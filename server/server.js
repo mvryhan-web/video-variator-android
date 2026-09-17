@@ -15,7 +15,7 @@ const __dirname=path.dirname(fileURLToPath(import.meta.url));
 const rootDir=path.resolve(__dirname,'..');
 const staticDir=path.join(rootDir,'app','src','main','assets');
 const ffmpegDist=path.join(rootDir,'node_modules','@ffmpeg','ffmpeg','dist','umd');
-const ffmpegCoreDist=path.join(rootDir,'node_modules','@ffmpeg','core','dist','umd');
+const ffmpegCoreDist=path.join(rootDir,'node_modules','@ffmpeg','core','dist','esm');
 const renderUrl=process.env.RENDER_EXTERNAL_HOSTNAME?`https://${process.env.RENDER_EXTERNAL_HOSTNAME}`:'';
 const appUrl=(process.env.APP_URL||process.env.RENDER_EXTERNAL_URL||renderUrl||`http://localhost:${port}`).replace(/\/$/,'');
 const jwtSecret=process.env.APP_JWT_SECRET||'';
@@ -74,7 +74,7 @@ app.use(express.json({limit:'1mb'}));
 async function signAppToken(user){requireServerConfig();const key=new TextEncoder().encode(jwtSecret);return new SignJWT({email:user.email||'',name:user.name||''}).setProtectedHeader({alg:'HS256'}).setSubject(user.id).setIssuer('video-variator').setAudience('video-variator-client').setIssuedAt().setExpirationTime('7d').sign(key);}
 async function auth(req,res,next){try{requireServerConfig();const token=(req.headers.authorization||'').replace(/^Bearer\s+/i,'');if(!token)return res.status(401).json({error:'AUTH_REQUIRED'});const key=new TextEncoder().encode(jwtSecret),{payload}=await jwtVerify(token,key,{issuer:'video-variator',audience:'video-variator-client'}),user=await getUser(payload.sub);if(!user)return res.status(401).json({error:'USER_NOT_FOUND'});req.user=user;next();}catch(_){res.status(401).json({error:'INVALID_SESSION'});}}
 
-app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',https:req.secure||!isProduction,videoProcessing:'local-only',ffmpegRuntime:'same-origin',appUrl,time:new Date().toISOString()}));
+app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',https:req.secure||!isProduction,videoProcessing:'local-only',ffmpegRuntime:'same-origin-esm',appUrl,time:new Date().toISOString()}));
 app.get('/api/version',(req,res)=>res.json({webVersion:process.env.WEB_VERSION||'5.0.0',androidVersion:process.env.ANDROID_VERSION||'5.0.0',androidVersionCode:Number(process.env.ANDROID_VERSION_CODE||5),latestApkUrl:process.env.LATEST_APK_URL||'https://github.com/mvryhan-web/video-variator-android/releases/download/latest/VideoUniquifier.apk'}));
 app.get('/api/config',(req,res)=>res.json({
   googleClientId:process.env.GOOGLE_CLIENT_ID||'',appleClientId:process.env.APPLE_CLIENT_ID||'',appleRedirectUri:process.env.APPLE_REDIRECT_URI||'',billingConfigured:!!(stripe&&plans.basic.priceId&&plans.pro.priceId&&plans.business.priceId),
