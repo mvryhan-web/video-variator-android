@@ -4,9 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b1020">
-  <meta name="description" content="Video Variator creates clean variations of your own videos with a simple privacy-first workflow.">
+  <meta name="description" content="Video Variator creates privacy-first video variations with simple credit-based billing.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="v3.css">
   <title>Video Variator</title>
 </head>
 <body>
@@ -16,11 +17,15 @@
     <nav>
       <button class="navBtn active" data-view="dashboard"><span>◫</span><span data-i18n="navDashboard">Dashboard</span></button>
       <button class="navBtn" data-view="history"><span>↻</span><span data-i18n="navHistory">History</span></button>
+      <button class="navBtn" data-view="analytics"><span>⌁</span><span data-i18n="navAnalytics">Analytics</span></button>
       <button class="navBtn" data-view="plans"><span>◇</span><span data-i18n="navPlans">Plans</span></button>
       <button class="navBtn" data-view="faq"><span>?</span><span data-i18n="navFaq">FAQ</span></button>
+      <div class="navDivider"></div>
+      <button class="navBtn" data-view="profile"><span>○</span><span data-i18n="navProfile">Profile & Settings</span></button>
     </nav>
     <div class="sidebarBottom">
       <div class="languageLine"><span data-i18n="languageAuto">Language: Auto</span><b id="localeBadge">EN</b></div>
+      <span class="secureBadge">● <span data-i18n="secureHttps">HTTPS required for online services</span></span>
       <small data-i18n="localProcessing">Video processing runs locally on your device.</small>
     </div>
   </aside>
@@ -43,15 +48,15 @@
           <p data-i18n="heroText">Upload a video, choose a processing style, and let Video Variator handle the rest.</p>
         </div>
         <div class="usageBox">
-          <div class="usageTop"><span data-i18n="usageLabel">Video credits</span><b id="creditText">2 / 2</b></div>
+          <div class="usageTop"><span id="usageLabel" data-i18n="usageLabel">Credits</span><b id="creditText">2 / 2</b></div>
           <div class="usageTrack"><div id="creditBar" style="width:100%"></div></div>
           <small id="planLabel">Free trial</small>
         </div>
       </div>
 
       <div class="statsGrid">
-        <article class="stat card"><span data-i18n="statProcessed">Processed</span><b id="processedCount">0</b><small data-i18n="statProcessedSub">videos completed</small></article>
-        <article class="stat card"><span data-i18n="statRemaining">Remaining</span><b id="remainingCount">2</b><small data-i18n="statRemainingSub">video credits</small></article>
+        <article class="stat card"><span data-i18n="statProcessed">Processed</span><b id="processedCount">0</b><small id="processedSub" data-i18n="statProcessedSub">videos completed</small></article>
+        <article class="stat card"><span data-i18n="statRemaining">Remaining</span><b id="remainingCount">2</b><small id="remainingSub">free videos</small></article>
         <article class="stat card"><span data-i18n="statPlan">Current plan</span><b id="currentPlan">Trial</b><small id="planStatus" data-i18n="trialStatus">No card required</small></article>
       </div>
 
@@ -71,8 +76,12 @@
         <div class="settingsGrid">
           <label><span data-i18n="variantsLabel">Variations per video</span><select id="variantCount"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select></label>
           <label><span data-i18n="modeLabel">Processing mode</span><select id="mode"><option value="gentle" data-i18n="modeGentle">Gentle</option><option value="balanced" selected data-i18n="modeBalanced">Balanced</option><option value="dynamic" data-i18n="modeDynamic">Dynamic</option></select></label>
-          <label><span data-i18n="qualityLabel">Output quality</span><select id="resolution"><option value="540x960">540 × 960</option><option value="720x1280" selected>720 × 1280</option><option value="1080x1920">1080 × 1920</option></select></label>
         </div>
+        <div class="formatGrid">
+          <label><span data-i18n="formatLabel">Video format</span><select id="aspectRatio"><option value="9:16" selected>9:16 · Vertical</option><option value="16:9">16:9 · Landscape</option></select></label>
+          <label><span data-i18n="qualityLabel">Output quality</span><select id="quality"><option value="540">540p</option><option value="720" selected>720p</option><option value="1080">1080p</option></select></label>
+        </div>
+        <div class="creditEstimate"><span data-i18n="estimatedCost">Estimated processing cost</span><b id="creditEstimate">—</b></div>
         <input id="microCut" type="hidden" value="auto">
         <input id="preserveAudio" type="hidden" value="1">
 
@@ -93,6 +102,8 @@
         <div class="readyIcon">✓</div><div><h3 id="readyTitle" data-i18n="readyTitle">Your videos are ready</h3><p id="readyText" data-i18n="readyText">Completed files were saved to your device.</p></div>
         <button class="ghostBtn" data-view-jump="history" data-i18n="viewHistory">View history</button>
       </section>
+
+      <section id="errorCard" class="card errorPanel" hidden><div class="sectionHead"><div><h3 data-i18n="recentIssue">Recent issue</h3><p id="errorMessage"></p></div><button id="dismissErrorBtn" class="ghostBtn">Dismiss</button></div></section>
     </section>
 
     <section id="historyView" class="view">
@@ -101,27 +112,48 @@
       <div id="historyEmpty" class="emptyState card"><b data-i18n="historyEmptyTitle">No processed videos yet</b><p data-i18n="historyEmptyText">Your completed videos will appear here.</p></div>
     </section>
 
+    <section id="analyticsView" class="view">
+      <div class="pageSection"><h2 data-i18n="analyticsTitle">Analytics</h2><p data-i18n="analyticsSub">Track usage, output volume, and processing reliability.</p></div>
+      <div class="analyticsGrid">
+        <article class="card analyticsCard"><span class="analyticsLabel" data-i18n="creditsUsed">Credits used</span><div id="analyticsCredits" class="analyticsValue">0</div><div class="metricSub">1 second = 1 credit</div></article>
+        <article class="card analyticsCard"><span class="analyticsLabel" data-i18n="outputsCreated">Outputs created</span><div id="analyticsOutputs" class="analyticsValue">0</div><div class="metricSub" id="analyticsDuration">0 sec processed</div></article>
+        <article class="card analyticsCard"><span class="analyticsLabel" data-i18n="successRate">Success rate</span><div id="analyticsSuccess" class="analyticsValue">100%</div><div class="metricSub" id="analyticsErrors">0 errors</div></article>
+      </div>
+      <section class="card"><h3 data-i18n="browserCompatibility">Browser compatibility</h3><p class="muted" data-i18n="browserCompatibilityText">The interface is continuously tested in Chromium, Firefox, and WebKit-based browsers. Video codec support can still vary by device.</p><div class="browserBadges"><span class="browserBadge">Chrome / Chromium</span><span class="browserBadge">Firefox</span><span class="browserBadge">Safari / WebKit</span><span class="browserBadge">Android WebView</span></div></section>
+    </section>
+
     <section id="plansView" class="view">
-      <div class="pricingHero"><span class="pill accent" data-i18n="firstOffer">Intro offer available on your first subscription</span><h2 data-i18n="plansTitle">Choose the plan that fits your workflow</h2><p data-i18n="plansSub">Start with two free videos. Upgrade only when you need more.</p></div>
+      <div class="pricingHero"><span class="pill accent" id="introOffer" data-i18n="firstOffer">Intro discount available on your first subscription</span><h2 data-i18n="plansTitle">Choose the plan that fits your workflow</h2><p data-i18n="plansSub">Paid plans use time-based credits. One second of processed output uses one credit.</p></div>
       <div class="pricingGrid">
-        <article class="priceCard card"><span class="planName">Basic</span><div class="price"><b>$9</b><span data-i18n="perMonth">/ month</span></div><p><strong>50</strong> <span data-i18n="videosPerMonth">videos per billing cycle</span></p><button class="primaryBtn planBtn" data-plan="basic" data-i18n="chooseBasic">Choose Basic</button></article>
-        <article class="priceCard card featured"><span class="popular" data-i18n="mostPopular">Most popular</span><span class="planName">Pro</span><div class="price"><b>$24</b><span data-i18n="perMonth">/ month</span></div><p><strong>150</strong> <span data-i18n="videosPerMonth">videos per billing cycle</span></p><button class="primaryBtn planBtn" data-plan="pro" data-i18n="choosePro">Choose Pro</button></article>
-        <article class="priceCard card"><span class="planName">Business</span><div class="price"><b>$99</b><span data-i18n="perMonth">/ month</span></div><p><strong>1,000</strong> <span data-i18n="videosPerMonth">videos per billing cycle</span></p><button class="primaryBtn planBtn" data-plan="business" data-i18n="chooseBusiness">Choose Business</button></article>
+        <article class="priceCard card"><span class="planName">Basic</span><div class="price"><b>$9</b><span data-i18n="perMonth">/ month</span></div><p><strong>750</strong> <span data-i18n="creditsPerCycle">credits per billing cycle</span></p><span class="planUnit">≈ 12.5 minutes of processing</span><button class="primaryBtn planBtn" data-plan="basic" data-i18n="chooseBasic">Choose Basic</button></article>
+        <article class="priceCard card featured"><span class="popular" data-i18n="mostPopular">Most popular</span><span class="planName">Pro</span><div class="price"><b>$24</b><span data-i18n="perMonth">/ month</span></div><p><strong>2,250</strong> <span data-i18n="creditsPerCycle">credits per billing cycle</span></p><span class="planUnit">≈ 37.5 minutes of processing</span><button class="primaryBtn planBtn" data-plan="pro" data-i18n="choosePro">Choose Pro</button></article>
+        <article class="priceCard card"><span class="planName">Business</span><div class="price"><b>$99</b><span data-i18n="perMonth">/ month</span></div><p><strong>15,000</strong> <span data-i18n="creditsPerCycle">credits per billing cycle</span></p><span class="planUnit">≈ 250 minutes of processing</span><button class="primaryBtn planBtn" data-plan="business" data-i18n="chooseBusiness">Choose Business</button></article>
       </div>
       <div class="guarantee card"><div class="guaranteeIcon">↺</div><div><b data-i18n="guaranteeTitle">Money-back guarantee</b><p data-i18n="guaranteeText">Eligible first subscription purchases are covered by our refund policy. Full eligibility terms are shown before checkout.</p></div></div>
-      <button id="manageBillingBtn" class="ghostBtn centered" hidden data-i18n="manageBilling">Manage billing</button>
     </section>
 
     <section id="faqView" class="view">
       <div class="pageSection"><h2 data-i18n="faqTitle">Frequently asked questions</h2><p data-i18n="faqSub">Everything you need to know before processing your videos.</p></div>
+      <div class="faqNote" data-i18n="faqCreditNote">Paid plans use seconds, not file count: every second of generated video costs one credit.</div>
       <div class="faqList">
-        <details class="card"><summary data-i18n="faq1q">What counts as one video credit?</summary><p data-i18n="faq1a">One source video counts as one credit, even if you create multiple variations from it in the same processing job.</p></details>
-        <details class="card"><summary data-i18n="faq2q">Where are my videos processed?</summary><p data-i18n="faq2a">Video processing is designed to run locally on your device. Account, billing, usage, and history metadata may sync with the service.</p></details>
-        <details class="card"><summary data-i18n="faq3q">Do I need a credit card for the free test?</summary><p data-i18n="faq3a">No. New accounts receive two free video credits before a paid subscription is required.</p></details>
-        <details class="card"><summary data-i18n="faq4q">Can I cancel my subscription?</summary><p data-i18n="faq4a">Yes. You can manage or cancel your subscription from the billing portal.</p></details>
-        <details class="card"><summary data-i18n="faq5q">What happens when I reach my limit?</summary><p data-i18n="faq5a">Processing pauses until your next billing cycle or until you switch to a plan with a higher allowance.</p></details>
-        <details class="card"><summary data-i18n="faq6q">What video formats are supported?</summary><p data-i18n="faq6a">Common formats such as MP4, MOV, M4V, WebM, MKV, and AVI are accepted when your device can read them.</p></details>
+        <details class="card"><summary data-i18n="faq1q">How do credits work?</summary><p data-i18n="faq1a">One second of generated video uses one credit. Creating multiple variations multiplies the processing time and credit cost.</p></details>
+        <details class="card"><summary data-i18n="faq2q">Where are my videos processed?</summary><p data-i18n="faq2a">Video processing is designed to run locally on your device. Only account, billing, usage, analytics, and history metadata may sync with the service.</p></details>
+        <details class="card"><summary data-i18n="faq3q">How does the free test work?</summary><p data-i18n="faq3a">New users can process two source videos before a paid subscription is required.</p></details>
+        <details class="card"><summary data-i18n="faq4q">Can I cancel my subscription easily?</summary><p data-i18n="faq4a">Yes. Open Profile & Settings and choose Manage or cancel subscription. Stripe's billing portal handles the cancellation securely.</p></details>
+        <details class="card"><summary data-i18n="faq5q">Which aspect ratios are supported?</summary><p data-i18n="faq5a">Video Variator supports both 9:16 vertical video and 16:9 landscape video at 540p, 720p, and 1080p.</p></details>
+        <details class="card"><summary data-i18n="faq6q">How is my data protected?</summary><p data-i18n="faq6a">Production online services require HTTPS, sensitive billing data stays with Stripe, OAuth is verified server-side, and raw video files are not uploaded for account or billing operations.</p></details>
+        <details class="card"><summary data-i18n="faq7q">What happens when I reach my credit limit?</summary><p data-i18n="faq7a">A new processing job is blocked before it starts if your available credits are insufficient.</p></details>
       </div>
+    </section>
+
+    <section id="profileView" class="view">
+      <div class="pageSection"><h2 data-i18n="profileTitle">Profile & Settings</h2><p data-i18n="profileSub">Manage your account, subscription, privacy, and updates.</p></div>
+      <div class="profileGrid">
+        <article class="card profileCard"><h3 data-i18n="accountTitle">Account</h3><div class="profileRows"><div class="profileRow"><span>Email</span><b id="profileEmail">Not signed in</b></div><div class="profileRow"><span>Plan</span><b id="profilePlan">Trial</b></div><div class="profileRow"><span>Status</span><b id="profileStatus">Inactive</b></div></div></article>
+        <article class="card profileCard"><h3 data-i18n="subscriptionTitle">Subscription</h3><p class="muted" data-i18n="subscriptionText">Manage payment methods, invoices, or cancel your subscription securely through Stripe.</p><div class="profileActionRow"><button id="manageBillingBtn" class="primaryBtn" data-i18n="manageOrCancel">Manage or cancel subscription</button></div></article>
+        <article class="card profileCard"><h3 data-i18n="updatesTitle">Updates</h3><p class="muted" id="updateStatus" data-i18n="updatesText">The web app checks for updates automatically.</p><div class="profileActionRow"><button id="checkUpdateBtn" class="ghostBtn" data-i18n="checkUpdates">Check for updates</button></div></article>
+      </div>
+      <section class="card privacyPanel"><h3 data-i18n="privacyTitle">Privacy & security</h3><div class="privacyPoint"><i>✓</i><span data-i18n="privacy1">HTTPS is enforced for production web traffic.</span></div><div class="privacyPoint"><i>✓</i><span data-i18n="privacy2">Raw video processing stays on-device whenever supported.</span></div><div class="privacyPoint"><i>✓</i><span data-i18n="privacy3">Stripe handles card data; Video Variator does not store card numbers.</span></div><div class="privacyPoint"><i>✓</i><span data-i18n="privacy4">Google and Apple identity tokens are verified on the server.</span></div></section>
     </section>
   </main>
 </div>
@@ -130,13 +162,14 @@
   <div class="modalBackdrop" data-close-auth></div>
   <section class="authCard card">
     <button class="modalClose" data-close-auth aria-label="Close">×</button>
-    <span class="eyebrow">VIDEO VARIATOR</span><h2 data-i18n="authTitle">Sign in to sync your account</h2><p data-i18n="authSub">Keep your plan, video credits, and history connected across devices.</p>
+    <span class="eyebrow">VIDEO VARIATOR</span><h2 data-i18n="authTitle">Sign in to sync your account</h2><p data-i18n="authSub">Keep your plan, credits, and history connected across devices.</p>
     <div id="googleButton" class="providerSlot"><button id="googleFallback" class="providerBtn"><span class="googleG">G</span><span data-i18n="continueGoogle">Continue with Google</span></button></div>
     <button id="appleButton" class="providerBtn appleBtn"><span class="appleLogo">●</span><span data-i18n="continueApple">Continue with Apple</span></button>
     <small id="authNotice" class="muted" data-i18n="authNotice">Secure sign-in opens through the provider. Video files are not uploaded for authentication.</small>
   </section>
 </div>
 
+<div id="updateBanner" class="updateBanner" hidden><div><b data-i18n="updateAvailable">An update is available</b><p data-i18n="updateAvailableText">Reload to use the latest Video Variator version.</p></div><button id="applyUpdateBtn" class="primaryBtn" data-i18n="updateNow">Update now</button></div>
 <div id="toast" class="toast" hidden></div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -144,7 +177,7 @@
 <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.15/dist/umd/ffmpeg.js"></script>
 <script src="bootstrap.js"></script>
 <script src="video-core.js"></script>
-<script src="app.js"></script>
+<script src="app-v3.js"></script>
 <script src="folder.js"></script>
 </body>
 </html>
