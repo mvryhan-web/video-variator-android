@@ -52,3 +52,21 @@ test('analytics profile error handling and FAQ are reachable',async({page})=>{
   await expect(page.getByText('What processing modes are included?')).toBeVisible();
   await expect(page.getByText('How is my data protected?')).toBeVisible();
 });
+
+test('verified administrator receives unrestricted premium UI',async({browser,baseURL})=>{
+  const context=await browser.newContext();
+  await context.addInitScript(()=>localStorage.setItem('vv_token','test-admin-token'));
+  const page=await context.newPage();
+  await page.route(/accounts\.google\.com|appleid\.cdn-apple\.com|unpkg\.com/,route=>route.abort());
+  await page.route('**/api/config',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({})}));
+  await page.route('**/api/me',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({user:{id:'admin',email:'admin@example.test',isAdmin:true,usage:{plan:'business',limit:1000000000,used:0,remaining:1000000000,active:true,unlimited:true,unit:'credits',status:'admin'}}})}));
+  await page.goto(baseURL||'/');
+  await expect(page.locator('#creditText')).toHaveText('Unlimited',{timeout:6000});
+  await expect(page.locator('#remainingCount')).toHaveText('∞');
+  await expect(page.locator('#currentPlan')).toHaveText('Administrator');
+  await expect(page.locator('#mode option[value="gentle"]')).toBeEnabled();
+  await expect(page.locator('#mode option[value="balanced"]')).toBeEnabled();
+  await expect(page.locator('#mode option[value="dynamic"]')).toBeEnabled();
+  await expect(page.locator('#quality')).toHaveValue('2160');
+  await context.close();
+});
