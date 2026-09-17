@@ -16,6 +16,7 @@
   }
 
   const style=document.createElement('link');style.rel='stylesheet';style.href='v5.css';document.head.appendChild(style);
+  const productStyle=document.createElement('link');productStyle.rel='stylesheet';productStyle.href='product-polish.css';document.head.appendChild(productStyle);
   const icon=document.createElement('link');icon.rel='icon';icon.href='icon.svg';document.head.appendChild(icon);
 
   window.addEventListener('DOMContentLoaded',()=>{
