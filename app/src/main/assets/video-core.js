@@ -51,11 +51,12 @@
     ffmpeg.on('log',({message})=>log(message));
     ffmpeg.on('progress',({progress})=>{if(state.running&&Number.isFinite(progress))state.progress=clamp(progress,0,1);});
     try{
-      const [classWorkerURL,coreURL,wasmURL]=await Promise.all([
-        toBlobURL(CLASS_WORKER,'text/javascript'),
-        toBlobURL(`${CORE_BASE}/ffmpeg-core.js`,'text/javascript'),
-        toBlobURL(`${CORE_BASE}/ffmpeg-core.wasm`,'application/wasm')
-      ]);
+      // Keep the class worker as a local blob for Android/WebView compatibility,
+      // but give that worker direct same-origin core URLs. Blob URLs created by
+      // the page are not reliably fetchable from a module worker on Android.
+      const classWorkerURL=await toBlobURL(CLASS_WORKER,'text/javascript');
+      const coreURL=`${CORE_BASE}/ffmpeg-core.js`;
+      const wasmURL=`${CORE_BASE}/ffmpeg-core.wasm`;
       await ffmpeg.load({classWorkerURL,coreURL,wasmURL});
       state.ffmpeg=ffmpeg;state.loaded=true;hooks.onEngine('ready');
       return ffmpeg;
