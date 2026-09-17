@@ -17,12 +17,14 @@
 
   const style=document.createElement('link');style.rel='stylesheet';style.href='v5.css';document.head.appendChild(style);
   const productStyle=document.createElement('link');productStyle.rel='stylesheet';productStyle.href='product-polish.css';document.head.appendChild(productStyle);
+  const authStyle=document.createElement('link');authStyle.rel='stylesheet';authStyle.href='auth-email.css';document.head.appendChild(authStyle);
   const icon=document.createElement('link');icon.rel='icon';icon.href='icon.svg';document.head.appendChild(icon);
 
   window.addEventListener('DOMContentLoaded',()=>{
     const admin=document.createElement('script');admin.src='admin-access.js';admin.defer=true;document.body.appendChild(admin);
     const v5=document.createElement('script');v5.src='app-v5.js';v5.defer=true;
     v5.addEventListener('load',()=>{
+      const emailAuth=document.createElement('script');emailAuth.src='auth-email.js';emailAuth.defer=true;document.body.appendChild(emailAuth);
       const trialQuality=document.createElement('script');trialQuality.src='trial-quality.js';trialQuality.defer=true;
       trialQuality.addEventListener('load',()=>{
         const productPolish=document.createElement('script');productPolish.src='product-polish.js';productPolish.defer=true;document.body.appendChild(productPolish);
