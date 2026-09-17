@@ -43,21 +43,35 @@
     if(Number(select.value)>max){select.value=String(max);select.dispatchEvent(new Event('change',{bubbles:true}));}
   }
 
+  function clearPreviousResultState(){
+    window.__vuLastResults=[];
+    const results=$('resultsCard');if(results)results.hidden=true;
+    const old=results?.querySelector('.readyDownloads');if(old)old.remove();
+    const err=$('errorCard');if(err)err.hidden=true;
+  }
+
   const originalEstimate=core.estimateCredits?.bind(core);
   if(originalEstimate)core.estimateCredits=(variants=1)=>originalEstimate(Math.min(maxVariants(),Math.max(1,Number(variants)||1)));
   const originalProcess=core.process?.bind(core);
   if(originalProcess)core.process=async options=>{
+    clearPreviousResultState();
     const safeOptions={...(options||{}),variants:Math.min(maxVariants(),Math.max(1,Number(options?.variants)||1))};
-    const result=await originalProcess(safeOptions);
-    window.__vuLastResults=result.results||[];
-    if(window.AndroidBridge&&core.saveToDevice){
-      for(const r of window.__vuLastResults){
-        if(r.saved)continue;
-        try{const saved=await core.saveToDevice(r.name,r.blob);r.saved=!!saved?.saved;r.path=saved?.path||r.path;}catch(_){ }
+    try{
+      const result=await originalProcess(safeOptions);
+      window.__vuLastResults=result.results||[];
+      if(window.AndroidBridge&&core.saveToDevice){
+        for(const r of window.__vuLastResults){
+          if(r.saved)continue;
+          try{const saved=await core.saveToDevice(r.name,r.blob);r.saved=!!saved?.saved;r.path=saved?.path||r.path;}catch(_){ }
+        }
       }
+      setTimeout(renderReadyDownloads,0);
+      return result;
+    }catch(e){
+      window.__vuLastResults=[];
+      const results=$('resultsCard');if(results)results.hidden=true;
+      throw e;
     }
-    setTimeout(renderReadyDownloads,0);
-    return result;
   };
 
   async function browserSave(name,blob){
@@ -146,8 +160,13 @@
     $('historyList')?.addEventListener('click',e=>{if(!window.AndroidBridge)return;const button=e.target.closest('button');if(!button)return;const row=button.closest('.historyItem'),name=row?.querySelector('h4')?.textContent,result=(window.__vuLastResults||[]).find(r=>r.name===name);if(!result)return;e.preventDefault();e.stopImmediatePropagation();saveResult(result);},true);
   }
 
+  function installProcessingStateGuard(){
+    $('startBtn')?.addEventListener('click',clearPreviousResultState,true);
+    const error=$('errorCard');if(error)new MutationObserver(()=>{if(!error.hidden){const results=$('resultsCard');if(results)results.hidden=true;const progress=$('progressCard');if(progress)progress.hidden=true;}}).observe(error,{attributes:true,attributeFilter:['hidden']});
+    const results=$('resultsCard');if(results)new MutationObserver(()=>{if(!results.hidden){const progress=$('progressCard');if(progress)progress.hidden=true;const error=$('errorCard');if(error)error.hidden=true;}}).observe(results,{attributes:true,attributeFilter:['hidden']});
+  }
   function observePlan(){const el=$('currentPlan');if(!el)return;new MutationObserver(()=>enforceVariantAccess()).observe(el,{childList:true,characterData:true,subtree:true});}
   function observeResults(){const card=$('resultsCard');if(!card)return;new MutationObserver(()=>{if(!card.hidden)renderReadyDownloads();}).observe(card,{attributes:true,attributeFilter:['hidden']});}
 
-  applyBranding();installVariantOptions();installBackButton();installNetworkBadge();installVersion();installAuthStatus();installNativeAuthBridge();interceptHistoryDownloads();observePlan();observeResults();
+  applyBranding();installVariantOptions();installBackButton();installNetworkBadge();installVersion();installAuthStatus();installNativeAuthBridge();interceptHistoryDownloads();installProcessingStateGuard();observePlan();observeResults();
 })();
