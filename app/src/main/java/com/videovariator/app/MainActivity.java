@@ -17,12 +17,19 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import androidx.documentfile.provider.DocumentFile;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
+    private static final int FOLDER_CHOOSER_REQUEST = 1002;
     private WebView webView;
     private ValueCallback<Uri[]> fileChooserCallback;
 
@@ -72,6 +79,19 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == FOLDER_CHOOSER_REQUEST) {
+            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+                Uri treeUri = data.getData();
+                try {
+                    int flags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    getContentResolver().takePersistableUriPermission(treeUri, flags);
+                } catch (Exception ignored) {}
+                importFolder(treeUri);
+            }
+            return;
+        }
+
         if (requestCode != FILE_CHOOSER_REQUEST || fileChooserCallback == null) return;
 
         Uri[] results = null;
@@ -88,6 +108,56 @@ public class MainActivity extends Activity {
         }
         fileChooserCallback.onReceiveValue(results);
         fileChooserCallback = null;
+    }
+
+    private void importFolder(Uri treeUri) {
+        Toast.makeText(this, "Читаю видео из папки…", Toast.LENGTH_SHORT).show();
+        new Thread(() -> {
+            try {
+                DocumentFile root = DocumentFile.fromTreeUri(this, treeUri);
+                if (root == null) throw new Exception("Не удалось открыть папку");
+                File batchDir = new File(getCacheDir(), "folder_" + System.currentTimeMillis());
+                if (!batchDir.mkdirs() && !batchDir.isDirectory()) throw new Exception("Не удалось создать временную папку");
+                JSONArray items = new JSONArray();
+                int[] counter = new int[]{0};
+                collectVideos(root, batchDir, items, counter);
+                final String json = items.toString();
+                runOnUiThread(() -> {
+                    webView.evaluateJavascript("window.receiveNativeFolderFiles(" + json + ")", null);
+                    Toast.makeText(this, items.length() + " видео найдено", Toast.LENGTH_SHORT).show();
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this, "Ошибка папки: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }
+        }).start();
+    }
+
+    private void collectVideos(DocumentFile node, File outDir, JSONArray items, int[] counter) throws Exception {
+        if (node.isDirectory()) {
+            for (DocumentFile child : node.listFiles()) collectVideos(child, outDir, items, counter);
+            return;
+        }
+        if (!node.isFile()) return;
+        String name = node.getName() == null ? "video.mp4" : node.getName();
+        String type = node.getType() == null ? "" : node.getType();
+        boolean video = type.startsWith("video/") || name.matches("(?i).+\\.(mp4|mov|m4v|webm|mkv|avi)$");
+        if (!video) return;
+
+        String safe = name.replaceAll("[^a-zA-Z0-9._-]", "_");
+        File target = new File(outDir, String.format("%04d_%s", counter[0]++, safe));
+        try (InputStream in = getContentResolver().openInputStream(node.getUri());
+             OutputStream out = new FileOutputStream(target)) {
+            if (in == null) return;
+            byte[] buffer = new byte[1024 * 1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) out.write(buffer, 0, read);
+        }
+        JSONObject item = new JSONObject();
+        item.put("name", name);
+        item.put("url", Uri.fromFile(target).toString());
+        item.put("type", type.isEmpty() ? "video/mp4" : type);
+        item.put("size", target.length());
+        items.put(item);
     }
 
     @Override
@@ -107,6 +177,18 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void toast(final String message) {
             runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show());
+        }
+
+        @JavascriptInterface
+        public void pickFolder() {
+            runOnUiThread(() -> {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
+                        Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION |
+                        Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+                startActivityForResult(Intent.createChooser(intent, "Выберите папку с видео"), FOLDER_CHOOSER_REQUEST);
+            });
         }
 
         @JavascriptInterface
