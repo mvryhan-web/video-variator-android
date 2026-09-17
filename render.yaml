@@ -16,7 +16,7 @@ services:
           name: video-uniquifier-db
           property: connectionString
       - key: DATABASE_SSL
-        value: "false"
+        value: "true"
       - key: APP_JWT_SECRET
         generateValue: true
       - key: ADMIN_EMAIL
