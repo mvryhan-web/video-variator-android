@@ -3,7 +3,12 @@ import { randomUUID } from 'node:crypto';
 
 const {Pool}=pg;
 const databaseUrl=process.env.DATABASE_URL||'';
+const adminEmail=(process.env.ADMIN_EMAIL||'').trim().toLowerCase();
 export const pool=databaseUrl?new Pool({connectionString:databaseUrl,ssl:process.env.DATABASE_SSL==='false'?false:{rejectUnauthorized:false}}):null;
+
+function isAdminUser(user){
+  return !!(user&&adminEmail&&user.provider==='google'&&String(user.email||'').trim().toLowerCase()===adminEmail);
+}
 
 export async function initDb(){
   if(!pool){console.warn('[db] DATABASE_URL is not configured; account persistence is disabled.');return;}
@@ -59,8 +64,13 @@ export async function getUserByCustomer(customerId){requireDb();const r=await po
 export async function getUserBySubscription(subscriptionId){requireDb();const r=await pool.query('SELECT * FROM vv_users WHERE stripe_subscription_id=$1',[subscriptionId]);return r.rows[0]||null;}
 
 export function publicUser(user){
-  if(!user)return null;const active=['active','trialing'].includes(user.subscription_status),limit=active?user.plan_limit:2,used=active?user.period_used:user.trial_used;
-  return{id:user.id,email:user.email,name:user.name,usage:{plan:active?user.plan:'trial',limit,used,remaining:Math.max(0,limit-used),active,unit:active?'credits':'videos',status:user.subscription_status,currentPeriodEnd:user.current_period_end}};
+  if(!user)return null;
+  const admin=isAdminUser(user);
+  if(admin){
+    return{id:user.id,email:user.email,name:user.name,isAdmin:true,usage:{plan:'business',limit:1000000000,used:0,remaining:1000000000,active:true,unlimited:true,unit:'credits',status:'admin',currentPeriodEnd:null}};
+  }
+  const active=['active','trialing'].includes(user.subscription_status),limit=active?user.plan_limit:2,used=active?user.period_used:user.trial_used;
+  return{id:user.id,email:user.email,name:user.name,isAdmin:false,usage:{plan:active?user.plan:'trial',limit,used,remaining:Math.max(0,limit-used),active,unlimited:false,unit:active?'credits':'videos',status:user.subscription_status,currentPeriodEnd:user.current_period_end}};
 }
 
 export async function setStripeCustomer(userId,customerId){requireDb();await pool.query('UPDATE vv_users SET stripe_customer_id=$2,updated_at=NOW() WHERE id=$1',[userId,customerId]);}
@@ -70,8 +80,16 @@ export async function resetPeriodUsageBySubscription(subscriptionId){requireDb()
 
 export async function consumeUsage(userId,{seconds=0,sourceCount=0}={}){
   requireDb();const safeSeconds=Math.max(0,Math.min(10000000,Math.ceil(Number(seconds)||0))),safeSources=Math.max(0,Math.min(1000,Math.ceil(Number(sourceCount)||0)));const client=await pool.connect();
-  try{await client.query('BEGIN');const q=await client.query('SELECT * FROM vv_users WHERE id=$1 FOR UPDATE',[userId]),u=q.rows[0];if(!u)throw new Error('USER_NOT_FOUND');const active=['active','trialing'].includes(u.subscription_status),limit=active?u.plan_limit:2,used=active?u.period_used:u.trial_used,cost=active?safeSeconds:safeSources;if(cost<1)throw new Error('INVALID_USAGE');if(used+cost>limit){const e=new Error('CREDIT_LIMIT_REACHED');e.code='CREDIT_LIMIT_REACHED';throw e;}if(active)await client.query('UPDATE vv_users SET period_used=period_used+$2,updated_at=NOW() WHERE id=$1',[userId,cost]);else await client.query('UPDATE vv_users SET trial_used=trial_used+$2,updated_at=NOW() WHERE id=$1',[userId,cost]);await client.query('COMMIT');}
-  catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}return getUser(userId);
+  try{
+    await client.query('BEGIN');
+    const q=await client.query('SELECT * FROM vv_users WHERE id=$1 FOR UPDATE',[userId]),u=q.rows[0];if(!u)throw new Error('USER_NOT_FOUND');
+    if(isAdminUser(u)){await client.query('COMMIT');return u;}
+    const active=['active','trialing'].includes(u.subscription_status),limit=active?u.plan_limit:2,used=active?u.period_used:u.trial_used,cost=active?safeSeconds:safeSources;
+    if(cost<1)throw new Error('INVALID_USAGE');if(used+cost>limit){const e=new Error('CREDIT_LIMIT_REACHED');e.code='CREDIT_LIMIT_REACHED';throw e;}
+    if(active)await client.query('UPDATE vv_users SET period_used=period_used+$2,updated_at=NOW() WHERE id=$1',[userId,cost]);else await client.query('UPDATE vv_users SET trial_used=trial_used+$2,updated_at=NOW() WHERE id=$1',[userId,cost]);
+    await client.query('COMMIT');
+  }catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
+  return getUser(userId);
 }
 
 export async function addHistory(userId,item){requireDb();await pool.query(`INSERT INTO vv_history(id,user_id,name,source_name,resolution,saved,created_at,duration_seconds,credits,aspect_ratio) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT(id) DO NOTHING`,[item.id||randomUUID(),userId,item.name,item.sourceName||null,item.resolution||null,item.saved!==false,item.createdAt||new Date(),Math.max(0,Number(item.durationSeconds)||0),Math.max(0,Number(item.credits)||0),item.aspectRatio||null]);}
