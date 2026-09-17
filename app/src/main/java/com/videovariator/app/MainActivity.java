@@ -12,6 +12,7 @@ import android.util.Base64;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -42,6 +43,7 @@ public class MainActivity extends Activity {
     private WebView webView;
     private ValueCallback<Uri[]> fileChooserCallback;
     private AppUpdateManager appUpdateManager;
+    private String trustedWebOrigin = "";
 
     private final InstallStateUpdatedListener updateListener = state -> {
         if (state.installStatus() == InstallStatus.DOWNLOADED && appUpdateManager != null) {
@@ -68,13 +70,22 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) settings.setSafeBrowsingEnabled(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            // Required by the trusted bundled UI so it can read user-selected local video copies.
             settings.setAllowFileAccessFromFileURLs(true);
             settings.setAllowUniversalAccessFromFileURLs(true);
         }
 
         webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                return handleNavigation(request.getUrl());
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return handleNavigation(Uri.parse(url));
+            }
+        });
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
@@ -89,10 +100,34 @@ public class MainActivity extends Activity {
             }
         });
 
-        webView.loadUrl("file:///android_asset/index.html");
+        String remote = BuildConfig.WEB_APP_URL == null ? "" : BuildConfig.WEB_APP_URL.trim();
+        if (remote.startsWith("https://")) {
+            Uri uri = Uri.parse(remote);
+            trustedWebOrigin = uri.getScheme() + "://" + uri.getAuthority();
+            webView.loadUrl(remote);
+        } else {
+            trustedWebOrigin = "file://";
+            webView.loadUrl("file:///android_asset/index.html");
+        }
+
         appUpdateManager = AppUpdateManagerFactory.create(this);
         appUpdateManager.registerListener(updateListener);
         checkForPlayUpdate(false);
+    }
+
+    private boolean handleNavigation(Uri uri) {
+        if (uri == null) return false;
+        String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase();
+        if ("file".equals(scheme) && trustedWebOrigin.startsWith("file://")) return false;
+        if (("https".equals(scheme) || "http".equals(scheme)) && !trustedWebOrigin.isEmpty()) {
+            String origin = scheme + "://" + uri.getAuthority();
+            if (origin.equalsIgnoreCase(trustedWebOrigin)) return false;
+        }
+        if ("https".equals(scheme)) {
+            try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); } catch (Exception ignored) {}
+            return true;
+        }
+        return true;
     }
 
     private void checkForPlayUpdate(boolean userInitiated) {
