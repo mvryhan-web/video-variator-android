@@ -1,66 +1,149 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en-US">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b1020">
-  <title>Video Variator</title>
+  <meta name="description" content="Video Variator creates clean variations of your own videos with a simple privacy-first workflow.">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
+  <title>Video Variator</title>
 </head>
 <body>
-<div class="app">
-  <header>
-    <div><span class="eyebrow">VIDEO VARIATOR</span><h1>Video Variator</h1><p>Аккуратная переработка ваших собственных видео прямо на телефоне.</p></div>
-    <span id="engineBadge" class="badge">Движок не загружен</span>
-  </header>
-
-  <section class="card">
-    <div class="privacy">● Видео обрабатывается локально на телефоне.</div>
-    <div class="pickerGrid">
-      <label class="picker">
-        <input id="fileInput" type="file" accept="video/*" multiple hidden>
-        <b>＋ Выбрать видео</b><small>Одно или несколько видео</small>
-      </label>
-      <button id="folderBtn" class="picker folderPicker" type="button">
-        <b>▣ Выбрать папку</b><small>Пакетная обработка всех видео</small>
-      </button>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand"><span class="brandMark">VV</span><div><b>Video Variator</b><small data-i18n="brandTag">Video variation made simple</small></div></div>
+    <nav>
+      <button class="navBtn active" data-view="dashboard"><span>◫</span><span data-i18n="navDashboard">Dashboard</span></button>
+      <button class="navBtn" data-view="history"><span>↻</span><span data-i18n="navHistory">History</span></button>
+      <button class="navBtn" data-view="plans"><span>◇</span><span data-i18n="navPlans">Plans</span></button>
+      <button class="navBtn" data-view="faq"><span>?</span><span data-i18n="navFaq">FAQ</span></button>
+    </nav>
+    <div class="sidebarBottom">
+      <div class="languageLine"><span data-i18n="languageAuto">Language: Auto</span><b id="localeBadge">EN</b></div>
+      <small data-i18n="localProcessing">Video processing runs locally on your device.</small>
     </div>
-    <div id="fileSummary" class="muted">Файлы ещё не выбраны.</div>
-  </section>
+  </aside>
 
-  <section class="card">
-    <h2>Настройки</h2>
-    <div class="grid">
-      <label><span>Количество вариантов</span><select id="variantCount"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select></label>
-      <label><span>Режим обработки</span><select id="mode"><option value="gentle">Очень мягкий</option><option value="balanced" selected>Сбалансированный</option><option value="dynamic">Более заметный</option></select></label>
-      <label><span>Качество</span><select id="resolution"><option value="540x960">540 × 960 — быстро</option><option value="720x1280" selected>720 × 1280 — рекомендовано</option><option value="1080x1920">1080 × 1920 — высокое</option></select></label>
-      <label><span>Микромонтаж</span><select id="microCut"><option value="auto" selected>Авто</option><option value="off">Выключить</option><option value="on">Включить</option></select></label>
-    </div>
-    <label class="check"><input id="preserveAudio" type="checkbox" checked><span>Сохранять звук с лёгкой вариацией тона и громкости</span></label>
-  </section>
+  <main class="main">
+    <header class="topbar">
+      <button id="menuBtn" class="iconBtn mobileOnly" aria-label="Menu">☰</button>
+      <div class="topTitle"><span class="eyebrow">VIDEO VARIATOR</span><h1 id="pageTitle" data-i18n="navDashboard">Dashboard</h1></div>
+      <div class="accountActions">
+        <span id="accountChip" class="accountChip" hidden></span>
+        <button id="signInBtn" class="ghostBtn" data-i18n="signIn">Sign in</button>
+      </div>
+    </header>
 
-  <section class="action">
-    <button id="startBtn" disabled>Создать варианты →</button>
-    <button id="cancelBtn" class="secondary" hidden>Остановить</button>
-    <p>Результаты сохраняются в <b>Downloads/VideoVariator</b>.</p>
-  </section>
+    <section id="dashboardView" class="view active">
+      <div class="hero card">
+        <div>
+          <span class="pill success" data-i18n="trialPill">2 free videos included</span>
+          <h2 data-i18n="heroTitle">Create your next video variation</h2>
+          <p data-i18n="heroText">Upload a video, choose a processing style, and let Video Variator handle the rest.</p>
+        </div>
+        <div class="usageBox">
+          <div class="usageTop"><span data-i18n="usageLabel">Video credits</span><b id="creditText">2 / 2</b></div>
+          <div class="usageTrack"><div id="creditBar" style="width:100%"></div></div>
+          <small id="planLabel">Free trial</small>
+        </div>
+      </div>
 
-  <section id="progressCard" class="card" hidden>
-    <div class="progressHead"><h2 id="progressTitle">Подготовка…</h2><b id="progressPercent">0%</b></div>
-    <div class="track"><div id="progressBar"></div></div>
-    <p id="progressText" class="muted">Загрузка движка…</p>
-    <details><summary>Технический журнал</summary><pre id="logBox"></pre></details>
-  </section>
+      <div class="statsGrid">
+        <article class="stat card"><span data-i18n="statProcessed">Processed</span><b id="processedCount">0</b><small data-i18n="statProcessedSub">videos completed</small></article>
+        <article class="stat card"><span data-i18n="statRemaining">Remaining</span><b id="remainingCount">2</b><small data-i18n="statRemainingSub">video credits</small></article>
+        <article class="stat card"><span data-i18n="statPlan">Current plan</span><b id="currentPlan">Trial</b><small id="planStatus" data-i18n="trialStatus">No card required</small></article>
+      </div>
 
-  <section id="resultsCard" class="card" hidden>
-    <div class="progressHead"><h2>Готовые видео</h2><button id="saveAllBtn" class="small">Сохранить все</button></div>
-    <div id="results"></div>
-  </section>
+      <section class="card workspace">
+        <div class="sectionHead"><div><h3 data-i18n="newProject">New variation</h3><p data-i18n="newProjectSub">Choose one or more videos, or select an entire folder.</p></div><span id="engineBadge" class="statusDot" data-i18n="engineStandby">Engine standby</span></div>
+        <div class="pickerGrid">
+          <label class="picker">
+            <input id="fileInput" type="file" accept="video/*" multiple hidden>
+            <span class="pickerIcon">＋</span><b data-i18n="chooseVideos">Choose videos</b><small data-i18n="chooseVideosSub">One or multiple files</small>
+          </label>
+          <button id="folderBtn" class="picker" type="button">
+            <span class="pickerIcon">▣</span><b data-i18n="chooseFolder">Choose folder</b><small data-i18n="chooseFolderSub">Batch process a folder</small>
+          </button>
+        </div>
+        <div id="fileSummary" class="fileSummary" data-i18n="noFiles">No videos selected yet.</div>
 
-  <footer>Для обработки собственных или разрешённых к использованию видео.</footer>
+        <div class="settingsGrid">
+          <label><span data-i18n="variantsLabel">Variations per video</span><select id="variantCount"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select></label>
+          <label><span data-i18n="modeLabel">Processing mode</span><select id="mode"><option value="gentle" data-i18n="modeGentle">Gentle</option><option value="balanced" selected data-i18n="modeBalanced">Balanced</option><option value="dynamic" data-i18n="modeDynamic">Dynamic</option></select></label>
+          <label><span data-i18n="qualityLabel">Output quality</span><select id="resolution"><option value="540x960">540 × 960</option><option value="720x1280" selected>720 × 1280</option><option value="1080x1920">1080 × 1920</option></select></label>
+        </div>
+        <input id="microCut" type="hidden" value="auto">
+        <input id="preserveAudio" type="hidden" value="1">
+
+        <div class="actionRow">
+          <button id="startBtn" class="primaryBtn" disabled data-i18n="startProcessing">Create variations</button>
+          <button id="cancelBtn" class="ghostBtn danger" hidden data-i18n="cancel">Cancel</button>
+        </div>
+      </section>
+
+      <section id="progressCard" class="card progressCard" hidden>
+        <div class="progressHead"><div><span id="progressStage" class="pill">Preparing</span><h3 id="progressTitle" data-i18n="preparing">Preparing your video</h3></div><b id="progressPercent">0%</b></div>
+        <div class="progressTrack"><div id="progressBar"></div></div>
+        <p id="progressText" class="muted" data-i18n="preparingSub">Getting everything ready…</p>
+        <div class="stageRow"><span class="stage active" data-stage="upload" data-i18n="stageUpload">Load</span><span class="stage" data-stage="process" data-i18n="stageProcess">Process</span><span class="stage" data-stage="save" data-i18n="stageSave">Save</span><span class="stage" data-stage="done" data-i18n="stageDone">Done</span></div>
+      </section>
+
+      <section id="resultsCard" class="card readyCard" hidden>
+        <div class="readyIcon">✓</div><div><h3 id="readyTitle" data-i18n="readyTitle">Your videos are ready</h3><p id="readyText" data-i18n="readyText">Completed files were saved to your device.</p></div>
+        <button class="ghostBtn" data-view-jump="history" data-i18n="viewHistory">View history</button>
+      </section>
+    </section>
+
+    <section id="historyView" class="view">
+      <div class="sectionHead pageSection"><div><h2 data-i18n="historyTitle">Download history</h2><p data-i18n="historySub">Your recent processed files and download status.</p></div><button id="clearHistoryBtn" class="ghostBtn" data-i18n="clearHistory">Clear history</button></div>
+      <div id="historyList" class="historyList"></div>
+      <div id="historyEmpty" class="emptyState card"><b data-i18n="historyEmptyTitle">No processed videos yet</b><p data-i18n="historyEmptyText">Your completed videos will appear here.</p></div>
+    </section>
+
+    <section id="plansView" class="view">
+      <div class="pricingHero"><span class="pill accent" data-i18n="firstOffer">Intro offer available on your first subscription</span><h2 data-i18n="plansTitle">Choose the plan that fits your workflow</h2><p data-i18n="plansSub">Start with two free videos. Upgrade only when you need more.</p></div>
+      <div class="pricingGrid">
+        <article class="priceCard card"><span class="planName">Basic</span><div class="price"><b>$9</b><span data-i18n="perMonth">/ month</span></div><p><strong>50</strong> <span data-i18n="videosPerMonth">videos per billing cycle</span></p><button class="primaryBtn planBtn" data-plan="basic" data-i18n="chooseBasic">Choose Basic</button></article>
+        <article class="priceCard card featured"><span class="popular" data-i18n="mostPopular">Most popular</span><span class="planName">Pro</span><div class="price"><b>$24</b><span data-i18n="perMonth">/ month</span></div><p><strong>150</strong> <span data-i18n="videosPerMonth">videos per billing cycle</span></p><button class="primaryBtn planBtn" data-plan="pro" data-i18n="choosePro">Choose Pro</button></article>
+        <article class="priceCard card"><span class="planName">Business</span><div class="price"><b>$99</b><span data-i18n="perMonth">/ month</span></div><p><strong>1,000</strong> <span data-i18n="videosPerMonth">videos per billing cycle</span></p><button class="primaryBtn planBtn" data-plan="business" data-i18n="chooseBusiness">Choose Business</button></article>
+      </div>
+      <div class="guarantee card"><div class="guaranteeIcon">↺</div><div><b data-i18n="guaranteeTitle">Money-back guarantee</b><p data-i18n="guaranteeText">Eligible first subscription purchases are covered by our refund policy. Full eligibility terms are shown before checkout.</p></div></div>
+      <button id="manageBillingBtn" class="ghostBtn centered" hidden data-i18n="manageBilling">Manage billing</button>
+    </section>
+
+    <section id="faqView" class="view">
+      <div class="pageSection"><h2 data-i18n="faqTitle">Frequently asked questions</h2><p data-i18n="faqSub">Everything you need to know before processing your videos.</p></div>
+      <div class="faqList">
+        <details class="card"><summary data-i18n="faq1q">What counts as one video credit?</summary><p data-i18n="faq1a">One source video counts as one credit, even if you create multiple variations from it in the same processing job.</p></details>
+        <details class="card"><summary data-i18n="faq2q">Where are my videos processed?</summary><p data-i18n="faq2a">Video processing is designed to run locally on your device. Account, billing, usage, and history metadata may sync with the service.</p></details>
+        <details class="card"><summary data-i18n="faq3q">Do I need a credit card for the free test?</summary><p data-i18n="faq3a">No. New accounts receive two free video credits before a paid subscription is required.</p></details>
+        <details class="card"><summary data-i18n="faq4q">Can I cancel my subscription?</summary><p data-i18n="faq4a">Yes. You can manage or cancel your subscription from the billing portal.</p></details>
+        <details class="card"><summary data-i18n="faq5q">What happens when I reach my limit?</summary><p data-i18n="faq5a">Processing pauses until your next billing cycle or until you switch to a plan with a higher allowance.</p></details>
+        <details class="card"><summary data-i18n="faq6q">What video formats are supported?</summary><p data-i18n="faq6a">Common formats such as MP4, MOV, M4V, WebM, MKV, and AVI are accepted when your device can read them.</p></details>
+      </div>
+    </section>
+  </main>
 </div>
+
+<div id="authModal" class="modal" hidden>
+  <div class="modalBackdrop" data-close-auth></div>
+  <section class="authCard card">
+    <button class="modalClose" data-close-auth aria-label="Close">×</button>
+    <span class="eyebrow">VIDEO VARIATOR</span><h2 data-i18n="authTitle">Sign in to sync your account</h2><p data-i18n="authSub">Keep your plan, video credits, and history connected across devices.</p>
+    <div id="googleButton" class="providerSlot"><button id="googleFallback" class="providerBtn"><span class="googleG">G</span><span data-i18n="continueGoogle">Continue with Google</span></button></div>
+    <button id="appleButton" class="providerBtn appleBtn"><span class="appleLogo">●</span><span data-i18n="continueApple">Continue with Apple</span></button>
+    <small id="authNotice" class="muted" data-i18n="authNotice">Secure sign-in opens through the provider. Video files are not uploaded for authentication.</small>
+  </section>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js" async defer></script>
 <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.15/dist/umd/ffmpeg.js"></script>
 <script src="bootstrap.js"></script>
+<script src="video-core.js"></script>
 <script src="app.js"></script>
 <script src="folder.js"></script>
 </body>
