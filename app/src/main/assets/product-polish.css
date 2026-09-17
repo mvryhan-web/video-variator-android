@@ -1,0 +1,55 @@
+/* Product positioning and conversion polish — presentation only. */
+.planBenefits{display:grid;gap:8px;margin:14px 0 16px;padding:13px 0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);color:#c5cfdf;font-size:12px;line-height:1.4}
+.planBenefits>span{display:block}
+.planOutputExample{padding:10px 11px;border-radius:12px;background:#0b1220;border:1px solid #24334d}
+.planOutputExample b{display:block;color:#fff;font-size:13px;margin-bottom:3px}
+.planOutputExample small{display:block;color:#8f9db3;font-size:11px}
+.priceCard{display:flex;flex-direction:column;min-width:0}
+.priceCard .planUnit{line-height:1.45;min-height:42px}
+.priceCard .planBtn{margin-top:auto}
+.billingNote{margin-top:14px;padding:17px 20px}
+.billingNote .guaranteeIcon{background:#113022;color:#79eaaa}
+
+.howItWorks{margin:0 0 16px;padding:20px;border:1px solid #25324a;border-radius:18px;background:linear-gradient(180deg,rgba(17,25,41,.96),rgba(11,17,29,.96))}
+.howHead h3{font-size:21px;line-height:1.2;margin:7px 0 8px;letter-spacing:-.015em}
+.howHead p{margin:0;color:#96a3b8;font-size:13px;line-height:1.55}
+.howSteps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+.howSteps article{min-width:0;padding:14px;border:1px solid #26344d;border-radius:14px;background:#0b1220;display:grid;gap:6px}
+.howSteps article>b{width:26px;height:26px;border-radius:9px;display:grid;place-items:center;background:#201b45;border:1px solid #5148a0;color:#d9d5ff;font-size:11px}
+.howSteps strong{font-size:13px}
+.howSteps span{color:#8f9db3;font-size:11px;line-height:1.45}
+
+.trialCompleteUpsell{padding:22px 0 2px;text-align:center}
+.trialCompleteUpsell[hidden]{display:none!important}
+.trialCompleteUpsell h3{font-size:22px;line-height:1.15;margin:12px 0 7px}
+.trialCompleteUpsell>p{max-width:570px;margin:0 auto;color:#94a1b6;font-size:13px;line-height:1.5}
+.trialPlanGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:18px 0 10px}
+.trialPlanMini{min-width:0;text-align:left;padding:13px;border:1px solid #2a3853;border-radius:14px;background:#0b1220;color:#fff;display:grid;gap:5px;transition:transform .15s ease,border-color .15s ease,background .15s ease}
+.trialPlanMini:hover,.trialPlanMini:focus-visible{border-color:#665be0;background:#121a30;transform:translateY(-1px);outline:none}
+.trialPlanMini strong{font-size:14px}
+.trialPlanMini span{color:#d8d5ff;font-size:12px;font-weight:700}
+.trialPlanMini small{color:#8796ad;font-size:10px;line-height:1.35}
+.trialCompareBtn{margin-top:2px;min-height:42px}
+.workspace.trialComplete>.pickerGrid,.workspace.trialComplete>.fileSummary,.workspace.trialComplete>.settingsGrid,.workspace.trialComplete>.formatGrid,.workspace.trialComplete>.planAccessHint,.workspace.trialComplete>.creditEstimate,.workspace.trialComplete>.actionRow{display:none!important}
+.workspace.trialComplete>.sectionHead{margin-bottom:0}
+
+@media(max-width:760px){
+  .howSteps{grid-template-columns:1fr}
+  .howItWorks{padding:17px;border-radius:16px}
+  .howHead h3{font-size:19px}
+  .trialPlanGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .trialPlanMini{padding:11px 9px;text-align:center;align-content:start}
+  .trialPlanMini strong{font-size:12px}
+  .trialPlanMini span{font-size:11px}
+  .trialPlanMini small{font-size:9px;overflow-wrap:anywhere}
+  .trialCompleteUpsell{padding-top:17px}
+  .trialCompleteUpsell h3{font-size:20px}
+  .planBenefits{margin:12px 0 14px}
+}
+
+@media(max-width:430px){
+  .trialPlanGrid{grid-template-columns:1fr}
+  .trialPlanMini{grid-template-columns:1fr auto;text-align:left;align-items:start}
+  .trialPlanMini small{grid-column:1/-1}
+  .billingNote{padding:15px}
+}
