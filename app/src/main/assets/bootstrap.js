@@ -11,4 +11,10 @@
     }
     return nativeFetch(input, init);
   };
+  window.addEventListener('DOMContentLoaded', () => {
+    const script = document.createElement('script');
+    script.src = 'admin-access.js';
+    script.defer = true;
+    document.body.appendChild(script);
+  });
 })();
