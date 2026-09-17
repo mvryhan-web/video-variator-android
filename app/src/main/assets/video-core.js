@@ -100,17 +100,52 @@
     return{trim:[.02,.3],speed:[.988,1.015],pitch:[-.15,.15],vol:[.974,1.026],bri:[-.014,.014],con:[.986,1.026],sat:[.984,1.03],sharp:[.03,.14],warm:[-.013,.013],zoom:[1.005,1.023],shift:[-.06,.06],cut:[.06,.11]};
   }
 
+  function extraRanges(mode){
+    if(mode==='gentle')return{motion:[0,0],gamma:[1,1],hue:[0,0],dynBri:[0,0],dynSat:[0,0],grain:[0,0],eqDb:[0,0],gop:[0,0]};
+    if(mode==='dynamic')return{motion:[.025,.06],gamma:[.985,1.015],hue:[-.8,.8],dynBri:[.002,.005],dynSat:[.003,.008],grain:[.8,1.8],eqDb:[-.65,.65],gop:[48,72]};
+    return{motion:[.012,.032],gamma:[.992,1.008],hue:[-.4,.4],dynBri:[0,0],dynSat:[0,0],grain:[0,0],eqDb:[0,0],gop:[0,0]};
+  }
+
   function recipe(duration,mode){
-    const r=ranges(mode),maxTrim=Math.max(0,Math.min(r.trim[1],duration*.025));
+    const r=ranges(mode),e=extraRanges(mode),maxTrim=Math.max(0,Math.min(r.trim[1],duration*.025));
     const ts=rand(r.trim[0],maxTrim||r.trim[0]),te=rand(r.trim[0],maxTrim||r.trim[0]),usable=Math.max(.5,duration-ts-te);
     const useCut=usable>5&&mode!=='gentle'&&Math.random()<(mode==='dynamic'?.7:.35);
-    return{trimStart:ts,trimEnd:te,usable,speed:rand(...r.speed),pitchSemi:rand(...r.pitch),volume:rand(...r.vol),brightness:rand(...r.bri),contrast:rand(...r.con),saturation:rand(...r.sat),sharpen:rand(...r.sharp),warmth:rand(...r.warm),zoom:rand(...r.zoom),shiftX:rand(...r.shift),shiftY:rand(...r.shift),useCut,cutAt:useCut?rand(usable*.3,usable*.7):0,cutLen:useCut?rand(...r.cut):0};
+    const motion=rand(...e.motion);
+    return{
+      trimStart:ts,trimEnd:te,usable,speed:rand(...r.speed),pitchSemi:rand(...r.pitch),volume:rand(...r.vol),
+      brightness:rand(...r.bri),contrast:rand(...r.con),saturation:rand(...r.sat),sharpen:rand(...r.sharp),warmth:rand(...r.warm),
+      zoom:rand(...r.zoom),shiftX:rand(...r.shift),shiftY:rand(...r.shift),useCut,cutAt:useCut?rand(usable*.3,usable*.7):0,cutLen:useCut?rand(...r.cut):0,
+      motionX:motion*rand(.72,1),motionY:motion*rand(.55,.88),motionPeriod:rand(Math.max(2.4,usable*.28),Math.max(3.2,usable*.7)),
+      motionPhase:rand(0,Math.PI*2),gamma:rand(...e.gamma),hue:rand(...e.hue),dynBrightness:rand(...e.dynBri),dynSaturation:rand(...e.dynSat),
+      grain:rand(...e.grain),audioEqDb:rand(...e.eqDb),gop:e.gop[1]?Math.round(rand(...e.gop)):0,mode
+    };
   }
 
   function filters(r,w,h,audio){
     const zw=Math.round(w*r.zoom/2)*2,zh=Math.round(h*r.zoom/2)*2;
-    const x=`(iw-ow)/2+(iw-ow)*${fmt(r.shiftX,5)}`,y=`(ih-oh)/2+(ih-oh)*${fmt(r.shiftY,5)}`;
-    const vf=[`scale=${zw}:${zh}:force_original_aspect_ratio=increase`,`crop=${w}:${h}:x='${x}':y='${y}'`,`eq=brightness=${fmt(r.brightness)}:contrast=${fmt(r.contrast)}:saturation=${fmt(r.saturation)}`,`colorbalance=rs=${fmt(r.warmth)}:bs=${fmt(-r.warmth)}`,`unsharp=5:5:${fmt(r.sharpen,3)}:5:5:0`,'fps=30'];
+    const moving=r.mode!=='gentle'&&r.motionX>0;
+    const xBase=`(iw-ow)/2+(iw-ow)*${fmt(r.shiftX,5)}`,yBase=`(ih-oh)/2+(ih-oh)*${fmt(r.shiftY,5)}`;
+    const x=moving?`${xBase}+(iw-ow)*${fmt(r.motionX,5)}*sin(2*PI*t/${fmt(r.motionPeriod,3)}+${fmt(r.motionPhase,4)})`:xBase;
+    const y=moving?`${yBase}+(ih-oh)*${fmt(r.motionY,5)}*sin(2*PI*t/${fmt(r.motionPeriod*1.17,3)}+${fmt(r.motionPhase*.73,4)})`:yBase;
+    const vf=[
+      `scale=${zw}:${zh}:force_original_aspect_ratio=increase`,
+      `crop=${w}:${h}:x='${x}':y='${y}'`,
+      `eq=brightness=${fmt(r.brightness)}:contrast=${fmt(r.contrast)}:saturation=${fmt(r.saturation)}`,
+      `colorbalance=rs=${fmt(r.warmth)}:bs=${fmt(-r.warmth)}`,
+      `unsharp=5:5:${fmt(r.sharpen,3)}:5:5:0`
+    ];
+    if(r.mode!=='gentle'){
+      vf.push(`eq=gamma=${fmt(r.gamma,5)}`);
+      if(Math.abs(r.hue)>.001)vf.push(`hue=h=${fmt(r.hue,4)}`);
+    }
+    if(r.mode==='dynamic'){
+      if(r.dynBrightness>0||r.dynSaturation>0){
+        const p=fmt(Math.max(3,r.motionPeriod*.86),3),phase=fmt(r.motionPhase*.61,4);
+        vf.push(`eq=brightness='${fmt(r.dynBrightness,5)}*sin(2*PI*t/${p}+${phase})':saturation='1+${fmt(r.dynSaturation,5)}*sin(2*PI*t/${p}+${phase})':eval=frame`);
+      }
+      if(r.grain>.05)vf.push(`noise=alls=${fmt(r.grain,3)}:allf=t+u`);
+    }
+    vf.push('fps=30');
     if(r.useCut){
       const a=fmt(r.cutAt,3),b=fmt(r.cutAt+r.cutLen,3);
       vf.push(`select='not(between(t\\,${a}\\,${b}))'`,'setpts=N/(30*TB)');
@@ -125,6 +160,10 @@
       }
       const p=Math.pow(2,r.pitchSemi/12);
       af.push(`asetrate=${fmt(48000*p,3)}`,'aresample=48000',`atempo=${fmt(1/p,6)}`,`atempo=${fmt(r.speed,6)}`,`volume=${fmt(r.volume,5)}`);
+      if(r.mode==='dynamic'){
+        if(Math.abs(r.audioEqDb)>.03)af.push(`equalizer=f=1000:t=q:w=1:g=${fmt(r.audioEqDb,3)}`);
+        af.push('acompressor=threshold=0.125:ratio=1.25:attack=20:release=250:makeup=1');
+      }
     }
     return{vf:vf.join(','),af:af.join(',')};
   }
@@ -134,6 +173,7 @@
     const a=['-hide_banner','-y','-ss',fmt(r.trimStart,3),'-t',fmt(clipped,3),'-i',input,'-vf',f.vf];
     if(audio)a.push('-af',f.af);else a.push('-an');
     a.push('-c:v','libx264','-preset','veryfast','-crf',w>=1080?'20':'21','-pix_fmt','yuv420p','-movflags','+faststart');
+    if(r.mode==='dynamic'&&r.gop>0)a.push('-g',String(r.gop));
     if(audio)a.push('-c:a','aac','-b:a','160k');
     a.push(out);
     return a;
