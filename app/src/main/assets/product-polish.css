@@ -1,106 +1,14 @@
-/* Video Uniquifier — Conversion Upgrade v2. Presentation only; video engine untouched. */
-:root{--vu-accent:#7c6cff;--vu-accent2:#9b8cff;--vu-green:#5ee7a5;--vu-soft:#11182a;--vu-soft2:#0d1423}
-
-.card{border-color:rgba(135,151,184,.16);box-shadow:0 18px 55px rgba(0,0,0,.18)}
-.primaryBtn{font-weight:800;letter-spacing:-.01em;box-shadow:0 12px 30px rgba(84,72,210,.22)}
-.primaryBtn:hover{transform:translateY(-1px)}
-
-.conversionHero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.65fr) minmax(250px,.75fr);gap:28px;align-items:center;padding:34px!important;background:radial-gradient(circle at 82% 8%,rgba(124,108,255,.22),transparent 30%),linear-gradient(145deg,#12192b 0%,#0c1220 58%,#0a101c 100%);border:1px solid rgba(139,129,255,.28)}
-.conversionHero::after{content:'';position:absolute;right:-90px;bottom:-130px;width:330px;height:330px;border-radius:50%;background:radial-gradient(circle,rgba(94,231,165,.10),transparent 68%);pointer-events:none}
-.conversionHeroCopy{position:relative;z-index:1;max-width:720px}
-.heroKicker{display:inline-flex;align-items:center;gap:8px;margin-bottom:13px;font-size:10px;font-weight:900;letter-spacing:.16em;color:#b7b0ff}
-.heroKicker::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--vu-green);box-shadow:0 0 15px rgba(94,231,165,.55)}
-.conversionHero h2{max-width:700px;margin:0;font-size:42px;line-height:1.03;letter-spacing:-.045em;color:#fff}
-.conversionHeroCopy>p{max-width:650px;margin:16px 0 0;color:#aebad0;font-size:16px;line-height:1.65}
-.heroTrust{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
-.heroTrust span,.pricingTrust span{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid rgba(144,159,190,.15);border-radius:999px;background:rgba(8,13,23,.48);color:#c9d3e4;font-size:11px;font-weight:700}
-.heroTrust span:first-child{color:#dff8e9;border-color:rgba(94,231,165,.2);background:rgba(22,67,49,.24)}
-.heroActions{display:flex;gap:10px;margin-top:22px;align-items:center}
-.heroActions .primaryBtn,.heroActions .ghostBtn{min-height:48px;padding:0 20px;border-radius:13px}
-.usageBox{position:relative;z-index:1;background:linear-gradient(180deg,rgba(17,25,42,.86),rgba(9,14,24,.92));border:1px solid rgba(146,158,190,.18);border-radius:18px;padding:20px!important;box-shadow:0 20px 50px rgba(0,0,0,.2)}
-.usageReassurance{display:block;margin-top:12px;color:#75839a!important;font-size:10px!important;line-height:1.4}
-
-.conversionValueProof{margin:12px 0 14px;padding:20px 22px;background:linear-gradient(180deg,rgba(15,22,38,.96),rgba(10,16,28,.96))}
-.valueProofHead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
-.valueProofHead h3{margin:4px 0 6px;font-size:20px;line-height:1.18;letter-spacing:-.02em}
-.valueProofHead p{max-width:760px;margin:0;color:#8f9db3;font-size:12px;line-height:1.55}
-.valueProofHead .ghostBtn{min-width:max-content}
-.valueProofGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:15px}
-.valueProofGrid span{display:flex;align-items:center;gap:8px;min-width:0;padding:11px 12px;border-radius:12px;border:1px solid rgba(137,151,180,.13);background:#0a111e;color:#c7d1e1;font-size:12px;font-weight:700}
-.valueProofGrid b{display:grid;place-items:center;flex:0 0 26px;height:26px;border-radius:8px;background:#1a1738;color:#bdb5ff;font-size:9px}
-
-.modePreview{margin-top:14px;padding:14px;border:1px solid rgba(124,108,255,.16);border-radius:15px;background:linear-gradient(180deg,rgba(15,20,36,.86),rgba(7,12,21,.9))}
-.modePreviewTitle{margin-bottom:11px;color:#aeb9cd;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
-.modePreviewFlow{display:grid;grid-template-columns:minmax(105px,.7fr) auto minmax(0,2.2fr);gap:11px;align-items:center}
-.previewArrow{color:#7369c8;font-size:20px;font-weight:900;text-align:center}
-.previewOutputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.previewCard{min-width:0;padding:8px;border:1px solid rgba(141,153,181,.13);border-radius:12px;background:#0a111e;display:grid;gap:5px}
-.previewCard i{display:block;position:relative;overflow:hidden;height:52px;border-radius:8px;background:linear-gradient(135deg,#29344d,#11192b)}
-.previewCard i::before{content:'';position:absolute;left:13%;right:13%;top:18%;height:40%;border-radius:8px;background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(124,108,255,.2));transform:skewX(-8deg)}
-.previewCard i::after{content:'';position:absolute;left:18%;right:24%;bottom:17%;height:7px;border-radius:999px;background:rgba(255,255,255,.14)}
-.previewCard b{font-size:10px;color:#d6deeb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.previewCard small{font-size:8px;color:#77869d}
-.previewGentle i{filter:saturate(.95) brightness(1.03)}
-.previewBalance i{background:linear-gradient(135deg,#2e3159,#151d35);filter:saturate(1.08)}
-.previewDynamic i{background:linear-gradient(135deg,#352b55,#172138);filter:saturate(1.18) contrast(1.06)}
-
-.privacyInline{display:flex;align-items:center;gap:8px;margin:0 0 12px;padding:10px 12px;border-radius:12px;border:1px solid rgba(94,231,165,.16);background:rgba(19,59,44,.18);color:#a9d6bd;font-size:11px;line-height:1.4}
-.privacyPulse{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:var(--vu-green);box-shadow:0 0 12px rgba(94,231,165,.5)}
-.conversionPicker{border-color:rgba(124,108,255,.35)!important;background:linear-gradient(180deg,rgba(20,25,47,.76),rgba(11,17,30,.88))!important;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease!important}
-.conversionPicker:hover{transform:translateY(-1px);border-color:rgba(141,129,255,.72)!important;box-shadow:0 16px 38px rgba(57,47,126,.16)}
-.conversionPicker b{font-size:15px}
-.planAccessHint.trialBalancePreview{border-color:rgba(124,108,255,.34)!important;background:rgba(64,52,145,.13)!important;color:#cfcaff!important}
-
-/* Pricing keeps the existing 50 / 100 / 150 adjustment positioning while improving presentation. */
-.pricingHero{max-width:860px;margin-left:auto;margin-right:auto;text-align:center}
-.pricingHero h2{font-size:38px;letter-spacing:-.035em;line-height:1.05}
-.pricingHero p{max-width:690px;margin-left:auto;margin-right:auto;color:#9eabc0;line-height:1.6}
-.pricingTrust{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin-top:16px}
-.pricingGrid{align-items:stretch;gap:14px}
-.priceCard{position:relative;display:flex;flex-direction:column;min-width:0;padding:24px!important;border-radius:20px!important;background:linear-gradient(180deg,rgba(16,23,39,.98),rgba(10,16,28,.98));transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
-.priceCard:hover{transform:translateY(-2px);border-color:rgba(130,119,255,.35);box-shadow:0 22px 60px rgba(0,0,0,.24)}
-.priceCard.featured{border-color:rgba(135,122,255,.7)!important;box-shadow:0 22px 60px rgba(81,64,190,.17);background:radial-gradient(circle at 80% 0%,rgba(124,108,255,.16),transparent 34%),linear-gradient(180deg,#141a31,#0b1220)}
-.priceCard .popular{position:absolute;top:14px;right:14px;padding:6px 9px;border-radius:999px;background:#7666ff;color:white;font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
-.planName{font-size:14px;font-weight:800;color:#ced8e7}
-.price{margin:12px 0 3px}
-.price b{font-size:40px;letter-spacing:-.04em}
-.price span{color:#7f8da4}
-.priceCard>p{margin:7px 0 0;color:#abb7ca}
-.priceCard>p strong{font-size:17px;color:#fff}
-.planFit{display:block;margin-top:4px;color:#7f8da4;font-size:10px;font-weight:600}
-.planBenefits{display:grid;gap:9px;margin:16px 0;padding:14px 0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);color:#c5cfdf;font-size:12px;line-height:1.45}
+/* Product positioning and conversion polish — presentation only. */
+.planBenefits{display:grid;gap:8px;margin:14px 0 16px;padding:13px 0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);color:#c5cfdf;font-size:12px;line-height:1.4}
 .planBenefits>span{display:block}
-.planOutputExample{padding:11px 12px;border-radius:12px;background:#0a111e;border:1px solid rgba(137,151,180,.17)}
+.planOutputExample{padding:10px 11px;border-radius:12px;background:#0b1220;border:1px solid #24334d}
 .planOutputExample b{display:block;color:#fff;font-size:13px;margin-bottom:3px}
-.planOutputExample small{display:block;color:#8594aa;font-size:11px}
-.priceCard .planUnit{min-height:42px;line-height:1.45;color:#98a6bc;font-size:11px}
-.priceCard .planBtn{margin-top:auto;min-height:48px;border-radius:13px}
-.priceCard.featured .planBtn{box-shadow:0 14px 34px rgba(93,77,221,.28)}
+.planOutputExample small{display:block;color:#8f9db3;font-size:11px}
+.priceCard{display:flex;flex-direction:column;min-width:0}
+.priceCard .planUnit{line-height:1.45;min-height:42px}
+.priceCard .planBtn{margin-top:auto}
 .billingNote{margin-top:14px;padding:17px 20px}
 .billingNote .guaranteeIcon{background:#113022;color:#79eaaa}
-
-.resultUpgrade{grid-column:1/-1;width:100%;display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:14px;padding:16px;border-radius:14px;border:1px solid rgba(124,108,255,.25);background:linear-gradient(110deg,rgba(42,34,93,.28),rgba(12,18,31,.82))}
-.resultUpgrade[hidden]{display:none!important}
-.resultUpgrade>div{display:grid;gap:4px;min-width:0}
-.resultUpgrade b{font-size:14px;line-height:1.35}
-.resultUpgrade small{color:#8f9db3;font-size:11px;line-height:1.45}
-.resultUpgrade .primaryBtn{flex:0 0 auto;min-height:42px;padding:0 15px}
-
-.trialCompleteUpsell{padding:22px 0 2px;text-align:center}
-.trialCompleteUpsell[hidden]{display:none!important}
-.trialCompleteUpsell h3{font-size:24px;line-height:1.12;margin:12px 0 7px;letter-spacing:-.02em}
-.trialCompleteUpsell>p{max-width:570px;margin:0 auto;color:#94a1b6;font-size:13px;line-height:1.5}
-.trialPlanGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:18px 0 10px;min-width:0}
-.trialPlanMini{position:relative;min-width:0;overflow:hidden;text-align:left;padding:14px;border:1px solid #2a3853;border-radius:14px;background:#0b1220;color:#fff;display:grid;gap:5px;transition:transform .15s ease,border-color .15s ease,background .15s ease}
-.trialPlanMini:hover,.trialPlanMini:focus-visible{border-color:#7669e8;background:#121a30;transform:translateY(-1px);outline:none}
-.trialPlanMini.featured{border-color:rgba(124,108,255,.65);background:linear-gradient(180deg,#151936,#0d1425)}
-.trialPlanMini em{font-style:normal;color:#a99fff;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
-.trialPlanMini strong{font-size:14px}
-.trialPlanMini span{color:#d8d5ff;font-size:12px;font-weight:800}
-.trialPlanMini small{color:#8796ad;font-size:10px;line-height:1.35}
-.trialCompareBtn{margin-top:2px;min-height:42px}
-.workspace.trialComplete>.pickerGrid,.workspace.trialComplete>.fileSummary,.workspace.trialComplete>.settingsGrid,.workspace.trialComplete>.formatGrid,.workspace.trialComplete>.planAccessHint,.workspace.trialComplete>.creditEstimate,.workspace.trialComplete>.actionRow,.workspace.trialComplete>.privacyInline{display:none!important}
-.workspace.trialComplete>.sectionHead{margin-bottom:0}
 
 .howItWorks{margin:0 0 16px;padding:20px;border:1px solid #25324a;border-radius:18px;background:linear-gradient(180deg,rgba(17,25,41,.96),rgba(11,17,29,.96))}
 .howHead h3{font-size:21px;line-height:1.2;margin:7px 0 8px;letter-spacing:-.015em}
@@ -111,42 +19,21 @@
 .howSteps strong{font-size:13px}
 .howSteps span{color:#8f9db3;font-size:11px;line-height:1.45}
 
-.mobileUpgradeBar{display:none}
-
-@media(max-width:900px){
-  .conversionHero{grid-template-columns:1fr;padding:26px!important;gap:18px}
-  .conversionHero h2{font-size:35px}
-  .usageBox{max-width:100%}
-  .valueProofGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .modePreviewFlow{grid-template-columns:95px auto minmax(0,1fr)}
-}
+.trialCompleteUpsell{padding:22px 0 2px;text-align:center}
+.trialCompleteUpsell[hidden]{display:none!important}
+.trialCompleteUpsell h3{font-size:22px;line-height:1.15;margin:12px 0 7px}
+.trialCompleteUpsell>p{max-width:570px;margin:0 auto;color:#94a1b6;font-size:13px;line-height:1.5}
+.trialPlanGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:18px 0 10px;min-width:0}
+.trialPlanMini{min-width:0;overflow:hidden;text-align:left;padding:13px;border:1px solid #2a3853;border-radius:14px;background:#0b1220;color:#fff;display:grid;gap:5px;transition:transform .15s ease,border-color .15s ease,background .15s ease}
+.trialPlanMini:hover,.trialPlanMini:focus-visible{border-color:#665be0;background:#121a30;transform:translateY(-1px);outline:none}
+.trialPlanMini strong{font-size:14px}
+.trialPlanMini span{color:#d8d5ff;font-size:12px;font-weight:700}
+.trialPlanMini small{color:#8796ad;font-size:10px;line-height:1.35}
+.trialCompareBtn{margin-top:2px;min-height:42px}
+.workspace.trialComplete>.pickerGrid,.workspace.trialComplete>.fileSummary,.workspace.trialComplete>.settingsGrid,.workspace.trialComplete>.formatGrid,.workspace.trialComplete>.planAccessHint,.workspace.trialComplete>.creditEstimate,.workspace.trialComplete>.actionRow{display:none!important}
+.workspace.trialComplete>.sectionHead{margin-bottom:0}
 
 @media(max-width:760px){
-  .conversionHero{padding:21px!important;border-radius:18px!important}
-  .conversionHero h2{font-size:30px;line-height:1.06}
-  .conversionHeroCopy>p{font-size:14px;line-height:1.55}
-  .heroTrust{gap:6px}
-  .heroTrust span{font-size:9px;padding:7px 8px}
-  .heroActions{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,.8fr);gap:8px}
-  .heroActions .primaryBtn,.heroActions .ghostBtn{width:100%;padding:0 10px}
-  .conversionValueProof{padding:17px}
-  .valueProofHead{align-items:flex-start}
-  .valueProofHead .ghostBtn{display:none}
-  .valueProofGrid{grid-template-columns:1fr 1fr}
-  .valueProofGrid span{font-size:10px;padding:9px}
-  .modePreview{padding:11px}
-  .modePreviewFlow{grid-template-columns:1fr;gap:8px}
-  .previewArrow{transform:rotate(90deg);font-size:16px}
-  .previewOriginal{max-width:150px;width:100%;margin:0 auto}
-  .previewOutputs{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .previewCard{padding:6px}
-  .previewCard i{height:44px}
-  .pricingHero{text-align:left}
-  .pricingHero h2{font-size:30px}
-  .pricingTrust{justify-content:flex-start}
-  .pricingGrid{gap:10px}
-  .priceCard{padding:20px!important}
-  .priceCard.featured{order:-1}
   .howSteps{grid-template-columns:1fr}
   .howItWorks{padding:17px;border-radius:16px}
   .howHead h3{font-size:19px}
@@ -156,28 +43,11 @@
   .trialPlanMini span{font-size:10px}
   .trialPlanMini small{font-size:8px;line-height:1.3;overflow-wrap:anywhere}
   .trialCompleteUpsell{padding-top:17px}
-  .trialCompleteUpsell h3{font-size:21px}
-  .resultUpgrade{display:grid;grid-template-columns:1fr;padding:14px}
-  .resultUpgrade .primaryBtn{width:100%}
-  .mobileUpgradeBar{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:70;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 11px 10px 13px;border-radius:15px;border:1px solid rgba(124,108,255,.45);background:rgba(10,15,26,.94);box-shadow:0 20px 55px rgba(0,0,0,.45);backdrop-filter:blur(16px)}
-  .mobileUpgradeBar[hidden]{display:none!important}
-  .mobileUpgradeBar>div{min-width:0;display:grid;gap:2px}
-  .mobileUpgradeBar b{font-size:12px}
-  .mobileUpgradeBar small{color:#8f9db3;font-size:8px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .mobileUpgradeBar button{flex:0 0 auto;border:0;border-radius:10px;background:#7465ed;color:#fff;font-size:10px;font-weight:900;padding:10px 12px}
-  body:has(.mobileUpgradeBar:not([hidden])) .main{padding-bottom:92px}
+  .trialCompleteUpsell h3{font-size:20px}
+  .planBenefits{margin:12px 0 14px}
 }
 
 @media(max-width:430px){
-  .conversionHero{padding:18px!important}
-  .conversionHero h2{font-size:27px}
-  .heroTrust span{flex:1 1 auto;justify-content:center}
-  .valueProofGrid{gap:6px}
-  .valueProofGrid span{padding:8px 7px}
-  .valueProofGrid b{width:23px;flex-basis:23px;height:23px}
-  .previewOutputs{gap:5px}
-  .previewCard b{font-size:9px}
-  .previewCard small{font-size:7px}
   .trialPlanGrid{gap:5px}
   .trialPlanMini{padding:10px 5px;border-radius:12px}
   .trialPlanMini strong{font-size:11px}
