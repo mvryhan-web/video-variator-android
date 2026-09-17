@@ -1,4 +1,4 @@
-name: Build Video Variator APK
+name: Build Video Uniquifier APK
 
 on:
   push:
@@ -17,6 +17,7 @@ jobs:
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       SDKMANAGER: /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager
       VV_WEB_APP_URL: ${{ vars.VV_WEB_APP_URL }}
+      VV_API_BASE_URL: ${{ vars.VV_API_BASE_URL }}
       VV_UPDATE_API_URL: ${{ vars.VV_UPDATE_API_URL }}
     steps:
       - name: Checkout
@@ -63,18 +64,21 @@ jobs:
       - name: Select distributable APK
         run: |
           if [ -f app/build/outputs/apk/release/app-release.apk ]; then
-            cp app/build/outputs/apk/release/app-release.apk VideoVariator.apk
+            cp app/build/outputs/apk/release/app-release.apk VideoUniquifier.apk
             echo "Using stable signed release APK"
           else
-            cp app/build/outputs/apk/debug/app-debug.apk VideoVariator.apk
+            cp app/build/outputs/apk/debug/app-debug.apk VideoUniquifier.apk
             echo "Using debug APK; configure signing secrets before public distribution"
           fi
+          cp VideoUniquifier.apk VideoVariator.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: VideoVariator-APK
-          path: VideoVariator.apk
+          name: VideoUniquifier-APK
+          path: |
+            VideoUniquifier.apk
+            VideoVariator.apk
           if-no-files-found: error
           retention-days: 30
 
@@ -87,6 +91,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -f latest
           git push origin refs/tags/latest --force
-          gh release create latest VideoVariator.apk \
-            --title "Video Variator Android v4" \
-            --notes "Latest Android build with local video processing, plan-based modes and quality, time credits, analytics, FAQ, administrator entitlement support, privacy controls, automatic PWA content updates when VV_WEB_APP_URL is configured, and Google Play native update support."
+          gh release create latest VideoUniquifier.apk VideoVariator.apk \
+            --title "Video Uniquifier Android v5" \
+            --notes "Video Uniquifier v5: new branding and launcher icon, faster local processing, automatic Gallery saving, working on-device Download actions, Back navigation, Basic/Pro/Business variation limits, production API wiring, analytics, FAQ, privacy controls, and update support."
