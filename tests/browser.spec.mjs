@@ -29,11 +29,45 @@ test('serves the FFmpeg core from same-origin',async({request})=>{
   }
 });
 
-test('trial keeps Gentle mode but unlocks 720p 1080p and 4K',async({page})=>{
+test('FFmpeg engine boots with the production worker',async({page},testInfo)=>{
+  test.skip(testInfo.project.name!=='chromium');
+  test.setTimeout(120000);
+  const ok=await page.evaluate(async()=>{
+    const toBlobURL=async(url,type)=>{
+      const r=await fetch(url);
+      if(!r.ok)throw new Error(`HTTP ${r.status}: ${url}`);
+      return URL.createObjectURL(new Blob([await r.arrayBuffer()],{type}));
+    };
+    const ffmpeg=new window.FFmpegWASM.FFmpeg();
+    const [classWorkerURL,coreURL,wasmURL]=await Promise.all([
+      toBlobURL('/ffmpeg-worker.js','text/javascript'),
+      toBlobURL('/vendor/ffmpeg/ffmpeg-core.js','text/javascript'),
+      toBlobURL('/vendor/ffmpeg/ffmpeg-core.wasm','application/wasm')
+    ]);
+    try{
+      await ffmpeg.load({classWorkerURL,coreURL,wasmURL});
+      return true;
+    }finally{
+      try{ffmpeg.terminate();}catch(_){ }
+      URL.revokeObjectURL(classWorkerURL);URL.revokeObjectURL(coreURL);URL.revokeObjectURL(wasmURL);
+    }
+  });
+  expect(ok).toBe(true);
+});
+
+test('trial unlocks all modes plus 720p 1080p and 4K',async({page})=>{
   await expect(page.locator('#folderBtn')).toHaveCount(0);
-  await expect(page.locator('#mode')).toHaveValue('gentle');
-  await expect(page.locator('#mode option[value="balanced"]')).toHaveAttribute('disabled','');
-  await expect(page.locator('#mode option[value="dynamic"]')).toHaveAttribute('disabled','');
+  const mode=page.locator('#mode');
+  await expect(mode).toBeEnabled();
+  await expect(mode.locator('option[value="gentle"]')).not.toHaveAttribute('disabled','');
+  await expect(mode.locator('option[value="balanced"]')).not.toHaveAttribute('disabled','');
+  await expect(mode.locator('option[value="dynamic"]')).not.toHaveAttribute('disabled','');
+  await mode.selectOption('balanced');
+  await expect(mode).toHaveValue('balanced');
+  await mode.selectOption('dynamic');
+  await expect(mode).toHaveValue('dynamic');
+  await mode.selectOption('gentle');
+  await expect(mode).toHaveValue('gentle');
 
   const quality=page.locator('#quality');
   await expect(quality).toBeEnabled();
