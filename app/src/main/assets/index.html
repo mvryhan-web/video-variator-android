@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <title>Video Variator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <header>
+    <div><span class="eyebrow">VIDEO VARIATOR</span><h1>Video Variator</h1><p>Аккуратная переработка ваших собственных видео прямо на телефоне.</p></div>
+    <span id="engineBadge" class="badge">Движок не загружен</span>
+  </header>
+
+  <section class="card">
+    <div class="privacy">● Видео обрабатывается локально на телефоне.</div>
+    <label class="picker">
+      <input id="fileInput" type="file" accept="video/*" multiple hidden>
+      <b>＋ Выбрать видео</b><small>Можно выбрать одно или несколько видео</small>
+    </label>
+    <div id="fileSummary" class="muted">Файлы ещё не выбраны.</div>
+  </section>
+
+  <section class="card">
+    <h2>Настройки</h2>
+    <div class="grid">
+      <label><span>Количество вариантов</span><select id="variantCount"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select></label>
+      <label><span>Режим обработки</span><select id="mode"><option value="gentle">Очень мягкий</option><option value="balanced" selected>Сбалансированный</option><option value="dynamic">Более заметный</option></select></label>
+      <label><span>Качество</span><select id="resolution"><option value="540x960">540 × 960 — быстро</option><option value="720x1280" selected>720 × 1280 — рекомендовано</option><option value="1080x1920">1080 × 1920 — высокое</option></select></label>
+      <label><span>Микромонтаж</span><select id="microCut"><option value="auto" selected>Авто</option><option value="off">Выключить</option><option value="on">Включить</option></select></label>
+    </div>
+    <label class="check"><input id="preserveAudio" type="checkbox" checked><span>Сохранять звук с лёгкой вариацией тона и громкости</span></label>
+  </section>
+
+  <section class="action">
+    <button id="startBtn" disabled>Создать варианты →</button>
+    <button id="cancelBtn" class="secondary" hidden>Остановить</button>
+    <p>Результаты сохраняются в <b>Downloads/VideoVariator</b>.</p>
+  </section>
+
+  <section id="progressCard" class="card" hidden>
+    <div class="progressHead"><h2 id="progressTitle">Подготовка…</h2><b id="progressPercent">0%</b></div>
+    <div class="track"><div id="progressBar"></div></div>
+    <p id="progressText" class="muted">Загрузка движка…</p>
+    <details><summary>Технический журнал</summary><pre id="logBox"></pre></details>
+  </section>
+
+  <section id="resultsCard" class="card" hidden>
+    <div class="progressHead"><h2>Готовые видео</h2><button id="saveAllBtn" class="small">Сохранить все</button></div>
+    <div id="results"></div>
+  </section>
+
+  <footer>Для обработки собственных или разрешённых к использованию видео.</footer>
+</div>
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.15/dist/umd/ffmpeg.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
