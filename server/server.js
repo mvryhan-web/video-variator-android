@@ -5,7 +5,7 @@ import {createRemoteJWKSet,jwtVerify,SignJWT} from 'jose';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {
-  initDb,upsertUser,getUser,publicUser,setStripeCustomer,applySubscription,updateSubscriptionByStripeId,
+  pool,initDb,upsertUser,getUser,publicUser,setStripeCustomer,applySubscription,updateSubscriptionByStripeId,
   resetPeriodUsageBySubscription,consumeUsage,addHistory,listHistory,clearHistory,addEvent,getAnalytics
 } from './db.js';
 
@@ -72,17 +72,30 @@ app.post('/api/webhooks/stripe',express.raw({type:'application/json'}),async(req
 
 app.use(express.json({limit:'1mb'}));
 async function signAppToken(user){requireServerConfig();const key=new TextEncoder().encode(jwtSecret);return new SignJWT({email:user.email||'',name:user.name||''}).setProtectedHeader({alg:'HS256'}).setSubject(user.id).setIssuer('video-variator').setAudience('video-variator-client').setIssuedAt().setExpirationTime('7d').sign(key);}
-async function auth(req,res,next){try{requireServerConfig();const token=(req.headers.authorization||'').replace(/^Bearer\s+/i,'');if(!token)return res.status(401).json({error:'AUTH_REQUIRED'});const key=new TextEncoder().encode(jwtSecret),{payload}=await jwtVerify(token,key,{issuer:'video-variator',audience:'video-variator-client'}),user=await getUser(payload.sub);if(!user)return res.status(401).json({error:'USER_NOT_FOUND'});req.user=user;next();}catch(_){res.status(401).json({error:'INVALID_SESSION'});}}
+async function auth(req,res,next){
+  if(!jwtSecret)return res.status(503).json({error:'AUTH_NOT_CONFIGURED'});
+  const token=(req.headers.authorization||'').replace(/^Bearer\s+/i,'');
+  if(!token)return res.status(401).json({error:'AUTH_REQUIRED'});
+  let payload;
+  try{({payload}=await jwtVerify(token,new TextEncoder().encode(jwtSecret),{issuer:'video-variator',audience:'video-variator-client'}));}
+  catch(_){return res.status(401).json({error:'INVALID_SESSION'});}
+  try{
+    const user=await getUser(payload.sub);
+    if(!user)return res.status(401).json({error:'USER_NOT_FOUND'});
+    req.user=user;next();
+  }catch(_){res.status(503).json({error:'ACCOUNT_STORAGE_UNAVAILABLE'});}
+}
 
-app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',https:req.secure||!isProduction,videoProcessing:'local-only',ffmpegRuntime:'same-origin-esm',appUrl,time:new Date().toISOString()}));
+app.get('/api/health',(req,res)=>res.json({ok:true,databaseConfigured:!!pool,service:'video-uniquifier',https:req.secure||!isProduction,videoProcessing:'local-only',ffmpegRuntime:'same-origin-esm',appUrl,time:new Date().toISOString()}));
 app.get('/api/version',(req,res)=>res.json({webVersion:process.env.WEB_VERSION||'5.0.0',androidVersion:process.env.ANDROID_VERSION||'5.0.0',androidVersionCode:Number(process.env.ANDROID_VERSION_CODE||5),latestApkUrl:process.env.LATEST_APK_URL||'https://github.com/mvryhan-web/video-variator-android/releases/download/latest/VideoUniquifier.apk'}));
 app.get('/api/config',(req,res)=>res.json({
+  authentication:{googleConfigured:!!(process.env.GOOGLE_CLIENT_ID&&pool&&jwtSecret),appleConfigured:!!(process.env.APPLE_CLIENT_ID&&process.env.APPLE_REDIRECT_URI&&pool&&jwtSecret),databaseConfigured:!!pool,sessionConfigured:!!jwtSecret},
   googleClientId:process.env.GOOGLE_CLIENT_ID||'',appleClientId:process.env.APPLE_CLIENT_ID||'',appleRedirectUri:process.env.APPLE_REDIRECT_URI||'',billingConfigured:!!(stripe&&plans.basic.priceId&&plans.pro.priceId&&plans.business.priceId),
   introOfferText:process.env.INTRO_OFFER_TEXT||'Intro discount available on your first subscription',privacy:{httpsRequired:isProduction,localVideoProcessing:true,rawVideoUploadDisabled:true},plans:{basic:{price:9,limit:750,unit:'credits'},pro:{price:24,limit:2250,unit:'credits'},business:{price:99,limit:15000,unit:'credits'}}
 }));
 
-app.post('/api/auth/google',async(req,res)=>{try{if(!process.env.GOOGLE_CLIENT_ID)return res.status(503).json({error:'GOOGLE_AUTH_NOT_CONFIGURED'});const credential=req.body?.credential;if(!credential)return res.status(400).json({error:'MISSING_GOOGLE_CREDENTIAL'});const {payload}=await jwtVerify(credential,googleJwks,{audience:process.env.GOOGLE_CLIENT_ID,issuer:['https://accounts.google.com','accounts.google.com']});const email=payload.email_verified===false?null:payload.email;const user=await upsertUser({provider:'google',providerSub:payload.sub,email,name:payload.name});res.json({token:await signAppToken(user),user:publicUser(user)});}catch(e){console.error('[google auth]',e);res.status(401).json({error:'GOOGLE_AUTH_FAILED'});}});
-app.post('/api/auth/apple',async(req,res)=>{try{if(!process.env.APPLE_CLIENT_ID)return res.status(503).json({error:'APPLE_AUTH_NOT_CONFIGURED'});const idToken=req.body?.idToken;if(!idToken)return res.status(400).json({error:'MISSING_APPLE_TOKEN'});const {payload}=await jwtVerify(idToken,appleJwks,{audience:process.env.APPLE_CLIENT_ID,issuer:'https://appleid.apple.com'}),supplied=req.body?.user||{},fullName=supplied?.name?[supplied.name.firstName,supplied.name.lastName].filter(Boolean).join(' '):null,user=await upsertUser({provider:'apple',providerSub:payload.sub,email:payload.email||supplied.email||null,name:fullName});res.json({token:await signAppToken(user),user:publicUser(user)});}catch(e){console.error('[apple auth]',e);res.status(401).json({error:'APPLE_AUTH_FAILED'});}});
+app.post('/api/auth/google',async(req,res)=>{try{if(!process.env.GOOGLE_CLIENT_ID)return res.status(503).json({error:'GOOGLE_AUTH_NOT_CONFIGURED'});const credential=req.body?.credential;if(!credential)return res.status(400).json({error:'MISSING_GOOGLE_CREDENTIAL'});const {payload}=await jwtVerify(credential,googleJwks,{audience:process.env.GOOGLE_CLIENT_ID,issuer:['https://accounts.google.com','accounts.google.com']});if(typeof payload.sub!=='string'||!payload.sub)throw new Error('INVALID_SUBJECT');const email=payload.email_verified===true?payload.email:null;const user=await upsertUser({provider:'google',providerSub:payload.sub,email,name:payload.name});res.json({token:await signAppToken(user),user:publicUser(user)});}catch(e){console.error('[google auth]',e);res.status(401).json({error:'GOOGLE_AUTH_FAILED'});}});
+app.post('/api/auth/apple',async(req,res)=>{try{if(!process.env.APPLE_CLIENT_ID)return res.status(503).json({error:'APPLE_AUTH_NOT_CONFIGURED'});const idToken=req.body?.idToken;if(!idToken)return res.status(400).json({error:'MISSING_APPLE_TOKEN'});const {payload}=await jwtVerify(idToken,appleJwks,{audience:process.env.APPLE_CLIENT_ID,issuer:'https://appleid.apple.com'}),supplied=req.body?.user||{},fullName=supplied?.name?[supplied.name.firstName,supplied.name.lastName].filter(Boolean).join(' '):null,user=await upsertUser({provider:'apple',providerSub:payload.sub,email:(payload.email_verified===true||payload.email_verified==='true')?payload.email||null:null,name:fullName});res.json({token:await signAppToken(user),user:publicUser(user)});}catch(e){console.error('[apple auth]',e);res.status(401).json({error:'APPLE_AUTH_FAILED'});}});
 app.get('/api/me',auth,(req,res)=>res.json({user:publicUser(req.user)}));
 
 app.post('/api/usage/consume',auth,async(req,res)=>{try{const user=await consumeUsage(req.user.id,{seconds:req.body?.seconds,sourceCount:req.body?.sourceCount??req.body?.count});await addEvent(req.user.id,{type:'processing_success',category:'usage'});res.json({user:publicUser(user)});}catch(e){if(e.code==='CREDIT_LIMIT_REACHED'||e.message==='CREDIT_LIMIT_REACHED')return res.status(402).json({error:'CREDIT_LIMIT_REACHED'});console.error(e);res.status(500).json({error:'USAGE_UPDATE_FAILED'});}});
