@@ -11,6 +11,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      HAS_RELEASE_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,19 +32,19 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '9.6.0'
+          gradle-version: '8.7'
 
       - name: Build debug APK
         run: gradle :app:assembleDebug --stacktrace
 
       - name: Decode stable release keystore
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        if: env.HAS_RELEASE_KEY == 'true'
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: echo "$KEYSTORE_BASE64" | base64 --decode > app/release-key.jks
 
       - name: Build signed release APK
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        if: env.HAS_RELEASE_KEY == 'true'
         env:
           KS_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -82,5 +84,5 @@ jobs:
           git tag -f latest
           git push origin refs/tags/latest --force
           gh release create latest VideoVariator.apk \
-            --title "Video Variator Android v3" \
-            --notes "Latest Android build. Paid plans use time-based credits and the app supports 9:16 and 16:9 output."
+            --title "Video Variator Android v4" \
+            --notes "Latest Android build with plan-based modes and output quality, time credits, automatic saving, analytics, FAQ, privacy controls, and 9:16 / 16:9 output."
