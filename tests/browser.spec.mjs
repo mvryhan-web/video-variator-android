@@ -40,8 +40,9 @@ test('FFmpeg engine boots with the production worker',async({page},testInfo)=>{
     };
     const ffmpeg=new window.FFmpegWASM.FFmpeg();
     const classWorkerURL=await toBlobURL('/ffmpeg-worker.js','text/javascript');
-    const coreURL='/vendor/ffmpeg/ffmpeg-core.js';
-    const wasmURL='/vendor/ffmpeg/ffmpeg-core.wasm';
+    const origin=location.origin;
+    const coreURL=`${origin}/vendor/ffmpeg/ffmpeg-core.js`;
+    const wasmURL=`${origin}/vendor/ffmpeg/ffmpeg-core.wasm`;
     try{
       await ffmpeg.load({classWorkerURL,coreURL,wasmURL});
       return true;
