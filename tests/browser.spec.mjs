@@ -99,14 +99,35 @@ test('back button is available outside dashboard',async({page})=>{
   await expect(page.locator('#dashboardView')).toHaveClass(/active/);
 });
 
-test('pricing displays credits plan access and quality',async({page})=>{
+test('pricing explains Essential Pro and Business in output terms',async({page})=>{
   await openView(page,'plans');
+  await expect(page.getByText('Essential',{exact:true}).first()).toBeVisible();
+  await expect(page.getByText('Pro',{exact:true}).first()).toBeVisible();
+  await expect(page.getByText('Business',{exact:true}).first()).toBeVisible();
   await expect(page.getByText('750',{exact:true})).toBeVisible();
   await expect(page.getByText('2,250',{exact:true})).toBeVisible();
   await expect(page.getByText('15,000',{exact:true})).toBeVisible();
-  await expect(page.getByText('Gentle mode · 720p · 9:16 / 16:9')).toBeVisible();
+  await expect(page.getByText('≈ 50 × 15-sec outputs')).toBeVisible();
+  await expect(page.getByText('≈ 150 × 15-sec outputs')).toBeVisible();
+  await expect(page.getByText('≈ 1,000 × 15-sec outputs')).toBeVisible();
+  await expect(page.getByText('Up to 50 technical micro-adjustment options')).toBeVisible();
+  await expect(page.getByText('Up to 100 advanced micro-adjustment options')).toBeVisible();
+  await expect(page.getByText('Up to 150 full-pipeline adjustment options')).toBeVisible();
+  await expect(page.getByText('Gentle · 720p · 9:16 / 16:9')).toBeVisible();
   await expect(page.getByText('Gentle + Balance · 1080p · 9:16 / 16:9')).toBeVisible();
-  await expect(page.getByText('All modes · 4K · 9:16 / 16:9')).toBeVisible();
+  await expect(page.getByText('Gentle + Balance + Dynamic · 4K · 9:16 / 16:9')).toBeVisible();
+  await expect(page.getByRole('button',{name:'Choose Essential'})).toBeVisible();
+});
+
+test('completed trial replaces creation controls with compact plan choices',async({page})=>{
+  await page.evaluate(()=>localStorage.setItem('vv_trial_used','2'));
+  await page.reload();
+  await expect(page.locator('#trialCompleteUpsell')).toBeVisible();
+  await expect(page.getByText('Free trial complete')).toBeVisible();
+  await expect(page.locator('.trialPlanMini')).toHaveCount(3);
+  await expect(page.locator('#startBtn')).toBeHidden();
+  await page.locator('.trialPlanMini[data-plan="pro"]').click();
+  await expect(page.locator('#plansView')).toHaveClass(/active/);
 });
 
 test('supports vertical and landscape output controls',async({page})=>{
@@ -118,7 +139,7 @@ test('supports vertical and landscape output controls',async({page})=>{
   await expect(format).toHaveValue('9:16');
 });
 
-test('analytics profile error handling and FAQ are reachable',async({page})=>{
+test('analytics profile product explanation and FAQ are reachable',async({page})=>{
   await openView(page,'analytics');
   await expect(page.locator('#analyticsView').getByRole('heading',{name:'Analytics'})).toBeVisible();
   await openView(page,'profile');
@@ -126,6 +147,9 @@ test('analytics profile error handling and FAQ are reachable',async({page})=>{
   await expect(page.getByText('Privacy & security')).toBeVisible();
   await expect(page.getByRole('button',{name:'Cancel subscription'})).toBeVisible();
   await openView(page,'faq');
+  await expect(page.getByText('Dozens of small technical changes, handled automatically')).toBeVisible();
+  await expect(page.getByText('What are micro-adjustments?')).toBeVisible();
+  await expect(page.getByText('What is the difference between Essential, Pro and Business?')).toBeVisible();
   await expect(page.getByText('How do credits work?')).toBeVisible();
   await expect(page.getByText('What processing modes are included?')).toBeVisible();
   await expect(page.getByText('How is my data protected?')).toBeVisible();
@@ -133,7 +157,7 @@ test('analytics profile error handling and FAQ are reachable',async({page})=>{
 
 test('mobile views do not create horizontal overflow',async({page},testInfo)=>{
   test.skip(!testInfo.project.name.includes('mobile'));
-  for(const view of ['dashboard','history','analytics','profile']){
+  for(const view of ['dashboard','history','analytics','profile','plans','faq']){
     if(view!=='dashboard')await openView(page,view);
     const sizes=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,viewport:window.innerWidth}));
     expect(sizes.doc).toBeLessThanOrEqual(sizes.viewport+1);
