@@ -1,4 +1,4 @@
-const CACHE='video-uniquifier-v6';
+const CACHE='video-uniquifier-v7';
 const APP_SHELL=['/','/index.html','/styles.css','/v3.css','/v5.css','/app-v4.js','/app-v5.js','/video-core.js','/bootstrap.js','/admin-access.js','/manifest.webmanifest','/icon.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
