@@ -11,7 +11,9 @@ import {
 
 const app=express(),port=Number(process.env.PORT||3000),isProduction=process.env.NODE_ENV==='production';
 app.set('trust proxy',1);
-const appUrl=(process.env.APP_URL||`http://localhost:${port}`).replace(/\/$/,''),jwtSecret=process.env.APP_JWT_SECRET||'';
+const renderUrl=process.env.RENDER_EXTERNAL_HOSTNAME?`https://${process.env.RENDER_EXTERNAL_HOSTNAME}`:'';
+const appUrl=(process.env.APP_URL||process.env.RENDER_EXTERNAL_URL||renderUrl||`http://localhost:${port}`).replace(/\/$/,'');
+const jwtSecret=process.env.APP_JWT_SECRET||'';
 const stripe=process.env.STRIPE_SECRET_KEY?new Stripe(process.env.STRIPE_SECRET_KEY):null;
 const googleJwks=createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs')),appleJwks=createRemoteJWKSet(new URL('https://appleid.apple.com/auth/keys'));
 const plans={
@@ -63,8 +65,8 @@ app.use(express.json({limit:'1mb'}));
 async function signAppToken(user){requireServerConfig();const key=new TextEncoder().encode(jwtSecret);return new SignJWT({email:user.email||'',name:user.name||''}).setProtectedHeader({alg:'HS256'}).setSubject(user.id).setIssuer('video-variator').setAudience('video-variator-client').setIssuedAt().setExpirationTime('7d').sign(key);}
 async function auth(req,res,next){try{requireServerConfig();const token=(req.headers.authorization||'').replace(/^Bearer\s+/i,'');if(!token)return res.status(401).json({error:'AUTH_REQUIRED'});const key=new TextEncoder().encode(jwtSecret),{payload}=await jwtVerify(token,key,{issuer:'video-variator',audience:'video-variator-client'}),user=await getUser(payload.sub);if(!user)return res.status(401).json({error:'USER_NOT_FOUND'});req.user=user;next();}catch(_){res.status(401).json({error:'INVALID_SESSION'});}}
 
-app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-variator',https:req.secure||!isProduction,videoProcessing:'local-only',time:new Date().toISOString()}));
-app.get('/api/version',(req,res)=>res.json({webVersion:process.env.WEB_VERSION||'4.0.0',androidVersion:process.env.ANDROID_VERSION||'4.0.0',androidVersionCode:Number(process.env.ANDROID_VERSION_CODE||4),latestApkUrl:process.env.LATEST_APK_URL||''}));
+app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',https:req.secure||!isProduction,videoProcessing:'local-only',appUrl,time:new Date().toISOString()}));
+app.get('/api/version',(req,res)=>res.json({webVersion:process.env.WEB_VERSION||'5.0.0',androidVersion:process.env.ANDROID_VERSION||'5.0.0',androidVersionCode:Number(process.env.ANDROID_VERSION_CODE||5),latestApkUrl:process.env.LATEST_APK_URL||'https://github.com/mvryhan-web/video-variator-android/releases/download/latest/VideoUniquifier.apk'}));
 app.get('/api/config',(req,res)=>res.json({
   googleClientId:process.env.GOOGLE_CLIENT_ID||'',appleClientId:process.env.APPLE_CLIENT_ID||'',appleRedirectUri:process.env.APPLE_REDIRECT_URI||'',billingConfigured:!!(stripe&&plans.basic.priceId&&plans.pro.priceId&&plans.business.priceId),
   introOfferText:process.env.INTRO_OFFER_TEXT||'Intro discount available on your first subscription',privacy:{httpsRequired:isProduction,localVideoProcessing:true,rawVideoUploadDisabled:true},plans:{basic:{price:9,limit:750,unit:'credits'},pro:{price:24,limit:2250,unit:'credits'},business:{price:99,limit:15000,unit:'credits'}}
@@ -89,4 +91,4 @@ const __dirname=path.dirname(fileURLToPath(import.meta.url)),staticDir=path.reso
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
 
-await initDb();app.listen(port,()=>console.log(`Video Variator running on ${appUrl}`));
+await initDb();app.listen(port,()=>console.log(`Video Uniquifier running on ${appUrl}`));
