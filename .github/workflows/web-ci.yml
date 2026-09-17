@@ -2,7 +2,7 @@ name: Validate Video Variator Web
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, production-auth-ios ]
   workflow_dispatch:
 
 jobs:
