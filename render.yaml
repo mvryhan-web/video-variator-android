@@ -1,0 +1,55 @@
+services:
+  - type: web
+    name: video-uniquifier-web
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: video-uniquifier-db
+          property: connectionString
+      - key: DATABASE_SSL
+        value: "false"
+      - key: APP_JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: APPLE_CLIENT_ID
+        sync: false
+      - key: APPLE_REDIRECT_URI
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_BASIC
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: STRIPE_PRICE_BUSINESS
+        sync: false
+      - key: INTRO_OFFER_TEXT
+        value: Intro discount available on your first subscription
+      - key: WEB_VERSION
+        value: 5.0.0
+      - key: ANDROID_VERSION
+        value: 5.0.0
+      - key: ANDROID_VERSION_CODE
+        value: "5"
+      - key: LATEST_APK_URL
+        value: https://github.com/mvryhan-web/video-variator-android/releases/download/latest/VideoUniquifier.apk
+
+databases:
+  - name: video-uniquifier-db
+    region: frankfurt
+    plan: free
+    ipAllowList: []
