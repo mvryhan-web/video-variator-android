@@ -35,7 +35,11 @@ async function verifyPassword(password,encoded){
 }
 
 export function installEmailAuth(app,{signAppToken}){
+  const configured=()=>!!process.env.DATABASE_URL;
+  app.get('/api/auth/email/status',(req,res)=>res.json({supported:true,configured:configured()}));
+
   app.post('/api/auth/email/register',async(req,res)=>{
+    if(!configured())return res.status(503).json({error:'ACCOUNT_STORAGE_NOT_CONFIGURED'});
     if(!allowAttempt(req))return res.status(429).json({error:'TOO_MANY_AUTH_ATTEMPTS'});
     const email=normalizeEmail(req.body?.email),password=String(req.body?.password||''),name=cleanName(req.body?.name);
     if(!validEmail(email))return res.status(400).json({error:'INVALID_EMAIL'});
@@ -51,6 +55,7 @@ export function installEmailAuth(app,{signAppToken}){
   });
 
   app.post('/api/auth/email/login',async(req,res)=>{
+    if(!configured())return res.status(503).json({error:'ACCOUNT_STORAGE_NOT_CONFIGURED'});
     if(!allowAttempt(req))return res.status(429).json({error:'TOO_MANY_AUTH_ATTEMPTS'});
     const email=normalizeEmail(req.body?.email),password=String(req.body?.password||'');
     if(!validEmail(email)||!password)return res.status(401).json({error:'INVALID_EMAIL_OR_PASSWORD'});
