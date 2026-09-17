@@ -5,10 +5,10 @@
   const $=id=>document.getElementById(id);
   const locale=(()=>{const raw=(navigator.languages?.[0]||navigator.language||'en-US').toLowerCase();if(raw.startsWith('fr'))return'fr';if(raw.startsWith('ru'))return'ru';if(raw.startsWith('uk'))return'uk';return'en';})();
   const copy={
-    en:{hero:'Uniqueify your old video',heroText:'Upload a video, choose a processing style, and let Video Uniquifier handle the rest.',choose:'Choose video',back:'Back',download:'Download',saved:'Saved automatically to your device.',saveOk:'Saved to your device.',saveFail:'Could not save this video. Please try again.',authPending:'Google and Apple sign-in require the production HTTPS backend and OAuth credentials.',online:'Online',offline:'Offline'},
-    fr:{hero:'Rendez votre ancienne vidéo unique',heroText:'Importez une vidéo, choisissez un style de traitement et laissez Video Uniquifier faire le reste.',choose:'Choisir une vidéo',back:'Retour',download:'Télécharger',saved:'Enregistré automatiquement sur votre appareil.',saveOk:'Enregistré sur votre appareil.',saveFail:'Impossible d’enregistrer cette vidéo. Réessayez.',authPending:'La connexion Google et Apple nécessite le serveur HTTPS de production et les identifiants OAuth.',online:'En ligne',offline:'Hors ligne'},
-    ru:{hero:'Уникализируй своё старое видео',heroText:'Загрузи видео, выбери режим обработки — остальное сделает Video Uniquifier.',choose:'Выбрать видео',back:'Назад',download:'Скачать',saved:'Видео автоматически сохранено на устройство.',saveOk:'Видео сохранено на устройство.',saveFail:'Не удалось сохранить видео. Попробуй ещё раз.',authPending:'Вход через Google и Apple заработает после подключения production HTTPS-сервера и OAuth-данных.',online:'Онлайн',offline:'Нет сети'},
-    uk:{hero:'Зроби своє старе відео унікальним',heroText:'Завантаж відео, обери режим обробки — решту зробить Video Uniquifier.',choose:'Вибрати відео',back:'Назад',download:'Завантажити',saved:'Відео автоматично збережено на пристрій.',saveOk:'Відео збережено на пристрій.',saveFail:'Не вдалося зберегти відео. Спробуйте ще раз.',authPending:'Вхід через Google та Apple запрацює після підключення production HTTPS-сервера й OAuth-даних.',online:'Онлайн',offline:'Немає мережі'}
+    en:{hero:'Uniqueify your old video',heroText:'Upload a video, choose a processing style, and let Video Uniquifier handle the rest.',choose:'Choose video',back:'Back',download:'Download',saved:'Saved automatically to your device.',saveOk:'Saved to your device.',saveFail:'Could not save this video. Please try again.',authPending:'Google and Apple sign-in require production OAuth credentials.',authBrowser:'Secure sign-in opens in your browser and returns you to Video Uniquifier.',online:'Online',offline:'Offline'},
+    fr:{hero:'Rendez votre ancienne vidéo unique',heroText:'Importez une vidéo, choisissez un style de traitement et laissez Video Uniquifier faire le reste.',choose:'Choisir une vidéo',back:'Retour',download:'Télécharger',saved:'Enregistré automatiquement sur votre appareil.',saveOk:'Enregistré sur votre appareil.',saveFail:'Impossible d’enregistrer cette vidéo. Réessayez.',authPending:'La connexion Google et Apple nécessite les identifiants OAuth de production.',authBrowser:'La connexion sécurisée s’ouvre dans votre navigateur puis revient dans Video Uniquifier.',online:'En ligne',offline:'Hors ligne'},
+    ru:{hero:'Уникализируй своё старое видео',heroText:'Загрузи видео, выбери режим обработки — остальное сделает Video Uniquifier.',choose:'Выбрать видео',back:'Назад',download:'Скачать',saved:'Видео автоматически сохранено на устройство.',saveOk:'Видео сохранено на устройство.',saveFail:'Не удалось сохранить видео. Попробуй ещё раз.',authPending:'Для входа через Google и Apple нужны production OAuth-данные.',authBrowser:'Безопасный вход откроется в браузере и вернёт тебя обратно в Video Uniquifier.',online:'Онлайн',offline:'Нет сети'},
+    uk:{hero:'Зроби своє старе відео унікальним',heroText:'Завантаж відео, обери режим обробки — решту зробить Video Uniquifier.',choose:'Вибрати відео',back:'Назад',download:'Завантажити',saved:'Відео автоматично збережено на пристрій.',saveOk:'Відео збережено на пристрій.',saveFail:'Не вдалося зберегти відео. Спробуйте ще раз.',authPending:'Для входу через Google та Apple потрібні production OAuth-дані.',authBrowser:'Безпечний вхід відкриється у браузері та поверне вас до Video Uniquifier.',online:'Онлайн',offline:'Немає мережі'}
   };
   const c=copy[locale]||copy.en;
   const ui=()=>window.VideoVariatorUI;
@@ -99,13 +99,47 @@
     const line=document.createElement('div');line.className='versionLine';let version='5.0.0';try{version=window.AndroidBridge?.getAppVersion?.()||version;}catch(_){ }line.textContent=`Video Uniquifier · v${version}`;card.appendChild(line);
   }
 
+  function apiBase(){try{const n=window.AndroidBridge?.getApiBase?.();if(n)return String(n).replace(/\/$/,'');}catch(_){ }return String(window.VV_API_BASE||location.origin||'').replace(/\/$/,'');}
   function installAuthStatus(){
     const card=document.querySelector('.authCard');if(!card||card.querySelector('.authSetupStatus'))return;
     const status=document.createElement('div');status.className='authSetupStatus';status.textContent=c.authPending;card.appendChild(status);
-    const apiConfigured=()=>!!window.VV_API_BASE||location.protocol==='https:';
-    $('googleFallback')?.addEventListener('click',e=>{if(apiConfigured())return;e.preventDefault();e.stopImmediatePropagation();status.textContent=c.authPending;},true);
-    $('appleButton')?.addEventListener('click',e=>{if(apiConfigured())return;e.preventDefault();e.stopImmediatePropagation();status.textContent=c.authPending;},true);
-    setTimeout(()=>{if(document.querySelector('#googleButton iframe,#googleButton [role="button"]'))status.hidden=true;},1600);
+    fetch(apiBase()+'/api/config',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(cfg=>{if(cfg&&(cfg.googleClientId||cfg.appleClientId))status.textContent=c.authBrowser;}).catch(()=>{});
+  }
+
+  function installNativeAuthBridge(){
+    let native=false;try{native=!!window.AndroidBridge?.openExternalAuth;}catch(_){ }
+    const mobileProvider=new URLSearchParams(location.search).get('mobileAuth');
+
+    if(native){
+      const slot=$('googleButton');
+      const renderNativeGoogle=()=>{
+        if(!slot)return;
+        if(slot.querySelector('[data-native-google]'))return;
+        slot.innerHTML='<button type="button" class="providerBtn" data-native-google><span class="googleG">G</span><span>Continue with Google</span></button>';
+        slot.querySelector('[data-native-google]')?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();window.AndroidBridge.openExternalAuth('google');},true);
+      };
+      renderNativeGoogle();
+      if(slot)new MutationObserver(()=>{if(!slot.querySelector('[data-native-google]'))renderNativeGoogle();}).observe(slot,{childList:true,subtree:true});
+      $('appleButton')?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();window.AndroidBridge.openExternalAuth('apple');},true);
+      return;
+    }
+
+    if(!['google','apple'].includes(mobileProvider||''))return;
+    document.documentElement.dataset.mobileAuth=mobileProvider;
+    const returnToApp=token=>{if(!token)return;location.href='videouniquifier://auth#token='+encodeURIComponent(token);};
+    const validateToken=async token=>{
+      if(!token)return false;
+      try{const r=await fetch(apiBase()+'/api/me',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'});if(r.ok){returnToApp(token);return true;}}catch(_){ }
+      return false;
+    };
+    const existing=localStorage.getItem('vv_token');
+    validateToken(existing).then(valid=>{
+      if(valid)return;
+      if(existing)localStorage.removeItem('vv_token');
+      setTimeout(()=>{$('signInBtn')?.click();if(mobileProvider==='google')$('appleButton')?.setAttribute('hidden','');else $('googleButton')?.setAttribute('hidden','');},250);
+    });
+    let last='';const timer=setInterval(async()=>{const token=localStorage.getItem('vv_token')||'';if(!token||token===last)return;last=token;if(await validateToken(token))clearInterval(timer);},350);
+    setTimeout(()=>clearInterval(timer),5*60*1000);
   }
 
   function interceptHistoryDownloads(){
@@ -115,5 +149,5 @@
   function observePlan(){const el=$('currentPlan');if(!el)return;new MutationObserver(()=>enforceVariantAccess()).observe(el,{childList:true,characterData:true,subtree:true});}
   function observeResults(){const card=$('resultsCard');if(!card)return;new MutationObserver(()=>{if(!card.hidden)renderReadyDownloads();}).observe(card,{attributes:true,attributeFilter:['hidden']});}
 
-  applyBranding();installVariantOptions();installBackButton();installNetworkBadge();installVersion();installAuthStatus();interceptHistoryDownloads();observePlan();observeResults();
+  applyBranding();installVariantOptions();installBackButton();installNetworkBadge();installVersion();installAuthStatus();installNativeAuthBridge();interceptHistoryDownloads();observePlan();observeResults();
 })();
