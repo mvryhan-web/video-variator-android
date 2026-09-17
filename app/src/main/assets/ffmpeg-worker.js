@@ -1,43 +1,29 @@
 // Video Uniquifier FFmpeg worker for @ffmpeg/ffmpeg 0.12.x.
-// @ffmpeg/ffmpeg creates this as a module worker. The core URL provided by the
-// client is a UMD blob, so convert it to a tiny ESM wrapper before importing it.
+// The Android/WebView class worker is a module worker, so it must import the ESM
+// build of @ffmpeg/core. The production server serves that ESM build at the
+// same-origin vendor URL below.
 const FALLBACK_BASE='https://video-variator-android.onrender.com/vendor/ffmpeg';
 const FALLBACK_CORE=`${FALLBACK_BASE}/ffmpeg-core.js`;
 const FALLBACK_WASM=`${FALLBACK_BASE}/ffmpeg-core.wasm`;
+const RUNTIME_REV='esm-v2';
 const T={LOAD:'LOAD',EXEC:'EXEC',FFPROBE:'FFPROBE',WRITE_FILE:'WRITE_FILE',READ_FILE:'READ_FILE',DELETE_FILE:'DELETE_FILE',RENAME:'RENAME',CREATE_DIR:'CREATE_DIR',LIST_DIR:'LIST_DIR',DELETE_DIR:'DELETE_DIR',ERROR:'ERROR',DOWNLOAD:'DOWNLOAD',PROGRESS:'PROGRESS',LOG:'LOG',MOUNT:'MOUNT',UNMOUNT:'UNMOUNT'};
 let ffmpeg;
 
-async function importCoreFactory(coreURL){
-  // If an actual ESM core is supplied, use it directly.
-  try{
-    const direct=await import(coreURL);
-    if(direct?.default)return{factory:direct.default,moduleURL:coreURL};
-  }catch(_){ }
+function freshURL(url){
+  const sep=String(url).includes('?')?'&':'?';
+  return `${url}${sep}runtime=${RUNTIME_REV}`;
+}
 
-  // Current app intentionally supplies a blob containing the stable UMD core.
-  // A module worker cannot call importScripts(), so expose the UMD factory as a
-  // default ES-module export and import that generated module instead.
-  const response=await fetch(coreURL);
-  if(!response.ok)throw new Error(`ffmpeg-core.js download failed (${response.status})`);
-  const source=await response.text();
-  const moduleURL=URL.createObjectURL(new Blob([
-    source,
-    '\nexport default createFFmpegCore;\n'
-  ],{type:'text/javascript'}));
-  try{
-    const mod=await import(moduleURL);
-    if(!mod?.default)throw new Error('ffmpeg-core.js has no module export');
-    return{factory:mod.default,moduleURL};
-  }catch(e){
-    URL.revokeObjectURL(moduleURL);
-    throw e;
-  }
+async function importCoreFactory(coreURL){
+  const mod=await import(coreURL);
+  if(!mod?.default)throw new Error('ffmpeg-core.js has no default ESM export');
+  return{factory:mod.default,moduleURL:coreURL};
 }
 
 async function load({coreURL:Fcore,wasmURL:Fwasm,workerURL:Fworker}={}){
   const first=!ffmpeg;
-  const suppliedCore=Fcore||FALLBACK_CORE;
-  const suppliedWasm=Fwasm||FALLBACK_WASM;
+  const suppliedCore=freshURL(Fcore||FALLBACK_CORE);
+  const suppliedWasm=freshURL(Fwasm||FALLBACK_WASM);
   let imported;
   try{
     imported=await importCoreFactory(suppliedCore);
