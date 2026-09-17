@@ -8,31 +8,40 @@
     return text==='free trial'||text==='trial';
   }
 
-  function syncTrialQuality(){
+  function syncTrialAccess(){
     if(syncing)return;
     syncing=true;
     try{
+      if(!isTrial())return;
       const quality=$('quality');
-      if(!quality||!isTrial())return;
-      Array.from(quality.options).forEach(option=>{option.disabled=false;});
-      quality.disabled=false;
+      if(quality){
+        Array.from(quality.options).forEach(option=>{if(option.disabled)option.disabled=false;});
+        if(quality.disabled)quality.disabled=false;
+      }
+      const mode=$('mode');
+      if(mode){
+        Array.from(mode.options).forEach(option=>{if(option.disabled)option.disabled=false;});
+        if(mode.disabled)mode.disabled=false;
+      }
       const hint=$('planAccessHint');
-      if(hint)hint.textContent='Free trial: Gentle · 720p / 1080p / 4K';
+      if(hint)hint.textContent='Free trial: Gentle + Balance + Dynamic · 720p / 1080p / 4K';
     }finally{
       syncing=false;
     }
   }
 
   function install(){
-    syncTrialQuality();
+    syncTrialAccess();
     const plan=$('currentPlan');
     const quality=$('quality');
-    if(plan)new MutationObserver(syncTrialQuality).observe(plan,{childList:true,characterData:true,subtree:true});
-    if(quality)new MutationObserver(syncTrialQuality).observe(quality,{attributes:true,attributeFilter:['disabled']});
+    const mode=$('mode');
+    if(plan)new MutationObserver(syncTrialAccess).observe(plan,{childList:true,characterData:true,subtree:true});
+    if(quality)new MutationObserver(syncTrialAccess).observe(quality,{attributes:true,subtree:true,attributeFilter:['disabled']});
+    if(mode)new MutationObserver(syncTrialAccess).observe(mode,{attributes:true,subtree:true,attributeFilter:['disabled']});
     document.addEventListener('change',event=>{
-      if(event.target?.id==='quality')syncTrialQuality();
+      if(event.target?.id==='quality'||event.target?.id==='mode')syncTrialAccess();
     },true);
-    window.addEventListener('focus',syncTrialQuality);
+    window.addEventListener('focus',syncTrialAccess);
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
