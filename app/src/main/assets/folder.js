@@ -20,11 +20,10 @@
     try{
       folderBtn.disabled=true;fileSummary.textContent=`Loading ${items.length} video file${items.length===1?'':'s'}…`;
       const files=[];
-      for(const item of items){
-        const response=await fetch(item.url);if(!response.ok)throw new Error(`Could not open ${item.name}`);
-        const blob=await response.blob();files.push(new File([blob],item.name,{type:item.type||blob.type||'video/mp4'}));
-      }
+      for(const item of items){const response=await fetch(item.url);if(!response.ok)throw new Error(`Could not open ${item.name}`);const blob=await response.blob();files.push(new File([blob],item.name,{type:item.type||blob.type||'video/mp4'}));}
       ui()?.setFiles(files);
-    }catch(e){fileSummary.textContent=e.message;ui()?.toast(e.message);}finally{folderBtn.disabled=false;}
+    }catch(e){fileSummary.textContent=e.message;ui()?.reportError?.(e,'folder');ui()?.toast(e.message);}finally{folderBtn.disabled=false;}
   };
+
+  const billing=document.createElement('script');billing.src='billing-v3.js';billing.defer=true;document.body.appendChild(billing);
 })();
