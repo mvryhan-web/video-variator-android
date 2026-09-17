@@ -2,31 +2,41 @@ plugins {
     id 'com.android.application'
 }
 
+def webAppUrl = (System.getenv('VV_WEB_APP_URL') ?: '').replace('\\','\\\\').replace('"','\\"')
+def updateApiUrl = (System.getenv('VV_UPDATE_API_URL') ?: '').replace('\\','\\\\').replace('"','\\"')
+
 android {
-    namespace 'com.videovariator.app'
-    compileSdk 35
+    namespace = 'com.videovariator.app'
+    compileSdk = 36
 
     defaultConfig {
-        applicationId 'com.videovariator.app'
-        minSdk 26
-        targetSdk 35
-        versionCode 1
-        versionName '1.0.0'
+        applicationId = 'com.videovariator.app'
+        minSdk = 26
+        targetSdk = 36
+        versionCode = 3
+        versionName = '3.0.0'
+        buildConfigField 'String', 'WEB_APP_URL', '"' + webAppUrl + '"'
+        buildConfigField 'String', 'UPDATE_API_URL', '"' + updateApiUrl + '"'
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
 dependencies {
     implementation 'androidx.documentfile:documentfile:1.0.1'
+    implementation 'com.google.android.play:app-update:2.1.0'
 }
