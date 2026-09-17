@@ -39,17 +39,15 @@ test('FFmpeg engine boots with the production worker',async({page},testInfo)=>{
       return URL.createObjectURL(new Blob([await r.arrayBuffer()],{type}));
     };
     const ffmpeg=new window.FFmpegWASM.FFmpeg();
-    const [classWorkerURL,coreURL,wasmURL]=await Promise.all([
-      toBlobURL('/ffmpeg-worker.js','text/javascript'),
-      toBlobURL('/vendor/ffmpeg/ffmpeg-core.js','text/javascript'),
-      toBlobURL('/vendor/ffmpeg/ffmpeg-core.wasm','application/wasm')
-    ]);
+    const classWorkerURL=await toBlobURL('/ffmpeg-worker.js','text/javascript');
+    const coreURL='/vendor/ffmpeg/ffmpeg-core.js';
+    const wasmURL='/vendor/ffmpeg/ffmpeg-core.wasm';
     try{
       await ffmpeg.load({classWorkerURL,coreURL,wasmURL});
       return true;
     }finally{
       try{ffmpeg.terminate();}catch(_){ }
-      URL.revokeObjectURL(classWorkerURL);URL.revokeObjectURL(coreURL);URL.revokeObjectURL(wasmURL);
+      URL.revokeObjectURL(classWorkerURL);
     }
   });
   expect(ok).toBe(true);
