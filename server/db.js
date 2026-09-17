@@ -32,6 +32,7 @@ export async function initDb(){
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       UNIQUE(provider, provider_sub)
     );
+    ALTER TABLE vv_users ADD COLUMN IF NOT EXISTS password_hash TEXT;
     CREATE TABLE IF NOT EXISTS vv_history (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL REFERENCES vv_users(id) ON DELETE CASCADE,
@@ -60,6 +61,8 @@ function requireDb(){if(!pool)throw new Error('DATABASE_NOT_CONFIGURED');}
 
 export async function upsertUser({provider,providerSub,email,name}){requireDb();const existing=await pool.query('SELECT * FROM vv_users WHERE provider=$1 AND provider_sub=$2',[provider,providerSub]);if(existing.rows[0]){const r=await pool.query(`UPDATE vv_users SET email=COALESCE($3,email),name=COALESCE($4,name),updated_at=NOW() WHERE provider=$1 AND provider_sub=$2 RETURNING *`,[provider,providerSub,email||null,name||null]);return r.rows[0];}const id=randomUUID();const r=await pool.query(`INSERT INTO vv_users(id,provider,provider_sub,email,name) VALUES($1,$2,$3,$4,$5) RETURNING *`,[id,provider,providerSub,email||null,name||null]);return r.rows[0];}
 export async function getUser(id){requireDb();const r=await pool.query('SELECT * FROM vv_users WHERE id=$1',[id]);return r.rows[0]||null;}
+export async function getUserByProvider(provider,providerSub){requireDb();const r=await pool.query('SELECT * FROM vv_users WHERE provider=$1 AND provider_sub=$2',[provider,providerSub]);return r.rows[0]||null;}
+export async function setPasswordHash(userId,passwordHash){requireDb();const r=await pool.query('UPDATE vv_users SET password_hash=$2,updated_at=NOW() WHERE id=$1 RETURNING *',[userId,passwordHash]);return r.rows[0]||null;}
 export async function getUserByCustomer(customerId){requireDb();const r=await pool.query('SELECT * FROM vv_users WHERE stripe_customer_id=$1',[customerId]);return r.rows[0]||null;}
 export async function getUserBySubscription(subscriptionId){requireDb();const r=await pool.query('SELECT * FROM vv_users WHERE stripe_subscription_id=$1',[subscriptionId]);return r.rows[0]||null;}
 
