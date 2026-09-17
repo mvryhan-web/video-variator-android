@@ -1,7 +1,6 @@
-/* Video Uniquifier — Conversion Upgrade v1. Presentation only; video engine untouched. */
+/* Video Uniquifier — Conversion Upgrade v2. Presentation only; video engine untouched. */
 :root{--vu-accent:#7c6cff;--vu-accent2:#9b8cff;--vu-green:#5ee7a5;--vu-soft:#11182a;--vu-soft2:#0d1423}
 
-/* Stronger premium hierarchy without changing application mechanics. */
 .card{border-color:rgba(135,151,184,.16);box-shadow:0 18px 55px rgba(0,0,0,.18)}
 .primaryBtn{font-weight:800;letter-spacing:-.01em;box-shadow:0 12px 30px rgba(84,72,210,.22)}
 .primaryBtn:hover{transform:translateY(-1px)}
@@ -30,13 +29,29 @@
 .valueProofGrid span{display:flex;align-items:center;gap:8px;min-width:0;padding:11px 12px;border-radius:12px;border:1px solid rgba(137,151,180,.13);background:#0a111e;color:#c7d1e1;font-size:12px;font-weight:700}
 .valueProofGrid b{display:grid;place-items:center;flex:0 0 26px;height:26px;border-radius:8px;background:#1a1738;color:#bdb5ff;font-size:9px}
 
+.modePreview{margin-top:14px;padding:14px;border:1px solid rgba(124,108,255,.16);border-radius:15px;background:linear-gradient(180deg,rgba(15,20,36,.86),rgba(7,12,21,.9))}
+.modePreviewTitle{margin-bottom:11px;color:#aeb9cd;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+.modePreviewFlow{display:grid;grid-template-columns:minmax(105px,.7fr) auto minmax(0,2.2fr);gap:11px;align-items:center}
+.previewArrow{color:#7369c8;font-size:20px;font-weight:900;text-align:center}
+.previewOutputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.previewCard{min-width:0;padding:8px;border:1px solid rgba(141,153,181,.13);border-radius:12px;background:#0a111e;display:grid;gap:5px}
+.previewCard i{display:block;position:relative;overflow:hidden;height:52px;border-radius:8px;background:linear-gradient(135deg,#29344d,#11192b)}
+.previewCard i::before{content:'';position:absolute;left:13%;right:13%;top:18%;height:40%;border-radius:8px;background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(124,108,255,.2));transform:skewX(-8deg)}
+.previewCard i::after{content:'';position:absolute;left:18%;right:24%;bottom:17%;height:7px;border-radius:999px;background:rgba(255,255,255,.14)}
+.previewCard b{font-size:10px;color:#d6deeb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.previewCard small{font-size:8px;color:#77869d}
+.previewGentle i{filter:saturate(.95) brightness(1.03)}
+.previewBalance i{background:linear-gradient(135deg,#2e3159,#151d35);filter:saturate(1.08)}
+.previewDynamic i{background:linear-gradient(135deg,#352b55,#172138);filter:saturate(1.18) contrast(1.06)}
+
 .privacyInline{display:flex;align-items:center;gap:8px;margin:0 0 12px;padding:10px 12px;border-radius:12px;border:1px solid rgba(94,231,165,.16);background:rgba(19,59,44,.18);color:#a9d6bd;font-size:11px;line-height:1.4}
 .privacyPulse{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:var(--vu-green);box-shadow:0 0 12px rgba(94,231,165,.5)}
 .conversionPicker{border-color:rgba(124,108,255,.35)!important;background:linear-gradient(180deg,rgba(20,25,47,.76),rgba(11,17,30,.88))!important;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease!important}
 .conversionPicker:hover{transform:translateY(-1px);border-color:rgba(141,129,255,.72)!important;box-shadow:0 16px 38px rgba(57,47,126,.16)}
 .conversionPicker b{font-size:15px}
+.planAccessHint.trialBalancePreview{border-color:rgba(124,108,255,.34)!important;background:rgba(64,52,145,.13)!important;color:#cfcaff!important}
 
-/* Pricing built around concrete value, not unverifiable adjustment counts. */
+/* Pricing keeps the existing 50 / 100 / 150 adjustment positioning while improving presentation. */
 .pricingHero{max-width:860px;margin-left:auto;margin-right:auto;text-align:center}
 .pricingHero h2{font-size:38px;letter-spacing:-.035em;line-height:1.05}
 .pricingHero p{max-width:690px;margin-left:auto;margin-right:auto;color:#9eabc0;line-height:1.6}
@@ -64,7 +79,6 @@
 .billingNote{margin-top:14px;padding:17px 20px}
 .billingNote .guaranteeIcon{background:#113022;color:#79eaaa}
 
-/* Post-success conversion moment. */
 .resultUpgrade{grid-column:1/-1;width:100%;display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:14px;padding:16px;border-radius:14px;border:1px solid rgba(124,108,255,.25);background:linear-gradient(110deg,rgba(42,34,93,.28),rgba(12,18,31,.82))}
 .resultUpgrade[hidden]{display:none!important}
 .resultUpgrade>div{display:grid;gap:4px;min-width:0}
@@ -72,7 +86,6 @@
 .resultUpgrade small{color:#8f9db3;font-size:11px;line-height:1.45}
 .resultUpgrade .primaryBtn{flex:0 0 auto;min-height:42px;padding:0 15px}
 
-/* Trial end: direct-to-checkout options. */
 .trialCompleteUpsell{padding:22px 0 2px;text-align:center}
 .trialCompleteUpsell[hidden]{display:none!important}
 .trialCompleteUpsell h3{font-size:24px;line-height:1.12;margin:12px 0 7px;letter-spacing:-.02em}
@@ -89,7 +102,6 @@
 .workspace.trialComplete>.pickerGrid,.workspace.trialComplete>.fileSummary,.workspace.trialComplete>.settingsGrid,.workspace.trialComplete>.formatGrid,.workspace.trialComplete>.planAccessHint,.workspace.trialComplete>.creditEstimate,.workspace.trialComplete>.actionRow,.workspace.trialComplete>.privacyInline{display:none!important}
 .workspace.trialComplete>.sectionHead{margin-bottom:0}
 
-/* FAQ/how-it-works trust layer. */
 .howItWorks{margin:0 0 16px;padding:20px;border:1px solid #25324a;border-radius:18px;background:linear-gradient(180deg,rgba(17,25,41,.96),rgba(11,17,29,.96))}
 .howHead h3{font-size:21px;line-height:1.2;margin:7px 0 8px;letter-spacing:-.015em}
 .howHead p{margin:0;color:#96a3b8;font-size:13px;line-height:1.55}
@@ -106,6 +118,7 @@
   .conversionHero h2{font-size:35px}
   .usageBox{max-width:100%}
   .valueProofGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .modePreviewFlow{grid-template-columns:95px auto minmax(0,1fr)}
 }
 
 @media(max-width:760px){
@@ -121,6 +134,13 @@
   .valueProofHead .ghostBtn{display:none}
   .valueProofGrid{grid-template-columns:1fr 1fr}
   .valueProofGrid span{font-size:10px;padding:9px}
+  .modePreview{padding:11px}
+  .modePreviewFlow{grid-template-columns:1fr;gap:8px}
+  .previewArrow{transform:rotate(90deg);font-size:16px}
+  .previewOriginal{max-width:150px;width:100%;margin:0 auto}
+  .previewOutputs{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .previewCard{padding:6px}
+  .previewCard i{height:44px}
   .pricingHero{text-align:left}
   .pricingHero h2{font-size:30px}
   .pricingTrust{justify-content:flex-start}
@@ -155,6 +175,9 @@
   .valueProofGrid{gap:6px}
   .valueProofGrid span{padding:8px 7px}
   .valueProofGrid b{width:23px;flex-basis:23px;height:23px}
+  .previewOutputs{gap:5px}
+  .previewCard b{font-size:9px}
+  .previewCard small{font-size:7px}
   .trialPlanGrid{gap:5px}
   .trialPlanMini{padding:10px 5px;border-radius:12px}
   .trialPlanMini strong{font-size:11px}
