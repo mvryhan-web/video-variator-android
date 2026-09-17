@@ -130,3 +130,13 @@ test('analytics profile error handling and FAQ are reachable',async({page})=>{
   await expect(page.getByText('What processing modes are included?')).toBeVisible();
   await expect(page.getByText('How is my data protected?')).toBeVisible();
 });
+
+test('mobile views do not create horizontal overflow',async({page},testInfo)=>{
+  test.skip(!testInfo.project.name.includes('mobile'));
+  for(const view of ['dashboard','history','analytics','profile']){
+    if(view!=='dashboard')await openView(page,view);
+    const sizes=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,viewport:window.innerWidth}));
+    expect(sizes.doc).toBeLessThanOrEqual(sizes.viewport+1);
+    expect(sizes.body).toBeLessThanOrEqual(sizes.viewport+1);
+  }
+});
