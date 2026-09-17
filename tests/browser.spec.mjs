@@ -8,22 +8,40 @@ async function openView(page,name){
 test.beforeEach(async({page})=>{
   await page.route(/accounts\.google\.com|appleid\.cdn-apple\.com|unpkg\.com/,route=>route.abort());
   await page.goto('/');
+  await expect(page).toHaveTitle(/Video Uniquifier/);
 });
 
-test('loads dashboard with zero of two free trial videos',async({page})=>{
-  await expect(page).toHaveTitle(/Video Variator/);
+test('loads rebranded dashboard with zero of two free trial videos',async({page})=>{
   await expect(page.getByRole('heading',{name:'Dashboard'})).toBeVisible();
   await expect(page.locator('#creditText')).toHaveText('0 / 2');
-  await expect(page.getByText('Уникализирай своё старое видео')).toBeVisible();
+  await expect(page.getByText('Uniqueify your old video')).toBeVisible();
+  await expect(page.getByText('Video Uniquifier',{exact:true}).first()).toBeVisible();
 });
 
-test('trial uses Gentle and 720p and has no folder picker',async({page})=>{
+test('trial uses Gentle 720p and locks premium variation counts',async({page})=>{
   await expect(page.locator('#folderBtn')).toHaveCount(0);
   await expect(page.locator('#mode')).toHaveValue('gentle');
   await expect(page.locator('#quality')).toHaveValue('720');
   await expect(page.locator('#quality')).toBeDisabled();
   await expect(page.locator('#mode option[value="balanced"]')).toHaveAttribute('disabled','');
   await expect(page.locator('#mode option[value="dynamic"]')).toHaveAttribute('disabled','');
+  await expect(page.locator('#variantCount option[value="10"]')).toHaveAttribute('disabled','');
+  await expect(page.locator('#variantCount option[value="15"]')).toHaveAttribute('disabled','');
+});
+
+test('Pro unlocks 10 variations and Business unlocks 15',async({page})=>{
+  await page.locator('#currentPlan').evaluate(el=>el.textContent='Pro');
+  await expect(page.locator('#variantCount option[value="10"]')).not.toHaveAttribute('disabled','');
+  await expect(page.locator('#variantCount option[value="15"]')).toHaveAttribute('disabled','');
+  await page.locator('#currentPlan').evaluate(el=>el.textContent='Business');
+  await expect(page.locator('#variantCount option[value="15"]')).not.toHaveAttribute('disabled','');
+});
+
+test('back button is available outside dashboard',async({page})=>{
+  await openView(page,'history');
+  await expect(page.locator('#backBtn')).toBeVisible();
+  await page.locator('#backBtn').click();
+  await expect(page.locator('#dashboardView')).toHaveClass(/active/);
 });
 
 test('pricing displays credits plan access and quality',async({page})=>{
