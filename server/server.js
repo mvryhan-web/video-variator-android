@@ -1,0 +1,130 @@
+import 'dotenv/config';
+import express from 'express';
+import Stripe from 'stripe';
+import { createRemoteJWKSet, jwtVerify, SignJWT } from 'jose';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+import {
+  initDb,upsertUser,getUser,publicUser,setStripeCustomer,applySubscription,updateSubscriptionByStripeId,
+  resetPeriodUsageBySubscription,consumeUsage,addHistory,listHistory,clearHistory
+} from './db.js';
+
+const app=express();
+const port=Number(process.env.PORT||3000);
+const appUrl=(process.env.APP_URL||`http://localhost:${port}`).replace(/\/$/,'');
+const jwtSecret=process.env.APP_JWT_SECRET||'';
+const stripe=process.env.STRIPE_SECRET_KEY?new Stripe(process.env.STRIPE_SECRET_KEY):null;
+const googleJwks=createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
+const appleJwks=createRemoteJWKSet(new URL('https://appleid.apple.com/auth/keys'));
+const plans={
+  basic:{name:'Basic',limit:50,amount:9,priceId:process.env.STRIPE_PRICE_BASIC||''},
+  pro:{name:'Pro',limit:150,amount:24,priceId:process.env.STRIPE_PRICE_PRO||''},
+  business:{name:'Business',limit:1000,amount:99,priceId:process.env.STRIPE_PRICE_BUSINESS||''}
+};
+
+function fromUnix(v){return v?new Date(Number(v)*1000):null;}
+function requireServerConfig(){if(!jwtSecret)throw new Error('APP_JWT_SECRET is not configured');}
+
+app.use((req,res,next)=>{
+  const allowed=(process.env.CORS_ORIGIN||'*').split(',').map(x=>x.trim());const origin=req.headers.origin;
+  if(allowed.includes('*'))res.setHeader('Access-Control-Allow-Origin','*');else if(origin&&allowed.includes(origin))res.setHeader('Access-Control-Allow-Origin',origin);
+  res.setHeader('Access-Control-Allow-Headers','Authorization, Content-Type, Stripe-Signature');res.setHeader('Access-Control-Allow-Methods','GET,POST,DELETE,OPTIONS');
+  if(req.method==='OPTIONS')return res.sendStatus(204);next();
+});
+
+// Stripe requires the untouched request body for signature verification.
+app.post('/api/webhooks/stripe',express.raw({type:'application/json'}),async(req,res)=>{
+  if(!stripe||!process.env.STRIPE_WEBHOOK_SECRET)return res.status(503).send('Stripe webhook is not configured');
+  let event;try{event=stripe.webhooks.constructEvent(req.body,req.headers['stripe-signature'],process.env.STRIPE_WEBHOOK_SECRET);}catch(e){return res.status(400).send(`Webhook signature error: ${e.message}`);}
+  try{
+    if(event.type==='checkout.session.completed'){
+      const s=event.data.object,userId=s.metadata?.userId,plan=s.metadata?.plan;
+      if(userId&&plans[plan])await applySubscription({userId,customerId:String(s.customer||''),subscriptionId:String(s.subscription||''),plan,status:'active',currentPeriodEnd:null,markSubscribed:true});
+    }
+    if(event.type==='customer.subscription.created'||event.type==='customer.subscription.updated'){
+      const sub=event.data.object,userId=sub.metadata?.userId,plan=sub.metadata?.plan;
+      if(userId&&plans[plan])await applySubscription({userId,customerId:String(sub.customer||''),subscriptionId:sub.id,plan,status:sub.status,currentPeriodEnd:fromUnix(sub.current_period_end),markSubscribed:true});
+      else await updateSubscriptionByStripeId({subscriptionId:sub.id,status:sub.status,currentPeriodEnd:fromUnix(sub.current_period_end)});
+    }
+    if(event.type==='customer.subscription.deleted'){
+      const sub=event.data.object;await updateSubscriptionByStripeId({subscriptionId:sub.id,status:'canceled',currentPeriodEnd:fromUnix(sub.current_period_end)});
+    }
+    if(event.type==='invoice.paid'){
+      const invoice=event.data.object;const subscriptionId=typeof invoice.subscription==='string'?invoice.subscription:invoice.subscription?.id;
+      if(subscriptionId&&invoice.billing_reason==='subscription_cycle')await resetPeriodUsageBySubscription(subscriptionId);
+    }
+    res.json({received:true});
+  }catch(e){console.error('[stripe webhook]',e);res.status(500).send('Webhook processing failed');}
+});
+
+app.use(express.json({limit:'1mb'}));
+
+async function signAppToken(user){
+  requireServerConfig();const key=new TextEncoder().encode(jwtSecret);
+  return new SignJWT({email:user.email||'',name:user.name||''}).setProtectedHeader({alg:'HS256'}).setSubject(user.id).setIssuer('video-variator').setAudience('video-variator-client').setIssuedAt().setExpirationTime('30d').sign(key);
+}
+
+async function auth(req,res,next){
+  try{requireServerConfig();const token=(req.headers.authorization||'').replace(/^Bearer\s+/i,'');if(!token)return res.status(401).json({error:'AUTH_REQUIRED'});const key=new TextEncoder().encode(jwtSecret);const {payload}=await jwtVerify(token,key,{issuer:'video-variator',audience:'video-variator-client'});const user=await getUser(payload.sub);if(!user)return res.status(401).json({error:'USER_NOT_FOUND'});req.user=user;next();}catch(e){res.status(401).json({error:'INVALID_SESSION'});}
+}
+
+app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-variator',time:new Date().toISOString()}));
+app.get('/api/config',(req,res)=>res.json({
+  googleClientId:process.env.GOOGLE_CLIENT_ID||'',appleClientId:process.env.APPLE_CLIENT_ID||'',appleRedirectUri:process.env.APPLE_REDIRECT_URI||'',
+  billingConfigured:!!(stripe&&plans.basic.priceId&&plans.pro.priceId&&plans.business.priceId),
+  introOfferText:process.env.INTRO_OFFER_TEXT||'Intro offer available on your first subscription',
+  plans:{basic:{price:9,limit:50},pro:{price:24,limit:150},business:{price:99,limit:1000}}
+}));
+
+app.post('/api/auth/google',async(req,res)=>{
+  try{
+    if(!process.env.GOOGLE_CLIENT_ID)return res.status(503).json({error:'GOOGLE_AUTH_NOT_CONFIGURED'});
+    const credential=req.body?.credential;if(!credential)return res.status(400).json({error:'MISSING_GOOGLE_CREDENTIAL'});
+    const {payload}=await jwtVerify(credential,googleJwks,{audience:process.env.GOOGLE_CLIENT_ID,issuer:['https://accounts.google.com','accounts.google.com']});
+    const user=await upsertUser({provider:'google',providerSub:payload.sub,email:payload.email,name:payload.name});
+    res.json({token:await signAppToken(user),user:publicUser(user)});
+  }catch(e){console.error('[google auth]',e);res.status(401).json({error:'GOOGLE_AUTH_FAILED'});}
+});
+
+app.post('/api/auth/apple',async(req,res)=>{
+  try{
+    if(!process.env.APPLE_CLIENT_ID)return res.status(503).json({error:'APPLE_AUTH_NOT_CONFIGURED'});
+    const idToken=req.body?.idToken;if(!idToken)return res.status(400).json({error:'MISSING_APPLE_TOKEN'});
+    const {payload}=await jwtVerify(idToken,appleJwks,{audience:process.env.APPLE_CLIENT_ID,issuer:'https://appleid.apple.com'});
+    const supplied=req.body?.user||{};const fullName=supplied?.name?[supplied.name.firstName,supplied.name.lastName].filter(Boolean).join(' '):null;
+    const user=await upsertUser({provider:'apple',providerSub:payload.sub,email:payload.email||supplied.email||null,name:fullName});
+    res.json({token:await signAppToken(user),user:publicUser(user)});
+  }catch(e){console.error('[apple auth]',e);res.status(401).json({error:'APPLE_AUTH_FAILED'});}
+});
+
+app.get('/api/me',auth,(req,res)=>res.json({user:publicUser(req.user)}));
+
+app.post('/api/usage/consume',auth,async(req,res)=>{
+  try{const user=await consumeUsage(req.user.id,req.body?.count);res.json({user:publicUser(user)});}catch(e){if(e.code==='CREDIT_LIMIT_REACHED'||e.message==='CREDIT_LIMIT_REACHED')return res.status(402).json({error:'CREDIT_LIMIT_REACHED'});console.error(e);res.status(500).json({error:'USAGE_UPDATE_FAILED'});}
+});
+
+app.get('/api/history',auth,async(req,res)=>{try{res.json({history:await listHistory(req.user.id)});}catch(e){res.status(500).json({error:'HISTORY_FAILED'});}});
+app.post('/api/history',auth,async(req,res)=>{try{const items=Array.isArray(req.body?.items)?req.body.items:[];for(const item of items.slice(0,25))await addHistory(req.user.id,item);res.json({ok:true});}catch(e){res.status(500).json({error:'HISTORY_SAVE_FAILED'});}});
+app.delete('/api/history',auth,async(req,res)=>{try{await clearHistory(req.user.id);res.json({ok:true});}catch(e){res.status(500).json({error:'HISTORY_CLEAR_FAILED'});}});
+
+app.post('/api/billing/checkout',auth,async(req,res)=>{
+  try{
+    if(!stripe)return res.status(503).json({error:'BILLING_NOT_CONFIGURED'});const plan=req.body?.plan,p=plans[plan];if(!p||!p.priceId)return res.status(400).json({error:'INVALID_OR_UNCONFIGURED_PLAN'});
+    let customerId=req.user.stripe_customer_id;
+    if(!customerId){const customer=await stripe.customers.create({email:req.user.email||undefined,name:req.user.name||undefined,metadata:{userId:req.user.id}});customerId=customer.id;await setStripeCustomer(req.user.id,customerId);}
+    const coupon=!req.user.has_subscribed&&process.env.STRIPE_FIRST_SUBSCRIPTION_COUPON_ID?process.env.STRIPE_FIRST_SUBSCRIPTION_COUPON_ID:null;
+    const session=await stripe.checkout.sessions.create({mode:'subscription',customer:customerId,line_items:[{price:p.priceId,quantity:1}],client_reference_id:req.user.id,metadata:{userId:req.user.id,plan},subscription_data:{metadata:{userId:req.user.id,plan}},discounts:coupon?[{coupon}]:undefined,success_url:`${appUrl}/?checkout=success`,cancel_url:`${appUrl}/?checkout=cancel`});
+    res.json({url:session.url});
+  }catch(e){console.error('[checkout]',e);res.status(500).json({error:'CHECKOUT_FAILED'});}
+});
+
+app.post('/api/billing/portal',auth,async(req,res)=>{
+  try{if(!stripe||!req.user.stripe_customer_id)return res.status(400).json({error:'BILLING_PORTAL_UNAVAILABLE'});const session=await stripe.billingPortal.sessions.create({customer:req.user.stripe_customer_id,return_url:`${appUrl}/`});res.json({url:session.url});}catch(e){console.error('[portal]',e);res.status(500).json({error:'BILLING_PORTAL_FAILED'});}
+});
+
+const __dirname=path.dirname(fileURLToPath(import.meta.url));const staticDir=path.resolve(__dirname,'../app/src/main/assets');
+app.use(express.static(staticDir,{extensions:['html']}));
+app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
+
+await initDb();
+app.listen(port,()=>console.log(`Video Variator running on ${appUrl}`));
