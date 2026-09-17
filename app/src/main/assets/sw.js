@@ -1,5 +1,5 @@
-const CACHE='video-variator-v3';
-const APP_SHELL=['/','/index.html','/styles.css','/v3.css','/app-v3.js','/video-core.js','/folder.js','/bootstrap.js','/billing-v3.js','/manifest.webmanifest','/icon.svg'];
+const CACHE='video-variator-v4';
+const APP_SHELL=['/','/index.html','/styles.css','/v3.css','/app-v4.js','/video-core.js','/bootstrap.js','/manifest.webmanifest','/icon.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting();});
