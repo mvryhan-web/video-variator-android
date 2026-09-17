@@ -2,9 +2,10 @@ plugins {
     id 'com.android.application'
 }
 
-def webAppUrl = (System.getenv('VV_WEB_APP_URL') ?: '').replace('\\','\\\\').replace('"','\\"')
-def apiBaseUrl = (System.getenv('VV_API_BASE_URL') ?: '').replace('\\','\\\\').replace('"','\\"')
-def updateApiUrl = (System.getenv('VV_UPDATE_API_URL') ?: '').replace('\\','\\\\').replace('"','\\"')
+def defaultProductionUrl = 'https://video-variator-android.onrender.com'
+def webAppUrl = (System.getenv('VV_WEB_APP_URL') ?: defaultProductionUrl).replace('\\','\\\\').replace('"','\\"')
+def apiBaseUrl = (System.getenv('VV_API_BASE_URL') ?: defaultProductionUrl).replace('\\','\\\\').replace('"','\\"')
+def updateApiUrl = (System.getenv('VV_UPDATE_API_URL') ?: defaultProductionUrl + '/api/version').replace('\\','\\\\').replace('"','\\"')
 def signingPath = project.findProperty('VV_KEYSTORE_PATH')
 def signingStorePassword = project.findProperty('VV_KEYSTORE_PASSWORD')
 def signingKeyAlias = project.findProperty('VV_KEY_ALIAS')
