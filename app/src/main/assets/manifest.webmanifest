@@ -1,0 +1,16 @@
+{
+  "name": "Video Variator",
+  "short_name": "Video Variator",
+  "description": "Create clean variations of your own videos with a simple privacy-first workflow.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#080b12",
+  "theme_color": "#0b1020",
+  "categories": ["video", "productivity", "utilities"],
+  "icons": [
+    {"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
