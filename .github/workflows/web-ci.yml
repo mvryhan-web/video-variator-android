@@ -21,12 +21,14 @@ jobs:
         run: |
           node --check server/server.js
           node --check server/db.js
+          node --check server/email-auth.js
       - name: Check PWA syntax
         run: |
           node --check app/src/main/assets/app-v4.js
           node --check app/src/main/assets/video-core.js
           node --check app/src/main/assets/bootstrap.js
           node --check app/src/main/assets/admin-access.js
+          node --check app/src/main/assets/auth-email.js
           node --check app/src/main/assets/sw.js
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox webkit
