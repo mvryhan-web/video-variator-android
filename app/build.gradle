@@ -4,6 +4,11 @@ plugins {
 
 def webAppUrl = (System.getenv('VV_WEB_APP_URL') ?: '').replace('\\','\\\\').replace('"','\\"')
 def updateApiUrl = (System.getenv('VV_UPDATE_API_URL') ?: '').replace('\\','\\\\').replace('"','\\"')
+def signingPath = project.findProperty('VV_KEYSTORE_PATH')
+def signingStorePassword = project.findProperty('VV_KEYSTORE_PASSWORD')
+def signingKeyAlias = project.findProperty('VV_KEY_ALIAS')
+def signingKeyPassword = project.findProperty('VV_KEY_PASSWORD')
+def hasReleaseSigning = signingPath && signingStorePassword && signingKeyAlias && signingKeyPassword
 
 android {
     namespace = 'com.videovariator.app'
@@ -19,14 +24,24 @@ android {
         buildConfigField 'String', 'UPDATE_API_URL', '"' + updateApiUrl + '"'
     }
 
-    buildFeatures {
-        buildConfig = true
+    buildFeatures { buildConfig = true }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create('release') {
+                storeFile = file(signingPath)
+                storePassword = signingStorePassword
+                keyAlias = signingKeyAlias
+                keyPassword = signingKeyPassword
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (hasReleaseSigning) signingConfig = signingConfigs.release
         }
     }
 
