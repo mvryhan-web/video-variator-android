@@ -55,7 +55,7 @@
     vf.push(`setpts=PTS/${fmt(r.speed,6)}`,'format=yuv420p');
     const af=[];if(audio){af.push('aresample=48000');if(r.useCut){const a=fmt(r.cutAt,3),b=fmt(r.cutAt+r.cutLen,3);af.push(`aselect='not(between(t\\,${a}\\,${b}))'`,'asetpts=N/SR/TB');}const p=Math.pow(2,r.pitchSemi/12);af.push(`asetrate=${fmt(48000*p,3)}`,'aresample=48000',`atempo=${fmt(1/p,6)}`,`atempo=${fmt(r.speed,6)}`,`volume=${fmt(r.volume,5)}`);}return{vf:vf.join(','),af:af.join(',')};
   }
-  function args(input,out,duration,r,w,h,audio){const clipped=Math.max(.4,duration-r.trimStart-r.trimEnd),f=filters(r,w,h,audio),a=['-hide_banner','-y','-ss',fmt(r.trimStart,3),'-t',fmt(clipped,3),'-i',input,'-vf',f.vf];if(audio)a.push('-af',f.af);else a.push('-an');a.push('-c:v','libx264','-preset','veryfast','-crf',Math.max(w,h)>=1920?'20':'21','-pix_fmt','yuv420p','-movflags','+faststart');if(audio)a.push('-c:a','aac','-b:a','160k');a.push(out);return a;}
+  function args(input,out,duration,r,w,h,audio){const clipped=Math.max(.4,duration-r.trimStart-r.trimEnd),f=filters(r,w,h,audio),a=['-hide_banner','-y','-ss',fmt(r.trimStart,3),'-t',fmt(clipped,3),'-i',input,'-vf',f.vf];if(audio)a.push('-af',f.af);else a.push('-an');a.push('-c:v','libx264','-preset','veryfast','-crf',Math.max(w,h)>=3840?'19':Math.max(w,h)>=1920?'20':'21','-pix_fmt','yuv420p','-movflags','+faststart');if(audio)a.push('-c:a','aac','-b:a','160k');a.push(out);return a;}
 
   function chunkDataURL(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]||'');reader.onerror=()=>reject(reader.error||new Error('Could not read the output file.'));reader.readAsDataURL(blob);});}
   async function saveAndroid(name,blob){if(!window.AndroidBridge?.startFile)return{saved:false,path:null};if(!window.AndroidBridge.startFile(name))throw new Error('Android could not create the output file.');const chunk=512*1024;for(let i=0;i<blob.size;i+=chunk){const b64=await chunkDataURL(blob.slice(i,Math.min(i+chunk,blob.size)));if(!window.AndroidBridge.appendChunk(b64))throw new Error('Could not save the output file to this device.');}const path=window.AndroidBridge.finishFile();return{saved:!!path&&path!=='error',path:path||null};}
@@ -69,10 +69,10 @@
     return{id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,sourceName:file.name,name,blob,saved:saved.saved,path:saved.path,resolution:`${w}×${h}`,aspectRatio:w>h?'16:9':'9:16',durationSeconds:Math.ceil(duration),credits:Math.ceil(duration),createdAt:new Date().toISOString(),variant:variantIndex+1,audio};
   }
 
-  function validResolution(value){return/^(540x960|720x1280|1080x1920|960x540|1280x720|1920x1080)$/.test(value||'');}
+  function validResolution(value){return/^(720x1280|1080x1920|2160x3840|1280x720|1920x1080|3840x2160)$/.test(value||'');}
   async function process(options={}){
     if(state.running)throw new Error('A processing job is already running.');if(!state.files.length)throw new Error('Choose at least one video first.');
-    const variants=Math.max(1,Math.min(5,Number(options.variants)||1)),mode=['gentle','balanced','dynamic'].includes(options.mode)?options.mode:'balanced',resolution=validResolution(options.resolution)?options.resolution:'720x1280';
+    const variants=Math.max(1,Math.min(5,Number(options.variants)||1)),mode=['gentle','balanced','dynamic'].includes(options.mode)?options.mode:'gentle',resolution=validResolution(options.resolution)?options.resolution:'720x1280';
     state.running=true;state.cancelled=false;state.progress=0;const total=state.files.length*variants,results=[];let done=0;
     const ticker=setInterval(()=>hooks.onProgress(clamp((done+state.progress)/total,0,1),{done,total}),160);
     try{
