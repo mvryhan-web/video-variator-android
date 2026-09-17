@@ -16,6 +16,8 @@ jobs:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       SDKMANAGER: /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager
+      VV_WEB_APP_URL: ${{ vars.VV_WEB_APP_URL }}
+      VV_UPDATE_API_URL: ${{ vars.VV_UPDATE_API_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -87,4 +89,4 @@ jobs:
           git push origin refs/tags/latest --force
           gh release create latest VideoVariator.apk \
             --title "Video Variator Android v4" \
-            --notes "Latest Android build with plan-based modes and output quality, time credits, automatic saving, analytics, FAQ, privacy controls, and 9:16 / 16:9 output."
+            --notes "Latest Android build with local video processing, plan-based modes and quality, time credits, analytics, FAQ, administrator entitlement support, privacy controls, automatic PWA content updates when VV_WEB_APP_URL is configured, and Google Play native update support."
