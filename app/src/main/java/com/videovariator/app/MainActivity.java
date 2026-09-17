@@ -29,6 +29,8 @@ import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.InstallStatus;
 import com.google.android.play.core.install.model.UpdateAvailability;
 
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -41,6 +43,7 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> fileChooserCallback;
     private AppUpdateManager appUpdateManager;
     private String trustedWebOrigin = "";
+    private String pendingAuthToken = "";
 
     private final InstallStateUpdatedListener updateListener = state -> {
         if (state.installStatus() == InstallStatus.DOWNLOADED && appUpdateManager != null) {
@@ -79,6 +82,7 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) { return handleNavigation(request.getUrl()); }
             @Override public boolean shouldOverrideUrlLoading(WebView view, String url) { return handleNavigation(Uri.parse(url)); }
+            @Override public void onPageFinished(WebView view, String url) { super.onPageFinished(view, url); deliverPendingAuthToken(); }
         });
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -104,6 +108,8 @@ public class MainActivity extends Activity {
             webView.loadUrl("file:///android_asset/index.html");
         }
 
+        handleAuthIntent(getIntent());
+
         appUpdateManager = AppUpdateManagerFactory.create(this);
         appUpdateManager.registerListener(updateListener);
         checkForPlayUpdate(false);
@@ -117,6 +123,10 @@ public class MainActivity extends Activity {
     private boolean handleNavigation(Uri uri) {
         if (uri == null) return false;
         String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase();
+        if ("videouniquifier".equals(scheme) && "auth".equalsIgnoreCase(uri.getHost())) {
+            acceptAuthUri(uri);
+            return true;
+        }
         if ("file".equals(scheme) && trustedWebOrigin.startsWith("file://")) return false;
         if ("https".equals(scheme) && !trustedWebOrigin.isEmpty()) {
             String origin = scheme + "://" + uri.getAuthority();
@@ -127,6 +137,46 @@ public class MainActivity extends Activity {
             return true;
         }
         return true;
+    }
+
+    private void handleAuthIntent(Intent intent) {
+        if (intent == null || !Intent.ACTION_VIEW.equals(intent.getAction())) return;
+        Uri uri = intent.getData();
+        if (uri != null && "videouniquifier".equalsIgnoreCase(uri.getScheme()) && "auth".equalsIgnoreCase(uri.getHost())) acceptAuthUri(uri);
+    }
+
+    private void acceptAuthUri(Uri uri) {
+        String token = uri.getQueryParameter("token");
+        if ((token == null || token.isEmpty()) && uri.getFragment() != null) {
+            String fragment = uri.getFragment();
+            for (String part : fragment.split("&")) {
+                if (part.startsWith("token=")) { token = Uri.decode(part.substring(6)); break; }
+            }
+        }
+        if (token == null || token.trim().isEmpty()) return;
+        pendingAuthToken = token.trim();
+        deliverPendingAuthToken();
+    }
+
+    private void deliverPendingAuthToken() {
+        if (webView == null || pendingAuthToken == null || pendingAuthToken.isEmpty()) return;
+        final String token = pendingAuthToken;
+        pendingAuthToken = "";
+        runOnUiThread(() -> {
+            String quoted = JSONObject.quote(token);
+            String js = "(function(){localStorage.setItem('vv_token'," + quoted + ");" +
+                    "if(window.VideoVariatorUI&&window.VideoVariatorUI.refreshAccount){window.VideoVariatorUI.refreshAccount();}" +
+                    "else{location.reload();}})();";
+            webView.evaluateJavascript(js, null);
+            Toast.makeText(MainActivity.this, "Signed in successfully.", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleAuthIntent(intent);
     }
 
     private void checkForPlayUpdate(boolean userInitiated) {
@@ -196,6 +246,22 @@ public class MainActivity extends Activity {
             String api = safeHttps(BuildConfig.API_BASE_URL);
             if (!api.isEmpty()) return api;
             return safeHttps(BuildConfig.WEB_APP_URL);
+        }
+
+        @JavascriptInterface
+        public void openExternalAuth(String provider) {
+            String p = provider == null ? "" : provider.trim().toLowerCase();
+            if (!"google".equals(p) && !"apple".equals(p)) return;
+            String base = getApiBase();
+            if (base == null || base.isEmpty()) {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Sign-in service is not configured.", Toast.LENGTH_SHORT).show());
+                return;
+            }
+            Uri uri = Uri.parse(base + "/?mobileAuth=" + Uri.encode(p));
+            runOnUiThread(() -> {
+                try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); }
+                catch (Exception e) { Toast.makeText(MainActivity.this, "Could not open the sign-in page.", Toast.LENGTH_SHORT).show(); }
+            });
         }
 
         @JavascriptInterface
