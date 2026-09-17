@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: video-uniquifier-latest-release
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -86,11 +90,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release delete latest --cleanup-tag --yes || true
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -f latest
+
+          existing_id="$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" --jq '.[] | select(.tag_name=="latest") | .id' | head -n1 || true)"
+          if [ -n "$existing_id" ]; then
+            gh api -X DELETE "repos/${GITHUB_REPOSITORY}/releases/${existing_id}"
+          fi
+
+          git push origin :refs/tags/latest || true
+          git tag -f latest "$GITHUB_SHA"
           git push origin refs/tags/latest --force
+
           gh release create latest VideoUniquifier.apk VideoVariator.apk \
             --title "Video Uniquifier Android v5" \
-            --notes "Video Uniquifier v5: new branding and launcher icon, faster local processing, automatic Gallery saving, working on-device Download actions, Back navigation, Basic/Pro/Business variation limits, production API wiring, analytics, FAQ, privacy controls, and update support."
+            --notes "Video Uniquifier v5: current Android build with the latest production UI and video-processing updates."
+
+          gh release view latest --json isDraft,tagName,url --jq '{draft:.isDraft,tag:.tagName,url:.url}'
