@@ -20,6 +20,10 @@
 
   window.addEventListener('DOMContentLoaded',()=>{
     const admin=document.createElement('script');admin.src='admin-access.js';admin.defer=true;document.body.appendChild(admin);
-    const v5=document.createElement('script');v5.src='app-v5.js';v5.defer=true;document.body.appendChild(v5);
+    const v5=document.createElement('script');v5.src='app-v5.js';v5.defer=true;
+    v5.addEventListener('load',()=>{
+      const trialQuality=document.createElement('script');trialQuality.src='trial-quality.js';trialQuality.defer=true;document.body.appendChild(trialQuality);
+    },{once:true});
+    document.body.appendChild(v5);
   });
 })();
