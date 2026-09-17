@@ -101,9 +101,10 @@ test('back button is available outside dashboard',async({page})=>{
 
 test('pricing explains Essential Pro and Business in output terms',async({page})=>{
   await openView(page,'plans');
-  await expect(page.getByText('Essential',{exact:true}).first()).toBeVisible();
-  await expect(page.getByText('Pro',{exact:true}).first()).toBeVisible();
-  await expect(page.getByText('Business',{exact:true}).first()).toBeVisible();
+  const planNames=page.locator('#plansView .priceCard .planName');
+  await expect(planNames.nth(0)).toHaveText('Essential');
+  await expect(planNames.nth(1)).toHaveText('Pro');
+  await expect(planNames.nth(2)).toHaveText('Business');
   await expect(page.getByText('750',{exact:true})).toBeVisible();
   await expect(page.getByText('2,250',{exact:true})).toBeVisible();
   await expect(page.getByText('15,000',{exact:true})).toBeVisible();
