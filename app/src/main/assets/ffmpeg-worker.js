@@ -1,25 +1,22 @@
-// Video Uniquifier same-origin FFmpeg worker for @ffmpeg/ffmpeg 0.12.x
-const CORE_URL=(self.location.protocol==='https:'||self.location.protocol==='http:')
-  ? `${self.location.origin}/vendor/ffmpeg/ffmpeg-core.js`
-  : 'https://video-variator-android.onrender.com/vendor/ffmpeg/ffmpeg-core.js';
+// Video Uniquifier FFmpeg worker.
+// Keep the v2 processing architecture, but load the core directly from the
+// production HTTPS host instead of trying to import a blob URL inside WebView.
+const RUNTIME_BASE='https://video-variator-android.onrender.com/vendor/ffmpeg';
+const CORE_URL=`${RUNTIME_BASE}/ffmpeg-core.js`;
+const WASM_URL=`${RUNTIME_BASE}/ffmpeg-core.wasm`;
 const T={LOAD:'LOAD',EXEC:'EXEC',FFPROBE:'FFPROBE',WRITE_FILE:'WRITE_FILE',READ_FILE:'READ_FILE',DELETE_FILE:'DELETE_FILE',RENAME:'RENAME',CREATE_DIR:'CREATE_DIR',LIST_DIR:'LIST_DIR',DELETE_DIR:'DELETE_DIR',ERROR:'ERROR',DOWNLOAD:'DOWNLOAD',PROGRESS:'PROGRESS',LOG:'LOG',MOUNT:'MOUNT',UNMOUNT:'UNMOUNT'};
 let ffmpeg;
 
-async function load({coreURL:_coreURL,wasmURL:_wasmURL,workerURL:_workerURL}={}){
+async function load(){
   const first=!ffmpeg;
   try{
-    if(!_coreURL)_coreURL=CORE_URL;
-    importScripts(_coreURL);
-  }catch(_){
-    if(!_coreURL)_coreURL=CORE_URL;
-    const mod=await import(_coreURL);
-    self.createFFmpegCore=mod.default;
-    if(!self.createFFmpegCore)throw new Error('failed to import ffmpeg-core.js');
+    importScripts(CORE_URL);
+  }catch(e){
+    throw new Error(`failed to import ffmpeg-core.js: ${e?.message||e}`);
   }
-  const coreURL=_coreURL;
-  const wasmURL=_wasmURL||_coreURL.replace(/\.js$/g,'.wasm');
-  const workerURL=_workerURL||_coreURL.replace(/\.js$/g,'.worker.js');
-  ffmpeg=await self.createFFmpegCore({mainScriptUrlOrBlob:`${coreURL}#${btoa(JSON.stringify({wasmURL,workerURL}))}`});
+  if(!self.createFFmpegCore)throw new Error('failed to import ffmpeg-core.js');
+  const runtime={wasmURL:WASM_URL};
+  ffmpeg=await self.createFFmpegCore({mainScriptUrlOrBlob:`${CORE_URL}#${btoa(JSON.stringify(runtime))}`});
   ffmpeg.setLogger(data=>self.postMessage({type:T.LOG,data}));
   ffmpeg.setProgress(data=>self.postMessage({type:T.PROGRESS,data}));
   return first;
