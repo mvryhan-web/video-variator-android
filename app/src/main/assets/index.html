@@ -16,10 +16,15 @@
 
   <section class="card">
     <div class="privacy">● Видео обрабатывается локально на телефоне.</div>
-    <label class="picker">
-      <input id="fileInput" type="file" accept="video/*" multiple hidden>
-      <b>＋ Выбрать видео</b><small>Можно выбрать одно или несколько видео</small>
-    </label>
+    <div class="pickerGrid">
+      <label class="picker">
+        <input id="fileInput" type="file" accept="video/*" multiple hidden>
+        <b>＋ Выбрать видео</b><small>Одно или несколько видео</small>
+      </label>
+      <button id="folderBtn" class="picker folderPicker" type="button">
+        <b>▣ Выбрать папку</b><small>Пакетная обработка всех видео</small>
+      </button>
+    </div>
     <div id="fileSummary" class="muted">Файлы ещё не выбраны.</div>
   </section>
 
@@ -57,5 +62,6 @@
 <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.15/dist/umd/ffmpeg.js"></script>
 <script src="bootstrap.js"></script>
 <script src="app.js"></script>
+<script src="folder.js"></script>
 </body>
 </html>
