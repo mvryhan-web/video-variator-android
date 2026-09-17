@@ -1,8 +1,19 @@
 (() => {
+  let apiBase='';
   try{
     const nativeBase=window.AndroidBridge?.getApiBase?.();
-    if(nativeBase&&String(nativeBase).startsWith('https://'))window.VV_API_BASE=String(nativeBase).replace(/\/$/,'');
+    if(nativeBase&&String(nativeBase).startsWith('https://')){
+      apiBase=String(nativeBase).replace(/\/$/,'');
+      window.VV_API_BASE=apiBase;
+    }
   }catch(_){ }
+
+  if(!window.FFmpegWASM?.FFmpeg){
+    const runtimeBase=(location.protocol==='https:'||location.protocol==='http:')
+      ? location.origin
+      : (apiBase||window.VV_API_BASE||'https://video-variator-android.onrender.com');
+    document.write(`<script src="${String(runtimeBase).replace(/\/$/,'')}/vendor/ffmpeg/ffmpeg.js"><\/script>`);
+  }
 
   const style=document.createElement('link');style.rel='stylesheet';style.href='v5.css';document.head.appendChild(style);
   const icon=document.createElement('link');icon.rel='icon';icon.href='icon.svg';document.head.appendChild(icon);
