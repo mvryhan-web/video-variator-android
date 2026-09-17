@@ -15,8 +15,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: package.json
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Check server syntax
@@ -25,7 +23,12 @@ jobs:
           node --check server/db.js
       - name: Check PWA syntax
         run: |
-          node --check app/src/main/assets/app.js
+          node --check app/src/main/assets/app-v3.js
           node --check app/src/main/assets/video-core.js
           node --check app/src/main/assets/folder.js
+          node --check app/src/main/assets/billing-v3.js
           node --check app/src/main/assets/sw.js
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Cross-browser tests
+        run: npm run test:browsers
