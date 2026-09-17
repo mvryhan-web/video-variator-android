@@ -29,13 +29,24 @@ test('serves the FFmpeg core from same-origin',async({request})=>{
   }
 });
 
-test('trial uses Gentle 720p and locks premium variation counts',async({page})=>{
+test('trial keeps Gentle mode but unlocks 720p 1080p and 4K',async({page})=>{
   await expect(page.locator('#folderBtn')).toHaveCount(0);
   await expect(page.locator('#mode')).toHaveValue('gentle');
-  await expect(page.locator('#quality')).toHaveValue('720');
-  await expect(page.locator('#quality')).toBeDisabled();
   await expect(page.locator('#mode option[value="balanced"]')).toHaveAttribute('disabled','');
   await expect(page.locator('#mode option[value="dynamic"]')).toHaveAttribute('disabled','');
+
+  const quality=page.locator('#quality');
+  await expect(quality).toBeEnabled();
+  await expect(quality.locator('option[value="720"]')).not.toHaveAttribute('disabled','');
+  await expect(quality.locator('option[value="1080"]')).not.toHaveAttribute('disabled','');
+  await expect(quality.locator('option[value="2160"]')).not.toHaveAttribute('disabled','');
+  await quality.selectOption('1080');
+  await expect(quality).toHaveValue('1080');
+  await quality.selectOption('2160');
+  await expect(quality).toHaveValue('2160');
+  await quality.selectOption('720');
+  await expect(quality).toHaveValue('720');
+
   await expect(page.locator('#variantCount option[value="10"]')).toHaveAttribute('disabled','');
   await expect(page.locator('#variantCount option[value="15"]')).toHaveAttribute('disabled','');
 });
