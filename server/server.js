@@ -11,6 +11,11 @@ import {
 
 const app=express(),port=Number(process.env.PORT||3000),isProduction=process.env.NODE_ENV==='production';
 app.set('trust proxy',1);
+const __dirname=path.dirname(fileURLToPath(import.meta.url));
+const rootDir=path.resolve(__dirname,'..');
+const staticDir=path.join(rootDir,'app','src','main','assets');
+const ffmpegDist=path.join(rootDir,'node_modules','@ffmpeg','ffmpeg','dist','umd');
+const ffmpegCoreDist=path.join(rootDir,'node_modules','@ffmpeg','core','dist','umd');
 const renderUrl=process.env.RENDER_EXTERNAL_HOSTNAME?`https://${process.env.RENDER_EXTERNAL_HOSTNAME}`:'';
 const appUrl=(process.env.APP_URL||process.env.RENDER_EXTERNAL_URL||renderUrl||`http://localhost:${port}`).replace(/\/$/,'');
 const jwtSecret=process.env.APP_JWT_SECRET||'';
@@ -32,9 +37,13 @@ app.use((req,res,next)=>{
   res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','DENY');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=(), payment=(self)');res.setHeader('Cross-Origin-Opener-Policy','same-origin-allow-popups');
   res.setHeader('X-Video-Processing','local-only');
-  res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com https://unpkg.com blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' data: https:; connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://accounts.google.com https://www.googleapis.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://js.stripe.com https://checkout.stripe.com; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://accounts.google.com https://appleid.apple.com https://checkout.stripe.com");
+  res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' data: https:; connect-src 'self' https://accounts.google.com https://www.googleapis.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://js.stripe.com https://checkout.stripe.com; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://accounts.google.com https://appleid.apple.com https://checkout.stripe.com");
   next();
 });
+
+app.get('/vendor/ffmpeg/ffmpeg.js',(req,res)=>{res.setHeader('Cache-Control','public,max-age=31536000,immutable');res.type('application/javascript').sendFile(path.join(ffmpegDist,'ffmpeg.js'));});
+app.get('/vendor/ffmpeg/ffmpeg-core.js',(req,res)=>{res.setHeader('Cache-Control','public,max-age=31536000,immutable');res.type('application/javascript').sendFile(path.join(ffmpegCoreDist,'ffmpeg-core.js'));});
+app.get('/vendor/ffmpeg/ffmpeg-core.wasm',(req,res)=>{res.setHeader('Cache-Control','public,max-age=31536000,immutable');res.type('application/wasm').sendFile(path.join(ffmpegCoreDist,'ffmpeg-core.wasm'));});
 
 app.use((req,res,next)=>{
   const configured=(process.env.CORS_ORIGIN||sameOriginFallback()).split(',').map(x=>x.trim()).filter(Boolean),origin=req.headers.origin;
@@ -65,7 +74,7 @@ app.use(express.json({limit:'1mb'}));
 async function signAppToken(user){requireServerConfig();const key=new TextEncoder().encode(jwtSecret);return new SignJWT({email:user.email||'',name:user.name||''}).setProtectedHeader({alg:'HS256'}).setSubject(user.id).setIssuer('video-variator').setAudience('video-variator-client').setIssuedAt().setExpirationTime('7d').sign(key);}
 async function auth(req,res,next){try{requireServerConfig();const token=(req.headers.authorization||'').replace(/^Bearer\s+/i,'');if(!token)return res.status(401).json({error:'AUTH_REQUIRED'});const key=new TextEncoder().encode(jwtSecret),{payload}=await jwtVerify(token,key,{issuer:'video-variator',audience:'video-variator-client'}),user=await getUser(payload.sub);if(!user)return res.status(401).json({error:'USER_NOT_FOUND'});req.user=user;next();}catch(_){res.status(401).json({error:'INVALID_SESSION'});}}
 
-app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',https:req.secure||!isProduction,videoProcessing:'local-only',appUrl,time:new Date().toISOString()}));
+app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',https:req.secure||!isProduction,videoProcessing:'local-only',ffmpegRuntime:'same-origin',appUrl,time:new Date().toISOString()}));
 app.get('/api/version',(req,res)=>res.json({webVersion:process.env.WEB_VERSION||'5.0.0',androidVersion:process.env.ANDROID_VERSION||'5.0.0',androidVersionCode:Number(process.env.ANDROID_VERSION_CODE||5),latestApkUrl:process.env.LATEST_APK_URL||'https://github.com/mvryhan-web/video-variator-android/releases/download/latest/VideoUniquifier.apk'}));
 app.get('/api/config',(req,res)=>res.json({
   googleClientId:process.env.GOOGLE_CLIENT_ID||'',appleClientId:process.env.APPLE_CLIENT_ID||'',appleRedirectUri:process.env.APPLE_REDIRECT_URI||'',billingConfigured:!!(stripe&&plans.basic.priceId&&plans.pro.priceId&&plans.business.priceId),
@@ -87,8 +96,7 @@ app.post('/api/billing/checkout',auth,async(req,res)=>{try{if(publicUser(req.use
 app.post('/api/billing/portal',auth,async(req,res)=>{try{if(publicUser(req.user)?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});if(!stripe||!req.user.stripe_customer_id)return res.status(400).json({error:'BILLING_PORTAL_UNAVAILABLE'});const session=await stripe.billingPortal.sessions.create({customer:req.user.stripe_customer_id,return_url:`${appUrl}/`});res.json({url:session.url});}catch(e){console.error('[portal]',e);res.status(500).json({error:'BILLING_PORTAL_FAILED'});}});
 app.post('/api/billing/cancel',auth,async(req,res)=>{try{if(publicUser(req.user)?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});if(!stripe||!req.user.stripe_subscription_id)return res.status(400).json({error:'NO_ACTIVE_SUBSCRIPTION'});const sub=await stripe.subscriptions.update(req.user.stripe_subscription_id,{cancel_at_period_end:true});await updateSubscriptionByStripeId({subscriptionId:sub.id,status:sub.status,currentPeriodEnd:fromUnix(sub.current_period_end)});res.json({ok:true,cancelAtPeriodEnd:!!sub.cancel_at_period_end,currentPeriodEnd:fromUnix(sub.current_period_end)});}catch(e){console.error('[cancel]',e);res.status(500).json({error:'SUBSCRIPTION_CANCEL_FAILED'});}});
 
-const __dirname=path.dirname(fileURLToPath(import.meta.url)),staticDir=path.resolve(__dirname,'../app/src/main/assets');
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
-app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
+app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
 
 await initDb();app.listen(port,()=>console.log(`Video Uniquifier running on ${appUrl}`));
