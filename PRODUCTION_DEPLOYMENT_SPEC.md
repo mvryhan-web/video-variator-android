@@ -71,7 +71,33 @@ Free trial:
 - Trial is counted by source videos, not seconds.
 - Trial access uses Gentle mode and 720p.
 
-## 4. Processing and saving UX
+## 4. Administrator entitlement
+
+A designated administrator Google account must receive unrestricted premium access.
+
+Security requirements:
+- Administrator access is granted only after a valid Google ID token has been verified server-side.
+- The server compares the verified Google email with the production `ADMIN_EMAIL` secret/environment value.
+- Do not expose the administrator Gmail address in client-side JavaScript, APK resources, public UI, or committed source files.
+- The designated administrator receives Business-level functionality, all processing modes, 4K, both aspect ratios, and unlimited processing without credit deduction.
+- Administrator status must be returned by `/api/me` and enforced by server-side usage logic, not only by UI state.
+- Billing checkout/cancellation controls are not required for the administrator entitlement.
+- Production deployment must set `ADMIN_EMAIL` to the designated administrator Gmail account supplied by the owner.
+
+## 5. Local-only processing architecture
+
+All actual video transformation and generated video content must execute locally using the user's device resources.
+
+Architecture requirements:
+- Browser/PWA processing runs in the client using the local FFmpeg/WebAssembly engine.
+- Android processing runs inside the installed application/WebView and uses device CPU, memory, and local storage.
+- Raw source videos must not be uploaded to the application backend for processing, authentication, billing, analytics, or account management.
+- The backend exposes metadata/account APIs only and rejects raw `video/*` and multipart video uploads.
+- Only required metadata may sync: account identity, subscription status, credit usage, history metadata, analytics counters, and non-sensitive error/reliability events.
+- Completed Android files save locally and automatically; the user is not asked to choose an output folder.
+- Browser/PWA downloads start automatically subject to browser download-permission behavior.
+
+## 6. Processing and saving UX
 
 - Do not show a folder-selection control for output saving.
 - Android output files save automatically to the application’s configured Downloads/VideoVariator location.
@@ -79,7 +105,7 @@ Free trial:
 - The user-facing hero phrase is exactly: `Уникализирай своё старое видео`.
 - Do not expose internal micro-editing, pitch, audio variation, FFmpeg settings, or other implementation details in the normal UI.
 
-## 5. HTTPS and privacy
+## 7. HTTPS and privacy
 
 Production must use HTTPS only.
 - Redirect HTTP to HTTPS in production.
@@ -88,12 +114,12 @@ Production must use HTTPS only.
 - Restrict CORS to the production origin; do not use wildcard CORS in production.
 - Use secure server-side session verification and short, revocable application sessions where practical.
 - Never store Stripe card details. Stripe Checkout/Portal handles payment data.
-- Raw source/output videos are intended to be processed locally and must not be uploaded for authentication, billing, or analytics.
+- Raw source/output videos are processed locally and must not be uploaded for authentication, billing, analytics, or content generation.
 - Store only required account, subscription, usage, reliability, and history metadata.
 - Production database access must use TLS and least-privilege credentials.
 - Secrets must live in the hosting platform secret manager / environment configuration, never in source control.
 
-## 6. Dashboard, analytics, errors, and FAQ
+## 8. Dashboard, analytics, errors, and FAQ
 
 Dashboard must show:
 - current plan
@@ -129,7 +155,7 @@ FAQ must clearly explain:
 - first-purchase discount terms
 - what happens when credits are exhausted
 
-## 7. Mobile and browser compatibility
+## 9. Mobile and browser compatibility
 
 Maintain responsive mobile-first behavior for Android, iOS browsers/PWA, tablets, and desktop browsers.
 
@@ -141,7 +167,7 @@ Automated browser CI should cover:
 
 Because media codecs/WebAssembly limits differ by OS/browser/device, production QA must include representative physical-device tests before launch.
 
-## 8. Update strategy
+## 10. Update strategy
 
 ### PWA/web application
 - Service worker uses a network-first/update-aware strategy.
@@ -156,13 +182,14 @@ Android does not allow an ordinary sideloaded APK to silently install arbitrary 
 
 All Android updates must use the same application ID and the same production signing key. Never ship production updates with changing debug signing keys.
 
-## 9. Release gate
+## 11. Release gate
 
 Before production launch verify:
 - production HTTPS domain live
 - PostgreSQL/TLS configured
 - production Google OAuth configured
 - production Apple Sign in configured
+- designated administrator Gmail configured only as `ADMIN_EMAIL` production secret
 - Stripe live Products/Prices mapped to Basic/Pro/Business environment variables
 - Stripe webhook signature secret configured
 - first-purchase coupon configured if offered
