@@ -1,30 +1,157 @@
-/* Video Uniquifier v5 */
+/* Video Uniquifier v5 — professional mobile polish */
 .workspace > .sectionHead > div { display:none; }
 .workspace > .sectionHead { justify-content:flex-end; min-height:28px; }
 .picker small { display:none !important; }
-.topbarLeft { display:flex; align-items:center; gap:8px; min-width:0; }
-#backBtn { white-space:nowrap; }
-#backBtn[hidden] { display:none !important; }
-.connectionBadge { display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border:1px solid var(--line,#24324b); border-radius:999px; font-size:12px; color:var(--muted,#9ba8bd); }
-.connectionBadge::before { content:''; width:7px; height:7px; border-radius:50%; background:#36d98a; box-shadow:0 0 10px rgba(54,217,138,.45); }
-.connectionBadge.offline::before { background:#ff6b7a; box-shadow:none; }
-.readyCard { align-items:flex-start; }
-.readyCard > div:nth-child(2) { flex:1; min-width:0; }
-.readyDownloads { width:100%; max-width:100%; min-width:0; display:grid; gap:9px; margin-top:14px; grid-column:1/-1; overflow:hidden; }
-.readyDownloadRow { width:100%; max-width:100%; min-width:0; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:12px; padding:11px 12px; border:1px solid var(--line,#24324b); border-radius:12px; background:rgba(255,255,255,.025); overflow:hidden; }
-.readyDownloadInfo { min-width:0; max-width:100%; overflow:hidden; }
-.readyDownloadInfo b { display:block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
-.readyDownloadInfo small { color:var(--muted,#9ba8bd); }
-.readyDownloadRow .primaryBtn { flex:0 0 auto; max-width:100%; }
-.variantLockNote { margin-top:7px; color:var(--muted,#9ba8bd); font-size:12px; }
-.authSetupStatus { margin-top:8px; padding:10px 12px; border-radius:10px; border:1px solid var(--line,#24324b); color:var(--muted,#9ba8bd); font-size:12px; line-height:1.45; }
-.versionLine { margin-top:10px; color:var(--muted,#9ba8bd); font-size:12px; }
-@media (max-width:720px){
-  .topbar { gap:8px; }
-  .topbarLeft { gap:5px; }
-  #backBtn { padding:8px 10px; font-size:12px; }
-  .connectionBadge { display:none; }
-  .readyDownloadRow { grid-template-columns:1fr; align-items:stretch; }
-  .readyDownloadInfo b { white-space:normal; overflow-wrap:anywhere; word-break:break-word; text-overflow:clip; }
-  .readyDownloadRow .primaryBtn { width:100%; justify-self:stretch; }
+
+/* Hard stop for accidental horizontal overflow on mobile/WebView. */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+body{min-width:0}
+.shell,.main,.view,.card,.topbar,.pageSection,.historyList,.analyticsGrid,.profileGrid,.pricingGrid{min-width:0;max-width:100%}
+.main{box-sizing:border-box}
+img,video,canvas,svg{max-width:100%;height:auto}
+button,select,input{max-width:100%;box-sizing:border-box}
+
+/* Consistent premium surfaces. */
+.card{border-radius:18px}
+.analyticsCard,.profileCard,#analyticsView>section.card,.privacyPanel{padding:20px}
+.analyticsCard,.profileCard{min-width:0;overflow:hidden}
+.analyticsCard{display:flex;flex-direction:column;justify-content:center;min-height:138px}
+.analyticsLabel{font-size:12px;letter-spacing:.01em;color:#96a5bc}
+.analyticsValue{font-size:36px;line-height:1;font-weight:800;margin:10px 0 7px;letter-spacing:-.03em}
+.metricSub{margin-top:0;color:#8694aa;font-size:12px;line-height:1.4}
+#analyticsView>section.card h3{margin:0 0 9px;font-size:18px}
+#analyticsView>section.card p{font-size:14px;line-height:1.55;margin:0}
+.browserBadges{gap:7px;margin-top:16px}
+.browserBadge{font-size:11px;line-height:1;padding:8px 10px;border-radius:999px;white-space:nowrap}
+
+/* Header hierarchy. */
+.topbarLeft{display:flex;align-items:center;gap:8px;min-width:0}
+.topbar>*{min-width:0}
+.topTitle{min-width:0}
+.topTitle .eyebrow{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#backBtn{white-space:nowrap}
+#backBtn[hidden]{display:none!important}
+.accountActions{min-width:0}
+.accountActions .ghostBtn{white-space:nowrap}
+.connectionBadge{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--line,#24324b);border-radius:999px;font-size:12px;color:var(--muted,#9ba8bd)}
+.connectionBadge::before{content:'';width:7px;height:7px;border-radius:50%;background:#36d98a;box-shadow:0 0 10px rgba(54,217,138,.45)}
+.connectionBadge.offline::before{background:#ff6b7a;box-shadow:none}
+
+/* History — prevent long file names from widening the whole page. */
+.historyItem{min-width:0;overflow:hidden;border-radius:16px}
+.historyItem>div:first-child{min-width:0;overflow:hidden}
+.historyItem h4{max-width:100%;margin:0 0 6px;line-height:1.35;overflow:hidden;overflow-wrap:anywhere;word-break:break-word;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.historyMeta{max-width:100%;line-height:1.45;overflow-wrap:anywhere}
+.historyBadge{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;align-self:start}
+
+/* Results / downloads. */
+.readyCard{align-items:flex-start;overflow:hidden}
+.readyCard>div:nth-child(2){min-width:0}
+.readyCard h3{line-height:1.25}
+.readyCard p{line-height:1.45}
+.readyDownloads{width:100%;max-width:100%;min-width:0;display:grid;gap:10px;margin-top:14px;grid-column:1/-1;overflow:hidden}
+.readyDownloadRow{width:100%;max-width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px;border:1px solid var(--line,#24324b);border-radius:13px;background:rgba(255,255,255,.025);overflow:hidden}
+.readyDownloadInfo{min-width:0;max-width:100%;overflow:hidden}
+.readyDownloadInfo b{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;line-height:1.35}
+.readyDownloadInfo small{display:block;margin-top:4px;color:var(--muted,#9ba8bd);font-size:11px;line-height:1.35;overflow-wrap:anywhere}
+.readyDownloadRow .primaryBtn{flex:0 0 auto;max-width:100%;min-height:40px;padding:10px 14px}
+
+/* Profile & settings. */
+.profileCard h3,.privacyPanel h3{margin:0 0 13px;font-size:18px;line-height:1.25}
+.profileRows{margin-top:0}
+.profileRow{min-width:0;display:grid;grid-template-columns:minmax(72px,.7fr) minmax(0,1.3fr);align-items:center;gap:12px;padding:13px 0}
+.profileRow span{min-width:0}
+.profileRow b{min-width:0;text-align:right;overflow-wrap:anywhere}
+.profileCard p{font-size:14px;line-height:1.55}
+.profileActionRow{gap:9px}
+.profileActionRow button{min-height:44px}
+.profileActionRow button:disabled{opacity:.38;filter:saturate(.65);cursor:not-allowed}
+.privacyPanel{margin-top:14px}
+.privacyPoint{line-height:1.45}
+.versionLine{margin-top:12px;color:var(--muted,#9ba8bd);font-size:11px}
+
+/* Small utility states. */
+.variantLockNote{margin-top:7px;color:var(--muted,#9ba8bd);font-size:12px;line-height:1.4}
+.authSetupStatus{margin-top:8px;padding:10px 12px;border-radius:10px;border:1px solid var(--line,#24324b);color:var(--muted,#9ba8bd);font-size:12px;line-height:1.45}
+
+@media(max-width:900px){
+  .shell{display:block;width:100%;max-width:100%}
+  .main{width:100%;max-width:100%;margin:0;padding:0 16px 38px}
+  .view{width:100%;max-width:100%}
+  .card{width:100%;max-width:100%}
+}
+
+@media(max-width:720px){
+  /* Compact, balanced app bar: menu | back | title | sign-in. */
+  .topbar{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;gap:7px;min-height:70px;margin-bottom:20px}
+  .topbarLeft{gap:5px}
+  #menuBtn{width:42px;height:42px;padding:0;display:grid;place-items:center;border-radius:12px;font-size:22px}
+  #backBtn{height:42px;padding:0 11px;font-size:12px;border-radius:12px}
+  .topTitle h1{margin:2px 0 0;font-size:18px;line-height:1.16;letter-spacing:-.01em;overflow-wrap:anywhere}
+  .topTitle .eyebrow{font-size:8px;letter-spacing:.14em;color:#7788a4}
+  .accountActions{justify-self:end}
+  .accountActions .ghostBtn{height:42px;padding:0 11px;border-radius:12px;font-size:13px;line-height:1}
+  .connectionBadge{display:none}
+
+  .pageSection{margin:2px 0 18px}
+  .pageSection h2,.pricingHero h2{font-size:27px;line-height:1.08;letter-spacing:-.025em;margin-bottom:8px}
+  .pageSection p,.pricingHero p{font-size:14px;line-height:1.55}
+
+  .analyticsGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .analyticsCard{padding:16px;min-height:118px;border-radius:16px}
+  .analyticsCard:nth-child(3){grid-column:1/-1;min-height:108px}
+  .analyticsValue{font-size:32px;margin:8px 0 6px}
+  #analyticsView>section.card{padding:17px;border-radius:16px;margin-top:10px}
+  .browserBadges{gap:6px}
+  .browserBadge{font-size:10px;padding:7px 9px}
+
+  .historyList{gap:9px}
+  .historyItem{grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:15px;border-radius:16px}
+  .historyItem h4{font-size:14px}
+  .historyMeta{font-size:11px}
+  .historyBadge{font-size:10px;padding:6px 8px}
+
+  .readyCard{grid-template-columns:36px minmax(0,1fr);gap:12px;padding:17px;border-radius:16px}
+  .readyIcon{width:36px;height:36px}
+  .readyCard h3{font-size:18px;margin-bottom:4px}
+  .readyCard p{font-size:13px}
+  .readyDownloadRow{grid-template-columns:1fr;align-items:stretch;padding:11px}
+  .readyDownloadInfo b{white-space:normal;overflow-wrap:anywhere;word-break:break-word;text-overflow:clip;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+  .readyDownloadRow .primaryBtn{width:100%;justify-self:stretch}
+
+  .profileGrid{gap:10px}
+  .profileCard,.privacyPanel{padding:17px;border-radius:16px}
+  .profileRow{grid-template-columns:minmax(70px,.8fr) minmax(0,1.2fr);padding:12px 0}
+  .profileRow span{font-size:13px}
+  .profileRow b{font-size:13px}
+  .profileActionRow{display:grid;grid-template-columns:1fr;gap:8px;margin-top:14px}
+  .profileActionRow button{width:100%;min-width:0}
+  .ghostBtn.danger{background:rgba(91,51,64,.08)}
+
+  .sectionHead.pageSection{gap:10px}
+  .sectionHead.pageSection .ghostBtn{min-height:40px;padding:9px 12px;font-size:12px}
+}
+
+@media(max-width:440px){
+  .main{padding-left:13px;padding-right:13px}
+  .topbar{grid-template-columns:auto auto minmax(0,1fr) auto;gap:5px}
+  #menuBtn{width:40px;height:40px}
+  #backBtn{height:40px;padding:0 9px}
+  .accountActions .ghostBtn{height:40px;padding:0 9px;font-size:12px}
+  .topTitle h1{font-size:16px}
+  .topTitle .eyebrow{font-size:7px}
+  .pageSection h2,.pricingHero h2{font-size:25px}
+  .analyticsGrid{grid-template-columns:1fr 1fr}
+  .analyticsCard{padding:14px}
+  .analyticsValue{font-size:29px}
+  .historyItem{padding:13px}
+}
+
+@media(max-width:370px){
+  .topTitle .eyebrow{display:none}
+  #backBtn{font-size:0;padding:0;width:40px}
+  #backBtn::after{content:'←';font-size:18px}
+  .accountActions .ghostBtn{font-size:11px;padding:0 8px}
+  .analyticsGrid{grid-template-columns:1fr}
+  .analyticsCard:nth-child(3){grid-column:auto}
 }
