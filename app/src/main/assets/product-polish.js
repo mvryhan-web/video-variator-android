@@ -10,12 +10,12 @@
     en:{
       heroTitle:'Create multiple fresh versions from one video.',
       heroText:'Upload once, choose a processing style, and generate ready-to-download variations automatically.',
-      free:'2 free videos',noCard:'No card required',local:'Video stays on your device',tryFree:'Try it free',
+      free:'2 free videos',noCard:'No card required',local:'Video stays on your device',tryFree:'Try it free',plans:'View plans',
       valueTitle:'Built for fast, repeatable video variation',valueText:'Automatic visual, audio and file-level adjustments are combined for each output while your source video is processed locally on your device.',
-      frame:'Frame & crop',motion:'Motion',color:'Color',audio:'Audio & file',
-      uploadNote:'Private by design — video processing runs locally on your device.',
+      frame:'Frame & crop',motion:'Motion',color:'Color',audio:'Audio & file',styleTitle:'One source. Different processing styles.',original:'Original',gentle:'Gentle',balance:'Balance',dynamic:'Dynamic',
+      uploadNote:'Private by design — video processing runs locally on your device.',balancePreview:'First free video: Balance preview available at 720p.',
       plansTitle:'Choose the plan that matches your workflow',plansText:'Simple monthly plans. Credits are based on finished output duration: 1 second = 1 credit.',
-      stripe:'Secure checkout by Stripe',cancel:'Manage or cancel from Profile',localShort:'Local video processing',recommended:'Recommended',
+      stripe:'Cards & supported wallets via Stripe',cancel:'Manage or cancel from Profile',localShort:'Local video processing',recommended:'Recommended',
       resultTitle:'Your variation is ready. Want more from every upload?',resultText:'Pro unlocks up to 10 variations per video, Balance mode and 1080p output.',resultCta:'Unlock Pro',
       trialDone:'Free trial complete',trialTitle:'Keep creating without interruption',trialText:'Choose a plan and continue straight to secure checkout.',compare:'Compare all plan details',
       faq1q:'Why does Video Uniquifier process locally?',faq1a:'Your video processing is designed to run on your device. Account, billing, usage and history metadata can sync securely over HTTPS, but raw video is not required for account or billing operations.',
@@ -25,12 +25,12 @@
     fr:{
       heroTitle:'Créez plusieurs nouvelles versions à partir d’une seule vidéo.',
       heroText:'Importez une fois, choisissez un style de traitement et générez automatiquement des variantes prêtes à télécharger.',
-      free:'2 vidéos gratuites',noCard:'Aucune carte requise',local:'La vidéo reste sur votre appareil',tryFree:'Essayer gratuitement',
+      free:'2 vidéos gratuites',noCard:'Aucune carte requise',local:'La vidéo reste sur votre appareil',tryFree:'Essayer gratuitement',plans:'Voir les offres',
       valueTitle:'Conçu pour créer rapidement des variantes vidéo',valueText:'Des ajustements visuels, audio et techniques sont combinés automatiquement pour chaque sortie, tandis que la vidéo source est traitée localement sur votre appareil.',
-      frame:'Cadre & recadrage',motion:'Mouvement',color:'Couleur',audio:'Audio & fichier',
-      uploadNote:'Confidentiel par conception — le traitement vidéo s’effectue localement sur votre appareil.',
+      frame:'Cadre & recadrage',motion:'Mouvement',color:'Couleur',audio:'Audio & fichier',styleTitle:'Une source. Plusieurs styles de traitement.',original:'Original',gentle:'Gentle',balance:'Balance',dynamic:'Dynamic',
+      uploadNote:'Confidentiel par conception — le traitement vidéo s’effectue localement sur votre appareil.',balancePreview:'Première vidéo gratuite : aperçu Balance disponible en 720p.',
       plansTitle:'Choisissez l’offre adaptée à votre rythme',plansText:'Abonnements mensuels simples. Les crédits dépendent de la durée finale : 1 seconde = 1 crédit.',
-      stripe:'Paiement sécurisé par Stripe',cancel:'Gérez ou annulez depuis Profil',localShort:'Traitement vidéo local',recommended:'Recommandé',
+      stripe:'Cartes et portefeuilles compatibles via Stripe',cancel:'Gérez ou annulez depuis Profil',localShort:'Traitement vidéo local',recommended:'Recommandé',
       resultTitle:'Votre variante est prête. Vous voulez plus à chaque import ?',resultText:'Pro débloque jusqu’à 10 variantes par vidéo, le mode Balance et la sortie 1080p.',resultCta:'Passer à Pro',
       trialDone:'Essai gratuit terminé',trialTitle:'Continuez à créer sans interruption',trialText:'Choisissez une offre et passez directement au paiement sécurisé.',compare:'Comparer toutes les offres',
       faq1q:'Pourquoi Video Uniquifier traite-t-il les vidéos localement ?',faq1a:'Le traitement vidéo est conçu pour s’effectuer sur votre appareil. Les données de compte, facturation, usage et historique peuvent être synchronisées via HTTPS, sans nécessiter l’envoi de la vidéo brute pour la gestion du compte ou de la facturation.',
@@ -40,12 +40,12 @@
     ru:{
       heroTitle:'Создавайте несколько новых версий из одного видео.',
       heroText:'Загрузите видео один раз, выберите стиль обработки и автоматически получите готовые варианты для скачивания.',
-      free:'2 видео бесплатно',noCard:'Карта не нужна',local:'Видео остаётся на устройстве',tryFree:'Попробовать бесплатно',
+      free:'2 видео бесплатно',noCard:'Карта не нужна',local:'Видео остаётся на устройстве',tryFree:'Попробовать бесплатно',plans:'Посмотреть тарифы',
       valueTitle:'Быстрая и повторяемая вариативная обработка видео',valueText:'Для каждого результата автоматически комбинируются визуальные, аудио и технические изменения, а исходное видео обрабатывается локально на вашем устройстве.',
-      frame:'Кадр и обрезка',motion:'Движение',color:'Цвет',audio:'Аудио и файл',
-      uploadNote:'Приватность по умолчанию — видео обрабатывается локально на вашем устройстве.',
+      frame:'Кадр и обрезка',motion:'Движение',color:'Цвет',audio:'Аудио и файл',styleTitle:'Одно видео. Разные стили обработки.',original:'Оригинал',gentle:'Gentle',balance:'Balance',dynamic:'Dynamic',
+      uploadNote:'Приватность по умолчанию — видео обрабатывается локально на вашем устройстве.',balancePreview:'Первое бесплатное видео: можно попробовать Balance в 720p.',
       plansTitle:'Выберите тариф под свой объём работы',plansText:'Простая ежемесячная подписка. Кредиты считаются по длительности готового результата: 1 секунда = 1 кредит.',
-      stripe:'Безопасная оплата через Stripe',cancel:'Управление и отмена в профиле',localShort:'Локальная обработка видео',recommended:'Рекомендуем',
+      stripe:'Карты и поддерживаемые кошельки через Stripe',cancel:'Управление и отмена в профиле',localShort:'Локальная обработка видео',recommended:'Рекомендуем',
       resultTitle:'Вариант готов. Хотите получать больше из каждой загрузки?',resultText:'Pro открывает до 10 вариантов на видео, режим Balance и качество 1080p.',resultCta:'Открыть Pro',
       trialDone:'Пробный период закончился',trialTitle:'Продолжайте без паузы',trialText:'Выберите тариф и сразу переходите к защищённой оплате.',compare:'Сравнить все тарифы',
       faq1q:'Почему Video Uniquifier обрабатывает видео локально?',faq1a:'Обработка видео работает на вашем устройстве. Данные аккаунта, оплаты, использования и истории могут безопасно синхронизироваться по HTTPS, но исходный видеофайл не нужен для операций аккаунта и биллинга.',
@@ -55,12 +55,12 @@
     uk:{
       heroTitle:'Створюйте кілька нових версій з одного відео.',
       heroText:'Завантажте відео один раз, оберіть стиль обробки та автоматично отримайте готові варіанти для завантаження.',
-      free:'2 відео безкоштовно',noCard:'Картка не потрібна',local:'Відео залишається на пристрої',tryFree:'Спробувати безкоштовно',
+      free:'2 відео безкоштовно',noCard:'Картка не потрібна',local:'Відео залишається на пристрої',tryFree:'Спробувати безкоштовно',plans:'Переглянути тарифи',
       valueTitle:'Швидка та повторювана варіативна обробка відео',valueText:'Для кожного результату автоматично комбінуються візуальні, аудіо та технічні зміни, а вихідне відео обробляється локально на вашому пристрої.',
-      frame:'Кадр і обрізка',motion:'Рух',color:'Колір',audio:'Аудіо та файл',
-      uploadNote:'Приватність за замовчуванням — відео обробляється локально на вашому пристрої.',
+      frame:'Кадр і обрізка',motion:'Рух',color:'Колір',audio:'Аудіо та файл',styleTitle:'Одне відео. Різні стилі обробки.',original:'Оригінал',gentle:'Gentle',balance:'Balance',dynamic:'Dynamic',
+      uploadNote:'Приватність за замовчуванням — відео обробляється локально на вашому пристрої.',balancePreview:'Перше безкоштовне відео: можна спробувати Balance у 720p.',
       plansTitle:'Оберіть тариф під свій обсяг роботи',plansText:'Проста щомісячна підписка. Кредити рахуються за тривалістю готового результату: 1 секунда = 1 кредит.',
-      stripe:'Безпечна оплата через Stripe',cancel:'Керування й скасування в профілі',localShort:'Локальна обробка відео',recommended:'Рекомендуємо',
+      stripe:'Картки та підтримувані гаманці через Stripe',cancel:'Керування й скасування в профілі',localShort:'Локальна обробка відео',recommended:'Рекомендуємо',
       resultTitle:'Варіант готовий. Хочете більше з кожного завантаження?',resultText:'Pro відкриває до 10 варіантів на відео, режим Balance та якість 1080p.',resultCta:'Відкрити Pro',
       trialDone:'Пробний період завершено',trialTitle:'Продовжуйте без паузи',trialText:'Оберіть тариф і одразу переходьте до захищеної оплати.',compare:'Порівняти всі тарифи',
       faq1q:'Чому Video Uniquifier обробляє відео локально?',faq1a:'Обробка відео працює на вашому пристрої. Дані акаунта, оплати, використання та історії можуть безпечно синхронізуватися через HTTPS, але вихідний відеофайл не потрібен для операцій акаунта й білінгу.',
@@ -70,22 +70,35 @@
   };
   const tx = copy[locale] || copy.en;
 
+  /* Keep the existing 50 / 100 / 150 adjustment positioning unchanged. */
   const plans = {
-    basic:{name:'Essential',price:'$9',credits:'750',short15:'≈ 50 × 15-sec outputs',short30:'25 × 30-sec outputs',variants:'Up to 5 variations',access:'Gentle · 720p · 9:16 / 16:9',fit:'For occasional creators'},
-    pro:{name:'Pro',price:'$24',credits:'2,250',short15:'≈ 150 × 15-sec outputs',short30:'75 × 30-sec outputs',variants:'Up to 10 variations',access:'Gentle + Balance · 1080p · 9:16 / 16:9',fit:'For regular creators'},
-    business:{name:'Business',price:'$99',credits:'15,000',short15:'≈ 1,000 × 15-sec outputs',short30:'500 × 30-sec outputs',variants:'Up to 15 variations',access:'Gentle + Balance + Dynamic · 4K · 9:16 / 16:9',fit:'For high-volume workflows'}
+    basic:{name:'Essential',price:'$9',credits:'750',short15:'≈ 50 × 15-sec outputs',short30:'25 × 30-sec outputs',micro:'Up to 50 technical micro-adjustment options',variants:'Up to 5 variations',access:'Gentle · 720p · 9:16 / 16:9',fit:'For occasional creators'},
+    pro:{name:'Pro',price:'$24',credits:'2,250',short15:'≈ 150 × 15-sec outputs',short30:'75 × 30-sec outputs',micro:'Up to 100 advanced micro-adjustment options',variants:'Up to 10 variations',access:'Gentle + Balance · 1080p · 9:16 / 16:9',fit:'For regular creators'},
+    business:{name:'Business',price:'$99',credits:'15,000',short15:'≈ 1,000 × 15-sec outputs',short30:'500 × 30-sec outputs',micro:'Up to 150 full-pipeline adjustment options',variants:'Up to 15 variations',access:'Gentle + Balance + Dynamic · 4K · 9:16 / 16:9',fit:'For high-volume workflows'}
   };
 
-  function track(type, data={}){
+  let funnelSyncing=false;
+  function readFunnel(){try{return JSON.parse(localStorage.getItem('vu_funnel')||'[]');}catch(_){return[];}}
+  function writeFunnel(rows){try{localStorage.setItem('vu_funnel',JSON.stringify(rows.slice(-250)));}catch(_){}}
+  async function syncFunnelQueue(){
+    const token=localStorage.getItem('vv_token');if(!token||funnelSyncing)return;
+    funnelSyncing=true;
     try{
-      const key='vu_funnel';
-      const rows=JSON.parse(localStorage.getItem(key)||'[]');
-      rows.push({type,at:new Date().toISOString(),...data});
-      localStorage.setItem(key,JSON.stringify(rows.slice(-200)));
-      const token=localStorage.getItem('vv_token');
-      if(token){
-        fetch('/api/events',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({type:`funnel_${type}`,category:'conversion',message:data.plan||data.source||null}),keepalive:true}).catch(()=>{});
+      const rows=readFunnel();
+      for(const row of rows.filter(r=>!r.sent).slice(0,20)){
+        try{
+          const r=await fetch('/api/events',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({type:`funnel_${row.type}`,category:'conversion',message:row.plan||row.source||null}),keepalive:true});
+          if(r.ok)row.sent=true;
+        }catch(_){break;}
       }
+      writeFunnel(rows);
+    }finally{funnelSyncing=false;}
+  }
+  function track(type,data={}){
+    try{
+      const rows=readFunnel();
+      rows.push({id:`${Date.now()}_${Math.random().toString(36).slice(2,8)}`,type,at:new Date().toISOString(),sent:false,...data});
+      writeFunnel(rows);syncFunnelQueue();
     }catch(_){/* analytics must never block the product */}
   }
 
@@ -95,10 +108,9 @@
     document.querySelector('.navBtn[data-view="plans"]')?.click();
   }
 
-  function choosePlan(id, source='pricing'){
+  function choosePlan(id,source='pricing'){
     const btn=document.querySelector(`.planBtn[data-plan="${id}"]`);
-    track('plan_click',{plan:id,source});
-    if(btn){btn.click();return;}
+    if(btn){btn.dataset.conversionSource=source;btn.click();setTimeout(()=>delete btn.dataset.conversionSource,0);return;}
     goPlans();
   }
 
@@ -117,19 +129,18 @@
     hero.dataset.conversion='1';hero.classList.add('conversionHero');
     const left=hero.firstElementChild;if(!left)return;
     left.classList.add('conversionHeroCopy');
-    left.innerHTML=`<span class="heroKicker">VIDEO UNIQUIFIER</span><h2>${tx.heroTitle}</h2><p>${tx.heroText}</p><div class="heroTrust"><span>✓ ${tx.free}</span><span>✓ ${tx.noCard}</span><span>✓ ${tx.local}</span></div><div class="heroActions"><button type="button" class="primaryBtn heroTryBtn">${tx.tryFree}</button><button type="button" class="ghostBtn heroPlansBtn">Plans</button></div>`;
+    left.innerHTML=`<span class="heroKicker">VIDEO UNIQUIFIER</span><h2>${tx.heroTitle}</h2><p>${tx.heroText}</p><div class="heroTrust"><span>✓ ${tx.free}</span><span>✓ ${tx.noCard}</span><span>✓ ${tx.local}</span></div><div class="heroActions"><button type="button" class="primaryBtn heroTryBtn">${tx.tryFree}</button><button type="button" class="ghostBtn heroPlansBtn">${tx.plans}</button></div>`;
     left.querySelector('.heroTryBtn')?.addEventListener('click',()=>{track('hero_try_free');$('fileInput')?.click();});
     left.querySelector('.heroPlansBtn')?.addEventListener('click',goPlans);
-
     const usage=hero.querySelector('.usageBox');
-    if(usage){usage.insertAdjacentHTML('beforeend','<small class="usageReassurance">No hidden upload step · Processing stays local</small>');}
+    if(usage&&!usage.querySelector('.usageReassurance'))usage.insertAdjacentHTML('beforeend','<small class="usageReassurance">No hidden upload step · Processing stays local</small>');
   }
 
   function addValueProof(){
     const hero=document.querySelector('#dashboardView .hero');
     if(!hero||$('conversionValueProof'))return;
     const block=document.createElement('section');block.id='conversionValueProof';block.className='conversionValueProof card';
-    block.innerHTML=`<div class="valueProofHead"><div><span class="eyebrow">HOW IT HELPS</span><h3>${tx.valueTitle}</h3><p>${tx.valueText}</p></div><button type="button" class="ghostBtn valueProofPlans">See plans</button></div><div class="valueProofGrid"><span><b>01</b>${tx.frame}</span><span><b>02</b>${tx.motion}</span><span><b>03</b>${tx.color}</span><span><b>04</b>${tx.audio}</span></div>`;
+    block.innerHTML=`<div class="valueProofHead"><div><span class="eyebrow">HOW IT HELPS</span><h3>${tx.valueTitle}</h3><p>${tx.valueText}</p></div><button type="button" class="ghostBtn valueProofPlans">${tx.plans}</button></div><div class="valueProofGrid"><span><b>01</b>${tx.frame}</span><span><b>02</b>${tx.motion}</span><span><b>03</b>${tx.color}</span><span><b>04</b>${tx.audio}</span></div><div class="modePreview"><div class="modePreviewTitle">${tx.styleTitle}</div><div class="modePreviewFlow"><article class="previewCard previewOriginal"><i></i><b>${tx.original}</b><small>Source</small></article><span class="previewArrow">→</span><div class="previewOutputs"><article class="previewCard previewGentle"><i></i><b>${tx.gentle}</b><small>Subtle</small></article><article class="previewCard previewBalance"><i></i><b>${tx.balance}</b><small>Stronger</small></article><article class="previewCard previewDynamic"><i></i><b>${tx.dynamic}</b><small>Broadest</small></article></div></div></div>`;
     hero.insertAdjacentElement('afterend',block);
     block.querySelector('.valueProofPlans')?.addEventListener('click',goPlans);
   }
@@ -152,6 +163,28 @@
     qsa('.variantLockNote').forEach(el=>{if(el.textContent.includes('Basic'))el.textContent=el.textContent.replaceAll('Basic','Essential');});
   }
 
+  function syncTrialBalancePreview(){
+    const mode=$('mode'),hint=$('planAccessHint');if(!mode||!hint)return;
+    const plan=($('currentPlan')?.textContent||'').toLowerCase();
+    const trial=plan.includes('trial')||plan.includes('free');
+    const remaining=Number(($('remainingCount')?.textContent||'').replace(/[^0-9.-]/g,''));
+    const fileCount=$('fileInput')?.files?.length||0;
+    const eligible=trial&&remaining===2&&fileCount<=1;
+    const balance=Array.from(mode.options).find(o=>o.value==='balanced');
+    const dynamic=Array.from(mode.options).find(o=>o.value==='dynamic');
+    if(!trial){hint.classList.remove('trialBalancePreview');return;}
+    if(balance)balance.disabled=!eligible;
+    if(dynamic)dynamic.disabled=true;
+    if(!eligible&&mode.value==='balanced')mode.value='gentle';
+    if(eligible){
+      hint.classList.add('trialBalancePreview');
+      if(hint.textContent!==tx.balancePreview)hint.textContent=tx.balancePreview;
+    }else{
+      hint.classList.remove('trialBalancePreview');
+      const fallback='Free trial: Gentle · 720p';if(hint.textContent!==fallback)hint.textContent=fallback;
+    }
+  }
+
   function decoratePricing(){
     const view=$('plansView');if(!view)return;
     const hero=view.querySelector('.pricingHero');
@@ -164,8 +197,7 @@
 
     qsa('.priceCard').forEach(card=>{
       const button=card.querySelector('.planBtn');const id=button?.dataset.plan;const plan=plans[id];if(!plan)return;
-      card.dataset.plan=id;
-      card.classList.toggle('featured',id==='pro');
+      card.dataset.plan=id;card.classList.toggle('featured',id==='pro');
       const oldPopular=card.querySelector('.popular');
       if(id==='pro'){
         if(oldPopular)oldPopular.textContent=tx.recommended;
@@ -178,7 +210,7 @@
       if(button)button.textContent=id==='pro'?'Get Pro':`Get ${plan.name}`;
       let benefits=card.querySelector('.planBenefits');
       if(!benefits){benefits=document.createElement('div');benefits.className='planBenefits';(unit||creditP)?.before(benefits);}
-      benefits.innerHTML=`<span class="planOutputExample"><b>${plan.short15}</b><small>${plan.short30}</small></span><span>✓ ${plan.variants}</span><span>✓ ${plan.access.split(' · ')[0]}</span>`;
+      benefits.innerHTML=`<span class="planOutputExample"><b>${plan.short15}</b><small>${plan.short30}</small></span><span>✓ ${plan.micro}</span><span>✓ ${plan.variants}</span><span>✓ ${plan.access.split(' · ')[0]}</span>`;
     });
 
     const guarantee=view.querySelector('.guarantee');
@@ -204,7 +236,13 @@
       if(summary.textContent.includes('quality'))p.textContent='Essential outputs at 720p, Pro at 1080p and Business at 4K. Both 9:16 and 16:9 are supported.';
       if(summary.textContent.includes('credits work'))p.textContent='1 second of each generated output uses 1 credit. A 15-second source rendered into 2 variations uses about 30 credits because two 15-second outputs are created.';
     });
-    [[tx.faq1q,tx.faq1a,'privacy'],[tx.faq2q,tx.faq2a,'plans']].reverse().forEach(([title,text,key])=>{const d=document.createElement('details');d.className='card';d.dataset.productFaq=key;d.innerHTML=`<summary>${title}</summary><p>${text}</p>`;list.prepend(d);});
+    const extras=[
+      [tx.faq1q,tx.faq1a,'privacy'],
+      [tx.faq2q,tx.faq2a,'plans'],
+      ['What are micro-adjustments?','They are small technical changes across frame and timing, motion, color, audio and file structure. The plan number describes the size of the available adjustment library; each output uses its own combination rather than applying every option at once.','micro'],
+      ['What is the difference between Essential, Pro and Business?','Essential provides up to 50 technical adjustment options and up to 5 variations. Pro expands the library to 100 options and up to 10 variations. Business provides the broadest library with up to 150 options and up to 15 variations.','plan_counts']
+    ];
+    extras.reverse().forEach(([title,text,key])=>{const d=document.createElement('details');d.className='card';d.dataset.productFaq=key;d.innerHTML=`<summary>${title}</summary><p>${text}</p>`;list.prepend(d);});
   }
 
   function makeTrialUpsell(){
@@ -212,7 +250,7 @@
     const box=document.createElement('section');box.id='trialCompleteUpsell';box.className='trialCompleteUpsell';box.hidden=true;
     box.innerHTML=`<span class="pill accent">${tx.trialDone}</span><h3>${tx.trialTitle}</h3><p>${tx.trialText}</p><div class="trialPlanGrid"></div><button type="button" class="ghostBtn trialCompareBtn">${tx.compare}</button>`;
     const grid=box.querySelector('.trialPlanGrid');
-    ['basic','pro','business'].forEach(id=>{const p=plans[id];const b=document.createElement('button');b.type='button';b.className=`trialPlanMini${id==='pro'?' featured':''}`;b.dataset.plan=id;b.innerHTML=`${id==='pro'?`<em>${tx.recommended}</em>`:''}<strong>${p.name}</strong><span>${p.price} / mo</span><small>${p.variants}</small>`;b.addEventListener('click',()=>choosePlan(id,'trial_exhausted'));grid.appendChild(b);});
+    ['basic','pro','business'].forEach(id=>{const p=plans[id];const b=document.createElement('button');b.type='button';b.className=`trialPlanMini${id==='pro'?' featured':''}`;b.dataset.plan=id;b.innerHTML=`${id==='pro'?`<em>${tx.recommended}</em>`:''}<strong>${p.name}</strong><span>${p.price} / mo</span><small>${p.micro.replace('Up to ','')} · ${p.variants}</small>`;b.addEventListener('click',()=>choosePlan(id,'trial_exhausted'));grid.appendChild(b);});
     box.querySelector('.trialCompareBtn')?.addEventListener('click',goPlans);
     workspace.appendChild(box);
   }
@@ -255,27 +293,32 @@
     const remaining=Number(($('remainingCount')?.textContent||'').replace(/[^0-9.-]/g,''));
     const trial=plan.includes('trial')||plan.includes('free');
     const exhausted=trial&&Number.isFinite(remaining)&&remaining<=0;
-    box.hidden=!exhausted;
-    workspace.classList.toggle('trialComplete',exhausted);
-    syncMobileUpgrade();
+    box.hidden=!exhausted;workspace.classList.toggle('trialComplete',exhausted);
+    if(exhausted&&!box.dataset.tracked){box.dataset.tracked='1';track('trial_exhausted');}
+    syncMobileUpgrade();syncTrialBalancePreview();
   }
 
   function installFunnelTracking(){
     if(sessionStorage.getItem('vu_open_tracked')!=='1'){sessionStorage.setItem('vu_open_tracked','1');track('app_open');}
-    $('fileInput')?.addEventListener('change',e=>{if(e.target.files?.length)track('upload_selected',{source:String(e.target.files.length)});});
+    const params=new URLSearchParams(location.search);
+    if(params.get('checkout')==='success'&&sessionStorage.getItem('vu_checkout_success')!=='1'){sessionStorage.setItem('vu_checkout_success','1');track('checkout_success');}
+    if(params.get('checkout')==='cancel'&&sessionStorage.getItem('vu_checkout_cancel')!=='1'){sessionStorage.setItem('vu_checkout_cancel','1');track('checkout_cancel');}
+    $('fileInput')?.addEventListener('change',e=>{if(e.target.files?.length){track('upload_selected',{source:String(e.target.files.length)});syncTrialBalancePreview();}});
+    $('mode')?.addEventListener('change',e=>{if(e.target.value==='balanced'){const plan=($('currentPlan')?.textContent||'').toLowerCase();if(plan.includes('trial')||plan.includes('free'))track('trial_balance_preview_selected');}});
     $('startBtn')?.addEventListener('click',()=>track('processing_start'));
     qsa('.navBtn[data-view="plans"]').forEach(b=>b.addEventListener('click',()=>track('plans_view',{source:'nav'})));
-    qsa('.planBtn').forEach(b=>b.addEventListener('click',()=>track('plan_click',{plan:b.dataset.plan||'',source:'pricing'})));
+    qsa('.planBtn').forEach(b=>b.addEventListener('click',()=>{const source=b.dataset.conversionSource||'pricing';const plan=b.dataset.plan||'';track('plan_click',{plan,source});track('checkout_open',{plan,source});}));
     const result=$('resultsCard');
     if(result)new MutationObserver(()=>{if(!result.hidden){track('processing_success');syncResultUpsell();syncMobileUpgrade();}}).observe(result,{attributes:true,attributeFilter:['hidden']});
+    let attempts=0;const timer=setInterval(()=>{syncFunnelQueue();if(++attempts>=12)clearInterval(timer);},5000);
   }
 
   function observeDisplay(){
-    ['currentPlan','profilePlan','planLabel','planAccessHint','remainingCount'].forEach(id=>{const el=$(id);if(!el)return;new MutationObserver(()=>{renameBasicDisplay();syncTrialUpsell();syncResultUpsell();}).observe(el,{childList:true,characterData:true,subtree:true});});
+    ['currentPlan','profilePlan','planLabel','planAccessHint','remainingCount'].forEach(id=>{const el=$(id);if(!el)return;new MutationObserver(()=>{renameBasicDisplay();syncTrialUpsell();syncResultUpsell();syncTrialBalancePreview();}).observe(el,{childList:true,characterData:true,subtree:true});});
   }
 
   function init(){
-    unifyBrand();upgradeHero();addValueProof();polishWorkspace();decoratePricing();addHowItWorks();updateFaq();makeTrialUpsell();makeResultUpsell();makeMobileUpgrade();renameBasicDisplay();syncTrialUpsell();syncResultUpsell();observeDisplay();installFunnelTracking();
+    unifyBrand();upgradeHero();addValueProof();polishWorkspace();decoratePricing();addHowItWorks();updateFaq();makeTrialUpsell();makeResultUpsell();makeMobileUpgrade();renameBasicDisplay();syncTrialUpsell();syncResultUpsell();syncTrialBalancePreview();observeDisplay();installFunnelTracking();syncFunnelQueue();
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
