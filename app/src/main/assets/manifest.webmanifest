@@ -1,7 +1,7 @@
 {
-  "name": "Video Variator",
-  "short_name": "Video Variator",
-  "description": "Create clean variations of your own videos with a simple privacy-first workflow.",
+  "name": "Video Uniquifier",
+  "short_name": "Uniquifier",
+  "description": "Make your old videos unique with privacy-first on-device processing.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
