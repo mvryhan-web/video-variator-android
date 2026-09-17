@@ -18,6 +18,17 @@ test('loads rebranded dashboard with zero of two free trial videos',async({page}
   await expect(page.getByText('Video Uniquifier',{exact:true}).first()).toBeVisible();
 });
 
+test('loads FFmpeg wrapper from same-origin when external CDN is blocked',async({page})=>{
+  await expect.poll(()=>page.evaluate(()=>!!window.FFmpegWASM?.FFmpeg),{timeout:10000}).toBe(true);
+});
+
+test('serves the FFmpeg core from same-origin',async({request})=>{
+  for(const path of ['/vendor/ffmpeg/ffmpeg.js','/vendor/ffmpeg/ffmpeg-core.js','/vendor/ffmpeg/ffmpeg-core.wasm']){
+    const response=await request.head(path);
+    expect(response.status()).toBe(200);
+  }
+});
+
 test('trial uses Gentle 720p and locks premium variation counts',async({page})=>{
   await expect(page.locator('#folderBtn')).toHaveCount(0);
   await expect(page.locator('#mode')).toHaveValue('gentle');
