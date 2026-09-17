@@ -53,7 +53,8 @@
     if(plan==='business')return{modes:['gentle','balanced','dynamic'],quality:'2160',label:'Business: Gentle + Balance + Dynamic · 4K'};
     if(plan==='pro')return{modes:['gentle','balanced'],quality:'1080',label:'Pro: Gentle + Balance · 1080p'};
     if(plan==='basic')return{modes:['gentle'],quality:'720',label:'Basic: Gentle · 720p'};
-    return{modes:['gentle'],quality:'720',label:'Free trial: Gentle · 720p'};
+    const u=usage(),files=core.getFiles(),balancePreview=u.remaining===2&&files.length<=1;
+    return{modes:balancePreview?['gentle','balanced']:['gentle'],quality:'720',label:balancePreview?'Free trial: Gentle + one Balance preview · 720p':'Free trial: Gentle · 720p'};
   }
   function enforcePlanControls(){
     const policy=policyFor(activePlan()),mode=$('mode'),quality=$('quality');
