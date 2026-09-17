@@ -112,7 +112,7 @@
   function reportError(error,category='client'){const msg=safeErrorMessage(error);state.metrics.errors++;saveMetrics();$('errorMessage').textContent=msg;$('errorCard').hidden=false;renderAnalytics();if(state.user)api('/api/events',{method:'POST',body:JSON.stringify({type:'error',category,message:msg})}).catch(()=>{});console.error(error);}
   window.addEventListener('error',e=>reportError(e.error||e.message,'window'));window.addEventListener('unhandledrejection',e=>reportError(e.reason,'promise'));
 
-  async function refreshAccount(){if(!state.token){state.user=null;renderAll();scheduleEstimate();return;}try{const d=await api('/api/me');state.user=d.user||d;renderAll();scheduleEstimate();}catch(e){if(e.status===401){state.token='';state.user=null;localStorage.removeItem('vv_token');}renderAll();}}
+  async function refreshAccount(){state.token=localStorage.getItem('vv_token')||'';if(!state.token){state.user=null;renderAll();scheduleEstimate();return;}try{const d=await api('/api/me');state.user=d.user||d;renderAll();scheduleEstimate();}catch(e){if(e.status===401){state.token='';state.user=null;localStorage.removeItem('vv_token');}renderAll();}}
   async function refreshAnalytics(){if(!state.user){renderAnalytics();return;}try{const d=await api('/api/analytics');if(d.analytics){state.metrics={...state.metrics,...d.analytics};saveMetrics();renderAnalytics();}}catch(e){console.warn(e);}}
 
   function openAuth(){$('authModal').hidden=false;initProviderButtons();}
