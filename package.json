@@ -1,12 +1,13 @@
 {
   "name": "video-variator",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "engines": {"node": ">=20.19.0"},
   "scripts": {
     "start": "node server/server.js",
-    "dev": "node --watch server/server.js"
+    "dev": "node --watch server/server.js",
+    "test:browsers": "playwright test"
   },
   "dependencies": {
     "dotenv": "17.4.2",
@@ -14,5 +15,8 @@
     "jose": "6.2.12",
     "pg": "8.23.0",
     "stripe": "22.6.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
   }
 }
