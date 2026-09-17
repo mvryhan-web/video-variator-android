@@ -1,22 +1,51 @@
-// Video Uniquifier FFmpeg worker.
-// Keep the v2 processing architecture, but load the core directly from the
-// production HTTPS host instead of trying to import a blob URL inside WebView.
-const RUNTIME_BASE='https://video-variator-android.onrender.com/vendor/ffmpeg';
-const CORE_URL=`${RUNTIME_BASE}/ffmpeg-core.js`;
-const WASM_URL=`${RUNTIME_BASE}/ffmpeg-core.wasm`;
+// Video Uniquifier FFmpeg worker for @ffmpeg/ffmpeg 0.12.x.
+// @ffmpeg/ffmpeg creates this as a module worker. The core URL provided by the
+// client is a UMD blob, so convert it to a tiny ESM wrapper before importing it.
+const FALLBACK_BASE='https://video-variator-android.onrender.com/vendor/ffmpeg';
+const FALLBACK_CORE=`${FALLBACK_BASE}/ffmpeg-core.js`;
+const FALLBACK_WASM=`${FALLBACK_BASE}/ffmpeg-core.wasm`;
 const T={LOAD:'LOAD',EXEC:'EXEC',FFPROBE:'FFPROBE',WRITE_FILE:'WRITE_FILE',READ_FILE:'READ_FILE',DELETE_FILE:'DELETE_FILE',RENAME:'RENAME',CREATE_DIR:'CREATE_DIR',LIST_DIR:'LIST_DIR',DELETE_DIR:'DELETE_DIR',ERROR:'ERROR',DOWNLOAD:'DOWNLOAD',PROGRESS:'PROGRESS',LOG:'LOG',MOUNT:'MOUNT',UNMOUNT:'UNMOUNT'};
 let ffmpeg;
 
-async function load(){
-  const first=!ffmpeg;
+async function importCoreFactory(coreURL){
+  // If an actual ESM core is supplied, use it directly.
   try{
-    importScripts(CORE_URL);
+    const direct=await import(coreURL);
+    if(direct?.default)return{factory:direct.default,moduleURL:coreURL};
+  }catch(_){ }
+
+  // Current app intentionally supplies a blob containing the stable UMD core.
+  // A module worker cannot call importScripts(), so expose the UMD factory as a
+  // default ES-module export and import that generated module instead.
+  const response=await fetch(coreURL);
+  if(!response.ok)throw new Error(`ffmpeg-core.js download failed (${response.status})`);
+  const source=await response.text();
+  const moduleURL=URL.createObjectURL(new Blob([
+    source,
+    '\nexport default createFFmpegCore;\n'
+  ],{type:'text/javascript'}));
+  try{
+    const mod=await import(moduleURL);
+    if(!mod?.default)throw new Error('ffmpeg-core.js has no module export');
+    return{factory:mod.default,moduleURL};
+  }catch(e){
+    URL.revokeObjectURL(moduleURL);
+    throw e;
+  }
+}
+
+async function load({coreURL:Fcore,wasmURL:Fwasm,workerURL:Fworker}={}){
+  const first=!ffmpeg;
+  const suppliedCore=Fcore||FALLBACK_CORE;
+  const suppliedWasm=Fwasm||FALLBACK_WASM;
+  let imported;
+  try{
+    imported=await importCoreFactory(suppliedCore);
+    const runtime={wasmURL:suppliedWasm,workerURL:Fworker||''};
+    ffmpeg=await imported.factory({mainScriptUrlOrBlob:`${imported.moduleURL}#${btoa(JSON.stringify(runtime))}`});
   }catch(e){
     throw new Error(`failed to import ffmpeg-core.js: ${e?.message||e}`);
   }
-  if(!self.createFFmpegCore)throw new Error('failed to import ffmpeg-core.js');
-  const runtime={wasmURL:WASM_URL};
-  ffmpeg=await self.createFFmpegCore({mainScriptUrlOrBlob:`${CORE_URL}#${btoa(JSON.stringify(runtime))}`});
   ffmpeg.setLogger(data=>self.postMessage({type:T.LOG,data}));
   ffmpeg.setProgress(data=>self.postMessage({type:T.PROGRESS,data}));
   return first;
