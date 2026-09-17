@@ -10,11 +10,12 @@
 .connectionBadge.offline::before { background:#ff6b7a; box-shadow:none; }
 .readyCard { align-items:flex-start; }
 .readyCard > div:nth-child(2) { flex:1; min-width:0; }
-.readyDownloads { width:100%; display:grid; gap:9px; margin-top:14px; grid-column:1/-1; }
-.readyDownloadRow { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 12px; border:1px solid var(--line,#24324b); border-radius:12px; background:rgba(255,255,255,.025); }
-.readyDownloadInfo { min-width:0; }
-.readyDownloadInfo b { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
+.readyDownloads { width:100%; max-width:100%; min-width:0; display:grid; gap:9px; margin-top:14px; grid-column:1/-1; overflow:hidden; }
+.readyDownloadRow { width:100%; max-width:100%; min-width:0; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:12px; padding:11px 12px; border:1px solid var(--line,#24324b); border-radius:12px; background:rgba(255,255,255,.025); overflow:hidden; }
+.readyDownloadInfo { min-width:0; max-width:100%; overflow:hidden; }
+.readyDownloadInfo b { display:block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
 .readyDownloadInfo small { color:var(--muted,#9ba8bd); }
+.readyDownloadRow .primaryBtn { flex:0 0 auto; max-width:100%; }
 .variantLockNote { margin-top:7px; color:var(--muted,#9ba8bd); font-size:12px; }
 .authSetupStatus { margin-top:8px; padding:10px 12px; border-radius:10px; border:1px solid var(--line,#24324b); color:var(--muted,#9ba8bd); font-size:12px; line-height:1.45; }
 .versionLine { margin-top:10px; color:var(--muted,#9ba8bd); font-size:12px; }
@@ -23,5 +24,7 @@
   .topbarLeft { gap:5px; }
   #backBtn { padding:8px 10px; font-size:12px; }
   .connectionBadge { display:none; }
-  .readyDownloadRow { align-items:flex-start; }
+  .readyDownloadRow { grid-template-columns:1fr; align-items:stretch; }
+  .readyDownloadInfo b { white-space:normal; overflow-wrap:anywhere; word-break:break-word; text-overflow:clip; }
+  .readyDownloadRow .primaryBtn { width:100%; justify-self:stretch; }
 }
