@@ -1,5 +1,7 @@
 // Video Uniquifier same-origin FFmpeg worker for @ffmpeg/ffmpeg 0.12.x
-const CORE_URL='https://unpkg.com/@ffmpeg/core@0.12.9/dist/umd/ffmpeg-core.js';
+const CORE_URL=(self.location.protocol==='https:'||self.location.protocol==='http:')
+  ? `${self.location.origin}/vendor/ffmpeg/ffmpeg-core.js`
+  : 'https://video-variator-android.onrender.com/vendor/ffmpeg/ffmpeg-core.js';
 const T={LOAD:'LOAD',EXEC:'EXEC',FFPROBE:'FFPROBE',WRITE_FILE:'WRITE_FILE',READ_FILE:'READ_FILE',DELETE_FILE:'DELETE_FILE',RENAME:'RENAME',CREATE_DIR:'CREATE_DIR',LIST_DIR:'LIST_DIR',DELETE_DIR:'DELETE_DIR',ERROR:'ERROR',DOWNLOAD:'DOWNLOAD',PROGRESS:'PROGRESS',LOG:'LOG',MOUNT:'MOUNT',UNMOUNT:'UNMOUNT'};
 let ffmpeg;
 
@@ -9,7 +11,7 @@ async function load({coreURL:_coreURL,wasmURL:_wasmURL,workerURL:_workerURL}={})
     if(!_coreURL)_coreURL=CORE_URL;
     importScripts(_coreURL);
   }catch(_){
-    if(!_coreURL||_coreURL===CORE_URL)_coreURL=CORE_URL.replace('/umd/','/esm/');
+    if(!_coreURL)_coreURL=CORE_URL;
     const mod=await import(_coreURL);
     self.createFFmpegCore=mod.default;
     if(!self.createFFmpegCore)throw new Error('failed to import ffmpeg-core.js');
