@@ -1,6 +1,6 @@
 {
-  "name": "video-variator",
-  "version": "3.0.0",
+  "name": "video-uniquifier",
+  "version": "5.0.0",
   "private": true,
   "type": "module",
   "engines": {"node": ">=20.19.0"},
