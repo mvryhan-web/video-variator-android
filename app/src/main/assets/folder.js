@@ -1,34 +1,30 @@
 (() => {
-  const folderBtn = document.getElementById('folderBtn');
-  const fileInput = document.getElementById('fileInput');
-  const fileSummary = document.getElementById('fileSummary');
+  const folderBtn=document.getElementById('folderBtn');
+  const fileSummary=document.getElementById('fileSummary');
+  const ui=()=>window.VideoVariatorUI;
 
-  folderBtn?.addEventListener('click', () => {
-    if (!window.AndroidBridge?.pickFolder) {
-      window.AndroidBridge?.toast?.('Выбор папки доступен в Android-приложении.');
-      return;
-    }
-    window.AndroidBridge.pickFolder();
+  const webFolderInput=document.createElement('input');
+  webFolderInput.type='file';webFolderInput.multiple=true;webFolderInput.setAttribute('webkitdirectory','');webFolderInput.setAttribute('directory','');webFolderInput.accept='video/*';webFolderInput.hidden=true;document.body.appendChild(webFolderInput);
+
+  folderBtn?.addEventListener('click',()=>{
+    if(window.AndroidBridge?.pickFolder){window.AndroidBridge.pickFolder();return;}
+    webFolderInput.click();
   });
 
-  window.receiveNativeFolderFiles = async (items) => {
-    try {
-      folderBtn.disabled = true;
-      fileSummary.textContent = `Загружаю видео из папки: ${items.length}…`;
-      const dt = new DataTransfer();
-      for (const item of items) {
-        const response = await fetch(item.url);
-        if (!response.ok) throw new Error(`Не удалось открыть ${item.name}`);
-        const blob = await response.blob();
-        dt.items.add(new File([blob], item.name, { type: item.type || blob.type || 'video/mp4' }));
+  webFolderInput.addEventListener('change',()=>{
+    const files=Array.from(webFolderInput.files||[]).filter(f=>f.type?.startsWith('video/')||/\.(mp4|mov|m4v|webm|mkv|avi)$/i.test(f.name));
+    ui()?.setFiles(files);
+  });
+
+  window.receiveNativeFolderFiles=async(items)=>{
+    try{
+      folderBtn.disabled=true;fileSummary.textContent=`Loading ${items.length} video file${items.length===1?'':'s'}…`;
+      const files=[];
+      for(const item of items){
+        const response=await fetch(item.url);if(!response.ok)throw new Error(`Could not open ${item.name}`);
+        const blob=await response.blob();files.push(new File([blob],item.name,{type:item.type||blob.type||'video/mp4'}));
       }
-      fileInput.files = dt.files;
-      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-    } catch (e) {
-      fileSummary.textContent = `Ошибка папки: ${e.message}`;
-      window.AndroidBridge?.toast?.(`Ошибка папки: ${e.message}`);
-    } finally {
-      folderBtn.disabled = false;
-    }
+      ui()?.setFiles(files);
+    }catch(e){fileSummary.textContent=e.message;ui()?.toast(e.message);}finally{folderBtn.disabled=false;}
   };
 })();
