@@ -17,6 +17,7 @@
       const el=$(id);if(!el)return;
       if(el.textContent.includes('Basic'))el.textContent=el.textContent.replaceAll('Basic','Essential');
     });
+    document.querySelectorAll('.variantLockNote').forEach(el=>{if(el.textContent.includes('Basic'))el.textContent=el.textContent.replaceAll('Basic','Essential');});
   }
 
   function decoratePricing(){
