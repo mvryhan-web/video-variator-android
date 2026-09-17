@@ -3,6 +3,7 @@ plugins {
 }
 
 def webAppUrl = (System.getenv('VV_WEB_APP_URL') ?: '').replace('\\','\\\\').replace('"','\\"')
+def apiBaseUrl = (System.getenv('VV_API_BASE_URL') ?: '').replace('\\','\\\\').replace('"','\\"')
 def updateApiUrl = (System.getenv('VV_UPDATE_API_URL') ?: '').replace('\\','\\\\').replace('"','\\"')
 def signingPath = project.findProperty('VV_KEYSTORE_PATH')
 def signingStorePassword = project.findProperty('VV_KEYSTORE_PASSWORD')
@@ -18,9 +19,10 @@ android {
         applicationId = 'com.videovariator.app'
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = '4.0.0'
+        versionCode = 5
+        versionName = '5.0.0'
         buildConfigField 'String', 'WEB_APP_URL', '"' + webAppUrl + '"'
+        buildConfigField 'String', 'API_BASE_URL', '"' + apiBaseUrl + '"'
         buildConfigField 'String', 'UPDATE_API_URL', '"' + updateApiUrl + '"'
     }
 
@@ -52,6 +54,5 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.documentfile:documentfile:1.0.1'
     implementation 'com.google.android.play:app-update:2.1.0'
 }
