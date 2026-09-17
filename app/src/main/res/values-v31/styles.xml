@@ -10,7 +10,6 @@
         <item name="android:windowSplashScreenBackground">@color/vu_splash_background</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_vu_foreground</item>
         <item name="android:windowSplashScreenIconBackgroundColor">@color/vu_icon_background</item>
-        <item name="android:postSplashScreenTheme">@style/Theme.VideoUniquifier</item>
         <item name="android:colorAccent">#26D8FF</item>
     </style>
 </resources>
