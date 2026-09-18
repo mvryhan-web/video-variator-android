@@ -46,6 +46,28 @@ jobs:
       - name: Build debug APK
         run: gradle :app:assembleDebug --stacktrace
 
+      - name: Enable emulator hardware acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Test camera recording and Gallery save on Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-front emulated -camera-back emulated
+          script: gradle :app:connectedDebugAndroidTest --stacktrace
+
+      - name: Upload Android test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-camera-tests
+          path: app/build/reports/androidTests/
+
       - name: Decode stable release keystore
         if: env.HAS_RELEASE_KEY == 'true'
         env:
