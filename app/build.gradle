@@ -55,5 +55,6 @@ android {
 }
 
 dependencies {
+    implementation 'androidx.core:core:1.15.0'
     implementation 'com.google.android.play:app-update:2.1.0'
 }

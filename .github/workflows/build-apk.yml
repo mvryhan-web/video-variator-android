@@ -2,7 +2,7 @@ name: Build Video Uniquifier APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, free-tools ]
   workflow_dispatch:
 
 permissions:
@@ -87,6 +87,7 @@ jobs:
           retention-days: 30
 
       - name: Publish latest APK release
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

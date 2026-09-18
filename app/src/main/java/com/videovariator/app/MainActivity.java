@@ -102,9 +102,11 @@ public class MainActivity extends Activity {
                 fileChooserCallback = filePathCallback;
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("video/*");
-                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                startActivityForResult(Intent.createChooser(intent, "Choose video"), FILE_CHOOSER_REQUEST);
+                String[] accepts = fileChooserParams.getAcceptTypes();
+                intent.setType(accepts != null && accepts.length == 1 && !accepts[0].isEmpty() ? accepts[0] : "*/*");
+                if (accepts != null && accepts.length > 1) intent.putExtra(Intent.EXTRA_MIME_TYPES, accepts);
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, fileChooserParams.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE);
+                startActivityForResult(Intent.createChooser(intent, "Choose files"), FILE_CHOOSER_REQUEST);
                 return true;
             }
         });
@@ -246,6 +248,69 @@ public class MainActivity extends Activity {
     }
 
     private class AndroidBridge {
+        private OutputStream toolStream;
+        private File toolFile;
+        private String toolMime;
+        @JavascriptInterface public synchronized boolean startToolFile(String name, String mime) {
+            cancelToolFile();
+            if (!("image/jpeg".equals(mime) || "image/png".equals(mime) || "image/webp".equals(mime) || "audio/mp4".equals(mime) || "video/mp4".equals(mime) || "video/quicktime".equals(mime))) return false;
+            try {
+                File dir = new File(getCacheDir(), "shared-tools");
+                if (!dir.exists() && !dir.mkdirs()) return false;
+                File[] old = dir.listFiles();
+                if (old != null) for (File f : old) if (System.currentTimeMillis() - f.lastModified() > 86400000L) f.delete();
+                String safe = name.replaceAll("[^a-zA-Z0-9._-]", "_");
+                if (safe.length() > 120) safe = safe.substring(safe.length()-120);
+                toolFile = new File(dir, System.currentTimeMillis() + "-" + safe);
+                toolMime = mime; toolStream = new FileOutputStream(toolFile); return true;
+            } catch (Exception e) { cancelToolFile(); return false; }
+        }
+        @JavascriptInterface public synchronized boolean appendToolChunk(String data) {
+            try { if (toolStream == null || data.length() > 400000) return false; toolStream.write(Base64.decode(data, Base64.DEFAULT)); return true; }
+            catch (Exception e) { cancelToolFile(); return false; }
+        }
+        @JavascriptInterface public synchronized boolean finishToolFile(boolean share) {
+            Uri dest = null;
+            try {
+                if (toolStream == null || toolFile == null) return false;
+                toolStream.close(); toolStream = null;
+                final File ready = toolFile; final String mime = toolMime;
+                if (share) {
+                    final Uri uri = androidx.core.content.FileProvider.getUriForFile(MainActivity.this, getPackageName()+".files", ready);
+                    runOnUiThread(() -> {
+                        try { Intent intent = new Intent(Intent.ACTION_SEND).setType(mime).putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            intent.setClipData(android.content.ClipData.newRawUri("Video Uniquifier", uri));
+                            startActivity(Intent.createChooser(intent, "Share"));
+                        } catch (Exception e) { Toast.makeText(MainActivity.this, "Could not open sharing", Toast.LENGTH_SHORT).show(); }
+                    });
+                } else {
+                    OutputStream target;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        ContentValues values = new ContentValues(); values.put(MediaStore.MediaColumns.DISPLAY_NAME, ready.getName());
+                        values.put(MediaStore.MediaColumns.MIME_TYPE, mime); values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS+"/VideoUniquifier");
+                        values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+                        dest = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                        if (dest == null) throw new java.io.IOException("No destination");
+                        target = getContentResolver().openOutputStream(dest);
+                    } else {
+                        File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "VideoUniquifier");
+                        if (!dir.exists() && !dir.mkdirs()) throw new java.io.IOException("No directory");
+                        target = new FileOutputStream(new File(dir, ready.getName()));
+                    }
+                    try (java.io.InputStream input = new java.io.FileInputStream(ready); OutputStream output = target) {
+                        byte[] bytes = new byte[262144]; int count; while ((count = input.read(bytes)) != -1) output.write(bytes, 0, count);
+                    }
+                    if (dest != null) { ContentValues values = new ContentValues(); values.put(MediaStore.MediaColumns.IS_PENDING, 0); getContentResolver().update(dest, values, null, null); }
+                    ready.delete();
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Saved to Downloads/VideoUniquifier", Toast.LENGTH_SHORT).show());
+                }
+                toolFile = null; return true;
+            } catch (Exception e) { if (dest != null) getContentResolver().delete(dest, null, null); cancelToolFile(); return false; }
+        }
+        @JavascriptInterface public synchronized void cancelToolFile() {
+            try { if (toolStream != null) toolStream.close(); } catch (Exception ignored) {}
+            toolStream = null; if (toolFile != null) toolFile.delete(); toolFile = null;
+        }
         private OutputStream outputStream;
         private Uri pendingUri;
         private File legacyFile;

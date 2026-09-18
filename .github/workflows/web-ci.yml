@@ -2,7 +2,7 @@ name: Validate Video Variator Web
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, free-tools ]
   workflow_dispatch:
 
 jobs:
@@ -30,6 +30,9 @@ jobs:
           node --check app/src/main/assets/admin-access.js
           node --check app/src/main/assets/auth-email.js
           node --check app/src/main/assets/sw.js
+          node --check app/src/main/assets/free-tools.js
+          node --check app/src/main/assets/file-share.js
+          node --check app/src/main/assets/theme.js
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox webkit
       - name: Cross-browser tests
