@@ -63,6 +63,17 @@ public class MainActivity extends Activity {
 
         webView = new WebView(this);
         setContentView(webView);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            webView.setOnApplyWindowInsetsListener((view, insets) -> {
+                view.setPadding(
+                        insets.getSystemWindowInsetLeft(),
+                        insets.getSystemWindowInsetTop(),
+                        insets.getSystemWindowInsetRight(),
+                        insets.getSystemWindowInsetBottom()
+                );
+                return insets;
+            });
+        }
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
