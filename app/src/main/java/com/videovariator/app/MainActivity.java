@@ -256,7 +256,7 @@ public class MainActivity extends Activity {
         private String toolMime;
         @JavascriptInterface public synchronized boolean startToolFile(String name, String mime) {
             cancelToolFile();
-            if (!("image/jpeg".equals(mime) || "image/png".equals(mime) || "image/webp".equals(mime) || "audio/mp4".equals(mime) || "video/mp4".equals(mime) || "video/quicktime".equals(mime))) return false;
+            if (!("application/x-subrip".equals(mime) || "text/vtt".equals(mime) || "image/jpeg".equals(mime) || "image/png".equals(mime) || "image/webp".equals(mime) || "audio/mp4".equals(mime) || "video/mp4".equals(mime) || "video/quicktime".equals(mime))) return false;
             try {
                 File dir = new File(getCacheDir(), "shared-tools");
                 if (!dir.exists() && !dir.mkdirs()) return false;

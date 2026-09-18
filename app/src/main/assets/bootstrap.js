@@ -18,6 +18,7 @@
   const style=document.createElement('link');style.rel='stylesheet';style.href='v5.css';document.head.appendChild(style);
   const productStyle=document.createElement('link');productStyle.rel='stylesheet';productStyle.href='product-polish.css';document.head.appendChild(productStyle);
   const authStyle=document.createElement('link');authStyle.rel='stylesheet';authStyle.href='auth-email.css';document.head.appendChild(authStyle);
+  const studio=document.createElement('link');studio.rel='stylesheet';studio.href='studio.css';document.head.appendChild(studio);
   const icon=document.createElement('link');icon.rel='icon';icon.href='icon.svg';document.head.appendChild(icon);
 
   window.addEventListener('DOMContentLoaded',()=>{
