@@ -13,7 +13,7 @@
   };
 
   const en={
-    brandTag:'Video variation made simple',navDashboard:'Dashboard',navHistory:'History',navAnalytics:'Analytics',navPlans:'Plans',navFaq:'FAQ',navProfile:'Profile & Settings',
+    brandTag:'One video. Many versions.',navDashboard:'Dashboard',navHistory:'History',navAnalytics:'Analytics',navPlans:'Plans',navFaq:'FAQ',navProfile:'Profile & Settings',
     languageAuto:'Language: Auto',localProcessing:'Video processing runs locally on your device.',secureHttps:'HTTPS required for online services',signIn:'Sign in',signOut:'Sign out',
     trialPill:'2 free videos included',heroText:'Upload a video, choose a processing style, and let Video Variator handle the rest.',statProcessed:'Processed',statProcessedSub:'outputs created',statRemaining:'Remaining',statPlan:'Current plan',trialStatus:'No card required',
     newProject:'New variation',newProjectSub:'Choose one or more videos. Completed files are saved automatically.',engineStandby:'Engine standby',engineLoading:'Loading engine…',engineReady:'Engine ready',chooseVideos:'Choose videos',chooseVideosSub:'One or multiple files',noFiles:'No videos selected yet.',
