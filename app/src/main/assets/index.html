@@ -4,16 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b1020">
-  <meta name="description" content="Video Variator creates privacy-first video variations with simple credit-based billing.">
+  <meta name="description" content="Video Uniquifier creates multiple finished versions from your own videos with privacy-first on-device processing.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="v3.css">
-  <title>Video Variator</title>
+  <title>Video Uniquifier</title>
 </head>
 <body>
 <div class="shell">
   <aside class="sidebar">
-    <div class="brand"><span class="brandMark">VV</span><div><b>Video Variator</b><small data-i18n="brandTag">Video variation made simple</small></div></div>
+    <div class="brand"><span class="brandMark">VU</span><div><b>Video Uniquifier</b><small data-i18n="brandTag">One video. Many versions.</small></div></div>
     <nav>
       <button class="navBtn active" data-view="dashboard"><span>◫</span><span data-i18n="navDashboard">Dashboard</span></button>
       <button class="navBtn" data-view="history"><span>↻</span><span data-i18n="navHistory">History</span></button>
@@ -33,7 +33,7 @@
   <main class="main">
     <header class="topbar">
       <button id="menuBtn" class="iconBtn mobileOnly" aria-label="Menu">☰</button>
-      <div class="topTitle"><span class="eyebrow">VIDEO VARIATOR</span><h1 id="pageTitle" data-i18n="navDashboard">Dashboard</h1></div>
+      <div class="topTitle"><span class="eyebrow">VIDEO UNIQUIFIER</span><h1 id="pageTitle" data-i18n="navDashboard">Dashboard</h1></div>
       <div class="accountActions">
         <span id="accountChip" class="accountChip" hidden></span>
         <button id="signInBtn" class="ghostBtn" data-i18n="signIn">Sign in</button>
@@ -161,14 +161,14 @@
   <div class="modalBackdrop" data-close-auth></div>
   <section class="authCard card">
     <button class="modalClose" data-close-auth aria-label="Close">×</button>
-    <span class="eyebrow">VIDEO VARIATOR</span><h2>Sign in to sync your account</h2><p>Keep your plan, credits, and history connected across devices.</p>
+    <span class="eyebrow">VIDEO UNIQUIFIER</span><h2>Sign in to sync your account</h2><p>Keep your plan, credits, and history connected across devices.</p>
     <div id="googleButton" class="providerSlot"><button id="googleFallback" class="providerBtn"><span class="googleG">G</span><span>Continue with Google</span></button></div>
     <button id="appleButton" class="providerBtn appleBtn"><span class="appleLogo">●</span><span>Continue with Apple</span></button>
     <small class="muted">Secure sign-in opens through the provider. Video files are not uploaded for authentication.</small>
   </section>
 </div>
 
-<div id="updateBanner" class="updateBanner" hidden><div><b>An update is available</b><p>Reload to use the latest Video Variator version.</p></div><button id="applyUpdateBtn" class="primaryBtn">Update now</button></div>
+<div id="updateBanner" class="updateBanner" hidden><div><b>An update is available</b><p>Reload to use the latest Video Uniquifier version.</p></div><button id="applyUpdateBtn" class="primaryBtn">Update now</button></div>
 <div id="toast" class="toast" hidden></div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
