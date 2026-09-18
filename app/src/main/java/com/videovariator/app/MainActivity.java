@@ -252,6 +252,11 @@ public class MainActivity extends Activity {
 
     private class AndroidBridge {
         private OutputStream toolStream;
+        @JavascriptInterface public void openTeleprompter(String script, int speed, int font, boolean mirror) {
+            final String safeScript = script == null ? "" : script.substring(0, Math.min(script.length(), 30000));
+            runOnUiThread(() -> startActivity(new Intent(MainActivity.this, TeleprompterActivity.class)
+                .putExtra("script", safeScript).putExtra("speed", speed).putExtra("font", font).putExtra("mirror", mirror)));
+        }
         private File toolFile;
         private String toolMime;
         @JavascriptInterface public synchronized boolean startToolFile(String name, String mime) {

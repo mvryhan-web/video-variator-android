@@ -1,7 +1,7 @@
 const CACHE='video-uniquifier-v23';
-const APP_SHELL=['/','/index.html','/styles.css','/v3.css','/v5.css','/product-polish.css','/auth-email.css','/app-v4.js','/app-v5.js','/product-polish.js','/auth-email.js','/video-core.js','/bootstrap.js','/trial-quality.js','/admin-access.js','/ffmpeg-worker.js','/manifest.webmanifest','/icon.svg','/free-tools.html','/free-tools.js','/free-tools.css','/theme.js','/theme.css','/file-share.js','/studio.css','/ai-tools.html','/ai-tools.js','/ai-media.js','/ai-worker.js','/ai-licenses.html'];
+const APP_SHELL=['/','/index.html','/styles.css','/v3.css','/v5.css','/product-polish.css','/auth-email.css','/app-v4.js','/app-v5.js','/product-polish.js','/auth-email.js','/video-core.js','/bootstrap.js','/trial-quality.js','/admin-access.js','/ffmpeg-worker.js','/manifest.webmanifest','/icon.svg','/free-tools.html','/free-tools.js','/free-tools.css','/theme.js','/theme.css','/file-share.js','/tool-icons.js','/camera-prompter.js','/studio.css','/ai-tools.html','/ai-tools.js','/ai-media.js','/ai-worker.js','/ai-licenses.html'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting();});
-self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
+self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('video-uniquifier-')&&k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting();});
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET')return;
