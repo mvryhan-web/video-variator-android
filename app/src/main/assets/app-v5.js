@@ -89,7 +89,7 @@
     const card=$('resultsCard'),results=window.__vuLastResults||[];if(!card||!results.length)return;
     card.querySelector('[data-view-jump="history"]')?.setAttribute('hidden','');
     let box=card.querySelector('.readyDownloads');if(!box){box=document.createElement('div');box.className='readyDownloads';card.appendChild(box);}box.innerHTML='';
-    results.forEach(r=>{const row=document.createElement('div');row.className='readyDownloadRow';const info=document.createElement('div');info.className='readyDownloadInfo';const name=document.createElement('b');name.textContent=r.name;const meta=document.createElement('small');meta.textContent=`${r.resolution||''} · ${r.saved?c.saved:'Ready'}`;info.append(name,meta);const b=document.createElement('button');b.className='primaryBtn';b.textContent=c.download;b.addEventListener('click',()=>saveResult(r));row.append(info,b);box.appendChild(row);});
+    results.forEach(r=>{const row=document.createElement('div');row.className='readyDownloadRow';const info=document.createElement('div');info.className='readyDownloadInfo';const name=document.createElement('b');name.textContent=r.name;const meta=document.createElement('small');meta.textContent=`${r.resolution||''} · ${r.saved?c.saved:'Ready'}`;info.append(name,meta);const b=document.createElement('button');b.className='primaryBtn';b.textContent=c.download;b.addEventListener('click',()=>saveResult(r));const share=document.createElement("button");share.className="ghostBtn";share.textContent=({ru:"Поделиться",fr:"Partager",uk:"Поділитися"})[(navigator.language||"en").slice(0,2)]||"Share";share.onclick=()=>window.VUShareFile?.(r);row.append(info,b,share);box.appendChild(row);});
     if($('readyText'))$('readyText').textContent=c.saved;
   }
 

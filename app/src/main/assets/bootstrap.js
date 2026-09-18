@@ -21,6 +21,7 @@
   const icon=document.createElement('link');icon.rel='icon';icon.href='icon.svg';document.head.appendChild(icon);
 
   window.addEventListener('DOMContentLoaded',()=>{
+    const sharing=document.createElement('script');sharing.src='file-share.js';document.body.appendChild(sharing);
     const admin=document.createElement('script');admin.src='admin-access.js';admin.defer=true;document.body.appendChild(admin);
     const v5=document.createElement('script');v5.src='app-v5.js';v5.defer=true;
     v5.addEventListener('load',()=>{
