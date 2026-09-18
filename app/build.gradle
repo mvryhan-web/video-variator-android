@@ -20,8 +20,8 @@ android {
         applicationId = 'com.videovariator.app'
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = '5.0.0'
+        versionCode = 6
+        versionName = '5.1.0'
         buildConfigField 'String', 'WEB_APP_URL', '"' + webAppUrl + '"'
         buildConfigField 'String', 'API_BASE_URL', '"' + apiBaseUrl + '"'
         buildConfigField 'String', 'UPDATE_API_URL', '"' + updateApiUrl + '"'

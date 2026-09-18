@@ -240,6 +240,9 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
+        if (webView != null && webView.getUrl() != null && webView.getUrl().contains("/free-tools.html")) {
+            webView.evaluateJavascript("window.vuHandleAndroidBack && window.vuHandleAndroidBack()", null); return;
+        }
         if (webView != null && webView.canGoBack()) { webView.goBack(); return; }
         if (webView == null) { super.onBackPressed(); return; }
         webView.evaluateJavascript("(function(){var b=document.getElementById('backBtn');if(b&&!b.hidden){b.click();return true;}return false;})()", value -> {
