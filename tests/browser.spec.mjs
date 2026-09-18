@@ -7,7 +7,7 @@ async function openView(page,name){
 
 test.beforeEach(async({page})=>{
   await page.route(/accounts\.google\.com|appleid\.cdn-apple\.com|unpkg\.com/,route=>route.abort());
-  await page.goto('/');
+  await page.goto('/',{waitUntil:'domcontentloaded'});
   await expect(page).toHaveTitle(/Video Uniquifier/);
 });
 

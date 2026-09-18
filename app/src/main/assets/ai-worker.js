@@ -11,7 +11,7 @@ self.onmessage=async({data})=>{try{
   const [result]=await segmenter(raw);const rgba=result.rgba();
   postMessage({type:'result',id:data.id,width:rgba.width,height:rgba.height,pixels:rgba.data.buffer},[rgba.data.buffer]);
  }else if(data.type==='speech'){
-  transcriber??=await pipeline('automatic-speech-recognition','onnx-community/whisper-tiny',{dtype:'q8',device:'wasm',progress_callback:progress});
+  transcriber??=await pipeline('automatic-speech-recognition','onnx-community/whisper-tiny',{dtype:{encoder_model:'fp32',decoder_model_merged:'q8'},device:'wasm',progress_callback:progress});
   const result=await transcriber(new Float32Array(data.audio),{return_timestamps:true,chunk_length_s:20,stride_length_s:3,task:'transcribe',...(data.language==='auto'?{}:{language:data.language})});
   postMessage({type:'result',id:data.id,chunks:result.chunks||[],text:result.text||''});
  }

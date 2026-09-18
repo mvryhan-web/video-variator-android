@@ -18,7 +18,7 @@ test('invalid portrait recovers without sending user files',async({page})=>{
  let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});await page.goto('/ai-tools.html');await page.locator('#aiFile').setInputFiles({name:'bad.png',mimeType:'image/png',buffer:Buffer.from('bad')});await page.locator('#aiRun').click();await expect(page.locator('#aiStatus')).toContainText('Could not finish');await expect(page.locator('#aiRun')).toBeEnabled();expect(posts).toBe(0);
 });
 test('dashboard metrics are compact and pricing fits without changing prices',async({page},info)=>{
- await page.goto('/');await expect(page.locator('.statsGrid .stat b').first()).toBeVisible();expect(await page.locator('.statsGrid .stat b').first().evaluate(e=>parseFloat(getComputedStyle(e).fontSize))).toBeLessThanOrEqual(16);
+ await page.goto('/',{waitUntil:'domcontentloaded'});await expect(page.locator('.statsGrid .stat b').first()).toBeVisible();expect(await page.locator('.statsGrid .stat b').first().evaluate(e=>parseFloat(getComputedStyle(e).fontSize))).toBeLessThanOrEqual(16);
  await page.screenshot({path:info.outputPath('dashboard.png'),fullPage:true});await page.locator('.navBtn[data-view="plans"]').evaluate(e=>e.click());await expect(page.locator('#plansView')).toHaveClass(/active/);await page.screenshot({path:info.outputPath('pricing.png'),fullPage:true});for(const price of ['$9','$24','$99'])await expect(page.locator('#plansView').getByText(price,{exact:true})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 test('real local models produce a transparent PNG, captions and a playable background video',async({page},info)=>{
