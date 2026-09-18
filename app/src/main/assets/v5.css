@@ -155,3 +155,11 @@ button,select,input{max-width:100%;box-sizing:border-box}
   .analyticsGrid{grid-template-columns:1fr}
   .analyticsCard:nth-child(3){grid-column:auto}
 }
+
+
+/* Mobile reliability fixes */
+[hidden]{display:none!important}
+.progressCard{overflow:hidden}
+.progressHead,.progressHead>div{min-width:0;max-width:100%}
+#progressTitle{max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+#progressText{max-width:100%;overflow-wrap:anywhere;word-break:break-word}
