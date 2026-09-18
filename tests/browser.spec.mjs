@@ -14,7 +14,9 @@ test.beforeEach(async({page})=>{
 test('loads rebranded dashboard with zero of two free trial videos',async({page})=>{
   await expect(page.getByRole('heading',{name:'Dashboard'})).toBeVisible();
   await expect(page.locator('#creditText')).toHaveText('0 / 2');
-  await expect(page.getByText('Uniqueify your old video')).toBeVisible();
+  await expect(page.getByText('One video. Many futures.')).toBeVisible();
+  await expect(page.getByText('One video. Many versions.')).toBeVisible();
+  await expect(page.locator('#resultsCard')).toBeHidden();
   await expect(page.getByText('Video Uniquifier',{exact:true}).first()).toBeVisible();
 });
 
@@ -148,7 +150,7 @@ test('analytics profile product explanation and FAQ are reachable',async({page})
   await expect(page.getByText('Privacy & security')).toBeVisible();
   await expect(page.getByRole('button',{name:'Cancel subscription'})).toBeVisible();
   await openView(page,'faq');
-  await expect(page.getByText('Dozens of small technical changes, handled automatically')).toBeVisible();
+  await expect(page.getByText('One original can become many finished versions')).toBeVisible();
   await expect(page.getByText('What are micro-adjustments?')).toBeVisible();
   await expect(page.getByText('What is the difference between Essential, Pro and Business?')).toBeVisible();
   await expect(page.getByText('How do credits work?')).toBeVisible();
@@ -164,4 +166,15 @@ test('mobile views do not create horizontal overflow',async({page},testInfo)=>{
     expect(sizes.doc).toBeLessThanOrEqual(sizes.viewport+1);
     expect(sizes.body).toBeLessThanOrEqual(sizes.viewport+1);
   }
+});
+
+
+test('processing state never shows the ready card at the same time',async({page})=>{
+  const progress=page.locator('#progressCard');
+  const results=page.locator('#resultsCard');
+  await results.evaluate(el=>{el.hidden=false;});
+  await expect(results).toBeVisible();
+  await progress.evaluate(el=>{el.hidden=false;});
+  await expect(progress).toBeVisible();
+  await expect(results).toBeHidden();
 });
