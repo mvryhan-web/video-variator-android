@@ -1,4 +1,4 @@
-import {pipeline,env,RawImage} from '/vendor/ai/transformers.web.min.js';
+import {pipeline,env,RawImage} from '/vendor/ai/transformers.min.js';
 env.allowLocalModels=false;
 env.backends.onnx.wasm.wasmPaths=new URL('/vendor/ai/',self.location.href).href;
 env.backends.onnx.wasm.numThreads=1;

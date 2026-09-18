@@ -40,9 +40,9 @@ jobs:
       - name: Cross-browser tests
         run: npm run test:browsers
 
-      - name: Upload browser failure evidence
-        if: failure()
+      - name: Upload browser evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: browser-failures
+          name: browser-evidence
           path: test-results/
