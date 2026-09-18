@@ -3,7 +3,9 @@
   "version": "5.0.0",
   "private": true,
   "type": "module",
-  "engines": {"node": ">=20.19.0"},
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "start": "node server/server.js",
     "dev": "node --watch server/server.js",
@@ -12,6 +14,7 @@
   "dependencies": {
     "@ffmpeg/core": "0.12.10",
     "@ffmpeg/ffmpeg": "0.12.15",
+    "@huggingface/transformers": "3.8.1",
     "dotenv": "17.4.2",
     "express": "5.2.1",
     "jose": "6.2.12",

@@ -2,7 +2,7 @@ name: Build Video Uniquifier APK
 
 on:
   push:
-    branches: [ main, free-tools ]
+    branches: [ main, free-tools, studio-stage-two ]
   workflow_dispatch:
 
 permissions:
@@ -45,6 +45,28 @@ jobs:
 
       - name: Build debug APK
         run: gradle :app:assembleDebug --stacktrace
+
+      - name: Enable emulator hardware acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Test camera recording and Gallery save on Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-front emulated -camera-back emulated
+          script: gradle :app:connectedDebugAndroidTest --stacktrace
+
+      - name: Upload Android test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-camera-tests
+          path: app/build/reports/androidTests/
 
       - name: Decode stable release keystore
         if: env.HAS_RELEASE_KEY == 'true'
@@ -95,8 +117,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          release_tag="v5.1.0-build-${GITHUB_RUN_NUMBER}"
+          release_tag="v5.2.0-build-${GITHUB_RUN_NUMBER}"
           gh release create "$release_tag" VideoUniquifier.apk VideoVariator.apk \
-            --target "$GITHUB_SHA" --title "Video Uniquifier 5.1 — Free tools" \
-            --notes "Local photo and video compression, audio extraction, teleprompter, themes and result sharing. Existing releases are preserved."
+            --target "$GITHUB_SHA" --title "Video Uniquifier 5.2 — Creator studio" \
+            --notes "Premium interface, local portrait cutouts, experimental local captions and short video backgrounds. Processing stays on your device. Existing tools and releases are preserved."
           gh release view "$release_tag" --json isDraft,tagName,url

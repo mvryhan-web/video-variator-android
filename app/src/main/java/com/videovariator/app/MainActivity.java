@@ -252,11 +252,16 @@ public class MainActivity extends Activity {
 
     private class AndroidBridge {
         private OutputStream toolStream;
+        @JavascriptInterface public void openTeleprompter(String script, int speed, int font, boolean mirror) {
+            final String safeScript = script == null ? "" : script.substring(0, Math.min(script.length(), 30000));
+            runOnUiThread(() -> startActivity(new Intent(MainActivity.this, TeleprompterActivity.class)
+                .putExtra("script", safeScript).putExtra("speed", speed).putExtra("font", font).putExtra("mirror", mirror)));
+        }
         private File toolFile;
         private String toolMime;
         @JavascriptInterface public synchronized boolean startToolFile(String name, String mime) {
             cancelToolFile();
-            if (!("image/jpeg".equals(mime) || "image/png".equals(mime) || "image/webp".equals(mime) || "audio/mp4".equals(mime) || "video/mp4".equals(mime) || "video/quicktime".equals(mime))) return false;
+            if (!("application/x-subrip".equals(mime) || "text/vtt".equals(mime) || "image/jpeg".equals(mime) || "image/png".equals(mime) || "image/webp".equals(mime) || "audio/mp4".equals(mime) || "video/mp4".equals(mime) || "video/quicktime".equals(mime))) return false;
             try {
                 File dir = new File(getCacheDir(), "shared-tools");
                 if (!dir.exists() && !dir.mkdirs()) return false;

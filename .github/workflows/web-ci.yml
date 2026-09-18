@@ -2,7 +2,7 @@ name: Validate Video Variator Web
 
 on:
   push:
-    branches: [ main, free-tools ]
+    branches: [ main, free-tools, studio-stage-two ]
   workflow_dispatch:
 
 jobs:
@@ -35,5 +35,14 @@ jobs:
           node --check app/src/main/assets/theme.js
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox webkit
+      - name: Install local speech and video test fixtures
+        run: sudo apt-get update && sudo apt-get install -y espeak-ng ffmpeg
       - name: Cross-browser tests
         run: npm run test:browsers
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-evidence
+          path: test-results/
