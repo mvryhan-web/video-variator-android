@@ -19,6 +19,8 @@
     document.title='Video Uniquifier';
     document.querySelector('meta[name="description"]')?.setAttribute('content','Video Uniquifier creates privacy-first variations of your own videos directly on your device.');
     document.querySelectorAll('.brand b').forEach(el=>el.textContent='Video Uniquifier');
+    document.querySelectorAll('.brandMark').forEach(el=>el.textContent='VU');
+    document.querySelectorAll('.brand small').forEach(el=>el.textContent='One video. Many versions.');
     document.querySelectorAll('.topTitle .eyebrow,#authModal .eyebrow').forEach(el=>el.textContent='VIDEO UNIQUIFIER');
     if($('heroTitle'))$('heroTitle').textContent=c.hero;
     const heroText=document.querySelector('[data-i18n="heroText"]');if(heroText)heroText.textContent=c.heroText;
@@ -102,6 +104,13 @@
     const observer=new MutationObserver(update);document.querySelectorAll('.view').forEach(v=>observer.observe(v,{attributes:true,attributeFilter:['class']}));update();
   }
 
+  function installSidebarSwipe(){
+    const sidebar=document.querySelector('.sidebar');if(!sidebar)return;
+    let sx=null,sy=null;
+    sidebar.addEventListener('touchstart',e=>{const t=e.touches?.[0];if(!t)return;sx=t.clientX;sy=t.clientY;},{passive:true});
+    sidebar.addEventListener('touchend',e=>{if(sx===null||sy===null)return;const t=e.changedTouches?.[0];if(!t){sx=sy=null;return;}const dx=t.clientX-sx,dy=t.clientY-sy;if(dx<-48&&Math.abs(dx)>Math.abs(dy)*1.15)sidebar.classList.remove('open');sx=sy=null;},{passive:true});
+  }
+
   function installNetworkBadge(){
     const topbar=document.querySelector('.topbar'),actions=document.querySelector('.accountActions');if(!topbar||!actions||$('connectionBadge'))return;
     const badge=document.createElement('span');badge.id='connectionBadge';badge.className='connectionBadge';topbar.insertBefore(badge,actions);
@@ -162,11 +171,12 @@
 
   function installProcessingStateGuard(){
     $('startBtn')?.addEventListener('click',clearPreviousResultState,true);
+    const progress=$('progressCard');if(progress)new MutationObserver(()=>{if(!progress.hidden){const results=$('resultsCard');if(results)results.hidden=true;}}).observe(progress,{attributes:true,attributeFilter:['hidden']});
     const error=$('errorCard');if(error)new MutationObserver(()=>{if(!error.hidden){const results=$('resultsCard');if(results)results.hidden=true;const progress=$('progressCard');if(progress)progress.hidden=true;}}).observe(error,{attributes:true,attributeFilter:['hidden']});
     const results=$('resultsCard');if(results)new MutationObserver(()=>{if(!results.hidden){const progress=$('progressCard');if(progress)progress.hidden=true;const error=$('errorCard');if(error)error.hidden=true;}}).observe(results,{attributes:true,attributeFilter:['hidden']});
   }
   function observePlan(){const el=$('currentPlan');if(!el)return;new MutationObserver(()=>enforceVariantAccess()).observe(el,{childList:true,characterData:true,subtree:true});}
   function observeResults(){const card=$('resultsCard');if(!card)return;new MutationObserver(()=>{if(!card.hidden)renderReadyDownloads();}).observe(card,{attributes:true,attributeFilter:['hidden']});}
 
-  applyBranding();installVariantOptions();installBackButton();installNetworkBadge();installVersion();installAuthStatus();installNativeAuthBridge();interceptHistoryDownloads();installProcessingStateGuard();observePlan();observeResults();
+  applyBranding();installVariantOptions();installBackButton();installSidebarSwipe();installNetworkBadge();installVersion();installAuthStatus();installNativeAuthBridge();interceptHistoryDownloads();installProcessingStateGuard();observePlan();observeResults();
 })();
