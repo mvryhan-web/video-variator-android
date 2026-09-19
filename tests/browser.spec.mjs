@@ -113,12 +113,12 @@ test('pricing explains Basic Pro and Business in output terms',async({page})=>{
   await expect(page.getByText('≈ 50 × 15-sec outputs')).toBeVisible();
   await expect(page.getByText('≈ 150 × 15-sec outputs')).toBeVisible();
   await expect(page.getByText('≈ 1,000 × 15-sec outputs')).toBeVisible();
-  await expect(page.getByText('Local processing + automatic saving',{exact:true})).toBeVisible();
-  await expect(page.getByText('Gentle + Balance processing modes',{exact:true})).toBeVisible();
-  await expect(page.getByText('All processing modes + highest 4K quality',{exact:true})).toBeVisible();
-  await expect(page.getByText('Gentle mode · Avatar Narrator included',{exact:true})).toBeVisible();
-  await expect(page.getByText('More control · Avatar Narrator included',{exact:true})).toBeVisible();
-  await expect(page.getByText('High-volume workflow · Avatar Narrator included',{exact:true})).toBeVisible();
+  await expect(page.locator('#plansView .planBenefits').getByText('Local processing + automatic saving',{exact:true})).toBeVisible();
+  await expect(page.locator('#plansView .planBenefits').getByText('Gentle + Balance processing modes',{exact:true})).toBeVisible();
+  await expect(page.locator('#plansView .planBenefits').getByText('All processing modes + highest 4K quality',{exact:true})).toBeVisible();
+  await expect(page.locator('#plansView .planBenefits').getByText('Gentle mode · Avatar Narrator included',{exact:true})).toBeVisible();
+  await expect(page.locator('#plansView .planBenefits').getByText('More control · Avatar Narrator included',{exact:true})).toBeVisible();
+  await expect(page.locator('#plansView .planBenefits').getByText('High-volume workflow · Avatar Narrator included',{exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'Choose Basic'})).toBeVisible();
 });
 
