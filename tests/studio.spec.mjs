@@ -7,7 +7,7 @@ test('portrait AI is the only local AI experiment exposed',async({page})=>{
  await expect(page.getByText('Avatar Narrator')).toBeVisible();
  await expect(page.getByText('Auto captions')).toHaveCount(0);
  await expect(page.getByText('Video background')).toHaveCount(0);
- await page.goto('/ai-tools.html');
+ await page.goto('/ai-tools.html',{waitUntil:'domcontentloaded'});
  await expect(page.getByRole('heading',{name:'Portrait Cutout'})).toBeVisible();
  await expect(page.locator('#aiExplanation')).toContainText('photos of people');
  await page.locator('#aiRun').click();
