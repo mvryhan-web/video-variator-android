@@ -5,13 +5,13 @@
   const locale=lang.startsWith('fr')?'fr':lang.startsWith('ru')?'ru':lang.startsWith('uk')?'uk':'en';
   const copy={
     en:{
-      hero:'Uniqueify your old video',
-      heroText:'Upload one original, choose the number of variations available in your plan, and create multiple finished versions locally on your device.',
-      workspace:'Turn one original into multiple finished versions',
-      workspaceSub:'Choose how many versions you want. Video Uniquifier handles the variation automatically.',
-      futureTag:'Built for the next decade of content',
-      pricing:'Choose how far one original can go',
-      pricingSub:'Pick the level that matches your workflow. 1 second of each generated output uses 1 credit.',
+      hero:'Turn your old video into fresh new versions',
+      heroText:'Upload once, choose how many versions you need, and create privacy-first results locally on your device.',
+      workspace:'Create multiple ready-to-use versions',
+      workspaceSub:'Upload once, choose your variations, and let Video Uniquifier handle the local processing.',
+      futureTag:'Private · local · creator-first',
+      pricing:'Choose your creator plan',
+      pricingSub:'Simple monthly plans for different creator workloads. 1 second of each generated output uses 1 credit.',
       trial:'Your free videos are used. Choose a plan and keep creating multiple versions from every upload.',
       howTitle:'One original can become many finished versions',
       howText:'Your idea stays yours. Video Uniquifier gives each output its own combination of frame, motion, color, audio and technical processing.',
@@ -43,9 +43,9 @@
   };
   const tx=copy[locale]||copy.en;
   const plans={
-    basic:{name:'Basic',credits:'750',short15:'≈ 50 × 15-sec outputs',short30:'or 25 × 30-sec outputs',micro:'Up to 50 technical micro-adjustment options',variants:'Up to 5 variations',access:'Gentle · 720p · up to 5 variations · Avatar Narrator'},
-    pro:{name:'Pro',credits:'2,250',short15:'≈ 150 × 15-sec outputs',short30:'or 75 × 30-sec outputs',micro:'Up to 100 advanced micro-adjustment options',variants:'Up to 10 variations',access:'Gentle + Balance · 1080p · up to 10 variations · Avatar Narrator'},
-    business:{name:'Business',credits:'15,000',short15:'≈ 1,000 × 15-sec outputs',short30:'or 500 × 30-sec outputs',micro:'Up to 150 full-pipeline adjustment options',variants:'Up to 15 variations',access:'Gentle + Balance + Dynamic · 4K · up to 15 variations · Avatar Narrator'}
+    basic:{name:'Basic',credits:'750',short15:'≈ 50 × 15-sec outputs',short30:'or 25 × 30-sec outputs',micro:'Local processing + automatic saving',variants:'Up to 5 variations · 720p',access:'Gentle mode · Avatar Narrator included'},
+    pro:{name:'Pro',credits:'2,250',short15:'≈ 150 × 15-sec outputs',short30:'or 75 × 30-sec outputs',micro:'Gentle + Balance processing modes',variants:'Up to 10 variations · 1080p',access:'More control · Avatar Narrator included'},
+    business:{name:'Business',credits:'15,000',short15:'≈ 1,000 × 15-sec outputs',short30:'or 500 × 30-sec outputs',micro:'All processing modes + highest 4K quality',variants:'Up to 15 variations · 4K',access:'High-volume workflow · Avatar Narrator included'}
   };
 
   function goPlans(){
@@ -128,7 +128,7 @@
     const box=document.createElement('section');box.id='trialCompleteUpsell';box.className='trialCompleteUpsell';box.hidden=true;
     box.innerHTML=`<span class="pill accent">Free trial complete</span><h3>Choose a plan to keep creating</h3><p>${tx.trial}</p><div class="trialPlanGrid"></div><button type="button" class="ghostBtn trialCompareBtn">Compare all plan details</button>`;
     const grid=box.querySelector('.trialPlanGrid');
-    ['basic','pro','business'].forEach(id=>{const p=plans[id];const b=document.createElement('button');b.type='button';b.className='trialPlanMini';b.dataset.plan=id;b.innerHTML=`<strong>${p.name}</strong><span>${id==='basic'?'$9':id==='pro'?'$24':'$99'} / mo</span><small>${p.micro.replace('Up to ','')}</small>`;b.addEventListener('click',goPlans);grid.appendChild(b);});
+    ['basic','pro','business'].forEach(id=>{const p=plans[id];const b=document.createElement('button');b.type='button';b.className='trialPlanMini';b.dataset.plan=id;b.innerHTML=`<strong>${p.name}</strong><span>${id==='basic'?'$9':id==='pro'?'$24':'$99'} / mo</span><small>${p.micro}</small>`;b.addEventListener('click',goPlans);grid.appendChild(b);});
     box.querySelector('.trialCompareBtn').addEventListener('click',goPlans);
     workspace.appendChild(box);
   }
