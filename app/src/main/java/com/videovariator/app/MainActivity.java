@@ -293,6 +293,7 @@ public class MainActivity extends Activity {
                     });
                 } else {
                     OutputStream target;
+                    File legacySaved = null;
                     final String directory = mime.startsWith("video/") ? Environment.DIRECTORY_MOVIES : mime.startsWith("image/") ? Environment.DIRECTORY_PICTURES : mime.startsWith("audio/") ? Environment.DIRECTORY_MUSIC : Environment.DIRECTORY_DOWNLOADS;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         ContentValues values = new ContentValues(); values.put(MediaStore.MediaColumns.DISPLAY_NAME, ready.getName());
@@ -304,13 +305,14 @@ public class MainActivity extends Activity {
                     } else {
                         File dir = new File(Environment.getExternalStoragePublicDirectory(directory), "VideoUniquifier");
                         if (!dir.exists() && !dir.mkdirs()) throw new java.io.IOException("No directory");
-                        File publishedFile = new File(dir, ready.getName());
-                        target = new FileOutputStream(publishedFile);
+                        legacySaved = new File(dir, ready.getName());
+                        target = new FileOutputStream(legacySaved);
                     }
                     try (java.io.InputStream input = new java.io.FileInputStream(ready); OutputStream output = target) {
                         byte[] bytes = new byte[262144]; int count; while ((count = input.read(bytes)) != -1) output.write(bytes, 0, count);
                     }
                     if (dest != null) { ContentValues values = new ContentValues(); values.put(MediaStore.MediaColumns.IS_PENDING, 0); getContentResolver().update(dest, values, null, null); }
+                    if (legacySaved != null) MediaScannerConnection.scanFile(MainActivity.this, new String[]{legacySaved.getAbsolutePath()}, new String[]{mime}, null);
                     ready.delete();
                     runOnUiThread(() -> Toast.makeText(MainActivity.this, "Saved to " + directory + "/VideoUniquifier", Toast.LENGTH_SHORT).show());
                 }

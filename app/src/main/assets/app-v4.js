@@ -93,7 +93,7 @@
     onLog(line){console.debug('[VideoVariator]',line);}
   });
 
-  function downloadBlob(name,blob){if(window.AndroidBridge&&window.VideoVariatorCore?.saveToDevice){window.VideoVariatorCore.saveToDevice(name,blob).then(r=>toast(r.saved?t('saved'):'Could not save. Please try again.')).catch(()=>toast('Could not save. Please try again.'));return;}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
+  function downloadBlob(name,blob){if(window.AndroidBridge&&window.VideoVariatorCore?.saveToDevice){window.VideoVariatorCore.saveToDevice(name,blob).then(r=>toast(r.saved?t('saved'):'Could not save. Please try again.')).catch(()=>toast('Could not save. Please try again.'));return;}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
   function autoSaveBrowserResults(results){if(window.AndroidBridge)return;results.forEach((r,i)=>setTimeout(()=>downloadBlob(r.name,r.blob),i*250));}
   async function addHistory(results){const items=[];for(const r of results){sessionDownloads.set(r.id,r.blob);const item={id:r.id,name:r.name,sourceName:r.sourceName,createdAt:r.createdAt,resolution:r.resolution,aspectRatio:r.aspectRatio,durationSeconds:r.durationSeconds,credits:r.credits,saved:r.saved||!window.AndroidBridge,path:r.path||null};state.history.unshift(item);items.push(item);}saveHistory();renderHistory();if(state.user)api('/api/history',{method:'POST',body:JSON.stringify({items})}).catch(()=>{});}
 

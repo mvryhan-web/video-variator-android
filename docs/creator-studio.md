@@ -1,25 +1,23 @@
-# Creator studio (5.2)
+# Creator studio 5.3
 
-Existing video variation processing and billing stay in their original modules. `studio.css` supplies the new dashboard, pricing and tools presentation.
+The premium layout and CameraX teleprompter remain. Photo/video background removal and automatic captions are retired; their old web routes return HTTP 410.
 
-## Local AI previews
+## Avatar commentary beta
 
-`ai-worker.js` loads the standalone Transformers.js browser bundle from the same origin. The browser downloads public MODNet / Whisper tiny model weights from Hugging Face only after a user starts an operation. Source photos, audio and video are never posted to an inference service. No API key or paid inference account is required. Model downloads may exceed 100 MB; speed and available memory vary by device.
+`avatar.html` checks `/api/avatar/access` against the authenticated server-side plan (active Basic, Pro, Business or administrator). No prices or credit consumption rules change. Original media never leaves the device. The server only authorizes access; local browser code is not DRM.
 
-- Portrait cutout: people only, up to 20 MB input and 1600 px output; transparent PNG.
-- Captions: first 60 seconds of a file up to 50 MB; editable SRT and a caption preview. Captions are not burned into the original video.
-- Video background: experimental first 3 seconds, 5 fps, at most 480 px, up to 30 MB input. Solid-color replacement and original audio when present. This is a preview, not a full-length video editor.
+The user provides a portrait, video, narration text and consent. Uploaded voice recordings are used directly without cloning. Optional English female/male Kokoro voices run in a worker on local WASM; model assets download on explicit generation. The shared Transformers runtime and WASM versions must match. `postinstall` bundles Kokoro with the same-origin Transformers import. Model, runtime and phonemizer notices are linked from the editor.
 
-Inference stays in a disposable worker. Cancel terminates inference/FFmpeg. No model is downloaded just by opening the tools screen. Licenses and limitations are linked from the page.
+Output is portrait MP4, 720x1280, 12 fps, at most 30 seconds and no longer than the source video or narration. Source audio is replaced. The lower portrait uses manually positioned audio-reactive mouth deformation, not realistic lip-sync. Text is displayed in approximate timed groups, not speech-aligned subtitles. There is no automatic translation. Input limits: video 100 MB, photo 10 MB / 40 megapixels, audio 20 MB, text 350 characters. Own audio is the fallback when local TTS exceeds phone memory.
 
-## Camera teleprompter
+## Saving
 
-Android uses CameraX Preview + VideoCapture/Recorder in `TeleprompterActivity`. A ScrollView/TextView overlays the live preview. Scrolling starts on the recording Start event and stops when recording stops. Prompt text is not encoded into the video. Videos are stored through MediaStore (Movies/VideoUniquifier on Android 10+) and can be shared through the Android share sheet. Camera and microphone access require explicit system permission. If microphone permission is denied, the native screen clearly indicates that recording has no audio. Leaving the screen stops recording.
+Android saves video to Movies/VideoUniquifier, images to Pictures/VideoUniquifier and audio to Music/VideoUniquifier with MediaStore. Share uses a FileProvider URI and the Android chooser. The main video engine retains its existing automatic-save adapter. Repeat downloads and history sharing use the actual Blob. Empty native video saves fail instead of reporting success.
 
-Web/PWA uses getUserMedia + MediaRecorder after an explicit Open camera action. Start begins recording and scrolling together. The camera stops when the page becomes hidden. MP4 is preferred where supported; otherwise WebM is used. Browser recordings are kept in memory until downloaded/shared; capture stops at approximately 150 MB. The overlay is preview-only. Permissions-Policy grants camera/microphone access to this origin only.
+Browsers send completed files to Downloads automatically; browser settings can block automatic/multiple downloads. Manual Download remains available, and unsupported desktop file sharing downloads a copy with an explanation. Old APKs lacking the generic file bridge show an update message instead of silently doing nothing. Browser UI updates alone cannot add native capabilities to an old APK.
 
-An older Android build needs an app update for the new native camera bridge and SRT saving. The package remains com.videovariator.app. Existing release-signing secrets are used if configured; debug builds cannot guarantee an in-place update over an app signed with a different key.
+## Verification and release
 
-## Verification
+The browser suite tests local MP4 composition, actual WAV synthesis for both voices, automatic/manual downloads, sharing bridge byte transfers and existing video/trial/pricing flows across five browser configurations. Android instrumentation checks camera recording and MediaStore image bytes in an emulator. Physical phones are still required to assess performance and voice-model memory use.
 
-The browser suite covers mobile layout, existing engine/trial/prices, real local compression/audio extraction, actual model inference (PNG, speech captions, background MP4), download output and camera recording using Chromium's virtual camera. Android instrumentation uses an emulator camera and checks simultaneous prompt scrolling, Gallery output and decodable saved video. These automated devices do not replace physical iPhone/Android testing for camera quality, microphone behavior or performance.
+APK package stays com.videovariator.app. Version 5.3.0 / code 8. Release workflow uses signing secrets when configured; otherwise its debug APK is not guaranteed to update an installation signed with a different key. Do not tell users to uninstall to work around signing without explaining loss of local data.
