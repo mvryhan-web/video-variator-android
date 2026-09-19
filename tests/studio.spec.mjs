@@ -76,7 +76,7 @@ test('real local portrait model produces a transparent PNG',async({page},info)=>
 
 test('native camera opens with the current prompt settings',async({page})=>{
  await page.addInitScript(()=>{window.AndroidBridge={openTeleprompter:(...args)=>window.cameraArgs=args};});
- await page.goto('/free-tools.html');await page.locator('#script').fill('Read this script');await page.locator('#cameraOpen').click();
+ await page.goto('/free-tools.html',{waitUntil:'domcontentloaded'});await page.locator('#script').fill('Read this script');await page.locator('#cameraOpen').click();
  expect(await page.evaluate(()=>window.cameraArgs)).toEqual(['Read this script',30,36,false]);
 });
 
