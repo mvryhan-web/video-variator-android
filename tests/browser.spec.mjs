@@ -234,3 +234,45 @@ test('premium creator UI exposes clear trust and plan positioning',async({page})
   const contrast=await disabled.evaluate(el=>({color:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor}));
   expect(contrast.color).not.toBe(contrast.bg);
 });
+
+
+test('authenticated billing controls call the intended endpoints without client errors',async({page})=>{
+  const errors=[];let checkoutCalls=0,portalCalls=0,cancelCalls=0;
+  page.on('pageerror',e=>errors.push(e.message));
+  const json=body=>({status:200,contentType:'application/json',body:JSON.stringify(body)});
+  await page.route('**/api/config',route=>route.fulfill(json({
+    googleClientId:'test-google',appleClientId:'test-apple',appleRedirectUri:'https://example.test/apple',
+    billingConfigured:true,plans:{basic:{price:9,limit:750,unit:'credits'},pro:{price:24,limit:2250,unit:'credits'},business:{price:99,limit:15000,unit:'credits'}},
+    privacy:{httpsRequired:true,localVideoProcessing:true,rawVideoUploadDisabled:true}
+  })));
+  await page.route('**/api/me',route=>route.fulfill(json({user:{id:'u1',email:'creator@example.com',name:'Creator',isAdmin:false,usage:{plan:'pro',limit:2250,used:120,remaining:2130,active:true,unlimited:false,unit:'credits',status:'active',currentPeriodEnd:null}}})));
+  await page.route('**/api/analytics',route=>route.fulfill(json({analytics:{credits:120,outputs:8,seconds:120,successes:8,attempts:8,errors:0}})));
+  await page.route('**/api/history',route=>route.fulfill(json({history:[]})));
+  await page.route('**/api/billing/checkout',async route=>{checkoutCalls++;await route.fulfill(json({url:'http://127.0.0.1:3000/?checkout=pro'}));});
+  await page.route('**/api/billing/portal',async route=>{portalCalls++;await route.fulfill(json({url:'http://127.0.0.1:3000/?portal=1'}));});
+  await page.route('**/api/billing/cancel',async route=>{cancelCalls++;await route.fulfill(json({ok:true}));});
+  await page.addInitScript(()=>localStorage.setItem('vv_token','test-token'));
+  await page.reload({waitUntil:'domcontentloaded'});
+  await expect(page.locator('#currentPlan')).toHaveText('Pro');
+
+  await openView(page,'plans');
+  await page.locator('.planBtn[data-plan="pro"]').click();
+  await expect(page).toHaveURL(/checkout=pro/);
+  expect(checkoutCalls).toBe(1);
+
+  await openView(page,'profile');
+  await expect(page.locator('#manageBillingBtn')).toBeEnabled();
+  await page.locator('#manageBillingBtn').click();
+  await expect(page).toHaveURL(/portal=1/);
+  expect(portalCalls).toBe(1);
+
+  page.on('dialog',dialog=>dialog.accept());
+  await openView(page,'profile');
+  await page.locator('#cancelSubscriptionBtn').click();
+  await expect.poll(()=>cancelCalls).toBe(1);
+
+  await page.locator('#signInBtn').click();
+  await expect(page.locator('#signInBtn')).toHaveText('Sign in');
+  expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBeNull();
+  expect(errors).toEqual([]);
+});
