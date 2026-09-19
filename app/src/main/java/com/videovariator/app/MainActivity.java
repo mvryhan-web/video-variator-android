@@ -6,6 +6,8 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaScannerConnection;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.Voice;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,6 +15,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
+import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -30,16 +33,24 @@ import com.google.android.play.core.install.model.InstallStatus;
 import com.google.android.play.core.install.model.UpdateAvailability;
 
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
     private static final int PLAY_UPDATE_REQUEST = 1003;
     private static final int STORAGE_PERMISSION_REQUEST = 1004;
+    private static final int WEB_MEDIA_PERMISSION_REQUEST = 1005;
     private WebView webView;
+    private PermissionRequest pendingWebPermissionRequest;
+    private TextToSpeech textToSpeech;
+    private volatile boolean ttsReady = false;
     private ValueCallback<Uri[]> fileChooserCallback;
     private AppUpdateManager appUpdateManager;
     private String trustedWebOrigin = "";
@@ -63,6 +74,12 @@ public class MainActivity extends Activity {
 
         webView = new WebView(this);
         setContentView(webView);
+        textToSpeech = new TextToSpeech(this, status -> {
+            ttsReady = status == TextToSpeech.SUCCESS;
+            if (ttsReady && webView != null) runOnUiThread(() ->
+                webView.evaluateJavascript("window.vuNativeVoicesReady&&window.vuNativeVoicesReady()", null)
+            );
+        });
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
             webView.setOnApplyWindowInsetsListener((view, insets) -> {
                 view.setPadding(
@@ -96,6 +113,11 @@ public class MainActivity extends Activity {
             @Override public void onPageFinished(WebView view, String url) { super.onPageFinished(view, url); deliverPendingAuthToken(); }
         });
         webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onPermissionRequest(PermissionRequest request) {
+                runOnUiThread(() -> handleWebPermissionRequest(request));
+            }
+
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
                 if (fileChooserCallback != null) fileChooserCallback.onReceiveValue(null);
@@ -185,6 +207,54 @@ public class MainActivity extends Activity {
         });
     }
 
+    private void handleWebPermissionRequest(PermissionRequest request) {
+        if (request == null || request.getOrigin() == null) return;
+        String origin = request.getOrigin().getScheme() + "://" + request.getOrigin().getAuthority();
+        boolean trusted = trustedWebOrigin.startsWith("file://")
+                ? "file".equalsIgnoreCase(request.getOrigin().getScheme())
+                : origin.equalsIgnoreCase(trustedWebOrigin);
+        if (!trusted) { request.deny(); return; }
+
+        boolean wantsAudio = false, wantsVideo = false;
+        for (String resource : request.getResources()) {
+            if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) wantsAudio = true;
+            if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(resource)) wantsVideo = true;
+        }
+
+        List<String> missing = new ArrayList<>();
+        if (wantsAudio && checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) missing.add(Manifest.permission.RECORD_AUDIO);
+        if (wantsVideo && checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) missing.add(Manifest.permission.CAMERA);
+        if (!missing.isEmpty()) {
+            if (pendingWebPermissionRequest != null) pendingWebPermissionRequest.deny();
+            pendingWebPermissionRequest = request;
+            requestPermissions(missing.toArray(new String[0]), WEB_MEDIA_PERMISSION_REQUEST);
+            return;
+        }
+        grantWebPermissionRequest(request);
+    }
+
+    private void grantWebPermissionRequest(PermissionRequest request) {
+        List<String> granted = new ArrayList<>();
+        for (String resource : request.getResources()) {
+            if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)
+                    && checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) granted.add(resource);
+            if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(resource)
+                    && checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) granted.add(resource);
+        }
+        if (granted.isEmpty()) request.deny();
+        else request.grant(granted.toArray(new String[0]));
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == WEB_MEDIA_PERMISSION_REQUEST && pendingWebPermissionRequest != null) {
+            PermissionRequest request = pendingWebPermissionRequest;
+            pendingWebPermissionRequest = null;
+            runOnUiThread(() -> grantWebPermissionRequest(request));
+        }
+    }
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -217,6 +287,8 @@ public class MainActivity extends Activity {
 
     @Override protected void onDestroy() {
         if (appUpdateManager != null) appUpdateManager.unregisterListener(updateListener);
+        if (pendingWebPermissionRequest != null) { pendingWebPermissionRequest.deny(); pendingWebPermissionRequest = null; }
+        if (textToSpeech != null) { textToSpeech.stop(); textToSpeech.shutdown(); textToSpeech = null; ttsReady = false; }
         if (webView != null) { webView.removeJavascriptInterface("AndroidBridge"); webView.destroy(); }
         super.onDestroy();
     }
@@ -252,6 +324,51 @@ public class MainActivity extends Activity {
 
     private class AndroidBridge {
         private OutputStream toolStream;
+        @JavascriptInterface public String getTtsVoices() {
+            JSONArray voices = new JSONArray();
+            if (!ttsReady || textToSpeech == null) return voices.toString();
+            try {
+                Set<Voice> available = textToSpeech.getVoices();
+                if (available == null) return voices.toString();
+                for (Voice voice : available) {
+                    JSONObject item = new JSONObject();
+                    item.put("name", voice.getName());
+                    item.put("lang", voice.getLocale() == null ? "" : voice.getLocale().toLanguageTag());
+                    item.put("voiceURI", voice.getName());
+                    item.put("native", true);
+                    voices.put(item);
+                }
+            } catch (Exception ignored) { }
+            return voices.toString();
+        }
+
+        @JavascriptInterface public boolean speakTtsVoice(String voiceName, String text) {
+            if (!ttsReady || textToSpeech == null || text == null) return false;
+            final Voice[] selected = new Voice[]{null};
+            try {
+                Set<Voice> available = textToSpeech.getVoices();
+                if (available != null) for (Voice voice : available) {
+                    if (voice.getName().equals(voiceName)) { selected[0] = voice; break; }
+                }
+            } catch (Exception ignored) { }
+            if (selected[0] == null) return false;
+            final String safeText = text.substring(0, Math.min(text.length(), 5000));
+            runOnUiThread(() -> {
+                try {
+                    textToSpeech.stop();
+                    textToSpeech.setVoice(selected[0]);
+                    textToSpeech.speak(safeText, TextToSpeech.QUEUE_FLUSH, null, "video-uniquifier-preview");
+                } catch (Exception ignored) { }
+            });
+            return true;
+        }
+
+        @JavascriptInterface public void stopTtsVoice() {
+            if (textToSpeech != null) runOnUiThread(() -> {
+                try { textToSpeech.stop(); } catch (Exception ignored) { }
+            });
+        }
+
         @JavascriptInterface public void openTeleprompter(String script, int speed, int font, boolean mirror) {
             final String safeScript = script == null ? "" : script.substring(0, Math.min(script.length(), 30000));
             runOnUiThread(() -> startActivity(new Intent(MainActivity.this, TeleprompterActivity.class)
