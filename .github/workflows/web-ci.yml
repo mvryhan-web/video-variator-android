@@ -3,6 +3,8 @@ name: Validate Video Variator Web
 on:
   push:
     branches: [ main, free-tools, studio-stage-two, stage-two-avatar-download-fix ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
