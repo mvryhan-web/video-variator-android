@@ -1,4 +1,6 @@
 import {test,expect} from '@playwright/test';
+import {execFileSync} from 'node:child_process';
+import {readFileSync} from 'node:fs';
 
 async function openView(page,name){
   await page.locator(`.navBtn[data-view="${name}"]`).evaluate(el=>el.click());
@@ -344,4 +346,81 @@ test('main History restores cached Avatar video actions after restart',async({pa
   await expect(row).toContainText('Avatar Narrator');
   await expect(row.getByRole('button',{name:'Download'})).toBeVisible();
   await expect(row.getByRole('button',{name:'Share'})).toBeVisible();
+});
+
+
+test('Android native voice list opens, previews David Voice, and Select closes it',async({page})=>{
+  await page.addInitScript(()=>{
+    window.__nativeSpoken=[];
+    window.AndroidBridge={
+      getTtsVoices(){return JSON.stringify([
+        {name:'David Voice',lang:'en-US',voiceURI:'David Voice',native:true},
+        {name:'Samantha Voice',lang:'en-US',voiceURI:'Samantha Voice',native:true}
+      ]);},
+      speakTtsVoice(name,text){window.__nativeSpoken.push({name,text});return true;},
+      stopTtsVoice(){window.__nativeStopped=(window.__nativeStopped||0)+1;}
+    };
+  });
+  await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#avatarText').fill('Native voice preview text');
+  await page.locator('#voicePickerToggle').click();
+  await expect(page.locator('#voicePickerMenu')).toBeVisible();
+  await expect(page.locator('.voice-option')).toHaveCount(2);
+  const david=page.locator('.voice-option').filter({hasText:'David Voice'});
+  await david.locator('.voice-option-preview').click();
+  await expect.poll(()=>page.evaluate(()=>window.__nativeSpoken.length)).toBe(1);
+  expect((await page.evaluate(()=>window.__nativeSpoken[0])).name).toBe('David Voice');
+  await expect(page.locator('#voicePickerMenu')).toBeVisible();
+  await david.locator('.voice-option-select').click();
+  await expect(page.locator('#voicePickerMenu')).toBeHidden();
+  await expect(page.locator('#voicePickerLabel')).toContainText('David Voice');
+});
+
+test('Avatar Record voice requests microphone, records, and Stop stores the recording',async({page})=>{
+  await page.addInitScript(()=>{
+    const track={stop(){window.__trackStopped=true;}};
+    Object.defineProperty(navigator,'mediaDevices',{configurable:true,value:{getUserMedia:async()=>({getTracks:()=>[track]})}});
+    class FakeMediaRecorder{
+      static isTypeSupported(){return true;}
+      constructor(stream,opts){this.stream=stream;this.mimeType=opts?.mimeType||'audio/webm';this.state='inactive';this.ondataavailable=null;this.onstop=null;this.onerror=null;}
+      start(){this.state='recording';}
+      stop(){this.state='inactive';this.ondataavailable?.({data:new Blob(['voice-data'],{type:'audio/webm'})});this.onstop?.();}
+    }
+    Object.defineProperty(window,'MediaRecorder',{configurable:true,value:FakeMediaRecorder});
+  });
+  await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#recordVoice').click();
+  await expect(page.locator('#recordVoice')).toBeDisabled();
+  await expect(page.locator('#stopVoice')).toBeEnabled();
+  await expect(page.locator('#voiceStatus')).toContainText(/Recording|Запись|Enregistrement|Запис/);
+  await page.locator('#stopVoice').click();
+  await expect(page.locator('#recordVoice')).toBeEnabled();
+  await expect(page.locator('#stopVoice')).toBeDisabled();
+  await expect(page.locator('#voiceStatus')).toContainText(/recorded|записан|enregistr|записано/i);
+  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('vu_avatar_draft_v2')||'{}').files?.voice?.name||'')).toContain('VideoUniquifier-avatar-voice');
+  expect(await page.evaluate(()=>window.__trackStopped)).toBe(true);
+});
+
+test('Avatar generation shows percentage, auto-downloads, and leaves a downloadable History item',async({page},testInfo)=>{
+  test.skip(testInfo.project.name!=='chromium');
+  test.setTimeout(180000);
+  const source=testInfo.outputPath('avatar-progress-source.mp4');
+  execFileSync('ffmpeg',['-y','-f','lavfi','-i','color=c=black:s=160x90:d=0.7','-f','lavfi','-i','sine=frequency=440:duration=0.7','-shortest','-c:v','libx264','-pix_fmt','yuv420p','-c:a','aac',source],{stdio:'ignore'});
+  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFElEQVR42mNk+M9Qz0AEYBxVSFUAAN4ABf4F0kwAAAAASUVORK5CYII=','base64');
+  await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#avatarVideo').setInputFiles({name:'source.mp4',mimeType:'video/mp4',buffer:readFileSync(source)});
+  await page.locator('#avatarPhoto').setInputFiles({name:'avatar.png',mimeType:'image/png',buffer:png});
+  await page.locator('#avatarText').fill('Create a short test video.');
+  await page.locator('#voiceConsent').check();
+  await expect(page.locator('#avatarGenerate')).toBeEnabled();
+  const downloadPromise=page.waitForEvent('download',{timeout:150000});
+  await page.locator('#avatarGenerate').click();
+  await expect(page.locator('#avatarProgress')).toBeVisible();
+  await expect.poll(async()=>parseInt((await page.locator('#avatarProgressPercent').textContent())||'0',10),{timeout:120000}).toBeGreaterThan(0);
+  const download=await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/^VideoUniquifier-Avatar-.*\.mp4$/);
+  await expect(page.locator('#avatarProgressPercent')).toHaveText('100%',{timeout:150000});
+  const latest=page.locator('#avatarHistory .avatar-history-row').first();
+  await expect(latest).toContainText(/Ready|Готово|Prêt/);
+  await expect(latest.getByRole('button',{name:/Download|Скачать|Télécharger|Завантажити/})).toBeVisible();
 });
