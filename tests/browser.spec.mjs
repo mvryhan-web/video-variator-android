@@ -403,9 +403,20 @@ test('Avatar Record voice requests microphone, records, and Stop stores the reco
 
 test('Avatar generation shows percentage, auto-downloads, and leaves a downloadable History item',async({page},testInfo)=>{
   test.skip(testInfo.project.name!=='chromium');
-  test.setTimeout(180000);
+  await page.addInitScript(()=>{
+    class FastFFmpeg{
+      constructor(){this.handlers={};}
+      on(name,fn){this.handlers[name]=fn;}
+      async load(){return true;}
+      async writeFile(){return true;}
+      async exec(){this.handlers.progress?.({progress:.25});this.handlers.progress?.({progress:.75});this.handlers.progress?.({progress:1});return 0;}
+      async readFile(){return new Uint8Array([0,0,0,24,102,116,121,112,105,115,111,109]);}
+      terminate(){}
+    }
+    window.FFmpegWASM={FFmpeg:FastFFmpeg};
+  });
   const source=testInfo.outputPath('avatar-progress-source.mp4');
-  execFileSync('ffmpeg',['-y','-f','lavfi','-i','color=c=black:s=160x90:d=0.7','-f','lavfi','-i','sine=frequency=440:duration=0.7','-shortest','-c:v','libx264','-pix_fmt','yuv420p','-c:a','aac',source],{stdio:'ignore'});
+  execFileSync('ffmpeg',['-y','-f','lavfi','-i','color=c=black:s=160x90:d=0.4','-f','lavfi','-i','sine=frequency=440:duration=0.4','-shortest','-c:v','libx264','-pix_fmt','yuv420p','-c:a','aac',source],{stdio:'ignore'});
   const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFElEQVR42mNk+M9Qz0AEYBxVSFUAAN4ABf4F0kwAAAAASUVORK5CYII=','base64');
   await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
   await page.locator('#avatarVideo').setInputFiles({name:'source.mp4',mimeType:'video/mp4',buffer:readFileSync(source)});
@@ -413,13 +424,13 @@ test('Avatar generation shows percentage, auto-downloads, and leaves a downloada
   await page.locator('#avatarText').fill('Create a short test video.');
   await page.locator('#voiceConsent').check();
   await expect(page.locator('#avatarGenerate')).toBeEnabled();
-  const downloadPromise=page.waitForEvent('download',{timeout:150000});
+  const downloadPromise=page.waitForEvent('download',{timeout:30000});
   await page.locator('#avatarGenerate').click();
   await expect(page.locator('#avatarProgress')).toBeVisible();
-  await expect.poll(async()=>parseInt((await page.locator('#avatarProgressPercent').textContent())||'0',10),{timeout:120000}).toBeGreaterThan(0);
+  await expect.poll(async()=>parseInt((await page.locator('#avatarProgressPercent').textContent())||'0',10),{timeout:15000}).toBeGreaterThan(0);
   const download=await downloadPromise;
   expect(download.suggestedFilename()).toMatch(/^VideoUniquifier-Avatar-.*\.mp4$/);
-  await expect(page.locator('#avatarProgressPercent')).toHaveText('100%',{timeout:150000});
+  await expect(page.locator('#avatarProgressPercent')).toHaveText('100%',{timeout:15000});
   const latest=page.locator('#avatarHistory .avatar-history-row').first();
   await expect(latest).toContainText(/Ready|Готово|Prêt/);
   await expect(latest.getByRole('button',{name:/Download|Скачать|Télécharger|Завантажити/})).toBeVisible();
