@@ -14,7 +14,7 @@ test.beforeEach(async({page})=>{
 test('loads rebranded dashboard with zero of two free trial videos',async({page})=>{
   await expect(page.getByRole('heading',{name:'Dashboard'})).toBeVisible();
   await expect(page.locator('#creditText')).toHaveText('0 / 2');
-  await expect(page.getByText('Uniqueify your old video')).toBeVisible();
+  await expect(page.getByText('Turn your old video into fresh new versions')).toBeVisible();
   await expect(page.getByText('One video. Many versions.')).toBeVisible();
   await expect(page.locator('#resultsCard')).toBeHidden();
   await expect(page.getByText('Video Uniquifier',{exact:true}).first()).toBeVisible();
@@ -113,12 +113,12 @@ test('pricing explains Basic Pro and Business in output terms',async({page})=>{
   await expect(page.getByText('≈ 50 × 15-sec outputs')).toBeVisible();
   await expect(page.getByText('≈ 150 × 15-sec outputs')).toBeVisible();
   await expect(page.getByText('≈ 1,000 × 15-sec outputs')).toBeVisible();
-  await expect(page.getByText('Up to 50 technical micro-adjustment options')).toBeVisible();
-  await expect(page.getByText('Up to 100 advanced micro-adjustment options')).toBeVisible();
-  await expect(page.getByText('Up to 150 full-pipeline adjustment options')).toBeVisible();
-  await expect(page.getByText('Gentle · 720p · up to 5 variations · Avatar Narrator')).toBeVisible();
-  await expect(page.getByText('Gentle + Balance · 1080p · up to 10 variations · Avatar Narrator')).toBeVisible();
-  await expect(page.getByText('Gentle + Balance + Dynamic · 4K · up to 15 variations · Avatar Narrator')).toBeVisible();
+  await expect(page.getByText('Local processing + automatic saving')).toBeVisible();
+  await expect(page.getByText('Gentle + Balance processing modes')).toBeVisible();
+  await expect(page.getByText('All processing modes + highest 4K quality')).toBeVisible();
+  await expect(page.getByText('Gentle mode · Avatar Narrator included')).toBeVisible();
+  await expect(page.getByText('More control · Avatar Narrator included')).toBeVisible();
+  await expect(page.getByText('High-volume workflow · Avatar Narrator included')).toBeVisible();
   await expect(page.getByRole('button',{name:'Choose Basic'})).toBeVisible();
 });
 
