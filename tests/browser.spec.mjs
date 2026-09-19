@@ -276,3 +276,42 @@ test('authenticated billing controls call the intended endpoints without client 
   expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBeNull();
   expect(errors).toEqual([]);
 });
+
+
+test('Avatar free test enables split-screen creation without recorded audio and previews selected device voice',async({page})=>{
+  await page.addInitScript(()=>{
+    window.__spoken=[];window.__speechCanceled=0;
+    window.SpeechSynthesisUtterance=function(text){this.text=text;this.lang='';this.voice=null;this.onstart=null;this.onend=null;this.onerror=null;};
+    Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{
+      onvoiceschanged:null,
+      getVoices(){return[
+        {name:'Test Voice One',lang:'en-US',default:true},
+        {name:'Test Voice Two',lang:'en-GB',default:false}
+      ];},
+      cancel(){window.__speechCanceled++;},
+      speak(utter){window.__spoken.push({text:utter.text,voice:utter.voice?.name||'',lang:utter.lang});utter.onstart?.();}
+    }});
+  });
+  await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#avatarPlan')).toContainText('Free test');
+  await expect(page.locator('#avatarGenerate')).toBeDisabled();
+  await expect(page.locator('#avatarStopSpeak')).toBeDisabled();
+
+  await page.locator('#avatarVoice').selectOption('1');
+  await expect.poll(()=>page.evaluate(()=>window.__spoken.length)).toBe(1);
+  expect((await page.evaluate(()=>window.__spoken[0])).voice).toBe('Test Voice Two');
+  await expect(page.locator('#avatarStopSpeak')).toBeEnabled();
+  await page.locator('#avatarStopSpeak').click();
+  await expect.poll(()=>page.evaluate(()=>window.__speechCanceled)).toBeGreaterThan(0);
+  await expect(page.locator('#avatarStopSpeak')).toBeDisabled();
+
+  await page.locator('#avatarText').fill('This is my avatar test.');
+  await page.locator('#avatarSpeak').click();
+  await expect.poll(()=>page.evaluate(()=>window.__spoken.at(-1)?.text)).toBe('This is my avatar test.');
+
+  await page.locator('#avatarVideo').setInputFiles({name:'source.mp4',mimeType:'video/mp4',buffer:Buffer.from('video')});
+  await page.locator('#avatarPhoto').setInputFiles({name:'avatar.png',mimeType:'image/png',buffer:Buffer.from('image')});
+  await page.locator('#voiceConsent').check();
+  await expect(page.locator('#avatarGenerate')).toBeEnabled();
+  await expect(page.locator('#avatarReadyHint')).toContainText('Ready to create');
+});
