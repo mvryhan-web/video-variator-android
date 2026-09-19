@@ -195,6 +195,7 @@ async function showLatestDone(){
 window.addEventListener('pagehide',()=>{leaving=true;window.speechSynthesis?.cancel?.();recordStream?.getTracks().forEach(t=>t.stop());if(activeJobId)patchJob(activeJobId,{status:'queued'});try{engine?.terminate();}catch(_){}urls.splice(0).forEach(URL.revokeObjectURL);});
 
 (async()=>{
- try{await media?.persist?.();}catch(_){}
- await restoreDraft();await account();await renderAvatarHistory();await showLatestDone();await resumePending();
+ media?.persist?.().catch(()=>{});
+ await Promise.all([restoreDraft(),account()]);
+ await renderAvatarHistory();await showLatestDone();await resumePending();
 })();
