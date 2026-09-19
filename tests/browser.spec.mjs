@@ -178,3 +178,59 @@ test('processing state never shows the ready card at the same time',async({page}
   await expect(progress).toBeVisible();
   await expect(results).toBeHidden();
 });
+
+
+test('primary navigation and non-destructive controls respond without client errors',async({page,request})=>{
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  for(const view of ['history','analytics','plans','faq','profile','dashboard']){
+    await openView(page,view);
+    await expect(page.locator('#'+view+'View')).toHaveClass(/active/);
+  }
+
+  await page.locator('#signInBtn').click();
+  await expect(page.locator('#authModal')).toBeVisible();
+  await page.locator('.modalClose').click();
+  await expect(page.locator('#authModal')).toBeHidden();
+
+  await openView(page,'plans');
+  for(const plan of ['basic','pro','business']){
+    await page.locator('.planBtn[data-plan="'+plan+'"]').click();
+    await expect(page.locator('#authModal')).toBeVisible();
+    await page.locator('.modalClose').click();
+  }
+
+  await openView(page,'profile');
+  await expect(page.locator('#manageBillingBtn')).toBeDisabled();
+  await expect(page.locator('#cancelSubscriptionBtn')).toBeDisabled();
+  await page.locator('#checkUpdateBtn').click();
+  await expect(page.locator('#updateStatus')).not.toHaveText('');
+
+  await openView(page,'history');
+  await page.locator('#clearHistoryBtn').click();
+  await expect(page.locator('#historyEmpty')).toBeVisible();
+
+  const dimensions=await page.locator('button:visible').evaluateAll(btns=>btns.map(b=>({w:b.getBoundingClientRect().width,h:b.getBoundingClientRect().height,text:b.textContent.trim()})));
+  for(const d of dimensions){expect(d.w, d.text).toBeGreaterThanOrEqual(32);expect(d.h, d.text).toBeGreaterThanOrEqual(32);}
+
+  for(const path of ['/free-tools.html','/avatar-studio.html','/ai-tools.html']){
+    const res=await request.get(path);expect(res.status(),path).toBe(200);
+  }
+  expect(errors).toEqual([]);
+});
+
+test('premium creator UI exposes clear trust and plan positioning',async({page})=>{
+  await expect(page.locator('.heroTrust')).toBeVisible();
+  await expect(page.locator('.heroTrust')).toContainText('Local processing');
+  await expect(page.locator('.heroTrust')).toContainText('Private by design');
+  await expect(page.locator('.heroTrust')).toContainText('Automatic saving');
+  await expect(page.locator('.picker b')).toHaveText('Drop a video here or browse');
+  await openView(page,'plans');
+  await expect(page.locator('[data-plan-audience="basic"]')).toContainText('everyday creators');
+  await expect(page.locator('[data-plan-audience="pro"]')).toContainText('growing creators');
+  await expect(page.locator('[data-plan-audience="business"]')).toContainText('high-volume teams');
+  const disabled=page.locator('#startBtn');
+  await openView(page,'dashboard');
+  await expect(disabled).toBeDisabled();
+  const contrast=await disabled.evaluate(el=>({color:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor}));
+  expect(contrast.color).not.toBe(contrast.bg);
+});
