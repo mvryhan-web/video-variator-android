@@ -40,6 +40,27 @@ jobs:
           node --check app/src/main/assets/app-v5.js
           node --check app/src/main/assets/product-polish.js
           node --check app/src/main/assets/theme.js
+      - name: Production security and API smoke
+        run: |
+          node --input-type=module <<'NODE'
+          const base='https://video-variator-android.onrender.com';
+          const health=await fetch(base+'/api/health',{redirect:'error'});
+          if(!health.ok)throw new Error('health '+health.status);
+          const h=await health.json();
+          if(!h.ok||h.videoProcessing!=='local-only')throw new Error('health payload');
+          const configRes=await fetch(base+'/api/config',{redirect:'error'});
+          if(!configRes.ok)throw new Error('config '+configRes.status);
+          const cfg=await configRes.json();
+          if(!cfg.privacy?.localVideoProcessing||!cfg.privacy?.rawVideoUploadDisabled)throw new Error('privacy config');
+          if(cfg.plans?.basic?.price!==9||cfg.plans?.pro?.price!==24||cfg.plans?.business?.price!==99)throw new Error('plan prices changed');
+          const home=await fetch(base+'/',{redirect:'error'});
+          const hsts=home.headers.get('strict-transport-security')||'',csp=home.headers.get('content-security-policy')||'';
+          if(!hsts.includes('max-age=31536000')||!csp.includes("default-src 'self'"))throw new Error('security headers');
+          const blocked=await fetch(base+'/api/raw-video-probe',{method:'POST',headers:{'content-type':'video/mp4'},body:'probe'});
+          if(blocked.status!==415)throw new Error('raw video upload guard '+blocked.status);
+          console.log(JSON.stringify({health:true,https:h.https,localOnly:h.videoProcessing,billingConfigured:!!cfg.billingConfigured,googleConfigured:!!cfg.googleClientId,appleConfigured:!!cfg.appleClientId,securityHeaders:true,rawUploadBlocked:true}));
+          NODE
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox webkit
       - name: Install local speech and video test fixtures
