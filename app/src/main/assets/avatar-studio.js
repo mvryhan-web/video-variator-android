@@ -122,7 +122,7 @@ function chooseVoice(voice){
  saveDraft({voice:chosenVoiceMeta});$('voicePickerLabel').textContent=chosenVoiceMeta.name+' · '+chosenVoiceMeta.lang;$('voicePreviewStatus').textContent=msg.chosen+': '+chosenVoiceMeta.name;stopVoicePreview();closeVoicePicker();renderVoicePicker();
 }
 function renderVoicePicker(){
- const menu=$('voicePickerMenu');if(!menu)return;const voices=allVoices().slice().sort((a,b)=>(a.lang||'').localeCompare(b.lang||'')||(a.name||'').localeCompare(b.name||''));menu.replaceChildren();
+ const menu=$('voicePickerMenu');if(!menu)return;const voices=allVoices().slice();menu.replaceChildren();
  if(chosenVoiceMeta)$('voicePickerLabel').textContent=chosenVoiceMeta.name+' · '+chosenVoiceMeta.lang;else $('voicePickerLabel').textContent=(dict[locale]||dict.en).chooseVoice;
  voices.forEach(voice=>{
   const row=document.createElement('div');row.className='voice-option';row.setAttribute('role','option');row.setAttribute('aria-selected',voiceKey(voice)===chosenVoiceMeta?.key?'true':'false');
