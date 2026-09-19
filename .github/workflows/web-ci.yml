@@ -2,7 +2,7 @@ name: Validate Video Variator Web
 
 on:
   push:
-    branches: [ main, free-tools, studio-stage-two ]
+    branches: [ main, free-tools, studio-stage-two, avatar-local ]
   workflow_dispatch:
 
 jobs:

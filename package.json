@@ -18,6 +18,8 @@
     "dotenv": "17.4.2",
     "express": "5.2.1",
     "jose": "6.2.12",
+    "kokoro-js": "1.2.1",
+    "kokoro-ort": "npm:onnxruntime-web@1.21.0",
     "pg": "8.23.0",
     "stripe": "22.6.2"
   },
