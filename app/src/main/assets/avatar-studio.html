@@ -48,7 +48,11 @@
     <div class="avatar-preview-bottom"><img id="avatarPhotoPreview" alt=""></div>
   </div>
   <p class="muted" data-av="motionNote">This free local version uses subtle avatar motion, not cloud lip-sync. A more advanced lip-sync provider can be added later without changing this workflow.</p>
-  <div class="actions"><button id="avatarGenerate" class="primaryBtn" disabled data-av="create">Create split-screen video</button><button id="avatarCancel" disabled data-av="cancel">Cancel</button></div>
+  <div class="actions avatar-main-actions"><button id="avatarGenerate" class="primaryBtn" disabled data-av="create">Create split-screen video</button><button id="avatarCancel" disabled data-av="cancel">Cancel</button></div>
+  <div id="avatarProgress" class="avatar-progress" hidden aria-live="polite">
+    <div class="avatar-progress-head"><span data-av="progress">Creating video</span><b id="avatarProgressPercent">0%</b></div>
+    <div class="avatar-progress-track"><div id="avatarProgressBar"></div></div>
+  </div>
   <p id="avatarReadyHint" class="muted" aria-live="polite"></p>
   <p id="avatarStatus" role="status" aria-live="polite"></p>
   <div id="avatarResult" class="ai-result"></div>

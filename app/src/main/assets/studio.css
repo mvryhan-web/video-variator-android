@@ -153,3 +153,66 @@ html[data-theme=light] .voice-picker-toggle{background:#fff}
   .avatar-history-row .actions{width:100%}
   .avatar-history-row .actions button{flex:1}
 }
+
+
+/* Mobile reliability + compact controls */
+.avatar-progress{display:grid;gap:8px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}
+.avatar-progress-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;color:var(--muted)}
+.avatar-progress-head b{font-size:13px;color:var(--text)}
+.avatar-progress-track{height:7px;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.07)}
+#avatarProgressBar{width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8f7df0,#72d8c0);transition:width .18s ease}
+.avatar-main-actions{align-items:center}
+.avatar-main-actions button{flex:0 0 auto!important;min-width:0!important;width:auto!important;padding:10px 15px}
+#recordVoice,#stopVoice{flex:0 0 auto!important;min-width:0!important;width:auto!important;padding:9px 13px}
+.voice-picker-menu[hidden]{display:none!important}
+.voice-option-preview{touch-action:manipulation}
+.voice-option-select{touch-action:manipulation;white-space:nowrap}
+
+/* Free Tools: direct Photo / Video / Audio choices */
+.free-tools-page{max-width:900px}
+.free-tools-hero{display:grid;gap:8px;margin:26px 0 18px}
+.free-tools-hero h1{margin:0}
+.theme-line{display:flex!important;align-items:center;gap:10px;margin:8px 0 0!important}
+.theme-line>span{margin:0!important}
+.theme-line select{width:auto;min-width:130px;padding:8px 10px}
+.avatar-launch-card{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:18px 0 22px;padding:18px 19px;border:1px solid #6d61b0;border-radius:16px;background:linear-gradient(125deg,rgba(168,151,255,.13),rgba(77,205,184,.06));color:var(--text);text-decoration:none;box-shadow:0 14px 35px rgba(0,0,0,.12)}
+.avatar-launch-card>div{display:grid;gap:5px}.avatar-launch-card strong{font-size:17px}.avatar-launch-card small{color:var(--muted);font-size:11px}.launch-arrow{font-size:22px;color:#c6bcff}
+.tool-kicker{font-size:9px;font-weight:800;letter-spacing:1.4px;color:#a99bff}
+.section-intro{margin-bottom:14px}.section-intro h2{margin:5px 0 4px}.section-intro p{margin:0}
+.quick-tool-list{display:grid;gap:10px}
+.quick-tool-item{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 15px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.02);transition:border-color .15s,background .15s}
+.quick-tool-item.active{border-color:#8f7df0;background:rgba(143,125,240,.07)}
+.quick-tool-copy{display:flex;align-items:center;gap:12px;min-width:0}.quick-tool-copy>div{min-width:0}.quick-tool-copy h3{margin:0 0 4px;font-size:14px}.quick-tool-copy p{margin:0;font-size:11px}
+.quick-tool-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border:1px solid #4b5670;border-radius:11px;background:rgba(168,151,255,.08);color:#c5bbff}
+.tool-choice{flex:0 0 auto!important;min-width:0!important;width:auto!important;padding:9px 13px!important;white-space:nowrap}
+.selected-tool-panel{margin-top:16px;padding-top:15px;border-top:1px solid var(--line)}
+.tool-limits{font-size:10px!important}
+.compact-actions{gap:8px!important}
+.compact-actions button{flex:0 0 auto!important;min-width:0!important;width:auto!important;padding:9px 13px!important}
+.prompter-settings{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:14px!important;align-items:end}
+.prompter-settings label{min-width:0!important;margin:8px 0!important}
+.prompter-settings input[type=range]{width:100%}
+.mirror-setting{display:flex!important;align-items:center;gap:7px;padding-bottom:8px;white-space:nowrap}.mirror-setting span{margin:0!important}
+.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+
+@media(max-width:600px){
+  .tools.free-tools-page,.tools.avatar-studio{padding-left:14px;padding-right:14px}
+  .tools .tool-card{padding:16px}
+  .avatar-card{gap:16px}
+  .avatar-main-actions,.avatar-voice-panel .actions,.compact-actions{display:flex;flex-wrap:wrap;gap:8px}
+  .avatar-main-actions button,#recordVoice,#stopVoice,.compact-actions button{font-size:12px;min-height:38px;padding:8px 12px}
+  .voice-picker-toggle{min-height:44px;padding:9px 11px}
+  .voice-option{grid-template-columns:minmax(0,1fr) auto;gap:5px}
+  .voice-option-preview{padding:8px 7px;gap:8px}
+  .voice-option-select{min-height:34px;padding:7px 9px;font-size:11px}
+  .voice-play{width:25px;height:25px;flex-basis:25px}
+  .voice-option-preview b{font-size:12px}.voice-option-preview small{font-size:9px}
+  .avatar-preview-shell{max-width:330px}
+  .avatar-history-row .actions{width:auto!important}.avatar-history-row .actions button{flex:0 0 auto!important;width:auto!important}
+  .avatar-launch-card{padding:15px}
+  .quick-tool-item{align-items:flex-start;flex-direction:column;gap:10px}
+  .tool-choice{align-self:flex-start}
+  .prompter-settings{grid-template-columns:1fr 1fr}
+  .font-setting{grid-column:1}.speed-setting{grid-column:2}.mirror-setting{grid-column:1/-1;justify-self:start;padding-bottom:0}
+  #cameraStage #prompter{padding:16px}
+}
