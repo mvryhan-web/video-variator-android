@@ -13,7 +13,7 @@
 <main class="tools avatar-studio">
 <header><a href="index.html" data-av="back">← Back</a><span>Video Uniquifier</span></header>
 <div class="avatar-hero">
-  <span class="pill accent" data-av="included">Included in Basic, Pro & Business</span>
+  <span class="pill accent" data-av="included">Free 720p test · Full quality in Basic, Pro & Business</span>
   <h1 data-av="title">Avatar Narrator</h1>
   <p data-av="intro">Put your video on top and your own photo avatar below. Add narration text and your own recorded voice. Everything is composed locally on this device.</p>
 </div>
@@ -27,8 +27,9 @@
   <div class="avatar-voice-panel">
     <div>
       <h2 data-av="deviceVoice">Device voice preview</h2>
-      <p data-av="deviceVoiceNote">Use a free voice already installed on this device to hear the text. For the downloadable video, use your own recorded/uploaded voice below.</p>
-      <div class="actions"><select id="avatarVoice" aria-label="Device voice"></select><button id="avatarSpeak" type="button" data-av="previewVoice">Preview voice</button></div>
+      <p data-av="deviceVoiceNote">Use a free voice already installed on this device to hear the text. For the downloadable video, your own recorded/uploaded voice is optional during testing.</p>
+      <div class="actions avatar-voice-actions"><select id="avatarVoice" aria-label="Device voice"></select><button id="avatarSpeak" type="button" data-av="previewVoice">Preview voice</button><button id="avatarStopSpeak" type="button" disabled data-av="stopPreview">Stop voice</button></div>
+      <p id="voicePreviewStatus" class="muted" aria-live="polite"></p>
     </div>
     <div>
       <h2 data-av="ownVoice">Your own voice for export</h2>
@@ -45,6 +46,7 @@
   </div>
   <p class="muted" data-av="motionNote">This free local version uses subtle avatar motion, not cloud lip-sync. A more advanced lip-sync provider can be added later without changing this workflow.</p>
   <div class="actions"><button id="avatarGenerate" class="primaryBtn" disabled data-av="create">Create split-screen video</button><button id="avatarCancel" disabled data-av="cancel">Cancel</button></div>
+  <p id="avatarReadyHint" class="muted" aria-live="polite"></p>
   <p id="avatarStatus" role="status" aria-live="polite"></p>
   <div id="avatarResult" class="ai-result"></div>
 </section>

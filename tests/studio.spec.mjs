@@ -7,7 +7,7 @@ test('portrait AI is the only local AI experiment exposed',async({page})=>{
  await expect(page.getByText('Avatar Narrator')).toBeVisible();
  await expect(page.getByText('Auto captions')).toHaveCount(0);
  await expect(page.getByText('Video background')).toHaveCount(0);
- await page.goto('/ai-tools.html');
+ await page.goto('/ai-tools.html',{waitUntil:'domcontentloaded'});
  await expect(page.getByRole('heading',{name:'Portrait Cutout'})).toBeVisible();
  await expect(page.locator('#aiExplanation')).toContainText('photos of people');
  await page.locator('#aiRun').click();
@@ -76,7 +76,7 @@ test('real local portrait model produces a transparent PNG',async({page},info)=>
 
 test('native camera opens with the current prompt settings',async({page})=>{
  await page.addInitScript(()=>{window.AndroidBridge={openTeleprompter:(...args)=>window.cameraArgs=args};});
- await page.goto('/free-tools.html');await page.locator('#script').fill('Read this script');await page.locator('#cameraOpen').click();
+ await page.goto('/free-tools.html',{waitUntil:'domcontentloaded'});await page.locator('#script').fill('Read this script');await page.locator('#cameraOpen').click();
  expect(await page.evaluate(()=>window.cameraArgs)).toEqual(['Read this script',30,36,false]);
 });
 
