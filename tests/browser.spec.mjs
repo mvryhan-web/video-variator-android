@@ -14,7 +14,7 @@ test.beforeEach(async({page})=>{
 test('loads rebranded dashboard with zero of two free trial videos',async({page})=>{
   await expect(page.getByRole('heading',{name:'Dashboard'})).toBeVisible();
   await expect(page.locator('#creditText')).toHaveText('0 / 2');
-  await expect(page.getByText('One video. Many futures.')).toBeVisible();
+  await expect(page.getByText('Uniqueify your old video')).toBeVisible();
   await expect(page.getByText('One video. Many versions.')).toBeVisible();
   await expect(page.locator('#resultsCard')).toBeHidden();
   await expect(page.getByText('Video Uniquifier',{exact:true}).first()).toBeVisible();
@@ -101,10 +101,10 @@ test('back button is available outside dashboard',async({page})=>{
   await expect(page.locator('#dashboardView')).toHaveClass(/active/);
 });
 
-test('pricing explains Essential Pro and Business in output terms',async({page})=>{
+test('pricing explains Basic Pro and Business in output terms',async({page})=>{
   await openView(page,'plans');
   const planNames=page.locator('#plansView .priceCard .planName');
-  await expect(planNames.nth(0)).toHaveText('Essential');
+  await expect(planNames.nth(0)).toHaveText('Basic');
   await expect(planNames.nth(1)).toHaveText('Pro');
   await expect(planNames.nth(2)).toHaveText('Business');
   await expect(page.getByText('750',{exact:true})).toBeVisible();
@@ -116,10 +116,10 @@ test('pricing explains Essential Pro and Business in output terms',async({page})
   await expect(page.getByText('Up to 50 technical micro-adjustment options')).toBeVisible();
   await expect(page.getByText('Up to 100 advanced micro-adjustment options')).toBeVisible();
   await expect(page.getByText('Up to 150 full-pipeline adjustment options')).toBeVisible();
-  await expect(page.getByText('Gentle · 720p · 9:16 / 16:9')).toBeVisible();
-  await expect(page.getByText('Gentle + Balance · 1080p · 9:16 / 16:9')).toBeVisible();
-  await expect(page.getByText('Gentle + Balance + Dynamic · 4K · 9:16 / 16:9')).toBeVisible();
-  await expect(page.getByRole('button',{name:'Choose Essential'})).toBeVisible();
+  await expect(page.getByText('Gentle · 720p · up to 5 variations · Avatar Narrator')).toBeVisible();
+  await expect(page.getByText('Gentle + Balance · 1080p · up to 10 variations · Avatar Narrator')).toBeVisible();
+  await expect(page.getByText('Gentle + Balance + Dynamic · 4K · up to 15 variations · Avatar Narrator')).toBeVisible();
+  await expect(page.getByRole('button',{name:'Choose Basic'})).toBeVisible();
 });
 
 test('completed trial replaces creation controls with compact plan choices',async({page})=>{
@@ -152,7 +152,7 @@ test('analytics profile product explanation and FAQ are reachable',async({page})
   await openView(page,'faq');
   await expect(page.getByText('One original can become many finished versions')).toBeVisible();
   await expect(page.getByText('What are micro-adjustments?')).toBeVisible();
-  await expect(page.getByText('What is the difference between Essential, Pro and Business?')).toBeVisible();
+  await expect(page.getByText('What is the difference between Basic, Pro and Business?')).toBeVisible();
   await expect(page.getByText('How do credits work?')).toBeVisible();
   await expect(page.getByText('What processing modes are included?')).toBeVisible();
   await expect(page.getByText('How is my data protected?')).toBeVisible();
