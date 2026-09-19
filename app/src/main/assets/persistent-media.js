@@ -7,7 +7,7 @@
   function open(){
     if(opening)return opening;
     opening=new Promise((resolve,reject)=>{
-      if(!('indexedDB'in window)){reject(new Error('PERSISTENT_MEDIA_UNAVAILABLE'));return;}
+      if(!('indexedDB' in window)){reject(new Error('PERSISTENT_MEDIA_UNAVAILABLE'));return;}
       const request=indexedDB.open(DB_NAME,1);
       request.onupgradeneeded=()=>{
         const db=request.result;
@@ -28,15 +28,15 @@
   async function transaction(mode,operation){
     const db=await open();
     return new Promise((resolve,reject)=>{
-      let settled=false;
+      let settled=false,result;
       const tx=db.transaction(STORE,mode),store=tx.objectStore(STORE);
       let request;
       try{request=operation(store);}catch(e){reject(e);return;}
       if(request){
-        request.onsuccess=()=>{if(!settled){settled=true;resolve(request.result);}};
+        request.onsuccess=()=>{result=request.result;};
         request.onerror=()=>{if(!settled){settled=true;reject(request.error||tx.error||new Error('PERSISTENT_MEDIA_FAILED'));}};
       }
-      tx.oncomplete=()=>{if(!settled){settled=true;resolve(true);}};
+      tx.oncomplete=()=>{if(!settled){settled=true;resolve(result===undefined?true:result);}};
       tx.onerror=()=>{if(!settled){settled=true;reject(tx.error||new Error('PERSISTENT_MEDIA_FAILED'));}};
       tx.onabort=()=>{if(!settled){settled=true;reject(tx.error||new Error('PERSISTENT_MEDIA_ABORTED'));}};
     });
@@ -44,7 +44,8 @@
 
   async function put(key,blob){
     if(!blob)throw new Error('PERSISTENT_MEDIA_EMPTY');
-    const record={blob,type:blob.type||'application/octet-stream',size:Number(blob.size)||0,updatedAt:Date.now()};
+    const bytes=await blob.arrayBuffer();
+    const record={bytes,type:blob.type||'application/octet-stream',size:Number(blob.size)||bytes.byteLength||0,updatedAt:Date.now()};
     await transaction('readwrite',store=>store.put(record,String(key)));
     return true;
   }
