@@ -3,20 +3,20 @@ import {createEngine,saveLocal} from './ai-media.js';
 const $=id=>document.getElementById(id);
 const lang=(navigator.language||'en-US').toLowerCase();
 const dict={
- ru:{back:'← Назад',included:'Бесплатный тест 720p · Полное качество в Basic, Pro и Business',title:'Аватар-комментатор',intro:'Сверху — ваше видео, снизу — ваш фото-аватар. Добавьте текст и при желании свой голос. Монтаж выполняется локально на устройстве.',plan:'Доступ',video:'1 · Исходное видео',photo:'2 · Фото аватара',text:'3 · Текст для озвучки',deviceVoice:'Голос устройства — предпросмотр',deviceVoiceNote:'Выберите голос — он сразу произнесёт ваш текст. Если текст ещё пустой, прозвучит короткий пример. Для тестового видео запись своего голоса необязательна.',previewVoice:'Прослушать текст',stopPreview:'Остановить голос',ownVoice:'Ваш голос для экспорта',ownVoiceNote:'Необязательно для теста. Загрузите аудио или запишите голос, если хотите, чтобы он был в готовом видео.',audio:'Загрузить аудио голоса',record:'Записать голос',stop:'Остановить запись',consent:'Я подтверждаю, что это мой голос/фото или у меня есть разрешение использовать их в этом видео.',motionNote:'Эта бесплатная локальная версия делает лёгкое движение аватара без облачного lip-sync. Более точную синхронизацию губ можно подключить позже, не меняя этот процесс.',create:'Создать видео с двумя экранами',cancel:'Отмена'},
- fr:{back:'← Retour',included:'Test gratuit 720p · Qualité complète avec Basic, Pro et Business',title:'Narrateur avatar',intro:'Votre vidéo en haut, votre avatar photo en bas. Ajoutez le texte et, si vous le souhaitez, votre propre voix. Le montage reste local.',plan:'Accès',video:'1 · Vidéo source',photo:'2 · Photo avatar',text:'3 · Texte de narration',deviceVoice:'Aperçu de la voix de l’appareil',deviceVoiceNote:'Choisissez une voix : elle lit immédiatement votre texte. Si le texte est vide, un court exemple est lu.',previewVoice:'Écouter le texte',stopPreview:'Arrêter la voix',ownVoice:'Votre voix pour l’export',ownVoiceNote:'Facultatif pour le test. Importez ou enregistrez votre voix pour l’inclure dans la vidéo finale.',audio:'Importer la voix',record:'Enregistrer la voix',stop:'Arrêter l’enregistrement',consent:'Je confirme que cette voix/photo m’appartient ou que j’ai l’autorisation de l’utiliser.',create:'Créer la vidéo',cancel:'Annuler'},
- uk:{back:'← Назад',included:'Безкоштовний тест 720p · Повна якість у Basic, Pro та Business',title:'Аватар-оповідач',intro:'Ваше відео зверху, фото-аватар знизу. Додайте текст і, за бажанням, власний голос. Монтаж виконується локально.',plan:'Доступ',video:'1 · Вихідне відео',photo:'2 · Фото аватара',text:'3 · Текст озвучення',deviceVoice:'Попередній перегляд голосу пристрою',deviceVoiceNote:'Оберіть голос — він одразу прочитає ваш текст. Якщо текст порожній, прозвучить короткий приклад.',previewVoice:'Прослухати текст',stopPreview:'Зупинити голос',ownVoice:'Ваш голос для експорту',ownVoiceNote:'Необов’язково для тесту. Завантажте або запишіть голос, щоб додати його до готового відео.',audio:'Завантажити голос',record:'Записати голос',stop:'Зупинити запис',consent:'Я підтверджую, що це мій голос/фото або маю дозвіл на їх використання.',create:'Створити відео',cancel:'Скасувати'}
+ ru:{back:'← Назад',included:'Бесплатный тест 720p · Полное качество в Basic, Pro и Business',title:'Аватар-комментатор',intro:'Сверху — ваше видео, снизу — ваш фото-аватар. Добавьте текст и при желании свой голос. Монтаж выполняется локально на устройстве.',plan:'Доступ',video:'1 · Исходное видео',photo:'2 · Фото аватара',text:'3 · Текст для озвучки',deviceVoice:'Голос устройства — предпросмотр',deviceVoiceNote:'Выберите голос — он сразу произнесёт ваш текст. Если текст ещё пустой, прозвучит короткий пример. Для тестового видео запись своего голоса необязательна.',previewVoice:'Прослушать текст',stopPreview:'Остановить голос',selectVoice:'Выбрать',ownVoice:'Ваш голос для экспорта',ownVoiceNote:'Необязательно для теста. Загрузите аудио или запишите голос, если хотите, чтобы он был в готовом видео.',audio:'Загрузить аудио голоса',record:'Записать голос',stop:'Остановить запись',consent:'Я подтверждаю, что это мой голос/фото или у меня есть разрешение использовать их в этом видео.',motionNote:'Эта бесплатная локальная версия делает лёгкое движение аватара без облачного lip-sync. Более точную синхронизацию губ можно подключить позже, не меняя этот процесс.',create:'Создать видео с двумя экранами',cancel:'Отмена'},
+ fr:{back:'← Retour',included:'Test gratuit 720p · Qualité complète avec Basic, Pro et Business',title:'Narrateur avatar',intro:'Votre vidéo en haut, votre avatar photo en bas. Ajoutez le texte et, si vous le souhaitez, votre propre voix. Le montage reste local.',plan:'Accès',video:'1 · Vidéo source',photo:'2 · Photo avatar',text:'3 · Texte de narration',deviceVoice:'Aperçu de la voix de l’appareil',deviceVoiceNote:'Choisissez une voix : elle lit immédiatement votre texte. Si le texte est vide, un court exemple est lu.',previewVoice:'Écouter le texte',stopPreview:'Arrêter la voix',selectVoice:'Choisir',ownVoice:'Votre voix pour l’export',ownVoiceNote:'Facultatif pour le test. Importez ou enregistrez votre voix pour l’inclure dans la vidéo finale.',audio:'Importer la voix',record:'Enregistrer la voix',stop:'Arrêter l’enregistrement',consent:'Je confirme que cette voix/photo m’appartient ou que j’ai l’autorisation de l’utiliser.',create:'Créer la vidéo',cancel:'Annuler'},
+ uk:{back:'← Назад',included:'Безкоштовний тест 720p · Повна якість у Basic, Pro та Business',title:'Аватар-оповідач',intro:'Ваше відео зверху, фото-аватар знизу. Додайте текст і, за бажанням, власний голос. Монтаж виконується локально.',plan:'Доступ',video:'1 · Вихідне відео',photo:'2 · Фото аватара',text:'3 · Текст озвучення',deviceVoice:'Попередній перегляд голосу пристрою',deviceVoiceNote:'Оберіть голос — він одразу прочитає ваш текст. Якщо текст порожній, прозвучить короткий приклад.',previewVoice:'Прослухати текст',stopPreview:'Зупинити голос',selectVoice:'Обрати',ownVoice:'Ваш голос для експорту',ownVoiceNote:'Необов’язково для тесту. Завантажте або запишіть голос, щоб додати його до готового відео.',audio:'Завантажити голос',record:'Записати голос',stop:'Зупинити запис',consent:'Я підтверджую, що це мій голос/фото або маю дозвіл на їх використання.',create:'Створити відео',cancel:'Скасувати'}
 };
 const locale=lang.startsWith('ru')?'ru':lang.startsWith('fr')?'fr':lang.startsWith('uk')?'uk':'en';
 const msg={
- en:{free:'Free test · 720p',ready:'Ready to create. Add your own voice only if you want audio in the exported video.',need:'Add a source video, avatar photo, narration text and confirm permission to enable Create.',sample:'Hello. This is a preview of the selected device voice.',selected:'Selected voice',speaking:'Speaking…',stopped:'Voice preview stopped.',noSpeech:'Device speech is unavailable here.',write:'Write narration text first.',silent:'No recorded voice was added, so this test video will be exported without narration audio.'},
- ru:{free:'Бесплатный тест · 720p',ready:'Готово к созданию. Свой голос добавляйте только если хотите слышать его в готовом видео.',need:'Добавьте видео, фото аватара, текст и подтвердите разрешение — после этого кнопка создания станет активной.',sample:'Здравствуйте. Это пример выбранного голоса устройства.',selected:'Выбран голос',speaking:'Голос воспроизводится…',stopped:'Прослушивание остановлено.',noSpeech:'Голос устройства здесь недоступен.',write:'Сначала напишите текст для озвучки.',silent:'Свой записанный голос не добавлен — тестовое видео будет создано без озвучки.'},
- fr:{free:'Test gratuit · 720p',ready:'Prêt à créer. Ajoutez votre propre voix uniquement si vous voulez l’entendre dans la vidéo exportée.',need:'Ajoutez la vidéo, la photo, le texte et confirmez l’autorisation pour activer la création.',sample:'Bonjour. Voici un aperçu de la voix sélectionnée.',selected:'Voix sélectionnée',speaking:'Lecture en cours…',stopped:'Aperçu vocal arrêté.',noSpeech:'La synthèse vocale est indisponible ici.',write:'Écrivez d’abord le texte de narration.',silent:'Aucune voix enregistrée : la vidéo de test sera exportée sans narration audio.'},
- uk:{free:'Безкоштовний тест · 720p',ready:'Готово до створення. Власний голос потрібен лише якщо ви хочете чути його у готовому відео.',need:'Додайте відео, фото аватара, текст і підтвердьте дозвіл — після цього створення стане активним.',sample:'Вітаю. Це приклад вибраного голосу пристрою.',selected:'Вибрано голос',speaking:'Голос відтворюється…',stopped:'Прослуховування зупинено.',noSpeech:'Голос пристрою тут недоступний.',write:'Спочатку напишіть текст озвучення.',silent:'Власний записаний голос не додано — тестове відео буде створено без озвучення.'}
+ en:{free:'Free test · 720p',ready:'Ready to create. Add your own voice only if you want audio in the exported video.',need:'Add a source video, avatar photo, narration text and confirm permission to enable Create.',sample:'Hello. This is a preview of the selected device voice.',selected:'Selected voice',chosen:'Voice selected',speaking:'Speaking…',stopped:'Voice preview stopped.',noSpeech:'Device speech is unavailable here.',write:'Write narration text first.',silent:'No recorded voice was added, so this test video will be exported without narration audio.'},
+ ru:{free:'Бесплатный тест · 720p',ready:'Готово к созданию. Свой голос добавляйте только если хотите слышать его в готовом видео.',need:'Добавьте видео, фото аватара, текст и подтвердите разрешение — после этого кнопка создания станет активной.',sample:'Здравствуйте. Это пример выбранного голоса устройства.',selected:'Прослушивается голос',chosen:'Голос выбран',speaking:'Голос воспроизводится…',stopped:'Прослушивание остановлено.',noSpeech:'Голос устройства здесь недоступен.',write:'Сначала напишите текст для озвучки.',silent:'Свой записанный голос не добавлен — тестовое видео будет создано без озвучки.'},
+ fr:{free:'Test gratuit · 720p',ready:'Prêt à créer. Ajoutez votre propre voix uniquement si vous voulez l’entendre dans la vidéo exportée.',need:'Ajoutez la vidéo, la photo, le texte et confirmez l’autorisation pour activer la création.',sample:'Bonjour. Voici un aperçu de la voix sélectionnée.',selected:'Voix en écoute',chosen:'Voix choisie',speaking:'Lecture en cours…',stopped:'Aperçu vocal arrêté.',noSpeech:'La synthèse vocale est indisponible ici.',write:'Écrivez d’abord le texte de narration.',silent:'Aucune voix enregistrée : la vidéo de test sera exportée sans narration audio.'},
+ uk:{free:'Безкоштовний тест · 720p',ready:'Готово до створення. Власний голос потрібен лише якщо ви хочете чути його у готовому відео.',need:'Додайте відео, фото аватара, текст і підтвердьте дозвіл — після цього створення стане активним.',sample:'Вітаю. Це приклад вибраного голосу пристрою.',selected:'Прослуховується голос',chosen:'Голос обрано',speaking:'Голос відтворюється…',stopped:'Прослуховування зупинено.',noSpeech:'Голос пристрою тут недоступний.',write:'Спочатку напишіть текст озвучення.',silent:'Власний записаний голос не додано — тестове відео буде створено без озвучення.'}
 }[locale];
 if(dict[locale])document.querySelectorAll('[data-av]').forEach(el=>{const v=dict[locale][el.dataset.av];if(v)el.textContent=v;});
 
-let plan='trial',engine=null,busy=false,cancelled=false,recordStream=null,recorder=null,recordChunks=[],recordedVoice=null;
+let plan='trial',engine=null,busy=false,cancelled=false,recordStream=null,recorder=null,recordChunks=[],recordedVoice=null,chosenDeviceVoiceIndex=null;
 const urls=[];
 const status=s=>$('avatarStatus').textContent=s;
 const voiceStatus=s=>$('voiceStatus').textContent=s;
@@ -44,13 +44,17 @@ function previewFile(input,el,type){
 }
 $('avatarVideo').onchange=()=>previewFile($('avatarVideo'),$('avatarVideoPreview'),'video');
 $('avatarPhoto').onchange=()=>{previewFile($('avatarPhoto'),$('avatarPhotoPreview'),'image');};
-$('avatarText').oninput=()=>{$('avatarPreviewText').textContent=$('avatarText').value;updateReady();};
+$('avatarText').oninput=()=>{updateReady();};
 $('avatarAudio').onchange=()=>{recordedVoice=null;voiceStatus($('avatarAudio').files[0]?.name||'');updateReady();};
 $('voiceConsent').onchange=updateReady;
 
 function selectedVoice(){
  const voices=window.speechSynthesis?.getVoices?.()||[];
  return voices[Number($('avatarVoice').value)]||voices[0]||null;
+}
+function chosenVoice(){
+ const voices=window.speechSynthesis?.getVoices?.()||[];
+ return chosenDeviceVoiceIndex===null?null:(voices[chosenDeviceVoiceIndex]||null);
 }
 function setSpeakState(active,label=''){
  $('avatarSpeak').disabled=active;
@@ -79,8 +83,18 @@ function loadVoices(){
  const chosen=selectedVoice();$('voicePreviewStatus').textContent=chosen?msg.selected+': '+chosen.name+' · '+chosen.lang:'';
 }
 if('speechSynthesis'in window){loadVoices();window.speechSynthesis.onvoiceschanged=loadVoices;}
-$('avatarVoice').addEventListener('change',()=>speakPreview(true));
+$('avatarVoice').addEventListener('change',()=>{
+ chosenDeviceVoiceIndex=null;
+ $('avatarSelectVoice').classList.remove('selected');
+ speakPreview(true);
+});
 $('avatarSpeak').onclick=()=>speakPreview(false);
+$('avatarSelectVoice').onclick=()=>{
+ const voices=window.speechSynthesis?.getVoices?.()||[],idx=Number($('avatarVoice').value),voice=voices[idx]||voices[0]||null;
+ chosenDeviceVoiceIndex=voice?(voices.indexOf(voice)>=0?voices.indexOf(voice):idx):null;
+ $('avatarSelectVoice').classList.toggle('selected',!!voice);
+ $('voicePreviewStatus').textContent=voice?msg.chosen+': '+voice.name+' · '+voice.lang:msg.noSpeech;
+};
 $('avatarStopSpeak').onclick=()=>{window.speechSynthesis?.cancel?.();setSpeakState(false,msg.stopped);};
 
 $('recordVoice').onclick=async()=>{
@@ -96,11 +110,6 @@ $('stopVoice').onclick=()=>{if(recorder&&recorder.state!=='inactive')recorder.st
 
 function mediaDuration(file,kind){
  return new Promise((resolve,reject)=>{const el=document.createElement(kind);el.preload='metadata';el.src=u(file);el.onloadedmetadata=()=>resolve(Number(el.duration)||0);el.onerror=()=>reject(Error('MEDIA_FORMAT'));});
-}
-function captionBlob(width,text){
- const h=Math.max(180,Math.round(width*.24)),c=document.createElement('canvas');c.width=width;c.height=h;const x=c.getContext('2d');x.clearRect(0,0,width,h);x.fillStyle='rgba(5,7,12,.72)';x.fillRect(0,0,width,h);x.fillStyle='#fff';x.textAlign='center';x.textBaseline='middle';x.font='600 '+Math.max(24,Math.round(width*.042))+'px system-ui, sans-serif';
- const words=text.trim().split(/\s+/),lines=[];let line='';const max=width*.88;for(const word of words){const test=line?line+' '+word:word;if(x.measureText(test).width>max&&line){lines.push(line);line=word;}else line=test;if(lines.length>=4)break;}if(line&&lines.length<5)lines.push(line);
- const lh=Math.max(34,Math.round(width*.055)),start=h/2-(lines.length-1)*lh/2;lines.forEach((v,i)=>x.fillText(v,width/2,start+i*lh,max));return new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(Error('CAPTION')),'image/png'));
 }
 async function resultControls(file){
  const wrap=document.createElement('div'),video=document.createElement('video');video.controls=true;video.playsInline=true;video.src=u(file);video.className='ai-preview';wrap.append(video);
@@ -118,14 +127,12 @@ $('avatarGenerate').onclick=async()=>{
   status('Preparing local split-screen composition…');engine=await createEngine();if(cancelled)throw Error('CANCELLED');
   await engine.writeFile('source',new Uint8Array(await video.arrayBuffer()));await engine.writeFile('avatar',new Uint8Array(await photo.arrayBuffer()));
   if(voice)await engine.writeFile('voice',new Uint8Array(await voice.arrayBuffer()));
-  const cap=await captionBlob(p.w,$('avatarText').value);await engine.writeFile('caption.png',new Uint8Array(await cap.arrayBuffer()));
-  const top=Math.round(p.h*.58/2)*2,bottom=p.h-top,capH=Math.max(180,Math.round(p.w*.24));
-  const captionIndex=voice?3:2;
-  const filter=`[0:v]scale=${p.w}:${top}:force_original_aspect_ratio=increase,crop=${p.w}:${top}[top];[1:v]scale=${p.w}:${bottom}:force_original_aspect_ratio=increase,crop=${p.w}:${bottom},zoompan=z='min(zoom+0.00025,1.035)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=${p.w}x${bottom}:fps=30[avatar];[top][avatar]vstack=inputs=2[stack];[stack][${captionIndex}:v]overlay=0:${p.h-capH}:format=auto[v]`;
+  const top=Math.round(p.h*.58/2)*2,bottom=p.h-top;
+  const filter=`[0:v]scale=${p.w}:${top}:force_original_aspect_ratio=increase,crop=${p.w}:${top}[top];[1:v]scale=${p.w}:${bottom}:force_original_aspect_ratio=increase,crop=${p.w}:${bottom},zoompan=z='min(zoom+0.00025,1.035)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=${p.w}x${bottom}:fps=30[avatar];[top][avatar]vstack=inputs=2[v]`;
   status(voice?'Creating video locally…':msg.silent);
   const args=['-i','source','-loop','1','-framerate','30','-i','avatar'];
   if(voice)args.push('-i','voice');
-  args.push('-loop','1','-i','caption.png','-filter_complex',filter,'-map','[v]');
+  args.push('-filter_complex',filter,'-map','[v]');
   if(voice)args.push('-map','2:a:0');else args.push('-an');
   args.push('-t',String(duration),'-c:v','libx264','-preset','ultrafast','-crf',p.w>=2160?'25':p.w>=1080?'23':'22','-pix_fmt','yuv420p');
   if(voice)args.push('-c:a','aac','-b:a','160k');
