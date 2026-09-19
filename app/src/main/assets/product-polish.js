@@ -134,8 +134,8 @@
       ['future',tx.faqFutureQ,tx.faqFutureA],
       ['60plus',tx.faq60Q,tx.faq60A],
       ['channels',tx.faqChannelsQ,tx.faqChannelsA],
-      ['micro','What are micro-adjustments?','They are small technical changes across frame and timing, motion, color, audio and file structure. The plan number describes the size of the available adjustment library; each output uses its own combination rather than applying every option at once.'],
-      ['plans','What is the difference between Basic, Pro and Business?','Basic provides up to 50 technical adjustment options and up to 5 variations. Pro expands the library to 100 options and up to 10 variations. Business provides the broadest library with up to 150 options and up to 15 variations.'],
+      ['micro','What changes can Video Uniquifier make?','It can apply subtle changes across framing, motion, color, audio and technical encoding. The available modes and output quality depend on your plan.'],
+      ['plans','What is the difference between Basic, Pro and Business?','Basic supports Gentle mode, 720p and up to 5 variations. Pro adds Balance mode, 1080p and up to 10 variations. Business unlocks all modes, 4K and up to 15 variations. Avatar Narrator is included in all paid plans.'],
       ['examples','How many videos do my credits cover?','As an example, 750 credits is about 50 outputs of 15 seconds or 25 outputs of 30 seconds. 2,250 credits is about 150 outputs of 15 seconds or 75 outputs of 30 seconds. 15,000 credits is about 1,000 outputs of 15 seconds or 500 outputs of 30 seconds.']
     ];
     extra.forEach(([key,title,text])=>{const d=document.createElement('details');d.className='card';d.dataset.productFaq=key;d.innerHTML=`<summary>${title}</summary><p>${text}</p>`;list.prepend(d);});
