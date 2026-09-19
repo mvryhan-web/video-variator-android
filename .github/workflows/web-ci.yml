@@ -53,6 +53,11 @@ jobs:
           const cfg=await configRes.json();
           if(!cfg.privacy?.localVideoProcessing||!cfg.privacy?.rawVideoUploadDisabled)throw new Error('privacy config');
           if(cfg.plans?.basic?.price!==9||cfg.plans?.pro?.price!==24||cfg.plans?.business?.price!==99)throw new Error('plan prices changed');
+          if(!cfg.billingConfigured)throw new Error('production billing is not configured');
+          const googleProbe=await fetch(base+'/api/auth/google',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});
+          const appleProbe=await fetch(base+'/api/auth/apple',{method:'POST',headers:{'content-type':'application/json'},body:'{}'});
+          if(googleProbe.status!==400)throw new Error('Google OAuth production config '+googleProbe.status);
+          if(appleProbe.status!==400)throw new Error('Apple OAuth production config '+appleProbe.status);
           const home=await fetch(base+'/',{redirect:'error'});
           const hsts=home.headers.get('strict-transport-security')||'',csp=home.headers.get('content-security-policy')||'';
           if(!hsts.includes('max-age=31536000')||!csp.includes("default-src 'self'"))throw new Error('security headers');
