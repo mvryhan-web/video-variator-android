@@ -298,9 +298,14 @@ test('Avatar free test enables split-screen creation without recorded audio and 
   await expect(page.locator('#avatarGenerate')).toBeDisabled();
   await expect(page.locator('#avatarStopSpeak')).toBeDisabled();
 
+  await expect(page.locator('#avatarPreviewText')).toHaveCount(0);
   await page.locator('#avatarVoice').selectOption('1');
   await expect.poll(()=>page.evaluate(()=>window.__spoken.length)).toBe(1);
   expect((await page.evaluate(()=>window.__spoken[0])).voice).toBe('Test Voice Two');
+  await expect(page.locator('#avatarSelectVoice')).not.toHaveClass(/selected/);
+  await page.locator('#avatarSelectVoice').click();
+  await expect(page.locator('#avatarSelectVoice')).toHaveClass(/selected/);
+  await expect(page.locator('#voicePreviewStatus')).toContainText('Voice selected: Test Voice Two');
   await expect(page.locator('#avatarStopSpeak')).toBeEnabled();
   await page.locator('#avatarStopSpeak').click();
   await expect.poll(()=>page.evaluate(()=>window.__speechCanceled)).toBeGreaterThan(0);
