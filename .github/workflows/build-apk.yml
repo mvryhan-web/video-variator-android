@@ -2,7 +2,7 @@ name: Build Video Uniquifier APK
 
 on:
   push:
-    branches: [ main, free-tools, studio-stage-two ]
+    branches: [ main, free-tools, studio-stage-two, stage-two-avatar-download-fix ]
   workflow_dispatch:
 
 permissions:
@@ -117,8 +117,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          release_tag="v5.2.0-build-${GITHUB_RUN_NUMBER}"
+          release_tag="v5.3.0-build-${GITHUB_RUN_NUMBER}"
           gh release create "$release_tag" VideoUniquifier.apk VideoVariator.apk \
-            --target "$GITHUB_SHA" --title "Video Uniquifier 5.2 — Creator studio" \
-            --notes "Premium interface, local portrait cutouts, experimental local captions and short video backgrounds. Processing stays on your device. Existing tools and releases are preserved."
+            --target "$GITHUB_SHA" --title "Video Uniquifier 5.3 — Avatar Narrator & Android save fixes" \
+            --notes "Premium interface, local Portrait Cutout, Avatar Narrator, CameraX teleprompter, plan-specific 5/10/15 variations, Android Gallery auto-save, Download and Share fixes. Raw video processing stays on your device."
           gh release view "$release_tag" --json isDraft,tagName,url
