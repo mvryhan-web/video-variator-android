@@ -28,7 +28,7 @@
     <div>
       <h2 data-av="deviceVoice">Device voice preview</h2>
       <p data-av="deviceVoiceNote">Use a free voice already installed on this device to hear the text. For the downloadable video, your own recorded/uploaded voice is optional during testing.</p>
-      <div class="actions avatar-voice-actions"><select id="avatarVoice" aria-label="Device voice"></select><button id="avatarSpeak" type="button" data-av="previewVoice">Preview voice</button><button id="avatarStopSpeak" type="button" disabled data-av="stopPreview">Stop voice</button></div>
+      <div class="actions avatar-voice-actions"><select id="avatarVoice" aria-label="Device voice"></select><button id="avatarSpeak" type="button" data-av="previewVoice">Preview voice</button><button id="avatarStopSpeak" type="button" disabled data-av="stopPreview">Stop voice</button><button id="avatarSelectVoice" type="button" class="primaryBtn" data-av="selectVoice">Select</button></div>
       <p id="voicePreviewStatus" class="muted" aria-live="polite"></p>
     </div>
     <div>
@@ -42,7 +42,7 @@
   <label class="consent-line"><input id="voiceConsent" type="checkbox"><span data-av="consent">I confirm this is my voice/photo, or I have permission to use them for this video.</span></label>
   <div class="avatar-preview-shell">
     <div class="avatar-preview-top"><video id="avatarVideoPreview" controls muted playsinline></video></div>
-    <div class="avatar-preview-bottom"><img id="avatarPhotoPreview" alt=""><div id="avatarPreviewText"></div></div>
+    <div class="avatar-preview-bottom"><img id="avatarPhotoPreview" alt=""></div>
   </div>
   <p class="muted" data-av="motionNote">This free local version uses subtle avatar motion, not cloud lip-sync. A more advanced lip-sync provider can be added later without changing this workflow.</p>
   <div class="actions"><button id="avatarGenerate" class="primaryBtn" disabled data-av="create">Create split-screen video</button><button id="avatarCancel" disabled data-av="cancel">Cancel</button></div>
