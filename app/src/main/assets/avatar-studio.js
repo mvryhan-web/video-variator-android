@@ -2,146 +2,200 @@ import {createEngine,saveLocal} from './ai-media.js';
 
 const $=id=>document.getElementById(id);
 const lang=(navigator.language||'en-US').toLowerCase();
-const dict={
- ru:{back:'← Назад',included:'Бесплатный тест 720p · Полное качество в Basic, Pro и Business',title:'Аватар-комментатор',intro:'Сверху — ваше видео, снизу — ваш фото-аватар. Добавьте текст и при желании свой голос. Монтаж выполняется локально на устройстве.',plan:'Доступ',video:'1 · Исходное видео',photo:'2 · Фото аватара',text:'3 · Текст для озвучки',deviceVoice:'Голос устройства — предпросмотр',deviceVoiceNote:'Выберите голос — он сразу произнесёт ваш текст. Если текст ещё пустой, прозвучит короткий пример. Для тестового видео запись своего голоса необязательна.',previewVoice:'Прослушать текст',stopPreview:'Остановить голос',selectVoice:'Выбрать',ownVoice:'Ваш голос для экспорта',ownVoiceNote:'Необязательно для теста. Загрузите аудио или запишите голос, если хотите, чтобы он был в готовом видео.',audio:'Загрузить аудио голоса',record:'Записать голос',stop:'Остановить запись',consent:'Я подтверждаю, что это мой голос/фото или у меня есть разрешение использовать их в этом видео.',motionNote:'Эта бесплатная локальная версия делает лёгкое движение аватара без облачного lip-sync. Более точную синхронизацию губ можно подключить позже, не меняя этот процесс.',create:'Создать видео с двумя экранами',cancel:'Отмена'},
- fr:{back:'← Retour',included:'Test gratuit 720p · Qualité complète avec Basic, Pro et Business',title:'Narrateur avatar',intro:'Votre vidéo en haut, votre avatar photo en bas. Ajoutez le texte et, si vous le souhaitez, votre propre voix. Le montage reste local.',plan:'Accès',video:'1 · Vidéo source',photo:'2 · Photo avatar',text:'3 · Texte de narration',deviceVoice:'Aperçu de la voix de l’appareil',deviceVoiceNote:'Choisissez une voix : elle lit immédiatement votre texte. Si le texte est vide, un court exemple est lu.',previewVoice:'Écouter le texte',stopPreview:'Arrêter la voix',selectVoice:'Choisir',ownVoice:'Votre voix pour l’export',ownVoiceNote:'Facultatif pour le test. Importez ou enregistrez votre voix pour l’inclure dans la vidéo finale.',audio:'Importer la voix',record:'Enregistrer la voix',stop:'Arrêter l’enregistrement',consent:'Je confirme que cette voix/photo m’appartient ou que j’ai l’autorisation de l’utiliser.',create:'Créer la vidéo',cancel:'Annuler'},
- uk:{back:'← Назад',included:'Безкоштовний тест 720p · Повна якість у Basic, Pro та Business',title:'Аватар-оповідач',intro:'Ваше відео зверху, фото-аватар знизу. Додайте текст і, за бажанням, власний голос. Монтаж виконується локально.',plan:'Доступ',video:'1 · Вихідне відео',photo:'2 · Фото аватара',text:'3 · Текст озвучення',deviceVoice:'Попередній перегляд голосу пристрою',deviceVoiceNote:'Оберіть голос — він одразу прочитає ваш текст. Якщо текст порожній, прозвучить короткий приклад.',previewVoice:'Прослухати текст',stopPreview:'Зупинити голос',selectVoice:'Обрати',ownVoice:'Ваш голос для експорту',ownVoiceNote:'Необов’язково для тесту. Завантажте або запишіть голос, щоб додати його до готового відео.',audio:'Завантажити голос',record:'Записати голос',stop:'Зупинити запис',consent:'Я підтверджую, що це мій голос/фото або маю дозвіл на їх використання.',create:'Створити відео',cancel:'Скасувати'}
-};
 const locale=lang.startsWith('ru')?'ru':lang.startsWith('fr')?'fr':lang.startsWith('uk')?'uk':'en';
+const dict={
+ en:{back:'← Back',included:'Free 720p test · Full quality in Basic, Pro & Business',title:'Avatar Narrator',intro:'Put your video on top and your own photo avatar below. Add narration text and, if you want, your own recorded voice. Everything is composed locally on this device.',plan:'Access',video:'1 · Source video',photo:'2 · Your avatar photo',text:'3 · Narration text',deviceVoice:'Device voice preview',deviceVoiceNote:'Open the voice list and tap any voice to hear it immediately. The list stays open until you press Select on the voice you want.',chooseVoice:'Choose a voice',useVoice:'Select',ownVoice:'Your own voice for export',ownVoiceNote:'Optional for testing. Upload or record narration if you want that audio inside the exported video.',audio:'Upload voice audio',record:'Record voice',stop:'Stop recording',consent:'I confirm this is my voice/photo, or I have permission to use them for this video.',motionNote:'This free local version uses subtle avatar motion, not cloud lip-sync.',create:'Create split-screen video',cancel:'Cancel',recent:'Recent Avatar videos',recentNote:'Saved projects and completed videos remain available after you reopen the app.',fullHistory:'Full history'},
+ ru:{back:'← Назад',included:'Бесплатный тест 720p · Полное качество в Basic, Pro и Business',title:'Аватар-комментатор',intro:'Сверху — ваше видео, снизу — фото-аватар. Добавьте текст и, при желании, свой записанный голос. Монтаж выполняется локально на устройстве.',plan:'Доступ',video:'1 · Исходное видео',photo:'2 · Фото аватара',text:'3 · Текст для озвучки',deviceVoice:'Голос устройства',deviceVoiceNote:'Откройте список и нажимайте на любой голос — он сразу говорит, а список остаётся открытым. Когда голос понравится, нажмите «Выбрать» справа именно в его строке.',chooseVoice:'Выберите голос',useVoice:'Выбрать',ownVoice:'Ваш голос для экспорта',ownVoiceNote:'Необязательно для теста. Загрузите аудио или запишите голос, если хотите слышать его в готовом видео.',audio:'Загрузить аудио голоса',record:'Записать голос',stop:'Остановить запись',consent:'Я подтверждаю, что это мой голос/фото или у меня есть разрешение использовать их в этом видео.',motionNote:'Эта бесплатная локальная версия делает лёгкое движение аватара без облачного lip-sync.',create:'Создать видео с двумя экранами',cancel:'Отмена',recent:'История Avatar',recentNote:'Проекты и готовые видео сохраняются и остаются после повторного входа в приложение.',fullHistory:'Вся история'},
+ fr:{back:'← Retour',included:'Test gratuit 720p · Qualité complète avec Basic, Pro et Business',title:'Narrateur avatar',intro:'Votre vidéo en haut, votre avatar photo en bas. Ajoutez le texte et, si vous le souhaitez, votre propre voix enregistrée. Le montage reste local.',plan:'Accès',video:'1 · Vidéo source',photo:'2 · Photo avatar',text:'3 · Texte de narration',deviceVoice:'Voix de l’appareil',deviceVoiceNote:'Ouvrez la liste et touchez une voix pour l’écouter immédiatement. La liste reste ouverte jusqu’à ce que vous choisissiez une voix.',chooseVoice:'Choisir une voix',useVoice:'Choisir',ownVoice:'Votre voix pour l’export',ownVoiceNote:'Facultatif pour le test. Importez ou enregistrez votre voix pour l’inclure dans la vidéo finale.',audio:'Importer la voix',record:'Enregistrer la voix',stop:'Arrêter l’enregistrement',consent:'Je confirme que cette voix/photo m’appartient ou que j’ai l’autorisation de l’utiliser.',motionNote:'Cette version locale gratuite utilise un léger mouvement de l’avatar, sans lip-sync cloud.',create:'Créer la vidéo',cancel:'Annuler',recent:'Vidéos Avatar récentes',recentNote:'Les projets et vidéos terminées restent disponibles après la réouverture de l’application.',fullHistory:'Historique complet'},
+ uk:{back:'← Назад',included:'Безкоштовний тест 720p · Повна якість у Basic, Pro та Business',title:'Аватар-оповідач',intro:'Ваше відео зверху, фото-аватар знизу. Додайте текст і, за бажанням, власний записаний голос. Монтаж виконується локально.',plan:'Доступ',video:'1 · Вихідне відео',photo:'2 · Фото аватара',text:'3 · Текст озвучення',deviceVoice:'Голос пристрою',deviceVoiceNote:'Відкрийте список і натискайте на будь-який голос — він одразу говорить, а список залишається відкритим. Коли голос сподобається, натисніть «Обрати» праворуч у його рядку.',chooseVoice:'Оберіть голос',useVoice:'Обрати',ownVoice:'Ваш голос для експорту',ownVoiceNote:'Необов’язково для тесту. Завантажте або запишіть голос, якщо хочете чути його у готовому відео.',audio:'Завантажити голос',record:'Записати голос',stop:'Зупинити запис',consent:'Я підтверджую, що це мій голос/фото або маю дозвіл на їх використання.',motionNote:'Ця безкоштовна локальна версія робить легкий рух аватара без хмарного lip-sync.',create:'Створити відео',cancel:'Скасувати',recent:'Історія Avatar',recentNote:'Проєкти та готові відео зберігаються після повторного входу в застосунок.',fullHistory:'Уся історія'}
+};
 const msg={
- en:{free:'Free test · 720p',ready:'Ready to create. Add your own voice only if you want audio in the exported video.',need:'Add a source video, avatar photo, narration text and confirm permission to enable Create.',sample:'Hello. This is a preview of the selected device voice.',selected:'Selected voice',chosen:'Voice selected',speaking:'Speaking…',stopped:'Voice preview stopped.',noSpeech:'Device speech is unavailable here.',write:'Write narration text first.',silent:'No recorded voice was added, so this test video will be exported without narration audio.'},
- ru:{free:'Бесплатный тест · 720p',ready:'Готово к созданию. Свой голос добавляйте только если хотите слышать его в готовом видео.',need:'Добавьте видео, фото аватара, текст и подтвердите разрешение — после этого кнопка создания станет активной.',sample:'Здравствуйте. Это пример выбранного голоса устройства.',selected:'Прослушивается голос',chosen:'Голос выбран',speaking:'Голос воспроизводится…',stopped:'Прослушивание остановлено.',noSpeech:'Голос устройства здесь недоступен.',write:'Сначала напишите текст для озвучки.',silent:'Свой записанный голос не добавлен — тестовое видео будет создано без озвучки.'},
- fr:{free:'Test gratuit · 720p',ready:'Prêt à créer. Ajoutez votre propre voix uniquement si vous voulez l’entendre dans la vidéo exportée.',need:'Ajoutez la vidéo, la photo, le texte et confirmez l’autorisation pour activer la création.',sample:'Bonjour. Voici un aperçu de la voix sélectionnée.',selected:'Voix en écoute',chosen:'Voix choisie',speaking:'Lecture en cours…',stopped:'Aperçu vocal arrêté.',noSpeech:'La synthèse vocale est indisponible ici.',write:'Écrivez d’abord le texte de narration.',silent:'Aucune voix enregistrée : la vidéo de test sera exportée sans narration audio.'},
- uk:{free:'Безкоштовний тест · 720p',ready:'Готово до створення. Власний голос потрібен лише якщо ви хочете чути його у готовому відео.',need:'Додайте відео, фото аватара, текст і підтвердьте дозвіл — після цього створення стане активним.',sample:'Вітаю. Це приклад вибраного голосу пристрою.',selected:'Прослуховується голос',chosen:'Голос обрано',speaking:'Голос відтворюється…',stopped:'Прослуховування зупинено.',noSpeech:'Голос пристрою тут недоступний.',write:'Спочатку напишіть текст озвучення.',silent:'Власний записаний голос не додано — тестове відео буде створено без озвучення.'}
+ en:{free:'Free test · 720p',ready:'Ready to create. Your project is saved locally.',need:'Add a source video, avatar photo, narration text and confirm permission.',sample:'Hello. This is a preview of this device voice.',listening:'Previewing',chosen:'Selected',recorded:'Voice recorded locally',recording:'Recording…',micDenied:'Microphone permission was not granted. Upload an audio file instead.',processing:'Creating video locally…',preparing:'Preparing your saved project…',done:'Done · saved locally and added to History.',queued:'Saved. This job will resume automatically when Avatar Narrator is open again.',restored:'Restored from your last session',historyProcessing:'Processing / resumes automatically',historyQueued:'Queued / resumes automatically',historyDone:'Ready',historyError:'Needs retry',download:'Download',share:'Share',silent:'No recorded/uploaded narration was added, so the exported video will have no narration audio.',storageFail:'Could not save this project for recovery. Free some device/browser storage and try again.'},
+ ru:{free:'Бесплатный тест · 720p',ready:'Готово к созданию. Проект сохранён локально.',need:'Добавьте видео, фото аватара, текст и подтвердите разрешение.',sample:'Здравствуйте. Это пример этого голоса устройства.',listening:'Прослушивается',chosen:'Выбран',recorded:'Голос записан локально',recording:'Запись…',micDenied:'Нет доступа к микрофону. Можно загрузить аудиофайл.',processing:'Создаю видео локально…',preparing:'Восстанавливаю сохранённый проект…',done:'Готово · видео сохранено и добавлено в Историю.',queued:'Проект сохранён. Задание автоматически продолжится, когда Avatar Narrator снова будет открыт.',restored:'Восстановлено из прошлого сеанса',historyProcessing:'Создаётся / продолжится автоматически',historyQueued:'В очереди / продолжится автоматически',historyDone:'Готово',historyError:'Нужно повторить',download:'Скачать',share:'Поделиться',silent:'Записанный или загруженный голос не добавлен — готовое видео будет без озвучки.',storageFail:'Не удалось сохранить проект для восстановления. Освободите немного памяти и попробуйте ещё раз.'},
+ fr:{free:'Test gratuit · 720p',ready:'Prêt à créer. Le projet est enregistré localement.',need:'Ajoutez la vidéo, la photo, le texte et confirmez l’autorisation.',sample:'Bonjour. Voici un aperçu de cette voix.',listening:'Écoute',chosen:'Choisie',recorded:'Voix enregistrée localement',recording:'Enregistrement…',micDenied:'Accès au microphone refusé. Importez un fichier audio.',processing:'Création locale de la vidéo…',preparing:'Restauration du projet enregistré…',done:'Terminé · vidéo enregistrée et ajoutée à l’historique.',queued:'Projet enregistré. Le traitement reprendra automatiquement à la réouverture.',restored:'Restauré depuis la dernière session',historyProcessing:'Traitement / reprise automatique',historyQueued:'En attente / reprise automatique',historyDone:'Prêt',historyError:'À réessayer',download:'Télécharger',share:'Partager',silent:'Aucune narration enregistrée/importée : la vidéo exportée sera sans narration.',storageFail:'Impossible d’enregistrer ce projet pour reprise. Libérez de l’espace et réessayez.'},
+ uk:{free:'Безкоштовний тест · 720p',ready:'Готово до створення. Проєкт збережено локально.',need:'Додайте відео, фото аватара, текст і підтвердьте дозвіл.',sample:'Вітаю. Це приклад цього голосу пристрою.',listening:'Прослуховується',chosen:'Обрано',recorded:'Голос записано локально',recording:'Запис…',micDenied:'Немає доступу до мікрофона. Можна завантажити аудіофайл.',processing:'Створюю відео локально…',preparing:'Відновлюю збережений проєкт…',done:'Готово · відео збережено й додано до Історії.',queued:'Проєкт збережено. Завдання автоматично продовжиться після відкриття Avatar Narrator.',restored:'Відновлено з минулого сеансу',historyProcessing:'Створюється / продовжиться автоматично',historyQueued:'У черзі / продовжиться автоматично',historyDone:'Готово',historyError:'Потрібно повторити',download:'Завантажити',share:'Поділитися',silent:'Записаний або завантажений голос не додано — готове відео буде без озвучення.',storageFail:'Не вдалося зберегти проєкт для відновлення. Звільніть трохи пам’яті та спробуйте ще раз.'}
 }[locale];
-if(dict[locale])document.querySelectorAll('[data-av]').forEach(el=>{const v=dict[locale][el.dataset.av];if(v)el.textContent=v;});
+document.querySelectorAll('[data-av]').forEach(el=>{const v=(dict[locale]||dict.en)[el.dataset.av];if(v)el.textContent=v;});
 
-let plan='trial',engine=null,busy=false,cancelled=false,recordStream=null,recorder=null,recordChunks=[],recordedVoice=null,chosenDeviceVoiceIndex=null;
+const media=window.VUPersistentMedia;
+const DRAFT_KEY='vu_avatar_draft_v2',JOBS_KEY='vu_avatar_jobs_v2';
+const policy={trial:{w:720,h:1280,label:'Free test · 720p'},basic:{w:720,h:1280,label:'Basic · 720p'},pro:{w:1080,h:1920,label:'Pro · 1080p'},business:{w:2160,h:3840,label:'Business · 4K'}};
+const inputIds={video:'avatarVideo',photo:'avatarPhoto',voice:'avatarAudio'};
+const savedIds={video:'avatarVideoSaved',photo:'avatarPhotoSaved',voice:'avatarAudioSaved'};
+let plan='trial',engine=null,busy=false,cancelled=false,leaving=false,activeJobId=null,recordStream=null,recorder=null,recordChunks=[],recordedVoice=null;
+let restored={video:null,photo:null,voice:null},chosenVoiceMeta=null;
 const urls=[];
+const token=localStorage.getItem('vv_token')||'';
 const status=s=>$('avatarStatus').textContent=s;
 const voiceStatus=s=>$('voiceStatus').textContent=s;
 const u=b=>{const x=URL.createObjectURL(b);urls.push(x);return x;};
-const token=localStorage.getItem('vv_token')||'';
-const policy={trial:{w:720,h:1280,label:'Free test · 720p'},basic:{w:720,h:1280,label:'Basic · 720p'},pro:{w:1080,h:1920,label:'Pro · 1080p'},business:{w:2160,h:3840,label:'Business · 4K'}};
-
+const readJson=(k,f)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(f));}catch(_){return f;}};
+const writeJson=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const jobs=()=>readJson(JOBS_KEY,[]).slice(0,30);
+function saveJobs(list){writeJson(JOBS_KEY,list.slice(0,30));}
+function upsertJob(job){const list=jobs(),i=list.findIndex(x=>x.id===job.id);if(i>=0)list[i]=job;else list.unshift(job);saveJobs(list);renderAvatarHistory();return job;}
+function patchJob(id,patch){const list=jobs(),i=list.findIndex(x=>x.id===id);if(i<0)return null;list[i]={...list[i],...patch,updatedAt:new Date().toISOString()};saveJobs(list);renderAvatarHistory();return list[i];}
+function draft(){return readJson(DRAFT_KEY,{text:'',consent:false,files:{},voice:null,updatedAt:null});}
+function saveDraft(patch={}){const d=draft(),next={...d,...patch,files:{...(d.files||{}),...(patch.files||{})},updatedAt:new Date().toISOString()};writeJson(DRAFT_KEY,next);return next;}
+function fileFor(kind){return $(inputIds[kind])?.files?.[0]||restored[kind]||null;}
+function noteFile(kind,name,restoredFlag=false){const el=$(savedIds[kind]);if(el)el.textContent=name?(restoredFlag?msg.restored+' · ':'')+name:'';}
+function previewBlob(kind,blob){
+ if(!blob)return;
+ if(kind==='video'){$('avatarVideoPreview').src=u(blob);$('avatarVideoPreview').load();}
+ if(kind==='photo')$('avatarPhotoPreview').src=u(blob);
+}
+async function persistDraftFile(kind,file){
+ if(!file||!media) return;
+ const key='avatar/draft/'+kind;
+ try{
+  await media.put(key,file);restored[kind]=file;
+  saveDraft({files:{[kind]:{key,name:file.name||kind,type:file.type||'',size:file.size||0}}});
+  noteFile(kind,file.name||kind,false);
+ }catch(_){status(msg.storageFail);}
+}
+async function restoreDraft(){
+ const d=draft();$('avatarText').value=d.text||'';$('voiceConsent').checked=!!d.consent;chosenVoiceMeta=d.voice||null;
+ for(const kind of ['video','photo','voice']){
+  const meta=d.files?.[kind];if(!meta?.key||!media)continue;
+  const blob=await media.get(meta.key);if(!blob)continue;
+  const file=new File([blob],meta.name||kind,{type:meta.type||blob.type||'application/octet-stream'});
+  restored[kind]=file;noteFile(kind,file.name,true);previewBlob(kind,file);
+  if(kind==='voice')voiceStatus(msg.restored+' · '+file.name);
+ }
+ updateReady();renderVoicePicker();
+}
 async function account(){
  if(!token){plan='trial';$('avatarPlan').textContent=msg.free;$('avatarQuality').textContent=policy.trial.label;updateReady();return;}
  try{
-  const r=await fetch('/api/me',{headers:{Authorization:'Bearer '+token}}),d=await r.json();
-  const usage=d.user?.usage||d.usage;
-  if(r.ok&&usage?.active&&policy[usage.plan]){plan=usage.plan;$('avatarPlan').textContent=(d.user?.isAdmin?'Admin · ':'')+policy[plan].label+' · Avatar Narrator';$('avatarQuality').textContent=policy[plan].label;updateReady();}
-  else{plan='trial';$('avatarPlan').textContent=msg.free;$('avatarQuality').textContent=policy.trial.label;updateReady();}
- }catch(_){plan='trial';$('avatarPlan').textContent=msg.free;$('avatarQuality').textContent=policy.trial.label;updateReady();}
+  const r=await fetch('/api/me',{headers:{Authorization:'Bearer '+token}}),d=await r.json(),usage=d.user?.usage||d.usage;
+  if(r.ok&&usage?.active&&policy[usage.plan]){plan=usage.plan;$('avatarPlan').textContent=(d.user?.isAdmin?'Admin · ':'')+policy[plan].label+' · Avatar Narrator';$('avatarQuality').textContent=policy[plan].label;}
+  else{plan='trial';$('avatarPlan').textContent=msg.free;$('avatarQuality').textContent=policy.trial.label;}
+ }catch(_){plan='trial';$('avatarPlan').textContent=msg.free;$('avatarQuality').textContent=policy.trial.label;}
+ updateReady();
 }
 function updateReady(){
- const ready=!!policy[plan]&&!!$('avatarVideo').files[0]&&!!$('avatarPhoto').files[0]&&!!$('avatarText').value.trim()&&$('voiceConsent').checked;
+ const ready=!!policy[plan]&&!!fileFor('video')&&!!fileFor('photo')&&!!$('avatarText').value.trim()&&$('voiceConsent').checked;
  $('avatarGenerate').disabled=busy||!ready;
  $('avatarReadyHint').textContent=ready?msg.ready:msg.need;
 }
-function previewFile(input,el,type){
- const file=input.files[0];if(!file){el.removeAttribute('src');updateReady();return;}
- el.src=u(file);if(type==='video')el.load();updateReady();
+function voiceKey(v){return v?[v.name||'',v.lang||'',v.voiceURI||''].join('|'):'';}
+function allVoices(){return window.speechSynthesis?.getVoices?.()||[];}
+function findChosenVoice(){
+ const list=allVoices();if(!chosenVoiceMeta)return null;
+ return list.find(v=>voiceKey(v)===chosenVoiceMeta.key)||list.find(v=>v.name===chosenVoiceMeta.name&&v.lang===chosenVoiceMeta.lang)||null;
 }
-$('avatarVideo').onchange=()=>previewFile($('avatarVideo'),$('avatarVideoPreview'),'video');
-$('avatarPhoto').onchange=()=>{previewFile($('avatarPhoto'),$('avatarPhotoPreview'),'image');};
-$('avatarText').oninput=()=>{updateReady();};
-$('avatarAudio').onchange=()=>{recordedVoice=null;voiceStatus($('avatarAudio').files[0]?.name||'');updateReady();};
-$('voiceConsent').onchange=updateReady;
+function closeVoicePicker(){$('voicePickerMenu').hidden=true;$('voicePickerToggle').setAttribute('aria-expanded','false');}
+function speakVoice(voice,row){
+ if(!voice||!('speechSynthesis'in window))return;
+ window.speechSynthesis.cancel();document.querySelectorAll('.voice-option.previewing').forEach(x=>x.classList.remove('previewing'));row?.classList.add('previewing');
+ const utter=new SpeechSynthesisUtterance($('avatarText').value.trim()||msg.sample);utter.voice=voice;utter.lang=voice.lang||navigator.language||'en-US';
+ utter.onstart=()=>{$('voicePreviewStatus').textContent=msg.listening+': '+voice.name;};
+ utter.onend=()=>{row?.classList.remove('previewing');$('voicePreviewStatus').textContent=chosenVoiceMeta?msg.chosen+': '+chosenVoiceMeta.name:'';};
+ utter.onerror=utter.onend;window.speechSynthesis.speak(utter);
+}
+function chooseVoice(voice){
+ chosenVoiceMeta={key:voiceKey(voice),name:voice.name,lang:voice.lang||'',voiceURI:voice.voiceURI||''};
+ saveDraft({voice:chosenVoiceMeta});$('voicePickerLabel').textContent=chosenVoiceMeta.name+' · '+chosenVoiceMeta.lang;$('voicePreviewStatus').textContent=msg.chosen+': '+chosenVoiceMeta.name;window.speechSynthesis?.cancel?.();closeVoicePicker();renderVoicePicker();
+}
+function renderVoicePicker(){
+ const menu=$('voicePickerMenu');if(!menu)return;const voices=allVoices();menu.replaceChildren();
+ if(chosenVoiceMeta)$('voicePickerLabel').textContent=chosenVoiceMeta.name+' · '+chosenVoiceMeta.lang;else $('voicePickerLabel').textContent=(dict[locale]||dict.en).chooseVoice;
+ voices.forEach(voice=>{
+  const row=document.createElement('div');row.className='voice-option';row.setAttribute('role','option');row.setAttribute('aria-selected',voiceKey(voice)===chosenVoiceMeta?.key?'true':'false');
+  const preview=document.createElement('button');preview.type='button';preview.className='voice-option-preview';preview.innerHTML='<span class="voice-play" aria-hidden="true">▶</span><span><b></b><small></small></span>';preview.querySelector('b').textContent=voice.name;preview.querySelector('small').textContent=voice.lang+(voice.default?' · Default':'');preview.onclick=()=>speakVoice(voice,row);
+  const select=document.createElement('button');select.type='button';select.className='voice-option-select';select.textContent=(dict[locale]||dict.en).useVoice;select.onclick=e=>{e.stopPropagation();chooseVoice(voice);};
+  row.append(preview,select);menu.append(row);
+ });
+ if(!voices.length){const p=document.createElement('p');p.className='muted';p.textContent='No device voices available.';menu.append(p);}
+}
+if('speechSynthesis'in window){renderVoicePicker();window.speechSynthesis.onvoiceschanged=renderVoicePicker;}
+$('voicePickerToggle').onclick=()=>{const open=$('voicePickerMenu').hidden;$('voicePickerMenu').hidden=!open;$('voicePickerToggle').setAttribute('aria-expanded',String(open));if(open)renderVoicePicker();};
+document.addEventListener('click',e=>{if(!$('voicePicker').contains(e.target))closeVoicePicker();});
 
-function selectedVoice(){
- const voices=window.speechSynthesis?.getVoices?.()||[];
- return voices[Number($('avatarVoice').value)]||voices[0]||null;
-}
-function chosenVoice(){
- const voices=window.speechSynthesis?.getVoices?.()||[];
- return chosenDeviceVoiceIndex===null?null:(voices[chosenDeviceVoiceIndex]||null);
-}
-function setSpeakState(active,label=''){
- $('avatarSpeak').disabled=active;
- $('avatarStopSpeak').disabled=!active;
- if(label)$('voicePreviewStatus').textContent=label;
-}
-function speakPreview(useSample=false){
- if(!('speechSynthesis'in window))return setSpeakState(false,msg.noSpeech);
- const selected=selectedVoice(),text=$('avatarText').value.trim()||(useSample?msg.sample:'');
- if(!text)return setSpeakState(false,msg.write);
- window.speechSynthesis.cancel();
- const utter=new SpeechSynthesisUtterance(text);
- if(selected)utter.voice=selected;
- utter.lang=selected?.lang||navigator.language||'en-US';
- utter.onstart=()=>setSpeakState(true,(selected?msg.selected+': '+selected.name+' · ':'')+msg.speaking);
- utter.onend=()=>setSpeakState(false,selected?msg.selected+': '+selected.name:'');
- utter.onerror=()=>setSpeakState(false,selected?msg.selected+': '+selected.name:'');
- setSpeakState(true,(selected?msg.selected+': '+selected.name+' · ':'')+msg.speaking);
- window.speechSynthesis.speak(utter);
-}
-function loadVoices(){
- const select=$('avatarVoice'),voices=window.speechSynthesis?.getVoices?.()||[],previous=select.value;select.replaceChildren();
- voices.forEach((v,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=v.name+' · '+v.lang+(v.default?' · Default':'');select.append(o);});
- if(!voices.length){const o=document.createElement('option');o.textContent='Default device voice';o.value='';select.append(o);}
- if(previous&&select.querySelector('option[value="'+previous+'"]'))select.value=previous;
- const chosen=selectedVoice();$('voicePreviewStatus').textContent=chosen?msg.selected+': '+chosen.name+' · '+chosen.lang:'';
-}
-if('speechSynthesis'in window){loadVoices();window.speechSynthesis.onvoiceschanged=loadVoices;}
-$('avatarVoice').addEventListener('change',()=>{
- chosenDeviceVoiceIndex=null;
- $('avatarSelectVoice').classList.remove('selected');
- speakPreview(true);
-});
-$('avatarSpeak').onclick=()=>speakPreview(false);
-$('avatarSelectVoice').onclick=()=>{
- const voices=window.speechSynthesis?.getVoices?.()||[],idx=Number($('avatarVoice').value),voice=voices[idx]||voices[0]||null;
- chosenDeviceVoiceIndex=voice?(voices.indexOf(voice)>=0?voices.indexOf(voice):idx):null;
- $('avatarSelectVoice').classList.toggle('selected',!!voice);
- $('voicePreviewStatus').textContent=voice?msg.chosen+': '+voice.name+' · '+voice.lang:msg.noSpeech;
-};
-$('avatarStopSpeak').onclick=()=>{window.speechSynthesis?.cancel?.();setSpeakState(false,msg.stopped);};
+$('avatarVideo').onchange=async()=>{const f=$('avatarVideo').files[0];if(f){restored.video=f;previewBlob('video',f);await persistDraftFile('video',f);}updateReady();};
+$('avatarPhoto').onchange=async()=>{const f=$('avatarPhoto').files[0];if(f){restored.photo=f;previewBlob('photo',f);await persistDraftFile('photo',f);}updateReady();};
+let textTimer;
+$('avatarText').oninput=()=>{clearTimeout(textTimer);textTimer=setTimeout(()=>saveDraft({text:$('avatarText').value}),120);updateReady();};
+$('voiceConsent').onchange=()=>{saveDraft({consent:$('voiceConsent').checked});updateReady();};
+$('avatarAudio').onchange=async()=>{recordedVoice=null;const f=$('avatarAudio').files[0];if(f){restored.voice=f;voiceStatus(f.name);await persistDraftFile('voice',f);}updateReady();};
 
 $('recordVoice').onclick=async()=>{
- if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)return voiceStatus('Voice recording is unavailable here. Upload an audio file instead.');
+ if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)return voiceStatus(msg.micDenied);
  try{
   recordStream=await navigator.mediaDevices.getUserMedia({audio:true});recordChunks=[];const mime=['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(x=>MediaRecorder.isTypeSupported(x));
   recorder=new MediaRecorder(recordStream,mime?{mimeType:mime}:undefined);recorder.ondataavailable=e=>{if(e.data.size)recordChunks.push(e.data);};
-  recorder.onstop=()=>{const type=recorder.mimeType||recordChunks[0]?.type||'audio/webm';recordedVoice=new File(recordChunks,'VideoUniquifier-avatar-voice.'+(type.includes('mp4')?'m4a':'webm'),{type:type.split(';')[0]});recordStream?.getTracks().forEach(t=>t.stop());recordStream=null;voiceStatus('Voice recorded locally · '+(recordedVoice.size/1048576).toFixed(2)+' MB');$('recordVoice').disabled=false;$('stopVoice').disabled=true;updateReady();};
-  recorder.start(500);$('recordVoice').disabled=true;$('stopVoice').disabled=false;voiceStatus('Recording…');
- }catch(_){voiceStatus('Microphone permission was not granted. Upload an audio file instead.');}
+  recorder.onstop=async()=>{const type=recorder.mimeType||recordChunks[0]?.type||'audio/webm';recordedVoice=new File(recordChunks,'VideoUniquifier-avatar-voice.'+(type.includes('mp4')?'m4a':'webm'),{type:type.split(';')[0]});restored.voice=recordedVoice;recordStream?.getTracks().forEach(t=>t.stop());recordStream=null;voiceStatus(msg.recorded+' · '+(recordedVoice.size/1048576).toFixed(2)+' MB');$('recordVoice').disabled=false;$('stopVoice').disabled=true;await persistDraftFile('voice',recordedVoice);updateReady();};
+  recorder.start(500);$('recordVoice').disabled=true;$('stopVoice').disabled=false;voiceStatus(msg.recording);
+ }catch(_){voiceStatus(msg.micDenied);}
 };
 $('stopVoice').onclick=()=>{if(recorder&&recorder.state!=='inactive')recorder.stop();};
 
-function mediaDuration(file,kind){
- return new Promise((resolve,reject)=>{const el=document.createElement(kind);el.preload='metadata';el.src=u(file);el.onloadedmetadata=()=>resolve(Number(el.duration)||0);el.onerror=()=>reject(Error('MEDIA_FORMAT'));});
-}
+function mediaDuration(file,kind='video'){return new Promise((resolve,reject)=>{const el=document.createElement(kind);el.preload='metadata';el.src=u(file);el.onloadedmetadata=()=>resolve(Number(el.duration)||0);el.onerror=()=>reject(Error('MEDIA_FORMAT'));});}
 async function resultControls(file){
  const wrap=document.createElement('div'),video=document.createElement('video');video.controls=true;video.playsInline=true;video.src=u(file);video.className='ai-preview';wrap.append(video);
  const actions=document.createElement('div');actions.className='actions';
- const save=document.createElement('button');save.textContent='Download';save.onclick=()=>saveLocal(file).catch(()=>status('Could not save the video.'));
- const share=document.createElement('button');share.textContent='Share';share.onclick=()=>window.VUShareFile?.({name:file.name,blob:file});
+ const save=document.createElement('button');save.textContent=msg.download;save.onclick=()=>saveLocal(file).catch(()=>status('Could not save the video.'));
+ const share=document.createElement('button');share.textContent=msg.share;share.onclick=()=>window.VUShareFile?.({name:file.name,blob:file});
  actions.append(save,share);wrap.append(actions);$('avatarResult').replaceChildren(wrap);
 }
-$('avatarCancel').onclick=()=>{cancelled=true;try{engine?.terminate();}catch(_){}engine=null;status('Canceled');};
-$('avatarGenerate').onclick=async()=>{
- if(busy||!policy[plan])return;updateReady();if($('avatarGenerate').disabled)return;
- const video=$('avatarVideo').files[0],photo=$('avatarPhoto').files[0],voice=$('avatarAudio').files[0]||recordedVoice,p=policy[plan];busy=true;cancelled=false;$('avatarGenerate').disabled=true;$('avatarCancel').disabled=false;$('avatarResult').replaceChildren();
+async function addGlobalHistory(job,file){
+ const list=readJson('vv_history',[]),item={id:job.id,name:file.name,sourceName:job.sourceName,createdAt:job.createdAt,resolution:job.resolution,aspectRatio:'9:16',durationSeconds:job.durationSeconds||0,credits:0,saved:true,path:null,type:'avatar',mediaCacheKey:job.outputKey};
+ const filtered=list.filter(x=>x.id!==item.id);filtered.unshift(item);writeJson('vv_history',filtered.slice(0,100));
+ if(token)fetch('/api/history',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({items:[item]})}).catch(()=>{});
+}
+async function createJob(){
+ const video=fileFor('video'),photo=fileFor('photo'),voice=fileFor('voice'),id='avatar-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),p=policy[plan]||policy.trial;
+ const job={id,status:'queued',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),sourceName:video.name||'source-video',photoName:photo.name||'avatar-photo',voiceName:voice?.name||null,text:$('avatarText').value.trim(),selectedDeviceVoice:chosenVoiceMeta,plan,resolution:p.w+'×'+p.h,sourceKey:id+'/source',photoKey:id+'/photo',voiceKey:voice?id+'/voice':null,outputKey:id+'/output'};
  try{
-  const duration=await mediaDuration(video,'video');if(!duration||duration>600)throw Error('Keep source video at 10 minutes or less for this local version.');
-  status('Preparing local split-screen composition…');engine=await createEngine();if(cancelled)throw Error('CANCELLED');
-  await engine.writeFile('source',new Uint8Array(await video.arrayBuffer()));await engine.writeFile('avatar',new Uint8Array(await photo.arrayBuffer()));
-  if(voice)await engine.writeFile('voice',new Uint8Array(await voice.arrayBuffer()));
-  const top=Math.round(p.h*.58/2)*2,bottom=p.h-top;
-  const filter=`[0:v]scale=${p.w}:${top}:force_original_aspect_ratio=increase,crop=${p.w}:${top}[top];[1:v]scale=${p.w}:${bottom}:force_original_aspect_ratio=increase,crop=${p.w}:${bottom},zoompan=z='min(zoom+0.00025,1.035)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=${p.w}x${bottom}:fps=30[avatar];[top][avatar]vstack=inputs=2[v]`;
-  status(voice?'Creating video locally…':msg.silent);
-  const args=['-i','source','-loop','1','-framerate','30','-i','avatar'];
-  if(voice)args.push('-i','voice');
-  args.push('-filter_complex',filter,'-map','[v]');
-  if(voice)args.push('-map','2:a:0');else args.push('-an');
-  args.push('-t',String(duration),'-c:v','libx264','-preset','ultrafast','-crf',p.w>=2160?'25':p.w>=1080?'23':'22','-pix_fmt','yuv420p');
-  if(voice)args.push('-c:a','aac','-b:a','160k');
-  args.push('-movflags','+faststart','avatar-output.mp4');
-  const rc=await engine.exec(args);
-  if(rc)throw Error('ENCODE');const bytes=await engine.readFile('avatar-output.mp4'),file=new File([bytes],'VideoUniquifier-Avatar-'+Date.now()+'.mp4',{type:'video/mp4'});
-  await resultControls(file);await saveLocal(file);status('Done · saved automatically to VideoUniquifier on this device.');
- }catch(e){if(!cancelled){console.warn(e);status(e.message==='CANCELLED'?'Canceled':String(e.message||'Could not create the avatar video.'));}}
- finally{try{engine?.terminate();}catch(_){}engine=null;busy=false;$('avatarCancel').disabled=true;updateReady();}
-};
-window.addEventListener('pagehide',()=>{window.speechSynthesis?.cancel?.();recordStream?.getTracks().forEach(t=>t.stop());try{engine?.terminate();}catch(_){}urls.splice(0).forEach(URL.revokeObjectURL);});
-account();
+  await media.put(job.sourceKey,video);await media.put(job.photoKey,photo);if(voice)await media.put(job.voiceKey,voice);
+ }catch(_){throw Error(msg.storageFail);}
+ upsertJob(job);return job;
+}
+async function loadJobFile(job,key,name,type){const blob=await media?.get(job[key]);return blob?new File([blob],name,{type:blob.type||type}):null;}
+async function processJob(job){
+ if(busy)return;busy=true;cancelled=false;leaving=false;activeJobId=job.id;patchJob(job.id,{status:'processing'});$('avatarGenerate').disabled=true;$('avatarCancel').disabled=false;$('avatarResult').replaceChildren();status(msg.preparing);
+ try{
+  const video=await loadJobFile(job,'sourceKey',job.sourceName,'video/mp4'),photo=await loadJobFile(job,'photoKey',job.photoName,'image/png'),voice=job.voiceKey?await loadJobFile(job,'voiceKey',job.voiceName||'voice','audio/webm'):null;
+  if(!video||!photo)throw Error('Saved project media is unavailable.');
+  const duration=await mediaDuration(video);if(!duration||duration>600)throw Error('Keep source video at 10 minutes or less for this local version.');
+  const p=policy[job.plan]||policy.trial;patchJob(job.id,{durationSeconds:Math.ceil(duration),resolution:p.w+'×'+p.h});engine=await createEngine();if(cancelled)throw Error('CANCELLED');
+  await engine.writeFile('source',new Uint8Array(await video.arrayBuffer()));await engine.writeFile('avatar',new Uint8Array(await photo.arrayBuffer()));if(voice)await engine.writeFile('voice',new Uint8Array(await voice.arrayBuffer()));
+  const top=Math.round(p.h*.58/2)*2,bottom=p.h-top,filter=`[0:v]scale=${p.w}:${top}:force_original_aspect_ratio=increase,crop=${p.w}:${top}[top];[1:v]scale=${p.w}:${bottom}:force_original_aspect_ratio=increase,crop=${p.w}:${bottom},zoompan=z='min(zoom+0.00025,1.035)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=${p.w}x${bottom}:fps=30[avatar];[top][avatar]vstack=inputs=2[v]`;
+  status(voice?msg.processing:msg.silent);const args=['-i','source','-loop','1','-framerate','30','-i','avatar'];if(voice)args.push('-i','voice');args.push('-filter_complex',filter,'-map','[v]');if(voice)args.push('-map','2:a:0');else args.push('-an');args.push('-t',String(duration),'-c:v','libx264','-preset','ultrafast','-crf',p.w>=2160?'25':p.w>=1080?'23':'22','-pix_fmt','yuv420p');if(voice)args.push('-c:a','aac','-b:a','160k');args.push('-movflags','+faststart','avatar-output.mp4');
+  const rc=await engine.exec(args);if(rc)throw Error('ENCODE');const bytes=await engine.readFile('avatar-output.mp4'),file=new File([bytes],'VideoUniquifier-Avatar-'+Date.now()+'.mp4',{type:'video/mp4'});
+  await media.put(job.outputKey,file);await addGlobalHistory({...job,durationSeconds:Math.ceil(duration),resolution:p.w+'×'+p.h},file);patchJob(job.id,{status:'done',outputName:file.name,durationSeconds:Math.ceil(duration),resolution:p.w+'×'+p.h,finishedAt:new Date().toISOString()});
+  await resultControls(file);try{await saveLocal(file);}catch(_){}
+  status(msg.done);
+ }catch(e){
+  if(leaving){patchJob(job.id,{status:'queued'});}
+  else if(cancelled||e.message==='CANCELLED'){patchJob(job.id,{status:'canceled'});status('Canceled');}
+  else{console.warn(e);patchJob(job.id,{status:'error',error:String(e.message||e)});status(String(e.message||'Could not create the avatar video.'));}
+ }finally{
+  try{engine?.terminate();}catch(_){}engine=null;busy=false;activeJobId=null;$('avatarCancel').disabled=true;updateReady();renderAvatarHistory();
+ }
+}
+async function resumePending(){
+ if(busy||!media)return;const pending=jobs().filter(j=>j.status==='queued'||j.status==='processing').sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));if(pending.length)await processJob(pending[0]);
+}
+$('avatarGenerate').onclick=async()=>{if(busy)return;updateReady();if($('avatarGenerate').disabled)return;try{const job=await createJob();await processJob(job);}catch(e){status(String(e.message||msg.storageFail));}};
+$('avatarCancel').onclick=()=>{cancelled=true;if(activeJobId)patchJob(activeJobId,{status:'canceled'});try{engine?.terminate();}catch(_){}engine=null;status('Canceled');};
+
+async function renderAvatarHistory(){
+ const box=$('avatarHistory');if(!box)return;box.replaceChildren();const list=jobs().slice(0,10);if(!list.length){const p=document.createElement('p');p.className='muted';p.textContent='—';box.append(p);return;}
+ for(const job of list){
+  const row=document.createElement('article');row.className='avatar-history-row';const info=document.createElement('div'),name=document.createElement('b'),meta=document.createElement('small');name.textContent=job.outputName||job.sourceName||'Avatar project';
+  const stateText=job.status==='done'?msg.historyDone:job.status==='processing'?msg.historyProcessing:job.status==='queued'?msg.historyQueued:job.status==='error'?msg.historyError:job.status;meta.textContent=new Date(job.createdAt).toLocaleString()+' · '+stateText;info.append(name,meta);row.append(info);
+  if(job.status==='done'&&job.outputKey&&media){const blob=await media.get(job.outputKey);if(blob){const file=new File([blob],job.outputName||'VideoUniquifier-Avatar.mp4',{type:'video/mp4'}),actions=document.createElement('div');actions.className='actions';const d=document.createElement('button');d.textContent=msg.download;d.onclick=()=>saveLocal(file);const s=document.createElement('button');s.textContent=msg.share;s.onclick=()=>window.VUShareFile?.({name:file.name,blob:file});actions.append(d,s);row.append(actions);}}
+  box.append(row);
+ }
+}
+async function showLatestDone(){
+ const job=jobs().find(j=>j.status==='done'&&j.outputKey);if(!job||!media)return;const blob=await media.get(job.outputKey);if(blob)await resultControls(new File([blob],job.outputName||'VideoUniquifier-Avatar.mp4',{type:'video/mp4'}));
+}
+window.addEventListener('pagehide',()=>{leaving=true;window.speechSynthesis?.cancel?.();recordStream?.getTracks().forEach(t=>t.stop());if(activeJobId)patchJob(activeJobId,{status:'queued'});try{engine?.terminate();}catch(_){}urls.splice(0).forEach(URL.revokeObjectURL);});
+
+(async()=>{
+ media?.persist?.().catch(()=>{});
+ await Promise.all([restoreDraft(),account()]);
+ await renderAvatarHistory();await showLatestDone();await resumePending();
+})();

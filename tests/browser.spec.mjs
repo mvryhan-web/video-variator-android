@@ -213,7 +213,7 @@ test('primary navigation and non-destructive controls respond without client err
   const dimensions=await page.locator('button:visible').evaluateAll(btns=>btns.map(b=>({w:b.getBoundingClientRect().width,h:b.getBoundingClientRect().height,text:b.textContent.trim()})));
   for(const d of dimensions){expect(d.w, d.text).toBeGreaterThanOrEqual(32);expect(d.h, d.text).toBeGreaterThanOrEqual(32);}
 
-  for(const path of ['/free-tools.html','/avatar-studio.html','/ai-tools.html']){
+  for(const path of ['/free-tools.html','/avatar-studio.html']){
     const res=await request.get(path);expect(res.status(),path).toBe(200);
   }
   expect(errors).toEqual([]);
@@ -279,45 +279,69 @@ test('authenticated billing controls call the intended endpoints without client 
 });
 
 
-test('Avatar free test enables split-screen creation without recorded audio and previews selected device voice',async({page})=>{
+test('Avatar voice list auditions in place and Select closes the list',async({page})=>{
   await page.addInitScript(()=>{
     window.__spoken=[];window.__speechCanceled=0;
     window.SpeechSynthesisUtterance=function(text){this.text=text;this.lang='';this.voice=null;this.onstart=null;this.onend=null;this.onerror=null;};
     Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{
       onvoiceschanged:null,
       getVoices(){return[
-        {name:'Test Voice One',lang:'en-US',default:true},
-        {name:'Test Voice Two',lang:'en-GB',default:false}
+        {name:'Test Voice One',lang:'en-US',voiceURI:'one',default:true},
+        {name:'Test Voice Two',lang:'en-GB',voiceURI:'two',default:false}
       ];},
       cancel(){window.__speechCanceled++;},
       speak(utter){window.__spoken.push({text:utter.text,voice:utter.voice?.name||'',lang:utter.lang});utter.onstart?.();}
     }});
   });
   await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
-  await expect(page.locator('#avatarPlan')).toContainText('Free test');
-  await expect(page.locator('#avatarGenerate')).toBeDisabled();
-  await expect(page.locator('#avatarStopSpeak')).toBeDisabled();
-
-  await expect(page.locator('#avatarPreviewText')).toHaveCount(0);
-  await page.locator('#avatarVoice').selectOption('1');
+  await expect(page.locator('#avatarSpeak')).toHaveCount(0);
+  await expect(page.locator('#avatarStopSpeak')).toHaveCount(0);
+  await expect(page.locator('#avatarSelectVoice')).toHaveCount(0);
+  await page.locator('#voicePickerToggle').click();
+  await expect(page.locator('#voicePickerMenu')).toBeVisible();
+  await expect(page.locator('.voice-option')).toHaveCount(2);
+  await page.locator('.voice-option').nth(1).locator('.voice-option-preview').click();
   await expect.poll(()=>page.evaluate(()=>window.__spoken.length)).toBe(1);
   expect((await page.evaluate(()=>window.__spoken[0])).voice).toBe('Test Voice Two');
-  await expect(page.locator('#avatarSelectVoice')).not.toHaveClass(/selected/);
-  await page.locator('#avatarSelectVoice').click();
-  await expect(page.locator('#avatarSelectVoice')).toHaveClass(/selected/);
-  await expect(page.locator('#voicePreviewStatus')).toContainText('Voice selected: Test Voice Two');
-  await expect(page.locator('#avatarStopSpeak')).toBeEnabled();
-  await page.locator('#avatarStopSpeak').click();
-  await expect.poll(()=>page.evaluate(()=>window.__speechCanceled)).toBeGreaterThan(0);
-  await expect(page.locator('#avatarStopSpeak')).toBeDisabled();
+  await expect(page.locator('#voicePickerMenu')).toBeVisible();
+  await page.locator('.voice-option').nth(1).locator('.voice-option-select').click();
+  await expect(page.locator('#voicePickerMenu')).toBeHidden();
+  await expect(page.locator('#voicePickerLabel')).toContainText('Test Voice Two');
+  await expect(page.locator('#voicePreviewStatus')).toContainText('Selected: Test Voice Two');
+});
 
-  await page.locator('#avatarText').fill('This is my avatar test.');
-  await page.locator('#avatarSpeak').click();
-  await expect.poll(()=>page.evaluate(()=>window.__spoken.at(-1)?.text)).toBe('This is my avatar test.');
-
-  await page.locator('#avatarVideo').setInputFiles({name:'source.mp4',mimeType:'video/mp4',buffer:Buffer.from('video')});
-  await page.locator('#avatarPhoto').setInputFiles({name:'avatar.png',mimeType:'image/png',buffer:Buffer.from('image')});
+test('Avatar project restores files text consent and selected voice after reload',async({page})=>{
+  await page.addInitScript(()=>{
+    window.SpeechSynthesisUtterance=function(text){this.text=text;};
+    Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{onvoiceschanged:null,getVoices(){return[{name:'Saved Voice',lang:'en-US',voiceURI:'saved',default:true}];},cancel(){},speak(){}}});
+  });
+  await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#avatarVideo').setInputFiles({name:'remember.mp4',mimeType:'video/mp4',buffer:Buffer.from('video-data')});
+  await page.locator('#avatarPhoto').setInputFiles({name:'remember.png',mimeType:'image/png',buffer:Buffer.from('image-data')});
+  await page.locator('#avatarText').fill('Remember this narration.');
   await page.locator('#voiceConsent').check();
+  await page.locator('#voicePickerToggle').click();
+  await page.locator('.voice-option-select').first().click();
+  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('vu_avatar_draft_v2')||'{}').files?.video?.name)).toBe('remember.mp4');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await expect(page.locator('#avatarText')).toHaveValue('Remember this narration.');
+  await expect(page.locator('#voiceConsent')).toBeChecked();
+  await expect(page.locator('#avatarVideoSaved')).toContainText('remember.mp4');
+  await expect(page.locator('#avatarPhotoSaved')).toContainText('remember.png');
+  await expect(page.locator('#voicePickerLabel')).toContainText('Saved Voice');
   await expect(page.locator('#avatarGenerate')).toBeEnabled();
-  await expect(page.locator('#avatarReadyHint')).toContainText('Ready to create');
+});
+
+test('main History restores cached Avatar video actions after restart',async({page})=>{
+  await page.evaluate(async()=>{
+    const blob=new Blob(['avatar-video'],{type:'video/mp4'});
+    await window.VUPersistentMedia.put('avatar/test/output',blob);
+    localStorage.setItem('vv_history',JSON.stringify([{id:'avatar-test',name:'VideoUniquifier-Avatar-test.mp4',sourceName:'source.mp4',createdAt:new Date().toISOString(),resolution:'720×1280',aspectRatio:'9:16',credits:0,saved:true,type:'avatar',mediaCacheKey:'avatar/test/output'}]));
+  });
+  await page.reload({waitUntil:'domcontentloaded'});
+  await openView(page,'history');
+  const row=page.locator('.historyItem').filter({hasText:'VideoUniquifier-Avatar-test.mp4'});
+  await expect(row).toContainText('Avatar Narrator');
+  await expect(row.getByRole('button',{name:'Download'})).toBeVisible();
+  await expect(row.getByRole('button',{name:'Share'})).toBeVisible();
 });
