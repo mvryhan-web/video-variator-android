@@ -46,6 +46,8 @@ app.use((req,res,next)=>{
   next();
 });
 
+app.use('/vendor/tts',express.static(path.join(rootDir,'build','vendor'),{maxAge:'1d'}));
+app.get(['/ai-tools.html','/ai-tools.js','/ai-worker.js'],(req,res)=>res.status(410).type('text').send('This experimental tool has been removed.'));
 app.use('/vendor/ai',express.static(path.join(rootDir,'node_modules','@huggingface','transformers','dist'),{maxAge:'1d'}));
 
 app.get('/vendor/ffmpeg/ffmpeg.js',(req,res)=>{res.setHeader('Cache-Control','public,max-age=31536000,immutable');res.type('application/javascript').sendFile(path.join(ffmpegDist,'ffmpeg.js'));});
@@ -83,7 +85,7 @@ async function auth(req,res,next){try{requireServerConfig();const token=(req.hea
 installEmailAuth(app,{signAppToken});
 
 app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',https:req.secure||!isProduction,videoProcessing:'local-only',ffmpegRuntime:'same-origin-esm',appUrl,time:new Date().toISOString()}));
-app.get('/api/version',(req,res)=>res.json({webVersion:process.env.WEB_VERSION||'5.0.0',androidVersion:process.env.ANDROID_VERSION||'5.0.0',androidVersionCode:Number(process.env.ANDROID_VERSION_CODE||5),latestApkUrl:process.env.LATEST_APK_URL||'https://github.com/mvryhan-web/video-variator-android/releases/download/latest/VideoUniquifier.apk'}));
+app.get('/api/version',(req,res)=>res.json({webVersion:process.env.WEB_VERSION||'5.3.0',androidVersion:process.env.ANDROID_VERSION||'5.3.0',androidVersionCode:Number(process.env.ANDROID_VERSION_CODE||8),latestApkUrl:process.env.LATEST_APK_URL||'https://github.com/mvryhan-web/video-variator-android/releases/latest/download/VideoUniquifier.apk'}));
 app.get('/api/config',(req,res)=>res.json({
   googleClientId:process.env.GOOGLE_CLIENT_ID||'',appleClientId:process.env.APPLE_CLIENT_ID||'',appleRedirectUri:process.env.APPLE_REDIRECT_URI||'',emailAuth:true,billingConfigured:billingConfigured(),
   introOfferText:process.env.INTRO_OFFER_TEXT||'Intro discount available on your first subscription',privacy:{httpsRequired:isProduction,localVideoProcessing:true,rawVideoUploadDisabled:true},plans:{basic:{price:9,limit:750,unit:'credits'},pro:{price:24,limit:2250,unit:'credits'},business:{price:99,limit:15000,unit:'credits'}}
@@ -92,6 +94,7 @@ app.get('/api/config',(req,res)=>res.json({
 app.post('/api/auth/google',async(req,res)=>{try{if(!process.env.GOOGLE_CLIENT_ID)return res.status(503).json({error:'GOOGLE_AUTH_NOT_CONFIGURED'});const credential=req.body?.credential;if(!credential)return res.status(400).json({error:'MISSING_GOOGLE_CREDENTIAL'});const {payload}=await jwtVerify(credential,googleJwks,{audience:process.env.GOOGLE_CLIENT_ID,issuer:['https://accounts.google.com','accounts.google.com']});const email=payload.email_verified===false?null:payload.email;const user=await upsertUser({provider:'google',providerSub:payload.sub,email,name:payload.name});res.json({token:await signAppToken(user),user:publicUser(user)});}catch(e){console.error('[google auth]',e);res.status(401).json({error:'GOOGLE_AUTH_FAILED'});}});
 app.post('/api/auth/apple',async(req,res)=>{try{if(!process.env.APPLE_CLIENT_ID)return res.status(503).json({error:'APPLE_AUTH_NOT_CONFIGURED'});const idToken=req.body?.idToken;if(!idToken)return res.status(400).json({error:'MISSING_APPLE_TOKEN'});const {payload}=await jwtVerify(idToken,appleJwks,{audience:process.env.APPLE_CLIENT_ID,issuer:'https://appleid.apple.com'}),supplied=req.body?.user||{},fullName=supplied?.name?[supplied.name.firstName,supplied.name.lastName].filter(Boolean).join(' '):null,user=await upsertUser({provider:'apple',providerSub:payload.sub,email:payload.email||supplied.email||null,name:fullName});res.json({token:await signAppToken(user),user:publicUser(user)});}catch(e){console.error('[apple auth]',e);res.status(401).json({error:'APPLE_AUTH_FAILED'});}});
 app.get('/api/me',auth,(req,res)=>res.json({user:publicUser(req.user)}));
+app.get('/api/avatar/access',auth,(req,res)=>{const user=publicUser(req.user);const allowed=user.isAdmin||(user.usage.active&&['basic','pro','business'].includes(user.usage.plan));res.status(allowed?200:403).json({allowed,plan:user.usage.plan});});
 
 app.post('/api/usage/consume',auth,async(req,res)=>{try{const user=await consumeUsage(req.user.id,{seconds:req.body?.seconds,sourceCount:req.body?.sourceCount??req.body?.count});await addEvent(req.user.id,{type:'processing_success',category:'usage'});res.json({user:publicUser(user)});}catch(e){if(e.code==='CREDIT_LIMIT_REACHED'||e.message==='CREDIT_LIMIT_REACHED')return res.status(402).json({error:'CREDIT_LIMIT_REACHED'});console.error(e);res.status(500).json({error:'USAGE_UPDATE_FAILED'});}});
 app.post('/api/events',auth,async(req,res)=>{try{await addEvent(req.user.id,{type:req.body?.type||'event',category:req.body?.category||null,message:req.body?.message||null});res.json({ok:true});}catch(e){res.status(500).json({error:'EVENT_SAVE_FAILED'});}});

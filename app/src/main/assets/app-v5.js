@@ -26,7 +26,7 @@
     const heroText=document.querySelector('[data-i18n="heroText"]');if(heroText)heroText.textContent=c.heroText;
     const choose=document.querySelector('[data-i18n="chooseVideos"]');if(choose)choose.textContent=c.choose;
     const chooseSub=document.querySelector('[data-i18n="chooseVideosSub"]');if(chooseSub)chooseSub.textContent='';
-    const readyText=$('readyText');if(readyText)readyText.textContent=c.saved;
+    const readyText=$('readyText');if(readyText)updateSaveStatus();
     document.querySelectorAll('.privacyPoint span').forEach(el=>{if(el.textContent.includes('Video Variator'))el.textContent=el.textContent.replaceAll('Video Variator','Video Uniquifier');});
     document.querySelectorAll('#updateBanner p').forEach(el=>el.textContent=el.textContent.replaceAll('Video Variator','Video Uniquifier'));
   }
@@ -77,20 +77,24 @@
   };
 
   async function browserSave(name,blob){
-    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();await sleep(300);URL.revokeObjectURL(url);return{saved:true,path:'Downloads'};
+    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);return{saved:false,requested:true,path:'Downloads'};
   }
   async function saveResult(result){
     try{
       const saved=window.AndroidBridge&&core.saveToDevice?await core.saveToDevice(result.name,result.blob):await browserSave(result.name,result.blob);
-      if(saved?.saved!==false){result.saved=true;result.path=saved?.path||result.path;toast(c.saveOk);}else throw new Error('SAVE_FAILED');
+      if(saved?.saved||saved?.requested){result.saved=!!saved.saved;result.path=saved?.path||result.path;toast(saved.saved?c.saveOk:(locale==='ru'?'Файл отправлен в загрузки браузера.':'File sent to browser downloads.'));updateSaveStatus();}else throw new Error('SAVE_FAILED');
     }catch(e){console.error(e);toast(c.saveFail);}
+  }
+  function updateSaveStatus(){
+    const el=$('readyText');if(!el)return;const results=window.__vuLastResults||[];
+    el.textContent=window.AndroidBridge?(results.length&&results.every(r=>r.saved)?(locale==='ru'?'Видео автоматически сохранены в Галерея / Movies/VideoUniquifier.':'Videos saved automatically to Gallery / Movies/VideoUniquifier.'):(locale==='ru'?'Автосохранение не завершилось. Нажмите «Скачать», чтобы повторить.':'Automatic saving did not finish. Use Download to retry.')):(locale==='ru'?'Видео автоматически отправлены в загрузки браузера. Если браузер заблокировал загрузку, нажмите «Скачать».':'Videos are sent to browser downloads automatically. If your browser blocked a download, use Download to retry.');
   }
   function renderReadyDownloads(){
     const card=$('resultsCard'),results=window.__vuLastResults||[];if(!card||!results.length)return;
     card.querySelector('[data-view-jump="history"]')?.setAttribute('hidden','');
     let box=card.querySelector('.readyDownloads');if(!box){box=document.createElement('div');box.className='readyDownloads';card.appendChild(box);}box.innerHTML='';
-    results.forEach(r=>{const row=document.createElement('div');row.className='readyDownloadRow';const info=document.createElement('div');info.className='readyDownloadInfo';const name=document.createElement('b');name.textContent=r.name;const meta=document.createElement('small');meta.textContent=`${r.resolution||''} · ${r.saved?c.saved:'Ready'}`;info.append(name,meta);const b=document.createElement('button');b.className='primaryBtn';b.textContent=c.download;b.addEventListener('click',()=>saveResult(r));const share=document.createElement("button");share.className="ghostBtn";share.textContent=({ru:"Поделиться",fr:"Partager",uk:"Поділитися"})[(navigator.language||"en").slice(0,2)]||"Share";share.onclick=()=>window.VUShareFile?.(r);row.append(info,b,share);box.appendChild(row);});
-    if($('readyText'))$('readyText').textContent=c.saved;
+    results.forEach(r=>{const row=document.createElement('div');row.className='readyDownloadRow';const info=document.createElement('div');info.className='readyDownloadInfo';const name=document.createElement('b');name.textContent=r.name;const meta=document.createElement('small');meta.textContent=`${r.resolution||''} · ${r.saved?c.saved:'Ready'}`;info.append(name,meta);const b=document.createElement('button');b.className='primaryBtn';b.textContent=c.download;b.addEventListener('click',()=>saveResult(r));const share=document.createElement("button");share.className="ghostBtn";share.textContent=({ru:"Поделиться",fr:"Partager",uk:"Поділитися"})[(navigator.language||"en").slice(0,2)]||"Share";share.onclick=()=>{if(window.VUShareFile)window.VUShareFile(r);else toast(locale==='ru'?'Модуль отправки ещё загружается. Повторите попытку.':'Sharing is still loading. Please try again.');};row.append(info,b,share);box.appendChild(row);});
+    updateSaveStatus();
   }
 
   function installBackButton(){
@@ -166,7 +170,7 @@
   }
 
   function interceptHistoryDownloads(){
-    $('historyList')?.addEventListener('click',e=>{if(!window.AndroidBridge)return;const button=e.target.closest('button');if(!button)return;const row=button.closest('.historyItem'),name=row?.querySelector('h4')?.textContent,result=(window.__vuLastResults||[]).find(r=>r.name===name);if(!result)return;e.preventDefault();e.stopImmediatePropagation();saveResult(result);},true);
+    $('historyList')?.addEventListener('click',e=>{if(!window.AndroidBridge)return;const button=e.target.closest('button');if(!button||/share|поделиться/i.test(button.textContent))return;const row=button.closest('.historyItem'),name=row?.querySelector('h4')?.textContent,result=(window.__vuLastResults||[]).find(r=>r.name===name);if(!result)return;e.preventDefault();e.stopImmediatePropagation();saveResult(result);},true);
   }
 
   function installProcessingStateGuard(){

@@ -261,7 +261,7 @@ public class MainActivity extends Activity {
         private String toolMime;
         @JavascriptInterface public synchronized boolean startToolFile(String name, String mime) {
             cancelToolFile();
-            if (!("application/x-subrip".equals(mime) || "text/vtt".equals(mime) || "image/jpeg".equals(mime) || "image/png".equals(mime) || "image/webp".equals(mime) || "audio/mp4".equals(mime) || "video/mp4".equals(mime) || "video/quicktime".equals(mime))) return false;
+            if (!("application/x-subrip".equals(mime) || "text/vtt".equals(mime) || "image/jpeg".equals(mime) || "image/png".equals(mime) || "image/webp".equals(mime) || "audio/mp4".equals(mime) || "video/mp4".equals(mime) || "video/quicktime".equals(mime) || "video/webm".equals(mime) || "audio/webm".equals(mime) || "audio/wav".equals(mime))) return false;
             try {
                 File dir = new File(getCacheDir(), "shared-tools");
                 if (!dir.exists() && !dir.mkdirs()) return false;
@@ -293,24 +293,28 @@ public class MainActivity extends Activity {
                     });
                 } else {
                     OutputStream target;
+                    File legacySaved = null;
+                    final String directory = mime.startsWith("video/") ? Environment.DIRECTORY_MOVIES : mime.startsWith("image/") ? Environment.DIRECTORY_PICTURES : mime.startsWith("audio/") ? Environment.DIRECTORY_MUSIC : Environment.DIRECTORY_DOWNLOADS;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         ContentValues values = new ContentValues(); values.put(MediaStore.MediaColumns.DISPLAY_NAME, ready.getName());
-                        values.put(MediaStore.MediaColumns.MIME_TYPE, mime); values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS+"/VideoUniquifier");
+                        values.put(MediaStore.MediaColumns.MIME_TYPE, mime); values.put(MediaStore.MediaColumns.RELATIVE_PATH, directory+"/VideoUniquifier");
                         values.put(MediaStore.MediaColumns.IS_PENDING, 1);
-                        dest = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                        dest = getContentResolver().insert(mime.startsWith("video/") ? MediaStore.Video.Media.EXTERNAL_CONTENT_URI : mime.startsWith("image/") ? MediaStore.Images.Media.EXTERNAL_CONTENT_URI : mime.startsWith("audio/") ? MediaStore.Audio.Media.EXTERNAL_CONTENT_URI : MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
                         if (dest == null) throw new java.io.IOException("No destination");
                         target = getContentResolver().openOutputStream(dest);
                     } else {
-                        File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "VideoUniquifier");
+                        File dir = new File(Environment.getExternalStoragePublicDirectory(directory), "VideoUniquifier");
                         if (!dir.exists() && !dir.mkdirs()) throw new java.io.IOException("No directory");
-                        target = new FileOutputStream(new File(dir, ready.getName()));
+                        legacySaved = new File(dir, ready.getName());
+                        target = new FileOutputStream(legacySaved);
                     }
                     try (java.io.InputStream input = new java.io.FileInputStream(ready); OutputStream output = target) {
                         byte[] bytes = new byte[262144]; int count; while ((count = input.read(bytes)) != -1) output.write(bytes, 0, count);
                     }
                     if (dest != null) { ContentValues values = new ContentValues(); values.put(MediaStore.MediaColumns.IS_PENDING, 0); getContentResolver().update(dest, values, null, null); }
+                    if (legacySaved != null) MediaScannerConnection.scanFile(MainActivity.this, new String[]{legacySaved.getAbsolutePath()}, new String[]{mime}, null);
                     ready.delete();
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Saved to Downloads/VideoUniquifier", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Saved to " + directory + "/VideoUniquifier", Toast.LENGTH_SHORT).show());
                 }
                 toolFile = null; return true;
             } catch (Exception e) { if (dest != null) getContentResolver().delete(dest, null, null); cancelToolFile(); return false; }
@@ -383,6 +387,7 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public synchronized String finishFile() {
             try {
+                if (outputStream == null) return "error";
                 if (outputStream != null) { outputStream.flush(); outputStream.close(); outputStream = null; }
                 String result = "Gallery / Movies/VideoUniquifier";
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && pendingUri != null) {
