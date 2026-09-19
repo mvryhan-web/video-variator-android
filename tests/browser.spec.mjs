@@ -152,7 +152,7 @@ test('analytics profile product explanation and FAQ are reachable',async({page})
   await expect(page.getByRole('button',{name:'Cancel subscription'})).toBeVisible();
   await openView(page,'faq');
   await expect(page.getByText('One original can become many finished versions')).toBeVisible();
-  await expect(page.getByText('What are micro-adjustments?')).toBeVisible();
+  await expect(page.getByText('What changes can Video Uniquifier make?')).toBeVisible();
   await expect(page.getByText('What is the difference between Basic, Pro and Business?')).toBeVisible();
   await expect(page.getByText('How do credits work?')).toBeVisible();
   await expect(page.getByText('What processing modes are included?')).toBeVisible();
