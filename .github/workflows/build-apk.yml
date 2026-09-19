@@ -121,6 +121,6 @@ jobs:
 
           release_tag="v5.3.0-build-${GITHUB_RUN_NUMBER}"
           gh release create "$release_tag" VideoUniquifier.apk VideoVariator.apk \
-            --target "$GITHUB_SHA" --title "Video Uniquifier 5.3 — Avatar Narrator & Android save fixes" \
-            --notes "Premium interface, local Portrait Cutout, Avatar Narrator, CameraX teleprompter, plan-specific 5/10/15 variations, Android Gallery auto-save, Download and Share fixes. Raw video processing stays on your device."
+            --target "$GITHUB_SHA" --title "Video Uniquifier 5.3 — Avatar Narrator & persistent history" \
+            --notes "Premium interface, Avatar Narrator with in-list voice preview and selection, persistent local project recovery and History, CameraX teleprompter, plan-specific 5/10/15 variations, Android Gallery auto-save, Download and Share. Raw video processing stays on your device."
           gh release view "$release_tag" --json isDraft,tagName,url
