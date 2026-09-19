@@ -293,15 +293,22 @@ public class MainActivity extends Activity {
                     });
                 } else {
                     OutputStream target;
+                    final boolean isVideo = mime != null && mime.startsWith("video/");
+                    final boolean isImage = mime != null && mime.startsWith("image/");
+                    final String publicFolder = isVideo ? Environment.DIRECTORY_MOVIES : (isImage ? Environment.DIRECTORY_PICTURES : Environment.DIRECTORY_DOWNLOADS);
+                    final String savedLabel = isVideo ? "Gallery / Movies/VideoUniquifier" : (isImage ? "Gallery / Pictures/VideoUniquifier" : "Downloads/VideoUniquifier");
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        ContentValues values = new ContentValues(); values.put(MediaStore.MediaColumns.DISPLAY_NAME, ready.getName());
-                        values.put(MediaStore.MediaColumns.MIME_TYPE, mime); values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS+"/VideoUniquifier");
+                        ContentValues values = new ContentValues();
+                        values.put(MediaStore.MediaColumns.DISPLAY_NAME, ready.getName());
+                        values.put(MediaStore.MediaColumns.MIME_TYPE, mime);
+                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, publicFolder + "/VideoUniquifier");
                         values.put(MediaStore.MediaColumns.IS_PENDING, 1);
-                        dest = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                        Uri collection = isVideo ? MediaStore.Video.Media.EXTERNAL_CONTENT_URI : (isImage ? MediaStore.Images.Media.EXTERNAL_CONTENT_URI : MediaStore.Downloads.EXTERNAL_CONTENT_URI);
+                        dest = getContentResolver().insert(collection, values);
                         if (dest == null) throw new java.io.IOException("No destination");
                         target = getContentResolver().openOutputStream(dest);
                     } else {
-                        File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "VideoUniquifier");
+                        File dir = new File(Environment.getExternalStoragePublicDirectory(publicFolder), "VideoUniquifier");
                         if (!dir.exists() && !dir.mkdirs()) throw new java.io.IOException("No directory");
                         target = new FileOutputStream(new File(dir, ready.getName()));
                     }
@@ -310,7 +317,7 @@ public class MainActivity extends Activity {
                     }
                     if (dest != null) { ContentValues values = new ContentValues(); values.put(MediaStore.MediaColumns.IS_PENDING, 0); getContentResolver().update(dest, values, null, null); }
                     ready.delete();
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Saved to Downloads/VideoUniquifier", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Saved to " + savedLabel, Toast.LENGTH_SHORT).show());
                 }
                 toolFile = null; return true;
             } catch (Exception e) { if (dest != null) getContentResolver().delete(dest, null, null); cancelToolFile(); return false; }

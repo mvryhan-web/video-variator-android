@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Avatar Narrator — Video Uniquifier</title>
+<link rel="stylesheet" href="free-tools.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="studio.css">
+<script src="theme.js" defer></script>
+</head>
+<body>
+<main class="tools avatar-studio">
+<header><a href="index.html" data-av="back">← Back</a><span>Video Uniquifier</span></header>
+<div class="avatar-hero">
+  <span class="pill accent" data-av="included">Included in Basic, Pro & Business</span>
+  <h1 data-av="title">Avatar Narrator</h1>
+  <p data-av="intro">Put your video on top and your own photo avatar below. Add narration text and your own recorded voice. Everything is composed locally on this device.</p>
+</div>
+<section class="tool-card avatar-card">
+  <div class="avatar-plan-row"><div><span data-av="plan">Access</span><b id="avatarPlan">Checking account…</b></div><small id="avatarQuality">720p / 1080p / 4K by plan</small></div>
+  <div class="avatar-grid">
+    <label><span data-av="video">1 · Source video</span><input id="avatarVideo" type="file" accept="video/*"></label>
+    <label><span data-av="photo">2 · Your avatar photo</span><input id="avatarPhoto" type="file" accept="image/jpeg,image/png,image/webp"></label>
+  </div>
+  <label><span data-av="text">3 · Narration text</span><textarea id="avatarText" rows="6" maxlength="5000" placeholder="Write what your avatar should say about the video…"></textarea></label>
+  <div class="avatar-voice-panel">
+    <div>
+      <h2 data-av="deviceVoice">Device voice preview</h2>
+      <p data-av="deviceVoiceNote">Use a free voice already installed on this device to hear the text. For the downloadable video, use your own recorded/uploaded voice below.</p>
+      <div class="actions"><select id="avatarVoice" aria-label="Device voice"></select><button id="avatarSpeak" type="button" data-av="previewVoice">Preview voice</button></div>
+    </div>
+    <div>
+      <h2 data-av="ownVoice">Your own voice for export</h2>
+      <p data-av="ownVoiceNote">Upload an audio file or record narration here. The recording stays on this device.</p>
+      <label><span data-av="audio">Upload voice audio</span><input id="avatarAudio" type="file" accept="audio/*"></label>
+      <div class="actions"><button id="recordVoice" type="button" data-av="record">Record voice</button><button id="stopVoice" type="button" disabled data-av="stop">Stop</button></div>
+      <p id="voiceStatus" class="muted"></p>
+    </div>
+  </div>
+  <label class="consent-line"><input id="voiceConsent" type="checkbox"><span data-av="consent">I confirm this is my voice/photo, or I have permission to use them for this video.</span></label>
+  <div class="avatar-preview-shell">
+    <div class="avatar-preview-top"><video id="avatarVideoPreview" controls muted playsinline></video></div>
+    <div class="avatar-preview-bottom"><img id="avatarPhotoPreview" alt=""><div id="avatarPreviewText"></div></div>
+  </div>
+  <p class="muted" data-av="motionNote">This free local version uses subtle avatar motion, not cloud lip-sync. A more advanced lip-sync provider can be added later without changing this workflow.</p>
+  <div class="actions"><button id="avatarGenerate" class="primaryBtn" disabled data-av="create">Create split-screen video</button><button id="avatarCancel" disabled data-av="cancel">Cancel</button></div>
+  <p id="avatarStatus" role="status" aria-live="polite"></p>
+  <div id="avatarResult" class="ai-result"></div>
+</section>
+</main>
+<script src="file-share.js"></script>
+<script type="module" src="avatar-studio.js"></script>
+</body>
+</html>

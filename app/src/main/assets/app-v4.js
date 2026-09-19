@@ -23,7 +23,7 @@
     analyticsTitle:'Analytics',analyticsSub:'Track usage, output volume, and processing reliability.',creditsUsed:'Credits used',outputsCreated:'Outputs created',successRate:'Success rate',browserCompatibility:'Browser compatibility',browserCompatibilityText:'The interface is tested in Chromium, Firefox, WebKit, and mobile browser profiles. Codec support can vary by device.',
     firstOffer:'Intro discount available on your first subscription',plansTitle:'Choose the plan that fits your workflow',plansSub:'One second of generated video uses one credit. Selecting 1–5 variations multiplies the base cost by that number.',perMonth:'/ month',mostPopular:'Most popular',guaranteeTitle:'Money-back guarantee',guaranteeText:'Eligible first subscription purchases are covered by our refund policy. Full eligibility terms are shown before checkout.',
     faqTitle:'Frequently asked questions',faqSub:'Everything you need to know before processing your videos.',profileTitle:'Profile & Settings',profileSub:'Manage your account, subscription, privacy, and updates.',
-    processing:'Processing',saving:'Saving',loading:'Loading',done:'Done',download:'Download',historyStatusSaved:'Saved',historyStatusReady:'Ready',freeTrial:'Free trial',
+    processing:'Processing',saving:'Saving',loading:'Loading',done:'Done',download:'Download',share:'Share',historyStatusSaved:'Saved',historyStatusReady:'Ready',freeTrial:'Free trial',
     creditsNeeded:'You do not have enough credits for this job.',freeVideosNeeded:'You do not have enough free test videos for this job.',signInRequired:'Sign in before choosing a paid plan.',billingUnavailable:'Billing is not configured yet.',authUnavailable:'Sign-in will activate after production OAuth credentials are configured.',clearConfirm:'History cleared.',jobComplete:'Processing complete.',processingError:'Processing failed. Please try again.',canceled:'Processing canceled.',
     updateChecking:'Checking for updates…',upToDate:'You are using the latest available version.'
   };
@@ -50,18 +50,18 @@
   function planName(id){return id==='basic'?'Basic':id==='pro'?'Pro':id==='business'?'Business':'Free trial';}
   function activePlan(){const u=usage();return u.active&&['basic','pro','business'].includes(u.plan)?u.plan:'trial';}
   function policyFor(plan){
-    if(plan==='business')return{modes:['gentle','balanced','dynamic'],quality:'2160',label:'Business: Gentle + Balance + Dynamic · 4K'};
-    if(plan==='pro')return{modes:['gentle','balanced'],quality:'1080',label:'Pro: Gentle + Balance · 1080p'};
-    if(plan==='basic')return{modes:['gentle'],quality:'720',label:'Basic: Gentle · 720p'};
+    if(plan==='business')return{modes:['gentle','balanced','dynamic'],quality:'2160',maxVariants:15,label:'Business: Gentle + Balance + Dynamic · 4K · up to 15 variations'};
+    if(plan==='pro')return{modes:['gentle','balanced'],quality:'1080',maxVariants:10,label:'Pro: Gentle + Balance · 1080p · up to 10 variations'};
+    if(plan==='basic')return{modes:['gentle'],quality:'720',maxVariants:5,label:'Basic: Gentle · 720p · up to 5 variations'};
     const u=usage(),files=core.getFiles(),balancePreview=u.remaining===2&&files.length<=1;
-    return{modes:balancePreview?['gentle','balanced']:['gentle'],quality:'720',label:balancePreview?'Free trial: Gentle + one Balance preview · 720p':'Free trial: Gentle · 720p'};
+    return{modes:balancePreview?['gentle','balanced']:['gentle'],quality:'720',maxVariants:5,label:balancePreview?'Free trial: Gentle + one Balance preview · 720p':'Free trial: Gentle · 720p'};
   }
   function enforcePlanControls(){
-    const policy=policyFor(activePlan()),mode=$('mode'),quality=$('quality');
+    const policy=policyFor(activePlan()),mode=$('mode'),quality=$('quality'),variants=$('variantCount');
     Array.from(mode.options).forEach(o=>o.disabled=!policy.modes.includes(o.value));
     if(!policy.modes.includes(mode.value))mode.value=policy.modes[0];
     Array.from(quality.options).forEach(o=>o.disabled=o.value!==policy.quality);
-    quality.value=policy.quality;quality.disabled=true;$('planAccessHint').textContent=policy.label;
+    quality.value=policy.quality;quality.disabled=true;Array.from(variants.options).forEach(o=>o.disabled=Number(o.value)>policy.maxVariants);if(Number(variants.value)>policy.maxVariants)variants.value=String(policy.maxVariants);$('planAccessHint').textContent=policy.label;
   }
 
   function renderDashboard(){
@@ -74,7 +74,7 @@
   }
   function renderProfile(){const u=usage();$('profileEmail').textContent=state.user?.email||'Not signed in';$('profilePlan').textContent=planName(u.plan);$('profileStatus').textContent=u.active?(u.status||'Active'):'Trial / inactive';$('manageBillingBtn').disabled=!state.user||!u.active;$('cancelSubscriptionBtn').disabled=!state.user||!u.active;}
   function renderAnalytics(){const m=state.metrics,rate=m.attempts?Math.round(m.successes/m.attempts*100):100;$('analyticsCredits').textContent=m.credits||0;$('analyticsOutputs').textContent=m.outputs||0;$('analyticsDuration').textContent=`${Math.round(m.seconds||0)} sec processed`;$('analyticsSuccess').textContent=`${rate}%`;$('analyticsErrors').textContent=`${m.errors||0} errors`;}
-  function renderHistory(){const list=$('historyList'),empty=$('historyEmpty');list.innerHTML='';empty.hidden=state.history.length>0;state.history.forEach(item=>{const row=document.createElement('article');row.className='historyItem card';const left=document.createElement('div'),title=document.createElement('h4'),meta=document.createElement('div');title.textContent=item.name;meta.className='historyMeta';meta.textContent=`${new Date(item.createdAt).toLocaleString()} · ${item.resolution||''} · ${item.aspectRatio||''} · ${item.credits||0} credits`;left.append(title,meta);const right=document.createElement('div'),blob=sessionDownloads.get(item.id);if(blob){const b=document.createElement('button');b.className='ghostBtn';b.textContent=t('download');b.onclick=()=>downloadBlob(item.name,blob);right.appendChild(b);}else{const badge=document.createElement('span');badge.className='historyBadge';badge.textContent=item.saved?t('historyStatusSaved'):t('historyStatusReady');right.appendChild(badge);}row.append(left,right);list.appendChild(row);});}
+  function renderHistory(){const list=$('historyList'),empty=$('historyEmpty');list.innerHTML='';empty.hidden=state.history.length>0;state.history.forEach(item=>{const row=document.createElement('article');row.className='historyItem card';const left=document.createElement('div'),title=document.createElement('h4'),meta=document.createElement('div');title.textContent=item.name;meta.className='historyMeta';meta.textContent=`${new Date(item.createdAt).toLocaleString()} · ${item.resolution||''} · ${item.aspectRatio||''} · ${item.credits||0} credits`;left.append(title,meta);const right=document.createElement('div'),blob=sessionDownloads.get(item.id);right.className='historyActions';if(blob){const d=document.createElement('button');d.className='ghostBtn';d.textContent=t('download');d.onclick=()=>saveResult(item.name,blob);const s=document.createElement('button');s.className='ghostBtn';s.textContent=t('share');s.onclick=()=>shareResult(item.name,blob);right.append(d,s);}else{const badge=document.createElement('span');badge.className='historyBadge';badge.textContent=item.saved?t('historyStatusSaved'):t('historyStatusReady');right.appendChild(badge);}row.append(left,right);list.appendChild(row);});}
   function renderAll(){renderDashboard();renderHistory();renderAnalytics();}
 
   function showView(name){qsa('.view').forEach(v=>v.classList.toggle('active',v.id===`${name}View`));qsa('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));const key={dashboard:'navDashboard',history:'navHistory',analytics:'navAnalytics',plans:'navPlans',faq:'navFaq',profile:'navProfile'}[name]||'navDashboard';$('pageTitle').textContent=t(key);document.querySelector('.sidebar')?.classList.remove('open');if(name==='analytics')refreshAnalytics();}
@@ -89,11 +89,14 @@
   core.configure({
     onEngine(status){const el=$('engineBadge');el.classList.toggle('ready',status==='ready');el.textContent=status==='ready'?t('engineReady'):status==='loading'?t('engineLoading'):t('engineStandby');},
     onProgress(p){const n=Math.round(p*100);$('progressPercent').textContent=n+'%';$('progressBar').style.width=n+'%';},
-    onStage(stage,info={}){setStage(stage);if(stage==='process'){$('progressTitle').textContent=info.file||t('processing');$('progressText').textContent=`${t('processing')} ${info.job||''}${info.total?` / ${info.total}`:''}`;}else if(stage==='save')$('progressText').textContent=t('saving');else if(stage==='done'){$('progressTitle').textContent=t('readyTitle');$('progressText').textContent=t('jobComplete');}},
+    onStage(stage,info={}){setStage(stage);if(stage==='process'){$('progressTitle').textContent=info.file||t('processing');$('progressText').textContent=`${t('processing')} ${info.job||''}${info.total?` / ${info.total}`:''}`;}else if(stage==='save')$('progressText').textContent=t('saving');else if(stage==='done'){$('progressTitle').textContent=t('done');$('progressText').textContent=t('jobComplete');}},
     onLog(line){console.debug('[VideoVariator]',line);}
   });
 
-  function downloadBlob(name,blob){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
+  function downloadBlob(name,blob){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
+  function blobChunkBase64(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]||'');reader.onerror=()=>reject(reader.error||new Error('Could not read file'));reader.readAsDataURL(blob);});}
+  async function saveResult(name,blob){const bridge=window.AndroidBridge;if(bridge?.startFile){if(!bridge.startFile(name))throw new Error('Android could not create the output file.');for(let i=0;i<blob.size;i+=512*1024){const b64=await blobChunkBase64(blob.slice(i,Math.min(i+512*1024,blob.size)));if(!bridge.appendChunk(b64))throw new Error('Could not save the output file.');}const path=bridge.finishFile();if(!path||path==='error')throw new Error('Could not finish saving the output file.');return path;}downloadBlob(name,blob);return'Downloads';}
+  async function shareResult(name,blob){if(window.VUShareFile){await window.VUShareFile({name,blob});return;}const file=new File([blob],name,{type:blob.type||'video/mp4'});if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'Video Uniquifier'});return;}downloadBlob(name,blob);}
   function autoSaveBrowserResults(results){if(window.AndroidBridge)return;results.forEach((r,i)=>setTimeout(()=>downloadBlob(r.name,r.blob),i*250));}
   async function addHistory(results){const items=[];for(const r of results){sessionDownloads.set(r.id,r.blob);const item={id:r.id,name:r.name,sourceName:r.sourceName,createdAt:r.createdAt,resolution:r.resolution,aspectRatio:r.aspectRatio,durationSeconds:r.durationSeconds,credits:r.credits,saved:r.saved||!window.AndroidBridge,path:r.path||null};state.history.unshift(item);items.push(item);}saveHistory();renderHistory();if(state.user)api('/api/history',{method:'POST',body:JSON.stringify({items})}).catch(()=>{});}
 
@@ -104,7 +107,7 @@
     try{
       const result=await core.process({variants:Number($('variantCount').value),mode:$('mode').value,resolution:getResolution()});
       if(state.user){const d=await api('/api/usage/consume',{method:'POST',body:JSON.stringify({seconds:result.creditSeconds,sourceCount:result.sourceCount})});state.user=d.user||state.user;}else{state.trialUsed=Math.min(2,state.trialUsed+result.sourceCount);localStorage.setItem('vv_trial_used',String(state.trialUsed));}
-      autoSaveBrowserResults(result.results);await addHistory(result.results);state.metrics.successes++;state.metrics.outputs+=result.outputCount;state.metrics.seconds+=result.creditSeconds;if(u.unit==='credits')state.metrics.credits+=result.creditSeconds;saveMetrics();renderAll();$('readyText').textContent=window.AndroidBridge?'Completed files were saved automatically to Downloads/VideoVariator.':`${result.outputCount} output${result.outputCount===1?'':'s'} sent to your browser downloads automatically.`;$('resultsCard').hidden=false;toast(t('jobComplete'));await refreshAccount();
+      autoSaveBrowserResults(result.results);await addHistory(result.results);state.metrics.successes++;state.metrics.outputs+=result.outputCount;state.metrics.seconds+=result.creditSeconds;if(u.unit==='credits')state.metrics.credits+=result.creditSeconds;saveMetrics();renderAll();$('readyText').textContent=window.AndroidBridge?'Completed files were saved automatically to Gallery / Movies / VideoUniquifier.':`${result.outputCount} output${result.outputCount===1?'':'s'} sent to your browser downloads automatically.`;$('resultsCard').hidden=false;toast(t('jobComplete'));await refreshAccount();
     }catch(e){if(String(e.message).toLowerCase().includes('cancel'))toast(t('canceled'));else{reportError(e,'processing');toast(t('processingError'));}}
     finally{$('cancelBtn').hidden=true;$('startBtn').disabled=!core.getFiles().length;scheduleEstimate();}
   }

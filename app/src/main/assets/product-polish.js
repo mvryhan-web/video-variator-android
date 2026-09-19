@@ -5,8 +5,8 @@
   const locale=lang.startsWith('fr')?'fr':lang.startsWith('ru')?'ru':lang.startsWith('uk')?'uk':'en';
   const copy={
     en:{
-      hero:'One video. Many futures.',
-      heroText:'Upload one original, choose ×3 or ×5, and create multiple distinct finished versions — each with its own combination of visual, audio and technical changes.',
+      hero:'Uniqueify your old video',
+      heroText:'Upload one original, choose the number of variations available in your plan, and create multiple finished versions locally on your device.',
       workspace:'Turn one original into multiple finished versions',
       workspaceSub:'Choose how many versions you want. Video Uniquifier handles the variation automatically.',
       futureTag:'Built for the next decade of content',
@@ -16,7 +16,7 @@
       howTitle:'One original can become many finished versions',
       howText:'Your idea stays yours. Video Uniquifier gives each output its own combination of frame, motion, color, audio and technical processing.',
       step1:'Upload your original',step1Text:'Choose the video you own or have permission to use.',
-      step2:'Choose ×1–×5',step2Text:'Create one or several separate versions from the same source.',
+      step2:'Choose your variations',step2Text:'Create one or several separate versions from the same source.',
       step3:'Use each version',step3Text:'Publish the finished versions where they fit your content strategy.',
       faqFutureQ:'Why create multiple versions from one original?',
       faqFutureA:'Because one idea can support several publishing opportunities. Video Uniquifier creates separate finished outputs with different combinations of visual, audio and technical adjustments instead of making you edit every version by hand.',
@@ -32,8 +32,8 @@
     },
     ru:{
       hero:'Уникализируй своё старое видео',
-      heroText:'Загрузите один оригинал, выберите ×3 или ×5 и получите несколько отдельных готовых версий — каждая со своей комбинацией визуальных, аудио и технических изменений.',
-      workspace:'Превратите один оригинал в несколько готовых версий',workspaceSub:'Выберите количество вариантов. Video Uniquifier автоматически выполнит вариативную обработку.',futureTag:'Создано для следующего десятилетия контента',pricing:'Решите, насколько далеко пойдёт один оригинал',pricingSub:'Выберите уровень под свой объём работы. 1 секунда каждого готового результата = 1 кредит.',trial:'Бесплатные видео использованы. Выберите тариф и продолжайте создавать несколько версий из каждой загрузки.',howTitle:'Один оригинал может стать несколькими готовыми версиями',howText:'Ваша идея остаётся вашей. Каждая версия получает собственную комбинацию кадра, движения, цвета, аудио и технической обработки.',step1:'Загрузите оригинал',step1Text:'Выберите видео, которое принадлежит вам или на которое у вас есть права.',step2:'Выберите ×1–×5',step2Text:'Создайте одну или несколько отдельных версий из одного исходника.',step3:'Используйте каждую версию',step3Text:'Публикуйте готовые версии там, где они подходят вашей контент-стратегии.',faqFutureQ:'Зачем создавать несколько версий одного оригинала?',faqFutureA:'Одна идея может дать несколько возможностей для публикации. Video Uniquifier создаёт отдельные готовые результаты с разными комбинациями визуальных, аудио и технических изменений, чтобы не монтировать каждый вариант вручную.',faq60Q:'Можно ли использовать видео длиннее 60 секунд?',faq60A:'Да. Рабочий процесс подходит и для видео 60+ секунд, и для более коротких роликов. Время обработки зависит от длительности, выбранного качества и мощности устройства.',faqChannelsQ:'Можно ли публиковать разные версии в разных каналах?',faqChannelsA:'Да, если исходный контент принадлежит вам или у вас есть права на его использование. Каждый результат — отдельная готовая версия. Распространение, рекомендации и монетизация всё равно определяются каждой платформой самостоятельно.'
+      heroText:'Загрузите одно исходное видео, выберите доступное по тарифу количество вариантов — остальное Video Uniquifier обработает локально на устройстве.',
+      workspace:'Превратите один оригинал в несколько готовых версий',workspaceSub:'Выберите количество вариантов. Video Uniquifier автоматически выполнит вариативную обработку.',futureTag:'Создано для следующего десятилетия контента',pricing:'Решите, насколько далеко пойдёт один оригинал',pricingSub:'Выберите уровень под свой объём работы. 1 секунда каждого готового результата = 1 кредит.',trial:'Бесплатные видео использованы. Выберите тариф и продолжайте создавать несколько версий из каждой загрузки.',howTitle:'Один оригинал может стать несколькими готовыми версиями',howText:'Ваша идея остаётся вашей. Каждая версия получает собственную комбинацию кадра, движения, цвета, аудио и технической обработки.',step1:'Загрузите оригинал',step1Text:'Выберите видео, которое принадлежит вам или на которое у вас есть права.',step2:'Выберите количество вариантов',step2Text:'Basic — до 5, Pro — до 10, Business — до 15 вариантов из одного исходного видео.',step3:'Используйте каждую версию',step3Text:'Публикуйте готовые версии там, где они подходят вашей контент-стратегии.',faqFutureQ:'Зачем создавать несколько версий одного оригинала?',faqFutureA:'Одна идея может дать несколько возможностей для публикации. Video Uniquifier создаёт отдельные готовые результаты с разными комбинациями визуальных, аудио и технических изменений, чтобы не монтировать каждый вариант вручную.',faq60Q:'Можно ли использовать видео длиннее 60 секунд?',faq60A:'Да. Рабочий процесс подходит и для видео 60+ секунд, и для более коротких роликов. Время обработки зависит от длительности, выбранного качества и мощности устройства.',faqChannelsQ:'Можно ли публиковать разные версии в разных каналах?',faqChannelsA:'Да, если исходный контент принадлежит вам или у вас есть права на его использование. Каждый результат — отдельная готовая версия. Распространение, рекомендации и монетизация всё равно определяются каждой платформой самостоятельно.'
     },
     uk:{
       hero:'Одне відео. Багато майбутніх версій.',
@@ -43,9 +43,9 @@
   };
   const tx=copy[locale]||copy.en;
   const plans={
-    basic:{name:'Essential',credits:'750',short15:'≈ 50 × 15-sec outputs',short30:'or 25 × 30-sec outputs',micro:'Up to 50 technical micro-adjustment options',variants:'Up to 5 variations',access:'Gentle · 720p · 9:16 / 16:9'},
-    pro:{name:'Pro',credits:'2,250',short15:'≈ 150 × 15-sec outputs',short30:'or 75 × 30-sec outputs',micro:'Up to 100 advanced micro-adjustment options',variants:'Up to 10 variations',access:'Gentle + Balance · 1080p · 9:16 / 16:9'},
-    business:{name:'Business',credits:'15,000',short15:'≈ 1,000 × 15-sec outputs',short30:'or 500 × 30-sec outputs',micro:'Up to 150 full-pipeline adjustment options',variants:'Up to 15 variations',access:'Gentle + Balance + Dynamic · 4K · 9:16 / 16:9'}
+    basic:{name:'Basic',credits:'750',short15:'≈ 50 × 15-sec outputs',short30:'or 25 × 30-sec outputs',micro:'Up to 50 technical micro-adjustment options',variants:'Up to 5 variations',access:'Gentle · 720p · up to 5 variations · Avatar Narrator'},
+    pro:{name:'Pro',credits:'2,250',short15:'≈ 150 × 15-sec outputs',short30:'or 75 × 30-sec outputs',micro:'Up to 100 advanced micro-adjustment options',variants:'Up to 10 variations',access:'Gentle + Balance · 1080p · up to 10 variations · Avatar Narrator'},
+    business:{name:'Business',credits:'15,000',short15:'≈ 1,000 × 15-sec outputs',short30:'or 500 × 30-sec outputs',micro:'Up to 150 full-pipeline adjustment options',variants:'Up to 15 variations',access:'Gentle + Balance + Dynamic · 4K · up to 15 variations · Avatar Narrator'}
   };
 
   function goPlans(){
@@ -68,13 +68,7 @@
     if(section){const h3=section.querySelector('h3'),p=section.querySelector('p');if(h3)h3.textContent=tx.workspace;if(p)p.textContent=tx.workspaceSub;}
   }
 
-  function renameBasicDisplay(){
-    ['currentPlan','profilePlan','planLabel','planAccessHint'].forEach(id=>{
-      const el=$(id);if(!el)return;
-      if(el.textContent.includes('Basic'))el.textContent=el.textContent.replaceAll('Basic','Essential');
-    });
-    document.querySelectorAll('.variantLockNote').forEach(el=>{if(el.textContent.includes('Basic'))el.textContent=el.textContent.replaceAll('Basic','Essential');});
-  }
+  function renameBasicDisplay(){ }
 
   function decoratePricing(){
     const hero=document.querySelector('#plansView .pricingHero');
@@ -113,8 +107,8 @@
     const list=$('faqView')?.querySelector('.faqList');if(!list)return;
     list.querySelectorAll('details').forEach(item=>{
       const summary=item.querySelector('summary');const p=item.querySelector('p');if(!summary||!p)return;
-      if(summary.textContent.includes('processing modes'))p.textContent='Essential includes Gentle. Pro includes Gentle and Balance. Business unlocks Gentle, Balance and Dynamic.';
-      if(summary.textContent.includes('quality'))p.textContent='Essential outputs at 720p, Pro at 1080p and Business at 4K. Both 9:16 and 16:9 are supported.';
+      if(summary.textContent.includes('processing modes'))p.textContent='Basic includes Gentle. Pro includes Gentle and Balance. Business unlocks Gentle, Balance and Dynamic.';
+      if(summary.textContent.includes('quality'))p.textContent='Basic outputs at 720p, Pro at 1080p and Business at 4K. Both 9:16 and 16:9 are supported.';
       if(summary.textContent.includes('credits work'))p.textContent='1 second of each generated output uses 1 credit. A 15-second source rendered into 2 variations uses about 30 credits because two 15-second outputs are created.';
     });
     if(list.querySelector('[data-product-faq="micro"]'))return;
@@ -123,7 +117,7 @@
       ['60plus',tx.faq60Q,tx.faq60A],
       ['channels',tx.faqChannelsQ,tx.faqChannelsA],
       ['micro','What are micro-adjustments?','They are small technical changes across frame and timing, motion, color, audio and file structure. The plan number describes the size of the available adjustment library; each output uses its own combination rather than applying every option at once.'],
-      ['plans','What is the difference between Essential, Pro and Business?','Essential provides up to 50 technical adjustment options and up to 5 variations. Pro expands the library to 100 options and up to 10 variations. Business provides the broadest library with up to 150 options and up to 15 variations.'],
+      ['plans','What is the difference between Basic, Pro and Business?','Basic provides up to 50 technical adjustment options and up to 5 variations. Pro expands the library to 100 options and up to 10 variations. Business provides the broadest library with up to 150 options and up to 15 variations.'],
       ['examples','How many videos do my credits cover?','As an example, 750 credits is about 50 outputs of 15 seconds or 25 outputs of 30 seconds. 2,250 credits is about 150 outputs of 15 seconds or 75 outputs of 30 seconds. 15,000 credits is about 1,000 outputs of 15 seconds or 500 outputs of 30 seconds.']
     ];
     extra.forEach(([key,title,text])=>{const d=document.createElement('details');d.className='card';d.dataset.productFaq=key;d.innerHTML=`<summary>${title}</summary><p>${text}</p>`;list.prepend(d);});
