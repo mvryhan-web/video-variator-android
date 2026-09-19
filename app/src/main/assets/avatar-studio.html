@@ -20,21 +20,24 @@
 <section class="tool-card avatar-card">
   <div class="avatar-plan-row"><div><span data-av="plan">Access</span><b id="avatarPlan">Checking account…</b></div><small id="avatarQuality">720p / 1080p / 4K by plan</small></div>
   <div class="avatar-grid">
-    <label><span data-av="video">1 · Source video</span><input id="avatarVideo" type="file" accept="video/*"></label>
-    <label><span data-av="photo">2 · Your avatar photo</span><input id="avatarPhoto" type="file" accept="image/jpeg,image/png,image/webp"></label>
+    <label><span data-av="video">1 · Source video</span><input id="avatarVideo" type="file" accept="video/*"><small id="avatarVideoSaved" class="muted saved-file-note"></small></label>
+    <label><span data-av="photo">2 · Your avatar photo</span><input id="avatarPhoto" type="file" accept="image/jpeg,image/png,image/webp"><small id="avatarPhotoSaved" class="muted saved-file-note"></small></label>
   </div>
   <label><span data-av="text">3 · Narration text</span><textarea id="avatarText" rows="6" maxlength="5000" placeholder="Write what your avatar should say about the video…"></textarea></label>
   <div class="avatar-voice-panel">
     <div>
       <h2 data-av="deviceVoice">Device voice preview</h2>
       <p data-av="deviceVoiceNote">Use a free voice already installed on this device to hear the text. For the downloadable video, your own recorded/uploaded voice is optional during testing.</p>
-      <div class="actions avatar-voice-actions"><select id="avatarVoice" aria-label="Device voice"></select><button id="avatarSpeak" type="button" data-av="previewVoice">Preview voice</button><button id="avatarStopSpeak" type="button" disabled data-av="stopPreview">Stop voice</button><button id="avatarSelectVoice" type="button" class="primaryBtn" data-av="selectVoice">Select</button></div>
+      <div class="voice-picker" id="voicePicker">
+        <button id="voicePickerToggle" type="button" class="voice-picker-toggle" aria-expanded="false" aria-controls="voicePickerMenu"><span id="voicePickerLabel" data-av="chooseVoice">Choose a voice</span><span aria-hidden="true">⌄</span></button>
+        <div id="voicePickerMenu" class="voice-picker-menu" hidden role="listbox" aria-label="Device voices"></div>
+      </div>
       <p id="voicePreviewStatus" class="muted" aria-live="polite"></p>
     </div>
     <div>
       <h2 data-av="ownVoice">Your own voice for export</h2>
       <p data-av="ownVoiceNote">Upload an audio file or record narration here. The recording stays on this device.</p>
-      <label><span data-av="audio">Upload voice audio</span><input id="avatarAudio" type="file" accept="audio/*"></label>
+      <label><span data-av="audio">Upload voice audio</span><input id="avatarAudio" type="file" accept="audio/*"><small id="avatarAudioSaved" class="muted saved-file-note"></small></label>
       <div class="actions"><button id="recordVoice" type="button" data-av="record">Record voice</button><button id="stopVoice" type="button" disabled data-av="stop">Stop</button></div>
       <p id="voiceStatus" class="muted"></p>
     </div>
@@ -49,9 +52,14 @@
   <p id="avatarReadyHint" class="muted" aria-live="polite"></p>
   <p id="avatarStatus" role="status" aria-live="polite"></p>
   <div id="avatarResult" class="ai-result"></div>
+  <section class="avatar-history-block">
+    <div class="avatar-history-head"><div><h2 data-av="recent">Recent Avatar videos</h2><p class="muted" data-av="recentNote">Saved projects and completed videos remain available after you reopen the app.</p></div><a href="index.html#history" data-av="fullHistory">Full history</a></div>
+    <div id="avatarHistory"></div>
+  </section>
 </section>
 </main>
 <script src="file-share.js"></script>
+<script src="persistent-media.js"></script>
 <script type="module" src="avatar-studio.js"></script>
 </body>
 </html>
