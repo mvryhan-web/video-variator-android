@@ -304,7 +304,8 @@ public class MainActivity extends Activity {
                     } else {
                         File dir = new File(Environment.getExternalStoragePublicDirectory(directory), "VideoUniquifier");
                         if (!dir.exists() && !dir.mkdirs()) throw new java.io.IOException("No directory");
-                        target = new FileOutputStream(new File(dir, ready.getName()));
+                        File publishedFile = new File(dir, ready.getName());
+                        target = new FileOutputStream(publishedFile);
                     }
                     try (java.io.InputStream input = new java.io.FileInputStream(ready); OutputStream output = target) {
                         byte[] bytes = new byte[262144]; int count; while ((count = input.read(bytes)) != -1) output.write(bytes, 0, count);

@@ -46,8 +46,7 @@ app.use((req,res,next)=>{
   next();
 });
 
-app.use('/vendor/tts',express.static(path.join(rootDir,'node_modules','kokoro-js','dist'),{maxAge:'1d'}));
-app.use('/vendor/tts-wasm',express.static(path.join(rootDir,'node_modules','kokoro-ort','dist'),{maxAge:'1d'}));
+app.use('/vendor/tts',express.static(path.join(rootDir,'build','vendor'),{maxAge:'1d'}));
 app.get(['/ai-tools.html','/ai-tools.js','/ai-worker.js'],(req,res)=>res.status(410).type('text').send('This experimental tool has been removed.'));
 app.use('/vendor/ai',express.static(path.join(rootDir,'node_modules','@huggingface','transformers','dist'),{maxAge:'1d'}));
 

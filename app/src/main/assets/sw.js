@@ -6,7 +6,7 @@ self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')sel
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET')return;
   const url=new URL(event.request.url);
-  if(url.pathname.startsWith('/api/')||url.pathname.startsWith('/vendor/ai/'))return;
+  if(url.pathname.startsWith('/api/')||url.pathname.startsWith('/vendor/ai/')||url.pathname.startsWith('/vendor/tts'))return;
   if(url.origin!==self.location.origin){event.respondWith(fetch(event.request));return;}
   const isNavigation=event.request.mode==='navigate';
   event.respondWith(fetch(event.request,{cache:'no-store'}).then(response=>{if(response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(event.request,copy));}return response;}).catch(()=>caches.match(event.request).then(r=>r||(isNavigation?caches.match('/index.html'):undefined))));

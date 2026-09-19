@@ -170,7 +170,7 @@
   }
 
   function interceptHistoryDownloads(){
-    $('historyList')?.addEventListener('click',e=>{if(!window.AndroidBridge)return;const button=e.target.closest('button');if(!button)return;const row=button.closest('.historyItem'),name=row?.querySelector('h4')?.textContent,result=(window.__vuLastResults||[]).find(r=>r.name===name);if(!result)return;e.preventDefault();e.stopImmediatePropagation();saveResult(result);},true);
+    $('historyList')?.addEventListener('click',e=>{if(!window.AndroidBridge)return;const button=e.target.closest('button');if(!button||/share|поделиться/i.test(button.textContent))return;const row=button.closest('.historyItem'),name=row?.querySelector('h4')?.textContent,result=(window.__vuLastResults||[]).find(r=>r.name===name);if(!result)return;e.preventDefault();e.stopImmediatePropagation();saveResult(result);},true);
   }
 
   function installProcessingStateGuard(){
