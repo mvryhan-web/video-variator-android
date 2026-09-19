@@ -5,6 +5,7 @@
   const qsa=s=>Array.from(document.querySelectorAll(s));
   const core=window.VideoVariatorCore;
   const sessionDownloads=new Map();
+  const persistentMedia=window.VUPersistentMedia;
   const trialUsed=Number(localStorage.getItem('vv_trial_used')||0);
   const state={
     locale:'en',config:null,user:null,token:localStorage.getItem('vv_token')||'',pendingPlan:null,
@@ -74,7 +75,23 @@
   }
   function renderProfile(){const u=usage();$('profileEmail').textContent=state.user?.email||'Not signed in';$('profilePlan').textContent=planName(u.plan);$('profileStatus').textContent=u.active?(u.status||'Active'):'Trial / inactive';$('manageBillingBtn').disabled=!state.user||!u.active;$('cancelSubscriptionBtn').disabled=!state.user||!u.active;}
   function renderAnalytics(){const m=state.metrics,rate=m.attempts?Math.round(m.successes/m.attempts*100):100;$('analyticsCredits').textContent=m.credits||0;$('analyticsOutputs').textContent=m.outputs||0;$('analyticsDuration').textContent=`${Math.round(m.seconds||0)} sec processed`;$('analyticsSuccess').textContent=`${rate}%`;$('analyticsErrors').textContent=`${m.errors||0} errors`;}
-  function renderHistory(){const list=$('historyList'),empty=$('historyEmpty');list.innerHTML='';empty.hidden=state.history.length>0;state.history.forEach(item=>{const row=document.createElement('article');row.className='historyItem card';const left=document.createElement('div'),title=document.createElement('h4'),meta=document.createElement('div');title.textContent=item.name;meta.className='historyMeta';meta.textContent=`${new Date(item.createdAt).toLocaleString()} · ${item.resolution||''} · ${item.aspectRatio||''} · ${item.credits||0} credits`;left.append(title,meta);const right=document.createElement('div'),blob=sessionDownloads.get(item.id);right.className='historyActions';if(blob){const d=document.createElement('button');d.className='ghostBtn';d.textContent=t('download');d.onclick=()=>saveResult(item.name,blob);const s=document.createElement('button');s.className='ghostBtn';s.textContent=t('share');s.onclick=()=>shareResult(item.name,blob);right.append(d,s);}else{const badge=document.createElement('span');badge.className='historyBadge';badge.textContent=item.saved?t('historyStatusSaved'):t('historyStatusReady');right.appendChild(badge);}row.append(left,right);list.appendChild(row);});}
+  function historyActionButtons(item,blob,right){
+    right.replaceChildren();const d=document.createElement('button');d.className='ghostBtn';d.textContent=t('download');d.onclick=()=>saveResult(item.name,blob);const s=document.createElement('button');s.className='ghostBtn';s.textContent=t('share');s.onclick=()=>shareResult(item.name,blob);right.append(d,s);
+  }
+  function renderHistory(){
+    const list=$('historyList'),empty=$('historyEmpty');list.innerHTML='';empty.hidden=state.history.length>0;
+    state.history.forEach(item=>{
+      const row=document.createElement('article');row.className='historyItem card';const left=document.createElement('div'),title=document.createElement('h4'),meta=document.createElement('div');title.textContent=item.name;meta.className='historyMeta';
+      const detail=item.type==='avatar'?'Avatar Narrator':`${item.credits||0} credits`;meta.textContent=`${new Date(item.createdAt).toLocaleString()} · ${item.resolution||''} · ${item.aspectRatio||''} · ${detail}`;left.append(title,meta);
+      const right=document.createElement('div'),blob=sessionDownloads.get(item.id);right.className='historyActions';
+      if(blob)historyActionButtons(item,blob,right);
+      else{
+        const badge=document.createElement('span');badge.className='historyBadge';badge.textContent=item.saved?t('historyStatusSaved'):t('historyStatusReady');right.appendChild(badge);
+        if(item.mediaCacheKey&&persistentMedia)persistentMedia.get(item.mediaCacheKey).then(savedBlob=>{if(savedBlob)historyActionButtons(item,savedBlob,right);}).catch(()=>{});
+      }
+      row.append(left,right);list.appendChild(row);
+    });
+  }
   function renderAll(){renderDashboard();renderHistory();renderAnalytics();}
 
   function showView(name){qsa('.view').forEach(v=>v.classList.toggle('active',v.id===`${name}View`));qsa('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));const key={dashboard:'navDashboard',history:'navHistory',analytics:'navAnalytics',plans:'navPlans',faq:'navFaq',profile:'navProfile'}[name]||'navDashboard';$('pageTitle').textContent=t(key);document.querySelector('.sidebar')?.classList.remove('open');if(name==='analytics')refreshAnalytics();}
@@ -143,8 +160,8 @@
   $('signInBtn').addEventListener('click',()=>{if(state.user){state.token='';state.user=null;localStorage.removeItem('vv_token');renderAll();}else openAuth();});
   qsa('[data-close-auth]').forEach(x=>x.addEventListener('click',closeAuth));$('googleFallback').addEventListener('click',()=>{if(!state.config?.googleClientId)toast(t('authUnavailable'));});$('appleButton').addEventListener('click',appleSignIn);
   qsa('.planBtn').forEach(b=>b.addEventListener('click',()=>checkout(b.dataset.plan)));$('manageBillingBtn').addEventListener('click',manageBilling);$('cancelSubscriptionBtn').addEventListener('click',cancelSubscription);$('checkUpdateBtn').addEventListener('click',checkUpdates);$('applyUpdateBtn').addEventListener('click',applyUpdate);
-  $('clearHistoryBtn').addEventListener('click',()=>{state.history=[];sessionDownloads.clear();saveHistory();renderHistory();toast(t('clearConfirm'));if(state.user)api('/api/history',{method:'DELETE'}).catch(()=>{});});
+  $('clearHistoryBtn').addEventListener('click',()=>{const mediaKeys=state.history.map(x=>x.mediaCacheKey).filter(Boolean);state.history=[];sessionDownloads.clear();saveHistory();renderHistory();mediaKeys.forEach(k=>persistentMedia?.remove?.(k));toast(t('clearConfirm'));if(state.user)api('/api/history',{method:'DELETE'}).catch(()=>{});});
 
   window.VideoVariatorUI={setFiles(files){core.setFiles(files);updateFileSummary();},toast,refreshAccount,showView,reportError};
-  applyLocale();renderAll();loadConfig().then(refreshAccount).then(refreshAnalytics);setupUpdates();
+  applyLocale();renderAll();if(location.hash==='#history')showView('history');loadConfig().then(refreshAccount).then(refreshAnalytics);setupUpdates();
 })();
