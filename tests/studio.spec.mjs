@@ -1,29 +1,11 @@
 import {test,expect} from '@playwright/test';
 
-test('portrait AI is the only local AI experiment exposed',async({page})=>{
- let modelRequests=0;page.on('request',r=>{if(/huggingface|hf\.co/.test(r.url()))modelRequests++;});
- await page.goto('/free-tools.html');
- await expect(page.getByText('Portrait cutout')).toBeVisible();
+test('Portrait Cutout is removed and Avatar Narrator remains exposed',async({page})=>{
+ await page.goto('/free-tools.html',{waitUntil:'domcontentloaded'});
+ await expect(page.getByText('Portrait cutout')).toHaveCount(0);
  await expect(page.getByText('Avatar Narrator')).toBeVisible();
- await expect(page.getByText('Auto captions')).toHaveCount(0);
- await expect(page.getByText('Video background')).toHaveCount(0);
- await page.goto('/ai-tools.html',{waitUntil:'domcontentloaded'});
- await expect(page.getByRole('heading',{name:'Portrait Cutout'})).toBeVisible();
- await expect(page.locator('#aiExplanation')).toContainText('photos of people');
- await page.locator('#aiRun').click();
- await expect(page.locator('#aiStatus')).toContainText('Choose a photo');
- expect(modelRequests).toBe(0);
+ await expect(page.locator('a[href*="ai-tools"]')).toHaveCount(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-});
-
-test('invalid portrait recovers without sending user files',async({page})=>{
- let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});
- await page.goto('/ai-tools.html');
- await page.locator('#aiFile').setInputFiles({name:'bad.png',mimeType:'image/png',buffer:Buffer.from('bad')});
- await page.locator('#aiRun').click();
- await expect(page.locator('#aiStatus')).toContainText('Could not finish');
- await expect(page.locator('#aiRun')).toBeEnabled();
- expect(posts).toBe(0);
 });
 
 test('dashboard metrics stay compact and plans keep prices plus 5 10 15 variants',async({page},info)=>{
