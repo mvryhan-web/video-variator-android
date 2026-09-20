@@ -324,6 +324,7 @@ test('Avatar project restores files text consent and selected voice after reload
   await page.locator('#avatarPhoto').setInputFiles({name:'remember.png',mimeType:'image/png',buffer:Buffer.from('image-data')});
   await page.locator('#avatarText').fill('Remember this narration.');
   await page.locator('#voiceConsent').check();
+  await page.locator('#voiceModeDevice').check();
   await page.locator('#voicePickerToggle').click();
   await page.locator('.voice-option-select').first().click();
   await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('vu_avatar_draft_v2')||'{}').files?.video?.name)).toBe('remember.mp4');
