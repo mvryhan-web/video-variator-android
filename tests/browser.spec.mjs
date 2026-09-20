@@ -461,8 +461,8 @@ test('Avatar narration is either Device voice or My voice and narration text is 
     voice:document.querySelector('.voice-source-section').compareDocumentPosition(document.querySelector('.avatar-text-last')),
     text:document.querySelector('.avatar-text-last').compareDocumentPosition(document.querySelector('.consent-line'))
   }));
-  expect(order.voice & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  expect(order.text & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(order.voice & 4).toBeTruthy();
+  expect(order.text & 4).toBeTruthy();
 });
 
 test('selected Android device voice is synthesized into Avatar export audio',async({page},testInfo)=>{
