@@ -19,7 +19,7 @@ document.querySelectorAll('[data-av]').forEach(el=>{const v=(dict[locale]||dict.
 
 const media=window.VUPersistentMedia;
 const DRAFT_KEY='vu_avatar_draft_v2',JOBS_KEY='vu_avatar_jobs_v2';
-const policy={trial:{w:720,h:1280,label:'Free test · 720p'},basic:{w:720,h:1280,label:'Basic · 720p'},pro:{w:1080,h:1920,label:'Pro · 1080p'},business:{w:2160,h:3840,label:'Business · 4K'}};
+const policy={trial:{w:720,h:1280,label:'Free test · 720p'},basic:{w:720,h:1280,label:'Basic · 720p'},pro:{w:1080,h:1920,label:'Pro · 1080p'},business:{w:2160,h:3840,label:'Business · 4K'},lifetime:{w:2160,h:3840,label:'Lifetime · 4K · all features'}};
 const inputIds={video:'avatarVideo',photo:'avatarPhoto',voice:'avatarAudio'};
 const savedIds={video:'avatarVideoSaved',photo:'avatarPhotoSaved',voice:'avatarAudioSaved'};
 let plan='trial',engine=null,busy=false,cancelled=false,leaving=false,activeJobId=null,recordStream=null,recorder=null,recordChunks=[],recordedVoice=null,recordStartedAt=0,recordTimer=null,voiceMode=null;

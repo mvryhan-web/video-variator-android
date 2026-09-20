@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 const {Pool}=pg;
 const databaseUrl=process.env.DATABASE_URL||'';
 const adminEmail=(process.env.ADMIN_EMAIL||'').trim().toLowerCase();
+const LIFETIME_LIMIT=2147483647;
 export const pool=databaseUrl?new Pool({connectionString:databaseUrl,ssl:process.env.DATABASE_SSL==='false'?false:{rejectUnauthorized:false}}):null;
 
 function isAdminUser(user){
@@ -70,14 +71,16 @@ export function publicUser(user){
   if(!user)return null;
   const admin=isAdminUser(user);
   if(admin){
-    return{id:user.id,email:user.email,name:user.name,isAdmin:true,usage:{plan:'business',limit:1000000000,used:0,remaining:1000000000,active:true,unlimited:true,unit:'credits',status:'admin',currentPeriodEnd:null}};
+    return{id:user.id,email:user.email,name:user.name,isAdmin:true,usage:{plan:'business',limit:1000000000,used:0,remaining:1000000000,active:true,unlimited:true,allFeatures:true,unit:'credits',status:'admin',currentPeriodEnd:null}};
   }
-  const active=['active','trialing'].includes(user.subscription_status),limit=active?user.plan_limit:2,used=active?user.period_used:user.trial_used;
-  return{id:user.id,email:user.email,name:user.name,isAdmin:false,usage:{plan:active?user.plan:'trial',limit,used,remaining:Math.max(0,limit-used),active,unlimited:false,unit:active?'credits':'videos',status:user.subscription_status,currentPeriodEnd:user.current_period_end}};
+  const lifetime=user.plan==='lifetime'&&user.subscription_status==='lifetime';
+  const active=lifetime||['active','trialing'].includes(user.subscription_status),limit=lifetime?LIFETIME_LIMIT:(active?user.plan_limit:2),used=lifetime?0:(active?user.period_used:user.trial_used);
+  return{id:user.id,email:user.email,name:user.name,isAdmin:false,usage:{plan:lifetime?'lifetime':(active?user.plan:'trial'),limit,used,remaining:lifetime?LIFETIME_LIMIT:Math.max(0,limit-used),active,unlimited:lifetime,allFeatures:lifetime,unit:active?'credits':'videos',status:lifetime?'lifetime':user.subscription_status,currentPeriodEnd:lifetime?null:user.current_period_end}};
 }
 
 export async function setStripeCustomer(userId,customerId){requireDb();await pool.query('UPDATE vv_users SET stripe_customer_id=$2,updated_at=NOW() WHERE id=$1',[userId,customerId]);}
-export async function applySubscription({userId,customerId,subscriptionId,plan,status,currentPeriodEnd,markSubscribed=false}){requireDb();const limits={basic:750,pro:2250,business:15000};if(!limits[plan])throw new Error('INVALID_PLAN');await pool.query(`UPDATE vv_users SET stripe_customer_id=COALESCE($2,stripe_customer_id),stripe_subscription_id=COALESCE($3,stripe_subscription_id),plan=$4,plan_limit=$5,subscription_status=$6,current_period_end=$7,has_subscribed=CASE WHEN $8 THEN TRUE ELSE has_subscribed END,updated_at=NOW() WHERE id=$1`,[userId,customerId||null,subscriptionId||null,plan,limits[plan],status||'active',currentPeriodEnd||null,markSubscribed]);}
+export async function applySubscription({userId,customerId,subscriptionId,plan,status,currentPeriodEnd,markSubscribed=false}){requireDb();const limits={basic:750,pro:2250,business:15000};if(!limits[plan])throw new Error('INVALID_PLAN');const current=await getUser(userId);if(current?.plan==='lifetime'&&current?.subscription_status==='lifetime')return current;const r=await pool.query(`UPDATE vv_users SET stripe_customer_id=COALESCE($2,stripe_customer_id),stripe_subscription_id=COALESCE($3,stripe_subscription_id),plan=$4,plan_limit=$5,subscription_status=$6,current_period_end=$7,has_subscribed=CASE WHEN $8 THEN TRUE ELSE has_subscribed END,updated_at=NOW() WHERE id=$1 RETURNING *`,[userId,customerId||null,subscriptionId||null,plan,limits[plan],status||'active',currentPeriodEnd||null,markSubscribed]);return r.rows[0]||null;}
+export async function applyLifetime({userId,customerId}){requireDb();const r=await pool.query(`UPDATE vv_users SET stripe_customer_id=COALESCE($2,stripe_customer_id),stripe_subscription_id=NULL,plan='lifetime',plan_limit=$3,period_used=0,subscription_status='lifetime',current_period_end=NULL,has_subscribed=TRUE,updated_at=NOW() WHERE id=$1 RETURNING *`,[userId,customerId||null,LIFETIME_LIMIT]);return r.rows[0]||null;}
 export async function updateSubscriptionByStripeId({subscriptionId,status,currentPeriodEnd}){requireDb();await pool.query('UPDATE vv_users SET subscription_status=$2,current_period_end=$3,updated_at=NOW() WHERE stripe_subscription_id=$1',[subscriptionId,status,currentPeriodEnd||null]);}
 export async function resetPeriodUsageBySubscription(subscriptionId){requireDb();await pool.query('UPDATE vv_users SET period_used=0,updated_at=NOW() WHERE stripe_subscription_id=$1',[subscriptionId]);}
 
@@ -86,7 +89,7 @@ export async function consumeUsage(userId,{seconds=0,sourceCount=0}={}){
   try{
     await client.query('BEGIN');
     const q=await client.query('SELECT * FROM vv_users WHERE id=$1 FOR UPDATE',[userId]),u=q.rows[0];if(!u)throw new Error('USER_NOT_FOUND');
-    if(isAdminUser(u)){await client.query('COMMIT');return u;}
+    if(isAdminUser(u)||u.plan==='lifetime'&&u.subscription_status==='lifetime'){await client.query('COMMIT');return u;}
     const active=['active','trialing'].includes(u.subscription_status),limit=active?u.plan_limit:2,used=active?u.period_used:u.trial_used,cost=active?safeSeconds:safeSources;
     if(cost<1)throw new Error('INVALID_USAGE');if(used+cost>limit){const e=new Error('CREDIT_LIMIT_REACHED');e.code='CREDIT_LIMIT_REACHED';throw e;}
     if(active)await client.query('UPDATE vv_users SET period_used=period_used+$2,updated_at=NOW() WHERE id=$1',[userId,cost]);else await client.query('UPDATE vv_users SET trial_used=trial_used+$2,updated_at=NOW() WHERE id=$1',[userId,cost]);

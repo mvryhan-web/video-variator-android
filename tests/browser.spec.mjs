@@ -574,7 +574,7 @@ test('Gentle Balance Dynamic build distinct real FFmpeg transformations and high
   expect(vf(commands[0])).not.toContain('noise=alls=');
   expect(vf(commands[1])).toContain('sin(2*PI*t/');
   expect(vf(commands[2])).toContain('noise=alls=');
-  expect(af(commands[2])).toContain('equalizer=');
+  expect(af(commands[2])).toContain('acompressor=');
   expect(vf(commands[0])).not.toBe(vf(commands[1]));
   expect(vf(commands[1])).not.toBe(vf(commands[2]));
 });

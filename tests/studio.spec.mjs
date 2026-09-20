@@ -9,22 +9,44 @@ test('Portrait Cutout is removed and Avatar Narrator remains exposed',async({pag
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
-test('dashboard metrics stay compact and plans keep prices plus 5 10 15 variants',async({page},info)=>{
+test('dashboard metrics stay compact and plans include Lifetime plus 5 10 15 variants',async({page},info)=>{
  await page.goto('/',{waitUntil:'domcontentloaded'});
  await expect(page.locator('.statsGrid .stat b').first()).toBeVisible();
  expect(await page.locator('.statsGrid .stat b').first().evaluate(e=>parseFloat(getComputedStyle(e).fontSize))).toBeLessThanOrEqual(16);
  await page.screenshot({path:info.outputPath('dashboard-5.3.png'),fullPage:true});
  await page.locator('.navBtn[data-view="plans"]').evaluate(e=>e.click());
  await expect(page.locator('#plansView')).toHaveClass(/active/);
- for(const price of ['$9','$24','$99'])await expect(page.locator('#plansView').getByText(price,{exact:true})).toBeVisible();
- for(const name of ['Basic','Pro','Business'])await expect(page.locator('#plansView').getByText(name,{exact:true}).first()).toBeVisible();
- await expect(page.locator('#plansView')).toContainText('Up to 5 variations');
- await expect(page.locator('#plansView')).toContainText('Up to 10 variations');
- await expect(page.locator('#plansView')).toContainText('Up to 15 variations');
+ for(const price of ['$9','$24','$99','€2,999'])await expect(page.locator('#plansView').getByText(price,{exact:true})).toBeVisible();
+ for(const name of ['Basic','Pro','Business','Lifetime'])await expect(page.locator('#plansView').getByText(name,{exact:true}).first()).toBeVisible();
+ await expect(page.locator('.planBtn[data-plan="lifetime"]')).toHaveText('Get Lifetime');
+ await expect(page.locator('.lifetimeCard')).toContainText('Unlimited');
+ await expect(page.locator('.lifetimeCard')).toContainText(/future features included/i);
+ await expect(page.locator('#plansView')).toContainText(/up to 5 variations/i);
+ await expect(page.locator('#plansView')).toContainText(/up to 10 variations/i);
+ await expect(page.locator('#plansView')).toContainText(/up to 15 variations/i);
  await expect(page.locator('#plansView')).toContainText('Avatar Narrator');
  await page.screenshot({path:info.outputPath('pricing-5.3.png'),fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
+
+test('Lifetime account is permanent unlimited and unlocks every current processing option',async({page},info)=>{
+ test.skip(info.project.name!=='chromium');
+ await page.route('**/api/me',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({user:{email:'lifetime@example.com',usage:{plan:'lifetime',active:true,limit:2147483647,used:0,remaining:2147483647,unlimited:true,allFeatures:true,unit:'credits',status:'lifetime',currentPeriodEnd:null}}})}));
+ await page.addInitScript(()=>localStorage.setItem('vv_token','lifetime-test-token'));
+ await page.goto('/',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#currentPlan')).toHaveText('Lifetime');
+ await expect(page.locator('#creditText')).toHaveText('Unlimited');
+ await expect(page.locator('#remainingCount')).toHaveText('∞');
+ await expect(page.locator('#planStatus')).toHaveText('Permanent');
+ await expect(page.locator('#planAccessHint')).toContainText('all current & future features');
+ for(const value of ['gentle','balanced','dynamic'])await expect(page.locator('#mode option[value="'+value+'"]')).toBeEnabled();
+ for(const value of ['720','1080','2160'])await expect(page.locator('#quality option[value="'+value+'"]')).toBeEnabled();
+ await expect(page.locator('#variantCount option[value="15"]')).toBeEnabled();
+ await expect(page.locator('#cancelSubscriptionBtn')).toBeDisabled();
+ const cfg=await page.evaluate(()=>fetch('/api/config').then(r=>r.json()));
+ expect(cfg.plans.lifetime).toMatchObject({price:2999,currency:'eur',unlimited:true,allFeatures:true,oneTime:true});
+});
+
 
 test('Avatar Narrator is plan-gated and requires user consent before generation',async({page})=>{
  test.setTimeout(60000);
