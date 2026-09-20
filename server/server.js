@@ -1,3 +1,4 @@
+import {isPaidLifetimeSession} from './lifetime.js';
 import 'dotenv/config';
 import express from 'express';
 import Stripe from 'stripe';
@@ -28,7 +29,7 @@ const plans={
   basic:{name:'Basic',limit:750,amount:9,priceId:process.env.STRIPE_PRICE_BASIC||'',paymentLink:process.env.STRIPE_PAYMENT_LINK_BASIC||''},
   pro:{name:'Pro',limit:2250,amount:24,priceId:process.env.STRIPE_PRICE_PRO||'',paymentLink:process.env.STRIPE_PAYMENT_LINK_PRO||''},
   business:{name:'Business',limit:15000,amount:99,priceId:process.env.STRIPE_PRICE_BUSINESS||'',paymentLink:process.env.STRIPE_PAYMENT_LINK_BUSINESS||''},
-  lifetime:{name:'Lifetime',limit:null,amount:2999,currency:'eur',priceId:process.env.STRIPE_PRICE_LIFETIME||'',oneTime:true}
+  lifetime:{name:'Lifetime',limit:null,amount:2999,currency:'eur',priceId:process.env.STRIPE_PRICE_LIFETIME||'',paymentLink:process.env.STRIPE_PAYMENT_LINK_LIFETIME||'',oneTime:true}
 };
 
 function fromUnix(v){return v?new Date(Number(v)*1000):null;}
@@ -78,8 +79,9 @@ app.use('/api',(req,res,next)=>{
 
 async function grantLifetimeFromCheckoutSession(s){
   const userId=s.metadata?.userId||s.client_reference_id,plan=s.metadata?.plan;
-  if(plan!=='lifetime'||!userId||s.payment_status!=='paid')return false;
-  const previousSubscriptionId=s.metadata?.previousSubscriptionId||'';
+  if(!userId||!isPaidLifetimeSession(s,{paymentLinkId:process.env.STRIPE_PAYMENT_LINK_LIFETIME_ID||''}))return false;
+  const account=await getUser(userId);if(!account)throw new Error('LIFETIME_ACCOUNT_NOT_FOUND');
+  const previousSubscriptionId=s.metadata?.previousSubscriptionId||account.stripe_subscription_id||'';
   await applyLifetime({userId,customerId:String(s.customer||'')});
   if(previousSubscriptionId)await cancelPreviousSubscriptionForLifetime(previousSubscriptionId);
   return true;
@@ -129,7 +131,10 @@ app.post('/api/billing/checkout',auth,async(req,res)=>{try{
   const current=publicUser(req.user);if(current?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});
   if(current?.usage?.plan==='lifetime'&&current.usage.active)return res.status(409).json({error:'LIFETIME_ALREADY_ACTIVE'});
   const plan=req.body?.plan,p=plans[plan];if(!p)return res.status(400).json({error:'INVALID_OR_UNCONFIGURED_PLAN'});
-  if(p.paymentLink&&!p.oneTime)return res.json({url:paymentLinkUrl(p.paymentLink,req.user)});
+  if(p.paymentLink&&(!p.oneTime||!stripe)){
+    if(p.oneTime&&req.user.stripe_subscription_id&&['active','trialing','past_due','unpaid'].includes(req.user.subscription_status))return res.status(409).json({error:'Please contact support to switch your existing subscription to Lifetime without further recurring charges.'});
+    return res.json({url:paymentLinkUrl(p.paymentLink,req.user)});
+  }
   if(!stripe||!p.priceId)return res.status(503).json({error:'BILLING_NOT_CONFIGURED'});
   let customerId=req.user.stripe_customer_id;if(!customerId){const customer=await stripe.customers.create({email:req.user.email||undefined,name:req.user.name||undefined,metadata:{userId:req.user.id}});customerId=customer.id;await setStripeCustomer(req.user.id,customerId);}
   if(p.oneTime){

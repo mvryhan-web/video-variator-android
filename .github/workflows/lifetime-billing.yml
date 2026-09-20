@@ -1,0 +1,30 @@
+name: Lifetime billing verification
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, fix-lifetime-checkout]
+jobs:
+  lifetime:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fixture
+          POSTGRES_PASSWORD: fixture-only
+          POSTGRES_DB: lifetime_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U fixture -d lifetime_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://fixture:fixture-only@127.0.0.1:5432/lifetime_test
+      DATABASE_SSL: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - run: node --test server/tests/lifetime.test.mjs
