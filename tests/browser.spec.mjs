@@ -118,7 +118,7 @@ test('pricing explains Basic Pro and Business in output terms',async({page})=>{
   const cards=page.locator('#plansView .priceCard');
   await expect(cards.nth(0).locator('.planBenefits')).toContainText('Local processing + automatic saving');
   await expect(cards.nth(1).locator('.planBenefits')).toContainText('Gentle + Balance processing modes');
-  await expect(cards.nth(2).locator('.planBenefits')).toContainText('All processing modes + highest 4K quality');
+  await expect(cards.nth(2).locator('.planBenefits')).toContainText('All processing modes + 4K output resolution');
   await expect(cards.nth(0).locator('.planUnit')).toHaveText('Gentle mode · Avatar Narrator included');
   await expect(cards.nth(1).locator('.planUnit')).toHaveText('More control · Avatar Narrator included');
   await expect(cards.nth(2).locator('.planUnit')).toHaveText('High-volume workflow · Avatar Narrator included');
