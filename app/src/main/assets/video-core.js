@@ -128,7 +128,7 @@
     const x=moving?`${xBase}+(iw-ow)*${fmt(r.motionX,5)}*sin(2*PI*t/${fmt(r.motionPeriod,3)}+${fmt(r.motionPhase,4)})`:xBase;
     const y=moving?`${yBase}+(ih-oh)*${fmt(r.motionY,5)}*sin(2*PI*t/${fmt(r.motionPeriod*1.17,3)}+${fmt(r.motionPhase*.73,4)})`:yBase;
     const vf=[
-      `scale=${zw}:${zh}:force_original_aspect_ratio=increase`,
+      `scale=${zw}:${zh}:force_original_aspect_ratio=increase:flags=bilinear`,
       `crop=${w}:${h}:x='${x}':y='${y}'`,
       `eq=brightness=${fmt(r.brightness)}:contrast=${fmt(r.contrast)}:saturation=${fmt(r.saturation)}`,
       `colorbalance=rs=${fmt(r.warmth)}:bs=${fmt(-r.warmth)}`,
@@ -172,7 +172,8 @@
     const clipped=Math.max(.4,duration-r.trimStart-r.trimEnd),f=filters(r,w,h,audio);
     const a=['-hide_banner','-y','-ss',fmt(r.trimStart,3),'-t',fmt(clipped,3),'-i',input,'-vf',f.vf];
     if(audio)a.push('-af',f.af);else a.push('-an');
-    a.push('-c:v','libx264','-preset','veryfast','-crf',w>=1080?'20':'21','-pix_fmt','yuv420p','-movflags','+faststart');
+    const highRes=w>=1080,crf=w>=2160?'24':w>=1080?'22':'21';
+    a.push('-c:v','libx264','-preset',highRes?'ultrafast':'veryfast','-crf',crf,'-pix_fmt','yuv420p','-movflags','+faststart');
     if(r.mode==='dynamic'&&r.gop>0)a.push('-g',String(r.gop));
     if(audio)a.push('-c:a','aac','-b:a','160k');
     a.push(out);
