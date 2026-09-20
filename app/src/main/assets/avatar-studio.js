@@ -22,15 +22,15 @@ const DRAFT_KEY='vu_avatar_draft_v2',JOBS_KEY='vu_avatar_jobs_v2';
 const policy={trial:{w:720,h:1280,label:'Free test · 720p'},basic:{w:720,h:1280,label:'Basic · 720p'},pro:{w:1080,h:1920,label:'Pro · 1080p'},business:{w:2160,h:3840,label:'Business · 4K'}};
 const inputIds={video:'avatarVideo',photo:'avatarPhoto',voice:'avatarAudio'};
 const savedIds={video:'avatarVideoSaved',photo:'avatarPhotoSaved',voice:'avatarAudioSaved'};
-let plan='trial',engine=null,busy=false,cancelled=false,leaving=false,activeJobId=null,recordStream=null,recorder=null,recordChunks=[],recordedVoice=null,recordStartedAt=0,recordTimer=null;
-let restored={video:null,photo:null,voice:null},chosenVoiceMeta=null;
+let plan='trial',engine=null,busy=false,cancelled=false,leaving=false,activeJobId=null,recordStream=null,recorder=null,recordChunks=[],recordedVoice=null,recordStartedAt=0,recordTimer=null,voiceMode=null;
+let restored={video:null,photo:null,voice:null},chosenVoiceMeta=null,currentProgress=0;
 const urls=[];
 const token=localStorage.getItem('vv_token')||'';
 const status=s=>$('avatarStatus').textContent=s;
 const voiceStatus=s=>$('voiceStatus').textContent=s;
 function setProgress(value,visible=true){
  const n=Math.max(0,Math.min(100,Math.round(Number(value)||0))),box=$('avatarProgress');
- if(!box)return;
+ currentProgress=n;if(!box)return;
  box.hidden=!visible;$('avatarProgressPercent').textContent=n+'%';$('avatarProgressBar').style.width=n+'%';
 }
 const u=b=>{const x=URL.createObjectURL(b);urls.push(x);return x;};
@@ -40,7 +40,7 @@ const jobs=()=>readJson(JOBS_KEY,[]).slice(0,30);
 function saveJobs(list){writeJson(JOBS_KEY,list.slice(0,30));}
 function upsertJob(job){const list=jobs(),i=list.findIndex(x=>x.id===job.id);if(i>=0)list[i]=job;else list.unshift(job);saveJobs(list);renderAvatarHistory();return job;}
 function patchJob(id,patch){const list=jobs(),i=list.findIndex(x=>x.id===id);if(i<0)return null;list[i]={...list[i],...patch,updatedAt:new Date().toISOString()};saveJobs(list);renderAvatarHistory();return list[i];}
-function draft(){return readJson(DRAFT_KEY,{text:'',consent:false,files:{},voice:null,updatedAt:null});}
+function draft(){return readJson(DRAFT_KEY,{text:'',consent:false,files:{},voice:null,voiceMode:null,updatedAt:null});}
 function saveDraft(patch={}){const d=draft(),next={...d,...patch,files:{...(d.files||{}),...(patch.files||{})},updatedAt:new Date().toISOString()};writeJson(DRAFT_KEY,next);return next;}
 function fileFor(kind){return $(inputIds[kind])?.files?.[0]||restored[kind]||null;}
 function noteFile(kind,name,restoredFlag=false){const el=$(savedIds[kind]);if(el)el.textContent=name?(restoredFlag?msg.restored+' · ':'')+name:'';}
@@ -67,6 +67,8 @@ async function restoreDraft(){
   restored[kind]=file;noteFile(kind,file.name,true);previewBlob(kind,file);
   if(kind==='voice')voiceStatus(msg.restored+' · '+file.name);
  }
+ const inferred=d.voiceMode||((restored.voice||d.files?.voice)?'own':(chosenVoiceMeta?'device':null));
+ setVoiceMode(inferred,false);
  updateReady();renderVoicePicker();
 }
 async function account(){
@@ -79,10 +81,28 @@ async function account(){
  updateReady();
 }
 function updateReady(){
- const ready=!!policy[plan]&&!!fileFor('video')&&!!fileFor('photo')&&!!$('avatarText').value.trim()&&$('voiceConsent').checked;
+ const base=!!policy[plan]&&!!fileFor('video')&&!!fileFor('photo')&&!!$('avatarText').value.trim()&&$('voiceConsent').checked;
+ const deviceReady=voiceMode==='device'&&!!chosenVoiceMeta&&!!window.AndroidBridge?.synthesizeTtsVoice;
+ const ownReady=voiceMode==='own'&&!!fileFor('voice');
+ const ready=base&&(deviceReady||ownReady);
  $('avatarGenerate').disabled=busy||!ready;
- $('avatarReadyHint').textContent=ready?msg.ready:msg.need;
+ let hint=msg.need;
+ if(base&&voiceMode==='device'&&!chosenVoiceMeta)hint=msg.needDevice;
+ else if(base&&voiceMode==='device'&&chosenVoiceMeta&&!window.AndroidBridge?.synthesizeTtsVoice)hint=msg.deviceUnsupported;
+ else if(base&&voiceMode==='own'&&!fileFor('voice'))hint=msg.needOwn;
+ else if(ready)hint=msg.ready;
+ $('avatarReadyHint').textContent=hint;
 }
+function setVoiceMode(mode,persist=true){
+ voiceMode=mode==='device'||mode==='own'?mode:null;
+ $('voiceModeDevice').checked=voiceMode==='device';$('voiceModeOwn').checked=voiceMode==='own';
+ $('deviceVoicePanel').hidden=voiceMode!=='device';$('ownVoicePanel').hidden=voiceMode!=='own';
+ document.querySelectorAll('.voice-source-card').forEach(card=>card.classList.toggle('selected',card.querySelector('input')?.checked));
+ if(persist)saveDraft({voiceMode});stopVoicePreview();closeVoicePicker();updateReady();
+}
+$('voiceModeDevice').addEventListener('change',()=>{if($('voiceModeDevice').checked)setVoiceMode('device');});
+$('voiceModeOwn').addEventListener('change',()=>{if($('voiceModeOwn').checked)setVoiceMode('own');});
+
 function voiceKey(v){return v?[v.name||'',v.lang||'',v.voiceURI||''].join('|'):'';}
 function nativeVoices(){
  try{
@@ -119,7 +139,7 @@ function speakVoice(voice,row){
 }
 function chooseVoice(voice){
  chosenVoiceMeta={key:voiceKey(voice),name:voice.name,lang:voice.lang||'',voiceURI:voice.voiceURI||'',native:!!voice.native};
- saveDraft({voice:chosenVoiceMeta});$('voicePickerLabel').textContent=chosenVoiceMeta.name+' · '+chosenVoiceMeta.lang;$('voicePreviewStatus').textContent=msg.chosen+': '+chosenVoiceMeta.name;stopVoicePreview();closeVoicePicker();renderVoicePicker();
+ saveDraft({voice:chosenVoiceMeta,voiceMode:'device'});voiceMode='device';$('voiceModeDevice').checked=true;$('voiceModeOwn').checked=false;$('deviceVoicePanel').hidden=false;$('ownVoicePanel').hidden=true;document.querySelectorAll('.voice-source-card').forEach(card=>card.classList.toggle('selected',card.querySelector('input')?.checked));$('voicePickerLabel').textContent=chosenVoiceMeta.name+' · '+chosenVoiceMeta.lang;$('voicePreviewStatus').textContent=msg.chosen+': '+chosenVoiceMeta.name;stopVoicePreview();closeVoicePicker();renderVoicePicker();updateReady();
 }
 function renderVoicePicker(){
  const menu=$('voicePickerMenu');if(!menu)return;const voices=allVoices().slice();menu.replaceChildren();
@@ -143,7 +163,7 @@ $('avatarPhoto').onchange=async()=>{const f=$('avatarPhoto').files[0];if(f){rest
 let textTimer;
 $('avatarText').oninput=()=>{clearTimeout(textTimer);textTimer=setTimeout(()=>saveDraft({text:$('avatarText').value}),120);updateReady();};
 $('voiceConsent').onchange=()=>{saveDraft({consent:$('voiceConsent').checked});updateReady();};
-$('avatarAudio').onchange=async()=>{recordedVoice=null;const f=$('avatarAudio').files[0];if(f){restored.voice=f;voiceStatus(f.name);await persistDraftFile('voice',f);}updateReady();};
+$('avatarAudio').onchange=async()=>{recordedVoice=null;const f=$('avatarAudio').files[0];if(f){voiceMode='own';$('voiceModeOwn').checked=true;$('voiceModeDevice').checked=false;$('ownVoicePanel').hidden=false;$('deviceVoicePanel').hidden=true;document.querySelectorAll('.voice-source-card').forEach(card=>card.classList.toggle('selected',card.querySelector('input')?.checked));restored.voice=f;voiceStatus(f.name);saveDraft({voiceMode:'own'});await persistDraftFile('voice',f);}updateReady();};
 
 $('recordVoice').onclick=async()=>{
  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)return voiceStatus(msg.micDenied);
@@ -156,7 +176,7 @@ $('recordVoice').onclick=async()=>{
    clearInterval(recordTimer);recordTimer=null;const type=recorder.mimeType||recordChunks[0]?.type||'audio/webm';
    recordStream?.getTracks().forEach(t=>t.stop());recordStream=null;$('recordVoice').disabled=false;$('stopVoice').disabled=true;
    if(!recordChunks.length){voiceStatus(msg.micDenied);return;}
-   recordedVoice=new File(recordChunks,'VideoUniquifier-avatar-voice.'+(type.includes('mp4')?'m4a':'webm'),{type:type.split(';')[0]});restored.voice=recordedVoice;
+   recordedVoice=new File(recordChunks,'VideoUniquifier-avatar-voice.'+(type.includes('mp4')?'m4a':'webm'),{type:type.split(';')[0]});voiceMode='own';$('voiceModeOwn').checked=true;$('voiceModeDevice').checked=false;$('ownVoicePanel').hidden=false;$('deviceVoicePanel').hidden=true;document.querySelectorAll('.voice-source-card').forEach(card=>card.classList.toggle('selected',card.querySelector('input')?.checked));saveDraft({voiceMode:'own'});restored.voice=recordedVoice;
    voiceStatus(msg.recorded+' · '+(recordedVoice.size/1048576).toFixed(2)+' MB');await persistDraftFile('voice',recordedVoice);updateReady();
   };
   recorder.start(250);recordStartedAt=Date.now();$('stopVoice').disabled=false;
