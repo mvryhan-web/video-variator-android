@@ -536,3 +536,44 @@ test('Avatar lower-face movement filter is valid FFmpeg and produces a playable 
   execFileSync('ffmpeg',['-y','-f','lavfi','-i','testsrc2=size=160x90:rate=24:duration=0.4','-f','lavfi','-i','color=c=gray:s=160x120:r=24:d=0.4','-filter_complex',filter,'-map','[v]','-t','0.4','-c:v','libx264','-pix_fmt','yuv420p',out],{stdio:'ignore'});
   expect(readFileSync(out).length).toBeGreaterThan(500);
 });
+
+
+test('Gentle Balance Dynamic build distinct real FFmpeg transformations and high-res dimensions',async({page},testInfo)=>{
+  test.skip(testInfo.project.name!=='chromium');
+  const source=testInfo.outputPath('mode-audit-source.mp4');
+  execFileSync('ffmpeg',['-y','-f','lavfi','-i','testsrc2=size=160x90:rate=24:duration=0.45','-f','lavfi','-i','sine=frequency=440:duration=0.45','-shortest','-c:v','libx264','-pix_fmt','yuv420p','-c:a','aac',source],{stdio:'ignore'});
+  await page.addInitScript(()=>{
+    window.__modeExec=[];
+    class AuditFFmpeg{
+      constructor(){this.handlers={};}
+      on(name,fn){this.handlers[name]=fn;}
+      async load(){return true;}
+      async writeFile(){return true;}
+      async exec(args){window.__modeExec.push(args.slice());this.handlers.progress?.({progress:1});return 0;}
+      async readFile(){return new Uint8Array([0,0,0,24,102,116,121,112,105,115,111,109]);}
+      async deleteFile(){return true;}
+      terminate(){}
+    }
+    window.FFmpegWASM={FFmpeg:AuditFFmpeg};
+  });
+  await page.goto('/',{waitUntil:'domcontentloaded'});
+  await page.locator('#fileInput').setInputFiles({name:'source.mp4',mimeType:'video/mp4',buffer:readFileSync(source)});
+  for(const [mode,resolution] of [['gentle','720x1280'],['balanced','1080x1920'],['dynamic','2160x3840']]){
+    await page.evaluate(async({mode,resolution})=>{
+      await window.VideoVariatorCore.process({variants:1,mode,resolution});
+    },{mode,resolution});
+  }
+  const commands=await page.evaluate(()=>window.__modeExec);
+  expect(commands).toHaveLength(3);
+  const vf=args=>args[args.indexOf('-vf')+1]||'';
+  const af=args=>args[args.indexOf('-af')+1]||'';
+  expect(vf(commands[0])).toContain('crop=720:1280');
+  expect(vf(commands[1])).toContain('crop=1080:1920');
+  expect(vf(commands[2])).toContain('crop=2160:3840');
+  expect(vf(commands[0])).not.toContain('noise=alls=');
+  expect(vf(commands[1])).toContain('sin(2*PI*t/');
+  expect(vf(commands[2])).toContain('noise=alls=');
+  expect(af(commands[2])).toContain('equalizer=');
+  expect(vf(commands[0])).not.toBe(vf(commands[1]));
+  expect(vf(commands[1])).not.toBe(vf(commands[2]));
+});
