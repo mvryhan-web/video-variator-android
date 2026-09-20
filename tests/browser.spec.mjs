@@ -251,7 +251,7 @@ test('authenticated billing controls call the intended endpoints without client 
   await page.route('**/api/me',route=>route.fulfill(json({user:{id:'u1',email:'creator@example.com',name:'Creator',isAdmin:false,usage:{plan:'pro',limit:2250,used:120,remaining:2130,active:true,unlimited:false,unit:'credits',status:'active',currentPeriodEnd:null}}})));
   await page.route('**/api/analytics',route=>route.fulfill(json({analytics:{credits:120,outputs:8,seconds:120,successes:8,attempts:8,errors:0}})));
   await page.route('**/api/history',route=>route.fulfill(json({history:[]})));
-  await page.route('**/api/billing/checkout',async route=>{checkoutCalls++;await route.fulfill(json({url:'http://127.0.0.1:3000/?checkout=pro'}));});
+  await page.route('**/api/billing/checkout',async route=>{checkoutCalls++;const plan=route.request().postDataJSON().plan;await route.fulfill(json({url:'http://127.0.0.1:3000/?checkout='+plan}));});
   await page.route('**/api/billing/portal',async route=>{portalCalls++;await route.fulfill(json({url:'http://127.0.0.1:3000/?portal=1'}));});
   await page.route('**/api/billing/cancel',async route=>{cancelCalls++;await route.fulfill(json({ok:true}));});
   await page.addInitScript(()=>localStorage.setItem('vv_token','test-token'));
@@ -262,6 +262,11 @@ test('authenticated billing controls call the intended endpoints without client 
   await page.locator('.planBtn[data-plan="pro"]').click();
   await expect(page).toHaveURL(/checkout=pro/);
   expect(checkoutCalls).toBe(1);
+
+  await openView(page,'plans');
+  await page.locator('.planBtn[data-plan="lifetime"]').click();
+  await expect(page).toHaveURL(/checkout=lifetime/);
+  expect(checkoutCalls).toBe(2);
 
   await openView(page,'profile');
   await expect(page.locator('#manageBillingBtn')).toBeEnabled();
