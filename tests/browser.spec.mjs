@@ -530,11 +530,11 @@ test('free trial keeps selected 1080p and 4K instead of forcing 720p at start',a
 });
 
 
-test('Avatar lower-face movement filter is valid FFmpeg and produces a playable MP4',async({},testInfo)=>{
+test('Avatar audio-reactive mouth filter is valid FFmpeg and produces a playable MP4',async({},testInfo)=>{
   test.skip(testInfo.project.name!=='chromium');
   const out=testInfo.outputPath('avatar-mouth-motion.mp4');
-  const filter="[0:v]scale=160:164:force_original_aspect_ratio=increase,crop=160:164,fps=24[top];[1:v]scale=160:120:force_original_aspect_ratio=increase,crop=160:120,fps=24,split=2[avatarbase][mouthsrc];[mouthsrc]crop=80:24:40:66[mouth];[avatarbase][mouth]overlay=40:y='66+1*sin(2*PI*t*3.2)'[avatar];[top][avatar]vstack=inputs=2[v]";
-  execFileSync('ffmpeg',['-y','-f','lavfi','-i','testsrc2=size=160x90:rate=24:duration=0.4','-f','lavfi','-i','color=c=gray:s=160x120:r=24:d=0.4','-filter_complex',filter,'-map','[v]','-t','0.4','-c:v','libx264','-pix_fmt','yuv420p',out],{stdio:'ignore'});
+  const filter="[0:v]scale=160:164:force_original_aspect_ratio=increase,crop=160:164,fps=24[top];[1:v]scale=160:120:force_original_aspect_ratio=increase,crop=160:120,fps=24,split=2[avatarbase][mouthsrc];[mouthsrc]crop=80:24:40:66[mouth];[avatarbase][mouth]overlay=40:y='66+3*(if(lt(t\\,0.180)\\,0.00\\,if(lt(t\\,0.420)\\,1.00\\,0)))*abs(sin(2*PI*t*4.6))'[avatar];[top][avatar]vstack=inputs=2[v]";
+  execFileSync('ffmpeg',['-y','-f','lavfi','-i','testsrc2=size=160x90:rate=24:duration=0.5','-f','lavfi','-i','testsrc2=size=160x120:rate=24:duration=0.5','-filter_complex',filter,'-map','[v]','-t','0.5','-c:v','libx264','-pix_fmt','yuv420p',out],{stdio:'ignore'});
   expect(readFileSync(out).length).toBeGreaterThan(500);
 });
 
@@ -577,4 +577,80 @@ test('Gentle Balance Dynamic build distinct real FFmpeg transformations and high
   expect(af(commands[2])).toContain('equalizer=');
   expect(vf(commands[0])).not.toBe(vf(commands[1]));
   expect(vf(commands[1])).not.toBe(vf(commands[2]));
+});
+
+
+test('Avatar full completion auto-saves, starts preview, keeps History, and builds voice-reactive mouth motion',async({page},testInfo)=>{
+  test.skip(testInfo.project.name!=='chromium');
+  test.setTimeout(90000);
+
+  const source=testInfo.outputPath('avatar-e2e-source.mp4');
+  const avatar=testInfo.outputPath('avatar-e2e-photo.png');
+  const voice=testInfo.outputPath('avatar-e2e-voice.wav');
+  const realOut=testInfo.outputPath('avatar-e2e-real.mp4');
+
+  execFileSync('ffmpeg',['-y','-f','lavfi','-i','testsrc2=size=160x90:rate=24:duration=1','-c:v','libx264','-pix_fmt','yuv420p',source],{stdio:'ignore'});
+  execFileSync('ffmpeg',['-y','-f','lavfi','-i','testsrc2=size=160x120:rate=1:duration=1','-frames:v','1',avatar],{stdio:'ignore'});
+  execFileSync('ffmpeg',['-y','-f','lavfi','-i','sine=frequency=440:sample_rate=16000:duration=0.5','-af','adelay=250,apad=pad_dur=0.25','-t','1','-c:a','pcm_s16le',voice],{stdio:'ignore'});
+
+  await page.addInitScript(()=>{
+    window.__avatarExecArgs=[];
+    window.__avatarPlayCalls=0;
+    window.__avatarSaved={start:0,chunks:0,finish:[]};
+    Object.defineProperty(HTMLMediaElement.prototype,'play',{configurable:true,value:function(){window.__avatarPlayCalls++;return Promise.resolve();}});
+    window.AndroidBridge={
+      startToolFile(name,type){window.__avatarSaved.start++;window.__avatarSaved.name=name;window.__avatarSaved.type=type;return true;},
+      appendToolChunk(){window.__avatarSaved.chunks++;return true;},
+      finishToolFile(share){window.__avatarSaved.finish.push(share);return true;},
+      cancelToolFile(){}
+    };
+    class FastFFmpeg{
+      constructor(){this.handlers={};}
+      on(name,fn){this.handlers[name]=fn;}
+      async load(){return true;}
+      async writeFile(){return true;}
+      async exec(args){window.__avatarExecArgs.push(args.slice());this.handlers.progress?.({progress:.2});this.handlers.progress?.({progress:.65});this.handlers.progress?.({progress:1});return 0;}
+      async readFile(){return new Uint8Array([0,0,0,24,102,116,121,112,105,115,111,109,0,0,0,0]);}
+      terminate(){}
+    }
+    window.FFmpegWASM={FFmpeg:FastFFmpeg};
+  });
+
+  await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#avatarVideo').setInputFiles({name:'source.mp4',mimeType:'video/mp4',buffer:readFileSync(source)});
+  await page.locator('#avatarPhoto').setInputFiles({name:'avatar.png',mimeType:'image/png',buffer:readFileSync(avatar)});
+  await page.locator('#voiceModeOwn').check();
+  await page.locator('#avatarAudio').setInputFiles({name:'voice.wav',mimeType:'audio/wav',buffer:readFileSync(voice)});
+  await page.locator('#avatarText').fill('Voice-reactive avatar completion test.');
+  await page.locator('#voiceConsent').check();
+  await expect(page.locator('#avatarGenerate')).toBeEnabled();
+
+  await page.locator('#avatarGenerate').click();
+  await expect(page.locator('#avatarProgressPercent')).toHaveText('100%',{timeout:30000});
+  await expect(page.locator('#avatarStatus')).toContainText(/Done|Готово|Terminé|Готово/);
+  await expect(page.locator('#avatarResult video')).toBeVisible();
+  await page.locator('#avatarResult video').dispatchEvent('canplay');
+
+  expect(await page.evaluate(()=>window.__avatarPlayCalls)).toBeGreaterThan(0);
+  const saved=await page.evaluate(()=>window.__avatarSaved);
+  expect(saved.start).toBe(1);
+  expect(saved.chunks).toBeGreaterThan(0);
+  expect(saved.finish).toEqual([false]);
+
+  const latest=page.locator('#avatarHistory .avatar-history-row').first();
+  await expect(latest).toContainText(/Ready|Готово|Prêt/);
+
+  const args=await page.evaluate(()=>window.__avatarExecArgs[0]);
+  const filter=args[args.indexOf('-filter_complex')+1];
+  expect(filter).toContain('*abs(sin(2*PI*t*4.6))');
+  expect(filter).toContain('if(lt(t\\,');
+  expect(filter).toMatch(/\\,0\.00\\,/);
+  expect(filter).toMatch(/\\,(?:0\.28|0\.52|0\.76|1\.00)\\,/);
+
+  execFileSync('ffmpeg',['-y','-i',source,'-loop','1','-framerate','24','-i',avatar,'-i',voice,'-filter_complex',filter,'-map','[v]','-map','2:a:0','-t','1','-c:v','libx264','-preset','ultrafast','-crf','22','-pix_fmt','yuv420p','-c:a','aac','-b:a','160k','-movflags','+faststart',realOut],{stdio:'ignore'});
+  expect(readFileSync(realOut).length).toBeGreaterThan(2000);
+
+  await page.reload({waitUntil:'domcontentloaded'});
+  await expect(page.locator('#avatarResult video')).toBeVisible();
+  await expect(page.locator('#avatarHistory .avatar-history-row').first()).toContainText(/Ready|Готово|Prêt/);
 });
