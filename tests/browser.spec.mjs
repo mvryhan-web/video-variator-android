@@ -511,11 +511,19 @@ test('selected Android device voice is synthesized into Avatar export audio',asy
 test('free trial keeps selected 1080p and 4K instead of forcing 720p at start',async({page})=>{
   await page.goto('/',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#currentPlan')).toHaveText('Free trial');
-  await expect(page.locator('#quality option[value="1080"]')).toBeEnabled();
+  await page.evaluate(()=>{
+    window.__processedResolutions=[];
+    window.VideoVariatorCore.estimateCredits=async variants=>({durations:[1],sourceCount:1,sourceSeconds:1,creditSeconds:variants,variants});
+    window.VideoVariatorCore.process=async options=>{window.__processedResolutions.push(options.resolution);return{results:[],sourceCount:1,sourceSeconds:1,creditSeconds:1,outputCount:0};};
+  });
+  await page.locator('#fileInput').setInputFiles({name:'trial.mp4',mimeType:'video/mp4',buffer:Buffer.from([0,1,2,3])});
+  await expect(page.locator('#startBtn')).toBeEnabled();
   await page.locator('#quality').selectOption('1080');
-  await page.evaluate(()=>window.VideoVariatorUI?.enforcePlanControls?.());
-  await expect(page.locator('#quality')).toHaveValue('1080');
+  await page.locator('#startBtn').click();
+  await expect.poll(()=>page.evaluate(()=>window.__processedResolutions.length)).toBe(1);
+  expect(await page.evaluate(()=>window.__processedResolutions[0])).toBe('1080x1920');
   await page.locator('#quality').selectOption('2160');
-  await page.evaluate(()=>window.VideoVariatorUI?.enforcePlanControls?.());
-  await expect(page.locator('#quality')).toHaveValue('2160');
+  await page.locator('#startBtn').click();
+  await expect.poll(()=>page.evaluate(()=>window.__processedResolutions.length)).toBe(2);
+  expect(await page.evaluate(()=>window.__processedResolutions[1])).toBe('2160x3840');
 });
