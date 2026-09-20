@@ -296,6 +296,7 @@ test('Avatar voice list auditions in place and Select closes the list',async({pa
     }});
   });
   await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#voiceModeDevice').check();
   await expect(page.locator('#avatarSpeak')).toHaveCount(0);
   await expect(page.locator('#avatarStopSpeak')).toHaveCount(0);
   await expect(page.locator('#avatarSelectVoice')).toHaveCount(0);
@@ -316,6 +317,7 @@ test('Avatar project restores files text consent and selected voice after reload
   await page.addInitScript(()=>{
     window.SpeechSynthesisUtterance=function(text){this.text=text;};
     Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{onvoiceschanged:null,getVoices(){return[{name:'Saved Voice',lang:'en-US',voiceURI:'saved',default:true}];},cancel(){},speak(){}}});
+    window.AndroidBridge={synthesizeTtsVoice(){return true;}};
   });
   await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
   await page.locator('#avatarVideo').setInputFiles({name:'remember.mp4',mimeType:'video/mp4',buffer:Buffer.from('video-data')});
@@ -362,6 +364,7 @@ test('Android native voice list opens, previews David Voice, and Select closes i
     };
   });
   await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#voiceModeDevice').check();
   await page.locator('#avatarText').fill('Native voice preview text');
   await page.locator('#voicePickerToggle').click();
   await expect(page.locator('#voicePickerMenu')).toBeVisible();
@@ -389,6 +392,7 @@ test('Avatar Record voice requests microphone, records, and Stop stores the reco
     Object.defineProperty(window,'MediaRecorder',{configurable:true,value:FakeMediaRecorder});
   });
   await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#voiceModeOwn').check();
   await page.locator('#recordVoice').click();
   await expect(page.locator('#recordVoice')).toBeDisabled();
   await expect(page.locator('#stopVoice')).toBeEnabled();
@@ -421,6 +425,8 @@ test('Avatar generation shows percentage, auto-downloads, and leaves a downloada
   await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
   await page.locator('#avatarVideo').setInputFiles({name:'source.mp4',mimeType:'video/mp4',buffer:readFileSync(source)});
   await page.locator('#avatarPhoto').setInputFiles({name:'avatar.png',mimeType:'image/png',buffer:png});
+  await page.locator('#voiceModeOwn').check();
+  await page.locator('#avatarAudio').setInputFiles({name:'voice.webm',mimeType:'audio/webm',buffer:Buffer.from('voice-data')});
   await page.locator('#avatarText').fill('Create a short test video.');
   await page.locator('#voiceConsent').check();
   await expect(page.locator('#avatarGenerate')).toBeEnabled();
@@ -434,4 +440,82 @@ test('Avatar generation shows percentage, auto-downloads, and leaves a downloada
   const latest=page.locator('#avatarHistory .avatar-history-row').first();
   await expect(latest).toContainText(/Ready|Готово|Prêt/);
   await expect(latest.getByRole('button',{name:/Download|Скачать|Télécharger|Завантажити/})).toBeVisible();
+});
+
+
+test('Avatar narration is either Device voice or My voice and narration text is last',async({page})=>{
+  await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#deviceVoicePanel')).toBeHidden();
+  await expect(page.locator('#ownVoicePanel')).toBeHidden();
+  await page.locator('#voiceModeDevice').check();
+  await expect(page.locator('#voiceModeDevice')).toBeChecked();
+  await expect(page.locator('#voiceModeOwn')).not.toBeChecked();
+  await expect(page.locator('#deviceVoicePanel')).toBeVisible();
+  await expect(page.locator('#ownVoicePanel')).toBeHidden();
+  await page.locator('#voiceModeOwn').check();
+  await expect(page.locator('#voiceModeOwn')).toBeChecked();
+  await expect(page.locator('#voiceModeDevice')).not.toBeChecked();
+  await expect(page.locator('#ownVoicePanel')).toBeVisible();
+  await expect(page.locator('#deviceVoicePanel')).toBeHidden();
+  const order=await page.evaluate(()=>({
+    voice:document.querySelector('.voice-source-section').compareDocumentPosition(document.querySelector('.avatar-text-last')),
+    text:document.querySelector('.avatar-text-last').compareDocumentPosition(document.querySelector('.consent-line'))
+  }));
+  expect(order.voice & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(order.text & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+});
+
+test('selected Android device voice is synthesized into Avatar export audio',async({page},testInfo)=>{
+  test.skip(testInfo.project.name!=='chromium');
+  await page.addInitScript(()=>{
+    window.__avatarWrites={};
+    window.AndroidBridge={
+      getTtsVoices(){return JSON.stringify([{name:'David Voice',lang:'en-US',voiceURI:'David Voice',native:true}]);},
+      speakTtsVoice(){return true;},stopTtsVoice(){},
+      synthesizeTtsVoice(name,text,id){window.__tts={name,text,id};setTimeout(()=>window.vuNativeTtsReady?.(id,true),0);return true;},
+      getTtsAudioSize(){return 4;},
+      getTtsAudioChunk(){return btoa(String.fromCharCode(1,2,3,4));},
+      releaseTtsAudio(){window.__ttsReleased=true;}
+    };
+    class FastFFmpeg{
+      constructor(){this.handlers={};}
+      on(name,fn){this.handlers[name]=fn;}
+      async load(){return true;}
+      async writeFile(name,data){window.__avatarWrites[name]=Array.from(data);return true;}
+      async exec(){this.handlers.progress?.({progress:1});return 0;}
+      async readFile(){return new Uint8Array([0,0,0,24,102,116,121,112,105,115,111,109]);}
+      terminate(){}
+    }
+    window.FFmpegWASM={FFmpeg:FastFFmpeg};
+  });
+  const source=testInfo.outputPath('avatar-device-voice-source.mp4');
+  execFileSync('ffmpeg',['-y','-f','lavfi','-i','color=c=black:s=160x90:d=0.35','-c:v','libx264','-pix_fmt','yuv420p',source],{stdio:'ignore'});
+  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFElEQVR42mNk+M9Qz0AEYBxVSFUAAN4ABf4F0kwAAAAASUVORK5CYII=','base64');
+  await page.goto('/avatar-studio.html',{waitUntil:'domcontentloaded'});
+  await page.locator('#avatarVideo').setInputFiles({name:'source.mp4',mimeType:'video/mp4',buffer:readFileSync(source)});
+  await page.locator('#avatarPhoto').setInputFiles({name:'avatar.png',mimeType:'image/png',buffer:png});
+  await page.locator('#voiceModeDevice').check();
+  await page.locator('#avatarText').fill('This should be spoken by David.');
+  await page.locator('#voicePickerToggle').click();
+  await page.locator('.voice-option-select').first().click();
+  await page.locator('#voiceConsent').check();
+  await expect(page.locator('#avatarGenerate')).toBeEnabled();
+  await page.locator('#avatarGenerate').click();
+  await expect(page.locator('#avatarProgressPercent')).toHaveText('100%',{timeout:15000});
+  expect(await page.evaluate(()=>window.__tts.name)).toBe('David Voice');
+  expect(await page.evaluate(()=>window.__tts.text)).toContain('spoken by David');
+  expect(await page.evaluate(()=>window.__avatarWrites.voice)).toEqual([1,2,3,4]);
+  expect(await page.evaluate(()=>window.__ttsReleased)).toBe(true);
+});
+
+test('free trial keeps selected 1080p and 4K instead of forcing 720p at start',async({page})=>{
+  await page.goto('/',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#currentPlan')).toHaveText('Free trial');
+  await expect(page.locator('#quality option[value="1080"]')).toBeEnabled();
+  await page.locator('#quality').selectOption('1080');
+  await page.evaluate(()=>window.VideoVariatorUI?.enforcePlanControls?.());
+  await expect(page.locator('#quality')).toHaveValue('1080');
+  await page.locator('#quality').selectOption('2160');
+  await page.evaluate(()=>window.VideoVariatorUI?.enforcePlanControls?.());
+  await expect(page.locator('#quality')).toHaveValue('2160');
 });
