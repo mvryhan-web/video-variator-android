@@ -527,3 +527,12 @@ test('free trial keeps selected 1080p and 4K instead of forcing 720p at start',a
   await expect.poll(()=>page.evaluate(()=>window.__processedResolutions.length)).toBe(2);
   expect(await page.evaluate(()=>window.__processedResolutions[1])).toBe('2160x3840');
 });
+
+
+test('Avatar lower-face movement filter is valid FFmpeg and produces a playable MP4',async({},testInfo)=>{
+  test.skip(testInfo.project.name!=='chromium');
+  const out=testInfo.outputPath('avatar-mouth-motion.mp4');
+  const filter="[0:v]scale=160:164:force_original_aspect_ratio=increase,crop=160:164,fps=24[top];[1:v]scale=160:120:force_original_aspect_ratio=increase,crop=160:120,fps=24,split=2[avatarbase][mouthsrc];[mouthsrc]crop=80:24:40:66[mouth];[avatarbase][mouth]overlay=40:y='66+1*sin(2*PI*t*3.2)'[avatar];[top][avatar]vstack=inputs=2[v]";
+  execFileSync('ffmpeg',['-y','-f','lavfi','-i','testsrc2=size=160x90:rate=24:duration=0.4','-f','lavfi','-i','color=c=gray:s=160x120:r=24:d=0.4','-filter_complex',filter,'-map','[v]','-t','0.4','-c:v','libx264','-pix_fmt','yuv420p',out],{stdio:'ignore'});
+  expect(readFileSync(out).length).toBeGreaterThan(500);
+});
