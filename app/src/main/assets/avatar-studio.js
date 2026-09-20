@@ -198,30 +198,79 @@ async function addGlobalHistory(job,file){
  const filtered=list.filter(x=>x.id!==item.id);filtered.unshift(item);writeJson('vv_history',filtered.slice(0,100));
  if(token)fetch('/api/history',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({items:[item]})}).catch(()=>{});
 }
+const ttsWaiters=new Map();
+window.vuNativeTtsReady=(requestId,ok)=>{
+ const waiter=ttsWaiters.get(requestId);if(!waiter)return;
+ ttsWaiters.delete(requestId);ok?waiter.resolve(true):waiter.reject(Error('DEVICE_TTS_FAILED'));
+};
+function decodeBase64Chunk(value){
+ const raw=atob(value||''),bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);return bytes;
+}
+async function synthesizeDeviceVoice(meta,text){
+ const bridge=window.AndroidBridge;
+ if(!bridge?.synthesizeTtsVoice||!bridge?.getTtsAudioSize||!bridge?.getTtsAudioChunk)throw Error(msg.deviceUnsupported);
+ const requestId='tts-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
+ const ready=new Promise((resolve,reject)=>{
+  const timer=setTimeout(()=>{ttsWaiters.delete(requestId);reject(Error('DEVICE_TTS_TIMEOUT'));},45000);
+  ttsWaiters.set(requestId,{resolve:v=>{clearTimeout(timer);resolve(v);},reject:e=>{clearTimeout(timer);reject(e);}});
+ });
+ status(msg.synthesizing);setProgress(Math.max(currentProgress,7),true);
+ if(!bridge.synthesizeTtsVoice(meta.voiceURI||meta.name,text,requestId)){ttsWaiters.delete(requestId);throw Error('DEVICE_TTS_FAILED');}
+ await ready;
+ const size=Math.max(0,Number(bridge.getTtsAudioSize(requestId))||0);if(!size)throw Error('DEVICE_TTS_EMPTY');
+ const chunks=[];for(let offset=0;offset<size;offset+=65536){
+  const b64=bridge.getTtsAudioChunk(requestId,offset,Math.min(65536,size-offset));if(!b64)throw Error('DEVICE_TTS_READ');
+  chunks.push(decodeBase64Chunk(b64));
+ }
+ try{bridge.releaseTtsAudio?.(requestId);}catch(_){}
+ return new File(chunks,'VideoUniquifier-device-voice.wav',{type:'audio/wav'});
+}
+
 async function createJob(){
- const video=fileFor('video'),photo=fileFor('photo'),voice=fileFor('voice'),id='avatar-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),p=policy[plan]||policy.trial;
- const job={id,status:'queued',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),sourceName:video.name||'source-video',photoName:photo.name||'avatar-photo',voiceName:voice?.name||null,text:$('avatarText').value.trim(),selectedDeviceVoice:chosenVoiceMeta,plan,resolution:p.w+'×'+p.h,sourceKey:id+'/source',photoKey:id+'/photo',voiceKey:voice?id+'/voice':null,outputKey:id+'/output'};
+ const video=fileFor('video'),photo=fileFor('photo'),ownVoice=voiceMode==='own'?fileFor('voice'):null,id='avatar-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),p=policy[plan]||policy.trial;
+ const job={id,status:'queued',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),sourceName:video.name||'source-video',photoName:photo.name||'avatar-photo',voiceMode,voiceName:ownVoice?.name||null,text:$('avatarText').value.trim(),selectedDeviceVoice:voiceMode==='device'?chosenVoiceMeta:null,plan,resolution:p.w+'×'+p.h,sourceKey:id+'/source',photoKey:id+'/photo',voiceKey:ownVoice?id+'/voice':null,outputKey:id+'/output'};
  try{
-  await media.put(job.sourceKey,video);await media.put(job.photoKey,photo);if(voice)await media.put(job.voiceKey,voice);
+  await media.put(job.sourceKey,video);await media.put(job.photoKey,photo);if(ownVoice)await media.put(job.voiceKey,ownVoice);
  }catch(_){throw Error(msg.storageFail);}
  upsertJob(job);return job;
 }
 async function loadJobFile(job,key,name,type){const blob=await media?.get(job[key]);return blob?new File([blob],name,{type:blob.type||type}):null;}
 async function processJob(job){
  if(busy)return;busy=true;cancelled=false;leaving=false;activeJobId=job.id;patchJob(job.id,{status:'processing'});$('avatarGenerate').disabled=true;$('avatarCancel').disabled=false;$('avatarResult').replaceChildren();setProgress(0,true);status(msg.preparing);
+ let progressTimer=null;
  try{
-  const video=await loadJobFile(job,'sourceKey',job.sourceName,'video/mp4'),photo=await loadJobFile(job,'photoKey',job.photoName,'image/png'),voice=job.voiceKey?await loadJobFile(job,'voiceKey',job.voiceName||'voice','audio/webm'):null;
+  const video=await loadJobFile(job,'sourceKey',job.sourceName,'video/mp4'),photo=await loadJobFile(job,'photoKey',job.photoName,'image/png');
+  let voice=job.voiceMode==='own'&&job.voiceKey?await loadJobFile(job,'voiceKey',job.voiceName||'voice','audio/webm'):null;
   if(!video||!photo)throw Error('Saved project media is unavailable.');
+  if(job.voiceMode==='device'){
+   if(!job.selectedDeviceVoice)throw Error(msg.needDevice);
+   voice=await synthesizeDeviceVoice(job.selectedDeviceVoice,job.text||'');
+  }
+  if(!voice)throw Error(job.voiceMode==='device'?msg.needDevice:msg.needOwn);
   const duration=await mediaDuration(video);if(!duration||duration>600)throw Error('Keep source video at 10 minutes or less for this local version.');
-  const p=policy[job.plan]||policy.trial;patchJob(job.id,{durationSeconds:Math.ceil(duration),resolution:p.w+'×'+p.h});setProgress(5,true);engine=await createEngine();engine.on?.('progress',({progress})=>{const pct=10+Math.max(0,Math.min(1,Number(progress)||0))*84;setProgress(pct,true);status((voice?msg.processing:msg.silent)+' '+Math.round(pct)+'%');});if(cancelled)throw Error('CANCELLED');
-  await engine.writeFile('source',new Uint8Array(await video.arrayBuffer()));await engine.writeFile('avatar',new Uint8Array(await photo.arrayBuffer()));if(voice)await engine.writeFile('voice',new Uint8Array(await voice.arrayBuffer()));setProgress(10,true);
-  const top=Math.round(p.h*.58/2)*2,bottom=p.h-top,filter=`[0:v]scale=${p.w}:${top}:force_original_aspect_ratio=increase,crop=${p.w}:${top}[top];[1:v]scale=${p.w}:${bottom}:force_original_aspect_ratio=increase,crop=${p.w}:${bottom},zoompan=z='min(zoom+0.00025,1.035)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=${p.w}x${bottom}:fps=30[avatar];[top][avatar]vstack=inputs=2[v]`;
-  status(voice?msg.processing:msg.silent);const args=['-i','source','-loop','1','-framerate','30','-i','avatar'];if(voice)args.push('-i','voice');args.push('-filter_complex',filter,'-map','[v]');if(voice)args.push('-map','2:a:0');else args.push('-an');args.push('-t',String(duration),'-c:v','libx264','-preset','ultrafast','-crf',p.w>=2160?'25':p.w>=1080?'23':'22','-pix_fmt','yuv420p');if(voice)args.push('-c:a','aac','-b:a','160k');args.push('-movflags','+faststart','avatar-output.mp4');
-  const rc=await engine.exec(args);if(rc)throw Error('ENCODE');setProgress(95,true);const bytes=await engine.readFile('avatar-output.mp4'),file=new File([bytes],'VideoUniquifier-Avatar-'+Date.now()+'.mp4',{type:'video/mp4'});
+  const p=policy[job.plan]||policy.trial;patchJob(job.id,{durationSeconds:Math.ceil(duration),resolution:p.w+'×'+p.h});setProgress(Math.max(currentProgress,8),true);
+  engine=await createEngine();
+  engine.on?.('progress',({progress})=>{const pct=10+Math.max(0,Math.min(1,Number(progress)||0))*84;if(pct>currentProgress)setProgress(pct,true);status(msg.processing+' '+Math.round(Math.max(pct,currentProgress))+'%');});
+  if(cancelled)throw Error('CANCELLED');
+  await engine.writeFile('source',new Uint8Array(await video.arrayBuffer()));
+  await engine.writeFile('avatar',new Uint8Array(await photo.arrayBuffer()));
+  await engine.writeFile('voice',new Uint8Array(await voice.arrayBuffer()));setProgress(10,true);
+
+  const top=Math.round(p.h*.58/2)*2,bottom=p.h-top,fps=24;
+  const mouthW=Math.max(80,Math.round(p.w*.44/2)*2),mouthH=Math.max(24,Math.round(bottom*.12/2)*2),mouthX=Math.round((p.w-mouthW)/2),mouthY=Math.max(0,Math.min(bottom-mouthH,Math.round(bottom*.55)));
+  const shift=Math.max(1,Math.round(bottom*.005));
+  const filter=`[0:v]scale=${p.w}:${top}:force_original_aspect_ratio=increase,crop=${p.w}:${top},fps=${fps}[top];[1:v]scale=${p.w}:${bottom}:force_original_aspect_ratio=increase,crop=${p.w}:${bottom},fps=${fps},split=2[avatarbase][mouthsrc];[mouthsrc]crop=${mouthW}:${mouthH}:${mouthX}:${mouthY}[mouth];[avatarbase][mouth]overlay=${mouthX}:y='${mouthY}+${shift}*sin(2*PI*t*3.2)'[avatar];[top][avatar]vstack=inputs=2[v]`;
+
+  const estimatedSeconds=Math.max(18,duration*(p.w>=2160?9:p.w>=1080?5:2.8)),started=Date.now();
+  progressTimer=setInterval(()=>{if(!busy)return;const elapsed=(Date.now()-started)/1000,estimated=10+Math.min(80,elapsed/estimatedSeconds*80);if(estimated>currentProgress)setProgress(estimated,true);status(msg.processing+' '+currentProgress+'%');},900);
+
+  const args=['-i','source','-loop','1','-framerate',String(fps),'-i','avatar','-i','voice','-filter_complex',filter,'-map','[v]','-map','2:a:0','-t',String(duration),'-c:v','libx264','-preset','ultrafast','-crf',p.w>=2160?'25':p.w>=1080?'23':'22','-pix_fmt','yuv420p','-c:a','aac','-b:a','160k','-movflags','+faststart','avatar-output.mp4'];
+  const rc=await engine.exec(args);clearInterval(progressTimer);progressTimer=null;if(rc)throw Error('ENCODE');
+  setProgress(95,true);const bytes=await engine.readFile('avatar-output.mp4'),file=new File([bytes],'VideoUniquifier-Avatar-'+Date.now()+'.mp4',{type:'video/mp4'});
   await media.put(job.outputKey,file);setProgress(98,true);await addGlobalHistory({...job,durationSeconds:Math.ceil(duration),resolution:p.w+'×'+p.h},file);patchJob(job.id,{status:'done',outputName:file.name,durationSeconds:Math.ceil(duration),resolution:p.w+'×'+p.h,finishedAt:new Date().toISOString()});
-  await resultControls(file);try{await saveLocal(file);}catch(e){console.warn('[avatar autosave]',e);}setProgress(100,true);
-  status(msg.done);
+  await resultControls(file);try{await saveLocal(file);}catch(e){console.warn('[avatar autosave]',e);}setProgress(100,true);status(msg.done);
  }catch(e){
+  clearInterval(progressTimer);
   if(leaving){patchJob(job.id,{status:'queued'});}
   else if(cancelled||e.message==='CANCELLED'){patchJob(job.id,{status:'canceled'});setProgress(0,false);status('Canceled');}
   else{console.warn(e);patchJob(job.id,{status:'error',error:String(e.message||e)});setProgress(0,false);status(String(e.message||'Could not create the avatar video.'));}
