@@ -45,23 +45,23 @@
   const plans={
     basic:{name:'Basic',credits:'750',short15:'≈ 50 × 15-sec outputs',short30:'or 25 × 30-sec outputs',micro:'Local processing + automatic saving',variants:'Up to 5 variations · 720p',access:'Gentle mode · Avatar Narrator included'},
     pro:{name:'Pro',credits:'2,250',short15:'≈ 150 × 15-sec outputs',short30:'or 75 × 30-sec outputs',micro:'Gentle + Balance processing modes',variants:'Up to 10 variations · 1080p',access:'More control · Avatar Narrator included'},
-    business:{name:'Business',credits:'15,000',short15:'≈ 1,000 × 15-sec outputs',short30:'or 500 × 30-sec outputs',micro:'All processing modes + highest 4K quality',variants:'Up to 15 variations · 4K',access:'High-volume workflow · Avatar Narrator included'}
+    business:{name:'Business',credits:'15,000',short15:'≈ 1,000 × 15-sec outputs',short30:'or 500 × 30-sec outputs',micro:'All processing modes + 4K output resolution',variants:'Up to 15 variations · 4K',access:'High-volume workflow · Avatar Narrator included'}
   };
   const planTranslations={
     fr:{
       basic:{short15:'≈ 50 sorties de 15 s',short30:'ou 25 sorties de 30 s',micro:'Traitement local + enregistrement automatique',variants:'Jusqu’à 5 variations · 720p',access:'Mode Gentle · Narrateur avatar inclus'},
       pro:{short15:'≈ 150 sorties de 15 s',short30:'ou 75 sorties de 30 s',micro:'Modes Gentle + Balance',variants:'Jusqu’à 10 variations · 1080p',access:'Plus de contrôle · Narrateur avatar inclus'},
-      business:{short15:'≈ 1 000 sorties de 15 s',short30:'ou 500 sorties de 30 s',micro:'Tous les modes + meilleure qualité 4K',variants:'Jusqu’à 15 variations · 4K',access:'Flux à volume élevé · Narrateur avatar inclus'}
+      business:{short15:'≈ 1 000 sorties de 15 s',short30:'ou 500 sorties de 30 s',micro:'Tous les modes + sortie 4K',variants:'Jusqu’à 15 variations · 4K',access:'Flux à volume élevé · Narrateur avatar inclus'}
     },
     ru:{
       basic:{short15:'≈ 50 роликов по 15 сек.',short30:'или 25 роликов по 30 сек.',micro:'Локальная обработка + автосохранение',variants:'До 5 вариантов · 720p',access:'Режим Gentle · Аватар-комментатор включён'},
       pro:{short15:'≈ 150 роликов по 15 сек.',short30:'или 75 роликов по 30 сек.',micro:'Режимы Gentle + Balance',variants:'До 10 вариантов · 1080p',access:'Больше контроля · Аватар-комментатор включён'},
-      business:{short15:'≈ 1 000 роликов по 15 сек.',short30:'или 500 роликов по 30 сек.',micro:'Все режимы + максимальное качество 4K',variants:'До 15 вариантов · 4K',access:'Для больших объёмов · Аватар-комментатор включён'}
+      business:{short15:'≈ 1 000 роликов по 15 сек.',short30:'или 500 роликов по 30 сек.',micro:'Все режимы + выходное разрешение 4K',variants:'До 15 вариантов · 4K',access:'Для больших объёмов · Аватар-комментатор включён'}
     },
     uk:{
       basic:{short15:'≈ 50 роликів по 15 сек.',short30:'або 25 роликів по 30 сек.',micro:'Локальна обробка + автозбереження',variants:'До 5 варіантів · 720p',access:'Режим Gentle · Аватар-оповідач включений'},
       pro:{short15:'≈ 150 роликів по 15 сек.',short30:'або 75 роликів по 30 сек.',micro:'Режими Gentle + Balance',variants:'До 10 варіантів · 1080p',access:'Більше контролю · Аватар-оповідач включений'},
-      business:{short15:'≈ 1 000 роликів по 15 сек.',short30:'або 500 роликів по 30 сек.',micro:'Усі режими + максимальна якість 4K',variants:'До 15 варіантів · 4K',access:'Для великих обсягів · Аватар-оповідач включений'}
+      business:{short15:'≈ 1 000 роликів по 15 сек.',short30:'або 500 роликів по 30 сек.',micro:'Усі режими + вихідна роздільність 4K',variants:'До 15 варіантів · 4K',access:'Для великих обсягів · Аватар-оповідач включений'}
     }
   };
   if(planTranslations[locale])Object.entries(planTranslations[locale]).forEach(([id,value])=>Object.assign(plans[id],value));

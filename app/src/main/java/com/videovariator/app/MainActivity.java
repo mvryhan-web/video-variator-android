@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaScannerConnection;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 import android.net.Uri;
 import android.os.Build;
@@ -38,9 +39,12 @@ import org.json.JSONArray;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
@@ -51,6 +55,7 @@ public class MainActivity extends Activity {
     private PermissionRequest pendingWebPermissionRequest;
     private TextToSpeech textToSpeech;
     private volatile boolean ttsReady = false;
+    private final Map<String, File> ttsExportFiles = new ConcurrentHashMap<>();
     private ValueCallback<Uri[]> fileChooserCallback;
     private AppUpdateManager appUpdateManager;
     private String trustedWebOrigin = "";
@@ -76,6 +81,14 @@ public class MainActivity extends Activity {
         setContentView(webView);
         textToSpeech = new TextToSpeech(this, status -> {
             ttsReady = status == TextToSpeech.SUCCESS;
+            if (ttsReady && textToSpeech != null) {
+                textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                    @Override public void onStart(String utteranceId) { }
+                    @Override public void onDone(String utteranceId) { handleTtsExportResult(utteranceId, true); }
+                    @Override public void onError(String utteranceId) { handleTtsExportResult(utteranceId, false); }
+                    @Override public void onError(String utteranceId, int errorCode) { handleTtsExportResult(utteranceId, false); }
+                });
+            }
             if (ttsReady && webView != null) runOnUiThread(() ->
                 webView.evaluateJavascript("window.vuNativeVoicesReady&&window.vuNativeVoicesReady()", null)
             );
@@ -207,6 +220,17 @@ public class MainActivity extends Activity {
         });
     }
 
+    private void handleTtsExportResult(String utteranceId, boolean ok) {
+        if (utteranceId == null || !utteranceId.startsWith("vu-export-")) return;
+        String requestId = utteranceId.substring("vu-export-".length());
+        if (!ok) {
+            File file = ttsExportFiles.remove(requestId);
+            if (file != null) file.delete();
+        }
+        final String js = "window.vuNativeTtsReady&&window.vuNativeTtsReady(" + JSONObject.quote(requestId) + "," + (ok ? "true" : "false") + ")";
+        if (webView != null) runOnUiThread(() -> webView.evaluateJavascript(js, null));
+    }
+
     private void handleWebPermissionRequest(PermissionRequest request) {
         if (request == null || request.getOrigin() == null) return;
         String origin = request.getOrigin().getScheme() + "://" + request.getOrigin().getAuthority();
@@ -289,6 +313,8 @@ public class MainActivity extends Activity {
         if (appUpdateManager != null) appUpdateManager.unregisterListener(updateListener);
         if (pendingWebPermissionRequest != null) { pendingWebPermissionRequest.deny(); pendingWebPermissionRequest = null; }
         if (textToSpeech != null) { textToSpeech.stop(); textToSpeech.shutdown(); textToSpeech = null; ttsReady = false; }
+        for (File file : ttsExportFiles.values()) if (file != null) file.delete();
+        ttsExportFiles.clear();
         if (webView != null) { webView.removeJavascriptInterface("AndroidBridge"); webView.destroy(); }
         super.onDestroy();
     }
@@ -340,6 +366,65 @@ public class MainActivity extends Activity {
                 }
             } catch (Exception ignored) { }
             return voices.toString();
+        }
+
+        @JavascriptInterface public boolean synthesizeTtsVoice(String voiceName, String text, String requestId) {
+            if (!ttsReady || textToSpeech == null || text == null || requestId == null || requestId.isEmpty()) return false;
+            final Voice[] selected = new Voice[]{null};
+            try {
+                Set<Voice> available = textToSpeech.getVoices();
+                if (available != null) for (Voice voice : available) {
+                    if (voice.getName().equals(voiceName)) { selected[0] = voice; break; }
+                }
+            } catch (Exception ignored) { }
+            if (selected[0] == null) return false;
+            final String safeRequestId = requestId.replaceAll("[^a-zA-Z0-9_-]", "_");
+            final String safeText = text.substring(0, Math.min(text.length(), 5000));
+            final File dir = new File(getCacheDir(), "tts-export");
+            if (!dir.exists() && !dir.mkdirs()) return false;
+            final File file = new File(dir, safeRequestId + ".wav");
+            if (file.exists()) file.delete();
+            ttsExportFiles.put(requestId, file);
+            runOnUiThread(() -> {
+                try {
+                    textToSpeech.stop();
+                    textToSpeech.setVoice(selected[0]);
+                    int result = textToSpeech.synthesizeToFile(safeText, new Bundle(), file, "vu-export-" + requestId);
+                    if (result != TextToSpeech.SUCCESS) handleTtsExportResult("vu-export-" + requestId, false);
+                } catch (Exception e) {
+                    handleTtsExportResult("vu-export-" + requestId, false);
+                }
+            });
+            return true;
+        }
+
+        @JavascriptInterface public synchronized int getTtsAudioSize(String requestId) {
+            File file = ttsExportFiles.get(requestId);
+            return file != null && file.exists() ? (int)Math.min(Integer.MAX_VALUE, file.length()) : 0;
+        }
+
+        @JavascriptInterface public synchronized String getTtsAudioChunk(String requestId, int offset, int length) {
+            File file = ttsExportFiles.get(requestId);
+            if (file == null || !file.exists() || offset < 0 || length <= 0) return "";
+            int safeLength = Math.min(65536, length);
+            try (RandomAccessFile input = new RandomAccessFile(file, "r")) {
+                if (offset >= input.length()) return "";
+                input.seek(offset);
+                byte[] buffer = new byte[(int)Math.min(safeLength, input.length() - offset)];
+                int count = input.read(buffer);
+                if (count <= 0) return "";
+                if (count != buffer.length) {
+                    byte[] exact = new byte[count];
+                    System.arraycopy(buffer, 0, exact, 0, count);
+                    buffer = exact;
+                }
+                return Base64.encodeToString(buffer, Base64.NO_WRAP);
+            } catch (Exception e) { return ""; }
+        }
+
+        @JavascriptInterface public synchronized void releaseTtsAudio(String requestId) {
+            File file = ttsExportFiles.remove(requestId);
+            if (file != null) file.delete();
         }
 
         @JavascriptInterface public boolean speakTtsVoice(String voiceName, String text) {

@@ -4,16 +4,16 @@ const $=id=>document.getElementById(id);
 const lang=(navigator.language||'en-US').toLowerCase();
 const locale=lang.startsWith('ru')?'ru':lang.startsWith('fr')?'fr':lang.startsWith('uk')?'uk':'en';
 const dict={
- en:{back:'← Back',included:'Free 720p test · Full quality in Basic, Pro & Business',title:'Avatar Narrator',intro:'Put your video on top and your own photo avatar below. Add narration text and, if you want, your own recorded voice. Everything is composed locally on this device.',plan:'Access',video:'1 · Source video',photo:'2 · Your avatar photo',text:'3 · Narration text',deviceVoice:'Device voice preview',deviceVoiceNote:'Open the voice list and tap any voice to hear it immediately. The list stays open until you press Select on the voice you want.',chooseVoice:'Choose a voice',useVoice:'Select',ownVoice:'Your own voice for export',ownVoiceNote:'Optional for testing. Upload or record narration if you want that audio inside the exported video.',audio:'Upload voice audio',record:'Record voice',stop:'Stop recording',consent:'I confirm this is my voice/photo, or I have permission to use them for this video.',motionNote:'This free local version uses subtle avatar motion, not cloud lip-sync.',create:'Create split-screen video',cancel:'Cancel',recent:'Recent Avatar videos',recentNote:'Saved projects and completed videos remain available after you reopen the app.',fullHistory:'Full history',progress:'Creating video'},
- ru:{back:'← Назад',included:'Бесплатный тест 720p · Полное качество в Basic, Pro и Business',title:'Аватар-комментатор',intro:'Сверху — ваше видео, снизу — фото-аватар. Добавьте текст и, при желании, свой записанный голос. Монтаж выполняется локально на устройстве.',plan:'Доступ',video:'1 · Исходное видео',photo:'2 · Фото аватара',text:'3 · Текст для озвучки',deviceVoice:'Голос устройства',deviceVoiceNote:'Откройте список и нажимайте на любой голос — он сразу говорит, а список остаётся открытым. Когда голос понравится, нажмите «Выбрать» справа именно в его строке.',chooseVoice:'Выберите голос',useVoice:'Выбрать',ownVoice:'Ваш голос для экспорта',ownVoiceNote:'Необязательно для теста. Загрузите аудио или запишите голос, если хотите слышать его в готовом видео.',audio:'Загрузить аудио голоса',record:'Записать голос',stop:'Остановить запись',consent:'Я подтверждаю, что это мой голос/фото или у меня есть разрешение использовать их в этом видео.',motionNote:'Эта бесплатная локальная версия делает лёгкое движение аватара без облачного lip-sync.',create:'Создать видео с двумя экранами',cancel:'Отмена',recent:'История Avatar',recentNote:'Проекты и готовые видео сохраняются и остаются после повторного входа в приложение.',fullHistory:'Вся история',progress:'Создание видео'},
- fr:{back:'← Retour',included:'Test gratuit 720p · Qualité complète avec Basic, Pro et Business',title:'Narrateur avatar',intro:'Votre vidéo en haut, votre avatar photo en bas. Ajoutez le texte et, si vous le souhaitez, votre propre voix enregistrée. Le montage reste local.',plan:'Accès',video:'1 · Vidéo source',photo:'2 · Photo avatar',text:'3 · Texte de narration',deviceVoice:'Voix de l’appareil',deviceVoiceNote:'Ouvrez la liste et touchez une voix pour l’écouter immédiatement. La liste reste ouverte jusqu’à ce que vous choisissiez une voix.',chooseVoice:'Choisir une voix',useVoice:'Choisir',ownVoice:'Votre voix pour l’export',ownVoiceNote:'Facultatif pour le test. Importez ou enregistrez votre voix pour l’inclure dans la vidéo finale.',audio:'Importer la voix',record:'Enregistrer la voix',stop:'Arrêter l’enregistrement',consent:'Je confirme que cette voix/photo m’appartient ou que j’ai l’autorisation de l’utiliser.',motionNote:'Cette version locale gratuite utilise un léger mouvement de l’avatar, sans lip-sync cloud.',create:'Créer la vidéo',cancel:'Annuler',recent:'Vidéos Avatar récentes',recentNote:'Les projets et vidéos terminées restent disponibles après la réouverture de l’application.',fullHistory:'Historique complet',progress:'Création de la vidéo'},
- uk:{back:'← Назад',included:'Безкоштовний тест 720p · Повна якість у Basic, Pro та Business',title:'Аватар-оповідач',intro:'Ваше відео зверху, фото-аватар знизу. Додайте текст і, за бажанням, власний записаний голос. Монтаж виконується локально.',plan:'Доступ',video:'1 · Вихідне відео',photo:'2 · Фото аватара',text:'3 · Текст озвучення',deviceVoice:'Голос пристрою',deviceVoiceNote:'Відкрийте список і натискайте на будь-який голос — він одразу говорить, а список залишається відкритим. Коли голос сподобається, натисніть «Обрати» праворуч у його рядку.',chooseVoice:'Оберіть голос',useVoice:'Обрати',ownVoice:'Ваш голос для експорту',ownVoiceNote:'Необов’язково для тесту. Завантажте або запишіть голос, якщо хочете чути його у готовому відео.',audio:'Завантажити голос',record:'Записати голос',stop:'Зупинити запис',consent:'Я підтверджую, що це мій голос/фото або маю дозвіл на їх використання.',motionNote:'Ця безкоштовна локальна версія робить легкий рух аватара без хмарного lip-sync.',create:'Створити відео',cancel:'Скасувати',recent:'Історія Avatar',recentNote:'Проєкти та готові відео зберігаються після повторного входу в застосунок.',fullHistory:'Уся історія',progress:'Створення відео'}
+ en:{back:'← Back',included:'Free 720p test · Full quality in Basic, Pro & Business',title:'Avatar Narrator',intro:'Put your video on top and your photo avatar below. Choose one narration source: a device voice or your own voice.',plan:'Access',video:'1 · Source video',photo:'2 · Your avatar photo',voiceSource:'3 · Choose one voice option',voiceSourceNote:'Use either a device voice or your own voice. You do not need both.',deviceOption:'Device voice',deviceOptionNote:'English, French and other installed voices',ownOption:'My voice',ownOptionNote:'Upload audio or record directly',text:'4 · Narration text',textNote:'Device voice reads this text. With My voice, keep it as your script/reference.',deviceVoice:'Device voice',deviceVoiceNote:'Open the list and tap any voice to hear it. Press Select on the voice you want to use in the finished video.',chooseVoice:'Choose a voice',useVoice:'Select',ownVoice:'My voice',ownVoiceNote:'Choose one: upload an existing audio file or record your narration here.',audio:'Upload voice audio',record:'Record voice',stop:'Stop recording',consent:'I confirm this is my voice/photo, or I have permission to use them for this video.',motionNote:'The local avatar uses subtle lower-face movement so the mouth area moves while narration plays. It is not full cloud lip-sync.',create:'Create split-screen video',cancel:'Cancel',recent:'Recent Avatar videos',recentNote:'Saved projects and completed videos remain available after you reopen the app.',fullHistory:'Full history',progress:'Creating video'},
+ ru:{back:'← Назад',included:'Бесплатный тест 720p · Полное качество в Basic, Pro и Business',title:'Аватар-комментатор',intro:'Сверху — ваше видео, снизу — фото-аватар. Выберите один вариант озвучки: голос устройства или свой голос.',plan:'Доступ',video:'1 · Исходное видео',photo:'2 · Фото аватара',voiceSource:'3 · Выберите один вариант голоса',voiceSourceNote:'Используйте либо голос устройства, либо свой голос. Оба сразу не нужны.',deviceOption:'Голос устройства',deviceOptionNote:'Английский, французский и другие установленные голоса',ownOption:'Мой голос',ownOptionNote:'Загрузить аудио или записать прямо здесь',text:'4 · Текст для озвучки',textNote:'Голос устройства читает этот текст. Для своего голоса текст можно использовать как сценарий.',deviceVoice:'Голос устройства',deviceVoiceNote:'Откройте список и нажимайте на любой голос — он сразу проигрывается. Нажмите «Выбрать» у нужного голоса, чтобы использовать его в готовом видео.',chooseVoice:'Выберите голос',useVoice:'Выбрать',ownVoice:'Мой голос',ownVoiceNote:'Выберите одно: загрузите готовое аудио или запишите озвучку прямо здесь.',audio:'Загрузить аудио голоса',record:'Записать голос',stop:'Остановить запись',consent:'Я подтверждаю, что это мой голос/фото или у меня есть разрешение использовать их в этом видео.',motionNote:'Локальная версия слегка двигает нижнюю часть лица, чтобы область рта двигалась во время озвучки. Это не полный облачный lip-sync.',create:'Создать видео с двумя экранами',cancel:'Отмена',recent:'История Avatar',recentNote:'Проекты и готовые видео сохраняются и остаются после повторного входа в приложение.',fullHistory:'Вся история',progress:'Создание видео'},
+ fr:{back:'← Retour',included:'Test gratuit 720p · Qualité complète avec Basic, Pro et Business',title:'Narrateur avatar',intro:'Votre vidéo en haut, votre avatar photo en bas. Choisissez une seule source de narration : une voix de l’appareil ou votre propre voix.',plan:'Accès',video:'1 · Vidéo source',photo:'2 · Photo avatar',voiceSource:'3 · Choisissez une option de voix',voiceSourceNote:'Utilisez soit une voix de l’appareil, soit votre propre voix. Les deux ne sont pas nécessaires.',deviceOption:'Voix de l’appareil',deviceOptionNote:'Voix anglaises, françaises et autres installées',ownOption:'Ma voix',ownOptionNote:'Importer un audio ou enregistrer directement',text:'4 · Texte de narration',textNote:'La voix de l’appareil lit ce texte. Avec votre propre voix, gardez-le comme script/référence.',deviceVoice:'Voix de l’appareil',deviceVoiceNote:'Ouvrez la liste et touchez une voix pour l’écouter. Appuyez sur Choisir pour l’utiliser dans la vidéo finale.',chooseVoice:'Choisir une voix',useVoice:'Choisir',ownVoice:'Ma voix',ownVoiceNote:'Choisissez une option : importez un fichier audio existant ou enregistrez votre narration ici.',audio:'Importer la voix',record:'Enregistrer la voix',stop:'Arrêter l’enregistrement',consent:'Je confirme que cette voix/photo m’appartient ou que j’ai l’autorisation de l’utiliser.',motionNote:'La version locale anime légèrement le bas du visage afin que la zone de la bouche bouge pendant la narration. Ce n’est pas un lip-sync cloud complet.',create:'Créer la vidéo',cancel:'Annuler',recent:'Vidéos Avatar récentes',recentNote:'Les projets et vidéos terminées restent disponibles après la réouverture de l’application.',fullHistory:'Historique complet',progress:'Création de la vidéo'},
+ uk:{back:'← Назад',included:'Безкоштовний тест 720p · Повна якість у Basic, Pro та Business',title:'Аватар-оповідач',intro:'Ваше відео зверху, фото-аватар знизу. Оберіть один варіант озвучення: голос пристрою або власний голос.',plan:'Доступ',video:'1 · Вихідне відео',photo:'2 · Фото аватара',voiceSource:'3 · Оберіть один варіант голосу',voiceSourceNote:'Використовуйте або голос пристрою, або власний голос. Обидва одночасно не потрібні.',deviceOption:'Голос пристрою',deviceOptionNote:'Англійські, французькі та інші встановлені голоси',ownOption:'Мій голос',ownOptionNote:'Завантажити аудіо або записати прямо тут',text:'4 · Текст озвучення',textNote:'Голос пристрою читає цей текст. Для власного голосу текст можна використовувати як сценарій.',deviceVoice:'Голос пристрою',deviceVoiceNote:'Відкрийте список і натискайте на будь-який голос для прослуховування. Натисніть «Обрати» біля потрібного голосу, щоб використати його в готовому відео.',chooseVoice:'Оберіть голос',useVoice:'Обрати',ownVoice:'Мій голос',ownVoiceNote:'Оберіть одне: завантажте готове аудіо або запишіть озвучення прямо тут.',audio:'Завантажити голос',record:'Записати голос',stop:'Зупинити запис',consent:'Я підтверджую, що це мій голос/фото або маю дозвіл на їх використання.',motionNote:'Локальна версія трохи рухає нижню частину обличчя, щоб область рота рухалася під час озвучення. Це не повний хмарний lip-sync.',create:'Створити відео',cancel:'Скасувати',recent:'Історія Avatar',recentNote:'Проєкти та готові відео зберігаються після повторного входу в застосунок.',fullHistory:'Уся історія',progress:'Створення відео'}
 };
 const msg={
- en:{free:'Free test · 720p',ready:'Ready to create. Your project is saved locally.',need:'Add a source video, avatar photo, narration text and confirm permission.',sample:'Hello. This is a preview of this device voice.',listening:'Previewing',chosen:'Selected',recorded:'Voice recorded locally',recording:'Recording…',micDenied:'Microphone permission was not granted. Upload an audio file instead.',processing:'Creating video locally…',preparing:'Preparing your saved project…',done:'Done · saved locally and added to History.',queued:'Saved. This job will resume automatically when Avatar Narrator is open again.',restored:'Restored from your last session',historyProcessing:'Processing / resumes automatically',historyQueued:'Queued / resumes automatically',historyDone:'Ready',historyError:'Needs retry',download:'Download',share:'Share',silent:'No recorded/uploaded narration was added, so the exported video will have no narration audio.',storageFail:'Could not save this project for recovery. Free some device/browser storage and try again.'},
- ru:{free:'Бесплатный тест · 720p',ready:'Готово к созданию. Проект сохранён локально.',need:'Добавьте видео, фото аватара, текст и подтвердите разрешение.',sample:'Здравствуйте. Это пример этого голоса устройства.',listening:'Прослушивается',chosen:'Выбран',recorded:'Голос записан локально',recording:'Запись…',micDenied:'Нет доступа к микрофону. Можно загрузить аудиофайл.',processing:'Создаю видео локально…',preparing:'Восстанавливаю сохранённый проект…',done:'Готово · видео сохранено и добавлено в Историю.',queued:'Проект сохранён. Задание автоматически продолжится, когда Avatar Narrator снова будет открыт.',restored:'Восстановлено из прошлого сеанса',historyProcessing:'Создаётся / продолжится автоматически',historyQueued:'В очереди / продолжится автоматически',historyDone:'Готово',historyError:'Нужно повторить',download:'Скачать',share:'Поделиться',silent:'Записанный или загруженный голос не добавлен — готовое видео будет без озвучки.',storageFail:'Не удалось сохранить проект для восстановления. Освободите немного памяти и попробуйте ещё раз.'},
- fr:{free:'Test gratuit · 720p',ready:'Prêt à créer. Le projet est enregistré localement.',need:'Ajoutez la vidéo, la photo, le texte et confirmez l’autorisation.',sample:'Bonjour. Voici un aperçu de cette voix.',listening:'Écoute',chosen:'Choisie',recorded:'Voix enregistrée localement',recording:'Enregistrement…',micDenied:'Accès au microphone refusé. Importez un fichier audio.',processing:'Création locale de la vidéo…',preparing:'Restauration du projet enregistré…',done:'Terminé · vidéo enregistrée et ajoutée à l’historique.',queued:'Projet enregistré. Le traitement reprendra automatiquement à la réouverture.',restored:'Restauré depuis la dernière session',historyProcessing:'Traitement / reprise automatique',historyQueued:'En attente / reprise automatique',historyDone:'Prêt',historyError:'À réessayer',download:'Télécharger',share:'Partager',silent:'Aucune narration enregistrée/importée : la vidéo exportée sera sans narration.',storageFail:'Impossible d’enregistrer ce projet pour reprise. Libérez de l’espace et réessayez.'},
- uk:{free:'Безкоштовний тест · 720p',ready:'Готово до створення. Проєкт збережено локально.',need:'Додайте відео, фото аватара, текст і підтвердьте дозвіл.',sample:'Вітаю. Це приклад цього голосу пристрою.',listening:'Прослуховується',chosen:'Обрано',recorded:'Голос записано локально',recording:'Запис…',micDenied:'Немає доступу до мікрофона. Можна завантажити аудіофайл.',processing:'Створюю відео локально…',preparing:'Відновлюю збережений проєкт…',done:'Готово · відео збережено й додано до Історії.',queued:'Проєкт збережено. Завдання автоматично продовжиться після відкриття Avatar Narrator.',restored:'Відновлено з минулого сеансу',historyProcessing:'Створюється / продовжиться автоматично',historyQueued:'У черзі / продовжиться автоматично',historyDone:'Готово',historyError:'Потрібно повторити',download:'Завантажити',share:'Поділитися',silent:'Записаний або завантажений голос не додано — готове відео буде без озвучення.',storageFail:'Не вдалося зберегти проєкт для відновлення. Звільніть трохи пам’яті та спробуйте ще раз.'}
+ en:{free:'Free test · 720p',ready:'Ready to create. Your project is saved locally.',need:'Add a video, avatar photo, choose one voice option, add narration text and confirm permission.',needDevice:'Select a device voice to use in the finished video.',needOwn:'Upload or record your own voice.',deviceUnsupported:'Device voice export is available in the Android app. Choose My voice in the browser.',sample:'Hello. This is a preview of this device voice.',listening:'Previewing',chosen:'Selected',recorded:'Voice recorded locally',recording:'Recording…',micDenied:'Microphone permission was not granted. Upload an audio file instead.',processing:'Creating video locally…',preparing:'Preparing your saved project…',synthesizing:'Creating narration from the selected device voice…',done:'Done · saved locally and added to History.',queued:'Saved. This job will resume automatically when Avatar Narrator is open again.',restored:'Restored from your last session',historyProcessing:'Processing / resumes automatically',historyQueued:'Queued / resumes automatically',historyDone:'Ready',historyError:'Needs retry',download:'Download',share:'Share',storageFail:'Could not save this project for recovery. Free some device/browser storage and try again.'},
+ ru:{free:'Бесплатный тест · 720p',ready:'Готово к созданию. Проект сохранён локально.',need:'Добавьте видео, фото аватара, выберите один вариант голоса, добавьте текст и подтвердите разрешение.',needDevice:'Выберите голос устройства для готового видео.',needOwn:'Загрузите или запишите свой голос.',deviceUnsupported:'Экспорт голоса устройства работает в Android-приложении. В браузере выберите «Мой голос».',sample:'Здравствуйте. Это пример этого голоса устройства.',listening:'Прослушивается',chosen:'Выбран',recorded:'Голос записан локально',recording:'Запись…',micDenied:'Нет доступа к микрофону. Можно загрузить аудиофайл.',processing:'Создаю видео локально…',preparing:'Подготавливаю сохранённый проект…',synthesizing:'Создаю озвучку выбранным голосом устройства…',done:'Готово · видео сохранено и добавлено в Историю.',queued:'Проект сохранён. Задание автоматически продолжится, когда Avatar Narrator снова будет открыт.',restored:'Восстановлено из прошлого сеанса',historyProcessing:'Создаётся / продолжится автоматически',historyQueued:'В очереди / продолжится автоматически',historyDone:'Готово',historyError:'Нужно повторить',download:'Скачать',share:'Поделиться',storageFail:'Не удалось сохранить проект для восстановления. Освободите немного памяти и попробуйте ещё раз.'},
+ fr:{free:'Test gratuit · 720p',ready:'Prêt à créer. Le projet est enregistré localement.',need:'Ajoutez une vidéo, une photo avatar, choisissez une option de voix, ajoutez le texte et confirmez l’autorisation.',needDevice:'Choisissez une voix de l’appareil pour la vidéo finale.',needOwn:'Importez ou enregistrez votre propre voix.',deviceUnsupported:'L’export avec une voix de l’appareil est disponible dans l’application Android. Dans le navigateur, choisissez Ma voix.',sample:'Bonjour. Voici un aperçu de cette voix.',listening:'Écoute',chosen:'Choisie',recorded:'Voix enregistrée localement',recording:'Enregistrement…',micDenied:'Accès au microphone refusé. Importez un fichier audio.',processing:'Création locale de la vidéo…',preparing:'Préparation du projet enregistré…',synthesizing:'Création de la narration avec la voix sélectionnée…',done:'Terminé · vidéo enregistrée et ajoutée à l’historique.',queued:'Projet enregistré. Le traitement reprendra automatiquement à la réouverture.',restored:'Restauré depuis la dernière session',historyProcessing:'Traitement / reprise automatique',historyQueued:'En attente / reprise automatique',historyDone:'Prêt',historyError:'À réessayer',download:'Télécharger',share:'Partager',storageFail:'Impossible d’enregistrer ce projet pour reprise. Libérez de l’espace et réessayez.'},
+ uk:{free:'Безкоштовний тест · 720p',ready:'Готово до створення. Проєкт збережено локально.',need:'Додайте відео, фото аватара, оберіть один варіант голосу, додайте текст і підтвердьте дозвіл.',needDevice:'Оберіть голос пристрою для готового відео.',needOwn:'Завантажте або запишіть власний голос.',deviceUnsupported:'Експорт голосу пристрою працює в Android-застосунку. У браузері оберіть «Мій голос».',sample:'Вітаю. Це приклад цього голосу пристрою.',listening:'Прослуховується',chosen:'Обрано',recorded:'Голос записано локально',recording:'Запис…',micDenied:'Немає доступу до мікрофона. Можна завантажити аудіофайл.',processing:'Створюю відео локально…',preparing:'Підготовка збереженого проєкту…',synthesizing:'Створюю озвучення обраним голосом пристрою…',done:'Готово · відео збережено й додано до Історії.',queued:'Проєкт збережено. Завдання автоматично продовжиться після відкриття Avatar Narrator.',restored:'Відновлено з минулого сеансу',historyProcessing:'Створюється / продовжиться автоматично',historyQueued:'У черзі / продовжиться автоматично',historyDone:'Готово',historyError:'Потрібно повторити',download:'Завантажити',share:'Поділитися',storageFail:'Не вдалося зберегти проєкт для відновлення. Звільніть трохи пам’яті та спробуйте ще раз.'}
 }[locale];
 document.querySelectorAll('[data-av]').forEach(el=>{const v=(dict[locale]||dict.en)[el.dataset.av];if(v)el.textContent=v;});
 
@@ -22,15 +22,15 @@ const DRAFT_KEY='vu_avatar_draft_v2',JOBS_KEY='vu_avatar_jobs_v2';
 const policy={trial:{w:720,h:1280,label:'Free test · 720p'},basic:{w:720,h:1280,label:'Basic · 720p'},pro:{w:1080,h:1920,label:'Pro · 1080p'},business:{w:2160,h:3840,label:'Business · 4K'}};
 const inputIds={video:'avatarVideo',photo:'avatarPhoto',voice:'avatarAudio'};
 const savedIds={video:'avatarVideoSaved',photo:'avatarPhotoSaved',voice:'avatarAudioSaved'};
-let plan='trial',engine=null,busy=false,cancelled=false,leaving=false,activeJobId=null,recordStream=null,recorder=null,recordChunks=[],recordedVoice=null,recordStartedAt=0,recordTimer=null;
-let restored={video:null,photo:null,voice:null},chosenVoiceMeta=null;
+let plan='trial',engine=null,busy=false,cancelled=false,leaving=false,activeJobId=null,recordStream=null,recorder=null,recordChunks=[],recordedVoice=null,recordStartedAt=0,recordTimer=null,voiceMode=null;
+let restored={video:null,photo:null,voice:null},chosenVoiceMeta=null,currentProgress=0;
 const urls=[];
 const token=localStorage.getItem('vv_token')||'';
 const status=s=>$('avatarStatus').textContent=s;
 const voiceStatus=s=>$('voiceStatus').textContent=s;
 function setProgress(value,visible=true){
  const n=Math.max(0,Math.min(100,Math.round(Number(value)||0))),box=$('avatarProgress');
- if(!box)return;
+ currentProgress=n;if(!box)return;
  box.hidden=!visible;$('avatarProgressPercent').textContent=n+'%';$('avatarProgressBar').style.width=n+'%';
 }
 const u=b=>{const x=URL.createObjectURL(b);urls.push(x);return x;};
@@ -40,7 +40,7 @@ const jobs=()=>readJson(JOBS_KEY,[]).slice(0,30);
 function saveJobs(list){writeJson(JOBS_KEY,list.slice(0,30));}
 function upsertJob(job){const list=jobs(),i=list.findIndex(x=>x.id===job.id);if(i>=0)list[i]=job;else list.unshift(job);saveJobs(list);renderAvatarHistory();return job;}
 function patchJob(id,patch){const list=jobs(),i=list.findIndex(x=>x.id===id);if(i<0)return null;list[i]={...list[i],...patch,updatedAt:new Date().toISOString()};saveJobs(list);renderAvatarHistory();return list[i];}
-function draft(){return readJson(DRAFT_KEY,{text:'',consent:false,files:{},voice:null,updatedAt:null});}
+function draft(){return readJson(DRAFT_KEY,{text:'',consent:false,files:{},voice:null,voiceMode:null,updatedAt:null});}
 function saveDraft(patch={}){const d=draft(),next={...d,...patch,files:{...(d.files||{}),...(patch.files||{})},updatedAt:new Date().toISOString()};writeJson(DRAFT_KEY,next);return next;}
 function fileFor(kind){return $(inputIds[kind])?.files?.[0]||restored[kind]||null;}
 function noteFile(kind,name,restoredFlag=false){const el=$(savedIds[kind]);if(el)el.textContent=name?(restoredFlag?msg.restored+' · ':'')+name:'';}
@@ -67,6 +67,8 @@ async function restoreDraft(){
   restored[kind]=file;noteFile(kind,file.name,true);previewBlob(kind,file);
   if(kind==='voice')voiceStatus(msg.restored+' · '+file.name);
  }
+ const inferred=d.voiceMode||((restored.voice||d.files?.voice)?'own':(chosenVoiceMeta?'device':null));
+ setVoiceMode(inferred,false);
  updateReady();renderVoicePicker();
 }
 async function account(){
@@ -79,10 +81,28 @@ async function account(){
  updateReady();
 }
 function updateReady(){
- const ready=!!policy[plan]&&!!fileFor('video')&&!!fileFor('photo')&&!!$('avatarText').value.trim()&&$('voiceConsent').checked;
+ const base=!!policy[plan]&&!!fileFor('video')&&!!fileFor('photo')&&!!$('avatarText').value.trim()&&$('voiceConsent').checked;
+ const deviceReady=voiceMode==='device'&&!!chosenVoiceMeta&&!!window.AndroidBridge?.synthesizeTtsVoice;
+ const ownReady=voiceMode==='own'&&!!fileFor('voice');
+ const ready=base&&(deviceReady||ownReady);
  $('avatarGenerate').disabled=busy||!ready;
- $('avatarReadyHint').textContent=ready?msg.ready:msg.need;
+ let hint=msg.need;
+ if(base&&voiceMode==='device'&&!chosenVoiceMeta)hint=msg.needDevice;
+ else if(base&&voiceMode==='device'&&chosenVoiceMeta&&!window.AndroidBridge?.synthesizeTtsVoice)hint=msg.deviceUnsupported;
+ else if(base&&voiceMode==='own'&&!fileFor('voice'))hint=msg.needOwn;
+ else if(ready)hint=msg.ready;
+ $('avatarReadyHint').textContent=hint;
 }
+function setVoiceMode(mode,persist=true){
+ voiceMode=mode==='device'||mode==='own'?mode:null;
+ $('voiceModeDevice').checked=voiceMode==='device';$('voiceModeOwn').checked=voiceMode==='own';
+ $('deviceVoicePanel').hidden=voiceMode!=='device';$('ownVoicePanel').hidden=voiceMode!=='own';
+ document.querySelectorAll('.voice-source-card').forEach(card=>card.classList.toggle('selected',card.querySelector('input')?.checked));
+ if(persist)saveDraft({voiceMode});stopVoicePreview();closeVoicePicker();updateReady();
+}
+$('voiceModeDevice').addEventListener('change',()=>{if($('voiceModeDevice').checked)setVoiceMode('device');});
+$('voiceModeOwn').addEventListener('change',()=>{if($('voiceModeOwn').checked)setVoiceMode('own');});
+
 function voiceKey(v){return v?[v.name||'',v.lang||'',v.voiceURI||''].join('|'):'';}
 function nativeVoices(){
  try{
@@ -119,7 +139,7 @@ function speakVoice(voice,row){
 }
 function chooseVoice(voice){
  chosenVoiceMeta={key:voiceKey(voice),name:voice.name,lang:voice.lang||'',voiceURI:voice.voiceURI||'',native:!!voice.native};
- saveDraft({voice:chosenVoiceMeta});$('voicePickerLabel').textContent=chosenVoiceMeta.name+' · '+chosenVoiceMeta.lang;$('voicePreviewStatus').textContent=msg.chosen+': '+chosenVoiceMeta.name;stopVoicePreview();closeVoicePicker();renderVoicePicker();
+ saveDraft({voice:chosenVoiceMeta,voiceMode:'device'});voiceMode='device';$('voiceModeDevice').checked=true;$('voiceModeOwn').checked=false;$('deviceVoicePanel').hidden=false;$('ownVoicePanel').hidden=true;document.querySelectorAll('.voice-source-card').forEach(card=>card.classList.toggle('selected',card.querySelector('input')?.checked));$('voicePickerLabel').textContent=chosenVoiceMeta.name+' · '+chosenVoiceMeta.lang;$('voicePreviewStatus').textContent=msg.chosen+': '+chosenVoiceMeta.name;stopVoicePreview();closeVoicePicker();renderVoicePicker();updateReady();
 }
 function renderVoicePicker(){
  const menu=$('voicePickerMenu');if(!menu)return;const voices=allVoices().slice();menu.replaceChildren();
@@ -143,7 +163,7 @@ $('avatarPhoto').onchange=async()=>{const f=$('avatarPhoto').files[0];if(f){rest
 let textTimer;
 $('avatarText').oninput=()=>{clearTimeout(textTimer);textTimer=setTimeout(()=>saveDraft({text:$('avatarText').value}),120);updateReady();};
 $('voiceConsent').onchange=()=>{saveDraft({consent:$('voiceConsent').checked});updateReady();};
-$('avatarAudio').onchange=async()=>{recordedVoice=null;const f=$('avatarAudio').files[0];if(f){restored.voice=f;voiceStatus(f.name);await persistDraftFile('voice',f);}updateReady();};
+$('avatarAudio').onchange=async()=>{recordedVoice=null;const f=$('avatarAudio').files[0];if(f){voiceMode='own';$('voiceModeOwn').checked=true;$('voiceModeDevice').checked=false;$('ownVoicePanel').hidden=false;$('deviceVoicePanel').hidden=true;document.querySelectorAll('.voice-source-card').forEach(card=>card.classList.toggle('selected',card.querySelector('input')?.checked));restored.voice=f;voiceStatus(f.name);saveDraft({voiceMode:'own'});await persistDraftFile('voice',f);}updateReady();};
 
 $('recordVoice').onclick=async()=>{
  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)return voiceStatus(msg.micDenied);
@@ -156,7 +176,7 @@ $('recordVoice').onclick=async()=>{
    clearInterval(recordTimer);recordTimer=null;const type=recorder.mimeType||recordChunks[0]?.type||'audio/webm';
    recordStream?.getTracks().forEach(t=>t.stop());recordStream=null;$('recordVoice').disabled=false;$('stopVoice').disabled=true;
    if(!recordChunks.length){voiceStatus(msg.micDenied);return;}
-   recordedVoice=new File(recordChunks,'VideoUniquifier-avatar-voice.'+(type.includes('mp4')?'m4a':'webm'),{type:type.split(';')[0]});restored.voice=recordedVoice;
+   recordedVoice=new File(recordChunks,'VideoUniquifier-avatar-voice.'+(type.includes('mp4')?'m4a':'webm'),{type:type.split(';')[0]});voiceMode='own';$('voiceModeOwn').checked=true;$('voiceModeDevice').checked=false;$('ownVoicePanel').hidden=false;$('deviceVoicePanel').hidden=true;document.querySelectorAll('.voice-source-card').forEach(card=>card.classList.toggle('selected',card.querySelector('input')?.checked));saveDraft({voiceMode:'own'});restored.voice=recordedVoice;
    voiceStatus(msg.recorded+' · '+(recordedVoice.size/1048576).toFixed(2)+' MB');await persistDraftFile('voice',recordedVoice);updateReady();
   };
   recorder.start(250);recordStartedAt=Date.now();$('stopVoice').disabled=false;
@@ -178,30 +198,79 @@ async function addGlobalHistory(job,file){
  const filtered=list.filter(x=>x.id!==item.id);filtered.unshift(item);writeJson('vv_history',filtered.slice(0,100));
  if(token)fetch('/api/history',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({items:[item]})}).catch(()=>{});
 }
+const ttsWaiters=new Map();
+window.vuNativeTtsReady=(requestId,ok)=>{
+ const waiter=ttsWaiters.get(requestId);if(!waiter)return;
+ ttsWaiters.delete(requestId);ok?waiter.resolve(true):waiter.reject(Error('DEVICE_TTS_FAILED'));
+};
+function decodeBase64Chunk(value){
+ const raw=atob(value||''),bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);return bytes;
+}
+async function synthesizeDeviceVoice(meta,text){
+ const bridge=window.AndroidBridge;
+ if(!bridge?.synthesizeTtsVoice||!bridge?.getTtsAudioSize||!bridge?.getTtsAudioChunk)throw Error(msg.deviceUnsupported);
+ const requestId='tts-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
+ const ready=new Promise((resolve,reject)=>{
+  const timer=setTimeout(()=>{ttsWaiters.delete(requestId);reject(Error('DEVICE_TTS_TIMEOUT'));},45000);
+  ttsWaiters.set(requestId,{resolve:v=>{clearTimeout(timer);resolve(v);},reject:e=>{clearTimeout(timer);reject(e);}});
+ });
+ status(msg.synthesizing);setProgress(Math.max(currentProgress,7),true);
+ if(!bridge.synthesizeTtsVoice(meta.voiceURI||meta.name,text,requestId)){ttsWaiters.delete(requestId);throw Error('DEVICE_TTS_FAILED');}
+ await ready;
+ const size=Math.max(0,Number(bridge.getTtsAudioSize(requestId))||0);if(!size)throw Error('DEVICE_TTS_EMPTY');
+ const chunks=[];for(let offset=0;offset<size;offset+=65536){
+  const b64=bridge.getTtsAudioChunk(requestId,offset,Math.min(65536,size-offset));if(!b64)throw Error('DEVICE_TTS_READ');
+  chunks.push(decodeBase64Chunk(b64));
+ }
+ try{bridge.releaseTtsAudio?.(requestId);}catch(_){}
+ return new File(chunks,'VideoUniquifier-device-voice.wav',{type:'audio/wav'});
+}
+
 async function createJob(){
- const video=fileFor('video'),photo=fileFor('photo'),voice=fileFor('voice'),id='avatar-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),p=policy[plan]||policy.trial;
- const job={id,status:'queued',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),sourceName:video.name||'source-video',photoName:photo.name||'avatar-photo',voiceName:voice?.name||null,text:$('avatarText').value.trim(),selectedDeviceVoice:chosenVoiceMeta,plan,resolution:p.w+'×'+p.h,sourceKey:id+'/source',photoKey:id+'/photo',voiceKey:voice?id+'/voice':null,outputKey:id+'/output'};
+ const video=fileFor('video'),photo=fileFor('photo'),ownVoice=voiceMode==='own'?fileFor('voice'):null,id='avatar-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),p=policy[plan]||policy.trial;
+ const job={id,status:'queued',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),sourceName:video.name||'source-video',photoName:photo.name||'avatar-photo',voiceMode,voiceName:ownVoice?.name||null,text:$('avatarText').value.trim(),selectedDeviceVoice:voiceMode==='device'?chosenVoiceMeta:null,plan,resolution:p.w+'×'+p.h,sourceKey:id+'/source',photoKey:id+'/photo',voiceKey:ownVoice?id+'/voice':null,outputKey:id+'/output'};
  try{
-  await media.put(job.sourceKey,video);await media.put(job.photoKey,photo);if(voice)await media.put(job.voiceKey,voice);
+  await media.put(job.sourceKey,video);await media.put(job.photoKey,photo);if(ownVoice)await media.put(job.voiceKey,ownVoice);
  }catch(_){throw Error(msg.storageFail);}
  upsertJob(job);return job;
 }
 async function loadJobFile(job,key,name,type){const blob=await media?.get(job[key]);return blob?new File([blob],name,{type:blob.type||type}):null;}
 async function processJob(job){
  if(busy)return;busy=true;cancelled=false;leaving=false;activeJobId=job.id;patchJob(job.id,{status:'processing'});$('avatarGenerate').disabled=true;$('avatarCancel').disabled=false;$('avatarResult').replaceChildren();setProgress(0,true);status(msg.preparing);
+ let progressTimer=null;
  try{
-  const video=await loadJobFile(job,'sourceKey',job.sourceName,'video/mp4'),photo=await loadJobFile(job,'photoKey',job.photoName,'image/png'),voice=job.voiceKey?await loadJobFile(job,'voiceKey',job.voiceName||'voice','audio/webm'):null;
+  const video=await loadJobFile(job,'sourceKey',job.sourceName,'video/mp4'),photo=await loadJobFile(job,'photoKey',job.photoName,'image/png');
+  let voice=job.voiceMode==='own'&&job.voiceKey?await loadJobFile(job,'voiceKey',job.voiceName||'voice','audio/webm'):null;
   if(!video||!photo)throw Error('Saved project media is unavailable.');
+  if(job.voiceMode==='device'){
+   if(!job.selectedDeviceVoice)throw Error(msg.needDevice);
+   voice=await synthesizeDeviceVoice(job.selectedDeviceVoice,job.text||'');
+  }
+  if(!voice)throw Error(job.voiceMode==='device'?msg.needDevice:msg.needOwn);
   const duration=await mediaDuration(video);if(!duration||duration>600)throw Error('Keep source video at 10 minutes or less for this local version.');
-  const p=policy[job.plan]||policy.trial;patchJob(job.id,{durationSeconds:Math.ceil(duration),resolution:p.w+'×'+p.h});setProgress(5,true);engine=await createEngine();engine.on?.('progress',({progress})=>{const pct=10+Math.max(0,Math.min(1,Number(progress)||0))*84;setProgress(pct,true);status((voice?msg.processing:msg.silent)+' '+Math.round(pct)+'%');});if(cancelled)throw Error('CANCELLED');
-  await engine.writeFile('source',new Uint8Array(await video.arrayBuffer()));await engine.writeFile('avatar',new Uint8Array(await photo.arrayBuffer()));if(voice)await engine.writeFile('voice',new Uint8Array(await voice.arrayBuffer()));setProgress(10,true);
-  const top=Math.round(p.h*.58/2)*2,bottom=p.h-top,filter=`[0:v]scale=${p.w}:${top}:force_original_aspect_ratio=increase,crop=${p.w}:${top}[top];[1:v]scale=${p.w}:${bottom}:force_original_aspect_ratio=increase,crop=${p.w}:${bottom},zoompan=z='min(zoom+0.00025,1.035)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=${p.w}x${bottom}:fps=30[avatar];[top][avatar]vstack=inputs=2[v]`;
-  status(voice?msg.processing:msg.silent);const args=['-i','source','-loop','1','-framerate','30','-i','avatar'];if(voice)args.push('-i','voice');args.push('-filter_complex',filter,'-map','[v]');if(voice)args.push('-map','2:a:0');else args.push('-an');args.push('-t',String(duration),'-c:v','libx264','-preset','ultrafast','-crf',p.w>=2160?'25':p.w>=1080?'23':'22','-pix_fmt','yuv420p');if(voice)args.push('-c:a','aac','-b:a','160k');args.push('-movflags','+faststart','avatar-output.mp4');
-  const rc=await engine.exec(args);if(rc)throw Error('ENCODE');setProgress(95,true);const bytes=await engine.readFile('avatar-output.mp4'),file=new File([bytes],'VideoUniquifier-Avatar-'+Date.now()+'.mp4',{type:'video/mp4'});
+  const p=policy[job.plan]||policy.trial;patchJob(job.id,{durationSeconds:Math.ceil(duration),resolution:p.w+'×'+p.h});setProgress(Math.max(currentProgress,8),true);
+  engine=await createEngine();
+  engine.on?.('progress',({progress})=>{const pct=10+Math.max(0,Math.min(1,Number(progress)||0))*84;if(pct>currentProgress)setProgress(pct,true);status(msg.processing+' '+Math.round(Math.max(pct,currentProgress))+'%');});
+  if(cancelled)throw Error('CANCELLED');
+  await engine.writeFile('source',new Uint8Array(await video.arrayBuffer()));
+  await engine.writeFile('avatar',new Uint8Array(await photo.arrayBuffer()));
+  await engine.writeFile('voice',new Uint8Array(await voice.arrayBuffer()));setProgress(10,true);
+
+  const top=Math.round(p.h*.58/2)*2,bottom=p.h-top,fps=24;
+  const mouthW=Math.max(80,Math.round(p.w*.44/2)*2),mouthH=Math.max(24,Math.round(bottom*.12/2)*2),mouthX=Math.round((p.w-mouthW)/2),mouthY=Math.max(0,Math.min(bottom-mouthH,Math.round(bottom*.55)));
+  const shift=Math.max(1,Math.round(bottom*.005));
+  const filter=`[0:v]scale=${p.w}:${top}:force_original_aspect_ratio=increase,crop=${p.w}:${top},fps=${fps}[top];[1:v]scale=${p.w}:${bottom}:force_original_aspect_ratio=increase,crop=${p.w}:${bottom},fps=${fps},split=2[avatarbase][mouthsrc];[mouthsrc]crop=${mouthW}:${mouthH}:${mouthX}:${mouthY}[mouth];[avatarbase][mouth]overlay=${mouthX}:y='${mouthY}+${shift}*sin(2*PI*t*3.2)'[avatar];[top][avatar]vstack=inputs=2[v]`;
+
+  const estimatedSeconds=Math.max(18,duration*(p.w>=2160?9:p.w>=1080?5:2.8)),started=Date.now();
+  progressTimer=setInterval(()=>{if(!busy)return;const elapsed=(Date.now()-started)/1000,estimated=10+Math.min(80,elapsed/estimatedSeconds*80);if(estimated>currentProgress)setProgress(estimated,true);status(msg.processing+' '+currentProgress+'%');},900);
+
+  const args=['-i','source','-loop','1','-framerate',String(fps),'-i','avatar','-i','voice','-filter_complex',filter,'-map','[v]','-map','2:a:0','-t',String(duration),'-c:v','libx264','-preset','ultrafast','-crf',p.w>=2160?'25':p.w>=1080?'23':'22','-pix_fmt','yuv420p','-c:a','aac','-b:a','160k','-movflags','+faststart','avatar-output.mp4'];
+  const rc=await engine.exec(args);clearInterval(progressTimer);progressTimer=null;if(rc)throw Error('ENCODE');
+  setProgress(95,true);const bytes=await engine.readFile('avatar-output.mp4'),file=new File([bytes],'VideoUniquifier-Avatar-'+Date.now()+'.mp4',{type:'video/mp4'});
   await media.put(job.outputKey,file);setProgress(98,true);await addGlobalHistory({...job,durationSeconds:Math.ceil(duration),resolution:p.w+'×'+p.h},file);patchJob(job.id,{status:'done',outputName:file.name,durationSeconds:Math.ceil(duration),resolution:p.w+'×'+p.h,finishedAt:new Date().toISOString()});
-  await resultControls(file);try{await saveLocal(file);}catch(e){console.warn('[avatar autosave]',e);}setProgress(100,true);
-  status(msg.done);
+  await resultControls(file);try{await saveLocal(file);}catch(e){console.warn('[avatar autosave]',e);}setProgress(100,true);status(msg.done);
  }catch(e){
+  clearInterval(progressTimer);
   if(leaving){patchJob(job.id,{status:'queued'});}
   else if(cancelled||e.message==='CANCELLED'){patchJob(job.id,{status:'canceled'});setProgress(0,false);status('Canceled');}
   else{console.warn(e);patchJob(job.id,{status:'error',error:String(e.message||e)});setProgress(0,false);status(String(e.message||'Could not create the avatar video.'));}

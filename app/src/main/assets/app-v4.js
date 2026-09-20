@@ -18,7 +18,7 @@
     languageAuto:'Language: Auto',localProcessing:'Video processing runs locally on your device.',secureHttps:'HTTPS required for online services',signIn:'Sign in',signOut:'Sign out',
     trialPill:'2 free videos included',heroText:'Upload once, choose your variations, and create privacy-first results locally on your device.',statProcessed:'Processed',statProcessedSub:'outputs created',statRemaining:'Remaining',statPlan:'Current plan',trialStatus:'No card required',
     newProject:'New variation',newProjectSub:'Choose one or more videos. Completed files are saved automatically.',engineStandby:'Engine standby',engineLoading:'Loading engine…',engineReady:'Engine ready',chooseVideos:'Choose videos',chooseVideosSub:'One or multiple files',noFiles:'No videos selected yet.',
-    variantsLabel:'Variations per video',modeLabel:'Processing mode',formatLabel:'Video format',qualityLabel:'Output quality',estimatedCost:'Estimated processing cost',startProcessing:'Create variations',cancel:'Cancel',
+    variantsLabel:'Variations per video',modeLabel:'Processing mode',formatLabel:'Video format',qualityLabel:'Output resolution',estimatedCost:'Estimated processing cost',startProcessing:'Create variations',cancel:'Cancel',
     preparing:'Preparing your video',preparingSub:'Getting everything ready…',stageUpload:'Load',stageProcess:'Process',stageSave:'Save',stageDone:'Done',readyTitle:'Done',readyText:'Completed files were saved automatically.',viewHistory:'View history',recentIssue:'Recent issue',
     historyTitle:'Download history',historySub:'Your recent processed files and download status.',clearHistory:'Clear history',historyEmptyTitle:'No processed videos yet',historyEmptyText:'Your completed videos will appear here.',
     analyticsTitle:'Analytics',analyticsSub:'Track usage, output volume, and processing reliability.',creditsUsed:'Credits used',outputsCreated:'Outputs created',successRate:'Success rate',browserCompatibility:'Browser compatibility',browserCompatibilityText:'The interface is tested in Chromium, Firefox, WebKit, and mobile browser profiles. Codec support can vary by device.',
@@ -51,18 +51,21 @@
   function planName(id){return id==='basic'?'Basic':id==='pro'?'Pro':id==='business'?'Business':'Free trial';}
   function activePlan(){const u=usage();return u.active&&['basic','pro','business'].includes(u.plan)?u.plan:'trial';}
   function policyFor(plan){
-    if(plan==='business')return{modes:['gentle','balanced','dynamic'],quality:'2160',maxVariants:15,label:'Business: Gentle + Balance + Dynamic · 4K · up to 15 variations'};
-    if(plan==='pro')return{modes:['gentle','balanced'],quality:'1080',maxVariants:10,label:'Pro: Gentle + Balance · 1080p · up to 10 variations'};
-    if(plan==='basic')return{modes:['gentle'],quality:'720',maxVariants:5,label:'Basic: Gentle · 720p · up to 5 variations'};
-    const u=usage(),files=core.getFiles(),balancePreview=u.remaining===2&&files.length<=1;
-    return{modes:balancePreview?['gentle','balanced']:['gentle'],quality:'720',maxVariants:5,label:balancePreview?'Free trial: Gentle + one Balance preview · 720p':'Free trial: Gentle · 720p'};
+    if(plan==='business')return{modes:['gentle','balanced','dynamic'],qualities:['2160'],maxVariants:15,label:'Business: Gentle + Balance + Dynamic · 4K · up to 15 variations'};
+    if(plan==='pro')return{modes:['gentle','balanced'],qualities:['1080'],maxVariants:10,label:'Pro: Gentle + Balance · 1080p · up to 10 variations'};
+    if(plan==='basic')return{modes:['gentle'],qualities:['720'],maxVariants:5,label:'Basic: Gentle · 720p · up to 5 variations'};
+    return{modes:['gentle','balanced','dynamic'],qualities:['720','1080','2160'],maxVariants:5,label:'Free trial: Gentle + Balance + Dynamic · 720p / 1080p / 4K'};
   }
   function enforcePlanControls(){
-    const policy=policyFor(activePlan()),mode=$('mode'),quality=$('quality'),variants=$('variantCount');
+    const policy=policyFor(activePlan()),mode=$('mode'),quality=$('quality'),variants=$('variantCount'),allowedQualities=policy.qualities||['720'];
     Array.from(mode.options).forEach(o=>o.disabled=!policy.modes.includes(o.value));
     if(!policy.modes.includes(mode.value))mode.value=policy.modes[0];
-    Array.from(quality.options).forEach(o=>o.disabled=o.value!==policy.quality);
-    quality.value=policy.quality;quality.disabled=true;Array.from(variants.options).forEach(o=>o.disabled=Number(o.value)>policy.maxVariants);if(Number(variants.value)>policy.maxVariants)variants.value=String(policy.maxVariants);$('planAccessHint').textContent=policy.label;
+    Array.from(quality.options).forEach(o=>o.disabled=!allowedQualities.includes(o.value));
+    if(!allowedQualities.includes(quality.value))quality.value=allowedQualities[0];
+    quality.disabled=allowedQualities.length===1;
+    Array.from(variants.options).forEach(o=>o.disabled=Number(o.value)>policy.maxVariants);
+    if(Number(variants.value)>policy.maxVariants)variants.value=String(policy.maxVariants);
+    $('planAccessHint').textContent=policy.label;
   }
 
   function renderDashboard(){
