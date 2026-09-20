@@ -6,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {installEmailAuth} from './email-auth.js';
 import {
-  initDb,upsertUser,getUser,publicUser,setStripeCustomer,applySubscription,updateSubscriptionByStripeId,
+  initDb,upsertUser,getUser,publicUser,setStripeCustomer,applySubscription,applyLifetime,updateSubscriptionByStripeId,
   resetPeriodUsageBySubscription,consumeUsage,addHistory,listHistory,clearHistory,addEvent,getAnalytics
 } from './db.js';
 
@@ -27,7 +27,8 @@ const googleJwks=createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v
 const plans={
   basic:{name:'Basic',limit:750,amount:9,priceId:process.env.STRIPE_PRICE_BASIC||'',paymentLink:process.env.STRIPE_PAYMENT_LINK_BASIC||''},
   pro:{name:'Pro',limit:2250,amount:24,priceId:process.env.STRIPE_PRICE_PRO||'',paymentLink:process.env.STRIPE_PAYMENT_LINK_PRO||''},
-  business:{name:'Business',limit:15000,amount:99,priceId:process.env.STRIPE_PRICE_BUSINESS||'',paymentLink:process.env.STRIPE_PAYMENT_LINK_BUSINESS||''}
+  business:{name:'Business',limit:15000,amount:99,priceId:process.env.STRIPE_PRICE_BUSINESS||'',paymentLink:process.env.STRIPE_PAYMENT_LINK_BUSINESS||''},
+  lifetime:{name:'Lifetime',limit:null,amount:2999,currency:'eur',priceId:process.env.STRIPE_PRICE_LIFETIME||'',oneTime:true}
 };
 
 function fromUnix(v){return v?new Date(Number(v)*1000):null;}
@@ -65,12 +66,26 @@ app.use('/api',(req,res,next)=>{
   next();
 });
 
+async function grantLifetimeFromCheckoutSession(s){
+  const userId=s.metadata?.userId||s.client_reference_id,plan=s.metadata?.plan;
+  if(plan!=='lifetime'||!userId||s.payment_status!=='paid')return false;
+  const previousSubscriptionId=s.metadata?.previousSubscriptionId||'';
+  await applyLifetime({userId,customerId:String(s.customer||'')});
+  if(previousSubscriptionId&&stripe){try{await stripe.subscriptions.cancel(previousSubscriptionId);}catch(e){console.warn('[lifetime cancel previous subscription]',e.message);}}
+  return true;
+}
+
 app.post('/api/webhooks/stripe',express.raw({type:'application/json'}),async(req,res)=>{
   if(!process.env.STRIPE_WEBHOOK_SECRET)return res.status(503).send('Stripe webhook is not configured');let event;
   try{event=stripeWebhookClient.webhooks.constructEvent(req.body,req.headers['stripe-signature'],process.env.STRIPE_WEBHOOK_SECRET);}catch(e){return res.status(400).send(`Webhook signature error: ${e.message}`);}
   try{
-    if(event.type==='checkout.session.completed'){const s=event.data.object,userId=s.metadata?.userId||s.client_reference_id,plan=s.metadata?.plan;if(userId&&plans[plan])await applySubscription({userId,customerId:String(s.customer||''),subscriptionId:String(s.subscription||''),plan,status:'active',currentPeriodEnd:null,markSubscribed:true});}
-    if(event.type==='customer.subscription.created'||event.type==='customer.subscription.updated'){const sub=event.data.object,userId=sub.metadata?.userId,plan=sub.metadata?.plan;if(userId&&plans[plan])await applySubscription({userId,customerId:String(sub.customer||''),subscriptionId:sub.id,plan,status:sub.status,currentPeriodEnd:fromUnix(sub.current_period_end),markSubscribed:true});else await updateSubscriptionByStripeId({subscriptionId:sub.id,status:sub.status,currentPeriodEnd:fromUnix(sub.current_period_end)});}
+    if(event.type==='checkout.session.completed'){
+      const s=event.data.object,userId=s.metadata?.userId||s.client_reference_id,plan=s.metadata?.plan;
+      if(plan==='lifetime')await grantLifetimeFromCheckoutSession(s);
+      else if(userId&&plans[plan]&&!plans[plan].oneTime)await applySubscription({userId,customerId:String(s.customer||''),subscriptionId:String(s.subscription||''),plan,status:'active',currentPeriodEnd:null,markSubscribed:true});
+    }
+    if(event.type==='checkout.session.async_payment_succeeded')await grantLifetimeFromCheckoutSession(event.data.object);
+    if(event.type==='customer.subscription.created'||event.type==='customer.subscription.updated'){const sub=event.data.object,userId=sub.metadata?.userId,plan=sub.metadata?.plan;if(userId&&plans[plan]&&!plans[plan].oneTime)await applySubscription({userId,customerId:String(sub.customer||''),subscriptionId:sub.id,plan,status:sub.status,currentPeriodEnd:fromUnix(sub.current_period_end),markSubscribed:true});else await updateSubscriptionByStripeId({subscriptionId:sub.id,status:sub.status,currentPeriodEnd:fromUnix(sub.current_period_end)});}
     if(event.type==='customer.subscription.deleted'){const sub=event.data.object;await updateSubscriptionByStripeId({subscriptionId:sub.id,status:'canceled',currentPeriodEnd:fromUnix(sub.current_period_end)});}
     if(event.type==='invoice.paid'){const invoice=event.data.object,subscriptionId=typeof invoice.subscription==='string'?invoice.subscription:invoice.subscription?.id;if(subscriptionId&&invoice.billing_reason==='subscription_cycle')await resetPeriodUsageBySubscription(subscriptionId);}
     res.json({received:true});
@@ -86,7 +101,7 @@ app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',ht
 app.get('/api/version',(req,res)=>res.json({webVersion:process.env.WEB_VERSION||'5.3.0',androidVersion:process.env.ANDROID_VERSION||'5.3.0',androidVersionCode:Number(process.env.ANDROID_VERSION_CODE||5),latestApkUrl:process.env.LATEST_APK_URL||'https://github.com/mvryhan-web/video-variator-android/releases/latest/download/VideoUniquifier.apk'}));
 app.get('/api/config',(req,res)=>res.json({
   googleClientId:process.env.GOOGLE_CLIENT_ID||'',appleClientId:process.env.APPLE_CLIENT_ID||'',appleRedirectUri:process.env.APPLE_REDIRECT_URI||'',emailAuth:true,billingConfigured:billingConfigured(),
-  introOfferText:process.env.INTRO_OFFER_TEXT||'Intro discount available on your first subscription',privacy:{httpsRequired:isProduction,localVideoProcessing:true,rawVideoUploadDisabled:true},plans:{basic:{price:9,limit:750,unit:'credits'},pro:{price:24,limit:2250,unit:'credits'},business:{price:99,limit:15000,unit:'credits'}}
+  introOfferText:process.env.INTRO_OFFER_TEXT||'Intro discount available on your first subscription',privacy:{httpsRequired:isProduction,localVideoProcessing:true,rawVideoUploadDisabled:true},plans:{basic:{price:9,limit:750,unit:'credits'},pro:{price:24,limit:2250,unit:'credits'},business:{price:99,limit:15000,unit:'credits'},lifetime:{price:2999,currency:'eur',unlimited:true,allFeatures:true,oneTime:true}}
 }));
 
 app.post('/api/auth/google',async(req,res)=>{try{if(!process.env.GOOGLE_CLIENT_ID)return res.status(503).json({error:'GOOGLE_AUTH_NOT_CONFIGURED'});const credential=req.body?.credential;if(!credential)return res.status(400).json({error:'MISSING_GOOGLE_CREDENTIAL'});const {payload}=await jwtVerify(credential,googleJwks,{audience:process.env.GOOGLE_CLIENT_ID,issuer:['https://accounts.google.com','accounts.google.com']});const email=payload.email_verified===false?null:payload.email;const user=await upsertUser({provider:'google',providerSub:payload.sub,email,name:payload.name});res.json({token:await signAppToken(user),user:publicUser(user)});}catch(e){console.error('[google auth]',e);res.status(401).json({error:'GOOGLE_AUTH_FAILED'});}});
@@ -100,9 +115,22 @@ app.get('/api/history',auth,async(req,res)=>{try{res.json({history:await listHis
 app.post('/api/history',auth,async(req,res)=>{try{const items=Array.isArray(req.body?.items)?req.body.items:[];for(const item of items.slice(0,25))await addHistory(req.user.id,item);res.json({ok:true});}catch(e){res.status(500).json({error:'HISTORY_SAVE_FAILED'});}});
 app.delete('/api/history',auth,async(req,res)=>{try{await clearHistory(req.user.id);res.json({ok:true});}catch(e){res.status(500).json({error:'HISTORY_CLEAR_FAILED'});}});
 
-app.post('/api/billing/checkout',auth,async(req,res)=>{try{if(publicUser(req.user)?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});const plan=req.body?.plan,p=plans[plan];if(!p)return res.status(400).json({error:'INVALID_OR_UNCONFIGURED_PLAN'});if(p.paymentLink)return res.json({url:paymentLinkUrl(p.paymentLink,req.user)});if(!stripe||!p.priceId)return res.status(503).json({error:'BILLING_NOT_CONFIGURED'});let customerId=req.user.stripe_customer_id;if(!customerId){const customer=await stripe.customers.create({email:req.user.email||undefined,name:req.user.name||undefined,metadata:{userId:req.user.id}});customerId=customer.id;await setStripeCustomer(req.user.id,customerId);}const coupon=!req.user.has_subscribed&&process.env.STRIPE_FIRST_SUBSCRIPTION_COUPON_ID?process.env.STRIPE_FIRST_SUBSCRIPTION_COUPON_ID:null;const session=await stripe.checkout.sessions.create({mode:'subscription',customer:customerId,line_items:[{price:p.priceId,quantity:1}],client_reference_id:req.user.id,metadata:{userId:req.user.id,plan,credits:String(p.limit)},subscription_data:{metadata:{userId:req.user.id,plan,credits:String(p.limit)}},discounts:coupon?[{coupon}]:undefined,success_url:`${appUrl}/?checkout=success`,cancel_url:`${appUrl}/?checkout=cancel`});res.json({url:session.url});}catch(e){console.error('[checkout]',e);res.status(500).json({error:'CHECKOUT_FAILED'});}});
+app.post('/api/billing/checkout',auth,async(req,res)=>{try{
+  const current=publicUser(req.user);if(current?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});
+  if(current?.usage?.plan==='lifetime'&&current.usage.active)return res.status(409).json({error:'LIFETIME_ALREADY_ACTIVE'});
+  const plan=req.body?.plan,p=plans[plan];if(!p)return res.status(400).json({error:'INVALID_OR_UNCONFIGURED_PLAN'});
+  if(p.paymentLink&&!p.oneTime)return res.json({url:paymentLinkUrl(p.paymentLink,req.user)});
+  if(!stripe||!p.priceId)return res.status(503).json({error:'BILLING_NOT_CONFIGURED'});
+  let customerId=req.user.stripe_customer_id;if(!customerId){const customer=await stripe.customers.create({email:req.user.email||undefined,name:req.user.name||undefined,metadata:{userId:req.user.id}});customerId=customer.id;await setStripeCustomer(req.user.id,customerId);}
+  if(p.oneTime){
+    const session=await stripe.checkout.sessions.create({mode:'payment',customer:customerId,line_items:[{price:p.priceId,quantity:1}],client_reference_id:req.user.id,metadata:{userId:req.user.id,plan:'lifetime',entitlement:'permanent',previousSubscriptionId:String(req.user.stripe_subscription_id||'')},payment_intent_data:{metadata:{userId:req.user.id,plan:'lifetime',entitlement:'permanent'}},success_url:`${appUrl}/?checkout=success&plan=lifetime`,cancel_url:`${appUrl}/?checkout=cancel`});
+    return res.json({url:session.url});
+  }
+  const coupon=!req.user.has_subscribed&&process.env.STRIPE_FIRST_SUBSCRIPTION_COUPON_ID?process.env.STRIPE_FIRST_SUBSCRIPTION_COUPON_ID:null;
+  const session=await stripe.checkout.sessions.create({mode:'subscription',customer:customerId,line_items:[{price:p.priceId,quantity:1}],client_reference_id:req.user.id,metadata:{userId:req.user.id,plan,credits:String(p.limit)},subscription_data:{metadata:{userId:req.user.id,plan,credits:String(p.limit)}},discounts:coupon?[{coupon}]:undefined,success_url:`${appUrl}/?checkout=success`,cancel_url:`${appUrl}/?checkout=cancel`});res.json({url:session.url});
+}catch(e){console.error('[checkout]',e);res.status(500).json({error:'CHECKOUT_FAILED'});}});
 app.post('/api/billing/portal',auth,async(req,res)=>{try{if(publicUser(req.user)?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});if(!stripe||!req.user.stripe_customer_id)return res.status(400).json({error:'BILLING_PORTAL_UNAVAILABLE'});const session=await stripe.billingPortal.sessions.create({customer:req.user.stripe_customer_id,return_url:`${appUrl}/`});res.json({url:session.url});}catch(e){console.error('[portal]',e);res.status(500).json({error:'BILLING_PORTAL_FAILED'});}});
-app.post('/api/billing/cancel',auth,async(req,res)=>{try{if(publicUser(req.user)?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});if(!stripe||!req.user.stripe_subscription_id)return res.status(400).json({error:'NO_ACTIVE_SUBSCRIPTION'});const sub=await stripe.subscriptions.update(req.user.stripe_subscription_id,{cancel_at_period_end:true});await updateSubscriptionByStripeId({subscriptionId:sub.id,status:sub.status,currentPeriodEnd:fromUnix(sub.current_period_end)});res.json({ok:true,cancelAtPeriodEnd:!!sub.cancel_at_period_end,currentPeriodEnd:fromUnix(sub.current_period_end)});}catch(e){console.error('[cancel]',e);res.status(500).json({error:'SUBSCRIPTION_CANCEL_FAILED'});}});
+app.post('/api/billing/cancel',auth,async(req,res)=>{try{const current=publicUser(req.user);if(current?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});if(current?.usage?.plan==='lifetime')return res.status(409).json({error:'LIFETIME_HAS_NO_SUBSCRIPTION'});if(!stripe||!req.user.stripe_subscription_id)return res.status(400).json({error:'NO_ACTIVE_SUBSCRIPTION'});const sub=await stripe.subscriptions.update(req.user.stripe_subscription_id,{cancel_at_period_end:true});await updateSubscriptionByStripeId({subscriptionId:sub.id,status:sub.status,currentPeriodEnd:fromUnix(sub.current_period_end)});res.json({ok:true,cancelAtPeriodEnd:!!sub.cancel_at_period_end,currentPeriodEnd:fromUnix(sub.current_period_end)});}catch(e){console.error('[cancel]',e);res.status(500).json({error:'SUBSCRIPTION_CANCEL_FAILED'});}});
 
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
