@@ -37,6 +37,8 @@ services:
         sync: false
       - key: STRIPE_PRICE_BUSINESS
         sync: false
+      - key: STRIPE_PRICE_LIFETIME
+        sync: false
       - key: INTRO_OFFER_TEXT
         value: Intro discount available on your first subscription
       - key: WEB_VERSION

@@ -74,8 +74,8 @@ async function restoreDraft(){
 async function account(){
  if(!token){plan='trial';$('avatarPlan').textContent=msg.free;$('avatarQuality').textContent=policy.trial.label;updateReady();return;}
  try{
-  const r=await fetch('/api/me',{headers:{Authorization:'Bearer '+token}}),d=await r.json(),usage=d.user?.usage||d.usage;
-  if(r.ok&&usage?.active&&policy[usage.plan]){plan=usage.plan;$('avatarPlan').textContent=(d.user?.isAdmin?'Admin · ':'')+policy[plan].label+' · Avatar Narrator';$('avatarQuality').textContent=policy[plan].label;}
+  const r=await fetch('/api/me',{headers:{Authorization:'Bearer '+token}}),d=await r.json(),usage=d.user?.usage||d.usage,effectivePlan=usage?.active&&usage?.allFeatures?'lifetime':usage?.plan;
+  if(r.ok&&usage?.active&&policy[effectivePlan]){plan=effectivePlan;$('avatarPlan').textContent=(d.user?.isAdmin?'Admin · ':'')+policy[plan].label+' · Avatar Narrator';$('avatarQuality').textContent=policy[plan].label;}
   else{plan='trial';$('avatarPlan').textContent=msg.free;$('avatarQuality').textContent=policy.trial.label;}
  }catch(_){plan='trial';$('avatarPlan').textContent=msg.free;$('avatarQuality').textContent=policy.trial.label;}
  updateReady();

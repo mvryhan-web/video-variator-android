@@ -36,6 +36,16 @@ function requireServerConfig(){if(!jwtSecret)throw new Error('APP_JWT_SECRET is 
 function sameOriginFallback(){try{return new URL(appUrl).origin;}catch(_){return'';}}
 function billingConfigured(){return Object.values(plans).every(p=>p.paymentLink||(stripe&&p.priceId));}
 function paymentLinkUrl(base,user){const url=new URL(base);url.searchParams.set('client_reference_id',user.id);if(user.email)url.searchParams.set('prefilled_email',user.email);return url.toString();}
+async function cancelPreviousSubscriptionForLifetime(subscriptionId){
+  if(!subscriptionId||!stripe)return;
+  try{
+    const sub=await stripe.subscriptions.retrieve(subscriptionId);
+    if(sub.status!=='canceled')await stripe.subscriptions.cancel(subscriptionId);
+  }catch(e){
+    if(e?.code==='resource_missing'||e?.statusCode===404)return;
+    throw e;
+  }
+}
 
 app.use((req,res,next)=>{
   if(isProduction&&!req.secure){const host=req.headers.host;if(host)return res.redirect(308,`https://${host}${req.originalUrl}`);}
@@ -71,7 +81,7 @@ async function grantLifetimeFromCheckoutSession(s){
   if(plan!=='lifetime'||!userId||s.payment_status!=='paid')return false;
   const previousSubscriptionId=s.metadata?.previousSubscriptionId||'';
   await applyLifetime({userId,customerId:String(s.customer||'')});
-  if(previousSubscriptionId&&stripe){try{await stripe.subscriptions.cancel(previousSubscriptionId);}catch(e){console.warn('[lifetime cancel previous subscription]',e.message);}}
+  if(previousSubscriptionId)await cancelPreviousSubscriptionForLifetime(previousSubscriptionId);
   return true;
 }
 
