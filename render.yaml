@@ -39,6 +39,10 @@ services:
         sync: false
       - key: STRIPE_PRICE_LIFETIME
         sync: false
+      - key: STRIPE_PAYMENT_LINK_LIFETIME
+        sync: false
+      - key: STRIPE_PAYMENT_LINK_LIFETIME_ID
+        sync: false
       - key: INTRO_OFFER_TEXT
         value: Intro discount available on your first subscription
       - key: WEB_VERSION
