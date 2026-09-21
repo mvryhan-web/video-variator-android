@@ -277,3 +277,6 @@ html[data-theme=light] .voice-picker-toggle{background:#fff}
   .compact-avatar-history .avatar-history-head{align-items:flex-start;gap:8px}
   .compact-avatar-history .avatar-history-head a{font-size:9px}
 }
+
+/* Local creator tools */
+.quick-tool-icon svg{width:25px;height:25px}#creatorToolSettings{padding:15px 0}#creatorToolSettings[hidden],#clipSettings[hidden]{display:none!important}#creatorToolSettings .settings{display:grid;grid-template-columns:1fr 1fr;gap:15px}#creatorToolSettings select{width:100%;min-height:44px}@media(max-width:420px){#creatorToolSettings .settings{grid-template-columns:1fr}}
