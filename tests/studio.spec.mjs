@@ -63,7 +63,8 @@ test('Avatar Narrator is plan-gated and requires user consent before generation'
  await expect(page.locator('#avatarGenerate')).toBeDisabled();
  await page.locator('#voiceConsent').check();
  await expect(page.locator('#avatarGenerate')).toBeEnabled();
- await expect(page.getByText(/reacts to narration loudness|реагирует на громкость речи|réagit au volume de la narration|реагує на гучність мовлення/i)).toBeVisible();
+ await expect(page.locator('.motion-note')).toBeVisible();
+ await expect(page.locator('.motion-note')).toContainText(/reacts to narration loudness|реагирует на громкость речи|réagit au volume de la narration|реагує на гучність мовлення/i);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
