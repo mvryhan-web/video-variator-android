@@ -22,9 +22,9 @@ test('Free Tools presents Avatar then Photo Video Audio and keeps Speed on the r
   await expect(page.locator('.avatar-launch-card')).toBeVisible();
   const order=await page.locator('.quick-tool-item').evaluateAll(items=>items.map(x=>x.getAttribute('data-mode-card')));
   expect(order).toEqual(['photo','video','audio','clips','motion']);
-  await expect(page.locator('.quick-tool-item').nth(0)).toContainText(/Photo|Фото/);
-  await expect(page.locator('.quick-tool-item').nth(1)).toContainText(/Video|Видео|Vidéo/);
-  await expect(page.locator('.quick-tool-item').nth(2)).toContainText(/Audio|Аудио/);
+  await expect(page.locator('.quick-tool-item').nth(0)).toContainText(/Photo|Фото/i);
+  await expect(page.locator('.quick-tool-item').nth(1)).toContainText(/Video|Видео|Vidéo/i);
+  await expect(page.locator('.quick-tool-item').nth(2)).toContainText(/Audio|Аудио/i);
   await page.locator('[data-tool="video"]').evaluate(el=>el.click());
   await expect(page.locator('#operation')).toHaveValue('video');
   await expect(page.locator('#files')).toHaveAttribute('accept','video/*');

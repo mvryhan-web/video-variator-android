@@ -29,7 +29,7 @@
       const emailAuth=document.createElement('script');emailAuth.src='auth-email.js';emailAuth.defer=true;document.body.appendChild(emailAuth);
       const trialQuality=document.createElement('script');trialQuality.src='trial-quality.js';trialQuality.defer=true;
       trialQuality.addEventListener('load',()=>{
-        const productPolish=document.createElement('script');productPolish.src='product-polish.js';productPolish.defer=true;productPolish.onload=()=>{const css=document.createElement('link');css.rel='stylesheet';css.href='creator-showcase.css';document.head.appendChild(css);const script=document.createElement('script');script.src='creator-showcase.js';document.body.appendChild(script);};document.body.appendChild(productPolish);
+        const productPolish=document.createElement('script');productPolish.src='product-polish.js';productPolish.defer=true;productPolish.onload=()=>{const css=document.createElement('link');css.rel='stylesheet';css.href='creator-showcase.css';document.head.appendChild(css);const script=document.createElement('script');script.src='creator-showcase.js';script.onload=()=>{const pageStyle=document.createElement('link');pageStyle.rel='stylesheet';pageStyle.href='creator-pages.css';document.head.appendChild(pageStyle);const pages=document.createElement('script');pages.src='creator-pages.js';document.body.appendChild(pages);};document.body.appendChild(script);};document.body.appendChild(productPolish);
       },{once:true});
       document.body.appendChild(trialQuality);
     },{once:true});
