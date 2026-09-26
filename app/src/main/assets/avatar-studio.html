@@ -33,6 +33,7 @@
       <p data-av="voiceSourceNote">Use either a device voice or your own voice. You do not need both.</p>
     </div>
     <div class="voice-source-choice" role="radiogroup" aria-labelledby="voiceSourceTitle">
+      <label class="voice-source-card"><input id="voiceModeGoogle" type="radio" name="voiceMode" value="google"><span><b>Google AI voice</b><small id="googleVoiceSummary">Natural narration from your text</small></span></label>
       <label class="voice-source-card">
         <input id="voiceModeDevice" type="radio" name="voiceMode" value="device">
         <span><b data-av="deviceOption">Device voice</b><small data-av="deviceOptionNote">English, French and other installed voices</small></span>
@@ -43,6 +44,7 @@
       </label>
     </div>
 
+    <div id="googleVoicePanel" class="voice-mode-panel" hidden><p id="googleVoiceNotice" role="status"></p><label><span id="googleLanguageLabel">Language</span><select id="googleLanguage"></select></label><label><span id="googleVoiceLabel">Voice</span><select id="googleVoice"></select></label><label class="consent-line"><input id="googleTextConsent" type="checkbox"><span id="googleConsentCopy">I agree to send the script to Google for narration. Video and photo stay on my device. Up to 1,000 characters; free quota applies.</span></label><div class="actions"><button id="googlePreview" type="button" disabled>Preview voice</button><button id="googleStop" type="button">Stop</button></div><audio id="googleAudioPreview" controls hidden></audio></div>
     <div id="deviceVoicePanel" class="voice-mode-panel" hidden>
       <h3 data-av="deviceVoice">Device voice</h3>
       <p data-av="deviceVoiceNote">Open the list and tap any voice to hear it. Press Select on the voice you want to use in the finished video.</p>
@@ -66,9 +68,10 @@
 
   <label class="consent-line"><input id="voiceConsent" type="checkbox"><span data-av="consent">I confirm this is my voice/photo, or I have permission to use them for this video.</span></label>
 
+  <section class="motion-settings"><h3 id="motionTitle">Mouth position</h3><p id="motionHelp"></p><div class="settings"><label><span>Horizontal</span><input id="mouthX" type="range" min="10" max="90" value="50"></label><label><span>Vertical</span><input id="mouthY" type="range" min="15" max="85" value="62"></label><label><span>Mouth width</span><input id="mouthWidth" type="range" min="10" max="60" value="28"></label></div></section>
   <div class="avatar-preview-shell compact-avatar-preview">
     <div class="avatar-preview-top"><video id="avatarVideoPreview" controls muted playsinline></video></div>
-    <div class="avatar-preview-bottom"><img id="avatarPhotoPreview" alt=""></div>
+    <div class="avatar-preview-bottom"><img id="avatarPhotoPreview" alt=""><span id="mouthMarker" aria-hidden="true"></span></div>
   </div>
   <p class="muted motion-note" data-av="motionNote">The local avatar uses subtle lower-face movement so the mouth area moves while narration plays. It is not full cloud lip-sync.</p>
 
@@ -89,6 +92,7 @@
 </main>
 <script src="file-share.js"></script>
 <script src="persistent-media.js"></script>
+<script src="result-delete.js"></script>
 <script type="module" src="avatar-studio.js"></script>
 <script src="creator-pages.js"></script>
 </body>

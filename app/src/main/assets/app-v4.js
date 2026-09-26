@@ -9,14 +9,14 @@
   const trialUsed=Number(localStorage.getItem('vv_trial_used')||0);
   const state={
     locale:'en',config:null,user:null,token:localStorage.getItem('vv_token')||'',pendingPlan:null,
-    trialUsed:Math.max(0,Math.min(2,trialUsed)),estimate:null,history:readJson('vv_history',[]).slice(0,100),
+    trialUsed:Math.max(0,Math.min(100,trialUsed)),estimate:null,history:readJson('vv_history',[]).slice(0,100),
     metrics:readJson('vv_metrics',{attempts:0,successes:0,errors:0,outputs:0,credits:0,seconds:0}),swReg:null,reloading:false
   };
 
   const en={
     brandTag:'One video. Many versions.',navDashboard:'Dashboard',navHistory:'History',navAnalytics:'Analytics',navPlans:'Plans',navFaq:'FAQ',navProfile:'Profile & Settings',
     languageAuto:'Language: Auto',localProcessing:'Video processing runs locally on your device.',secureHttps:'HTTPS required for online services',signIn:'Sign in',signOut:'Sign out',
-    trialPill:'2 free videos included',heroText:'Upload once, choose your variations, and create privacy-first results locally on your device.',statProcessed:'Processed',statProcessedSub:'outputs created',statRemaining:'Remaining',statPlan:'Current plan',trialStatus:'No card required',
+    trialPill:'100 free videos included',heroText:'Upload once, choose your variations, and create privacy-first results locally on your device.',statProcessed:'Processed',statProcessedSub:'outputs created',statRemaining:'Remaining',statPlan:'Current plan',trialStatus:'No card required',
     newProject:'New variation',newProjectSub:'Choose one or more videos. Completed files are saved automatically.',engineStandby:'Engine standby',engineLoading:'Loading engine…',engineReady:'Engine ready',chooseVideos:'Choose videos',chooseVideosSub:'One or multiple files',noFiles:'No videos selected yet.',
     variantsLabel:'Variations per video',modeLabel:'Processing mode',formatLabel:'Video format',qualityLabel:'Output resolution',estimatedCost:'Estimated processing cost',startProcessing:'Create variations',cancel:'Cancel',
     preparing:'Preparing your video',preparingSub:'Getting everything ready…',stageUpload:'Load',stageProcess:'Process',stageSave:'Save',stageDone:'Done',readyTitle:'Done',readyText:'Completed files were saved automatically.',viewHistory:'View history',recentIssue:'Recent issue',
@@ -47,7 +47,7 @@
   function apiBase(){if(window.VV_API_BASE)return String(window.VV_API_BASE).replace(/\/$/,'');if(location.protocol==='https:'||location.protocol==='http:')return location.origin;return localStorage.getItem('vv_api_base')||'';}
   async function api(path,options={}){const base=apiBase();if(!base)throw new Error('API_UNAVAILABLE');const headers={'Content-Type':'application/json',...(options.headers||{})};if(state.token)headers.Authorization=`Bearer ${state.token}`;const r=await fetch(base+path,{...options,headers});const data=await r.json().catch(()=>({}));if(!r.ok){const e=new Error(data.error||`Request failed (${r.status})`);e.status=r.status;throw e;}return data;}
 
-  function usage(){if(state.user?.usage)return state.user.usage;return{plan:'trial',limit:2,used:state.trialUsed,remaining:Math.max(0,2-state.trialUsed),active:false,unit:'videos'};}
+  function usage(){if(state.user?.usage)return state.user.usage;return{plan:'trial',limit:100,used:state.trialUsed,remaining:Math.max(0,100-state.trialUsed),active:false,unit:'videos'};}
   function planName(id){return id==='basic'?'Basic':id==='pro'?'Pro':id==='business'?'Business':id==='lifetime'?'Lifetime':'Free trial';}
   function activePlan(){const u=usage();if(u.active&&u.allFeatures)return'lifetime';return u.active&&['basic','pro','business','lifetime'].includes(u.plan)?u.plan:'trial';}
   function policyFor(plan){
@@ -81,7 +81,7 @@
   function renderProfile(){const u=usage(),lifetime=u.active&&(u.plan==='lifetime'||u.allFeatures);$('profileEmail').textContent=state.user?.email||'Not signed in';$('profilePlan').textContent=planName(u.plan);$('profileStatus').textContent=lifetime?'Lifetime · permanent':(u.active?(u.status||'Active'):'Trial / inactive');$('manageBillingBtn').disabled=!state.user||!u.active;$('cancelSubscriptionBtn').disabled=!state.user||!u.active||lifetime;}
   function renderAnalytics(){const m=state.metrics,rate=m.attempts?Math.round(m.successes/m.attempts*100):100;$('analyticsCredits').textContent=m.credits||0;$('analyticsOutputs').textContent=m.outputs||0;$('analyticsDuration').textContent=`${Math.round(m.seconds||0)} sec processed`;$('analyticsSuccess').textContent=`${rate}%`;$('analyticsErrors').textContent=`${m.errors||0} errors`;}
   function historyActionButtons(item,blob,right){
-    right.replaceChildren();const d=document.createElement('button');d.className='ghostBtn';d.textContent=t('download');d.onclick=()=>saveResult(item.name,blob);const s=document.createElement('button');s.className='ghostBtn';s.textContent=t('share');s.onclick=()=>shareResult(item.name,blob);right.append(d,s);
+    right.replaceChildren();const d=document.createElement('button');d.className='ghostBtn';d.textContent=t('download');d.onclick=()=>saveResult(item.name,blob);const s=document.createElement('button');s.className='ghostBtn';s.textContent=t('share');s.onclick=()=>shareResult(item.name,blob);right.append(d,s);if(window.VUResultDelete)right.append(window.VUResultDelete.button(item));
   }
   function renderHistory(){
     const list=$('historyList'),empty=$('historyEmpty');list.innerHTML='';empty.hidden=state.history.length>0;
@@ -91,12 +91,13 @@
       const right=document.createElement('div'),blob=sessionDownloads.get(item.id);right.className='historyActions';
       if(blob)historyActionButtons(item,blob,right);
       else{
-        const badge=document.createElement('span');badge.className='historyBadge';badge.textContent=item.saved?t('historyStatusSaved'):t('historyStatusReady');right.appendChild(badge);
+        const badge=document.createElement('span');badge.className='historyBadge';badge.textContent=item.saved?t('historyStatusSaved'):t('historyStatusReady');right.appendChild(badge);if(window.VUResultDelete)right.append(window.VUResultDelete.button(item));
         if(item.mediaCacheKey&&persistentMedia)persistentMedia.get(item.mediaCacheKey).then(savedBlob=>{if(savedBlob)historyActionButtons(item,savedBlob,right);}).catch(()=>{});
       }
       row.append(left,right);list.appendChild(row);
     });
   }
+  window.addEventListener('vu-result-deleted',e=>{state.history=state.history.filter(x=>x.id!==e.detail.id);sessionDownloads.delete(e.detail.id);saveHistory();renderHistory();});
   function renderAll(){renderDashboard();renderHistory();renderAnalytics();}
 
   function showView(name){qsa('.view').forEach(v=>v.classList.toggle('active',v.id===`${name}View`));qsa('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));const key={dashboard:'navDashboard',history:'navHistory',analytics:'navAnalytics',plans:'navPlans',faq:'navFaq',profile:'navProfile'}[name]||'navDashboard';$('pageTitle').textContent=t(key);document.querySelector('.sidebar')?.classList.remove('open');if(name==='analytics')refreshAnalytics();}
@@ -128,7 +129,7 @@
     state.metrics.attempts++;saveMetrics();$('progressCard').hidden=false;$('resultsCard').hidden=true;$('errorCard').hidden=true;$('cancelBtn').hidden=false;$('startBtn').disabled=true;$('progressBar').style.width='0%';$('progressPercent').textContent='0%';setStage('upload');
     try{
       const result=await core.process({variants:Number($('variantCount').value),mode:$('mode').value,resolution:getResolution()});
-      if(state.user){const d=await api('/api/usage/consume',{method:'POST',body:JSON.stringify({seconds:result.creditSeconds,sourceCount:result.sourceCount})});state.user=d.user||state.user;}else{state.trialUsed=Math.min(2,state.trialUsed+result.sourceCount);localStorage.setItem('vv_trial_used',String(state.trialUsed));}
+      if(state.user){const d=await api('/api/usage/consume',{method:'POST',body:JSON.stringify({seconds:result.creditSeconds,sourceCount:result.sourceCount})});state.user=d.user||state.user;}else{state.trialUsed=Math.min(100,state.trialUsed+result.sourceCount);localStorage.setItem('vv_trial_used',String(state.trialUsed));}
       autoSaveBrowserResults(result.results);await addHistory(result.results);state.metrics.successes++;state.metrics.outputs+=result.outputCount;state.metrics.seconds+=result.creditSeconds;if(u.unit==='credits')state.metrics.credits+=result.creditSeconds;saveMetrics();renderAll();$('readyText').textContent=window.AndroidBridge?'Completed files were saved automatically to Gallery / Movies / VideoUniquifier.':`${result.outputCount} output${result.outputCount===1?'':'s'} sent to your browser downloads automatically.`;$('resultsCard').hidden=false;toast(t('jobComplete'));await refreshAccount();
     }catch(e){if(String(e.message).toLowerCase().includes('cancel'))toast(t('canceled'));else{reportError(e,'processing');toast(t('processingError'));}}
     finally{$('cancelBtn').hidden=true;$('startBtn').disabled=!core.getFiles().length;scheduleEstimate();}

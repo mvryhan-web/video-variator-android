@@ -280,3 +280,5 @@ html[data-theme=light] .voice-picker-toggle{background:#fff}
 
 /* Local creator tools */
 .quick-tool-icon svg{width:25px;height:25px}#creatorToolSettings{padding:15px 0}#creatorToolSettings[hidden],#clipSettings[hidden]{display:none!important}#creatorToolSettings .settings{display:grid;grid-template-columns:1fr 1fr;gap:15px}#creatorToolSettings select{width:100%;min-height:44px}@media(max-width:420px){#creatorToolSettings .settings{grid-template-columns:1fr}}
+
+.avatar-preview-bottom{position:relative;aspect-ratio:720/538;overflow:hidden}.avatar-preview-bottom #avatarPhotoPreview{width:100%;height:100%;object-fit:cover}.avatar-preview-bottom #mouthMarker{position:absolute;height:11%;border:2px dashed #ff805d;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}.motion-settings .settings{display:flex;flex-wrap:wrap;gap:16px}.motion-settings label{flex:1;min-width:120px}.delete-result{color:#df6060!important}

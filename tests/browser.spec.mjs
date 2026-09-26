@@ -13,9 +13,9 @@ test.beforeEach(async({page})=>{
   await expect(page).toHaveTitle(/Video Uniquifier/);
 });
 
-test('loads rebranded dashboard with zero of two free trial videos',async({page})=>{
+test('loads rebranded dashboard with zero of 100 free trial videos',async({page})=>{
   await expect(page.getByRole('heading',{name:'Dashboard'})).toBeVisible();
-  await expect(page.locator('#creditText')).toHaveText('0 / 2');
+  await expect(page.locator('#creditText')).toHaveText('0 / 100');
   await expect(page.getByText('Turn your old video into fresh new versions')).toBeVisible();
   await expect(page.getByText('One video. Many versions.')).toBeVisible();
   await expect(page.locator('#resultsCard')).toBeHidden();
@@ -126,7 +126,7 @@ test('pricing explains Basic Pro and Business in output terms',async({page})=>{
 });
 
 test('completed trial replaces creation controls with compact plan choices',async({page})=>{
-  await page.evaluate(()=>localStorage.setItem('vv_trial_used','2'));
+  await page.evaluate(()=>localStorage.setItem('vv_trial_used','100'));
   await page.reload();
   await expect(page.locator('#trialCompleteUpsell')).toBeVisible();
   await expect(page.getByText('Free trial complete')).toBeVisible();
@@ -465,7 +465,7 @@ test('Avatar narration is either Device voice or My voice and narration text is 
   await expect(page.locator('#deviceVoicePanel')).toBeHidden();
   const order=await page.evaluate(()=>({
     voice:document.querySelector('.voice-source-section').compareDocumentPosition(document.querySelector('.avatar-text-last')),
-    text:document.querySelector('.avatar-text-last').compareDocumentPosition(document.querySelector('.consent-line'))
+    text:document.querySelector('.avatar-text-last').compareDocumentPosition(document.querySelector('#voiceConsent').closest('.consent-line'))
   }));
   expect(order.voice & 4).toBeTruthy();
   expect(order.text & 4).toBeTruthy();
