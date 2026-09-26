@@ -1,3 +1,4 @@
+import {installSpeech} from './speech.js';
 import {isPaidLifetimeSession} from './lifetime.js';
 import 'dotenv/config';
 import express from 'express';
@@ -8,7 +9,7 @@ import path from 'node:path';
 import {installEmailAuth} from './email-auth.js';
 import {
   initDb,upsertUser,getUser,publicUser,setStripeCustomer,applySubscription,applyLifetime,updateSubscriptionByStripeId,
-  resetPeriodUsageBySubscription,consumeUsage,addHistory,listHistory,clearHistory,addEvent,getAnalytics
+  resetPeriodUsageBySubscription,consumeUsage,addHistory,listHistory,clearHistory,deleteHistoryItem,reserveSpeech,addEvent,getAnalytics
 } from './db.js';
 
 const app=express(),port=Number(process.env.PORT||3000),isProduction=process.env.NODE_ENV==='production';
@@ -108,11 +109,12 @@ app.use(express.json({limit:'1mb'}));
 async function signAppToken(user){requireServerConfig();const key=new TextEncoder().encode(jwtSecret);return new SignJWT({email:user.email||'',name:user.name||''}).setProtectedHeader({alg:'HS256'}).setSubject(user.id).setIssuer('video-variator').setAudience('video-variator-client').setIssuedAt().setExpirationTime('7d').sign(key);}
 async function auth(req,res,next){try{requireServerConfig();const token=(req.headers.authorization||'').replace(/^Bearer\s+/i,'');if(!token)return res.status(401).json({error:'AUTH_REQUIRED'});const key=new TextEncoder().encode(jwtSecret),{payload}=await jwtVerify(token,key,{issuer:'video-variator',audience:'video-variator-client'}),user=await getUser(payload.sub);if(!user)return res.status(401).json({error:'USER_NOT_FOUND'});req.user=user;next();}catch(_){res.status(401).json({error:'INVALID_SESSION'});}}
 installEmailAuth(app,{signAppToken});
+installSpeech(app,{auth,reserve:reserveSpeech});
 
 app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',https:req.secure||!isProduction,videoProcessing:'local-only',ffmpegRuntime:'same-origin-esm',appUrl,time:new Date().toISOString()}));
 app.get('/api/version',(req,res)=>res.json({webVersion:process.env.WEB_VERSION||'5.3.0',androidVersion:process.env.ANDROID_VERSION||'5.3.0',androidVersionCode:Number(process.env.ANDROID_VERSION_CODE||5),latestApkUrl:process.env.LATEST_APK_URL||'https://github.com/mvryhan-web/video-variator-android/releases/latest/download/VideoUniquifier.apk'}));
 app.get('/api/config',(req,res)=>res.json({
-  googleClientId:process.env.GOOGLE_CLIENT_ID||'',appleClientId:process.env.APPLE_CLIENT_ID||'',appleRedirectUri:process.env.APPLE_REDIRECT_URI||'',emailAuth:true,billingConfigured:billingConfigured(),
+  googleClientId:process.env.GOOGLE_CLIENT_ID||'',appleClientId:process.env.APPLE_CLIENT_ID||'',appleRedirectUri:process.env.APPLE_REDIRECT_URI||'',emailAuth:true,trialLimit:100,billingConfigured:billingConfigured(),
   introOfferText:process.env.INTRO_OFFER_TEXT||'Intro discount available on your first subscription',privacy:{httpsRequired:isProduction,localVideoProcessing:true,rawVideoUploadDisabled:true},plans:{basic:{price:9,limit:750,unit:'credits'},pro:{price:24,limit:2250,unit:'credits'},business:{price:99,limit:15000,unit:'credits'},lifetime:{price:2999,currency:'eur',unlimited:true,allFeatures:true,oneTime:true}}
 }));
 
@@ -125,6 +127,7 @@ app.post('/api/events',auth,async(req,res)=>{try{await addEvent(req.user.id,{typ
 app.get('/api/analytics',auth,async(req,res)=>{try{res.json({analytics:await getAnalytics(req.user.id)});}catch(e){res.status(500).json({error:'ANALYTICS_FAILED'});}});
 app.get('/api/history',auth,async(req,res)=>{try{res.json({history:await listHistory(req.user.id)});}catch(e){res.status(500).json({error:'HISTORY_FAILED'});}});
 app.post('/api/history',auth,async(req,res)=>{try{const items=Array.isArray(req.body?.items)?req.body.items:[];for(const item of items.slice(0,25))await addHistory(req.user.id,item);res.json({ok:true});}catch(e){res.status(500).json({error:'HISTORY_SAVE_FAILED'});}});
+app.delete('/api/history/:id',auth,async(req,res)=>{try{await deleteHistoryItem(req.user.id,req.params.id);res.json({ok:true});}catch(_){res.status(500).json({error:'HISTORY_DELETE_FAILED'});}});
 app.delete('/api/history',auth,async(req,res)=>{try{await clearHistory(req.user.id);res.json({ok:true});}catch(e){res.status(500).json({error:'HISTORY_CLEAR_FAILED'});}});
 
 app.post('/api/billing/checkout',auth,async(req,res)=>{try{

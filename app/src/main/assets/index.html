@@ -46,7 +46,7 @@
     <section id="dashboardView" class="view active">
       <div class="hero card">
         <div>
-          <span class="pill success" data-i18n="trialPill">2 free videos included</span>
+          <span class="pill success" data-i18n="trialPill">100 free videos included</span>
           <h2 id="heroTitle">Уникализируй своё старое видео</h2>
           <p data-i18n="heroText">Upload a video, choose a processing style, and let Video Uniquifier handle the rest.</p>
         </div>
@@ -142,7 +142,7 @@
         <details class="card"><summary>What processing modes are included?</summary><p>Basic includes Gentle. Pro includes Gentle and Balance. Business unlocks Gentle, Balance, and Dynamic. Lifetime includes all current modes and future features.</p></details>
         <details class="card"><summary>What quality is included?</summary><p>Basic outputs at 720p, Pro at 1080p, and Business at 4K. Lifetime unlocks 720p, 1080p, and 4K. Both 9:16 and 16:9 are supported.</p></details>
         <details class="card"><summary>How does Lifetime work?</summary><p>Lifetime is a single €2,999 payment. Once Stripe confirms the payment, the account receives permanent Lifetime access with unlimited credits, all current features, and future feature access included. There is no recurring Lifetime subscription to cancel.</p></details>
-        <details class="card"><summary>How does the free test work?</summary><p>New users can process two source videos. The dashboard starts at 0 / 2 and counts upward as free videos are used.</p></details>
+        <details class="card"><summary>How does the free test work?</summary><p>New users can process 100 source videos. The dashboard starts at 0 / 2 and counts upward as free videos are used.</p></details>
         <details class="card"><summary>Where are my videos processed?</summary><p>Video processing is designed to run locally on your device. Account, billing, analytics, usage, and history metadata may sync securely over HTTPS.</p></details>
         <details class="card"><summary>Can I cancel my subscription easily?</summary><p>Yes. Open Profile & Settings to manage billing or schedule cancellation at the end of the current billing period.</p></details>
         <details class="card"><summary>How is my data protected?</summary><p>Production web services require HTTPS, Stripe handles card data, OAuth tokens are verified server-side, and raw video files are not uploaded for account or billing operations.</p></details>
@@ -183,6 +183,7 @@
 <script src="video-core.js"></script>
 <script src="file-share.js"></script>
 <script src="persistent-media.js"></script>
+<script src="result-delete.js"></script>
 <script src="app-v4.js"></script>
 </body>
 </html>

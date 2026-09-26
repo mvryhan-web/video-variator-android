@@ -21,8 +21,8 @@ android {
         minSdk = 26
         testInstrumentationRunner = 'androidx.test.runner.AndroidJUnitRunner'
         targetSdk = 36
-        versionCode = 8
-        versionName = '5.3.0'
+        versionCode = 9
+        versionName = '5.4.0'
         buildConfigField 'String', 'WEB_APP_URL', '"' + webAppUrl + '"'
         buildConfigField 'String', 'API_BASE_URL', '"' + apiBaseUrl + '"'
         buildConfigField 'String', 'UPDATE_API_URL', '"' + updateApiUrl + '"'
