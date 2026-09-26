@@ -87,14 +87,15 @@ function updateReady(){
  const base=!!policy[plan]&&!!fileFor('video')&&!!fileFor('photo')&&!!$('avatarText').value.trim()&&$('voiceConsent').checked;
  const deviceReady=voiceMode==='device'&&!!chosenVoiceMeta&&!!window.AndroidBridge?.synthesizeTtsVoice;
  const ownReady=voiceMode==='own'&&!!fileFor('voice');
- const googleReady=voiceMode==='google'&&googleEnabled&&$('googleTextConsent').checked&&$('avatarText').value.length<=1000;
+ const googleReady=voiceMode==='google'&&googleEnabled&&!!token&&$('googleTextConsent').checked&&$('avatarText').value.length<=1000;
  const ready=base&&(deviceReady||ownReady||googleReady);
  $('avatarGenerate').disabled=busy||!ready;
  let hint=msg.need;
  if(base&&voiceMode==='device'&&!chosenVoiceMeta)hint=msg.needDevice;
  else if(base&&voiceMode==='device'&&chosenVoiceMeta&&!window.AndroidBridge?.synthesizeTtsVoice)hint=msg.deviceUnsupported;
  else if(base&&voiceMode==='own'&&!fileFor('voice'))hint=msg.needOwn;
- else if(ready)hint=msg.ready;
+ else if(base&&voiceMode==='google')hint=!googleEnabled?$('googleVoiceNotice').textContent:!token?(locale==='ru'?'Сначала войдите в аккаунт на главной.':'Sign in from the home page first.'):$('avatarText').value.length>1000?(locale==='ru'?'Для Google используйте до 1 000 символов.':'Google narration supports up to 1,000 characters.'):(locale==='ru'?'Подтвердите отправку текста в Google.':'Confirm sending the script to Google.');
+ if(ready)hint=msg.ready;
  $('avatarReadyHint').textContent=hint;
 }
 function setVoiceMode(mode,persist=true){
