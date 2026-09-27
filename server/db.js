@@ -74,7 +74,7 @@ export function publicUser(user){
     return{id:user.id,email:user.email,name:user.name,isAdmin:true,usage:{plan:'business',limit:1000000000,used:0,remaining:1000000000,active:true,unlimited:true,allFeatures:true,unit:'credits',status:'admin',currentPeriodEnd:null}};
   }
   const lifetime=user.plan==='lifetime'&&user.subscription_status==='lifetime';
-  const active=lifetime||['active','trialing'].includes(user.subscription_status),limit=lifetime?LIFETIME_LIMIT:(active?user.plan_limit:2),used=lifetime?0:(active?user.period_used:user.trial_used);
+  const active=lifetime||['active','trialing'].includes(user.subscription_status),limit=lifetime?LIFETIME_LIMIT:(active?user.plan_limit:100),used=lifetime?0:(active?user.period_used:user.trial_used);
   return{id:user.id,email:user.email,name:user.name,isAdmin:false,usage:{plan:lifetime?'lifetime':(active?user.plan:'trial'),limit,used,remaining:lifetime?LIFETIME_LIMIT:Math.max(0,limit-used),active,unlimited:lifetime,allFeatures:lifetime,unit:active?'credits':'videos',status:lifetime?'lifetime':user.subscription_status,currentPeriodEnd:lifetime?null:user.current_period_end}};
 }
 
@@ -90,7 +90,7 @@ export async function consumeUsage(userId,{seconds=0,sourceCount=0}={}){
     await client.query('BEGIN');
     const q=await client.query('SELECT * FROM vv_users WHERE id=$1 FOR UPDATE',[userId]),u=q.rows[0];if(!u)throw new Error('USER_NOT_FOUND');
     if(isAdminUser(u)||u.plan==='lifetime'&&u.subscription_status==='lifetime'){await client.query('COMMIT');return u;}
-    const active=['active','trialing'].includes(u.subscription_status),limit=active?u.plan_limit:2,used=active?u.period_used:u.trial_used,cost=active?safeSeconds:safeSources;
+    const active=['active','trialing'].includes(u.subscription_status),limit=active?u.plan_limit:100,used=active?u.period_used:u.trial_used,cost=active?safeSeconds:safeSources;
     if(cost<1)throw new Error('INVALID_USAGE');if(used+cost>limit){const e=new Error('CREDIT_LIMIT_REACHED');e.code='CREDIT_LIMIT_REACHED';throw e;}
     if(active)await client.query('UPDATE vv_users SET period_used=period_used+$2,updated_at=NOW() WHERE id=$1',[userId,cost]);else await client.query('UPDATE vv_users SET trial_used=trial_used+$2,updated_at=NOW() WHERE id=$1',[userId,cost]);
     await client.query('COMMIT');
@@ -103,3 +103,15 @@ export async function listHistory(userId){requireDb();const r=await pool.query('
 export async function clearHistory(userId){requireDb();await pool.query('DELETE FROM vv_history WHERE user_id=$1',[userId]);}
 export async function addEvent(userId,{type='event',category=null,message=null}={}){requireDb();await pool.query('INSERT INTO vv_events(id,user_id,event_type,category,message) VALUES($1,$2,$3,$4,$5)',[randomUUID(),userId||null,String(type).slice(0,40),category?String(category).slice(0,80):null,message?String(message).slice(0,240):null]);}
 export async function getAnalytics(userId){requireDb();const [h,e]=await Promise.all([pool.query(`SELECT COUNT(*)::int AS outputs,COALESCE(SUM(credits),0)::int AS credits,COALESCE(SUM(duration_seconds),0)::int AS seconds FROM vv_history WHERE user_id=$1`,[userId]),pool.query(`SELECT COUNT(*) FILTER (WHERE event_type='processing_success')::int AS successes,COUNT(*) FILTER (WHERE event_type='processing_attempt')::int AS attempts,COUNT(*) FILTER (WHERE event_type='error')::int AS errors FROM vv_events WHERE user_id=$1`,[userId])]);return{outputs:h.rows[0].outputs||0,credits:h.rows[0].credits||0,seconds:h.rows[0].seconds||0,successes:e.rows[0].successes||0,attempts:e.rows[0].attempts||0,errors:e.rows[0].errors||0};}
+
+export async function deleteHistoryItem(userId,id){requireDb();await pool.query('DELETE FROM vv_history WHERE user_id=$1 AND id=$2',[userId,id]);}
+
+// Persistent, conservative caps shared by every instance. Failed requests also consume quota.
+export async function reserveSpeech(userId){
+ requireDb();const client=await pool.connect();try{await client.query('BEGIN');await client.query("SELECT pg_advisory_xact_lock(782145)");
+ await client.query('CREATE TABLE IF NOT EXISTS vv_speech_daily(day DATE NOT NULL,user_id TEXT NOT NULL,requests INT NOT NULL DEFAULT 0,PRIMARY KEY(day,user_id))');
+ const r=await client.query("SELECT COALESCE(SUM(requests),0)::int AS total,COALESCE(SUM(requests) FILTER(WHERE user_id=$1),0)::int AS mine FROM vv_speech_daily WHERE day=CURRENT_DATE",[userId]);
+ if(r.rows[0].total>=10||r.rows[0].mine>=3){await client.query('ROLLBACK');return false;}
+ await client.query('INSERT INTO vv_speech_daily(day,user_id,requests) VALUES(CURRENT_DATE,$1,1) ON CONFLICT(day,user_id) DO UPDATE SET requests=vv_speech_daily.requests+1',[userId]);await client.query('COMMIT');return true;
+ }catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}
+}

@@ -1,4 +1,6 @@
 import {createEngine,saveLocal} from './ai-media.js';
+import {voices as googleVoices,languages as googleLanguages,synthesize} from './speech-client.js';
+import {buildAvatarFilter,envelopeFromSamples} from './avatar-motion.js';
 
 const $=id=>document.getElementById(id);
 const lang=(navigator.language||'en-US').toLowerCase();
@@ -22,6 +24,7 @@ const DRAFT_KEY='vu_avatar_draft_v2',JOBS_KEY='vu_avatar_jobs_v2';
 const policy={trial:{w:720,h:1280,label:'Free test · 720p'},basic:{w:720,h:1280,label:'Basic · 720p'},pro:{w:1080,h:1920,label:'Pro · 1080p'},business:{w:2160,h:3840,label:'Business · 4K'},lifetime:{w:2160,h:3840,label:'Lifetime · 4K · all features'}};
 const inputIds={video:'avatarVideo',photo:'avatarPhoto',voice:'avatarAudio'};
 const savedIds={video:'avatarVideoSaved',photo:'avatarPhotoSaved',voice:'avatarAudioSaved'};
+let googleEnabled=false,googlePreviewUrl=null,googlePreviewAbort=null;
 let plan='trial',engine=null,busy=false,cancelled=false,leaving=false,activeJobId=null,recordStream=null,recorder=null,recordChunks=[],recordedVoice=null,recordStartedAt=0,recordTimer=null,voiceMode=null;
 let restored={video:null,photo:null,voice:null},chosenVoiceMeta=null,currentProgress=0;
 const urls=[];
@@ -84,22 +87,27 @@ function updateReady(){
  const base=!!policy[plan]&&!!fileFor('video')&&!!fileFor('photo')&&!!$('avatarText').value.trim()&&$('voiceConsent').checked;
  const deviceReady=voiceMode==='device'&&!!chosenVoiceMeta&&!!window.AndroidBridge?.synthesizeTtsVoice;
  const ownReady=voiceMode==='own'&&!!fileFor('voice');
- const ready=base&&(deviceReady||ownReady);
+ const googleReady=voiceMode==='google'&&googleEnabled&&!!token&&$('googleTextConsent').checked&&$('avatarText').value.length<=1000;
+ const ready=base&&(deviceReady||ownReady||googleReady);
  $('avatarGenerate').disabled=busy||!ready;
  let hint=msg.need;
  if(base&&voiceMode==='device'&&!chosenVoiceMeta)hint=msg.needDevice;
  else if(base&&voiceMode==='device'&&chosenVoiceMeta&&!window.AndroidBridge?.synthesizeTtsVoice)hint=msg.deviceUnsupported;
  else if(base&&voiceMode==='own'&&!fileFor('voice'))hint=msg.needOwn;
- else if(ready)hint=msg.ready;
+ else if(base&&voiceMode==='google')hint=!googleEnabled?$('googleVoiceNotice').textContent:!token?(locale==='ru'?'Сначала войдите в аккаунт на главной.':'Sign in from the home page first.'):$('avatarText').value.length>1000?(locale==='ru'?'Для Google используйте до 1 000 символов.':'Google narration supports up to 1,000 characters.'):(locale==='ru'?'Подтвердите отправку текста в Google.':'Confirm sending the script to Google.');
+ if(ready)hint=msg.ready;
  $('avatarReadyHint').textContent=hint;
 }
 function setVoiceMode(mode,persist=true){
- voiceMode=mode==='device'||mode==='own'?mode:null;
+ voiceMode=['device','own','google'].includes(mode)?mode:null;
+ $('voiceModeGoogle').checked=voiceMode==='google';$('googleVoicePanel').hidden=voiceMode!=='google';
  $('voiceModeDevice').checked=voiceMode==='device';$('voiceModeOwn').checked=voiceMode==='own';
  $('deviceVoicePanel').hidden=voiceMode!=='device';$('ownVoicePanel').hidden=voiceMode!=='own';
  document.querySelectorAll('.voice-source-card').forEach(card=>card.classList.toggle('selected',card.querySelector('input')?.checked));
  if(persist)saveDraft({voiceMode});stopVoicePreview();closeVoicePicker();updateReady();
 }
+$('voiceModeGoogle').addEventListener('change',()=>{if($('voiceModeGoogle').checked)setVoiceMode('google');});
+$('googleTextConsent').onchange=()=>{updateReady();$('googlePreview').disabled=!googleEnabled||!$('googleTextConsent').checked;};
 $('voiceModeDevice').addEventListener('change',()=>{if($('voiceModeDevice').checked)setVoiceMode('device');});
 $('voiceModeOwn').addEventListener('change',()=>{if($('voiceModeOwn').checked)setVoiceMode('own');});
 
@@ -119,7 +127,7 @@ function findChosenVoice(){
  const list=allVoices();if(!chosenVoiceMeta)return null;
  return list.find(v=>voiceKey(v)===chosenVoiceMeta.key)||list.find(v=>v.name===chosenVoiceMeta.name&&v.lang===chosenVoiceMeta.lang)||null;
 }
-function stopVoicePreview(){try{window.AndroidBridge?.stopTtsVoice?.();}catch(_){}window.speechSynthesis?.cancel?.();}
+function stopVoicePreview(){googlePreviewAbort?.abort();$('googleAudioPreview')?.pause();try{window.AndroidBridge?.stopTtsVoice?.();}catch(_){}window.speechSynthesis?.cancel?.();}
 function closeVoicePicker(){$('voicePickerMenu').hidden=true;$('voicePickerToggle').setAttribute('aria-expanded','false');}
 function speakVoice(voice,row){
  if(!voice)return;
@@ -186,13 +194,13 @@ $('recordVoice').onclick=async()=>{
 $('stopVoice').onclick=()=>{if(recorder&&recorder.state!=='inactive'){$('stopVoice').disabled=true;recorder.stop();}};
 
 function mediaDuration(file,kind='video'){return new Promise((resolve,reject)=>{const el=document.createElement(kind);el.preload='metadata';el.src=u(file);el.onloadedmetadata=()=>resolve(Number(el.duration)||0);el.onerror=()=>reject(Error('MEDIA_FORMAT'));});}
-async function resultControls(file){
+async function resultControls(file,job){
  const wrap=document.createElement('div'),video=document.createElement('video');
  video.controls=true;video.playsInline=true;video.autoplay=true;video.preload='auto';video.src=u(file);video.className='ai-preview';wrap.append(video);
  const actions=document.createElement('div');actions.className='actions';
  const save=document.createElement('button');save.textContent=msg.download;save.onclick=()=>saveLocal(file).catch(()=>status('Could not save the video.'));
  const share=document.createElement('button');share.textContent=msg.share;share.onclick=()=>window.VUShareFile?.({name:file.name,blob:file});
- actions.append(save,share);wrap.append(actions);$('avatarResult').replaceChildren(wrap);
+ actions.append(save,share);if(job&&window.VUResultDelete)actions.append(window.VUResultDelete.button(job,()=>{video.pause();video.removeAttribute('src');wrap.remove();renderAvatarHistory();}));wrap.append(actions);$('avatarResult').replaceChildren(wrap);
  const play=()=>video.play().catch(()=>{});
  if(video.readyState>=2)play();else video.addEventListener('canplay',play,{once:true});
 }
@@ -244,15 +252,14 @@ async function analyzeVoiceEnvelope(file){
    const start=Math.floor(buffer.length*b/bins),end=Math.max(start+1,Math.floor(buffer.length*(b+1)/bins)),stride=Math.max(1,Math.floor((end-start)/500));
    let sum=0,count=0;
    for(let i=start;i<end;i+=stride){
-    let sample=0;for(const data of channels)sample+=data[i]||0;sample/=channels.length;
-    sum+=sample*sample;count++;
+    for(const data of channels){const sample=data[i]||0;sum+=sample*sample;count++;}
    }
    raw.push(Math.sqrt(sum/Math.max(1,count)));
   }
-  const sorted=raw.slice().sort((a,b)=>a-b),noise=sorted[Math.floor(sorted.length*.18)]||0,peak=sorted[Math.floor(sorted.length*.92)]||Math.max(...raw)||1,range=Math.max(.00001,peak-noise);
+  const sorted=raw.slice().sort((a,b)=>a-b),noise=sorted[Math.floor(sorted.length*.18)]||0,peak=sorted[Math.floor(sorted.length*.92)]||Math.max(...raw)||1,range=Math.max(.00001,peak-Math.min(noise,peak*.15));
   const normalized=raw.map((v,i)=>{
    const prev=raw[Math.max(0,i-1)],next=raw[Math.min(raw.length-1,i+1)],smooth=(prev+v*2+next)/4;
-   const n=Math.max(0,Math.min(1,(smooth-noise)/range));
+   const n=Math.max(0,Math.min(1,(smooth-Math.min(noise,peak*.15))/range));
    return n<.08?0:n<.28?.28:n<.52?.52:n<.76?.76:1;
   });
   const step=duration/bins,segments=[];
@@ -276,7 +283,7 @@ function mouthAmplitudeExpression(envelope){
 
 async function createJob(){
  const video=fileFor('video'),photo=fileFor('photo'),ownVoice=voiceMode==='own'?fileFor('voice'):null,id='avatar-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),p=policy[plan]||policy.trial;
- const job={id,status:'queued',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),sourceName:video.name||'source-video',photoName:photo.name||'avatar-photo',voiceMode,voiceName:ownVoice?.name||null,text:$('avatarText').value.trim(),selectedDeviceVoice:voiceMode==='device'?chosenVoiceMeta:null,plan,resolution:p.w+'×'+p.h,sourceKey:id+'/source',photoKey:id+'/photo',voiceKey:ownVoice?id+'/voice':null,outputKey:id+'/output'};
+ const job={googleVoice:$('googleVoice').value,googleLanguage:$('googleLanguage').value,googleConsent:$('googleTextConsent').checked,mouth:{x:Number($('mouthX').value),y:Number($('mouthY').value),width:Number($('mouthWidth').value)},id,status:'queued',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),sourceName:video.name||'source-video',photoName:photo.name||'avatar-photo',voiceMode,voiceName:ownVoice?.name||null,text:$('avatarText').value.trim(),selectedDeviceVoice:voiceMode==='device'?chosenVoiceMeta:null,plan,resolution:p.w+'×'+p.h,sourceKey:id+'/source',photoKey:id+'/photo',voiceKey:ownVoice?id+'/voice':null,outputKey:id+'/output'};
  try{
   await media.put(job.sourceKey,video);await media.put(job.photoKey,photo);if(ownVoice)await media.put(job.voiceKey,ownVoice);
  }catch(_){throw Error(msg.storageFail);}
@@ -290,6 +297,7 @@ async function processJob(job){
   const video=await loadJobFile(job,'sourceKey',job.sourceName,'video/mp4'),photo=await loadJobFile(job,'photoKey',job.photoName,'image/png');
   let voice=job.voiceMode==='own'&&job.voiceKey?await loadJobFile(job,'voiceKey',job.voiceName||'voice','audio/webm'):null;
   if(!video||!photo)throw Error('Saved project media is unavailable.');
+  if(job.voiceMode==='google'){if(!job.googleConsent)throw Error('GOOGLE_TEXT_CONSENT_REQUIRED');voice=await synthesize(job.text,job.googleVoice||'Kore',job.googleLanguage||'en-US',true);}
   if(job.voiceMode==='device'){
    if(!job.selectedDeviceVoice)throw Error(msg.needDevice);
    voice=await synthesizeDeviceVoice(job.selectedDeviceVoice,job.text||'');
@@ -305,9 +313,12 @@ async function processJob(job){
   await engine.writeFile('voice',new Uint8Array(await voice.arrayBuffer()));setProgress(10,true);
 
   const top=Math.round(p.h*.58/2)*2,bottom=p.h-top,fps=24;
-  const mouthW=Math.max(80,Math.round(p.w*.44/2)*2),mouthH=Math.max(24,Math.round(bottom*.12/2)*2),mouthX=Math.round((p.w-mouthW)/2),mouthY=Math.max(0,Math.min(bottom-mouthH,Math.round(bottom*.55)));
-  const shift=Math.max(2,Math.round(bottom*.009)),envelope=await analyzeVoiceEnvelope(voice),ampExpr=mouthAmplitudeExpression(envelope);
-  const filter=`[0:v]scale=${p.w}:${top}:force_original_aspect_ratio=increase,crop=${p.w}:${top},fps=${fps}[top];[1:v]scale=${p.w}:${bottom}:force_original_aspect_ratio=increase,crop=${p.w}:${bottom},fps=${fps},split=2[avatarbase][mouthsrc];[mouthsrc]crop=${mouthW}:${mouthH}:${mouthX}:${mouthY}[mouth];[avatarbase][mouth]overlay=${mouthX}:y='${mouthY}+${shift}*(${ampExpr})*abs(sin(2*PI*t*4.6))'[avatar];[top][avatar]vstack=inputs=2[v]`;
+  let envelope=await analyzeVoiceEnvelope(voice);
+  if(!envelope){
+   const rc=await engine.exec(['-i','voice','-vn','-ac','1','-ar','16000','-f','s16le','voice-envelope.pcm']);
+   if(!rc){const bytes=await engine.readFile('voice-envelope.pcm'),view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),samples=new Float32Array(Math.floor(bytes.byteLength/2));for(let i=0;i<samples.length;i++)samples[i]=view.getInt16(i*2,true)/32768;envelope=envelopeFromSamples(samples);}
+  }
+  const filter=buildAvatarFilter({w:p.w,h:p.h,fps,envelope,mouth:job.mouth});
 
   const estimatedSeconds=Math.max(18,duration*(p.w>=2160?9:p.w>=1080?5:2.8)),started=Date.now();
   progressTimer=setInterval(()=>{if(!busy)return;const elapsed=(Date.now()-started)/1000,estimated=10+Math.min(80,elapsed/estimatedSeconds*80);if(estimated>currentProgress)setProgress(estimated,true);status(msg.processing+' '+currentProgress+'%');},900);
@@ -316,7 +327,7 @@ async function processJob(job){
   const rc=await engine.exec(args);clearInterval(progressTimer);progressTimer=null;if(rc)throw Error('ENCODE');
   setProgress(95,true);const bytes=await engine.readFile('avatar-output.mp4'),file=new File([bytes],'VideoUniquifier-Avatar-'+Date.now()+'.mp4',{type:'video/mp4'});
   await media.put(job.outputKey,file);setProgress(98,true);await addGlobalHistory({...job,durationSeconds:Math.ceil(duration),resolution:p.w+'×'+p.h},file);patchJob(job.id,{status:'done',outputName:file.name,durationSeconds:Math.ceil(duration),resolution:p.w+'×'+p.h,finishedAt:new Date().toISOString()});
-  await resultControls(file);try{await saveLocal(file);}catch(e){console.warn('[avatar autosave]',e);}setProgress(100,true);status(msg.done);
+  await resultControls(file,job);try{await saveLocal(file);}catch(e){console.warn('[avatar autosave]',e);}setProgress(100,true);status(msg.done);
  }catch(e){
   clearInterval(progressTimer);
   if(leaving){patchJob(job.id,{status:'queued'});}
@@ -332,19 +343,38 @@ async function resumePending(){
 $('avatarGenerate').onclick=async()=>{if(busy)return;updateReady();if($('avatarGenerate').disabled)return;try{const job=await createJob();await processJob(job);}catch(e){status(String(e.message||msg.storageFail));}};
 $('avatarCancel').onclick=()=>{cancelled=true;if(activeJobId)patchJob(activeJobId,{status:'canceled'});try{engine?.terminate();}catch(_){}engine=null;setProgress(0,false);status('Canceled');};
 
+let historyRender=0;
 async function renderAvatarHistory(){
+ const render=++historyRender;
  const box=$('avatarHistory');if(!box)return;box.replaceChildren();const list=jobs().slice(0,10);if(!list.length){const p=document.createElement('p');p.className='muted';p.textContent='—';box.append(p);return;}
  for(const job of list){
   const row=document.createElement('article');row.className='avatar-history-row';const info=document.createElement('div'),name=document.createElement('b'),meta=document.createElement('small');name.textContent=job.outputName||job.sourceName||'Avatar project';
   const stateText=job.status==='done'?msg.historyDone:job.status==='processing'?msg.historyProcessing:job.status==='queued'?msg.historyQueued:job.status==='error'?msg.historyError:job.status;meta.textContent=new Date(job.createdAt).toLocaleString()+' · '+stateText;info.append(name,meta);row.append(info);
   if(job.status==='done'&&job.outputKey&&media){const blob=await media.get(job.outputKey);if(blob){const file=new File([blob],job.outputName||'VideoUniquifier-Avatar.mp4',{type:'video/mp4'}),actions=document.createElement('div');actions.className='actions';const d=document.createElement('button');d.textContent=msg.download;d.onclick=()=>saveLocal(file);const s=document.createElement('button');s.textContent=msg.share;s.onclick=()=>window.VUShareFile?.({name:file.name,blob:file});actions.append(d,s);row.append(actions);}}
-  box.append(row);
+  if(window.VUResultDelete){const del=window.VUResultDelete.button(job,()=>{$('avatarResult').replaceChildren();renderAvatarHistory();});del.disabled=job.id===activeJobId;row.append(del);}
+  if(render!==historyRender)return;box.append(row);
  }
 }
 async function showLatestDone(){
- const job=jobs().find(j=>j.status==='done'&&j.outputKey);if(!job||!media)return;const blob=await media.get(job.outputKey);if(blob)await resultControls(new File([blob],job.outputName||'VideoUniquifier-Avatar.mp4',{type:'video/mp4'}));
+ const job=jobs().find(j=>j.status==='done'&&j.outputKey);if(!job||!media)return;const blob=await media.get(job.outputKey);if(blob)await resultControls(new File([blob],job.outputName||'VideoUniquifier-Avatar.mp4',{type:'video/mp4'}),job);
 }
 window.addEventListener('pagehide',()=>{leaving=true;stopVoicePreview();clearInterval(recordTimer);recordStream?.getTracks().forEach(t=>t.stop());if(activeJobId)patchJob(activeJobId,{status:'queued'});try{engine?.terminate();}catch(_){}urls.splice(0).forEach(URL.revokeObjectURL);});
+
+
+
+const gc={en:['Natural Google narration','Language','Voice','I agree to send the script to Google for narration. Video and photo stay on my device. Maximum 1,000 characters; free quota applies.','Preview voice','Stop','Google voices await owner setup. Use your own voice below in the meantime.','Google AI voices · sign-in required · up to 3 requests/day. Preview also uses a request.'],ru:['Естественная озвучка Google','Язык','Голос','Я согласен отправить текст в Google для озвучки. Видео и фото останутся на устройстве. До 1 000 символов, действует бесплатный лимит.','Прослушать','Стоп','Голоса Google ожидают настройки владельцем. Пока используйте свой голос.','Голоса Google AI · нужен вход · до 3 запросов в день. Прослушивание тоже расходует запрос.'],fr:['Narration naturelle Google','Langue','Voix','J’accepte d’envoyer le texte à Google. Vidéo et photo restent sur l’appareil. 1 000 caractères maximum ; quota gratuit.','Écouter','Arrêter','Les voix Google attendent la configuration du propriétaire. Utilisez votre voix en attendant.','Voix Google AI · connexion requise · 3 requêtes/jour. L’aperçu utilise une requête.'],uk:['Природне озвучення Google','Мова','Голос','Погоджуюсь надіслати текст до Google. Відео й фото залишаться на пристрої. До 1 000 символів; діє ліміт.','Прослухати','Стоп','Голоси Google очікують налаштування власником. Поки використовуйте свій голос.','Google AI · потрібен вхід · до 3 запитів на день. Прослуховування також витрачає запит.']}[locale];
+['googleVoiceSummary','googleLanguageLabel','googleVoiceLabel','googleConsentCopy','googlePreview','googleStop','googleVoiceNotice'].forEach((id,i)=>$(id).textContent=gc[i]);
+for(const v of googleVoices){const o=document.createElement('option');o.value=v;o.textContent=v;$('googleVoice').append(o);}
+for(const [v,n]of Object.entries(googleLanguages)){const o=document.createElement('option');o.value=v;o.textContent=n;$('googleLanguage').append(o);}
+fetch('/api/speech/config').then(r=>r.json()).then(c=>{googleEnabled=!!c.enabled;$('googleVoiceNotice').textContent=gc[googleEnabled?7:6];if(googleEnabled){$('voiceModeDevice').closest('label').hidden=true;if(voiceMode==='device')setVoiceMode('google');}updateReady();}).catch(()=>{});
+$('googleStop').onclick=stopVoicePreview;
+$('googlePreview').onclick=async()=>{if(!googleEnabled||!$('googleTextConsent').checked)return;stopVoicePreview();googlePreviewAbort=new AbortController();$('googlePreview').disabled=true;try{const text=$('avatarText').value.trim();if(!text)throw Error(msg.need);const file=await synthesize(text.slice(0,200),$('googleVoice').value,$('googleLanguage').value,true,googlePreviewAbort.signal);if(googlePreviewUrl)URL.revokeObjectURL(googlePreviewUrl);$('googleAudioPreview').src=googlePreviewUrl=URL.createObjectURL(file);$('googleAudioPreview').hidden=false;await $('googleAudioPreview').play();}catch(e){if(e.name!=='AbortError')$('googleVoiceNotice').textContent=String(e.message);}finally{googlePreviewAbort=null;$('googlePreview').disabled=!googleEnabled||!$('googleTextConsent').checked;}};
+
+const motionCopy={en:['Mouth position','Move the marker onto the lips in the cropped portrait below. Use a front-facing photo. This is simple audio-reactive motion, not realistic lip-sync.','Horizontal','Vertical','Mouth width'],ru:['Положение рта','Совместите метку с губами на портрете ниже. Лучше фото анфас. Это простая реакция на звук, а не реалистичная синхронизация речи.','По горизонтали','По вертикали','Ширина рта'],fr:['Position de la bouche','Placez le repère sur les lèvres du portrait recadré. Utilisez une photo de face. Animation simple, sans lip-sync réaliste.','Horizontal','Vertical','Largeur'],uk:['Положення рота','Сумістіть позначку з губами на портреті. Оберіть фото анфас. Це проста реакція на звук, не реалістична синхронізація.','По горизонталі','По вертикалі','Ширина рота']}[locale];
+$('motionTitle').textContent=motionCopy[0];$('motionHelp').textContent=motionCopy[1];
+['mouthX','mouthY','mouthWidth'].forEach((id,i)=>{const input=$(id);input.previousElementSibling.textContent=motionCopy[i+2];input.value=draft().mouth?.[i]??input.value;input.oninput=()=>{saveDraft({mouth:['mouthX','mouthY','mouthWidth'].map(k=>Number($(k).value))});syncMouthMarker();};});
+function syncMouthMarker(){const m=$('mouthMarker');m.style.left=$('mouthX').value+'%';m.style.top=$('mouthY').value+'%';m.style.width=$('mouthWidth').value+'%';}
+syncMouthMarker();
 
 (async()=>{
  media?.persist?.().catch(()=>{});
