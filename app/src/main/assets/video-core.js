@@ -45,7 +45,13 @@
 
   async function ensureEngine(){
     if(state.loaded&&state.ffmpeg)return state.ffmpeg;
-    if(!window.FFmpegWASM?.FFmpeg)throw new Error('The video engine could not load. Please reopen the app and try again.');
+    if(!window.FFmpegWASM?.FFmpeg){
+      await new Promise((resolve,reject)=>{
+        const script=document.createElement('script');script.src=CORE_BASE+'/ffmpeg.js';
+        script.onload=resolve;script.onerror=()=>reject(new Error('The video engine could not load. Please reopen the app and try again.'));
+        document.head.append(script);
+      });
+    }
     hooks.onEngine('loading');
     const ffmpeg=new window.FFmpegWASM.FFmpeg();
     ffmpeg.on('log',({message})=>log(message));
@@ -57,7 +63,7 @@
       const classWorkerURL=await toBlobURL(CLASS_WORKER,'text/javascript');
       const coreURL=`${CORE_BASE}/ffmpeg-core.js`;
       const wasmURL=`${CORE_BASE}/ffmpeg-core.wasm`;
-      await ffmpeg.load({classWorkerURL,coreURL,wasmURL});
+      try{await ffmpeg.load({classWorkerURL,coreURL,wasmURL});}finally{URL.revokeObjectURL(classWorkerURL);}
       state.ffmpeg=ffmpeg;state.loaded=true;hooks.onEngine('ready');
       return ffmpeg;
     }catch(e){
@@ -128,6 +134,7 @@
     const x=moving?`${xBase}+(iw-ow)*${fmt(r.motionX,5)}*sin(2*PI*t/${fmt(r.motionPeriod,3)}+${fmt(r.motionPhase,4)})`:xBase;
     const y=moving?`${yBase}+(ih-oh)*${fmt(r.motionY,5)}*sin(2*PI*t/${fmt(r.motionPeriod*1.17,3)}+${fmt(r.motionPhase*.73,4)})`:yBase;
     const vf=[
+      'fps=30',
       `scale=${zw}:${zh}:force_original_aspect_ratio=increase:flags=bilinear`,
       `crop=${w}:${h}:x='${x}':y='${y}'`,
       `eq=brightness=${fmt(r.brightness)}:contrast=${fmt(r.contrast)}:saturation=${fmt(r.saturation)}`,
@@ -145,7 +152,6 @@
       }
       if(r.grain>.05)vf.push(`noise=alls=${fmt(r.grain,3)}:allf=t+u`);
     }
-    vf.push('fps=30');
     if(r.useCut){
       const a=fmt(r.cutAt,3),b=fmt(r.cutAt+r.cutLen,3);
       vf.push(`select='not(between(t\\,${a}\\,${b}))'`,'setpts=N/(30*TB)');
@@ -206,16 +212,15 @@
     return/^(720x1280|1080x1920|2160x3840|1280x720|1920x1080|3840x2160)$/.test(value||'');
   }
 
-  async function processOne(file,fileIndex,variantIndex,total,options,duration){
+  async function processOne(file,fileIndex,variantIndex,total,options,duration,input){
     const ffmpeg=await ensureEngine();
     const [w,h]=options.resolution.split('x').map(Number),r=recipe(duration,options.mode);
     const token=`${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
-    const input=`in_${token}.${extOf(file.name)}`,internal=`out_${token}.mp4`;
+    const internal=`out_${token}.mp4`;
     const name=`${safeBase(file.name)}_variant_${variantIndex+1}.mp4`,job=fileIndex*options.variants+variantIndex;
     hooks.onStage('process',{file:file.name,variant:variantIndex+1,job:job+1,total});
     state.progress=0;
 
-    await ffmpeg.writeFile(input,new Uint8Array(await file.arrayBuffer()));
     let audio=true;
     try{
       const a=args(input,internal,duration,r,w,h,true);
@@ -231,11 +236,10 @@
       if(code!==0)throw err;
     }
 
-    const data=await ffmpeg.readFile(internal),blob=new Blob([data.buffer],{type:'video/mp4'});
+    const data=await ffmpeg.readFile(internal),blob=new Blob([data],{type:'video/mp4'});
     hooks.onStage('save',{file:file.name,variant:variantIndex+1,job:job+1,total});
     let saved={saved:false,path:null};
     try{saved=await saveAndroid(name,blob);}catch(e){log(e.message);}
-    try{await ffmpeg.deleteFile(input);}catch(_){ }
     try{await ffmpeg.deleteFile(internal);}catch(_){ }
 
     return{
@@ -254,6 +258,7 @@
     const mode=['gentle','balanced','dynamic'].includes(options.mode)?options.mode:'gentle';
     const resolution=validResolution(options.resolution)?options.resolution:'720x1280';
     state.running=true;state.cancelled=false;state.progress=0;
+    const session=window.VUProcessingSession?.begin();
     const total=state.files.length*variants,results=[];let done=0;
     const ticker=setInterval(()=>hooks.onProgress(clamp((done+state.progress)/total,0,1),{done,total}),160);
     try{
@@ -261,17 +266,25 @@
       const estimate=await estimateCredits(variants);
       await ensureEngine();
       for(let i=0;i<state.files.length;i++){
-        for(let v=0;v<variants;v++){
-          if(state.cancelled)throw new Error('Processing was canceled.');
-          const result=await processOne(state.files[i],i,v,total,{variants,mode,resolution},estimate.durations[i]);
-          results.push(result);done++;
-          hooks.onProgress(done/total,{done,total});
-        }
+        const file=state.files[i],input=`source_${i}.${extOf(file.name)}`;
+        // Keep one source in the engine for all its variations. Free it before
+        // loading the next file to avoid multiplying memory use by batch size.
+        await state.ffmpeg.writeFile(input,new Uint8Array(await file.arrayBuffer()));
+        try{
+          for(let v=0;v<variants;v++){
+            if(state.cancelled)throw new Error('Processing was canceled.');
+            const result=await processOne(file,i,v,total,{variants,mode,resolution},estimate.durations[i],input);
+            results.push(result);done++;
+            if(options.onResult)await options.onResult(result);
+            hooks.onProgress(done/total,{done,total});
+          }
+        }finally{try{await state.ffmpeg?.deleteFile(input);}catch(_){}}
       }
       hooks.onStage('done',{done,total});
       return{results,sourceCount:state.files.length,sourceSeconds:estimate.sourceSeconds,creditSeconds:estimate.creditSeconds,outputCount:results.length};
     }finally{
       clearInterval(ticker);state.running=false;
+      window.VUProcessingSession?.end(session);
     }
   }
 

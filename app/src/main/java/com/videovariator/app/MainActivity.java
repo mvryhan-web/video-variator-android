@@ -52,6 +52,13 @@ public class MainActivity extends Activity {
     private static final int STORAGE_PERMISSION_REQUEST = 1004;
     private static final int WEB_MEDIA_PERMISSION_REQUEST = 1005;
     private WebView webView;
+    private volatile boolean processing = false;
+    private final android.content.BroadcastReceiver processingStop = new android.content.BroadcastReceiver() {
+        @Override public void onReceive(android.content.Context context, Intent intent) {
+            processing = false;
+            if (webView != null) webView.evaluateJavascript("window.dispatchEvent(new Event('vu-native-processing-stop'))", null);
+        }
+    };
     private PermissionRequest pendingWebPermissionRequest;
     private TextToSpeech textToSpeech;
     private volatile boolean ttsReady = false;
@@ -119,6 +126,8 @@ public class MainActivity extends Activity {
             settings.setAllowUniversalAccessFromFileURLs(true);
         }
 
+        androidx.core.content.ContextCompat.registerReceiver(this, processingStop,
+            new android.content.IntentFilter(ProcessingService.STOP), androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
         webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
         webView.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) { return handleNavigation(request.getUrl()); }
@@ -310,6 +319,9 @@ public class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        processing = false;
+        stopService(new Intent(this, ProcessingService.class));
+        try { unregisterReceiver(processingStop); } catch (IllegalArgumentException ignored) {}
         if (appUpdateManager != null) appUpdateManager.unregisterListener(updateListener);
         if (pendingWebPermissionRequest != null) { pendingWebPermissionRequest.deny(); pendingWebPermissionRequest = null; }
         if (textToSpeech != null) { textToSpeech.stop(); textToSpeech.shutdown(); textToSpeech = null; ttsReady = false; }
@@ -338,6 +350,7 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
+        if (processing) { moveTaskToBack(true); return; }
         if (webView != null && webView.getUrl() != null && webView.getUrl().contains("/free-tools.html")) {
             webView.evaluateJavascript("window.vuHandleAndroidBack && window.vuHandleAndroidBack()", null); return;
         }
@@ -349,6 +362,21 @@ public class MainActivity extends Activity {
     }
 
     private class AndroidBridge {
+        @JavascriptInterface public boolean beginProcessing() {
+            if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                runOnUiThread(() -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 6403));
+            }
+            try {
+                androidx.core.content.ContextCompat.startForegroundService(MainActivity.this,
+                    new Intent(MainActivity.this, ProcessingService.class));
+                processing = true;
+                return true;
+            } catch (RuntimeException e) { return false; }
+        }
+        @JavascriptInterface public void endProcessing() {
+            processing = false;
+            stopService(new Intent(MainActivity.this, ProcessingService.class));
+        }
         private OutputStream toolStream;
         @JavascriptInterface public String getTtsVoices() {
             JSONArray voices = new JSONArray();

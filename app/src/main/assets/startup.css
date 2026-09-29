@@ -1,0 +1,4 @@
+/* Only the finished presentation is painted. No older layout behind an overlay. */
+html.vu-starting body > :not(script):not(link){visibility:hidden}
+html.vu-starting::after{content:"Video Uniquifier";position:fixed;inset:0;display:grid;place-items:center;color:#bbc8e8;background:#080e1b;font:600 18px system-ui;letter-spacing:.04em}
+html[data-theme="light"].vu-starting::after{background:#f4f7fb;color:#293654}
