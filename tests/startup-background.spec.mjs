@@ -39,7 +39,7 @@ test('five real variations reuse one source and retain completed results after r
  // Capture actual FS writes, not a fake encoding result.
  await page.evaluate(()=>{
   const Real=FFmpegWASM.FFmpeg;window.sourceWrites=0;
-  FFmpegWASM.FFmpeg=class extends Real{constructor(){super();const write=this.writeFile.bind(this);this.writeFile=(name,...args)=>{if(name.startsWith('source_'))sourceWrites++;return write(name,...args);};}};
+  window.FFmpegWASM={FFmpeg:class extends Real{constructor(){super();const write=this.writeFile.bind(this);this.writeFile=(name,...args)=>{if(name.startsWith('source_'))sourceWrites++;return write(name,...args);};}}};
  });
  await page.locator('#fileInput').setInputFiles(source);
  await page.locator('#variantCount').selectOption('5');

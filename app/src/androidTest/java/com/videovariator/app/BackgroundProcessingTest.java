@@ -31,14 +31,14 @@ public class BackgroundProcessingTest {
         android.content.Context app=ApplicationProvider.getApplicationContext();
         android.content.Context test=InstrumentationRegistry.getInstrumentation().getContext();
         String fixture=read(test,"background-source.base64");
-        String html="<html><body><div id='progressCard'></div><script src='https://video-variator-android.onrender.com/vendor/ffmpeg/ffmpeg.js'></script><script>"+
+        String html="<html><head><script>window.errors=[];window.onerror=(m)=>window.errors.push(String(m));</script></head><body><div id='progressCard'></div><script src='https://video-variator-android.onrender.com/vendor/ffmpeg/ffmpeg.js'></script><script>"+
             read(app,"processing-session.js")+read(app,"video-core.js")+
             "window.failure='';window.result=null;const bytes=Uint8Array.from(atob("+JSONObject.quote(fixture)+"),c=>c.charCodeAt(0));VideoVariatorCore.setFiles([new File([bytes],'background.mp4',{type:'video/mp4'})]);VideoVariatorCore.process({variants:2,resolution:'720x1280'}).then(r=>window.result=r).catch(e=>window.failure=e.message);</script></body></html>";
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)){
             scenario.onActivity(a->web(a.getWindow().getDecorView()).loadDataWithBaseURL("https://video-variator-android.onrender.com/",html,"text/html","UTF-8",null));
             long deadline=SystemClock.elapsedRealtime()+90000;
             while(!"true".equals(js(scenario,"!!window.VideoVariatorCore?.state.loaded"))&&SystemClock.elapsedRealtime()<deadline)SystemClock.sleep(300);
-            assertEquals("Engine must load", "true",js(scenario,"!!window.VideoVariatorCore?.state.loaded"));
+            assertEquals("Engine must load: "+js(scenario,"JSON.stringify({errors:window.errors,failure:window.failure,href:location.href,runtime:typeof FFmpegWASM,core:typeof VideoVariatorCore})"), "true",js(scenario,"!!window.VideoVariatorCore?.state.loaded"));
             assertTrue("Foreground service active",ProcessingService.active);
             // Back must keep the same Activity and worker, rather than navigating.
             scenario.onActivity(MainActivity::onBackPressed);

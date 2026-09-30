@@ -122,14 +122,17 @@
   async function shareResult(name,blob){if(window.VUShareFile){await window.VUShareFile({name,blob});return;}const file=new File([blob],name,{type:blob.type||'video/mp4'});if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'Video Uniquifier'});return;}downloadBlob(name,blob);}
   function autoSaveBrowserResults(results){if(window.AndroidBridge)return;results.forEach((r,i)=>setTimeout(()=>downloadBlob(r.name,r.blob),i*250));}
   async function addHistory(results){const items=[];for(const r of results){sessionDownloads.set(r.id,r.blob);const item={id:r.id,name:r.name,sourceName:r.sourceName,createdAt:r.createdAt,resolution:r.resolution,aspectRatio:r.aspectRatio,durationSeconds:r.durationSeconds,credits:r.credits,saved:r.saved||!window.AndroidBridge,path:r.path||null};if(persistentMedia){try{item.mediaCacheKey='result:'+r.id;await persistentMedia.put(item.mediaCacheKey,r.blob);}catch(_){delete item.mediaCacheKey;}}
-      state.history.unshift(item);items.push(item);}saveHistory();renderHistory();if(state.user)api('/api/history',{method:'POST',body:JSON.stringify({items})}).catch(()=>{});}
+      state.history.unshift(item);items.push(item);}
+    const evicted=state.history.splice(100);saveHistory();renderHistory();
+    for(const item of evicted){sessionDownloads.delete(item.id);if(item.mediaCacheKey?.startsWith('result:'))persistentMedia?.remove(item.mediaCacheKey);}
+    if(state.user)api('/api/history',{method:'POST',body:JSON.stringify({items})}).catch(()=>{});}
 
   async function startProcessing(){
     const files=core.getFiles();if(!files.length)return;enforcePlanControls();let estimate=state.estimate;try{if(!estimate)estimate=await core.estimateCredits(Number($('variantCount').value));}catch(e){reportError(e,'duration');return;}
     const u=usage(),needed=u.unit==='credits'?estimate.creditSeconds:estimate.sourceCount;if(!u.unlimited&&needed>u.remaining){showView('plans');toast(u.unit==='credits'?t('creditsNeeded'):t('freeVideosNeeded'));return;}
     state.metrics.attempts++;saveMetrics();$('progressCard').hidden=false;$('resultsCard').hidden=true;$('errorCard').hidden=true;$('cancelBtn').hidden=false;$('startBtn').disabled=true;$('progressBar').style.width='0%';$('progressPercent').textContent='0%';setStage('upload');
     try{
-      const result=await core.process({variants:Number($('variantCount').value),mode:$('mode').value,resolution:getResolution(),onResult:async r=>{await addHistory([r]);autoSaveBrowserResults([r]);}});
+      const result=await core.process({variants:Number($('variantCount').value),mode:$('mode').value,resolution:getResolution(),fastExport:$('fastExport')?.checked!==false,onResult:async r=>{await addHistory([r]);autoSaveBrowserResults([r]);}});
       if(state.user){const d=await api('/api/usage/consume',{method:'POST',body:JSON.stringify({seconds:result.creditSeconds,sourceCount:result.sourceCount})});state.user=d.user||state.user;}else{state.trialUsed=Math.min(100,state.trialUsed+result.sourceCount);localStorage.setItem('vv_trial_used',String(state.trialUsed));}
       state.metrics.successes++;state.metrics.outputs+=result.outputCount;state.metrics.seconds+=result.creditSeconds;if(u.unit==='credits')state.metrics.credits+=result.creditSeconds;saveMetrics();renderAll();$('readyText').textContent=window.AndroidBridge?'Completed files were saved automatically to Gallery / Movies / VideoUniquifier.':`${result.outputCount} output${result.outputCount===1?'':'s'} sent to your browser downloads automatically.`;$('resultsCard').hidden=false;toast(t('jobComplete'));await refreshAccount();
     }catch(e){if(String(e.message).toLowerCase().includes('cancel'))toast(t('canceled'));else{reportError(e,'processing');toast(t('processingError'));}}

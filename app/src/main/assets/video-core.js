@@ -45,6 +45,7 @@
 
   async function ensureEngine(){
     if(state.loaded&&state.ffmpeg)return state.ffmpeg;
+    if(window.vuRuntimeReady)await window.vuRuntimeReady;
     if(!window.FFmpegWASM?.FFmpeg){
       await new Promise((resolve,reject)=>{
         const script=document.createElement('script');script.src=CORE_BASE+'/ffmpeg.js';
@@ -174,12 +175,12 @@
     return{vf:vf.join(','),af:af.join(',')};
   }
 
-  function args(input,out,duration,r,w,h,audio){
+  function args(input,out,duration,r,w,h,audio,fastExport=true){
     const clipped=Math.max(.4,duration-r.trimStart-r.trimEnd),f=filters(r,w,h,audio);
     const a=['-hide_banner','-y','-ss',fmt(r.trimStart,3),'-t',fmt(clipped,3),'-i',input,'-vf',f.vf];
     if(audio)a.push('-af',f.af);else a.push('-an');
     const highRes=w>=1080,crf=w>=2160?'24':w>=1080?'22':'21';
-    a.push('-c:v','libx264','-preset',highRes?'ultrafast':'veryfast','-crf',crf,'-pix_fmt','yuv420p','-movflags','+faststart');
+    a.push('-c:v','libx264','-preset',(highRes||fastExport)?'ultrafast':'veryfast','-crf',crf,'-pix_fmt','yuv420p','-movflags','+faststart');
     if(r.mode==='dynamic'&&r.gop>0)a.push('-g',String(r.gop));
     if(audio)a.push('-c:a','aac','-b:a','160k');
     a.push(out);
@@ -223,7 +224,7 @@
 
     let audio=true;
     try{
-      const a=args(input,internal,duration,r,w,h,true);
+      const a=args(input,internal,duration,r,w,h,true,options.fastExport);
       log('> ffmpeg '+a.join(' '));
       const code=await ffmpeg.exec(a);
       if(code!==0)throw new Error('Video processing failed.');
@@ -231,7 +232,7 @@
       log('Audio track retry disabled for this source.');
       audio=false;
       try{await ffmpeg.deleteFile(internal);}catch(_){ }
-      const a=args(input,internal,duration,r,w,h,false);
+      const a=args(input,internal,duration,r,w,h,false,options.fastExport);
       const code=await ffmpeg.exec(a);
       if(code!==0)throw err;
     }
@@ -273,7 +274,7 @@
         try{
           for(let v=0;v<variants;v++){
             if(state.cancelled)throw new Error('Processing was canceled.');
-            const result=await processOne(file,i,v,total,{variants,mode,resolution},estimate.durations[i],input);
+            const result=await processOne(file,i,v,total,{variants,mode,resolution,fastExport:options.fastExport!==false},estimate.durations[i],input);
             results.push(result);done++;
             if(options.onResult)await options.onResult(result);
             hooks.onProgress(done/total,{done,total});
