@@ -27,6 +27,13 @@ public class BackgroundProcessingTest {
         long end=SystemClock.elapsedRealtime()+5000;while(result.get()==null&&SystemClock.elapsedRealtime()<end)SystemClock.sleep(50);
         assertNotNull("JS callback",result.get());return result.get();
     }
+    @org.junit.Before public void allowTestNotifications() {
+        if(android.os.Build.VERSION.SDK_INT>=33)InstrumentationRegistry.getInstrumentation().getUiAutomation().grantRuntimePermission("com.videovariator.app",android.Manifest.permission.POST_NOTIFICATIONS);
+    }
+    private void reopenFromLauncher()throws Exception {
+        android.os.ParcelFileDescriptor fd=InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand("am start -W -n com.videovariator.app/.MainActivity");
+        try(java.io.InputStream in=new android.os.ParcelFileDescriptor.AutoCloseInputStream(fd)){byte[] b=new byte[1024];while(in.read(b)!=-1){}}
+    }
     @Test public void serviceStartsCancelsAndStops()throws Exception {
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)){
             scenario.onActivity(a->{a.startForegroundService(new Intent(a,ProcessingService.class));});
@@ -54,7 +61,11 @@ public class BackgroundProcessingTest {
             scenario.onActivity(MainActivity::onBackPressed);
             Intent home=new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             app.startActivity(home);SystemClock.sleep(15000);
-            app.startActivity(new Intent(app,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP));
+            // An app cannot launch itself from the background on modern Android.
+            // Reopen as a user would from the launcher, rather than issuing an
+            // app-originated background activity start that Android can deny.
+            reopenFromLauncher();
+            assertEquals(androidx.lifecycle.Lifecycle.State.RESUMED,scenario.getState());
             deadline=SystemClock.elapsedRealtime()+180000;
             while("null".equals(js(scenario,"window.result"))&&SystemClock.elapsedRealtime()<deadline){
                 assertEquals("No encoding error","\"\"",js(scenario,"window.failure"));SystemClock.sleep(500);

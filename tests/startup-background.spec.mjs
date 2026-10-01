@@ -9,6 +9,7 @@ test('slow presentation scripts never expose the old tool layout',async({page})=
   await page.goto(path,{waitUntil:'commit'});
   await expect(page.locator('html')).toHaveClass(/vu-starting/);
   await expect(page.locator(path==='/index.html'?'.shell':'main')).toHaveCSS('visibility','hidden');
+  if(path==='/index.html'){await expect(page.locator('#vu-startup-help')).toBeVisible({timeout:9000});await expect(page.locator('.shell')).toHaveCSS('visibility','hidden');}
   release();
   await expect(page.locator('html')).toHaveClass(/creator-pages/);
   await expect(page.locator('html')).not.toHaveClass(/vu-starting/);
