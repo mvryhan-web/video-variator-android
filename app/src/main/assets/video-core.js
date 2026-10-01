@@ -70,6 +70,10 @@
     }catch(e){
       hooks.onEngine('error');
       try{ffmpeg.terminate();}catch(_){ }
+      if(/simd|Simd128/i.test(String(e?.message||e))){
+        const ru=(navigator.language||'').startsWith('ru');
+        throw new Error(ru?'Для обработки обновите Android System WebView и Chrome, затем перезапустите приложение.':'Update Android System WebView and Chrome, then reopen the app to process video.');
+      }
       throw new Error(`Could not start the local video engine. ${e?.message||e}`);
     }
   }
@@ -157,7 +161,7 @@
       const a=fmt(r.cutAt,3),b=fmt(r.cutAt+r.cutLen,3);
       vf.push(`select='not(between(t\\,${a}\\,${b}))'`,'setpts=N/(30*TB)');
     }
-    vf.push(`setpts=PTS/${fmt(r.speed,6)}`,'format=yuv420p');
+    vf.push(`setpts=PTS/${fmt(r.speed,6)}`,'format=yuv420p','setsar=1');
     const af=[];
     if(audio){
       af.push('aresample=48000');

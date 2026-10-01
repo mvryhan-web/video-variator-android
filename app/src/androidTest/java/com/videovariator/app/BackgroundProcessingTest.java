@@ -27,6 +27,16 @@ public class BackgroundProcessingTest {
         long end=SystemClock.elapsedRealtime()+5000;while(result.get()==null&&SystemClock.elapsedRealtime()<end)SystemClock.sleep(50);
         assertNotNull("JS callback",result.get());return result.get();
     }
+    @Test public void serviceStartsCancelsAndStops()throws Exception {
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)){
+            scenario.onActivity(a->{a.startForegroundService(new Intent(a,ProcessingService.class));});
+            long end=SystemClock.elapsedRealtime()+5000;while(!ProcessingService.active&&SystemClock.elapsedRealtime()<end)SystemClock.sleep(50);
+            assertTrue(ProcessingService.active);
+            scenario.onActivity(a->a.startService(new Intent(a,ProcessingService.class).setAction(ProcessingService.CANCEL)));
+            end=SystemClock.elapsedRealtime()+5000;while(ProcessingService.active&&SystemClock.elapsedRealtime()<end)SystemClock.sleep(50);
+            assertFalse(ProcessingService.active);
+        }
+    }
     @Test public void localEncoderSurvivesHomeAndBackThenSavesGalleryVideo()throws Exception {
         android.content.Context app=ApplicationProvider.getApplicationContext();
         android.content.Context test=InstrumentationRegistry.getInstrumentation().getContext();

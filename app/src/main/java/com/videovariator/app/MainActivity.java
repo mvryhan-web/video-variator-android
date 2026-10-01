@@ -187,7 +187,10 @@ public class MainActivity extends Activity {
         if ("file".equals(scheme) && trustedWebOrigin.startsWith("file://")) return false;
         if ("https".equals(scheme) && !trustedWebOrigin.isEmpty()) {
             String origin = scheme + "://" + uri.getAuthority();
-            if (origin.equalsIgnoreCase(trustedWebOrigin)) return false;
+            if (origin.equalsIgnoreCase(trustedWebOrigin)) {
+                if (processing) { Toast.makeText(this, "Finish or cancel the current video before opening another page.", Toast.LENGTH_SHORT).show(); return true; }
+                return false;
+            }
         }
         if ("https".equals(scheme)) {
             try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); } catch (Exception ignored) { }

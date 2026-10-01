@@ -57,7 +57,7 @@ jobs:
       - name: Test camera recording and Gallery save on Android
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
+          api-level: 35
           arch: x86_64
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-front emulated -camera-back emulated
@@ -68,6 +68,22 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Android-camera-tests
+          path: app/build/reports/androidTests/
+
+      - name: Check foreground service lifecycle on Android 11
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: gradle :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.videovariator.app.BackgroundProcessingTest#serviceStartsCancelsAndStops --stacktrace
+
+      - name: Upload Android 11 service report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-11-service-tests
           path: app/build/reports/androidTests/
 
       - name: Decode stable release keystore

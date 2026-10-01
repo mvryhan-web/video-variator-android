@@ -57,3 +57,28 @@ test('five real variations reuse one source and retain completed results after r
  await expect(page.locator('#historyList .historyItem')).toHaveCount(5);
  await expect(page.locator('#historyList button').filter({hasText:'Download'})).toHaveCount(5);
 });
+
+test('completed output remains downloadable when the next variation is canceled',async({page},info)=>{
+ test.skip(info.project.name!=='chromium');
+ const source=info.outputPath('cancel-source.mp4');
+ execFileSync('ffmpeg',['-v','error','-f','lavfi','-i','color=size=96x160:duration=0.5','-c:v','libx264','-pix_fmt','yuv420p','-y',source]);
+ await page.addInitScript(bytes=>{
+  window.FFmpegWASM={FFmpeg:class{
+   calls=0;pending=null;stopped=false;
+   on(){}async load(){}async writeFile(){}async deleteFile(){}
+   async exec(){if(this.stopped)throw Error('Processing was canceled.');if(++this.calls===1)return 0;return new Promise((resolve,reject)=>this.pending=reject);}
+   async readFile(){return new Uint8Array(bytes);}
+   terminate(){this.stopped=true;this.pending?.(Error('Processing was canceled.'));}
+  }};
+ },Array.from(readFileSync(source)));
+ await page.goto('/');await page.locator('#fileInput').setInputFiles(source);
+ await page.locator('#variantCount').selectOption('5');await page.locator('#startBtn').click();
+ await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('vv_history')||'[]').length)).toBe(1);
+ await page.locator('#cancelBtn').click();
+ await expect.poll(()=>page.evaluate(()=>VideoVariatorCore.state.running)).toBe(false);
+ expect(await page.evaluate(()=>VUProcessingSession.active)).toBe(false);
+ await page.reload();await page.locator('[data-view="history"]').evaluate(e=>e.click());
+ await expect(page.locator('#historyList .historyItem')).toHaveCount(1);
+ const downloaded=page.waitForEvent('download');await page.locator('#historyList').getByRole('button',{name:'Download',exact:true}).click();
+ expect((await downloaded).suggestedFilename()).toContain('variant_1.mp4');
+});
