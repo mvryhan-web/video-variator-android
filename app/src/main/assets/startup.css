@@ -1,0 +1,7 @@
+/* Only the finished presentation is painted. No older layout behind an overlay. */
+html.vu-starting body > :not(script):not(link){visibility:hidden}
+html.vu-starting::after{content:"Video Uniquifier";position:fixed;inset:0;display:grid;place-items:center;color:#bbc8e8;background:#080e1b;font:600 18px system-ui;letter-spacing:.04em}
+html[data-theme="light"].vu-starting::after{background:#f4f7fb;color:#293654}
+html.vu-starting #vu-startup-help{visibility:visible!important;position:fixed;z-index:2;top:54%;left:5%;width:90%;text-align:center;color:#bbc8e8;font:14px system-ui}
+#vu-startup-help button{border:1px solid #8fa1c0;border-radius:12px;padding:10px 22px;background:#172438;color:#fff;cursor:pointer}
+html[data-theme="light"].vu-starting #vu-startup-help{color:#293654}
