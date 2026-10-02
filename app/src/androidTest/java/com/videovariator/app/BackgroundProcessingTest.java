@@ -65,7 +65,17 @@ public class BackgroundProcessingTest {
             // Reopen as a user would from the launcher, rather than issuing an
             // app-originated background activity start that Android can deny.
             reopenFromLauncher();
-            assertEquals(androidx.lifecycle.Lifecycle.State.RESUMED,scenario.getState());
+            // am start -W waits for launch, not completion of lifecycle callbacks.
+            // ActivityScenario.getState throws during an intermediate STARTED stage.
+            deadline=SystemClock.elapsedRealtime()+10000;
+            boolean resumed=false;
+            while(!resumed&&SystemClock.elapsedRealtime()<deadline){
+                InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+                try{resumed=scenario.getState()==androidx.lifecycle.Lifecycle.State.RESUMED;}
+                catch(NullPointerException transitionInProgress){/* Retry only within this bounded lifecycle wait. */}
+                if(!resumed)SystemClock.sleep(100);
+            }
+            assertTrue("Original Activity resumes after launcher return",resumed);
             deadline=SystemClock.elapsedRealtime()+180000;
             while("null".equals(js(scenario,"window.result"))&&SystemClock.elapsedRealtime()<deadline){
                 assertEquals("No encoding error","\"\"",js(scenario,"window.failure"));SystemClock.sleep(500);
