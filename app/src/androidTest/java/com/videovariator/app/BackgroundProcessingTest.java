@@ -31,7 +31,7 @@ public class BackgroundProcessingTest {
         if(android.os.Build.VERSION.SDK_INT>=33)InstrumentationRegistry.getInstrumentation().getUiAutomation().grantRuntimePermission("com.videovariator.app",android.Manifest.permission.POST_NOTIFICATIONS);
     }
     private void reopenFromLauncher()throws Exception {
-        android.os.ParcelFileDescriptor fd=InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand("am start -W -n com.videovariator.app/.MainActivity");
+        android.os.ParcelFileDescriptor fd=InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand("am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n com.videovariator.app/.MainActivity");
         try(java.io.InputStream in=new android.os.ParcelFileDescriptor.AutoCloseInputStream(fd)){byte[] b=new byte[1024];while(in.read(b)!=-1){}}
     }
     @Test public void serviceStartsCancelsAndStops()throws Exception {
@@ -51,7 +51,11 @@ public class BackgroundProcessingTest {
         String html="<html><head><script>window.errors=[];window.onerror=(m)=>window.errors.push(String(m));</script></head><body><div id='progressCard'></div><script src='https://video-variator-android.onrender.com/vendor/ffmpeg/ffmpeg.js'></script><script>"+
             read(app,"processing-session.js")+read(app,"video-core.js")+
             "window.failure='';window.result=null;const bytes=Uint8Array.from(atob("+JSONObject.quote(fixture)+"),c=>c.charCodeAt(0));VideoVariatorCore.setFiles([new File([bytes],'background.mp4',{type:'video/mp4'})]);VideoVariatorCore.process({variants:2,resolution:'720x1280'}).then(r=>window.result=r).catch(e=>window.failure=e.message);</script></body></html>";
-        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)){
+        // Match the real launcher Intent on both launches. MainActivity updates
+        // getIntent() in onNewIntent; ActivityScenario ignores lifecycle events if
+        // the new action/categories differ from the original launch Intent.
+        Intent launch=new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setClass(app,MainActivity.class);
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(launch)){
             scenario.onActivity(a->web(a.getWindow().getDecorView()).loadDataWithBaseURL("https://video-variator-android.onrender.com/",html,"text/html","UTF-8",null));
             long deadline=SystemClock.elapsedRealtime()+90000;
             while(!"true".equals(js(scenario,"!!window.VideoVariatorCore?.state.loaded"))&&SystemClock.elapsedRealtime()<deadline)SystemClock.sleep(300);
