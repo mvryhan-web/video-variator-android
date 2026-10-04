@@ -116,7 +116,7 @@ function init(){
 if(document.documentElement.classList.contains('creator-pages'))return;
 document.documentElement.classList.add('creator-pages');
 const tools=$('.free-tools-page'),avatar=$('.avatar-studio');
-if(tools){
+if(tools&&!tools.hasAttribute('data-tool-hub')){
  nav(tools);hero($('.free-tools-hero'),c.hub,'.free-tools-hero [data-t="privacy"]');
  const badges=element('div','cp-benefits');[c.free,c.local,c.saved].forEach(t=>badges.append(element('span','',t)));$('.free-tools-hero').append(badges);
  text('.media-tools-card .section-intro h2',c.mediaTitle);text('.media-tools-card .section-intro p',c.mediaIntro);

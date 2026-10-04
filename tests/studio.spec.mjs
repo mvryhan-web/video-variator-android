@@ -4,7 +4,7 @@ test('Portrait Cutout is removed and Avatar Narrator remains exposed',async({pag
  test.setTimeout(60000);
  await page.goto('/free-tools.html',{waitUntil:'domcontentloaded',timeout:45000});
  await expect(page.getByText('Portrait cutout')).toHaveCount(0);
- await expect(page.getByText('Avatar Narrator')).toBeVisible();
+ await expect(page.locator('.avatar-launch-card')).toHaveCount(0);await expect(page.locator('[data-hub-tool]')).toHaveCount(8);
  await expect(page.locator('a[href*="ai-tools"]')).toHaveCount(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
@@ -70,13 +70,13 @@ test('Avatar Narrator is plan-gated and requires user consent before generation'
 
 test('native camera opens with the current prompt settings',async({page})=>{
  await page.addInitScript(()=>{window.AndroidBridge={openTeleprompter:(...args)=>window.cameraArgs=args};});
- await page.goto('/free-tools.html',{waitUntil:'domcontentloaded'});await page.locator('#script').fill('Read this script');await page.locator('#cameraOpen').click();
+ await page.goto('/free-tools.html?tool=prompter',{waitUntil:'domcontentloaded'});await page.locator('#script').fill('Read this script');await page.locator('#cameraOpen').click();
  expect(await page.evaluate(()=>window.cameraArgs)).toEqual(['Read this script',30,36,false]);
 });
 
 test('browser camera records a playable local video and scrolls only during recording',async({browser},info)=>{
  test.skip(info.project.name!=='chromium');const context=await browser.newContext({permissions:['camera','microphone']});const page=await context.newPage();
- await page.goto('http://127.0.0.1:3000/free-tools.html');await page.locator('#script').fill('Hello from our studio.\n'.repeat(100));await page.locator('#cameraOpen').click();
+ await page.goto('http://127.0.0.1:3000/free-tools.html?tool=prompter');await page.locator('#script').fill('Hello from our studio.\n'.repeat(100));await page.locator('#cameraOpen').click();
  await expect(page.locator('#play')).toBeEnabled();await page.locator('#play').click();await expect(page.locator('#play')).toHaveAttribute('aria-pressed','true');
  await expect.poll(()=>page.locator('#prompter').evaluate(e=>e.scrollTop)).toBeGreaterThan(15);await page.locator('#play').click();await expect(page.locator('#cameraResults video')).toBeVisible();
  const d=page.waitForEvent('download');await page.locator('#cameraResults button').first().click();expect((await d).suggestedFilename()).toMatch(/VideoUniquifier-Prompter-.*\.(mp4|webm)/);
