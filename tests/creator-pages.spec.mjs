@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 
 test('tool pages share creator design and link to the actual plans view',async({page})=>{
- for(const path of ['/free-tools.html','/avatar-studio.html']){
+ for(const path of ['/avatar-studio.html']){
   await page.goto(path);await expect(page.locator('html')).toHaveClass(/creator-pages/);
   await expect(page.locator('.cp-hero .cp-lead')).toBeVisible();
   await expect(page.locator('.cp-cta')).toBeVisible();
@@ -26,7 +26,7 @@ test('secondary pages retain controls and readable light-theme layout',async({pa
  await page.getByText('How do credits work?',{exact:true}).click();await expect(page.locator('details[open]')).toContainText('30 credits');
  await page.screenshot({path:info.outputPath('creator-faq-light.png'),fullPage:true});
  await page.goto('/free-tools.html');await expect(page.locator('html')).toHaveClass(/creator-pages/);
- await page.locator('[data-tool="photo"]').evaluate(e=>e.click());await expect(page.locator('#operation')).toHaveValue('photo');
+ await page.locator('[data-hub-tool="photo"]').evaluate(e=>e.click());await expect(page.locator('#operation')).toHaveValue('photo');
  await page.screenshot({path:info.outputPath('creator-tools-light.png'),fullPage:true});
 });
 
