@@ -11,7 +11,15 @@ export function envelopeFromSamples(samples,rate=16000){
 }
 export function amplitudeExpression(envelope){
  if(!envelope?.segments?.length)return '1';
- let e='0';for(const s of [...envelope.segments].reverse())e=`if(lt(t\\,${s.end.toFixed(3)})\\,${s.amp.toFixed(2)}\\,${e})`;return e;
+ // Balanced decisions keep FFmpeg's expression parser below its recursion limit.
+ // Include the silent tail so motion stops at exactly the end of the narration.
+ const segments=envelope.segments;
+ function branch(lo,hi){
+  if(lo===hi)return lo===segments.length?'0':segments[lo].amp.toFixed(2);
+  const mid=Math.floor((lo+hi)/2);
+  return `if(lt(t\\,${segments[mid].end.toFixed(3)})\\,${branch(lo,mid)}\\,${branch(mid+1,hi)})`;
+ }
+ return branch(0,segments.length);
 }
 export function buildAvatarFilter({w,h,fps=24,envelope,mouth={}}){
  const even=n=>Math.max(2,Math.round(n/2)*2),top=even(h*.58),bottom=h-top;
