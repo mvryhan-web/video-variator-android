@@ -16,13 +16,14 @@
 <main class="tools avatar-studio">
 <header><a href="index.html" data-av="back">← Back</a><span>Video Uniquifier</span></header>
 <div class="avatar-hero">
-  <span class="pill accent" data-av="included">Free 720p test · Full quality in Basic, Pro & Business</span>
+  <span class="pill accent" data-av="included">720p · 1080p · 4K — available to everyone</span>
   <h1 data-av="title">Avatar Narrator</h1>
   <p data-av="intro">Put your video on top and your photo avatar below. Choose one narration source: a device voice or your own voice.</p>
 </div>
 <section class="tool-card avatar-card">
-  <div class="avatar-plan-row"><div><span data-av="plan">Access</span><b id="avatarPlan">Checking account…</b></div><small id="avatarQuality">720p / 1080p / 4K by plan</small></div>
+  <div class="avatar-plan-row"><div><span data-av="plan">Access</span><b id="avatarPlan">Checking account…</b></div><small id="avatarQuality">720p / 1080p / 4K</small></div>
 
+  <label class="avatar-quality-control"><span id="avatarQualityLabel">Output quality</span><select id="avatarOutputQuality"><option value="720">720p</option><option value="1080">1080p</option><option value="2160">4K</option></select><small id="avatarQualityHelp">All qualities are unlocked. 4K takes more time and device memory; it cannot restore missing detail.</small></label>
   <div class="avatar-grid compact-upload-grid">
     <label><span data-av="video">1 · Source video</span><input id="avatarVideo" type="file" accept="video/*"><small id="avatarVideoSaved" class="muted saved-file-note"></small></label>
     <label><span data-av="photo">2 · Your avatar photo</span><input id="avatarPhoto" type="file" accept="image/jpeg,image/png,image/webp"><small id="avatarPhotoSaved" class="muted saved-file-note"></small></label>
@@ -46,7 +47,7 @@
       </label>
     </div>
 
-    <div id="googleVoicePanel" class="voice-mode-panel" hidden><p id="googleVoiceNotice" role="status"></p><label><span id="googleLanguageLabel">Language</span><select id="googleLanguage"></select></label><label><span id="googleVoiceLabel">Voice</span><select id="googleVoice"></select></label><label class="consent-line"><input id="googleTextConsent" type="checkbox"><span id="googleConsentCopy">I agree to send the script to Google for narration. Video and photo stay on my device. Up to 1,000 characters; free quota applies.</span></label><div class="actions"><button id="googlePreview" type="button" disabled>Preview voice</button><button id="googleStop" type="button">Stop</button></div><audio id="googleAudioPreview" controls hidden></audio></div>
+    <div id="googleVoicePanel" class="voice-mode-panel" hidden><p id="googleVoiceNotice" role="status"></p><label><span id="googleLanguageLabel">Language</span><select id="googleLanguage"></select></label><label><span id="googleVoiceLabel">Voice</span><select id="googleVoice"></select></label><details id="googleVoicePicker"><summary id="googleVoicePickerLabel">Listen & choose a voice</summary><div id="googleVoiceOptions"></div></details><label class="consent-line"><input id="googleTextConsent" type="checkbox"><span id="googleConsentCopy">I agree to send the script to Google for narration. Video and photo stay on my device. Up to 1,000 characters; free quota applies.</span></label><div class="actions"><button id="googlePreview" type="button">Preview voice</button><button id="googleStop" type="button">Stop</button></div><audio id="googleAudioPreview" controls hidden></audio></div>
     <div id="deviceVoicePanel" class="voice-mode-panel" hidden>
       <h3 data-av="deviceVoice">Device voice</h3>
       <p data-av="deviceVoiceNote">Open the list and tap any voice to hear it. Press Select on the voice you want to use in the finished video.</p>
