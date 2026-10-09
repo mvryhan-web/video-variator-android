@@ -307,12 +307,12 @@ test('Avatar voice list auditions in place and Select closes the list',async({pa
   await expect(page.locator('#avatarSelectVoice')).toHaveCount(0);
   await page.locator('#voicePickerToggle').click();
   await expect(page.locator('#voicePickerMenu')).toBeVisible();
-  await expect(page.locator('.voice-option')).toHaveCount(2);
-  await page.locator('.voice-option').nth(1).locator('.voice-option-preview').click();
+  await expect(page.locator('#voicePickerMenu .voice-option')).toHaveCount(2);
+  await page.locator('#voicePickerMenu .voice-option').nth(1).locator('.voice-option-preview').click();
   await expect.poll(()=>page.evaluate(()=>window.__spoken.length)).toBe(1);
   expect((await page.evaluate(()=>window.__spoken[0])).voice).toBe('Test Voice Two');
   await expect(page.locator('#voicePickerMenu')).toBeVisible();
-  await page.locator('.voice-option').nth(1).locator('.voice-option-select').click();
+  await page.locator('#voicePickerMenu .voice-option').nth(1).locator('.voice-option-select').click();
   await expect(page.locator('#voicePickerMenu')).toBeHidden();
   await expect(page.locator('#voicePickerLabel')).toContainText('Test Voice Two');
   await expect(page.locator('#voicePreviewStatus')).toContainText('Selected: Test Voice Two');
@@ -331,7 +331,7 @@ test('Avatar project restores files text consent and selected voice after reload
   await page.locator('#voiceConsent').check();
   await page.locator('#voiceModeDevice').check();
   await page.locator('#voicePickerToggle').click();
-  await page.locator('.voice-option-select').first().click();
+  await page.locator('#voicePickerMenu .voice-option-select').first().click();
   await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('vu_avatar_draft_v2')||'{}').files?.video?.name)).toBe('remember.mp4');
   await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.locator('#avatarText')).toHaveValue('Remember this narration.');
@@ -374,8 +374,8 @@ test('Android native voice list opens, previews David Voice, and Select closes i
   await page.locator('#avatarText').fill('Native voice preview text');
   await page.locator('#voicePickerToggle').click();
   await expect(page.locator('#voicePickerMenu')).toBeVisible();
-  await expect(page.locator('.voice-option')).toHaveCount(2);
-  const david=page.locator('.voice-option').filter({hasText:'David Voice'});
+  await expect(page.locator('#voicePickerMenu .voice-option')).toHaveCount(2);
+  const david=page.locator('#voicePickerMenu .voice-option').filter({hasText:'David Voice'});
   await david.locator('.voice-option-preview').click();
   await expect.poll(()=>page.evaluate(()=>window.__nativeSpoken.length)).toBe(1);
   expect((await page.evaluate(()=>window.__nativeSpoken[0])).name).toBe('David Voice');
@@ -503,7 +503,7 @@ test('selected Android device voice is synthesized into Avatar export audio',asy
   await page.locator('#voiceModeDevice').check();
   await page.locator('#avatarText').fill('This should be spoken by David.');
   await page.locator('#voicePickerToggle').click();
-  await page.locator('.voice-option-select').first().click();
+  await page.locator('#voicePickerMenu .voice-option-select').first().click();
   await page.locator('#voiceConsent').check();
   await expect(page.locator('#avatarGenerate')).toBeEnabled();
   await page.locator('#avatarGenerate').click();
