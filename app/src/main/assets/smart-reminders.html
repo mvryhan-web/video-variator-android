@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Smart reminders · Video Uniquifier</title>
+<link rel="stylesheet" href="free-tools.css"><link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="creator-pages.css"><link rel="stylesheet" href="tools-hub.css"><link rel="stylesheet" href="smart-reminders.css">
+<script src="theme.js"></script>
+</head><body><main class="tools reminder-page">
+<header><a class="tool-back" href="free-tools.html" id="reminderBack">← Free tools</a><span>Video Uniquifier</span></header>
+<div class="free-tools-hero"><h1 id="reminderTitle">Smart reminders</h1><p id="reminderLead">A simple reminder you can write or dictate. Free, no video credits.</p></div>
+<section class="tool-card" aria-labelledby="reminderFormTitle"><h2 id="reminderFormTitle">Create a reminder</h2>
+<label><span id="spokenLabel">Describe your reminder (optional)</span>
+<textarea id="spokenReminder" rows="2" maxlength="500" placeholder="Remind me to exercise every Monday at 6 PM, one hour before"></textarea></label>
+<div class="reminder-speech-row"><button type="button" id="reminderMic">🎙️ Dictate</button><button type="button" id="reminderParse">Fill fields from text</button></div>
+<p id="parseHint" class="tool-limits" aria-live="polite"></p>
+<label><span id="reminderWhatLabel">What should I remind you?</span><input id="reminderWhat" maxlength="180" required placeholder="Gym, meeting, cancel subscription…"></label>
+<div class="reminder-fields"><label><span id="reminderDateLabel">Day / month / year</span><input id="reminderDate" type="date" required></label>
+<label><span id="reminderTimeLabel">Time</span><input id="reminderTime" type="time" required value="18:00"></label></div>
+<div class="reminder-fields">
+<label><span id="repeatLabel">Repeat</span><select id="repeatRule"><option value="none">One time</option><option value="daily">Every day</option><option value="weekly">Selected weekdays</option><option value="monthly">Every month</option></select></label>
+<label><span id="advanceLabel">Notify in advance</span><select id="advanceMinutes"><option value="0">At the event</option><option value="5">5 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="60" selected>1 hour</option><option value="120">2 hours</option><option value="1440">1 day</option></select></label>
+</div>
+<fieldset id="repeatDays" hidden><legend id="daysLabel">Days of the week</legend><div class="reminder-weekdays"><label><input type="checkbox" value="1"> <span>Mon</span></label><label><input type="checkbox" value="2"> <span>Tue</span></label><label><input type="checkbox" value="3"> <span>Wed</span></label><label><input type="checkbox" value="4"> <span>Thu</span></label><label><input type="checkbox" value="5"> <span>Fri</span></label><label><input type="checkbox" value="6"> <span>Sat</span></label><label><input type="checkbox" value="7"> <span>Sun</span></label></div></fieldset>
+<label><span id="notifyViaLabel">How should you receive it?</span><select id="notifyVia"><option value="push">Notification from the app</option><option value="telegram">Telegram bot</option><option value="both">Both</option></select></label>
+<div class="reminder-help"><p id="reminderZone"></p><p id="notifySupport"></p></div>
+<div class="actions"><button type="button" id="enableNotifications">Enable notifications</button><button type="button" id="connectTelegram">Connect Telegram</button></div>
+<div class="reminder-confirm" id="reminderConfirmation" hidden><h3 id="confirmHeading">Please confirm</h3><p id="confirmSummary"></p><div class="actions"><button type="button" id="confirmSave">Save reminder</button><button type="button" id="confirmEdit">Edit</button></div></div>
+<div class="actions"><button type="button" id="reminderPreview">Check time before saving</button></div>
+<p role="status" aria-live="polite" id="reminderStatus"></p>
+</section>
+<section class="tool-card" aria-labelledby="listHeading"><h2 id="listHeading">Your reminders</h2><p id="listDescription">Edit or delete reminders any time.</p><div id="reminderList"></div></section>
+</main>
+<script src="smart-reminders.js" type="module"></script>
+</body></html>
