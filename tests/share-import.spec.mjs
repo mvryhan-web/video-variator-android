@@ -38,3 +38,15 @@ test('tool back buttons have a visible touch target and return to dashboard',asy
     await expect(page).toHaveURL(/index.html$/);
   }
 });
+
+test('a job started during share import keeps its source selection',async({page})=>{
+  await page.goto('/');
+  await page.evaluate(()=>{
+    VideoVariatorUI.setFiles([new File(['old'],'current-job.mp4',{type:'video/mp4'})]);
+    window.shareFinished=false;
+    window.AndroidBridge={getSharedVideos:()=>JSON.stringify([{id:'new',name:'new.mp4',type:'video/mp4',size:4}]),readSharedVideo(){VideoVariatorCore.state.running=true;return 'AQIDBA==';},finishSharedVideoImport(){shareFinished=true;}};
+    window.dispatchEvent(new Event('vu-shared-videos'));
+  });
+  await expect.poll(()=>page.evaluate(()=>shareFinished)).toBe(true);
+  expect(await page.evaluate(()=>VideoVariatorCore.getFiles()[0].name)).toBe('current-job.mp4');
+});

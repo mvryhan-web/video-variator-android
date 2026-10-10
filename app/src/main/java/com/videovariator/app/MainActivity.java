@@ -366,6 +366,11 @@ public class MainActivity extends Activity {
                 sharedVideoMetadata = metadata.toString();
                 runOnUiThread(() -> {
                     if (isDestroyed()) { clearSharedVideos(); return; }
+                    if (processing) {
+                        clearSharedVideos();
+                        Toast.makeText(this, "Finish the current task, then share the video again.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
                     String current = webView.getUrl();
                     if (dashboardUrl.equals(current) || (trustedWebOrigin + "/").equals(current)) {
                         webView.evaluateJavascript("window.dispatchEvent(new Event('vu-shared-videos'))", null);

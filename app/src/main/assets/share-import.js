@@ -25,6 +25,9 @@
         }
         files.push(new File(parts, item.name, {type: item.type}));
       }
+      // A job may have started while the content chunks were being read.
+      // Never replace its source selection or navigate away from its worker.
+      if (window.VideoVariatorCore?.state.running) throw new Error('Processing is active');
       ui.showView('dashboard');
       ui.setFiles(files);
       document.getElementById('workspace')?.scrollIntoView({block: 'start'});
