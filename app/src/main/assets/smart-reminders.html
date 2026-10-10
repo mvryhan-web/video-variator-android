@@ -28,6 +28,13 @@
 <p role="status" aria-live="polite" id="reminderStatus"></p>
 </section>
 <section class="tool-card" aria-labelledby="listHeading"><h2 id="listHeading">Your reminders</h2><p id="listDescription">Edit or delete reminders any time.</p><div id="reminderList"></div></section>
+<section class="tool-card" id="quick-notes" aria-labelledby="notesHeading">
+<h2 id="notesHeading">Quick notes</h2>
+<p id="notesHint">Write something down in seconds. Notes sync across devices with your account.</p>
+<label><span id="notesBodyLabel">New note</span><textarea id="notesBody" rows="3" maxlength="2000" placeholder="Write a quick note…"></textarea></label>
+<div class="actions"><button id="notesSave" type="button">Save note</button></div>
+<p id="notesStatus" role="status"></p><div id="notesList"></div>
+</section>
 </main>
 <script src="smart-reminders.js" type="module"></script>
 </body></html>
