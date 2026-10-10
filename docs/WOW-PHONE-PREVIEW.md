@@ -1,8 +1,8 @@
 # Owner phone acceptance build
 
 The `wow-phone-preview` pull request enables `VV_BUNDLED_PREVIEW=true` only
-in its Android CI build. Normal builds default to false. No main deployment,
-public Release, Render service, database, provider setting or price is changed.
+in its Android branch/PR CI build. Normal builds default to false. No main deployment,
+stable Release, Render service, database, provider setting or price is changed.
 
 The preview keeps `com.videovariator.app` and the existing signing key.
 The native WebView serves packaged static screens at the existing HTTPS origin;
@@ -27,3 +27,25 @@ time, visible errors and background/resume behavior. No speed target guaranteed.
 
 An iPhone cannot install this APK. Safari/PWA phone acceptance needs a separately
 approved HTTPS preview path; the production URL still serves the published code.
+
+## WOW v2 owner-feedback revision
+
+The initial v1 zoom of 1.2–2.5% was too subtle. V2 uses a 0–0.48-second
+opening settle and up to five subsequent, non-overlapping zoom/pan pulses.
+Motion measurements choose 8%, 11.5% or 15% pulse zoom; the opening is capped
+at 16%, and total framing relative to the standard recipe stays within 1.22x.
+Direction alternates; the existing recipe shift can reverse the pattern.
+All accents use one perspective pass, no added frame cuts, speed changes,
+flashes, new audio, aspect-ratio changes or extra encode pass. Pixel content
+is reframed/resampled: this does not guarantee preserved detail or immunity
+from duplicate recognition. There is no speech, semantic or beat recognition.
+Only the first 12 seconds are analyzed and edited in this revision.
+Uncertain analysis still skips, and render failures retain the original
+recipe. UI reports the count of actual applied camera accents or the skip/
+fallback reason. Main, Render, auth, billing and the separate tools policy
+remain untouched. The original published test APK is v1 until a new tested
+asset is explicitly published; old release assets must not be overwritten.
+
+CI also runs on pushes to this isolated preview branch because the draft PR
+can conflict with evolving main. Preview concurrency is isolated from main;
+normal release publication remains guarded to main and stable signing.

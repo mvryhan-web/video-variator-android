@@ -34,8 +34,7 @@ for(const scenario of [
     let enhanced=enabled.commands.find(c=>c.some(arg=>arg.includes('perspective=')));
     assert.ok(enhanced,'planner selected a real effect');
     if(!scenario.audio){enhanced=[...enhanced];const af=enhanced.indexOf('-af');enhanced.splice(af,2,'-an');const ac=enhanced.indexOf('-c:a');enhanced.splice(ac,4);}
-    const window=enhanced[enhanced.indexOf('-vf')+1].match(/enable='between\(t,([\d.]+),([\d.]+)\)'/);
-    assert.ok(window);const sampleTime=(Number(window[1])+Number(window[2]))/2;
+    const sampleTime=1.5;
     const outputs=[];
     for(const [name,captured] of [['off',base.commands.at(-1)],['on',enhanced]]){
       const output=join(folder,name+'.mp4'),command=[...captured];
@@ -57,7 +56,7 @@ for(const scenario of [
     assert.equal(outputs[0].video.nb_frames,outputs[1].video.nb_frames);
     if(scenario.audio)assert.deepEqual(outputs[0].pcm,outputs[1].pcm,'WOW must preserve decoded standard audio exactly');
     let difference=0;for(let i=0;i<outputs[0].image.length;i++)difference+=Math.abs(outputs[0].image[i]-outputs[1].image[i]);
-    assert.ok(difference/outputs[0].image.length>.05,'effect changes actual decoded pixels');
+    assert.ok(difference/outputs[0].image.length>2.5,'effect changes actual decoded pixels');
     console.log('WOW_MEDIA '+JSON.stringify({mode:scenario.mode,resolution:scenario.resolution,offMs:Math.round(outputs[0].renderMs),onMs:Math.round(outputs[1].renderMs),format:scenario.format,profile:analysis.profile,pixelDifference:difference/outputs[0].image.length,audioIdentical:scenario.audio?true:null,duration:outputs[1].video.duration}));
   }finally{rmSync(folder,{recursive:true,force:true});}
 });

@@ -1,4 +1,4 @@
-// Local visual montage v1. No network, models, semantic/audio classification or randomness.
+// Local visual montage v2. No network, models, semantic/audio classification or randomness.
 ((root) => {
   'use strict';
   const WIDTH=160, HEIGHT=90, FPS=4, MAX_FRAMES=48, MAX_SECONDS=12;
@@ -53,9 +53,9 @@
   }
 
   function plan(analysis, recipe) {
-    const empty=reason=>({version:1,status:'skipped',reason,profile:analysis?.profile||'unknown',effects:[]});
+    const empty=reason=>({version:2,status:'skipped',reason,profile:analysis?.profile||'unknown',effects:[]});
     if(!analysis||!finite(analysis.confidence)||analysis.confidence<.65||!Array.isArray(analysis.scenes)||!['calm','moderate','moving'].includes(analysis.profile))return empty('low-confidence');
-    if(!finite(recipe.speed)||recipe.speed<=0)return empty('invalid-timeline');
+    if(![recipe.speed,recipe.trimStart,recipe.usable,recipe.zoom].every(finite)||recipe.speed<=0||recipe.zoom<1)return empty('invalid-timeline');
     const sourceEnd=recipe.trimStart+recipe.usable;
     const cutStart=recipe.trimStart+recipe.cutAt,cutEnd=cutStart+recipe.cutLen;
     const map=t=>(t-recipe.trimStart-(recipe.useCut&&t>=cutEnd?recipe.cutLen:0))/recipe.speed;
@@ -64,35 +64,49 @@
       const start=Math.max(scene.start,recipe.trimStart),end=Math.min(scene.end,sourceEnd);
       if(end<=start)continue;
       const parts=recipe.useCut?[[start,Math.min(end,cutStart)],[Math.max(start,cutEnd),end]]:[[start,end]];
-      for(const [a,b] of parts){if(b>a)intervals.push({start:map(a)+.3,end:map(b)-.3});}
+      for(const [a,b] of parts){if(b>a)intervals.push({start:Math.max(0,map(a)),end:map(b)});}
     }
-    const interval=intervals.find(i=>i.end-i.start>=2);
-    if(!interval)return empty('no-safe-scene');
-    // Bound total framing change and reduce added motion when the mode already moves.
-    const desired={calm:.012,moderate:.018,moving:.025}[analysis.profile];
-    const headroom=Math.max(0,1.045/recipe.zoom-1);
-    const zoom=Math.min(desired,headroom)*(recipe.motionX>0?.65:1);
-    if(zoom<.004)return empty('existing-framing-limit');
-    return{version:1,status:'planned',profile:analysis.profile,reason:'measured-frame-motion',effects:[{
-      type:'camera',start:interval.start,end:Math.min(interval.end,interval.start+5),zoom,speed:recipe.speed,
-      pan:analysis.profile==='moving'?.18:.08,
-    }]};
+    // Keep total crop bounded even with Dynamic's existing framing. There are
+    // no extra timeline edits, audio changes, black borders or flashes.
+    const zoom=Math.min({calm:.08,moderate:.115,moving:.15}[analysis.profile],Math.max(0,1.22/recipe.zoom-1));
+    if(zoom<.04)return empty('existing-framing-limit');
+    const effects=[],direction=finite(recipe.shiftX)&&recipe.shiftX<0?-1:1;
+    const add=(kind,start,end,index)=>effects.push({type:'camera',kind,start,end,zoom:kind==='intro'?Math.min(.16,zoom*1.25,1.22/recipe.zoom-1):zoom,speed:recipe.speed,pan:analysis.profile==='calm'?.35:.7,direction:index%2?-direction:direction});
+    for(const interval of intervals){
+      let cursor=interval.start+.15;
+      if(interval.start<.04&&interval.end>=.7){add('intro',0,.48,0);cursor=.9;}
+      const length=analysis.profile==='calm'?2.2:analysis.profile==='moderate'?1.5:1.05;
+      const gap=analysis.profile==='calm'?1.3:.65;
+      while(cursor+length<=interval.end-.15&&effects.length<6){
+        add('pulse',cursor,cursor+length,effects.length);cursor+=length+gap;
+      }
+    }
+    if(!effects.length)return empty('no-safe-scene');
+    return{version:2,status:'planned',profile:analysis.profile,reason:'measured-frame-motion',effects};
   }
 
   function appendFilters(command, montage) {
     if(!montage.effects.length)return [...command];
-    const e=montage.effects[0];
-    if(e.type!=='camera'||![e.start,e.end,e.zoom,e.speed,e.pan].every(finite)||e.end<=e.start||e.zoom<=0||e.zoom>.03||e.speed<=0||e.pan<0||e.pan>.2)throw Error('Unsafe montage plan');
-    const num=n=>Number(n.toFixed(6));
-    const time=`in/(30*${num(e.speed)})`;
-    const phase=`max(0,min(1,(${time}-${num(e.start)})/${num(e.end-e.start)}))`;
-    const inset=`${num(e.zoom/(2*(1+e.zoom)))}*pow(sin(PI*(${phase})),2)`;
-    const dx=`(${inset})*${num(e.pan)}*sin(2*PI*(${phase}))`;
-    const dy=`(${inset})*${num(e.pan/2)}*sin(PI*(${phase}))`;
+    if(montage.effects.length>6)throw Error('Unsafe montage plan');
+    const num=n=>Number(n.toFixed(6)),insets=[],dxs=[],dys=[];
+    let previousEnd=-1;
+    for(const e of montage.effects){
+      if(e.type!=='camera'||!['intro','pulse'].includes(e.kind)||![e.start,e.end,e.zoom,e.speed,e.pan,e.direction].every(finite)||e.start<0||e.start<previousEnd||e.end<=e.start||e.zoom<=0||e.zoom>.16||e.speed<=0||e.pan<0||e.pan>.7||Math.abs(e.direction)!==1)throw Error('Unsafe montage plan');
+      previousEnd=e.end;
+      const time=`in/(30*${num(e.speed)})`;
+      const phase=`max(0,min(1,(${time}-${num(e.start)})/${num(e.end-e.start)}))`;
+      const envelope=e.kind==='intro'?`pow(1-(${phase}),3)`:`pow(sin(PI*(${phase})),2)`;
+      const inset=`${num(e.zoom/(2*(1+e.zoom)))}*(${envelope})*between(${time},${num(e.start)},${num(e.end)})`;
+      insets.push(`(${inset})`);
+      dxs.push(`(${inset})*${num(e.pan*e.direction)}*sin(2*PI*(${phase}))`);
+      // Opening settles down into place; later gestures have smaller vertical travel.
+      dys.push(`(${inset})*${num(e.kind==='intro'?.65:e.pan*.25)}*${e.kind==='intro'?'1':`sin(PI*(${phase}))`}`);
+    }
+    const inset=insets.join('+'),dx=dxs.join('+'),dy=dys.join('+');
     const left=`W*((${inset})+(${dx}))`,right=`W*(1-(${inset})+(${dx}))`;
     const top=`H*((${inset})+(${dy}))`,bottom=`H*(1-(${inset})+(${dy}))`;
-    // Unlike zoompan, perspective retains incoming timestamps and frame count.
-    const filter=`perspective=x0='${left}':y0='${top}':x1='${right}':y1='${top}':x2='${left}':y2='${bottom}':x3='${right}':y3='${bottom}':sense=source:eval=frame:interpolation=cubic:enable='between(t,${num(e.start)},${num(e.end)})'`;
+    // One pass for all gestures. Perspective preserves timestamps/frame count.
+    const filter=`perspective=x0='${left}':y0='${top}':x1='${right}':y1='${top}':x2='${left}':y2='${bottom}':x3='${right}':y3='${bottom}':sense=source:eval=frame:interpolation=cubic:enable='between(t,0,${num(previousEnd)})'`;
     const result=[...command],index=result.indexOf('-vf');
     if(index<0)throw Error('Missing standard video filter');
     result[index+1]+=','+filter;
@@ -114,5 +128,5 @@
     return ffmpeg.exec(command);
   }
 
-  root.VUWowMontage=Object.freeze({ready:true,version:1,limits:Object.freeze({width:WIDTH,height:HEIGHT,fps:FPS,maxFrames:MAX_FRAMES,maxSeconds:MAX_SECONDS}),analyzeFrames,analysisArgs,analyze,plan,appendFilters,encode});
+  root.VUWowMontage=Object.freeze({ready:true,version:2,limits:Object.freeze({width:WIDTH,height:HEIGHT,fps:FPS,maxFrames:MAX_FRAMES,maxSeconds:MAX_SECONDS}),analyzeFrames,analysisArgs,analyze,plan,appendFilters,encode});
 })(typeof window==='undefined'?globalThis:window);

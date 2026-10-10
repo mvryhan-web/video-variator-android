@@ -256,7 +256,7 @@
       resolution:`${w}×${h}`,aspectRatio:w>h?'16:9':'9:16',
       durationSeconds:Math.ceil(duration),credits:Math.ceil(duration),
       createdAt:new Date().toISOString(),variant:variantIndex+1,audio,
-      ...(montage?{wowMontage:{status:montage.status,reason:montage.reason,profile:montage.profile}}:{})
+      ...(montage?{wowMontage:{version:montage.version,status:montage.status,reason:montage.reason,profile:montage.profile,effectCount:montage.effects.length}}:{})
     };
   }
 

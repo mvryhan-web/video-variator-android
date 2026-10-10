@@ -45,7 +45,7 @@ test('real pinned WASM renders all three modes with WOW and preserves standard a
   },Array.from(readFileSync(source)));
   for(const result of evidence){
     expect(result.status).toBe('applied');expect(result.width).toBe(1280);expect(result.height).toBe(720);
-    expect(result.durationOn).toBeCloseTo(result.durationOff,3);expect(result.audioIdentical).toBe(true);expect(result.pixelDifference).toBeGreaterThan(.05);
+    expect(result.durationOn).toBeCloseTo(result.durationOff,3);expect(result.audioIdentical).toBe(true);expect(result.pixelDifference).toBeGreaterThan(2.5);
   }
   expect(uploads).toEqual([]);console.log('WOW_WASM '+JSON.stringify(evidence));
 });
