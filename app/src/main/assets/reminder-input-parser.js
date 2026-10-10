@@ -21,7 +21,7 @@ function timeValue(h,m,ampm=''){h=Number(h);m=Number(m);if(ampm.toLowerCase()===
 function monthIndex(s){const v=s.toLowerCase();for(let i=0;i<12;i++){if([ruMonths[i],enMonths[i],frMonths[i],ukMonths[i]].some(a=>a&&v.startsWith(a)))return i+1;}return 0;}
 const isoDate=/\b(20\d{2})[-\/](0?[1-9]|1[012])[-\/](0?[1-9]|[12]\d|3[01])\b/;
 const dayDate=/\b(0?[1-9]|[12]\d|3[01])[.\/-](0?[1-9]|1[012])(?:[.\/-](20\d{2}))?\b/;
-const wordDate=/\b(\d{1,2})\s+([^\d\s.,:\/-]{3,18})(?:\s+(20\d{2}))?\b/iu;
+const wordDate=/(?:^|[\s:])(\d{1,2})\s+([\p{L}]{3,18})(?:\s+(20\d{2}))?(?=$|[\s,.;:])/iu;
 function chooseFutureDate(day,month,year,now){const y=year||now.getFullYear();let d=new Date(y,month-1,day);if(!validDate(d,y,month,day))return null;if(!year&&d<new Date(now.getFullYear(),now.getMonth(),now.getDate())){d=new Date(y+1,month-1,day);if(!validDate(d,y+1,month,day))return null;}return d;}
 export function parseReminderText(raw,now=new Date()){
  const text=String(raw||'').trim(),s=text.toLowerCase(),out={title:null,date:null,time:null,recurrence:null,weekdays:[],advanceMinutes:null,notes:[]};
@@ -82,7 +82,7 @@ export function extractTicketDateTimes(text,now=new Date()){
  for(const m of s.matchAll(/\b(\d{1,2})[.\/-](\d{1,2})(?:[.\/-](20\d{2}))?\b/g)){
   const d=chooseFutureDate(+m[1],+m[2],m[3]?+m[3]:null,now);if(d)result.push({date:localDate(d),source:m[0]});
  }
- for(const m of s.matchAll(/\b(\d{1,2})\s+([^\d\s,.:]{3,18})(?:\s+(20\d{2}))?\b/giu)){
+ for(const m of s.matchAll(/(?:^|[\s:])(\d{1,2})\s+([\p{L}]{3,18})(?:\s+(20\d{2}))?(?=$|[\s,.;:])/giu)){
   const month=monthIndex(m[2]);if(!month)continue;const d=chooseFutureDate(+m[1],month,m[3]?+m[3]:null,now);if(d)result.push({date:localDate(d),source:m[0]});
  }
  const dates=[...new Map(result.map(x=>[x.date,x])).values()];
