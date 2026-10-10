@@ -1,3 +1,5 @@
 node_modules/
 test-results/
 playwright-report/
+app/src/main/assets/smart-vendor/
+app/src/main/assets/smart-models/

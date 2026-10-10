@@ -2,14 +2,14 @@ name: Validate Video Variator Web
 
 on:
   push:
-    branches: [ main, free-tools, studio-stage-two, stage-two-avatar-download-fix, wow-phone-preview ]
+    branches: [ main, free-tools, studio-stage-two, stage-two-avatar-download-fix, wow-phone-preview, smart-montage-preview ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
 
 concurrency:
   group: web-${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
-  cancel-in-progress: ${{ github.ref == 'refs/heads/wow-phone-preview' }}
+  cancel-in-progress: ${{ (github.ref == 'refs/heads/wow-phone-preview' || github.ref == 'refs/heads/smart-montage-preview') }}
 
 jobs:
   validate:
@@ -23,6 +23,8 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Prepare pinned local Smart Studio models
+        run: npm run prepare:smart
       - name: Check server syntax
         run: |
           node --check server/server.js
@@ -30,6 +32,9 @@ jobs:
           node --check server/email-auth.js
       - name: Check PWA syntax
         run: |
+          node --check app/src/main/assets/smart-studio.js
+          node --check app/src/main/assets/smart-face-worker.js
+          node --check app/src/main/assets/smart-plan.js
           node --check app/src/main/assets/wow-montage-preview.js
           node --check app/src/main/assets/app-v4.js
           node --check app/src/main/assets/dashboard-controls.js
@@ -85,6 +90,8 @@ jobs:
         run: node --test tests/speech-unit.mjs
       - name: WOW preparation and unchanged video engine baselines
         run: node --test tests/wow-montage-stage1-unit.mjs tests/wow-montage-legacy-media.mjs tests/wow-montage-engine-unit.mjs tests/wow-montage-media.mjs
+      - name: Smart Studio media tests
+        run: node --test tests/smart-plan-unit.mjs
       - name: Cross-browser tests
         run: npm run test:browsers
 

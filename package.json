@@ -9,7 +9,8 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "node --watch server/server.js",
-    "test:browsers": "playwright test"
+    "test:browsers": "playwright test",
+    "prepare:smart": "node scripts/prepare-smart-assets.mjs"
   },
   "dependencies": {
     "@ffmpeg/core": "0.12.10",
@@ -19,7 +20,8 @@
     "express": "5.2.1",
     "jose": "6.2.12",
     "pg": "8.23.0",
-    "stripe": "22.6.2"
+    "stripe": "22.6.2",
+    "@mediapipe/tasks-vision": "1.0.1"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0"

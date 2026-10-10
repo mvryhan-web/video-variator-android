@@ -1,0 +1,21 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {validateClip,selectFace,smoothTrack,cropGeometry,cropExpression,normalizeWords,validateWords,captionFrames,safeStyle} from '../app/src/main/assets/smart-plan.js';
+test('bounded local clip validation rejects invalid/oversized input',()=>{validateClip(60,150*1024*1024);for(const v of [0,-1,NaN,61])assert.throws(()=>validateClip(v,10));assert.throws(()=>validateClip(5,151*1024*1024));});
+test('face association ignores poor detection and follows nearest face',()=>{const faces=[{x:.2,y:.5,w:.2,h:.2,score:.9},{x:.8,y:.5,w:.4,h:.4,score:.8},{x:.4,y:.5,w:.5,h:.5,score:.2}];assert.equal(selectFace(faces,null).x,.8);assert.equal(selectFace(faces,{x:.22,y:.5}).x,.2);assert.equal(selectFace([],null),null);const t=smoothTrack([{t:0,face:faces[0]},{t:1,face:null}]);assert.equal(t[0].x,t[1].x);});
+test('captions retain gaps, word highlighting and reject overlapping edits',()=>{const words=normalizeWords([{text:'Hello',timestamp:[.1,.5]},{text:'world',timestamp:[.7,1]}],2);validateWords(words,2);const f=captionFrames(words,2);assert.equal(f.find(x=>x.start===.5).active,-1);assert.equal(f.find(x=>x.start===.7).active,1);assert.throws(()=>validateWords([{text:'a',start:0,end:1},{text:'b',start:.5,end:1.5}],2));assert.deepEqual(captionFrames([],2),[{start:0,duration:2,words:[],active:-1}]);assert.equal(safeStyle({color:'evil',brand:'x'.repeat(100)}).brand.length,40);});
+test('real FFmpeg moving crop and timed PNG captions preserve audio and duration',()=>{const dir=mkdtempSync(join(tmpdir(),'smart-media-'));try{
+ const input=join(dir,'in.mp4'),png=join(dir,'cap.png'),list=join(dir,'captions.txt'),out=join(dir,'out.mp4');
+ execFileSync('ffmpeg',['-y','-f','lavfi','-i','testsrc2=size=320x180:rate=30:duration=2','-f','lavfi','-i','sine=frequency=440:duration=2','-c:v','libx264','-c:a','aac','-shortest',input],{stdio:'ignore'});
+ execFileSync('ffmpeg',['-y','-f','lavfi','-i','color=red@0.5:size=100x180,format=rgba','-frames:v','1',png],{stdio:'ignore'});
+ writeFileSync(list,"file 'cap.png'\nduration 2\nfile 'cap.png'\n");
+ const x=cropExpression([{t:0,x:.2},{t:.5,x:.35},{t:1,x:.65},{t:1.5,x:.8}],320,180,100);
+ execFileSync('ffmpeg',['-y','-i',input,'-f','concat','-safe','0','-i',list,'-filter_complex',`[0:v]crop=100:180:x='${x}':y=0[b];[1:v]fps=30[s];[b][s]overlay=0:0:format=auto,format=yuv420p[out]`,'-map','[out]','-map','0:a?','-t','2','-c:v','libx264','-preset','ultrafast','-c:a','copy',out],{stdio:'pipe'});
+ const p=JSON.parse(execFileSync('ffprobe',['-v','error','-show_streams','-show_format','-of','json',out]));assert.equal(p.streams.find(s=>s.codec_type==='video').width,100);assert.ok(p.streams.some(s=>s.codec_type==='audio'));assert.ok(Math.abs(Number(p.format.duration)-2)<.12);
+ const a=execFileSync('ffmpeg',['-v','error','-i',out,'-map','0:a','-c:a','copy','-f','adts','-']);const b=execFileSync('ffmpeg',['-v','error','-i',input,'-map','0:a','-c:a','copy','-f','adts','-']);assert.deepEqual(a,b);
+ const frames=execFileSync('ffmpeg',['-v','error','-i',out,'-vf','fps=1','-f','rawvideo','-pix_fmt','rgb24','-']);assert.notDeepEqual(frames.subarray(0,54000),frames.subarray(54000,108000));
+}finally{rmSync(dir,{recursive:true,force:true});}});

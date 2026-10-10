@@ -5,7 +5,7 @@
     window.VU_BUNDLED_PREVIEW=window.AndroidBridge?.isBundledPreview?.()===true;
     if(window.VU_BUNDLED_PREVIEW){
       const notice=document.createElement('div');notice.id='bundledPreviewNotice';
-      notice.textContent='Video Uniquifier · WOW + compact dashboard · v3';
+      notice.textContent='Video Uniquifier · Smart Studio prototype · v1';
       notice.style.cssText='padding:8px 12px;background:#19334b;color:#e6f4ff;text-align:center;font:600 12px system-ui;';
       document.body.prepend(notice);
     }

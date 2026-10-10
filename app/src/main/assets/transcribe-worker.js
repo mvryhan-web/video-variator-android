@@ -7,7 +7,7 @@ self.onmessage=async({data})=>{
  try{
   if(!recognizer)recognizer=await pipeline('automatic-speech-recognition','Xenova/whisper-base',{dtype:'q8',device:'wasm',progress_callback:p=>{if(p.status==='progress')self.postMessage({type:'progress',progress:p.progress});}});
   self.postMessage({type:"recognizing"});
-  const result=await recognizer(data.samples,{language:data.language||undefined,task:'transcribe',chunk_length_s:30,stride_length_s:5,return_timestamps:true});
+  const result=await recognizer(data.samples,{language:data.language||undefined,task:'transcribe',chunk_length_s:30,stride_length_s:5,return_timestamps:data.wordTimestamps?'word':true});
   self.postMessage({type:'result',result});
  }catch(_){self.postMessage({type:'error',error:'TRANSCRIPTION_FAILED'});}
 };

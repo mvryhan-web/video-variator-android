@@ -85,4 +85,35 @@ public class BundledPreviewTest {
         } finally {one.delete();two.delete();}
     }
 
+    @Test public void smartStudioPackagedModelAndCaptionExportSaveToGallery() throws Exception {
+        org.junit.Assume.assumeTrue(BuildConfig.BUNDLED_PREVIEW);
+        android.content.Context app=ApplicationProvider.getApplicationContext();
+        android.content.Context test=InstrumentationRegistry.getInstrumentation().getContext();
+        if(android.os.Build.VERSION.SDK_INT>=33)InstrumentationRegistry.getInstrumentation().getUiAutomation().grantRuntimePermission("com.videovariator.app",android.Manifest.permission.POST_NOTIFICATIONS);
+        String fixture=read(test,"background-source.base64");
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(a->web(a.getWindow().getDecorView()).loadUrl("https://video-variator-android.onrender.com/smart-studio.html"));
+            long end=SystemClock.elapsedRealtime()+60000;
+            while(!"true".equals(js(scenario,"!!document.getElementById('source')&&document.title.startsWith('Smart Studio')"))&&SystemClock.elapsedRealtime()<end)SystemClock.sleep(300);
+            assertEquals("Smart Studio packaged page", "true", js(scenario,"document.title.startsWith('Smart Studio')"));
+            js(scenario,"window.smartModel=null;window.smartError='';(async()=>{const c=document.createElement('canvas');c.width=160;c.height=160;c.getContext('2d').fillRect(0,0,160,160);const bitmap=await createImageBitmap(c);const w=new Worker('smart-face-worker.js');w.onmessage=({data})=>{window.smartModel=data;w.terminate();};w.onerror=e=>window.smartError=e.message;w.postMessage({id:1,bitmap},[bitmap]);})().catch(e=>window.smartError=e.message)");
+            end=SystemClock.elapsedRealtime()+90000;
+            while("null".equals(js(scenario,"window.smartModel"))&&SystemClock.elapsedRealtime()<end){assertEquals("No worker error", "\"\"",js(scenario,"window.smartError"));SystemClock.sleep(300);}
+            assertEquals("Local face model executes in Android WebView: "+js(scenario,"JSON.stringify(window.smartModel)"),"true",js(scenario,"Array.isArray(window.smartModel?.faces)&&!window.smartModel.error"));
+            js(scenario,"const bytes=Uint8Array.from(atob("+JSONObject.quote(fixture)+"),c=>c.charCodeAt(0));const dt=new DataTransfer();dt.items.add(new File([bytes],'smart-source.mp4',{type:'video/mp4'}));document.getElementById('source').files=dt.files;document.getElementById('source').dispatchEvent(new Event('change'))");
+            end=SystemClock.elapsedRealtime()+30000;
+            while("true".equals(js(scenario,"document.getElementById('addCaption').disabled"))&&SystemClock.elapsedRealtime()<end)SystemClock.sleep(200);
+            js(scenario,"document.getElementById('follow').checked=false;document.getElementById('follow').dispatchEvent(new Event('change'));document.getElementById('addCaption').click();document.getElementById('brand').value='Android Smart Studio';document.getElementById('export').click()");
+            end=SystemClock.elapsedRealtime()+180000;
+            while(!"true".equals(js(scenario,"document.getElementById('status').textContent.includes('Saved automatically')"))&&SystemClock.elapsedRealtime()<end)SystemClock.sleep(500);
+            assertEquals("Caption export automatically saved: "+js(scenario,"document.getElementById('status').textContent"),"true",js(scenario,"document.getElementById('status').textContent.includes('Saved automatically')"));
+            try(android.database.Cursor cursor=app.getContentResolver().query(android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI,new String[]{android.provider.MediaStore.Video.Media._ID},android.provider.MediaStore.Video.Media.DISPLAY_NAME+" = ?",new String[]{"VideoUniquifier-Smart.mp4"},android.provider.MediaStore.Video.Media.DATE_ADDED+" DESC")) {
+                assertNotNull(cursor);assertTrue("Smart result saved to Gallery",cursor.moveToFirst());Uri uri=android.content.ContentUris.withAppendedId(android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI,cursor.getLong(0));
+                try(MediaMetadataRetriever retriever=new MediaMetadataRetriever()){retriever.setDataSource(app,uri);assertNotNull(retriever.getFrameAtTime());assertTrue(Long.parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION))>2000);}
+                finally{app.getContentResolver().delete(uri,null,null);}
+            }
+            js(scenario,"document.getElementById('delete').click()");assertEquals("Deleted preview", "true", js(scenario,"document.getElementById('result').hidden"));
+        }
+    }
+
 }
