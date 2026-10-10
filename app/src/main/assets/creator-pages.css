@@ -44,3 +44,33 @@ html[data-theme=light].creator-pages :is(.pageSection,.cp-hero,.cp-cta,.authCard
 @media(prefers-reduced-motion:reduce){.creator-pages *{scroll-behavior:auto!important}}
 
 .audio-launch-card{display:flex;align-items:center;justify-content:space-between;text-decoration:none;color:inherit;margin:20px 0}.audio-launch-card strong,.audio-launch-card small{display:block;margin-top:8px}.audio-launch-card strong{font-size:1.3rem}.audio-launch-card .tool-kicker{color:#df775e}.consent-line{display:flex!important;gap:12px;align-items:flex-start}.consent-line input{width:auto!important;flex:none;margin-top:5px}
+
+/* Match the Home/History/Analytics/Plans #backBtn sizing on Free Tools and Avatar only.
+   The source button is .ghostBtn in styles.css with responsive rules in v5.css. */
+.creator-pages .tools:is(.free-tools-page,.avatar-studio) header .tool-back{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:auto;min-width:0;height:auto;min-height:0;
+  padding:11px 15px;border:1px solid #2c3954;border-radius:12px;
+  background:#172035;color:#e8ecf4;font-size:16px;font-weight:700;
+  line-height:normal;text-decoration:none;flex-shrink:0;white-space:nowrap;
+}
+.creator-pages .tools:is(.free-tools-page,.avatar-studio) header .tool-back:hover{background:#1c2740}
+html[data-theme=light].creator-pages .tools:is(.free-tools-page,.avatar-studio) header .tool-back{
+  background:#eef1f8;color:#172039;border-color:#bcc8dc;
+}
+@media(max-width:720px){
+  .creator-pages .tools:is(.free-tools-page,.avatar-studio) header .tool-back{
+    height:42px;padding:0 11px;font-size:12px;border-radius:12px;
+  }
+}
+@media(max-width:440px){
+  .creator-pages .tools:is(.free-tools-page,.avatar-studio) header .tool-back{height:40px;padding:0 9px}
+}
+@media(max-width:370px){
+  .creator-pages .tools:is(.free-tools-page,.avatar-studio) header .tool-back{
+    font-size:0;padding:0;width:40px;
+  }
+  .creator-pages .tools:is(.free-tools-page,.avatar-studio) header .tool-back::after{
+    content:'←';font-size:18px;
+  }
+}
