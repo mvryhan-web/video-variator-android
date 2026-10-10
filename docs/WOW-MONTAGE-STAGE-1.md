@@ -1,5 +1,7 @@
 # WOW Montage — stage 1 preparation
 
+Historical stage 1 record. Current implementation: [stage 3](WOW-MONTAGE-STAGE-3.md).
+
 Only stage 1 is implemented. No effect renderer, analyzer, UI switch, runtime import,
 deployment, paid dependency, or new Render resource is included.
 

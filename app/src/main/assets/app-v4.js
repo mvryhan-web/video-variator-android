@@ -114,7 +114,7 @@
   core.configure({
     onEngine(status){const el=$('engineBadge');el.classList.toggle('ready',status==='ready');el.textContent=status==='ready'?t('engineReady'):status==='loading'?t('engineLoading'):t('engineStandby');},
     onProgress(p){const n=Math.round(p*100);$('progressPercent').textContent=n+'%';$('progressBar').style.width=n+'%';},
-    onStage(stage,info={}){setStage(stage);if(stage==='process'){$('progressTitle').textContent=info.file||t('processing');$('progressText').textContent=`${t('processing')} ${info.job||''}${info.total?` / ${info.total}`:''}`;}else if(stage==='save')$('progressText').textContent=t('saving');else if(stage==='done'){$('progressTitle').textContent=t('done');$('progressText').textContent=t('jobComplete');}},
+    onStage(stage,info={}){setStage(stage==='analyze'?'upload':stage);if(stage==='analyze'){$('progressTitle').textContent=info.file||t('preparing');$('progressText').textContent=window.VUWowMontageUI?.analyzeText||'Analyzing the first 12 seconds…';}else if(stage==='process'){$('progressTitle').textContent=info.file||t('processing');$('progressText').textContent=`${t('processing')} ${info.job||''}${info.total?` / ${info.total}`:''}`;}else if(stage==='save')$('progressText').textContent=t('saving');else if(stage==='done'){$('progressTitle').textContent=t('done');$('progressText').textContent=t('jobComplete');}},
     onLog(line){console.debug('[VideoVariator]',line);}
   });
 
@@ -131,10 +131,11 @@
 
   async function startProcessing(){
     const files=core.getFiles();if(!files.length)return;enforcePlanControls();let estimate=state.estimate;try{if(!estimate)estimate=await core.estimateCredits(Number($('variantCount').value));}catch(e){reportError(e,'duration');return;}
+    window.VUWowMontageUI?.reset();
     const u=usage(),needed=u.unit==='credits'?estimate.creditSeconds:estimate.sourceCount;if(!u.unlimited&&needed>u.remaining){showView('plans');toast(u.unit==='credits'?t('creditsNeeded'):t('freeVideosNeeded'));return;}
     state.metrics.attempts++;saveMetrics();$('progressCard').hidden=false;$('resultsCard').hidden=true;$('errorCard').hidden=true;$('cancelBtn').hidden=false;$('startBtn').disabled=true;$('progressBar').style.width='0%';$('progressPercent').textContent='0%';setStage('upload');
     try{
-      const result=await core.process({variants:Number($('variantCount').value),mode:$('mode').value,resolution:getResolution(),fastExport:$('fastExport')?.checked!==false,onResult:async r=>{await addHistory([r]);autoSaveBrowserResults([r]);}});
+      const result=await core.process({variants:Number($('variantCount').value),mode:$('mode').value,resolution:getResolution(),fastExport:$('fastExport')?.checked!==false,...($('wowMontage')?.checked?{wowMontage:true}:{}),onResult:async r=>{await addHistory([r]);autoSaveBrowserResults([r]);if(r.wowMontage)window.VUWowMontageUI?.record(r.wowMontage);}});
       if(state.user){const d=await api('/api/usage/consume',{method:'POST',body:JSON.stringify({seconds:result.creditSeconds,sourceCount:result.sourceCount})});state.user=d.user||state.user;}else{state.trialUsed=Math.min(100,state.trialUsed+result.sourceCount);localStorage.setItem('vv_trial_used',String(state.trialUsed));}
       state.metrics.successes++;state.metrics.outputs+=result.outputCount;state.metrics.seconds+=result.creditSeconds;if(u.unit==='credits')state.metrics.credits+=result.creditSeconds;saveMetrics();renderAll();$('readyText').textContent=window.AndroidBridge?'Completed files were saved automatically to Gallery / Movies / VideoUniquifier.':`${result.outputCount} output${result.outputCount===1?'':'s'} sent to your browser downloads automatically.`;$('resultsCard').hidden=false;toast(t('jobComplete'));await refreshAccount();
     }catch(e){if(String(e.message).toLowerCase().includes('cancel'))toast(t('canceled'));else{reportError(e,'processing');toast(t('processingError'));}}

@@ -1,5 +1,7 @@
 # WOW Montage — stage 2 UI preparation
 
+Historical disabled-control record. Current implementation: [stage 3](WOW-MONTAGE-STAGE-3.md).
+
 The optional control is now placed directly below the existing mode selector on
 the development branch. It is unchecked and disabled in Gentle, Balance and
 Dynamic, with a visible `In development` status and an explanation that processing

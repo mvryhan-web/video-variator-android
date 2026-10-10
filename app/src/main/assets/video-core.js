@@ -56,7 +56,7 @@
     hooks.onEngine('loading');
     const ffmpeg=new window.FFmpegWASM.FFmpeg();
     ffmpeg.on('log',({message})=>log(message));
-    ffmpeg.on('progress',({progress})=>{if(state.running&&Number.isFinite(progress))state.progress=clamp(progress,0,1);});
+    ffmpeg.on('progress',({progress})=>{if(state.running&&!state.analyzing&&Number.isFinite(progress))state.progress=clamp(progress,0,1);});
     try{
       // Keep the class worker as a local blob for Android/WebView compatibility,
       // but give that worker direct same-origin core URLs. Blob URLs created by
@@ -220,6 +220,7 @@
   async function processOne(file,fileIndex,variantIndex,total,options,duration,input){
     const ffmpeg=await ensureEngine();
     const [w,h]=options.resolution.split('x').map(Number),r=recipe(duration,options.mode);
+    const montage=options.wowMontage?window.VUWowMontage.plan(options.wowAnalysis,r):null;
     const token=`${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
     const internal=`out_${token}.mp4`;
     const name=`${safeBase(file.name)}_variant_${variantIndex+1}.mp4`,job=fileIndex*options.variants+variantIndex;
@@ -230,15 +231,17 @@
     try{
       const a=args(input,internal,duration,r,w,h,true,options.fastExport);
       log('> ffmpeg '+a.join(' '));
-      const code=await ffmpeg.exec(a);
+      const code=montage?await window.VUWowMontage.encode(ffmpeg,a,montage,()=>state.cancelled,log):await ffmpeg.exec(a);
       if(code!==0)throw new Error('Video processing failed.');
     }catch(err){
+      if(montage&&state.cancelled)throw err;
       log('Audio track retry disabled for this source.');
       audio=false;
       try{await ffmpeg.deleteFile(internal);}catch(_){ }
       const a=args(input,internal,duration,r,w,h,false,options.fastExport);
       const code=await ffmpeg.exec(a);
       if(code!==0)throw err;
+      if(montage&&montage.status==='applied'){montage.status='fallback';montage.reason='standard-audio-retry';}
     }
 
     const data=await ffmpeg.readFile(internal),blob=new Blob([data],{type:'video/mp4'});
@@ -252,7 +255,8 @@
       sourceName:file.name,name,blob,saved:saved.saved,path:saved.path,
       resolution:`${w}×${h}`,aspectRatio:w>h?'16:9':'9:16',
       durationSeconds:Math.ceil(duration),credits:Math.ceil(duration),
-      createdAt:new Date().toISOString(),variant:variantIndex+1,audio
+      createdAt:new Date().toISOString(),variant:variantIndex+1,audio,
+      ...(montage?{wowMontage:{status:montage.status,reason:montage.reason,profile:montage.profile}}:{})
     };
   }
 
@@ -262,6 +266,8 @@
     const variants=Math.max(1,Math.min(15,Number(options.variants)||1));
     const mode=['gentle','balanced','dynamic'].includes(options.mode)?options.mode:'gentle';
     const resolution=validResolution(options.resolution)?options.resolution:'720x1280';
+    const wowMontage=options.wowMontage===true;
+    if(wowMontage&&!window.VUWowMontage?.ready)throw new Error('WOW Montage could not load. Turn it off and try again.');
     state.running=true;state.cancelled=false;state.progress=0;
     const session=window.VUProcessingSession?.begin();
     const total=state.files.length*variants,results=[];let done=0;
@@ -276,9 +282,17 @@
         // loading the next file to avoid multiplying memory use by batch size.
         await state.ffmpeg.writeFile(input,new Uint8Array(await file.arrayBuffer()));
         try{
+          let wowAnalysis;
+          if(wowMontage){
+            hooks.onStage('analyze',{file:file.name,done,total});
+            state.analyzing=true;
+            try{wowAnalysis=await window.VUWowMontage.analyze(state.ffmpeg,input,estimate.durations[i],()=>state.cancelled);}
+            finally{state.analyzing=false;state.progress=0;}
+            log(`WOW Montage: ${wowAnalysis.profile}; sampled ${wowAnalysis.sampledSeconds}s. Speech and rhythm are not classified.`);
+          }
           for(let v=0;v<variants;v++){
             if(state.cancelled)throw new Error('Processing was canceled.');
-            const result=await processOne(file,i,v,total,{variants,mode,resolution,fastExport:options.fastExport!==false},estimate.durations[i],input);
+            const result=await processOne(file,i,v,total,{variants,mode,resolution,fastExport:options.fastExport!==false,...(wowMontage?{wowMontage,wowAnalysis}:{})},estimate.durations[i],input);
             results.push(result);done++;
             if(options.onResult)await options.onResult(result);
             hooks.onProgress(done/total,{done,total});

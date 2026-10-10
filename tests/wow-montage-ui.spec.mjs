@@ -4,32 +4,32 @@ test.beforeEach(async ({page}) => {
   await page.route(/accounts\.google\.com|appleid\.cdn-apple\.com/, route => route.abort());
 });
 
-test('WOW remains off and unavailable in all three modes, including after reload', async ({page}) => {
+test('working WOW is optional and defaults off in all three modes and after reload', async ({page}) => {
   await page.goto('/');
   const toggle = page.getByRole('switch', {name:'WOW Montage'});
-  await expect(toggle).toBeDisabled();
+  await expect(toggle).toBeEnabled();
   await expect(toggle).not.toBeChecked();
-  await expect(page.locator('#wowMontageStatus')).toHaveText('In development');
-  await expect(page.locator('#wowMontageHelp')).toContainText('Not available yet');
+  await expect(page.locator('#wowMontageStatus')).toHaveText('Optional');
+  await expect(page.locator('#wowMontageHelp')).toContainText('first 12 seconds');
   for (const mode of ['gentle','balanced','dynamic']) {
     await page.locator('#mode').selectOption(mode);
     await expect(page.locator('#mode')).toHaveValue(mode);
     await expect(page.locator('#wowMontageOption')).toBeVisible();
-    await expect(toggle).toBeDisabled();
-    const labelBox = await page.locator('label[for="wowMontage"]').boundingBox();
-    await page.mouse.click(labelBox.x + labelBox.width / 2, labelBox.y + labelBox.height / 2);
+    await expect(toggle).toBeEnabled();
+    await toggle.focus();await toggle.press('Space');await expect(toggle).toBeChecked();
+    await toggle.press('Space');
     await expect(toggle).not.toBeChecked();
   }
   await page.reload();
-  await expect(toggle).toBeDisabled();
+  await expect(toggle).toBeEnabled();
   await expect(toggle).not.toBeChecked();
   expect(await page.evaluate(() => typeof window.createMontageRequest)).toBe('undefined');
 });
 
 test('optional control fits narrow screens in both themes and supported locales', async ({page}, info) => {
   const locales = [
-    ['en-US','In development'],['ru-RU','В разработке'],
-    ['fr-FR','En développement'],['uk-UA','У розробці'],
+    ['en-US','Optional'],['ru-RU','Дополнительно'],
+    ['fr-FR','En option'],['uk-UA','Додатково'],
   ];
   await page.addInitScript(() => {
     const locale = new URL(location.href).searchParams.get('wow-test-locale') || 'en-US';
@@ -54,7 +54,7 @@ test('optional control fits narrow screens in both themes and supported locales'
   }
 });
 
-test('UI still invokes the existing processing API without a WOW option', async ({page}) => {
+test('UI invokes unchanged options when off, and only adds explicit WOW when enabled', async ({page}) => {
   await page.goto('/');
   // Capture the UI boundary only. Real encoding is covered separately by baseline tests.
   await page.evaluate(() => {
@@ -75,5 +75,24 @@ test('UI still invokes the existing processing API without a WOW option', async 
   const calls = await page.evaluate(() => window.wowStage2Calls);
   expect(calls).toHaveLength(3);
   for (const call of calls) expect(call.keys.sort()).toEqual(['fastExport','mode','onResult','resolution','variants']);
+  const toggle=page.getByRole('switch',{name:'WOW Montage'});await toggle.focus();await toggle.press('Space');
+  for(const mode of ['gentle','balanced','dynamic']){
+    await page.locator('#mode').selectOption(mode);await expect(page.locator('#startBtn')).toBeEnabled();await page.locator('#startBtn').click();
+    await expect.poll(()=>page.evaluate(()=>window.wowStage2Calls.at(-1)?.mode)).toBe(mode);
+  }
+  const all=await page.evaluate(()=>window.wowStage2Calls);
+  expect(all).toHaveLength(6);for(const call of all.slice(3))expect(call.keys.sort()).toEqual(['fastExport','mode','onResult','resolution','variants','wowMontage']);
+});
+
+test('missing runtime leaves the option genuinely unavailable',async({page})=>{
+  await page.route('**/wow-montage.js',route=>route.abort());await page.goto('/');
   await expect(page.getByRole('switch',{name:'WOW Montage'})).toBeDisabled();
+  await expect(page.locator('#wowMontageStatus')).toHaveText('In development');
+});
+
+test('actual applied/skipped/fallback statuses are displayed without claiming every output has WOW',async({page})=>{
+  await page.goto('/');await page.evaluate(()=>{
+    VUWowMontageUI.record({status:'applied'});VUWowMontageUI.record({status:'skipped'});VUWowMontageUI.record({status:'fallback'});
+  });
+  await expect(page.locator('#wowMontageResult')).toContainText('1 applied · 1 skipped · 1 standard fallbacks');
 });

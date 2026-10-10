@@ -78,7 +78,7 @@ jobs:
       - name: Speech and trial unit tests
         run: node --test tests/speech-unit.mjs
       - name: WOW preparation and unchanged video engine baselines
-        run: node --test tests/wow-montage-stage1-unit.mjs tests/wow-montage-legacy-media.mjs
+        run: node --test tests/wow-montage-stage1-unit.mjs tests/wow-montage-legacy-media.mjs tests/wow-montage-engine-unit.mjs tests/wow-montage-media.mjs
       - name: Cross-browser tests
         run: npm run test:browsers
 

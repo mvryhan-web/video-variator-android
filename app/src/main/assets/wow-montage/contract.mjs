@@ -1,5 +1,5 @@
-// Stage 1 contract only. Intentionally not imported by any application page.
-export const MONTAGE_STATUS = 'not-implemented';
+// Versioned contract. The classic runtime supplies analysis and visual rendering.
+export const MONTAGE_STATUS = 'visual-v1';
 const MODES = new Set(['gentle', 'balanced', 'dynamic']);
 
 export function createMontageRequest({enabled = false, mode = 'gentle', width, height} = {}) {
@@ -16,16 +16,11 @@ export function createMontageRequest({enabled = false, mode = 'gentle', width, h
   });
 }
 
-// No renderer, pretend analysis, or silently enabled option in this stage.
+// An enabled request still needs measured analysis before any effects are selected.
 export function prepareMontage(request) {
   const validated = createMontageRequest({
     enabled: request?.enabled, mode: request?.mode,
     width: request?.output?.width, height: request?.output?.height,
   });
-  if (validated.enabled) {
-    const error = new Error('WOW Montage is not implemented; do not expose an active control.');
-    error.code = 'WOW_MONTAGE_NOT_READY';
-    throw error;
-  }
-  return Object.freeze({status: 'disabled', request: validated, effects: Object.freeze([])});
+  return Object.freeze({status: validated.enabled ? 'requires-analysis' : 'disabled', request: validated, effects: Object.freeze([])});
 }

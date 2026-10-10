@@ -8,18 +8,22 @@ import {captureLegacy, coreSource} from './helpers/legacy-video-harness.mjs';
 const baseline = JSON.parse(readFileSync(new URL('fixtures/legacy-video-baseline.json', import.meta.url)));
 const modes = ['gentle', 'balanced', 'dynamic'];
 
-test('legacy production engine is byte-for-byte unchanged from the recorded baseline', () => {
-  assert.equal(createHash('sha256').update(coreSource).digest('hex'), baseline.coreSha256);
+test('legacy recipe/ranges/filter/encoding functions remain byte-for-byte unchanged', () => {
+  const hashes=JSON.parse(readFileSync(new URL('fixtures/legacy-algorithm-hashes.json',import.meta.url)));
+  for(const [name,hash] of Object.entries(hashes)){
+    const source=coreSource.match(new RegExp('  function '+name+'\\([\\s\\S]*?(?=\\n  (?:async )?function |\\n  window\\.)'))?.[0];
+    assert.ok(source,name);assert.equal(createHash('sha256').update(source).digest('hex'),hash,name);
+  }
 });
 
-test('WOW contract defaults off in every mode; enabling fails explicitly before integration', () => {
-  assert.equal(MONTAGE_STATUS, 'not-implemented');
+test('WOW contract defaults off in every mode; enabling requires measured analysis', () => {
+  assert.equal(MONTAGE_STATUS, 'visual-v1');
   for (const mode of modes) {
     const request = createMontageRequest({mode, width: 1280, height: 720});
     assert.equal(request.enabled, false);
     assert.deepEqual(prepareMontage(request).effects, []);
     assert.ok(Object.isFrozen(request) && Object.isFrozen(request.output) && Object.isFrozen(request.invariants));
-    assert.throws(() => prepareMontage(createMontageRequest({...request, width: 1280, height: 720, enabled: true})), {code: 'WOW_MONTAGE_NOT_READY'});
+    assert.equal(prepareMontage(createMontageRequest({...request, width:1280,height:720,enabled:true})).status,'requires-analysis');
   }
 });
 
@@ -29,7 +33,7 @@ test('invalid contract flags/modes/geometry cannot activate a partial feature', 
   }
 });
 
-test('prepared module is absent from all runtime pages and existing asset scripts', () => {
+test('ES module contract is not imported into Android file pages; classic runtime is separate', () => {
   const assets = new URL('../app/src/main/assets/', import.meta.url);
   for (const file of readdirSync(assets).filter(f => /\.(html|js)$/.test(f))) {
     assert.doesNotMatch(readFileSync(new URL(file, assets), 'utf8'), /wow-montage\/contract|prepareMontage|createMontageRequest/);
