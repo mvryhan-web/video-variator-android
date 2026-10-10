@@ -1,4 +1,4 @@
-name: Publish tested WOW APK download
+name: Publish tested Smart Studio APK download
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: wow-phone-test-download
+  group: smart-studio-test-download
   cancel-in-progress: false
 
 jobs:
@@ -19,10 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      SOURCE_SHA: 8f3a7d0e8e454e8d375fb52598b7ef9cd9c2fa77
-      SOURCE_RUN: '38067575506'
-      WEB_RUN: '38067575520'
-      TEST_TAG: wow-dashboard-test-2026-10-10
+      SOURCE_SHA: 9750954551c4b99f6aab7b53ddcb1e42ba324a18
+      SOURCE_RUN: '38083395655'
+      WEB_RUN: '38083395652'
+      TEST_TAG: smart-studio-test-2026-10-10
     steps:
       - name: Verify frozen tested source
         run: |
@@ -36,7 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           gh run download "$SOURCE_RUN" --repo "$GITHUB_REPOSITORY" --name VideoUniquifier-APK --dir apk
-          echo 'da8163647083edfc2cd403513b750f89fcf28051259a578775b65468d1b46290  apk/VideoUniquifier.apk' | sha256sum --check
+          echo '29eb22e2bde2cd0eadd626c227626254e7b522dcdb3a3afdae09709e807bca37  apk/VideoUniquifier.apk' | sha256sum --check
 
       - name: Publish test download without changing latest release
         run: |
@@ -46,17 +46,19 @@ jobs:
             exit 0
           fi
           cat > notes.md <<'NOTES'
-          Android owner acceptance build for the compact dashboard and optional WOW Montage v2.
-          Visible Gentle / Balance / Dynamic, 720p / 1080p / 4K and 9:16 / 16:9 buttons replace dashboard dropdowns.
-          Smaller mobile spacing and statistics. Fast export is always enabled; the redundant Trial/mode hint and long WOW description are hidden.
-          Optimization and the default-off WOW switch remain. Existing server plan restrictions, processing recipes, Gallery, Download and Share are preserved.
-          WOW v2 adds measured camera accents within the first 12 seconds, without speech/beat/semantic recognition or a duplicate-detection guarantee.
-          Uses packaged test screens and the existing production API. Original videos remain on the device.
-          Package com.videovariator.app and the existing signing key are retained.
-          This is a test prerelease, not the production app update. Production website and latest stable release remain unchanged.
-          Visible app banner: WOW + compact dashboard · v3. This APK cannot be installed on iPhone.
+          Android owner acceptance build for local Smart Studio.
+          Open the app menu, then Smart Studio - prototype.
+          Tracks a clearly visible face into an optional 9:16 crop, with framing preview. Best with a wide source and one face; already vertical footage may have no room for horizontal crop movement. Multiple people or occlusion can break association. It does not identify people or track an invisible body.
+          Recognizes speech locally into editable words and timestamps. Exports active-word captions and a saved brand name, accent color and caption size using the existing FFmpeg WASM runtime.
+          Preview, Download, Share and Delete preview are available. Android automatically saves to Movies/VideoUniquifier. Deleting a preview does not delete files already saved in Gallery.
+          Prototype limits: 60 seconds / 150 MB, up to 250 caption entries; up to 720x1280 vertical or 1280px longest side otherwise. Original audio packets and duration are preserved for supported MP4/AAC input. Review every caption and the crop before export. Keep the page visible for frame analysis.
+          Free local model downloads on first use; no raw video or audio uploads and no paid API. Face runtime/model are packaged in the APK. Local word recognition requires a first-use model download.
+          Real browser model/export/transcription checks and Android 15 model/export/Gallery plus Android 11 service checks passed for the frozen source.
+          Existing processing modes, authorization, billing and pricing remain unchanged. Package com.videovariator.app and the existing signing key are retained.
+          This is a test prerelease, not a production website or latest stable app update. Test on your physical phone before production approval.
+          Visible app banner: Smart Studio prototype - v1. Android APK cannot be installed on iPhone.
           NOTES
           gh release create "$TEST_TAG" apk/VideoUniquifier.apk --repo "$GITHUB_REPOSITORY" \
             --target "$SOURCE_SHA" --prerelease --latest=false \
-            --title 'Video Uniquifier — Compact dashboard Android test' --notes-file notes.md
+            --title 'Video Uniquifier — Smart Studio Android prototype' --notes-file notes.md
           gh release view "$TEST_TAG" --repo "$GITHUB_REPOSITORY" --json tagName,isPrerelease,url,assets
