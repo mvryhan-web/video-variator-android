@@ -1,4 +1,5 @@
 // Telegram webhook foundation. No video files or payments are processed here.
+import {createHash} from 'node:crypto';
 const commands = {
   start: 'Welcome to Video Uniquifier! Open the app using the Menu button or the link below.',
   create: 'To process a video, open the app. Telegram file processing is not available yet.',
@@ -12,9 +13,9 @@ const commands = {
 
 export function installTelegramBot(app, {appUrl}) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
-  if (!token || !secret) {
-    console.info('[telegram] Webhook disabled until TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET are set.');
+  const secret = process.env.TELEGRAM_WEBHOOK_SECRET || (token ? createHash('sha256').update(token).digest('hex') : '');
+  if (!token) {
+    console.info('[telegram] Webhook disabled until TELEGRAM_BOT_TOKEN is set.');
     return;
   }
   app.post('/api/telegram/webhook', async (req, res) => {
@@ -48,4 +49,31 @@ export function installTelegramBot(app, {appUrl}) {
       return res.status(502).json({ok:false});
     }
   });
+  // Register only after the HTTP server is listening, so Telegram can deliver updates.
+  return async () => {
+    const webhookUrl = new URL('/api/telegram/webhook', appUrl).toString();
+    if (!webhookUrl.startsWith('https://')) {
+      console.warn('[telegram] Webhook registration requires an HTTPS APP_URL.');
+      return;
+    }
+    try {
+      const response = await fetch('https://api.telegram.org/bot' + token + '/setWebhook', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          url:webhookUrl,
+          secret_token:secret,
+          allowed_updates:['message']
+        }),
+        signal:AbortSignal.timeout(10000)
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        throw new Error('Telegram rejected webhook registration (HTTP ' + response.status + ')');
+      }
+      console.info('[telegram] Webhook registration succeeded.');
+    } catch (error) {
+      console.error('[telegram] Webhook registration failed:', error.message);
+    }
+  };
 }
