@@ -29,8 +29,9 @@ function addCandidate(label,action){
 function showCandidates(str){
  candidates.replaceChildren();
  const {dates,times}=extractTicketDateTimes(str);
- if(dates.length===1)setField('reminderDate',dates[0].date);
- if(times.length===1)setField('reminderTime',times[0]);
+ // Do not leave a default date/time in place when the ticket is ambiguous.
+ setField('reminderDate',dates.length===1?dates[0].date:'');
+ setField('reminderTime',times.length===1?times[0]:'');
  // Never silently guess which of multiple flight departure/arrival times is intended.
  if(dates.length>1){const line=document.createElement('p');line.textContent=t('Several dates found — choose the event date:','Найдено несколько дат — выберите дату события:');candidates.append(line);dates.forEach(d=>addCandidate(d.date+' ('+d.source+')',()=>setField('reminderDate',d.date)));}
  if(times.length>1){const line=document.createElement('p');line.textContent=t('Several times found — choose the correct one:','Найдено несколько вариантов времени — выберите нужный:');candidates.append(line);times.forEach(v=>addCandidate(v,()=>setField('reminderTime',v)));}
