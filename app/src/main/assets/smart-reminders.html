@@ -46,7 +46,8 @@
 <h2 id="notesHeading">Quick notes</h2>
 <p id="notesHint">Write something down in seconds. Notes sync across devices with your account.</p>
 <label><span id="notesBodyLabel">New note</span><textarea id="notesBody" rows="3" maxlength="2000" placeholder="Write a quick note…"></textarea></label>
-<div class="actions"><button id="notesSave" type="button">Save note</button></div>
+<div class="actions"><button id="notesMic" type="button" aria-pressed="false">🎙️ Dictate note</button><button id="notesSave" type="button">Save note</button></div>
+<p id="notesVoiceStatus" role="status" aria-live="polite"></p>
 <p id="notesStatus" role="status"></p><div id="notesList"></div>
 </section>
 </main>
