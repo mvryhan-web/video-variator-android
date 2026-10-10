@@ -1,0 +1,60 @@
+name: Publish tested WOW APK download
+
+on:
+  pull_request:
+    branches: [main]
+    paths: ['.github/workflows/wow-phone-download.yml']
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: wow-phone-test-download
+  cancel-in-progress: false
+
+jobs:
+  publish-tested-preview:
+    if: github.head_ref == 'wow-phone-preview' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SOURCE_SHA: e6dd6ced85f0a0a6b47a48cfc34ff01767d76ae8
+      SOURCE_RUN: '38049756398'
+      WEB_RUN: '38049756448'
+      BILLING_RUN: '38049756460'
+      TEST_TAG: wow-phone-test-2026-10-10
+    steps:
+      - name: Verify frozen tested source
+        run: |
+          set -euo pipefail
+          for run_id in "$SOURCE_RUN" "$WEB_RUN" "$BILLING_RUN"; do
+            test "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" --jq .conclusion)" = success
+            test "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" --jq .head_sha)" = "$SOURCE_SHA"
+          done
+
+      - name: Download the already signed and tested APK
+        run: |
+          set -euo pipefail
+          gh run download "$SOURCE_RUN" --repo "$GITHUB_REPOSITORY" --name VideoUniquifier-APK --dir apk
+          echo '59b89fe5ac1267bce30ce11a6ec48921ae70ee1b279dd7856798bdb0a1774cf3  apk/VideoUniquifier.apk' | sha256sum --check
+
+      - name: Publish test download without changing latest release
+        run: |
+          set -euo pipefail
+          if gh release view "$TEST_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release view "$TEST_TAG" --repo "$GITHUB_REPOSITORY" --json tagName,isPrerelease,url
+            exit 0
+          fi
+          cat > notes.md <<'NOTES'
+          Android owner acceptance build for optional WOW Montage.
+          Uses packaged test screens and the existing production API. Original videos remain on the device.
+          Package com.videovariator.app and the existing signing key are retained.
+          This is a test prerelease, not the production app update. Production website and latest stable release remain unchanged.
+          Start with one short video, Gentle, 720p, then compare WOW off/on and check audio, Gallery, Download and Share.
+          This APK cannot be installed on iPhone.
+          NOTES
+          gh release create "$TEST_TAG" apk/VideoUniquifier.apk --repo "$GITHUB_REPOSITORY" \
+            --target "$SOURCE_SHA" --prerelease --latest=false \
+            --title 'Video Uniquifier — WOW Android test' --notes-file notes.md
+          gh release view "$TEST_TAG" --repo "$GITHUB_REPOSITORY" --json tagName,isPrerelease,url,assets
