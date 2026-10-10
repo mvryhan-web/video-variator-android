@@ -9,8 +9,34 @@
   "orientation": "portrait-primary",
   "background_color": "#080b12",
   "theme_color": "#0b1020",
-  "categories": ["video", "productivity", "utilities"],
+  "categories": [
+    "video",
+    "productivity",
+    "utilities"
+  ],
   "icons": [
-    {"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New reminder",
+      "short_name": "Reminder",
+      "url": "/smart-reminders.html"
+    },
+    {
+      "name": "Quick notes",
+      "short_name": "Notes",
+      "url": "/smart-reminders.html#quick-notes"
+    },
+    {
+      "name": "Free tools",
+      "short_name": "Tools",
+      "url": "/free-tools.html"
+    }
   ]
 }
