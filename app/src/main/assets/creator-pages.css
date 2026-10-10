@@ -152,3 +152,6 @@ html[data-theme=light].creator-pages .tools:is(.free-tools-page,.avatar-studio) 
   .creator-pages .tools.avatar-studio .voice-source-choice{gap:6px}
   .creator-pages .tools.avatar-studio .voice-source-card{padding:9px 4px}
 }
+/* Hide the redundant Access / Free access / resolution summary in Avatar only.
+   Leave its DOM node available for existing account-status logic. */
+.creator-pages .tools.avatar-studio .avatar-plan-row{display:none!important}
