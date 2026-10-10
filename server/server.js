@@ -1,5 +1,6 @@
 import {installSpeech} from './speech.js';
 import {installTelegramBot} from './telegram.js';
+import {installReminders,initRemindersDb,startReminderScheduler} from './reminders.js';
 import {isPaidLifetimeSession} from './lifetime.js';
 import 'dotenv/config';
 import express from 'express';
@@ -118,6 +119,7 @@ async function signAppToken(user){requireServerConfig();const key=new TextEncode
 async function auth(req,res,next){try{requireServerConfig();const token=(req.headers.authorization||'').replace(/^Bearer\s+/i,'');if(!token)return res.status(401).json({error:'AUTH_REQUIRED'});const key=new TextEncoder().encode(jwtSecret),{payload}=await jwtVerify(token,key,{issuer:'video-variator',audience:'video-variator-client'}),user=await getUser(payload.sub);if(!user)return res.status(401).json({error:'USER_NOT_FOUND'});req.user=user;next();}catch(_){res.status(401).json({error:'INVALID_SESSION'});}}
 installEmailAuth(app,{signAppToken});
 installSpeech(app,{auth,reserve:reserveSpeech});
+installReminders(app,{auth});
 
 app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',https:req.secure||!isProduction,videoProcessing:'local-only',ffmpegRuntime:'same-origin-esm',appUrl,time:new Date().toISOString()}));
 app.get('/api/version',(req,res)=>res.json({webVersion:process.env.WEB_VERSION||'5.3.0',androidVersion:process.env.ANDROID_VERSION||'5.3.0',androidVersionCode:Number(process.env.ANDROID_VERSION_CODE||5),latestApkUrl:process.env.LATEST_APK_URL||'https://github.com/mvryhan-web/video-variator-android/releases/latest/download/VideoUniquifier.apk'}));
@@ -161,4 +163,4 @@ app.post('/api/billing/cancel',auth,async(req,res)=>{try{const current=publicUse
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
 
-await initDb();app.listen(port,()=>{console.log(`Video Uniquifier running on ${appUrl}`);void registerTelegramWebhook?.();});
+await initDb();await initRemindersDb();app.listen(port,()=>{console.log(`Video Uniquifier running on ${appUrl}`);void registerTelegramWebhook?.();startReminderScheduler();});
