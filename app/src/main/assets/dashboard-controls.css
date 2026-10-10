@@ -9,7 +9,7 @@
 #dashboardView .choiceButtons button:focus-visible{outline:2px solid #b8a6ff;outline-offset:2px}
 #dashboardView .frameIcon{display:inline-block;width:16px;height:23px;border:1.5px solid currentColor;border-radius:3px;flex-shrink:0}
 #dashboardView .frameIcon.landscape{width:25px;height:15px}
-#dashboardView .variationChoice select{min-height:54px;width:100%;margin:0;border-radius:14px}
+#dashboardView .variationChoice select{min-height:54px;width:100%;margin:0;border-radius:14px;background:var(--panel2,#141d30);color:var(--text,#fff);border:1px solid var(--creator-border,#30394e);padding:10px 12px;font-size:14px}
 #dashboardView .variantLockNote{display:none}
 #dashboardView .dashboardChoice select[hidden],#dashboardView #planAccessHint[hidden],#dashboardView #wowMontageHelp[hidden],#dashboardView #wowMontageStatus[hidden]{display:none!important}
 #dashboardView .dashboardOptimization{grid-column:1/-1}
