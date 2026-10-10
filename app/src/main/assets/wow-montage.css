@@ -1,0 +1,24 @@
+/* Scoped to the optional mode control; no styling for other pages or tools. */
+.modeSettings {min-width:0;}
+#dashboardView .settingsGrid {align-items:start;}
+#wowMontageOption {margin-top:10px;padding:12px;border:1px solid var(--cp-line,var(--line,#344057));border-radius:12px;background:var(--cp-bg,var(--bg,#0a101c));color:var(--cp-text,var(--text,#e8ecf4));}
+#wowMontageOption .wowMontageHeading {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+#wowMontageOption .wowMontageControl {position:relative;display:flex;align-items:center;gap:8px;min-height:44px;margin:0;color:inherit;font-size:13px;font-weight:600;cursor:pointer;}
+#wowMontageOption .wowMontageControl > span {font:inherit;color:inherit;letter-spacing:normal;text-transform:none;}
+#wowMontageOption input {position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+#wowMontageOption .wowMontageTrack {display:block;flex:0 0 32px;width:32px;height:18px;border:1px solid var(--cp-muted,var(--muted,#8494b0));border-radius:20px;opacity:.7;}
+#wowMontageOption .wowMontageTrack::after {content:'';display:block;width:10px;height:10px;margin:3px;border-radius:50%;background:var(--cp-muted,var(--muted,#8494b0));}
+#wowMontageOption input:checked + .wowMontageTrack {background:var(--cp-accent,#ffb09b);border-color:var(--cp-accent,#ffb09b);opacity:1;}
+#wowMontageOption input:checked + .wowMontageTrack::after {transform:translateX(14px);background:var(--cp-bg,var(--bg));}
+#wowMontageOption input:focus-visible + .wowMontageTrack {outline:2px solid var(--cp-accent,#ffb09b);outline-offset:3px;}
+#wowMontageOption .wowMontageControl:has(input:disabled) {cursor:not-allowed;}
+#wowMontageOption .wowMontageStatus {font-size:11px;line-height:1.4;color:var(--cp-muted,var(--muted,#aab5c8));}
+#wowMontageOption p {margin:7px 0 0;font-size:12px;line-height:1.5;color:var(--cp-muted,var(--muted,#aab5c8));overflow-wrap:break-word;}
+
+#wowMontagePreview {box-sizing:border-box;width:min(640px,calc(100vw - 24px));max-height:calc(100dvh - 32px);overflow:auto;padding:20px;border:1px solid var(--cp-line,#344057);border-radius:16px;background:var(--cp-bg,var(--bg,#0a101c));color:var(--cp-text,var(--text,#e8ecf4));}
+#wowMontagePreview::backdrop {background:rgb(0 0 0 / .72);}
+#wowMontagePreview h2 {font-size:20px;margin:0 0 8px;}
+#wowMontagePreview p {overflow-wrap:anywhere;font-size:13px;}
+#wowMontagePreview video {display:block;width:100%;max-height:55dvh;background:#000;object-fit:contain;}
+#wowMontagePreview .wowPreviewActions {display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+#wowMontagePreview button {min-height:44px;}

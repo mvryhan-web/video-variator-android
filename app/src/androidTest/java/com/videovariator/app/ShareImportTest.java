@@ -59,7 +59,19 @@ public class ShareImportTest {
         }
         assertTrue("Native share copy completed",ready.get());
         String html="<html lang='en'><body><div id='workspace'></div><script>window.selected=[];window.VideoVariatorUI={toast(){},showView(){},setFiles(files){window.selected=files;}};"+read(context,"share-import.js")+"</script></body></html>";
-        scenario.onActivity(a->web(a.getWindow().getDecorView()).loadDataWithBaseURL("https://video-variator-android.onrender.com/",html,"text/html","UTF-8","https://video-variator-android.onrender.com/"));
+        // Use a real navigation: loadDataWithBaseURL can retain a data: URL
+        // under an asset-intercepting WebView, despite its HTTPS script origin.
+        scenario.onActivity(a->{
+            WebView view=web(a.getWindow().getDecorView());
+            view.setWebViewClient(new android.webkit.WebViewClient(){
+                @Override public android.webkit.WebResourceResponse shouldInterceptRequest(WebView ignored,android.webkit.WebResourceRequest request){
+                    if("https://video-variator-android.onrender.com/".equals(request.getUrl().toString()))
+                        return new android.webkit.WebResourceResponse("text/html","UTF-8",new java.io.ByteArrayInputStream(html.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+                    return null;
+                }
+            });
+            view.loadUrl("https://video-variator-android.onrender.com/");
+        });
         long until=SystemClock.elapsedRealtime()+15000;
         while(!Integer.toString(expected).equals(js(scenario,"window.selected?.length"))&&SystemClock.elapsedRealtime()<until)SystemClock.sleep(100);
         assertEquals(Integer.toString(expected),js(scenario,"selected.length"));
@@ -76,7 +88,14 @@ public class ShareImportTest {
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(single)) {
             importFixture(scenario,context,1);
             AtomicReference<String> currentUrl=new AtomicReference<>();
-            scenario.onActivity(a->currentUrl.set(web(a.getWindow().getDecorView()).getUrl()));
+            // Script execution may precede WebView's committed history URL,
+            // especially when the surrounding preview assets load immediately.
+            long navigationDeadline=SystemClock.elapsedRealtime()+15000;
+            do {
+                scenario.onActivity(a->currentUrl.set(web(a.getWindow().getDecorView()).getUrl()));
+                if("https://video-variator-android.onrender.com/".equals(currentUrl.get()))break;
+                SystemClock.sleep(100);
+            } while(SystemClock.elapsedRealtime()<navigationDeadline);
             assertEquals("Fixture must have the real dashboard URL for warm import","https://video-variator-android.onrender.com/",currentUrl.get());
             ArrayList<Uri> list=new ArrayList<>();list.add(first);list.add(second);
             Intent multiple=new Intent(Intent.ACTION_SEND_MULTIPLE).setType("video/mp4").putParcelableArrayListExtra(Intent.EXTRA_STREAM,list).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);

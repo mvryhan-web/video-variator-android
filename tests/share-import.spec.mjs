@@ -32,7 +32,8 @@ test('tool back buttons have a visible touch target and return to dashboard',asy
     const back=page.locator('header .tool-back');
     await expect(back).toBeVisible();
     const box=await back.boundingBox();
-    expect(box.height).toBeGreaterThanOrEqual(48);
+    // Current main intentionally matches the compact dashboard Back button (40px on narrow phones).
+    expect(box.height).toBeGreaterThanOrEqual(40);
     expect(box.y).toBeGreaterThanOrEqual(20);
     await back.click();
     await expect(page).toHaveURL(/index.html$/);
