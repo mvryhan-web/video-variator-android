@@ -76,7 +76,14 @@ public class ShareImportTest {
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(single)) {
             importFixture(scenario,context,1);
             AtomicReference<String> currentUrl=new AtomicReference<>();
-            scenario.onActivity(a->currentUrl.set(web(a.getWindow().getDecorView()).getUrl()));
+            // Script execution may precede WebView's committed history URL,
+            // especially when the surrounding preview assets load immediately.
+            long navigationDeadline=SystemClock.elapsedRealtime()+15000;
+            do {
+                scenario.onActivity(a->currentUrl.set(web(a.getWindow().getDecorView()).getUrl()));
+                if("https://video-variator-android.onrender.com/".equals(currentUrl.get()))break;
+                SystemClock.sleep(100);
+            } while(SystemClock.elapsedRealtime()<navigationDeadline);
             assertEquals("Fixture must have the real dashboard URL for warm import","https://video-variator-android.onrender.com/",currentUrl.get());
             ArrayList<Uri> list=new ArrayList<>();list.add(first);list.add(second);
             Intent multiple=new Intent(Intent.ACTION_SEND_MULTIPLE).setType("video/mp4").putParcelableArrayListExtra(Intent.EXTRA_STREAM,list).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
