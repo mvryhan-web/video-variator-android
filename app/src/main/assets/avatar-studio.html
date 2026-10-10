@@ -23,7 +23,16 @@
 <section class="tool-card avatar-card">
   <div class="avatar-plan-row"><div><span data-av="plan">Access</span><b id="avatarPlan">Checking account…</b></div><small id="avatarQuality">720p / 1080p / 4K</small></div>
 
-  <label class="avatar-quality-control"><span id="avatarQualityLabel">Output quality</span><select id="avatarOutputQuality"><option value="720">720p</option><option value="1080">1080p</option><option value="2160">4K</option></select><small id="avatarQualityHelp">All qualities are unlocked. 4K takes more time and device memory; it cannot restore missing detail.</small></label>
+  <div class="avatar-quality-control">
+    <span id="avatarQualityLabel">Output quality</span>
+    <select id="avatarOutputQuality" class="avatar-quality-native" tabindex="-1" aria-hidden="true"><option value="720">720p</option><option value="1080">1080p</option><option value="2160">4K</option></select>
+    <div class="avatar-quality-options" role="group" aria-labelledby="avatarQualityLabel">
+      <button type="button" class="avatar-quality-option" data-quality="720" aria-pressed="true"><b>720p</b><small data-av="quality720">Faster</small></button>
+      <button type="button" class="avatar-quality-option" data-quality="1080" aria-pressed="false"><b>1080p</b><small data-av="quality1080">Balanced</small></button>
+      <button type="button" class="avatar-quality-option" data-quality="2160" aria-pressed="false"><b>4K</b><small data-av="quality2160">Highest detail</small></button>
+    </div>
+    <small id="avatarQualityHelp">All qualities are unlocked. 4K takes more time and device memory; it cannot restore missing detail.</small>
+  </div>
   <div class="avatar-grid compact-upload-grid">
     <label><span data-av="video">1 · Source video</span><input id="avatarVideo" type="file" accept="video/*"><small id="avatarVideoSaved" class="muted saved-file-note"></small></label>
     <label><span data-av="photo">2 · Your avatar photo</span><input id="avatarPhoto" type="file" accept="image/jpeg,image/png,image/webp"><small id="avatarPhotoSaved" class="muted saved-file-note"></small></label>
@@ -67,11 +76,17 @@
     </div>
   </section>
 
-  <label class="avatar-text-last"><span data-av="text">4 · Narration text</span><textarea id="avatarText" rows="4" maxlength="5000" placeholder="Write what your avatar should say about the video…"></textarea><small class="muted" data-av="textNote">Device voice reads this text. With My voice, keep it as your script/reference.</small></label>
+  <label class="avatar-text-last"><span data-av="text">4 · Narration text</span><textarea id="avatarText" rows="6" maxlength="5000" placeholder="Write what your avatar should say about the video…"></textarea><small class="muted" data-av="textNote">Device voice reads this text. With My voice, keep it as your script/reference.</small></label>
 
   <label class="consent-line"><input id="voiceConsent" type="checkbox"><span data-av="consent">I confirm this is my voice/photo, or I have permission to use them for this video.</span></label>
 
-  <section class="motion-settings"><h3 id="motionTitle">Mouth position</h3><p id="motionHelp"></p><div class="settings"><label><span>Horizontal</span><input id="mouthX" type="range" min="10" max="90" value="50"></label><label><span>Vertical</span><input id="mouthY" type="range" min="15" max="85" value="62"></label><label><span>Mouth width</span><input id="mouthWidth" type="range" min="10" max="60" value="28"></label></div></section>
+  <details class="motion-settings">
+    <summary id="motionTitle">Mouth position</summary>
+    <div class="motion-settings-body">
+      <p id="motionHelp"></p>
+      <div class="settings"><label><span>Horizontal</span><input id="mouthX" type="range" min="10" max="90" value="50"></label><label><span>Vertical</span><input id="mouthY" type="range" min="15" max="85" value="62"></label><label><span>Mouth width</span><input id="mouthWidth" type="range" min="10" max="60" value="28"></label></div>
+    </div>
+  </details>
   <div class="avatar-preview-shell compact-avatar-preview">
     <div class="avatar-preview-top"><video id="avatarVideoPreview" controls muted playsinline></video></div>
     <div class="avatar-preview-bottom"><img id="avatarPhotoPreview" alt=""><span id="mouthMarker" aria-hidden="true"></span></div>
