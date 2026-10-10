@@ -239,6 +239,64 @@ function setNotesCopy(){
  $('notesBodyLabel').textContent=t('Write a note','Напишите заметку','Écrire une note','Написати нотатку');
  $('notesBody').placeholder=t('Write here…','Напишите здесь…');
  $('notesSave').textContent=t('Save note','Сохранить заметку','Enregistrer','Зберегти');
+ $('notesMic').textContent=t('🎙️ Dictate note','🎙️ Надиктовать заметку','🎙️ Dicter une note','🎙️ Продиктувати нотатку');
+}
+let notesRecognizer=null;
+function setupNotesDictation(){
+ const mic=$('notesMic'),area=$('notesBody'),notice=$('notesVoiceStatus');
+ const API=window.SpeechRecognition||window.webkitSpeechRecognition;
+ const idle=t('🎙️ Dictate note','🎙️ Надиктовать заметку','🎙️ Dicter une note','🎙️ Продиктувати нотатку');
+ const stopLabel=t('■ Stop dictation','■ Остановить запись','■ Arrêter la dictée','■ Зупинити диктування');
+ if(!API){
+  mic.disabled=true;
+  notice.textContent=t('Voice input is unavailable in this browser. You can still type notes.','Голосовой ввод не поддерживается этим браузером. Заметку можно написать.','La dictée n’est pas disponible dans ce navigateur.','Голосове введення недоступне в цьому браузері.');
+  return;
+ }
+ mic.addEventListener('click',()=>{
+  if(notesRecognizer){notesRecognizer.stop();return;}
+  if(speech){
+   notice.textContent=t('Finish recording the reminder above first.','Сначала завершите запись напоминания выше.','Terminez d’abord le rappel en cours.','Спочатку завершіть запис нагадування.');
+   return;
+  }
+  const recognizer=new API();
+  notesRecognizer=recognizer;
+  recognizer.lang=navigator.language||'en-US';
+  recognizer.interimResults=true;
+  recognizer.continuous=true;
+  recognizer.maxAlternatives=1;
+  const existing=area.value.trim();
+  let heard=false,parts=[];
+  recognizer.onstart=()=>{
+   mic.textContent=stopLabel;mic.setAttribute('aria-pressed','true');
+   notice.textContent=t('Listening… Speak your note.','Слушаю… Продиктуйте заметку.','J’écoute… Dictez votre note.','Слухаю… Продиктуйте нотатку.');
+  };
+  recognizer.onresult=e=>{
+   for(let i=e.resultIndex;i<e.results.length;i++){
+    const item=e.results[i];parts[i]=item[0]?.transcript?.trim()||'';
+   }
+   const spoken=parts.filter(Boolean).join(' ').trim();
+   if(!spoken)return;
+   heard=true;
+   area.value=[existing,spoken].filter(Boolean).join(existing?'\n':'').slice(0,2000);
+   area.dispatchEvent(new Event('input',{bubbles:true}));
+   notice.textContent=t('Text recognized. Check it, then save your note.','Текст распознан. Проверьте его и сохраните заметку.','Texte reconnu. Vérifiez-le avant d’enregistrer.','Текст розпізнано. Перевірте й збережіть нотатку.');
+  };
+  recognizer.onerror=e=>{
+   const code=String(e?.error||'');
+   notice.textContent=(code==='not-allowed'||code==='service-not-allowed')
+    ?t('Microphone permission denied. Allow access in browser settings.','Доступ к микрофону запрещён. Разрешите его в настройках браузера.','Accès au microphone refusé.','Доступ до мікрофона заборонено.')
+    :t('Voice input stopped. You can continue typing.','Не удалось продолжить распознавание. Можно дописать вручную.','Dictée interrompue. Vous pouvez écrire.','Диктування перервано. Можна дописати вручну.');
+  };
+  recognizer.onend=()=>{
+   if(notesRecognizer===recognizer)notesRecognizer=null;
+   mic.textContent=idle;mic.setAttribute('aria-pressed','false');
+   if(!heard&&!notice.textContent.includes('запрещён')&&!notice.textContent.includes('denied')){
+    notice.textContent=t('No voice text received. Try again or type.','Речь не распознана. Попробуйте ещё раз или напишите текст.','Aucun texte détecté. Réessayez.','Мовлення не розпізнано. Спробуйте ще раз.');
+   }
+  };
+  try{recognizer.start();}
+  catch(_){notesRecognizer=null;mic.textContent=idle;mic.setAttribute('aria-pressed','false');notice.textContent=t('Could not start the microphone.','Не удалось включить микрофон.','Impossible de démarrer le micro.','Не вдалося увімкнути мікрофон.');}
+ });
 }
 let editingNoteId=null;
 async function loadNotes(){
@@ -262,6 +320,7 @@ async function loadNotes(){
  }catch(e){$('notesList').textContent=errorText(e);}
 }
 setNotesCopy();
+setupNotesDictation();
 $('notesSave').onclick=async()=>{
  const body=$('notesBody').value.trim();if(!body)return;
  $('notesSave').disabled=true;
