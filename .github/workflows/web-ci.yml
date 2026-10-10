@@ -24,10 +24,15 @@ jobs:
       - name: Check server syntax
         run: |
           node --check server/server.js
+          node --check server/reminders.js
           node --check server/db.js
           node --check server/email-auth.js
       - name: Check PWA syntax
         run: |
+          node --check app/src/main/assets/mobile-utility.js
+          node --check app/src/main/assets/mobile-utility-links.js
+          node --check app/src/main/assets/reminder-photo.js
+          node --check app/src/main/assets/smart-reminders.js
           node --check app/src/main/assets/app-v4.js
           node --check app/src/main/assets/video-core.js
           node --check app/src/main/assets/bootstrap.js
