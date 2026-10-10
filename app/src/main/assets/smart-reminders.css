@@ -1,0 +1,35 @@
+.reminder-page{max-width:820px}.reminder-page .tool-card{display:grid;gap:12px}
+.reminder-page .tool-card h2{margin:0}.reminder-page label{display:grid;min-width:0;gap:5px}
+.reminder-page input[type=date],.reminder-page input[type=time],.reminder-page input[type=text],
+.reminder-page #reminderWhat,.reminder-page select,.reminder-page textarea{box-sizing:border-box;width:100%;max-width:100%}
+.reminder-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.reminder-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.reminder-weekdays label{border:1px solid var(--line);padding:8px 2px;border-radius:9px;font-size:11px;text-align:center;justify-items:center}
+.reminder-weekdays input{width:auto}.reminder-speech-row{display:flex;flex-wrap:wrap;gap:9px}
+.reminder-confirm{padding:12px;border:1px solid var(--line);border-radius:13px}
+.reminder-confirm h3{margin:0 0 9px}.reminder-help p{font-size:12px;margin:3px 0;overflow-wrap:anywhere}
+.reminder-entry{border:1px solid var(--line);border-radius:13px;padding:12px;margin:7px 0}
+.reminder-entry p{margin:4px 0}.reminder-entry .actions{margin-top:10px}
+.reminder-page [hidden]{display:none!important}
+@media(max-width:560px){.reminder-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+.reminder-weekdays{grid-template-columns:repeat(4,minmax(0,1fr))}
+.reminder-page .tool-card{padding:13px}}
+
+/* Voice is the primary action; photo import is deliberately secondary. */
+.reminder-voice-first{display:grid;gap:7px}
+.reminder-primary-mic{width:100%;min-height:60px;font-weight:700;font-size:16px}
+.reminder-primary-mic[aria-pressed="true"]{outline:2px solid currentColor;outline-offset:2px}
+.reminder-voice-first p{margin:0}
+.reminder-photo-extra{border:1px solid var(--line);border-radius:12px;padding:12px}
+.reminder-photo-extra summary{cursor:pointer;font-weight:600}
+.reminder-photo-extra p{font-size:13px;line-height:1.5}
+.reminder-photo-extra label{margin-top:10px}
+#photoPreview{max-width:100%;max-height:220px;object-fit:contain;justify-self:start;border-radius:8px}
+#photoRecognized{max-width:100%;width:100%;box-sizing:border-box}
+#photoCandidates{display:grid;gap:8px;margin-top:8px}
+#photoCandidates button{justify-self:start}
+
+/* Notes dictation uses the same control styling as other free tools. */
+#notesMic[aria-pressed="true"]{outline:2px solid currentColor;outline-offset:2px}
+#notesVoiceStatus:empty{display:none}
+#notesVoiceStatus{margin:0;font-size:13px;line-height:1.4}

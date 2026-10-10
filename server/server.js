@@ -1,5 +1,6 @@
 import {installSpeech} from './speech.js';
 import {installTelegramBot} from './telegram.js';
+import {installReminders,initRemindersDb,startReminderScheduler} from './reminders.js';
 import {isPaidLifetimeSession} from './lifetime.js';
 import 'dotenv/config';
 import express from 'express';
@@ -62,11 +63,17 @@ app.use((req,res,next)=>{
   res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy','camera=(self), microphone=(self), geolocation=(), payment=(self)');res.setHeader('Cross-Origin-Opener-Policy','same-origin-allow-popups');
   res.setHeader('X-Video-Processing','local-only');
-  res.setHeader('Content-Security-Policy',`default-src 'self'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' blob: data: https:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://accounts.google.com https://www.googleapis.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://js.stripe.com https://checkout.stripe.com; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; frame-ancestors ${frameAncestors}; form-action 'self' https://accounts.google.com https://appleid.apple.com https://checkout.stripe.com`);
+  res.setHeader('Content-Security-Policy',`default-src 'self'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' blob: data: https:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://tessdata.projectnaptha.com https://accounts.google.com https://www.googleapis.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://js.stripe.com https://checkout.stripe.com; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; frame-ancestors ${frameAncestors}; form-action 'self' https://accounts.google.com https://appleid.apple.com https://checkout.stripe.com`);
   next();
 });
 
 app.use('/vendor/ai',express.static(path.join(rootDir,'node_modules','@huggingface','transformers','dist'),{maxAge:'1d'}));
+/* Browser OCR reads images locally; only language data is downloaded. */
+app.use('/vendor/pdf-lib',express.static(path.join(rootDir,'node_modules','pdf-lib','dist'),{maxAge:'1d'}));
+app.use('/vendor/jszip',express.static(path.join(rootDir,'node_modules','jszip','dist'),{maxAge:'1d'}));
+app.get('/vendor/qr/qrcode.js',(req,res)=>res.type('application/javascript').sendFile(path.join(rootDir,'node_modules','qrcode-generator','qrcode.js')));
+app.use('/vendor/ocr',express.static(path.join(rootDir,'node_modules','tesseract.js','dist'),{maxAge:'1d'}));
+app.use('/vendor/ocr-core',express.static(path.join(rootDir,'node_modules','tesseract.js-core'),{maxAge:'1d'}));
 
 app.get('/vendor/ffmpeg/ffmpeg.js',(req,res)=>{res.setHeader('Cache-Control','public,max-age=31536000,immutable');res.type('application/javascript').sendFile(path.join(ffmpegDist,'ffmpeg.js'));});
 app.get('/vendor/ffmpeg/ffmpeg-core.js',(req,res)=>{res.setHeader('Cache-Control','public,max-age=31536000,immutable');res.type('application/javascript').sendFile(path.join(ffmpegCoreDist,'ffmpeg-core.js'));});
@@ -118,6 +125,7 @@ async function signAppToken(user){requireServerConfig();const key=new TextEncode
 async function auth(req,res,next){try{requireServerConfig();const token=(req.headers.authorization||'').replace(/^Bearer\s+/i,'');if(!token)return res.status(401).json({error:'AUTH_REQUIRED'});const key=new TextEncoder().encode(jwtSecret),{payload}=await jwtVerify(token,key,{issuer:'video-variator',audience:'video-variator-client'}),user=await getUser(payload.sub);if(!user)return res.status(401).json({error:'USER_NOT_FOUND'});req.user=user;next();}catch(_){res.status(401).json({error:'INVALID_SESSION'});}}
 installEmailAuth(app,{signAppToken});
 installSpeech(app,{auth,reserve:reserveSpeech});
+installReminders(app,{auth});
 
 app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',https:req.secure||!isProduction,videoProcessing:'local-only',ffmpegRuntime:'same-origin-esm',appUrl,time:new Date().toISOString()}));
 app.get('/api/version',(req,res)=>res.json({webVersion:process.env.WEB_VERSION||'5.3.0',androidVersion:process.env.ANDROID_VERSION||'5.3.0',androidVersionCode:Number(process.env.ANDROID_VERSION_CODE||5),latestApkUrl:process.env.LATEST_APK_URL||'https://github.com/mvryhan-web/video-variator-android/releases/latest/download/VideoUniquifier.apk'}));
@@ -161,4 +169,4 @@ app.post('/api/billing/cancel',auth,async(req,res)=>{try{const current=publicUse
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
 
-await initDb();app.listen(port,()=>{console.log(`Video Uniquifier running on ${appUrl}`);void registerTelegramWebhook?.();});
+await initDb();await initRemindersDb();app.listen(port,()=>{console.log(`Video Uniquifier running on ${appUrl}`);void registerTelegramWebhook?.();startReminderScheduler();});

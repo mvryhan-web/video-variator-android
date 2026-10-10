@@ -19,13 +19,20 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Test voice reminders and ticket recognition
+        run: node --test tests/reminder-input.test.mjs tests/reminders.test.mjs
       - name: Check server syntax
         run: |
           node --check server/server.js
+          node --check server/reminders.js
           node --check server/db.js
           node --check server/email-auth.js
       - name: Check PWA syntax
         run: |
+          node --check app/src/main/assets/mobile-utility.js
+          node --check app/src/main/assets/mobile-utility-links.js
+          node --check app/src/main/assets/reminder-photo.js
+          node --check app/src/main/assets/smart-reminders.js
           node --check app/src/main/assets/app-v4.js
           node --check app/src/main/assets/video-core.js
           node --check app/src/main/assets/bootstrap.js
