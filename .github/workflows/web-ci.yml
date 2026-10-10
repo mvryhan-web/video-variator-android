@@ -10,6 +10,20 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    services:
+      tool-test-postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: tools_test
+          POSTGRES_PASSWORD: isolated_ci_test_only
+          POSTGRES_DB: tools_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tools_test -d tools_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,11 +35,14 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Check server syntax
         run: |
+          node --check server/tool-access.js
+          node --check server/tool-policy.js
           node --check server/server.js
           node --check server/db.js
           node --check server/email-auth.js
       - name: Check PWA syntax
         run: |
+          node --check app/src/main/assets/tool-access.js
           node --check app/src/main/assets/app-v4.js
           node --check app/src/main/assets/video-core.js
           node --check app/src/main/assets/bootstrap.js
@@ -77,8 +94,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y espeak-ng ffmpeg
       - name: Speech and trial unit tests
         run: node --test tests/speech-unit.mjs
+      - name: Tool entitlement policy and real PostgreSQL integration
+        env:
+          DATABASE_URL: postgresql://tools_test:isolated_ci_test_only@127.0.0.1:5432/tools_test
+          DATABASE_SSL: 'false'
+        run: node --test tests/tool-policy-unit.mjs tests/tool-access-db.mjs
       - name: Cross-browser tests
-        run: npm run test:browsers
+        run: npm run test:browsers -- --max-failures=1
 
       - name: Upload browser evidence
         if: always()

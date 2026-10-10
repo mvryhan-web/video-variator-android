@@ -1,3 +1,4 @@
+import {mockToolAccess} from './helpers/tool-access-fixture.mjs';
 import {test,expect} from '@playwright/test';
 import {execFileSync} from 'node:child_process';
 import {mkdtempSync,writeFileSync,readFileSync,rmSync} from 'node:fs';
@@ -20,8 +21,8 @@ test('creator page connects real tools and keeps plan prices',async({page},info)
 });
 
 test('actual local clipping and photo motion export playable MP4 files without uploads',async({page},info)=>{
- test.skip(info.project.name!=='chromium');test.setTimeout(180000);
- const dir=mkdtempSync(join(tmpdir(),'vu-creator-'));let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});
+ test.skip(info.project.name!=='chromium');test.setTimeout(180000);await mockToolAccess(page);
+ const dir=mkdtempSync(join(tmpdir(),'vu-creator-'));let posts=0;page.on('request',r=>{if(r.method()==='POST'&&!new URL(r.url()).pathname.startsWith('/api/tools/'))posts++;});
  try{
  execFileSync('ffmpeg',['-v','error','-f','lavfi','-i','testsrc2=size=160x120:rate=25:duration=1.2','-f','lavfi','-i','sine=frequency=440:duration=1.2','-c:v','libx264','-c:a','aac','-shortest',join(dir,'source.mp4')]);
  execFileSync('ffmpeg',['-v','error','-i',join(dir,'source.mp4'),'-frames:v','1',join(dir,'source.png')]);
