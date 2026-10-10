@@ -63,11 +63,14 @@ app.use((req,res,next)=>{
   res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy','camera=(self), microphone=(self), geolocation=(), payment=(self)');res.setHeader('Cross-Origin-Opener-Policy','same-origin-allow-popups');
   res.setHeader('X-Video-Processing','local-only');
-  res.setHeader('Content-Security-Policy',`default-src 'self'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' blob: data: https:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://accounts.google.com https://www.googleapis.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://js.stripe.com https://checkout.stripe.com; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; frame-ancestors ${frameAncestors}; form-action 'self' https://accounts.google.com https://appleid.apple.com https://checkout.stripe.com`);
+  res.setHeader('Content-Security-Policy',`default-src 'self'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' blob: data: https:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://tessdata.projectnaptha.com https://accounts.google.com https://www.googleapis.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://js.stripe.com https://checkout.stripe.com; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; frame-ancestors ${frameAncestors}; form-action 'self' https://accounts.google.com https://appleid.apple.com https://checkout.stripe.com`);
   next();
 });
 
 app.use('/vendor/ai',express.static(path.join(rootDir,'node_modules','@huggingface','transformers','dist'),{maxAge:'1d'}));
+/* Browser OCR reads images locally; only language data is downloaded. */
+app.use('/vendor/ocr',express.static(path.join(rootDir,'node_modules','tesseract.js','dist'),{maxAge:'1d'}));
+app.use('/vendor/ocr-core',express.static(path.join(rootDir,'node_modules','tesseract.js-core'),{maxAge:'1d'}));
 
 app.get('/vendor/ffmpeg/ffmpeg.js',(req,res)=>{res.setHeader('Cache-Control','public,max-age=31536000,immutable');res.type('application/javascript').sendFile(path.join(ffmpegDist,'ffmpeg.js'));});
 app.get('/vendor/ffmpeg/ffmpeg-core.js',(req,res)=>{res.setHeader('Cache-Control','public,max-age=31536000,immutable');res.type('application/javascript').sendFile(path.join(ffmpegCoreDist,'ffmpeg-core.js'));});
