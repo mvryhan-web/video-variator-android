@@ -39,3 +39,12 @@ test('not every photographed number should be interpreted as a date',()=>{
  assert.equal(x.dates.length,0);
  assert.deepEqual(x.times,['18:30']);
 });
+
+test('natural spoken times without colon and one month deadline',()=>{
+ const a=parseReminderText('Напомни завтра в 18 часов пойти на спорт',now);
+ assert.equal(a.date,'2026-10-11');
+ assert.equal(a.time,'18:00');
+ const b=parseReminderText('Через месяц в 19 отключить подписку',now);
+ assert.equal(b.date,'2026-11-10');
+ assert.equal(b.time,'19:00');
+});
