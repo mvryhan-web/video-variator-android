@@ -176,7 +176,7 @@ if($('#dashboardView')){
  text('#historyEmpty b',c.emptyTitle);text('#historyEmpty p',c.emptyText);
  const start=element('button','cp-action',c.start);start.type='button';start.onclick=()=>{history.replaceState(history.state,'',location.pathname+location.search);window.VideoVariatorUI?.showView('dashboard');};$('#historyEmpty').append(start);
  paragraph($('#historyView'),c.historyNote);callout($('#historyView'),c.nextTitle,c.nextText);
- paragraph($('#analyticsView'),c.analyticsNote);document.querySelectorAll('.analyticsLabel').forEach((el,i)=>{el.removeAttribute('data-i18n');el.textContent=c.metrics[i];});text('.analyticsCard .metricSub',c.metric);callout($('#analyticsView'),c.profileNextTitle,c.profileNextText);
+ document.querySelectorAll('.analyticsLabel').forEach((el,i)=>{el.removeAttribute('data-i18n');el.textContent=c.metrics[i];});text('.analyticsCard .metricSub',c.metric);callout($('#analyticsView'),c.profileNextTitle,c.profileNextText);
  document.querySelectorAll('.profileCard h3').forEach((el,i)=>el.textContent=c.profileCards[i]);document.querySelectorAll('.profileRow>span').forEach((el,i)=>{if(c.profileLabels[i])el.textContent=c.profileLabels[i];});
  text('#profileView .profileCard:nth-child(2)>p',c.billing);text('#manageBillingBtn',c.manage);text('#cancelSubscriptionBtn',c.cancel);text('#checkUpdateBtn',c.updates);text('#downloadAndroidBtn',c.android);text('.privacyPanel h3',c.privacy);
  document.querySelectorAll('.privacyPoint span').forEach((el,i)=>{if(c.privacyPoints[i])el.textContent=c.privacyPoints[i];});callout($('#profileView'),c.profileNextTitle,c.profileNextText);
