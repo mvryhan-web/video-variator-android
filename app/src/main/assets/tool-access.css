@@ -1,0 +1,10 @@
+.toolAccessBanner {margin:12px 0;padding:12px 14px;border:1px solid var(--cp-line,var(--line,#394257));border-radius:12px;background:var(--cp-bg,var(--bg,#0b1220));color:var(--cp-text,var(--text,#eef2fa));font-size:13px;overflow-wrap:anywhere;}
+.toolAccessBanner strong {font-size:14px;}
+.toolAccessBanner p {margin:6px 0;font-size:12px;line-height:1.45;}
+.toolAccessBanner p:empty {display:none;}
+.toolAccessBanner > div {display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;}
+.toolAccessBanner a {display:inline-flex;align-items:center;min-height:44px;color:inherit;text-decoration:underline;text-underline-offset:3px;}
+.toolAccessBadge {display:block;margin-top:6px;font-size:11px;line-height:1.4;color:var(--cp-muted,var(--muted,#91a1ba));overflow-wrap:anywhere;}
+[data-hub-tool][data-access=subscription] .toolAccessBadge {color:var(--cp-accent,#e5a882);}
+
+.priceCard .toolSubscriptionNote {font-size:12px;line-height:1.5;margin:10px 0;}
