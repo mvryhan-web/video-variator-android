@@ -61,7 +61,7 @@ export function installTelegramBot(app, {appUrl}) {
         body:JSON.stringify({
           chat_id:chatId,
           text:reply + (['start','create','plans','account','help'].includes(command) ? '\n\n' + appUrl : ''),
-          reply_markup:mini && ['start','create'].includes(command)?{inline_keyboard:[[{text:'🎬 Process in Telegram',web_app:{url:appUrl+'/telegram-mini.html'}}],[{text:'🌐 Open full website',url:appUrl}]]}:undefined,
+          reply_markup:mini && message.chat?.type==='private' && ['start','create'].includes(command)?{inline_keyboard:[[{text:'🎬 Process in Telegram',web_app:{url:appUrl+'/telegram-mini.html'}}],[{text:'🌐 Open full website',url:appUrl}]]}:undefined,
           disable_web_page_preview:true
         }),
         signal:AbortSignal.timeout(10000)
