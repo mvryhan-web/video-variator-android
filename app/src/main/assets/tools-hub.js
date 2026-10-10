@@ -29,6 +29,20 @@
   a.innerHTML=`<span class="hub-icon">${icon(i)}</span><strong></strong><small></small>`;a.querySelector('strong').textContent=c.names[i];a.querySelector('small').textContent=c.notes[i];grid.append(a);
   if(!['tts','stt'].includes(mode))a.onclick=e=>{e.preventDefault();navigate(mode);};
  });
+ // Extra everyday utilities: direct access, same styling as existing tool tiles.
+ const extra=lang==='ru'?
+  [['smart-reminders.html','Умные напоминания','Даты, повторы и уведомления'],['smart-reminders.html#quick-notes','Быстрые заметки','Синхронизация с аккаунтом']]:
+  lang==='fr'?[['smart-reminders.html','Rappels intelligents','Dates et notifications'],['smart-reminders.html#quick-notes','Notes rapides','Synchronisées sur vos appareils']]:
+  lang==='uk'?[['smart-reminders.html','Розумні нагадування','Дати та сповіщення'],['smart-reminders.html#quick-notes','Швидкі нотатки','Синхронізовані в акаунті']]:
+  [['smart-reminders.html','Smart reminders','Dates, repeats & alerts'],['smart-reminders.html#quick-notes','Quick notes','Synced with your account']];
+ extra.forEach(([href,title,note],i)=>{
+  const link=document.createElement('a');link.className='hub-tile';
+  link.href=href;
+  const iconEl=document.createElement('span');iconEl.className='hub-icon';iconEl.textContent=i?'✎':'◷';iconEl.setAttribute('aria-hidden','true');
+  const heading=document.createElement('strong');heading.textContent=title;
+  const small=document.createElement('small');small.textContent=note;
+  link.append(iconEl,heading,small);grid.append(link);
+ });
  const screen=document.createElement('div');screen.className='hub-screen-header';screen.hidden=true;screen.innerHTML='<button type="button" id="hubBack"></button><h1 tabindex="-1" id="hubTitle"></h1><p role="status" id="hubNotice"></p>';screen.querySelector('button').textContent='← '+c.back;hero.after(screen);
  $('#files').closest('label').querySelector('span').textContent=c.choose;
  const adjust=document.createElement('h2');adjust.className='hub-adjust';adjust.textContent=c.settings;$('#qualityLabel').before(adjust);
