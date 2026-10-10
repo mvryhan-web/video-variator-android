@@ -405,10 +405,33 @@ async function previewGoogleVoice(voice){
  finally{if(googlePreviewAbort===controller)googlePreviewAbort=null;}
 }
 $('googlePreview').onclick=()=>previewGoogleVoice($('googleVoice').value);
+// The three visible quality tiles control the original native select used by job creation.
 $('avatarOutputQuality').value=qualities[draft().quality]?draft().quality:'720';
-$('avatarOutputQuality').onchange=()=>saveDraft({quality:$('avatarOutputQuality').value});
-$('avatarQualityLabel').textContent=locale==='ru'?'Качество видео':'Output quality';
-$('avatarQualityHelp').textContent=locale==='ru'?'Все качества доступны. 4K требует больше времени и памяти устройства; детализация зависит от исходника.':'All qualities are unlocked. 4K takes more time and device memory; it cannot restore missing detail.';
+function syncQualityTiles(){
+  const current=$('avatarOutputQuality').value;
+  document.querySelectorAll('.avatar-quality-option').forEach(button=>{
+    button.setAttribute('aria-pressed',String(button.dataset.quality===current));
+  });
+}
+$('avatarOutputQuality').onchange=()=>{saveDraft({quality:$('avatarOutputQuality').value});syncQualityTiles();};
+document.querySelectorAll('.avatar-quality-option').forEach(button=>{
+  button.addEventListener('click',()=>{
+    $('avatarOutputQuality').value=button.dataset.quality;
+    $('avatarOutputQuality').dispatchEvent(new Event('change',{bubbles:true}));
+  });
+});
+syncQualityTiles();
+const qualityCopy={
+ en:['Choose video quality','All resolutions are available. 4K requires more device memory.','Faster','Balanced','Maximum'],
+ ru:['Выберите качество видео','Все три качества доступны. 4K требует больше памяти устройства.','Быстрее','Оптимально','Максимум'],
+ fr:['Choisissez la qualité vidéo','Les trois résolutions sont disponibles. La 4K demande plus de mémoire.','Rapide','Équilibré','Maximum'],
+ uk:['Оберіть якість відео','Усі три якості доступні. 4K потребує більше пам’яті.','Швидше','Оптимально','Максимум']
+}[locale]||[];
+$('avatarQualityLabel').textContent=qualityCopy[0];
+$('avatarQualityHelp').textContent=qualityCopy[1];
+['quality720','quality1080','quality2160'].forEach((name,i)=>{
+  document.querySelector('[data-av="'+name+'"]').textContent=qualityCopy[i+2];
+});
 
 const motionCopy={en:['Mouth position','Move the marker onto the lips in the cropped portrait below. Use a front-facing photo. This is simple audio-reactive motion, not realistic lip-sync.','Horizontal','Vertical','Mouth width'],ru:['Положение рта','Совместите метку с губами на портрете ниже. Лучше фото анфас. Это простая реакция на звук, а не реалистичная синхронизация речи.','По горизонтали','По вертикали','Ширина рта'],fr:['Position de la bouche','Placez le repère sur les lèvres du portrait recadré. Utilisez une photo de face. Animation simple, sans lip-sync réaliste.','Horizontal','Vertical','Largeur'],uk:['Положення рота','Сумістіть позначку з губами на портреті. Оберіть фото анфас. Це проста реакція на звук, не реалістична синхронізація.','По горизонталі','По вертикалі','Ширина рота']}[locale];
 $('motionTitle').textContent=motionCopy[0];$('motionHelp').textContent=motionCopy[1];

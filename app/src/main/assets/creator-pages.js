@@ -127,18 +127,47 @@ if(tools&&!tools.hasAttribute('data-tool-hub')){
  callout(tools,c.nextTitle,c.nextText);
 }
 if(avatar){
- const unlocked={
- en:['720p · 1080p · 4K — available to everyone','Choose the quality for your device.','All three qualities are unlocked for Avatar Narrator. Higher resolution needs more time and memory.',['720p','Smaller files and faster export.'],['1080p','More detail for everyday sharing.'],['4K','Largest output. Best on capable devices; source detail still matters.']],
- ru:['720p · 1080p · 4K — доступны всем','Выберите качество для вашего устройства.','В Аватаре доступны все три качества. Высокое разрешение требует больше времени и памяти.',['720p','Меньше размер и быстрее экспорт.'],['1080p','Больше деталей для обычных публикаций.'],['4K','Максимальный размер. Для мощных устройств; детализация зависит от исходника.']],
- fr:['720p · 1080p · 4K — accessibles à tous','Choisissez la qualité pour votre appareil.','Les trois qualités sont disponibles. La haute résolution demande plus de temps et de mémoire.',['720p','Fichiers légers, export rapide.'],['1080p','Plus de détails au quotidien.'],['4K','Pour les appareils puissants ; la source détermine les détails.']],
- uk:['720p · 1080p · 4K — доступні всім','Оберіть якість для вашого пристрою.','Доступні всі три якості. Вища роздільність потребує більше часу та пам’яті.',['720p','Менші файли та швидший експорт.'],['1080p','Більше деталей для публікацій.'],['4K','Для потужних пристроїв; деталі залежать від джерела.']]
- }[locale]||null;
- if(unlocked){c.avatarBadge=unlocked[0];c.qualityTitle=unlocked[1];c.qualitySub=unlocked[2];c.qualityCards=unlocked.slice(3);c.avatarNextText=unlocked[2];}
- nav(avatar);hero($('.avatar-hero'),c.avatarHero,'.avatar-hero [data-av="intro"]');text('.avatar-hero [data-av="included"]',c.avatarBadge);
- const steps=features(avatar,c.avatarSteps);$('.avatar-hero').after(steps);
- paragraph($('.avatar-hero'),c.avatarNote);
+ const flow={
+  en:{
+   kicker:'AVATAR · 3 STEPS',lead:'Your video and a talking photo, together.',
+   intro:'Your video is on top; the portrait is below. Add the files, choose a voice and create a video.',
+   steps:['1 · Video + photo','2 · Voice + text','3 · Create & save'],
+   note:'In Telegram or the browser, record/upload your voice or use Google AI if enabled. Exporting a device voice requires Android. Mouth movement follows audio, not exact lip-sync.'
+  },
+  ru:{
+   kicker:'АВАТАР · 3 ШАГА',lead:'Видео и говорящее фото — в одном ролике.',
+   intro:'Ваше видео будет сверху, фото — снизу. Загрузите файлы, выберите озвучку и создайте ролик.',
+   steps:['1 · Видео + фото','2 · Голос + текст','3 · Создать и скачать'],
+   note:'В Telegram и браузере можно записать или загрузить свой голос. Google AI доступен, если включён. Экспорт голоса устройства — только в Android. Движение губ приблизительное.'
+  },
+  fr:{
+   kicker:'AVATAR · 3 ÉTAPES',lead:'Votre vidéo et une photo qui parle.',
+   intro:'La vidéo est en haut, le portrait en bas. Ajoutez les fichiers, choisissez une voix et créez le résultat.',
+   steps:['1 · Vidéo + photo','2 · Voix + texte','3 · Créer et sauver'],
+   note:'Dans Telegram ou le navigateur, enregistrez/importez votre voix, ou utilisez Google AI si activé. Une voix de l’appareil nécessite Android. Le mouvement des lèvres est approximatif.'
+  },
+  uk:{
+   kicker:'АВАТАР · 3 КРОКИ',lead:'Відео та фото, що говорить, разом.',
+   intro:'Ваше відео буде зверху, портрет — знизу. Додайте файли, оберіть голос і створіть ролик.',
+   steps:['1 · Відео + фото','2 · Голос + текст','3 · Створити й зберегти'],
+   note:'У Telegram або браузері запишіть/завантажте голос чи скористайтеся Google AI, якщо активний. Голос пристрою для експорту доступний лише в Android. Рух губ приблизний.'
+  }
+ }[locale]||{
+   kicker:'AVATAR · 3 STEPS',lead:'Your video and a talking photo, together.',
+   intro:'Add the video, portrait, voice and text, then export.',
+   steps:['1 · Video + photo','2 · Voice + text','3 · Create & save'],
+   note:'Device voice export requires Android. The avatar moves with the sound, not precise lip-sync.'
+ };
+ nav(avatar);
+ hero($('.avatar-hero'),[flow.kicker,flow.lead,flow.intro],'.avatar-hero [data-av="intro"]');
+ const workflow=element('div','avatar-workflow');
+ workflow.setAttribute('aria-label',flow.kicker);
+ flow.steps.forEach(step=>workflow.append(element('span','avatar-workflow-step',step)));
+ $('.avatar-hero').after(workflow);
+ paragraph($('.avatar-hero'),flow.note);
  text('[data-av="recentNote"]',c.historyNote);
- const quality=element('section','cp-quality');quality.append(element('h2','cp-section-title',c.qualityTitle));paragraph(quality,c.qualitySub,'cp-section-sub');features(quality,c.qualityCards);avatar.append(quality);callout(avatar,c.avatarNextTitle,c.avatarNextText);
+ // Resolution is now a single interactive 720p / 1080p / 4K selector at the top.
+ // Do not repeat oversized quality cards and a paid-plan callout under history.
 }
 if($('#dashboardView')){
  for(const key of ['history','analytics','profile','faq'])heading('#'+key+'View',c[key]);
@@ -147,7 +176,7 @@ if($('#dashboardView')){
  text('#historyEmpty b',c.emptyTitle);text('#historyEmpty p',c.emptyText);
  const start=element('button','cp-action',c.start);start.type='button';start.onclick=()=>{history.replaceState(history.state,'',location.pathname+location.search);window.VideoVariatorUI?.showView('dashboard');};$('#historyEmpty').append(start);
  paragraph($('#historyView'),c.historyNote);callout($('#historyView'),c.nextTitle,c.nextText);
- paragraph($('#analyticsView'),c.analyticsNote);document.querySelectorAll('.analyticsLabel').forEach((el,i)=>{el.removeAttribute('data-i18n');el.textContent=c.metrics[i];});text('.analyticsCard .metricSub',c.metric);callout($('#analyticsView'),c.profileNextTitle,c.profileNextText);
+ document.querySelectorAll('.analyticsLabel').forEach((el,i)=>{el.removeAttribute('data-i18n');el.textContent=c.metrics[i];});text('.analyticsCard .metricSub',c.metric);callout($('#analyticsView'),c.profileNextTitle,c.profileNextText);
  document.querySelectorAll('.profileCard h3').forEach((el,i)=>el.textContent=c.profileCards[i]);document.querySelectorAll('.profileRow>span').forEach((el,i)=>{if(c.profileLabels[i])el.textContent=c.profileLabels[i];});
  text('#profileView .profileCard:nth-child(2)>p',c.billing);text('#manageBillingBtn',c.manage);text('#cancelSubscriptionBtn',c.cancel);text('#checkUpdateBtn',c.updates);text('#downloadAndroidBtn',c.android);text('.privacyPanel h3',c.privacy);
  document.querySelectorAll('.privacyPoint span').forEach((el,i)=>{if(c.privacyPoints[i])el.textContent=c.privacyPoints[i];});callout($('#profileView'),c.profileNextTitle,c.profileNextText);

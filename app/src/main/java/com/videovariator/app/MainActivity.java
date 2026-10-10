@@ -20,6 +20,7 @@ import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -134,6 +135,9 @@ public class MainActivity extends Activity {
             new android.content.IntentFilter(ProcessingService.STOP), androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);
         webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
         webView.setWebViewClient(new WebViewClient() {
+            @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                return bundledPreviewResponse(request);
+            }
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) { return handleNavigation(request.getUrl()); }
             @Override public boolean shouldOverrideUrlLoading(WebView view, String url) { return handleNavigation(Uri.parse(url)); }
             @Override public void onPageFinished(WebView view, String url) {
@@ -168,7 +172,16 @@ public class MainActivity extends Activity {
         if (!remote.isEmpty()) {
             Uri uri = Uri.parse(remote);
             trustedWebOrigin = uri.getScheme() + "://" + uri.getAuthority();
-            webView.loadUrl(remote);
+            if (BuildConfig.BUNDLED_PREVIEW) {
+                // Clear old website caches before the first preview navigation;
+                // otherwise an installed production service worker can serve old UI.
+                String target = JSONObject.quote(remote + "/index.html?bundled-preview=1");
+                String html = "<!doctype html><meta name='viewport' content='width=device-width'><p>Loading Video Uniquifier test version…</p><script>"
+                    + "Promise.all([navigator.serviceWorker?navigator.serviceWorker.getRegistrations().then(rs=>Promise.all(rs.map(r=>r.unregister()))):Promise.resolve(),"
+                    + "window.caches?caches.keys().then(ks=>Promise.all(ks.map(k=>caches.delete(k)))):Promise.resolve()])"
+                    + ".then(()=>location.replace(" + target + ")).catch(()=>document.querySelector('p').textContent='Could not clear the old app cache. Please reopen the test version.');</script>";
+                webView.loadDataWithBaseURL(remote + "/", html, "text/html", "UTF-8", null);
+            } else webView.loadUrl(remote);
         } else {
             trustedWebOrigin = "file://";
             webView.loadUrl("file:///android_asset/index.html");
@@ -180,6 +193,32 @@ public class MainActivity extends Activity {
         appUpdateManager = AppUpdateManagerFactory.create(this);
         appUpdateManager.registerListener(updateListener);
         checkForPlayUpdate(false);
+    }
+
+    private WebResourceResponse bundledPreviewResponse(WebResourceRequest request) {
+        if (!BuildConfig.BUNDLED_PREVIEW || !"GET".equals(request.getMethod())) return null;
+        Uri origin = Uri.parse(safeHttps(BuildConfig.WEB_APP_URL));
+        Uri uri = request.getUrl();
+        if (!"https".equals(uri.getScheme()) || !java.util.Objects.equals(origin.getAuthority(), uri.getAuthority())) return null;
+        String path = uri.getPath();
+        if (path == null || path.startsWith("/api/") || path.startsWith("/vendor/")) return null;
+        String asset = "/".equals(path) ? "index.html" : path.substring(1);
+        if (asset.contains("..") || asset.contains("\\")) return null;
+        try {
+            String mime = java.net.URLConnection.guessContentTypeFromName(asset);
+            if (asset.endsWith(".js") || asset.endsWith(".mjs")) mime = "application/javascript";
+            else if (asset.endsWith(".css")) mime = "text/css";
+            else if (asset.endsWith(".svg")) mime = "image/svg+xml";
+            else if (asset.endsWith(".webmanifest")) mime = "application/manifest+json";
+            if (mime == null) mime = "application/octet-stream";
+            return new WebResourceResponse(mime, "UTF-8", 200, "OK",
+                java.util.Collections.singletonMap("Cache-Control", "no-store"), getAssets().open(asset));
+        } catch (java.io.IOException missingAsset) {
+            // Do not silently substitute production UI for missing packaged code.
+            return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found",
+                java.util.Collections.singletonMap("Cache-Control", "no-store"),
+                new java.io.ByteArrayInputStream(new byte[0]));
+        }
     }
 
     private String safeHttps(String value) {
@@ -670,6 +709,7 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void toast(final String message) { runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show()); }
         @JavascriptInterface public void checkForUpdate() { runOnUiThread(() -> checkForPlayUpdate(true)); }
         @JavascriptInterface public String getAppVersion() { return BuildConfig.VERSION_NAME; }
+        @JavascriptInterface public boolean isBundledPreview() { return BuildConfig.BUNDLED_PREVIEW; }
         @JavascriptInterface public String getApiBase() {
             String api = safeHttps(BuildConfig.API_BASE_URL);
             if (!api.isEmpty()) return api;

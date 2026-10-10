@@ -3,6 +3,9 @@ plugins {
 }
 
 def defaultProductionUrl = 'https://video-variator-android.onrender.com'
+// Explicit owner-test builds use packaged screens, while API/runtime requests
+// continue to the existing production origin. Normal builds remain remote.
+def bundledPreview = System.getenv('VV_BUNDLED_PREVIEW') == 'true'
 def webAppUrl = (System.getenv('VV_WEB_APP_URL') ?: defaultProductionUrl).replace('\\','\\\\').replace('"','\\"')
 def apiBaseUrl = (System.getenv('VV_API_BASE_URL') ?: defaultProductionUrl).replace('\\','\\\\').replace('"','\\"')
 def updateApiUrl = (System.getenv('VV_UPDATE_API_URL') ?: defaultProductionUrl + '/api/version').replace('\\','\\\\').replace('"','\\"')
@@ -24,6 +27,7 @@ android {
         versionCode = 11
         versionName = '5.4.0'
         buildConfigField 'String', 'WEB_APP_URL', '"' + webAppUrl + '"'
+        buildConfigField 'boolean', 'BUNDLED_PREVIEW', bundledPreview.toString()
         buildConfigField 'String', 'API_BASE_URL', '"' + apiBaseUrl + '"'
         buildConfigField 'String', 'UPDATE_API_URL', '"' + updateApiUrl + '"'
     }

@@ -1,4 +1,5 @@
 import {installSpeech} from './speech.js';
+import {installTelegramBot} from './telegram.js';
 import {isPaidLifetimeSession} from './lifetime.js';
 import 'dotenv/config';
 import express from 'express';
@@ -52,10 +53,16 @@ async function cancelPreviousSubscriptionForLifetime(subscriptionId){
 app.use((req,res,next)=>{
   if(isProduction&&!req.secure){const host=req.headers.host;if(host)return res.redirect(308,`https://${host}${req.originalUrl}`);}
   if(req.secure||isProduction)res.setHeader('Strict-Transport-Security','max-age=31536000; includeSubDomains; preload');
-  res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','DENY');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
+  // Telegram Desktop/Web embeds Mini App HTML in an iframe.
+  // Allow only Telegram to frame HTML pages; keep the frame ban for API/non-HTML routes.
+  const servesHtmlPage=req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/')&&(!path.extname(req.path)||req.path.endsWith('.html'));
+  const frameAncestors=servesHtmlPage?"'self' https://web.telegram.org https://telegram.org https://*.telegram.org":"'none'";
+  res.setHeader('X-Content-Type-Options','nosniff');
+  if(!servesHtmlPage)res.setHeader('X-Frame-Options','DENY');
+  res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy','camera=(self), microphone=(self), geolocation=(), payment=(self)');res.setHeader('Cross-Origin-Opener-Policy','same-origin-allow-popups');
   res.setHeader('X-Video-Processing','local-only');
-  res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' blob: data: https:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://accounts.google.com https://www.googleapis.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://js.stripe.com https://checkout.stripe.com; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://accounts.google.com https://appleid.apple.com https://checkout.stripe.com");
+  res.setHeader('Content-Security-Policy',`default-src 'self'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' blob: data: https:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://accounts.google.com https://www.googleapis.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://js.stripe.com https://checkout.stripe.com; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; frame-ancestors ${frameAncestors}; form-action 'self' https://accounts.google.com https://appleid.apple.com https://checkout.stripe.com`);
   next();
 });
 
@@ -106,6 +113,7 @@ app.post('/api/webhooks/stripe',express.raw({type:'application/json'}),async(req
 });
 
 app.use(express.json({limit:'1mb'}));
+const registerTelegramWebhook=installTelegramBot(app,{appUrl});
 async function signAppToken(user){requireServerConfig();const key=new TextEncoder().encode(jwtSecret);return new SignJWT({email:user.email||'',name:user.name||''}).setProtectedHeader({alg:'HS256'}).setSubject(user.id).setIssuer('video-variator').setAudience('video-variator-client').setIssuedAt().setExpirationTime('7d').sign(key);}
 async function auth(req,res,next){try{requireServerConfig();const token=(req.headers.authorization||'').replace(/^Bearer\s+/i,'');if(!token)return res.status(401).json({error:'AUTH_REQUIRED'});const key=new TextEncoder().encode(jwtSecret),{payload}=await jwtVerify(token,key,{issuer:'video-variator',audience:'video-variator-client'}),user=await getUser(payload.sub);if(!user)return res.status(401).json({error:'USER_NOT_FOUND'});req.user=user;next();}catch(_){res.status(401).json({error:'INVALID_SESSION'});}}
 installEmailAuth(app,{signAppToken});
@@ -153,4 +161,4 @@ app.post('/api/billing/cancel',auth,async(req,res)=>{try{const current=publicUse
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
 
-await initDb();app.listen(port,()=>console.log(`Video Uniquifier running on ${appUrl}`));
+await initDb();app.listen(port,()=>{console.log(`Video Uniquifier running on ${appUrl}`);void registerTelegramWebhook?.();});
