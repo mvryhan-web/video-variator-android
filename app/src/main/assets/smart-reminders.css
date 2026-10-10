@@ -14,3 +14,17 @@
 @media(max-width:560px){.reminder-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
 .reminder-weekdays{grid-template-columns:repeat(4,minmax(0,1fr))}
 .reminder-page .tool-card{padding:13px}}
+
+/* Voice is the primary action; photo import is deliberately secondary. */
+.reminder-voice-first{display:grid;gap:7px}
+.reminder-primary-mic{width:100%;min-height:60px;font-weight:700;font-size:16px}
+.reminder-primary-mic[aria-pressed="true"]{outline:2px solid currentColor;outline-offset:2px}
+.reminder-voice-first p{margin:0}
+.reminder-photo-extra{border:1px solid var(--line);border-radius:12px;padding:12px}
+.reminder-photo-extra summary{cursor:pointer;font-weight:600}
+.reminder-photo-extra p{font-size:13px;line-height:1.5}
+.reminder-photo-extra label{margin-top:10px}
+#photoPreview{max-width:100%;max-height:220px;object-fit:contain;justify-self:start;border-radius:8px}
+#photoRecognized{max-width:100%;width:100%;box-sizing:border-box}
+#photoCandidates{display:grid;gap:8px;margin-top:8px}
+#photoCandidates button{justify-self:start}
