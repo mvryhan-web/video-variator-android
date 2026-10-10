@@ -3,7 +3,7 @@
 const $=id=>document.getElementById(id),tg=window.Telegram?.WebApp;
 const core=window.VideoVariatorCore;
 const initData=tg?.initData||'';
-let file=null,mode='gentle',job=null,doneBlob=null,doneName='',previewUrl=null,outputUrl=null,remaining=5,busy=false,authenticated=false;
+let file=null,mode='gentle',job=null,doneBlob=null,doneName='',previewUrl=null,outputUrl=null,remaining=5,busy=false,authenticated=false,landscape=false;
 const status=(msg)=>{$('status').textContent=msg;};
 const api=async(path,body)=>{
  const r=await fetch('/api/telegram-mini/'+path,{
@@ -25,10 +25,10 @@ function showPlans(plans){
   name.textContent=p.name;sub.textContent=p.price+(p.credits==null?' · Unlimited':' · '+p.credits+' credits');
   sub.style.display='block';label.append(name,sub);
   const button=document.createElement('button');button.type='button';button.textContent='Buy subscription';
-  button.addEventListener('click',()=>alert('Telegram Stars payments need prices to be configured. Existing website plans have not changed.'));
+  button.textContent='Stars checkout · soon';button.disabled=true;button.title='Telegram Stars pricing needs to be configured';
   row.append(label,button);root.append(row);
  }
- section.scrollIntoView({behavior:'smooth',block:'start'});
+ if(!busy)section.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function applySession(data){
  if(!data)return;
@@ -59,9 +59,11 @@ async function onFile(){
   if(core.getFiles().length!==1)throw Error('Please select a video file.');
   const length=await core.durationOf(incoming);
   if(length>45||length<.3)throw Error('Choose a video between 1 and 45 seconds.');
-  file=incoming;file.duration=length; // Local metadata only; video is not uploaded.
+  file=incoming; // Local metadata only; video is not uploaded.
   $('filename').textContent=incoming.name;
-  previewUrl=URL.createObjectURL(incoming);$('preview').src=previewUrl;$('preview').hidden=false;
+  previewUrl=URL.createObjectURL(incoming);const preview=$('preview');preview.src=previewUrl;preview.hidden=false;
+  await new Promise((resolve,reject)=>{if(preview.readyState>=1)return resolve();preview.addEventListener('loadedmetadata',resolve,{once:true});preview.addEventListener('error',()=>reject(Error('Unable to preview this video.')),{once:true});});
+  landscape=preview.videoWidth>=preview.videoHeight;
   status('Ready. Choose a mode and press Start processing.');
  }catch(e){status(localeError(e));}
  $('start').disabled=!authenticated||!file||busy||remaining<1;
@@ -72,11 +74,10 @@ async function start(){
  $('start').disabled=true;
  $('progress').value=0;$('progressWrap').hidden=false;
  try{
-  const reserved=await api('reserve',{mode,duration:file.duration});
+  const reserved=await api('reserve',{mode,duration:await core.durationOf(file)});
   job=reserved.job;applySession(reserved);
   status('Preparing video engine on your phone…');
-  const video=$('preview'),isWide=(video.videoWidth||0)>=(video.videoHeight||0);
-  const resolution=isWide?'1280x720':'720x1280';
+  const resolution=landscape?'1280x720':'720x1280';
   const output=await core.process({mode,variants:1,resolution,fastExport:true});
   const result=output.results?.[0];
   if(!result?.blob?.size)throw Error('No output was produced.');
