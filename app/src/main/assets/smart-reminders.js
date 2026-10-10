@@ -121,10 +121,13 @@ async function list(){
     $('reminderWhat').dataset.editId=item.id;window.scrollTo({top:0,behavior:'smooth'});
     status(t('Editing reminder; confirm and save again.','Редактирование: проверьте и сохраните заново.'));
    };
+   const calendar=document.createElement('button');calendar.type='button';
+   calendar.textContent=t('Add to calendar','В календарь','Au calendrier','У календар');
+   calendar.onclick=()=>exportICS(item);
    const del=document.createElement('button');del.type='button';del.textContent=t('Delete','Удалить');del.onclick=async()=>{
     if(!confirm(t('Delete this reminder?','Удалить напоминание?')))return;
     try{await api('/'+encodeURIComponent(item.id),{method:'DELETE'});await list();}catch(e){status(errorText(e));}
-   };actions.append(edit,del);row.append(title,desc,actions);list.append(row);
+   };actions.append(edit,calendar,del);row.append(title,desc,actions);list.append(row);
   }
  }catch(e){$('reminderList').textContent=errorText(e);}
 }
@@ -177,4 +180,78 @@ $('confirmSave').onclick=async()=>{
 $('enableNotifications').onclick=enablePush;$('connectTelegram').onclick=telegram;speechInput();
 const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);setDate(tomorrow);
 $('notifySupport').textContent=t('App notifications require a supported browser and permission; Telegram works after linking the bot.','Для уведомлений от приложения нужны поддерживаемый браузер и разрешение. Telegram работает после подключения бота.');
-if(userToken())list();else $('reminderList').textContent=t('Sign in first to synchronize reminders across devices.','Сначала войдите в аккаунт, чтобы напоминания сохранялись между устройствами.');
+if(userToken()){list();loadNotes();handlePushAction();}else $('reminderList').textContent=t('Sign in first to synchronize reminders across devices.','Сначала войдите в аккаунт, чтобы напоминания сохранялись между устройствами.');
+
+
+function exportICS(reminder){
+ const date=String(reminder.date_local).slice(0,10).replace(/-/g,'');
+ const time=String(reminder.time_local).slice(0,5).replace(':','');
+ const zone=String(reminder.timezone);
+ const escape=s=>String(s).replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
+ const local=date+'T'+time+'00';
+ const uid='vv-reminder-'+reminder.id+'@video-uniquifier';
+ const trigger=Number(reminder.advance_minutes)===0?'PT0S':'-PT'+Number(reminder.advance_minutes)+'M';
+ const start=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Video Uniquifier//Smart Reminders//EN',
+  'BEGIN:VEVENT','UID:'+uid,'DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z/,'Z'),
+  'SUMMARY:'+escape(reminder.title),'DTSTART;TZID='+zone+':'+local,'DURATION:PT15M'];
+ if(reminder.recurrence==='daily')start.push('RRULE:FREQ=DAILY');
+ if(reminder.recurrence==='weekly')start.push('RRULE:FREQ=WEEKLY;BYDAY='+reminder.weekdays.map(n=>['','MO','TU','WE','TH','FR','SA','SU'][n]).join(','));
+ if(reminder.recurrence==='monthly')start.push('RRULE:FREQ=MONTHLY');
+ start.push('BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+escape(reminder.title),'TRIGGER:'+trigger,'END:VALARM','END:VEVENT','END:VCALENDAR');
+ const file=new File([start.join('\r\n')+'\r\n'],'reminder-'+reminder.id+'.ics',{type:'text/calendar'});
+ const url=URL.createObjectURL(file),link=document.createElement('a');
+ link.href=url;link.download=file.name;document.body.append(link);link.click();link.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),30000);
+ status(t('Calendar file created. Open the ICS file to import it. This is a one-way export.','Файл календаря готов. Откройте ICS, чтобы импортировать событие. Это односторонний экспорт.'));
+}
+async function handlePushAction(){
+ const args=new URLSearchParams(location.search),action=args.get('action'),id=args.get('id');
+ if(!['done','snooze'].includes(action)||!/^[a-f0-9-]{36}$/i.test(id||''))return;
+ history.replaceState(history.state,'',location.pathname+location.hash);
+ try{
+  await api('/'+encodeURIComponent(id)+'/'+action,{method:'POST'});
+  status(action==='done'?t('Reminder completed.','Напоминание отмечено выполненным.'):t('Snoozed for 10 minutes.','Напоминание отложено на 10 минут.'));
+  await list();
+ }catch(e){status(errorText(e));}
+}
+function setNotesCopy(){
+ $('notesHeading').textContent=t('Quick notes','Быстрые заметки','Notes rapides','Швидкі нотатки');
+ $('notesHint').textContent=t('Notes are saved in your account and appear on your other devices after sign-in.','Заметки сохраняются в аккаунте и доступны на других устройствах после входа.');
+ $('notesBodyLabel').textContent=t('Write a note','Напишите заметку','Écrire une note','Написати нотатку');
+ $('notesBody').placeholder=t('Write here…','Напишите здесь…');
+ $('notesSave').textContent=t('Save note','Сохранить заметку','Enregistrer','Зберегти');
+}
+let editingNoteId=null;
+async function loadNotes(){
+ try{
+  const data=await api('/notes');
+  const box=$('notesList');box.replaceChildren();
+  if(!data.items.length){box.textContent=t('No notes yet.','Пока нет заметок.');return;}
+  for(const note of data.items){
+   const row=document.createElement('article');row.className='reminder-entry';
+   const text=document.createElement('p');text.textContent=note.body;
+   const actions=document.createElement('div');actions.className='actions';
+   const edit=document.createElement('button');edit.type='button';edit.textContent=t('Edit','Изменить');edit.onclick=()=>{
+    editingNoteId=note.id;$('notesBody').value=note.body;$('notesBody').focus();};
+   const del=document.createElement('button');del.type='button';del.textContent=t('Delete','Удалить');del.onclick=async()=>{
+    if(!confirm(t('Delete note?','Удалить заметку?')))return;
+    try{await api('/notes/'+encodeURIComponent(note.id),{method:'DELETE'});if(editingNoteId===note.id){editingNoteId=null;$('notesBody').value='';}await loadNotes();}
+    catch(e){$('notesStatus').textContent=errorText(e);}
+   };
+   actions.append(edit,del);row.append(text,actions);box.append(row);
+  }
+ }catch(e){$('notesList').textContent=errorText(e);}
+}
+setNotesCopy();
+$('notesSave').onclick=async()=>{
+ const body=$('notesBody').value.trim();if(!body)return;
+ $('notesSave').disabled=true;
+ try{
+  await api('/notes'+(editingNoteId?'/'+editingNoteId:''),{
+   method:editingNoteId?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({body})});
+  editingNoteId=null;$('notesBody').value='';
+  $('notesStatus').textContent=t('Note saved and synced.','Заметка сохранена и синхронизирована.');
+  await loadNotes();
+ }catch(e){$('notesStatus').textContent=errorText(e);}
+ finally{$('notesSave').disabled=false;}
+};
