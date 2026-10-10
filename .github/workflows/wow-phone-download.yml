@@ -19,10 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      SOURCE_SHA: d4510e3a2cdb7fb6c89215f76631819b7ecef3d3
-      SOURCE_RUN: '38064898149'
-      WEB_RUN: '38064898189'
-      TEST_TAG: wow-v2-phone-test-2026-10-10
+      SOURCE_SHA: d6793e44b4acd5d83e9875fa0622f7a5b33b1615
+      SOURCE_RUN: '38066863339'
+      WEB_RUN: '38066863413'
+      TEST_TAG: wow-dashboard-test-2026-10-10
     steps:
       - name: Verify frozen tested source
         run: |
@@ -36,7 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           gh run download "$SOURCE_RUN" --repo "$GITHUB_REPOSITORY" --name VideoUniquifier-APK --dir apk
-          echo 'a1ceb9b8c4e0a39ce2804d5efafe9bf10766c548dc72bc9fa36e332e362f286b  apk/VideoUniquifier.apk' | sha256sum --check
+          echo 'cad1189c44627c5300f559c888617dffe2913e1b5122a9706ea728ce4663ec91  apk/VideoUniquifier.apk' | sha256sum --check
 
       - name: Publish test download without changing latest release
         run: |
@@ -46,16 +46,17 @@ jobs:
             exit 0
           fi
           cat > notes.md <<'NOTES'
-          Android owner acceptance build for optional WOW Montage v2.
-          Adds a 0.48-second opening settle, visible zoom/pan pulses and short camera reveals at measured scene boundaries within the first 12 seconds.
-          No speech/beat/semantic recognition or duplicate-detection guarantee. No additional audio or duration changes.
+          Android owner acceptance build for the compact dashboard and optional WOW Montage v2.
+          Visible Gentle / Balance / Dynamic, 720p / 1080p / 4K and 9:16 / 16:9 buttons replace dashboard dropdowns.
+          Smaller mobile spacing and statistics. Fast export is always enabled; the redundant Trial/mode hint and long WOW description are hidden.
+          Optimization and the default-off WOW switch remain. Existing server plan restrictions, processing recipes, Gallery, Download and Share are preserved.
+          WOW v2 adds measured camera accents within the first 12 seconds, without speech/beat/semantic recognition or a duplicate-detection guarantee.
           Uses packaged test screens and the existing production API. Original videos remain on the device.
           Package com.videovariator.app and the existing signing key are retained.
           This is a test prerelease, not the production app update. Production website and latest stable release remain unchanged.
-          Start with one short video, Gentle, 720p, then compare WOW off/on and check audio, Gallery, Download and Share.
-          This APK cannot be installed on iPhone.
+          Visible app banner: WOW + compact dashboard · v3. This APK cannot be installed on iPhone.
           NOTES
           gh release create "$TEST_TAG" apk/VideoUniquifier.apk --repo "$GITHUB_REPOSITORY" \
             --target "$SOURCE_SHA" --prerelease --latest=false \
-            --title 'Video Uniquifier — WOW v2 Android test' --notes-file notes.md
+            --title 'Video Uniquifier — Compact dashboard Android test' --notes-file notes.md
           gh release view "$TEST_TAG" --repo "$GITHUB_REPOSITORY" --json tagName,isPrerelease,url,assets
