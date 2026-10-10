@@ -1,16 +1,31 @@
 import {test,expect} from '@playwright/test';
 
-test('tool pages share creator design and link to the actual plans view',async({page})=>{
- for(const path of ['/avatar-studio.html']){
-  await page.goto(path);await expect(page.locator('html')).toHaveClass(/creator-pages/);
-  await expect(page.locator('.cp-hero .cp-lead')).toBeVisible();
-  await expect(page.locator('.cp-cta')).toBeVisible();
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  await page.locator('.cp-cta a').click();
-  await expect(page.locator('#plansView')).toHaveClass(/active/);
-  await expect(page.locator('.planBtn[data-plan="lifetime"]')).toHaveText('Get Lifetime');
-  await expect(page.locator('.priceCard').first().locator('.price b')).toHaveText('$9');
- }
+test('Avatar keeps creator styling and fits quality, files and voice choices into compact rows',async({page})=>{
+ await page.goto('/avatar-studio.html');
+ await expect(page.locator('html')).toHaveClass(/creator-pages/);
+ await expect(page.locator('.cp-hero .cp-lead')).toBeVisible();
+ await expect(page.locator('.avatar-workflow-step')).toHaveCount(3);
+ await expect(page.locator('.cp-quality')).toHaveCount(0); // no duplicate oversized quality cards
+ const qualities=page.locator('.avatar-quality-option');
+ await expect(qualities).toHaveCount(3);
+ await expect(page.locator('.voice-source-choice .voice-source-card')).toHaveCount(3);
+ const aligned=async(selector)=>{
+  const tops=await page.locator(selector).evaluateAll(els=>els.map(el=>el.getBoundingClientRect().top));
+  expect(Math.max(...tops)-Math.min(...tops)).toBeLessThan(4);
+ };
+ await aligned('.avatar-quality-option');
+ await aligned('.compact-upload-grid>label');
+ await aligned('.voice-source-choice .voice-source-card');
+ await qualities.nth(2).click();await expect(page.locator('#avatarOutputQuality')).toHaveValue('2160');
+ await expect(qualities.nth(2)).toHaveAttribute('aria-pressed','true');
+ await page.reload();
+ await expect(page.locator('#avatarOutputQuality')).toHaveValue('2160');
+ await expect(page.locator('.avatar-quality-option').nth(2)).toHaveAttribute('aria-pressed','true');
+ const mouth=page.locator('details.motion-settings');
+ await expect(mouth).not.toHaveAttribute('open','');
+ await mouth.locator('summary').click();await expect(mouth).toHaveAttribute('open','');
+ await expect(page.locator('#mouthWidth')).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
 test('secondary pages retain controls and readable light-theme layout',async({page},info)=>{
@@ -34,9 +49,11 @@ test('Russian page copy explains avatar support and keeps links functional',asyn
  const context=await browser.newContext({locale:'ru-RU'});const page=await context.newPage();
  try{
   await page.goto('http://127.0.0.1:3000/avatar-studio.html');await expect(page.locator('html')).toHaveClass(/creator-pages/);
-  await expect(page.locator('.cp-hero')).toContainText('В веб-версии выберите «Мой голос»');
+  await expect(page.locator('.cp-hero')).toContainText('В Telegram и браузере');
+  await expect(page.locator('.avatar-workflow')).toContainText('Голос + текст');
   await expect(page.locator('#avatarGenerate')).toBeDisabled();
-  await page.locator('.cp-cta a').click();await expect(page.locator('#plansView')).toHaveClass(/active/);
-  await expect(page.locator('.planBtn[data-plan="pro"]')).toHaveText('Выбрать Pro');
+  await expect(page.locator('.avatar-quality-option')).toHaveCount(3);
+  await page.locator('header .tool-back').click();
+  await expect(page.locator('#dashboardView')).toHaveClass(/active/);
  }finally{await context.close();}
 });

@@ -54,10 +54,16 @@ async function cancelPreviousSubscriptionForLifetime(subscriptionId){
 app.use((req,res,next)=>{
   if(isProduction&&!req.secure){const host=req.headers.host;if(host)return res.redirect(308,`https://${host}${req.originalUrl}`);}
   if(req.secure||isProduction)res.setHeader('Strict-Transport-Security','max-age=31536000; includeSubDomains; preload');
-  res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','DENY');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
+  // Telegram Desktop/Web embeds Mini App HTML in an iframe.
+  // Allow only Telegram to frame HTML pages; keep the frame ban for API/non-HTML routes.
+  const servesHtmlPage=req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/')&&(!path.extname(req.path)||req.path.endsWith('.html'));
+  const frameAncestors=servesHtmlPage?"'self' https://web.telegram.org https://telegram.org https://*.telegram.org":"'none'";
+  res.setHeader('X-Content-Type-Options','nosniff');
+  if(!servesHtmlPage)res.setHeader('X-Frame-Options','DENY');
+  res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy','camera=(self), microphone=(self), geolocation=(), payment=(self)');res.setHeader('Cross-Origin-Opener-Policy','same-origin-allow-popups');
   res.setHeader('X-Video-Processing','local-only');
-  res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' blob: data: https:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://accounts.google.com https://www.googleapis.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://js.stripe.com https://checkout.stripe.com; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://accounts.google.com https://appleid.apple.com https://checkout.stripe.com");
+  res.setHeader('Content-Security-Policy',`default-src 'self'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' blob: data: https:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://accounts.google.com https://www.googleapis.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://js.stripe.com https://checkout.stripe.com; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; frame-ancestors ${frameAncestors}; form-action 'self' https://accounts.google.com https://appleid.apple.com https://checkout.stripe.com`);
   next();
 });
 
