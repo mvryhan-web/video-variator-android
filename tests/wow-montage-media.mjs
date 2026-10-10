@@ -12,13 +12,14 @@ for(const scenario of [
   {mode:'gentle',format:'mp4',resolution:'720x1280',audio:true},
   {mode:'balanced',format:'mov',resolution:'1280x720',audio:true},
   {mode:'dynamic',format:'webm',resolution:'1280x720',audio:false},
+  {mode:'gentle',format:'mp4',resolution:'1280x720',audio:true,cut:true},
   ...['gentle','balanced','dynamic'].flatMap(mode=>['1920x1080','3840x2160'].map(resolution=>({mode,format:'mp4',resolution,audio:true,duration:3.5}))),
-])test(`real WOW/off pair: ${scenario.mode}, ${scenario.format}, audio=${scenario.audio}`,async()=>{
+])test(`real WOW/off pair: ${scenario.mode}, ${scenario.format}, audio=${scenario.audio}, cut=${!!scenario.cut}`,async()=>{
   const folder=mkdtempSync(join(tmpdir(),'vu-wow-'));
   try{
     const duration=scenario.duration||6;
     const source=join(folder,'source.'+scenario.format),frames=join(folder,'samples.gray');
-    const fixture=['-v','error','-f','lavfi','-i','testsrc2=size=320x180:rate=30'];
+    const fixture=['-v','error','-f','lavfi','-i',scenario.cut?"testsrc2=size=320x180:rate=30,negate=enable='gte(t,3)'":'testsrc2=size=320x180:rate=30'];
     if(scenario.audio)fixture.push('-f','lavfi','-i','sine=frequency=440:sample_rate=48000');
     fixture.push('-t',String(duration),'-c:v',scenario.format==='webm'?'libvpx':'libx264');
     if(scenario.format==='webm')fixture.push('-deadline','realtime','-cpu-used','8');else fixture.push('-preset','ultrafast');
@@ -35,7 +36,8 @@ for(const scenario of [
     assert.ok(enhanced,'planner selected a real effect');
     if(!scenario.audio){enhanced=[...enhanced];const af=enhanced.indexOf('-af');enhanced.splice(af,2,'-an');const ac=enhanced.indexOf('-c:a');enhanced.splice(ac,4);}
     const windows=[...enhanced[enhanced.indexOf('-vf')+1].matchAll(/between\(in\/\(30\*[\d.]+\),([\d.]+),([\d.]+)\)/g)].map(m=>[Number(m[1]),Number(m[2])]);
-    const pulse=windows.find(([start,end])=>end-start>.5);assert.ok(pulse,'a real camera pulse is present');
+    const pulse=windows.find(([start,end])=>scenario.cut?start>2&&end-start<.4:end-start>.5);assert.ok(pulse,'a real camera accent is present');
+    if(scenario.cut)assert.ok(analysis.scenes.length>1,'actual scene boundary was measured');
     const sampleTime=(pulse[0]+pulse[1])/2;
     const outputs=[];
     for(const [name,captured] of [['off',base.commands.at(-1)],['on',enhanced]]){

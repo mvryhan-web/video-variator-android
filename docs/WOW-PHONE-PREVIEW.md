@@ -31,7 +31,10 @@ approved HTTPS preview path; the production URL still serves the published code.
 ## WOW v2 owner-feedback revision
 
 The initial v1 zoom of 1.2–2.5% was too subtle. V2 uses a 0–0.48-second
-opening settle and up to five subsequent, non-overlapping zoom/pan pulses.
+opening settle and up to five subsequent, non-overlapping zoom/pan accents.
+Detected later shots receive a 0.38-second camera reveal; longer shots
+receive pulses. This is reframing across an existing cut, not a crossfade
+or a newly invented scene cut.
 Motion measurements choose 8%, 11.5% or 15% pulse zoom; the opening is capped
 at 16%, and total framing relative to the standard recipe stays within 1.22x.
 Direction alternates; the existing recipe shift can reverse the pattern.

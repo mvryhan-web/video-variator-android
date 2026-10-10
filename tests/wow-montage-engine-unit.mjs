@@ -26,7 +26,7 @@ test('shot boundaries, trim, cut and speed are respected; no safe interval means
   const plan=wow.plan(analysis,recipe),effect=plan.effects[0];
   assert.ok(effect.start===0&&effect.end===.48);
   const cut=wow.plan(wow.analyzeFrames(sampleFrames(),8),{...recipe,useCut:true,cutAt:1,cutLen:.2,speed:1.02});
-  assert.ok(cut.effects.every(e=>e.end<=1/1.02||e.start>=1/1.02+.14));
+  assert.ok(cut.effects.every(e=>e.end<=1/1.02||e.start>=1/1.02));
   assert.equal(wow.plan({...analysis,confidence:0},recipe).effects.length,0);
   assert.equal(wow.plan(analysis,{...recipe,trimStart:7.8,usable:.2}).effects.length,0);
 });
@@ -98,6 +98,7 @@ test('cancel during visual rendering never retries the standard command',async()
     assert.equal(plan.effects[0].kind,'intro');assert.equal(plan.effects[0].start,0);assert.equal(plan.effects[0].end,.48);
     assert.ok(plan.effects.length>=3&&plan.effects.length<=6);
     assert.ok(plan.effects.slice(1).every(e=>e.zoom>=.08));
+    if(kind==='cut')assert.ok(plan.effects.some(e=>e.kind==='reveal'&&e.start>5),'detected next shot gets a short reveal');
     let end=-1;for(const e of plan.effects){assert.ok(e.start>=end);end=e.end;assert.ok(end<=12);}
     const command=wow.appendFilters(['-vf','fps=30','out.mp4'],plan);
     assert.equal(command[1].match(/perspective=/g).length,1,'all effects use one transform pass');

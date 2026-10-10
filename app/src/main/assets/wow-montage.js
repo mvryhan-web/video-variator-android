@@ -71,10 +71,12 @@
     const zoom=Math.min({calm:.08,moderate:.115,moving:.15}[analysis.profile],Math.max(0,1.22/recipe.zoom-1));
     if(zoom<.04)return empty('existing-framing-limit');
     const effects=[],direction=finite(recipe.shiftX)&&recipe.shiftX<0?-1:1;
-    const add=(kind,start,end,index)=>effects.push({type:'camera',kind,start,end,zoom:kind==='intro'?Math.min(.16,zoom*1.25,1.22/recipe.zoom-1):zoom,speed:recipe.speed,pan:analysis.profile==='calm'?.35:.7,direction:index%2?-direction:direction});
+    const add=(kind,start,end,index)=>effects.push({type:'camera',kind,start,end,zoom:kind==='intro'?Math.min(.16,zoom*1.25,1.22/recipe.zoom-1):kind==='reveal'?Math.min(.12,zoom):zoom,speed:recipe.speed,pan:analysis.profile==='calm'?.35:.7,direction:index%2?-direction:direction});
     for(const interval of intervals){
+      if(effects.length>=6)break;
       let cursor=interval.start+.15;
       if(interval.start<.04&&interval.end>=.7){add('intro',0,.48,0);cursor=.9;}
+      else if(interval.start>=.04&&interval.end-interval.start>=.7){add('reveal',interval.start,interval.start+.38,effects.length);cursor=interval.start+.7;}
       const length=analysis.profile==='calm'?2.2:analysis.profile==='moderate'?1.5:1.05;
       const gap=analysis.profile==='calm'?1.3:.65;
       while(cursor+length<=interval.end-.15&&effects.length<6){
@@ -91,14 +93,14 @@
     const num=n=>Number(n.toFixed(6)),insets=[],dxs=[],dys=[];
     let previousEnd=-1;
     for(const e of montage.effects){
-      if(e.type!=='camera'||!['intro','pulse'].includes(e.kind)||![e.start,e.end,e.zoom,e.speed,e.pan,e.direction].every(finite)||e.start<0||e.start<previousEnd||e.end<=e.start||e.zoom<=0||e.zoom>.16||e.speed<=0||e.pan<0||e.pan>.7||Math.abs(e.direction)!==1)throw Error('Unsafe montage plan');
+      if(e.type!=='camera'||!['intro','reveal','pulse'].includes(e.kind)||![e.start,e.end,e.zoom,e.speed,e.pan,e.direction].every(finite)||e.start<0||e.start<previousEnd||e.end<=e.start||e.zoom<=0||e.zoom>.16||e.speed<=0||e.pan<0||e.pan>.7||Math.abs(e.direction)!==1)throw Error('Unsafe montage plan');
       previousEnd=e.end;
       const time=`in/(30*${num(e.speed)})`;
       const phase=`max(0,min(1,(${time}-${num(e.start)})/${num(e.end-e.start)}))`;
-      const envelope=e.kind==='intro'?`pow(1-(${phase}),3)`:`pow(sin(PI*(${phase})),2)`;
+      const envelope=e.kind!=='pulse'?`pow(1-(${phase}),3)`:`pow(sin(PI*(${phase})),2)`;
       const inset=`${num(e.zoom/(2*(1+e.zoom)))}*(${envelope})*between(${time},${num(e.start)},${num(e.end)})`;
       insets.push(`(${inset})`);
-      dxs.push(`(${inset})*${num(e.pan*e.direction)}*sin(2*PI*(${phase}))`);
+      dxs.push(`(${inset})*${num(e.pan*e.direction)}*${e.kind==='reveal'?`(1-(${phase}))`:`sin(2*PI*(${phase}))`}`);
       // Opening settles down into place; later gestures have smaller vertical travel.
       dys.push(`(${inset})*${num(e.kind==='intro'?.65:e.pan*.25)}*${e.kind==='intro'?'1':`sin(PI*(${phase}))`}`);
     }
