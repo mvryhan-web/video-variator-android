@@ -45,18 +45,25 @@ export function parseReminderText(raw,now=new Date()){
     if(n>0&&n<=120){d=new Date(now);if(/мес|місяц|month|mois/i.test(unit)){const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+n);d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));}else d.setDate(d.getDate()+n);}
    }
   }
+  if(!d&&/(?:через|in|dans)\s+(?:месяц[а-я]*|місяц[а-яіїє]*|a month|one month|un mois|month)/iu.test(s)){
+   d=new Date(now);const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+1);
+   d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));
+  }
  }
  if(!d&&weekdays.length){const jsDay=(now.getDay()+6)%7+1, offsets=weekdays.map(day=>(day-jsDay+7)%7);let off=Math.min(...offsets);d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+off);}
  if(d)out.date=localDate(d);
  // Prefer explicit times with a colon or "18 часов". Do not confuse dates with times.
  const times=[...s.matchAll(/(?:\b(?:в|о|at|à|in|на)\s*)?(\d{1,2})[:](\d{2})\s*(am|pm)?\b/gi)]
    .map(m=>timeValue(m[1],m[2],m[3]||'')).filter(Boolean);
- const hour=s.match(/(?:\bв|\bat|\bà)\s*(\d{1,2})\s*(?:час(?:ов|а)?|годин[уі]?|o'clock|h)\b/i);
+ const hour=s.match(/(?:^|[\s,])(в|at|à)\s*(\d{1,2})\s*(?:час(?:ов|а)?|годин[уі]?|o'clock|h)(?=\s|$|[.,!?])/iu);
+ const bare=s.match(/(?:^|[\s,])(в|at|à)\s*(\d{1,2})(?=\s|$|[.,!?])/iu);
+ const bareAfter=bare?s.slice(bare.index+bare[0].length).trim().match(/^[\p{L}]+/u)?.[0]:'';
  const ampm=s.match(/\b(\d{1,2})\s*(am|pm)\b/i);
  if(times.length===1)out.time=times[0];
  else if(times.length>1)out.notes.push('MULTIPLE_TIMES');
- else if(hour)out.time=timeValue(hour[1],0);
+ else if(hour)out.time=timeValue(hour[2],0);
  else if(ampm)out.time=timeValue(ampm[1],0,ampm[2]);
+ else if(bare&&!monthIndex(bareAfter||''))out.time=timeValue(bare[2],0);
  const minutes=s.match(/(?:за|before|avant)\s+(\d{1,4})\s*(?:минут|хвилин|minutes?)/i);
  if(minutes&&[5,15,30,60,120,1440].includes(Number(minutes[1])))out.advanceMinutes=Number(minutes[1]);
  else if(/за\s+(?:один\s+)?час(?=\s|$|[.,!?])|one hour before|1 hour before|une heure avant/i.test(s))out.advanceMinutes=60;
