@@ -19,9 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      SOURCE_SHA: d6793e44b4acd5d83e9875fa0622f7a5b33b1615
-      SOURCE_RUN: '38066863339'
-      WEB_RUN: '38066863413'
+      SOURCE_SHA: 8f3a7d0e8e454e8d375fb52598b7ef9cd9c2fa77
+      SOURCE_RUN: '38067575506'
+      WEB_RUN: '38067575520'
       TEST_TAG: wow-dashboard-test-2026-10-10
     steps:
       - name: Verify frozen tested source
@@ -36,7 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           gh run download "$SOURCE_RUN" --repo "$GITHUB_REPOSITORY" --name VideoUniquifier-APK --dir apk
-          echo 'cad1189c44627c5300f559c888617dffe2913e1b5122a9706ea728ce4663ec91  apk/VideoUniquifier.apk' | sha256sum --check
+          echo 'da8163647083edfc2cd403513b750f89fcf28051259a578775b65468d1b46290  apk/VideoUniquifier.apk' | sha256sum --check
 
       - name: Publish test download without changing latest release
         run: |
