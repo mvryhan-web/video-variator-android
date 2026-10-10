@@ -7,6 +7,10 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+concurrency:
+  group: web-${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+  cancel-in-progress: ${{ github.ref == 'refs/heads/wow-phone-preview' }}
+
 jobs:
   validate:
     runs-on: ubuntu-latest

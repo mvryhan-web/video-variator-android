@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: video-uniquifier-${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/wow-phone-preview' }}
 
 jobs:
   build:

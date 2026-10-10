@@ -34,7 +34,9 @@ for(const scenario of [
     let enhanced=enabled.commands.find(c=>c.some(arg=>arg.includes('perspective=')));
     assert.ok(enhanced,'planner selected a real effect');
     if(!scenario.audio){enhanced=[...enhanced];const af=enhanced.indexOf('-af');enhanced.splice(af,2,'-an');const ac=enhanced.indexOf('-c:a');enhanced.splice(ac,4);}
-    const sampleTime=1.5;
+    const windows=[...enhanced[enhanced.indexOf('-vf')+1].matchAll(/between\(in\/\(30\*[\d.]+\),([\d.]+),([\d.]+)\)/g)].map(m=>[Number(m[1]),Number(m[2])]);
+    const pulse=windows.find(([start,end])=>end-start>.5);assert.ok(pulse,'a real camera pulse is present');
+    const sampleTime=(pulse[0]+pulse[1])/2;
     const outputs=[];
     for(const [name,captured] of [['off',base.commands.at(-1)],['on',enhanced]]){
       const output=join(folder,name+'.mp4'),command=[...captured];
