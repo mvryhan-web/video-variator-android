@@ -38,8 +38,9 @@ test('completed WOW output keeps preview in history after reload without rerende
   await expect(page.locator('#startBtn')).toBeEnabled();await page.locator('#startBtn').click();
   await expect(page.locator('#resultsCard')).toBeVisible();
   expect(await page.evaluate(()=>JSON.parse(localStorage.vv_history)[0].wowMontage.status)).toBe('applied');
-  await page.locator('#historyList').getByRole('button',{name:'Preview',exact:true}).evaluate(button=>button.click());
+  await page.locator('#resultsCard [data-view-jump=history]').click();
+  await page.locator('#historyList').getByRole('button',{name:'Preview',exact:true}).click();
   await expect(page.getByRole('dialog')).toBeVisible();expect(await page.evaluate(()=>encodeCount)).toBe(1);
-  await page.getByRole('dialog').getByRole('button',{name:'Close',exact:true}).click();await page.reload();
-  const preview=page.locator('#historyList').getByRole('button',{name:'Preview',exact:true});await expect(preview).toHaveCount(1);await preview.evaluate(button=>button.click());await expect(page.getByRole('dialog')).toBeVisible();
+  await page.getByRole('dialog').getByRole('button',{name:'Close',exact:true}).click();await page.reload();await page.locator('[data-view=history]').evaluate(button=>button.click());
+  const preview=page.locator('#historyList').getByRole('button',{name:'Preview',exact:true});await expect(preview).toHaveCount(1);await preview.click();await expect(page.getByRole('dialog')).toBeVisible();
 });

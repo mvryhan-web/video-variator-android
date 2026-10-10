@@ -9,7 +9,7 @@
     const opener=document.activeElement,dialog=document.createElement('dialog');dialog.id='wowMontagePreview';dialog.setAttribute('aria-labelledby','wowPreviewTitle');
     const title=document.createElement('h2');title.id='wowPreviewTitle';title.textContent=labels[1];
     const filename=document.createElement('p');filename.textContent=name;
-    const video=document.createElement('video');video.controls=true;video.playsInline=true;video.preload='metadata';video.setAttribute('aria-label',name);
+    const video=document.createElement('video');video.controls=true;video.playsInline=true;video.setAttribute('playsinline','');video.preload='metadata';video.setAttribute('aria-label',name);
     const actions=document.createElement('div');actions.className='wowPreviewActions';
     const status=document.createElement('p');status.setAttribute('role','status');
     const dismiss=document.createElement('button');dismiss.type='button';dismiss.className='ghostBtn';dismiss.textContent=labels[2];dismiss.onclick=close;
