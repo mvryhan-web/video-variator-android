@@ -73,3 +73,18 @@ test('cancel during analysis stops encoding; missing module cannot silently enab
   await assert.rejects(captureLegacy({mode:'gentle',wowMontage:true,wowRuntime:wow,execOverride:(_args,core)=>{core.cancel();return 0;}}),/canceled/);
   await assert.rejects(captureLegacy({mode:'gentle',wowMontage:true}),/could not load/);
 });
+
+test('long sources remain bounded to 12 seconds and at most 48 sample frames',()=>{
+ const args=wow.analysisArgs('long.mp4','samples.gray',3600);
+ assert.equal(args[args.indexOf('-t')+1],'12');assert.equal(args[args.indexOf('-frames:v')+1],'48');
+ assert.ok(args.includes('-an'));assert.match(args[args.indexOf('-vf')+1],/fps=4,scale=160:90/);
+ assert.equal(wow.limits.maxFrames*wow.limits.width*wow.limits.height,691200);
+});
+
+test('cancel during visual rendering never retries the standard command',async()=>{
+ let stopped=false;const commands=[];
+ const ff={async exec(args){commands.push(args);stopped=true;return 1;},async deleteFile(){throw Error('Must not run fallback cleanup after cancellation');}};
+ const montage=wow.plan(wow.analyzeFrames(sampleFrames(),8),recipe);
+ await assert.rejects(wow.encode(ff,['-vf','fps=30','out.mp4'],montage,()=>stopped),/canceled/);
+ assert.equal(commands.length,1);
+});
