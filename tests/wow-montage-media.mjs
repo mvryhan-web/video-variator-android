@@ -62,3 +62,28 @@ for(const scenario of [
     console.log('WOW_MEDIA '+JSON.stringify({mode:scenario.mode,resolution:scenario.resolution,offMs:Math.round(outputs[0].renderMs),onMs:Math.round(outputs[1].renderMs),format:scenario.format,profile:analysis.profile,pixelDifference:difference/outputs[0].image.length,audioIdentical:scenario.audio?true:null,duration:outputs[1].video.duration}));
   }finally{rmSync(folder,{recursive:true,force:true});}
 });
+
+test('opening is visible immediately and camera motion never creates black borders',()=>{
+  const folder=mkdtempSync(join(tmpdir(),'vu-wow-opening-'));
+  try{
+    const source=join(folder,'grid.mp4');
+    execFileSync('ffmpeg',['-v','error','-f','lavfi','-i','color=c=white:s=192x320:r=30,drawgrid=w=40:h=40:t=3:c=0x808080','-t','6','-c:v','libx264','-preset','ultrafast','-y',source]);
+    const frames=new Uint8Array(160*90*24).fill(128);
+    const montage=wow.plan(wow.analyzeFrames(frames,6),{trimStart:0,usable:6,speed:1,zoom:1,motionX:0,useCut:false,cutAt:0,cutLen:0});
+    assert.equal(montage.effects[0].end,.48);assert.ok(montage.effects.length>=2);
+    const results=[];
+    for(const enabled of [false,true]){
+      const output=join(folder,enabled?'on.mp4':'off.mp4');
+      const base=['-v','error','-i',source,'-vf','fps=30,format=yuv420p','-an','-c:v','libx264','-crf','18','-preset','ultrafast','-y',output];
+      execFileSync('ffmpeg',enabled?wow.appendFilters(base,montage):base,{timeout:30000,stdio:'pipe'});
+      results.push([.03,2,5.8].map(time=>execFileSync('ffmpeg',['-v','error','-ss',String(time),'-i',output,'-frames:v','1','-f','rawvideo','-pix_fmt','gray','-'],{maxBuffer:1024*1024})));
+    }
+    for(let t=0;t<3;t++){
+      const a=results[0][t],b=results[1][t];let diff=0;
+      for(let i=0;i<b.length;i++){diff+=Math.abs(a[i]-b[i]);assert.ok(b[i]>80,'no black/empty transform border');}
+      diff/=b.length;
+      if(t<2)assert.ok(diff>3,'visible opening and subsequent pulse');
+      else assert.ok(diff<2,'returns to the standard framing after the accents');
+    }
+  }finally{rmSync(folder,{recursive:true,force:true});}
+});

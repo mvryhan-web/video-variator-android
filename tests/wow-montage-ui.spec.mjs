@@ -92,8 +92,12 @@ test('missing runtime leaves the option genuinely unavailable',async({page})=>{
 });
 
 test('actual applied/skipped/fallback statuses are displayed without claiming every output has WOW',async({page})=>{
-  await page.goto('/');await page.evaluate(()=>{
-    VUWowMontageUI.record({status:'applied'});VUWowMontageUI.record({status:'skipped'});VUWowMontageUI.record({status:'fallback'});
-  });
+  await page.goto('/');
+  await page.evaluate(()=>VUWowMontageUI.record({status:'applied',effectCount:4}));
+  await expect(page.locator('#wowMontageResult')).toContainText('4 camera accents in the last video.');
+  await page.evaluate(()=>VUWowMontageUI.record({status:'skipped',reason:'low-confidence'}));
+  await expect(page.locator('#wowMontageResult')).toContainText('Not enough reliable frames.');
+  await page.evaluate(()=>VUWowMontageUI.record({status:'fallback',reason:'visual-render-unavailable'}));
+  await expect(page.locator('#wowMontageResult')).toContainText('Camera rendering failed; standard video retained.');
   await expect(page.locator('#wowMontageResult')).toContainText('1 applied · 1 skipped · 1 standard fallbacks');
 });
