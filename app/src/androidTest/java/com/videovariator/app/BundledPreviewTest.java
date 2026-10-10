@@ -15,6 +15,8 @@ import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import java.util.concurrent.atomic.AtomicReference;
+import java.io.File;
+import java.util.ArrayList;
 import static org.junit.Assert.*;
 
 @RunWith(AndroidJUnit4.class)
