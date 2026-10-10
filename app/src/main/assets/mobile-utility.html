@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en-US">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mobile utility · Video Uniquifier</title>
+<link rel="stylesheet" href="free-tools.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="studio.css">
+<link rel="stylesheet" href="creator-pages.css">
+<link rel="stylesheet" href="tools-hub.css">
+<link rel="stylesheet" href="mobile-utility.css">
+<script src="theme.js"></script>
+</head>
+<body>
+<main class="tools utility-page">
+<header><a class="tool-back" href="free-tools.html" id="utilityBack">← Free tools</a><span>Video Uniquifier</span></header>
+<section class="tool-card utility-workspace" aria-labelledby="utilityTitle">
+  <p class="tool-kicker" id="utilityKicker">FREE • ON DEVICE</p>
+  <h1 id="utilityTitle">Choose a tool</h1><p id="utilityDescription" class="muted"></p>
+  <div class="utility-config">
+    <label id="fileLine"><span id="utilityFileLabel">Choose files</span><input id="utilityFiles" type="file" multiple></label>
+    <label id="textLine" hidden><span id="utilityTextLabel">Enter text</span><textarea id="utilityText" rows="3"></textarea></label>
+    <div id="settingsRow" class="utility-settings">
+      <label id="formatLine" hidden><span id="utilityFormatLabel">Format</span><select id="utilityFormat"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></label>
+      <label id="widthLine" hidden><span id="utilityWidthLabel">Width (px)</span><input id="utilityWidth" type="number" min="1" max="8000" value="1080"></label>
+      <label id="heightLine" hidden><span id="utilityHeightLabel">Height (px)</span><input id="utilityHeight" type="number" min="1" max="8000" value="1080"></label>
+      <label id="startLine" hidden><span id="utilityStartLabel">Start (seconds)</span><input id="utilityStart" type="number" value="0" min="0" step="0.1"></label>
+      <label id="endLine" hidden><span id="utilityEndLabel">End (seconds)</span><input id="utilityEnd" type="number" value="10" min="0" step="0.1"></label>
+      <label id="pagesLine" hidden><span id="utilityPagesLabel">Pages</span><input id="utilityPages" type="text" value="1" placeholder="1-3, 5"></label>
+      <label id="langLine" hidden><span id="utilityLangLabel">Language</span><select id="utilityLang"><option value="eng">English</option><option value="fra">Français</option><option value="rus">Русский</option><option value="ukr">Українська</option></select></label>
+      <label id="qrLine" hidden><span id="utilityQrLabel">QR text or URL</span><textarea id="utilityQr" rows="3" maxlength="1600" placeholder="https://example.com"></textarea></label>
+      <label id="kindLine" hidden><span id="utilityKindLabel">Action</span><select id="utilityKind"><option value="pack">Create ZIP</option><option value="unpack">Extract ZIP</option></select></label>
+    </div>
+    <div id="signatureRow" hidden><p id="signatureHint">Draw your signature with a finger or mouse.</p><canvas id="utilitySignature" width="480" height="145" aria-label="Signature drawing canvas"></canvas><button id="signatureClear" type="button">Clear</button></div>
+    <div id="redactRow" hidden><p id="redactHint">Drag over the information you want to hide. Black boxes permanently cover the selected pixels.</p><canvas id="redactCanvas" width="600" height="450" aria-label="Photo redaction canvas"></canvas><div class="actions"><button id="redactUndo" type="button">Undo</button><button id="redactReset" type="button">Reset</button></div></div>
+    <p id="utilityHelp" class="tool-limits">Files are processed locally.</p>
+    <div class="actions"><button id="utilityRun" type="button" class="primaryBtn">Create</button><button id="utilityCancel" type="button" disabled>Cancel</button></div>
+    <p id="utilityStatus" role="status" aria-live="polite"></p>
+    <div id="utilityResults" aria-live="polite"></div>
+  </div>
+</section>
+</main>
+<script src="mobile-utility-links.js"></script>
+<script type="module" src="mobile-utility.js"></script>
+</body></html>
