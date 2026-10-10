@@ -80,7 +80,7 @@ async function ensureNotificationChannel(userId,channel){
 }
 
 export async function initRemindersDb(){
- requireDb();
+ if(!pool){console.info('[reminders] No database configured; skipping reminder storage initialization.');return;}
  await pool.query(`
  CREATE TABLE IF NOT EXISTS vv_reminders (
   id UUID PRIMARY KEY,
