@@ -1,3 +1,5 @@
+import {parseReminderText} from './reminder-input-parser.js';
+import './reminder-photo.js';
 /* Smart Reminders: explicit confirmation before any cloud schedule is saved. */
 const $=id=>document.getElementById(id),locale=(navigator.language||'en').slice(0,2);
 const ru=locale==='ru',fr=locale==='fr',uk=locale==='uk';
@@ -56,36 +58,25 @@ function setDays(days){document.querySelectorAll('#repeatDays input').forEach(el
 function localISO(d){const pad=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
 function setDate(d){$('reminderDate').value=localISO(d);}
 function fillText(){
- const raw=$('spokenReminder').value.trim();if(!raw)return status(t('Describe the reminder first.','Сначала опишите напоминание.'));
- const s=raw.toLowerCase(),now=new Date(),date=new Date();
- let parsedDate=false;
- if(/послезавтра|day after tomorrow/.test(s)){date.setDate(now.getDate()+2);parsedDate=true;}
- else if(/завтра|tomorrow|demain|завтра/.test(s)){date.setDate(now.getDate()+1);parsedDate=true;}
- else {
-  const months=/через\s+(\d+|один|одну|два|две|три)\s+месяц|in\s+(\d+)\s+months?/.exec(s);
-  if(months){const map={один:1,одну:1,два:2,две:2,три:3},n=Number(months[1]||months[2])||map[months[1]]||1;date.setMonth(now.getMonth()+n);parsedDate=true;}
- }
- const time=s.match(/(?:в|at|à)\s*(\d{1,2})\s*[:.]\s*(\d{2})|(?:в|at|à)\s*(\d{1,2})(?!\d)/);
- if(time){let h=Number(time[1]||time[3]),m=Number(time[2]||0);if(/pm/.test(s)&&h<12)h+=12;if(/am/.test(s)&&h===12)h=0;if(h<24&&m<60)$('reminderTime').value=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
- const direct=s.match(/\b(\d{1,2})[.\/](\d{1,2})(?:[.\/](\d{4}))?\b/);
- if(direct){date.setFullYear(Number(direct[3]||now.getFullYear()),Number(direct[2])-1,Number(direct[1]));parsedDate=true;}
- let weekdays=[];
- const variants=[/понедельник|monday|lundi|понеділ/,/вторник|tuesday|mardi|вівтор/,/сред|wednesday|mercredi|серед/,/четвер|thursday|jeudi|четвер/,/пятниц|пятниц|friday|vendredi|п’ятниц|пятниц/,/суббот|saturday|samedi|субот/,/воскрес|sunday|dimanche|неділ/];
- variants.forEach((re,i)=>{if(re.test(s))weekdays.push(i+1);});
- if(/кажд|every|chaque|щотиж|щодня|tous les/.test(s)){if(/каждый день|every day|щодня|tous les jours/.test(s))$('repeatRule').value='daily';else if(/каждый месяц|every month|chaque mois/.test(s))$('repeatRule').value='monthly';else if(weekdays.length){$('repeatRule').value='weekly';setDays(weekdays);}}
- if($('repeatRule').value==='weekly'&&weekdays.length){
-  const isoDay=(now.getDay()+6)%7+1;
-  const offset=(weekdays[0]-isoDay+7)%7;
-  if(!parsedDate)date.setDate(now.getDate()+offset);
- }
- if(/за час|за 1 час|one hour before|1 hour before/.test(s))$('advanceMinutes').value='60';
- else if(/за день|one day before|1 day before/.test(s))$('advanceMinutes').value='1440';
- else {const adv=s.match(/за\s+(\d+)\s+мин|\b(\d+)\s+minutes? before/);if(adv&&[5,15,30,60,120].includes(Number(adv[1]||adv[2])))$('advanceMinutes').value=adv[1]||adv[2];}
- const phrase=raw.replace(/^(напомни(?:\s+мне)?|remind me(?:\s+to)?|rappelle[- ]moi)\s*/i,'').replace(/\b(завтра|послезавтра|tomorrow|demain)\b/gi,'').replace(/\b(?:в|at)\s*\d{1,2}(?::\d{2})?/gi,'').replace(/(?:за\s+(?:час|день|\d+\s+минут)|one hour before)/gi,'').trim().replace(/^[,\s]+|[,\s]+$/g,'');
- if(phrase)$('reminderWhat').value=phrase.slice(0,180);
- if(parsedDate)setDate(date);
+ const raw=$('spokenReminder').value.trim();
+ if(!raw)return status(t('Describe the reminder first.','Сначала продиктуйте или напишите напоминание.'));
+ const p=parseReminderText(raw,new Date());
+ if(p.title)$('reminderWhat').value=p.title;
+ if(p.date)$('reminderDate').value=p.date;
+ if(p.time)$('reminderTime').value=p.time;
+ if(p.recurrence)$('repeatRule').value=p.recurrence;
+ if(p.weekdays?.length)setDays(p.weekdays);
+ if(p.advanceMinutes!==null)$('advanceMinutes').value=String(p.advanceMinutes);
  $('repeatDays').hidden=$('repeatRule').value!=='weekly';
- status(t('I filled what I could. Please verify all fields.','Я заполнил то, что удалось распознать. Проверьте все поля.'));
+ $('reminderConfirmation').hidden=true;
+ draft=null;
+ const missing=[];
+ if(!p.date)missing.push(t('date','дату'));
+ if(!p.time)missing.push(t('time','время'));
+ const msg=missing.length
+  ?t('Speech recognized. Please enter/check ','Речь распознана. Уточните ')+missing.join(', ')+'.'
+  :t('Details filled from speech. Review the date, time and task before saving.','Данные из голосового ввода заполнены. Проверьте задачу, дату и время перед сохранением.');
+ status(p.notes.includes('MULTIPLE_TIMES')?t('Several times detected. Choose the correct time manually.','Найдено несколько вариантов времени. Выберите правильное вручную.'):msg);
 }
 function fromFields(){
  const title=$('reminderWhat').value.trim(),date=$('reminderDate').value,time=$('reminderTime').value;
@@ -153,14 +144,41 @@ async function telegram(){
  }catch(e){status(errorText(e));}
 }
 function speechInput(){
- const API=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!API){$('reminderMic').disabled=true;$('reminderMic').title=t('Voice input is not supported in this browser.','Голосовой ввод не поддерживается этим браузером.');return;}
- $('reminderMic').onclick=()=>{
+ const mic=$('reminderMic'),hint=$('voiceHint'),API=window.SpeechRecognition||window.webkitSpeechRecognition;
+ const idle=t('🎙️ Dictate reminder','🎙️ Продиктовать напоминание','🎙️ Dicter un rappel','🎙️ Продиктувати нагадування');
+ const stop=t('■ Stop recording','■ Завершить запись','■ Arrêter','■ Зупинити запис');
+ mic.textContent=idle;
+ hint.textContent=t('Tap the microphone, say what and when. Review the fields before saving.','Нажмите микрофон и скажите, что и когда напомнить. Затем проверьте поля.','Touchez le micro, dictez la tâche et la date. Vérifiez avant de sauvegarder.','Натисніть мікрофон, скажіть що й коли нагадати. Перевірте поля.');
+ if(!API){
+  mic.disabled=true;mic.title=t('Voice recognition is unavailable in this browser. Use the text field instead.','Этот браузер не поддерживает распознавание голоса. Используйте текстовое поле.');
+  hint.textContent=mic.title;
+  return;
+ }
+ mic.onclick=()=>{
   if(speech){speech.stop();return;}
-  speech=new API();speech.lang=navigator.language||'en-US';speech.interimResults=false;
-  speech.onresult=e=>{$('spokenReminder').value=e.results[0][0].transcript;fillText();};
-  speech.onerror=()=>status(t('Microphone unavailable. You can type instead.','Микрофон недоступен. Можно ввести текст.'));
-  speech.onend=()=>{speech=null;};speech.start();
+  const recognition=new API();speech=recognition;
+  recognition.lang=navigator.language||'en-US';
+  recognition.interimResults=false;recognition.continuous=false;recognition.maxAlternatives=1;
+  let received=false;
+  recognition.onstart=()=>{mic.textContent=stop;mic.setAttribute('aria-pressed','true');status(t('Listening… Speak clearly.','Слушаю… Говорите.'));};
+  recognition.onresult=e=>{
+   const transcript=Array.from(e.results||[]).map(r=>r[0]?.transcript||'').join(' ').trim();
+   if(!transcript)return;
+   received=true;$('spokenReminder').value=transcript;fillText();
+  };
+  recognition.onerror=e=>{
+   const code=String(e?.error||'');
+   const msg=code==='not-allowed'||code==='service-not-allowed'
+    ?t('Microphone permission denied. Allow it in browser settings or type a reminder.','Нет разрешения на микрофон. Разрешите его в браузере или напишите напоминание.')
+    :t('Speech recognition failed. You can type the reminder instead.','Не удалось распознать речь. Можно написать напоминание вручную.');
+   status(msg);
+  };
+  recognition.onend=()=>{
+   if(speech===recognition)speech=null;
+   mic.textContent=idle;mic.setAttribute('aria-pressed','false');
+   if(!received&&!$('reminderStatus').textContent.includes('микрофон')){ /* Retain recognition error if displayed. */ }
+  };
+  try{recognition.start();}catch(e){speech=null;mic.textContent=idle;mic.setAttribute('aria-pressed','false');status(t('Microphone could not start. Try typing.','Не удалось включить микрофон. Попробуйте написать текст.'));}
  };
 }
 setCopy();$('repeatRule').onchange=()=>{$('repeatDays').hidden=$('repeatRule').value!=='weekly';$('reminderConfirmation').hidden=true;};
