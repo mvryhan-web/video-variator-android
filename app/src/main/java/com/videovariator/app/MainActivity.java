@@ -175,12 +175,12 @@ public class MainActivity extends Activity {
             if (BuildConfig.BUNDLED_PREVIEW) {
                 // Clear old website caches before the first preview navigation;
                 // otherwise an installed production service worker can serve old UI.
-                String target = JSONObject.quote(remote + "/index.html?bundled-preview=1");
-                String html = "<!doctype html><meta name='viewport' content='width=device-width'><p>Loading Video Uniquifier test version…</p><script>"
-                    + "Promise.all([navigator.serviceWorker?navigator.serviceWorker.getRegistrations().then(rs=>Promise.all(rs.map(r=>r.unregister()))):Promise.resolve(),"
-                    + "window.caches?caches.keys().then(ks=>Promise.all(ks.map(k=>caches.delete(k)))):Promise.resolve()])"
-                    + ".then(()=>location.replace(" + target + ")).catch(()=>document.querySelector('p').textContent='Could not clear the old app cache. Please reopen the test version.');</script>";
-                webView.loadDataWithBaseURL(remote + "/", html, "text/html", "UTF-8", null);
+                android.webkit.ServiceWorkerController.getInstance().setServiceWorkerClient(new android.webkit.ServiceWorkerClient() {
+                    @Override public WebResourceResponse shouldInterceptRequest(WebResourceRequest request) {
+                        return bundledPreviewResponse(request);
+                    }
+                });
+                webView.loadUrl(remote + "/preview-bootstrap.html");
             } else webView.loadUrl(remote);
         } else {
             trustedWebOrigin = "file://";

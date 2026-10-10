@@ -37,7 +37,7 @@ public class BundledPreviewTest {
         try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(MainActivity.class)) {
             long end=SystemClock.elapsedRealtime()+60000;
             while(!"true".equals(js(scenario,"!!window.VU_BUNDLED_PREVIEW&&!!window.VUWowMontage?.ready&&!!window.VideoVariatorCore&&!!document.getElementById('bundledPreviewNotice')"))&&SystemClock.elapsedRealtime()<end)SystemClock.sleep(300);
-            assertEquals("Packaged WOW UI must load rather than production UI","true",js(scenario,"!!window.VU_BUNDLED_PREVIEW&&!!window.VUWowMontage?.ready&&!!document.getElementById('bundledPreviewNotice')"));
+            assertEquals("Packaged WOW UI must load rather than production UI: "+js(scenario,"JSON.stringify({href:location.href,body:document.body?.innerText?.slice(0,350),preview:window.VU_BUNDLED_PREVIEW,core:typeof VideoVariatorCore})"),"true",js(scenario,"!!window.VU_BUNDLED_PREVIEW&&!!window.VUWowMontage?.ready&&!!document.getElementById('bundledPreviewNotice')"));
             assertEquals("Default remains off","false",js(scenario,"document.getElementById('wowMontage').checked"));
             assertEquals("Toggle is working","false",js(scenario,"document.getElementById('wowMontage').disabled"));
             assertEquals("Same HTTPS API origin", "true", js(scenario,"window.VV_API_BASE===location.origin"));
