@@ -57,4 +57,30 @@ public class BundledPreviewTest {
             }
         }
     }
+    @Test public void realPackagedDashboardImportsColdAndWarmShares() throws Exception {
+        org.junit.Assume.assumeTrue(BuildConfig.BUNDLED_PREVIEW);
+        android.content.Context app=ApplicationProvider.getApplicationContext();
+        android.content.Context test=InstrumentationRegistry.getInstrumentation().getContext();
+        File folder=new File(app.getCacheDir(),"shared-tools");folder.mkdirs();
+        byte[] bytes=android.util.Base64.decode(read(test,"background-source.base64"),android.util.Base64.DEFAULT);
+        File one=new File(folder,"wow-share-one.mp4"),two=new File(folder,"wow-share-two.mp4");
+        java.nio.file.Files.write(one.toPath(),bytes);java.nio.file.Files.write(two.toPath(),bytes);
+        Uri first=androidx.core.content.FileProvider.getUriForFile(app,"com.videovariator.app.files",one);
+        Uri second=androidx.core.content.FileProvider.getUriForFile(app,"com.videovariator.app.files",two);
+        Intent launch=new Intent(Intent.ACTION_SEND).setType("video/mp4").putExtra(Intent.EXTRA_STREAM,first).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION).setClass(app,MainActivity.class);
+        try(ActivityScenario<MainActivity> scenario=ActivityScenario.launch(launch)) {
+            long end=SystemClock.elapsedRealtime()+30000;
+            while(!"true".equals(js(scenario,"!!window.VU_BUNDLED_PREVIEW&&VideoVariatorCore?.state.files.length===1"))&&SystemClock.elapsedRealtime()<end)SystemClock.sleep(200);
+            assertEquals("Cold share reaches actual packaged dashboard","1",js(scenario,"VideoVariatorCore?.state.files.length"));
+            assertEquals("\"wow-share-one.mp4\"",js(scenario,"VideoVariatorCore.state.files[0].name"));
+            ArrayList<Uri> files=new ArrayList<>();files.add(first);files.add(second);
+            Intent multiple=new Intent(Intent.ACTION_SEND_MULTIPLE).setType("video/mp4").putParcelableArrayListExtra(Intent.EXTRA_STREAM,files).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            scenario.onActivity(a->{a.onNewIntent(multiple);a.setIntent(launch);});
+            end=SystemClock.elapsedRealtime()+30000;
+            while(!"2".equals(js(scenario,"VideoVariatorCore?.state.files.length"))&&SystemClock.elapsedRealtime()<end)SystemClock.sleep(200);
+            assertEquals("Warm share retains actual packaged dashboard","2",js(scenario,"VideoVariatorCore?.state.files.length"));
+            assertEquals("\"wow-share-two.mp4\"",js(scenario,"VideoVariatorCore.state.files[1].name"));
+        } finally {one.delete();two.delete();}
+    }
+
 }
