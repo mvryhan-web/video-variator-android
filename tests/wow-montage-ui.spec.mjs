@@ -12,7 +12,7 @@ test('working WOW is optional and defaults off in all three modes and after relo
   await expect(page.locator('#wowMontageStatus')).toHaveText('Optional');
   await expect(page.locator('#wowMontageHelp')).toContainText('first 12 seconds');
   for (const mode of ['gentle','balanced','dynamic']) {
-    await page.locator('#mode').selectOption(mode);
+    await page.locator(`[data-select="mode"] button[data-value="${mode}"]`).click();
     await expect(page.locator('#mode')).toHaveValue(mode);
     await expect(page.locator('#wowMontageOption')).toBeVisible();
     await expect(toggle).toBeEnabled();
@@ -62,23 +62,23 @@ test('UI invokes unchanged options when off, and only adds explicit WOW when ena
     window.wowStage2Calls = [];
     VideoVariatorCore.estimateCredits = async variants => ({durations:[1],sourceCount:1,sourceSeconds:1,creditSeconds:variants,variants});
     VideoVariatorCore.process = async options => {
-      window.wowStage2Calls.push({mode:options.mode,keys:Object.keys(options)});
+      window.wowStage2Calls.push({mode:options.mode,keys:Object.keys(options),fastExport:options.fastExport});
       throw Error('Test capture: no encode requested');
     };
   });
   await page.locator('#fileInput').setInputFiles({name:'fixture.mp4',mimeType:'video/mp4',buffer:Buffer.from('UI selection fixture')});
   for (const mode of ['gentle','balanced','dynamic']) {
-    await page.locator('#mode').selectOption(mode);
+    await page.locator(`[data-select="mode"] button[data-value="${mode}"]`).click();
     await expect(page.locator('#startBtn')).toBeEnabled();
     await page.locator('#startBtn').click();
     await expect.poll(() => page.evaluate(() => window.wowStage2Calls.at(-1)?.mode)).toBe(mode);
   }
   const calls = await page.evaluate(() => window.wowStage2Calls);
   expect(calls).toHaveLength(3);
-  for (const call of calls) expect(call.keys.sort()).toEqual(['fastExport','mode','onResult','resolution','variants']);
+  for (const call of calls) { expect(call.fastExport).toBe(true); expect(call.keys.sort()).toEqual(['fastExport','mode','onResult','resolution','variants']); }
   const toggle=page.getByRole('switch',{name:'WOW Montage'});await toggle.focus();await toggle.press('Space');
   for(const mode of ['gentle','balanced','dynamic']){
-    await page.locator('#mode').selectOption(mode);await expect(page.locator('#startBtn')).toBeEnabled();await page.locator('#startBtn').click();
+    await page.locator(`[data-select="mode"] button[data-value="${mode}"]`).click();await expect(page.locator('#startBtn')).toBeEnabled();await page.locator('#startBtn').click();
     await expect.poll(()=>page.evaluate(()=>window.wowStage2Calls.at(-1)?.mode)).toBe(mode);
   }
   const all=await page.evaluate(()=>window.wowStage2Calls);

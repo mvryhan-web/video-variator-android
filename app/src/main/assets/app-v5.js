@@ -32,14 +32,6 @@
     document.querySelectorAll('#updateBanner p').forEach(el=>el.textContent=el.textContent.replaceAll('Video Variator','Video Uniquifier'));
   }
 
-  function installExportSpeed(){
-    const label=document.createElement('label');label.className='exportSpeed';
-    const check=document.createElement('input');check.type='checkbox';check.id='fastExport';check.checked=true;
-    const copy={ru:['Быстрый экспорт','Меньше ожидания; файл может быть больше.'],fr:['Export rapide','Moins d’attente ; le fichier peut être plus volumineux.'],uk:['Швидкий експорт','Менше очікування; файл може бути більшим.']};
-    const words=copy[locale]||['Fast export','Less waiting; the file may be larger.'];
-    const body=document.createElement('span'),title=document.createElement('b'),hint=document.createElement('small');title.textContent=words[0];hint.textContent=words[1];body.append(title,hint);label.append(check,body);
-    document.querySelector('.formatGrid')?.after(label);
-  }
   function currentPlan(){return ($('currentPlan')?.textContent||'Trial').trim().toLowerCase();}
   function maxVariants(){const p=currentPlan();if(p.includes('administrator')||p.includes('business'))return 15;if(p==='pro'||p.includes('pro'))return 10;return 5;}
   function installVariantOptions(){
@@ -200,5 +192,5 @@
   function observePlan(){const el=$('currentPlan');if(!el)return;new MutationObserver(()=>enforceVariantAccess()).observe(el,{childList:true,characterData:true,subtree:true});}
   function observeResults(){const card=$('resultsCard');if(!card)return;new MutationObserver(()=>{if(!card.hidden)renderReadyDownloads();}).observe(card,{attributes:true,attributeFilter:['hidden']});}
 
-  installExportSpeed();applyBranding();installPremiumDetails();installVariantOptions();installBackButton();installSidebarSwipe();installNetworkBadge();installVersion();installAuthStatus();installNativeAuthBridge();interceptHistoryDownloads();installProcessingStateGuard();observePlan();observeResults();
+  applyBranding();installPremiumDetails();installVariantOptions();installBackButton();installSidebarSwipe();installNetworkBadge();installVersion();installAuthStatus();installNativeAuthBridge();interceptHistoryDownloads();installProcessingStateGuard();observePlan();observeResults();
 })();

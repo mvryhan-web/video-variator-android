@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="creator-pages.css">
 <link rel="stylesheet" href="wow-montage.css">
 <link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="dashboard-controls.css">
 <link rel="stylesheet" href="startup.css">
 <script src="startup.js"></script>
 </head>
@@ -84,27 +85,20 @@
         </div>
         <div id="fileSummary" class="fileSummary" data-i18n="noFiles">No videos selected yet.</div>
 
-        <div class="settingsGrid">
-          <label><span data-i18n="variantsLabel">Variations per video</span><select id="variantCount"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option></select></label>
-          <div class="modeSettings">
-            <label><span data-i18n="modeLabel">Processing mode</span><select id="mode"><option value="gentle" selected>Gentle</option><option value="balanced">Balance</option><option value="dynamic">Dynamic</option></select></label>
+        <div class="dashboardSettings">
+          <label class="variationChoice"><span data-i18n="variantsLabel">Variations per video</span><select id="variantCount"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option></select></label>
+<div class="dashboardChoice" data-select="mode"><span class="choiceLabel" id="modeLabel" data-i18n="modeLabel">Processing mode</span><div class="choiceButtons" role="group" aria-labelledby="modeLabel"><button type="button" data-value="gentle" aria-pressed="true" disabled><span>Gentle</span></button><button type="button" data-value="balanced" aria-pressed="false" disabled><span>Balance</span></button><button type="button" data-value="dynamic" aria-pressed="false" disabled><span>Dynamic</span></button></div><select id="mode" hidden aria-hidden="true" tabindex="-1"><option value="gentle" selected>Gentle</option><option value="balanced">Balance</option><option value="dynamic">Dynamic</option></select></div><div class="dashboardChoice" data-select="quality"><span class="choiceLabel" id="qualityLabel" data-i18n="qualityLabel">Output resolution</span><div class="choiceButtons" role="group" aria-labelledby="qualityLabel"><button type="button" data-value="720" aria-pressed="true" disabled><span>720p</span></button><button type="button" data-value="1080" aria-pressed="false" disabled><span>1080p</span></button><button type="button" data-value="2160" aria-pressed="false" disabled><span>4K</span></button></div><select id="quality" hidden aria-hidden="true" tabindex="-1"><option value="720" selected>720p</option><option value="1080">1080p</option><option value="2160">4K</option></select></div><div class="dashboardChoice" data-select="aspectRatio"><span class="choiceLabel" id="aspectRatioLabel" data-i18n="formatLabel">Video format</span><div class="choiceButtons" role="group" aria-labelledby="aspectRatioLabel"><button type="button" data-value="9:16" aria-pressed="true" disabled><i class="frameIcon portrait" aria-hidden="true"></i><span>9:16</span></button><button type="button" data-value="16:9" aria-pressed="false" disabled><i class="frameIcon landscape" aria-hidden="true"></i><span>16:9</span></button></div><select id="aspectRatio" hidden aria-hidden="true" tabindex="-1"><option value="9:16" selected>9:16</option><option value="16:9">16:9</option></select></div>
+          <div class="dashboardOptimization"><span class="choiceLabel" data-dashboard-optimization>Optimization</span>
             <div id="wowMontageOption" class="wowMontageOption">
-              <div class="wowMontageHeading">
-                <label for="wowMontage" class="wowMontageControl">
-                  <input id="wowMontage" type="checkbox" role="switch" disabled autocomplete="off" aria-describedby="wowMontageStatus wowMontageHelp">
-                  <span class="wowMontageTrack" aria-hidden="true"></span><span>WOW Montage</span>
-                </label>
-                <span id="wowMontageStatus" class="wowMontageStatus" data-i18n="wowMontageStatus">In development</span>
-              </div>
-              <p id="wowMontageHelp" data-i18n="wowMontageHelp">Optional automatic editing. Not available yet; your selected mode works as usual.</p>
+              <div class="wowMontageHeading"><label for="wowMontage" class="wowMontageControl">
+                <input id="wowMontage" type="checkbox" role="switch" disabled autocomplete="off" aria-describedby="wowMontageStatus">
+                <span class="wowMontageTrack" aria-hidden="true"></span><span>WOW Montage</span>
+              </label><span id="wowMontageStatus" class="wowMontageStatus" hidden>In development</span></div>
+              <p id="wowMontageHelp" hidden></p>
             </div>
           </div>
         </div>
-        <div class="formatGrid">
-          <label><span data-i18n="formatLabel">Video format</span><select id="aspectRatio"><option value="9:16" selected>9:16 · Vertical</option><option value="16:9">16:9 · Landscape</option></select></label>
-          <label><span data-i18n="qualityLabel">Output resolution</span><select id="quality"><option value="720" selected>720p</option><option value="1080">1080p</option><option value="2160">4K</option></select></label>
-        </div>
-        <div id="planAccessHint" class="planAccessHint">Trial / Basic: Gentle · 720p</div>
+        <div id="planAccessHint" class="planAccessHint" hidden></div>
         <div class="creditEstimate"><span data-i18n="estimatedCost">Estimated processing cost</span><b id="creditEstimate">—</b></div>
         <input id="microCut" type="hidden" value="auto">
         <input id="preserveAudio" type="hidden" value="1">
@@ -218,5 +212,6 @@
 <script src="creator-showcase.js" defer></script>
 <script src="creator-pages.js" defer></script>
 <script src="share-import.js" defer></script>
+<script src="dashboard-controls.js" defer></script>
 </body>
 </html>

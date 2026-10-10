@@ -1,0 +1,45 @@
+/* Static, dashboard-only layout: visible on the first painted frame. */
+#dashboardView .dashboardSettings{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+#dashboardView .dashboardChoice,#dashboardView .variationChoice,#dashboardView .dashboardOptimization{min-width:0}
+#dashboardView .choiceLabel,#dashboardView .variationChoice>span{display:block;margin:0 0 8px;font-size:12px;font-weight:600;color:var(--creator-muted,#a1a9bb);letter-spacing:.02em}
+#dashboardView .choiceButtons{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px;padding:4px;border:1px solid var(--creator-border,#30394e);border-radius:14px;background:var(--surface,#101827)}
+#dashboardView .choiceButtons button{display:flex;align-items:center;justify-content:center;gap:9px;min-width:0;min-height:44px;padding:8px 5px;border:1px solid transparent;border-radius:10px;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+#dashboardView .choiceButtons button[aria-pressed=true]{background:var(--primary,#785bea);border-color:#ad9aff;color:#fff;box-shadow:0 2px 8px #7151d52b}
+#dashboardView .choiceButtons button:disabled{opacity:.4;cursor:not-allowed}
+#dashboardView .choiceButtons button:focus-visible{outline:2px solid #b8a6ff;outline-offset:2px}
+#dashboardView .frameIcon{display:inline-block;width:16px;height:23px;border:1.5px solid currentColor;border-radius:3px;flex-shrink:0}
+#dashboardView .frameIcon.landscape{width:25px;height:15px}
+#dashboardView .variationChoice select{min-height:54px;width:100%;margin:0;border-radius:14px}
+#dashboardView .variantLockNote{display:none}
+#dashboardView .dashboardChoice select[hidden],#dashboardView #planAccessHint[hidden],#dashboardView #wowMontageHelp[hidden],#dashboardView #wowMontageStatus[hidden]{display:none!important}
+#dashboardView .dashboardOptimization{grid-column:1/-1}
+#dashboardView .wowMontageOption{margin:0;padding:8px 12px;border-radius:14px}
+#dashboardView .wowMontageHeading{min-height:36px}
+#dashboardView .wowMontageControl{width:100%;min-height:44px}
+#dashboardView .wowMontageControl .wowMontageTrack{order:1;margin-left:auto}
+#dashboardView .wowMontageControl>span:last-child{font-size:14px}
+#dashboardView .workspace{padding:20px}
+#dashboardView .workspace .sectionHead{margin-bottom:12px}
+#dashboardView .fileSummary{margin:10px 0;font-size:12px}
+#dashboardView .creditEstimate{margin:12px 0;padding:10px 12px;font-size:12px}
+#dashboardView .statsGrid{margin:12px 0 16px;padding:10px 0}
+#dashboardView .stat.card{padding:4px 10px}
+#dashboardView .stat b{font-size:18px}
+@media(max-width:640px){
+ #dashboardView .dashboardSettings{grid-template-columns:1fr;gap:12px;margin:12px 0}
+ #dashboardView .hero{padding:20px 16px;gap:12px}
+ #dashboardView .hero h2{font-size:28px;line-height:1.12}
+ #dashboardView .hero .creatorArt{display:none}
+ #dashboardView .hero p{font-size:13px;line-height:1.5}
+ #dashboardView .workspace{padding:16px}
+ #dashboardView .workspace .sectionHead p{font-size:12px}
+ #dashboardView .picker{min-height:100px;padding:14px}
+ #dashboardView .pickerIcon{font-size:24px}
+ #dashboardView .stat b{font-size:16px}
+ #dashboardView .statsGrid .usageBox{padding-top:8px}
+ #dashboardView .actionRow{margin-top:12px}
+}
+@media(prefers-reduced-motion:no-preference){#dashboardView .choiceButtons button{transition:background .15s,border-color .15s}}
+#dashboardView .workspace.trialComplete>.dashboardSettings{display:none!important}
+html[data-theme=light] #dashboardView .choiceButtons{background:#eef1f8;border-color:#cbd3e1;color:#172039}
+html[data-theme=light] #dashboardView .choiceLabel,html[data-theme=light] #dashboardView .variationChoice>span{color:#505e76}

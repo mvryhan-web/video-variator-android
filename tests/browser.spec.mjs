@@ -66,11 +66,11 @@ test('trial unlocks all modes plus 720p 1080p and 4K',async({page})=>{
   await expect(mode.locator('option[value="gentle"]')).not.toHaveAttribute('disabled','');
   await expect(mode.locator('option[value="balanced"]')).not.toHaveAttribute('disabled','');
   await expect(mode.locator('option[value="dynamic"]')).not.toHaveAttribute('disabled','');
-  await mode.selectOption('balanced');
+  await page.locator('[data-select="mode"] button[data-value="balanced"]').click();
   await expect(mode).toHaveValue('balanced');
-  await mode.selectOption('dynamic');
+  await page.locator('[data-select="mode"] button[data-value="dynamic"]').click();
   await expect(mode).toHaveValue('dynamic');
-  await mode.selectOption('gentle');
+  await page.locator('[data-select="mode"] button[data-value="gentle"]').click();
   await expect(mode).toHaveValue('gentle');
 
   const quality=page.locator('#quality');
@@ -78,11 +78,11 @@ test('trial unlocks all modes plus 720p 1080p and 4K',async({page})=>{
   await expect(quality.locator('option[value="720"]')).not.toHaveAttribute('disabled','');
   await expect(quality.locator('option[value="1080"]')).not.toHaveAttribute('disabled','');
   await expect(quality.locator('option[value="2160"]')).not.toHaveAttribute('disabled','');
-  await quality.selectOption('1080');
+  await page.locator('[data-select="quality"] button[data-value="1080"]').click();
   await expect(quality).toHaveValue('1080');
-  await quality.selectOption('2160');
+  await page.locator('[data-select="quality"] button[data-value="2160"]').click();
   await expect(quality).toHaveValue('2160');
-  await quality.selectOption('720');
+  await page.locator('[data-select="quality"] button[data-value="720"]').click();
   await expect(quality).toHaveValue('720');
 
   await expect(page.locator('#variantCount option[value="10"]')).toHaveAttribute('disabled','');
@@ -139,10 +139,10 @@ test('completed trial replaces creation controls with compact plan choices',asyn
 
 test('supports vertical and landscape output controls',async({page})=>{
   const format=page.locator('#aspectRatio');
-  await expect(format).toBeVisible();
-  await format.selectOption('16:9');
+  await expect(page.locator('[data-select="aspectRatio"]')).toBeVisible();
+  await page.locator('[data-select="aspectRatio"] button[data-value="16:9"]').click();
   await expect(format).toHaveValue('16:9');
-  await format.selectOption('9:16');
+  await page.locator('[data-select="aspectRatio"] button[data-value="9:16"]').click();
   await expect(format).toHaveValue('9:16');
 });
 
@@ -525,11 +525,11 @@ test('free trial keeps selected 1080p and 4K instead of forcing 720p at start',a
   });
   await page.locator('#fileInput').setInputFiles({name:'trial.mp4',mimeType:'video/mp4',buffer:Buffer.from([0,1,2,3])});
   await expect(page.locator('#startBtn')).toBeEnabled();
-  await page.locator('#quality').selectOption('1080');
+  await page.locator('[data-select="quality"] button[data-value="1080"]').click();
   await page.locator('#startBtn').click();
   await expect.poll(()=>page.evaluate(()=>window.__processedResolutions.length)).toBe(1);
   expect(await page.evaluate(()=>window.__processedResolutions[0])).toBe('1080x1920');
-  await page.locator('#quality').selectOption('2160');
+  await page.locator('[data-select="quality"] button[data-value="2160"]').click();
   await page.locator('#startBtn').click();
   await expect.poll(()=>page.evaluate(()=>window.__processedResolutions.length)).toBe(2);
   expect(await page.evaluate(()=>window.__processedResolutions[1])).toBe('2160x3840');

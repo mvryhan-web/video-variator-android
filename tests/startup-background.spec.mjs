@@ -44,7 +44,7 @@ test('five real variations reuse one source and retain completed results after r
  });
  await page.locator('#fileInput').setInputFiles(source);
  await page.locator('#variantCount').selectOption('5');
- await page.locator('#quality').selectOption({label:'720p'});
+ await page.locator('[data-select="quality"] button[data-value="720"]').click();
  const started=Date.now();await page.locator('#startBtn').click();
  await expect(page.locator('#resultsCard')).toBeVisible({timeout:570000});
  console.log('BATCH_BENCHMARK '+JSON.stringify({seconds:(Date.now()-started)/1000,sourceSeconds:13,outputs:5,resolution:'720p',sourceWrites:await page.evaluate(()=>sourceWrites)}));
