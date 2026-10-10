@@ -422,10 +422,10 @@ document.querySelectorAll('.avatar-quality-option').forEach(button=>{
 });
 syncQualityTiles();
 const qualityCopy={
- en:['Output quality','All resolutions are available. 4K requires more device memory.','Faster','Balanced','Maximum'],
- ru:['Качество видео','Все три качества доступны. 4K требует больше памяти устройства.','Быстрее','Оптимально','Максимум'],
- fr:['Qualité vidéo','Les trois résolutions sont disponibles. La 4K demande plus de mémoire.','Rapide','Équilibré','Maximum'],
- uk:['Якість відео','Усі три якості доступні. 4K потребує більше пам’яті.','Швидше','Оптимально','Максимум']
+ en:['Choose video quality','All resolutions are available. 4K requires more device memory.','Faster','Balanced','Maximum'],
+ ru:['Выберите качество видео','Все три качества доступны. 4K требует больше памяти устройства.','Быстрее','Оптимально','Максимум'],
+ fr:['Choisissez la qualité vidéo','Les trois résolutions sont disponibles. La 4K demande plus de mémoire.','Rapide','Équilibré','Maximum'],
+ uk:['Оберіть якість відео','Усі три якості доступні. 4K потребує більше пам’яті.','Швидше','Оптимально','Максимум']
 }[locale]||[];
 $('avatarQualityLabel').textContent=qualityCopy[0];
 $('avatarQualityHelp').textContent=qualityCopy[1];
