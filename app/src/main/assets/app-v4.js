@@ -164,7 +164,7 @@
   async function checkUpdates(){const status=$('updateStatus');status.textContent=t('updateChecking');try{if(state.swReg)await state.swReg.update();if(window.AndroidBridge?.checkForUpdate)window.AndroidBridge.checkForUpdate();const d=await api('/api/version').catch(()=>null);status.textContent=d?.webVersion?`Web ${d.webVersion} · Android ${d.androidVersion||''}`:t('upToDate');if(state.swReg?.waiting)showUpdateBanner(state.swReg);}catch(_){status.textContent=t('upToDate');}}
   function applyUpdate(){if(state.swReg?.waiting)state.swReg.waiting.postMessage({type:'SKIP_WAITING'});else location.reload();}
 
-  qsa('.navBtn').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+  qsa('.navBtn[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
   qsa('[data-view-jump]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.viewJump)));
   $('menuBtn').addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('open'));
   $('fileInput').addEventListener('change',e=>{core.setFiles(e.target.files);updateFileSummary();});
