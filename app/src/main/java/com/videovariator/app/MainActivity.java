@@ -67,6 +67,10 @@ public class MainActivity extends Activity {
     private AppUpdateManager appUpdateManager;
     private String trustedWebOrigin = "";
     private String pendingAuthToken = "";
+    private final Map<String, File> sharedVideos = new ConcurrentHashMap<>();
+    private volatile String sharedVideoMetadata = "[]";
+    private String dashboardUrl;
+    private volatile boolean importingShare = false;
 
     private final InstallStateUpdatedListener updateListener = state -> {
         if (state.installStatus() == InstallStatus.DOWNLOADED && appUpdateManager != null) {
@@ -132,7 +136,11 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) { return handleNavigation(request.getUrl()); }
             @Override public boolean shouldOverrideUrlLoading(WebView view, String url) { return handleNavigation(Uri.parse(url)); }
-            @Override public void onPageFinished(WebView view, String url) { super.onPageFinished(view, url); deliverPendingAuthToken(); }
+            @Override public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                deliverPendingAuthToken();
+                view.evaluateJavascript("window.dispatchEvent(new Event('vu-shared-videos'))", null);
+            }
         });
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -156,6 +164,7 @@ public class MainActivity extends Activity {
         });
 
         String remote = safeHttps(BuildConfig.WEB_APP_URL);
+        dashboardUrl = remote.isEmpty() ? "file:///android_asset/index.html" : remote + "/index.html";
         if (!remote.isEmpty()) {
             Uri uri = Uri.parse(remote);
             trustedWebOrigin = uri.getScheme() + "://" + uri.getAuthority();
@@ -166,6 +175,7 @@ public class MainActivity extends Activity {
         }
 
         handleAuthIntent(getIntent());
+        handleShareIntent(getIntent());
 
         appUpdateManager = AppUpdateManagerFactory.create(this);
         appUpdateManager.registerListener(updateListener);
@@ -296,6 +306,87 @@ public class MainActivity extends Activity {
         super.onNewIntent(intent);
         setIntent(intent);
         handleAuthIntent(intent);
+        handleShareIntent(intent);
+    }
+
+    private void handleShareIntent(Intent intent) {
+        if (intent == null || (!Intent.ACTION_SEND.equals(intent.getAction()) && !Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction()))) return;
+        if (intent.getType() == null || !intent.getType().startsWith("video/")) return;
+        if (processing || importingShare || !sharedVideos.isEmpty()) {
+            Toast.makeText(this, "Finish the current task before sharing another video.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        final ArrayList<Uri> sources = new ArrayList<>();
+        try {
+            if (Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) {
+                ArrayList<Uri> list = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+                if (list != null) sources.addAll(list);
+            } else {
+                Uri uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                if (uri != null) sources.add(uri);
+            }
+            if (sources.isEmpty() && intent.getClipData() != null) {
+                for (int i = 0; i < intent.getClipData().getItemCount(); i++) sources.add(intent.getClipData().getItemAt(i).getUri());
+            }
+        } catch (RuntimeException e) { return; }
+        if (sources.isEmpty() || sources.size() > 50) {
+            Toast.makeText(this, "Share between 1 and 50 videos.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        importingShare = true;
+        Toast.makeText(this, "Opening shared video…", Toast.LENGTH_SHORT).show();
+        new Thread(() -> {
+            JSONArray metadata = new JSONArray();
+            long total = 0;
+            try {
+                for (Uri uri : sources) {
+                    if (uri == null || !"content".equalsIgnoreCase(uri.getScheme())) throw new java.io.IOException();
+                    String mime = getContentResolver().getType(uri);
+                    if (mime != null && !mime.startsWith("video/")) throw new java.io.IOException();
+                    String name = "shared-video.mp4";
+                    try (android.database.Cursor cursor = getContentResolver().query(uri, new String[]{android.provider.OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+                        if (cursor != null && cursor.moveToFirst() && !cursor.isNull(0)) name = cursor.getString(0);
+                    }
+                    File file = File.createTempFile("shared-video-", ".tmp", getCacheDir());
+                    String id = java.util.UUID.randomUUID().toString();
+                    sharedVideos.put(id, file);
+                    try (java.io.InputStream input = getContentResolver().openInputStream(uri); FileOutputStream output = new FileOutputStream(file)) {
+                        if (input == null) throw new java.io.IOException();
+                        byte[] buffer = new byte[128 * 1024];
+                        int count;
+                        while ((count = input.read(buffer)) != -1) {
+                            total += count;
+                            if (total > 1024L * 1024 * 1024) throw new java.io.IOException();
+                            output.write(buffer, 0, count);
+                        }
+                    }
+                    if (file.length() == 0) throw new java.io.IOException();
+                    metadata.put(new JSONObject().put("id", id).put("name", name).put("type", mime == null ? intent.getType() : mime).put("size", file.length()));
+                }
+                sharedVideoMetadata = metadata.toString();
+                runOnUiThread(() -> {
+                    if (isDestroyed()) { clearSharedVideos(); return; }
+                    if (processing) {
+                        clearSharedVideos();
+                        Toast.makeText(this, "Finish the current task, then share the video again.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    String current = webView.getUrl();
+                    if (dashboardUrl.equals(current) || (trustedWebOrigin + "/").equals(current)) {
+                        webView.evaluateJavascript("window.dispatchEvent(new Event('vu-shared-videos'))", null);
+                    } else webView.loadUrl(dashboardUrl);
+                });
+            } catch (Exception e) {
+                clearSharedVideos();
+                runOnUiThread(() -> Toast.makeText(this, "Could not open the shared video. Try selecting it inside the app (maximum 1 GB per batch).", Toast.LENGTH_LONG).show());
+            } finally { importingShare = false; }
+        }, "video-share-import").start();
+    }
+
+    private void clearSharedVideos() {
+        sharedVideoMetadata = "[]";
+        for (File file : sharedVideos.values()) file.delete();
+        sharedVideos.clear();
     }
 
     private void checkForPlayUpdate(boolean userInitiated) {
@@ -330,6 +421,7 @@ public class MainActivity extends Activity {
         if (textToSpeech != null) { textToSpeech.stop(); textToSpeech.shutdown(); textToSpeech = null; ttsReady = false; }
         for (File file : ttsExportFiles.values()) if (file != null) file.delete();
         ttsExportFiles.clear();
+        clearSharedVideos();
         if (webView != null) { webView.removeJavascriptInterface("AndroidBridge"); webView.destroy(); }
         super.onDestroy();
     }
@@ -365,6 +457,18 @@ public class MainActivity extends Activity {
     }
 
     private class AndroidBridge {
+        @JavascriptInterface public String getSharedVideos() { return sharedVideoMetadata; }
+        @JavascriptInterface public String readSharedVideo(String id, long offset) {
+            File file = sharedVideos.get(id);
+            if (file == null || offset < 0 || offset >= file.length()) return "";
+            try (RandomAccessFile input = new RandomAccessFile(file, "r")) {
+                input.seek(offset);
+                byte[] bytes = new byte[(int)Math.min(192 * 1024, file.length() - offset)];
+                input.readFully(bytes);
+                return Base64.encodeToString(bytes, Base64.NO_WRAP);
+            } catch (Exception e) { return ""; }
+        }
+        @JavascriptInterface public void finishSharedVideoImport() { clearSharedVideos(); }
         @JavascriptInterface public boolean beginProcessing() {
             if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 runOnUiThread(() -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 6403));
