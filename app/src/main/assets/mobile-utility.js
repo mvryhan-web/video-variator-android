@@ -143,3 +143,100 @@ async function perform(){
   default:throw Error('Unsupported operation');
  }
 }
+
+async function convertPhoto(){
+ const f=files()[0],c=await openImage(f),type=$('utilityFormat').value;
+ const b=await blobFrom(c,type,.92),ext=type==='image/png'?'png':type==='image/webp'?'webp':'jpg';
+ await result(new File([b],base(f)+'-converted.'+ext,{type}));
+ c.width=c.height=1;
+}
+async function resizePhoto(){
+ const f=files()[0],im=await openImage(f);
+ const width=Math.round(settingsNum('utilityWidth')),height=Math.round(settingsNum('utilityHeight'));
+ if(width<1||height<1||width*height>40000000)throw Error(label('Dimensions must be within 40 megapixels.','Максимальный размер 40 мегапикселей.'));
+ const c=document.createElement('canvas');c.width=width;c.height=height;const x=c.getContext('2d');
+ const crop=$('resizeMode').value==='cover',scale=crop?Math.max(width/im.width,height/im.height):Math.min(width/im.width,height/im.height);
+ const dw=im.width*scale,dh=im.height*scale;
+ x.fillStyle='#fff';x.fillRect(0,0,width,height);x.drawImage(im,(width-dw)/2,(height-dh)/2,dw,dh);
+ const type=$('utilityFormat').value,blob=await blobFrom(c,type,.92);
+ const ext=type==='image/png'?'png':type==='image/webp'?'webp':'jpg';
+ await result(new File([blob],base(f)+'-'+width+'x'+height+'.'+ext,{type}));
+ im.width=im.height=c.width=c.height=1;
+}
+async function makeQR(){
+ const text=$('utilityQr').value.trim();if(!text)throw Error(label('Enter text or a URL first.','Введите ссылку или текст.'));
+ await qr();
+ const q=window.qrcode(0,'M');q.addData(text);q.make();
+ // Store as a printable SVG; only locally calculated cells, no QR-code API request.
+ const svg=q.createSvgTag({cellSize:8,margin:12,scalable:true});
+ await result(new File([svg],'VideoUniquifier-QR.svg',{type:'image/svg+xml'}));
+}
+async function manageZip(){
+ await jszip();
+ const zip=new window.JSZip(),kind=$('utilityKind').value,fs=files();
+ if(kind==='pack'){
+  for(const f of fs){if(abort)throw Error('Canceled');zip.file(safeName(f.name),f);}
+  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:5}});
+  return result(new File([blob],'VideoUniquifier-files.zip',{type:'application/zip'}));
+ }
+ if(fs.length!==1)throw Error('Choose one ZIP archive.');
+ const z=await window.JSZip.loadAsync(fs[0]);let count=0,total=0;
+ for(const [name,entry] of Object.entries(z.files)){
+  if(entry.dir)continue;if(++count>100)throw Error('Archive contains too many files');
+  if(/(^|\/|\\)\.\.(\/|\\|$)/.test(name))continue;
+  const out=await entry.async('blob');total+=out.size;
+  if(total>200*1048576)throw Error('Archive expands beyond 200 MB');
+  if(abort)throw Error('Canceled');
+  await result(new File([out],safeName(name.split('/').pop()),{type:'application/octet-stream'}));
+ }
+ if(!count)throw Error('Empty archive');
+}
+function setupSignature(){
+ const c=$('utilitySignature'),x=c.getContext('2d');x.strokeStyle='#101828';x.lineWidth=3;x.lineJoin='round';x.lineCap='round';
+ let drawing=false,prior=null;
+ const point=e=>{const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height};};
+ c.addEventListener('pointerdown',e=>{drawing=true;prior=point(e);c.setPointerCapture(e.pointerId);x.beginPath();x.moveTo(prior.x,prior.y);x.lineTo(prior.x+.01,prior.y);x.stroke();});
+ c.addEventListener('pointermove',e=>{if(!drawing)return;const p=point(e);x.beginPath();x.moveTo(prior.x,prior.y);x.lineTo(p.x,p.y);x.stroke();prior=p;});
+ const stop=()=>{drawing=false;prior=null;};c.addEventListener('pointerup',stop);c.addEventListener('pointercancel',stop);
+ $('signatureClear').onclick=()=>x.clearRect(0,0,c.width,c.height);
+}
+function setupRedaction(){
+ const c=$('redactCanvas');
+ const point=e=>{const r=c.getBoundingClientRect();return{x:Math.min(c.width,Math.max(0,(e.clientX-r.left)*c.width/r.width)),y:Math.min(c.height,Math.max(0,(e.clientY-r.top)*c.height/r.height))};};
+ c.addEventListener('pointerdown',e=>{if(!redactBase)return;redactDragging={start:point(e),end:point(e)};c.setPointerCapture(e.pointerId);renderRedactions();});
+ c.addEventListener('pointermove',e=>{if(!redactDragging)return;redactDragging.end=point(e);renderRedactions();});
+ c.addEventListener('pointerup',e=>{if(!redactDragging)return;redactDragging.end=point(e);
+  const r=redactDragging;redactDragging=null;
+  if(Math.abs(r.start.x-r.end.x)>3&&Math.abs(r.start.y-r.end.y)>3)redactRects.push(r);
+  renderRedactions();
+ });
+ c.addEventListener('pointercancel',()=>{redactDragging=null;renderRedactions();});
+ $('redactUndo').onclick=()=>{redactRects.pop();renderRedactions();};
+ $('redactReset').onclick=()=>{redactRects=[];renderRedactions();};
+}
+async function loadRedaction(){
+ const c=$('redactCanvas'),f=$('utilityFiles').files[0];
+ redactRects=[];redactBase=null;if(!f)return;
+ try{redactImage=await openImage(f);const scale=Math.min(1,920/Math.max(redactImage.width,redactImage.height));c.width=Math.max(1,Math.round(redactImage.width*scale));c.height=Math.max(1,Math.round(redactImage.height*scale));redactBase=c.getContext('2d');renderRedactions();}catch(e){status(String(e.message||e));}
+}
+function drawCovers(context,r,scale=1){
+ const x=Math.min(r.start.x,r.end.x)*scale,y=Math.min(r.start.y,r.end.y)*scale,w=Math.abs(r.start.x-r.end.x)*scale,h=Math.abs(r.start.y-r.end.y)*scale;
+ context.fillStyle='#000';context.fillRect(x,y,w,h);
+}
+function renderRedactions(){
+ if(!redactBase||!redactImage)return;const c=$('redactCanvas');
+ redactBase.clearRect(0,0,c.width,c.height);redactBase.drawImage(redactImage,0,0,c.width,c.height);
+ for(const r of redactRects)drawCovers(redactBase,r);
+ if(redactDragging)drawCovers(redactBase,redactDragging);
+}
+async function exportRedaction(){
+ const f=files()[0];if(!redactImage||!redactRects.length)throw Error(label('Select an image and cover at least one area.','Выберите фото и закройте хотя бы одну область.'));
+ const full=document.createElement('canvas');full.width=redactImage.width;full.height=redactImage.height;
+ const x=full.getContext('2d');x.drawImage(redactImage,0,0);
+ const scale=full.width/$('redactCanvas').width;
+ for(const r of redactRects)drawCovers(x,r,scale);
+ // Opaque blocks replace pixels; exporting does not retain image layers.
+ const blob=await blobFrom(full,'image/png');
+ await result(new File([blob],base(f)+'-redacted.png',{type:'image/png'}));
+ full.width=full.height=1;
+}
