@@ -2,6 +2,7 @@
 import {createHash} from 'node:crypto';
 import {linkTelegramChat} from './reminders.js';
 import {installTelegramVideo} from './telegram-video.js';
+import {installTelegramMini} from './telegram-mini.js';
 const commands = {
   start: 'Welcome to Video Uniquifier! Open the app using the Menu button or the link below.',
   create: 'To process a video, open the app. Telegram file processing is not available yet.',
@@ -17,6 +18,7 @@ export function installTelegramBot(app, {appUrl}) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const secret = process.env.TELEGRAM_WEBHOOK_SECRET || (token ? createHash('sha256').update(token).digest('hex') : '');
   const videoAddon = installTelegramVideo(app, {appUrl,token});
+  const mini = installTelegramMini(app,{token});
   if (!token) {
     console.info('[telegram] Webhook disabled until TELEGRAM_BOT_TOKEN is set.');
     return;
@@ -59,6 +61,7 @@ export function installTelegramBot(app, {appUrl}) {
         body:JSON.stringify({
           chat_id:chatId,
           text:reply + (['start','create','plans','account','help'].includes(command) ? '\n\n' + appUrl : ''),
+          reply_markup:mini && ['start','create'].includes(command)?{inline_keyboard:[[{text:'🎬 Process in Telegram',web_app:{url:appUrl+'/telegram-mini.html'}}],[{text:'🌐 Open full website',url:appUrl}]]}:undefined,
           disable_web_page_preview:true
         }),
         signal:AbortSignal.timeout(10000)
@@ -72,6 +75,7 @@ export function installTelegramBot(app, {appUrl}) {
   });
   // Register only after the HTTP server is listening, so Telegram can deliver updates.
   return async () => {
+    if (mini) { try{await mini.init();}catch(e){console.error('[telegram-mini] Init failed:',e.message);} }
     if (videoAddon) {
       try { await videoAddon.init(); }
       catch(error){console.error('[telegram-video] Storage initialization failed:',error.message);}
