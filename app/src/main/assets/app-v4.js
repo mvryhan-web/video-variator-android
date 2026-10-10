@@ -14,6 +14,7 @@
   };
 
   const en={
+    wowMontageStatus:'In development',wowMontageHelp:'Optional automatic editing. Not available yet; your selected mode works as usual.',
     brandTag:'One video. Many versions.',navDashboard:'Dashboard',navHistory:'History',navAnalytics:'Analytics',navPlans:'Plans',navFaq:'FAQ',navProfile:'Profile & Settings',
     languageAuto:'Language: Auto',localProcessing:'Video processing runs locally on your device.',secureHttps:'HTTPS required for online services',signIn:'Sign in',signOut:'Sign out',
     trialPill:'100 free videos included',heroText:'Upload once, choose your variations, and create privacy-first results locally on your device.',statProcessed:'Processed',statProcessedSub:'outputs created',statRemaining:'Remaining',statPlan:'Current plan',trialStatus:'No card required',
@@ -30,9 +31,10 @@
   };
   const translations={
     en,
-    fr:{navDashboard:'Tableau de bord',navHistory:'Historique',navAnalytics:'Analytique',navPlans:'Offres',navFaq:'FAQ',navProfile:'Profil et réglages',signIn:'Se connecter',signOut:'Se déconnecter',startProcessing:'Créer les variations',cancel:'Annuler',analyticsTitle:'Analytique',profileTitle:'Profil et réglages'},
-    ru:{navDashboard:'Главная',navHistory:'История',navAnalytics:'Аналитика',navPlans:'Тарифы',navFaq:'FAQ',navProfile:'Профиль и настройки',signIn:'Войти',signOut:'Выйти',startProcessing:'Создать вариации',cancel:'Отменить',analyticsTitle:'Аналитика',profileTitle:'Профиль и настройки'},
-    uk:{navDashboard:'Головна',navHistory:'Історія',navAnalytics:'Аналітика',navPlans:'Тарифи',navFaq:'FAQ',navProfile:'Профіль і налаштування',signIn:'Увійти',signOut:'Вийти',startProcessing:'Створити варіації',cancel:'Скасувати',analyticsTitle:'Аналітика',profileTitle:'Профіль і налаштування'}
+    // WOW is a disabled preparation control; no processing option is passed yet.
+    fr:{wowMontageStatus:'En développement',wowMontageHelp:'Montage automatique en option. Pas encore disponible ; le mode choisi fonctionne comme avant.',navDashboard:'Tableau de bord',navHistory:'Historique',navAnalytics:'Analytique',navPlans:'Offres',navFaq:'FAQ',navProfile:'Profil et réglages',signIn:'Se connecter',signOut:'Se déconnecter',startProcessing:'Créer les variations',cancel:'Annuler',analyticsTitle:'Analytique',profileTitle:'Profil et réglages'},
+    ru:{wowMontageStatus:'В разработке',wowMontageHelp:'Дополнительный автоматический монтаж. Пока недоступен; выбранный режим работает как раньше.',navDashboard:'Главная',navHistory:'История',navAnalytics:'Аналитика',navPlans:'Тарифы',navFaq:'FAQ',navProfile:'Профиль и настройки',signIn:'Войти',signOut:'Выйти',startProcessing:'Создать вариации',cancel:'Отменить',analyticsTitle:'Аналитика',profileTitle:'Профиль и настройки'},
+    uk:{wowMontageStatus:'У розробці',wowMontageHelp:'Додатковий автоматичний монтаж. Поки недоступний; обраний режим працює як раніше.',navDashboard:'Головна',navHistory:'Історія',navAnalytics:'Аналітика',navPlans:'Тарифи',navFaq:'FAQ',navProfile:'Профіль і налаштування',signIn:'Увійти',signOut:'Вийти',startProcessing:'Створити варіації',cancel:'Скасувати',analyticsTitle:'Аналітика',profileTitle:'Профіль і налаштування'}
   };
 
   function readJson(key,fallback){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback));}catch(_){return fallback;}}

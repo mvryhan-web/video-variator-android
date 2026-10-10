@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="studio.css">
 <link rel="stylesheet" href="creator-showcase.css">
 <link rel="stylesheet" href="creator-pages.css">
+<link rel="stylesheet" href="wow-montage.css">
 <link rel="icon" href="icon.svg">
 <link rel="stylesheet" href="startup.css">
 <script src="startup.js"></script>
@@ -85,7 +86,19 @@
 
         <div class="settingsGrid">
           <label><span data-i18n="variantsLabel">Variations per video</span><select id="variantCount"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option></select></label>
-          <label><span data-i18n="modeLabel">Processing mode</span><select id="mode"><option value="gentle" selected>Gentle</option><option value="balanced">Balance</option><option value="dynamic">Dynamic</option></select></label>
+          <div class="modeSettings">
+            <label><span data-i18n="modeLabel">Processing mode</span><select id="mode"><option value="gentle" selected>Gentle</option><option value="balanced">Balance</option><option value="dynamic">Dynamic</option></select></label>
+            <div id="wowMontageOption" class="wowMontageOption">
+              <div class="wowMontageHeading">
+                <label for="wowMontage" class="wowMontageControl">
+                  <input id="wowMontage" type="checkbox" role="switch" disabled autocomplete="off" aria-describedby="wowMontageStatus wowMontageHelp">
+                  <span class="wowMontageTrack" aria-hidden="true"></span><span>WOW Montage</span>
+                </label>
+                <span id="wowMontageStatus" class="wowMontageStatus" data-i18n="wowMontageStatus">In development</span>
+              </div>
+              <p id="wowMontageHelp" data-i18n="wowMontageHelp">Optional automatic editing. Not available yet; your selected mode works as usual.</p>
+            </div>
+          </div>
         </div>
         <div class="formatGrid">
           <label><span data-i18n="formatLabel">Video format</span><select id="aspectRatio"><option value="9:16" selected>9:16 · Vertical</option><option value="16:9">16:9 · Landscape</option></select></label>

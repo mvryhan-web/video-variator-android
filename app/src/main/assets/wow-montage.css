@@ -1,0 +1,11 @@
+/* Scoped to the optional mode control; no styling for other pages or tools. */
+.modeSettings {min-width:0;}
+#wowMontageOption {margin-top:10px;padding:12px;border:1px solid var(--cp-line,var(--line,#344057));border-radius:12px;background:var(--cp-bg,var(--bg,#0a101c));color:var(--cp-text,var(--text,#e8ecf4));}
+#wowMontageOption .wowMontageHeading {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+#wowMontageOption .wowMontageControl {position:relative;display:flex;align-items:center;gap:8px;min-height:32px;margin:0;color:inherit;font-size:13px;font-weight:600;cursor:not-allowed;}
+#wowMontageOption .wowMontageControl > span {font:inherit;color:inherit;letter-spacing:normal;text-transform:none;}
+#wowMontageOption input {position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+#wowMontageOption .wowMontageTrack {display:block;flex:0 0 32px;width:32px;height:18px;border:1px solid var(--cp-muted,var(--muted,#8494b0));border-radius:20px;opacity:.7;}
+#wowMontageOption .wowMontageTrack::after {content:'';display:block;width:10px;height:10px;margin:3px;border-radius:50%;background:var(--cp-muted,var(--muted,#8494b0));}
+#wowMontageOption .wowMontageStatus {font-size:11px;line-height:1.4;color:var(--cp-muted,var(--muted,#aab5c8));}
+#wowMontageOption p {margin:7px 0 0;font-size:12px;line-height:1.5;color:var(--cp-muted,var(--muted,#aab5c8));overflow-wrap:break-word;}
