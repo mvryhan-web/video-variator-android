@@ -45,6 +45,19 @@ public class ShareImportTest {
         try(java.io.InputStream in=context.getAssets().open(path)){return new String(in.readAllBytes(),java.nio.charset.StandardCharsets.UTF_8);}
     }
     private void importFixture(ActivityScenario<MainActivity> scenario,Context context,int expected)throws Exception {
+        // Let the native copy and its dashboard navigation finish before loading
+        // the isolated fixture. Otherwise that navigation replaces the fixture.
+        AtomicReference<Boolean> ready=new AtomicReference<>(false);
+        long copyDeadline=SystemClock.elapsedRealtime()+15000;
+        while(!ready.get()&&SystemClock.elapsedRealtime()<copyDeadline) {
+            scenario.onActivity(a->{try {
+                java.lang.reflect.Field copying=MainActivity.class.getDeclaredField("importingShare");copying.setAccessible(true);
+                java.lang.reflect.Field pending=MainActivity.class.getDeclaredField("sharedVideoMetadata");pending.setAccessible(true);
+                ready.set(!copying.getBoolean(a)&&!"[]".equals(pending.get(a)));
+            } catch(Exception e){throw new AssertionError(e);}});
+            if(!ready.get())SystemClock.sleep(100);
+        }
+        assertTrue("Native share copy completed",ready.get());
         String html="<html lang='en'><body><div id='workspace'></div><script>window.selected=[];window.VideoVariatorUI={toast(){},showView(){},setFiles(files){window.selected=files;}};"+read(context,"share-import.js")+"</script></body></html>";
         scenario.onActivity(a->web(a.getWindow().getDecorView()).loadDataWithBaseURL("https://video-variator-android.onrender.com/",html,"text/html","UTF-8",null));
         long until=SystemClock.elapsedRealtime()+15000;
