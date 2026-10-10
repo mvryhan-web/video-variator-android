@@ -240,3 +240,96 @@ async function exportRedaction(){
  await result(new File([blob],base(f)+'-redacted.png',{type:'image/png'}));
  full.width=full.height=1;
 }
+
+async function processPDF(){
+ const lib=await pdf(),{PDFDocument,StandardFonts,rgb}=lib,fs=files();
+ if(tool==='scan-pdf'){
+  const doc=await PDFDocument.create();
+  for(const f of fs){if(abort)throw Error('Canceled');const canvas=await openImage(f);
+   const max=2400,scale=Math.min(1,max/Math.max(canvas.width,canvas.height));
+   const imgCanvas=document.createElement('canvas');imgCanvas.width=Math.max(1,Math.floor(canvas.width*scale));imgCanvas.height=Math.max(1,Math.floor(canvas.height*scale));
+   const cx=imgCanvas.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,imgCanvas.width,imgCanvas.height);cx.drawImage(canvas,0,0,imgCanvas.width,imgCanvas.height);
+   const blob=await blobFrom(imgCanvas,'image/jpeg',.84),img=await doc.embedJpg(await blob.arrayBuffer());
+   const width=595,height=Math.max(120,Math.min(842,width*img.height/img.width));const page=doc.addPage([width,height]);
+   const ratio=Math.min(width/img.width,height/img.height);page.drawImage(img,{x:(width-img.width*ratio)/2,y:(height-img.height*ratio)/2,width:img.width*ratio,height:img.height*ratio});
+   canvas.width=canvas.height=imgCanvas.width=imgCanvas.height=1;
+  }
+  return result(new File([await doc.save({useObjectStreams:true})],'scanned-documents.pdf',{type:'application/pdf'}));
+ }
+ if(tool==='pdf-merge'){
+  const doc=await PDFDocument.create();
+  for(const f of fs){if(abort)throw Error('Canceled');const from=await PDFDocument.load(await f.arrayBuffer());const pages=await doc.copyPages(from,from.getPageIndices());pages.forEach(p=>doc.addPage(p));}
+  return result(new File([await doc.save({useObjectStreams:true})],'merged.pdf',{type:'application/pdf'}));
+ }
+ const src=await PDFDocument.load(await fs[0].arrayBuffer());
+ if(tool==='pdf-compress'){
+  const bytes=await src.save({useObjectStreams:true,objectsPerTick:40});
+  // Structural optimization may not shrink embedded scanned photos.
+  const out=new File([bytes],base(fs[0])+'-optimized.pdf',{type:'application/pdf'});
+  return result(out.size<=fs[0].size?out:fs[0]);
+ }
+ function indices(spec,n){
+  const nums=new Set();
+  for(const bit of String(spec).split(',')){
+   const str=bit.trim(),m=str.match(/^(\d+)\s*(?:-\s*(\d+))?$/);
+   if(!m)throw Error(label('Use pages like 1-3,5.','Укажите страницы как 1-3,5.'));
+   const lo=Number(m[1]),hi=m[2]?Number(m[2]):lo;
+   if(lo<1||hi>n||hi<lo)throw Error(label('Page is outside the document.','Номер страницы вне документа.'));
+   for(let i=lo;i<=hi;i++)nums.add(i-1);
+  }return [...nums].sort((a,b)=>a-b);
+ }
+ const selected=indices($('utilityPages').value,src.getPageCount());
+ if(tool==='pdf-split'){
+  const doc=await PDFDocument.create();(await doc.copyPages(src,selected)).forEach(p=>doc.addPage(p));
+  return result(new File([await doc.save()],'selected-pages.pdf',{type:'application/pdf'}));
+ }
+ if(tool==='pdf-sign'){
+  const font=await src.embedFont(StandardFonts.Helvetica);
+  const line=$('utilityText').value.trim();const signature=$('utilitySignature');const sigBlob=await blobFrom(signature,'image/png');
+  const bitmap=new Uint8Array(await sigBlob.arrayBuffer());
+  for(const ix of selected){
+   const p=src.getPage(ix);
+   if(line){
+    // Built-in Helvetica only supports Latin characters. Reject unsupported glyphs safely.
+    try{font.encodeText(line);}catch(e){throw Error(label('PDF text supports Latin letters here; draw a signature for other scripts.','Для текста в PDF здесь поддерживается латиница. Для других языков нарисуйте подпись.'));}
+    p.drawText(line,{x:35,y:110,size:13,font,color:rgb(.12,.14,.2),maxWidth:p.getWidth()-70});
+   }
+   const img=await src.embedPng(bitmap);p.drawImage(img,{x:35,y:22,width:Math.min(235,p.getWidth()-70),height:71});
+  }
+  return result(new File([await src.save()],base(fs[0])+'-signed.pdf',{type:'application/pdf'}));
+ }
+}
+async function processMedia(){
+ const f=files()[0],video=tool!=='audio-trim';
+ let start=0,end=0;
+ if(tool!=='video-mute'){start=settingsNum('utilityStart');end=settingsNum('utilityEnd');if(end<=start||end-start>3600)throw Error(label('End must be after start; maximum 60 minutes.','Конец должен быть позже начала. Максимум 60 минут.'));}
+ engine=await createEngine();if(abort)return;
+ await engine.writeFile('input',new Uint8Array(await f.arrayBuffer()));
+ if(abort)return;
+ let out,args;
+ if(tool==='video-mute'){
+  out='silent.mp4';args=['-i','input','-map','0:v:0','-an','-c:v','libx264','-preset','ultrafast','-crf','25','-pix_fmt','yuv420p','-movflags','+faststart',out];
+ }else if(tool==='video-trim'){
+  out='trimmed.mp4';args=['-ss',String(start),'-i','input','-t',String(end-start),'-map','0:v:0','-map','0:a:0?','-c:v','libx264','-preset','ultrafast','-crf','25','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-movflags','+faststart',out];
+ }else{
+  out='trimmed.m4a';args=['-ss',String(start),'-i','input','-t',String(end-start),'-vn','-map','0:a:0','-c:a','aac','-b:a','128k',out];
+ }
+ const code=await engine.exec(args);if(abort)return;if(code!==0)throw Error(label('The file codec is not supported.','Кодек файла не поддерживается.'));
+ const bytes=await engine.readFile(out),mime=video?'video/mp4':'audio/mp4';
+ return result(new File([bytes],base(f)+'-'+out,{type:mime}));
+}
+async function runOCR(){
+ const f=files()[0];
+ const T=await loadScript('/vendor/ocr/tesseract.min.js','Tesseract');
+ const lang=$('utilityLang').value;
+ const worker=await T.createWorker(lang,1,{
+  workerPath:'/vendor/ocr/worker.min.js',corePath:'/vendor/ocr-core/tesseract-core-simd.wasm.js',
+  langPath:'https://tessdata.projectnaptha.com/4.0.0',workerBlobURL:false,
+  logger:info=>{if(info.status)status(String(info.status)+' '+Math.round((info.progress||0)*100)+'%');}
+ });
+ try{
+  const resultData=await worker.recognize(f);
+  if(abort)return;
+  await textResult(resultData.data.text||'',base(f)+'-text.txt');
+ }finally{await worker.terminate();}
+}
