@@ -81,7 +81,12 @@ public class ShareImportTest {
             ArrayList<Uri> list=new ArrayList<>();list.add(first);list.add(second);
             Intent multiple=new Intent(Intent.ACTION_SEND_MULTIPLE).setType("video/mp4").putParcelableArrayListExtra(Intent.EXTRA_STREAM,list).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             assertTrue(context.getPackageManager().queryIntentActivities(multiple,0).stream().anyMatch(info->info.activityInfo.packageName.equals(context.getPackageName())));
-            scenario.onActivity(a->a.onNewIntent(multiple));
+            scenario.onActivity(a->{
+                a.onNewIntent(multiple);
+                // ActivityScenario matches lifecycle events against its launch
+                // Intent. Restore that identity after delivering the warm share.
+                a.setIntent(single);
+            });
             long until=SystemClock.elapsedRealtime()+15000;
             while(!"2".equals(js(scenario,"selected.length"))&&SystemClock.elapsedRealtime()<until)SystemClock.sleep(100);
             assertEquals("2",js(scenario,"selected.length"));
