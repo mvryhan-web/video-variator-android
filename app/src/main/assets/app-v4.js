@@ -14,6 +14,7 @@
   };
 
   const en={
+    wowMontageStatus:'In development',wowMontageHelp:'Optional automatic editing. Not available yet; your selected mode works as usual.',
     brandTag:'One video. Many versions.',navDashboard:'Dashboard',navHistory:'History',navAnalytics:'Analytics',navPlans:'Plans',navFaq:'FAQ',navProfile:'Profile & Settings',
     languageAuto:'Language: Auto',localProcessing:'Video processing runs locally on your device.',secureHttps:'HTTPS required for online services',signIn:'Sign in',signOut:'Sign out',
     trialPill:'100 free videos included',heroText:'Upload once, choose your variations, and create privacy-first results locally on your device.',statProcessed:'Processed',statProcessedSub:'outputs created',statRemaining:'Remaining',statPlan:'Current plan',trialStatus:'No card required',
@@ -30,9 +31,10 @@
   };
   const translations={
     en,
-    fr:{navDashboard:'Tableau de bord',navHistory:'Historique',navAnalytics:'Analytique',navPlans:'Offres',navFaq:'FAQ',navProfile:'Profil et réglages',signIn:'Se connecter',signOut:'Se déconnecter',startProcessing:'Créer les variations',cancel:'Annuler',analyticsTitle:'Analytique',profileTitle:'Profil et réglages'},
-    ru:{navDashboard:'Главная',navHistory:'История',navAnalytics:'Аналитика',navPlans:'Тарифы',navFaq:'FAQ',navProfile:'Профиль и настройки',signIn:'Войти',signOut:'Выйти',startProcessing:'Создать вариации',cancel:'Отменить',analyticsTitle:'Аналитика',profileTitle:'Профиль и настройки'},
-    uk:{navDashboard:'Головна',navHistory:'Історія',navAnalytics:'Аналітика',navPlans:'Тарифи',navFaq:'FAQ',navProfile:'Профіль і налаштування',signIn:'Увійти',signOut:'Вийти',startProcessing:'Створити варіації',cancel:'Скасувати',analyticsTitle:'Аналітика',profileTitle:'Профіль і налаштування'}
+    // WOW is a disabled preparation control; no processing option is passed yet.
+    fr:{wowMontageStatus:'En développement',wowMontageHelp:'Montage automatique en option. Pas encore disponible ; le mode choisi fonctionne comme avant.',navDashboard:'Tableau de bord',navHistory:'Historique',navAnalytics:'Analytique',navPlans:'Offres',navFaq:'FAQ',navProfile:'Profil et réglages',signIn:'Se connecter',signOut:'Se déconnecter',startProcessing:'Créer les variations',cancel:'Annuler',analyticsTitle:'Analytique',profileTitle:'Profil et réglages'},
+    ru:{wowMontageStatus:'В разработке',wowMontageHelp:'Дополнительный автоматический монтаж. Пока недоступен; выбранный режим работает как раньше.',navDashboard:'Главная',navHistory:'История',navAnalytics:'Аналитика',navPlans:'Тарифы',navFaq:'FAQ',navProfile:'Профиль и настройки',signIn:'Войти',signOut:'Выйти',startProcessing:'Создать вариации',cancel:'Отменить',analyticsTitle:'Аналитика',profileTitle:'Профиль и настройки'},
+    uk:{wowMontageStatus:'У розробці',wowMontageHelp:'Додатковий автоматичний монтаж. Поки недоступний; обраний режим працює як раніше.',navDashboard:'Головна',navHistory:'Історія',navAnalytics:'Аналітика',navPlans:'Тарифи',navFaq:'FAQ',navProfile:'Профіль і налаштування',signIn:'Увійти',signOut:'Вийти',startProcessing:'Створити варіації',cancel:'Скасувати',analyticsTitle:'Аналітика',profileTitle:'Профіль і налаштування'}
   };
 
   function readJson(key,fallback){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback));}catch(_){return fallback;}}
@@ -81,7 +83,7 @@
   function renderProfile(){const u=usage(),lifetime=u.active&&(u.plan==='lifetime'||u.allFeatures);$('profileEmail').textContent=state.user?.email||'Not signed in';$('profilePlan').textContent=planName(u.plan);$('profileStatus').textContent=lifetime?'Lifetime · permanent':(u.active?(u.status||'Active'):'Trial / inactive');$('manageBillingBtn').disabled=!state.user||!u.active;$('cancelSubscriptionBtn').disabled=!state.user||!u.active||lifetime;}
   function renderAnalytics(){const m=state.metrics,rate=m.attempts?Math.round(m.successes/m.attempts*100):100;$('analyticsCredits').textContent=m.credits||0;$('analyticsOutputs').textContent=m.outputs||0;$('analyticsDuration').textContent=`${Math.round(m.seconds||0)} sec processed`;$('analyticsSuccess').textContent=`${rate}%`;$('analyticsErrors').textContent=`${m.errors||0} errors`;}
   function historyActionButtons(item,blob,right){
-    right.replaceChildren();const d=document.createElement('button');d.className='ghostBtn';d.textContent=t('download');d.onclick=()=>saveResult(item.name,blob);const s=document.createElement('button');s.className='ghostBtn';s.textContent=t('share');s.onclick=()=>shareResult(item.name,blob);right.append(d,s);if(window.VUResultDelete)right.append(window.VUResultDelete.button(item));
+    right.replaceChildren();if(item.wowMontage&&window.VUWowMontagePreview){const preview=document.createElement('button');preview.className='ghostBtn';preview.textContent=window.VUWowMontagePreview.label;preview.onclick=()=>window.VUWowMontagePreview.open({name:item.name,blob,save:saveResult,share:shareResult});right.append(preview);}const d=document.createElement('button');d.className='ghostBtn';d.textContent=t('download');d.onclick=()=>saveResult(item.name,blob);const s=document.createElement('button');s.className='ghostBtn';s.textContent=t('share');s.onclick=()=>shareResult(item.name,blob);right.append(d,s);if(window.VUResultDelete)right.append(window.VUResultDelete.button(item));
   }
   function renderHistory(){
     const list=$('historyList'),empty=$('historyEmpty');list.innerHTML='';empty.hidden=state.history.length>0;
@@ -112,7 +114,7 @@
   core.configure({
     onEngine(status){const el=$('engineBadge');el.classList.toggle('ready',status==='ready');el.textContent=status==='ready'?t('engineReady'):status==='loading'?t('engineLoading'):t('engineStandby');},
     onProgress(p){const n=Math.round(p*100);$('progressPercent').textContent=n+'%';$('progressBar').style.width=n+'%';},
-    onStage(stage,info={}){setStage(stage);if(stage==='process'){$('progressTitle').textContent=info.file||t('processing');$('progressText').textContent=`${t('processing')} ${info.job||''}${info.total?` / ${info.total}`:''}`;}else if(stage==='save')$('progressText').textContent=t('saving');else if(stage==='done'){$('progressTitle').textContent=t('done');$('progressText').textContent=t('jobComplete');}},
+    onStage(stage,info={}){setStage(stage==='analyze'?'upload':stage);if(stage==='analyze'){$('progressTitle').textContent=info.file||t('preparing');$('progressText').textContent=window.VUWowMontageUI?.analyzeText||'Analyzing the first 12 seconds…';}else if(stage==='process'){$('progressTitle').textContent=info.file||t('processing');$('progressText').textContent=`${t('processing')} ${info.job||''}${info.total?` / ${info.total}`:''}`;}else if(stage==='save')$('progressText').textContent=t('saving');else if(stage==='done'){$('progressTitle').textContent=t('done');$('progressText').textContent=t('jobComplete');}},
     onLog(line){console.debug('[VideoVariator]',line);}
   });
 
@@ -121,7 +123,7 @@
   async function saveResult(name,blob){const bridge=window.AndroidBridge;if(bridge?.startFile){if(!bridge.startFile(name))throw new Error('Android could not create the output file.');for(let i=0;i<blob.size;i+=512*1024){const b64=await blobChunkBase64(blob.slice(i,Math.min(i+512*1024,blob.size)));if(!bridge.appendChunk(b64))throw new Error('Could not save the output file.');}const path=bridge.finishFile();if(!path||path==='error')throw new Error('Could not finish saving the output file.');return path;}downloadBlob(name,blob);return'Downloads';}
   async function shareResult(name,blob){if(window.VUShareFile){await window.VUShareFile({name,blob});return;}const file=new File([blob],name,{type:blob.type||'video/mp4'});if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'Video Uniquifier'});return;}downloadBlob(name,blob);}
   function autoSaveBrowserResults(results){if(window.AndroidBridge)return;results.forEach((r,i)=>setTimeout(()=>downloadBlob(r.name,r.blob),i*250));}
-  async function addHistory(results){const items=[];for(const r of results){sessionDownloads.set(r.id,r.blob);const item={id:r.id,name:r.name,sourceName:r.sourceName,createdAt:r.createdAt,resolution:r.resolution,aspectRatio:r.aspectRatio,durationSeconds:r.durationSeconds,credits:r.credits,saved:r.saved||!window.AndroidBridge,path:r.path||null};if(persistentMedia){try{item.mediaCacheKey='result:'+r.id;await persistentMedia.put(item.mediaCacheKey,r.blob);}catch(_){delete item.mediaCacheKey;}}
+  async function addHistory(results){const items=[];for(const r of results){sessionDownloads.set(r.id,r.blob);const item={id:r.id,name:r.name,sourceName:r.sourceName,createdAt:r.createdAt,resolution:r.resolution,aspectRatio:r.aspectRatio,durationSeconds:r.durationSeconds,credits:r.credits,saved:r.saved||!window.AndroidBridge,path:r.path||null,...(r.wowMontage?{wowMontage:r.wowMontage}:{})};if(persistentMedia){try{item.mediaCacheKey='result:'+r.id;await persistentMedia.put(item.mediaCacheKey,r.blob);}catch(_){delete item.mediaCacheKey;}}
       state.history.unshift(item);items.push(item);}
     const evicted=state.history.splice(100);saveHistory();renderHistory();
     for(const item of evicted){sessionDownloads.delete(item.id);if(item.mediaCacheKey?.startsWith('result:'))persistentMedia?.remove(item.mediaCacheKey);}
@@ -129,14 +131,15 @@
 
   async function startProcessing(){
     const files=core.getFiles();if(!files.length)return;enforcePlanControls();let estimate=state.estimate;try{if(!estimate)estimate=await core.estimateCredits(Number($('variantCount').value));}catch(e){reportError(e,'duration');return;}
+    window.VUWowMontageUI?.reset();
     const u=usage(),needed=u.unit==='credits'?estimate.creditSeconds:estimate.sourceCount;if(!u.unlimited&&needed>u.remaining){showView('plans');toast(u.unit==='credits'?t('creditsNeeded'):t('freeVideosNeeded'));return;}
-    state.metrics.attempts++;saveMetrics();$('progressCard').hidden=false;$('resultsCard').hidden=true;$('errorCard').hidden=true;$('cancelBtn').hidden=false;$('startBtn').disabled=true;$('progressBar').style.width='0%';$('progressPercent').textContent='0%';setStage('upload');
+    state.metrics.attempts++;saveMetrics();$('progressCard').hidden=false;$('resultsCard').hidden=true;$('errorCard').hidden=true;$('cancelBtn').hidden=false;$('startBtn').disabled=true;$('progressBar').style.width='0%';$('progressPercent').textContent='0%';setStage('upload');window.VUWowMontageUI?.setBusy(true);
     try{
-      const result=await core.process({variants:Number($('variantCount').value),mode:$('mode').value,resolution:getResolution(),fastExport:$('fastExport')?.checked!==false,onResult:async r=>{await addHistory([r]);autoSaveBrowserResults([r]);}});
+      const result=await core.process({variants:Number($('variantCount').value),mode:$('mode').value,resolution:getResolution(),fastExport:$('fastExport')?.checked!==false,...($('wowMontage')?.checked?{wowMontage:true}:{}),onResult:async r=>{await addHistory([r]);autoSaveBrowserResults([r]);if(r.wowMontage)window.VUWowMontageUI?.record(r.wowMontage);}});
       if(state.user){const d=await api('/api/usage/consume',{method:'POST',body:JSON.stringify({seconds:result.creditSeconds,sourceCount:result.sourceCount})});state.user=d.user||state.user;}else{state.trialUsed=Math.min(100,state.trialUsed+result.sourceCount);localStorage.setItem('vv_trial_used',String(state.trialUsed));}
       state.metrics.successes++;state.metrics.outputs+=result.outputCount;state.metrics.seconds+=result.creditSeconds;if(u.unit==='credits')state.metrics.credits+=result.creditSeconds;saveMetrics();renderAll();$('readyText').textContent=window.AndroidBridge?'Completed files were saved automatically to Gallery / Movies / VideoUniquifier.':`${result.outputCount} output${result.outputCount===1?'':'s'} sent to your browser downloads automatically.`;$('resultsCard').hidden=false;toast(t('jobComplete'));await refreshAccount();
     }catch(e){if(String(e.message).toLowerCase().includes('cancel'))toast(t('canceled'));else{reportError(e,'processing');toast(t('processingError'));}}
-    finally{$('cancelBtn').hidden=true;$('startBtn').disabled=!core.getFiles().length;scheduleEstimate();}
+    finally{window.VUWowMontageUI?.setBusy(false);$('cancelBtn').hidden=true;$('startBtn').disabled=!core.getFiles().length;scheduleEstimate();}
   }
 
   function safeErrorMessage(error){return String(error?.message||error||'Unknown error').replace(/[\r\n]+/g,' ').slice(0,240);}
