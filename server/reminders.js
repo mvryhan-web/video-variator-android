@@ -33,7 +33,7 @@ function cleanSpec(src){
  if(start.diffNow('years').years>8)throw bad('REMINDER_TOO_FAR_AHEAD');
  return {title,date,time,timezone,recurrence,channel,advanceMinutes,weekdays};
 }
-function nextOccurrence(spec,after=DateTime.utc()){
+export function nextOccurrence(spec,after=DateTime.utc()){
  const {date,time,timezone,recurrence,weekdays,advanceMinutes}=spec;
  const start=DateTime.fromISO(date+'T'+time,{zone:timezone});
  const now=after.setZone(timezone);
@@ -64,6 +64,21 @@ const own=(req)=>req.user.id;
 const fields='id,title,event_at,timezone,date_local,time_local,recurrence,weekdays,advance_minutes,channel,enabled,created_at';
 const insertColumns='user_id,title,date_local,time_local,timezone,recurrence,weekdays,advance_minutes,channel,event_at,trigger_at';
 function queryArgs(spec,next,userId){return [userId,spec.title,spec.date,spec.time,spec.timezone,spec.recurrence,spec.weekdays,spec.advanceMinutes,spec.channel,next.eventAt,next.triggerAt];}
+async function ensureNotificationChannel(userId,channel){
+ const wantsPush=channel==='push'||channel==='both';
+ const wantsTelegram=channel==='telegram'||channel==='both';
+ if(wantsPush){
+  if(!pushEnabled)throw bad('PUSH_NOT_CONFIGURED',503);
+  const r=await pool.query('SELECT 1 FROM vv_push_subscriptions WHERE user_id=$1 LIMIT 1',[userId]);
+  if(!r.rowCount)throw bad('ENABLE_APP_NOTIFICATIONS_FIRST',409);
+ }
+ if(wantsTelegram){
+  if(!process.env.TELEGRAM_BOT_TOKEN)throw bad('TELEGRAM_UNAVAILABLE',503);
+  const r=await pool.query('SELECT 1 FROM vv_telegram_links WHERE user_id=$1 LIMIT 1',[userId]);
+  if(!r.rowCount)throw bad('CONNECT_TELEGRAM_FIRST',409);
+ }
+}
+
 export async function initRemindersDb(){
  requireDb();
  await pool.query(`
@@ -142,6 +157,7 @@ export function installReminders(app,{auth}){
  app.post('/api/reminders',auth,safeJson(async(req,res)=>{
   const spec=cleanSpec(req.body),next=nextOccurrence(spec);
   if(!next)throw bad('NO_NEXT_REMINDER');
+  await ensureNotificationChannel(own(req),spec.channel);
   const id=randomUUID();
   const args=[id,...queryArgs(spec,next,own(req))];
   const q=await pool.query(`INSERT INTO vv_reminders(id,${insertColumns}) VALUES (${args.map((_,i)=>'$'+(i+1)).join(',')}) RETURNING ${fields}`,args);
@@ -150,6 +166,7 @@ export function installReminders(app,{auth}){
  app.put('/api/reminders/:id',auth,safeJson(async(req,res)=>{
   const spec=cleanSpec(req.body),next=nextOccurrence(spec);
   if(!next)throw bad('NO_NEXT_REMINDER');
+  await ensureNotificationChannel(own(req),spec.channel);
   const args=[...queryArgs(spec,next,own(req)),req.params.id];
   const q=await pool.query(`UPDATE vv_reminders SET title=$2,date_local=$3,time_local=$4,timezone=$5,recurrence=$6,weekdays=$7,advance_minutes=$8,channel=$9,event_at=$10,trigger_at=$11,enabled=true WHERE user_id=$1 AND id=$12 RETURNING ${fields}`,args);
   if(!q.rows.length)throw bad('NOT_FOUND',404);
