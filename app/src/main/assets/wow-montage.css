@@ -1,5 +1,6 @@
 /* Scoped to the optional mode control; no styling for other pages or tools. */
 .modeSettings {min-width:0;}
+#dashboardView .settingsGrid {align-items:start;}
 #wowMontageOption {margin-top:10px;padding:12px;border:1px solid var(--cp-line,var(--line,#344057));border-radius:12px;background:var(--cp-bg,var(--bg,#0a101c));color:var(--cp-text,var(--text,#e8ecf4));}
 #wowMontageOption .wowMontageHeading {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 #wowMontageOption .wowMontageControl {position:relative;display:flex;align-items:center;gap:8px;min-height:44px;margin:0;color:inherit;font-size:13px;font-weight:600;cursor:pointer;}

@@ -46,6 +46,7 @@ test('optional control fits narrow screens in both themes and supported locales'
       expect(box.x).toBeGreaterThanOrEqual(0);
       expect(box.x + box.width).toBeLessThanOrEqual(width + 1);
       expect(await page.locator('#wowMontageOption').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+      expect((await page.locator('#variantCount').boundingBox()).height).toBeLessThanOrEqual(60);
       await expect(page.getByRole('switch',{name:'WOW Montage'})).not.toBeChecked();
     }
   }
