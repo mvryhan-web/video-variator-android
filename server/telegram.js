@@ -1,5 +1,6 @@
 // Telegram webhook foundation. No video files or payments are processed here.
 import {createHash} from 'node:crypto';
+import {linkTelegramChat} from './reminders.js';
 const commands = {
   start: 'Welcome to Video Uniquifier! Open the app using the Menu button or the link below.',
   create: 'To process a video, open the app. Telegram file processing is not available yet.',
@@ -27,6 +28,20 @@ export function installTelegramBot(app, {appUrl}) {
     const text = String(message?.text || '');
     if (!chatId) return res.json({ok:true});
     const command = text.match(/^\/([a-z]+)(?:@[A-Za-z0-9_]+)?(?:\s|$)/i)?.[1]?.toLowerCase();
+    // A one-time deep-link connects only the chat that explicitly pressed Start.
+    if (command==='start' && /^\/start(?:@[A-Za-z0-9_]+)?\s+r_[0-9a-f]{40}$/i.test(text.trim())) {
+      const code=text.trim().split(/\s+/).pop();
+      try {
+        const ok=await linkTelegramChat(code,chatId);
+        const response=await fetch('https://api.telegram.org/bot'+token+'/sendMessage',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({chat_id:chatId,text:ok?'✅ Reminders connected / Напоминания подключены':'Link expired or invalid / Ссылка устарела. Откройте подключение в Video Uniquifier заново.'}),
+          signal:AbortSignal.timeout(10000)
+        });
+        if(!response.ok)throw Error('Telegram link response failed');
+        return res.json({ok:true});
+      }catch(e){console.error('[telegram] reminder link:',e.message);return res.status(502).json({ok:false});}
+    }
     const reply = commands[command] ||
       (message.video || message.document
         ? 'Thanks! Direct video upload and processing in Telegram are not enabled yet. Please use the app.'

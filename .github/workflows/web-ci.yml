@@ -19,6 +19,8 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Test voice reminders and ticket recognition
+        run: node --test tests/reminder-input.test.mjs tests/reminders.test.mjs
       - name: Check server syntax
         run: |
           node --check server/server.js
