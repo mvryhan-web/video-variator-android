@@ -69,6 +69,9 @@ app.use((req,res,next)=>{
 
 app.use('/vendor/ai',express.static(path.join(rootDir,'node_modules','@huggingface','transformers','dist'),{maxAge:'1d'}));
 /* Browser OCR reads images locally; only language data is downloaded. */
+app.use('/vendor/pdf-lib',express.static(path.join(rootDir,'node_modules','pdf-lib','dist'),{maxAge:'1d'}));
+app.use('/vendor/jszip',express.static(path.join(rootDir,'node_modules','jszip','dist'),{maxAge:'1d'}));
+app.get('/vendor/qr/qrcode.js',(req,res)=>res.type('application/javascript').sendFile(path.join(rootDir,'node_modules','qrcode-generator','qrcode.js')));
 app.use('/vendor/ocr',express.static(path.join(rootDir,'node_modules','tesseract.js','dist'),{maxAge:'1d'}));
 app.use('/vendor/ocr-core',express.static(path.join(rootDir,'node_modules','tesseract.js-core'),{maxAge:'1d'}));
 
