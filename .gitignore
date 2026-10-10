@@ -1,3 +1,6 @@
 node_modules/
 test-results/
 playwright-report/
+
+# Private Windows Telegram bot token; do not commit.
+scripts/telegram-video-worker.env

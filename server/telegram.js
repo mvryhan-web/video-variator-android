@@ -1,6 +1,7 @@
 // Telegram webhook foundation. No video files or payments are processed here.
 import {createHash} from 'node:crypto';
 import {linkTelegramChat} from './reminders.js';
+import {installTelegramVideo} from './telegram-video.js';
 const commands = {
   start: 'Welcome to Video Uniquifier! Open the app using the Menu button or the link below.',
   create: 'To process a video, open the app. Telegram file processing is not available yet.',
@@ -15,6 +16,7 @@ const commands = {
 export function installTelegramBot(app, {appUrl}) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const secret = process.env.TELEGRAM_WEBHOOK_SECRET || (token ? createHash('sha256').update(token).digest('hex') : '');
+  const videoAddon = installTelegramVideo(app, {appUrl,token});
   if (!token) {
     console.info('[telegram] Webhook disabled until TELEGRAM_BOT_TOKEN is set.');
     return;
@@ -22,6 +24,10 @@ export function installTelegramBot(app, {appUrl}) {
   app.post('/api/telegram/webhook', async (req, res) => {
     if (req.get('X-Telegram-Bot-Api-Secret-Token') !== secret) {
       return res.sendStatus(403);
+    }
+    if (videoAddon) {
+      try { if (await videoAddon.handle(req.body)) return res.json({ok:true}); }
+      catch(error){console.error('[telegram-video] Update handling failed:',error.message);return res.status(502).json({ok:false});}
     }
     const message = req.body?.message;
     const chatId = message?.chat?.id;
@@ -66,6 +72,10 @@ export function installTelegramBot(app, {appUrl}) {
   });
   // Register only after the HTTP server is listening, so Telegram can deliver updates.
   return async () => {
+    if (videoAddon) {
+      try { await videoAddon.init(); }
+      catch(error){console.error('[telegram-video] Storage initialization failed:',error.message);}
+    }
     const webhookUrl = new URL('/api/telegram/webhook', appUrl).toString();
     if (!webhookUrl.startsWith('https://')) {
       console.warn('[telegram] Webhook registration requires an HTTPS APP_URL.');
@@ -78,7 +88,7 @@ export function installTelegramBot(app, {appUrl}) {
         body:JSON.stringify({
           url:webhookUrl,
           secret_token:secret,
-          allowed_updates:['message']
+          allowed_updates:videoAddon?['message','callback_query']:['message']
         }),
         signal:AbortSignal.timeout(10000)
       });
