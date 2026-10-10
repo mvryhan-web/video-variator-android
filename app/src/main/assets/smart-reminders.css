@@ -28,3 +28,8 @@
 #photoRecognized{max-width:100%;width:100%;box-sizing:border-box}
 #photoCandidates{display:grid;gap:8px;margin-top:8px}
 #photoCandidates button{justify-self:start}
+
+/* Notes dictation uses the same control styling as other free tools. */
+#notesMic[aria-pressed="true"]{outline:2px solid currentColor;outline-offset:2px}
+#notesVoiceStatus:empty{display:none}
+#notesVoiceStatus{margin:0;font-size:13px;line-height:1.4}
