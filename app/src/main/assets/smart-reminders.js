@@ -62,11 +62,12 @@ function fillText(){
  if(!raw)return status(t('Describe the reminder first.','Сначала продиктуйте или напишите напоминание.'));
  const p=parseReminderText(raw,new Date());
  if(p.title)$('reminderWhat').value=p.title;
- if(p.date)$('reminderDate').value=p.date;
- if(p.time)$('reminderTime').value=p.time;
- if(p.recurrence)$('repeatRule').value=p.recurrence;
- if(p.weekdays?.length)setDays(p.weekdays);
- if(p.advanceMinutes!==null)$('advanceMinutes').value=String(p.advanceMinutes);
+ // Never leave a previous/default date or time after an unclear dictation.
+ $('reminderDate').value=p.date||'';
+ $('reminderTime').value=p.time||'';
+ $('repeatRule').value=p.recurrence||'none';
+ setDays(p.weekdays||[]);
+ $('advanceMinutes').value=String(p.advanceMinutes??60);
  $('repeatDays').hidden=$('repeatRule').value!=='weekly';
  $('reminderConfirmation').hidden=true;
  draft=null;
