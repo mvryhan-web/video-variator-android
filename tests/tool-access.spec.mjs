@@ -10,7 +10,7 @@ test('single photo works signed out without quota calls; subscribed tools are la
 });
 test('five successful batches share one trial; sixth is blocked before image encoding',async({page})=>{
  const fixture=await mockToolAccess(page,{plan:'trial'});await page.goto('/free-tools.html?tool=photo');const bytes=await image(page);await page.locator('#files').setInputFiles(photos(bytes));
- for(let i=0;i<5;i++){await page.locator('#run').click();await expect(page.locator('#status')).toHaveText('Done');await expect(page.locator('[data-access-summary]')).toContainText(`${4-i} of 5`);}
+ for(let i=0;i<5;i++){await page.locator('#run').click();await expect(page.locator('#status')).toHaveText('Done');await expect(page.locator('[data-access-summary]')).toContainText(`${4-i} of 5`);await expect(page.locator('#run')).toBeEnabled();await expect.poll(()=>fixture.snapshot().trial.used).toBe(i+1);}
  expect(fixture.snapshot().trial.used).toBe(5);
  await page.evaluate(()=>{window.photoEncodes=0;const original=HTMLCanvasElement.prototype.toBlob;HTMLCanvasElement.prototype.toBlob=function(...args){photoEncodes++;return original.apply(this,args);};});
  await page.locator('#run').click();await expect(page.locator('#status')).toContainText('five trial tasks are used');expect(await page.evaluate(()=>photoEncodes)).toBe(0);await expect(page.locator('#outputs article')).toHaveCount(2);

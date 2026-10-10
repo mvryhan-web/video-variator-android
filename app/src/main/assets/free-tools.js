@@ -45,7 +45,7 @@ $('run').onclick=async()=>{
  if(!files.length)return status(t('select'));
  if(files.length>(mode==='photo'?50:1)||files.some(f=>f.size>(['photo','motion'].includes(mode)?25:150)*1048576))return status(t('limit'));
  const feature=mode==='photo'&&files.length>1?'photo_batch':mode;
- busy=true;canceled=false;$('run').disabled=true;$('cancel').disabled=false;$('operation').disabled=true;$('files').disabled=true;
+ busy=true;canceled=false;status(t('processing'));$('run').disabled=true;$('cancel').disabled=false;$('operation').disabled=true;$('files').disabled=true;
  document.querySelectorAll('.tool-choice,#creatorToolSettings select').forEach(e=>e.disabled=true);
  let failures=0,successes=0,permit=null,settled=false;
  try{
