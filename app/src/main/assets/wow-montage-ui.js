@@ -17,7 +17,7 @@
   let applied=0,skipped=0,fallback=0;
   const reset=()=>{applied=skipped=fallback=0;note.hidden=true;note.textContent='';};
   window.VUWowMontageUI=Object.freeze({
-    analyzeText:copy.analyze,reset,
+    analyzeText:copy.analyze,reset,setBusy(value){toggle.disabled=!!value;},
     record(result){if(result.status==='applied')applied++;else if(result.status==='fallback')fallback++;else skipped++;note.textContent=copy.summary(applied,skipped,fallback);note.hidden=false;},
   });
   toggle.checked=false;toggle.disabled=false;toggle.addEventListener('change',reset);

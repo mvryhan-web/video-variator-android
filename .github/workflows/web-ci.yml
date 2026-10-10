@@ -26,6 +26,7 @@ jobs:
           node --check server/email-auth.js
       - name: Check PWA syntax
         run: |
+          node --check app/src/main/assets/wow-montage-preview.js
           node --check app/src/main/assets/app-v4.js
           node --check app/src/main/assets/video-core.js
           node --check app/src/main/assets/bootstrap.js

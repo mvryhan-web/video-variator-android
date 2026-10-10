@@ -14,3 +14,11 @@
 #wowMontageOption .wowMontageControl:has(input:disabled) {cursor:not-allowed;}
 #wowMontageOption .wowMontageStatus {font-size:11px;line-height:1.4;color:var(--cp-muted,var(--muted,#aab5c8));}
 #wowMontageOption p {margin:7px 0 0;font-size:12px;line-height:1.5;color:var(--cp-muted,var(--muted,#aab5c8));overflow-wrap:break-word;}
+
+#wowMontagePreview {box-sizing:border-box;width:min(640px,calc(100vw - 24px));max-height:calc(100dvh - 32px);overflow:auto;padding:20px;border:1px solid var(--cp-line,#344057);border-radius:16px;background:var(--cp-bg,var(--bg,#0a101c));color:var(--cp-text,var(--text,#e8ecf4));}
+#wowMontagePreview::backdrop {background:rgb(0 0 0 / .72);}
+#wowMontagePreview h2 {font-size:20px;margin:0 0 8px;}
+#wowMontagePreview p {overflow-wrap:anywhere;font-size:13px;}
+#wowMontagePreview video {display:block;width:100%;max-height:55dvh;background:#000;object-fit:contain;}
+#wowMontagePreview .wowPreviewActions {display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+#wowMontagePreview button {min-height:44px;}
