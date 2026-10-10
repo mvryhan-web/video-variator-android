@@ -18,7 +18,7 @@ const dayPatterns=[
 function localDate(d){const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());}
 function validDate(d,y,m,day){return d.getFullYear()===y&&d.getMonth()===m-1&&d.getDate()===day;}
 function timeValue(h,m,ampm=''){h=Number(h);m=Number(m);if(ampm.toLowerCase()==='pm'&&h<12)h+=12;if(ampm.toLowerCase()==='am'&&h===12)h=0;return h>=0&&h<=23&&m>=0&&m<=59?String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'):null;}
-function monthIndex(s){const v=s.toLowerCase();for(let i=0;i<12;i++){if([ruMonths[i],enMonths[i],frMonths[i],ukMonths[i]].some(a=>a&&v.startsWith(a)))return i+1;}return 0;}
+function monthIndex(s){const v=s.toLowerCase();for(let i=0;i<12;i++){if([ruMonths[i],enMonths[i],frMonths[i],ukMonths[i]].some(a=>a&&(v.startsWith(a)||(v.length>=3&&a.startsWith(v)))))return i+1;}return 0;}
 const isoDate=/\b(20\d{2})[-\/](0?[1-9]|1[012])[-\/](0?[1-9]|[12]\d|3[01])\b/;
 const dayDate=/\b(0?[1-9]|[12]\d|3[01])[.\/-](0?[1-9]|1[012])(?:[.\/-](20\d{2}))?\b/;
 const wordDate=/(?:^|[\s:])(\d{1,2})\s+([\p{L}]{3,18})(?:\s+(20\d{2}))?(?=$|[\s,.;:])/iu;
@@ -59,7 +59,7 @@ export function parseReminderText(raw,now=new Date()){
  else if(ampm)out.time=timeValue(ampm[1],0,ampm[2]);
  const minutes=s.match(/(?:за|before|avant)\s+(\d{1,4})\s*(?:минут|хвилин|minutes?)/i);
  if(minutes&&[5,15,30,60,120,1440].includes(Number(minutes[1])))out.advanceMinutes=Number(minutes[1]);
- else if(/за\s+(?:один\s+)?час\b|one hour before|1 hour before|une heure avant/i.test(s))out.advanceMinutes=60;
+ else if(/за\s+(?:один\s+)?час(?=\s|$|[.,!?])|one hour before|1 hour before|une heure avant/i.test(s))out.advanceMinutes=60;
  else if(/за\s+(?:один\s+)?день\b|one day before|1 day before|un jour avant/i.test(s))out.advanceMinutes=1440;
  // Use the user's wording, avoid overinterpreting the task.
  let title=text.replace(/^\s*(напомни(?:\s+мне)?|нагадай(?:\s+мені)?|remind me(?:\s+to)?|rappelle[- ]moi)\s*/i,'')
