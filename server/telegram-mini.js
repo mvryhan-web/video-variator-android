@@ -2,7 +2,7 @@
 import {createHmac,randomUUID,timingSafeEqual} from 'node:crypto';
 import {pool} from './db.js';
 import {initStars,starsAccess,starsPlans,createStarsInvoice,processStarsUpdate} from './telegram-stars.js';
-import {initTelegramAccountTables,linkedStripeAccess,linkedAccountId,createAccountLink} from './telegram-account.js';
+import {initTelegramAccountTables,linkedStripeAccess,linkedStarsAccess,createAccountLink} from './telegram-account.js';
 import {jwtVerify} from 'jose';
 import {getUser} from './db.js';
 export const TELEGRAM_MINI_TRIAL_LIMIT=5;
@@ -69,6 +69,19 @@ export function installTelegramMini(app,{token}){
  app.post('/api/telegram-mini/account-link',accountAuth,async(req,res)=>{
   try{res.json(await createAccountLink(req.telegramLinkAccount.id));}
   catch(e){console.error('[account-link]',e.message);res.status(503).json({error:'ACCOUNT_LINK_UNAVAILABLE'});}
+ });
+ // Prevent a second Stripe checkout for a website user already covered by Stars.
+ // This optional middleware runs before the original Stripe route and never modifies Stripe.
+ app.use('/api/billing/checkout',async(req,res,next)=>{
+  if(!ready)return res.status(503).json({error:'TELEGRAM_LINK_INITIALIZING'});
+  try{
+   const raw=String(req.get('Authorization')||'').replace(/^Bearer\s+/i,'');
+   if(!raw||!process.env.APP_JWT_SECRET)return next();
+   const verified=await jwtVerify(raw,new TextEncoder().encode(process.env.APP_JWT_SECRET),{issuer:'video-variator',audience:'video-variator-client'});
+   const entitlement=await linkedStarsAccess(verified.payload.sub);
+   if(entitlement)return res.status(409).json({error:'TELEGRAM_STARS_SUBSCRIPTION_ALREADY_ACTIVE'});
+  }catch(e){if(e.code!=='ERR_JWT_EXPIRED'&&e.code!=='ERR_JWS_INVALID'&&e.code!=='ERR_JWS_SIGNATURE_VERIFICATION_FAILED')console.error('[stars] checkout guard:',e.message);}
+  next();
  });
  const auth=(fn)=>async(req,res)=>{
   if(!ready)return res.status(503).json({error:'TELEGRAM_MINI_NOT_READY'});
