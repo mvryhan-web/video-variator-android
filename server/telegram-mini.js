@@ -2,7 +2,9 @@
 import {createHmac,randomUUID,timingSafeEqual} from 'node:crypto';
 import {pool} from './db.js';
 import {initStars,starsAccess,starsPlans,createStarsInvoice,processStarsUpdate} from './telegram-stars.js';
-import {initTelegramAccountTables,linkedStripeAccess,linkedAccountId} from './telegram-account.js';
+import {initTelegramAccountTables,linkedStripeAccess,linkedAccountId,createAccountLink} from './telegram-account.js';
+import {jwtVerify} from 'jose';
+import {getUser} from './db.js';
 export const TELEGRAM_MINI_TRIAL_LIMIT=5;
 const enabled=process.env.TELEGRAM_MINI_ENABLED==='true';
 const plans=[
@@ -47,6 +49,27 @@ export function installTelegramMini(app,{token}){
   await initTelegramAccountTables();
   ready=true;
  }
+ const accountAuth=async(req,res,next)=>{
+  try{
+   if(!ready)return res.status(503).json({error:'TELEGRAM_MINI_NOT_READY'});
+   const raw=String(req.get('Authorization')||'').replace(/^Bearer\s+/i,'');
+   if(!raw||!process.env.APP_JWT_SECRET)return res.status(401).json({error:'AUTH_REQUIRED'});
+   const secret=new TextEncoder().encode(process.env.APP_JWT_SECRET);
+   const {payload}=await jwtVerify(raw,secret,{issuer:'video-variator',audience:'video-variator-client'});
+   const account=await getUser(payload.sub);
+   if(!account)return res.status(401).json({error:'INVALID_SESSION'});
+   req.telegramLinkAccount=account;
+   next();
+  }catch(e){res.status(401).json({error:'INVALID_SESSION'});}
+ };
+ app.get('/api/telegram-mini/account-link',accountAuth,async(req,res)=>{
+  try{const telegram=await pool.query('SELECT telegram_id FROM vv_tg_account_links WHERE user_id=$1',[req.telegramLinkAccount.id]);res.json({linked:telegram.rowCount>0});}
+  catch(e){res.status(503).json({error:'ACCOUNT_LINK_UNAVAILABLE'});}
+ });
+ app.post('/api/telegram-mini/account-link',accountAuth,async(req,res)=>{
+  try{res.json(await createAccountLink(req.telegramLinkAccount.id));}
+  catch(e){console.error('[account-link]',e.message);res.status(503).json({error:'ACCOUNT_LINK_UNAVAILABLE'});}
+ });
  const auth=(fn)=>async(req,res)=>{
   if(!ready)return res.status(503).json({error:'TELEGRAM_MINI_NOT_READY'});
   const user=verifyTelegramMiniInitData(req.get('X-Telegram-Init-Data'),token);
