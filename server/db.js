@@ -75,6 +75,7 @@ export function publicUser(user){
   }
   const lifetime=user.plan==='lifetime'&&user.subscription_status==='lifetime';
   const active=lifetime||['active','trialing'].includes(user.subscription_status),limit=lifetime?LIFETIME_LIMIT:(active?user.plan_limit:100),used=lifetime?0:(active?user.period_used:user.trial_used);
+  if(!active&&user.telegram_access){const access=user.telegram_access;return{id:user.id,email:user.email,name:user.name,isAdmin:false,usage:{plan:access.plan,limit:access.credits===null?LIFETIME_LIMIT:access.credits,used:access.used,remaining:access.credits===null?LIFETIME_LIMIT:access.remaining,active:true,unlimited:access.credits===null,allFeatures:access.credits===null,unit:'credits',status:'active',currentPeriodEnd:access.expiresAt,source:'telegram'}};}
   return{id:user.id,email:user.email,name:user.name,isAdmin:false,usage:{plan:lifetime?'lifetime':(active?user.plan:'trial'),limit,used,remaining:lifetime?LIFETIME_LIMIT:Math.max(0,limit-used),active,unlimited:lifetime,allFeatures:lifetime,unit:active?'credits':'videos',status:lifetime?'lifetime':user.subscription_status,currentPeriodEnd:lifetime?null:user.current_period_end}};
 }
 
@@ -90,6 +91,16 @@ export async function consumeUsage(userId,{seconds=0,sourceCount=0}={}){
     await client.query('BEGIN');
     const q=await client.query('SELECT * FROM vv_users WHERE id=$1 FOR UPDATE',[userId]),u=q.rows[0];if(!u)throw new Error('USER_NOT_FOUND');
     if(isAdminUser(u)||u.plan==='lifetime'&&u.subscription_status==='lifetime'){await client.query('COMMIT');return u;}
+    if(process.env.TELEGRAM_MINI_ENABLED==='true'&&!['active','trialing'].includes(u.subscription_status)){
+      const tg=await client.query("SELECT a.telegram_id,a.plan,a.period_used FROM vv_tg_account_links l JOIN vv_tg_star_access a ON a.telegram_id=l.telegram_id WHERE l.user_id=$1 AND (a.plan='lifetime' OR a.expires_at>NOW()) FOR UPDATE OF a",[userId]);
+      if(tg.rowCount){
+        const record=tg.rows[0],max={basic:750,pro:2250,business:15000,lifetime:null}[record.plan];
+        if(max===undefined)throw Error('INVALID_TELEGRAM_PLAN');
+        if(max!==null){const cost=Math.max(1,safeSeconds);if(Number(record.period_used)+cost>max){const e=new Error('CREDIT_LIMIT_REACHED');e.code=e.message;throw e;}
+          await client.query('UPDATE vv_tg_star_access SET period_used=period_used+$2 WHERE telegram_id=$1',[record.telegram_id,cost]);}
+        await client.query('COMMIT');return getUser(userId);
+      }
+    }
     const active=['active','trialing'].includes(u.subscription_status),limit=active?u.plan_limit:100,used=active?u.period_used:u.trial_used,cost=active?safeSeconds:safeSources;
     if(cost<1)throw new Error('INVALID_USAGE');if(used+cost>limit){const e=new Error('CREDIT_LIMIT_REACHED');e.code='CREDIT_LIMIT_REACHED';throw e;}
     if(active)await client.query('UPDATE vv_users SET period_used=period_used+$2,updated_at=NOW() WHERE id=$1',[userId,cost]);else await client.query('UPDATE vv_users SET trial_used=trial_used+$2,updated_at=NOW() WHERE id=$1',[userId,cost]);
