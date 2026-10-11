@@ -23,11 +23,12 @@ function showPlans(plans){
  for(const p of plans||[]){
   const row=document.createElement('div');row.className='plan';
   const label=document.createElement('div'),name=document.createElement('b'),sub=document.createElement('small');
-  name.textContent=p.name;sub.textContent=p.price+(p.credits==null?' · Unlimited':' · '+p.credits+' credits')+(p.stars?' · '+p.stars+' ★ in Telegram':'');
+  name.textContent=p.name;sub.textContent=(p.credits==null?'Unlimited':p.credits+' credits')+(p.stars?' · '+p.stars+' ★ / 30 days':(' · Website reference '+p.price));
+  if(p.id==='lifetime')sub.textContent='Website only · €2,999 one time · Not purchasable with Stars';
   sub.style.display='block';label.append(name,sub);
   const button=document.createElement('button');button.type='button';button.textContent='Buy subscription';
   if(Number.isInteger(p.stars)&&p.stars>0){button.textContent='Buy for '+p.stars+' ★';button.addEventListener('click',()=>buyPlan(p,button));}
-  else{button.textContent='Stars price pending';button.disabled=true;button.title='Telegram Stars price must be approved by the owner';}
+  else{button.textContent=p.id==='lifetime'?'Not sold via Stars':'Unavailable';button.disabled=true;button.title=p.id==='lifetime'?'Lifetime is currently offered only on the independent website':'Telegram Stars price not configured';}
   row.append(label,button);root.append(row);
  }
  if(!busy)section.scrollIntoView({behavior:'smooth',block:'start'});
@@ -35,9 +36,15 @@ function showPlans(plans){
 async function refreshSession(){const data=await api('session');applySession(data);return data;}
 async function buyPlan(plan,button){
  if(!tg?.openInvoice){status('Open this tool in the Telegram app to purchase.');return;}
+ const termsAccepted=$('termsAccepted')?.checked===true,immediateAccess=$('immediateAccess')?.checked===true,recurringAcknowledged=$('recurringAcknowledged')?.checked===true;
+ if(!termsAccepted||!immediateAccess||!recurringAcknowledged){
+  status('Before paying, please review and agree to the purchase terms, immediate access and 30-day renewal.');
+  $('termsAccepted')?.scrollIntoView({behavior:'smooth',block:'center'});
+  return;
+ }
  button.disabled=true;status('Opening Telegram Stars checkout…');
  try{
-  const invoice=await api('checkout',{plan:plan.id});
+  const invoice=await api('checkout',{plan:plan.id,termsAccepted,immediateAccess,recurringAcknowledged});
   tg.openInvoice(invoice.url,async invoiceStatus=>{
    if(invoiceStatus==='paid'||invoiceStatus==='pending'){
     status('Confirming your payment with Telegram…');
@@ -67,6 +74,8 @@ function localeError(error){
   CREDITS_EXHAUSTED:'Your paid video credits are used for this period.',
   MODE_REQUIRES_HIGHER_PLAN:'This mode requires a higher subscription plan.',
   INVOICE_CREATE_FAILED:'Could not open Telegram Stars payment. Try again later.',
+  TERMS_ACCEPTANCE_REQUIRED:'Please accept the Terms and confirm immediate access and recurring billing.',
+  LIFETIME_STARS_UNAVAILABLE:'Lifetime cannot currently be purchased in the Telegram Mini App.',
   VIDEO_ALREADY_PROCESSING:'You already have a processing session. Please wait.',
   VIDEO_LIMIT_45_SECONDS:'Maximum duration is 45 seconds.',
   TELEGRAM_MINI_UNAVAILABLE:'The service is temporarily unavailable.',
