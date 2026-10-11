@@ -29,13 +29,18 @@ test('Telegram Mini App genuinely transcodes a short MP4 on mobile Chromium',asy
  await page.locator('#start').click();
  await expect(page.locator('#result')).toBeVisible({timeout:155000});
  await expect(page.locator('#counter')).toHaveText('4 / 5 free');
- const output=await page.evaluate(async()=>{
-  const url=document.querySelector('#output').src;
-  const bytes=await(await fetch(url)).arrayBuffer();
-  return{length:bytes.byteLength,mp4Tag:new TextDecoder().decode(bytes.slice(4,8))};
+ const downloadPromise=page.waitForEvent('download',{timeout:15000});
+ await page.evaluate(()=>{
+  const a=document.createElement('a');
+  a.href=document.querySelector('#output').src;
+  a.download='processed.mp4';
+  document.body.append(a);a.click();a.remove();
  });
- expect(output.length).toBeGreaterThan(3000);
- expect(output.mp4Tag).toBe('ftyp');
+ const downloaded=await downloadPromise;
+ const downloadedBytes=readFileSync(await downloaded.path());
+ expect(downloaded.suggestedFilename()).toBe('processed.mp4');
+ expect(downloadedBytes.byteLength).toBeGreaterThan(3000);
+ expect(downloadedBytes.toString('ascii',4,8)).toBe('ftyp');
  expect(uploads).toEqual([]);
  expect(failures).toEqual([]);
 });
