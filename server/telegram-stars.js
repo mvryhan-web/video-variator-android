@@ -1,6 +1,7 @@
 // Telegram Stars: optional Mini App checkout, zero Stripe changes.
 import {randomUUID} from 'node:crypto';
 import {pool} from './db.js';
+import {linkedStripeAccess} from './telegram-account.js';
 const specs={
  basic:{name:'Basic',credits:750,monthly:true,env:'TG_STARS_BASIC'},
  pro:{name:'Pro',credits:2250,monthly:true,env:'TG_STARS_PRO'},
@@ -38,7 +39,7 @@ export async function createStarsInvoice(token,id,plan){
  if(!validId(id)||!specs[plan])return{error:'UNKNOWN_PLAN',status:400};
  const amount=priceOf(plan);if(amount===null)return{error:'STARS_PRICE_NOT_CONFIGURED',status:409};
  const existing=await starsAccess(id);
- if(existing)return{error:'SUBSCRIPTION_ALREADY_ACTIVE',status:409};
+ if(existing||await linkedStripeAccess(id))return{error:'SUBSCRIPTION_ALREADY_ACTIVE',status:409};
  const pending=await pool.query("SELECT COUNT(*)::int AS n FROM vv_tg_star_orders WHERE telegram_id=$1 AND status='pending' AND created_at>NOW()-INTERVAL '1 hour'",[String(id)]);
  if(pending.rows[0].n>=5)return{error:'TOO_MANY_PENDING_INVOICES',status:429};
  const order=randomUUID(),s=specs[plan];
