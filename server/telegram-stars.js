@@ -26,7 +26,7 @@ async function tg(token,method,body){
 }
 export async function initStars(){
  if(!pool)throw Error('PostgreSQL is required for Stars');
- await pool.query("CREATE TABLE IF NOT EXISTS vv_tg_star_orders(id TEXT PRIMARY KEY,telegram_id TEXT NOT NULL,plan TEXT NOT NULL,amount INTEGER NOT NULL,status TEXT NOT NULL DEFAULT 'pending',created_at TIMESTAMPTZ DEFAULT NOW(),paid_at TIMESTAMPTZ,charge_id TEXT UNIQUE); CREATE INDEX IF NOT EXISTS vv_tg_star_orders_user_idx ON vv_tg_star_orders(telegram_id,created_at DESC); CREATE TABLE IF NOT EXISTS vv_tg_star_payments(charge_id TEXT PRIMARY KEY,telegram_id TEXT NOT NULL,order_id TEXT NOT NULL,plan TEXT NOT NULL,amount INTEGER NOT NULL,created_at TIMESTAMPTZ DEFAULT NOW()); CREATE TABLE IF NOT EXISTS vv_tg_star_access(telegram_id TEXT PRIMARY KEY,plan TEXT NOT NULL,period_used INTEGER NOT NULL DEFAULT 0,expires_at TIMESTAMPTZ,updated_at TIMESTAMPTZ DEFAULT NOW());");
+ await pool.query("CREATE TABLE IF NOT EXISTS vv_tg_star_orders(id TEXT PRIMARY KEY,telegram_id TEXT NOT NULL,plan TEXT NOT NULL,amount INTEGER NOT NULL,status TEXT NOT NULL DEFAULT 'pending',created_at TIMESTAMPTZ DEFAULT NOW(),paid_at TIMESTAMPTZ,charge_id TEXT UNIQUE); CREATE INDEX IF NOT EXISTS vv_tg_star_orders_user_idx ON vv_tg_star_orders(telegram_id,created_at DESC); CREATE TABLE IF NOT EXISTS vv_tg_star_payments(charge_id TEXT PRIMARY KEY,telegram_id TEXT NOT NULL,order_id TEXT NOT NULL,plan TEXT NOT NULL,amount INTEGER NOT NULL,created_at TIMESTAMPTZ DEFAULT NOW()); CREATE TABLE IF NOT EXISTS vv_tg_star_access(telegram_id TEXT PRIMARY KEY,plan TEXT NOT NULL,period_used INTEGER NOT NULL DEFAULT 0,expires_at TIMESTAMPTZ,last_charge_id TEXT,updated_at TIMESTAMPTZ DEFAULT NOW()); ALTER TABLE vv_tg_star_access ADD COLUMN IF NOT EXISTS last_charge_id TEXT;");
 }
 export async function starsAccess(id){
  if(!validId(id))return null;
@@ -85,10 +85,24 @@ export async function processStarsUpdate(update,token){
      const seconds=Number(paid.subscription_expiration_date);
      expires=Number.isSafeInteger(seconds)&&seconds>Date.now()/1000?new Date(seconds*1000):new Date(Date.now()+2592000000);
     }
-    await client.query("INSERT INTO vv_tg_star_access(telegram_id,plan,period_used,expires_at) VALUES($1,$2,0,$3) ON CONFLICT(telegram_id) DO UPDATE SET plan=CASE WHEN vv_tg_star_access.plan='lifetime' THEN 'lifetime' ELSE EXCLUDED.plan END,period_used=CASE WHEN vv_tg_star_access.plan='lifetime' THEN vv_tg_star_access.period_used ELSE 0 END,expires_at=CASE WHEN vv_tg_star_access.plan='lifetime' THEN vv_tg_star_access.expires_at ELSE EXCLUDED.expires_at END,updated_at=NOW()",[user,order.plan,expires]);
+    await client.query("INSERT INTO vv_tg_star_access(telegram_id,plan,period_used,expires_at,last_charge_id) VALUES($1,$2,0,$3,$4) ON CONFLICT(telegram_id) DO UPDATE SET plan=CASE WHEN vv_tg_star_access.plan='lifetime' THEN 'lifetime' ELSE EXCLUDED.plan END,period_used=CASE WHEN vv_tg_star_access.plan='lifetime' THEN vv_tg_star_access.period_used ELSE 0 END,expires_at=CASE WHEN vv_tg_star_access.plan='lifetime' THEN vv_tg_star_access.expires_at ELSE EXCLUDED.expires_at END,last_charge_id=CASE WHEN vv_tg_star_access.plan='lifetime' THEN vv_tg_star_access.last_charge_id ELSE EXCLUDED.last_charge_id END,updated_at=NOW()",[user,order.plan,expires,charge]);
    }
    await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});console.error('[stars] fulfill:',e.message);throw e;}
+  finally{client.release();}
+  return true;
+ }
+ const refund=message?.refunded_payment,refundId=orderId(refund?.invoice_payload);
+ if(refund&&refundId){
+  const charge=String(refund.telegram_payment_charge_id||'');
+  if(!charge)return true;
+  const client=await pool.connect();
+  try{
+   await client.query('BEGIN');
+   await client.query("UPDATE vv_tg_star_orders SET status='refunded' WHERE id=$1 AND charge_id=$2",[refundId,charge]);
+   await client.query("DELETE FROM vv_tg_star_access WHERE last_charge_id=$1",[charge]);
+   await client.query('COMMIT');
+  }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}
   finally{client.release();}
   return true;
  }
