@@ -9,8 +9,15 @@ const specs={
  lifetime:{name:'Lifetime',credits:null,monthly:false,env:'TG_STARS_LIFETIME'}
 };
 const validId=x=>/^[1-9][0-9]{0,19}$/.test(String(x||''));
+// Roughly match the buyer-facing $9/$24/$99 reference at about $0.02 per purchased Star.
+// The actual buyer price varies by platform, location, fees and taxes.
+// Lifetime €2,999 cannot be offered as an equivalent single Stars purchase.
+export const TELEGRAM_STARS_DRAFT_PRICE=Object.freeze({basic:450,pro:1200,business:4950,lifetime:null});
+export const TELEGRAM_TERMS_VERSION='2026-10-11';
+
 function priceOf(plan){
- const raw=process.env[specs[plan]?.env||'']||'';
+ if(plan==='lifetime')return null; // Never silently sell €2,999 Lifetime for a cheap Stars substitute.
+ const raw=process.env[specs[plan]?.env||'']||String(TELEGRAM_STARS_DRAFT_PRICE[plan]||'');
  if(!/^[1-9][0-9]{0,4}$/.test(raw))return null;
  const n=Number(raw);return n>0&&n<=10000?n:null;
 }
@@ -37,7 +44,7 @@ async function tg(token,method,body){
 }
 export async function initStars(){
  if(!pool)throw Error('PostgreSQL is required for Stars');
- await pool.query("CREATE TABLE IF NOT EXISTS vv_tg_star_orders(id TEXT PRIMARY KEY,telegram_id TEXT NOT NULL,plan TEXT NOT NULL,amount INTEGER NOT NULL,status TEXT NOT NULL DEFAULT 'pending',created_at TIMESTAMPTZ DEFAULT NOW(),paid_at TIMESTAMPTZ,charge_id TEXT UNIQUE); CREATE INDEX IF NOT EXISTS vv_tg_star_orders_user_idx ON vv_tg_star_orders(telegram_id,created_at DESC); CREATE TABLE IF NOT EXISTS vv_tg_star_payments(charge_id TEXT PRIMARY KEY,telegram_id TEXT NOT NULL,order_id TEXT NOT NULL,plan TEXT NOT NULL,amount INTEGER NOT NULL,created_at TIMESTAMPTZ DEFAULT NOW()); CREATE TABLE IF NOT EXISTS vv_tg_star_access(telegram_id TEXT PRIMARY KEY,plan TEXT NOT NULL,period_used INTEGER NOT NULL DEFAULT 0,expires_at TIMESTAMPTZ,last_charge_id TEXT,updated_at TIMESTAMPTZ DEFAULT NOW()); ALTER TABLE vv_tg_star_access ADD COLUMN IF NOT EXISTS last_charge_id TEXT;");
+ await pool.query("CREATE TABLE IF NOT EXISTS vv_tg_star_orders(id TEXT PRIMARY KEY,telegram_id TEXT NOT NULL,plan TEXT NOT NULL,amount INTEGER NOT NULL,status TEXT NOT NULL DEFAULT 'pending',created_at TIMESTAMPTZ DEFAULT NOW(),paid_at TIMESTAMPTZ,charge_id TEXT UNIQUE); CREATE INDEX IF NOT EXISTS vv_tg_star_orders_user_idx ON vv_tg_star_orders(telegram_id,created_at DESC); CREATE TABLE IF NOT EXISTS vv_tg_star_payments(charge_id TEXT PRIMARY KEY,telegram_id TEXT NOT NULL,order_id TEXT NOT NULL,plan TEXT NOT NULL,amount INTEGER NOT NULL,created_at TIMESTAMPTZ DEFAULT NOW()); CREATE TABLE IF NOT EXISTS vv_tg_star_access(telegram_id TEXT PRIMARY KEY,plan TEXT NOT NULL,period_used INTEGER NOT NULL DEFAULT 0,expires_at TIMESTAMPTZ,last_charge_id TEXT,updated_at TIMESTAMPTZ DEFAULT NOW()); ALTER TABLE vv_tg_star_access ADD COLUMN IF NOT EXISTS last_charge_id TEXT; ALTER TABLE vv_tg_star_orders ADD COLUMN IF NOT EXISTS terms_version TEXT; ALTER TABLE vv_tg_star_orders ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ;");
 }
 export async function starsAccess(id){
  if(!validId(id))return null;
@@ -45,15 +52,17 @@ export async function starsAccess(id){
  const v=r.rows[0],s=specs[v?.plan];if(!s)return null;
  return{plan:v.plan,credits:s.credits,used:Number(v.period_used),remaining:s.credits===null?null:Math.max(0,s.credits-Number(v.period_used)),expiresAt:v.expires_at};
 }
-export async function createStarsInvoice(token,id,plan){
+export async function createStarsInvoice(token,id,plan,consent={}){
  if(!validId(id)||!specs[plan])return{error:'UNKNOWN_PLAN',status:400};
+ if(plan==='lifetime')return{error:'LIFETIME_STARS_UNAVAILABLE',status:409};
+ if(consent.termsAccepted!==true||consent.immediateAccess!==true||specs[plan].monthly&&consent.recurringAcknowledged!==true)return{error:'TERMS_ACCEPTANCE_REQUIRED',status:400};
  const amount=priceOf(plan);if(amount===null)return{error:'STARS_PRICE_NOT_CONFIGURED',status:409};
  const existing=await starsAccess(id);
  if(existing||await linkedStripeAccess(id))return{error:'SUBSCRIPTION_ALREADY_ACTIVE',status:409};
  const pending=await pool.query("SELECT COUNT(*)::int AS n FROM vv_tg_star_orders WHERE telegram_id=$1 AND status='pending' AND created_at>NOW()-INTERVAL '1 hour'",[String(id)]);
  if(pending.rows[0].n>=5)return{error:'TOO_MANY_PENDING_INVOICES',status:429};
  const order=randomUUID(),s=specs[plan];
- await pool.query('INSERT INTO vv_tg_star_orders(id,telegram_id,plan,amount) VALUES($1,$2,$3,$4)',[order,String(id),plan,amount]);
+ await pool.query('INSERT INTO vv_tg_star_orders(id,telegram_id,plan,amount,terms_version,terms_accepted_at) VALUES($1,$2,$3,$4,$5,NOW())',[order,String(id),plan,amount,TELEGRAM_TERMS_VERSION]);
  try{
   const url=await tg(token,'createInvoiceLink',starsInvoicePayload(plan,order,amount));
   return{url,plan,stars:amount};
