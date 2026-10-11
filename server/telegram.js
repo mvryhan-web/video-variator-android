@@ -6,7 +6,7 @@ import {installTelegramFreeMini} from './telegram-free-mini.js';
 const commands = {
   start: 'Welcome to Video Uniquifier! Open the app using the Menu button or the link below.',
   create: 'To process a video, open the app. Telegram file processing is not available yet.',
-  plans: 'View Video Uniquifier plans on the existing website. All subscription payments remain in Stripe.',
+  plans: 'This Telegram preview is free. Information about our separate website and Android product is on the existing website.',
   account: 'Open the app to view your account and remaining credits.',
   help: 'Use the Menu button to open Video Uniquifier and select a tool.',
   support: 'Please use the support contact information in the app.',
