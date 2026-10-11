@@ -27,7 +27,7 @@ export function starsInvoicePayload(plan,order,amount){
  return{
    title:'Video Uniquifier '+s.name,
    description:s.monthly?s.credits+' video credits every 30 days':'Lifetime Telegram Mini video processing',
-   payload:'vu2:'+order,currency:'XTR',
+   payload:'vu2:'+order,provider_token:'',currency:'XTR',
    prices:[{label:s.name,amount}],...(s.monthly?{subscription_period:2592000}:{})
  };
 }
