@@ -73,7 +73,7 @@ export function installTelegramMini(app,{token}){
  // Prevent a second Stripe checkout for a website user already covered by Stars.
  // This optional middleware runs before the original Stripe route and never modifies Stripe.
  app.use('/api/billing/checkout',async(req,res,next)=>{
-  if(!ready)return res.status(503).json({error:'TELEGRAM_LINK_INITIALIZING'});
+  if(!ready)return next(); // Never block existing Stripe checkout if Mini App storage is unavailable.
   try{
    const raw=String(req.get('Authorization')||'').replace(/^Bearer\s+/i,'');
    if(!raw||!process.env.APP_JWT_SECRET)return next();
