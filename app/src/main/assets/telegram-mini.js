@@ -15,7 +15,7 @@ const api=async(path,body)=>{
  if(!r.ok)throw Object.assign(Error(data.error||'NETWORK_ERROR'),{status:r.status});
  return data;
 };
-function hasCredits(){return !!(paid&&(paid.remaining===null||paid.remaining>0))||remaining>0;}
+function hasCredits(){return paid?(paid.remaining===null||paid.remaining>0):remaining>0;}
 function showPlans(plans){
  const section=$('plansSection'),root=$('plans');
  section.hidden=false;
