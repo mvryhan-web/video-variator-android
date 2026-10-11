@@ -38,7 +38,9 @@ TG_STARS_PRO=<approved Stars price>
 TG_STARS_BUSINESS=<approved Stars price>
 TG_STARS_LIFETIME=<approved Stars price>
 ```
-**Do not enable until Stars prices are approved and a real purchase/refund smoke test is completed.** All price vars are unset by default. The Mini App plan buttons remain disabled until individually priced; no customer can be charged without explicit configuration.
+**Do not enable until Stars prices are approved and a real purchase/refund smoke test is completed.**
+
+**Release blockers:** Add owner-approved Terms & Conditions, explicit acceptance before Stars checkout, working `/paysupport` customer support details, test a real payment/refund in Telegram's test environment, and validate purchases on Android and iOS. These are required to avoid selling a paid feature before support and cancellation/renewal handling are ready. All price vars are unset by default. The Mini App plan buttons remain disabled until individually priced; no customer can be charged without explicit configuration.
 
 **Shared account access added (testing required):** Signed-in website/Android users can open Profile & Settings → Connect Telegram, receive a 10-minute one-time link, and press Start in their private Telegram bot chat. The server binds that verified Telegram ID to one website account only, and refuses linking two independently active paid plans. Stripe website subscriptions then unlock processing in the Mini App, and Stars purchases unlock the same plan/credits on website and Android. The paid credit balance is charged by video-seconds from either interface, not duplicated. Existing website free trials are unchanged; Telegram's five free tests are separate. Linking is optional, and users must sign in to their web account to initiate it. **Real linked-account, payment, renewal and refund integration tests still required before rollout.**
 
