@@ -6,6 +6,7 @@ on:
       - 'server/tests/telegram*.mjs'
       - 'app/src/main/assets/telegram-mini.*'
       - 'tests/telegram-mini-browser.spec.mjs'
+      - 'tests/telegram-mini-real-video.spec.mjs'
       - '.github/workflows/telegram-mini-ci.yml'
   workflow_dispatch:
 
@@ -45,4 +46,7 @@ jobs:
           ffmpeg -hide_banner -loglevel error -y -f lavfi -i testsrc2=size=160x120:rate=15 -t 1 -c:v libx264 -pix_fmt yuv420p -an /tmp/telegram-mini-smoke.mp4
       - name: Simulated Android and iOS Telegram video/purchase flow
         run: npx playwright test tests/telegram-mini-browser.spec.mjs --project=mobile-chromium --project=mobile-webkit
+      - name: Verify real FFmpeg MP4 video output in mobile Chromium
+        run: npx playwright test tests/telegram-mini-real-video.spec.mjs --project=mobile-chromium
+
 
