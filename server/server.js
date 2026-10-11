@@ -1,4 +1,5 @@
 import {installGenerationStudio} from './generation-studio.js';
+import {installGenerationBilling} from './generation-billing.js';
 import {pool as generationPool} from './db.js';
 import {installSpeech} from './speech.js';
 import {installTelegramBot} from './telegram.js';
@@ -108,6 +109,7 @@ app.post('/api/webhooks/stripe',express.raw({type:'application/json'}),async(req
   if(!process.env.STRIPE_WEBHOOK_SECRET)return res.status(503).send('Stripe webhook is not configured');let event;
   try{event=stripeWebhookClient.webhooks.constructEvent(req.body,req.headers['stripe-signature'],process.env.STRIPE_WEBHOOK_SECRET);}catch(e){return res.status(400).send(`Webhook signature error: ${e.message}`);}
   try{
+    if(await generationBilling.handleEvent(event))return res.json({received:true});
     if(event.type==='checkout.session.completed'){
       const s=event.data.object,userId=s.metadata?.userId||s.client_reference_id,plan=s.metadata?.plan;
       if(plan==='lifetime')await grantLifetimeFromCheckoutSession(s);
@@ -169,6 +171,7 @@ app.post('/api/billing/checkout',auth,async(req,res)=>{try{
 app.post('/api/billing/portal',auth,async(req,res)=>{try{if(publicUser(req.user)?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});if(!stripe||!req.user.stripe_customer_id)return res.status(400).json({error:'BILLING_PORTAL_UNAVAILABLE'});const session=await stripe.billingPortal.sessions.create({customer:req.user.stripe_customer_id,return_url:`${appUrl}/`});res.json({url:session.url});}catch(e){console.error('[portal]',e);res.status(500).json({error:'BILLING_PORTAL_FAILED'});}});
 app.post('/api/billing/cancel',auth,async(req,res)=>{try{const current=publicUser(req.user);if(current?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});if(current?.usage?.plan==='lifetime')return res.status(409).json({error:'LIFETIME_HAS_NO_SUBSCRIPTION'});if(!stripe||!req.user.stripe_subscription_id)return res.status(400).json({error:'NO_ACTIVE_SUBSCRIPTION'});const sub=await stripe.subscriptions.update(req.user.stripe_subscription_id,{cancel_at_period_end:true});await updateSubscriptionByStripeId({subscriptionId:sub.id,status:sub.status,currentPeriodEnd:fromUnix(sub.current_period_end)});res.json({ok:true,cancelAtPeriodEnd:!!sub.cancel_at_period_end,currentPeriodEnd:fromUnix(sub.current_period_end)});}catch(e){console.error('[cancel]',e);res.status(500).json({error:'SUBSCRIPTION_CANCEL_FAILED'});}});
 
+const generationBilling=installGenerationBilling(app,{auth,pool:generationPool,stripe,appUrl});
 installGenerationStudio(app,{auth,pool:generationPool});
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});

@@ -10,6 +10,45 @@ Adapters: Nano Banana 2 (`gemini-3.1-flash-image`), Veo 3.1 Lite, Lyria 3 Clip.
 No Suno/Seedance/Kling/OpenAI connectors or file dubbing implemented yet.
 No consumer account scraping, subscription credit reuse, paid fallbacks or retries.
 
+## Prepaid customer billing preparation (not live)
+
+`generation-wallet.js` implements a separate PostgreSQL AI-credit ledger: paid purchase,
+atomic reservation, successful capture, confirmed failure release, unknown status hold,
+and cumulative payment-refund/debt accounting. Deleting media has no wallet operation.
+Concurrent transactions lock the user's wallet; purchase session/payment intent and job
+identifiers prevent replay. Purchases repay refund debt before credit becomes spendable.
+Existing subscription credits and Lifetime entitlements are not used for provider spending.
+
+`generation-billing.js` prepares a **sandbox-only** Stripe Checkout adapter. A live key
+cannot activate it. Defaults create no tables, payments or price objects. Server-side
+approved packs/rates are loaded from `AI_CREDIT_PACKS_JSON` / `AI_CREDIT_RATES_JSON`;
+there are no invented default customer prices. Prices are checked against Stripe before
+Checkout; signed five-minute quotes bind the user, content, model, format and rate revision.
+Order snapshots persist across catalog changes. The existing signed webhook delegates
+AI order fulfillment only after Stripe reports paid, with amount/currency/line-item checks.
+Duplicate completed/async succeeded events cannot grant twice. The success redirect
+grants nothing. Access uses existing auth. Checkout requests require a stable UUID.
+
+Endpoints: `/api/ai-billing/config`, authenticated `/balance`, `/history`, `/quote`,
+`/checkout`. All except configuration return 503 unless the sandbox feature is enabled.
+`AI_BILLING_ENABLED=true`, existing database/signing settings and a **test-mode** Stripe
+key are required. No environment settings were changed. A quote explicitly reports
+`generationEnabled:false`: this customer wallet is not connected to the owner generation
+pilot yet. No paid customer launch, cash refund/dispute webhook orchestration, tax rules,
+credit expiry policy or provider spend settlement is claimed implemented. Wallet refund
+accounting is currently an internal primitive, not an automatic Stripe cash refund.
+
+Before customer launch: approve package prices and provider access, wire wallet reservations
+to generation jobs with crash recovery, connect refunds/disputes, define customer terms,
+test actual signed Stripe sandbox webhooks and real provider calls, then request live release
+approval. Stripe payment collection does not itself fund the Google API account: provider
+billing must be configured and may charge before Stripe payouts reach the bank.
+
+CI uses a disposable PostgreSQL 16 service with fixture credentials and an isolated
+`vv_ai_test` database, not Render. It tests real concurrent transactions, persistence through
+a fresh wallet instance, replay, refunds/debt, and sandbox route/provider mocks. No real
+payment or production database mutation is made by those tests.
+
 ## Activation is NOT performed
 
 Render server secrets only: GEMINI_API_KEY. Never put keys in HTML, APK, localStorage or git.
