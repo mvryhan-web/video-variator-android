@@ -41,5 +41,14 @@
  };
  refresh.onclick=state;
  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&localStorage.getItem('vv_token'))state();});
+ // Keep the existing site unchanged when the Telegram feature is disabled.
+ (async()=>{
+  try{
+   const token=localStorage.getItem('vv_token')||'';
+   const r=await fetch('/api/telegram-mini/account-link',{headers:token?{Authorization:'Bearer '+token}:{}});
+   if(r.status===404){card.remove();return;}
+   if(r.ok)await state();
+  }catch(_){}
+ })();
  // Account may be signed in later; the button remains available.
 })();
