@@ -19,11 +19,34 @@ The existing Telegram site window/menu button, `/start` text, website navigation
 
 **No extra hosting service**, server-side FFmpeg, Windows PC, or file uploads to Render. PostgreSQL stores only usage metadata.
 
-## Payment / release blocker
+## Telegram Stars checkout (prepared but OFF until owner sets prices)
 
-At five free trials, the Mini App displays the same four website plan names and list prices. Actual Telegram checkout is **intentionally disabled** until the owner selects Telegram Stars prices and entitlement synchronization with paid website accounts is built and verified. Do not show a working `Buy` checkout or redirect Mini App digital-goods purchases to Stripe; Telegram requires Stars (XTR). Existing website plans and billing remain unchanged.
+Digital services sold inside a Telegram bot/Mini App must use Telegram Stars (currency XTR), not embedded Stripe or an external Stripe checkout link. The normal website keeps Stripe as before.
 
-This mobile pilot must be tested **inside both Android and iPhone Telegram WebViews**. FFmpeg WASM memory limits and downloads from blob: URLs vary by device; Web Share is attempted first. Only advertise after verifying a real 5–10 second video on a phone. Keep the webview open during processing.
+The added backend supports:
+- Verified `createInvoiceLink` XTR invoices shown in Telegram via `WebApp.openInvoice`.
+- 30-day recurring Stars subscriptions for Basic/Pro/Business, plus one-time Lifetime.
+- `pre_checkout_query` validation and idempotent fulfillment **only** after Telegram's signed webhook returns `successful_payment`.
+- Refund handling, server-side monthly credit accounting, and trial access lock.
+- Five free per Telegram identity; paid credits are counted by video seconds (consistent with the existing web tariffs).
+
+Configure exact approved Stars amounts (whole stars, 1-10000, no automatic USD conversion) in existing Render web service environment:
+```
+TELEGRAM_MINI_ENABLED=true
+TG_STARS_BASIC=<approved Stars price>
+TG_STARS_PRO=<approved Stars price>
+TG_STARS_BUSINESS=<approved Stars price>
+TG_STARS_LIFETIME=<approved Stars price>
+```
+**Do not enable until Stars prices are approved and a real purchase/refund smoke test is completed.** All price vars are unset by default. The Mini App plan buttons remain disabled until individually priced; no customer can be charged without explicit configuration.
+
+Website Stripe accounts are currently **not linked** to Telegram identities. Telegram Mini App purchases currently unlock processing in the Telegram Mini App, NOT the independent website login. Do not advertise a cross-platform entitlement until account linking/synchronization has been designed and tested. Existing website subscriptions are unchanged.
+
+Telegram subscriptions are subject to Telegram's recurring-payment rules; users should manage them in Telegram's Stars subscription settings. Unpaid Mini App trials remain available.
+
+### Release tests
+
+`node --test server/tests/telegram-mini.test.mjs server/tests/telegram-stars.test.mjs` plus a real on-device checkout (Telegram testing bot) and a refund test. Do not use a real charged customer as an initial integration test.
 
 ## Security and limits
 
