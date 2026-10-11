@@ -11,7 +11,7 @@ test.describe('Telegram Mini App mobile checkout and five free trials',()=>{
    {id:'lifetime',name:'Lifetime',price:'€2,999 one time',credits:null,stars:null}
   ];
   const state=()=>({limit:5,used,remaining:5-used,paid:null,busy:false,plans,firstName:'Tester'});
-  await page.route('**/telegram-web-app.js?*',async route=>route.fulfill({
+  await page.route(/telegram-web-app\.js/,async route=>route.fulfill({
    contentType:'application/javascript',body:"window.Telegram={WebApp:{initData:'signed-telegram-test-fixture',ready(){},expand(){},openInvoice(url,fn){window.__invoiceOpened=url;window.__invoiceCallback=fn;}}};"
   }));
   await page.route('**/video-core.js',async route=>route.fulfill({
