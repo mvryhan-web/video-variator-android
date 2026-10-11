@@ -1,0 +1,18 @@
+name: AI Studio preview checks
+on:
+  push:
+    branches: [ai-generation-studio]
+  pull_request:
+    paths: ['server/generation-*.js', 'app/src/main/assets/generate-studio.*', 'tests/generation-studio*', '.github/workflows/ai-studio.yml']
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - run: node --test tests/generation-studio-unit.mjs
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npx playwright test tests/generation-studio.spec.mjs
