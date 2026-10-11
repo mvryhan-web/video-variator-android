@@ -1,0 +1,37 @@
+name: Telegram Mini App checks
+on:
+  pull_request:
+    paths:
+      - 'server/telegram*.js'
+      - 'server/tests/telegram*.mjs'
+      - 'app/src/main/assets/telegram-mini.*'
+      - '.github/workflows/telegram-mini-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  telegram-mini:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Syntax check
+        run: |
+          node --check server/telegram.js
+          node --check server/telegram-mini.js
+          node --check server/telegram-stars.js
+          node --check server/telegram-account.js
+          node --check server/db.js
+          node --check app/src/main/assets/telegram-mini.js
+          node --check app/src/main/assets/telegram-account-link.js
+      - name: Telegram identity, subscriptions, and account unit tests
+        run: node --test server/tests/telegram-mini.test.mjs server/tests/telegram-stars.test.mjs server/tests/telegram-account.test.mjs
