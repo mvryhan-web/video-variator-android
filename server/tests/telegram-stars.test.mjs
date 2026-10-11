@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {starsPlans,createStarsInvoice} from '../telegram-stars.js';
+import {starsPlans,createStarsInvoice,starsInvoicePayload} from '../telegram-stars.js';
 const keys=['TG_STARS_BASIC','TG_STARS_PRO','TG_STARS_BUSINESS','TG_STARS_LIFETIME'];
 const saved=Object.fromEntries(keys.map(x=>[x,process.env[x]]));
 function cleanup(){for(const name of keys){if(saved[name]===undefined)delete process.env[name];else process.env[name]=saved[name];}}
@@ -22,4 +22,19 @@ test('invalid or unconfigured plan rejects before any invoice is created',{concu
   assert.equal((await createStarsInvoice('bot','12345','basic')).error,'STARS_PRICE_NOT_CONFIGURED');
   assert.equal((await createStarsInvoice('bot','anonymous','basic')).error,'UNKNOWN_PLAN');
  }finally{cleanup();}
+});
+
+test('Telegram XTR invoices omit provider token, use one price and valid recurring period',()=>{
+ const id='11111111-2222-3333-4444-555555555555';
+ const basic=starsInvoicePayload('basic',id,100);
+ assert.equal(basic.currency,'XTR');
+ assert.equal(basic.subscription_period,2592000);
+ assert.equal(basic.prices.length,1);
+ assert.equal(basic.prices[0].amount,100);
+ assert.equal(Object.hasOwn(basic,'provider_token'),false);
+ const lifetime=starsInvoicePayload('lifetime',id,10000);
+ assert.equal(Object.hasOwn(lifetime,'subscription_period'),false);
+ assert.equal(Object.hasOwn(lifetime,'provider_token'),false);
+ assert.throws(()=>starsInvoicePayload('lifetime',id,10001),/INVALID_STARS_INVOICE/);
+ assert.throws(()=>starsInvoicePayload('basic','not-valid',100),/INVALID_STARS_INVOICE/);
 });
