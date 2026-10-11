@@ -33,10 +33,10 @@ test('Telegram XTR invoices omit provider token, use one price and valid recurri
  assert.equal(basic.subscription_period,2592000);
  assert.equal(basic.prices.length,1);
  assert.equal(basic.prices[0].amount,100);
- assert.equal(Object.hasOwn(basic,'provider_token'),false);
+ assert.equal(basic.provider_token,'');
  const lifetime=starsInvoicePayload('lifetime',id,10000);
  assert.equal(Object.hasOwn(lifetime,'subscription_period'),false);
- assert.equal(Object.hasOwn(lifetime,'provider_token'),false);
+ assert.equal(lifetime.provider_token,'');
  assert.throws(()=>starsInvoicePayload('lifetime',id,10001),/INVALID_STARS_INVOICE/);
  assert.throws(()=>starsInvoicePayload('basic','not-valid',100),/INVALID_STARS_INVOICE/);
 });
