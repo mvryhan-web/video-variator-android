@@ -6,7 +6,7 @@ import {installTelegramMini} from './telegram-mini.js';
 const commands = {
   start: 'Welcome to Video Uniquifier! Open the app using the Menu button or the link below.',
   create: 'To process a video, open the app. Telegram file processing is not available yet.',
-  plans: 'View current plans in the app. Telegram Stars payments are not available yet.',
+  plans: 'View all current Video Uniquifier plans in the app.',
   account: 'Open the app to view your account and remaining credits.',
   help: 'Use the Menu button to open Video Uniquifier and select a tool.',
   support: 'Please use the support contact information in the app.',
@@ -26,6 +26,10 @@ export function installTelegramBot(app, {appUrl}) {
   app.post('/api/telegram/webhook', async (req, res) => {
     if (req.get('X-Telegram-Bot-Api-Secret-Token') !== secret) {
       return res.sendStatus(403);
+    }
+    if (mini) {
+      try { if (await mini.handlePaymentUpdate(req.body)) return res.json({ok:true}); }
+      catch(error){console.error('[telegram-stars] Payment handling failed:',error.message);return res.status(503).json({ok:false});}
     }
     if (videoAddon) {
       try { if (await videoAddon.handle(req.body)) return res.json({ok:true}); }
@@ -61,7 +65,7 @@ export function installTelegramBot(app, {appUrl}) {
         body:JSON.stringify({
           chat_id:chatId,
           text:reply + (['start','create','plans','account','help'].includes(command) ? '\n\n' + appUrl : ''),
-          reply_markup:mini && message.chat?.type==='private' && ['start','create'].includes(command)?{inline_keyboard:[[{text:'🎬 Process in Telegram',web_app:{url:appUrl+'/telegram-mini.html'}}],[{text:'🌐 Open full website',url:appUrl}]]}:undefined,
+          reply_markup:mini && message.chat?.type==='private' && ['start','create','plans'].includes(command)?{inline_keyboard:[[{text:'🎬 Process in Telegram',web_app:{url:appUrl+'/telegram-mini.html'}}],[{text:'🌐 Open full website',url:appUrl}]]}:undefined,
           disable_web_page_preview:true
         }),
         signal:AbortSignal.timeout(10000)
@@ -92,7 +96,7 @@ export function installTelegramBot(app, {appUrl}) {
         body:JSON.stringify({
           url:webhookUrl,
           secret_token:secret,
-          allowed_updates:videoAddon?['message','callback_query']:['message']
+          allowed_updates:['message',...(videoAddon?['callback_query']:[]),...(mini?['pre_checkout_query','subscription']:[])]
         }),
         signal:AbortSignal.timeout(10000)
       });
