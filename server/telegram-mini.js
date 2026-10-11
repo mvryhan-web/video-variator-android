@@ -2,6 +2,7 @@
 import {createHmac,randomUUID,timingSafeEqual} from 'node:crypto';
 import {pool} from './db.js';
 import {initStars,starsAccess,starsPlans,createStarsInvoice,processStarsUpdate} from './telegram-stars.js';
+import {initTelegramAccountTables,linkedStripeAccess,linkedAccountId} from './telegram-account.js';
 export const TELEGRAM_MINI_TRIAL_LIMIT=5;
 const enabled=process.env.TELEGRAM_MINI_ENABLED==='true';
 const plans=[
@@ -32,7 +33,7 @@ export function verifyTelegramMiniInitData(raw,botToken,nowSeconds=Math.floor(Da
 async function state(id){
  const r=await pool.query('SELECT trial_used,active_job,active_started FROM vv_tg_mini_trials WHERE telegram_id=$1',[id]);
  const u=r.rows[0]||{};
- const used=Number(u.trial_used||0),paid=await starsAccess(id);
+ const used=Number(u.trial_used||0),paid=(await linkedStripeAccess(id))||(await starsAccess(id));
  const priced=starsPlans();
  return{limit:5,used,remaining:Math.max(0,5-used),paid,busy:!!(u.active_job&&u.active_started&&new Date(u.active_started).getTime()>Date.now()-20*60*1000),plans:plans.map(p=>({...p,stars:priced.find(v=>v.id===p.id)?.stars??null}))};
 }
@@ -43,6 +44,7 @@ export function installTelegramMini(app,{token}){
   if(!pool)throw Error('Telegram Mini App needs PostgreSQL');
   await pool.query('CREATE TABLE IF NOT EXISTS vv_tg_mini_trials(telegram_id TEXT PRIMARY KEY,trial_used INTEGER NOT NULL DEFAULT 0,active_job TEXT,active_started TIMESTAMPTZ,failed_refunds INTEGER NOT NULL DEFAULT 0,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()); ALTER TABLE vv_tg_mini_trials ADD COLUMN IF NOT EXISTS active_kind TEXT NOT NULL DEFAULT \'trial\'; ALTER TABLE vv_tg_mini_trials ADD COLUMN IF NOT EXISTS active_paid_cost INTEGER NOT NULL DEFAULT 0;');
   await initStars();
+  await initTelegramAccountTables();
   ready=true;
  }
  const auth=(fn)=>async(req,res)=>{
@@ -65,10 +67,20 @@ export function installTelegramMini(app,{token}){
    const q=await client.query('SELECT trial_used,active_job,active_started FROM vv_tg_mini_trials WHERE telegram_id=$1 FOR UPDATE',[user.id]);
    const u=q.rows[0],busy=u.active_job&&u.active_started&&new Date(u.active_started).getTime()>Date.now()-20*60*1000;
    if(busy){await client.query('ROLLBACK');return res.status(409).json({error:'VIDEO_ALREADY_PROCESSING'});}
-   const paidQ=await client.query("SELECT plan,period_used FROM vv_tg_star_access WHERE telegram_id=$1 AND (plan='lifetime' OR expires_at>NOW()) FOR UPDATE",[user.id]);
+   const linked=await client.query("SELECT u.id,u.plan,u.plan_limit,u.period_used,u.subscription_status FROM vv_tg_account_links l JOIN vv_users u ON u.id=l.user_id WHERE l.telegram_id=$1 FOR UPDATE OF u",[user.id]);
+   const web=linked.rows[0],activeWeb=web&&(web.plan==='lifetime'&&web.subscription_status==='lifetime'||['active','trialing'].includes(web.subscription_status));
+   const paidQ=activeWeb?{rows:[]}:await client.query("SELECT plan,period_used FROM vv_tg_star_access WHERE telegram_id=$1 AND (plan='lifetime' OR expires_at>NOW()) FOR UPDATE",[user.id]);
    const paid=paidQ.rows[0],tiers={basic:750,pro:2250,business:15000,lifetime:null};
    let kind='trial',cost=0;
-   if(paid&&Object.prototype.hasOwnProperty.call(tiers,paid.plan)){
+   if(activeWeb){
+    const allowed={basic:['gentle'],pro:['gentle','balanced'],business:['gentle','balanced','dynamic'],lifetime:['gentle','balanced','dynamic']};
+    if(!allowed[web.plan]?.includes(mode)){await client.query('ROLLBACK');return res.status(403).json({error:'MODE_REQUIRES_HIGHER_PLAN'});}
+    kind='stripe';cost=Math.max(1,Math.ceil(duration));
+    if(web.plan!=='lifetime'){
+     if(Number(web.period_used)+cost>Number(web.plan_limit)){await client.query('ROLLBACK');return res.status(402).json({error:'CREDITS_EXHAUSTED'});}
+     await client.query('UPDATE vv_users SET period_used=period_used+$2 WHERE id=$1',[web.id,cost]);
+    }else cost=0;
+   }else if(paid&&Object.prototype.hasOwnProperty.call(tiers,paid.plan)){
     const allowed={basic:['gentle'],pro:['gentle','balanced'],business:['gentle','balanced','dynamic'],lifetime:['gentle','balanced','dynamic']};
     if(!allowed[paid.plan].includes(mode)){await client.query('ROLLBACK');return res.status(403).json({error:'MODE_REQUIRES_HIGHER_PLAN'});}
     kind='paid';cost=Math.max(1,Math.ceil(duration));
@@ -101,6 +113,7 @@ export function installTelegramMini(app,{token}){
    if(u?.active_job===job){
     if(u.failed_refunds<3){
      if(u.active_kind==='paid'&&u.active_paid_cost>0)await client.query('UPDATE vv_tg_star_access SET period_used=GREATEST(0,period_used-$2) WHERE telegram_id=$1',[user.id,u.active_paid_cost]);
+     if(u.active_kind==='stripe'&&u.active_paid_cost>0)await client.query('UPDATE vv_users SET period_used=GREATEST(0,period_used-$2) WHERE id=(SELECT user_id FROM vv_tg_account_links WHERE telegram_id=$1)',[user.id,u.active_paid_cost]);
      if(u.active_kind==='trial')await client.query('UPDATE vv_tg_mini_trials SET trial_used=GREATEST(0,trial_used-1) WHERE telegram_id=$1',[user.id]);
     }
     await client.query('UPDATE vv_tg_mini_trials SET failed_refunds=failed_refunds+1,active_job=NULL,active_started=NULL,active_paid_cost=0 WHERE telegram_id=$1',[user.id]);
