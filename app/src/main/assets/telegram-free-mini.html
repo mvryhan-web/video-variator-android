@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c1021"><title>Video Uniquifier · Free Telegram Preview</title>
+<link rel="stylesheet" href="telegram-free-mini.css">
+<script src="https://telegram.org/js/telegram-web-app.js?64"></script>
+<script src="video-core.js" defer></script><script src="telegram-free-mini.js" defer></script></head>
+<body><main>
+<header><span class="mark">VU</span><span>Video Uniquifier<small>Telegram Studio</small></span><span id="counter" class="counter">5 free</span></header>
+<section class="hero"><p class="eyebrow">CREATE ON YOUR PHONE</p><h1>Make your video unique.</h1><p>Choose a video from your phone. Video processing stays on your device.</p></section>
+<section id="editor" class="panel">
+ <label class="upload"><input type="file" id="video" accept="video/*" hidden><span class="upload-icon">＋</span><b id="filename">Choose a video</b><small>MP4, MOV or WebM · up to 45 seconds / 20 MB</small></label>
+ <video id="preview" controls playsinline hidden></video>
+ <p class="label">Processing mode</p>
+ <div id="modes" class="modes"><button type="button" data-mode="gentle" class="selected">Gentle<small>Soft changes</small></button><button type="button" data-mode="balanced">Balanced<small>Natural variety</small></button><button type="button" data-mode="dynamic">Dynamic<small>More motion</small></button></div>
+ <button id="start" class="primary" type="button" disabled>▶ Start processing</button>
+ <p id="status" role="status" aria-live="polite">Open from the Telegram bot to get started.</p>
+ <div id="progressWrap" hidden><progress id="progress" max="100" value="0"></progress><p>Keep Telegram open while processing.</p></div>
+ <div id="result" class="result" hidden><h2>✓ Your video is ready!</h2><video id="output" controls playsinline></video><button id="download" type="button" class="primary">↓ Save video to phone</button><p>On iPhone, use Share → Save to Files / Save Video if needed.</p></div>
+</section>
+
+<section id="plansSection" class="panel" hidden><h2>Five free previews completed</h2><p>Your Telegram trial is finished. No payment is collected inside this Mini App. The separate Video Uniquifier website and Android app continue to offer their existing features and Stripe billing independently.</p><p class="hint">Use the bot's existing Open website option whenever you need the full website.</p></section>
+<footer>Five free Telegram previews • Gentle / Balanced / Dynamic • Local 720p processing • No checkout inside Telegram</footer>
+</main></body></html>
