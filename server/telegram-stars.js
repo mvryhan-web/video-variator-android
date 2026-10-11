@@ -48,7 +48,7 @@ export async function createStarsInvoice(token,id,plan){
   const url=await tg(token,'createInvoiceLink',{
    title:'Video Uniquifier '+s.name,
    description:s.monthly?s.credits+' video credits every 30 days':'Lifetime Telegram Mini video processing',
-   payload:'vu2:'+order,provider_token:'',currency:'XTR',
+   payload:'vu2:'+order,currency:'XTR',
    prices:[{label:s.name,amount}],...(s.monthly?{subscription_period:2592000}:{})
   });
   return{url,plan,stars:amount};
@@ -60,7 +60,10 @@ export async function processStarsUpdate(update,token){
   const id=orderId(q.invoice_payload);if(!id)return false;
   try{
    const r=await pool.query("SELECT * FROM vv_tg_star_orders WHERE id=$1 AND ((status='pending' AND created_at>NOW()-INTERVAL '2 hours') OR (status='paid' AND plan<>'lifetime'))",[id]);
-   const o=r.rows[0],ok=!!o&&o.telegram_id===String(q.from?.id)&&q.currency==='XTR'&&o.amount===q.total_amount;
+   const o=r.rows[0],who=String(q.from?.id||''),valid=!!o&&o.telegram_id===who&&q.currency==='XTR'&&o.amount===q.total_amount;
+   // Reject accidental duplicate purchases while a different paid plan is active.
+   const subscribed=valid&&o.status==='pending'&&(await starsAccess(who)||await linkedStripeAccess(who));
+   const ok=valid&&!subscribed;
    await tg(token,'answerPreCheckoutQuery',{pre_checkout_query_id:q.id,ok,...(!ok?{error_message:'This invoice has expired. Please open the Mini App again.'}:{})});
   }catch(e){
    console.error('[stars] precheckout:',e.message);
@@ -77,7 +80,7 @@ export async function processStarsUpdate(update,token){
    await client.query('BEGIN');
    const r=await client.query('SELECT * FROM vv_tg_star_orders WHERE id=$1 FOR UPDATE',[id]);
    const order=r.rows[0];
-   if(!order||order.telegram_id!==user||order.amount!==paid.total_amount||!specs[order.plan])throw Error('Stars payment/order mismatch');
+   if(!order||order.telegram_id!==user||order.amount!==paid.total_amount||!specs[order.plan]||order.status==='refunded')throw Error('Stars payment/order mismatch');
    const saved=await client.query("INSERT INTO vv_tg_star_payments(charge_id,telegram_id,order_id,plan,amount) VALUES($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING RETURNING charge_id",[charge,user,id,order.plan,order.amount]);
    if(saved.rowCount){
     await client.query("UPDATE vv_tg_star_orders SET status='paid',paid_at=NOW(),charge_id=$2 WHERE id=$1",[id,charge]);
