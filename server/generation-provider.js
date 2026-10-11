@@ -1,8 +1,9 @@
 // Server-only Google adapter. No account cookies or consumer subscription automation.
+import {MODELS,MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
+export {MODELS,MODEL_CATALOG};
 const ROOT='https://generativelanguage.googleapis.com/v1beta/';
-export const MODELS={image:{id:'gemini-3.1-flash-image',label:'Nano Banana 2',ratios:['1:1','2:3','3:2','9:16','16:9'],references:3},video:{id:'veo-3.1-lite-generate-preview',label:'Veo 3.1 Lite',ratios:['16:9','9:16'],references:1},music:{id:'lyria-3-clip-preview',label:'Lyria · 30 seconds',ratios:[],references:0}};
 export function validateGeneration(body){
- const m=MODELS[body?.kind];
+ const m=body?.model?MODEL_CATALOG.find(m=>m.id===body.model&&m.kind===body.kind&&m.adapter):MODELS[body?.kind];
  if(!m||typeof body.prompt!=='string'||!body.prompt.trim()||body.prompt.length>2000||body.consent!==true)throw new Error('INVALID_REQUEST');
  if(m.ratios.length&&!m.ratios.includes(body.ratio))throw new Error('UNSUPPORTED_FORMAT');
  const references=body.references??[];
@@ -14,7 +15,7 @@ export function validateGeneration(body){
   if(r.mimeType==='image/jpeg'&&(b[0]!==255||b[1]!==216||b[2]!==255))throw new Error('INVALID_REFERENCES');
  }
  if(body.kind==='music'&&!['song','instrumental'].includes(body.musicMode))throw new Error('INVALID_MUSIC_MODE');
- return {kind:body.kind,prompt:body.prompt.trim(),ratio:body.ratio,references,musicMode:body.musicMode};
+ return {kind:body.kind,model:m.id,prompt:body.prompt.trim(),ratio:body.ratio,references,musicMode:body.musicMode};
 }
 export function safeGoogleUrl(value){const u=new URL(value);if(u.protocol!=='https:'||u.hostname!=='generativelanguage.googleapis.com'||u.username||u.password)throw new Error('UNSAFE_PROVIDER_URL');return u.toString();}
 export async function googleJson(relative,{key,body,fetcher=fetch}){
@@ -24,7 +25,8 @@ export async function googleJson(relative,{key,body,fetcher=fetch}){
  return r.json();
 }
 export async function generateGoogle(request,{key,fetcher=fetch}){
- const model=MODELS[request.kind];
+ const model=request.model?MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter):MODELS[request.kind];
+ if(!model)throw new Error('MODEL_NOT_CONNECTED');
  if(request.kind==='video'){
   const ref=request.references[0];
   const data=await googleJson(`models/${model.id}:predictLongRunning`,{key,fetcher,body:{instances:[{prompt:request.prompt,...(ref?{image:{bytesBase64Encoded:ref.data,mimeType:ref.mimeType}}:{})}],parameters:{aspectRatio:request.ratio,resolution:'720p',durationSeconds:8,sampleCount:1}}});

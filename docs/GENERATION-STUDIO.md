@@ -2,13 +2,46 @@
 
 Production main baseline: 259653624375d6fe383d721a0022e7030fbb14be. No deployment approved.
 
-Separate `generate-studio.html`: video, images, music and clearly unavailable translation.
+Separate `generate-studio.html`: video, images and audio; clearly unavailable translation.
 US English; Russian device locale translation; responsive mobile layout. Images: description,
 PNG/JPEG reference files up to 3 × 1 MB, supported ratios. Video: text or one image,
 8 seconds 720p, 16:9 / 9:16. Music: 30-second song with vocals or instrumental.
 Adapters: Nano Banana 2 (`gemini-3.1-flash-image`), Veo 3.1 Lite, Lyria 3 Clip.
+Veo 3.1 Fast uses the same validated Google adapter but additionally requires an explicit
+`AI_STUDIO_ALLOWED_MODELS=veo-3.1-fast-generate-preview` entry before activation.
 No Suno/Seedance/Kling/OpenAI connectors or file dubbing implemented yet.
 No consumer account scraping, subscription credit reuse, paid fallbacks or retries.
+
+## Three-studio interface, inspected 2026-10-11
+
+Opened and interacted with all three public Lumina pages in Cloud Browser:
+https://ai.byteplus.com/lumina/en/model/image?mode=image
+https://ai.byteplus.com/lumina/en/model/video?mode=video
+https://ai.byteplus.com/lumina/en/model/audio?mode=audio
+
+Observed shared layout: desktop navigation on the left, large central result area,
+bottom prompt/material composer, model popover with short descriptions, separate settings
+popover and Explore/History controls. Image settings show ratio drawings; video exposes
+ratio/resolution/duration; audio exposes models and pitch/volume. Our own implementation
+uses this layout pattern and Video Uniquifier branding, not their assets or text.
+Payments were explicitly deferred by the owner; the existing sandbox-only draft remains off.
+
+Direct links: `generate-studio.html?studio=video`, `?studio=image`, `?studio=audio`.
+Responsive top navigation on phones; keyboard-accessible model and settings dialogs;
+ratio drawings; local photo previews, drag/drop, clear and per-studio draft retention.
+My results displays/resumes the latest pilot result only, not a fabricated full gallery.
+The Audio studio prepares song/instrumental and voiceover controls. New voiceover/Seed
+model slots remain disconnected; a link opens the existing voiceover tool.
+
+`generate-models.js` shares safe capabilities with the server. Model choices are included
+in requests and validated against their type: an unconnected choice cannot silently fall
+back to Google. BytePlus Seedance/Seedream/Seed Audio/Seed Speech entries are clearly
+marked API connection pending; no BytePlus adapters, keys or paid calls are claimed done.
+Photos are never uploaded by preview/settings/model/history actions. Generate remains
+disabled without adapter + server activation + consent + prompt. Extra Google models
+cannot be enabled solely by enabling the video category.
+
+Screenshots in `docs/studio-preview/` are actual local browser renders, not provider outputs.
 
 ## Prepaid customer billing preparation (not live)
 

@@ -1,10 +1,12 @@
 import {randomUUID} from 'node:crypto';
-import {MODELS,validateGeneration,generateGoogle,pollGoogle} from './generation-provider.js';
+import {MODELS,MODEL_CATALOG,validateGeneration,generateGoogle,pollGoogle} from './generation-provider.js';
 export function studioConfig(env=process.env){
  const calls=Number(env.AI_STUDIO_MAX_CALLS||0);
  const enabled=env.AI_STUDIO_ENABLED==='true'&&!!env.GEMINI_API_KEY&&!!env.DATABASE_URL&&!!env.ADMIN_EMAIL&&Number.isInteger(calls)&&calls>0&&calls<=20;
  const allowed=(env.AI_STUDIO_ALLOWED_KINDS||'').split(',');
- return {pilot:true,ownerOnly:true,enabled,reason:enabled?null:'OWNER_SETUP_REQUIRED',models:Object.entries(MODELS).map(([kind,m])=>({kind,...m,enabled:enabled&&allowed.includes(kind)})),translation:{enabled:false,reason:'PROVIDER_NOT_CONNECTED'}};
+ const explicit=(env.AI_STUDIO_ALLOWED_MODELS||'').split(',');
+ const catalog=MODEL_CATALOG.map(m=>({...m,enabled:enabled&&m.adapter&&allowed.includes(m.kind)&&(m.id===MODELS[m.kind]?.id||explicit.includes(m.id))}));
+ return {pilot:true,ownerOnly:true,enabled,reason:enabled?null:'OWNER_SETUP_REQUIRED',models:Object.entries(MODELS).map(([kind,m])=>({kind,...m,enabled:catalog.find(c=>c.id===m.id)?.enabled||false})),catalog,translation:{enabled:false,reason:'PROVIDER_NOT_CONNECTED'}};
 }
 export function installGenerationStudio(app,{auth,pool,env=process.env,provider=generateGoogle,poller=pollGoogle}){
  let ready;
@@ -16,7 +18,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  async function run(id,request){try{await finish(id,await provider(request,{key:env.GEMINI_API_KEY}));}catch(e){await pool.query('UPDATE vv_generation_pilot SET status=$2,error=$3 WHERE id=$1',[id,'failed','GENERATION_FAILED_NO_AUTOMATIC_RETRY']);}}
  app.post('/api/studio/jobs',auth,owner,async(req,res)=>{
   let request;try{request=validateGeneration(req.body);}catch(e){return res.status(400).json({error:e.message});}
-  if(!studioConfig(env).models.find(m=>m.kind===request.kind)?.enabled)return res.status(503).json({error:'MODEL_NOT_ENABLED'});
+  if(!studioConfig(env).catalog.find(m=>m.id===request.model&&m.kind===request.kind)?.enabled)return res.status(503).json({error:'MODEL_NOT_ENABLED'});
   // No consumer credits or existing subscription entitlements are reused in this owner-only pilot.
   let c,id;try{
    await init();c=await pool.connect();await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(84920115)');

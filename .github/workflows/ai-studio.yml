@@ -3,7 +3,7 @@ on:
   push:
     branches: [ai-generation-studio]
   pull_request:
-    paths: ['server/generation-*.js', 'app/src/main/assets/generate-studio.*', 'tests/generation-*', '.github/workflows/ai-studio.yml']
+    paths: ['server/generation-*.js', 'app/src/main/assets/generate-studio.*', 'app/src/main/assets/generate-models.js', 'tests/generation-*', '.github/workflows/ai-studio.yml']
 jobs:
   verify:
     runs-on: ubuntu-latest

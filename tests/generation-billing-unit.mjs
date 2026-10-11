@@ -15,7 +15,9 @@ test('quote binds approved price, user, model, content and reference image',()=>
  for(const change of [{userId:'other'},{body:{...body,prompt:'Different'}},{body:{...body,ratio:'9:16'}},{env:{...env,AI_CREDIT_RATES_JSON:'[{"kind":"video","credits":11}]'}},{token:q.token+'x'},{now:301000}]) assert.throws(()=>verifyQuote({userId:'u',body,token:q.token,env,now:2000,...change}));
 });
 test('quote cannot override server pricing through client credits/model',()=>{
- const q=makeQuote({userId:'u',body:{...body,credits:1,model:'cheap-fake'},env,now:1000});assert.equal(q.credits,10);assert.equal(q.model,'veo-3.1-lite-generate-preview');
+ const q=makeQuote({userId:'u',body:{...body,credits:1},env,now:1000});assert.equal(q.credits,10);assert.equal(q.model,'veo-3.1-lite-generate-preview');
+ assert.throws(()=>makeQuote({userId:'u',body:{...body,model:'cheap-fake'},env,now:1000}));
+ assert.throws(()=>makeQuote({userId:'u',body:{...body,model:'veo-3.1-fast-generate-preview'},env,now:1000}),/AI_PRICING_NOT_APPROVED/);
 });
 test('live Stripe key cannot activate this test-only payment integration',async()=>{
  const app=express();app.use(express.json());let reads=0;

@@ -17,7 +17,7 @@ export function billingCatalog(env={}) {
 }
 export function makeQuote({userId,body,env,now=Date.now()}) {
   const request=validateGeneration(body),catalog=billingCatalog(env),rate=catalog.rates.find(r=>r.kind===request.kind);
-  if (!rate||!env.APP_JWT_SECRET) throw Error('AI_PRICING_NOT_APPROVED');
+  if (!rate||!env.APP_JWT_SECRET||request.model!==MODELS[request.kind].id) throw Error('AI_PRICING_NOT_APPROVED');
   const data={userId,fingerprint:hash(request),kind:request.kind,model:MODELS[request.kind].id,credits:rate.credits,revision:catalog.revision,expiresAt:now+300000};
   const payload=Buffer.from(JSON.stringify(data)).toString('base64url');
   const signature=createHmac('sha256',env.APP_JWT_SECRET).update(payload).digest('base64url');

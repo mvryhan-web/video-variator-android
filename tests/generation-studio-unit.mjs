@@ -8,6 +8,16 @@ test('Veo submits exactly one 8 second 720p generation',async()=>{let seen;const
 test('music output parsed by media type, not first part',async()=>{const r=await generateGoogle({kind:'music',prompt:'Piano',musicMode:'instrumental',references:[]},{key:'test',fetcher:async()=>({ok:true,json:async()=>({candidates:[{content:{parts:[{text:'Lyrics'},{inlineData:{mimeType:'audio/mpeg',data:Buffer.from('fixture').toString('base64')}}]}}]})})});assert.equal(r.mime,'audio/mpeg');assert.equal(r.bytes.toString(),'fixture');});
 test('provider API key never sent to arbitrary or redirected download URLs',async()=>{assert.throws(()=>safeGoogleUrl('https://evil.test/file'));assert.throws(()=>safeGoogleUrl('http://generativelanguage.googleapis.com/file'));let calls=0;await assert.rejects(()=>pollGoogle('operations/test',{key:'secret',fetcher:async()=>{calls++;return {ok:true,json:async()=>({done:true,response:{generateVideoResponse:{generatedSamples:[{video:{uri:'https://evil.test/file'}}]}}})};}}));assert.equal(calls,1);});
 test('provider errors produce no fake media',async()=>{await assert.rejects(()=>generateGoogle(request,{key:'test',fetcher:async()=>({ok:false,status:429})}),/PROVIDER_BUSY/);});
+test('model selection routes explicitly and unconnected models never fall back to Google',async()=>{
+ const selected=validateGeneration({...request,model:'veo-3.1-fast-generate-preview'});let called='';
+ await generateGoogle(selected,{key:'fixture',fetcher:async url=>{called=url;return {ok:true,json:async()=>({name:'operations/fixture'})};}});
+ assert.ok(called.includes('veo-3.1-fast-generate-preview:predictLongRunning'));
+ for(const model of ['byteplus-seedance-2','gemini-3.1-flash-image','unknown'])assert.throws(()=>validateGeneration({...request,model}));
+ const env={AI_STUDIO_ENABLED:'true',GEMINI_API_KEY:'fixture',DATABASE_URL:'fixture',ADMIN_EMAIL:'fixture',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'video'};
+ assert.equal(studioConfig(env).catalog.find(m=>m.id===selected.model).enabled,false);
+ assert.equal(studioConfig({...env,AI_STUDIO_ALLOWED_MODELS:selected.model}).catalog.find(m=>m.id===selected.model).enabled,true);
+ assert.equal(studioConfig({...env,AI_STUDIO_ALLOWED_MODELS:'byteplus-seedance-2'}).catalog.find(m=>m.id==='byteplus-seedance-2').enabled,false);
+});
 import express from 'express';import {installGenerationStudio} from '../server/generation-studio.js';
 test('owner pilot cap persists across installation; deletion never restores attempts',async()=>{
  const jobs=[];const pool={async query(sql,args=[]){if(sql.startsWith('CREATE'))return {};if(sql.startsWith('SELECT *'))return {rows:jobs.filter(j=>j.id===args[0]&&j.user_id===args[1]&&!j.deleted)};if(sql.startsWith('UPDATE')&&sql.includes('deleted=true')){jobs.find(j=>j.id===args[0]).deleted=true;return {};}if(sql.startsWith('UPDATE')){const j=jobs.find(j=>j.id===args[0]);Object.assign(j,{status:args[1],operation:args[2],mime:args[3],media:args[4],result_text:args[5]});return {};}throw new Error(sql);},async connect(){return {query:async(sql,args=[])=>{if(sql.startsWith('SELECT count'))return {rows:[{n:jobs.length}]};if(sql.startsWith('INSERT'))jobs.push({id:args[0],user_id:args[1],kind:args[2],status:args[3]});return {};},release(){}};}};
