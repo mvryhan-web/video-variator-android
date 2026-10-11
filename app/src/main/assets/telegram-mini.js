@@ -153,6 +153,7 @@ $('modes').addEventListener('click',e=>{
 });
 $('start').addEventListener('click',start);
 $('download').addEventListener('click',download);
+$('connectWebAccount').addEventListener('click',()=>{const url=location.origin+'/';try{if(tg?.openLink)tg.openLink(url,{try_instant_view:false});else window.open(url,'_blank','noopener');}catch(e){status('Open '+url+' in a browser, sign in and choose Profile & Settings → Connect Telegram.');}});
 if(core)core.configure({onProgress:v=>{$('progress').value=Math.round(v*100)},onStage:(s)=>{if(s==='process')status('Processing your video…')}});else status('Local video engine is unavailable. Please reopen Telegram.');
 init();
 })();
