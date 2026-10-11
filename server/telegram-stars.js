@@ -58,7 +58,7 @@ export async function processStarsUpdate(update,token){
  if(q){
   const id=orderId(q.invoice_payload);if(!id)return false;
   try{
-   const r=await pool.query("SELECT * FROM vv_tg_star_orders WHERE id=$1 AND status='pending' AND created_at>NOW()-INTERVAL '2 hours'",[id]);
+   const r=await pool.query("SELECT * FROM vv_tg_star_orders WHERE id=$1 AND ((status='pending' AND created_at>NOW()-INTERVAL '2 hours') OR (status='paid' AND plan<>'lifetime'))",[id]);
    const o=r.rows[0],ok=!!o&&o.telegram_id===String(q.from?.id)&&q.currency==='XTR'&&o.amount===q.total_amount;
    await tg(token,'answerPreCheckoutQuery',{pre_checkout_query_id:q.id,ok,...(!ok?{error_message:'This invoice has expired. Please open the Mini App again.'}:{})});
   }catch(e){
