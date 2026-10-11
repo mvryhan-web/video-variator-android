@@ -22,6 +22,11 @@ export async function linkedStarsAccess(userId){
  if(limit===undefined)return null;
  return{plan:u.plan,credits:limit,used:Number(u.period_used),remaining:limit===null?null:Math.max(0,limit-Number(u.period_used)),expiresAt:u.expires_at,source:'telegram'};
 }
+export async function effectiveWebAccount(user){
+ if(!user||process.env.TELEGRAM_MINI_ENABLED!=='true'||stripeIsActive(user))return user;
+ const a=await linkedStarsAccess(user.id);
+ return a?{...user,telegram_access:a}:user;
+}
 export async function linkedAccountId(telegramId){
  const q=await pool.query('SELECT user_id FROM vv_tg_account_links WHERE telegram_id=$1',[String(telegramId)]);
  return q.rows[0]?.user_id||null;
