@@ -3,6 +3,7 @@ import {createHash} from 'node:crypto';
 import {linkTelegramChat} from './reminders.js';
 import {installTelegramVideo} from './telegram-video.js';
 import {installTelegramMini} from './telegram-mini.js';
+import {finishAccountLink} from './telegram-account.js';
 const commands = {
   start: 'Welcome to Video Uniquifier! Open the app using the Menu button or the link below.',
   create: 'To process a video, open the app. Telegram file processing is not available yet.',
@@ -40,6 +41,13 @@ export function installTelegramBot(app, {appUrl}) {
     const text = String(message?.text || '');
     if (!chatId) return res.json({ok:true});
     const command = text.match(/^\/([a-z]+)(?:@[A-Za-z0-9_]+)?(?:\s|$)/i)?.[1]?.toLowerCase();
+    if (mini && command==='start' && /^\/start(?:@[A-Za-z0-9_]+)?\s+a_[0-9a-f]{48}$/i.test(text.trim())) {
+      const privateUser=message.chat?.type==='private' && String(chatId)===String(message.from?.id);
+      const secret=text.trim().split(/\s+/).pop()?.slice(2);
+      const ok=privateUser?await finishAccountLink(secret,message.from.id):false;
+      try{await fetch('https://api.telegram.org/bot'+token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId,text:ok?'✅ Your website account is now linked to Telegram. Subscriptions and credits will be shared.':'Account link expired, already linked or conflicting with another active subscription. Reopen your website account to create a new link.'}),signal:AbortSignal.timeout(10000)});}catch(e){console.error('[account-link] reply:',e.message);}
+      return res.json({ok:true});
+    }
     // A one-time deep-link connects only the chat that explicitly pressed Start.
     if (command==='start' && /^\/start(?:@[A-Za-z0-9_]+)?\s+r_[0-9a-f]{40}$/i.test(text.trim())) {
       const code=text.trim().split(/\s+/).pop();
