@@ -34,7 +34,7 @@ attempt ledger. Inputs are sent to Google but not persisted by our server.
 Deleting while processing is blocked; does not cancel a provider charge. Unknown interrupted
 image/music jobs never automatically retry. Video operation resumes polling if stored.
 Results may remain until manually deleted; no automated expiry or public customer retention policy.
-This is an owner pilot, not production storage architecture. No native Android Gallery bridge yet.
+This is an owner pilot, not production storage architecture. Uses the existing Android save/share bridge; physical-device output tests remain pending.
 Browser file sharing works only when supported; otherwise truthful download instruction.
 Translated-file input is deliberately unavailable; existing raw video upload prohibition remains.
 
