@@ -30,8 +30,10 @@ jobs:
           node --check server/telegram-mini.js
           node --check server/telegram-stars.js
           node --check server/telegram-account.js
+          node --check server/telegram-support.js
           node --check server/db.js
           node --check app/src/main/assets/telegram-mini.js
           node --check app/src/main/assets/telegram-account-link.js
+          node --check app/src/main/assets/telegram-support-admin.js
       - name: Telegram identity, subscriptions, and account unit tests
         run: node --test server/tests/telegram-mini.test.mjs server/tests/telegram-stars.test.mjs server/tests/telegram-account.test.mjs
