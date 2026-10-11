@@ -93,7 +93,7 @@ export function installTelegramMini(app,{token}){
   }catch(error){console.error('[telegram-mini]',error.message);res.status(503).json({error:'TELEGRAM_MINI_UNAVAILABLE'});}
  };
  app.get('/api/telegram-mini/session',auth(async(_req,res,user)=>res.json({...await state(user.id),firstName:user.firstName})));
- app.post('/api/telegram-mini/checkout',auth(async(req,res,user)=>{const invoice=await createStarsInvoice(token,user.id,String(req.body?.plan||''));if(invoice.error)return res.status(invoice.status||400).json({error:invoice.error});res.json(invoice);}));
+ app.post('/api/telegram-mini/checkout',auth(async(req,res,user)=>{const invoice=await createStarsInvoice(token,user.id,String(req.body?.plan||''),{termsAccepted:req.body?.termsAccepted===true,immediateAccess:req.body?.immediateAccess===true,recurringAcknowledged:req.body?.recurringAcknowledged===true});if(invoice.error)return res.status(invoice.status||400).json({error:invoice.error});res.json(invoice);}));
  app.post('/api/telegram-mini/reserve',auth(async(req,res,user)=>{
   const mode=String(req.body?.mode||''),duration=Number(req.body?.duration);
   if(!['gentle','balanced','dynamic'].includes(mode)||!Number.isFinite(duration)||duration<0.3||duration>45)return res.status(400).json({error:'VIDEO_LIMIT_45_SECONDS'});
