@@ -4,6 +4,7 @@ import {linkTelegramChat} from './reminders.js';
 import {installTelegramVideo} from './telegram-video.js';
 import {installTelegramMini} from './telegram-mini.js';
 import {finishAccountLink} from './telegram-account.js';
+import {installTelegramSupport} from './telegram-support.js';
 const commands = {
   start: 'Welcome to Video Uniquifier! Open the app using the Menu button or the link below.',
   create: 'To process a video, open the app. Telegram file processing is not available yet.',
@@ -20,6 +21,7 @@ export function installTelegramBot(app, {appUrl}) {
   const secret = process.env.TELEGRAM_WEBHOOK_SECRET || (token ? createHash('sha256').update(token).digest('hex') : '');
   const videoAddon = installTelegramVideo(app, {appUrl,token});
   const mini = installTelegramMini(app,{token});
+  const support = mini?installTelegramSupport(app,{token,appUrl}):null;
   if (!token) {
     console.info('[telegram] Webhook disabled until TELEGRAM_BOT_TOKEN is set.');
     return;
@@ -31,6 +33,10 @@ export function installTelegramBot(app, {appUrl}) {
     if (mini) {
       try { if (await mini.handlePaymentUpdate(req.body)) return res.json({ok:true}); }
       catch(error){console.error('[telegram-stars] Payment handling failed:',error.message);return res.status(503).json({ok:false});}
+    }
+    if (support) {
+      try { if(await support.handle(req.body))return res.json({ok:true}); }
+      catch(error){console.error('[telegram-support]',error.message);return res.status(503).json({ok:false});}
     }
     if (videoAddon) {
       try { if (await videoAddon.handle(req.body)) return res.json({ok:true}); }
@@ -88,6 +94,7 @@ export function installTelegramBot(app, {appUrl}) {
   // Register only after the HTTP server is listening, so Telegram can deliver updates.
   return async () => {
     if (mini) { try{await mini.init();}catch(e){console.error('[telegram-mini] Init failed:',e.message);} }
+    if (support) { try{await support.init();}catch(e){console.error('[telegram-support] Init failed:',e.message);} }
     if (videoAddon) {
       try { await videoAddon.init(); }
       catch(error){console.error('[telegram-video] Storage initialization failed:',error.message);}
