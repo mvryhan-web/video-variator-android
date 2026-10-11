@@ -104,7 +104,7 @@ export function installTelegramBot(app, {appUrl}) {
         body:JSON.stringify({
           url:webhookUrl,
           secret_token:secret,
-          allowed_updates:['message',...(videoAddon?['callback_query']:[]),...(mini?['pre_checkout_query','subscription']:[])]
+          allowed_updates:['message',...(videoAddon?['callback_query']:[]),...(mini?['pre_checkout_query']:[])]
         }),
         signal:AbortSignal.timeout(10000)
       });
