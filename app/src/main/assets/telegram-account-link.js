@@ -47,7 +47,20 @@
    const token=localStorage.getItem('vv_token')||'';
    const r=await fetch('/api/telegram-mini/account-link',{headers:token?{Authorization:'Bearer '+token}:{}});
    if(r.status===404){card.remove();return;}
-   if(r.ok)await state();
+   if(r.ok){
+    await state();
+    if(token){
+     const me=await fetch('/api/me',{headers:{Authorization:'Bearer '+token}}).then(v=>v.json()).catch(()=>({}));
+     if(me?.user?.isAdmin){
+      const link=document.createElement('a');
+      link.href='telegram-support-admin.html';
+      link.textContent='Open Telegram customer support inbox';
+      link.className='ghostBtn';
+      link.style.display='inline-block';
+      card.append(link);
+     }
+    }
+   }
   }catch(_){}
  })();
  // Account may be signed in later; the button remains available.
