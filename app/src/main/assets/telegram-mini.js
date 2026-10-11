@@ -3,7 +3,7 @@
 const $=id=>document.getElementById(id),tg=window.Telegram?.WebApp;
 const core=window.VideoVariatorCore;
 const initData=tg?.initData||'';
-let file=null,mode='gentle',job=null,doneBlob=null,doneName='',previewUrl=null,outputUrl=null,remaining=5,busy=false,authenticated=false,landscape=false;
+let file=null,mode='gentle',job=null,doneBlob=null,doneName='',previewUrl=null,outputUrl=null,remaining=5,paid=null,busy=false,authenticated=false,landscape=false;
 const status=(msg)=>{$('status').textContent=msg;};
 const api=async(path,body)=>{
  const r=await fetch('/api/telegram-mini/'+path,{
@@ -15,6 +15,7 @@ const api=async(path,body)=>{
  if(!r.ok)throw Object.assign(Error(data.error||'NETWORK_ERROR'),{status:r.status});
  return data;
 };
+function hasCredits(){return !!(paid&&(paid.remaining===null||paid.remaining>0))||remaining>0;}
 function showPlans(plans){
  const section=$('plansSection'),root=$('plans');
  section.hidden=false;
@@ -22,26 +23,50 @@ function showPlans(plans){
  for(const p of plans||[]){
   const row=document.createElement('div');row.className='plan';
   const label=document.createElement('div'),name=document.createElement('b'),sub=document.createElement('small');
-  name.textContent=p.name;sub.textContent=p.price+(p.credits==null?' · Unlimited':' · '+p.credits+' credits');
+  name.textContent=p.name;sub.textContent=p.price+(p.credits==null?' · Unlimited':' · '+p.credits+' credits')+(p.stars?' · '+p.stars+' ★ in Telegram':'');
   sub.style.display='block';label.append(name,sub);
   const button=document.createElement('button');button.type='button';button.textContent='Buy subscription';
-  button.textContent='Stars checkout · soon';button.disabled=true;button.title='Telegram Stars pricing needs to be configured';
+  if(Number.isInteger(p.stars)&&p.stars>0){button.textContent='Buy for '+p.stars+' ★';button.addEventListener('click',()=>buyPlan(p,button));}
+  else{button.textContent='Stars price pending';button.disabled=true;button.title='Telegram Stars price must be approved by the owner';}
   row.append(label,button);root.append(row);
  }
  if(!busy)section.scrollIntoView({behavior:'smooth',block:'start'});
 }
+async function refreshSession(){const data=await api('session');applySession(data);return data;}
+async function buyPlan(plan,button){
+ if(!tg?.openInvoice){status('Open this tool in the Telegram app to purchase.');return;}
+ button.disabled=true;status('Opening Telegram Stars checkout…');
+ try{
+  const invoice=await api('checkout',{plan:plan.id});
+  tg.openInvoice(invoice.url,async invoiceStatus=>{
+   if(invoiceStatus==='paid'||invoiceStatus==='pending'){
+    status('Confirming your payment with Telegram…');
+    for(let attempt=0;attempt<6;attempt++){
+     try{await new Promise(resolve=>setTimeout(resolve,1100));const state=await refreshSession();if(state.paid){status('Subscription activated: '+state.paid.plan+'.');return;}}catch(e){console.warn('Checking invoice:',e);}
+    }
+    status('Payment is processing. Reopen this page to refresh the subscription.');
+   }else status(invoiceStatus==='cancelled'?'Payment cancelled.':'Payment was not completed.');
+  });
+ }catch(e){status(localeError(e));}finally{button.disabled=false;}
+}
 function applySession(data){
  if(!data)return;
- remaining=Number(data.remaining??0);
- $('counter').textContent=remaining+' / 5 free';
- $('start').disabled=!authenticated||!file||busy||remaining<1;
- if(remaining<=0)showPlans(data.plans||[]);
+ remaining=Number(data.remaining??0);paid=data.paid||null;
+ $('counter').textContent=paid?(paid.plan.toUpperCase()+(paid.remaining===null?' · unlimited':' · '+paid.remaining+' credits')):(remaining+' / 5 free');
+ $('start').disabled=!authenticated||!file||busy||!hasCredits();
+ if(paid){$('plansSection').hidden=true;const allowed={basic:['gentle'],pro:['gentle','balanced'],business:['gentle','balanced','dynamic'],lifetime:['gentle','balanced','dynamic']};for(const button of document.querySelectorAll('[data-mode]'))button.disabled=!allowed[paid.plan]?.includes(button.dataset.mode);if(!allowed[paid.plan]?.includes(mode)){mode='gentle';for(const button of document.querySelectorAll('[data-mode]'))button.classList.toggle('selected',button.dataset.mode===mode);}}
+ else{for(const button of document.querySelectorAll('[data-mode]'))button.disabled=false;if(remaining<=0)showPlans(data.plans||[]);}
 }
 function localeError(error){
  const dict={
   TELEGRAM_MINI_NOT_READY:'Telegram Studio is starting. Try again shortly.',
   INVALID_TELEGRAM_SESSION:'Please open this tool from @VideoUniqAppBot in Telegram.',
   TRIAL_EXHAUSTED:'Your 5 free videos are used. See subscriptions below.',
+  STARS_PRICE_NOT_CONFIGURED:'Telegram Stars pricing will be available after the owner approves it.',
+  SUBSCRIPTION_ALREADY_ACTIVE:'A paid Telegram subscription is already active.',
+  CREDITS_EXHAUSTED:'Your paid video credits are used for this period.',
+  MODE_REQUIRES_HIGHER_PLAN:'This mode requires a higher subscription plan.',
+  INVOICE_CREATE_FAILED:'Could not open Telegram Stars payment. Try again later.',
   VIDEO_ALREADY_PROCESSING:'You already have a processing session. Please wait.',
   VIDEO_LIMIT_45_SECONDS:'Maximum duration is 45 seconds.',
   TELEGRAM_MINI_UNAVAILABLE:'The service is temporarily unavailable.',
@@ -66,7 +91,7 @@ async function onFile(){
   landscape=preview.videoWidth>=preview.videoHeight;
   status('Ready. Choose a mode and press Start processing.');
  }catch(e){status(localeError(e));}
- $('start').disabled=!authenticated||!file||busy||remaining<1;
+ $('start').disabled=!authenticated||!file||busy||!hasCredits();
 }
 async function start(){
  if(!authenticated||!file||busy||!core)return;
@@ -96,7 +121,7 @@ async function start(){
   if(e.status===402){try{showPlans((await api('session')).plans);}catch(_){}}
  }finally{
   busy=false;$('progressWrap').hidden=true;
-  $('start').disabled=!authenticated||!file||remaining<1;
+  $('start').disabled=!authenticated||!file||!hasCredits();
  }
 }
 async function download(){
@@ -116,7 +141,8 @@ async function init(){
  try{
   const data=await api('session');
   authenticated=true;applySession(data);
-  if(data.remaining>0)status('Ready. Choose a video from your phone.');
+  if(data.paid)status('Paid subscription active. Choose your next video.');
+  else if(data.remaining>0)status('Ready. Choose a video from your phone.');
   else status('Your free trial has ended. Plans are shown below.');
  }catch(e){status(localeError(e));}
 }
