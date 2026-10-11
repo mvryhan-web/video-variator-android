@@ -62,7 +62,7 @@ export function installTelegramBot(app, {appUrl}) {
         return res.json({ok:true});
       }catch(e){console.error('[telegram] reminder link:',e.message);return res.status(502).json({ok:false});}
     }
-    const reply = commands[command] ||
+    const reply = (mini&&command==='create'?'Tap the button below to process your video directly inside Telegram. Your first five videos are free.':commands[command]) ||
       (message.video || message.document
         ? 'Thanks! Direct video upload and processing in Telegram are not enabled yet. Please use the app.'
         : 'Open Video Uniquifier using the Menu button to get started.');
