@@ -1,9 +1,12 @@
 import {test,expect} from '@playwright/test';
 import {readFileSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
 
 test('Telegram Mini App genuinely transcodes a short MP4 on mobile Chromium',async({page},info)=>{
  test.skip(info.project.name!=='mobile-chromium');
  test.setTimeout(180000);
+ const fixture=info.outputPath('short.mp4');
+ execFileSync('ffmpeg',['-hide_banner','-loglevel','error','-y','-f','lavfi','-i','testsrc2=size=160x120:rate=15','-t','1','-threads','1','-c:v','libx264','-pix_fmt','yuv420p','-an',fixture]);
  const uploads=[];
  page.on('request',req=>{
   if(req.method()==='POST'&&/video\/|application\/octet-stream/i.test(req.headers()['content-type']||''))uploads.push(req.url());
@@ -23,7 +26,7 @@ test('Telegram Mini App genuinely transcodes a short MP4 on mobile Chromium',asy
  await page.goto('/telegram-free-mini.html',{waitUntil:'domcontentloaded'});
  await expect(page.locator('#counter')).toHaveText('5 / 5 free');
  await page.locator('#video').setInputFiles({
-  name:'short.mp4',mimeType:'video/mp4',buffer:readFileSync('/tmp/telegram-mini-smoke.mp4')
+  name:'short.mp4',mimeType:'video/mp4',buffer:readFileSync(fixture)
  });
  await expect(page.locator('#start')).toBeEnabled({timeout:15000});
  await page.locator('#start').click();
