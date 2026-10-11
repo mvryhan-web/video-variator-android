@@ -61,7 +61,17 @@ export async function initDb(){
 function requireDb(){if(!pool)throw new Error('DATABASE_NOT_CONFIGURED');}
 
 export async function upsertUser({provider,providerSub,email,name}){requireDb();const existing=await pool.query('SELECT * FROM vv_users WHERE provider=$1 AND provider_sub=$2',[provider,providerSub]);if(existing.rows[0]){const r=await pool.query(`UPDATE vv_users SET email=COALESCE($3,email),name=COALESCE($4,name),updated_at=NOW() WHERE provider=$1 AND provider_sub=$2 RETURNING *`,[provider,providerSub,email||null,name||null]);return r.rows[0];}const id=randomUUID();const r=await pool.query(`INSERT INTO vv_users(id,provider,provider_sub,email,name) VALUES($1,$2,$3,$4,$5) RETURNING *`,[id,provider,providerSub,email||null,name||null]);return r.rows[0];}
-export async function getUser(id){requireDb();const r=await pool.query('SELECT * FROM vv_users WHERE id=$1',[id]);return r.rows[0]||null;}
+export async function getUser(id){
+ requireDb();
+ const r=await pool.query('SELECT * FROM vv_users WHERE id=$1',[id]),user=r.rows[0]||null;
+ if(!user||process.env.TELEGRAM_MINI_ENABLED!=='true'||(user.plan==='lifetime'&&user.subscription_status==='lifetime')||['active','trialing'].includes(user.subscription_status))return user;
+ const linked=await pool.query("SELECT a.plan,a.period_used,a.expires_at FROM vv_tg_account_links l JOIN vv_tg_star_access a ON a.telegram_id=l.telegram_id WHERE l.user_id=$1 AND (a.plan='lifetime' OR a.expires_at>NOW())",[id]);
+ const access=linked.rows[0];if(!access)return user;
+ const limit={basic:750,pro:2250,business:15000,lifetime:null}[access.plan];
+ if(limit===undefined)return user;
+ const used=Number(access.period_used||0);
+ return {...user,telegram_access:{plan:access.plan,credits:limit,used,remaining:limit===null?null:Math.max(0,limit-used),expiresAt:access.expires_at,source:'telegram'}};
+}
 export async function getUserByProvider(provider,providerSub){requireDb();const r=await pool.query('SELECT * FROM vv_users WHERE provider=$1 AND provider_sub=$2',[provider,providerSub]);return r.rows[0]||null;}
 export async function setPasswordHash(userId,passwordHash){requireDb();const r=await pool.query('UPDATE vv_users SET password_hash=$2,updated_at=NOW() WHERE id=$1 RETURNING *',[userId,passwordHash]);return r.rows[0]||null;}
 export async function getUserByCustomer(customerId){requireDb();const r=await pool.query('SELECT * FROM vv_users WHERE stripe_customer_id=$1',[customerId]);return r.rows[0]||null;}
