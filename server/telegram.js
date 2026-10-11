@@ -2,10 +2,11 @@
 import {createHash} from 'node:crypto';
 import {linkTelegramChat} from './reminders.js';
 import {installTelegramVideo} from './telegram-video.js';
+import {installTelegramFreeMini} from './telegram-free-mini.js';
 const commands = {
   start: 'Welcome to Video Uniquifier! Open the app using the Menu button or the link below.',
   create: 'To process a video, open the app. Telegram file processing is not available yet.',
-  plans: 'View current plans in the app. Telegram Stars payments are not available yet.',
+  plans: 'View Video Uniquifier plans on the existing website. All subscription payments remain in Stripe.',
   account: 'Open the app to view your account and remaining credits.',
   help: 'Use the Menu button to open Video Uniquifier and select a tool.',
   support: 'Please use the support contact information in the app.',
@@ -17,6 +18,7 @@ export function installTelegramBot(app, {appUrl}) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const secret = process.env.TELEGRAM_WEBHOOK_SECRET || (token ? createHash('sha256').update(token).digest('hex') : '');
   const videoAddon = installTelegramVideo(app, {appUrl,token});
+  const freeMini = installTelegramFreeMini(app,{token});
   if (!token) {
     console.info('[telegram] Webhook disabled until TELEGRAM_BOT_TOKEN is set.');
     return;
@@ -48,7 +50,7 @@ export function installTelegramBot(app, {appUrl}) {
         return res.json({ok:true});
       }catch(e){console.error('[telegram] reminder link:',e.message);return res.status(502).json({ok:false});}
     }
-    const reply = commands[command] ||
+    const reply = (freeMini && command==='create'?'Choose Process in Telegram below to try up to five free local video variations.':commands[command]) ||
       (message.video || message.document
         ? 'Thanks! Direct video upload and processing in Telegram are not enabled yet. Please use the app.'
         : 'Open Video Uniquifier using the Menu button to get started.');
@@ -59,6 +61,7 @@ export function installTelegramBot(app, {appUrl}) {
         body:JSON.stringify({
           chat_id:chatId,
           text:reply + (['start','create','plans','account','help'].includes(command) ? '\n\n' + appUrl : ''),
+          reply_markup:freeMini && message.chat?.type==='private' && ['start','create'].includes(command)?{inline_keyboard:[[{text:'🎬 Five free videos in Telegram',web_app:{url:appUrl+'/telegram-free-mini.html'}}],[{text:'🌐 Open existing website',url:appUrl}]]}:undefined,
           disable_web_page_preview:true
         }),
         signal:AbortSignal.timeout(10000)
@@ -72,6 +75,7 @@ export function installTelegramBot(app, {appUrl}) {
   });
   // Register only after the HTTP server is listening, so Telegram can deliver updates.
   return async () => {
+    if(freeMini){try{await freeMini.init();}catch(e){console.error('[telegram-free-preview] DB init:',e.message);}}
     if (videoAddon) {
       try { await videoAddon.init(); }
       catch(error){console.error('[telegram-video] Storage initialization failed:',error.message);}
