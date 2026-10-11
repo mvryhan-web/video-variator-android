@@ -14,6 +14,16 @@ function priceOf(plan){
  if(!/^[1-9][0-9]{0,4}$/.test(raw))return null;
  const n=Number(raw);return n>0&&n<=10000?n:null;
 }
+export function starsInvoicePayload(plan,order,amount){
+ const s=specs[plan];
+ if(!s||!Number.isSafeInteger(amount)||amount<1||amount>10000||!/^[0-9a-f-]{36}$/i.test(order))throw Error('INVALID_STARS_INVOICE');
+ return{
+   title:'Video Uniquifier '+s.name,
+   description:s.monthly?s.credits+' video credits every 30 days':'Lifetime Telegram Mini video processing',
+   payload:'vu2:'+order,currency:'XTR',
+   prices:[{label:s.name,amount}],...(s.monthly?{subscription_period:2592000}:{})
+ };
+}
 export function starsPlans(){
  return Object.entries(specs).map(([id,v])=>({id,name:v.name,credits:v.credits,period:v.monthly?'30 days':'lifetime',stars:priceOf(id)}));
 }
@@ -45,12 +55,7 @@ export async function createStarsInvoice(token,id,plan){
  const order=randomUUID(),s=specs[plan];
  await pool.query('INSERT INTO vv_tg_star_orders(id,telegram_id,plan,amount) VALUES($1,$2,$3,$4)',[order,String(id),plan,amount]);
  try{
-  const url=await tg(token,'createInvoiceLink',{
-   title:'Video Uniquifier '+s.name,
-   description:s.monthly?s.credits+' video credits every 30 days':'Lifetime Telegram Mini video processing',
-   payload:'vu2:'+order,currency:'XTR',
-   prices:[{label:s.name,amount}],...(s.monthly?{subscription_period:2592000}:{})
-  });
+  const url=await tg(token,'createInvoiceLink',starsInvoicePayload(plan,order,amount));
   return{url,plan,stars:amount};
  }catch(e){console.error('[stars] invoice:',e.message);return{error:'INVOICE_CREATE_FAILED',status:502};}
 }
