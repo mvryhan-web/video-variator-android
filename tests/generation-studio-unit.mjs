@@ -12,7 +12,8 @@ test('model selection routes explicitly and unconnected models never fall back t
  const selected=validateGeneration({...request,model:'veo-3.1-fast-generate-preview'});let called='';
  await generateGoogle(selected,{key:'fixture',fetcher:async url=>{called=url;return {ok:true,json:async()=>({name:'operations/fixture'})};}});
  assert.ok(called.includes('veo-3.1-fast-generate-preview:predictLongRunning'));
- for(const model of ['byteplus-seedance-2','gemini-3.1-flash-image','unknown'])assert.throws(()=>validateGeneration({...request,model}));
+ for(const model of ['byteplus-seed-speech-2','gemini-3.1-flash-image','unknown'])assert.throws(()=>validateGeneration({...request,model}));
+ await assert.rejects(()=>generateGoogle(validateGeneration({...request,model:'byteplus-seedance-2'}),{key:'fixture',fetcher:()=>{throw Error('must not call Google');}}),/MODEL_NOT_CONNECTED/);
  const env={AI_STUDIO_ENABLED:'true',GEMINI_API_KEY:'fixture',DATABASE_URL:'fixture',ADMIN_EMAIL:'fixture',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'video'};
  assert.equal(studioConfig(env).catalog.find(m=>m.id===selected.model).enabled,false);
  assert.equal(studioConfig({...env,AI_STUDIO_ALLOWED_MODELS:selected.model}).catalog.find(m=>m.id===selected.model).enabled,true);

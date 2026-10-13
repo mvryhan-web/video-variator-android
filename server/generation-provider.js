@@ -26,7 +26,7 @@ export async function googleJson(relative,{key,body,fetcher=fetch}){
 }
 export async function generateGoogle(request,{key,fetcher=fetch}){
  const model=request.model?MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter):MODELS[request.kind];
- if(!model)throw new Error('MODEL_NOT_CONNECTED');
+ if(!model||(model.provider&&model.provider!=='Google'))throw new Error('MODEL_NOT_CONNECTED');
  if(request.kind==='video'){
   const ref=request.references[0];
   const data=await googleJson(`models/${model.id}:predictLongRunning`,{key,fetcher,body:{instances:[{prompt:request.prompt,...(ref?{image:{bytesBase64Encoded:ref.data,mimeType:ref.mimeType}}:{})}],parameters:{aspectRatio:request.ratio,resolution:'720p',durationSeconds:8,sampleCount:1}}});

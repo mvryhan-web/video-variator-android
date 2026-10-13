@@ -35,8 +35,9 @@ model slots remain disconnected; a link opens the existing voiceover tool.
 
 `generate-models.js` shares safe capabilities with the server. Model choices are included
 in requests and validated against their type: an unconnected choice cannot silently fall
-back to Google. BytePlus Seedance/Seedream/Seed Audio/Seed Speech entries are clearly
-marked API connection pending; no BytePlus adapters, keys or paid calls are claimed done.
+back to Google. BytePlus Seedream 4.5/5.0 Lite and Seedance 2.0 REST adapters are
+prepared and mock-tested; keys, activation and real provider calls are still pending.
+Seed Audio/Seed Speech remain disconnected.
 Photos are never uploaded by preview/settings/model/history actions. Generate remains
 disabled without adapter + server activation + consent + prompt. Extra Google models
 cannot be enabled solely by enabling the video category.
@@ -124,3 +125,34 @@ https://ai.google.dev/gemini-api/docs/image-generation
 https://ai.google.dev/gemini-api/docs/veo
 https://ai.google.dev/gemini-api/docs/generate-content/music-generation
 https://platform.suno.com/
+
+## BytePlus adapter preparation (2026-10-13)
+
+`server/generation-byteplus.js` uses only the official ModelArk REST endpoint, not
+Lumina account cookies. `BYTEPLUS_API_KEY` stays server-side; no keys have been
+installed or requested in chat. BytePlus models require both allowed kinds and an
+explicit `AI_STUDIO_ALLOWED_MODELS` entry; a Google key cannot enable them.
+
+- Seedream 4.5 / 5.0 Lite: one image per call, up to three local reference photos,
+  fixed 2K pixel dimensions mapped to the chosen ratio, base64 result. Version 4.5
+  retains its JPEG output; 5.0 Lite requests PNG. No URL image download is required.
+- Seedance 2.0: one 5-second 720p task, optional first-frame photo, generated audio,
+  watermark retained. `byteplus:<task-id>` is stored in the existing operation field
+  and resumes through the same job endpoint after reload. Failed/expired tasks become
+  terminal failures, not automatic new paid requests.
+- Video cannot be enabled until `BYTEPLUS_MEDIA_HOSTS` contains exact approved
+  provider CDN hostnames. Hosts must be HTTPS BytePlus/Volcengine domains. No wildcard,
+  arbitrary host, nonstandard port, credential URL or redirect is allowed. Download
+  requests carry no API key. Response bytes are capped at 30 MB and checked as MP4.
+- The consent label follows the selected provider and resets when the model/studio
+  changes. Existing engine, payments, authentication and production remain untouched.
+
+Official references consulted:
+https://docs.byteplus.com/fr/docs/modelark/seedream-4-0-5-0
+https://docs.byteplus.com/fr/docs/modelark/video-generation-tutorial
+https://docs.byteplus.com/pt/docs/modelark/create-video-generation-task-api
+
+No paid API call, model activation, balance top-up, resource purchase or production
+deployment was performed. Exact account access and live CDN output still need a
+separate authorized provider smoke test. BytePlus account prerequisites can require
+funding; do not activate or purchase anything without the owner's confirmation.
