@@ -9,11 +9,17 @@ This file is the shared live progress board for all coding agents.
 
 ## Current priority gate
 
-**ACTIVE NOW:** finish the currently assigned production work from the existing TXT/specification and the latest active command already being executed by the current ChatGPT Work agent.
+**ACTIVE NOW:** finish the currently assigned production/TXT scope already being handled by the current ChatGPT Work agent.
 
-**DO NOT START the queued roadmap blocks 1–6 below until the current active TXT/spec work is completed and verified, unless the owner explicitly changes priority.**
+Visible active work in GitHub:
+- branch: `ai-generation-studio`
+- open PR: **#40 — Prepare compact AI video, image and audio studios; keep generation and billing gated**
+- current branch head referenced by that PR: `144e1e9a1a9e9e98951d4ef4aa49c29fdb630f6c`
+- PR reports compact AI video/image/audio studios, provider preparation, gated billing, and passing automated checks; it is still an open PR and is **not treated as merged production**.
 
-Before beginning any queued block, audit the latest code because another agent may have implemented part of it since this file was last updated.
+**Important:** do NOT assign the current Work agent all roadmap blocks 1–6 by default. Its job is to finish and hand off its current bounded TXT/production scope. Additional agents may take separate non-overlapping roadmap blocks after the relevant shared foundations are stable, or earlier only when the owner explicitly assigns them and collision risk is low.
+
+Before any agent starts a roadmap block, it must audit the latest code/branches/PRs because another agent may already have implemented part of it.
 
 ## Existing production baseline
 
@@ -21,33 +27,70 @@ This is an existing production project, not a greenfield app. Preserve and reuse
 
 The exact completion state of older components must be verified from the current code and tests. Do not infer completion from names alone.
 
+## Active work ownership
+
+| Workstream | Owner / Agent | Branch / PR | Status | Rule |
+|---|---|---|---|---|
+| Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Finish, test, hand off. Do not automatically absorb blocks 1–6. |
+
+When another agent joins, add one row per claimed workstream before substantial implementation. One agent should own one bounded workstream at a time.
+
 ## Approved queued roadmap
 
-| # | Workstream | Status | Notes |
-|---|---|---|---|
-| 1 | Multi-AI Compare + Smart Model Routing | NOT STARTED / QUEUED | One prompt -> multiple real AI providers, compare, combine, cost/credit tracking |
-| 2 | User Agent — “Do it for me” | NOT STARTED / QUEUED | Multi-step execution through Agent Orchestrator |
-| 3 | Inspiration / Create Yours | NOT STARTED / QUEUED | Original owned gallery, prompts/templates, Clone/Create Yours flows |
-| 4 | Studio + My Workspace | NOT STARTED / QUEUED | Creation editor/templates/skills + personal project workspace |
-| 5 | Internal Product Watcher Agent | NOT STARTED / QUEUED | Owner-only scheduled monitoring, recommendations, approvals, daily/weekly reports |
-| 6 | Deepsyq Voice Agent | NOT STARTED / QUEUED | Realtime voice interface across Deepsyq, Device Cleanup skill, owner voice access to Product Watcher |
+| # | Workstream | Status | Assigned owner | Notes |
+|---|---|---|---|---|
+| 1 | Multi-AI Compare + Smart Model Routing | NOT STARTED / QUEUED | UNASSIGNED | One prompt -> multiple real AI providers, compare, combine, cost/credit tracking |
+| 2 | User Agent — “Do it for me” | NOT STARTED / QUEUED | UNASSIGNED | Multi-step execution through Agent Orchestrator |
+| 3 | Inspiration / Create Yours | NOT STARTED / QUEUED | UNASSIGNED | Original owned gallery, prompts/templates, Clone/Create Yours flows |
+| 4 | Studio + My Workspace | NOT STARTED / QUEUED | UNASSIGNED | Creation editor/templates/skills + personal project workspace |
+| 5 | Internal Product Watcher Agent | NOT STARTED / QUEUED | UNASSIGNED | Owner-only scheduled monitoring, recommendations, approvals, daily/weekly reports |
+| 6 | Deepsyq Voice Agent | NOT STARTED / QUEUED | UNASSIGNED | Realtime voice interface across Deepsyq, Device Cleanup skill, owner voice access to Product Watcher |
 
 Full requirements: `docs/DEEPSYQ_ROADMAP.md`.
 
-## Recommended execution order after current work is complete
+## Multi-agent execution strategy
 
-1. Audit current production against the active TXT/spec and finish all remaining acceptance tests.
-2. Reconcile this status file with the real code.
-3. Build/finish shared AI Provider Router + common job/usage/credits foundations needed by blocks 1–2.
-4. Implement roadmap blocks in dependency-aware order, without duplicating anything already present.
-5. Use separate branches for parallel workstreams if multiple agents are active.
-6. Merge only after tests and update this file after every merge.
+Use multiple agents deliberately instead of giving one agent the entire backlog.
 
-## Current owner/workstream
+Recommended split after the current TXT scope is stable enough:
 
-- Current primary implementation agent: ChatGPT Work agent working on the existing production/TXT scope.
-- Future additional agents may join, but must follow `AGENTS.md`, this status file, and the roadmap.
-- No future agent is allowed to restart the project or assume the queued blocks are still untouched without checking the code first.
+- **Foundation agent:** shared AI Provider Router, jobs, usage/credits, provider configuration.
+- **Agent A:** Block 1 — Multi-AI Compare.
+- **Agent B:** Block 2 — User Agent / Do it for me.
+- **Agent C:** Block 3 — Inspiration.
+- **Agent D:** Block 4 — Studio + My Workspace.
+- **Agent E:** Block 5 — Product Watcher.
+- **Agent F:** Block 6 — Voice Agent.
+
+This split is only a coordination model, not a requirement to hire six agents. One agent may take several blocks sequentially, but no agent should be expected to keep all six in active context at once.
+
+Dependency rule:
+- Blocks 1 and 2 should share the same provider/router/job/usage foundations.
+- Block 4 should reuse existing generation-studio work rather than recreate it.
+- Block 6 should reuse the Agent Orchestrator from Block 2.
+- Product Watcher in Block 5 stays technically separate from user Agent permissions but may later expose owner-approved data to Block 6 Voice Owner Mode.
+
+## How a new task is added
+
+When the owner invents a new lasting feature:
+
+1. Add the full requirement to `docs/DEEPSYQ_ROADMAP.md` or another appropriate spec.
+2. Add one concise row here with status `NOT STARTED / QUEUED`.
+3. Leave it `UNASSIGNED` until an agent is actually chosen.
+4. The chosen agent changes it to `IN PROGRESS`, records its branch/PR, and works only on that bounded scope.
+5. When verified and merged/deployed as appropriate, change it to `DONE`.
+
+This keeps the roadmap complete without forcing the current agent to implement everything immediately.
+
+## Recommended execution order
+
+1. Current Work agent finishes/hands off the active TXT/generation-studio scope.
+2. Reconcile this status file with the real merged code and open PRs.
+3. Stabilize shared foundations needed by several roadmap blocks.
+4. Assign separate roadmap blocks to available agents.
+5. Use separate branches for parallel workstreams.
+6. Merge only after tests and conflict review.
+7. Update this file after every meaningful handoff/merge.
 
 ## Blockers / external dependencies
 
@@ -64,6 +107,7 @@ Current queued-roadmap dependencies to verify before implementation:
 ## Handoff — update this before ending a meaningful work session
 
 **Workstream:**  
+**Owner/agent:**  
 **Status:**  
 **Changed:**  
 **Verified/tests:**  
