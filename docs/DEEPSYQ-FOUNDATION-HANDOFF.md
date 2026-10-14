@@ -1,0 +1,55 @@
+# Deepsyq current TXT scope — 2026-10-14
+
+Status: PARTIAL; feature branch only. No public launch, provider call, secret, database or payment changes.
+
+## Source of truth
+
+`DEEPSYQ_PLATFORM_SPEC.md` retains the user's supplied TXT verbatim. The subsequent owner instruction names the platform **Deepsyq**, makes Video Uniquifier secondary, renames Free Tools to Everyday Tools, requests an eventual $0.99 Trial, separates Lifetime tools from paid AI generation, and requires honest comparative SEO with no DeepSeek affiliation. These override earlier Video Uniquifier-first product naming. Do not change technical package IDs, JWT issuer/audience, existing database namespaces or Stripe identifiers for branding.
+
+New roadmap blocks 1–6 remain queued as recorded in PROJECT_STATUS; do not implement them implicitly.
+
+## Architecture audit
+
+- One Express service (`server/server.js`), static bundled Android/PWA assets; original `index.html` and `app-v4.js` own the video dashboard. Android package remains `com.videovariator.app`.
+- One PostgreSQL connection `server/db.js`, vv_users and current usage/history tables; existing email auth and verified provider tokens, `vv_token` client session. Deepsyq reuses them. Native login delegates to original Android browser-return implementation.
+- Original Stripe subscription/Lifetime checkout and verified webhook remain unchanged. Current advertised config: Basic $9/750, Pro $24/2250, Business $99/15000, Lifetime EUR2999. These are tool credits, not a validated AI generation allowance.
+- Existing generation-studio module owns the catalog/provider dispatch, Google and BytePlus adapters, owner-only pilot jobs. Existing AI wallet/billing foundation remains gated/sandbox-only; no second ledger/router added by this workstream.
+- Main 14de516 contains shared collaboration docs and Telegram preview changes. Those are reconciled into this branch; do not revert them.
+- Existing PR28 (`tools-subscription-access`, ae9a5a7) already implements transactional shared tool quota, reservation/commit/cancel. It is NOT merged here. It currently keeps three tools permanently free, differing from the latest request for a trial for each tool. Integrate/reconcile that module once, not a new access system.
+
+## Changes in this pass
+
+- `deepsyq.html/css/js`: compact responsive Dashboard linking to existing image/video/audio studios, Everyday Tools, original Video Uniquifier, histories and original account view; existing email component and Google auth API; explicit logout; pricing rendered from `/api/config` and original `/api/billing/checkout`.
+- `generate-studio.*`: Deepsyq branding/navigation; existing latest-result view deep link, no processing changes.
+- `app-v4.js`: original history, plans, profile and sign-in deep links; all existing processing code preserved.
+- Existing tool navigation labels renamed to Everyday Tools; no utility processing rewritten.
+- `deepsyq-vs-deepseek.html`, `deepsyq-seo.css`: original crawlable comparison, metadata and internal links; explicitly discloses no affiliation and no current general-purpose chat. No unverified superiority claims.
+- Optional `DEEPSYQ_HOME_ENABLED=true` serves the new Dashboard at `/`. Defaults OFF. `/index.html` always remains the original tool; root mobileAuth and checkout return queries continue through the original app. `/dashboard` and `/deepsyq.html` permit review without changing root. Draft Dashboard currently noindex; remove draft noindex only when launch is approved and canonical root truly enabled.
+
+## Database / environment / Stripe
+
+No new migration, database or infrastructure created in this pass. New flag: `DEEPSYQ_HOME_ENABLED`, default off; not installed in Render. No secrets changed. No Price/Product IDs created or modified. No checkout submitted to Stripe in tests.
+
+Trial $0.99 is visible as **not available for purchase**. It must not become a fake pay button. Before enabling it define included tools/AI usage, term, expiry/renewal/refund behavior, configure/reuse an actual verified Stripe price and implement entitlement via verified webhook in existing billing. Do not silently charge a different plan.
+
+Lifetime existing rights remain untouched. New pricing explicitly excludes unlimited future paid AI generation. Existing subscribers must not lose already purchased tool access.
+
+## Real remaining blockers / release gate
+
+- BytePlus account model activation was blocked on profile/payment completion; no API key was created or installed in prior work. Free-credits-only guard had been enabled; re-check current console before activation.
+- AI generation is owner-only, not a complete public paid platform. No live provider result was verified in this pass.
+- Long-song provider, general-purpose AI assistant, full durable per-user generation history/restart recovery/object storage, commercial job-credit settlement and provider administration remain incomplete. Extend existing modules, not another architecture.
+- Existing trial/tool-access PR28 must be reconciled; each-tool policy and all utility entry points are not enforced in current main.
+- Android app branding/manifest/platform root rollout, localized Dashboard copy, full public SEO suite and launch privacy/terms need further work before launch.
+- No production backup/migration, real Google login, real Stripe payment/refund or physical iPhone/Android journey was performed here. Never label fixture tests as production acceptance.
+
+## Verification
+
+- 23 existing Google/BytePlus gating, billing/quote and Telegram auth/quota unit checks passed locally.
+- Syntax checks: new Dashboard JS and server passed.
+- New Playwright tests cover responsive layout, navigation, reused email form/session/logout with fixture API, original checkout route/error, honest comparative page and original history/profile deep links. CI runs Chromium, Firefox, WebKit and mobile Chromium/WebKit; screenshots retained as artifact. See actual run results before marking verified.
+- No local visual browser verification: current Sites managed environment has no advertised control-browser capability. CI is the browser verification path.
+
+## Next action
+
+Review/fix CI. Continue this bounded current TXT scope: integrate existing quotas, complete verified provider/job/history/credit vertical slice, then Trial and public launch. Root stays on the old application until launch gates pass. Do not publish an APK or claim the public URL changed from a feature-branch commit.

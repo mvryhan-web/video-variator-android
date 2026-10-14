@@ -1,0 +1,45 @@
+name: Free Telegram Mini App checks
+on:
+  pull_request:
+    paths:
+      - 'server/telegram-free-mini.js'
+      - 'server/telegram.js'
+      - 'server/tests/telegram-free-mini.test.mjs'
+      - 'app/src/main/assets/telegram-free-mini.*'
+      - 'tests/telegram-free-*.spec.mjs'
+      - '.github/workflows/telegram-free-mini-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  free-telegram:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Syntax and signed Telegram identity tests
+        run: |
+          node --check server/telegram-free-mini.js
+          node --check server/telegram.js
+          node --check server/server.js
+          node --check app/src/main/assets/telegram-free-mini.js
+          node --test server/tests/telegram-free-mini.test.mjs
+      - name: Install mobile browsers and video fixture
+        run: |
+          npx playwright install --with-deps chromium webkit
+          sudo apt-get install -y ffmpeg
+          ffmpeg -hide_banner -loglevel error -y -f lavfi -i testsrc2=size=160x120:rate=15 -t 1 -c:v libx264 -pix_fmt yuv420p -an /tmp/telegram-mini-smoke.mp4
+      - name: Five free previews on simulated Android and iOS
+        run: npx playwright test tests/telegram-free-browser.spec.mjs --project=mobile-chromium --project=mobile-webkit
+      - name: Real on-device FFmpeg MP4 export
+        run: npx playwright test tests/telegram-free-real-video.spec.mjs --project=mobile-chromium
+

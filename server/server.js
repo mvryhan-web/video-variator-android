@@ -66,7 +66,7 @@ app.use((req,res,next)=>{
   res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy','camera=(self), microphone=(self), geolocation=(), payment=(self)');res.setHeader('Cross-Origin-Opener-Policy','same-origin-allow-popups');
   res.setHeader('X-Video-Processing','local-only');
-  res.setHeader('Content-Security-Policy',`default-src 'self'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' blob: data: https:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://tessdata.projectnaptha.com https://accounts.google.com https://www.googleapis.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://js.stripe.com https://checkout.stripe.com; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; frame-ancestors ${frameAncestors}; form-action 'self' https://accounts.google.com https://appleid.apple.com https://checkout.stripe.com`);
+  res.setHeader('Content-Security-Policy',`default-src 'self'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com https://telegram.org blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' blob: data: https:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://tessdata.projectnaptha.com https://accounts.google.com https://www.googleapis.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://js.stripe.com https://checkout.stripe.com; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; frame-ancestors ${frameAncestors}; form-action 'self' https://accounts.google.com https://appleid.apple.com https://checkout.stripe.com`);
   next();
 });
 
@@ -173,6 +173,13 @@ app.post('/api/billing/cancel',auth,async(req,res)=>{try{const current=publicUse
 
 const generationBilling=installGenerationBilling(app,{auth,pool:generationPool,stripe,appUrl});
 installGenerationStudio(app,{auth,pool:generationPool});
+// Opt-in platform entry. Legacy auth/payment returns retain their existing handler.
+app.get('/',(req,res,next)=>{
+  if(process.env.DEEPSYQ_HOME_ENABLED!=='true'||req.query.mobileAuth||req.query.checkout)return next();
+  res.setHeader('Cache-Control','no-cache');
+  res.sendFile(path.join(staticDir,'deepsyq.html'));
+});
+app.get('/dashboard',(req,res)=>res.sendFile(path.join(staticDir,'deepsyq.html')));
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
 
