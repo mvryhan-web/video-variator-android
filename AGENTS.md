@@ -10,7 +10,7 @@ Before changing code, always read and reconcile:
 2. `PROJECT_STATUS.md` — live progress, current owner, blockers, and next work.
 3. `docs/DEEPSYQ_ROADMAP.md` — approved product roadmap and requirements.
 4. Any relevant existing specification files, especially `docs/PRODUCTION_SPEC.md` and `PRODUCTION_DEPLOYMENT_SPEC.md`.
-5. The latest Git history, current branch, recent commits, and the actual implementation.
+5. The latest Git history, current branch, recent commits, open PRs, and the actual implementation.
 
 Do not assume a feature exists or works because a file, route, button, or function has a promising name. Verify the code and tests.
 
@@ -26,12 +26,25 @@ Do not assume a feature exists or works because a file, route, button, or functi
 Every agent must, before work:
 
 - fetch/pull the latest repository state;
-- inspect recent commits;
+- inspect recent commits and open PRs;
 - read `PROJECT_STATUS.md`;
 - inspect the relevant existing code;
 - confirm that the task has not already been implemented by another agent.
 
 If the status file and the code disagree, the code plus verified tests are the technical truth. Update `PROJECT_STATUS.md` to remove the mismatch.
+
+## Bounded ownership — do not overload one agent
+
+Do not assume the current agent owns the entire roadmap.
+
+Each agent should normally receive one bounded workstream or a small coherent set of tightly related tasks.
+
+Before substantial work:
+- claim the workstream in `PROJECT_STATUS.md`;
+- record the agent/workstream and branch/PR when practical;
+- check that no other agent is already modifying the same area.
+
+When multiple agents are available, parallelize **non-overlapping** work instead of making one agent hold all roadmap blocks in active context.
 
 ## Claim work and avoid collisions
 
@@ -76,14 +89,17 @@ Keep `PROJECT_STATUS.md` concise. Detailed historical changes belong in Git comm
 
 The approved future product roadmap is in `docs/DEEPSYQ_ROADMAP.md`.
 
-Important gate: the currently active production/TXT work must be completed and verified before the queued roadmap blocks 1–6 are started, unless the owner explicitly changes that priority.
+The current Work agent should finish and hand off its current bounded TXT/production scope. It should **not automatically be responsible for all queued roadmap blocks 1–6**.
+
+Roadmap blocks may be assigned to additional agents as separate workstreams once shared dependencies are ready, or earlier when the owner explicitly assigns an independent, non-conflicting block.
 
 When the owner gives a new lasting product requirement:
 
 1. do not lose or overwrite previous approved requirements;
 2. add or reconcile the requirement in the appropriate roadmap/spec file;
-3. update `PROJECT_STATUS.md` so future agents can see its state;
-4. then implement according to the current priority.
+3. add/update its concise state in `PROJECT_STATUS.md`;
+4. leave it unassigned until an agent is chosen, unless the owner explicitly assigns it;
+5. then implement according to the current priority and dependency rules.
 
 A chat message is not a reason to duplicate existing work. First inspect the repository and status.
 
@@ -112,6 +128,7 @@ The next agent should be able to answer, from the repository alone:
 
 - What is already done?
 - What is in progress?
+- Who owns each active workstream?
 - What is next?
 - What is blocked?
 - What must not be duplicated?
