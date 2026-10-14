@@ -1,3 +1,4 @@
+import {initToolAccess,installToolAccess} from './tool-access.js';
 import {installGenerationStudio} from './generation-studio.js';
 import {installGenerationBilling} from './generation-billing.js';
 import {pool as generationPool} from './db.js';
@@ -129,6 +130,7 @@ const registerTelegramWebhook=installTelegramBot(app,{appUrl});
 async function signAppToken(user){requireServerConfig();const key=new TextEncoder().encode(jwtSecret);return new SignJWT({email:user.email||'',name:user.name||''}).setProtectedHeader({alg:'HS256'}).setSubject(user.id).setIssuer('video-variator').setAudience('video-variator-client').setIssuedAt().setExpirationTime('7d').sign(key);}
 async function auth(req,res,next){try{requireServerConfig();const token=(req.headers.authorization||'').replace(/^Bearer\s+/i,'');if(!token)return res.status(401).json({error:'AUTH_REQUIRED'});const key=new TextEncoder().encode(jwtSecret),{payload}=await jwtVerify(token,key,{issuer:'video-variator',audience:'video-variator-client'}),user=await getUser(payload.sub);if(!user)return res.status(401).json({error:'USER_NOT_FOUND'});req.user=user;next();}catch(_){res.status(401).json({error:'INVALID_SESSION'});}}
 installEmailAuth(app,{signAppToken});
+installToolAccess(app,{auth});
 installSpeech(app,{auth,reserve:reserveSpeech});
 installReminders(app,{auth});
 
@@ -183,4 +185,4 @@ app.get('/dashboard',(req,res)=>res.sendFile(path.join(staticDir,'deepsyq.html')
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
 
-await initDb();await initRemindersDb();app.listen(port,()=>{console.log(`Video Uniquifier running on ${appUrl}`);void registerTelegramWebhook?.();startReminderScheduler();});
+await initDb();await initToolAccess();await initRemindersDb();app.listen(port,()=>{console.log(`Video Uniquifier running on ${appUrl}`);void registerTelegramWebhook?.();startReminderScheduler();});

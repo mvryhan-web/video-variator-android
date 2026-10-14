@@ -40,7 +40,32 @@ async function creatorMedia(file,mode){
 }
 async function mediaFile(file,mode){if(['clips','motion'].includes(mode))return creatorMedia(file,mode);await loadEngine();if(canceled)throw Error('Canceled');await engine.writeFile('input',new Uint8Array(await file.arrayBuffer()));const out=mode==='audio'?'audio.m4a':'compressed.mp4';const args=mode==='audio'?['-i','input','-map','0:a:0','-vn','-c:a','aac','-b:a','128k',out]:['-i','input','-map','0:v:0','-map','0:a:0?','-vf',"scale=w='min(1280,iw)':h='min(1280,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2",'-c:v','libx264','-preset','ultrafast','-crf','30','-pix_fmt','yuv420p','-c:a','aac','-b:a','96k','-movflags','+faststart',out];const code=await engine.exec(args);if(code!==0)throw Error('Processing failed');const data=await engine.readFile(out),mime=mode==='audio'?'audio/mp4':'video/mp4';const output=new File([data],file.name.replace(/\.[^.]+$/,'')+'-'+out,{type:mime});return mode==='video'&&output.size>=file.size?file:output;}
 $('cancel').onclick=()=>{canceled=true;try{engine?.terminate();}catch(_){}status(t('cancelled'));};
-$('run').onclick=async()=>{if(busy)return;const files=Array.from($('files').files),mode=$('operation').value;if(!files.length)return status(t('select'));if(files.length>(mode==='photo'?50:1)||files.some(f=>f.size>(['photo','motion'].includes(mode)?25:150)*1048576))return status(t('limit'));busy=true;canceled=false;release();$('outputs').replaceChildren();$('run').disabled=true;$('cancel').disabled=false;$('operation').disabled=true;$('files').disabled=true;document.querySelectorAll('.tool-choice,#creatorToolSettings select').forEach(e=>e.disabled=true);let failures=0;try{for(let i=0;i<files.length&&!canceled;i++){status(`${t('processing')} ${i+1}/${files.length}`);try{const output=mode==='photo'?await compressPhoto(files[i]):await mediaFile(files[i],mode);if(!canceled){for(const item of (Array.isArray(output)?output:[output])){if(canceled)break;result(item,files[i],item===files[i]?t('smaller'):'');if(window.AndroidBridge)await save(item);}}}catch(e){if(!canceled){failures++;const p=document.createElement('p');p.textContent=files[i].name+': '+t('failed');$('outputs').append(p);}}}status(canceled?t('cancelled'):failures?t('failed'):(window.AndroidBridge?t('done')+' · Gallery / VideoUniquifier':t('done')));}finally{try{engine?.terminate();}catch(_){}engine=null;if(workerURL)URL.revokeObjectURL(workerURL);workerURL=null;busy=false;$('run').disabled=false;$('cancel').disabled=true;$('operation').disabled=false;$('files').disabled=false;document.querySelectorAll('.tool-choice,#creatorToolSettings select').forEach(e=>e.disabled=false);}};
+$('run').onclick=async()=>{
+ if(busy)return;const files=Array.from($('files').files),mode=$('operation').value;
+ if(!files.length)return status(t('select'));
+ if(files.length>(mode==='photo'?50:1)||files.some(f=>f.size>(['photo','motion'].includes(mode)?25:150)*1048576))return status(t('limit'));
+ const feature=mode==='photo'&&files.length>1?'photo_batch':mode;
+ busy=true;canceled=false;status(t('processing'));$('run').disabled=true;$('cancel').disabled=false;$('operation').disabled=true;$('files').disabled=true;
+ document.querySelectorAll('.tool-choice,#creatorToolSettings select').forEach(e=>e.disabled=true);
+ let failures=0,successes=0,permit=null,settled=false;
+ try{
+  if(!['photo','audio'].includes(feature)){if(!window.VUToolAccess)throw Error('TOOLS_UNAVAILABLE');permit=await window.VUToolAccess.begin(feature);}
+  if(canceled)return;release();$('outputs').replaceChildren();
+  for(let i=0;i<files.length&&!canceled;i++){
+   status(`${t('processing')} ${i+1}/${files.length}`);
+   try{const output=mode==='photo'?await compressPhoto(files[i]):await mediaFile(files[i],mode);
+    if(!canceled){for(const item of (Array.isArray(output)?output:[output])){if(canceled)break;result(item,files[i],item===files[i]?t('smaller'):'');if(window.AndroidBridge)await save(item);successes++;}}
+   }catch(e){if(!canceled){failures++;const p=document.createElement('p');p.textContent=files[i].name+': '+t('failed');$('outputs').append(p);}}
+  }
+  if(permit){settled=true;await(canceled||!successes?permit.cancel():permit.complete());}
+  status(canceled?t('cancelled'):failures?t('failed'):(window.AndroidBridge?t('done')+' · Gallery / VideoUniquifier':t('done')));
+ }catch(e){status(window.VUToolAccess?.message(e)||t('failed'));}
+ finally{
+  if(permit&&!settled)try{await permit.cancel();}catch(_){}
+  try{engine?.terminate();}catch(_){}engine=null;if(workerURL)URL.revokeObjectURL(workerURL);workerURL=null;
+  busy=false;$('run').disabled=false;$('cancel').disabled=true;$('operation').disabled=false;$('files').disabled=false;document.querySelectorAll('.tool-choice,#creatorToolSettings select').forEach(e=>e.disabled=false);
+ }
+};
 window.VUFreeTools={get busy(){return busy;},save,share,renderRecording:file=>result(file,file,'',$('cameraResults'))};
 window.addEventListener('beforeunload',e=>{if(busy){e.preventDefault();e.returnValue='';}});window.addEventListener('pagehide',()=>{release();try{engine?.terminate();}catch(_){}});window.vuHandleAndroidBack=()=>{if(busy){$('cancel').click();return true;}location.href='index.html';return true;};
 })();

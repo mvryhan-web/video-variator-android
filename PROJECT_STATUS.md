@@ -1,8 +1,8 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
-Last updated: 2026-10-14  
-Repository: `mvryhan-web/video-variator-android`  
-Brand: **Deepsyq**  
+Last updated: 2026-10-14
+Repository: `mvryhan-web/video-variator-android`
+Brand: **Deepsyq**
 This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
@@ -107,12 +107,13 @@ Current queued-roadmap dependencies to verify before implementation:
 
 ## Handoff — 2026-10-14
 
-**Workstream:** Deepsyq Dashboard / navigation / pricing and SEO entry, current TXT scope.  
-**Owner:** current ChatGPT Work agent.  
-**Status:** PARTIAL / feature branch only, CI pending.  
-**Changed:** responsive Deepsyq shell reuses existing studio, tools, email auth, token, plan config and Stripe checkout; honest availability; Lifetime separated; $0.99 Trial visibly not purchasable; comparative SEO; deep links. Main Telegram/docs changes retained.  
-**Verified:** 23 existing provider/billing/Telegram unit checks; JS syntax. Browser CI added, not yet a production login/payment test.  
-**Branch:** `deepsyq-platform` built from `ai-generation-studio` PR40 plus main 14de516.  
-**Blockers:** owner-only AI, BytePlus profile/payment activation and missing secure key, public job/credit/storage flow, real Trial entitlement, existing PR28 quota reconciliation. No live production changes.  
-**Next:** review CI, preserve PR28 instead of duplicating access architecture, finish bounded TXT flow. Roadmap blocks 1–6 stay queued.  
+**Workstream:** Deepsyq Dashboard / navigation / pricing and SEO entry, current TXT scope.
+**Owner:** current ChatGPT Work agent.
+**Status:** PARTIAL / feature branch only; current Dashboard CI passed.
+**Quota integration:** existing PR28 reservation/settlement code reused with additive migration, CI-only PostgreSQL fixture, and production-URL guard. Legacy five shared trial tasks retained provisionally; requested per-tool trials remain PARTIAL.
+**Changed:** responsive Deepsyq shell reuses existing studio, tools, email auth, token, plan config and Stripe checkout; honest availability; Lifetime separated; $0.99 Trial visibly not purchasable; comparative SEO; deep links. Main Telegram/docs changes retained.
+**Verified foundation (5c28ac7):** Dashboard CI 38551913472 passed (25 unit, 70 browser cases with one retry); general web CI passed (327 passed, 3 retry-passed, 75 skipped); Android build/emulator CI 38551913541 passed. Quota integration: 5 local policy/route checks passed; isolated PostgreSQL and cross-browser CI pending. Not a real production login/payment test.
+**Branch:** `deepsyq-platform` built from `ai-generation-studio` PR40 plus main 14de516.
+**Blockers:** owner-only AI, BytePlus profile/payment activation and missing secure key, public job/credit/storage flow, real Trial entitlement, existing PR28 quota reconciliation. No live production changes.
+**Next:** IN PROGRESS: integrate and reconcile existing PR28 tool access into this same feature branch; no other agent owns this workstream. Finish bounded TXT flow. Roadmap blocks 1–6 stay queued.
 **Detail:** `docs/DEEPSYQ-FOUNDATION-HANDOFF.md` and original TXT in `docs/DEEPSYQ_PLATFORM_SPEC.md`.

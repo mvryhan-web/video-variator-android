@@ -1,6 +1,6 @@
 # Deepsyq current TXT scope — 2026-10-14
 
-Status: PARTIAL; feature branch only. No public launch, provider call, secret, database or payment changes.
+Status: PARTIAL; feature branch only. No public launch, provider call, secret, production database or payment changes.
 
 ## Source of truth
 
@@ -15,7 +15,7 @@ New roadmap blocks 1–6 remain queued as recorded in PROJECT_STATUS; do not imp
 - Original Stripe subscription/Lifetime checkout and verified webhook remain unchanged. Current advertised config: Basic $9/750, Pro $24/2250, Business $99/15000, Lifetime EUR2999. These are tool credits, not a validated AI generation allowance.
 - Existing generation-studio module owns the catalog/provider dispatch, Google and BytePlus adapters, owner-only pilot jobs. Existing AI wallet/billing foundation remains gated/sandbox-only; no second ledger/router added by this workstream.
 - Main 14de516 contains shared collaboration docs and Telegram preview changes. Those are reconciled into this branch; do not revert them.
-- Existing PR28 (`tools-subscription-access`, ae9a5a7) already implements transactional shared tool quota, reservation/commit/cancel. It is NOT merged here. It currently keeps three tools permanently free, differing from the latest request for a trial for each tool. Integrate/reconcile that module once, not a new access system.
+- Existing PR28 (`tools-subscription-access`, ae9a5a7) already implements transactional shared tool quota, reservation/commit/cancel. Its module is now integrated into this feature branch, pending integration CI. It currently keeps three tools permanently free, differing from the latest request for a trial for each tool. Per-tool trial policy and remaining utility entry points still require reconciliation; this is not marked complete.
 
 ## Changes in this pass
 
@@ -28,7 +28,7 @@ New roadmap blocks 1–6 remain queued as recorded in PROJECT_STATUS; do not imp
 
 ## Database / environment / Stripe
 
-No new migration, database or infrastructure created in this pass. New flag: `DEEPSYQ_HOME_ENABLED`, default off; not installed in Render. No secrets changed. No Price/Product IDs created or modified. No checkout submitted to Stripe in tests.
+Added repeatable additive migration `server/migrations/20261014-tool-access.sql` for the existing PostgreSQL database: `vv_users.tools_trial_used` and `vv_tool_runs`. It has NOT run in production. No new database or infrastructure created. New flag: `DEEPSYQ_HOME_ENABLED`, default off; not installed in Render. No secrets changed. No Price/Product IDs created or modified. No checkout submitted to Stripe in tests.
 
 Trial $0.99 is visible as **not available for purchase**. It must not become a fake pay button. Before enabling it define included tools/AI usage, term, expiry/renewal/refund behavior, configure/reuse an actual verified Stripe price and implement entitlement via verified webhook in existing billing. Do not silently charge a different plan.
 
@@ -39,7 +39,7 @@ Lifetime existing rights remain untouched. New pricing explicitly excludes unlim
 - BytePlus account model activation was blocked on profile/payment completion; no API key was created or installed in prior work. Free-credits-only guard had been enabled; re-check current console before activation.
 - AI generation is owner-only, not a complete public paid platform. No live provider result was verified in this pass.
 - Long-song provider, general-purpose AI assistant, full durable per-user generation history/restart recovery/object storage, commercial job-credit settlement and provider administration remain incomplete. Extend existing modules, not another architecture.
-- Existing trial/tool-access PR28 must be reconciled; each-tool policy and all utility entry points are not enforced in current main.
+- PR28 quota code is integrated in this branch: account locking, reservations, success settlement, cancellation/refunds and client retry queue. Each-tool trial policy and all utility entry points remain incomplete. Local processing means this is cooperative client enforcement, not proof of processing on a trusted server.
 - Android app branding/manifest/platform root rollout, localized Dashboard copy, full public SEO suite and launch privacy/terms need further work before launch.
 - No production backup/migration, real Google login, real Stripe payment/refund or physical iPhone/Android journey was performed here. Never label fixture tests as production acceptance.
 
@@ -52,4 +52,8 @@ Lifetime existing rights remain untouched. New pricing explicitly excludes unlim
 
 ## Next action
 
-Review/fix CI. Continue this bounded current TXT scope: integrate existing quotas, complete verified provider/job/history/credit vertical slice, then Trial and public launch. Root stays on the old application until launch gates pass. Do not publish an APK or claim the public URL changed from a feature-branch commit.
+Review/fix integration CI. Continue this bounded current TXT scope: reconcile per-tool policy, complete verified provider/job/history/credit vertical slice, then Trial and public launch. Root stays on the old application until launch gates pass. Do not publish an APK or claim the public URL changed from a feature-branch commit.
+
+## Verified foundation before quota integration
+
+Head `5c28ac7`: Dashboard CI run 38551913472 passed (25 unit checks; 70 browser cases including one retry); general browser CI 38551913454 passed (327 passed, 3 retry-passed, 75 skipped); Android CI 38551913541 passed including emulator tests. These results predate the quota integration. New quota checks use an isolated ephemeral CI PostgreSQL fixture, guarded against production URLs. No live user login or payment was verified.
