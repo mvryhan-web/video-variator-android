@@ -2,6 +2,21 @@ import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id);
 const quickCreateForm=$('quickCreateForm');
 const quickCreateDropzone=$('quickCreateDropzone');
+// Draft-only examples. These do not represent connected AI workflows or spend credits.
+const quickPromptStarters={
+ 'product-image':{kind:'image',prompt:'Create a polished editorial product photograph with soft studio light and a clean background. Keep any supplied reference product accurate, including its shape, color and branding. Do not invent product features or text.'},
+ 'social-video':{kind:'video',prompt:'Create a short, engaging social video with clear visual storytelling, natural motion and a strong opening frame. Keep any reference subject recognizable; avoid fabricated product claims or logos.'},
+ portrait:{kind:'image',prompt:'Create an elegant editorial portrait with natural skin texture, soft directional lighting and a carefully composed background. Respect any supplied reference photo and avoid unwanted text or logos.'}
+};
+document.querySelectorAll('[data-quick-starter]').forEach(button=>button.addEventListener('click',()=>{
+ const starter=quickPromptStarters[button.dataset.quickStarter];if(!starter)return;
+ const prompt=$('quickCreatePrompt'),existing=prompt.value.trim();
+ if(existing&&existing!==starter.prompt&&!confirm('Replace your current description with this starter?'))return;
+ $('quickCreateKind').value=starter.kind;prompt.value=starter.prompt;
+ $('quickCreateStatus').textContent='Editable starter loaded. Nothing has been uploaded or generated.';
+ prompt.focus();
+}));
+
 let quickReferences=[],quickPreviewUrls=[];
 const QUICK_MAX_FILES=4,QUICK_MAX_BYTES=1024*1024;
 function renderQuickReferences(){
