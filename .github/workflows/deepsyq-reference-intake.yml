@@ -25,6 +25,16 @@ jobs:
     permissions:
       contents: read
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fixture
+          POSTGRES_PASSWORD: fixture
+          POSTGRES_DB: vv_ai_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -49,6 +59,12 @@ jobs:
           node --check tests/generation-reference-probe-unit.mjs
           node --check tests/generation-worker-runtime-unit.mjs
           node --check tests/generation-reference-upload-unit.mjs
+          node --check tests/generation-reference-lifecycle-postgres.mjs
       - name: Reference parser, codec probe, API, S3 and ledger mock regression
         run: |
           node --test tests/generation-reference-media-unit.mjs tests/generation-reference-ledger-unit.mjs tests/generation-reference-upload-unit.mjs tests/generation-reference-probe-unit.mjs tests/generation-reference-compatibility-unit.mjs tests/generation-worker-runtime-unit.mjs
+      - name: Real PostgreSQL reference intake and fake S3 lifetime acceptance
+        env:
+          AI_TEST_DATABASE_URL: postgres://fixture:fixture@127.0.0.1:5432/vv_ai_test
+          NODE_ENV: test
+        run: node --test tests/generation-reference-lifecycle-postgres.mjs
