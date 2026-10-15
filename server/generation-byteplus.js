@@ -27,7 +27,9 @@ export async function generateBytePlus(request,{key,fetcher=fetch}){
   return {operation:`byteplus:${d.id}`};
  }
  if(!SIZES[request.ratio]||images.length>3)throw Error('INVALID_REQUEST');
- const d=await json('images/generations',{key,fetcher,body:{model,prompt:request.prompt,size:SIZES[request.ratio],response_format:'b64_json',stream:false,sequential_image_generation:'disabled',watermark:true,...(request.model==='byteplus-seedream-5-lite'?{output_format:'png'}:{}),...(images.length?{image:images}:{})}});
+ if(request.model==='byteplus-seedream-5-lite'&&!['png','jpeg'].includes(request.outputFormat||'png'))throw Error('UNSUPPORTED_IMAGE_FORMAT');
+ if(request.model==='byteplus-seedream-4-5'&&request.outputFormat&&request.outputFormat!=='auto')throw Error('UNSUPPORTED_IMAGE_FORMAT');
+ const d=await json('images/generations',{key,fetcher,body:{model,prompt:request.prompt,size:SIZES[request.ratio],response_format:'b64_json',stream:false,sequential_image_generation:'disabled',watermark:true,...(request.model==='byteplus-seedream-5-lite'?{output_format:request.outputFormat||'png'}:{}),...(images.length?{image:images}:{})}});
  const data=d.data?.[0]?.b64_json;
  if(typeof data!=='string'||data.length>Math.ceil(MAX/3)*4||data.length%4!==0||!/^[A-Za-z0-9+/]*={0,2}$/.test(data))throw Error('INVALID_PROVIDER_MEDIA');
  const bytes=Buffer.from(data,'base64');
