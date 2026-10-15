@@ -17,7 +17,7 @@ Visible active work in GitHub:
 - current branch head referenced by that PR: `144e1e9a1a9e9e98951d4ef4aa49c29fdb630f6c`
 - PR reports compact AI video/image/audio studios, provider preparation, gated billing, and passing automated checks; it is still an open PR and is **not treated as merged production**.
 
-**Important:** do NOT assign the current Work agent all roadmap blocks 1–6 by default. Its job is to finish and hand off its current bounded TXT/production scope. Additional agents may take separate non-overlapping roadmap blocks after the relevant shared foundations are stable, or earlier only when the owner explicitly assigns them and collision risk is low.
+**Important:** do NOT assign the current Work agent all roadmap blocks 1–7 by default. Its job is to finish and hand off its current bounded TXT/production scope. Additional agents may take separate non-overlapping roadmap blocks after the relevant shared foundations are stable, or earlier only when the owner explicitly assigns them and collision risk is low.
 
 Before any agent starts a roadmap block, it must audit the latest code/branches/PRs because another agent may already have implemented part of it.
 
@@ -46,6 +46,7 @@ When another agent joins, add one row per claimed workstream before substantial 
 | 4 | Studio + My Workspace | NOT STARTED / QUEUED | UNASSIGNED | Creation editor/templates/skills + personal project workspace |
 | 5 | Internal Product Watcher Agent | NOT STARTED / QUEUED | UNASSIGNED | Owner-only scheduled monitoring, recommendations, approvals, daily/weekly reports |
 | 6 | Deepsyq Voice Agent | NOT STARTED / QUEUED | UNASSIGNED | Realtime voice interface across Deepsyq, Device Cleanup skill, owner voice access to Product Watcher |
+| 7 | Pricing, Credits, Stripe & Unit Economics | NOT STARTED / QUEUED | UNASSIGNED | Reuse existing Stripe; AI credits/top-ups, provider cost, reservations, margins; no unlimited Lifetime AI |
 
 Full requirements: `docs/DEEPSYQ_ROADMAP.md`.
 
@@ -62,6 +63,7 @@ Recommended split after the current TXT scope is stable enough:
 - **Agent D:** Block 4 — Studio + My Workspace.
 - **Agent E:** Block 5 — Product Watcher.
 - **Agent F:** Block 6 — Voice Agent.
+- **Agent G / later billing pass:** Block 7 — Pricing, Credits, Stripe & Unit Economics.
 
 This split is only a coordination model, not a requirement to hire six agents. One agent may take several blocks sequentially, but no agent should be expected to keep all six in active context at once.
 
@@ -115,8 +117,8 @@ Current queued-roadmap dependencies to verify before implementation:
 **Verified foundation (5c28ac7):** Dashboard CI 38551913472 passed (25 unit, 70 browser cases with one retry); general web CI passed (327 passed, 3 retry-passed, 75 skipped); Android build/emulator CI 38551913541 passed. Quota integration (db289716): 28 local checks passed, isolated PostgreSQL integration passed; 70 Deepsyq browser cases passed without retries; Android build/emulator passed. Full web CI 38623063405 passed: 358 passed, 3 retry-passed, 74 skipped. Not a real production login/payment test.
 **Branch:** `deepsyq-platform` built from `ai-generation-studio` PR40 plus main 14de516.
 **Blockers:** owner-only AI, BytePlus profile/payment activation and missing secure key, public job/credit/storage flow, real Trial entitlement, existing PR28 quota reconciliation. No live production changes.
-**Next:** reconcile final per-tool allowances and remaining entry points; then connect the existing AI wallet reservation/settlement to generation jobs after pricing/provider economics are approved. Finish bounded TXT flow. Roadmap blocks 1–6 stay queued.
-**Continuation 2026-10-15:** work-limit efficiency rule added to `AGENTS.md`. Owner-only `GET /api/studio/jobs` now exposes the latest 50 non-deleted generation records as safe metadata for History; it does not expose media bytes. Unit fixture updated to cover listing and deletion filtering. No provider activation, payment, production database, deployment or public-access change was made.
+**Next:** reconcile final per-tool allowances and remaining entry points; then connect the existing AI wallet reservation/settlement to generation jobs after pricing/provider economics are approved. Finish bounded TXT flow. Roadmap blocks 1–7 stay queued.
+**Continuation 2026-10-15:** work-limit efficiency rule added to `AGENTS.md`. Owner-only `GET /api/studio/jobs` now exposes the latest 50 non-deleted generation records as safe metadata for History; it does not expose media bytes. Unit fixture updated to cover listing and deletion filtering. No provider activation, payment, production database, deployment or public-access change was made. Durable generation-job metadata migration was added (provider/model/lifecycle/cost/credit fields), Studio My Results now renders saved jobs and can reopen a stored result, and a config-driven server-side generation pricing engine plus safe credit-estimate endpoint were added. No default AI prices were invented; pricing remains unconfigured until verified provider economics are entered.
 **Detail:** `docs/DEEPSYQ-FOUNDATION-HANDOFF.md` and original TXT in `docs/DEEPSYQ_PLATFORM_SPEC.md`.
 
 **External verification:** CI production probe on Oct 14 reached health/config and found billingConfigured=true, Google and Apple unconfigured (503). The smoke step permits failure; a green workflow does not establish production OAuth readiness. Apple remains intentionally disabled. Oct 15 BytePlus console is signed in but blocks model configuration on an unchecked terms/customer agreement/data-processing consent dialog; no acceptance or activation performed.
