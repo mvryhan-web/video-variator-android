@@ -20,7 +20,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 6 | BytePlus first provider adapter | PARTIAL / BLOCKED | Server-only ModelArk adapter exists for Seedream/Seedance. Real account activation/key/smoke call pending. |
 | 7 | AI Provider Router | PARTIAL | Shared dispatch/catalog exists, but full provider-neutral router contract + admin routing/fallback remains incomplete. |
 | 8 | Fallback | NOT STARTED | Do not auto-retry paid provider calls until ambiguity/idempotency rules are implemented. |
-| 9 | Provider config in admin | PARTIAL | Feature-gated owner API now supports model enable override, maintenance, priority, markup and internal cost. Full primary/fallback routing UI is still pending. |
+| 9 | Provider config in admin | PARTIAL | Feature-gated owner API + owner UI support model enable override, maintenance, priority, markup and internal cost. Primary/fallback routing policy is still pending. |
 | 10 | Normal generation-job database entity | PARTIAL | Durable job metadata migration now stores provider/model/prompt/lifecycle/cost/credits/settings. Current table remains pilot-oriented and needs commercial migration/cleanup. |
 | 11 | Permanent object storage | BLOCKED | Current pilot stores result bytes in PostgreSQL; production S3-compatible storage/service credentials are still required. |
 | 12 | Background jobs | PARTIAL | Async provider tasks persist external operation IDs; in-process kickoff is not a restart-safe commercial worker. |
@@ -49,7 +49,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 35 | Security | PARTIAL | Keys server-side, auth/user scoping, safe provider URLs, Stripe verification foundations exist; launch security review still required. |
 | 36 | Privacy | PARTIAL | Reference media is not persisted by current pilot; final Terms/Privacy/provider disclosures and retention policy pending. |
 | 37 | Business analytics | PARTIAL | Existing account analytics plus new owner provider/model job metrics foundation; revenue/margin/churn dashboard incomplete. |
-| 38 | Admin dashboard | NOT STARTED | Needs owner UI for users/jobs/providers/models/credits/templates. |
+| 38 | Admin dashboard | PARTIAL | Owner AI Control page now shows safe model controls and provider/model performance metrics. Users/payments/credits/templates sections remain pending. |
 | 39 | Provider performance | PARTIAL | Owner metrics endpoint aggregates provider/model jobs, success/failure, processing, average time, cost and charged credits. |
 | 40 | Model routing registry | PARTIAL | Shared model catalog/capabilities exists, but logical product model IDs and dynamic routing are incomplete. |
 | 41 | Internal model capabilities | PARTIAL | ratios/references/quality/duration/provider metadata exist; full capability schema is incomplete. |
@@ -77,6 +77,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 - Added safe owner-only generation credit estimate endpoint.
 - Added owner-only provider/model performance metrics endpoint.
 - Added feature-gated owner model controls for enable/disable, maintenance, priority, markup and internal cost; generation and estimates honor them when enabled.
+- Added owner-only AI Control page linked only for admin accounts; no API keys/secrets are exposed.
 - Recorded Roadmap Block 7 — Pricing, Credits, Stripe & Unit Economics.
 - Added/updated unit and browser test coverage for these changes.
 
