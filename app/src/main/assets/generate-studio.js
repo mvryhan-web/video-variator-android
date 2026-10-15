@@ -240,7 +240,11 @@ $('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)ret
    // Switching from Video/Audio uses the saved Image draft without touching the original result.
    if(kind!=='image')select('image',{remember:true});
    if((currentModel()?.references||0)<1)throw Error('IMAGE_REFERENCE_UNSUPPORTED');
-   const append=refs.length>0&&refs.length<(currentModel()?.references||0);
+   const maxRefs=currentModel()?.references||0;
+   if(refs.length>=maxRefs&&!confirm(say('Replace your existing reference photos with this result?','Заменить имеющиеся фотографии этим результатом?'))){
+    $('status').textContent=say('Your existing references are unchanged.','Ваши фотографии оставлены без изменений.');return;
+   }
+   const append=refs.length>0&&refs.length<maxRefs;
    const accepted=await acceptFiles([file],{append});
    if(!accepted)throw Error('IMAGE_REFERENCE_PREPARE_FAILED');
    $('consent').checked=false;$('prompt').focus();availability();
