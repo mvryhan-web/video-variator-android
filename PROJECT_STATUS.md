@@ -204,3 +204,10 @@ Current queued-roadmap dependencies to verify before implementation:
 - Added implementation-accurate AI media handling disclosure and links from Studio/Product Video/Dashboard.
 - Local Product Video handoff now cleans expired records when the IndexedDB handoff store is accessed.
 - Final legal Terms/Privacy and server retention schedule remain external owner/legal launch gates; no unsupported promise was added.
+
+
+### Continuation 12 — data-driven homepage workflows
+
+- Homepage can now surface up to six owner-approved featured workflows from the shared template API.
+- Empty/unavailable catalogs remain invisible instead of showing fake examples.
+- No public rollout flag was enabled; content remains controlled by AI Apps feature gating and owner template activation.

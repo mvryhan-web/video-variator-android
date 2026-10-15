@@ -95,3 +95,11 @@ test('Product Video keeps references local until Studio review and never auto-ge
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,models:[{kind:'video',id:'video-fixture',label:'Video Fixture',ratios:['16:9','9:16','1:1'],references:2,enabled:true}],catalog:[{kind:'video',id:'video-fixture',label:'Video Fixture',ratios:['16:9','9:16','1:1'],references:2,enabled:true,adapter:true,provider:'Google',duration:'8 seconds'}]}}));
  let jobPosts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')jobPosts++;});await page.goto('/product-video.html');const img=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');await page.locator('#photos').setInputFiles({name:'product.png',mimeType:'image/png',buffer:img});await page.locator('#productName').fill('Luna Bag');await page.locator('#style').selectOption('cinematic');await page.locator('#ratio').selectOption('9:16');await expect(page.locator('#promptPreview')).toContainText('Luna Bag');await expect(page.locator('#promptPreview')).toContainText('cinematic');await page.locator('#continue').click();await expect(page).toHaveURL(/generate-studio.html\\?studio=video/);await expect(page.locator('#prompt')).toContainText('Luna Bag');await expect(page.locator('#ratio')).toHaveValue('9:16');await expect(page.locator('#refPreview img')).toHaveCount(1);await expect(page.locator('#consent')).not.toBeChecked();expect(jobPosts).toBe(0);
 });
+
+
+test('dashboard featured workflows are data-driven and disappear when empty',async({page})=>{
+ await fixtures(page);
+ await page.route('**/api/config',r=>r.fulfill({json:{googleClientId:'',appleClientId:'',emailAuth:true,billingConfigured:false,features:{aiApps:true,productVideo:true,onboarding:true},plans:{}}}));
+ await page.route('**/api/templates?featured=true',r=>r.fulfill({json:{items:[{id:'f1',title:'Owner Featured Workflow',slug:'owner-featured',category:'ecommerce',description:'Approved workflow',thumbnail:null,generationType:'image',active:true,featured:true}]}}));
+ await page.goto('/deepsyq.html');await expect(page.locator('#featuredWorkflows')).toBeVisible();await expect(page.locator('#featuredWorkflowGrid')).toContainText('Owner Featured Workflow');
+});

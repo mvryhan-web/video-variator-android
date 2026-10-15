@@ -34,7 +34,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 20 | Product Video workflow | PARTIAL | Guided local workflow accepts up to 3 product photos + optional logo/name, style/format/duration preference, builds an internal prompt, and hands prompt/settings/local references to Video Studio without auto-generation. Live commercial generation remains gated. |
 | 21 | AI Agents | NOT STARTED (BASE) | Deeper implementation is Roadmap Block 2. |
 | 22 | Inspiration / Discover | NOT STARTED (BASE) | Full implementation is Roadmap Block 3. |
-| 23 | Template system | PARTIAL | Data-driven PostgreSQL template schema/API and owner create/edit/activate/feature/reorder UI exist. Public AI Apps/template gallery wiring is still pending. |
+| 23 | Template system | PARTIAL | Data-driven PostgreSQL template schema/API, owner create/edit/activate/feature/reorder UI, AI Apps catalog and homepage Featured workflows are wired. Final public content still depends on owner-approved templates/assets. |
 | 24 | History | PARTIAL | Owner Studio History now has All/Images/Videos/Failed/Processing filters plus Open, Download, Reuse, prepare-only Regenerate and safe Delete. It remains owner-gated; card thumbnails are not yet generated. |
 | 25 | My Creations | PARTIAL | User-scoped job access exists; full library/project experience is Roadmap Block 4. |
 | 26 | Canvas | PARTIAL | Studio generation workspace exists; richer unified Canvas still incomplete. |
@@ -57,7 +57,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 43 | Pricing page | PARTIAL | Existing plan display/checkout reused; final Deepsyq AI subscription/credit economics not approved. |
 | 44 | Free plan | PARTIAL | Existing non-AI trials/tools exist; safe AI acquisition allowance not defined. |
 | 45 | Onboarding | PARTIAL | New email/Google/Apple accounts are flagged for a persistent Image/Video onboarding choice; selection is stored server-side and routes directly to a real studio. Public launch verification is still pending. |
-| 46 | Homepage conversion | PARTIAL | Deepsyq dashboard now uses primary `Create` and secondary `Explore templates` CTAs into real Studio/AI Apps. Public launch examples/content still require owner-approved assets. |
+| 46 | Homepage conversion | PARTIAL | Dashboard uses `Create` + `Explore templates` and now renders up to six real owner-featured workflows from the template API; the section stays hidden when no approved content exists. Public launch still requires owner-approved content/assets. |
 | 47 | Do not expose BytePlus as our product | DONE | Provider stays implementation detail; Deepsyq branding used. |
 | 48 | Production safety / regression | PARTIAL | Feature flags, CI and no-live-change discipline exist; backup/staging/live regression still required before launch. |
 | 49 | Database migrations | PARTIAL | Additive commercial-job migration is repeatable and has an isolated PostgreSQL migration test, including legacy pilot copy. Production backup/migration/rollback still has not been run. |
@@ -199,3 +199,10 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Added cleanup of expired local IndexedDB handoff records whenever the handoff store is next accessed; the notice does not falsely claim a browser background TTL service.
 - Explicitly states that no automatic server-side retention period is promised yet and that final legal Terms/Privacy/provider disclosures still require launch review.
 - Linked the notice from Studio, Product Video and the Deepsyq footer.
+
+
+## Continuation 13 — data-driven homepage workflows
+
+- Added a homepage Featured workflows section backed only by active `featured=true` template records.
+- No sample cards, prompts or third-party images are invented in code. If the approved featured catalog is empty or AI Apps is disabled, the entire section stays hidden.
+- Cards show the owner-provided title/description/thumbnail/category/type and route into the existing AI Apps catalog.
