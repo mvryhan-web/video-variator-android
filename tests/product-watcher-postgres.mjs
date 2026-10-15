@@ -6,6 +6,7 @@ import { runProductWatcherOnce } from '../server/product-watcher/monitor.js';
 import { productWatcherTick } from '../server/product-watcher/scheduler.js';
 import { runOfficialSourcesOnce } from '../server/product-watcher/official-sources.js';
 import { runBriefsIfDue } from '../server/product-watcher/briefs.js';
+import { runContentTasksIfDue } from '../server/product-watcher/content-tasks.js';
 import { installProductWatcher } from '../server/product-watcher/admin-api.js';
 
 const url = process.env.PRODUCT_WATCHER_TEST_DB_URL || '';
@@ -97,6 +98,23 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     assert.equal(pending.rows[0].reviewed_by,'owner-1');
 
     
+
+    // Minimal isolated fixture matching only the deployed BASE content columns we inspect.
+    await pool.query("CREATE TABLE IF NOT EXISTS vv_ai_template(id TEXT PRIMARY KEY,active BOOLEAN NOT NULL DEFAULT false,thumbnail TEXT,prompt_template TEXT NOT NULL DEFAULT '')");
+    await pool.query("CREATE TABLE IF NOT EXISTS vv_ai_inspiration(id TEXT PRIMARY KEY,active BOOLEAN NOT NULL DEFAULT false,kind TEXT NOT NULL,rights_note TEXT NOT NULL DEFAULT '',rights_basis TEXT NOT NULL,preview_url TEXT NOT NULL DEFAULT '')");
+    await pool.query("INSERT INTO vv_ai_template(id,active,thumbnail,prompt_template) VALUES('watcher-test-template',TRUE,NULL,'A prompt fixture') ON CONFLICT(id) DO NOTHING");
+    await pool.query("INSERT INTO vv_ai_inspiration(id,active,kind,rights_note,rights_basis,preview_url) VALUES('watcher-test-inspiration',TRUE,'image','licensed preview','licensed','https://example.test/image.jpg') ON CONFLICT(id) DO NOTHING");
+    const contentRun=await runContentTasksIfDue({pool,env:{...env,PRODUCT_WATCHER_CONTENT_TASKS_ENABLED:'true'},now:()=>new Date()});
+    assert.equal(contentRun.status,'generated');
+    assert.deepEqual(contentRun.generated.map(x=>x.kind),['content','opportunities']);
+    const contentList=await request('GET','/api/product-watcher/admin/content-tasks');
+    assert.equal(contentList.statusCode,200);
+    assert.equal(contentList.body.items.length,2);
+    assert.ok(contentList.body.items.some(x=>x.kind==='content'&&x.content.templates.missingThumbnail===1));
+    assert.ok(contentList.body.items.some(x=>x.kind==='opportunities'&&x.content.recommendations.some(y=>y.code==='NO_APPROVED_VIDEO_EXAMPLE')));
+    const contentAgain=await runContentTasksIfDue({pool,env:{...env,PRODUCT_WATCHER_CONTENT_TASKS_ENABLED:'true'},now:()=>new Date()});
+    assert.equal(contentAgain.status,'not_due');
+
     const report=await runBriefsIfDue({pool,env:{...env,PRODUCT_WATCHER_BRIEFS_ENABLED:'true'},now:()=>new Date()});
     assert.equal(report.status,'generated');
     assert.ok(report.generated.some(x=>x.kind==='daily'));
