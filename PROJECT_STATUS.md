@@ -232,3 +232,10 @@ Current queued-roadmap dependencies to verify before implementation:
 - Provider cost currency is now explicit per pricing row/job; owner analytics keeps costs separated by currency and launch readiness blocks pricing rows without currency.
 - Added checksummed transactional `npm run migrate:ai`, read-only `npm run migrate:ai:check`, read-only `npm run ai:preflight`, and standalone `npm run worker:generation`.
 - Added `docs/AI_PRODUCTION_ROLLOUT.md`; no production flags/services/keys were enabled by these repository changes.
+
+
+### Continuation 15 — separated Pricing and wallet activity
+
+- Added `ai-pricing.html`: existing Video/Everyday Tools subscriptions and Lifetime are visually/semantically separate from AI credit packs.
+- No AI pack prices are hardcoded; the page uses `/api/ai-billing/config` only, and checkout buttons remain disabled unless AI billing is active.
+- Studio wallet now renders recent ledger activity and handles Stripe return/cancel states without claiming payment before webhook confirmation.

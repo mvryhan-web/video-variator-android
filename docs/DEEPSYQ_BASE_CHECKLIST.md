@@ -54,7 +54,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 40 | Model routing registry | PARTIAL | Shared catalog/capabilities plus server-side compatible candidate ordering and owner priorities exist. Logical cross-provider product model IDs and measured quality/reliability routing remain future work. |
 | 41 | Internal model capabilities | PARTIAL | All catalog models now expose a normalized capability object for input kinds, output kind, ratios, max references, async mode, quality, duration seconds and reference support. Future provider-specific constraints may extend it. |
 | 42 | Persist BytePlus output in our storage | PARTIAL / BLOCKED | Adapter downloads/validates media and Studio can move completed bytes into configured S3-compatible storage before wallet capture. Real storage provisioning and live BytePlus verification remain external gates. |
-| 43 | Pricing page | PARTIAL | Existing plans remain intact; Studio now exposes configured AI-wallet balance and credit packs with Stripe Checkout only when AI billing is enabled. Final public Deepsyq AI pricing page/economics remain unapproved. |
+| 43 | Pricing page | PARTIAL | Dedicated Pricing page now separates existing Video/Everyday Tools subscriptions (including Lifetime) from prepaid AI credits, renders only server-configured AI packs, and enables Stripe only when AI billing is active. Final AI economics/pack values still require approval. |
 | 44 | Free plan | PARTIAL | Existing non-AI trials/tools exist; safe AI acquisition allowance not defined. |
 | 45 | Onboarding | PARTIAL | New email/Google/Apple accounts are flagged for a persistent Image/Video onboarding choice; selection is stored server-side and routes directly to a real studio. Public launch verification is still pending. |
 | 46 | Homepage conversion | PARTIAL | Dashboard uses `Create` + `Explore templates` and now renders up to six real owner-featured workflows from the template API; the section stays hidden when no approved content exists. Public launch still requires owner-approved content/assets. |
@@ -226,3 +226,11 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Provider costs carry explicit currency; owner analytics never combines currencies or invents FX conversion.
 - Added checksummed transactional migration runner, non-mutating migration status, read-only AI preflight and a standalone recovery worker entry point.
 - Added `docs/AI_PRODUCTION_ROLLOUT.md` with mandatory activation/rollback order. External production gates remain untouched.
+
+
+## Continuation 16 — separated Pricing and wallet activity
+
+- Added a dedicated Pricing page that clearly separates existing tool subscriptions/Lifetime from separately metered AI-generation credits. Existing Lifetime is explicitly not presented as unlimited AI.
+- AI pack cards render only server-configured credits/amount/currency and cannot start checkout while AI billing is disabled.
+- Studio AI wallet now shows recent ledger activity and a manual balance refresh.
+- Returning from Stripe never claims payment success; Studio states that credits appear only after the signed Stripe webhook confirms payment.
