@@ -9,6 +9,7 @@ import { runBriefsIfDue } from '../server/product-watcher/briefs.js';
 import { runContentTasksIfDue } from '../server/product-watcher/content-tasks.js';
 import { deliverCriticalWatcherAlertsOnce } from '../server/product-watcher/telegram-alerts.js';
 import {watcherDeploymentReadiness} from '../server/product-watcher/readiness.js';
+import {checkBillingReconciliation} from '../server/product-watcher/billing-signals.js';
 import { installProductWatcher } from '../server/product-watcher/admin-api.js';
 
 const url = process.env.PRODUCT_WATCHER_TEST_DB_URL || '';
@@ -219,10 +220,51 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
       locker.release();
     }
 
+    // Independent, NON-PRODUCTION local-only AI billing reconciliation fixture.
+    // Tables mirror the existing generation-billing / generation-wallet structures.
+    await pool.query("CREATE TABLE IF NOT EXISTS vv_ai_order(id TEXT PRIMARY KEY,user_id TEXT NOT NULL,sku TEXT NOT NULL,snapshot JSONB NOT NULL,session_id TEXT UNIQUE,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
+    await pool.query("CREATE TABLE IF NOT EXISTS vv_ai_purchase(session_id TEXT PRIMARY KEY,user_id TEXT NOT NULL,payment_intent TEXT UNIQUE NOT NULL,credits INTEGER NOT NULL,amount INTEGER NOT NULL,currency TEXT NOT NULL,refunded_amount INTEGER NOT NULL DEFAULT 0)");
+    for(let i=0;i<3;i++) {
+      await pool.query(
+        "INSERT INTO vv_ai_order(id,user_id,sku,snapshot,session_id,created_at) VALUES($1,'fixture-user','test','{}'::jsonb,$2,NOW()-INTERVAL '3 days')",
+        ['watcher-billing-order-'+i,'cs_watcher_test_'+i]
+      );
+    }
+    await pool.query(
+      "INSERT INTO vv_ai_purchase(session_id,user_id,payment_intent,credits,amount,currency,refunded_amount) VALUES('cs_watcher_orphan','fixture-user','pi_watcher_orphan',5,100,'usd',110)"
+    );
+    const bill=await checkBillingReconciliation(pool,{enabled:true});
+    assert.equal(bill.code,'AI_REFUND_LEDGER_INCONSISTENT');
+    assert.equal(bill.status,'critical');
+    assert.equal(bill.counters.oldUnmatchedCheckoutSessions7d,3);
+    assert.equal(bill.counters.orphanCreditPurchases,1);
+    assert.equal(bill.counters.overRefundedPurchases,1);
+    assert.equal(bill.stripeWebhookVerified,false);
+    assert.ok(!JSON.stringify(bill).includes('fixture-user'));
+    assert.ok(!JSON.stringify(bill).includes('pi_watcher_orphan'));
+
     res=await request('POST','/api/product-watcher/admin/control',{body:{action:'pause'}});
     assert.equal(res.body.paused,true);
     const noRun=await request('POST','/api/product-watcher/admin/run');
     assert.equal(noRun.body.status,'paused');
     assert.equal(httpCalls,1);
+
+    // Exercise the real Watcher run/alert persistence with the billing observer ON.
+    // This cannot send/refund anything to Stripe: the entire test uses watcher_test.
+    const resumeBilling=await request('POST','/api/product-watcher/admin/control',{body:{action:'resume'}});
+    assert.equal(resumeBilling.statusCode,200);
+    const withBilling=await runProductWatcherOnce({
+      pool,env:{...env,PRODUCT_WATCHER_BILLING_SIGNALS_ENABLED:'true'},fetchFn
+    });
+    assert.equal(withBilling.status,'critical');
+    assert.equal(withBilling.checks.billing.code,'AI_REFUND_LEDGER_INCONSISTENT');
+    assert.equal(withBilling.checks.billing.stripeWebhookVerified,false);
+    assert.equal(withBilling.checks.billing.counters.oldUnmatchedCheckoutSessions7d,3);
+    assert.ok(withBilling.findings.some(x=>x.source==='billing'&&x.severity==='critical'));
+    assert.ok(!JSON.stringify(withBilling).includes('fixture-user'));
+    const persistedCritical=await pool.query(
+      "SELECT COUNT(*)::int AS count FROM vv_product_watcher_alerts WHERE source='billing' AND code='AI_REFUND_LEDGER_INCONSISTENT' AND severity='critical'"
+    );
+    assert.equal(persistedCritical.rows[0].count,1);
   } finally {await pool.end();}
 });

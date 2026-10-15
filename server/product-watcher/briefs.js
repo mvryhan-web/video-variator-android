@@ -42,7 +42,10 @@ async function compileBrief(client,kind,instant){
     RECORDED_SPEND_SPIKE:'Compare volume, models and verified costs; do not assume a price increase.',
     RECORDED_UNIT_COST_SPIKE:'Compare resolution and model mix against actual provider rate cards.',
     HTTP_UNAVAILABLE:'Review hosting health and recent deploys.',
-    DB_UNAVAILABLE:'Check database health privately without sharing secrets.'
+    DB_UNAVAILABLE:'Check database health privately without sharing secrets.',
+    AI_REFUND_LEDGER_INCONSISTENT:'Review internal AI refund records; do not issue automatic refunds or credits.',
+    AI_PAYMENT_RECONCILIATION_REVIEW:'Check Checkout sessions in Stripe dashboard before assuming webhook failure.',
+    AI_BILLING_LEDGER_NOT_READY:'Verify optional AI billing schema and approved activation status.'
   };
   const suggestions=[...new Set(issues.map(x=>guidelines[x.code]).filter(Boolean))].slice(0,8);
 

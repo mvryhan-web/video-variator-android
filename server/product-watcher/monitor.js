@@ -5,6 +5,7 @@
  */
 import { checkOperationalSignals } from './operational-signals.js';
 import { saveWatcherAlerts } from './alerts.js';
+import {checkBillingReconciliation,billingObserverEnabled} from './billing-signals.js';
 
 const DEFAULT_TIMEOUT_MS = 5000;
 const ADVISORY_LOCK_KEYS = [455033, 5];
@@ -108,7 +109,8 @@ export async function runProductWatcherOnce({ pool, env = {}, fetchFn = globalTh
       http: await httpHealth({ fetchFn, ...config }),
       database: await checkDatabase(client),
       generations: await checkGenerationJobs(client),
-      operations: await checkOperationalSignals(client)
+      operations: await checkOperationalSignals(client),
+      billing: await checkBillingReconciliation(client,{enabled:billingObserverEnabled(env)})
     };
     const { status, findings } = summarizeChecks(checks);
     const report = { enabled: true, status, checkedAt: now().toISOString(), checks, findings };
