@@ -18,3 +18,10 @@ CREATE TABLE IF NOT EXISTS vv_product_watcher_control (
 );
 INSERT INTO vv_product_watcher_control(id, paused) VALUES(1, TRUE)
   ON CONFLICT(id) DO NOTHING;
+
+-- Only an actually running private worker updates this heartbeat; no fake online flag.
+CREATE TABLE IF NOT EXISTS vv_product_watcher_scheduler (
+  id INTEGER PRIMARY KEY CHECK(id=1),
+  heartbeat_at TIMESTAMPTZ
+);
+INSERT INTO vv_product_watcher_scheduler(id) VALUES(1) ON CONFLICT(id) DO NOTHING;

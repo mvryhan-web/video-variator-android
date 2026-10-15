@@ -1,5 +1,6 @@
 import { runProductWatcherOnce, watcherConfig } from './monitor.js';
 import { initAdminAudit } from '../admin-audit.js';
+import { WATCHER_INTERVAL_MS } from './scheduler.js';
 
 // Match the existing Deepsyq owner identity policy: only the designated Google account.
 // An empty ADMIN_EMAIL must never authorize a user with an empty email.
@@ -21,19 +22,27 @@ export function installProductWatcher(app, { auth, pool, env = process.env, fetc
     if (!enabled()) return res.json({ enabled: false, status: 'disabled', paused: null, schedulerActive: false, lastRun: null, runs: [] });
     if (!pool) return error(res, 503, 'WATCHER_DATABASE_NOT_CONFIGURED');
     try {
-      const [state, history] = await Promise.all([
+      const [state, history, worker] = await Promise.all([
         pool.query('SELECT paused, updated_at FROM vv_product_watcher_control WHERE id=1'),
-        pool.query('SELECT id, status, checks, findings, created_at FROM vv_product_watcher_runs ORDER BY id DESC LIMIT 30')
+        pool.query('SELECT id, status, checks, findings, created_at FROM vv_product_watcher_runs ORDER BY id DESC LIMIT 30'),
+        pool.query('SELECT heartbeat_at FROM vv_product_watcher_scheduler WHERE id=1')
       ]);
       if (!state.rows?.length) return error(res, 503, 'WATCHER_SCHEMA_NOT_READY');
       const runs = history.rows.map(r => ({
         id: Number(r.id), status: r.status, checks: r.checks, findings: r.findings,
         checkedAt: r.created_at
       }));
+      if (!worker.rows?.length) return error(res, 503, 'WATCHER_SCHEMA_NOT_READY');
+      const heartbeat = worker.rows[0].heartbeat_at ? new Date(worker.rows[0].heartbeat_at).getTime() : 0;
+      const schedulerActive = env.PRODUCT_WATCHER_SCHEDULER_ENABLED === 'true' &&
+        heartbeat > 0 && heartbeat <= Date.now() && Date.now() - heartbeat < 180000;
+      const recent = runs[0]?.checkedAt ? new Date(runs[0].checkedAt).getTime() : null;
+      const nextRun = schedulerActive && !state.rows[0].paused && Number.isFinite(recent)
+        ? new Date(recent + WATCHER_INTERVAL_MS).toISOString() : null;
       return res.json({
         enabled: true, status: state.rows[0].paused ? 'paused' : 'ready',
-        paused: !!state.rows[0].paused, schedulerActive: false,
-        nextRun: null, lastRun: runs[0] || null, runs
+        paused: !!state.rows[0].paused, schedulerActive,
+        nextRun, lastRun: runs[0] || null, runs
       });
     } catch {
       return error(res, 503, 'WATCHER_STATUS_UNAVAILABLE');
