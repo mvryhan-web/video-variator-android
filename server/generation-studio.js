@@ -183,8 +183,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(objectStorage.configured&&result.bytes){
    try{asset=await objectStorage.putGeneration({userId,jobId:id,mime:result.mime,bytes:result.bytes});media=null;}
    catch(_){
-    if(walletEnabled())await wallet.settle({userId,jobId:id,outcome:'confirmed_failure'}).catch(()=>{});
-    await pool.query("UPDATE vv_generation_jobs SET status='failed',credits_reserved=CASE WHEN $2 THEN 0 ELSE credits_reserved,error='OBJECT_STORAGE_FAILED',error_message='OBJECT_STORAGE_FAILED',failed_at=NOW() WHERE id=$1",[id,walletEnabled()]);
+    await failTerminalProviderJob(id,userId,Error('OBJECT_STORAGE_FAILED'),'storage');
     return;
    }
   }
