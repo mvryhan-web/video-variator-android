@@ -3,3 +3,15 @@
 @media(max-width:1100px){.orb{right:-30px;opacity:.3}.account>span,.section-head>.muted{display:none}.tool-grid{grid-template-columns:repeat(2,1fr)}main{padding:20px 24px}.top{padding:0 24px}.studio-grid{gap:10px}.card-copy{padding:14px}}
 @media(max-width:760px){aside{transform:translateX(-100%);transition:transform .15s;box-shadow:20px 0 60px #0008}body.menu-open aside{transform:translateX(0)}.content{margin-left:0}.top{height:64px;padding:0 18px;position:relative;z-index:21;background:#111318}#menu{display:block;padding:8px 12px}.breadcrumb{display:none}main{padding:14px 18px 0}.hero{padding:25px 0 30px}.hero h1{font-size:43px;letter-spacing:-2px}.hero p{font-size:13px}.orb{width:170px;height:170px;right:-45px;top:75px;opacity:.18}.hero-actions{gap:16px;flex-wrap:wrap}.eyebrow{font-size:8px}.studio-grid{grid-template-columns:1fr}.studio-card{display:grid;grid-template-columns:100px 1fr}.card-art{height:150px}.art-shape{left:12px;top:30px;transform:scale(.75) rotate(-25deg);transform-origin:left}.audio .art-shape{left:-8px;font-size:80px;top:30px}.card-index{font-size:7px;left:10px;letter-spacing:1px}.card-copy{align-self:center;padding:16px}.card-copy h3{font-size:14px}.card-copy p{font-size:12px}.section-head{margin-top:28px}h2{font-size:21px}.unique-tool{padding:17px;gap:12px;flex-wrap:wrap}.unique-tool div{flex:1;min-width:180px}.unique-tool>span:last-child{margin-left:42px}.trial-offer,.lifetime{align-items:stretch;flex-direction:column;gap:8px}.plan-grid{grid-template-columns:1fr}.plan{padding:20px}.plan p{min-height:0}.history-links{flex-direction:column;gap:16px}.tool-grid a{padding:14px}.tool-grid b{font-size:11px}.authCard{padding:25px 20px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.onboardingCard{position:relative;max-width:560px;width:100%;border:1px solid #454b58;border-radius:16px;background:#181c24;padding:30px}
+.onboardingCard h2{font-size:26px;margin:18px 0 10px}
+.onboardingCard>p{color:#a5adbc;font-size:13px;line-height:1.6}
+.onboardingChoices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0 14px}
+.onboardingChoices button{text-align:left;display:grid;gap:7px;min-height:118px;padding:18px;border:1px solid #3a414e;border-radius:13px;background:#20242d;color:#eef0f4}
+.onboardingChoices button:hover{border-color:#78915f;background:#252c25}
+.onboardingChoices strong{font-size:16px}
+.onboardingChoices span{font-size:11px;line-height:1.5;color:#a3acbb}
+#onboardingLater{width:100%;margin-top:2px}
+#onboardingStatus{min-height:18px;font-size:11px;color:#b7c6ad}
+@media(max-width:560px){.onboardingCard{padding:25px 20px}.onboardingChoices{grid-template-columns:1fr}.onboardingChoices button{min-height:96px}}
