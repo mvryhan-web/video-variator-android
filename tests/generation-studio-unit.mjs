@@ -50,3 +50,26 @@ test('owner metrics expose aggregate provider performance without secrets',async
   assert.ok(!JSON.stringify(d).includes('secret'));
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
+
+test('recovery polls only an existing provider operation and never starts a replacement generation',async()=>{
+ let providerCalls=0,pollCalls=0,finished=false;
+ const row={id:'job-1',operation:'byteplus:task_1',status:'processing',deleted:false};
+ const pool={
+  async query(sql,args=[]){
+   if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_pilot'))return {rows:[]};
+   if(sql.startsWith("SELECT id,operation FROM vv_generation_pilot"))return {rows:[{id:row.id,operation:row.operation}]};
+   if(sql.startsWith('UPDATE vv_generation_pilot SET status=$2')){finished=true;return {rows:[]};}
+   throw new Error(sql);
+  },
+  async connect(){return {async query(sql,args=[]){
+   if(sql.startsWith('SELECT pg_try_advisory_lock'))return {rows:[{locked:true}]};
+   if(sql.startsWith('SELECT status,operation,deleted'))return {rows:[row]};
+   if(sql.startsWith('SELECT pg_advisory_unlock'))return {rows:[{pg_advisory_unlock:true}]};
+   throw new Error(sql);
+  },release(){}};}
+ };
+ const env={AI_STUDIO_ENABLED:'true',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'video',AI_STUDIO_ALLOWED_MODELS:'byteplus-seedance-2',AI_STUDIO_BACKGROUND_POLLING:'true',BYTEPLUS_API_KEY:'fixture',BYTEPLUS_MEDIA_HOSTS:'cdn.bytepluses.com',DATABASE_URL:'fixture',ADMIN_EMAIL:'owner@example.test'};
+ const app=express();const controls=installGenerationStudio(app,{env,pool,auth:(_req,_res,next)=>next(),provider:async()=>{providerCalls++;throw Error('must not generate');},poller:async operation=>{pollCalls++;assert.equal(operation,row.operation);return {mime:'video/mp4',bytes:Buffer.from('fixture'),text:''};}});
+ await controls.recoveryTick();
+ assert.equal(providerCalls,0);assert.equal(pollCalls,1);assert.equal(finished,true);
+});
