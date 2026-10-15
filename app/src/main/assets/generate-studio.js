@@ -1,5 +1,6 @@
 import {saveLocal} from './ai-media.js';
 import {MODEL_CATALOG,MODELS} from './generate-models.js';
+import {takeStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id),ru=navigator.language.startsWith('ru');
 const say=(en,r)=>ru?r:en;
 const strings={back:'← Назад',pilot:'Предпросмотр студии',workspace:'ВАША СТУДИЯ',video:'Видео',image:'Изображения',audio:'Аудио',dashboard:'Главная ↗',translation:'Перевод · позже',create:'Создать',history:'Мои результаты',label:'ТВОРЧЕСКАЯ СТУДИЯ',headline:'Ваша идея. Создайте её.',prompt:'Опишите, что хотите создать',addPhoto:'Фото',clear:'Убрать фото',generate:'Создать ✦',consent:'Я согласен отправить запрос и фотографии в Google для генерации.',pilotNote:'Предпросмотр студии. Оплата не включена.',chooseModel:'Выберите модель',modelHint:'Выберите инструмент для своей задачи. У каждой модели указан статус подключения.',settings:'Настройки',format:'Формат',capabilityNote:'Настройки соответствуют выбранной модели. Неподдерживаемые параметры не отправляются.',trackType:'Тип аудио',song:'Песня с вокалом',instrumental:'Без слов',voiceoverMode:'Озвучка · подключение готовится',voiceover:'Открыть существующий инструмент озвучки →',language:'Язык',voice:'Голос',done:'Готово',download:'Скачать',share:'Поделиться',delete:'Удалить',saveNote:'Сохраните копию. Удаление результата не удаляет скачанные файлы.',historyHint:'Здесь доступны сохранённые результаты студии. Генерация не запускается автоматически.',checkResult:'Проверить последний результат',historyLoading:'Загружаем результаты…',historyNone:'Сохранённых результатов пока нет.',historyOpen:'Открыть',historyReady:'Готово',historyProcessing:'В работе',historyFailed:'Ошибка',filterAll:'Все',filterImages:'Изображения',filterVideos:'Видео',filterFailed:'Ошибки',filterProcessing:'В работе'};
@@ -87,7 +88,19 @@ function filename(){const ext=blob?.type.startsWith('video/')?'mp4':blob?.type==
 $('download').onclick=async()=>{if(!blob||busy)return;busy=true;availability();try{await saveLocal(new File([blob],filename(),{type:blob.type}));}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
 $('share').onclick=async()=>{if(!blob||busy)return;const file=new File([blob],filename(),{type:blob.type});try{if(window.AndroidBridge&&window.VUShareFile){busy=true;availability();try{await window.VUShareFile({blob:file,name:file.name});}finally{busy=false;availability();}return;}if(navigator.canShare?.({files:[file]}))await navigator.share({files:[file]});else $('status').textContent=say('File sharing is unavailable in this browser. Download the file to share it.','Этот браузер не поддерживает отправку файла. Скачайте его и поделитесь.');}catch(e){if(e.name!=='AbortError')$('status').textContent=say('Could not share. Try downloading the file.','Не удалось поделиться. Попробуйте скачать файл.');}};
 $('remove').onclick=async()=>{if(!job||busy)return;busy=true;availability();try{await api(`/api/studio/jobs/${encodeURIComponent(job)}`,{method:'DELETE'});++generation;clearResult();sessionStorage.removeItem('vu_generation_job');job=null;$('status').textContent=say('Result deleted. Downloaded copies are kept.','Результат удалён. Скачанные копии остаются.');if(historyView)await loadHistory();else setHistory(false);}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
-$('resumeJob').onclick=()=>{if(busy)return;function applyTemplateStart(){
+$('resumeJob').onclick=()=>{if(busy)return;async function applyLocalStudioHandoff(){
+ try{
+  const h=await takeStudioHandoff();if(!h)return false;
+  const target=h.kind==='music'?'music':h.kind;if(target!==kind)select(target);
+  if(h.defaultModel&&catalog.some(m=>m.id===h.defaultModel&&m.kind===target)){modelId=h.defaultModel;renderModel();}
+  $('prompt').value=String(h.prompt||'').slice(0,2000);
+  const ratio=h.settings?.ratio;if(ratio&&currentModel()?.ratios?.includes(ratio)){$('ratio').value=ratio;updateRatioSelection();}
+  const max=currentModel()?.references||0,files=(h.files||[]).slice(0,max);if(files.length)await acceptFiles(files);
+  $('consent').checked=false;availability();const dropped=(h.files||[]).length-files.length;
+  $('status').textContent=dropped?say(`Workflow prepared. This model accepts ${max} reference file(s), so ${dropped} local file(s) were not attached. Review everything before generating.`,`Шаблон подготовлен. Эта модель принимает ${max} файл(а), поэтому ${dropped} файл(а) не были прикреплены. Проверьте всё перед генерацией.`):say('Workflow prepared locally. Review the prompt, references and settings before generating.','Шаблон подготовлен локально. Проверьте запрос, фотографии и настройки перед генерацией.');return true;
+ }catch(_){$('status').textContent=say('The local workflow handoff could not be restored. Add your references here instead.','Не удалось восстановить локальный шаблон. Добавьте фотографии здесь.');return false;}
+}
+function applyTemplateStart(){
  const raw=sessionStorage.getItem('deepsyq_template_start');if(!raw)return;sessionStorage.removeItem('deepsyq_template_start');
  try{
   const t=JSON.parse(raw),target=t.generationType==='image'?'image':t.generationType==='audio'?'music':['video','product_video'].includes(t.generationType)?'video':null;if(!target)return;
@@ -101,7 +114,7 @@ $('resumeJob').onclick=()=>{if(busy)return;function applyTemplateStart(){
 const previous=sessionStorage.getItem('vu_generation_job');if(!previous)return;job=previous;busy=true;availability();watch(job,++generation).catch(e=>{$('status').textContent=errorText(e);busy=false;availability();});};
 select(kind,{remember:false});
 try{config=await(await api('/api/studio/config')).json();catalog=config.catalog||[...config.models.map(m=>({...m,id:m.id||MODELS[m.kind]?.id,adapter:true,provider:'Google'})),...MODEL_CATALOG.filter(m=>!config.models.some(c=>(c.id||MODELS[c.kind]?.id)===m.id)).map(m=>({...m,enabled:false}))];const preferred=config.models?.find(m=>m.kind===kind&&m.enabled);if(preferred?.id)modelId=preferred.id;renderModel();}catch(_){availability();}
-applyTemplateStart();
+const restored=await applyLocalStudioHandoff();if(!restored)applyTemplateStart();
 const previous=sessionStorage.getItem('vu_generation_job');if(previous&&config.enabled){job=previous;busy=true;availability();watch(job,++generation).catch(e=>{$('status').textContent=errorText(e);busy=false;availability();});}
 
 if(new URLSearchParams(location.search).get('view')==='history')setHistory(true);

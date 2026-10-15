@@ -168,3 +168,10 @@ Current queued-roadmap dependencies to verify before implementation:
 - Use Template prepares the real Studio with prompt/default model/ratio but keeps consent unchecked and does not auto-generate.
 - Dashboard main/secondary CTAs now point to real creation and active templates.
 - These remain feature-branch changes; no production/root/provider/payment activation occurred.
+
+
+### Continuation 7 — Product Video workflow
+
+- Added BASE Product Video guided workflow using local-only file handoff into the existing Video Studio.
+- Product photos/logo are not sent to a provider from the workflow page; Studio restores compatible references, prompt and ratio locally, consent stays unchecked, and generation is never auto-started.
+- No live provider/payment/public entitlement/deployment switch was enabled.

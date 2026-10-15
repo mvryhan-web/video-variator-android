@@ -15,3 +15,5 @@
 #onboardingLater{width:100%;margin-top:2px}
 #onboardingStatus{min-height:18px;font-size:11px;color:#b7c6ad}
 @media(max-width:560px){.onboardingCard{padding:25px 20px}.onboardingChoices{grid-template-columns:1fr}.onboardingChoices button{min-height:96px}}
+
+.product .card-art{background:#c8c3aa}.product .art-shape{border-radius:18px;border-color:#4a4434;box-shadow:18px 12px 0 #7c7254;transform:rotate(8deg)}

@@ -31,7 +31,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 17 | Unit economics | PARTIAL | Job cost/credit fields + provider metrics endpoint + pricing foundation added; real provider costs not configured. |
 | 18 | Pricing engine | PARTIAL | Server-side `AI_MODEL_PRICING_JSON` engine + safe credit estimate endpoint added; no invented/default prices. |
 | 19 | AI Apps | PARTIAL | Separate data-driven AI Apps page now renders only active templates from the shared template API. Use Template prepares a real Image/Video/Audio Studio and never auto-generates; broader workflows remain pending. |
-| 20 | Product Video workflow | NOT STARTED | No finished guided product-video workflow yet. |
+| 20 | Product Video workflow | PARTIAL | Guided local workflow accepts up to 3 product photos + optional logo/name, style/format/duration preference, builds an internal prompt, and hands prompt/settings/local references to Video Studio without auto-generation. Live commercial generation remains gated. |
 | 21 | AI Agents | NOT STARTED (BASE) | Deeper implementation is Roadmap Block 2. |
 | 22 | Inspiration / Discover | NOT STARTED (BASE) | Full implementation is Roadmap Block 3. |
 | 23 | Template system | PARTIAL | Data-driven PostgreSQL template schema/API and owner create/edit/activate/feature/reorder UI exist. Public AI Apps/template gallery wiring is still pending. |
@@ -158,3 +158,11 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Use Template stores a bounded prefill and opens the matching real Studio; Studio consumes the prompt/default model/ratio once and never submits a generation automatically.
 - Unsupported active workflow types are shown as pending rather than pretending they work.
 - Dashboard CTA now follows the BASE conversion direction: `Create` plus `Explore templates`.
+
+
+## Continuation 8 — Product Video workflow
+
+- Added a guided Product Video page for product photos, optional logo/name, advertising style, aspect ratio and duration preference.
+- Product media is transferred locally through short-lived IndexedDB handoff storage, not uploaded on the workflow page. Video Studio restores only as many references as the selected model supports, keeps consent unchecked and never auto-generates.
+- The internal prompt explicitly avoids inventing product features, claims, packaging text or brand details not visible in references.
+- Duration remains a creative preference because supported duration is model-specific; unsupported provider parameters are not fabricated.
