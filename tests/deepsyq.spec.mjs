@@ -206,7 +206,7 @@ test('dashboard shows the authenticated AI wallet only when AI billing is enable
  await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Wallet User',isAdmin:false}}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'test',livePaymentsEnabled:false,unit:'AI credits',packs:[],rates:[],revision:'x'}}));
- await page.route('**/api/ai-billing/balance',r=>r.fulfill({json:{available:4200,reserved:150,debt:0}}));
+ await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:4200,reserved:150,debt:0}}));
  await page.goto('/deepsyq.html');await expect(page.locator('#aiWalletLink')).toBeVisible();await expect(page.locator('#aiWalletAvailable')).toHaveText('4,200');await expect(page.locator('#aiWalletHeld')).toHaveText('150 held');await expect(page.locator('#aiWalletLink')).toHaveAttribute('href','ai-pricing.html');
 });
 
