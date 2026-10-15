@@ -3,7 +3,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {readFile} from 'node:fs/promises';
+import {readFile,mkdtemp,rm} from 'node:fs/promises';
+import {spawnSync} from 'node:child_process';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {once} from 'node:events';
 import pg from 'pg';
 import express from 'express';
@@ -12,6 +15,7 @@ import {createGenerationReferenceLedger} from '../server/generation-reference-le
 import {installGenerationReferenceUpload} from '../server/generation-reference-upload.js';
 import {createSeedanceStagedReferenceInspector} from '../server/generation-reference-inspector.js';
 import {createSeedanceAudioPayloadPreparer} from '../server/generation-reference-audio-payload.js';
+import {createSeedanceVideoTransferPlanner} from '../server/generation-reference-video-transfer.js';
 
 const url=process.env.AI_TEST_DATABASE_URL||'';
 function localFixtureDatabase(){
@@ -36,7 +40,7 @@ const fixtureEnv=()=>({
  AI_STUDIO_REFERENCE_CLEANUP_ENABLED:'true',
  AI_STUDIO_REFERENCE_TTL_MINUTES:'5',
  AI_OBJECT_STORAGE_ENABLED:'true',
- AI_OBJECT_STORAGE_ENDPOINT:'https://private-storage.example.invalid',
+ AI_OBJECT_STORAGE_ENDPOINT:'https://private-storage.example.com',
  AI_OBJECT_STORAGE_BUCKET:'deepsyq-ci-private',
  AI_OBJECT_STORAGE_REGION:'auto',
  AI_OBJECT_STORAGE_ACCESS_KEY_ID:'REFERENCE_FIXTURE_KEY',
@@ -61,7 +65,7 @@ test('private media lifecycle: real isolated PostgreSQL, HTTP admission and fake
   let failDelete=0,failPut=0;
   const storage=createObjectStorage({env,fetcher:async (url,opts)=>{
    const target=String(url);
-   assert.ok(target.startsWith('https://private-storage.example.invalid/deepsyq-ci-private/'));
+   assert.ok(target.startsWith('https://private-storage.example.com/deepsyq-ci-private/'));
    assert.match(String(opts.headers?.Authorization),/^AWS4-HMAC-SHA256 /);
    assert.equal(opts.redirect,'error');
    calls.push({method:opts.method,url:target});
@@ -172,6 +176,39 @@ test('private media lifecycle: real isolated PostgreSQL, HTTP admission and fake
    env.AI_STUDIO_REFERENCE_STAGING_ENABLED='false';
    assert.deepEqual(await ledger.cleanupExpired(),{claimed:1,deleted:1,failed:0});
    assert.equal(objects.size,0);
+  });
+  await t.test('real stored H264 MP4 yields owner-only, 30-second signed GET but no provider dispatch',async()=>{
+   env.AI_STUDIO_REFERENCE_STAGING_ENABLED='true';
+   env.AI_STUDIO_REFERENCE_VIDEO_PRESIGN_ENABLED='true';
+   env.AI_STUDIO_REFERENCE_TRANSFER_REVIEW_APPROVED='true';
+   env.AI_STUDIO_REFERENCE_PROVIDER_FETCH_HOSTS='private-storage.example.com';
+   const tmp=await mkdtemp(join(tmpdir(),'deepsyq-mp4-ci-'));
+   try{
+    const file=join(tmp,'reference.mp4');
+    const ff=spawnSync('ffmpeg',['-v','error','-f','lavfi','-i','color=c=blue:s=854x480:r=24',
+     '-t','3','-c:v','libx264','-pix_fmt','yuv420p','-movflags','+faststart','-an','-y',file],
+     {timeout:20000,encoding:'utf8'});
+    assert.equal(ff.status,0,ff.stderr||'ffmpeg unavailable');
+    const original=await readFile(file);
+    const staged=await ledger.stage({userId:'alice',mime:'video/mp4',bytes:original});
+    const inspector=createSeedanceStagedReferenceInspector({ledger});
+    const planner=createSeedanceVideoTransferPlanner({ledger,storage,inspector,env});
+    const result=await planner.prepare({userId:'alice',model:'byteplus-seedance-2',videoAssetIds:[staged.id]});
+    assert.equal(result.providerSubmitted,false);
+    assert.equal(result.content[0].role,'reference_video');
+    const signed=new URL(result.content[0].video_url.url);
+    assert.equal(signed.hostname,'private-storage.example.com');
+    assert.equal(signed.searchParams.get('X-Amz-Expires'),'30');
+    assert.ok(signed.searchParams.get('X-Amz-Signature'));
+    assert.equal(result.content.length,1);
+    await assert.rejects(()=>ledger.getForVideoTransfer({userId:'mallory',id:staged.id}),/REFERENCE_MEDIA_ACCESS_DENIED/);
+    // Once the row expires, another signed candidate must never be issued.
+    await pool.query("UPDATE vv_generation_reference_assets SET created_at=NOW()-INTERVAL '1 hour',expires_at=NOW()-INTERVAL '1 minute'");
+    await assert.rejects(()=>ledger.getForVideoTransfer({userId:'alice',id:staged.id}),/REFERENCE_MEDIA_ACCESS_DENIED/);
+    env.AI_STUDIO_REFERENCE_STAGING_ENABLED='false';
+    assert.deepEqual(await ledger.cleanupExpired(),{claimed:1,deleted:1,failed:0});
+    assert.equal(objects.size,0);
+   }finally{await rm(tmp,{recursive:true,force:true});}
   });
   await t.test('reference transport never used provider/wallet and only private S3 verbs',()=>{
    assert.ok(calls.some(x=>x.method==='PUT'));
