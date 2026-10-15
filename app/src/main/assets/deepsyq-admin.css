@@ -6,3 +6,13 @@
 .review-card input{min-height:40px;border-radius:9px;border:1px solid #343b49;background:#0f1218;color:#fff;padding:8px}
 .review-card .message{grid-column:2/4;margin:0}
 @media(max-width:760px){.review-card{grid-template-columns:1fr}.review-card strong,.review-card small,.review-card .message{grid-column:1}.review-card button,.review-card input{width:100%}}
+
+.route-preview-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-top:14px}
+.route-preview-controls label{display:grid;gap:6px;min-width:150px;font-size:10px;color:#9aa4b8}
+.route-preview-controls select{min-height:40px;border-radius:9px;border:1px solid #343b49;background:#0f1218;color:#fff;padding:8px}
+.route-result{display:grid;gap:8px;margin-top:10px}
+.route-result>p{margin:0;color:#cfd5e3}
+.route-candidate{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #2d3340;border-radius:12px;background:#12161d}
+.route-candidate>span{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#252b37;color:#cfd5e3;font-size:10px}
+.route-candidate strong,.route-candidate small{display:block}
+.route-candidate small{margin-top:3px;color:#8f98ab}
