@@ -32,3 +32,21 @@ test('owner pilot cap persists across installation; deletion never restores atte
  r=await fetch(base+'/api/studio/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'image',prompt:'Test',ratio:'1:1',consent:true})});assert.equal(r.status,429);assert.equal(jobs.length,1);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
+
+test('owner metrics expose aggregate provider performance without secrets',async()=>{
+ const pool={
+  async query(sql){
+   if(sql.includes('CREATE TABLE')||sql.includes('ALTER TABLE')||sql.includes('CREATE INDEX'))return {rows:[]};
+   if(sql.includes('GROUP BY provider,model,kind'))return {rows:[{provider:'BytePlus',model:'byteplus-seedance-2',kind:'video',jobs:4,succeeded:3,failed:1,processing:0,avg_seconds:'12.50',actual_cost:'1.250000',credits_charged:'320'}]};
+   throw new Error(sql);
+  }
+ };
+ const env={AI_STUDIO_ENABLED:'true',AI_STUDIO_MAX_CALLS:'1',AI_STUDIO_ALLOWED_KINDS:'video',BYTEPLUS_API_KEY:'secret',BYTEPLUS_MEDIA_HOSTS:'cdn.bytepluses.com',DATABASE_URL:'test',ADMIN_EMAIL:'owner@example.test'};
+ const app=express();installGenerationStudio(app,{env,pool,auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));const base=`http://127.0.0.1:${server.address().port}`;
+ try{
+  const r=await fetch(base+'/api/studio/admin/metrics');assert.equal(r.status,200);const d=await r.json();
+  assert.equal(d.items[0].provider,'BytePlus');assert.equal(d.items[0].jobs,4);assert.equal(d.items[0].averageSeconds,12.5);assert.equal(d.items[0].creditsCharged,320);
+  assert.ok(!JSON.stringify(d).includes('secret'));
+ }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});
