@@ -55,3 +55,9 @@
 .quick-create .quick-starters button{margin:0;padding:7px 10px;border:1px solid #52614d;border-radius:999px;background:#252c29;color:#cfe7c5;font-size:11px;font-weight:500}
 .quick-create .quick-starters button:hover{background:#304134;border-color:#93ae80}
 .quick-create .quick-starters button:focus-visible{outline:2px solid #d2f7ae;outline-offset:2px}
+
+/* Secondary Canvas reset action; current draft is session-only. */
+.quick-create .quick-create-clear{margin-left:auto;border:1px solid #505b52;background:transparent;color:#c5d4c4;font-size:11px;padding:10px 11px}
+.quick-create .quick-create-clear:hover{background:#313934}
+.quick-create .quick-create-clear+button{margin-left:0}
+@media(max-width:560px){.quick-create .quick-create-clear{flex:0 0 auto}.quick-create .quick-create-clear+button{flex:1 0 100%}}
