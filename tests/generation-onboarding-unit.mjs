@@ -25,3 +25,9 @@ test('onboarding persists the selected starting workflow for the authenticated u
   r=await fetch(base+'/api/onboarding',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({goal:'image'})});assert.equal(r.status,200);d=await r.json();assert.equal(d.target,'/generate-studio.html?studio=image');assert.deepEqual(saved,{userId:'user-1',goal:'image'});
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
+
+
+test('onboarding is production-gated by default',async()=>{
+ const app=express();app.use(express.json());installOnboarding(app,{pool:{},env:{NODE_ENV:'production',AI_ONBOARDING_ENABLED:'false'},auth:(req,_res,next)=>{req.user={id:'u1'};next();}});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));try{const base=`http://127.0.0.1:${server.address().port}`;const r=await fetch(base+'/api/onboarding');assert.equal(r.status,503);assert.equal((await r.json()).error,'ONBOARDING_NOT_ENABLED');}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});

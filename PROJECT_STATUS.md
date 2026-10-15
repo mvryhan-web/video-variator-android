@@ -190,3 +190,10 @@ Current queued-roadmap dependencies to verify before implementation:
 - Added feature-gated owner AI-wallet adjustments with explicit user confirmation, idempotency and audit reason.
 - Negative adjustments cannot overdraw available credits or create hidden debt. Stripe is untouched.
 - `AI_OWNER_CREDIT_ADJUSTMENTS` remains OFF by default; enabling it requires an owner operational policy decision.
+
+
+### Continuation 10 — production-safe BASE feature flags
+
+- Added `AI_APPS_ENABLED`, `AI_PRODUCT_VIDEO_ENABLED` and `AI_ONBOARDING_ENABLED`; production defaults OFF unless explicitly true.
+- Public APIs/routes and Dashboard visibility honor these flags; owner template preparation remains available while AI Apps public rollout is off.
+- Existing provider/billing/root switches remain unchanged and OFF where previously gated.

@@ -27,3 +27,10 @@ test('public template API exposes active templates and owner can create one',asy
   r=await fetch(base+'/api/studio/admin/templates',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Video ad',slug:'video-ad',category:'ads',generationType:'video',promptTemplate:'Create a short product video',requiredInputTypes:['image'],defaultSettings:{ratio:'16:9'},active:false,featured:false,sortOrder:30})});assert.equal(r.status,201);d=await r.json();assert.equal(d.template.slug,'video-ad');assert.equal(d.template.active,false);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
+
+
+test('public templates are production-gated while owner preparation can remain separate',async()=>{
+ const pool={async query(sql){if(sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_template'))return {rows:[]};throw new Error(sql);}};
+ const app=express();installGenerationTemplates(app,{pool,env:{NODE_ENV:'production',AI_APPS_ENABLED:'false',ADMIN_EMAIL:'owner@example.test'},auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));try{const base=`http://127.0.0.1:${server.address().port}`;const r=await fetch(base+'/api/templates');assert.equal(r.status,503);assert.equal((await r.json()).error,'AI_APPS_NOT_ENABLED');}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});

@@ -61,7 +61,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 47 | Do not expose BytePlus as our product | DONE | Provider stays implementation detail; Deepsyq branding used. |
 | 48 | Production safety / regression | PARTIAL | Feature flags, CI and no-live-change discipline exist; backup/staging/live regression still required before launch. |
 | 49 | Database migrations | PARTIAL | Additive commercial-job migration is repeatable and has an isolated PostgreSQL migration test, including legacy pilot copy. Production backup/migration/rollback still has not been run. |
-| 50 | Feature flags | PARTIAL | Major Deepsyq/studio/billing gates exist; future modules need their own flags as implemented. |
+| 50 | Feature flags | PARTIAL | Major Deepsyq/studio/billing gates plus AI Apps, Product Video, Onboarding and owner credit-adjustment flags now exist. New BASE modules default OFF in production unless explicitly enabled. Future roadmap modules still need their own flags. |
 | 51 | First commercial vertical slice | PARTIAL | Gated code path now supports approved price → reserve → provider job → S3/DB persistence → finalizing → capture, plus held-credit reconciliation and abuse limits. Live provider/storage/Stripe/margin verification is still incomplete. |
 | 52 | Required implementation order | IN PROGRESS | Continue BASE before Roadmap Blocks 1–7. |
 | 53 | Explicit non-goals for now | DONE / RULE | No unnecessary marketplace/social network/Photoshop/huge provider sprawl should be built during BASE. |
@@ -183,3 +183,11 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Owner adjustment endpoint requires exact target-user confirmation, UUID request ID, non-zero bounded integer delta and reason.
 - Negative adjustments cannot exceed currently available AI credits; they cannot silently create debt.
 - Feature flag `AI_OWNER_CREDIT_ADJUSTMENTS=false` keeps the capability disabled by default. The operation never changes Stripe.
+
+
+## Continuation 11 — production-safe BASE feature flags
+
+- Added production-safe flags for AI Apps, Product Video and new-account onboarding. In production, absent flags resolve to OFF; dev/test remains previewable unless explicitly disabled.
+- Public template APIs return `AI_APPS_NOT_ENABLED` while AI Apps is disabled; owner template management remains available for preparation.
+- Direct `/ai-apps(.html)` and `/product-video(.html)` routes return 404 while disabled, so static-file URLs cannot bypass rollout.
+- Dashboard hides disabled module links/cards; onboarding does not interrupt users while its flag is off.

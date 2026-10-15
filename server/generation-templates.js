@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 const TYPES=new Set(['image','video','product_video','avatar','audio']);
 const INPUTS=new Set(['image','video','audio','logo','product_name','text']);
 let initPromise;
+function featureEnabled(env){const value=env.AI_APPS_ENABLED;return value==='true'||(env.NODE_ENV!=='production'&&value!=='false');}
 
 function owner(user,env){return !!(user&&env.ADMIN_EMAIL&&user.provider==='google'&&String(user.email||'').trim().toLowerCase()===String(env.ADMIN_EMAIL).trim().toLowerCase());}
 function text(v,max,{required=false}={}){const s=String(v??'').trim();if((required&&!s)||s.length>max)throw Error('INVALID_TEMPLATE');return s;}
@@ -41,7 +42,7 @@ export function validateTemplate(value,current={}){
 function row(r){return {id:r.id,title:r.title,slug:r.slug,category:r.category,description:r.description||'',thumbnail:r.thumbnail||null,generationType:r.generation_type,promptTemplate:r.prompt_template,defaultModel:r.default_model||null,requiredInputTypes:r.required_input_types||[],defaultSettings:r.default_settings||{},active:!!r.active,featured:!!r.featured,sortOrder:Number(r.sort_order||0),createdAt:r.created_at,updatedAt:r.updated_at};}
 
 export function installGenerationTemplates(app,{auth,pool,env=process.env}){
- app.get('/api/templates',async(req,res)=>{try{
+ app.get('/api/templates',async(req,res)=>{if(!featureEnabled(env))return res.status(503).json({error:'AI_APPS_NOT_ENABLED'});try{
   await initTemplates(pool);const where=['active=true'],args=[];
   if(req.query.category){args.push(String(req.query.category).slice(0,80));where.push(`category=$${args.length}`);}
   if(req.query.type){args.push(String(req.query.type).slice(0,40));where.push(`generation_type=$${args.length}`);}
@@ -49,7 +50,7 @@ export function installGenerationTemplates(app,{auth,pool,env=process.env}){
   const {rows}=await pool.query(`SELECT * FROM vv_ai_template WHERE ${where.join(' AND ')} ORDER BY featured DESC,sort_order ASC,title ASC LIMIT 100`,args);
   res.json({items:rows.map(row)});
  }catch(_){res.status(503).json({error:'TEMPLATES_UNAVAILABLE'});}});
- app.get('/api/templates/:slug',async(req,res)=>{try{await initTemplates(pool);const {rows}=await pool.query('SELECT * FROM vv_ai_template WHERE slug=$1 AND active=true',[req.params.slug]);if(!rows.length)return res.status(404).json({error:'TEMPLATE_NOT_FOUND'});res.json({template:row(rows[0])});}catch(_){res.status(503).json({error:'TEMPLATES_UNAVAILABLE'});}});
+ app.get('/api/templates/:slug',async(req,res)=>{if(!featureEnabled(env))return res.status(503).json({error:'AI_APPS_NOT_ENABLED'});try{await initTemplates(pool);const {rows}=await pool.query('SELECT * FROM vv_ai_template WHERE slug=$1 AND active=true',[req.params.slug]);if(!rows.length)return res.status(404).json({error:'TEMPLATE_NOT_FOUND'});res.json({template:row(rows[0])});}catch(_){res.status(503).json({error:'TEMPLATES_UNAVAILABLE'});}});
  const onlyOwner=(req,res,next)=>owner(req.user,env)?next():res.status(403).json({error:'OWNER_ONLY'});
  app.get('/api/studio/admin/templates',auth,onlyOwner,async(_req,res)=>{try{await initTemplates(pool);const {rows}=await pool.query('SELECT * FROM vv_ai_template ORDER BY sort_order ASC,title ASC');res.json({items:rows.map(row)});}catch(_){res.status(503).json({error:'TEMPLATES_UNAVAILABLE'});}});
  app.post('/api/studio/admin/templates',auth,onlyOwner,async(req,res)=>{try{
