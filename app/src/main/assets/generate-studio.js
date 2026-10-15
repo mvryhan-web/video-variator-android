@@ -273,7 +273,7 @@ function renderRefs(){
  const max=currentModel()?.references||0;
  $('clearRefs').hidden=!refs.length;
  $('imageEditPresets').hidden=kind!=='image'||!refs.length;
- $('refHint').textContent=max?say('PNG/JPG · '+refs.length+'/'+max+' references · 1 MB each','PNG/JPG · '+refs.length+'/'+max+' изображений · до 1 МБ'):'';
+ $('refHint').textContent=max?say('PNG/JPG · '+refs.length+'/'+max+' references · upload up to 16 MB each, optimized locally to 1 MB','PNG/JPG · '+refs.length+'/'+max+' изображений · исходник до 16 МБ, подготовка до 1 МБ'):'';
  refs.forEach((ref,index)=>{
   const tile=document.createElement('div');tile.className='studio-reference-tile';
   const img=document.createElement('img');img.alt=say('Reference photo '+(index+1),'Изображение '+(index+1));img.src=URL.createObjectURL(ref.file);
@@ -345,7 +345,7 @@ async function acceptFiles(files,{append=false}={}){
   const max=currentModel()?.references||0,selected=Array.from(files||[]);
   if(!selected.length)return false;
   if(selected.length+(append?refs.length:0)>max)throw Error(say('This model supports at most '+max+' reference photos. Remove an existing reference first.','Эта модель поддерживает до '+max+' изображений. Сначала уберите лишние.'));
-  busy=true;availability();
+  busy=true;availability();$('status').textContent=say('Preparing reference photos locally. No files have been uploaded.','Подготавливаем фотографии на устройстве. Файлы ещё не отправлялись.');
   const next=append?[...refs]:[];
   let optimizedCount=0;
   for(const source of selected){
@@ -356,7 +356,7 @@ async function acceptFiles(files,{append=false}={}){
    next.push({file,mimeType:file.type,data});
   }
   refs=next;$('consent').checked=false;accepted=true;
-  if(optimizedCount)$('status').textContent=say(optimizedCount+' large photo(s) optimized locally to fit the 1 MB reference limit. Original files were unchanged.','Больших фотографий уменьшено: '+optimizedCount+'. Подготовка выполнена на устройстве; оригиналы не изменены.');
+  $('status').textContent=optimizedCount?say(optimizedCount+' large photo(s) optimized locally to fit the 1 MB reference limit. Original files were unchanged.','Больших фотографий уменьшено: '+optimizedCount+'. Подготовка выполнена на устройстве; оригиналы не изменены.'):say('Reference photos are ready. Generate will start only after your approval.','Фотографии готовы. Генерация начнётся только после вашего подтверждения.');
  }catch(e){$('status').textContent=errorText(e);}
  finally{
   busy=false;
