@@ -253,6 +253,23 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     // This cannot send/refund anything to Stripe: the entire test uses watcher_test.
     const resumeBilling=await request('POST','/api/product-watcher/admin/control',{body:{action:'resume'}});
     assert.equal(resumeBilling.statusCode,200);
+    const configCheck=await runProductWatcherOnce({
+      pool,env:{...env,PRODUCT_WATCHER_WEBHOOK_CONFIG_ENABLED:'true',
+        AI_BILLING_ENABLED:'true',AI_BILLING_MODE:'test',
+        STRIPE_SECRET_KEY:'sk_test_FAKENOTREAL',STRIPE_WEBHOOK_SECRET:'',
+        DATABASE_URL:'postgres://fixture:fake@localhost/watcher_test'},fetchFn
+    });
+    assert.equal(configCheck.checks.webhookConfig.status,'critical');
+    assert.equal(configCheck.checks.webhookConfig.code,'AI_STRIPE_CONFIG_BLOCKED');
+    assert.equal(configCheck.checks.webhookConfig.webhookDeliveryVerified,false);
+    assert.ok(!JSON.stringify(configCheck).includes('sk_test_FAKENOTREAL'));
+    assert.ok(configCheck.findings.some(x=>x.source==='webhookConfig'));
+    assert.ok(!JSON.stringify(configCheck).includes('fixture:fake'));
+    const configLog=await pool.query(
+      "SELECT COUNT(*)::int AS count FROM vv_product_watcher_alerts WHERE source='webhookConfig' AND code='AI_STRIPE_CONFIG_BLOCKED' AND severity='critical'"
+    );
+    assert.equal(configLog.rows[0].count,1);
+
     const withBilling=await runProductWatcherOnce({
       pool,env:{...env,PRODUCT_WATCHER_BILLING_SIGNALS_ENABLED:'true'},fetchFn
     });

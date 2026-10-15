@@ -196,6 +196,12 @@ function render(d){
  current=d;$('watcherStatus').textContent=d.enabled?(d.paused?'Paused':'Ready for manual checks'):'Not enabled';
  $('watcherDetails').textContent=d.enabled?'Scheduler: '+(d.schedulerActive?'reported active':'not deployed')+' · Last run: '+formatDate(d.lastRun?.checkedAt):'Product Watcher is disabled in server configuration.';
  $('watcherBilling').textContent=billingCountersText(d.lastRun?.checks?.billing);
+ const stripe=d.lastRun?.checks?.webhookConfig;
+ $('watcherWebhookConfig').textContent=!stripe||stripe.scope==='disabled'
+  ?'Stripe webhook configuration diagnostics: disabled.'
+  :'AI Stripe configuration: '+String(stripe.code||'not reported')+
+    ' · '+((stripe.blockers||[]).map(x=>String(x.code)).join(' · ')||'No code-level blockers')+
+    ' · Stripe delivery NOT verified.';
  $('watcherToggle').textContent=d.paused?'Resume checks':'Pause checks';
  $('watcherToggle').disabled=busy||!d.enabled;
  $('watcherRun').disabled=busy||!d.enabled||d.paused;
