@@ -114,3 +114,10 @@ This runbook applies to the existing production project. It does **not** authori
 - physical Android/iPhone acceptance;
 - legal Terms/Privacy/provider disclosures;
 - final root/public launch approval.
+
+
+## Interpreting the read-only preflight report
+
+`verificationScope=configuration-and-migration-ledger` means the command checked local configuration and the recorded migration checksums only. Even `launchReady=true` is not evidence of a successful provider request, storage roundtrip, running worker, Stripe purchase/refund or phone acceptance; the report lists these under `externalVerificationRequired`. Keep the external gates above.
+
+Exit codes: `0` configuration/ledger checks pass; `2` missing configuration or pending/drifted/empty migration ledger; `3` check/cleanup failure. Database connections and queries have bounded timeouts. Errors use stable generic codes and never print database driver messages or connection strings. Diagnose failures through access-controlled infrastructure logs, not by adding secrets to this report. This command never applies migrations.
