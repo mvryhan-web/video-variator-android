@@ -432,6 +432,22 @@ async function deleteHistoryItem(item){
  if(!confirm(say('Delete this saved result? Downloaded copies are not affected.','Удалить сохранённый результат? Скачанные копии останутся.')))return;
  busy=true;availability();try{await api(`/api/studio/jobs/${encodeURIComponent(item.id)}`,{method:'DELETE'});if(job===item.id){++generation;clearResult();sessionStorage.removeItem('vu_generation_job');job=null;}$('status').textContent=say('Result deleted.','Результат удалён.');await loadHistory();}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}
 }
+// A single, authenticated status check for an existing Video job. Never creates or retries a paid task.
+async function checkHistoryVideo(item){
+ if(busy||item.kind!=='video'||!['queued','processing','finalizing'].includes(item.status))return;
+ busy=true;availability();
+ $('status').textContent=say('Checking this video job…','Проверяем состояние видеозадачи…');
+ try{
+  const d=await(await api('/api/studio/jobs/'+encodeURIComponent(item.id))).json();
+  if(d.id!==item.id||(d.kind&&d.kind!=='video'))throw Error('STUDIO_STORAGE_UNAVAILABLE');
+  if(d.status==='ready')$('status').textContent=say('Video is ready. Select Open in History to view or download it.','Видео готово. Нажмите «Открыть» в Истории, чтобы посмотреть или скачать его.');
+  else if(d.status==='failed')$('status').textContent=say('Video generation failed. No automatic retry was started.','Генерация видео завершилась ошибкой. Автоматического повтора не было.');
+  else if(d.status==='unknown')$('status').textContent=say('Video status is uncertain. No new task was submitted or charged. Do not regenerate until the original task is reviewed.','Статус видео неизвестен. Новая задача не отправлялась. Не запускайте повтор, пока не проверена исходная задача.');
+  else $('status').textContent=say('Video is still '+(d.status==='queued'?'queued':d.status==='finalizing'?'finalizing':'processing')+'. The server task continues without this page open.','Видео ещё '+(d.status==='queued'?'в очереди':d.status==='finalizing'?'завершается':'обрабатывается')+'. Серверная задача продолжается без открытой страницы.');
+  await loadHistory();
+ }catch(e){$('status').textContent=errorText(e);}
+ finally{busy=false;availability();}
+}
 async function openHistoryJob(id){
  if(busy)return;job=id;sessionStorage.setItem('vu_generation_job',id);if(sessionStorage.getItem('vu_generation_background_job')===id)sessionStorage.removeItem('vu_generation_background_job');busy=true;availability();$('status').textContent=say('Opening saved result…','Открываем сохранённый результат…');
  const epoch=++generation;try{await watch(id,epoch);if(epoch===generation)setHistory(false);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
@@ -461,6 +477,13 @@ async function loadHistory(){
     edit.title=say('Use this saved image as a reference in Image Generation. No AI job starts automatically.','Использовать сохранённое изображение как референс. Генерация не запускается автоматически.');
     edit.onclick=()=>void editHistoryImage(item);
     actions.append(edit);
+   }
+   if(item.kind==='video'&&['queued','processing','finalizing'].includes(item.status)){
+    const check=document.createElement('button');check.type='button';
+    check.textContent=say('Check status','Проверить статус');
+    check.title=say('Check this existing video task once. No new generation or charge.','Однократно проверить существующую видеозадачу без новой генерации и списания.');
+    check.onclick=()=>void checkHistoryVideo(item);
+    actions.append(check);
    }
    actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions);list.append(card);observeHistoryThumbnail(item,preview);
   }
