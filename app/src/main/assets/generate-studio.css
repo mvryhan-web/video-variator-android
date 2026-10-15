@@ -43,3 +43,5 @@
 
 .studio-reference-tile{position:relative;display:inline-block;width:58px;height:58px}
 .studio-reference-tile button{position:absolute;right:-6px;top:-6px;border-radius:50%;background:#263126;color:white;border:1px solid #82947d;cursor:pointer}
+
+.image-edit-presets{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:10px 0}.image-edit-presets[hidden]{display:none}.image-edit-presets span{color:#a8b5aa;font-size:11px}.image-edit-presets button{border:1px solid #4c5e52;border-radius:999px;padding:7px 10px;background:#222d26;color:#e5f0e2;font-size:11px;cursor:pointer}
