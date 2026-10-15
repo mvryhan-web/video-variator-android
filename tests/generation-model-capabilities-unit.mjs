@@ -17,6 +17,6 @@ test('routing reads normalized ratio and reference capability limits',()=>{
  const catalog=MODEL_CATALOG.map((m,i)=>({...m,enabled:true,priority:i+1}));
  const video=orderedGenerationCandidates({kind:'video',ratio:'1:1',references:[{}]},catalog);
  assert.ok(video.length>0);assert.ok(video.every(m=>m.capabilities.ratios.includes('1:1')&&m.capabilities.maxReferences>=1));
- const impossible=orderedGenerationCandidates({kind:'video',ratio:'1:1',references:[{},{}]},catalog);
+ const impossible=orderedGenerationCandidates({kind:'video',ratio:'1:1',references:[{},{},{},{}]},catalog);
  assert.equal(impossible.length,0);
 });
