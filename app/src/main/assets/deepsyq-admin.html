@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Deepsyq Admin · AI Models</title><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#111318">
+<link rel="stylesheet" href="deepsyq-admin.css"><script type="module" src="deepsyq-admin.js"></script></head>
+<body>
+<header><a href="deepsyq.html">← Deepsyq</a><strong>Owner AI Control</strong><span>Secrets are never shown here</span></header>
+<main>
+<section><div class="section-head"><div><p class="eyebrow">ROUTING CONTROL</p><h1>Models & providers</h1><p>Enable or pause prepared models, set priority and internal economics. Changes affect generation only when the owner model-control feature flag is enabled.</p></div><button id="refresh">Refresh</button></div><p id="modelStatus" role="status"></p><div id="models" class="grid"></div></section>
+<section><div class="section-head"><div><p class="eyebrow">OPERATIONS</p><h2>Provider performance</h2><p>Durable generation-job aggregates. Empty values mean there is not enough live data yet.</p></div></div><p id="metricsStatus" role="status"></p><div class="table-wrap"><table><thead><tr><th>Provider</th><th>Model</th><th>Kind</th><th>Jobs</th><th>Success</th><th>Failed</th><th>Processing</th><th>Avg sec</th><th>Cost</th><th>Credits</th></tr></thead><tbody id="metrics"></tbody></table></div></section>
+</main></body></html>
