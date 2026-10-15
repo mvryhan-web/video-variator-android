@@ -25,7 +25,7 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:true,
   models:[{id:'configured-image',kind:'image',enabled:true},{id:'configured-video',kind:'video',enabled:true}],
   catalog:[{id:'configured-image',kind:'image',label:'Connected image',provider:'Fixture',enabled:true,ratios:['1:1'],references:0},{id:'not-connected',kind:'image',label:'Pending image',provider:'Fixture',enabled:false,ratios:['1:1'],references:0},{id:'configured-video',kind:'video',label:'Connected video',provider:'Fixture',enabled:true,ratios:['16:9'],references:0}]
- }}}));
+ }}));
  await page.goto('/deepsyq.html');
  await expect(page.locator('#sidebar nav a').first()).toHaveAttribute('aria-label','Home');
  await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
@@ -316,6 +316,85 @@ test('approved video appears in the real homepage hero but does not erase Canvas
  await expect(page.locator('#quickCreateForm')).toBeVisible();
  await expect(page.locator('.studio-card')).toHaveCount(4);
 });
+test('video carousel switches only among owner-approved videos and retains existing media',async({page})=>{
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
+ const shared={category:'Cinematic',actionTarget:'studio',aspectRatio:'16:9',active:true,featured:true};
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[
+  {...shared,id:'v1',kind:'video',title:'Owned video one',previewUrl:'/one.mp4',previewPosterUrl:'/one.webp'},
+  {...shared,id:'p',kind:'image',title:'Preserved owned photo',previewUrl:'/owned.png'},
+  {...shared,id:'v2',kind:'video',title:'Owned video two',previewUrl:'/two.mp4',previewPosterUrl:'/two.webp'}
+ ],categories:['Cinematic'],ratios:['16:9']}}));
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+ await expect(page.locator('#homeHeroDots button')).toHaveCount(2);
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/one.mp4');
+ await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 2');
+ await page.locator('#homeHeroNext').click();
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/two.mp4');
+ await expect(page.locator('#homeHeroCounter')).toHaveText('Video 2 of 2');
+ await page.locator('#homeHeroNext').click();
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/one.mp4');
+ await page.locator('#homeHeroPrevious').click();
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/two.mp4');
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(3);
+ await expect(page.locator('#inspirationPreviewGrid')).toContainText('Preserved owned photo');
+ await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
+});
+test('reduced-motion users get a manual Play button for genuine videos',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'clip',title:'Approved original clip',kind:'video',previewUrl:'/approved.mp4',actionTarget:'studio',category:'Cinematic',aspectRatio:'16:9'}],categories:['Cinematic'],ratios:['16:9']}}));
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+ await expect(page.locator('#homeHeroPlay')).toHaveText('Play');
+ await expect(page.locator('#homeHeroNext')).toBeDisabled();
+ await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
+});
+test('Home Quick Create hands off Audio and Video prompts to existing Studio without AI jobs',async({page})=>{
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:false,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
+ let posts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')posts++;});
+ await page.goto('/deepsyq.html');
+ await page.locator('[data-home-kind="music"]').click();
+ await page.locator('#homeQuickPrompt').fill('Original cinematic percussion and ambient strings');
+ await page.locator('#homeQuickSubmit').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=audio&from=home/);
+ await expect(page.locator('#prompt')).toHaveValue('Original cinematic percussion and ambient strings');
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(posts).toBe(0);
+ await page.goto('/deepsyq.html');
+ await page.locator('[data-home-kind="video"]').click();
+ await page.locator('#homeQuickPrompt').fill('Original slow-motion product reveal');
+ await page.locator('#homeQuickSubmit').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=home/);
+ await expect(page.locator('#prompt')).toHaveValue('Original slow-motion product reveal');
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(posts).toBe(0);
+});
+test('Home Quick Create hands off an unpaid draft and Agent remains a preview',async({page})=>{
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:false,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
+ let posts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#homeHeroCarousel')).toBeHidden();
+ await page.locator('[data-home-kind="agent"]').click();
+ await page.locator('#homeQuickSubmit').click();
+ await expect(page.locator('#homeQuickStatus')).toContainText('not available yet');
+ expect(posts).toBe(0);
+ await page.locator('[data-home-kind="image"]').click();
+ await page.locator('#homeQuickPrompt').fill('Original underwater still photograph');
+ await page.locator('#homeQuickSubmit').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=home/);
+ await expect(page.locator('#prompt')).toHaveValue('Original underwater still photograph');
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(posts).toBe(0);
+});
 test('dashboard never fabricates a featured hero when only approved images exist',async({page})=>{
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
@@ -389,16 +468,16 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  await page.locator('#topPromo').click();
  await expect(page.locator('#promoDialog')).toBeVisible();
  await expect(page.locator('#promoDialog')).toContainText('not available yet');
- await page.locator('#promoDialog button[value=close]').click();
+ await page.locator('#promoDialog button[type=submit][value=close]').click();
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
  await expect(page.locator('#agentFeature')).toContainText('Coming soon');
  await expect(page.locator('#appsFeature')).toBeVisible();
  await expect(page.locator('#inspirationPreview')).toHaveCount(1);
- const order=await page.evaluate(()=>['canvasFeature','agentFeature','appsFeature','inspirationPreview'].map(id=>[id,document.getElementById(id)?.getBoundingClientRect().top]));
- expect(order.map(x=>x[0])).toEqual(['canvasFeature','agentFeature','appsFeature','inspirationPreview']);
- expect(order[0][1]).toBeLessThan(order[1][1]);
- expect(order[1][1]).toBeLessThan(order[2][1]);
- expect(order[2][1]).toBeLessThan(order[3][1]);
+ const inDocumentOrder=await page.evaluate(()=>{
+  const nodes=['canvasFeature','agentFeature','appsFeature','inspirationPreview'].map(id=>document.getElementById(id));
+  return nodes.every((node,i)=>node&&(i===nodes.length-1||Boolean(node.compareDocumentPosition(nodes[i+1])&Node.DOCUMENT_POSITION_FOLLOWING)));
+ });
+ expect(inDocumentOrder).toBe(true);
  await expect(page.locator('#quickCreateKind')).toBeVisible();
  await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
 });

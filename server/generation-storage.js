@@ -70,8 +70,19 @@ export function createObjectStorage({env=process.env,fetcher=fetch,now=()=>new D
   if(!r.ok)throw Error('OBJECT_STORAGE_REQUEST_FAILED');
   return r;
  }
+ const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+ function stagedReferenceKey({userId,mime,assetId}){
+  requireReady();
+  if(env.AI_STUDIO_REFERENCE_STAGING_ENABLED!=='true')throw Error('REFERENCE_STAGING_DISABLED');
+  if(env.AI_STUDIO_REFERENCE_CLEANUP_ENABLED!=='true')throw Error('REFERENCE_CLEANUP_DISABLED');
+  if(typeof userId!=='string'||!userId||userId.length>256||
+     !Object.hasOwn(STUDIO_REFERENCE_MEDIA_LIMITS,mime)||!uuidPattern.test(assetId))throw Error('REFERENCE_MEDIA_INVALID');
+  const owner=sha(userId).slice(0,24);
+  return `${cfg.prefix}/references/users/${owner}/${assetId}.${mime==='video/mp4'?'mp4':'wav'}`;
+ }
  return {
   configured:cfg.configured,
+  stagedReferenceKey,
   async putGeneration({userId,jobId,mime,bytes}){
    requireReady();if(!MIME_EXT.has(mime)||!Buffer.isBuffer(bytes)||!bytes.length||bytes.length>50*1024*1024)throw Error('OBJECT_STORAGE_INVALID_MEDIA');
    const owner=sha(String(userId)).slice(0,24),key=`${cfg.prefix}/users/${owner}/${jobId}.${MIME_EXT.get(mime)}`;
@@ -79,12 +90,9 @@ export function createObjectStorage({env=process.env,fetcher=fetch,now=()=>new D
   },
   // Prepared for a future authenticated upload ledger. No HTTP route calls these
   // methods yet; staging is OFF unless explicitly approved after retention design.
-  async putStagedReference({userId,mime,bytes}){
-   requireReady();
-   if(env.AI_STUDIO_REFERENCE_STAGING_ENABLED!=='true')throw Error('REFERENCE_STAGING_DISABLED');
-   if(!userId||typeof userId!=='string'||userId.length>256)throw Error('REFERENCE_MEDIA_INVALID');
+  async putStagedReference({userId,mime,bytes,assetId=randomUUID()}){
    const inspected=inspectStudioReferenceMedia({bytes,mime});
-   const owner=sha(userId).slice(0,24),key=`${cfg.prefix}/references/users/${owner}/${randomUUID()}.${inspected.extension}`;
+   const key=stagedReferenceKey({userId,mime,assetId});
    await request('PUT',key,{bytes,mime});
    // Never return a public/presigned URL or provider transfer token.
    return {storage:'s3',key,...inspected};
@@ -104,7 +112,8 @@ export function createObjectStorage({env=process.env,fetcher=fetch,now=()=>new D
   },
   async deleteStagedReference({userId,key}){
    requireReady();
-   if(env.AI_STUDIO_REFERENCE_STAGING_ENABLED!=='true')throw Error('REFERENCE_STAGING_DISABLED');
+   // Deletion must continue after the new-upload gate is disabled.
+   if(env.AI_STUDIO_REFERENCE_CLEANUP_ENABLED!=='true')throw Error('REFERENCE_CLEANUP_DISABLED');
    const owner=sha(String(userId||'')).slice(0,24);
    const base=`${cfg.prefix}/references/users/${owner}/`;
    if(typeof key!=='string'||!key.startsWith(base)||
