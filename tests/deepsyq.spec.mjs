@@ -354,6 +354,28 @@ test('reduced-motion users get a manual Play button for genuine videos',async({p
  await expect(page.locator('#homeHeroNext')).toBeDisabled();
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
 });
+test('Home Quick Create hands off Audio and Video prompts to existing Studio without AI jobs',async({page})=>{
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:false,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
+ let posts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')posts++;});
+ await page.goto('/deepsyq.html');
+ await page.locator('[data-home-kind="music"]').click();
+ await page.locator('#homeQuickPrompt').fill('Original cinematic percussion and ambient strings');
+ await page.locator('#homeQuickSubmit').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=audio&from=home/);
+ await expect(page.locator('#prompt')).toHaveValue('Original cinematic percussion and ambient strings');
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(posts).toBe(0);
+ await page.goto('/deepsyq.html');
+ await page.locator('[data-home-kind="video"]').click();
+ await page.locator('#homeQuickPrompt').fill('Original slow-motion product reveal');
+ await page.locator('#homeQuickSubmit').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=home/);
+ await expect(page.locator('#prompt')).toHaveValue('Original slow-motion product reveal');
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(posts).toBe(0);
+});
 test('Home Quick Create hands off an unpaid draft and Agent remains a preview',async({page})=>{
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:false,productVideo:false,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
