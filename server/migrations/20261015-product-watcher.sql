@@ -45,3 +45,31 @@ CREATE TABLE IF NOT EXISTS vv_product_watcher_alerts (
 );
 CREATE INDEX IF NOT EXISTS vv_product_watcher_alerts_seen_idx
   ON vv_product_watcher_alerts(last_seen_at DESC);
+
+
+-- Optional, additive only. Existing main migration manifest remains unchanged.
+-- Snapshots keep hashes and official URLs, NEVER page content or credentials.
+CREATE TABLE IF NOT EXISTS vv_product_watcher_official_sources (
+  source_key TEXT PRIMARY KEY,
+  provider TEXT NOT NULL,
+  source_url TEXT NOT NULL,
+  content_hash CHAR(64),
+  last_checked_at TIMESTAMPTZ,
+  last_success_at TIMESTAMPTZ,
+  last_error_code TEXT
+);
+CREATE TABLE IF NOT EXISTS vv_product_watcher_proposals (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  source_key TEXT NOT NULL REFERENCES vv_product_watcher_official_sources(source_key),
+  provider TEXT NOT NULL,
+  source_url TEXT NOT NULL,
+  previous_hash CHAR(64) NOT NULL,
+  current_hash CHAR(64) NOT NULL,
+  review_status TEXT NOT NULL DEFAULT 'pending' CHECK (review_status IN ('pending','reviewed','dismissed')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  reviewed_at TIMESTAMPTZ,
+  reviewed_by TEXT,
+  UNIQUE(source_key,current_hash)
+);
+CREATE INDEX IF NOT EXISTS vv_product_watcher_proposals_status_idx
+  ON vv_product_watcher_proposals(review_status,created_at DESC);
