@@ -97,7 +97,8 @@ export function createObjectStorage({env=process.env,fetcher=fetch,now=()=>new D
    if(typeof key!=='string'||!key.startsWith(base)||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(mp4|wav)$/.test(key.slice(base.length))||
       !Object.hasOwn(STUDIO_REFERENCE_MEDIA_LIMITS,mime)||!key.endsWith(mime==='video/mp4'?'.mp4':'.wav'))throw Error('REFERENCE_MEDIA_ACCESS_DENIED');
-   const bytes=await this.get(key,{maxBytes:STUDIO_REFERENCE_MEDIA_LIMITS[mime]});
+   const response=await request('GET',key);
+   const bytes=await readLimited(response,STUDIO_REFERENCE_MEDIA_LIMITS[mime]);
    inspectStudioReferenceMedia({bytes,mime});
    return bytes;
   },
@@ -108,7 +109,7 @@ export function createObjectStorage({env=process.env,fetcher=fetch,now=()=>new D
    const base=`${cfg.prefix}/references/users/${owner}/`;
    if(typeof key!=='string'||!key.startsWith(base)||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(mp4|wav)$/.test(key.slice(base.length)))throw Error('REFERENCE_MEDIA_ACCESS_DENIED');
-   return this.delete(key);
+   await request('DELETE',key);return true;
   },
   async get(key,{maxBytes=50*1024*1024}={}){const r=await request('GET',key);return readLimited(r,maxBytes);},
   async delete(key){await request('DELETE',key);return true;}
