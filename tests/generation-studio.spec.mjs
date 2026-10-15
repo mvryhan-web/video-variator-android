@@ -22,3 +22,17 @@ test('reference photo preview, draft retention and clear are local',async({page}
 });
 
 test('consent names the provider and resets when model or studio changes',async({page})=>{await page.goto('/generate-studio.html?studio=image');await page.locator('#consent').check();await page.locator('#modelButton').click();await page.getByRole('button',{name:/Seedream 4.5/}).click();await expect(page.locator('#consent')).not.toBeChecked();await expect(page.locator('[data-t=consent]')).toContainText('BytePlus');await page.locator('#consent').check();await page.locator('[data-kind=video]').click();await expect(page.locator('#consent')).not.toBeChecked();await expect(page.locator('[data-t=consent]')).toContainText('Google');});
+
+test('saved generation history renders and reopens a durable result',async({page})=>{
+ const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]};
+ await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
+ await page.route('**/api/studio/jobs',r=>{
+  if(r.request().method()==='GET')return r.fulfill({json:{items:[{id:'saved-1',kind:'image',status:'ready',provider:'Google',model:'fixture',createdAt:'2026-10-15T08:00:00.000Z'}]}});
+  return r.continue();
+ });
+ await page.route('**/api/studio/jobs/saved-1',r=>r.fulfill({json:{id:'saved-1',kind:'image',status:'ready',provider:'Google',model:'fixture',mime:'image/png'}}));
+ await page.route('**/api/studio/jobs/saved-1/media',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
+ await page.goto('/generate-studio.html?studio=image');await page.locator('#showHistory').click();
+ await expect(page.locator('.history-card')).toHaveCount(1);await expect(page.locator('.history-card')).toContainText('fixture');await expect(page.locator('.history-card')).toContainText('Google');
+ await page.locator('.history-card button').click();await expect(page.locator('#media img')).toBeVisible();await expect(page.locator('#showCreate')).toHaveAttribute('aria-pressed','true');
+});
