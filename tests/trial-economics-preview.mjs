@@ -42,6 +42,7 @@ test('one expensive model limits all credits and may make trial commercially unw
 });
 test('missing currency, duplicate rates, garbage price and zero provider cost block launch',()=>{
  assert.equal(analyzeTrialEconomics(scenario({currency:'usd/usd'})).reason,'INVALID_CURRENCY');
+ assert.equal(analyzeTrialEconomics(scenario({currency:'eur',eligibleRates:[{...rate('image-eur','image',10,50000),currency:'eur'}]})).reason,'TRIAL_CURRENCY_NOT_USD');
  assert.equal(analyzeTrialEconomics(scenario({eligibleRates:[rate('a','image',20,50000),rate('a','image',20,50000)]})).reason,'UNAPPROVED_MODEL_PRICES');
  assert.equal(analyzeTrialEconomics(scenario({eligibleRates:[rate('a','image',20,0)]})).reason,'UNAPPROVED_MODEL_PRICES');
  assert.equal(analyzeTrialEconomics(scenario({processorBasisPoints:11000})).reason,'MISSING_VERIFIED_FEES_OR_RESERVES');
