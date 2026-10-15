@@ -2,6 +2,7 @@ import { runProductWatcherOnce, watcherConfig } from './monitor.js';
 import { initAdminAudit } from '../admin-audit.js';
 import { WATCHER_INTERVAL_MS } from './scheduler.js';
 import { listWatcherAlerts } from './alerts.js';
+import { listOfficialSourceReviews, officialSourceEnabled } from './official-sources.js';
 
 // Match the existing Deepsyq owner identity policy: only the designated Google account.
 // An empty ADMIN_EMAIL must never authorize a user with an empty email.
@@ -76,6 +77,47 @@ export function installProductWatcher(app, { auth, pool, env = process.env, fetc
     }catch{
       if(client)await client.query('ROLLBACK').catch(()=>{});
       return error(res,503,'WATCHER_ALERT_ACK_FAILED');
+    }finally{client?.release();}
+  });
+
+
+  // Owner review is a decision about whether to investigate; it NEVER applies a
+  // pricing, routing, model, secret, deployment, or provider configuration change.
+  app.get('/api/product-watcher/admin/official-sources',auth,owner,async(_req,res)=>{
+    if(!enabled())return res.json({enabled:false,monitoringEnabled:false,sources:[],proposals:[]});
+    if(!pool)return error(res,503,'WATCHER_DATABASE_NOT_CONFIGURED');
+    try{
+      const data=await listOfficialSourceReviews(pool);
+      return res.json({enabled:true,monitoringEnabled:officialSourceEnabled(env),...data});
+    }catch{return error(res,503,'WATCHER_OFFICIAL_SOURCES_UNAVAILABLE');}
+  });
+
+  app.post('/api/product-watcher/admin/proposals/review',auth,owner,async(req,res)=>{
+    if(!enabled())return error(res,503,'WATCHER_DISABLED');
+    if(!pool)return error(res,503,'WATCHER_DATABASE_NOT_CONFIGURED');
+    const id=Number(req.body?.proposalId),confirm=Number(req.body?.confirmProposalId),
+      decision=req.body?.decision;
+    if(!Number.isSafeInteger(id)||id<1||id!==confirm||!['reviewed','dismissed'].includes(decision))
+      return error(res,400,'WATCHER_EXPLICIT_REVIEW_REQUIRED');
+    let client;
+    try{
+      await initAdminAudit(pool);
+      client=await pool.connect();
+      await client.query('BEGIN');
+      const {rows}=await client.query(
+        "UPDATE vv_product_watcher_proposals SET review_status=$2,reviewed_by=$3,reviewed_at=NOW() WHERE id=$1 AND review_status='pending' RETURNING id",
+        [id,decision,req.user.id]
+      );
+      if(!rows?.length){await client.query('ROLLBACK');return error(res,409,'WATCHER_PROPOSAL_NOT_PENDING');}
+      await client.query(
+        'INSERT INTO vv_admin_audit(actor_user_id,action,target_type,target_id,details) VALUES($1,$2,$3,$4,$5::jsonb)',
+        [req.user.id,'product_watcher.proposal_review','product_watcher_proposal',String(id),JSON.stringify({decision,applied:false})]
+      );
+      await client.query('COMMIT');
+      return res.json({ok:true,proposalId:id,decision,applied:false});
+    }catch{
+      if(client)await client.query('ROLLBACK').catch(()=>{});
+      return error(res,503,'WATCHER_PROPOSAL_REVIEW_FAILED');
     }finally{client?.release();}
   });
 

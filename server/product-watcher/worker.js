@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { pool } from '../db.js';
 import { productWatcherTick } from './scheduler.js';
+import { runOfficialSourcesOnce } from './official-sources.js';
 
 if (process.env.PRODUCT_WATCHER_ENABLED !== 'true' ||
     process.env.PRODUCT_WATCHER_SCHEDULER_ENABLED !== 'true') {
@@ -24,6 +25,17 @@ async function tick(){
     }));
   } catch {
     console.error('[product watcher] WATCHER_TICK_FAILED');
+  }
+  try {
+    // Independent opt-in 6-hour official source check with durable last-check state.
+    const sources=await runOfficialSourcesOnce({pool,env:process.env});
+    if(sources.status!=='disabled' && sources.attempted>0){
+      console.log('[product watcher] official-source '+JSON.stringify({
+        status:sources.status,attempted:sources.attempted,changed:sources.changed
+      }));
+    }
+  } catch {
+    console.error('[product watcher] WATCHER_OFFICIAL_SOURCE_TICK_FAILED');
   } finally { busy=false; }
 }
 

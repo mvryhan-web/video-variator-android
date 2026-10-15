@@ -27,6 +27,9 @@ function db({paused=false,missing=false}={}){
   if(sql.startsWith('SELECT paused, updated_at'))return{rows:missing?[]:[{paused,updated_at:'2026-10-15T00:00:00Z'}]};
   if(sql.startsWith('SELECT heartbeat_at FROM vv_product_watcher_scheduler'))return{rows:[{heartbeat_at:null}]};
   if(sql.startsWith('SELECT id,source,code,severity'))return{rows:[]};
+  if(sql.startsWith('SELECT source_key,provider,source_url,last_checked_at'))return{rows:[]};
+  if(sql.startsWith('SELECT id,source_key,provider,source_url,review_status'))return{rows:[]};
+  if(sql.startsWith('UPDATE vv_product_watcher_proposals'))return{rows:[{id:9}]};
   if(sql.startsWith('UPDATE vv_product_watcher_alerts'))return{rows:[{id:'9'}]};
   if(sql.startsWith('SELECT id, status, checks'))return{rows:[{id:'9',status:'warning',checks:{http:{status:'healthy'}},findings:[{code:'GENERATION_ATTENTION'}],created_at:'2026-10-15T01:00:00Z'}]};
   if(sql==='BEGIN'||sql==='COMMIT'||sql==='ROLLBACK')return{rows:[]};
@@ -142,4 +145,31 @@ test('acknowledgement requires explicit matching ID and a logged owner action',a
  r=await f.call('POST','/api/product-watcher/admin/alerts/ack',{body:{alertId:9,confirmAlertId:9}});
  assert.equal(r.statusCode,200);assert.equal(r.body.acknowledged,true);
  assert.ok(f.pool.seen.some(([q,args])=>q.includes('INSERT INTO vv_admin_audit')&&args[1]==='product_watcher.alert_ack'));
+});
+
+
+test('official-source evidence is owner-only and off unless an explicit enable flag',async()=>{
+ const f=fixture();const r=await f.call('GET','/api/product-watcher/admin/official-sources',{user:denied});
+ assert.equal(r.statusCode,403);
+ const allowed=await f.call('GET','/api/product-watcher/admin/official-sources');
+ assert.equal(allowed.statusCode,200);assert.equal(allowed.body.monitoringEnabled,false);
+ assert.deepEqual(allowed.body.proposals,[]);
+});
+
+test('proposal review is a logged human decision, not price/model/production application',async()=>{
+ const f=fixture();
+ const deny=await f.call('POST','/api/product-watcher/admin/proposals/review',{
+  user:denied,body:{proposalId:9,confirmProposalId:9,decision:'reviewed'}});
+ assert.equal(deny.statusCode,403);
+ const invalid=await f.call('POST','/api/product-watcher/admin/proposals/review',{
+  body:{proposalId:9,confirmProposalId:8,decision:'reviewed'}});
+ assert.equal(invalid.statusCode,400);
+ const apply=await f.call('POST','/api/product-watcher/admin/proposals/review',{
+  body:{proposalId:9,confirmProposalId:9,decision:'apply'}});
+ assert.equal(apply.statusCode,400);
+ const ok=await f.call('POST','/api/product-watcher/admin/proposals/review',{
+  body:{proposalId:9,confirmProposalId:9,decision:'reviewed'}});
+ assert.equal(ok.statusCode,200);assert.equal(ok.body.applied,false);
+ assert.ok(f.pool.seen.some(([sql,params])=>sql.includes('INSERT INTO vv_admin_audit')&&params[1]==='product_watcher.proposal_review'));
+ assert.ok(!f.pool.seen.some(([sql])=>/UPDATE.*(vv_generation|stripe|vv_ai_wallet)/i.test(sql)));
 });
