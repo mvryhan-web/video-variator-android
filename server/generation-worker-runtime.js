@@ -24,3 +24,10 @@ export function generationWorkerPlan(env={},pool=null,{storageConfigured=false}=
   ?'REFERENCE_STORAGE_NOT_CONFIGURED':generationWorkerReady(env,pool).reason;
  return {ready:recovery||cleanup,recovery,cleanup,reason};
 }
+
+/** Read-only migration gate. Never auto-apply schemas in a worker. */
+export function referenceCleanupMigrationReady(items){
+ if(!Array.isArray(items))return false;
+ const migration=items.find(row=>row?.name==='20261015-generation-reference-assets.sql');
+ return migration?.applied===true&&migration?.checksumMatches===true;
+}
