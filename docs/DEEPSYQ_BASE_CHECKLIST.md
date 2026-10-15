@@ -303,3 +303,11 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Each owner may hold at most two active unexpired references. Admission uses a PostgreSQL advisory transaction lock before ledger INSERT; S3 network PUT occurs after commit. Failed/ambiguous PUT remains eligible for expiry cleanup.
 - Added `tests/generation-reference-upload-unit.mjs` HTTP/auth/MIME/malformed/quota cases (authored, not run on real runner). No production database migration, S3 credential, Stripe, live provider or AI credits were changed.
 - **NEXT:** finish independent codec/malware validation and owner staging acceptance; confirm background cleanup runs with real storage, then design secure short-lived provider-fetch transport and verify BytePlus video/audio input mapping, pricing and explicit generation consent. No BytePlus reference media generation is available yet. Never advertise as production-ready.
+
+
+### BASE Video: pre-storage FFprobe codec gate — 2026-10-15
+
+- Added mandatory fail-closed **FFprobe** codec/duration/resolution/FPS inspection to the previously owner-only, feature-gated raw reference-upload route. FFprobe inspects only a private temporary local file; absent/unavailable probe blocks intake before any ledger INSERT or S3 PUT.
+- Initial formats: MP4 H.264/yuv420p with optional AAC; PCM s16le/s24le WAV. Existing owner/byte/duration/retention constraints remain. Unsupported codecs return HTTP 415; unavailable codec inspection returns 503.
+- Added targeted codec/API/ledger/S3 checks via independent GitHub Actions workflow, with PCM WAV real-probe fixture and optional H.264 real encode fixture. No live paid provider call or Stripe changes.
+- **Still PARTIAL/BLOCKED, not commercial-ready**: public user uploads, malware/sanitization security review, verified deployed FFprobe package, production S3/worker acceptance, short-lived provider URL transport, BytePlus video/audio reference acceptance and approved credits are pending. No frontend reference picker, AI wallet usage, Render flag activation or production migrations.
