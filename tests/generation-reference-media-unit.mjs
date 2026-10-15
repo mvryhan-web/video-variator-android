@@ -58,7 +58,7 @@ test('private staging remains OFF even when output-object storage is available',
 });
 test('opt-in private staging signs user-scoped PUT/GET/DELETE, never provides provider URL',async()=>{
  const objects=new Map(),calls=[];
- const storage=createObjectStorage({env:{...env,AI_STUDIO_REFERENCE_STAGING_ENABLED:'true'},fetcher:async(url,opts)=>{
+ const storage=createObjectStorage({env:{...env,AI_STUDIO_REFERENCE_STAGING_ENABLED:'true',AI_STUDIO_REFERENCE_CLEANUP_ENABLED:'true'},fetcher:async(url,opts)=>{
   calls.push({url,method:opts.method,headers:opts.headers});
   if(opts.method==='PUT'){objects.set(url,Buffer.from(opts.body));return {ok:true};}
   if(opts.method==='DELETE'){objects.delete(url);return {ok:true};}
@@ -78,4 +78,23 @@ test('opt-in private staging signs user-scoped PUT/GET/DELETE, never provides pr
  assert.deepEqual(calls.map(c=>c.method),['PUT','GET','DELETE']);
  assert.ok(calls.every(c=>!c.url.includes('very-secret-storage-key')));
  assert.ok(calls.every(c=>!!c.headers.Authorization));
+});
+
+test('cleanup-only storage deletes old references after intake is switched off',async()=>{
+ const objects=new Map(),calls=[];
+ const activeEnv={...env,AI_STUDIO_REFERENCE_STAGING_ENABLED:'true',AI_STUDIO_REFERENCE_CLEANUP_ENABLED:'true'};
+ const fetcher=async(url,opts)=>{
+  calls.push(opts.method);
+  if(opts.method==='PUT'){objects.set(url,Buffer.from(opts.body));return {ok:true};}
+  if(opts.method==='DELETE'){objects.delete(url);return {ok:true};}
+  throw Error('Unexpected media download');
+ };
+ const staged=createObjectStorage({env:activeEnv,fetcher});
+ const asset=await staged.putStagedReference({userId:'alice',mime:'video/mp4',bytes:video()});
+ const cleanup=createObjectStorage({env:{...env,AI_STUDIO_REFERENCE_CLEANUP_ENABLED:'true'},fetcher});
+ await assert.rejects(()=>cleanup.putStagedReference({userId:'alice',mime:'video/mp4',bytes:video()}),/REFERENCE_STAGING_DISABLED/);
+ await assert.rejects(()=>cleanup.getStagedReference({userId:'alice',key:asset.key,mime:'video/mp4'}),/REFERENCE_STAGING_DISABLED/);
+ assert.equal(await cleanup.deleteStagedReference({userId:'alice',key:asset.key}),true);
+ assert.equal(objects.size,0);
+ assert.deepEqual(calls,['PUT','DELETE']);
 });
