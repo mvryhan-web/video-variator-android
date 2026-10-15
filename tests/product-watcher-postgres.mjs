@@ -248,5 +248,23 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     const noRun=await request('POST','/api/product-watcher/admin/run');
     assert.equal(noRun.body.status,'paused');
     assert.equal(httpCalls,1);
+
+    // Exercise the real Watcher run/alert persistence with the billing observer ON.
+    // This cannot send/refund anything to Stripe: the entire test uses watcher_test.
+    const resumeBilling=await request('POST','/api/product-watcher/admin/control',{body:{action:'resume'}});
+    assert.equal(resumeBilling.statusCode,200);
+    const withBilling=await runProductWatcherOnce({
+      pool,env:{...env,PRODUCT_WATCHER_BILLING_SIGNALS_ENABLED:'true'},fetchFn
+    });
+    assert.equal(withBilling.status,'critical');
+    assert.equal(withBilling.checks.billing.code,'AI_REFUND_LEDGER_INCONSISTENT');
+    assert.equal(withBilling.checks.billing.stripeWebhookVerified,false);
+    assert.equal(withBilling.checks.billing.counters.oldUnmatchedCheckoutSessions7d,3);
+    assert.ok(withBilling.findings.some(x=>x.source==='billing'&&x.severity==='critical'));
+    assert.ok(!JSON.stringify(withBilling).includes('fixture-user'));
+    const persistedCritical=await pool.query(
+      "SELECT COUNT(*)::int AS count FROM vv_product_watcher_alerts WHERE source='billing' AND code='AI_REFUND_LEDGER_INCONSISTENT' AND severity='critical'"
+    );
+    assert.equal(persistedCritical.rows[0].count,1);
   } finally {await pool.end();}
 });
