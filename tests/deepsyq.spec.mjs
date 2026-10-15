@@ -130,7 +130,7 @@ test('checkout uses original plan endpoint and explains unavailable payments',as
  await expect(page.locator('#paymentStatus')).toContainText('No payment was taken');expect(plan).toBe('basic');
 });
 test('comparison is crawlable and does not pretend AI chat exists',async({page})=>{
- await page.goto('/deepsyq-vs-deepseek.html');await expect(page).toHaveTitle(/Deepsyq vs DeepSeek/);
+ await page.goto('/deepsyq-vs-deepseek.html',{waitUntil:'domcontentloaded'});await expect(page).toHaveTitle(/Deepsyq vs DeepSeek/);
  await expect(page.locator('h1')).toHaveCount(1);await expect(page.locator('body')).toContainText('not currently offer a general-purpose AI chat');
  await expect(page.locator('body')).toContainText('not affiliated');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
