@@ -24,6 +24,15 @@ export function validateGeneration(body){
  const resolution=body.kind==='image'?(body.resolution||m.quality||'1K'):null;
  if(body.kind==='image'&&(!m.capabilities?.resolutions?.includes(resolution)))throw new Error('UNSUPPORTED_RESOLUTION');
  if(body.kind!=='image'&&body.resolution)throw new Error('UNSUPPORTED_RESOLUTION');
+ const videoInputMode=body.kind==='video'?(body.videoInputMode||(references.length?'first_frame':'text')):null;
+ if(body.kind==='video'&&!m.capabilities?.videoInputModes?.includes(videoInputMode))throw new Error('UNSUPPORTED_VIDEO_INPUT_MODE');
+ if(body.kind==='video'&&(
+  videoInputMode==='text'&&references.length!==0||
+  videoInputMode==='first_frame'&&references.length!==1||
+  videoInputMode==='first_last'&&references.length!==2||
+  videoInputMode==='reference_image'&&(references.length<1||references.length>3)
+ ))throw new Error('INVALID_VIDEO_REFERENCES');
+ if(body.kind!=='video'&&body.videoInputMode!=null)throw new Error('UNSUPPORTED_VIDEO_SETTINGS');
  const videoResolution=body.kind==='video'?(body.videoResolution||m.quality):null;
  const videoDuration=body.kind==='video'?(body.videoDuration==null?m.capabilities?.durationSeconds:body.videoDuration):null;
  if(body.kind==='video'&&!m.capabilities?.resolutions?.includes(videoResolution))throw new Error('UNSUPPORTED_VIDEO_RESOLUTION');
@@ -32,7 +41,7 @@ export function validateGeneration(body){
  if(body.kind==='video'&&m.provider==='Google'&&videoResolution==='1080p'&&videoDuration!==8)throw new Error('UNSUPPORTED_VIDEO_DURATION');
  if(body.kind!=='video'&&(body.videoResolution!=null||body.videoDuration!=null))throw new Error('UNSUPPORTED_VIDEO_SETTINGS');
  if(body.kind==='music'&&!['song','instrumental'].includes(body.musicMode))throw new Error('INVALID_MUSIC_MODE');
- return {kind:body.kind,model:m.id,prompt:body.prompt.trim(),ratio:body.ratio,references,musicMode:body.musicMode,...(body.kind==='image'?{resolution,outputFormat}:{}),...(body.kind==='video'?{videoResolution,videoDuration}:{})};
+ return {kind:body.kind,model:m.id,prompt:body.prompt.trim(),ratio:body.ratio,references,musicMode:body.musicMode,...(body.kind==='image'?{resolution,outputFormat}:{}),...(body.kind==='video'?{videoResolution,videoDuration,videoInputMode}:{})};
 }
 export function safeGoogleUrl(value){const u=new URL(value);if(u.protocol!=='https:'||u.hostname!=='generativelanguage.googleapis.com'||u.username||u.password)throw new Error('UNSAFE_PROVIDER_URL');return u.toString();}
 export async function googleJson(relative,{key,body,fetcher=fetch}){
