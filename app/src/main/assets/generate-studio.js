@@ -536,8 +536,10 @@ function prepareHistoryItem(item,{settings=false}={}){
  $('prompt').value=item.prompt||'';
  if(settings&&item.kind==='video'){
   videoDraftNeedsPhotos=false;videoDraftExpectedRefs=0;videoDraftPendingMode='text';
-  const n=Number(item.settings?.referenceCount||0),oldMode=item.settings?.videoInputMode;
-  if(Number.isInteger(n)&&n>0&&n<=currentModel()?.references&&currentModel()?.capabilities?.videoInputModes?.includes(oldMode)){
+  const n=Number(item.settings?.referenceCount||0),oldMode=item.settings?.videoInputMode||(n===1?'first_frame':'unsupported');
+  // Legacy History jobs may lack videoInputMode; one old photo always meant first_frame.
+  // An unsupported historical mode remains blocked until the user explicitly chooses text-only.
+  if(Number.isInteger(n)&&n>0&&n<=3){
    refs=[];videoDraftNeedsPhotos=true;videoDraftExpectedRefs=n;videoDraftPendingMode=oldMode;
    renderRefs();
   }
