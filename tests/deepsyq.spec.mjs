@@ -252,6 +252,38 @@ test('dashboard inspiration preview is data-driven and hides Agent examples when
 });
 
 
+test('featured owned video is promoted but original homepage sections and images remain',async({page})=>{
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
+ const common={description:'Original',defaultModel:null,requiredInputTypes:[],defaultSettings:{},actionTarget:'studio',active:true,featured:true};
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[
+  {...common,id:'photo',title:'Original owned photo',slug:'original-owned-photo',kind:'image',category:'Product Ads',previewUrl:'/original-photo.png',prompt:'Photo prompt',aspectRatio:'1:1'},
+  {...common,id:'film',title:'Original owned film',slug:'original-owned-film',kind:'video',category:'Cinematic',previewUrl:'/original-film.mp4',previewPosterUrl:'/original-poster.jpg',prompt:'Video prompt',aspectRatio:'16:9'}
+ ],categories:['Product Ads','Cinematic'],ratios:['1:1','16:9'],pagination:{hasMore:false}}}));
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#inspirationPreview')).toBeVisible();
+ await expect(page.locator('#inspirationPreviewGrid a')).toHaveCount(2);
+ await expect(page.locator('#inspirationPreviewGrid a').first()).toContainText('Original owned film');
+ await expect(page.locator('#inspirationPreviewGrid a').last()).toContainText('Original owned photo');
+ await expect(page.locator('#inspirationPreviewGrid video')).toHaveCount(1);
+ await expect(page.locator('#inspirationPreviewGrid video')).toHaveJSProperty('muted',true);
+ await expect(page.locator('#inspirationPreviewGrid video')).toHaveJSProperty('loop',true);
+ expect(await page.evaluate(()=>!!(document.querySelector('#inspirationPreview').compareDocumentPosition(document.querySelector('[aria-labelledby="createTitle"]'))&Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+ await expect(page.locator('.studio-card')).toHaveCount(4);
+ await expect(page.getByRole('link',{name:/Video Uniquifier history/})).toBeVisible();
+});
+test('public Inspiration shortcuts display only published category labels',async({page})=>{
+ const item={id:'owned',title:'Owned image',slug:'owned-image',kind:'image',category:'Fashion & Beauty',previewUrl:'/owned.png',prompt:'Original prompt',aspectRatio:'1:1',actionTarget:'studio',requiredInputTypes:[],defaultSettings:{}};
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[item],categories:['Fashion & Beauty'],ratios:['1:1'],pagination:{hasMore:false}}}));
+ await page.goto('/inspiration.html');
+ await expect(page.locator('#categoryChips button')).toHaveCount(1);
+ await expect(page.getByRole('button',{name:'Fashion & Beauty'})).toBeVisible();
+ await expect(page.locator('#categoryChips')).not.toContainText('Cinematic Worlds');
+ await page.locator('#categoryChips button').click();
+ await expect(page.locator('#category')).toHaveValue('Fashion & Beauty');
+ await expect(page).toHaveURL(/category=Fashion%20%26%20Beauty/);
+});
 test('owner can manage Block 3 inspiration without exposing rights internals publicly',async({page})=>{
  await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','owner-fixture'));await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Owner',isAdmin:true}}}));
  const empty={items:[]};for(const p of ['business','purchases','users','jobs','audit','models','metrics','billing-review','templates'])await page.route('**/api/studio/admin/'+p+'**',r=>r.fulfill({json:p==='business'?{users:{total:0,registrations30d:0,everSubscribed:0,inactiveAfterSubscription:0,generationAdoptionRate:0,everSubscribedRate:0},generation:{jobs:0,generatingUsers:0,ready:0,failed:0,processing:0,failureRate:0,jobsPerGeneratingUser:0,averageSeconds:null,providerCosts:[],creditsCharged:0,topModel:null},aiPurchases:[],grossMargin:null}:empty}));

@@ -43,3 +43,10 @@ To publish later:
 ## Owner publish readiness
 
 Owner AI Control now reports Block 3-specific readiness without turning anything on automatically. The content gate requires at least one approved image, one approved video and one featured Studio example; every active item must have recorded rights evidence. Agent examples remain informationally gated until Block 2 provides a real destination.
+
+## 2026-10-15 — Homepage/gallery polish, original media retained
+
+- Existing approved images, videos, titles, source links, prompts, Studio handoff, rights checks, tools, AI Apps and future Agent integration remain intact; the current Inspiration preview appears above, not instead of, the existing studio cards.
+- Real approved featured video records are emphasized with muted/looped, viewport-limited previews (disabled for reduced motion and data saver). No example is fabricated, copied, uploaded, or automatically published.
+- Public Inspiration lists only actual available categories as shortcut chips. The same existing filters/actions and original media cards remain; video cards receive more room and keep playback controls.
+- Regression checks added for non-destructive layout and real media. Browser CI is required before declaring visual changes verified. Public activation still needs actual owned/licensed media, evidence, owner approval and separate launch checks.
