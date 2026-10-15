@@ -282,6 +282,18 @@ function prepareHistoryItem(item,{settings=false}={}){
  if(settings&&item.kind==='music'&&['song','instrumental'].includes(item.settings?.musicMode)){$('musicMode').value=item.settings.musicMode;renderModel();}
  $('consent').checked=false;availability();setHistory(false);$('prompt').focus();
 }
+async function editHistoryImage(item){
+ if(busy||item.kind!=='image'||item.status!=='ready')return;
+ busy=true;availability();$('status').textContent=say('Preparing the saved image for editing…','Готовим сохранённое изображение для редактирования…');
+ try{
+  const response=await api('/api/studio/jobs/'+encodeURIComponent(item.id)+'/media');
+  const savedImage=await response.blob();
+  await useResultAsImageReference(savedImage,{suggestedPrompt:item.prompt||''});
+ }catch(e){
+  $('status').textContent=['IMAGE_RESULT_REQUIRED','IMAGE_PREPARE_FAILED','IMAGE_REFERENCE_PREPARE_FAILED','IMAGE_REFERENCE_UNSUPPORTED'].includes(e.message)?
+   say('Unable to prepare this saved image as a reference. Your existing draft was kept.','Не удалось подготовить сохранённое изображение. Ваш текущий черновик сохранён.'):errorText(e);
+ }finally{busy=false;availability();}
+}
 async function downloadHistoryItem(item){
  if(item.status!=='ready'||busy)return;busy=true;availability();
  try{const response=await api(`/api/studio/jobs/${encodeURIComponent(item.id)}/media`),b=await response.blob();const ext=b.type.startsWith('video/')?'mp4':b.type==='image/jpeg'?'jpg':b.type.startsWith('image/')?'png':b.type==='audio/wav'?'wav':'mp3';await saveLocal(new File([b],`Deepsyq-${item.id}.${ext}`,{type:b.type}));}
@@ -315,6 +327,13 @@ async function loadHistory(){
    const reuse=document.createElement('button');reuse.type='button';reuse.textContent=say('Reuse prompt','Повторить запрос');reuse.disabled=!item.prompt;reuse.onclick=()=>prepareHistoryItem(item);
    const regenerate=document.createElement('button');regenerate.type='button';regenerate.textContent=say('Regenerate','Создать снова');regenerate.disabled=!item.prompt;regenerate.title=say('Prepares the previous prompt and settings. It does not start a paid generation.','Подготавливает прошлый запрос и настройки. Платная генерация сама не запускается.');regenerate.onclick=()=>prepareHistoryItem(item,{settings:true});
    const remove=document.createElement('button');remove.type='button';remove.textContent=say('Delete','Удалить');remove.disabled=['queued','processing','finalizing'].includes(item.status);remove.onclick=()=>void deleteHistoryItem(item);
+   if(item.kind==='image'&&item.status==='ready'){
+    const edit=document.createElement('button');edit.type='button';
+    edit.textContent=say('Edit image','Редактировать изображение');
+    edit.title=say('Use this saved image as a reference in Image Generation. No AI job starts automatically.','Использовать сохранённое изображение как референс. Генерация не запускается автоматически.');
+    edit.onclick=()=>void editHistoryImage(item);
+    actions.append(edit);
+   }
    actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions);list.append(card);observeHistoryThumbnail(item,preview);
   }
  }catch(e){list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
@@ -328,50 +347,54 @@ $('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)ret
 // Continue from an existing image in the same browser without an API call.
  // The reference is explicitly prepared for a new Image request; Generate stays manual.
  async function imageResultReference(input){
-  if(!input?.type?.startsWith('image/'))throw Error('IMAGE_RESULT_REQUIRED');
-  const bitmap=await createImageBitmap(input);
-  try{
-   let width=bitmap.width,height=bitmap.height;
-   const scale=Math.min(1,2048/Math.max(width,height));
-   width=Math.max(1,Math.floor(width*scale));height=Math.max(1,Math.floor(height*scale));
-   for(let attempt=0;attempt<5;attempt++){
-    const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
-    const ctx=canvas.getContext('2d');if(!ctx)throw Error('IMAGE_PREPARE_FAILED');
-    ctx.drawImage(bitmap,0,0,width,height);
-    for(const quality of [.9,.75,.6,.45]){
-     const result=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
-     if(result&&result.size>0&&result.size<=1024*1024)return new File([result],'deepsyq-image-reference.jpg',{type:'image/jpeg'});
-    }
-    width=Math.max(1,Math.floor(width*.7));height=Math.max(1,Math.floor(height*.7));
+ if(!['image/jpeg','image/png'].includes(input?.type)||!input.size||input.size>30*1024*1024)throw Error('IMAGE_RESULT_REQUIRED');
+ const bitmap=await createImageBitmap(input);
+ try{
+  let width=bitmap.width,height=bitmap.height;
+  const scale=Math.min(1,2048/Math.max(width,height));
+  width=Math.max(1,Math.floor(width*scale));height=Math.max(1,Math.floor(height*scale));
+  for(let attempt=0;attempt<5;attempt++){
+   const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+   const ctx=canvas.getContext('2d');if(!ctx)throw Error('IMAGE_PREPARE_FAILED');
+   ctx.drawImage(bitmap,0,0,width,height);
+   for(const quality of [.9,.75,.6,.45]){
+    const result=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+    if(result&&result.size>0&&result.size<=1024*1024)return new File([result],'deepsyq-image-reference.jpg',{type:'image/jpeg'});
    }
-   throw Error('IMAGE_PREPARE_FAILED');
-  }finally{bitmap.close();}
+   width=Math.max(1,Math.floor(width*.7));height=Math.max(1,Math.floor(height*.7));
+  }
+  throw Error('IMAGE_PREPARE_FAILED');
+ }finally{bitmap.close();}
+}
+// Shared History and recent-result editing path. Conversion is local; no paid provider action.
+async function useResultAsImageReference(result,{suggestedPrompt=''}={}){
+ const file=await imageResultReference(result);
+ // Release the local preparation lock before using existing Studio draft controls.
+ busy=false;
+ if(kind!=='image')select('image',{remember:true});
+ const maxRefs=Number(currentModel()?.references||0);
+ if(maxRefs<1)throw Error('IMAGE_REFERENCE_UNSUPPORTED');
+ if(refs.length>=maxRefs&&!confirm(say('Replace your existing reference photos with this image?','Заменить имеющиеся фотографии этим изображением?'))){
+  $('status').textContent=say('Your existing references are unchanged.','Ваши фотографии оставлены без изменений.');
+  return false;
  }
- $('continueImage').onclick=async()=>{
-  if(!blob||busy||!blob.type.startsWith('image/'))return;
-  busy=true;availability();$('status').textContent=say('Preparing this image as your next reference…','Готовим изображение как основу следующей редакции…');
-  try{
-   const file=await imageResultReference(blob);
-   // select() and acceptFiles() deliberately reject changes while a paid job is busy.
-   // Preparation is finished now, so unlock before applying the new local draft.
-   busy=false;
-   // Keep the current image draft intact when continuing from an image.
-   // Switching from Video/Audio uses the saved Image draft without touching the original result.
-   if(kind!=='image')select('image',{remember:true});
-   if((currentModel()?.references||0)<1)throw Error('IMAGE_REFERENCE_UNSUPPORTED');
-   const maxRefs=currentModel()?.references||0;
-   if(refs.length>=maxRefs&&!confirm(say('Replace your existing reference photos with this result?','Заменить имеющиеся фотографии этим результатом?'))){
-    $('status').textContent=say('Your existing references are unchanged.','Ваши фотографии оставлены без изменений.');return;
-   }
-   const append=refs.length>0&&refs.length<maxRefs;
-   const accepted=await acceptFiles([file],{append});
-   if(!accepted)throw Error('IMAGE_REFERENCE_PREPARE_FAILED');
-   $('consent').checked=false;$('prompt').focus();availability();
-   $('status').textContent=say('Image added as a reference. Update your prompt, review the model and generate when ready. No new generation was started.','Изображение добавлено как пример. Измените запрос, проверьте модель и запустите генерацию сами. Новая генерация не запускалась.');
-  }catch(_){$('status').textContent=say('Could not prepare the image as a reference. Download it and add it manually.','Не получилось подготовить изображение. Скачайте его и добавьте вручную.');}
-  finally{busy=false;availability();}
- };
- function filename(){const ext=blob?.type.startsWith('video/')?'mp4':blob?.type==='image/jpeg'?'jpg':blob?.type.startsWith('image/')?'png':blob?.type==='audio/wav'?'wav':'mp3';return `Deepsyq-${job}.${ext}`;}
+ const append=refs.length>0&&refs.length<maxRefs;
+ const hadPrompt=!!$('prompt').value.trim();
+ if(!await acceptFiles([file],{append}))throw Error('IMAGE_REFERENCE_PREPARE_FAILED');
+ if(!hadPrompt&&suggestedPrompt)$('prompt').value=String(suggestedPrompt).slice(0,2000);
+ $('consent').checked=false;
+ setHistory(false);$('prompt').focus();availability();
+ $('status').textContent=say('Image ready as a reference. Describe your changes and review the model before generating. No AI request was started.','Изображение готово как референс. Опишите изменения и проверьте модель. AI-генерация не запускалась.');
+ return true;
+}
+$('continueImage').onclick=async()=>{
+ if(!blob||busy||!blob.type.startsWith('image/'))return;
+ busy=true;availability();$('status').textContent=say('Preparing this image as your next reference…','Готовим изображение для следующей редакции…');
+ try{await useResultAsImageReference(blob);}
+ catch(_){$('status').textContent=say('Could not prepare this image. Download it and add it manually.','Не удалось подготовить изображение. Скачайте его и добавьте вручную.');}
+ finally{busy=false;availability();}
+};
+function filename(){const ext=blob?.type.startsWith('video/')?'mp4':blob?.type==='image/jpeg'?'jpg':blob?.type.startsWith('image/')?'png':blob?.type==='audio/wav'?'wav':'mp3';return `Deepsyq-${job}.${ext}`;}
 $('download').onclick=async()=>{if(!blob||busy)return;busy=true;availability();try{await saveLocal(new File([blob],filename(),{type:blob.type}));}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
 $('share').onclick=async()=>{if(!blob||busy)return;const file=new File([blob],filename(),{type:blob.type});try{if(window.AndroidBridge&&window.VUShareFile){busy=true;availability();try{await window.VUShareFile({blob:file,name:file.name});}finally{busy=false;availability();}return;}if(navigator.canShare?.({files:[file]}))await navigator.share({files:[file]});else $('status').textContent=say('File sharing is unavailable in this browser. Download the file to share it.','Этот браузер не поддерживает отправку файла. Скачайте его и поделитесь.');}catch(e){if(e.name!=='AbortError')$('status').textContent=say('Could not share. Try downloading the file.','Не удалось поделиться. Попробуйте скачать файл.');}};
 $('remove').onclick=async()=>{if(!job||busy)return;busy=true;availability();try{await api(`/api/studio/jobs/${encodeURIComponent(job)}`,{method:'DELETE'});++generation;clearResult();sessionStorage.removeItem('vu_generation_job');job=null;$('status').textContent=say('Result deleted. Downloaded copies are kept.','Результат удалён. Скачанные копии остаются.');if(historyView)await loadHistory();else setHistory(false);}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
