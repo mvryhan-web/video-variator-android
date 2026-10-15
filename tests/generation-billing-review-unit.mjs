@@ -7,6 +7,8 @@ test('owner billing review requires explicit job confirmation and only releases 
  const settlements=[],updates=[];
  const pool={async query(sql,args=[]){
   if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};
+  if(sql.includes('CREATE TABLE IF NOT EXISTS vv_admin_audit'))return {rows:[]};
+  if(sql.startsWith('INSERT INTO vv_admin_audit('))return {rows:[]};
   if(sql.includes("FROM vv_ai_reservation r JOIN vv_generation_jobs j")&&sql.includes("ORDER BY j.created_at"))return {rows:[{job_id:'job-1',user_id:'user-1',credits:17,kind:'video',provider:'BytePlus',model:'byteplus-seedance-2',status:'failed',error:'GENERATION_FAILED_NO_AUTOMATIC_RETRY',error_message:'AI_WALLET_REVIEW_REQUIRED',created_at:new Date('2026-10-15T08:00:00Z')}]};
   if(sql.includes("WHERE r.job_id=$1")&&sql.includes("AI_WALLET_REVIEW_REQUIRED"))return {rows:args[0]==='job-1'?[{job_id:'job-1',user_id:'user-1',credits:17}]:[]};
   if(sql.startsWith('UPDATE vv_generation_jobs SET credits_reserved=0')){updates.push(args);return {rows:[]};}
