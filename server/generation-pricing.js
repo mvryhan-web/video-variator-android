@@ -31,7 +31,7 @@ export function estimateGenerationPricing(request,model,env={}){
  const defaultDurationSeconds=model.capabilities?.durationSeconds??(Number(String(model.duration||'').match(/\d+/)?.[0]||0)||null);
  const durationSeconds=request.kind==='video'?(request.videoDuration??defaultDurationSeconds):defaultDurationSeconds;
  const candidates=catalog.entries.filter(e=>e.model===model.id&&e.kind===model.kind&&e.provider===model.provider);
- const inputMode=request.kind==='video'?(request.videoInputMode||((request.referenceCount??request.references?.length||0)?'first_frame':'text')):null;
+ const inputMode=request.kind==='video'?(request.videoInputMode||((request.referenceCount??request.references?.length??0)?'first_frame':'text')):null;
  const referenceCount=request.kind==='video'?(request.referenceCount??request.references?.length??0):0;
  const score=e=>{
   if(e.ratio&&e.ratio!==request.ratio)return -1;
