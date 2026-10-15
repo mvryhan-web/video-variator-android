@@ -9,6 +9,7 @@ function mockPool({counts={}, schema=true, failDb=false, lock=true}={}) {
       seen.push([sql,params]);
       if(sql.includes('pg_try_advisory_lock'))return {rows:[{acquired:lock}]};
       if(sql.includes('pg_advisory_unlock'))return {rows:[{pg_advisory_unlock:true}]};
+      if(sql==='SELECT paused FROM vv_product_watcher_control WHERE id=1')return {rows:[{paused:false}]};
       if(sql==='SELECT 1 AS alive'){if(failDb)throw Error('password=secret');return{rows:[{alive:1}]};}
       if(sql.includes('to_regclass'))return {rows:[{table_name:schema?'vv_generation_jobs':null}]};
       if(sql.includes('FROM vv_generation_jobs'))return {rows:[counts]};
@@ -74,4 +75,27 @@ test('unknown missing schema reported without throwing; severity picks worst',as
  const pool=mockPool({schema:false});const client=await pool.connect();
  assert.equal((await checkGenerationJobs(client)).status,'warning');
  assert.equal(summarizeChecks({a:{status:'healthy'},b:{status:'critical'}}).status,'critical');
+});
+
+
+test('persisted checks do not call external service if owner paused',async()=>{
+ const pool=mockPool();const original=pool.connect;pool.connect=async()=>{
+   const c=await original(),query=c.query;
+   c.query=async(sql,params)=>sql==='SELECT paused FROM vv_product_watcher_control WHERE id=1'?{rows:[{paused:true}]}:query(sql,params);
+   return c;
+ };
+ let calls=0;
+ const r=await runProductWatcherOnce({pool,env,fetchFn:async()=>{calls++;throw Error('NOT_EXPECTED')}});
+ assert.equal(r.status,'paused');assert.equal(calls,0);
+ assert.equal(pool.seen.filter(([sql])=>sql.includes('INSERT INTO vv_product_watcher_runs')).length,0);
+ assert.ok(pool.seen.some(([sql])=>sql.includes('pg_advisory_unlock')));
+});
+
+test('very old stuck and held credit jobs are still included in aggregate SQL',async()=>{
+ const pool=mockPool();await runProductWatcherOnce({pool,env,fetchFn});
+ const sql=pool.seen.find(([s])=>s.includes('FROM vv_generation_jobs'))?.[0]||'';
+ assert.match(sql,/created_at >= NOW\(\) - INTERVAL '24 hours' OR status IN/);
+ assert.match(sql,/deleted=false/);
+ assert.match(sql,/stale_24h/);
+ assert.match(sql,/held_review_24h/);
 });
