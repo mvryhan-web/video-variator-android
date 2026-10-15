@@ -65,6 +65,8 @@ export async function probeStudioReferenceMedia({bytes,mime,run=execFileAsync}={
  }catch(e){
   if(e?.message==='REFERENCE_MEDIA_CODEC_UNSUPPORTED'||e?.message==='REFERENCE_MEDIA_INVALID')throw e;
   if(e?.code==='ENOENT'||e?.code==='EACCES'||e?.code==='ETIMEDOUT'||e?.killed)throw Error('REFERENCE_MEDIA_PROBE_UNAVAILABLE');
+  // ffprobe exited after inspecting malformed media: reject as unsupported.
+  if(Number.isInteger(e?.code)&&e.code!==0)throw Error('REFERENCE_MEDIA_CODEC_UNSUPPORTED');
   throw Error('REFERENCE_MEDIA_PROBE_UNAVAILABLE');
  }finally{if(dir)await rm(dir,{recursive:true,force:true}).catch(()=>{});}
 }
