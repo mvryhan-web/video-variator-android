@@ -8,10 +8,14 @@ export function referenceRetentionMinutes(env={}){
  return env.AI_STUDIO_REFERENCE_TTL_MINUTES!=null&&Number.isInteger(n)&&n>=5&&n<=1440?n:null;
 }
 export function createGenerationReferenceLedger({pool,storage,env=process.env,uuid=randomUUID,now=()=>new Date()}={}){
- function ready(){
-  if(env.AI_STUDIO_REFERENCE_STAGING_ENABLED!=='true'||!pool||!storage?.configured)throw Error('REFERENCE_STAGING_DISABLED');
-  // Never allow new objects unless the expiry worker is explicitly enabled too.
+ function cleanupReady(){
+  // Cleanup must continue even after new uploads are disabled, or old assets leak.
+  if(!pool||!storage?.configured)throw Error('REFERENCE_STORAGE_UNAVAILABLE');
   if(env.AI_STUDIO_REFERENCE_CLEANUP_ENABLED!=='true')throw Error('REFERENCE_CLEANUP_DISABLED');
+ }
+ function ready(){
+  cleanupReady();
+  if(env.AI_STUDIO_REFERENCE_STAGING_ENABLED!=='true')throw Error('REFERENCE_STAGING_DISABLED');
   const ttl=referenceRetentionMinutes(env);
   if(!ttl)throw Error('REFERENCE_RETENTION_NOT_CONFIGURED');
   return ttl;
@@ -55,8 +59,7 @@ export function createGenerationReferenceLedger({pool,storage,env=process.env,uu
   return storage.getStagedReference({userId,key:rows[0].storage_key,mime:rows[0].mime});
  }
  async function cleanupExpired({batchSize=20}={}){
-  ready();
-  if(env.AI_STUDIO_REFERENCE_CLEANUP_ENABLED!=='true')throw Error('REFERENCE_CLEANUP_DISABLED');
+  cleanupReady();
   if(!Number.isInteger(batchSize)||batchSize<1||batchSize>100)throw Error('INVALID_CLEANUP_BATCH');
   const {rows}=await pool.query(`WITH selected AS (
    SELECT id FROM vv_generation_reference_assets
