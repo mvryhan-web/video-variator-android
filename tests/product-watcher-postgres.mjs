@@ -32,7 +32,7 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     const state=await pool.query('SELECT id,paused FROM vv_product_watcher_control');
     assert.deepEqual(state.rows,[{id:1,paused:true}]);
 
-    await pool.query("CREATE TABLE IF NOT EXISTS vv_generation_jobs(id TEXT PRIMARY KEY,status TEXT NOT NULL,created_at TIMESTAMPTZ NOT NULL,deleted BOOLEAN NOT NULL DEFAULT false,credits_reserved INTEGER NOT NULL DEFAULT 0)");
+    await pool.query("CREATE TABLE IF NOT EXISTS vv_generation_jobs(id TEXT PRIMARY KEY,status TEXT NOT NULL,created_at TIMESTAMPTZ NOT NULL,deleted BOOLEAN NOT NULL DEFAULT false,credits_reserved INTEGER NOT NULL DEFAULT 0,provider TEXT,actual_cost NUMERIC(14,6),cost_currency TEXT)");
     await pool.query('DELETE FROM vv_generation_jobs WHERE id LIKE $1',['watcher-fixture-%']);
     await pool.query("INSERT INTO vv_generation_jobs(id,status,created_at,credits_reserved) VALUES('watcher-fixture-failed','failed',NOW()-INTERVAL '1 hour',0),('watcher-fixture-stale','processing',NOW()-INTERVAL '2 days',0),('watcher-fixture-held','finalizing',NOW()-INTERVAL '3 days',8),('watcher-fixture-ready','ready',NOW()-INTERVAL '5 minutes',0)");
 
@@ -65,6 +65,9 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     assert.equal(res.body.checks.generations.counts.failed_24h,1);
     assert.equal(res.body.checks.generations.counts.stale_24h,1);
     assert.equal(res.body.checks.generations.counts.held_review_24h,1);
+    assert.equal(res.body.checks.operations.status,'warning');
+    assert.ok(res.body.checks.operations.alerts.some(x=>x.code==='COST_VISIBILITY_GAP'));
+    assert.equal(res.body.checks.operations.currencies.length,0);
     assert.equal(httpCalls,1);
     const notDue=await productWatcherTick({pool,env:schedulerEnv,fetchFn});
     assert.equal(notDue.status,'not_due');assert.equal(httpCalls,1);
@@ -73,6 +76,8 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     assert.equal(history.statusCode,200);assert.equal(history.body.runs[0].status,'warning');
     assert.equal(history.body.schedulerActive,false);
     assert.ok(!JSON.stringify(history.body).includes('watcher-fixture-'));
+    assert.ok(history.body.runs[0].checks.operations.alerts.some(x=>x.code==='COST_VISIBILITY_GAP'));
+
 
     // A second Postgres session owns the lock; the contender neither contacts HTTP
     // nor inserts a report and must return an explicitly skipped state.

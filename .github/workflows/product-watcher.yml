@@ -18,6 +18,7 @@ jobs:
       - name: Syntax checks
         run: |
           node --check server/product-watcher/monitor.js
+          node --check server/product-watcher/operational-signals.js
           node --check server/product-watcher/admin-api.js
           node --check server/product-watcher/run-once.js
           node --check server/product-watcher/scheduler.js
@@ -25,7 +26,7 @@ jobs:
           node --check app/src/main/assets/product-watcher-admin.js
           node --check server/server.js
       - name: Watcher security and behavior unit tests
-        run: node --test tests/product-watcher-unit.mjs tests/product-watcher-admin-unit.mjs tests/product-watcher-scheduler-unit.mjs
+        run: node --test tests/product-watcher-unit.mjs tests/product-watcher-admin-unit.mjs tests/product-watcher-scheduler-unit.mjs tests/product-watcher-operational-unit.mjs
 
   postgres:
     runs-on: ubuntu-latest
