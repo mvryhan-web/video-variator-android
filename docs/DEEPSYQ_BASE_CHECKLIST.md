@@ -24,7 +24,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 10 | Normal generation-job database entity | PARTIAL | Commercial `vv_generation_jobs` now stores provider/model/prompt/lifecycle/cost/credits/settings/assets/error fields and additively migrates legacy `vv_generation_pilot` rows. Production migration/rollback is still unverified. |
 | 11 | Permanent object storage | PARTIAL / BLOCKED | Gated S3-compatible server storage, signed PUT/GET/DELETE and Studio persistence are implemented. Real production bucket/credentials are still required; fallback pilot bytes remain only when storage is disabled. |
 | 12 | Background jobs | PARTIAL | Async provider task IDs persist; browser/recovery polling is atomically throttled per job and restart recovery resumes existing tasks without replacement generations. A dedicated production commercial worker/service is still required. |
-| 13 | Internal AI credit system | PARTIAL | Separate AI wallet exists and is wired to generation jobs behind `AI_STUDIO_WALLET_ENABLED=false`; public entitlements/live economics remain gated. |
+| 13 | Internal AI credit system | PARTIAL | Separate AI wallet is wired to generation jobs and now appears read-only on the authenticated Dashboard when AI billing is enabled; public entitlements/live economics remain gated. |
 | 14 | Credit ledger | PARTIAL | Purchase/reserve/capture/release/refund/debt ledger primitives exist; generation success now captures a prior reservation behind the disabled commercial wallet flag. |
 | 15 | Credit reservation | PARTIAL | Generation reserves approved server-priced AI credits before provider execution and captures only after durable output; ambiguous submission errors remain held for review. Feature remains disabled by default. |
 | 16 | Stripe subscriptions + credit packs | PARTIAL | Existing Stripe is reused. AI credit-pack checkout supports explicit test/live modes, idempotent grants and cumulative refund synchronization; live Products/Prices/webhook smoke test are still external/unconfigured. |
@@ -236,3 +236,9 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Returning from Stripe never claims payment success; Studio states that credits appear only after the signed Stripe webhook confirms payment.
 
 - Studio error UX now also explains hourly rate limits, concurrent-generation limits and unapproved AI pricing without exposing internal details.
+
+
+## Continuation 17 — Dashboard AI wallet
+
+- Authenticated Dashboard now shows available AI credits plus held credits or debt when AI billing is actually enabled.
+- Wallet UI stays hidden when AI billing is disabled/unavailable and links to the existing separated Pricing page; it never fabricates a balance.

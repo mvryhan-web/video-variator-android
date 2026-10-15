@@ -241,3 +241,9 @@ Current queued-roadmap dependencies to verify before implementation:
 - Studio wallet now renders recent ledger activity and handles Stripe return/cancel states without claiming payment before webhook confirmation.
 
 - Added missing Studio messages for server-side AI rate/concurrency limits and unapproved pricing.
+
+
+### Continuation 16 — Dashboard AI wallet
+
+- Authenticated users can see current AI-wallet available/held/debt status in the Deepsyq header when AI billing is enabled.
+- The wallet chip is hidden when billing is disabled or unavailable and links to the existing AI Pricing page.

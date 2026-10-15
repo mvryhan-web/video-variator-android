@@ -110,3 +110,12 @@ test('pricing keeps existing Lifetime separate from AI credit packs and uses ser
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',livePaymentsEnabled:false,packs:[{sku:'configured',credits:4200,amount:1900,currency:'usd'}],rates:[]}}));
  await page.goto('/ai-pricing.html');await expect(page.locator('#toolPlans')).toContainText('Lifetime');await expect(page.locator('#toolPlans')).toContainText('not unlimited AI-generation credit');await expect(page.locator('#aiPacks')).toContainText('4,200 AI credits');await expect(page.locator('#aiPacks')).toContainText('$19');await expect(page.locator('#aiPacks button')).toBeDisabled();
 });
+
+
+test('dashboard shows the authenticated AI wallet only when AI billing is enabled',async({page})=>{
+ await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
+ await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Wallet User',isAdmin:false}}}));
+ await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'test',livePaymentsEnabled:false,unit:'AI credits',packs:[],rates:[],revision:'x'}}));
+ await page.route('**/api/ai-billing/balance',r=>r.fulfill({json:{available:4200,reserved:150,debt:0}}));
+ await page.goto('/deepsyq.html');await expect(page.locator('#aiWalletLink')).toBeVisible();await expect(page.locator('#aiWalletAvailable')).toHaveText('4,200');await expect(page.locator('#aiWalletHeld')).toHaveText('150 held');await expect(page.locator('#aiWalletLink')).toHaveAttribute('href','ai-pricing.html');
+});

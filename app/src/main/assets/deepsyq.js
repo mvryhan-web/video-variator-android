@@ -27,6 +27,16 @@ function renderPlans(){const descriptions={basic:'For occasional video projects.
 try{config=await api('/api/config');applyPlatformFeatures();renderPlans();initGoogle();await loadFeaturedWorkflows();}catch(_){$('paymentStatus').textContent='Plans could not load. Please try again later.';}
 window.addEventListener('load',initGoogle);
 try{const c=await api('/api/studio/config');$('studioStatus').textContent=c.ownerOnly?'AI generation is in owner preview. Explore the studios; existing tools remain available.':c.enabled?'Open a studio to see the available models.':'AI generation is not available yet. Existing tools remain available.';}catch(_){$('studioStatus').textContent='Studio availability could not be checked. Existing tools remain available.';}
+async function loadAIWallet(){
+ const chip=$('aiWalletLink');if(!chip)return;
+ if(!localStorage.getItem('vv_token')){chip.hidden=true;return;}
+ try{
+  const billing=await api('/api/ai-billing/config');if(!billing.enabled){chip.hidden=true;return;}
+  const balance=await api('/api/ai-billing/balance');const available=Number(balance.available||0),reserved=Number(balance.reserved||0),debt=Number(balance.debt||0);
+  $('aiWalletAvailable').textContent=available.toLocaleString();$('aiWalletHeld').textContent=debt>0?`${debt.toLocaleString()} debt`:reserved>0?`${reserved.toLocaleString()} held`:'available';chip.dataset.debt=String(debt>0);chip.hidden=false;
+ }catch(_){chip.hidden=true;}
+}
+
 async function maybeShowOnboarding(){
  if(config?.features?.onboarding===false)return;
  if(localStorage.getItem('deepsyq_onboarding_pending')!=='1'||!localStorage.getItem('vv_token'))return;
@@ -44,5 +54,5 @@ document.querySelectorAll('[data-onboarding-goal]').forEach(button=>button.oncli
  catch(e){status.textContent=e.message==='ONBOARDING_UNAVAILABLE'?'Onboarding is temporarily unavailable. You can still use the studios from the dashboard.':'Could not save your choice. Please try again.';buttons.forEach(b=>b.disabled=false);}
 });
 
-if(localStorage.getItem('vv_token'))try{const {user}=await api('/api/me');$('accountLabel').textContent=user.name||'Your workspace';$('accountButton').textContent='Account settings';$('accountButton').onclick=()=>location.assign('index.html#profile');$('logout').hidden=false;if(user.isAdmin&&!document.getElementById('adminAiControl')){const a=document.createElement('a');a.id='adminAiControl';a.href='deepsyq-admin.html';a.textContent='Owner AI Control';document.querySelector('.sidebar-bottom').prepend(a);}await maybeShowOnboarding();}catch(e){if(e.message==='INVALID_SESSION'||e.message==='USER_NOT_FOUND'){localStorage.removeItem('vv_token');localStorage.removeItem('deepsyq_onboarding_pending');}}
+if(localStorage.getItem('vv_token'))try{const {user}=await api('/api/me');$('accountLabel').textContent=user.name||'Your workspace';$('accountButton').textContent='Account settings';$('accountButton').onclick=()=>location.assign('index.html#profile');$('logout').hidden=false;if(user.isAdmin&&!document.getElementById('adminAiControl')){const a=document.createElement('a');a.id='adminAiControl';a.href='deepsyq-admin.html';a.textContent='Owner AI Control';document.querySelector('.sidebar-bottom').prepend(a);}await Promise.all([maybeShowOnboarding(),loadAIWallet()]);}catch(e){if(e.message==='INVALID_SESSION'||e.message==='USER_NOT_FOUND'){localStorage.removeItem('vv_token');localStorage.removeItem('deepsyq_onboarding_pending');}}
 if(new URLSearchParams(location.search).get('checkout')==='success')$('paymentStatus').textContent='Your checkout has returned. Access is updated only after Stripe confirms payment. Open your account to see its current status.';
