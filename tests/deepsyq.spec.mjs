@@ -379,6 +379,12 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
  await expect(page.locator('#inspirationPreviewGrid')).toContainText('Original owner still');
 });
 test('reduced-motion users get a manual Play button for genuine videos',async({page})=>{
+ // This scenario tests the no-autoplay control, not the availability of fixture MP4 bytes.
+ await page.addInitScript(()=>{
+  HTMLMediaElement.prototype.load=function(){};
+  HTMLMediaElement.prototype.play=function(){return Promise.resolve();};
+  HTMLMediaElement.prototype.pause=function(){};
+ });
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
