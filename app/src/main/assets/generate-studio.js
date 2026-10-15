@@ -93,6 +93,106 @@ document.querySelectorAll('[data-image-edit]').forEach(button=>button.addEventLi
  input.value=suggestion;$('consent').checked=false;availability();input.focus();
  $('status').textContent=say('Edit prompt prepared; review your settings before generating.','Запрос подготовлен. Проверьте настройки перед генерацией.');
 }));
+// Local-only reference cropping: no uploads, provider calls, or credit use.
+const cropDialog=$('cropReferenceDialog');
+let cropImage=null,cropObjectUrl='',cropIndex=-1,cropOriginalFile=null,cropApplying=false,cropDrag=null;
+const cropRatio=$('cropReferenceRatio'),cropZoom=$('cropReferenceZoom'),cropX=$('cropReferenceX'),cropY=$('cropReferenceY');
+function cropBounds(){
+ const w=cropImage.naturalWidth,h=cropImage.naturalHeight;
+ const wanted=cropRatio.value==='original'?w/h:Number(cropRatio.value.split(':')[0])/Number(cropRatio.value.split(':')[1]);
+ const baseW=Math.min(w,h*wanted),baseH=baseW/wanted,zoom=Math.max(1,Number(cropZoom.value)||1);
+ const cw=baseW/zoom,ch=baseH/zoom;
+ const x=(w-cw)*Number(cropX.value)/100,y=(h-ch)*Number(cropY.value)/100;
+ return {x,y,w:cw,h:ch,ratio:wanted};
+}
+function drawCropPreview(){
+ if(!cropImage)return;
+ const crop=cropBounds(),canvas=$('cropReferencePreview');
+ const size=Math.min(480,Math.round(360*crop.ratio));
+ const width=Math.max(1,size),height=Math.max(1,Math.round(width/crop.ratio));
+ if(canvas.width!==width)canvas.width=width;
+ if(canvas.height!==height)canvas.height=height;
+ const ctx=canvas.getContext('2d');if(!ctx)return;
+ ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);
+ ctx.drawImage(cropImage,crop.x,crop.y,crop.w,crop.h,0,0,width,height);
+}
+function resetCropView(){
+ cropRatio.value='original';cropZoom.value='1';cropX.value='50';cropY.value='50';drawCropPreview();
+}
+function closeCrop(){if(!cropApplying&&cropDialog.open)cropDialog.close();}
+cropDialog.addEventListener('close',()=>{
+ if(cropObjectUrl)URL.revokeObjectURL(cropObjectUrl);
+ cropObjectUrl='';cropImage=null;cropIndex=-1;cropOriginalFile=null;cropDrag=null;
+});
+cropDialog.addEventListener('cancel',event=>{if(cropApplying)event.preventDefault();});
+$('cropReferenceCancel').onclick=closeCrop;
+$('cropReferenceClose').onclick=closeCrop;
+$('cropReferenceReset').onclick=resetCropView;
+for(const el of [cropRatio,cropZoom,cropX,cropY])el.addEventListener('input',drawCropPreview);
+$('cropReferencePreview').addEventListener('pointerdown',event=>{
+ if(!cropImage||cropApplying)return;
+ const canvas=$('cropReferencePreview');
+ cropDrag={pointerId:event.pointerId,x:event.clientX,y:event.clientY,xValue:Number(cropX.value),yValue:Number(cropY.value),crop:cropBounds()};
+ canvas.setPointerCapture(event.pointerId);
+});
+$('cropReferencePreview').addEventListener('pointermove',event=>{
+ if(!cropDrag||event.pointerId!==cropDrag.pointerId||!cropImage)return;
+ const box=$('cropReferencePreview').getBoundingClientRect(),region=cropDrag.crop;
+ const roomX=cropImage.naturalWidth-region.w,roomY=cropImage.naturalHeight-region.h;
+ if(roomX>0)cropX.value=String(Math.max(0,Math.min(100,cropDrag.xValue-(event.clientX-cropDrag.x)/box.width*region.w/roomX*100)));
+ if(roomY>0)cropY.value=String(Math.max(0,Math.min(100,cropDrag.yValue-(event.clientY-cropDrag.y)/box.height*region.h/roomY*100)));
+ drawCropPreview();
+});
+for(const type of ['pointerup','pointercancel'])$('cropReferencePreview').addEventListener(type,()=>{cropDrag=null;});
+async function openCropReference(index){
+ if(busy||cropApplying||!refs[index]||cropDialog.open)return;
+ cropIndex=index;cropOriginalFile=refs[index].file;
+ $('cropReferenceStatus').textContent=say('Loading image…','Загружаем изображение…');
+ const img=new Image();cropImage=null;
+ cropObjectUrl=URL.createObjectURL(cropOriginalFile);
+ cropDialog.showModal();
+ try{
+  await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=cropObjectUrl;});
+  if(!cropDialog.open||cropIndex!==index)return;
+  if(!img.naturalWidth||!img.naturalHeight)throw Error('EMPTY_IMAGE');
+  cropImage=img;resetCropView();$('cropReferenceStatus').textContent='';
+ }catch(_){$('cropReferenceStatus').textContent=say('This photo could not be opened for cropping.','Не удалось открыть фото для кадрирования.');}
+}
+async function exportReferenceCrop(){
+ const region=cropBounds(),maxEdge=Math.max(region.w,region.h);
+ let factor=Math.min(1,2048/maxEdge);
+ for(let attempt=0;attempt<6;attempt++){
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(region.w*factor));canvas.height=Math.max(1,Math.round(region.h*factor));
+  const ctx=canvas.getContext('2d');if(!ctx)throw Error('CROP_CANVAS_UNAVAILABLE');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(cropImage,region.x,region.y,region.w,region.h,0,0,canvas.width,canvas.height);
+  for(const quality of [.92,.8,.65,.5]){
+   const output=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+   if(output?.size>0&&output.size<=1024*1024){
+    return new File([output],'deepsyq-cropped-reference.jpg',{type:'image/jpeg'});
+   }
+  }
+  factor*=.72;
+ }
+ throw Error('CROP_TOO_LARGE');
+}
+$('cropReferenceApply').onclick=async()=>{
+ if(!cropImage||cropApplying||busy||cropIndex<0)return;
+ cropApplying=true;
+ for(const id of ['cropReferenceCancel','cropReferenceClose','cropReferenceApply','cropReferenceReset'])$(id).disabled=true;
+ $('cropReferenceStatus').textContent=say('Preparing crop locally…','Подготавливаем кадрирование…');
+ try{
+  const index=cropIndex,old=refs[index];
+  const file=await exportReferenceCrop();
+  const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=reject;reader.readAsDataURL(file);});
+  if(!old||old.file!==cropOriginalFile||refs[index]!==old)throw Error('REFERENCE_CHANGED');
+  refs[index]={...old,file,mimeType:'image/jpeg',data,originalFile:old.originalFile||old.file,originalData:old.originalData||old.data,originalMimeType:old.originalMimeType||old.mimeType};
+  $('consent').checked=false;renderRefs();availability();cropDialog.close();
+  $('status').textContent=say('Cropped reference applied. Your original file is unchanged on your device.','Обрезанный референс применён. Исходный файл на устройстве не изменён.');
+ }catch(_){$('cropReferenceStatus').textContent=say('Could not apply this crop. The existing reference has not been changed.','Не удалось применить кадрирование. Исходный референс в редакторе сохранён.');}
+ finally{cropApplying=false;for(const id of ['cropReferenceCancel','cropReferenceClose','cropReferenceApply','cropReferenceReset'])$(id).disabled=false;}
+};
 function renderRefs(){
  for(const img of $('refPreview').querySelectorAll('img'))URL.revokeObjectURL(img.src);
  $('refPreview').replaceChildren();$('references').value='';
@@ -117,7 +217,17 @@ function renderRefs(){
    };
    controls.append(move);
   }
-  tile.append(img,remove,controls);$('refPreview').append(tile);
+  const crop=document.createElement('button');crop.type='button';crop.className='reference-crop-action';
+  crop.textContent=say('Crop','Обрезать');crop.disabled=busy;
+  crop.setAttribute('aria-label',say('Crop reference photo ','Обрезать изображение ')+(index+1));
+  crop.onclick=()=>void openCropReference(index);
+  const undo=document.createElement('button');undo.type='button';undo.className='reference-undo-action';
+  undo.textContent=say('Original','Исходное');undo.hidden=!ref.originalFile;undo.disabled=busy;
+  undo.onclick=()=>{if(busy||!ref.originalFile)return;
+   refs[index]={file:ref.originalFile,mimeType:ref.originalMimeType||ref.originalFile.type,data:ref.originalData};
+   $('consent').checked=false;renderRefs();availability();
+  };
+  tile.append(img,remove,controls,crop,undo);$('refPreview').append(tile);
  });
 }
 async function acceptFiles(files,{append=false}={}){
