@@ -14,6 +14,7 @@ This file tracks only canonical Roadmap **Block 3**. It does not expand or imple
 | Category filters | DONE | Data-driven public categories. |
 | Aspect-ratio support/filter | DONE | 1:1, 16:9, 9:16, 2:3, 3:2, 4:3, 3:4 validated; public ratio filter is data-driven. |
 | Search | DONE | Server-side bounded search across title/category/description/prompt. |
+| Scalable gallery loading | DONE | Public API uses bounded page size/offset and the UI appends additional cards with Load more rather than fetching an unbounded gallery. |
 | Image/video previews | DONE | Responsive image/video cards; video uses controls/poster when supplied. |
 | Prompt/template metadata | DONE | Prompt, category, ratio and model metadata shown. |
 | Create yours | DONE | Opens real Studio with prompt/settings prepared; never auto-generates. |

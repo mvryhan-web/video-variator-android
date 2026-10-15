@@ -346,7 +346,7 @@ Current queued-roadmap dependencies to verify before implementation:
 **CODE COMPLETE / CONTENT GATE on `deepsyq-platform`; scope is limited to Block 3.**
 
 - Data-driven `vv_ai_inspiration` supports Images/Videos, categories, supported aspect ratios, preview/poster, prompt, model/settings, source-input hints, featured/order and action target.
-- Public gallery supports All / Images / Videos, category, aspect-ratio and text-search filters. Filter state is reflected in the URL for shareable views.
+- Public gallery supports All / Images / Videos, category, aspect-ratio and text-search filters. Filter state is reflected in the URL for shareable views, and bounded Load-more pagination keeps larger libraries scalable.
 - Publishing requires owned/licensed status **and a recorded rights evidence note**; legacy/invalid active rows without that evidence are excluded from public queries. No inspiration assets are seeded or fabricated.
 - Full responsive gallery renders image/video previews plus prompt/template metadata and the required **Create yours / Use this prompt / Clone and Try** actions.
 - All currently public actions lead into the real Studio with bounded prompt/settings prefill; no action starts a paid generation automatically and inspiration source assets are never copied into the user's request.

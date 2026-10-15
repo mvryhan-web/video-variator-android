@@ -62,3 +62,11 @@ test('agent inspiration requires both explicit flag and a real same-origin actio
  d=await request({AI_INSPIRATION_AGENT_TARGETS_ENABLED:'true',AI_INSPIRATION_AGENT_PATH:'/agent.html'});assert.equal(d.items.length,1);assert.equal(d.items[0].actionPath,'/agent.html');
  d=await request({AI_INSPIRATION_AGENT_TARGETS_ENABLED:'true',AI_INSPIRATION_AGENT_PATH:'https://evil.example/agent'});assert.deepEqual(d.items,[]);
 });
+
+
+test('public inspiration pagination is bounded and exposes a next offset',async()=>{
+ const rows=Array.from({length:25},(_,i)=>({id:'p'+i,title:'Item '+i,slug:'item-'+i,kind:'image',category:'Editorial',description:'',preview_url:'/p'+i+'.webp',preview_poster_url:null,prompt:'Prompt '+i,default_model:null,aspect_ratio:'1:1',required_input_types:[],default_settings:{},action_target:'studio',rights_basis:'owned',rights_note:'Created in house',active:true,featured:false,sort_order:i,created_at:new Date(),updated_at:new Date()}));
+ const pool={async query(sql){if(sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_inspiration'))return {rows:[]};if(sql.startsWith('SELECT DISTINCT category'))return {rows:[{category:'Editorial'}]};if(sql.startsWith('SELECT DISTINCT aspect_ratio'))return {rows:[{aspect_ratio:'1:1'}]};if(sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true'))return {rows};throw new Error(sql);}};
+ const app=express();installInspiration(app,{pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true',ADMIN_EMAIL:'owner@example.test'},auth:(req,_res,next)=>next()});const server=app.listen(0);await new Promise(r=>server.once('listening',r));
+ try{const r=await fetch('http://127.0.0.1:'+server.address().port+'/api/inspiration?limit=24&offset=0');assert.equal(r.status,200);const d=await r.json();assert.equal(d.items.length,24);assert.equal(d.pagination.hasMore,true);assert.equal(d.pagination.nextOffset,24);assert.equal(d.pagination.limit,24);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});
