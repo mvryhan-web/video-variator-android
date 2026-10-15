@@ -6,6 +6,9 @@ export function validateGeneration(body){
  const selectedModelId=body?.model||MODELS[body?.kind]?.id;
  const m=MODEL_CATALOG.find(candidate=>candidate.id===selectedModelId&&candidate.kind===body?.kind&&candidate.adapter);
  if(!m||typeof body.prompt!=='string'||!body.prompt.trim()||body.prompt.length>2000||body.consent!==true)throw new Error('INVALID_REQUEST');
+ // Existing Image providers have no verified seed/negative-prompt API support.
+ // Reject explicit fields instead of silently ignoring a promised control.
+ if(body&&('seed'in body||'negativePrompt'in body||'negative_prompt'in body))throw new Error('UNSUPPORTED_IMAGE_CONTROL');
  if(m.ratios.length&&!m.ratios.includes(body.ratio))throw new Error('UNSUPPORTED_FORMAT');
  const references=body.references??[];
  if(!Array.isArray(references)||references.length>m.references)throw new Error('INVALID_REFERENCES');
