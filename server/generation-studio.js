@@ -46,7 +46,23 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   res.status(202).json({id,status:'processing'});void run(id,request).catch(()=>{});
  });
  const getJob=async(req)=>{await init();const r=await pool.query('SELECT * FROM vv_generation_pilot WHERE id=$1 AND user_id=$2 AND deleted=false',[req.params.id,req.user.id]);return r.rows[0];};
- app.get('/api/studio/jobs',auth,owner,async(req,res)=>{try{await init();const {rows}=await pool.query('SELECT id,kind,status,provider,model,error,result_text,mime,created_at,started_at,completed_at,failed_at,credits_reserved,credits_charged,estimated_cost,actual_cost FROM vv_generation_pilot WHERE user_id=$1 AND deleted=false ORDER BY created_at DESC LIMIT 50',[req.user.id]);res.json({items:rows.map(j=>({id:j.id,kind:j.kind,status:j.status,provider:j.provider||null,model:j.model||null,error:j.error||null,text:j.result_text||'',mime:j.mime||null,createdAt:j.created_at,startedAt:j.started_at||null,completedAt:j.completed_at||null,failedAt:j.failed_at||null,creditsReserved:Number(j.credits_reserved||0),creditsCharged:Number(j.credits_charged||0),estimatedCost:j.estimated_cost==null?null:Number(j.estimated_cost),actualCost:j.actual_cost==null?null:Number(j.actual_cost)}))});}catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
+ app.get('/api/studio/admin/metrics',auth,owner,async(_req,res)=>{try{
+  await init();
+  const {rows}=await pool.query(`SELECT provider,model,kind,
+    COUNT(*)::int AS jobs,
+    COUNT(*) FILTER (WHERE status='ready')::int AS succeeded,
+    COUNT(*) FILTER (WHERE status='failed')::int AS failed,
+    COUNT(*) FILTER (WHERE status='processing')::int AS processing,
+    ROUND(AVG(EXTRACT(EPOCH FROM (COALESCE(completed_at,failed_at)-started_at))) FILTER (WHERE started_at IS NOT NULL AND (completed_at IS NOT NULL OR failed_at IS NOT NULL))::numeric,2) AS avg_seconds,
+    COALESCE(SUM(actual_cost),0)::numeric AS actual_cost,
+    COALESCE(SUM(credits_charged),0)::bigint AS credits_charged
+   FROM vv_generation_pilot
+   WHERE deleted=false
+   GROUP BY provider,model,kind
+   ORDER BY jobs DESC,provider,model`);
+  res.json({items:rows.map(r=>({provider:r.provider||null,model:r.model||null,kind:r.kind,jobs:Number(r.jobs||0),succeeded:Number(r.succeeded||0),failed:Number(r.failed||0),processing:Number(r.processing||0),averageSeconds:r.avg_seconds==null?null:Number(r.avg_seconds),actualCost:Number(r.actual_cost||0),creditsCharged:Number(r.credits_charged||0)}))});
+ }catch(_){res.status(503).json({error:'STUDIO_ANALYTICS_UNAVAILABLE'});}});
+  app.get('/api/studio/jobs',auth,owner,async(req,res)=>{try{await init();const {rows}=await pool.query('SELECT id,kind,status,provider,model,error,result_text,mime,created_at,started_at,completed_at,failed_at,credits_reserved,credits_charged,estimated_cost,actual_cost FROM vv_generation_pilot WHERE user_id=$1 AND deleted=false ORDER BY created_at DESC LIMIT 50',[req.user.id]);res.json({items:rows.map(j=>({id:j.id,kind:j.kind,status:j.status,provider:j.provider||null,model:j.model||null,error:j.error||null,text:j.result_text||'',mime:j.mime||null,createdAt:j.created_at,startedAt:j.started_at||null,completedAt:j.completed_at||null,failedAt:j.failed_at||null,creditsReserved:Number(j.credits_reserved||0),creditsCharged:Number(j.credits_charged||0),estimatedCost:j.estimated_cost==null?null:Number(j.estimated_cost),actualCost:j.actual_cost==null?null:Number(j.actual_cost)}))});}catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
  app.get('/api/studio/jobs/:id',auth,owner,async(req,res)=>{try{
   let j=await getJob(req);if(!j)return res.status(404).json({error:'NOT_FOUND'});
   if(j.status==='processing'&&j.operation){try{const result=await poller(j.operation,{env});if(!result.pending){await finish(j.id,result);j=await getJob(req);}}catch(e){if(e.terminal){await pool.query("UPDATE vv_generation_pilot SET status='failed',error='GENERATION_FAILED_NO_AUTOMATIC_RETRY',failed_at=NOW() WHERE id=$1",[j.id]);j=await getJob(req);}else return res.status(502).json({error:'PROVIDER_POLL_FAILED',retryable:true});}}
