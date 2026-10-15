@@ -2,6 +2,12 @@
 
 This file preserves the approved future product requirements so new agents do not lose them.
 
+## Integration and release destination (owner instruction, 2026-10-15)
+
+**One canonical release branch: `main` for BASE and Blocks 1–7.** The seven blocks are components of the same Deepsyq app, not separate permanent branches or separately deployed products. Agents may develop on isolated branches to avoid conflicts, but every completed, reviewed and tested block must be integrated into the shared BASE and ultimately merged into `main` after satisfying dependency and production-safety gates.
+
+Use `AGENTS.md` and `PROJECT_STATUS.md` for the merge owner, PR links, current status, test evidence and deployment blockers. Track **feature code complete**, **merged to main** and **deployed/verified** as distinct states. Render follows `main` with automatic deploy, so a feature merge must not precede verified PostgreSQL continuity/backup and required migration, auth, billing, provider, compatibility and rollback checks. This rule does not authorize enabling paid features or changing production secrets.
+
 ## Priority and scope rule
 
 Deepsyq is the main product and main dashboard. Video Uniquifier remains an existing secondary tool inside the platform.
@@ -457,7 +463,91 @@ Prepare, without forcing immediate implementation:
 
 ---
 
-# Shared acceptance principles for blocks 1–6
+# BLOCK 7 — Pricing, Credits, Stripe & Unit Economics
+
+Extend the existing billing foundation. Do **not** create a second Stripe integration, second customer system, or duplicate ledger.
+
+## Existing systems to preserve
+
+- existing Stripe account, Products/Prices, Checkout and verified webhook;
+- existing Basic / Pro / Business / Lifetime products until the owner explicitly changes them;
+- existing PostgreSQL user/account mapping;
+- existing tool entitlements and Video Uniquifier billing;
+- existing AI wallet / reservation primitives where appropriate.
+
+## Required Deepsyq AI credit model
+
+Add a commercial AI credit layer that is tied to real provider economics.
+
+Support:
+- subscription credit grants;
+- one-time credit top-ups;
+- per-generation quotes;
+- atomic credit reserve before expensive work;
+- capture after confirmed success;
+- release/refund after confirmed failure;
+- idempotent Stripe webhook fulfillment;
+- provider/model usage and actual/estimated cost recording;
+- gross-margin reporting.
+
+Never expose provider cost as the customer-facing price. Users see Deepsyq credits.
+
+Do not invent final credit prices until current provider pricing is verified.
+
+## Stripe integration
+
+Reuse the existing Stripe integration.
+
+Customer payment -> verified existing Stripe webhook -> Deepsyq entitlement/credit grant.
+
+Do not grant credits because the browser success page was reached.
+
+Do not make users pay BytePlus/Google/OpenAI directly.
+
+## Lifetime
+
+Existing Lifetime rights for Everyday Tools / Video Uniquifier must not silently become unlimited paid AI generation.
+
+AI credits remain separately metered unless the owner approves a financially safe allowance.
+
+## Pricing engine
+
+Pricing must be server-side/config-driven and able to vary by:
+- provider;
+- model;
+- generation type;
+- resolution/quality;
+- duration;
+- quantity;
+- premium capabilities.
+
+Keep provider/model prices replaceable without frontend rewrites.
+
+Target architecture must support switching to a cheaper/better provider later without changing the user-facing credit workflow.
+
+## Credit packs and subscriptions
+
+Support subscriptions plus one-time top-ups. Lumina pricing may be used only as a market benchmark, not copied blindly.
+
+Final packs, monthly grants and margins must be calculated from verified real provider costs.
+
+## Business analytics
+
+Owner/admin should be able to see:
+- revenue;
+- provider/API cost;
+- gross margin;
+- average cost per user;
+- average cost per generation;
+- most expensive providers/models;
+- credit sales;
+- reserved vs captured/refunded credits.
+
+No false profitability estimates.
+
+---
+
+# Shared acceptance principles for blocks 1–7
 
 For every block:
 - use real APIs only when actually connected;
