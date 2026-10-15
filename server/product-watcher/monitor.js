@@ -50,12 +50,12 @@ export async function checkGenerationJobs(client) {
     if (!reg.rows?.[0]?.table_name) return { status: 'warning', code: 'GENERATION_SCHEMA_NOT_READY' };
     // Counts only; never select user identifiers, prompts, assets or billing identifiers.
     const q = await client.query([
-      'SELECT COUNT(*)::int AS total_24h,',
-      "COUNT(*) FILTER (WHERE status='failed')::int AS failed_24h,",
-      "COUNT(*) FILTER (WHERE status='unknown')::int AS unknown_24h,",
+      "SELECT COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '24 hours')::int AS total_24h,",
+      "COUNT(*) FILTER (WHERE status='failed' AND created_at >= NOW() - INTERVAL '24 hours')::int AS failed_24h,",
+      "COUNT(*) FILTER (WHERE status='unknown' AND created_at >= NOW() - INTERVAL '24 hours')::int AS unknown_24h,",
       "COUNT(*) FILTER (WHERE status IN ('queued','processing') AND created_at < NOW() - INTERVAL '30 minutes')::int AS stale_24h,",
       "COUNT(*) FILTER (WHERE status IN ('unknown','finalizing') AND credits_reserved > 0)::int AS held_review_24h",
-      "FROM vv_generation_jobs WHERE created_at >= NOW() - INTERVAL '24 hours'"
+      "FROM vv_generation_jobs WHERE deleted=false AND (created_at >= NOW() - INTERVAL '24 hours' OR status IN ('queued','processing','unknown','finalizing'))"
     ].join(' '));
     const row = q.rows?.[0] || {};
     const counts = Object.fromEntries(['total_24h','failed_24h','unknown_24h','stale_24h','held_review_24h'].map(k => [k, Math.max(0, Number(row[k]) || 0)]));
@@ -83,6 +83,12 @@ export async function runProductWatcherOnce({ pool, env = {}, fetchFn = globalTh
     const r = await client.query('SELECT pg_try_advisory_lock($1, $2) AS acquired', ADVISORY_LOCK_KEYS);
     locked = r.rows?.[0]?.acquired === true;
     if (!locked) return { enabled: true, status: 'skipped', code: 'ALREADY_RUNNING', findings: [], checks: {} };
+    if (persist) {
+      // Schema and owner pause state must exist before any HTTP request or checks.
+      const control = await client.query('SELECT paused FROM vv_product_watcher_control WHERE id=1');
+      if (!control.rows?.length) throw Error('WATCHER_SCHEMA_NOT_READY');
+      if (control.rows[0].paused === true) return { enabled: true, status: 'paused', code: 'OWNER_PAUSED', findings: [], checks: {} };
+    }
     const checks = {
       http: await httpHealth({ fetchFn, ...config }),
       database: await checkDatabase(client),
