@@ -301,3 +301,10 @@ Current queued-roadmap dependencies to verify before implementation:
 - Updated stale unit mocks for Studio recovery claim SQL, commercial job INSERT arguments, cost-currency analytics and audited owner endpoints.
 - Coordinated destructive PostgreSQL generation-job fixture tests with a shared advisory lock so concurrent Node test files do not drop each other's tables.
 - BASE Canvas/main site remain **PARTIAL**. These are feature-branch changes only, not proof of deployed production functionality. Latest CI must pass; live paid AI, public root switch, production migrations and provider activation remain gated.
+
+## BASE Canvas follow-up — 2026-10-15
+
+- Feature branch `deepsyq-platform` / PR #42: homepage quick-create now allows user-authored Image/Video prompts plus up to four local PNG/JPG reference images (1 MB each), file picker or drag/drop, preview and removal. Uses the existing `studio-handoff.js` transfer, retains Studio's per-model reference limits and explicit consent before generation. No upload or paid request on selection.
+- Added Create / Canvas sidebar shortcut; restored featured AI Apps homepage section and corrected its API origin. No invented or auto-seeded templates; section stays hidden if active featured templates are absent.
+- Added route and Playwright coverage for local handoff, references/removal, featured workflows and navigation. Local source syntax inspected; GitHub Actions for the current head are still queued/not yet confirmed. Do **not** mark BASE verified or deployed.
+- Production root switch, migrations, payment/provider activation remain blocked pending approval and live prerequisites. Next: inspect latest GitHub Actions run logs after runners finish, resolve remaining failures before further BASE claims.
