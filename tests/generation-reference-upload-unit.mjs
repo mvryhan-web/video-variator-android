@@ -121,3 +121,12 @@ test('ffprobe unavailable blocks intake before any ledger or S3 write',async()=>
   assert.equal(x.calls.length,0);
  }finally{await x.close();}
 });
+
+test('unsupported codec maps to 415 before any private upload',async()=>{
+ const x=await webServer({probe:async()=>{throw Error('REFERENCE_MEDIA_CODEC_UNSUPPORTED');}});
+ try{
+  const r=await fetch(x.url,{method:'POST',headers:{Authorization:'owner','Content-Type':'audio/wav'},body:wav()});
+  assert.equal(r.status,415);assert.equal((await r.json()).error,'REFERENCE_MEDIA_CODEC_UNSUPPORTED');
+  assert.equal(x.calls.length,0);
+ }finally{await x.close();}
+});
