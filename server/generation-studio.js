@@ -68,9 +68,15 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   const resolution=kind==='image'?(body?.resolution||selected.quality||'1K'):null;
   if(kind==='image'&&!selected.capabilities?.resolutions?.includes(resolution))throw Error('UNSUPPORTED_RESOLUTION');
   if(kind!=='image'&&body?.resolution)throw Error('UNSUPPORTED_RESOLUTION');
+  const videoResolution=kind==='video'?(body?.videoResolution||selected.quality):null;
+  const videoDuration=kind==='video'?(body?.videoDuration==null?selected.capabilities?.durationSeconds:body.videoDuration):null;
+  if(kind==='video'&&!selected.capabilities?.resolutions?.includes(videoResolution))throw Error('UNSUPPORTED_VIDEO_RESOLUTION');
+  if(kind==='video'&&!selected.capabilities?.durations?.includes(videoDuration))throw Error('UNSUPPORTED_VIDEO_DURATION');
+  if(kind==='video'&&selected.provider==='Google'&&(count>0||videoResolution==='1080p')&&videoDuration!==8)throw Error('UNSUPPORTED_VIDEO_DURATION');
+  if(kind!=='video'&&(body?.videoResolution!=null||body?.videoDuration!=null))throw Error('UNSUPPORTED_VIDEO_SETTINGS');
   if(count>Number(selected.references||0))throw Error('INVALID_REFERENCES');
   if(kind==='music'&&!['song','instrumental'].includes(musicMode))throw Error('INVALID_MUSIC_MODE');
-  return {request:{kind,model:selected.id,ratio,musicMode,...(kind==='image'?{resolution,outputFormat}:{})},selected,routing};
+  return {request:{kind,model:selected.id,ratio,musicMode,...(kind==='image'?{resolution,outputFormat}:{}),...(kind==='video'?{videoResolution,videoDuration}:{})},selected,routing};
  }
  async function resolveRequest(body){
   const catalog=await effectiveCatalog();
@@ -207,14 +213,14 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   const totalCredits=quote.credits*quantity;
   if(!Number.isSafeInteger(totalCredits)||totalCredits>10_000_000)return res.status(400).json({error:'INVALID_IMAGE_QUANTITY'});
   res.json({credits:totalCredits,perImageCredits:quote.credits,quantity,unit:'AI credits',model:quote.model,kind:quote.kind,routing});
- }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','INVALID_REFERENCES','INVALID_MUSIC_MODE'].includes(e.message);res.status(bad?400:503).json({error:bad?e.message:e.message||'AI_PRICING_NOT_APPROVED'});}});
+ }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','INVALID_REFERENCES','INVALID_MUSIC_MODE'].includes(e.message);res.status(bad?400:503).json({error:bad?e.message:e.message||'AI_PRICING_NOT_APPROVED'});}});
   app.post('/api/studio/jobs',auth,generationUser,async(req,res)=>{
   let request,selected,routing,clientRequestId;try{
    // The job endpoint always creates ONE image. Multi-image batches must use distinct, independently idempotent jobs.
    if(req.body?.quantity!=null&&req.body.quantity!==1)throw Error('INVALID_IMAGE_QUANTITY');
    ({request,selected,routing}=await resolveRequest(req.body));
    clientRequestId=generationRequestId(req.body?.requestId,{required:req.generationAccess?.scope==='public'});
-  }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','INVALID_REFERENCES','INVALID_MUSIC_MODE','GENERATION_REQUEST_ID_REQUIRED','INVALID_GENERATION_REQUEST_ID','INVALID_IMAGE_QUANTITY'].includes(e.message);return res.status(bad?400:503).json({error:e.message||'MODEL_NOT_ENABLED'});}
+  }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','INVALID_REFERENCES','INVALID_MUSIC_MODE','GENERATION_REQUEST_ID_REQUIRED','INVALID_GENERATION_REQUEST_ID','INVALID_IMAGE_QUANTITY'].includes(e.message);return res.status(bad?400:503).json({error:e.message||'MODEL_NOT_ENABLED'});}
   const quote=walletEnabled()?estimateGenerationPricing(request,selected,env):null;if(walletEnabled()&&!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
   // Fail before insertion/reservation if prices changed after the user confirmed the batch quote.
   if(req.body?.expectedCredits!=null&&(!walletEnabled()||!Number.isSafeInteger(req.body.expectedCredits)||req.body.expectedCredits!==quote?.credits))
@@ -226,7 +232,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
    const access=req.generationAccess||{scope:'owner'};
    await enforceGenerationPolicy(c,{userId:req.user.id,env,policyOverride:access.scope==='public'?{enabled:true,maxConcurrentPerUser:access.maxConcurrent,maxJobsPerHourPerUser:access.maxPerHour}:null});
    if(access.scope==='owner'){const count=await c.query('SELECT count(*)::int AS n FROM vv_generation_jobs');if(count.rows[0].n>=Number(env.AI_STUDIO_MAX_CALLS)){await c.query('ROLLBACK');return res.status(429).json({error:'PILOT_LIMIT_REACHED'});}}
-   const settings={ratio:request.ratio,resolution:request.resolution||null,outputFormat:request.outputFormat||null,musicMode:request.musicMode||null,referenceCount:request.references?.length||0,routing};
+   const settings={ratio:request.ratio,resolution:request.resolution||null,outputFormat:request.outputFormat||null,videoResolution:request.videoResolution||null,videoDuration:request.videoDuration??null,musicMode:request.musicMode||null,referenceCount:request.references?.length||0,routing};
    await c.query('INSERT INTO vv_generation_jobs(id,user_id,kind,status,provider,model,prompt,client_request_id,request_fingerprint,started_at,settings,estimated_cost,cost_currency) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),$10::jsonb,$11,$12)',[id,req.user.id,request.kind,walletEnabled()?'queued':'processing',selected.provider||null,selected.id,request.prompt,clientRequestId,fingerprint,JSON.stringify(settings),quote?quote.providerCostMicros/1_000_000:null,quote?.currency||null]);await c.query('COMMIT');
   }catch(e){if(c)await c.query('ROLLBACK').catch(()=>{});if(['AI_CONCURRENCY_LIMIT','AI_RATE_LIMIT'].includes(e.message))return res.status(429).json({error:e.message});if(e.message==='GENERATION_REQUEST_CONFLICT')return res.status(409).json({error:e.message});return res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}finally{c?.release();}
   if(walletEnabled())try{
