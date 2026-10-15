@@ -85,3 +85,16 @@ CREATE TABLE IF NOT EXISTS vv_product_watcher_briefs (
   UNIQUE(kind,period_key)
 );
 CREATE INDEX IF NOT EXISTS vv_product_watcher_briefs_created_idx ON vv_product_watcher_briefs(created_at DESC);
+
+
+-- Daily owner-only content diagnostics and internal opportunity notes.
+CREATE TABLE IF NOT EXISTS vv_product_watcher_content_tasks (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  kind TEXT NOT NULL CHECK(kind IN ('content','opportunities')),
+  period_key CHAR(10) NOT NULL,
+  content JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(kind,period_key)
+);
+CREATE INDEX IF NOT EXISTS vv_product_watcher_content_created_idx
+  ON vv_product_watcher_content_tasks(created_at DESC);
