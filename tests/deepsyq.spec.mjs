@@ -342,6 +342,18 @@ test('video carousel switches only among owner-approved videos and retains exist
  await expect(page.locator('#inspirationPreviewGrid')).toContainText('Preserved owned photo');
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
 });
+test('reduced-motion users get a manual Play button for genuine videos',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'clip',title:'Approved original clip',kind:'video',previewUrl:'/approved.mp4',actionTarget:'studio',category:'Cinematic',aspectRatio:'16:9'}],categories:['Cinematic'],ratios:['16:9']}}));
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+ await expect(page.locator('#homeHeroPlay')).toHaveText('Play');
+ await expect(page.locator('#homeHeroNext')).toBeDisabled();
+ await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
+});
 test('Home Quick Create hands off an unpaid draft and Agent remains a preview',async({page})=>{
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:false,productVideo:false,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
