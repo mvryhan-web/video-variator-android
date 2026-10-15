@@ -8,6 +8,7 @@ import {readFile,mkdtemp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {spawnSync} from 'node:child_process';
+import {request as httpRequest} from 'node:http';
 import {createObjectStorage} from '../server/generation-storage.js';
 
 const minio=process.env.AI_TEST_MINIO_URL||'';
@@ -49,8 +50,24 @@ const storageEnv=()=>({
  AI_STUDIO_REFERENCE_PROVIDER_FETCH_HOSTS:host
 });
 async function local(method,path,{headers={},body}={}){
- return fetch(minio+path,{method,headers:{Host:host,...headers},
-  redirect:'error',signal:AbortSignal.timeout(10000),...(body?{body}:{})});
+ // A real S3 signature authenticates the original Host, not the loopback host.
+ assert.equal(minio,'http://127.0.0.1:9000');
+ assert.ok(path.startsWith('/'+bucket),'request must stay inside unique ephemeral bucket');
+ return new Promise((resolve,reject)=>{
+  const req=httpRequest({hostname:'127.0.0.1',port:9000,method,path,
+    headers:{...headers,Host:host},signal:AbortSignal.timeout(10000)},res=>{
+    const chunks=[];
+    res.on('data',piece=>chunks.push(piece));
+    res.on('error',reject);
+    res.on('end',()=>{
+     const bytes=Buffer.concat(chunks);
+     resolve(new Response(bytes.length?bytes:null,{status:res.statusCode,headers:res.headers}));
+    });
+  });
+  req.on('error',reject);
+  if(body)req.write(body);
+  req.end();
+ });
 }
 function proxyFetch(url,options){
  const u=new URL(url);
