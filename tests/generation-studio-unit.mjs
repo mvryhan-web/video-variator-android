@@ -56,9 +56,9 @@ test('recovery polls only an existing provider operation and never starts a repl
  const row={id:'job-1',operation:'byteplus:task_1',status:'processing',deleted:false};
  const pool={
   async query(sql,args=[]){
-   if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_pilot'))return {rows:[]};
-   if(sql.startsWith("SELECT id,operation FROM vv_generation_pilot"))return {rows:[{id:row.id,operation:row.operation}]};
-   if(sql.startsWith('UPDATE vv_generation_pilot SET status=$2')){finished=true;return {rows:[]};}
+   if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};
+   if(sql.startsWith("SELECT id,operation FROM vv_generation_jobs"))return {rows:[{id:row.id,operation:row.operation}]};
+   if(sql.startsWith('UPDATE vv_generation_jobs SET status=$2')){finished=true;return {rows:[]};}
    throw new Error(sql);
   },
   async connect(){return {async query(sql,args=[]){
