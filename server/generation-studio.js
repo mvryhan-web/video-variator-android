@@ -31,12 +31,13 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   app.use('/api/studio',(_req,res,next)=>{if(!studioConfig(env).enabled)return res.status(503).json({error:'OWNER_SETUP_REQUIRED'});next();});
  async function finish(id,result){const status=result.operation?'processing':'ready';await pool.query("UPDATE vv_generation_pilot SET status=$2,operation=$3,mime=$4,media=$5,result_text=$6,completed_at=CASE WHEN $2='ready' THEN NOW() ELSE completed_at END WHERE id=$1",[id,status,result.operation||null,result.mime||null,result.bytes||null,result.text||'']);}
  async function run(id,request){try{await finish(id,await provider(request,{env}));}catch(e){await pool.query("UPDATE vv_generation_pilot SET status='failed',error='GENERATION_FAILED_NO_AUTOMATIC_RETRY',failed_at=NOW() WHERE id=$1",[id]);}}
- app.post('/api/studio/estimate',auth,owner,(req,res)=>{try{
-  const request=validateGeneration(req.body),selected=studioConfig(env).catalog.find(m=>m.id===request.model&&m.kind===request.kind);
-  if(!selected?.enabled)return res.status(503).json({error:'MODEL_NOT_ENABLED'});
+ app.post('/api/studio/estimate',auth,owner,async(req,res)=>{try{
+  const request=validateGeneration(req.body);let selected=studioConfig(env).catalog.find(m=>m.id===request.model&&m.kind===request.kind);
+  if(env.AI_PROVIDER_ADMIN_ENABLED==='true'&&pool&&selected)selected=applyModelControl(selected,await getModelControl(pool,selected.id));
+  if(!selected?.enabled)return res.status(503).json({error:selected?.maintenance?'MODEL_MAINTENANCE':'MODEL_NOT_ENABLED'});
   const quote=estimateGenerationPricing(request,selected,env);if(!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
   res.json({credits:quote.credits,unit:'AI credits',model:quote.model,kind:quote.kind});
- }catch(e){res.status(400).json({error:e.message==='INVALID_REQUEST'?'INVALID_REQUEST':'AI_PRICING_NOT_APPROVED'});}});
+ }catch(e){const invalid=e.message==='INVALID_REQUEST';res.status(invalid?400:503).json({error:invalid?'INVALID_REQUEST':'AI_PRICING_NOT_APPROVED'});}});
   app.post('/api/studio/jobs',auth,owner,async(req,res)=>{
   let request;try{request=validateGeneration(req.body);}catch(e){return res.status(400).json({error:e.message});}
   let selected=studioConfig(env).catalog.find(m=>m.id===request.model&&m.kind===request.kind);if(env.AI_PROVIDER_ADMIN_ENABLED==='true'&&pool&&selected){try{selected=applyModelControl(selected,await getModelControl(pool,selected.id));}catch(_){return res.status(503).json({error:'MODEL_ADMIN_UNAVAILABLE'});}}if(!selected?.enabled)return res.status(503).json({error:selected?.maintenance?'MODEL_MAINTENANCE':'MODEL_NOT_ENABLED'});
