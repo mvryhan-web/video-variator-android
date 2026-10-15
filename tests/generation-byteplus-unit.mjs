@@ -39,6 +39,34 @@ test('Seedance accepts supported 1080p and 15-second settings and blocks unsuppo
  assert.throws(()=>validateGeneration({...advanced,consent:true,videoResolution:'4k'}),/UNSUPPORTED_VIDEO_RESOLUTION/);
  assert.throws(()=>validateGeneration({...advanced,consent:true,videoDuration:16}),/UNSUPPORTED_VIDEO_DURATION/);
 });
+test('Seedance first+last and reference-image modes emit exclusive native roles',async()=>{
+ const source={mimeType:'image/png',data:png.toString('base64')};
+ const prepare=(mode,count)=>validateGeneration({
+  kind:'video',model:'byteplus-seedance-2',ratio:'16:9',prompt:'Film this scene',
+  consent:true,references:Array.from({length:count},()=>({...source})),videoInputMode:mode
+ });
+ const submitted=[];
+ for(const [mode,count,expected] of [
+  ['first_frame',1,['first_frame']],
+  ['first_last',2,['first_frame','last_frame']],
+  ['reference_image',1,['reference_image']],
+  ['reference_image',3,['reference_image','reference_image','reference_image']]
+ ]){
+  let body;
+  await generateBytePlus(prepare(mode,count),{key:'fixture',fetcher:async(_url,options)=>{
+   body=JSON.parse(options.body);submitted.push(body);return json({id:'cgt-reference-test'});
+  }});
+  assert.deepEqual(body.content.filter(c=>c.type==='image_url').map(c=>c.role),expected);
+  assert.equal(body.content[0].type,'text');
+  assert.equal(body.content.length,count+1);
+ }
+ assert.equal(submitted.length,4);
+ for(const [mode,count] of [['first_last',1],['first_frame',2],['text',1],['reference_image',0]]){
+  assert.throws(()=>prepare(mode,count),/INVALID_VIDEO_REFERENCES/);
+ }
+ assert.throws(()=>validateGeneration({kind:'video',model:'veo-3.1-lite-generate-preview',ratio:'16:9',
+  prompt:'Scene',consent:true,references:[source],videoInputMode:'reference_image'}),/UNSUPPORTED_VIDEO_INPUT_MODE/);
+});
 test('result download requires exact approved HTTPS CDN host; API key never travels to CDN',async()=>{
  const host='fixture.tos-ap-southeast-1.bytepluses.com';let calls=0;
  for(const url of ['http://'+host+'/file','https://evil.test/file','https://127.0.0.1/file','https://'+host+':8443/file','https://secret@'+host+'/file','https://another.bytepluses.com/file'])assert.throws(()=>safeBytePlusMediaUrl(url,host));
