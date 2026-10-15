@@ -98,3 +98,18 @@ CREATE TABLE IF NOT EXISTS vv_product_watcher_content_tasks (
 );
 CREATE INDEX IF NOT EXISTS vv_product_watcher_content_created_idx
   ON vv_product_watcher_content_tasks(created_at DESC);
+
+
+-- Exactly once attempt per alert/channel; unknown deliveries stay pending owner review.
+CREATE TABLE IF NOT EXISTS vv_product_watcher_notifications (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  alert_id BIGINT NOT NULL REFERENCES vv_product_watcher_alerts(id),
+  channel TEXT NOT NULL CHECK(channel='telegram'),
+  status TEXT NOT NULL CHECK(status IN ('sending','sent','delivery_unknown')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  checked_at TIMESTAMPTZ,
+  delivered_at TIMESTAMPTZ,
+  UNIQUE(alert_id,channel)
+);
+CREATE INDEX IF NOT EXISTS vv_product_watcher_notifications_created_idx
+  ON vv_product_watcher_notifications(created_at DESC);
