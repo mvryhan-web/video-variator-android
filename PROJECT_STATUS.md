@@ -445,3 +445,16 @@ Current queued-roadmap dependencies to verify before implementation:
 - Two visual website **concept renderings** were generated in the conversation for discussion; they are not functional webpages or genuine completed image/video cards, and were not published to production.
 - No user media, generations, Stripe, wallet, provider credentials, Render settings, live deployment, schema migrations or production flags changed.
 - CI/browser verification for the latest PR head remains pending. Do not mark Block 3 or BASE public-launch DONE. Next: real owner-approved media (with rights record and working media URLs), then targeted browser/owner acceptance, then a separate approved release gate.
+
+
+### Continuation — 2026-10-15 — owner-selected sidebar/gallery layout
+
+**Workstream:** Deepsyq BASE / Block 3 visual navigation handoff (existing PR #42, no duplicate UI or DB). **Status: IMPLEMENTED / BROWSER CI UNVERIFIED.**
+
+- Owner selected the richer-color **second** design direction, left navigation, Home first, Image/Video model flyouts, Agent/Audio/Tools/AI Apps/Canvas/Video Uniquifier/Assets/Affiliate/Share; preserve earlier content and sections.
+- Dashboard HTML/CSS/JS now implement desktop icon-only sidebar collapse, mobile drawer, keyboard/hover-accessible model flyouts populated from the existing Studio config, and one-click Studio selection only for server-configured enabled models. No model is claimed live merely because it exists in the static catalog.
+- Main Inspiration tiles now present an editorial mosaic using **only real owner-approved API media**. Videos retain viewport-limited muted playback with data-saver and reduced-motion guard; stills zoom on hover, never pretend to be playable video. Existing assets, CTAs, templates, original studios and legacy utilities untouched.
+- Assets links to the existing saved-results/history section; Agent and Affiliate are visibly marked **soon**, rather than using fake pages. Share uses standard browser sharing or clipboard.
+- Browser coverage for collapse and model menus added to `tests/deepsyq.spec.mjs`. Exact old nav text assertion updated to new Canvas label.
+- **Next:** inspect GitHub Actions against this branch head and run browser acceptance (desktop/mobile, menu keyboard/hovers, authenticated sidebar), then prepare real original approved media to populate cinematic gallery. No real media was generated, uploaded, licensed or published by this task; no live feature flag, provider payment, database migration, Stripe, domain, or production deploy was changed.
+
