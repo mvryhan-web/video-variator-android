@@ -227,6 +227,26 @@ test('Inspiration filters approved media and all actions only prepare Studio',as
  let inspirationUrl='';await page.route('**/api/inspiration**',r=>{inspirationUrl=r.request().url();return r.fulfill({json:{items,categories:['Editorial'],ratios:['2:3','16:9']}});});await page.route('**/fixture-inspiration.png',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1','2:3'],references:1,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1','2:3'],references:1,enabled:true,adapter:true,provider:'Google'}]}}));let jobPosts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')jobPosts++;});await page.goto('/inspiration.html');await expect(page.getByRole('heading',{name:'Inspiration'})).toBeVisible();await expect(page.locator('#ratio')).toContainText('2:3');await page.locator('#ratio').selectOption('2:3');await expect.poll(()=>new URL(inspirationUrl).searchParams.get('ratio')).toBe('2:3');await expect(page.locator('.card')).toHaveCount(1);await expect(page.locator('.card')).toContainText('Owned Editorial Portrait');await expect(page.locator('.card')).toContainText('2:3');await page.getByRole('button',{name:'Clone and Try'}).click();await expect(page).toHaveURL(/generate-studio\.html\?studio=image/);await expect(page.locator('#prompt')).toHaveValue('Editorial portrait in soft window light');await expect(page.locator('#ratio')).toHaveValue('2:3');await expect(page.locator('#consent')).not.toBeChecked();expect(jobPosts).toBe(0);
 });
 
+test('Inspiration ignores stale filter responses and keeps the latest search result',async({page})=>{
+ let releaseInitial=null;
+ let initialRequested;
+ const initialSeen=new Promise(resolve=>{initialRequested=resolve;});
+ await page.route('**/api/inspiration**',async route=>{
+  const q=new URL(route.request().url()).searchParams.get('q')||'';
+  if(!q){initialRequested();await new Promise(resolve=>{releaseInitial=resolve;});}
+  const item={id:'race-'+(q||'old'),title:q?'Newest search result':'Outdated search result',slug:q?'newest':'outdated',kind:'image',category:'Editorial',description:'Owned example',previewUrl:'/sample.png',prompt:'Original prompt',aspectRatio:'1:1',requiredInputTypes:[],defaultSettings:{ratio:'1:1'},actionTarget:'studio'};
+  try{await route.fulfill({json:{items:[item],categories:['Editorial'],ratios:['1:1'],pagination:{limit:24,offset:0,nextOffset:null,hasMore:false}}});}catch(_){}
+ });
+ await page.goto('/inspiration.html');
+ await initialSeen;
+ await page.locator('#search').fill('newest');
+ await expect(page.locator('.card')).toContainText('Newest search result');
+ releaseInitial();
+ await page.waitForTimeout(100);
+ await expect(page.locator('.card')).toHaveCount(1);
+ await expect(page.locator('.card')).toContainText('Newest search result');
+});
+
 test('dashboard inspiration preview is data-driven and hides Agent examples when none are connected',async({page})=>{
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));await page.route('**/api/inspiration**',r=>{const u=new URL(r.request().url());if(u.searchParams.get('target')==='agent')return r.fulfill({json:{items:[],categories:[]}});return r.fulfill({json:{items:[{id:'f1',title:'Owned Video Mood',slug:'owned-video-mood',kind:'video',category:'Cinematic',description:'Original example',previewUrl:'/owned.mp4',previewPosterUrl:null,prompt:'Cinematic scene',defaultModel:null,aspectRatio:'16:9',requiredInputTypes:[],defaultSettings:{ratio:'16:9'},actionTarget:'studio',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false,nextOffset:null}}});});await page.goto('/deepsyq.html');await expect(page.locator('#inspirationPreview')).toBeVisible();await expect(page.locator('#inspirationPreviewGrid')).toContainText('Owned Video Mood');await expect(page.locator('#inspirationPreviewCategories')).toContainText('Cinematic');await expect(page.locator('#inspirationPreviewCategories a')).toHaveAttribute('href','inspiration.html?category=Cinematic');await expect(page.locator('#inspirationPreviewGrid a').first()).toHaveAttribute('href',/inspiration\.html\?kind=video.*category=Cinematic.*ratio=16%3A9.*q=Owned%20Video%20Mood/);await expect(page.locator('#agentExamples')).toBeHidden();
 });
