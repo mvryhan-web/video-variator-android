@@ -10,6 +10,8 @@ export function referenceRetentionMinutes(env={}){
 export function createGenerationReferenceLedger({pool,storage,env=process.env,uuid=randomUUID,now=()=>new Date()}={}){
  function ready(){
   if(env.AI_STUDIO_REFERENCE_STAGING_ENABLED!=='true'||!pool||!storage?.configured)throw Error('REFERENCE_STAGING_DISABLED');
+  // Never allow new objects unless the expiry worker is explicitly enabled too.
+  if(env.AI_STUDIO_REFERENCE_CLEANUP_ENABLED!=='true')throw Error('REFERENCE_CLEANUP_DISABLED');
   const ttl=referenceRetentionMinutes(env);
   if(!ttl)throw Error('REFERENCE_RETENTION_NOT_CONFIGURED');
   return ttl;
@@ -60,7 +62,7 @@ export function createGenerationReferenceLedger({pool,storage,env=process.env,uu
    SELECT id FROM vv_generation_reference_assets
    WHERE (status IN ('uploading','ready','failed') AND expires_at<=NOW())
       OR (status='deleting' AND cleanup_claimed_at<=NOW()-INTERVAL '15 minutes')
-   ORDER BY expires_at,id FOR UPDATE SKIP LOCKED LIMIT $1
+   ORDER BY expires_at,id LIMIT $1 FOR UPDATE SKIP LOCKED
   )
   UPDATE vv_generation_reference_assets a SET status='deleting',cleanup_claimed_at=NOW()
   FROM selected WHERE a.id=selected.id
