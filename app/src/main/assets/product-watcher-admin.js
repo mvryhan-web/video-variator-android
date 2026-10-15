@@ -55,6 +55,55 @@ function renderAlerts(items){
   tr.append(actionCell);root.append(tr);
  }
 }
+function safeOfficialLink(url,label){
+ const span=document.createElement('span');span.textContent=label;
+ try{
+  const u=new URL(url);
+  if(u.protocol!=='https:'||!['docs.byteplus.com','ai.google.dev','developers.openai.com'].includes(u.hostname))return span;
+  const a=document.createElement('a');a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';
+  a.textContent=label;return a;
+ }catch{return span;}
+}
+function renderOfficialSources(data){
+ $('officialSourceStatus').textContent=!data.enabled?'Product Watcher disabled.'
+  :data.monitoringEnabled?'Official-source checks configured (verify worker heartbeat to confirm actual runs).'
+  :'Official-source checks off. Existing results can still be reviewed.';
+ const list=$('officialSourceRows');list.replaceChildren();
+ if(!data.sources?.length){
+  const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=3;
+  td.textContent='No official source checks recorded.';tr.append(td);list.append(tr);
+ }
+ for(const item of data.sources||[]){
+  const tr=document.createElement('tr'),name=document.createElement('td');
+  name.append(safeOfficialLink(item.url,[item.provider,item.key].filter(Boolean).join(' · ')));
+  const when=document.createElement('td');when.textContent=formatDate(item.lastCheckedAt);
+  const state=document.createElement('td');state.textContent=item.lastErrorCode||'Last fetch recorded (not verified pricing).';
+  tr.append(name,when,state);list.append(tr);
+ }
+ const proposals=$('officialProposalRows');proposals.replaceChildren();
+ if(!data.proposals?.length){
+  const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=3;
+  td.textContent='No page changes awaiting review.';tr.append(td);proposals.append(tr);
+ }
+ for(const p of data.proposals||[]){
+  const tr=document.createElement('tr'),time=document.createElement('td'),label=document.createElement('td'),actions=document.createElement('td');
+  time.textContent=formatDate(p.detectedAt);
+  label.append(safeOfficialLink(p.url,p.provider+' — official changelog'));
+  const disclaimer=document.createElement('small');
+  disclaimer.textContent=' · Page changed; exact release/pricing impact not verified.';
+  label.append(disclaimer);
+  if(p.status==='pending'){
+   for(const [decision,word] of [['reviewed','Mark reviewed'],['dismissed','Dismiss']]){
+    const b=document.createElement('button');b.type='button';b.textContent=word;b.disabled=busy;
+    b.addEventListener('click',()=>{
+     if(window.confirm(word+'? This will NOT apply a model, pricing or website change.'))
+      void action('/api/product-watcher/admin/proposals/review',{proposalId:p.id,confirmProposalId:p.id,decision});
+    });actions.append(b);
+   }
+  }else actions.textContent=p.status+' (no changes applied)';
+  tr.append(time,label,actions);proposals.append(tr);
+ }
+}
 function render(d){
  current=d;$('watcherStatus').textContent=d.enabled?(d.paused?'Paused':'Ready for manual checks'):'Not enabled';
  $('watcherDetails').textContent=d.enabled?'Scheduler: '+(d.schedulerActive?'reported active':'not deployed')+' · Last run: '+formatDate(d.lastRun?.checkedAt):'Product Watcher is disabled in server configuration.';
@@ -65,7 +114,7 @@ function render(d){
  showRuns(d.runs||[]);
 }
 async function refresh(){
- try{busy=true;if(current)render(current);const [d,alerts]=await Promise.all([api('/api/product-watcher/admin/status'),api('/api/product-watcher/admin/alerts')]);busy=false;render(d);renderAlerts(alerts.items);feedback('Status updated.');}
+ try{busy=true;if(current)render(current);const [d,alerts,sources]=await Promise.all([api('/api/product-watcher/admin/status'),api('/api/product-watcher/admin/alerts'),api('/api/product-watcher/admin/official-sources')]);busy=false;render(d);renderAlerts(alerts.items);renderOfficialSources(sources);feedback('Status updated.');}
  catch(e){busy=false;current=null;$('watcherStatus').textContent='Unavailable';$('watcherDetails').textContent=e.message==='SIGN_IN_REQUIRED'?'Sign in using the existing Deepsyq owner account.':'Owner access or Watcher database is unavailable.';$('watcherToggle').disabled=true;$('watcherRun').disabled=true;$('watcherRefresh').disabled=false;feedback(e.message,true);}
 }
 async function action(path,body){

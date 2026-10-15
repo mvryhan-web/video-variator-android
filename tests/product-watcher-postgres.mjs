@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import pg from 'pg';
 import { runProductWatcherOnce } from '../server/product-watcher/monitor.js';
 import { productWatcherTick } from '../server/product-watcher/scheduler.js';
+import { runOfficialSourcesOnce } from '../server/product-watcher/official-sources.js';
 import { installProductWatcher } from '../server/product-watcher/admin-api.js';
 
 const url = process.env.PRODUCT_WATCHER_TEST_DB_URL || '';
@@ -71,6 +72,28 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     assert.equal(httpCalls,1);
     const notDue=await productWatcherTick({pool,env:schedulerEnv,fetchFn});
     assert.equal(notDue.status,'not_due');assert.equal(httpCalls,1);
+
+    const officialEnv={...env,PRODUCT_WATCHER_OFFICIAL_SOURCES_ENABLED:'true'};
+    const officialHtml='<html><body><main><h1>Official product updates</h1><p>'+('Model announcements from official documentation. '.repeat(8))+'</p></main></body></html>';
+    const first=await runOfficialSourcesOnce({pool,env:officialEnv,now:()=>new Date('2026-10-15T00:00:00Z'),
+      fetchFn:async()=>new Response(officialHtml,{headers:{'content-type':'text/html'}})});
+    assert.equal(first.changed,0);assert.equal(first.attempted,3);
+    const second=await runOfficialSourcesOnce({pool,env:officialEnv,now:()=>new Date('2026-10-15T07:00:00Z'),
+      fetchFn:async()=>new Response(officialHtml+' '+('A visible page revision. '.repeat(10)),{headers:{'content-type':'text/html'}})});
+    assert.equal(second.changed,3);
+    const listed=await request('GET','/api/product-watcher/admin/official-sources');
+    assert.equal(listed.statusCode,200);assert.equal(listed.body.proposals.length,3);
+    assert.equal(listed.body.proposals[0].applied,false);
+    const proposalId=listed.body.proposals[0].id;
+    const unauthorized=await request('POST','/api/product-watcher/admin/proposals/review',{user:{id:'stranger',provider:'email',email:'owner@example.test'},
+      body:{proposalId,confirmProposalId:proposalId,decision:'reviewed'}});
+    assert.equal(unauthorized.statusCode,403);
+    const reviewed=await request('POST','/api/product-watcher/admin/proposals/review',{
+      body:{proposalId,confirmProposalId:proposalId,decision:'reviewed'}});
+    assert.equal(reviewed.statusCode,200);assert.equal(reviewed.body.applied,false);
+    const pending=await pool.query('SELECT review_status,reviewed_by FROM vv_product_watcher_proposals WHERE id=$1',[proposalId]);
+    assert.equal(pending.rows[0].review_status,'reviewed');
+    assert.equal(pending.rows[0].reviewed_by,'owner-1');
 
     const history=await request('GET','/api/product-watcher/admin/status');
     assert.equal(history.statusCode,200);assert.equal(history.body.runs[0].status,'warning');
