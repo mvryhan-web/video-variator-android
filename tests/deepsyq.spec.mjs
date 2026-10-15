@@ -118,7 +118,7 @@ test('existing email component logs in and logout clears session and latest resu
  await expect(page.locator('#accountButton')).toHaveText('Account settings');
  expect(payload.email).toBe('creator@example.test');
  expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBe('test-session');
- if(await page.locator('#menu').isVisible())await page.locator('#menu').click();
+ if(await page.locator('#menu').isVisible()&&!(await page.locator('body').evaluate(el=>el.classList.contains('menu-open'))))await page.locator('#menu').click();
  await page.locator('#logout').click();await expect(page.locator('#logout')).toBeHidden();
  expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBeNull();
 });
