@@ -2,7 +2,7 @@
 // No media is exposed to any AI provider, generation job, or public URL.
 import express from 'express';
 import {createGenerationReferenceLedger} from './generation-reference-ledger.js';
-import {STUDIO_REFERENCE_MEDIA_LIMITS} from './generation-reference-media.js';
+import {inspectStudioReferenceMedia,STUDIO_REFERENCE_MEDIA_LIMITS} from './generation-reference-media.js';
 
 const RAW_TYPES=new Set(Object.keys(STUDIO_REFERENCE_MEDIA_LIMITS));
 const raw=express.raw({type:['video/mp4','audio/wav'],limit:'20mb',inflate:false});
@@ -33,6 +33,8 @@ export function installGenerationReferenceUpload(app,{auth,owner,pool,storage,en
   if(req.body.length>STUDIO_REFERENCE_MEDIA_LIMITS[req.referenceMime])
    return res.status(413).json({error:'REFERENCE_MEDIA_TOO_LARGE'});
   try{
+   // Parse the actual bytes before any database or object-storage write.
+   inspectStudioReferenceMedia({mime:req.referenceMime,bytes:req.body});
    const asset=await references.stage({userId:String(req.user?.id||''),mime:req.referenceMime,bytes:req.body});
    // Never return a signed URL or begin a provider call.
    res.status(201).json({asset,stagedOnly:true,providerReady:false});
