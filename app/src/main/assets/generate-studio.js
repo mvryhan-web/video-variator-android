@@ -88,7 +88,7 @@ function filename(){const ext=blob?.type.startsWith('video/')?'mp4':blob?.type==
 $('download').onclick=async()=>{if(!blob||busy)return;busy=true;availability();try{await saveLocal(new File([blob],filename(),{type:blob.type}));}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
 $('share').onclick=async()=>{if(!blob||busy)return;const file=new File([blob],filename(),{type:blob.type});try{if(window.AndroidBridge&&window.VUShareFile){busy=true;availability();try{await window.VUShareFile({blob:file,name:file.name});}finally{busy=false;availability();}return;}if(navigator.canShare?.({files:[file]}))await navigator.share({files:[file]});else $('status').textContent=say('File sharing is unavailable in this browser. Download the file to share it.','Этот браузер не поддерживает отправку файла. Скачайте его и поделитесь.');}catch(e){if(e.name!=='AbortError')$('status').textContent=say('Could not share. Try downloading the file.','Не удалось поделиться. Попробуйте скачать файл.');}};
 $('remove').onclick=async()=>{if(!job||busy)return;busy=true;availability();try{await api(`/api/studio/jobs/${encodeURIComponent(job)}`,{method:'DELETE'});++generation;clearResult();sessionStorage.removeItem('vu_generation_job');job=null;$('status').textContent=say('Result deleted. Downloaded copies are kept.','Результат удалён. Скачанные копии остаются.');if(historyView)await loadHistory();else setHistory(false);}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
-$('resumeJob').onclick=()=>{if(busy)return;async function applyLocalStudioHandoff(){
+async function applyLocalStudioHandoff(){
  try{
   const h=await takeStudioHandoff();if(!h)return false;
   const target=h.kind==='music'?'music':h.kind;if(target!==kind)select(target);
@@ -101,17 +101,17 @@ $('resumeJob').onclick=()=>{if(busy)return;async function applyLocalStudioHandof
  }catch(_){$('status').textContent=say('The local workflow handoff could not be restored. Add your references here instead.','Не удалось восстановить локальный шаблон. Добавьте фотографии здесь.');return false;}
 }
 function applyTemplateStart(){
- const raw=sessionStorage.getItem('deepsyq_template_start');if(!raw)return;sessionStorage.removeItem('deepsyq_template_start');
+ const raw=sessionStorage.getItem('deepsyq_template_start');if(!raw)return false;sessionStorage.removeItem('deepsyq_template_start');
  try{
-  const t=JSON.parse(raw),target=t.generationType==='image'?'image':t.generationType==='audio'?'music':['video','product_video'].includes(t.generationType)?'video':null;if(!target)return;
+  const t=JSON.parse(raw),target=t.generationType==='image'?'image':t.generationType==='audio'?'music':['video','product_video'].includes(t.generationType)?'video':null;if(!target)return false;
   if(target!==kind)select(target);
   if(t.defaultModel&&catalog.some(m=>m.id===t.defaultModel&&m.kind===target)){modelId=t.defaultModel;renderModel();}
   $('prompt').value=String(t.promptTemplate||'').slice(0,2000);
   const ratio=t.defaultSettings?.ratio;if(ratio&&currentModel()?.ratios?.includes(ratio)){$('ratio').value=ratio;updateRatioSelection();}
-  $('consent').checked=false;availability();$('status').textContent=say('Template prepared. Review the prompt, references and settings before generating.','Шаблон подготовлен. Проверьте запрос, фотографии и настройки перед генерацией.');
- }catch(_){$('status').textContent=say('The template could not be prepared.','Не удалось подготовить шаблон.');}
+  $('consent').checked=false;availability();$('status').textContent=say('Template prepared. Review the prompt, references and settings before generating.','Шаблон подготовлен. Проверьте запрос, фотографии и настройки перед генерацией.');return true;
+ }catch(_){$('status').textContent=say('The template could not be prepared.','Не удалось подготовить шаблон.');return false;}
 }
-const previous=sessionStorage.getItem('vu_generation_job');if(!previous)return;job=previous;busy=true;availability();watch(job,++generation).catch(e=>{$('status').textContent=errorText(e);busy=false;availability();});};
+$('resumeJob').onclick=()=>{if(busy)return;const previous=sessionStorage.getItem('vu_generation_job');if(!previous)return;job=previous;busy=true;availability();watch(job,++generation).catch(e=>{$('status').textContent=errorText(e);busy=false;availability();});};
 select(kind,{remember:false});
 try{config=await(await api('/api/studio/config')).json();catalog=config.catalog||[...config.models.map(m=>({...m,id:m.id||MODELS[m.kind]?.id,adapter:true,provider:'Google'})),...MODEL_CATALOG.filter(m=>!config.models.some(c=>(c.id||MODELS[c.kind]?.id)===m.id)).map(m=>({...m,enabled:false}))];const preferred=config.models?.find(m=>m.kind===kind&&m.enabled);if(preferred?.id)modelId=preferred.id;renderModel();}catch(_){availability();}
 const restored=await applyLocalStudioHandoff();if(!restored)applyTemplateStart();
