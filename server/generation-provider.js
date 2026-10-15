@@ -14,11 +14,14 @@ export function validateGeneration(body){
   if(r.mimeType==='image/png'&&!b.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))throw new Error('INVALID_REFERENCES');
   if(r.mimeType==='image/jpeg'&&(b[0]!==255||b[1]!==216||b[2]!==255))throw new Error('INVALID_REFERENCES');
  }
+ const outputFormat=body.kind==='image'?(body.outputFormat||m.capabilities?.outputFormats?.[0]||'auto'):null;
+ if(body.kind==='image'&&!m.capabilities?.outputFormats?.includes(outputFormat))throw new Error('UNSUPPORTED_IMAGE_FORMAT');
+ if(body.kind!=='image'&&body.outputFormat)throw new Error('UNSUPPORTED_IMAGE_FORMAT');
  const resolution=body.kind==='image'?(body.resolution||m.quality||'1K'):null;
  if(body.kind==='image'&&(!m.capabilities?.resolutions?.includes(resolution)))throw new Error('UNSUPPORTED_RESOLUTION');
  if(body.kind!=='image'&&body.resolution)throw new Error('UNSUPPORTED_RESOLUTION');
  if(body.kind==='music'&&!['song','instrumental'].includes(body.musicMode))throw new Error('INVALID_MUSIC_MODE');
- return {kind:body.kind,model:m.id,prompt:body.prompt.trim(),ratio:body.ratio,references,musicMode:body.musicMode,...(body.kind==='image'?{resolution}:{})};
+ return {kind:body.kind,model:m.id,prompt:body.prompt.trim(),ratio:body.ratio,references,musicMode:body.musicMode,...(body.kind==='image'?{resolution,outputFormat}:{})};
 }
 export function safeGoogleUrl(value){const u=new URL(value);if(u.protocol!=='https:'||u.hostname!=='generativelanguage.googleapis.com'||u.username||u.password)throw new Error('UNSAFE_PROVIDER_URL');return u.toString();}
 export async function googleJson(relative,{key,body,fetcher=fetch}){
