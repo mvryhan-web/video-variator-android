@@ -41,12 +41,14 @@ jobs:
         run: |
           node --check server/generation-worker.js
           node --check server/generation-worker-runtime.js
+          node --check server/generation-reference-compatibility.js
           node --check server/generation-reference-probe.js
           node --check server/generation-reference-upload.js
           node --check server/generation-reference-ledger.js
+          node --check tests/generation-reference-compatibility-unit.mjs
           node --check tests/generation-reference-probe-unit.mjs
           node --check tests/generation-worker-runtime-unit.mjs
           node --check tests/generation-reference-upload-unit.mjs
       - name: Reference parser, codec probe, API, S3 and ledger mock regression
         run: |
-          node --test tests/generation-reference-media-unit.mjs tests/generation-reference-ledger-unit.mjs tests/generation-reference-upload-unit.mjs tests/generation-reference-probe-unit.mjs tests/generation-worker-runtime-unit.mjs
+          node --test tests/generation-reference-media-unit.mjs tests/generation-reference-ledger-unit.mjs tests/generation-reference-upload-unit.mjs tests/generation-reference-probe-unit.mjs tests/generation-reference-compatibility-unit.mjs tests/generation-worker-runtime-unit.mjs
