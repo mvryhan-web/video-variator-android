@@ -39,6 +39,7 @@ The exact completion state of older components must be verified from the current
 |---|---|---|---|---|
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
+| Block 3 — Inspiration / Create Yours | Current ChatGPT agent | `block-3-inspiration-v2` | IN PROGRESS | Only Block 3; do not modify Blocks 1, 2, 4–7. |
 
 When another agent joins, add one row per claimed workstream before substantial implementation. One agent should own one bounded workstream at a time.
 
@@ -48,7 +49,7 @@ When another agent joins, add one row per claimed workstream before substantial 
 |---|---|---|---|---|
 | 1 | Multi-AI Compare + Smart Model Routing | NOT STARTED / QUEUED | UNASSIGNED | One prompt -> multiple real AI providers, compare, combine, cost/credit tracking |
 | 2 | User Agent — “Do it for me” | NOT STARTED / QUEUED | UNASSIGNED | Multi-step execution through Agent Orchestrator |
-| 3 | Inspiration / Create Yours | NOT STARTED / QUEUED | UNASSIGNED | Original owned gallery, prompts/templates, Clone/Create Yours flows |
+| 3 | Inspiration / Create Yours | IN PROGRESS | Current ChatGPT agent | Branch `block-3-inspiration-v2`; original data-driven gallery and real Studio handoff only. |
 | 4 | Studio + My Workspace | NOT STARTED / QUEUED | UNASSIGNED | Creation editor/templates/skills + personal project workspace |
 | 5 | Internal Product Watcher Agent | NOT STARTED / QUEUED | UNASSIGNED | Owner-only scheduled monitoring, recommendations, approvals, daily/weekly reports |
 | 6 | Deepsyq Voice Agent | NOT STARTED / QUEUED | UNASSIGNED | Realtime voice interface across Deepsyq, Device Cleanup skill, owner voice access to Product Watcher |
