@@ -60,7 +60,7 @@ export async function watcherDeploymentReadiness(pool,{env={},now=()=>new Date()
   try{
     // Fixed SQL identifiers only; no user-supplied relation names or credentials.
     const tables=[...WATCHER_REQUIRED_TABLES,...BASE_REQUIRED_TABLES];
-    const query="SELECT unnest($1::text[]) AS name, to_regclass('public.' || unnest($1::text[])) AS relation";
+    const query="SELECT x.name, to_regclass('public.' || x.name) AS relation FROM unnest($1::text[]) AS x(name)";
     const q=await pool.query(query,[tables]);
     const availability=new Map((q.rows||[]).map(x=>[x.name,!!x.relation]));
     status.requiredTables=WATCHER_REQUIRED_TABLES.map(name=>({name,present:availability.get(name)===true}));
