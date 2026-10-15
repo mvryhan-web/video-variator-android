@@ -14,6 +14,18 @@ Before changing code, always read and reconcile:
 
 Do not assume a feature exists or works because a file, route, button, or function has a promising name. Verify the code and tests.
 
+
+## Work-limit efficiency — avoid redundant verification
+
+Use the smallest verification scope that is safe for the current change.
+
+- Do one focused audit before a coherent work block, then reuse that verified context while the relevant files/config have not changed.
+- Do not re-read the same files, re-check the same branch/PR state, or re-run the same GitHub/Render/production inspections after every small edit.
+- Batch related edits first, then run the relevant tests once at the end of the logical block.
+- Re-check earlier facts only when the related code/config changed, an unexpected result appears, or the change touches a critical boundary such as production, database migrations, Stripe, authentication, secrets, provider activation, or destructive operations.
+- Prefer targeted tests for the changed area; run broader regression only at a meaningful release/merge gate or when the blast radius justifies it.
+- Never skip a necessary safety check just to save tool calls, but do not spend Work limit proving the same unchanged fact repeatedly.
+
 ## One project, no duplicate architecture
 
 - Continue the existing production project. Never create a second Deepsyq project, parallel database, duplicate authentication system, duplicate Stripe setup, duplicate router, or replacement architecture unless the owner explicitly asks for it.
