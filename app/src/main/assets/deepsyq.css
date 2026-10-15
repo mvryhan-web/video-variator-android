@@ -49,3 +49,9 @@
 @media(max-width:560px){.quick-create-dropzone{align-items:stretch;flex-direction:column;gap:7px}.quick-create-dropzone span{min-width:0}}
 
 .quick-create{scroll-margin-top:100px}
+
+.quick-starters{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:11px 0 0}
+.quick-starters span{font-size:11px;color:#a8b8a7;margin-right:2px}
+.quick-create .quick-starters button{margin:0;padding:7px 10px;border:1px solid #52614d;border-radius:999px;background:#252c29;color:#cfe7c5;font-size:11px;font-weight:500}
+.quick-create .quick-starters button:hover{background:#304134;border-color:#93ae80}
+.quick-create .quick-starters button:focus-visible{outline:2px solid #d2f7ae;outline-offset:2px}
