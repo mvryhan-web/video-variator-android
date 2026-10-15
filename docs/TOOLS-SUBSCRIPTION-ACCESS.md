@@ -1,6 +1,10 @@
 # Account access for the eight existing tool cards
 
-Separate from WOW Montage. Built on main 6bb0764b, including its Telegram integration. No Render services/databases, Stripe prices, checkout routes, OAuth credentials, package ID or video/FFmpeg processing algorithms changed.
+Reused from existing PR28 and integrated into `deepsyq-platform` / draft PR42 alongside main 14de516 and the current generation studio. Separate from WOW Montage. No Render services/databases, Stripe prices, checkout routes, OAuth credentials, package ID or video/FFmpeg processing algorithms changed.
+
+## Provisional legacy policy
+
+This is the existing PR28 policy, not the final Deepsyq per-tool allowance requested by the owner. Per-tool trials and remaining utility entry points are still PARTIAL; do not publish this as completed Deepsyq pricing.
 
 ## Policy
 
@@ -23,11 +27,11 @@ These are account entitlements and normal-client gates, not DRM: an open-source 
 
 ## UI
 
-The tool hub is titled Tools, with three free tool labels, Basic/Pro labels and an account banner: Included in your subscription / remaining trial tasks. Eight existing cards are retained; single and batch photos share one card. Audio pages and plan cards describe entitlements and cloud limits. Prices and existing credit allocations are unchanged. PWA cache version is advanced for the new access assets; release cache coordination with the separate WOW branch is still required before production.
+The tool hub is titled Everyday Tools, with three free tool labels, Basic/Pro labels and an account banner: Included in your subscription / remaining trial tasks. Eight existing cards are retained; single and batch photos share one card. Audio pages and plan cards describe entitlements and cloud limits. Prices and existing credit allocations are unchanged. PWA cache version is advanced for the new access assets; release cache coordination with the separate WOW branch is still required before production.
 
 ## Validation / release
 
 Policy tests cover tiers and trial counts. An isolated ephemeral PostgreSQL service in GitHub Actions verifies real migrations, simultaneous reservations, idempotency, cancellations/expiry, owner checks, HTTP responses and persisted quotas across clients. It is test infrastructure only, not another production database. Browser fixtures explicitly grant entitlement for existing local media engine tests; upload assertions now distinguish small access metadata from prohibited media uploads. Dedicated browser tests cover free single-image use, five shared trials and sixth-task lock, failure/cancel release, included tiers, mobile geometry and sign-in return.
 
-No production rollout or public APK release is authorized here. Both draft branches require final CI review and owner production approval. Physical device acceptance remains required for WOW.
+No production rollout or public APK release is authorized here. Draft PR42 requires final CI review and owner production approval. Physical-device acceptance is still required.
 

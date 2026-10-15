@@ -15,7 +15,7 @@ New roadmap blocks 1–6 remain queued as recorded in PROJECT_STATUS; do not imp
 - Original Stripe subscription/Lifetime checkout and verified webhook remain unchanged. Current advertised config: Basic $9/750, Pro $24/2250, Business $99/15000, Lifetime EUR2999. These are tool credits, not a validated AI generation allowance.
 - Existing generation-studio module owns the catalog/provider dispatch, Google and BytePlus adapters, owner-only pilot jobs. Existing AI wallet/billing foundation remains gated/sandbox-only; no second ledger/router added by this workstream.
 - Main 14de516 contains shared collaboration docs and Telegram preview changes. Those are reconciled into this branch; do not revert them.
-- Existing PR28 (`tools-subscription-access`, ae9a5a7) already implements transactional shared tool quota, reservation/commit/cancel. Its module is now integrated into this feature branch, pending integration CI. It currently keeps three tools permanently free, differing from the latest request for a trial for each tool. Per-tool trial policy and remaining utility entry points still require reconciliation; this is not marked complete.
+- Existing PR28 (`tools-subscription-access`, ae9a5a7) already implements transactional shared tool quota, reservation/commit/cancel. Its module is now integrated into this feature branch, verified by integration CI. It currently keeps three tools permanently free, differing from the latest request for a trial for each tool. Per-tool trial policy and remaining utility entry points still require reconciliation; this is not marked complete.
 
 ## Changes in this pass
 
@@ -57,3 +57,9 @@ Review/fix integration CI. Continue this bounded current TXT scope: reconcile pe
 ## Verified foundation before quota integration
 
 Head `5c28ac7`: Dashboard CI run 38551913472 passed (25 unit checks; 70 browser cases including one retry); general browser CI 38551913454 passed (327 passed, 3 retry-passed, 75 skipped); Android CI 38551913541 passed including emulator tests. These results predate the quota integration. New quota checks use an isolated ephemeral CI PostgreSQL fixture, guarded against production URLs. No live user login or payment was verified.
+
+## Quota integration verification
+
+Head `db289716`: 28 local checks passed. CI PostgreSQL reservation/concurrency/idempotency/HTTP tests passed, including repeated migration application. Dashboard run 38623063381: 70 browser cases passed without retries. Android run 38623063396 passed. Full web run 38623063405 passed: 358 passed, 3 retry-passed, 74 skipped. Final per-tool allowance policy remains incomplete. No production deployment.
+
+Oct 15 external gate: existing BytePlus console shows an unchecked binding agreements consent dialog; user confirmation is required before acceptance. No key/model activation or paid calls. CI production probe reached health/config, billingConfigured=true; Google/Apple endpoints returned 503 with client IDs absent. The optional smoke step failed internally, so workflow success does not prove production OAuth. Apple intentionally remains off.
