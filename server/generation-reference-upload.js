@@ -44,6 +44,7 @@ export function installGenerationReferenceUpload(app,{auth,owner,pool,storage,en
   }catch(e){
    const error=e?.message||'';
    if(error==='REFERENCE_MEDIA_INVALID')return res.status(400).json({error});
+   if(error==='REFERENCE_MEDIA_CODEC_UNSUPPORTED')return res.status(415).json({error});
    if(error==='REFERENCE_UPLOAD_LIMIT')return res.status(429).json({error});
    res.status(503).json({error:'REFERENCE_UPLOAD_UNAVAILABLE'});
   }
