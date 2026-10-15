@@ -33,6 +33,20 @@ test('dashboard quick-create prepares a local image draft without any paid reque
  expect(jobPosts).toBe(0);
 });
 
+test('Canvas starter prompts are editable, preserve existing drafts on cancel, and do not call paid AI',async({page})=>{
+ await fixtures(page);
+ let posts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
+ await page.goto('/deepsyq.html');
+ await page.locator('[data-quick-starter="social-video"]').click();
+ await expect(page.locator('#quickCreateKind')).toHaveValue('video');
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue(/short, engaging social video/);
+ await page.locator('#quickCreatePrompt').fill('My own carefully written prompt');
+ page.once('dialog',dialog=>dialog.dismiss());
+ await page.locator('[data-quick-starter="portrait"]').click();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('My own carefully written prompt');
+ expect(posts).toBe(0);
+});
+
 test('Canvas quick-create accepts local reference photos, allows removal and never auto-generates',async({page})=>{
  await fixtures(page);
  await page.route('**/api/studio/config',route=>route.fulfill({json:{
