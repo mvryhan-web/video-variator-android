@@ -368,3 +368,8 @@ body.sidebar-collapsed #sidebar nav .sidebar-social button{justify-content:cente
 @media(max-width:760px){.hero-stage{aspect-ratio:4/5;min-height:400px}.home-hero-footer{max-width:100%;left:15px;right:15px;bottom:12px;align-items:center}.home-hero-slide-details{padding:8px 11px;text-align:center;max-width:70%}.home-hero-carousel-actions{top:49%}.home-hero-slide-details strong{font-size:14px}.home-quick-bar{margin:13px auto 22px;padding:13px}.home-quick-form-bottom{align-items:stretch;flex-direction:column}.home-quick-mode button{padding:8px 11px}#homeQuickSubmit{width:100%}}
 @media(max-width:490px){.home-hero-slide-details{max-width:100%}.home-hero-player{max-width:100%}.home-hero-dots button{width:18px}.home-hero-dots button[aria-current="true"]{width:24px}.home-hero-carousel-actions button{width:35px;height:35px}.hero-stage-copy{padding:26px 18px 125px}.home-quick-bar-heading h2{font-size:18px}}
 @media(prefers-reduced-motion:reduce){.home-hero-carousel video{animation:none!important}.home-quick-bar *{scroll-behavior:auto}}
+
+/* Keep the approved Create beyond limits heading legible over real video footage. */
+/* home-carousel film contrast overlay */
+.home-hero-carousel::after{content:"";position:absolute;z-index:1;inset:0;background:linear-gradient(90deg,#100f1ded 0%,#100f1dcc 37%,#100f1d45 70%,transparent 100%);pointer-events:none}
+@media(max-width:760px){.home-hero-carousel::after{background:linear-gradient(180deg,#110d1eaa 0%,#110d1ed9 52%,#110d1e55 100%)}}
