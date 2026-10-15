@@ -78,7 +78,7 @@ async function proxyFetch(url,options){
   // Print only sanitized HTTP status and XML error code; never any bearer URL,
   // S3 object key, raw server XML, Authorization header or fixture credentials.
   const body=await r.clone().text();
-  const code=/<Code>([A-Za-z0-9_-]{1,70})<\\/Code>/.exec(body)?.[1]||'UNKNOWN';
+  const code=/<Code>([A-Za-z0-9_-]{1,70})<\/Code>/.exec(body)?.[1]||'UNKNOWN';
   throw Error('MINIO_TEST_'+options.method+'_HTTP_'+r.status+'_'+code);
  }
  return r;
