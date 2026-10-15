@@ -3,7 +3,8 @@ import {MODELS,MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 export {MODELS,MODEL_CATALOG};
 const ROOT='https://generativelanguage.googleapis.com/v1beta/';
 export function validateGeneration(body){
- const m=body?.model?MODEL_CATALOG.find(m=>m.id===body.model&&m.kind===body.kind&&m.adapter):MODELS[body?.kind];
+ const selectedModelId=body?.model||MODELS[body?.kind]?.id;
+ const m=MODEL_CATALOG.find(candidate=>candidate.id===selectedModelId&&candidate.kind===body?.kind&&candidate.adapter);
  if(!m||typeof body.prompt!=='string'||!body.prompt.trim()||body.prompt.length>2000||body.consent!==true)throw new Error('INVALID_REQUEST');
  if(m.ratios.length&&!m.ratios.includes(body.ratio))throw new Error('UNSUPPORTED_FORMAT');
  const references=body.references??[];
