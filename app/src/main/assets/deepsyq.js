@@ -1,6 +1,41 @@
 import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id);
 const quickCreateForm=$('quickCreateForm');
+const quickCreateDropzone=$('quickCreateDropzone');
+let quickReferences=[],quickPreviewUrls=[];
+const QUICK_MAX_FILES=4,QUICK_MAX_BYTES=1024*1024;
+function renderQuickReferences(){
+ for(const url of quickPreviewUrls)URL.revokeObjectURL(url);
+ quickPreviewUrls=[];const previews=$('quickCreatePreviews');previews.replaceChildren();
+ quickReferences.forEach((file,index)=>{
+  const item=document.createElement('div');item.className='quick-reference';
+  const img=document.createElement('img'),url=URL.createObjectURL(file);
+  quickPreviewUrls.push(url);img.src=url;img.alt='Reference '+(index+1);
+  const name=document.createElement('span');name.textContent=file.name;name.title=file.name;
+  const remove=document.createElement('button');remove.type='button';remove.textContent='Remove';remove.setAttribute('aria-label','Remove reference '+(index+1));
+  remove.onclick=()=>{quickReferences.splice(index,1);renderQuickReferences();};
+  item.append(img,name,remove);previews.append(item);
+ });
+}
+function setQuickReferences(files,{append=false}={}){
+ const candidates=[...(append?quickReferences:[]),...Array.from(files||[])];
+ if(candidates.length>QUICK_MAX_FILES||candidates.some(file=>!['image/png','image/jpeg'].includes(file.type)||file.size>QUICK_MAX_BYTES||file.size===0)){
+  $('quickCreateStatus').textContent='Use up to 4 nonempty PNG/JPG photos, each no larger than 1 MB.';
+  return;
+ }
+ quickReferences=candidates;renderQuickReferences();
+ $('quickCreateStatus').textContent=quickReferences.length?quickReferences.length+' photo(s) prepared locally. Nothing has been uploaded.':'';
+}
+$('quickCreateFiles').addEventListener('change',event=>{
+ setQuickReferences(event.target.files);event.target.value='';
+});
+quickCreateDropzone.addEventListener('dragover',event=>{event.preventDefault();quickCreateDropzone.classList.add('drag-over');});
+quickCreateDropzone.addEventListener('dragleave',()=>quickCreateDropzone.classList.remove('drag-over'));
+quickCreateDropzone.addEventListener('drop',event=>{
+ event.preventDefault();quickCreateDropzone.classList.remove('drag-over');
+ setQuickReferences(event.dataTransfer?.files,{append:true});
+});
+window.addEventListener('pagehide',()=>{for(const url of quickPreviewUrls)URL.revokeObjectURL(url);quickPreviewUrls=[];});
 quickCreateForm?.addEventListener('submit',async event=>{
  event.preventDefault();
  const prompt=$('quickCreatePrompt').value.trim(),kind=$('quickCreateKind').value;
@@ -8,10 +43,10 @@ quickCreateForm?.addEventListener('submit',async event=>{
  if(!prompt||prompt.length>2000||!['image','video'].includes(kind)){status.textContent='Enter a description (up to 2,000 characters).';return;}
  button.disabled=true;status.textContent='Preparing your Studio draft locally…';
  try{
-  await saveStudioHandoff({kind,prompt,source:'dashboard-quick-create'});
+  await saveStudioHandoff({kind,prompt,files:quickReferences,source:'dashboard-quick-create'});
   location.assign('generate-studio.html?studio='+kind+'&from=dashboard');
  }catch(_){
-  status.textContent='This browser could not save the draft. Your text is still here; copy it before opening Studio.';
+  status.textContent='This browser could not save the draft. Your text and references are still here; try again or open Studio directly.';
   button.disabled=false;
  }
 });
