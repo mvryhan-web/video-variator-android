@@ -437,3 +437,11 @@ Current queued-roadmap dependencies to verify before implementation:
 - The existing approved pricing flow still requires an **explicit model + quality price row** for 3K/4K instead of reusing the 2K quote; premium generation remains unapproved until commercial economics are configured and verified. Public generation, payments, Stripe, deployment and provider keys were not changed.
 - **IMPLEMENTED / UNVERIFIED**: no live provider call, full CI/browser acceptance or paid validation performed, per owner's BASE-first instructions. BASE #4 remains PARTIAL/BLOCKED by live model and verified billing readiness; seven later roadmap blocks are unchanged.
 - Source documentation: https://ai.byteplus.com/ark/region:ap-southeast-1/docs/image-generation-api ; https://api.byteplus.com/api-explorer?action=ImageGenerations&groupName=View+Usage&serviceCode=ark&version=2024-01-01
+
+### Block 3 safe continuation — 2026-10-15 ("ok go")
+
+- Addressed a real owner Inspiration browser-test assertion: the editable title is an `input.value`, not visible text. Scoped the large owner Inspiration form on narrow screens and kept the subsequent Route Preview controls in a higher stacking context. Changes are only in tests/admin CSS; previous content unchanged.
+- Created `docs/DEEPSYQ_INSPIRATION_CONTENT_PRODUCTION.md` with 16 original image briefs and 8 real-video motion briefs, a commercial-rights/provenance checklist and explicit no-fake-media launch gates. These are **briefs, not generated/approved/uploaded assets**; no new Inspiration DB rows exist from this work.
+- Two visual website **concept renderings** were generated in the conversation for discussion; they are not functional webpages or genuine completed image/video cards, and were not published to production.
+- No user media, generations, Stripe, wallet, provider credentials, Render settings, live deployment, schema migrations or production flags changed.
+- CI/browser verification for the latest PR head remains pending. Do not mark Block 3 or BASE public-launch DONE. Next: real owner-approved media (with rights record and working media URLs), then targeted browser/owner acceptance, then a separate approved release gate.
