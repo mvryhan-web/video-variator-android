@@ -1,6 +1,6 @@
 # Deepsyq — $0.99 trial and professional Lumina UX review
 
-Date: 2026-10-15. Owner explicitly reconfirmed the planned **$0.99 entry offer** and requested a more professional Lumina-inspired navigation/pricing/media experience. The existing owner-approved Deepsyq Home screenshot and `docs/DEEPSYQ_OWNER_APPROVED_HOME_DESIGN.md` remain the non-negotiable visual identity; this document does **not** authorize copying third-party Lumina footage, artwork, UI source, trademarks or entire visual compositions.
+Date: 2026-10-15. Owner reconfirmed the planned **$0.99 entry offer**, then replied **ok go** to a direct question proposing **3-day, one-time, no auto-renewal** terms, and requested a more professional Lumina-inspired navigation/pricing/media experience. Treat that as approval to PREPARE THE OFFER PRESENTATION, **not** a mandate to activate Stripe, assign unpriced credits or launch live sales. The existing owner-approved Deepsyq Home screenshot and `docs/DEEPSYQ_OWNER_APPROVED_HOME_DESIGN.md` remain the non-negotiable visual identity; this document does **not** authorize copying third-party Lumina footage, artwork, UI source, trademarks or entire visual compositions.
 
 ## Verified competitor behavior (public research, 15 October 2026)
 
@@ -14,13 +14,13 @@ Date: 2026-10-15. Owner explicitly reconfirmed the planned **$0.99 entry offer**
 1. Home already contains a disabled `Trial $0.99` teaser, but `ai-pricing.html` had no Trial at all: broken customer journey.
 2. `ai-pricing.css` still used legacy **mint-green** visual identity, inconsistent with approved **violet/blue-magenta** Home.
 3. The accessible Stripe connector lists only the `MrRyhan` **TEST-MODE** context with **zero test products/prices**. This does not prove there are no prices in a separate live Stripe account; **production billing not verified**.
-4. Existing `/api/ai-billing/config` and `/api/ai-billing/checkout` support server-configured prepaid AI credit packs. The trial does **not** have an approved one-time Checkout + entitlement workflow, and should not be wired to a random existing product price.
+4. Existing `/api/ai-billing/config` and `/api/ai-billing/checkout` support server-configured prepaid AI credit packs. The trial does **not** yet have an implemented/tested one-time Checkout + entitlement workflow, and should not be wired to a random existing product price.
 5. Home models and Studio consent are separately feature-gated; never imply that paying $0.99 unlocks every inactive model/Agent, or unlimited generation.
 6. Existing user Video Uniquifier/Everyday Tools plans and Lifetime entitlements are separate; do not reprice or remove them.
 
 ## Delivered (feature branch only)
 
-- Added a visually consistent, prominent `#trialOffer` to `ai-pricing.html`: **$0.99 PLANNED**, not purchasable, states credits, trial duration, eligibility, renewal and Stripe fulfillment remain unapproved; respects honest disabled checkout.
+- Added a visually consistent, prominent `#trialOffer` to `ai-pricing.html`: **$0.99 planned 3-day, one-time, NO auto-renewal**, not purchasable, with an explicit warning that included credits, eligibility checks and Stripe fulfillment remain pending; the checkout stays correctly disabled.
 - Changed Pricing typography/cards/background from mint-green to existing dark purple/magenta accent language without altering navigation or product routes.
 - Changed Home's dead disabled trial CTA into a functioning `See trial details` navigation to `ai-pricing.html#trialOffer`, without starting checkout or charging.
 - Added browser regression for $0.99 messaging, disabled purchase, real navigation, and preservation of existing tools prices/server-configured AI packs.
@@ -28,7 +28,7 @@ Date: 2026-10-15. Owner explicitly reconfirmed the planned **$0.99 entry offer**
 
 ## Trial activation — explicitly pending business decisions and testing
 
-Do not enable trial purchases before owner approval of **(a)** exact credit allowance, **(b)** exact validity period and expiration behavior, **(c)** one-time new-user eligibility and fraud protection, **(d)** no-auto-renew versus clearly disclosed subscription, **(e)** provider generation costs and unit economics, **(f)** verified live Stripe account + separate live product/price, **(g)** Checkout success and webhook idempotent credit grants/refunds, **(h)** quote/ledger tests and explicit customer consent, **(i)** compliant paid offer copy and receipt/consumer rights obligations.
+Do not enable trial purchases before owner approval of **(a)** exact credit allowance, **(b)** three-day expiry enforcement, **(c)** one-time new-user eligibility and fraud protection, **(d)** a technically verified one-off charge with NO auto-renew, **(e)** provider generation costs and unit economics, **(f)** verified live Stripe account + separate live product/price, **(g)** Checkout success and webhook idempotent credit grants/refunds, **(h)** quote/ledger tests and explicit customer consent, **(i)** compliant paid offer copy and receipt/consumer rights obligations.
 
 Recommend a **one-time, non-renewing $0.99 Starter Pass** concept (NOT yet a confirmed duration/credit grant), for the user's preference to let visitors sample paid AI creation before selecting a fuller plan. Do not copy Lumina's 299 credits blindly. All inactive agent/model/canvas capabilities stay labelled as previews.
 
@@ -40,3 +40,9 @@ Recommend a **one-time, non-renewing $0.99 Starter Pass** concept (NOT yet a con
 - No production deployment until owner confirms final look and payments pass test/live gates.
 
 Status: **pricing presentation implemented, trial checkout BLOCKED**, browser CI and visual acceptance pending.
+
+## Follow-up UX/mobile acceptance (2026-10-15)
+
+- Updated the Home preview and Pricing trial to use **three days, $0.99 one time, no automatic renewal** as the planned, explicitly unavailable offer. Do not invent a credit quantity or grant users actual provider usage before economics/Stripe testing. This is not evidence of a successfully configured live payment product.
+- Added a dedicated **390px mobile Chromium test** to check layout overflow, visibility of price/terms and the disabled checkout. Targeted Home CI now selects the mobile test. Full run result must be recorded after completion.
+- A future enabled checkout should use an owner-approved one-time Stripe Price. Server side must enforce one eligible purchase per identity/payment method per antifraud policy, three-day entitlement expiry, bounded credits and clear refunds; preserve original AI wallet/Stripe webhook idempotency and provider guardrails. Do not manufacture an independent billing subsystem.
