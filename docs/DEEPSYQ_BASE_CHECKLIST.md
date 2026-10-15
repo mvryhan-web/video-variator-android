@@ -20,7 +20,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 6 | BytePlus first provider adapter | PARTIAL / BLOCKED | Server-only ModelArk adapter exists for Seedream/Seedance. Real account activation/key/smoke call pending. |
 | 7 | AI Provider Router | PARTIAL | Shared dispatch/catalog exists, but full provider-neutral router contract + admin routing/fallback remains incomplete. |
 | 8 | Fallback | NOT STARTED | Do not auto-retry paid provider calls until ambiguity/idempotency rules are implemented. |
-| 9 | Provider config in admin | NOT STARTED | Needs owner-only provider/model routing controls with enable/disable/priority/markup/maintenance. |
+| 9 | Provider config in admin | PARTIAL | Feature-gated owner API now supports model enable override, maintenance, priority, markup and internal cost. Full primary/fallback routing UI is still pending. |
 | 10 | Normal generation-job database entity | PARTIAL | Durable job metadata migration now stores provider/model/prompt/lifecycle/cost/credits/settings. Current table remains pilot-oriented and needs commercial migration/cleanup. |
 | 11 | Permanent object storage | BLOCKED | Current pilot stores result bytes in PostgreSQL; production S3-compatible storage/service credentials are still required. |
 | 12 | Background jobs | PARTIAL | Async provider tasks persist external operation IDs; in-process kickoff is not a restart-safe commercial worker. |
@@ -76,6 +76,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 - Added config-driven server-side AI pricing engine with no invented defaults.
 - Added safe owner-only generation credit estimate endpoint.
 - Added owner-only provider/model performance metrics endpoint.
+- Added feature-gated owner model controls for enable/disable, maintenance, priority, markup and internal cost; generation and estimates honor them when enabled.
 - Recorded Roadmap Block 7 — Pricing, Credits, Stripe & Unit Economics.
 - Added/updated unit and browser test coverage for these changes.
 
@@ -83,7 +84,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 
 These can be implemented without spending provider credits, but must remain feature-gated:
 1. finalize the commercial generation-job schema/repository instead of the pilot naming;
-2. build owner admin provider/model registry and routing controls;
+2. add primary/fallback provider routing policy and owner UI on top of the model-control registry;
 3. connect AI wallet reserve/capture/release to commercial jobs behind disabled feature flags;
 4. add server-side public concurrency/rate-limit policy;
 5. build templates/onboarding/admin UI foundations where they do not depend on live provider output.
