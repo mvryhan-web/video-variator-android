@@ -22,3 +22,27 @@ Status: **IMPLEMENTED / LOCAL UNIT TESTED / NOT DEPLOYED**. This is the internal
 The future admin UI must use existing authenticated owner checks. It must never expose these internal diagnostics through public routes. Persisted reports have no user data. Do not expand auto-apply rights; price/model/provider/routing changes need explicit owner approval and audit. Product Watcher must not become the User Agent. Tests: `node --test tests/product-watcher-unit.mjs`.
 
 Known limits: in the first slice, the health route can say OK even when sign-in or Stripe is misconfigured; separate authenticated checks and Stripe webhook diagnostics must be added later, and checks must not claim to test live payments. Job window is 24h; earlier stuck jobs are currently not counted. One API check does not prove the whole product is available. Database migration and deployment have not been run.
+
+
+## Owner Control — integrated code, external rollout disabled
+
+- Isolated owner page (not a Home redesign): /product-watcher-admin.html. The existing shared app authentication supplies the user session; all Product Watcher API routes still independently enforce nonempty ADMIN_EMAIL and provider=google.
+- GET /api/product-watcher/admin/status: paused state, 30 newest safe reports, last check, real worker heartbeat; no made-up schedule or fake readiness.
+- POST /api/product-watcher/admin/control: JSON action pause or resume. Changes owner-only DB state and writes the existing vv_admin_audit row in the same transaction.
+- POST /api/product-watcher/admin/run: owner-only one-shot check. A pause prevents it; a second concurrent run is skipped using the PostgreSQL advisory lock.
+- The separate watcher schema must be explicitly migrated. This module does NOT auto-apply SQL or create a new auth/Stripe/DB architecture.
+
+## Private background worker (code only; not deployed)
+
+- Run command only in a dedicated **private** worker: node server/product-watcher/worker.js
+- Needs PRODUCT_WATCHER_ENABLED=true and PRODUCT_WATCHER_SCHEDULER_ENABLED=true, verified APP_URL, PostgreSQL, and owner-approved additive schema.
+- Worker wakes every 60 seconds, stores a heartbeat, and runs the currently implemented health+jobs checks no more often than every 15 minutes based on last persisted report. If the browser closes or the worker restarts, schedule state comes from PostgreSQL; concurrent workers share the advisory lock.
+- If paused, worker heartbeat persists but no monitoring runs. If PostgreSQL is unavailable, the worker logs a generic error (no secrets) and tries again next tick. Scheduler status in admin reflects a **fresh** heartbeat only when explicitly enabled; an environment flag alone does not show it as online.
+- This is only the 15-minute check loop; the roadmap's hourly analytics, 6-hour official provider model/pricing discovery, daily briefs and Monday audits need separate task implementations, owner policies and validation before they are shown as available.
+- **Not deployed**: no Render worker, cron service, production migrations, live provider/Stripe calls, email/alerts or autonomous modifications were enabled.
+
+## Verification / unresolved gates
+
+- CI checks syntax and security/behavior tests for monitor, admin API and scheduler (Node 22).
+- Separate GitHub Actions job provisions ephemeral PostgreSQL 16 and runs the SQL/migration/pause/history/lock/audit acceptance. The test refuses any DB URL except the explicit local database watcher_test, and does not touch production.
+- Existing main app production switch stays OFF. Full user-facing browser/mobile verification, Render deployment, long-running resilience/notifications, verified official provider checks and automated recommendation/approval workflows are not finished.
