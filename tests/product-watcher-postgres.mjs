@@ -149,6 +149,26 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     const duplicateNotice=await deliverCriticalWatcherAlertsOnce({pool,env:notificationEnv,
       fetchFn:async()=>{throw Error('must not retry')}});
     assert.equal(duplicateNotice.attempted,0);
+    // SQL-level regression: LIMIT 3 must count unclaimed critical notifications,
+    // not repeatedly return the newest three that already have delivery records.
+    for(let i=0;i<4;i++){
+      await pool.query(
+        "INSERT INTO vv_product_watcher_alerts(fingerprint,source,code,severity,details) VALUES($1,'db','DB_UNAVAILABLE','critical','{}'::jsonb)",
+        [String(i+1).repeat(64)]
+      );
+    }
+    let backlogMessages=0;
+    const sendBacklog=async()=>{backlogMessages++;return{status:200,json:async()=>({ok:true})};};
+    const firstBatch=await deliverCriticalWatcherAlertsOnce({pool,env:notificationEnv,fetchFn:sendBacklog});
+    assert.deepEqual([firstBatch.attempted,firstBatch.sent],[3,3]);
+    const lastBatch=await deliverCriticalWatcherAlertsOnce({pool,env:notificationEnv,fetchFn:sendBacklog});
+    assert.deepEqual([lastBatch.attempted,lastBatch.sent],[1,1]);
+    const drained=await deliverCriticalWatcherAlertsOnce({pool,env:notificationEnv,
+      fetchFn:async()=>{throw Error('must not send any duplicate');}});
+    assert.equal(drained.attempted,0);
+    assert.equal(backlogMessages,4);
+    const allNotifications=await pool.query("SELECT status,COUNT(*)::int AS count FROM vv_product_watcher_notifications GROUP BY status");
+    assert.deepEqual(allNotifications.rows,[{status:'sent',count:5}]);
     const notifications=await request('GET','/api/product-watcher/admin/notifications');
     assert.equal(notifications.statusCode,200);assert.ok(notifications.body.items.some(x=>x.code==='HTTP_UNAVAILABLE'));
     assert.ok(!JSON.stringify(notifications.body).includes('EXAMPLE_TEST_TOKEN'));
