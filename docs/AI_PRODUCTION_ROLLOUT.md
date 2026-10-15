@@ -114,3 +114,17 @@ This runbook applies to the existing production project. It does **not** authori
 - physical Android/iPhone acceptance;
 - legal Terms/Privacy/provider disclosures;
 - final root/public launch approval.
+
+
+## Future video/audio reference intake — not approved for production
+
+These checks describe a **future** BASE #5 gate; they do not authorize activating it now. The Studio UI and API **do not accept video/audio reference uploads yet**.
+
+1. The existing AI migration manifest includes `20261015-generation-reference-assets.sql`. Back up the database, check migration checksums, and apply only through the existing transactional migration runner in an approved staging environment. Do not hand-edit a previously applied checksum.
+2. A separate `vv_generation_reference_assets` ledger tracks owner, UUID, private object key, MIME, byte size, duration, upload state and expiry. The server-only `createGenerationReferenceLedger()` inserts an `uploading` row **before** S3 PUT so an uncertain upload still has a deletion record. The S3 object uses `references/users/<hashed owner>/<UUID>`, not the generated-output directory. No customer-facing or provider URL is returned.
+3. All of these must be ready together before even considering private intake: existing `AI_OBJECT_STORAGE_ENABLED=true` with approved private S3 credentials, `AI_STUDIO_REFERENCE_STAGING_ENABLED=true`, `AI_STUDIO_REFERENCE_CLEANUP_ENABLED=true`, an explicitly approved integer `AI_STUDIO_REFERENCE_TTL_MINUTES` (5–1440), and the existing `npm run worker:generation` worker running consistently. **Leave both reference flags FALSE/unset in production for now.**
+4. The existing worker includes an optional 10-minute expired-asset sweep. It atomically claims rows with PostgreSQL `FOR UPDATE SKIP LOCKED`, deletes the private object and then deletes the ledger row, with reclaims for abandoned deletions after 15 minutes. A failed object deletion leaves a retryable ledger row. This is not tested with actual production S3 and must not be presented as an SLA.
+5. Before any user route or feature-flag activation, separately complete authenticated bounded upload/request limits, full media codec & audio/video stream probing and sanitization, provider-specific duration rules, privacy/retention approval, short-lived provider-fetch transport which does not reveal permanent bucket credentials, historical job attachment and deletion semantics, abuse limits, unit economics and staged end-to-end tests. The current MP4/WAV structural checks alone are insufficient to declare an input safe or compatible.
+6. Never manually turn on this subsystem merely because a migration appears applied. Reconfirm rollback, retention sweeper health, orphan cleanup, owner isolation and zero duplicate AI jobs first.
+
+To disable reference intake later, switch `AI_STUDIO_REFERENCE_STAGING_ENABLED=false` (no new uploads), but keep already-staged assets recoverable for deletion under an operator-reviewed cleanup procedure before disabling the cleanup worker. Avoid orphaning customer input by stopping storage/worker prematurely.
