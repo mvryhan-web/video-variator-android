@@ -47,3 +47,5 @@
 .quick-reference span{min-width:0;max-width:95px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:#d6e3d1}
 .quick-create .quick-reference button{margin-left:auto;padding:6px;border:1px solid #687268;border-radius:5px;background:transparent;color:#e0e8db;font-size:10px}
 @media(max-width:560px){.quick-create-dropzone{align-items:stretch;flex-direction:column;gap:7px}.quick-create-dropzone span{min-width:0}}
+
+.quick-create{scroll-margin-top:100px}
