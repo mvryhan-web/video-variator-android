@@ -21,6 +21,12 @@ Visible active work in GitHub:
 
 Before any agent starts a roadmap block, it must audit the latest code/branches/PRs because another agent may already have implemented part of it.
 
+## Current owner direction — BASE-first implementation (2026-10-15)
+
+Owner asked to prioritize building out the full BASE and website instead of repeatedly triaging CI failures. Keep already-working functionality and production/billing untouched. Defer optional CI-error analysis and broad regression work to the later integrated acceptance phase; do not mistake that pause for verification of unfinished code or permission to skip necessary release safety gates.
+
+Current bounded contribution in PR #42: the homepage Canvas now offers optional model-catalog-based aspect ratio preferences, preserves the choice only in the current tab's draft, and hands it to the existing Studio for model-specific validation. **Status: IMPLEMENTED / UNVERIFIED** per owner instruction; no browser/CI test has been run for this addition. Continue BASE from the original TXT and the checklist, without creating duplicate components.
+
 ## Existing production baseline
 
 This is an existing production project, not a greenfield app. Preserve and reuse the working codebase, PostgreSQL, authentication, Stripe/billing pieces, Video Uniquifier, utilities, deployment and other existing functionality.

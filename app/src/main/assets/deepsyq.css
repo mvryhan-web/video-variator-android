@@ -63,3 +63,12 @@
 @media(max-width:560px){.quick-create .quick-create-clear{flex:0 0 auto}.quick-create .quick-create-clear+button{flex:1 0 100%}}
 
 .inspiration-preview{margin:54px 0}.inspiration-preview .section-heading{display:flex;justify-content:space-between;align-items:end;gap:18px;margin-bottom:16px}.inspiration-preview .section-heading h2{margin:6px 0 0;font-size:27px}.inspiration-preview .section-heading>a{font-size:11px;color:var(--mint,#d2f7ae)}.inspiration-preview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.inspiration-preview-card{display:grid;grid-template-rows:150px auto;border:1px solid var(--line,#343943);border-radius:15px;overflow:hidden;background:#171b22;color:inherit;text-decoration:none}.inspiration-preview-media{display:grid;place-items:center;background:#222833;color:#cbe1b6;font-size:34px;overflow:hidden}.inspiration-preview-media img{width:100%;height:100%;object-fit:cover}.inspiration-preview-card>div:last-child{display:grid;gap:5px;padding:13px}.inspiration-preview-card strong{font-size:13px}.inspiration-preview-card span{font-size:9px;color:var(--muted,#9ba5b3);line-height:1.45}.agent-example{grid-template-rows:auto}.agent-example>div:last-child{padding:18px}@media(max-width:820px){.inspiration-preview-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.inspiration-preview .section-heading{align-items:start;flex-direction:column}.inspiration-preview-grid{grid-template-columns:1fr}}
+
+/* Optional Canvas preferences; Studio checks model compatibility before generation. */
+.quick-create-advanced{margin-top:12px;border:1px solid #3c4a40;border-radius:10px;padding:11px 13px;background:#171e1b}
+.quick-create-advanced summary{cursor:pointer;color:#d3e8ca;font-size:12px;font-weight:650}
+.quick-create-advanced summary:focus-visible{outline:2px solid #d2f7ae;outline-offset:4px}
+.quick-create-settings{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px}
+.quick-create-settings label{font-size:12px;color:#d6e2d1}
+.quick-create-advanced p{margin:9px 0 0;font-size:11px;line-height:1.5;color:#98ab9d}
+@media(max-width:560px){.quick-create-settings{align-items:stretch;flex-direction:column}.quick-create-settings select{width:100%}}

@@ -1,7 +1,18 @@
 import {saveStudioHandoff} from './studio-handoff.js';
+import {MODEL_CATALOG} from './generate-models.js';
 const $=id=>document.getElementById(id);
 const quickCreateForm=$('quickCreateForm');
 const quickCreateDropzone=$('quickCreateDropzone');
+// Offer only ratios advertised by at least one model of this type.
+// The chosen model in Studio remains authoritative and validates the preference.
+function allowedQuickRatios(kind){
+ return [...new Set(MODEL_CATALOG.filter(model=>model.kind===kind).flatMap(model=>model.capabilities?.ratios||model.ratios||[]))];
+}
+function populateQuickRatios(preferred=''){
+ const kind=$('quickCreateKind').value,ratios=allowedQuickRatios(kind),select=$('quickCreateRatio');
+ select.replaceChildren(new Option('Let Studio decide',''),...ratios.map(ratio=>new Option(ratio,ratio)));
+ select.value=ratios.includes(preferred)?preferred:'';
+}
 // Draft-only examples. These do not represent connected AI workflows or spend credits.
 const quickPromptStarters={
  'product-image':{kind:'image',prompt:'Create a polished editorial product photograph with soft studio light and a clean background. Keep any supplied reference product accurate, including its shape, color and branding. Do not invent product features or text.'},
@@ -12,7 +23,7 @@ document.querySelectorAll('[data-quick-starter]').forEach(button=>button.addEven
  const starter=quickPromptStarters[button.dataset.quickStarter];if(!starter)return;
  const prompt=$('quickCreatePrompt'),existing=prompt.value.trim();
  if(existing&&existing!==starter.prompt&&!confirm('Replace your current description with this starter?'))return;
- $('quickCreateKind').value=starter.kind;prompt.value=starter.prompt;
+ $('quickCreateKind').value=starter.kind;populateQuickRatios();prompt.value=starter.prompt;
  saveQuickDraft();
  $('quickCreateStatus').textContent='Editable starter loaded. Nothing has been uploaded or generated.';
  prompt.focus();
@@ -22,24 +33,26 @@ let quickReferences=[],quickPreviewUrls=[];
 // Small session-only Canvas draft: never stores uploaded files or sends drafts to the server.
 const QUICK_DRAFT_KEY='deepsyq_quick_canvas_draft_v1';
 function saveQuickDraft(){
- const draft={prompt:$('quickCreatePrompt').value.slice(0,2000),kind:$('quickCreateKind').value};
+ const draft={prompt:$('quickCreatePrompt').value.slice(0,2000),kind:$('quickCreateKind').value,ratio:$('quickCreateRatio').value};
  try{sessionStorage.setItem(QUICK_DRAFT_KEY,JSON.stringify(draft));}catch(_){/* Browsers may deny storage; creation still works. */}
 }
 function restoreQuickDraft(){
  try{
   const draft=JSON.parse(sessionStorage.getItem(QUICK_DRAFT_KEY)||'null');
-  if(!draft||typeof draft.prompt!=='string'||!['image','video'].includes(draft.kind))return;
+  if(!draft||typeof draft.prompt!=='string'||!['image','video'].includes(draft.kind)){populateQuickRatios();return;}
   $('quickCreatePrompt').value=draft.prompt.slice(0,2000);
   $('quickCreateKind').value=draft.kind;
- }catch(_){/* Ignore corrupt or inaccessible session data. */}
+  populateQuickRatios(typeof draft.ratio==='string'?draft.ratio:'');
+ }catch(_){populateQuickRatios();/* Ignore corrupt or inaccessible session data. */}
 }
 restoreQuickDraft();
 $('quickCreatePrompt').addEventListener('input',saveQuickDraft);
-$('quickCreateKind').addEventListener('change',saveQuickDraft);
+$('quickCreateKind').addEventListener('change',()=>{populateQuickRatios();saveQuickDraft();});
+$('quickCreateRatio').addEventListener('change',saveQuickDraft);
 $('quickCreateClear').addEventListener('click',()=>{
  const hasDraft=!!$('quickCreatePrompt').value.trim()||quickReferences.length>0;
  if(hasDraft&&!confirm('Clear this Canvas draft and remove its selected reference photos?'))return;
- $('quickCreatePrompt').value='';$('quickCreateKind').value='image';
+ $('quickCreatePrompt').value='';$('quickCreateKind').value='image';populateQuickRatios();
  quickReferences=[];$('quickCreateFiles').value='';renderQuickReferences();
  try{sessionStorage.removeItem(QUICK_DRAFT_KEY);}catch(_){}
  $('quickCreateStatus').textContent='Canvas draft cleared. No files were uploaded.';
@@ -86,7 +99,8 @@ quickCreateForm?.addEventListener('submit',async event=>{
  if(!prompt||prompt.length>2000||!['image','video'].includes(kind)){status.textContent='Enter a description (up to 2,000 characters).';return;}
  button.disabled=true;status.textContent='Preparing your Studio draft locally…';
  try{
-  await saveStudioHandoff({kind,prompt,files:quickReferences,source:'dashboard-quick-create'});
+  const ratio=$('quickCreateRatio').value;
+  await saveStudioHandoff({kind,prompt,settings:ratio?{ratio}:{},files:quickReferences,source:'dashboard-quick-create'});
   location.assign('generate-studio.html?studio='+kind+'&from=dashboard');
  }catch(_){
   status.textContent='This browser could not save the draft. Your text and references are still here; try again or open Studio directly.';
