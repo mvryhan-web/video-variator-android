@@ -26,20 +26,22 @@ export function pricingCatalog(env={}){
 export function estimateGenerationPricing(request,model,env={}){
  const catalog=pricingCatalog(env);
  if(!catalog.configured||!model||request?.model!==model.id||request?.kind!==model.kind)return null;
- const durationSeconds=model.capabilities?.durationSeconds??(Number(String(model.duration||'').match(/\d+/)?.[0]||0)||null);
+ const durationSeconds=request.kind==='video'?(request.videoDuration??model.capabilities?.durationSeconds):(model.capabilities?.durationSeconds??(Number(String(model.duration||'').match(/\d+/)?.[0]||0)||null));
  const candidates=catalog.entries.filter(e=>e.model===model.id&&e.kind===model.kind&&e.provider===model.provider);
  const score=e=>{
   if(e.ratio&&e.ratio!==request.ratio)return -1;
-  const quality=request.kind==='image'?(request.resolution||model.quality):(model.capabilities?.quality??model.quality);
+  const quality=request.kind==='image'?(request.resolution||model.quality):request.kind==='video'?(request.videoResolution||model.quality):(model.capabilities?.quality??model.quality);
   if(e.quality&&e.quality!==quality)return -1;
   // Higher image resolution must have an explicitly approved price row.
   // Legacy wildcard rows may price the previous default quality only.
   if(request.kind==='image'&&!e.quality&&quality!==model.quality)return -1;
+  if(request.kind==='video'&&!e.quality&&quality!==model.quality)return -1;
   const outputFormat=request.kind==='image'?(request.outputFormat||model.capabilities?.outputFormats?.[0]||'auto'):null;
   if(e.outputFormat&&e.outputFormat!==outputFormat)return -1;
   // Switching from the default image encoding requires explicit format-specific pricing.
   if(request.kind==='image'&&!e.outputFormat&&outputFormat!==(model.capabilities?.outputFormats?.[0]||'auto'))return -1;
   if(e.durationSeconds&&e.durationSeconds!==durationSeconds)return -1;
+  if(request.kind==='video'&&!e.durationSeconds&&durationSeconds!==model.capabilities?.durationSeconds)return -1;
   return Number(!!e.ratio)+Number(!!e.quality)+Number(!!e.outputFormat)+Number(!!e.durationSeconds);
  };
  const match=candidates.map(e=>({e,s:score(e)})).filter(x=>x.s>=0).sort((a,b)=>b.s-a.s)[0]?.e;
