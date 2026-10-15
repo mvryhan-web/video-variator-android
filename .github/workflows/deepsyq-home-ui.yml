@@ -51,7 +51,7 @@ jobs:
           node --check tests/deepsyq.spec.mjs
       - run: npx playwright install --with-deps chromium
       - name: Test approved design, carousel, accessibility preferences and safe Studio launch
-        run: npx playwright test tests/deepsyq.spec.mjs --project=chromium --grep 'video carousel switches only|failed owner media clips never trap|reduced-motion users get|Home Quick Create hands off|owner-approved homepage layout|homepage inspiration All Image Video|pricing shows the planned \\$0\\.99 trial'
+        run: npx playwright test tests/deepsyq.spec.mjs --project=chromium --grep 'video carousel switches only|failed owner media clips never trap|reduced-motion users get|Home Quick Create hands off|owner-approved homepage layout|homepage inspiration All Image Video|pricing shows the planned'
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
