@@ -229,11 +229,27 @@ test('pricing shows the planned $0.99 trial without creating misleading live che
  await page.goto('/ai-pricing.html#trialOffer');
  await expect(page.locator('#trialOffer')).toBeVisible();
  await expect(page.locator('#trialOffer')).toContainText('$0.99');
+ await expect(page.locator('#trialOffer')).toContainText('3-day access');
+ await expect(page.locator('#trialOffer')).toContainText('No auto-renewal');
  await expect(page.locator('#trialOffer')).toContainText('not on sale yet');
  await expect(page.locator('#trialOffer button')).toBeDisabled();
  await expect(page.locator('#trialOffer a')).toHaveAttribute('href','deepsyq.html#homeQuickBar');
  await expect(page.locator('#toolPlans')).toContainText('Basic');
  await expect(page.locator('#aiStatus')).toContainText('No AI credit packs');
+});
+test('pricing mobile trial keeps three-day terms and clean accessible layout',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000}}}}));
+ await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',packs:[]}}));
+ await page.goto('/ai-pricing.html#trialOffer');
+ await expect(page.locator('#trialOffer')).toBeVisible();
+ await expect(page.locator('#trialOffer')).toContainText('three days');
+ await expect(page.locator('#trialOffer')).toContainText('no automatic renewal');
+ await expect(page.locator('#trialOffer button')).toBeDisabled();
+ await expect(page.locator('#toolPlans')).toContainText('Basic');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
+ const visual=await page.locator('#trialOffer').evaluate(el=>{const a=el.getBoundingClientRect();return{width:a.width,viewport:innerWidth}});
+ expect(visual.width).toBeLessThanOrEqual(visual.viewport);
 });
 test('pricing keeps existing Lifetime separate from AI credit packs and uses server prices only',async({page})=>{
  await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur',unlimited:true}}}}));
