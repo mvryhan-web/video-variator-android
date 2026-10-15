@@ -117,7 +117,7 @@ Current queued-roadmap dependencies to verify before implementation:
 **Verified foundation (5c28ac7):** Dashboard CI 38551913472 passed (25 unit, 70 browser cases with one retry); general web CI passed (327 passed, 3 retry-passed, 75 skipped); Android build/emulator CI 38551913541 passed. Quota integration (db289716): 28 local checks passed, isolated PostgreSQL integration passed; 70 Deepsyq browser cases passed without retries; Android build/emulator passed. Full web CI 38623063405 passed: 358 passed, 3 retry-passed, 74 skipped. Not a real production login/payment test.
 **Branch:** `deepsyq-platform` built from `ai-generation-studio` PR40 plus main 14de516.
 **Blockers:** owner-only AI, BytePlus profile/payment activation and missing secure key, public job/credit/storage flow, real Trial entitlement, existing PR28 quota reconciliation. No live production changes.
-**Next:** finish repository-safe BASE gaps: primary/fallback routing policy without unsafe paid retries, public concurrency/rate-limit policy, object-storage abstraction, and billing-review reconciliation. Keep live provider/payment/root rollout disabled until external gates pass. Roadmap blocks 1–7 stay queued.
+**Next:** keep post-dispatch fallback disabled until provider idempotency is verified; finish external object-storage provisioning/retention, real provider economics, public AI entitlements/limits, and live Stripe AI products only after owner/external gates. Repository-safe routing, rate limits, storage abstraction and billing-review reconciliation are now implemented behind disabled flags. Roadmap blocks 1–7 stay queued.
 **Continuation 2026-10-15:** work-limit efficiency rule added to `AGENTS.md`. Owner-only `GET /api/studio/jobs` now exposes the latest 50 non-deleted generation records as safe metadata for History; it does not expose media bytes. Unit fixture updated to cover listing and deletion filtering. No provider activation, payment, production database, deployment or public-access change was made. Durable generation-job metadata migration was added (provider/model/lifecycle/cost/credit fields), Studio My Results now renders saved jobs and can reopen a stored result, and a config-driven server-side generation pricing engine plus safe credit-estimate endpoint were added. No default AI prices were invented; pricing remains unconfigured until verified provider economics are entered.
 
 **Continuation 2 — repository-safe BASE work:** Added feature-gated owner model controls (enable override, maintenance, priority, markup, internal cost), an owner-only AI Control page, and priority-based default model selection. Studio History now lists durable jobs, reopens results and reuses prompts. Server-side pricing remains config-only with no invented rates. Added an opt-in recovery poller that resumes only existing async provider task IDs after restart and never starts a replacement generation; unit coverage asserts that behavior. No provider key, live Stripe AI price, production migration or deployment was changed. See `docs/DEEPSYQ_BASE_CHECKLIST.md` for the point-by-point original TXT status.
@@ -136,3 +136,17 @@ Current queued-roadmap dependencies to verify before implementation:
 - Studio UI understands queued/finalizing states and insufficient-credit / wallet-unavailable errors.
 - No live Stripe AI product, provider key, Render secret, production DB migration, public entitlement, deployment or root switch was enabled.
 - Latest branch CI is running after these changes; do not mark this continuation verified until the current head is green.
+
+
+### Continuation 4 — 2026-10-15
+
+- Added safe pre-dispatch Smart routing with compatible candidate ordering. Default existing models keep preferred base priority unless owner overrides it.
+- Added owner route preview; it never performs a provider call.
+- Automatic fallback after a provider request may have started remains intentionally disabled.
+- Added feature-gated server-side per-user concurrent-job and hourly-job limits using PostgreSQL advisory locking.
+- Added S3-compatible object storage abstraction with server-side SigV4 PUT/GET/DELETE. When enabled, generated media is stored externally and PostgreSQL keeps metadata rather than result bytes.
+- Added owner held-credit review/release flow with explicit job confirmation, note and audit metadata; no generation retry is triggered.
+- Added isolated PostgreSQL migration test for repeatable legacy pilot → commercial generation-job migration.
+- New environment switches/storage credentials are documented in `.env.example`; all remain disabled/unconfigured by default.
+- No live provider key, Stripe AI price, production object-storage credential, production database migration, deployment, root switch or public AI access was enabled.
+- Latest CI for the current head is still the verification gate; do not call this continuation verified until those workflows are green.
