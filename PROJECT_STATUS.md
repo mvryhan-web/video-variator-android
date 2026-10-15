@@ -39,6 +39,7 @@ The exact completion state of older components must be verified from the current
 |---|---|---|---|---|
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
+| Block 5 — Product Watcher (isolated core) | New dedicated agent | `deepsyq-block5-product-watcher` / draft PR | IN PROGRESS / LOCAL UNIT TESTED | Private, read-only health/DB/job checks, separate optional journal. No UI, public API, scheduled worker, migration or production activation. |
 
 When another agent joins, add one row per claimed workstream before substantial implementation. One agent should own one bounded workstream at a time.
 
@@ -50,7 +51,7 @@ When another agent joins, add one row per claimed workstream before substantial 
 | 2 | User Agent — “Do it for me” | NOT STARTED / QUEUED | UNASSIGNED | Multi-step execution through Agent Orchestrator |
 | 3 | Inspiration / Create Yours | CODE READY / CONTENT + BROWSER CI GATED | BLOCK 3 IMPLEMENTED | Original gallery, filtered image/video previews, Studio prefill, owner rights controls, approved migration path; needs owned/licensed publish content, live rollout approval and final browser CI. See `docs/BLOCK3_INSPIRATION_CHECKLIST.md`. |
 | 4 | Studio + My Workspace | NOT STARTED / QUEUED | UNASSIGNED | Creation editor/templates/skills + personal project workspace |
-| 5 | Internal Product Watcher Agent | NOT STARTED / QUEUED | UNASSIGNED | Owner-only scheduled monitoring, recommendations, approvals, daily/weekly reports |
+| 5 | Internal Product Watcher Agent | IN PROGRESS — FIRST SLICE ONLY | Dedicated Block 5 agent | Isolated branch; initial read-only checker/unit tests, no deployment, scheduler, owner UI or auto-apply. |
 | 6 | Deepsyq Voice Agent | NOT STARTED / QUEUED | UNASSIGNED | Realtime voice interface across Deepsyq, Device Cleanup skill, owner voice access to Product Watcher |
 | 7 | Pricing, Credits, Stripe & Unit Economics | NOT STARTED / QUEUED | UNASSIGNED | Reuse existing Stripe; AI credits/top-ups, provider cost, reservations, margins; no unlimited Lifetime AI |
 
@@ -491,3 +492,12 @@ Current queued-roadmap dependencies to verify before implementation:
 - Strict validation exists at **both** the estimate/create API and the BytePlus adapter. The request carries `videoInputMode`, is idempotently fingerprinted, and job History stores that setting. Text/first-frame remains the original pricing baseline; premium first+last or omni images require an explicit model+role+exact image-count rate in the existing pricing catalog. No invented prices, double jobs or automatic retries.
 - Reference videos/audio are documented as supported by the provider but **not falsely exposed** in our Studio; ModelArk video references require an externally accessible provider media URL, which cannot safely be produced by passing a local user's video. A secure authenticated asset upload, private persistent bucket/URL lifecycle, verification of codec/duration/frames, provider connectivity and unit economics must precede this capability. No untrusted URL proxy or public-media shortcuts were added.
 - Mocked unit and browser regression cases were authored for output role mapping, cross-model restrictions, pricing gates and count-aware selector behavior; full tests/live provider calls are **DEFERRED / UNVERIFIED**, following the owner's BASE-first instruction. No paid AI requests, production/Render/Stripe changes, new DB architecture or Roadmap Blocks 1–7 changes.
+
+
+### Block 5 Product Watcher — isolated initial implementation (2026-10-15)
+
+- **Owner/workstream:** dedicated Block 5 agent, branch `deepsyq-block5-product-watcher`; separate draft PR to `deepsyq-platform`. Do not edit BASE Image/Video, Block 3 Inspiration/Home, auth, Stripe, generation routing or existing migrations.
+- **Implemented:** `server/product-watcher/monitor.js` + one-shot worker, opt-in PostgreSQL `vv_product_watcher_runs` table SQL, and docs. Checks existing `/api/health`, PostgreSQL connectivity and aggregated 24-hour generation failures/unknown/stale/held-credit counts. Session advisory lock stops overlapping runs; public API and automatic changes are absent. Defaults OFF; no user prompts, media, credentials or direct provider paid calls.
+- **Verified:** `node --check` for both watcher JS files and `node --test tests/product-watcher-unit.mjs` — 7 passed, 0 failed locally against mocks. No real DB, staging, production API or scheduler verification; do not mark Block 5 DONE.
+- **Gates:** migration deliberately not applied to production; explicit owner-approved DB backup/migration and private Render schedule required. Live owner UI, notifications, official provider/model update checks, cost anomaly reports and approval workflows remain open. No production deployment, Stripe, provider, root layout or API secrets changed.
+- **Next:** isolated DB integration test/migration review, owner-only status dashboard connected using existing auth, then safe scheduled checks and audited approval queue; rebase/merge after reviewing latest BASE head.
