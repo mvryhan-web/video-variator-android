@@ -140,6 +140,31 @@ function renderPlans(){const descriptions={basic:'For occasional video projects.
 try{config=await api('/api/config');applyPlatformFeatures();renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);}catch(_){$('paymentStatus').textContent='Plans could not load. Please try again later.';}
 window.addEventListener('load',initGoogle);
 try{const c=await api('/api/studio/config');$('studioStatus').textContent=c.ownerOnly?'AI generation is in owner preview. Explore the studios; existing tools remain available.':c.enabled?'Open a studio to see the available models.':'AI generation is not available yet. Existing tools remain available.';}catch(_){$('studioStatus').textContent='Studio availability could not be checked. Existing tools remain available.';}
+// Read-only dashboard overview: reuses the existing authenticated Studio history.
+// Never embeds media blobs, starts jobs, or exposes another user's results.
+async function loadRecentCreations(){
+ const status=$('recentCreationsStatus'),grid=$('recentCreationsGrid');if(!status||!grid)return;
+ grid.replaceChildren();
+ if(!localStorage.getItem('vv_token')){status.textContent='Sign in to see your saved Studio creations.';return;}
+ status.textContent='Loading your recent creations…';
+ try{
+  const response=await api('/api/studio/jobs?filter=all'),items=Array.isArray(response.items)?response.items.slice(0,4):[];
+  if(!items.length){status.textContent='No saved creations yet. Start with Canvas or a Studio.';return;}
+  const label={ready:'Ready',queued:'Queued',processing:'Processing',finalizing:'Finalizing',failed:'Failed'};
+  for(const item of items){
+   if(!item||!['image','video','music'].includes(item.kind))continue;
+   const card=document.createElement('a');card.className='recent-creation';card.href='generate-studio.html?view=history';
+   const head=document.createElement('div'),type=document.createElement('strong'),state=document.createElement('span');
+   type.textContent=item.kind==='music'?'Audio':item.kind==='image'?'Image':'Video';
+   state.textContent=label[item.status]||'In progress';state.dataset.status=String(item.status||'unknown');head.append(type,state);
+   const prompt=document.createElement('p');prompt.textContent=String(item.prompt||'Untitled creation').slice(0,140);
+   const date=document.createElement('small');const timestamp=new Date(item.createdAt||'');
+   date.textContent=Number.isFinite(timestamp.getTime())?timestamp.toLocaleDateString():'Open in Studio';
+   card.append(head,prompt,date);grid.append(card);
+  }
+  status.textContent=grid.childElementCount?'Select a creation to open your Studio history.':'No saved creations yet.';
+ }catch(_){status.textContent='Studio history is not available for this account right now.';}
+}
 async function loadAIWallet(){
  const chip=$('aiWalletLink');if(!chip)return;
  if(!localStorage.getItem('vv_token')){chip.hidden=true;return;}
@@ -167,5 +192,5 @@ document.querySelectorAll('[data-onboarding-goal]').forEach(button=>button.oncli
  catch(e){status.textContent=e.message==='ONBOARDING_UNAVAILABLE'?'Onboarding is temporarily unavailable. You can still use the studios from the dashboard.':'Could not save your choice. Please try again.';buttons.forEach(b=>b.disabled=false);}
 });
 
-if(localStorage.getItem('vv_token'))try{const {user}=await api('/api/me');$('accountLabel').textContent=user.name||'Your workspace';$('accountButton').textContent='Account settings';$('accountButton').onclick=()=>location.assign('index.html#profile');$('logout').hidden=false;if(user.isAdmin&&!document.getElementById('adminAiControl')){const a=document.createElement('a');a.id='adminAiControl';a.href='deepsyq-admin.html';a.textContent='Owner AI Control';document.querySelector('.sidebar-bottom').prepend(a);}await Promise.all([maybeShowOnboarding(),loadAIWallet()]);}catch(e){if(e.message==='INVALID_SESSION'||e.message==='USER_NOT_FOUND'){localStorage.removeItem('vv_token');localStorage.removeItem('deepsyq_onboarding_pending');}}
+if(localStorage.getItem('vv_token'))try{const {user}=await api('/api/me');$('accountLabel').textContent=user.name||'Your workspace';$('accountButton').textContent='Account settings';$('accountButton').onclick=()=>location.assign('index.html#profile');$('logout').hidden=false;if(user.isAdmin&&!document.getElementById('adminAiControl')){const a=document.createElement('a');a.id='adminAiControl';a.href='deepsyq-admin.html';a.textContent='Owner AI Control';document.querySelector('.sidebar-bottom').prepend(a);}await Promise.all([maybeShowOnboarding(),loadAIWallet(),loadRecentCreations()]);}catch(e){if(e.message==='INVALID_SESSION'||e.message==='USER_NOT_FOUND'){localStorage.removeItem('vv_token');localStorage.removeItem('deepsyq_onboarding_pending');}}
 if(new URLSearchParams(location.search).get('checkout')==='success')$('paymentStatus').textContent='Your checkout has returned. Access is updated only after Stripe confirms payment. Open your account to see its current status.';

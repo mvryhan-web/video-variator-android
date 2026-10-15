@@ -25,7 +25,7 @@ Before any agent starts a roadmap block, it must audit the latest code/branches/
 
 Owner asked to prioritize building out the full BASE and website instead of repeatedly triaging CI failures. Keep already-working functionality and production/billing untouched. Defer optional CI-error analysis and broad regression work to the later integrated acceptance phase; do not mistake that pause for verification of unfinished code or permission to skip necessary release safety gates.
 
-Current bounded contribution in PR #42: the homepage Canvas now offers optional model-catalog-based aspect ratio preferences, preserves the choice only in the current tab's draft, and hands it to the existing Studio for model-specific validation. **Status: IMPLEMENTED / UNVERIFIED** per owner instruction; no browser/CI test has been run for this addition. Continue BASE from the original TXT and the checklist, without creating duplicate components.
+Current bounded contributions in PR #42: the homepage Canvas offers optional model-catalog-based aspect ratio preferences, preserves the choice only in the current tab's draft, and hands it to the existing Studio for model-specific validation. Dashboard also shows the four most recent user-owned Studio jobs read-only via the existing authenticated history API, without duplicating media or job storage. **Status: IMPLEMENTED / UNVERIFIED** per owner instruction; no browser/CI test has been run for these additions. Continue BASE from the original TXT and the checklist, without creating duplicate components.
 
 ## Existing production baseline
 
