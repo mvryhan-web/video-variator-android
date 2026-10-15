@@ -62,3 +62,14 @@ A finished video must include genuine motion and an actual playable media file. 
 
 ## Status
 All 24 concepts are **planned**, not completed. Until original media is generated, files are stored appropriately, provenance is recorded and rights are reviewed, **no Inspiration gallery card should be seeded or published from this document**.
+
+
+## Owner-approved layout update — 15 October 2026
+
+The owner selected the more colorful **second** mockup as the visual direction: a permanent collapsible **left navigation rail** with Home, Image and Video model flyouts, Agent, Audio, Tools, AI Apps, Canvas, Video Uniquifier, Assets, Affiliate and Share. The first mockup contributes its **lower editorial media strip**. Do not change, rename, delete or overwrite any owner-owned existing images, videos, projects or features.
+
+The lower strip should eventually include **original** visual equivalents of these remembered scenes: flowing red fashion gown (IMG-05), imaginary fantasy castle (new creative idea; not yet a generated asset), expressive beauty close-up (IMG-06), and scenic mountains/lake (IMG-09). They are art directions, **not files, owned samples, or a claim that earlier mockup images are available to deploy**. A castle art direction: "Wide cinematic scene of an entirely fictional stone castle on a misty ridge, warm sunrise light and original fantasy architecture, no logos, no recognizable film/game franchise, no signage or text." Keep these additional media separate from the first 16/8 production briefs until actually generated and provenance-reviewed.
+
+When approved video files exist, prefer a genuine owner-approved featured **video hero** (muted, looped, viewport-limited), followed by smaller gallery items. Genuine static images can gently zoom on hover, but must not be labeled or advertised as playable generated videos. Reduced-motion and data-saver settings still control autoplay. Existing Studio handoff remains unchanged and never auto-generates on entry.
+
+Current state: navigation and approved-media mosaic code prepared in PR #42. **No new castle, red-dress, portrait, mountain image or video file has been generated, licensed, uploaded or publicly released by this update.**
