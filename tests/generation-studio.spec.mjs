@@ -175,6 +175,58 @@ test('Seedance image modes follow attached photo count without posting paid jobs
  expect(jobPosts).toBe(0);
 });
 
+test('video prompt and model settings restore privately after tab reload without any provider request',async({page})=>{
+ let jobPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')jobPosts++;});
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#modelButton').click();
+ await page.getByRole('button',{name:/Seedance 2.0/}).click();
+ await page.locator('#prompt').fill('A calm mountain sunrise with slowly moving clouds');
+ await page.locator('#settingsButton').click();
+ await page.locator('#videoResolution').selectOption('1080p');
+ await page.locator('#videoDuration').selectOption('15');
+ await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.reload();
+ await expect(page.locator('#prompt')).toHaveValue('A calm mountain sunrise with slowly moving clouds');
+ await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');
+ await expect(page.locator('#videoResolution')).toHaveValue('1080p');
+ await expect(page.locator('#videoDuration')).toHaveValue('15');
+ await expect(page.locator('#videoDraftBar')).toBeVisible();
+ await expect(page.locator('#consent')).not.toBeChecked();
+ page.once('dialog',d=>d.accept());
+ await page.locator('#clearVideoDraft').click();
+ await page.reload();
+ await expect(page.locator('#prompt')).toHaveValue('');
+ expect(jobPosts).toBe(0);
+});
+test('recovered Seedance first and last frames require both photos again, never store photos',async({page})=>{
+ let jobPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')jobPosts++;});
+ const img=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ const photo=name=>({name,mimeType:'image/png',buffer:img});
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#modelButton').click();
+ await page.getByRole('button',{name:/Seedance 2.0/}).click();
+ await page.locator('#prompt').fill('A sunset transitions into night');
+ await page.locator('#references').setInputFiles([photo('first.png'),photo('last.png')]);
+ await expect(page.locator('#refPreview img')).toHaveCount(2);
+ await page.locator('#settingsButton').click();
+ await page.locator('#videoInputMode').selectOption('first_last');
+ await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.reload();
+ await expect(page.locator('#refPreview img')).toHaveCount(0);
+ await expect(page.locator('#videoDraftMessage')).toContainText('Attach 2 reference photo');
+ await expect(page.locator('#videoInputMode')).toHaveValue('text');
+ await expect(page.locator('#generate')).toBeDisabled();
+ await page.locator('#references').setInputFiles(photo('first-new.png'));
+ await expect(page.locator('#videoDraftMessage')).toContainText('1 added so far');
+ await page.locator('#references').setInputFiles(photo('last-new.png'));
+ await expect(page.locator('#refPreview img')).toHaveCount(2);
+ await expect(page.locator('#videoInputMode')).toHaveValue('first_last');
+ await expect(page.locator('#videoDraftSkipPhotos')).toBeHidden();
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(jobPosts).toBe(0);
+});
 test('video History checks an existing task without resubmitting or downloading media',async({page})=>{
  const cfg={enabled:true,models:[{kind:'video',label:'Video fixture',id:'fixture-video',ratios:['16:9'],references:0,enabled:true}],catalog:[{kind:'video',label:'Video fixture',id:'fixture-video',ratios:['16:9'],references:0,enabled:true,adapter:true,provider:'Google'}]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
