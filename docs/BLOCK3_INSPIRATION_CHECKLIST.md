@@ -8,7 +8,7 @@ This file tracks only canonical Roadmap **Block 3**. It does not expand or imple
 |---|---|---|
 | Original Deepsyq Inspiration experience | DONE | Dedicated responsive `inspiration.html/css/js`; no Lumina assets/copy/branding are used. |
 | Homepage AI Apps preview + Explore | DONE | Featured AI Apps are data-driven from active template records. |
-| Homepage Inspiration preview + Explore | DONE | Featured inspiration records render only when published. |
+| Homepage Inspiration preview + Explore | DONE | Featured inspiration records render only when published, with live category shortcuts into filtered Inspiration views. |
 | Homepage AI Agent examples | INTEGRATION READY / BLOCK 2 GATE | Block 3 can publish/link Agent examples only when both the explicit flag and a safe same-origin real Agent path are configured; handoff is stored in `deepsyq_agent_inspiration_start`. |
 | All / Images / Videos | DONE | Full gallery media-type tabs. |
 | Category filters | DONE | Data-driven public categories. |
