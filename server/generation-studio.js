@@ -3,6 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {MODELS,MODEL_CATALOG,validateGeneration,generateGoogle,pollGoogle} from './generation-provider.js';
 import {generateBytePlus,pollBytePlus,bytePlusDownloadsConfigured} from './generation-byteplus.js';
 import {pricingCatalog,estimateGenerationPricing} from './generation-pricing.js';
+import {listModelControls,getModelControl,updateModelControl,applyModelControl} from './generation-model-control.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch}={}){
  const model=MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter);
  if(!model)throw Error('MODEL_NOT_CONNECTED');
@@ -23,8 +24,11 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  let ready;
  const init=()=>ready??=readFile(new URL('./migrations/20261015-generation-jobs.sql',import.meta.url),'utf8').then(sql=>pool.query(sql));
  const owner=(req,res,next)=>{if(req.user.provider!=='google'||String(req.user.email||'').toLowerCase()!==String(env.ADMIN_EMAIL||'').trim().toLowerCase())return res.status(403).json({error:'OWNER_PILOT_ONLY'});next();};
- app.get('/api/studio/config',(_req,res)=>res.json(studioConfig(env)));
- app.use('/api/studio',(_req,res,next)=>{if(!studioConfig(env).enabled)return res.status(503).json({error:'OWNER_SETUP_REQUIRED'});next();});
+ app.get('/api/studio/config',async(_req,res)=>{const base=studioConfig(env);if(env.AI_PROVIDER_ADMIN_ENABLED!=='true'||!pool)return res.json(base);try{const controlled=await listModelControls(pool,base.catalog);const map=new Map(controlled.map(m=>[m.id,m]));res.json({...base,catalog:controlled,models:base.models.map(m=>map.get(m.id)?{...m,enabled:map.get(m.id).enabled}:m)});}catch(_){res.json(base);}});
+ const modelAdminEnabled=()=>env.AI_PROVIDER_ADMIN_ENABLED==='true'&&!!pool;
+ app.get('/api/studio/admin/models',auth,owner,async(_req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const items=await listModelControls(pool,studioConfig(env).catalog);res.json({items});}catch(_){res.status(503).json({error:'MODEL_ADMIN_UNAVAILABLE'});}});
+ app.patch('/api/studio/admin/models/:id',auth,owner,async(req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const control=await updateModelControl(pool,{modelId:req.params.id,userId:req.user.id,patch:req.body,catalog:studioConfig(env).catalog});res.json({modelId:req.params.id,control});}catch(e){const status=e.message==='MODEL_NOT_FOUND'?404:e.message==='INVALID_MODEL_CONTROL'?400:503;res.status(status).json({error:status===503?'MODEL_ADMIN_UNAVAILABLE':e.message});}});
+  app.use('/api/studio',(_req,res,next)=>{if(!studioConfig(env).enabled)return res.status(503).json({error:'OWNER_SETUP_REQUIRED'});next();});
  async function finish(id,result){const status=result.operation?'processing':'ready';await pool.query("UPDATE vv_generation_pilot SET status=$2,operation=$3,mime=$4,media=$5,result_text=$6,completed_at=CASE WHEN $2='ready' THEN NOW() ELSE completed_at END WHERE id=$1",[id,status,result.operation||null,result.mime||null,result.bytes||null,result.text||'']);}
  async function run(id,request){try{await finish(id,await provider(request,{env}));}catch(e){await pool.query("UPDATE vv_generation_pilot SET status='failed',error='GENERATION_FAILED_NO_AUTOMATIC_RETRY',failed_at=NOW() WHERE id=$1",[id]);}}
  app.post('/api/studio/estimate',auth,owner,(req,res)=>{try{
@@ -35,7 +39,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  }catch(e){res.status(400).json({error:e.message==='INVALID_REQUEST'?'INVALID_REQUEST':'AI_PRICING_NOT_APPROVED'});}});
   app.post('/api/studio/jobs',auth,owner,async(req,res)=>{
   let request;try{request=validateGeneration(req.body);}catch(e){return res.status(400).json({error:e.message});}
-  const selected=studioConfig(env).catalog.find(m=>m.id===request.model&&m.kind===request.kind);if(!selected?.enabled)return res.status(503).json({error:'MODEL_NOT_ENABLED'});
+  let selected=studioConfig(env).catalog.find(m=>m.id===request.model&&m.kind===request.kind);if(env.AI_PROVIDER_ADMIN_ENABLED==='true'&&pool&&selected){try{selected=applyModelControl(selected,await getModelControl(pool,selected.id));}catch(_){return res.status(503).json({error:'MODEL_ADMIN_UNAVAILABLE'});}}if(!selected?.enabled)return res.status(503).json({error:selected?.maintenance?'MODEL_MAINTENANCE':'MODEL_NOT_ENABLED'});
   // No consumer credits or existing subscription entitlements are reused in this owner-only pilot.
   let c,id;try{
    await init();c=await pool.connect();await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(84920115)');
