@@ -99,7 +99,7 @@ export async function runOfficialSourcesOnce({pool,env={},fetchFn=globalThis.fet
       try{
         await client.query([
           'INSERT INTO vv_product_watcher_official_sources(source_key,provider,source_url,content_hash,last_checked_at,last_success_at,last_error_code)',
-          'VALUES ($1,$2,$3,$4,$5,CASE WHEN $4::text IS NULL THEN NULL ELSE $5::timestamptz END,$6)',
+          'VALUES ($1,$2,$3,$4::char(64),$5::timestamptz,CASE WHEN $4::char(64) IS NULL THEN NULL ELSE $5::timestamptz END,$6)',
           'ON CONFLICT(source_key) DO UPDATE SET provider=EXCLUDED.provider,source_url=EXCLUDED.source_url,',
           'content_hash=COALESCE(EXCLUDED.content_hash,vv_product_watcher_official_sources.content_hash),',
           'last_checked_at=EXCLUDED.last_checked_at,',
