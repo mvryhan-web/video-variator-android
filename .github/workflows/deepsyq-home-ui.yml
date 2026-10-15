@@ -27,7 +27,7 @@ permissions:
 
 concurrency:
   group: deepsyq-home-ui-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   visual-interactions:
