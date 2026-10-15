@@ -259,3 +259,12 @@ test('all three Block 3 actions preserve their intended prefill semantics withou
  await page.goto('/inspiration.html');await page.getByRole('button',{name:'Clone and Try'}).click();
  await expect(page.locator('#prompt')).toHaveValue('Soft editorial portrait');await expect(page.locator('#ratio')).toHaveValue('2:3');await expect(page.locator('#modelButton')).toContainText('Clone Model');await expect(page.locator('#refPreview img')).toHaveCount(0);await expect(page.locator('#consent')).not.toBeChecked();expect(posts).toBe(0);
 });
+
+
+test('Block 3 Agent examples stay hidden until a real configured route exists',async({page})=>{
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
+ const agent={id:'agent-1',title:'Campaign Builder',slug:'campaign-builder',kind:'video',category:'Campaign',description:'Prepare a campaign workflow',previewUrl:'/agent.webp',previewPosterUrl:null,prompt:'Build a social campaign',defaultModel:null,aspectRatio:'9:16',requiredInputTypes:['image'],defaultSettings:{ratio:'9:16'},actionTarget:'agent',actionPath:'/agent-test.html',active:true,featured:true};
+ await page.route('**/api/inspiration**',r=>{const u=new URL(r.request().url());return r.fulfill({json:u.searchParams.get('target')==='agent'?{items:[agent],categories:['Campaign'],ratios:['9:16']}:{items:[],categories:[],ratios:[]}});});
+ await page.route('**/agent-test.html**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Agent test</title><h1>Agent test</h1>'}));
+ await page.goto('/deepsyq.html');await expect(page.locator('#agentExamples')).toBeVisible();await expect(page.locator('#agentExamplesGrid')).toContainText('Campaign Builder');await page.locator('#agentExamplesGrid a').click();await expect(page).toHaveURL(/agent-test\.html\?from=inspiration/);const handoff=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('deepsyq_agent_inspiration_start')));expect(handoff.promptTemplate).toBe('Build a social campaign');expect(handoff.defaultSettings.ratio).toBe('9:16');
+});

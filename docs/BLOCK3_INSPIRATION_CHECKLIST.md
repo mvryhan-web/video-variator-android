@@ -9,7 +9,7 @@ This file tracks only canonical Roadmap **Block 3**. It does not expand or imple
 | Original Deepsyq Inspiration experience | DONE | Dedicated responsive `inspiration.html/css/js`; no Lumina assets/copy/branding are used. |
 | Homepage AI Apps preview + Explore | DONE | Featured AI Apps are data-driven from active template records. |
 | Homepage Inspiration preview + Explore | DONE | Featured inspiration records render only when published. |
-| Homepage AI Agent examples | DEPENDENCY-GATED | Data/API path exists but stays hidden until Block 2 provides a real Agent destination. |
+| Homepage AI Agent examples | INTEGRATION READY / BLOCK 2 GATE | Block 3 can publish/link Agent examples only when both the explicit flag and a safe same-origin real Agent path are configured; handoff is stored in `deepsyq_agent_inspiration_start`. |
 | All / Images / Videos | DONE | Full gallery media-type tabs. |
 | Category filters | DONE | Data-driven public categories. |
 | Aspect-ratio support/filter | DONE | 1:1, 16:9, 9:16, 2:3, 3:2, 4:3, 3:4 validated; public ratio filter is data-driven. |
@@ -22,7 +22,7 @@ This file tracks only canonical Roadmap **Block 3**. It does not expand or imple
 | Replace source assets | DONE | Inspiration assets are not copied; Studio asks user to add/select their own references. |
 | Data-driven admin | DONE | Owner create/update, active/featured/order, media metadata, rights metadata; audit log. |
 | Rights safety | DONE | Public items require owned/licensed basis plus recorded rights evidence note. |
-| No fake integrations | DONE | Agent-target examples are not publicly actionable until a real Agent exists. |
+| No fake integrations | DONE | Agent-target examples require both an explicit enable flag and a configured safe same-origin Agent path. With either missing, API returns no Agent examples. |
 | Production rollout flag | DONE | `AI_INSPIRATION_ENABLED=false` by default in production. |
 | Publish readiness | DONE | Owner readiness shows publishable/image/video/featured counts, ratios/categories, rights blockers and Agent dependency. |
 | Real launch content | OWNER CONTENT GATE | No examples are invented. Owner must add actual owned/licensed images/videos and rights evidence. |
@@ -36,7 +36,7 @@ To publish later:
 2. include a rights evidence note for every active item;
 3. verify preview URLs/posters;
 4. enable `AI_INSPIRATION_ENABLED=true` only after those assets are approved;
-5. keep `AI_INSPIRATION_AGENT_TARGETS_ENABLED=false` until Block 2 Agent has a real action destination.
+5. keep `AI_INSPIRATION_AGENT_TARGETS_ENABLED=false` and `AI_INSPIRATION_AGENT_PATH` blank until Block 2 Agent has a real route that consumes the documented handoff.
 
 
 ## Owner publish readiness

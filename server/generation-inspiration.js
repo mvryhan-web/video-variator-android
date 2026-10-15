@@ -10,7 +10,8 @@ const RIGHTS=new Set(['owned','licensed']);
 let initPromise;
 
 function featureEnabled(env){const v=env.AI_INSPIRATION_ENABLED;return v==='true'||(env.NODE_ENV!=='production'&&v!=='false');}
-function agentTargetsEnabled(env){return env.AI_INSPIRATION_AGENT_TARGETS_ENABLED==='true';}
+function agentPath(env){const p=String(env.AI_INSPIRATION_AGENT_PATH||'').trim();if(!p||p==='/'||!/^\/[A-Za-z0-9][A-Za-z0-9._\/-]*$/.test(p)||p.includes('..')||p.includes('//'))return null;return p;}
+function agentTargetsEnabled(env){return env.AI_INSPIRATION_AGENT_TARGETS_ENABLED==='true'&&!!agentPath(env);}
 function owner(user,env){return !!(user&&env.ADMIN_EMAIL&&user.provider==='google'&&String(user.email||'').trim().toLowerCase()===String(env.ADMIN_EMAIL).trim().toLowerCase());}
 function txt(v,max,{required=false}={}){const s=String(v??'').trim();if((required&&!s)||s.length>max)throw Error('INVALID_INSPIRATION');return s;}
 function slug(v){const s=String(v??'').trim().toLowerCase();if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s)||s.length>100)throw Error('INVALID_INSPIRATION');return s;}
@@ -33,9 +34,9 @@ export function validateInspiration(value,current={}){
  if(active&&rightsNote.length<3)throw Error('INSPIRATION_RIGHTS_NOTE_REQUIRED');
  return {title:txt(value.title??current.title,120,{required:true}),slug:slug(value.slug??current.slug),kind,category:txt(value.category??current.category,80,{required:true}),description:txt(value.description??current.description??'',600),previewUrl:safeUrl(value.previewUrl===undefined?current.previewUrl:value.previewUrl,{required:true}),previewPosterUrl:safeUrl(value.previewPosterUrl===undefined?current.previewPosterUrl:value.previewPosterUrl),prompt:txt(value.prompt??current.prompt,4000,{required:true}),defaultModel:model(value.defaultModel===undefined?current.defaultModel:value.defaultModel),aspectRatio:ratio,requiredInputTypes:array(value.requiredInputTypes===undefined?current.requiredInputTypes:value.requiredInputTypes),defaultSettings:object(value.defaultSettings===undefined?current.defaultSettings:value.defaultSettings),actionTarget:target,rightsBasis:rights,rightsNote,active,featured:bool(value.featured,current.featured??false),sortOrder:order(value.sortOrder,current.sortOrder??100)};
 }
-function row(r,{ownerView=false}={}){
+function row(r,{ownerView=false,agentActionPath=null}={}){
  const item={id:r.id,title:r.title,slug:r.slug,kind:r.kind,category:r.category,description:r.description||'',previewUrl:r.preview_url,previewPosterUrl:r.preview_poster_url||null,prompt:r.prompt,defaultModel:r.default_model||null,aspectRatio:r.aspect_ratio,requiredInputTypes:r.required_input_types||[],defaultSettings:r.default_settings||{},actionTarget:r.action_target,active:!!r.active,featured:!!r.featured,sortOrder:Number(r.sort_order||0),createdAt:r.created_at,updatedAt:r.updated_at};
- if(ownerView){item.rightsBasis=r.rights_basis;item.rightsNote=r.rights_note||'';}return item;
+ if(r.action_target==='agent'&&agentActionPath)item.actionPath=agentActionPath;if(ownerView){item.rightsBasis=r.rights_basis;item.rightsNote=r.rights_note||'';}return item;
 }
 function publicTargetSql(env){return agentTargetsEnabled(env)?'':" AND action_target='studio'";}
 
@@ -52,9 +53,9 @@ export function installInspiration(app,{auth,pool,env=process.env}){
    pool.query(`SELECT DISTINCT category FROM vv_ai_inspiration WHERE active=true AND rights_basis IN ('owned','licensed') AND length(trim(rights_note))>=3${targetGate} ORDER BY category`),
    pool.query(`SELECT DISTINCT aspect_ratio FROM vv_ai_inspiration WHERE active=true AND rights_basis IN ('owned','licensed') AND length(trim(rights_note))>=3${targetGate} ORDER BY aspect_ratio`)
   ]);
-  res.json({items:rows.map(r=>row(r)),categories:cats.rows.map(x=>x.category),ratios:ratios.rows.map(x=>x.aspect_ratio)});
+  const agentActionPath=agentPath(env);res.json({items:rows.map(r=>row(r,{agentActionPath})),categories:cats.rows.map(x=>x.category),ratios:ratios.rows.map(x=>x.aspect_ratio)});
  }catch(_){res.status(503).json({error:'INSPIRATION_UNAVAILABLE'});}});
- app.get('/api/inspiration/:slug',async(req,res)=>{if(!featureEnabled(env))return res.status(503).json({error:'INSPIRATION_NOT_ENABLED'});try{await initInspiration(pool);const {rows}=await pool.query(`SELECT * FROM vv_ai_inspiration WHERE slug=$1 AND active=true AND rights_basis IN ('owned','licensed') AND length(trim(rights_note))>=3${publicTargetSql(env)}`,[req.params.slug]);if(!rows.length)return res.status(404).json({error:'INSPIRATION_NOT_FOUND'});res.json({item:row(rows[0])});}catch(_){res.status(503).json({error:'INSPIRATION_UNAVAILABLE'});}});
+ app.get('/api/inspiration/:slug',async(req,res)=>{if(!featureEnabled(env))return res.status(503).json({error:'INSPIRATION_NOT_ENABLED'});try{await initInspiration(pool);const {rows}=await pool.query(`SELECT * FROM vv_ai_inspiration WHERE slug=$1 AND active=true AND rights_basis IN ('owned','licensed') AND length(trim(rights_note))>=3${publicTargetSql(env)}`,[req.params.slug]);if(!rows.length)return res.status(404).json({error:'INSPIRATION_NOT_FOUND'});res.json({item:row(rows[0],{agentActionPath:agentPath(env)})});}catch(_){res.status(503).json({error:'INSPIRATION_UNAVAILABLE'});}});
  const onlyOwner=(req,res,next)=>owner(req.user,env)?next():res.status(403).json({error:'OWNER_ONLY'});
  app.get('/api/studio/admin/inspiration-readiness',auth,onlyOwner,async(_req,res)=>{try{
   await initInspiration(pool);const {rows}=await pool.query('SELECT kind,category,aspect_ratio,action_target,rights_basis,rights_note,active,featured FROM vv_ai_inspiration');
