@@ -67,3 +67,10 @@
 .reference-crop-actions button{padding:10px 13px;min-height:40px}
 #cropReferenceStatus{min-height:16px;color:#cfe9c8;font-size:12px}
 @media(max-width:560px){.reference-crop-controls{grid-template-columns:1fr}.reference-crop-actions button{flex:1}}
+
+/* Image-only, tab-scoped draft reminder; reference media is deliberately never stored. */
+.image-draft-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 10px;margin:8px 0;border:1px solid #384740;border-radius:10px;background:#17221d;color:#cddcd0;font-size:11px}
+.image-draft-bar[hidden]{display:none}
+.image-draft-bar span{flex:1;min-width:170px}
+.image-draft-bar button{padding:6px 10px;min-height:29px;border:1px solid #53665b;border-radius:7px;background:#27352d;color:#e1ece2;font-size:11px;cursor:pointer}
+.image-draft-bar button:focus-visible{outline:2px solid #d2f7ae;outline-offset:2px}
