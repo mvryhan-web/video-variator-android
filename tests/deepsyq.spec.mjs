@@ -473,11 +473,11 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  await expect(page.locator('#agentFeature')).toContainText('Coming soon');
  await expect(page.locator('#appsFeature')).toBeVisible();
  await expect(page.locator('#inspirationPreview')).toHaveCount(1);
- const order=await page.evaluate(()=>['canvasFeature','agentFeature','appsFeature','inspirationPreview'].map(id=>[id,document.getElementById(id)?.getBoundingClientRect().top]));
- expect(order.map(x=>x[0])).toEqual(['canvasFeature','agentFeature','appsFeature','inspirationPreview']);
- expect(order[0][1]).toBeLessThan(order[1][1]);
- expect(order[1][1]).toBeLessThan(order[2][1]);
- expect(order[2][1]).toBeLessThan(order[3][1]);
+ const inDocumentOrder=await page.evaluate(()=>{
+  const nodes=['canvasFeature','agentFeature','appsFeature','inspirationPreview'].map(id=>document.getElementById(id));
+  return nodes.every((node,i)=>node&&(i===nodes.length-1||Boolean(node.compareDocumentPosition(nodes[i+1])&Node.DOCUMENT_POSITION_FOLLOWING)));
+ });
+ expect(inDocumentOrder).toBe(true);
  await expect(page.locator('#quickCreateKind')).toBeVisible();
  await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
 });
