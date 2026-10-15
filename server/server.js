@@ -174,7 +174,7 @@ app.post('/api/billing/portal',auth,async(req,res)=>{try{if(publicUser(req.user)
 app.post('/api/billing/cancel',auth,async(req,res)=>{try{const current=publicUser(req.user);if(current?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});if(current?.usage?.plan==='lifetime')return res.status(409).json({error:'LIFETIME_HAS_NO_SUBSCRIPTION'});if(!stripe||!req.user.stripe_subscription_id)return res.status(400).json({error:'NO_ACTIVE_SUBSCRIPTION'});const sub=await stripe.subscriptions.update(req.user.stripe_subscription_id,{cancel_at_period_end:true});await updateSubscriptionByStripeId({subscriptionId:sub.id,status:sub.status,currentPeriodEnd:fromUnix(sub.current_period_end)});res.json({ok:true,cancelAtPeriodEnd:!!sub.cancel_at_period_end,currentPeriodEnd:fromUnix(sub.current_period_end)});}catch(e){console.error('[cancel]',e);res.status(500).json({error:'SUBSCRIPTION_CANCEL_FAILED'});}});
 
 const generationBilling=installGenerationBilling(app,{auth,pool:generationPool,stripe,appUrl});
-const generationStudio=installGenerationStudio(app,{auth,pool:generationPool});
+const generationStudio=installGenerationStudio(app,{auth,pool:generationPool,wallet:generationBilling.wallet});
 // Opt-in platform entry. Legacy auth/payment returns retain their existing handler.
 app.get('/',(req,res,next)=>{
   if(process.env.DEEPSYQ_HOME_ENABLED!=='true'||req.query.mobileAuth||req.query.checkout)return next();
