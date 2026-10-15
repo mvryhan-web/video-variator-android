@@ -1,0 +1,38 @@
+name: Deepsyq private reference intake checks
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-reference-*.js'
+      - 'server/generation-storage.js'
+      - 'tests/generation-reference-*.mjs'
+      - '.github/workflows/deepsyq-reference-intake.yml'
+  pull_request:
+    paths:
+      - 'server/generation-reference-*.js'
+      - 'server/generation-storage.js'
+      - 'tests/generation-reference-*.mjs'
+      - '.github/workflows/deepsyq-reference-intake.yml'
+jobs:
+  reference-intake:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify JS syntax
+        run: |
+          node --check server/generation-reference-probe.js
+          node --check server/generation-reference-upload.js
+          node --check server/generation-reference-ledger.js
+          node --check tests/generation-reference-probe-unit.mjs
+          node --check tests/generation-reference-upload-unit.mjs
+      - name: Reference parser, codec probe, API, S3 and ledger mock regression
+        run: |
+          node --test tests/generation-reference-media-unit.mjs tests/generation-reference-ledger-unit.mjs tests/generation-reference-upload-unit.mjs tests/generation-reference-probe-unit.mjs
