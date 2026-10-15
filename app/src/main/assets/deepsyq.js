@@ -109,11 +109,112 @@ quickCreateForm?.addEventListener('submit',async event=>{
 });
 let base='';try{base=window.AndroidBridge?.getApiBase?.()||'';}catch(_){}base=String(base||window.VV_API_BASE||location.origin).replace(/\/$/,'');
 async function api(path,options={}){const token=localStorage.getItem('vv_token');const r=await fetch(base+path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{})}});const d=await r.json();if(!r.ok)throw Error(d.error||'REQUEST_FAILED');return d;}
+// Deepsyq creator navigation: icon-only collapse on desktop, drawer on mobile.
 const mobileMenu=matchMedia('(max-width:760px)');
-function syncMenu(){$('sidebar').inert=mobileMenu.matches&&!document.body.classList.contains('menu-open');}
-mobileMenu.addEventListener('change',syncMenu);syncMenu();
-$('menu').onclick=()=>{const open=document.body.classList.toggle('menu-open');$('menu').setAttribute('aria-expanded',String(open));syncMenu();};
-document.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',()=>{document.body.classList.remove('menu-open');$('menu').setAttribute('aria-expanded','false');syncMenu();}));
+const SIDEBAR_STATE_KEY='deepsyq_sidebar_collapsed_v1';
+let collapsedSidebar=false;
+try{collapsedSidebar=localStorage.getItem(SIDEBAR_STATE_KEY)==='1';}catch(_){}
+document.body.classList.toggle('sidebar-collapsed',collapsedSidebar);
+function syncMenu(){
+ const mobile=mobileMenu.matches,expanded=mobile?document.body.classList.contains('menu-open'):!collapsedSidebar;
+ if(!mobile)document.body.classList.remove('menu-open');
+ document.body.classList.toggle('sidebar-collapsed',!mobile&&collapsedSidebar);
+ $('sidebar').inert=mobile&&!expanded;
+ for(const button of [$('menu'),$('sidebarToggle')]){
+  button.setAttribute('aria-expanded',String(expanded));
+  button.setAttribute('aria-label',mobile?(expanded?'Close navigation':'Open navigation'):(expanded?'Collapse sidebar':'Expand sidebar'));
+  button.title=button.getAttribute('aria-label');
+ }
+ closeModelFlyout();
+}
+function toggleSidebar(){
+ if(mobileMenu.matches)document.body.classList.toggle('menu-open');
+ else{collapsedSidebar=!collapsedSidebar;try{localStorage.setItem(SIDEBAR_STATE_KEY,collapsedSidebar?'1':'0');}catch(_){}}
+ syncMenu();
+}
+mobileMenu.addEventListener('change',syncMenu);
+$('menu').onclick=toggleSidebar;
+$('sidebarToggle').onclick=toggleSidebar;
+document.querySelectorAll('#sidebar nav a').forEach(a=>a.addEventListener('click',()=>{
+ if(mobileMenu.matches)document.body.classList.remove('menu-open');
+ syncMenu();
+}));
+
+// Model options are discovered from the existing Studio config. Prepared or disabled models
+// are visible but cannot be selected as if they were live integrations.
+let studioModelMenuConfig=null,openModelsKind=null,modelCloseTimer=null;
+function closeModelFlyout(){
+ clearTimeout(modelCloseTimer);
+ $('modelFlyout').hidden=true;openModelsKind=null;
+ document.querySelectorAll('[data-open-models]').forEach(b=>b.setAttribute('aria-expanded','false'));
+}
+function scheduleModelClose(){
+ clearTimeout(modelCloseTimer);
+ modelCloseTimer=setTimeout(()=>{
+  const focus=document.activeElement;
+  if(!$('modelFlyout').contains(focus)&&!focus?.closest?.('[data-model-menu]'))closeModelFlyout();
+ },160);
+}
+function renderModelFlyout(kind){
+ const list=$('modelFlyoutList');list.replaceChildren();
+ const configured=Array.isArray(studioModelMenuConfig?.catalog)?studioModelMenuConfig.catalog:MODEL_CATALOG;
+ const models=configured.filter(m=>m.kind===kind);
+ const allowedIds=new Set((studioModelMenuConfig?.models||[]).filter(m=>m.enabled===true).map(m=>m.id));
+ const studioActive=studioModelMenuConfig?.enabled===true;
+ const note=$('modelFlyoutNote');
+ note.textContent=!studioModelMenuConfig?'Checking model availability…':studioActive?'Choose a connected model; review access and settings in Studio.':'Models are preview-only until Studio is enabled.';
+ for(const model of models){
+  const usable=studioActive&&allowedIds.has(model.id)&&model.enabled!==false;
+  const b=document.createElement('button');b.type='button';b.className='model-flyout-option';b.disabled=!usable;
+  const title=document.createElement('strong');title.textContent=model.label;
+  const details=document.createElement('span');details.textContent=[model.provider,usable?(studioModelMenuConfig.ownerOnly?'Owner preview':'Open in Studio'):'Not connected'].filter(Boolean).join(' · ');
+  b.append(title,details);
+  if(usable)b.onclick=()=>{
+   try{sessionStorage.setItem('deepsyq_template_start',JSON.stringify({generationType:kind,defaultModel:model.id,promptTemplate:'',defaultSettings:{},source:'model-menu'}));}
+   catch(_){/* Direct Studio navigation remains available. */}
+   location.assign('generate-studio.html?studio='+kind+'&from=model-menu');
+  };
+  list.append(b);
+ }
+ if(!models.length){const msg=document.createElement('p');msg.textContent='No models listed yet. Open Studio for updates.';list.append(msg);}
+ const go=document.createElement('a');go.className='model-flyout-all';go.href='generate-studio.html?studio='+kind;go.textContent='View all in Studio →';list.append(go);
+}
+function showModelFlyout(kind,entry){
+ if(!['image','video'].includes(kind)||mobileMenu.matches&&!document.body.classList.contains('menu-open'))return;
+ clearTimeout(modelCloseTimer);openModelsKind=kind;
+ const panel=$('modelFlyout');$('modelFlyoutTitle').textContent=kind==='image'?'Image models':'Video models';
+ renderModelFlyout(kind);panel.hidden=false;
+ const rect=entry.getBoundingClientRect(),sidebar=$('sidebar').getBoundingClientRect();
+ panel.style.left=Math.min(window.innerWidth-panel.offsetWidth-12,sidebar.right+10)+'px';
+ panel.style.top=Math.max(12,Math.min(rect.top,window.innerHeight-panel.offsetHeight-12))+'px';
+ document.querySelectorAll('[data-open-models]').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.openModels===kind)));
+}
+for(const entry of document.querySelectorAll('[data-model-menu]')){
+ const kind=entry.dataset.modelMenu,btn=entry.querySelector('[data-open-models]');
+ entry.addEventListener('mouseenter',()=>showModelFlyout(kind,entry));
+ entry.addEventListener('mouseleave',scheduleModelClose);
+ entry.addEventListener('focusin',()=>showModelFlyout(kind,entry));
+ entry.addEventListener('focusout',scheduleModelClose);
+ btn.onclick=()=>{if(openModelsKind===kind&&!$('modelFlyout').hidden)closeModelFlyout();else showModelFlyout(kind,entry);};
+}
+$('modelFlyout').addEventListener('mouseenter',()=>clearTimeout(modelCloseTimer));
+$('modelFlyout').addEventListener('mouseleave',scheduleModelClose);
+$('modelFlyout').addEventListener('focusout',scheduleModelClose);
+$('modelFlyoutClose').onclick=closeModelFlyout;
+document.addEventListener('pointerdown',e=>{if(!$('modelFlyout').contains(e.target)&&!e.target.closest?.('[data-model-menu]'))closeModelFlyout();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModelFlyout();});
+window.addEventListener('resize',closeModelFlyout);
+syncMenu();
+
+$('navShare').onclick=async()=>{
+ const url=new URL('deepsyq.html',location.href).href;
+ try{
+  if(navigator.share)await navigator.share({title:'Deepsyq',url});
+  else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url);$('navShareStatus').textContent='Deepsyq link copied.';}
+  else $('navShareStatus').textContent='Copy this link: '+url;
+ }catch(e){if(e.name!=='AbortError')$('navShareStatus').textContent='Sharing is unavailable. Copy the page address instead.';}
+};
+
 let authOpener;function openAuth(){if(window.AndroidBridge){location.assign('index.html#signin');return;}authOpener=document.activeElement;$('authModal').hidden=false;setTimeout(()=>$('emailAuthEmail')?.focus(),0);initGoogle();}function closeAuth(){$('authModal').hidden=true;authOpener?.focus();}
 $('accountButton').onclick=openAuth;document.querySelectorAll('[data-close-auth]').forEach(b=>b.onclick=closeAuth);
 document.addEventListener('keydown',e=>{if($('authModal').hidden)return;if(e.key==='Escape')closeAuth();if(e.key==='Tab'){const items=[...$('authModal').querySelectorAll('button:not(:disabled),input:not(:disabled)')].filter(e=>e.getClientRects().length);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}});
@@ -150,7 +251,7 @@ function applyPlatformFeatures(){for(const el of document.querySelectorAll('[dat
 function renderPlans(){const descriptions={basic:'For occasional video projects.',pro:'For a regular creator workflow.',business:'For a high-volume video workflow.'};$('plans').replaceChildren();for(const key of ['basic','pro','business']){const p=config.plans?.[key];if(!p)continue;const card=document.createElement('article');card.className='plan';const heading=document.createElement('h3');heading.textContent=key[0].toUpperCase()+key.slice(1);const price=document.createElement('div');price.className='price';price.textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(p.price);const period=document.createElement('small');period.textContent=' / month';price.append(period);const desc=document.createElement('p');desc.textContent=descriptions[key];const usage=document.createElement('p');usage.textContent=`${Number(p.limit).toLocaleString('en-US')} video credits per month. Existing tool access applies.`;const b=document.createElement('button');b.textContent='Choose '+heading.textContent;b.onclick=()=>checkout(key);card.append(heading,price,desc,usage,b);$('plans').append(card);}const p=config.plans?.lifetime;if(p){$('lifetimePrice').textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:p.currency||'EUR',maximumFractionDigits:0}).format(p.price)+' · one payment';$('lifetimeCheckout').disabled=false;$('lifetimeCheckout').onclick=()=>checkout('lifetime');}}
 try{config=await api('/api/config');applyPlatformFeatures();renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);}catch(_){$('paymentStatus').textContent='Plans could not load. Please try again later.';}
 window.addEventListener('load',initGoogle);
-try{const c=await api('/api/studio/config');$('studioStatus').textContent=c.ownerOnly?'AI generation is in owner preview. Explore the studios; existing tools remain available.':c.enabled?'Open a studio to see the available models.':'AI generation is not available yet. Existing tools remain available.';}catch(_){$('studioStatus').textContent='Studio availability could not be checked. Existing tools remain available.';}
+try{const c=await api('/api/studio/config');studioModelMenuConfig=c;if(openModelsKind)renderModelFlyout(openModelsKind);$('studioStatus').textContent=c.ownerOnly?'AI generation is in owner preview. Explore the studios; existing tools remain available.':c.enabled?'Open a studio to see the available models.':'AI generation is not available yet. Existing tools remain available.';}catch(_){$('studioStatus').textContent='Studio availability could not be checked. Existing tools remain available.';}
 // Read-only dashboard overview: reuses the existing authenticated Studio history.
 // Never embeds media blobs, starts jobs, or exposes another user's results.
 async function loadRecentCreations(){
