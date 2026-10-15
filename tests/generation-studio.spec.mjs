@@ -37,3 +37,14 @@ test('saved generation history renders and reopens a durable result',async({page
  await page.getByRole('button',{name:'Reuse prompt'}).click();await expect(page.locator('#prompt')).toHaveValue('Saved product prompt');await page.locator('#showHistory').click();
  await page.getByRole('button',{name:'Open'}).click();await expect(page.locator('#media img')).toBeVisible();await expect(page.locator('#showCreate')).toHaveAttribute('aria-pressed','true');
 });
+
+test('Studio honors server-selected preferred enabled model',async({page})=>{
+ const cfg={enabled:true,models:[{kind:'video',id:'byteplus-seedance-2',label:'Seedance 2.0',ratios:['16:9','9:16','1:1'],references:1,enabled:true}],catalog:[
+  {id:'veo-3.1-lite-generate-preview',label:'Veo 3.1 Lite',kind:'video',provider:'Google',adapter:true,ratios:['16:9','9:16'],references:1,enabled:true,quality:'720p',duration:'8 seconds'},
+  {id:'byteplus-seedance-2',label:'Seedance 2.0',kind:'video',provider:'BytePlus',adapter:true,ratios:['16:9','9:16','1:1'],references:1,enabled:true,quality:'720p',duration:'5 seconds'}
+ ]};
+ await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
+ await page.goto('/generate-studio.html?studio=video');
+ await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');
+ await expect(page.locator('[data-t=consent]')).toContainText('BytePlus');
+});
