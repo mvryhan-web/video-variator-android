@@ -23,6 +23,38 @@ function showRuns(runs){
   el.append(tr);
  }
 }
+const alertAdvice={
+ PROVIDER_HIGH_FAILURE_RATE:'Check recent provider/model errors and availability before any routing changes.',
+ RECORDED_SPEND_SPIKE:'Review job volume, model mix and recorded provider costs; this does not confirm a provider price increase.',
+ RECORDED_UNIT_COST_SPIKE:'Compare models, resolutions and job mix against verified provider economics.',
+ COST_VISIBILITY_GAP:'Review missing actual-cost reporting before estimating any gross margin.',
+ HTTP_UNAVAILABLE:'Investigate Deepsyq service availability and Render status.',
+ DB_UNAVAILABLE:'Verify database connectivity without exposing credentials.',
+ GENERATION_ATTENTION:'Review failed, stuck and billing-review jobs in Owner AI Control.'
+};
+function renderAlerts(items){
+ const root=$('watcherAlerts');root.replaceChildren();
+ if(!Array.isArray(items)||!items.length){
+  const tr=document.createElement('tr'),td=document.createElement('td');
+  td.colSpan=4;td.textContent='No recorded alerts.';tr.append(td);root.append(tr);return;
+ }
+ for(const item of items){
+  const tr=document.createElement('tr');
+  const place=[formatDate(item.lastSeenAt),[item.source,item.code,item.provider,item.currency].filter(Boolean).join(' · '),
+   alertAdvice[item.code]||'Review the saved check and investigate before making changes.'];
+  for(const value of place){const td=document.createElement('td');td.textContent=String(value);tr.append(td);}
+  const actionCell=document.createElement('td');
+  if(item.acknowledged){actionCell.textContent='Acknowledged';}
+  else{
+   const b=document.createElement('button');b.type='button';b.textContent='Acknowledge';
+   b.disabled=busy;b.addEventListener('click',()=>{
+    if(window.confirm('Acknowledge this alert? This does not fix the issue.'))void action('/api/product-watcher/admin/alerts/ack',{alertId:item.id,confirmAlertId:item.id});
+   });
+   actionCell.append(b);
+  }
+  tr.append(actionCell);root.append(tr);
+ }
+}
 function render(d){
  current=d;$('watcherStatus').textContent=d.enabled?(d.paused?'Paused':'Ready for manual checks'):'Not enabled';
  $('watcherDetails').textContent=d.enabled?'Scheduler: '+(d.schedulerActive?'reported active':'not deployed')+' · Last run: '+formatDate(d.lastRun?.checkedAt):'Product Watcher is disabled in server configuration.';
@@ -33,7 +65,7 @@ function render(d){
  showRuns(d.runs||[]);
 }
 async function refresh(){
- try{busy=true;if(current)render(current);const d=await api('/api/product-watcher/admin/status');busy=false;render(d);feedback('Status updated.');}
+ try{busy=true;if(current)render(current);const [d,alerts]=await Promise.all([api('/api/product-watcher/admin/status'),api('/api/product-watcher/admin/alerts')]);busy=false;render(d);renderAlerts(alerts.items);feedback('Status updated.');}
  catch(e){busy=false;current=null;$('watcherStatus').textContent='Unavailable';$('watcherDetails').textContent=e.message==='SIGN_IN_REQUIRED'?'Sign in using the existing Deepsyq owner account.':'Owner access or Watcher database is unavailable.';$('watcherToggle').disabled=true;$('watcherRun').disabled=true;$('watcherRefresh').disabled=false;feedback(e.message,true);}
 }
 async function action(path,body){
