@@ -1,14 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createHash} from 'node:crypto';
+import {createHmac} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import pg from 'pg';
 import {AI_MIGRATION_FILES} from '../server/ai-migrations.js';
 import {previewTrialWindow} from '../server/generation-trial-policy.js';
 const connString=process.env.AI_TEST_DATABASE_URL;
 const start=Date.parse('2026-10-15T12:00:00Z');
-const purchase=(id,extra={})=>({userId:'trial-'+id,hash:createHash('sha256').update('fixture-'+id).digest('hex'),session:'cs_trial_'+id,intent:'pi_trial_'+id,...extra});
+const purchase=(id,extra={})=>({userId:'trial-'+id,hash:createHmac('sha256','STAGING_FIXTURE_ONLY_NONPRODUCTION').update('fixture-'+id).digest('hex'),session:'cs_trial_'+id,intent:'pi_trial_'+id,verifiedWebhook:true,paymentStatus:'paid',amountCents:99,currency:'usd',checkoutMode:'payment',oneTime:true,autoRenew:false,...extra});
 async function insert(pool,p){
+ const review=previewTrialWindow({userId:p.userId,sessionId:p.session,paymentIntent:p.intent,verifiedWebhook:p.verifiedWebhook,
+   paymentStatus:p.paymentStatus,checkoutMode:p.checkoutMode,amountCents:p.amountCents,currency:p.currency,
+   oneTime:p.oneTime,autoRenew:p.autoRenew,paidAtMs:start,refundedCents:0,revoked:false},start);
+ if(review.status!=='ACTIVE_WINDOW_PREVIEW')throw Error('NOT_VERIFIED_PAID_RECEIPT');
  const c=await pool.connect();
  try{
   await c.query('BEGIN');
@@ -47,6 +51,14 @@ test('isolated PostgreSQL trial payment staging never mutates live schemas or gr
    const p=purchase('identity');await insert(pool,p);
    await assert.rejects(()=>insert(pool,{...purchase('other'),hash:p.hash}),/DUPLICATE_CUSTOMER_OR_PAYMENT/);
    await assert.rejects(()=>insert(pool,{...p,session:'cs_trial_new'}),/DUPLICATE_CUSTOMER_OR_PAYMENT/);
+  });
+  await t.test('unpaid, recurring, unverified, wrong-amount and browser-return events cannot create a trial',async()=>{
+   for(const change of [{verifiedWebhook:false},{paymentStatus:'unpaid'},{checkoutMode:'subscription'},
+     {autoRenew:true},{amountCents:100},{currency:'eur'}]){
+    await assert.rejects(()=>insert(pool,purchase('blocked',{...change})),/NOT_VERIFIED_PAID_RECEIPT/);
+   }
+   const {rows}=await db.query('SELECT COUNT(*)::int AS n FROM vv_ai_trial_purchase_staging WHERE user_id=$1',['trial-blocked']);
+   assert.equal(rows[0].n,0);
   });
   await t.test('72-hour expiry starts at paid time; no actual access granted',async()=>{
    const p=purchase('window');await insert(pool,p);
