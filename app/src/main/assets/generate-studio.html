@@ -38,5 +38,19 @@
 <div id="musicOptions" hidden><label><span data-t="trackType">Audio type</span><select id="musicMode"><option value="song" data-t="song">Song with vocals</option><option value="instrumental" data-t="instrumental">Instrumental</option><option value="voice" data-t="voiceoverMode">Voiceover · setup pending</option></select></label><div id="voiceSettings" hidden><label><span data-t="language">Language</span><select id="voiceLanguage"><option>American English</option><option>German</option><option>Russian</option><option>French</option><option>Spanish</option></select></label><label><span data-t="voice">Voice</span><select id="voiceChoice"><option>Kore</option><option>Puck</option><option>Charon</option><option>Aoede</option></select></label></div><a href="audio-studio.html" class="tool-link" data-t="voiceover">Open existing voiceover tool →</a></div>
 <button type="button" class="primary" data-close="settingsDialog" data-t="done">Done</button>
 </dialog>
+<dialog id="cropReferenceDialog" class="reference-crop-dialog" aria-labelledby="cropReferenceTitle">
+ <div class="dialog-head"><h2 id="cropReferenceTitle">Crop reference photo</h2><button id="cropReferenceClose" type="button" aria-label="Close crop editor">×</button></div>
+ <p class="hint">Crop this reference locally before generation. Drag the preview to move the photo, or use the sliders below. Your original file stays on your device.</p>
+ <div class="reference-crop-stage"><canvas id="cropReferencePreview" width="480" height="320" aria-label="Cropping preview"></canvas></div>
+ <div class="reference-crop-controls">
+  <label>Crop shape <select id="cropReferenceRatio"><option value="original">Original</option><option value="1:1">Square · 1:1</option><option value="4:5">Portrait · 4:5</option><option value="9:16">Vertical · 9:16</option><option value="3:2">Landscape · 3:2</option><option value="16:9">Widescreen · 16:9</option></select></label>
+  <label>Zoom <input id="cropReferenceZoom" type="range" min="1" max="3" step="0.05" value="1"></label>
+  <label>Horizontal position <input id="cropReferenceX" type="range" min="0" max="100" step="1" value="50"></label>
+  <label>Vertical position <input id="cropReferenceY" type="range" min="0" max="100" step="1" value="50"></label>
+ </div>
+ <p class="hint">Only the selected reference is changed. The result is optimized for the existing 1 MB image-reference limit.</p>
+ <p id="cropReferenceStatus" role="status" aria-live="polite"></p>
+ <div class="reference-crop-actions"><button id="cropReferenceReset" type="button">Reset view</button><button id="cropReferenceCancel" type="button">Cancel</button><button id="cropReferenceApply" type="button" class="primary">Apply crop</button></div>
+</dialog>
 <dialog id="walletDialog"><div class="dialog-head"><h2>AI credits</h2><button type="button" data-close="walletDialog" aria-label="Close">×</button></div><p id="walletMode" class="hint"></p><div id="walletSummary" class="wallet-summary"></div><div class="wallet-actions"><button id="walletRefresh" type="button">Refresh balance</button></div><div id="creditPacks" class="credit-packs"></div><section class="wallet-history"><h3>Recent activity</h3><div id="walletHistory"></div></section><p id="walletStatus" role="status"></p><p class="hint">Credits are added only after Stripe confirms a successful payment.</p></dialog>
 </body></html>
