@@ -14,8 +14,8 @@ This file is the shared live progress board for all coding agents.
 Visible active work in GitHub:
 - branch: `ai-generation-studio`
 - open PR: **#40 — Prepare compact AI video, image and audio studios; keep generation and billing gated**
-- current branch head referenced by that PR: `144e1e9a1a9e9e98951d4ef4aa49c29fdb630f6c`
-- PR reports compact AI video/image/audio studios, provider preparation, gated billing, and passing automated checks; it is still an open PR and is **not treated as merged production**.
+- PR #40 remains the earlier generation-studio branch. The active continuation is now `deepsyq-platform` / draft PR **#42**, which builds on that work plus current `main`.
+- Neither PR is treated as merged production. Always inspect the current PR head before continuing because the branch is actively changing.
 
 **Important:** do NOT assign the current Work agent all roadmap blocks 1–7 by default. Its job is to finish and hand off its current bounded TXT/production scope. Additional agents may take separate non-overlapping roadmap blocks after the relevant shared foundations are stable, or earlier only when the owner explicitly assigns them and collision risk is low.
 
@@ -32,7 +32,7 @@ The exact completion state of older components must be verified from the current
 | Workstream | Owner / Agent | Branch / PR | Status | Rule |
 |---|---|---|---|---|
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
-| Deepsyq Dashboard, navigation and truthful pricing/SEO entry | Current ChatGPT Work agent | `deepsyq-platform`, based on PR #40 + current main | IN PROGRESS | Current owner request; reuse auth/tools/checkout, no live billing or provider activation. |
+| Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
 
 When another agent joins, add one row per claimed workstream before substantial implementation. One agent should own one bounded workstream at a time.
 
@@ -117,7 +117,7 @@ Current queued-roadmap dependencies to verify before implementation:
 **Verified foundation (5c28ac7):** Dashboard CI 38551913472 passed (25 unit, 70 browser cases with one retry); general web CI passed (327 passed, 3 retry-passed, 75 skipped); Android build/emulator CI 38551913541 passed. Quota integration (db289716): 28 local checks passed, isolated PostgreSQL integration passed; 70 Deepsyq browser cases passed without retries; Android build/emulator passed. Full web CI 38623063405 passed: 358 passed, 3 retry-passed, 74 skipped. Not a real production login/payment test.
 **Branch:** `deepsyq-platform` built from `ai-generation-studio` PR40 plus main 14de516.
 **Blockers:** owner-only AI, BytePlus profile/payment activation and missing secure key, public job/credit/storage flow, real Trial entitlement, existing PR28 quota reconciliation. No live production changes.
-**Next:** reconcile final per-tool allowances and remaining entry points; then connect the existing AI wallet reservation/settlement to generation jobs after pricing/provider economics are approved. Finish bounded TXT flow. Roadmap blocks 1–7 stay queued.
+**Next:** finish repository-safe BASE gaps: primary/fallback routing policy without unsafe paid retries, public concurrency/rate-limit policy, object-storage abstraction, and billing-review reconciliation. Keep live provider/payment/root rollout disabled until external gates pass. Roadmap blocks 1–7 stay queued.
 **Continuation 2026-10-15:** work-limit efficiency rule added to `AGENTS.md`. Owner-only `GET /api/studio/jobs` now exposes the latest 50 non-deleted generation records as safe metadata for History; it does not expose media bytes. Unit fixture updated to cover listing and deletion filtering. No provider activation, payment, production database, deployment or public-access change was made. Durable generation-job metadata migration was added (provider/model/lifecycle/cost/credit fields), Studio My Results now renders saved jobs and can reopen a stored result, and a config-driven server-side generation pricing engine plus safe credit-estimate endpoint were added. No default AI prices were invented; pricing remains unconfigured until verified provider economics are entered.
 
 **Continuation 2 — repository-safe BASE work:** Added feature-gated owner model controls (enable override, maintenance, priority, markup, internal cost), an owner-only AI Control page, and priority-based default model selection. Studio History now lists durable jobs, reopens results and reuses prompts. Server-side pricing remains config-only with no invented rates. Added an opt-in recovery poller that resumes only existing async provider task IDs after restart and never starts a replacement generation; unit coverage asserts that behavior. No provider key, live Stripe AI price, production migration or deployment was changed. See `docs/DEEPSYQ_BASE_CHECKLIST.md` for the point-by-point original TXT status.
@@ -125,3 +125,14 @@ Current queued-roadmap dependencies to verify before implementation:
 **Detail:** `docs/DEEPSYQ-FOUNDATION-HANDOFF.md`, `docs/DEEPSYQ_BASE_CHECKLIST.md`, and original TXT in `docs/DEEPSYQ_PLATFORM_SPEC.md`.
 
 **External verification:** CI production probe on Oct 14 reached health/config and found billingConfigured=true, Google and Apple unconfigured (503). The smoke step permits failure; a green workflow does not establish production OAuth readiness. Apple remains intentionally disabled. Oct 15 BytePlus console is signed in but blocks model configuration on an unchecked terms/customer agreement/data-processing consent dialog; no acceptance or activation performed.
+
+
+### Continuation 3 — 2026-10-15
+
+- Studio now reads/writes commercial `vv_generation_jobs`; migration additively copies legacy `vv_generation_pilot` rows without deleting the old table.
+- Existing `GenerationWallet` is shared with Studio behind `AI_STUDIO_WALLET_ENABLED=false`.
+- When enabled with approved pricing, generation reserves credits before provider execution. Immediate or polled output is persisted in `finalizing` state before wallet capture; capture recovery never regenerates media.
+- Confirmed terminal provider failures release reservations; ambiguous provider-submission failures retain the reservation for billing review rather than guessing/refunding.
+- Studio UI understands queued/finalizing states and insufficient-credit / wallet-unavailable errors.
+- No live Stripe AI product, provider key, Render secret, production DB migration, public entitlement, deployment or root switch was enabled.
+- Latest branch CI is running after these changes; do not mark this continuation verified until the current head is green.
