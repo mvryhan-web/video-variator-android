@@ -1,11 +1,17 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
-Last updated: 2026-10-14  
+Last updated: 2026-10-15  
 Repository: `mvryhan-web/video-variator-android`  
 Brand: **Deepsyq**  
 This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
+
+## Canonical integration policy — owner instruction 2026-10-15
+
+**Target: one existing repository and `main` branch for Deepsyq BASE + all seven blocks (1–7).** Feature branches and draft PRs are temporary development workspaces. Every verified block must be reconciled with the latest BASE, merged into `main` through reviewed tests and conflict resolution, and then separately validated on Render where required. See `AGENTS.md` and `docs/DEEPSYQ_ROADMAP.md`. No force-push, no replacement architecture, and no blind copy of feature branches to production.
+
+**Actual release status:** `main` still serves the existing application. BASE is in draft PR #42; Product Watcher Block 5 is in separate draft PR chain #49 → #48 → #47 → #46. These are **NOT MERGED TO MAIN**, and the other roadmap blocks must be checked individually. Render currently auto-deploys `main`; the free PostgreSQL `video-uniquifier-db` is reported available with expiry **2026-10-17**. Before the first functional integration/deploy, verify database continuity, independent recoverable backup, compatibility, CI and rollback. Documentation commits use `[skip render]` to avoid redeployment. Do not claim live migration, backup or readiness until verified.
 
 ## Current priority gate
 
@@ -17,7 +23,7 @@ Visible active work in GitHub:
 - current branch head referenced by that PR: `144e1e9a1a9e9e98951d4ef4aa49c29fdb630f6c`
 - PR reports compact AI video/image/audio studios, provider preparation, gated billing, and passing automated checks; it is still an open PR and is **not treated as merged production**.
 
-**Important:** do NOT assign the current Work agent all roadmap blocks 1–6 by default. Its job is to finish and hand off its current bounded TXT/production scope. Additional agents may take separate non-overlapping roadmap blocks after the relevant shared foundations are stable, or earlier only when the owner explicitly assigns them and collision risk is low.
+**Important:** do NOT assign the current Work agent all roadmap blocks 1–7 by default. Its job is to finish and hand off its current bounded TXT/production scope. Additional agents may take separate non-overlapping roadmap blocks after the relevant shared foundations are stable, or earlier only when the owner explicitly assigns them and collision risk is low.
 
 Before any agent starts a roadmap block, it must audit the latest code/branches/PRs because another agent may already have implemented part of it.
 
@@ -45,6 +51,7 @@ When another agent joins, add one row per claimed workstream before substantial 
 | 4 | Studio + My Workspace | NOT STARTED / QUEUED | UNASSIGNED | Creation editor/templates/skills + personal project workspace |
 | 5 | Internal Product Watcher Agent | NOT STARTED / QUEUED | UNASSIGNED | Owner-only scheduled monitoring, recommendations, approvals, daily/weekly reports |
 | 6 | Deepsyq Voice Agent | NOT STARTED / QUEUED | UNASSIGNED | Realtime voice interface across Deepsyq, Device Cleanup skill, owner voice access to Product Watcher |
+| 7 | Pricing, Credits, Stripe & Unit Economics | NOT STARTED / QUEUED | UNASSIGNED | Extend existing Stripe/AI wallet with verified provider economics; see roadmap |
 
 Full requirements: `docs/DEEPSYQ_ROADMAP.md`.
 
