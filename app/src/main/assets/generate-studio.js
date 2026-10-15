@@ -179,6 +179,9 @@ $('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)ret
   busy=true;availability();$('status').textContent=say('Preparing this image as your next reference…','Готовим изображение как основу следующей редакции…');
   try{
    const file=await imageResultReference(blob);
+   // select() and acceptFiles() deliberately reject changes while a paid job is busy.
+   // Preparation is finished now, so unlock before applying the new local draft.
+   busy=false;
    select('image',{remember:false});
    await acceptFiles([file]);
    $('consent').checked=false;availability();
