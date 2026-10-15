@@ -598,3 +598,13 @@ Current queued-roadmap dependencies to verify before implementation:
 - Existing owner-only API and isolated panel expose status, alerts, content tasks, official-source proposal review, reports and delivery attempts. No public read/write access, no new auth or second bot.
 - CI: syntax, owner-access and logic tests, real temporary PostgreSQL 16 schema/dedup/audit/recovery, fake provider docs and Telegram. See PR #46 for latest run results. **Not deployed**: no migrations in production, no Render private worker, no live provider/Telegram/billing calls. Default flags OFF / owner PAUSED.
 - Remaining: actual Render rollout after owner-approved DB backup, real provider/pricing semantic verification, market-based product opportunity research, independent billing/webhook monitoring, media/link E2E tests, owner/staging signoff and real notification acceptance. Product Watcher status **IN PROGRESS**, not DONE.
+
+
+### Block 5 — deployment readiness gate (isolated follow-up)
+
+- Owned by the dedicated Block 5 agent, independently prepared on `deepsyq-block5-readiness-gate` / draft PR #47 targeting Block 5 draft PR #46. BASE Image/Video and Block 3 Home/Inspiration changes are preserved.
+- Implemented owner-only read-only preflight `server/product-watcher/readiness.js` and `/api/product-watcher/admin/readiness`. Reports only boolean flags, table presence, owner pause and recent worker heartbeat, never secrets, database writes or implied production approval.
+- Standalone Watcher panel displays preflight blockers; test coverage includes HTTP owner authorization, Node unit tests, ephemeral PostgreSQL 16 schema/paused state and worker heartbeat.
+- **Verified** on isolated branch head `62c8da50`: both GitHub Actions runs passed (watcher/security tests and PostgreSQL). This status entry requires a new CI run after commit, and the feature must still be merged/reviewed.
+- **Important gate:** existing free Render PostgreSQL was reported available but scheduled to expire on 2026-10-17; owner-approved backup/data continuity, separate additive migration and real production/staging acceptance required. No billing change, database upgrade, production deployment, paid provider call or Telegram delivery performed.
+- The code-level preflight can be green without being production-certified; Block 5 remains **IN PROGRESS** pending external staging, backup and owner approval. Full checklist in `docs/PRODUCT_WATCHER_DEPLOYMENT_GATES.md`.
