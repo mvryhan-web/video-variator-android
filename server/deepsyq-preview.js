@@ -7,6 +7,7 @@ import express from 'express';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
+import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 
 const app=express();
 const port=Number(process.env.PORT||31990);
@@ -33,7 +34,7 @@ app.get('/api/config',(_req,res)=>res.json({
 }));
 app.get('/api/studio/config',(_req,res)=>res.json({
  enabled:false,ownerOnly:true,publicGenerationEnabled:false,pricingConfigured:false,
- models:[],catalog:[],translation:{enabled:false,reason:'PREVIEW_ONLY'}
+ models:[],catalog:MODEL_CATALOG.map(m=>({...m,enabled:false})),translation:{enabled:false,reason:'PREVIEW_ONLY'}
 }));
 app.get('/api/templates',(_req,res)=>res.json({items:[]}));
 app.get('/api/auth/email/status',(_req,res)=>res.json({configured:false}));
