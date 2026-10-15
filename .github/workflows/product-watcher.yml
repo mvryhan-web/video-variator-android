@@ -1,0 +1,26 @@
+name: Product Watcher unit checks
+on:
+  push:
+    branches: [deepsyq-block5-product-watcher]
+  pull_request:
+    branches: [deepsyq-platform]
+permissions:
+  contents: read
+jobs:
+  watcher:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax checks
+        run: |
+          node --check server/product-watcher/monitor.js
+          node --check server/product-watcher/admin-api.js
+          node --check server/product-watcher/run-once.js
+          node --check app/src/main/assets/product-watcher-admin.js
+          node --check server/server.js
+      - name: Watcher security and behavior unit tests
+        run: node --test tests/product-watcher-unit.mjs tests/product-watcher-admin-unit.mjs
