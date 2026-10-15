@@ -13,11 +13,39 @@ document.querySelectorAll('[data-quick-starter]').forEach(button=>button.addEven
  const prompt=$('quickCreatePrompt'),existing=prompt.value.trim();
  if(existing&&existing!==starter.prompt&&!confirm('Replace your current description with this starter?'))return;
  $('quickCreateKind').value=starter.kind;prompt.value=starter.prompt;
+ saveQuickDraft();
  $('quickCreateStatus').textContent='Editable starter loaded. Nothing has been uploaded or generated.';
  prompt.focus();
 }));
 
 let quickReferences=[],quickPreviewUrls=[];
+// Small session-only Canvas draft: never stores uploaded files or sends drafts to the server.
+const QUICK_DRAFT_KEY='deepsyq_quick_canvas_draft_v1';
+function saveQuickDraft(){
+ const draft={prompt:$('quickCreatePrompt').value.slice(0,2000),kind:$('quickCreateKind').value};
+ try{sessionStorage.setItem(QUICK_DRAFT_KEY,JSON.stringify(draft));}catch(_){/* Browsers may deny storage; creation still works. */}
+}
+function restoreQuickDraft(){
+ try{
+  const draft=JSON.parse(sessionStorage.getItem(QUICK_DRAFT_KEY)||'null');
+  if(!draft||typeof draft.prompt!=='string'||!['image','video'].includes(draft.kind))return;
+  $('quickCreatePrompt').value=draft.prompt.slice(0,2000);
+  $('quickCreateKind').value=draft.kind;
+ }catch(_){/* Ignore corrupt or inaccessible session data. */}
+}
+restoreQuickDraft();
+$('quickCreatePrompt').addEventListener('input',saveQuickDraft);
+$('quickCreateKind').addEventListener('change',saveQuickDraft);
+$('quickCreateClear').addEventListener('click',()=>{
+ const hasDraft=!!$('quickCreatePrompt').value.trim()||quickReferences.length>0;
+ if(hasDraft&&!confirm('Clear this Canvas draft and remove its selected reference photos?'))return;
+ $('quickCreatePrompt').value='';$('quickCreateKind').value='image';
+ quickReferences=[];$('quickCreateFiles').value='';renderQuickReferences();
+ try{sessionStorage.removeItem(QUICK_DRAFT_KEY);}catch(_){}
+ $('quickCreateStatus').textContent='Canvas draft cleared. No files were uploaded.';
+ $('quickCreatePrompt').focus();
+});
+
 const QUICK_MAX_FILES=4,QUICK_MAX_BYTES=1024*1024;
 function renderQuickReferences(){
  for(const url of quickPreviewUrls)URL.revokeObjectURL(url);
