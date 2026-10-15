@@ -1,4 +1,5 @@
 import {createHash,createHmac,randomUUID} from 'node:crypto';
+import {isIP} from 'node:net';
 import {inspectStudioReferenceMedia,STUDIO_REFERENCE_MEDIA_LIMITS} from './generation-reference-media.js';
 
 const MIME_EXT=new Map([['image/png','png'],['image/jpeg','jpg'],['video/mp4','mp4'],['audio/mpeg','mp3'],['audio/mp3','mp3'],['audio/wav','wav']]);
@@ -37,6 +38,34 @@ function signingKey(secret,day,region){
  const date=hmac('AWS4'+secret,day),reg=hmac(date,region),service=hmac(reg,'s3');
  return hmac(service,'aws4_request');
 }
+// AWS SigV4 query authentication for a future server-private, short-lived S3 GET.
+// DO NOT place presigned URLs in HTTP responses, logs, job history or browser state.
+const sigV4Encode=s=>encodeURIComponent(String(s)).replace(/[!'()*]/g,ch=>'%'+ch.charCodeAt(0).toString(16).toUpperCase());
+function presignedGet({url,region,accessKeyId,secretAccessKey,issuedAt,seconds}){
+ const u=new URL(url),stamp=amzDate(issuedAt),scope=stamp.day+'/'+region+'/s3/aws4_request';
+ const params=[
+  ['X-Amz-Algorithm','AWS4-HMAC-SHA256'],
+  ['X-Amz-Credential',accessKeyId+'/'+scope],
+  ['X-Amz-Date',stamp.full],
+  ['X-Amz-Expires',String(seconds)],
+  ['X-Amz-SignedHeaders','host']
+ ];
+ const query=params.sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>sigV4Encode(k)+'='+sigV4Encode(v)).join('&');
+ const canonical=['GET',u.pathname,query,'host:'+u.host+'\\n','host','UNSIGNED-PAYLOAD'].join('\\n');
+ const toSign=['AWS4-HMAC-SHA256',stamp.full,scope,sha(canonical)].join('\\n');
+ const signature=createHmac('sha256',signingKey(secretAccessKey,stamp.day,region)).update(toSign).digest('hex');
+ return u.origin+u.pathname+'?'+query+'&X-Amz-Signature='+signature;
+}
+function approvedReferenceHost(cfg,env){
+ const url=new URL(cfg.endpoint),hostname=url.hostname.toLowerCase();
+ const approved=String(env.AI_STUDIO_REFERENCE_PROVIDER_FETCH_HOSTS||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+ // Reject hostnames that are private, unresolved, wildcarded, IP literals or not
+ // exactly owner-approved; this is not an SSRF check and makes no network request.
+ const publicDns=/^(?=.{4,253}$)[a-z0-9-]+(?:\\.[a-z0-9-]+)+$/.test(hostname)&&
+  !/(?:\\.local|\\.internal|\\.localhost|\\.invalid|\\.test)$/.test(hostname);
+ return publicDns&&!isIP(hostname)&&!url.port&&approved.length>0&&approved.every(h=>h===hostname);
+}
+
 function signedRequest({method,url,region,accessKeyId,secretAccessKey,body=Buffer.alloc(0),mime,now=new Date()}){
  const u=new URL(url),payload=Buffer.isBuffer(body)?body:Buffer.from(body||'');
  const payloadHash=sha(payload),date=amzDate(now),headers={host:u.host,'x-amz-content-sha256':payloadHash,'x-amz-date':date.full};
@@ -83,6 +112,31 @@ export function createObjectStorage({env=process.env,fetcher=fetch,now=()=>new D
  return {
   configured:cfg.configured,
   stagedReferenceKey,
+  // Sensitive, optional server-only S3 presigned GET for a future consented
+  // ModelArk dispatch. Caller MUST verify the owner/expiry in the ledger,
+  // inspect actual media bytes, and approve the paid job separately.
+  presignStagedReferenceRead({userId,key,expiresAt,seconds=30}={}){
+   requireReady();
+   if(env.AI_STUDIO_REFERENCE_VIDEO_PRESIGN_ENABLED!=='true'||
+      env.AI_STUDIO_REFERENCE_TRANSFER_REVIEW_APPROVED!=='true'||
+      env.AI_STUDIO_REFERENCE_STAGING_ENABLED!=='true'||
+      env.AI_STUDIO_REFERENCE_CLEANUP_ENABLED!=='true')
+    throw Error('REFERENCE_VIDEO_TRANSFER_DISABLED');
+   if(!approvedReferenceHost(cfg,env))throw Error('REFERENCE_PROVIDER_FETCH_HOST_NOT_APPROVED');
+   if(!Number.isInteger(seconds)||seconds<15||seconds>60)
+    throw Error('REFERENCE_VIDEO_URL_TTL_INVALID');
+   const id=typeof key==='string'&&key.match(/\\/([0-9a-f-]{36})\\.mp4$/)?.[1];
+   if(typeof userId!=='string'||!id||key!==stagedReferenceKey({userId,mime:'video/mp4',assetId:id}))
+    throw Error('REFERENCE_MEDIA_ACCESS_DENIED');
+   const issued=now(),expires=new Date(expiresAt);
+   if(!(issued instanceof Date)||!Number.isFinite(issued.getTime())||
+      !Number.isFinite(expires.getTime())||
+      expires.getTime()<=issued.getTime()+(seconds+30)*1000)
+    throw Error('REFERENCE_VIDEO_URL_EXPIRES_TOO_LATE');
+   return {url:presignedGet({url:urlFor(key),region:cfg.region,accessKeyId:cfg.accessKeyId,
+     secretAccessKey:cfg.secretAccessKey,issuedAt:issued,seconds}),
+     expiresAt:new Date(issued.getTime()+seconds*1000).toISOString()};
+  },
   async putGeneration({userId,jobId,mime,bytes}){
    requireReady();if(!MIME_EXT.has(mime)||!Buffer.isBuffer(bytes)||!bytes.length||bytes.length>50*1024*1024)throw Error('OBJECT_STORAGE_INVALID_MEDIA');
    const owner=sha(String(userId)).slice(0,24),key=`${cfg.prefix}/users/${owner}/${jobId}.${MIME_EXT.get(mime)}`;
