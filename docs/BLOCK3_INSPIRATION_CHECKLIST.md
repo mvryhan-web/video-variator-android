@@ -50,3 +50,10 @@ Owner AI Control now reports Block 3-specific readiness without turning anything
 - Real approved featured video records are emphasized with muted/looped, viewport-limited previews (disabled for reduced motion and data saver). No example is fabricated, copied, uploaded, or automatically published.
 - Public Inspiration lists only actual available categories as shortcut chips. The same existing filters/actions and original media cards remain; video cards receive more room and keep playback controls.
 - Regression checks added for non-destructive layout and real media. Browser CI is required before declaring visual changes verified. Public activation still needs actual owned/licensed media, evidence, owner approval and separate launch checks.
+
+## 2026-10-15 — Real approved homepage video hero (feature-branch only)
+
+- Added an optional **homepage hero video** which is filled exclusively from the existing first owner-approved, Studio-targeted, featured Video Inspiration API record. The existing Canvas, tool links, sidebar, original owner gallery media and all Studio buttons are preserved.
+- The hero never appears for photo-only/empty data or when Inspiration is disabled or its API fails. It is a real media `<video>` linked to the original Inspiration card, not a still image disguised by a fake play icon.
+- Shares the existing viewport-limited muted playback observer and pauses when the tab hides; `prefers-reduced-motion` and data saver suppress ambient autoplay. All other videos are unchanged.
+- Browser tests added for owner-approved video hero and image-only fallback. No third-party image/video imported, no asset records created, no provider charges or public enablement. Verify on latest-head CI before marking tested.

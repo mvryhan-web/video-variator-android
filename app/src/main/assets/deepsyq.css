@@ -228,3 +228,25 @@ body.sidebar-collapsed .sidebar-bottom #logout:not([hidden])::before{content:"â‡
 
 /* Feature flags must win over navigation display rules. */
 #sidebar [hidden],#modelFlyout[hidden]{display:none!important}
+
+/* Approved first-party video hero: completely absent until API confirms a featured video. */
+.inspiration-hero-feature[hidden]{display:none!important}
+.inspiration-hero-feature{position:absolute;z-index:1;right:1%;top:110px;width:39%;height:355px;display:block;overflow:hidden;border-radius:21px;border:1px solid #6e5285;background:linear-gradient(135deg,#302044,#181928);box-shadow:0 23px 65px #0008}
+.inspiration-hero-feature video{width:100%;height:100%;display:block;object-fit:cover;pointer-events:none}
+.inspiration-hero-overlay{position:absolute;inset:auto 0 0;padding:65px 20px 20px;display:grid;gap:6px;color:#fff;background:linear-gradient(transparent,#120d21ed)}
+.inspiration-hero-overlay small{font-size:9px;letter-spacing:1.5px;color:#e1c4ff}
+.inspiration-hero-overlay strong{font-size:21px;line-height:1.2}
+.inspiration-hero-overlay>span{font-size:12px;color:#dccdff}
+.hero:has(.inspiration-hero-feature:not([hidden])) .quick-create{max-width:58%}
+.hero:has(.inspiration-hero-feature:not([hidden])) .orb{opacity:.08}
+.inspiration-hero-feature:focus-visible{outline:3px solid #dfb8ff;outline-offset:3px}
+@media(max-width:1050px){
+ .inspiration-hero-feature{position:relative;right:auto;top:auto;width:100%;height:auto;aspect-ratio:16/9;max-height:420px;margin:22px 0 5px}
+ .hero:has(.inspiration-hero-feature:not([hidden])) .quick-create{max-width:650px}
+}
+@media(max-width:600px){
+ .inspiration-hero-feature{aspect-ratio:4/3;min-height:210px}
+ .inspiration-hero-overlay{padding:35px 13px 12px}
+ .inspiration-hero-overlay strong{font-size:16px}
+}
+@media(prefers-reduced-motion:reduce){.inspiration-hero-feature video{animation:none!important}}

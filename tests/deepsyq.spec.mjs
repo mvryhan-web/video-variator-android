@@ -301,6 +301,32 @@ test('featured owned video is promoted but original homepage sections and images
  await expect(page.locator('.studio-card')).toHaveCount(4);
  await expect(page.getByRole('link',{name:/Video Uniquifier history/})).toBeVisible();
 });
+test('approved video appears in the real homepage hero but does not erase Canvas or original sections',async({page})=>{
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'approved-film',title:'Original mountain film',slug:'original-mountain-film',kind:'video',category:'Cinematic',actionTarget:'studio',previewUrl:'/owner-owned-film.mp4',previewPosterUrl:'/owner-owned-poster.jpg',aspectRatio:'16:9',prompt:'Cinematic natural camera movement',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false}}}));
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#inspirationHeroFeature')).toBeVisible();
+ await expect(page.locator('#inspirationHeroTitle')).toHaveText('Original mountain film');
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/owner-owned-film.mp4');
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('poster','/owner-owned-poster.jpg');
+ await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
+ await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href',/inspiration\.html\?kind=video/);
+ await expect(page.locator('#quickCreateForm')).toBeVisible();
+ await expect(page.locator('.studio-card')).toHaveCount(4);
+});
+test('dashboard never fabricates a featured hero when only approved images exist',async({page})=>{
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'still',title:'Owned castle still',kind:'image',category:'Cinematic',actionTarget:'studio',previewUrl:'/castle.png',aspectRatio:'16:9',prompt:'Original castle',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9']}}));
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#inspirationPreview')).toBeVisible();
+ await expect(page.locator('#inspirationHeroFeature')).toBeHidden();
+ await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
+ await expect(page.locator('#inspirationPreviewGrid')).toContainText('Owned castle still');
+});
 test('public Inspiration shortcuts display only published category labels',async({page})=>{
  const item={id:'owned',title:'Owned image',slug:'owned-image',kind:'image',category:'Fashion & Beauty',previewUrl:'/owned.png',prompt:'Original prompt',aspectRatio:'1:1',actionTarget:'studio',requiredInputTypes:[],defaultSettings:{}};
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[item],categories:['Fashion & Beauty'],ratios:['1:1'],pagination:{hasMore:false}}}));
