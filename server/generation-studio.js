@@ -9,6 +9,7 @@ import {createObjectStorage} from './generation-storage.js';
 import {resolveGenerationModel,orderedGenerationCandidates} from './generation-routing.js';
 import {normalizeGenerationError,publicGenerationError} from './generation-errors.js';
 import {claimProviderPoll} from './generation-polling.js';
+import {recordAdminAudit,listAdminAudit} from './admin-audit.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch}={}){
  const model=MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter);
  if(!model)throw Error('MODEL_NOT_CONNECTED');
@@ -53,7 +54,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  const modelAdminEnabled=()=>env.AI_PROVIDER_ADMIN_ENABLED==='true'&&!!pool;
  app.get('/api/studio/admin/models',auth,owner,async(_req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const items=await listModelControls(pool,studioConfig(env).catalog);res.json({items});}catch(_){res.status(503).json({error:'MODEL_ADMIN_UNAVAILABLE'});}});
  app.post('/api/studio/admin/route-preview',auth,owner,async(req,res)=>{if(env.AI_SMART_ROUTING_ENABLED!=='true')return res.status(503).json({error:'SMART_ROUTING_NOT_ENABLED'});try{const catalog=await effectiveCatalog();const candidates=orderedGenerationCandidates(req.body,catalog);if(!candidates.length)return res.status(503).json({error:'NO_COMPATIBLE_MODEL'});res.json({primary:candidates[0].id,candidates:candidates.map(m=>({id:m.id,provider:m.provider,priority:Number(m.control?.priority??m.priority??100),quality:m.capabilities?.quality??m.quality??null,durationSeconds:m.capabilities?.durationSeconds??null,maxReferences:m.capabilities?.maxReferences??m.references??0,ratios:m.capabilities?.ratios??m.ratios??[]}))});}catch(_){res.status(503).json({error:'SMART_ROUTING_UNAVAILABLE'});}});
- app.patch('/api/studio/admin/models/:id',auth,owner,async(req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const control=await updateModelControl(pool,{modelId:req.params.id,userId:req.user.id,patch:req.body,catalog:studioConfig(env).catalog});res.json({modelId:req.params.id,control});}catch(e){const status=e.message==='MODEL_NOT_FOUND'?404:e.message==='INVALID_MODEL_CONTROL'?400:503;res.status(status).json({error:status===503?'MODEL_ADMIN_UNAVAILABLE':e.message});}});
+ app.patch('/api/studio/admin/models/:id',auth,owner,async(req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const control=await updateModelControl(pool,{modelId:req.params.id,userId:req.user.id,patch:req.body,catalog:studioConfig(env).catalog});await recordAdminAudit(pool,{actorUserId:req.user.id,action:'model_control.update',targetType:'model',targetId:req.params.id,details:{enabledOverride:control.enabledOverride,priority:control.priority,markupBps:control.markupBps,internalCostMicros:control.internalCostMicros,maintenance:control.maintenance}});res.json({modelId:req.params.id,control});}catch(e){const status=e.message==='MODEL_NOT_FOUND'?404:e.message==='INVALID_MODEL_CONTROL'?400:503;res.status(status).json({error:status===503?'MODEL_ADMIN_UNAVAILABLE':e.message});}});
 
  app.get('/api/studio/admin/billing-review',auth,owner,async(_req,res)=>{if(!wallet)return res.status(503).json({error:'AI_WALLET_UNAVAILABLE'});try{
   await init();await wallet.init();
@@ -72,7 +73,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   await pool.query(`UPDATE vv_generation_jobs SET credits_reserved=0,error_message='AI_WALLET_RELEASED_BY_OWNER',
     metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object('billingReview',jsonb_build_object('action','release','note',$2,'resolvedBy',$3,'resolvedAt',NOW()::text))
     WHERE id=$1`,[item.job_id,note,req.user.id]);
-  res.json({ok:true,jobId:item.job_id,releasedCredits:Number(item.credits)});
+  await recordAdminAudit(pool,{actorUserId:req.user.id,action:'billing_review.release',targetType:'generation_job',targetId:item.job_id,details:{releasedCredits:Number(item.credits),note}});res.json({ok:true,jobId:item.job_id,releasedCredits:Number(item.credits)});
  }catch(_){res.status(503).json({error:'AI_WALLET_REVIEW_UNAVAILABLE'});}});
  app.get('/api/studio/admin/users',auth,owner,async(req,res)=>{try{
   await init();if(wallet)await wallet.init();const q=String(req.query.q||'').trim().slice(0,80);
@@ -90,7 +91,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   const requestId=String(req.body?.requestId||''),confirmUserId=String(req.body?.confirmUserId||''),delta=Number(req.body?.delta),reason=String(req.body?.reason||'').trim();
   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId)||confirmUserId!==req.params.id||!Number.isSafeInteger(delta)||delta===0||Math.abs(delta)>1000000||reason.length<3||reason.length>200)return res.status(400).json({error:'EXPLICIT_CONFIRMATION_REQUIRED'});
   try{
-   await wallet.init();const balance=await wallet.adjust({userId:req.params.id,adjustmentId:requestId,ownerUserId:req.user.id,delta,reason});res.json({ok:true,balance});
+   await wallet.init();const balance=await wallet.adjust({userId:req.params.id,adjustmentId:requestId,ownerUserId:req.user.id,delta,reason});await recordAdminAudit(pool,{actorUserId:req.user.id,action:'ai_credits.adjust',targetType:'user',targetId:req.params.id,details:{requestId,delta,reason}});res.json({ok:true,balance});
   }catch(e){const status=e.message==='INSUFFICIENT_AVAILABLE_AI_CREDITS'?409:e.message==='ADJUSTMENT_CONFLICT'?409:e.message?.startsWith('INVALID_')?400:503;res.status(status).json({error:status===503?'OWNER_CREDIT_ADJUSTMENT_FAILED':e.message});}
  });
  app.get('/api/studio/admin/jobs',auth,owner,async(req,res)=>{try{
@@ -100,6 +101,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
     FROM vv_generation_jobs j LEFT JOIN vv_users u ON u.id=j.user_id WHERE ${where.join(' AND ')} ORDER BY j.created_at DESC LIMIT 100`,args);
   res.json({filter,items:rows.map(j=>({id:j.id,userId:j.user_id,userEmail:j.email||null,kind:j.kind,status:j.status,provider:j.provider||null,model:j.model||null,error:j.error||j.error_message||null,createdAt:j.created_at,durationSeconds:j.started_at&&(j.completed_at||j.failed_at)?Math.max(0,(new Date(j.completed_at||j.failed_at)-new Date(j.started_at))/1000):null,estimatedCost:j.estimated_cost==null?null:Number(j.estimated_cost),actualCost:j.actual_cost==null?null:Number(j.actual_cost),creditsReserved:Number(j.credits_reserved||0),creditsCharged:Number(j.credits_charged||0)}))});
  }catch(_){res.status(503).json({error:'OWNER_JOBS_UNAVAILABLE'});}});
+ app.get('/api/studio/admin/audit',auth,owner,async(_req,res)=>{try{res.json({items:await listAdminAudit(pool,{limit:100})});}catch(_){res.status(503).json({error:'OWNER_AUDIT_UNAVAILABLE'});}});
  app.get('/api/studio/admin/business',auth,owner,async(_req,res)=>{try{
   await init();if(wallet)await wallet.init();
   const [users,jobs,model,purchases]=await Promise.all([

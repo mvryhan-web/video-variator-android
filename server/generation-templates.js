@@ -1,5 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
+import {recordAdminAudit} from './admin-audit.js';
 
 const TYPES=new Set(['image','video','product_video','avatar','audio']);
 const INPUTS=new Set(['image','video','audio','logo','product_name','text']);
@@ -58,13 +59,13 @@ export function installGenerationTemplates(app,{auth,pool,env=process.env}){
   const {rows}=await pool.query(`INSERT INTO vv_ai_template(id,title,slug,category,description,thumbnail,generation_type,prompt_template,default_model,required_input_types,default_settings,active,featured,sort_order,created_by)
    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11::jsonb,$12,$13,$14,$15) RETURNING *`,
    [id,t.title,t.slug,t.category,t.description,t.thumbnail,t.generationType,t.promptTemplate,t.defaultModel,JSON.stringify(t.requiredInputTypes),JSON.stringify(t.defaultSettings),t.active,t.featured,t.sortOrder,req.user.id]);
-  res.status(201).json({template:row(rows[0])});
+  const created=row(rows[0]);await recordAdminAudit(pool,{actorUserId:req.user.id,action:'template.create',targetType:'template',targetId:id,details:{slug:created.slug,category:created.category,generationType:created.generationType,active:created.active,featured:created.featured,sortOrder:created.sortOrder}});res.status(201).json({template:created});
  }catch(e){res.status(e?.code==='23505'?409:e.message==='INVALID_TEMPLATE'?400:503).json({error:e?.code==='23505'?'TEMPLATE_SLUG_EXISTS':e.message==='INVALID_TEMPLATE'?'INVALID_TEMPLATE':'TEMPLATES_UNAVAILABLE'});}});
  app.patch('/api/studio/admin/templates/:id',auth,onlyOwner,async(req,res)=>{try{
   await initTemplates(pool);const current=await pool.query('SELECT * FROM vv_ai_template WHERE id=$1',[req.params.id]);if(!current.rows.length)return res.status(404).json({error:'TEMPLATE_NOT_FOUND'});
   const t=validateTemplate(req.body,row(current.rows[0]));
   const {rows}=await pool.query(`UPDATE vv_ai_template SET title=$2,slug=$3,category=$4,description=$5,thumbnail=$6,generation_type=$7,prompt_template=$8,default_model=$9,required_input_types=$10::jsonb,default_settings=$11::jsonb,active=$12,featured=$13,sort_order=$14,updated_at=NOW() WHERE id=$1 RETURNING *`,
    [req.params.id,t.title,t.slug,t.category,t.description,t.thumbnail,t.generationType,t.promptTemplate,t.defaultModel,JSON.stringify(t.requiredInputTypes),JSON.stringify(t.defaultSettings),t.active,t.featured,t.sortOrder]);
-  res.json({template:row(rows[0])});
+  const updated=row(rows[0]);await recordAdminAudit(pool,{actorUserId:req.user.id,action:'template.update',targetType:'template',targetId:req.params.id,details:{slug:updated.slug,category:updated.category,generationType:updated.generationType,active:updated.active,featured:updated.featured,sortOrder:updated.sortOrder}});res.json({template:updated});
  }catch(e){res.status(e?.code==='23505'?409:e.message==='INVALID_TEMPLATE'?400:503).json({error:e?.code==='23505'?'TEMPLATE_SLUG_EXISTS':e.message==='INVALID_TEMPLATE'?'INVALID_TEMPLATE':'TEMPLATES_UNAVAILABLE'});}});
 }
