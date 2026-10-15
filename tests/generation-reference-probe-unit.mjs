@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile,stat} from 'node:fs/promises';
+import {readFile,stat,mkdtemp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {inspectStudioReferenceMedia} from '../server/generation-reference-media.js';
 import {validateStudioReferenceProbe,probeStudioReferenceMedia} from '../server/generation-reference-probe.js';
@@ -80,4 +82,16 @@ const hasFfprobe=spawnSync('ffprobe',['-version'],{timeout:3000,encoding:'utf8'}
 test('real ffprobe accepts a simple uncompressed PCM WAV',{skip:!hasFfprobe},async()=>{
  const result=await probeStudioReferenceMedia({mime:'audio/wav',bytes:wav()});
  assert.equal(result.audioCodec,'pcm_s16le');assert.equal(result.durationSeconds,1);
+});
+
+const hasX264=hasFfprobe&&spawnSync('ffmpeg',['-hide_banner','-encoders'],{timeout:5000,encoding:'utf8'}).stdout?.includes('libx264');
+test('real ffprobe accepts a bounded H.264 MP4 generated locally',{skip:!hasX264},async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'deepsyq-probe-test-'));
+ try{
+  const filename=join(dir,'fixture.mp4');
+  const result=spawnSync('ffmpeg',['-v','error','-f','lavfi','-i','color=c=blue:s=320x240:r=24','-t','1','-c:v','libx264','-pix_fmt','yuv420p','-movflags','+faststart','-an','-y',filename],{timeout:15000,encoding:'utf8'});
+  assert.equal(result.status,0,result.stderr);
+  const inspection=await probeStudioReferenceMedia({mime:'video/mp4',bytes:await readFile(filename)});
+  assert.equal(inspection.videoCodec,'h264');assert.equal(inspection.width,320);assert.equal(inspection.height,240);
+ }finally{await rm(dir,{recursive:true,force:true});}
 });
