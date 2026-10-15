@@ -225,3 +225,15 @@ A **backend-only safety foundation** has been added. This section is deliberatel
 - Mocked unit cases cover MP4/WAV happy paths, spoofed/truncated/too-long media, default-off flag, owner-scoped read/delete, signed operations and lack of provider URL. **Tests not run** under owner's BASE-first testing policy. No production environment changes.
 
 This deliberately keeps existing Photo → Video and the server-owned video-job/history flow unchanged, preserving all prior safeguards.
+
+
+## Durable reference ledger and expiry cleanup — BASE #5
+
+This follow-on is **server-only and default OFF**. There are no new browser media pickers, upload routes, provider media links or paid AI requests.
+
+- The existing `server/ai-migrations.js` manifest now includes the **new** `20261015-generation-reference-assets.sql` additive migration. Existing applied migration files/checksums were not rewritten. The ledger `vv_generation_reference_assets` tracks UUID, user ID, private object key, MIME/size/duration, state and explicit expiry; an index supports cleanup scans.
+- `server/generation-reference-ledger.js` creates the database row in `uploading` **before** S3 PUT, using a deterministic precomputed UUID key from the existing storage adapter. When completed, it marks the row `ready` and returns only non-secret metadata. An ambiguous PUT is tracked as a failed/expiring row, not forgotten. Reads check authenticated owner ID, `ready` state and `expires_at>NOW()`.
+- `cleanupExpired()` atomically claims expired or abandoned rows through `FOR UPDATE SKIP LOCKED` and deletes only that owner's staged object from private S3. Successful S3 deletion deletes the ledger row (no indefinite metadata retention). Failed deletion retains a retryable row. Abandoned in-progress deletions become eligible after 15 minutes. This **never** starts a new generation or retries a paid provider request.
+- An optional 10-minute cleanup loop uses the **existing** `server/generation-worker.js`, rather than adding another worker. No worker was deployed or started here. `AI_STUDIO_REFERENCE_CLEANUP_ENABLED=true` allows cleanup even if `AI_STUDIO_REFERENCE_STAGING_ENABLED=false` (important during rollback); staging additionally requires both flags, private object storage, and an explicit `AI_STUDIO_REFERENCE_TTL_MINUTES` in the range 5–1440. No TTL is assumed. Both new flags remain unset/OFF.
+- This ledger does not replace full media codec scanning, retention/legal review, upload authentication, rate limits, provider-reachable signed reference URLs or BytePlus acceptance. **Do not activate** staging until these gates pass and the new SQL migration is backed up, reviewed and applied through the existing runner.
+- Added focused mocks for row-before-object persistence, user isolation, TTL expiration, retryable deletion, uncertain upload and cleanup continuing after disabling new uploads. **Test files authored but not run**, following the BASE-first deferred-testing instruction.
