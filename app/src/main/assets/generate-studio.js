@@ -509,6 +509,7 @@ $('backgroundVideo').onclick=()=>{
  sessionStorage.setItem('vu_generation_job',backgroundJob);
  sessionStorage.setItem('vu_generation_background_job',backgroundJob);
  const u=new URL(location.href);u.searchParams.set('view','history');history.replaceState(null,'',u);
+ historyFilter='video';document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.historyFilter==='video')));
  setHistory(true);availability();
  $('status').textContent=say(
   'Video job saved in History. Browser waiting stopped; generation was NOT cancelled. Return later to check its status.',
