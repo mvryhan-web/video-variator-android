@@ -23,7 +23,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 9 | Provider config in admin | PARTIAL | Feature-gated owner API + owner UI support model enable override, maintenance, priority, markup and internal cost. Primary/fallback routing policy is still pending. |
 | 10 | Normal generation-job database entity | PARTIAL | Durable job metadata migration now stores provider/model/prompt/lifecycle/cost/credits/settings. Current table remains pilot-oriented and needs commercial migration/cleanup. |
 | 11 | Permanent object storage | BLOCKED | Current pilot stores result bytes in PostgreSQL; production S3-compatible storage/service credentials are still required. |
-| 12 | Background jobs | PARTIAL | Async provider tasks persist external operation IDs; in-process kickoff is not a restart-safe commercial worker. |
+| 12 | Background jobs | PARTIAL | Async provider task IDs persist and an opt-in restart recovery poller can resume existing async tasks without starting duplicate generations. A dedicated production commercial worker/service is still required. |
 | 13 | Internal AI credit system | PARTIAL | Separate AI wallet exists; not yet connected to commercial generation jobs. |
 | 14 | Credit ledger | PARTIAL | Purchase/reserve/capture/release/refund/debt ledger primitives exist. Commercial job integration pending. |
 | 15 | Credit reservation | PARTIAL | Atomic reservation/settlement exists in wallet; generation-job wiring pending approved pricing. |
@@ -44,7 +44,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 30 | Desktop / Android / iPhone responsive | PARTIAL | Browser/mobile CI exists; physical iPhone/Android acceptance remains outstanding. |
 | 31 | Generation UX/status | PARTIAL | Processing/ready/failed/unknown flows exist; commercial queued/finalizing/reserved-credit UX incomplete. |
 | 32 | Friendly error handling | PARTIAL | Provider errors are normalized in pilot; broader public error taxonomy remains incomplete. |
-| 33 | Safe retry | PARTIAL | No automatic paid retries on ambiguous failure; durable commercial retry/recovery needs worker integration. |
+| 33 | Safe retry | PARTIAL | No automatic paid retries on ambiguous failure; recovery polls only existing provider task IDs. Commercial retry policy still needs dedicated worker integration. |
 | 34 | Server-side rate/concurrency limits | PARTIAL | Owner pilot has durable attempt cap; public per-plan concurrency/rate limits not implemented. |
 | 35 | Security | PARTIAL | Keys server-side, auth/user scoping, safe provider URLs, Stripe verification foundations exist; launch security review still required. |
 | 36 | Privacy | PARTIAL | Reference media is not persisted by current pilot; final Terms/Privacy/provider disclosures and retention policy pending. |
@@ -78,6 +78,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 - Added owner-only provider/model performance metrics endpoint.
 - Added feature-gated owner model controls for enable/disable, maintenance, priority, markup and internal cost; generation and estimates honor them when enabled.
 - Added owner-only AI Control page linked only for admin accounts; no API keys/secrets are exposed.
+- Added opt-in restart recovery polling for already-created async provider task IDs; it never creates a replacement generation.
 - Recorded Roadmap Block 7 — Pricing, Credits, Stripe & Unit Economics.
 - Added/updated unit and browser test coverage for these changes.
 
