@@ -18,6 +18,20 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('#taskTitle')).toContainText('image');
  await page.locator('.topbar .back').click();await expect(page).toHaveURL(/deepsyq.html/);
 });
+test('dashboard quick-create prepares a local image draft without any paid request',async({page})=>{
+ await fixtures(page);let jobPosts=0;
+ page.on('request',request=>{if(request.url().includes('/api/studio/jobs')&&request.method()==='POST')jobPosts++;});
+ await page.goto('/deepsyq.html');
+ await page.locator('#quickCreatePrompt').fill('A watercolor greenhouse filled with sunlight');
+ await page.locator('#quickCreateKind').selectOption('image');
+ await page.locator('#quickCreateSubmit').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=dashboard/);
+ await expect(page.locator('#taskTitle')).toHaveText('Create an image');
+ await expect(page.locator('#prompt')).toHaveValue('A watercolor greenhouse filled with sunlight');
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(jobPosts).toBe(0);
+});
+
 test('existing email component logs in and logout clears session and latest result',async({page})=>{
  await fixtures(page);let payload;
  await page.route('**/api/auth/email/login',async r=>{payload=r.request().postDataJSON();await r.fulfill({json:{token:'test-session'}});});
