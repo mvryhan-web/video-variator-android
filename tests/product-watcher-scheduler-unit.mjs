@@ -19,6 +19,8 @@ function db({paused=false,last=null,lock=true,missing=false}={}){
   if(sql==='SELECT 1 AS alive')return{rows:[{alive:1}]};
   if(sql.includes('to_regclass'))return{rows:[{table_name:'vv_generation_jobs'}]};
   if(sql.includes('FROM vv_generation_jobs'))return{rows:[{}]};
+  if(['BEGIN','COMMIT','ROLLBACK'].includes(sql))return{rows:[]};
+  if(sql.includes('INSERT INTO vv_product_watcher_alerts'))return{rows:[]};
   if(sql.includes('INSERT INTO vv_product_watcher_runs'))return{rows:[{id:27}]};
   throw Error('UNEXPECTED_SQL:'+sql);
  };
