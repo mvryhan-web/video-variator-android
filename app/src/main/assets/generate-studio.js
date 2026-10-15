@@ -139,7 +139,7 @@ async function loadHistory(){
    const actions=document.createElement('div');actions.className='history-actions';
    const open=document.createElement('button');open.type='button';open.textContent=say('Open','Открыть');open.onclick=()=>openHistoryJob(item.id);open.disabled=item.status==='failed';
    const download=document.createElement('button');download.type='button';download.textContent=say('Download','Скачать');download.disabled=item.status!=='ready';download.onclick=()=>void downloadHistoryItem(item);
-   const reuse=document.createElement('button');reuse.type='button';reuse.textContent=say('Reuse','Повторить запрос');reuse.disabled=!item.prompt;reuse.onclick=()=>prepareHistoryItem(item);
+   const reuse=document.createElement('button');reuse.type='button';reuse.textContent=say('Reuse prompt','Повторить запрос');reuse.disabled=!item.prompt;reuse.onclick=()=>prepareHistoryItem(item);
    const regenerate=document.createElement('button');regenerate.type='button';regenerate.textContent=say('Regenerate','Создать снова');regenerate.disabled=!item.prompt;regenerate.title=say('Prepares the previous prompt and settings. It does not start a paid generation.','Подготавливает прошлый запрос и настройки. Платная генерация сама не запускается.');regenerate.onclick=()=>prepareHistoryItem(item,{settings:true});
    const remove=document.createElement('button');remove.type='button';remove.textContent=say('Delete','Удалить');remove.disabled=['queued','processing','finalizing'].includes(item.status);remove.onclick=()=>void deleteHistoryItem(item);
    actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions);list.append(card);observeHistoryThumbnail(item,preview);
