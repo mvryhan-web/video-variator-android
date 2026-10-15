@@ -16,7 +16,7 @@ function fixture(){
  }};
  const probe=async({mime,bytes})=>{
   calls.push({op:'probe',mime,length:bytes.length});
-  return mime==='video/mp4'?videoMeta:audioMeta;
+  return mime==='video/mp4'?(bytes.length===700?{...videoMeta,durationSeconds:7}:videoMeta):audioMeta;
  };
  return {inspector:createSeedanceStagedReferenceInspector({ledger,probe}),calls,objects};
 }
