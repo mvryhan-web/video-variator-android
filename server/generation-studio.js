@@ -38,6 +38,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   res.status(202).json({id,status:'processing'});void run(id,request).catch(()=>{});
  });
  const getJob=async(req)=>{await init();const r=await pool.query('SELECT * FROM vv_generation_pilot WHERE id=$1 AND user_id=$2 AND deleted=false',[req.params.id,req.user.id]);return r.rows[0];};
+ app.get('/api/studio/jobs',auth,owner,async(req,res)=>{try{await init();const {rows}=await pool.query('SELECT id,kind,status,error,result_text,mime,created_at FROM vv_generation_pilot WHERE user_id=$1 AND deleted=false ORDER BY created_at DESC LIMIT 50',[req.user.id]);res.json({items:rows.map(j=>({id:j.id,kind:j.kind,status:j.status,error:j.error||null,text:j.result_text||'',mime:j.mime||null,createdAt:j.created_at}))});}catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
  app.get('/api/studio/jobs/:id',auth,owner,async(req,res)=>{try{
   let j=await getJob(req);if(!j)return res.status(404).json({error:'NOT_FOUND'});
   if(j.status==='processing'&&j.operation){try{const result=await poller(j.operation,{env});if(!result.pending){await finish(j.id,result);j=await getJob(req);}}catch(e){if(e.terminal){await pool.query('UPDATE vv_generation_pilot SET status=$2,error=$3 WHERE id=$1',[j.id,'failed','GENERATION_FAILED_NO_AUTOMATIC_RETRY']);j=await getJob(req);}else return res.status(502).json({error:'PROVIDER_POLL_FAILED',retryable:true});}}
