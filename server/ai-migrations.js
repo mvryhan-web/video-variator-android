@@ -20,7 +20,9 @@ async function ensureLedger(db){
  )`);
 }
 export async function aiMigrationStatus(pool){
- if(!pool)throw Error('DATABASE_NOT_CONFIGURED');await ensureLedger(pool);const manifest=await loadAiMigrationManifest(),{rows}=await pool.query('SELECT name,checksum,applied_at FROM vv_schema_migration ORDER BY name'),applied=new Map(rows.map(r=>[r.name,r]));
+ if(!pool)throw Error('DATABASE_NOT_CONFIGURED');const manifest=await loadAiMigrationManifest();
+ const exists=await pool.query("SELECT to_regclass('public.vv_schema_migration') AS reg");if(!exists.rows[0]?.reg)return manifest.map(m=>({name:m.name,checksum:m.checksum,applied:false,checksumMatches:true,appliedAt:null}));
+ const {rows}=await pool.query('SELECT name,checksum,applied_at FROM vv_schema_migration ORDER BY name'),applied=new Map(rows.map(r=>[r.name,r]));
  return manifest.map(m=>{const row=applied.get(m.name);return {name:m.name,checksum:m.checksum,applied:!!row,checksumMatches:!row||row.checksum===m.checksum,appliedAt:row?.applied_at||null};});
 }
 export async function runAiMigrations(pool,{checkOnly=false}={}){
