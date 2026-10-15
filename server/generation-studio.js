@@ -168,6 +168,15 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   res.json({users:{total,registrations30d:Number(u.registrations_30d||0),everSubscribed:Number(u.ever_subscribed||0),inactiveAfterSubscription:Number(u.inactive_after_subscription||0),generationAdoptionRate:total?generating/total:0,everSubscribedRate:total?Number(u.ever_subscribed||0)/total:0},generation:{jobs:jobCount,generatingUsers:generating,ready:Number(j.ready||0),failed,processing:Number(j.processing||0),failureRate:jobCount?failed/jobCount:0,jobsPerGeneratingUser:generating?jobCount/generating:0,averageSeconds:j.avg_seconds==null?null:Number(j.avg_seconds),providerCosts:costs.rows.map(c=>({currency:c.currency,amount:Number(c.amount||0)})),creditsCharged:Number(j.credits_charged||0),topModel:model.rows[0]?.model||null},aiPurchases:purchases.rows.map(p=>({currency:p.currency,purchases:Number(p.purchases||0),netAmountMinor:Number(p.net_amount_minor||0),creditsPurchased:Number(p.credits_purchased||0)})),grossMargin:null,grossMarginReason:'Provider cost currency and live AI revenue economics are not yet verified.'});
  }catch(_){res.status(503).json({error:'OWNER_BUSINESS_UNAVAILABLE'});}});
   app.use('/api/studio',(_req,res,next)=>{if(!studioConfig(env).enabled)return res.status(503).json({error:'OWNER_SETUP_REQUIRED'});next();});
+ async function failTerminalProviderJob(id,userId,error,stage){
+  const failure=normalizeGenerationError(error,{stage});
+  let released=false;
+  if(walletEnabled()){
+   try{const result=await wallet.settle({userId,jobId:id,outcome:'confirmed_failure'});released=result?.status==='released';}
+   catch(_){/* Keep reservation held for audited owner review. */}
+  }
+  await pool.query("UPDATE vv_generation_jobs SET status='failed',credits_reserved=CASE WHEN $2 THEN 0 ELSE credits_reserved END,error=$3,error_message=CASE WHEN $4 THEN 'AI_WALLET_REVIEW_REQUIRED' ELSE NULL END,metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object('failure',jsonb_build_object('category',$5,'stage',$6,'sourceCode',$7,'retryable',$8)),failed_at=NOW() WHERE id=$1",[id,released,failure.code,walletEnabled()&&!released,failure.category,failure.stage,failure.sourceCode,failure.retryable]);
+ }
  async function finish(id,result,userId){
   if(result.operation){await pool.query("UPDATE vv_generation_jobs SET status='processing',operation=$2 WHERE id=$1",[id,result.operation]);return;}
   let asset=null,media=result.bytes||null;
@@ -257,7 +266,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  app.get('/api/studio/jobs/:id',auth,generationUser,async(req,res)=>{try{
   let j=await getJob(req);if(!j)return res.status(404).json({error:'NOT_FOUND'});
   if(j.status==='finalizing'&&walletEnabled()){try{await wallet.settle({userId:req.user.id,jobId:j.id,outcome:'success'});await pool.query("UPDATE vv_generation_jobs SET status='ready',credits_charged=credits_reserved,error_message=null,completed_at=NOW() WHERE id=$1 AND status='finalizing'",[j.id]);j=await getJob(req);}catch(_){/* Keep durable finalizing state; background/user polling may retry capture. */}}
-  if(j.status==='processing'&&j.operation){try{const claimed=await claimProviderPoll(pool,j.id,{minSeconds:5});if(claimed){const result=await poller(j.operation,{env});if(!result.pending){await finish(j.id,result,req.user.id);j=await getJob(req);}}}catch(e){const failure=normalizeGenerationError(e,{stage:'provider_poll'});if(e.terminal){if(walletEnabled())await wallet.settle({userId:req.user.id,jobId:j.id,outcome:'confirmed_failure'}).catch(()=>{});await pool.query("UPDATE vv_generation_jobs SET status='failed',credits_reserved=CASE WHEN $2 THEN 0 ELSE credits_reserved END,error=$3,error_message=null,metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object('failure',jsonb_build_object('category',$4,'stage',$5,'sourceCode',$6,'retryable',$7)),failed_at=NOW() WHERE id=$1",[j.id,walletEnabled(),failure.code,failure.category,failure.stage,failure.sourceCode,failure.retryable]);j=await getJob(req);}else return res.status(502).json(publicGenerationError(e,{stage:'provider_poll'}));}}
+  if(j.status==='processing'&&j.operation){try{const claimed=await claimProviderPoll(pool,j.id,{minSeconds:5});if(claimed){const result=await poller(j.operation,{env});if(!result.pending){await finish(j.id,result,req.user.id);j=await getJob(req);}}}catch(e){if(e.terminal){await failTerminalProviderJob(j.id,req.user.id,e,'provider_poll');j=await getJob(req);}else return res.status(502).json(publicGenerationError(e,{stage:'provider_poll'}));}}
   if(j.status==='processing'&&!j.operation&&Date.now()-new Date(j.created_at).getTime()>180000)return res.json({id:j.id,status:'unknown',error:'STATUS_UNKNOWN_NO_AUTOMATIC_RETRY',retryAfterSeconds:0});
   res.json({id:j.id,kind:j.kind,status:j.status,provider:j.provider||null,model:j.model||null,prompt:j.prompt||'',error:j.error,text:j.result_text||'',mime:j.mime,createdAt:j.created_at,creditsReserved:Number(j.credits_reserved||0),creditsCharged:Number(j.credits_charged||0),retryAfterSeconds:['queued','processing','finalizing'].includes(j.status)?5:0});
  }catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
@@ -283,7 +292,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
      if(!current||current.deleted||current.status!=='processing'||!current.operation)continue;
      if(!await claimProviderPoll(client,job.id,{minSeconds:5}))continue;
      try{const result=await poller(current.operation,{env});if(!result.pending)await finish(job.id,result,job.user_id);}
-     catch(e){if(e.terminal){const failure=normalizeGenerationError(e,{stage:'recovery_poll'});if(walletEnabled())await wallet.settle({userId:job.user_id,jobId:job.id,outcome:'confirmed_failure'}).catch(()=>{});await pool.query("UPDATE vv_generation_jobs SET status='failed',credits_reserved=CASE WHEN $2 THEN 0 ELSE credits_reserved END,error=$3,error_message=null,metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object('failure',jsonb_build_object('category',$4,'stage',$5,'sourceCode',$6,'retryable',$7)),failed_at=NOW() WHERE id=$1",[job.id,walletEnabled(),failure.code,failure.category,failure.stage,failure.sourceCode,failure.retryable]);}}
+     catch(e){if(e.terminal)await failTerminalProviderJob(job.id,job.user_id,e,'recovery_poll');}
     }finally{if(locked)await client.query('SELECT pg_advisory_unlock(hashtext($1))',[job.id]).catch(()=>{});client.release();}
    }
   }catch(e){console.error('[studio recovery]',e?.message||e);}
