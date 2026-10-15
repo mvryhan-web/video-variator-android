@@ -118,3 +118,29 @@ test('Studio explains the signed-in plan generation limits',async({page})=>{
  await page.route('**/api/studio/access',r=>r.fulfill({json:{allowed:true,scope:'public',plan:'basic',maxConcurrent:2,maxPerHour:12,activeJobs:1,jobsThisHour:4,reason:null,walletReady:true,pricingConfigured:true}}));
  await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#accessInfo')).toBeVisible();await expect(page.locator('#accessInfo')).toContainText('2 active generation');await expect(page.locator('#accessInfo')).toContainText('12 per hour');await expect(page.locator('#accessInfo')).toContainText('1/2 active');await expect(page.locator('#accessInfo')).toContainText('4/12 in the last hour');
 });
+
+test('video History checks an existing task without resubmitting or downloading media',async({page})=>{
+ const cfg={enabled:true,models:[{kind:'video',label:'Video fixture',id:'fixture-video',ratios:['16:9'],references:0,enabled:true}],catalog:[{kind:'video',label:'Video fixture',id:'fixture-video',ratios:['16:9'],references:0,enabled:true,adapter:true,provider:'Google'}]};
+ await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
+ let statusChecks=0,mediaDownloads=0,jobPosts=0,jobStatus='processing';
+ page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')jobPosts++;});
+ await page.route('**/api/studio/jobs?filter=video',r=>r.fulfill({json:{items:[{id:'running-video',kind:'video',status:jobStatus,model:'fixture-video',prompt:'Sample video',provider:'Google',createdAt:'2026-10-15T12:00:00Z'}]}}));
+ await page.route('**/api/studio/jobs/running-video',r=>{
+  statusChecks++;if(statusChecks===2)jobStatus='ready';
+  return r.fulfill({json:{id:'running-video',kind:'video',status:jobStatus,mime:jobStatus==='ready'?'video/mp4':null,retryAfterSeconds:5}});
+ });
+ await page.route('**/api/studio/jobs/running-video/media',r=>{mediaDownloads++;return r.fulfill({contentType:'video/mp4',body:''});});
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#showHistory').click();
+ await page.locator('[data-history-filter=video]').click();
+ await expect(page.getByRole('button',{name:'Check status'})).toBeVisible();
+ await page.getByRole('button',{name:'Check status'}).click();
+ await expect(page.locator('#status')).toContainText('still processing');
+ await expect(page.locator('.history-status')).toHaveText('Processing');
+ await page.getByRole('button',{name:'Check status'}).click();
+ await expect(page.locator('#status')).toContainText('Video is ready');
+ await expect(page.locator('.history-status')).toHaveText('Ready');
+ expect(statusChecks).toBe(2);
+ expect(jobPosts).toBe(0);
+ expect(mediaDownloads).toBe(0); // Only the explicit Open action may fetch video bytes.
+});
