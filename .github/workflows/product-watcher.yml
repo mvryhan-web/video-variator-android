@@ -1,9 +1,9 @@
 name: Product Watcher unit checks
 on:
   push:
-    branches: [deepsyq-block5-product-watcher]
+    branches: [deepsyq-block5-product-watcher, deepsyq-block5-readiness-gate]
   pull_request:
-    branches: [deepsyq-platform]
+    branches: [deepsyq-platform, deepsyq-block5-product-watcher]
 permissions:
   contents: read
 jobs:
