@@ -10,6 +10,7 @@ import express from 'express';
 import {createObjectStorage} from '../server/generation-storage.js';
 import {createGenerationReferenceLedger} from '../server/generation-reference-ledger.js';
 import {installGenerationReferenceUpload} from '../server/generation-reference-upload.js';
+import {createSeedanceStagedReferenceInspector} from '../server/generation-reference-inspector.js';
 
 const url=process.env.AI_TEST_DATABASE_URL||'';
 function localFixtureDatabase(){
@@ -109,6 +110,14 @@ test('private media lifecycle: real isolated PostgreSQL, HTTP admission and fake
    assert.equal(row.status,'ready');assert.equal(row.user_id,'alice');
    assert.ok(!row.storage_key.includes('alice'),'object key must use hashed owner');
    assert.equal(objects.size,1);
+  });
+  await t.test('model preflight re-reads actual private bytes and refuses too-short WAV',async()=>{
+   const row=(await pool.query("SELECT id FROM vv_generation_reference_assets WHERE status='ready' LIMIT 1")).rows[0];
+   assert.ok(row?.id);
+   const inspector=createSeedanceStagedReferenceInspector({ledger});
+   const result=await inspector.inspect({userId:'alice',model:'byteplus-seedance-2',imageCount:1,audioAssetIds:[row.id]});
+   assert.deepEqual(result,{compatible:false,reason:'REFERENCE_AUDIO_INCOMPATIBLE'});
+   await assert.rejects(()=>inspector.inspect({userId:'mallory',model:'byteplus-seedance-2',imageCount:1,audioAssetIds:[row.id]}),/REFERENCE_MEDIA_ACCESS_DENIED/);
   });
   await t.test('parallel owner uploads obey a transactional two-slot quota',async()=>{
    const outcomes=await Promise.all([upload(),upload(),upload()]);
