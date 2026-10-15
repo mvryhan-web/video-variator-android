@@ -12,13 +12,15 @@ test('provider polling is atomically throttled per job',async t=>{
  if(!url){t.skip('AI_TEST_DATABASE_URL is not configured');return;}
  assert.equal(safe(),true,'refusing to run outside isolated vv_ai_test database');
  const pool=new pg.Pool({connectionString:url});
+ const db=await pool.connect();
+ await db.query('SELECT pg_advisory_lock(99101426)'); // serialize destructive migration fixtures across Node test files
  try{
-  await pool.query('DROP TABLE IF EXISTS vv_generation_jobs CASCADE; DROP TABLE IF EXISTS vv_generation_pilot CASCADE;');
-  const sql=await readFile(new URL('../server/migrations/20261015-generation-jobs.sql',import.meta.url),'utf8');await pool.query(sql);
-  await pool.query("INSERT INTO vv_generation_jobs(id,user_id,kind,status,operation,prompt) VALUES('poll-1','u1','video','processing','byteplus:task_1','x')");
+  await db.query('DROP TABLE IF EXISTS vv_generation_jobs CASCADE; DROP TABLE IF EXISTS vv_generation_pilot CASCADE;');
+  const sql=await readFile(new URL('../server/migrations/20261015-generation-jobs.sql',import.meta.url),'utf8');await db.query(sql);
+  await db.query("INSERT INTO vv_generation_jobs(id,user_id,kind,status,operation,prompt) VALUES('poll-1','u1','video','processing','byteplus:task_1','x')");
   assert.equal(await claimProviderPoll(pool,'poll-1',{minSeconds:10}),true);
   assert.equal(await claimProviderPoll(pool,'poll-1',{minSeconds:10}),false);
-  await pool.query("UPDATE vv_generation_jobs SET last_polled_at=NOW()-INTERVAL '20 seconds' WHERE id='poll-1'");
+  await db.query("UPDATE vv_generation_jobs SET last_polled_at=NOW()-INTERVAL '20 seconds' WHERE id='poll-1'");
   assert.equal(await claimProviderPoll(pool,'poll-1',{minSeconds:10}),true);
- }finally{await pool.query('DROP TABLE IF EXISTS vv_generation_jobs CASCADE;').catch(()=>{});await pool.end();}
+ }finally{await db.query('DROP TABLE IF EXISTS vv_generation_jobs CASCADE;').catch(()=>{});await db.query('SELECT pg_advisory_unlock(99101426)').catch(()=>{});db.release();await pool.end();}
 });
