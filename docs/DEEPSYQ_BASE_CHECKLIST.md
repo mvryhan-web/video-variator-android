@@ -35,7 +35,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 21 | AI Agents | NOT STARTED (BASE) | Deeper implementation is Roadmap Block 2. |
 | 22 | Inspiration / Discover | NOT STARTED (BASE) | Full implementation is Roadmap Block 3. |
 | 23 | Template system | PARTIAL | Data-driven PostgreSQL template schema/API, owner create/edit/activate/feature/reorder UI, AI Apps catalog and homepage Featured workflows are wired. Final public content still depends on owner-approved templates/assets. |
-| 24 | History | PARTIAL | Owner Studio History now has All/Images/Videos/Failed/Processing filters plus Open, Download, Reuse, prepare-only Regenerate and safe Delete. It remains owner-gated; card thumbnails are not yet generated. |
+| 24 | History | PARTIAL | Studio History has filters plus Open/Download/Reuse/prepare-only Regenerate/Delete, and now lazily previews ready image results through the authenticated media endpoint. Video/audio stay lightweight placeholders. It remains gated by generation access. |
 | 25 | My Creations | PARTIAL | User-scoped job access exists; full library/project experience is Roadmap Block 4. |
 | 26 | Canvas | PARTIAL | Studio generation workspace exists; richer unified Canvas still incomplete. |
 | 27 | Existing Video Uniquifier preserved under Tools | PARTIAL | Existing functionality preserved and linked from Deepsyq; root switch not launched. |
@@ -264,3 +264,10 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Signed-in Pricing page now shows AI-wallet Available/Held/Debt and up to ten recent ledger entries.
 - Ledger labels cover purchase, welcome grant, reserve, capture, release, refund and owner adjustment without exposing Stripe/payment identifiers or internal secrets.
 - Wallet visibility uses the payment-independent `/api/ai-wallet` endpoints and remains separate from existing Video/Everyday Tools credits.
+
+
+## Continuation 21 — lazy History image previews
+
+- Ready image History cards now fetch their protected result only when the card approaches the viewport and render an image preview.
+- Video/audio cards deliberately remain lightweight placeholders so History never downloads large media just to paint the list.
+- Preview object URLs are revoked whenever History reloads to avoid browser-memory leaks.

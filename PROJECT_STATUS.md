@@ -266,3 +266,9 @@ Current queued-roadmap dependencies to verify before implementation:
 
 - Pricing now gives signed-in users a read-only AI-wallet summary and recent ledger activity without exposing payment/internal identifiers.
 - Existing tool-plan credits and AI-generation wallet credits remain visibly separate.
+
+
+### Continuation 20 — lazy History image previews
+
+- Studio History now lazily loads protected previews for ready image jobs only.
+- Video/audio media is not downloaded for card thumbnails; placeholders remain until the user opens/downloads the result.

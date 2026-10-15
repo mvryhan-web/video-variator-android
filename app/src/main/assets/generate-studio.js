@@ -10,6 +10,7 @@ let kind=requested==='image'?'image':requested==='audio'?'music':'video';
 let config={enabled:false,models:[]},catalog=MODEL_CATALOG.map(m=>({...m,enabled:false}));
 let refs=[],modelId=MODELS[kind].id,url,blob,job,busy=false,generation=0,historyView=false,historyFilter='all';
 let estimateTimer=null,estimateSignature='';
+let historyThumbUrls=[];
 const drafts={};
 let nativeBase='';try{const base=window.AndroidBridge?.getApiBase?.();if(typeof base==='string'&&base.startsWith('https://'))nativeBase=base;}catch(_){}
 const apiBase=()=>String(window.VV_API_BASE||nativeBase||localStorage.getItem('vv_api_base')||location.origin).replace(/\/$/,'');
@@ -75,6 +76,19 @@ $('references').onchange=()=>acceptFiles(Array.from($('references').files));$('c
 $('clearRefs').onclick=()=>{if(busy)return;refs=[];renderRefs();};document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>select(b.dataset.kind));$('prompt').oninput=availability;$('consent').onchange=availability;$('ratio').onchange=updateRatioSelection;
 $('musicMode').onchange=()=>{$('consent').checked=false;modelId='';renderModel();};
 $('modelButton').onclick=()=>{renderModels();$('modelDialog').showModal();};$('settingsButton').onclick=()=>$('settingsDialog').showModal();document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
+function clearHistoryThumbs(){for(const u of historyThumbUrls)URL.revokeObjectURL(u);historyThumbUrls=[];}
+async function loadHistoryImageThumbnail(item,preview){
+ try{
+  const response=await api(`/api/studio/jobs/${encodeURIComponent(item.id)}/media`),b=await response.blob();if(!b.type.startsWith('image/'))return;
+  const u=URL.createObjectURL(b);historyThumbUrls.push(u);const img=document.createElement('img');img.className='history-thumb';img.src=u;img.alt=say('Generated image preview','Предпросмотр созданного изображения');img.loading='lazy';preview.replaceChildren(img);
+ }catch(_){/* Keep the lightweight placeholder if preview retrieval fails. */}
+}
+function observeHistoryThumbnail(item,preview){
+ if(item.kind!=='image'||item.status!=='ready')return;
+ if(!('IntersectionObserver'in window)){void loadHistoryImageThumbnail(item,preview);return;}
+ const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){observer.disconnect();void loadHistoryImageThumbnail(item,preview);}},{rootMargin:'180px'});
+ observer.observe(preview);
+}
 function historyState(status){return status==='ready'?say('Ready','Готово'):status==='queued'?say('Queued','В очереди'):status==='processing'?say('Processing','В работе'):status==='finalizing'?say('Finalizing','Завершаем'):status==='failed'?say('Failed','Ошибка'):status;}
 function historyDate(value){try{return new Intl.DateTimeFormat(navigator.language||'en',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));}catch(_){return String(value||'');}}
 function historyCredits(item){const n=Number(item.creditsCharged||item.creditsReserved||0);return n>0?say(n+' AI credits',n+' AI-кредитов'):'';}
@@ -101,7 +115,7 @@ async function openHistoryJob(id){
  try{await watch(id,++generation);setHistory(false);}catch(e){$('status').textContent=errorText(e);busy=false;availability();}
 }
 async function loadHistory(){
- const list=$('historyList');list.hidden=false;list.replaceChildren();const loading=document.createElement('p');loading.className='hint';loading.textContent=say('Loading results…','Загружаем результаты…');list.append(loading);
+ const list=$('historyList');list.hidden=false;clearHistoryThumbs();list.replaceChildren();const loading=document.createElement('p');loading.className='hint';loading.textContent=say('Loading results…','Загружаем результаты…');list.append(loading);
  try{
   const d=await(await api('/api/studio/jobs?filter='+encodeURIComponent(historyFilter))).json();list.replaceChildren();
   if(!d.items?.length){const p=document.createElement('p');p.className='hint';p.textContent=say('No results in this filter yet.','В этом фильтре пока нет результатов.');list.append(p);return;}
@@ -119,7 +133,7 @@ async function loadHistory(){
    const reuse=document.createElement('button');reuse.type='button';reuse.textContent=say('Reuse','Повторить запрос');reuse.disabled=!item.prompt;reuse.onclick=()=>prepareHistoryItem(item);
    const regenerate=document.createElement('button');regenerate.type='button';regenerate.textContent=say('Regenerate','Создать снова');regenerate.disabled=!item.prompt;regenerate.title=say('Prepares the previous prompt and settings. It does not start a paid generation.','Подготавливает прошлый запрос и настройки. Платная генерация сама не запускается.');regenerate.onclick=()=>prepareHistoryItem(item,{settings:true});
    const remove=document.createElement('button');remove.type='button';remove.textContent=say('Delete','Удалить');remove.disabled=['queued','processing','finalizing'].includes(item.status);remove.onclick=()=>void deleteHistoryItem(item);
-   actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions);list.append(card);
+   actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions);list.append(card);observeHistoryThumbnail(item,preview);
   }
  }catch(e){list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
 }

@@ -99,3 +99,14 @@ test('Studio shows a server-priced credit estimate without sending prompt or med
  let estimateBody=null;await page.route('**/api/studio/estimate',r=>{estimateBody=r.request().postDataJSON();return r.fulfill({json:{credits:12,unit:'AI credits',model:'fixture',kind:'image',routing:{smart:false,candidates:['fixture']}}});});
  await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#creditEstimate')).toContainText('12 AI credits');expect(estimateBody.prompt).toBeUndefined();expect(estimateBody.references).toBeUndefined();expect(estimateBody.consent).toBeUndefined();expect(estimateBody.referenceCount).toBe(0);
 });
+
+
+test('History lazily previews ready images without touching video media',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-user'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,pricingConfigured:false,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]}}));
+ let imageMedia=0,videoMedia=0;
+ await page.route('**/api/studio/jobs?filter=all',r=>r.fulfill({json:{items:[{id:'img-1',kind:'image',status:'ready',provider:'Google',model:'fixture',prompt:'Image prompt',settings:{ratio:'1:1'},mime:'image/png',createdAt:'2026-10-15T08:00:00Z'},{id:'vid-1',kind:'video',status:'ready',provider:'Google',model:'fixture-video',prompt:'Video prompt',settings:{ratio:'16:9'},mime:'video/mp4',createdAt:'2026-10-15T08:01:00Z'}]}}));
+ await page.route('**/api/studio/jobs/img-1/media',r=>{imageMedia++;return r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')});});
+ await page.route('**/api/studio/jobs/vid-1/media',r=>{videoMedia++;return r.fulfill({contentType:'video/mp4',body:'video'});});
+ await page.goto('/generate-studio.html?studio=image');await page.locator('#showHistory').click();await expect(page.locator('.history-card')).toHaveCount(2);await expect(page.locator('.history-thumb')).toHaveCount(1);expect(imageMedia).toBe(1);expect(videoMedia).toBe(0);
+});
