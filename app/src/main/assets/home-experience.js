@@ -49,7 +49,7 @@ if(video&&carousel){
   userPaused=!userPaused;const b=$('homeHeroPlay');b.textContent=userPaused?'Play':'Pause';b.setAttribute('aria-label',userPaused?'Play video':'Pause video');
   if(userPaused)video.pause();else if(!document.hidden&&visible)void video.play().catch(()=>{$('homeHeroStatus').textContent='Video playback unavailable.';});
  });
- video.addEventListener('ended',()=>{if(slides.length>1&&ambientAllowed())setSlide(index+1);});
+ video.addEventListener('ended',()=>{if(!ambientAllowed())return;if(slides.length>1)setSlide(index+1);else if(slides.length===1){video.currentTime=0;ambientPlay();}});
  video.addEventListener('loadeddata',ambientPlay);
  video.addEventListener('error',()=>{$('homeHeroStatus').textContent='Video unavailable. Choose another example.';});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else ambientPlay();});
@@ -66,6 +66,7 @@ let chosen='image',busy=false;
 function choose(kind){
  if(!['image','video','music','agent'].includes(kind))return;
  chosen=kind;
+ $('homeQuickPrompt').required=kind!=='agent';
  for(const b of document.querySelectorAll('[data-home-kind]'))b.setAttribute('aria-pressed',String(b.dataset.homeKind===kind));
  $('homeQuickSubmit').textContent=kind==='agent'?'See Agent preview ↗':'Open in Studio ↗';
 }
@@ -81,8 +82,8 @@ if($('homeQuickForm')){
  $('homeQuickForm').addEventListener('submit',async e=>{
   e.preventDefault();if(busy)return;
   const prompt=$('homeQuickPrompt').value.trim(),status=$('homeQuickStatus'),button=$('homeQuickSubmit');
-  if(!prompt||prompt.length>2000){status.textContent='Enter a description of up to 2,000 characters.';return;}
   if(chosen==='agent'){status.textContent='AI Agent execution is not available yet. Explore the preview below.';$('agentFeature').scrollIntoView({behavior:'smooth',block:'start'});return;}
+  if(!prompt||prompt.length>2000){status.textContent='Enter a description of up to 2,000 characters.';return;}
   const studio=modeToStudio[chosen];if(!studio){status.textContent='Choose Image, Video or Audio.';return;}
   busy=true;button.disabled=true;status.textContent='Preparing your existing Studio draft locally…';
   try{await saveStudioHandoff({kind:chosen,prompt,source:'home-quick-create'});location.assign('generate-studio.html?studio='+studio+'&from=home');}
