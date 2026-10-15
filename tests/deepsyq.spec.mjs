@@ -58,8 +58,22 @@ test('owner sees AI control entry and admin page exposes only safe model control
  await page.route('**/api/studio/admin/metrics',r=>r.fulfill({json:{items:[{provider:'BytePlus',model:'byteplus-seedance-2',kind:'video',jobs:2,succeeded:1,failed:1,processing:0,averageSeconds:12.5,actualCost:0.5,creditsCharged:80}]}}));
  await page.route('**/api/studio/admin/billing-review',r=>r.fulfill({json:{items:[{jobId:'job-review-1',userId:'user-1',credits:17,kind:'video',provider:'BytePlus',model:'byteplus-seedance-2',status:'failed',error:'GENERATION_FAILED_NO_AUTOMATIC_RETRY',createdAt:'2026-10-15T08:00:00Z'}]}}));
  await page.route('**/api/studio/admin/route-preview',r=>r.fulfill({json:{primary:'byteplus-seedance-2',candidates:[{id:'byteplus-seedance-2',provider:'BytePlus',priority:10,quality:'720p',duration:'5 seconds'}]}}));
+ await page.route('**/api/studio/admin/templates',r=>r.fulfill({json:{items:[{id:'t-1',title:'Original Product Template',slug:'original-product-template',category:'ecommerce',description:'Owned workflow',thumbnail:null,generationType:'image',promptTemplate:'Create a product image',defaultModel:null,requiredInputTypes:['image'],defaultSettings:{ratio:'1:1'},active:true,featured:true,sortOrder:10}]}}));
  await page.goto('/deepsyq.html');if(await page.locator('#menu').isVisible())await page.locator('#menu').click();await expect(page.locator('#adminAiControl')).toBeVisible();await page.locator('#adminAiControl').click();
- await expect(page).toHaveURL(/deepsyq-admin.html/);await expect(page.getByText('Seedance 2.0')).toBeVisible();await expect(page.locator('table')).toContainText('BytePlus');await expect(page.locator('#billingReview')).toContainText('17 credits');
+ await expect(page).toHaveURL(/deepsyq-admin.html/);await expect(page.getByText('Seedance 2.0')).toBeVisible();await expect(page.locator('table')).toContainText('BytePlus');await expect(page.locator('#billingReview')).toContainText('17 credits');await expect(page.locator('#templates')).toContainText('Original Product Template');
  await page.locator('#routeKind').selectOption('video');await page.locator('#routeRatio').selectOption('16:9');await page.locator('#routePreview').click();await expect(page.locator('#routeResult')).toContainText('byteplus-seedance-2');await expect(page.locator('#routeStatus')).toContainText('No provider call was made');
  await expect(page.locator('body')).not.toContainText('API key');await expect(page.locator('body')).not.toContainText('secret');
+});
+
+
+test('new account onboarding goes straight to a real first-stage workflow',async({page})=>{
+ await fixtures(page);await page.addInitScript(()=>{localStorage.setItem('vv_token','new-user');localStorage.setItem('deepsyq_onboarding_pending','1');});
+ await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'New creator',isAdmin:false}}}));
+ let savedGoal=null;
+ await page.route('**/api/onboarding',async r=>{
+  if(r.request().method()==='POST'){const body=r.request().postDataJSON();savedGoal=body.goal;return r.fulfill({json:{ok:true,goal:body.goal,target:'/generate-studio.html?studio='+body.goal}});}
+  return r.fulfill({json:{completed:false,goal:null,options:[{id:'image',label:'Image',target:'/generate-studio.html?studio=image'},{id:'video',label:'Video',target:'/generate-studio.html?studio=video'}]}});
+ });
+ await page.goto('/deepsyq.html');await expect(page.locator('#onboardingModal')).toBeVisible();await page.locator('[data-onboarding-goal=image]').click();
+ await expect(page).toHaveURL(/generate-studio.html\?studio=image/);expect(savedGoal).toBe('image');expect(await page.evaluate(()=>localStorage.getItem('deepsyq_onboarding_pending'))).toBeNull();
 });

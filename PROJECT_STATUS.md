@@ -150,3 +150,12 @@ Current queued-roadmap dependencies to verify before implementation:
 - New environment switches/storage credentials are documented in `.env.example`; all remain disabled/unconfigured by default.
 - No live provider key, Stripe AI price, production object-storage credential, production database migration, deployment, root switch or public AI access was enabled.
 - Latest CI for the current head is still the verification gate; do not call this continuation verified until those workflows are green.
+
+
+### Continuation 5 — templates and onboarding
+
+- Added data-driven `vv_ai_template` migration/API matching the original BASE schema; no hard-coded per-card backend architecture and no fake seeded assets.
+- Owner AI Control now includes template create/edit/activate/feature/reorder controls.
+- Added persistent Image/Video onboarding state and new-account signaling for email, Google and Apple auth.
+- Deepsyq onboarding appears only for newly created accounts in this flow and routes to real Image/Video studios; unavailable Product Ads/Avatar workflows are not advertised as working.
+- No public AI launch, provider spend, Stripe AI product, production migration or deployment was enabled.

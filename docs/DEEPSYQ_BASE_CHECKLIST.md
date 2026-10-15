@@ -34,7 +34,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 20 | Product Video workflow | NOT STARTED | No finished guided product-video workflow yet. |
 | 21 | AI Agents | NOT STARTED (BASE) | Deeper implementation is Roadmap Block 2. |
 | 22 | Inspiration / Discover | NOT STARTED (BASE) | Full implementation is Roadmap Block 3. |
-| 23 | Template system | NOT STARTED | Needs data-driven templates and admin management. |
+| 23 | Template system | PARTIAL | Data-driven PostgreSQL template schema/API and owner create/edit/activate/feature/reorder UI exist. Public AI Apps/template gallery wiring is still pending. |
 | 24 | History | PARTIAL | Durable `GET /api/studio/jobs`, metadata, result reopening and prompt reuse now exist for owner Studio. Public commercial history still gated. |
 | 25 | My Creations | PARTIAL | User-scoped job access exists; full library/project experience is Roadmap Block 4. |
 | 26 | Canvas | PARTIAL | Studio generation workspace exists; richer unified Canvas still incomplete. |
@@ -49,14 +49,14 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 35 | Security | PARTIAL | Keys server-side, auth/user scoping, safe provider URLs, Stripe verification foundations exist; launch security review still required. |
 | 36 | Privacy | PARTIAL | Reference media is not persisted by current pilot; final Terms/Privacy/provider disclosures and retention policy pending. |
 | 37 | Business analytics | PARTIAL | Existing account analytics plus new owner provider/model job metrics foundation; revenue/margin/churn dashboard incomplete. |
-| 38 | Admin dashboard | PARTIAL | Owner AI Control now shows model controls, route preview, provider/model metrics and held-credit review/release. Users/payments/templates and broader commercial analytics remain pending. |
+| 38 | Admin dashboard | PARTIAL | Owner AI Control now shows model controls, route preview, provider/model metrics, held-credit review/release and template create/edit/activate/feature/reorder. Users/payments and broader commercial analytics remain pending. |
 | 39 | Provider performance | PARTIAL | Owner metrics endpoint aggregates provider/model jobs, success/failure, processing, average time, cost and charged credits. |
 | 40 | Model routing registry | PARTIAL | Shared catalog/capabilities plus server-side compatible candidate ordering and owner priorities exist. Logical cross-provider product model IDs and measured quality/reliability routing remain future work. |
 | 41 | Internal model capabilities | PARTIAL | ratios/references/quality/duration/provider metadata exist; full capability schema is incomplete. |
 | 42 | Persist BytePlus output in our storage | PARTIAL / BLOCKED | Adapter downloads/validates media and Studio can move completed bytes into configured S3-compatible storage before wallet capture. Real storage provisioning and live BytePlus verification remain external gates. |
 | 43 | Pricing page | PARTIAL | Existing plan display/checkout reused; final Deepsyq AI subscription/credit economics not approved. |
 | 44 | Free plan | PARTIAL | Existing non-AI trials/tools exist; safe AI acquisition allowance not defined. |
-| 45 | Onboarding | NOT STARTED | Needs creation-goal onboarding after registration. |
+| 45 | Onboarding | PARTIAL | New email/Google/Apple accounts are flagged for a persistent Image/Video onboarding choice; selection is stored server-side and routes directly to a real studio. Public launch verification is still pending. |
 | 46 | Homepage conversion | PARTIAL | Deepsyq dashboard exists; full public conversion homepage/examples require launch content. |
 | 47 | Do not expose BytePlus as our product | DONE | Provider stays implementation detail; Deepsyq branding used. |
 | 48 | Production safety / regression | PARTIAL | Feature flags, CI and no-live-change discipline exist; backup/staging/live regression still required before launch. |
@@ -131,3 +131,13 @@ Repository-only work now includes:
 - isolated PostgreSQL migration coverage for repeatable `vv_generation_pilot` → `vv_generation_jobs` migration.
 
 All new commercial switches remain OFF by default. Real bucket credentials, provider keys, live Stripe AI products/prices, production migrations and deployment are still external gates. Latest CI must pass before these changes are treated as verified.
+
+
+## Continuation 5 — templates and onboarding
+
+- Added `vv_ai_template` with the exact BASE fields: id/title/slug/category/description/thumbnail/generation type/prompt/default model/required inputs/default settings/active/featured/sort order.
+- Public template API returns active templates only; owner API/UI supports create, edit, activate, feature and reorder. No invented templates or third-party assets are seeded automatically.
+- Added persistent `vv_ai_onboarding` state for Image/Video first-stage workflows.
+- New email, Google and Apple account responses identify new accounts; Deepsyq queues onboarding only for those new accounts.
+- The onboarding UI routes only to currently real Image/Video studios; Product Ads/Avatar are not falsely presented as completed workflows.
+- Added unit/browser coverage for templates and onboarding. Public launch verification is still pending.
