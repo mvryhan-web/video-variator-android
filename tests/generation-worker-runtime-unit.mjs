@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {generationWorkerReady,generationWorkerPlan} from '../server/generation-worker-runtime.js';
+import {generationWorkerReady,generationWorkerPlan,referenceCleanupMigrationReady} from '../server/generation-worker-runtime.js';
 
 test('generation worker is fail-closed until DB, studio, polling and provider key are configured',()=>{
  const pool={};
@@ -45,4 +45,14 @@ test('failed cleanup configuration does not permit a fake healthy worker',()=>{
   AI_STUDIO_BACKGROUND_POLLING:'true',BYTEPLUS_API_KEY:'test-only'};
  assert.equal(generationWorkerPlan(env,pool,{storageConfigured:false}).ready,false);
  assert.equal(generationWorkerPlan(env,pool,{storageConfigured:false}).reason,'REFERENCE_STORAGE_NOT_CONFIGURED');
+});
+
+test('cleanup worker requires verified migration; it never assumes schema exists',()=>{
+ const ref='20261015-generation-reference-assets.sql';
+ assert.equal(referenceCleanupMigrationReady(),false);
+ assert.equal(referenceCleanupMigrationReady([]),false);
+ assert.equal(referenceCleanupMigrationReady([{name:ref,applied:false,checksumMatches:true}]),false);
+ assert.equal(referenceCleanupMigrationReady([{name:ref,applied:true,checksumMatches:false}]),false);
+ assert.equal(referenceCleanupMigrationReady([{name:ref,applied:true,checksumMatches:true}]),true);
+ assert.equal(referenceCleanupMigrationReady([{name:'unrelated.sql',applied:true,checksumMatches:true}]),false);
 });
