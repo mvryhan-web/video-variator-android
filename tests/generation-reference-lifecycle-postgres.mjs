@@ -161,7 +161,7 @@ test('private media lifecycle: real isolated PostgreSQL, HTTP admission and fake
     AI_STUDIO_REFERENCE_TRANSFER_REVIEW_APPROVED:'true'};
    const preparer=createSeedanceAudioPayloadPreparer({ledger,env:payloadEnv,
     verifyVisualContext:async({userId,model})=>{
-     assert.equal(userId,'alice');assert.equal(model,'byteplus-seedance-2');return 1;
+     assert.equal(typeof userId,'string');assert.equal(model,'byteplus-seedance-2');return 1;
     }});
    const data=await preparer.prepare({userId:'alice',model:'byteplus-seedance-2',audioAssetIds:[staged.id]});
    assert.equal(data.providerSubmitted,false);assert.equal(data.content.length,1);

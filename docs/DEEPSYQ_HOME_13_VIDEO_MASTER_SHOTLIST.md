@@ -102,9 +102,17 @@ This is the production handoff for **the same current** `mvryhan-web/video-varia
 - Screen reference and scene segmentation: **COMPLETE** — 13 exact pixel-crops in the Library ZIP, source hash recorded.
 - Six first-wave shot scripts: **COMPLETE, CREATIVE BRIEFS ONLY**.
 - Next seven scripts: **DIRECTIVE / NOT GENERATED**.
-- 13 clean high-quality scene stills: **NOT GENERATED**.
+- Clean source images: **one original exact-pixel 16:9 Hero Girl crop READY AS A LOW-RES REFERENCE (640×360)**, 12 other raw scene references still have baked-in UI overlays and are **NOT yet clean production masters**. No photorealistic video generated.
 - 13 actual realistic AI scene videos: **NOT GENERATED**.
 - Licence/provenance review and stable public hosting: **NOT COMPLETED**.
 - Public Inspiration activation / homepage video deployment: **NOT AUTHORIZED OR DONE**.
 
 This document supplements `docs/DEEPSYQ_OWNER_APPROVED_HOME_DESIGN.md` and `docs/DEEPSYQ_INSPIRATION_CONTENT_PRODUCTION.md` without replacing earlier approved layout, Studio, existing media, or other agents' work.
+
+## 2026-10-15 — image-to-video production handoff, first clean frame
+
+- Verified original owner-supplied screenshot `Премиальная AI-платформа для творчества(1).png` and retained the 13 exact crops. Extracted a **genuine untouched-pixel 640×360 16:9 photographic crop** of the original Hero Girl at rectangle `x=666..1305, y=0..359`; this crop contains no navigation, title, Play overlay or baked UI. This is NOT an AI re-render, NOT a new face and NOT a video. File SHA-256 `efb312dce69323d1773978afeb50543601ec272dfc81135acd263d6eee487a3f`. Cropping limits the visible surrounding scene; final full-width hero may require separate controlled frame extension **without changing the woman's identity**, plus final owner visual review.
+- Saved a ready-for-review production package at owner Library `/Deepsyq/Media Drafts/DEEPSYQ_FIRST_6_IMAGE_TO_VIDEO_PRODUCTION_KIT.zip`: the clean hero crop, the other five exact raw references (flagged as **not** clean due to text/play UI), six image-to-video motion+negative prompts, provenance/status manifest and a read-only ffprobe MP4 validation script. The archive is verified and **contains zero generated video clips**. Do not publish its screenshots as motion.
+- Runway image-to-video plugin was surfaced for the owner to connect. **Connection, available model/credits, generation cost, accepted input minimum resolution and commercial-use terms remain unverified.** Do not submit paid generations or claim Runway output until confirmed in the active connection, agreed cost and rights review.
+- Two internal image generation attempts returned new page mockups, not a clean cinematic frame; **rejected** and not used as Hero media. The clean crop is from the unchanged actual owner-supplied photo.
+- Follow-up: generate the Hero Girl video first with truly independent natural facial/hair motion, confirm exact identity and cinematographic quality with owner, then remove UI overlays from other scene masters using an owner-approved retouch/AI workflow, generate remaining five. Rights, hosting, Stripe/wallet/cost checks and existing site's public-release gate remain intact.
