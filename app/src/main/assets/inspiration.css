@@ -14,3 +14,8 @@
 .category-chips button:hover{border-color:#d2f7ae}
 @media(max-width:980px){.gallery .card[data-kind="video"]{grid-column:span 6}}
 @media(max-width:620px){.gallery .card[data-kind="video"]{margin-bottom:14px}.category-chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:5px}.category-chips button{flex:0 0 auto}}
+
+/* A still image remains a still image; hover adds visual depth, not a fake video. */
+.gallery .card .media img{transition:transform .7s ease}
+.gallery .card:hover .media img,.gallery .card:focus-within .media img{transform:scale(1.065)}
+@media(prefers-reduced-motion:reduce){.gallery .card .media img{transition:none}.gallery .card:hover .media img,.gallery .card:focus-within .media img{transform:none}}
