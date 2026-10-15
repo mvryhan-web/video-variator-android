@@ -12,11 +12,12 @@ export function pricingCatalog(env={}){
    if(!r||!id(r.model)||!id(r.provider)||!['image','video','music','voice'].includes(r.kind)||!positive(r.credits,MAX_CREDITS)||!positive(r.providerCostMicros,MAX_MICROS))throw Error();
    if(r.ratio!=null&&typeof r.ratio!=='string')throw Error();
    if(r.quality!=null&&typeof r.quality!=='string')throw Error();
+   if(r.outputFormat!=null&&(!['auto','png','jpeg'].includes(r.outputFormat)||r.kind!=='image'))throw Error();
    if(r.durationSeconds!=null&&!positive(r.durationSeconds,3600))throw Error();
    if(r.currency!=null&&!/^[a-z]{3}$/.test(r.currency))throw Error();
-   return {model:r.model,provider:r.provider,kind:r.kind,credits:r.credits,providerCostMicros:r.providerCostMicros,currency:r.currency||null,ratio:r.ratio||null,quality:r.quality||null,durationSeconds:r.durationSeconds||null};
+   return {model:r.model,provider:r.provider,kind:r.kind,credits:r.credits,providerCostMicros:r.providerCostMicros,currency:r.currency||null,ratio:r.ratio||null,quality:r.quality||null,outputFormat:r.outputFormat||null,durationSeconds:r.durationSeconds||null};
   });
-  const keys=entries.map(e=>[e.model,e.kind,e.ratio||'*',e.quality||'*',e.durationSeconds||'*'].join('|'));
+  const keys=entries.map(e=>[e.model,e.kind,e.ratio||'*',e.quality||'*',e.outputFormat||'*',e.durationSeconds||'*'].join('|'));
   if(new Set(keys).size!==keys.length)throw Error();
   return {entries,configured:entries.length>0};
  }catch(_){return {entries:[],configured:false};}
@@ -34,8 +35,12 @@ export function estimateGenerationPricing(request,model,env={}){
   // Higher image resolution must have an explicitly approved price row.
   // Legacy wildcard rows may price the previous default quality only.
   if(request.kind==='image'&&!e.quality&&quality!==model.quality)return -1;
+  const outputFormat=request.kind==='image'?(request.outputFormat||model.capabilities?.outputFormats?.[0]||'auto'):null;
+  if(e.outputFormat&&e.outputFormat!==outputFormat)return -1;
+  // Switching from the default image encoding requires explicit format-specific pricing.
+  if(request.kind==='image'&&!e.outputFormat&&outputFormat!==(model.capabilities?.outputFormats?.[0]||'auto'))return -1;
   if(e.durationSeconds&&e.durationSeconds!==durationSeconds)return -1;
-  return Number(!!e.ratio)+Number(!!e.quality)+Number(!!e.durationSeconds);
+  return Number(!!e.ratio)+Number(!!e.quality)+Number(!!e.outputFormat)+Number(!!e.durationSeconds);
  };
  const match=candidates.map(e=>({e,s:score(e)})).filter(x=>x.s>=0).sort((a,b)=>b.s-a.s)[0]?.e;
  if(!match)return null;
