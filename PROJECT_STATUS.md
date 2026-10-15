@@ -343,16 +343,16 @@ Current queued-roadmap dependencies to verify before implementation:
 
 ### Block 3 — Inspiration / Create Yours
 
-**IN PROGRESS on deepsyq-platform; only Block 3 was touched in this pass.**
+**CODE COMPLETE / CONTENT GATE on `deepsyq-platform`; scope is limited to Block 3.**
 
-- Added data-driven vv_ai_inspiration schema with Images/Videos, category, aspect ratio, preview/poster, prompt, model/settings, source-input hints, featured/order and action target.
-- Publishing requires an explicit owned or licensed rights basis. No inspiration examples/assets are seeded or fabricated.
-- Added public Inspiration API with All/Images/Videos, category, text search, featured items and owner-only create/update API with admin audit logging.
-- Added full responsive Inspiration gallery with image/video previews and Create yours, Use this prompt, Clone and Try.
-- All three actions route into the real Studio with bounded prompt/settings prefill and never auto-start a paid generation. Source inspiration assets are not copied; users add their own references.
-- Added data-driven Homepage Inspiration preview. Agent-example preview stays hidden unless explicitly enabled and populated; Block 2 Agent is not faked.
-- AI_INSPIRATION_ENABLED=false by default in production; AI_INSPIRATION_AGENT_TARGETS_ENABLED=false remains off until a real Agent workflow exists.
-- Remaining Block 3 content gate: owner must add actual Deepsyq-owned or properly licensed image/video examples before public rollout.
+- Data-driven `vv_ai_inspiration` supports Images/Videos, categories, supported aspect ratios, preview/poster, prompt, model/settings, source-input hints, featured/order and action target.
+- Public gallery supports All / Images / Videos, category, aspect-ratio and text-search filters. Filter state is reflected in the URL for shareable views.
+- Publishing requires owned/licensed status **and a recorded rights evidence note**; legacy/invalid active rows without that evidence are excluded from public queries. No inspiration assets are seeded or fabricated.
+- Full responsive gallery renders image/video previews plus prompt/template metadata and the required **Create yours / Use this prompt / Clone and Try** actions.
+- All currently public actions lead into the real Studio with bounded prompt/settings prefill; no action starts a paid generation automatically and inspiration source assets are never copied into the user's request.
+- Homepage contains data-driven Featured AI Apps and Inspiration previews with Explore-all routes. Agent examples remain hidden behind `AI_INSPIRATION_AGENT_TARGETS_ENABLED=false` until Block 2 supplies a real Agent destination; no fake Agent route is created.
+- AI Apps now cross-links to Inspiration. `AI_INSPIRATION_ENABLED=false` remains the production rollout gate.
+- **Only remaining Block 3 dependency is content:** owner must add real Deepsyq-owned or properly licensed image/video examples (with rights evidence) before public rollout.
 
 
 ### BASE CI repair — mobile navigation and WebKit local image handoff
