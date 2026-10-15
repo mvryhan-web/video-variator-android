@@ -12,6 +12,7 @@ let refs=[],modelId=MODELS[kind].id,url,blob,job,busy=false,generation=0,history
 let estimateTimer=null,estimateSignature='';
 let historyThumbUrls=[];
 const drafts={};
+let activeVideoWatchId=null; // Current browser polling only; the provider job is server-owned.
 const imageBatchQuantity=()=>kind==='image'&&config?.imageBatchEnabled?Number($('imageQuantity').value||1):1;
 let imageDraftKey=null,imageDraftReady=false,imageDraftLoaded=false,imageDraftNeedsPhotos=false;
 async function initializeImageDraft(){
@@ -130,7 +131,7 @@ async function loadEstimate(key){
   if(key!==estimateKey())return;estimateSignature=key;el.textContent=d.quantity>1?say(`Batch estimate: ${d.quantity} separate image jobs × ${d.perImageCredits.toLocaleString()} = ${d.credits.toLocaleString()} AI credits. No generation started.`,`Пакет: ${d.quantity} отдельных изображения × ${d.perImageCredits.toLocaleString()} = ${d.credits.toLocaleString()} AI-кредитов. Генерация не запускалась.`):say(`Estimated cost: ${d.credits.toLocaleString()} AI credits · no generation started`,`Ориентировочная стоимость: ${d.credits.toLocaleString()} AI-кредитов · генерация не запускалась`);el.hidden=false;
  }catch(e){if(key!==estimateKey())return;estimateSignature=key;if(e.message==='AI_PRICING_NOT_APPROVED'){el.textContent=errorText(e);el.hidden=false;}else{el.hidden=true;el.textContent='';}}
 }
-function availability(){const m=currentModel();scheduleEstimate();document.querySelector('[data-t=consent]').textContent=say('I agree to send this prompt and reference photos to '+(m?.provider||'the selected provider')+' for generation.','Я согласен отправить запрос и фотографии в '+(m?.provider||'выбранный сервис')+' для генерации.');$('generate').disabled=busy||!connected(m)||!$('consent').checked||!$('prompt').value.trim()||(kind==='image'&&imageDraftNeedsPhotos&&!refs.length);$('modelButton').disabled=busy;$('settingsButton').disabled=busy;$('references').disabled=busy;$('prompt').disabled=busy||kind==='translation';$('availability').textContent=kind==='translation'?say('File translation is not connected yet. No file will be uploaded.','Перевод файлов ещё не подключён. Файл не будет загружен.'):!m?.adapter?say('This model is not connected yet. You can prepare your settings; no request will be sent.','Модель пока не подключена. Можно выбрать настройки; запрос не отправляется.'):connected(m)?say('Owner preview. Each attempt uses the approved test quota.','Тест владельца. Каждая попытка расходует согласованный лимит.'):say('Generation is not enabled. Provider access and test budget need approval.','Генерация не включена. Нужно подключение и согласованный бюджет.');if(kind==='image'){if(refs.length)imageDraftNeedsPhotos=false;showImageDraftState();saveImageDraft();}}
+function availability(){const m=currentModel();$('videoBackgroundControls').hidden=!(busy&&activeVideoWatchId&&activeVideoWatchId===job);scheduleEstimate();document.querySelector('[data-t=consent]').textContent=say('I agree to send this prompt and reference photos to '+(m?.provider||'the selected provider')+' for generation.','Я согласен отправить запрос и фотографии в '+(m?.provider||'выбранный сервис')+' для генерации.');$('generate').disabled=busy||!connected(m)||!$('consent').checked||!$('prompt').value.trim()||(kind==='image'&&imageDraftNeedsPhotos&&!refs.length);$('modelButton').disabled=busy;$('settingsButton').disabled=busy;$('references').disabled=busy;$('prompt').disabled=busy||kind==='translation';$('availability').textContent=kind==='translation'?say('File translation is not connected yet. No file will be uploaded.','Перевод файлов ещё не подключён. Файл не будет загружен.'):!m?.adapter?say('This model is not connected yet. You can prepare your settings; no request will be sent.','Модель пока не подключена. Можно выбрать настройки; запрос не отправляется.'):connected(m)?say('Owner preview. Each attempt uses the approved test quota.','Тест владельца. Каждая попытка расходует согласованный лимит.'):say('Generation is not enabled. Provider access and test budget need approval.','Генерация не включена. Нужно подключение и согласованный бюджет.');if(kind==='image'){if(refs.length)imageDraftNeedsPhotos=false;showImageDraftState();saveImageDraft();}}
 function storeDraft(){drafts[kind]={prompt:$('prompt').value,modelId,ratio:$('ratio').value,resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value,quantity:imageBatchQuantity(),refs,musicMode:$('musicMode').value};if(kind==='image')saveImageDraft();}
 function renderModels(){const list=catalog.filter(m=>m.kind===modelKind());$('modelChoices').replaceChildren();for(const m of list){const b=document.createElement('button');b.type='button';b.className='model-card';b.dataset.connected=String(m.adapter);b.setAttribute('aria-pressed',String(m.id===modelId));const title=document.createElement('strong');title.textContent=m.label;const description=document.createElement('small');description.textContent=ru?m.descriptionRu||m.description||'':m.description||'';const state=document.createElement('span');state.className='connection';state.textContent=m.provider+' · '+(m.adapter?say('Adapter prepared','Адаптер подготовлен'):say('API connection pending','API не подключён'));b.append(title,description,state);b.onclick=()=>{if(busy)return;const limit=Number(m.references||0);if(refs.length>limit&&!confirm(say('This model supports '+limit+' references. Remove '+(refs.length-limit)+' photo(s) to switch models?','Эта модель поддерживает '+limit+' изображений. Убрать '+(refs.length-limit)+' фото для переключения?')))return;refs=refs.slice(0,limit);modelId=m.id;$('consent').checked=false;renderModel();$('modelDialog').close();};$('modelChoices').append(b);}}
 function renderRatios(){const m=currentModel(),previous=$('ratio').value;$('ratio').replaceChildren();for(const r of m?.ratios||[])$('ratio').add(new Option(r,r));if(m?.ratios.includes(previous))$('ratio').value=previous;$('ratioLabel').hidden=!m?.ratios.length;$('ratioChoices').replaceChildren();for(const r of m?.ratios||[]){const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',r);b.setAttribute('aria-pressed',String(r===$('ratio').value));const shape=document.createElement('span');shape.className='ratio-drawing';const [w,h]=r.split(':').map(Number);shape.style.width=Math.round(Math.min(38,27*w/h))+'px';shape.style.height=Math.round(Math.min(27,38*h/w))+'px';const text=document.createElement('span');text.textContent=r;b.append(shape,text);b.onclick=()=>{$('ratio').value=r;$('consent').checked=false;updateRatioSelection();availability();};$('ratioChoices').append(b);}updateRatioSelection();}
@@ -469,7 +470,51 @@ document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclic
 function setHistory(on){historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
 $('showCreate').onclick=()=>setHistory(false);$('showHistory').onclick=()=>setHistory(true);
 function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
-async function watch(id,epoch){for(let i=0;i<120&&epoch===generation;i++){const d=await(await api(`/api/studio/jobs/${encodeURIComponent(id)}`)).json();if(d.status==='ready'){const b=await(await api(`/api/studio/jobs/${encodeURIComponent(id)}/media`)).blob();if(epoch!==generation)return;clearResult();blob=b;url=URL.createObjectURL(b);const tag=d.mime.startsWith('image/')?'img':d.mime.startsWith('video/')?'video':'audio';const media=document.createElement(tag);media.src=url;if(tag==='img')media.alt=say('Generated image','Созданное изображение');else media.controls=true;$('media').append(media);$('lyrics').textContent=d.text||'';$('empty').hidden=true;$('historyEmpty').hidden=true;$('actions').hidden=false;$('continueImage').hidden=!b.type.startsWith('image/');$('saveNote').hidden=false;$('status').textContent=say('Ready. Preview and save your creation.','Готово. Посмотрите и сохраните результат.');busy=false;availability();return;}if(d.status==='failed'||d.status==='unknown')throw Error(d.error||'GENERATION_FAILED');const wait=Math.max(3000,Math.min(20000,Number(d.retryAfterSeconds||5)*1000));await new Promise(r=>setTimeout(r,wait));}throw Error('STILL_PROCESSING_RELOAD_TO_CHECK');}
+async function watch(id,epoch){
+ for(let i=0;i<120&&epoch===generation;i++){
+  const d=await(await api('/api/studio/jobs/'+encodeURIComponent(id))).json();
+  // The user can stop browser polling at any moment; ignore late HTTP responses.
+  if(epoch!==generation)return;
+  if(d.kind==='video'&&['queued','processing','finalizing'].includes(d.status)){
+   activeVideoWatchId=id;availability();
+  }
+  if(d.status==='ready'){
+   const b=await(await api('/api/studio/jobs/'+encodeURIComponent(id)+'/media')).blob();
+   if(epoch!==generation)return;
+   activeVideoWatchId=null;
+   clearResult();blob=b;url=URL.createObjectURL(b);
+   const tag=d.mime.startsWith('image/')?'img':d.mime.startsWith('video/')?'video':'audio';
+   const media=document.createElement(tag);media.src=url;
+   if(tag==='img')media.alt=say('Generated image','Созданное изображение');else media.controls=true;
+   $('media').append(media);$('lyrics').textContent=d.text||'';
+   $('empty').hidden=true;$('historyEmpty').hidden=true;
+   $('actions').hidden=false;$('continueImage').hidden=!b.type.startsWith('image/');
+   $('saveNote').hidden=false;
+   $('status').textContent=say('Ready. Preview and save your creation.','Готово. Посмотрите и сохраните результат.');
+   if(sessionStorage.getItem('vu_generation_background_job')===id)sessionStorage.removeItem('vu_generation_background_job');
+   busy=false;availability();return;
+  }
+  if(d.status==='failed'||d.status==='unknown'){activeVideoWatchId=null;throw Error(d.error||'GENERATION_FAILED');}
+  const wait=Math.max(3000,Math.min(20000,Number(d.retryAfterSeconds||5)*1000));
+  await new Promise(r=>setTimeout(r,wait));
+ }
+ if(epoch!==generation)return;
+ activeVideoWatchId=null;throw Error('STILL_PROCESSING_RELOAD_TO_CHECK');
+}
+$('backgroundVideo').onclick=()=>{
+ if(!busy||!activeVideoWatchId||job!==activeVideoWatchId)return;
+ const backgroundJob=job;
+ ++generation; // Stop only the local watcher, never the provider task or wallet reservation.
+ activeVideoWatchId=null;busy=false;
+ sessionStorage.setItem('vu_generation_job',backgroundJob);
+ sessionStorage.setItem('vu_generation_background_job',backgroundJob);
+ const u=new URL(location.href);u.searchParams.set('view','history');history.replaceState(null,'',u);
+ setHistory(true);availability();
+ $('status').textContent=say(
+  'Video job saved in History. Browser waiting stopped; generation was NOT cancelled. Return later to check its status.',
+  'Видеозадача сохранена в Истории. Ожидание в браузере остановлено, генерация НЕ отменена. Проверьте результат позже.'
+ );
+};
 
 async function createImageBatch(){
  const quantity=imageBatchQuantity();
