@@ -29,7 +29,8 @@ export function studioConfig(env=process.env){
  const explicit=(env.AI_STUDIO_ALLOWED_MODELS||'').split(',');
  const catalog=MODEL_CATALOG.map(m=>({...m,priority:m.id===MODELS[m.kind]?.id?50:100,enabled:enabled&&m.adapter&&(m.provider!=='BytePlus'||m.kind!=='video'||bytePlusDownloadsConfigured(env.BYTEPLUS_MEDIA_HOSTS))&&!!(m.provider==='BytePlus'?env.BYTEPLUS_API_KEY:env.GEMINI_API_KEY)&&allowed.includes(m.kind)&&(m.id===MODELS[m.kind]?.id||explicit.includes(m.id))}));
  const pricingConfigured=pricingCatalog(env).configured,entitlements=generationEntitlements(env),publicReady=env.AI_PUBLIC_GENERATION_ENABLED==='true'&&env.AI_STUDIO_WALLET_ENABLED==='true'&&pricingConfigured&&entitlements.configured;
- return {pilot:!publicReady,ownerOnly:!publicReady,publicGenerationEnabled:publicReady,entitlementsConfigured:entitlements.configured,enabled,pricingConfigured,publicPolicy:generationPolicy(env),reason:enabled?null:'OWNER_SETUP_REQUIRED',models:Object.entries(MODELS).map(([kind,m])=>({kind,...m,enabled:catalog.find(c=>c.id===m.id)?.enabled||false})),catalog,translation:{enabled:false,reason:'PROVIDER_NOT_CONNECTED'}};
+ const imageBatchEnabled=env.AI_STUDIO_IMAGE_BATCH_ENABLED==='true'&&env.AI_STUDIO_WALLET_ENABLED==='true'&&pricingConfigured;
+ return {pilot:!publicReady,ownerOnly:!publicReady,publicGenerationEnabled:publicReady,entitlementsConfigured:entitlements.configured,enabled,pricingConfigured,imageBatchEnabled,publicPolicy:generationPolicy(env),reason:enabled?null:'OWNER_SETUP_REQUIRED',models:Object.entries(MODELS).map(([kind,m])=>({kind,...m,enabled:catalog.find(c=>c.id===m.id)?.enabled||false})),catalog,translation:{enabled:false,reason:'PROVIDER_NOT_CONNECTED'}};
 }
 export function installGenerationStudio(app,{auth,pool,env=process.env,provider=dispatchGeneration,poller=dispatchPoll,wallet=null,storage=null}){
  let ready;
@@ -190,12 +191,25 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  }}
  app.post('/api/studio/estimate',auth,generationUser,async(req,res)=>{try{
   const {request,selected,routing}=await resolveEstimateRequest(req.body);
+  const quantity=req.body?.quantity==null?1:Number(req.body.quantity);
+  if(!Number.isSafeInteger(quantity)||quantity<1||quantity>4||quantity>1&&request.kind!=='image')return res.status(400).json({error:'INVALID_IMAGE_QUANTITY'});
+  if(quantity>1&&!(studioConfig(env).imageBatchEnabled&&walletEnabled()))return res.status(503).json({error:'IMAGE_BATCH_NOT_ENABLED'});
   const quote=estimateGenerationPricing(request,selected,env);if(!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
-  res.json({credits:quote.credits,unit:'AI credits',model:quote.model,kind:quote.kind,routing});
+  const totalCredits=quote.credits*quantity;
+  if(!Number.isSafeInteger(totalCredits)||totalCredits>10_000_000)return res.status(400).json({error:'INVALID_IMAGE_QUANTITY'});
+  res.json({credits:totalCredits,perImageCredits:quote.credits,quantity,unit:'AI credits',model:quote.model,kind:quote.kind,routing});
  }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','INVALID_REFERENCES','INVALID_MUSIC_MODE'].includes(e.message);res.status(bad?400:503).json({error:bad?e.message:e.message||'AI_PRICING_NOT_APPROVED'});}});
   app.post('/api/studio/jobs',auth,generationUser,async(req,res)=>{
-  let request,selected,routing,clientRequestId;try{({request,selected,routing}=await resolveRequest(req.body));clientRequestId=generationRequestId(req.body?.requestId,{required:req.generationAccess?.scope==='public'});}catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','INVALID_REFERENCES','INVALID_MUSIC_MODE','GENERATION_REQUEST_ID_REQUIRED','INVALID_GENERATION_REQUEST_ID'].includes(e.message);return res.status(bad?400:503).json({error:e.message||'MODEL_NOT_ENABLED'});}
+  let request,selected,routing,clientRequestId;try{
+   // The job endpoint always creates ONE image. Multi-image batches must use distinct, independently idempotent jobs.
+   if(req.body?.quantity!=null&&req.body.quantity!==1)throw Error('INVALID_IMAGE_QUANTITY');
+   ({request,selected,routing}=await resolveRequest(req.body));
+   clientRequestId=generationRequestId(req.body?.requestId,{required:req.generationAccess?.scope==='public'});
+  }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','INVALID_REFERENCES','INVALID_MUSIC_MODE','GENERATION_REQUEST_ID_REQUIRED','INVALID_GENERATION_REQUEST_ID','INVALID_IMAGE_QUANTITY'].includes(e.message);return res.status(bad?400:503).json({error:e.message||'MODEL_NOT_ENABLED'});}
   const quote=walletEnabled()?estimateGenerationPricing(request,selected,env):null;if(walletEnabled()&&!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
+  // Fail before insertion/reservation if prices changed after the user confirmed the batch quote.
+  if(req.body?.expectedCredits!=null&&(!walletEnabled()||!Number.isSafeInteger(req.body.expectedCredits)||req.body.expectedCredits!==quote?.credits))
+   return res.status(409).json({error:'AI_ESTIMATE_CHANGED'});
   const fingerprint=requestFingerprint(request);let c,id=randomUUID(),reused=null;try{
    await init();c=await pool.connect();await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(hashtext($1))',['ai-create:'+req.user.id]);
    reused=await findGenerationRequest(c,{userId:req.user.id,requestId:clientRequestId,fingerprint});
