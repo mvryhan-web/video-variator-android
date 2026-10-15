@@ -418,3 +418,14 @@ test('homepage inspiration All Image Video filters only owned API cards',async({
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toHaveCount(2);
 });
 
+
+test('owner-approved social share section stays in left rail without invented official accounts',async({page})=>{
+ await fixtures(page);await page.goto('/deepsyq.html');
+ await expect(page.locator('.sidebar-social')).toBeVisible();
+ await expect(page.locator('.sidebar-social [data-social=discord]')).toBeVisible();
+ await expect(page.locator('.sidebar-social [data-social=x]')).toBeVisible();
+ await expect(page.locator('.sidebar-social [data-social=instagram]')).toBeVisible();
+ await page.locator('#sidebarToggle').click();
+ await expect(page.locator('body')).toHaveClass(/sidebar-collapsed/);
+ await expect(page.locator('.sidebar-social [data-social=x]')).toBeVisible();
+});

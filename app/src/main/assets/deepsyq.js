@@ -215,6 +215,14 @@ $('navShare').onclick=async()=>{
  }catch(e){if(e.name!=='AbortError')$('navShareStatus').textContent='Sharing is unavailable. Copy the page address instead.';}
 };
 
+// Sharing actions never impersonate an official Deepsyq social account.
+document.querySelectorAll('[data-social]').forEach(button=>button.addEventListener('click',async()=>{
+ const kind=button.dataset.social,url=new URL('deepsyq.html',location.href).href;
+ if(kind==='x'){window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent('Create with Deepsyq')+'&url='+encodeURIComponent(url),'_blank','noopener,noreferrer');return;}
+ try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url);$('navShareStatus').textContent='Link copied. Paste it into '+(kind==='discord'?'Discord':'Instagram')+' to share.';}else{$('navShareStatus').textContent='Copy this link to share: '+url;}}
+ catch(_){$('navShareStatus').textContent='Copy this link to share: '+url;}
+ window.open(kind==='discord'?'https://discord.com/channels/@me':'https://www.instagram.com/','_blank','noopener,noreferrer');
+}));
 let authOpener;function openAuth(){if(window.AndroidBridge){location.assign('index.html#signin');return;}authOpener=document.activeElement;$('authModal').hidden=false;setTimeout(()=>$('emailAuthEmail')?.focus(),0);initGoogle();}function closeAuth(){$('authModal').hidden=true;authOpener?.focus();}
 $('accountButton').onclick=openAuth;document.querySelectorAll('[data-close-auth]').forEach(b=>b.onclick=closeAuth);
 document.addEventListener('keydown',e=>{if($('authModal').hidden)return;if(e.key==='Escape')closeAuth();if(e.key==='Tab'){const items=[...$('authModal').querySelectorAll('button:not(:disabled),input:not(:disabled)')].filter(e=>e.getClientRects().length);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}});

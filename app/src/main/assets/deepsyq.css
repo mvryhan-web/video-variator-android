@@ -310,3 +310,13 @@ body.sidebar-collapsed .sidebar-bottom #logout:not([hidden])::before{content:"â‡
 @media(max-width:760px){.top{position:relative;min-height:64px;padding:9px 12px}.top-brand{display:block}.top-actions{width:100%;justify-content:flex-end}.top-help,.top-actions>a.top-link:nth-last-of-type(1){display:none}.top-actions .top-promo{padding:8px}.top-actions .top-login{padding:8px 14px}.top-actions .top-link{font-size:10px}.hero-stage{min-height:375px}.hero-stage-copy{max-width:90%;padding:28px 23px}.hero-stage-copy h1{font-size:clamp(41px,10vw,67px)}.landing-feature{padding:19px;margin:22px 0}.landing-feature-heading{align-items:start;flex-direction:column}.agent-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.canvas-feature-guide{padding:16px}}
 @media(max-width:480px){.top-actions{justify-content:space-between}.top-language select{max-width:95px}.top-actions .top-promo{font-size:9px}.top-actions #topInvite{display:none}.hero-stage{min-height:400px}.hero-stage-copy h1{font-size:43px}.hero-stage-copy{max-width:100%}.hero-stage-copy>p{font-size:12px}.agent-feature-grid{grid-template-columns:1fr}.feature-capabilities{grid-template-columns:1fr 1fr}.feature-capabilities span{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.hero-stage *{transition:none!important}}
+
+/* Owner-approved bottom-of-sidebar social sharing; no fictitious Deepsyq accounts. */
+.sidebar-social{margin:22px 0 8px;padding:15px 0;border-top:1px solid #494062;display:grid;gap:3px}
+#sidebar nav .sidebar-social>.caption{margin:4px 11px 8px;font-size:9px;color:#aea3c6}
+#sidebar nav .sidebar-social button{width:100%;display:flex;align-items:center;gap:12px;padding:9px 11px;border-radius:10px;text-align:left;min-height:38px}
+#sidebar nav .sidebar-social button:hover{background:#332b4c;color:#f0e7ff}
+body.sidebar-collapsed #sidebar nav .sidebar-social{margin-top:14px;padding-top:12px}
+body.sidebar-collapsed #sidebar nav .sidebar-social>.caption{display:none}
+body.sidebar-collapsed #sidebar nav .sidebar-social button{justify-content:center;padding:9px 5px}
+@media(max-width:760px){body.sidebar-collapsed #sidebar nav .sidebar-social button{justify-content:flex-start;padding:9px 11px}body.sidebar-collapsed #sidebar nav .sidebar-social>.caption{display:block}}
