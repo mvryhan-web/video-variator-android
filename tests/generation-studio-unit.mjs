@@ -5,6 +5,23 @@ const request={kind:'video',prompt:'Ocean at sunset',ratio:'16:9',consent:true,r
 test('no paid request without explicit setup and durable call quota',()=>{assert.equal(studioConfig({}).enabled,false);for(const n of ['0','21','NaN'])assert.equal(studioConfig({AI_STUDIO_ENABLED:'true',GEMINI_API_KEY:'test',DATABASE_URL:'test',ADMIN_EMAIL:'test',AI_STUDIO_MAX_CALLS:n}).enabled,false);const c=studioConfig({AI_STUDIO_ENABLED:'true',GEMINI_API_KEY:'secret',DATABASE_URL:'secret',ADMIN_EMAIL:'owner',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image'});assert.equal(c.models.find(m=>m.kind==='image').enabled,true);assert.equal(c.models.find(m=>m.kind==='video').enabled,false);assert.ok(!JSON.stringify(c).includes('secret'));});
 test('reject unsupported ratio, missing consent, oversized prompt, invalid refs',()=>{assert.throws(()=>validateGeneration({...request,ratio:'1:1'}));assert.throws(()=>validateGeneration({...request,consent:false}));assert.throws(()=>validateGeneration({...request,prompt:'x'.repeat(2001)}));assert.throws(()=>validateGeneration({...request,references:[{mimeType:'image/png',data:'abcd'}]}));assert.equal(validateGeneration(request).kind,'video');});
 test('Veo submits exactly one 8 second 720p generation',async()=>{let seen;const result=await generateGoogle(request,{key:'test-key',fetcher:async(url,opts)=>{seen={url,opts};return {ok:true,json:async()=>({name:'operations/test'})};}});const body=JSON.parse(seen.opts.body);assert.equal(body.parameters.sampleCount,1);assert.equal(body.parameters.durationSeconds,8);assert.equal(body.parameters.resolution,'720p');assert.ok(seen.url.endsWith(':predictLongRunning'));assert.equal(result.operation,'operations/test');});
+test('Veo video output settings obey model capability and first-frame duration restrictions',async()=>{
+ const short=validateGeneration({...request,videoResolution:'720p',videoDuration:4});
+ assert.equal(short.videoDuration,4);assert.equal(short.videoResolution,'720p');
+ const hd=validateGeneration({...request,videoResolution:'1080p',videoDuration:8});
+ assert.equal(hd.videoResolution,'1080p');
+ assert.throws(()=>validateGeneration({...request,videoResolution:'1080p',videoDuration:4}),/UNSUPPORTED_VIDEO_DURATION/);
+ assert.throws(()=>validateGeneration({...request,videoResolution:'4k',videoDuration:8}),/UNSUPPORTED_VIDEO_RESOLUTION/);
+ assert.throws(()=>validateGeneration({...request,videoResolution:'720p',videoDuration:5}),/UNSUPPORTED_VIDEO_DURATION/);
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ const reference={mimeType:'image/png',data:png.toString('base64')};
+ assert.throws(()=>validateGeneration({...request,videoDuration:4,references:[reference]}),/UNSUPPORTED_VIDEO_DURATION/);
+ let submitted=0,body;
+ await generateGoogle(short,{key:'fixture',fetcher:async(_url,opts)=>{submitted++;body=JSON.parse(opts.body);return {ok:true,json:async()=>({name:'operations/test'})};}});
+ assert.equal(submitted,1);assert.equal(body.parameters.durationSeconds,4);assert.equal(body.parameters.resolution,'720p');
+ await generateGoogle(hd,{key:'fixture',fetcher:async(_url,opts)=>{body=JSON.parse(opts.body);return {ok:true,json:async()=>({name:'operations/test'})};}});
+ assert.equal(body.parameters.durationSeconds,8);assert.equal(body.parameters.resolution,'1080p');
+});
 test('music output parsed by media type, not first part',async()=>{const r=await generateGoogle({kind:'music',prompt:'Piano',musicMode:'instrumental',references:[]},{key:'test',fetcher:async()=>({ok:true,json:async()=>({candidates:[{content:{parts:[{text:'Lyrics'},{inlineData:{mimeType:'audio/mpeg',data:Buffer.from('fixture').toString('base64')}}]}}]})})});assert.equal(r.mime,'audio/mpeg');assert.equal(r.bytes.toString(),'fixture');});
 test('provider API key never sent to arbitrary or redirected download URLs',async()=>{assert.throws(()=>safeGoogleUrl('https://evil.test/file'));assert.throws(()=>safeGoogleUrl('http://generativelanguage.googleapis.com/file'));let calls=0;await assert.rejects(()=>pollGoogle('operations/test',{key:'secret',fetcher:async()=>{calls++;return {ok:true,json:async()=>({done:true,response:{generateVideoResponse:{generatedSamples:[{video:{uri:'https://evil.test/file'}}]}}})};}}));assert.equal(calls,1);});
 test('Veo completed provider errors are terminal and never start a second paid job',async()=>{
