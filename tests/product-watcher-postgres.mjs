@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import pg from 'pg';
 import { runProductWatcherOnce } from '../server/product-watcher/monitor.js';
+import { productWatcherTick } from '../server/product-watcher/scheduler.js';
 import { installProductWatcher } from '../server/product-watcher/admin-api.js';
 
 const url = process.env.PRODUCT_WATCHER_TEST_DB_URL || '';
@@ -37,6 +38,11 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
 
     const paused=await runProductWatcherOnce({pool,env,fetchFn});
     assert.equal(paused.status,'paused');assert.equal(httpCalls,0);
+    const schedulerEnv={...env,PRODUCT_WATCHER_SCHEDULER_ENABLED:'true'};
+    const pausedTick=await productWatcherTick({pool,env:schedulerEnv,fetchFn});
+    assert.equal(pausedTick.status,'paused');assert.equal(httpCalls,0);
+    const heartbeat=await pool.query('SELECT heartbeat_at FROM vv_product_watcher_scheduler WHERE id=1');
+    assert.ok(heartbeat.rows[0].heartbeat_at);
 
     const app={routes:new Map(),get(path,...fns){this.routes.set('GET '+path,fns);},post(path,...fns){this.routes.set('POST '+path,fns);}};
     installProductWatcher(app,{auth:(req,_res,next)=>next(),pool,env,fetchFn});
@@ -60,6 +66,8 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     assert.equal(res.body.checks.generations.counts.stale_24h,1);
     assert.equal(res.body.checks.generations.counts.held_review_24h,1);
     assert.equal(httpCalls,1);
+    const notDue=await productWatcherTick({pool,env:schedulerEnv,fetchFn});
+    assert.equal(notDue.status,'not_due');assert.equal(httpCalls,1);
 
     const history=await request('GET','/api/product-watcher/admin/status');
     assert.equal(history.statusCode,200);assert.equal(history.body.runs[0].status,'warning');
