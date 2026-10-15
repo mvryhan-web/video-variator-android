@@ -47,6 +47,28 @@ test('Canvas starter prompts are editable, preserve existing drafts on cancel, a
  expect(posts).toBe(0);
 });
 
+test('Canvas saves only text and kind within this tab; refresh drops photos and clear requires confirmation',async({page})=>{
+ await fixtures(page);
+ let jobPosts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')jobPosts++;});
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.goto('/deepsyq.html');
+ await page.locator('#quickCreatePrompt').fill('A very specific personal product video idea');
+ await page.locator('#quickCreateKind').selectOption('video');
+ await page.locator('#quickCreateFiles').setInputFiles({name:'private-photo.png',mimeType:'image/png',buffer:png});
+ await expect(page.locator('.quick-reference')).toHaveCount(1);
+ await page.reload();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('A very specific personal product video idea');
+ await expect(page.locator('#quickCreateKind')).toHaveValue('video');
+ await expect(page.locator('.quick-reference')).toHaveCount(0);
+ page.once('dialog',d=>d.dismiss());await page.locator('#quickCreateClear').click();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('A very specific personal product video idea');
+ page.once('dialog',d=>d.accept());await page.locator('#quickCreateClear').click();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+ await expect(page.locator('#quickCreateKind')).toHaveValue('image');
+ expect(await page.evaluate(()=>sessionStorage.getItem('deepsyq_quick_canvas_draft_v1'))).toBeNull();
+ expect(jobPosts).toBe(0);
+});
+
 test('Canvas quick-create accepts local reference photos, allows removal and never auto-generates',async({page})=>{
  await fixtures(page);
  await page.route('**/api/studio/config',route=>route.fulfill({json:{
