@@ -373,3 +373,10 @@ body.sidebar-collapsed #sidebar nav .sidebar-social button{justify-content:cente
 /* home-carousel film contrast overlay */
 .home-hero-carousel::after{content:"";position:absolute;z-index:1;inset:0;background:linear-gradient(90deg,#100f1ded 0%,#100f1dcc 37%,#100f1d45 70%,transparent 100%);pointer-events:none}
 @media(max-width:760px){.home-hero-carousel::after{background:linear-gradient(180deg,#110d1eaa 0%,#110d1ed9 52%,#110d1e55 100%)}}
+
+/* Existing Home pricing card: informative CTA, never a fake checkout. */
+.trial-offer{background:linear-gradient(130deg,#332149,#1c1830);border-color:#8054ad;border-radius:17px}
+.trial-offer strong{color:#e6b0ff}.trial-offer .tag{color:#d4aeff}
+.trial-details-link{display:inline-flex;align-items:center;justify-content:center;min-height:45px;border-radius:12px;padding:12px 18px;background:linear-gradient(100deg,#8654e7,#de8aca);color:white;text-decoration:none;font-size:12px;font-weight:750;white-space:nowrap}
+.trial-details-link:focus-visible{outline:3px solid #e5baff;outline-offset:3px}
+@media(max-width:680px){.trial-offer{flex-direction:column;align-items:stretch}.trial-details-link{width:100%}}
