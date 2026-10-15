@@ -172,7 +172,8 @@ test('real MinIO accepts correctly signed private GET, then denies forgery, expi
     assert.equal(candidate.key,stagedKey);
     const rows=(await pool.query('SELECT COUNT(*)::int AS n FROM vv_generation_reference_assets')).rows[0].n;
     assert.equal(rows,1);
-    await pool.query("UPDATE vv_generation_reference_assets SET expires_at=NOW()-INTERVAL '1 minute' WHERE id=$1",[staged.id]);
+    // Preserve the real DB CHECK (expires_at > created_at) when simulating expiry.
+    await pool.query("UPDATE vv_generation_reference_assets SET created_at=NOW()-INTERVAL '1 hour', expires_at=NOW()-INTERVAL '1 minute' WHERE id=$1",[staged.id]);
     await assert.rejects(()=>ledger.getForVideoTransfer({userId:owner,id:staged.id}),/REFERENCE_MEDIA_ACCESS_DENIED/);
     env.AI_STUDIO_REFERENCE_STAGING_ENABLED='false';
     assert.deepEqual(await ledger.cleanupExpired(),{claimed:1,deleted:1,failed:0});
