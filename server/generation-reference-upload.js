@@ -3,6 +3,7 @@
 import express from 'express';
 import {createGenerationReferenceLedger} from './generation-reference-ledger.js';
 import {inspectStudioReferenceMedia,STUDIO_REFERENCE_MEDIA_LIMITS} from './generation-reference-media.js';
+import {probeStudioReferenceMedia} from './generation-reference-probe.js';
 
 const RAW_TYPES=new Set(Object.keys(STUDIO_REFERENCE_MEDIA_LIMITS));
 const raw=express.raw({type:['video/mp4','audio/wav'],limit:'20mb',inflate:false});
@@ -11,7 +12,7 @@ const rawBody=(req,res,next)=>raw(req,res,error=>{
  return res.status(error.status===413?413:400).json({error:error.status===413?'REFERENCE_MEDIA_TOO_LARGE':'REFERENCE_UPLOAD_BODY_INVALID'});
 });
 
-export function installGenerationReferenceUpload(app,{auth,owner,pool,storage,env=process.env,ledger}={}){
+export function installGenerationReferenceUpload(app,{auth,owner,pool,storage,env=process.env,ledger,probe=probeStudioReferenceMedia}={}){
  if(typeof auth!=='function'||typeof owner!=='function')throw Error('REFERENCE_UPLOAD_AUTH_REQUIRED');
  const references=ledger||createGenerationReferenceLedger({pool,storage,env,maxActiveUploads:2});
  // This is NOT a public uploader: owner-only until independent codec/malware
@@ -35,6 +36,8 @@ export function installGenerationReferenceUpload(app,{auth,owner,pool,storage,en
   try{
    // Parse the actual bytes before any database or object-storage write.
    inspectStudioReferenceMedia({mime:req.referenceMime,bytes:req.body});
+   // Fail closed if ffprobe is missing or the actual codec is unsupported.
+   await probe({mime:req.referenceMime,bytes:req.body});
    const asset=await references.stage({userId:String(req.user?.id||''),mime:req.referenceMime,bytes:req.body});
    // Never return a signed URL or begin a provider call.
    res.status(201).json({asset,stagedOnly:true,providerReady:false});
