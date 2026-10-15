@@ -225,3 +225,6 @@ body.sidebar-collapsed .sidebar-bottom #adminAiControl::before{content:"⚙";fon
 body.sidebar-collapsed .sidebar-bottom #logout:not([hidden]){display:grid;place-items:center;font-size:0;min-height:39px;border-radius:9px}
 body.sidebar-collapsed .sidebar-bottom #logout:not([hidden])::before{content:"⇥";font-size:20px}
 @media(max-width:760px){body.sidebar-collapsed .sidebar-bottom #adminAiControl,body.sidebar-collapsed .sidebar-bottom #logout:not([hidden]){display:block;font-size:12px}body.sidebar-collapsed .sidebar-bottom #adminAiControl::before,body.sidebar-collapsed .sidebar-bottom #logout:not([hidden])::before{content:none}}
+
+/* Feature flags must win over navigation display rules. */
+#sidebar [hidden],#modelFlyout[hidden]{display:none!important}
