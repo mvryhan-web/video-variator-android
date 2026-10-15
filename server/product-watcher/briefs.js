@@ -21,7 +21,8 @@ function rowCount(r,key){return Math.max(0,Number(r?.[key]||0)||0);}
 async function compileBrief(client,kind,instant){
   // Values are measured snapshots, not verified external announcements or Stripe revenue.
   const window=kind==='weekly'?'7 days':'24 hours';
-  const [runs,alerts,sourceChanges,pending,costs]=await Promise.all([
+  const period=parisBriefSlots(new Date(instant));
+  const [runs,alerts,sourceChanges,pending,costs,contentTasks]=await Promise.all([
     client.query("SELECT COUNT(*)::int AS total,COUNT(*) FILTER (WHERE status='critical')::int AS critical,COUNT(*) FILTER (WHERE status='warning')::int AS warning FROM vv_product_watcher_runs WHERE created_at >= $1::timestamptz - $2::interval",[instant,window]),
     client.query("SELECT code,severity,COUNT(*)::int AS occurrences FROM vv_product_watcher_alerts WHERE last_seen_at >= $1::timestamptz - $2::interval GROUP BY code,severity ORDER BY occurrences DESC,code LIMIT 30",[instant,window]),
     client.query("SELECT COUNT(*)::int AS changed FROM vv_product_watcher_proposals WHERE created_at >= $1::timestamptz - $2::interval",[instant,window]),
@@ -31,7 +32,8 @@ async function compileBrief(client,kind,instant){
       "COUNT(*)::int AS priced_jobs FROM vv_generation_jobs WHERE deleted=false",
       "AND created_at >= $1::timestamptz - $2::interval AND actual_cost IS NOT NULL",
       "AND cost_currency ~ '^[a-z]{3}$' GROUP BY lower(cost_currency) ORDER BY lower(cost_currency)"
-    ].join(' '),[instant,window])
+    ].join(' '),[instant,window]),
+    client.query('SELECT kind,content FROM vv_product_watcher_content_tasks WHERE period_key=$1 ORDER BY kind',[period.periodKey])
   ]);
   const issues=alerts.rows.slice(0,30).map(x=>({code:String(x.code).slice(0,70),severity:x.severity,count:rowCount(x,'occurrences')}));
   const guidelines={
@@ -43,10 +45,14 @@ async function compileBrief(client,kind,instant){
     DB_UNAVAILABLE:'Check database health privately without sharing secrets.'
   };
   const suggestions=[...new Set(issues.map(x=>guidelines[x.code]).filter(Boolean))].slice(0,8);
-  const period=parisBriefSlots(new Date(instant));
+
   const critical=rowCount(runs.rows[0],'critical'),warning=rowCount(runs.rows[0],'warning'),
     changed=rowCount(sourceChanges.rows[0],'changed'),pendingCount=rowCount(pending.rows[0],'pending');
   const risk=critical?'high':warning||issues.length?'medium':'low';
+  const readiness=contentTasks.rows.find(x=>x.kind==='content')?.content||null;
+  const opportunity=contentTasks.rows.find(x=>x.kind==='opportunities')?.content||null;
+  const ownerSuggestions=Array.isArray(opportunity?.recommendations)
+    ?opportunity.recommendations.slice(0,12).filter(x=>typeof x?.text==='string'&&x.text.length<=240):[];
   return {
     kind,periodKey:period.periodKey,timezone:ZONE,
     generatedAt:instant,window,
@@ -56,7 +62,12 @@ async function compileBrief(client,kind,instant){
     costs:{recordedByCurrency:costs.rows.map(x=>({currency:x.currency,
       recordedCost:String(x.recorded_cost),pricedJobs:rowCount(x,'priced_jobs')})),
       marginVerified:false,revenueVerified:false},
-    recommendations:suggestions,
+    recommendations:[...new Set([...suggestions,...ownerSuggestions.map(x=>x.text)])].slice(0,12),
+    contentChecks:{status:readiness?.status||'not_checked',code:readiness?.code||'NOT_CHECKED',
+      templates:readiness?.templates||null,inspiration:readiness?.inspiration||null,
+      evidence:'Recorded metadata only, not verified link playback or media licenses.'},
+    internalOpportunities:ownerSuggestions.map(x=>({code:String(x.code).slice(0,80),
+      priority:String(x.priority).slice(0,20),text:x.text})),
     pendingApprovals:{officialSourceReviews:pendingCount,automaticApplication:false},
     audit:kind==='weekly'?{priority:risk,high:critical,medium:warning,low:issues.length}:null,
     limitations:'Recorded events only. No official model/pricing claims, real revenue or live provider smoke test inferred.'

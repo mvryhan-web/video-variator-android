@@ -16,6 +16,7 @@ const fake=(opts={})=>{
   if(sql.startsWith('SELECT COUNT(*)::int AS changed'))return{rows:[{changed:3}]};
   if(sql.startsWith('SELECT COUNT(*)::int AS pending'))return{rows:[{pending:2}]};
   if(sql.startsWith('SELECT lower(cost_currency)'))return{rows:[{currency:'usd',recorded_cost:'3.000000',priced_jobs:4}]};
+  if(sql.startsWith('SELECT kind,content FROM vv_product_watcher_content_tasks'))return{rows:[{kind:'content',content:{status:'attention',code:'CONTENT_METADATA_GAPS'}},{kind:'opportunities',content:{recommendations:[{code:'NO_APPROVED_VIDEO_EXAMPLE',priority:'medium',text:'Check a real video sample.'}]}}]};
   if(sql.startsWith('INSERT INTO vv_product_watcher_briefs')){
    const id=briefs.size+1;briefs.set(args.slice(0,2).join(':'),{id,kind:args[0],period_key:args[1],content:JSON.parse(args[2]),created_at:new Date()});
    return{rows:[{id}]};
@@ -66,6 +67,8 @@ test('daily and weekly generation are durable, deduplicated and carry no invente
   assert.equal(report.content.costs.marginVerified,false);
   assert.equal(report.content.costs.revenueVerified,false);
   assert.equal(report.content.pendingApprovals.automaticApplication,false);
+  assert.equal(report.content.contentChecks.status,'attention');
+  assert.ok(report.content.internalOpportunities.some(x=>x.code==='NO_APPROVED_VIDEO_EXAMPLE'));
   assert.equal(report.content.changed.officialPageChangesUnverified,3);
   assert.ok(!text.includes('private'));
   assert.ok(!text.includes('grossMargin:'));

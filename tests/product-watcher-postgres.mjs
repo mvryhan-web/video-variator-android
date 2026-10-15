@@ -124,6 +124,8 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     assert.equal(briefView.statusCode,200);
     assert.ok(briefView.body.items.length>=1);
     assert.equal(briefView.body.items[0].content.costs.marginVerified,false);
+    assert.ok(briefView.body.items[0].content.internalOpportunities.some(x=>x.code==='NO_APPROVED_VIDEO_EXAMPLE'));
+    assert.ok(['ready','attention'].includes(briefView.body.items[0].content.contentChecks.status));
     assert.equal(briefView.body.items[0].content.pendingApprovals.automaticApplication,false);
     assert.equal(JSON.stringify(briefView.body).includes('watcher-fixture-failed'),false);
 
