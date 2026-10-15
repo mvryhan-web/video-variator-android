@@ -74,6 +74,7 @@ export function createObjectStorage({env=process.env,fetcher=fetch,now=()=>new D
  function stagedReferenceKey({userId,mime,assetId}){
   requireReady();
   if(env.AI_STUDIO_REFERENCE_STAGING_ENABLED!=='true')throw Error('REFERENCE_STAGING_DISABLED');
+  if(env.AI_STUDIO_REFERENCE_CLEANUP_ENABLED!=='true')throw Error('REFERENCE_CLEANUP_DISABLED');
   if(typeof userId!=='string'||!userId||userId.length>256||
      !Object.hasOwn(STUDIO_REFERENCE_MEDIA_LIMITS,mime)||!uuidPattern.test(assetId))throw Error('REFERENCE_MEDIA_INVALID');
   const owner=sha(userId).slice(0,24);
