@@ -437,6 +437,12 @@ function renderRefs(){
   };
   tile.append(img,remove,controls,crop,undo);$('refPreview').append(tile);
  });
+ if(kind==='video'&&videoDraftNeedsPhotos&&refs.length===videoDraftExpectedRefs&&
+   [...$('videoInputMode').options].some(o=>o.value===videoDraftPendingMode)){
+  $('videoInputMode').value=videoDraftPendingMode;
+  videoDraftNeedsPhotos=false;videoDraftExpectedRefs=0;videoDraftPendingMode='text';
+  $('status').textContent=say('Reference photos reattached. Review their order and input mode before generating.','Фотографии прикреплены заново. Проверьте порядок кадров и режим перед генерацией.');
+ }
  if(kind==='video')updateRatioSelection();
 }
 // Large reference photos are prepared locally. Provider payloads still obey the original 1 MB cap.
@@ -495,15 +501,7 @@ async function acceptFiles(files,{append=false}={}){
  }catch(e){$('status').textContent=errorText(e);}
  finally{
   busy=false;
-  if(accepted){
-   renderRefs();
-   if(kind==='video'&&videoDraftNeedsPhotos&&refs.length===videoDraftExpectedRefs&&
-     [...$('videoInputMode').options].some(o=>o.value===videoDraftPendingMode)){
-    $('videoInputMode').value=videoDraftPendingMode;
-    videoDraftNeedsPhotos=false;videoDraftExpectedRefs=0;videoDraftPendingMode='text';
-    $('status').textContent=say('Reference photos reattached. Review their order and input mode before generating.','Фотографии прикреплены заново. Проверьте порядок кадров и режим перед генерацией.');
-   }
-  }else $('references').value='';
+  if(accepted)renderRefs();else $('references').value='';
   availability();
  }
  return accepted;
