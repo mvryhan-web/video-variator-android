@@ -40,7 +40,13 @@ export async function generateGoogle(request,{key,fetcher=fetch}){
  if(!media)throw new Error('EMPTY_GENERATION');
  const mime=media.mimeType||media.mime_type;
  if(!['image/png','image/jpeg','audio/mpeg','audio/mp3','audio/wav'].includes(mime))throw new Error('UNSUPPORTED_PROVIDER_MEDIA');
+ if(typeof media.data!=='string'||media.data.length>40*1024*1024||media.data.length%4!==0||!/^[A-Za-z0-9+/]*={0,2}$/.test(media.data))throw new Error('INVALID_PROVIDER_MEDIA');
  const bytes=Buffer.from(media.data,'base64');if(!bytes.length||bytes.length>30*1024*1024)throw new Error('INVALID_PROVIDER_MEDIA');
+ if(request.kind==='image'){
+  const png=bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]));
+  const jpeg=bytes.length>=3&&bytes[0]===255&&bytes[1]===216&&bytes[2]===255;
+  if(!((mime==='image/png'&&png)||(mime==='image/jpeg'&&jpeg)))throw new Error('INVALID_PROVIDER_MEDIA');
+ }
  return {mime,bytes,text:parts.map(p=>p.text||'').join('\n').slice(0,12000)};
 }
 export async function pollGoogle(operation,{key,fetcher=fetch}){
