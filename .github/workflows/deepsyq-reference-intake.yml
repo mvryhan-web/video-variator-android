@@ -26,6 +26,11 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - name: Install local media inspection tools for real fixture acceptance
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          ffprobe -version | head -n 1
       - name: Verify JS syntax
         run: |
           node --check server/generation-reference-probe.js
