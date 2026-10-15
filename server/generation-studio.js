@@ -6,6 +6,7 @@ import {pricingCatalog,estimateGenerationPricing} from './generation-pricing.js'
 import {listModelControls,getModelControl,updateModelControl,applyModelControl} from './generation-model-control.js';
 import {enforceGenerationPolicy,generationPolicy} from './generation-policy.js';
 import {createObjectStorage} from './generation-storage.js';
+import {resolveGenerationModel,orderedGenerationCandidates} from './generation-routing.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch}={}){
  const model=MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter);
  if(!model)throw Error('MODEL_NOT_CONNECTED');
@@ -29,9 +30,27 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  const owner=(req,res,next)=>{if(req.user.provider!=='google'||String(req.user.email||'').toLowerCase()!==String(env.ADMIN_EMAIL||'').trim().toLowerCase())return res.status(403).json({error:'OWNER_PILOT_ONLY'});next();};
  const walletEnabled=()=>env.AI_STUDIO_WALLET_ENABLED==='true'&&!!wallet&&pricingCatalog(env).configured;
  const requestFingerprint=request=>createHash('sha256').update(JSON.stringify(request)).digest('hex');
+ async function effectiveCatalog(){
+  const base=studioConfig(env).catalog;
+  if(env.AI_PROVIDER_ADMIN_ENABLED!=='true'||!pool)return base;
+  return listModelControls(pool,base);
+ }
+ async function resolveRequest(body){
+  const catalog=await effectiveCatalog();
+  let selected;
+  if(env.AI_SMART_ROUTING_ENABLED==='true'&&(body?.model==='smart'||!body?.model)){
+   const choice=resolveGenerationModel(body,catalog,env);selected=choice.model;
+   return {request:validateGeneration({...body,model:selected.id}),selected,routing:{smart:true,candidates:choice.candidates.map(m=>m.id)}};
+  }
+  const request=validateGeneration(body);selected=catalog.find(m=>m.id===request.model&&m.kind===request.kind);
+  if(!selected)throw Error('MODEL_NOT_FOUND');
+  if(!selected.enabled)throw Error(selected.maintenance?'MODEL_MAINTENANCE':'MODEL_NOT_ENABLED');
+  return {request,selected,routing:{smart:false,candidates:[selected.id]}};
+ }
  app.get('/api/studio/config',async(_req,res)=>{const base=studioConfig(env);if(env.AI_PROVIDER_ADMIN_ENABLED!=='true'||!pool)return res.json(base);try{const controlled=await listModelControls(pool,base.catalog);const defaults=base.models.map(m=>{const best=controlled.filter(x=>x.kind===m.kind&&x.enabled).sort((a,b)=>(a.control?.priority??100)-(b.control?.priority??100))[0];return best?{kind:m.kind,id:best.id,label:best.label,ratios:best.ratios,references:best.references,enabled:true}: {...m,enabled:false};});res.json({...base,catalog:controlled,models:defaults});}catch(_){res.json(base);}});
  const modelAdminEnabled=()=>env.AI_PROVIDER_ADMIN_ENABLED==='true'&&!!pool;
  app.get('/api/studio/admin/models',auth,owner,async(_req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const items=await listModelControls(pool,studioConfig(env).catalog);res.json({items});}catch(_){res.status(503).json({error:'MODEL_ADMIN_UNAVAILABLE'});}});
+ app.post('/api/studio/admin/route-preview',auth,owner,async(req,res)=>{if(env.AI_SMART_ROUTING_ENABLED!=='true')return res.status(503).json({error:'SMART_ROUTING_NOT_ENABLED'});try{const catalog=await effectiveCatalog();const candidates=orderedGenerationCandidates(req.body,catalog);if(!candidates.length)return res.status(503).json({error:'NO_COMPATIBLE_MODEL'});res.json({primary:candidates[0].id,candidates:candidates.map(m=>({id:m.id,provider:m.provider,priority:Number(m.control?.priority??m.priority??100),quality:m.quality||null,duration:m.duration||null}))});}catch(_){res.status(503).json({error:'SMART_ROUTING_UNAVAILABLE'});}});
  app.patch('/api/studio/admin/models/:id',auth,owner,async(req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const control=await updateModelControl(pool,{modelId:req.params.id,userId:req.user.id,patch:req.body,catalog:studioConfig(env).catalog});res.json({modelId:req.params.id,control});}catch(e){const status=e.message==='MODEL_NOT_FOUND'?404:e.message==='INVALID_MODEL_CONTROL'?400:503;res.status(status).json({error:status===503?'MODEL_ADMIN_UNAVAILABLE':e.message});}});
   app.use('/api/studio',(_req,res,next)=>{if(!studioConfig(env).enabled)return res.status(503).json({error:'OWNER_SETUP_REQUIRED'});next();});
  async function finish(id,result,userId){
@@ -56,22 +75,19 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(walletEnabled())await wallet.settle({userId,jobId:id,outcome:'unknown'}).catch(()=>{});
  }}
  app.post('/api/studio/estimate',auth,owner,async(req,res)=>{try{
-  const request=validateGeneration(req.body);let selected=studioConfig(env).catalog.find(m=>m.id===request.model&&m.kind===request.kind);
-  if(env.AI_PROVIDER_ADMIN_ENABLED==='true'&&pool&&selected)selected=applyModelControl(selected,await getModelControl(pool,selected.id));
-  if(!selected?.enabled)return res.status(503).json({error:selected?.maintenance?'MODEL_MAINTENANCE':'MODEL_NOT_ENABLED'});
+  const {request,selected,routing}=await resolveRequest(req.body);
   const quote=estimateGenerationPricing(request,selected,env);if(!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
-  res.json({credits:quote.credits,unit:'AI credits',model:quote.model,kind:quote.kind});
- }catch(e){const invalid=e.message==='INVALID_REQUEST';res.status(invalid?400:503).json({error:invalid?'INVALID_REQUEST':'AI_PRICING_NOT_APPROVED'});}});
+  res.json({credits:quote.credits,unit:'AI credits',model:quote.model,kind:quote.kind,routing});
+ }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','INVALID_REFERENCES','INVALID_MUSIC_MODE'].includes(e.message);res.status(bad?400:503).json({error:bad?e.message:e.message||'AI_PRICING_NOT_APPROVED'});}});
   app.post('/api/studio/jobs',auth,owner,async(req,res)=>{
-  let request;try{request=validateGeneration(req.body);}catch(e){return res.status(400).json({error:e.message});}
-  let selected=studioConfig(env).catalog.find(m=>m.id===request.model&&m.kind===request.kind);if(env.AI_PROVIDER_ADMIN_ENABLED==='true'&&pool&&selected){try{selected=applyModelControl(selected,await getModelControl(pool,selected.id));}catch(_){return res.status(503).json({error:'MODEL_ADMIN_UNAVAILABLE'});}}if(!selected?.enabled)return res.status(503).json({error:selected?.maintenance?'MODEL_MAINTENANCE':'MODEL_NOT_ENABLED'});
+  let request,selected,routing;try{({request,selected,routing}=await resolveRequest(req.body));}catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','INVALID_REFERENCES','INVALID_MUSIC_MODE'].includes(e.message);return res.status(bad?400:503).json({error:e.message||'MODEL_NOT_ENABLED'});}
   const quote=walletEnabled()?estimateGenerationPricing(request,selected,env):null;if(walletEnabled()&&!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
   let c,id=randomUUID();try{
    await init();c=await pool.connect();await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(84920115)');
    await enforceGenerationPolicy(c,{userId:req.user.id,env});
    const count=await c.query('SELECT count(*)::int AS n FROM vv_generation_jobs');
    if(count.rows[0].n>=Number(env.AI_STUDIO_MAX_CALLS)){await c.query('ROLLBACK');return res.status(429).json({error:'PILOT_LIMIT_REACHED'});}
-   const settings={ratio:request.ratio,musicMode:request.musicMode||null,referenceCount:request.references?.length||0};
+   const settings={ratio:request.ratio,musicMode:request.musicMode||null,referenceCount:request.references?.length||0,routing};
    await c.query('INSERT INTO vv_generation_jobs(id,user_id,kind,status,provider,model,prompt,started_at,settings,estimated_cost) VALUES($1,$2,$3,$4,$5,$6,$7,NOW(),$8::jsonb,$9)',[id,req.user.id,request.kind,walletEnabled()?'queued':'processing',selected.provider||null,selected.id,request.prompt,JSON.stringify(settings),quote?quote.providerCostMicros/1_000_000:null]);await c.query('COMMIT');
   }catch(e){if(c)await c.query('ROLLBACK').catch(()=>{});if(['AI_CONCURRENCY_LIMIT','AI_RATE_LIMIT'].includes(e.message))return res.status(429).json({error:e.message});return res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}finally{c?.release();}
   if(walletEnabled())try{
