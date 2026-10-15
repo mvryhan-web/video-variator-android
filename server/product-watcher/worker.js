@@ -3,6 +3,7 @@ import { pool } from '../db.js';
 import { productWatcherTick } from './scheduler.js';
 import { runOfficialSourcesOnce } from './official-sources.js';
 import { runBriefsIfDue } from './briefs.js';
+import { runContentTasksIfDue } from './content-tasks.js';
 
 if (process.env.PRODUCT_WATCHER_ENABLED !== 'true' ||
     process.env.PRODUCT_WATCHER_SCHEDULER_ENABLED !== 'true') {
@@ -37,6 +38,15 @@ async function tick(){
     }
   } catch {
     console.error('[product watcher] WATCHER_OFFICIAL_SOURCE_TICK_FAILED');
+  }
+  try {
+    const morning=await runContentTasksIfDue({pool,env:process.env});
+    if(morning.generated?.length){
+      console.log('[product watcher] content '+JSON.stringify({status:morning.status,
+        generated:morning.generated.map(x=>({kind:x.kind,periodKey:x.periodKey}))}));
+    }
+  } catch {
+    console.error('[product watcher] WATCHER_CONTENT_TICK_FAILED');
   }
   try {
     const briefs=await runBriefsIfDue({pool,env:process.env});
