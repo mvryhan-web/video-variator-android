@@ -272,3 +272,9 @@ Current queued-roadmap dependencies to verify before implementation:
 
 - Studio History now lazily loads protected previews for ready image jobs only.
 - Video/audio media is not downloaded for card thumbnails; placeholders remain until the user opens/downloads the result.
+
+
+### Continuation 21 — user-visible AI plan access
+
+- Studio now explains the signed-in account's configured AI plan entitlement and rate/concurrency limits through a read-only access endpoint.
+- No public entitlement values are invented; production still depends on approved `AI_PLAN_ENTITLEMENTS_JSON` and disabled rollout gates.

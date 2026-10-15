@@ -76,6 +76,11 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(!selected.enabled)throw Error(selected.maintenance?'MODEL_MAINTENANCE':'MODEL_NOT_ENABLED');
   return {request,selected,routing:{smart:false,candidates:[selected.id]}};
  }
+ app.get('/api/studio/access',auth,async(req,res)=>{
+  if(isOwner(req.user))return res.json({allowed:true,scope:'owner',plan:req.user.plan||null,maxConcurrent:null,maxPerHour:null,reason:null});
+  const access=generationEntitlementForUser(req.user,env);
+  res.json({allowed:!!access.allowed,scope:access.scope||'public',plan:access.plan||req.user.plan||null,maxConcurrent:access.maxConcurrent??null,maxPerHour:access.maxPerHour??null,reason:access.reason||null,walletReady:walletEnabled(),pricingConfigured:pricingCatalog(env).configured});
+ });
  app.get('/api/studio/config',async(_req,res)=>{const base=studioConfig(env);if(env.AI_PROVIDER_ADMIN_ENABLED!=='true'||!pool)return res.json(base);try{const controlled=await listModelControls(pool,base.catalog);const defaults=base.models.map(m=>{const best=controlled.filter(x=>x.kind===m.kind&&x.enabled).sort((a,b)=>(a.control?.priority??100)-(b.control?.priority??100))[0];return best?{kind:m.kind,id:best.id,label:best.label,ratios:best.ratios,references:best.references,enabled:true}: {...m,enabled:false};});res.json({...base,catalog:controlled,models:defaults});}catch(_){res.json(base);}});
  const modelAdminEnabled=()=>env.AI_PROVIDER_ADMIN_ENABLED==='true'&&!!pool;
  app.get('/api/studio/admin/models',auth,owner,async(_req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const items=await listModelControls(pool,studioConfig(env).catalog);res.json({items});}catch(_){res.status(503).json({error:'MODEL_ADMIN_UNAVAILABLE'});}});

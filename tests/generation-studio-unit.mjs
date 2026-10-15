@@ -166,3 +166,12 @@ test('pricing estimate does not upload prompt or reference bytes',async()=>{
  try{const r=await fetch(base+'/api/studio/estimate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'image',model:'gemini-3.1-flash-image',ratio:'1:1',referenceCount:0})});assert.equal(r.status,200);const d=await r.json();assert.equal(d.credits,9);assert.equal(d.model,'gemini-3.1-flash-image');}
  finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
+
+
+test('Studio access endpoint reports configured plan limits without inventing defaults',async()=>{
+ const pool={async query(sql){if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};throw new Error(sql);}};
+ const env={AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',AI_MODEL_PRICING_JSON:JSON.stringify([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:5,providerCostMicros:1000,currency:'usd'}]),AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:12}])};
+ const wallet={};
+ const app=express();installGenerationStudio(app,{env,pool,wallet,auth:(req,_res,next)=>{req.user={id:'u1',provider:'email',plan:'basic',subscription_status:'active'};next();}});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));try{const base=`http://127.0.0.1:${server.address().port}`;const r=await fetch(base+'/api/studio/access');assert.equal(r.status,200);const d=await r.json();assert.equal(d.allowed,true);assert.equal(d.maxConcurrent,2);assert.equal(d.maxPerHour,12);assert.equal(d.plan,'basic');}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});

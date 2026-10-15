@@ -45,7 +45,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 31 | Generation UX/status | PARTIAL | Queued/processing/finalizing/ready/failed/unknown states, bounded retry-after polling and localized status/error messages now exist. Full public commercial acceptance UX remains gated. |
 | 32 | Friendly error handling | PARTIAL | Central server-side AI error normalization now maps provider capacity/configuration/timeout/output/download/security failures to stable public-safe codes; raw provider text is not exposed. Final public support copy still needs launch review. |
 | 33 | Safe retry | PARTIAL | No automatic paid retries on ambiguous failure; recovery only polls existing task IDs, provider polling is throttled, and Generate creation is idempotent via per-user client request IDs/fingerprints. Dedicated commercial worker retry policy is still pending. |
-| 34 | Server-side rate/concurrency limits | PARTIAL | Config-driven public plan entitlements can now supply per-user concurrency/hourly limits behind `AI_PUBLIC_GENERATION_ENABLED=false`; no default plan limits are invented. Approved production values remain pending. |
+| 34 | Server-side rate/concurrency limits | PARTIAL | Config-driven public plan entitlements supply per-user concurrency/hourly limits and Studio can now display the signed-in plan's exact configured limits/reason. No default values are invented; approved production values remain pending. |
 | 35 | Security | PARTIAL | Keys stay server-side; auth/user scoping, safe provider URLs, MIME/signature checks, idempotent generation creation and owner action audit logging exist. Formal launch security review still required. |
 | 36 | Privacy | PARTIAL | Added an implementation-accurate AI Media Privacy notice: local Product Video handoff, explicit Studio consent, provider transfer, job metadata storage, object-storage/DB fallback and deletion behavior. Final legal Terms/Privacy and approved automatic retention schedule remain pending. |
 | 37 | Business analytics | PARTIAL | Owner overview now shows users/30-day registrations, generation adoption/jobs/failure/latency/top model, recorded provider cost/credits, and confirmed AI-wallet purchases separated by currency. Gross margin stays intentionally blank until live economics/currency are verified. |
@@ -271,3 +271,10 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Ready image History cards now fetch their protected result only when the card approaches the viewport and render an image preview.
 - Video/audio cards deliberately remain lightweight placeholders so History never downloads large media just to paint the list.
 - Preview object URLs are revoked whenever History reloads to avoid browser-memory leaks.
+
+
+## Continuation 22 — user-visible AI plan access
+
+- Added authenticated read-only `/api/studio/access` that reports owner scope or the exact configured public entitlement for the user's current plan.
+- Studio shows plan/max-concurrent/max-per-hour when allowed, or a friendly reason when public AI/entitlements/plan status are not ready.
+- The endpoint does not start generation, mutate wallet data or invent fallback plan limits.
