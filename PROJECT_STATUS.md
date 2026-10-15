@@ -260,3 +260,9 @@ Current queued-roadmap dependencies to verify before implementation:
 - Added an explicit, one-time, server-configured welcome AI-credit claim path; default remains OFF/0.
 - Welcome grants are idempotent, ledgered and debt-first, and do not touch Stripe.
 - Added payment-independent AI-wallet balance/history/config endpoints for safe user visibility.
+
+
+### Continuation 19 — Pricing wallet activity
+
+- Pricing now gives signed-in users a read-only AI-wallet summary and recent ledger activity without exposing payment/internal identifiers.
+- Existing tool-plan credits and AI-generation wallet credits remain visibly separate.
