@@ -22,6 +22,14 @@ export function generationBillingRuntime(env={}){
   const activationRequested=env.AI_BILLING_ENABLED==='true';
   return {mode,livemode:mode==='live',keyMatches,liveApproved,activationRequested,livePaymentsEnabled:activationRequested&&mode==='live'&&liveApproved&&keyMatches};
 }
+export function stripeRefundData(event,{livemode}={}){
+  if(event?.type!=='charge.refunded')return null;
+  const charge=event.data?.object||{},eventLive=!!event.livemode,chargeLive=!!charge.livemode;
+  if(eventLive!==!!livemode||chargeLive!==!!livemode)throw Error('AI_PAYMENT_MODE_MISMATCH');
+  const paymentIntent=typeof charge.payment_intent==='string'?charge.payment_intent:charge.payment_intent?.id;
+  if(typeof paymentIntent!=='string'||!paymentIntent||paymentIntent.length>200||!Number.isSafeInteger(charge.amount_refunded)||charge.amount_refunded<=0)throw Error('INVALID_AI_REFUND_EVENT');
+  return {paymentIntent,cumulativeAmount:charge.amount_refunded};
+}
 export function makeQuote({userId,body,env,now=Date.now()}) {
   const request=validateGeneration(body),catalog=billingCatalog(env),rate=catalog.rates.find(r=>r.kind===request.kind);
   if (!rate||!env.APP_JWT_SECRET||request.model!==MODELS[request.kind].id) throw Error('AI_PRICING_NOT_APPROVED');
@@ -90,6 +98,13 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
   });
   async function handleEvent(event) {
     // Invoked only after the existing Stripe webhook signature check.
+    const r=runtime();
+    if(event.type==='charge.refunded'){
+      if(!enabled())throw Error('AI_BILLING_WEBHOOK_DISABLED');
+      const refund=stripeRefundData(event,{livemode:r.livemode});if(!refund)return false;
+      const result=await wallet.refund(refund.paymentIntent,refund.cumulativeAmount);
+      return !result?.ignored;
+    }
     if (!['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type)) return false;
     const object=event.data.object;
     if (object.metadata?.aiWallet!=='v1') return false;
@@ -97,7 +112,7 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
     await init();
     const {rows}=await pool.query('SELECT * FROM vv_ai_order WHERE id=$1',[object.metadata.orderId]);
     if (!rows.length) throw Error('AI_ORDER_NOT_FOUND');
-    const order=rows[0],p=order.snapshot,r=runtime();if((p.billingMode||'test')!==r.mode)throw Error('AI_PAYMENT_MODE_MISMATCH');
+    const order=rows[0],p=order.snapshot;if((p.billingMode||'test')!==r.mode)throw Error('AI_PAYMENT_MODE_MISMATCH');
     const s=await stripe.checkout.sessions.retrieve(object.id,{expand:['line_items']});
     if (s.payment_status!=='paid') return true;
     const lines=s.line_items?.data||[];

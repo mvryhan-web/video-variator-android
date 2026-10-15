@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
-import {billingCatalog,makeQuote,verifyQuote,generationBillingRuntime,installGenerationBilling} from '../server/generation-billing.js';
+import {billingCatalog,makeQuote,verifyQuote,generationBillingRuntime,stripeRefundData,installGenerationBilling} from '../server/generation-billing.js';
 const body={kind:'video',prompt:'Ocean at sunset',ratio:'16:9',consent:true};
 // Synthetic prices for code tests only, never proposed customer prices.
 const env={APP_JWT_SECRET:'test-only-signing-key',AI_CREDIT_PACKS_JSON:JSON.stringify([{sku:'fixture',priceId:'price_fixture',amount:100,credits:100,currency:'eur'}]),AI_CREDIT_RATES_JSON:JSON.stringify([{kind:'video',credits:10}])};
@@ -51,4 +51,13 @@ test('billing runtime only enables live payments behind all explicit gates',()=>
  assert.equal(generationBillingRuntime({AI_BILLING_ENABLED:'true',AI_BILLING_MODE:'live',STRIPE_SECRET_KEY:'sk_live_fixture'}).livePaymentsEnabled,false);
  assert.equal(generationBillingRuntime({AI_BILLING_ENABLED:'true',AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'true',STRIPE_SECRET_KEY:'sk_test_fixture'}).keyMatches,false);
  assert.equal(generationBillingRuntime({AI_BILLING_ENABLED:'true',AI_BILLING_MODE:'test',STRIPE_SECRET_KEY:'sk_test_fixture'}).livemode,false);
+});
+
+
+test('Stripe refund parsing uses cumulative refunded amount and enforces billing mode',()=>{
+ const event={type:'charge.refunded',livemode:true,data:{object:{livemode:true,payment_intent:'pi_fixture',amount_refunded:450}}};
+ assert.deepEqual(stripeRefundData(event,{livemode:true}),{paymentIntent:'pi_fixture',cumulativeAmount:450});
+ assert.throws(()=>stripeRefundData(event,{livemode:false}),/AI_PAYMENT_MODE_MISMATCH/);
+ assert.throws(()=>stripeRefundData({type:'charge.refunded',livemode:true,data:{object:{livemode:true,payment_intent:'pi_fixture',amount_refunded:0}}},{livemode:true}),/INVALID_AI_REFUND_EVENT/);
+ assert.equal(stripeRefundData({type:'invoice.paid'},{livemode:false}),null);
 });
