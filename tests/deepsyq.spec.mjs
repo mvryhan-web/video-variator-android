@@ -7,7 +7,7 @@ async function fixtures(page){
 }
 test('dashboard keeps tools secondary, honest availability and supported navigation',async({page},info)=>{
  await fixtures(page);await page.goto('/deepsyq.html');
- await expect(page.getByRole('heading',{name:/What will you/})).toBeVisible();
+ await expect(page.locator('.hero-stage h1')).toContainText('beyond limits');
  await expect(page.locator('nav a[href="#quickCreateForm"]')).toContainText('Canvas');
  await expect(page.locator('#studioStatus')).toContainText('owner preview');
  await expect(page.locator('.plan')).toHaveCount(3);
