@@ -231,7 +231,7 @@ test('pricing shows the planned $0.99 trial without creating misleading live che
  await expect(page.locator('#trialOffer')).toContainText('$0.99');
  await expect(page.locator('#trialOffer')).toContainText('3-day access');
  await expect(page.locator('#trialOffer')).toContainText('No auto-renewal');
- await expect(page.locator('#trialOffer')).toContainText('not on sale yet');
+ await expect(page.locator('#trialOffer')).toContainText('Not available to purchase yet.');
  await expect(page.locator('#trialOffer button')).toBeDisabled();
  await expect(page.locator('#trialOffer a')).toHaveAttribute('href','deepsyq.html#homeQuickBar');
  await expect(page.locator('#toolPlans')).toContainText('Basic');
