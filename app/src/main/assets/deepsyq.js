@@ -1,4 +1,20 @@
+import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id);
+const quickCreateForm=$('quickCreateForm');
+quickCreateForm?.addEventListener('submit',async event=>{
+ event.preventDefault();
+ const prompt=$('quickCreatePrompt').value.trim(),kind=$('quickCreateKind').value;
+ const status=$('quickCreateStatus'),button=$('quickCreateSubmit');
+ if(!prompt||prompt.length>2000||!['image','video'].includes(kind)){status.textContent='Enter a description (up to 2,000 characters).';return;}
+ button.disabled=true;status.textContent='Preparing your Studio draft locally…';
+ try{
+  await saveStudioHandoff({kind,prompt,source:'dashboard-quick-create'});
+  location.assign('generate-studio.html?studio='+kind+'&from=dashboard');
+ }catch(_){
+  status.textContent='This browser could not save the draft. Your text is still here; copy it before opening Studio.';
+  button.disabled=false;
+ }
+});
 let base='';try{base=window.AndroidBridge?.getApiBase?.()||'';}catch(_){}base=String(base||window.VV_API_BASE||location.origin).replace(/\/$/,'');
 async function api(path,options={}){const token=localStorage.getItem('vv_token');const r=await fetch(base+path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{})}});const d=await r.json();if(!r.ok)throw Error(d.error||'REQUEST_FAILED');return d;}
 const mobileMenu=matchMedia('(max-width:760px)');
