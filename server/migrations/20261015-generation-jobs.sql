@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS vv_generation_pilot(
 );
 
 ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS provider TEXT;
+ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS prompt TEXT;
 ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS model TEXT;
 ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ;
 ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ;
