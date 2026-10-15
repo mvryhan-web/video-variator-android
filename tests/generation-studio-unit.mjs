@@ -57,8 +57,8 @@ test('recovery polls only an existing provider operation and never starts a repl
  const pool={
   async query(sql,args=[]){
    if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};
-   if(sql.startsWith("SELECT id,operation FROM vv_generation_jobs"))return {rows:[{id:row.id,operation:row.operation}]};
-   if(sql.startsWith('UPDATE vv_generation_jobs SET status=$2')){finished=true;return {rows:[]};}
+   if(sql.startsWith("SELECT id,user_id,operation FROM vv_generation_jobs"))return {rows:[{id:row.id,user_id:'owner',operation:row.operation}]};
+   if(sql.startsWith("UPDATE vv_generation_jobs SET status='ready'")){finished=true;return {rows:[]};}
    throw new Error(sql);
   },
   async connect(){return {async query(sql,args=[]){
@@ -72,4 +72,38 @@ test('recovery polls only an existing provider operation and never starts a repl
  const app=express();const controls=installGenerationStudio(app,{env,pool,auth:(_req,_res,next)=>next(),provider:async()=>{providerCalls++;throw Error('must not generate');},poller:async operation=>{pollCalls++;assert.equal(operation,row.operation);return {mime:'video/mp4',bytes:Buffer.from('fixture'),text:''};}});
  await controls.recoveryTick();
  assert.equal(providerCalls,0);assert.equal(pollCalls,1);assert.equal(finished,true);
+});
+
+
+test('wallet-gated Studio reserves before provider use and captures only after durable output',async()=>{
+ const jobs=[];const walletCalls=[];
+ const wallet={
+  async reserve(v){walletCalls.push(['reserve',v]);return {available:93,reserved:7,debt:0};},
+  async settle(v){walletCalls.push(['settle',v]);return {available:93,reserved:0,debt:0,status:'captured'};}
+ };
+ const pool={
+  async query(sql,args=[]){
+   if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};
+   if(sql.startsWith('SELECT * FROM vv_generation_jobs'))return {rows:jobs.filter(j=>j.id===args[0]&&j.user_id===args[1]&&!j.deleted)};
+   if(sql.startsWith("UPDATE vv_generation_jobs SET status='processing',credits_reserved")){const j=jobs.find(j=>j.id===args[0]);j.status='processing';j.credits_reserved=args[1];return {rows:[]};}
+   if(sql.startsWith("UPDATE vv_generation_jobs SET status='finalizing'")){const j=jobs.find(j=>j.id===args[0]);Object.assign(j,{status:'finalizing',mime:args[1],media:args[2],result_text:args[3]});return {rows:[]};}
+   if(sql.startsWith("UPDATE vv_generation_jobs SET status='ready',credits_charged")){const j=jobs.find(j=>j.id===args[0]);j.status='ready';j.credits_charged=j.credits_reserved;return {rows:[]};}
+   if(sql.startsWith('SELECT id,kind,status'))return {rows:jobs};
+   throw new Error(sql);
+  },
+  async connect(){return {async query(sql,args=[]){
+   if(sql==='BEGIN'||sql==='COMMIT'||sql==='ROLLBACK'||sql.startsWith('SELECT pg_advisory_xact_lock'))return {rows:[]};
+   if(sql.startsWith('SELECT count'))return {rows:[{n:jobs.length}]};
+   if(sql.startsWith('INSERT INTO vv_generation_jobs')){jobs.push({id:args[0],user_id:args[1],kind:args[2],status:args[3],provider:args[4],model:args[5],prompt:args[6],settings:JSON.parse(args[7]),estimated_cost:args[8],created_at:new Date(),started_at:new Date(),credits_reserved:0,credits_charged:0,deleted:false});return {rows:[]};}
+   throw new Error(sql);
+  },release(){}};}
+ };
+ const env={AI_STUDIO_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',GEMINI_API_KEY:'fixture',DATABASE_URL:'fixture',ADMIN_EMAIL:'owner@example.test',AI_MODEL_PRICING_JSON:JSON.stringify([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:7,providerCostMicros:1200}])};
+ let providerSawReservation=false;
+ const app=express();app.use(express.json());installGenerationStudio(app,{env,pool,wallet,auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();},provider:async()=>{providerSawReservation=walletCalls.some(([name])=>name==='reserve');return {mime:'image/png',bytes:Buffer.from('fixture')};}});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));const base=`http://127.0.0.1:${server.address().port}`;
+ try{
+  const r=await fetch(base+'/api/studio/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'image',prompt:'Test',ratio:'1:1',consent:true})});assert.equal(r.status,202);const d=await r.json();assert.equal(d.creditsReserved,7);
+  await new Promise(r=>setTimeout(r,20));assert.equal(providerSawReservation,true);assert.deepEqual(walletCalls.map(x=>x[0]),['reserve','settle']);assert.equal(walletCalls[1][1].outcome,'success');assert.equal(jobs[0].status,'ready');assert.equal(jobs[0].credits_reserved,7);assert.equal(jobs[0].credits_charged,7);assert.equal(jobs[0].estimated_cost,0.0012);
+ }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
