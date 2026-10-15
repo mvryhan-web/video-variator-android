@@ -137,7 +137,7 @@ $('clearVideoDraft').onclick=()=>{
  if(!confirm(say('Clear your video description, settings and attached photos? Generated History is not deleted.','Очистить описание видео, настройки и фотографии? Готовые результаты в Истории сохранятся.')))return;
  videoDraftReady=false;videoDraftLoaded=false;videoDraftNeedsPhotos=false;videoDraftExpectedRefs=0;videoDraftPendingMode='text';
  refs=[];$('prompt').value='';modelId=config.models?.find(m=>m.kind==='video'&&m.enabled)?.id||MODELS.video.id;
- $('videoResolution').value='';$('videoDuration').value='';$('consent').checked=false;
+ $('ratio').value='';$('videoInputMode').value='';$('videoResolution').value='';$('videoDuration').value='';$('consent').checked=false;
  renderModel();drafts.video=null;
  try{if(videoDraftKey)sessionStorage.removeItem(videoDraftKey);}catch(_){}
  videoDraftReady=true;showVideoDraftState();availability();
