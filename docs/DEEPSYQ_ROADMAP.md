@@ -2,6 +2,12 @@
 
 This file preserves the approved future product requirements so new agents do not lose them.
 
+## Integration and release destination (owner instruction, 2026-10-15)
+
+**One canonical release branch: `main` for BASE and Blocks 1–7.** The seven blocks are components of the same Deepsyq app, not separate permanent branches or separately deployed products. Agents may develop on isolated branches to avoid conflicts, but every completed, reviewed and tested block must be integrated into the shared BASE and ultimately merged into `main` after satisfying dependency and production-safety gates.
+
+Use `AGENTS.md` and `PROJECT_STATUS.md` for the merge owner, PR links, current status, test evidence and deployment blockers. Track **feature code complete**, **merged to main** and **deployed/verified** as distinct states. Render follows `main` with automatic deploy, so a feature merge must not precede verified PostgreSQL continuity/backup and required migration, auth, billing, provider, compatibility and rollback checks. This rule does not authorize enabling paid features or changing production secrets.
+
 ## Priority and scope rule
 
 Deepsyq is the main product and main dashboard. Video Uniquifier remains an existing secondary tool inside the platform.
