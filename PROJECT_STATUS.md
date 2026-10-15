@@ -308,3 +308,11 @@ Current queued-roadmap dependencies to verify before implementation:
 - Added Create / Canvas sidebar shortcut; restored featured AI Apps homepage section and corrected its API origin. No invented or auto-seeded templates; section stays hidden if active featured templates are absent.
 - Added route and Playwright coverage for local handoff, references/removal, featured workflows and navigation. Local source syntax inspected; GitHub Actions for the current head are still queued/not yet confirmed. Do **not** mark BASE verified or deployed.
 - Production root switch, migrations, payment/provider activation remain blocked pending approval and live prerequisites. Next: inspect latest GitHub Actions run logs after runners finish, resolve remaining failures before further BASE claims.
+
+## Isolated design preview preparation — 2026-10-15
+
+- Added `server/deepsyq-preview.js`, a **visual-only, read-only preview entrypoint** using existing Deepsyq frontend assets. No production DB, authentication, wallet, provider or Stripe integration is instantiated. Preview API blocks paid/writing endpoints and advertises the real public model catalog with every model disabled.
+- Added `npm run preview:deepsyq`, `tests/deepsyq-preview.mjs`, focused CI checks and `docs/DEEPSYQ_PREVIEW.md` with a separate free Render web-service deployment checklist.
+- Repository code is committed to `deepsyq-platform` / PR #42; **preview service is NOT deployed yet**. The owner must first confirm which Render workspace to use (the connector reported `My Workspace`).
+- Latest GitHub Actions for the feature branch remain queued; no verified passing CI or externally accessible test URL can be claimed yet.
+- BASE remains in progress, legacy production and existing billing stay untouched. Continue with specific CI failures once runners finish; do not start independent roadmap Blocks 1–7 before BASE handoff without owner instruction.
