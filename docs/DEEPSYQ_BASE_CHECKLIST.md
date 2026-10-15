@@ -234,3 +234,5 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - AI pack cards render only server-configured credits/amount/currency and cannot start checkout while AI billing is disabled.
 - Studio AI wallet now shows recent ledger activity and a manual balance refresh.
 - Returning from Stripe never claims payment success; Studio states that credits appear only after the signed Stripe webhook confirms payment.
+
+- Studio error UX now also explains hourly rate limits, concurrent-generation limits and unapproved AI pricing without exposing internal details.

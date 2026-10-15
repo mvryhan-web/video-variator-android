@@ -239,3 +239,5 @@ Current queued-roadmap dependencies to verify before implementation:
 - Added `ai-pricing.html`: existing Video/Everyday Tools subscriptions and Lifetime are visually/semantically separate from AI credit packs.
 - No AI pack prices are hardcoded; the page uses `/api/ai-billing/config` only, and checkout buttons remain disabled unless AI billing is active.
 - Studio wallet now renders recent ledger activity and handles Stripe return/cancel states without claiming payment before webhook confirmation.
+
+- Added missing Studio messages for server-side AI rate/concurrency limits and unapproved pricing.
