@@ -529,9 +529,21 @@ function historyState(status){return status==='ready'?say('Ready','Готово'
 function historyDate(value){try{return new Intl.DateTimeFormat(navigator.language||'en',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));}catch(_){return String(value||'');}}
 function historyCredits(item){const n=Number(item.creditsCharged||item.creditsReserved||0);return n>0?say(n+' AI credits',n+' AI-кредитов'):'';}
 function prepareHistoryItem(item,{settings=false}={}){
- if(busy)return;select(item.kind==='music'?'music':item.kind);
+ if(busy)return;
+ const previousCount=kind==='video'?refs.length:(drafts.video?.refs?.length||0);
+ const oldPhotos=settings&&item.kind==='video'&&Number.isInteger(item.settings?.referenceCount)&&item.settings.referenceCount>0;
+ if(oldPhotos&&previousCount&&!confirm(say('Preparing this historical video will detach your current video photos. Continue?','Для подготовки прежнего видео потребуется убрать текущие фотографии из редактора. Продолжить?')))return;
+ select(item.kind==='music'?'music':item.kind);
  if(item.model&&catalog.some(m=>m.id===item.model&&m.kind===(item.kind==='music'?'music':item.kind))){modelId=item.model;renderModel();}
  $('prompt').value=item.prompt||'';
+ if(settings&&item.kind==='video'){
+  videoDraftNeedsPhotos=false;videoDraftExpectedRefs=0;videoDraftPendingMode='text';
+  const n=Number(item.settings?.referenceCount||0),oldMode=item.settings?.videoInputMode;
+  if(Number.isInteger(n)&&n>0&&n<=currentModel()?.references&&currentModel()?.capabilities?.videoInputModes?.includes(oldMode)){
+   refs=[];videoDraftNeedsPhotos=true;videoDraftExpectedRefs=n;videoDraftPendingMode=oldMode;
+   renderRefs();
+  }
+ }
  if(settings&&item.settings?.ratio&&currentModel()?.ratios?.includes(item.settings.ratio)){$('ratio').value=item.settings.ratio;updateRatioSelection();}if(settings&&kind==='image'&&currentModel()?.capabilities?.resolutions?.includes(item.settings?.resolution)){$('imageResolution').value=item.settings.resolution;updateRatioSelection();}if(settings&&kind==='image'&&currentModel()?.capabilities?.outputFormats?.includes(item.settings?.outputFormat)){$('imageOutputFormat').value=item.settings.outputFormat;updateRatioSelection();}
  if(settings&&item.kind==='video'){if(item.settings?.referenceCount>0&&!refs.length)$('status').textContent=say('Previous video referenced photos that were not saved in this draft. Re-add them and choose the reference mode before generating.','В прежнем видео использовались фотографии, которые не сохранились в черновике. Добавьте их заново и выберите режим референсов перед генерацией.');if(currentModel()?.capabilities?.resolutions?.includes(item.settings?.videoResolution))$('videoResolution').value=item.settings.videoResolution;renderVideoSettings();if(currentModel()?.capabilities?.durations?.includes(item.settings?.videoDuration)&&[...$('videoDuration').options].some(o=>o.value===String(item.settings.videoDuration)))$('videoDuration').value=String(item.settings.videoDuration);updateRatioSelection();}
  if(settings&&item.kind==='video'&&currentModel()?.capabilities?.videoInputModes?.includes(item.settings?.videoInputMode)&&[...$('videoInputMode').options].some(o=>o.value===item.settings.videoInputMode))$('videoInputMode').value=item.settings.videoInputMode;
