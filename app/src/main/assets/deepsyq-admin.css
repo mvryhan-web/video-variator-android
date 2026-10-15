@@ -16,3 +16,18 @@
 .route-candidate>span{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#252b37;color:#cfd5e3;font-size:10px}
 .route-candidate strong,.route-candidate small{display:block}
 .route-candidate small{margin-top:3px;color:#8f98ab}
+
+.template-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:12px;margin-top:14px}
+.template-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:14px;border:1px solid #2d3340;border-radius:14px;background:#12161d;margin-top:14px}
+.template-form>input,.template-form>select,.template-form>textarea,.template-form label input,.template-form label select,.template-form label textarea{width:100%;min-height:40px;border-radius:9px;border:1px solid #343b49;background:#0f1218;color:#fff;padding:8px}
+.template-form>textarea{min-height:78px;resize:vertical}
+.template-form label{display:grid;gap:6px;font-size:10px;color:#9aa4b8}
+.template-form label textarea,.template-form label input,.template-form label select{font:inherit}
+.template-card{grid-template-columns:1fr 1fr;margin-top:0}
+.template-card label:has(textarea){grid-column:1/-1}
+.template-flags{display:flex;gap:16px;align-items:center}
+.template-flags .check{display:flex;align-items:center;gap:8px}
+.template-flags .check input{width:18px;min-height:18px}
+.template-form>.message{grid-column:1/-1;margin:0}
+@media(max-width:900px){.template-form{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.template-form,.template-card{grid-template-columns:1fr}.template-card label:has(textarea){grid-column:1}.template-list{grid-template-columns:1fr}}
