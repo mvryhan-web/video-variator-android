@@ -240,3 +240,29 @@ test('owner can manage Block 3 inspiration without exposing rights internals pub
  await page.route('**/api/studio/admin/inspiration**',async r=>{if(r.request().method()==='GET')return r.fulfill({json:{items:[item]}});const body=r.request().postDataJSON();item={...item,...body};return r.fulfill({json:{item}});});
  await page.goto('/deepsyq-admin.html');await expect(page.locator('#inspirationAdminList')).toContainText('Owned Fashion Film');await expect(page.locator('#inspirationAdminList')).toContainText('Publish only if rights are verified: owned');await expect(page.locator('#inspirationAdminList input[name=title]').first()).toHaveValue('Owned Fashion Film');
 });
+
+
+test('Block 3 ratio filter and all three actions preserve their intended handoff semantics',async({page})=>{
+ const items=[
+  {id:'img-1',title:'Owned Square Product',slug:'owned-square-product',kind:'image',category:'Product',description:'Original concept',previewUrl:'/fixture-inspiration.png',previewPosterUrl:null,prompt:'Product prompt',defaultModel:'fixture-image',aspectRatio:'1:1',requiredInputTypes:['image'],defaultSettings:{ratio:'1:1'},actionTarget:'studio',active:true,featured:true,sortOrder:10},
+  {id:'vid-1',title:'Owned Social Motion',slug:'owned-social-motion',kind:'video',category:'Social',description:'Original video concept poster',previewUrl:'/fixture-social.svg',previewPosterUrl:'/fixture-social.svg',prompt:'Video prompt',defaultModel:'fixture-video',aspectRatio:'9:16',requiredInputTypes:['image'],defaultSettings:{ratio:'9:16'},actionTarget:'studio',active:true,featured:true,sortOrder:20}
+ ];
+ let lastRatio='';
+ await page.route('**/api/inspiration**',r=>{const u=new URL(r.request().url());lastRatio=u.searchParams.get('ratio')||'';const filtered=lastRatio?items.filter(x=>x.aspectRatio===lastRatio):items;return r.fulfill({json:{items:filtered,categories:['Product','Social']}});});
+ await page.route('**/fixture-inspiration.png',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
+ await page.route('**/fixture-social.svg',r=>r.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 16"><rect width="9" height="16"/></svg>'}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,models:[
+  {kind:'image',id:'fixture-image',label:'Image fixture',ratios:['1:1'],references:1,enabled:true},
+  {kind:'video',id:'fixture-video',label:'Video fixture',ratios:['9:16','16:9'],references:1,enabled:true}
+ ],catalog:[
+  {kind:'image',id:'fixture-image',label:'Image fixture',ratios:['1:1'],references:1,enabled:true,adapter:true,provider:'Google'},
+  {kind:'video',id:'fixture-video',label:'Video fixture',ratios:['9:16','16:9'],references:1,enabled:true,adapter:true,provider:'Google'}
+ ]}}));
+ let jobPosts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')jobPosts++;});
+ await page.goto('/inspiration.html');
+ await page.locator('#ratio').selectOption('9:16');await expect.poll(()=>lastRatio).toBe('9:16');await expect(page.locator('.card')).toHaveCount(1);await expect(page.locator('.card')).toContainText('Owned Social Motion');await expect(page.locator('.card video')).toHaveCount(0);await expect(page.locator('.card .concept-play')).toHaveCount(1);await expect(page.locator('.replace-note')).toContainText('Add your own source assets');
+
+ await page.getByRole('button',{name:'Use this prompt'}).click();await expect(page).toHaveURL(/studio=video/);await expect(page.locator('#prompt')).toHaveValue('Video prompt');await expect(page.locator('#consent')).not.toBeChecked();expect(jobPosts).toBe(0);
+ await page.goto('/inspiration.html');await page.locator('#ratio').selectOption('9:16');await page.getByRole('button',{name:'Create yours'}).click();await expect(page.locator('#prompt')).toHaveValue('Video prompt');await expect(page.locator('#ratio')).toHaveValue('9:16');expect(jobPosts).toBe(0);
+ await page.goto('/inspiration.html');await page.locator('#ratio').selectOption('9:16');await page.getByRole('button',{name:'Clone and Try'}).click();await expect(page.locator('#prompt')).toHaveValue('Video prompt');await expect(page.locator('#modelButton')).toContainText('Video fixture');await expect(page.locator('#ratio')).toHaveValue('9:16');expect(jobPosts).toBe(0);
+});
