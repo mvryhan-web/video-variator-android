@@ -3,14 +3,15 @@ function openDb(){return new Promise((resolve,reject)=>{if(!('indexedDB'in windo
 function tx(db,mode,run){return new Promise((resolve,reject)=>{const t=db.transaction(STORE,mode),s=t.objectStore(STORE);let req;try{req=run(s);}catch(e){reject(e);return;}t.oncomplete=()=>resolve(req?.result);t.onerror=()=>reject(Error('LOCAL_HANDOFF_UNAVAILABLE'));t.onabort=()=>reject(Error('LOCAL_HANDOFF_UNAVAILABLE'));});}
 function safeSettings(v){if(!v||typeof v!=='object'||Array.isArray(v))return{};const raw=JSON.stringify(v);if(raw.length>2000)throw Error('INVALID_HANDOFF');return v;}
 function safeFiles(files){const list=Array.from(files||[]);if(list.length>4)throw Error('TOO_MANY_REFERENCES');for(const f of list)if(!(f instanceof Blob)||!['image/png','image/jpeg'].includes(f.type)||f.size>1024*1024)throw Error('INVALID_REFERENCE');return list;}
+async function cleanupExpired(db,now=Date.now()){await new Promise((resolve,reject)=>{const t=db.transaction(STORE,'readwrite'),s=t.objectStore(STORE),r=s.openCursor();r.onsuccess=()=>{const c=r.result;if(!c)return;if(Number(c.value?.expiresAt||0)<now)c.delete();c.continue();};r.onerror=()=>reject(Error('LOCAL_HANDOFF_UNAVAILABLE'));t.oncomplete=()=>resolve();t.onerror=()=>reject(Error('LOCAL_HANDOFF_UNAVAILABLE'));});}
 export async function saveStudioHandoff({kind,prompt,defaultModel=null,settings={},files=[],source='workflow',meta={}}){
  if(!['image','video','music'].includes(kind)||typeof prompt!=='string'||!prompt.trim()||prompt.length>2000)throw Error('INVALID_HANDOFF');
  const refs=safeFiles(files),id=crypto.randomUUID?.()||('handoff-'+Date.now()+'-'+Math.random().toString(16).slice(2)),now=Date.now();
  const record={id,createdAt:now,expiresAt:now+TTL,kind,prompt:prompt.trim(),defaultModel:defaultModel||null,settings:safeSettings(settings),source:String(source).slice(0,50),meta:safeSettings(meta),files:refs.map((f,i)=>({name:f.name||('reference-'+(i+1)),type:f.type,lastModified:f.lastModified||now,blob:f}))};
- const db=await openDb();try{await tx(db,'readwrite',s=>s.put(record));}finally{db.close();}
+ const db=await openDb();try{await cleanupExpired(db,now);await tx(db,'readwrite',s=>s.put(record));}finally{db.close();}
  sessionStorage.setItem(KEY,id);return id;
 }
 export async function takeStudioHandoff(){
  const id=sessionStorage.getItem(KEY);if(!id)return null;sessionStorage.removeItem(KEY);
- const db=await openDb();try{const record=await tx(db,'readonly',s=>s.get(id));await tx(db,'readwrite',s=>s.delete(id));if(!record||record.expiresAt<Date.now())return null;return {...record,files:(record.files||[]).map(x=>new File([x.blob],x.name,{type:x.type,lastModified:x.lastModified}))};}finally{db.close();}
+ const db=await openDb();try{await cleanupExpired(db);const record=await tx(db,'readonly',s=>s.get(id));await tx(db,'readwrite',s=>s.delete(id));if(!record||record.expiresAt<Date.now())return null;return {...record,files:(record.files||[]).map(x=>new File([x.blob],x.name,{type:x.type,lastModified:x.lastModified}))};}finally{db.close();}
 }

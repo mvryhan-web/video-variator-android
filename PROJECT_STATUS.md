@@ -197,3 +197,10 @@ Current queued-roadmap dependencies to verify before implementation:
 - Added `AI_APPS_ENABLED`, `AI_PRODUCT_VIDEO_ENABLED` and `AI_ONBOARDING_ENABLED`; production defaults OFF unless explicitly true.
 - Public APIs/routes and Dashboard visibility honor these flags; owner template preparation remains available while AI Apps public rollout is off.
 - Existing provider/billing/root switches remain unchanged and OFF where previously gated.
+
+
+### Continuation 11 — AI media privacy disclosure
+
+- Added implementation-accurate AI media handling disclosure and links from Studio/Product Video/Dashboard.
+- Local Product Video handoff now cleans expired records when the IndexedDB handoff store is accessed.
+- Final legal Terms/Privacy and server retention schedule remain external owner/legal launch gates; no unsupported promise was added.

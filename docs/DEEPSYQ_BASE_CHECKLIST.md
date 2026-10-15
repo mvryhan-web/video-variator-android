@@ -47,7 +47,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 33 | Safe retry | PARTIAL | No automatic paid retries on ambiguous failure; recovery polls only existing provider task IDs. Commercial retry policy still needs dedicated worker integration. |
 | 34 | Server-side rate/concurrency limits | PARTIAL | Feature-gated server policy now enforces per-user concurrent-job and hourly-job limits with advisory locking. Final per-plan values/public entitlement wiring remain unapproved. |
 | 35 | Security | PARTIAL | Keys server-side, auth/user scoping, safe provider URLs, Stripe verification foundations exist; launch security review still required. |
-| 36 | Privacy | PARTIAL | Reference media is not persisted by current pilot; final Terms/Privacy/provider disclosures and retention policy pending. |
+| 36 | Privacy | PARTIAL | Added an implementation-accurate AI Media Privacy notice: local Product Video handoff, explicit Studio consent, provider transfer, job metadata storage, object-storage/DB fallback and deletion behavior. Final legal Terms/Privacy and approved automatic retention schedule remain pending. |
 | 37 | Business analytics | PARTIAL | Owner overview now shows users/30-day registrations, generation adoption/jobs/failure/latency/top model, recorded provider cost/credits, and confirmed AI-wallet purchases separated by currency. Gross margin stays intentionally blank until live economics/currency are verified. |
 | 38 | Admin dashboard | PARTIAL | Owner AI Control includes Users, Generation Jobs, business overview, model controls, route preview, provider metrics, held-credit review, template management, and feature-gated audited manual AI credit adjustment. Full Stripe payment administration remains pending. |
 | 39 | Provider performance | PARTIAL | Owner metrics endpoint aggregates provider/model jobs, success/failure, processing, average time, cost and charged credits. |
@@ -191,3 +191,11 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Public template APIs return `AI_APPS_NOT_ENABLED` while AI Apps is disabled; owner template management remains available for preparation.
 - Direct `/ai-apps(.html)` and `/product-video(.html)` routes return 404 while disabled, so static-file URLs cannot bypass rollout.
 - Dashboard hides disabled module links/cards; onboarding does not interrupt users while its flag is off.
+
+
+## Continuation 12 — AI media privacy disclosure
+
+- Added a technical AI Media Privacy notice based on current implementation rather than promises: Product Video local handoff, Studio consent, provider transfer, job metadata, generated-result storage and deletion.
+- Added cleanup of expired local IndexedDB handoff records whenever the handoff store is next accessed; the notice does not falsely claim a browser background TTL service.
+- Explicitly states that no automatic server-side retention period is promised yet and that final legal Terms/Privacy/provider disclosures still require launch review.
+- Linked the notice from Studio, Product Video and the Deepsyq footer.
