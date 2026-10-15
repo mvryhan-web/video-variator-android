@@ -1,9 +1,9 @@
 name: Product Watcher unit checks
 on:
   push:
-    branches: [deepsyq-block5-product-watcher, deepsyq-block5-readiness-gate]
+    branches: [deepsyq-block5-product-watcher, deepsyq-block5-readiness-gate, deepsyq-block5-billing-observer]
   pull_request:
-    branches: [deepsyq-platform, deepsyq-block5-product-watcher]
+    branches: [deepsyq-platform, deepsyq-block5-product-watcher, deepsyq-block5-readiness-gate]
 permissions:
   contents: read
 jobs:
@@ -25,6 +25,7 @@ jobs:
           node --check server/product-watcher/content-tasks.js
           node --check server/product-watcher/telegram-alerts.js
           node --check server/product-watcher/readiness.js
+          node --check server/product-watcher/billing-signals.js
           node --check server/product-watcher/admin-api.js
           node --check server/product-watcher/run-once.js
           node --check server/product-watcher/scheduler.js
@@ -32,7 +33,7 @@ jobs:
           node --check app/src/main/assets/product-watcher-admin.js
           node --check server/server.js
       - name: Watcher security and behavior unit tests
-        run: node --test tests/product-watcher-unit.mjs tests/product-watcher-admin-unit.mjs tests/product-watcher-scheduler-unit.mjs tests/product-watcher-operational-unit.mjs tests/product-watcher-alerts-unit.mjs tests/product-watcher-official-unit.mjs tests/product-watcher-briefs-unit.mjs tests/product-watcher-content-unit.mjs tests/product-watcher-telegram-unit.mjs tests/product-watcher-readiness-unit.mjs
+        run: node --test tests/product-watcher-unit.mjs tests/product-watcher-admin-unit.mjs tests/product-watcher-scheduler-unit.mjs tests/product-watcher-operational-unit.mjs tests/product-watcher-alerts-unit.mjs tests/product-watcher-official-unit.mjs tests/product-watcher-briefs-unit.mjs tests/product-watcher-content-unit.mjs tests/product-watcher-telegram-unit.mjs tests/product-watcher-readiness-unit.mjs tests/product-watcher-billing-unit.mjs
 
   postgres:
     runs-on: ubuntu-latest

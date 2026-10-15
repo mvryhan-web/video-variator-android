@@ -180,9 +180,22 @@ function renderPreflight(data){
   title.textContent=label;result.textContent=value;tr.append(title,result);rows.append(tr);
  }
 }
+function billingCountersText(check){
+ if(!check||check.coverage==='disabled')return 'Billing diagnostics: disabled (no Stripe outcome checks).';
+ const c=check.counters||{};
+ const numbers=[
+  'created AI orders (24h): '+String(c.recentCheckoutOrders24h??'—'),
+  'old unmatched Checkout sessions (7d): '+String(c.oldUnmatchedCheckoutSessions7d??'—'),
+  'AI credit purchases missing orders: '+String(c.orphanCreditPurchases??'—'),
+  'over-refunded AI purchase records: '+String(c.overRefundedPurchases??'—')
+ ];
+ return 'Billing: '+String(check.code||'not ready')+' · '+numbers.join(' · ')+
+  ' · Stripe webhook delivery NOT verified. Unmatched sessions may be cancelled or unpaid.';
+}
 function render(d){
  current=d;$('watcherStatus').textContent=d.enabled?(d.paused?'Paused':'Ready for manual checks'):'Not enabled';
  $('watcherDetails').textContent=d.enabled?'Scheduler: '+(d.schedulerActive?'reported active':'not deployed')+' · Last run: '+formatDate(d.lastRun?.checkedAt):'Product Watcher is disabled in server configuration.';
+ $('watcherBilling').textContent=billingCountersText(d.lastRun?.checks?.billing);
  $('watcherToggle').textContent=d.paused?'Resume checks':'Pause checks';
  $('watcherToggle').disabled=busy||!d.enabled;
  $('watcherRun').disabled=busy||!d.enabled||d.paused;
