@@ -11,6 +11,7 @@ import {normalizeGenerationError,publicGenerationError} from './generation-error
 import {claimProviderPoll} from './generation-polling.js';
 import {recordAdminAudit,listAdminAudit} from './admin-audit.js';
 import {generationEntitlements,generationEntitlementForUser} from './generation-entitlements.js';
+import {generationRequestId,findGenerationRequest} from './generation-idempotency.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch}={}){
  const model=MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter);
  if(!model)throw Error('MODEL_NOT_CONNECTED');
@@ -151,18 +152,20 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   res.json({credits:quote.credits,unit:'AI credits',model:quote.model,kind:quote.kind,routing});
  }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','INVALID_REFERENCES','INVALID_MUSIC_MODE'].includes(e.message);res.status(bad?400:503).json({error:bad?e.message:e.message||'AI_PRICING_NOT_APPROVED'});}});
   app.post('/api/studio/jobs',auth,generationUser,async(req,res)=>{
-  let request,selected,routing;try{({request,selected,routing}=await resolveRequest(req.body));}catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','INVALID_REFERENCES','INVALID_MUSIC_MODE'].includes(e.message);return res.status(bad?400:503).json({error:e.message||'MODEL_NOT_ENABLED'});}
+  let request,selected,routing,clientRequestId;try{({request,selected,routing}=await resolveRequest(req.body));clientRequestId=generationRequestId(req.body?.requestId,{required:req.generationAccess?.scope==='public'});}catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','INVALID_REFERENCES','INVALID_MUSIC_MODE','GENERATION_REQUEST_ID_REQUIRED','INVALID_GENERATION_REQUEST_ID'].includes(e.message);return res.status(bad?400:503).json({error:e.message||'MODEL_NOT_ENABLED'});}
   const quote=walletEnabled()?estimateGenerationPricing(request,selected,env):null;if(walletEnabled()&&!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
-  let c,id=randomUUID();try{
-   await init();c=await pool.connect();await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(84920115)');
+  const fingerprint=requestFingerprint(request);let c,id=randomUUID(),reused=null;try{
+   await init();c=await pool.connect();await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(hashtext($1))',['ai-create:'+req.user.id]);
+   reused=await findGenerationRequest(c,{userId:req.user.id,requestId:clientRequestId,fingerprint});
+   if(reused){await c.query('COMMIT');return res.status(200).json({...reused,reused:true});}
    const access=req.generationAccess||{scope:'owner'};
    await enforceGenerationPolicy(c,{userId:req.user.id,env,policyOverride:access.scope==='public'?{enabled:true,maxConcurrentPerUser:access.maxConcurrent,maxJobsPerHourPerUser:access.maxPerHour}:null});
    if(access.scope==='owner'){const count=await c.query('SELECT count(*)::int AS n FROM vv_generation_jobs');if(count.rows[0].n>=Number(env.AI_STUDIO_MAX_CALLS)){await c.query('ROLLBACK');return res.status(429).json({error:'PILOT_LIMIT_REACHED'});}}
    const settings={ratio:request.ratio,musicMode:request.musicMode||null,referenceCount:request.references?.length||0,routing};
-   await c.query('INSERT INTO vv_generation_jobs(id,user_id,kind,status,provider,model,prompt,started_at,settings,estimated_cost) VALUES($1,$2,$3,$4,$5,$6,$7,NOW(),$8::jsonb,$9)',[id,req.user.id,request.kind,walletEnabled()?'queued':'processing',selected.provider||null,selected.id,request.prompt,JSON.stringify(settings),quote?quote.providerCostMicros/1_000_000:null]);await c.query('COMMIT');
-  }catch(e){if(c)await c.query('ROLLBACK').catch(()=>{});if(['AI_CONCURRENCY_LIMIT','AI_RATE_LIMIT'].includes(e.message))return res.status(429).json({error:e.message});return res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}finally{c?.release();}
+   await c.query('INSERT INTO vv_generation_jobs(id,user_id,kind,status,provider,model,prompt,client_request_id,request_fingerprint,started_at,settings,estimated_cost) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),$10::jsonb,$11)',[id,req.user.id,request.kind,walletEnabled()?'queued':'processing',selected.provider||null,selected.id,request.prompt,clientRequestId,fingerprint,JSON.stringify(settings),quote?quote.providerCostMicros/1_000_000:null]);await c.query('COMMIT');
+  }catch(e){if(c)await c.query('ROLLBACK').catch(()=>{});if(['AI_CONCURRENCY_LIMIT','AI_RATE_LIMIT'].includes(e.message))return res.status(429).json({error:e.message});if(e.message==='GENERATION_REQUEST_CONFLICT')return res.status(409).json({error:e.message});return res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}finally{c?.release();}
   if(walletEnabled())try{
-   await wallet.reserve({userId:req.user.id,jobId:id,credits:quote.credits,fingerprint:requestFingerprint(request)});
+   await wallet.reserve({userId:req.user.id,jobId:id,credits:quote.credits,fingerprint});
    await pool.query("UPDATE vv_generation_jobs SET status='processing',credits_reserved=$2 WHERE id=$1",[id,quote.credits]);
   }catch(e){await pool.query("UPDATE vv_generation_jobs SET status='failed',error=$2,error_message=$2,failed_at=NOW() WHERE id=$1",[id,e.message==='INSUFFICIENT_AI_CREDITS'?'INSUFFICIENT_AI_CREDITS':'AI_WALLET_RESERVATION_FAILED']).catch(()=>{});return res.status(e.message==='INSUFFICIENT_AI_CREDITS'?402:503).json({error:e.message==='INSUFFICIENT_AI_CREDITS'?'INSUFFICIENT_AI_CREDITS':'AI_WALLET_UNAVAILABLE'});}
   res.status(202).json({id,status:'processing',creditsReserved:quote?.credits||0});void run(id,request,req.user.id).catch(()=>{});

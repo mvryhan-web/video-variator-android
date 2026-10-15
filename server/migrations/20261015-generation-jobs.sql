@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS vv_generation_jobs(
   ) STORED,
   operation TEXT,
   prompt TEXT,
+  client_request_id TEXT,
+  request_fingerprint TEXT,
   settings JSONB NOT NULL DEFAULT '{}'::jsonb,
   input_assets JSONB NOT NULL DEFAULT '[]'::jsonb,
   output_assets JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -41,6 +43,8 @@ ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS provider TEXT;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS model TEXT;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS operation TEXT;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS prompt TEXT;
+ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS client_request_id TEXT;
+ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS request_fingerprint TEXT;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS failed_at TIMESTAMPTZ;
@@ -101,3 +105,5 @@ CREATE INDEX IF NOT EXISTS vv_generation_jobs_provider_status_idx
 CREATE INDEX IF NOT EXISTS vv_generation_jobs_provider_task_idx
   ON vv_generation_jobs(provider,provider_task_id)
   WHERE provider_task_id IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS vv_generation_jobs_user_request_uidx ON vv_generation_jobs(user_id,client_request_id) WHERE client_request_id IS NOT NULL;
