@@ -48,3 +48,23 @@ test('Studio honors server-selected preferred enabled model',async({page})=>{
  await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');
  await expect(page.locator('[data-t=consent]')).toContainText('BytePlus');
 });
+
+
+test('history filters and actions never auto-regenerate a paid job',async({page})=>{
+ const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1','16:9'],references:0,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1','16:9'],references:0,enabled:true,adapter:true,provider:'Google'}]};
+ await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
+ let posts=0,lastFilter='';
+ await page.route('**/api/studio/jobs**',async r=>{
+  const u=new URL(r.request().url());
+  if(r.request().method()==='POST'){posts++;return r.fulfill({status:500,json:{error:'UNEXPECTED_POST'}});}
+  if(r.request().method()==='DELETE')return r.fulfill({json:{ok:true}});
+  lastFilter=u.searchParams.get('filter')||'all';
+  const item={id:'history-1',kind:'image',status:'ready',provider:'Google',model:'fixture',prompt:'Reusable prompt',settings:{ratio:'16:9'},mime:'image/png',creditsReserved:9,creditsCharged:9,createdAt:'2026-10-15T08:00:00.000Z'};
+  return r.fulfill({json:{filter:lastFilter,items:[item]}});
+ });
+ await page.route('**/api/studio/jobs/history-1/media',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
+ await page.goto('/generate-studio.html?studio=image');await page.locator('#showHistory').click();await expect(page.locator('.history-card')).toContainText('9 AI credits');
+ await page.locator('[data-history-filter=image]').click();await expect.poll(()=>lastFilter).toBe('image');
+ await page.getByRole('button',{name:'Regenerate'}).click();await expect(page.locator('#prompt')).toHaveValue('Reusable prompt');await expect(page.locator('#ratio')).toHaveValue('16:9');expect(posts).toBe(0);
+ await page.locator('#showHistory').click();const download=page.waitForEvent('download');await page.getByRole('button',{name:'Download'}).click();expect((await download).suggestedFilename()).toBe('Deepsyq-history-1.png');expect(posts).toBe(0);
+});

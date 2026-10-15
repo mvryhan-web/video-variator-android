@@ -35,7 +35,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 21 | AI Agents | NOT STARTED (BASE) | Deeper implementation is Roadmap Block 2. |
 | 22 | Inspiration / Discover | NOT STARTED (BASE) | Full implementation is Roadmap Block 3. |
 | 23 | Template system | PARTIAL | Data-driven PostgreSQL template schema/API and owner create/edit/activate/feature/reorder UI exist. Public AI Apps/template gallery wiring is still pending. |
-| 24 | History | PARTIAL | Durable `GET /api/studio/jobs`, metadata, result reopening and prompt reuse now exist for owner Studio. Public commercial history still gated. |
+| 24 | History | PARTIAL | Owner Studio History now has All/Images/Videos/Failed/Processing filters plus Open, Download, Reuse, prepare-only Regenerate and safe Delete. It remains owner-gated; card thumbnails are not yet generated. |
 | 25 | My Creations | PARTIAL | User-scoped job access exists; full library/project experience is Roadmap Block 4. |
 | 26 | Canvas | PARTIAL | Studio generation workspace exists; richer unified Canvas still incomplete. |
 | 27 | Existing Video Uniquifier preserved under Tools | PARTIAL | Existing functionality preserved and linked from Deepsyq; root switch not launched. |
@@ -141,3 +141,11 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - New email, Google and Apple account responses identify new accounts; Deepsyq queues onboarding only for those new accounts.
 - The onboarding UI routes only to currently real Image/Video studios; Product Ads/Avatar are not falsely presented as completed workflows.
 - Added unit/browser coverage for templates and onboarding. Public launch verification is still pending.
+
+
+## Continuation 6 — History actions
+
+- Added server-whitelisted History filters: All, Images, Videos, Failed and Processing (queued/processing/finalizing).
+- History metadata now includes saved generation settings for safe reuse/regenerate preparation.
+- Added Download, Reuse, prepare-only Regenerate and safe Delete actions. Regenerate only restores prompt/model/ratio/settings and never starts a paid request automatically.
+- Credit usage is visible on History cards. Automatic media thumbnails are intentionally not fetched yet to avoid loading full generated videos/images just to render the list; thumbnail generation remains future work.

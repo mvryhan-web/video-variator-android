@@ -92,3 +92,11 @@ Additional repository-only foundations now exist behind disabled flags:
 - `vv_generation_jobs` migration has isolated PostgreSQL coverage, including repeatable legacy `vv_generation_pilot` migration.
 
 Still external/not activated: real storage bucket credentials and retention policy, BytePlus account/model/key, verified provider prices, live AI Stripe Products/Prices, production database migration/backup/rollback, real paid smoke tests and controlled deployment. Do not turn on the new flags until those gates are satisfied.
+
+
+## Continuation 5 — templates/onboarding and History
+
+- Data-driven templates and owner template management are implemented without seeding fake content/assets.
+- New-account onboarding is persistent and currently offers only real Image/Video Studio destinations.
+- Studio History now supports safe filters and actions: Open, Download, Reuse, prepare-only Regenerate, and Delete for non-active jobs. Regenerate never submits a generation automatically.
+- History remains owner-only until the public commercial entitlement/provider/storage gates are cleared.
