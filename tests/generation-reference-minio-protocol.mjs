@@ -120,9 +120,14 @@ test('real MinIO accepts correctly signed private GET, then denies forgery, expi
 
   // A true S3 server, not our own HMAC test helper, authenticates GET.
   const good=await local('GET',u.pathname+u.search);
-  assert.equal(good.status,200,'MinIO must accept the query signature: '+good.status+' '+(await good.clone().text()).slice(0,350));
+  // Never echo raw S3 XML into CI logs: it can reveal object paths and signed query details.
+  assert.equal(good.status,200,'MinIO must accept authorized SigV4 GET (HTTP '+good.status+')');
   assert.deepEqual(Buffer.from(await good.arrayBuffer()),bytes);
 
+  // A plain URL must not fetch objects from the private bucket.
+  const anonymous=await local('GET',u.pathname);
+  assert.ok([400,403].includes(anonymous.status),'anonymous direct GET must not expose MP4');
+  assert.notEqual(anonymous.status,200);
   const forged=new URL(link.url);
   forged.searchParams.set('X-Amz-Expires','60');
   const tampered=await local('GET',forged.pathname+forged.search);
