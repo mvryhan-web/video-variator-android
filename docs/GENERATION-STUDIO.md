@@ -202,3 +202,14 @@ Selected `videoInputMode` enters estimate/create, request fingerprint, signed-in
 **Out of scope for this pass:** BytePlus accepts reference video as an accessible `video_url.url` (rather than a raw local file). Audio reference also needs provider-acceptable media transport. Until authenticated uploads, private durable storage, provider-reachable references with safe expiry, size/duration/MIME validation and approved unit economics are complete, **video/audio reference upload and edits remain unavailable**. No external URL from a user is forwarded, no new paid submission is performed, and no background media-hosting feature is claimed.
 
 **Status:** implemented in repository, no live provider request or complete browser/provider billing acceptance run (deferred at owner's request). Official: https://ai.byteplus.com/ark/region:ap-southeast-1/docs/create-video-generation-task-api .
+
+
+## Video draft recovery — private, tab-scoped BASE flow
+
+Video Studio now follows the privacy pattern already used by Image Studio. In a single browser tab, it autosaves only the active video **prompt, model, aspect ratio, resolution, duration, input mode and intended reference count**, for at most **24 hours**, under a key scoped by a hash of the active auth session. Source photos and their Base64 data are **never** persisted. All cached settings are validated against the known Video model catalog before being applied after a refresh.
+
+If the saved draft used reference photos, the restored form deliberately has **zero photos and unchecked provider consent**. The Generate button is blocked until the user explicitly reattaches the correct count and the saved first-frame/first-last/reference-image role is restored, or clicks **Continue without old photos** to clear their dependency and use text-only generation. Partly reattaching references does not bypass this guard. **Clear video draft** removes saved description, model settings and local attachments without touching previously generated jobs or server History.
+
+Reusing a photo-guided item from History similarly does not silently reuse the user's unrelated current photos. Draft recovery is a separate client-side feature: it does **not** start another provider request, revive a cancelled job, access media storage, mutate the AI wallet, or replace the existing server-side background job and History flow. New explicit Studio workflow/template handoffs take precedence over an older saved video draft.
+
+**Implementation only / unverified.** Browser cases were added for session refresh, user clearing, two-frame reattachment and zero paid POSTs. The broader BASE testing and provider acceptance phase remains deferred. No storage policy, production or Stripe changes made.
