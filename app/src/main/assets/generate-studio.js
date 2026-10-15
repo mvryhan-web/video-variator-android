@@ -156,6 +156,11 @@ function renderImageQuantity(){
  if(!enabled)$('imageQuantity').value='1';
  $('imageQuantityLabel').hidden=!enabled;
  $('imageQuantityNote').hidden=!enabled;
+ if(ru&&enabled){
+  $('imageQuantityLabel').querySelector('span').textContent='Изображений в пакете';
+  for(const option of $('imageQuantity').options)option.textContent=option.value+' '+(option.value==='1'?'изображение':'изображения');
+  $('imageQuantityNote').textContent='Каждое изображение — отдельная задача и отдельное списание. Пакет выполняется по очереди, останавливается при ошибке и не запускает повторов. Перед началом нужно подтвердить общую стоимость.';
+ }
 }
 function updateRatioSelection(){for(const b of $('ratioChoices').children)b.setAttribute('aria-pressed',String(b.getAttribute('aria-label')===$('ratio').value));const m=currentModel();$('settingsButton').textContent=kind==='music'?say('Audio settings ⌄','Настройки аудио ⌄'):[$('ratio').value,kind==='image'?$('imageResolution').value:m?.quality,kind==='image'&&m?.capabilities?.outputFormats?.length>1?$('imageOutputFormat').value.toUpperCase():'',kind==='image'&&imageBatchQuantity()>1?imageBatchQuantity()+' images':'',m?.duration].filter(Boolean).join(' · ')+' ⌄';}
 function renderModel(){let m=currentModel();if(!m){m=catalog.find(m=>m.kind===modelKind());modelId=m?.id||'';}$('modelButton').textContent=(m?.label||say('Model','Модель'))+' ⌄';$('referenceBox').hidden=!m?.references;renderImageResolution();renderImageOutputFormat();renderImageQuantity();renderRatios();renderRefs();renderModels();$('qualityValue').textContent=kind==='image'?'':(m?.quality||'');$('durationValue').textContent=m?.duration||'';$('voiceSettings').hidden=modelKind()!=='voice';availability();}
