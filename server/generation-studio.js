@@ -2,6 +2,7 @@ import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {MODELS,MODEL_CATALOG,validateGeneration,generateGoogle,pollGoogle} from './generation-provider.js';
 import {generateBytePlus,pollBytePlus,bytePlusDownloadsConfigured} from './generation-byteplus.js';
+import {pricingCatalog,estimateGenerationPricing} from './generation-pricing.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch}={}){
  const model=MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter);
  if(!model)throw Error('MODEL_NOT_CONNECTED');
@@ -16,7 +17,7 @@ export function studioConfig(env=process.env){
  const allowed=(env.AI_STUDIO_ALLOWED_KINDS||'').split(',');
  const explicit=(env.AI_STUDIO_ALLOWED_MODELS||'').split(',');
  const catalog=MODEL_CATALOG.map(m=>({...m,enabled:enabled&&m.adapter&&(m.provider!=='BytePlus'||m.kind!=='video'||bytePlusDownloadsConfigured(env.BYTEPLUS_MEDIA_HOSTS))&&!!(m.provider==='BytePlus'?env.BYTEPLUS_API_KEY:env.GEMINI_API_KEY)&&allowed.includes(m.kind)&&(m.id===MODELS[m.kind]?.id||explicit.includes(m.id))}));
- return {pilot:true,ownerOnly:true,enabled,reason:enabled?null:'OWNER_SETUP_REQUIRED',models:Object.entries(MODELS).map(([kind,m])=>({kind,...m,enabled:catalog.find(c=>c.id===m.id)?.enabled||false})),catalog,translation:{enabled:false,reason:'PROVIDER_NOT_CONNECTED'}};
+ return {pilot:true,ownerOnly:true,enabled,pricingConfigured:pricingCatalog(env).configured,reason:enabled?null:'OWNER_SETUP_REQUIRED',models:Object.entries(MODELS).map(([kind,m])=>({kind,...m,enabled:catalog.find(c=>c.id===m.id)?.enabled||false})),catalog,translation:{enabled:false,reason:'PROVIDER_NOT_CONNECTED'}};
 }
 export function installGenerationStudio(app,{auth,pool,env=process.env,provider=dispatchGeneration,poller=dispatchPoll}){
  let ready;
@@ -26,7 +27,13 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  app.use('/api/studio',(_req,res,next)=>{if(!studioConfig(env).enabled)return res.status(503).json({error:'OWNER_SETUP_REQUIRED'});next();});
  async function finish(id,result){const status=result.operation?'processing':'ready';await pool.query("UPDATE vv_generation_pilot SET status=$2,operation=$3,mime=$4,media=$5,result_text=$6,completed_at=CASE WHEN $2='ready' THEN NOW() ELSE completed_at END WHERE id=$1",[id,status,result.operation||null,result.mime||null,result.bytes||null,result.text||'']);}
  async function run(id,request){try{await finish(id,await provider(request,{env}));}catch(e){await pool.query("UPDATE vv_generation_pilot SET status='failed',error='GENERATION_FAILED_NO_AUTOMATIC_RETRY',failed_at=NOW() WHERE id=$1",[id]);}}
- app.post('/api/studio/jobs',auth,owner,async(req,res)=>{
+ app.post('/api/studio/estimate',auth,owner,(req,res)=>{try{
+  const request=validateGeneration(req.body),selected=studioConfig(env).catalog.find(m=>m.id===request.model&&m.kind===request.kind);
+  if(!selected?.enabled)return res.status(503).json({error:'MODEL_NOT_ENABLED'});
+  const quote=estimateGenerationPricing(request,selected,env);if(!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
+  res.json({credits:quote.credits,unit:'AI credits',model:quote.model,kind:quote.kind});
+ }catch(e){res.status(400).json({error:e.message==='INVALID_REQUEST'?'INVALID_REQUEST':'AI_PRICING_NOT_APPROVED'});}});
+  app.post('/api/studio/jobs',auth,owner,async(req,res)=>{
   let request;try{request=validateGeneration(req.body);}catch(e){return res.status(400).json({error:e.message});}
   const selected=studioConfig(env).catalog.find(m=>m.id===request.model&&m.kind===request.kind);if(!selected?.enabled)return res.status(503).json({error:'MODEL_NOT_ENABLED'});
   // No consumer credits or existing subscription entitlements are reused in this owner-only pilot.
