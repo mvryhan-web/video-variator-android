@@ -3,7 +3,7 @@
 // No network outside 127.0.0.1, no S3 credentials, no AI jobs, no billable calls.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createServer} from 'node:http';
+import {createServer,request as httpRequest} from 'node:http';
 import {once} from 'node:events';
 import {createHash,createHmac,randomUUID,timingSafeEqual} from 'node:crypto';
 import {createObjectStorage} from '../server/generation-storage.js';
@@ -92,8 +92,25 @@ test('local HTTP verifies SigV4 GET and rejects unsigned, altered, expired and d
   const url=new URL(input);
   assert.equal(url.hostname,hostname,'never fetch an unapproved host');
   remoteCalls++;
-  return fetch('http://127.0.0.1:'+port+url.pathname+url.search,{
-   ...options,redirect:'error',headers:{...options.headers,Host:hostname}
+  // Undici/fetch rewrites Host to 127.0.0.1. S3 signs the ORIGINAL Host.
+  // Node http.request allows the exact canonical Host while binding loopback.
+  return new Promise((resolve,reject)=>{
+   const req=httpRequest({
+    hostname:'127.0.0.1',port,path:url.pathname+url.search,
+    method:options.method||'GET',headers:{...options.headers,Host:hostname},
+    signal:options.signal
+   },res=>{
+    const chunks=[];
+    res.on('data',piece=>chunks.push(piece));
+    res.on('error',reject);
+    res.on('end',()=>{
+     const data=Buffer.concat(chunks),status=res.statusCode;
+     resolve(new Response(data.length?data:null,{status,headers:res.headers}));
+    });
+   });
+   req.on('error',reject);
+   if(options.body)req.write(options.body);
+   req.end();
   });
  }
  const env={
