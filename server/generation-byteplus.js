@@ -26,7 +26,8 @@ export async function generateBytePlus(request,{key,fetcher=fetch}){
  const images=(request.references||[]).map(r=>`data:${r.mimeType};base64,${r.data}`);
  if(request.kind==='video'){
   if(!['16:9','9:16','1:1'].includes(request.ratio)||images.length>1)throw Error('INVALID_REQUEST');
-  const d=await json('contents/generations/tasks',{key,fetcher,body:{model,content:[{type:'text',text:request.prompt},...images.map(url=>({type:'image_url',image_url:{url},role:'first_frame'}))],ratio:request.ratio,resolution:'720p',duration:5,generate_audio:true,watermark:true}});
+  if(!['720p','1080p'].includes(request.videoResolution||'720p')||![4,5,8,10,15].includes(request.videoDuration??5))throw Error('UNSUPPORTED_VIDEO_SETTINGS');
+  const d=await json('contents/generations/tasks',{key,fetcher,body:{model,content:[{type:'text',text:request.prompt},...images.map(url=>({type:'image_url',image_url:{url},role:'first_frame'}))],ratio:request.ratio,resolution:request.videoResolution||'720p',duration:request.videoDuration??5,generate_audio:true,watermark:true}});
   if(typeof d.id!=='string'||!/^[-A-Za-z0-9_]{1,160}$/.test(d.id))throw Error('EMPTY_OPERATION');
   return {operation:`byteplus:${d.id}`};
  }
