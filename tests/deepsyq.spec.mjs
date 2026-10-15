@@ -240,3 +240,22 @@ test('owner can manage Block 3 inspiration without exposing rights internals pub
  await page.route('**/api/studio/admin/inspiration**',async r=>{if(r.request().url().includes('inspiration-readiness'))return r.fulfill({json:{ready:true,featureEnabled:false,agentTargetsEnabled:false,counts:{total:1,active:1,publishable:1,studio:1,images:0,videos:1,featured:1,rightsBlocked:0,agentGated:0},categories:['Fashion'],ratios:['9:16'],blockers:[]}});if(r.request().method()==='GET')return r.fulfill({json:{items:[item]}});const body=r.request().postDataJSON();item={...item,...body};return r.fulfill({json:{item}});});
  await page.goto('/deepsyq-admin.html');await expect(page.locator('#inspirationAdminList')).toContainText('Owned Fashion Film');await expect(page.locator('#inspirationReadiness')).toContainText('Block 3 content is ready to publish');await expect(page.locator('#inspirationAdminList')).toContainText('Publish only if rights are verified: owned');await expect(page.locator('#inspirationAdminList input[name=title]').first()).toHaveValue('Owned Fashion Film');
 });
+
+
+test('all three Block 3 actions preserve their intended prefill semantics without copying source media',async({page})=>{
+ const item={id:'insp-actions',title:'Owned Portrait',slug:'owned-portrait',kind:'image',category:'Editorial',description:'Original',previewUrl:'/owned-preview.png',previewPosterUrl:null,prompt:'Soft editorial portrait',defaultModel:'clone-model',aspectRatio:'2:3',requiredInputTypes:['image'],defaultSettings:{ratio:'2:3'},actionTarget:'studio',active:true,featured:true,sortOrder:1};
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[item],categories:['Editorial'],ratios:['1:1','2:3']}}));
+ await page.route('**/owned-preview.png',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
+ const cfg={enabled:true,models:[{kind:'image',id:'base-model',label:'Base Model',ratios:['1:1','2:3'],references:1,enabled:true}],catalog:[{kind:'image',id:'base-model',label:'Base Model',ratios:['1:1','2:3'],references:1,enabled:true,adapter:true,provider:'Google'},{kind:'image',id:'clone-model',label:'Clone Model',ratios:['1:1','2:3'],references:1,enabled:true,adapter:true,provider:'Google'}]};
+ await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
+ let posts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
+
+ await page.goto('/inspiration.html');await page.getByRole('button',{name:'Use this prompt'}).click();
+ await expect(page.locator('#prompt')).toHaveValue('Soft editorial portrait');await expect(page.locator('#ratio')).toHaveValue('1:1');await expect(page.locator('#modelButton')).toContainText('Base Model');await expect(page.locator('#refPreview img')).toHaveCount(0);await expect(page.locator('#consent')).not.toBeChecked();expect(posts).toBe(0);
+
+ await page.goto('/inspiration.html');await page.getByRole('button',{name:'Create yours'}).click();
+ await expect(page.locator('#prompt')).toHaveValue('Soft editorial portrait');await expect(page.locator('#ratio')).toHaveValue('2:3');await expect(page.locator('#modelButton')).toContainText('Base Model');await expect(page.locator('#refPreview img')).toHaveCount(0);await expect(page.locator('#consent')).not.toBeChecked();expect(posts).toBe(0);
+
+ await page.goto('/inspiration.html');await page.getByRole('button',{name:'Clone and Try'}).click();
+ await expect(page.locator('#prompt')).toHaveValue('Soft editorial portrait');await expect(page.locator('#ratio')).toHaveValue('2:3');await expect(page.locator('#modelButton')).toContainText('Clone Model');await expect(page.locator('#refPreview img')).toHaveCount(0);await expect(page.locator('#consent')).not.toBeChecked();expect(posts).toBe(0);
+});
