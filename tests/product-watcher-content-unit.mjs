@@ -51,7 +51,8 @@ test('no invented media, rights or market demand: only internal documented gaps'
  assert.ok(opp.recommendations.some(x=>x.code==='INSPIRATION_RIGHTS_GAPS'));
  assert.ok(opp.recommendations.some(x=>x.code==='NO_APPROVED_VIDEO_EXAMPLE'));
  assert.ok(!JSON.stringify(opp).includes('trending'));
- assert.ok(!JSON.stringify(opp).includes('competitor'));
+ assert.ok(!JSON.stringify(opp.recommendations).includes('competitor'));
+ assert.match(opp.scope,/No market trend/);
 });
 
 test('missing platform schema is not treated as zero real content',async()=>{
