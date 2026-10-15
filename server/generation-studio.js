@@ -6,6 +6,7 @@ import {pricingCatalog,estimateGenerationPricing} from './generation-pricing.js'
 import {listModelControls,getModelControl,updateModelControl,applyModelControl} from './generation-model-control.js';
 import {enforceGenerationPolicy,generationPolicy} from './generation-policy.js';
 import {createObjectStorage} from './generation-storage.js';
+import {installGenerationReferenceUpload} from './generation-reference-upload.js';
 import {resolveGenerationModel,orderedGenerationCandidates} from './generation-routing.js';
 import {normalizeGenerationError,publicGenerationError} from './generation-errors.js';
 import {claimProviderPoll} from './generation-polling.js';
@@ -38,6 +39,8 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  const init=()=>ready??=readFile(new URL('./migrations/20261015-generation-jobs.sql',import.meta.url),'utf8').then(sql=>pool.query(sql));
  const isOwner=user=>!!(user&&user.provider==='google'&&String(user.email||'').toLowerCase()===String(env.ADMIN_EMAIL||'').trim().toLowerCase());
  const owner=(req,res,next)=>{if(!isOwner(req.user))return res.status(403).json({error:'OWNER_PILOT_ONLY'});next();};
+ // Reference intake is owner-only and independently disabled. It never submits an AI job.
+ installGenerationReferenceUpload(app,{auth,owner,pool,storage:objectStorage,env});
  const walletEnabled=()=>env.AI_STUDIO_WALLET_ENABLED==='true'&&!!wallet&&pricingCatalog(env).configured;
  const generationUser=(req,res,next)=>{
   if(isOwner(req.user)){req.generationAccess={allowed:true,scope:'owner'};return next();}

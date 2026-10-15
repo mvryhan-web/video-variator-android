@@ -97,7 +97,8 @@ app.use((req,res,next)=>{
 app.use('/api',(req,res,next)=>{
   res.setHeader('Cache-Control','no-store, private');
   const type=String(req.headers['content-type']||'').toLowerCase();
-  if(type.startsWith('video/')||type.includes('multipart/form-data'))return res.status(415).json({error:'RAW_VIDEO_UPLOAD_DISABLED',message:'Video files are processed locally on the user device.'});
+  const approvedReferencePilot=req.method==='POST'&&req.path==='/studio/references'&&type==='video/mp4'&&process.env.AI_STUDIO_REFERENCE_UPLOAD_ENABLED==='true';
+  if((type.startsWith('video/')||type.includes('multipart/form-data'))&&!approvedReferencePilot)return res.status(415).json({error:'RAW_VIDEO_UPLOAD_DISABLED',message:'Video files are processed locally on the user device.'});
   next();
 });
 

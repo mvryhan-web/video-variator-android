@@ -39,7 +39,8 @@ The exact completion state of older components must be verified from the current
 |---|---|---|---|---|
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
-| Block 5 — Product Watcher (isolated core) | Dedicated Block 5 agent | `deepsyq-block5-product-watcher` / draft PR #46 | IN PROGRESS / CI VERIFIED | Owner-only controls, read-only monitor, durable schedule; no production deployment. |
+| BASE Video / private MP4-WAV reference upload API | ChatGPT continuation (handoff `90ee2b7`) | `deepsyq-platform` / PR #42 | IMPLEMENTED / UNVERIFIED | Owner-only disabled raw HTTP pilot, ledger-serialized two-slot cap, mock tests authored but not run. No provider transport, AI credit charges, public rollout or production changes. |
+| Block 5 — Product Watcher | Dedicated Block 5 agent | `deepsyq-block5-product-watcher` / draft PR #46 | IN PROGRESS / CI VERIFIED | Owner controls, safe operational monitoring, observed alert queue; never touch provider bills or BASE UI. |
 
 When another agent joins, add one row per claimed workstream before substantial implementation. One agent should own one bounded workstream at a time.
 
@@ -51,7 +52,7 @@ When another agent joins, add one row per claimed workstream before substantial 
 | 2 | User Agent — “Do it for me” | NOT STARTED / QUEUED | UNASSIGNED | Multi-step execution through Agent Orchestrator |
 | 3 | Inspiration / Create Yours | CODE READY / CONTENT + BROWSER CI GATED | BLOCK 3 IMPLEMENTED | Original gallery, filtered image/video previews, Studio prefill, owner rights controls, approved migration path; needs owned/licensed publish content, live rollout approval and final browser CI. See `docs/BLOCK3_INSPIRATION_CHECKLIST.md`. |
 | 4 | Studio + My Workspace | NOT STARTED / QUEUED | UNASSIGNED | Creation editor/templates/skills + personal project workspace |
-| 5 | Internal Product Watcher Agent | IN PROGRESS — CORE CI VERIFIED | Dedicated Block 5 agent / draft PR #46 | Owner API+UI, safe 15m worker, audit, isolated PostgreSQL checks; not deployed. Provider watcher, approval workflows, alerts, briefs pending. |
+| 5 | Internal Product Watcher Agent | IN PROGRESS / MONITORING + ALERTS CI VERIFIED | Dedicated Block 5 agent; PR #46 | Read-only checks, costs by currency, owner alert acknowledgements, worker foundation. Render deployment/provider announcements/briefs/approval engine pending. |
 | 6 | Deepsyq Voice Agent | NOT STARTED / QUEUED | UNASSIGNED | Realtime voice interface across Deepsyq, Device Cleanup skill, owner voice access to Product Watcher |
 | 7 | Pricing, Credits, Stripe & Unit Economics | NOT STARTED / QUEUED | UNASSIGNED | Reuse existing Stripe; AI credits/top-ups, provider cost, reservations, margins; no unlimited Lifetime AI |
 
@@ -538,11 +539,27 @@ Current queued-roadmap dependencies to verify before implementation:
 - Site/brand visual lock remains in `docs/DEEPSYQ_OWNER_APPROVED_HOME_DESIGN.md`. No public rollout, Render deployment, owner-media deletion, provider spend, billing changes or production data edits. **Realistic AI hero videos, approved licensing, actual media delivery URLs and owner's design acceptance are still outstanding**; general backend CI remains separate.
 
 
-### Block 5 Product Watcher — dedicated workstream (2026-10-15)
+### BASE Video — reference upload HTTP pilot handoff (2026-10-15)
 
-- **Ownership:** Block 5 dedicated agent; isolated branch deepsyq-block5-product-watcher, draft PR #46 into deepsyq-platform. BASE Image/Video and Block 3 Home/Inspiration untouched.
-- **Current code:** owner-only Product Watcher routes registered with existing auth; separate admin page, manual Run now, Pause/Resume with transactional existing admin audit, latest 30 reports. Owner requires provider=google and a nonempty matching ADMIN_EMAIL. No second auth/Stripe/DB/router.
-- **Checks:** HTTPS health, DB reachability, aggregate failures/unknown/stale jobs and held credits, with secret-safe reports. Separate explicit additive PostgreSQL watcher migration. No private customer data loaded.
-- **Autonomy foundation:** opt-in standalone private worker, 1-minute heartbeat and 15-minute checks based on durable PostgreSQL run history; advisory lock plus under-lock interval recheck prevent overlapping/fast duplicate runs. Default owner state PAUSED, feature flags OFF, no public worker or production migration enabled.
-- **Verified:** GitHub Actions watcher security/behavior/scheduler unit checks + isolated PostgreSQL 16 migration/audit/lock/restart tests SUCCESS for prior head 32b31e09. Current merge head requires its own CI. No live Render, provider, billing or end-to-end browser verification.
-- **Not finished:** verified provider/model/pricing updates, hourly cost anomalies, official source monitoring, notifications, owner approvals, daily/weekly briefs, deployed schedule and controlled acceptance. BLOCK 5 remains IN PROGRESS / not fully done.
+- Continued predecessor's `90ee2b7` ledger/worker cleanup on existing `deepsyq-platform` / PR #42. Reused the same `generation-reference-ledger.js`, `generation-storage.js`, existing Studio JWT/Google owner middleware and S3/private PostgreSQL design. No duplicate provider, auth, history or wallet infrastructure.
+- Added `server/generation-reference-upload.js`: `POST /api/studio/references` accepts only raw video/mp4 or audio/wav, checks size/content-encoding and structural validity before staging, requires existing JWT + Google owner, returns only staged asset metadata. Existing global /api raw-video prohibition has only one exact opt-in exception; other endpoints stay blocked.
+- Transaction-scoped PostgreSQL advisory lock now limits a single owner to two unexpired uploading/ready/failed assets; S3 PUT remains after ledger commit and existing cleanup worker handles expired/failed uploads. All new flags OFF by default; no real media upload endpoint activation, provider transfer, paid job, wallet, Stripe, Render or production DB changes.
+- Added `tests/generation-reference-upload-unit.mjs` (auth, owner restriction, malformed/wrong media, secure metadata and quota). **Tests written, NOT EXECUTED**: no verified browser, real provider, real storage or CI acceptance for this continuation. See `docs/GENERATION-STUDIO.md` and `docs/DEEPSYQ_BASE_CHECKLIST.md`.
+- **Next:** staged end-to-end media intake acceptance with full codec/security probe, running S3 expiry cleaner and controlled migration; then owner-approved short-lived BytePlus media URL transport, provider input compatibility tests, cost/credit gate and Studio UI. Keep new upload disabled and don't start Roadmap Blocks 1–7.
+
+### Owner-safe Home carousel continuation — verified 2026-10-15
+
+- Extended existing `home-experience.js` to skip unreachable preview videos and fall back to the locked purple hero without deleting owner's Inspiration cards. Sound is muted by default and enabled only by a deliberate user click, including the Music Video showcase case; play/pause and reduced-motion/data-saver protections remain.
+- Verified browser acceptance: GitHub Action run **38783419793**, **7/7 Chromium tests PASSED** on the current feature work. Broken-media and Sound on/off behavior covered, as well as previous tests. This does NOT mean all backend CI is green.
+- Created another true original 8-second 1280×720/24fps H.264/AAC promo draft with procedural 2D motion and self-synthesized music: `/Deepsyq/Media Drafts/DEEPSYQ_MUSIC_VISUAL_CONCEPT_16x9_REVIEW.zip`. Full provenance, MP4 SHA-256, included reproducible Python source and non-publication guard are at `docs/DEEPSYQ_MUSIC_VISUAL_DRAFT_02.md`. It is not proof of Music Video Agent or real AI generation. No URL, owner approval, seed entry or site deployment was made.
+- Production Render free Postgres `video-uniquifier-db` remains operational but is scheduled to expire **2026-10-17T09:02:21Z**. Owner approval is required for payment, upgrade or risky data migrations; do not silently migrate or replace the database. Prompt action is warranted to avoid possible disruption.
+- Continue in `deepsyq-platform` / draft PR #42. Await commercial-rights signoff on owner media, real cinematic girl/other feature clips from a permitted generator, approved stable hosting, and owner-approved public release. Do not redesign the protected Home layout.
+
+### Dedicated Block 5 Product Watcher update — 2026-10-15 (PR #46)
+
+- Scope owned only in isolated branch deepsyq-block5-product-watcher (draft PR #46 into current PR #42). Preserves current BASE Image/Video, Block 3 Home/Inspiration, common auth, wallet, Stripe and routing.
+- Read-only HTTP/DB health, stuck/failed jobs, held-credit warnings; rolling last-hour provider failures and provider-cost observations separated by original currency. No guessed provider price, exchange rates, revenue or margin. Thresholds and limitations in docs/PRODUCT_WATCHER.md.
+- Durable append-only watcher run history, paused-by-default owner control, restart-safe private worker and 15-minute scheduling via heartbeat, PostgreSQL advisory lock plus inside-lock interval recheck. All new production flags remain OFF. No Render service or production migration created.
+- Owner-only API/UI reuse existing session+Google ADMIN_EMAIL. Alerts are deduplicated and listed with first/last seen; owner acknowledgement requires matching confirmation ID, audit transaction, and DOES NOT resolve/repair/reprice anything.
+- Validation: branch GitHub Actions at 678b4c98 ran watcher JS/security/threshold/dedup tests and isolated PostgreSQL 16 schema/locking/acknowledgement acceptance — **BOTH PASSED**. New merge head requires fresh CI.
+- Remaining Block 5: real official-provider announcements/models/pricing monitoring, owner approval queue, escalation channels, daily/weekly briefs, Render private worker deploy and controlled owner/staging/production acceptance. Status IN PROGRESS, NOT DONE.

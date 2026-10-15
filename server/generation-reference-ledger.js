@@ -7,7 +7,8 @@ export function referenceRetentionMinutes(env={}){
  const n=Number(env.AI_STUDIO_REFERENCE_TTL_MINUTES);
  return env.AI_STUDIO_REFERENCE_TTL_MINUTES!=null&&Number.isInteger(n)&&n>=5&&n<=1440?n:null;
 }
-export function createGenerationReferenceLedger({pool,storage,env=process.env,uuid=randomUUID,now=()=>new Date()}={}){
+export function createGenerationReferenceLedger({pool,storage,env=process.env,uuid=randomUUID,now=()=>new Date(),maxActiveUploads=0}={}){
+ if(!Number.isInteger(maxActiveUploads)||maxActiveUploads<0||maxActiveUploads>10)throw Error('REFERENCE_UPLOAD_LIMIT_INVALID');
  function cleanupReady(){
   // Cleanup must continue even after new uploads are disabled, or old assets leak.
   if(!pool||!storage?.configured)throw Error('REFERENCE_STORAGE_UNAVAILABLE');
@@ -29,10 +30,29 @@ export function createGenerationReferenceLedger({pool,storage,env=process.env,uu
   if(!(date instanceof Date)||!Number.isFinite(date.getTime()))throw Error('REFERENCE_RETENTION_NOT_CONFIGURED');
   const expires=new Date(date.getTime()+ttl*60000);
   // A failed/ambiguous PUT remains discoverable: ledger row precedes S3 upload.
-  await pool.query(`INSERT INTO vv_generation_reference_assets
+  const insertSql=`INSERT INTO vv_generation_reference_assets
    (id,user_id,storage_key,mime,byte_size,duration_seconds,expires_at,status)
-   VALUES($1,$2,$3,$4,$5,$6,$7,'uploading')`,
-   [id,userId,key,mime,info.size,info.durationSeconds,expires]);
+   VALUES($1,$2,$3,$4,$5,$6,$7,'uploading')`;
+  const args=[id,userId,key,mime,info.size,info.durationSeconds,expires];
+  if(maxActiveUploads){
+   // Serialize admissions across app instances, not just within one Node process.
+   // S3 upload happens AFTER commit so a slow remote PUT never holds a DB lock.
+   if(typeof pool.connect!=='function')throw Error('REFERENCE_UPLOAD_UNAVAILABLE');
+   const c=await pool.connect();
+   try{
+    await c.query('BEGIN');
+    await c.query('SELECT pg_advisory_xact_lock(hashtext($1))',['ai-reference:'+userId]);
+    const {rows}=await c.query(`SELECT COUNT(*)::int AS active
+     FROM vv_generation_reference_assets
+     WHERE user_id=$1 AND status IN ('uploading','ready','failed') AND expires_at>NOW()`,[userId]);
+    if(Number(rows[0]?.active||0)>=maxActiveUploads)throw Error('REFERENCE_UPLOAD_LIMIT');
+    await c.query(insertSql,args);
+    await c.query('COMMIT');
+   }catch(e){
+    await c.query('ROLLBACK').catch(()=>{});
+    throw e;
+   }finally{c.release();}
+  }else await pool.query(insertSql,args);
   try{
    const stored=await storage.putStagedReference({userId,mime,bytes,assetId:id});
    if(stored.key!==key)throw Error('REFERENCE_STAGING_FAILED');

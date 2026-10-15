@@ -237,3 +237,27 @@ This follow-on is **server-only and default OFF**. There are no new browser medi
 - An optional 10-minute cleanup loop uses the **existing** `server/generation-worker.js`, rather than adding another worker. No worker was deployed or started here. `AI_STUDIO_REFERENCE_CLEANUP_ENABLED=true` allows cleanup even if `AI_STUDIO_REFERENCE_STAGING_ENABLED=false` (important during rollback); staging additionally requires both flags, private object storage, and an explicit `AI_STUDIO_REFERENCE_TTL_MINUTES` in the range 5–1440. No TTL is assumed. Both new flags remain unset/OFF.
 - This ledger does not replace full media codec scanning, retention/legal review, upload authentication, rate limits, provider-reachable signed reference URLs or BytePlus acceptance. **Do not activate** staging until these gates pass and the new SQL migration is backed up, reviewed and applied through the existing runner.
 - Added focused mocks for row-before-object persistence, user isolation, TTL expiration, retryable deletion, uncertain upload and cleanup continuing after disabling new uploads. **Test files authored but not run**, following the BASE-first deferred-testing instruction.
+
+
+## BASE #5 — owner-only HTTP media reference intake (2026-10-15)
+
+An additive, **disabled-by-default** `POST /api/studio/references` endpoint now accepts one raw `video/mp4` (up to 20 MiB) or `audio/wav` PCM (up to 8 MiB) body. These formats undergo the existing conservative structural/duration validation (MP4 maximum 30 seconds; WAV maximum 60 seconds). Authentication uses the existing bearer JWT and **the same Google-owner restriction as Studio Admin**. It deliberately accepts **no multipart, JSON/base64, arbitrary URL, or compressed request body**. The global raw-video rejection middleware remains in place for every other API route.
+
+The endpoint uses the **existing** `vv_generation_reference_assets` PostgreSQL ledger, private S3 adapter and expiry cleaner. New per-owner uploads are admitted under a PostgreSQL transaction-scoped advisory lock, limited to at most two unexpired uploading/ready/failed references per owner. It records the ledger row before writing to S3. On success the response contains only owner-scoped asset metadata, `stagedOnly:true`, and `providerReady:false`—never bytes, public links, temporary provider URLs or paid job IDs. A failed/ambiguous upload remains eligible for cleanup once expired.
+
+**Not a public production feature:** `AI_STUDIO_REFERENCE_UPLOAD_ENABLED=false` by default. Pilot staging also requires `AI_STUDIO_ENABLED=true`, private object-storage configuration, `AI_STUDIO_REFERENCE_STAGING_ENABLED=true`, `AI_STUDIO_REFERENCE_CLEANUP_ENABLED=true`, an explicit validated 5–1440-minute TTL and the additive ledger migration in a controlled environment. The owner must confirm an operational cleanup worker, bucket retention/permissions and backup/rollback before any pilot. Do not activate these variables merely because a route now exists.
+
+**Remaining external gates:** real media probing (supported codecs, malware/security analysis, sanitization), durable rate policy and abuse limits for public users, end-to-end storage and cleanup tests with the real worker, encrypted/private short-lived provider-access transport, BytePlus acceptance and model compatibility, approved per-input usage pricing, and explicit wallet consent before any provider call. In particular, **this API does NOT send staged media to BytePlus, invoke generation, debit Stripe or reserve AI credits**. `tests/generation-reference-upload-unit.mjs` contains owner/auth/body/quota regression cases but they have not yet been executed on a fully equipped runner.
+
+
+### BASE #5 — fail-closed codec probe (2026-10-15)
+
+Before inserting a ledger record or writing any bytes to private S3, the owner-only `POST /api/studio/references` pipeline now runs:
+
+1. Existing bounded MP4 / PCM-WAV container and metadata checks.
+2. A **real ffprobe executable** on a randomly named local private temporary file, using a restricted file-only protocol, a 10-second subprocess timeout, a 128 KiB stdout cap, and unconditional temporary-file cleanup.
+3. A conservative codec allowlist: MP4 must contain **one H.264/yuv420p video track** (16–3840px wide, 16–2160px high, <=8,294,400 pixels, 1–60 fps) with optional single AAC audio track; WAV must contain one PCM s16le/s24le audio track with one or two channels at 8–96 kHz. Existing MP4 30s and WAV 60s duration/byte caps continue to apply.
+
+Unsupported codec metadata returns HTTP 415. Missing, inaccessible or timed-out FFprobe blocks upload with HTTP 503; **there is no fallback to unsafe unprobed staging**. Neither structural parsing nor FFprobe is a malware scan, decoding/sanitization guarantee, provider-compatibility confirmation or proof that the file is safe to publish. Keep external provider-media transfer disabled until dedicated security review, real private S3/worker acceptance, signed short-lived transfer, and approved pricing/credits flow.
+
+Regression tests include fake/invalid codec metadata, temporary file cleanup, missing FFprobe, a real PCM WAV and (only where local FFmpeg/libx264 is available) a locally encoded H.264 MP4. `.github/workflows/deepsyq-reference-intake.yml` independently runs targeted parse/codec/API/ledger/S3 unit checks on GitHub Actions, without live paid provider calls.
