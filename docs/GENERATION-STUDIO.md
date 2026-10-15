@@ -167,3 +167,16 @@ The selected number is not sent as a fictitious single provider `n` or `sampleCo
 Each single job also sends `expectedCredits` from its approved per-image quote. The server compares that value with its fresh price before any database insertion/reservation and returns `AI_ESTIMATE_CHANGED` if it differs; earlier completed images remain in History. The job route explicitly refuses `quantity>1` because a job always represents exactly one result. The aggregate estimate validates count, model, per-image price, and maximum 10,000,000 credit total.
 
 **Status:** repository implementation only, not confirmed paid operation. Owner-requested end-to-end browser, wallet and provider verification remains deferred until original BASE integration is complete. Do not enable the flag as a substitute for those checks.
+
+
+## Model-supported Video duration and resolution — BASE #5
+
+Video Studio now exposes the selected provider model's explicit `videoResolution` and `videoDuration` controls in **Settings**. The same fields are checked on the server in `validateGeneration` and `resolveEstimateRequest`, saved in each existing generation job's settings and applied directly by the already-configured Google/BytePlus adapters. They are **not** merely prompt text.
+
+- **Veo 3.1 Lite / Fast (Gemini API):** `720p` with 4, 6 or 8 seconds; `1080p` with 8 seconds. The Studio conservatively fixes image-guided generation to 8 seconds. Both models remain one video per provider job.
+- **Seedance 2.0 (ModelArk):** our initial allowlisted safe subset is `720p` and `1080p` at 4, 5, 8, 10 or 15 seconds. The official API documents wider duration/resolution capabilities, but 4K / external video/audio references and camera controls are not enabled without safe media storage, pricing and provider validation.
+- **Credit protection:** every nondefault duration and/or resolution requires a separately approved matching `AI_MODEL_PRICING_JSON` row; old default-price wildcards cannot quote the higher-cost setting. The single-job creation endpoint refuses premium Video options without approved economics **even in owner preview**. Existing feature flags, owner access, wallet and provider budget gates still apply.
+- **History:** `videoResolution` / `videoDuration` are in stored settings and can populate a new unsubmitted prompt/settings draft. History does not trigger a second provider job.
+- **Status:** CODE IMPLEMENTED, TESTS AUTHORED BUT NOT RUN, LIVE PROVIDER UNVERIFIED. No production activation, provider credentials, commercial Stripe settings or future roadmap blocks were modified.
+
+Official API references: https://ai.google.dev/gemini-api/docs/veo and https://api.byteplus.com/api-explorer/?action=CreateContentsGenerationsTasks&groupName=Chat+API&serviceCode=ark&version=2024-01-01 .
