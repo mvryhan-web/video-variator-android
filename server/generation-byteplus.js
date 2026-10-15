@@ -2,7 +2,11 @@
 const ROOT='https://ark.ap-southeast.bytepluses.com/api/v3/';
 const MAX=30*1024*1024;
 const IDS={'byteplus-seedance-2':'dreamina-seedance-2-0-260128','byteplus-seedream-4-5':'seedream-4-5-251128','byteplus-seedream-5-lite':'seedream-5-0-lite-260128'};
-const SIZES={'1:1':'2048x2048','2:3':'1664x2496','3:2':'2496x1664','9:16':'1600x2848','16:9':'2848x1600'};
+const SIZES={
+ '2K':{'1:1':'2048x2048','2:3':'1664x2496','3:2':'2496x1664','9:16':'1600x2848','16:9':'2848x1600'},
+ '3K':{'1:1':'3072x3072','2:3':'2496x3744','3:2':'3744x2496','9:16':'2304x4096','16:9':'4096x2304'},
+ '4K':{'1:1':'4096x4096','2:3':'3328x4992','3:2':'4992x3328','9:16':'3040x5504','16:9':'5504x3040'}
+};
 async function readLimited(r,limit){
  if(Number(r.headers.get('content-length'))>limit)throw Error('RESULT_TOO_LARGE');
  const reader=r.body?.getReader();if(!reader)throw Error('EMPTY_GENERATION');
@@ -26,10 +30,13 @@ export async function generateBytePlus(request,{key,fetcher=fetch}){
   if(typeof d.id!=='string'||!/^[-A-Za-z0-9_]{1,160}$/.test(d.id))throw Error('EMPTY_OPERATION');
   return {operation:`byteplus:${d.id}`};
  }
- if(!SIZES[request.ratio]||images.length>3)throw Error('INVALID_REQUEST');
+ const resolution=request.resolution||'2K';
+ if(!SIZES[resolution]?.[request.ratio]||images.length>3)throw Error('INVALID_REQUEST');
+ if(resolution==='3K'&&request.model!=='byteplus-seedream-5-lite')throw Error('UNSUPPORTED_RESOLUTION');
+ if(!['2K','3K','4K'].includes(resolution))throw Error('UNSUPPORTED_RESOLUTION');
  if(request.model==='byteplus-seedream-5-lite'&&!['png','jpeg'].includes(request.outputFormat||'png'))throw Error('UNSUPPORTED_IMAGE_FORMAT');
  if(request.model==='byteplus-seedream-4-5'&&request.outputFormat&&request.outputFormat!=='auto')throw Error('UNSUPPORTED_IMAGE_FORMAT');
- const d=await json('images/generations',{key,fetcher,body:{model,prompt:request.prompt,size:SIZES[request.ratio],response_format:'b64_json',stream:false,sequential_image_generation:'disabled',watermark:true,...(request.model==='byteplus-seedream-5-lite'?{output_format:request.outputFormat||'png'}:{}),...(images.length?{image:images}:{})}});
+ const d=await json('images/generations',{key,fetcher,body:{model,prompt:request.prompt,size:SIZES[resolution][request.ratio],response_format:'b64_json',stream:false,sequential_image_generation:'disabled',watermark:true,...(request.model==='byteplus-seedream-5-lite'?{output_format:request.outputFormat||'png'}:{}),...(images.length?{image:images}:{})}});
  const data=d.data?.[0]?.b64_json;
  if(typeof data!=='string'||data.length>Math.ceil(MAX/3)*4||data.length%4!==0||!/^[A-Za-z0-9+/]*={0,2}$/.test(data))throw Error('INVALID_PROVIDER_MEDIA');
  const bytes=Buffer.from(data,'base64');
