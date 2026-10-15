@@ -21,7 +21,7 @@ Status: **IMPLEMENTED / LOCAL UNIT TESTED / NOT DEPLOYED**. This is the internal
 
 The future admin UI must use existing authenticated owner checks. It must never expose these internal diagnostics through public routes. Persisted reports have no user data. Do not expand auto-apply rights; price/model/provider/routing changes need explicit owner approval and audit. Product Watcher must not become the User Agent. Tests: `node --test tests/product-watcher-unit.mjs`.
 
-Known limits: in the first slice, the health route can say OK even when sign-in or Stripe is misconfigured; separate authenticated checks and Stripe webhook diagnostics must be added later, and checks must not claim to test live payments. Job window is 24h; earlier stuck jobs are currently not counted. One API check does not prove the whole product is available. Database migration and deployment have not been run.
+Known limits: in the first slice, the health route can say OK even when sign-in or Stripe is misconfigured; separate authenticated checks and Stripe webhook diagnostics must be added later, and checks must not claim to test live payments. Failures are counted for the last 24 hours; stuck processing/finalizing and held reservations include older unfinished jobs. One API check does not prove the whole product is available. Database migration and deployment have not been run.
 
 
 ## Owner Control — integrated code, external rollout disabled
@@ -46,3 +46,19 @@ Known limits: in the first slice, the health route can say OK even when sign-in 
 - CI checks syntax and security/behavior tests for monitor, admin API and scheduler (Node 22).
 - Separate GitHub Actions job provisions ephemeral PostgreSQL 16 and runs the SQL/migration/pause/history/lock/audit acceptance. The test refuses any DB URL except the explicit local database watcher_test, and does not touch production.
 - Existing main app production switch stays OFF. Full user-facing browser/mobile verification, Render deployment, long-running resilience/notifications, verified official provider checks and automated recommendation/approval workflows are not finished.
+
+## Provider failure and recorded-cost checks (code prepared, no paid API calls)
+
+- Read-only operational-signals.js reads existing generation-job metadata. No customer prompts/media, API keys, billing changes, or payment actions.
+- Provider health alert requires 10 last-hour jobs, at least 5 failures, and 40% failure rate; this is an observational heuristic, not verified provider downtime.
+- Per-currency last-hour recorded spending is compared to the preceding 23-hour hourly average. Alert threshold: 3x, with at least 5 recent and 20 baseline tracked jobs. Separately, unit-cost anomaly threshold is 2.5x; model mix and usage volume may explain either change. Never sum EUR/USD, invent exchange rates, claim margin or assert provider officially changed prices.
+- Ready jobs lacking actual recorded provider cost create COST_VISIBILITY_GAP warnings instead of fictitious zero expenses.
+- The last-hour snapshot is sampled by the existing 15-minute runner; no separate deployed hourly scheduler or official pricing watcher exists yet.
+
+## Owner-only alert queue (code prepared)
+
+- Same opt-in watcher migration adds vv_product_watcher_alerts. The job report and deduplicated signal observations commit in one transaction, otherwise both roll back.
+- Entries are keyed by a stable fingerprint per code/source/provider/currency; retain first/last seen and observation count. Acknowledged means reviewed, NOT fixed or automatically resolved.
+- Owner-only API supports GET /api/product-watcher/admin/alerts (50 newest) and POST /api/product-watcher/admin/alerts/ack (explicit matching alertId/confirmAlertId) with existing admin audit transaction.
+- The standalone owner page shows observed alerts and contextual review recommendations using text-only insertion. No automatic repricing, routing, Stripe changes, refunds or provider calls.
+- Remaining: official provider feed monitoring, notifications and escalation, safe approvals/application policy, daily and weekly briefs, verified Render deployment.
