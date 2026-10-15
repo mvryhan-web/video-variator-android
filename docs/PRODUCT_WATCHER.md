@@ -96,7 +96,7 @@ Known limits: in the first slice, the health route can say OK even when sign-in 
 ## Optional owner-only Telegram critical alert delivery (code, not deployed)
 
 - Uses the EXISTING Telegram bot token, not a second bot/webhook. Requires PRODUCT_WATCHER_TELEGRAM_ALERTS_ENABLED=true, TELEGRAM_BOT_TOKEN and a specifically configured positive PRODUCT_WATCHER_OWNER_TELEGRAM_CHAT_ID. Do not commit the real bot token or chat ID.
-- Only critical, unacknowledged system alerts can send; at most 3 per worker tick. The message contains only alert source/code and tells the owner to open the private Watcher panel; no user data or private error stack.
+- Only critical, unacknowledged system alerts can send; at most 3 per worker tick. The query excludes alerts with an existing Telegram delivery claim **before** selecting the newest three. Backlogs drain over later worker ticks instead of repeatedly selecting previously notified alerts. The message contains only alert source/code and tells the owner to open the private Watcher panel; no user data or private error stack.
 - Each alert+channel delivery is claimed ONCE in additive watcher DB before sending. An ambiguous network result is saved as delivery_unknown and NOT automatically retried, preventing unnoticed duplicate messaging. Delivery receipts require Telegram API HTTP 200 AND ok=true; unknown records require human review.
 - Owner-only GET /api/product-watcher/admin/notifications displays delivery status without bot tokens or owner chat details. Email/SMS and general notification rules are NOT implemented.
 - Feature remains OFF and no message has been sent to a real account. Verify a permitted private owner chat and delivery in staging before considering production activation.
