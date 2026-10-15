@@ -39,7 +39,7 @@ The exact completion state of older components must be verified from the current
 |---|---|---|---|---|
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
-| BASE Video / private MP4-WAV reference upload API | ChatGPT continuation (handoff `90ee2b7`) | `deepsyq-platform` / PR #42 | IN PROGRESS | Owner-only pilot, fail-closed raw HTTP intake; reuse existing ledger/S3, no provider transfer or production rollout. Isolated from Home/Inspiration/other roadmap blocks. |
+| BASE Video / private MP4-WAV reference upload API | ChatGPT continuation (handoff `90ee2b7`) | `deepsyq-platform` / PR #42 | IMPLEMENTED / UNVERIFIED | Owner-only disabled raw HTTP pilot, ledger-serialized two-slot cap, mock tests authored but not run. No provider transport, AI credit charges, public rollout or production changes. |
 
 When another agent joins, add one row per claimed workstream before substantial implementation. One agent should own one bounded workstream at a time.
 
@@ -536,3 +536,12 @@ Current queued-roadmap dependencies to verify before implementation:
 - The only prior browser failures were TEST ASSERTION issues: ambiguous Promo Code close button selector; checking geometric position of an intentionally hidden Inspiration section. Both corrected; did NOT redesign sections or alter media to satisfy tests.
 - A separate 8-second H.264 **original procedural Canvas motion-graphics review** was authored at 1280×720/24fps and stored privately in user Library `/Deepsyq/Media Drafts/DEEPSYQ_CANVAS_MOTION_REVIEW_16x9.zip`. Detailed provenance and limitations: `docs/DEEPSYQ_CANVAS_MOTION_DRAFT_01.md`. This is a genuine moving brand concept, **not AI-model generated**, not the cinematic girl scene, and NOT seeded into public Inspiration or the Home carousel.
 - Site/brand visual lock remains in `docs/DEEPSYQ_OWNER_APPROVED_HOME_DESIGN.md`. No public rollout, Render deployment, owner-media deletion, provider spend, billing changes or production data edits. **Realistic AI hero videos, approved licensing, actual media delivery URLs and owner's design acceptance are still outstanding**; general backend CI remains separate.
+
+
+### BASE Video — reference upload HTTP pilot handoff (2026-10-15)
+
+- Continued predecessor's `90ee2b7` ledger/worker cleanup on existing `deepsyq-platform` / PR #42. Reused the same `generation-reference-ledger.js`, `generation-storage.js`, existing Studio JWT/Google owner middleware and S3/private PostgreSQL design. No duplicate provider, auth, history or wallet infrastructure.
+- Added `server/generation-reference-upload.js`: `POST /api/studio/references` accepts only raw video/mp4 or audio/wav, checks size/content-encoding and structural validity before staging, requires existing JWT + Google owner, returns only staged asset metadata. Existing global /api raw-video prohibition has only one exact opt-in exception; other endpoints stay blocked.
+- Transaction-scoped PostgreSQL advisory lock now limits a single owner to two unexpired uploading/ready/failed assets; S3 PUT remains after ledger commit and existing cleanup worker handles expired/failed uploads. All new flags OFF by default; no real media upload endpoint activation, provider transfer, paid job, wallet, Stripe, Render or production DB changes.
+- Added `tests/generation-reference-upload-unit.mjs` (auth, owner restriction, malformed/wrong media, secure metadata and quota). **Tests written, NOT EXECUTED**: no verified browser, real provider, real storage or CI acceptance for this continuation. See `docs/GENERATION-STUDIO.md` and `docs/DEEPSYQ_BASE_CHECKLIST.md`.
+- **Next:** staged end-to-end media intake acceptance with full codec/security probe, running S3 expiry cleaner and controlled migration; then owner-approved short-lived BytePlus media URL transport, provider input compatibility tests, cost/credit gate and Studio UI. Keep new upload disabled and don't start Roadmap Blocks 1–7.
