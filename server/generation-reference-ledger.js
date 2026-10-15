@@ -78,6 +78,18 @@ export function createGenerationReferenceLedger({pool,storage,env=process.env,uu
   if(rows.length!==1)throw Error('REFERENCE_MEDIA_ACCESS_DENIED');
   return storage.getStagedReference({userId,key:rows[0].storage_key,mime:rows[0].mime});
  }
+ // Server-only signing candidate; callers still must FFprobe the underlying bytes
+ // and obtain independently approved paid-generation consent before dispatch.
+ async function getForVideoTransfer({userId,id}={}){
+  ready();
+  if(!identity(userId)||!UUID.test(id||''))throw Error('REFERENCE_MEDIA_ACCESS_DENIED');
+  const {rows}=await pool.query(`SELECT storage_key,mime,expires_at
+   FROM vv_generation_reference_assets
+   WHERE id=$1 AND user_id=$2 AND mime='video/mp4' AND status='ready'
+     AND expires_at>NOW()+INTERVAL '90 seconds'`,[id,userId]);
+  if(rows.length!==1)throw Error('REFERENCE_MEDIA_ACCESS_DENIED');
+  return {key:rows[0].storage_key,mime:rows[0].mime,expiresAt:rows[0].expires_at};
+ }
  async function cleanupExpired({batchSize=20}={}){
   cleanupReady();
   if(!Number.isInteger(batchSize)||batchSize<1||batchSize>100)throw Error('INVALID_CLEANUP_BATCH');
@@ -105,5 +117,5 @@ export function createGenerationReferenceLedger({pool,storage,env=process.env,uu
   }
   return {claimed:rows.length,deleted,failed};
  }
- return {stage,get,cleanupExpired};
+ return {stage,get,getForVideoTransfer,cleanupExpired};
 }

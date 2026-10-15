@@ -26,6 +26,17 @@ Use the smallest verification scope that is safe for the current change.
 - Prefer targeted tests for the changed area; run broader regression only at a meaningful release/merge gate or when the blast radius justifies it.
 - Never skip a necessary safety check just to save tool calls, but do not spend Work limit proving the same unchanged fact repeatedly.
 
+## Canonical main branch — BASE + all seven roadmap blocks (owner rule, 2026-10-15)
+
+**Final integration target: `main`.** Deepsyq BASE and **every one of Blocks 1–7** belong in this **existing repository** and must eventually be merged into the canonical `main` branch as a single integrated application. A feature branch, draft PR, or independent Render service is **not** the final home of any completed block.
+
+- During parallel development, use isolated feature branches and PRs to protect other agents' work. That is temporary, not a different product or release branch. Do not commit unfinished, unreviewed or conflicting work directly to `main`.
+- Before integration, inspect the latest `main`, the active BASE branch/PR, other open PRs, actual code and `PROJECT_STATUS.md`. Integrate dependencies first; preserve the owner-approved Home, existing functions and the newest verified work of other agents. Never overwrite or force-push `main` to resolve a conflict.
+- Integration order: verify the shared BASE, merge it to `main`, then merge each ready block through reviewed, tested, conflict-resolved PRs. Block 5 Product Watcher has nested PRs #49 -> #48 -> #47 -> #46; reconcile them with the current BASE before the final `main` merge. Other blocks follow their actual dependencies; no block is presumed complete merely because its PR exists.
+- Record a block as **IN PROGRESS / READY TO MERGE / MERGED TO MAIN / DEPLOYED AND VERIFIED** separately. A green CI run or merge is not proof of a working production deployment. Mark DONE only after all applicable tests, `main` integration and required end-to-end verification.
+- **Production is a separate safety gate.** Render currently auto-deploys `main`; before any functional merge that could deploy, check migration/backup/restore readiness, database continuity, production compatibility, disabled-by-default paid features, secrets and relevant owner approvals. Never deploy risky changes just to satisfy the canonical-branch rule. Documentation-only commits to `main` should use `[skip render]` in the commit message to avoid unnecessary redeployment.
+- Maintain one GitHub repository, one `main` production integration branch, the existing application/Render service, and shared PostgreSQL/auth/Stripe/provider foundations. Do not create a permanent second Deepsyq stack or abandon a finished block in a private branch.
+
 ## One project, no duplicate architecture
 
 - Continue the existing production project. Never create a second Deepsyq project, parallel database, duplicate authentication system, duplicate Stripe setup, duplicate router, or replacement architecture unless the owner explicitly asks for it.
