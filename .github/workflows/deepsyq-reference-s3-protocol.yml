@@ -5,11 +5,13 @@ on:
     paths:
       - 'server/generation-storage.js'
       - 'tests/generation-reference-sigv4-http.mjs'
+      - 'tests/generation-reference-minio-protocol.mjs'
       - '.github/workflows/deepsyq-reference-s3-protocol.yml'
   pull_request:
     paths:
       - 'server/generation-storage.js'
       - 'tests/generation-reference-sigv4-http.mjs'
+      - 'tests/generation-reference-minio-protocol.mjs'
       - '.github/workflows/deepsyq-reference-s3-protocol.yml'
   workflow_dispatch:
 jobs:
@@ -46,6 +48,13 @@ jobs:
         with:
           go-version: '1.24.8'
           cache: false
+      - name: Cache pinned MinIO Go compilation across CI reruns
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-deepsyq-minio-source-2025-10-15-go1248-v1
       - name: Install official pinned MinIO server from upstream Go source
         env:
           GOMAXPROCS: '2'
