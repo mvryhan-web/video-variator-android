@@ -39,6 +39,7 @@ The exact completion state of older components must be verified from the current
 |---|---|---|---|---|
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
+| BASE Video / private MP4-WAV reference upload API | ChatGPT continuation (handoff `90ee2b7`) | `deepsyq-platform` / PR #42 | IN PROGRESS | Owner-only pilot, fail-closed raw HTTP intake; reuse existing ledger/S3, no provider transfer or production rollout. Isolated from Home/Inspiration/other roadmap blocks. |
 
 When another agent joins, add one row per claimed workstream before substantial implementation. One agent should own one bounded workstream at a time.
 
