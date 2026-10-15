@@ -46,8 +46,11 @@ async function loadHistory(){
    const title=document.createElement('strong');title.textContent=(item.kind==='music'?say('Audio','Аудио'):item.kind==='image'?say('Image','Изображение'):say('Video','Видео'))+(item.model?' · '+item.model:'');
    const state=document.createElement('span');state.className='history-status';state.dataset.status=item.status;state.textContent=historyState(item.status);head.append(title,state);
    const meta=document.createElement('small');meta.textContent=[historyDate(item.createdAt),item.provider].filter(Boolean).join(' · ');
+   const prompt=document.createElement('p');prompt.className='history-prompt';prompt.textContent=item.prompt||'';
+   const actions=document.createElement('div');actions.className='history-actions';
+   const reuse=document.createElement('button');reuse.type='button';reuse.textContent=say('Reuse prompt','Повторить запрос');reuse.disabled=!item.prompt;reuse.onclick=()=>{select(item.kind==='music'?'music':item.kind);$('prompt').value=item.prompt||'';availability();setHistory(false);$('prompt').focus();};
    const open=document.createElement('button');open.type='button';open.textContent=say('Open','Открыть');open.onclick=()=>openHistoryJob(item.id);if(item.status==='failed')open.disabled=true;
-   card.append(head,meta,open);list.append(card);
+   actions.append(reuse,open);card.append(head,meta,prompt,actions);list.append(card);
   }
  }catch(e){list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
 }
