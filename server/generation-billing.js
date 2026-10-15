@@ -15,6 +15,10 @@ export function billingCatalog(env={}) {
     return {packs,rates,revision:hash({packs,rates})};
   } catch (_) { return {packs:[],rates:[],revision:null}; }
 }
+export function welcomeCreditConfig(env={}){
+  const credits=Number(env.AI_WELCOME_CREDITS||0),valid=Number.isSafeInteger(credits)&&credits>0&&credits<=10_000_000;
+  return {enabled:env.AI_WELCOME_CREDITS_ENABLED==='true'&&valid,credits:valid?credits:0};
+}
 export function generationBillingRuntime(env={}){
   const mode=env.AI_BILLING_MODE==='live'?'live':'test',key=String(env.STRIPE_SECRET_KEY||'');
   const keyMatches=mode==='live'?/^(sk_live_|rk_live_)/.test(key):/^(sk_test_|rk_test_)/.test(key);
@@ -60,6 +64,10 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
       session_id TEXT UNIQUE,created_at TIMESTAMPTZ NOT NULL DEFAULT now())`).catch(e=>{initializing=null;throw e;});
     await initializing;
   };
+  app.get('/api/ai-wallet/config',(_req,res)=>{const c=welcomeCreditConfig(env);res.json({welcomeEnabled:c.enabled,welcomeCredits:c.credits});});
+  app.get('/api/ai-wallet/balance',auth,async(req,res)=>{try{res.json(await wallet.balance(req.user.id));}catch(_){res.status(503).json({error:'WALLET_UNAVAILABLE'});}});
+  app.get('/api/ai-wallet/history',auth,async(req,res)=>{try{res.json({items:await wallet.history(req.user.id)});}catch(_){res.status(503).json({error:'WALLET_UNAVAILABLE'});}});
+  app.post('/api/ai-wallet/welcome',auth,async(req,res)=>{const c=welcomeCreditConfig(env);if(!c.enabled)return res.status(503).json({error:'AI_WELCOME_CREDITS_NOT_ENABLED'});try{const balance=await wallet.grantOnce({userId:req.user.id,kind:'welcome',credits:c.credits});res.json({ok:true,credits:c.credits,balance});}catch(_){res.status(503).json({error:'WALLET_UNAVAILABLE'});}});
   app.get('/api/ai-billing/config',(_req,res)=>{
     const c=billingCatalog(env);
     const r=runtime();res.json({enabled:enabled(),mode:r.mode,livePaymentsEnabled:enabled()&&r.livemode,unit:'AI credits',packs:c.packs.map(({priceId,...p})=>p),rates:c.rates,revision:c.revision,reason:enabled()?null:'PAYMENTS_NOT_ACTIVATED'});

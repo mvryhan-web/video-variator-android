@@ -31,8 +31,8 @@ async function loadAIWallet(){
  const chip=$('aiWalletLink');if(!chip)return;
  if(!localStorage.getItem('vv_token')){chip.hidden=true;return;}
  try{
-  const billing=await api('/api/ai-billing/config');if(!billing.enabled){chip.hidden=true;return;}
-  const balance=await api('/api/ai-billing/balance');const available=Number(balance.available||0),reserved=Number(balance.reserved||0),debt=Number(balance.debt||0);
+  const [billing,welcome]=await Promise.all([api('/api/ai-billing/config').catch(()=>({enabled:false})),api('/api/ai-wallet/config').catch(()=>({welcomeEnabled:false}))]);if(!billing.enabled&&!welcome.welcomeEnabled){chip.hidden=true;return;}
+  const balance=await api('/api/ai-wallet/balance');const available=Number(balance.available||0),reserved=Number(balance.reserved||0),debt=Number(balance.debt||0);
   $('aiWalletAvailable').textContent=available.toLocaleString();$('aiWalletHeld').textContent=debt>0?`${debt.toLocaleString()} debt`:reserved>0?`${reserved.toLocaleString()} held`:'available';chip.dataset.debt=String(debt>0);chip.hidden=false;
  }catch(_){chip.hidden=true;}
 }

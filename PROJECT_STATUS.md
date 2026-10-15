@@ -253,3 +253,10 @@ Current queued-roadmap dependencies to verify before implementation:
 
 - Studio now surfaces server-priced AI credits before Generate without uploading prompt/media for the estimate.
 - Estimate recalculation is debounced and cached by settings signature; no provider generation is triggered.
+
+
+### Continuation 18 — optional welcome AI credits
+
+- Added an explicit, one-time, server-configured welcome AI-credit claim path; default remains OFF/0.
+- Welcome grants are idempotent, ledgered and debt-first, and do not touch Stripe.
+- Added payment-independent AI-wallet balance/history/config endpoints for safe user visibility.

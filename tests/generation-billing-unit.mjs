@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
-import {billingCatalog,makeQuote,verifyQuote,generationBillingRuntime,stripeRefundData,installGenerationBilling} from '../server/generation-billing.js';
+import {billingCatalog,makeQuote,verifyQuote,generationBillingRuntime,stripeRefundData,welcomeCreditConfig,installGenerationBilling} from '../server/generation-billing.js';
 const body={kind:'video',prompt:'Ocean at sunset',ratio:'16:9',consent:true};
 // Synthetic prices for code tests only, never proposed customer prices.
 const env={APP_JWT_SECRET:'test-only-signing-key',AI_CREDIT_PACKS_JSON:JSON.stringify([{sku:'fixture',priceId:'price_fixture',amount:100,credits:100,currency:'eur'}]),AI_CREDIT_RATES_JSON:JSON.stringify([{kind:'video',credits:10}])};
@@ -60,4 +60,25 @@ test('Stripe refund parsing uses cumulative refunded amount and enforces billing
  assert.throws(()=>stripeRefundData(event,{livemode:false}),/AI_PAYMENT_MODE_MISMATCH/);
  assert.throws(()=>stripeRefundData({type:'charge.refunded',livemode:true,data:{object:{livemode:true,payment_intent:'pi_fixture',amount_refunded:0}}},{livemode:true}),/INVALID_AI_REFUND_EVENT/);
  assert.equal(stripeRefundData({type:'invoice.paid'},{livemode:false}),null);
+});
+
+
+test('welcome AI credits are opt-in, bounded and disabled by default',()=>{
+ assert.deepEqual(welcomeCreditConfig({}),{enabled:false,credits:0});
+ assert.deepEqual(welcomeCreditConfig({AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'4200'}),{enabled:true,credits:4200});
+ assert.deepEqual(welcomeCreditConfig({AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'99999999'}),{enabled:false,credits:0});
+});
+
+test('one-time welcome grant is idempotent and pays wallet debt first',async()=>{
+ const walletRows=new Map([['user-1',{available:5,reserved:0,debt:7}]]),grants=new Map(),ledger=[];
+ const pool={async query(sql){if(sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_wallet'))return {rows:[]};throw Error(sql);},async connect(){return {async query(sql,args=[]){
+  if(sql==='BEGIN'||sql==='COMMIT'||sql==='ROLLBACK')return {rows:[]};if(sql.startsWith('INSERT INTO vv_ai_wallet'))return {rows:[]};if(sql.startsWith('SELECT * FROM vv_ai_wallet'))return {rows:[walletRows.get(args[0])]};
+  if(sql.startsWith('SELECT * FROM vv_ai_grant'))return {rows:grants.has(args[0]+'|'+args[1])?[grants.get(args[0]+'|'+args[1])]:[]};
+  if(sql.startsWith('INSERT INTO vv_ai_grant')){grants.set(args[0]+'|'+args[1],{user_id:args[0],kind:args[1],credits:args[2]});return {rows:[]};}
+  if(sql.startsWith('UPDATE vv_ai_wallet')){walletRows.set(args[0],{available:args[1],reserved:args[2],debt:args[3]});return {rows:[]};}
+  if(sql.startsWith('INSERT INTO vv_ai_ledger')){ledger.push(args);return {rows:[]};}throw Error(sql);
+ },release(){}};}};
+ const {GenerationWallet}=await import('../server/generation-wallet.js');const wallet=new GenerationWallet(pool);
+ let b=await wallet.grantOnce({userId:'user-1',kind:'welcome',credits:20});assert.equal(b.available,18);assert.equal(b.debt,0);assert.equal(b.granted,20);assert.equal(ledger.length,1);
+ b=await wallet.grantOnce({userId:'user-1',kind:'welcome',credits:20});assert.equal(b.duplicate,true);assert.equal(walletRows.get('user-1').available,18);assert.equal(ledger.length,1);
 });

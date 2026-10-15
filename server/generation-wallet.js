@@ -31,6 +31,9 @@ export class GenerationWallet {
         id TEXT PRIMARY KEY, user_id TEXT NOT NULL, owner_user_id TEXT NOT NULL,
         delta BIGINT NOT NULL CHECK(delta<>0 AND delta BETWEEN -1000000 AND 1000000),
         reason TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+      CREATE TABLE IF NOT EXISTS vv_ai_grant (
+        user_id TEXT NOT NULL, kind TEXT NOT NULL, credits INTEGER NOT NULL CHECK(credits>0 AND credits<=10000000),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(), PRIMARY KEY(user_id,kind));
       CREATE INDEX IF NOT EXISTS vv_ai_ledger_user ON vv_ai_ledger(user_id,id DESC);
     `).catch(e => { this.initializing = null; throw e; });
     await this.initializing;
@@ -65,6 +68,16 @@ export class GenerationWallet {
       await c.query('INSERT INTO vv_ai_purchase(session_id,user_id,payment_intent,credits,amount,currency) VALUES($1,$2,$3,$4,$5,$6)', [sessionId,userId,paymentIntent,credits,amount,currency]);
       const paidDebt=Math.min(w.debt,credits);
       return this.change(c,userId,w,sessionId,'purchase',credits-paidDebt,0,-paidDebt);
+    });
+  }
+  async grantOnce({userId,kind='welcome',credits}) {
+    identifier(userId); identifier(kind); integer(credits,'CREDITS',10_000_000);
+    return this.transaction(userId,async(c,w)=>{
+      const old=await c.query('SELECT * FROM vv_ai_grant WHERE user_id=$1 AND kind=$2',[userId,kind]);
+      if(old.rows.length)return {...w,duplicate:true,granted:Number(old.rows[0].credits)};
+      await c.query('INSERT INTO vv_ai_grant(user_id,kind,credits) VALUES($1,$2,$3)',[userId,kind,credits]);
+      const debtPaid=Math.min(w.debt,credits),next=await this.change(c,userId,w,kind,'welcome_grant',credits-debtPaid,0,-debtPaid);
+      return {...next,duplicate:false,granted:credits};
     });
   }
   async reserve({userId,jobId,credits,fingerprint}) {

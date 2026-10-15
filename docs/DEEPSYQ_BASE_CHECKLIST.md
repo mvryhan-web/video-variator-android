@@ -55,7 +55,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 41 | Internal model capabilities | PARTIAL | All catalog models now expose a normalized capability object for input kinds, output kind, ratios, max references, async mode, quality, duration seconds and reference support. Future provider-specific constraints may extend it. |
 | 42 | Persist BytePlus output in our storage | PARTIAL / BLOCKED | Adapter downloads/validates media and Studio can move completed bytes into configured S3-compatible storage before wallet capture. Real storage provisioning and live BytePlus verification remain external gates. |
 | 43 | Pricing page | PARTIAL | Dedicated Pricing page now separates existing Video/Everyday Tools subscriptions (including Lifetime) from prepaid AI credits, renders only server-configured AI packs, and enables Stripe only when AI billing is active. Final AI economics/pack values still require approval. |
-| 44 | Free plan | PARTIAL | Existing non-AI trials/tools exist; safe AI acquisition allowance not defined. |
+| 44 | Free plan | PARTIAL | Added a config-driven one-time welcome AI-credit grant mechanism with explicit claim, idempotency and debt-first handling. It remains OFF with amount 0 until an exact acquisition allowance is approved. |
 | 45 | Onboarding | PARTIAL | New email/Google/Apple accounts are flagged for a persistent Image/Video onboarding choice; selection is stored server-side and routes directly to a real studio. Public launch verification is still pending. |
 | 46 | Homepage conversion | PARTIAL | Dashboard uses `Create` + `Explore templates` and now renders up to six real owner-featured workflows from the template API; the section stays hidden when no approved content exists. Public launch still requires owner-approved content/assets. |
 | 47 | Do not expose BytePlus as our product | DONE | Provider stays implementation detail; Deepsyq branding used. |
@@ -249,3 +249,11 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Studio now shows the exact server-configured AI-credit estimate before generation when pricing is configured and the signed-in user is allowed to access the estimate.
 - Estimate requests do not transmit prompt text, reference image bytes or consent state; only kind/model/format/music mode/reference count are used.
 - Recalculation is debounced and signature-cached so unchanged settings do not repeatedly hit the server. The estimate never starts a provider call.
+
+
+## Continuation 19 — optional one-time welcome AI credits
+
+- Added `AI_WELCOME_CREDITS_ENABLED=false` + `AI_WELCOME_CREDITS=0`; no free amount is invented or active by default.
+- Signed-in users can explicitly claim the configured welcome grant once per account from Pricing when enabled. The grant is idempotent and recorded in the AI ledger.
+- If an account has refund debt, the welcome grant pays that debt first instead of bypassing it. Stripe is not involved.
+- Added independent `/api/ai-wallet` balance/history/config endpoints so wallet visibility does not depend on payment checkout activation.
