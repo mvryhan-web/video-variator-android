@@ -18,12 +18,12 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 4 | Image generation | PARTIAL / BLOCKED | Google + BytePlus image adapters prepared; live BytePlus key/model activation and commercial flow pending. |
 | 5 | Video generation | PARTIAL / BLOCKED | Google + BytePlus async video adapters prepared; live provider activation/storage/commercial flow pending. |
 | 6 | BytePlus first provider adapter | PARTIAL / BLOCKED | Server-only ModelArk adapter exists for Seedream/Seedance. Real account activation/key/smoke call pending. |
-| 7 | AI Provider Router | PARTIAL | Shared dispatch/catalog now has server-side smart pre-dispatch candidate ordering and an owner route preview. Public multi-provider routing and live reliability/cost scoring remain incomplete. |
+| 7 | AI Provider Router | PARTIAL | Shared dispatch/catalog has safe pre-dispatch candidate ordering, normalized model capabilities, owner route preview and config-driven plan access foundation. Live measured reliability/latency routing and broader providers remain incomplete. |
 | 8 | Fallback | PARTIAL / SAFETY-GATED | Compatible fallback candidates are ordered before dispatch, but automatic post-dispatch fallback remains intentionally disabled so ambiguous paid calls are never duplicated. |
 | 9 | Provider config in admin | PARTIAL | Feature-gated owner API/UI support enable override, maintenance, priority, markup and internal cost, plus a no-spend route preview showing primary/candidate models. |
 | 10 | Normal generation-job database entity | PARTIAL | Commercial `vv_generation_jobs` now stores provider/model/prompt/lifecycle/cost/credits/settings/assets/error fields and additively migrates legacy `vv_generation_pilot` rows. Production migration/rollback is still unverified. |
 | 11 | Permanent object storage | PARTIAL / BLOCKED | Gated S3-compatible server storage, signed PUT/GET/DELETE and Studio persistence are implemented. Real production bucket/credentials are still required; fallback pilot bytes remain only when storage is disabled. |
-| 12 | Background jobs | PARTIAL | Async provider task IDs persist and an opt-in restart recovery poller can resume existing async tasks without starting duplicate generations. A dedicated production commercial worker/service is still required. |
+| 12 | Background jobs | PARTIAL | Async provider task IDs persist; browser/recovery polling is atomically throttled per job and restart recovery resumes existing tasks without replacement generations. A dedicated production commercial worker/service is still required. |
 | 13 | Internal AI credit system | PARTIAL | Separate AI wallet exists and is wired to generation jobs behind `AI_STUDIO_WALLET_ENABLED=false`; public entitlements/live economics remain gated. |
 | 14 | Credit ledger | PARTIAL | Purchase/reserve/capture/release/refund/debt ledger primitives exist; generation success now captures a prior reservation behind the disabled commercial wallet flag. |
 | 15 | Credit reservation | PARTIAL | Generation reserves approved server-priced AI credits before provider execution and captures only after durable output; ambiguous submission errors remain held for review. Feature remains disabled by default. |
@@ -42,17 +42,17 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 28 | Utilities gathered in Tools | PARTIAL | Everyday Tools hub exists; final per-tool allowance policy and some planned utilities remain incomplete. |
 | 29 | Final navigation | PARTIAL | Deepsyq dashboard/navigation exists; queued modules are not yet live. |
 | 30 | Desktop / Android / iPhone responsive | PARTIAL | Browser/mobile CI exists; physical iPhone/Android acceptance remains outstanding. |
-| 31 | Generation UX/status | PARTIAL | Queued/processing/finalizing/ready/failed/unknown states now exist, including localized queued/finalizing labels; public commercial UX and billing-review resolution remain incomplete. |
-| 32 | Friendly error handling | PARTIAL | Provider errors are normalized in pilot; broader public error taxonomy remains incomplete. |
-| 33 | Safe retry | PARTIAL | No automatic paid retries on ambiguous failure; recovery polls only existing provider task IDs. Commercial retry policy still needs dedicated worker integration. |
-| 34 | Server-side rate/concurrency limits | PARTIAL | Feature-gated server policy now enforces per-user concurrent-job and hourly-job limits with advisory locking. Final per-plan values/public entitlement wiring remain unapproved. |
-| 35 | Security | PARTIAL | Keys server-side, auth/user scoping, safe provider URLs, Stripe verification foundations exist; launch security review still required. |
+| 31 | Generation UX/status | PARTIAL | Queued/processing/finalizing/ready/failed/unknown states, bounded retry-after polling and localized status/error messages now exist. Full public commercial acceptance UX remains gated. |
+| 32 | Friendly error handling | PARTIAL | Central server-side AI error normalization now maps provider capacity/configuration/timeout/output/download/security failures to stable public-safe codes; raw provider text is not exposed. Final public support copy still needs launch review. |
+| 33 | Safe retry | PARTIAL | No automatic paid retries on ambiguous failure; recovery only polls existing task IDs, provider polling is throttled, and Generate creation is idempotent via per-user client request IDs/fingerprints. Dedicated commercial worker retry policy is still pending. |
+| 34 | Server-side rate/concurrency limits | PARTIAL | Config-driven public plan entitlements can now supply per-user concurrency/hourly limits behind `AI_PUBLIC_GENERATION_ENABLED=false`; no default plan limits are invented. Approved production values remain pending. |
+| 35 | Security | PARTIAL | Keys stay server-side; auth/user scoping, safe provider URLs, MIME/signature checks, idempotent generation creation and owner action audit logging exist. Formal launch security review still required. |
 | 36 | Privacy | PARTIAL | Added an implementation-accurate AI Media Privacy notice: local Product Video handoff, explicit Studio consent, provider transfer, job metadata storage, object-storage/DB fallback and deletion behavior. Final legal Terms/Privacy and approved automatic retention schedule remain pending. |
 | 37 | Business analytics | PARTIAL | Owner overview now shows users/30-day registrations, generation adoption/jobs/failure/latency/top model, recorded provider cost/credits, and confirmed AI-wallet purchases separated by currency. Gross margin stays intentionally blank until live economics/currency are verified. |
-| 38 | Admin dashboard | PARTIAL | Owner AI Control includes Users, Generation Jobs, business overview, model controls, route preview, provider metrics, held-credit review, template management, and feature-gated audited manual AI credit adjustment. Full Stripe payment administration remains pending. |
+| 38 | Admin dashboard | PARTIAL | Owner AI Control includes Users, Generation Jobs, business overview, model controls, route preview, provider metrics, held-credit review, template management, audited credit adjustment and a recent owner action log. Full Stripe payment administration remains pending. |
 | 39 | Provider performance | PARTIAL | Owner metrics endpoint aggregates provider/model jobs, success/failure, processing, average time, cost and charged credits. |
 | 40 | Model routing registry | PARTIAL | Shared catalog/capabilities plus server-side compatible candidate ordering and owner priorities exist. Logical cross-provider product model IDs and measured quality/reliability routing remain future work. |
-| 41 | Internal model capabilities | PARTIAL | ratios/references/quality/duration/provider metadata exist; full capability schema is incomplete. |
+| 41 | Internal model capabilities | PARTIAL | All catalog models now expose a normalized capability object for input kinds, output kind, ratios, max references, async mode, quality, duration seconds and reference support. Future provider-specific constraints may extend it. |
 | 42 | Persist BytePlus output in our storage | PARTIAL / BLOCKED | Adapter downloads/validates media and Studio can move completed bytes into configured S3-compatible storage before wallet capture. Real storage provisioning and live BytePlus verification remain external gates. |
 | 43 | Pricing page | PARTIAL | Existing plan display/checkout reused; final Deepsyq AI subscription/credit economics not approved. |
 | 44 | Free plan | PARTIAL | Existing non-AI trials/tools exist; safe AI acquisition allowance not defined. |
@@ -62,7 +62,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 48 | Production safety / regression | PARTIAL | Feature flags, CI and no-live-change discipline exist; backup/staging/live regression still required before launch. |
 | 49 | Database migrations | PARTIAL | Additive commercial-job migration is repeatable and has an isolated PostgreSQL migration test, including legacy pilot copy. Production backup/migration/rollback still has not been run. |
 | 50 | Feature flags | PARTIAL | Major Deepsyq/studio/billing gates plus AI Apps, Product Video, Onboarding and owner credit-adjustment flags now exist. New BASE modules default OFF in production unless explicitly enabled. Future roadmap modules still need their own flags. |
-| 51 | First commercial vertical slice | PARTIAL | Gated code path now supports approved price → reserve → provider job → S3/DB persistence → finalizing → capture, plus held-credit reconciliation and abuse limits. Live provider/storage/Stripe/margin verification is still incomplete. |
+| 51 | First commercial vertical slice | PARTIAL | Gated path now supports plan entitlement → idempotent create → approved price → reserve → provider job → throttled async polling → S3/DB persistence → finalizing → capture, plus reconciliation/audit/abuse limits. Live provider/storage/Stripe/margin verification remains incomplete. |
 | 52 | Required implementation order | IN PROGRESS | Continue BASE before Roadmap Blocks 1–7. |
 | 53 | Explicit non-goals for now | DONE / RULE | No unnecessary marketplace/social network/Photoshop/huge provider sprawl should be built during BASE. |
 | 54 | BASE readiness criteria | NOT MET | Cannot mark BASE done until a real new user can buy/get AI credits, generate image/video, leave/return, retrieve result, see correct charge/refund and old tools still work. |
@@ -206,3 +206,13 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Added a homepage Featured workflows section backed only by active `featured=true` template records.
 - No sample cards, prompts or third-party images are invented in code. If the approved featured catalog is empty or AI Apps is disabled, the entire section stays hidden.
 - Cards show the owner-provided title/description/thumbnail/category/type and route into the existing AI Apps catalog.
+
+
+## Continuation 14 — commercial safety foundations
+
+- Added stable public-safe AI error taxonomy; unknown upstream text is reduced to `UNKNOWN` rather than surfaced to users.
+- Standardized model capability metadata and made routing/pricing consume the normalized capability fields.
+- Added atomic per-job provider polling throttle shared by browser polling and recovery worker to avoid duplicate status requests.
+- Added persistent owner audit log for model-control changes, billing-review releases, AI credit adjustments and template create/update actions.
+- Added public AI entitlement foundation with no invented defaults. Existing Lifetime access is explicitly not treated as AI entitlement. `AI_PUBLIC_GENERATION_ENABLED=false` remains the gate.
+- Added per-user generation request idempotency using UUID request IDs and request fingerprints so the same request cannot start a second paid job.
