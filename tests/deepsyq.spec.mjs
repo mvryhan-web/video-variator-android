@@ -317,6 +317,12 @@ test('approved video appears in the real homepage hero but does not erase Canvas
  await expect(page.locator('.studio-card')).toHaveCount(4);
 });
 test('video carousel switches only among owner-approved videos and retains existing media',async({page})=>{
+ // Mock the transport layer: this test verifies navigation, not fake MP4 playback.
+ await page.addInitScript(()=>{
+  HTMLMediaElement.prototype.load=function(){};
+  HTMLMediaElement.prototype.play=function(){return Promise.resolve();};
+  HTMLMediaElement.prototype.pause=function(){};
+ });
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
