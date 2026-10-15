@@ -1,0 +1,82 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {evaluateOperationalSignals,checkOperationalSignals} from '../server/product-watcher/operational-signals.js';
+
+test('failure warnings require actual observed volume, not guessed provider quality',()=>{
+ const low=evaluateOperationalSignals([{provider:'BytePlus',jobs_1h:4,failed_1h:4}],[]);
+ assert.equal(low.status,'healthy');
+ const high=evaluateOperationalSignals([{provider:'Google',jobs_1h:20,failed_1h:9}],[]);
+ assert.equal(high.status,'warning');
+ assert.deepEqual(high.alerts.map(x=>x.code),['PROVIDER_HIGH_FAILURE_RATE']);
+ assert.equal(high.alerts[0].rate,0.45);
+});
+
+test('recorded spend is compared within same currency only, no FX, revenue or invented profit',()=>{
+ const rows=[
+ {currency:'usd',tracked_1h:12,tracked_prev_23h:46,missing_cost_1h:0,cost_1h:'24.000000',cost_prev_23h:'46.000000'},
+ {currency:'eur',tracked_1h:10,tracked_prev_23h:25,missing_cost_1h:0,cost_1h:'2.000000',cost_prev_23h:'25.000000'}
+ ];
+ const r=evaluateOperationalSignals([],rows);
+ assert.equal(r.currencies.length,2);
+ assert.equal(r.currencies[0].recordedCostLastHour,'24.000000');
+ assert.ok(r.alerts.some(x=>x.code==='RECORDED_SPEND_SPIKE'&&x.currency==='usd'));
+ assert.ok(!r.alerts.some(x=>x.currency==='eur'));
+ assert.equal('grossMargin' in r,false);
+ assert.equal('totalSpend' in r,false);
+});
+
+test('per-job cost spike does not claim official provider price increase',()=>{
+ const rows=[{currency:'usd',tracked_1h:10,tracked_prev_23h:30,missing_cost_1h:0,cost_1h:'100',cost_prev_23h:'30'}];
+ const r=evaluateOperationalSignals([],rows);
+ assert.ok(r.alerts.some(x=>x.code==='RECORDED_UNIT_COST_SPIKE'));
+ assert.ok(!JSON.stringify(r).includes('PRICE_INCREASE_CONFIRMED'));
+});
+
+test('insufficient baseline prevents cost anomaly, even at extreme amount',()=>{
+ const r=evaluateOperationalSignals([],[
+ {currency:'usd',tracked_1h:2,tracked_prev_23h:4,cost_1h:'500000',cost_prev_23h:'1',missing_cost_1h:0}
+ ]);
+ assert.equal(r.status,'healthy');
+});
+
+test('missing actual cost is visibility gap, not a fictional zero-cost provider',()=>{
+ const r=evaluateOperationalSignals([],[
+ {currency:'unknown',tracked_1h:0,tracked_prev_23h:0,cost_1h:'0',cost_prev_23h:'0',missing_cost_1h:3}
+ ]);
+ assert.equal(r.currencies.length,0);
+ assert.deepEqual(r.alerts,[{code:'COST_VISIBILITY_GAP',readyJobsWithoutActualCostLastHour:3}]);
+});
+
+test('incomplete, malicious or invalid ledger inputs never generate fake metrics',()=>{
+ const r=evaluateOperationalSignals(
+ [{provider:'Bad',jobs_1h:-10,failed_1h:10}],
+ [{currency:'usd',tracked_1h:50,tracked_prev_23h:100,cost_1h:'NaN',cost_prev_23h:'12',missing_cost_1h:0}]
+ );
+ assert.equal(r.status,'healthy');
+ assert.equal(r.providers.length,0);
+ assert.equal(r.currencies.length,0);
+});
+
+test('operational checker only performs aggregate read-only SQL without user data',async()=>{
+ const statements=[];
+ const client={async query(sql){
+  statements.push(sql);
+  if(sql.includes('to_regclass'))return{rows:[{table_name:'vv_generation_jobs'}]};
+  if(sql.includes('AS jobs_1h'))return{rows:[{provider:'BytePlus',jobs_1h:12,failed_1h:8}]};
+  return{rows:[{currency:'usd',tracked_1h:0,tracked_prev_23h:0,missing_cost_1h:0,cost_1h:'0',cost_prev_23h:'0'}]};
+ }};
+ const r=await checkOperationalSignals(client);
+ assert.equal(r.status,'warning');
+ assert.equal(r.alerts[0].code,'PROVIDER_HIGH_FAILURE_RATE');
+ assert.ok(statements.every(s=>/^\s*SELECT/i.test(s)));
+ assert.ok(!statements.join('\n').includes('prompt'));
+ assert.ok(!statements.join('\n').includes('user_id'));
+ assert.ok(!statements.join('\n').includes('stripe'));
+});
+
+test('database failure is normalized without secrets',async()=>{
+ const client={query:async()=>{throw Error('postgres://user:secret@localhost/hidden')}};
+ const r=await checkOperationalSignals(client);
+ assert.deepEqual(r,{status:'warning',code:'OPERATIONAL_METRICS_UNAVAILABLE'});
+ assert.ok(!JSON.stringify(r).includes('secret'));
+});

@@ -39,7 +39,8 @@ The exact completion state of older components must be verified from the current
 |---|---|---|---|---|
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
-| BASE Video / reference intake, cleanup and Seedance preflight | ChatGPT continuation (handoff `90ee2b7`) | `deepsyq-platform` / PR #42 | TARGETED CI PASSED / PROVIDER GATES BLOCKED | Owner-only upload and WAV preparer remain OFF. Server-private owner/FFprobe/TTL-checked bounded WAV Base64 preparation; 44 unit + 8 isolated PostgreSQL/fake S3 tests passed (38788618373). No paid provider call, video media transport, Stripe, or production flags. |
+| BASE Video / reference intake, cleanup and Seedance preflight | ChatGPT continuation (handoff `90ee2b7`) | `deepsyq-platform` / PR #42 | TARGETED CI PASSED / PROVIDER GATES BLOCKED | Owner-only upload remains OFF. Isolated PostgreSQL/private-S3-fixture lifecycle and stored-media reinspection: 38+7 tests green (run 38787247753). No real S3, BytePlus, credits, Stripe or production changes. |
+| Block 5 — Internal Product Watcher | Dedicated Block 5 agent | `deepsyq-block5-product-watcher` / draft PR #46 | IN PROGRESS / CODE+CI VERIFIED | Owner API, health, alerts, sources, reports, opt-in Telegram code; not deployed. |
 
 When another agent joins, add one row per claimed workstream before substantial implementation. One agent should own one bounded workstream at a time.
 
@@ -51,7 +52,7 @@ When another agent joins, add one row per claimed workstream before substantial 
 | 2 | User Agent — “Do it for me” | NOT STARTED / QUEUED | UNASSIGNED | Multi-step execution through Agent Orchestrator |
 | 3 | Inspiration / Create Yours | CODE READY / CONTENT + BROWSER CI GATED | BLOCK 3 IMPLEMENTED | Original gallery, filtered image/video previews, Studio prefill, owner rights controls, approved migration path; needs owned/licensed publish content, live rollout approval and final browser CI. See `docs/BLOCK3_INSPIRATION_CHECKLIST.md`. |
 | 4 | Studio + My Workspace | NOT STARTED / QUEUED | UNASSIGNED | Creation editor/templates/skills + personal project workspace |
-| 5 | Internal Product Watcher Agent | NOT STARTED / QUEUED | UNASSIGNED | Owner-only scheduled monitoring, recommendations, approvals, daily/weekly reports |
+| 5 | Internal Product Watcher Agent | IN PROGRESS / STAGED CODE VERIFIED | Dedicated Block 5 agent; draft PR #46 | Owner-only read-only checks; 6h official source diffs; 06/07 content; 08 daily, Mon09 weekly; alert triage and opt-in Telegram. Deployment/real acceptance pending. |
 | 6 | Deepsyq Voice Agent | NOT STARTED / QUEUED | UNASSIGNED | Realtime voice interface across Deepsyq, Device Cleanup skill, owner voice access to Product Watcher |
 | 7 | Pricing, Credits, Stripe & Unit Economics | NOT STARTED / QUEUED | UNASSIGNED | Reuse existing Stripe; AI credits/top-ups, provider cost, reservations, margins; no unlimited Lifetime AI |
 
@@ -588,7 +589,6 @@ Current queued-roadmap dependencies to verify before implementation:
 - GitHub Actions run **38787247753**: **38/38** unit and **7/7** real isolated PostgreSQL/fake S3 acceptance checks passed, no failures or skips. This does **not** validate a deployed S3 bucket, antivirus, real Render worker, BytePlus URL transport or payable provider request; all reference upload/production switches still OFF.
 - **Next:** explicit owner-reviewed staging S3/storage/worker rollout plan, hardened safe media transfer strategy (bounded audio vs short-lived video provider fetch), provenance/security review, verified BytePlus request payload/cost/consent. Do not enable external media transport, deploy to Render or touch Stripe without approved launch gates.
 
-
 ### BASE Video — gated WAV reference preparation without provider dispatch (2026-10-15)
 
 - Continued BASE #5 Video in **existing `deepsyq-platform` / draft PR #42**. Read official ModelArk API docs: `audio_url.url=data:audio/wav;base64,...` with role `reference_audio` is supported for Seedance 2.0, but `reference_video` requires a provider-accessible URL or trusted asset ID. Did **not** create a public S3 URL, proxy or paid provider request.
@@ -604,3 +604,13 @@ Current queued-roadmap dependencies to verify before implementation:
 - Two experimental image generations resulted in unrelated complete UI mockups, rejected and NOT used. No cinematic scene footage actually generated.
 - Runway image-to-video option surfaced for owner to connect; **not connected or priced/approved at time of work**. This is the blocker for a true first realistic portrait video. Await actual connection, validated commercial terms/cost/model/input resolution and owner's spend approval. Never fabricate video via photo zoom, use third-party samples, or publish mock assets.
 - Updated `docs/DEEPSYQ_HOME_13_VIDEO_MASTER_SHOTLIST.md`; remaining Home, first-party old media, Stripe, provider credentials, wallets, public Inspiration flags and Render are untouched. **Production/hero videos still NOT created or published.**
+
+### Block 5 — dedicated isolated workstream update (2026-10-15)
+
+- Branch: `deepsyq-block5-product-watcher`, draft PR #46 targeting `deepsyq-platform` / PR #42. Do not edit BASE Image/Video, Block 3 Inspiration/Home, auth, wallet, Stripe, Provider Router or approved design.
+- Implemented: fixed allowlisted official BytePlus ModelArk, Google Gemini and OpenAI API changelog comparisons at opt-in 6-hour intervals, baseline first, page-hash changes marked **UNVERIFIED**, human-reviewed/dismissed with existing audit; no automatic provider/model/routing/pricing changes.
+- Implemented: read-only content metadata checks at 06:00 Europe/Paris; 07:00 internal recommendation snapshots, 08:00 Deepsyq Daily Brief and Monday 09:00 Weekly Product Audit. All are opt-in and stored in separate additive watcher SQL tables with durable per-day idempotence; missed same-day slots resume after private worker restart, DST-aware.
+- Implemented: optional Telegram critical-alert owner-only delivery through existing bot and configured owner chat, committed once per alert to avoid duplicate sends; unknown delivery is NOT automatically retried. Fixed a starvation issue: new critical alerts are selected from unclaimed notification rows **before** the 3-message per-tick limit, so a backlog is drained rather than hidden by the newest already-notified alerts. Added unit and real temporary-PostgreSQL backlog regression tests. All live tokens/chat IDs/configuration remain unchanged; test sends use fake Telegram responses.
+- Existing owner-only API and isolated panel expose status, alerts, content tasks, official-source proposal review, reports and delivery attempts. No public read/write access, no new auth or second bot.
+- CI: syntax, owner-access and logic tests, real temporary PostgreSQL 16 schema/dedup/audit/recovery, fake provider docs and Telegram. See PR #46 for latest run results. **Not deployed**: no migrations in production, no Render private worker, no live provider/Telegram/billing calls. Default flags OFF / owner PAUSED.
+- Remaining: actual Render rollout after owner-approved DB backup, real provider/pricing semantic verification, market-based product opportunity research, independent billing/webhook monitoring, media/link E2E tests, owner/staging signoff and real notification acceptance. Product Watcher status **IN PROGRESS**, not DONE.
