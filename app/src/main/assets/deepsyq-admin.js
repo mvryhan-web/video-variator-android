@@ -16,6 +16,27 @@ async function loadModels(){try{$('modelStatus').textContent='Loading…';const 
 async function loadMetrics(){try{$('metricsStatus').textContent='Loading…';const d=await api('/api/studio/admin/metrics');$('metrics').replaceChildren();for(const m of d.items||[]){const tr=document.createElement('tr');for(const v of [m.provider||'—',m.model||'—',m.kind,m.jobs,m.succeeded,m.failed,m.processing,m.averageSeconds??'—',m.actualCost,m.creditsCharged]){const td=document.createElement('td');td.textContent=String(v);tr.append(td);}$('metrics').append(tr);}$('metricsStatus').textContent=d.items?.length?'':'No generation data yet.';}catch(e){$('metricsStatus').textContent=e.message;}}
 
 
+
+function parseTemplateForm(form){
+ const fd=new FormData(form),inputs=String(fd.get('requiredInputTypes')||'').split(',').map(x=>x.trim()).filter(Boolean);
+ let settings={};const raw=String(fd.get('defaultSettings')||'').trim();if(raw){try{settings=JSON.parse(raw);}catch(_){throw Error('Default settings must be valid JSON.');}}
+ return {title:String(fd.get('title')||'').trim(),slug:String(fd.get('slug')||'').trim(),category:String(fd.get('category')||'').trim(),generationType:String(fd.get('generationType')||'image'),defaultModel:String(fd.get('defaultModel')||'').trim()||null,thumbnail:String(fd.get('thumbnail')||'').trim()||null,description:String(fd.get('description')||'').trim(),promptTemplate:String(fd.get('promptTemplate')||'').trim(),requiredInputTypes:inputs,defaultSettings:settings,sortOrder:Number(fd.get('sortOrder')||100),active:fd.get('active')==='on',featured:fd.get('featured')==='on'};
+}
+function templateEditor(t){
+ const form=document.createElement('form');form.className='template-form template-card';
+ const values={title:t.title,slug:t.slug,category:t.category,generationType:t.generationType,defaultModel:t.defaultModel||'',thumbnail:t.thumbnail||'',description:t.description||'',promptTemplate:t.promptTemplate,requiredInputTypes:(t.requiredInputTypes||[]).join(','),defaultSettings:JSON.stringify(t.defaultSettings||{}),sortOrder:t.sortOrder};
+ for(const name of ['title','slug','category','defaultModel','thumbnail','requiredInputTypes']){const el=document.createElement('input');el.name=name;el.value=values[name]||'';el.placeholder=name;form.append(field(name,el));}
+ const type=document.createElement('select');type.name='generationType';for(const v of ['image','video','product_video','avatar','audio'])type.add(new Option(v.replace('_',' '),v));type.value=t.generationType;form.append(field('generation type',type));
+ for(const name of ['description','promptTemplate','defaultSettings']){const el=document.createElement('textarea');el.name=name;el.value=values[name]||'';form.append(field(name,el));}
+ const orderEl=input('number',t.sortOrder??100,0,100000);orderEl.name='sortOrder';form.append(field('sort order',orderEl));
+ const active=input('checkbox');active.name='active';active.checked=!!t.active;const featured=input('checkbox');featured.name='featured';featured.checked=!!t.featured;const flags=document.createElement('div');flags.className='template-flags';const a=field('Active',active),b=field('Featured',featured);a.className='check';b.className='check';flags.append(a,b);form.append(flags);
+ const save=document.createElement('button');save.type='submit';save.textContent='Save template';const msg=document.createElement('p');msg.className='message';form.append(save,msg);
+ form.onsubmit=async e=>{e.preventDefault();save.disabled=true;msg.textContent='Saving…';try{const body=parseTemplateForm(form);await api('/api/studio/admin/templates/'+encodeURIComponent(t.id),{method:'PATCH',body:JSON.stringify(body)});msg.textContent='Saved.';await loadTemplates();}catch(err){msg.textContent=err.message;}finally{save.disabled=false;}};
+ return form;
+}
+function renderTemplates(items){$('templates').replaceChildren();if(!items.length){const p=document.createElement('p');p.className='message';p.textContent='No templates yet.';$('templates').append(p);return;}for(const t of items)$('templates').append(templateEditor(t));}
+async function loadTemplates(){try{$('templateStatus').textContent='Loading…';const d=await api('/api/studio/admin/templates');renderTemplates(d.items||[]);$('templateStatus').textContent='';}catch(e){$('templates').replaceChildren();$('templateStatus').textContent=e.message;}}
+
 async function previewRoute(){
  const button=$('routePreview'),out=$('routeResult');button.disabled=true;$('routeStatus').textContent='Checking compatible models…';out.replaceChildren();
  try{
@@ -43,7 +64,8 @@ function renderBillingReview(items){
 }
 async function loadBillingReview(){try{$('billingStatus').textContent='Loading…';const d=await api('/api/studio/admin/billing-review');renderBillingReview(d.items||[]);$('billingStatus').textContent='';}catch(e){$('billingReview').replaceChildren();$('billingStatus').textContent=e.message==='AI_WALLET_UNAVAILABLE'?'AI wallet review is not available yet.':e.message;}}
 
-async function verifyOwner(){try{const {user}=await api('/api/me');if(!user?.isAdmin)throw Error('OWNER_ONLY');await Promise.all([loadModels(),loadMetrics(),loadBillingReview()]);}catch(e){$('modelStatus').textContent=e.message==='AUTH_REQUIRED'?'Sign in with the owner account first.':'Owner access required.';$('metricsStatus').textContent='';}}
+async function verifyOwner(){try{const {user}=await api('/api/me');if(!user?.isAdmin)throw Error('OWNER_ONLY');await Promise.all([loadModels(),loadMetrics(),loadBillingReview(),loadTemplates()]);}catch(e){$('modelStatus').textContent=e.message==='AUTH_REQUIRED'?'Sign in with the owner account first.':'Owner access required.';$('metricsStatus').textContent='';}}
+$('templateCreate').onsubmit=async e=>{e.preventDefault();const button=$('templateCreate').querySelector('button[type=submit]');button.disabled=true;$('templateStatus').textContent='Creating…';try{const body=parseTemplateForm($('templateCreate'));await api('/api/studio/admin/templates',{method:'POST',body:JSON.stringify(body)});$('templateCreate').reset();$('templateCreate').querySelector('[name=sortOrder]').value='100';$('templateStatus').textContent='Template created.';await loadTemplates();}catch(err){$('templateStatus').textContent=err.message;}finally{button.disabled=false;}};
 $('routePreview').onclick=previewRoute;
 $('routeKind').onchange=()=>{$('routeRatio').disabled=$('routeKind').value==='music';};
-$('refresh').onclick=()=>Promise.all([loadModels(),loadMetrics(),loadBillingReview()]);verifyOwner();
+$('refresh').onclick=()=>Promise.all([loadModels(),loadMetrics(),loadBillingReview(),loadTemplates()]);verifyOwner();
