@@ -11,6 +11,18 @@ Owner-approved layout, authentication, wallet, Stripe, current Render services a
 - New `tests/generation-reference-sigv4-http.mjs` uses an isolated HTTP server on 127.0.0.1, independently verifies SigV4 header/query authentication and confirms signed GET success, signature tampering / missing signature rejection, time expiry and failed GET after DELETE. GitHub Actions run **38792787579** passed **1/1**.
 - **Official MinIO acceptance passed in CI**: workflow `deepsyq-reference-s3-protocol.yml`, run **38796164230** (`s3-real-source` and `s3-link-guards` both green). This builds pinned official MinIO from Go source on the isolated runner and verifies private signed MP4 PUT/GET, presigned GET, altered/missing/expired signature rejection, signed DELETE, denial after deletion, and disposable bucket removal. The official archived MinIO container was unavailable on Quay/Docker Hub in earlier attempts; **no unaudited mirror** was used. A specific cloud S3 vendor/region still requires separate staging acceptance.
 
+## Cross-service acceptance: REAL PostgreSQL 16 + official MinIO
+
+GitHub Actions run **38798448778** passed BOTH isolated jobs (**s3-link-guards** and **s3-real-source**); real source-built MinIO reported **2 tests passed, 0 failed, 0 skipped**. This adds a meaningful integration gate beyond the earlier standalone MinIO checks:
+
+- Creates a **localhost-only** disposable PostgreSQL 16 database `vv_ai_test`, unique throwaway schema, and runs the repository's **original unchanged** reference-assets migration.
+- Inserts a real, locally generated H.264 MP4 via the **existing** `createGenerationReferenceLedger.stage` and signed private MinIO PUT, then reads it back via owner-scoped ledger GET.
+- Rejects access from another owner, verifies a ready video candidate can be read while unexpired, and respects the actual PostgreSQL constraint `expires_at > created_at`.
+- Simulates a legitimately expired row, disables **new reference staging**, then runs `cleanupExpired` to remove the real S3 object and ledger row. An independently authenticated MinIO GET confirms the object is gone (`404`).
+- Disposes the fixture schema, bucket contents and locally bound MinIO server. This never connects to production Render/PostgreSQL, the real media bucket, BytePlus, Stripe, or a customer upload.
+
+A preceding run 38798236638 failed solely because the first fixture moved `expires_at` into the past without also moving `created_at`, violating the real database's expiry constraint. Corrected in commit `23d1b1c`; run **38798448778** passed the full checks. This is now **LOCAL S3-PROTOCOL + LOCAL POSTGRES LIFECYCLE VERIFIED**, not vendor-cloud S3, public ModelArk fetch, commercial readiness or media safety approval.
+
 ## Required before any real provider fetch
 
 1. **Owner-controlled staging only:** agree a dedicated disposable test bucket and endpoint, with no customer media, no permanent public ACL, no user-browser presigned links, no unrestricted CORS. Do not reuse production buckets or production credentials for fixtures.
