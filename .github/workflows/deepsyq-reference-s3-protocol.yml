@@ -39,11 +39,23 @@ jobs:
     permissions:
       contents: read
     timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fixture
+          POSTGRES_PASSWORD: fixture
+          POSTGRES_DB: vv_ai_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install project dependencies for isolated PostgreSQL ledger fixture
+        run: npm ci --no-audit --no-fund
       - name: Check upstream S3 fixture syntax before building server
         run: node --check tests/generation-reference-minio-protocol.mjs
       - uses: actions/setup-go@v5
@@ -91,6 +103,7 @@ jobs:
       - name: Verify real S3 header and presigned GET against upstream MinIO
         env:
           AI_TEST_MINIO_URL: http://127.0.0.1:9000
+          AI_TEST_DATABASE_URL: postgres://fixture:fixture@127.0.0.1:5432/vv_ai_test
           NODE_ENV: test
         run: |
           node --check tests/generation-reference-minio-protocol.mjs

@@ -671,10 +671,8 @@ Current queued-roadmap dependencies to verify before implementation:
 - Handoff runbook: `docs/GENERATION_REFERENCE_S3_STAGING_ACCEPTANCE.md`. Do **not** call this production ready, open customer media URLs, deploy a new S3 server, spend credits or enable flags before full CI plus separately approved real staging vendor/provider acceptance. The shared Render/PostgreSQL settings and all user-facing features remain unchanged.
 
 
-### Block 5 integration staging — 2026-10-15
+### Block 5 consolidated integration candidate (2026-10-15)
 
-- Canonical owner rule: BASE and all seven blocks ultimately integrate into `main`. No watcher production deployment has occurred.
-- Integrated Block 5 candidate assembled **from latest BASE** `9d6854a2e2b6`, overlaying only dedicated Product Watcher code/docs/tests, with a two-line hook in the latest BASE `server/server.js`. Existing Home/Inspiration, provider router, Stripe and all other BASE files are preserved.
-- Dedicated watcher implementation includes owner-only admin controls, alerts/briefs, official source hash checks, internal content checks, Stripe order-credit observational reconciliation and webhook configuration readiness. New features default OFF and owner control defaults PAUSED; no paid provider, Stripe API, model or pricing change.
-- Source review chain: #49 -> #48 -> #47 -> #46; integration candidate is not a production merge. Run focused CI and PostgreSQL 16 acceptance on this candidate; do not claim passing until checks complete.
-- Remaining release gates: verify main/base conflicts, owner-approved PostgreSQL continuity, independent backup and recovery, separate reviewed migration, staging auth and private Render worker test. No `main` merge or Render deployment authorized by this preparation alone.
+- Owned watcher branch `deepsyq-block5-integration`, draft PR #50, updated against latest BASE 23d1b1c1eb39. Preserves BASE Home, Image/Video, Inspiration, existing auth, Stripe, Provider Router and wallet. No functional production/main merge.
+- Entire Product Watcher source, documentation, tests and owner page are staged with only a small existing-server mounting hook; all features OFF by default, DB owner control PAUSED, no second runtime/database/bot.
+- PR #50 combines nested #46–49 work. Dedicated CI with ephemeral PostgreSQL must run at new head. Main integration blocked until BASE #42 mergeability and DB continuity/backup verified.
