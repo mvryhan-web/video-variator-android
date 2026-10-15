@@ -1,0 +1,51 @@
+name: Deepsyq isolated S3 protocol checks
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-storage.js'
+      - 'tests/generation-reference-minio-protocol.mjs'
+      - '.github/workflows/deepsyq-reference-s3-protocol.yml'
+  pull_request:
+    paths:
+      - 'server/generation-storage.js'
+      - 'tests/generation-reference-minio-protocol.mjs'
+      - '.github/workflows/deepsyq-reference-s3-protocol.yml'
+jobs:
+  s3-protocol:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Install local H264 fixture tools
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Start isolated official MinIO S3-compatible server
+        run: |
+          docker run -d --rm --name deepsyq-s3-protocol -p 127.0.0.1:9000:9000 \
+            -e MINIO_ROOT_USER=DEEPSYQ_CI_KEY_12345 \
+            -e MINIO_ROOT_PASSWORD=deepsyq-CI-isolated-minio-secret-long-only \
+            quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z server /data
+          for i in $(seq 1 60); do
+            if curl --silent --fail http://127.0.0.1:9000/minio/health/live >/dev/null; then
+              echo "Isolated MinIO is healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs deepsyq-s3-protocol 2>&1 | tail -n 30
+          exit 1
+      - name: Verify real S3 signature, object privacy, expiry and deletion
+        env:
+          AI_TEST_MINIO_URL: http://127.0.0.1:9000
+          NODE_ENV: test
+        run: node --test tests/generation-reference-minio-protocol.mjs
+      - name: Dispose ephemeral S3 service
+        if: always()
+        run: docker rm -f deepsyq-s3-protocol >/dev/null 2>&1 || true
