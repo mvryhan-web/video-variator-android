@@ -30,6 +30,7 @@ function db({paused=false,missing=false}={}){
   if(sql.startsWith('SELECT source_key,provider,source_url,last_checked_at'))return{rows:[]};
   if(sql.startsWith('SELECT id,kind,period_key,content,created_at'))return{rows:[]};
   if(sql.startsWith('SELECT id,kind,period_key,content,created_at FROM vv_product_watcher_content_tasks'))return{rows:[]};
+  if(sql.startsWith('SELECT n.id,n.status,n.created_at'))return{rows:[]};
   if(sql.startsWith('SELECT id,source_key,provider,source_url,review_status'))return{rows:[]};
   if(sql.startsWith('UPDATE vv_product_watcher_proposals'))return{rows:[{id:9}]};
   if(sql.startsWith('UPDATE vv_product_watcher_alerts'))return{rows:[{id:'9'}]};
@@ -192,5 +193,15 @@ test('internal content checks are owner-only and off without separate explicit f
  assert.equal(r.statusCode,403);
  const view=await f.call('GET','/api/product-watcher/admin/content-tasks');
  assert.equal(view.statusCode,200);assert.equal(view.body.schedulerEnabled,false);
+ assert.deepEqual(view.body.items,[]);
+});
+
+
+test('Telegram notifications status is owner-only and disabled by default',async()=>{
+ const f=fixture();
+ const deniedRequest=await f.call('GET','/api/product-watcher/admin/notifications',{user:denied});
+ assert.equal(deniedRequest.statusCode,403);
+ const view=await f.call('GET','/api/product-watcher/admin/notifications');
+ assert.equal(view.statusCode,200);assert.equal(view.body.deliveryConfigured,false);
  assert.deepEqual(view.body.items,[]);
 });

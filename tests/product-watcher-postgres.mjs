@@ -7,6 +7,7 @@ import { productWatcherTick } from '../server/product-watcher/scheduler.js';
 import { runOfficialSourcesOnce } from '../server/product-watcher/official-sources.js';
 import { runBriefsIfDue } from '../server/product-watcher/briefs.js';
 import { runContentTasksIfDue } from '../server/product-watcher/content-tasks.js';
+import { deliverCriticalWatcherAlertsOnce } from '../server/product-watcher/telegram-alerts.js';
 import { installProductWatcher } from '../server/product-watcher/admin-api.js';
 
 const url = process.env.PRODUCT_WATCHER_TEST_DB_URL || '';
@@ -128,6 +129,30 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     assert.ok(['ready','attention'].includes(briefView.body.items[0].content.contentChecks.status));
     assert.equal(briefView.body.items[0].content.pendingApprovals.automaticApplication,false);
     assert.equal(JSON.stringify(briefView.body).includes('watcher-fixture-failed'),false);
+
+
+    // Bot API is mocked: the test runs only against the isolated watcher_test PostgreSQL.
+    const critical=await pool.query(
+      "INSERT INTO vv_product_watcher_alerts(fingerprint,source,code,severity,details) VALUES($1,'http','HTTP_UNAVAILABLE','critical','{}'::jsonb) RETURNING id",
+      ['e'.repeat(64)]
+    );
+    let sentMessages=0;
+    const notificationEnv={...env,PRODUCT_WATCHER_TELEGRAM_ALERTS_ENABLED:'true',
+      PRODUCT_WATCHER_OWNER_TELEGRAM_CHAT_ID:'123456789',
+      TELEGRAM_BOT_TOKEN:'1234567:EXAMPLE_TEST_TOKEN_NOT_LIVE_ABCDEFG'};
+    const notify=await deliverCriticalWatcherAlertsOnce({pool,env:notificationEnv,fetchFn:async(_url,opts)=>{
+      sentMessages++;const request=JSON.parse(opts.body);
+      assert.equal(request.chat_id,'123456789');
+      return{status:200,json:async()=>({ok:true})};
+    }});
+    assert.equal(notify.sent,1);assert.equal(sentMessages,1);
+    const duplicateNotice=await deliverCriticalWatcherAlertsOnce({pool,env:notificationEnv,
+      fetchFn:async()=>{throw Error('must not retry')}});
+    assert.equal(duplicateNotice.attempted,0);
+    const notifications=await request('GET','/api/product-watcher/admin/notifications');
+    assert.equal(notifications.statusCode,200);assert.ok(notifications.body.items.some(x=>x.code==='HTTP_UNAVAILABLE'));
+    assert.ok(!JSON.stringify(notifications.body).includes('EXAMPLE_TEST_TOKEN'));
+    assert.ok(Number(critical.rows[0].id)>0);
 
     const history=await request('GET','/api/product-watcher/admin/status');
     assert.equal(history.statusCode,200);assert.equal(history.body.runs[0].status,'warning');
