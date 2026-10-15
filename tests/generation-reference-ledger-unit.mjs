@@ -65,7 +65,7 @@ function fixture(){
   }
  };
  const ledger=createGenerationReferenceLedger({pool,storage,env,uuid:()=>ID,now:()=>clock});
- return {ledger,rows,objects,get clock(){return clock;},advance:minutes=>{clock=new Date(clock.getTime()+minutes*60000);},
+ return {ledger,pool,storage,rows,objects,get clock(){return clock;},advance:minutes=>{clock=new Date(clock.getTime()+minutes*60000);},
   failDeletion:state=>{failDelete=state;},failUpload:state=>{failPut=state;},get deletedCalls(){return deletedCalls;}};
 }
 test('reference ledger requires explicit TTL and stays disabled by default',async()=>{
@@ -102,4 +102,16 @@ test('ambiguous upload failure is recorded for later sweeping; no provider task 
  assert.equal(x.rows.get(ID).status,'failed');
  x.advance(6);
  assert.deepEqual(await x.ledger.cleanupExpired(),{claimed:1,deleted:1,failed:0});
+});
+
+test('turning off reference intake does not strand old S3 assets or reenable staging',async()=>{
+ const x=fixture();await x.ledger.stage({userId:'alice',mime:'audio/wav',bytes:wav()});
+ x.advance(6);
+ const cleanupOnly=createGenerationReferenceLedger({
+  pool:x.pool,storage:x.storage,uuid:()=>ID,
+  env:{AI_STUDIO_REFERENCE_CLEANUP_ENABLED:'true'}
+ });
+ await assert.rejects(()=>cleanupOnly.stage({userId:'alice',mime:'audio/wav',bytes:wav()}),/REFERENCE_STAGING_DISABLED/);
+ assert.deepEqual(await cleanupOnly.cleanupExpired(),{claimed:1,deleted:1,failed:0});
+ assert.equal(x.objects.size,0);assert.equal(x.rows.size,0);
 });
