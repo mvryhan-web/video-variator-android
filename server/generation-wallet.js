@@ -27,6 +27,10 @@ export class GenerationWallet {
         id BIGSERIAL PRIMARY KEY, user_id TEXT NOT NULL, reference TEXT NOT NULL, kind TEXT NOT NULL,
         available_delta BIGINT NOT NULL, reserved_delta BIGINT NOT NULL, debt_delta BIGINT NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+      CREATE TABLE IF NOT EXISTS vv_ai_adjustment (
+        id TEXT PRIMARY KEY, user_id TEXT NOT NULL, owner_user_id TEXT NOT NULL,
+        delta BIGINT NOT NULL CHECK(delta<>0 AND delta BETWEEN -1000000 AND 1000000),
+        reason TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
       CREATE INDEX IF NOT EXISTS vv_ai_ledger_user ON vv_ai_ledger(user_id,id DESC);
     `).catch(e => { this.initializing = null; throw e; });
     await this.initializing;
@@ -104,6 +108,23 @@ export class GenerationWallet {
       const revoke=Math.ceil(p.credits*cumulativeAmount/p.amount)-Math.ceil(p.credits*p.refunded_amount/p.amount);
       await c.query('UPDATE vv_ai_purchase SET refunded_amount=$2 WHERE payment_intent=$1',[paymentIntent,cumulativeAmount]);
       return this.change(c,userId,w,p.session_id,'payment_refund',-Math.min(w.available,revoke),0,Math.max(0,revoke-w.available));
+    });
+  }
+  async adjust({userId,adjustmentId,ownerUserId,delta,reason}) {
+    identifier(userId); identifier(adjustmentId); identifier(ownerUserId);
+    if (!Number.isSafeInteger(delta) || delta===0 || Math.abs(delta)>1_000_000) throw new Error('INVALID_ADJUSTMENT');
+    const note=String(reason||'').trim();
+    if (note.length<3 || note.length>200) throw new Error('INVALID_ADJUSTMENT_REASON');
+    return this.transaction(userId,async(c,w)=>{
+      const old=await c.query('SELECT * FROM vv_ai_adjustment WHERE id=$1',[adjustmentId]);
+      if(old.rows.length){
+        const a=old.rows[0];
+        if(a.user_id!==userId||a.owner_user_id!==ownerUserId||Number(a.delta)!==delta||a.reason!==note)throw new Error('ADJUSTMENT_CONFLICT');
+        return {...w,duplicate:true};
+      }
+      if(delta<0&&w.available<Math.abs(delta))throw new Error('INSUFFICIENT_AVAILABLE_AI_CREDITS');
+      await c.query('INSERT INTO vv_ai_adjustment(id,user_id,owner_user_id,delta,reason) VALUES($1,$2,$3,$4,$5)',[adjustmentId,userId,ownerUserId,delta,note]);
+      return this.change(c,userId,w,adjustmentId,'owner_adjustment',delta,0,0);
     });
   }
   async balance(userId) {

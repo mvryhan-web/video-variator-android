@@ -83,6 +83,14 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
    ORDER BY u.created_at DESC LIMIT 50`,[q]);
   res.json({items:rows.map(u=>({id:u.id,email:u.email||null,name:u.name||null,provider:u.provider,plan:u.plan,status:u.subscription_status,hasSubscribed:!!u.has_subscribed,toolUsage:{limit:Number(u.plan_limit||0),periodUsed:Number(u.period_used||0),trialUsed:Number(u.trial_used||0)},aiWallet:{available:Number(u.ai_available||0),reserved:Number(u.ai_reserved||0),debt:Number(u.ai_debt||0)},generationCount:Number(u.generation_count||0),aiPurchaseCount:Number(u.ai_purchase_count||0),createdAt:u.created_at,updatedAt:u.updated_at}))});
  }catch(_){res.status(503).json({error:'OWNER_USERS_UNAVAILABLE'});}});
+ app.post('/api/studio/admin/users/:id/credits/adjust',auth,owner,async(req,res)=>{
+  if(env.AI_OWNER_CREDIT_ADJUSTMENTS!=='true'||!wallet)return res.status(503).json({error:'OWNER_CREDIT_ADJUSTMENTS_DISABLED'});
+  const requestId=String(req.body?.requestId||''),confirmUserId=String(req.body?.confirmUserId||''),delta=Number(req.body?.delta),reason=String(req.body?.reason||'').trim();
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId)||confirmUserId!==req.params.id||!Number.isSafeInteger(delta)||delta===0||Math.abs(delta)>1000000||reason.length<3||reason.length>200)return res.status(400).json({error:'EXPLICIT_CONFIRMATION_REQUIRED'});
+  try{
+   await wallet.init();const balance=await wallet.adjust({userId:req.params.id,adjustmentId:requestId,ownerUserId:req.user.id,delta,reason});res.json({ok:true,balance});
+  }catch(e){const status=e.message==='INSUFFICIENT_AVAILABLE_AI_CREDITS'?409:e.message==='ADJUSTMENT_CONFLICT'?409:e.message?.startsWith('INVALID_')?400:503;res.status(status).json({error:status===503?'OWNER_CREDIT_ADJUSTMENT_FAILED':e.message});}
+ });
  app.get('/api/studio/admin/jobs',auth,owner,async(req,res)=>{try{
   await init();const filter=String(req.query.status||'all'),allowed=new Set(['all','queued','processing','finalizing','ready','failed']);if(!allowed.has(filter))return res.status(400).json({error:'INVALID_JOB_FILTER'});
   const args=[],where=['j.deleted=false'];if(filter!=='all'){args.push(filter);where.push(`j.status=${args.length}`);}

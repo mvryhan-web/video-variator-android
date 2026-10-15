@@ -49,7 +49,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 35 | Security | PARTIAL | Keys server-side, auth/user scoping, safe provider URLs, Stripe verification foundations exist; launch security review still required. |
 | 36 | Privacy | PARTIAL | Reference media is not persisted by current pilot; final Terms/Privacy/provider disclosures and retention policy pending. |
 | 37 | Business analytics | PARTIAL | Owner overview now shows users/30-day registrations, generation adoption/jobs/failure/latency/top model, recorded provider cost/credits, and confirmed AI-wallet purchases separated by currency. Gross margin stays intentionally blank until live economics/currency are verified. |
-| 38 | Admin dashboard | PARTIAL | Owner AI Control now includes read-only Users, Generation Jobs, business overview, model controls, route preview, provider metrics, held-credit review and template management. Manual credit adjustment and full Stripe payment administration remain pending. |
+| 38 | Admin dashboard | PARTIAL | Owner AI Control includes Users, Generation Jobs, business overview, model controls, route preview, provider metrics, held-credit review, template management, and feature-gated audited manual AI credit adjustment. Full Stripe payment administration remains pending. |
 | 39 | Provider performance | PARTIAL | Owner metrics endpoint aggregates provider/model jobs, success/failure, processing, average time, cost and charged credits. |
 | 40 | Model routing registry | PARTIAL | Shared catalog/capabilities plus server-side compatible candidate ordering and owner priorities exist. Logical cross-provider product model IDs and measured quality/reliability routing remain future work. |
 | 41 | Internal model capabilities | PARTIAL | ratios/references/quality/duration/provider metadata exist; full capability schema is incomplete. |
@@ -175,3 +175,11 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Added business overview for registrations, generation adoption, jobs/failure/latency/top model, recorded provider cost/credits and confirmed AI-wallet purchases grouped by currency.
 - Gross margin is deliberately not calculated until provider-cost currency and live AI revenue economics are verified; currencies are never summed together.
 - No manual credit mutation or Stripe write/admin action was added in this pass.
+
+
+## Continuation 10 — audited manual AI credit adjustment
+
+- Added idempotent `owner_adjustment` support to the existing AI wallet with a dedicated audit table containing adjustment ID, target user, owner user, delta and reason.
+- Owner adjustment endpoint requires exact target-user confirmation, UUID request ID, non-zero bounded integer delta and reason.
+- Negative adjustments cannot exceed currently available AI credits; they cannot silently create debt.
+- Feature flag `AI_OWNER_CREDIT_ADJUSTMENTS=false` keeps the capability disabled by default. The operation never changes Stripe.

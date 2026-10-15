@@ -183,3 +183,10 @@ Current queued-roadmap dependencies to verify before implementation:
 - Sensitive auth fields, OAuth subject identifiers, Stripe customer IDs, media and prompts are not returned by these views.
 - Confirmed AI-wallet purchases remain separated by currency; gross margin is not fabricated before live economics are approved.
 - No manual credit adjustment or Stripe write action was enabled.
+
+
+### Continuation 9 — audited manual AI credit adjustment
+
+- Added feature-gated owner AI-wallet adjustments with explicit user confirmation, idempotency and audit reason.
+- Negative adjustments cannot overdraw available credits or create hidden debt. Stripe is untouched.
+- `AI_OWNER_CREDIT_ADJUSTMENTS` remains OFF by default; enabling it requires an owner operational policy decision.
