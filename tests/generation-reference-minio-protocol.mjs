@@ -55,7 +55,8 @@ async function local(method,path,{headers={},body}={}){
  assert.ok(path.startsWith('/'+bucket),'request must stay inside unique ephemeral bucket');
  return new Promise((resolve,reject)=>{
   const req=httpRequest({hostname:'127.0.0.1',port:9000,method,path,
-    headers:{...headers,Host:host},signal:AbortSignal.timeout(10000)},res=>{
+    headers:{...headers,Host:host,...(Buffer.isBuffer(body)?{'Content-Length':String(body.length)}:{})},
+    signal:AbortSignal.timeout(10000)},res=>{
     const chunks=[];
     res.on('data',piece=>chunks.push(piece));
     res.on('error',reject);
