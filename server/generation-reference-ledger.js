@@ -14,8 +14,8 @@ export function createGenerationReferenceLedger({pool,storage,env=process.env,uu
   if(env.AI_STUDIO_REFERENCE_CLEANUP_ENABLED!=='true')throw Error('REFERENCE_CLEANUP_DISABLED');
  }
  function ready(){
-  cleanupReady();
   if(env.AI_STUDIO_REFERENCE_STAGING_ENABLED!=='true')throw Error('REFERENCE_STAGING_DISABLED');
+  cleanupReady();
   const ttl=referenceRetentionMinutes(env);
   if(!ttl)throw Error('REFERENCE_RETENTION_NOT_CONFIGURED');
   return ttl;
