@@ -27,8 +27,8 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 13 | Internal AI credit system | PARTIAL | Separate AI wallet exists and is wired to generation jobs behind `AI_STUDIO_WALLET_ENABLED=false`; public entitlements/live economics remain gated. |
 | 14 | Credit ledger | PARTIAL | Purchase/reserve/capture/release/refund/debt ledger primitives exist; generation success now captures a prior reservation behind the disabled commercial wallet flag. |
 | 15 | Credit reservation | PARTIAL | Generation reserves approved server-priced AI credits before provider execution and captures only after durable output; ambiguous submission errors remain held for review. Feature remains disabled by default. |
-| 16 | Stripe subscriptions + credit packs | PARTIAL | Existing Stripe reused; sandbox AI packs/webhook primitives exist; live AI packs not configured. |
-| 17 | Unit economics | PARTIAL | Job cost/credit fields + provider metrics endpoint + pricing foundation added; real provider costs not configured. |
+| 16 | Stripe subscriptions + credit packs | PARTIAL | Existing Stripe is reused. AI credit-pack checkout supports explicit test/live modes, idempotent grants and cumulative refund synchronization; live Products/Prices/webhook smoke test are still external/unconfigured. |
+| 17 | Unit economics | PARTIAL | Job/provider pricing tracks explicit cost currency, credits and provider cost; owner analytics separates currencies and does not fabricate FX/gross margin. Real verified provider economics remain unconfigured. |
 | 18 | Pricing engine | PARTIAL | Server-side `AI_MODEL_PRICING_JSON` engine + safe credit estimate endpoint added; no invented/default prices. |
 | 19 | AI Apps | PARTIAL | Separate data-driven AI Apps page now renders only active templates from the shared template API. Use Template prepares a real Image/Video/Audio Studio and never auto-generates; broader workflows remain pending. |
 | 20 | Product Video workflow | PARTIAL | Guided local workflow accepts up to 3 product photos + optional logo/name, style/format/duration preference, builds an internal prompt, and hands prompt/settings/local references to Video Studio without auto-generation. Live commercial generation remains gated. |
@@ -54,13 +54,13 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 40 | Model routing registry | PARTIAL | Shared catalog/capabilities plus server-side compatible candidate ordering and owner priorities exist. Logical cross-provider product model IDs and measured quality/reliability routing remain future work. |
 | 41 | Internal model capabilities | PARTIAL | All catalog models now expose a normalized capability object for input kinds, output kind, ratios, max references, async mode, quality, duration seconds and reference support. Future provider-specific constraints may extend it. |
 | 42 | Persist BytePlus output in our storage | PARTIAL / BLOCKED | Adapter downloads/validates media and Studio can move completed bytes into configured S3-compatible storage before wallet capture. Real storage provisioning and live BytePlus verification remain external gates. |
-| 43 | Pricing page | PARTIAL | Existing plan display/checkout reused; final Deepsyq AI subscription/credit economics not approved. |
+| 43 | Pricing page | PARTIAL | Existing plans remain intact; Studio now exposes configured AI-wallet balance and credit packs with Stripe Checkout only when AI billing is enabled. Final public Deepsyq AI pricing page/economics remain unapproved. |
 | 44 | Free plan | PARTIAL | Existing non-AI trials/tools exist; safe AI acquisition allowance not defined. |
 | 45 | Onboarding | PARTIAL | New email/Google/Apple accounts are flagged for a persistent Image/Video onboarding choice; selection is stored server-side and routes directly to a real studio. Public launch verification is still pending. |
 | 46 | Homepage conversion | PARTIAL | Dashboard uses `Create` + `Explore templates` and now renders up to six real owner-featured workflows from the template API; the section stays hidden when no approved content exists. Public launch still requires owner-approved content/assets. |
 | 47 | Do not expose BytePlus as our product | DONE | Provider stays implementation detail; Deepsyq branding used. |
-| 48 | Production safety / regression | PARTIAL | Feature flags, CI and no-live-change discipline exist; backup/staging/live regression still required before launch. |
-| 49 | Database migrations | PARTIAL | Additive commercial-job migration is repeatable and has an isolated PostgreSQL migration test, including legacy pilot copy. Production backup/migration/rollback still has not been run. |
+| 48 | Production safety / regression | PARTIAL | Feature flags, owner Launch Gates, read-only preflight, checksummed migrations, idempotency, audit log and staged rollout runbook exist. Production backup/staging/live smoke/physical-device regression are still required. |
+| 49 | Database migrations | PARTIAL | Additive AI migrations now have a checksummed transactional runner/ledger plus read-only status/check commands. Production backup and actual migration execution still have not been performed. |
 | 50 | Feature flags | PARTIAL | Major Deepsyq/studio/billing gates plus AI Apps, Product Video, Onboarding and owner credit-adjustment flags now exist. New BASE modules default OFF in production unless explicitly enabled. Future roadmap modules still need their own flags. |
 | 51 | First commercial vertical slice | PARTIAL | Gated path now supports plan entitlement → idempotent create → approved price → reserve → provider job → throttled async polling → S3/DB persistence → finalizing → capture, plus reconciliation/audit/abuse limits. Live provider/storage/Stripe/margin verification remains incomplete. |
 | 52 | Required implementation order | IN PROGRESS | Continue BASE before Roadmap Blocks 1–7. |
@@ -216,3 +216,13 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Added persistent owner audit log for model-control changes, billing-review releases, AI credit adjustments and template create/update actions.
 - Added public AI entitlement foundation with no invented defaults. Existing Lifetime access is explicitly not treated as AI entitlement. `AI_PUBLIC_GENERATION_ENABLED=false` remains the gate.
 - Added per-user generation request idempotency using UUID request IDs and request fingerprints so the same request cannot start a second paid job.
+
+
+## Continuation 15 — rollout tooling and live-billing safety
+
+- Added explicit test/live Stripe AI-credit modes. Live requires live mode + live key + `AI_LIVE_BILLING_APPROVED=true` + AI billing enablement.
+- Stripe refund webhooks revoke proportional AI credits idempotently; if refunded credits were already spent, wallet debt records the deficit.
+- Added Studio AI-wallet/credit-pack checkout UI that stays hidden while AI billing is disabled and validates the Stripe Checkout hostname before navigation.
+- Provider costs carry explicit currency; owner analytics never combines currencies or invents FX conversion.
+- Added checksummed transactional migration runner, non-mutating migration status, read-only AI preflight and a standalone recovery worker entry point.
+- Added `docs/AI_PRODUCTION_ROLLOUT.md` with mandatory activation/rollback order. External production gates remain untouched.

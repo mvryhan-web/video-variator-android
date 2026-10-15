@@ -147,3 +147,7 @@ The next agent should be able to answer, from the repository alone:
 - What was tested?
 - Which approved roadmap requirement does the work belong to?
 
+
+
+## Production AI rollout
+Before any production/public AI activation, read `docs/AI_PRODUCTION_ROLLOUT.md`. Run `npm run ai:preflight` read-only before launch decisions and `npm run migrate:ai` only after a verified production DB backup. Never enable live Stripe/public AI/root switching in the same unverified step.

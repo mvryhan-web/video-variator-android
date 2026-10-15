@@ -222,3 +222,13 @@ Current queued-roadmap dependencies to verify before implementation:
 - Added config-driven public AI plan entitlements behind `AI_PUBLIC_GENERATION_ENABLED=false`; no plan limits or Lifetime AI access are invented.
 - Generate creation now supports per-user UUID idempotency/fingerprint conflict protection to prevent duplicate paid jobs.
 - All public commercial switches remain OFF pending real provider/storage/Stripe/economics gates.
+
+
+### Continuation 14 — production rollout controls
+
+- AI credit checkout is now code-ready for explicit test/live Stripe modes; live requires `AI_LIVE_BILLING_APPROVED=true` in addition to live mode/key and AI billing enablement.
+- Stripe `charge.refunded` now synchronizes cumulative partial/full AI-credit refunds into the wallet ledger; spent refunded credits become wallet debt rather than free credits.
+- Studio exposes AI wallet balance and configured credit packs only when AI billing is enabled; checkout starts only after an explicit user click and the returned URL must be `https://checkout.stripe.com`.
+- Provider cost currency is now explicit per pricing row/job; owner analytics keeps costs separated by currency and launch readiness blocks pricing rows without currency.
+- Added checksummed transactional `npm run migrate:ai`, read-only `npm run migrate:ai:check`, read-only `npm run ai:preflight`, and standalone `npm run worker:generation`.
+- Added `docs/AI_PRODUCTION_ROLLOUT.md`; no production flags/services/keys were enabled by these repository changes.
