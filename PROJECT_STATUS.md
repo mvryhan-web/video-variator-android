@@ -347,3 +347,13 @@ Current queued-roadmap dependencies to verify before implementation:
 - Added data-driven Homepage Inspiration preview. Agent-example preview stays hidden unless explicitly enabled and populated; Block 2 Agent is not faked.
 - AI_INSPIRATION_ENABLED=false by default in production; AI_INSPIRATION_AGENT_TARGETS_ENABLED=false remains off until a real Agent workflow exists.
 - Remaining Block 3 content gate: owner must add actual Deepsyq-owned or properly licensed image/video examples before public rollout.
+
+
+### BASE CI repair — mobile navigation and WebKit local image handoff
+
+**IN PROGRESS / CI PENDING — PR #42, `deepsyq-platform`.** Targeted work after reviewing the failed GitHub browser suites:
+
+- Legacy mobile Logout failure (Firefox/mobile-WebKit): the account button was off-screen within a fixed, non-scrollable sidebar; updated only mobile sidebar to scroll within its own viewport. Updated the browser test to open the menu **only if not already open** (previous test toggled it closed just before clicking Logout). Production authentication/logout backend unchanged.
+- WebKit local reference handoff failure (Dashboard Canvas and Product Video): changed the **existing** `studio-handoff.js` IndexedDB record to serialize references as transferable ArrayBuffers rather than nested `File` objects. The read path accepts both new `bytes` and legacy `blob` records. All files remain local; no new uploads, project DB, payments or AI provider calls. Source syntax parsed successfully; Safari/WebKit regression remains to be confirmed by current-head CI.
+- CI evidence before these changes: last inspected previous branch head `5d1135c` had success on AI Studio preview, Lifetime billing and Telegram, while browser suites still failed on WebKit handoff/mobile menu and a separate admin-mobile action interception; active build runs on later heads may be cancelled by new pushes.
+- **Do not mark BASE verified or deploy from this log.** Next: inspect the completed latest-head CI; if WebKit still fails, use failure page status/trace to isolate the actual IndexedDB/transfer error instead of blindly rewriting working code. Agent Block 3 Inspiration files are being edited on this same branch by another workstream — preserve its latest changes.
