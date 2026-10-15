@@ -1,0 +1,44 @@
+import 'dotenv/config';
+import { pool } from '../db.js';
+import { productWatcherTick } from './scheduler.js';
+
+if (process.env.PRODUCT_WATCHER_ENABLED !== 'true' ||
+    process.env.PRODUCT_WATCHER_SCHEDULER_ENABLED !== 'true') {
+  console.error('[product watcher] disabled: explicit flags required');
+  process.exit(1);
+}
+if (!pool) {
+  console.error('[product watcher] database not configured');
+  process.exit(1);
+}
+
+let busy=false,stopping=false;
+async function tick(){
+  if (busy || stopping) return;
+  busy=true;
+  try {
+    const report=await productWatcherTick({pool,env:process.env});
+    // Never print database URLs, credentials, account identifiers or raw errors.
+    console.log('[product watcher] '+JSON.stringify({
+      status:report.status,checked:report.checked,runId:report.runId||null
+    }));
+  } catch {
+    console.error('[product watcher] WATCHER_TICK_FAILED');
+  } finally { busy=false; }
+}
+
+const timer=setInterval(()=>{void tick();},60_000);
+await tick();
+
+async function shutdown(signal){
+  if (stopping) return;
+  stopping=true;
+  console.log('[product watcher] stopping: '+signal);
+  clearInterval(timer);
+  const limit=Date.now()+20_000;
+  while (busy && Date.now()<limit) await new Promise(resolve=>setTimeout(resolve,100));
+  await pool.end().catch(()=>{});
+  process.exit(0);
+}
+process.once('SIGTERM',()=>{void shutdown('SIGTERM');});
+process.once('SIGINT',()=>{void shutdown('SIGINT');});
