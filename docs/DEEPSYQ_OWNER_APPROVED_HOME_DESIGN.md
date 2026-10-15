@@ -28,3 +28,14 @@ Approved by the owner on 2026-10-15. **No redesign without explicit owner permis
 - Mobile must be responsive and usable; fidelity means design intent and hierarchy, not forcing a 1448 px screenshot onto a phone.
 - Do not auto-enable AI, production DB migrations, Stripe, credit giveaways, live paid providers or Render deployment without approval. Do not overstate availability or rights.
 - Implement in existing `deepsyq-platform` / draft PR #42, not a new project. Validate with targeted browser tests. Status until accepted by owner, including screenshot comparison: **IMPLEMENTED / VISUAL ACCEPTANCE PENDING**.
+
+## Hero Video Carousel 16:9 and Quick Create extension — owner approval, 2026-10-15
+
+The owner explicitly requested this **within** the locked purple/blue Deepsyq visual direction, not as permission to redesign the brand, navigation, established sections or existing user content.
+
+- Homepage hero is a **16:9 cinema-style carousel on desktop**, responsive to narrower screens. It has previous/next controls, accessible slide indicators, original public video titles/posters, and wraps from the last slide back to the first.
+- Automatic video playback is muted, subject to browser policy and limited to visible videos. Playing to the end advances to the next real video; if there is only one video it loops. Reduced-motion and data-saver preferences disable ambient autoplay. Explicit user Play/Pause remains available. Pauses in background tabs.
+- Data source is the **existing rights-filtered, featured Inspiration API**, not mock data or copied Lumina content. The carousel never invents examples for named models, launch announcements, Music Video Agent or AI Canvas. It hides if no real approved video is available, retaining the original colorful static gradient hero. The user-requested girl clip has **not** been generated or uploaded merely by adding this code.
+- A ChatGPT-style **Quick Create prompt bar directly below the hero** supports editable ideas and Image / Video / Audio handoff into existing Studio, with real Studio review and separate explicit generation consent. Agent takes the user only to its clearly labelled coming-soon preview. No automatic API calls to paid providers or wallet changes.
+- The full Canvas, AI Agent, AI Apps, Inspiration mosaic and original Studios/Tools/Assets remain below, separated with breathing room. The approved header/sidebar controls and old owner media are untouched.
+- Status is **CODE PREPARED / CI AND REAL MEDIA GATED** until targeted browser verification and live owned/licensed video with reliable preview URLs exist; public activation needs independent approval.
