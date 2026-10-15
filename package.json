@@ -10,7 +10,9 @@
     "start": "node server/server.js",
     "dev": "node --watch server/server.js",
     "test:browsers": "playwright test",
-    "worker:generation": "node server/generation-worker.js"
+    "worker:generation": "node server/generation-worker.js",
+    "migrate:ai": "node server/migrate-ai.js",
+    "migrate:ai:check": "node server/migrate-ai.js --check"
   },
   "dependencies": {
     "@ffmpeg/core": "0.12.10",
