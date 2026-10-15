@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS vv_generation_jobs(
   started_at TIMESTAMPTZ,
   completed_at TIMESTAMPTZ,
   failed_at TIMESTAMPTZ,
+  last_polled_at TIMESTAMPTZ,
   metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
   deleted BOOLEAN NOT NULL DEFAULT false
 );
@@ -43,6 +44,7 @@ ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS prompt TEXT;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS failed_at TIMESTAMPTZ;
+ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS last_polled_at TIMESTAMPTZ;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS credits_reserved INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS credits_charged INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS estimated_cost NUMERIC(14,6);
