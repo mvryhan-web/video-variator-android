@@ -76,4 +76,32 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  }catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
  app.get('/api/studio/jobs/:id/media',auth,owner,async(req,res)=>{try{const j=await getJob(req);if(!j||j.status!=='ready'||!j.media)return res.status(404).json({error:'RESULT_UNAVAILABLE'});res.type(j.mime).send(j.media);}catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
  app.delete('/api/studio/jobs/:id',auth,owner,async(req,res)=>{try{const j=await getJob(req);if(!j)return res.status(404).json({error:'NOT_FOUND'});if(j.status==='processing')return res.status(409).json({error:'PROCESSING_CANNOT_BE_CANCELLED'});await pool.query('UPDATE vv_generation_pilot SET deleted=true,media=null,result_text=null WHERE id=$1 AND user_id=$2',[req.params.id,req.user.id]);res.json({ok:true});}catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
+ let recoveryTimer=null,recoveryBusy=false;
+ async function recoveryTick(){
+  if(recoveryBusy||env.AI_STUDIO_BACKGROUND_POLLING!=='true'||!studioConfig(env).enabled||!pool)return;
+  recoveryBusy=true;
+  try{
+   await init();
+   const {rows}=await pool.query("SELECT id,operation FROM vv_generation_pilot WHERE status='processing' AND operation IS NOT NULL AND deleted=false ORDER BY created_at ASC LIMIT 5");
+   for(const job of rows){
+    const client=await pool.connect();let locked=false;
+    try{
+     const lock=await client.query('SELECT pg_try_advisory_lock(hashtext($1)) AS locked',[job.id]);locked=!!lock.rows[0]?.locked;if(!locked)continue;
+     const latest=await client.query("SELECT status,operation,deleted FROM vv_generation_pilot WHERE id=$1",[job.id]);const current=latest.rows[0];
+     if(!current||current.deleted||current.status!=='processing'||!current.operation)continue;
+     try{const result=await poller(current.operation,{env});if(!result.pending)await finish(job.id,result);}
+     catch(e){if(e.terminal)await pool.query("UPDATE vv_generation_pilot SET status='failed',error='GENERATION_FAILED_NO_AUTOMATIC_RETRY',failed_at=NOW() WHERE id=$1",[job.id]);}
+    }finally{if(locked)await client.query('SELECT pg_advisory_unlock(hashtext($1))',[job.id]).catch(()=>{});client.release();}
+   }
+  }catch(e){console.error('[studio recovery]',e?.message||e);}
+  finally{recoveryBusy=false;}
+ }
+ function startRecovery(){
+  if(env.AI_STUDIO_BACKGROUND_POLLING!=='true'||!studioConfig(env).enabled||!pool)return false;
+  if(recoveryTimer)return true;
+  const raw=Number(env.AI_STUDIO_POLL_INTERVAL_MS||15000),interval=Number.isFinite(raw)?Math.max(5000,Math.min(60000,Math.floor(raw))):15000;
+  recoveryTimer=setInterval(()=>void recoveryTick(),interval);recoveryTimer.unref?.();void recoveryTick();return true;
+ }
+ function stopRecovery(){if(recoveryTimer){clearInterval(recoveryTimer);recoveryTimer=null;}return true;}
+ return {startRecovery,stopRecovery,recoveryTick};
 }
