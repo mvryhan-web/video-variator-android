@@ -52,6 +52,26 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  app.get('/api/studio/admin/models',auth,owner,async(_req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const items=await listModelControls(pool,studioConfig(env).catalog);res.json({items});}catch(_){res.status(503).json({error:'MODEL_ADMIN_UNAVAILABLE'});}});
  app.post('/api/studio/admin/route-preview',auth,owner,async(req,res)=>{if(env.AI_SMART_ROUTING_ENABLED!=='true')return res.status(503).json({error:'SMART_ROUTING_NOT_ENABLED'});try{const catalog=await effectiveCatalog();const candidates=orderedGenerationCandidates(req.body,catalog);if(!candidates.length)return res.status(503).json({error:'NO_COMPATIBLE_MODEL'});res.json({primary:candidates[0].id,candidates:candidates.map(m=>({id:m.id,provider:m.provider,priority:Number(m.control?.priority??m.priority??100),quality:m.quality||null,duration:m.duration||null}))});}catch(_){res.status(503).json({error:'SMART_ROUTING_UNAVAILABLE'});}});
  app.patch('/api/studio/admin/models/:id',auth,owner,async(req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const control=await updateModelControl(pool,{modelId:req.params.id,userId:req.user.id,patch:req.body,catalog:studioConfig(env).catalog});res.json({modelId:req.params.id,control});}catch(e){const status=e.message==='MODEL_NOT_FOUND'?404:e.message==='INVALID_MODEL_CONTROL'?400:503;res.status(status).json({error:status===503?'MODEL_ADMIN_UNAVAILABLE':e.message});}});
+
+ app.get('/api/studio/admin/billing-review',auth,owner,async(_req,res)=>{if(!wallet)return res.status(503).json({error:'AI_WALLET_UNAVAILABLE'});try{
+  await init();await wallet.init();
+  const {rows}=await pool.query(`SELECT r.job_id,r.user_id,r.credits,j.kind,j.provider,j.model,j.status,j.error,j.error_message,j.created_at
+   FROM vv_ai_reservation r JOIN vv_generation_jobs j ON j.id=r.job_id
+   WHERE r.status='held' AND j.deleted=false AND j.status='failed' AND j.error_message='AI_WALLET_REVIEW_REQUIRED'
+   ORDER BY j.created_at ASC LIMIT 50`);
+  res.json({items:rows.map(r=>({jobId:r.job_id,userId:r.user_id,credits:Number(r.credits),kind:r.kind,provider:r.provider||null,model:r.model||null,status:r.status,error:r.error||null,createdAt:r.created_at}))});
+ }catch(_){res.status(503).json({error:'AI_WALLET_REVIEW_UNAVAILABLE'});}});
+ app.post('/api/studio/admin/billing-review/:id/release',auth,owner,async(req,res)=>{if(!wallet)return res.status(503).json({error:'AI_WALLET_UNAVAILABLE'});const note=String(req.body?.note||'').trim();if(req.body?.confirmJobId!==req.params.id||note.length<3||note.length>200)return res.status(400).json({error:'EXPLICIT_CONFIRMATION_REQUIRED'});try{
+  await init();await wallet.init();
+  const {rows}=await pool.query(`SELECT r.job_id,r.user_id,r.credits FROM vv_ai_reservation r JOIN vv_generation_jobs j ON j.id=r.job_id
+   WHERE r.job_id=$1 AND r.status='held' AND j.deleted=false AND j.status='failed' AND j.error_message='AI_WALLET_REVIEW_REQUIRED'`,[req.params.id]);
+  if(!rows.length)return res.status(409).json({error:'BILLING_REVIEW_NOT_RELEASABLE'});
+  const item=rows[0];await wallet.settle({userId:item.user_id,jobId:item.job_id,outcome:'confirmed_failure'});
+  await pool.query(`UPDATE vv_generation_jobs SET credits_reserved=0,error_message='AI_WALLET_RELEASED_BY_OWNER',
+    metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object('billingReview',jsonb_build_object('action','release','note',$2,'resolvedBy',$3,'resolvedAt',NOW()::text))
+    WHERE id=$1`,[item.job_id,note,req.user.id]);
+  res.json({ok:true,jobId:item.job_id,releasedCredits:Number(item.credits)});
+ }catch(_){res.status(503).json({error:'AI_WALLET_REVIEW_UNAVAILABLE'});}});
   app.use('/api/studio',(_req,res,next)=>{if(!studioConfig(env).enabled)return res.status(503).json({error:'OWNER_SETUP_REQUIRED'});next();});
  async function finish(id,result,userId){
   if(result.operation){await pool.query("UPDATE vv_generation_jobs SET status='processing',operation=$2 WHERE id=$1",[id,result.operation]);return;}
