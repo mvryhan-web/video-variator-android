@@ -83,3 +83,26 @@ Known limits: in the first slice, the health route can say OK even when sign-in 
 - All additional tables are additive in server/migrations/20261015-product-watcher.sql and are NOT in the BASE migration manifest; must be reviewed and applied after owner-approved database backup. Production Postgres may be scheduled for expiration; do not unilaterally upgrade, delete or replace it.
 - Feature flags OFF by default; owner control defaults PAUSED. The current branches do not include an enabled private Render service or a public Product Watcher API.
 - CI exercises fake network responses and temporary PostgreSQL 16; no real commercial provider or Stripe request is made. Real provider fetch behavior, Render uptime, OAuth owner sign-in, E2E UI, negative security probes, privacy review and notification delivery still require a separate owner-controlled staging test.
+
+## 06:00 metadata check and 07:00 internal recommendations (code, not deployed)
+
+- Opt-in only: PRODUCT_WATCHER_CONTENT_TASKS_ENABLED=true, in addition to parent Product Watcher/worker gates. A shared advisory lock and UNIQUE(kind, period_key) persist one content check and one opportunity snapshot per Paris calendar date. If the private worker restarts after the due time, it can complete missing same-day checks once.
+- Reads existing vv_ai_template and vv_ai_inspiration metadata from the **current BASE and Block 3 schema**, never modifies a record or invents a new template, illustration, rights declaration, or media asset.
+- 06:00: count existing active templates and media previews; note incomplete thumbnail/prompt, source media/rights metadata. Checks metadata only, NOT that links work or rights evidence is legally verified.
+- 07:00: generate explicitly labelled internal suggestions from observed gaps, e.g. lack of approved image/video examples or missing rights notes. These are NOT market trends, competitive intelligence, customer demand, or marketing claims.
+- Existing Daily Brief incorporates the latest same-day content check and suggestions when present. Missing schemas are reported as not_ready/not_checked, never as zero existing media.
+- Existing owner-only GET /api/product-watcher/admin/content-tasks and standalone owner panel show 20 recent snapshots. No published edits.
+
+## Optional owner-only Telegram critical alert delivery (code, not deployed)
+
+- Uses the EXISTING Telegram bot token, not a second bot/webhook. Requires PRODUCT_WATCHER_TELEGRAM_ALERTS_ENABLED=true, TELEGRAM_BOT_TOKEN and a specifically configured positive PRODUCT_WATCHER_OWNER_TELEGRAM_CHAT_ID. Do not commit the real bot token or chat ID.
+- Only critical, unacknowledged system alerts can send; at most 3 per worker tick. The message contains only alert source/code and tells the owner to open the private Watcher panel; no user data or private error stack.
+- Each alert+channel delivery is claimed ONCE in additive watcher DB before sending. An ambiguous network result is saved as delivery_unknown and NOT automatically retried, preventing unnoticed duplicate messaging. Delivery receipts require Telegram API HTTP 200 AND ok=true; unknown records require human review.
+- Owner-only GET /api/product-watcher/admin/notifications displays delivery status without bot tokens or owner chat details. Email/SMS and general notification rules are NOT implemented.
+- Feature remains OFF and no message has been sent to a real account. Verify a permitted private owner chat and delivery in staging before considering production activation.
+
+## Current release status
+
+The Block 5 **code** now includes: site/DB/job health, recorded operational cost/provider-error heuristics, persistence and owner alert review, opt-in 6-hour official changelog checks with provenance, 06/07 internal content diagnostics and suggestions, 08:00 local Daily Brief, Monday 09:00 Weekly Audit, and gated Telegram critical alerts. All require explicitly approved schema/worker configuration. Official source page changes are unverified until reviewed, and reviewed decisions never execute production changes.
+
+Still blocked/incomplete: independent real provider API uptime & verified published API price parsing, authenticated end-to-end browser tests, actual media link/playback checks, complex product-market discovery, Stripe webhook diagnostic checks, production migration after a backup, Render worker deployment, notification delivery to real owner, real operations acceptance and any auto-apply path. No owner approval means NO production deployment, paid requests, live billing or critical changes.
