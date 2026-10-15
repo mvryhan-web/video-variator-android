@@ -4,6 +4,7 @@ import {MODELS,MODEL_CATALOG,validateGeneration,generateGoogle,pollGoogle} from 
 import {generateBytePlus,pollBytePlus,bytePlusDownloadsConfigured} from './generation-byteplus.js';
 import {pricingCatalog,estimateGenerationPricing} from './generation-pricing.js';
 import {listModelControls,getModelControl,updateModelControl,applyModelControl} from './generation-model-control.js';
+import {enforceGenerationPolicy,generationPolicy} from './generation-policy.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch}={}){
  const model=MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter);
  if(!model)throw Error('MODEL_NOT_CONNECTED');
@@ -18,7 +19,7 @@ export function studioConfig(env=process.env){
  const allowed=(env.AI_STUDIO_ALLOWED_KINDS||'').split(',');
  const explicit=(env.AI_STUDIO_ALLOWED_MODELS||'').split(',');
  const catalog=MODEL_CATALOG.map(m=>({...m,enabled:enabled&&m.adapter&&(m.provider!=='BytePlus'||m.kind!=='video'||bytePlusDownloadsConfigured(env.BYTEPLUS_MEDIA_HOSTS))&&!!(m.provider==='BytePlus'?env.BYTEPLUS_API_KEY:env.GEMINI_API_KEY)&&allowed.includes(m.kind)&&(m.id===MODELS[m.kind]?.id||explicit.includes(m.id))}));
- return {pilot:true,ownerOnly:true,enabled,pricingConfigured:pricingCatalog(env).configured,reason:enabled?null:'OWNER_SETUP_REQUIRED',models:Object.entries(MODELS).map(([kind,m])=>({kind,...m,enabled:catalog.find(c=>c.id===m.id)?.enabled||false})),catalog,translation:{enabled:false,reason:'PROVIDER_NOT_CONNECTED'}};
+ return {pilot:true,ownerOnly:true,enabled,pricingConfigured:pricingCatalog(env).configured,publicPolicy:generationPolicy(env),reason:enabled?null:'OWNER_SETUP_REQUIRED',models:Object.entries(MODELS).map(([kind,m])=>({kind,...m,enabled:catalog.find(c=>c.id===m.id)?.enabled||false})),catalog,translation:{enabled:false,reason:'PROVIDER_NOT_CONNECTED'}};
 }
 export function installGenerationStudio(app,{auth,pool,env=process.env,provider=dispatchGeneration,poller=dispatchPoll,wallet=null}){
  let ready;
@@ -55,11 +56,12 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   const quote=walletEnabled()?estimateGenerationPricing(request,selected,env):null;if(walletEnabled()&&!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
   let c,id=randomUUID();try{
    await init();c=await pool.connect();await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(84920115)');
+   await enforceGenerationPolicy(c,{userId:req.user.id,env});
    const count=await c.query('SELECT count(*)::int AS n FROM vv_generation_jobs');
    if(count.rows[0].n>=Number(env.AI_STUDIO_MAX_CALLS)){await c.query('ROLLBACK');return res.status(429).json({error:'PILOT_LIMIT_REACHED'});}
    const settings={ratio:request.ratio,musicMode:request.musicMode||null,referenceCount:request.references?.length||0};
    await c.query('INSERT INTO vv_generation_jobs(id,user_id,kind,status,provider,model,prompt,started_at,settings,estimated_cost) VALUES($1,$2,$3,$4,$5,$6,$7,NOW(),$8::jsonb,$9)',[id,req.user.id,request.kind,walletEnabled()?'queued':'processing',selected.provider||null,selected.id,request.prompt,JSON.stringify(settings),quote?quote.providerCostMicros/1_000_000:null]);await c.query('COMMIT');
-  }catch(_){if(c)await c.query('ROLLBACK').catch(()=>{});return res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}finally{c?.release();}
+  }catch(e){if(c)await c.query('ROLLBACK').catch(()=>{});if(['AI_CONCURRENCY_LIMIT','AI_RATE_LIMIT'].includes(e.message))return res.status(429).json({error:e.message});return res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}finally{c?.release();}
   if(walletEnabled())try{
    await wallet.reserve({userId:req.user.id,jobId:id,credits:quote.credits,fingerprint:requestFingerprint(request)});
    await pool.query("UPDATE vv_generation_jobs SET status='processing',credits_reserved=$2 WHERE id=$1",[id,quote.credits]);
