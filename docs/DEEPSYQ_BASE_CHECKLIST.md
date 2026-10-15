@@ -294,3 +294,12 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Owner provider/model metrics now support 24h, 7d, 30d and all-time windows, defaulting to 7d.
 - Added success/failure rates while preserving latency/cost/credits aggregates and counting queued/finalizing as in-flight work.
 - These metrics are observational only; Smart Routing is not automatically changed by them before Roadmap Block 1.
+
+
+### BASE Video: authenticated reference HTTP intake — 2026-10-15
+
+- **IMPLEMENTED IN CODE / NOT YET VERIFIED:** isolated `POST /api/studio/references` owner-only raw HTTP upload pilot, disabled by `AI_STUDIO_REFERENCE_UPLOAD_ENABLED=false`. It reuses the existing auth, ledger, S3 storage and expiry cleanup; no second media store or provider router is introduced.
+- Only raw MP4 (20 MiB / declared duration at most 30 s) and PCM WAV (8 MiB / declared duration at most 60 s) are permitted by the preliminary local parser. Multipart/base64, compressed and all other media uploads remain blocked. No media stream/URL is returned to the browser.
+- Each owner may hold at most two active unexpired references. Admission uses a PostgreSQL advisory transaction lock before ledger INSERT; S3 network PUT occurs after commit. Failed/ambiguous PUT remains eligible for expiry cleanup.
+- Added `tests/generation-reference-upload-unit.mjs` HTTP/auth/MIME/malformed/quota cases (authored, not run on real runner). No production database migration, S3 credential, Stripe, live provider or AI credits were changed.
+- **NEXT:** finish independent codec/malware validation and owner staging acceptance; confirm background cleanup runs with real storage, then design secure short-lived provider-fetch transport and verify BytePlus video/audio input mapping, pricing and explicit generation consent. No BytePlus reference media generation is available yet. Never advertise as production-ready.
