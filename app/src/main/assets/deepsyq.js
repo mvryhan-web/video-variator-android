@@ -236,6 +236,26 @@ function updateInspirationHero(items){
  feature.href='inspiration.html?kind=video&category='+encodeURIComponent(first.category||'')+'&ratio='+encodeURIComponent(first.aspectRatio||'')+'&q='+encodeURIComponent(first.title||'');
  feature.hidden=false;
 }
+
+// Owner-approved Home enhancements: no extra provider/credit/auth APIs are created.
+const homeLang=$('homeLanguage');const homeI18n={
+ en:{hero:'Create<br><em>beyond limits.</em>',canvas:'Canvas — your creative workspace',agent:'AI Agent — bring bigger ideas to life',apps:'AI Apps — discover ways to create',inspiration:'Inspiration — Images & Videos'},
+ fr:{hero:'Créez<br><em>sans limites.</em>',canvas:'Canvas — votre espace créatif',agent:'Agent IA — imaginez plus grand',apps:'AI Apps — explorez la création',inspiration:'Inspiration — Images et vidéos'},
+ ru:{hero:'Создавайте<br><em>без границ.</em>',canvas:'Canvas — ваше творческое пространство',agent:'AI Agent — больше возможностей',apps:'AI Apps — инструменты творчества',inspiration:'Вдохновение — изображения и видео'}
+};
+function applyHomeLanguage(code){const v=homeI18n[code]||homeI18n.en;const hero=document.querySelector('.hero-stage-copy h1');if(hero)hero.innerHTML=v.hero;for(const [id,key] of [['canvasFeatureTitle','canvas'],['agentFeatureTitle','agent'],['appsFeatureTitle','apps'],['inspirationPreviewTitle','inspiration']]){const el=$(id);if(el)el.textContent=v[key];}if(homeLang)homeLang.value=homeI18n[code]?code:'en';}
+if(homeLang){const saved=localStorage.getItem('deepsyq_home_language');applyHomeLanguage(saved||'en');homeLang.onchange=()=>{localStorage.setItem('deepsyq_home_language',homeLang.value);applyHomeLanguage(homeLang.value);};}
+const promo=$('promoDialog');$('topPromo')?.addEventListener('click',()=>promo?.showModal());$('promoShare')?.addEventListener('click',()=>{$('navShare')?.click();promo?.close();});$('topInvite')?.addEventListener('click',()=>$('navShare')?.click());
+$('topLogin')?.addEventListener('click',()=>{$('accountButton')?.click();});
+function markHomeLogin(){const b=$('topLogin');if(b)b.textContent=localStorage.getItem('vv_token')?'Account':'Log in';}
+markHomeLogin();
+let featuredInspirationKind='all';
+document.querySelectorAll('[data-inspiration-kind]').forEach(button=>button.addEventListener('click',()=>{
+ featuredInspirationKind=button.dataset.inspirationKind;
+ document.querySelectorAll('[data-inspiration-kind]').forEach(x=>x.setAttribute('aria-pressed',String(x===button)));
+ for(const card of document.querySelectorAll('#inspirationPreviewGrid .inspiration-preview-card'))card.hidden=featuredInspirationKind!=='all'&&card.dataset.kind!==featuredInspirationKind;
+}));
+
 // Real owner-approved media only. Playback is disabled for reduced motion/data saver.
 let inspirationVideoObserver=null;
 function showInspirationVideos(root){

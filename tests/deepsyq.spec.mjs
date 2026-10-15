@@ -380,3 +380,41 @@ test('Block 3 gallery loads more without replacing existing cards',async({page})
  let calls=0;await page.route('**/api/inspiration**',r=>{calls++;const u=new URL(r.request().url()),offset=Number(u.searchParams.get('offset')||0),items=offset===0?[{id:'one',title:'First owned image',slug:'first',kind:'image',category:'Editorial',description:'',previewUrl:'/one.png',previewPosterUrl:null,prompt:'First prompt',defaultModel:null,aspectRatio:'1:1',requiredInputTypes:[],defaultSettings:{ratio:'1:1'},actionTarget:'studio'}]:[{id:'two',title:'Second owned image',slug:'second',kind:'image',category:'Editorial',description:'',previewUrl:'/two.png',previewPosterUrl:null,prompt:'Second prompt',defaultModel:null,aspectRatio:'1:1',requiredInputTypes:[],defaultSettings:{ratio:'1:1'},actionTarget:'studio'}];return r.fulfill({json:{items,categories:['Editorial'],ratios:['1:1'],pagination:{limit:24,offset,nextOffset:offset===0?24:null,hasMore:offset===0}}});});const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');await page.route('**/one.png',r=>r.fulfill({contentType:'image/png',body:png}));await page.route('**/two.png',r=>r.fulfill({contentType:'image/png',body:png}));
  await page.goto('/inspiration.html');await expect(page.locator('.card')).toHaveCount(1);await expect(page.locator('#loadMore')).toBeVisible();await page.locator('#loadMore').click();await expect(page.locator('.card')).toHaveCount(2);await expect(page.locator('#gallery')).toContainText('First owned image');await expect(page.locator('#gallery')).toContainText('Second owned image');await expect(page.locator('#loadMore')).toBeHidden();expect(calls).toBeGreaterThanOrEqual(2);
 });
+
+test('owner-approved homepage layout keeps the real Canvas and section order',async({page})=>{
+ await fixtures(page);
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('.hero-stage h1')).toContainText('beyond limits');
+ await expect(page.locator('#topPromo')).toBeVisible();
+ await page.locator('#topPromo').click();
+ await expect(page.locator('#promoDialog')).toBeVisible();
+ await expect(page.locator('#promoDialog')).toContainText('not available yet');
+ await page.locator('#promoDialog button[value=close]').click();
+ await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
+ await expect(page.locator('#agentFeature')).toContainText('Coming soon');
+ await expect(page.locator('#appsFeature')).toBeVisible();
+ await expect(page.locator('#inspirationPreview')).toHaveCount(1);
+ const order=await page.evaluate(()=>['canvasFeature','agentFeature','appsFeature','inspirationPreview'].map(id=>[id,document.getElementById(id)?.getBoundingClientRect().top]));
+ expect(order.map(x=>x[0])).toEqual(['canvasFeature','agentFeature','appsFeature','inspirationPreview']);
+ expect(order[0][1]).toBeLessThan(order[1][1]);
+ expect(order[1][1]).toBeLessThan(order[2][1]);
+ expect(order[2][1]).toBeLessThan(order[3][1]);
+ await expect(page.locator('#quickCreateKind')).toBeVisible();
+ await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
+});
+test('homepage inspiration All Image Video filters only owned API cards',async({page})=>{
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:true,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'i',title:'Existing image',kind:'image',previewUrl:'/owned.png',category:'Editorial',aspectRatio:'1:1',actionTarget:'studio'},{id:'v',title:'Existing video',kind:'video',previewUrl:'/owned.mp4',category:'Cinematic',aspectRatio:'16:9',actionTarget:'studio'}],categories:['Editorial','Cinematic']}}));
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
+ await page.locator('[data-inspiration-kind="image"]').click();
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toHaveCount(1);
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toContainText('Existing image');
+ await page.locator('[data-inspiration-kind="video"]').click();
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toHaveCount(1);
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toContainText('Existing video');
+ await page.locator('[data-inspiration-kind="all"]').click();
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toHaveCount(2);
+});
+
