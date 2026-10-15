@@ -4,7 +4,7 @@ import express from 'express';
 import {validateInspiration,installInspiration} from '../server/generation-inspiration.js';
 
 test('inspiration validation requires owned/licensed media and safe preview URLs',()=>{
- const item=validateInspiration({title:'Owned editorial image',slug:'owned-editorial-image',kind:'image',category:'editorial',previewUrl:'/owned/inspiration/editorial.webp',prompt:'Editorial portrait with soft natural light',aspectRatio:'2:3',rightsBasis:'owned',active:true,featured:true});
+ const item=validateInspiration({title:'Owned editorial image',slug:'owned-editorial-image',kind:'image',category:'editorial',previewUrl:'/owned/inspiration/editorial.webp',prompt:'Editorial portrait with soft natural light',aspectRatio:'2:3',rightsBasis:'owned',rightsNote:'Created in house',active:true,featured:true});
  assert.equal(item.kind,'image');assert.equal(item.rightsBasis,'owned');assert.equal(item.aspectRatio,'2:3');
  assert.throws(()=>validateInspiration({...item,rightsBasis:'unknown'}),/INVALID_INSPIRATION/);
  assert.throws(()=>validateInspiration({...item,previewUrl:'javascript:alert(1)'}),/INVALID_INSPIRATION/);
@@ -17,4 +17,19 @@ test('public inspiration is active-only and agent-target content stays hidden by
  const app=express();app.use(express.json());installInspiration(app,{pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true',ADMIN_EMAIL:'owner@example.test'},auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});
  const server=app.listen(0);await new Promise(r=>server.once('listening',r));const base='http://127.0.0.1:'+server.address().port;
  try{let r=await fetch(base+'/api/inspiration?kind=image');assert.equal(r.status,200);let d=await r.json();assert.equal(d.items.length,1);assert.equal(d.items[0].rightsBasis,undefined);assert.ok(queries.some(q=>q.sql.includes("action_target='studio'")));r=await fetch(base+'/api/inspiration?target=agent');assert.equal(r.status,200);d=await r.json();assert.deepEqual(d.items,[]);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});
+
+
+test('active inspiration cannot be published without an explicit rights note',()=>{
+ const base={title:'Owned concept',slug:'owned-concept',kind:'image',category:'editorial',previewUrl:'/inspiration/editorial-orbit.svg',prompt:'Original prompt',aspectRatio:'2:3',rightsBasis:'owned'};
+ assert.throws(()=>validateInspiration({...base,active:true}),/INVALID_INSPIRATION/);
+ assert.throws(()=>validateInspiration({...base,active:false,featured:true,rightsNote:'owned'}),/INVALID_INSPIRATION/);
+ assert.equal(validateInspiration({...base,active:true,featured:true,rightsNote:'Original Deepsyq artwork'}).active,true);
+});
+
+test('public inspiration accepts a validated aspect-ratio filter',async()=>{
+ const queries=[];const pool={async query(sql,args=[]){queries.push({sql,args});if(sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_inspiration'))return {rows:[]};if(sql.startsWith('SELECT DISTINCT category'))return {rows:[]};if(sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true'))return {rows:[]};throw new Error(sql);}};
+ const app=express();app.use(express.json());installInspiration(app,{pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true',ADMIN_EMAIL:'owner@example.test'},auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));const base='http://127.0.0.1:'+server.address().port;
+ try{const r=await fetch(base+'/api/inspiration?kind=video&ratio=9%3A16');assert.equal(r.status,200);const q=queries.find(x=>x.sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true'));assert.ok(q.sql.includes('aspect_ratio='));assert.deepEqual(q.args,['video','9:16']);const bad=await fetch(base+'/api/inspiration?ratio=10%3A1');assert.equal(bad.status,400);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });

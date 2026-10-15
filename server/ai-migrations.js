@@ -3,6 +3,7 @@ import {readFile} from 'node:fs/promises';
 
 export const AI_MIGRATION_FILES=Object.freeze([
  '20261015-admin-audit.sql',
+ '20261015-ai-inspiration.sql',
  '20261015-ai-onboarding.sql',
  '20261015-ai-templates.sql',
  '20261015-generation-jobs.sql'
