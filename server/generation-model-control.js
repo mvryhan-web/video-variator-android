@@ -37,7 +37,7 @@ export async function listModelControls(pool,catalog){
  return catalog.map(model=>{
   const row=map.get(model.id),control={
    enabledOverride:row?.enabled_override??null,
-   priority:Number(row?.priority??100),
+   priority:Number(row?.priority??model.priority??100),
    markupBps:row?.markup_bps==null?null:Number(row.markup_bps),
    internalCostMicros:row?.internal_cost_micros==null?null:Number(row.internal_cost_micros),
    maintenance:!!row?.maintenance,
