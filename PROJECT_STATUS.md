@@ -11,7 +11,7 @@ This file is the shared live progress board for all coding agents.
 
 **Target: one existing repository and `main` branch for Deepsyq BASE + all seven blocks (1–7).** Feature branches and draft PRs are temporary development workspaces. Every verified block must be reconciled with the latest BASE, merged into `main` through reviewed tests and conflict resolution, and then separately validated on Render where required. See `AGENTS.md` and `docs/DEEPSYQ_ROADMAP.md`. No force-push, no replacement architecture, and no blind copy of feature branches to production.
 
-**Actual release status:** `main` still serves the existing application. BASE is in draft PR #42; Product Watcher Block 5 is in separate draft PR chain #49 → #48 → #47 → #46. These are **NOT MERGED TO MAIN**, and the other roadmap blocks must be checked individually. Render currently auto-deploys `main`; the free PostgreSQL `video-uniquifier-db` is reported available with expiry **2026-10-17**. Before the first functional integration/deploy, verify database continuity, independent recoverable backup, compatibility, CI and rollback. Documentation commits use `[skip render]` to avoid redeployment. Do not claim live migration, backup or readiness until verified.
+**Actual release status:** `main` still serves the existing application. BASE is in draft PR #42; Product Watcher Block 5 has consolidated draft PR #50 (incorporating #46–49). These are **NOT MERGED TO MAIN**, and the other roadmap blocks must be checked individually. Render currently auto-deploys `main`; the free PostgreSQL `video-uniquifier-db` is reported available with expiry **2026-10-17**. Before the first functional integration/deploy, verify database continuity, independent recoverable backup, compatibility, CI and rollback. Documentation commits use `[skip render]` to avoid redeployment. Do not claim live migration, backup or readiness until verified.
 
 ## Current priority gate
 
@@ -45,15 +45,17 @@ When another agent joins, add one row per claimed workstream before substantial 
 
 | # | Workstream | Status | Assigned owner | Notes |
 |---|---|---|---|---|
-| 1 | Multi-AI Compare + Smart Model Routing | NOT STARTED / QUEUED | UNASSIGNED | One prompt -> multiple real AI providers, compare, combine, cost/credit tracking |
-| 2 | User Agent — “Do it for me” | NOT STARTED / QUEUED | UNASSIGNED | Multi-step execution through Agent Orchestrator |
-| 3 | Inspiration / Create Yours | NOT STARTED / QUEUED | UNASSIGNED | Original owned gallery, prompts/templates, Clone/Create Yours flows |
-| 4 | Studio + My Workspace | NOT STARTED / QUEUED | UNASSIGNED | Creation editor/templates/skills + personal project workspace |
-| 5 | Internal Product Watcher Agent | NOT STARTED / QUEUED | UNASSIGNED | Owner-only scheduled monitoring, recommendations, approvals, daily/weekly reports |
-| 6 | Deepsyq Voice Agent | NOT STARTED / QUEUED | UNASSIGNED | Realtime voice interface across Deepsyq, Device Cleanup skill, owner voice access to Product Watcher |
-| 7 | Pricing, Credits, Stripe & Unit Economics | NOT STARTED / QUEUED | UNASSIGNED | Extend existing Stripe/AI wallet with verified provider economics; see roadmap |
+| 1 | Multi-AI Compare + Smart Model Routing | ⬜ NOT STARTED (block); BASE router PARTIAL | UNASSIGNED | Shared routing foundation exists in BASE PR #42; multi-provider comparison and synthesis not verified. |
+| 2 | User Agent — “Do it for me” | ⬜ NOT STARTED | UNASSIGNED | Shared Agent Orchestrator and multi-step user execution not verified. |
+| 3 | Inspiration / Create Yours | ✅ CODE IMPLEMENTED; ⏳ NOT DEPLOYED | Block 3 / PR #44; BASE PR #42 | Gallery, filters, Studio prefill and rights checks implemented. Owner content, acceptance and main integration pending. |
+| 4 | Studio + My Workspace | 🟡 PARTIAL (BASE studios only) | BASE / PR #42; block owner UNASSIGNED | Image/Video/Audio studio and History groundwork exist; full project workspace and template-owned project lifecycle not verified. |
+| 5 | Internal Product Watcher Agent | ✅ CODE INTEGRATED IN PR #50; ⏳ NOT DEPLOYED | Block 5 / PR #50 (supersedes integration of #46–49) | Node + disposable PostgreSQL CI passed on d52890ea; owner-only monitoring, readiness and billing diagnostics. Needs BASE/main merge, backup, Render worker and live checks. |
+| 6 | Deepsyq Voice Agent | ⬜ NOT STARTED | UNASSIGNED | Full realtime shared voice assistant and Device Cleanup skill not verified. |
+| 7 | Pricing, Credits, Stripe & Unit Economics | 🟡 PARTIAL (BASE foundations); ⏳ COMMERCIAL RELEASE PENDING | BASE / PR #42; block owner UNASSIGNED | Existing Stripe, AI wallet/reservation/pricing groundwork; live AI packs, verified provider prices and end-to-end billing not completed. |
 
 Full requirements: `docs/DEEPSYQ_ROADMAP.md`.
+
+**Status legend for every new agent:** ✅ = implementation evidenced by linked PR/tests **only**, not automatic production DONE; 🟡 = partial foundation or work in progress; ⬜ = no verified block implementation; ⏳ = main merge / real production acceptance still pending. Mark a full block `DONE` only after required tests, integration into `main`, and production verification. Before claiming work, inspect actual PR and code; never restart ✅ or 🟡 work from scratch. This table reflects known GitHub evidence on 2026-10-15 and must be refreshed on every handoff.
 
 ## Multi-agent execution strategy
 
