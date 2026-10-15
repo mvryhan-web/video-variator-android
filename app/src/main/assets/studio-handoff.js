@@ -7,11 +7,12 @@ async function cleanupExpired(db,now=Date.now()){await new Promise((resolve,reje
 export async function saveStudioHandoff({kind,prompt,defaultModel=null,settings={},files=[],source='workflow',meta={}}){
  if(!['image','video','music'].includes(kind)||typeof prompt!=='string'||!prompt.trim()||prompt.length>2000)throw Error('INVALID_HANDOFF');
  const refs=safeFiles(files),id=crypto.randomUUID?.()||('handoff-'+Date.now()+'-'+Math.random().toString(16).slice(2)),now=Date.now();
- const record={id,createdAt:now,expiresAt:now+TTL,kind,prompt:prompt.trim(),defaultModel:defaultModel||null,settings:safeSettings(settings),source:String(source).slice(0,50),meta:safeSettings(meta),files:refs.map((f,i)=>({name:f.name||('reference-'+(i+1)),type:f.type,lastModified:f.lastModified||now,blob:f}))};
+ const serializedRefs=await Promise.all(refs.map(async(f,i)=>({name:f.name||('reference-'+(i+1)),type:f.type,lastModified:f.lastModified||now,bytes:await f.arrayBuffer()})));
+ const record={id,createdAt:now,expiresAt:now+TTL,kind,prompt:prompt.trim(),defaultModel:defaultModel||null,settings:safeSettings(settings),source:String(source).slice(0,50),meta:safeSettings(meta),files:serializedRefs};
  const db=await openDb();try{await cleanupExpired(db,now);await tx(db,'readwrite',s=>s.put(record));}finally{db.close();}
  sessionStorage.setItem(KEY,id);return id;
 }
 export async function takeStudioHandoff(){
  const id=sessionStorage.getItem(KEY);if(!id)return null;sessionStorage.removeItem(KEY);
- const db=await openDb();try{await cleanupExpired(db);const record=await tx(db,'readonly',s=>s.get(id));await tx(db,'readwrite',s=>s.delete(id));if(!record||record.expiresAt<Date.now())return null;return {...record,files:(record.files||[]).map(x=>new File([x.blob],x.name,{type:x.type,lastModified:x.lastModified}))};}finally{db.close();}
+ const db=await openDb();try{await cleanupExpired(db);const record=await tx(db,'readonly',s=>s.get(id));await tx(db,'readwrite',s=>s.delete(id));if(!record||record.expiresAt<Date.now())return null;return {...record,files:(record.files||[]).map(x=>new File([x.bytes??x.blob],x.name,{type:x.type,lastModified:x.lastModified}))};}finally{db.close();}
 }
