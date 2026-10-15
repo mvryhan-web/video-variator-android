@@ -32,6 +32,19 @@ test('dashboard quick-create prepares a local image draft without any paid reque
  expect(jobPosts).toBe(0);
 });
 
+test('featured AI Apps render from approved API data and disappear when no templates exist',async({page})=>{
+ await fixtures(page);
+ let items=[{id:'featured-1',slug:'product-photo',title:'Approved Product Photo',description:'Owner approved workflow',category:'ecommerce',generationType:'image',active:true,featured:true}];
+ await page.route('**/api/templates?featured=true',route=>route.fulfill({json:{items}}));
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#featuredWorkflows')).toBeVisible();
+ await expect(page.locator('#featuredWorkflowGrid .featured-workflow-card')).toHaveCount(1);
+ await expect(page.locator('#featuredWorkflowGrid')).toContainText('Approved Product Photo');
+ items=[];
+ await page.reload();
+ await expect(page.locator('#featuredWorkflows')).toBeHidden();
+});
+
 test('existing email component logs in and logout clears session and latest result',async({page})=>{
  await fixtures(page);let payload;
  await page.route('**/api/auth/email/login',async r=>{payload=r.request().postDataJSON();await r.fulfill({json:{token:'test-session'}});});
