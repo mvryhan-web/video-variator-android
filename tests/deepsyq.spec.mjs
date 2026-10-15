@@ -56,7 +56,7 @@ test('owner sees AI control entry and admin page exposes only safe model control
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Owner',isAdmin:true}}}));
  await page.route('**/api/studio/admin/models',r=>r.fulfill({json:{items:[{id:'byteplus-seedance-2',label:'Seedance 2.0',provider:'BytePlus',kind:'video',enabled:true,control:{enabledOverride:null,priority:100,markupBps:null,internalCostMicros:null,maintenance:false}}]}}));
  await page.route('**/api/studio/admin/metrics',r=>r.fulfill({json:{items:[{provider:'BytePlus',model:'byteplus-seedance-2',kind:'video',jobs:2,succeeded:1,failed:1,processing:0,averageSeconds:12.5,actualCost:0.5,creditsCharged:80}]}}));
- await page.goto('/deepsyq.html');await expect(page.locator('#adminAiControl')).toBeVisible();await page.locator('#adminAiControl').click();
+ await page.goto('/deepsyq.html');if(await page.locator('#menu').isVisible())await page.locator('#menu').click();await expect(page.locator('#adminAiControl')).toBeVisible();await page.locator('#adminAiControl').click();
  await expect(page).toHaveURL(/deepsyq-admin.html/);await expect(page.getByText('Seedance 2.0')).toBeVisible();await expect(page.locator('table')).toContainText('BytePlus');
  await expect(page.locator('body')).not.toContainText('API key');await expect(page.locator('body')).not.toContainText('secret');
 });
