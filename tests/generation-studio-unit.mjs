@@ -7,6 +7,14 @@ test('reject unsupported ratio, missing consent, oversized prompt, invalid refs'
 test('Veo submits exactly one 8 second 720p generation',async()=>{let seen;const result=await generateGoogle(request,{key:'test-key',fetcher:async(url,opts)=>{seen={url,opts};return {ok:true,json:async()=>({name:'operations/test'})};}});const body=JSON.parse(seen.opts.body);assert.equal(body.parameters.sampleCount,1);assert.equal(body.parameters.durationSeconds,8);assert.equal(body.parameters.resolution,'720p');assert.ok(seen.url.endsWith(':predictLongRunning'));assert.equal(result.operation,'operations/test');});
 test('music output parsed by media type, not first part',async()=>{const r=await generateGoogle({kind:'music',prompt:'Piano',musicMode:'instrumental',references:[]},{key:'test',fetcher:async()=>({ok:true,json:async()=>({candidates:[{content:{parts:[{text:'Lyrics'},{inlineData:{mimeType:'audio/mpeg',data:Buffer.from('fixture').toString('base64')}}]}}]})})});assert.equal(r.mime,'audio/mpeg');assert.equal(r.bytes.toString(),'fixture');});
 test('provider API key never sent to arbitrary or redirected download URLs',async()=>{assert.throws(()=>safeGoogleUrl('https://evil.test/file'));assert.throws(()=>safeGoogleUrl('http://generativelanguage.googleapis.com/file'));let calls=0;await assert.rejects(()=>pollGoogle('operations/test',{key:'secret',fetcher:async()=>{calls++;return {ok:true,json:async()=>({done:true,response:{generateVideoResponse:{generatedSamples:[{video:{uri:'https://evil.test/file'}}]}}})};}}));assert.equal(calls,1);});
+test('Veo completed provider errors are terminal and never start a second paid job',async()=>{
+ let calls=0;
+ await assert.rejects(()=>pollGoogle('operations/test',{key:'fixture',fetcher:async()=>{
+  calls++;return {ok:true,json:async()=>({done:true,error:{code:400,message:'private provider rejection'}})};
+ }}),e=>e.message==='PROVIDER_TASK_FAILED'&&e.terminal===true);
+ assert.equal(calls,1);
+ assert.deepEqual(await pollGoogle('operations/test',{key:'fixture',fetcher:async()=>({ok:true,json:async()=>({done:false})})}),{pending:true});
+});
 test('provider errors produce no fake media',async()=>{await assert.rejects(()=>generateGoogle(request,{key:'test',fetcher:async()=>({ok:false,status:429})}),/PROVIDER_BUSY/);});
 test('model selection routes explicitly and unconnected models never fall back to Google',async()=>{
  const selected=validateGeneration({...request,model:'veo-3.1-fast-generate-preview'});let called='';
