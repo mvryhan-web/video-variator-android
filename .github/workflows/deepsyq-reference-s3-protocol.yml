@@ -31,7 +31,7 @@ jobs:
           docker run -d --rm --name deepsyq-s3-protocol -p 127.0.0.1:9000:9000 \
             -e MINIO_ROOT_USER=DEEPSYQ_CI_KEY_12345 \
             -e MINIO_ROOT_PASSWORD=deepsyq-CI-isolated-minio-secret-long-only \
-            quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z server /data
+            minio/minio:RELEASE.2025-09-07T16-13-09Z server /data
           for i in $(seq 1 60); do
             if curl --silent --fail http://127.0.0.1:9000/minio/health/live >/dev/null; then
               echo "Isolated MinIO is healthy"
