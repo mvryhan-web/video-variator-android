@@ -475,3 +475,11 @@ Current queued-roadmap dependencies to verify before implementation:
 - The pricing engine requires explicit resolution-/duration-specific economics for every nondefault video output. Neither a fallback default price nor owner-preview access may silently authorize upgraded video settings. Other existing provider, wallet and availability safety gates remain intact.
 - Added focused repository test cases for Veo provider request mapping/restrictions, Seedance request fields and rejection, and AI-credit quote selection. **Code authored / not run** under the owner's deferred end-to-end testing requirement; this does not prove that real providers accept the entire response lifecycle. No provider key, Stripe, live billing, production deployment or roadmap Blocks 1–7 touched. BASE Video remains PARTIAL/BLOCKED.
 - Provider references: https://ai.google.dev/gemini-api/docs/veo and https://api.byteplus.com/api-explorer/?action=CreateContentsGenerationsTasks&groupName=Chat+API&serviceCode=ark&version=2024-01-01 .
+
+
+### BASE launch-preflight hardening — isolated contribution
+
+- Owner: current Work continuation; branch `base-launch-preflight`, based on PR #42 head `c834dcf`. IMPLEMENTED / TARGETED TESTS VERIFIED; integration pending. Scope limited to the read-only preflight CLI, its targeted tests and rollout documentation. No edits to homepage/Block 3, Studio, providers, wallet or active Video work.
+- Correct earlier external notes: on Oct 15 this conversation verified Seedream Lite Activated and saved a model-restricted `BYTEPLUS_API_KEY` in the existing Render service with Save only. This proves stored configuration only, not a deployed API generation test. No paid call or production deployment was performed.
+
+- Verification: 8 targeted preflight/readiness tests passed, covering credential-safe failures, bounded DB options, cleanup, missing/pending/drifted/empty ledger and explicit external-verification scope. No live DB/provider/Stripe calls or deployment. Merge this isolated contribution into PR #42 after coordination; do not overwrite concurrent Studio or Inspiration changes.
