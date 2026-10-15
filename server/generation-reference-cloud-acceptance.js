@@ -128,9 +128,10 @@ export async function executeReferenceS3CloudAcceptance({
   const expired=oldStorage.presignStagedReferenceRead({userId,key,expiresAt,seconds:30});
   const expiredRead=await readSigned(expired.url);
   if(expiredRead.status<400||expiredRead.status>=500)deny('REFERENCE_S3_ACCEPTANCE_EXPIRED_ACCEPTED');
-  await storage.deleteStagedReference({userId,key});cleanupNeeded=false;
+  await storage.deleteStagedReference({userId,key});
   const deleted=await readSigned(link.url);
   if(deleted.status!==404)deny('REFERENCE_S3_ACCEPTANCE_DELETE_UNCONFIRMED');
+  cleanupNeeded=false;
   return {status:'isolated-fixture-verified',checks:[
    'SIGNED_PUT','PRIVATE_GET','SHORT_SIGNED_GET','TAMPER_DENIED',
    'UNSIGNED_DENIED','EXPIRED_DENIED','SIGNED_DELETE','READ_AFTER_DELETE_404'
