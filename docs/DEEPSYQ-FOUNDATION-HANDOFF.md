@@ -79,3 +79,16 @@ Repository-only work completed without enabling live spend:
 - work-limit efficiency rule is permanent in `AGENTS.md`.
 
 Still do not enable public/commercial AI generation yet. Live BytePlus activation/key, verified provider economics, production object storage, restart-safe worker infrastructure, real Stripe AI Products/Prices, staging migrations/backups, real provider smoke calls and physical-device acceptance remain external gates.
+
+
+## Continuation 4 — routing, storage and billing safety
+
+Additional repository-only foundations now exist behind disabled flags:
+- pre-dispatch Smart routing orders compatible models by owner priority/internal cost and exposes an owner route preview; no provider call occurs during preview;
+- post-dispatch automatic fallback remains disabled to avoid duplicate paid calls when provider acceptance is ambiguous;
+- per-user concurrent-job/hourly-job limits are available through a PostgreSQL advisory-lock policy;
+- S3-compatible object storage signs server-side PUT/GET/DELETE requests; when enabled, completed media is stored outside PostgreSQL before wallet capture;
+- owner billing review lists only held reservations attached to ambiguous failed generation jobs and allows explicit release with confirmation/note/audit metadata;
+- `vv_generation_jobs` migration has isolated PostgreSQL coverage, including repeatable legacy `vv_generation_pilot` migration.
+
+Still external/not activated: real storage bucket credentials and retention policy, BytePlus account/model/key, verified provider prices, live AI Stripe Products/Prices, production database migration/backup/rollback, real paid smoke tests and controlled deployment. Do not turn on the new flags until those gates are satisfied.
