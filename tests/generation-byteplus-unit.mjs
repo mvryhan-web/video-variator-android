@@ -26,7 +26,7 @@ test('Seedream 4.5 does not request unsupported PNG output',async()=>{
  await assert.rejects(()=>generateBytePlus(req(),{key:'fixture',fetcher:async()=>json({data:[{b64_json:Buffer.from('not media').toString('base64')}]})}),/INVALID_PROVIDER_MEDIA/);
 });
 test('Seedance task persists provider prefix, fixed approved limits and first frame',async()=>{
- let body;const r=await generateBytePlus({...req('video','byteplus-seedance-2'),references:[{mimeType:'image/png',data:png.toString('base64')}]},{key:'fixture',fetcher:async(_,opts)=>{body=JSON.parse(opts.body);return json({id:'cgt-fixture'});}});
+ let body;const r=await generateBytePlus({...req('video','byteplus-seedance-2'),videoInputMode:'first_frame',references:[{mimeType:'image/png',data:png.toString('base64')}]},{key:'fixture',fetcher:async(_,opts)=>{body=JSON.parse(opts.body);return json({id:'cgt-fixture'});}});
  assert.equal(r.operation,'byteplus:cgt-fixture');assert.equal(body.model,'dreamina-seedance-2-0-260128');assert.equal(body.duration,5);assert.equal(body.resolution,'720p');assert.equal(body.content[1].role,'first_frame');assert.equal(body.generate_audio,true);
  assert.deepEqual(await dispatchPoll(r.operation,{env:{BYTEPLUS_API_KEY:'fixture'},fetcher:async()=>json({status:'running'})}),{pending:true});
 });
