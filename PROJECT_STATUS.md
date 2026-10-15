@@ -333,3 +333,17 @@ Current queued-roadmap dependencies to verify before implementation:
 - Fixed the **web-browser fixture only** for authenticated AI wallet summary: the test mocked obsolete `/api/ai-billing/balance` while the working UI calls `/api/ai-wallet/balance`. Did not change the wallet backend or billing behavior.
 - Historical head `d86b1d9` CI: **SUCCESS** AI Studio preview checks, Lifetime billing, Telegram Mini App; **FAIL** Validate Video Variator Web (wallet fixture route; production OAuth Google/Apple health=503 also seen in earlier runs); **IN PROGRESS** platform regression when last inspected; APK build was cancelled after the newer push. These checks do not certify later Canvas/draft commits.
 - Scope: existing `deepsyq-platform`, PR #42. Production, credentials, payment activation and separate Render preview remain untouched/deferred as requested. Keep the BASE status PARTIAL until current-head tests and real user flow pass.
+
+
+### Block 3 — Inspiration / Create Yours
+
+**IN PROGRESS on deepsyq-platform; only Block 3 was touched in this pass.**
+
+- Added data-driven vv_ai_inspiration schema with Images/Videos, category, aspect ratio, preview/poster, prompt, model/settings, source-input hints, featured/order and action target.
+- Publishing requires an explicit owned or licensed rights basis. No inspiration examples/assets are seeded or fabricated.
+- Added public Inspiration API with All/Images/Videos, category, text search, featured items and owner-only create/update API with admin audit logging.
+- Added full responsive Inspiration gallery with image/video previews and Create yours, Use this prompt, Clone and Try.
+- All three actions route into the real Studio with bounded prompt/settings prefill and never auto-start a paid generation. Source inspiration assets are not copied; users add their own references.
+- Added data-driven Homepage Inspiration preview. Agent-example preview stays hidden unless explicitly enabled and populated; Block 2 Agent is not faked.
+- AI_INSPIRATION_ENABLED=false by default in production; AI_INSPIRATION_AGENT_TARGETS_ENABLED=false remains off until a real Agent workflow exists.
+- Remaining Block 3 content gate: owner must add actual Deepsyq-owned or properly licensed image/video examples before public rollout.

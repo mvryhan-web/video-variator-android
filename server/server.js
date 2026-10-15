@@ -2,6 +2,7 @@ import {initToolAccess,installToolAccess} from './tool-access.js';
 import {installGenerationStudio} from './generation-studio.js';
 import {installGenerationBilling} from './generation-billing.js';
 import {installGenerationTemplates} from './generation-templates.js';
+import {installInspiration} from './generation-inspiration.js';
 import {installOnboarding} from './generation-onboarding.js';
 import {pool as generationPool} from './db.js';
 import {installSpeech} from './speech.js';
@@ -141,7 +142,7 @@ app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',ht
 app.get('/api/version',(req,res)=>res.json({webVersion:process.env.WEB_VERSION||'5.3.0',androidVersion:process.env.ANDROID_VERSION||'5.3.0',androidVersionCode:Number(process.env.ANDROID_VERSION_CODE||5),latestApkUrl:process.env.LATEST_APK_URL||'https://github.com/mvryhan-web/video-variator-android/releases/latest/download/VideoUniquifier.apk'}));
 app.get('/api/config',(req,res)=>res.json({
   googleClientId:process.env.GOOGLE_CLIENT_ID||'',appleClientId:process.env.APPLE_CLIENT_ID||'',appleRedirectUri:process.env.APPLE_REDIRECT_URI||'',emailAuth:true,trialLimit:100,billingConfigured:billingConfigured(),
-  introOfferText:process.env.INTRO_OFFER_TEXT||'Intro discount available on your first subscription',features:{aiApps:platformFeatureEnabled('AI_APPS_ENABLED'),productVideo:platformFeatureEnabled('AI_PRODUCT_VIDEO_ENABLED'),onboarding:platformFeatureEnabled('AI_ONBOARDING_ENABLED')},privacy:{httpsRequired:isProduction,localVideoProcessing:true,rawVideoUploadDisabled:true},plans:{basic:{price:9,limit:750,unit:'credits'},pro:{price:24,limit:2250,unit:'credits'},business:{price:99,limit:15000,unit:'credits'},lifetime:{price:2999,currency:'eur',unlimited:true,allFeatures:true,oneTime:true}}
+  introOfferText:process.env.INTRO_OFFER_TEXT||'Intro discount available on your first subscription',features:{aiApps:platformFeatureEnabled('AI_APPS_ENABLED'),inspiration:platformFeatureEnabled('AI_INSPIRATION_ENABLED'),productVideo:platformFeatureEnabled('AI_PRODUCT_VIDEO_ENABLED'),onboarding:platformFeatureEnabled('AI_ONBOARDING_ENABLED')},privacy:{httpsRequired:isProduction,localVideoProcessing:true,rawVideoUploadDisabled:true},plans:{basic:{price:9,limit:750,unit:'credits'},pro:{price:24,limit:2250,unit:'credits'},business:{price:99,limit:15000,unit:'credits'},lifetime:{price:2999,currency:'eur',unlimited:true,allFeatures:true,oneTime:true}}
 }));
 
 app.post('/api/auth/google',async(req,res)=>{try{if(!process.env.GOOGLE_CLIENT_ID)return res.status(503).json({error:'GOOGLE_AUTH_NOT_CONFIGURED'});const credential=req.body?.credential;if(!credential)return res.status(400).json({error:'MISSING_GOOGLE_CREDENTIAL'});const {payload}=await jwtVerify(credential,googleJwks,{audience:process.env.GOOGLE_CLIENT_ID,issuer:['https://accounts.google.com','accounts.google.com']});const email=payload.email_verified===false?null:payload.email,existing=await getUserByProvider('google',payload.sub);const user=await upsertUser({provider:'google',providerSub:payload.sub,email,name:payload.name});res.json({token:await signAppToken(user),user:publicUser(user),newAccount:!existing});}catch(e){console.error('[google auth]',e);res.status(401).json({error:'GOOGLE_AUTH_FAILED'});}});
@@ -178,6 +179,7 @@ app.post('/api/billing/cancel',auth,async(req,res)=>{try{const current=publicUse
 
 const generationBilling=installGenerationBilling(app,{auth,pool:generationPool,stripe,appUrl});
 installGenerationTemplates(app,{auth,pool:generationPool});
+installInspiration(app,{auth,pool:generationPool});
 installOnboarding(app,{auth,pool:generationPool});
 const generationStudio=installGenerationStudio(app,{auth,pool:generationPool,wallet:generationBilling.wallet});
 // Opt-in platform entry. Legacy auth/payment returns retain their existing handler.
@@ -188,6 +190,7 @@ app.get('/',(req,res,next)=>{
 });
 app.get('/dashboard',(req,res)=>res.sendFile(path.join(staticDir,'deepsyq.html')));
 app.get(['/ai-apps','/ai-apps.html'],(req,res,next)=>platformFeatureEnabled('AI_APPS_ENABLED')?next():res.status(404).type('text/plain').send('Not found'));
+app.get(['/inspiration','/inspiration.html'],(req,res,next)=>platformFeatureEnabled('AI_INSPIRATION_ENABLED')?next():res.status(404).type('text/plain').send('Not found'));
 app.get(['/product-video','/product-video.html'],(req,res,next)=>platformFeatureEnabled('AI_PRODUCT_VIDEO_ENABLED')?next():res.status(404).type('text/plain').send('Not found'));
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
