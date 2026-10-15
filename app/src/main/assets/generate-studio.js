@@ -236,11 +236,15 @@ $('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)ret
    // select() and acceptFiles() deliberately reject changes while a paid job is busy.
    // Preparation is finished now, so unlock before applying the new local draft.
    busy=false;
-   select('image',{remember:false});
-   await acceptFiles([file]);
-   $('consent').checked=false;availability();
-   $('prompt').value='';$('prompt').focus();availability();
-   $('status').textContent=say('Image added as a reference. Describe what you want to change, review the model and Generate when ready. No new generation was started.','Изображение добавлено как пример. Опишите, что хотите изменить, проверьте модель и нажмите «Создать» сами. Новая генерация не запускалась.');
+   // Keep the current image draft intact when continuing from an image.
+   // Switching from Video/Audio uses the saved Image draft without touching the original result.
+   if(kind!=='image')select('image',{remember:true});
+   if((currentModel()?.references||0)<1)throw Error('IMAGE_REFERENCE_UNSUPPORTED');
+   const append=refs.length>0&&refs.length<(currentModel()?.references||0);
+   const accepted=await acceptFiles([file],{append});
+   if(!accepted)throw Error('IMAGE_REFERENCE_PREPARE_FAILED');
+   $('consent').checked=false;$('prompt').focus();availability();
+   $('status').textContent=say('Image added as a reference. Update your prompt, review the model and generate when ready. No new generation was started.','Изображение добавлено как пример. Измените запрос, проверьте модель и запустите генерацию сами. Новая генерация не запускалась.');
   }catch(_){$('status').textContent=say('Could not prepare the image as a reference. Download it and add it manually.','Не получилось подготовить изображение. Скачайте его и добавьте вручную.');}
   finally{busy=false;availability();}
  };
