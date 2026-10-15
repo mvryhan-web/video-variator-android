@@ -12,9 +12,9 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 
 | # | Original requirement | Status | Current state / next action |
 |---|---|---|---|
-| 1 | Product becomes Lumina-style AI creative platform | PARTIAL | Deepsyq dashboard/studios exist on feature branch; dashboard now has a prompt-first Image/Video Canvas entry using the existing local handoff (no automatic generation). Public product is not launched. |
+| 1 | Product becomes Lumina-style AI creative platform | PARTIAL | Deepsyq dashboard/studios exist on feature branch; dashboard now has prompt-first Image/Video Canvas creation, local PNG/JPG reference previews/drag-drop and a Create / Canvas nav shortcut (no automatic generation). Public product is not launched. |
 | 2 | New AI platform becomes `/` | BLOCKED | `DEEPSYQ_HOME_ENABLED` exists but defaults OFF. Enable only after launch gates pass. |
-| 3 | Hero / Canvas workspace | PARTIAL | Studio composer, references, model/settings and examples exist; homepage quick-create now transfers a local prompt to Image/Video Studio for review. Unified Canvas remains incomplete. |
+| 3 | Hero / Canvas workspace | PARTIAL | Studio composer, references, model/settings and examples exist; homepage quick-create now passes a prompt and up to four locally prepared reference images to Image/Video Studio for review. Unified Canvas remains incomplete. |
 | 4 | Image generation | PARTIAL / BLOCKED | Google + BytePlus image adapters prepared; live BytePlus key/model activation and commercial flow pending. |
 | 5 | Video generation | PARTIAL / BLOCKED | Google + BytePlus async video adapters prepared; live provider activation/storage/commercial flow pending. |
 | 6 | BytePlus first provider adapter | PARTIAL / BLOCKED | Server-only ModelArk adapter exists for Seedream/Seedance. Real account activation/key/smoke call pending. |
@@ -57,7 +57,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 43 | Pricing page | PARTIAL | Pricing separates existing tool subscriptions/Lifetime from AI credits, renders server-configured packs/welcome grant only, and now shows signed-in AI-wallet balance plus recent ledger activity. Final AI economics/pack values still require approval. |
 | 44 | Free plan | PARTIAL | Added a config-driven one-time welcome AI-credit grant mechanism with explicit claim, idempotency and debt-first handling. It remains OFF with amount 0 until an exact acquisition allowance is approved. |
 | 45 | Onboarding | PARTIAL | New email/Google/Apple accounts are flagged for a persistent Image/Video onboarding choice; selection is stored server-side and routes directly to a real studio. Public launch verification is still pending. |
-| 46 | Homepage conversion | PARTIAL | Dashboard uses `Create` + `Explore templates` and now renders up to six real owner-featured workflows from the template API; the section stays hidden when no approved content exists. Public launch still requires owner-approved content/assets. |
+| 46 | Homepage conversion | PARTIAL | Dashboard uses `Create` + `Explore templates` and renders up to six real owner-featured workflows from the template API in a restored, responsive section; it remains hidden without approved active content. Public launch still requires owner-approved content/assets. |
 | 47 | Do not expose BytePlus as our product | DONE | Provider stays implementation detail; Deepsyq branding used. |
 | 48 | Production safety / regression | PARTIAL | Feature flags, owner Launch Gates, read-only preflight, checksummed migrations, idempotency, audit log and staged rollout runbook exist. Production backup/staging/live smoke/physical-device regression are still required. |
 | 49 | Database migrations | PARTIAL | Additive AI migrations now have a checksummed transactional runner/ledger plus read-only status/check commands. Production backup and actual migration execution still have not been performed. |
