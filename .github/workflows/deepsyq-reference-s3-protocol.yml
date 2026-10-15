@@ -54,6 +54,11 @@ jobs:
           mkdir -p "$RUNNER_TEMP/minio-source-bin"
           GOBIN="$RUNNER_TEMP/minio-source-bin" go install github.com/minio/minio@RELEASE.2025-10-15T17-29-55Z
           "$RUNNER_TEMP/minio-source-bin/minio" --version
+      - name: Install local FFmpeg for real H264 test fixture
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          ffmpeg -version | head -n 1
       - name: Start disposable S3 service bound to loopback
         run: |
           mkdir -p "$RUNNER_TEMP/deepsyq-minio-data"
