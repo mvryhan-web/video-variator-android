@@ -9,6 +9,7 @@ function capability(model){
   ratios:Object.freeze(ratios),
   resolutions:Object.freeze(['image','video'].includes(model.kind)?[...(model.resolutions||[model.quality||'1K'])]:[]),
   durations:Object.freeze(model.kind==='video'?[...(model.durations||[durationSeconds(model.duration)])]:[]),
+  videoInputModes:Object.freeze(model.kind==='video'?[...(model.videoInputModes||['text','first_frame'])]:[]),
   outputFormats:Object.freeze(model.kind==='image'?[...(model.outputFormats||['auto'])]:[]),
   maxReferences,
   async:model.kind==='video',
@@ -29,7 +30,7 @@ export const MODELS={
 const RAW_MODEL_CATALOG=[
  {...MODELS.video,kind:'video',provider:'Google',adapter:true,description:'Text or a photo into a short video.',descriptionRu:'Короткое видео из текста или фотографии.',quality:'720p',duration:'8 seconds',resolutions:['720p','1080p'],durations:[4,6,8]},
  {id:'veo-3.1-fast-generate-preview',label:'Veo 3.1 Fast',kind:'video',provider:'Google',adapter:true,ratios:['16:9','9:16'],references:1,description:'A second Google video model to compare results.',descriptionRu:'Другая модель Google для сравнения результатов.',quality:'720p',duration:'8 seconds',resolutions:['720p','1080p'],durations:[4,6,8]},
- {id:'byteplus-seedance-2',label:'Seedance 2.0',kind:'video',provider:'BytePlus',adapter:true,ratios:['16:9','9:16','1:1'],references:1,description:'Text or a first-frame photo into a short video.',descriptionRu:'Видео из текста или первого кадра.',quality:'720p',duration:'5 seconds',resolutions:['720p','1080p'],durations:[4,5,8,10,15]},
+ {id:'byteplus-seedance-2',label:'Seedance 2.0',kind:'video',provider:'BytePlus',adapter:true,ratios:['16:9','9:16','1:1'],references:3,videoInputModes:['text','first_frame','first_last','reference_image'],description:'Text or up to three image references into a short video.',descriptionRu:'Видео из текста, первого/последнего кадра или референсных фотографий.',quality:'720p',duration:'5 seconds',resolutions:['720p','1080p'],durations:[4,5,8,10,15]},
  {...MODELS.image,kind:'image',provider:'Google',adapter:true,description:'Create or edit an image with reference photos.',descriptionRu:'Создание изображений с фотографиями для примера.',quality:'1K',resolutions:['1K','2K','4K']},
  {id:'byteplus-seedream-4-5',label:'Seedream 4.5',kind:'image',provider:'BytePlus',adapter:true,ratios:['1:1','2:3','3:2','9:16','16:9'],references:3,description:'Create an image with optional reference photos.',descriptionRu:'Создание изображения с фотографиями для примера.',quality:'2K',resolutions:['2K','4K']},
  {id:'byteplus-seedream-5-lite',label:'Seedream 5.0 Lite',kind:'image',provider:'BytePlus',adapter:true,ratios:['1:1','2:3','3:2','9:16','16:9'],references:3,description:'Another image model prepared for connection.',descriptionRu:'Ещё одна модель изображений для будущего подключения.',quality:'2K',resolutions:['2K','3K','4K'],outputFormats:['png','jpeg']},
