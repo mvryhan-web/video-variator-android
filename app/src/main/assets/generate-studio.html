@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="generate-studio.css"><script defer src="file-share.js"></script><script type="module" src="generate-studio.js"></script>
 </head>
 <body>
-<header class="topbar"><a href="deepsyq.html" class="back" data-t="back">← Back</a><a href="deepsyq.html" class="brand"><span class="brand-mark">d.</span>Deepsyq</a><span class="badge" data-t="pilot">Studio preview</span></header>
+<header class="topbar"><a href="deepsyq.html" class="back" data-t="back">← Back</a><a href="deepsyq.html" class="brand"><span class="brand-mark">d.</span>Deepsyq</a><button id="walletButton" class="wallet-button" type="button" hidden>AI credits <strong id="walletBalance">—</strong></button><span class="badge" data-t="pilot">Studio preview</span></header>
 <div class="studio-shell">
 <nav class="studio-nav" aria-label="Studios">
 <span class="nav-caption" data-t="workspace">YOUR WORKSPACE</span>
@@ -38,4 +38,5 @@
 <div id="musicOptions" hidden><label><span data-t="trackType">Audio type</span><select id="musicMode"><option value="song" data-t="song">Song with vocals</option><option value="instrumental" data-t="instrumental">Instrumental</option><option value="voice" data-t="voiceoverMode">Voiceover · setup pending</option></select></label><div id="voiceSettings" hidden><label><span data-t="language">Language</span><select id="voiceLanguage"><option>American English</option><option>German</option><option>Russian</option><option>French</option><option>Spanish</option></select></label><label><span data-t="voice">Voice</span><select id="voiceChoice"><option>Kore</option><option>Puck</option><option>Charon</option><option>Aoede</option></select></label></div><a href="audio-studio.html" class="tool-link" data-t="voiceover">Open existing voiceover tool →</a></div>
 <button type="button" class="primary" data-close="settingsDialog" data-t="done">Done</button>
 </dialog>
+<dialog id="walletDialog"><div class="dialog-head"><h2>AI credits</h2><button type="button" data-close="walletDialog" aria-label="Close">×</button></div><p id="walletMode" class="hint"></p><div id="walletSummary" class="wallet-summary"></div><div id="creditPacks" class="credit-packs"></div><p id="walletStatus" role="status"></p><p class="hint">Credits are added only after Stripe confirms a successful payment.</p></dialog>
 </body></html>
