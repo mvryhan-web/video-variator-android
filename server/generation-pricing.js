@@ -13,7 +13,8 @@ export function pricingCatalog(env={}){
    if(r.ratio!=null&&typeof r.ratio!=='string')throw Error();
    if(r.quality!=null&&typeof r.quality!=='string')throw Error();
    if(r.durationSeconds!=null&&!positive(r.durationSeconds,3600))throw Error();
-   return {model:r.model,provider:r.provider,kind:r.kind,credits:r.credits,providerCostMicros:r.providerCostMicros,ratio:r.ratio||null,quality:r.quality||null,durationSeconds:r.durationSeconds||null};
+   if(r.currency!=null&&!/^[a-z]{3}$/.test(r.currency))throw Error();
+   return {model:r.model,provider:r.provider,kind:r.kind,credits:r.credits,providerCostMicros:r.providerCostMicros,currency:r.currency||null,ratio:r.ratio||null,quality:r.quality||null,durationSeconds:r.durationSeconds||null};
   });
   const keys=entries.map(e=>[e.model,e.kind,e.ratio||'*',e.quality||'*',e.durationSeconds||'*'].join('|'));
   if(new Set(keys).size!==keys.length)throw Error();
@@ -34,5 +35,5 @@ export function estimateGenerationPricing(request,model,env={}){
  };
  const match=candidates.map(e=>({e,s:score(e)})).filter(x=>x.s>=0).sort((a,b)=>b.s-a.s)[0]?.e;
  if(!match)return null;
- return {credits:match.credits,providerCostMicros:match.providerCostMicros,currency:'USD',model:model.id,provider:model.provider,kind:model.kind};
+ return {credits:match.credits,providerCostMicros:match.providerCostMicros,currency:match.currency,model:model.id,provider:model.provider,kind:model.kind};
 }
