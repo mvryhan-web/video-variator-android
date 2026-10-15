@@ -1,0 +1,77 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { watcherConfig, runProductWatcherOnce, checkGenerationJobs, summarizeChecks } from '../server/product-watcher/monitor.js';
+
+function mockPool({counts={}, schema=true, failDb=false, lock=true}={}) {
+  const seen=[];
+  const client={
+    async query(sql,params){
+      seen.push([sql,params]);
+      if(sql.includes('pg_try_advisory_lock'))return {rows:[{acquired:lock}]};
+      if(sql.includes('pg_advisory_unlock'))return {rows:[{pg_advisory_unlock:true}]};
+      if(sql==='SELECT 1 AS alive'){if(failDb)throw Error('password=secret');return{rows:[{alive:1}]};}
+      if(sql.includes('to_regclass'))return {rows:[{table_name:schema?'vv_generation_jobs':null}]};
+      if(sql.includes('FROM vv_generation_jobs'))return {rows:[counts]};
+      if(sql.includes('INSERT INTO vv_product_watcher_runs'))return {rows:[{id:'14'}]};
+      throw Error('UNEXPECTED_SQL:'+sql);
+    },
+    release(){seen.push(['RELEASE']);}
+  };
+  return{ seen, connect:async()=>client };
+}
+const env={PRODUCT_WATCHER_ENABLED:'true',NODE_ENV:'production',APP_URL:'https://deepsyq.example/'};
+const fetchFn=async()=>({ok:true,status:200,headers:{get:()=>null},json:async()=>({ok:true})});
+
+test('disabled by default: no DB or network touched', async()=>{
+ const r=await runProductWatcherOnce({env:{},fetchFn:()=>{throw Error('must not fetch')}});
+ assert.equal(r.status,'disabled');
+});
+
+test('requires HTTPS in production and rejects embedded credentials or path',()=>{
+ assert.throws(()=>watcherConfig({...env,APP_URL:'http://example.com/'}),/WATCHER_INVALID_BASE_URL/);
+ assert.throws(()=>watcherConfig({...env,APP_URL:'https://user:pass@example.com/'}),/WATCHER_INVALID_BASE_URL/);
+ assert.throws(()=>watcherConfig({...env,APP_URL:'https://example.com/secret'}),/WATCHER_INVALID_BASE_URL/);
+ assert.deepEqual(watcherConfig({}).enabled,false);
+ assert.equal(watcherConfig(env).healthUrl,'https://deepsyq.example/api/health');
+});
+
+test('healthy run writes only safe aggregate data and releases advisory lock',async()=>{
+ const pool=mockPool();const r=await runProductWatcherOnce({pool,env,fetchFn,now:()=>new Date('2026-10-15T00:00:00Z')});
+ assert.equal(r.status,'healthy');assert.equal(r.runId,14);
+ assert.equal(r.checkedAt,'2026-10-15T00:00:00.000Z');
+ assert.equal(r.checks.generations.counts.total_24h,0);
+ assert.ok(pool.seen.some(([sql])=>sql.includes('INSERT INTO vv_product_watcher_runs')));
+ assert.ok(pool.seen.some(([sql])=>sql.includes('pg_advisory_unlock')));
+ assert.equal(pool.seen.at(-1)[0],'RELEASE');
+ assert.ok(!JSON.stringify(r).includes('secret'));
+});
+
+test('unhealthy health endpoint and generation failures are recorded as issues',async()=>{
+ const pool=mockPool({counts:{total_24h:5,failed_24h:2,unknown_24h:1,stale_24h:1,held_review_24h:1}});
+ const r=await runProductWatcherOnce({pool,env,fetchFn:async()=>({ok:false,status:503})});
+ assert.equal(r.status,'critical');assert.deepEqual(r.findings.map(x=>x.source),['http','generations']);
+ assert.equal(r.checks.generations.counts.failed_24h,2);
+});
+
+test('provider/internal database errors never expose exception secrets',async()=>{
+ const pool=mockPool({failDb:true,schema:false});
+ const r=await runProductWatcherOnce({pool,env,fetchFn:async()=>{throw Error('https://user:password@server/private')}});
+ assert.equal(r.status,'critical');assert.equal(r.checks.database.code,'DB_UNAVAILABLE');
+ assert.equal(r.checks.generations.code,'GENERATION_SCHEMA_NOT_READY');
+ assert.equal(JSON.stringify(r).includes('password'),false);
+});
+
+test('overlap is skipped without writes; dry-run has no persistence writes',async()=>{
+ const overlap=mockPool({lock:false});
+ const a=await runProductWatcherOnce({pool:overlap,env,fetchFn});
+ assert.equal(a.status,'skipped');assert.equal(overlap.seen.filter(([s])=>s.includes('INSERT')).length,0);
+ const pool=mockPool();const b=await runProductWatcherOnce({pool,env,fetchFn,persist:false});
+ assert.equal(b.status,'healthy');assert.equal(b.runId,undefined);
+ assert.equal(pool.seen.filter(([s])=>s.includes('INSERT')).length,0);
+});
+
+test('unknown missing schema reported without throwing; severity picks worst',async()=>{
+ const pool=mockPool({schema:false});const client=await pool.connect();
+ assert.equal((await checkGenerationJobs(client)).status,'warning');
+ assert.equal(summarizeChecks({a:{status:'healthy'},b:{status:'critical'}}).status,'critical');
+});
