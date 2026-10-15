@@ -10,7 +10,8 @@ for(const enabled of [false,true])test(`platform flag ${enabled}: preserves lega
   const get=async path=>{const r=await fetch(base+path);assert.equal(r.status,200);return r.text();};
   assert.match(await get('/'),enabled?/<title>Deepsyq/:/<title>.*Video Uniquifier/);
   for(const route of ['/index.html','/?mobileAuth=google','/?checkout=success'])assert.match(await get(route),/<title>.*Video Uniquifier/);
-  assert.match(await get('/dashboard'),/<title>Deepsyq/);
+  const dashboard=await get('/dashboard');assert.match(dashboard,/<title>Deepsyq/);
+  assert.match(dashboard,/<form id="quickCreateForm"/);assert.match(dashboard,/id="quickCreatePrompt"/);assert.match(dashboard,/id="quickCreateKind"/);
   assert.equal((await fetch(base+'/api/studio/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).status,503);
  }finally{child.kill();await once(child,'exit');}
 });
