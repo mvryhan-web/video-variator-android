@@ -248,3 +248,16 @@ The endpoint uses the **existing** `vv_generation_reference_assets` PostgreSQL l
 **Not a public production feature:** `AI_STUDIO_REFERENCE_UPLOAD_ENABLED=false` by default. Pilot staging also requires `AI_STUDIO_ENABLED=true`, private object-storage configuration, `AI_STUDIO_REFERENCE_STAGING_ENABLED=true`, `AI_STUDIO_REFERENCE_CLEANUP_ENABLED=true`, an explicit validated 5–1440-minute TTL and the additive ledger migration in a controlled environment. The owner must confirm an operational cleanup worker, bucket retention/permissions and backup/rollback before any pilot. Do not activate these variables merely because a route now exists.
 
 **Remaining external gates:** real media probing (supported codecs, malware/security analysis, sanitization), durable rate policy and abuse limits for public users, end-to-end storage and cleanup tests with the real worker, encrypted/private short-lived provider-access transport, BytePlus acceptance and model compatibility, approved per-input usage pricing, and explicit wallet consent before any provider call. In particular, **this API does NOT send staged media to BytePlus, invoke generation, debit Stripe or reserve AI credits**. `tests/generation-reference-upload-unit.mjs` contains owner/auth/body/quota regression cases but they have not yet been executed on a fully equipped runner.
+
+
+### BASE #5 — fail-closed codec probe (2026-10-15)
+
+Before inserting a ledger record or writing any bytes to private S3, the owner-only `POST /api/studio/references` pipeline now runs:
+
+1. Existing bounded MP4 / PCM-WAV container and metadata checks.
+2. A **real ffprobe executable** on a randomly named local private temporary file, using a restricted file-only protocol, a 10-second subprocess timeout, a 128 KiB stdout cap, and unconditional temporary-file cleanup.
+3. A conservative codec allowlist: MP4 must contain **one H.264/yuv420p video track** (16–3840px wide, 16–2160px high, <=8,294,400 pixels, 1–60 fps) with optional single AAC audio track; WAV must contain one PCM s16le/s24le audio track with one or two channels at 8–96 kHz. Existing MP4 30s and WAV 60s duration/byte caps continue to apply.
+
+Unsupported codec metadata returns HTTP 415. Missing, inaccessible or timed-out FFprobe blocks upload with HTTP 503; **there is no fallback to unsafe unprobed staging**. Neither structural parsing nor FFprobe is a malware scan, decoding/sanitization guarantee, provider-compatibility confirmation or proof that the file is safe to publish. Keep external provider-media transfer disabled until dedicated security review, real private S3/worker acceptance, signed short-lived transfer, and approved pricing/credits flow.
+
+Regression tests include fake/invalid codec metadata, temporary file cleanup, missing FFprobe, a real PCM WAV and (only where local FFmpeg/libx264 is available) a locally encoded H.264 MP4. `.github/workflows/deepsyq-reference-intake.yml` independently runs targeted parse/codec/API/ledger/S3 unit checks on GitHub Actions, without live paid provider calls.
