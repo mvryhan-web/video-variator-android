@@ -8,7 +8,7 @@ async function fixtures(page){
 test('dashboard keeps tools secondary, honest availability and supported navigation',async({page},info)=>{
  await fixtures(page);await page.goto('/deepsyq.html');
  await expect(page.getByRole('heading',{name:/What will you/})).toBeVisible();
- await expect(page.locator('nav a[href="#quickCreateForm"]')).toContainText('Create / Canvas');
+ await expect(page.locator('nav a[href="#quickCreateForm"]')).toContainText('Canvas');
  await expect(page.locator('#studioStatus')).toContainText('owner preview');
  await expect(page.locator('.plan')).toHaveCount(3);
  await expect(page.locator('.trial-offer button')).toBeDisabled();
@@ -19,6 +19,34 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('#taskTitle')).toContainText('image');
  await page.locator('.topbar .back').click();await expect(page).toHaveURL(/deepsyq.html/);
 });
+
+test('Deepsyq keeps a collapsible left rail and shows only selectable configured image and video models',async({page})=>{
+ await fixtures(page);
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:true,
+  models:[{id:'configured-image',kind:'image',enabled:true},{id:'configured-video',kind:'video',enabled:true}],
+  catalog:[{id:'configured-image',kind:'image',label:'Connected image',provider:'Fixture',enabled:true,ratios:['1:1'],references:0},{id:'not-connected',kind:'image',label:'Pending image',provider:'Fixture',enabled:false,ratios:['1:1'],references:0},{id:'configured-video',kind:'video',label:'Connected video',provider:'Fixture',enabled:true,ratios:['16:9'],references:0}]
+ }}}));
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#sidebar nav a').first()).toHaveAttribute('aria-label','Home');
+ await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
+ await page.locator('#sidebarToggle').click();
+ await expect(page.locator('body')).toHaveClass(/sidebar-collapsed/);
+ await expect(page.locator('#sidebar a[aria-label="Home"]')).toBeVisible();
+ await page.locator('#menu').click();
+ await expect(page.locator('body')).not.toHaveClass(/sidebar-collapsed/);
+ await page.locator('[data-model-menu="image"]').hover();
+ await expect(page.locator('#modelFlyout')).toBeVisible();
+ await expect(page.locator('#modelFlyout')).toContainText('Connected image');
+ await expect(page.locator('#modelFlyout')).toContainText('Pending image');
+ await expect(page.locator('#modelFlyout .model-flyout-option').first()).toBeEnabled();
+ await expect(page.locator('#modelFlyout .model-flyout-option').nth(1)).toBeDisabled();
+ await page.locator('[data-model-menu="video"]').hover();
+ await expect(page.locator('#modelFlyoutTitle')).toHaveText('Video models');
+ await expect(page.locator('#modelFlyout')).toContainText('Connected video');
+ await page.locator('#modelFlyoutClose').click();
+ await expect(page.locator('#modelFlyout')).toBeHidden();
+});
+
 test('dashboard quick-create prepares a local image draft without any paid request',async({page})=>{
  await fixtures(page);let jobPosts=0;
  page.on('request',request=>{if(request.url().includes('/api/studio/jobs')&&request.method()==='POST')jobPosts++;});
