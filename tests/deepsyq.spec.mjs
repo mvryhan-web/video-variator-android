@@ -337,6 +337,13 @@ test('video carousel switches only among owner-approved videos and retains exist
  await expect(page.locator('#homeHeroDots button')).toHaveCount(2);
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/one.mp4');
  await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 2');
+ await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
+ await page.locator('#homeHeroSound').click();
+ await expect(page.locator('#homeHeroSound')).toHaveText('Sound on');
+ await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',false);
+ await page.locator('#homeHeroSound').click();
+ await expect(page.locator('#homeHeroSound')).toHaveText('Sound off');
+ await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/two.mp4');
  await expect(page.locator('#homeHeroCounter')).toHaveText('Video 2 of 2');
