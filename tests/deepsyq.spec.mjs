@@ -70,14 +70,14 @@ test('owner sees AI control entry and admin page exposes only safe model control
 
 
 test('new account onboarding goes straight to a real first-stage workflow',async({page})=>{
- await fixtures(page);await page.addInitScript(()=>{localStorage.setItem('vv_token','new-user');localStorage.setItem('deepsyq_onboarding_pending','1');});
+ await fixtures(page);
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'New creator',isAdmin:false}}}));
  let savedGoal=null;
  await page.route('**/api/onboarding',async r=>{
   if(r.request().method()==='POST'){const body=r.request().postDataJSON();savedGoal=body.goal;return r.fulfill({json:{ok:true,goal:body.goal,target:'/generate-studio.html?studio='+body.goal}});}
   return r.fulfill({json:{completed:false,goal:null,options:[{id:'image',label:'Image',target:'/generate-studio.html?studio=image'},{id:'video',label:'Video',target:'/generate-studio.html?studio=video'}]}});
  });
- await page.goto('/deepsyq.html');await expect(page.locator('#onboardingModal')).toBeVisible();await page.locator('[data-onboarding-goal=image]').click();
+ await page.goto('/deepsyq.html');await page.evaluate(()=>{localStorage.setItem('vv_token','new-user');localStorage.setItem('deepsyq_onboarding_pending','1');});await page.reload();await expect(page.locator('#onboardingModal')).toBeVisible();await page.locator('[data-onboarding-goal=image]').click();
  await expect(page).toHaveURL(/generate-studio.html\?studio=image/);expect(savedGoal).toBe('image');expect(await page.evaluate(()=>localStorage.getItem('deepsyq_onboarding_pending'))).toBeNull();
 });
 
