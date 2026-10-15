@@ -5,6 +5,7 @@ import pg from 'pg';
 import { runProductWatcherOnce } from '../server/product-watcher/monitor.js';
 import { productWatcherTick } from '../server/product-watcher/scheduler.js';
 import { runOfficialSourcesOnce } from '../server/product-watcher/official-sources.js';
+import { runBriefsIfDue } from '../server/product-watcher/briefs.js';
 import { installProductWatcher } from '../server/product-watcher/admin-api.js';
 
 const url = process.env.PRODUCT_WATCHER_TEST_DB_URL || '';
@@ -94,6 +95,19 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     const pending=await pool.query('SELECT review_status,reviewed_by FROM vv_product_watcher_proposals WHERE id=$1',[proposalId]);
     assert.equal(pending.rows[0].review_status,'reviewed');
     assert.equal(pending.rows[0].reviewed_by,'owner-1');
+
+    
+    const report=await runBriefsIfDue({pool,env:{...env,PRODUCT_WATCHER_BRIEFS_ENABLED:'true'},now:()=>new Date()});
+    assert.equal(report.status,'generated');
+    assert.ok(report.generated.some(x=>x.kind==='daily'));
+    const duplicateReport=await runBriefsIfDue({pool,env:{...env,PRODUCT_WATCHER_BRIEFS_ENABLED:'true'},now:()=>new Date()});
+    assert.equal(duplicateReport.status,'not_due');
+    const briefView=await request('GET','/api/product-watcher/admin/briefs');
+    assert.equal(briefView.statusCode,200);
+    assert.ok(briefView.body.items.length>=1);
+    assert.equal(briefView.body.items[0].content.costs.marginVerified,false);
+    assert.equal(briefView.body.items[0].content.pendingApprovals.automaticApplication,false);
+    assert.equal(JSON.stringify(briefView.body).includes('watcher-fixture-failed'),false);
 
     const history=await request('GET','/api/product-watcher/admin/status');
     assert.equal(history.statusCode,200);assert.equal(history.body.runs[0].status,'warning');
