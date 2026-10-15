@@ -15,6 +15,8 @@ test('public template API exposes active templates and owner can create one',asy
  const rows=[{id:'t-1',title:'Photo ad',slug:'photo-ad',category:'ecommerce',description:'',thumbnail:null,generation_type:'image',prompt_template:'Make an ad',default_model:null,required_input_types:['image'],default_settings:{ratio:'1:1'},active:true,featured:true,sort_order:10,created_at:new Date(),updated_at:new Date()}];
  const pool={async query(sql,args=[]){
   if(sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_template'))return {rows:[]};
+  if(sql.includes('CREATE TABLE IF NOT EXISTS vv_admin_audit'))return {rows:[]};
+  if(sql.startsWith('INSERT INTO vv_admin_audit('))return {rows:[]};
   if(sql.startsWith('SELECT * FROM vv_ai_template WHERE active=true'))return {rows};
   if(sql.startsWith('INSERT INTO vv_ai_template')){const r={...rows[0],id:args[0],title:args[1],slug:args[2],category:args[3],description:args[4],thumbnail:args[5],generation_type:args[6],prompt_template:args[7],default_model:args[8],required_input_types:JSON.parse(args[9]),default_settings:JSON.parse(args[10]),active:args[11],featured:args[12],sort_order:args[13]};return {rows:[r]};}
   throw new Error(sql);
