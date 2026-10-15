@@ -462,7 +462,54 @@ function setHistory(on){historyView=on;$('showCreate').setAttribute('aria-presse
 $('showCreate').onclick=()=>setHistory(false);$('showHistory').onclick=()=>setHistory(true);
 function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
 async function watch(id,epoch){for(let i=0;i<120&&epoch===generation;i++){const d=await(await api(`/api/studio/jobs/${encodeURIComponent(id)}`)).json();if(d.status==='ready'){const b=await(await api(`/api/studio/jobs/${encodeURIComponent(id)}/media`)).blob();if(epoch!==generation)return;clearResult();blob=b;url=URL.createObjectURL(b);const tag=d.mime.startsWith('image/')?'img':d.mime.startsWith('video/')?'video':'audio';const media=document.createElement(tag);media.src=url;if(tag==='img')media.alt=say('Generated image','Созданное изображение');else media.controls=true;$('media').append(media);$('lyrics').textContent=d.text||'';$('empty').hidden=true;$('historyEmpty').hidden=true;$('actions').hidden=false;$('continueImage').hidden=!b.type.startsWith('image/');$('saveNote').hidden=false;$('status').textContent=say('Ready. Preview and save your creation.','Готово. Посмотрите и сохраните результат.');busy=false;availability();return;}if(d.status==='failed'||d.status==='unknown')throw Error(d.error||'GENERATION_FAILED');const wait=Math.max(3000,Math.min(20000,Number(d.retryAfterSeconds||5)*1000));await new Promise(r=>setTimeout(r,wait));}throw Error('STILL_PROCESSING_RELOAD_TO_CHECK');}
-$('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)return;busy=true;availability();setHistory(false);clearResult();const epoch=++generation;$('status').textContent=say('Submitting your request…','Отправляем запрос…');try{const d=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID(),kind,model:modelId,prompt:$('prompt').value,ratio:$('ratio').value,...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked})})).json();job=d.id;sessionStorage.setItem('vu_generation_job',job);$('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');await watch(job,epoch);}catch(e){$('status').textContent=errorText(e);busy=false;availability();}};
+
+async function createImageBatch(){
+ const quantity=imageBatchQuantity();
+ if(quantity<2||quantity>4||!config.imageBatchEnabled)throw Error('IMAGE_BATCH_NOT_ENABLED');
+ // This is N ordinary, independently idempotent image jobs, NOT a single multi-output provider call.
+ const params={kind:'image',model:modelId,prompt:$('prompt').value,ratio:$('ratio').value,
+  resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value,
+  musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:true};
+ const estimate=await(await api('/api/studio/estimate',{method:'POST',body:JSON.stringify({
+  kind:'image',model:params.model,ratio:params.ratio,resolution:params.resolution,
+  outputFormat:params.outputFormat,referenceCount:params.references.length,quantity
+ })})).json();
+ const perImage=Number(estimate.perImageCredits),total=Number(estimate.credits);
+ if(estimate.quantity!==quantity||!Number.isSafeInteger(perImage)||perImage<1||
+    !Number.isSafeInteger(total)||total!==perImage*quantity)throw Error('AI_PRICING_NOT_APPROVED');
+ if(!confirm(say(
+  'Generate '+quantity+' images as '+quantity+' separate AI jobs? Each costs '+perImage+' credits; total up to '+total+' credits. Jobs run one at a time. If one fails, the batch stops; no job retries automatically. Completed jobs remain in History.',
+  'Создать '+quantity+' изображения отдельными AI-задачами? Каждая стоит '+perImage+' кредитов; всего до '+total+' кредитов. Задачи выполняются по очереди. При ошибке пакет остановится, автоматических повторов не будет. Готовые результаты останутся в Истории.'
+ ))){$('status').textContent=say('Batch cancelled; no images were submitted.','Пакет отменён, изображения не отправлялись.');return;}
+ const epoch=++generation;
+ let submitted=0,ready=0;
+ setHistory(false);clearResult();
+ for(let index=0;index<quantity;index++){
+  busy=true;availability();
+  $('status').textContent=say('Creating image '+(index+1)+' of '+quantity+'…','Создаём изображение '+(index+1)+' из '+quantity+'…');
+  try{
+   // New ID exactly once per job. Ambiguous network responses are NEVER submitted again.
+   const requestId=crypto.randomUUID();
+   const reply=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({
+    ...params,requestId,expectedCredits:perImage
+   })})).json();
+   if(!reply.id)throw Error('STUDIO_STORAGE_UNAVAILABLE');
+   submitted++;
+   job=reply.id;
+   sessionStorage.setItem('vu_generation_job',job);
+   await watch(job,epoch);
+   ready++;
+  }catch(e){
+   $('status').textContent=say(
+    'Batch stopped after '+submitted+' submitted and '+ready+' completed image(s). '+errorText(e)+' Check History: a job may still be processing. No automatic retries were made.',
+    'Пакет остановлен: отправлено '+submitted+', готово '+ready+'. '+errorText(e)+' Проверьте Историю: одна из задач ещё может выполняться. Автоматических повторов не было.'
+   );
+   return;
+  }
+ }
+ $('status').textContent=say('Batch complete: '+ready+' images saved as separate results in History.','Пакет завершён: '+ready+' изображения сохранены отдельно в Истории.');
+}
+$('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)return;busy=true;availability();if(kind==='image'&&imageBatchQuantity()>1){try{await createImageBatch();}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}return;}setHistory(false);clearResult();const epoch=++generation;$('status').textContent=say('Submitting your request…','Отправляем запрос…');try{const d=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID(),kind,model:modelId,prompt:$('prompt').value,ratio:$('ratio').value,...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked})})).json();job=d.id;sessionStorage.setItem('vu_generation_job',job);$('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');await watch(job,epoch);}catch(e){$('status').textContent=errorText(e);busy=false;availability();}};
 // Continue from an existing image in the same browser without an API call.
  // The reference is explicitly prepared for a new Image request; Generate stays manual.
  async function imageResultReference(input){
