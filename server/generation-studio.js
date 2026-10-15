@@ -7,6 +7,7 @@ import {listModelControls,getModelControl,updateModelControl,applyModelControl} 
 import {enforceGenerationPolicy,generationPolicy} from './generation-policy.js';
 import {createObjectStorage} from './generation-storage.js';
 import {resolveGenerationModel,orderedGenerationCandidates} from './generation-routing.js';
+import {normalizeGenerationError,publicGenerationError} from './generation-errors.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch}={}){
  const model=MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter);
  if(!model)throw Error('MODEL_NOT_CONNECTED');
@@ -128,7 +129,8 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   catch(_){/* Durable finalizing state is retried by recoveryTick; never regenerate provider output. */}
  }
  async function run(id,request,userId){try{await finish(id,await provider(request,{env}),userId);}catch(e){
-  await pool.query("UPDATE vv_generation_jobs SET status='failed',error='GENERATION_FAILED_NO_AUTOMATIC_RETRY',error_message=$2,failed_at=NOW() WHERE id=$1",[id,walletEnabled()?'AI_WALLET_REVIEW_REQUIRED':null]);
+  const failure=normalizeGenerationError(e,{stage:'provider_submit'});
+  await pool.query("UPDATE vv_generation_jobs SET status='failed',error=$2,error_message=$3,metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object('failure',jsonb_build_object('category',$4,'stage',$5,'sourceCode',$6,'retryable',$7)),failed_at=NOW() WHERE id=$1",[id,failure.code,walletEnabled()?'AI_WALLET_REVIEW_REQUIRED':null,failure.category,failure.stage,failure.sourceCode,failure.retryable]);
   if(walletEnabled())await wallet.settle({userId,jobId:id,outcome:'unknown'}).catch(()=>{});
  }}
  app.post('/api/studio/estimate',auth,owner,async(req,res)=>{try{
@@ -182,7 +184,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  app.get('/api/studio/jobs/:id',auth,owner,async(req,res)=>{try{
   let j=await getJob(req);if(!j)return res.status(404).json({error:'NOT_FOUND'});
   if(j.status==='finalizing'&&walletEnabled()){try{await wallet.settle({userId:req.user.id,jobId:j.id,outcome:'success'});await pool.query("UPDATE vv_generation_jobs SET status='ready',credits_charged=credits_reserved,error_message=null,completed_at=NOW() WHERE id=$1 AND status='finalizing'",[j.id]);j=await getJob(req);}catch(_){/* Keep durable finalizing state; background/user polling may retry capture. */}}
-  if(j.status==='processing'&&j.operation){try{const result=await poller(j.operation,{env});if(!result.pending){await finish(j.id,result,req.user.id);j=await getJob(req);}}catch(e){if(e.terminal){if(walletEnabled())await wallet.settle({userId:req.user.id,jobId:j.id,outcome:'confirmed_failure'}).catch(()=>{});await pool.query("UPDATE vv_generation_jobs SET status='failed',credits_reserved=CASE WHEN $2 THEN 0 ELSE credits_reserved END,error='GENERATION_FAILED_NO_AUTOMATIC_RETRY',error_message=null,failed_at=NOW() WHERE id=$1",[j.id,walletEnabled()]);j=await getJob(req);}else return res.status(502).json({error:'PROVIDER_POLL_FAILED',retryable:true});}}
+  if(j.status==='processing'&&j.operation){try{const result=await poller(j.operation,{env});if(!result.pending){await finish(j.id,result,req.user.id);j=await getJob(req);}}catch(e){const failure=normalizeGenerationError(e,{stage:'provider_poll'});if(e.terminal){if(walletEnabled())await wallet.settle({userId:req.user.id,jobId:j.id,outcome:'confirmed_failure'}).catch(()=>{});await pool.query("UPDATE vv_generation_jobs SET status='failed',credits_reserved=CASE WHEN $2 THEN 0 ELSE credits_reserved END,error=$3,error_message=null,metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object('failure',jsonb_build_object('category',$4,'stage',$5,'sourceCode',$6,'retryable',$7)),failed_at=NOW() WHERE id=$1",[j.id,walletEnabled(),failure.code,failure.category,failure.stage,failure.sourceCode,failure.retryable]);j=await getJob(req);}else return res.status(502).json(publicGenerationError(e,{stage:'provider_poll'}));}}
   if(j.status==='processing'&&!j.operation&&Date.now()-new Date(j.created_at).getTime()>180000)return res.json({id:j.id,status:'unknown',error:'STATUS_UNKNOWN_NO_AUTOMATIC_RETRY'});
   res.json({id:j.id,kind:j.kind,status:j.status,provider:j.provider||null,model:j.model||null,prompt:j.prompt||'',error:j.error,text:j.result_text||'',mime:j.mime,createdAt:j.created_at,creditsReserved:Number(j.credits_reserved||0),creditsCharged:Number(j.credits_charged||0)});
  }catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
