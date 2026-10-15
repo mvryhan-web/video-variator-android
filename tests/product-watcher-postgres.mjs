@@ -75,6 +75,20 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     const history=await request('GET','/api/product-watcher/admin/status');
     assert.equal(history.statusCode,200);assert.equal(history.body.runs[0].status,'warning');
     assert.equal(history.body.schedulerActive,false);
+    const observed=await pool.query('SELECT id,source,code,observations,acknowledged_at FROM vv_product_watcher_alerts ORDER BY id');
+    assert.ok(observed.rows.some(x=>x.source==='operations'&&x.code==='COST_VISIBILITY_GAP'));
+    const list=await request('GET','/api/product-watcher/admin/alerts');
+    assert.equal(list.statusCode,200);
+    assert.ok(list.body.items.some(x=>x.code==='COST_VISIBILITY_GAP'));
+    const chosen=list.body.items.find(x=>x.code==='COST_VISIBILITY_GAP');
+    const confirm=await request('POST','/api/product-watcher/admin/alerts/ack',{body:{alertId:chosen.id,confirmAlertId:chosen.id}});
+    assert.equal(confirm.statusCode,200);
+    const acknowledged=await pool.query('SELECT acknowledged_at,acknowledged_by FROM vv_product_watcher_alerts WHERE id=$1',[chosen.id]);
+    assert.ok(acknowledged.rows[0].acknowledged_at);
+    assert.equal(acknowledged.rows[0].acknowledged_by,'owner-1');
+    const duplicate=await request('POST','/api/product-watcher/admin/alerts/ack',{body:{alertId:chosen.id,confirmAlertId:chosen.id}});
+    assert.equal(duplicate.statusCode,409);
+
     assert.ok(!JSON.stringify(history.body).includes('watcher-fixture-'));
     assert.ok(history.body.runs[0].checks.operations.alerts.some(x=>x.code==='COST_VISIBILITY_GAP'));
 

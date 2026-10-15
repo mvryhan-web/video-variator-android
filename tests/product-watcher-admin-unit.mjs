@@ -38,6 +38,7 @@ function db({paused=false,missing=false}={}){
   if(sql==='SELECT 1 AS alive')return{rows:[{alive:1}]};
   if(sql.includes('to_regclass'))return{rows:[{table_name:'vv_generation_jobs'}]};
   if(sql.includes('FROM vv_generation_jobs'))return{rows:[{}]};
+  if(sql.startsWith('INSERT INTO vv_product_watcher_alerts'))return{rows:[]};
   if(sql.startsWith('INSERT INTO vv_product_watcher_runs'))return{rows:[{id:'10'}]};
   throw Error('UNKNOWN_SQL: '+sql);
  };
@@ -122,4 +123,23 @@ test('owner explicit run after resume appends one report; schema absent fails cl
  assert.equal(status.statusCode,503);
  const noRun=await missing.call('POST','/api/product-watcher/admin/run');
  assert.equal(noRun.statusCode,503);assert.equal(noRun.body.error,'WATCHER_RUN_FAILED');
+});
+
+
+test('private alert queue rejects non-owner and returns safe metadata',async()=>{
+ const f=fixture();
+ let r=await f.call('GET','/api/product-watcher/admin/alerts',{user:denied});
+ assert.equal(r.statusCode,403);
+ r=await f.call('GET','/api/product-watcher/admin/alerts');
+ assert.equal(r.statusCode,200);assert.deepEqual(r.body.items,[]);
+});
+
+test('acknowledgement requires explicit matching ID and a logged owner action',async()=>{
+ const f=fixture();
+ let r=await f.call('POST','/api/product-watcher/admin/alerts/ack',{body:{alertId:9,confirmAlertId:10}});
+ assert.equal(r.statusCode,400);
+ assert.equal(f.pool.seen.filter(([q])=>q.includes('UPDATE vv_product_watcher_alerts')).length,0);
+ r=await f.call('POST','/api/product-watcher/admin/alerts/ack',{body:{alertId:9,confirmAlertId:9}});
+ assert.equal(r.statusCode,200);assert.equal(r.body.acknowledged,true);
+ assert.ok(f.pool.seen.some(([q,args])=>q.includes('INSERT INTO vv_admin_audit')&&args[1]==='product_watcher.alert_ack'));
 });
