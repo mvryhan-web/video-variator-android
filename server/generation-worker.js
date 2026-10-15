@@ -15,6 +15,7 @@ const studio=installGenerationStudio(app,{auth:(_req,_res,next)=>next(),pool,wal
 if(!studio.startRecovery()){console.error('[generation worker] recovery did not start');await pool.end();process.exit(1);}
 console.log('[generation worker] recovery loop started');
 
+let stopping=false;
 const cleanupEnabled=process.env.AI_STUDIO_REFERENCE_CLEANUP_ENABLED==='true'&&
  process.env.AI_STUDIO_REFERENCE_STAGING_ENABLED==='true'&&referenceRetentionMinutes(process.env)!==null;
 const references=cleanupEnabled?createGenerationReferenceLedger({
@@ -34,7 +35,6 @@ const referenceCleanupTimer=references?setInterval(()=>void cleanupReferenceBatc
 if(references)void cleanupReferenceBatch();
 
 const heartbeat=setInterval(()=>{},60_000);
-let stopping=false;
 async function shutdown(signal){
  if(stopping)return;stopping=true;console.log('[generation worker] stopping:',signal);
  clearInterval(heartbeat);if(referenceCleanupTimer)clearInterval(referenceCleanupTimer);studio.stopRecovery();await pool.end().catch(()=>{});process.exit(0);
