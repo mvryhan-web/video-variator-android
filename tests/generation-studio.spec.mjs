@@ -144,6 +144,37 @@ test('video selectors follow real Veo/Seedance capabilities without submitting j
  expect(posts).toBe(0);
 });
 
+test('Seedance image modes follow attached photo count without posting paid jobs',async({page})=>{
+ let jobPosts=0;page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')jobPosts++;});
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#modelButton').click();
+ await page.getByRole('button',{name:/Seedance 2.0/}).click();
+ const image={name:'frame.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')};
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#videoInputMode')).toHaveValue('text');
+ await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.locator('#references').setInputFiles(image);
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#videoInputMode')).toHaveValue('first_frame');
+ await page.locator('#videoInputMode').selectOption('reference_image');
+ await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.locator('#references').setInputFiles({...image,name:'last.png'});
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#videoInputMode')).toHaveValue('reference_image');
+ await expect(page.locator('#videoInputMode option')).toHaveCount(2);
+ await page.locator('#videoInputMode').selectOption('first_last');
+ await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.locator('#references').setInputFiles({...image,name:'third.png'});
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#videoInputMode')).toHaveValue('reference_image');
+ await expect(page.locator('#videoInputMode option')).toHaveCount(1);
+ await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.locator('#clearRefs').click();
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#videoInputMode')).toHaveValue('text');
+ expect(jobPosts).toBe(0);
+});
+
 test('video History checks an existing task without resubmitting or downloading media',async({page})=>{
  const cfg={enabled:true,models:[{kind:'video',label:'Video fixture',id:'fixture-video',ratios:['16:9'],references:0,enabled:true}],catalog:[{kind:'video',label:'Video fixture',id:'fixture-video',ratios:['16:9'],references:0,enabled:true,adapter:true,provider:'Google'}]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
