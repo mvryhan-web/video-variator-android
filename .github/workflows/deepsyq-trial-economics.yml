@@ -1,0 +1,45 @@
+name: Deepsyq Trial Economics (offline)
+
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-pricing.js'
+      - 'scripts/trial-economics-preview.mjs'
+      - 'tests/trial-economics-preview.mjs'
+      - '.github/workflows/deepsyq-trial-economics.yml'
+  pull_request:
+    paths:
+      - 'server/generation-pricing.js'
+      - 'scripts/trial-economics-preview.mjs'
+      - 'tests/trial-economics-preview.mjs'
+      - '.github/workflows/deepsyq-trial-economics.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-scenarios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check existing pricing importer and preview syntax
+        run: |
+          node --check server/generation-pricing.js
+          node --check scripts/trial-economics-preview.mjs
+          node --check tests/trial-economics-preview.mjs
+      - name: Verify conservative trial limits with hypothetical fixture costs
+        run: node --test tests/trial-economics-preview.mjs
+      - name: No live Stripe or credentials required
+        run: |
+          set +e
+          node scripts/trial-economics-preview.mjs > /tmp/deepsyq-trial-no-config.json
+          exit_code=$?
+          set -e
+          test "$exit_code" -eq 2
+          grep -q 'EXPLICIT_JSON_INPUT_REQUIRED' /tmp/deepsyq-trial-no-config.json
