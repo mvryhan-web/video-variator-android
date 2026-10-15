@@ -23,6 +23,12 @@ GitHub Actions run **38798448778** passed BOTH isolated jobs (**s3-link-guards**
 
 A preceding run 38798236638 failed solely because the first fixture moved `expires_at` into the past without also moving `created_at`, violating the real database's expiry constraint. Corrected in commit `23d1b1c`; run **38798448778** passed the full checks. This is now **LOCAL S3-PROTOCOL + LOCAL POSTGRES LIFECYCLE VERIFIED**, not vendor-cloud S3, public ModelArk fetch, commercial readiness or media safety approval.
 
+## Owner intake concurrency guard (verified before cloud staging)
+
+The existing `server/generation-reference-upload.js` owner-only HTTP endpoint now rejects a third concurrent upload **before** `express.raw` can buffer up to 20 MiB and before `ffprobe` starts. This is a **per-process** two-slot admission guard, not a distributed rate limiter, and it does **not** replace the existing PostgreSQL advisory-lock two-active-asset quota across app instances. It releases capacity on completed response, parsing error, or disconnected body stream; during asynchronous probe/S3 work it holds the slot until the actual operation completes, even when the browser disconnects.
+
+Run **38800557591** passed **52/52 focused unit checks + 9/9 isolated PostgreSQL/fake-S3 checks** (no skips/failures), including held concurrent uploads (third HTTP request gets `429 REFERENCE_UPLOAD_BUSY` before probe/ledger) and recovery after malformed input/failed probe. These CI fixtures do not make the public endpoint available: `AI_STUDIO_REFERENCE_UPLOAD_ENABLED=false` remains the production/default state. Full production admission/backpressure, malicious file scanning, and a global abuse policy remain staging launch blockers.
+
 ## Required before any real provider fetch
 
 1. **Owner-controlled staging only:** agree a dedicated disposable test bucket and endpoint, with no customer media, no permanent public ACL, no user-browser presigned links, no unrestricted CORS. Do not reuse production buckets or production credentials for fixtures.
