@@ -107,7 +107,17 @@ function renderRefs(){
   remove.setAttribute('aria-label',say('Remove reference '+(index+1),'Убрать изображение '+(index+1)));
   remove.disabled=busy;
   remove.onclick=()=>{if(busy)return;refs.splice(index,1);$('consent').checked=false;renderRefs();availability();};
-  tile.append(img,remove);$('refPreview').append(tile);
+  const controls=document.createElement('div');controls.className='reference-order-controls';
+  for(const [direction,label] of [[-1,say('Move reference left','Переместить влево')],[1,say('Move reference right','Переместить вправо')]]){
+   const move=document.createElement('button');move.type='button';move.textContent=direction<0?'←':'→';
+   move.setAttribute('aria-label',label+' '+(index+1));move.disabled=busy||index+direction<0||index+direction>=refs.length;
+   move.onclick=()=>{if(busy)return;const destination=index+direction;if(destination<0||destination>=refs.length)return;
+    [refs[index],refs[destination]]=[refs[destination],refs[index]];
+    $('consent').checked=false;renderRefs();availability();
+   };
+   controls.append(move);
+  }
+  tile.append(img,remove,controls);$('refPreview').append(tile);
  });
 }
 async function acceptFiles(files,{append=false}={}){
