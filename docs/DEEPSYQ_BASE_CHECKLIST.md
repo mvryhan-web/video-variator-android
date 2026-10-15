@@ -12,9 +12,9 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 
 | # | Original requirement | Status | Current state / next action |
 |---|---|---|---|
-| 1 | Product becomes Lumina-style AI creative platform | PARTIAL | Deepsyq dashboard/studios exist on feature branch; public product is not launched. |
+| 1 | Product becomes Lumina-style AI creative platform | PARTIAL | Deepsyq dashboard/studios exist on feature branch; dashboard now has a prompt-first Image/Video Canvas entry using the existing local handoff (no automatic generation). Public product is not launched. |
 | 2 | New AI platform becomes `/` | BLOCKED | `DEEPSYQ_HOME_ENABLED` exists but defaults OFF. Enable only after launch gates pass. |
-| 3 | Hero / Canvas workspace | PARTIAL | Studio composer, references, model/settings and examples exist; unified Canvas is not complete. |
+| 3 | Hero / Canvas workspace | PARTIAL | Studio composer, references, model/settings and examples exist; homepage quick-create now transfers a local prompt to Image/Video Studio for review. Unified Canvas remains incomplete. |
 | 4 | Image generation | PARTIAL / BLOCKED | Google + BytePlus image adapters prepared; live BytePlus key/model activation and commercial flow pending. |
 | 5 | Video generation | PARTIAL / BLOCKED | Google + BytePlus async video adapters prepared; live provider activation/storage/commercial flow pending. |
 | 6 | BytePlus first provider adapter | PARTIAL / BLOCKED | Server-only ModelArk adapter exists for Seedream/Seedance. Real account activation/key/smoke call pending. |
