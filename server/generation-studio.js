@@ -50,6 +50,20 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(env.AI_PROVIDER_ADMIN_ENABLED!=='true'||!pool)return base;
   return listModelControls(pool,base);
  }
+ async function resolveEstimateRequest(body){
+  const catalog=await effectiveCatalog(),kind=String(body?.kind||''),ratio=String(body?.ratio||''),musicMode=body?.musicMode==null?null:String(body.musicMode),count=Number(body?.referenceCount||0);
+  if(!['image','video','music'].includes(kind)||!Number.isInteger(count)||count<0||count>10)throw Error('INVALID_REQUEST');
+  let selected,routing;
+  if(env.AI_SMART_ROUTING_ENABLED==='true'&&(body?.model==='smart'||!body?.model)){
+   const candidates=orderedGenerationCandidates({kind,ratio,references:Array.from({length:count})},catalog);if(!candidates.length)throw Error('NO_COMPATIBLE_MODEL');selected=candidates[0];routing={smart:true,candidates:candidates.map(m=>m.id)};
+  }else{
+   selected=catalog.find(m=>m.id===body?.model&&m.kind===kind);if(!selected)throw Error('MODEL_NOT_FOUND');if(!selected.enabled)throw Error(selected.maintenance?'MODEL_MAINTENANCE':'MODEL_NOT_ENABLED');routing={smart:false,candidates:[selected.id]};
+  }
+  if(selected.ratios?.length&&!selected.ratios.includes(ratio))throw Error('UNSUPPORTED_FORMAT');
+  if(count>Number(selected.references||0))throw Error('INVALID_REFERENCES');
+  if(kind==='music'&&!['song','instrumental'].includes(musicMode))throw Error('INVALID_MUSIC_MODE');
+  return {request:{kind,model:selected.id,ratio,musicMode},selected,routing};
+ }
  async function resolveRequest(body){
   const catalog=await effectiveCatalog();
   let selected;
@@ -152,7 +166,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(walletEnabled())await wallet.settle({userId,jobId:id,outcome:'unknown'}).catch(()=>{});
  }}
  app.post('/api/studio/estimate',auth,generationUser,async(req,res)=>{try{
-  const {request,selected,routing}=await resolveRequest(req.body);
+  const {request,selected,routing}=await resolveEstimateRequest(req.body);
   const quote=estimateGenerationPricing(request,selected,env);if(!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
   res.json({credits:quote.credits,unit:'AI credits',model:quote.model,kind:quote.kind,routing});
  }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','INVALID_REFERENCES','INVALID_MUSIC_MODE'].includes(e.message);res.status(bad?400:503).json({error:bad?e.message:e.message||'AI_PRICING_NOT_APPROVED'});}});

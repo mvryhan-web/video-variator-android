@@ -247,3 +247,9 @@ Current queued-roadmap dependencies to verify before implementation:
 
 - Authenticated users can see current AI-wallet available/held/debt status in the Deepsyq header when AI billing is enabled.
 - The wallet chip is hidden when billing is disabled or unavailable and links to the existing AI Pricing page.
+
+
+### Continuation 17 — pre-generation credit estimate
+
+- Studio now surfaces server-priced AI credits before Generate without uploading prompt/media for the estimate.
+- Estimate recalculation is debounced and cached by settings signature; no provider generation is triggered.

@@ -91,3 +91,11 @@ test('wallet activity and Stripe return never claim payment before webhook confi
  await page.goto('/generate-studio.html?studio=image&ai_checkout=returned');
  await expect(page.locator('#walletDialog')).toBeVisible();await expect(page.locator('#walletStatus')).toContainText('Credits appear only after Stripe confirms');await expect(page.locator('#walletHistory')).toContainText('Credit purchase');await expect(page.locator('#walletHistory')).toContainText('Generation reserve');await expect(page.locator('#walletBalance')).toHaveText('850');
 });
+
+
+test('Studio shows a server-priced credit estimate without sending prompt or media',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','owner'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,ownerOnly:true,pricingConfigured:true,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:1,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:1,enabled:true,adapter:true,provider:'Google'}]}}));
+ let estimateBody=null;await page.route('**/api/studio/estimate',r=>{estimateBody=r.request().postDataJSON();return r.fulfill({json:{credits:12,unit:'AI credits',model:'fixture',kind:'image',routing:{smart:false,candidates:['fixture']}}});});
+ await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#creditEstimate')).toContainText('12 AI credits');expect(estimateBody.prompt).toBeUndefined();expect(estimateBody.references).toBeUndefined();expect(estimateBody.consent).toBeUndefined();expect(estimateBody.referenceCount).toBe(0);
+});

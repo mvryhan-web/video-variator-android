@@ -29,7 +29,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 15 | Credit reservation | PARTIAL | Generation reserves approved server-priced AI credits before provider execution and captures only after durable output; ambiguous submission errors remain held for review. Feature remains disabled by default. |
 | 16 | Stripe subscriptions + credit packs | PARTIAL | Existing Stripe is reused. AI credit-pack checkout supports explicit test/live modes, idempotent grants and cumulative refund synchronization; live Products/Prices/webhook smoke test are still external/unconfigured. |
 | 17 | Unit economics | PARTIAL | Job/provider pricing tracks explicit cost currency, credits and provider cost; owner analytics separates currencies and does not fabricate FX/gross margin. Real verified provider economics remain unconfigured. |
-| 18 | Pricing engine | PARTIAL | Server-side `AI_MODEL_PRICING_JSON` engine + safe credit estimate endpoint added; no invented/default prices. |
+| 18 | Pricing engine | PARTIAL | Server-side `AI_MODEL_PRICING_JSON` engine + privacy-preserving Studio credit estimate are wired; estimate sends only kind/model/settings/reference count, never prompt or media. No invented/default prices. |
 | 19 | AI Apps | PARTIAL | Separate data-driven AI Apps page now renders only active templates from the shared template API. Use Template prepares a real Image/Video/Audio Studio and never auto-generates; broader workflows remain pending. |
 | 20 | Product Video workflow | PARTIAL | Guided local workflow accepts up to 3 product photos + optional logo/name, style/format/duration preference, builds an internal prompt, and hands prompt/settings/local references to Video Studio without auto-generation. Live commercial generation remains gated. |
 | 21 | AI Agents | NOT STARTED (BASE) | Deeper implementation is Roadmap Block 2. |
@@ -242,3 +242,10 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 
 - Authenticated Dashboard now shows available AI credits plus held credits or debt when AI billing is actually enabled.
 - Wallet UI stays hidden when AI billing is disabled/unavailable and links to the existing separated Pricing page; it never fabricates a balance.
+
+
+## Continuation 18 — pre-generation credit estimate
+
+- Studio now shows the exact server-configured AI-credit estimate before generation when pricing is configured and the signed-in user is allowed to access the estimate.
+- Estimate requests do not transmit prompt text, reference image bytes or consent state; only kind/model/format/music mode/reference count are used.
+- Recalculation is debounced and signature-cached so unchanged settings do not repeatedly hit the server. The estimate never starts a provider call.
