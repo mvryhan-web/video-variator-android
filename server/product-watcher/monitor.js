@@ -73,7 +73,7 @@ export function summarizeChecks(checks) {
   return { status, findings };
 }
 
-export async function runProductWatcherOnce({ pool, env = {}, fetchFn = globalThis.fetch, now = () => new Date(), persist = true } = {}) {
+export async function runProductWatcherOnce({ pool, env = {}, fetchFn = globalThis.fetch, now = () => new Date(), persist = true, minimumIntervalMs = 0 } = {}) {
   const config = watcherConfig(env);
   if (!config.enabled) return { enabled: false, status: 'disabled', findings: [], checks: {} };
   if (!pool || typeof pool.connect !== 'function') throw Error('WATCHER_DATABASE_NOT_CONFIGURED');
@@ -88,6 +88,18 @@ export async function runProductWatcherOnce({ pool, env = {}, fetchFn = globalTh
       const control = await client.query('SELECT paused FROM vv_product_watcher_control WHERE id=1');
       if (!control.rows?.length) throw Error('WATCHER_SCHEMA_NOT_READY');
       if (control.rows[0].paused === true) return { enabled: true, status: 'paused', code: 'OWNER_PAUSED', findings: [], checks: {} };
+    }
+    if (persist && minimumIntervalMs > 0) {
+      // Double-check the durable schedule *under* the same PostgreSQL advisory lock.
+      // Two fast workers must not create two reports for one 15-minute interval.
+      if (!Number.isSafeInteger(minimumIntervalMs) || minimumIntervalMs < 60000 || minimumIntervalMs > 86400000) {
+        throw Error('WATCHER_INVALID_INTERVAL');
+      }
+      const last = await client.query('SELECT created_at FROM vv_product_watcher_runs ORDER BY id DESC LIMIT 1');
+      const lastTime = last.rows?.[0]?.created_at ? new Date(last.rows[0].created_at).getTime() : null;
+      if (lastTime != null && (!Number.isFinite(lastTime) || now().getTime() - lastTime < minimumIntervalMs)) {
+        return { enabled: true, status: 'not_due', code: 'INTERVAL_NOT_ELAPSED', findings: [], checks: {} };
+      }
     }
     const checks = {
       http: await httpHealth({ fetchFn, ...config }),

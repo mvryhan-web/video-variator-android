@@ -30,6 +30,6 @@ export async function productWatcherTick({
   if (lastMillis != null && (!Number.isFinite(lastMillis) || now().getTime() - lastMillis < WATCHER_INTERVAL_MS)) {
     return { status: 'not_due', checked: false };
   }
-  const report = await runProductWatcherOnce({pool,env,fetchFn,now,persist:true});
+  const report = await runProductWatcherOnce({pool,env,fetchFn,now,persist:true,minimumIntervalMs:WATCHER_INTERVAL_MS});
   return { status: report.status, checked: !!report.runId, runId: report.runId || null };
 }

@@ -10,6 +10,7 @@ function mockPool({counts={}, schema=true, failDb=false, lock=true}={}) {
       if(sql.includes('pg_try_advisory_lock'))return {rows:[{acquired:lock}]};
       if(sql.includes('pg_advisory_unlock'))return {rows:[{pg_advisory_unlock:true}]};
       if(sql==='SELECT paused FROM vv_product_watcher_control WHERE id=1')return {rows:[{paused:false}]};
+      if(sql==='SELECT created_at FROM vv_product_watcher_runs ORDER BY id DESC LIMIT 1')return{rows:[]};
       if(sql==='SELECT 1 AS alive'){if(failDb)throw Error('password=secret');return{rows:[{alive:1}]};}
       if(sql.includes('to_regclass'))return {rows:[{table_name:schema?'vv_generation_jobs':null}]};
       if(sql.includes('FROM vv_generation_jobs'))return {rows:[counts]};
@@ -98,4 +99,20 @@ test('very old stuck and held credit jobs are still included in aggregate SQL',a
  assert.match(sql,/deleted=false/);
  assert.match(sql,/stale_24h/);
  assert.match(sql,/held_review_24h/);
+});
+
+
+test('minimum interval is rechecked inside lock before HTTP or insertion',async()=>{
+ const pool=mockPool();
+ const original=pool.connect;pool.connect=async()=>{const c=await original(),base=c.query;
+  c.query=async(sql,params)=>sql.startsWith('SELECT created_at FROM vv_product_watcher_runs')
+    ?{rows:[{created_at:new Date('2026-10-15T11:50:00Z')}]}:base(sql,params);
+  return c;
+ };
+ let calls=0;const report=await runProductWatcherOnce({
+  pool,env,persist:true,now:()=>new Date('2026-10-15T12:00:00Z'),minimumIntervalMs:900000,
+  fetchFn:async()=>{calls++;throw Error('unexpected')}
+ });
+ assert.equal(report.status,'not_due');assert.equal(calls,0);
+ assert.ok(pool.seen.some(([s])=>s.includes('pg_advisory_unlock')));
 });

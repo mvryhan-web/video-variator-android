@@ -12,6 +12,7 @@ function db({paused=false,last=null,lock=true,missing=false}={}){
   if(sql.startsWith('SELECT c.paused'))return{rows:missing?[]:[{paused}]};
   if(sql.startsWith('UPDATE vv_product_watcher_scheduler'))return{rows:[]};
   if(sql.startsWith('SELECT created_at FROM vv_product_watcher_runs'))return{rows:last?[{created_at:last}]:[]};
+  if(sql==='SELECT created_at FROM vv_product_watcher_runs ORDER BY id DESC LIMIT 1')return{rows:last?[{created_at:last}]:[]};
   if(sql.includes('pg_try_advisory_lock'))return{rows:[{acquired:lock}]};
   if(sql.includes('pg_advisory_unlock'))return{rows:[{}]};
   if(sql==='SELECT paused FROM vv_product_watcher_control WHERE id=1')return{rows:[{paused}]};
