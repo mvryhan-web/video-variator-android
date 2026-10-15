@@ -458,3 +458,11 @@ Current queued-roadmap dependencies to verify before implementation:
 - Browser coverage for collapse and model menus added to `tests/deepsyq.spec.mjs`. Exact old nav text assertion updated to new Canvas label.
 - **Next:** inspect GitHub Actions against this branch head and run browser acceptance (desktop/mobile, menu keyboard/hovers, authenticated sidebar), then prepare real original approved media to populate cinematic gallery. No real media was generated, uploaded, licensed or published by this task; no live feature flag, provider payment, database migration, Stripe, domain, or production deploy was changed.
 
+
+### Block 3 — feature-gated real video hero continuation (2026-10-15)
+
+- Built in the **existing** Deepsyq homepage: optional cinematic hero using only the first actual featured/rights-approved Studio-targeted **video** from the existing `/api/inspiration` API. A working poster remains visible while playback is off; the hero never appears from static artwork or from image-only/empty/disabled content. It opens the existing matching Inspiration item.
+- Reuses the existing viewport-based mute/loop/pause playback logic and respects reduced motion/data saver. Maintains the original prompt Canvas, previous Studio cards, sidebar, owner media, all tools/links and gallery without replacement.
+- Added focused Playwright tests for video hero and image-only fallback; syntax parsed, latest-head GitHub CI was running when last inspected. **NOT a confirmed green release or production deploy.**
+- Creative visual mockups generated in the chat are design references only, NOT standalone picture/video media, validated rights assets or published live site content. Four owner-requested art subjects (red dress, castle, close-up beauty portrait, mountain landscape) remain content production tasks; no paid video provider was launched. No new media rows, production flag, PostgreSQL migration, Stripe or Render deployment changed.
+- Branch `deepsyq-platform`, draft PR #42; implementation commit `72e13c6e461f128a0d50705da76859fc0dd3e77a`. Next: final browser CI/UX validation, real original source asset creation with rights/provenance, then explicit owner-approved launch.
