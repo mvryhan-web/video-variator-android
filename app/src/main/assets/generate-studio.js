@@ -16,14 +16,22 @@ async function api(path,options={}){const token=localStorage.getItem('vv_token')
 let aiBilling=null;
 function moneyMinor(amount,currency){try{return new Intl.NumberFormat(undefined,{style:'currency',currency:String(currency||'usd').toUpperCase()}).format(Number(amount||0)/100);}catch(_){return (Number(amount||0)/100).toFixed(2)+' '+String(currency||'usd').toUpperCase();}}
 function walletStat(label,value){const x=document.createElement('div');x.className='wallet-stat';const l=document.createElement('span');l.textContent=label;const v=document.createElement('strong');v.textContent=String(value);x.append(l,v);return x;}
+const walletKinds={purchase:['Credit purchase','Покупка кредитов'],reserve:['Generation reserve','Резерв генерации'],captured:['Generation charged','Списание за генерацию'],released:['Generation refund','Возврат резерва'],payment_refund:['Payment refund','Возврат платежа'],owner_adjustment:['Owner adjustment','Корректировка владельца']};
+function ledgerDelta(label,value){if(!value)return null;const span=document.createElement('span');span.className=value>0?'positive':'negative';span.textContent=label+' '+(value>0?'+':'')+Number(value).toLocaleString();return span;}
+function renderWalletHistory(items){
+ const root=$('walletHistory');root.replaceChildren();
+ if(!items?.length){const p=document.createElement('p');p.className='wallet-empty';p.textContent=say('No AI credit activity yet.','Операций с AI-кредитами пока нет.');root.append(p);return;}
+ for(const item of items.slice(0,20)){const row=document.createElement('article');row.className='wallet-ledger';const title=document.createElement('strong'),labels=walletKinds[item.kind]||[item.kind,item.kind];title.textContent=ru?labels[1]:labels[0];const date=document.createElement('small');try{date.textContent=new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(new Date(item.created_at||item.createdAt));}catch(_){date.textContent='';}const deltas=document.createElement('div');deltas.className='wallet-deltas';for(const node of [ledgerDelta(say('available','доступно'),Number(item.available_delta??item.availableDelta||0)),ledgerDelta(say('held','резерв'),Number(item.reserved_delta??item.reservedDelta||0)),ledgerDelta(say('debt','долг'),Number(item.debt_delta??item.debtDelta||0))])if(node)deltas.append(node);row.append(title,date,deltas);root.append(row);}
+}
 async function loadAiWallet(){
  try{
-  const response=await fetch(apiBase()+'/api/ai-billing/config',{cache:'no-store'}),cfg=await response.json().catch(()=>({}));if(!response.ok||!cfg.enabled){$('walletButton').hidden=true;return;}
+  const response=await fetch(apiBase()+'/api/ai-billing/config',{cache:'no-store'}),cfg=await response.json().catch(()=>({}));if(!response.ok||!cfg.enabled){$('walletButton').hidden=true;return false;}
   aiBilling=cfg;$('walletButton').hidden=false;$('walletMode').textContent=cfg.mode==='live'?say('Live Stripe checkout. Payment is completed on Stripe.','Оплата через live Stripe Checkout. Платёж завершается на Stripe.'):say('Stripe test checkout. No real charge should be made in test mode.','Тестовый Stripe Checkout. В тестовом режиме реального списания быть не должно.');
   $('creditPacks').replaceChildren();for(const p of cfg.packs||[]){const card=document.createElement('article');card.className='credit-pack';const title=document.createElement('strong');title.textContent=Number(p.credits).toLocaleString()+' AI credits';const price=document.createElement('small');price.textContent=moneyMinor(p.amount,p.currency);const b=document.createElement('button');b.type='button';b.textContent=cfg.mode==='live'?say('Continue to Stripe','Перейти в Stripe'):say('Open test checkout','Открыть тестовую оплату');b.onclick=()=>void buyCredits(p,b);card.append(title,price,b);$('creditPacks').append(card);}
-  if(!localStorage.getItem('vv_token')){$('walletBalance').textContent='—';$('walletSummary').replaceChildren();$('walletStatus').textContent=say('Sign in to view your AI credit balance or buy credits.','Войдите, чтобы увидеть баланс AI-кредитов или купить кредиты.');return;}
-  const balance=await(await api('/api/ai-billing/balance')).json();$('walletBalance').textContent=Number(balance.available||0).toLocaleString();$('walletSummary').replaceChildren(walletStat(say('Available','Доступно'),Number(balance.available||0).toLocaleString()),walletStat(say('Held','В резерве'),Number(balance.reserved||0).toLocaleString()),walletStat(say('Debt','Долг'),Number(balance.debt||0).toLocaleString()));$('walletStatus').textContent='';
- }catch(_){$('walletButton').hidden=true;}
+  if(!localStorage.getItem('vv_token')){$('walletBalance').textContent='—';$('walletSummary').replaceChildren();renderWalletHistory([]);$('walletStatus').textContent=say('Sign in to view your AI credit balance or buy credits.','Войдите, чтобы увидеть баланс AI-кредитов или купить кредиты.');return true;}
+  const [balance,history]=await Promise.all([api('/api/ai-billing/balance').then(r=>r.json()),api('/api/ai-billing/history').then(r=>r.json()).catch(()=>({items:[]}))]);
+  $('walletBalance').textContent=Number(balance.available||0).toLocaleString();$('walletSummary').replaceChildren(walletStat(say('Available','Доступно'),Number(balance.available||0).toLocaleString()),walletStat(say('Held','В резерве'),Number(balance.reserved||0).toLocaleString()),walletStat(say('Debt','Долг'),Number(balance.debt||0).toLocaleString()));renderWalletHistory(history.items||[]);$('walletStatus').textContent='';return true;
+ }catch(_){$('walletButton').hidden=true;return false;}
 }
 async function buyCredits(pack,button){
  if(!localStorage.getItem('vv_token')){$('walletStatus').textContent=say('Sign in before opening checkout.','Войдите перед оплатой.');return;}
@@ -35,6 +43,7 @@ async function buyCredits(pack,button){
  }catch(e){$('walletStatus').textContent=errorText(e);button.disabled=false;}
 }
 $('walletButton').onclick=()=>{$('walletDialog').showModal();void loadAiWallet();};
+$('walletRefresh').onclick=async()=>{$('walletRefresh').disabled=true;$('walletStatus').textContent=say('Refreshing…','Обновляем…');try{await loadAiWallet();}finally{$('walletRefresh').disabled=false;}};
 
 const modelKind=()=>kind==='music'&&$('musicMode').value==='voice'?'voice':kind;
 const currentModel=()=>catalog.find(m=>m.id===modelId&&m.kind===modelKind());
@@ -143,3 +152,9 @@ const previous=sessionStorage.getItem('vu_generation_job');if(previous&&config.e
 if(new URLSearchParams(location.search).get('view')==='history')setHistory(true);
 
 await loadAiWallet();
+const aiCheckoutState=new URLSearchParams(location.search).get('ai_checkout');
+if((aiCheckoutState==='returned'||aiCheckoutState==='cancelled')&&!$('walletButton').hidden){
+ if(!$('walletDialog').open)$('walletDialog').showModal();
+ $('walletStatus').textContent=aiCheckoutState==='returned'?say('Returned from Stripe. Credits appear only after Stripe confirms the payment webhook. Use Refresh balance if confirmation is still pending.','Вы вернулись из Stripe. Кредиты появятся только после подтверждения платежа webhook. Если подтверждение ещё идёт, нажмите «Обновить баланс».'):say('Checkout was cancelled. No AI credits were added by this return.','Оплата отменена. По этому возврату AI-кредиты не добавлены.');
+ const u=new URL(location.href);u.searchParams.delete('ai_checkout');history.replaceState(null,'',u);
+}

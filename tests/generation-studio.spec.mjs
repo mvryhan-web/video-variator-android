@@ -80,3 +80,14 @@ test('AI wallet shows configured packs and opens Stripe only after click',async(
  await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#walletButton')).toBeVisible();await expect(page.locator('#walletBalance')).toHaveText('120');expect(checkoutCalls).toBe(0);
  await page.locator('#walletButton').click();await expect(page.locator('#walletDialog')).toBeVisible();await expect(page.locator('#creditPacks')).toContainText('1,000 AI credits');await page.getByRole('button',{name:'Continue to Stripe'}).click();await expect(page).toHaveURL(/checkout\.stripe\.com/);expect(checkoutCalls).toBe(1);
 });
+
+
+test('wallet activity and Stripe return never claim payment before webhook confirmation',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'live',livePaymentsEnabled:true,packs:[],rates:[],revision:'r1'}}));
+ await page.route('**/api/ai-billing/balance',r=>r.fulfill({json:{available:850,reserved:50,debt:0}}));
+ await page.route('**/api/ai-billing/history',r=>r.fulfill({json:{items:[{kind:'purchase',available_delta:1000,reserved_delta:0,debt_delta:0,created_at:'2026-10-15T10:00:00Z'},{kind:'reserve',available_delta:-50,reserved_delta:50,debt_delta:0,created_at:'2026-10-15T10:05:00Z'},{kind:'captured',available_delta:0,reserved_delta:-50,debt_delta:0,created_at:'2026-10-15T10:06:00Z'}]}}));
+ await page.goto('/generate-studio.html?studio=image&ai_checkout=returned');
+ await expect(page.locator('#walletDialog')).toBeVisible();await expect(page.locator('#walletStatus')).toContainText('Credits appear only after Stripe confirms');await expect(page.locator('#walletHistory')).toContainText('Credit purchase');await expect(page.locator('#walletHistory')).toContainText('Generation reserve');await expect(page.locator('#walletBalance')).toHaveText('850');
+});
