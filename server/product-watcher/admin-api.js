@@ -3,6 +3,7 @@ import { initAdminAudit } from '../admin-audit.js';
 import { WATCHER_INTERVAL_MS } from './scheduler.js';
 import { listWatcherAlerts } from './alerts.js';
 import { listOfficialSourceReviews, officialSourceEnabled } from './official-sources.js';
+import { listWatcherBriefs, briefEnabled } from './briefs.js';
 
 // Match the existing Deepsyq owner identity policy: only the designated Google account.
 // An empty ADMIN_EMAIL must never authorize a user with an empty email.
@@ -119,6 +120,15 @@ export function installProductWatcher(app, { auth, pool, env = process.env, fetc
       if(client)await client.query('ROLLBACK').catch(()=>{});
       return error(res,503,'WATCHER_PROPOSAL_REVIEW_FAILED');
     }finally{client?.release();}
+  });
+
+  app.get('/api/product-watcher/admin/briefs',auth,owner,async(_req,res)=>{
+    if(!enabled())return res.json({enabled:false,schedulerEnabled:false,items:[]});
+    if(!pool)return error(res,503,'WATCHER_DATABASE_NOT_CONFIGURED');
+    try{
+      const items=await listWatcherBriefs(pool);
+      return res.json({enabled:true,schedulerEnabled:briefEnabled(env),items});
+    }catch{return error(res,503,'WATCHER_BRIEFS_UNAVAILABLE');}
   });
 
   // Pause/resume blocks future runs, not work already in flight. Only one guarded,

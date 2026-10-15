@@ -28,6 +28,7 @@ function db({paused=false,missing=false}={}){
   if(sql.startsWith('SELECT heartbeat_at FROM vv_product_watcher_scheduler'))return{rows:[{heartbeat_at:null}]};
   if(sql.startsWith('SELECT id,source,code,severity'))return{rows:[]};
   if(sql.startsWith('SELECT source_key,provider,source_url,last_checked_at'))return{rows:[]};
+  if(sql.startsWith('SELECT id,kind,period_key,content,created_at'))return{rows:[]};
   if(sql.startsWith('SELECT id,source_key,provider,source_url,review_status'))return{rows:[]};
   if(sql.startsWith('UPDATE vv_product_watcher_proposals'))return{rows:[{id:9}]};
   if(sql.startsWith('UPDATE vv_product_watcher_alerts'))return{rows:[{id:'9'}]};
@@ -172,4 +173,14 @@ test('proposal review is a logged human decision, not price/model/production app
  assert.equal(ok.statusCode,200);assert.equal(ok.body.applied,false);
  assert.ok(f.pool.seen.some(([sql,params])=>sql.includes('INSERT INTO vv_admin_audit')&&params[1]==='product_watcher.proposal_review'));
  assert.ok(!f.pool.seen.some(([sql])=>/UPDATE.*(vv_generation|stripe|vv_ai_wallet)/i.test(sql)));
+});
+
+
+test('briefs are owner-only; configured flag does not fabricate reports',async()=>{
+ const f=fixture();
+ const denied=await f.call('GET','/api/product-watcher/admin/briefs',{user:{id:'anon',provider:'email',email:'owner@example.test'}});
+ assert.equal(denied.statusCode,403);
+ const view=await f.call('GET','/api/product-watcher/admin/briefs');
+ assert.equal(view.statusCode,200);assert.equal(view.body.schedulerEnabled,false);
+ assert.deepEqual(view.body.items,[]);
 });

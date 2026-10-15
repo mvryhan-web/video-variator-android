@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { pool } from '../db.js';
 import { productWatcherTick } from './scheduler.js';
 import { runOfficialSourcesOnce } from './official-sources.js';
+import { runBriefsIfDue } from './briefs.js';
 
 if (process.env.PRODUCT_WATCHER_ENABLED !== 'true' ||
     process.env.PRODUCT_WATCHER_SCHEDULER_ENABLED !== 'true') {
@@ -36,6 +37,15 @@ async function tick(){
     }
   } catch {
     console.error('[product watcher] WATCHER_OFFICIAL_SOURCE_TICK_FAILED');
+  }
+  try {
+    const briefs=await runBriefsIfDue({pool,env:process.env});
+    if(briefs.generated?.length){
+      console.log('[product watcher] briefs '+JSON.stringify({status:briefs.status,
+        generated:briefs.generated.map(x=>({kind:x.kind,periodKey:x.periodKey}))}));
+    }
+  } catch {
+    console.error('[product watcher] WATCHER_BRIEFS_TICK_FAILED');
   } finally { busy=false; }
 }
 
