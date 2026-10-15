@@ -8,8 +8,8 @@ export function generationPolicy(env={}){
  };
 }
 
-export async function enforceGenerationPolicy(client,{userId,env=process.env}){
- const p=generationPolicy(env);if(!p.enabled)return {ok:true,policy:p};
+export async function enforceGenerationPolicy(client,{userId,env=process.env,policyOverride=null}){
+ const p=policyOverride||generationPolicy(env);if(!p.enabled)return {ok:true,policy:p};
  await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',['ai-user:'+userId]);
  if(p.maxConcurrentPerUser){
   const {rows}=await client.query("SELECT count(*)::int AS n FROM vv_generation_jobs WHERE user_id=$1 AND deleted=false AND status IN ('queued','processing','finalizing')",[userId]);
