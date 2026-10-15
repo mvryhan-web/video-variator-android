@@ -15,6 +15,18 @@ function renderModels(items){$('models').replaceChildren();for(const m of items)
 async function loadModels(){try{$('modelStatus').textContent='Loading…';const d=await api('/api/studio/admin/models');renderModels(d.items||[]);$('modelStatus').textContent=d.items?.length?'':'No model records.';}catch(e){$('models').replaceChildren();$('modelStatus').textContent=e.message==='MODEL_ADMIN_NOT_ENABLED'?'Model controls are prepared but the feature flag is OFF. No settings were changed.':e.message;}}
 async function loadMetrics(){try{$('metricsStatus').textContent='Loading…';const d=await api('/api/studio/admin/metrics');$('metrics').replaceChildren();for(const m of d.items||[]){const tr=document.createElement('tr');for(const v of [m.provider||'—',m.model||'—',m.kind,m.jobs,m.succeeded,m.failed,m.processing,m.averageSeconds??'—',m.actualCost,m.creditsCharged]){const td=document.createElement('td');td.textContent=String(v);tr.append(td);}$('metrics').append(tr);}$('metricsStatus').textContent=d.items?.length?'':'No generation data yet.';}catch(e){$('metricsStatus').textContent=e.message;}}
 
+
+async function previewRoute(){
+ const button=$('routePreview'),out=$('routeResult');button.disabled=true;$('routeStatus').textContent='Checking compatible models…';out.replaceChildren();
+ try{
+  const kind=$('routeKind').value,ratio=kind==='music'?'':$('routeRatio').value;
+  const d=await api('/api/studio/admin/route-preview',{method:'POST',body:JSON.stringify({kind,ratio,references:[]})});
+  const primary=document.createElement('p');primary.innerHTML='<strong>Primary:</strong> ';primary.append(document.createTextNode(d.primary||'—'));out.append(primary);
+  for(const [i,m] of (d.candidates||[]).entries()){const row=document.createElement('div');row.className='route-candidate';const rank=document.createElement('span');rank.textContent=String(i+1);const text=document.createElement('div');text.innerHTML='<strong></strong><small></small>';text.querySelector('strong').textContent=m.id;text.querySelector('small').textContent=[m.provider,'priority '+m.priority,m.quality,m.duration].filter(Boolean).join(' · ');row.append(rank,text);out.append(row);}
+  $('routeStatus').textContent='Preview only. No provider call was made.';
+ }catch(e){$('routeStatus').textContent=e.message==='SMART_ROUTING_NOT_ENABLED'?'Smart routing is prepared but its feature flag is OFF.':e.message;}finally{button.disabled=false;}
+}
+
 function renderBillingReview(items){
  const root=$('billingReview');root.replaceChildren();
  if(!items.length){const p=document.createElement('p');p.className='message';p.textContent='No held reservations need review.';root.append(p);return;}
@@ -32,4 +44,6 @@ function renderBillingReview(items){
 async function loadBillingReview(){try{$('billingStatus').textContent='Loading…';const d=await api('/api/studio/admin/billing-review');renderBillingReview(d.items||[]);$('billingStatus').textContent='';}catch(e){$('billingReview').replaceChildren();$('billingStatus').textContent=e.message==='AI_WALLET_UNAVAILABLE'?'AI wallet review is not available yet.':e.message;}}
 
 async function verifyOwner(){try{const {user}=await api('/api/me');if(!user?.isAdmin)throw Error('OWNER_ONLY');await Promise.all([loadModels(),loadMetrics(),loadBillingReview()]);}catch(e){$('modelStatus').textContent=e.message==='AUTH_REQUIRED'?'Sign in with the owner account first.':'Owner access required.';$('metricsStatus').textContent='';}}
+$('routePreview').onclick=previewRoute;
+$('routeKind').onchange=()=>{$('routeRatio').disabled=$('routeKind').value==='music';};
 $('refresh').onclick=()=>Promise.all([loadModels(),loadMetrics(),loadBillingReview()]);verifyOwner();
