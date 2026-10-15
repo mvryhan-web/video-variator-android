@@ -433,8 +433,8 @@ async function deleteHistoryItem(item){
  busy=true;availability();try{await api(`/api/studio/jobs/${encodeURIComponent(item.id)}`,{method:'DELETE'});if(job===item.id){++generation;clearResult();sessionStorage.removeItem('vu_generation_job');job=null;}$('status').textContent=say('Result deleted.','Результат удалён.');await loadHistory();}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}
 }
 async function openHistoryJob(id){
- if(busy)return;job=id;sessionStorage.setItem('vu_generation_job',id);busy=true;availability();$('status').textContent=say('Opening saved result…','Открываем сохранённый результат…');
- try{await watch(id,++generation);setHistory(false);}catch(e){$('status').textContent=errorText(e);busy=false;availability();}
+ if(busy)return;job=id;sessionStorage.setItem('vu_generation_job',id);if(sessionStorage.getItem('vu_generation_background_job')===id)sessionStorage.removeItem('vu_generation_background_job');busy=true;availability();$('status').textContent=say('Opening saved result…','Открываем сохранённый результат…');
+ const epoch=++generation;try{await watch(id,epoch);if(epoch===generation)setHistory(false);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
 }
 async function loadHistory(){
  const list=$('historyList');list.hidden=false;clearHistoryThumbs();list.replaceChildren();const loading=document.createElement('p');loading.className='hint';loading.textContent=say('Loading results…','Загружаем результаты…');list.append(loading);
@@ -468,7 +468,7 @@ async function loadHistory(){
 }
 document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclick=()=>{historyFilter=button.dataset.historyFilter;document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));void loadHistory();});
 function setHistory(on){historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
-$('showCreate').onclick=()=>setHistory(false);$('showHistory').onclick=()=>setHistory(true);
+$('showCreate').onclick=()=>{const u=new URL(location.href);u.searchParams.delete('view');history.replaceState(null,'',u);setHistory(false);};$('showHistory').onclick=()=>setHistory(true);
 function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
 async function watch(id,epoch){
  for(let i=0;i<120&&epoch===generation;i++){
@@ -562,7 +562,7 @@ async function createImageBatch(){
  }
  $('status').textContent=say('Batch complete: '+ready+' images saved as separate results in History.','Пакет завершён: '+ready+' изображения сохранены отдельно в Истории.');
 }
-$('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)return;busy=true;availability();if(kind==='image'&&imageBatchQuantity()>1){try{await createImageBatch();}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}return;}setHistory(false);clearResult();const epoch=++generation;$('status').textContent=say('Submitting your request…','Отправляем запрос…');try{const d=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID(),kind,model:modelId,prompt:$('prompt').value,ratio:$('ratio').value,...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked})})).json();job=d.id;sessionStorage.setItem('vu_generation_job',job);$('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');await watch(job,epoch);}catch(e){$('status').textContent=errorText(e);busy=false;availability();}};
+$('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)return;busy=true;availability();if(kind==='image'&&imageBatchQuantity()>1){try{await createImageBatch();}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}return;}setHistory(false);clearResult();const epoch=++generation;$('status').textContent=say('Submitting your request…','Отправляем запрос…');try{const d=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID(),kind,model:modelId,prompt:$('prompt').value,ratio:$('ratio').value,...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked})})).json();job=d.id;sessionStorage.setItem('vu_generation_job',job);if(kind==='video'){activeVideoWatchId=job;availability();}$('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');await watch(job,epoch);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}};
 // Continue from an existing image in the same browser without an API call.
  // The reference is explicitly prepared for a new Image request; Generate stays manual.
  async function imageResultReference(input){
@@ -640,13 +640,13 @@ function applyTemplateStart(){
   $('consent').checked=false;availability();$('status').textContent=say('Template prepared. Review the prompt, references and settings before generating.','Шаблон подготовлен. Проверьте запрос, фотографии и настройки перед генерацией.');return true;
  }catch(_){$('status').textContent=say('The template could not be prepared.','Не удалось подготовить шаблон.');return false;}
 }
-$('resumeJob').onclick=()=>{if(busy)return;const previous=sessionStorage.getItem('vu_generation_job');if(!previous)return;job=previous;busy=true;availability();watch(job,++generation).catch(e=>{$('status').textContent=errorText(e);busy=false;availability();});};
+$('resumeJob').onclick=()=>{if(busy)return;const previous=sessionStorage.getItem('vu_generation_job');if(!previous)return;job=previous;if(sessionStorage.getItem('vu_generation_background_job')===job)sessionStorage.removeItem('vu_generation_background_job');busy=true;availability();const epoch=++generation;watch(job,epoch).catch(e=>{if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();});};
 await initializeImageDraft();
 select(kind,{remember:false});
 try{config=await(await api('/api/studio/config')).json();await loadGenerationAccess();catalog=config.catalog||[...config.models.map(m=>({...m,id:m.id||MODELS[m.kind]?.id,adapter:true,provider:'Google'})),...MODEL_CATALOG.filter(m=>!config.models.some(c=>(c.id||MODELS[c.kind]?.id)===m.id)).map(m=>({...m,enabled:false}))];const preferred=config.models?.find(m=>m.kind===kind&&m.enabled);if(preferred?.id&&!(kind==='image'&&imageDraftLoaded))modelId=preferred.id;renderModel();if(kind==='image'&&imageDraftLoaded){const d=drafts.image;if(currentModel()?.ratios?.includes(d?.ratio))$('ratio').value=d.ratio;if(currentModel()?.capabilities?.resolutions?.includes(d?.resolution))$('imageResolution').value=d.resolution;if(currentModel()?.capabilities?.outputFormats?.includes(d?.outputFormat))$('imageOutputFormat').value=d.outputFormat;if(config.imageBatchEnabled===true&&Number.isInteger(d?.quantity)&&d.quantity>=1&&d.quantity<=4)$('imageQuantity').value=String(d.quantity);updateRatioSelection();}}catch(_){availability();}
 const restored=await applyLocalStudioHandoff();if(!restored)applyTemplateStart();
 imageDraftReady=true;if(kind==='image'){showImageDraftState();saveImageDraft();}
-const previous=sessionStorage.getItem('vu_generation_job');if(previous&&config.enabled){job=previous;busy=true;availability();watch(job,++generation).catch(e=>{$('status').textContent=errorText(e);busy=false;availability();});}
+const previous=sessionStorage.getItem('vu_generation_job');if(previous&&config.enabled&&sessionStorage.getItem('vu_generation_background_job')!==previous){job=previous;busy=true;availability();const epoch=++generation;watch(job,epoch).catch(e=>{if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();});}else if(previous&&sessionStorage.getItem('vu_generation_background_job')===previous){job=previous;setHistory(true);$('status').textContent=say('The video job is being tracked in History. Check its status when ready.','Видеозадача находится в Истории. Проверяйте её статус там.');}
 
 if(new URLSearchParams(location.search).get('view')==='history')setHistory(true);
 
