@@ -39,3 +39,16 @@ test('active inspiration requires recorded rights evidence',()=>{
  assert.throws(()=>validateInspiration({...base,active:true,rightsNote:''}),/INSPIRATION_RIGHTS_NOTE_REQUIRED/);
  assert.equal(validateInspiration({...base,active:true,rightsNote:'License contract #42'}).active,true);
 });
+
+
+test('owner Inspiration readiness reports concrete content blockers',async()=>{
+ const rows=[
+  {kind:'image',category:'Fashion',aspect_ratio:'2:3',action_target:'studio',rights_basis:'owned',rights_note:'Created in house',active:true,featured:true},
+  {kind:'video',category:'Cinematic',aspect_ratio:'16:9',action_target:'studio',rights_basis:'licensed',rights_note:'License #7',active:true,featured:false},
+  {kind:'image',category:'Draft',aspect_ratio:'1:1',action_target:'studio',rights_basis:'owned',rights_note:'',active:true,featured:false},
+  {kind:'video',category:'Agent',aspect_ratio:'9:16',action_target:'agent',rights_basis:'owned',rights_note:'Created in house',active:true,featured:true}
+ ];
+ const pool={async query(sql){if(sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_inspiration'))return {rows:[]};if(sql.startsWith('SELECT kind,category,aspect_ratio'))return {rows};throw new Error(sql);}};
+ const app=express();installInspiration(app,{pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true',AI_INSPIRATION_AGENT_TARGETS_ENABLED:'false',ADMIN_EMAIL:'owner@example.test'},auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));try{const r=await fetch('http://127.0.0.1:'+server.address().port+'/api/studio/admin/inspiration-readiness');assert.equal(r.status,200);const d=await r.json();assert.equal(d.ready,false);assert.equal(d.counts.images,1);assert.equal(d.counts.videos,1);assert.equal(d.counts.featured,1);assert.equal(d.counts.rightsBlocked,1);assert.equal(d.counts.agentGated,1);assert.ok(d.blockers.includes('ACTIVE_ITEMS_MISSING_RIGHTS_EVIDENCE'));assert.deepEqual(d.ratios,['16:9','2:3']);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});

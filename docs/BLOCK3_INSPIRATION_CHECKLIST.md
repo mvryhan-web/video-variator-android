@@ -24,6 +24,7 @@ This file tracks only canonical Roadmap **Block 3**. It does not expand or imple
 | Rights safety | DONE | Public items require owned/licensed basis plus recorded rights evidence note. |
 | No fake integrations | DONE | Agent-target examples are not publicly actionable until a real Agent exists. |
 | Production rollout flag | DONE | `AI_INSPIRATION_ENABLED=false` by default in production. |
+| Publish readiness | DONE | Owner readiness shows publishable/image/video/featured counts, ratios/categories, rights blockers and Agent dependency. |
 | Real launch content | OWNER CONTENT GATE | No examples are invented. Owner must add actual owned/licensed images/videos and rights evidence. |
 
 ## Completion state
@@ -36,3 +37,8 @@ To publish later:
 3. verify preview URLs/posters;
 4. enable `AI_INSPIRATION_ENABLED=true` only after those assets are approved;
 5. keep `AI_INSPIRATION_AGENT_TARGETS_ENABLED=false` until Block 2 Agent has a real action destination.
+
+
+## Owner publish readiness
+
+Owner AI Control now reports Block 3-specific readiness without turning anything on automatically. The content gate requires at least one approved image, one approved video and one featured Studio example; every active item must have recorded rights evidence. Agent examples remain informationally gated until Block 2 provides a real destination.

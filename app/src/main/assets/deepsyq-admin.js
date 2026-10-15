@@ -38,6 +38,15 @@ async function loadMetrics(){try{const window=$('metricsWindow')?.value||'7d';$(
 
 
 
+function renderInspirationReadiness(d){
+ const root=$('inspirationReadiness');root.replaceChildren();
+ const head=document.createElement('div');head.className='inspiration-readiness-head';const title=document.createElement('strong');title.textContent=d.ready?'Block 3 content is ready to publish':'Block 3 still needs approved content';const flag=document.createElement('span');flag.textContent=d.featureEnabled?'Public flag ON':'Public flag OFF';head.append(title,flag);root.append(head);
+ const stats=document.createElement('div');stats.className='inspiration-readiness-stats';for(const [label,value] of [['Publishable',d.counts?.studio||0],['Images',d.counts?.images||0],['Videos',d.counts?.videos||0],['Featured',d.counts?.featured||0],['Rights blocked',d.counts?.rightsBlocked||0]]){const s=document.createElement('span');s.textContent=label+': '+value;stats.append(s);}root.append(stats);
+ const details=document.createElement('p');details.textContent=(d.categories?.length?'Categories: '+d.categories.join(', ')+'. ':'')+(d.ratios?.length?'Ratios: '+d.ratios.join(', ')+'. ':'')+(d.counts?.agentGated&&!d.agentTargetsEnabled?'Agent examples remain gated until Block 2 has a real destination.':'');root.append(details);
+ if(d.blockers?.length){const ul=document.createElement('ul'),labels={NO_PUBLISHED_STUDIO_EXAMPLES:'Add at least one publishable Studio example.',NO_PUBLISHED_IMAGE_EXAMPLES:'Add at least one approved image example.',NO_PUBLISHED_VIDEO_EXAMPLES:'Add at least one approved video example.',NO_FEATURED_INSPIRATION:'Mark at least one approved Studio example as Featured.',ACTIVE_ITEMS_MISSING_RIGHTS_EVIDENCE:'Add rights evidence to every active item or deactivate it.'};for(const code of d.blockers){const li=document.createElement('li');li.textContent=labels[code]||code;ul.append(li);}root.append(ul);}
+}
+async function loadInspirationReadiness(){try{renderInspirationReadiness(await api('/api/studio/admin/inspiration-readiness'));}catch(e){$('inspirationReadiness').textContent=e.message;}}
+
 function parseInspirationForm(form){
  const fd=new FormData(form),inputs=String(fd.get('requiredInputTypes')||'').split(',').map(x=>x.trim()).filter(Boolean);let settings={};const raw=String(fd.get('defaultSettings')||'').trim();if(raw){try{settings=JSON.parse(raw);}catch(_){throw Error('Settings must be valid JSON.');}}
  return {title:String(fd.get('title')||'').trim(),slug:String(fd.get('slug')||'').trim(),kind:String(fd.get('kind')||'image'),category:String(fd.get('category')||'').trim(),description:String(fd.get('description')||'').trim(),previewUrl:String(fd.get('previewUrl')||'').trim(),previewPosterUrl:String(fd.get('previewPosterUrl')||'').trim()||null,prompt:String(fd.get('prompt')||'').trim(),defaultModel:String(fd.get('defaultModel')||'').trim()||null,aspectRatio:String(fd.get('aspectRatio')||'1:1'),requiredInputTypes:inputs,defaultSettings:settings,actionTarget:String(fd.get('actionTarget')||'studio'),rightsBasis:String(fd.get('rightsBasis')||'owned'),rightsNote:String(fd.get('rightsNote')||'').trim(),sortOrder:Number(fd.get('sortOrder')||100),active:fd.get('active')==='on',featured:fd.get('featured')==='on'};
@@ -55,7 +64,7 @@ function inspirationEditor(item){
  return form;
 }
 function renderInspirationAdmin(items){$('inspirationAdminList').replaceChildren();if(!items.length){const p=document.createElement('p');p.className='message';p.textContent='No inspiration items yet. Add only owned or licensed media.';$('inspirationAdminList').append(p);return;}for(const item of items)$('inspirationAdminList').append(inspirationEditor(item));}
-async function loadInspirationAdmin(){try{$('inspirationAdminStatus').textContent='Loading…';const d=await api('/api/studio/admin/inspiration');renderInspirationAdmin(d.items||[]);$('inspirationAdminStatus').textContent='';}catch(e){$('inspirationAdminList').replaceChildren();$('inspirationAdminStatus').textContent=e.message;}}
+async function loadInspirationAdmin(){try{$('inspirationAdminStatus').textContent='Loading…';const d=await api('/api/studio/admin/inspiration');renderInspirationAdmin(d.items||[]);$('inspirationAdminStatus').textContent='';await loadInspirationReadiness();}catch(e){$('inspirationAdminList').replaceChildren();$('inspirationAdminStatus').textContent=e.message;}}
 
 function parseTemplateForm(form){
  const fd=new FormData(form),inputs=String(fd.get('requiredInputTypes')||'').split(',').map(x=>x.trim()).filter(Boolean);

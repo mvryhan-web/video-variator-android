@@ -352,6 +352,7 @@ Current queued-roadmap dependencies to verify before implementation:
 - All currently public actions lead into the real Studio with bounded prompt/settings prefill; no action starts a paid generation automatically and inspiration source assets are never copied into the user's request.
 - Homepage contains data-driven Featured AI Apps and Inspiration previews with Explore-all routes. Agent examples remain hidden behind `AI_INSPIRATION_AGENT_TARGETS_ENABLED=false` until Block 2 supplies a real Agent destination; no fake Agent route is created.
 - AI Apps now cross-links to Inspiration. `AI_INSPIRATION_ENABLED=false` remains the production rollout gate.
+- Owner AI Control now includes Block 3 publish-readiness counts/blockers for approved images, videos, featured examples and rights evidence.
 - **Only remaining Block 3 dependency is content:** owner must add real Deepsyq-owned or properly licensed image/video examples (with rights evidence) before public rollout.
 
 
