@@ -19,10 +19,15 @@ export async function deliverCriticalWatcherAlertsOnce({pool,env={},fetchFn=glob
     if(owner.rows?.length!==1)throw Error('WATCHER_SCHEMA_NOT_READY');
     if(owner.rows[0].paused)return{status:'paused',attempted:0,sent:0};
     // Only unacknowledged CRITICAL events. No user IDs, account data, prompts or external links.
+    // Filter already claimed alert/channel pairs BEFORE LIMIT. Otherwise the
+    // same newest three notifications can hide older undelivered critical alerts
+    // forever, even though the ON CONFLICT claim avoids duplicate sends.
     const found=await client.query([
-      "SELECT id,source,code,provider FROM vv_product_watcher_alerts",
-      "WHERE severity='critical' AND acknowledged_at IS NULL",
-      'ORDER BY last_seen_at DESC,id DESC LIMIT 3'
+      "SELECT a.id,a.source,a.code,a.provider FROM vv_product_watcher_alerts a",
+      "WHERE a.severity='critical' AND a.acknowledged_at IS NULL",
+      "AND NOT EXISTS (SELECT 1 FROM vv_product_watcher_notifications n",
+      "WHERE n.alert_id=a.id AND n.channel='telegram')",
+      'ORDER BY a.last_seen_at DESC,a.id DESC LIMIT 3'
     ].join(' '));
     for(const a of found.rows){
       const claimed=await client.query([
