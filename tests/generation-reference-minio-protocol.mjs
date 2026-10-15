@@ -10,6 +10,8 @@ import {join} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {request as httpRequest} from 'node:http';
 import {createObjectStorage} from '../server/generation-storage.js';
+import {createGenerationReferenceLedger} from '../server/generation-reference-ledger.js';
+import pg from 'pg';
 
 const minio=process.env.AI_TEST_MINIO_URL||'';
 const permitted=minio==='http://127.0.0.1:9000';
@@ -43,7 +45,7 @@ const storageEnv=()=>({
  AI_OBJECT_STORAGE_BUCKET:bucket,AI_OBJECT_STORAGE_REGION:region,
  AI_OBJECT_STORAGE_ACCESS_KEY_ID:keyId,AI_OBJECT_STORAGE_SECRET_ACCESS_KEY:secret,
  AI_OBJECT_STORAGE_PREFIX:prefix,
- AI_STUDIO_REFERENCE_STAGING_ENABLED:'true',
+ AI_STUDIO_REFERENCE_STAGING_ENABLED:'true',AI_STUDIO_REFERENCE_TTL_MINUTES:'5',
  AI_STUDIO_REFERENCE_CLEANUP_ENABLED:'true',
  AI_STUDIO_REFERENCE_VIDEO_PRESIGN_ENABLED:'true',
  AI_STUDIO_REFERENCE_TRANSFER_REVIEW_APPROVED:'true',
@@ -145,6 +147,50 @@ test('real MinIO accepts correctly signed private GET, then denies forgery, expi
   assert.equal(expiredResponse.status,403,'expired signed links must not be usable');
   await store.deleteStagedReference({userId:owner,key:getKey});
   const deleted=await local('GET',u.pathname+u.search);
+  await t.test('real PostgreSQL reference ledger expires and deletes real MinIO object with intake OFF',async()=>{
+   const database=process.env.AI_TEST_DATABASE_URL||'';
+   const dbUrl=new URL(database);
+   assert.equal(dbUrl.protocol,'postgres:');
+   assert.ok(['127.0.0.1','localhost'].includes(dbUrl.hostname),'no external database');
+   assert.equal(dbUrl.pathname,'/vv_ai_test','refuse production database');
+   const schema='ref_s3_ci_'+randomUUID().replaceAll('-','');
+   const admin=new pg.Pool({connectionString:database});
+   let pool,stagedKey;
+   try{
+    await admin.query('CREATE SCHEMA '+schema);
+    pool=new pg.Pool({connectionString:database,options:'-c search_path='+schema});
+    assert.equal((await pool.query('SHOW search_path')).rows[0].search_path,schema);
+    const migration=await readFile(new URL('../server/migrations/20261015-generation-reference-assets.sql',import.meta.url),'utf8');
+    await pool.query(migration);
+    const ledger=createGenerationReferenceLedger({pool,storage:store,env,maxActiveUploads:2});
+    const staged=await ledger.stage({userId:owner,mime:'video/mp4',bytes});
+    stagedKey=store.stagedReferenceKey({userId:owner,mime:'video/mp4',assetId:staged.id});
+    assert.equal(staged.mime,'video/mp4');
+    assert.deepEqual(await ledger.get({userId:owner,id:staged.id}),bytes);
+    await assert.rejects(()=>ledger.get({userId:'different-owner',id:staged.id}),/REFERENCE_MEDIA_ACCESS_DENIED/);
+    const candidate=await ledger.getForVideoTransfer({userId:owner,id:staged.id});
+    assert.equal(candidate.key,stagedKey);
+    const rows=(await pool.query('SELECT COUNT(*)::int AS n FROM vv_generation_reference_assets')).rows[0].n;
+    assert.equal(rows,1);
+    await pool.query("UPDATE vv_generation_reference_assets SET expires_at=NOW()-INTERVAL '1 minute' WHERE id=$1",[staged.id]);
+    await assert.rejects(()=>ledger.getForVideoTransfer({userId:owner,id:staged.id}),/REFERENCE_MEDIA_ACCESS_DENIED/);
+    env.AI_STUDIO_REFERENCE_STAGING_ENABLED='false';
+    assert.deepEqual(await ledger.cleanupExpired(),{claimed:1,deleted:1,failed:0});
+    assert.equal((await pool.query('SELECT COUNT(*)::int AS n FROM vv_generation_reference_assets')).rows[0].n,0);
+    // Independently authenticated S3 GET must report object not present,
+    // even though new intake is switched OFF.
+    const path='/'+bucket+'/'+stagedKey;
+    const gone=await local('GET',path,{headers:signedBucketRequest('GET',path)});
+    assert.equal(gone.status,404,'real MinIO must have deleted expired MP4');
+   }finally{
+    env.AI_STUDIO_REFERENCE_STAGING_ENABLED='true';
+    if(stagedKey)await store.deleteStagedReference({userId:owner,key:stagedKey}).catch(()=>{});
+    if(pool)await pool.end();
+    await admin.query('DROP SCHEMA IF EXISTS '+schema+' CASCADE').catch(()=>{});
+    await admin.end();
+   }
+  });
+
   assert.equal(deleted.status,404,'deleting the object must revoke media availability');
  }finally{
   await store.deleteStagedReference({userId:owner,key:getKey}).catch(()=>{});
