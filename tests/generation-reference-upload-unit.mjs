@@ -13,7 +13,7 @@ function wav(){
  const header=Buffer.alloc(8);header.write('RIFF',0);header.writeUInt32LE(bytes.length,4);
  return Buffer.concat([header,bytes]);
 }
-async function webServer({enabled=true,stage=async()=>({id:'test-id',size:16044,mime:'audio/wav',durationSeconds:1})}={}){
+async function webServer({enabled=true,stage=async()=>({id:'test-id',size:16044,mime:'audio/wav',durationSeconds:1}),probe=async()=>({audioCodec:'pcm_s16le'})}={}){
  const app=express(),calls=[];
  const auth=(req,res,next)=>{
   const who=String(req.headers.authorization||'');
@@ -23,7 +23,7 @@ async function webServer({enabled=true,stage=async()=>({id:'test-id',size:16044,
  const owner=(req,res,next)=>req.user.id==='owner'?next():res.status(403).json({error:'OWNER_PILOT_ONLY'});
  installGenerationReferenceUpload(app,{auth,owner,env:{
   AI_STUDIO_ENABLED:'true',AI_STUDIO_REFERENCE_UPLOAD_ENABLED:enabled?'true':'false'
- },ledger:{async stage(args){calls.push(args);return stage(args);}}});
+ },probe,ledger:{async stage(args){calls.push(args);return stage(args);}}});
  const server=app.listen(0,'127.0.0.1');await once(server,'listening');
  const url=`http://127.0.0.1:${server.address().port}/api/studio/references`;
  return {url,calls,close:()=>new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()))};
@@ -110,4 +110,14 @@ test('ledger enforces active-slot admission through a transaction-scoped advisor
  assert.equal(rows.length,1);
  assert.equal(queries.filter(x=>x==='BEGIN').length,2);
  assert.ok(queries.some(x=>x.includes('pg_advisory_xact_lock')));
+});
+
+test('ffprobe unavailable blocks intake before any ledger or S3 write',async()=>{
+ const x=await webServer({probe:async()=>{throw Error('REFERENCE_MEDIA_PROBE_UNAVAILABLE');}});
+ try{
+  const r=await fetch(x.url,{method:'POST',headers:{Authorization:'owner','Content-Type':'audio/wav'},body:wav()});
+  assert.equal(r.status,503);
+  assert.equal((await r.json()).error,'REFERENCE_UPLOAD_UNAVAILABLE');
+  assert.equal(x.calls.length,0);
+ }finally{await x.close();}
 });
