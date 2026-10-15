@@ -475,7 +475,7 @@ async function createImageBatch(){
   outputFormat:params.outputFormat,referenceCount:params.references.length,quantity
  })})).json();
  const perImage=Number(estimate.perImageCredits),total=Number(estimate.credits);
- if(estimate.quantity!==quantity||!Number.isSafeInteger(perImage)||perImage<1||
+ if(estimate.quantity!==quantity||estimate.kind!=='image'||estimate.model!==params.model||!Number.isSafeInteger(perImage)||perImage<1||
     !Number.isSafeInteger(total)||total!==perImage*quantity)throw Error('AI_PRICING_NOT_APPROVED');
  if(!confirm(say(
   'Generate '+quantity+' images as '+quantity+' separate AI jobs? Each costs '+perImage+' credits; total up to '+total+' credits. Jobs run one at a time. If one fails, the batch stops; no job retries automatically. Completed jobs remain in History.',
