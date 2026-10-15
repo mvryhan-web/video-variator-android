@@ -26,7 +26,7 @@ test('consent names the provider and resets when model or studio changes',async(
 test('saved generation history renders and reopens a durable result',async({page})=>{
  const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
- await page.route('**/api/studio/jobs',r=>{
+ await page.route('**/api/studio/jobs**',r=>{
   if(r.request().method()==='GET')return r.fulfill({json:{items:[{id:'saved-1',kind:'image',status:'ready',provider:'Google',model:'fixture',prompt:'Saved product prompt',createdAt:'2026-10-15T08:00:00.000Z'}]}});
   return r.continue();
  });
