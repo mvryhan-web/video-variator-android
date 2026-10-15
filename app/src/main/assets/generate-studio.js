@@ -79,9 +79,38 @@ function renderRatios(){const m=currentModel(),previous=$('ratio').value;$('rati
 function updateRatioSelection(){for(const b of $('ratioChoices').children)b.setAttribute('aria-pressed',String(b.getAttribute('aria-label')===$('ratio').value));const m=currentModel();$('settingsButton').textContent=kind==='music'?say('Audio settings ⌄','Настройки аудио ⌄'):[$('ratio').value,m?.quality,m?.duration].filter(Boolean).join(' · ')+' ⌄';}
 function renderModel(){let m=currentModel();if(!m){m=catalog.find(m=>m.kind===modelKind());modelId=m?.id||'';}$('modelButton').textContent=(m?.label||say('Model','Модель'))+' ⌄';$('referenceBox').hidden=!m?.references;renderRatios();renderRefs();renderModels();$('qualityValue').textContent=m?.quality||'';$('durationValue').textContent=m?.duration||'';$('voiceSettings').hidden=modelKind()!=='voice';availability();}
 function select(next,{remember=true}={}){if(busy)return;if(remember)storeDraft();kind=next;$('consent').checked=false;const d=drafts[kind];refs=d?.refs||[];$('prompt').value=d?.prompt||'';$('musicMode').value=d?.musicMode||'song';modelId=d?.modelId||config.models?.find(m=>m.kind===kind)?.id||MODELS[kind]?.id||'';document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.kind===kind)));$('taskTitle').textContent={video:say('Create a video','Создать видео'),image:say('Create an image','Создать изображение'),music:say('Create audio','Создать аудио'),translation:say('Translate your file','Перевести файл')}[kind];$('taskDescription').textContent={video:say('Describe a scene or add a photo. Choose your model and bring the idea to life.','Опишите сцену или добавьте фото. Выберите модель и оживите свою идею.'),image:say('Start with a description. Add reference photos to guide the look.','Начните с описания. Добавьте фотографии, чтобы задать нужный образ.'),music:say('Create a short song, an instrumental, or prepare a voiceover.','Создайте короткую песню, музыку без слов или подготовьте озвучку.'),translation:say('Translation will be added after the studio is ready.','Перевод добавим после подготовки студии.')}[kind];$('musicOptions').hidden=kind!=='music';$('prompt').placeholder=kind==='music'?say('Describe the sound, mood and language. Add your lyrics or voiceover text…','Опишите звучание, настроение и язык. Добавьте текст песни или озвучки…'):kind==='image'?say('Describe your image: subject, style, colours and light…','Опишите изображение: объект, стиль, цвета и свет…'):say('Describe your video: scene, movement and atmosphere…','Опишите видео: сцену, движение и атмосферу…');$('examples').replaceChildren();const examples=kind==='video'?[['A cinematic product reveal with soft studio light','Презентация товара с мягким студийным светом'],['A calm ocean at sunset, gentle camera movement','Спокойный океан на закате и плавное движение камеры']]:kind==='image'?[['A premium product photo on a clean background','Фото товара на чистом фоне'],['A colourful illustrated poster','Яркий иллюстрированный постер']]:kind==='music'?[['A joyful pop song in English about a fresh start','Позитивная поп-песня на английском о новом начале'],['Instrumental relaxing piano for a travel video','Спокойное фортепиано для видео о путешествии']]:[];for(const [en,r] of examples){const b=document.createElement('button');b.type='button';b.textContent=say(en,r);b.onclick=()=>{if(busy)return;$('prompt').value=say(en,r);availability();};$('examples').append(b);}renderModel();if(d?.ratio&&currentModel()?.ratios.includes(d.ratio)){$('ratio').value=d.ratio;updateRatioSelection();}if(kind!=='translation'){const u=new URL(location.href);u.searchParams.set('studio',kind==='music'?'audio':kind);history.replaceState(null,'',u);}setHistory(false);}
-function renderRefs(){for(const img of $('refPreview').querySelectorAll('img'))URL.revokeObjectURL(img.src);$('refPreview').replaceChildren();$('references').value='';$('clearRefs').hidden=!refs.length;$('refHint').textContent=currentModel()?.references?say('PNG/JPG · '+currentModel().references+' max · 1 MB each','PNG/JPG · до '+currentModel().references+' · 1 МБ каждое'):'';for(const ref of refs){const img=document.createElement('img');img.alt=say('Reference photo','Фотография для примера');img.src=URL.createObjectURL(ref.file);$('refPreview').append(img);}}
-async function acceptFiles(files){if(busy)return;try{const max=currentModel()?.references||0;if(files.length>max)throw Error(say('Choose fewer reference photos.','Выберите меньше фотографий.'));const next=[];for(const file of files){if(!['image/png','image/jpeg'].includes(file.type)||file.size>1024*1024)throw Error(say('Use PNG or JPG photos under 1 MB.','Нужны PNG/JPG до 1 МБ.'));const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file);});next.push({file,mimeType:file.type,data});}refs=next;renderRefs();}catch(e){$('status').textContent=errorText(e);$('references').value='';}}
-$('references').onchange=()=>acceptFiles(Array.from($('references').files));$('creator').ondragover=e=>{if(currentModel()?.references)e.preventDefault();};$('creator').ondrop=e=>{e.preventDefault();if(currentModel()?.references)void acceptFiles(Array.from(e.dataTransfer.files));};
+function renderRefs(){
+ for(const img of $('refPreview').querySelectorAll('img'))URL.revokeObjectURL(img.src);
+ $('refPreview').replaceChildren();$('references').value='';
+ const max=currentModel()?.references||0;
+ $('clearRefs').hidden=!refs.length;
+ $('refHint').textContent=max?say('PNG/JPG · '+refs.length+'/'+max+' references · 1 MB each','PNG/JPG · '+refs.length+'/'+max+' изображений · до 1 МБ'):'';
+ refs.forEach((ref,index)=>{
+  const tile=document.createElement('div');tile.className='studio-reference-tile';
+  const img=document.createElement('img');img.alt=say('Reference photo '+(index+1),'Изображение '+(index+1));img.src=URL.createObjectURL(ref.file);
+  const remove=document.createElement('button');remove.type='button';remove.textContent='×';
+  remove.setAttribute('aria-label',say('Remove reference '+(index+1),'Убрать изображение '+(index+1)));
+  remove.disabled=busy;
+  remove.onclick=()=>{if(busy)return;refs.splice(index,1);$('consent').checked=false;renderRefs();availability();};
+  tile.append(img,remove);$('refPreview').append(tile);
+ });
+}
+async function acceptFiles(files,{append=false}={}){
+ if(busy)return false;
+ try{
+  const max=currentModel()?.references||0,selected=Array.from(files||[]);
+  if(!selected.length)return false;
+  if(selected.length+(append?refs.length:0)>max)throw Error(say('This model supports at most '+max+' reference photos. Remove an existing reference first.','Эта модель поддерживает до '+max+' изображений. Сначала уберите лишние.'));
+  const next=append?[...refs]:[];
+  for(const file of selected){
+   if(!['image/png','image/jpeg'].includes(file.type)||!file.size||file.size>1024*1024)throw Error(say('Use nonempty PNG or JPG photos under 1 MB.','Нужны непустые PNG/JPG до 1 МБ.'));
+   const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file);});
+   next.push({file,mimeType:file.type,data});
+  }
+  refs=next;$('consent').checked=false;renderRefs();availability();return true;
+ }catch(e){$('status').textContent=errorText(e);$('references').value='';return false;}
+}
+$('references').onchange=()=>void acceptFiles(Array.from($('references').files),{append:true});$('creator').ondragover=e=>{if(currentModel()?.references)e.preventDefault();};$('creator').ondrop=e=>{e.preventDefault();if(currentModel()?.references)void acceptFiles(Array.from(e.dataTransfer.files),{append:true});};
 $('clearRefs').onclick=()=>{if(busy)return;refs=[];renderRefs();};document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>select(b.dataset.kind));$('prompt').oninput=availability;$('consent').onchange=availability;$('ratio').onchange=updateRatioSelection;
 $('musicMode').onchange=()=>{$('consent').checked=false;modelId='';renderModel();};
 $('modelButton').onclick=()=>{renderModels();$('modelDialog').showModal();};$('settingsButton').onclick=()=>$('settingsDialog').showModal();document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
