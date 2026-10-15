@@ -64,6 +64,7 @@ test('recovery polls only an existing provider operation and never starts a repl
   async connect(){return {async query(sql,args=[]){
    if(sql.startsWith('SELECT pg_try_advisory_lock'))return {rows:[{locked:true}]};
    if(sql.startsWith('SELECT status,operation,deleted'))return {rows:[row]};
+   if(sql.startsWith('UPDATE vv_generation_jobs SET last_polled_at=NOW()'))return {rows:[{last_polled_at:new Date()}]};
    if(sql.startsWith('SELECT pg_advisory_unlock'))return {rows:[{pg_advisory_unlock:true}]};
    throw new Error(sql);
   },release(){}};}
@@ -94,7 +95,7 @@ test('wallet-gated Studio reserves before provider use and captures only after d
   async connect(){return {async query(sql,args=[]){
    if(sql==='BEGIN'||sql==='COMMIT'||sql==='ROLLBACK'||sql.startsWith('SELECT pg_advisory_xact_lock'))return {rows:[]};
    if(sql.startsWith('SELECT count'))return {rows:[{n:jobs.length}]};
-   if(sql.startsWith('INSERT INTO vv_generation_jobs')){jobs.push({id:args[0],user_id:args[1],kind:args[2],status:args[3],provider:args[4],model:args[5],prompt:args[6],settings:JSON.parse(args[7]),estimated_cost:args[8],created_at:new Date(),started_at:new Date(),credits_reserved:0,credits_charged:0,deleted:false});return {rows:[]};}
+   if(sql.startsWith('INSERT INTO vv_generation_jobs')){jobs.push({id:args[0],user_id:args[1],kind:args[2],status:args[3],provider:args[4],model:args[5],prompt:args[6],settings:JSON.parse(args[9]),estimated_cost:args[10],created_at:new Date(),started_at:new Date(),credits_reserved:0,credits_charged:0,deleted:false});return {rows:[]};}
    throw new Error(sql);
   },release(){}};}
  };
@@ -145,6 +146,7 @@ test('owner read-only analytics omit auth and Stripe secrets',async()=>{
   if(sql.startsWith('SELECT COUNT(*)::int AS jobs'))return {rows:[{jobs:4,generating_users:2,ready:3,failed:1,processing:0,avg_seconds:8.5,recorded_cost:0.4,credits_charged:20}]};
   if(sql.startsWith('SELECT model,COUNT(*)::int AS jobs'))return {rows:[{model:'fixture',jobs:3}]};
   if(sql.startsWith('SELECT currency,COUNT(*)::int AS purchases'))return {rows:[{currency:'eur',purchases:1,net_amount_minor:500,credits_purchased:100}]};
+  if(sql.startsWith("SELECT COALESCE(cost_currency,'unknown') AS currency"))return {rows:[{currency:'usd',amount:0.4}]};
   throw new Error(sql);
  }};
  const wallet={async init(){}},env={ADMIN_EMAIL:'owner@example.test'};
