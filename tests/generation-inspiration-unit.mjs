@@ -70,3 +70,17 @@ test('public inspiration pagination is bounded and exposes a next offset',async(
  const app=express();installInspiration(app,{pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true',ADMIN_EMAIL:'owner@example.test'},auth:(req,_res,next)=>next()});const server=app.listen(0);await new Promise(r=>server.once('listening',r));
  try{const r=await fetch('http://127.0.0.1:'+server.address().port+'/api/inspiration?limit=24&offset=0');assert.equal(r.status,200);const d=await r.json();assert.equal(d.items.length,24);assert.equal(d.pagination.hasMore,true);assert.equal(d.pagination.nextOffset,24);assert.equal(d.pagination.limit,24);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
+
+test('production Inspiration never auto-creates its database table',async()=>{
+ const statements=[];
+ const pool={async query(sql){statements.push(sql);if(sql.includes("to_regclass('public.vv_ai_inspiration')"))return {rows:[{table_name:null}]};throw Error('UNEXPECTED_SQL');}};
+ const app=express();app.use(express.json());installInspiration(app,{pool,env:{NODE_ENV:'production',AI_INSPIRATION_ENABLED:'true',ADMIN_EMAIL:'owner@example.test'},auth:(_req,_res,next)=>next()});
+ const listener=app.listen(0);await new Promise(r=>listener.once('listening',r));
+ try{
+  const r=await fetch('http://127.0.0.1:'+listener.address().port+'/api/inspiration');
+  assert.equal(r.status,503);
+  assert.equal((await r.json()).error,'INSPIRATION_UNAVAILABLE');
+  assert.ok(statements.some(sql=>sql.includes("to_regclass('public.vv_ai_inspiration')")));
+  assert.ok(statements.every(sql=>!sql.includes('CREATE TABLE')&&!sql.includes('ALTER TABLE')));
+ }finally{listener.closeAllConnections();await new Promise(r=>listener.close(r));}
+});
