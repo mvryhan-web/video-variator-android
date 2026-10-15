@@ -151,3 +151,7 @@ The next agent should be able to answer, from the repository alone:
 
 ## Production AI rollout
 Before any production/public AI activation, read `docs/AI_PRODUCTION_ROLLOUT.md`. Run `npm run ai:preflight` read-only before launch decisions and `npm run migrate:ai` only after a verified production DB backup. Never enable live Stripe/public AI/root switching in the same unverified step.
+
+## Owner-approved Deepsyq Home design — protected visual contract (2026-10-15)
+
+**OWNER-LOCKED:** Before changing the Deepsyq dashboard/menu/hero/Canvas/Agent/AI Apps/Inspiration visual architecture, read `docs/DEEPSYQ_OWNER_APPROVED_HOME_DESIGN.md` and compare against the exact owner-approved PNG in the owner's persistent Library (`/Deepsyq/Approved Design/DEEPSYQ_OWNER_APPROVED_HOME_2026-10-15.png`, SHA-256 `7198fb20b8300e8f8d90c4788a0288570a49be569df23cb82f06da29e1b0db47`). Do not redesign, replace, reorder or materially restyle the selected purple/blue cinematic layout without **explicit new owner approval**. Keep previous user assets and existing functions. Minor bug fixes/responsiveness/accessibility changes must maintain fidelity and remain gated by existing production safety. The PNG is a reference screenshot, not a real playable video. Do not fake video, functionality, social links, promotional credits or available Agents.
