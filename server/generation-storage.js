@@ -51,8 +51,8 @@ function presignedGet({url,region,accessKeyId,secretAccessKey,issuedAt,seconds})
   ['X-Amz-SignedHeaders','host']
  ];
  const query=params.sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>sigV4Encode(k)+'='+sigV4Encode(v)).join('&');
- const canonical=['GET',u.pathname,query,'host:'+u.host+'\\n','host','UNSIGNED-PAYLOAD'].join('\\n');
- const toSign=['AWS4-HMAC-SHA256',stamp.full,scope,sha(canonical)].join('\\n');
+ const canonical=['GET',u.pathname,query,'host:'+u.host+'\n','host','UNSIGNED-PAYLOAD'].join('\n');
+ const toSign=['AWS4-HMAC-SHA256',stamp.full,scope,sha(canonical)].join('\n');
  const signature=createHmac('sha256',signingKey(secretAccessKey,stamp.day,region)).update(toSign).digest('hex');
  return u.origin+u.pathname+'?'+query+'&X-Amz-Signature='+signature;
 }
@@ -61,8 +61,8 @@ function approvedReferenceHost(cfg,env){
  const approved=String(env.AI_STUDIO_REFERENCE_PROVIDER_FETCH_HOSTS||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
  // Reject hostnames that are private, unresolved, wildcarded, IP literals or not
  // exactly owner-approved; this is not an SSRF check and makes no network request.
- const publicDns=/^(?=.{4,253}$)[a-z0-9-]+(?:\\.[a-z0-9-]+)+$/.test(hostname)&&
-  !/(?:\\.local|\\.internal|\\.localhost|\\.invalid|\\.test)$/.test(hostname);
+ const publicDns=/^(?=.{4,253}$)[a-z0-9-]+(?:\.[a-z0-9-]+)+$/.test(hostname)&&
+  !/(?:\.local|\.internal|\.localhost|\.invalid|\.test)$/.test(hostname);
  return publicDns&&!isIP(hostname)&&!url.port&&approved.length>0&&approved.every(h=>h===hostname);
 }
 
@@ -125,7 +125,7 @@ export function createObjectStorage({env=process.env,fetcher=fetch,now=()=>new D
    if(!approvedReferenceHost(cfg,env))throw Error('REFERENCE_PROVIDER_FETCH_HOST_NOT_APPROVED');
    if(!Number.isInteger(seconds)||seconds<15||seconds>60)
     throw Error('REFERENCE_VIDEO_URL_TTL_INVALID');
-   const id=typeof key==='string'&&key.match(/\\/([0-9a-f-]{36})\\.mp4$/)?.[1];
+   const id=typeof key==='string'&&key.match(/\/([0-9a-f-]{36})\.mp4$/)?.[1];
    if(typeof userId!=='string'||!id||key!==stagedReferenceKey({userId,mime:'video/mp4',assetId:id}))
     throw Error('REFERENCE_MEDIA_ACCESS_DENIED');
    const issued=now(),expires=new Date(expiresAt);
