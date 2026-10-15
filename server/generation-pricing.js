@@ -24,11 +24,11 @@ export function pricingCatalog(env={}){
 export function estimateGenerationPricing(request,model,env={}){
  const catalog=pricingCatalog(env);
  if(!catalog.configured||!model||request?.model!==model.id||request?.kind!==model.kind)return null;
- const durationSeconds=Number(String(model.duration||'').match(/\d+/)?.[0]||0)||null;
+ const durationSeconds=model.capabilities?.durationSeconds??(Number(String(model.duration||'').match(/\d+/)?.[0]||0)||null);
  const candidates=catalog.entries.filter(e=>e.model===model.id&&e.kind===model.kind&&e.provider===model.provider);
  const score=e=>{
   if(e.ratio&&e.ratio!==request.ratio)return -1;
-  if(e.quality&&e.quality!==model.quality)return -1;
+  if(e.quality&&e.quality!==(model.capabilities?.quality??model.quality))return -1;
   if(e.durationSeconds&&e.durationSeconds!==durationSeconds)return -1;
   return Number(!!e.ratio)+Number(!!e.quality)+Number(!!e.durationSeconds);
  };

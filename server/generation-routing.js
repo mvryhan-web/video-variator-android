@@ -1,9 +1,10 @@
 // Server-side pre-dispatch routing only. Never starts or retries a provider call.
 function compatible(model,body){
  if(!model?.enabled||model.maintenance||model.kind!==body?.kind)return false;
- if(Array.isArray(model.ratios)&&model.ratios.length&&body?.ratio&&!model.ratios.includes(body.ratio))return false;
+ const caps=model.capabilities||{},ratios=Array.isArray(caps.ratios)?caps.ratios:model.ratios||[],maxReferences=Number(caps.maxReferences??model.references??0);
+ if(ratios.length&&body?.ratio&&!ratios.includes(body.ratio))return false;
  const refs=Array.isArray(body?.references)?body.references.length:0;
- if(refs>Number(model.references||0))return false;
+ if(refs>maxReferences)return false;
  return true;
 }
 export function orderedGenerationCandidates(body,catalog=[]){

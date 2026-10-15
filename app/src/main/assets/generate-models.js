@@ -1,10 +1,27 @@
 // Public capability catalog only. Credentials and provider endpoints stay on the server.
+function durationSeconds(value){const n=Number(String(value||'').match(/\d+/)?.[0]||0);return Number.isFinite(n)&&n>0?n:null;}
+function capability(model){
+ const maxReferences=Number(model.references||0),ratios=Array.isArray(model.ratios)?[...model.ratios]:[];
+ const inputKinds=['text',...(maxReferences>0?['image']:[])];
+ return Object.freeze({
+  inputKinds:Object.freeze(inputKinds),
+  outputKind:model.kind==='music'||model.kind==='voice'?'audio':model.kind,
+  ratios:Object.freeze(ratios),
+  maxReferences,
+  async:model.kind==='video',
+  quality:model.quality||null,
+  durationSeconds:durationSeconds(model.duration),
+  supportsPrompt:true,
+  supportsImageReferences:maxReferences>0
+ });
+}
+function withCapabilities(model){return Object.freeze({...model,capabilities:capability(model)});}
 export const MODELS={
  image:{id:'gemini-3.1-flash-image',label:'Nano Banana 2',ratios:['1:1','2:3','3:2','9:16','16:9'],references:3},
  video:{id:'veo-3.1-lite-generate-preview',label:'Veo 3.1 Lite',ratios:['16:9','9:16'],references:1},
  music:{id:'lyria-3-clip-preview',label:'Lyria · 30 seconds',ratios:[],references:0}
 };
-export const MODEL_CATALOG=[
+const RAW_MODEL_CATALOG=[
  {...MODELS.video,kind:'video',provider:'Google',adapter:true,description:'Text or a photo into a short video.',descriptionRu:'Короткое видео из текста или фотографии.',quality:'720p',duration:'8 seconds'},
  {id:'veo-3.1-fast-generate-preview',label:'Veo 3.1 Fast',kind:'video',provider:'Google',adapter:true,ratios:['16:9','9:16'],references:1,description:'A second Google video model to compare results.',descriptionRu:'Другая модель Google для сравнения результатов.',quality:'720p',duration:'8 seconds'},
  {id:'byteplus-seedance-2',label:'Seedance 2.0',kind:'video',provider:'BytePlus',adapter:true,ratios:['16:9','9:16','1:1'],references:1,description:'Text or a first-frame photo into a short video.',descriptionRu:'Видео из текста или первого кадра.',quality:'720p',duration:'5 seconds'},
@@ -16,3 +33,4 @@ export const MODEL_CATALOG=[
  {id:'byteplus-seed-speech-2',label:'Seed Speech 2.0',kind:'voice',provider:'BytePlus',adapter:false,ratios:[],references:0,description:'BytePlus speech. API connection pending.',descriptionRu:'Озвучка BytePlus. API пока не подключён.'},
  {id:'byteplus-seed-audio-1',label:'Seed Audio 1.0',kind:'voice',provider:'BytePlus',adapter:false,ratios:[],references:0,description:'Audio model prepared for connection.',descriptionRu:'Модель аудио для будущего подключения.'}
 ];
+export const MODEL_CATALOG=Object.freeze(RAW_MODEL_CATALOG.map(withCapabilities));
