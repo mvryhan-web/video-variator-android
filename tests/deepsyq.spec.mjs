@@ -77,3 +77,12 @@ test('new account onboarding goes straight to a real first-stage workflow',async
  await page.goto('/deepsyq.html');await expect(page.locator('#onboardingModal')).toBeVisible();await page.locator('[data-onboarding-goal=image]').click();
  await expect(page).toHaveURL(/generate-studio.html\?studio=image/);expect(savedGoal).toBe('image');expect(await page.evaluate(()=>localStorage.getItem('deepsyq_onboarding_pending'))).toBeNull();
 });
+
+
+test('AI Apps shows only active API templates and prepares Studio without generating',async({page})=>{
+ await page.route('**/api/templates',r=>r.fulfill({json:{items:[{id:'app-1',title:'Owned Product Image',slug:'owned-product-image',category:'ecommerce',description:'Original workflow',thumbnail:null,generationType:'image',promptTemplate:'Create an original product image',defaultModel:'fixture',requiredInputTypes:['image'],defaultSettings:{ratio:'16:9'},active:true,featured:true,sortOrder:10}]}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1','16:9'],references:1,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1','16:9'],references:1,enabled:true,adapter:true,provider:'Google'}]}}));
+ let posts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
+ await page.goto('/ai-apps.html');await expect(page.getByRole('heading',{name:'AI Apps'})).toBeVisible();await expect(page.locator('.app-card')).toHaveCount(1);await expect(page.locator('.app-card')).toContainText('Owned Product Image');
+ await page.getByRole('button',{name:'Use template'}).click();await expect(page).toHaveURL(/generate-studio.html\?studio=image/);await expect(page.locator('#prompt')).toHaveValue('Create an original product image');await expect(page.locator('#ratio')).toHaveValue('16:9');await expect(page.locator('#consent')).not.toBeChecked();expect(posts).toBe(0);
+});

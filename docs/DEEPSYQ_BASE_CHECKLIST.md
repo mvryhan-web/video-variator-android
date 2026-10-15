@@ -30,7 +30,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 16 | Stripe subscriptions + credit packs | PARTIAL | Existing Stripe reused; sandbox AI packs/webhook primitives exist; live AI packs not configured. |
 | 17 | Unit economics | PARTIAL | Job cost/credit fields + provider metrics endpoint + pricing foundation added; real provider costs not configured. |
 | 18 | Pricing engine | PARTIAL | Server-side `AI_MODEL_PRICING_JSON` engine + safe credit estimate endpoint added; no invented/default prices. |
-| 19 | AI Apps | NOT STARTED | Future roadmap/inspiration/template work should reuse shared generation stack. |
+| 19 | AI Apps | PARTIAL | Separate data-driven AI Apps page now renders only active templates from the shared template API. Use Template prepares a real Image/Video/Audio Studio and never auto-generates; broader workflows remain pending. |
 | 20 | Product Video workflow | NOT STARTED | No finished guided product-video workflow yet. |
 | 21 | AI Agents | NOT STARTED (BASE) | Deeper implementation is Roadmap Block 2. |
 | 22 | Inspiration / Discover | NOT STARTED (BASE) | Full implementation is Roadmap Block 3. |
@@ -57,7 +57,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 43 | Pricing page | PARTIAL | Existing plan display/checkout reused; final Deepsyq AI subscription/credit economics not approved. |
 | 44 | Free plan | PARTIAL | Existing non-AI trials/tools exist; safe AI acquisition allowance not defined. |
 | 45 | Onboarding | PARTIAL | New email/Google/Apple accounts are flagged for a persistent Image/Video onboarding choice; selection is stored server-side and routes directly to a real studio. Public launch verification is still pending. |
-| 46 | Homepage conversion | PARTIAL | Deepsyq dashboard exists; full public conversion homepage/examples require launch content. |
+| 46 | Homepage conversion | PARTIAL | Deepsyq dashboard now uses primary `Create` and secondary `Explore templates` CTAs into real Studio/AI Apps. Public launch examples/content still require owner-approved assets. |
 | 47 | Do not expose BytePlus as our product | DONE | Provider stays implementation detail; Deepsyq branding used. |
 | 48 | Production safety / regression | PARTIAL | Feature flags, CI and no-live-change discipline exist; backup/staging/live regression still required before launch. |
 | 49 | Database migrations | PARTIAL | Additive commercial-job migration is repeatable and has an isolated PostgreSQL migration test, including legacy pilot copy. Production backup/migration/rollback still has not been run. |
@@ -149,3 +149,12 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - History metadata now includes saved generation settings for safe reuse/regenerate preparation.
 - Added Download, Reuse, prepare-only Regenerate and safe Delete actions. Regenerate only restores prompt/model/ratio/settings and never starts a paid request automatically.
 - Credit usage is visible on History cards. Automatic media thumbnails are intentionally not fetched yet to avoid loading full generated videos/images just to render the list; thumbnail generation remains future work.
+
+
+## Continuation 7 — AI Apps entry
+
+- Added a separate responsive AI Apps page driven only by active records from the shared template system.
+- No example/template cards are hardcoded or invented. An empty active catalog produces an honest empty state.
+- Use Template stores a bounded prefill and opens the matching real Studio; Studio consumes the prompt/default model/ratio once and never submits a generation automatically.
+- Unsupported active workflow types are shown as pending rather than pretending they work.
+- Dashboard CTA now follows the BASE conversion direction: `Create` plus `Explore templates`.

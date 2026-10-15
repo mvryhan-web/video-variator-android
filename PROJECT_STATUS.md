@@ -159,3 +159,12 @@ Current queued-roadmap dependencies to verify before implementation:
 - Added persistent Image/Video onboarding state and new-account signaling for email, Google and Apple auth.
 - Deepsyq onboarding appears only for newly created accounts in this flow and routes to real Image/Video studios; unavailable Product Ads/Avatar workflows are not advertised as working.
 - No public AI launch, provider spend, Stripe AI product, production migration or deployment was enabled.
+
+
+### Continuation 6 — History and AI Apps
+
+- Studio History now has server-whitelisted filters and safe Open/Download/Reuse/prepare-only Regenerate/Delete actions. No History action silently starts a paid generation.
+- Added a responsive, data-driven AI Apps page backed by active `vv_ai_template` records only; no fake examples are seeded.
+- Use Template prepares the real Studio with prompt/default model/ratio but keeps consent unchecked and does not auto-generate.
+- Dashboard main/secondary CTAs now point to real creation and active templates.
+- These remain feature-branch changes; no production/root/provider/payment activation occurred.
