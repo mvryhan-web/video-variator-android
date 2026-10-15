@@ -1,5 +1,6 @@
 import {initToolAccess,installToolAccess} from './tool-access.js';
 import {installGenerationStudio} from './generation-studio.js';
+import {installProductWatcher} from './product-watcher/admin-api.js';
 import {installGenerationBilling} from './generation-billing.js';
 import {installGenerationTemplates} from './generation-templates.js';
 import {installInspiration} from './generation-inspiration.js';
@@ -182,6 +183,7 @@ installGenerationTemplates(app,{auth,pool:generationPool});
 installInspiration(app,{auth,pool:generationPool});
 installOnboarding(app,{auth,pool:generationPool});
 const generationStudio=installGenerationStudio(app,{auth,pool:generationPool,wallet:generationBilling.wallet});
+installProductWatcher(app,{auth,pool:generationPool});
 // Opt-in platform entry. Legacy auth/payment returns retain their existing handler.
 app.get('/',(req,res,next)=>{
   if(process.env.DEEPSYQ_HOME_ENABLED!=='true'||req.query.mobileAuth||req.query.checkout)return next();
