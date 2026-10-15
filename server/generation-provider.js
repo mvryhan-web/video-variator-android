@@ -24,8 +24,15 @@ export function validateGeneration(body){
  const resolution=body.kind==='image'?(body.resolution||m.quality||'1K'):null;
  if(body.kind==='image'&&(!m.capabilities?.resolutions?.includes(resolution)))throw new Error('UNSUPPORTED_RESOLUTION');
  if(body.kind!=='image'&&body.resolution)throw new Error('UNSUPPORTED_RESOLUTION');
+ const videoResolution=body.kind==='video'?(body.videoResolution||m.quality):null;
+ const videoDuration=body.kind==='video'?(body.videoDuration==null?m.capabilities?.durationSeconds:body.videoDuration):null;
+ if(body.kind==='video'&&!m.capabilities?.resolutions?.includes(videoResolution))throw new Error('UNSUPPORTED_VIDEO_RESOLUTION');
+ if(body.kind==='video'&&!m.capabilities?.durations?.includes(videoDuration))throw new Error('UNSUPPORTED_VIDEO_DURATION');
+ if(body.kind==='video'&&m.provider==='Google'&&references.length&&videoDuration!==8)throw new Error('UNSUPPORTED_VIDEO_DURATION');
+ if(body.kind==='video'&&m.provider==='Google'&&videoResolution==='1080p'&&videoDuration!==8)throw new Error('UNSUPPORTED_VIDEO_DURATION');
+ if(body.kind!=='video'&&(body.videoResolution!=null||body.videoDuration!=null))throw new Error('UNSUPPORTED_VIDEO_SETTINGS');
  if(body.kind==='music'&&!['song','instrumental'].includes(body.musicMode))throw new Error('INVALID_MUSIC_MODE');
- return {kind:body.kind,model:m.id,prompt:body.prompt.trim(),ratio:body.ratio,references,musicMode:body.musicMode,...(body.kind==='image'?{resolution,outputFormat}:{})};
+ return {kind:body.kind,model:m.id,prompt:body.prompt.trim(),ratio:body.ratio,references,musicMode:body.musicMode,...(body.kind==='image'?{resolution,outputFormat}:{}),...(body.kind==='video'?{videoResolution,videoDuration}:{})};
 }
 export function safeGoogleUrl(value){const u=new URL(value);if(u.protocol!=='https:'||u.hostname!=='generativelanguage.googleapis.com'||u.username||u.password)throw new Error('UNSAFE_PROVIDER_URL');return u.toString();}
 export async function googleJson(relative,{key,body,fetcher=fetch}){
@@ -39,7 +46,7 @@ export async function generateGoogle(request,{key,fetcher=fetch}){
  if(!model||(model.provider&&model.provider!=='Google'))throw new Error('MODEL_NOT_CONNECTED');
  if(request.kind==='video'){
   const ref=request.references[0];
-  const data=await googleJson(`models/${model.id}:predictLongRunning`,{key,fetcher,body:{instances:[{prompt:request.prompt,...(ref?{image:{bytesBase64Encoded:ref.data,mimeType:ref.mimeType}}:{})}],parameters:{aspectRatio:request.ratio,resolution:'720p',durationSeconds:8,sampleCount:1}}});
+  const data=await googleJson(`models/${model.id}:predictLongRunning`,{key,fetcher,body:{instances:[{prompt:request.prompt,...(ref?{image:{bytesBase64Encoded:ref.data,mimeType:ref.mimeType}}:{})}],parameters:{aspectRatio:request.ratio,resolution:request.videoResolution||model.quality,durationSeconds:request.videoDuration??model.capabilities.durationSeconds,sampleCount:1}}});
   if(typeof data.name!=='string')throw new Error('EMPTY_OPERATION');
   return {operation:data.name};
  }
