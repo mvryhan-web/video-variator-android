@@ -44,6 +44,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Check upstream S3 fixture syntax before building server
+        run: node --check tests/generation-reference-minio-protocol.mjs
       - uses: actions/setup-go@v5
         with:
           go-version: '1.24.8'
