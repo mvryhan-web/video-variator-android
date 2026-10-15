@@ -25,7 +25,7 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:true,
   models:[{id:'configured-image',kind:'image',enabled:true},{id:'configured-video',kind:'video',enabled:true}],
   catalog:[{id:'configured-image',kind:'image',label:'Connected image',provider:'Fixture',enabled:true,ratios:['1:1'],references:0},{id:'not-connected',kind:'image',label:'Pending image',provider:'Fixture',enabled:false,ratios:['1:1'],references:0},{id:'configured-video',kind:'video',label:'Connected video',provider:'Fixture',enabled:true,ratios:['16:9'],references:0}]
- }}}));
+ }}));
  await page.goto('/deepsyq.html');
  await expect(page.locator('#sidebar nav a').first()).toHaveAttribute('aria-label','Home');
  await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
@@ -315,6 +315,51 @@ test('approved video appears in the real homepage hero but does not erase Canvas
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href',/inspiration\.html\?kind=video/);
  await expect(page.locator('#quickCreateForm')).toBeVisible();
  await expect(page.locator('.studio-card')).toHaveCount(4);
+});
+test('video carousel switches only among owner-approved videos and retains existing media',async({page})=>{
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
+ const shared={category:'Cinematic',actionTarget:'studio',aspectRatio:'16:9',active:true,featured:true};
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[
+  {...shared,id:'v1',kind:'video',title:'Owned video one',previewUrl:'/one.mp4',previewPosterUrl:'/one.webp'},
+  {...shared,id:'p',kind:'image',title:'Preserved owned photo',previewUrl:'/owned.png'},
+  {...shared,id:'v2',kind:'video',title:'Owned video two',previewUrl:'/two.mp4',previewPosterUrl:'/two.webp'}
+ ],categories:['Cinematic'],ratios:['16:9']}}));
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+ await expect(page.locator('#homeHeroDots button')).toHaveCount(2);
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/one.mp4');
+ await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 2');
+ await page.locator('#homeHeroNext').click();
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/two.mp4');
+ await expect(page.locator('#homeHeroCounter')).toHaveText('Video 2 of 2');
+ await page.locator('#homeHeroNext').click();
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/one.mp4');
+ await page.locator('#homeHeroPrevious').click();
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/two.mp4');
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(3);
+ await expect(page.locator('#inspirationPreviewGrid')).toContainText('Preserved owned photo');
+ await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
+});
+test('Home Quick Create hands off an unpaid draft and Agent remains a preview',async({page})=>{
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:false,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
+ let posts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#homeHeroCarousel')).toBeHidden();
+ await page.locator('[data-home-kind="agent"]').click();
+ await page.locator('#homeQuickSubmit').click();
+ await expect(page.locator('#homeQuickStatus')).toContainText('not available yet');
+ expect(posts).toBe(0);
+ await page.locator('[data-home-kind="image"]').click();
+ await page.locator('#homeQuickPrompt').fill('Original underwater still photograph');
+ await page.locator('#homeQuickSubmit').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=home/);
+ await expect(page.locator('#prompt')).toHaveValue('Original underwater still photograph');
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(posts).toBe(0);
 });
 test('dashboard never fabricates a featured hero when only approved images exist',async({page})=>{
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
