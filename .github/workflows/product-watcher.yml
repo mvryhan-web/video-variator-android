@@ -27,7 +27,7 @@ jobs:
           node --check app/src/main/assets/product-watcher-admin.js
           node --check server/server.js
       - name: Watcher security and behavior unit tests
-        run: node --test tests/product-watcher-unit.mjs tests/product-watcher-admin-unit.mjs tests/product-watcher-scheduler-unit.mjs tests/product-watcher-operational-unit.mjs
+        run: node --test tests/product-watcher-unit.mjs tests/product-watcher-admin-unit.mjs tests/product-watcher-scheduler-unit.mjs tests/product-watcher-operational-unit.mjs tests/product-watcher-alerts-unit.mjs
 
   postgres:
     runs-on: ubuntu-latest
