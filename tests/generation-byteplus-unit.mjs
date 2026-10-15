@@ -30,6 +30,15 @@ test('Seedance task persists provider prefix, fixed approved limits and first fr
  assert.equal(r.operation,'byteplus:cgt-fixture');assert.equal(body.model,'dreamina-seedance-2-0-260128');assert.equal(body.duration,5);assert.equal(body.resolution,'720p');assert.equal(body.content[1].role,'first_frame');assert.equal(body.generate_audio,true);
  assert.deepEqual(await dispatchPoll(r.operation,{env:{BYTEPLUS_API_KEY:'fixture'},fetcher:async()=>json({status:'running'})}),{pending:true});
 });
+test('Seedance accepts supported 1080p and 15-second settings and blocks unsupported combinations',async()=>{
+ const advanced=validateGeneration({kind:'video',model:'byteplus-seedance-2',ratio:'16:9',prompt:'Studio reveal',consent:true,references:[],videoResolution:'1080p',videoDuration:15});
+ let calls=0,payload;
+ const r=await generateBytePlus(advanced,{key:'fixture',fetcher:async(_url,opts)=>{calls++;payload=JSON.parse(opts.body);return json({id:'cgt-resolution-fixture'});}});
+ assert.equal(r.operation,'byteplus:cgt-resolution-fixture');
+ assert.equal(calls,1);assert.equal(payload.resolution,'1080p');assert.equal(payload.duration,15);
+ assert.throws(()=>validateGeneration({...advanced,consent:true,videoResolution:'4k'}),/UNSUPPORTED_VIDEO_RESOLUTION/);
+ assert.throws(()=>validateGeneration({...advanced,consent:true,videoDuration:16}),/UNSUPPORTED_VIDEO_DURATION/);
+});
 test('result download requires exact approved HTTPS CDN host; API key never travels to CDN',async()=>{
  const host='fixture.tos-ap-southeast-1.bytepluses.com';let calls=0;
  for(const url of ['http://'+host+'/file','https://evil.test/file','https://127.0.0.1/file','https://'+host+':8443/file','https://secret@'+host+'/file','https://another.bytepluses.com/file'])assert.throws(()=>safeBytePlusMediaUrl(url,host));
