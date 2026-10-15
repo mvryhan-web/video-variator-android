@@ -292,3 +292,12 @@ Current queued-roadmap dependencies to verify before implementation:
 
 - Owner AI Control can inspect provider/model performance over 24h/7d/30d/all-time windows, including success rate, latency, cost and credits.
 - No automatic routing behavior was changed; Roadmap Block 1 remains separate.
+
+## Continuation — 2026-10-15: Dashboard quick-create and CI hardening
+
+- Added a real prompt-first Image/Video entry on the existing Deepsyq dashboard (HTML/JS/CSS). It uses the existing IndexedDB/session-based Studio handoff, does not send prompt/media to the server, never starts generation automatically, and requires the existing Studio consent step.
+- Added dashboard route and browser handoff regression checks for the new workflow.
+- Fixed a JavaScript parsing error in Studio AI-credit ledger presentation (mixed nullish coalescing with logical OR); extended the platform CI JS syntax checks to include Studio and handoff.
+- Updated stale unit mocks for Studio recovery claim SQL, commercial job INSERT arguments, cost-currency analytics and audited owner endpoints.
+- Coordinated destructive PostgreSQL generation-job fixture tests with a shared advisory lock so concurrent Node test files do not drop each other's tables.
+- BASE Canvas/main site remain **PARTIAL**. These are feature-branch changes only, not proof of deployed production functionality. Latest CI must pass; live paid AI, public root switch, production migrations and provider activation remain gated.
