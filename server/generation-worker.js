@@ -4,7 +4,7 @@ import {pool} from './db.js';
 import {GenerationWallet} from './generation-wallet.js';
 import {installGenerationStudio} from './generation-studio.js';
 import {createObjectStorage} from './generation-storage.js';
-import {createGenerationReferenceLedger,referenceRetentionMinutes} from './generation-reference-ledger.js';
+import {createGenerationReferenceLedger} from './generation-reference-ledger.js';
 import {generationWorkerReady} from './generation-worker-runtime.js';
 
 const state=generationWorkerReady(process.env,pool);
@@ -16,8 +16,8 @@ if(!studio.startRecovery()){console.error('[generation worker] recovery did not 
 console.log('[generation worker] recovery loop started');
 
 let stopping=false;
-const cleanupEnabled=process.env.AI_STUDIO_REFERENCE_CLEANUP_ENABLED==='true'&&
- process.env.AI_STUDIO_REFERENCE_STAGING_ENABLED==='true'&&referenceRetentionMinutes(process.env)!==null;
+// The expiry worker must remain available even if intake is disabled for rollback.
+const cleanupEnabled=process.env.AI_STUDIO_REFERENCE_CLEANUP_ENABLED==='true';
 const references=cleanupEnabled?createGenerationReferenceLedger({
  pool,storage:createObjectStorage({env:process.env}),env:process.env
 }):null;
