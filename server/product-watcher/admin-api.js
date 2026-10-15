@@ -6,6 +6,7 @@ import { listOfficialSourceReviews, officialSourceEnabled } from './official-sou
 import { listWatcherBriefs, briefEnabled } from './briefs.js';
 import { listContentTasks, contentTasksEnabled } from './content-tasks.js';
 import {listWatcherNotificationStatus,watcherTelegramConfig} from './telegram-alerts.js';
+import {watcherDeploymentReadiness} from './readiness.js';
 
 // Match the existing Deepsyq owner identity policy: only the designated Google account.
 // An empty ADMIN_EMAIL must never authorize a user with an empty email.
@@ -148,6 +149,14 @@ export function installProductWatcher(app, { auth, pool, env = process.env, fetc
       try{deliveryConfigured=watcherTelegramConfig(env).enabled;}catch{}
       return res.json({enabled:true,deliveryConfigured,items:await listWatcherNotificationStatus(pool)});
     }catch{return error(res,503,'WATCHER_NOTIFICATION_STATUS_UNAVAILABLE');}
+  });
+
+  app.get('/api/product-watcher/admin/readiness',auth,owner,async(_req,res)=>{
+    // Read-only preflight remains visible to the owner even when disabled.
+    // No schema creation, payment activity, worker activation or raw credentials.
+    try{
+      return res.json(await watcherDeploymentReadiness(pool,{env}));
+    }catch{return error(res,503,'WATCHER_PREFLIGHT_UNAVAILABLE');}
   });
 
   // Pause/resume blocks future runs, not work already in flight. Only one guarded,

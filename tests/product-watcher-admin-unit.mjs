@@ -30,6 +30,7 @@ function db({paused=false,missing=false}={}){
   if(sql.startsWith('SELECT source_key,provider,source_url,last_checked_at'))return{rows:[]};
   if(sql.startsWith('SELECT id,kind,period_key,content,created_at'))return{rows:[]};
   if(sql.startsWith('SELECT id,kind,period_key,content,created_at FROM vv_product_watcher_content_tasks'))return{rows:[]};
+  if(sql.includes('FROM unnest($1::text[])'))return{rows:args[0].map(name=>({name,relation:name}))};
   if(sql.startsWith('SELECT n.id,n.status,n.created_at'))return{rows:[]};
   if(sql.startsWith('SELECT id,source_key,provider,source_url,review_status'))return{rows:[]};
   if(sql.startsWith('UPDATE vv_product_watcher_proposals'))return{rows:[{id:9}]};
@@ -204,4 +205,17 @@ test('Telegram notifications status is owner-only and disabled by default',async
  const view=await f.call('GET','/api/product-watcher/admin/notifications');
  assert.equal(view.statusCode,200);assert.equal(view.body.deliveryConfigured,false);
  assert.deepEqual(view.body.items,[]);
+});
+
+
+test('owner can read safe deployment preflight while disabled; public users cannot',async()=>{
+ const f=fixture({settings:{...env,PRODUCT_WATCHER_ENABLED:'false'}});
+ const unauthorized=await f.call('GET','/api/product-watcher/admin/readiness',{user:denied});
+ assert.equal(unauthorized.statusCode,403);
+ const ownerView=await f.call('GET','/api/product-watcher/admin/readiness');
+ assert.equal(ownerView.statusCode,200);
+ assert.ok(ownerView.body.blockers.includes('WATCHER_FEATURE_DISABLED'));
+ assert.equal(ownerView.body.productionVerified,false);
+ assert.equal(ownerView.body.backupVerified,false);
+ assert.ok(f.pool.seen.every(([sql])=>/^\s*SELECT/i.test(sql)));
 });

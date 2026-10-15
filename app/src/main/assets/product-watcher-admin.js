@@ -161,6 +161,25 @@ function renderNotifications(data){
   root.append(tr);
  }
 }
+function renderPreflight(data){
+ $('watcherPreflightStatus').textContent='Code checks: '+(data.readyForOwnerReview?'Ready for owner review':'Blocked or not deployed')+
+  ' · Backup verified: No · Production verified: No';
+ const rows=$('watcherPreflightRows');rows.replaceChildren();
+ const values=[
+  ['Feature enabled',data.flags?.watcher===true?'Yes':'No'],
+  ['Worker configured',data.flags?.backgroundWorker===true?'Yes':'No'],
+  ['HTTPS health origin validated',data.healthUrlValid===true?'Yes':'No'],
+  ['Watcher schema tables',String((data.requiredTables||[]).filter(x=>x.present).length)+'/'+String((data.requiredTables||[]).length)],
+  ['Base generation schema',data.baseTables?.every(x=>x.present)?'Present':'Not ready'],
+  ['Owner state',data.paused===true?'Paused':data.paused===false?'Resumed':'Unknown'],
+  ['Fresh worker heartbeat',data.schedulerHeartbeatFresh===true?'Observed':'Not observed'],
+  ['Missing gates',(data.blockers||[]).join(' · ')||'No code-level blockers; production unverified']
+ ];
+ for(const [label,value] of values){
+  const tr=document.createElement('tr'),title=document.createElement('td'),result=document.createElement('td');
+  title.textContent=label;result.textContent=value;tr.append(title,result);rows.append(tr);
+ }
+}
 function render(d){
  current=d;$('watcherStatus').textContent=d.enabled?(d.paused?'Paused':'Ready for manual checks'):'Not enabled';
  $('watcherDetails').textContent=d.enabled?'Scheduler: '+(d.schedulerActive?'reported active':'not deployed')+' · Last run: '+formatDate(d.lastRun?.checkedAt):'Product Watcher is disabled in server configuration.';
@@ -171,7 +190,7 @@ function render(d){
  showRuns(d.runs||[]);
 }
 async function refresh(){
- try{busy=true;if(current)render(current);const [d,alerts,sources,briefs,content,delivery]=await Promise.all([api('/api/product-watcher/admin/status'),api('/api/product-watcher/admin/alerts'),api('/api/product-watcher/admin/official-sources'),api('/api/product-watcher/admin/briefs'),api('/api/product-watcher/admin/content-tasks'),api('/api/product-watcher/admin/notifications')]);busy=false;render(d);renderAlerts(alerts.items);renderOfficialSources(sources);renderBriefs(briefs);renderContentTasks(content);renderNotifications(delivery);feedback('Status updated.');}
+ try{busy=true;if(current)render(current);const [d,alerts,sources,briefs,content,delivery,preflight]=await Promise.all([api('/api/product-watcher/admin/status'),api('/api/product-watcher/admin/alerts'),api('/api/product-watcher/admin/official-sources'),api('/api/product-watcher/admin/briefs'),api('/api/product-watcher/admin/content-tasks'),api('/api/product-watcher/admin/notifications'),api('/api/product-watcher/admin/readiness')]);busy=false;render(d);renderAlerts(alerts.items);renderOfficialSources(sources);renderBriefs(briefs);renderContentTasks(content);renderNotifications(delivery);renderPreflight(preflight);feedback('Status updated.');}
  catch(e){busy=false;current=null;$('watcherStatus').textContent='Unavailable';$('watcherDetails').textContent=e.message==='SIGN_IN_REQUIRED'?'Sign in using the existing Deepsyq owner account.':'Owner access or Watcher database is unavailable.';$('watcherToggle').disabled=true;$('watcherRun').disabled=true;$('watcherRefresh').disabled=false;feedback(e.message,true);}
 }
 async function action(path,body){

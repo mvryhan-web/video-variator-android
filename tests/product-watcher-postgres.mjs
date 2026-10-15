@@ -8,6 +8,7 @@ import { runOfficialSourcesOnce } from '../server/product-watcher/official-sourc
 import { runBriefsIfDue } from '../server/product-watcher/briefs.js';
 import { runContentTasksIfDue } from '../server/product-watcher/content-tasks.js';
 import { deliverCriticalWatcherAlertsOnce } from '../server/product-watcher/telegram-alerts.js';
+import {watcherDeploymentReadiness} from '../server/product-watcher/readiness.js';
 import { installProductWatcher } from '../server/product-watcher/admin-api.js';
 
 const url = process.env.PRODUCT_WATCHER_TEST_DB_URL || '';
@@ -33,6 +34,17 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     // Runs only against the explicitly named localhost watcher_test database.
     await pool.query(sql);
     await pool.query(sql);
+    const preflight=await watcherDeploymentReadiness(pool,{
+      env:{...env,PRODUCT_WATCHER_SCHEDULER_ENABLED:'true',DATABASE_URL:'postgres://placeholder:placeholder@localhost/watcher_test'},
+      now:()=>new Date()
+    });
+    assert.equal(preflight.requiredTables.every(t=>t.present),true);
+    assert.equal(preflight.productionVerified,false);
+    assert.equal(preflight.backupVerified,false);
+    assert.ok(preflight.blockers.includes('WATCHER_OWNER_PAUSED'));
+    assert.ok(preflight.blockers.includes('WATCHER_WORKER_NOT_SEEN'));
+    assert.ok(!JSON.stringify(preflight).includes('placeholder'));
+
     const state=await pool.query('SELECT id,paused FROM vv_product_watcher_control');
     assert.deepEqual(state.rows,[{id:1,paused:true}]);
 
