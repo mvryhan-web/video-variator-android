@@ -8,6 +8,7 @@ let slides=[],index=0,visible=false,userPaused=false,observer=null,failedSlides=
 function ambientAllowed(){return !document.hidden&&visible&&!userPaused&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData;}
 function ambientPlay(){if(!video?.getAttribute('src')||!ambientAllowed())return;void video.play().catch(()=>{userPaused=true;setPlayLabel();});}
 function setPlayLabel(){const b=$('homeHeroPlay');if(!b)return;b.textContent=userPaused?'Play':'Pause';b.setAttribute('aria-label',userPaused?'Play video':'Pause video');}
+function setSoundLabel(){const b=$('homeHeroSound');if(!b||!video)return;b.textContent=video.muted?'Sound off':'Sound on';b.setAttribute('aria-label',video.muted?'Turn sound on':'Turn sound off');b.setAttribute('aria-pressed',String(!video.muted));}
 function showHeroFallback(){
  video.pause();video.removeAttribute('src');video.removeAttribute('poster');video.load();
  carousel.hidden=true;$('inspirationHeroFeature').hidden=true;observer?.disconnect();observer=null;
@@ -35,7 +36,7 @@ function setSlide(next,direction=1){
 export function renderHomeCarousel(items){
  if(!carousel||!video||!Array.isArray(items))return;
  slides=items.filter(x=>x.kind==='video'&&x.actionTarget==='studio'&&typeof x.previewUrl==='string'&&x.previewUrl.trim()).slice(0,8);
- userPaused=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||!!navigator.connection?.saveData;index=0;failedSlides=new Set();video.pause();observer?.disconnect();observer=null;
+ userPaused=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||!!navigator.connection?.saveData;index=0;failedSlides=new Set();video.pause();video.muted=true;setSoundLabel();observer?.disconnect();observer=null;
  if(!slides.length){showHeroFallback();return;}
  video.loop=false;
  carousel.hidden=false;$('inspirationHeroFeature').hidden=false;
@@ -53,6 +54,11 @@ if(video&&carousel){
  $('homeHeroPlay')?.addEventListener('click',()=>{
   userPaused=!userPaused;setPlayLabel();
   if(userPaused)video.pause();else if(!document.hidden&&visible)void video.play().catch(()=>{userPaused=true;setPlayLabel();$('homeHeroStatus').textContent='Video playback unavailable.';});
+ });
+ $('homeHeroSound')?.addEventListener('click',()=>{
+  video.muted=!video.muted;setSoundLabel();
+  // Unmuting is never automatic: only a direct click can activate the soundtrack.
+  // Play remains a separate opt-in when reduced-motion or data saver is enabled.
  });
  video.addEventListener('ended',()=>{if(!ambientAllowed())return;if(slides.length>1)setSlide(index+1);else if(slides.length===1){video.currentTime=0;ambientPlay();}});
  video.addEventListener('loadeddata',ambientPlay);
