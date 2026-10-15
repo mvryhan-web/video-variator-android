@@ -5,6 +5,7 @@ import { listWatcherAlerts } from './alerts.js';
 import { listOfficialSourceReviews, officialSourceEnabled } from './official-sources.js';
 import { listWatcherBriefs, briefEnabled } from './briefs.js';
 import { listContentTasks, contentTasksEnabled } from './content-tasks.js';
+import {listWatcherNotificationStatus,watcherTelegramConfig} from './telegram-alerts.js';
 
 // Match the existing Deepsyq owner identity policy: only the designated Google account.
 // An empty ADMIN_EMAIL must never authorize a user with an empty email.
@@ -137,6 +138,16 @@ export function installProductWatcher(app, { auth, pool, env = process.env, fetc
     if(!pool)return error(res,503,'WATCHER_DATABASE_NOT_CONFIGURED');
     try{return res.json({enabled:true,schedulerEnabled:contentTasksEnabled(env),items:await listContentTasks(pool)});}
     catch{return error(res,503,'WATCHER_CONTENT_TASKS_UNAVAILABLE');}
+  });
+
+  app.get('/api/product-watcher/admin/notifications',auth,owner,async(_req,res)=>{
+    if(!enabled())return res.json({enabled:false,deliveryConfigured:false,items:[]});
+    if(!pool)return error(res,503,'WATCHER_DATABASE_NOT_CONFIGURED');
+    try{
+      let deliveryConfigured=false;
+      try{deliveryConfigured=watcherTelegramConfig(env).enabled;}catch{}
+      return res.json({enabled:true,deliveryConfigured,items:await listWatcherNotificationStatus(pool)});
+    }catch{return error(res,503,'WATCHER_NOTIFICATION_STATUS_UNAVAILABLE');}
   });
 
   // Pause/resume blocks future runs, not work already in flight. Only one guarded,

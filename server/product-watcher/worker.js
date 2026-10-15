@@ -4,6 +4,7 @@ import { productWatcherTick } from './scheduler.js';
 import { runOfficialSourcesOnce } from './official-sources.js';
 import { runBriefsIfDue } from './briefs.js';
 import { runContentTasksIfDue } from './content-tasks.js';
+import { deliverCriticalWatcherAlertsOnce } from './telegram-alerts.js';
 
 if (process.env.PRODUCT_WATCHER_ENABLED !== 'true' ||
     process.env.PRODUCT_WATCHER_SCHEDULER_ENABLED !== 'true') {
@@ -56,6 +57,16 @@ async function tick(){
     }
   } catch {
     console.error('[product watcher] WATCHER_BRIEFS_TICK_FAILED');
+  }
+  try {
+    const delivery=await deliverCriticalWatcherAlertsOnce({pool,env:process.env});
+    if(delivery.attempted){
+      console.log('[product watcher] owner alert delivery '+JSON.stringify({
+        status:delivery.status,attempted:delivery.attempted,sent:delivery.sent
+      }));
+    }
+  } catch {
+    console.error('[product watcher] WATCHER_OWNER_DELIVERY_FAILED');
   } finally { busy=false; }
 }
 
