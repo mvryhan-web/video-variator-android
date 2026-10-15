@@ -69,11 +69,19 @@ async function local(method,path,{headers={},body}={}){
   req.end();
  });
 }
-function proxyFetch(url,options){
+async function proxyFetch(url,options){
  const u=new URL(url);
  assert.equal(u.origin,'https://'+host,'never fetch an external domain');
  assert.ok(u.pathname.startsWith('/'+bucket+'/'),'never call outside test bucket');
- return local(options.method,u.pathname+u.search,{headers:options.headers,body:options.body});
+ const r=await local(options.method,u.pathname+u.search,{headers:options.headers,body:options.body});
+ if(!r.ok){
+  // Print only sanitized HTTP status and XML error code; never any bearer URL,
+  // S3 object key, raw server XML, Authorization header or fixture credentials.
+  const body=await r.clone().text();
+  const code=/<Code>([A-Za-z0-9_-]{1,70})<\\/Code>/.exec(body)?.[1]||'UNKNOWN';
+  throw Error('MINIO_TEST_'+options.method+'_HTTP_'+r.status+'_'+code);
+ }
+ return r;
 }
 async function makeMp4(){
  const dir=await mkdtemp(join(tmpdir(),'deepsyq-minio-mp4-'));
