@@ -149,10 +149,45 @@ async function loadHistory(){
 document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclick=()=>{historyFilter=button.dataset.historyFilter;document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));void loadHistory();});
 function setHistory(on){historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
 $('showCreate').onclick=()=>setHistory(false);$('showHistory').onclick=()=>setHistory(true);
-function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
-async function watch(id,epoch){for(let i=0;i<120&&epoch===generation;i++){const d=await(await api(`/api/studio/jobs/${encodeURIComponent(id)}`)).json();if(d.status==='ready'){const b=await(await api(`/api/studio/jobs/${encodeURIComponent(id)}/media`)).blob();if(epoch!==generation)return;clearResult();blob=b;url=URL.createObjectURL(b);const tag=d.mime.startsWith('image/')?'img':d.mime.startsWith('video/')?'video':'audio';const media=document.createElement(tag);media.src=url;if(tag==='img')media.alt=say('Generated image','Созданное изображение');else media.controls=true;$('media').append(media);$('lyrics').textContent=d.text||'';$('empty').hidden=true;$('historyEmpty').hidden=true;$('actions').hidden=false;$('saveNote').hidden=false;$('status').textContent=say('Ready. Preview and save your creation.','Готово. Посмотрите и сохраните результат.');busy=false;availability();return;}if(d.status==='failed'||d.status==='unknown')throw Error(d.error||'GENERATION_FAILED');const wait=Math.max(3000,Math.min(20000,Number(d.retryAfterSeconds||5)*1000));await new Promise(r=>setTimeout(r,wait));}throw Error('STILL_PROCESSING_RELOAD_TO_CHECK');}
+function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
+async function watch(id,epoch){for(let i=0;i<120&&epoch===generation;i++){const d=await(await api(`/api/studio/jobs/${encodeURIComponent(id)}`)).json();if(d.status==='ready'){const b=await(await api(`/api/studio/jobs/${encodeURIComponent(id)}/media`)).blob();if(epoch!==generation)return;clearResult();blob=b;url=URL.createObjectURL(b);const tag=d.mime.startsWith('image/')?'img':d.mime.startsWith('video/')?'video':'audio';const media=document.createElement(tag);media.src=url;if(tag==='img')media.alt=say('Generated image','Созданное изображение');else media.controls=true;$('media').append(media);$('lyrics').textContent=d.text||'';$('empty').hidden=true;$('historyEmpty').hidden=true;$('actions').hidden=false;$('continueImage').hidden=!b.type.startsWith('image/');$('saveNote').hidden=false;$('status').textContent=say('Ready. Preview and save your creation.','Готово. Посмотрите и сохраните результат.');busy=false;availability();return;}if(d.status==='failed'||d.status==='unknown')throw Error(d.error||'GENERATION_FAILED');const wait=Math.max(3000,Math.min(20000,Number(d.retryAfterSeconds||5)*1000));await new Promise(r=>setTimeout(r,wait));}throw Error('STILL_PROCESSING_RELOAD_TO_CHECK');}
 $('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)return;busy=true;availability();setHistory(false);clearResult();const epoch=++generation;$('status').textContent=say('Submitting your request…','Отправляем запрос…');try{const d=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID(),kind,model:modelId,prompt:$('prompt').value,ratio:$('ratio').value,musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked})})).json();job=d.id;sessionStorage.setItem('vu_generation_job',job);$('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');await watch(job,epoch);}catch(e){$('status').textContent=errorText(e);busy=false;availability();}};
-function filename(){const ext=blob?.type.startsWith('video/')?'mp4':blob?.type==='image/jpeg'?'jpg':blob?.type.startsWith('image/')?'png':blob?.type==='audio/wav'?'wav':'mp3';return `Deepsyq-${job}.${ext}`;}
+// Continue from an existing image in the same browser without an API call.
+ // The reference is explicitly prepared for a new Image request; Generate stays manual.
+ async function imageResultReference(input){
+  if(!input?.type?.startsWith('image/'))throw Error('IMAGE_RESULT_REQUIRED');
+  const bitmap=await createImageBitmap(input);
+  try{
+   let width=bitmap.width,height=bitmap.height;
+   const scale=Math.min(1,2048/Math.max(width,height));
+   width=Math.max(1,Math.floor(width*scale));height=Math.max(1,Math.floor(height*scale));
+   for(let attempt=0;attempt<5;attempt++){
+    const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+    const ctx=canvas.getContext('2d');if(!ctx)throw Error('IMAGE_PREPARE_FAILED');
+    ctx.drawImage(bitmap,0,0,width,height);
+    for(const quality of [.9,.75,.6,.45]){
+     const result=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+     if(result&&result.size>0&&result.size<=1024*1024)return new File([result],'deepsyq-image-reference.jpg',{type:'image/jpeg'});
+    }
+    width=Math.max(1,Math.floor(width*.7));height=Math.max(1,Math.floor(height*.7));
+   }
+   throw Error('IMAGE_PREPARE_FAILED');
+  }finally{bitmap.close();}
+ }
+ $('continueImage').onclick=async()=>{
+  if(!blob||busy||!blob.type.startsWith('image/'))return;
+  busy=true;availability();$('status').textContent=say('Preparing this image as your next reference…','Готовим изображение как основу следующей редакции…');
+  try{
+   const file=await imageResultReference(blob);
+   select('image',{remember:false});
+   await acceptFiles([file]);
+   $('consent').checked=false;availability();
+   $('prompt').value='';$('prompt').focus();availability();
+   $('status').textContent=say('Image added as a reference. Describe what you want to change, review the model and Generate when ready. No new generation was started.','Изображение добавлено как пример. Опишите, что хотите изменить, проверьте модель и нажмите «Создать» сами. Новая генерация не запускалась.');
+  }catch(_){$('status').textContent=say('Could not prepare the image as a reference. Download it and add it manually.','Не получилось подготовить изображение. Скачайте его и добавьте вручную.');}
+  finally{busy=false;availability();}
+ };
+ function filename(){const ext=blob?.type.startsWith('video/')?'mp4':blob?.type==='image/jpeg'?'jpg':blob?.type.startsWith('image/')?'png':blob?.type==='audio/wav'?'wav':'mp3';return `Deepsyq-${job}.${ext}`;}
 $('download').onclick=async()=>{if(!blob||busy)return;busy=true;availability();try{await saveLocal(new File([blob],filename(),{type:blob.type}));}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
 $('share').onclick=async()=>{if(!blob||busy)return;const file=new File([blob],filename(),{type:blob.type});try{if(window.AndroidBridge&&window.VUShareFile){busy=true;availability();try{await window.VUShareFile({blob:file,name:file.name});}finally{busy=false;availability();}return;}if(navigator.canShare?.({files:[file]}))await navigator.share({files:[file]});else $('status').textContent=say('File sharing is unavailable in this browser. Download the file to share it.','Этот браузер не поддерживает отправку файла. Скачайте его и поделитесь.');}catch(e){if(e.name!=='AbortError')$('status').textContent=say('Could not share. Try downloading the file.','Не удалось поделиться. Попробуйте скачать файл.');}};
 $('remove').onclick=async()=>{if(!job||busy)return;busy=true;availability();try{await api(`/api/studio/jobs/${encodeURIComponent(job)}`,{method:'DELETE'});++generation;clearResult();sessionStorage.removeItem('vu_generation_job');job=null;$('status').textContent=say('Result deleted. Downloaded copies are kept.','Результат удалён. Скачанные копии остаются.');if(historyView)await loadHistory();else setHistory(false);}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
