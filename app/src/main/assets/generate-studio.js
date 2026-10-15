@@ -304,20 +304,67 @@ function renderRefs(){
   tile.append(img,remove,controls,crop,undo);$('refPreview').append(tile);
  });
 }
+// Large reference photos are prepared locally. Provider payloads still obey the original 1 MB cap.
+const REFERENCE_LIMIT=1024*1024,REFERENCE_INPUT_LIMIT=16*1024*1024,REFERENCE_PIXEL_LIMIT=48_000_000;
+async function prepareReferenceUpload(source){
+ if(!source||!['image/png','image/jpeg'].includes(source.type)||!source.size||source.size>REFERENCE_INPUT_LIMIT)
+  throw Error(say('Choose PNG or JPG files up to 16 MB.','Выберите PNG или JPG размером до 16 МБ.'));
+ if(source.size<=REFERENCE_LIMIT)return {file:source,optimized:false};
+ let bitmap;
+ try{bitmap=await createImageBitmap(source);}catch(_){throw Error(say('This image cannot be decoded in your browser. Try another PNG or JPG file.','Браузер не смог открыть изображение. Попробуйте другой PNG или JPG.'));}
+ try{
+  const pixels=bitmap.width*bitmap.height;
+  if(!bitmap.width||!bitmap.height||pixels>REFERENCE_PIXEL_LIMIT)throw Error(say('Image dimensions are too large to prepare safely. Please resize the image first.','Размеры фотографии слишком большие. Уменьшите её перед загрузкой.'));
+  let scale=Math.min(1,2048/Math.max(bitmap.width,bitmap.height));
+  // Keep PNG as PNG: logos and transparent background must not silently become opaque JPEGs.
+  const type=source.type;
+  for(let attempt=0;attempt<8;attempt++){
+   const canvas=document.createElement('canvas');
+   canvas.width=Math.max(1,Math.floor(bitmap.width*scale));
+   canvas.height=Math.max(1,Math.floor(bitmap.height*scale));
+   const context=canvas.getContext('2d');if(!context)throw Error('REFERENCE_PREPARE_FAILED');
+   context.drawImage(bitmap,0,0,canvas.width,canvas.height);
+   const qualities=type==='image/jpeg'?[.9,.8,.68,.54]:[undefined];
+   for(const quality of qualities){
+    const result=await new Promise(resolve=>canvas.toBlob(resolve,type,quality));
+    if(result?.size>0&&result.size<=REFERENCE_LIMIT){
+     const basename=String(source.name||'reference').replace(/\.[^.]*$/,'').replace(/[^a-z0-9_-]/gi,'_').slice(0,45)||'reference';
+     const extension=type==='image/png'?'png':'jpg';
+     return {file:new File([result],basename+'-optimized.'+extension,{type,lastModified:Date.now()}),optimized:true};
+    }
+   }
+   scale*=.72;
+  }
+  throw Error(say('Could not make this image small enough. Please choose a different photo.','Не удалось уменьшить фотографию до 1 МБ. Выберите другую.'));
+ }finally{bitmap.close();}
+}
 async function acceptFiles(files,{append=false}={}){
- if(busy)return false;
+ if(busy||cropApplying)return false;
+ let accepted=false;
  try{
   const max=currentModel()?.references||0,selected=Array.from(files||[]);
   if(!selected.length)return false;
   if(selected.length+(append?refs.length:0)>max)throw Error(say('This model supports at most '+max+' reference photos. Remove an existing reference first.','Эта модель поддерживает до '+max+' изображений. Сначала уберите лишние.'));
+  busy=true;availability();
   const next=append?[...refs]:[];
-  for(const file of selected){
-   if(!['image/png','image/jpeg'].includes(file.type)||!file.size||file.size>1024*1024)throw Error(say('Use nonempty PNG or JPG photos under 1 MB.','Нужны непустые PNG/JPG до 1 МБ.'));
+  let optimizedCount=0;
+  for(const source of selected){
+   const prepared=await prepareReferenceUpload(source);
+   const file=prepared.file;
+   if(prepared.optimized)optimizedCount++;
    const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file);});
    next.push({file,mimeType:file.type,data});
   }
-  refs=next;$('consent').checked=false;renderRefs();availability();return true;
- }catch(e){$('status').textContent=errorText(e);$('references').value='';return false;}
+  refs=next;$('consent').checked=false;accepted=true;
+  if(optimizedCount)$('status').textContent=say(optimizedCount+' large photo(s) optimized locally to fit the 1 MB reference limit. Original files were unchanged.','Больших фотографий уменьшено: '+optimizedCount+'. Подготовка выполнена на устройстве; оригиналы не изменены.');
+ }catch(e){$('status').textContent=errorText(e);}
+ finally{
+  busy=false;
+  if(accepted)renderRefs();
+  else $('references').value='';
+  availability();
+ }
+ return accepted;
 }
 $('references').onchange=()=>void acceptFiles(Array.from($('references').files),{append:true});$('creator').ondragover=e=>{if(currentModel()?.references)e.preventDefault();};$('creator').ondrop=e=>{e.preventDefault();if(currentModel()?.references)void acceptFiles(Array.from(e.dataTransfer.files),{append:true});};
 $('clearRefs').onclick=()=>{if(busy)return;refs=[];renderRefs();};document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>select(b.dataset.kind));$('prompt').oninput=()=>{$('consent').checked=false;availability();};$('consent').onchange=availability;$('ratio').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageResolution').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageOutputFormat').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};
