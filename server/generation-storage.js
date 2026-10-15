@@ -1,4 +1,5 @@
-import {createHash,createHmac} from 'node:crypto';
+import {createHash,createHmac,randomUUID} from 'node:crypto';
+import {inspectStudioReferenceMedia,STUDIO_REFERENCE_MEDIA_LIMITS} from './generation-reference-media.js';
 
 const MIME_EXT=new Map([['image/png','png'],['image/jpeg','jpg'],['video/mp4','mp4'],['audio/mpeg','mp3'],['audio/mp3','mp3'],['audio/wav','wav']]);
 const sha=value=>createHash('sha256').update(value).digest('hex');
@@ -75,6 +76,40 @@ export function createObjectStorage({env=process.env,fetcher=fetch,now=()=>new D
    requireReady();if(!MIME_EXT.has(mime)||!Buffer.isBuffer(bytes)||!bytes.length||bytes.length>50*1024*1024)throw Error('OBJECT_STORAGE_INVALID_MEDIA');
    const owner=sha(String(userId)).slice(0,24),key=`${cfg.prefix}/users/${owner}/${jobId}.${MIME_EXT.get(mime)}`;
    await request('PUT',key,{bytes,mime});return {storage:'s3',key,mime,size:bytes.length};
+  },
+  // Prepared for a future authenticated upload ledger. No HTTP route calls these
+  // methods yet; staging is OFF unless explicitly approved after retention design.
+  async putStagedReference({userId,mime,bytes}){
+   requireReady();
+   if(env.AI_STUDIO_REFERENCE_STAGING_ENABLED!=='true')throw Error('REFERENCE_STAGING_DISABLED');
+   if(!userId||typeof userId!=='string'||userId.length>256)throw Error('REFERENCE_MEDIA_INVALID');
+   const inspected=inspectStudioReferenceMedia({bytes,mime});
+   const owner=sha(userId).slice(0,24),key=`${cfg.prefix}/references/users/${owner}/${randomUUID()}.${inspected.extension}`;
+   await request('PUT',key,{bytes,mime});
+   // Never return a public/presigned URL or provider transfer token.
+   return {storage:'s3',key,...inspected};
+  },
+  async getStagedReference({userId,key,mime}){
+   requireReady();
+   if(env.AI_STUDIO_REFERENCE_STAGING_ENABLED!=='true')throw Error('REFERENCE_STAGING_DISABLED');
+   const owner=sha(String(userId||'')).slice(0,24);
+   const base=`${cfg.prefix}/references/users/${owner}/`;
+   if(typeof key!=='string'||!key.startsWith(base)||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(mp4|wav)$/.test(key.slice(base.length))||
+      !Object.hasOwn(STUDIO_REFERENCE_MEDIA_LIMITS,mime)||!key.endsWith(mime==='video/mp4'?'.mp4':'.wav'))throw Error('REFERENCE_MEDIA_ACCESS_DENIED');
+   const response=await request('GET',key);
+   const bytes=await readLimited(response,STUDIO_REFERENCE_MEDIA_LIMITS[mime]);
+   inspectStudioReferenceMedia({bytes,mime});
+   return bytes;
+  },
+  async deleteStagedReference({userId,key}){
+   requireReady();
+   if(env.AI_STUDIO_REFERENCE_STAGING_ENABLED!=='true')throw Error('REFERENCE_STAGING_DISABLED');
+   const owner=sha(String(userId||'')).slice(0,24);
+   const base=`${cfg.prefix}/references/users/${owner}/`;
+   if(typeof key!=='string'||!key.startsWith(base)||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(mp4|wav)$/.test(key.slice(base.length)))throw Error('REFERENCE_MEDIA_ACCESS_DENIED');
+   await request('DELETE',key);return true;
   },
   async get(key,{maxBytes=50*1024*1024}={}){const r=await request('GET',key);return readLimited(r,maxBytes);},
   async delete(key){await request('DELETE',key);return true;}

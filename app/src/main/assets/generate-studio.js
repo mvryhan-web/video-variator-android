@@ -120,6 +120,8 @@ function showVideoDraftState(){
  bar.hidden=kind!=='video';if(bar.hidden)return;
  $('videoDraftMessage').textContent=!videoDraftKey?
   say('Private tab autosave is unavailable in this browser.','В этом браузере недоступно сохранение черновика видео.'):
+  videoDraftNeedsPhotos&&(!currentModel()?.capabilities?.videoInputModes?.includes(videoDraftPendingMode)||videoDraftExpectedRefs>Number(currentModel()?.references||0))?
+   say('The old photo mode is not supported by this model. Choose another compatible model or Continue without old photos. No AI request was started.','Прежний режим фотографий не поддерживается этой моделью. Выберите совместимую модель или продолжите без старых фотографий. AI-запрос не запускался.'):
   videoDraftNeedsPhotos?
    say('Video settings restored. Attach '+videoDraftExpectedRefs+' reference photo(s) again ('+refs.length+' added so far). Original photos were never stored.','Настройки видео восстановлены. Добавьте заново '+videoDraftExpectedRefs+' фото (сейчас добавлено: '+refs.length+'). Исходные фото не сохранялись.'):
    say('Video description and settings stay in this tab for up to 24 hours. Reference photos are never stored.','Описание и параметры видео сохраняются в этой вкладке до 24 часов. Фотографии не записываются в хранилище.');

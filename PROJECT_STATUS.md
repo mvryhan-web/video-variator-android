@@ -39,7 +39,7 @@ The exact completion state of older components must be verified from the current
 |---|---|---|---|---|
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
-| Block 5 — Product Watcher (isolated core) | New dedicated agent | `deepsyq-block5-product-watcher` / draft PR | IN PROGRESS / LOCAL UNIT TESTED | Private, read-only health/DB/job checks, separate optional journal. No UI, public API, scheduled worker, migration or production activation. |
+| Block 5 — Product Watcher (isolated core) | Dedicated Block 5 agent | `deepsyq-block5-product-watcher` / draft PR #46 | IN PROGRESS / LOCAL UNIT TESTED | Private, read-only health/DB/job checks, separate optional journal. No UI, public API, scheduled worker, migration or production activation. |
 
 When another agent joins, add one row per claimed workstream before substantial implementation. One agent should own one bounded workstream at a time.
 
@@ -51,7 +51,7 @@ When another agent joins, add one row per claimed workstream before substantial 
 | 2 | User Agent — “Do it for me” | NOT STARTED / QUEUED | UNASSIGNED | Multi-step execution through Agent Orchestrator |
 | 3 | Inspiration / Create Yours | CODE READY / CONTENT + BROWSER CI GATED | BLOCK 3 IMPLEMENTED | Original gallery, filtered image/video previews, Studio prefill, owner rights controls, approved migration path; needs owned/licensed publish content, live rollout approval and final browser CI. See `docs/BLOCK3_INSPIRATION_CHECKLIST.md`. |
 | 4 | Studio + My Workspace | NOT STARTED / QUEUED | UNASSIGNED | Creation editor/templates/skills + personal project workspace |
-| 5 | Internal Product Watcher Agent | IN PROGRESS — FIRST SLICE ONLY | Dedicated Block 5 agent | Isolated branch; initial read-only checker/unit tests, no deployment, scheduler, owner UI or auto-apply. |
+| 5 | Internal Product Watcher Agent | IN PROGRESS — FIRST SLICE ONLY | Dedicated Block 5 agent | Isolated PR #46; no deployment, scheduler, owner UI or auto-apply. |
 | 6 | Deepsyq Voice Agent | NOT STARTED / QUEUED | UNASSIGNED | Realtime voice interface across Deepsyq, Device Cleanup skill, owner voice access to Product Watcher |
 | 7 | Pricing, Credits, Stripe & Unit Economics | NOT STARTED / QUEUED | UNASSIGNED | Reuse existing Stripe; AI credits/top-ups, provider cost, reservations, margins; no unlimited Lifetime AI |
 
@@ -492,6 +492,14 @@ Current queued-roadmap dependencies to verify before implementation:
 - Strict validation exists at **both** the estimate/create API and the BytePlus adapter. The request carries `videoInputMode`, is idempotently fingerprinted, and job History stores that setting. Text/first-frame remains the original pricing baseline; premium first+last or omni images require an explicit model+role+exact image-count rate in the existing pricing catalog. No invented prices, double jobs or automatic retries.
 - Reference videos/audio are documented as supported by the provider but **not falsely exposed** in our Studio; ModelArk video references require an externally accessible provider media URL, which cannot safely be produced by passing a local user's video. A secure authenticated asset upload, private persistent bucket/URL lifecycle, verification of codec/duration/frames, provider connectivity and unit economics must precede this capability. No untrusted URL proxy or public-media shortcuts were added.
 - Mocked unit and browser regression cases were authored for output role mapping, cross-model restrictions, pricing gates and count-aware selector behavior; full tests/live provider calls are **DEFERRED / UNVERIFIED**, following the owner's BASE-first instruction. No paid AI requests, production/Render/Stripe changes, new DB architecture or Roadmap Blocks 1–7 changes.
+
+
+### BASE Video — session-safe unfinished draft recovery (2026-10-15)
+
+- Continued **original BASE #5** without introducing a second video job architecture or enabling public/paid AI. Video Studio now privately autosaves prompt, model, aspect, resolution, duration, intended photo-role and reference count per authenticated-session hash in `sessionStorage`, expiring after 24 hours. It does **not** write reference images or Base64 media into storage.
+- After a tab refresh, photo-guided drafts restore only their metadata; generation stays blocked until the correct image count is manually reattached, or the user deliberately chooses **Continue without old photos**. Clear video draft resets model settings and removes local attachments without deleting History or issuing provider calls. A new explicit template/workflow handoff supersedes a previous pending-photo warning. Historical photo-guided video preparation likewise requires reattachment; legacy single-photo jobs safely infer first-frame mode, and unsupported historical modes fail closed rather than silently becoming text-only.
+- Added two browser regression cases for tab refresh/settings/clear and reattaching first+last frames without a paid POST. **Not run yet**, consistent with owner direction to defer full integration testing while BASE development proceeds.
+- No Render deployment, existing Stripe payments, live AI provider access, new database tables, or roadmap Blocks 1–7 touched. Video BASE remains **PARTIAL / UNVERIFIED**; current next blockers include authenticated durable media-intake for video/audio references, real provider acceptance, verified AI wallet economics and production lifecycle verification.
 
 
 ### Block 5 Product Watcher — isolated initial implementation (2026-10-15)
