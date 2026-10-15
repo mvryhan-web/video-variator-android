@@ -12,6 +12,7 @@ import {claimProviderPoll} from './generation-polling.js';
 import {recordAdminAudit,listAdminAudit} from './admin-audit.js';
 import {generationEntitlements,generationEntitlementForUser} from './generation-entitlements.js';
 import {generationRequestId,findGenerationRequest} from './generation-idempotency.js';
+import {generationReadiness} from './generation-readiness.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch}={}){
  const model=MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter);
  if(!model)throw Error('MODEL_NOT_CONNECTED');
@@ -111,6 +112,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
     FROM vv_generation_jobs j LEFT JOIN vv_users u ON u.id=j.user_id WHERE ${where.join(' AND ')} ORDER BY j.created_at DESC LIMIT 100`,args);
   res.json({filter,items:rows.map(j=>({id:j.id,userId:j.user_id,userEmail:j.email||null,kind:j.kind,status:j.status,provider:j.provider||null,model:j.model||null,error:j.error||j.error_message||null,createdAt:j.created_at,durationSeconds:j.started_at&&(j.completed_at||j.failed_at)?Math.max(0,(new Date(j.completed_at||j.failed_at)-new Date(j.started_at))/1000):null,estimatedCost:j.estimated_cost==null?null:Number(j.estimated_cost),actualCost:j.actual_cost==null?null:Number(j.actual_cost),creditsReserved:Number(j.credits_reserved||0),creditsCharged:Number(j.credits_charged||0)}))});
  }catch(_){res.status(503).json({error:'OWNER_JOBS_UNAVAILABLE'});}});
+ app.get('/api/studio/admin/readiness',auth,owner,(_req,res)=>res.json(generationReadiness(env)));
  app.get('/api/studio/admin/audit',auth,owner,async(_req,res)=>{try{res.json({items:await listAdminAudit(pool,{limit:100})});}catch(_){res.status(503).json({error:'OWNER_AUDIT_UNAVAILABLE'});}});
  app.get('/api/studio/admin/business',auth,owner,async(_req,res)=>{try{
   await init();if(wallet)await wallet.init();
