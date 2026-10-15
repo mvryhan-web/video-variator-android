@@ -62,3 +62,24 @@ Known limits: in the first slice, the health route can say OK even when sign-in 
 - Owner-only API supports GET /api/product-watcher/admin/alerts (50 newest) and POST /api/product-watcher/admin/alerts/ack (explicit matching alertId/confirmAlertId) with existing admin audit transaction.
 - The standalone owner page shows observed alerts and contextual review recommendations using text-only insertion. No automatic repricing, routing, Stripe changes, refunds or provider calls.
 - Remaining: official provider feed monitoring, notifications and escalation, safe approvals/application policy, daily and weekly briefs, verified Render deployment.
+
+## Official model/provider changes — review only (code, NOT live)
+
+- Static allowlist contains official BytePlus ModelArk product updates, Google Gemini API changelog and OpenAI API changelog. Source paths are fixed in server/product-watcher/official-sources.js; callers cannot submit network URLs.
+- Enable ONLY when owner approves private worker monitoring: PRODUCT_WATCHER_ENABLED=true, PRODUCT_WATCHER_SCHEDULER_ENABLED=true, PRODUCT_WATCHER_OFFICIAL_SOURCES_ENABLED=true. Existing owner pause still prevents all external fetches. No credentials, paid API calls or redirects.
+- Private worker polls each allowlisted source at most every six hours using durable last_checked_at and PostgreSQL advisory locking. Downloads are capped to 1 MiB per source and 9-second timeout; non-HTTPS, redirects, wrong MIME, truncated/invalid content fail closed. Unexpected errors are collapsed to safe codes without any raw URL/user input.
+- First successful page is only a reference baseline: NO new model or price inferred. A subsequent page-text checksum difference generates a deduplicated pending human-review entry linked to the original official URL, with prior/new hashes. Hash changes are NOT factual confirmation of pricing, release, deprecation or API compatibility. Source body/HTML is not stored.
+- Owner only GET /api/product-watcher/admin/official-sources and POST /api/product-watcher/admin/proposals/review with matching proposal IDs; decisions are reviewed/dismissed, audited transactionally. No approve-and-apply route exists and no model, Stripe, secret, pricing or production settings are modified.
+
+## Europe/Paris reports (code, NOT live)
+
+- PRODUCT_WATCHER_BRIEFS_ENABLED=true opts into a separate durable daily 08:00 Deepsyq Daily Brief and Monday 09:00 Weekly Product Audit. Schedules use Intl Europe/Paris local time and handle summer/winter DST, recover same-day after service restart, and use PostgreSQL advisory lock plus UNIQUE(kind,period_key) to prevent duplicates.
+- Briefs are deterministic compilations of recorded watcher checks, alerts, official page changes (always marked unverified), recorded costs grouped by currency, and pending source reviews. They include New / Changed / Problems / Costs / Recommendations / Pending approvals (source review only) and weekly high/medium/low priority estimates. Revenue, provider price rates, gross margin, actual Stripe payments and unverified product claims are never invented.
+- Owner-only GET /api/product-watcher/admin/briefs lists recent locally saved reports. No external delivery, email, SMS, Telegram, webhook, LLM cost or official release fact is assumed from the existence of a report.
+- Remaining schedules: 06:00 content/template actual workflow tests and 07:00 product discovery are NOT implemented. Hourly standalone provider error/cost checks are not separately scheduled (currently rolling 1h metrics sampled in 15m health reports). External Render/cron activation, delivery notifications and independent acceptance remain pending.
+
+## Security, readiness and release gates
+
+- All additional tables are additive in server/migrations/20261015-product-watcher.sql and are NOT in the BASE migration manifest; must be reviewed and applied after owner-approved database backup. Production Postgres may be scheduled for expiration; do not unilaterally upgrade, delete or replace it.
+- Feature flags OFF by default; owner control defaults PAUSED. The current branches do not include an enabled private Render service or a public Product Watcher API.
+- CI exercises fake network responses and temporary PostgreSQL 16; no real commercial provider or Stripe request is made. Real provider fetch behavior, Render uptime, OAuth owner sign-in, E2E UI, negative security probes, privacy review and notification delivery still require a separate owner-controlled staging test.
