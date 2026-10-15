@@ -5,13 +5,13 @@ import {objectStorageConfig} from './generation-storage.js';
 import {bytePlusDownloadsConfigured} from './generation-byteplus.js';
 
 export function generationReadiness(env={}){
- const pricing=pricingCatalog(env),billing=billingCatalog(env),billingRuntime=generationBillingRuntime(env),entitlements=generationEntitlements(env),storage=objectStorageConfig(env);
+ const pricing=pricingCatalog(env),pricingCurrenciesExplicit=pricing.configured&&pricing.entries.every(e=>!!e.currency),billing=billingCatalog(env),billingRuntime=generationBillingRuntime(env),entitlements=generationEntitlements(env),storage=objectStorageConfig(env);
  const gates=[
   {id:'database',label:'PostgreSQL',ready:!!env.DATABASE_URL,required:true},
   {id:'jwt',label:'Server JWT secret',ready:!!env.APP_JWT_SECRET,required:true},
   {id:'provider',label:'At least one AI provider key',ready:!!(env.GEMINI_API_KEY||env.BYTEPLUS_API_KEY),required:true},
   {id:'byteplusMedia',label:'BytePlus approved media hosts',ready:!env.BYTEPLUS_API_KEY||bytePlusDownloadsConfigured(env.BYTEPLUS_MEDIA_HOSTS),required:!!env.BYTEPLUS_API_KEY},
-  {id:'pricing',label:'Approved model pricing',ready:pricing.configured,required:true},
+  {id:'pricing',label:'Approved model pricing + currency',ready:pricingCurrenciesExplicit,required:true},
   {id:'wallet',label:'AI wallet generation gate',ready:env.AI_STUDIO_WALLET_ENABLED==='true',required:true},
   {id:'creditPacks',label:'AI credit packs + rates',ready:billing.packs.length>0&&billing.rates.length>0,required:true},
   {id:'stripeMode',label:'Stripe AI billing mode/key',ready:billingRuntime.keyMatches,required:true},
@@ -28,6 +28,7 @@ export function generationReadiness(env={}){
   gates,
   providers:{googleConfigured:!!env.GEMINI_API_KEY,bytePlusConfigured:!!env.BYTEPLUS_API_KEY},
   billing:{mode:billingRuntime.mode,liveAiPaymentsImplemented:true,liveAiPaymentsEnabled:billingRuntime.livePaymentsEnabled,creditPackCount:billing.packs.length,rateCount:billing.rates.length},
+  pricing:{configured:pricing.configured,currenciesExplicit:pricingCurrenciesExplicit},
   storage:{configured:storage.configured},
   entitlements:{configured:entitlements.configured,planCount:entitlements.plans.length}
  };
