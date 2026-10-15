@@ -63,3 +63,19 @@ Head `5c28ac7`: Dashboard CI run 38551913472 passed (25 unit checks; 70 browser 
 Head `db289716`: 28 local checks passed. CI PostgreSQL reservation/concurrency/idempotency/HTTP tests passed, including repeated migration application. Dashboard run 38623063381: 70 browser cases passed without retries. Android run 38623063396 passed. Full web run 38623063405 passed: 358 passed, 3 retry-passed, 74 skipped. Final per-tool allowance policy remains incomplete. No production deployment.
 
 Oct 15 external gate: existing BytePlus console shows an unchecked binding agreements consent dialog; user confirmation is required before acceptance. No key/model activation or paid calls. CI production probe reached health/config, billingConfigured=true; Google/Apple endpoints returned 503 with client IDs absent. The optional smoke step failed internally, so workflow success does not prove production OAuth. Apple intentionally remains off.
+
+
+## Continuation by current assistant — 2026-10-15
+
+The original owner TXT remains the source of truth. A point-by-point implementation map is now in `docs/DEEPSYQ_BASE_CHECKLIST.md`; use it before claiming the BASE is complete.
+
+Repository-only work completed without enabling live spend:
+- durable generation-job migration now records provider/model/prompt/lifecycle timestamps, settings, cost and credit fields;
+- owner Studio `My Results` now lists durable jobs, reopens stored results and can reuse saved prompts;
+- config-driven `AI_MODEL_PRICING_JSON` pricing engine added with no invented defaults;
+- owner-only `POST /api/studio/estimate` returns customer-facing AI credits only when pricing is explicitly configured;
+- owner-only `GET /api/studio/admin/metrics` aggregates provider/model jobs, success/failure/processing, average duration, actual cost and charged credits;
+- Roadmap Block 7 (Pricing, Credits, Stripe & Unit Economics) is recorded separately from BASE;
+- work-limit efficiency rule is permanent in `AGENTS.md`.
+
+Still do not enable public/commercial AI generation yet. Live BytePlus activation/key, verified provider economics, production object storage, restart-safe worker infrastructure, real Stripe AI Products/Prices, staging migrations/backups, real provider smoke calls and physical-device acceptance remain external gates.
