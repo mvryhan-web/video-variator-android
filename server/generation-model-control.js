@@ -35,15 +35,15 @@ export async function listModelControls(pool,catalog){
  const {rows}=await pool.query('SELECT model_id,enabled_override,priority,markup_bps,internal_cost_micros,maintenance,updated_at FROM vv_ai_model_control');
  const map=new Map(rows.map(r=>[r.model_id,r]));
  return catalog.map(model=>{
-  const row=map.get(model.id);
-  return {...model,control:{
+  const row=map.get(model.id),control={
    enabledOverride:row?.enabled_override??null,
    priority:Number(row?.priority??100),
    markupBps:row?.markup_bps==null?null:Number(row.markup_bps),
    internalCostMicros:row?.internal_cost_micros==null?null:Number(row.internal_cost_micros),
    maintenance:!!row?.maintenance,
    updatedAt:row?.updated_at||null
-  }};
+  };
+  return {...applyModelControl(model,control),baseEnabled:!!model.enabled,control};
  });
 }
 
