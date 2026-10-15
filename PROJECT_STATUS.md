@@ -211,3 +211,14 @@ Current queued-roadmap dependencies to verify before implementation:
 - Homepage can now surface up to six owner-approved featured workflows from the shared template API.
 - Empty/unavailable catalogs remain invisible instead of showing fake examples.
 - No public rollout flag was enabled; content remains controlled by AI Apps feature gating and owner template activation.
+
+
+### Continuation 13 — commercial safety foundations
+
+- Centralized provider/user-facing AI error codes; no raw upstream error body is exposed.
+- Model catalog now exposes normalized capabilities consumed by routing/pricing.
+- Provider status polling is atomically throttled across browser and recovery paths.
+- Sensitive owner AI actions are written to a dedicated audit log and visible read-only in Owner AI Control.
+- Added config-driven public AI plan entitlements behind `AI_PUBLIC_GENERATION_ENABLED=false`; no plan limits or Lifetime AI access are invented.
+- Generate creation now supports per-user UUID idempotency/fingerprint conflict protection to prevent duplicate paid jobs.
+- All public commercial switches remain OFF pending real provider/storage/Stripe/economics gates.
