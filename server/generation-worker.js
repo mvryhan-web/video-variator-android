@@ -5,11 +5,22 @@ import {GenerationWallet} from './generation-wallet.js';
 import {installGenerationStudio} from './generation-studio.js';
 import {createObjectStorage} from './generation-storage.js';
 import {createGenerationReferenceLedger} from './generation-reference-ledger.js';
-import {generationWorkerPlan} from './generation-worker-runtime.js';
+import {generationWorkerPlan,referenceCleanupMigrationReady} from './generation-worker-runtime.js';
+import {aiMigrationStatus} from './ai-migrations.js';
 
 const storage=createObjectStorage({env:process.env});
 const state=generationWorkerPlan(process.env,pool,{storageConfigured:storage.configured});
 if(!state.ready){console.error('[generation worker]',state.reason);process.exit(1);}
+if(state.cleanup){
+ // Never auto-apply an unapproved production migration from a long-running worker.
+ let migrationReady=false;
+ try{migrationReady=referenceCleanupMigrationReady(await aiMigrationStatus(pool));}catch(_){}
+ if(!migrationReady){
+  console.error('[generation worker] REFERENCE_MIGRATION_NOT_APPLIED');
+  await pool.end().catch(()=>{});
+  process.exit(1);
+ }
+}
 let studio=null;
 if(state.recovery){
  // Legacy provider recovery is started ONLY when its original gates are satisfied.
