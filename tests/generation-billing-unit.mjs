@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
-import {billingCatalog,makeQuote,verifyQuote,installGenerationBilling} from '../server/generation-billing.js';
+import {billingCatalog,makeQuote,verifyQuote,generationBillingRuntime,installGenerationBilling} from '../server/generation-billing.js';
 const body={kind:'video',prompt:'Ocean at sunset',ratio:'16:9',consent:true};
 // Synthetic prices for code tests only, never proposed customer prices.
 const env={APP_JWT_SECRET:'test-only-signing-key',AI_CREDIT_PACKS_JSON:JSON.stringify([{sku:'fixture',priceId:'price_fixture',amount:100,credits:100,currency:'eur'}]),AI_CREDIT_RATES_JSON:JSON.stringify([{kind:'video',credits:10}])};
@@ -19,7 +19,7 @@ test('quote cannot override server pricing through client credits/model',()=>{
  assert.throws(()=>makeQuote({userId:'u',body:{...body,model:'cheap-fake'},env,now:1000}));
  assert.throws(()=>makeQuote({userId:'u',body:{...body,model:'veo-3.1-fast-generate-preview'},env,now:1000}),/AI_PRICING_NOT_APPROVED/);
 });
-test('live Stripe key cannot activate this test-only payment integration',async()=>{
+test('live Stripe billing requires explicit live mode and owner approval',async()=>{
  const app=express();app.use(express.json());let reads=0;
  installGenerationBilling(app,{auth:(_r,_s,n)=>n(),pool:{query:()=>{reads++;throw Error('must not touch DB');}},stripe:{},appUrl:'https://example.test',env:{...env,AI_BILLING_ENABLED:'true',DATABASE_URL:'fixture',STRIPE_SECRET_KEY:'sk_live_fixture'}});
  const server=app.listen(0);await new Promise(r=>server.once('listening',r));
@@ -43,4 +43,12 @@ test('owner AI credit adjustment is idempotent and cannot overdraw available cre
  let b=await wallet.adjust({userId:'user-1',adjustmentId:'11111111-1111-4111-8111-111111111111',ownerUserId:'owner',delta:25,reason:'support credit correction'});assert.equal(b.available,75);assert.equal(ledger.length,1);
  b=await wallet.adjust({userId:'user-1',adjustmentId:'11111111-1111-4111-8111-111111111111',ownerUserId:'owner',delta:25,reason:'support credit correction'});assert.equal(b.duplicate,true);assert.equal(walletRows.get('user-1').available,75);assert.equal(ledger.length,1);
  await assert.rejects(()=>wallet.adjust({userId:'user-1',adjustmentId:'22222222-2222-4222-8222-222222222222',ownerUserId:'owner',delta:-100,reason:'invalid overdraw attempt'}),/INSUFFICIENT_AVAILABLE_AI_CREDITS/);assert.equal(walletRows.get('user-1').available,75);
+});
+
+
+test('billing runtime only enables live payments behind all explicit gates',()=>{
+ assert.deepEqual(generationBillingRuntime({AI_BILLING_ENABLED:'true',AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'true',STRIPE_SECRET_KEY:'sk_live_fixture'}),{mode:'live',livemode:true,keyMatches:true,liveApproved:true,activationRequested:true,livePaymentsEnabled:true});
+ assert.equal(generationBillingRuntime({AI_BILLING_ENABLED:'true',AI_BILLING_MODE:'live',STRIPE_SECRET_KEY:'sk_live_fixture'}).livePaymentsEnabled,false);
+ assert.equal(generationBillingRuntime({AI_BILLING_ENABLED:'true',AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'true',STRIPE_SECRET_KEY:'sk_test_fixture'}).keyMatches,false);
+ assert.equal(generationBillingRuntime({AI_BILLING_ENABLED:'true',AI_BILLING_MODE:'test',STRIPE_SECRET_KEY:'sk_test_fixture'}).livemode,false);
 });

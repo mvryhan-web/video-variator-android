@@ -15,6 +15,13 @@ export function billingCatalog(env={}) {
     return {packs,rates,revision:hash({packs,rates})};
   } catch (_) { return {packs:[],rates:[],revision:null}; }
 }
+export function generationBillingRuntime(env={}){
+  const mode=env.AI_BILLING_MODE==='live'?'live':'test',key=String(env.STRIPE_SECRET_KEY||'');
+  const keyMatches=mode==='live'?/^(sk_live_|rk_live_)/.test(key):/^(sk_test_|rk_test_)/.test(key);
+  const liveApproved=env.AI_LIVE_BILLING_APPROVED==='true';
+  const activationRequested=env.AI_BILLING_ENABLED==='true';
+  return {mode,livemode:mode==='live',keyMatches,liveApproved,activationRequested,livePaymentsEnabled:activationRequested&&mode==='live'&&liveApproved&&keyMatches};
+}
 export function makeQuote({userId,body,env,now=Date.now()}) {
   const request=validateGeneration(body),catalog=billingCatalog(env),rate=catalog.rates.find(r=>r.kind===request.kind);
   if (!rate||!env.APP_JWT_SECRET||request.model!==MODELS[request.kind].id) throw Error('AI_PRICING_NOT_APPROVED');
@@ -34,10 +41,10 @@ export function verifyQuote({userId,body,token,env,now=Date.now()}) {
   return q;
 }
 
-// Deliberately sandbox-only until live provider economics and purchase terms are approved.
 export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=process.env}) {
   const wallet=new GenerationWallet(pool); let initializing;
-  const enabled=()=>env.AI_BILLING_ENABLED==='true'&&!!pool&&!!stripe&&!!env.DATABASE_URL&&!!env.APP_JWT_SECRET&&/^sk_test_|^rk_test_/.test(env.STRIPE_SECRET_KEY||'');
+  const runtime=()=>generationBillingRuntime(env);
+  const enabled=()=>{const r=runtime();return r.activationRequested&&!!pool&&!!stripe&&!!env.DATABASE_URL&&!!env.APP_JWT_SECRET&&r.keyMatches&&(r.mode==='test'||r.liveApproved);};
   const init=async()=>{
     await wallet.init();
     if (!initializing) initializing=pool.query(`CREATE TABLE IF NOT EXISTS vv_ai_order (
@@ -47,13 +54,13 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
   };
   app.get('/api/ai-billing/config',(_req,res)=>{
     const c=billingCatalog(env);
-    res.json({enabled:enabled(),mode:'test',livePaymentsEnabled:false,unit:'AI credits',packs:c.packs.map(({priceId,...p})=>p),rates:c.rates,revision:c.revision,reason:enabled()?null:'PAYMENTS_NOT_ACTIVATED'});
+    const r=runtime();res.json({enabled:enabled(),mode:r.mode,livePaymentsEnabled:enabled()&&r.livemode,unit:'AI credits',packs:c.packs.map(({priceId,...p})=>p),rates:c.rates,revision:c.revision,reason:enabled()?null:'PAYMENTS_NOT_ACTIVATED'});
   });
   app.use('/api/ai-billing',(_req,res,next)=>enabled()?next():res.status(503).json({error:'PAYMENTS_NOT_ACTIVATED'}));
   app.get('/api/ai-billing/balance',auth,async(req,res)=>{try{res.json(await wallet.balance(req.user.id));}catch(_){res.status(503).json({error:'WALLET_UNAVAILABLE'});}});
   app.get('/api/ai-billing/history',auth,async(req,res)=>{try{res.json({items:await wallet.history(req.user.id)});}catch(_){res.status(503).json({error:'WALLET_UNAVAILABLE'});}});
   app.post('/api/ai-billing/quote',auth,(req,res)=>{
-    try{const q=makeQuote({userId:req.user.id,body:req.body,env});res.json({...q,scope:'test',generationEnabled:false});}
+    try{const q=makeQuote({userId:req.user.id,body:req.body,env}),r=runtime();res.json({...q,scope:r.mode,generationEnabled:env.AI_STUDIO_WALLET_ENABLED==='true'});}
     catch(_){res.status(400).json({error:'AI_PRICING_NOT_APPROVED_OR_INVALID_REQUEST'});}
   });
   app.post('/api/ai-billing/checkout',auth,async(req,res)=>{
@@ -62,23 +69,23 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
     if (!pack) return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
     try {
       await init();
-      const id=hash({userId:req.user.id,requestId:req.body.requestId});
-      const snapshot={...pack,email:req.user.email||'',identifier:'vvai_'+randomUUID().replaceAll('-','').slice(0,8).replace(/[0-9]/g,'a')};
+      const id=hash({userId:req.user.id,requestId:req.body.requestId}),r=runtime();
+      const snapshot={...pack,billingMode:r.mode,email:req.user.email||'',identifier:'vvai_'+randomUUID().replaceAll('-','').slice(0,8).replace(/[0-9]/g,'a')};
       await pool.query('INSERT INTO vv_ai_order(id,user_id,sku,snapshot) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING',[id,req.user.id,pack.sku,JSON.stringify(snapshot)]);
       const {rows}=await pool.query('SELECT * FROM vv_ai_order WHERE id=$1 AND user_id=$2',[id,req.user.id]); const order=rows[0],p=order.snapshot;
       if (order.sku!==pack.sku) return res.status(409).json({error:'CHECKOUT_REQUEST_CONFLICT'});
       if (order.session_id) {const s=await stripe.checkout.sessions.retrieve(order.session_id);return res.json({url:s.url,id:s.id,mode:'test'});}
       const price=await stripe.prices.retrieve(p.priceId);
-      if (!price.active||price.type!=='one_time'||price.unit_amount!==p.amount||price.currency!==p.currency||price.livemode!==false) throw Error('PRICE_MISMATCH');
+      if (!price.active||price.type!=='one_time'||price.unit_amount!==p.amount||price.currency!==p.currency||!!price.livemode!==r.livemode) throw Error('PRICE_MISMATCH');
       const s=await stripe.checkout.sessions.create({
         mode:'payment',line_items:[{price:p.priceId,quantity:1}],client_reference_id:req.user.id,
         customer_email:p.email||undefined,metadata:{aiWallet:'v1',orderId:id},payment_intent_data:{metadata:{aiWallet:'v1',orderId:id}},
         integration_identifier:p.identifier,allow_promotion_codes:false,
         success_url:`${appUrl}/generate-studio.html?ai_checkout=returned`,cancel_url:`${appUrl}/generate-studio.html?ai_checkout=cancelled`
       },{idempotencyKey:'vv-ai-'+id});
-      if (s.livemode!==false||typeof s.url!=='string'||new URL(s.url).hostname!=='checkout.stripe.com') throw Error('CHECKOUT_MODE_MISMATCH');
+      if (!!s.livemode!==r.livemode||typeof s.url!=='string'||new URL(s.url).hostname!=='checkout.stripe.com') throw Error('CHECKOUT_MODE_MISMATCH');
       await pool.query('UPDATE vv_ai_order SET session_id=$2 WHERE id=$1',[id,s.id]);
-      res.json({url:s.url,id:s.id,mode:'test'});
+      res.json({url:s.url,id:s.id,mode:r.mode});
     } catch (_) {res.status(503).json({error:'AI_CHECKOUT_UNAVAILABLE'});}
   });
   async function handleEvent(event) {
@@ -90,11 +97,11 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
     await init();
     const {rows}=await pool.query('SELECT * FROM vv_ai_order WHERE id=$1',[object.metadata.orderId]);
     if (!rows.length) throw Error('AI_ORDER_NOT_FOUND');
-    const order=rows[0],p=order.snapshot;
+    const order=rows[0],p=order.snapshot,r=runtime();if((p.billingMode||'test')!==r.mode)throw Error('AI_PAYMENT_MODE_MISMATCH');
     const s=await stripe.checkout.sessions.retrieve(object.id,{expand:['line_items']});
     if (s.payment_status!=='paid') return true;
     const lines=s.line_items?.data||[];
-    if (s.livemode!==false||event.livemode!==false||s.mode!=='payment'||s.metadata?.orderId!==order.id||s.metadata?.aiWallet!=='v1'||s.client_reference_id!==order.user_id||s.amount_total!==p.amount||s.currency!==p.currency||s.line_items?.has_more||lines.length!==1||lines[0].price?.id!==p.priceId||lines[0].quantity!==1||!s.payment_intent||(order.session_id&&order.session_id!==s.id)) throw Error('AI_PAYMENT_MISMATCH');
+    if (!!s.livemode!==r.livemode||!!event.livemode!==r.livemode||s.mode!=='payment'||s.metadata?.orderId!==order.id||s.metadata?.aiWallet!=='v1'||s.client_reference_id!==order.user_id||s.amount_total!==p.amount||s.currency!==p.currency||s.line_items?.has_more||lines.length!==1||lines[0].price?.id!==p.priceId||lines[0].quantity!==1||!s.payment_intent||(order.session_id&&order.session_id!==s.id)) throw Error('AI_PAYMENT_MISMATCH');
     // Handles a webhook that raced the checkout response; snapshot is already durable.
     await pool.query('UPDATE vv_ai_order SET session_id=$2 WHERE id=$1 AND (session_id IS NULL OR session_id=$2)',[order.id,s.id]);
     await wallet.grant({userId:order.user_id,sessionId:s.id,paymentIntent:typeof s.payment_intent==='string'?s.payment_intent:s.payment_intent.id,credits:p.credits,amount:p.amount,currency:p.currency});
