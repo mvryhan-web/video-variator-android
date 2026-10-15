@@ -53,12 +53,14 @@ jobs:
           node --check server/generation-worker-runtime.js
           node --check server/generation-reference-compatibility.js
           node --check server/generation-reference-audio-payload.js
+          node --check server/generation-reference-video-transfer.js
           node --check server/generation-reference-inspector.js
           node --check server/generation-reference-probe.js
           node --check server/generation-reference-upload.js
           node --check server/generation-reference-ledger.js
           node --check tests/generation-reference-compatibility-unit.mjs
           node --check tests/generation-reference-audio-payload-unit.mjs
+          node --check tests/generation-reference-video-transfer-unit.mjs
           node --check tests/generation-reference-inspector-unit.mjs
           node --check tests/generation-reference-probe-unit.mjs
           node --check tests/generation-worker-runtime-unit.mjs
@@ -66,7 +68,7 @@ jobs:
           node --check tests/generation-reference-lifecycle-postgres.mjs
       - name: Reference parser, codec probe, API, S3 and ledger mock regression
         run: |
-          node --test tests/generation-reference-media-unit.mjs tests/generation-reference-ledger-unit.mjs tests/generation-reference-upload-unit.mjs tests/generation-reference-probe-unit.mjs tests/generation-reference-compatibility-unit.mjs tests/generation-reference-inspector-unit.mjs tests/generation-reference-audio-payload-unit.mjs tests/generation-worker-runtime-unit.mjs
+          node --test tests/generation-reference-media-unit.mjs tests/generation-reference-ledger-unit.mjs tests/generation-reference-upload-unit.mjs tests/generation-reference-probe-unit.mjs tests/generation-reference-compatibility-unit.mjs tests/generation-reference-inspector-unit.mjs tests/generation-reference-audio-payload-unit.mjs tests/generation-reference-video-transfer-unit.mjs tests/generation-worker-runtime-unit.mjs
       - name: Real PostgreSQL reference intake and fake S3 lifetime acceptance
         env:
           AI_TEST_DATABASE_URL: postgres://fixture:fixture@127.0.0.1:5432/vv_ai_test
