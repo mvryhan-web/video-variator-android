@@ -180,3 +180,25 @@ Video Studio now exposes the selected provider model's explicit `videoResolution
 - **Status:** CODE IMPLEMENTED, TESTS AUTHORED BUT NOT RUN, LIVE PROVIDER UNVERIFIED. No production activation, provider credentials, commercial Stripe settings or future roadmap blocks were modified.
 
 Official API references: https://ai.google.dev/gemini-api/docs/veo and https://api.byteplus.com/api-explorer/?action=CreateContentsGenerationsTasks&groupName=Chat+API&serviceCode=ark&version=2024-01-01 .
+
+
+## Seedance 2.0 image-reference roles — BASE #5
+
+Official ModelArk video generation supports distinct **mutually exclusive** workflows. The existing Deepsyq Video Studio now offers only the following small, supported image-reference subset for `byteplus-seedance-2`:
+
+| Studio mode | Reference photos | ModelArk `content[].role` |
+|---|---:|---|
+| Text to video | 0 | Text only |
+| First frame | 1 | `first_frame` |
+| First and last frames | Exactly 2 | `first_frame`, `last_frame` in the user's thumbnail order |
+| Scene reference images | 1–3 | `reference_image` for each image |
+
+No mixing of these modes is allowed in one job. Images are locally prepared as PNG/JPG under the existing 1 MB **per-file** API limit; the server still checks MIME signatures, Base64 lengths, max references and model capabilities. The ModelArk adapter separately rejects contradictory modes or counts before any provider call. Google Veo remains limited to text or one first-frame image: it cannot accept Seedance's extra role names through our adapter.
+
+Selected `videoInputMode` enters estimate/create, request fingerprint, signed-in History job settings and same-session editor drafts. A History prompt reuse cannot recover old reference image bytes, so users must add photos again before using a photo-guided mode. Mode changes reset provider consent.
+
+**Credit safeguards:** legacy quote rows cover only the existing text or single-first-frame mode, never the newly introduced first+last or reference-image guidance. The newer modes require explicit per-model `videoInputMode` **and exact** `referenceCount` in `AI_MODEL_PRICING_JSON` (e.g. `videoInputMode: "first_last", referenceCount: 2`). These are validated before owner-preview or wallet-enabled paid provider dispatch. Values/credit amounts are **not** prepopulated or guessed. No new premium mode is enabled in production.
+
+**Out of scope for this pass:** BytePlus accepts reference video as an accessible `video_url.url` (rather than a raw local file). Audio reference also needs provider-acceptable media transport. Until authenticated uploads, private durable storage, provider-reachable references with safe expiry, size/duration/MIME validation and approved unit economics are complete, **video/audio reference upload and edits remain unavailable**. No external URL from a user is forwarded, no new paid submission is performed, and no background media-hosting feature is claimed.
+
+**Status:** implemented in repository, no live provider request or complete browser/provider billing acceptance run (deferred at owner's request). Official: https://ai.byteplus.com/ark/region:ap-southeast-1/docs/create-video-generation-task-api .
