@@ -9,7 +9,8 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "node --watch server/server.js",
-    "test:browsers": "playwright test"
+    "test:browsers": "playwright test",
+    "worker:generation": "node server/generation-worker.js"
   },
   "dependencies": {
     "@ffmpeg/core": "0.12.10",
