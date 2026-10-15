@@ -61,7 +61,7 @@ export async function generateGoogle(request,{key,fetcher=fetch}){
 }
 export async function pollGoogle(operation,{key,fetcher=fetch}){
  const d=await googleJson(operation,{key,fetcher});if(!d.done)return {pending:true};
- if(d.error)throw new Error('PROVIDER_ERROR');
+ if(d.error){const failure=new Error('PROVIDER_TASK_FAILED');failure.terminal=true;throw failure;}
  const uri=d.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri;
  if(!uri)throw new Error('EMPTY_GENERATION');
  const r=await fetcher(safeGoogleUrl(uri),{redirect:'error',signal:AbortSignal.timeout(120000),headers:{'x-goog-api-key':key}});
