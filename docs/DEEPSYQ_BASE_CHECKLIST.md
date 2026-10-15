@@ -49,7 +49,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 35 | Security | PARTIAL | Keys stay server-side; auth/user scoping, safe provider URLs, MIME/signature checks, idempotent generation creation and owner action audit logging exist. Formal launch security review still required. |
 | 36 | Privacy | PARTIAL | Added an implementation-accurate AI Media Privacy notice: local Product Video handoff, explicit Studio consent, provider transfer, job metadata storage, object-storage/DB fallback and deletion behavior. Final legal Terms/Privacy and approved automatic retention schedule remain pending. |
 | 37 | Business analytics | PARTIAL | Owner overview now shows users/30-day registrations, generation adoption/jobs/failure/latency/top model, recorded provider cost/credits, and confirmed AI-wallet purchases separated by currency. Gross margin stays intentionally blank until live economics/currency are verified. |
-| 38 | Admin dashboard | PARTIAL | Owner AI Control includes Users, Generation Jobs, business overview, model controls, route preview, provider metrics, held-credit review, template management, audited credit adjustment and a recent owner action log. Full Stripe payment administration remains pending. |
+| 38 | Admin dashboard | PARTIAL | Owner AI Control includes Users, Generation Jobs, business overview, AI credit purchases/refunds, model controls, route preview, provider metrics, held-credit review, template management, audited credit adjustment and owner audit log. Live Stripe actions still remain external/pending. |
 | 39 | Provider performance | PARTIAL | Owner metrics endpoint aggregates provider/model jobs, success/failure, processing, average time, cost and charged credits. |
 | 40 | Model routing registry | PARTIAL | Shared catalog/capabilities plus server-side compatible candidate ordering and owner priorities exist. Logical cross-provider product model IDs and measured quality/reliability routing remain future work. |
 | 41 | Internal model capabilities | PARTIAL | All catalog models now expose a normalized capability object for input kinds, output kind, ratios, max references, async mode, quality, duration seconds and reference support. Future provider-specific constraints may extend it. |
@@ -280,3 +280,10 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - The endpoint does not start generation, mutate wallet data or invent fallback plan limits.
 
 - Studio plan-access readout now includes current active-job usage and rolling last-hour generation count when the database is available.
+
+
+## Continuation 23 — owner AI purchase/refund ledger
+
+- Added owner read-only AI purchase/refund table from Deepsyq's confirmed wallet records: user, credits, paid/refunded/net amounts, currency and ledger timestamp.
+- Stripe Checkout session and PaymentIntent identifiers are deliberately omitted from the API/UI.
+- The view does not call Stripe and cannot mutate/refund a payment.

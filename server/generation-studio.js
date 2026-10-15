@@ -129,6 +129,14 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
    await wallet.init();const balance=await wallet.adjust({userId:req.params.id,adjustmentId:requestId,ownerUserId:req.user.id,delta,reason});await recordAdminAudit(pool,{actorUserId:req.user.id,action:'ai_credits.adjust',targetType:'user',targetId:req.params.id,details:{requestId,delta,reason}});res.json({ok:true,balance});
   }catch(e){const status=e.message==='INSUFFICIENT_AVAILABLE_AI_CREDITS'?409:e.message==='ADJUSTMENT_CONFLICT'?409:e.message?.startsWith('INVALID_')?400:503;res.status(status).json({error:status===503?'OWNER_CREDIT_ADJUSTMENT_FAILED':e.message});}
  });
+ app.get('/api/studio/admin/purchases',auth,owner,async(_req,res)=>{try{
+  await init();if(wallet)await wallet.init();
+  const {rows}=await pool.query(`SELECT p.user_id,u.email,p.credits,p.amount,p.refunded_amount,p.currency,l.created_at
+    FROM vv_ai_purchase p LEFT JOIN vv_users u ON u.id=p.user_id
+    LEFT JOIN LATERAL (SELECT created_at FROM vv_ai_ledger WHERE user_id=p.user_id AND reference=p.session_id AND kind='purchase' ORDER BY id ASC LIMIT 1) l ON true
+    ORDER BY l.created_at DESC NULLS LAST,p.user_id LIMIT 100`);
+  res.json({items:rows.map(p=>({userId:p.user_id,userEmail:p.email||null,credits:Number(p.credits||0),amountMinor:Number(p.amount||0),refundedMinor:Number(p.refunded_amount||0),netMinor:Number(p.amount||0)-Number(p.refunded_amount||0),currency:p.currency,createdAt:p.created_at||null}))});
+ }catch(_){res.status(503).json({error:'OWNER_PURCHASES_UNAVAILABLE'});}});
  app.get('/api/studio/admin/jobs',auth,owner,async(req,res)=>{try{
   await init();const filter=String(req.query.status||'all'),allowed=new Set(['all','queued','processing','finalizing','ready','failed']);if(!allowed.has(filter))return res.status(400).json({error:'INVALID_JOB_FILTER'});
   const args=[],where=['j.deleted=false'];if(filter!=='all'){args.push(filter);where.push(`j.status=${args.length}`);}

@@ -187,3 +187,14 @@ test('Studio access endpoint reports live usage counters when database is availa
  const app=express();installGenerationStudio(app,{env,pool,wallet:{},auth:(req,_res,next)=>{req.user={id:'u1',provider:'email',plan:'basic',subscription_status:'active'};next();}});
  const server=app.listen(0);await new Promise(r=>server.once('listening',r));try{const base=`http://127.0.0.1:${server.address().port}`;const d=await fetch(base+'/api/studio/access').then(r=>r.json());assert.equal(d.activeJobs,1);assert.equal(d.jobsThisHour,4);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
+
+
+test('owner purchase list omits Stripe identifiers and reports refund/net amounts',async()=>{
+ const pool={async query(sql){
+  if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs')||sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_wallet'))return {rows:[]};
+  if(sql.startsWith('SELECT p.user_id,u.email,p.credits'))return {rows:[{user_id:'u1',email:'buyer@example.test',credits:1000,amount:999,refunded_amount:250,currency:'eur',created_at:new Date('2026-10-15T10:00:00Z'),session_id:'cs_secret',payment_intent:'pi_secret'}]};
+  throw new Error(sql);
+ }};
+ const app=express();installGenerationStudio(app,{pool,wallet:{async init(){}},env:{ADMIN_EMAIL:'owner@example.test'},auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));try{const d=await fetch(`http://127.0.0.1:${server.address().port}/api/studio/admin/purchases`).then(r=>r.json());assert.equal(d.items[0].netMinor,749);assert.equal(d.items[0].refundedMinor,250);assert.equal(JSON.stringify(d).includes('cs_secret'),false);assert.equal(JSON.stringify(d).includes('pi_secret'),false);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});

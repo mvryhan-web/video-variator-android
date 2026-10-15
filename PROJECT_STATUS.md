@@ -280,3 +280,9 @@ Current queued-roadmap dependencies to verify before implementation:
 - No public entitlement values are invented; production still depends on approved `AI_PLAN_ENTITLEMENTS_JSON` and disabled rollout gates.
 
 - Added read-only rolling AI usage counters (active jobs / jobs in the last hour) next to configured public plan limits in Studio.
+
+
+### Continuation 22 — owner AI purchase/refund ledger
+
+- Owner AI Control now includes read-only confirmed AI credit purchases/refunds with net amounts per currency.
+- No Stripe identifiers or write/refund actions are exposed in this table.
