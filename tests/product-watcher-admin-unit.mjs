@@ -26,6 +26,8 @@ function db({paused=false,missing=false}={}){
   if(sql.includes('CREATE TABLE IF NOT EXISTS vv_admin_audit'))return{rows:[]};
   if(sql.startsWith('SELECT paused, updated_at'))return{rows:missing?[]:[{paused,updated_at:'2026-10-15T00:00:00Z'}]};
   if(sql.startsWith('SELECT heartbeat_at FROM vv_product_watcher_scheduler'))return{rows:[{heartbeat_at:null}]};
+  if(sql.startsWith('SELECT id,source,code,severity'))return{rows:[]};
+  if(sql.startsWith('UPDATE vv_product_watcher_alerts'))return{rows:[{id:'9'}]};
   if(sql.startsWith('SELECT id, status, checks'))return{rows:[{id:'9',status:'warning',checks:{http:{status:'healthy'}},findings:[{code:'GENERATION_ATTENTION'}],created_at:'2026-10-15T01:00:00Z'}]};
   if(sql==='BEGIN'||sql==='COMMIT'||sql==='ROLLBACK')return{rows:[]};
   if(sql.startsWith('UPDATE vv_product_watcher_control')){paused=args[0];return{rows:missing?[]:[{paused,updated_at:'2026-10-15T02:00:00Z'}]};}

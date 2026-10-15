@@ -1,6 +1,7 @@
 import { runProductWatcherOnce, watcherConfig } from './monitor.js';
 import { initAdminAudit } from '../admin-audit.js';
 import { WATCHER_INTERVAL_MS } from './scheduler.js';
+import { listWatcherAlerts } from './alerts.js';
 
 // Match the existing Deepsyq owner identity policy: only the designated Google account.
 // An empty ADMIN_EMAIL must never authorize a user with an empty email.
@@ -47,6 +48,35 @@ export function installProductWatcher(app, { auth, pool, env = process.env, fetc
     } catch {
       return error(res, 503, 'WATCHER_STATUS_UNAVAILABLE');
     }
+  });
+
+  app.get('/api/product-watcher/admin/alerts', auth, owner, async (_req,res)=>{
+    if(!enabled())return res.json({enabled:false,items:[]});
+    if(!pool)return error(res,503,'WATCHER_DATABASE_NOT_CONFIGURED');
+    try{return res.json({enabled:true,items:await listWatcherAlerts(pool,{limit:50})});}
+    catch{return error(res,503,'WATCHER_ALERTS_UNAVAILABLE');}
+  });
+
+  app.post('/api/product-watcher/admin/alerts/ack', auth, owner, async(req,res)=>{
+    if(!enabled())return error(res,503,'WATCHER_DISABLED');
+    if(!pool)return error(res,503,'WATCHER_DATABASE_NOT_CONFIGURED');
+    const id=Number(req.body?.alertId),confirmation=Number(req.body?.confirmAlertId);
+    if(!Number.isSafeInteger(id)||id<1||id!==confirmation)return error(res,400,'WATCHER_CONFIRM_ALERT_REQUIRED');
+    let client;
+    try{
+      await initAdminAudit(pool);
+      client=await pool.connect();
+      await client.query('BEGIN');
+      const changed=await client.query('UPDATE vv_product_watcher_alerts SET acknowledged_at=NOW(),acknowledged_by=$2 WHERE id=$1 AND acknowledged_at IS NULL RETURNING id',[id,req.user.id]);
+      if(!changed.rows?.length){await client.query('ROLLBACK');return error(res,409,'WATCHER_ALERT_NOT_PENDING');}
+      await client.query('INSERT INTO vv_admin_audit(actor_user_id,action,target_type,target_id,details) VALUES($1,$2,$3,$4,$5::jsonb)',
+        [req.user.id,'product_watcher.alert_ack','product_watcher_alert',String(id),JSON.stringify({alertId:id})]);
+      await client.query('COMMIT');
+      return res.json({ok:true,alertId:id,acknowledged:true});
+    }catch{
+      if(client)await client.query('ROLLBACK').catch(()=>{});
+      return error(res,503,'WATCHER_ALERT_ACK_FAILED');
+    }finally{client?.release();}
   });
 
   // Pause/resume blocks future runs, not work already in flight. Only one guarded,

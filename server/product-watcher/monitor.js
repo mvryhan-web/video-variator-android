@@ -4,6 +4,7 @@
  * Externally scheduled only after the owner enables and deploys it.
  */
 import { checkOperationalSignals } from './operational-signals.js';
+import { saveWatcherAlerts } from './alerts.js';
 
 const DEFAULT_TIMEOUT_MS = 5000;
 const ADVISORY_LOCK_KEYS = [455033, 5];
@@ -113,9 +114,18 @@ export async function runProductWatcherOnce({ pool, env = {}, fetchFn = globalTh
     const report = { enabled: true, status, checkedAt: now().toISOString(), checks, findings };
     if (persist) {
       // Deliberately no implicit migration; an owner must approve the schema first.
-      const saved = await client.query('INSERT INTO vv_product_watcher_runs (status, checks, findings) VALUES ($1,$2::jsonb,$3::jsonb) RETURNING id', [status, JSON.stringify(checks), JSON.stringify(findings)]);
-      report.runId = Number(saved.rows?.[0]?.id);
-      if (!Number.isSafeInteger(report.runId) || report.runId < 1) throw Error('WATCHER_PERSISTENCE_FAILED');
+      // Keep report and deduplicated alert observations atomic. No action is auto-applied.
+      await client.query('BEGIN');
+      try {
+        const saved = await client.query('INSERT INTO vv_product_watcher_runs (status, checks, findings) VALUES ($1,$2::jsonb,$3::jsonb) RETURNING id', [status, JSON.stringify(checks), JSON.stringify(findings)]);
+        report.runId = Number(saved.rows?.[0]?.id);
+        if (!Number.isSafeInteger(report.runId) || report.runId < 1) throw Error('WATCHER_PERSISTENCE_FAILED');
+        report.alertObservations = await saveWatcherAlerts(client,checks);
+        await client.query('COMMIT');
+      } catch (error) {
+        await client.query('ROLLBACK').catch(()=>{});
+        throw error;
+      }
     }
     return report;
   } finally {

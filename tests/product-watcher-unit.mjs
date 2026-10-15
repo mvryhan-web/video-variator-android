@@ -14,6 +14,8 @@ function mockPool({counts={}, schema=true, failDb=false, lock=true}={}) {
       if(sql==='SELECT 1 AS alive'){if(failDb)throw Error('password=secret');return{rows:[{alive:1}]};}
       if(sql.includes('to_regclass'))return {rows:[{table_name:schema?'vv_generation_jobs':null}]};
       if(sql.includes('FROM vv_generation_jobs'))return {rows:[counts]};
+      if(sql==='BEGIN'||sql==='COMMIT'||sql==='ROLLBACK')return{rows:[]};
+      if(sql.includes('INSERT INTO vv_product_watcher_alerts'))return{rows:[]};
       if(sql.includes('INSERT INTO vv_product_watcher_runs'))return {rows:[{id:'14'}]};
       throw Error('UNEXPECTED_SQL:'+sql);
     },

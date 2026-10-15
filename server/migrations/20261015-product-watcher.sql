@@ -25,3 +25,23 @@ CREATE TABLE IF NOT EXISTS vv_product_watcher_scheduler (
   heartbeat_at TIMESTAMPTZ
 );
 INSERT INTO vv_product_watcher_scheduler(id) VALUES(1) ON CONFLICT(id) DO NOTHING;
+
+
+-- Owner review queue. Observations are deduplicated, with no automatic remediations.
+CREATE TABLE IF NOT EXISTS vv_product_watcher_alerts (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  fingerprint CHAR(64) NOT NULL UNIQUE,
+  source TEXT NOT NULL,
+  code TEXT NOT NULL,
+  severity TEXT NOT NULL CHECK(severity IN ('warning','critical')),
+  provider TEXT,
+  currency TEXT,
+  details JSONB NOT NULL DEFAULT '{}'::jsonb,
+  first_seen_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_seen_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  observations INTEGER NOT NULL DEFAULT 1,
+  acknowledged_at TIMESTAMPTZ,
+  acknowledged_by TEXT
+);
+CREATE INDEX IF NOT EXISTS vv_product_watcher_alerts_seen_idx
+  ON vv_product_watcher_alerts(last_seen_at DESC);
