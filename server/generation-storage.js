@@ -111,7 +111,8 @@ export function createObjectStorage({env=process.env,fetcher=fetch,now=()=>new D
   },
   async deleteStagedReference({userId,key}){
    requireReady();
-   if(env.AI_STUDIO_REFERENCE_STAGING_ENABLED!=='true')throw Error('REFERENCE_STAGING_DISABLED');
+   // Deletion must continue after the new-upload gate is disabled.
+   if(env.AI_STUDIO_REFERENCE_CLEANUP_ENABLED!=='true')throw Error('REFERENCE_CLEANUP_DISABLED');
    const owner=sha(String(userId||'')).slice(0,24);
    const base=`${cfg.prefix}/references/users/${owner}/`;
    if(typeof key!=='string'||!key.startsWith(base)||
