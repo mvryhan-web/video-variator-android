@@ -4,6 +4,7 @@
  * Externally scheduled only after the owner enables and deploys it.
  */
 import { checkOperationalSignals } from './operational-signals.js';
+import {checkWebhookConfiguration} from './webhook-config.js';
 import { saveWatcherAlerts } from './alerts.js';
 import {checkBillingReconciliation,billingObserverEnabled} from './billing-signals.js';
 
@@ -110,7 +111,8 @@ export async function runProductWatcherOnce({ pool, env = {}, fetchFn = globalTh
       database: await checkDatabase(client),
       generations: await checkGenerationJobs(client),
       operations: await checkOperationalSignals(client),
-      billing: await checkBillingReconciliation(client,{enabled:billingObserverEnabled(env)})
+      billing: await checkBillingReconciliation(client,{enabled:billingObserverEnabled(env)}),
+      webhookConfig: checkWebhookConfiguration(env)
     };
     const { status, findings } = summarizeChecks(checks);
     const report = { enabled: true, status, checkedAt: now().toISOString(), checks, findings };
