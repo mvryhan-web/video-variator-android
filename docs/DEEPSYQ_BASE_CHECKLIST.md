@@ -311,3 +311,12 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Initial formats: MP4 H.264/yuv420p with optional AAC; PCM s16le/s24le WAV. Existing owner/byte/duration/retention constraints remain. Unsupported codecs return HTTP 415; unavailable codec inspection returns 503.
 - Added targeted codec/API/ledger/S3 checks via independent GitHub Actions workflow, with PCM WAV real-probe fixture and optional H.264 real encode fixture. No live paid provider call or Stripe changes.
 - **Still PARTIAL/BLOCKED, not commercial-ready**: public user uploads, malware/sanitization security review, verified deployed FFprobe package, production S3/worker acceptance, short-lived provider URL transport, BytePlus video/audio reference acceptance and approved credits are pending. No frontend reference picker, AI wallet usage, Render flag activation or production migrations.
+
+
+### BASE Video: independent staged reference cleanup worker — 2026-10-15
+
+- Corrected the existing `worker:generation` service so reference expiry cleanup does **not** depend on AI Studio activation, background polling or Google/BytePlus keys. The same worker can run **cleanup only**, recovery only, or both; cleanup-only performs no wallet initialization, AI jobs or paid provider calls.
+- When cleanup is requested, startup requires configured private object storage and an already applied matching-checksum `20261015-generation-reference-assets.sql` migration, checked **read-only**. Unconfigured/mismatched storage/schema fails closed. No production migration or feature flag was enabled.
+- The original S3 owner isolation, expiring ledger, `SKIP LOCKED` claims, stale-claim recovery and retryable deletes remain unchanged. Turning off incoming uploads will not turn off cleanup as long as the separate cleanup flag and storage/worker remain active.
+- New unit cases in `tests/generation-worker-runtime-unit.mjs` exercise cleanup-only without provider credentials, combined recovery/cleanup, storage-not-ready and migration checksum gates. Targeted CI must include this file before marking the patch verified; production worker and private bucket still need staged acceptance.
+- BytePlus ModelArk documents reference_video as a reachable URL and reference_audio as URL or Base64 for supported Seedance models. No external media fetch token, public URL, provider request, approval of costs/credits, or frontend video/audio ref picker has been enabled. Official source: https://docs.byteplus.com/pt/docs/modelark/create-video-generation-task-api
