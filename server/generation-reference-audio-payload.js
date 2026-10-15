@@ -14,12 +14,14 @@ export function seedanceAudioPayloadEnabled(env={}){
  return env.AI_STUDIO_REFERENCE_AUDIO_PAYLOAD_ENABLED==='true'&&
   env.AI_STUDIO_REFERENCE_TRANSFER_REVIEW_APPROVED==='true';
 }
-export function createSeedanceAudioPayloadPreparer({ledger,probe=probeStudioReferenceMedia,env=process.env}={}){
- if(typeof ledger?.get!=='function'||typeof probe!=='function')reject('REFERENCE_AUDIO_PREPARER_NOT_CONFIGURED');
- async function prepare({userId,model,audioAssetIds=[],verifiedImageCount=0}={}){
+export function createSeedanceAudioPayloadPreparer({ledger,probe=probeStudioReferenceMedia,verifyVisualContext,env=process.env}={}){
+ if(typeof ledger?.get!=='function'||typeof probe!=='function'||typeof verifyVisualContext!=='function')reject('REFERENCE_AUDIO_PREPARER_NOT_CONFIGURED');
+ async function prepare({userId,model,audioAssetIds=[]}={}){
   if(!seedanceAudioPayloadEnabled(env))reject('REFERENCE_AUDIO_PAYLOAD_DISABLED');
   if(typeof userId!=='string'||!userId||userId.length>256)reject('REFERENCE_MEDIA_ACCESS_DENIED');
   if(model!=='byteplus-seedance-2')reject('REFERENCE_MODEL_NOT_SUPPORTED');
+  // Visual proof must be looked up server-side, not accepted as client input.
+  const verifiedImageCount=await verifyVisualContext({userId,model});
   if(!Number.isInteger(verifiedImageCount)||verifiedImageCount<1||verifiedImageCount>3)
    reject('REFERENCE_VISUAL_PROOF_REQUIRED');
   if(!Array.isArray(audioAssetIds)||audioAssetIds.length<1||audioAssetIds.length>3||
