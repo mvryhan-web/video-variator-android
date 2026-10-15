@@ -446,7 +446,7 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  await page.locator('#topPromo').click();
  await expect(page.locator('#promoDialog')).toBeVisible();
  await expect(page.locator('#promoDialog')).toContainText('not available yet');
- await page.locator('#promoDialog button[value=close]').click();
+ await page.locator('#promoDialog button[type=submit][value=close]').click();
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
  await expect(page.locator('#agentFeature')).toContainText('Coming soon');
  await expect(page.locator('#appsFeature')).toBeVisible();
