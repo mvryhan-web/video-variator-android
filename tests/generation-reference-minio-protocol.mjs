@@ -4,6 +4,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash,createHmac,randomUUID} from 'node:crypto';
+import {readFile,mkdtemp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {spawnSync} from 'node:child_process';
 import {createObjectStorage} from '../server/generation-storage.js';
 
 const minio=process.env.AI_TEST_MINIO_URL||'';
@@ -54,11 +58,16 @@ function proxyFetch(url,options){
  assert.ok(u.pathname.startsWith('/'+bucket+'/'),'never call outside test bucket');
  return local(options.method,u.pathname+u.search,{headers:options.headers,body:options.body});
 }
-function fakeMp4(){
- // Structural media fixture only. S3 protocol acceptance is independent of
- // FFprobe or model compatibility (covered in the existing 50+9 tests).
- const header=Buffer.alloc(8);header.writeUInt32BE(16);header.write('ftyp',4);
- return Buffer.concat([header,Buffer.from('isom0000')]);
+async function makeMp4(){
+ const dir=await mkdtemp(join(tmpdir(),'deepsyq-minio-mp4-'));
+ try{
+  const file=join(dir,'sample.mp4');
+  const result=spawnSync('ffmpeg',['-v','error','-f','lavfi','-i',
+   'color=c=blue:s=854x480:r=24','-t','3','-c:v','libx264','-pix_fmt','yuv420p',
+   '-movflags','+faststart','-an','-y',file],{timeout:20000,encoding:'utf8'});
+  assert.equal(result.status,0,result.stderr||'fixture MP4 generation failed');
+  return await readFile(file);
+ }finally{await rm(dir,{recursive:true,force:true});}
 }
 test('real MinIO accepts correctly signed private GET, then denies forgery, expiry and deletion',async t=>{
  if(!minio){t.skip('AI_TEST_MINIO_URL was not set; external storage is never contacted');return;}
@@ -66,22 +75,13 @@ test('real MinIO accepts correctly signed private GET, then denies forgery, expi
  const bpath='/'+bucket;
  const create=await local('PUT',bpath,{headers:signedBucketRequest('PUT',bpath)});
  assert.ok([200,201].includes(create.status),'local MinIO CreateBucket: '+create.status+' '+(await create.text()).slice(0,350));
- const env=storageEnv(),owner='fixture-owner',id=randomUUID(),bytes=fakeMp4();
+ const env=storageEnv(),owner='fixture-owner',id=randomUUID(),bytes=await makeMp4();
  const store=createObjectStorage({env,fetcher:proxyFetch});
  const now=new Date();
  const expiresAt=new Date(now.getTime()+5*60000);
  const getKey=store.stagedReferenceKey({userId:owner,mime:'video/mp4',assetId:id});
  try{
-  // A genuine MinIO must independently verify the SigV4 Authorization header
-  // used by the existing application's PUT, GET and DELETE path.
-  const put=await local('PUT','/'+bucket+'/'+getKey,{
-   headers:{...signedBucketRequest('PUT','/'+bucket+'/'+getKey),'Content-Type':'video/mp4'},
-   body:Buffer.alloc(0)
-  });
-  // The preceding explicit PUT is not needed: use the actual app's storage PUT.
-  // The empty request is deliberately NOT trusted or asserted; the application
-  // overwrites the object using its own signed request below.
-  void put;
+  // A genuine MinIO independently verifies our SigV4 Authorization on PUT/GET/DELETE.
   const actual=await store.putStagedReference({userId:owner,mime:'video/mp4',assetId:id,bytes});
   assert.equal(actual.key,getKey);
   const privateRead=await store.getStagedReference({userId:owner,mime:'video/mp4',key:getKey});
