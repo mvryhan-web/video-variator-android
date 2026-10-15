@@ -286,3 +286,9 @@ Current queued-roadmap dependencies to verify before implementation:
 
 - Owner AI Control now includes read-only confirmed AI credit purchases/refunds with net amounts per currency.
 - No Stripe identifiers or write/refund actions are exposed in this table.
+
+
+### Continuation 23 — provider performance windows
+
+- Owner AI Control can inspect provider/model performance over 24h/7d/30d/all-time windows, including success rate, latency, cost and credits.
+- No automatic routing behavior was changed; Roadmap Block 1 remains separate.

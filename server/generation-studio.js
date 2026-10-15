@@ -207,21 +207,22 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   res.status(202).json({id,status:'processing',creditsReserved:quote?.credits||0});void run(id,request,req.user.id).catch(()=>{});
  });
  const getJob=async(req)=>{await init();const r=await pool.query('SELECT * FROM vv_generation_jobs WHERE id=$1 AND user_id=$2 AND deleted=false',[req.params.id,req.user.id]);return r.rows[0];};
- app.get('/api/studio/admin/metrics',auth,owner,async(_req,res)=>{try{
-  await init();
+ app.get('/api/studio/admin/metrics',auth,owner,async(req,res)=>{try{
+  await init();const window=String(req.query.window||'7d'),windows={'24h':'1 day','7d':'7 days','30d':'30 days',all:null};if(!(window in windows))return res.status(400).json({error:'INVALID_METRICS_WINDOW'});
+  const args=[],where=['deleted=false'];if(windows[window]){args.push(windows[window]);where.push(`created_at>=NOW()-${args.length}::interval`);}
   const {rows}=await pool.query(`SELECT provider,model,kind,COALESCE(cost_currency,'unknown') AS cost_currency,
     COUNT(*)::int AS jobs,
     COUNT(*) FILTER (WHERE status='ready')::int AS succeeded,
     COUNT(*) FILTER (WHERE status='failed')::int AS failed,
-    COUNT(*) FILTER (WHERE status='processing')::int AS processing,
+    COUNT(*) FILTER (WHERE status IN ('queued','processing','finalizing'))::int AS processing,
     ROUND(AVG(EXTRACT(EPOCH FROM (COALESCE(completed_at,failed_at)-started_at))) FILTER (WHERE started_at IS NOT NULL AND (completed_at IS NOT NULL OR failed_at IS NOT NULL))::numeric,2) AS avg_seconds,
     COALESCE(SUM(actual_cost),0)::numeric AS actual_cost,
     COALESCE(SUM(credits_charged),0)::bigint AS credits_charged
    FROM vv_generation_jobs
-   WHERE deleted=false
+   WHERE ${where.join(' AND ')}
    GROUP BY provider,model,kind,COALESCE(cost_currency,'unknown')
-   ORDER BY jobs DESC,provider,model,cost_currency`);
-  res.json({items:rows.map(r=>({provider:r.provider||null,model:r.model||null,kind:r.kind,jobs:Number(r.jobs||0),succeeded:Number(r.succeeded||0),failed:Number(r.failed||0),processing:Number(r.processing||0),averageSeconds:r.avg_seconds==null?null:Number(r.avg_seconds),actualCost:Number(r.actual_cost||0),costCurrency:r.cost_currency,creditsCharged:Number(r.credits_charged||0)}))});
+   ORDER BY jobs DESC,provider,model,cost_currency`,args);
+  res.json({window,items:rows.map(r=>({provider:r.provider||null,model:r.model||null,kind:r.kind,jobs:Number(r.jobs||0),succeeded:Number(r.succeeded||0),failed:Number(r.failed||0),processing:Number(r.processing||0),successRate:Number(r.jobs||0)?Number(r.succeeded||0)/Number(r.jobs||0):0,failureRate:Number(r.jobs||0)?Number(r.failed||0)/Number(r.jobs||0):0,averageSeconds:r.avg_seconds==null?null:Number(r.avg_seconds),actualCost:Number(r.actual_cost||0),costCurrency:r.cost_currency,creditsCharged:Number(r.credits_charged||0)}))});
  }catch(_){res.status(503).json({error:'STUDIO_ANALYTICS_UNAVAILABLE'});}});
   app.get('/api/studio/jobs',auth,generationUser,async(req,res)=>{try{
   await init();const filter=String(req.query.filter||'all'),allowed=new Set(['all','image','video','failed','processing']);if(!allowed.has(filter))return res.status(400).json({error:'INVALID_HISTORY_FILTER'});

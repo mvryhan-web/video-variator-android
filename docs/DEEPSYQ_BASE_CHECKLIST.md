@@ -50,7 +50,7 @@ This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain se
 | 36 | Privacy | PARTIAL | Added an implementation-accurate AI Media Privacy notice: local Product Video handoff, explicit Studio consent, provider transfer, job metadata storage, object-storage/DB fallback and deletion behavior. Final legal Terms/Privacy and approved automatic retention schedule remain pending. |
 | 37 | Business analytics | PARTIAL | Owner overview now shows users/30-day registrations, generation adoption/jobs/failure/latency/top model, recorded provider cost/credits, and confirmed AI-wallet purchases separated by currency. Gross margin stays intentionally blank until live economics/currency are verified. |
 | 38 | Admin dashboard | PARTIAL | Owner AI Control includes Users, Generation Jobs, business overview, AI credit purchases/refunds, model controls, route preview, provider metrics, held-credit review, template management, audited credit adjustment and owner audit log. Live Stripe actions still remain external/pending. |
-| 39 | Provider performance | PARTIAL | Owner metrics endpoint aggregates provider/model jobs, success/failure, processing, average time, cost and charged credits. |
+| 39 | Provider performance | PARTIAL | Owner metrics aggregate provider/model jobs, success/failure rates, processing, average time, cost and charged credits with 24h/7d/30d/all-time windows. Metrics remain observational and do not yet drive routing automatically. |
 | 40 | Model routing registry | PARTIAL | Shared catalog/capabilities plus server-side compatible candidate ordering and owner priorities exist. Logical cross-provider product model IDs and measured quality/reliability routing remain future work. |
 | 41 | Internal model capabilities | PARTIAL | All catalog models now expose a normalized capability object for input kinds, output kind, ratios, max references, async mode, quality, duration seconds and reference support. Future provider-specific constraints may extend it. |
 | 42 | Persist BytePlus output in our storage | PARTIAL / BLOCKED | Adapter downloads/validates media and Studio can move completed bytes into configured S3-compatible storage before wallet capture. Real storage provisioning and live BytePlus verification remain external gates. |
@@ -287,3 +287,10 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Added owner read-only AI purchase/refund table from Deepsyq's confirmed wallet records: user, credits, paid/refunded/net amounts, currency and ledger timestamp.
 - Stripe Checkout session and PaymentIntent identifiers are deliberately omitted from the API/UI.
 - The view does not call Stripe and cannot mutate/refund a payment.
+
+
+## Continuation 24 — provider performance windows
+
+- Owner provider/model metrics now support 24h, 7d, 30d and all-time windows, defaulting to 7d.
+- Added success/failure rates while preserving latency/cost/credits aggregates and counting queued/finalizing as in-flight work.
+- These metrics are observational only; Smart Routing is not automatically changed by them before Roadmap Block 1.
