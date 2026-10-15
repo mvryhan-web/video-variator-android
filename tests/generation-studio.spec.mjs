@@ -119,6 +119,31 @@ test('Studio explains the signed-in plan generation limits',async({page})=>{
  await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#accessInfo')).toBeVisible();await expect(page.locator('#accessInfo')).toContainText('2 active generation');await expect(page.locator('#accessInfo')).toContainText('12 per hour');await expect(page.locator('#accessInfo')).toContainText('1/2 active');await expect(page.locator('#accessInfo')).toContainText('4/12 in the last hour');
 });
 
+test('video selectors follow real Veo/Seedance capabilities without submitting jobs',async({page})=>{
+ let posts=0;page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))posts++;});
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#videoResolutionLabel')).toBeVisible();
+ await expect(page.locator('#videoDurationLabel')).toBeVisible();
+ await expect(page.locator('#videoDuration option')).toHaveCount(3);
+ await page.locator('#videoDuration').selectOption('4');
+ await expect(page.locator('#settingsButton')).toContainText('4s');
+ await page.locator('#videoResolution').selectOption('1080p');
+ await expect(page.locator('#videoDuration')).toHaveValue('8');
+ await expect(page.locator('#videoDuration option')).toHaveCount(1);
+ await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.locator('#modelButton').click();
+ await page.getByRole('button',{name:/Seedance 2.0/}).click();
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#videoDuration option')).toHaveCount(5);
+ await page.locator('#videoDuration').selectOption('15');
+ await expect(page.locator('#videoDuration')).toHaveValue('15');
+ await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.locator('[data-kind=image]').click();
+ await expect(page.locator('#videoDurationLabel')).toBeHidden();
+ expect(posts).toBe(0);
+});
+
 test('video History checks an existing task without resubmitting or downloading media',async({page})=>{
  const cfg={enabled:true,models:[{kind:'video',label:'Video fixture',id:'fixture-video',ratios:['16:9'],references:0,enabled:true}],catalog:[{kind:'video',label:'Video fixture',id:'fixture-video',ratios:['16:9'],references:0,enabled:true,adapter:true,provider:'Google'}]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
