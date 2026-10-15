@@ -221,7 +221,9 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
    ({request,selected,routing}=await resolveRequest(req.body));
    clientRequestId=generationRequestId(req.body?.requestId,{required:req.generationAccess?.scope==='public'});
   }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','INVALID_REFERENCES','INVALID_MUSIC_MODE','GENERATION_REQUEST_ID_REQUIRED','INVALID_GENERATION_REQUEST_ID','INVALID_IMAGE_QUANTITY'].includes(e.message);return res.status(bad?400:503).json({error:e.message||'MODEL_NOT_ENABLED'});}
-  const quote=walletEnabled()?estimateGenerationPricing(request,selected,env):null;if(walletEnabled()&&!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
+  const premiumVideo=request.kind==='video'&&(request.videoResolution!==selected.quality||request.videoDuration!==selected.capabilities?.durationSeconds);
+  const quote=walletEnabled()||premiumVideo?estimateGenerationPricing(request,selected,env):null;
+  if((walletEnabled()||premiumVideo)&&!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
   // Fail before insertion/reservation if prices changed after the user confirmed the batch quote.
   if(req.body?.expectedCredits!=null&&(!walletEnabled()||!Number.isSafeInteger(req.body.expectedCredits)||req.body.expectedCredits!==quote?.credits))
    return res.status(409).json({error:'AI_ESTIMATE_CHANGED'});
