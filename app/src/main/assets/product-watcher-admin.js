@@ -145,6 +145,22 @@ function renderContentTasks(data){
   root.append(card);
  }
 }
+function renderNotifications(data){
+ $('watcherNotificationStatus').textContent=!data.enabled?'Watcher disabled.'
+  :data.deliveryConfigured?'Private Telegram notifications configured; confirm delivery from saved records.'
+  :'Telegram owner notifications disabled or not configured.';
+ const root=$('watcherNotificationRows');root.replaceChildren();
+ if(!data.items?.length){const tr=document.createElement('tr'),td=document.createElement('td');
+  td.colSpan=3;td.textContent='No attempts recorded.';tr.append(td);root.append(tr);return;}
+ for(const n of data.items){
+  const tr=document.createElement('tr');
+  for(const value of [formatDate(n.createdAt),String(n.source||'system')+' · '+String(n.code||''),
+    String(n.status||'unverified')]){
+    const td=document.createElement('td');td.textContent=value;tr.append(td);
+  }
+  root.append(tr);
+ }
+}
 function render(d){
  current=d;$('watcherStatus').textContent=d.enabled?(d.paused?'Paused':'Ready for manual checks'):'Not enabled';
  $('watcherDetails').textContent=d.enabled?'Scheduler: '+(d.schedulerActive?'reported active':'not deployed')+' · Last run: '+formatDate(d.lastRun?.checkedAt):'Product Watcher is disabled in server configuration.';
@@ -155,7 +171,7 @@ function render(d){
  showRuns(d.runs||[]);
 }
 async function refresh(){
- try{busy=true;if(current)render(current);const [d,alerts,sources,briefs,content]=await Promise.all([api('/api/product-watcher/admin/status'),api('/api/product-watcher/admin/alerts'),api('/api/product-watcher/admin/official-sources'),api('/api/product-watcher/admin/briefs'),api('/api/product-watcher/admin/content-tasks')]);busy=false;render(d);renderAlerts(alerts.items);renderOfficialSources(sources);renderBriefs(briefs);renderContentTasks(content);feedback('Status updated.');}
+ try{busy=true;if(current)render(current);const [d,alerts,sources,briefs,content,delivery]=await Promise.all([api('/api/product-watcher/admin/status'),api('/api/product-watcher/admin/alerts'),api('/api/product-watcher/admin/official-sources'),api('/api/product-watcher/admin/briefs'),api('/api/product-watcher/admin/content-tasks'),api('/api/product-watcher/admin/notifications')]);busy=false;render(d);renderAlerts(alerts.items);renderOfficialSources(sources);renderBriefs(briefs);renderContentTasks(content);renderNotifications(delivery);feedback('Status updated.');}
  catch(e){busy=false;current=null;$('watcherStatus').textContent='Unavailable';$('watcherDetails').textContent=e.message==='SIGN_IN_REQUIRED'?'Sign in using the existing Deepsyq owner account.':'Owner access or Watcher database is unavailable.';$('watcherToggle').disabled=true;$('watcherRun').disabled=true;$('watcherRefresh').disabled=false;feedback(e.message,true);}
 }
 async function action(path,body){
