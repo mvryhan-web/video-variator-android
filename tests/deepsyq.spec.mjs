@@ -342,6 +342,29 @@ test('video carousel switches only among owner-approved videos and retains exist
  await expect(page.locator('#inspirationPreviewGrid')).toContainText('Preserved owned photo');
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
 });
+test('failed owner media clips never trap the Home carousel or erase Canvas',async({page})=>{
+ await page.addInitScript(()=>{
+  HTMLMediaElement.prototype.load=function(){};
+  HTMLMediaElement.prototype.play=function(){return Promise.resolve();};
+  HTMLMediaElement.prototype.pause=function(){};
+ });
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
+ const common={actionTarget:'studio',category:'Cinematic',aspectRatio:'16:9',featured:true,active:true};
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{...common,id:'broken-1',kind:'video',title:'Unavailable first film',previewUrl:'/broken-one.mp4'},{...common,id:'broken-2',kind:'video',title:'Unavailable second film',previewUrl:'/broken-two.mp4'},{...common,id:'preserved-image',kind:'image',title:'Original owner still',previewUrl:'/owner-image.png'}],categories:['Cinematic'],ratios:['16:9']}}));
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/broken-one.mp4');
+ await page.locator('#inspirationHeroVideo').evaluate(v=>v.dispatchEvent(new Event('error')));
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/broken-two.mp4');
+ await expect(page.locator('#homeHeroDots button').first()).toBeDisabled();
+ await page.locator('#inspirationHeroVideo').evaluate(v=>v.dispatchEvent(new Event('error')));
+ await expect(page.locator('#homeHeroCarousel')).toBeHidden();
+ await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
+ await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
+ await expect(page.locator('#inspirationPreviewGrid')).toContainText('Original owner still');
+});
 test('reduced-motion users get a manual Play button for genuine videos',async({page})=>{
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
