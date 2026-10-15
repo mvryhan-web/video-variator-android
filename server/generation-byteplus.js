@@ -25,9 +25,18 @@ export async function generateBytePlus(request,{key,fetcher=fetch}){
  if(!model||!['image','video'].includes(request.kind)||(request.kind==='video')!==(request.model==='byteplus-seedance-2'))throw Error('MODEL_NOT_CONNECTED');
  const images=(request.references||[]).map(r=>`data:${r.mimeType};base64,${r.data}`);
  if(request.kind==='video'){
-  if(!['16:9','9:16','1:1'].includes(request.ratio)||images.length>1)throw Error('INVALID_REQUEST');
+  if(!['16:9','9:16','1:1'].includes(request.ratio)||images.length>3)throw Error('INVALID_REQUEST');
+  const mode=request.videoInputMode||(images.length?'first_frame':'text');
+  if(!['text','first_frame','first_last','reference_image'].includes(mode)||
+   mode==='text'&&images.length!==0||
+   mode==='first_frame'&&images.length!==1||
+   mode==='first_last'&&images.length!==2||
+   mode==='reference_image'&&(images.length<1||images.length>3))
+    throw Error('INVALID_VIDEO_REFERENCES');
+  const roles=mode==='first_last'?['first_frame','last_frame']:images.map(()=>mode==='reference_image'?'reference_image':'first_frame');
+
   if(!['720p','1080p'].includes(request.videoResolution||'720p')||![4,5,8,10,15].includes(request.videoDuration??5))throw Error('UNSUPPORTED_VIDEO_SETTINGS');
-  const d=await json('contents/generations/tasks',{key,fetcher,body:{model,content:[{type:'text',text:request.prompt},...images.map(url=>({type:'image_url',image_url:{url},role:'first_frame'}))],ratio:request.ratio,resolution:request.videoResolution||'720p',duration:request.videoDuration??5,generate_audio:true,watermark:true}});
+  const d=await json('contents/generations/tasks',{key,fetcher,body:{model,content:[{type:'text',text:request.prompt},...images.map((url,index)=>({type:'image_url',image_url:{url},role:roles[index]}))],ratio:request.ratio,resolution:request.videoResolution||'720p',duration:request.videoDuration??5,generate_audio:true,watermark:true}});
   if(typeof d.id!=='string'||!/^[-A-Za-z0-9_]{1,160}$/.test(d.id))throw Error('EMPTY_OPERATION');
   return {operation:`byteplus:${d.id}`};
  }
