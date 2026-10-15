@@ -72,6 +72,35 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
     WHERE id=$1`,[item.job_id,note,req.user.id]);
   res.json({ok:true,jobId:item.job_id,releasedCredits:Number(item.credits)});
  }catch(_){res.status(503).json({error:'AI_WALLET_REVIEW_UNAVAILABLE'});}});
+ app.get('/api/studio/admin/users',auth,owner,async(req,res)=>{try{
+  await init();if(wallet)await wallet.init();const q=String(req.query.q||'').trim().slice(0,80);
+  const {rows}=await pool.query(`SELECT u.id,u.email,u.name,u.provider,u.plan,u.subscription_status,u.has_subscribed,u.plan_limit,u.period_used,u.trial_used,u.created_at,u.updated_at,
+    COALESCE(w.available,0)::bigint AS ai_available,COALESCE(w.reserved,0)::bigint AS ai_reserved,COALESCE(w.debt,0)::bigint AS ai_debt,
+    (SELECT COUNT(*)::int FROM vv_generation_jobs j WHERE j.user_id=u.id AND j.deleted=false) AS generation_count,
+    (SELECT COUNT(*)::int FROM vv_ai_purchase p WHERE p.user_id=u.id) AS ai_purchase_count
+   FROM vv_users u LEFT JOIN vv_ai_wallet w ON w.user_id=u.id
+   WHERE ($1='' OR COALESCE(u.email,'') ILIKE '%'||$1||'%' OR COALESCE(u.name,'') ILIKE '%'||$1||'%')
+   ORDER BY u.created_at DESC LIMIT 50`,[q]);
+  res.json({items:rows.map(u=>({id:u.id,email:u.email||null,name:u.name||null,provider:u.provider,plan:u.plan,status:u.subscription_status,hasSubscribed:!!u.has_subscribed,toolUsage:{limit:Number(u.plan_limit||0),periodUsed:Number(u.period_used||0),trialUsed:Number(u.trial_used||0)},aiWallet:{available:Number(u.ai_available||0),reserved:Number(u.ai_reserved||0),debt:Number(u.ai_debt||0)},generationCount:Number(u.generation_count||0),aiPurchaseCount:Number(u.ai_purchase_count||0),createdAt:u.created_at,updatedAt:u.updated_at}))});
+ }catch(_){res.status(503).json({error:'OWNER_USERS_UNAVAILABLE'});}});
+ app.get('/api/studio/admin/jobs',auth,owner,async(req,res)=>{try{
+  await init();const filter=String(req.query.status||'all'),allowed=new Set(['all','queued','processing','finalizing','ready','failed']);if(!allowed.has(filter))return res.status(400).json({error:'INVALID_JOB_FILTER'});
+  const args=[],where=['j.deleted=false'];if(filter!=='all'){args.push(filter);where.push(`j.status=${args.length}`);}
+  const {rows}=await pool.query(`SELECT j.id,j.user_id,u.email,j.kind,j.status,j.provider,j.model,j.error,j.error_message,j.created_at,j.started_at,j.completed_at,j.failed_at,j.estimated_cost,j.actual_cost,j.credits_reserved,j.credits_charged
+    FROM vv_generation_jobs j LEFT JOIN vv_users u ON u.id=j.user_id WHERE ${where.join(' AND ')} ORDER BY j.created_at DESC LIMIT 100`,args);
+  res.json({filter,items:rows.map(j=>({id:j.id,userId:j.user_id,userEmail:j.email||null,kind:j.kind,status:j.status,provider:j.provider||null,model:j.model||null,error:j.error||j.error_message||null,createdAt:j.created_at,durationSeconds:j.started_at&&(j.completed_at||j.failed_at)?Math.max(0,(new Date(j.completed_at||j.failed_at)-new Date(j.started_at))/1000):null,estimatedCost:j.estimated_cost==null?null:Number(j.estimated_cost),actualCost:j.actual_cost==null?null:Number(j.actual_cost),creditsReserved:Number(j.credits_reserved||0),creditsCharged:Number(j.credits_charged||0)}))});
+ }catch(_){res.status(503).json({error:'OWNER_JOBS_UNAVAILABLE'});}});
+ app.get('/api/studio/admin/business',auth,owner,async(_req,res)=>{try{
+  await init();if(wallet)await wallet.init();
+  const [users,jobs,model,purchases]=await Promise.all([
+   pool.query(`SELECT COUNT(*)::int AS users,COUNT(*) FILTER (WHERE created_at>=NOW()-INTERVAL '30 days')::int AS registrations_30d,COUNT(*) FILTER (WHERE has_subscribed)::int AS ever_subscribed,COUNT(*) FILTER (WHERE has_subscribed AND subscription_status NOT IN ('active','trialing','lifetime'))::int AS inactive_after_subscription FROM vv_users`),
+   pool.query(`SELECT COUNT(*)::int AS jobs,COUNT(DISTINCT user_id)::int AS generating_users,COUNT(*) FILTER (WHERE status='ready')::int AS ready,COUNT(*) FILTER (WHERE status='failed')::int AS failed,COUNT(*) FILTER (WHERE status IN ('queued','processing','finalizing'))::int AS processing,ROUND(AVG(EXTRACT(EPOCH FROM (COALESCE(completed_at,failed_at)-started_at))) FILTER (WHERE started_at IS NOT NULL AND (completed_at IS NOT NULL OR failed_at IS NOT NULL))::numeric,2) AS avg_seconds,COALESCE(SUM(actual_cost),0)::numeric AS recorded_cost,COALESCE(SUM(credits_charged),0)::bigint AS credits_charged FROM vv_generation_jobs WHERE deleted=false`),
+   pool.query(`SELECT model,COUNT(*)::int AS jobs FROM vv_generation_jobs WHERE deleted=false AND model IS NOT NULL GROUP BY model ORDER BY jobs DESC,model LIMIT 1`),
+   pool.query(`SELECT currency,COUNT(*)::int AS purchases,COALESCE(SUM(amount-refunded_amount),0)::bigint AS net_amount_minor,COALESCE(SUM(credits),0)::bigint AS credits_purchased FROM vv_ai_purchase GROUP BY currency ORDER BY currency`)
+  ]);
+  const u=users.rows[0]||{},j=jobs.rows[0]||{},total=Number(u.users||0),generating=Number(j.generating_users||0),jobCount=Number(j.jobs||0),failed=Number(j.failed||0);
+  res.json({users:{total,registrations30d:Number(u.registrations_30d||0),everSubscribed:Number(u.ever_subscribed||0),inactiveAfterSubscription:Number(u.inactive_after_subscription||0),generationAdoptionRate:total?generating/total:0,everSubscribedRate:total?Number(u.ever_subscribed||0)/total:0},generation:{jobs:jobCount,generatingUsers:generating,ready:Number(j.ready||0),failed,processing:Number(j.processing||0),failureRate:jobCount?failed/jobCount:0,jobsPerGeneratingUser:generating?jobCount/generating:0,averageSeconds:j.avg_seconds==null?null:Number(j.avg_seconds),recordedProviderCost:Number(j.recorded_cost||0),creditsCharged:Number(j.credits_charged||0),topModel:model.rows[0]?.model||null},aiPurchases:purchases.rows.map(p=>({currency:p.currency,purchases:Number(p.purchases||0),netAmountMinor:Number(p.net_amount_minor||0),creditsPurchased:Number(p.credits_purchased||0)})),grossMargin:null,grossMarginReason:'Provider cost currency and live AI revenue economics are not yet verified.'});
+ }catch(_){res.status(503).json({error:'OWNER_BUSINESS_UNAVAILABLE'});}});
   app.use('/api/studio',(_req,res,next)=>{if(!studioConfig(env).enabled)return res.status(503).json({error:'OWNER_SETUP_REQUIRED'});next();});
  async function finish(id,result,userId){
   if(result.operation){await pool.query("UPDATE vv_generation_jobs SET status='processing',operation=$2 WHERE id=$1",[id,result.operation]);return;}

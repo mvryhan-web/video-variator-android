@@ -175,3 +175,11 @@ Current queued-roadmap dependencies to verify before implementation:
 - Added BASE Product Video guided workflow using local-only file handoff into the existing Video Studio.
 - Product photos/logo are not sent to a provider from the workflow page; Studio restores compatible references, prompt and ratio locally, consent stays unchecked, and generation is never auto-started.
 - No live provider/payment/public entitlement/deployment switch was enabled.
+
+
+### Continuation 8 — owner read-only business operations
+
+- Owner AI Control now has read-only business, user and generation-job operational views.
+- Sensitive auth fields, OAuth subject identifiers, Stripe customer IDs, media and prompts are not returned by these views.
+- Confirmed AI-wallet purchases remain separated by currency; gross margin is not fabricated before live economics are approved.
+- No manual credit adjustment or Stripe write action was enabled.
