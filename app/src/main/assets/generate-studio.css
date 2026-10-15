@@ -74,3 +74,12 @@
 .image-draft-bar span{flex:1;min-width:170px}
 .image-draft-bar button{padding:6px 10px;min-height:29px;border:1px solid #53665b;border-radius:7px;background:#27352d;color:#e1ece2;font-size:11px;cursor:pointer}
 .image-draft-bar button:focus-visible{outline:2px solid #d2f7ae;outline-offset:2px}
+
+
+/* Server-owned Video jobs keep running when the user stops local polling. */
+.video-background-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0;padding:12px;border:1px solid #40534b;border-radius:12px;background:#18251f}
+.video-background-controls[hidden]{display:none}
+.video-background-controls button{min-height:40px;padding:9px 13px;border:1px solid #7ca481;border-radius:9px;background:#294132;color:#ecfbea;font-size:12px;font-weight:700;cursor:pointer}
+.video-background-controls button:focus-visible{outline:2px solid #d2f7ae;outline-offset:2px}
+.video-background-controls .hint{flex:1;min-width:220px;margin:0;font-size:11px;line-height:1.5}
+@media(max-width:600px){.video-background-controls button{width:100%}.video-background-controls .hint{min-width:0}}
