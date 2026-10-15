@@ -39,8 +39,15 @@ The exact completion state of older components must be verified from the current
 |---|---|---|---|---|
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
-| BASE AI Apps discovery (search, type/category filters, own visual parity only) | ChatGPT isolated continuation | `base-ai-apps-discovery-20261015` / draft PR pending | IN PROGRESS / INDEPENDENT | Edit only AI Apps page/controller/styles and focused isolated checks. No Home, Studio, Block 3, Block 5, trial/Stripe/provider changes. |
+| BASE AI Apps discovery (search, type/category filters, own visual parity only) | ChatGPT isolated continuation | `base-ai-apps-discovery-20261015` / draft PR #51 | IMPLEMENTED / CI & REVIEW PENDING | AI Apps page/controller/styles + dedicated browser cases/CI only. No Home, Studio, Block 3, Block 5, trial/Stripe/provider changes. |
 | BASE Video / reference intake, cleanup and Seedance preflight | ChatGPT continuation (handoff `90ee2b7`) | `deepsyq-platform` / PR #42 | OFFICIAL MINIO PARTIAL S3 VERIFIED / FULL STAGING & PROVIDER BLOCKED | Local SigV4 green (38792787579); source-built official MinIO accepted signed MP4 PUT, owner GET, 30s presigned GET and denied tampering (38795444234). Full MinIO expiry/delete suite not yet confirmed green (test fixture HTTP 400 vs 403 updated); real deployed bucket, provider, credits, Stripe and production untouched. All transfer/upload flags OFF. |
+
+### BASE AI Apps discovery — independent continuation (2026-10-15)
+
+- **Workstream:** BASE #19 AI Apps search, filtering and standalone page visual parity only. Draft [PR #51](https://github.com/mvryhan-web/video-variator-android/pull/51), branch `base-ai-apps-discovery-20261015`, base `deepsyq-platform` (not `main`).
+- **Implemented:** search active templates by title/description/category, filter Image/Video/Audio (including product_video under Video), preserve category, share filters in URLs, Clear filters, accessible and responsive Deepsyq purple styling, truthful missing-content/API failures. Existing /api/templates and session-only Studio handoff remain unchanged; generation never starts automatically.
+- **Verification:** JS syntax parser and changed-file scope inspected. Two focused browser cases and narrow Playwright CI added; GitHub run pending when recorded. **Do not mark DONE or claim release** until CI/review/BASE integration. No live customer/provider/Stripe/Render acceptance.
+- **Boundaries:** No edits to Home, Block 3, Block 5, commercial jobs/Stripe, Trial $0.99, Video Uniquifier, models, server or migrations. Owner-approved Home remains locked. Next: review targeted CI, reconcile concurrent BASE updates and request PR merge after readiness.
 
 When another agent joins, add one row per claimed workstream before substantial implementation. One agent should own one bounded workstream at a time.
 
