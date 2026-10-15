@@ -32,6 +32,31 @@ test('dashboard quick-create prepares a local image draft without any paid reque
  expect(jobPosts).toBe(0);
 });
 
+test('Canvas quick-create accepts local reference photos, allows removal and never auto-generates',async({page})=>{
+ await fixtures(page);
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{
+  enabled:true,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:2,enabled:true}],
+  catalog:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:2,enabled:true,adapter:true,provider:'Google'}]
+ }}));
+ let jobPosts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')jobPosts++;});
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.goto('/deepsyq.html');
+ await page.locator('#quickCreatePrompt').fill('Natural product photograph with soft light');
+ await page.locator('#quickCreateFiles').setInputFiles([
+  {name:'reference-1.png',mimeType:'image/png',buffer:png},
+  {name:'reference-2.png',mimeType:'image/png',buffer:png}
+ ]);
+ await expect(page.locator('.quick-reference')).toHaveCount(2);
+ await page.getByRole('button',{name:'Remove reference 2'}).click();
+ await expect(page.locator('.quick-reference')).toHaveCount(1);
+ await page.locator('#quickCreateSubmit').click();
+ await expect(page).toHaveURL(/studio=image&from=dashboard/);
+ await expect(page.locator('#prompt')).toHaveValue('Natural product photograph with soft light');
+ await expect(page.locator('#refPreview img')).toHaveCount(1);
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(jobPosts).toBe(0);
+});
+
 test('featured AI Apps render from approved API data and disappear when no templates exist',async({page})=>{
  await fixtures(page);
  let items=[{id:'featured-1',slug:'product-photo',title:'Approved Product Photo',description:'Owner approved workflow',category:'ecommerce',generationType:'image',active:true,featured:true}];
