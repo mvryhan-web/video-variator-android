@@ -29,7 +29,11 @@ export function estimateGenerationPricing(request,model,env={}){
  const candidates=catalog.entries.filter(e=>e.model===model.id&&e.kind===model.kind&&e.provider===model.provider);
  const score=e=>{
   if(e.ratio&&e.ratio!==request.ratio)return -1;
-  if(e.quality&&e.quality!==(model.capabilities?.quality??model.quality))return -1;
+  const quality=request.kind==='image'?(request.resolution||model.quality):(model.capabilities?.quality??model.quality);
+  if(e.quality&&e.quality!==quality)return -1;
+  // Higher image resolution must have an explicitly approved price row.
+  // Legacy wildcard rows may price the previous default quality only.
+  if(request.kind==='image'&&!e.quality&&quality!==model.quality)return -1;
   if(e.durationSeconds&&e.durationSeconds!==durationSeconds)return -1;
   return Number(!!e.ratio)+Number(!!e.quality)+Number(!!e.durationSeconds);
  };
