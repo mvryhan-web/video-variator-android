@@ -56,7 +56,7 @@ async function loadGenerationAccess(){
  try{
   const a=await(await api('/api/studio/access')).json();el.hidden=false;
   if(a.scope==='owner'){el.textContent=say('Owner preview access. Public plan limits do not apply to this preview.','Доступ владельца. Публичные тарифные лимиты к этому preview не применяются.');return;}
-  if(a.allowed){el.textContent=say(`Plan ${a.plan}: up to ${a.maxConcurrent} active generation(s) and ${a.maxPerHour} per hour.`,`Тариф ${a.plan}: до ${a.maxConcurrent} одновременных генераций и ${a.maxPerHour} в час.`);return;}
+  if(a.allowed){const usage=Number.isInteger(a.activeJobs)&&Number.isInteger(a.jobsThisHour)?say(` Currently: ${a.activeJobs}/${a.maxConcurrent} active · ${a.jobsThisHour}/${a.maxPerHour} in the last hour.`,` Сейчас: ${a.activeJobs}/${a.maxConcurrent} активных · ${a.jobsThisHour}/${a.maxPerHour} за последний час.`):'';el.textContent=say(`Plan ${a.plan}: up to ${a.maxConcurrent} active generation(s) and ${a.maxPerHour} per hour.`,`Тариф ${a.plan}: до ${a.maxConcurrent} одновременных генераций и ${a.maxPerHour} в час.`)+usage;return;}
   el.textContent=({PUBLIC_AI_DISABLED:say('Public AI generation is not enabled yet.','Публичная AI-генерация пока не включена.'),AI_ENTITLEMENTS_NOT_CONFIGURED:say('AI plan access is not configured yet.','Доступ к AI по тарифам пока не настроен.'),AI_PLAN_NOT_ENTITLED:say('Your current plan does not include AI generation yet.','Текущий тариф пока не включает AI-генерацию.'),AI_PLAN_INACTIVE:say('An active eligible plan is required for AI generation.','Для AI-генерации нужен активный подходящий тариф.')})[a.reason]||say('AI plan access is not available yet.','Доступ к AI по тарифу пока недоступен.');
  }catch(_){el.hidden=true;}
 }

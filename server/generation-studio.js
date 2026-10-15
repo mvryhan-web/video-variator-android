@@ -77,9 +77,13 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   return {request,selected,routing:{smart:false,candidates:[selected.id]}};
  }
  app.get('/api/studio/access',auth,async(req,res)=>{
-  if(isOwner(req.user))return res.json({allowed:true,scope:'owner',plan:req.user.plan||null,maxConcurrent:null,maxPerHour:null,reason:null});
-  const access=generationEntitlementForUser(req.user,env);
-  res.json({allowed:!!access.allowed,scope:access.scope||'public',plan:access.plan||req.user.plan||null,maxConcurrent:access.maxConcurrent??null,maxPerHour:access.maxPerHour??null,reason:access.reason||null,walletReady:walletEnabled(),pricingConfigured:pricingCatalog(env).configured});
+  if(isOwner(req.user))return res.json({allowed:true,scope:'owner',plan:req.user.plan||null,maxConcurrent:null,maxPerHour:null,activeJobs:null,jobsThisHour:null,reason:null});
+  const access=generationEntitlementForUser(req.user,env);let activeJobs=null,jobsThisHour=null;
+  if(access.allowed&&pool)try{
+   await init();const {rows}=await pool.query("SELECT COUNT(*) FILTER (WHERE status IN ('queued','processing','finalizing'))::int AS active,COUNT(*) FILTER (WHERE created_at>NOW()-INTERVAL '1 hour')::int AS hourly FROM vv_generation_jobs WHERE user_id=$1 AND deleted=false",[req.user.id]);
+   activeJobs=Number(rows[0]?.active||0);jobsThisHour=Number(rows[0]?.hourly||0);
+  }catch(_){}
+  res.json({allowed:!!access.allowed,scope:access.scope||'public',plan:access.plan||req.user.plan||null,maxConcurrent:access.maxConcurrent??null,maxPerHour:access.maxPerHour??null,activeJobs,jobsThisHour,reason:access.reason||null,walletReady:walletEnabled(),pricingConfigured:pricingCatalog(env).configured});
  });
  app.get('/api/studio/config',async(_req,res)=>{const base=studioConfig(env);if(env.AI_PROVIDER_ADMIN_ENABLED!=='true'||!pool)return res.json(base);try{const controlled=await listModelControls(pool,base.catalog);const defaults=base.models.map(m=>{const best=controlled.filter(x=>x.kind===m.kind&&x.enabled).sort((a,b)=>(a.control?.priority??100)-(b.control?.priority??100))[0];return best?{kind:m.kind,id:best.id,label:best.label,ratios:best.ratios,references:best.references,enabled:true}: {...m,enabled:false};});res.json({...base,catalog:controlled,models:defaults});}catch(_){res.json(base);}});
  const modelAdminEnabled=()=>env.AI_PROVIDER_ADMIN_ENABLED==='true'&&!!pool;

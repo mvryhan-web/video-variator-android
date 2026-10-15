@@ -278,3 +278,5 @@ All new commercial switches remain OFF by default. Real bucket credentials, prov
 - Added authenticated read-only `/api/studio/access` that reports owner scope or the exact configured public entitlement for the user's current plan.
 - Studio shows plan/max-concurrent/max-per-hour when allowed, or a friendly reason when public AI/entitlements/plan status are not ready.
 - The endpoint does not start generation, mutate wallet data or invent fallback plan limits.
+
+- Studio plan-access readout now includes current active-job usage and rolling last-hour generation count when the database is available.

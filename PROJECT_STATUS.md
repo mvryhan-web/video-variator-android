@@ -278,3 +278,5 @@ Current queued-roadmap dependencies to verify before implementation:
 
 - Studio now explains the signed-in account's configured AI plan entitlement and rate/concurrency limits through a read-only access endpoint.
 - No public entitlement values are invented; production still depends on approved `AI_PLAN_ENTITLEMENTS_JSON` and disabled rollout gates.
+
+- Added read-only rolling AI usage counters (active jobs / jobs in the last hour) next to configured public plan limits in Studio.
