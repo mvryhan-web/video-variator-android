@@ -8,7 +8,7 @@ export function generationReadiness(env={}){
  const pricing=pricingCatalog(env),pricingCurrenciesExplicit=pricing.configured&&pricing.entries.every(e=>!!e.currency),billing=billingCatalog(env),billingRuntime=generationBillingRuntime(env),entitlements=generationEntitlements(env),storage=objectStorageConfig(env);
  const gates=[
   {id:'database',label:'PostgreSQL',ready:!!env.DATABASE_URL,required:true},
-  {id:'jwt',label:'Server JWT secret',ready:!!env.APP_JWT_SECRET,required:true},
+  {id:'jwt',label:'Server JWT signing key',ready:!!env.APP_JWT_SECRET,required:true},
   {id:'provider',label:'At least one AI provider key',ready:!!(env.GEMINI_API_KEY||env.BYTEPLUS_API_KEY),required:true},
   {id:'byteplusMedia',label:'BytePlus approved media hosts',ready:!env.BYTEPLUS_API_KEY||bytePlusDownloadsConfigured(env.BYTEPLUS_MEDIA_HOSTS),required:!!env.BYTEPLUS_API_KEY},
   {id:'pricing',label:'Approved model pricing + currency',ready:pricingCurrenciesExplicit,required:true},
