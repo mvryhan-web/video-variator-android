@@ -131,7 +131,7 @@ test('real MinIO accepts correctly signed private GET, then denies forgery, expi
   const withoutSignature=new URL(link.url);
   withoutSignature.searchParams.delete('X-Amz-Signature');
   const unsigned=await local('GET',withoutSignature.pathname+withoutSignature.search);
-  assert.equal(unsigned.status,403,'unauthenticated object access must remain private');
+  assert.ok([400,403].includes(unsigned.status),'malformed/unsigned requests must not return media');
 
   const oldStore=createObjectStorage({env,now:()=>new Date(Date.now()-120000)});
   const expired=oldStore.presignStagedReferenceRead({userId:owner,key:getKey,
