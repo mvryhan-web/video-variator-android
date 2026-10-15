@@ -54,7 +54,25 @@ ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS error_message TEXT;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS duration INTEGER;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS metadata JSONB NOT NULL DEFAULT '{}'::jsonb;
 
-DO $$
+DO $
+BEGIN
+  IF to_regclass('public.vv_generation_pilot') IS NOT NULL THEN
+    ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS provider TEXT;
+    ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS prompt TEXT;
+    ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS model TEXT;
+    ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ;
+    ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ;
+    ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS failed_at TIMESTAMPTZ;
+    ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS credits_reserved INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS credits_charged INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS estimated_cost NUMERIC(14,6);
+    ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS actual_cost NUMERIC(14,6);
+    ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS settings JSONB NOT NULL DEFAULT '{}'::jsonb;
+    ALTER TABLE vv_generation_pilot ADD COLUMN IF NOT EXISTS metadata JSONB NOT NULL DEFAULT '{}'::jsonb;
+  END IF;
+END $;
+
+DO $
 BEGIN
   IF to_regclass('public.vv_generation_pilot') IS NOT NULL THEN
     INSERT INTO vv_generation_jobs(
