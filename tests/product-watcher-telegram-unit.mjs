@@ -5,13 +5,17 @@ import {watcherTelegramConfig,deliverCriticalWatcherAlertsOnce,listWatcherNotifi
 const env={PRODUCT_WATCHER_ENABLED:'true',PRODUCT_WATCHER_TELEGRAM_ALERTS_ENABLED:'true',
  TELEGRAM_BOT_TOKEN:'1234567:EXAMPLE_TEST_TOKEN_NEVER_REAL_ABCDEFG',
  PRODUCT_WATCHER_OWNER_TELEGRAM_CHAT_ID:'123456789'};
-function fake({paused=false}={}){
+function fake({paused=false,alerts=[{id:'8',source:'http',code:'HTTP_UNAVAILABLE'}]}={}){
  const queries=[],events=new Map();
  const client={async query(sql,args=[]){
   queries.push([sql,args]);
   if(sql==='SELECT paused FROM vv_product_watcher_control WHERE id=1')return{rows:[{paused}]};
-  if(sql.startsWith('SELECT id,source,code,provider FROM vv_product_watcher_alerts'))
-    return{rows:[{id:'8',source:'http',code:'HTTP_UNAVAILABLE'}]};
+  if(sql.includes('FROM vv_product_watcher_alerts a')){
+    const unclaimed=sql.includes('NOT EXISTS')
+      ? alerts.filter(a=>!events.has(String(a.id)))
+      : alerts;
+    return{rows:unclaimed.slice(0,3)};
+  }
   if(sql.startsWith('INSERT INTO vv_product_watcher_notifications')){
     if(events.has(String(args[0])))return{rows:[]};
     const id=events.size+1;events.set(String(args[0]),{id,alert_id:args[0],status:'sending'});
@@ -76,4 +80,39 @@ test('notification owner status never returns Telegram credentials or target cha
  assert.equal(listed.length,1);assert.equal(listed[0].code,'HTTP_UNAVAILABLE');
  assert.equal(JSON.stringify(listed).includes(env.TELEGRAM_BOT_TOKEN),false);
  assert.equal(JSON.stringify(listed).includes(env.PRODUCT_WATCHER_OWNER_TELEGRAM_CHAT_ID),false);
+});
+
+test('critical notification backlog drains after initial three without re-sending claimed alerts',async()=>{
+ const alerts=Array.from({length:5},(_,i)=>({
+  id:String(i+10),source:'http',code:'HTTP_UNAVAILABLE'
+ }));
+ const d=fake({alerts});let sent=0;
+ const fetchFn=async()=>{sent++;return{status:200,json:async()=>({ok:true})};};
+ const first=await deliverCriticalWatcherAlertsOnce({pool:d.pool,env,fetchFn});
+ assert.deepEqual([first.attempted,first.sent],[3,3]);
+ const second=await deliverCriticalWatcherAlertsOnce({pool:d.pool,env,fetchFn});
+ assert.deepEqual([second.attempted,second.sent],[2,2]);
+ const third=await deliverCriticalWatcherAlertsOnce({pool:d.pool,env,fetchFn});
+ assert.deepEqual([third.attempted,third.sent],[0,0]);
+ assert.equal(sent,5);assert.equal(d.events.size,5);
+ assert.ok([...d.events.values()].every(x=>x.status==='sent'));
+ const query=d.queries.find(([sql])=>sql.includes('FROM vv_product_watcher_alerts a'));
+ assert.match(query[0],/NOT EXISTS/);
+ assert.match(query[0],/LIMIT 3/);
+});
+
+test('uncertain claimed delivery does not block later undelivered critical events',async()=>{
+ const alerts=Array.from({length:4},(_,i)=>({
+  id:String(i+20),source:'http',code:'HTTP_UNAVAILABLE'
+ }));
+ const d=fake({alerts});let attempted=0;
+ const failed=await deliverCriticalWatcherAlertsOnce({pool:d.pool,env,
+  fetchFn:async()=>{attempted++;throw Error('network receipt unavailable');}});
+ assert.deepEqual([failed.attempted,failed.sent],[3,0]);
+ const later=await deliverCriticalWatcherAlertsOnce({pool:d.pool,env,
+  fetchFn:async()=>{attempted++;return{status:200,json:async()=>({ok:true})};}});
+ assert.deepEqual([later.attempted,later.sent],[1,1]);
+ assert.equal(attempted,4);
+ assert.equal(d.events.get('20').status,'delivery_unknown');
+ assert.equal(d.events.get('23').status,'sent');
 });
