@@ -73,3 +73,15 @@ CREATE TABLE IF NOT EXISTS vv_product_watcher_proposals (
 );
 CREATE INDEX IF NOT EXISTS vv_product_watcher_proposals_status_idx
   ON vv_product_watcher_proposals(review_status,created_at DESC);
+
+
+-- Owner-only deterministic reports. No outbound delivery is configured by this schema.
+CREATE TABLE IF NOT EXISTS vv_product_watcher_briefs (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  kind TEXT NOT NULL CHECK(kind IN ('daily','weekly')),
+  period_key CHAR(10) NOT NULL,
+  content JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(kind,period_key)
+);
+CREATE INDEX IF NOT EXISTS vv_product_watcher_briefs_created_idx ON vv_product_watcher_briefs(created_at DESC);
