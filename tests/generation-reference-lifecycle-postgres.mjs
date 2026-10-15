@@ -11,6 +11,7 @@ import {createObjectStorage} from '../server/generation-storage.js';
 import {createGenerationReferenceLedger} from '../server/generation-reference-ledger.js';
 import {installGenerationReferenceUpload} from '../server/generation-reference-upload.js';
 import {createSeedanceStagedReferenceInspector} from '../server/generation-reference-inspector.js';
+import {createSeedanceAudioPayloadPreparer} from '../server/generation-reference-audio-payload.js';
 
 const url=process.env.AI_TEST_DATABASE_URL||'';
 function localFixtureDatabase(){
@@ -19,8 +20,8 @@ function localFixtureDatabase(){
   return u.protocol==='postgres:'&&['127.0.0.1','localhost'].includes(u.hostname)&&u.pathname==='/vv_ai_test';
  }catch(_){return false;}
 }
-function wav(){
- const samples=Buffer.alloc(16000),fmt=Buffer.alloc(16);
+function wav(seconds=1){
+ const samples=Buffer.alloc(16000*seconds),fmt=Buffer.alloc(16);
  fmt.writeUInt16LE(1,0);fmt.writeUInt16LE(1,2);fmt.writeUInt32LE(8000,4);
  fmt.writeUInt32LE(16000,8);fmt.writeUInt16LE(2,12);fmt.writeUInt16LE(16,14);
  const sub=Buffer.alloc(8);sub.write('data');sub.writeUInt32LE(samples.length,4);
@@ -151,6 +152,26 @@ test('private media lifecycle: real isolated PostgreSQL, HTTP admission and fake
    assert.deepEqual(await ledger.cleanupExpired(),{claimed:1,deleted:1,failed:0});
    assert.equal(objects.size,0);
    assert.equal((await pool.query('SELECT COUNT(*)::int AS n FROM vv_generation_reference_assets')).rows[0].n,0);
+  });
+  await t.test('real private S3 WAV round trip builds bounded offline ModelArk audio, not a paid request',async()=>{
+   env.AI_STUDIO_REFERENCE_STAGING_ENABLED='true';
+   const original=wav(3);
+   const staged=await ledger.stage({userId:'alice',mime:'audio/wav',bytes:original});
+   const payloadEnv={...env,AI_STUDIO_REFERENCE_AUDIO_PAYLOAD_ENABLED:'true',
+    AI_STUDIO_REFERENCE_TRANSFER_REVIEW_APPROVED:'true'};
+   const preparer=createSeedanceAudioPayloadPreparer({ledger,env:payloadEnv,
+    verifyVisualContext:async({userId,model})=>{
+     assert.equal(userId,'alice');assert.equal(model,'byteplus-seedance-2');return 1;
+    }});
+   const data=await preparer.prepare({userId:'alice',model:'byteplus-seedance-2',audioAssetIds:[staged.id]});
+   assert.equal(data.providerSubmitted,false);assert.equal(data.content.length,1);
+   assert.equal(data.content[0].role,'reference_audio');
+   assert.deepEqual(Buffer.from(data.content[0].audio_url.url.split(',')[1],'base64'),original);
+   await assert.rejects(()=>preparer.prepare({userId:'mallory',model:'byteplus-seedance-2',audioAssetIds:[staged.id]}),/REFERENCE_MEDIA_ACCESS_DENIED/);
+   await pool.query("UPDATE vv_generation_reference_assets SET created_at=NOW()-INTERVAL '1 hour',expires_at=NOW()-INTERVAL '1 minute'");
+   env.AI_STUDIO_REFERENCE_STAGING_ENABLED='false';
+   assert.deepEqual(await ledger.cleanupExpired(),{claimed:1,deleted:1,failed:0});
+   assert.equal(objects.size,0);
   });
   await t.test('reference transport never used provider/wallet and only private S3 verbs',()=>{
    assert.ok(calls.some(x=>x.method==='PUT'));
