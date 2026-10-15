@@ -282,7 +282,7 @@ test('public Inspiration shortcuts display only published category labels',async
  await expect(page.locator('#categoryChips')).not.toContainText('Cinematic Worlds');
  await page.locator('#categoryChips button').click();
  await expect(page.locator('#category')).toHaveValue('Fashion & Beauty');
- await expect(page).toHaveURL(/category=Fashion%20%26%20Beauty/);
+ await expect.poll(()=>new URL(page.url()).searchParams.get('category')).toBe('Fashion & Beauty');
 });
 test('owner can manage Block 3 inspiration without exposing rights internals publicly',async({page})=>{
  await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','owner-fixture'));await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Owner',isAdmin:true}}}));
