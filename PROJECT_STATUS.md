@@ -39,7 +39,7 @@ The exact completion state of older components must be verified from the current
 |---|---|---|---|---|
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
-| BASE Video / reference intake, cleanup and Seedance preflight | ChatGPT continuation (handoff `90ee2b7`) | `deepsyq-platform` / PR #42 | TARGETED CI PASSED / REAL PROVIDER GATES BLOCKED | Owner-only upload, WAV preparation and MP4 presigning remain OFF. Private SigV4 30s MP4 planner after owner/FFprobe/TTL validation. 50/50 unit and 9/9 isolated PostgreSQL/fake S3 CI green (38790331214). No real BytePlus/S3, credits, Stripe or production. |
+| BASE Video / reference intake, cleanup and Seedance preflight | ChatGPT continuation (handoff `90ee2b7`) | `deepsyq-platform` / PR #42 | LOCAL CI PASSED / REAL S3 & PROVIDER BLOCKED | Owner-only upload/WAV/MP4 remain OFF. Prior 50+9 CI green; real local HTTP SigV4 tamper, expiry, delete acceptance 1/1 green (38792787579). Official MinIO images unavailable; real S3, ModelArk, credits, Stripe, production unverified/untouched. |
 
 When another agent joins, add one row per claimed workstream before substantial implementation. One agent should own one bounded workstream at a time.
 
@@ -629,3 +629,10 @@ Current queued-roadmap dependencies to verify before implementation:
 - Added 390×844 viewport responsive acceptance and checked visual viewport is free of horizontal page overflow. Existing tests also assert the $0.99 trial cannot create a deceptive live Checkout.
 - Verified GitHub Actions focused Home acceptance run **38792332985** against commit `20b5f31957d7cafe21f0224f9a39f08e0dc0e8db`: **9/9 Playwright Chromium tests PASSED** (desktop & mobile planned Trial, owner-controlled video carousel, broken-media fallback, reduced-motion, local Image/Video/Audio handoff, locked Home layout, Inspiration filters). Earlier 8/9 failure was an outdated test copy expectation after approved trial text revision; repaired, no UI rewrite needed.
 - Trial and benchmarking constraints documented at `docs/DEEPSYQ_TRIAL_099_AND_LUMINA_UX_REVIEW.md`. Target is Lumina-grade polish using original Deepsyq owner-locked layout/assets; never copy third-party copyrighted media/source. Live payment activation and public deployment STILL BLOCKED pending actual wallet/Stripe/provider/consumer rights verification and explicit owner launch approval. General Base Video/Studio CI can fail separately.
+
+
+### BASE Video — S3 protocol verification boundary (2026-10-15)
+
+- Added **test-only** `tests/generation-reference-sigv4-http.mjs` with actual loopback HTTP and independently verified SigV4 Authorization/query signatures, GET, altered/missing signature, simulated expiry, renewed GET and DELETE revocation. Focused GitHub Action **38792787579**: **1 passed / 0 failed / 0 skipped**. No changes to production reference signer, uploads, provider router, wallet or model calls.
+- Attempted a more faithful real MinIO protocol acceptance, but archived **official** containers are inaccessible (Quay 38791985947 and Docker Hub 38792200637, both registry access denial). Real-provider S3 compatibility **NOT verified**; separate `tests/generation-reference-minio-protocol.mjs` is optional and unrun. Refused unaudited third-party image mirror. No pretend production acceptance.
+- Wrote `docs/GENERATION_REFERENCE_S3_STAGING_ACCEPTANCE.md` with owner-approved future bucket, TLS, lifecycle, real S3 checks, ModelArk short-link latency, paid quote/consent and cleanup rollback gates. New upload/presign flags remain **OFF**. Do not deploy or activate BytePlus on local test results alone.
