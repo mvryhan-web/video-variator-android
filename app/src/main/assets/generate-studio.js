@@ -71,6 +71,79 @@ $('clearImageDraft').onclick=()=>{
  $('status').textContent=say('Image draft cleared. No generated results were deleted.','Черновик изображения очищен. Готовые результаты не удалены.');
 };
 
+// Reuse the same session-identity hash as Image drafts; store settings only, never media bytes.
+let videoDraftKey=null,videoDraftReady=false,videoDraftLoaded=false;
+let videoDraftNeedsPhotos=false,videoDraftExpectedRefs=0,videoDraftPendingMode='text';
+async function initializeVideoDraft(){
+ if(!imageDraftKey)return;
+ videoDraftKey=imageDraftKey.replace('deepsyq_image_draft_v1_','deepsyq_video_draft_v1_');
+ try{
+  const raw=sessionStorage.getItem(videoDraftKey);
+  if(!raw||raw.length>4500)return;
+  const saved=JSON.parse(raw);
+  if(saved?.v!==1||!Number.isFinite(saved.savedAt)||Date.now()-saved.savedAt>24*60*60*1000||saved.savedAt>Date.now()){
+   sessionStorage.removeItem(videoDraftKey);return;
+  }
+  if(typeof saved.prompt!=='string'||saved.prompt.length>2000)return;
+  const model=MODEL_CATALOG.find(m=>m.kind==='video'&&m.id===saved.modelId);
+  if(!model)return;
+  const count=saved.referenceCount;
+  if(!Number.isInteger(count)||count<0||count>model.references)return;
+  const mode=saved.videoInputMode;
+  if(!model.capabilities?.videoInputModes?.includes(mode))return;
+  if(mode==='text'&&count!==0||mode==='first_frame'&&count!==1||mode==='first_last'&&count!==2||mode==='reference_image'&&(count<1||count>3))return;
+  drafts.video={prompt:saved.prompt,modelId:model.id,ratio:model.ratios.includes(saved.ratio)?saved.ratio:model.ratios[0],
+   videoResolution:model.capabilities.resolutions.includes(saved.videoResolution)?saved.videoResolution:model.quality,
+   videoDuration:model.capabilities.durations.includes(saved.videoDuration)?saved.videoDuration:model.capabilities.durationSeconds,
+   videoInputMode:'text',refs:[],musicMode:'song'};
+  videoDraftLoaded=true;
+  videoDraftNeedsPhotos=count>0;videoDraftExpectedRefs=count;videoDraftPendingMode=mode;
+ }catch(_){videoDraftKey=null;}
+}
+function saveVideoDraft(){
+ if(!videoDraftReady||!videoDraftKey||kind!=='video')return;
+ try{
+  const prompt=$('prompt').value.slice(0,2000),model=currentModel();
+  const referenceCount=videoDraftNeedsPhotos?videoDraftExpectedRefs:refs.length;
+  const mode=videoDraftNeedsPhotos?videoDraftPendingMode:$('videoInputMode').value;
+  const data={v:1,savedAt:Date.now(),prompt,modelId,ratio:$('ratio').value,
+   videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),
+   videoInputMode:mode,referenceCount};
+  const hasChanges=modelId!==MODELS.video.id||data.ratio!==model?.ratios?.[0]||data.videoResolution!==model?.quality||
+   data.videoDuration!==model?.capabilities?.durationSeconds||mode!=='text'||referenceCount>0;
+  if(prompt.trim()||hasChanges)sessionStorage.setItem(videoDraftKey,JSON.stringify(data));
+  else sessionStorage.removeItem(videoDraftKey);
+ }catch(_){/* Nonpersistent tab storage does not prevent editing or generation. */}
+}
+function showVideoDraftState(){
+ const bar=$('videoDraftBar');if(!bar)return;
+ bar.hidden=kind!=='video';if(bar.hidden)return;
+ $('videoDraftMessage').textContent=!videoDraftKey?
+  say('Private tab autosave is unavailable in this browser.','В этом браузере недоступно сохранение черновика видео.'):
+  videoDraftNeedsPhotos?
+   say('Video settings restored. Attach '+videoDraftExpectedRefs+' reference photo(s) again ('+refs.length+' added so far). Original photos were never stored.','Настройки видео восстановлены. Добавьте заново '+videoDraftExpectedRefs+' фото (сейчас добавлено: '+refs.length+'). Исходные фото не сохранялись.'):
+   say('Video description and settings stay in this tab for up to 24 hours. Reference photos are never stored.','Описание и параметры видео сохраняются в этой вкладке до 24 часов. Фотографии не записываются в хранилище.');
+ $('videoDraftSkipPhotos').hidden=!videoDraftNeedsPhotos;
+}
+$('videoDraftSkipPhotos').onclick=()=>{
+ if(busy||kind!=='video'||!videoDraftNeedsPhotos)return;
+ if(refs.length&&!confirm(say('Discard the photos just attached and continue with text only?','Удалить уже прикреплённые фотографии и продолжить только с текстом?')))return;
+ refs=[];videoDraftNeedsPhotos=false;videoDraftExpectedRefs=0;videoDraftPendingMode='text';
+ $('consent').checked=false;renderRefs();availability();
+ $('status').textContent=say('Continuing without the previous photos. Review the video settings before generating.','Продолжаем без прежних фотографий. Проверьте настройки видео перед генерацией.');
+};
+$('clearVideoDraft').onclick=()=>{
+ if(busy||kind!=='video')return;
+ if(!confirm(say('Clear your video description, settings and attached photos? Generated History is not deleted.','Очистить описание видео, настройки и фотографии? Готовые результаты в Истории сохранятся.')))return;
+ videoDraftReady=false;videoDraftLoaded=false;videoDraftNeedsPhotos=false;videoDraftExpectedRefs=0;videoDraftPendingMode='text';
+ refs=[];$('prompt').value='';modelId=config.models?.find(m=>m.kind==='video'&&m.enabled)?.id||MODELS.video.id;
+ $('videoResolution').value='';$('videoDuration').value='';$('consent').checked=false;
+ renderModel();drafts.video=null;
+ try{if(videoDraftKey)sessionStorage.removeItem(videoDraftKey);}catch(_){}
+ videoDraftReady=true;showVideoDraftState();availability();
+ $('status').textContent=say('Video draft cleared. Previous generated results are untouched.','Черновик видео очищен. Созданные ранее результаты не затронуты.');
+};
+
 let nativeBase='';try{const base=window.AndroidBridge?.getApiBase?.();if(typeof base==='string'&&base.startsWith('https://'))nativeBase=base;}catch(_){}
 const apiBase=()=>String(window.VV_API_BASE||nativeBase||localStorage.getItem('vv_api_base')||location.origin).replace(/\/$/,'');
 async function api(path,options={}){const token=localStorage.getItem('vv_token');const response=await fetch(apiBase()+path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{})}});if(!response.ok){const d=await response.json().catch(()=>({}));throw new Error(d.error||'REQUEST_FAILED');}return response;}
