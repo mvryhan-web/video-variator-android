@@ -10,6 +10,7 @@ export function analyzeTrialEconomics(c){
  const {salePriceCents,trialDays,oneTime,noAutoRenew,currency,processorFixedCents,processorBasisPoints,taxReserveCents,fxReserveCents,riskReserveCents,minimumProfitCents,feesVerifiedInSaleCurrency,eligibleRates}=c;
  if(salePriceCents!==99||trialDays!==3||oneTime!==true||noAutoRenew!==true)return blocked('TRIAL_TERMS_INVALID');
  if(typeof currency!=='string'||!/^[a-z]{3}$/.test(currency))return blocked('INVALID_CURRENCY');
+ if(currency!=='usd')return blocked('TRIAL_CURRENCY_NOT_USD');
  if(![processorFixedCents,taxReserveCents,fxReserveCents,riskReserveCents,minimumProfitCents].every(x=>validInt(x))||!validInt(processorBasisPoints,10000))return blocked('MISSING_VERIFIED_FEES_OR_RESERVES');
  if(feesVerifiedInSaleCurrency!==true)return blocked('FX_OR_SETTLEMENT_FEES_UNVERIFIED');
  if(!Array.isArray(eligibleRates)||!eligibleRates.length||eligibleRates.length>100)return blocked('NO_APPROVED_PROVIDER_RATES');
@@ -20,7 +21,7 @@ export function analyzeTrialEconomics(c){
  const reserved=fee+taxReserveCents+fxReserveCents+riskReserveCents+minimumProfitCents;
  if(reserved>=salePriceCents)return blocked('NOT_ENOUGH_REVENUE_AFTER_FEES');
  const budget=BigInt(salePriceCents-reserved)*10000n;
- let cap=1000000000n;
+ let cap=10000000n; // Matches the existing single-wallet grant limit; no unlimited trial allowance.
  for(const r of catalog.entries){
   const estimate=budget*BigInt(r.credits)/BigInt(r.providerCostMicros);
   if(estimate<cap)cap=estimate;
