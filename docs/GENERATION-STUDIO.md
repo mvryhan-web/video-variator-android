@@ -156,3 +156,14 @@ No paid API call, model activation, balance top-up, resource purchase or product
 deployment was performed. Exact account access and live CDN output still need a
 separate authorized provider smoke test. BytePlus account prerequisites can require
 funding; do not activate or purchase anything without the owner's confirmation.
+
+
+## Image batch quantity — opt-in BASE implementation
+
+The existing Image Studio has a prepared **Images per batch** control for 1–4 images. It is **off by default**. Before owner approval, `AI_STUDIO_IMAGE_BATCH_ENABLED` must remain unset/false. Enabling it additionally requires the existing AI wallet and an approved `AI_MODEL_PRICING_JSON`; actual provider access and full end-to-end billing acceptance are separate gates. This change does not enable production payments or AI generation.
+
+The selected number is not sent as a fictitious single provider `n` or `sampleCount`: each output is a separate existing generation job with its own unique `requestId`, wallet reservation and result in user History. The frontend first calls `POST /api/studio/estimate` with `quantity` (1–4), displays the calculated total, and requires **one affirmative confirmation**. It submits jobs sequentially, waits for each result, and stops at the first error. There is **no automatic retry**. In case of a lost response, the owner/user should inspect History; the frontend must never silently send a duplicate job.
+
+Each single job also sends `expectedCredits` from its approved per-image quote. The server compares that value with its fresh price before any database insertion/reservation and returns `AI_ESTIMATE_CHANGED` if it differs; earlier completed images remain in History. The job route explicitly refuses `quantity>1` because a job always represents exactly one result. The aggregate estimate validates count, model, per-image price, and maximum 10,000,000 credit total.
+
+**Status:** repository implementation only, not confirmed paid operation. Owner-requested end-to-end browser, wallet and provider verification remains deferred until original BASE integration is complete. Do not enable the flag as a substitute for those checks.
