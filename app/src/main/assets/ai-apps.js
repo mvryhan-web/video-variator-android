@@ -215,6 +215,9 @@ const accountLogout=$('appsLogout');
 if(accountLogout){
  accountLogout.hidden=!localStorage.getItem('vv_token');
  accountLogout.addEventListener('click',()=>{
+  // A prepared product name/prompt is local account data. Never carry it into
+  // the next sign-in on this tab when leaving from AI Apps.
+  sessionStorage.removeItem('deepsyq_template_start');
   localStorage.removeItem('vv_token');
   location.assign('deepsyq.html');
  });
