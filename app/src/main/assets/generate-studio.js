@@ -631,12 +631,14 @@ function historyCredits(item){const n=Number(item.creditsCharged||item.creditsRe
 function prepareHistoryItem(item,{settings=false}={}){
  if(busy)return;
  const previousCount=kind==='video'?refs.length:(drafts.video?.refs?.length||0);
- const oldPhotos=settings&&item.kind==='video'&&Number.isInteger(item.settings?.referenceCount)&&item.settings.referenceCount>0;
- if(oldPhotos&&previousCount&&!confirm(say('Preparing this historical video will detach your current video photos. Continue?','Для подготовки прежнего видео потребуется убрать текущие фотографии из редактора. Продолжить?')))return;
+ const videoRegenerate=settings&&item.kind==='video';
+ if(videoRegenerate&&previousCount&&!confirm(say('Preparing this historical video will detach your current video photos. Continue?','Для подготовки прежнего видео потребуется убрать текущие фотографии из редактора. Продолжить?')))return;
  select(item.kind==='music'?'music':item.kind);
  if(item.model&&catalog.some(m=>m.id===item.model&&m.kind===(item.kind==='music'?'music':item.kind))){modelId=item.model;renderModel();}
  $('prompt').value=item.prompt||'';
  if(settings&&item.kind==='video'){
+  // Historic references are never restored from another live draft, even for text-only video.
+  refs=[];renderRefs();
   videoDraftNeedsPhotos=false;videoDraftExpectedRefs=0;videoDraftPendingMode='text';
   const n=Number(item.settings?.referenceCount||0),oldMode=item.settings?.videoInputMode||(n===1?'first_frame':'unsupported');
   // Legacy History jobs may lack videoInputMode; one old photo always meant first_frame.
@@ -650,6 +652,7 @@ function prepareHistoryItem(item,{settings=false}={}){
  if(settings&&item.kind==='video'){if(item.settings?.referenceCount>0&&!refs.length)$('status').textContent=say('Previous video referenced photos that were not saved in this draft. Re-add them and choose the reference mode before generating.','В прежнем видео использовались фотографии, которые не сохранились в черновике. Добавьте их заново и выберите режим референсов перед генерацией.');if(currentModel()?.capabilities?.resolutions?.includes(item.settings?.videoResolution))$('videoResolution').value=item.settings.videoResolution;renderVideoSettings();if(currentModel()?.capabilities?.durations?.includes(item.settings?.videoDuration)&&[...$('videoDuration').options].some(o=>o.value===String(item.settings.videoDuration)))$('videoDuration').value=String(item.settings.videoDuration);updateRatioSelection();}
  if(settings&&item.kind==='video'&&currentModel()?.capabilities?.videoInputModes?.includes(item.settings?.videoInputMode)&&[...$('videoInputMode').options].some(o=>o.value===item.settings.videoInputMode))$('videoInputMode').value=item.settings.videoInputMode;
  if(settings&&item.kind==='music'&&['song','instrumental'].includes(item.settings?.musicMode)){$('musicMode').value=item.settings.musicMode;renderModel();}
+ if(videoRegenerate)storeDraft(); // Prevent stale photos returning after tab switch.
  $('consent').checked=false;availability();setHistory(false);$('prompt').focus();
 }
 async function editHistoryImage(item){
