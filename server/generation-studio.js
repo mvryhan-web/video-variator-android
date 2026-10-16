@@ -61,7 +61,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(body&&('seed'in body||'negativePrompt'in body||'negative_prompt'in body))throw Error('UNSUPPORTED_IMAGE_CONTROL');
   let selected,routing;
   if(env.AI_SMART_ROUTING_ENABLED==='true'&&(body?.model==='smart'||!body?.model)){
-   const candidates=orderedGenerationCandidates({kind,ratio,references:Array.from({length:count})},catalog);if(!candidates.length)throw Error('NO_COMPATIBLE_MODEL');selected=candidates[0];routing={smart:true,candidates:candidates.map(m=>m.id)};
+   const candidates=orderedGenerationCandidates({kind,ratio,references:Array.from({length:count}),...(kind==='video'?{videoInputMode:body?.videoInputMode,videoResolution:body?.videoResolution,videoDuration:body?.videoDuration}:{})},catalog);if(!candidates.length)throw Error('NO_COMPATIBLE_MODEL');selected=candidates[0];routing={smart:true,candidates:candidates.map(m=>m.id)};
   }else{
    selected=catalog.find(m=>m.id===body?.model&&m.kind===kind);if(!selected)throw Error('MODEL_NOT_FOUND');if(!selected.enabled)throw Error(selected.maintenance?'MODEL_MAINTENANCE':'MODEL_NOT_ENABLED');routing={smart:false,candidates:[selected.id]};
   }
