@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent C — BASE #30 mobile drawer navigation acceptance / IN PROGRESS (2026-10-16)
+
+- **Recovery:** prior Agent C Issue #74 HANDOFF after PR #110; this is a new bounded scoped task (not takeover of already merged code). Existing PR #79 and #110 functionality preserved.
+- **Claim:** original BASE #30, Agent C, dedicated branch `base30-mobile-drawer-acceptance-20261016` targeting `deepsyq-platform`. `tests/deepsyq.spec.mjs` off-canvas mobile fixture has failed prior broad CI; navigation must be accepted with actual visible `#menu` drawer behavior, real account/admin/share actions and browser device checks. Coordinate with A-owned Home and D-owned pricing assertions; do not change locked visuals, provider, Stripe, wallet or main.
+- **Status:** IN PROGRESS; branch tests/PR pending. Production and physical devices NOT VERIFIED.
+
 ## Agent 5 — isolated design Preview read-only boundary acceptance / FOCUSED CI PASS, PR #138 (2026-10-16)
 
 - **Agent/scope:** 5 technical QA, `agent5-preview-boundary-smoke-20261016`; no A–D original BASE feature row, no owner Home redesign, no real paid generation.
