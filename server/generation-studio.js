@@ -89,6 +89,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(kind!=='video'&&(body?.videoResolution!=null||body?.videoDuration!=null))throw Error('UNSUPPORTED_VIDEO_SETTINGS');
   if(count>Number(selected.references||0))throw Error('INVALID_REFERENCES');
   if(kind==='music'&&!['song','instrumental'].includes(musicMode))throw Error('INVALID_MUSIC_MODE');
+  if(kind==='music'&&['musicDuration','durationSeconds','genre','lyrics','vocalStyle','musicLanguage'].some(field=>body?.[field]!=null))throw Error('UNSUPPORTED_MUSIC_CONTROL');
   return {request:{kind,model:selected.id,ratio,musicMode,...(kind==='image'?{resolution,outputFormat}:{}),...(kind==='video'?{videoResolution,videoDuration,videoInputMode,referenceCount:count}:{})},selected,routing};
  }
  async function resolveRequest(body){
@@ -253,14 +254,14 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   const totalCredits=quote.credits*quantity;
   if(!Number.isSafeInteger(totalCredits)||totalCredits>10_000_000)return res.status(400).json({error:'INVALID_IMAGE_QUANTITY'});
   res.json({credits:totalCredits,perImageCredits:quote.credits,quantity,unit:'AI credits',model:quote.model,kind:quote.kind,routing});
- }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_VIDEO_INPUT_MODE','INVALID_VIDEO_REFERENCES','INVALID_REFERENCES','INVALID_MUSIC_MODE'].includes(e.message);res.status(bad?400:503).json({error:bad?e.message:e.message||'AI_PRICING_NOT_APPROVED'});}});
+ }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_VIDEO_INPUT_MODE','INVALID_VIDEO_REFERENCES','INVALID_REFERENCES','INVALID_MUSIC_MODE','UNSUPPORTED_MUSIC_CONTROL'].includes(e.message);res.status(bad?400:503).json({error:bad?e.message:e.message||'AI_PRICING_NOT_APPROVED'});}});
   app.post('/api/studio/jobs',auth,generationUser,async(req,res)=>{
   let request,selected,routing,clientRequestId;try{
    // The job endpoint always creates ONE image. Multi-image batches must use distinct, independently idempotent jobs.
    if(req.body?.quantity!=null&&req.body.quantity!==1)throw Error('INVALID_IMAGE_QUANTITY');
    ({request,selected,routing}=await resolveRequest(req.body));
    clientRequestId=generationRequestId(req.body?.requestId,{required:req.generationAccess?.scope==='public'});
-  }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_VIDEO_INPUT_MODE','INVALID_VIDEO_REFERENCES','INVALID_REFERENCES','INVALID_MUSIC_MODE','GENERATION_REQUEST_ID_REQUIRED','INVALID_GENERATION_REQUEST_ID','INVALID_IMAGE_QUANTITY'].includes(e.message);return res.status(bad?400:503).json({error:e.message||'MODEL_NOT_ENABLED'});}
+  }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_VIDEO_INPUT_MODE','INVALID_VIDEO_REFERENCES','INVALID_REFERENCES','INVALID_MUSIC_MODE','UNSUPPORTED_MUSIC_CONTROL','GENERATION_REQUEST_ID_REQUIRED','INVALID_GENERATION_REQUEST_ID','INVALID_IMAGE_QUANTITY'].includes(e.message);return res.status(bad?400:503).json({error:e.message||'MODEL_NOT_ENABLED'});}
   const premiumVideo=request.kind==='video'&&(request.videoResolution!==selected.quality||request.videoDuration!==selected.capabilities?.durationSeconds||!['text','first_frame'].includes(request.videoInputMode)||request.references?.length>1);
   const quote=walletEnabled()||premiumVideo?estimateGenerationPricing(request,selected,env):null;
   if((walletEnabled()||premiumVideo)&&!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});

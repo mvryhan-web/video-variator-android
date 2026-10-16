@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {buildLyriaClipPrompt,parseLyriaClipResult,looksLikeMp3} from '../server/generation-music-lyria.js';
 import {generateGoogle,validateGeneration} from '../server/generation-provider.js';
+import {installGenerationStudio} from '../server/generation-studio.js';
+import express from 'express';
 
 const mp3=Buffer.concat([Buffer.from([0xff,0xfb,0x90,0x64]),Buffer.alloc(96)]);
 const b64=mp3.toString('base64');
@@ -71,4 +73,23 @@ test('without any approved live API no paid calls occur in validation and parsin
  assert.deepEqual(parseLyriaClipResult(providerResponse()).bytes,mp3);
  assert.equal(r.references.length,0);
  assert.equal(r.musicMode,'instrumental');
+});
+
+test('estimate refuses unsupported structured music controls before any cost quote or provider call',async()=>{
+ const env={AI_STUDIO_ENABLED:'true',GEMINI_API_KEY:'fixture',DATABASE_URL:'fixture',
+  ADMIN_EMAIL:'owner@example.test',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'music'};
+ let paid=0;
+ const app=express();app.use(express.json());
+ installGenerationStudio(app,{env,pool:{query:async()=>({rows:[]})},
+  provider:async()=>{paid++;throw Error('never dispatch');},
+  auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));
+ try{
+  const r=await fetch('http://127.0.0.1:'+server.address().port+'/api/studio/estimate',{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({kind:'music',model:'lyria-3-clip-preview',ratio:'',musicMode:'song',genre:'edm'})});
+  assert.equal(r.status,400);
+  assert.equal((await r.json()).error,'UNSUPPORTED_MUSIC_CONTROL');
+  assert.equal(paid,0);
+ }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
