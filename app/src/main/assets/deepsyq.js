@@ -101,6 +101,8 @@ window.addEventListener('storage',event=>{
  if(event.key!=='vv_token')return;
  ++quickDraftEpoch;
  $('quickCreatePrompt').value='';$('quickCreateKind').value='image';populateQuickRatios();
+ $('quickCreateFiles').value='';
+ const quickBarPrompt=$('homeQuickPrompt');if(quickBarPrompt)quickBarPrompt.value='';
  quickReferences=[];renderQuickReferences();
  $('quickCreateStatus').textContent='Account changed. Reload to start a private draft for this account.';
 });
