@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — BASE 55 verifier accepts zero active agent claims / IN PROGRESS (2026-10-16)
+
+- **Scope owner:** Agent 5 technical QA only, branch `agent5-base55-zero-claims-ci-20261016`. No BASE feature task A/B/C/D claimed or overwritten.
+- **Audited gap:** the existing native unit test `claimed IN PROGRESS requires a recorded owner, general item state does not` calls `current.find(...)` and requires a **live** `IN PROGRESS` claim on the board; legitimate periods with no active feature claims turn this into an unrelated false CI failure. Current 55-row board has no explicitly claimed `IN PROGRESS` row; BASE #52 may have overall state `IN PROGRESS` independently.
+- **Planned bounded change:** move synthetic claim into an in-memory fixture, assert no-claims valid, retain fail-closed detection of missing owner and duplicate/missing original BASE protection; change only Agent 5 verifier tests. Run focused GitHub Actions in isolated PR, record exact success, then update status and merge only into `deepsyq-platform`. Main/production, locked Home, tools, auth, database, Stripe, providers and original TXT untouched.
+
 ## Agent 5 — original BASE TXT full-text immutability verification (CODE VERIFIED / PR #107, 2026-10-16)
 
 - **Agent5-only scope:** isolated `agent5-immutable-base55-source-20261016`, no coding lane A–D reservation.
