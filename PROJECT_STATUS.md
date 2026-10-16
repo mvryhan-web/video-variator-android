@@ -2,6 +2,10 @@
 
 ## Agent D — BASE #16 post-disable refunds + explicit billing mode / PR #164 CODE PUSHED, CI QUEUED (2026-10-16)
 
+- **Follow-up gap claimed before code:** after setting `AI_BILLING_ENABLED=false`, a late signed `checkout.session.completed` or `checkout.session.async_payment_succeeded` for a checkout created **before shutdown** is rejected; a customer may already have paid while the purchased credits stay ungranted. Extend SAME scoped PR #164 only to replay existing persisted orders with exact verified Stripe session, mode/amount/price/user metadata and existing idempotent wallet grant; never reopen Checkout, accept arbitrary unrecorded orders, or ignore missing credentials. Original signed webhook boundary is still required. Claim board commit `78a5e294`.
+
+
+
 - **Existing claim expanded BEFORE source change:** board `fc25aa8`, PROJECT_STATUS `79feec9`. [PR #164](https://github.com/mvryhan-web/video-variator-android/pull/164) head `bc62fbff295b3981e28f1ea56e0a0a2d07bc9ebb` DRAFT/UNMERGED; exactly `server/generation-billing.js`, `tests/base16-shared-stripe-refund-unit.mjs`, `tests/generation-billing-unit.mjs`, `docs/BASE_16_REFUNDS_AFTER_CHECKOUT_OFF.md`.
 - **Historical refunds:** clearly AI-marked same-mode Stripe charge refund reaches existing durable reversal despite new checkout OFF. Unrelated legacy refunds untouched; not-yet-recorded purchase retried; cross-mode mismatch rejected. Exact handler synthetic 4/4 PASS.
 - **Explicit mode:** New AI Checkout requires literal `AI_BILLING_MODE=test|live`; an unknown/missing mode and matching sk_test key cannot inadvertently enable Test Checkout. Exact runtime 8/8 isolated PASS, plus new Express HTTP test (not yet CI-verified). No new prices, ledger, Stripe product, original TXT, public rollout, main or Render change.
