@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — scoped CI regression ownership / IN PROGRESS (2026-10-16)
+
+- **Agent / branch:** Agent 5 / `agent5-regression-handoff-20261016`, coordination-only; not a BASE A/B/C/D feature claim.
+- **Scope:** audit precise broad CI failures in Agent C PR #79/#88 against active A/D code, publish focused owner handoffs and non-destructive release blockers; correct outdated Agent 5 coordination snapshots only. Do not touch another agent's product code, owner-locked visuals, Stripe, provider, database or `main`.
+- **Evidence at claim:** AI Apps PR #79 dedicated CI 38905303919 SUCCESS vs browser regression 38905303815 FAILURE; templates PR #88 dedicated CI 38906432137 / 38906432334 SUCCESS vs Studio 38906432469 FAILURE. Await exact log-level classification before closing.
+
 ## Agent 5 — Issues #72–75 coordination acceptance review (2026-10-16)
 
 - **Owner:** Agent 5 (technical coordinator; **not** coding lanes A/B/C/D).
