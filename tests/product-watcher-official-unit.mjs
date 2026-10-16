@@ -70,6 +70,22 @@ test('a small, deterministic visible text extraction ignores scripts and markup'
  assert.throws(()=>normalizeOfficialText('<p>empty</p>'),/SOURCE_NOT_READABLE/);
 });
 
+test('JS-only release page is not mistaken for a real monitored announcement feed',async()=>{
+ const shell='<html><body><noscript>You need to enable JavaScript to run this app.</noscript>'+
+   '<header>'+('Product updates navigation. '.repeat(20))+'</header></body></html>';
+ await assert.rejects(fetchOfficialFingerprint(OFFICIAL_SOURCES[0],{
+  fetchFn:async()=>response(shell)
+ }),/SOURCE_RENDER_REQUIRED/);
+ const s=store();
+ const report=await runOfficialSourcesOnce({pool:s.pool,env,now:at(9),
+  fetchFn:async(url)=>url===OFFICIAL_SOURCES[0].url?response(shell):response()});
+ assert.equal(report.status,'partial');
+ assert.equal(report.items[0].code,'SOURCE_RENDER_REQUIRED');
+ assert.equal(s.proposals.length,0);
+ assert.equal(s.history.get(OFFICIAL_SOURCES[0].key).content_hash,null);
+ assert.equal(s.history.get(OFFICIAL_SOURCES[0].key).last_error_code,'SOURCE_RENDER_REQUIRED');
+});
+
 test('HTML size/content-type/status/network errors fail safely without exposing content',async()=>{
  for(const stub of [
   async()=>response(html,{status:503}),

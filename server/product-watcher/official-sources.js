@@ -89,7 +89,13 @@ export async function fetchOfficialFingerprint(source,{fetchFn=globalThis.fetch}
     if(count===0)throw Error('SOURCE_EMPTY');
     const data=new Uint8Array(count);let offset=0;
     for(const part of chunks){data.set(part,offset);offset+=part.byteLength;}
-    const visible=normalizeOfficialText(new TextDecoder('utf-8',{fatal:true}).decode(data));
+    const rawHtml=new TextDecoder('utf-8',{fatal:true}).decode(data);
+    // A JavaScript-only shell is NOT evidence that the vendor's release notes
+    // have been scanned. The notice is commonly inside <noscript>, which the
+    // visible-text normalizer intentionally removes. Fail closed before it.
+    if(/you need to enable javascript to run this app/i.test(rawHtml))
+      throw Error('SOURCE_RENDER_REQUIRED');
+    const visible=normalizeOfficialText(rawHtml);
     return {contentHash:createHash('sha256').update(visible).digest('hex'),
       topicDigests:officialTopicDigests(visible),byteLength:count};
   } catch(error){

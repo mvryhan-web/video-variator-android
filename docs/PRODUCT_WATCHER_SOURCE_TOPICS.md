@@ -11,3 +11,7 @@ Interpretation rules:
 - Every proposal always returns `verifiedFact:false`, `applied:false`; admin review never changes models, prices, credentials or routing. No automatic credits or generation requests.
 
 Migration `server/migrations/20261015-product-watcher.sql` is still additive, repeatable and **not auto-applied**; two new columns on source rows and two on proposal rows have safe defaults for older snapshots. Local unit tests and isolated PostgreSQL CI validate the SQL and owner-facing API. Live semantic provider/model/pricing verification and notification delivery remain pending release gates. **B5-03 must stay PARTIAL**.
+
+## JS-rendered vendor sources (fail-closed)
+
+An official HTML response can contain navigation and a JavaScript-only placeholder but no actual release notes. When the document visibly requires JavaScript to render its content, the read-only fetch returns `SOURCE_RENDER_REQUIRED`, saves a safe error status, preserves any previous successful hash and does **not** create a fake changed-page proposal. The owner must review a verifiable vendor source or approve a future dedicated read-only feed adapter. No browser automation, bypass, paid provider call, or silent substitution of unapproved sources is introduced. BytePlus's currently linked ModelArk updates page has shown this limitation in a public page inspection; actual availability in the runtime still requires staged testing.
