@@ -11,7 +11,9 @@ This file is the shared live progress board for all coding agents.
 
 - **Recovery:** prior Agent C Issue #74 HANDOFF after PR #110; this is a new bounded scoped task (not takeover of already merged code). Existing PR #79 and #110 functionality preserved.
 - **Claim:** original BASE #30, Agent C, dedicated branch `base30-mobile-drawer-acceptance-20261016` targeting `deepsyq-platform`. `tests/deepsyq.spec.mjs` off-canvas mobile fixture has failed prior broad CI; navigation must be accepted with actual visible `#menu` drawer behavior, real account/admin/share actions and browser device checks. Coordinate with A-owned Home and D-owned pricing assertions; do not change locked visuals, provider, Stripe, wallet or main.
-- **Status:** IN PROGRESS; branch tests/PR pending. Production and physical devices NOT VERIFIED.
+- **Verified failure:** real GitHub [focused CI 38934859289](https://github.com/mvryhan-web/video-variator-android/actions/runs/38934859289) FAILED 6 mobile cases and PASSED 2 desktop: later `#sidebar{transform:translateX(-100%)}` selector overrides earlier `body.menu-open aside`, leaving mobile account/share/toggle outside viewport. This is a proven mobile UI defect, not only stale test setup. Earlier queued runs before CSS fix may also fail.
+- **Scoped fix PR:** [#144](https://github.com/mvryhan-web/video-variator-android/pull/144), latest pushed `bb221e1ff8e481e6fa0d121cb82b3ccba06ad855`. Mobile `body.menu-open #sidebar` override; drawer below top header, Escape/outside close, focus and header login, plus corrected actual mobile UI clicks in browser tests and dedicated four-project workflow. Existing owner Home media/brand and D billing untouched. Agent A #145 independently edits distant Home CSS/tests hunks; overlap communicated to its PR.
+- **Status:** IN PROGRESS; new HEAD-specific [focused CI 38936084196](https://github.com/mvryhan-web/video-variator-android/actions/runs/38936084196) QUEUED at checkpoint, **NOT YET CODE VERIFIED**. No merge to BASE/main, production deployment or physical-device acceptance.
 
 ## Agent 5 — isolated design Preview read-only boundary acceptance / FOCUSED CI PASS, PR #138 (2026-10-16)
 
