@@ -245,6 +245,13 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Actual code-level gap:** `server/generation-billing.js` uses strict `existingCheckoutResponse` for stored Stripe Checkout Sessions, but the *first* freshly created session only checks livemode and URL hostname. It does not validate HTTPS, embedded credentials/port, session status/expiry, user, metadata/order, amount/currency before persisting and handing out the payment link. The trusted Stripe API ordinarily returns correct fields, but malformed or inconsistent responses must fail closed.
 - **Scope:** reuse existing exact invariants for first-session creation with an ephemeral checked order, without modifying legacy Stripe, ledger, account auth, owner Home, provider, production config or `main`; add focused mocked HTTP cases and a scoped CI workflow. No real Stripe/provider spend.
 
+## BASE #48 preflight error redaction — IN PROGRESS (2026-10-16)
+
+- **Owner:** BASE-D / Issue #75, same release-safety scope as reviewed PR #77. Isolated `base48-preflight-redacted-errors-20261016`; shared board marked IN PROGRESS before code.
+- **Verified risk:** `npm run ai:preflight` runs a database check using `DATABASE_URL` and on failure prints `e.message` directly to CI/operator logs. Upstream PostgreSQL/URI/SSL exceptions may embed connection details, secrets or full DSNs. Read-only safety preflight must not expose raw error text.
+- **Bounded change:** fail-closed safe, machine-readable allowlisted error codes (connection/schema/migration vs generic) with no raw message; tests using deliberately secret-bearing synthetic exception, no real DB/provider/Stripe call, no production variables or flag changes.
+- **Original BASE #48 remains PARTIAL** until real staging backup, migration/restore, login, existing subscriptions, Tools, mobile and rollback verification.
+
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
 **ACTIVE OWNER PRIORITY NOW:** all four coding-agent sessions focus on the **original BASE TXT / 55-point checklist**, not new Roadmap Blocks 1–7 or duplicated Product Watcher. Shared 55-item claim board and proposed collision-safe work lanes: [`docs/DEEPSYQ_BASE_55_COORDINATION.md`](docs/DEEPSYQ_BASE_55_COORDINATION.md). This new owner instruction overrides older prose suggesting BASE is owned by just one agent or that Agents E/Block 5 should keep expanding their scope. **Already verified:** 55 rows exist in the BASE checklist; #47 and #53 are DONE/RULE; **53 other rows are not fully DONE** and mostly have significant existing code. `PARTIAL` does NOT mean “build from scratch.”
