@@ -46,7 +46,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 13 | Internal AI credit system | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (PR #96 · CI 38908532493 PASS; LIVE BLOCKED) | BASE-D-StudioWallet / base13-studio-wallet-20261016 |
 | 14 | Credit ledger | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS | Agent-D-BASE14 / base14-private-ledger-refs-20261016 |
 | 15 | Credit reservation | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
-| 16 | Stripe subscriptions + credit packs | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / REGRESSION FIX VERIFIED (PR #91 CI 38907092954 PASS + #85/#86; LIVE BLOCKED) | BASE-D-CheckoutReuse / base16-checkout-reuse-20261016 |
+| 16 | Stripe subscriptions + credit packs | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS (non-AI Stripe refund webhook interoperability) | BASE-D-CheckoutReuse / base16-checkout-reuse-20261016 |
 | 17 | Unit economics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (partial; #89) | Agent-D / CI 38906320339 |
 | 18 | Pricing engine | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (partial; PR #83 · CI 38904230756 · 775cc805; MAIN/LIVE BLOCKED) | BASE-D-ProviderPricing / base55-d-provider-pricing-20261016 |
 | 19 | AI Apps | PARTIAL | C | EXISTING PRODUCT VIDEO FALLBACK VERIFIED; REAL TEMPLATE ASSETS + LIVE GATED | CODE VERIFIED / MERGED TO BASE (partial) | ChatGPT lane C / PR #71 / CI 38901487492 / merge 59dea3d3 |
