@@ -18,6 +18,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent A — BASE #32 safe unknown Studio errors / IN PROGRESS (2026-10-16)
+
+- **Claim:** Issue #72 / original BASE #32 only; `agent-a-base32-safe-unknown-errors-20261016` targeting `deepsyq-platform`, separate from previously prepared PR #145/#152/#154. A owns the single fallback expression in `app/src/main/assets/generate-studio.js::errorText` and focused browser acceptance; no changes to B's generation error normalization, provider logs, D wallet, C navigation, owner Home or production.
+- **Verified real gap:** existing `errorText(e)` has a long translated safe-code table but returns `e.message` for an unmapped code. Raw upstream errors and arbitrary API messages could therefore surface to customers (contradicts BASE #32). Preserve all mapped friendly errors; unknown errors must show a stable, localized public-safe message and no internal details or refund claims.
+- **Status:** pre-code claim saved; no change yet, no tests/merge/production acceptance.
+
 ## Agent D — BASE #16 duplicate Stripe Price-ID risk / IN PROGRESS (2026-10-16)
 
 - **Progress:** PR #148 latest 9fdb2da8. Isolated 5/5 config checks PASS. Added mocked Checkout fail-closed test, not yet CI-verified; GitHub Actions pending. Full BASE #16 remains PARTIAL / NOT LIVE.
