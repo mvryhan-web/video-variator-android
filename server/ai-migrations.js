@@ -52,8 +52,9 @@ export async function runAiMigrations(pool,{checkOnly=false}={}){
  }
  // Hold one dedicated connection while applying the entire manifest. Every
  // cooperating runner re-reads status *after* the lock has been acquired.
- const c=await pool.connect();let locked=false;
+ const c=await pool.connect();let locked=false,lockAttempted=false;
  try{
+  lockAttempted=true;
   await c.query(AI_MIGRATION_LOCK);locked=true;
   await ensureLedger(c);
   const manifest=await loadAiMigrationManifest(),status=await aiMigrationStatus(c);
@@ -72,8 +73,17 @@ export async function runAiMigrations(pool,{checkOnly=false}={}){
   }
   return {applied,pending:[],status:await aiMigrationStatus(c)};
  }finally{
-  // PostgreSQL also drops a session advisory lock when the connection dies.
-  if(locked)await c.query(AI_MIGRATION_UNLOCK).catch(()=>{});
-  c.release();
+  // A failed unlock cannot return a potentially locked session to the pool.
+  // node-postgres release(true) destroys the client, releasing session locks.
+  // A rejected lock query may have reached PostgreSQL and acquired the lock.
+  // Discard any uncertain session rather than reuse it in the shared pool.
+  let destroy=lockAttempted&&!locked;
+  if(locked){
+   try{
+    const result=await c.query(AI_MIGRATION_UNLOCK);
+    if(result.rows?.[0]?.pg_advisory_unlock!==true)destroy=true;
+   }catch(_){destroy=true;}
+  }
+  c.release(destroy);
  }
 }
