@@ -258,12 +258,17 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     await pool.query(
       "INSERT INTO vv_ai_purchase(session_id,user_id,payment_intent,credits,amount,currency,refunded_amount) VALUES('cs_watcher_orphan','fixture-user','pi_watcher_orphan',5,100,'usd',110)"
     );
+    // Synthetic invalid purchase mirrors corrupt ledger metadata, NOT a real payment.
+    // The matching order keeps the orphan-purchase count unchanged.
+    await pool.query("INSERT INTO vv_ai_order(id,user_id,sku,snapshot,session_id) VALUES('watcher-billing-invalid-order','fixture-user','test','{}'::jsonb,'cs_watcher_invalid')");
+    await pool.query("INSERT INTO vv_ai_purchase(session_id,user_id,payment_intent,credits,amount,currency,refunded_amount) VALUES('cs_watcher_invalid','fixture-user','pi_watcher_invalid',-5,100,'US D',-1)");
     const bill=await checkBillingReconciliation(pool,{enabled:true});
     assert.equal(bill.code,'AI_REFUND_LEDGER_INCONSISTENT');
     assert.equal(bill.status,'critical');
     assert.equal(bill.counters.oldUnmatchedCheckoutSessions7d,3);
     assert.equal(bill.counters.orphanCreditPurchases,1);
     assert.equal(bill.counters.overRefundedPurchases,1);
+    assert.equal(bill.counters.invalidCreditPurchases,1);
     assert.equal(bill.stripeWebhookVerified,false);
     assert.ok(!JSON.stringify(bill).includes('fixture-user'));
     assert.ok(!JSON.stringify(bill).includes('pi_watcher_orphan'));
@@ -302,6 +307,7 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     assert.equal(withBilling.checks.billing.code,'AI_REFUND_LEDGER_INCONSISTENT');
     assert.equal(withBilling.checks.billing.stripeWebhookVerified,false);
     assert.equal(withBilling.checks.billing.counters.oldUnmatchedCheckoutSessions7d,3);
+    assert.equal(withBilling.checks.billing.counters.invalidCreditPurchases,1);
     assert.ok(withBilling.findings.some(x=>x.source==='billing'&&x.severity==='critical'));
     assert.ok(!JSON.stringify(withBilling).includes('fixture-user'));
     const persistedCritical=await pool.query(
