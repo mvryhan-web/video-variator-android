@@ -65,6 +65,16 @@ main,footer{max-width:1180px;margin:auto;padding-left:22px;padding-right:22px}
 .app-body button{min-height:45px;border:0;border-radius:10px;background:linear-gradient(125deg,#a98af4,#ddb5f9);color:#21133d;font-weight:750;cursor:pointer}
 .app-body button:hover:enabled{filter:brightness(1.08)}
 .app-body button:disabled{background:#383044;color:#a89db8;cursor:not-allowed}
+.template-preview{border:1px solid #59456f;border-radius:10px;background:#191628;min-width:0}
+.template-preview summary{cursor:pointer;padding:11px 13px;font-size:12px;font-weight:700;color:#ebd6ff;list-style-position:inside}
+.template-preview summary:focus-visible{outline:2px solid #bd9af0;outline-offset:2px}
+.template-preview-content{border-top:1px solid #49385e;padding:12px;display:grid;gap:10px;min-width:0}
+.template-preview-row{display:grid;grid-template-columns:minmax(92px,1fr) minmax(0,2fr);gap:8px;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.template-preview-row strong,.template-preview-content>strong{font-size:11px;color:#f0e4ff}
+.template-preview-row span{color:#ddcde9}
+.template-preview-prompt{white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;padding:12px;background:#100e1c;border-radius:8px;color:#dfccec;font:11px/1.6 ui-monospace,monospace;margin:0}
+.app-body .template-preview-content>p{min-height:0;margin:0;font-size:11px;color:#ab9abb}
+@media(max-width:640px){.template-preview-row{grid-template-columns:minmax(0,1fr)}}
 .catalog-more{display:flex;justify-content:center;margin:26px 0 8px}
 .catalog-more button{min-height:44px;padding:10px 22px;background:#34254e;color:#f1dfff;border:1px solid #8c6bbb;border-radius:11px;font-weight:700;cursor:pointer}
 .catalog-more button:hover{background:#503472}
