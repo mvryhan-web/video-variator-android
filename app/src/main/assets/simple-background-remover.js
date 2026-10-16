@@ -110,7 +110,11 @@ $('erase').onclick=async()=>{
   if(epoch===generation)setStatus(e.message==='SAMPLE_IS_TRANSPARENT'
    ?'Pixel is already transparent. Choose an opaque background color.'
    :'Could not prepare the transparent PNG. Try a smaller image.');
- }finally{$('erase').disabled=!original;}
+ }finally{
+  // A previous asynchronous PNG encode must not re-enable controls for a
+  // newly selected photo while its own encode is still in progress.
+  if(epoch===generation)$('erase').disabled=!original;
+ }
 };
 $('download').onclick=()=>{
  if($('download').disabled||!original||!exportUrl)return;
