@@ -57,6 +57,13 @@ test('BASE #42 a public-mode owner quote rejects absent S3 before any provider o
    body:JSON.stringify({kind:'video',model:videoModel,prompt:'A starry night',
     ratio:'16:9',videoDuration:5,videoResolution:'720p',videoInputMode:'text',referenceCount:0})});
   assert.equal(r.status,503);assert.equal((await r.json()).error,'MODEL_NOT_ENABLED');
-  assert.equal(calls,0);
+  const job=await fetch('http://127.0.0.1:'+server.address().port+'/api/studio/jobs',{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({kind:'video',model:videoModel,prompt:'A starry night',
+    ratio:'16:9',videoDuration:5,videoResolution:'720p',videoInputMode:'text',
+    references:[],consent:true,requestId:'00000000-0000-4000-8000-000000000042'})});
+  assert.equal(job.status,503);
+  assert.equal((await job.json()).error,'MODEL_NOT_ENABLED');
+  assert.equal(calls,0); // no DB, wallet, provider or existing job created
  }finally{server.closeAllConnections();await new Promise(done=>server.close(done));}
 });
