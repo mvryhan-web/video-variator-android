@@ -148,3 +148,43 @@ test('BASE 3: one failed source cannot leave useless arrows active on the sole s
  await expect(page.locator('#homeHeroDots button').last()).toBeEnabled();
  await expect(page.locator('#homeHeroCarousel')).not.toHaveClass(/is-empty/);
 });
+
+test('BASE 3: all 13 original scene identities can navigate with only real API poster metadata',async({page})=>{
+ // Test fixture has synthetic paths and mocked media methods, not actual
+ // licensed playable V01–V13 movies or recreated owner imagery.
+ await page.addInitScript(()=>{
+  HTMLMediaElement.prototype.load=function(){};
+  HTMLMediaElement.prototype.pause=function(){};
+  HTMLMediaElement.prototype.play=function(){return Promise.resolve();};
+ });
+ const names=['Hero Girl','Red Dress','Castle','Portrait','Snow Mountains','Neon Vehicle',
+  'Astronaut','Fantasy Landscape','Product Film','Music Concept','Cinematic Travel',
+  'Pink Cherry Tree Glass House','Dusk Waterfront Glass House'];
+ const common={kind:'video',actionTarget:'studio',category:'Cinematic',aspectRatio:'16:9',active:true,featured:true};
+ const scenes=names.map((title,i)=>({...common,id:'owner-identity-'+(i+1),title,
+  previewUrl:'/approved-identity-'+(i+1)+'.mp4',previewPosterUrl:'/approved-poster-'+(i+1)+'.png'}));
+ let exactVideoFeed=false;
+ await mockSafeHome(page,[]);
+ await page.route('**/api/inspiration**',route=>{
+  const query=new URL(route.request().url()).searchParams;
+  if(query.get('kind')==='video'&&query.get('limit')==='13'){
+   exactVideoFeed=true;
+   return route.fulfill({json:{items:scenes,categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false}}});
+  }
+  return route.fulfill({json:{items:scenes.slice(0,2),categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false}}});
+ });
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#homeHeroDots button')).toHaveCount(13);
+ expect(exactVideoFeed).toBe(true);
+ await expect(page.locator('#homeHeroDots img')).toHaveCount(13);
+ await expect(page.locator('#homeHeroDots button').first()).toHaveAttribute('aria-current','true');
+ await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 13');
+ await page.locator('#homeHeroPrevious').click();
+ await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Dusk Waterfront Glass House');
+ await expect(page.locator('#homeHeroCounter')).toHaveText('Video 13 of 13');
+ await page.locator('#homeHeroNext').click();
+ await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Hero Girl');
+ await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 13');
+ await expect(page.locator('#homeHeroDots button').last()).toHaveAttribute('aria-label',/Dusk Waterfront Glass House/);
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
+});
