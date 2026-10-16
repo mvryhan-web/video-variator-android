@@ -12,7 +12,7 @@ test('launch readiness is fail-closed and never contains secret values',()=>{
   AI_CREDIT_RATES_JSON:JSON.stringify([{kind:'image',credits:10}]),
   STRIPE_SECRET_KEY:'sk_live_hidden',AI_BILLING_ENABLED:'true',AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'true',
   AI_OBJECT_STORAGE_ENABLED:'true',AI_OBJECT_STORAGE_ENDPOINT:'https://objects.example.test',AI_OBJECT_STORAGE_BUCKET:'deepsyq-media',AI_OBJECT_STORAGE_REGION:'auto',AI_OBJECT_STORAGE_ACCESS_KEY_ID:'access-key-123',AI_OBJECT_STORAGE_SECRET_ACCESS_KEY:'storage-hidden-123',
-  AI_STUDIO_BACKGROUND_POLLING:'true',AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:1,maxPerHour:10}]),AI_PUBLIC_GENERATION_ENABLED:'true'
+  AI_STUDIO_BACKGROUND_POLLING:'true',AI_STUDIO_PUBLIC_POLICY_ENABLED:'true',AI_STUDIO_MAX_CONCURRENT_PER_USER:'1',AI_STUDIO_MAX_JOBS_PER_HOUR:'10',AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:1,maxPerHour:10}]),AI_PUBLIC_GENERATION_ENABLED:'true'
  };
  const ready=generationReadiness(env);assert.equal(ready.launchReady,true);const raw=JSON.stringify(ready);for(const secret of ['jwt-hidden','gemini-hidden','sk_live_hidden','storage-hidden-123','postgres://hidden'])assert.equal(raw.includes(secret),false);
  assert.equal(ready.billing.liveAiPaymentsImplemented,true);assert.equal(ready.billing.liveAiPaymentsEnabled,true);assert.equal(ready.billing.mode,'live');
@@ -43,4 +43,12 @@ test('BASE #51: release readiness flags an enabled public rate guard with missin
  }
  const disabled=generationReadiness({AI_STUDIO_PUBLIC_POLICY_ENABLED:'false'});
  assert.equal(disabled.blockers.includes('publicJobPolicy'),false);
+ const publicWithoutGuard=generationReadiness({...base,AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_PUBLIC_POLICY_ENABLED:'false'});
+ assert.equal(publicWithoutGuard.launchReady,false);
+ assert.equal(publicWithoutGuard.gates.find(g=>g.id==='publicJobPolicy').ready,false);
+ assert.ok(publicWithoutGuard.blockers.includes('publicJobPolicy'));
+ const publicUnsetGuard=generationReadiness({AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_MAX_CONCURRENT_PER_USER:'1',AI_STUDIO_MAX_JOBS_PER_HOUR:'10'});
+ assert.ok(publicUnsetGuard.blockers.includes('publicJobPolicy'));
+ const pilotWithoutGuard=generationReadiness({AI_PUBLIC_GENERATION_ENABLED:'false'});
+ assert.equal(pilotWithoutGuard.blockers.includes('publicJobPolicy'),false);
 });
