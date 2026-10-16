@@ -175,15 +175,37 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  app.get('/api/studio/admin/audit',auth,owner,async(_req,res)=>{try{res.json({items:await listAdminAudit(pool,{limit:100})});}catch(_){res.status(503).json({error:'OWNER_AUDIT_UNAVAILABLE'});}});
  app.get('/api/studio/admin/business',auth,owner,async(_req,res)=>{try{
   await init();if(wallet)await wallet.init();
-  const [users,jobs,model,purchases,costs]=await Promise.all([
+  // BASE #37 owner-only aggregate metrics: do not return user/payment identifiers.
+  const [users,jobs,model,purchases,costs,firstGenerations,paidAccounts]=await Promise.all([
    pool.query(`SELECT COUNT(*)::int AS users,COUNT(*) FILTER (WHERE created_at>=NOW()-INTERVAL '30 days')::int AS registrations_30d,COUNT(*) FILTER (WHERE has_subscribed)::int AS ever_subscribed,COUNT(*) FILTER (WHERE has_subscribed AND subscription_status NOT IN ('active','trialing','lifetime'))::int AS inactive_after_subscription FROM vv_users`),
    pool.query(`SELECT COUNT(*)::int AS jobs,COUNT(DISTINCT user_id)::int AS generating_users,COUNT(*) FILTER (WHERE status='ready')::int AS ready,COUNT(*) FILTER (WHERE status='failed')::int AS failed,COUNT(*) FILTER (WHERE status IN ('queued','processing','finalizing'))::int AS processing,ROUND(AVG(EXTRACT(EPOCH FROM (COALESCE(completed_at,failed_at)-started_at))) FILTER (WHERE started_at IS NOT NULL AND (completed_at IS NOT NULL OR failed_at IS NOT NULL))::numeric,2) AS avg_seconds,COALESCE(SUM(credits_charged),0)::bigint AS credits_charged FROM vv_generation_jobs WHERE deleted=false`),
    pool.query(`SELECT model,COUNT(*)::int AS jobs FROM vv_generation_jobs WHERE deleted=false AND model IS NOT NULL GROUP BY model ORDER BY jobs DESC,model LIMIT 1`),
    pool.query(`SELECT currency,COUNT(*)::int AS purchases,COALESCE(SUM(amount-refunded_amount),0)::bigint AS net_amount_minor,COALESCE(SUM(credits),0)::bigint AS credits_purchased FROM vv_ai_purchase GROUP BY currency ORDER BY currency`),
-   pool.query(`SELECT COALESCE(cost_currency,'unknown') AS currency,COALESCE(SUM(actual_cost),0)::numeric AS amount FROM vv_generation_jobs WHERE deleted=false AND actual_cost IS NOT NULL GROUP BY COALESCE(cost_currency,'unknown') ORDER BY currency`)
+   pool.query(`SELECT COALESCE(cost_currency,'unknown') AS currency,
+     COALESCE(SUM(actual_cost),0)::numeric AS amount,
+     COUNT(*) FILTER (WHERE status='ready')::int AS ready_priced_jobs,
+     ROUND(AVG(actual_cost) FILTER (WHERE status='ready'),6) AS avg_ready_cost
+     FROM vv_generation_jobs WHERE deleted=false AND actual_cost IS NOT NULL
+     GROUP BY COALESCE(cost_currency,'unknown') ORDER BY currency`),
+   pool.query(`SELECT COUNT(*)::int AS first_success_users,
+     COUNT(*) FILTER (WHERE first_success_at>=NOW()-INTERVAL '30 days')::int AS first_success_30d
+     FROM (SELECT user_id,MIN(COALESCE(completed_at,created_at)) AS first_success_at
+       FROM vv_generation_jobs WHERE deleted=false AND status='ready' GROUP BY user_id) firsts`),
+   pool.query(`SELECT COUNT(DISTINCT p.user_id)::int AS paying_accounts
+     FROM vv_ai_purchase p JOIN vv_users u ON u.id=p.user_id
+     WHERE p.amount>0 AND p.amount>p.refunded_amount`)
   ]);
-  const u=users.rows[0]||{},j=jobs.rows[0]||{},total=Number(u.users||0),generating=Number(j.generating_users||0),jobCount=Number(j.jobs||0),failed=Number(j.failed||0);
-  res.json({users:{total,registrations30d:Number(u.registrations_30d||0),everSubscribed:Number(u.ever_subscribed||0),inactiveAfterSubscription:Number(u.inactive_after_subscription||0),generationAdoptionRate:total?generating/total:0,everSubscribedRate:total?Number(u.ever_subscribed||0)/total:0},generation:{jobs:jobCount,generatingUsers:generating,ready:Number(j.ready||0),failed,processing:Number(j.processing||0),failureRate:jobCount?failed/jobCount:0,jobsPerGeneratingUser:generating?jobCount/generating:0,averageSeconds:j.avg_seconds==null?null:Number(j.avg_seconds),providerCosts:costs.rows.map(c=>({currency:c.currency,amount:Number(c.amount||0)})),creditsCharged:Number(j.credits_charged||0),topModel:model.rows[0]?.model||null},aiPurchases:purchases.rows.map(p=>({currency:p.currency,purchases:Number(p.purchases||0),netAmountMinor:Number(p.net_amount_minor||0),creditsPurchased:Number(p.credits_purchased||0)})),grossMargin:null,grossMarginReason:'Provider cost currency and live AI revenue economics are not yet verified.'});
+  const u=users.rows[0]||{},j=jobs.rows[0]||{},total=Number(u.users||0),generating=Number(j.generating_users||0),jobCount=Number(j.jobs||0),failed=Number(j.failed||0),
+   paid=Math.min(total,Math.max(0,Number(paidAccounts.rows[0]?.paying_accounts||0))),
+   firstSuccess=Number(firstGenerations.rows[0]?.first_success_users||0),
+   firstSuccess30d=Number(firstGenerations.rows[0]?.first_success_30d||0);
+  res.json({users:{total,registrations30d:Number(u.registrations_30d||0),everSubscribed:Number(u.ever_subscribed||0),inactiveAfterSubscription:Number(u.inactive_after_subscription||0),generationAdoptionRate:total?generating/total:0,everSubscribedRate:total?Number(u.ever_subscribed||0)/total:0,
+   aiCreditBuyers:paid,aiCreditBuyerConversionRate:total?paid/total:0},generation:{jobs:jobCount,generatingUsers:generating,
+   firstSuccessfulUsers:firstSuccess,firstSuccessfulUsers30d:firstSuccess30d,ready:Number(j.ready||0),failed,processing:Number(j.processing||0),failureRate:jobCount?failed/jobCount:0,jobsPerGeneratingUser:generating?jobCount/generating:0,averageSeconds:j.avg_seconds==null?null:Number(j.avg_seconds),providerCosts:costs.rows.map(c=>({currency:c.currency,amount:Number(c.amount||0),
+    readyPricedJobs:Number(c.ready_priced_jobs||0),
+    averageReadyJobCost:c.avg_ready_cost==null?null:Number(c.avg_ready_cost)})),creditsCharged:Number(j.credits_charged||0),topModel:model.rows[0]?.model||null},aiPurchases:purchases.rows.map(p=>({currency:p.currency,purchases:Number(p.purchases||0),netAmountMinor:Number(p.net_amount_minor||0),creditsPurchased:Number(p.credits_purchased||0)})),grossMargin:null,grossMarginReason:'Provider cost currency and live AI revenue economics are not yet verified.',
+   unverifiedMetrics:{trialToPaid:null,churnRate:null,revenuePerUser:null,mostUsedTool:null},
+   analyticsScope:'Saved non-deleted generation jobs and net-positive confirmed AI-credit purchases only; no live Stripe or provider revenue verification.'});
  }catch(_){res.status(503).json({error:'OWNER_BUSINESS_UNAVAILABLE'});}});
   app.use('/api/studio',(_req,res,next)=>{if(!studioConfig(env).enabled)return res.status(503).json({error:'OWNER_SETUP_REQUIRED'});next();});
  async function failTerminalProviderJob(id,userId,error,stage){
