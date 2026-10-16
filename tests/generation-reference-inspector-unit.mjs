@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 import {createSeedanceStagedReferenceInspector} from '../server/generation-reference-inspector.js';
 
 const ONE='123e4567-e89b-42d3-a456-426614174000';
@@ -66,4 +67,19 @@ test('provider limits are checked again after trusted byte inspection',async()=>
  assert.equal(result.compatible,true);
  const fail=await x.inspector.inspect({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ONE,TWO,THREE]});
  assert.equal(fail.reason,'REFERENCE_VIDEO_DURATION_TOTAL');
+});
+
+test('internal presign snapshot holds deterministic SHA256 without exposing it in normal inspection',async()=>{
+ const x=fixture(),bytes=x.objects.get(ONE);
+ const regular=await x.inspector.inspect({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ONE]});
+ assert.equal(regular.compatible,true);
+ assert.equal(regular.videoDigests,undefined);
+ assert.equal(JSON.stringify(regular).includes(createHash('sha256').update(bytes).digest('hex')),false);
+ const snapshot=await x.inspector.inspectVideoSnapshot({
+  userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ONE]
+ });
+ assert.deepEqual(snapshot.verdict,regular);
+ assert.deepEqual(snapshot.videoDigests,[createHash('sha256').update(bytes).digest('hex')]);
+ assert.equal(JSON.stringify(snapshot).includes('owner'),false);
+ assert.equal(JSON.stringify(snapshot).includes(ONE),false);
 });
