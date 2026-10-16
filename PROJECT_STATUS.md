@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent D — BASE #54 15-step first-pass release acceptance matrix / AUDIT IN PROGRESS (2026-10-16)
+
+- **Original BASE §54:** 15 user-visible new-user milestones plus provider/model/task/cost/credits/error admin detail. Full green release cannot be inferred from unit tests, isolated synthetic examples or a live older no-secret visual preview.
+- **Claimed bounded task:** author a read-only acceptance matrix with precise current code/test evidence, explicit NOT VERIFIED statuses for actual provider, paid credit purchase/refund, durable History re-open, legacy preservation and owner physical-device/staging acceptance. Provide ordered acceptance procedure without secrets, paid actions, production migration or requiring another agent to duplicate work.
+- **Branch:** `base54-first-pass-acceptance-matrix-20261016`; isolated scope `docs/BASE_54_FIRST_PASS_ACCEPTANCE_MATRIX.md`, targeting `deepsyq-platform`. D owns final readiness gate, other agents retain feature code; no Home/Stripe/provider/DB/main or original TXT modifications.
+
+
 ## Agent D — BASE #16 post-disable refunds + explicit billing mode / PR #164 CODE PUSHED, CI QUEUED (2026-10-16)
 
 - **Historical paid Checkout settlement after sales OFF (new bounded code and tests):** amended [PR #164](https://github.com/mvryhan-web/video-variator-android/pull/164) latest commit `2aec8b03602a6334bc439998e1f6518d5fa37771`. Both signed `checkout.session.completed` and `checkout.session.async_payment_succeeded` can reconcile PRE-EXISTING persisted orders with verified live/test mode, valid Stripe session retrieved server-side, exact user/Price ID/amount/currency and idempotent `wallet.grant`. New sales, unknown/foreign orders and missing credentials stay blocked. Current handler executed via isolated V8 against 2/2 valid positive and 10/10 invalid negative cases PASS, not a replacement for full GitHub CI.
