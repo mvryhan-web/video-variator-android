@@ -5,8 +5,6 @@ const catalog=window.VUMobileToolsCatalog,tool=new URLSearchParams(location.sear
 const mode=catalog?.tools.find(x=>x.id===tool);
 const lang=catalog?.lang||'en',ru=lang==='ru';
 const label=(en,russian)=>ru?russian:en;
-if(!mode)location.replace('free-tools.html');
-else init();
 
 function field(name,visible){const el=$(name+'Line');if(el)el.hidden=!visible;}
 function status(msg){$('utilityStatus').textContent=msg;}
@@ -361,3 +359,7 @@ async function runOCR(){
   await textResult(resultData.data.text||'',base(f)+'-text.txt');
  }finally{await worker.terminate();}
 }
+
+// Initialize after all module-level const configuration and handlers exist.
+if(!mode)location.replace('free-tools.html');
+else init();
