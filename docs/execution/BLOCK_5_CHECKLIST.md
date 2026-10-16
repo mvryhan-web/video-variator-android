@@ -15,12 +15,12 @@
 - [x] **B5-01. Сверить уже собранный PR #50 и цепочку #46–49; не дублировать Product Watcher.**
   - Критерий: Продолжение с последнего протестированного коммита.
   - Статус: ✅ VERIFIED — **инвентаризация кода, не production**. [PR #50](https://github.com/mvryhan-web/video-variator-android/pull/50) на коммите [d52890e](https://github.com/mvryhan-web/video-variator-android/commit/d52890eaf7ac084596d631cb6d91e12be75826cf) объединяет работу #46–49. [Push CI](https://github.com/mvryhan-web/video-variator-android/actions/runs/38800150157) и [PR CI](https://github.com/mvryhan-web/video-variator-android/actions/runs/38800157436) — SUCCESS. Код не слит в main, на Render не проверен.
-- [ ] **B5-02. Обеспечить полностью отдельные от User Agent полномочия, бюджеты, очереди и audit.**
+- [x] **B5-02. Обеспечить полностью отдельные от User Agent полномочия, бюджеты, очереди и audit.**
   - Критерий: Только owner/admin видит приватные данные.
-  - Статус: 🟡 PARTIAL. Owner auth, отдельные worker/таблицы/audit и изолированные тесты присутствуют в PR #50, но полный независимый бюджет, очередь и все права от User Agent ещё требуют приёмки. Не ставить ✅ до проверки.
+  - Статус: ✅ VERIFIED **на уровне кода и тестов, не Render**. [PR #50](https://github.com/mvryhan-web/video-variator-android/pull/50), commit [1079746](https://github.com/mvryhan-web/video-variator-android/commit/1079746e0e6f5fa427efc22cdd85cc4ccb63acfd), [Node + изолированный PostgreSQL CI](https://github.com/mvryhan-web/video-variator-android/actions/runs/38888192058) — SUCCESS. Все 11 private owner routes отвергают неавторизованных без обращения к БД; требуют существующий Google owner с непустым user ID. Отдельный private worker, DB-таблицы, advisory-locks, review queues и owner audit; бюджет платных AI-вызовов Watcher — **0**, он не использует wallet/provider router и не модифицирует пользовательские платёжные/job таблицы. Сканирование исходников — регрессионная проверка, не полная security certification. Не считать production-ready до B5-19/B5-20.
 - [ ] **B5-03. Проверять официальные источники новостей AI API, новых/устаревающих моделей, цен и лимитов.**
   - Критерий: Каждое предупреждение имеет ссылку/источник; непроверенное — без статуса факта.
-  - Статус / PR / коммит / тест / blocker: _заполнить при выполнении; уже существующий код сначала подтвердить_.
+  - Статус: 🟡 PARTIAL — в PR #50 реализован opt-in просмотр 3 allowlisted официальных страниц раз в 6 часов, фиксация изменения хеша и owner-review без автоматической публикации/смены цены. **Фактические изменения моделей/цен не интерпретируются и не сверяются со структурированными тарифами; Render worker не развёрнут.** Следующий этап: проверить охват исходного требования и устранить только подтверждённые пробелы, не выдумывая факты.
 - [ ] **B5-04. Мониторить uptime, backend/db errors, job failures, provider availability и latency.**
   - Критерий: Проверки читают реальные показатели, а не имитации.
   - Статус / PR / коммит / тест / blocker: _заполнить при выполнении; уже существующий код сначала подтвердить_.

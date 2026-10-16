@@ -19,7 +19,7 @@ All seven source blocks are preserved verbatim in `docs/execution/DEEPSYQ_BLOCKS
 
 ## Block 5 numbered progress — 2026-10-16
 
-B5-01 ✅ VERIFIED (code inventory only): PR #50 at `d52890e`; push CI 38800150157 and PR CI 38800157436 passed. B5-02 🟡 PARTIAL: owner-only isolated implementation exists but explicit complete queue/budget separation still needs tests. Do not imply deployment. Canonical checklists now have a network-free GitHub Actions integrity gate. **Next action:** verify B5-02 without changing other agents' modules.
+B5-01 ✅ VERIFIED (code inventory only): PR #50 at `d52890e`; push CI 38800150157 and PR CI 38800157436 passed. **B5-02 ✅ VERIFIED at code/CI level:** PR #50 commit `1079746`, [GitHub Actions 38888192058](https://github.com/mvryhan-web/video-variator-android/actions/runs/38888192058) passed Node security and ephemeral PostgreSQL acceptance. All 11 owner routes deny imposters; require Google owner identity + user ID, and dedicated Watcher worker/DB review queues/advisory locks/owner audit are kept isolated from customer Agent and wallet. Watcher has **zero paid-provider-call entitlement**; source/Telegram requests have bounded rates. Web owner panel now trusts a real fresh worker heartbeat rather than the web service flag. This is NOT live deployment/security certification. **B5-03 🟡 PARTIAL:** three official source hashes are monitored by optional code, but actual pricing/model semantic verification is not established. Next single action: B5-03. GitHub Actions continuously enforces canonical checklist integrity.
 
 ## Current priority gate
 
