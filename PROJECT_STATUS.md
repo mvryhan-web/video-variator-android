@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent D — BASE #16 duplicate Stripe Price-ID risk / IN PROGRESS (2026-10-16)
+
+- **Existing BASE #16, new bounded scope:** billingCatalog currently rejects duplicate pack SKU but not duplicate Stripe Price IDs. Two SKUs with the same Stripe Price and different approved credit counts can charge the same amount for different wallet value. Claim: reject ambiguous duplicate `priceId` configuration fail closed, preserve all real approved amounts, existing subscriptions and webhook/idempotency paths.
+- **Branch:** `base16-price-id-uniqueness-20261016` targeting `deepsyq-platform`; exact code scope `server/generation-billing.js` plus isolated Node test/workflow, no changes to Stripe account/configuration/ledger/DB schema, Home, main or Render.
+- **Separate existing D #49:** PR #139 remains DRAFT and is waiting for GitHub Actions queue at last checkpoint; no simultaneous change to its migration code. All BASE #16 earlier merged evidence stays valid; full #16 PARTIAL / NOT LIVE.
+
 ## Agent C — BASE #28 unique Photo Compression tile / IN PROGRESS (2026-10-16)
 
 - **Scoped claim:** isolated C task `base28-unique-utility-tiles-20261016`, preserving previous PRs #67/#113/#121 and all free tool engines. Actual `mobile-utility-links.js` pushes `photo-compress` into `tools`, renders the full array, and then appends a second Photo Compression link manually; duplicate CTA harms mobile navigation clarity. Keep registry entry, exactly one visible tile and real `data-utility` link routing; no new backend/service.
