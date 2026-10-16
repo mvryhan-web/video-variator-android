@@ -3,6 +3,7 @@
 header,footer{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:19px clamp(16px,5vw,60px);border-bottom:1px solid #342d46}
 footer{border-top:1px solid #342d46;border-bottom:0;font-size:12px;color:#a49db3;flex-wrap:wrap}
 header span{font-weight:750;color:#edeaf6;font-size:20px}
+header .brand{display:flex;align-items:center;gap:9px}header .brand img{width:28px;height:28px;object-fit:contain}
 main{max-width:1160px;margin:0 auto;padding:32px 20px 60px}h1{font-size:clamp(29px,5vw,47px);line-height:1.08;margin:9px 0 14px}
 main>p{color:#b8b0c5;max-width:800px;line-height:1.6}.eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;color:#a6c5ff}
 .panel{background:#201b2d;border:1px solid #45395a;padding:clamp(16px,3vw,26px);border-radius:17px;margin-top:25px}
