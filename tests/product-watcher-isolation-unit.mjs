@@ -15,6 +15,7 @@ test('Watcher cannot import customer tools, AI provider clients, wallets or paid
  const allowedParent={
   'admin-api.js':['../admin-audit.js'],
   'worker.js':['../db.js'],
+  'run-once.js':['../db.js'],
   // Read-only catalog/config inspection, never handler execution:
   'webhook-config.js':['../generation-billing.js']
  };
