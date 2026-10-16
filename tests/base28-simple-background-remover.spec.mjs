@@ -42,6 +42,16 @@ test('BASE #28: local simple-background erase yields transparent PNG without upl
  await page.locator('#download').click();
  const download=await downloadPromise;
  expect(download.suggestedFilename()).toBe('item-transparent.png');
+ await page.locator('#clearPhoto').click();
+ await expect(page.locator('#photo')).toHaveValue('');
+ await expect(page.locator('#clearPhoto')).toBeDisabled();
+ await expect(page.locator('#erase')).toBeDisabled();
+ await expect(page.locator('#download')).toBeDisabled();
+ await expect(page.locator('#status')).toContainText('Photo and preview cleared');
+ const cleared=await page.locator('#original').evaluate(canvas=>({
+  width:canvas.width,height:canvas.height,alpha:canvas.getContext('2d').getImageData(0,0,1,1).data[3]
+ }));
+ expect(cleared).toEqual({width:1,height:1,alpha:0});
  expect(uploads).toBe(0);
 });
 test('BASE #28: rejects oversized or unsupported input safely without upload',async({page})=>{
@@ -50,4 +60,23 @@ test('BASE #28: rejects oversized or unsupported input safely without upload',as
  await expect(page.locator('#status')).toContainText('under 10 MB');
  await expect(page.locator('#erase')).toBeDisabled();
  await expect(page.locator('#download')).toBeDisabled();
+});
+test('BASE #28: replacing photo with invalid format does not leave earlier image visible',async({page})=>{
+ await page.goto('/simple-background-remover.html');
+ const bytes=await page.evaluate(async()=>{
+  const c=document.createElement('canvas');c.width=c.height=3;
+  const ctx=c.getContext('2d');ctx.fillStyle='#f00';ctx.fillRect(0,0,3,3);
+  const b=await new Promise(done=>c.toBlob(done,'image/png'));
+  return Array.from(new Uint8Array(await b.arrayBuffer()));
+ });
+ await page.locator('#photo').setInputFiles({name:'valid.png',mimeType:'image/png',buffer:Buffer.from(bytes)});
+ await expect(page.locator('#erase')).toBeEnabled();
+ await expect(page.locator('#original')).toHaveJSProperty('width',3);
+ await page.locator('#photo').setInputFiles({name:'bad.gif',mimeType:'image/gif',buffer:Buffer.from('GIF89a')});
+ await expect(page.locator('#erase')).toBeDisabled();
+ await expect(page.locator('#original')).toHaveJSProperty('width',1);
+ await expect(page.locator('#result')).toHaveJSProperty('width',1);
+ await expect(page.locator('#status')).toContainText('under 10 MB');
+ await page.locator('#clearPhoto').click();
+ await expect(page.locator('#photo')).toHaveValue('');
 });
