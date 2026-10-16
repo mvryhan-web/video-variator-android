@@ -172,8 +172,10 @@ async function compressPhoto(){
   opaque.width=opaque.height=1;
   const labelSize=n=>(n/1048576).toFixed(2)+' MB';
   await result(new File([blob],base(f)+'-compressed.jpg',{type:'image/jpeg'}));
-  status(label('Original: ','Исходный размер: ')+labelSize(f.size)+label(' · Result: ',' · Результат: ')+labelSize(blob.size)+
-   (blob.size>=f.size?label(' · Result is not smaller.',' · Файл не стал меньше.'):''));
+  const report=document.createElement('p');
+  report.textContent=label('Original: ','Исходный размер: ')+labelSize(f.size)+label(' · Result: ',' · Результат: ')+labelSize(blob.size)+
+   (blob.size>=f.size?label(' · Result is not smaller.',' · Файл не стал меньше.'):'');
+  $('utilityResults').lastElementChild?.append(report);
  }finally{canvas.width=canvas.height=1;}
 }
 async function resizePhoto(){
