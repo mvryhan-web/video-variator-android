@@ -43,7 +43,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 10 | Normal generation-job database entity | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 11 | Permanent object storage | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 12 | Background jobs | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
-| 13 | Internal AI credit system | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | BROWSER REGRESSION IN PROGRESS (merged #96 retained; test fixtures only) | BASE-D-StudioWallet / base13-studio-wallet-20261016 |
+| 13 | Internal AI credit system | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / BROWSER REGRESSION VERIFIED (#96 + #104; CI 38912419194 and 38912155019 PASS; LIVE BLOCKED) | BASE-D-StudioWallet / base13-studio-wallet-20261016 |
 | 14 | Credit ledger | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (scoped; PR #90 · CI 38906957706) | Agent-D |
 | 15 | Credit reservation | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / BASE MERGED (scoped; PR #102 · PostgreSQL CI 38911667162) | Agent-D |
 | 16 | Stripe subscriptions + credit packs | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | WEBHOOK READINESS IN PROGRESS (existing checkout/refund code merged) | BASE-D-CheckoutReuse / base16-checkout-reuse-20261016 |
