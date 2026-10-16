@@ -31,26 +31,35 @@ export function createSeedanceVideoTransferPlanner({
   // Only trusted bytes obtained via owner+ready+unexpired ledger.get can pass.
   const verdict=await review.inspect({userId,model,imageCount:0,videoAssetIds});
   if(!verdict.compatible)reject(verdict.reason);
-  // Final DB read verifies the owner/state/remaining lifetime again.
-  // Storage validates the exact hashed-user S3 object path, approved HTTPS
-  // provider-fetch hostname, both gates and 30-second URL expiry.
-  const content=[];
-  let earliestExpiration=null;
+  // Complete ALL asynchronous owner/state/TTL lookups before starting to
+  // mint short-lived bearer URLs. A slow second/third database lookup must
+  // never consume the first link's 30-second provider-fetch window.
+  const candidates=[];
   for(const id of videoAssetIds){
    const asset=await ledger.getForVideoTransfer({userId,id});
    if(asset?.mime!=='video/mp4')reject('REFERENCE_MEDIA_ACCESS_DENIED');
+   candidates.push(asset);
+  }
+  // Storage validates the owner-hashed key, approved HTTPS host, both gates,
+  // and remaining asset lifetime again at the precise moment of signing.
+  // No await between signs: links are created in one synchronous final phase.
+  const content=[];
+  let earliestExpiration=null;
+  for(const asset of candidates){
    const link=storage.presignStagedReferenceRead({
     userId,key:asset.key,expiresAt:asset.expiresAt,seconds:30
    });
    if(!link?.url||!link?.expiresAt)reject('REFERENCE_VIDEO_URL_UNAVAILABLE');
-   earliestExpiration=earliestExpiration===null?link.expiresAt:
-    (link.expiresAt<earliestExpiration?link.expiresAt:earliestExpiration);
+   const expires=new Date(link.expiresAt);
+   if(!Number.isFinite(expires.getTime()))reject('REFERENCE_VIDEO_URL_UNAVAILABLE');
+   earliestExpiration=earliestExpiration===null||expires.getTime()<earliestExpiration.getTime()?
+    expires:earliestExpiration;
    content.push({type:'video_url',video_url:{url:link.url},role:'reference_video'});
   }
   // NOTE: 30 seconds may be insufficient for provider-side asynchronous fetch.
   // Before any paid dispatch, test fetch timing and obtain consent/pricing and
   // short-lived transport approval. Do not reuse/persist this object.
-  return {content,expiresAt:earliestExpiration,providerSubmitted:false,
+  return {content,expiresAt:earliestExpiration.toISOString(),providerSubmitted:false,
    transport:'server-only-presigned-s3-get'};
  }
  return {prepare};
