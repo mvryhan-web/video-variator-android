@@ -83,3 +83,10 @@
 .video-background-controls button:focus-visible{outline:2px solid #d2f7ae;outline-offset:2px}
 .video-background-controls .hint{flex:1;min-width:220px;margin:0;font-size:11px;line-height:1.5}
 @media(max-width:600px){.video-background-controls button{width:100%}.video-background-controls .hint{min-width:0}}
+
+/* BASE #24: user-triggered local preview of an already saved media result. */
+.history-inline-media{grid-column:1/-1;min-width:0}
+.history-inline-media:empty{display:none}
+.history-inline-media video,.history-inline-media audio{display:block;width:100%;max-width:100%;border-radius:10px;background:#080b10}
+.history-inline-media video{max-height:310px;object-fit:contain}
+.history-inline-media .hint{font-size:11px;margin:4px 0}
