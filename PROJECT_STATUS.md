@@ -361,7 +361,10 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - Original BASE §51 requires a functioning generation Studio. Current read-only `generationReadiness` omits `AI_STUDIO_ENABLED` and can return launchReady while the customer generation routes are disabled. Branch `base51-studio-enabled-readiness-20261016`, scoped to readiness+tests, no API/provider/payment activation.
 - Prior PR #130 checks Image/Video flags and is preserved; this change enforces independent server Studio enabled gate. No Home, Stripe, Render, database or other-agent files. Full #51 remains PARTIAL.
 
-## BASE #16 paid invoice replay after tariff adjustment — IN PROGRESS (2026-10-16)
+## BASE #16 paid invoice replay after tariff adjustment — MERGED TO BASE / POSTGRES VERIFIED (2026-10-16)
+
+- **Result:** [PR #135](https://github.com/mvryhan-web/video-variator-android/pull/135) merged to `deepsyq-platform`, squash `0e9ae4f3a2b8e43b9e86c37b7ac0f075d71ad1d6`; real disposable PostgreSQL [CI 38930410063](https://github.com/mvryhan-web/video-variator-android/actions/runs/38930410063) PASS. Existing wallet/partial-settlement/Pricing checks also PASS. Signed subscription invoices may replay *already credited* invoices after an owner-approved monthly allocation changes, provided stored user+PI+money/currency are unchanged; historical credits are not reissued or altered, new invoices get the new amount. Ordinary `cs_` credit-pack retries still reject changed credits, even with server-only replay option. No owner tariff set/changed, no real Stripe, provider spend, production DB/Render/main/Home. Full BASE #16 remains PARTIAL / LIVE BLOCKED.
+
 
 - Same original BASE-D-CheckoutReuse / Issue #75 / BASE §16, isolated branch `base16-invoice-replay-rate-change-20261016`. Shared claim before code.
 - **Verified operational gap:** `wallet.grant` rightly rejects mismatched credits on idempotent credit-pack purchase. The now-implemented signed **subscription** invoice grant reuses it; if an operator changes the approved monthly AI-credit allocation while Stripe retries an older invoice under unchanged Stripe Price ID, `PURCHASE_CONFLICT` blocks the signed delivery/legacy subscription renewal despite that invoice already having been credited correctly. Prior paid invoice must not grant again, but must remain replay-safe after future allocation changes.
