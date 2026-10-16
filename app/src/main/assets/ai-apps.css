@@ -54,11 +54,15 @@ main,footer{max-width:1180px;margin:auto;padding-left:22px;padding-right:22px}
 .app-body{padding:18px;display:grid;gap:12px}
 .app-body h3{font-size:17px;margin:0}
 .app-body p{font-size:12px;line-height:1.6;min-height:39px;margin:0;color:var(--muted)}
+.app-body .input-hint{font-size:11px;line-height:1.5;min-height:0;color:#dfc7f3;border-left:2px solid #8e72b7;padding-left:10px}
 .app-meta{display:flex;gap:6px;flex-wrap:wrap;align-content:start}
 .app-meta span{font-size:10px;background:#342845;border:1px solid #4c3b62;color:#d3c1e8;border-radius:999px;padding:5px 8px}
 .app-body button{min-height:45px;border:0;border-radius:10px;background:linear-gradient(125deg,#a98af4,#ddb5f9);color:#21133d;font-weight:750;cursor:pointer}
 .app-body button:hover:enabled{filter:brightness(1.08)}
 .app-body button:disabled{background:#383044;color:#a89db8;cursor:not-allowed}
+.catalog-more{display:flex;justify-content:center;margin:26px 0 8px}
+.catalog-more button{min-height:44px;padding:10px 22px;background:#34254e;color:#f1dfff;border:1px solid #8c6bbb;border-radius:11px;font-weight:700;cursor:pointer}
+.catalog-more button:hover{background:#503472}
 .empty{grid-column:1/-1;border:1px dashed #655174;background:#191528;border-radius:16px;padding:32px;color:var(--muted);font-size:13px;line-height:1.6}
 .empty p{margin:0 0 13px}
 .empty .retry-templates{display:inline-block;min-height:42px;margin:0 16px 0 0;padding:9px 16px;border:1px solid #9570d0;border-radius:10px;background:#35234e;color:#f0dcff;font-weight:650;cursor:pointer}

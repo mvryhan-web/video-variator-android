@@ -82,3 +82,46 @@ test('Use template prepares existing Studio with consent unchecked and no paid g
  await expect(page.locator('#consent')).not.toBeChecked();
  expect(jobPosts).toBe(0);
 });
+
+test('AI Apps only enables workflows with inputs supported by the existing Studio handoff',async({page})=>{
+ const variants=[
+  {id:'needs-video',title:'Video reference workflow',description:'Must upload video',category:'Commercial',generationType:'video',requiredInputTypes:['video'],promptTemplate:'Original video scene'},
+  {id:'needs-logo',title:'Product logo workflow',description:'Must upload logo and name',category:'Commercial',generationType:'product_video',requiredInputTypes:['logo','product_name'],promptTemplate:'Original product ad'},
+  {id:'needs-photo',title:'Image reference workflow',description:'Add a photo yourself',category:'Photography',generationType:'image',requiredInputTypes:['image'],promptTemplate:'Original image styling'}
+ ];
+ let jobPosts=0;
+ await page.route('**/api/templates',route=>route.fulfill({json:{items:variants}}));
+ page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))jobPosts++;});
+ await page.goto('/ai-apps.html');
+ const video=page.locator('.app-card').filter({hasText:'Video reference workflow'});
+ const logo=page.locator('.app-card').filter({hasText:'Product logo workflow'});
+ const image=page.locator('.app-card').filter({hasText:'Image reference workflow'});
+ await expect(video.getByRole('button',{name:'Workflow pending'})).toBeDisabled();
+ await expect(logo.getByRole('button',{name:'Workflow pending'})).toBeDisabled();
+ await expect(video).toContainText('not yet available through Studio');
+ await expect(logo).toContainText('not yet available through Studio');
+ await expect(image.getByRole('button',{name:'Use template'})).toBeEnabled();
+ await expect(image).toContainText('not attached automatically');
+ expect(jobPosts).toBe(0);
+});
+
+test('AI Apps reveals large real API catalogs in batches and resets paging on filter changes',async({page})=>{
+ const many=Array.from({length:25},(_,i)=>({
+  id:'catalog-'+i,title:'Template '+i,description:'A genuine active workflow',category:'Photography',
+  generationType:'image',promptTemplate:'Original prompt '+i,active:true
+ }));
+ await page.route('**/api/templates',route=>route.fulfill({json:{items:many}}));
+ await page.goto('/ai-apps.html');
+ await expect(page.locator('.app-card')).toHaveCount(12);
+ await expect(page.locator('#status')).toHaveText('Showing 12 of 25 matching templates (25 active templates loaded).');
+ await page.getByRole('button',{name:/Load more templates/}).click();
+ await expect(page.locator('.app-card')).toHaveCount(24);
+ await page.getByRole('button',{name:/Load more templates/}).click();
+ await expect(page.locator('.app-card')).toHaveCount(25);
+ await expect(page.locator('#loadMore')).toBeHidden();
+ await page.locator('#search').fill('Template 20');
+ await expect(page.locator('.app-card')).toHaveCount(1);
+ await expect(page.locator('#loadMore')).toBeHidden();
+ await page.locator('#search').fill('');
+ await expect(page.locator('.app-card')).toHaveCount(12);
+});
