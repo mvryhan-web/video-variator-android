@@ -8,12 +8,35 @@ Before changing code, always read and reconcile:
 
 1. `AGENTS.md` — collaboration and safety rules.
 2. `PROJECT_STATUS.md` — live progress, current owner, blockers, and next work.
-3. `docs/DEEPSYQ_ROADMAP.md` — approved product roadmap and requirements.
-4. Any relevant existing specification files, especially `docs/PRODUCTION_SPEC.md` and `PRODUCTION_DEPLOYMENT_SPEC.md`.
+3. **The exact original owner TXT specification for the assigned scope:** BASE = `docs/DEEPSYQ_PLATFORM_SPEC.md`, or Roadmap Block N = `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_N.txt` (N = 1…7). Read the **whole applicable original** before deciding what to implement. For tasks spanning multiple scopes, read each corresponding TXT.
+4. `docs/DEEPSYQ_ROADMAP.md` and `docs/DEEPSYQ_BASE_CHECKLIST.md` — secondary roadmap/status references, NEVER replacements for the original TXT.
+5. Any relevant existing production specifications, especially `docs/PRODUCTION_SPEC.md` and `PRODUCTION_DEPLOYMENT_SPEC.md`.
 5. The latest Git history, current branch, recent commits, open PRs, and the actual implementation.
 
 Do not assume a feature exists or works because a file, route, button, or function has a promising name. Verify the code and tests.
 
+
+## Original owner TXT files are mandatory and authoritative (2026-10-16)
+
+**Non-negotiable owner instruction:** The original, separate TXT for the workstream governs what to build. Do not invent a parallel feature roadmap from agent suggestions, a progress summary, or generic checklists.
+
+- **BASE** — the owner's original large TXT `Вставленный текст(9).txt`, faithfully and byte-for-byte reflected in the existing `docs/DEEPSYQ_PLATFORM_SPEC.md`. BASE is **not Block 1**. Follow its numbered requirements and `docs/DEEPSYQ_BASE_CHECKLIST.md` for completion state.
+- **Block 1** — `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_1.txt`, Multi-AI Compare + Smart Model Routing.
+- **Block 2** — `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_2.txt`, User Agent / Do It For Me.
+- **Block 3** — `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_3.txt`, Inspiration / Create Yours.
+- **Block 4** — `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_4.txt`, Studio + My Workspace.
+- **Block 5** — `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_5.txt`, Internal Product Watcher Agent.
+- **Block 6** — `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_6.txt`, Deepsyq Voice Agent.
+- **Block 7** — `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_7.txt`, Pricing, Credits, Stripe & Unit Economics.
+
+All seven TXT copies originate from the owner's separately saved original files, not assistant-authored paraphrases. The owner's combined `DEEPSYQ_BLOCKS_1-7_CANONICAL.txt` is an additional cross-reference; it does **not** collapse these separate scope files. **Do not edit/rewrite any copied source TXT to reflect implementation progress**; put statuses in `PROJECT_STATUS.md` / scoped checklists instead. Any newly approved owner amendment should be separately documented and linked, not silently woven into the original.
+
+**Required workflow for every agent and every new scoped task:**
+1. Identify whether the work is BASE or Block 1–7. Read the whole exact source TXT for that specific scope *before coding*. Do not confuse numbered sections inside BASE with Roadmap Blocks.
+2. Map requested requirements to the existing code, owner/branch, and relevant checklist. Mark which are already genuinely implemented versus incomplete; respect concurrent agents and do not duplicate their work.
+3. Implement **the next incomplete original TXT requirement within your assigned workstream**, not an unrelated useful-sounding feature. Handle external blockers honestly without substituting endless tests or fake completion. Do not touch other blocks without assignment.
+4. After the coherent feature is implemented, run the appropriate targeted checks once, record the actual verified result, and continue with the next TXT requirement. `CODE VERIFIED`, `MERGED TO MAIN`, `DEPLOYED`, and `LIVE VERIFIED` are distinct states.
+5. If the applicable TXT cannot be accessed or its requirements conflict with existing owner-approved constraints, **do not fabricate the missing source or silently substitute the summary roadmap**. Locate/recover the source and reconcile the conflict first.
 
 ## Work-limit efficiency — avoid redundant verification
 
