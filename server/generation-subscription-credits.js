@@ -43,11 +43,14 @@ export async function grantPaidSubscriptionInvoice({event,env={},pool,wallet}){
  // never recognized by customer metadata supplied from browser.
  const mode=env.AI_BILLING_MODE==='live';
  if(invoice?.status!=='paid'||invoice?.paid!==true||
+    !['subscription_create','subscription_cycle'].includes(invoice.billing_reason)||
     !Number.isSafeInteger(invoice.amount_paid)||invoice.amount_paid<=0||
     invoice.livemode!==mode||event.livemode!==mode||
     invoice.lines.has_more!==false||lines.length!==1||matching.length!==1||
     matching[0].quantity!==1)
   throw Error('AI_SUBSCRIPTION_INVOICE_INVALID');
+ if(mode&&env.AI_LIVE_BILLING_APPROVED!=='true')
+  throw Error('AI_SUBSCRIPTION_LIVE_NOT_APPROVED');
  const grant=config.entries.find(e=>e.priceId===matching[0].price.id);
  const id=subscriptionId(invoice);
  if(!stripeId(id,'sub_')||!stripeId(invoice.id,'in_')||
