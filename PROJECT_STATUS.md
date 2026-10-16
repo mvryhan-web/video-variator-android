@@ -32,7 +32,8 @@ This file is the shared live progress board for all coding agents.
 
 - **Original source:** BASE #28 explicitly lists Background Remover; repository tree had no browser page/route for it in `app/src/main/assets`. To avoid inventing paid AI, implement an honestly labelled **simple uniform-background eraser** using user-picked color, tolerance and connected-pixel processing only. It is NOT a sophisticated person/complex-object AI segmentation service.
 - **Scope:** Agent C separate branch `base28-simple-background-remover-20261016`, standalone local tool and its own entry in existing `free-tools.html`/test/CI. Protect current `mobile-utility-links.js` PR #147, existing #30 PR #144, original Home/brand, provider, auth, billing and DB.
-- **Status:** CLAIMED / NOT VERIFIED; no production/main release, tests pending.
+- **Pushed code:** [PR #151](https://github.com/mvryhan-web/video-variator-android/pull/151), HEAD `72431e3799e25cb3f14ecb19eb947b88f7ab0b02`. Added standalone local HTML/CSS/JS plus pure `simple-background-remover-core.mjs`, a Tools hub link, pure Node connectivity/memory-bound checks, and Playwright synthetic product-background PNG tests on desktop/mobile Chrome/WebKit. Its workflow [38940331078](https://github.com/mvryhan-web/video-variator-android/actions/runs/38940331078) is QUEUED, not yet CODE VERIFIED. The tool explicitly states it is for *simple uniform backgrounds*, not AI subject segmentation; maximum 8MP/10MB and no uploads, Stripe or credits.
+- **Status:** IN PROGRESS / CI PENDING, not merged to BASE/main or verified in production.
 
 ## Agent C — BASE #28 unique Photo Compression tile / IN PROGRESS (2026-10-16)
 
