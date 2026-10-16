@@ -245,7 +245,12 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Actual code-level gap:** `server/generation-billing.js` uses strict `existingCheckoutResponse` for stored Stripe Checkout Sessions, but the *first* freshly created session only checks livemode and URL hostname. It does not validate HTTPS, embedded credentials/port, session status/expiry, user, metadata/order, amount/currency before persisting and handing out the payment link. The trusted Stripe API ordinarily returns correct fields, but malformed or inconsistent responses must fail closed.
 - **Scope:** reuse existing exact invariants for first-session creation with an ephemeral checked order, without modifying legacy Stripe, ledger, account auth, owner Home, provider, production config or `main`; add focused mocked HTTP cases and a scoped CI workflow. No real Stripe/provider spend.
 
-## BASE #48 preflight error redaction — IN PROGRESS (2026-10-16)
+## BASE #48 preflight error redaction — MERGED TO BASE / CODE VERIFIED (2026-10-16)
+
+- **Verified:** [PR #117](https://github.com/mvryhan-web/video-variator-android/pull/117) squash merge `301870c02cbe272d222f5df8a60bfa0aa7c6d764`; [CI 38923210338](https://github.com/mvryhan-web/video-variator-android/actions/runs/38923210338) PASS (syntax, synthetic deliberately secret-bearing DB error tests, existing readiness regression). Replaced raw PostgreSQL/migration `e.message` printed by `npm run ai:preflight` with an allowlisted `safeAiPreflightError` classifier; diagnostic exit code remains 3, read-only behavior unchanged. Four scoped files; no database connection or migration applied during tests, no live Stripe/provider/Render/main/Home changes.
+- **Remaining:** original BASE #48 is PARTIAL until real backup+restore, staging DB migration, signed Stripe purchase/refund, login, old Video Uniquifier, mobile and rollback acceptance.
+
+
 
 - **Owner:** BASE-D / Issue #75, same release-safety scope as reviewed PR #77. Isolated `base48-preflight-redacted-errors-20261016`; shared board marked IN PROGRESS before code.
 - **Verified risk:** `npm run ai:preflight` runs a database check using `DATABASE_URL` and on failure prints `e.message` directly to CI/operator logs. Upstream PostgreSQL/URI/SSL exceptions may embed connection details, secrets or full DSNs. Read-only safety preflight must not expose raw error text.
