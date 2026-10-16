@@ -49,6 +49,7 @@ The exact completion state of older components must be verified from the current
 
 | Workstream | Owner / Agent | Branch / PR | Status | Rule |
 |---|---|---|---|---|
+| BASE #20 — Product Video duration preference handoff | ChatGPT BASE lane C / this session | `base20-product-video-duration-20261016` / PR pending | **IN PROGRESS** — 2026-10-16 | Fix existing Product Video -> Video Studio duration preference only; preserve existing workflow, do not duplicate Video Core or payment logic. |
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
 | BASE AI Apps retry and safe template handoff | ChatGPT continuation / PR #52 | `deepsyq-platform` (integrated from `base-ai-apps-resilience-20261016`) | CODE VERIFIED / MERGED TO BASE / NOT DEPLOYED | Retry after temporary template API outage preserves filters; template prefill into existing Studio does not auto-generate. Focused desktop + mobile Playwright CI 38888470970 PASS; shared Veo regression unrelated. |
