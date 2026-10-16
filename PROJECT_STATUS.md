@@ -335,11 +335,11 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Scope:** reuse *existing* transactional purchase/refund ledger for paid subscription invoices; use real invoice payment intent, amount/currency and invoice ID (not synthetic client metadata), preserve `subscription_grant` ledger type and per-invoice idempotency. Route signed refund to existing wallet when the subscription AI grant flag is enabled even if credit-pack Checkout is disabled. Flag defaults OFF; no new schema, no real payments, no old subscriptions changed. Prove cumulative and duplicate refund against disposable PostgreSQL. No #17/#37 edits, Home, Render, main, provider or production changes.
 - **Remaining:** real Stripe event/API-version acceptance and owner-approved amounts still blocked.
 
-## Agent D BASE #51 — Image + Video launch switches checked by readiness / IN PROGRESS (2026-10-16)
+## Agent D BASE #51 — Image + Video launch switch readiness CODE VERIFIED / MERGED TO BASE / NOT LIVE (2026-10-16)
 
 - **Branch:** `base51-image-video-launch-switches-20261016`; original BASE TXT §51 first commercial slice demands Image and Video. Existing `generationReadiness` can report launchReady when explicit per-kind Image or Video kill switch is OFF.
 - **Changes:** reuse `generationFeatureSwitches`, add Image/Video enabled readiness gate, small negative and backward compatibility unit tests, owner-only readiness response unchanged except an additional boolean gate. No flag enabled, provider billing/Stripe/router/DB/Home modified.
-- **Check:** create isolated PR, pass targeted tests, reconcile shared status; full BASE #51 remains PARTIAL until real commercial end-to-end.
+- **Check:** [PR #130](https://github.com/mvryhan-web/video-variator-android/pull/130) merged `2df3852d`; [focused CI 38929447746](https://github.com/mvryhan-web/video-variator-android/actions/runs/38929447746) SUCCESS. Full BASE #51 remains PARTIAL / NOT LIVE pending real commercial end-to-end and owner launch approval.
 
 ## BASE #43 paid subscription AI credit display — IN PROGRESS (2026-10-16)
 
