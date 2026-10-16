@@ -79,3 +79,59 @@ test('BASE 45: Product Ads remains hidden while the existing feature flag is dis
  await expect(page.locator('[data-onboarding-goal=image]')).toHaveCount(1);
  await expect(page.locator('[data-onboarding-goal=product_ads]')).toHaveCount(0);
 });
+
+test('BASE 45: old account onboarding GET cannot open the new account modal',async({page})=>{
+ await page.addInitScript(()=>{
+  localStorage.setItem('vv_token','account-A');
+  localStorage.setItem('deepsyq_onboarding_pending','1');
+ });
+ await page.route('**/api/config',r=>r.fulfill({json:{googleClientId:'',plans:{},
+  features:{inspiration:false,aiApps:false,productVideo:false,onboarding:true}}}));
+ await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Account A',isAdmin:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[]}}));
+ let start,release,finished;
+ const seen=new Promise(resolve=>start=resolve),hold=new Promise(resolve=>release=resolve);
+ const done=new Promise(resolve=>finished=resolve);
+ await page.route('**/api/onboarding',async route=>{
+  start();await hold;
+  try{await route.fulfill({json:{completed:false,options:[{id:'image',target:'/generate-studio.html?studio=image'}]}});}catch(_){}
+  finished();
+ });
+ await page.goto('/deepsyq.html',{waitUntil:'commit'});
+ await seen;
+ await page.evaluate(()=>localStorage.setItem('vv_token','account-B'));
+ release();await done;
+ await expect(page.locator('#onboardingModal')).toBeHidden();
+ await expect(page.locator('[data-onboarding-goal]')).toHaveCount(2); // static placeholders never displayed
+ expect(await page.evaluate(()=>localStorage.getItem('deepsyq_onboarding_pending'))).toBe('1');
+});
+
+test('BASE 45: switching accounts while onboarding POST is pending cannot redirect or clear setup',async({page})=>{
+ await page.addInitScript(()=>{
+  localStorage.setItem('vv_token','account-A');
+  localStorage.setItem('deepsyq_onboarding_pending','1');
+ });
+ await page.route('**/api/config',r=>r.fulfill({json:{googleClientId:'',plans:{},
+  features:{inspiration:false,aiApps:false,productVideo:false,onboarding:true}}}));
+ await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Account A',isAdmin:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[]}}));
+ let start,release,finished;
+ const seen=new Promise(resolve=>start=resolve),hold=new Promise(resolve=>release=resolve);
+ const done=new Promise(resolve=>finished=resolve);
+ await page.route('**/api/onboarding',async route=>{
+  if(route.request().method()==='GET')return route.fulfill({json:{completed:false,
+   options:[{id:'image',target:'/generate-studio.html?studio=image'}]}});
+  start();await hold;
+  try{await route.fulfill({json:{ok:true,goal:'image',target:'/generate-studio.html?studio=image'}});}catch(_){}
+  finished();
+ });
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#onboardingModal')).toBeVisible();
+ await page.locator('[data-onboarding-goal=image]').click();
+ await seen;
+ await page.evaluate(()=>localStorage.setItem('vv_token','account-B'));
+ release();await done;
+ await expect(page.locator('#onboardingModal')).toBeHidden();
+ await expect(page).toHaveURL(/deepsyq.html/);
+ expect(await page.evaluate(()=>localStorage.getItem('deepsyq_onboarding_pending'))).toBe('1');
+});
