@@ -11,10 +11,24 @@ function resetResult(){
  generation++;$('download').disabled=true;result.width=result.height=1;
  outCtx.clearRect(0,0,1,1);
 }
-$('photo').addEventListener('change',async()=>{
- const file=$('photo').files?.[0];original=null;
+function clearCurrent({clearInput=false}={}){
+ // Clear both canvases immediately. Never retain a previous user's photo
+ // behind an invalid/new file selection while the next image is decoding.
+ if(original?.data)original.data.fill(0);
+ original=null;source.width=1;source.height=1;selected={x:0,y:0};photoName='photo';
  $('erase').disabled=true;$('topLeft').disabled=true;
- resetResult();const epoch=generation;
+ $('sampleStatus').textContent='Choose a photo to begin.';
+ resetResult(); // Also invalidates any pending asynchronous image decode.
+ if(clearInput){
+  $('photo').value='';$('clearPhoto').disabled=true;
+  setStatus('Photo and preview cleared from this page.');
+ }
+}
+$('clearPhoto').onclick=()=>clearCurrent({clearInput:true});
+$('photo').addEventListener('change',async()=>{
+ const file=$('photo').files?.[0];
+ clearCurrent();$('clearPhoto').disabled=!file;
+ const epoch=generation;
  if(!file){setStatus('Choose a photo to begin.');return;}
  if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>10*1024*1024||!file.size){
   setStatus('Choose a JPG, PNG or WebP photo under 10 MB.');return;
