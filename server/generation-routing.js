@@ -39,14 +39,21 @@ export function orderedGenerationCandidates(body,catalog=[]){
 export function resolveGenerationModel(body,catalog=[],env={}){
  const explicit=typeof body?.model==='string'&&body.model&&body.model!=='smart'?body.model:null;
  if(explicit){
-  const model=catalog.find(m=>m.id===explicit&&m.kind===body.kind);
-  if(!model)throw Error('MODEL_NOT_FOUND');
+  // Model IDs identify one concrete paid provider. Never guess if an
+  // accidentally duplicated registry ID could charge the wrong provider.
+  const matches=catalog.filter(m=>m.id===explicit&&m.kind===body?.kind);
+  if(!matches.length)throw Error('MODEL_NOT_FOUND');
+  if(matches.length!==1)throw Error('MODEL_AMBIGUOUS');
+  const model=matches[0];
   if(!compatible(model,body))throw Error(model.maintenance?'MODEL_MAINTENANCE':'MODEL_NOT_ENABLED');
   return {model,candidates:[model],smart:false};
  }
  if(env.AI_SMART_ROUTING_ENABLED!=='true'){
+  // Disabled Smart Routing deliberately does NOT switch to another model;
+  // however the first configured model must still accept this exact input.
+  // Previously an incompatible model could reach the paid provider step.
   const model=catalog.find(m=>m.kind===body?.kind&&m.enabled);
-  if(!model)throw Error('MODEL_NOT_ENABLED');
+  if(!model||!compatible(model,body))throw Error(model?.maintenance?'MODEL_MAINTENANCE':'MODEL_NOT_ENABLED');
   return {model,candidates:[model],smart:false};
  }
  const candidates=orderedGenerationCandidates(body,catalog);
