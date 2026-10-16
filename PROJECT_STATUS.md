@@ -43,6 +43,12 @@ This file is the shared live progress board for all coding agents.
 - **Evidence:** draft [PR #69](https://github.com/mvryhan-web/video-variator-android/pull/69), code commit `39bd5f909bf5096d04fef058929b5fc7d9c1fe80`, 4 unit tests `d613d0c94f337294160611d170acab18c9180705`, scoped [GitHub CI 38900828078](https://github.com/mvryhan-web/video-variator-android/actions/runs/38900828078) **PASS** (4 new + existing manifest, no production DB calls).
 - **State:** scoped **CODE VERIFIED**; full BASE #49 remains **PARTIAL / NOT MERGED TO MAIN / NOT LIVE VERIFIED** until staging migration, production backup and rollback acceptance. PR #45 preflight files unchanged.
 
+## BASE #48 / Agent D Issue #75 release safety — IN PROGRESS (2026-10-16)
+
+- **Agent D scoped assignment:** GitHub [Issue #75](https://github.com/mvryhan-web/video-variator-android/issues/75), isolated `base55-d-release-review-issue75-20261016` targeting `deepsyq-platform`. Coordinator Agent 5 instructed a read-only PR collision and recovery/rollback audit, **not** new payment, Stripe, DB or Home code. Shared BASE #48 row claimed before report edits; existing #44 remains owned by another D session.
+- **First evidence:** PR #70 already **MERGED to BASE**, with byte-identical `generation-entitlements.js`, `generation-entitlements-unit.mjs`, `base-free-plan.yml` across #65/#70/BASE. PR #65 is still OPEN and must NOT be merged again. No attempt to close another owner's PR before documented handoff. Focused original CI #38900312833 and reconciled #38900866559 PASS.
+- **Pending:** publish scoped read-only review/merge sequence and backup/restore blockers, create separate draft PR, update claims and issue status. No `main` merge, Render changes or live spend.
+
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
 **ACTIVE OWNER PRIORITY NOW:** all four coding-agent sessions focus on the **original BASE TXT / 55-point checklist**, not new Roadmap Blocks 1–7 or duplicated Product Watcher. Shared 55-item claim board and proposed collision-safe work lanes: [`docs/DEEPSYQ_BASE_55_COORDINATION.md`](docs/DEEPSYQ_BASE_55_COORDINATION.md). This new owner instruction overrides older prose suggesting BASE is owned by just one agent or that Agents E/Block 5 should keep expanding their scope. **Already verified:** 55 rows exist in the BASE checklist; #47 and #53 are DONE/RULE; **53 other rows are not fully DONE** and mostly have significant existing code. `PARTIAL` does NOT mean “build from scratch.”
