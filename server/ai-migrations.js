@@ -36,17 +36,44 @@ export async function aiMigrationStatus(pool){
  });
  return status;
 }
+// Unique, application-owned advisory lock key. This protects the migration
+// manifest+ledger across parallel deploy/startup processes on the same DB.
+const AI_MIGRATION_LOCK='SELECT pg_advisory_lock(271828,20261016)';
+const AI_MIGRATION_UNLOCK='SELECT pg_advisory_unlock(271828,20261016)';
+
 export async function runAiMigrations(pool,{checkOnly=false}={}){
  if(!pool)throw Error('DATABASE_NOT_CONFIGURED');
- // Inspection must be strictly SELECT-only: --check must not create the ledger.
- if(!checkOnly)await ensureLedger(pool);
- const manifest=await loadAiMigrationManifest(),status=await aiMigrationStatus(pool);
- const drift=status.find(x=>x.applied&&!x.checksumMatches);if(drift)throw Error('MIGRATION_CHECKSUM_MISMATCH:'+drift.name);
- if(checkOnly)return {applied:[],pending:status.filter(x=>!x.applied).map(x=>x.name),status};
- const applied=[];
- for(const m of manifest){
-  const current=status.find(x=>x.name===m.name);if(current?.applied)continue;
-  const c=await pool.connect();try{await c.query('BEGIN');await c.query(m.sql);await c.query('INSERT INTO vv_schema_migration(name,checksum) VALUES($1,$2)',[m.name,m.checksum]);await c.query('COMMIT');applied.push(m.name);}catch(e){await c.query('ROLLBACK').catch(()=>{});throw e;}finally{c.release();}
+ // A dry run is strictly SELECT-only and never acquires a session lock.
+ if(checkOnly){
+  const status=await aiMigrationStatus(pool);
+  const drift=status.find(x=>x.applied&&!x.checksumMatches);
+  if(drift)throw Error('MIGRATION_CHECKSUM_MISMATCH:'+drift.name);
+  return {applied:[],pending:status.filter(x=>!x.applied).map(x=>x.name),status};
  }
- return {applied,pending:[],status:await aiMigrationStatus(pool)};
+ // Hold one dedicated connection while applying the entire manifest. Every
+ // cooperating runner re-reads status *after* the lock has been acquired.
+ const c=await pool.connect();let locked=false;
+ try{
+  await c.query(AI_MIGRATION_LOCK);locked=true;
+  await ensureLedger(c);
+  const manifest=await loadAiMigrationManifest(),status=await aiMigrationStatus(c);
+  const drift=status.find(x=>x.applied&&!x.checksumMatches);
+  if(drift)throw Error('MIGRATION_CHECKSUM_MISMATCH:'+drift.name);
+  const applied=[];
+  for(const m of manifest){
+   if(status.find(x=>x.name===m.name)?.applied)continue;
+   try{
+    await c.query('BEGIN');
+    await c.query(m.sql);
+    await c.query('INSERT INTO vv_schema_migration(name,checksum) VALUES($1,$2)',[m.name,m.checksum]);
+    await c.query('COMMIT');
+    applied.push(m.name);
+   }catch(e){await c.query('ROLLBACK').catch(()=>{});throw e;}
+  }
+  return {applied,pending:[],status:await aiMigrationStatus(c)};
+ }finally{
+  // PostgreSQL also drops a session advisory lock when the connection dies.
+  if(locked)await c.query(AI_MIGRATION_UNLOCK).catch(()=>{});
+  c.release();
+ }
 }
