@@ -1,4 +1,5 @@
 import {parisBriefSlots} from './briefs.js';
+import {checkContentAssetReachability} from './link-reachability.js';
 // Owner-only checks of EXISTING approved-content metadata, not modifications
 // or external media fetches. 06:00 readiness, 07:00 internal opportunities.
 const LOCK=[455033,8];
@@ -93,7 +94,7 @@ export function internalContentRecommendations(result){
   return suggestions;
 }
 
-export async function runContentTasksIfDue({pool,env={},now=()=>new Date()}={}){
+export async function runContentTasksIfDue({pool,env={},now=()=>new Date(),fetchFn=globalThis.fetch}={}){
   if(!contentTasksEnabled(env))return{status:'disabled',generated:[]};
   if(!pool?.connect)throw Error('WATCHER_DATABASE_NOT_CONFIGURED');
   const snapshot=now(),local=parisBriefSlots(snapshot);
@@ -112,9 +113,17 @@ export async function runContentTasksIfDue({pool,env={},now=()=>new Date()}={}){
       const exists=await client.query('SELECT id FROM vv_product_watcher_content_tasks WHERE kind=$1 AND period_key=$2',[kind,local.periodKey]);
       if(exists.rows?.length)continue;
       const data=await scanExistingContent(client);
+      // A real network probe is an optional daily content check, not a paid workflow.
+      // Do not probe missing schemas or run again for the 07:00 opportunities task.
+      const reachability=kind==='content'
+        ? (data.status==='ready'||data.status==='attention'
+          ? await checkContentAssetReachability({client,env,fetchFn})
+          : {status:'not_checked',code:'CONTENT_METADATA_UNAVAILABLE'})
+        : null;
       const content=kind==='content'?{
         kind,periodKey:local.periodKey,timezone:'Europe/Paris',checkedAt:snapshot.toISOString(),
-        ...data
+        ...data,
+        assetReachability:reachability
       }:{
         kind,periodKey:local.periodKey,timezone:'Europe/Paris',checkedAt:snapshot.toISOString(),
         status:data.status,
