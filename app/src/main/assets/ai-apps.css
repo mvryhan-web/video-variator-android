@@ -61,6 +61,9 @@ main,footer{max-width:1180px;margin:auto;padding-left:22px;padding-right:22px}
 .app-body button:disabled{background:#383044;color:#a89db8;cursor:not-allowed}
 .empty{grid-column:1/-1;border:1px dashed #655174;background:#191528;border-radius:16px;padding:32px;color:var(--muted);font-size:13px;line-height:1.6}
 .empty p{margin:0 0 13px}
+.empty .retry-templates{display:inline-block;min-height:42px;margin:0 16px 0 0;padding:9px 16px;border:1px solid #9570d0;border-radius:10px;background:#35234e;color:#f0dcff;font-weight:650;cursor:pointer}
+.empty .retry-templates:hover:enabled{background:#4c316e}
+.empty .retry-templates:disabled{opacity:.55;cursor:wait}
 .empty a{color:#e5c4ff;text-decoration:underline;text-underline-offset:3px}
 footer{border-top:1px solid #3b304e;margin-top:64px;padding-top:24px;padding-bottom:45px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:20px}
 footer p{margin:0}

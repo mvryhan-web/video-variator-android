@@ -54,12 +54,19 @@ function useTemplate(template){
  }
  location.assign('generate-studio.html?studio='+destination(template)+'&from=template');
 }
-function empty(message){
+function empty(message,{retry=false}={}){
  const box=document.createElement('div');
  box.className='empty';
  const p=document.createElement('p');p.textContent=message;
  const a=document.createElement('a');a.href='generate-studio.html?studio=image';a.textContent='Open Image Studio ↗';
- box.append(p,a);$('apps').append(box);
+ box.append(p);
+ if(retry){
+  const again=document.createElement('button');again.type='button';again.className='retry-templates';
+  again.textContent='Retry loading templates';
+  again.addEventListener('click',()=>{again.disabled=true;load();});
+  box.append(again);
+ }
+ box.append(a);$('apps').append(box);
 }
 function render(){
  const term=$('search').value.trim().toLocaleLowerCase();
@@ -105,6 +112,8 @@ function render(){
  }
 }
 async function load(){
+ $('status').textContent='Loading active templates…';
+ $('apps').replaceChildren();
  try{
   const response=await fetch('/api/templates',{cache:'no-store'});
   const data=await response.json().catch(()=>({}));
@@ -115,7 +124,7 @@ async function load(){
   $('clearFilters').disabled=true;
   $('status').textContent='Active templates are temporarily unavailable. No generation was started.';
   $('apps').replaceChildren();
-  empty('Please try again later, or use Studio without a template.');
+  empty('Please try again later, or use Studio without a template.',{retry:true});
  }
 }
 $('search').addEventListener('input',changed);
