@@ -263,11 +263,11 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Bounded change:** fail-closed safe, machine-readable allowlisted error codes (connection/schema/migration vs generic) with no raw message; tests using deliberately secret-bearing synthetic exception, no real DB/provider/Stripe call, no production variables or flag changes.
 - **Original BASE #48 remains PARTIAL** until real staging backup, migration/restore, login, existing subscriptions, Tools, mobile and rollback verification.
 
-## Agent D BASE #37 — owner AI generation-kind breakdown — IN PROGRESS (2026-10-16)
+## Agent D BASE #37 — owner AI generation-kind breakdown — CODE VERIFIED / MERGED TO BASE / NOT LIVE (2026-10-16)
 
 - **Original BASE TXT §37** and existing analytics. PR #64 already merged user conversion/first-success metrics and must NOT be duplicated.
 - **Observed gap:** owner Business overview has top AI model but no recorded breakdown by Image, Video, Music/Voice generation jobs. Existing `vv_generation_jobs.kind` already stores that safely. Add aggregate owner-only counts and success/failure by known creation type; exclude deleted jobs; UI label MUST say recorded AI generations, NOT total legacy-tool usage. No user identifiers, new tracking, AI provider calls or money estimates.
-- **Claim:** `base37-generation-kind-breakdown-20261016` with dedicated server endpoint fixture tests and existing admin display only. No approved Home design change. Preserve `unverifiedMetrics.mostUsedTool=null`, because legacy tools are not tracked consistently; keep production main/Stripe/Render untouched.
+- **Evidence:** [PR #119](https://github.com/mvryhan-web/video-variator-android/pull/119) MERGED to BASE as `652093c3`. [Owner Business CI 38923598306](https://github.com/mvryhan-web/video-variator-android/actions/runs/38923598306), [refreshed business CI 38924145417](https://github.com/mvryhan-web/video-variator-android/actions/runs/38924145417), [legacy business regression 38923643938](https://github.com/mvryhan-web/video-variator-android/actions/runs/38923643938) and [coordination 38923643922](https://github.com/mvryhan-web/video-variator-android/actions/runs/38923643922) PASS. Following the concurrent BASE update preserved colleagues' files. Owner business API/UI now show only saved AI creation mix; all legacy Tool popularity, true gross margin, trial-to-paid/churn remain unverified. No main/Render/Stripe/provider/Home change; overall §37 PARTIAL.
 
 ## BASE #49 concurrent AI migration runners — MERGED TO BASE / POSTGRES VERIFIED (2026-10-16)
 
