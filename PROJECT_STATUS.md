@@ -39,9 +39,17 @@ The exact completion state of older components must be verified from the current
 |---|---|---|---|---|
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
+| BASE AI Apps discovery | ChatGPT continuation / PR #51 | `deepsyq-platform` (integrated from `base-ai-apps-discovery-20261015`) | CODE VERIFIED / BASE MERGED / NOT DEPLOYED | Search, format/category filters, shareable URLs, safe empty/error states; desktop/mobile Chromium GitHub CI 38887932245 PASS. No public release; shared Google Veo regressions remain separate. |
 | BASE Video / reference intake, cleanup and Seedance preflight | ChatGPT continuation (handoff `90ee2b7`) | `deepsyq-platform` / PR #42 | TRUSTED REAL FFPROBE + ISOLATED S3/POSTGRES CI PASSED / CLOUD & BYTEPLUS BLOCKED | Video URL planner no longer accepts forged inspector verdict; mandatory owner MP4 GET + real FFprobe & Seedance checks before signing, 2nd ledger ready/TTL check; reference CI 38887304221: 62/62 unit, 9/9 isolated PG/fake S3 green. MinIO+PG 38798448778 green. New transfer flags OFF; no real cloud/BytePlus/Stripe/production. |
 
 When another agent joins, add one row per claimed workstream before substantial implementation. One agent should own one bounded workstream at a time.
+
+### BASE AI Apps discovery — PR #51 integration (2026-10-16)
+
+- **CODE VERIFIED / MERGED TO BASE, NOT PRODUCTION:** AI Apps search, format/category filters, shareable URLs, responsive styling, honest no-data/error states and direct existing Studio handoff. No new generation calls, credit charges or fake templates. Branch `base-ai-apps-discovery-20261015` PR #51 was reconciled against current `deepsyq-platform` without overwriting BASE Video concurrent files.
+- **Focused CI:** [AI Apps desktop + mobile Chromium run 38887932245](https://github.com/mvryhan-web/video-variator-android/actions/runs/38887932245) passed after conflict resolution. Shared platform regression still fails in unrelated Google Veo unit cases; investigate through owning BASE Video stream, not by changing PR #51 files.
+- No changes to protected Home, Inspiration, backend, provider router, jobs, Stripe, wallet, database migrations, Render/main. Public activation, genuine owner templates and integrated broad acceptance remain separate launch gates.
+
 
 ## Approved queued roadmap
 

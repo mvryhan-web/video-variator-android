@@ -1,0 +1,39 @@
+name: Deepsyq AI Apps discovery
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/ai-apps.html'
+      - 'app/src/main/assets/ai-apps.css'
+      - 'app/src/main/assets/ai-apps.js'
+      - 'tests/deepsyq-ai-apps-discovery.spec.mjs'
+      - '.github/workflows/deepsyq-ai-apps-discovery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ai-apps-discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Validate isolated AI Apps changes
+        run: |
+          node --check app/src/main/assets/ai-apps.js
+          node --check tests/deepsyq-ai-apps-discovery.spec.mjs
+      - run: npx playwright install --with-deps chromium
+      - name: Check search, URL filters and honest empty states on desktop and mobile
+        run: npx playwright test tests/deepsyq-ai-apps-discovery.spec.mjs --project=chromium --project=mobile-chromium
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: ai-apps-discovery-evidence
+          path: test-results/
+          retention-days: 7
