@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — reconcile already-merged QA status records (IN PROGRESS, 2026-10-16)
+
+- **Owner/branch:** Agent 5, `agent5-handoff-status-reconciliation-20261016`; coordinator-only documentation correction, no BASE feature row claimed.
+- **Gap:** top-of-file historical Agent 5 PR #78/#92/#95/#100 records still say `READY TO INTEGRATE`, `PR PENDING` or `pending BASE merge` despite GitHub showing each **MERGED into `deepsyq-platform`**. This can mislead successor agents about unfinished work.
+- **Plan:** verify exact GitHub merge commits, correct only Agent 5's four scoped records, retain `NOT MAIN / NOT LIVE` and observed red broad CI; leave A–D code and ownership unchanged. Separate docs PR into BASE.
+
 ## Agent 5 — BASE checklist ↔ coordination consistency CI (SCOPED CODE VERIFIED, PR #100, 2026-10-16)
 
 - **Ownership:** Agent 5 independent read-only QA (`agent5-base55-checklist-consistency-20261016`), no new A–D BASE feature-row claim.
