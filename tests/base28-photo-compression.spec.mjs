@@ -15,6 +15,6 @@ test('BASE #28 local photo compression produces JPEG with quality control and no
  await page.locator('#compressQuality').fill('50');
  await page.locator('#utilityRun').click();
  await expect(page.locator('.utility-result')).toContainText('test-compressed.jpg');
- await expect(page.locator('#utilityStatus')).toContainText('Original:');
+ await expect(page.locator('.utility-result')).toContainText('Original:');
  expect(posts).toBe(0);
 });
