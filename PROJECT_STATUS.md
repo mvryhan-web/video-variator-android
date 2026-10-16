@@ -35,11 +35,13 @@ This file is the shared live progress board for all coding agents.
 - **Evidence:** [Draft PR #66](https://github.com/mvryhan-web/video-variator-android/pull/66), implementation `6538fe8e8046f0ecb89529594774e0c2becd7bc9`, 5 new tests `5d0899d0b6d793e3c00545d819d983f5f21460cf`, [GitHub Actions 38900266382](https://github.com/mvryhan-web/video-variator-android/actions/runs/38900266382) **PASS** (new + prior generation pricing tests + syntax).
 - **State:** scoped **CODE VERIFIED**, entire BASE #18 **PARTIAL / NOT MAIN / NOT DEPLOYED**; real pricing-provider evidence and commercial launch gates remain external. No Stripe/Render/main edits.
 
-## BASE #49 — Migration read-only checks and ledger drift / IN PROGRESS (2026-10-16)
+## BASE #49 — Migration read-only checks and ledger drift / SCOPED CODE VERIFIED (2026-10-16)
 
 - **Agent:** BASE-D-MigrationSafety, branch `base55-d-migration-readonly-20261016`, parent BASE `deepsyq-platform`. Specific row #49 claimed first in coordination board.
 - **Audit:** `runAiMigrations(pool,{checkOnly:true})` runs `CREATE TABLE IF NOT EXISTS` via `ensureLedger` before deciding it is check-only. Thus `npm run migrate:ai:check` is *not truly read-only*. Also existing `aiMigrationStatus` omits applied ledger names missing from current manifest, so obsolete/unexpected migrations can go unreported. PR #45 concerns separate preflight files; leave them untouched.
-- **Scope:** Fix check-only side effects and fail-closed unknown migration-ledger rows in `server/ai-migrations.js`; add bounded no-database unit tests and CI. Do not apply migrations, change schema/SQL files, touch Render or launch production.
+- **Result:** `server/ai-migrations.js` changed so `runAiMigrations(...,{checkOnly:true})` does **not** call the schema-writing `ensureLedger`. `aiMigrationStatus` now reports unknown historical ledger entries and blocks later migrate/check when one is present. No migration SQL/schema changed or applied.
+- **Evidence:** draft [PR #69](https://github.com/mvryhan-web/video-variator-android/pull/69), code commit `39bd5f909bf5096d04fef058929b5fc7d9c1fe80`, 4 unit tests `d613d0c94f337294160611d170acab18c9180705`, scoped [GitHub CI 38900828078](https://github.com/mvryhan-web/video-variator-android/actions/runs/38900828078) **PASS** (4 new + existing manifest, no production DB calls).
+- **State:** scoped **CODE VERIFIED**; full BASE #49 remains **PARTIAL / NOT MERGED TO MAIN / NOT LIVE VERIFIED** until staging migration, production backup and rollback acceptance. PR #45 preflight files unchanged.
 
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
