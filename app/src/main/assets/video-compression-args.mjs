@@ -17,6 +17,13 @@ export function videoCompressionArgs(preset='balanced',output='compressed.mp4'){
   '-pix_fmt','yuv420p','-c:a','aac','-b:a',p.audioKbps+'k',
   '-movflags','+faststart',output];
 }
+export function videoCompressionInputSupported(file){
+ if(!file||typeof file.name!=='string')return false;
+ const mime=String(file.type||'').toLowerCase();
+ // Browser file-picker accept=video/* is advisory; validate before loading WASM.
+ // Some phones omit MOV/WebM MIME types, so allow known video extensions too.
+ return mime.startsWith('video/')||/\.(mp4|m4v|mov|webm|mkv|avi|3gp)$/i.test(file.name);
+}
 export function videoCompressionSummary(inputBytes,outputBytes){
  if(!Number.isSafeInteger(inputBytes)||inputBytes<=0||!Number.isSafeInteger(outputBytes)||outputBytes<=0)
   throw new RangeError('INVALID_VIDEO_SIZE');

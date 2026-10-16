@@ -91,3 +91,18 @@ test('BASE #28: empty codec output reports failure and must not offer a bogus 10
  expect(spy.terminated).toBe(true);
  expect(posts).toBe(0);
 });
+
+test('BASE #28: non-video file is rejected before allocating local FFmpeg memory',async({page})=>{
+ let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.route('**/ai-media.js',r=>r.fulfill({status:200,contentType:'text/javascript',body:localEngineMock}));
+ await page.goto('/mobile-utility.html?tool=video-compress');
+ await page.evaluate(()=>{window.__ffmpegSpy={};});
+ await page.locator('#utilityFiles').setInputFiles({name:'not-video.pdf',mimeType:'application/pdf',buffer:Buffer.from('%PDF-1.4')});
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityStatus')).toContainText('Choose a video file');
+ await expect(page.locator('#utilityResults')).toBeEmpty();
+ const spy=await page.evaluate(()=>window.__ffmpegSpy);
+ expect(spy.input).toBeUndefined();
+ expect(spy.args).toBeUndefined();
+ expect(posts).toBe(0);
+});

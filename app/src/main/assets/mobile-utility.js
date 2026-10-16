@@ -1,6 +1,6 @@
 /* Free mobile utilities: processing on-device, no raw file uploads. */
 import {createEngine,saveLocal,subtitleFiles} from './ai-media.js';
-import {videoCompressionArgs,videoCompressionSummary} from './video-compression-args.mjs';
+import {videoCompressionArgs,videoCompressionSummary,videoCompressionInputSupported} from './video-compression-args.mjs';
 const $=id=>document.getElementById(id);
 const catalog=window.VUMobileToolsCatalog,tool=new URLSearchParams(location.search).get('tool');
 const mode=catalog?.tools.find(x=>x.id===tool);
@@ -343,6 +343,7 @@ async function processPDF(){
 }
 async function processMedia(){
  const f=files()[0],video=tool!=='audio-trim';
+ if(tool==='video-compress'&&!videoCompressionInputSupported(f))throw Error(label('Choose a video file (MP4, MOV, WebM and other video formats).','Выберите видеофайл (MP4, MOV, WebM или другой видеоформат).'));
  if(tool==='video-compress'&&f.size===0)throw Error(label('Choose a non-empty video file.','Выберите видеофайл с данными.'));
  let start=0,end=0;
  if(tool!=='video-mute'&&tool!=='video-compress'){start=settingsNum('utilityStart');end=settingsNum('utilityEnd');if(end<=start||end-start>3600)throw Error(label('End must be after start; maximum 60 minutes.','Конец должен быть позже начала. Максимум 60 минут.'));}

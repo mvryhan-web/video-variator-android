@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {videoCompressionArgs,videoCompressionSummary} from '../app/src/main/assets/video-compression-args.mjs';
+import {videoCompressionArgs,videoCompressionSummary,videoCompressionInputSupported} from '../app/src/main/assets/video-compression-args.mjs';
 
 test('BASE #28: all local FFmpeg presets map a real video and optional audio, no shell command',()=>{
  for(const [preset,crf,bitrate] of [['small','31','96k'],['balanced','27','128k'],['quality','23','160k']]){
@@ -25,4 +25,12 @@ test('BASE #28: report measured savings without promising smaller output',()=>{
  assert.throws(()=>videoCompressionSummary(0,100),/INVALID_VIDEO_SIZE/);
  assert.throws(()=>videoCompressionSummary(200,-3),/INVALID_VIDEO_SIZE/);
  assert.throws(()=>videoCompressionSummary(200,0),/INVALID_VIDEO_SIZE/); // Empty FFmpeg output is never 100% saved.
+});
+test('BASE #28: reject non-video sources before allocating browser WASM',()=>{
+ assert.equal(videoCompressionInputSupported({name:'photo.png',type:'image/png'}),false);
+ assert.equal(videoCompressionInputSupported({name:'document.pdf',type:'application/pdf'}),false);
+ assert.equal(videoCompressionInputSupported({name:'mobile.MOV',type:''}),true);
+ assert.equal(videoCompressionInputSupported({name:'clip.webm',type:'application/octet-stream'}),true);
+ assert.equal(videoCompressionInputSupported({name:'unknown',type:'video/mp4'}),true);
+ assert.equal(videoCompressionInputSupported(null),false);
 });
