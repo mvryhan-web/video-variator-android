@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash,createHmac} from 'node:crypto';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {mkdtemp,readFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {createObjectStorage} from '../server/generation-storage.js';
 import {createSeedanceVideoTransferPlanner,referenceVideoTransferEnabled} from '../server/generation-reference-video-transfer.js';
 
@@ -8,6 +13,21 @@ const now=()=>new Date('2026-10-15T18:55:00.000Z');
 const ID='123e4567-e89b-42d3-a456-426614174000';
 const ID2='123e4567-e89b-42d3-a456-426614174001';
 const secret='STORAGE_TEST_SECRET_KEY_NOT_LIVE_12345';
+const execFileAsync=promisify(execFile);
+async function actualMp4(seconds){
+ const dir=await mkdtemp(join(tmpdir(),'deepsyq-transfer-proof-'));
+ try{
+  const filename=join(dir,'real-reference.mp4');
+  await execFileAsync('ffmpeg',['-v','error','-f','lavfi','-i',
+   'color=c=blue:s=854x480:r=24','-t',String(seconds),'-c:v','libx264',
+   '-pix_fmt','yuv420p','-movflags','+faststart','-an','-y',filename],
+   {timeout:25000,maxBuffer:32*1024,windowsHide:true});
+  return readFile(filename);
+ }finally{await rm(dir,{recursive:true,force:true});}
+}
+let readyMp4,tooLongMp4;
+const validMp4=()=>readyMp4??=actualMp4(3);
+const invalidDurationMp4=()=>tooLongMp4??=actualMp4(16);
 const env=()=>({
  AI_OBJECT_STORAGE_ENABLED:'true',AI_OBJECT_STORAGE_ENDPOINT:'https://media.example.com',
  AI_OBJECT_STORAGE_BUCKET:'deepsyq-fixture',AI_OBJECT_STORAGE_REGION:'ap-southeast-1',
@@ -95,38 +115,90 @@ test('another owner, spoofed extension or arbitrary S3 key cannot be presigned',
   assert.throws(()=>storage.presignStagedReferenceRead({...other,expiresAt:'2026-10-15T19:00:00Z'}),/REFERENCE_MEDIA_ACCESS_DENIED|REFERENCE_MEDIA_INVALID/);
  }
 });
-test('future provider video plan is offline and requires trusted reinspection, owner and remaining TTL',async()=>{
- const {storage,key}=storageAndAsset(),events=[];
+test('video planning always reads owner-scoped actual MP4 bytes and runs real ffprobe before presigning',async()=>{
+ const {storage}=storageAndAsset(),events=[],bytes=await validMp4();
  const ledger={
-  async get(){throw Error('NOT_USED_WHEN_INSPECTOR_INJECTED');},
+  async get({userId,id}){
+   events.push(['get',userId,id]);
+   if(userId!=='owner')throw Error('REFERENCE_MEDIA_ACCESS_DENIED');
+   return bytes;
+  },
   async getForVideoTransfer({userId,id}){
    events.push(['candidate',userId,id]);
    if(userId!=='owner')throw Error('REFERENCE_MEDIA_ACCESS_DENIED');
-   return {key:storage.stagedReferenceKey({userId,mime:'video/mp4',assetId:id}),mime:'video/mp4',expiresAt:'2026-10-15T19:00:00Z'};
+   return {key:storage.stagedReferenceKey({userId,mime:'video/mp4',assetId:id}),
+    mime:'video/mp4',expiresAt:'2026-10-15T19:00:00Z'};
   }
  };
- const inspector={async inspect({userId,model,videoAssetIds}){events.push(['inspect',userId,model,...videoAssetIds]);return {compatible:true,reason:null};}};
+ let forgeryCalled=false;
+ // Deliberate extra property must be IGNORED, not trusted.
+ const inspector={async inspect(){forgeryCalled=true;return {compatible:false,reason:'FORGED'};}};
  const planner=createSeedanceVideoTransferPlanner({ledger,storage,inspector,env:env()});
  const result=await planner.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ID,ID2]});
+ assert.equal(forgeryCalled,false,'planner must never consult injected inspector');
  assert.equal(result.providerSubmitted,false);
  assert.equal(result.content.length,2);
  assert.equal(result.content[0].type,'video_url');
  assert.equal(result.content[0].role,'reference_video');
  assert.equal(new URL(result.content[0].video_url.url).searchParams.get('X-Amz-Expires'),'30');
  assert.equal(result.expiresAt,'2026-10-15T18:55:30.000Z');
- assert.deepEqual(events,[['inspect','owner','byteplus-seedance-2',ID,ID2],['candidate','owner',ID],['candidate','owner',ID2]]);
- assert.equal(result.providerRequest,undefined);assert.equal(result.submittedJob,undefined);
+ assert.deepEqual(events,[
+  ['get','owner',ID],['get','owner',ID2],
+  ['candidate','owner',ID],['candidate','owner',ID2]
+ ]);
+ assert.equal(result.providerRequest,undefined);
+ assert.equal(result.submittedJob,undefined);
 });
-test('no media plan can bypass model, replay/duplicate IDs, reinspection or transfer flags',async()=>{
+test('fake compatible verdict cannot bypass malformed or incompatible video bytes',async()=>{
  const {storage}=storageAndAsset();
- const ledger={get:async()=>Buffer.alloc(0),getForVideoTransfer:async()=>{throw Error('NEVER') }};
- const deny={inspect:async()=>({compatible:false,reason:'REFERENCE_VIDEO_DURATION_TOTAL'})};
- const planner=createSeedanceVideoTransferPlanner({ledger,storage,inspector:deny,env:env()});
- await assert.rejects(()=>planner.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ID]}),/REFERENCE_VIDEO_DURATION_TOTAL/);
+ let candidateReads=0,inspectOverrideCalls=0,signedCount=0;
+ const ledger={
+  async get(){return Buffer.from('not a real MP4 file');},
+  async getForVideoTransfer(){candidateReads++;throw Error('SHOULD_NOT_READ_CANDIDATE');}
+ };
+ const planner=createSeedanceVideoTransferPlanner({
+  ledger,storage:{presignStagedReferenceRead(){signedCount++;throw Error('SHOULD_NOT_SIGN');}},
+  inspector:{async inspect(){inspectOverrideCalls++;return {compatible:true};}},
+  env:env()
+ });
+ await assert.rejects(()=>planner.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ID]}),
+  /REFERENCE_MEDIA_INVALID/);
+ assert.equal(inspectOverrideCalls,0);
+ assert.equal(candidateReads,0);
+ assert.equal(signedCount,0);
+});
+test('real ffprobe metadata incompatible with Seedance duration refuses signed video URL',async()=>{
+ const {storage}=storageAndAsset(),bytes=await invalidDurationMp4();
+ let candidates=0;
+ const planner=createSeedanceVideoTransferPlanner({
+  ledger:{
+   async get(){return bytes;},
+   async getForVideoTransfer(){candidates++;throw Error('NEVER_SIGN');}
+  },storage,env:env()
+ });
+ await assert.rejects(()=>planner.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ID]}),
+  /REFERENCE_VIDEO_INCOMPATIBLE/);
+ assert.equal(candidates,0);
+});
+test('no video plan can bypass model, duplicate IDs, actual reinspection or transfer flags',async()=>{
+ const {storage}=storageAndAsset();
+ let reads=0;
+ const ledger={
+  async get(){reads++;return Buffer.alloc(0);},
+  async getForVideoTransfer(){throw Error('NEVER_SIGN');}
+ };
+ const planner=createSeedanceVideoTransferPlanner({ledger,storage,env:env()});
+ await assert.rejects(()=>planner.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ID]}),
+  /REFERENCE_MEDIA_INVALID/);
  for(const videoAssetIds of [[],[ID,ID],['https://evil.test/secret.mp4'],[ID,ID2,ID,ID2]]){
-  await assert.rejects(()=>planner.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds}),/REFERENCE_MEDIA_INVALID/);
+  await assert.rejects(()=>planner.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds}),
+   /REFERENCE_MEDIA_INVALID/);
  }
- await assert.rejects(()=>planner.prepare({userId:'owner',model:'other-model',videoAssetIds:[ID]}),/REFERENCE_MODEL_NOT_SUPPORTED/);
- const disabled=createSeedanceVideoTransferPlanner({ledger,storage,inspector:deny,env:{}});
- await assert.rejects(()=>disabled.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ID]}),/REFERENCE_VIDEO_TRANSFER_DISABLED/);
+ await assert.rejects(()=>planner.prepare({userId:'owner',model:'other-model',videoAssetIds:[ID]}),
+  /REFERENCE_MODEL_NOT_SUPPORTED/);
+ assert.equal(reads,1,'invalid requests should not run ffprobe or touch stored media');
+ const disabled=createSeedanceVideoTransferPlanner({ledger,storage,env:{}});
+ await assert.rejects(()=>disabled.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ID]}),
+  /REFERENCE_VIDEO_TRANSFER_DISABLED/);
+ assert.equal(reads,1);
 });
