@@ -58,7 +58,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 25 | My Creations | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 26 | Canvas | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 27 | Existing Video Uniquifier preserved under Tools | PARTIAL | C | ROOT SWITCH/PRODUCTION REGRESSION GATED | CODE VERIFIED (BASE, not live) | ChatGPT Lane C / PR #61 / `base-27-video-uniquifier-tools-20261016` / CI 38898789990 |
-| 28 | Utilities gathered in Tools | PARTIAL — AUDIO AND COLLAGE CODE VERIFIED | C | PHOTO COMPRESSION MISSING / REMAINING TOOL GAPS / RELEASE GATED | IN PROGRESS — PHOTO COMPRESSION (prior Collage CI retained) | ChatGPT Lane C / PR #67 / merge `cea9c087` / CI 38900538191 |
+| 28 | Utilities gathered in Tools | PARTIAL — AUDIO/COLLAGE/PHOTO COMPRESSION CODE VERIFIED | C | REMAINING UTILITIES + PHYSICAL DEVICES AND RELEASE GATED | CODE VERIFIED / MERGED TO BASE (PRs #67 + #113) | Agent C / PR #113 merge `dd596a8c` / CI 38923490078 + collage 38923490073 |
 | 29 | Final navigation | PARTIAL — AI APPS HISTORY/CREDITS + ACCOUNT LINKS CODE VERIFIED | C | WHOLE-APP ACCOUNT NAV AND DEVICE/LIVE GATED | CODE VERIFIED / MERGED TO BASE (PRs #68 + #110) | Agent C / Issue #74 / PR #68 CI 38900798943 / PR #110 merge `89477d7b` CIs 38915655213 + 38915655095 |
 | 30 | Desktop / Android / iPhone responsive | PARTIAL — AI APPS MOBILE CODE VERIFIED | C | PHYSICAL DEVICE + WHOLE-APP ACCEPTANCE PENDING | CODE VERIFIED / MERGED TO BASE (PR #79) | Agent C / Issue #74 / merge `c389045d` / CI 38904085432 / Agent 5 reviewed |
 | 31 | Generation UX/status | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
@@ -78,8 +78,8 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 45 | Onboarding | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 46 | Homepage conversion | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 47 | Do not expose BytePlus as our product | DONE | — | DO NOT REBUILD | — | — |
-| 48 | Production safety / regression | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS — redact preflight database errors; historical PR #77 review preserved | BASE-D / base55-d-release-review-issue75-20261016 |
-| 49 | Database migrations | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (partial; PR #82 · CI 38904014557 · a87bdc86; MAIN/LIVE BLOCKED) | BASE-D-MigrationSafety / base55-d-migration-readonly-20261016 |
+| 48 | Production safety / regression | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (#117 · CI 38923210338 PASS, release/live gates pending) | BASE-D / base55-d-release-review-issue75-20261016 |
+| 49 | Database migrations | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS — serialize concurrent migration apply using PostgreSQL advisory lock; prior #82 preserved | BASE-D-MigrationSafety / base55-d-migration-readonly-20261016 |
 | 50 | Feature flags | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (partial; #87) | Agent-D / CI 38905747621 |
 | 51 | First commercial vertical slice | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (#97 + #101, CI #38911625488 PASS, LIVE BLOCKED) | BASE-D-PolicyGuard / base51-generation-policy-failclosed-20261016 |
 | 52 | Required implementation order | IN PROGRESS | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
