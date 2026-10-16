@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — BASE 55-claim-board integrity verifier / IN PROGRESS (2026-10-16)
+
+- **Agent / isolated branch:** Agent 5 coordinator (not A–D feature owner), `agent5-base55-board-integrity-20261016`.
+- **Claim scope:** new read-only Node script + isolated unit tests + guarded GH Actions workflow to assert 55 exact original BASE rows, correct non-overlapping A/B/C/D lane mapping, and a named assignee for an explicit `IN PROGRESS` claim. It must not change any original TXT, product feature, approved Home, provider/router, Stripe, DB or `main`.
+- **Before code:** inspected original BASE headings, current 55 coordination rows and tests/workflows directory; no existing equivalent verifier found. Claims/owners in A-D unchanged.
+
 ## Agent 5 — scoped CI regression ownership / IN PROGRESS (2026-10-16)
 
 - **Agent / branch:** Agent 5 / `agent5-regression-handoff-20261016`, independent quality handoff; no BASE A/B/C/D feature claim. **SCOPED REVIEW VERIFIED / PR PENDING / NOT MAIN / NOT LIVE.**
