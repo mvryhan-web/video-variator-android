@@ -1,5 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent D — BASE #16 post-disable refunds + explicit billing mode / PR #164 CODE PUSHED, CI QUEUED (2026-10-16)
+
+- **Existing claim expanded BEFORE source change:** board `fc25aa8`, PROJECT_STATUS `79feec9`. [PR #164](https://github.com/mvryhan-web/video-variator-android/pull/164) head `bc62fbff295b3981e28f1ea56e0a0a2d07bc9ebb` DRAFT/UNMERGED; exactly `server/generation-billing.js`, `tests/base16-shared-stripe-refund-unit.mjs`, `tests/generation-billing-unit.mjs`, `docs/BASE_16_REFUNDS_AFTER_CHECKOUT_OFF.md`.
+- **Historical refunds:** clearly AI-marked same-mode Stripe charge refund reaches existing durable reversal despite new checkout OFF. Unrelated legacy refunds untouched; not-yet-recorded purchase retried; cross-mode mismatch rejected. Exact handler synthetic 4/4 PASS.
+- **Explicit mode:** New AI Checkout requires literal `AI_BILLING_MODE=test|live`; an unknown/missing mode and matching sk_test key cannot inadvertently enable Test Checkout. Exact runtime 8/8 isolated PASS, plus new Express HTTP test (not yet CI-verified). No new prices, ledger, Stripe product, original TXT, public rollout, main or Render change.
+- **Current latest-head CI:** eight new GitHub Actions 38947237364,38947237331,38947237386,38947237494,38947237404,38947237406,38947237461,38947237468 all QUEUED. No full CI or merge claimed. Original BASE #16 PARTIAL / NOT LIVE.
+
+
 ## Agent D — BASE #16 historical signed Stripe refunds while Checkout OFF / IN PROGRESS (2026-10-16)
 
 - **Scoped PR:** [#164](https://github.com/mvryhan-web/video-variator-android/pull/164), head `b1cb76f5b47fef356a985c7ab45ed965a1407c12`, DRAFT/UNMERGED. Exact three files: one change in `server/generation-billing.js` to allow positively AI-marked historical same-mode charge refunds even with one-time AI Checkout OFF; tests extend existing `base16-shared-stripe-refund-unit.mjs`; explanatory document. Prior unrelated legacy subscription refunds remain untouched, pending AI grant still retriable, cross-mode marked refund rejected. 4/4 isolated executions of actual refund dispatcher PASS. Eight current-head GitHub Actions queued (including old BASE #16 shared refunds CI 38946337878); no full CI success/merge claimed. Signed webhook envelope is verified upstream; no activation or new grant. Full #16 PARTIAL / NOT LIVE.
