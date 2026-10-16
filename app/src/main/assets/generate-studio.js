@@ -2,6 +2,7 @@ import {saveLocal} from './ai-media.js';
 import {MODEL_CATALOG,MODELS} from './generate-models.js';
 import {takeStudioHandoff} from './studio-handoff.js';
 import {studioCreditWalletState} from './studio-credit-wallet.js';
+import {progressView} from './studio-job-progress.js';
 const $=id=>document.getElementById(id),ru=navigator.language.startsWith('ru');
 const say=(en,r)=>ru?r:en;
 const strings={back:'← Назад',pilot:'Предпросмотр студии',workspace:'ВАША СТУДИЯ',video:'Видео',image:'Изображения',audio:'Аудио',dashboard:'Главная ↗',translation:'Перевод · позже',create:'Создать',history:'Мои результаты',label:'ТВОРЧЕСКАЯ СТУДИЯ',headline:'Ваша идея. Создайте её.',prompt:'Опишите, что хотите создать',addPhoto:'Фото',clear:'Убрать фото',generate:'Создать ✦',consent:'Я согласен отправить запрос и фотографии в Google для генерации.',pilotNote:'Предпросмотр студии. Оплата не включена.',chooseModel:'Выберите модель',modelHint:'Выберите инструмент для своей задачи. У каждой модели указан статус подключения.',settings:'Настройки',format:'Формат',capabilityNote:'Настройки соответствуют выбранной модели. Неподдерживаемые параметры не отправляются.',trackType:'Тип аудио',song:'Песня с вокалом',instrumental:'Без слов',voiceoverMode:'Озвучка · подключение готовится',voiceover:'Открыть существующий инструмент озвучки →',language:'Язык',voice:'Голос',done:'Готово',download:'Скачать',share:'Поделиться',delete:'Удалить',saveNote:'Сохраните копию. Удаление результата не удаляет скачанные файлы.',historyHint:'Здесь доступны сохранённые результаты студии. Генерация не запускается автоматически.',checkResult:'Проверить последний результат',historyLoading:'Загружаем результаты…',historyNone:'Сохранённых результатов пока нет.',historyOpen:'Открыть',historyReady:'Готово',historyProcessing:'В работе',historyFailed:'Ошибка',filterAll:'Все',filterImages:'Изображения',filterVideos:'Видео',filterFailed:'Ошибки',filterProcessing:'В работе'};
@@ -14,6 +15,16 @@ let estimateTimer=null,estimateSignature='';
 let historyThumbUrls=[],historyMediaUrl=null,historyMediaPlayer=null,historyMediaButton=null,historyMediaEpoch=0;
 const drafts={};
 let activeVideoWatchId=null; // Current browser polling only; the provider job is server-owned.
+let lastJobProgress=null;
+function updateJobProgress(status,amounts={}){
+ lastJobProgress=progressView(status,{...amounts,locale:ru?'ru':'en'});
+ const panel=$('jobProgress');if(!panel)return;
+ $('jobProgressStage').textContent=lastJobProgress.heading;
+ $('jobProgressCredits').textContent=lastJobProgress.credits;
+ $('jobProgressHint').textContent=lastJobProgress.hint;
+ panel.dataset.status=lastJobProgress.status;
+ panel.hidden=historyView;
+}
 const imageBatchQuantity=()=>kind==='image'&&config?.imageBatchEnabled?Number($('imageQuantity').value||1):1;
 let imageDraftKey=null,imageDraftReady=false,imageDraftLoaded=false,imageDraftNeedsPhotos=false;
 async function initializeImageDraft(){
@@ -740,7 +751,7 @@ async function loadHistory(){
  }catch(e){list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
 }
 document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclick=()=>{historyFilter=button.dataset.historyFilter;document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));void loadHistory();});
-function setHistory(on){if(!on)clearHistoryMediaPreview();historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
+function setHistory(on){if(!on)clearHistoryMediaPreview();historyView=on;if($('jobProgress'))$('jobProgress').hidden=on||!lastJobProgress;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
 window.addEventListener('pagehide',()=>{clearHistoryMediaPreview();clearHistoryThumbs();});
 $('showCreate').onclick=()=>{const u=new URL(location.href);u.searchParams.delete('view');history.replaceState(null,'',u);setHistory(false);};$('showHistory').onclick=()=>setHistory(true);
 function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
@@ -749,6 +760,7 @@ async function watch(id,epoch){
   const d=await(await api('/api/studio/jobs/'+encodeURIComponent(id))).json();
   // The user can stop browser polling at any moment; ignore late HTTP responses.
   if(epoch!==generation)return;
+  updateJobProgress(d.status,{creditsReserved:d.creditsReserved,creditsCharged:d.creditsCharged});
   if(d.kind==='video'&&['queued','processing','finalizing'].includes(d.status)){
    activeVideoWatchId=id;availability();
   }
@@ -813,6 +825,7 @@ async function createImageBatch(){
  let submitted=0,ready=0;
  setHistory(false);clearResult();
  for(let index=0;index<quantity;index++){
+  job=null;updateJobProgress('submitting');
   busy=true;availability();
   $('status').textContent=say('Creating image '+(index+1)+' of '+quantity+'…','Создаём изображение '+(index+1)+' из '+quantity+'…');
   try{
@@ -825,9 +838,11 @@ async function createImageBatch(){
    submitted++;
    job=reply.id;
    sessionStorage.setItem('vu_generation_job',job);
+   updateJobProgress(reply.status||'processing',{creditsReserved:reply.creditsReserved});
    await watch(job,epoch);
    ready++;
   }catch(e){
+   if(!job)updateJobProgress('unconfirmed');
    $('status').textContent=say(
     'Batch stopped after '+submitted+' submitted and '+ready+' completed image(s). '+errorText(e)+' Check History: a job may still be processing. No automatic retries were made.',
     'Пакет остановлен: отправлено '+submitted+', готово '+ready+'. '+errorText(e)+' Проверьте Историю: одна из задач ещё может выполняться. Автоматических повторов не было.'
@@ -837,7 +852,7 @@ async function createImageBatch(){
  }
  $('status').textContent=say('Batch complete: '+ready+' images saved as separate results in History.','Пакет завершён: '+ready+' изображения сохранены отдельно в Истории.');
 }
-$('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)return;busy=true;availability();if(kind==='image'&&imageBatchQuantity()>1){try{await createImageBatch();}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}return;}setHistory(false);clearResult();const epoch=++generation;$('status').textContent=say('Submitting your request…','Отправляем запрос…');try{const d=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID(),kind,model:modelId,prompt:$('prompt').value,ratio:$('ratio').value,...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),...(kind==='video'?{videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value}:{}),musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked})})).json();job=d.id;sessionStorage.setItem('vu_generation_job',job);if(kind==='video'){activeVideoWatchId=job;availability();}$('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');await watch(job,epoch);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}};
+$('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)return;busy=true;availability();if(kind==='image'&&imageBatchQuantity()>1){try{await createImageBatch();}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}return;}setHistory(false);clearResult();job=null;updateJobProgress('submitting');const epoch=++generation;$('status').textContent=say('Submitting your request…','Отправляем запрос…');try{const d=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID(),kind,model:modelId,prompt:$('prompt').value,ratio:$('ratio').value,...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),...(kind==='video'?{videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value}:{}),musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked})})).json();if(!d.id)throw Error('STUDIO_STORAGE_UNAVAILABLE');job=d.id;sessionStorage.setItem('vu_generation_job',job);updateJobProgress(d.status||'processing',{creditsReserved:d.creditsReserved});if(kind==='video'){activeVideoWatchId=job;availability();}$('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');await watch(job,epoch);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;if(!job)updateJobProgress('unconfirmed');$('status').textContent=errorText(e);busy=false;availability();}};
 // Continue from an existing image in the same browser without an API call.
  // The reference is explicitly prepared for a new Image request; Generate stays manual.
  async function imageResultReference(input){
