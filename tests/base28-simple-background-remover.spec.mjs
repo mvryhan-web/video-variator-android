@@ -19,6 +19,16 @@ test('BASE #28: local simple-background erase yields transparent PNG without upl
  await page.locator('#photo').setInputFiles({name:'item.png',mimeType:'image/png',buffer:Buffer.from(bytes)});
  await expect(page.locator('#erase')).toBeEnabled();
  await expect(page.locator('#sampleStatus')).toContainText('RGB 255, 255, 255');
+ // The interactive canvas must be fully usable without a mouse.
+ await page.locator('#original').focus();
+ await page.keyboard.press('End');
+ await expect(page.locator('#sampleStatus')).toContainText('Background sample at 30, 30');
+ await page.keyboard.press('Home');
+ await expect(page.locator('#sampleStatus')).toContainText('Background sample at 1, 1');
+ await page.keyboard.press('Shift+ArrowRight');
+ await expect(page.locator('#sampleStatus')).toContainText('Background sample at 11, 1');
+ await page.keyboard.press('Enter');
+ await expect(page.locator('#status')).toContainText('pixel selected');
  await page.locator('#erase').click();
  await expect(page.locator('#download')).toBeEnabled();
  const pixels=await page.locator('#result').evaluate(canvas=>{
