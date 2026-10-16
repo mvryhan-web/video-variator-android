@@ -147,7 +147,12 @@ export class GenerationWallet {
   }
   async history(userId) {
     identifier(userId); await this.init();
-    const {rows}=await this.pool.query('SELECT kind,reference,available_delta,reserved_delta,debt_delta,created_at FROM vv_ai_ledger WHERE user_id=$1 ORDER BY id DESC LIMIT 50',[userId]);
-    return rows;
+    // Keep Stripe checkout/session refs and job IDs in the durable internal
+    // ledger for idempotency/audit; expose only amounts/type/time to customers.
+    const {rows}=await this.pool.query('SELECT kind,available_delta,reserved_delta,debt_delta,created_at FROM vv_ai_ledger WHERE user_id=$1 ORDER BY id DESC LIMIT 50',[userId]);
+    return rows.map(row=>({
+      kind:row.kind,available_delta:row.available_delta,reserved_delta:row.reserved_delta,
+      debt_delta:row.debt_delta,created_at:row.created_at
+    }));
   }
 }
