@@ -57,7 +57,14 @@ export function estimateGenerationPricing(request,model,env={}){
   if(request.kind==='video'&&!e.durationSeconds&&durationSeconds!==defaultDurationSeconds)return -1;
   return Number(!!e.ratio)+Number(!!e.quality)+Number(!!e.outputFormat)+Number(!!e.videoInputMode)+Number(e.referenceCount!=null)+Number(!!e.durationSeconds);
  };
- const match=candidates.map(e=>({e,s:score(e)})).filter(x=>x.s>=0).sort((a,b)=>b.s-a.s)[0]?.e;
- if(!match)return null;
+ const matches=candidates.map(e=>({e,s:score(e)})).filter(x=>x.s>=0);
+ if(!matches.length)return null;
+ // Two different approved pricing rows can overlap with equal specificity
+ // (e.g. one matches ratio, another matches quality). Never let JSON order
+ // decide the credit charge: require a single best match or refuse pricing.
+ const highest=Math.max(...matches.map(x=>x.s));
+ const best=matches.filter(x=>x.s===highest);
+ if(best.length!==1)return null;
+ const match=best[0].e;
  return {credits:match.credits,providerCostMicros:match.providerCostMicros,currency:match.currency,model:model.id,provider:model.provider,kind:model.kind};
 }
