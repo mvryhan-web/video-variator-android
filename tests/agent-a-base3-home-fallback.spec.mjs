@@ -45,7 +45,9 @@ test('BASE 3: empty rights-cleared video feed keeps visible honest 16:9 gallery 
  await expect(page.locator('#homeHeroEmpty')).toBeVisible();
  await expect(page.locator('.hero-stage h1')).toBeVisible();
  await expect(page.locator('#canvasFeature')).toBeVisible();
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+ // Measure this A-owned hero only; C separately owns mobile drawer/top-nav acceptance.
+ const fits=await gallery.evaluate(el=>{const a=el.getBoundingClientRect(),b=el.closest('.hero-stage').getBoundingClientRect();return a.left>=-1&&a.right<=innerWidth+1&&b.left>=-1&&b.right<=innerWidth+1;});
+ expect(fits).toBeTruthy();
  await page.screenshot({path:info.outputPath('home-no-approved-media-390.png'),fullPage:true});
  expect(paidPosts).toEqual([]);
 });
