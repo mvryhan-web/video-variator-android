@@ -25,6 +25,9 @@ test('BASE #30: real mobile opener, scrollable owned drawer, Escape, outside tap
   await expect(page.locator('body')).toHaveClass(/menu-open/);
   await expect(menu).toHaveAttribute('aria-expanded','true');
   await expect(sidebar).toHaveJSProperty('inert',false);
+  // Wait for the actual 150ms mobile drawer transition, never assume the
+  // layout has finished immediately after aria-expanded changes.
+  await expect.poll(()=>sidebar.evaluate(el=>el.getBoundingClientRect().left)).toBeGreaterThanOrEqual(-1);
   const rect=await sidebar.evaluate(el=>{
    const r=el.getBoundingClientRect();return {left:r.left,right:r.right,viewport:innerWidth,
     scrollable:el.scrollHeight>el.clientHeight,overflow:getComputedStyle(el).overflowY};
