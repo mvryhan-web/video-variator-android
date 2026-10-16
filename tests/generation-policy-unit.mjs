@@ -21,3 +21,39 @@ test('policy blocks concurrent and hourly abuse server-side',async()=>{
  mode='hourly';
  await assert.rejects(()=>enforceGenerationPolicy(client,{userId:'user-1',env}),/AI_RATE_LIMIT/);
 });
+
+test('BASE #51: explicitly enabled AI rate policy refuses missing, zero and malformed limits before DB',async()=>{
+ let queries=0;
+ const client={async query(){queries++;throw Error('DATABASE_SHOULD_NOT_BE_TOUCHED');}};
+ const enabled={AI_STUDIO_PUBLIC_POLICY_ENABLED:'true',
+  AI_STUDIO_MAX_CONCURRENT_PER_USER:'2',AI_STUDIO_MAX_JOBS_PER_HOUR:'6'};
+ for(const change of [
+  {AI_STUDIO_MAX_CONCURRENT_PER_USER:undefined},
+  {AI_STUDIO_MAX_CONCURRENT_PER_USER:'0'},
+  {AI_STUDIO_MAX_CONCURRENT_PER_USER:'not-a-number'},
+  {AI_STUDIO_MAX_CONCURRENT_PER_USER:'101'},
+  {AI_STUDIO_MAX_JOBS_PER_HOUR:undefined},
+  {AI_STUDIO_MAX_JOBS_PER_HOUR:'0'},
+  {AI_STUDIO_MAX_JOBS_PER_HOUR:'10001'},
+  {AI_STUDIO_MAX_JOBS_PER_HOUR:'1.5'}
+ ]){
+  const env={...enabled,...change};
+  await assert.rejects(
+   ()=>enforceGenerationPolicy(client,{userId:'test-1',env}),
+   e=>e.message==='AI_POLICY_LIMITS_NOT_CONFIGURED'&&e.status===503
+  );
+ }
+ for(const overrides of [
+  {enabled:true,maxConcurrentPerUser:0,maxJobsPerHourPerUser:10},
+  {enabled:true,maxConcurrentPerUser:1,maxJobsPerHourPerUser:0},
+  {enabled:true,maxConcurrentPerUser:undefined,maxJobsPerHourPerUser:10},
+  {enabled:true,maxConcurrentPerUser:101,maxJobsPerHourPerUser:10},
+  {enabled:true,maxConcurrentPerUser:1,maxJobsPerHourPerUser:10001}
+ ]){
+  await assert.rejects(
+   ()=>enforceGenerationPolicy(client,{userId:'test-1',policyOverride:overrides}),
+   /AI_POLICY_LIMITS_NOT_CONFIGURED/
+  );
+ }
+ assert.equal(queries,0,'invalid enabled rate policies must not query the database');
+});
