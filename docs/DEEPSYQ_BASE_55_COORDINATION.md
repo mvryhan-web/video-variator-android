@@ -70,7 +70,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 37 | Business analytics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | PR #64 + #119 / CODE VERIFIED (scoped, NOT LIVE) | BASE-D-Analytics-ChatGPT / PR #64 · CI 38899113996; Agent-D / PR #119 · CI 38924145417 |
 | 38 | Admin dashboard | PARTIAL — ADMIN MOBILE CODE VERIFIED | C | REAL DEVICES / AUTH AND LIVE RELEASE ACCEPTANCE PENDING | CODE VERIFIED / MERGED TO BASE (PR #98) | Agent C / Issue #74 / merge `fb9ce2a1` / CI 38912222509 |
 | 39 | Provider performance | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | CODE READY / TERMINAL-ONLY OUTCOME RATES, GH CI QUEUED (2026-10-16; NOT VERIFIED) | Agent B / Issue #73 / [PR #160](https://github.com/mvryhan-web/video-variator-android/pull/160) · `a2fd61b` |
-| 40 | Model routing registry | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 40 | Model routing registry | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS / FAIL-CLOSED DEFAULT MODEL REGISTRY (2026-10-16) | Agent B / Issue #73 / `base40-model-registry-safety-20261016` |
 | 41 | Internal model capabilities | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS / SAFE CATALOG METADATA (2026-10-16; CLAIMED) | Agent B / Issue #73 / `base41-model-capability-fidelity-20261016` (independent BASE branch; no fake provider support) |
 | 42 | Persist BytePlus output in our storage | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 43 | Pricing page | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (PR #132 · CI 38929739219 + 38929739237 PASS, LIVE BLOCKED) | BASE-D-ChatGPT / base55-d-pricing-integrity-20261016 |
