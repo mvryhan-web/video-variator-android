@@ -82,3 +82,32 @@ test('one-time welcome grant is idempotent and pays wallet debt first',async()=>
  let b=await wallet.grantOnce({userId:'user-1',kind:'welcome',credits:20});assert.equal(b.available,18);assert.equal(b.debt,0);assert.equal(b.granted,20);assert.equal(ledger.length,1);
  b=await wallet.grantOnce({userId:'user-1',kind:'welcome',credits:20});assert.equal(b.duplicate,true);assert.equal(walletRows.get('user-1').available,18);assert.equal(ledger.length,1);
 });
+
+
+test('BASE #16: explicit Stripe AI billing mode is mandatory; unknown mode cannot activate Checkout',async()=>{
+ const common={AI_BILLING_ENABLED:'true',STRIPE_SECRET_KEY:'sk_test_fixture',DATABASE_URL:'fixture',APP_JWT_SECRET:'test-signing-only'};
+ const explicit=generationBillingRuntime({...common,AI_BILLING_MODE:'test'});
+ assert.equal(explicit.keyMatches,true);
+ for(const value of [undefined,'','prod','TEST','0',null]){
+  const r=generationBillingRuntime({...common,AI_BILLING_MODE:value});
+  assert.equal(r.keyMatches,false,'unknown AI_BILLING_MODE='+String(value));
+  assert.equal(r.livePaymentsEnabled,false);
+ }
+ const app=express();app.use(express.json());let dbCalls=0,stripeCalls=0;
+ installGenerationBilling(app,{
+  auth:(req,_res,next)=>{req.user={id:'test-owner'};next();},
+  pool:{query(){dbCalls++;throw Error('DB must not be touched');}},
+  stripe:{checkout:{sessions:{create(){stripeCalls++;throw Error('Stripe must not be called');}}}},
+  appUrl:'https://example.invalid',env:{...common,AI_BILLING_MODE:'not-a-valid-mode'}
+ });
+ const server=app.listen(0);await new Promise(resolve=>server.once('listening',resolve));
+ try{
+  const base='http://127.0.0.1:'+server.address().port;
+  const config=await fetch(base+'/api/ai-billing/config').then(r=>r.json());
+  assert.equal(config.enabled,false);
+  const response=await fetch(base+'/api/ai-billing/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sku:'anything',requestId:'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa'})});
+  assert.equal(response.status,503);
+  assert.equal(dbCalls,0);
+  assert.equal(stripeCalls,0);
+ }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
+});
