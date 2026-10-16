@@ -13,6 +13,10 @@ This file is the shared live progress board for all coding agents.
 
 **Actual release status:** `main` still serves the existing application. BASE is in draft PR #42; Product Watcher Block 5 has consolidated draft PR #50 (incorporating #46–49). These are **NOT MERGED TO MAIN**, and the other roadmap blocks must be checked individually. Render currently auto-deploys `main`; the free PostgreSQL `video-uniquifier-db` is reported available with expiry **2026-10-17**. Before the first functional integration/deploy, verify database continuity, independent recoverable backup, compatibility, CI and rollback. Documentation commits use `[skip render]` to avoid redeployment. Do not claim live migration, backup or readiness until verified.
 
+## Ordered road-map execution documents — documentation verified 2026-10-16
+
+All seven source blocks are preserved verbatim in `docs/execution/DEEPSYQ_BLOCKS_1-7_CANONICAL.txt`; seven per-block checklists in `docs/execution/BLOCK_1_CHECKLIST.md` … `BLOCK_7_CHECKLIST.md` contain **131 ordered acceptance stages**. All seven embedded original text sections match their canonical repository section character-for-character; see `docs/execution/VALIDATION.md`. The execution index and AGENTS.md now point to these files; BASE remains a **separate 55-point workstream** in PR #42. Documentation status: **VERIFIED**. Functional implementation/deployment status: **unchanged**. No Render, DB, Stripe or provider actions were performed for this docs task. Next agent: take its already-assigned isolated block, reconcile live PR/code with its numbered checklist, and record actual verified steps rather than reimplementing completed work.
+
 ## Current priority gate
 
 **ACTIVE NOW:** finish the currently assigned production/TXT scope already being handled by the current ChatGPT Work agent.
