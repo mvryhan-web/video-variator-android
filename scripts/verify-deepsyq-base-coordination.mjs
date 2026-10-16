@@ -5,6 +5,7 @@
  * It does not claim, unlock, deploy, generate media, or change user/product data.
  */
 import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 
 export const BASE_LANES=Object.freeze({
@@ -14,6 +15,17 @@ export const BASE_LANES=Object.freeze({
  D:[2,13,14,15,16,17,18,37,43,44,48,49,50,51,52,54,55]
 });
 export const UNASSIGNED=new Set([47,53]);
+/**
+ * Git blob SHA is for the exact original owner BASE TXT, not just its 55 headers.
+ * An owner-approved change requires explicit review of this pinned digest;
+ * never silently update the expected value on a failed test.
+ */
+export const ORIGINAL_BASE_SPEC_BLOB_SHA='0de69857a38540af1c3fdcf75fb91fa2112b93fb';
+export function gitBlobSha(text=''){
+ const data=String(text);
+ return createHash('sha1').update('blob '+Buffer.byteLength(data,'utf8')+'\0').update(data,'utf8').digest('hex');
+}
+
 const EXPECTED=Array.from({length:55},(_,index)=>index+1);
 const LANE_BY_NUMBER=new Map(Object.entries(BASE_LANES).flatMap(([lane,nums])=>nums.map(n=>[n,lane])));
 
@@ -50,6 +62,9 @@ export function verifyBaseCoordination(spec,board,checklist){
 
  const issues=[];
  const source=originalBaseNumbers(spec),rows=boardRows(board);
+ if(gitBlobSha(spec)!==ORIGINAL_BASE_SPEC_BLOB_SHA){
+  issues.push('ORIGINAL_BASE_SOURCE_CHANGED: original owner BASE TXT body differs from approved immutable Git blob');
+ }
  if(JSON.stringify(source)!==JSON.stringify(EXPECTED)){
   issues.push('ORIGINAL_BASE_HEADINGS: expected exactly numbered #1–#55 in order (do not edit source TXT)');
  }
@@ -109,6 +124,6 @@ if(process.argv[1]&&fileURLToPath(import.meta.url)===process.argv[1]){
   process.stderr.write(result.issues.join('\n')+'\n');
   process.exitCode=1;
  }else{
-  process.stdout.write('BASE 55 source, shared coordination and detailed checklist: 55 unique aligned items and titles verified. Active claim owners validated.\n');
+  process.stdout.write('BASE original Git blob verified; 55 source headings, board and detailed checklist items aligned. Active claim owners validated.\n');
  }
 }

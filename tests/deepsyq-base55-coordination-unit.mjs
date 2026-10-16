@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {BASE_LANES,originalBaseNumbers,boardRows,checklistRows,verifyBaseCoordination,verifyCurrentFiles} from '../scripts/verify-deepsyq-base-coordination.mjs';
+import {BASE_LANES,ORIGINAL_BASE_SPEC_BLOB_SHA,gitBlobSha,originalBaseNumbers,boardRows,checklistRows,verifyBaseCoordination,verifyCurrentFiles} from '../scripts/verify-deepsyq-base-coordination.mjs';
 
 const spec=readFileSync('docs/DEEPSYQ_PLATFORM_SPEC.md','utf8');
 const board=readFileSync('docs/DEEPSYQ_BASE_55_COORDINATION.md','utf8');
@@ -42,10 +42,16 @@ test('claimed IN PROGRESS requires a recorded owner, general item state does not
  assert.ok(active,'fixture requires one genuinely claimed BASE task');
  const unowned=verifyBaseCoordination(spec,edited(active.number,line=>line.replace(/\|\s*[^|]+\s*\|\s*$/, '| — |')));
  assert.ok(unowned.issues.includes('UNOWNED_ACTIVE_CLAIM: '+active.number),JSON.stringify(unowned.issues));
- // General BASE #52 status may be IN PROGRESS without any exclusive claim.
- const general=current.find(row=>row.number===52);
+ // The general BASE #52 state can be IN PROGRESS without an exclusive claim.
+ // Isolate that invariant in a copy: another agent may legitimately claim #52
+ // while CI is running. Do not hardcode the live board's claim as always free.
+ const neutral=edited(52,line=>{
+  const cells=line.split('|');cells[6]=' — ';cells[7]=' — ';return cells.join('|');
+ });
+ const general=boardRows(neutral).find(row=>row.number===52);
  assert.equal(general.state,'IN PROGRESS');
  assert.equal(general.claim,'—');
+ assert.equal(verifyBaseCoordination(spec,neutral,checklist).ok,true);
  assert.equal(verifyCurrentFiles().ok,true);
 });
 test('tampered original requirement numbering is rejected without modifying the real TXT',()=>{
@@ -96,4 +102,14 @@ test('different descriptive progress wording between checklist and board is allo
  const changed=editChecklist(30,line=>line.replace('| PARTIAL |','| PARTIAL — scoped CI checked |'));
  const result=verifyBaseCoordination(spec,board,changed);
  assert.equal(result.ok,true,JSON.stringify(result.issues));
+});
+
+test('original owner BASE TXT is frozen by exact Git blob SHA, not headings alone',()=>{
+ assert.equal(gitBlobSha(spec),ORIGINAL_BASE_SPEC_BLOB_SHA);
+ const changed=spec.replace('Video Variator','Video Varietator');
+ assert.notEqual(changed,spec,'fixture must modify a real BASE paragraph');
+ assert.deepEqual(originalBaseNumbers(changed),originalBaseNumbers(spec),'all numbered headings remain unchanged');
+ const result=verifyBaseCoordination(changed,board,checklist);
+ assert.ok(result.issues.some(issue=>issue.startsWith('ORIGINAL_BASE_SOURCE_CHANGED:')),JSON.stringify(result.issues));
+ assert.ok(!result.issues.some(issue=>issue.startsWith('ORIGINAL_BASE_HEADINGS:')),'this test must guard body changes missed by numbered headings');
 });
