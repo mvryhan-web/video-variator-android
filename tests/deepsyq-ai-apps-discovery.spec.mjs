@@ -225,3 +225,29 @@ test('BASE #29 AI Apps navigation reaches existing History, Credits and Pricing 
  await expect(page.locator('#showHistory')).toHaveAttribute('aria-pressed','true');
  expect(paidJobs).toBe(0);
 });
+
+test('BASE #19 empty AI Apps offers a REAL guided Product Video path, without fake templates or paid generation',async({page})=>{
+ let generationPosts=0;
+ page.on('request',request=>{if(request.url().includes('/api/studio/jobs')&&request.method()==='POST')generationPosts++;});
+ await page.route('**/api/templates',route=>route.fulfill({json:{items:[]}}));
+ await page.goto('/ai-apps.html');
+ await expect(page.locator('.app-card')).toHaveCount(0);
+ await expect(page.locator('#status')).toContainText('No active AI Apps templates');
+ const guided=page.getByRole('link',{name:'Prepare Product Video'});
+ await expect(guided).toHaveAttribute('href','product-video.html');
+ await expect(page.locator('.guided-product-note')).toContainText('No AI generation starts automatically');
+ await guided.click();
+ await expect(page).toHaveURL(/product-video\.html$/);
+ await expect(page.locator('#workflow')).toBeVisible();
+ await expect(page.locator('#photoPreview')).toBeEmpty();
+ expect(generationPosts).toBe(0);
+});
+
+test('BASE #19 catalog outage still offers local product briefing without misrepresenting service status',async({page})=>{
+ await page.route('**/api/templates',route=>route.fulfill({status:503,json:{error:'TEMPLATES_UNAVAILABLE'}}));
+ await page.goto('/ai-apps.html');
+ await expect(page.locator('#status')).toContainText('temporarily unavailable');
+ await expect(page.getByRole('button',{name:'Retry loading templates'})).toBeVisible();
+ await expect(page.getByRole('link',{name:'Prepare Product Video'})).toHaveAttribute('href','product-video.html');
+ await expect(page.locator('.app-card')).toHaveCount(0);
+});
