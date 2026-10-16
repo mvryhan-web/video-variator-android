@@ -83,7 +83,7 @@ test('BASE #16: a signed, paid invoice grants once per invoice on disposable Pos
   const wrongMode=invoice({livemode:true,id:'in_wrongmode'});
   await assert.rejects(()=>installed.handleEvent(wrongMode),/AI_SUBSCRIPTION_INVOICE_INVALID/);
   const zeroCharge=invoice({amount_paid:0,id:'in_zero'});
-  await assert.rejects(()=>installed.handleEvent(zeroCharge),/AI_SUBSCRIPTION_INVOICE_INVALID/);
+  assert.equal(await installed.handleEvent(zeroCharge),false,'free invoice must allow old subscription renewal handler');
   const prorated=invoice({id:'in_prorate',billing_reason:'subscription_update'});
   await assert.rejects(()=>installed.handleEvent(prorated),/AI_SUBSCRIPTION_INVOICE_INVALID/);
   const notApproved=invoice({id:'in_unapproved',livemode:true});
