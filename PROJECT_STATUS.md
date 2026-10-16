@@ -9,9 +9,9 @@ This file is the shared live progress board for all coding agents.
 
 ## Agent 5 — scoped CI regression ownership / IN PROGRESS (2026-10-16)
 
-- **Agent / branch:** Agent 5 / `agent5-regression-handoff-20261016`, coordination-only; not a BASE A/B/C/D feature claim.
+- **Agent / branch:** Agent 5 / `agent5-regression-handoff-20261016`, independent quality handoff; no BASE A/B/C/D feature claim. **SCOPED REVIEW VERIFIED / PR PENDING / NOT MAIN / NOT LIVE.**
 - **Scope:** audit precise broad CI failures in Agent C PR #79/#88 against active A/D code, publish focused owner handoffs and non-destructive release blockers; correct outdated Agent 5 coordination snapshots only. Do not touch another agent's product code, owner-locked visuals, Stripe, provider, database or `main`.
-- **Evidence at claim:** AI Apps PR #79 dedicated CI 38905303919 SUCCESS vs browser regression 38905303815 FAILURE; templates PR #88 dedicated CI 38906432137 / 38906432334 SUCCESS vs Studio 38906432469 FAILURE. Await exact log-level classification before closing.
+- **Verified outcome:** GitHub job logs inspected, with explicit code/line/reproduction-level diagnoses and clear non-overlapping A/C/D owners in `docs/DEEPSYQ_AGENT5_REGRESSION_REVIEW_20261016.md`. PRs #79 and #88 were merged BASE with scoped successful checks, but broad CI **38905303815 browser FAILED** (Lifetime wording mismatch, mock MP4 hero error, mobile sidebar outside viewport) and **38906432469 AI Studio FAILED** (D Checkout replay 409 versus expected 200). Handoffs posted to Issues #72, #74, #75 and PR #79/#88. Original owner-approved Home amendment #76 and new-chat protocol #81 are now merged BASE, no media live acceptance. No app, billing, Stripe, DB, provider, live flags or `main` edits.
 
 ## Agent 5 — Issues #72–75 coordination acceptance review (2026-10-16)
 
