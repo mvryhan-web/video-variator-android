@@ -173,12 +173,11 @@ body.sidebar-collapsed #sidebar nav .nav-entry>a{flex:1}
 body.sidebar-collapsed .sidebar-bottom #accountButton{font-size:0;padding:10px 4px;border:1px solid #444059;border-radius:9px;background:#272338}
 body.sidebar-collapsed .sidebar-bottom #accountButton::before{content:"◎";font-size:22px;line-height:25px}
 @media(max-width:760px){
- /* Keep the drawer below the 64px header: that header deliberately sits
-    above the sidebar and otherwise blocks its own close button. */
- #sidebar{width:240px;top:64px;max-height:calc(100dvh - 64px);transform:translateX(-100%)}
- /* ID selector must beat the off-canvas #sidebar rule when the real header
-    opener toggles menu-open; otherwise every drawer link stays off-screen. */
- body.menu-open #sidebar{transform:translateX(0)}
+ #sidebar{width:240px;transform:translateX(-100%)}
+ /* The mobile topbar can wrap to two rows at 320px. An open drawer must
+    overlay it: hardcoding 64px top still leaves the drawer close button under
+    the language/promo controls. Preserve the original full-height scroll. */
+ body.menu-open #sidebar{transform:translateX(0);z-index:22}
  body.sidebar-collapsed #sidebar{width:240px;padding:17px 20px}
  body.sidebar-collapsed #sidebar .brand-name,
  body.sidebar-collapsed #sidebarToggle,
