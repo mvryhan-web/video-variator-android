@@ -1,21 +1,13 @@
+import {templateSupport,prepareTemplatePrompt} from './ai-template-product-name.js';
 const $=id=>document.getElementById(id);
 const TYPES=new Set(['image','video','audio']);
-const SUPPORTED_REFERENCE_INPUTS=new Set(['text','image']);
 const PAGE_SIZE=12;
 let all=[],shownLimit=PAGE_SIZE;
 
-function unsupportedInputs(template){
- const required=template.requiredInputTypes;
- if(required==null)return [];
- if(!Array.isArray(required))return ['unknown'];
- return required.filter(input=>typeof input!=='string'||!SUPPORTED_REFERENCE_INPUTS.has(input));
-}
-function supported(template){
- return ['image','video','product_video','audio'].includes(template.generationType)&&unsupportedInputs(template).length===0;
-}
+function supported(template){return templateSupport(template).supported;}
 function inputHint(template){
- const unsupported=unsupportedInputs(template);
- if(unsupported.length)return 'This workflow requires '+unsupported.map(input=>String(input).replaceAll('_',' ')).join(', ')+' input support not yet available through Studio.';
+ const info=templateSupport(template);
+ if(!info.supported)return info.reason;
  if(template.requiredInputTypes?.includes?.('image'))return 'Add your own reference images in Studio. Images are not attached automatically.';
  return '';
 }
@@ -54,18 +46,22 @@ function changed(){
  updateUrl();
  render();
 }
-function useTemplate(template){
+function useTemplate(template,productName='',feedback=null){
  if(!supported(template))return;
+ let prompt;
+ try{prompt=prepareTemplatePrompt(template,productName);}catch(error){if(feedback)feedback.textContent=error.message;return;}
+ if(feedback)feedback.textContent='';
  const payload={
   id:template.id,title:template.title,generationType:template.generationType,
-  promptTemplate:template.promptTemplate||'',defaultModel:template.defaultModel||null,
+  promptTemplate:prompt,defaultModel:template.defaultModel||null,
   requiredInputTypes:Array.isArray(template.requiredInputTypes)?template.requiredInputTypes:[],
   defaultSettings:template.defaultSettings&&typeof template.defaultSettings==='object'&&!Array.isArray(template.defaultSettings)?template.defaultSettings:{}
  };
  try{
   sessionStorage.setItem('deepsyq_template_start',JSON.stringify(payload));
  }catch(_){
-  $('status').textContent='Your browser could not prepare this template. Check your storage permissions and try again.';
+  if(feedback)feedback.textContent='This browser could not save the prepared template. Please check storage permissions.';
+  else $('status').textContent='Your browser could not prepare this template. Check your storage permissions and try again.';
   return;
  }
  location.assign('generate-studio.html?studio='+destination(template)+'&from=template');
@@ -126,13 +122,26 @@ function render(){
    if(!value)continue;
    const span=document.createElement('span');span.textContent=value;meta.append(span);
   }
+  const eligibility=templateSupport(item);
+  let nameInput=null;
+  if(eligibility.supported&&eligibility.requiresProductName){
+   const label=document.createElement('label');label.className='product-name-field';
+   const caption=document.createElement('span');caption.textContent='Product name';
+   nameInput=document.createElement('input');nameInput.type='text';nameInput.maxLength=80;
+   nameInput.autocomplete='off';nameInput.placeholder='Name of your product';
+   label.append(caption,nameInput);body.append(h,p,label);
+  }else body.append(h,p);
   const button=document.createElement('button');button.type='button';
-  button.textContent=supported(item)?'Use template':'Workflow pending';button.disabled=!supported(item);
-  button.addEventListener('click',()=>useTemplate(item));
-  body.append(h,p);
+  button.textContent=eligibility.supported?'Use template':'Workflow pending';button.disabled=!eligibility.supported;
+  const feedback=document.createElement('p');feedback.className='template-error';feedback.setAttribute('role','status');
+  button.addEventListener('click',()=>{
+   const name=nameInput?.value||'';
+   if(nameInput&&!name.trim()){feedback.textContent='Enter your product name before opening Studio.';nameInput.focus();return;}
+   useTemplate(item,name,feedback);
+  });
   const hint=inputHint(item);
   if(hint){const note=document.createElement('p');note.className='input-hint';note.textContent=hint;body.append(note);}
-  body.append(meta,button);card.append(visual,body);root.append(card);
+  body.append(meta,button,feedback);card.append(visual,body);root.append(card);
  }
 }
 async function load(){

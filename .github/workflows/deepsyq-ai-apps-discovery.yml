@@ -6,6 +6,8 @@ on:
       - 'app/src/main/assets/ai-apps.html'
       - 'app/src/main/assets/ai-apps.css'
       - 'app/src/main/assets/ai-apps.js'
+      - 'app/src/main/assets/ai-template-product-name.js'
+      - 'tests/ai-template-product-name.mjs'
       - 'tests/deepsyq-ai-apps-discovery.spec.mjs'
       - '.github/workflows/deepsyq-ai-apps-discovery.yml'
   workflow_dispatch:
@@ -27,6 +29,8 @@ jobs:
       - name: Validate isolated AI Apps changes
         run: |
           node --check app/src/main/assets/ai-apps.js
+          node --check app/src/main/assets/ai-template-product-name.js
+          node --test tests/ai-template-product-name.mjs
           node --check tests/deepsyq-ai-apps-discovery.spec.mjs
       - run: npx playwright install --with-deps chromium webkit
       - name: Check AI Apps in desktop and mobile Chromium and Safari WebKit

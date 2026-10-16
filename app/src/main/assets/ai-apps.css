@@ -55,6 +55,11 @@ main,footer{max-width:1180px;margin:auto;padding-left:22px;padding-right:22px}
 .app-body h3{font-size:17px;margin:0}
 .app-body p{font-size:12px;line-height:1.6;min-height:39px;margin:0;color:var(--muted)}
 .app-body .input-hint{font-size:11px;line-height:1.5;min-height:0;color:#dfc7f3;border-left:2px solid #8e72b7;padding-left:10px}
+.product-name-field{display:grid;gap:7px;min-width:0;font-size:12px;font-weight:650;color:var(--text)}
+.product-name-field input{width:100%;min-width:0;min-height:42px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#191328;color:var(--text);font:inherit;font-weight:400}
+.product-name-field input:focus-visible{outline:2px solid #c7a0f9;outline-offset:2px}
+.app-body .template-error{font-size:11px;min-height:0;color:#ffd4db;margin:0;line-height:1.4}
+.app-body .template-error:empty{display:none}
 .app-meta{display:flex;gap:6px;flex-wrap:wrap;align-content:start}
 .app-meta span{font-size:10px;background:#342845;border:1px solid #4c3b62;color:#d3c1e8;border-radius:999px;padding:5px 8px}
 .app-body button{min-height:45px;border:0;border-radius:10px;background:linear-gradient(125deg,#a98af4,#ddb5f9);color:#21133d;font-weight:750;cursor:pointer}
