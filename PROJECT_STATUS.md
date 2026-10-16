@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — byte-exact Deepsyq installed icon derivative QA / IN PROGRESS (2026-10-16)
+
+- **Owner/branch:** Agent 5 independent QA on `agent5-brand-derivative-integrity-20261016`, no BASE A/B/C/D feature-row claim or Home/app production change.
+- **Verified gap:** merged brand PR #126 has an excellent exact SHA-256 check for the 1254px owner source only, plus existence/manifest tests. Subsequent changes could silently replace the 192/512 web icons, maskable exports, adaptive Android foreground or favicon while the master source test stays green.
+- **Scoped action:** expand *existing* `tests/deepsyq-brand-identity.spec.mjs` with read-only byte-integrity checks of shipped derivatives and file-format/dimension invariants. Reuse its existing official brand CI rather than duplicate work. Document which 192/512 transparent images are byte-for-byte those in the approved Library ZIP and which platform-specific exports are pinned to the current merged PR #126 baseline. Never regenerate image pixels, replace source, edit A/C feature UI, or deploy production; update status after GitHub test and merge isolated PR into BASE.
+
 ## Agent 5 — verified PR #118/#122 closeout and broad browser CI ownership / REVIEW COMPLETE (2026-10-16)
 
 - **Agent/branch:** Agent 5 coordination-only, `agent5-qa-status-closeout-20261016`; no A–D BASE feature row claimed.
