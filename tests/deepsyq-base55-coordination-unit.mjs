@@ -53,7 +53,7 @@ test('tampered original requirement numbering is rejected without modifying the 
  assert.ok(result.issues.some(issue=>issue.startsWith('ORIGINAL_BASE_HEADINGS')));
 });
 test('malformed table shape and missing requirement title are detected',()=>{
- const truncated=verifyBaseCoordination(spec,edited(23,line=>line.replace(' | — | — |',' | — |')));
+ const truncated=verifyBaseCoordination(spec,edited(23,line=>{const parts=line.split('|');parts.splice(parts.length-2,1);return parts.join('|');}));
  assert.ok(truncated.issues.some(issue=>issue.startsWith('INVALID_ROW_WIDTH: 23')));
  const missingTitle=verifyBaseCoordination(spec,edited(23,line=>line.replace('| Template system |','| — |')));
  assert.ok(missingTitle.issues.includes('MISSING_ITEM_TITLE: 23'));
