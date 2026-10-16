@@ -186,7 +186,12 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
     if (!['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type)) return false;
     const object=event.data.object;
     if (object.metadata?.aiWallet!=='v1') return false;
-    if (!enabled()) throw Error('AI_BILLING_WEBHOOK_DISABLED');
+    // Turning OFF new Checkout must not strand an already-paid, signed event
+    // for an order persisted before shutdown. Reconciliation still requires
+    // matching Stripe credentials, mode, the original order and session.
+    const historicalPaidSettlement=!r.activationRequested&&r.keyMatches&&!!pool&&
+      !!stripe?.checkout?.sessions?.retrieve&&!!env.DATABASE_URL&&!!env.APP_JWT_SECRET;
+    if (!enabled()&&!historicalPaidSettlement) throw Error('AI_BILLING_WEBHOOK_DISABLED');
     await init();
     const {rows}=await pool.query('SELECT * FROM vv_ai_order WHERE id=$1',[object.metadata.orderId]);
     if (!rows.length) throw Error('AI_ORDER_NOT_FOUND');
