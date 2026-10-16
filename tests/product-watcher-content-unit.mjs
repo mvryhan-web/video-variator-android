@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {runContentTasksIfDue,internalContentRecommendations,contentTasksEnabled,listContentTasks} from '../server/product-watcher/content-tasks.js';
 
 const env={PRODUCT_WATCHER_ENABLED:'true',PRODUCT_WATCHER_CONTENT_TASKS_ENABLED:'true'};
-function fake({paused=false,locked=false,schema=true,rightsGaps=0}={}){
+function fake({paused=false,locked=false,schema=true,rightsGaps=0,invalidTemplate=0,invalidPreview=0,invalidPoster=0}={}){
  const rows=new Map(),queries=[];
  const conn={async query(sql,args=[]){
   queries.push([sql,args]);
@@ -11,8 +11,8 @@ function fake({paused=false,locked=false,schema=true,rightsGaps=0}={}){
   if(sql.includes('pg_advisory_unlock'))return{rows:[]};
   if(sql==='SELECT paused FROM vv_product_watcher_control WHERE id=1')return{rows:[{paused}]};
   if(sql.includes('to_regclass'))return{rows:[{templates:schema?'vv_ai_template':null,inspiration:schema?'vv_ai_inspiration':null}]};
-  if(sql.includes('FROM vv_ai_template'))return{rows:[{active:0,missing_thumbnail:0,missing_prompt:0}]};
-  if(sql.includes('FROM vv_ai_inspiration'))return{rows:[{active:1,images:1,videos:0,rights_gaps:rightsGaps,missing_previews:0}]};
+  if(sql.includes('FROM vv_ai_template'))return{rows:[{active:0,missing_thumbnail:0,missing_prompt:0,invalid_thumbnail_urls:invalidTemplate}]};
+  if(sql.includes('FROM vv_ai_inspiration'))return{rows:[{active:1,images:1,videos:0,rights_gaps:rightsGaps,missing_previews:0,invalid_preview_urls:invalidPreview,invalid_poster_urls:invalidPoster}]};
   if(sql.startsWith('SELECT id FROM vv_product_watcher_content_tasks'))return{rows:rows.has(args.join(':'))?[{id:rows.get(args.join(':')).id}]:[]};
   if(sql.startsWith('INSERT INTO vv_product_watcher_content_tasks')){
    const id=rows.size+1,content=JSON.parse(args[2]);
@@ -55,6 +55,29 @@ test('no invented media, rights or market demand: only internal documented gaps'
  assert.match(opp.scope,/No market trend/);
 });
 
+test('read-only syntax signals flag suspicious media links but never fetch or store URLs',async()=>{
+ const d=fake({invalidTemplate:2,invalidPreview:1,invalidPoster:3});
+ const result=await runContentTasksIfDue({pool:d.pool,env,now:instant('2026-10-15T10:00:00Z')});
+ assert.equal(result.generated.length,2);
+ const list=await listContentTasks(d.pool);
+ const audit=list.find(x=>x.kind==='content').content;
+ const opportunity=list.find(x=>x.kind==='opportunities').content;
+ assert.equal(audit.status,'attention');
+ assert.equal(audit.linkCheck,'syntax_only');
+ assert.equal(audit.urlReachability,'not_checked');
+ assert.equal(audit.mediaPlayback,'not_checked');
+ assert.equal(audit.skills,'not_checked');
+ assert.equal(audit.workflows,'not_checked');
+ assert.equal(audit.templates.invalidThumbnailUrls,2);
+ assert.equal(audit.inspiration.invalidPreviewUrls,1);
+ assert.equal(audit.inspiration.invalidPosterUrls,3);
+ assert.ok(['TEMPLATE_THUMBNAIL_URL_INVALID','INSPIRATION_PREVIEW_URL_INVALID','INSPIRATION_POSTER_URL_INVALID']
+   .every(c=>opportunity.recommendations.some(x=>x.code===c)));
+ assert.ok(d.queries.some(([q])=>q.includes('invalid_preview_urls')&&q.includes('invalid_poster_urls')));
+ assert.ok(d.queries.some(([q])=>q.includes('invalid_thumbnail_urls')));
+ assert.ok(!JSON.stringify(list).includes('secret-token'));
+});
+
 test('missing platform schema is not treated as zero real content',async()=>{
  const d=fake({schema:false}),r=await runContentTasksIfDue({pool:d.pool,env,now:instant('2026-10-15T10:00:00Z')});
  assert.equal(r.generated.length,2);
@@ -78,7 +101,7 @@ test('disabled, paused and locked checks do not read or mutate live content',asy
 
 test('recommendations never automatically publish templates or edit rights records',()=>{
  const result={status:'attention',templates:{active:1,missingThumbnail:2,missingPrompt:1},
-  inspiration:{active:1,images:0,videos:0,rightsGaps:1,missingPreviews:1}};
+  inspiration:{active:1,images:0,videos:0,rightsGaps:1,missingPreviews:1,invalidPreviewUrls:0,invalidPosterUrls:0}};
  const list=internalContentRecommendations(result);
  assert.ok(list.length>=5);assert.ok(list.every(x=>['high','medium','low'].includes(x.priority)));
  assert.ok(list.every(x=>!x.actions&&!x.applied));

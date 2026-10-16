@@ -53,6 +53,9 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     await pool.query('DELETE FROM vv_generation_jobs WHERE id LIKE $1',['watcher-fixture-%']);
     await pool.query("INSERT INTO vv_generation_jobs(id,status,created_at,credits_reserved) VALUES('watcher-fixture-failed','failed',NOW()-INTERVAL '1 hour',0),('watcher-fixture-stale','processing',NOW()-INTERVAL '2 days',0),('watcher-fixture-held','finalizing',NOW()-INTERVAL '3 days',8),('watcher-fixture-ready','ready',NOW()-INTERVAL '5 minutes',0)");
 
+    // Isolated synthetic job durations validate the real aggregate SQL.
+    await pool.query("INSERT INTO vv_generation_jobs(id,status,created_at,started_at,completed_at) SELECT 'watcher-fixture-latency-old-'||n,'ready',NOW()-INTERVAL '2 hours',NOW()-INTERVAL '2 hours',NOW()-INTERVAL '2 hours'+INTERVAL '10 seconds' FROM generate_series(1,25) AS n");
+    await pool.query("INSERT INTO vv_generation_jobs(id,status,created_at,started_at,completed_at) SELECT 'watcher-fixture-latency-new-'||n,'ready',NOW()-INTERVAL '5 minutes',NOW()-INTERVAL '5 minutes',NOW()-INTERVAL '5 minutes'+INTERVAL '65 seconds' FROM generate_series(1,6) AS n");
     const paused=await runProductWatcherOnce({pool,env,fetchFn});
     assert.equal(paused.status,'paused');assert.equal(httpCalls,0);
     const schedulerEnv={...env,PRODUCT_WATCHER_SCHEDULER_ENABLED:'true'};
@@ -84,6 +87,8 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     assert.equal(res.body.checks.generations.counts.held_review_24h,1);
     assert.equal(res.body.checks.operations.status,'warning');
     assert.ok(res.body.checks.operations.alerts.some(x=>x.code==='COST_VISIBILITY_GAP'));
+    assert.ok(res.body.checks.operations.alerts.some(x=>x.code==='GENERATION_COMPLETION_LATENCY_SPIKE'));
+    assert.equal(res.body.checks.operations.providers.find(x=>x.provider==='unknown').completionLatencySamplesLastHour,6);
     assert.equal(res.body.checks.operations.currencies.length,0);
     assert.equal(httpCalls,1);
     const notDue=await productWatcherTick({pool,env:schedulerEnv,fetchFn});
@@ -117,7 +122,7 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
 
     // Minimal isolated fixture matching only the deployed BASE content columns we inspect.
     await pool.query("CREATE TABLE IF NOT EXISTS vv_ai_template(id TEXT PRIMARY KEY,active BOOLEAN NOT NULL DEFAULT false,thumbnail TEXT,prompt_template TEXT NOT NULL DEFAULT '')");
-    await pool.query("CREATE TABLE IF NOT EXISTS vv_ai_inspiration(id TEXT PRIMARY KEY,active BOOLEAN NOT NULL DEFAULT false,kind TEXT NOT NULL,rights_note TEXT NOT NULL DEFAULT '',rights_basis TEXT NOT NULL,preview_url TEXT NOT NULL DEFAULT '')");
+    await pool.query("CREATE TABLE IF NOT EXISTS vv_ai_inspiration(id TEXT PRIMARY KEY,active BOOLEAN NOT NULL DEFAULT false,kind TEXT NOT NULL,rights_note TEXT NOT NULL DEFAULT '',rights_basis TEXT NOT NULL,preview_url TEXT NOT NULL DEFAULT '',preview_poster_url TEXT)");
     await pool.query("INSERT INTO vv_ai_template(id,active,thumbnail,prompt_template) VALUES('watcher-test-template',TRUE,NULL,'A prompt fixture') ON CONFLICT(id) DO NOTHING");
     await pool.query("INSERT INTO vv_ai_inspiration(id,active,kind,rights_note,rights_basis,preview_url) VALUES('watcher-test-inspiration',TRUE,'image','licensed preview','licensed','https://example.test/image.jpg') ON CONFLICT(id) DO NOTHING");
     const contentRun=await runContentTasksIfDue({pool,env:{...env,PRODUCT_WATCHER_CONTENT_TASKS_ENABLED:'true'},now:()=>new Date()});
@@ -127,6 +132,8 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     assert.equal(contentList.statusCode,200);
     assert.equal(contentList.body.items.length,2);
     assert.ok(contentList.body.items.some(x=>x.kind==='content'&&x.content.templates.missingThumbnail===1));
+    assert.ok(contentList.body.items.some(x=>x.kind==='content'&&x.content.linkCheck==='syntax_only'));
+    assert.ok(contentList.body.items.some(x=>x.kind==='content'&&x.content.mediaPlayback==='not_checked'));
     assert.ok(contentList.body.items.some(x=>x.kind==='opportunities'&&x.content.recommendations.some(y=>y.code==='NO_APPROVED_VIDEO_EXAMPLE')));
     const contentAgain=await runContentTasksIfDue({pool,env:{...env,PRODUCT_WATCHER_CONTENT_TASKS_ENABLED:'true'},now:()=>new Date()});
     assert.equal(contentAgain.status,'not_due');

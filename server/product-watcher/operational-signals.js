@@ -29,7 +29,7 @@ export function evaluateOperationalSignals(providerRows=[],costRows=[]) {
       &&recentMs>=0&&baselineMs>=1000;
     providers.push({provider,jobsLastHour:jobs,failedLastHour:failed,failureRate:Math.round(rate*1000)/1000,
       completionLatencySamplesLastHour:Number.isSafeInteger(recentSamples)?recentSamples:0,
-      completionLatencyAverageMsLastHour:Number.isFinite(recentMs)&&recentMs>=0?Math.round(recentMs):null});
+      completionLatencyAverageMsLastHour:recentSamples>0&&row.latency_avg_ms_1h!=null&&Number.isFinite(recentMs)&&recentMs>=0?Math.round(recentMs):null});
     if(validLatency&&recentMs>=MIN_LATENCY_MS&&recentMs/baselineMs>=MIN_LATENCY_RATIO){
       alerts.push({code:'GENERATION_COMPLETION_LATENCY_SPIKE',provider,
         recentSamples,baselineSamples,averageMsLastHour:Math.round(recentMs),
