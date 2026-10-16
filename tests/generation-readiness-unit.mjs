@@ -7,6 +7,7 @@ test('launch readiness is fail-closed and never contains secret values',()=>{
  const env={
   DATABASE_URL:'postgres://hidden',APP_JWT_SECRET:'jwt-hidden',GEMINI_API_KEY:'gemini-hidden',
   AI_MODEL_PRICING_JSON:JSON.stringify([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:10,providerCostMicros:1000,currency:'usd'}]),
+  AI_STUDIO_ENABLED:'true',
   AI_STUDIO_WALLET_ENABLED:'true',
   AI_CREDIT_PACKS_JSON:JSON.stringify([{sku:'starter',priceId:'price_Test123',credits:100,amount:99,currency:'usd'}]),
   AI_CREDIT_RATES_JSON:JSON.stringify([{kind:'image',credits:10}]),
@@ -34,6 +35,19 @@ test('BASE #51: explicit Image or Video kill switches block commercial launch re
  }
  assert.equal(generationReadiness({...base,BYTEPLUS_ENABLED:'false'}).gates.find(g=>g.id==='imageVideo').ready,true,
   'disabling just one optional provider should not disable an independent provider');
+});
+
+test('BASE #51: commercial readiness cannot report ready when Studio routes are disabled',()=>{
+ for(const value of [undefined,'false','','TRUE','0']){
+  const report=generationReadiness({AI_STUDIO_ENABLED:value,AI_PUBLIC_GENERATION_ENABLED:'true'});
+  assert.equal(report.gates.find(g=>g.id==='studioEnabled').ready,false);
+  assert.ok(report.blockers.includes('studioEnabled'));
+  assert.equal(report.launchReady,false);
+ }
+ const report=generationReadiness({AI_STUDIO_ENABLED:'true'});
+ assert.equal(report.gates.find(g=>g.id==='studioEnabled').ready,true);
+ assert.equal(report.blockers.includes('studioEnabled'),false);
+ assert.equal(report.launchReady,false,'other required production gates remain mandatory');
 });
 
 test('pricing without currency remains a launch blocker even when model economics exist',()=>{
