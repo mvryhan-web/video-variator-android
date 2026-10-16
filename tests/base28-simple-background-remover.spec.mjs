@@ -147,3 +147,21 @@ test('BASE #28: old encode cannot unlock a newer in-progress encode',async({page
  await expect(page.locator('#erase')).toBeEnabled();
  await expect(page.locator('#download')).toBeEnabled();
 });
+
+test('BASE #28: pagehide purges canvases and photo input for BFCache privacy',async({page})=>{
+ await page.goto('/simple-background-remover.html');
+ const bytes=await page.evaluate(async()=>{
+  const canvas=document.createElement('canvas');canvas.width=canvas.height=3;
+  const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,3,3);
+  const blob=await new Promise(ok=>canvas.toBlob(ok,'image/png'));
+  return [...new Uint8Array(await blob.arrayBuffer())];
+ });
+ await page.locator('#photo').setInputFiles({name:'private.png',mimeType:'image/png',buffer:Buffer.from(bytes)});
+ await expect(page.locator('#original')).toHaveJSProperty('width',3);
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+ await expect(page.locator('#original')).toHaveJSProperty('width',1);
+ await expect(page.locator('#result')).toHaveJSProperty('width',1);
+ await expect(page.locator('#photo')).toHaveValue('');
+ await expect(page.locator('#erase')).toBeDisabled();
+ await expect(page.locator('#download')).toBeDisabled();
+});
