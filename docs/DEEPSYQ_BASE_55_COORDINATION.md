@@ -54,7 +54,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 21 | AI Agents | NOT STARTED (BASE) | C | VERIFY BASE SCOPE; NO BLOCK DUPLICATE | — | — |
 | 22 | Inspiration / Discover | NOT STARTED (BASE) | C | VERIFY BASE SCOPE; NO BLOCK DUPLICATE | — | — |
 | 23 | Template system | PARTIAL — PRODUCT NAME VALIDATION CODE VERIFIED | C | REAL TEMPLATE ASSETS, MIGRATION & LIVE GATED | CODE VERIFIED / MERGED TO BASE (PR #88) | Agent C / Issue #74 / merge `8cc09747` / CI 38906432334 + 38906432137; unrelated payment CI failure to D #75 |
-| 24 | History | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS — stale filter response prevention (not code verified) | Agent A / agent-a-base24-history-filter-race-20261016 / Issue #72 |
+| 24 | History | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS — latest-filter guard coded, browser CI pending (not verified) | Agent A / agent-a-base24-history-filter-race-20261016 / Issue #72 |
 | 25 | My Creations | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 26 | Canvas | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 27 | Existing Video Uniquifier preserved under Tools | PARTIAL | C | ROOT SWITCH/PRODUCTION REGRESSION GATED | CODE VERIFIED (BASE, not live) | ChatGPT Lane C / PR #61 / `base-27-video-uniquifier-tools-20261016` / CI 38898789990 |
