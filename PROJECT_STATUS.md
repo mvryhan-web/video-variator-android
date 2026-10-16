@@ -7,11 +7,11 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
-## Agent 5 — actual Home icon rendering browser smoke / IN PROGRESS (2026-10-16)
+## Agent 5 — actual Home icon rendering browser smoke / CODE VERIFIED, PR #131 (2026-10-16)
 
 - **Role/branch:** Agent 5 read-only cross-browser acceptance QA, `agent5-brand-browser-smoke-20261016`. No BASE A/B/C/D feature implementation or claim takeover.
 - **Gap confirmed:** existing merged PR #126 brand Node suite plus Android build and new PR #128 derivative integrity confirm original approved artwork and files, but do not test that `deepsyq-logo.png` actually loads (`naturalWidth>0`) and renders in desktop sidebar/mobile top header in a real browser.
-- **Claim scope:** add a narrowly scoped Playwright brand rendering test and reuse existing `.github/workflows/deepsyq-brand-icons.yml` for Chrome and WebKit. Verify visible desktop/mobile actual brand imagery, correct separate manifest/favicons, and no unapproved paid generation POST. Do not mutate owner-locked Home, logo pixel assets, backend/auth, original TXT, Stripe, DB, Render, providers, production or `main`. Record CI and keep screenshots acceptance separate from source/asset verification.
+- **Completed:** [PR #131](https://github.com/mvryhan-web/video-variator-android/pull/131) adds isolated real-browser tests for original approved logo `naturalWidth=1254`, visible desktop sidebar/390px mobile header, correctly served Deepsyq PWA icons, preserved legacy Uniquifier PWA and no POST on rendering. Uses existing official brand CI with a separate Chromium/WebKit/browser-device smoke job. [GitHub Actions 38929572575](https://github.com/mvryhan-web/video-variator-android/actions/runs/38929572575) **SUCCESS — 8/8 browser cases across Chromium/WebKit/mobile and 8/8 Node byte-identity checks; Android debug APK compile passed.** Source, layout, A/C app feature code, auth, Stripe, providers, DB and production not touched. No assertion of complete Home Hero Girl visual acceptance, real phone install or paid release.
 
 ## Agent 5 — byte-exact Deepsyq installed icon derivative QA / CODE VERIFIED, PR #128 (2026-10-16)
 
