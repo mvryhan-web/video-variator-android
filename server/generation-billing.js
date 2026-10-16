@@ -29,7 +29,8 @@ export function stripeWebhookConfigured(env={}){
 }
 export function generationBillingRuntime(env={}){
   const mode=env.AI_BILLING_MODE==='live'?'live':'test',key=String(env.STRIPE_SECRET_KEY||'');
-  const keyMatches=mode==='live'?/^(sk_live_|rk_live_)/.test(key):/^(sk_test_|rk_test_)/.test(key);
+  const explicitMode=env.AI_BILLING_MODE==='test'||env.AI_BILLING_MODE==='live';
+  const keyMatches=explicitMode&&(mode==='live'?/^(sk_live_|rk_live_)/.test(key):/^(sk_test_|rk_test_)/.test(key));
   const liveApproved=env.AI_LIVE_BILLING_APPROVED==='true';
   const activationRequested=env.AI_BILLING_ENABLED==='true';
   return {mode,livemode:mode==='live',keyMatches,liveApproved,activationRequested,livePaymentsEnabled:activationRequested&&mode==='live'&&liveApproved&&keyMatches};
