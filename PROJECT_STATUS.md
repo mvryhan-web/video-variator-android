@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent D — BASE #16 historical signed Stripe refunds while Checkout OFF / IN PROGRESS (2026-10-16)
+
+- **Gap and claim:** one-time AI Checkout can be turned OFF to stop new sales, but current `handleEvent('charge.refunded')` throws `AI_BILLING_WEBHOOK_DISABLED` even on clearly AI-tagged previously sold payment refund. Retrying webhook indefinitely risks stale spendable refunded credits. New bounded fix will permit signed, same-mode, AI-tagged historical refund to reach existing durable wallet reversal regardless of new Checkout activation, without re-enabling new sales or grants. Unrelated legacy refunds remain unchanged, wrong-mode AI refunds stay blocked and missing original purchase remains retriable.
+- **Scope:** branch `base16-refunds-after-checkout-off-20261016`, target `deepsyq-platform`, `server/generation-billing.js` + existing focused tests/doc. Preserve merged PR #148, all existing signed Stripe replay protections, subscription grants, admin+UI, provider, DB, owner Home and public flags. No real Stripe connection.
+- **Separate D:** #153 webhook public error patch and #158 launch pricing check are independent DRAFT and pending GitHub CI. Full original #16 PARTIAL/NOT LIVE.
+
+
 ## Agent D — BASE #16 Price ID guard MERGED (2026-10-16)
 
 - Scoped [PR #148](https://github.com/mvryhan-web/video-variator-android/pull/148) **squash MERGED** to `deepsyq-platform` as `7d19224c785583858f7641f6c8e429f647a8940a`. Full final-head **8/8 GitHub Actions SUCCESS**: 38938557040, 38938557110, 38938557047, 38938557088, 38938557023, 38938557010, 38938556988, 38938556998. Four scoped files: `server/generation-billing.js`, new negative mocked-Checkout + unit tests, dedicated workflow, docs. Different AI credit-pack SKUs cannot share a Stripe Price ID; invalid config fails closed before paid checkout or DB writes.
