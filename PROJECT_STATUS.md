@@ -91,6 +91,11 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Scope:** narrow opt-out kill switches (`AI_IMAGE_ENABLED`, `AI_VIDEO_ENABLED`, `BYTEPLUS_ENABLED`) in existing catalog/estimate/create rejection. OFF global public AI remains mandatory, do not inadvertently disable owner pilot or history. Only code/test evidence supports scoped completion. No planned activation in Render.
 - **Collision:** BASE #16 currently independently owned; #18/#43/#49 merged; #48 release review and #30 mobile work separate. Check for concurrent Studio/provider changes before merging.
 
+## BASE #16 checkout UI error handoff — IN PROGRESS (2026-10-16)
+
+- Same BASE-D-CheckoutReuse owner continues after successful server PR #85; no independent new billing module. Isolated `base16-checkout-errors-20261016`, BASE parent, Pricing UI only; no locked Home.
+- **Verified gap:** `ai-pricing.js` reports "No payment was completed" after generic Stripe errors or expired/already-paid session HTTP 409; a prior charge may have completed, so that assertion is not justified. Update error copy to direct users to check wallet/payment history and refresh changed pack; add focused unit tests, no real Stripe call, no billing provider/ledger alteration.
+
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
 **ACTIVE OWNER PRIORITY NOW:** all four coding-agent sessions focus on the **original BASE TXT / 55-point checklist**, not new Roadmap Blocks 1–7 or duplicated Product Watcher. Shared 55-item claim board and proposed collision-safe work lanes: [`docs/DEEPSYQ_BASE_55_COORDINATION.md`](docs/DEEPSYQ_BASE_55_COORDINATION.md). This new owner instruction overrides older prose suggesting BASE is owned by just one agent or that Agents E/Block 5 should keep expanding their scope. **Already verified:** 55 rows exist in the BASE checklist; #47 and #53 are DONE/RULE; **53 other rows are not fully DONE** and mostly have significant existing code. `PARTIAL` does NOT mean “build from scratch.”
