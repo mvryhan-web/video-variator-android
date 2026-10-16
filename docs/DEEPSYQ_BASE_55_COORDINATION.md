@@ -37,7 +37,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 4 | Image generation | PARTIAL / BLOCKED | A | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 5 | Video generation | CORE CODE VERIFIED / ADVANCED & LIVE BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 6 | BytePlus first provider adapter | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
-| 7 | AI Provider Router | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS — scoped pre-dispatch capability compatibility (2026-10-16) | Agent B / Issue #73 / base7-video-capability-routing-20261016 (PR pending) |
+| 7 | AI Provider Router | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS / CODE PREPARED, CI QUEUED (2026-10-16; NOT VERIFIED/LIVE) | Agent B / Issue #73 / PR #143 / base7-video-capability-routing-20261016 · `37151d5` |
 | 8 | Fallback | PARTIAL / SAFETY-GATED | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 9 | Provider config in admin | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 10 | Normal generation-job database entity | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
