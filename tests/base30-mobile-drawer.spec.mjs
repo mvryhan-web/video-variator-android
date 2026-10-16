@@ -69,6 +69,19 @@ test('BASE #30: mobile account and owner navigation are reachable through visibl
  await expect(page).toHaveURL(/deepsyq-admin\.html/);
 });
 
+test('BASE #30: header Log in opens existing auth even while mobile sidebar is inert',async({page},info)=>{
+ test.skip(!info.project.name.startsWith('mobile-'),'mobile viewport only');
+ await prepare(page);
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#sidebar')).toHaveJSProperty('inert',true);
+ await page.locator('#topLogin').click();
+ await expect(page.locator('#authModal')).toBeVisible();
+ await expect(page.locator('#authModal')).toContainText('Sign in to your account');
+ await expect(page.locator('body')).not.toHaveClass(/menu-open/);
+ await page.locator('#authModal .modalClose').click();
+ await expect(page.locator('#authModal')).toBeHidden();
+});
+
 test('BASE #30: mobile share is reachable after scrolling the actual drawer',async({page},info)=>{
  test.skip(!info.project.name.startsWith('mobile-'),'mobile viewport only');
  await prepare(page);
