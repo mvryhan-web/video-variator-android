@@ -3,7 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {MODELS,MODEL_CATALOG,validateGeneration,generateGoogle,pollGoogle} from './generation-provider.js';
 import {generateBytePlus,pollBytePlus,bytePlusDownloadsConfigured} from './generation-byteplus.js';
 import {pricingCatalog,estimateGenerationPricing} from './generation-pricing.js';
-import {listModelControls,getModelControl,updateModelControl,applyModelControl} from './generation-model-control.js';
+import {listModelControls,getModelControl,updateModelControl,applyModelControl,updateProviderGroupControls} from './generation-model-control.js';
 import {enforceGenerationPolicy,generationPolicy} from './generation-policy.js';
 import {createObjectStorage} from './generation-storage.js';
 import {installGenerationReferenceUpload} from './generation-reference-upload.js';
@@ -116,6 +116,18 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  app.get('/api/studio/config',async(_req,res)=>{const base=studioConfig(env);if(env.AI_PROVIDER_ADMIN_ENABLED!=='true'||!pool)return res.json(base);try{const controlled=await listModelControls(pool,base.catalog);const defaults=base.models.map(m=>{const best=controlled.filter(x=>x.kind===m.kind&&x.enabled).sort((a,b)=>(a.control?.priority??100)-(b.control?.priority??100))[0];return best?{kind:m.kind,id:best.id,label:best.label,ratios:best.ratios,references:best.references,enabled:true}: {...m,enabled:false};});res.json({...base,catalog:controlled,models:defaults});}catch(_){res.json(base);}});
  const modelAdminEnabled=()=>env.AI_PROVIDER_ADMIN_ENABLED==='true'&&!!pool;
  app.get('/api/studio/admin/models',auth,owner,async(_req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const items=await listModelControls(pool,studioConfig(env).catalog);res.json({items});}catch(_){res.status(503).json({error:'MODEL_ADMIN_UNAVAILABLE'});}});
+ app.patch('/api/studio/admin/providers/:provider',auth,owner,async(req,res)=>{
+  if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});
+  if(!req.body||typeof req.body!=='object'||Array.isArray(req.body))return res.status(400).json({error:'INVALID_PROVIDER_GROUP_PATCH'});
+  const {kind,...patch}=req.body;
+  try{
+   const result=await updateProviderGroupControls(pool,{provider:req.params.provider,kind,userId:req.user.id,patch,catalog:studioConfig(env).catalog});
+   res.json({...result,customerCreditPricesUnchanged:true});
+  }catch(e){
+   const status=e.message==='INVALID_PROVIDER_GROUP_PATCH'?400:e.message==='PROVIDER_NOT_FOUND'?404:503;
+   res.status(status).json({error:status===503?'MODEL_ADMIN_UNAVAILABLE':e.message});
+  }
+ });
  app.post('/api/studio/admin/route-preview',auth,owner,async(req,res)=>{if(env.AI_SMART_ROUTING_ENABLED!=='true')return res.status(503).json({error:'SMART_ROUTING_NOT_ENABLED'});try{const catalog=await effectiveCatalog();const candidates=orderedGenerationCandidates(req.body,catalog);if(!candidates.length)return res.status(503).json({error:'NO_COMPATIBLE_MODEL'});
   const first=candidates[0],refs=Array.isArray(req.body?.references)?req.body.references.length:req.body?.referenceCount??0;
   const fallback=planPreDispatchFallback({
