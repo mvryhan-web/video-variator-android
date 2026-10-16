@@ -10,7 +10,7 @@ const orders={
   recent_checkout_sessions_24h:10,
   unmatched_old_sessions_7d:0
 };
-const purchases={orphan_credit_purchases:0,over_refunded_purchases:0};
+const purchases={orphan_credit_purchases:0,over_refunded_purchases:0,invalid_credit_purchases:0};
 function fake({schema='both',rows=orders,purchaseRows=purchases,throwSecret=false}={}) {
   const seen=[];
   const client={async query(sql){
@@ -90,6 +90,52 @@ test('refund amounts greater than recorded purchase amounts are critical interna
  assert.equal(r.status,'critical');
  assert.equal(r.code,'AI_REFUND_LEDGER_INCONSISTENT');
  assert.equal(r.stripeWebhookVerified,false);
+});
+
+
+test('B5-07 invalid credit count, purchase amount, refund sign or currency are internal consistency alarms',()=>{
+ const r=summarizeBillingReconciliation({orders,purchases:{...purchases,invalid_credit_purchases:2}});
+ assert.equal(r.status,'critical');
+ assert.equal(r.code,'AI_PURCHASE_LEDGER_INCONSISTENT');
+ assert.equal(r.reviewRequired,true);
+ assert.equal(r.counters.invalidCreditPurchases,2);
+ assert.equal(r.stripeWebhookVerified,false);
+ assert.equal(r.stripeApiChecked,false);
+ assert.ok(!('affectedUsers' in r));
+ const both=summarizeBillingReconciliation({orders,purchases:{...purchases,over_refunded_purchases:1,invalid_credit_purchases:2}});
+ assert.equal(both.code,'AI_REFUND_LEDGER_INCONSISTENT');
+ assert.equal(both.counters.invalidCreditPurchases,2);
+});
+
+test('B5-07 query validates impossible ledger shapes without exposing personal or payment data',async()=>{
+ const f=fake(),r=await checkBillingReconciliation(f.client,{enabled:true});
+ assert.equal(r.status,'healthy');
+ assert.equal(r.counters.invalidCreditPurchases,0);
+ const q=f.seen.find(sql=>sql.includes('FROM vv_ai_purchase p LEFT JOIN vv_ai_order'));
+ assert.ok(q.includes('p.credits<=0'));
+ assert.ok(q.includes('p.amount<=0'));
+ assert.ok(q.includes('p.refunded_amount<0'));
+ assert.ok(q.includes("btrim(p.currency) !~* '^[a-z]{3}
+ const invalid=summarizeBillingReconciliation({
+  orders:{...orders,unmatched_old_sessions_7d:-2},purchases
+ });
+ assert.equal(invalid.status,'warning');
+ assert.equal(invalid.code,'BILLING_METRICS_INVALID');
+ const f=fake({throwSecret:true}),r=await checkBillingReconciliation(f.client,{enabled:true});
+ assert.equal(r.status,'warning');
+ assert.equal(r.code,'AI_BILLING_LEDGER_UNAVAILABLE');
+ assert.equal(JSON.stringify(r).includes('password'),false);
+});
+
+test('all returned fields are safe aggregates or fixed labels, never user/session IDs',async()=>{
+ const f=fake(),r=await checkBillingReconciliation(f.client,{enabled:true});
+ const text=JSON.stringify(r);
+ assert.ok(!text.includes('cus_')&&!text.includes('pi_')&&!text.includes('cs_'));
+ assert.ok(!('userId' in r));
+ assert.ok(!('sessionId' in r));
+});
+"));
+ assert.ok(f.seen.every(sql=>/^SELECT/.test(sql)));
 });
 
 test('invalid counters or errors never invent a clean status or reveal credentials',async()=>{
