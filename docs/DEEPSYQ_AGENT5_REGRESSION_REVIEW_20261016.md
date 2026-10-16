@@ -45,7 +45,6 @@ Merged **PR #76** is the newer explicit Home lock: keep the **original approved 
 
 *Agent 5 read-only source/CI evidence, not a promise of unattended monitoring or another coding session having received its issue comment. Rerun checks after each new affected commit.*
 
-
 ## E. Latest shared BASE head — mergeability is NOT browser acceptance (2026-10-16, ~16:31 UTC)
 
 - **Git history repaired, not launched.** [PR #136](https://github.com/mvryhan-web/video-variator-android/pull/136) was merged **only into `deepsyq-platform`**, preserving `main` history and all 11 existing `docs/execution/**` files plus their workflow. At inspected BASE head `2101a6b59421a889f89451c4478e39cd05fc4fbb`, GitHub compare `main...deepsyq-platform` reports `behind=0`, `ahead=1077`; draft [PR #42](https://github.com/mvryhan-web/video-variator-android/pull/42) reports `mergeable=true`. **This only removes the history/merge-conflict gate; it is not permission to merge `main` or deploy.** These numbers are a point-in-time snapshot, not a live watch.

@@ -15,6 +15,12 @@ This file is the shared live progress board for all coding agents.
 - **Next owners:** D #75 narrow semantic Lifetime test and #134 reconciliation, A #72 permanent honest Home carousel/real owner media, C #74 working 320/390px mobile menu; full browser and physical-device acceptance plus real backup/restore, signed Stripe/provider/storage checks before `main`/Render. Full evidence: [Agent 5 CI handoff](docs/DEEPSYQ_AGENT5_REGRESSION_REVIEW_20261016.md#e-latest-shared-base-head--mergeability-is-not-browser-acceptance-2026-10-16-1631-utc).
 - **State:** REVIEW VERIFIED / PR REVIEW ONLY / NOT MAIN / NOT DEPLOYED / NOT LIVE. No production/Stripe/AI spend or customer data changed.
 
+## Agent 5 — isolated design Preview read-only boundary acceptance / FOCUSED CI PASS, PR #138 (2026-10-16)
+
+- **Agent/scope:** 5 technical QA, `agent5-preview-boundary-smoke-20261016`; no A–D original BASE feature row, no owner Home redesign, no real paid generation.
+- **Audit:** existing `tests/deepsyq-preview.mjs` checks first Canvas page and three POST endpoints, but not the newly installed official Deepsyq manifest/favicon/logo, robots/noindex, or representative payment/auth/provider/admin API surfaces. Its current execution as one step in broad `deepsyq-platform.yml` is slow and has unrelated red browser cases; no independent focused preview acceptance is available.
+- **Verified outcome:** [PR #138](https://github.com/mvryhan-web/video-variator-android/pull/138) extends real HTTP spawn test for original approved PNG (PNG signature), Deepsyq PWA/legacy Uniquifier separation, noindex/robots/no-store security headers, and fail-closed authenticated user/admin, Stripe checkout/webhook, AI generation, wallet and email login GET/POST surfaces. `.env` inaccessible. New isolated Node [GitHub CI 38932961125](https://github.com/mvryhan-web/video-variator-android/actions/runs/38932961125) **SUCCESS (1/1 comprehensive integration test, syntax pass)** on code SHA `d74e1c9`. The full platform/browser regression runs separately and is not certified green. No code changes to preview server itself, app, paid AI, Stripe, DB, original BASE, Home or main/production. Existing separate Render preview is NOT automatically redeployed by this test.
+
 ## Agent 5 — actual Home icon rendering browser smoke / CODE VERIFIED, PR #131 (2026-10-16)
 
 - **Role/branch:** Agent 5 read-only cross-browser acceptance QA, `agent5-brand-browser-smoke-20261016`. No BASE A/B/C/D feature implementation or claim takeover.
@@ -388,6 +394,9 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Scope:** require an explicit `AI_BILLING_MODE=test|live` when subscription grants are enabled, reject test-only subscription grants in actual `NODE_ENV=production`; OFF mode remains backward compatible. Add focused parsing/public-projection/real mock invoice tests in original focused CI. No new rates, Home, DB schema, payment, provider, `main` or Render edits.
 
 ## BASE #49 advisory lock connection release — IN PROGRESS (2026-10-16)
+
+- **Pushed PR #139 / CI 38933005898 QUEUED:** [PR #139](https://github.com/mvryhan-web/video-variator-android/pull/139), branch `base49-release-lock-failure-20261016`, code SHA `35a729aaff230eeb6545fe7cc920d369183176a3`, latest PR SHA `f5cfbfaa379d52830b16926d5f0535207ca560f6`. Real bug: `pg_advisory_unlock` failure/missing false outcome was silently ignored and pooled connection potentially retained migration lock. New code discards it via `client.release(true)` when unlock unconfirmed; preserves existing primary migration error. Four synthetic unit cases + previous read-only/manifest tests in new CI. [CI 38933005898](https://github.com/mvryhan-web/video-variator-android/actions/runs/38933005898) still **QUEUED**, do not merge or claim verified. Existing real PostgreSQL concurrency [CI 38933005579](https://github.com/mvryhan-web/video-variator-android/actions/runs/38933005579) **PASS** on PR head. BASE #49 remains IN PROGRESS / LIVE BLOCKED. No production DB, Render, Stripe, Home or main mutation.
+
 
 - Same previously assigned BASE-D-MigrationSafety owner; isolated `base49-release-lock-failure-20261016`. Confirmed gap: `runAiMigrations` swallows failure of `pg_advisory_unlock` and returns the same pooled connection to other callers while it may retain its session-level migration lock. Fix must destroy that connection on unlock failure and preserve any prior error. Synthetic tests and existing PostgreSQL run; no new schema or production DB access.
 
