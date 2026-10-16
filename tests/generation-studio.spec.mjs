@@ -422,3 +422,31 @@ test('BASE 24: History cards label reserved credits separately from server-confi
  await expect(unknown).not.toContainText('Reserved per server:');
  expect(paidPosts).toBe(0);
 });
+
+test('BASE 24 Music History filter is visible on narrow screens, read-only and does not show other kinds',async({page})=>{
+ await page.setViewportSize({width:320,height:740});
+ const cfg={enabled:false,ownerOnly:true,models:[],catalog:[]};
+ await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
+ let lastFilter='',posts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))posts++;});
+ await page.route('**/api/studio/jobs**',r=>{
+   const u=new URL(r.request().url());
+   if(r.request().method()!=='GET')return r.fulfill({status:500,json:{error:'UNEXPECTED_WRITE'}});
+   lastFilter=u.searchParams.get('filter')||'all';
+   const items=lastFilter==='music'?[{id:'music-owned',kind:'music',status:'ready',
+     prompt:'Original customer audio',provider:'Google',model:'fixture-music',settings:{musicMode:'song'},
+     createdAt:'2026-10-16T08:02:00Z'}]:[];
+   return r.fulfill({json:{filter:lastFilter,items}});
+ });
+ await page.goto('/generate-studio.html?studio=audio');
+ await page.locator('#showHistory').click();
+ await expect(page.locator('[data-history-filter=music]')).toBeVisible();
+ await page.locator('[data-history-filter=music]').click();
+ await expect.poll(()=>lastFilter).toBe('music');
+ await expect(page.locator('[data-history-filter=music]')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('.history-card')).toHaveCount(1);
+ await expect(page.locator('.history-card')).toContainText('Original customer audio');
+ await expect(page.locator('.history-card')).not.toContainText('Image');
+ expect(posts).toBe(0);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
