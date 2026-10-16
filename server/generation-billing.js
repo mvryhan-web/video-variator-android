@@ -145,9 +145,12 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
         integration_identifier:p.identifier,allow_promotion_codes:false,
         success_url:`${appUrl}/generate-studio.html?ai_checkout=returned`,cancel_url:`${appUrl}/generate-studio.html?ai_checkout=cancelled`
       },{idempotencyKey:'vv-ai-'+id});
-      if (!!s.livemode!==r.livemode||typeof s.url!=='string'||new URL(s.url).hostname!=='checkout.stripe.com') throw Error('CHECKOUT_MODE_MISMATCH');
+      // The first Checkout creation must satisfy the same integrity contract as
+      // an idempotent replay, before its session ID is persisted or URL shown.
+      // A malformed upstream session must never be presented as payable.
+      const verified=existingCheckoutResponse({order:{...order,session_id:s?.id},pack,session:s,runtime:r,userId:req.user.id});
       await pool.query('UPDATE vv_ai_order SET session_id=$2 WHERE id=$1',[id,s.id]);
-      res.json({url:s.url,id:s.id,mode:r.mode});
+      res.json(verified);
     } catch (_) {res.status(503).json({error:'AI_CHECKOUT_UNAVAILABLE'});}
   });
   async function handleEvent(event) {
