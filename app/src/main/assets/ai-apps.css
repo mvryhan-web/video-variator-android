@@ -22,8 +22,10 @@ header{
 .brand{display:flex;align-items:center;gap:9px;white-space:nowrap;font-weight:750;font-size:22px}
 .brand span{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#7153e8,#d970b6);color:#fff;box-shadow:0 0 19px #8657e15e}
 nav{display:flex;gap:8px;flex-wrap:wrap}
-nav a{font-size:12px;color:#c7bbd9;padding:9px 12px;border-radius:9px;white-space:nowrap}
-nav a.active,nav a:hover{background:#33264c;color:#fff}
+nav a,nav button{font-size:12px;color:#c7bbd9;padding:9px 12px;border-radius:9px;white-space:nowrap}
+nav button{background:transparent;border:0;cursor:pointer}
+nav button[hidden]{display:none}
+nav a.active,nav a:hover,nav button:hover{background:#33264c;color:#fff}
 main,footer{max-width:1180px;margin:auto;padding-left:22px;padding-right:22px}
 .hero{padding:70px 0 40px;max-width:790px}
 .eyebrow{font-size:10px;letter-spacing:1.7px;color:#d9b9fa;font-weight:650}
@@ -94,7 +96,7 @@ footer p{margin:0}
  header{position:relative;padding:14px 16px;align-items:flex-start;flex-direction:column;gap:12px}
  .brand{font-size:19px}
  nav{max-width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}
- nav a{padding:8px 11px;min-height:44px;display:inline-flex;align-items:center}
+ nav a,nav button{padding:8px 11px;min-height:44px} nav a{display:inline-flex;align-items:center}
  nav{-webkit-overflow-scrolling:touch;overscroll-behavior-inline:contain}
  main,footer{padding-left:16px;padding-right:16px}
  .hero{padding:43px 0 27px}
