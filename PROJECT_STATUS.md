@@ -116,11 +116,11 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Scope:** remove internal provider cost fields from authenticated customer History read response while preserving credits and existing owner-only cost telemetry. Implemented customer-only History cost filtering (SQL select + JSON), preserving owner cost reports and customer credit balances. Merged PR #89, commit cd31b923; targeted HTTP CI 38906320339 PASS and Video core 38906352706 PASS. Shared AI Studio suite 38906352455 failed in separately owned BASE #16 Checkout replay fixture (409/200), not falsely claimed green. No Stripe, wallet, accounting ledger or provider changes.
 - **External:** authoritative provider billing, currency conversion, infra cost, gross margin and revenue still NOT verified. This is a privacy/cost-presentation correction, not a pretend margin calculation.
 
-## Agent D BASE #14 — protect wallet ledger references from customer APIs — IN PROGRESS (2026-10-16)
+## Agent D BASE #14 — protect wallet ledger references — CODE VERIFIED, BASE MERGED, NOT LIVE (2026-10-16)
 
 - **Claim:** original owner BASE §14 `docs/DEEPSYQ_PLATFORM_SPEC.md`, new isolated branch `base14-private-ledger-refs-20261016`. Existing durable ledger retains references, timestamps, per-user deltas, Stripe/order IDs for internal idempotency and audit.
 - **Observed gap:** `GenerationWallet.history` includes internal ledger `reference` in both customer `/api/ai-wallet/history` and `/api/ai-billing/history`. Current client UIs use only kind, date and deltas. Filter returned customer fields without changing stored records or owner reports.
-- **Collision guard:** concurrent #16 owns `server/generation-billing.js`; do NOT change their routes, webhook flows or Stripe. Single change in `generation-wallet.js` plus isolated HTTP/mock validation. No production/migration changes.
+- **Collision guard:** concurrent #16 owns `server/generation-billing.js`; do NOT change their routes, webhook flows or Stripe. Scoped PR #90 merged as 446274f1; authenticated HTTP wallet history tests PASS in CI 38906957706, no production deployment or Stripe change. Original ledger references preserved internally, but customer view restricted. Full BASE #14 still PARTIAL.
 
 ## BASE #16 PostgreSQL Checkout fixture regression — MERGED TO BASE / TESTS PASS (2026-10-16)
 
@@ -157,6 +157,12 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Owner:** same BASE-D-CheckoutReuse; isolated `base16-nonai-refund-webhooks-20261016`; original BASE §16 explicitly reuses existing Stripe subscriptions and must not break them. Shared board #16 marked before code. #14 different owner modifying private wallet ledger; untouched.
 - **Real integration gap:** shared signed `/api/webhooks/stripe` first invokes `generationBilling.handleEvent(event)` even for existing Video Uniquifier Stripe events. New AI billing code currently throws `AI_BILLING_WEBHOOK_DISABLED` on **any** `charge.refunded` while AI billing is OFF (default), causing existing Stripe webhook server to answer HTTP 500 for unrelated paid subscription refunds. With AI billing enabled but in a different Stripe mode, generic other-product refund can also throw before identifying whether AI wallet knows the payment.
 - **Scope:** fail closed on clearly AI-tagged refunds while not blocking unmarked unrelated Stripe events; require retry if explicitly tagged AI refund precedes durable AI wallet purchase. Add synthetic webhook tests, never call real Stripe, no checkout price/ledger/provider/Render/main changes.
+
+## Agent D BASE #15 — partial final credit capture / unused reserve release — IN PROGRESS (2026-10-16)
+ 
+- **Original owner source:** `docs/DEEPSYQ_PLATFORM_SPEC.md` §15. Current wallet idempotently reserves credits and captures FULL reserve on successful provider output, but has no internal means to consume less and refund the unused remainder.
+- **Assigned branch:** `base15-partial-settlement-20261016` from latest BASE. Extend **existing** wallet primitive with trusted optional `actualCredits` (never from browser), preserving default full-reserve capture. Ensure debt-first surplus release, zero overspend, retry idempotency and mismatch detection, with PostgreSQL tests.
+- **Boundaries:** Other agent's BASE #16 Stripe paths, DB migrations, Home and public provider pricing left unchanged. No production usage-based cost mapping or enabled public calls without real invoices and approval.
 
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 

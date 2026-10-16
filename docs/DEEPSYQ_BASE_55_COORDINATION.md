@@ -44,8 +44,8 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 11 | Permanent object storage | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 12 | Background jobs | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 13 | Internal AI credit system | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (PR #96 · CI 38908532493 PASS; LIVE BLOCKED) | BASE-D-StudioWallet / base13-studio-wallet-20261016 |
-| 14 | Credit ledger | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS | Agent-D-BASE14 / base14-private-ledger-refs-20261016 |
-| 15 | Credit reservation | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 14 | Credit ledger | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (scoped; PR #90 · CI 38906957706) | Agent-D |
+| 15 | Credit reservation | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS | Agent-D-BASE15 / base15-partial-settlement-20261016 |
 | 16 | Stripe subscriptions + credit packs | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / REGRESSION VERIFIED (PR #99 · CI 38909520882 PASS; older #85/#86/#91; LIVE BLOCKED) | BASE-D-CheckoutReuse / base16-checkout-reuse-20261016 |
 | 17 | Unit economics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (partial; #89) | Agent-D / CI 38906320339 |
 | 18 | Pricing engine | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (partial; PR #83 · CI 38904230756 · 775cc805; MAIN/LIVE BLOCKED) | BASE-D-ProviderPricing / base55-d-provider-pricing-20261016 |
