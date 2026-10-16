@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent D — BASE #37 completed generation failure-rate accuracy / IN PROGRESS (2026-10-16)
+
+- **Exact scope:** existing owner Business analytics `failureRate = failed / all jobs` includes queued/processing/finalizing tasks, diluting the failure percentage while providers are pending. Add separately named `completedFailureRate = failed / (ready + failed)` with a **null when no completed jobs**, preserve original legacy field for compatibility and clearly label the new metric in owner-only admin UI. No fake provider costs/revenue/churn or altered pricing.
+- **Agent D claim:** original BASE §37; branch `base37-completed-failure-rate-20261016`, target `deepsyq-platform`. Minimal owner-only `server/generation-studio.js` business aggregate and `app/src/main/assets/deepsyq-admin.js` owner dashboard, plus pure narrow unit tests and explanatory doc. Does NOT change provider dispatch/jobs, media, public Home, wallet, DB migrations or Agent B active PR #160 provider metrics and #175 task audit.
+- **Already merged prior work:** BASE #37 PRs #64 + #119; overall analytics still PARTIAL / NOT LIVE. Full GitHub CI necessary before merge, and owner launch is not authorized.
+
+
 ## Agent D — BASE #54 15-step first-pass acceptance audit MERGED / OVERALL NOT MET (2026-10-16)
 
 - **Merged documentation-only:** [PR #171](https://github.com/mvryhan-web/video-variator-android/pull/171), squash `b4e841ab96e897af528b5751dc5e09a7f383ab86`. Exact single file `docs/BASE_54_FIRST_PASS_ACCEPTANCE_MATRIX.md`; static evidence check verified 15/15 original end-user steps and 5/5 owner diagnostics present, release status marked NOT MET and NOT LIVE VERIFIED. No CI triggered for doc-only PR; it does NOT establish live success.
