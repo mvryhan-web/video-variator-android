@@ -7,6 +7,18 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent C — BASE #30 mobile drawer navigation acceptance / IN PROGRESS (2026-10-16)
+
+- **Recovery:** prior Agent C Issue #74 HANDOFF after PR #110; this is a new bounded scoped task (not takeover of already merged code). Existing PR #79 and #110 functionality preserved.
+- **Claim:** original BASE #30, Agent C, dedicated branch `base30-mobile-drawer-acceptance-20261016` targeting `deepsyq-platform`. `tests/deepsyq.spec.mjs` off-canvas mobile fixture has failed prior broad CI; navigation must be accepted with actual visible `#menu` drawer behavior, real account/admin/share actions and browser device checks. Coordinate with A-owned Home and D-owned pricing assertions; do not change locked visuals, provider, Stripe, wallet or main.
+- **Status:** IN PROGRESS; branch tests/PR pending. Production and physical devices NOT VERIFIED.
+
+## Agent 5 — isolated design Preview read-only boundary acceptance / FOCUSED CI PASS, PR #138 (2026-10-16)
+
+- **Agent/scope:** 5 technical QA, `agent5-preview-boundary-smoke-20261016`; no A–D original BASE feature row, no owner Home redesign, no real paid generation.
+- **Audit:** existing `tests/deepsyq-preview.mjs` checks first Canvas page and three POST endpoints, but not the newly installed official Deepsyq manifest/favicon/logo, robots/noindex, or representative payment/auth/provider/admin API surfaces. Its current execution as one step in broad `deepsyq-platform.yml` is slow and has unrelated red browser cases; no independent focused preview acceptance is available.
+- **Verified outcome:** [PR #138](https://github.com/mvryhan-web/video-variator-android/pull/138) extends real HTTP spawn test for original approved PNG (PNG signature), Deepsyq PWA/legacy Uniquifier separation, noindex/robots/no-store security headers, and fail-closed authenticated user/admin, Stripe checkout/webhook, AI generation, wallet and email login GET/POST surfaces. `.env` inaccessible. New isolated Node [GitHub CI 38932961125](https://github.com/mvryhan-web/video-variator-android/actions/runs/38932961125) **SUCCESS (1/1 comprehensive integration test, syntax pass)** on code SHA `d74e1c9`. The full platform/browser regression runs separately and is not certified green. No code changes to preview server itself, app, paid AI, Stripe, DB, original BASE, Home or main/production. Existing separate Render preview is NOT automatically redeployed by this test.
+
 ## Agent 5 — actual Home icon rendering browser smoke / CODE VERIFIED, PR #131 (2026-10-16)
 
 - **Role/branch:** Agent 5 read-only cross-browser acceptance QA, `agent5-brand-browser-smoke-20261016`. No BASE A/B/C/D feature implementation or claim takeover.
@@ -381,6 +393,9 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 
 ## BASE #49 advisory lock connection release — IN PROGRESS (2026-10-16)
 
+- **Pushed PR #139 / CI 38933005898 QUEUED:** [PR #139](https://github.com/mvryhan-web/video-variator-android/pull/139), branch `base49-release-lock-failure-20261016`, code SHA `35a729aaff230eeb6545fe7cc920d369183176a3`, latest PR SHA `f5cfbfaa379d52830b16926d5f0535207ca560f6`. Real bug: `pg_advisory_unlock` failure/missing false outcome was silently ignored and pooled connection potentially retained migration lock. New code discards it via `client.release(true)` when unlock unconfirmed; preserves existing primary migration error. Four synthetic unit cases + previous read-only/manifest tests in new CI. [CI 38933005898](https://github.com/mvryhan-web/video-variator-android/actions/runs/38933005898) still **QUEUED**, do not merge or claim verified. Existing real PostgreSQL concurrency [CI 38933005579](https://github.com/mvryhan-web/video-variator-android/actions/runs/38933005579) **PASS** on PR head. BASE #49 remains IN PROGRESS / LIVE BLOCKED. No production DB, Render, Stripe, Home or main mutation.
+
+
 - Same previously assigned BASE-D-MigrationSafety owner; isolated `base49-release-lock-failure-20261016`. Confirmed gap: `runAiMigrations` swallows failure of `pg_advisory_unlock` and returns the same pooled connection to other callers while it may retain its session-level migration lock. Fix must destroy that connection on unlock failure and preserve any prior error. Synthetic tests and existing PostgreSQL run; no new schema or production DB access.
 
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
@@ -425,6 +440,7 @@ The exact completion state of older components must be verified from the current
 
 | Workstream | Owner / Agent | Branch / PR | Status | Rule |
 |---|---|---|---|---|
+| BASE #7 — Video-first smart provider routing capability validation | Agent B / Issue #73 (new chat takeover) | [PR #143](https://github.com/mvryhan-web/video-variator-android/pull/143) · `37151d5` → `deepsyq-platform` | **IN PROGRESS / CODE PREPARED / CI QUEUED / NOT LIVE** 2026-10-16 | Video Smart route now filters native mode, ref count, requested resolution/duration and Veo 8s restriction in `generation-routing.js`; estimate passes identical controls in B-owned `generation-studio.js`; 2 regression unit tests pushed. Independent GitHub AI Studio #38934781901 and Video core #38934782051 QUEUED; local hand-copied logic smoke 6/6 PASS (not repository CI). Do not mark CODE VERIFIED or merge to MAIN before scoped CI. Paid provider/cloud S3 still blocked. |
 | BASE #19 — AI Apps empty-state direct Product Video path | ChatGPT BASE lane C (this session) | PR #71 → `deepsyq-platform`, merge `59dea3d3` | **CODE VERIFIED / MERGED TO BASE / ITEM PARTIAL / NOT LIVE** — 2026-10-16 | AI Apps empty catalog and temporary API outage now link the existing local Product Video workflow, clearly identified as manual Studio preparation, not a published template or paid generation. CI 38901487492 PASS Chromium + WebKit desktop/mobile. No owner-locked Home, Video Studio, Stripe, auth, DB or production changes. Owner-approved template assets and real provider/media acceptance remain gated. |
 | BASE #36 worker crash log redaction | Agent C / Issue #74 / PR #109 | `deepsyq-platform` / merge `e89aefc7` | CODE VERIFIED / MERGED TO BASE / NOT LIVE | AI worker uncaught exception and unhandled rejection logs no longer serialize potentially sensitive exception text; fatal shutdown retained. Static-message privacy regression node CI 38914175144 PASS. Full privacy/provider/media/terms review still pending. |
 | BASE #38 Owner admin narrow screens | Agent C / Issue #74 / PR #98 | `deepsyq-platform` / merge `fb9ce2a1` | CODE VERIFIED / MERGED TO BASE / NOT LIVE | Mobile owner Admin model/title and section text no longer force 348px page width at 320px. Existing financial/owner controls untouched, responsive 320/390/1440 browser tests Chromium/WebKit desktop/mobile CI 38912222509 PASS. Real device, owner auth E2E, live launch still unverified. |

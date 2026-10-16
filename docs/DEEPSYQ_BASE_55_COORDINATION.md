@@ -37,7 +37,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 4 | Image generation | PARTIAL / BLOCKED | A | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 5 | Video generation | CORE CODE VERIFIED / ADVANCED & LIVE BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 6 | BytePlus first provider adapter | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
-| 7 | AI Provider Router | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 7 | AI Provider Router | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS / CODE PREPARED, CI QUEUED (2026-10-16; NOT VERIFIED/LIVE) | Agent B / Issue #73 / PR #143 / base7-video-capability-routing-20261016 · `37151d5` |
 | 8 | Fallback | PARTIAL / SAFETY-GATED | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 9 | Provider config in admin | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 10 | Normal generation-job database entity | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
@@ -60,7 +60,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 27 | Existing Video Uniquifier preserved under Tools | PARTIAL | C | ROOT SWITCH/PRODUCTION REGRESSION GATED | CODE VERIFIED (BASE, not live) | ChatGPT Lane C / PR #61 / `base-27-video-uniquifier-tools-20261016` / CI 38898789990 |
 | 28 | Utilities gathered in Tools | PARTIAL — AUDIO/COLLAGE/PHOTO COMPRESSION/TELEPROMPTER VERIFIED | C | REMAINING UTILITIES + REAL DEVICE & RELEASE GATED | CODE VERIFIED / MERGED TO BASE (PRs #67/#113/#121) | Agent C / PR #121 merge `5699de20`; browser CI 38924678239; compression 38924678343 / collage 38924678471 PASS |
 | 29 | Final navigation | PARTIAL — AI APPS HISTORY/CREDITS + ACCOUNT LINKS CODE VERIFIED | C | WHOLE-APP ACCOUNT NAV AND DEVICE/LIVE GATED | CODE VERIFIED / MERGED TO BASE (PRs #68 + #110) | Agent C / Issue #74 / PR #68 CI 38900798943 / PR #110 merge `89477d7b` CIs 38915655213 + 38915655095 |
-| 30 | Desktop / Android / iPhone responsive | PARTIAL — AI APPS MOBILE CODE VERIFIED | C | PHYSICAL DEVICE + WHOLE-APP ACCEPTANCE PENDING | CODE VERIFIED / MERGED TO BASE (PR #79) | Agent C / Issue #74 / merge `c389045d` / CI 38904085432 / Agent 5 reviewed |
+| 30 | Desktop / Android / iPhone responsive | PARTIAL — AI APPS MOBILE CODE VERIFIED | C | PHYSICAL DEVICE + WHOLE-APP ACCEPTANCE PENDING | IN PROGRESS — mobile drawer E2E + keyboard/navigation acceptance; previous PR #79 preserved | Agent C / Issue #74 / base30-mobile-drawer-acceptance-20261016 (new claim) |
 | 31 | Generation UX/status | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 32 | Friendly error handling | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 33 | Safe retry | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
