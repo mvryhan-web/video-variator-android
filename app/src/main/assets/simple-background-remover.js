@@ -125,6 +125,7 @@ $('download').onclick=()=>{
  setStatus('Transparent PNG downloaded. The original photo was not changed.');
 };
 window.addEventListener('pagehide',()=>{
- discardExport();
- if(original?.data)original.data.fill(0);
+ // A page restored from the back/forward cache must not display the previous
+ // customer's image, even though its Blob URL and CPU buffer were released.
+ clearCurrent({clearInput:true});
 });
