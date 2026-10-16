@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent A — published active BASE #4/#24 M0 coordination claims (2026-10-16)
+
+- **BASE #4 / Image:** [draft PR #193](https://github.com/mvryhan-web/video-variator-android/pull/193), branch `agent-a-base4-openai-gpt-image-m0-20261016`, Image OpenAI optional adapter + 14 authored no-cost Node tests; actual source/test-body V8 mock 14/14 PASS, GitHub CI QUEUED, no live paid dispatch. Existing BytePlus/Google router untouched, Agent B integration and D verified purchased-credit gating pending. Owner #178 + zero-paid rule #182. Scope PARTIAL/BLOCKED.
+- **BASE #24 / History:** [draft PR #152](https://github.com/mvryhan-web/video-variator-android/pull/152), branch `agent-a-base24-history-filter-race-20261016`. Existing pending History race + privacy corrections preserved; B-requested Audio/Music filter now has bound Postgres `kind=$2`, account-scoped read, EN/RU UI and focused browser/Express regression code. 6/6 actual SQL branch simulations PASS; real GitHub CI QUEUED; draft diverged and requires conflict-safe review. Scope PARTIAL.
+- **Coordination:** these are pre-existing Agent A reserved branches, not permission to merge/deploy. Latest shared 55-row board now reflects the exact branch/PR claims. No changes to other agents' modules, Home locked design, main, Render, payment, paid provider, or production.
+
+
 
 
 ## Agent C — BASE #35 AI Apps logout pending prompt scrub / IN PROGRESS, PR #192 (2026-10-16)
