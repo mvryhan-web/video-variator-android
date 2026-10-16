@@ -39,6 +39,10 @@ test('invalid ratios/sizes/quality and unsupported formats fail closed',()=>{
  assert.throws(()=>buildOpenAIImageRequest({...input,outputFormat:'webp'},model),/UNSUPPORTED_IMAGE_FORMAT/);
  assert.throws(()=>buildOpenAIImageRequest({...input,model:'gpt-image-1.5'}, {...model,quality:'max',id:'gpt-image-1.5'}),/UNSUPPORTED_IMAGE_QUALITY/);
  assert.equal(buildOpenAIImageRequest(input,{...model,quality:'max'}).quality,'max');
+ const old={...model,id:'gpt-image-1.5',quality:'high',sizes:{'1:1':{'1K':'1536x864'}}};
+ assert.throws(()=>buildOpenAIImageRequest({...input,model:old.id},old),/UNSUPPORTED_RESOLUTION/);
+ const supported={...old,sizes:{'1:1':{'1K':'1024x1024'}}};
+ assert.equal(buildOpenAIImageRequest({...input,model:old.id},supported).size,'1024x1024');
 });
 test('accept approved genuine base64 PNG/JPEG inputs, forbid malformed and too many references',()=>{
  const ref={mimeType:'image/png',data:png.toString('base64')};
@@ -120,4 +124,10 @@ test('network failure normalized and never auto-retried',async()=>{
 test('malformed success output returns safe provider-media error',async()=>{
  await assert.rejects(call({},model,{fetcher:async()=>answer({data:[{b64_json:'Zg=='}]})}),
   /INVALID_PROVIDER_MEDIA/);
+});
+
+test('output mismatch in provider-declared size and quality is rejected before storage',async()=>{
+ await assert.rejects(call({},model,{fetcher:async()=>answer({...apiImage,size:'1536x1024'})}),/INVALID_PROVIDER_MEDIA/);
+ await assert.rejects(call({},model,{fetcher:async()=>answer({...apiImage,quality:'max'})}),/INVALID_PROVIDER_MEDIA/);
+ assert.equal((await call({},model,{fetcher:async()=>answer({...apiImage,size:'1024x1024',quality:'low'})})).mime,'image/png');
 });
