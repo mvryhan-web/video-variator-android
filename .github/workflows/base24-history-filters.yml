@@ -1,0 +1,48 @@
+name: BASE 24 History filter latest-response acceptance
+
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/generate-studio.js'
+      - 'tests/generation-studio.spec.mjs'
+      - '.github/workflows/base24-history-filters.yml'
+  pull_request:
+    paths:
+      - 'app/src/main/assets/generate-studio.js'
+      - 'tests/generation-studio.spec.mjs'
+      - '.github/workflows/base24-history-filters.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: base24-history-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  history-out-of-order:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Check Studio and History browser test syntax
+        run: |
+          node --check app/src/main/assets/generate-studio.js
+          node --check tests/generation-studio.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Run only BASE 24 out-of-order History cases on actual browsers
+        run: npx playwright test tests/generation-studio.spec.mjs --project=chromium --project=webkit --grep 'BASE 24:'
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: base24-history-filter-race-evidence
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
