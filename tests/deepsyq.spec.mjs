@@ -330,6 +330,8 @@ test('featured owned video is promoted but original homepage sections and images
  await expect(page.getByRole('link',{name:/Video Uniquifier history/})).toBeVisible();
 });
 test('approved video appears in the real homepage hero but does not erase Canvas or original sections',async({page})=>{
+ // Navigation/media-element assertions are separate from serving real MP4 bytes.
+ await page.addInitScript(()=>{HTMLMediaElement.prototype.load=function(){};HTMLMediaElement.prototype.pause=function(){};HTMLMediaElement.prototype.play=function(){return Promise.resolve();};});
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
@@ -401,7 +403,12 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/broken-two.mp4');
  await expect(page.locator('#homeHeroDots button').first()).toBeDisabled();
  await page.locator('#inspirationHeroVideo').evaluate(v=>v.dispatchEvent(new Event('error')));
- await expect(page.locator('#homeHeroCarousel')).toBeHidden();
+ await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+ await expect(page.locator('#homeHeroCarousel')).toHaveClass(/is-empty/);
+ await expect(page.locator('#homeHeroEmpty')).toBeVisible();
+ await expect(page.locator('#homeHeroPlay')).toBeHidden();
+ await expect(page.locator('#homeHeroNext')).toBeHidden();
+ await expect(page.locator('#homeHeroSlideLink')).toBeHidden();
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
  await expect(page.locator('#inspirationPreviewGrid')).toContainText('Original owner still');
@@ -452,7 +459,8 @@ test('Home Quick Create hands off an unpaid draft and Agent remains a preview',a
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  let posts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
  await page.goto('/deepsyq.html');
- await expect(page.locator('#homeHeroCarousel')).toBeHidden();
+ await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+ await expect(page.locator('#homeHeroEmpty')).toBeVisible();
  await page.locator('[data-home-kind="agent"]').click();
  await page.locator('#homeQuickSubmit').click();
  await expect(page.locator('#homeQuickStatus')).toContainText('not available yet');
