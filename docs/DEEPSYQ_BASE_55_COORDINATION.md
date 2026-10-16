@@ -82,7 +82,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 49 | Database migrations | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (#120 + #139; CI 38936179884, 38936179931, 38936179868, 38936179892 PASS; staging/backup LIVE BLOCKED) | BASE-D-MigrationSafety / PR #139 / base49-release-lock-failure-20261016 |
 | 50 | Feature flags | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (partial; #87) | Agent-D / CI 38905747621 |
 | 51 | First commercial vertical slice | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS — PR #158 dual Image+Video pricing/rates gate; 16/16 isolated PASS, CI QUEUED; #130/#142 merged; LIVE BLOCKED | Agent D / PR #158 / base51-image-video-pricing-gate-20261016 |
-| 52 | Required implementation order | IN PROGRESS | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 52 | Required implementation order | IN PROGRESS | D | AUDIT IMPLEMENTATION; FINISH GAP | Stage 19 preview live at older SHA `f90bafc`, behind current BASE `d7ed4df`; end-to-end staging/payments/backups/device gates NOT VERIFIED (read-only Render inspection, 2026-10-16) | Agent D / PROJECT_STATUS BASE #52 stage 19 read-only |
 | 53 | Explicit non-goals for now | DONE / RULE | — | DO NOT REBUILD | — | — |
 | 54 | BASE readiness criteria | NOT MET | D | FINAL GATE | — | — |
 | 55 | Required final report | PENDING | D | FINAL GATE | — | — |
