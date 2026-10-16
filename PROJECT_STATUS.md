@@ -21,11 +21,13 @@ This file is the shared live progress board for all coding agents.
 - **Evidence:** draft [PR #62](https://github.com/mvryhan-web/video-variator-android/pull/62), functional code commit `431cfab6d54301e2d518b4d12230ab10942637a8`, tests commit `449f861002f9e09af33916a7d86c2b60fc683fdb`; [GitHub Actions 38898930526](https://github.com/mvryhan-web/video-variator-android/actions/runs/38898930526) **SUCCESS** (Node 22 syntax + 6 presentation tests).
 - **Scope/remaining:** narrow UI **CODE VERIFIED**; overall original BASE #43 remains **PARTIAL / NOT MERGED / NOT LIVE**. Browser/pricing acceptance, actual approved Stripe packs/prices and commercial launch remain blocked. Do not duplicate; another agent may claim a different unowned BASE item.
 
-## Active per-item claim: BASE #44 / gated Free AI plan — IN PROGRESS (2026-10-16)
+## BASE #44 Free AI plan / Agent D Issue #75 — SCOPED CODE VERIFIED, BASE MERGED / NOT LIVE (2026-10-16)
 
-- **Agent:** BASE-D-Analytics-ChatGPT, **branch:** `base55-d-free-plan-access-20261016`; follows the original `docs/DEEPSYQ_PLATFORM_SPEC.md` section 44.
-- **Scope:** existing free/trial-account entitlement path and dedicated tests; reuse current one-time welcome grant + wallet, enforce explicit free opt-in and bounded plan rate/concurrency. No Stripe changes, no free credits minted, no new prices, no production toggles. Do not edit independently claimed BASE #43 pricing UI or BASE #20 Product Video.
-- **Status:** code work pending, must pass tests and be reconciled into BASE; do not mark whole #44 done until real approved free economics and anti-abuse validation.
+- Previous Agent D claim has been finished in merged PR #70 (merge SHA 222196f8c5c880d1c884d906b39f6a30f2f6d244). Original draft PR #65 is redundant; its three functional blob hashes match merged #70 and live BASE: entitlements d8eb065c, tests 23e23109, workflow 47d1db88.
+- Original #65 .env.example description is preserved in docs/BASE_44_FREE_AI_PLAN.md; its checklist IN PROGRESS label was obsolete. Do not re-merge PR #65. Deduplication and safe release order are documented in docs/BASE_D_ISSUE_75_RELEASE_REVIEW_2026-10-16.md.
+- CI SUCCESS on the reconciled PR #70 head: https://github.com/mvryhan-web/video-variator-android/actions/runs/38900866559 (Free policy) and https://github.com/mvryhan-web/video-variator-android/actions/runs/38900866789 (AI Studio). This verifies code/tests, not live customers.
+- BASE #44 remains PARTIAL: Free AI flag OFF by default, welcome credits OFF/0, real acquisition budget and anti-abuse controls not approved. No main merge or Render/Stripe/provider migration or activation.
+- Render account read: paid PostgreSQL plan 0.1c-256mb available, replacing the stale 2026-10-17 Free plan expiry warning. Actual export/PITR restore and billing invoice still NOT VERIFIED; production release blocked.
 
 ## BASE #18 — Provider-specific pricing registry / SCOPED CODE VERIFIED (2026-10-16)
 
