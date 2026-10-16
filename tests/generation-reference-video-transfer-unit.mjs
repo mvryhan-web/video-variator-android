@@ -202,3 +202,72 @@ test('no video plan can bypass model, duplicate IDs, actual reinspection or tran
   /REFERENCE_VIDEO_TRANSFER_DISABLED/);
  assert.equal(reads,1);
 });
+
+test('all owner DB lookups finish before first 30-second link is minted',async()=>{
+ const bytes=await validMp4(),actualStorage=storageAndAsset().storage;
+ let secondLookupStarted,continueSecondLookup;
+ const waiting=new Promise(resolve=>{secondLookupStarted=resolve;});
+ const gate=new Promise(resolve=>{continueSecondLookup=resolve;});
+ const events=[];
+ const ledger={
+  async get({id}){events.push('inspect:'+id);return bytes;},
+  async getForVideoTransfer({userId,id}){
+   events.push('candidate:'+id);
+   if(id===ID2){secondLookupStarted();await gate;}
+   return {mime:'video/mp4',expiresAt:'2026-10-15T19:00:00Z',
+    key:actualStorage.stagedReferenceKey({userId,mime:'video/mp4',assetId:id})};
+  }
+ };
+ const storage={
+  presignStagedReferenceRead(input){
+   events.push('sign:'+input.key.slice(-40,-4));
+   return actualStorage.presignStagedReferenceRead(input);
+  }
+ };
+ const pending=createSeedanceVideoTransferPlanner({ledger,storage,env:env()})
+  .prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ID,ID2]});
+ try{
+  await Promise.race([waiting,new Promise((_,reject)=>setTimeout(()=>reject(Error('second candidate did not start')),10000))]);
+  assert.equal(events.some(x=>x.startsWith('sign:')),false,
+   'no signed bearer URL may be issued before final candidate lookup finishes');
+ }finally{continueSecondLookup();}
+ const result=await pending;
+ assert.equal(result.content.length,2);
+ assert.deepEqual(events.slice(0,4),[
+  'inspect:'+ID,'inspect:'+ID2,'candidate:'+ID,'candidate:'+ID2
+ ]);
+ assert.equal(events.filter(x=>x.startsWith('sign:')).length,2);
+});
+test('late rejected owner candidate mints zero links, even if previous candidates were valid',async()=>{
+ const bytes=await validMp4();let signingCalls=0;
+ const ledger={
+  async get(){return bytes;},
+  async getForVideoTransfer({id}){
+   if(id===ID2)throw Error('REFERENCE_MEDIA_ACCESS_DENIED');
+   return {mime:'video/mp4',key:'unused',expiresAt:'2026-10-15T19:00:00Z'};
+  }
+ };
+ const planner=createSeedanceVideoTransferPlanner({
+  ledger,
+  storage:{presignStagedReferenceRead(){signingCalls++;throw Error('NEVER_SIGN');}},
+  env:env()
+ });
+ await assert.rejects(()=>planner.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ID,ID2]}),
+  /REFERENCE_MEDIA_ACCESS_DENIED/);
+ assert.equal(signingCalls,0);
+});
+test('an invalid link expiry is rejected, never returned as a transfer plan',async()=>{
+ const bytes=await validMp4(),storage=storageAndAsset().storage;
+ const ledger={
+  async get(){return bytes;},
+  async getForVideoTransfer({userId,id}){
+   return {mime:'video/mp4',key:storage.stagedReferenceKey({userId,mime:'video/mp4',assetId:id}),
+    expiresAt:'2026-10-15T19:00:00Z'};
+  }
+ };
+ const planner=createSeedanceVideoTransferPlanner({ledger,env:env(),storage:{
+  presignStagedReferenceRead:()=>({url:'https://media.example.com/fixture',expiresAt:'not-a-date'})
+ }});
+ await assert.rejects(()=>planner.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ID]}),
+  /REFERENCE_VIDEO_URL_UNAVAILABLE/);
+});
