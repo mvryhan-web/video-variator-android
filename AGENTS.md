@@ -11,7 +11,7 @@ Before changing code, always read and reconcile:
 3. **The exact original owner TXT specification for the assigned scope:** BASE = `docs/DEEPSYQ_PLATFORM_SPEC.md`, or Roadmap Block N = `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_N.txt` (N = 1…7). Read the **whole applicable original** before deciding what to implement. For tasks spanning multiple scopes, read each corresponding TXT.
 4. `docs/DEEPSYQ_ROADMAP.md` and `docs/DEEPSYQ_BASE_CHECKLIST.md` — secondary roadmap/status references, NEVER replacements for the original TXT.
 5. Any relevant existing production specifications, especially `docs/PRODUCTION_SPEC.md` and `PRODUCTION_DEPLOYMENT_SPEC.md`.
-5. The latest Git history, current branch, recent commits, open PRs, and the actual implementation.
+6. The latest Git history, current branch, recent commits, open PRs, and the actual implementation.
 
 Do not assume a feature exists or works because a file, route, button, or function has a promising name. Verify the code and tests.
 
