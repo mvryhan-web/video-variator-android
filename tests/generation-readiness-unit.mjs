@@ -25,7 +25,7 @@ test('pricing without currency remains a launch blocker even when model economic
 });
 
 test('BASE #51: release readiness flags an enabled public rate guard with missing limits',()=>{
- const base={AI_STUDIO_PUBLIC_POLICY_ENABLED:'true',AI_STUDIO_MAX_CONCURRENT_PER_USER:'1',AI_STUDIO_MAX_JOBS_PER_HOUR:'10'};
+ const base={AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_PUBLIC_POLICY_ENABLED:'true',AI_STUDIO_MAX_CONCURRENT_PER_USER:'1',AI_STUDIO_MAX_JOBS_PER_HOUR:'10'};
  const good=generationReadiness(base);
  assert.equal(good.gates.find(g=>g.id==='publicJobPolicy')?.ready,true);
  assert.equal(good.blockers.includes('publicJobPolicy'),false);
