@@ -135,11 +135,11 @@ function closeMobileDrawer(restoreFocus=false){
  if(restoreFocus)$('menu').focus();
  return true;
 }
-function toggleSidebar(){
+function toggleSidebar(event){
  if(mobileMenu.matches){
   // The header button is always visible; the rail button exists only inside
   // the open drawer. Return keyboard focus to the visible header on close.
-  if(!closeMobileDrawer(document.activeElement===$('sidebarToggle'))){
+  if(!closeMobileDrawer(event?.currentTarget===$('sidebarToggle')||document.activeElement===$('sidebarToggle'))){
    document.body.classList.add('menu-open');
    syncMenu();
   }
