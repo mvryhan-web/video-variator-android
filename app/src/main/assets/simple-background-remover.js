@@ -52,6 +52,7 @@ $('erase').onclick=()=>{
  $('erase').disabled=true;setStatus('Removing matching connected pixels on your device…');
  try{
   const removed=eraseConnectedColor(original.data,source.width,source.height,selected.x,selected.y,Number($('tolerance').value));
+  result.width=source.width;result.height=source.height;
   outCtx.putImageData(new ImageData(removed.rgba,source.width,source.height),0,0);
   $('download').disabled=removed.removedPixels===0;
   setStatus(removed.removedPixels
