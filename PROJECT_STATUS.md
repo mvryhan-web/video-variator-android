@@ -9,9 +9,17 @@ This file is the shared live progress board for all coding agents.
 
 ## Agent D — BASE #16 duplicate Stripe Price-ID risk / IN PROGRESS (2026-10-16)
 
+- **Progress:** PR #148 latest 9fdb2da8. Isolated 5/5 config checks PASS. Added mocked Checkout fail-closed test, not yet CI-verified; GitHub Actions pending. Full BASE #16 remains PARTIAL / NOT LIVE.
+
+
 - **Existing BASE #16, new bounded scope:** billingCatalog currently rejects duplicate pack SKU but not duplicate Stripe Price IDs. Two SKUs with the same Stripe Price and different approved credit counts can charge the same amount for different wallet value. Claim: reject ambiguous duplicate `priceId` configuration fail closed, preserve all real approved amounts, existing subscriptions and webhook/idempotency paths.
 - **Branch:** `base16-price-id-uniqueness-20261016` targeting `deepsyq-platform`; exact code scope `server/generation-billing.js` plus isolated Node test/workflow, no changes to Stripe account/configuration/ledger/DB schema, Home, main or Render.
 - **Separate existing D #49:** PR #139 remains DRAFT and is waiting for GitHub Actions queue at last checkpoint; no simultaneous change to its migration code. All BASE #16 earlier merged evidence stays valid; full #16 PARTIAL / NOT LIVE.
+
+## Agent D — BASE #16 Price ID safety patch authored / CI pending (2026-10-16)
+
+- **Scoped PR:** [#148](https://github.com/mvryhan-web/video-variator-android/pull/148), branch `base16-price-id-uniqueness-20261016`, latest SHA `9fdb2da88a5d1a59f7dac912902d57afc6817818`, still DRAFT and UNMERGED. `billingCatalog` rejects multiple credit packs with the same Stripe Price ID, even if SKUs/credits differ. New four-case Node unit and mocked HTTP test refuse Checkout before database/Stripe access; existing billing tests run in focused workflow. The production code change is 2 added lines / 1 deleted line; no credit or real payment change.
+- **Isolated exact-function V8 evaluation:** 5/5 catalog cases PASS, not equivalent to full repository CI. Current-head GitHub Actions 38938556998 plus 7 related workflows are QUEUED; no CI PASS claimed yet. Previous Base #16 paid subscriptions, refunds, credits and pack checkout verified/merged work preserved. No production/main/schema/provider/owner Home mutation.
 
 ## Agent C — BASE #28 unique Photo Compression tile / IN PROGRESS (2026-10-16)
 
