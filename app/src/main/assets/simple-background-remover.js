@@ -45,6 +45,26 @@ source.addEventListener('click',event=>{
  };
  resetResult();setSample();setStatus('Background color selected. Adjust tolerance, then remove it.');
 });
+source.addEventListener('keydown',event=>{
+ if(!original)return;
+ const step=event.shiftKey?10:1;
+ let {x,y}=selected;
+ if(event.key==='ArrowLeft')x-=step;
+ else if(event.key==='ArrowRight')x+=step;
+ else if(event.key==='ArrowUp')y-=step;
+ else if(event.key==='ArrowDown')y+=step;
+ else if(event.key==='Home'){x=0;y=0;}
+ else if(event.key==='End'){x=source.width-1;y=source.height-1;}
+ else if(event.key==='Enter'||event.key===' '){
+  event.preventDefault();
+  setSample();
+  setStatus('Background pixel selected. Adjust tolerance and remove it.');
+  return;
+ }else return;
+ event.preventDefault();
+ selected={x:Math.max(0,Math.min(source.width-1,x)),y:Math.max(0,Math.min(source.height-1,y))};
+ resetResult();setSample();setStatus('Background color selected with keyboard. Review RGB and remove it.');
+});
 $('topLeft').onclick=()=>{if(!original)return;selected={x:0,y:0};resetResult();setSample();};
 $('tolerance').oninput=()=>{$('toleranceValue').textContent=$('tolerance').value;resetResult();};
 $('erase').onclick=()=>{
