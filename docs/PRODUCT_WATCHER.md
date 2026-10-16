@@ -119,3 +119,9 @@ Still blocked/incomplete: independent real provider API uptime & verified publis
 - Missing thumbnails/previews remain separate counts. Invalid link syntax produces `TEMPLATE_THUMBNAIL_URL_INVALID`, `INSPIRATION_PREVIEW_URL_INVALID` and `INSPIRATION_POSTER_URL_INVALID` owner recommendations without auto-fixes or public publishing.
 - Reports explicitly indicate `linkCheck: syntax_only` and `urlReachability`, `mediaPlayback`, `skills` and `workflows` as `not_checked`. A syntactically valid URL **does not** prove delivery, ownership, playable files, skill availability or functional workflow execution. B5-05 remains PARTIAL; safe external reachability checks and workflow/skill ownership must be designed and separately verified before completion.
 - The isolated PostgreSQL test now also verifies actual last-hour versus 23-hour provider-grouped job elapsed-time SQL with 31 synthetic completed jobs. B5-04 remains PARTIAL for true provider availability and production evidence; no fake vendor latency claim.
+
+## B5-05 workflow metadata shape audit (2026-10-16)
+
+Source: original owner Block 5 TXT preserved verbatim in `main:docs/execution/DEEPSYQ_BLOCKS_1-7_CANONICAL.txt`, with sequential acceptance criteria in `main:docs/execution/BLOCK_5_CHECKLIST.md`. BASE is separate from Blocks 1–7.
+
+The existing opt-in owner-only audit now checks active template generation types, supported input-list JSON array elements and settings JSON object shape; inspiration checks allowed studio/agent target, input-list and settings JSON shape. Queries return aggregate counts only, with no raw prompts/config/links; findings are review-only. `workflowMetadata: schema_shape_only` is explicit; actual `workflows`, `skills`, `urlReachability` and `mediaPlayback` remain `not_checked`. B5-05 remains PARTIAL until safe functional/runtime checks are approved. No production user data or paid providers.

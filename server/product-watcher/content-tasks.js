@@ -16,12 +16,19 @@ async function scanExistingContent(client){
     const localUrl="'^/[^/[:space:]][^[:space:]]*$'";
     const httpsUrl="'^https://[^/@:[:space:]?#]+(:[0-9]{1,5})?([/?#][^[:space:]]*)?$'";
     const invalidUrl=column=>`NOT (btrim(${column}) ~ ${localUrl} OR btrim(${column}) ~ ${httpsUrl})`;
+    // Read only counts of active workflow metadata; never read prompt bodies.
+    const allowedInputs="'[\"image\",\"video\",\"audio\",\"logo\",\"product_name\",\"text\"]'::jsonb";
+    const invalidInputs=`(required_input_types IS NULL OR jsonb_typeof(required_input_types)<>'array' OR NOT (required_input_types <@ ${allowedInputs}))`;
+    const invalidSettings="(default_settings IS NULL OR jsonb_typeof(default_settings)<>'object')";
     const [templates,inspiration]=await Promise.all([
       client.query([
         'SELECT COUNT(*) FILTER(WHERE active)::int AS active,',
         "COUNT(*) FILTER(WHERE active AND (thumbnail IS NULL OR btrim(thumbnail)=''))::int AS missing_thumbnail,",
         "COUNT(*) FILTER(WHERE active AND btrim(prompt_template)='')::int AS missing_prompt,",
-        `COUNT(*) FILTER(WHERE active AND thumbnail IS NOT NULL AND btrim(thumbnail)<>'' AND ${invalidUrl('thumbnail')})::int AS invalid_thumbnail_urls`,
+        `COUNT(*) FILTER(WHERE active AND thumbnail IS NOT NULL AND btrim(thumbnail)<>'' AND ${invalidUrl('thumbnail')})::int AS invalid_thumbnail_urls,`,
+        "COUNT(*) FILTER(WHERE active AND generation_type NOT IN ('image','video','product_video','avatar','audio'))::int AS invalid_generation_types,",
+        `COUNT(*) FILTER(WHERE active AND ${invalidInputs})::int AS invalid_input_types,`,
+        `COUNT(*) FILTER(WHERE active AND ${invalidSettings})::int AS invalid_default_settings`,
         'FROM vv_ai_template'
       ].join(' ')),
       client.query([
@@ -31,22 +38,31 @@ async function scanExistingContent(client){
         "COUNT(*) FILTER(WHERE active AND (btrim(rights_note)='' OR rights_basis NOT IN ('owned','licensed')))::int AS rights_gaps,",
         "COUNT(*) FILTER(WHERE active AND btrim(preview_url)='')::int AS missing_previews,",
         `COUNT(*) FILTER(WHERE active AND btrim(preview_url)<>'' AND ${invalidUrl('preview_url')})::int AS invalid_preview_urls,`,
-        `COUNT(*) FILTER(WHERE active AND preview_poster_url IS NOT NULL AND btrim(preview_poster_url)<>'' AND ${invalidUrl('preview_poster_url')})::int AS invalid_poster_urls`,
+        `COUNT(*) FILTER(WHERE active AND preview_poster_url IS NOT NULL AND btrim(preview_poster_url)<>'' AND ${invalidUrl('preview_poster_url')})::int AS invalid_poster_urls,`,
+        "COUNT(*) FILTER(WHERE active AND action_target NOT IN ('studio','agent'))::int AS invalid_action_targets,",
+        `COUNT(*) FILTER(WHERE active AND ${invalidInputs})::int AS invalid_input_types,`,
+        `COUNT(*) FILTER(WHERE active AND ${invalidSettings})::int AS invalid_default_settings`,
         'FROM vv_ai_inspiration'
       ].join(' '))
     ]);
     const asInt=(r,k)=>Math.max(0,Number(r?.[k])||0);
     const t=templates.rows?.[0]||{},i=inspiration.rows?.[0]||{};
     const result={templates:{active:asInt(t,'active'),missingThumbnail:asInt(t,'missing_thumbnail'),
-      missingPrompt:asInt(t,'missing_prompt'),invalidThumbnailUrls:asInt(t,'invalid_thumbnail_urls')},
+      missingPrompt:asInt(t,'missing_prompt'),invalidThumbnailUrls:asInt(t,'invalid_thumbnail_urls'),
+      invalidGenerationTypes:asInt(t,'invalid_generation_types'),invalidInputTypes:asInt(t,'invalid_input_types'),
+      invalidDefaultSettings:asInt(t,'invalid_default_settings')},
       inspiration:{active:asInt(i,'active'),images:asInt(i,'images'),videos:asInt(i,'videos'),
         rightsGaps:asInt(i,'rights_gaps'),missingPreviews:asInt(i,'missing_previews'),
-        invalidPreviewUrls:asInt(i,'invalid_preview_urls'),invalidPosterUrls:asInt(i,'invalid_poster_urls')}};
+        invalidPreviewUrls:asInt(i,'invalid_preview_urls'),invalidPosterUrls:asInt(i,'invalid_poster_urls'),
+        invalidActionTargets:asInt(i,'invalid_action_targets'),invalidInputTypes:asInt(i,'invalid_input_types'),
+        invalidDefaultSettings:asInt(i,'invalid_default_settings')}};
     const problems=Object.values(result.templates).slice(1).some(x=>x>0)||
       result.inspiration.rightsGaps>0||result.inspiration.missingPreviews>0||
-      result.inspiration.invalidPreviewUrls>0||result.inspiration.invalidPosterUrls>0;
+      result.inspiration.invalidPreviewUrls>0||result.inspiration.invalidPosterUrls>0||
+      result.inspiration.invalidActionTargets>0||result.inspiration.invalidInputTypes>0||
+      result.inspiration.invalidDefaultSettings>0;
     return{status:problems?'attention':'ready',code:problems?'CONTENT_METADATA_GAPS':'CONTENT_METADATA_READ',
-      ...result,linkCheck:'syntax_only',skills:'not_checked',workflows:'not_checked',
+      ...result,linkCheck:'syntax_only',workflowMetadata:'schema_shape_only',skills:'not_checked',workflows:'not_checked',
       mediaPlayback:'not_checked',urlReachability:'not_checked',
       limitations:'Metadata and URL shape only. No network/media fetching; no proof links load, licenses are valid, workflows execute or skills work.'};
   }catch{return{status:'unavailable',code:'CONTENT_CHECK_UNAVAILABLE'};}
@@ -63,10 +79,16 @@ export function internalContentRecommendations(result){
   if(result.templates.active===0)add('NO_ACTIVE_TEMPLATES','low','Review approved AI App templates and publish only verified workflows.');
   if(result.templates.missingThumbnail>0)add('TEMPLATE_THUMBNAIL_GAPS','medium','Check public template previews before publication.');
   if(result.templates.invalidThumbnailUrls>0)add('TEMPLATE_THUMBNAIL_URL_INVALID','high','Repair invalid thumbnail URL metadata before public release.');
+  if(result.templates.invalidGenerationTypes>0)add('TEMPLATE_GENERATION_TYPE_INVALID','high','Review invalid active template generation-type metadata.');
+  if(result.templates.invalidInputTypes>0)add('TEMPLATE_INPUT_SCHEMA_INVALID','high','Review active template input-list schema; do not execute unverified workflows.');
+  if(result.templates.invalidDefaultSettings>0)add('TEMPLATE_SETTINGS_SCHEMA_INVALID','high','Review active template settings schema before use.');
   if(result.inspiration.rightsGaps>0)add('INSPIRATION_RIGHTS_GAPS','high','Review inspiration rights evidence before any public release.');
   if(result.inspiration.missingPreviews>0)add('INSPIRATION_PREVIEW_GAPS','high','Review missing inspiration preview metadata.');
   if(result.inspiration.invalidPreviewUrls>0)add('INSPIRATION_PREVIEW_URL_INVALID','high','Review invalid inspiration preview URL metadata.');
   if(result.inspiration.invalidPosterUrls>0)add('INSPIRATION_POSTER_URL_INVALID','medium','Review invalid optional video poster URL metadata.');
+  if(result.inspiration.invalidActionTargets>0)add('INSPIRATION_TARGET_INVALID','high','Review invalid inspiration studio/agent target metadata.');
+  if(result.inspiration.invalidInputTypes>0)add('INSPIRATION_INPUT_SCHEMA_INVALID','high','Review inspiration input-list schema before publishing.');
+  if(result.inspiration.invalidDefaultSettings>0)add('INSPIRATION_SETTINGS_SCHEMA_INVALID','high','Review inspiration default-settings schema.');
   if(result.templates.missingPrompt>0)add('TEMPLATE_PROMPT_GAPS','medium','Review template prompt completeness.');
   return suggestions;
 }

@@ -121,10 +121,12 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     
 
     // Minimal isolated fixture matching only the deployed BASE content columns we inspect.
-    await pool.query("CREATE TABLE IF NOT EXISTS vv_ai_template(id TEXT PRIMARY KEY,active BOOLEAN NOT NULL DEFAULT false,thumbnail TEXT,prompt_template TEXT NOT NULL DEFAULT '')");
-    await pool.query("CREATE TABLE IF NOT EXISTS vv_ai_inspiration(id TEXT PRIMARY KEY,active BOOLEAN NOT NULL DEFAULT false,kind TEXT NOT NULL,rights_note TEXT NOT NULL DEFAULT '',rights_basis TEXT NOT NULL,preview_url TEXT NOT NULL DEFAULT '',preview_poster_url TEXT)");
+    await pool.query("CREATE TABLE IF NOT EXISTS vv_ai_template(id TEXT PRIMARY KEY,active BOOLEAN NOT NULL DEFAULT false,thumbnail TEXT,prompt_template TEXT NOT NULL DEFAULT '',generation_type TEXT NOT NULL DEFAULT 'image',required_input_types JSONB DEFAULT '[]'::jsonb,default_settings JSONB DEFAULT '{}'::jsonb)");
+    await pool.query("CREATE TABLE IF NOT EXISTS vv_ai_inspiration(id TEXT PRIMARY KEY,active BOOLEAN NOT NULL DEFAULT false,kind TEXT NOT NULL,rights_note TEXT NOT NULL DEFAULT '',rights_basis TEXT NOT NULL,preview_url TEXT NOT NULL DEFAULT '',preview_poster_url TEXT,action_target TEXT NOT NULL DEFAULT 'studio',required_input_types JSONB DEFAULT '[]'::jsonb,default_settings JSONB DEFAULT '{}'::jsonb)");
     await pool.query("INSERT INTO vv_ai_template(id,active,thumbnail,prompt_template) VALUES('watcher-test-template',TRUE,NULL,'A prompt fixture') ON CONFLICT(id) DO NOTHING");
     await pool.query("INSERT INTO vv_ai_inspiration(id,active,kind,rights_note,rights_basis,preview_url) VALUES('watcher-test-inspiration',TRUE,'image','licensed preview','licensed','https://example.test/image.jpg') ON CONFLICT(id) DO NOTHING");
+    await pool.query("UPDATE vv_ai_template SET generation_type='bad_mode',required_input_types='{\"bad\":true}'::jsonb,default_settings='[]'::jsonb WHERE id='watcher-test-template'");
+    await pool.query("UPDATE vv_ai_inspiration SET action_target='broken',required_input_types='[\"unapproved\"]'::jsonb,default_settings='[]'::jsonb WHERE id='watcher-test-inspiration'");
     const contentRun=await runContentTasksIfDue({pool,env:{...env,PRODUCT_WATCHER_CONTENT_TASKS_ENABLED:'true'},now:()=>new Date()});
     assert.equal(contentRun.status,'generated');
     assert.deepEqual(contentRun.generated.map(x=>x.kind),['content','opportunities']);
@@ -134,6 +136,9 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     assert.ok(contentList.body.items.some(x=>x.kind==='content'&&x.content.templates.missingThumbnail===1));
     assert.ok(contentList.body.items.some(x=>x.kind==='content'&&x.content.linkCheck==='syntax_only'));
     assert.ok(contentList.body.items.some(x=>x.kind==='content'&&x.content.mediaPlayback==='not_checked'));
+    assert.ok(contentList.body.items.some(x=>x.kind==='content'&&x.content.templates.invalidInputTypes===1));
+    assert.ok(contentList.body.items.some(x=>x.kind==='content'&&x.content.inspiration.invalidActionTargets===1));
+    assert.ok(contentList.body.items.some(x=>x.kind==='opportunities'&&x.content.recommendations.some(r=>r.code==='TEMPLATE_INPUT_SCHEMA_INVALID')));
     assert.ok(contentList.body.items.some(x=>x.kind==='opportunities'&&x.content.recommendations.some(y=>y.code==='NO_APPROVED_VIDEO_EXAMPLE')));
     const contentAgain=await runContentTasksIfDue({pool,env:{...env,PRODUCT_WATCHER_CONTENT_TASKS_ENABLED:'true'},now:()=>new Date()});
     assert.equal(contentAgain.status,'not_due');

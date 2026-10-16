@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {runContentTasksIfDue,internalContentRecommendations,contentTasksEnabled,listContentTasks} from '../server/product-watcher/content-tasks.js';
 
 const env={PRODUCT_WATCHER_ENABLED:'true',PRODUCT_WATCHER_CONTENT_TASKS_ENABLED:'true'};
-function fake({paused=false,locked=false,schema=true,rightsGaps=0,invalidTemplate=0,invalidPreview=0,invalidPoster=0}={}){
+function fake({paused=false,locked=false,schema=true,rightsGaps=0,invalidTemplate=0,invalidPreview=0,invalidPoster=0,invalidTemplateWorkflow=0,invalidTemplateInputs=0,invalidTemplateSettings=0,invalidTarget=0,invalidInspirationInputs=0,invalidInspirationSettings=0}={}){
  const rows=new Map(),queries=[];
  const conn={async query(sql,args=[]){
   queries.push([sql,args]);
@@ -11,8 +11,8 @@ function fake({paused=false,locked=false,schema=true,rightsGaps=0,invalidTemplat
   if(sql.includes('pg_advisory_unlock'))return{rows:[]};
   if(sql==='SELECT paused FROM vv_product_watcher_control WHERE id=1')return{rows:[{paused}]};
   if(sql.includes('to_regclass'))return{rows:[{templates:schema?'vv_ai_template':null,inspiration:schema?'vv_ai_inspiration':null}]};
-  if(sql.includes('FROM vv_ai_template'))return{rows:[{active:0,missing_thumbnail:0,missing_prompt:0,invalid_thumbnail_urls:invalidTemplate}]};
-  if(sql.includes('FROM vv_ai_inspiration'))return{rows:[{active:1,images:1,videos:0,rights_gaps:rightsGaps,missing_previews:0,invalid_preview_urls:invalidPreview,invalid_poster_urls:invalidPoster}]};
+  if(sql.includes('FROM vv_ai_template'))return{rows:[{active:0,missing_thumbnail:0,missing_prompt:0,invalid_thumbnail_urls:invalidTemplate,invalid_generation_types:invalidTemplateWorkflow,invalid_input_types:invalidTemplateInputs,invalid_default_settings:invalidTemplateSettings}]};
+  if(sql.includes('FROM vv_ai_inspiration'))return{rows:[{active:1,images:1,videos:0,rights_gaps:rightsGaps,missing_previews:0,invalid_preview_urls:invalidPreview,invalid_poster_urls:invalidPoster,invalid_action_targets:invalidTarget,invalid_input_types:invalidInspirationInputs,invalid_default_settings:invalidInspirationSettings}]};
   if(sql.startsWith('SELECT id FROM vv_product_watcher_content_tasks'))return{rows:rows.has(args.join(':'))?[{id:rows.get(args.join(':')).id}]:[]};
   if(sql.startsWith('INSERT INTO vv_product_watcher_content_tasks')){
    const id=rows.size+1,content=JSON.parse(args[2]);
@@ -76,6 +76,28 @@ test('read-only syntax signals flag suspicious media links but never fetch or st
  assert.ok(d.queries.some(([q])=>q.includes('invalid_preview_urls')&&q.includes('invalid_poster_urls')));
  assert.ok(d.queries.some(([q])=>q.includes('invalid_thumbnail_urls')));
  assert.ok(!JSON.stringify(list).includes('secret-token'));
+});
+
+test('active workflow metadata types are audited without reading prompts or invoking providers',async()=>{
+ const data=fake({invalidTemplateWorkflow:1,invalidTemplateInputs:2,invalidTemplateSettings:3,
+   invalidTarget:1,invalidInspirationInputs:2,invalidInspirationSettings:1});
+ const result=await runContentTasksIfDue({pool:data.pool,env,now:instant('2026-10-15T09:00:00Z')});
+ assert.equal(result.status,'generated');
+ const reports=await listContentTasks(data.pool);
+ const c=reports.find(x=>x.kind==='content').content;
+ const recommendations=reports.find(x=>x.kind==='opportunities').content.recommendations;
+ assert.equal(c.status,'attention');
+ assert.equal(c.workflowMetadata,'schema_shape_only');
+ assert.equal(c.workflows,'not_checked');
+ assert.equal(c.skills,'not_checked');
+ assert.deepEqual([c.templates.invalidGenerationTypes,c.templates.invalidInputTypes,c.templates.invalidDefaultSettings],[1,2,3]);
+ assert.deepEqual([c.inspiration.invalidActionTargets,c.inspiration.invalidInputTypes,c.inspiration.invalidDefaultSettings],[1,2,1]);
+ const codes=new Set(recommendations.map(x=>x.code));
+ for(const code of ['TEMPLATE_GENERATION_TYPE_INVALID','TEMPLATE_INPUT_SCHEMA_INVALID',
+   'TEMPLATE_SETTINGS_SCHEMA_INVALID','INSPIRATION_TARGET_INVALID',
+   'INSPIRATION_INPUT_SCHEMA_INVALID','INSPIRATION_SETTINGS_SCHEMA_INVALID'])assert.ok(codes.has(code),code);
+ assert.ok(data.queries.some(([q])=>q.includes('jsonb_typeof')&&q.includes('invalid_input_types')));
+ assert.ok(data.queries.every(([q])=>!q.includes('SELECT * FROM vv_ai_template')&&!q.includes('user_id')));
 });
 
 test('missing platform schema is not treated as zero real content',async()=>{
