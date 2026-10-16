@@ -1,5 +1,6 @@
 import {initToolAccess,installToolAccess} from './tool-access.js';
 import {installGenerationStudio} from './generation-studio.js';
+import {platformFeatureEnabled} from './platform-feature-flags.js';
 import {installGenerationBilling} from './generation-billing.js';
 import {installGenerationTemplates} from './generation-templates.js';
 import {installInspiration} from './generation-inspiration.js';
@@ -46,7 +47,7 @@ function fromUnix(v){return v?new Date(Number(v)*1000):null;}
 function requireServerConfig(){if(!jwtSecret)throw new Error('APP_JWT_SECRET is not configured');}
 function sameOriginFallback(){try{return new URL(appUrl).origin;}catch(_){return'';}}
 function billingConfigured(){return Object.values(plans).every(p=>p.paymentLink||(stripe&&p.priceId));}
-function platformFeatureEnabled(name){const value=process.env[name];return value==='true'||(process.env.NODE_ENV!=='production'&&value!=='false');}
+
 function paymentLinkUrl(base,user){const url=new URL(base);url.searchParams.set('client_reference_id',user.id);if(user.email)url.searchParams.set('prefilled_email',user.email);return url.toString();}
 async function cancelPreviousSubscriptionForLifetime(subscriptionId){
   if(!subscriptionId||!stripe)return;
