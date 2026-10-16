@@ -90,7 +90,10 @@ function renderOfficialSources(data){
   time.textContent=formatDate(p.detectedAt);
   label.append(safeOfficialLink(p.url,p.provider+' — official changelog'));
   const disclaimer=document.createElement('small');
-  disclaimer.textContent=' · Page changed; exact release/pricing impact not verified.';
+  const topics=Array.isArray(p.possibleTopics)?p.possibleTopics.filter(x=>['models','deprecations','pricing','limits','api'].includes(x)):[];
+  disclaimer.textContent=p.topicsCompared
+   ?' · Page change; possible keyword contexts: '+(topics.join(', ')||'none detected')+'. NOT a verified model/pricing change.'
+   :' · Page change; topic comparison unavailable (older baseline). NOT a verified model/pricing change.';
   label.append(disclaimer);
   if(p.status==='pending'){
    for(const [decision,word] of [['reviewed','Mark reviewed'],['dismissed','Dismiss']]){

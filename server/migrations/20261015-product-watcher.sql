@@ -54,10 +54,13 @@ CREATE TABLE IF NOT EXISTS vv_product_watcher_official_sources (
   provider TEXT NOT NULL,
   source_url TEXT NOT NULL,
   content_hash CHAR(64),
+  topic_digests JSONB,
   last_checked_at TIMESTAMPTZ,
   last_success_at TIMESTAMPTZ,
   last_error_code TEXT
 );
+ALTER TABLE vv_product_watcher_official_sources ADD COLUMN IF NOT EXISTS topic_digests JSONB;
+
 CREATE TABLE IF NOT EXISTS vv_product_watcher_proposals (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   source_key TEXT NOT NULL REFERENCES vv_product_watcher_official_sources(source_key),
@@ -66,11 +69,15 @@ CREATE TABLE IF NOT EXISTS vv_product_watcher_proposals (
   previous_hash CHAR(64) NOT NULL,
   current_hash CHAR(64) NOT NULL,
   review_status TEXT NOT NULL DEFAULT 'pending' CHECK (review_status IN ('pending','reviewed','dismissed')),
+  possible_topics TEXT[] NOT NULL DEFAULT '{}',
+  topics_compared BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   reviewed_at TIMESTAMPTZ,
   reviewed_by TEXT,
   UNIQUE(source_key,current_hash)
 );
+ALTER TABLE vv_product_watcher_proposals ADD COLUMN IF NOT EXISTS possible_topics TEXT[] NOT NULL DEFAULT '{}';
+ALTER TABLE vv_product_watcher_proposals ADD COLUMN IF NOT EXISTS topics_compared BOOLEAN NOT NULL DEFAULT FALSE;
 CREATE INDEX IF NOT EXISTS vv_product_watcher_proposals_status_idx
   ON vv_product_watcher_proposals(review_status,created_at DESC);
 

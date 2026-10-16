@@ -99,6 +99,8 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     assert.equal(second.changed,3);
     const listed=await request('GET','/api/product-watcher/admin/official-sources');
     assert.equal(listed.statusCode,200);assert.equal(listed.body.proposals.length,3);
+    assert.equal(listed.body.proposals.every(x=>x.topicsCompared===true),true);
+    assert.equal(listed.body.proposals.every(x=>Array.isArray(x.possibleTopics)),true);
     assert.equal(listed.body.proposals[0].applied,false);
     const proposalId=listed.body.proposals[0].id;
     const unauthorized=await request('POST','/api/product-watcher/admin/proposals/review',{user:{id:'stranger',provider:'email',email:'owner@example.test'},

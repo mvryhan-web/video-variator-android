@@ -15,6 +15,38 @@ export function officialSourceEnabled(env={}){
   return env.PRODUCT_WATCHER_ENABLED==='true' &&
     env.PRODUCT_WATCHER_OFFICIAL_SOURCES_ENABLED==='true';
 }
+
+// Non-factual owner review hints. Only bounded, normalized keyword-context
+// SHA256 digests are retained; no page text, secrets or paid AI inference.
+const OFFICIAL_TOPIC_RULES = Object.freeze({
+  models: /\b(?:models?|seedance|seedream|gemini|gpt[-\d]?\w*)\b/gi,
+  deprecations: /\b(?:deprecat\w*|sunset|retir\w*|end.of.life|discontinu\w*)\b/gi,
+  pricing: /\b(?:pric(?:e|es|ing)|costs?|billing|per million tokens?)\b/gi,
+  limits: /\b(?:rate limits?|quotas?|throughput|context windows?|token limits?|qps|rpm|tpm)\b/gi,
+  api: /\b(?:api|endpoint|endpoints|sdks?|parameters?|schemas?)\b/gi
+});
+export const OFFICIAL_TOPIC_CATEGORIES = Object.freeze(Object.keys(OFFICIAL_TOPIC_RULES));
+export function officialTopicDigests(visibleText) {
+  if(typeof visibleText!=='string'||visibleText.length>OFFICIAL_SOURCE_MAX_BYTES) throw Error('SOURCE_TOO_LARGE');
+  const out={};
+  for(const [topic,regexp] of Object.entries(OFFICIAL_TOPIC_RULES)){
+    const contexts=[];
+    regexp.lastIndex=0;
+    for(const match of visibleText.matchAll(regexp)){
+      const start=Math.max(0,match.index-90),end=Math.min(visibleText.length,match.index+match[0].length+90);
+      contexts.push(visibleText.slice(start,end));
+      if(contexts.length>=24)break;
+    }
+    if(contexts.length)out[topic]=createHash('sha256').update(JSON.stringify(contexts)).digest('hex');
+  }
+  return out;
+}
+export function compareOfficialTopicDigests(previous,current){
+  if(!previous||typeof previous!=='object'||Array.isArray(previous))
+    return {compared:false,possibleTopics:[]};
+  return {compared:true,possibleTopics:OFFICIAL_TOPIC_CATEGORIES.filter(k=>previous[k]!==current?.[k])};
+}
+
 export function normalizeOfficialText(html){
   // Extract conservative visible text; unstable markup is not stored or treated as a verified fact.
   const content=String(html).replace(/<!--[\s\S]*?-->/g,' ')
@@ -58,7 +90,8 @@ export async function fetchOfficialFingerprint(source,{fetchFn=globalThis.fetch}
     const data=new Uint8Array(count);let offset=0;
     for(const part of chunks){data.set(part,offset);offset+=part.byteLength;}
     const visible=normalizeOfficialText(new TextDecoder('utf-8',{fatal:true}).decode(data));
-    return {contentHash:createHash('sha256').update(visible).digest('hex'),byteLength:count};
+    return {contentHash:createHash('sha256').update(visible).digest('hex'),
+      topicDigests:officialTopicDigests(visible),byteLength:count};
   } catch(error){
     // Throw only bounded, fixed error codes: never surface external HTML or credentials.
     if(/^(SOURCE_[A-Z_]+)$/.test(error?.message||''))throw error;
@@ -82,7 +115,7 @@ export async function runOfficialSourcesOnce({pool,env={},fetchFn=globalThis.fet
     if(control.rows[0].paused)return{status:'paused',attempted:0,changed:0,items:[]};
     const result={status:'ok',attempted:0,changed:0,items:[]};
     for(const source of OFFICIAL_SOURCES){
-      const existing=await client.query('SELECT content_hash,last_checked_at FROM vv_product_watcher_official_sources WHERE source_key=$1',[source.key]);
+      const existing=await client.query('SELECT content_hash,last_checked_at,topic_digests FROM vv_product_watcher_official_sources WHERE source_key=$1',[source.key]);
       const prev=existing.rows?.[0];
       const last=prev?.last_checked_at?new Date(prev.last_checked_at).getTime():null;
       const tick=now().getTime();
@@ -90,27 +123,31 @@ export async function runOfficialSourcesOnce({pool,env={},fetchFn=globalThis.fet
       if(last!==null&&Number.isFinite(last)&&tick-last<OFFICIAL_SOURCE_INTERVAL_MS)continue;
       result.attempted++;
       const checkedAt=now().toISOString();
-      let hash=null,error=null,bytes=null;
+      let hash=null,error=null,bytes=null,topicDigests=null;
       try{
         const fetched=await fetchOfficialFingerprint(source,{fetchFn});
-        hash=fetched.contentHash;bytes=fetched.byteLength;
+        hash=fetched.contentHash;bytes=fetched.byteLength;topicDigests=fetched.topicDigests;
       }catch(e){error=/^SOURCE_[A-Z_]+$/.test(e?.message||'')?e.message:'SOURCE_FETCH_FAILED';}
       await client.query('BEGIN');
       try{
         await client.query([
-          'INSERT INTO vv_product_watcher_official_sources(source_key,provider,source_url,content_hash,last_checked_at,last_success_at,last_error_code)',
-          'VALUES ($1,$2,$3,$4::char(64),$5::timestamptz,CASE WHEN $4::char(64) IS NULL THEN NULL ELSE $5::timestamptz END,$6)',
+          'INSERT INTO vv_product_watcher_official_sources(source_key,provider,source_url,content_hash,last_checked_at,last_success_at,last_error_code,topic_digests)',
+          'VALUES ($1,$2,$3,$4::char(64),$5::timestamptz,CASE WHEN $4::char(64) IS NULL THEN NULL ELSE $5::timestamptz END,$6,$7::jsonb)',
           'ON CONFLICT(source_key) DO UPDATE SET provider=EXCLUDED.provider,source_url=EXCLUDED.source_url,',
           'content_hash=COALESCE(EXCLUDED.content_hash,vv_product_watcher_official_sources.content_hash),',
           'last_checked_at=EXCLUDED.last_checked_at,',
           'last_success_at=COALESCE(EXCLUDED.last_success_at,vv_product_watcher_official_sources.last_success_at),',
-          'last_error_code=EXCLUDED.last_error_code'
-        ].join(' '),[source.key,source.provider,source.url,hash,checkedAt,error]);
+          'last_error_code=EXCLUDED.last_error_code,',
+          'topic_digests=COALESCE(EXCLUDED.topic_digests,vv_product_watcher_official_sources.topic_digests)'
+        ].join(' '),[source.key,source.provider,source.url,hash,checkedAt,error,
+          topicDigests===null?null:JSON.stringify(topicDigests)]);
+        const topicComparison=compareOfficialTopicDigests(prev?.topic_digests,topicDigests);
         if(hash&&prev?.content_hash&&prev.content_hash!==hash){
           await client.query([
-            'INSERT INTO vv_product_watcher_proposals(source_key,provider,source_url,previous_hash,current_hash,review_status)',
-            "VALUES($1,$2,$3,$4,$5,'pending') ON CONFLICT(source_key,current_hash) DO NOTHING"
-          ].join(' '),[source.key,source.provider,source.url,prev.content_hash,hash]);
+            'INSERT INTO vv_product_watcher_proposals(source_key,provider,source_url,previous_hash,current_hash,review_status,possible_topics,topics_compared)',
+            "VALUES($1,$2,$3,$4,$5,'pending',$6::text[],$7) ON CONFLICT(source_key,current_hash) DO NOTHING"
+          ].join(' '),[source.key,source.provider,source.url,prev.content_hash,hash,
+            topicComparison.possibleTopics,topicComparison.compared]);
           result.changed++;
         }
         await client.query('COMMIT');
@@ -118,7 +155,9 @@ export async function runOfficialSourcesOnce({pool,env={},fetchFn=globalThis.fet
       result.items.push({sourceKey:source.key,provider:source.provider,sourceUrl:source.url,
         code:error||(!prev?.content_hash?'BASELINE_CREATED':prev.content_hash===hash?'UNCHANGED':'PAGE_CHANGED_REVIEW_REQUIRED'),
         // No raw announcements or unverified model/pricing claims.
-        verifiedFact:false,bytes:bytes??null});
+        verifiedFact:false,possibleTopics:hash&&prev?.content_hash&&prev.content_hash!==hash?topicComparison.possibleTopics:[],
+        topicsCompared:!!(hash&&prev?.content_hash&&prev.content_hash!==hash&&topicComparison.compared),
+        bytes:bytes??null});
     }
     if(result.items.some(x=>x.code.startsWith('SOURCE_')))result.status='partial';
     return result;
@@ -131,13 +170,15 @@ export async function runOfficialSourcesOnce({pool,env={},fetchFn=globalThis.fet
 export async function listOfficialSourceReviews(pool){
   const [sources,proposals]=await Promise.all([
     pool.query('SELECT source_key,provider,source_url,last_checked_at,last_success_at,last_error_code FROM vv_product_watcher_official_sources ORDER BY source_key'),
-    pool.query('SELECT id,source_key,provider,source_url,review_status,created_at,reviewed_at FROM vv_product_watcher_proposals ORDER BY created_at DESC,id DESC LIMIT 50')
+    pool.query('SELECT id,source_key,provider,source_url,review_status,created_at,reviewed_at,possible_topics,topics_compared FROM vv_product_watcher_proposals ORDER BY created_at DESC,id DESC LIMIT 50')
   ]);
   return{
     sources:sources.rows.map(x=>({key:x.source_key,provider:x.provider,url:x.source_url,
       lastCheckedAt:x.last_checked_at,lastSuccessAt:x.last_success_at,lastErrorCode:x.last_error_code})),
     proposals:proposals.rows.map(x=>({id:Number(x.id),sourceKey:x.source_key,provider:x.provider,url:x.source_url,
       status:x.review_status,detectedAt:x.created_at,reviewedAt:x.reviewed_at,
+      possibleTopics:Array.isArray(x.possible_topics)?x.possible_topics.filter(t=>OFFICIAL_TOPIC_CATEGORIES.includes(t)):[],
+      topicsCompared:x.topics_compared===true,
       verifiedFact:false,applied:false}))
   };
 }

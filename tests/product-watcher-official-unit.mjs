@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { OFFICIAL_SOURCES,fetchOfficialFingerprint,normalizeOfficialText,runOfficialSourcesOnce,listOfficialSourceReviews } from '../server/product-watcher/official-sources.js';
+import { OFFICIAL_SOURCES,fetchOfficialFingerprint,normalizeOfficialText,officialTopicDigests,compareOfficialTopicDigests,runOfficialSourcesOnce,listOfficialSourceReviews } from '../server/product-watcher/official-sources.js';
 
 const env={PRODUCT_WATCHER_ENABLED:'true',PRODUCT_WATCHER_OFFICIAL_SOURCES_ENABLED:'true'};
 const html='<html><body><main><article><h1>Documented API release notes</h1><p>'+('Official source text about API changes and model announcements. '.repeat(8))+'</p></article></main></body></html>';
@@ -14,17 +14,18 @@ function store({paused=false,locked=false}={}){
   if(sql==='SELECT paused FROM vv_product_watcher_control WHERE id=1')return{rows:[{paused}]};
   if(sql.startsWith('SELECT content_hash,last_checked_at'))return{rows:history.has(args[0])?[history.get(args[0])]:[]};
   if(sql.startsWith('INSERT INTO vv_product_watcher_official_sources')){
-   const [key,provider,url,hash,date,error]=args;
+   const [key,provider,url,hash,date,error,digests]=args;
    const prev=history.get(key)||{};
    history.set(key,{source_key:key,provider,source_url:url,content_hash:hash||prev.content_hash||null,
-     last_checked_at:new Date(date),last_success_at:hash?new Date(date):prev.last_success_at||null,last_error_code:error||null});
+     last_checked_at:new Date(date),last_success_at:hash?new Date(date):prev.last_success_at||null,
+     last_error_code:error||null,topic_digests:digests?JSON.parse(digests):prev.topic_digests??null});
    return{rows:[]};
   }
   if(sql.startsWith('INSERT INTO vv_product_watcher_proposals')){
-   const [key,provider,url,previous_hash,current_hash]=args;
+   const [key,provider,url,previous_hash,current_hash,possible_topics,topics_compared]=args;
    if(!proposals.some(x=>x.source_key===key&&x.current_hash===current_hash))
       proposals.push({id:proposals.length+1,source_key:key,provider,source_url:url,
-        previous_hash,current_hash,review_status:'pending',created_at:new Date(),reviewed_at:null});
+        previous_hash,current_hash,possible_topics,topics_compared,review_status:'pending',created_at:new Date(),reviewed_at:null});
    return{rows:[]};
   }
   if(sql.startsWith('SELECT source_key,provider,source_url,last_checked_at'))return{rows:[...history.values()]};
@@ -35,6 +36,19 @@ function store({paused=false,locked=false}={}){
  return {pool:{connect:async()=>client,query:client.query},history,proposals,queries};
 }
 const at=(h=12)=>()=>new Date('2026-10-15T'+String(h).padStart(2,'0')+':00:00Z');
+
+test('topic hashes identify possible changes without inventing factual price/model releases',()=>{
+ const prior=officialTopicDigests('Model API description. The pricing page says 2 tokens per call. '.repeat(4));
+ const next=officialTopicDigests('Model API description. The pricing page says 3 tokens per call. '.repeat(4));
+ const comparison=compareOfficialTopicDigests(prior,next);
+ assert.equal(comparison.compared,true);
+ assert.ok(comparison.possibleTopics.includes('pricing'));
+ assert.ok(comparison.possibleTopics.every(x=>['models','deprecations','pricing','limits','api'].includes(x)));
+ assert.deepEqual(compareOfficialTopicDigests(null,next),{compared:false,possibleTopics:[]});
+ assert.deepEqual(compareOfficialTopicDigests(prior,prior),{compared:true,possibleTopics:[]});
+ assert.ok(!JSON.stringify(next).includes('2 tokens'));
+ assert.ok(!JSON.stringify(next).includes('3 tokens'));
+});
 
 test('only exact allowlisted official docs URLs allowed, with no redirect following',async()=>{
  assert.equal(OFFICIAL_SOURCES.length,3);
@@ -95,10 +109,13 @@ test('first check creates baselines only, changes require review, unchanged not 
  const change=await runOfficialSourcesOnce({pool:d.pool,env,fetchFn:async()=>response(html+' Official update follows '+('different '.repeat(20))),now:at(7)});
  assert.equal(change.changed,3);assert.equal(d.proposals.length,3);
  assert.ok(change.items.every(x=>x.code==='PAGE_CHANGED_REVIEW_REQUIRED'));
+ assert.ok(change.items.every(x=>x.topicsCompared===true&&Array.isArray(x.possibleTopics)));
  const unchanged=await runOfficialSourcesOnce({pool:d.pool,env,fetchFn:async()=>response(html+' Official update follows '+('different '.repeat(20))),now:at(14)});
  assert.equal(unchanged.changed,0);assert.equal(d.proposals.length,3);
  const review=await listOfficialSourceReviews(d.pool);
- assert.equal(review.proposals.length,3);assert.ok(review.proposals.every(x=>x.applied===false&&x.verifiedFact===false));
+ assert.equal(review.proposals.length,3);
+ assert.ok(review.proposals.every(x=>x.applied===false&&x.verifiedFact===false&&x.topicsCompared===true));
+ assert.ok(review.proposals.every(x=>Array.isArray(x.possibleTopics)));
  assert.ok(!JSON.stringify(review).includes('Official update follows'));
 });
 
