@@ -37,7 +37,8 @@ test('invalid ratios/sizes/quality and unsupported formats fail closed',()=>{
  assert.throws(()=>buildOpenAIImageRequest({...input,ratio:'16:9'},model),/UNSUPPORTED_RESOLUTION/);
  assert.throws(()=>buildOpenAIImageRequest(input,{...model,sizes:{'1:1':{'1K':'1010x1024'}}}),/UNSUPPORTED_RESOLUTION/);
  assert.throws(()=>buildOpenAIImageRequest({...input,outputFormat:'webp'},model),/UNSUPPORTED_IMAGE_FORMAT/);
- assert.throws(()=>buildOpenAIImageRequest(input,{...model,quality:'max',id:model.id.replace('2.5-flare','1.5')}),/INVALID_REQUEST/);
+ assert.throws(()=>buildOpenAIImageRequest({...input,model:'gpt-image-1.5'}, {...model,quality:'max',id:'gpt-image-1.5'}),/UNSUPPORTED_IMAGE_QUALITY/);
+ assert.equal(buildOpenAIImageRequest(input,{...model,quality:'max'}).quality,'max');
 });
 test('accept approved genuine base64 PNG/JPEG inputs, forbid malformed and too many references',()=>{
  const ref={mimeType:'image/png',data:png.toString('base64')};
