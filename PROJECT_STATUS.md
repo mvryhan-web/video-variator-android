@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Active per-item claim: BASE #37 / first-generation and AI-paid conversion analytics — IN PROGRESS (2026-10-16)
+
+- **Agent:** BASE-D-Analytics-ChatGPT; **isolated branch:** `base55-d-business-analytics-20261016` based on current `deepsyq-platform`.
+- **Ownership:** BASE #37 read-only owner business aggregate endpoint and focused UI/tests ONLY; implement first completed generation and confirmed AI credit purchase conversion as separate observations. No shared Stripe/wallet changes; do not duplicate the concurrently claimed BASE #43 Pricing UI or BASE #20 Product Video work. Other users' identities are not exposed.
+- **Claim:** row #37 reserved in `docs/DEEPSYQ_BASE_55_COORDINATION.md`, feature checks/commit pending. Keep gross margin, trial→paid and churn unknown until authoritative data exists.
+
 ## Active per-item claim: BASE #43 / Pricing integrity — IN PROGRESS (2026-10-16)
 
 - **Agent:** BASE-D-ChatGPT; **isolated branch:** `base55-d-pricing-integrity-20261016` (BASE PR #42 parent, not main).
