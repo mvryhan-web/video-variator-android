@@ -12,14 +12,14 @@ test('Product Video orders multiple existing image references and preserves vali
   {name:'detail.jpg',mimeType:'image/jpeg',buffer:tinyJpg}
  ]);
  await expect(page.locator('.photo-item')).toHaveCount(2);
- const imageTypes=()=>page.locator('.photo-item img').evaluateAll(imgs=>Promise.all(imgs.map(async img=>(await fetch(img.src)).headers.get('content-type'))));
- expect(await imageTypes()).toEqual(['image/png','image/jpeg']);
+ const orderedNames=()=>page.locator('.photo-item small').allTextContents();
+ expect(await orderedNames()).toEqual(['1. front.png','2. detail.jpg']);
  await page.getByRole('button',{name:'Move photo 1 later'}).click();
- expect(await imageTypes()).toEqual(['image/jpeg','image/png']);
+ expect(await orderedNames()).toEqual(['1. detail.jpg','2. front.png']);
  await expect(page.locator('#status')).toContainText('Photo order updated');
  await page.locator('#photos').setInputFiles({name:'too-large.png',mimeType:'image/png',buffer:Buffer.alloc(1024*1024+1)});
  await expect(page.locator('#status')).toContainText('previous valid selection is preserved');
- expect(await imageTypes()).toEqual(['image/jpeg','image/png']);
+ expect(await orderedNames()).toEqual(['1. detail.jpg','2. front.png']);
  await page.locator('#productName').fill('Handmade Mini Bag');
  await page.locator('#duration').selectOption('about 8 seconds');
  await expect(page.locator('#promptPreview')).toHaveValue(/Handmade Mini Bag.*8 seconds/s);
