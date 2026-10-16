@@ -37,6 +37,10 @@ This file is the shared live progress board for all coding agents.
 - **Evidence:** [Draft PR #66](https://github.com/mvryhan-web/video-variator-android/pull/66), implementation `6538fe8e8046f0ecb89529594774e0c2becd7bc9`, 5 new tests `5d0899d0b6d793e3c00545d819d983f5f21460cf`, [GitHub Actions 38900266382](https://github.com/mvryhan-web/video-variator-android/actions/runs/38900266382) **PASS** (new + prior generation pricing tests + syntax).
 - **State:** scoped **CODE VERIFIED**, entire BASE #18 **PARTIAL / NOT MAIN / NOT DEPLOYED**; real pricing-provider evidence and commercial launch gates remain external. No Stripe/Render/main edits.
 
+## BASE #49 clean integration IN PROGRESS — resuming existing claimed work (2026-10-16)
+
+- Existing owner BASE-D-MigrationSafety continues previously code-verified #49, not a new claim. Fresh BASE evolved after PR #69 and the old PR reports non-mergeable. Prepare a clean scoped branch containing **only** the reviewed runtime migration safety file, unit tests and CI; preserve concurrent checklist and no writes to PR #42. Merge into `deepsyq-platform` only after new focused CI, then mark MERGED TO BASE / NOT LIVE. Old #69 to be explicitly superseded if exact code is integrated.
+
 ## BASE #49 — Migration read-only checks and ledger drift / SCOPED CODE VERIFIED (2026-10-16)
 
 - **Agent:** BASE-D-MigrationSafety, branch `base55-d-migration-readonly-20261016`, parent BASE `deepsyq-platform`. Specific row #49 claimed first in coordination board.
