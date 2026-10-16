@@ -7,6 +7,13 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+
+## Agent 5 — PR #42 main-branch documentation reconciliation (prepared 2026-10-16)
+
+- **Nonproduction merge-resolution proposal only**: reconcile `main`'s previously added, ordered `docs/execution/` files (11 files: seven block stage checklists, canonical combined source, validator/readme) into `deepsyq-platform` without changing owner BASE TXT or the seven separate original Block TXT. Git merge history retains `main` as a parent instead of flattening its history.
+- Preserve latest BASE `AGENTS.md`, whole `PROJECT_STATUS.md` and `docs/DEEPSYQ_ROADMAP.md` (roadmap content is already semantically identical); add one supplementary execution-doc reference to AGENTS. Preserve all runtime/build files, Home design, icon, API/Stripe/PostgreSQL, active owner claims and `main` untouched.
+- This **does not** certify BASE product readiness or solve A-owned Home fallback, C-owned mobile navigation, D-owned paid-gate checks, full platform CI, backup or real external provider acceptance. PR #42 must remain draft and must not be merged to `main` until those issues are verified and owner approves production rollout.
+
 ## Agent 5 — actual Home icon rendering browser smoke / CODE VERIFIED, PR #131 (2026-10-16)
 
 - **Role/branch:** Agent 5 read-only cross-browser acceptance QA, `agent5-brand-browser-smoke-20261016`. No BASE A/B/C/D feature implementation or claim takeover.
