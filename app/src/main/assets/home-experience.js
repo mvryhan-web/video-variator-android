@@ -23,6 +23,18 @@ function showHeroFallback(){
  $('homeHeroSlideLink').hidden=true;$('homeHeroEmpty').hidden=false;
  $('homeHeroStatus').textContent='No approved playable featured video is available. The original Home gallery remains visible.';
 }
+function syncSlideControls(){
+ // A broken source is not a navigable slide. One remaining usable
+ // item must not show active previous/next buttons that go nowhere.
+ const canNavigate=slides.length-failedSlides.size>1;
+ $('homeHeroPrevious').disabled=!canNavigate;
+ $('homeHeroNext').disabled=!canNavigate;
+ for(const dot of $('homeHeroDots').querySelectorAll('button')){
+  const bad=failedSlides.has(Number(dot.dataset.index));
+  dot.disabled=bad;
+  if(bad)dot.setAttribute('aria-label','Video '+(Number(dot.dataset.index)+1)+' unavailable');
+ }
+}
 function setSlide(next,direction=1){
  if(!slides.length||!video||failedSlides.size===slides.length)return;
  let selected=((next%slides.length)+slides.length)%slides.length;
@@ -51,10 +63,10 @@ export function renderHomeCarousel(items){
  carousel.hidden=false;carousel.classList.remove('is-empty');$('inspirationHeroFeature').hidden=false;
  $('homeHeroEmpty').hidden=true;$('homeHeroSlideLink').hidden=false;
  $('homeHeroPlay').disabled=false;$('homeHeroSound').disabled=false;
- $('homeHeroPrevious').disabled=slides.length<2;$('homeHeroNext').disabled=slides.length<2;
  setPlayLabel();
  $('homeHeroDots').replaceChildren();
  slides.forEach((x,i)=>{const b=document.createElement('button');b.type='button';b.dataset.index=String(i);b.setAttribute('aria-label','Show video '+(i+1)+': '+(x.title||'Original video'));b.addEventListener('click',()=>setSlide(i));$('homeHeroDots').append(b);});
+ syncSlideControls();
  visible=!('IntersectionObserver'in window);
  if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{for(const e of entries){visible=e.isIntersecting;if(visible)ambientPlay();else video.pause();}},{threshold:.25});observer.observe(carousel);}
  setSlide(0);
@@ -76,8 +88,8 @@ if(video&&carousel){
  video.addEventListener('error',()=>{
   if(!slides.length||!video.getAttribute('src'))return;
   failedSlides.add(index);
-  const badDot=$('homeHeroDots').querySelector('[data-index="'+index+'"]');if(badDot){badDot.disabled=true;badDot.setAttribute('aria-label','Video '+(index+1)+' unavailable');}
   if(failedSlides.size>=slides.length){showHeroFallback();return;}
+  syncSlideControls();
   $('homeHeroStatus').textContent='This video is unavailable. Showing the next available creation.';
   setSlide(index+1);
  });
