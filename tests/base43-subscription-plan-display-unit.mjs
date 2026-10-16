@@ -20,7 +20,9 @@ test('BASE #43: disabled/invalid subscription credits never appear in Pricing',(
   {...configured,AI_SUBSCRIPTION_CREDITS_JSON:'{}'},
   {...configured,AI_SUBSCRIPTION_CREDITS_JSON:'{"basic":"120"}'},
   {...configured,AI_SUBSCRIPTION_CREDITS_JSON:'{"basic":50000000}'},
-  {...configured,AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'false'}
+  {...configured,AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'false'},
+  {...configured,AI_BILLING_MODE:undefined},
+  {...configured,AI_BILLING_MODE:'test',NODE_ENV:'production'}
  ])assert.equal(publicSubscriptionCreditGrants(env),null);
  for(const invalid of [null,undefined,0,'120',-1,NaN,Infinity,10000001]){
   assert.equal(approvedSubscriptionCredits({subscriptionCredits:{basic:invalid}},'basic'),null);
