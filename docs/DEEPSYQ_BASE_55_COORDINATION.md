@@ -73,7 +73,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 40 | Model routing registry | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 41 | Internal model capabilities | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 42 | Persist BytePlus output in our storage | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
-| 43 | Pricing page | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS | BASE-D-ChatGPT / base55-d-pricing-integrity-20261016 |
+| 43 | Pricing page | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED (scoped, 6 tests CI 38898930526); PR #62 MERGE/LIVE PENDING | BASE-D-ChatGPT / base55-d-pricing-integrity-20261016 |
 | 44 | Free plan | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 45 | Onboarding | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 46 | Homepage conversion | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
