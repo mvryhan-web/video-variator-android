@@ -90,3 +90,25 @@
 .history-inline-media video,.history-inline-media audio{display:block;width:100%;max-width:100%;border-radius:10px;background:#080b10}
 .history-inline-media video{max-height:310px;object-fit:contain}
 .history-inline-media .hint{font-size:11px;margin:4px 0}
+
+/* Compact model picker (issue #166): no dialog/backdrop or layout shift. */
+.model-picker{position:relative;display:inline-flex;min-width:0;max-width:100%}
+.model-picker .pill{max-width:100%;text-align:left}
+.model-menu{position:fixed;z-index:1000;min-width:0;overflow-y:auto;overscroll-behavior:contain;background:#1c202a;border:1px solid #44485a;border-radius:14px;padding:7px;box-shadow:0 14px 38px #0008;color:var(--text)}
+.model-menu[hidden]{display:none!important}
+.model-menu .model-choices{display:grid;gap:3px;margin:0}
+.model-menu .model-card{width:100%;min-height:44px;padding:9px 11px;border-radius:9px;gap:3px;background:transparent;border:1px solid transparent;text-align:left;white-space:normal}
+.model-menu .model-card:hover,.model-menu .model-card:focus-visible{background:#303341}
+.model-menu .model-card[aria-checked=true]{border-color:#8273a7;background:#302b41}
+.model-menu .model-card strong{font-size:12px}
+.model-menu .model-card small{font-size:10px;line-height:1.35;color:#b8bdcb}
+.model-menu .model-card .connection{font-size:9px}
+@media(max-width:350px){.composer-controls .model-picker{flex:1}.model-picker .pill{width:100%}}
+
+/* Settings are intentionally a separate dialog, but not a black fullscreen veil. */
+#settingsDialog{width:min(560px,calc(100vw - 24px));max-height:min(85dvh,720px);padding:clamp(16px,3vw,22px)}
+#settingsDialog::backdrop{background:rgba(0,0,0,.30);backdrop-filter:blur(1px)}
+#settingsDialog .ratio-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:8px;margin:12px 0 18px}
+#settingsDialog .ratio-choices button{min-width:0;width:100%;min-height:72px}
+#settingsDialog label{margin:12px 0}
+@media(max-width:700px){#settingsDialog{width:calc(100vw - 16px);max-height:82dvh;border-radius:18px}#settingsDialog .ratio-choices{grid-template-columns:repeat(auto-fit,minmax(64px,1fr))}}
