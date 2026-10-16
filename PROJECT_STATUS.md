@@ -28,6 +28,12 @@ This file is the shared live progress board for all coding agents.
 - **Scoped PR:** [#148](https://github.com/mvryhan-web/video-variator-android/pull/148), branch `base16-price-id-uniqueness-20261016`, latest SHA `9fdb2da88a5d1a59f7dac912902d57afc6817818`, still DRAFT and UNMERGED. `billingCatalog` rejects multiple credit packs with the same Stripe Price ID, even if SKUs/credits differ. New four-case Node unit and mocked HTTP test refuse Checkout before database/Stripe access; existing billing tests run in focused workflow. The production code change is 2 added lines / 1 deleted line; no credit or real payment change.
 - **Isolated exact-function V8 evaluation:** 5/5 catalog cases PASS, not equivalent to full repository CI. Current-head GitHub Actions 38938556998 plus 7 related workflows are QUEUED; no CI PASS claimed yet. Previous Base #16 paid subscriptions, refunds, credits and pack checkout verified/merged work preserved. No production/main/schema/provider/owner Home mutation.
 
+## Agent C — BASE #28 local simple background remover / IN PROGRESS (2026-10-16)
+
+- **Original source:** BASE #28 explicitly lists Background Remover; repository tree had no browser page/route for it in `app/src/main/assets`. To avoid inventing paid AI, implement an honestly labelled **simple uniform-background eraser** using user-picked color, tolerance and connected-pixel processing only. It is NOT a sophisticated person/complex-object AI segmentation service.
+- **Scope:** Agent C separate branch `base28-simple-background-remover-20261016`, standalone local tool and its own entry in existing `free-tools.html`/test/CI. Protect current `mobile-utility-links.js` PR #147, existing #30 PR #144, original Home/brand, provider, auth, billing and DB.
+- **Status:** CLAIMED / NOT VERIFIED; no production/main release, tests pending.
+
 ## Agent C — BASE #28 unique Photo Compression tile / IN PROGRESS (2026-10-16)
 
 - **Scoped claim:** isolated C task `base28-unique-utility-tiles-20261016`, preserving previous PRs #67/#113/#121 and all free tool engines. Actual `mobile-utility-links.js` pushes `photo-compress` into `tools`, renders the full array, and then appends a second Photo Compression link manually; duplicate CTA harms mobile navigation clarity. Keep registry entry, exactly one visible tile and real `data-utility` link routing; no new backend/service.
