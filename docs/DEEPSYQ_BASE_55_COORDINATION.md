@@ -46,7 +46,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 13 | Internal AI credit system | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (PR #96 · CI 38908532493 PASS; LIVE BLOCKED) | BASE-D-StudioWallet / base13-studio-wallet-20261016 |
 | 14 | Credit ledger | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS | Agent-D-BASE14 / base14-private-ledger-refs-20261016 |
 | 15 | Credit reservation | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
-| 16 | Stripe subscriptions + credit packs | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS (non-AI Stripe refund webhook interoperability) | BASE-D-CheckoutReuse / base16-checkout-reuse-20261016 |
+| 16 | Stripe subscriptions + credit packs | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / REGRESSION VERIFIED (PR #99 · CI 38909520882 PASS; older #85/#86/#91; LIVE BLOCKED) | BASE-D-CheckoutReuse / base16-checkout-reuse-20261016 |
 | 17 | Unit economics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (partial; #89) | Agent-D / CI 38906320339 |
 | 18 | Pricing engine | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (partial; PR #83 · CI 38904230756 · 775cc805; MAIN/LIVE BLOCKED) | BASE-D-ProviderPricing / base55-d-provider-pricing-20261016 |
 | 19 | AI Apps | PARTIAL | C | EXISTING PRODUCT VIDEO FALLBACK VERIFIED; REAL TEMPLATE ASSETS + LIVE GATED | CODE VERIFIED / MERGED TO BASE (partial) | ChatGPT lane C / PR #71 / CI 38901487492 / merge 59dea3d3 |
@@ -81,7 +81,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 48 | Production safety / regression | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | REVIEW VERIFIED (PR #77; BASE release LIVE BLOCKED) | BASE-D / base55-d-release-review-issue75-20261016 |
 | 49 | Database migrations | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (partial; PR #82 · CI 38904014557 · a87bdc86; MAIN/LIVE BLOCKED) | BASE-D-MigrationSafety / base55-d-migration-readonly-20261016 |
 | 50 | Feature flags | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (partial; #87) | Agent-D / CI 38905747621 |
-| 51 | First commercial vertical slice | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (PR #97 · original CI 38907897427 PASS; renewed CI pending; LIVE BLOCKED) | BASE-D-PolicyGuard / base51-generation-policy-failclosed-20261016 |
+| 51 | First commercial vertical slice | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (PR #97 · original CI 38907897427 PASS; renewed CI 38908880552 PASS; LIVE BLOCKED) | BASE-D-PolicyGuard / base51-generation-policy-failclosed-20261016 |
 | 52 | Required implementation order | IN PROGRESS | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 53 | Explicit non-goals for now | DONE / RULE | — | DO NOT REBUILD | — | — |
 | 54 | BASE readiness criteria | NOT MET | D | FINAL GATE | — | — |
