@@ -56,6 +56,11 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     // Isolated synthetic job durations validate the real aggregate SQL.
     await pool.query("INSERT INTO vv_generation_jobs(id,status,created_at,started_at,completed_at) SELECT 'watcher-fixture-latency-old-'||n,'ready',NOW()-INTERVAL '2 hours',NOW()-INTERVAL '2 hours',NOW()-INTERVAL '2 hours'+INTERVAL '10 seconds' FROM generate_series(1,25) AS n");
     await pool.query("INSERT INTO vv_generation_jobs(id,status,created_at,started_at,completed_at) SELECT 'watcher-fixture-latency-new-'||n,'ready',NOW()-INTERVAL '5 minutes',NOW()-INTERVAL '5 minutes',NOW()-INTERVAL '5 minutes'+INTERVAL '65 seconds' FROM generate_series(1,6) AS n");
+    // B5-06: real PostgreSQL aggregates for 23-hour baseline vs hourly
+    // generation volume and a recorded cost without a known currency.
+    await pool.query("INSERT INTO vv_generation_jobs(id,status,created_at,provider) SELECT 'watcher-fixture-usage-old-'||n,'ready',NOW()-INTERVAL '3 hours','BytePlus' FROM generate_series(1,69) AS n");
+    await pool.query("INSERT INTO vv_generation_jobs(id,status,created_at,provider) SELECT 'watcher-fixture-usage-new-'||n,'ready',NOW()-INTERVAL '10 minutes','BytePlus' FROM generate_series(1,50) AS n");
+    await pool.query("INSERT INTO vv_generation_jobs(id,status,created_at,actual_cost,cost_currency) VALUES('watcher-fixture-no-currency','ready',NOW()-INTERVAL '8 minutes',2.400000,NULL)");
     const paused=await runProductWatcherOnce({pool,env,fetchFn});
     assert.equal(paused.status,'paused');assert.equal(httpCalls,0);
     const schedulerEnv={...env,PRODUCT_WATCHER_SCHEDULER_ENABLED:'true'};
@@ -88,8 +93,12 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     assert.equal(res.body.checks.operations.status,'warning');
     assert.ok(res.body.checks.operations.alerts.some(x=>x.code==='COST_VISIBILITY_GAP'));
     assert.ok(res.body.checks.operations.alerts.some(x=>x.code==='GENERATION_COMPLETION_LATENCY_SPIKE'));
+    assert.ok(res.body.checks.operations.alerts.some(x=>x.code==='GENERATION_USAGE_SPIKE'));
+    assert.ok(res.body.checks.operations.alerts.some(x=>x.code==='COST_CURRENCY_MISSING'));
     assert.equal(res.body.checks.operations.providers.find(x=>x.provider==='unknown').completionLatencySamplesLastHour,6);
     assert.equal(res.body.checks.operations.currencies.length,0);
+    assert.equal(res.body.checks.operations.providers.find(x=>x.provider==='BytePlus').jobsPrevious23Hours,69);
+    assert.ok(!JSON.stringify(res.body.checks.operations).includes('watcher-fixture-'));
     assert.equal(httpCalls,1);
     const notDue=await productWatcherTick({pool,env:schedulerEnv,fetchFn});
     assert.equal(notDue.status,'not_due');assert.equal(httpCalls,1);

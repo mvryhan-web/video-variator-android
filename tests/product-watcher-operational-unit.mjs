@@ -11,6 +11,21 @@ test('failure warnings require actual observed volume, not guessed provider qual
  assert.equal(high.alerts[0].rate,0.45);
 });
 
+test('B5-06 measured generation-job usage burst needs enough prior and current samples',()=>{
+ const base={provider:'BytePlus',jobs_1h:50,jobs_prev_23h:69,failed_1h:0};
+ const result=evaluateOperationalSignals([base],[]);
+ assert.equal(result.status,'warning');
+ assert.deepEqual(result.alerts,[{code:'GENERATION_USAGE_SPIKE',provider:'BytePlus',
+  jobs:50,previousJobs:69,ratio:16.67}]);
+ assert.equal(result.providers[0].jobsPrevious23Hours,69);
+ for(const changed of [{jobs_1h:24},{jobs_prev_23h:45},{jobs_prev_23h:400},
+   {jobs_prev_23h:0},{jobs_prev_23h:-1}]) {
+  const val=evaluateOperationalSignals([{...base,...changed}],[]);
+  assert.equal(val.alerts.length,0);
+ }
+ assert.ok(result.note.includes('No vendor API request volume'));
+});
+
 test('completion latency spike requires real sample volume and high absolute slowdown',()=>{
  const provider='BytePlus';
  const enough={provider,jobs_1h:9,failed_1h:0,latency_jobs_1h:7,
@@ -46,6 +61,23 @@ test('recorded spend is compared within same currency only, no FX, revenue or in
  assert.ok(!r.alerts.some(x=>x.currency==='eur'));
  assert.equal('grossMargin' in r,false);
  assert.equal('totalSpend' in r,false);
+});
+
+test('B5-06 recorded charge missing currency triggers a visibility alert, not invented FX or zero cost',()=>{
+ const r=evaluateOperationalSignals([],[{
+   currency:'unknown',tracked_1h:1,tracked_prev_23h:0,
+   missing_cost_1h:0,missing_currency_cost_1h:1,cost_1h:'2.400000',cost_prev_23h:'0'
+ }]);
+ assert.equal(r.status,'warning');
+ assert.equal(r.currencies.length,0);
+ assert.deepEqual(r.alerts,[{code:'COST_CURRENCY_MISSING',jobs:1}]);
+ assert.equal('totalSpend' in r,false);
+ assert.equal('convertedCost' in r,false);
+ const malformed=evaluateOperationalSignals([],[{
+   currency:'usd',tracked_1h:1,tracked_prev_23h:0,
+   missing_currency_cost_1h:-1,cost_1h:'0',cost_prev_23h:'0'
+ }]);
+ assert.equal(malformed.alerts.length,0);
 });
 
 test('per-job cost spike does not claim official provider price increase',()=>{
@@ -97,6 +129,9 @@ test('operational checker only performs aggregate read-only SQL without user dat
  assert.ok(!statements.join('\n').includes('stripe'));
  assert.ok(statements.some(s=>s.includes('completed_at-started_at')));
  assert.ok(statements.some(s=>s.includes("INTERVAL '24 hours'")));
+ assert.ok(statements.some(s=>s.includes('jobs_prev_23h')));
+ assert.ok(statements.some(s=>s.includes('missing_currency_cost_1h')));
+ assert.ok(statements.every(s=>!s.includes('SELECT * FROM vv_generation_jobs')));
  assert.ok(statements.every(s=>!s.includes('password_hash')));
 });
 

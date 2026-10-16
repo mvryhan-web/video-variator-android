@@ -706,3 +706,7 @@ Current queued-roadmap dependencies to verify before implementation:
 ### Block 5 / B5-05 — canonical TXT, internal workflow metadata (2026-10-16)
 
 Source verified: Block 5 original text in `main:docs/execution/DEEPSYQ_BLOCKS_1-7_CANONICAL.txt` and `main:docs/execution/BLOCK_5_CHECKLIST.md`. This draft PR #50 owns Block 5 only; BASE and all seven blocks keep separate canonical TXT scopes and order. B5-05 **PARTIAL**: read-only aggregate checks of active template/inspiration generation type, target, input-array and settings-object metadata + recommendation-only alerts, with isolated PostgreSQL synthetic corruption acceptance. Functional workflow/skills/media/link behavior and live worker remain unverified. B5-03/B5-04 still partial due to live/staging external gates; no owner-locked Home, Stripe, paid AI, production DB or Render changes.
+
+### Block 5 B5-06 — usage bursts and missing cost currency (2026-10-16)
+
+Per original Block 5 TXT and numbered checklist, independently advanced B5-06 on the existing draft PR #50 (not merged/deployed). Read-only owner diagnostics now warn on >=4x generation-job arrivals with adequate 1h/23h samples and count priced jobs with missing/invalid currency, without inventing FX, cross-currency totals or vendor API usage. Node + isolated PostgreSQL test fixtures added; branch Actions run is the verification record. Prior B5-03/04/05 remain PARTIAL on external/runtime acceptance. No main/Render/Stripe/paid AI/production DB/BASE/Home changes.

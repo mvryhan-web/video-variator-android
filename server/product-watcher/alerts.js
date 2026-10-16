@@ -13,7 +13,7 @@ export function observedWatcherAlerts(checks){
         const currency=/^[a-z]{3}$/.test(finding.currency||'')?finding.currency:null;
         rows.push({source,code,severity:'warning',provider,currency,
           // Whitelist only counters/ratios, never secrets or raw provider responses.
-          details:Object.fromEntries(['jobs','failed','rate','ratio','trackedJobsLastHour','readyJobsWithoutActualCostLastHour',
+          details:Object.fromEntries(['jobs','previousJobs','failed','rate','ratio','trackedJobsLastHour','readyJobsWithoutActualCostLastHour',
             'recentSamples','baselineSamples','averageMsLastHour','baselineAverageMs']
             .filter(k=>Number.isFinite(finding[k])&&finding[k]>=0).map(k=>[k,finding[k]]))});
       }
