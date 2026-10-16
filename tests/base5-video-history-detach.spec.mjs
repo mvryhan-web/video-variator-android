@@ -17,7 +17,7 @@ async function setup(page){
   createdAt:'2026-10-16T09:00:00.000Z'}]}}));
 }
 test('BASE #5: History Regenerate text-only Video confirms and removes unrelated current photos, no paid POST',async({page})=>{
- await page.setViewportSize({width:390,height:844});await page.setViewportSize({width:320,height:740});await setup(page);let paid=0;page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))paid++;});
+ await page.setViewportSize({width:390,height:844});await setup(page);let paid=0;page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))paid++;});
  await page.goto('/generate-studio.html?studio=video');
  await page.locator('#prompt').fill('Different current prompt');
  await page.locator('#references').setInputFiles({name:'current.png',mimeType:'image/png',buffer:png});
@@ -36,7 +36,7 @@ test('BASE #5: History Regenerate text-only Video confirms and removes unrelated
  expect(paid).toBe(0);
 });
 test('BASE #5: History Reuse prompt-only retains current Video photos',async({page})=>{
- await setup(page);let paid=0;page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))paid++;});
+ await page.setViewportSize({width:320,height:740});await setup(page);let paid=0;page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))paid++;});
  await page.goto('/generate-studio.html?studio=video');
  await page.locator('#references').setInputFiles({name:'current.png',mimeType:'image/png',buffer:png});
  await expect(page.locator('#refPreview img')).toHaveCount(1);
