@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import pg from 'pg';
 import { runProductWatcherOnce } from '../server/product-watcher/monitor.js';
 import { productWatcherTick } from '../server/product-watcher/scheduler.js';
-import { runOfficialSourcesOnce } from '../server/product-watcher/official-sources.js';
+import { OFFICIAL_SOURCES, runOfficialSourcesOnce } from '../server/product-watcher/official-sources.js';
 import { runBriefsIfDue } from '../server/product-watcher/briefs.js';
 import { runContentTasksIfDue } from '../server/product-watcher/content-tasks.js';
 import { deliverCriticalWatcherAlertsOnce } from '../server/product-watcher/telegram-alerts.js';
@@ -93,12 +93,12 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     const officialHtml='<html><body><main><h1>Official product updates</h1><p>'+('Model announcements from official documentation. '.repeat(8))+'</p></main></body></html>';
     const first=await runOfficialSourcesOnce({pool,env:officialEnv,now:()=>new Date('2026-10-15T00:00:00Z'),
       fetchFn:async()=>new Response(officialHtml,{headers:{'content-type':'text/html'}})});
-    assert.equal(first.changed,0);assert.equal(first.attempted,3);
+    assert.equal(first.changed,0);assert.equal(first.attempted,OFFICIAL_SOURCES.length);
     const second=await runOfficialSourcesOnce({pool,env:officialEnv,now:()=>new Date('2026-10-15T07:00:00Z'),
       fetchFn:async()=>new Response(officialHtml+' '+('A visible page revision. '.repeat(10)),{headers:{'content-type':'text/html'}})});
-    assert.equal(second.changed,3);
+    assert.equal(second.changed,OFFICIAL_SOURCES.length);
     const listed=await request('GET','/api/product-watcher/admin/official-sources');
-    assert.equal(listed.statusCode,200);assert.equal(listed.body.proposals.length,3);
+    assert.equal(listed.statusCode,200);assert.equal(listed.body.proposals.length,OFFICIAL_SOURCES.length);
     assert.equal(listed.body.proposals.every(x=>x.topicsCompared===true),true);
     assert.equal(listed.body.proposals.every(x=>Array.isArray(x.possibleTopics)),true);
     assert.equal(listed.body.proposals[0].applied,false);

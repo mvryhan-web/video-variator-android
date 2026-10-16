@@ -8,7 +8,11 @@ const TIMEOUT_MS = 9000;
 export const OFFICIAL_SOURCES = Object.freeze([
   Object.freeze({key:'byteplus-modelark',provider:'BytePlus',url:'https://docs.byteplus.com/en/docs/modelark/product-update-announcements'}),
   Object.freeze({key:'google-gemini-api',provider:'Google',url:'https://ai.google.dev/gemini-api/docs/changelog'}),
-  Object.freeze({key:'openai-api',provider:'OpenAI',url:'https://developers.openai.com/api/docs/changelog'})
+  Object.freeze({key:'google-gemini-pricing',provider:'Google',url:'https://ai.google.dev/gemini-api/docs/pricing'}),
+  Object.freeze({key:'google-gemini-limits',provider:'Google',url:'https://ai.google.dev/gemini-api/docs/rate-limits'}),
+  Object.freeze({key:'openai-api',provider:'OpenAI',url:'https://developers.openai.com/api/docs/changelog'}),
+  Object.freeze({key:'openai-api-pricing',provider:'OpenAI',url:'https://developers.openai.com/api/docs/pricing'}),
+  Object.freeze({key:'openai-api-limits',provider:'OpenAI',url:'https://developers.openai.com/api/docs/guides/rate-limits'})
 ]);
 
 export function officialSourceEnabled(env={}){
@@ -30,14 +34,19 @@ export function officialTopicDigests(visibleText) {
   if(typeof visibleText!=='string'||visibleText.length>OFFICIAL_SOURCE_MAX_BYTES) throw Error('SOURCE_TOO_LARGE');
   const out={};
   for(const [topic,regexp] of Object.entries(OFFICIAL_TOPIC_RULES)){
-    const contexts=[];
+    // Stream every relevant context rather than only the first 24. Pricing and
+    // deprecation entries often appear late in long, reverse-chronological docs.
+    // The 1 MiB page cap bounds scanning; only the final digest is retained.
+    const hash=createHash('sha256');
+    let count=0;
     regexp.lastIndex=0;
     for(const match of visibleText.matchAll(regexp)){
       const start=Math.max(0,match.index-90),end=Math.min(visibleText.length,match.index+match[0].length+90);
-      contexts.push(visibleText.slice(start,end));
-      if(contexts.length>=24)break;
+      const context=visibleText.slice(start,end);
+      hash.update(String(context.length)).update(':').update(context);
+      count++;
     }
-    if(contexts.length)out[topic]=createHash('sha256').update(JSON.stringify(contexts)).digest('hex');
+    if(count)out[topic]=hash.digest('hex');
   }
   return out;
 }

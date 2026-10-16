@@ -50,8 +50,25 @@ test('topic hashes identify possible changes without inventing factual price/mod
  assert.ok(!JSON.stringify(next).includes('3 tokens'));
 });
 
+test('late pricing and limit changes are visible past the first 24 keyword occurrences',()=>{
+ const prefix='Pricing and rate limits remain unchanged for the first model. '.repeat(40);
+ const prior=officialTopicDigests(prefix+' Pricing for a late model: 2 USD. Rate limit for that model: 20 RPM.');
+ const next=officialTopicDigests(prefix+' Pricing for a late model: 3 USD. Rate limit for that model: 25 RPM.');
+ const difference=compareOfficialTopicDigests(prior,next);
+ assert.equal(difference.compared,true);
+ assert.ok(difference.possibleTopics.includes('pricing'));
+ assert.ok(difference.possibleTopics.includes('limits'));
+ assert.ok(!JSON.stringify(prior).includes('20 RPM'));
+});
+
 test('only exact allowlisted official docs URLs allowed, with no redirect following',async()=>{
- assert.equal(OFFICIAL_SOURCES.length,3);
+ assert.equal(OFFICIAL_SOURCES.length,7);
+ assert.deepEqual(OFFICIAL_SOURCES.filter(s=>/pricing|limits/.test(s.key)).map(s=>s.url),[
+  'https://ai.google.dev/gemini-api/docs/pricing',
+  'https://ai.google.dev/gemini-api/docs/rate-limits',
+  'https://developers.openai.com/api/docs/pricing',
+  'https://developers.openai.com/api/docs/guides/rate-limits'
+ ]);
  await assert.rejects(fetchOfficialFingerprint({key:'google-gemini-api',provider:'Google',url:'https://evil.example/private'},
   {fetchFn:async()=>{throw Error('MUST_NOT_CALL')}}),/SOURCE_NOT_ALLOWLISTED/);
  let count=0;
@@ -117,19 +134,19 @@ test('first check creates baselines only, changes require review, unchanged not 
  let requests=0;
  const fetchFn=async()=>{requests++;return response();};
  const first=await runOfficialSourcesOnce({pool:d.pool,env,fetchFn,now:at(0)});
- assert.equal(first.attempted,3);assert.equal(first.changed,0);
+ assert.equal(first.attempted,OFFICIAL_SOURCES.length);assert.equal(first.changed,0);
  assert.ok(first.items.every(x=>x.code==='BASELINE_CREATED'&&x.verifiedFact===false));
  assert.equal(d.proposals.length,0);
  const repeat=await runOfficialSourcesOnce({pool:d.pool,env,fetchFn,now:at(1)});
- assert.equal(repeat.attempted,0);assert.equal(requests,3);
+ assert.equal(repeat.attempted,0);assert.equal(requests,OFFICIAL_SOURCES.length);
  const change=await runOfficialSourcesOnce({pool:d.pool,env,fetchFn:async()=>response(html+' Official update follows '+('different '.repeat(20))),now:at(7)});
- assert.equal(change.changed,3);assert.equal(d.proposals.length,3);
+ assert.equal(change.changed,OFFICIAL_SOURCES.length);assert.equal(d.proposals.length,OFFICIAL_SOURCES.length);
  assert.ok(change.items.every(x=>x.code==='PAGE_CHANGED_REVIEW_REQUIRED'));
  assert.ok(change.items.every(x=>x.topicsCompared===true&&Array.isArray(x.possibleTopics)));
  const unchanged=await runOfficialSourcesOnce({pool:d.pool,env,fetchFn:async()=>response(html+' Official update follows '+('different '.repeat(20))),now:at(14)});
- assert.equal(unchanged.changed,0);assert.equal(d.proposals.length,3);
+ assert.equal(unchanged.changed,0);assert.equal(d.proposals.length,OFFICIAL_SOURCES.length);
  const review=await listOfficialSourceReviews(d.pool);
- assert.equal(review.proposals.length,3);
+ assert.equal(review.proposals.length,OFFICIAL_SOURCES.length);
  assert.ok(review.proposals.every(x=>x.applied===false&&x.verifiedFact===false&&x.topicsCompared===true));
  assert.ok(review.proposals.every(x=>Array.isArray(x.possibleTopics)));
  assert.ok(!JSON.stringify(review).includes('Official update follows'));
@@ -141,7 +158,7 @@ test('one official source fails without blocking others or inventing a change',a
   n++;if(n===1)throw Error('token private');
   return response();
  }});
- assert.equal(r.status,'partial');assert.equal(r.attempted,3);assert.equal(r.changed,0);
+ assert.equal(r.status,'partial');assert.equal(r.attempted,OFFICIAL_SOURCES.length);assert.equal(r.changed,0);
  assert.equal(r.items[0].code,'SOURCE_FETCH_FAILED');assert.equal(d.history.get(OFFICIAL_SOURCES[0].key).last_error_code,'SOURCE_FETCH_FAILED');
  assert.ok(!JSON.stringify(r).includes('token private'));
 });

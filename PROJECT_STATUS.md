@@ -682,3 +682,8 @@ Current queued-roadmap dependencies to verify before implementation:
 ### Block 5 integration refresh (2026-10-15)
 
 - Draft PR #50 refreshed from BASE 17577c7fd61c using the latest BASE full tree plus 36 Watcher-owned files. Only the auth-reusing mount in `server/server.js` and this append-only status note touch shared files. No Render, production DB, Stripe or `main` release performed. Feature flags remain OFF and Watcher owner PAUSED. Re-run CI and confirm mergeability before release.
+
+### Block 5 / B5-03 — official pricing and limits references (2026-10-16)
+
+- **IN PROGRESS / PR #50 / NOT DEPLOYED:** Watcher source allowlist extended from three changelogs to seven pinned public documentation URLs, including official Google and OpenAI pricing/rate-limit pages. ModelArk release notes remain pinned, with JS-only pages failing closed. Topic digests now include keyword context matches beyond the previous 24-entry cutoff. Existing source keys, private owner review, 6-hour lock, no-paid-call and no-auto-apply policies preserved.
+- Test scope: watcher official-source unit tests plus isolated PostgreSQL watcher acceptance, with assertions parametrized to the source registry. Browser/Render/production, external HTTP fetches, account-specific rate tiers and pricing verification are **not** established by these code changes. B5-03 remains **PARTIAL**.
