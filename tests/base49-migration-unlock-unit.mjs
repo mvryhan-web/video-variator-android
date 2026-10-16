@@ -7,7 +7,10 @@ function fixture(unlock){
  const client={
   async query(sql){
    queries.push(String(sql));
-   if(String(sql).includes('pg_advisory_lock('))return {rows:[{pg_advisory_lock:null}]};
+   if(String(sql).includes('pg_advisory_lock(')){
+    if(unlock==='acquire-throws')throw Error('advisory acquisition uncertain');
+    return {rows:[{pg_advisory_lock:null}]};
+   }
    if(String(sql).includes('pg_advisory_unlock(')){
     if(unlock==='throws')throw Error('connection was lost');
     return {rows:[{pg_advisory_unlock:unlock}]};
@@ -33,3 +36,12 @@ for(const [name,unlock,discard] of [
   assert.equal(state.queries.filter(q=>q.includes('pg_advisory_unlock')).length,1);
  });
 }
+
+test('BASE #49: uncertain advisory-lock acquisition destroys the pool client',async()=>{
+ const x=fixture('acquire-throws');
+ await assert.rejects(()=>runAiMigrations(x.pool),/advisory acquisition uncertain/);
+ const state=x.result();
+ assert.equal(state.released,true);
+ assert.equal(state.queries.filter(q=>q.includes('pg_advisory_lock(')).length,1);
+ assert.equal(state.queries.filter(q=>q.includes('pg_advisory_unlock(')).length,0);
+});
