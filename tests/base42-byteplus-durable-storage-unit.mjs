@@ -4,6 +4,7 @@ import express from 'express';
 import {bytePlusPublicDurableStorageReady} from '../server/generation-byteplus-storage-gate.js';
 import {studioConfig,installGenerationStudio} from '../server/generation-studio.js';
 import {applyModelControl} from '../server/generation-model-control.js';
+import {orderedGenerationCandidates,resolveGenerationModel} from '../server/generation-routing.js';
 
 const byteplus={kind:'video',provider:'BytePlus',id:'byteplus-seedance-2'};
 const google={kind:'video',provider:'Google',id:'veo-3.1-lite-generate-preview'};
@@ -54,6 +55,18 @@ test('BASE #42 owner admin override cannot bypass missing S3 durability prerequi
  const enabled=studioConfig({...env,...storage}).catalog.find(m=>m.id===videoModel);
  assert.equal(applyModelControl(enabled,{enabledOverride:true,priority:0,maintenance:false}).enabled,true);
  assert.equal(applyModelControl(enabled,{enabledOverride:false,priority:0,maintenance:false}).enabled,false);
+});
+
+test('BASE #42 explicit and smart routing cannot choose a BytePlus video model that lacks durable S3',()=>{
+ const request={kind:'video',model:videoModel,ratio:'16:9',videoResolution:'720p',videoDuration:5,
+  videoInputMode:'text',references:[]};
+ const onlyBytePlus=studioConfig(env).catalog.filter(m=>m.id===videoModel);
+ assert.equal(onlyBytePlus.length,1);
+ assert.deepEqual(orderedGenerationCandidates(request,onlyBytePlus),[]);
+ assert.throws(()=>resolveGenerationModel(request,onlyBytePlus,{AI_SMART_ROUTING_ENABLED:'true'}),/MODEL_NOT_ENABLED/);
+ assert.throws(()=>resolveGenerationModel({...request,model:'smart'},onlyBytePlus,{AI_SMART_ROUTING_ENABLED:'true'}),/NO_COMPATIBLE_MODEL/);
+ const ready=studioConfig({...env,...storage}).catalog.filter(m=>m.id===videoModel);
+ assert.equal(orderedGenerationCandidates(request,ready).length,1);
 });
 
 test('BASE #42 a public-mode owner quote rejects absent S3 before any provider or credit action',async()=>{
