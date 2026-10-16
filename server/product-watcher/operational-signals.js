@@ -6,6 +6,7 @@
 const MIN_PROVIDER_JOBS=10, MIN_PROVIDER_FAILURES=5;
 const MIN_RECENT_COST_JOBS=5, MIN_BASELINE_COST_JOBS=20;
 const MIN_SPEND_RATIO=3, MIN_UNIT_COST_RATIO=2.5;
+const MIN_LATENCY_RECENT=5, MIN_LATENCY_BASELINE=20, MIN_LATENCY_RATIO=2.5, MIN_LATENCY_MS=30000;
 
 export function evaluateOperationalSignals(providerRows=[],costRows=[]) {
   const alerts=[];
@@ -16,7 +17,25 @@ export function evaluateOperationalSignals(providerRows=[],costRows=[]) {
     const failed=Math.max(0,Number(row.failed_1h)||0);
     if(!Number.isSafeInteger(jobs)||!Number.isSafeInteger(failed)||failed>jobs)continue;
     const rate=jobs?failed/jobs:0;
-    providers.push({provider,jobsLastHour:jobs,failedLastHour:failed,failureRate:Math.round(rate*1000)/1000});
+    // Server-recorded completion interval (started_at -> completed_at), not
+    // direct vendor API latency. Insufficient/no valid timestamps stay unknown.
+    const recentSamples=Number(row.latency_jobs_1h??0);
+    const baselineSamples=Number(row.latency_jobs_prev_23h??0);
+    const recentMs=Number(row.latency_avg_ms_1h);
+    const baselineMs=Number(row.latency_avg_ms_prev_23h);
+    const enoughRecent=Number.isSafeInteger(recentSamples)&&recentSamples>=MIN_LATENCY_RECENT;
+    const enoughBaseline=Number.isSafeInteger(baselineSamples)&&baselineSamples>=MIN_LATENCY_BASELINE;
+    const validLatency=enoughRecent&&enoughBaseline&&Number.isFinite(recentMs)&&Number.isFinite(baselineMs)
+      &&recentMs>=0&&baselineMs>=1000;
+    providers.push({provider,jobsLastHour:jobs,failedLastHour:failed,failureRate:Math.round(rate*1000)/1000,
+      completionLatencySamplesLastHour:Number.isSafeInteger(recentSamples)?recentSamples:0,
+      completionLatencyAverageMsLastHour:Number.isFinite(recentMs)&&recentMs>=0?Math.round(recentMs):null});
+    if(validLatency&&recentMs>=MIN_LATENCY_MS&&recentMs/baselineMs>=MIN_LATENCY_RATIO){
+      alerts.push({code:'GENERATION_COMPLETION_LATENCY_SPIKE',provider,
+        recentSamples,baselineSamples,averageMsLastHour:Math.round(recentMs),
+        baselineAverageMs:Math.round(baselineMs),
+        ratio:Math.round(recentMs/baselineMs*100)/100});
+    }
     if(jobs>=MIN_PROVIDER_JOBS&&failed>=MIN_PROVIDER_FAILURES&&rate>=0.4){
       alerts.push({code:'PROVIDER_HIGH_FAILURE_RATE',provider,jobs,failed,rate:Math.round(rate*1000)/1000});
     }
@@ -52,7 +71,7 @@ export function evaluateOperationalSignals(providerRows=[],costRows=[]) {
     currencies,providers,
     alerts:alerts.slice(0,50),
     // Deliberately no single summed "total spend" across currencies.
-    note:'Recorded costs only; models/provider mix can change averages. No live pricing, revenue or margin verified.'
+    note:'Recorded costs and completed-job elapsed time only. No live provider API latency, provider uptime, revenue or margin verified; model mix and workloads can affect averages.'
   };
 }
 
@@ -64,8 +83,12 @@ export async function checkOperationalSignals(client){
       client.query([
         "SELECT COALESCE(NULLIF(provider,''),'unknown') AS provider,",
         "COUNT(*) FILTER (WHERE created_at >= NOW()-INTERVAL '1 hour')::int AS jobs_1h,",
-        "COUNT(*) FILTER (WHERE status='failed' AND created_at >= NOW()-INTERVAL '1 hour')::int AS failed_1h",
-        "FROM vv_generation_jobs WHERE deleted=false AND created_at>=NOW()-INTERVAL '1 hour'",
+        "COUNT(*) FILTER (WHERE status='failed' AND created_at >= NOW()-INTERVAL '1 hour')::int AS failed_1h,",
+        "COUNT(*) FILTER (WHERE status='ready' AND started_at IS NOT NULL AND completed_at >= started_at AND created_at >= NOW()-INTERVAL '1 hour')::int AS latency_jobs_1h,",
+        "COUNT(*) FILTER (WHERE status='ready' AND started_at IS NOT NULL AND completed_at >= started_at AND created_at < NOW()-INTERVAL '1 hour')::int AS latency_jobs_prev_23h,",
+        "ROUND(AVG(EXTRACT(EPOCH FROM (completed_at-started_at))*1000) FILTER (WHERE status='ready' AND started_at IS NOT NULL AND completed_at >= started_at AND created_at >= NOW()-INTERVAL '1 hour'))::bigint AS latency_avg_ms_1h,",
+        "ROUND(AVG(EXTRACT(EPOCH FROM (completed_at-started_at))*1000) FILTER (WHERE status='ready' AND started_at IS NOT NULL AND completed_at >= started_at AND created_at < NOW()-INTERVAL '1 hour'))::bigint AS latency_avg_ms_prev_23h",
+        "FROM vv_generation_jobs WHERE deleted=false AND created_at>=NOW()-INTERVAL '24 hours'",
         "GROUP BY COALESCE(NULLIF(provider,''),'unknown') ORDER BY jobs_1h DESC,provider LIMIT 100"
       ].join(' ')),
       client.query([

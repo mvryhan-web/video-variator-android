@@ -11,6 +11,29 @@ test('failure warnings require actual observed volume, not guessed provider qual
  assert.equal(high.alerts[0].rate,0.45);
 });
 
+test('completion latency spike requires real sample volume and high absolute slowdown',()=>{
+ const provider='BytePlus';
+ const enough={provider,jobs_1h:9,failed_1h:0,latency_jobs_1h:7,
+   latency_jobs_prev_23h:28,latency_avg_ms_1h:68000,latency_avg_ms_prev_23h:12000};
+ const spike=evaluateOperationalSignals([enough],[]);
+ assert.equal(spike.status,'warning');
+ assert.equal(spike.alerts[0].code,'GENERATION_COMPLETION_LATENCY_SPIKE');
+ assert.equal(spike.alerts[0].ratio,5.67);
+ assert.equal(spike.alerts[0].recentSamples,7);
+ assert.ok(spike.note.includes('No live provider API latency'));
+ const tooFew=evaluateOperationalSignals([{...enough,latency_jobs_1h:4}],[]);
+ assert.equal(tooFew.status,'healthy');
+ const noHistory=evaluateOperationalSignals([{...enough,latency_jobs_prev_23h:2}],[]);
+ assert.equal(noHistory.status,'healthy');
+ const short=evaluateOperationalSignals([{...enough,latency_avg_ms_1h:18000}],[]);
+ assert.equal(short.status,'healthy');
+ const badClock=evaluateOperationalSignals([{...enough,latency_avg_ms_1h:-150}],[]);
+ assert.equal(badClock.status,'healthy');
+ const noTimestamps=evaluateOperationalSignals([{provider,jobs_1h:9,failed_1h:0}],[]);
+ assert.equal(noTimestamps.alerts.length,0);
+ assert.equal(noTimestamps.providers[0].completionLatencyAverageMsLastHour,null);
+});
+
 test('recorded spend is compared within same currency only, no FX, revenue or invented profit',()=>{
  const rows=[
  {currency:'usd',tracked_1h:12,tracked_prev_23h:46,missing_cost_1h:0,cost_1h:'24.000000',cost_prev_23h:'46.000000'},
@@ -72,6 +95,9 @@ test('operational checker only performs aggregate read-only SQL without user dat
  assert.ok(!statements.join('\n').includes('prompt'));
  assert.ok(!statements.join('\n').includes('user_id'));
  assert.ok(!statements.join('\n').includes('stripe'));
+ assert.ok(statements.some(s=>s.includes('completed_at-started_at')));
+ assert.ok(statements.some(s=>s.includes("INTERVAL '24 hours'")));
+ assert.ok(statements.every(s=>!s.includes('password_hash')));
 });
 
 test('database failure is normalized without secrets',async()=>{
