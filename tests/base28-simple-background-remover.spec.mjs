@@ -112,3 +112,38 @@ test('BASE #28: stale asynchronous PNG cannot resurrect an image after Clear',as
  await expect(page.locator('#original')).toHaveJSProperty('width',1);
  await expect(page.locator('#status')).toContainText('Photo and preview cleared');
 });
+
+test('BASE #28: old encode cannot unlock a newer in-progress encode',async({page})=>{
+ await page.addInitScript(()=>{
+  const actual=HTMLCanvasElement.prototype.toBlob;
+  let ordinal=0;
+  HTMLCanvasElement.prototype.toBlob=function(done,...options){
+   if(this.id!=='result')return actual.call(this,done,...options);
+   const order=++ordinal;
+   return actual.call(this,blob=>setTimeout(()=>{
+    done(blob);
+    document.body.dataset['encoded'+order]='yes';
+   },order===1?180:1000),...options);
+  };
+ });
+ await page.goto('/simple-background-remover.html');
+ const bytes=await page.evaluate(async()=>{
+  const canvas=document.createElement('canvas');canvas.width=canvas.height=3;
+  const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,3,3);
+  const blob=await new Promise(ok=>canvas.toBlob(ok,'image/png'));
+  return [...new Uint8Array(await blob.arrayBuffer())];
+ });
+ const file={name:'product.png',mimeType:'image/png',buffer:Buffer.from(bytes)};
+ await page.locator('#photo').setInputFiles(file);
+ await expect(page.locator('#erase')).toBeEnabled();
+ await page.locator('#erase').click();
+ await page.locator('#photo').setInputFiles({name:'new-product.png',mimeType:'image/png',buffer:Buffer.from(bytes)});
+ await expect(page.locator('#erase')).toBeEnabled();
+ await page.locator('#erase').click();
+ await expect(page.locator('body')).toHaveAttribute('data-encoded1','yes');
+ await expect(page.locator('#erase')).toBeDisabled();
+ await expect(page.locator('#download')).toBeDisabled();
+ await expect(page.locator('body')).toHaveAttribute('data-encoded2','yes');
+ await expect(page.locator('#erase')).toBeEnabled();
+ await expect(page.locator('#download')).toBeEnabled();
+});
