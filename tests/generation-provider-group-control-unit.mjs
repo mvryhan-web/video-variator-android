@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateProviderGroupPatch,updateProviderGroupControls,applyModelControl} from '../server/generation-model-control.js';
+import {validateProviderGroupPatch,updateProviderGroupControls,updateModelControl,applyModelControl} from '../server/generation-model-control.js';
 import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 
 function mockPool({failAtModelInsert=0}={}){
@@ -62,4 +62,15 @@ test('BASE #9: refuse unknown provider, unsafe kind or empty owner without a tra
 test('BASE #9: owner cannot override a model lacking configured provider credentials',()=>{
  const base={...googleVideo[0],enabled:false};
  assert.equal(applyModelControl(base,{enabledOverride:true,maintenance:false,priority:1}).enabled,false);
+});
+
+test('BASE #9: first admin toggle preserves configured default routing priority',async()=>{
+ const pool=mockPool();
+ const choice={...googleVideo[0],priority:17};
+ await updateModelControl(pool,{modelId:choice.id,userId:'owner-user',patch:{enabled:false},catalog:[choice]});
+ const insert=pool.calls.find(x=>x.sql.startsWith('INSERT INTO vv_ai_model_control'));
+ assert.ok(insert);
+ assert.equal(insert.args[0],choice.id);
+ assert.equal(insert.args[1],false);
+ assert.equal(insert.args[2],17);
 });
