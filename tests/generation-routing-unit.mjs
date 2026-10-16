@@ -79,3 +79,32 @@ test('BASE #7: routes actual Google and BytePlus capability catalog, not only mo
  const veoText={kind:'video',ratio:'16:9',videoInputMode:'text',videoResolution:'720p',videoDuration:6,references:[]};
  assert.ok(orderedGenerationCandidates(veoText,videoModels).some(m=>m.provider==='Google'));
 });
+
+test('BASE #40: non-smart route fails closed rather than dispatching incompatible default model',()=>{
+ const models=[
+  {id:'first-model',kind:'video',provider:'Google',enabled:true,maintenance:false,
+   ratios:['16:9'],references:1,quality:'720p',
+   capabilities:{maxReferences:1,videoInputModes:['text','first_frame'],resolutions:['720p'],durations:[8],durationSeconds:8}},
+  {id:'supported-model',kind:'video',provider:'BytePlus',enabled:true,maintenance:false,
+   ratios:['16:9'],references:3,quality:'720p',
+   capabilities:{maxReferences:3,videoInputModes:['text','first_frame','first_last'],resolutions:['720p','1080p'],durations:[5,8,15],durationSeconds:5}}
+ ];
+ const request={kind:'video',ratio:'16:9',videoInputMode:'first_last',
+  videoDuration:15,videoResolution:'1080p',references:[{},{}]};
+ const disabled={AI_SMART_ROUTING_ENABLED:'false'};
+ assert.throws(()=>resolveGenerationModel(request,models,disabled),/MODEL_NOT_ENABLED/);
+ assert.equal(resolveGenerationModel(request,models,{AI_SMART_ROUTING_ENABLED:'true'}).model.id,'supported-model');
+ assert.equal(resolveGenerationModel({...request,videoInputMode:'text',videoDuration:8,videoResolution:'720p',references:[]},models,disabled).model.id,'first-model');
+ assert.throws(()=>resolveGenerationModel({...request,videoInputMode:'first_frame',references:[{}],videoDuration:6,videoResolution:'720p'},models,disabled),/MODEL_NOT_ENABLED/);
+ assert.throws(()=>resolveGenerationModel({...request,videoInputMode:'text',references:[],videoDuration:8,videoResolution:'720p'},[{...models[0],maintenance:true},models[1]],disabled),/MODEL_MAINTENANCE/);
+});
+
+test('BASE #40: explicit paid model ID must uniquely identify a concrete provider',()=>{
+ const model={id:'shared-id',kind:'video',provider:'Google',enabled:true,
+  ratios:['16:9'],references:0,capabilities:{maxReferences:0,videoInputModes:['text'],resolutions:['720p'],durations:[8],durationSeconds:8}};
+ const other={...model,provider:'BytePlus'};
+ const request={kind:'video',ratio:'16:9',references:[],videoInputMode:'text',videoResolution:'720p',videoDuration:8,model:'shared-id'};
+ assert.throws(()=>resolveGenerationModel(request,[model,other],{AI_SMART_ROUTING_ENABLED:'true'}),/MODEL_AMBIGUOUS/);
+ assert.equal(resolveGenerationModel(request,[model],{AI_SMART_ROUTING_ENABLED:'true'}).model.provider,'Google');
+ assert.throws(()=>resolveGenerationModel({...request,model:'missing'},[model],{}),/MODEL_NOT_FOUND/);
+});
