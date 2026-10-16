@@ -7,6 +7,14 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — PR #42 history repaired, browser CI still FAIL / REVIEW VERIFIED (2026-10-16)
+
+- **Reviewer / branch:** Agent 5 coordination-only, `agent5-ci-release-triage-20261016`; no coding lane BASE task claimed, no A/C/D owned files touched.
+- **Source audit:** [PR #136](https://github.com/mvryhan-web/video-variator-android/pull/136) merged only to BASE to reconcile `main` Git history; compare `main...deepsyq-platform` at inspected `2101a6b5` showed behind 0/ahead 1077, and draft [PR #42](https://github.com/mvryhan-web/video-variator-android/pull/42) `mergeable=true`. **Mergeable does NOT mean release approved.**
+- **Blocking actual CI:** [Validate Video Variator Web 38931698804](https://github.com/mvryhan-web/video-variator-android/actions/runs/38931698804) **FAILED**, Playwright `tests/deepsyq.spec.mjs:257` outdated Lifetime text expectation vs accurate visible wording. Test stopped at `--max-failures=1`: remaining browser suite NOT VERIFIED. Other broad run 38931698933 was pending, APK 38931698867 cancelled at audit. Independent Agent D [PR #134](https://github.com/mvryhan-web/video-variator-android/pull/134) had earlier scoped green CI but now a stale conflicting base; duplicate #133 closed unmerged.
+- **Next owners:** D #75 narrow semantic Lifetime test and #134 reconciliation, A #72 permanent honest Home carousel/real owner media, C #74 working 320/390px mobile menu; full browser and physical-device acceptance plus real backup/restore, signed Stripe/provider/storage checks before `main`/Render. Full evidence: [Agent 5 CI handoff](docs/DEEPSYQ_AGENT5_REGRESSION_REVIEW_20261016.md#e-latest-shared-base-head--mergeability-is-not-browser-acceptance-2026-10-16-1631-utc).
+- **State:** REVIEW VERIFIED / PR REVIEW ONLY / NOT MAIN / NOT DEPLOYED / NOT LIVE. No production/Stripe/AI spend or customer data changed.
+
 ## Agent 5 — actual Home icon rendering browser smoke / CODE VERIFIED, PR #131 (2026-10-16)
 
 - **Role/branch:** Agent 5 read-only cross-browser acceptance QA, `agent5-brand-browser-smoke-20261016`. No BASE A/B/C/D feature implementation or claim takeover.
