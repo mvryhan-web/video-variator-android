@@ -2,6 +2,10 @@
 
 ## Agent D — BASE #50 public platform flags invalid values / IN PROGRESS (2026-10-16)
 
+- **Current scoped PR:** [#189](https://github.com/mvryhan-web/video-variator-android/pull/189), DRAFT/UNMERGED, head `56ba9c6670cfd11a266d3fd671bcb773e1cc55b4`. Exactly five changed paths: new `server/platform-feature-flags.js`, integration `server/server.js`, new `tests/base50-platform-feature-flags-unit.mjs`, reused `.github/workflows/base50-feature-flags.yml`, new short doc. Config API and Express route guards now share explicit `true` policy, explicit invalid values OFF for every runtime, unset dev/preview fallback retained. Pure source helper evaluated 160/160 env/flag/value scenarios PASS. GitHub current-head CI pending; no merge/live flag change. Earlier merged BASE #50 #87 remains intact; original #50 PARTIAL/NOT LIVE.
+
+
+
 - **Exact existing gap:** `platformFeatureEnabled()` in `server/server.js` treats every non-`false` value as enabled for non-production, so `AI_APPS_ENABLED=0`, `AI_INSPIRATION_ENABLED=TRUE`, `AI_PRODUCT_VIDEO_ENABLED=garbage` erroneously expose opt-in routes. Production behavior already requires literal `true`.
 - **Bounded claim:** preserve unset legacy preview/dev fallback while fail-closing **explicit but invalid** values in all environments. Use a shared pure Node helper and unit tests; server-wide config JSON and guarded routes must rely on one source of truth, no static Home/visual changes or public provider/Stripe switch changes.
 - **Branch/ownership:** `base50-platform-public-flag-policy-20261016`, target `deepsyq-platform`, Agent D §50 Issue #75, minimal `server/server.js`, new pure helper and tests, existing base50 CI workflow/doc. No `main`, Render, auth, payment, DB, or production env actions. Prior #87 merged; full BASE #50 still PARTIAL.
