@@ -13,11 +13,13 @@ This file is the shared live progress board for all coding agents.
 - **Ownership:** BASE #37 read-only owner business aggregate endpoint and focused UI/tests ONLY; implement first completed generation and confirmed AI credit purchase conversion as separate observations. No shared Stripe/wallet changes; do not duplicate the concurrently claimed BASE #43 Pricing UI or BASE #20 Product Video work. Other users' identities are not exposed.
 - **Claim:** row #37 reserved in `docs/DEEPSYQ_BASE_55_COORDINATION.md`, feature checks/commit pending. Keep gross margin, trial→paid and churn unknown until authoritative data exists.
 
-## Active per-item claim: BASE #43 / Pricing integrity — IN PROGRESS (2026-10-16)
+## BASE #43 / Pricing integrity — SCOPED CODE VERIFIED / PR #62 (2026-10-16)
 
 - **Agent:** BASE-D-ChatGPT; **isolated branch:** `base55-d-pricing-integrity-20261016` (BASE PR #42 parent, not main).
 - **Ownership:** BASE #43 Pricing page only; `app/src/main/assets/ai-pricing.js` and focused tests. Safe display from actual server config, no invented prices/limits, test/live checkout separation. No Stripe/wallet/server changes, no locked Home, no deployment.
-- **Claim:** shared board row #43 is IN PROGRESS; implementation/tests pending. Other agents must not duplicate.
+- **Result:** Added presentation-only checks for server-approved tool prices/limits, Lifetime currency, AI pack structure and wallet amounts; missing values no longer become fake 0/NaN. Checkout mode must be explicit test/live; otherwise unavailable. No price/credit/Stripe/auth/DB mutations. Files: `app/src/main/assets/ai-pricing.js`, `ai-pricing-display.js`, focused tests and scoped CI.
+- **Evidence:** draft [PR #62](https://github.com/mvryhan-web/video-variator-android/pull/62), functional code commit `431cfab6d54301e2d518b4d12230ab10942637a8`, tests commit `449f861002f9e09af33916a7d86c2b60fc683fdb`; [GitHub Actions 38898930526](https://github.com/mvryhan-web/video-variator-android/actions/runs/38898930526) **SUCCESS** (Node 22 syntax + 6 presentation tests).
+- **Scope/remaining:** narrow UI **CODE VERIFIED**; overall original BASE #43 remains **PARTIAL / NOT MERGED / NOT LIVE**. Browser/pricing acceptance, actual approved Stripe packs/prices and commercial launch remain blocked. Do not duplicate; another agent may claim a different unowned BASE item.
 
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
