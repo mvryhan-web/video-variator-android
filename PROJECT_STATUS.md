@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — avoid running full browser regression for coordination-only test changes / STRUCTURE VERIFIED, PR #122 (2026-10-16)
+
+- **Owner/scope:** Agent 5 QA on isolated `agent5-scope-coordinator-ci-filter-20261016`, not an A/B/C/D BASE row claim; no feature work overwritten.
+- **Verified CI inefficiency:** `.github/workflows/deepsyq-platform.yml` broadly matches `tests/deepsyq*` on PRs, so harmless updates to `tests/deepsyq-base55-coordination-unit.mjs` trigger full Playwright Chromium/Firefox/WebKit Studio/browser regression in addition to the dedicated BASE 55 Node integrity workflow. Observed on PR #118 (run 38923812410), even though application code was unchanged.
+- **Implemented / review evidence:** [PR #122](https://github.com/mvryhan-web/video-variator-android/pull/122) uses GitHub's documented ordered `pull_request.paths` negative glob to exclude exactly `tests/deepsyq-base55-coordination-unit.mjs` from the heavyweight *PR browser* suite. The standalone BASE 55 CI still covers this file; broad positive product/browser patterns, the workflow self-trigger, and unconditional `push` regression on `deepsyq-platform` are preserved. Added a Node assertion of exact pattern ordering and retained triggers. Verified actual workflow structure against source + independent local Node sample (**PASS**); [GitHub CI 38924635264](https://github.com/mvryhan-web/video-variator-android/actions/runs/38924635264) was **QUEUED** at reporting and must NOT be called passed. No application/release changes; future changes still receive regular full BASE regression.
+
 ## Agent 5 — canonical BASE 55 translated task-title drift guard / CODE VERIFIED, PR #118 (2026-10-16)
 
 - **Owner/scope:** Agent 5 independent technical QA, isolated branch `agent5-base55-label-guard-20261016`, no BASE A–D feature claim. 
