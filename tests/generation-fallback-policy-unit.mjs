@@ -82,3 +82,21 @@ test('BASE #8: real approved pricing registry permits lowercase usd fallback par
  assert.equal(plan.reason,'READY');
  assert.deepEqual(plan.eligible,[{id:veo.id,provider:'Google'}]);
 });
+
+test('BASE #8: approved 2K image fallback respects real model formats and primary capabilities',()=>{
+ const google={...MODEL_CATALOG.find(m=>m.id==='gemini-3.1-flash-image'),enabled:true};
+ const byteplus={...MODEL_CATALOG.find(m=>m.id==='byteplus-seedream-4-5'),enabled:true};
+ assert.ok(google&&byteplus);
+ const requestImage={kind:'image',ratio:'1:1',references:[],resolution:'2K',outputFormat:'auto'};
+ const env={AI_MODEL_PRICING_JSON:JSON.stringify([
+  {model:google.id,provider:'Google',kind:'image',credits:20,providerCostMicros:100000,currency:'usd',quality:'2K'},
+  {model:byteplus.id,provider:'BytePlus',kind:'image',credits:20,providerCostMicros:95000,currency:'usd',quality:'2K'}
+ ])};
+ const input={request:requestImage,primary:google,candidates:[google,byteplus],smart:true,
+  quoteFor:(m,q)=>estimateGenerationPricing({...q,model:m.id},m,env)};
+ const safe=planPreDispatchFallback(input);
+ assert.deepEqual(safe.eligible,[{id:byteplus.id,provider:'BytePlus'}]);
+ const invalidPrimary=planPreDispatchFallback({...input,request:{...requestImage,outputFormat:'png'}});
+ assert.deepEqual(invalidPrimary.eligible,[]);
+ assert.equal(invalidPrimary.reason,'PRIMARY_CAPABILITIES_INVALID');
+});
