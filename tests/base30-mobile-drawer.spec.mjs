@@ -72,6 +72,12 @@ test('BASE #30: mobile account and owner navigation are reachable through visibl
 test('BASE #30: mobile share is reachable after scrolling the actual drawer',async({page},info)=>{
  test.skip(!info.project.name.startsWith('mobile-'),'mobile viewport only');
  await prepare(page);
+ // Browser-native share sheets are not automation targets. Exercise the real
+ // fallback copy-link UI instead, without contacting any social service.
+ await page.addInitScript(()=>{
+  Object.defineProperty(navigator,'share',{configurable:true,value:undefined});
+  Object.defineProperty(navigator,'clipboard',{configurable:true,value:undefined});
+ });
  await page.goto('/deepsyq.html');
  await page.locator('#menu').click();
  await expect(page.locator('.sidebar-social [data-social=x]')).toBeVisible();
