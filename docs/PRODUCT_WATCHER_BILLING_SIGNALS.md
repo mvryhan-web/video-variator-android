@@ -28,3 +28,9 @@ This implementation does not measure subscription renewal webhook delivery or bu
 - Do not apply migrations or turn on Product Watcher production flags without owner approval, a tested backup and a safe plan for the Render database's reported expiration on 17 October 2026.
 
 **Status:** implemented in an isolated branch, awaiting CI and owner-controlled staging acceptance. Not deployed, no live Stripe events verified.
+
+## B5-07 — malformed purchase-ledger review (2026-10-16)
+
+The existing read-only aggregate now also counts AI credit purchase rows with impossible internal values: non-positive purchased credit count or amount, negative cumulative refunded amount, or missing/malformed three-letter currency. The owner-only signal is `AI_PURCHASE_LEDGER_INCONSISTENT` (critical); when an over-refund is also observed, the existing `AI_REFUND_LEDGER_INCONSISTENT` code takes precedence while both counters remain visible. This is **internal database consistency evidence only**, not proof of a Stripe event failure or successful webhook delivery.
+
+No user/payment/session identifiers, monetary balances, private snapshot JSON, secrets or event bodies are returned. No billing handler, Stripe API, AI wallet, customer record or production migration is modified. The observer still requires both disabled-by-default Watcher and billing-signal flags; real Stripe delivery, provider availability and Render worker activation remain unverified. Node tests plus a disposable PostgreSQL malformed-record fixture were added in PR #50; refer to the CI run for actual verification status.
