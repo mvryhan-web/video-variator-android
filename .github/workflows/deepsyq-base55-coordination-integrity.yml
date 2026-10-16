@@ -1,7 +1,7 @@
 name: Deepsyq BASE 55 Coordination Integrity
 on:
   push:
-    branches: [agent5-base55-board-integrity-20261016]
+    branches: [deepsyq-platform, agent5-base55-board-integrity-20261016]
     paths:
       - 'docs/DEEPSYQ_PLATFORM_SPEC.md'
       - 'docs/DEEPSYQ_BASE_55_COORDINATION.md'
