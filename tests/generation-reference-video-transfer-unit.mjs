@@ -144,7 +144,8 @@ test('video planning always reads owner-scoped actual MP4 bytes and runs real ff
  assert.equal(result.expiresAt,'2026-10-15T18:55:30.000Z');
  assert.deepEqual(events,[
   ['get','owner',ID],['get','owner',ID2],
-  ['candidate','owner',ID],['candidate','owner',ID2]
+  ['candidate','owner',ID],['get','owner',ID],
+  ['candidate','owner',ID2],['get','owner',ID2]
  ]);
  assert.equal(result.providerRequest,undefined);
  assert.equal(result.submittedJob,undefined);
@@ -233,8 +234,9 @@ test('all owner DB lookups finish before first 30-second link is minted',async()
  }finally{continueSecondLookup();}
  const result=await pending;
  assert.equal(result.content.length,2);
- assert.deepEqual(events.slice(0,4),[
-  'inspect:'+ID,'inspect:'+ID2,'candidate:'+ID,'candidate:'+ID2
+ assert.deepEqual(events.slice(0,6),[
+  'inspect:'+ID,'inspect:'+ID2,
+  'candidate:'+ID,'inspect:'+ID,'candidate:'+ID2,'inspect:'+ID2
  ]);
  assert.equal(events.filter(x=>x.startsWith('sign:')).length,2);
 });
@@ -270,4 +272,83 @@ test('an invalid link expiry is rejected, never returned as a transfer plan',asy
  }});
  await assert.rejects(()=>planner.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ID]}),
   /REFERENCE_VIDEO_URL_UNAVAILABLE/);
+});
+
+test('rewritten private MP4 after trusted FFprobe blocks ALL temporary S3 URLs',async()=>{
+ const approved=await validMp4(),rewritten=Buffer.from(approved);
+ rewritten[rewritten.length-1]^=0x01;
+ let reads=0,lookup=0,signed=0;
+ const ledger={
+  async get(){
+   reads++;
+   return reads===1?approved:rewritten;
+  },
+  async getForVideoTransfer({userId,id}){
+   lookup++;
+   return {key:storageAndAsset().storage.stagedReferenceKey({userId,mime:'video/mp4',assetId:id}),
+    mime:'video/mp4',expiresAt:'2026-10-15T19:00:00Z'};
+  }
+ };
+ const planner=createSeedanceVideoTransferPlanner({ledger,env:env(),
+  storage:{presignStagedReferenceRead(){signed++;throw Error('NEVER_SIGN');}}});
+ await assert.rejects(
+  ()=>planner.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ID]}),
+  /REFERENCE_VIDEO_CONTENT_CHANGED/
+ );
+ assert.equal(reads,2,'must actually re-fetch object before signing');
+ assert.equal(lookup,1);
+ assert.equal(signed,0,'no bearer link minted for rewritten object');
+});
+
+test('change in second inspected private MP4 prevents URLs for either asset',async()=>{
+ const original=await validMp4(),changed=Buffer.from(original);
+ changed[changed.length-1]^=0x01;
+ let secondReads=0,signs=0;
+ const ledger={
+  async get({id}){
+   if(id===ID2){secondReads++;return secondReads===1?original:changed;}
+   return original;
+  },
+  async getForVideoTransfer({userId,id}){
+   return {key:storageAndAsset().storage.stagedReferenceKey({userId,mime:'video/mp4',assetId:id}),
+    mime:'video/mp4',expiresAt:'2026-10-15T19:00:00Z'};
+  }
+ };
+ const planner=createSeedanceVideoTransferPlanner({ledger,env:env(),storage:{
+  presignStagedReferenceRead(){signs++;throw Error('NEVER_SIGN');}
+ }});
+ await assert.rejects(
+  ()=>planner.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:[ID,ID2]}),
+  /REFERENCE_VIDEO_CONTENT_CHANGED/
+ );
+ assert.equal(secondReads,2);
+ assert.equal(signs,0,'batch must fail before any link signing');
+});
+
+test('video asset ID input is snapshotted and cannot be mutated during async inspection',async()=>{
+ const original=await validMp4(),ids=[ID],seen=[];
+ let unblock,signal;
+ const gate=new Promise(resolve=>{unblock=resolve;});
+ const entered=new Promise(resolve=>{signal=resolve;});
+ const ledger={
+  async get({id}){
+   seen.push(['read',id]);if(seen.length===1){signal();await gate;}
+   return original;
+  },
+  async getForVideoTransfer({userId,id}){
+   seen.push(['candidate',id]);
+   return {mime:'video/mp4',expiresAt:'2026-10-15T19:00:00Z',
+    key:storageAndAsset().storage.stagedReferenceKey({userId,mime:'video/mp4',assetId:id})};
+  }
+ };
+ const planner=createSeedanceVideoTransferPlanner({ledger,storage:storageAndAsset().storage,env:env()});
+ const pending=planner.prepare({userId:'owner',model:'byteplus-seedance-2',videoAssetIds:ids});
+ try{
+  await Promise.race([entered,new Promise((_,reject)=>setTimeout(()=>reject(Error('ledger never started')),10000))]);
+  ids[0]=ID2;
+  ids.push(ID2);
+ }finally{unblock();}
+ const result=await pending;
+ assert.equal(result.content.length,1);
+ assert.deepEqual(seen,[['read',ID],['candidate',ID],['read',ID]]);
 });
