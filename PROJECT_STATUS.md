@@ -2,6 +2,10 @@
 
 ## Agent D — BASE #16 historical signed Stripe refunds while Checkout OFF / IN PROGRESS (2026-10-16)
 
+- **Scoped PR:** [#164](https://github.com/mvryhan-web/video-variator-android/pull/164), head `b1cb76f5b47fef356a985c7ab45ed965a1407c12`, DRAFT/UNMERGED. Exact three files: one change in `server/generation-billing.js` to allow positively AI-marked historical same-mode charge refunds even with one-time AI Checkout OFF; tests extend existing `base16-shared-stripe-refund-unit.mjs`; explanatory document. Prior unrelated legacy subscription refunds remain untouched, pending AI grant still retriable, cross-mode marked refund rejected. 4/4 isolated executions of actual refund dispatcher PASS. Eight current-head GitHub Actions queued (including old BASE #16 shared refunds CI 38946337878); no full CI success/merge claimed. Signed webhook envelope is verified upstream; no activation or new grant. Full #16 PARTIAL / NOT LIVE.
+
+
+
 - **Gap and claim:** one-time AI Checkout can be turned OFF to stop new sales, but current `handleEvent('charge.refunded')` throws `AI_BILLING_WEBHOOK_DISABLED` even on clearly AI-tagged previously sold payment refund. Retrying webhook indefinitely risks stale spendable refunded credits. New bounded fix will permit signed, same-mode, AI-tagged historical refund to reach existing durable wallet reversal regardless of new Checkout activation, without re-enabling new sales or grants. Unrelated legacy refunds remain unchanged, wrong-mode AI refunds stay blocked and missing original purchase remains retriable.
 - **Scope:** branch `base16-refunds-after-checkout-off-20261016`, target `deepsyq-platform`, `server/generation-billing.js` + existing focused tests/doc. Preserve merged PR #148, all existing signed Stripe replay protections, subscription grants, admin+UI, provider, DB, owner Home and public flags. No real Stripe connection.
 - **Separate D:** #153 webhook public error patch and #158 launch pricing check are independent DRAFT and pending GitHub CI. Full original #16 PARTIAL/NOT LIVE.
