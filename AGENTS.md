@@ -8,7 +8,7 @@ Before changing code, always read and reconcile:
 
 1. `AGENTS.md` — collaboration and safety rules.
 2. `PROJECT_STATUS.md` — live progress, current owner, blockers, and next work.
-3. `docs/DEEPSYQ_ROADMAP.md` — approved product roadmap and requirements.
+3. `docs/DEEPSYQ_ROADMAP.md` and `docs/execution/README.md` — approved roadmap and ordered checklists. For an assigned roadmap block, read `docs/execution/BLOCK_<N>_CHECKLIST.md` and the preserved full source `docs/execution/DEEPSYQ_BLOCKS_1-7_CANONICAL.txt`. BASE has its own separate 55-point checklist on `deepsyq-platform` and is not Block 1.
 4. Any relevant existing specification files, especially `docs/PRODUCTION_SPEC.md` and `PRODUCTION_DEPLOYMENT_SPEC.md`.
 5. The latest Git history, current branch, recent commits, open PRs, and the actual implementation.
 
@@ -20,7 +20,7 @@ Do not assume a feature exists or works because a file, route, button, or functi
 
 - During parallel development, use isolated feature branches and PRs to protect other agents' work. That is temporary, not a different product or release branch. Do not commit unfinished, unreviewed or conflicting work directly to `main`.
 - Before integration, inspect the latest `main`, the active BASE branch/PR, other open PRs, actual code and `PROJECT_STATUS.md`. Integrate dependencies first; preserve the owner-approved Home, existing functions and the newest verified work of other agents. Never overwrite or force-push `main` to resolve a conflict.
-- Integration order: verify the shared BASE, merge it to `main`, then merge each ready block through reviewed, tested, conflict-resolved PRs. Block 5 Product Watcher has nested PRs #49 -> #48 -> #47 -> #46; reconcile them with the current BASE before the final `main` merge. Other blocks follow their actual dependencies; no block is presumed complete merely because its PR exists.
+- Integration order: verify the shared BASE, merge it to `main`, then merge each ready block through reviewed, tested, conflict-resolved PRs. Block 5 Product Watcher is consolidated in draft PR #50 (based on #46–#49); reconcile it with the current BASE before the final `main` merge. Other blocks follow their actual dependencies; no block is presumed complete merely because its PR exists.
 - Record a block as **IN PROGRESS / READY TO MERGE / MERGED TO MAIN / DEPLOYED AND VERIFIED** separately. A green CI run or merge is not proof of a working production deployment. Mark DONE only after all applicable tests, `main` integration and required end-to-end verification.
 - **Production is a separate safety gate.** Render currently auto-deploys `main`; before any functional merge that could deploy, check migration/backup/restore readiness, database continuity, production compatibility, disabled-by-default paid features, secrets and relevant owner approvals. Never deploy risky changes just to satisfy the canonical-branch rule. Documentation-only commits to `main` should use `[skip render]` in the commit message to avoid unnecessary redeployment.
 - Maintain one GitHub repository, one `main` production integration branch, the existing application/Render service, and shared PostgreSQL/auth/Stripe/provider foundations. Do not create a permanent second Deepsyq stack or abandon a finished block in a private branch.
