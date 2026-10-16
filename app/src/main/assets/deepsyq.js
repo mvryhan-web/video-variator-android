@@ -273,7 +273,12 @@ const homeLang=$('homeLanguage');const homeI18n={
 function applyHomeLanguage(code){const v=homeI18n[code]||homeI18n.en;const hero=document.querySelector('.hero-stage-copy h1');if(hero)hero.innerHTML=v.hero;for(const [id,key] of [['canvasFeatureTitle','canvas'],['agentFeatureTitle','agent'],['appsFeatureTitle','apps'],['inspirationPreviewTitle','inspiration']]){const el=$(id);if(el)el.textContent=v[key];}if(homeLang)homeLang.value=homeI18n[code]?code:'en';}
 if(homeLang){const saved=localStorage.getItem('deepsyq_home_language');applyHomeLanguage(saved||'en');homeLang.onchange=()=>{localStorage.setItem('deepsyq_home_language',homeLang.value);applyHomeLanguage(homeLang.value);};}
 const promo=$('promoDialog');$('topPromo')?.addEventListener('click',()=>promo?.showModal());$('promoShare')?.addEventListener('click',()=>{$('navShare')?.click();promo?.close();});$('topInvite')?.addEventListener('click',()=>$('navShare')?.click());
-$('topLogin')?.addEventListener('click',()=>{$('accountButton')?.click();});
+// Header sign-in must not depend on dispatching a click to the inert,
+// off-canvas mobile sidebar account button.
+$('topLogin')?.addEventListener('click',()=>{
+ if(localStorage.getItem('vv_token'))location.assign('index.html#profile');
+ else openAuth();
+});
 function markHomeLogin(){const b=$('topLogin');if(b)b.textContent=localStorage.getItem('vv_token')?'Account':'Log in';}
 markHomeLogin();
 let featuredInspirationKind='all';
