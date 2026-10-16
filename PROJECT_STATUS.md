@@ -7,11 +7,11 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
-## Agent 5 — original BASE TXT full-text immutability verification (IN PROGRESS, 2026-10-16)
+## Agent 5 — original BASE TXT full-text immutability verification (CODE VERIFIED / PR #107, 2026-10-16)
 
 - **Agent5-only scope:** isolated `agent5-immutable-base55-source-20261016`, no coding lane A–D reservation.
 - **Audit:** currently merged verifier checks original requirement numbers #1–55 and board/checklist titles, but not the **body text** of the canonical immutable `docs/DEEPSYQ_PLATFORM_SPEC.md`; accidentally changing a requirement paragraph without changing its numbered heading would pass. Fresh exact GitHub file blob SHA `0de69857a38540af1c3fdcf75fb91fa2112b93fb` checked on BASE.
-- **Implementation boundary:** add read-only Git-blob SHA-1 verification and in-memory tampering unit test into existing isolated Agent5 checker/workflow. Do not modify original TXT, app, Home, generation code, credentials, Stripe, DB, Render or main. Authorized owner revision would require explicit review of the locked expected source hash; do not silently auto-adopt new text.
+- **Evidence/results:** [PR #107](https://github.com/mvryhan-web/video-variator-android/pull/107) adds exact verified original Git-blob SHA-1 guard and one in-memory mutated-paragraph test, so changed requirement text is caught even when all 55 numbered headings stay unchanged. Also removed old CI test's incorrect assumption that BASE #52 can never be explicitly claimed; it now tests a neutral in-memory fixture, not another agent's live claim. After first CI failed only on that stale test assumption, repaired and reran: [CI 38913231792](https://github.com/mvryhan-web/video-variator-android/actions/runs/38913231792) **SUCCESS / 12 of 12 tests** on code SHA `ed03e2c5`. Scope: read-only Agent5 checker/test only, no change to original TXT, site, Stripe, Home, provider, DB or main. Authorized owner source revision requires explicit review/updating pinned SHA; not silently changed.
 
 ## Agent 5 — reconcile already-merged QA status records (SCOPED REVIEW COMPLETE, 2026-10-16)
 
