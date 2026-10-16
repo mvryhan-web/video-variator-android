@@ -1,5 +1,11 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent D — BASE #16 Price ID guard MERGED (2026-10-16)
+
+- Scoped [PR #148](https://github.com/mvryhan-web/video-variator-android/pull/148) **squash MERGED** to `deepsyq-platform` as `7d19224c785583858f7641f6c8e429f647a8940a`. Full final-head **8/8 GitHub Actions SUCCESS**: 38938557040, 38938557110, 38938557047, 38938557088, 38938557023, 38938557010, 38938556988, 38938556998. Four scoped files: `server/generation-billing.js`, new negative mocked-Checkout + unit tests, dedicated workflow, docs. Different AI credit-pack SKUs cannot share a Stripe Price ID; invalid config fails closed before paid checkout or DB writes.
+- Original BASE #16 remains PARTIAL / NOT LIVE: actual approved AI pack economics, Stripe live payment/refund, signatures and full operational release gates are not verified. No public flag/live Stripe/Render/main/DB edits. Remaining Agent D #48 PR #153 and #51 PR #158 tracked separately.
+
+
 ## Agent D — BASE #52 stage 19 Render deployment provenance / READ-ONLY VERIFIED (2026-10-16)
 
 - **Exact Render evidence (read-only):** Production web service `video-variator-android` (`srv-dalqnkoae00c73caj8vg`), branch `main`, autoDeploy=yes, last live deployment `14de5163c8c3f45f32e5703f7e2a30def9928684` (2026-10-14). Separate Deepsyq visual preview `deepsyq-visual-preview-20261016` (`srv-db91k1vf3r2c73fpj350`), branch `deepsyq-platform`, autoDeploy=no, last live deployment `f90bafc033762acde7b3a3ed4fd055128feb2224` on 2026-10-16 16:15 UTC.
