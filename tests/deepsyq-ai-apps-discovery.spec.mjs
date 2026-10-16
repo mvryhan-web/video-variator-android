@@ -251,3 +251,48 @@ test('BASE #19 catalog outage still offers local product briefing without misrep
  await expect(page.getByRole('link',{name:'Prepare Product Video'})).toHaveAttribute('href','product-video.html');
  await expect(page.locator('.app-card')).toHaveCount(0);
 });
+
+test('BASE #30: real long template metadata stays readable at 320px and 390px without redesign',async({page},info)=>{
+ const word='OriginalCreativeProductName'.repeat(5);
+ const category='HandmadeCampaignCollection'.repeat(4);
+ await page.route('**/api/templates',route=>route.fulfill({json:{items:[
+  {id:'long-template',title:word,description:'Original workflow '+word,category,generationType:'image',promptTemplate:'Create original visuals for '+word,requiredInputTypes:[],active:true},
+  {id:'blocked-template',title:'Requires reference video',description:'Owner source needed',category:'Video',generationType:'video',promptTemplate:'No generation without source',requiredInputTypes:['video'],active:true}
+ ]}}));
+ let posts=0;
+ page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))posts++;});
+ for(const width of [320,390]){
+  await page.setViewportSize({width,height:760});
+  await page.goto('/ai-apps.html');
+  await expect(page.locator('.app-card')).toHaveCount(2);
+  const first=page.locator('.app-card').first();
+  const bounds=await first.evaluate(card=>{
+   const rect=card.getBoundingClientRect();
+   return {right:rect.right,children:[card.querySelector('h3'),card.querySelector('.app-meta span')].map(e=>e.getBoundingClientRect().right)};
+  });
+  for(const right of bounds.children)expect(right).toBeLessThanOrEqual(bounds.right+1);
+  await expect(page.getByRole('navigation',{name:'Main navigation'})).toBeVisible();
+  const navTouch=await page.getByRole('navigation',{name:'Main navigation'}).locator('a').first().evaluate(e=>e.getBoundingClientRect().height);
+  expect(navTouch).toBeGreaterThanOrEqual(44);
+  await first.getByText('Preview workflow').click();
+  await expect(first.locator('.template-preview-prompt')).toContainText(word);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+  if(width===390)await page.screenshot({path:info.outputPath('base30-ai-apps-390.png'),fullPage:true});
+ }
+ await expect(page.locator('.app-card').last().getByRole('button',{name:'Workflow pending'})).toBeDisabled();
+ expect(posts).toBe(0);
+});
+
+test('BASE #30: mobile and desktop Quick Create hand off to Studio without generating',async({page})=>{
+ let posts=0;
+ page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))posts++;});
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#homeQuickPrompt')).toBeVisible();
+ await page.locator('[data-home-kind="video"]').click();
+ await page.locator('#homeQuickPrompt').fill('Original product announcement in a cinematic studio');
+ await page.locator('#homeQuickSubmit').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=home/);
+ await expect(page.locator('#prompt')).toHaveValue('Original product announcement in a cinematic studio');
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(posts).toBe(0);
+});

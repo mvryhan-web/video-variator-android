@@ -51,7 +51,10 @@ main,footer{max-width:1180px;margin:auto;padding-left:22px;padding-right:22px}
 .app-card:hover{border-color:#8964c0}
 .app-thumb{display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse at 25% 10%,#65409577,transparent 60%),linear-gradient(135deg,#302447,#151321);font-size:44px;color:#e0befa}
 .app-thumb img{width:100%;height:100%;object-fit:cover}
-.app-body{padding:18px;display:grid;gap:12px}
+.app-body{padding:18px;display:grid;gap:12px;min-width:0}
+/* Prevent long real template names and metadata from clipping on narrow phones. */
+.app-body h3,.app-body p,.app-meta span{overflow-wrap:anywhere}
+.app-meta span{min-width:0;max-width:100%}
 .app-body h3{font-size:17px;margin:0}
 .app-body p{font-size:12px;line-height:1.6;min-height:39px;margin:0;color:var(--muted)}
 .app-body .input-hint{font-size:11px;line-height:1.5;min-height:0;color:#dfc7f3;border-left:2px solid #8e72b7;padding-left:10px}
@@ -91,7 +94,8 @@ footer p{margin:0}
  header{position:relative;padding:14px 16px;align-items:flex-start;flex-direction:column;gap:12px}
  .brand{font-size:19px}
  nav{max-width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}
- nav a{padding:8px}
+ nav a{padding:8px 11px;min-height:44px;display:inline-flex;align-items:center}
+ nav{-webkit-overflow-scrolling:touch;overscroll-behavior-inline:contain}
  main,footer{padding-left:16px;padding-right:16px}
  .hero{padding:43px 0 27px}
  .hero h1{letter-spacing:-2px}
