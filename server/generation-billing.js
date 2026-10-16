@@ -26,6 +26,30 @@ export function generationBillingRuntime(env={}){
   const activationRequested=env.AI_BILLING_ENABLED==='true';
   return {mode,livemode:mode==='live',keyMatches,liveApproved,activationRequested,livePaymentsEnabled:activationRequested&&mode==='live'&&liveApproved&&keyMatches};
 }
+// Idempotent Checkout retries must never return a stale, foreign or cross-mode
+// Stripe URL. This is only validation of an existing Stripe session: it never
+// grants credits; the signed, confirmed webhook remains the source of truth.
+export function existingCheckoutResponse({order,pack,session,runtime,userId,nowSeconds=Math.floor(Date.now()/1000)}){
+  const p=order?.snapshot;
+  if(!p||order.user_id!==userId||order.sku!==pack?.sku||
+     p.sku!==pack.sku||p.priceId!==pack.priceId||p.amount!==pack.amount||
+     p.currency!==pack.currency||p.credits!==pack.credits||
+     p.billingMode!==runtime?.mode)throw Error('CHECKOUT_REQUEST_CONFLICT');
+  let checkoutUrl;
+  try{checkoutUrl=new URL(session?.url);}catch(_){throw Error('CHECKOUT_SESSION_INVALID');}
+  if(!session||session.id!==order.session_id||
+     session.mode!=='payment'||session.status!=='open'||
+     session.livemode!==runtime.livemode||
+     session.client_reference_id!==userId||
+     session.metadata?.aiWallet!=='v1'||session.metadata?.orderId!==order.id||
+     session.amount_total!==p.amount||session.currency!==p.currency||
+     !Number.isSafeInteger(session.expires_at)||session.expires_at<=nowSeconds||
+     checkoutUrl.protocol!=='https:'||checkoutUrl.hostname!=='checkout.stripe.com'||
+     !!checkoutUrl.port||!!checkoutUrl.username||!!checkoutUrl.password)
+      throw Error('CHECKOUT_SESSION_INVALID');
+  return {url:session.url,id:session.id,mode:runtime.mode};
+}
+
 export function stripeRefundData(event,{livemode}={}){
   if(event?.type!=='charge.refunded')return null;
   const charge=event.data?.object||{},eventLive=!!event.livemode,chargeLive=!!charge.livemode;
@@ -90,7 +114,15 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
       await pool.query('INSERT INTO vv_ai_order(id,user_id,sku,snapshot) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING',[id,req.user.id,pack.sku,JSON.stringify(snapshot)]);
       const {rows}=await pool.query('SELECT * FROM vv_ai_order WHERE id=$1 AND user_id=$2',[id,req.user.id]); const order=rows[0],p=order.snapshot;
       if (order.sku!==pack.sku) return res.status(409).json({error:'CHECKOUT_REQUEST_CONFLICT'});
-      if (order.session_id) {const s=await stripe.checkout.sessions.retrieve(order.session_id);return res.json({url:s.url,id:s.id,mode:'test'});}
+      if (order.session_id) {
+        // Reopening a paid/expired, foreign or previously differently priced Checkout
+        // is not a safe idempotent retry: ask the client to make a new request ID.
+        const s=await stripe.checkout.sessions.retrieve(order.session_id);
+        try{return res.json(existingCheckoutResponse({order,pack,session:s,runtime:r,userId:req.user.id}));}
+        catch(_){return res.status(409).json({error:'CHECKOUT_SESSION_NOT_REUSABLE'});}
+      }
+      if (!order.snapshot||order.snapshot.billingMode!==r.mode||order.snapshot.priceId!==pack.priceId||order.snapshot.amount!==pack.amount||order.snapshot.credits!==pack.credits||order.snapshot.currency!==pack.currency)
+        return res.status(409).json({error:'CHECKOUT_REQUEST_CONFLICT'});
       const price=await stripe.prices.retrieve(p.priceId);
       if (!price.active||price.type!=='one_time'||price.unit_amount!==p.amount||price.currency!==p.currency||!!price.livemode!==r.livemode) throw Error('PRICE_MISMATCH');
       const s=await stripe.checkout.sessions.create({
