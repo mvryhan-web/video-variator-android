@@ -43,6 +43,10 @@ export function validateTemplate(value,current={}){
  const active=bool(value.active,current.active??false),featured=bool(value.featured,current.featured??false);
  const rightsBasis=rights(value.rightsBasis===undefined?current.rightsBasis:value.rightsBasis);
  const rightsNote=text(value.rightsNote===undefined?current.rightsNote:value.rightsNote,300);
+ const requiredInputs=inputTypes(value.requiredInputTypes===undefined?current.requiredInputTypes:value.requiredInputTypes);
+ const prompt=text(value.promptTemplate??current.promptTemplate,4000,{required:true});
+ // Keep published Product Name templates usable through the real AI Apps handoff.
+ if(active&&requiredInputs.includes('product_name')&&!/\{\{\s*product_name\s*\}\}/i.test(prompt))throw Error('TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED');
  if(active&&(!rightsBasis||rightsNote.length<3))throw Error('TEMPLATE_RIGHTS_REQUIRED');
  if(featured&&!active)throw Error('INVALID_TEMPLATE');
  return {
@@ -52,9 +56,9 @@ export function validateTemplate(value,current={}){
   description:text(value.description??current.description??'',600),
   thumbnail:thumbnail(value.thumbnail===undefined?current.thumbnail:value.thumbnail),
   generationType:type,
-  promptTemplate:text(value.promptTemplate??current.promptTemplate,4000,{required:true}),
+  promptTemplate:prompt,
   defaultModel:model(value.defaultModel===undefined?current.defaultModel:value.defaultModel),
-  requiredInputTypes:inputTypes(value.requiredInputTypes===undefined?current.requiredInputTypes:value.requiredInputTypes),
+  requiredInputTypes:requiredInputs,
   defaultSettings:jsonObject(value.defaultSettings===undefined?current.defaultSettings:value.defaultSettings),
   active,featured,rightsBasis,rightsNote,
   sortOrder:order(value.sortOrder,current.sortOrder??100)
@@ -84,12 +88,12 @@ export function installGenerationTemplates(app,{auth,pool,env=process.env}){
    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11::jsonb,$12,$13,$14,$15,$16,$17) RETURNING *`,
    [id,t.title,t.slug,t.category,t.description,t.thumbnail,t.generationType,t.promptTemplate,t.defaultModel,JSON.stringify(t.requiredInputTypes),JSON.stringify(t.defaultSettings),t.active,t.featured,t.sortOrder,req.user.id,t.rightsBasis,t.rightsNote]);
   const created=row(rows[0],{ownerView:true});await recordAdminAudit(pool,{actorUserId:req.user.id,action:'template.create',targetType:'template',targetId:id,details:{slug:created.slug,category:created.category,generationType:created.generationType,active:created.active,featured:created.featured,sortOrder:created.sortOrder}});res.status(201).json({template:created});
- }catch(e){res.status(e?.code==='23505'?409:(e.message==='INVALID_TEMPLATE'||e.message==='TEMPLATE_RIGHTS_REQUIRED')?400:503).json({error:e?.code==='23505'?'TEMPLATE_SLUG_EXISTS':e.message==='INVALID_TEMPLATE'?'INVALID_TEMPLATE':e.message==='TEMPLATE_RIGHTS_REQUIRED'?'TEMPLATE_RIGHTS_REQUIRED':'TEMPLATES_UNAVAILABLE'});}});
+ }catch(e){res.status(e?.code==='23505'?409:(e.message==='INVALID_TEMPLATE'||e.message==='TEMPLATE_RIGHTS_REQUIRED'||e.message==='TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED')?400:503).json({error:e?.code==='23505'?'TEMPLATE_SLUG_EXISTS':e.message==='INVALID_TEMPLATE'?'INVALID_TEMPLATE':e.message==='TEMPLATE_RIGHTS_REQUIRED'?'TEMPLATE_RIGHTS_REQUIRED':e.message==='TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED'?'TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED':'TEMPLATES_UNAVAILABLE'});}});
  app.patch('/api/studio/admin/templates/:id',auth,onlyOwner,async(req,res)=>{try{
   await initTemplates(pool,env);const current=await pool.query('SELECT * FROM vv_ai_template WHERE id=$1',[req.params.id]);if(!current.rows.length)return res.status(404).json({error:'TEMPLATE_NOT_FOUND'});
   const t=validateTemplate(req.body,row(current.rows[0],{ownerView:true}));
   const {rows}=await pool.query(`UPDATE vv_ai_template SET title=$2,slug=$3,category=$4,description=$5,thumbnail=$6,generation_type=$7,prompt_template=$8,default_model=$9,required_input_types=$10::jsonb,default_settings=$11::jsonb,active=$12,featured=$13,sort_order=$14,rights_basis=$15,rights_note=$16,updated_at=NOW() WHERE id=$1 RETURNING *`,
    [req.params.id,t.title,t.slug,t.category,t.description,t.thumbnail,t.generationType,t.promptTemplate,t.defaultModel,JSON.stringify(t.requiredInputTypes),JSON.stringify(t.defaultSettings),t.active,t.featured,t.sortOrder,t.rightsBasis,t.rightsNote]);
   const updated=row(rows[0],{ownerView:true});await recordAdminAudit(pool,{actorUserId:req.user.id,action:'template.update',targetType:'template',targetId:req.params.id,details:{slug:updated.slug,category:updated.category,generationType:updated.generationType,active:updated.active,featured:updated.featured,sortOrder:updated.sortOrder}});res.json({template:updated});
- }catch(e){res.status(e?.code==='23505'?409:(e.message==='INVALID_TEMPLATE'||e.message==='TEMPLATE_RIGHTS_REQUIRED')?400:503).json({error:e?.code==='23505'?'TEMPLATE_SLUG_EXISTS':e.message==='INVALID_TEMPLATE'?'INVALID_TEMPLATE':e.message==='TEMPLATE_RIGHTS_REQUIRED'?'TEMPLATE_RIGHTS_REQUIRED':'TEMPLATES_UNAVAILABLE'});}});
+ }catch(e){res.status(e?.code==='23505'?409:(e.message==='INVALID_TEMPLATE'||e.message==='TEMPLATE_RIGHTS_REQUIRED'||e.message==='TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED')?400:503).json({error:e?.code==='23505'?'TEMPLATE_SLUG_EXISTS':e.message==='INVALID_TEMPLATE'?'INVALID_TEMPLATE':e.message==='TEMPLATE_RIGHTS_REQUIRED'?'TEMPLATE_RIGHTS_REQUIRED':e.message==='TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED'?'TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED':'TEMPLATES_UNAVAILABLE'});}});
 }

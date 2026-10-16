@@ -14,6 +14,10 @@ test('template validation enforces data-driven schema and safe fields',()=>{
  assert.throws(()=>validateTemplate({...t,rightsNote:''}),/TEMPLATE_RIGHTS_REQUIRED/);
  assert.throws(()=>validateTemplate({...t,rightsBasis:'unknown'}),/INVALID_TEMPLATE/);
  assert.throws(()=>validateTemplate({...t,active:false,featured:true}),/INVALID_TEMPLATE/);
+ assert.throws(()=>validateTemplate({...t,promptTemplate:'Product photo without name field'}),/TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED/);
+ assert.throws(()=>validateTemplate({...t,promptTemplate:'Product photo {product_name}'}),/TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED/);
+ assert.equal(validateTemplate({...t,active:false,featured:false,promptTemplate:'Incomplete draft'}).active,false);
+ assert.ok(validateTemplate({...t,promptTemplate:'Photo for {{ PRODUCT_NAME }}'}).promptTemplate.includes('PRODUCT_NAME'));
  const draft=validateTemplate({...t,active:false,featured:false,rightsBasis:null,rightsNote:''});
  assert.equal(draft.rightsBasis,null);
 });
@@ -40,6 +44,8 @@ test('public template API exposes active templates and owner can create one',asy
   r=await fetch(base+'/api/templates/photo-ad');assert.equal(r.status,200);d=await r.json();assert.equal(d.template.slug,'photo-ad');assert.equal(Object.hasOwn(d.template,'rightsNote'),false);
   r=await fetch(base+'/api/studio/admin/templates',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Unverified offer',slug:'unverified-offer',category:'ads',generationType:'image',promptTemplate:'An original design',active:true,featured:false})});
   assert.equal(r.status,400);assert.equal((await r.json()).error,'TEMPLATE_RIGHTS_REQUIRED');
+  r=await fetch(base+'/api/studio/admin/templates',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Missing Name',slug:'missing-name',category:'ads',generationType:'image',promptTemplate:'Original photo without a name variable',requiredInputTypes:['product_name'],rightsBasis:'owned',rightsNote:'Original prompt evidence',active:true})});
+  assert.equal(r.status,400);assert.equal((await r.json()).error,'TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED');
   r=await fetch(base+'/api/studio/admin/templates/t-1',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({rightsBasis:'licensed',rightsNote:'License receipt kept in internal archive',active:true,featured:true})});
   assert.equal(r.status,200);d=await r.json();assert.equal(d.template.rightsBasis,'licensed');assert.equal(d.template.rightsNote,'License receipt kept in internal archive');
   r=await fetch(base+'/api/studio/admin/templates',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Video ad',slug:'video-ad',category:'ads',generationType:'video',promptTemplate:'Create a short product video',requiredInputTypes:['image'],defaultSettings:{ratio:'16:9'},active:false,featured:false,sortOrder:30})});assert.equal(r.status,201);d=await r.json();assert.equal(d.template.slug,'video-ad');assert.equal(d.template.active,false);assert.equal(d.template.rightsBasis,null);
