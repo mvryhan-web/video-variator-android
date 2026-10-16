@@ -27,7 +27,16 @@ test('BASE #38 owner Admin is usable at 320/390px without page overflow or enabl
   });
   expect(result.titleRight).toBeLessThanOrEqual(result.card.right+1);
   expect(result.stateRight).toBeLessThanOrEqual(result.card.right+1);
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  const overflow=await page.evaluate(()=>{
+    const viewport=innerWidth;
+    const offenders=[...document.querySelectorAll('body *')].map(el=>{
+      const r=el.getBoundingClientRect();
+      return {element:el.tagName.toLowerCase()+(el.id?'#'+el.id:el.className&&typeof el.className==='string'?'.'+el.className.split(' ').slice(0,2).join('.'):''),
+        right:Math.round(r.right),left:Math.round(r.left),width:Math.round(r.width)};
+    }).filter(item=>item.right>viewport+1||item.left< -1).slice(0,12);
+    return {width:viewport,document:document.documentElement.scrollWidth,offenders};
+  });
+  expect(overflow,'Overflow diagnostics for admin '+width+'px: '+JSON.stringify(overflow)).toMatchObject({width,document:width,offenders:[]});
   await expect(page.locator('#models article button',{hasText:'Save'})).toBeVisible();
   await expect(page.locator('#templateCreate')).toBeVisible();
   await expect(page.locator('#creditAdjustForm')).toBeVisible();
