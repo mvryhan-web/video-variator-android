@@ -10,7 +10,7 @@
 
 ## Agent D — BASE #16 historical signed Stripe refunds while Checkout OFF / IN PROGRESS (2026-10-16)
 
-- **Scoped PR:** [#164](https://github.com/mvryhan-web/video-variator-android/pull/164), head `b1cb76f5b47fef356a985c7ab45ed965a1407c12`, DRAFT/UNMERGED. Exact three files: one change in `server/generation-billing.js` to allow positively AI-marked historical same-mode charge refunds even with one-time AI Checkout OFF; tests extend existing `base16-shared-stripe-refund-unit.mjs`; explanatory document. Prior unrelated legacy subscription refunds remain untouched, pending AI grant still retriable, cross-mode marked refund rejected. 4/4 isolated executions of actual refund dispatcher PASS. Eight current-head GitHub Actions queued (including old BASE #16 shared refunds CI 38946337878); no full CI success/merge claimed. Signed webhook envelope is verified upstream; no activation or new grant. Full #16 PARTIAL / NOT LIVE.
+- **Historical initial checkpoint (superseded by newest #164 summary above):** [PR #164](https://github.com/mvryhan-web/video-variator-android/pull/164) earlier head `b1cb76f5b47fef356a985c7ab45ed965a1407c12`, now superseded by latest head `bc62fbff295b3981e28f1ea56e0a0a2d07bc9ebb` DRAFT/UNMERGED. Exact three files: one change in `server/generation-billing.js` to allow positively AI-marked historical same-mode charge refunds even with one-time AI Checkout OFF; tests extend existing `base16-shared-stripe-refund-unit.mjs`; explanatory document. Prior unrelated legacy subscription refunds remain untouched, pending AI grant still retriable, cross-mode marked refund rejected. 4/4 isolated executions of actual refund dispatcher PASS. Eight current-head GitHub Actions queued (including old BASE #16 shared refunds CI 38946337878); no full CI success/merge claimed. Signed webhook envelope is verified upstream; no activation or new grant. Full #16 PARTIAL / NOT LIVE.
 
 
 
@@ -40,7 +40,7 @@
 
 - **Specific new gap:** generationReadiness currently counts any approved model rate and any AI credit rate, so its overall launchReady can be true with Image-only priced generation despite original BASE §51 requiring both Image and Video commercial creation. Do not alter unit prices or provider dispatch. Add a fail-closed, independently named Image+Video price/credit-rate coverage gate to owner preflight; all other readiness gates, optional feature switches, provider and legacy checkout behavior remain unchanged.
 - **Owner/branch:** Agent D, `base51-image-video-pricing-gate-20261016`, target `deepsyq-platform`. Only `server/generation-readiness.js`, its existing focused unit tests, and a scoped doc. Existing BASE #51 #130/#142 remain merged; status still PARTIAL / NO LIVE launch.
-- **Non-overlap:** Agent B edits video routing in `server/generation-studio.js`, A Home/History, C utility/navigation; none touched. Independent D PRs #148 (Price ID) and #153 (webhook public diagnostics) remain DRAFT with GitHub CI queue and do not overlap readiness.
+- **Non-overlap:** Agent B edits video routing in `server/generation-studio.js`, A Home/History, C utility/navigation; none touched. Independent D PR #148 (Price ID) is MERGED after 8/8 green CI. PR #153 (webhook public diagnostics) and #164 (refund/mode) remain DRAFT/CI queued and do not overlap readiness.
  
 
 ## Agent D — BASE #48 Stripe webhook public error redaction / IN PROGRESS (2026-10-16)
@@ -51,7 +51,7 @@
 
 - **New bounded claim:** existing shared Stripe webhook `/api/webhooks/stripe` returns raw `e.message` after signature verification fails. Raw SDK/user-content details are not suitable for a public HTTP response. Return a generic error while preserving HTTP 400, Stripe `constructEvent` verification, routing and webhook acknowledgement behavior. Keep legacy subscriptions, signed AI credit grants and provider processing unchanged.
 - **Isolated branch:** `base48-stripe-signature-error-redaction-20261016`, target `deepsyq-platform`; code scope existing `server/server.js` plus narrowly scoped verification. Do not edit Home, app assets, Stripe account, provider, DB or main. Previous #48 PRs #117/#123 remain merged; BASE #48 overall PARTIAL / NOT LIVE.
-- **Independent BASE #16:** PR #148 is still DRAFT and CI queued; no shared code edits with this security patch.
+- **Independent BASE #16:** PR #148 has MERGED to BASE with 8/8 green CI; separate historical refund follow-up PR #164 remains DRAFT/queued, no shared code edits with this security patch.
 
 
 Last updated: 2026-10-15
@@ -61,9 +61,9 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
-## Agent D — BASE #16 duplicate Stripe Price-ID risk / IN PROGRESS (2026-10-16)
+## Agent D — BASE #16 duplicate Stripe Price-ID risk / MERGED TO BASE (2026-10-16)
 
-- **Progress:** PR #148 latest 9fdb2da8. Isolated 5/5 config checks PASS. Added mocked Checkout fail-closed test, not yet CI-verified; GitHub Actions pending. Full BASE #16 remains PARTIAL / NOT LIVE.
+- **Completed:** PR #148 `7d19224c` MERGED TO BASE after 8/8 current-head GitHub Actions SUCCESS. Original full BASE #16 remains PARTIAL / NOT LIVE.
 
 
 - **Existing BASE #16, new bounded scope:** billingCatalog currently rejects duplicate pack SKU but not duplicate Stripe Price IDs. Two SKUs with the same Stripe Price and different approved credit counts can charge the same amount for different wallet value. Claim: reject ambiguous duplicate `priceId` configuration fail closed, preserve all real approved amounts, existing subscriptions and webhook/idempotency paths.
@@ -77,10 +77,10 @@ This file is the shared live progress board for all coding agents.
 - **Overall BASE #49 remains PARTIAL / NOT MAIN / NOT LIVE.** Staging backup/restore and owner-authorized production migration have NOT occurred. Render, Stripe, original TXT, prod DB, owner Home and main not changed.
 - **Next D:** existing claimed BASE #16 Stripe pack Price ID uniqueness [PR #148](https://github.com/mvryhan-web/video-variator-android/pull/148) awaits GitHub CI; reconcile if BASE moved; no duplicate billing work.
 
-## Agent D — BASE #16 Price ID safety patch authored / CI pending (2026-10-16)
+## Agent D — BASE #16 Price ID safety patch / HISTORICAL CHECKPOINT SUPERSEDED BY MERGE (2026-10-16)
 
-- **Scoped PR:** [#148](https://github.com/mvryhan-web/video-variator-android/pull/148), branch `base16-price-id-uniqueness-20261016`, latest SHA `9fdb2da88a5d1a59f7dac912902d57afc6817818`, still DRAFT and UNMERGED. `billingCatalog` rejects multiple credit packs with the same Stripe Price ID, even if SKUs/credits differ. New four-case Node unit and mocked HTTP test refuse Checkout before database/Stripe access; existing billing tests run in focused workflow. The production code change is 2 added lines / 1 deleted line; no credit or real payment change.
-- **Isolated exact-function V8 evaluation:** 5/5 catalog cases PASS, not equivalent to full repository CI. Current-head GitHub Actions 38938556998 plus 7 related workflows are QUEUED; no CI PASS claimed yet. Previous Base #16 paid subscriptions, refunds, credits and pack checkout verified/merged work preserved. No production/main/schema/provider/owner Home mutation.
+- **Scoped PR:** [#148](https://github.com/mvryhan-web/video-variator-android/pull/148), branch `base16-price-id-uniqueness-20261016`, head SHA `9fdb2da88a5d1a59f7dac912902d57afc6817818`, **MERGED TO BASE** SHA `7d19224c785583858f7641f6c8e429f647a8940a` after **8/8 GitHub Actions SUCCESS**. `billingCatalog` rejects multiple credit packs with the same Stripe Price ID, even if SKUs/credits differ. New four-case Node unit and mocked HTTP test refuse Checkout before database/Stripe access; existing billing tests run in focused workflow. The production code change is 2 added lines / 1 deleted line; no credit or real payment change.
+- **Isolated exact-function V8 evaluation:** 5/5 catalog cases PASS, not equivalent to full repository CI. Historical queue completed: current-head GitHub Actions 38938556998 plus 7 related workflows all SUCCESS. Merge proven; no live Stripe acceptance. Previous Base #16 paid subscriptions, refunds, credits and pack checkout verified/merged work preserved. No production/main/schema/provider/owner Home mutation.
 
 ## Agent C — BASE #28 local simple background remover / IN PROGRESS (2026-10-16)
 
