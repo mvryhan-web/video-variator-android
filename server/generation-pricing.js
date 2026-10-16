@@ -19,7 +19,9 @@ export function pricingCatalog(env={}){
    if(r.currency!=null&&!/^[a-z]{3}$/.test(r.currency))throw Error();
    return {model:r.model,provider:r.provider,kind:r.kind,credits:r.credits,providerCostMicros:r.providerCostMicros,currency:r.currency||null,ratio:r.ratio||null,quality:r.quality||null,outputFormat:r.outputFormat||null,videoInputMode:r.videoInputMode||null,referenceCount:r.referenceCount??null,durationSeconds:r.durationSeconds||null};
   });
-  const keys=entries.map(e=>[e.model,e.kind,e.ratio||'*',e.quality||'*',e.outputFormat||'*',e.videoInputMode||'*',e.referenceCount??'*',e.durationSeconds||'*'].join('|'));
+  // Provider is part of the commercial price identity. Different adapters may expose the same logical model ID.
+  // Do not reject their independent approved rates as duplicates or conflate their costs.
+  const keys=entries.map(e=>[e.provider,e.model,e.kind,e.ratio||'*',e.quality||'*',e.outputFormat||'*',e.videoInputMode||'*',e.referenceCount??'*',e.durationSeconds||'*'].join('|'));
   if(new Set(keys).size!==keys.length)throw Error();
   return {entries,configured:entries.length>0};
  }catch(_){return {entries:[],configured:false};}
