@@ -39,6 +39,7 @@ The exact completion state of older components must be verified from the current
 |---|---|---|---|---|
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
+| BASE AI Apps retry + real Studio handoff verification | ChatGPT continuation | `base-ai-apps-resilience-20261016` / new draft PR | IN PROGRESS / CI PENDING | Add retry of failed template API with preserved URL filters and verify template → Studio consent/no paid generation. UI only; no home, jobs, providers or production changes. |
 | BASE AI Apps discovery | ChatGPT continuation / PR #51 | `deepsyq-platform` (integrated from `base-ai-apps-discovery-20261015`) | CODE VERIFIED / BASE MERGED / NOT DEPLOYED | Search, format/category filters, shareable URLs, safe empty/error states; desktop/mobile Chromium GitHub CI 38887932245 PASS. No public release; shared Google Veo regressions remain separate. |
 | BASE Video / reference intake, cleanup and Seedance preflight | ChatGPT continuation (handoff `90ee2b7`) | `deepsyq-platform` / PR #42 | BATCH-SAFE PRESIGN + REAL FFPROBE + LOCAL S3/PG CI PASSED / CLOUD & BYTEPLUS BLOCKED | Owner MP4 FFprobe is mandatory; all 1–3 ledger owner/ready/TTL queries now complete BEFORE any 30s S3 bearer URL signing. Focused CI 38887993265: 65/65 unit + 9/9 isolated PG/fake S3 green; official local MinIO/PG 38798448778 green. No real cloud/BytePlus, Stripe or production changes; new flags OFF. |
 
@@ -50,6 +51,11 @@ When another agent joins, add one row per claimed workstream before substantial 
 - **Focused CI:** [AI Apps desktop + mobile Chromium run 38887932245](https://github.com/mvryhan-web/video-variator-android/actions/runs/38887932245) passed after conflict resolution. Shared platform regression still fails in unrelated Google Veo unit cases; investigate through owning BASE Video stream, not by changing PR #51 files.
 - No changes to protected Home, Inspiration, backend, provider router, jobs, Stripe, wallet, database migrations, Render/main. Public activation, genuine owner templates and integrated broad acceptance remain separate launch gates.
 
+
+### BASE AI Apps retry and handoff (2026-10-16)
+
+- Isolated continuation of merged PR #51. Adds a retry action to the existing AI Apps empty-error state and focused browser coverage for URL-preserving recovery and existing Studio template handoff with unchecked consent and no generation POST.
+- Branch: `base-ai-apps-resilience-20261016`; **IN PROGRESS / TARGETED CI PENDING**. No Home design, shared Studio implementation, provider jobs, wallet, Stripe, production, or Render touched. Change only the AI Apps page/controller, narrow tests, shared status record and its isolated CI trigger.
 
 ## Approved queued roadmap
 

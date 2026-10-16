@@ -48,3 +48,37 @@ test('AI Apps reports no published content and API errors without inventing temp
  await expect(page.locator('#status')).toContainText('temporarily unavailable');
  await expect(page.locator('.app-card')).toHaveCount(0);
 });
+
+
+test('AI Apps can retry a temporary template API outage without losing URL filters or generating',async({page})=>{
+ let attempts=0,jobPosts=0;
+ await page.route('**/api/templates',route=>{
+  attempts++;
+  if(attempts===1)return route.fulfill({status:503,json:{error:'TEMPLATES_UNAVAILABLE'}});
+  return route.fulfill({json:{items:templates}});
+ });
+ page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))jobPosts++;});
+ await page.goto('/ai-apps.html?q=portrait&type=image');
+ await expect(page.locator('#status')).toContainText('temporarily unavailable');
+ await expect(page.locator('.app-card')).toHaveCount(0);
+ await page.getByRole('button',{name:'Retry loading templates'}).click();
+ await expect(page.locator('#search')).toHaveValue('portrait');
+ await expect(page.locator('#type')).toHaveValue('image');
+ await expect(page.locator('.app-card')).toHaveCount(1);
+ await expect(page.locator('#apps')).toContainText('Editorial Portrait');
+ expect(attempts).toBe(2);
+ expect(jobPosts).toBe(0);
+});
+
+test('Use template prepares existing Studio with consent unchecked and no paid generation',async({page})=>{
+ let jobPosts=0;
+ await page.route('**/api/templates',route=>route.fulfill({json:{items:templates}}));
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))jobPosts++;});
+ await page.goto('/ai-apps.html');
+ await page.locator('.app-card').filter({hasText:'Product Reel'}).getByRole('button',{name:'Use template'}).click();
+ await expect(page).toHaveURL(/generate-studio\\.html\\?studio=video&from=template/);
+ await expect(page.locator('#prompt')).toHaveValue('Original product reel concept');
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(jobPosts).toBe(0);
+});
