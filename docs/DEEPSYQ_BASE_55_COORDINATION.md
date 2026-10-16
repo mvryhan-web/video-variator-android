@@ -43,10 +43,10 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 10 | Normal generation-job database entity | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 11 | Permanent object storage | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 12 | Background jobs | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
-| 13 | Internal AI credit system | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | BROWSER REGRESSION IN PROGRESS (merged #96 retained; test fixtures only) | BASE-D-StudioWallet / base13-studio-wallet-20261016 |
+| 13 | Internal AI credit system | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / BROWSER REGRESSION VERIFIED (#96 + #104; CI 38912419194 and 38912155019 PASS; LIVE BLOCKED) | BASE-D-StudioWallet / base13-studio-wallet-20261016 |
 | 14 | Credit ledger | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (scoped; PR #90 · CI 38906957706) | Agent-D |
 | 15 | Credit reservation | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / BASE MERGED (scoped; PR #102 · PostgreSQL CI 38911667162) | Agent-D |
-| 16 | Stripe subscriptions + credit packs | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / REGRESSION VERIFIED (PR #99 · CI 38909520882 PASS; older #85/#86/#91; LIVE BLOCKED) | BASE-D-CheckoutReuse / base16-checkout-reuse-20261016 |
+| 16 | Stripe subscriptions + credit packs | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | RUNTIME WEBHOOK GATE IN PROGRESS (preceding PR #106 merged) | BASE-D-CheckoutReuse / base16-checkout-reuse-20261016 |
 | 17 | Unit economics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (partial; #89) | Agent-D / CI 38906320339 |
 | 18 | Pricing engine | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (partial; PR #83 · CI 38904230756 · 775cc805; MAIN/LIVE BLOCKED) | BASE-D-ProviderPricing / base55-d-provider-pricing-20261016 |
 | 19 | AI Apps | PARTIAL | C | EXISTING PRODUCT VIDEO FALLBACK VERIFIED; REAL TEMPLATE ASSETS + LIVE GATED | CODE VERIFIED / MERGED TO BASE (partial) | ChatGPT lane C / PR #71 / CI 38901487492 / merge 59dea3d3 |
@@ -66,9 +66,9 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 33 | Safe retry | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 34 | Server-side rate/concurrency limits | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 35 | Security | PARTIAL — TEMPLATE OWNER AUTHORIZATION CI VERIFIED | C | OTHER IDOR/UPLOAD/WEBHOOK/KEY/PRODUCTION REVIEWS PENDING | CODE VERIFIED / MERGED TO BASE (PR #94) | Agent C / Issue #74 / merge `6a3b2d2a` / PostgreSQL CI 38907935442 |
-| 36 | Privacy | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 36 | Privacy | PARTIAL | C | WORKER CRASH LOG PII / KEY REDACTION | IN PROGRESS | Agent C / Issue #74 / `base36-worker-crash-redaction-20261016` |
 | 37 | Business analytics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / BASE MERGED (partial) | BASE-D-Analytics-ChatGPT / PR #64 · CI 38899113996 |
-| 38 | Admin dashboard | PARTIAL | C | OWNER ADMIN RESPONSIVE 320–390px CARDS/CONTROLS | IN PROGRESS | Agent C / Issue #74 / `base38-owner-admin-mobile-20261016` |
+| 38 | Admin dashboard | PARTIAL — ADMIN MOBILE CODE VERIFIED | C | REAL DEVICES / AUTH AND LIVE RELEASE ACCEPTANCE PENDING | CODE VERIFIED / MERGED TO BASE (PR #98) | Agent C / Issue #74 / merge `fb9ce2a1` / CI 38912222509 |
 | 39 | Provider performance | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 40 | Model routing registry | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 41 | Internal model capabilities | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
