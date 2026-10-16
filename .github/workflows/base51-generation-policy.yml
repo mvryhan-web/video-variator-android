@@ -4,13 +4,17 @@ on:
     branches: [base51-generation-policy-failclosed-20261016]
     paths:
       - 'server/generation-policy.js'
+      - 'server/generation-readiness.js'
       - 'tests/generation-policy-unit.mjs'
+      - 'tests/generation-readiness-unit.mjs'
       - '.github/workflows/base51-generation-policy.yml'
   pull_request:
     branches: [deepsyq-platform]
     paths:
       - 'server/generation-policy.js'
+      - 'server/generation-readiness.js'
       - 'tests/generation-policy-unit.mjs'
+      - 'tests/generation-readiness-unit.mjs'
       - '.github/workflows/base51-generation-policy.yml'
 permissions:
   contents: read
@@ -27,6 +31,7 @@ jobs:
       - name: Syntax
         run: |
           node --check server/generation-policy.js
+          node --check server/generation-readiness.js
           node --check tests/generation-policy-unit.mjs
       - name: Bounded rate guards, entitlements and existing Studio regression
-        run: node --test tests/generation-policy-unit.mjs tests/generation-entitlements-unit.mjs tests/generation-studio-unit.mjs
+        run: node --test tests/generation-policy-unit.mjs tests/generation-entitlements-unit.mjs tests/generation-studio-unit.mjs tests/generation-readiness-unit.mjs
