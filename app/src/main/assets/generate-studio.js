@@ -1,6 +1,7 @@
 import {saveLocal} from './ai-media.js';
 import {MODEL_CATALOG,MODELS} from './generate-models.js';
 import {takeStudioHandoff} from './studio-handoff.js';
+import {studioCreditWalletState} from './studio-credit-wallet.js';
 const $=id=>document.getElementById(id),ru=navigator.language.startsWith('ru');
 const say=(en,r)=>ru?r:en;
 const strings={back:'← Назад',pilot:'Предпросмотр студии',workspace:'ВАША СТУДИЯ',video:'Видео',image:'Изображения',audio:'Аудио',dashboard:'Главная ↗',translation:'Перевод · позже',create:'Создать',history:'Мои результаты',label:'ТВОРЧЕСКАЯ СТУДИЯ',headline:'Ваша идея. Создайте её.',prompt:'Опишите, что хотите создать',addPhoto:'Фото',clear:'Убрать фото',generate:'Создать ✦',consent:'Я согласен отправить запрос и фотографии в Google для генерации.',pilotNote:'Предпросмотр студии. Оплата не включена.',chooseModel:'Выберите модель',modelHint:'Выберите инструмент для своей задачи. У каждой модели указан статус подключения.',settings:'Настройки',format:'Формат',capabilityNote:'Настройки соответствуют выбранной модели. Неподдерживаемые параметры не отправляются.',trackType:'Тип аудио',song:'Песня с вокалом',instrumental:'Без слов',voiceoverMode:'Озвучка · подключение готовится',voiceover:'Открыть существующий инструмент озвучки →',language:'Язык',voice:'Голос',done:'Готово',download:'Скачать',share:'Поделиться',delete:'Удалить',saveNote:'Сохраните копию. Удаление результата не удаляет скачанные файлы.',historyHint:'Здесь доступны сохранённые результаты студии. Генерация не запускается автоматически.',checkResult:'Проверить последний результат',historyLoading:'Загружаем результаты…',historyNone:'Сохранённых результатов пока нет.',historyOpen:'Открыть',historyReady:'Готово',historyProcessing:'В работе',historyFailed:'Ошибка',filterAll:'Все',filterImages:'Изображения',filterVideos:'Видео',filterFailed:'Ошибки',filterProcessing:'В работе'};
@@ -160,14 +161,55 @@ function renderWalletHistory(items){
  for(const item of items.slice(0,20)){const row=document.createElement('article');row.className='wallet-ledger';const title=document.createElement('strong'),labels=walletKinds[item.kind]||[item.kind,item.kind];title.textContent=ru?labels[1]:labels[0];const date=document.createElement('small');try{date.textContent=new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(new Date(item.created_at||item.createdAt));}catch(_){date.textContent='';}const deltas=document.createElement('div');deltas.className='wallet-deltas';for(const node of [ledgerDelta(say('available','доступно'),Number(item.available_delta??item.availableDelta??0)),ledgerDelta(say('held','резерв'),Number(item.reserved_delta??item.reservedDelta??0)),ledgerDelta(say('debt','долг'),Number(item.debt_delta??item.debtDelta??0))])if(node)deltas.append(node);row.append(title,date,deltas);root.append(row);}
 }
 async function loadAiWallet(){
+ const btn=$('walletButton'),summary=$('walletSummary'),packs=$('creditPacks');
+ // An authenticated customer's existing AI wallet is readable even when
+ // credit-pack checkout is disabled. Checkout and wallet are separate gates.
+ btn.hidden=false;$('walletBalance').textContent='—';
+ summary.replaceChildren();packs.replaceChildren();renderWalletHistory([]);
+ let cfg={};
  try{
-  const response=await fetch(apiBase()+'/api/ai-billing/config',{cache:'no-store'}),cfg=await response.json().catch(()=>({}));if(!response.ok||!cfg.enabled){$('walletButton').hidden=true;return false;}
-  aiBilling=cfg;$('walletButton').hidden=false;$('walletMode').textContent=cfg.mode==='live'?say('Live Stripe checkout. Payment is completed on Stripe.','Оплата через live Stripe Checkout. Платёж завершается на Stripe.'):say('Stripe test checkout. No real charge should be made in test mode.','Тестовый Stripe Checkout. В тестовом режиме реального списания быть не должно.');
-  $('creditPacks').replaceChildren();for(const p of cfg.packs||[]){const card=document.createElement('article');card.className='credit-pack';const title=document.createElement('strong');title.textContent=Number(p.credits).toLocaleString()+' AI credits';const price=document.createElement('small');price.textContent=moneyMinor(p.amount,p.currency);const b=document.createElement('button');b.type='button';b.textContent=cfg.mode==='live'?say('Continue to Stripe','Перейти в Stripe'):say('Open test checkout','Открыть тестовую оплату');b.onclick=()=>void buyCredits(p,b);card.append(title,price,b);$('creditPacks').append(card);}
-  if(!localStorage.getItem('vv_token')){$('walletBalance').textContent='—';$('walletSummary').replaceChildren();renderWalletHistory([]);$('walletStatus').textContent=say('Sign in to view your AI credit balance or buy credits.','Войдите, чтобы увидеть баланс AI-кредитов или купить кредиты.');return true;}
-  const [balance,history]=await Promise.all([api('/api/ai-billing/balance').then(r=>r.json()),api('/api/ai-billing/history').then(r=>r.json()).catch(()=>({items:[]}))]);
-  $('walletBalance').textContent=Number(balance.available||0).toLocaleString();$('walletSummary').replaceChildren(walletStat(say('Available','Доступно'),Number(balance.available||0).toLocaleString()),walletStat(say('Held','В резерве'),Number(balance.reserved||0).toLocaleString()),walletStat(say('Debt','Долг'),Number(balance.debt||0).toLocaleString()));renderWalletHistory(history.items||[]);$('walletStatus').textContent='';return true;
- }catch(_){$('walletButton').hidden=true;return false;}
+  const response=await fetch(apiBase()+'/api/ai-billing/config',{cache:'no-store'});
+  if(response.ok)cfg=await response.json().catch(()=>({}));
+ }catch(_){/* Checkout config unavailable: continue reading existing wallet. */}
+ const state=studioCreditWalletState(cfg);
+ aiBilling=state.checkoutMode?cfg:null;
+ $('walletMode').textContent=state.checkoutMode==='live'
+  ?say('Live Stripe checkout. Credits are added only after a confirmed webhook.','Оплата через Stripe. Кредиты поступают только после подтверждённого webhook.')
+  :state.checkoutMode==='test'
+  ?say('Stripe test checkout. No real charge is made in test mode.','Тестовая оплата Stripe. Реальные деньги не списываются.')
+  :say('Credit purchases are not active. Your existing AI credits remain available to view.','Покупка кредитов неактивна. Свои AI-кредиты можно просматривать.');
+ for(const p of state.packs){
+  const card=document.createElement('article');card.className='credit-pack';
+  const title=document.createElement('strong');title.textContent=p.credits.toLocaleString()+' AI credits';
+  const price=document.createElement('small');price.textContent=moneyMinor(p.amount,p.currency);
+  const button=document.createElement('button');button.type='button';
+  button.textContent=state.checkoutMode==='live'?say('Continue to Stripe','Перейти в Stripe'):say('Open test checkout','Открыть тестовую оплату');
+  button.onclick=()=>void buyCredits(p,button);card.append(title,price,button);packs.append(card);
+ }
+ if(!localStorage.getItem('vv_token')){
+  $('walletStatus').textContent=say('Sign in to view your AI credit balance.','Войдите, чтобы увидеть баланс AI-кредитов.');
+  return true;
+ }
+ try{
+  const [balance,history]=await Promise.all([
+   api('/api/ai-wallet/balance').then(r=>r.json()),
+   api('/api/ai-wallet/history').then(r=>r.json()).catch(()=>({items:[]}))
+  ]);
+  const totals=studioCreditWalletState(cfg,balance).totals;
+  if(!totals)throw Error('INVALID_WALLET_TOTALS');
+  $('walletBalance').textContent=totals.available.toLocaleString();
+  summary.replaceChildren(
+   walletStat(say('Available','Доступно'),totals.available.toLocaleString()),
+   walletStat(say('Held','В резерве'),totals.reserved.toLocaleString()),
+   walletStat(say('Debt','Долг'),totals.debt.toLocaleString())
+  );
+  renderWalletHistory(Array.isArray(history.items)?history.items:[]);
+  $('walletStatus').textContent='';return true;
+ }catch(_){
+  $('walletBalance').textContent='—';summary.replaceChildren();renderWalletHistory([]);
+  $('walletStatus').textContent=say('AI wallet information is temporarily unavailable. Please refresh later.','Информация об AI-кредитах временно недоступна. Обновите позже.');
+  return false;
+ }
 }
 async function buyCredits(pack,button){
  if(!localStorage.getItem('vv_token')){$('walletStatus').textContent=say('Sign in before opening checkout.','Войдите перед оплатой.');return;}
