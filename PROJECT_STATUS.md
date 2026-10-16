@@ -14,7 +14,7 @@ This file is the shared live progress board for all coding agents.
 
 - **Existing BASE #16, new bounded scope:** billingCatalog currently rejects duplicate pack SKU but not duplicate Stripe Price IDs. Two SKUs with the same Stripe Price and different approved credit counts can charge the same amount for different wallet value. Claim: reject ambiguous duplicate `priceId` configuration fail closed, preserve all real approved amounts, existing subscriptions and webhook/idempotency paths.
 - **Branch:** `base16-price-id-uniqueness-20261016` targeting `deepsyq-platform`; exact code scope `server/generation-billing.js` plus isolated Node test/workflow, no changes to Stripe account/configuration/ledger/DB schema, Home, main or Render.
-- **Separate existing D #49:** PR #139 remains DRAFT and is waiting for GitHub Actions queue at last checkpoint; no simultaneous change to its migration code. All BASE #16 earlier merged evidence stays valid; full #16 PARTIAL / NOT LIVE.
+- **Separate D #49 now MERGED:** PR #139 was merged to BASE as `dbe4a468161959ef12ebf3067c616ab00a0a6c22` with 4/4 CI successful. It does not overlap this #16 work. All earlier BASE #16 merged evidence remains valid; full #16 is PARTIAL / NOT LIVE.
 
 ## Agent D — BASE #49 PostgreSQL advisory-lock cleanup / BASE MERGED (2026-10-16)
 
