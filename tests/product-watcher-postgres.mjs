@@ -49,7 +49,7 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     const state=await pool.query('SELECT id,paused FROM vv_product_watcher_control');
     assert.deepEqual(state.rows,[{id:1,paused:true}]);
 
-    await pool.query("CREATE TABLE IF NOT EXISTS vv_generation_jobs(id TEXT PRIMARY KEY,status TEXT NOT NULL,created_at TIMESTAMPTZ NOT NULL,deleted BOOLEAN NOT NULL DEFAULT false,credits_reserved INTEGER NOT NULL DEFAULT 0,provider TEXT,actual_cost NUMERIC(14,6),cost_currency TEXT)");
+    await pool.query("CREATE TABLE IF NOT EXISTS vv_generation_jobs(id TEXT PRIMARY KEY,status TEXT NOT NULL,created_at TIMESTAMPTZ NOT NULL,deleted BOOLEAN NOT NULL DEFAULT false,credits_reserved INTEGER NOT NULL DEFAULT 0,provider TEXT,actual_cost NUMERIC(14,6),cost_currency TEXT,started_at TIMESTAMPTZ,completed_at TIMESTAMPTZ)");
     await pool.query('DELETE FROM vv_generation_jobs WHERE id LIKE $1',['watcher-fixture-%']);
     await pool.query("INSERT INTO vv_generation_jobs(id,status,created_at,credits_reserved) VALUES('watcher-fixture-failed','failed',NOW()-INTERVAL '1 hour',0),('watcher-fixture-stale','processing',NOW()-INTERVAL '2 days',0),('watcher-fixture-held','finalizing',NOW()-INTERVAL '3 days',8),('watcher-fixture-ready','ready',NOW()-INTERVAL '5 minutes',0)");
 
