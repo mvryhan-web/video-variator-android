@@ -556,16 +556,17 @@ $('clearRefs').onclick=()=>{if(busy)return;refs=[];$('consent').checked=false;re
 $('musicMode').onchange=()=>{$('consent').checked=false;modelId='';renderModel();};
 $('modelButton').onclick=()=>{renderModels();$('modelDialog').showModal();};$('settingsButton').onclick=()=>$('settingsDialog').showModal();document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
 function clearHistoryThumbs(){for(const u of historyThumbUrls)URL.revokeObjectURL(u);historyThumbUrls=[];}
-async function loadHistoryImageThumbnail(item,preview){
+async function loadHistoryImageThumbnail(item,preview,epoch){
  try{
-  const response=await api(`/api/studio/jobs/${encodeURIComponent(item.id)}/media`),b=await response.blob();if(!b.type.startsWith('image/'))return;
+  const response=await api(`/api/studio/jobs/${encodeURIComponent(item.id)}/media`),b=await response.blob();
+   if(epoch!==historyLoadEpoch||!historyView||!preview.isConnected||!b.type.startsWith('image/'))return;
   const u=URL.createObjectURL(b);historyThumbUrls.push(u);const img=document.createElement('img');img.className='history-thumb';img.src=u;img.alt=say('Generated image preview','Предпросмотр созданного изображения');img.loading='lazy';preview.replaceChildren(img);
  }catch(_){/* Keep the lightweight placeholder if preview retrieval fails. */}
 }
-function observeHistoryThumbnail(item,preview){
+function observeHistoryThumbnail(item,preview,epoch){
  if(item.kind!=='image'||item.status!=='ready')return;
- if(!('IntersectionObserver'in window)){void loadHistoryImageThumbnail(item,preview);return;}
- const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){observer.disconnect();void loadHistoryImageThumbnail(item,preview);}},{rootMargin:'180px'});
+ if(!('IntersectionObserver'in window)){void loadHistoryImageThumbnail(item,preview,epoch);return;}
+ const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){observer.disconnect();if(epoch===historyLoadEpoch&&historyView&&preview.isConnected)void loadHistoryImageThumbnail(item,preview,epoch);}},{rootMargin:'180px'});
  observer.observe(preview);
 }
 
@@ -739,13 +740,13 @@ async function loadHistory(){
     previewButton.onclick=()=>void previewHistoryMedia(item,inlinePreview,previewButton);
     actions.append(previewButton);
    }
-   actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions,inlinePreview);list.append(card);observeHistoryThumbnail(item,preview);
+   actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions,inlinePreview);list.append(card);observeHistoryThumbnail(item,preview,epoch);
   }
  }catch(e){if(epoch!==historyLoadEpoch||!historyView)return;list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
 }
 document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclick=()=>{historyFilter=button.dataset.historyFilter;document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));void loadHistory();});
-function setHistory(on){if(!on){++historyLoadEpoch;clearHistoryMediaPreview();}historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
-window.addEventListener('pagehide',()=>{clearHistoryMediaPreview();clearHistoryThumbs();});
+function setHistory(on){if(!on){++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();}historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
+window.addEventListener('pagehide',()=>{++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();});
 $('showCreate').onclick=()=>{const u=new URL(location.href);u.searchParams.delete('view');history.replaceState(null,'',u);setHistory(false);};$('showHistory').onclick=()=>setHistory(true);
 function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
 async function watch(id,epoch){
