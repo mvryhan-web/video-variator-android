@@ -1,0 +1,24 @@
+name: BASE 5 Veo MP4 Result Verification
+on:
+  pull_request:
+    paths:
+      - 'server/generation-provider.js'
+      - 'tests/base5-google-video-media-unit.mjs'
+      - '.github/workflows/base5-veo-media.yml'
+permissions:
+  contents: read
+jobs:
+  google-video-media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax safety
+        run: |
+          node --check server/generation-provider.js
+          node --check tests/base5-google-video-media-unit.mjs
+      - name: Non-paid Veo result security regressions
+        run: node --test tests/base5-google-video-media-unit.mjs

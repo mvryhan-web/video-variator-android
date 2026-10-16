@@ -43,7 +43,14 @@ export function validateGeneration(body){
  if(body.kind==='music'&&!['song','instrumental'].includes(body.musicMode))throw new Error('INVALID_MUSIC_MODE');
  return {kind:body.kind,model:m.id,prompt:body.prompt.trim(),ratio:body.ratio,references,musicMode:body.musicMode,...(body.kind==='image'?{resolution,outputFormat}:{}),...(body.kind==='video'?{videoResolution,videoDuration,videoInputMode}:{})};
 }
-export function safeGoogleUrl(value){const u=new URL(value);if(u.protocol!=='https:'||u.hostname!=='generativelanguage.googleapis.com'||u.username||u.password)throw new Error('UNSAFE_PROVIDER_URL');return u.toString();}
+export function safeGoogleUrl(value){
+ let u;try{u=new URL(value);}catch{throw new Error('UNSAFE_PROVIDER_URL');}
+ // Never send the server API key to nonstandard ports, userinfo or fragments.
+ // Veo may require ?alt=media on the legitimate Google API HTTPS origin.
+ if(u.protocol!=='https:'||u.hostname!=='generativelanguage.googleapis.com'||
+    u.username||u.password||u.port||u.hash)throw new Error('UNSAFE_PROVIDER_URL');
+ return u.toString();
+}
 export async function googleJson(relative,{key,body,fetcher=fetch}){
  if(!/^(models\/[a-z0-9.-]+:(generateContent|predictLongRunning)|models\/[a-z0-9.-]+\/operations\/[A-Za-z0-9_-]+|operations\/[A-Za-z0-9_-]+)$/.test(relative))throw new Error('INVALID_OPERATION');
  const r=await fetcher(ROOT+relative,{method:body?'POST':'GET',redirect:'error',signal:AbortSignal.timeout(120000),headers:{'x-goog-api-key':key,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
@@ -83,7 +90,16 @@ export async function pollGoogle(operation,{key,fetcher=fetch}){
  if(!uri)throw new Error('EMPTY_GENERATION');
  const r=await fetcher(safeGoogleUrl(uri),{redirect:'error',signal:AbortSignal.timeout(120000),headers:{'x-goog-api-key':key}});
  if(!r.ok)throw new Error('VIDEO_DOWNLOAD_FAILED');
+ const limit=30*1024*1024;
+ if(Number(r.headers?.get?.('content-length'))>limit)throw new Error('RESULT_TOO_LARGE');
+ if(!r.body?.getReader)throw new Error('INVALID_PROVIDER_MEDIA');
  const reader=r.body.getReader(),chunks=[];let size=0;
- try{for(;;){const {value,done}=await reader.read();if(done)break;size+=value.length;if(size>30*1024*1024)throw new Error('RESULT_TOO_LARGE');chunks.push(Buffer.from(value));}}finally{await reader.cancel();}
- if(!size)throw new Error('EMPTY_GENERATION');return {mime:'video/mp4',bytes:Buffer.concat(chunks),text:''};
+ try{for(;;){const {value,done}=await reader.read();if(done)break;size+=value.length;if(size>limit)throw new Error('RESULT_TOO_LARGE');chunks.push(Buffer.from(value));}}finally{await reader.cancel();}
+ if(!size)throw new Error('EMPTY_GENERATION');
+ const bytes=Buffer.concat(chunks),headerSize=bytes.length>=8?bytes.readUInt32BE(0):0;
+ // Never report HTML/JSON/error pages as completed MP4 output. Use a minimal
+ // ISO-BMFF file-type box check; this is NOT a codec or malware verdict.
+ if(bytes.length<16||bytes.subarray(4,8).toString('ascii')!=='ftyp'||
+    headerSize<16||headerSize>bytes.length)throw new Error('INVALID_PROVIDER_MEDIA');
+ return {mime:'video/mp4',bytes,text:''};
 }
