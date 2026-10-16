@@ -80,3 +80,35 @@ test('BASE #28: replacing photo with invalid format does not leave earlier image
  await page.locator('#clearPhoto').click();
  await expect(page.locator('#photo')).toHaveValue('');
 });
+
+test('BASE #28: stale asynchronous PNG cannot resurrect an image after Clear',async({page})=>{
+ await page.addInitScript(()=>{
+  const original=HTMLCanvasElement.prototype.toBlob;
+  HTMLCanvasElement.prototype.toBlob=function(callback,...args){
+   if(this.id!=='result')return original.call(this,callback,...args);
+   return original.call(this,blob=>{
+    setTimeout(()=>{
+     callback(blob);
+     document.body.dataset.encodedAfterClear='yes';
+    },120);
+   },...args);
+  };
+ });
+ await page.goto('/simple-background-remover.html');
+ const bytes=await page.evaluate(async()=>{
+  const canvas=document.createElement('canvas');
+  canvas.width=canvas.height=3;
+  const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,3,3);
+  const blob=await new Promise(ok=>canvas.toBlob(ok,'image/png'));
+  return [...new Uint8Array(await blob.arrayBuffer())];
+ });
+ await page.locator('#photo').setInputFiles({name:'local.png',mimeType:'image/png',buffer:Buffer.from(bytes)});
+ await expect(page.locator('#erase')).toBeEnabled();
+ await page.locator('#erase').click();
+ await page.locator('#clearPhoto').click();
+ await expect(page.locator('body')).toHaveAttribute('data-encoded-after-clear','yes');
+ await expect(page.locator('#download')).toBeDisabled();
+ await expect(page.locator('#erase')).toBeDisabled();
+ await expect(page.locator('#original')).toHaveJSProperty('width',1);
+ await expect(page.locator('#status')).toContainText('Photo and preview cleared');
+});
