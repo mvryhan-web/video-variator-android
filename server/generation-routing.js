@@ -3,8 +3,28 @@ function compatible(model,body){
  if(!model?.enabled||model.maintenance||model.kind!==body?.kind)return false;
  const caps=model.capabilities||{},ratios=Array.isArray(caps.ratios)?caps.ratios:model.ratios||[],maxReferences=Number(caps.maxReferences??model.references??0);
  if(ratios.length&&body?.ratio&&!ratios.includes(body.ratio))return false;
- const refs=Array.isArray(body?.references)?body.references.length:0;
- if(refs>maxReferences)return false;
+ const refs=Array.isArray(body?.references)?body.references.length:body?.referenceCount??0;
+ if(!Number.isInteger(refs)||refs<0||refs>maxReferences)return false;
+ // Provider choice must respect the actual VIDEO request, not just aspect ratio
+ // and total references. Otherwise an inexpensive but incompatible model may
+ // be selected before the paid-job reservation and then rejected downstream.
+ if(body?.kind==='video'){
+  const mode=body?.videoInputMode||(refs?'first_frame':'text');
+  const modes=caps.videoInputModes;
+  if(Array.isArray(modes)&&!modes.includes(mode))return false;
+  if(mode==='text'&&refs!==0||mode==='first_frame'&&refs!==1||
+     mode==='first_last'&&refs!==2||mode==='reference_image'&&(refs<1||refs>3)||
+     !['text','first_frame','first_last','reference_image'].includes(mode))return false;
+  const resolution=body?.videoResolution??model.quality??caps.quality;
+  const duration=body?.videoDuration??caps.durationSeconds;
+  if(Array.isArray(caps.resolutions)&&caps.resolutions.length&&
+     !caps.resolutions.includes(resolution))return false;
+  if(Array.isArray(caps.durations)&&caps.durations.length&&
+     !caps.durations.includes(duration))return false;
+  // Veo reference images and 1080p require eight seconds, even though
+  // text-only 720p calls may support shorter durations.
+  if(model.provider==='Google'&&(refs>0||resolution==='1080p')&&duration!==8)return false;
+ }
  return true;
 }
 export function orderedGenerationCandidates(body,catalog=[]){
