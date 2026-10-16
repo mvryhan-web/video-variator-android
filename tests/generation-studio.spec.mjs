@@ -423,7 +423,7 @@ test('BASE 24: History cards label reserved credits separately from server-confi
  expect(paidPosts).toBe(0);
 });
 
-test('BASE 24 Music History filter is visible on narrow screens, read-only and does not show other kinds',async({page})=>{
+test('BASE 24: Music History filter is visible on narrow screens, read-only and does not show other kinds',async({page})=>{
  await page.setViewportSize({width:320,height:740});
  const cfg={enabled:false,ownerOnly:true,models:[],catalog:[]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
