@@ -61,6 +61,13 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent A — BASE #26 Canvas prepare-only Regenerate input isolation / CLAIMED (2026-10-16)
+
+- **Owner:** Agent A, Issue #72, original BASE #26. Branch `agent-a-base26-canvas-clean-history-regenerate-20261016`; original Image Studio already supports references, prompt, model settings, previews, saved History, continue image as reference and prepare-only Regenerate. No rewrite or new Canvas DB.
+- **Gap:** `prepareHistoryItem(item,{settings:true})` for saved images can silently inherit unrelated current Image draft references when preparing a different historical result. Since original source references are not recovered from History, user could mistakenly submit old unrelated photos after new explicit consent. Preparing another job must not mix project inputs.
+- **Bounded fix:** when Regenerate saved image, explicitly confirm before dropping current Image draft references, remove them on approval, preserve them on cancel, keep original job stored and consent reset, tell user original photos are not restored. Same authenticated History and existing Studio only; no provider/Stripe/wallet/server changes. Narrow tests in own draft PR; B/C/D/A24/A31 unchanged.
+- **Pre-code claim:** not tested/merged/live.
+
 ## Agent D — BASE #16 duplicate Stripe Price-ID risk / MERGED TO BASE (2026-10-16)
 
 - **Completed:** PR #148 `7d19224c` MERGED TO BASE after 8/8 current-head GitHub Actions SUCCESS. Original full BASE #16 remains PARTIAL / NOT LIVE.
