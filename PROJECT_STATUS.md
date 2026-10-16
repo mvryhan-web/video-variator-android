@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — byte-exact Deepsyq installed icon derivative QA / CODE VERIFIED, PR #128 (2026-10-16)
+
+- **Owner/branch:** Agent 5 independent QA on `agent5-brand-derivative-integrity-20261016`, no BASE A/B/C/D feature-row claim or Home/app production change.
+- **Verified gap:** merged brand PR #126 has an excellent exact SHA-256 check for the 1254px owner source only, plus existence/manifest tests. Subsequent changes could silently replace the 192/512 web icons, maskable exports, adaptive Android foreground or favicon while the master source test stays green.
+- **Verified outcome:** [PR #128](https://github.com/mvryhan-web/video-variator-android/pull/128) adds four read-only assertions in the existing brand suite, pinning installed master, transparent exports, maskable icons, favicon and Android adaptive foreground to reviewed PR #126 Git blob IDs. Library ZIP 192/512 transparent SHA-256 is independently confirmed; PNG pixel dimensions, ICO header and minSdk=26 v26-adaptive compatibility validated. [GitHub brand QA 38928644260](https://github.com/mvryhan-web/video-variator-android/actions/runs/38928644260) **SUCCESS: 8/8 Node checks and actual Android debug APK build** on code SHA `e09f6a2b`. This verifies repository byte integrity/build only, not screenshot quality, physically installed apps or production release. No owner Home, product files, media, wallet, Stripe, provider, DB, `main` or Render edits.
+
 ## Agent 5 — verified PR #118/#122 closeout and broad browser CI ownership / REVIEW COMPLETE (2026-10-16)
 
 - **Agent/branch:** Agent 5 coordination-only, `agent5-qa-status-closeout-20261016`; no A–D BASE feature row claimed.
