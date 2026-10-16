@@ -84,6 +84,11 @@ test('Canvas saves only text and kind within this tab; refresh drops photos and 
  await page.locator('#quickCreateKind').selectOption('video');
  await page.locator('#quickCreateFiles').setInputFiles({name:'private-photo.png',mimeType:'image/png',buffer:png});
  await expect(page.locator('.quick-reference')).toHaveCount(1);
+ // The account-specific SHA-256 storage key is resolved asynchronously; wait
+ // for the real local write before testing a hard refresh.
+ await expect.poll(()=>page.evaluate(()=>Object.keys(sessionStorage)
+  .filter(key=>key.startsWith('deepsyq_quick_canvas_draft_v2_'))
+  .some(key=>JSON.parse(sessionStorage.getItem(key)||'null')?.prompt==='A very specific personal product video idea'))).toBe(true);
  await page.reload();
  await expect(page.locator('#quickCreatePrompt')).toHaveValue('A very specific personal product video idea');
  await expect(page.locator('#quickCreateKind')).toHaveValue('video');
@@ -94,6 +99,8 @@ test('Canvas saves only text and kind within this tab; refresh drops photos and 
  await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
  await expect(page.locator('#quickCreateKind')).toHaveValue('image');
  expect(await page.evaluate(()=>sessionStorage.getItem('deepsyq_quick_canvas_draft_v1'))).toBeNull();
+ await expect.poll(()=>page.evaluate(()=>Object.keys(sessionStorage)
+  .filter(key=>key.startsWith('deepsyq_quick_canvas_draft_v2_')).length)).toBe(0);
  expect(jobPosts).toBe(0);
 });
 
