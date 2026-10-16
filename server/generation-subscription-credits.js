@@ -38,6 +38,9 @@ export async function grantPaidSubscriptionInvoice({event,env={},pool,wallet}){
  if(!Array.isArray(lines))return false; // not a verified subscription-line invoice
  const matching=lines.filter(line=>config.entries.some(e=>e.priceId===line?.price?.id));
  if(!matching.length)return false; // legacy Stripe invoice outside AI grant rollout
+ // A fully discounted/free invoice is not a paid AI credit purchase.
+ // Preserve legacy subscription-cycle webhook handling without a grant.
+ if(invoice?.amount_paid===0)return false;
  if(!pool||!wallet)throw Error('AI_SUBSCRIPTION_WALLET_UNAVAILABLE');
  // A paid invoice with a configured AI-eligible price must be fully verified,
  // never recognized by customer metadata supplied from browser.
