@@ -19,6 +19,23 @@ test('launch readiness is fail-closed and never contains secret values',()=>{
 });
 
 
+test('BASE #51: explicit Image or Video kill switches block commercial launch readiness',()=>{
+ const base={AI_PUBLIC_GENERATION_ENABLED:'true',AI_IMAGE_ENABLED:'true',AI_VIDEO_ENABLED:'true'};
+ assert.equal(generationReadiness(base).gates.find(g=>g.id==='imageVideo').ready,true);
+ assert.equal(generationReadiness({AI_PUBLIC_GENERATION_ENABLED:'true'}).gates.find(g=>g.id==='imageVideo').ready,true,
+  'unset flags retain existing backward-compatible catalog behavior');
+ for(const flag of ['AI_IMAGE_ENABLED','AI_VIDEO_ENABLED']){
+  for(const value of ['false','0','TRUE','']){
+   const report=generationReadiness({...base,[flag]:value});
+   assert.ok(report.blockers.includes('imageVideo'),flag+'='+value);
+   assert.equal(report.launchReady,false);
+   assert.equal(report.gates.find(g=>g.id==='imageVideo').ready,false);
+  }
+ }
+ assert.equal(generationReadiness({...base,BYTEPLUS_ENABLED:'false'}).gates.find(g=>g.id==='imageVideo').ready,true,
+  'disabling just one optional provider should not disable an independent provider');
+});
+
 test('pricing without currency remains a launch blocker even when model economics exist',()=>{
  const r=generationReadiness({AI_MODEL_PRICING_JSON:JSON.stringify([{model:'m',provider:'P',kind:'image',credits:1,providerCostMicros:100}])});
  assert.equal(r.pricing.configured,true);assert.equal(r.pricing.currenciesExplicit,false);assert.ok(r.blockers.includes('pricing'));
