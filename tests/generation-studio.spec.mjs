@@ -399,3 +399,26 @@ test('BASE 24: leaving History revokes already-created temporary image URLs',asy
  await expect(page.locator('#historyList')).toBeHidden();
  await expect.poll(()=>page.evaluate(()=>window.__historyUrlRevoked)).toBeGreaterThan(before.revoked);
 });
+
+test('BASE 24: History cards label reserved credits separately from server-confirmed charges',async({page})=>{
+ const items=[
+  {id:'charged-image',kind:'image',status:'ready',model:'image-fixture',prompt:'Confirmed settled image',creditsReserved:12,creditsCharged:10},
+  {id:'reserved-video',kind:'video',status:'processing',model:'video-fixture',prompt:'Pending server job',creditsReserved:8,creditsCharged:0},
+  {id:'free-image',kind:'image',status:'failed',model:'image-fixture',prompt:'Unknown settlement',creditsReserved:0,creditsCharged:0}
+ ];
+ await page.route('**/api/studio/jobs?filter=all',r=>r.fulfill({json:{items}}));
+ let paidPosts=0;page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))paidPosts++;});
+ await page.goto('/generate-studio.html?studio=image');
+ await page.locator('#showHistory').click();
+ await expect(page.locator('.history-card')).toHaveCount(3);
+ const settled=page.locator('.history-card').filter({hasText:'Confirmed settled image'});
+ await expect(settled).toContainText('Charged: 10 AI credits');
+ await expect(settled).not.toContainText('12 AI credits');
+ const pending=page.locator('.history-card').filter({hasText:'Pending server job'});
+ await expect(pending).toContainText('Reserved per server: 8 AI credits');
+ await expect(pending).not.toContainText('Charged:');
+ const unknown=page.locator('.history-card').filter({hasText:'Unknown settlement'});
+ await expect(unknown).not.toContainText('Charged:');
+ await expect(unknown).not.toContainText('Reserved per server:');
+ expect(paidPosts).toBe(0);
+});
