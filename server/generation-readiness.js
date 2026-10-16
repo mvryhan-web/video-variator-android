@@ -26,7 +26,8 @@ export function generationReadiness(env={}){
   {id:'publicJobPolicy',label:'Enabled bounded public job spend-rate limits',ready:policy.enabled&&policy.maxConcurrentPerUser>0&&policy.maxJobsPerHourPerUser>0,required:env.AI_PUBLIC_GENERATION_ENABLED==='true'},
   {id:'entitlements',label:'Public plan entitlements',ready:entitlements.configured,required:true},
   {id:'publicFlag',label:'Public AI generation flag',ready:env.AI_PUBLIC_GENERATION_ENABLED==='true',required:true},
-  {id:'imageVideo',label:'Image and Video generation switches',ready:featureSwitches.image&&featureSwitches.video,required:true}
+  {id:'imageVideo',label:'Image and Video generation switches',ready:featureSwitches.image&&featureSwitches.video,required:true},
+  {id:'imageVideoPricing',label:'Approved Image and Video prices and credit rates',ready:['image','video'].every(kind=>pricing.entries.some(p=>p.kind===kind)&&billing.rates.some(rate=>rate.kind===kind)),required:true}
  ];
  const blockers=gates.filter(g=>g.required&&!g.ready).map(g=>g.id);
  return {
