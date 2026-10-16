@@ -61,6 +61,13 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent A — BASE #25 My Creations dashboard session privacy / CLAIMED (2026-10-16)
+
+- **Owner:** Agent A Issue #72, original BASE #25, isolated branch `agent-a-base25-account-scoped-recent-creations-20261016`. Existing per-user DB History storage belongs to B/D; dashboard already displays most recent four user-scoped cards and deep-links into authenticated Studio History. No parallel library DB, new routes or chargeable calls.
+- **Gap:** asynchronous `loadRecentCreations()` renders received private prompts without checking whether `vv_token` still belongs to the account that started the request; a token replaced or removed while HTTP was pending may display stale account data. A cross-tab localStorage account switch can also leave prior cards visible until reload.
+- **Narrow scope:** A-only dashboard `loadRecentCreations` and session-change DOM invalidation, focused tests; no auth endpoint, wallet, provider, B History, C mobile menu, Home hero visuals or D database changes. Backend user_id scoping remains authoritative.
+- **Status:** claimed before code; no CI PASS, no production or user private data access.
+
 ## Agent D — BASE #16 duplicate Stripe Price-ID risk / MERGED TO BASE (2026-10-16)
 
 - **Completed:** PR #148 `7d19224c` MERGED TO BASE after 8/8 current-head GitHub Actions SUCCESS. Original full BASE #16 remains PARTIAL / NOT LIVE.
