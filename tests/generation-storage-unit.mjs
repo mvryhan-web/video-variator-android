@@ -89,7 +89,8 @@ test('BASE #11 authenticated job media passes recorded checksum to S3 and refuse
   assert.equal(attempts,1);
   job.output_assets[0].sha256='corrupt-hash';
   const bad=await fetch(url);
-  assert.equal(bad.status,200); // mock deliberately does not validate format; unit above tests storage itself
+  assert.equal(bad.status,503);
+  assert.equal((await bad.json()).error,'STUDIO_STORAGE_UNAVAILABLE'); // no corrupted bytes leaked
   assert.equal(attempts,2);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
