@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { OFFICIAL_SOURCES,fetchOfficialFingerprint,normalizeOfficialText,officialTopicDigests,compareOfficialTopicDigests,runOfficialSourcesOnce,listOfficialSourceReviews } from '../server/product-watcher/official-sources.js';
+import { OFFICIAL_SOURCES,fetchOfficialFingerprint,normalizeOfficialText,normalizeOfficialDocument,officialTopicDigests,compareOfficialTopicDigests,runOfficialSourcesOnce,listOfficialSourceReviews } from '../server/product-watcher/official-sources.js';
 
 const env={PRODUCT_WATCHER_ENABLED:'true',PRODUCT_WATCHER_OFFICIAL_SOURCES_ENABLED:'true'};
 const html='<html><body><main><article><h1>Documented API release notes</h1><p>'+('Official source text about API changes and model announcements. '.repeat(8))+'</p></article></main></body></html>';
@@ -87,6 +87,40 @@ test('a small, deterministic visible text extraction ignores scripts and markup'
  assert.throws(()=>normalizeOfficialText('<p>empty</p>'),/SOURCE_NOT_READABLE/);
 });
 
+test('official page fingerprint excludes vendor navigation, sidebars and footers',async()=>{
+ const article='<main><article><h1>Pricing and API limits</h1><p>'+
+   ('Model limits and API pricing are documented for developer review. '.repeat(7))+
+   '</p></article></main>';
+ const navA='<nav>'+('Old menu navigation links '.repeat(20))+'</nav>';
+ const navB='<nav>'+('New menu navigation links '.repeat(20))+'</nav>';
+ const a='<html><body>'+navA+article+'<footer>Original legal footer</footer></body></html>';
+ const b='<html><body>'+navB+article+'<footer>Revised legal footer</footer></body></html>';
+ const p=OFFICIAL_SOURCES.find(x=>x.key==='openai-api-pricing');
+ const one=await fetchOfficialFingerprint(p,{fetchFn:async()=>response(a)});
+ const two=await fetchOfficialFingerprint(p,{fetchFn:async()=>response(b)});
+ assert.equal(one.contentHash,two.contentHash);
+ assert.deepEqual(one.topicDigests,two.topicDigests);
+ const changed=b.replace('developer review','developer review at a new price');
+ const three=await fetchOfficialFingerprint(p,{fetchFn:async()=>response(changed)});
+ assert.notEqual(three.contentHash,one.contentHash);
+ assert.ok(compareOfficialTopicDigests(one.topicDigests,three.topicDigests).possibleTopics.includes('pricing'));
+});
+
+test('HTML without real documentation body fails closed instead of hashing site chrome',async()=>{
+ const shell='<html><body><header>'+('Vendor navigation items '.repeat(20))+'</header>'+
+   '<footer>'+('Pricing support links '.repeat(20))+'</footer></body></html>';
+ await assert.rejects(fetchOfficialFingerprint(OFFICIAL_SOURCES[1],{
+   fetchFn:async()=>response(shell)
+ }),/SOURCE_MAIN_CONTENT_MISSING/);
+ const hidden='<main><nav>'+('Pricing link to vendor docs '.repeat(20))+'</nav></main>';
+ assert.throws(()=>normalizeOfficialDocument(hidden),/SOURCE_NOT_READABLE/);
+ const fallback='<article><h1>API notes</h1><p>'+('Model changes announced here. '.repeat(9))+
+   '</p></article>';
+ assert.ok(normalizeOfficialDocument(fallback).includes('API notes'));
+ assert.equal(normalizeOfficialDocument('Pricing and API changes. '.repeat(9),
+  {contentType:'text/plain'}).includes('API changes'),true);
+});
+
 test('JS-only release page is not mistaken for a real monitored announcement feed',async()=>{
  const shell='<html><body><noscript>You need to enable JavaScript to run this app.</noscript>'+
    '<header>'+('Product updates navigation. '.repeat(20))+'</header></body></html>';
@@ -139,11 +173,12 @@ test('first check creates baselines only, changes require review, unchanged not 
  assert.equal(d.proposals.length,0);
  const repeat=await runOfficialSourcesOnce({pool:d.pool,env,fetchFn,now:at(1)});
  assert.equal(repeat.attempted,0);assert.equal(requests,OFFICIAL_SOURCES.length);
- const change=await runOfficialSourcesOnce({pool:d.pool,env,fetchFn:async()=>response(html+' Official update follows '+('different '.repeat(20))),now:at(7)});
+ const updatedHtml=html.replace('</article>','<p>Official update follows '+('different '.repeat(20))+'</p></article>');
+ const change=await runOfficialSourcesOnce({pool:d.pool,env,fetchFn:async()=>response(updatedHtml),now:at(7)});
  assert.equal(change.changed,OFFICIAL_SOURCES.length);assert.equal(d.proposals.length,OFFICIAL_SOURCES.length);
  assert.ok(change.items.every(x=>x.code==='PAGE_CHANGED_REVIEW_REQUIRED'));
  assert.ok(change.items.every(x=>x.topicsCompared===true&&Array.isArray(x.possibleTopics)));
- const unchanged=await runOfficialSourcesOnce({pool:d.pool,env,fetchFn:async()=>response(html+' Official update follows '+('different '.repeat(20))),now:at(14)});
+ const unchanged=await runOfficialSourcesOnce({pool:d.pool,env,fetchFn:async()=>response(updatedHtml),now:at(14)});
  assert.equal(unchanged.changed,0);assert.equal(d.proposals.length,OFFICIAL_SOURCES.length);
  const review=await listOfficialSourceReviews(d.pool);
  assert.equal(review.proposals.length,OFFICIAL_SOURCES.length);

@@ -95,7 +95,7 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
       fetchFn:async()=>new Response(officialHtml,{headers:{'content-type':'text/html'}})});
     assert.equal(first.changed,0);assert.equal(first.attempted,OFFICIAL_SOURCES.length);
     const second=await runOfficialSourcesOnce({pool,env:officialEnv,now:()=>new Date('2026-10-15T07:00:00Z'),
-      fetchFn:async()=>new Response(officialHtml+' '+('A visible page revision. '.repeat(10)),{headers:{'content-type':'text/html'}})});
+      fetchFn:async()=>new Response(officialHtml.replace('</main>', '<p>'+('A visible page revision. '.repeat(10))+'</p></main>'),{headers:{'content-type':'text/html'}})});
     assert.equal(second.changed,OFFICIAL_SOURCES.length);
     const listed=await request('GET','/api/product-watcher/admin/official-sources');
     assert.equal(listed.statusCode,200);assert.equal(listed.body.proposals.length,OFFICIAL_SOURCES.length);

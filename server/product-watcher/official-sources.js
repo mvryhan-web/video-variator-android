@@ -67,6 +67,26 @@ export function normalizeOfficialText(html){
   return content;
 }
 
+/**
+ * Fingerprint only the actual documentation content, not the vendor's global
+ * navigation, cookie prompts, sidebar or footer. Never treat a navigation-only
+ * HTML shell as a successfully scanned release/price/limits document.
+ * This is deliberately fail-closed: sites with different semantic markup need
+ * a reviewed adapter rather than a misleading 'no change' baseline.
+ */
+export function normalizeOfficialDocument(raw,{contentType='text/html'}={}){
+  if(/^text\/plain(?:\s*;|$)/i.test(contentType))return normalizeOfficialText(raw);
+  const withoutScripts=String(raw)
+    .replace(/<!--[\s\S]*?-->/g,' ')
+    .replace(/<(?:script|style|svg|noscript|template)\b[^>]*>[\s\S]*?<\/(?:script|style|svg|noscript|template)\s*>/gi,' ');
+  const main=withoutScripts.match(/<main\b[^>]*>([\s\S]*?)<\/main\s*>/i)
+    ||withoutScripts.match(/<article\b[^>]*>([\s\S]*?)<\/article\s*>/i);
+  if(!main)throw Error('SOURCE_MAIN_CONTENT_MISSING');
+  const content=main[1].replace(
+    /<(nav|header|footer|aside|form)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,' ');
+  return normalizeOfficialText(content);
+}
+
 export async function fetchOfficialFingerprint(source,{fetchFn=globalThis.fetch}={}){
   if(!OFFICIAL_SOURCES.some(x=>x.key===source?.key && x.url===source?.url && x.provider===source?.provider))
     throw Error('SOURCE_NOT_ALLOWLISTED');
@@ -104,7 +124,7 @@ export async function fetchOfficialFingerprint(source,{fetchFn=globalThis.fetch}
     // visible-text normalizer intentionally removes. Fail closed before it.
     if(/you need to enable javascript to run this app/i.test(rawHtml))
       throw Error('SOURCE_RENDER_REQUIRED');
-    const visible=normalizeOfficialText(rawHtml);
+    const visible=normalizeOfficialDocument(rawHtml,{contentType:type});
     return {contentHash:createHash('sha256').update(visible).digest('hex'),
       topicDigests:officialTopicDigests(visible),byteLength:count};
   } catch(error){
