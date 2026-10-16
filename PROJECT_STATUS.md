@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — Issues #72–75 coordination acceptance review (2026-10-16)
+
+- **Owner:** Agent 5 (technical coordinator; **not** coding lanes A/B/C/D).
+- **Status:** **IN PROGRESS** on isolated branch `agent5-issues72-75-review-20261016`; this is a coordination/PR-collision and source-code evidence task, **not** a new BASE feature-row claim.
+- **Scope:** reconcile up-to-date issue dispatch (#72 A, #73 B, #74 C, #75 D), PR #65/#70 duplicate #44 work, protected Home references, confirmed tests and release gates. Do not edit application code, owner-locked visuals, Stripe/DB/provider or `main`; deliver a separate review PR targeting `deepsyq-platform`.
+
 ## BASE #37 / first-generation and AI-paid conversion analytics — CODE VERIFIED, MERGED TO BASE / NOT LIVE (2026-10-16)
 
 - **Agent:** BASE-D-Analytics-ChatGPT; **isolated branch:** `base55-d-business-analytics-20261016` based on current `deepsyq-platform`.
