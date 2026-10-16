@@ -194,6 +194,12 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Implementation:** update only stale Studio test fixtures to current customer-wallet endpoints; add a fail-closed wallet-visible/checkout-disabled test. Do not touch owner-locked Home, Stripe/webhook, GenerationWallet or provider behavior; user-visible purchase offers remain governed by existing billing configuration.
 - **Acceptance:** focused browser tests + existing AI Studio suite; report results truthfully. §52 is overall IN PROGRESS because staging/physical/production and full preflight gates remain external.
 
+## BASE #16 signed webhook readiness — IN PROGRESS (2026-10-16)
+
+- Same owner BASE-D-CheckoutReuse, branch `base16-stripe-webhook-readiness-20261016`, previously merged #85/#86/#91/#99 untouched. Claimed via shared BASE #16 board before code.
+- **Verified live-launch gap:** `server/server.js` returns HTTP 503 on the signed Stripe webhook without `STRIPE_WEBHOOK_SECRET`, yet `generationReadiness` may return `launchReady:true` with fully configured live AI keys/packs and no webhook signing secret. Users could buy credits but never receive them. Fix **read-only readiness report** only, require an explicitly formatted signing secret before green AI live launch. No Stripe key values/transactions and no prod configuration changed.
+- **Scope:** existing `server/generation-readiness.js` + focused synthetic tests, keep test-mode/owner pilot unchanged. Separate PR and CI; no Stripe handler or legacy webhook implementation edits, no design or DB.
+
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
 **ACTIVE OWNER PRIORITY NOW:** all four coding-agent sessions focus on the **original BASE TXT / 55-point checklist**, not new Roadmap Blocks 1–7 or duplicated Product Watcher. Shared 55-item claim board and proposed collision-safe work lanes: [`docs/DEEPSYQ_BASE_55_COORDINATION.md`](docs/DEEPSYQ_BASE_55_COORDINATION.md). This new owner instruction overrides older prose suggesting BASE is owned by just one agent or that Agents E/Block 5 should keep expanding their scope. **Already verified:** 55 rows exist in the BASE checklist; #47 and #53 are DONE/RULE; **53 other rows are not fully DONE** and mostly have significant existing code. `PARTIAL` does NOT mean “build from scratch.”
