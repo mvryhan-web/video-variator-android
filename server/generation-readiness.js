@@ -2,11 +2,13 @@ import {pricingCatalog} from './generation-pricing.js';
 import {billingCatalog,generationBillingRuntime,stripeWebhookConfigured} from './generation-billing.js';
 import {generationEntitlements} from './generation-entitlements.js';
 import {generationPolicy} from './generation-policy.js';
+import {generationFeatureSwitches} from './generation-feature-flags.js';
 import {objectStorageConfig} from './generation-storage.js';
 import {bytePlusDownloadsConfigured} from './generation-byteplus.js';
 
 export function generationReadiness(env={}){
  const pricing=pricingCatalog(env),pricingCurrenciesExplicit=pricing.configured&&pricing.entries.every(e=>!!e.currency),billing=billingCatalog(env),billingRuntime=generationBillingRuntime(env),entitlements=generationEntitlements(env),storage=objectStorageConfig(env),policy=generationPolicy(env);
+ const featureSwitches=generationFeatureSwitches(env);
  const gates=[
   {id:'database',label:'PostgreSQL',ready:!!env.DATABASE_URL,required:true},
   {id:'jwt',label:'Server JWT signing key',ready:!!env.APP_JWT_SECRET,required:true},
@@ -22,7 +24,8 @@ export function generationReadiness(env={}){
   {id:'worker',label:'Background generation worker flag',ready:env.AI_STUDIO_BACKGROUND_POLLING==='true',required:true},
   {id:'publicJobPolicy',label:'Enabled bounded public job spend-rate limits',ready:policy.enabled&&policy.maxConcurrentPerUser>0&&policy.maxJobsPerHourPerUser>0,required:env.AI_PUBLIC_GENERATION_ENABLED==='true'},
   {id:'entitlements',label:'Public plan entitlements',ready:entitlements.configured,required:true},
-  {id:'publicFlag',label:'Public AI generation flag',ready:env.AI_PUBLIC_GENERATION_ENABLED==='true',required:true}
+  {id:'publicFlag',label:'Public AI generation flag',ready:env.AI_PUBLIC_GENERATION_ENABLED==='true',required:true},
+  {id:'imageVideo',label:'Image and Video generation switches',ready:featureSwitches.image&&featureSwitches.video,required:true}
  ];
  const blockers=gates.filter(g=>g.required&&!g.ready).map(g=>g.id);
  return {
