@@ -59,7 +59,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 26 | Canvas | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 27 | Existing Video Uniquifier preserved under Tools | PARTIAL | C | ROOT SWITCH/PRODUCTION REGRESSION GATED | CODE VERIFIED (BASE, not live) | ChatGPT Lane C / PR #61 / `base-27-video-uniquifier-tools-20261016` / CI 38898789990 |
 | 28 | Utilities gathered in Tools | PARTIAL — AUDIO AND COLLAGE CODE VERIFIED | C | REMAINING TOOL GAPS / RELEASE GATED | CODE VERIFIED (BASE; NOT LIVE) | ChatGPT Lane C / PR #67 / merge `cea9c087` / CI 38900538191 |
-| 29 | Final navigation | PARTIAL — PR #68 HISTORY/CREDITS VERIFIED; ACCOUNT LINKS IN PROGRESS | C | AI APPS → EXISTING PROFILE BILLING / SETTINGS + AUTHENTICATED LOGOUT | IN PROGRESS (this subtask; PR #68 remains VERIFIED) | Agent C / Issue #74 / `base29-ai-apps-account-links-20261016`; prior PR #68 CI 38900798943 merge df1a4463 |
+| 29 | Final navigation | PARTIAL — AI APPS HISTORY/CREDITS + ACCOUNT LINKS CODE VERIFIED | C | WHOLE-APP ACCOUNT NAV AND DEVICE/LIVE GATED | CODE VERIFIED / MERGED TO BASE (PRs #68 + #110) | Agent C / Issue #74 / PR #68 CI 38900798943 / PR #110 merge `89477d7b` CIs 38915655213 + 38915655095 |
 | 30 | Desktop / Android / iPhone responsive | PARTIAL — AI APPS MOBILE CODE VERIFIED | C | PHYSICAL DEVICE + WHOLE-APP ACCEPTANCE PENDING | CODE VERIFIED / MERGED TO BASE (PR #79) | Agent C / Issue #74 / merge `c389045d` / CI 38904085432 / Agent 5 reviewed |
 | 31 | Generation UX/status | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 32 | Friendly error handling | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
