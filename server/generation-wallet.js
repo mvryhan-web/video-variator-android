@@ -94,18 +94,43 @@ export class GenerationWallet {
       return this.change(c,userId,w,jobId,'reserve',-credits,credits);
     });
   }
-  async settle({userId,jobId,outcome}) {
+  async settle({userId,jobId,outcome,actualCredits}) {
     identifier(jobId);
     if (!['success','confirmed_failure','unknown'].includes(outcome)) throw new Error('INVALID_OUTCOME');
+    // Only a trusted server-side final usage quote may supply actualCredits.
+    // Older callers omit it and still capture the full reservation.
+    if (actualCredits!==undefined&&(outcome!=='success'||!Number.isSafeInteger(actualCredits)||actualCredits<1))
+      throw new Error('INVALID_ACTUAL_CREDITS');
     return this.transaction(userId,async(c,w) => {
       const {rows} = await c.query('SELECT * FROM vv_ai_reservation WHERE job_id=$1 AND user_id=$2', [jobId,userId]);
       if (!rows.length) throw new Error('RESERVATION_NOT_FOUND');
-      const p=rows[0];
-      if (outcome==='unknown' || p.status!=='held') return {...w,status:p.status};
-      const refund=outcome==='confirmed_failure', debtPaid=refund?Math.min(w.debt,p.credits):0;
-      const status=refund?'released':'captured';
+      const p=rows[0],reserved=Number(p.credits);
+      if (actualCredits!==undefined&&actualCredits>reserved) throw new Error('INVALID_ACTUAL_CREDITS');
+      if (outcome==='unknown') return {...w,status:p.status};
+      if (p.status!=='held') {
+        // An explicit retry at a different final amount must never silently
+        // accept a prior capture. The existing captured ledger row durably
+        // records returned surplus (available_delta - debt_delta), even when
+        // a concurrent Stripe refund left the user in debt.
+        if (outcome==='success'&&actualCredits!==undefined) {
+          if (p.status!=='captured') throw new Error('SETTLEMENT_ALREADY_RELEASED');
+          const prior=await c.query("SELECT available_delta,debt_delta FROM vv_ai_ledger WHERE user_id=$1 AND reference=$2 AND kind='captured' ORDER BY id DESC LIMIT 2",[userId,jobId]);
+          if (prior.rows.length!==1) throw new Error('SETTLEMENT_AUDIT_MISSING');
+          const returned=Number(prior.rows[0].available_delta)-Number(prior.rows[0].debt_delta);
+          if (!Number.isSafeInteger(returned)||returned<0||returned>reserved||actualCredits!==reserved-returned)
+            throw new Error('SETTLEMENT_AMOUNT_CONFLICT');
+        }
+        return {...w,status:p.status};
+      }
+      const refund=outcome==='confirmed_failure';
+      const charge=refund?0:(actualCredits===undefined?reserved:actualCredits);
+      const remainder=reserved-charge;
+      // Refund surplus first against any outstanding payment debt. Otherwise
+      // a disputed/refunded checkout could manufacture spendable credits.
+      const debtPaid=Math.min(w.debt,remainder),status=refund?'released':'captured';
       await c.query('UPDATE vv_ai_reservation SET status=$2 WHERE job_id=$1', [jobId,status]);
-      return {...await this.change(c,userId,w,jobId,status,refund?p.credits-debtPaid:0,-p.credits,-debtPaid),status};
+      const balance=await this.change(c,userId,w,jobId,status,remainder-debtPaid,-reserved,-debtPaid);
+      return {...balance,status,...(refund?{}:{capturedCredits:charge,returnedCredits:remainder})};
     });
   }
   // Stripe cumulative refunded amount makes out-of-order / duplicate events harmless.
