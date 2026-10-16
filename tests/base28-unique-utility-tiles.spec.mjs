@@ -5,7 +5,7 @@ test('BASE #28: each free utility is shown once, including real Photo Compressio
  page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:studio\/jobs|billing|ai-wallet)/.test(r.url()))paidRequests++;});
  await page.goto('/free-tools.html');
  const tiles=page.locator('#mobileUtilityGrid a[data-utility]');
- await expect(tiles).toHaveCount(16);
+ await expect(tiles).toHaveCount(18); // 16 catalog entries + distinct Teleprompter and Collage
  const destinations=await tiles.evaluateAll(items=>items.map(item=>item.getAttribute('href')));
  expect(new Set(destinations).size).toBe(destinations.length);
  const compress=page.locator('#mobileUtilityGrid a[data-utility="photo-compress"]');
