@@ -164,10 +164,10 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Real integration gap:** shared signed `/api/webhooks/stripe` first invokes `generationBilling.handleEvent(event)` even for existing Video Uniquifier Stripe events. New AI billing code currently throws `AI_BILLING_WEBHOOK_DISABLED` on **any** `charge.refunded` while AI billing is OFF (default), causing existing Stripe webhook server to answer HTTP 500 for unrelated paid subscription refunds. With AI billing enabled but in a different Stripe mode, generic other-product refund can also throw before identifying whether AI wallet knows the payment.
 - **Scope:** fail closed on clearly AI-tagged refunds while not blocking unmarked unrelated Stripe events; require retry if explicitly tagged AI refund precedes durable AI wallet purchase. Add synthetic webhook tests, never call real Stripe, no checkout price/ledger/provider/Render/main changes.
 
-## Agent D BASE #15 — partial final credit capture / unused reserve release — IN PROGRESS (2026-10-16)
+## Agent D BASE #15 — partial credit capture — CODE VERIFIED / MERGED TO BASE / NOT LIVE (2026-10-16)
  
 - **Original owner source:** `docs/DEEPSYQ_PLATFORM_SPEC.md` §15. Current wallet idempotently reserves credits and captures FULL reserve on successful provider output, but has no internal means to consume less and refund the unused remainder.
-- **Assigned branch:** `base15-partial-settlement-20261016` from latest BASE. Extend **existing** wallet primitive with trusted optional `actualCredits` (never from browser), preserving default full-reserve capture. Ensure debt-first surplus release, zero overspend, retry idempotency and mismatch detection, with PostgreSQL tests.
+- **Assigned branch:** `base15-partial-settlement-20261016` from latest BASE. Extend **existing** wallet primitive with trusted optional `actualCredits` (never from browser), preserving default full-reserve capture. Ensure debt-first surplus release, zero overspend, retry idempotency and mismatch detection, with **real isolated PostgreSQL tests SUCCESS** in CI 38911667162 and 38911706899; merged feature PR #102 (3d43defa). Existing full-capture default unchanged; provider cost → final trusted credits not connected.
 - **Boundaries:** Other agent's BASE #16 Stripe paths, DB migrations, Home and public provider pricing left unchanged. No production usage-based cost mapping or enabled public calls without real invoices and approval.
 
 ## BASE #51 public rate policy rollout guard — CODE VERIFIED / MERGED TO BASE (2026-10-16)
