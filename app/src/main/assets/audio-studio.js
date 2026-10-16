@@ -1,5 +1,6 @@
 import {createEngine,saveLocal,subtitleFiles} from './ai-media.js';
 import {voices,languages,synthesize,toMp3} from './speech-client.js';
+import {audioTrimSettings,trimAudioLocal} from './audio-trim-core.js';
 const $=id=>document.getElementById(id),lang=(navigator.language||'en').slice(0,2);
 const copy={
  en:{setup:'Google voices are waiting for owner setup. Local transcription is available below.',available:'Free preview: up to 3 requests per account/day, 1,000 characters each. Shared daily quota applies. Sign in from the home page first.',working:'Processing… Keep this page open.',loading:'Downloading the speech model…',done:'Done. Review the result before using it.',cancelled:'Canceled',error:'Could not process this file. Try a shorter recording, check your connection and free device memory.',choose:'Choose a file first.',limit:'Use a recording of 5 minutes or less, up to 150 MB.',download:'Download MP3',share:'Share',delete:'Delete',copied:'Copied',login:'Sign in from the home page first.',quota:'The free voice quota is used up. Try again later.',consent:'I agree to send this text to Google to generate speech. Do not include private information.'},
@@ -7,8 +8,14 @@ const copy={
  fr:{back:'← Outils du quotidien',title:'Audio et texte',lead:'Transformez un script en narration et un enregistrement en texte.',free:'Gratuit · sans crédits vidéo',tts:'Texte → MP3',ttsNote:'Les voix Google lisent votre texte. Seul le texte est envoyé à Google ; les vidéos restent sur votre appareil.',language:'Langue',voice:'Voix',script:'Votre texte (1 000 caractères maximum)',consent:'J’accepte d’envoyer ce texte à Google pour la narration. N’incluez pas de données privées.',generate:'Créer le MP3',cancel:'Annuler',stt:'Vidéo / MP3 → texte',sttNote:'Reconnaissance locale. La première utilisation télécharge un modèle et peut prendre plusieurs minutes. Aucun enregistrement n’est envoyé.',limits:'5 minutes / 150 Mo maximum. Vérifiez le texte avant publication.',file:'Fichier vidéo ou audio',auto:'Détection automatique',recognize:'Extraire le texte',text:'Texte reconnu — modifiable',copy:'Copier',download:'Télécharger',share:'Partager',delete:'Supprimer',setup:'Les voix Google attendent la configuration du propriétaire. La transcription locale est disponible.',working:'Traitement… Gardez la page ouverte.',loading:'Téléchargement du modèle…',done:'Terminé. Vérifiez le résultat.',cancelled:'Annulé',choose:'Choisissez un fichier.',limit:'5 minutes et 150 Mo maximum.',copied:'Copié'},
  uk:{back:'← Безкоштовні інструменти',title:'Аудіо й текст',lead:'Перетворіть сценарій на озвучення, а запис — на текст.',free:'Безкоштовно · без відеокредитів',tts:'Текст → MP3',language:'Мова',voice:'Голос',generate:'Створити MP3',cancel:'Скасувати',stt:'Відео / MP3 → текст',file:'Відео або аудіофайл',recognize:'Витягти текст',text:'Розпізнаний текст — можна редагувати',copy:'Копіювати',download:'Завантажити',share:'Поділитися',delete:'Видалити',setup:'Голоси Google очікують налаштування власником. Локальне розпізнавання доступне.',working:'Обробка… Не закривайте сторінку.',done:'Готово. Перевірте результат.',cancelled:'Скасовано'}
 };
-const t=k=>copy[lang]?.[k]||copy.en[k]||k;
-document.querySelectorAll('[data-s]').forEach(el=>{if(copy[lang]?.[el.dataset.s])el.textContent=copy[lang][el.dataset.s];});
+const trimCopy={
+ en:{trimTitle:'Audio Trimmer',trimNote:'Cut a recording locally without uploading it. Export the selected part as an MP3.',trimFile:'Audio file (up to 50 MB)',trimStart:'Start (seconds)',trimEnd:'End (seconds)',trimGenerate:'Trim to MP3',trimInvalid:'Choose a supported audio file and a valid time range (maximum 10 minutes).'},
+ ru:{trimTitle:'Обрезать аудио',trimNote:'Обрежьте аудиозапись прямо на устройстве, без загрузки на сервер. Сохраните фрагмент в MP3.',trimFile:'Аудиофайл (до 50 МБ)',trimStart:'Начало (секунды)',trimEnd:'Конец (секунды)',trimGenerate:'Обрезать в MP3',trimInvalid:'Выберите аудиофайл и правильный интервал (до 10 минут).'},
+ fr:{trimTitle:'Découper un audio',trimNote:'Découpez un fichier sur votre appareil sans le téléverser. Exportez en MP3.',trimFile:'Fichier audio (50 Mo max.)',trimStart:'Début (secondes)',trimEnd:'Fin (secondes)',trimGenerate:'Découper en MP3',trimInvalid:'Choisissez un fichier audio et un intervalle valide (10 minutes max.).'},
+ uk:{trimTitle:'Обрізати аудіо',trimNote:'Обрізайте запис на своєму пристрої без завантаження на сервер. Експортуйте у MP3.',trimFile:'Аудіофайл (до 50 МБ)',trimStart:'Початок (секунди)',trimEnd:'Кінець (секунди)',trimGenerate:'Обрізати у MP3',trimInvalid:'Оберіть аудіофайл і правильний інтервал (до 10 хвилин).'}
+};
+const t=k=>copy[lang]?.[k]||trimCopy[lang]?.[k]||copy.en[k]||trimCopy.en[k]||k;
+document.querySelectorAll('[data-s]').forEach(el=>{const translated=copy[lang]?.[el.dataset.s]||trimCopy[lang]?.[el.dataset.s];if(translated)el.textContent=translated;});
 for(const [value,name] of Object.entries(languages)){for(const id of ['speechLanguage','transcribeLanguage']){if(id==='transcribeLanguage'&&value==='en-GB')continue;const o=document.createElement('option');o.value=id==='transcribeLanguage'?value.split('-')[0]:value;o.textContent=name;$(id).append(o);}}
 voices.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;$('speechVoice').append(o);});
 let enabled=false,ttsAbort=null,ttsEngine=null,worker=null,sttEngine=null,sttBusy=false,sttId=0,resultURL=null,srt='';
@@ -42,4 +49,68 @@ $('copyText').onclick=async()=>{try{await navigator.clipboard.writeText($('trans
 $('saveText').onclick=()=>saveLocal(new File([$ ('transcript').value],'VideoUniquifier-transcript.txt',{type:'text/plain'})).catch(()=>$('transcribeStatus').textContent=t('error'));
 $('saveSrt').onclick=()=>saveLocal(new File([srt],'VideoUniquifier-subtitles.srt',{type:'text/plain'})).catch(()=>$('transcribeStatus').textContent=t('error'));
 $('clearText').onclick=()=>{$('transcript').value='';srt='';$('saveSrt').disabled=true;editReady();};
-window.addEventListener('pagehide',()=>{ttsAbort?.abort();ttsEngine?.terminate();sttEngine?.terminate();worker?.terminate();if(resultURL)URL.revokeObjectURL(resultURL);});
+// Standalone, device-local audio trimming. Reuses the existing local FFmpeg
+// runtime but never calls /api/speech, ToolAccess quota, wallets or AI services.
+let trimBusy=false,trimEngine=null,trimAbort=null,trimSourceURL=null,trimResultURL=null;
+const trimPreview=$('trimSourcePreview');
+function trimReady(){
+ if(trimBusy){$('trimGenerate').disabled=true;return;}
+ try{
+  audioTrimSettings($('trimFile').files[0],$('trimStart').value,$('trimEnd').value);
+  $('trimGenerate').disabled=false;
+ }catch(_){$('trimGenerate').disabled=true;}
+}
+for(const id of ['trimStart','trimEnd'])$(id).addEventListener('input',trimReady);
+$('trimFile').addEventListener('change',()=>{
+ if(trimSourceURL){URL.revokeObjectURL(trimSourceURL);trimSourceURL=null;}
+ trimPreview.pause();trimPreview.removeAttribute('src');trimPreview.hidden=true;
+ const file=$('trimFile').files[0];
+ if(file){
+  trimSourceURL=URL.createObjectURL(file);trimPreview.src=trimSourceURL;trimPreview.hidden=false;
+  trimPreview.onloadedmetadata=()=>{
+   const duration=trimPreview.duration;
+   if(Number.isFinite(duration)&&duration>0){
+    const limited=Math.min(600,duration);
+    $('trimEnd').value=String(Math.min(10,Math.round(limited*10)/10));
+    trimReady();
+   }
+  };
+ }
+ trimReady();
+});
+$('trimGenerate').onclick=async()=>{
+ if(trimBusy||sttBusy||ttsAbort)return;
+ const file=$('trimFile').files[0];
+ let options;
+ try{options=audioTrimSettings(file,$('trimStart').value,$('trimEnd').value);}
+ catch(_){$('trimStatus').textContent=t('trimInvalid');return;}
+ if(trimPreview.duration&&Number.isFinite(trimPreview.duration)&&
+    options.begin+options.seconds>trimPreview.duration+0.05){
+  $('trimStatus').textContent=t('trimInvalid');return;
+ }
+ trimBusy=true;trimAbort=new AbortController();trimReady();
+ $('trimCancel').disabled=false;$('trimStatus').textContent=t('working');
+ try{
+  const output=await trimAudioLocal(file,{start:$('trimStart').value,end:$('trimEnd').value,
+   createEngine,onEngine:engine=>{trimEngine=engine;},signal:trimAbort.signal});
+  if(trimAbort.signal.aborted)return;
+  if(trimResultURL)URL.revokeObjectURL(trimResultURL);
+  trimResultURL=URL.createObjectURL(output);
+  const player=document.createElement('audio');player.controls=true;player.src=trimResultURL;
+  const actions=document.createElement('div');actions.className='actions';
+  for(const [name,perform]of [
+   ['download',()=>saveLocal(output)],
+   ['share',()=>window.VUShareFile({name:output.name,blob:output})],
+   ['delete',()=>{player.pause();if(trimResultURL)URL.revokeObjectURL(trimResultURL);trimResultURL=null;$('trimResult').replaceChildren();}]
+  ]){
+   const btn=document.createElement('button');btn.textContent=t(name);
+   btn.onclick=()=>Promise.resolve().then(perform).catch(()=>$('trimStatus').textContent=t('error'));
+   actions.append(btn);
+  }
+  $('trimResult').replaceChildren(player,actions);
+  $('trimStatus').textContent=t('done');
+ }catch(_){$('trimStatus').textContent=trimAbort?.signal.aborted?t('cancelled'):t('error');}
+ finally{trimBusy=false;trimEngine=null;trimAbort=null;$('trimCancel').disabled=true;trimReady();}
+};
+$('trimCancel').onclick=()=>{trimAbort?.abort();try{trimEngine?.terminate();}catch(_){/* cancelled worker */}};
+window.addEventListener('pagehide',()=>{ttsAbort?.abort();ttsEngine?.terminate();sttEngine?.terminate();worker?.terminate();if(resultURL)URL.revokeObjectURL(resultURL);trimAbort?.abort();try{trimEngine?.terminate();}catch(_){}if(trimSourceURL)URL.revokeObjectURL(trimSourceURL);if(trimResultURL)URL.revokeObjectURL(trimResultURL);});
