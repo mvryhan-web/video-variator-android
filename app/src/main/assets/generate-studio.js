@@ -535,6 +535,7 @@ function clearHistoryMediaPreview(){
   historyMediaPlayer.pause();
   historyMediaPlayer.removeAttribute('src');
   historyMediaPlayer.load();
+  historyMediaPlayer.remove();
   historyMediaPlayer=null;
  }
  if(historyMediaUrl){URL.revokeObjectURL(historyMediaUrl);historyMediaUrl=null;}
