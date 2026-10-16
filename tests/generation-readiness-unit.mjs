@@ -23,3 +23,24 @@ test('pricing without currency remains a launch blocker even when model economic
  const r=generationReadiness({AI_MODEL_PRICING_JSON:JSON.stringify([{model:'m',provider:'P',kind:'image',credits:1,providerCostMicros:100}])});
  assert.equal(r.pricing.configured,true);assert.equal(r.pricing.currenciesExplicit,false);assert.ok(r.blockers.includes('pricing'));
 });
+
+test('BASE #51: release readiness flags an enabled public rate guard with missing limits',()=>{
+ const base={AI_STUDIO_PUBLIC_POLICY_ENABLED:'true',AI_STUDIO_MAX_CONCURRENT_PER_USER:'1',AI_STUDIO_MAX_JOBS_PER_HOUR:'10'};
+ const good=generationReadiness(base);
+ assert.equal(good.gates.find(g=>g.id==='publicJobPolicy')?.ready,true);
+ assert.equal(good.blockers.includes('publicJobPolicy'),false);
+ for(const bad of [
+  {AI_STUDIO_MAX_CONCURRENT_PER_USER:'0'},
+  {AI_STUDIO_MAX_CONCURRENT_PER_USER:'garbled'},
+  {AI_STUDIO_MAX_CONCURRENT_PER_USER:'101'},
+  {AI_STUDIO_MAX_JOBS_PER_HOUR:'0'},
+  {AI_STUDIO_MAX_JOBS_PER_HOUR:'10001'},
+  {AI_STUDIO_MAX_JOBS_PER_HOUR:undefined}
+ ]){
+  const readiness=generationReadiness({...base,...bad});
+  assert.equal(readiness.launchReady,false);
+  assert.ok(readiness.blockers.includes('publicJobPolicy'),JSON.stringify(bad));
+ }
+ const disabled=generationReadiness({AI_STUDIO_PUBLIC_POLICY_ENABLED:'false'});
+ assert.equal(disabled.blockers.includes('publicJobPolicy'),false);
+});
