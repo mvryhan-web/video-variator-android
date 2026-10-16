@@ -322,9 +322,13 @@ async function loadAIWallet(){
 
 async function maybeShowOnboarding(){
  if(config?.features?.onboarding===false)return;
- if(localStorage.getItem('deepsyq_onboarding_pending')!=='1'||!localStorage.getItem('vv_token'))return;
+ const requestedToken=localStorage.getItem('vv_token');
+ if(localStorage.getItem('deepsyq_onboarding_pending')!=='1'||!requestedToken)return;
+ const sameAccount=()=>requestedToken===localStorage.getItem('vv_token');
  try{
-  const state=await api('/api/onboarding');if(state.completed){localStorage.removeItem('deepsyq_onboarding_pending');return;}
+  const state=await api('/api/onboarding');
+  if(!sameAccount())return; // A different login must fetch its own first-run state.
+  if(state.completed){localStorage.removeItem('deepsyq_onboarding_pending');return;}
   // The backend advertises only goals it can persist; Product Ads and Avatar
   // must remain absent until D's reviewed database/service changes are live.
   const authorized=authorizedOnboardingOptions(state.options,{productVideoEnabled:config?.features?.productVideo===true});
@@ -337,10 +341,15 @@ async function maybeShowOnboarding(){
    const detail=document.createElement('span');detail.textContent=option.description;
    button.append(title,detail);
    button.addEventListener('click',async()=>{
+    if(!sameAccount()){
+     closeOnboarding();
+     return;
+    }
     const status=$('onboardingStatus'),buttons=[...choices.querySelectorAll('button')];
     buttons.forEach(b=>b.disabled=true);status.textContent='Saving your starting point…';
     try{
      const response=await api('/api/onboarding',{method:'POST',body:JSON.stringify({goal:option.id})});
+     if(!sameAccount()){closeOnboarding();return;}
      const target=onboardingResponseTarget(response,option.id,authorized);
      if(!target)throw Error('ONBOARDING_TARGET_NOT_AUTHORIZED');
      localStorage.removeItem('deepsyq_onboarding_pending');
@@ -354,9 +363,10 @@ async function maybeShowOnboarding(){
    });
    choices.append(button);
   }
+  if(!sameAccount())return; // A logout while building buttons must not expose prior state.
   $('onboardingStatus').textContent='';
   modal.hidden=false;
-  setTimeout(()=>choices.querySelector('button')?.focus(),0);
+  setTimeout(()=>{if(sameAccount()&&!modal.hidden)choices.querySelector('button')?.focus();},0);
  }catch(_){/* Keep pending marker so setup can be retried later. */}
 }
 function closeOnboarding(){const modal=$('onboardingModal');if(modal)modal.hidden=true;}
