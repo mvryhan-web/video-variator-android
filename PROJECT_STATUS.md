@@ -1,5 +1,11 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+
+## Agent C — BASE #21 simple AI chat MVP audit / SCOPED, NOT PRODUCT BUILD (2026-10-16)
+
+- **Authority:** Original BASE #21 requires Agents page and allows workflow-based first stage; original Block 2 demands a real autonomous orchestrator and is a separate future scope. Owner #172 specifically prioritizes a **minimal honest AI chat** before advanced agent; owner #182 prohibits owner- or agent-funded paid AI tests and billable free grants.
+- **Scope:** code-free first-MVP readiness/API/UX audit on isolated branch `base21-simple-ai-chat-mvp-readiness-audit-20261016`. No `/api/chat` route or authorized dialog model observed in current BASE source; existing Home Agent remains Coming Soon. Do not enable placeholder fake chat, make billable provider requests, alter B/D-owned server router/auth/wallet, recreate Block 2, or edit Home/locked visual.
+- **Deliverable/gate:** concise technical audit with exact missing dependencies, minimal contract, read-only test strategy and C-vs-B/D handoff, in its own docs-only PR. This is **not** BASE #21 implementation/Code Verified.
 ## Agent D — BASE #50 public platform flags invalid values / IN PROGRESS (2026-10-16)
 
 - **Current scoped PR:** [#189](https://github.com/mvryhan-web/video-variator-android/pull/189), DRAFT/UNMERGED, head `56ba9c6670cfd11a266d3fd671bcb773e1cc55b4`. Exactly five changed paths: new `server/platform-feature-flags.js`, integration `server/server.js`, new `tests/base50-platform-feature-flags-unit.mjs`, reused `.github/workflows/base50-feature-flags.yml`, new short doc. Config API and Express route guards now share explicit `true` policy, explicit invalid values OFF for every runtime, unset dev/preview fallback retained. Pure source helper evaluated 160/160 env/flag/value scenarios PASS. GitHub current-head CI pending; no merge/live flag change. Earlier merged BASE #50 #87 remains intact; original #50 PARTIAL/NOT LIVE.
