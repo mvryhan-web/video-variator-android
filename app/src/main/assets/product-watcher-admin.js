@@ -28,6 +28,7 @@ const alertAdvice={
  RECORDED_SPEND_SPIKE:'Review job volume, model mix and recorded provider costs; this does not confirm a provider price increase.',
  RECORDED_UNIT_COST_SPIKE:'Compare models, resolutions and job mix against verified provider economics.',
  COST_VISIBILITY_GAP:'Review missing actual-cost reporting before estimating any gross margin.',
+ AI_PURCHASE_LEDGER_INCONSISTENT:'Review invalid purchase credits, paid amount, refund sign or currency in the internal ledger. Never alter Stripe or user credits from this alert.',
  HTTP_UNAVAILABLE:'Investigate Deepsyq service availability and Render status.',
  DB_UNAVAILABLE:'Verify database connectivity without exposing credentials.',
  GENERATION_ATTENTION:'Review failed, stuck and billing-review jobs in Owner AI Control.'
@@ -190,14 +191,21 @@ function billingCountersText(check){
   'created AI orders (24h): '+String(c.recentCheckoutOrders24h??'—'),
   'old unmatched Checkout sessions (7d): '+String(c.oldUnmatchedCheckoutSessions7d??'—'),
   'AI credit purchases missing orders: '+String(c.orphanCreditPurchases??'—'),
-  'over-refunded AI purchase records: '+String(c.overRefundedPurchases??'—')
+  'over-refunded AI purchase records: '+String(c.overRefundedPurchases??'—'),
+  'invalid AI purchase records: '+String(c.invalidCreditPurchases??'—')
  ];
  return 'Billing: '+String(check.code||'not ready')+' · '+numbers.join(' · ')+
   ' · Stripe webhook delivery NOT verified. Unmatched sessions may be cancelled or unpaid.';
 }
 function render(d){
  current=d;$('watcherStatus').textContent=d.enabled?(d.paused?'Paused':'Ready for manual checks'):'Not enabled';
- $('watcherDetails').textContent=d.enabled?'Scheduler: '+(d.schedulerActive?'reported active':'not deployed')+' · Last run: '+formatDate(d.lastRun?.checkedAt):'Product Watcher is disabled in server configuration.';
+ const scheduler=d.schedulerActive?'Fresh private-worker heartbeat observed':'No fresh private-worker heartbeat observed';
+ const scheduleDetail=!d.schedulerActive?''
+  :d.scheduleOverdue?' · Scheduled check overdue — check worker logs'
+  :d.nextRun?' · Next expected check (estimate): '+formatDate(d.nextRun)
+  :' · Next check: not established';
+ $('watcherDetails').textContent=d.enabled?scheduler+' · Last run: '+formatDate(d.lastRun?.checkedAt)+scheduleDetail
+  :'Product Watcher is disabled in server configuration.';
  $('watcherBilling').textContent=billingCountersText(d.lastRun?.checks?.billing);
  const stripe=d.lastRun?.checks?.webhookConfig;
  $('watcherWebhookConfig').textContent=!stripe||stripe.scope==='disabled'
