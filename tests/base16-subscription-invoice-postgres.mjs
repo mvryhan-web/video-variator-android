@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import pg from 'pg';
 import {GenerationWallet} from '../server/generation-wallet.js';
 import {installGenerationBilling} from '../server/generation-billing.js';
-import {subscriptionCreditConfig,grantPaidSubscriptionInvoice} from '../server/generation-subscription-credits.js';
+import {subscriptionCreditConfig,invoicePaymentIntent,grantPaidSubscriptionInvoice} from '../server/generation-subscription-credits.js';
 
 const dsn=process.env.AI_TEST_DATABASE_URL;
 const env={
@@ -38,6 +38,19 @@ test('BASE #16 never interprets old tool credits as AI credits or uses unknown S
  }
  assert.deepEqual(subscriptionCreditConfig(env).entries,
   [{plan:'basic',credits:120,priceId:'price_subfixture'}]);
+});
+
+test('BASE #16: subscription invoice requires a real unique Stripe payment intent',()=>{
+ assert.equal(invoicePaymentIntent({payment_intent:'pi_invoice1'}),'pi_invoice1');
+ assert.equal(invoicePaymentIntent({payments:{data:[{payment:{
+  type:'payment_intent',payment_intent:'pi_invoice2'}}]}}),'pi_invoice2');
+ assert.equal(invoicePaymentIntent({payment_intent:'pi_invoice1',payments:{data:[
+  {payment:{type:'payment_intent',payment_intent:'pi_invoice1'}}]}}),'pi_invoice1');
+ for(const candidate of [{},{payment_intent:'a_fake'},{
+   payment_intent:'pi_invoice1',payments:{data:[{payment:{type:'payment_intent',payment_intent:'pi_other'}}]}
+ }]){
+  assert.throws(()=>invoicePaymentIntent(candidate),/AI_SUBSCRIPTION_PAYMENT_INTENT_INVALID/);
+ }
 });
 
 test('BASE #16: a signed, paid invoice grants once per invoice on disposable PostgreSQL', {skip:!dsn},async()=>{
