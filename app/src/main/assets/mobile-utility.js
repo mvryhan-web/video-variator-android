@@ -362,6 +362,7 @@ async function processMedia(){
  const code=await engine.exec(args);if(abort)return;if(code!==0)throw Error(label('The file codec is not supported.','Кодек файла не поддерживается.'));
  const bytes=await engine.readFile(out),mime=video?'video/mp4':'audio/mp4';
  const converted=new File([bytes],base(f)+'-'+out,{type:mime});
+ if(tool==='video-compress'&&converted.size===0)throw Error(label('The video codec produced no output. Try another file or quality.','Видеокодек не создал файл. Попробуйте другое видео или качество.'));
  // Validate a real, non-empty conversion before adding any Download action.
  const compressionStats=tool==='video-compress'?videoCompressionSummary(f.size,converted.size):null;
  await result(converted);
