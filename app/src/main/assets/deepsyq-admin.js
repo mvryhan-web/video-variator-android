@@ -1,3 +1,4 @@
+import {summarizeAiTemplateReadiness} from './ai-template-readiness.js';
 const $=id=>document.getElementById(id);
 let base='';try{base=window.AndroidBridge?.getApiBase?.()||'';}catch(_){}base=String(base||window.VV_API_BASE||location.origin).replace(/\/$/,'');
 async function api(path,options={}){const token=localStorage.getItem('vv_token');if(!token)throw Error('AUTH_REQUIRED');const r=await fetch(base+path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),Authorization:`Bearer ${token}`}});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'REQUEST_FAILED');return d;}
@@ -85,7 +86,23 @@ function templateEditor(t){
  return form;
 }
 function renderTemplates(items){$('templates').replaceChildren();if(!items.length){const p=document.createElement('p');p.className='message';p.textContent='No templates yet.';$('templates').append(p);return;}for(const t of items)$('templates').append(templateEditor(t));}
-async function loadTemplates(){try{$('templateStatus').textContent='Loading…';const d=await api('/api/studio/admin/templates');renderTemplates(d.items||[]);$('templateStatus').textContent='';}catch(e){$('templates').replaceChildren();$('templateStatus').textContent=e.message;}}
+function renderTemplateReadiness(items){
+ const root=$('templateReadiness');if(!root)return;root.replaceChildren();
+ const r=summarizeAiTemplateReadiness(items);
+ const head=document.createElement('div');head.className='inspiration-readiness-head';
+ const title=document.createElement('strong');title.textContent='AI Apps publish readiness';
+ const status=document.createElement('span');status.textContent=r.actionable+' usable / '+r.total+' records';
+ head.append(title,status);root.append(head);
+ const stats=document.createElement('div');stats.className='inspiration-readiness-stats';
+ for(const [label,n] of [['Active records',r.active],['Rights recorded + active',r.publicEligible],['Studio-compatible + active',r.actionable],['Drafts',r.drafts],['Rights not recorded',r.missingRights],['Without preview image',r.noThumbnail]]){
+  const count=document.createElement('span');count.textContent=label+': '+n;stats.append(count);
+ }
+ root.append(stats);
+ const notice=document.createElement('p');notice.textContent='Metadata review only. Recorded rights notes are not independent license verification. Public access still requires approved migrations, real model access and the production feature flag.';root.append(notice);
+ if(r.blockers.length){const label=document.createElement('strong');label.textContent='Review before publishing:';root.append(label);const ul=document.createElement('ul');for(const b of r.blockers.slice(0,8)){const item=document.createElement('li');item.textContent=b;ul.append(item);}root.append(ul);}
+ else{const p=document.createElement('p');p.textContent=r.total?'No metadata blockers found for active templates. This does not approve public launch.':'Add your first owned/licensed draft with real rights evidence to begin.';root.append(p);}
+}
+async function loadTemplates(){try{$('templateStatus').textContent='Loading…';const d=await api('/api/studio/admin/templates');renderTemplates(d.items||[]);renderTemplateReadiness(d.items||[]);$('templateStatus').textContent='';}catch(e){$('templates').replaceChildren();const root=$('templateReadiness');if(root)root.textContent='Could not load template publish readiness.';$('templateStatus').textContent=e.message;}}
 
 async function previewRoute(){
  const button=$('routePreview'),out=$('routeResult');button.disabled=true;$('routeStatus').textContent='Checking compatible models…';out.replaceChildren();
