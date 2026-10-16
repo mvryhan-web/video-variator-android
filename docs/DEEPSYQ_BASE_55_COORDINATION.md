@@ -33,7 +33,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 |---:|---|---|:---:|---|---|---|
 | 1 | Product becomes Lumina-style AI creative platform | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 2 | New AI platform becomes `/` | BLOCKED | D | EXTERNAL GATE; SAFE CODE ONLY | — | — |
-| 3 | Hero / Canvas workspace | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 3 | Hero / Canvas workspace | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS — owner-approved always-visible Home carousel truthful no-video fallback only | Agent A / agent-a-base3-visible-home-fallback-20261016 / Issue #72 |
 | 4 | Image generation | PARTIAL / BLOCKED | A | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 5 | Video generation | CORE CODE VERIFIED / ADVANCED & LIVE BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 6 | BytePlus first provider adapter | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
