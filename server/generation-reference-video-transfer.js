@@ -10,13 +10,15 @@ export function referenceVideoTransferEnabled(env={}){
   env.AI_STUDIO_REFERENCE_TRANSFER_REVIEW_APPROVED==='true';
 }
 export function createSeedanceVideoTransferPlanner({
- ledger,storage,inspector,env=process.env
+ ledger,storage,env=process.env
 }={}){
  if(typeof ledger?.get!=='function'||typeof ledger?.getForVideoTransfer!=='function'||
   typeof storage?.presignStagedReferenceRead!=='function')
   reject('REFERENCE_VIDEO_PLANNER_NOT_CONFIGURED');
- const review=inspector||createSeedanceStagedReferenceInspector({ledger});
- if(typeof review?.inspect!=='function')reject('REFERENCE_VIDEO_PLANNER_NOT_CONFIGURED');
+ // The signer must NEVER accept an injected/precomputed "compatible" verdict.
+ // Always fetch owner-scoped private bytes and run the actual local ffprobe
+ // through our internal inspector before minting a bearer S3 GET capability.
+ const review=createSeedanceStagedReferenceInspector({ledger});
  async function prepare({userId,model,videoAssetIds=[]}={}){
   if(!referenceVideoTransferEnabled(env))reject('REFERENCE_VIDEO_TRANSFER_DISABLED');
   if(typeof userId!=='string'||!userId||userId.length>256)
