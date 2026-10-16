@@ -197,7 +197,10 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Implementation:** update only stale Studio test fixtures to current customer-wallet endpoints; add a fail-closed wallet-visible/checkout-disabled test. Do not touch owner-locked Home, Stripe/webhook, GenerationWallet or provider behavior; user-visible purchase offers remain governed by existing billing configuration.
 - **Acceptance:** focused browser tests + existing AI Studio suite; report results truthfully. §52 is overall IN PROGRESS because staging/physical/production and full preflight gates remain external.
 
-## BASE #16 signed webhook readiness — IN PROGRESS (2026-10-16)
+## BASE #16 signed webhook readiness — MERGED TO BASE / CODE VERIFIED (2026-10-16)
+
+- **Result:** [PR #106](https://github.com/mvryhan-web/video-variator-android/pull/106) merged to `deepsyq-platform` squash `fad742097368b7e0dd6f404f30fcc66071298a44`; [targeted CI 38912856318](https://github.com/mvryhan-web/video-variator-android/actions/runs/38912856318) **PASS**. Live AI readiness now checks plausible `STRIPE_WEBHOOK_SECRET` configuration because missing signed webhook means confirmed payments cannot credit the wallet. Only `server/generation-readiness.js` and tests changed, no secrets displayed. This is *configuration presence*, NOT webhook delivery proof or an owner-approved real payment. Original #16 PARTIAL / NOT LIVE. All previous checkout/refund fixes stay intact.
+
 
 - Same owner BASE-D-CheckoutReuse, branch `base16-stripe-webhook-readiness-20261016`, previously merged #85/#86/#91/#99 untouched. Claimed via shared BASE #16 board before code.
 - **Verified live-launch gap:** `server/server.js` returns HTTP 503 on the signed Stripe webhook without `STRIPE_WEBHOOK_SECRET`, yet `generationReadiness` may return `launchReady:true` with fully configured live AI keys/packs and no webhook signing secret. Users could buy credits but never receive them. Fix **read-only readiness report** only, require an explicitly formatted signing secret before green AI live launch. No Stripe key values/transactions and no prod configuration changed.
