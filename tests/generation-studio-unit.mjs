@@ -172,6 +172,7 @@ test('owner read-only analytics omit auth and Stripe secrets',async()=>{
   if(sql.startsWith('SELECT COUNT(*)::int AS users'))return {rows:[{users:2,registrations_30d:1,ever_subscribed:1,inactive_after_subscription:0}]};
   if(sql.startsWith('SELECT COUNT(*)::int AS jobs'))return {rows:[{jobs:4,generating_users:2,ready:3,failed:1,processing:0,avg_seconds:8.5,recorded_cost:0.4,credits_charged:20}]};
   if(sql.startsWith('SELECT model,COUNT(*)::int AS jobs'))return {rows:[{model:'fixture',jobs:3}]};
+  if(sql.startsWith('SELECT kind,COUNT(*)::int AS jobs'))return {rows:[{kind:'image',jobs:2,ready:2,failed:0},{kind:'video',jobs:1,ready:0,failed:1}]};
   if(sql.startsWith('SELECT currency,COUNT(*)::int AS purchases'))return {rows:[{currency:'eur',purchases:1,net_amount_minor:500,credits_purchased:100}]};
   if(sql.startsWith("SELECT COALESCE(cost_currency,'unknown') AS currency"))return {rows:[{currency:'usd',amount:0.4,ready_priced_jobs:2,avg_ready_cost:0.12}]};
   if(sql.startsWith('SELECT COUNT(*)::int AS first_success_users'))return {rows:[{first_success_users:2,first_success_30d:1}]};
@@ -188,10 +189,13 @@ test('owner read-only analytics omit auth and Stripe secrets',async()=>{
   assert.equal(d.generation.firstSuccessfulUsers30d,1);assert.equal(d.users.aiCreditBuyers,1);
   assert.equal(d.users.aiCreditBuyerConversionRate,0.5);
   assert.equal(d.generation.providerCosts[0].readyPricedJobs,2);
+  assert.deepEqual(d.generation.creationTypes,[{kind:'image',jobs:2,ready:2,failed:0},{kind:'video',jobs:1,ready:0,failed:1}]);
+  assert.equal(d.generation.topCreationType,'image');
   assert.equal(d.generation.providerCosts[0].averageReadyJobCost,0.12);
   assert.deepEqual(d.unverifiedMetrics,{trialToPaid:null,churnRate:null,revenuePerUser:null,mostUsedTool:null});
   assert.ok(seen.some(q=>q.includes('MIN(COALESCE(completed_at,created_at))')&&q.includes("status='ready'")));
   assert.ok(seen.some(q=>q.includes('COUNT(DISTINCT p.user_id)')&&q.includes('p.amount>p.refunded_amount')));
+  assert.ok(seen.some(q=>q.includes("kind IN ('image','video','music','voice')")&&q.includes('deleted=false')));
   assert.ok(seen.every(q=>q.startsWith('SELECT')||q.startsWith('CREATE TABLE')));
   assert.equal(JSON.stringify(d).includes('must-not-leak'),false);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
