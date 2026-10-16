@@ -38,4 +38,8 @@ This object is a sample of the **adapter input contract**, not a proposed live m
 - https://developers.openai.com/api/reference/resources/images/methods/edit
 - https://developers.openai.com/api/docs/guides/image-generation
 
-**Status:** M0 adapter source & 13 authored offline tests. GitHub CI outcome must be recorded after actual run; **NOT** deployed, commercially active, end-to-end verified or BASE §4 DONE.
+**Status:** M0 adapter source & 14 authored offline tests. GitHub CI outcome must be recorded after actual run; **NOT** deployed, commercially active, end-to-end verified or BASE §4 DONE.
+
+## Continued verification (2026-10-16)
+
+Provider API documentation reconfirmed allowed standard sizes for older GPT Image models and custom 16-pixel-multiple sizes for the newer flexible-size models. Adapter now rejects custom sizes for `gpt-image-1.5` even if a server config is mistaken, and rejects provider-reported size/quality mismatches before private storage. Test count **14**. Exact actual GitHub source + the actual authored test bodies evaluated in a contained V8 harness with emulated Node Buffer/FormData/Blob/assert: **14/14 PASS**; GitHub Node CI remains QUEUED and is not represented as passed. No live provider requests.
