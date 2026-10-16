@@ -68,7 +68,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 35 | Security | PARTIAL — TEMPLATE OWNER AUTHORIZATION CI VERIFIED | C | OTHER IDOR/UPLOAD/WEBHOOK/KEY/PRODUCTION REVIEWS PENDING | CODE VERIFIED / MERGED TO BASE (PR #94) | Agent C / Issue #74 / merge `6a3b2d2a` / PostgreSQL CI 38907935442 |
 | 36 | Privacy | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 37 | Business analytics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / BASE MERGED (partial) | BASE-D-Analytics-ChatGPT / PR #64 · CI 38899113996 |
-| 38 | Admin dashboard | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 38 | Admin dashboard | PARTIAL | C | OWNER ADMIN RESPONSIVE 320–390px CARDS/CONTROLS | IN PROGRESS | Agent C / Issue #74 / `base38-owner-admin-mobile-20261016` |
 | 39 | Provider performance | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 40 | Model routing registry | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 41 | Internal model capabilities | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
