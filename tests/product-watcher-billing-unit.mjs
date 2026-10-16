@@ -117,7 +117,7 @@ test('B5-07 query validates impossible purchase shapes with read-only, private a
  assert.ok(q.includes('p.refunded_amount<0'));
  assert.ok(q.includes("btrim(p.currency) !~* '^[a-z]{3}$'"));
  assert.ok(q.includes('invalid_credit_purchases'));
- assert.ok(f.seen.every(sql=>/^SELECT\\b/.test(sql)));
+ assert.ok(f.seen.every(sql=>sql.startsWith('SELECT')));
  assert.ok(!f.seen.join('\n').includes('user_id'));
  assert.ok(!f.seen.join('\n').includes('payment_intent'));
  assert.ok(!('sessionId' in r));
