@@ -33,6 +33,7 @@ test('BASE #16: missing live signed webhook forces checkout config OFF and no da
    assert.equal(config.livePaymentsEnabled,false);
    assert.equal(config.reason,'PAYMENTS_NOT_ACTIVATED');
    assert.equal(generationReadiness(env).gates.find(g=>g.id==='stripeWebhook').ready,false);
+   assert.equal(generationReadiness(env).billing.liveAiPaymentsEnabled,false);
    const post=await fetch(h.base+'/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sku:pack.sku,requestId:'11111111-1111-4111-8111-111111111111'})});
    assert.equal(post.status,503);
    assert.equal(h.getReads(),0,'blocked checkout must not access wallet/order database');
@@ -54,5 +55,6 @@ test('BASE #16: explicit syntactically valid live webhook matches the readiness 
  assert.equal(stripeWebhookConfigured(env),true);
  const gate=generationReadiness(env).gates.find(g=>g.id==='stripeWebhook');
  assert.equal(gate.ready,true);
+ assert.equal(generationReadiness(env).billing.liveAiPaymentsEnabled,true);
  assert.equal(JSON.stringify(gate).includes(env.STRIPE_WEBHOOK_SECRET),false);
 });
