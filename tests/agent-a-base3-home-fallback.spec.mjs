@@ -193,3 +193,31 @@ test('BASE 3: all 13 original scene identities can navigate with only real API p
  await expect(page.locator('#homeHeroDots button').last()).toHaveAttribute('aria-label',/Red Silhouette/);
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
 });
+
+test('BASE 3: independent rights-cleared Hero survives failed preview and optional Agent feed',async({page})=>{
+ await mockSafeHome(page,[]);
+ // These are synthetic API contract entries, NOT delivered owner MP4s.
+ await page.addInitScript(()=>{
+  HTMLMediaElement.prototype.load=function(){};
+  HTMLMediaElement.prototype.pause=function(){};
+  HTMLMediaElement.prototype.play=function(){return Promise.resolve();};
+ });
+ const item={id:'fixture-video',kind:'video',title:'Owner-authorized scene fixture',
+  actionTarget:'studio',aspectRatio:'16:9',category:'Cinematic',active:true,featured:true,
+  previewUrl:'/fixture-not-published.mp4',previewPosterUrl:'/fixture-not-published.png'};
+ let receivedOwnerQuery=false;
+ await page.route('**/api/inspiration**',route=>{
+  const request=new URL(route.request().url());
+  if(request.searchParams.get('kind')==='video'&&request.searchParams.get('limit')==='13'){
+   receivedOwnerQuery=true;
+   return route.fulfill({json:{items:[item],categories:[],ratios:[]}});
+  }
+  return route.fulfill({status:503,json:{error:'INSPIRATION_UNAVAILABLE'}});
+ });
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>receivedOwnerQuery).toBe(true);
+ await expect(page.locator('#homeHeroDots button')).toHaveCount(1);
+ await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Owner-authorized scene fixture');
+ await expect(page.locator('#inspirationPreview')).toBeHidden();
+ await expect(page.locator('#agentExamples')).toBeHidden();
+});
