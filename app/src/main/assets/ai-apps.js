@@ -1,9 +1,23 @@
 const $=id=>document.getElementById(id);
 const TYPES=new Set(['image','video','audio']);
-let all=[];
+const SUPPORTED_REFERENCE_INPUTS=new Set(['text','image']);
+const PAGE_SIZE=12;
+let all=[],shownLimit=PAGE_SIZE;
 
+function unsupportedInputs(template){
+ const required=template.requiredInputTypes;
+ if(required==null)return [];
+ if(!Array.isArray(required))return ['unknown'];
+ return required.filter(input=>typeof input!=='string'||!SUPPORTED_REFERENCE_INPUTS.has(input));
+}
 function supported(template){
- return ['image','video','product_video','audio'].includes(template.generationType);
+ return ['image','video','product_video','audio'].includes(template.generationType)&&unsupportedInputs(template).length===0;
+}
+function inputHint(template){
+ const unsupported=unsupportedInputs(template);
+ if(unsupported.length)return 'This workflow requires '+unsupported.map(input=>String(input).replaceAll('_',' ')).join(', ')+' input support not yet available through Studio.';
+ if(template.requiredInputTypes?.includes?.('image'))return 'Add your own reference images in Studio. Images are not attached automatically.';
+ return '';
 }
 function destination(template){
  return template.generationType==='image'?'image':template.generationType==='audio'?'audio':'video';
@@ -18,6 +32,7 @@ function renderCategories(){
  select.value=categories.includes(current)?current:'';
 }
 function restoreFiltersFromUrl(){
+ shownLimit=PAGE_SIZE;
  const params=new URLSearchParams(location.search);
  $('search').value=(params.get('q')||'').slice(0,100);
  const type=params.get('type')||'';
@@ -35,6 +50,7 @@ function updateUrl(){
  history.replaceState(history.state,'',url.pathname+url.search+url.hash);
 }
 function changed(){
+ shownLimit=PAGE_SIZE;
  updateUrl();
  render();
 }
@@ -78,18 +94,23 @@ function render(){
   return !term||searchable.includes(term);
  });
  const root=$('apps');root.replaceChildren();
+ const visible=items.slice(0,shownLimit),more=$('loadMore');
+ more.hidden=items.length<=shownLimit;
+ more.textContent='Load more templates ('+(items.length-visible.length)+' remaining)';
  $('clearFilters').disabled=!(term||type||category);
  if(!all.length){
   $('status').textContent='No active AI Apps templates are published yet.';
   empty('Browse Studio while new workflows are being prepared. No templates or results are being invented.');
   return;
  }
- $('status').textContent=items.length+' of '+all.length+' active template'+(all.length===1?'':'s')+' shown.';
+ $('status').textContent=items.length>shownLimit?
+  'Showing '+visible.length+' of '+items.length+' matching templates ('+all.length+' active templates loaded).':
+  items.length+' of '+all.length+' active template'+(all.length===1?'':'s')+' shown.';
  if(!items.length){
   empty('No matching workflows. Try another search, format or category.');
   return;
  }
- for(const item of items){
+ for(const item of visible){
   const card=document.createElement('article');card.className='app-card';
   const visual=document.createElement('div');visual.className='app-thumb';
   if(item.thumbnail){
@@ -108,7 +129,10 @@ function render(){
   const button=document.createElement('button');button.type='button';
   button.textContent=supported(item)?'Use template':'Workflow pending';button.disabled=!supported(item);
   button.addEventListener('click',()=>useTemplate(item));
-  body.append(h,p,meta,button);card.append(visual,body);root.append(card);
+  body.append(h,p);
+  const hint=inputHint(item);
+  if(hint){const note=document.createElement('p');note.className='input-hint';note.textContent=hint;body.append(note);}
+  body.append(meta,button);card.append(visual,body);root.append(card);
  }
 }
 async function load(){
@@ -130,6 +154,10 @@ async function load(){
 $('search').addEventListener('input',changed);
 $('type').addEventListener('change',changed);
 $('category').addEventListener('change',changed);
+$('loadMore').addEventListener('click',()=>{
+ shownLimit+=PAGE_SIZE;
+ render();
+});
 $('clearFilters').addEventListener('click',()=>{
  $('search').value='';$('type').value='';$('category').value='';
  changed();$('search').focus();

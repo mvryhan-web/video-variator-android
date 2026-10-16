@@ -40,6 +40,7 @@ The exact completion state of older components must be verified from the current
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
 | BASE AI Apps retry and safe template handoff | ChatGPT continuation / PR #52 | `deepsyq-platform` (integrated from `base-ai-apps-resilience-20261016`) | CODE VERIFIED / MERGED TO BASE / NOT DEPLOYED | Retry after temporary template API outage preserves filters; template prefill into existing Studio does not auto-generate. Focused desktop + mobile Playwright CI 38888470970 PASS; shared Veo regression unrelated. |
+| BASE AI Apps catalog readiness | ChatGPT continuation | `base-ai-apps-catalog-readiness-20261016` / pending PR | IN PROGRESS / CI PENDING | Honest requirements for real Studio input support plus bounded Load more rendering; isolated frontend/tests only, no provider/API/Studio/Stripe changes. |
 | BASE AI Apps discovery | ChatGPT continuation / PR #51 | `deepsyq-platform` (integrated from `base-ai-apps-discovery-20261015`) | CODE VERIFIED / BASE MERGED / NOT DEPLOYED | Search, format/category filters, shareable URLs, safe empty/error states; desktop/mobile Chromium GitHub CI 38887932245 PASS. No public release; shared Google Veo regressions remain separate. |
 | BASE Video / reference intake, cleanup and Seedance preflight | ChatGPT continuation (handoff `90ee2b7`) | `deepsyq-platform` / PR #42 | BATCH-SAFE PRESIGN + REAL FFPROBE + LOCAL S3/PG CI PASSED / CLOUD & BYTEPLUS BLOCKED | Owner MP4 FFprobe is mandatory; all 1–3 ledger owner/ready/TTL queries now complete BEFORE any 30s S3 bearer URL signing. Focused CI 38887993265: 65/65 unit + 9/9 isolated PG/fake S3 green; official local MinIO/PG 38798448778 green. No real cloud/BytePlus, Stripe or production changes; new flags OFF. |
 
@@ -57,6 +58,12 @@ When another agent joins, add one row per claimed workstream before substantial 
 - **CODE VERIFIED / MERGED TO BASE, NOT PRODUCTION.** Implemented in-page Retry when active-template API fails, with filters restored from shareable URL; added desktop/mobile browser assertions for failed-first/successful-retry and real template handoff to existing Video Studio with unchecked consent/zero paid generation POSTs. Isolated changes: AI Apps JS/CSS and focused Playwright suite.
 - [Focused CI run 38888470970](https://github.com/mvryhan-web/video-variator-android/actions/runs/38888470970) passed. Shared regression 38888471036 failed in separate pre-existing Google Veo cases; BASE Video owner handles this independently.
 - Integrated from PR #52; no main, Render, shared Studio/server, auth, provider, wallet, billing, data or owner-locked Home changes. Public media/providers/pricing/AI Apps activation remain separate release gates.
+
+### BASE AI Apps — real catalog input readiness (2026-10-16)
+
+- Isolated continuation after merged PR #51/#52. The catalog no longer offers an enabled Use template button when a workflow requires video, audio, logo or product-name input handling that the current prompt-only Studio handoff does not implement; image-reference workflows explain that the user must attach their own images manually in Studio. No fake attachments or paid provider call.
+- Added 12-item incremental Load more rendering over the existing owner-activated template API dataset (server currently caps at 100 rows), keeping category/search/type filtering over the full loaded dataset. Narrow desktop/mobile Playwright tests cover input gating and large catalogs.
+- Branch `base-ai-apps-catalog-readiness-20261016`: CODE PREPARED / CI PENDING; do not treat as public release. No changes to existing server templates, models, protected Home, Studio, backend, jobs, Stripe, wallet, migrations or production.
 
 ## Approved queued roadmap
 
