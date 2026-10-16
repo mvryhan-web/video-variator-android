@@ -19,6 +19,12 @@ export function welcomeCreditConfig(env={}){
   const credits=Number(env.AI_WELCOME_CREDITS||0),valid=Number.isSafeInteger(credits)&&credits>0&&credits<=10_000_000;
   return {enabled:env.AI_WELCOME_CREDITS_ENABLED==='true'&&valid,credits:valid?credits:0};
 }
+// This checks configuration presence only. Real signed Stripe delivery still
+// needs a controlled staging webhook/payment test before public activation.
+export function stripeWebhookConfigured(env={}){
+ const secret=env.STRIPE_WEBHOOK_SECRET;
+ return typeof secret==='string'&&secret.startsWith('whsec_')&&secret.length>=16;
+}
 export function generationBillingRuntime(env={}){
   const mode=env.AI_BILLING_MODE==='live'?'live':'test',key=String(env.STRIPE_SECRET_KEY||'');
   const keyMatches=mode==='live'?/^(sk_live_|rk_live_)/.test(key):/^(sk_test_|rk_test_)/.test(key);
@@ -88,7 +94,7 @@ export function verifyQuote({userId,body,token,env,now=Date.now()}) {
 export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=process.env}) {
   const wallet=new GenerationWallet(pool); let initializing;
   const runtime=()=>generationBillingRuntime(env);
-  const enabled=()=>{const r=runtime();return r.activationRequested&&!!pool&&!!stripe&&!!env.DATABASE_URL&&!!env.APP_JWT_SECRET&&r.keyMatches&&(r.mode==='test'||r.liveApproved);};
+  const enabled=()=>{const r=runtime();return r.activationRequested&&!!pool&&!!stripe&&!!env.DATABASE_URL&&!!env.APP_JWT_SECRET&&r.keyMatches&&(r.mode==='test'||(r.liveApproved&&stripeWebhookConfigured(env)));};
   const init=async()=>{
     await wallet.init();
     if (!initializing) initializing=pool.query(`CREATE TABLE IF NOT EXISTS vv_ai_order (

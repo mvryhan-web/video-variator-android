@@ -1,5 +1,5 @@
 import {pricingCatalog} from './generation-pricing.js';
-import {billingCatalog,generationBillingRuntime} from './generation-billing.js';
+import {billingCatalog,generationBillingRuntime,stripeWebhookConfigured} from './generation-billing.js';
 import {generationEntitlements} from './generation-entitlements.js';
 import {generationPolicy} from './generation-policy.js';
 import {objectStorageConfig} from './generation-storage.js';
@@ -17,7 +17,7 @@ export function generationReadiness(env={}){
   {id:'creditPacks',label:'AI credit packs + rates',ready:billing.packs.length>0&&billing.rates.length>0,required:true},
   {id:'stripeMode',label:'Stripe AI billing mode/key',ready:billingRuntime.keyMatches,required:true},
   {id:'liveBillingApproval',label:'Live AI billing approval',ready:billingRuntime.livePaymentsEnabled,required:true},
-  {id:'stripeWebhook',label:'Signed Stripe webhook configured',ready:typeof env.STRIPE_WEBHOOK_SECRET==='string'&&env.STRIPE_WEBHOOK_SECRET.startsWith('whsec_')&&env.STRIPE_WEBHOOK_SECRET.length>=16,required:billingRuntime.livePaymentsEnabled},
+  {id:'stripeWebhook',label:'Signed Stripe webhook configured',ready:stripeWebhookConfigured(env),required:billingRuntime.livePaymentsEnabled},
   {id:'storage',label:'Permanent object storage',ready:storage.configured,required:true},
   {id:'worker',label:'Background generation worker flag',ready:env.AI_STUDIO_BACKGROUND_POLLING==='true',required:true},
   {id:'publicJobPolicy',label:'Enabled bounded public job spend-rate limits',ready:policy.enabled&&policy.maxConcurrentPerUser>0&&policy.maxJobsPerHourPerUser>0,required:env.AI_PUBLIC_GENERATION_ENABLED==='true'},
@@ -30,7 +30,7 @@ export function generationReadiness(env={}){
   blockers,
   gates,
   providers:{googleConfigured:!!env.GEMINI_API_KEY,bytePlusConfigured:!!env.BYTEPLUS_API_KEY},
-  billing:{mode:billingRuntime.mode,liveAiPaymentsImplemented:true,liveAiPaymentsEnabled:billingRuntime.livePaymentsEnabled,creditPackCount:billing.packs.length,rateCount:billing.rates.length},
+  billing:{mode:billingRuntime.mode,liveAiPaymentsImplemented:true,liveAiPaymentsEnabled:billingRuntime.livePaymentsEnabled&&stripeWebhookConfigured(env),creditPackCount:billing.packs.length,rateCount:billing.rates.length},
   pricing:{configured:pricing.configured,currenciesExplicit:pricingCurrenciesExplicit},
   storage:{configured:storage.configured},
   entitlements:{configured:entitlements.configured,planCount:entitlements.plans.length}
