@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {BASE_LANES,ORIGINAL_BASE_SPEC_BLOB_SHA,gitBlobSha,originalBaseNumbers,boardRows,checklistRows,verifyBaseCoordination,verifyCurrentFiles} from '../scripts/verify-deepsyq-base-coordination.mjs';
+import {BASE_LANES,BASE_TRACKING_LABELS,ORIGINAL_BASE_SPEC_BLOB_SHA,gitBlobSha,originalBaseNumbers,boardRows,checklistRows,verifyBaseCoordination,verifyCurrentFiles} from '../scripts/verify-deepsyq-base-coordination.mjs';
 
 const spec=readFileSync('docs/DEEPSYQ_PLATFORM_SPEC.md','utf8');
 const board=readFileSync('docs/DEEPSYQ_BASE_55_COORDINATION.md','utf8');
@@ -132,4 +132,22 @@ test('original owner BASE TXT is frozen by exact Git blob SHA, not headings alon
  const result=verifyBaseCoordination(changed,board,checklist);
  assert.ok(result.issues.some(issue=>issue.startsWith('ORIGINAL_BASE_SOURCE_CHANGED:')),JSON.stringify(result.issues));
  assert.ok(!result.issues.some(issue=>issue.startsWith('ORIGINAL_BASE_HEADINGS:')),'this test must guard body changes missed by numbered headings');
+});
+
+test('canonical 55 translated tracking labels are stable even if both live tables are jointly renamed',()=>{
+ assert.equal(BASE_TRACKING_LABELS.length,55);
+ for(const row of boardRows(board)){
+  assert.equal(row.title,BASE_TRACKING_LABELS[row.number-1],'Tracking title for #'+row.number);
+ }
+ // The old checker only compared titles between the two editable documents.
+ // An identical rewrite in both used to pass despite redefining a BASE row.
+ const name='Renamed template system without owner review';
+ const updatedBoard=edited(23,line=>line.replace('| Template system |','| '+name+' |'));
+ const updatedChecklist=editChecklist(23,line=>line.replace('| Template system |','| '+name+' |'));
+ const result=verifyBaseCoordination(spec,updatedBoard,updatedChecklist);
+ assert.ok(result.issues.includes('BASE_TRACKING_LABEL_DRIFT: 23'),JSON.stringify(result.issues));
+ assert.ok(!result.issues.includes('CHECKLIST_TITLE_MISMATCH: 23'),'both edited tables still agree');
+ // Progress and ownership evolve freely; the exact tracked task remains the same.
+ const statusOnly=edited(23,line=>line.replace('| PARTIAL', '| PARTIAL — scoped verification'));
+ assert.equal(verifyBaseCoordination(spec,statusOnly,checklist).ok,true);
 });
