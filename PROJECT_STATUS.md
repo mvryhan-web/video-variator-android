@@ -16,7 +16,8 @@ This file is the shared live progress board for all coding agents.
 ## Agent C — BASE #28 unique Photo Compression tile / IN PROGRESS (2026-10-16)
 
 - **Scoped claim:** isolated C task `base28-unique-utility-tiles-20261016`, preserving previous PRs #67/#113/#121 and all free tool engines. Actual `mobile-utility-links.js` pushes `photo-compress` into `tools`, renders the full array, and then appends a second Photo Compression link manually; duplicate CTA harms mobile navigation clarity. Keep registry entry, exactly one visible tile and real `data-utility` link routing; no new backend/service.
-- **Boundaries:** existing BASE #30 PR #144 is independently pending GitHub runner availability and remains reserved; this #28 change touches only mobile utility tile render and its focused verification. No shared Home/Stripe/providers/auth/DB/main edits. Not yet CODE VERIFIED or deployed.
+- **Code pushed:** [PR #147](https://github.com/mvryhan-web/video-variator-android/pull/147), HEAD `cc8613d4c60844bd4a8047f4495bd2c5373c0633`: deduplicated catalog rendering by keeping one `photo-compress` item, preserving its required `data-utility` route/old compressor and all other 17 tool links. Added an explicit unique-18-links Playwright acceptance and extended the existing BASE #28 four-browser photo-compression workflow. [CI 38937757465](https://github.com/mvryhan-web/video-variator-android/actions/runs/38937757465) QUEUED; no browser PASS claimed yet.
+- **Boundaries:** BASE #30 PR #144 is separately reserved pending current runner availability; #28 change touches only mobile utility tile render and its focused verification. No shared Home/Stripe/providers/auth/DB/main edits. Not yet CODE VERIFIED or deployed.
 
 ## Agent C — BASE #30 mobile drawer navigation acceptance / IN PROGRESS (2026-10-16)
 
