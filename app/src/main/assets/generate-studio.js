@@ -629,7 +629,12 @@ async function previewHistoryMedia(item,holder,button){
 }
 function historyState(status){return status==='ready'?say('Ready','Готово'):status==='queued'?say('Queued','В очереди'):status==='processing'?say('Processing','В работе'):status==='finalizing'?say('Finalizing','Завершаем'):status==='failed'?say('Failed','Ошибка'):status;}
 function historyDate(value){try{return new Intl.DateTimeFormat(navigator.language||'en',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));}catch(_){return String(value||'');}}
-function historyCredits(item){const n=Number(item.creditsCharged||item.creditsReserved||0);return n>0?say(n+' AI credits',n+' AI-кредитов'):'';}
+function historyCredits(item){
+ const charged=Number(item.creditsCharged),reserved=Number(item.creditsReserved);
+ if(Number.isSafeInteger(charged)&&charged>0)return say('Charged: '+charged+' AI credits','Списано: '+charged+' AI-кредитов');
+ if(Number.isSafeInteger(reserved)&&reserved>0)return say('Reserved per server: '+reserved+' AI credits','Резерв по данным сервера: '+reserved+' AI-кредитов');
+ return '';
+}
 function prepareHistoryItem(item,{settings=false}={}){
  if(busy)return;
  const previousCount=kind==='video'?refs.length:(drafts.video?.refs?.length||0);
