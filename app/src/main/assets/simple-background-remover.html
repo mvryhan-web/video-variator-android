@@ -17,7 +17,8 @@
   <p id="privacy">Your photo stays in this browser. No server upload, account or AI credits.</p>
   <div class="work-area">
    <div><h2>Original · pick the background</h2>
-    <div class="image-well"><canvas id="original" width="1" height="1" tabindex="0" role="img" aria-label="Loaded photo. Tap or click a background-colored pixel to select it."></canvas></div>
+    <div class="image-well"><canvas id="original" width="1" height="1" tabindex="0" role="button" aria-describedby="keyboardHelp sampleStatus" aria-label="Choose a background pixel in the loaded photo"></canvas></div>
+    <p id="keyboardHelp">Tap the photo, or use the arrow keys to choose a pixel (Shift moves 10). Home picks top-left; End picks bottom-right. Press Enter to confirm.</p>
     <button type="button" id="topLeft" disabled>Use top-left background color</button>
     <p id="sampleStatus" role="status" aria-live="polite">Choose a photo to begin.</p>
    </div>
