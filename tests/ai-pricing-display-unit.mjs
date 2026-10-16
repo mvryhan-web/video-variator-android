@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   validPlanPrice,validToolLimit,validLifetimeCurrency,
-  validAiPack,validWalletAmount,aiCheckoutMode
+  validAiPack,validWalletAmount,aiCheckoutMode,checkoutErrorMessage
 } from '../app/src/main/assets/ai-pricing-display.js';
 
 test('BASE #43: configured tool plan prices are passed through, never guessed',()=>{
@@ -52,4 +52,18 @@ test('BASE #43: test/live checkout mode must be explicit and enabled',()=>{
   for(const x of [{},{enabled:true},{enabled:false,mode:'live'},
     {enabled:true,mode:'production'},{enabled:true,mode:'LIVE'}])
     assert.equal(aiCheckoutMode(x),null);
+});
+
+test('BASE #16: checkout failures never assert an uncertain payment was not made',()=>{
+ const cases=['CHECKOUT_SESSION_NOT_REUSABLE','CHECKOUT_REQUEST_CONFLICT','AI_CHECKOUT_UNAVAILABLE',
+  'PAYMENTS_NOT_ACTIVATED','UNSAFE_CHECKOUT_URL','REQUEST_FAILED'];
+ for(const code of cases){
+  const msg=checkoutErrorMessage(code);
+  assert.equal(typeof msg,'string');
+  assert.ok(msg.length>25);
+  assert.doesNotMatch(msg,/no payment was completed|payment was not made|no charge occurred/i);
+ }
+ assert.match(checkoutErrorMessage('CHECKOUT_SESSION_NOT_REUSABLE'),/wallet.*payment history/i);
+ assert.match(checkoutErrorMessage('CHECKOUT_REQUEST_CONFLICT'),/refresh/i);
+ assert.match(checkoutErrorMessage('AI_CHECKOUT_UNAVAILABLE'),/temporarily unavailable/i);
 });
