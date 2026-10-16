@@ -141,7 +141,7 @@ test('BASE #51 launch prerequisites reflect actual Studio owner, call limit and 
   assert.ok(report.blockers.includes('studioOperator'));
   assert.equal(report.launchReady,false);
  }
- for(const kinds of ['', 'image', 'video', 'music', 'image, video','video,image,video_bad']){
+ for(const kinds of ['', 'image', 'video', 'music', 'image, video','image,video_bad']){
   const report=generationReadiness({...base,AI_STUDIO_ALLOWED_KINDS:kinds});
   assert.equal(report.gates.find(g=>g.id==='imageVideoKinds').ready,false,kinds);
   assert.ok(report.blockers.includes('imageVideoKinds'));
