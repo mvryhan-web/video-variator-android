@@ -80,7 +80,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 47 | Do not expose BytePlus as our product | DONE | — | DO NOT REBUILD | — | — |
 | 48 | Production safety / regression | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | REVIEW VERIFIED (PR #77; BASE release LIVE BLOCKED) | BASE-D / base55-d-release-review-issue75-20261016 |
 | 49 | Database migrations | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (partial; PR #82 · CI 38904014557 · a87bdc86; MAIN/LIVE BLOCKED) | BASE-D-MigrationSafety / base55-d-migration-readonly-20261016 |
-| 50 | Feature flags | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 50 | Feature flags | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS | Agent-D-BASE50 / base50-feature-switches-20261016 |
 | 51 | First commercial vertical slice | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 52 | Required implementation order | IN PROGRESS | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 53 | Explicit non-goals for now | DONE / RULE | — | DO NOT REBUILD | — | — |

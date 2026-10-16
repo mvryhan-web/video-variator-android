@@ -85,6 +85,12 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Files:** `server/generation-billing.js`, `tests/base16-checkout-reuse-unit.mjs`, `.github/workflows/base16-checkout-reuse.yml`. Existing idempotent Checkout resume no longer returns hard-coded test mode for live requests; it checks original order snapshot and current pack, Stripe owner/order metadata, amount/currency, live/test mode, open status, expiry and HTTPS Checkout domain before reusing a session. Unsafe/expired sessions return 409. Verified webhook source-of-truth and credit ledger untouched.
 - **Status:** scoped code `MERGED TO BASE / CODE VERIFIED`; original BASE #16 still **PARTIAL / NOT MAIN / NOT LIVE** until Stripe owner-approved Products/Prices, real signed webhook and test-mode purchase/refund acceptance. No live payment/Render/main/home change.
 
+## Agent D BASE #50 — individual Image/Video/BytePlus feature switches — IN PROGRESS (2026-10-16)
+
+- **Claim:** original `docs/DEEPSYQ_PLATFORM_SPEC.md` section 50, branch `base50-feature-switches-20261016` and isolated PR to `deepsyq-platform`. Existing owner-controlled Studio model catalog and global disabled public AI gate reused; no second router, Studio renderer, payment or database. No editing owner-locked Home.
+- **Scope:** narrow opt-out kill switches (`AI_IMAGE_ENABLED`, `AI_VIDEO_ENABLED`, `BYTEPLUS_ENABLED`) in existing catalog/estimate/create rejection. OFF global public AI remains mandatory, do not inadvertently disable owner pilot or history. Only code/test evidence supports scoped completion. No planned activation in Render.
+- **Collision:** BASE #16 currently independently owned; #18/#43/#49 merged; #48 release review and #30 mobile work separate. Check for concurrent Studio/provider changes before merging.
+
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
 **ACTIVE OWNER PRIORITY NOW:** all four coding-agent sessions focus on the **original BASE TXT / 55-point checklist**, not new Roadmap Blocks 1–7 or duplicated Product Watcher. Shared 55-item claim board and proposed collision-safe work lanes: [`docs/DEEPSYQ_BASE_55_COORDINATION.md`](docs/DEEPSYQ_BASE_55_COORDINATION.md). This new owner instruction overrides older prose suggesting BASE is owned by just one agent or that Agents E/Block 5 should keep expanding their scope. **Already verified:** 55 rows exist in the BASE checklist; #47 and #53 are DONE/RULE; **53 other rows are not fully DONE** and mostly have significant existing code. `PARTIAL` does NOT mean “build from scratch.”
