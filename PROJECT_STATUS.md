@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent A — BASE #24 History filter request race / CLAIMED / IN PROGRESS (2026-10-16)
+
+- **Owner/scope:** Explicit Agent A #72, only original BASE #24; isolated branch `agent-a-base24-history-filter-race-20261016`, target `deepsyq-platform`. Existing History filters and authenticated results remain; fix a confirmed implementation risk where an older `GET /api/studio/jobs?filter=...` response can overwrite newer requested History filter after rapid selection or after switching back to Create.
+- **Claim boundary:** `app/src/main/assets/generate-studio.js` history loader and focused `tests/generation-studio.spec.mjs` browser assertions. Never alter billing/Stripe, API, DB, provider routing, media rights, Home approved visuals/logo, or C mobile navigation. Another A draft PR #145 remains separately reserved on BASE #3. No new AI/provider requests.
+- **Verification planned:** real Chromium/WebKit race acceptance with deferred older response, newer filter correct, no unauthorized POST/paid job and tab exit remains clean. **Not yet CODE VERIFIED, not merged or live.**
+
 ## Agent D — BASE #16 duplicate Stripe Price-ID risk / IN PROGRESS (2026-10-16)
 
 - **Progress:** PR #148 latest 9fdb2da8. Isolated 5/5 config checks PASS. Added mocked Checkout fail-closed test, not yet CI-verified; GitHub Actions pending. Full BASE #16 remains PARTIAL / NOT LIVE.
