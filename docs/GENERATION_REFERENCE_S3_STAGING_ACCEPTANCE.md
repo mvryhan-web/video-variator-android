@@ -73,3 +73,12 @@ GitHub Actions focused run **38802341080** passed **60/60 unit and 9/9 isolated 
 
 Do not select `--execute` until the owner explicitly approves the precise disposable bucket/credentials, verifies that access policies allow only the fixture namespace, and accepts the small cloud requests/egress. No API activation follows automatically, even if the manually approved test later passes.
 
+
+
+## Mandatory real-byte video reinspection before presigning (2026-10-16)
+
+The internal, **not connected to provider requests** `createSeedanceVideoTransferPlanner` has been hardened to construct `createSeedanceStagedReferenceInspector({ledger})` unconditionally. A caller-supplied `inspector` is **not accepted or consulted**: the planner must read each owner-scoped, ready, unexpired reference through `ledger.get`, parse and re-probe the actual MP4 bytes using the **real local FFprobe**, run Seedance 2.0 compatibility (H.264, resolution, frame rate, duration and total visual length), then perform a second ledger owner/state/remaining-TTL read immediately before minting a 30-second S3 bearer URL. Malformed MP4 or otherwise incompatible references cannot obtain a signed URL, even if code attempts to pass a fabricated `{compatible:true}` inspector.
+
+Focused GitHub Actions **38887304221** passed **62/62 unit tests plus 9/9 isolated PostgreSQL/fake-S3 integration tests**, no failures/skips. New video planner tests use real FFmpeg-generated 854x480 H.264 MP4s plus actual local FFprobe; prove forged inspector is never called, owner ledger bytes are reread per asset, malformed media is rejected before metadata/signing, 16-second media violates Seedance input policy and flags/duplicate-ID/model errors fail early. No provider requests, customer uploads, billing, real cloud S3, public routes, wallet, Render or production flags were altered. Separate official MinIO plus isolated PostgreSQL lifecycle run **38798448778** remains verified.
+
+This closes an **offline internal trust bypass**, not the independent pending gates for media malware/privacy, production/cloud S3 DNS/TLS, BytePlus async download timing, retention/cleanup rollout and explicitly approved paid generation. Preserve all new upload/presign/audio flags OFF.
