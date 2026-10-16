@@ -7,6 +7,7 @@
 - Keeps the existing 16:9 `#homeHeroCarousel` region present **from initial HTML** and after zero usable rights-cleared video items.
 - When the entire real featured video set fails to load, keeps the gallery visible, clears inaccessible sources and misleading links, and shows a clear **static preview / not playable** status.
 - Hides disabled Prev/Next/Play/Sound controls rather than pretending a still or nonexistent MP4 is a video. Approved CTA links, Quick Create, Canvas, Agent, AI Apps, Inspiration and legacy tools stay untouched.
+- The owner-approved 13-scene identity scope now has capacity for 13 rights-cleared real video slides; dedicated `?featured=true&kind=video&limit=13` is fetched from the same Inspiration backend, optional real poster URLs become slide-selecting thumbnails, with the existing 10 preview cards unchanged. **This is only functional capacity, not produced assets or visual acceptance.**
 - Existing authenticated/right-filtered Inspiration feed remains the **only source** for actual playable videos. Real valid video slides retain cyclic navigation, muted autoplay gated on visibility/reduced motion/data saver, manual sound and one-video disabled arrows.
 - Adds Chromium/WebKit desktop/mobile checks for empty feed and exhausted errors; snapshots at 1448px/390px for **actual current implementation**, not a claim of visual acceptance.
 
