@@ -59,7 +59,8 @@ export async function getModelControl(pool,modelId){
 export async function updateModelControl(pool,{modelId,userId,patch,catalog}){
  if(!validModelId(modelId)||!catalog.some(m=>m.id===modelId))throw Error('MODEL_NOT_FOUND');
  const p=validateModelControlPatch(patch);await initModelControls(pool);
- const current=await getModelControl(pool,modelId)||{enabledOverride:null,priority:100,markupBps:null,internalCostMicros:null,maintenance:false};
+ const modelDefault=catalog.find(m=>m.id===modelId);
+ const current=await getModelControl(pool,modelId)||{enabledOverride:null,priority:Number(modelDefault?.control?.priority??modelDefault?.priority??100),markupBps:null,internalCostMicros:null,maintenance:false};
  const next={
   enabledOverride:Object.hasOwn(p,'enabled')?p.enabled:current.enabledOverride,
   priority:Object.hasOwn(p,'priority')?p.priority:current.priority,
