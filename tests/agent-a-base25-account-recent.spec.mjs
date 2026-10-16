@@ -24,7 +24,8 @@ test('BASE 25: an old account HTTP reply cannot show old private prompts after t
   await hold;
   try{await r.fulfill({json:{items:[oldUserJob]}});}catch(_){}
  });
- await page.goto('/deepsyq.html');
+ // Do not wait for full page load: the module's authorized History fetch is intentionally held.
+ await page.goto('/deepsyq.html',{waitUntil:'commit'});
  await seen;
  await page.evaluate(()=>localStorage.setItem('vv_token','fixture-account-B'));
  releaseOld();
