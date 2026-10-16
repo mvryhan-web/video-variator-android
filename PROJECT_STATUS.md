@@ -6,7 +6,8 @@
 - **Owner-approved source:** Agent A cross-lane Issue #74 QA #6222953396 identified AI Apps temporary `d.` logo; the canonical existing site/app icon is `app/src/main/assets/deepsyq-logo.png`. A keeps ownership of Home design and brand review, C owns AI Apps.
 - **Claimed branch:** `base19-ai-apps-official-brand-20261016` targeting `deepsyq-platform`, scoped to the existing AI Apps header brand markup and local style; a focused browser regression/workflow. No icon redrawing or asset changes, no locked Home, provider/Stripe, templates/API/auth, original TXT, main or production.
 - **Acceptance:** actual icon resource loads on desktop and mobile 320px, brand link accessible, no navigation/layout regression. Independent of open draft PRs #144/#151/#173, whose CI is still queued.
-- **Status:** CLAIMED / NOT CODE VERIFIED / NOT LIVE pending browser CI and integration.
+- **Code pushed:** [draft PR #183](https://github.com/mvryhan-web/video-variator-android/pull/183), HEAD `05d3920e2f18403e60655f826b4537675f309355`. Replaces only provisional AI Apps `d.` badge with existing approved `deepsyq-logo.png` (actual unchanged asset Git blob `41e7cf2d8550b14f54c83454ee7d24c7ce327962`, 713591 bytes); preserves 32px footprint, wordmark and nav, CSS removes false gradient. Focused desktop/mobile Chromium/WebKit test checks image load, visible link, active nav, no POST. [CI 38954780402](https://github.com/mvryhan-web/video-variator-android/actions/runs/38954780402) QUEUED; actual static source/asset-tree and JS test syntax inspected PASS, browser verification NOT yet passed.
+- **Status:** IN PROGRESS / CI BLOCKED (queued), NOT CODE VERIFIED / NOT LIVE, PR not merged.
 
 ## Agent D — BASE #37 completed generation failure-rate accuracy / IN PROGRESS (2026-10-16)
 
