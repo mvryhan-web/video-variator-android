@@ -60,7 +60,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 27 | Existing Video Uniquifier preserved under Tools | PARTIAL | C | ROOT SWITCH/PRODUCTION REGRESSION GATED | CODE VERIFIED (BASE, not live) | ChatGPT Lane C / PR #61 / `base-27-video-uniquifier-tools-20261016` / CI 38898789990 |
 | 28 | Utilities gathered in Tools | PARTIAL — AUDIO AND COLLAGE CODE VERIFIED | C | REMAINING TOOL GAPS / RELEASE GATED | CODE VERIFIED (BASE; NOT LIVE) | ChatGPT Lane C / PR #67 / merge `cea9c087` / CI 38900538191 |
 | 29 | Final navigation | PARTIAL | C | AI APPS → REAL HISTORY / CREDITS / PRICING CODE VERIFIED; WHOLE APP PENDING | CODE VERIFIED / MERGED TO BASE (partial) | ChatGPT lane C / PR #68 / CI 38900798943 / merge df1a4463 |
-| 30 | Desktop / Android / iPhone responsive | PARTIAL | C | Narrow AI Apps mobile overflow + readability, no locked Home changes | IN PROGRESS | Agent C / Issue #74 / `base30-ai-apps-mobile-overflow-20261016` |
+| 30 | Desktop / Android / iPhone responsive | PARTIAL — AI APPS NARROW UI CODE VERIFIED | C | REAL DEVICE + WHOLE-APP ACCEPTANCE GATED | CODE VERIFIED / READY FOR AGENT 5 REVIEW (PR #79) | Agent C / Issue #74 / `base30-ai-apps-mobile-overflow-20261016` / CI 38903600516 |
 | 31 | Generation UX/status | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 32 | Friendly error handling | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 33 | Safe retry | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
@@ -74,12 +74,12 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 41 | Internal model capabilities | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 42 | Persist BytePlus output in our storage | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 43 | Pricing page | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED (scoped, 6 tests CI 38898930526); PR #62 MERGE/LIVE PENDING | BASE-D-ChatGPT / base55-d-pricing-integrity-20261016 |
-| 44 | Free plan | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS | BASE-D-Analytics-ChatGPT / base55-d-free-plan-access-20261016 |
+| 44 | Free plan | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (scope only) | Agent D PR #70; Issue #75 audit |
 | 45 | Onboarding | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 46 | Homepage conversion | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 47 | Do not expose BytePlus as our product | DONE | — | DO NOT REBUILD | — | — |
-| 48 | Production safety / regression | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
-| 49 | Database migrations | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED (scoped) · PR #69 / CI 38900828078 PASS; MAIN/LIVE PENDING | BASE-D-MigrationSafety / base55-d-migration-readonly-20261016 |
+| 48 | Production safety / regression | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | REVIEW VERIFIED (PR #77; BASE release LIVE BLOCKED) | BASE-D / base55-d-release-review-issue75-20261016 |
+| 49 | Database migrations | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | INTEGRATION IN PROGRESS (clean reviewed PR; original #69 CI PASS; MAIN/LIVE PENDING | BASE-D-MigrationSafety / base55-d-migration-readonly-20261016 |
 | 50 | Feature flags | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 51 | First commercial vertical slice | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 52 | Required implementation order | IN PROGRESS | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |

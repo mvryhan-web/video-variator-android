@@ -21,11 +21,13 @@ This file is the shared live progress board for all coding agents.
 - **Evidence:** draft [PR #62](https://github.com/mvryhan-web/video-variator-android/pull/62), functional code commit `431cfab6d54301e2d518b4d12230ab10942637a8`, tests commit `449f861002f9e09af33916a7d86c2b60fc683fdb`; [GitHub Actions 38898930526](https://github.com/mvryhan-web/video-variator-android/actions/runs/38898930526) **SUCCESS** (Node 22 syntax + 6 presentation tests).
 - **Scope/remaining:** narrow UI **CODE VERIFIED**; overall original BASE #43 remains **PARTIAL / NOT MERGED / NOT LIVE**. Browser/pricing acceptance, actual approved Stripe packs/prices and commercial launch remain blocked. Do not duplicate; another agent may claim a different unowned BASE item.
 
-## Active per-item claim: BASE #44 / gated Free AI plan — IN PROGRESS (2026-10-16)
+## BASE #44 Free AI plan / Agent D Issue #75 — SCOPED CODE VERIFIED, BASE MERGED / NOT LIVE (2026-10-16)
 
-- **Agent:** BASE-D-Analytics-ChatGPT, **branch:** `base55-d-free-plan-access-20261016`; follows the original `docs/DEEPSYQ_PLATFORM_SPEC.md` section 44.
-- **Scope:** existing free/trial-account entitlement path and dedicated tests; reuse current one-time welcome grant + wallet, enforce explicit free opt-in and bounded plan rate/concurrency. No Stripe changes, no free credits minted, no new prices, no production toggles. Do not edit independently claimed BASE #43 pricing UI or BASE #20 Product Video.
-- **Status:** code work pending, must pass tests and be reconciled into BASE; do not mark whole #44 done until real approved free economics and anti-abuse validation.
+- Previous Agent D claim has been finished in merged PR #70 (merge SHA 222196f8c5c880d1c884d906b39f6a30f2f6d244). Original draft PR #65 is redundant; its three functional blob hashes match merged #70 and live BASE: entitlements d8eb065c, tests 23e23109, workflow 47d1db88.
+- Original #65 .env.example description is preserved in docs/BASE_44_FREE_AI_PLAN.md; its checklist IN PROGRESS label was obsolete. Do not re-merge PR #65. Deduplication and safe release order are documented in docs/BASE_D_ISSUE_75_RELEASE_REVIEW_2026-10-16.md.
+- CI SUCCESS on the reconciled PR #70 head: https://github.com/mvryhan-web/video-variator-android/actions/runs/38900866559 (Free policy) and https://github.com/mvryhan-web/video-variator-android/actions/runs/38900866789 (AI Studio). This verifies code/tests, not live customers.
+- BASE #44 remains PARTIAL: Free AI flag OFF by default, welcome credits OFF/0, real acquisition budget and anti-abuse controls not approved. No main merge or Render/Stripe/provider migration or activation.
+- Render account read: paid PostgreSQL plan 0.1c-256mb available, replacing the stale 2026-10-17 Free plan expiry warning. Actual export/PITR restore and billing invoice still NOT VERIFIED; production release blocked.
 
 ## BASE #18 — Provider-specific pricing registry / SCOPED CODE VERIFIED (2026-10-16)
 
@@ -35,6 +37,10 @@ This file is the shared live progress board for all coding agents.
 - **Evidence:** [Draft PR #66](https://github.com/mvryhan-web/video-variator-android/pull/66), implementation `6538fe8e8046f0ecb89529594774e0c2becd7bc9`, 5 new tests `5d0899d0b6d793e3c00545d819d983f5f21460cf`, [GitHub Actions 38900266382](https://github.com/mvryhan-web/video-variator-android/actions/runs/38900266382) **PASS** (new + prior generation pricing tests + syntax).
 - **State:** scoped **CODE VERIFIED**, entire BASE #18 **PARTIAL / NOT MAIN / NOT DEPLOYED**; real pricing-provider evidence and commercial launch gates remain external. No Stripe/Render/main edits.
 
+## BASE #49 clean integration IN PROGRESS — resuming existing claimed work (2026-10-16)
+
+- Existing owner BASE-D-MigrationSafety continues previously code-verified #49, not a new claim. Fresh BASE evolved after PR #69 and the old PR reports non-mergeable. Prepare a clean scoped branch containing **only** the reviewed runtime migration safety file, unit tests and CI; preserve concurrent checklist and no writes to PR #42. Merge into `deepsyq-platform` only after new focused CI, then mark MERGED TO BASE / NOT LIVE. Old #69 to be explicitly superseded if exact code is integrated.
+
 ## BASE #49 — Migration read-only checks and ledger drift / SCOPED CODE VERIFIED (2026-10-16)
 
 - **Agent:** BASE-D-MigrationSafety, branch `base55-d-migration-readonly-20261016`, parent BASE `deepsyq-platform`. Specific row #49 claimed first in coordination board.
@@ -42,6 +48,14 @@ This file is the shared live progress board for all coding agents.
 - **Result:** `server/ai-migrations.js` changed so `runAiMigrations(...,{checkOnly:true})` does **not** call the schema-writing `ensureLedger`. `aiMigrationStatus` now reports unknown historical ledger entries and blocks later migrate/check when one is present. No migration SQL/schema changed or applied.
 - **Evidence:** draft [PR #69](https://github.com/mvryhan-web/video-variator-android/pull/69), code commit `39bd5f909bf5096d04fef058929b5fc7d9c1fe80`, 4 unit tests `d613d0c94f337294160611d170acab18c9180705`, scoped [GitHub CI 38900828078](https://github.com/mvryhan-web/video-variator-android/actions/runs/38900828078) **PASS** (4 new + existing manifest, no production DB calls).
 - **State:** scoped **CODE VERIFIED**; full BASE #49 remains **PARTIAL / NOT MERGED TO MAIN / NOT LIVE VERIFIED** until staging migration, production backup and rollback acceptance. PR #45 preflight files unchanged.
+
+## BASE #48 / Agent D Issue #75 release safety — REVIEW VERIFIED / PR #77 (2026-10-16)
+
+- **Agent D scoped assignment:** GitHub [Issue #75](https://github.com/mvryhan-web/video-variator-android/issues/75), isolated `base55-d-release-review-issue75-20261016` targeting `deepsyq-platform`. Coordinator Agent 5 instructed a read-only PR collision and recovery/rollback audit, **not** new payment, Stripe, DB or Home code. Shared BASE #48 row claimed before report edits; existing #44 remains owned by another D session.
+- **First evidence:** PR #70 already **MERGED to BASE**, with byte-identical `generation-entitlements.js`, `generation-entitlements-unit.mjs`, `base-free-plan.yml` across #65/#70/BASE. PR #65 is still OPEN and must NOT be merged again. No attempt to close another owner's PR before documented handoff. Focused original CI #38900312833 and reconciled #38900866559 PASS.
+- **Result:** documented complete #65/#70 duplicate comparison and release decision in [draft PR #77](https://github.com/mvryhan-web/video-variator-android/pull/77), report commit `5a674c4287929971dff052f80b27a289a1048685`, `docs/BASE_D_ISSUE_75_RELEASE_REVIEW_2026-10-16.md`. Verified code blobs for 3 overlapping files match #65/#70/current BASE; #70 **MERGED TO BASE**, #65 **OPEN — DO NOT RE-MERGE**. #44 original owner retains ownership; awaiting their explicit acknowledgment for #65 closure/status. CI #38900312833 / #38900866559 passed.
+- **Open scoped D PRs:** [#69 migration read-only fix](https://github.com/mvryhan-web/video-variator-android/pull/69) CI #38900828078 PASS, [#66 provider-aware pricing](https://github.com/mvryhan-web/video-variator-android/pull/66) CI #38900266382 PASS (currently not mergeable), [#62 UI pricing](https://github.com/mvryhan-web/video-variator-android/pull/62) CI #38898930526 PASS. Their runtime files do not overlap but their BASE checklist edit does; do not blindly overwrite current checklist. Propose review/rebase/merge #69 then #66 then #62 into BASE, NOT main; keep full BASE row states PARTIAL.
+- **Launch gate:** current BASE `server/ai-migrations.js` still makes a possible DDL call in `--check` (fix only in OPEN #69). Agent 5 reports paid AVAILABLE Render PostgreSQL; live backup/restore NOT VERIFIED; actual invoice/charge date UNKNOWN. No live DB read/backup, payment or production changes were made. Original #48 remains PARTIAL / RELEASE BLOCKED.
 
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
@@ -86,7 +100,7 @@ The exact completion state of older components must be verified from the current
 | Workstream | Owner / Agent | Branch / PR | Status | Rule |
 |---|---|---|---|---|
 | BASE #19 — AI Apps empty-state direct Product Video path | ChatGPT BASE lane C (this session) | PR #71 → `deepsyq-platform`, merge `59dea3d3` | **CODE VERIFIED / MERGED TO BASE / ITEM PARTIAL / NOT LIVE** — 2026-10-16 | AI Apps empty catalog and temporary API outage now link the existing local Product Video workflow, clearly identified as manual Studio preparation, not a published template or paid generation. CI 38901487492 PASS Chromium + WebKit desktop/mobile. No owner-locked Home, Video Studio, Stripe, auth, DB or production changes. Owner-approved template assets and real provider/media acceptance remain gated. |
-| BASE #30 narrow mobile overflow | Agent C / Issue #74 | `base30-ai-apps-mobile-overflow-20261016` / draft PR pending | IN PROGRESS / CODE PREPARED / CI PENDING | AI Apps long title/categories wrap on 320/390px with 44px nav hit area; browser QA verifies Quick Create → Studio zero-spend handoff; only standalone CSS/tests changed. No protected Home redesign. |
+| BASE #30 narrow mobile overflow | Agent C / Issue #74 | `base30-ai-apps-mobile-overflow-20261016` / PR #79 | CODE VERIFIED / READY FOR AGENT 5 REVIEW / NOT LIVE | AI Apps unbroken titles/categories now wrap at 320/390px, nav links meet 44px touch height. Existing Quick Create → real Studio handoff, consent off and zero paid requests verified in focused desktop/mobile Chromium+WebKit CI 38903600516 PASS. Home design/code unchanged. Await Agent 5 review and scoped integration. |
 | BASE #29 — AI Apps navigation to existing History/Credits | ChatGPT BASE lane C (this session) | PR #68 → `deepsyq-platform`, merge `df1a4463` | **CODE VERIFIED / MERGED TO BASE / ITEM STILL PARTIAL / NOT LIVE** — 2026-10-16 | Existing AI Apps nav now links real Studio My Creations/History view, AI Credits and Pricing. Browser CI 38900798943 PASS across Chromium + WebKit desktop/mobile; zero paid-generation POSTs. No owner-locked Home, auth, provider, Stripe, server, migrations or main/Render changes. Remaining: coordinated whole-app user menu and real-device/production navigation acceptance. |
 | BASE #20 — Product Video reference ordering | ChatGPT BASE lane C / this session | PR #63 → `deepsyq-platform` | **CODE VERIFIED / MERGED TO BASE / ITEM STILL PARTIAL / NOT LIVE** — 2026-10-16 | Existing local workflow now reorders 1–3 product images and preserves valid selection on invalid replacement; browser CI 38899612960 PASSED 8/8 desktop/mobile Chromium/WebKit; merge `b8dc6c18`. Video Studio durationPreference still needs coordinated B-owner handoff. No paid provider call, production deploy, Stripe or migration. |
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
@@ -171,6 +185,13 @@ When another agent joins, add one row per claimed workstream before substantial 
 - **CODE VERIFIED / MERGED TO BASE; NOT DEPLOYED.** Adds a single localized Video Uniquifier entry on the *existing* Tools hub pointing to its unchanged `index.html`. Legacy Gentle, Balance and Dynamic modes, auth, subscriptions, processing, account records and History are untouched; users navigate to the original editor.
 - Dedicated [CI 38898789990](https://github.com/mvryhan-web/video-variator-android/actions/runs/38898789990) PASSED desktop/mobile Chromium and desktop/iPhone Safari/WebKit navigation, legacy three-mode presence, stable existing eight tool tiles and absence of new paid AI requests. Explicit root switch and public production regression remain owner-approved external gates; do not label 27 DONE on production evidence.
 - Workstream claim was pushed in both `PROJECT_STATUS.md` and `docs/DEEPSYQ_BASE_55_COORDINATION.md` **before** code commit, then advanced here after test evidence. Other agents must not duplicate this isolated PR.
+
+### Agent C / Issue #74 — BASE #30 mobile AI Apps acceptance (PR #79, 2026-10-16)
+
+- Isolated responsive fix on the existing standalone AI Apps catalogue: long, owner-supplied titles/descriptions/category tags wrap rather than clip on narrow 320px and 390px viewports; mobile horizontal navigation uses a 44px tap area. No change to locked Deepsyq Home visuals.
+- Existing protected Home Quick Create → real Video Studio handoff is *tested only*, without modifying Home. User's draft arrives with consent unchecked; no generation POST. Unsupported workflow remains disabled.
+- Dedicated [CI 38903600516](https://github.com/mvryhan-web/video-variator-android/actions/runs/38903600516) PASSED isolated desktop/mobile Chromium and Safari WebKit browser tests. Screenshot from 390px viewport is generated in the focused test evidence. Generic platform regression is tracked separately; not counted as proof of release readiness.
+- **CODE VERIFIED / READY FOR AGENT 5 REVIEW / NOT LIVE:** one scoped PR #79, not a direct feature edit of PR #42; no provider, Stripe, migrations, main, Render or owner-locked Home changes. Real devices/full integration blocked.
 
 ## Approved queued roadmap
 
