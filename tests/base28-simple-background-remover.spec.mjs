@@ -36,6 +36,12 @@ test('BASE #28: local simple-background erase yields transparent PNG without upl
   return {width:canvas.width,height:canvas.height,background:ctx.getImageData(0,0,1,1).data[3],subject:ctx.getImageData(15,15,1,1).data[3]};
  });
  expect(pixels).toEqual({width:30,height:30,background:0,subject:255});
+ // Verify that the advertised finished artifact is an actual downloadable PNG,
+ // not merely a canvas that appears transparent on screen.
+ const downloadPromise=page.waitForEvent('download');
+ await page.locator('#download').click();
+ const download=await downloadPromise;
+ expect(download.suggestedFilename()).toBe('item-transparent.png');
  expect(uploads).toBe(0);
 });
 test('BASE #28: rejects oversized or unsupported input safely without upload',async({page})=>{
