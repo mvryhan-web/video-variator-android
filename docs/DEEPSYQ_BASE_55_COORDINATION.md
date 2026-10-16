@@ -57,7 +57,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 24 | History | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 25 | My Creations | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 26 | Canvas | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
-| 27 | Existing Video Uniquifier preserved under Tools | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 27 | Existing Video Uniquifier preserved under Tools | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS | ChatGPT Lane C / `base-27-video-uniquifier-tools-20261016` |
 | 28 | Utilities gathered in Tools | PARTIAL — AUDIO TOOLS CODE VERIFIED | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 29 | Final navigation | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 30 | Desktop / Android / iPhone responsive | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
