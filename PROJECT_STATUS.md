@@ -269,7 +269,12 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Observed gap:** owner Business overview has top AI model but no recorded breakdown by Image, Video, Music/Voice generation jobs. Existing `vv_generation_jobs.kind` already stores that safely. Add aggregate owner-only counts and success/failure by known creation type; exclude deleted jobs; UI label MUST say recorded AI generations, NOT total legacy-tool usage. No user identifiers, new tracking, AI provider calls or money estimates.
 - **Claim:** `base37-generation-kind-breakdown-20261016` with dedicated server endpoint fixture tests and existing admin display only. No approved Home design change. Preserve `unverifiedMetrics.mostUsedTool=null`, because legacy tools are not tracked consistently; keep production main/Stripe/Render untouched.
 
-## BASE #49 concurrent AI migration runners — IN PROGRESS (2026-10-16)
+## BASE #49 concurrent AI migration runners — MERGED TO BASE / POSTGRES VERIFIED (2026-10-16)
+
+- **Result:** [PR #120](https://github.com/mvryhan-web/video-variator-android/pull/120) merged to `deepsyq-platform` as `e62e5171a5b6d132af551bd25f821187440977de`. [Focused CI 38924084068](https://github.com/mvryhan-web/video-variator-android/actions/runs/38924084068) **SUCCESS**, including two concurrent `runAiMigrations` on disposable PostgreSQL 16 + manifest checks; zero duplicate ledger rows, one runner skips already committed migrations; `--check` proved read-only. Uses one dedicated connection + session advisory lock around each transactional manifest apply; SHA drift checks remain. Previous BASE #49 fixes #82 preserved. Other triggered CI #38924084520 and #38924084058 were still queued at merge; don't claim them green prematurely. No production migrations, DB or Render changes.
+- **Remaining:** original #49 remains PARTIAL until approved staging migration run with verified backup/restore and production signoff.
+
+
 
 - Same BASE-D-MigrationSafety lane from earlier #49 PR #82; new isolated `base49-serialize-ai-migrations-20261016`, Issue #75. Board/status marked before changing code.
 - **Verified gap:** `runAiMigrations` computes initial applied status outside any cross-runner lock, then each process independently runs DDL and inserts migration ledger keys. Concurrent deploy/staging processes can both see pending entries and race into duplicate `vv_schema_migration` rows; second runner may error after DDL, despite first finishing.
