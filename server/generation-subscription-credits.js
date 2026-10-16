@@ -22,6 +22,18 @@ export function subscriptionCreditConfig(env={}){
   throw Error('AI_SUBSCRIPTION_CONFIG_INVALID');
  return {enabled:true,entries};
 }
+// Public projection for Pricing contains no Stripe IDs, secrets or guessed
+// plan amounts. It is null unless subscription AI credits really are approved.
+export function publicSubscriptionCreditGrants(env={}){
+ try{
+  const config=subscriptionCreditConfig(env);
+  if(!config.enabled||
+     (env.AI_BILLING_MODE==='live'&&env.AI_LIVE_BILLING_APPROVED!=='true'))
+   return null;
+  return Object.fromEntries(config.entries.map(e=>[e.plan,e.credits]));
+ }catch(_){return null;}
+}
+
 const stripeId=(value,prefix)=>typeof value==='string'&&
   new RegExp('^'+prefix+'[A-Za-z0-9]+$').test(value)&&value.length<=175;
 const subscriptionId=invoice=>{
