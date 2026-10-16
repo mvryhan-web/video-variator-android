@@ -38,8 +38,8 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 5 | Video generation | CORE CODE VERIFIED / ADVANCED & LIVE BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 6 | BytePlus first provider adapter | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 7 | AI Provider Router | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | SCOPED NATIVE VIDEO ROUTING MERGED TO BASE / ALL 7 GITHUB WORKFLOWS PASS (2026-10-16); NOT LIVE/FULL BASE #7 DONE | Agent B / Issue #73 / [PR #143](https://github.com/mvryhan-web/video-variator-android/pull/143) merge `4b5361f` |
-| 8 | Fallback | PARTIAL / SAFETY-GATED | B | AUDIT IMPLEMENTATION; FINISH GAP | CODE PREPARED / 7/7 GitHub-source tests PASS (incl. real pricing), GitHub CI QUEUED; NOT LIVE (2026-10-16) | Agent B / Issue #73 / [PR #149](https://github.com/mvryhan-web/video-variator-android/pull/149) -> deepsyq-platform · `d52fd0f` |
-| 9 | Provider config in admin | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 8 | Fallback | PARTIAL / SAFETY-GATED | B | AUDIT IMPLEMENTATION; FINISH GAP | CODE READY FOR REVIEW (EDIT CLAIM RELEASED) / 8/8 GitHub-source tests PASS (incl. real Video + Image 2K pricing), GitHub CI QUEUED; NOT LIVE (2026-10-16) | Agent B / Issue #73 / [PR #149](https://github.com/mvryhan-web/video-variator-android/pull/149) -> deepsyq-platform · `d782d4c` |
+| 9 | Provider config in admin | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | CODE READY FOR REVIEW (EDIT CLAIM RELEASED) / GitHub-source harness 6/6 PASS, GH CI QUEUED; NOT LIVE (2026-10-16) | Agent B / Issue #73 / stacked [PR #150](https://github.com/mvryhan-web/video-variator-android/pull/150) `66b24eb` depends on PR #149 |
 | 10 | Normal generation-job database entity | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 11 | Permanent object storage | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 12 | Background jobs | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
@@ -58,30 +58,30 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 25 | My Creations | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 26 | Canvas | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 27 | Existing Video Uniquifier preserved under Tools | PARTIAL | C | ROOT SWITCH/PRODUCTION REGRESSION GATED | CODE VERIFIED (BASE, not live) | ChatGPT Lane C / PR #61 / `base-27-video-uniquifier-tools-20261016` / CI 38898789990 |
-| 28 | Utilities gathered in Tools | PARTIAL — AUDIO/COLLAGE/PHOTO COMPRESSION/TELEPROMPTER VERIFIED | C | REMAINING UTILITIES + REAL DEVICE & RELEASE GATED | IN PROGRESS — single Photo Compression tile cleanup; prior #67/#113/#121 remain MERGED/CODE VERIFIED | Agent C / base28-unique-utility-tiles-20261016; previous PR #121 merge `5699de20`, compression CI 38924678343 PASS |
+| 28 | Utilities gathered in Tools | PARTIAL — AUDIO/COLLAGE/PHOTO COMPRESSION/TELEPROMPTER VERIFIED | C | REMAINING UTILITIES + REAL DEVICE & RELEASE GATED | IN PROGRESS — C scoped Photo Compression duplicate PR #147 AND flat-background transparent PNG utility; prior #67/#113/#121 remain MERGED/CODE VERIFIED | Agent C / base28-unique-utility-tiles-20261016 and base28-simple-background-remover-20261016; previous PR #121 merge `5699de20`, compression CI 38924678343 PASS; new #147 HEAD 85a3381 / CI 38939152984 QUEUED; new #151 HEAD d061406 / CI 38940769737 QUEUED (not live) |
 | 29 | Final navigation | PARTIAL — AI APPS HISTORY/CREDITS + ACCOUNT LINKS CODE VERIFIED | C | WHOLE-APP ACCOUNT NAV AND DEVICE/LIVE GATED | CODE VERIFIED / MERGED TO BASE (PRs #68 + #110) | Agent C / Issue #74 / PR #68 CI 38900798943 / PR #110 merge `89477d7b` CIs 38915655213 + 38915655095 |
-| 30 | Desktop / Android / iPhone responsive | PARTIAL — AI APPS MOBILE CODE VERIFIED | C | PHYSICAL DEVICE + WHOLE-APP ACCEPTANCE PENDING | IN PROGRESS — mobile drawer E2E + keyboard/navigation acceptance; previous PR #79 preserved | Agent C / Issue #74 / base30-mobile-drawer-acceptance-20261016 (new claim) |
+| 30 | Desktop / Android / iPhone responsive | PARTIAL — AI APPS MOBILE CODE VERIFIED | C | PHYSICAL DEVICE + WHOLE-APP ACCEPTANCE PENDING | IN PROGRESS — mobile drawer E2E + keyboard/navigation acceptance; previous PR #79 preserved | Agent C / Issue #74 / base30-mobile-drawer-acceptance-20261016 PR #144 HEAD d7867bd / CI 38939357227 QUEUED (not yet code-verified) |
 | 31 | Generation UX/status | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 32 | Friendly error handling | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 33 | Safe retry | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
-| 34 | Server-side rate/concurrency limits | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 34 | Server-side rate/concurrency limits | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | CODE READY FOR CI / 6 REGRESSION CASES; GH CI QUEUED (2026-10-16; NOT VERIFIED) | Agent B / Issue #73 / [PR #157](https://github.com/mvryhan-web/video-variator-android/pull/157) · `719e170` |
 | 35 | Security | PARTIAL — TEMPLATE OWNER AUTHORIZATION CI VERIFIED | C | OTHER IDOR/UPLOAD/WEBHOOK/KEY/PRODUCTION REVIEWS PENDING | CODE VERIFIED / MERGED TO BASE (PR #94) | Agent C / Issue #74 / merge `6a3b2d2a` / PostgreSQL CI 38907935442 |
 | 36 | Privacy | PARTIAL — WORKER CRASH REDACTION CODE VERIFIED | C | TERMS/MEDIA PROVIDER PAYLOADS + LIVE PRIVACY REVIEW REMAIN | CODE VERIFIED / MERGED TO BASE (PR #109) | Agent C / Issue #74 / merge `e89aefc7` / focused CI 38914175144 |
 | 37 | Business analytics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | PR #64 + #119 / CODE VERIFIED (scoped, NOT LIVE) | BASE-D-Analytics-ChatGPT / PR #64 · CI 38899113996; Agent-D / PR #119 · CI 38924145417 |
 | 38 | Admin dashboard | PARTIAL — ADMIN MOBILE CODE VERIFIED | C | REAL DEVICES / AUTH AND LIVE RELEASE ACCEPTANCE PENDING | CODE VERIFIED / MERGED TO BASE (PR #98) | Agent C / Issue #74 / merge `fb9ce2a1` / CI 38912222509 |
 | 39 | Provider performance | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 40 | Model routing registry | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
-| 41 | Internal model capabilities | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 41 | Internal model capabilities | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS / SAFE CATALOG METADATA (2026-10-16; CLAIMED) | Agent B / Issue #73 / `base41-model-capability-fidelity-20261016` (independent BASE branch; no fake provider support) |
 | 42 | Persist BytePlus output in our storage | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 43 | Pricing page | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (PR #132 · CI 38929739219 + 38929739237 PASS, LIVE BLOCKED) | BASE-D-ChatGPT / base55-d-pricing-integrity-20261016 |
 | 44 | Free plan | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (scope only) | Agent D PR #70; Issue #75 audit |
 | 45 | Onboarding | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 46 | Homepage conversion | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 47 | Do not expose BytePlus as our product | DONE | — | DO NOT REBUILD | — | — |
-| 48 | Production safety / regression | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (#117 + #123; CI #38925102380 PASS, LIVE BLOCKED) | BASE-D / base55-d-release-review-issue75-20261016 |
+| 48 | Production safety / regression | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS — PR #153 signature diagnostics redacted; isolated handler 3/3 PASS, CI QUEUED; #117/#123 earlier merged; LIVE BLOCKED | Agent D / PR #153 / base48-stripe-signature-error-redaction-20261016 |
 | 49 | Database migrations | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (#120 + #139; CI 38936179884, 38936179931, 38936179868, 38936179892 PASS; staging/backup LIVE BLOCKED) | BASE-D-MigrationSafety / PR #139 / base49-release-lock-failure-20261016 |
 | 50 | Feature flags | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (partial; #87) | Agent-D / CI 38905747621 |
-| 51 | First commercial vertical slice | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (#130 + #142; CI 38934607122,38934607127,38934606937,38934607156,38934607199 PASS; LIVE BLOCKED) | Agent-D / base51-studio-gate-reconciled-20261016 |
+| 51 | First commercial vertical slice | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS — Image+Video approved pricing/rates readiness gap; #130/#142 previously merged; LIVE BLOCKED | Agent D / base51-image-video-pricing-gate-20261016 |
 | 52 | Required implementation order | IN PROGRESS | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 53 | Explicit non-goals for now | DONE / RULE | — | DO NOT REBUILD | — | — |
 | 54 | BASE readiness criteria | NOT MET | D | FINAL GATE | — | — |
