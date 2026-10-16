@@ -86,7 +86,7 @@ export function evaluateOperationalSignals(providerRows=[],costRows=[]) {
     currencies,providers,
     alerts:alerts.slice(0,50),
     // Deliberately no single summed "total spend" across currencies.
-    note:'Recorded job arrivals, recorded costs and completed-job elapsed time only; currency must be explicit. No vendor API request volume, live provider latency, provider uptime, revenue or margin verified; model mix and workloads can affect averages.'
+    note:'Recorded job arrivals, recorded costs and completed-job elapsed time only; currency must be explicit. No vendor API request volume. No live provider API latency, provider uptime, revenue or margin verified; model mix and workloads can affect averages.'
   };
 }
 
