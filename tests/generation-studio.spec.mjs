@@ -93,22 +93,29 @@ test('wallet activity and Stripe return never claim payment before webhook confi
 });
 
 
-test('BASE #13: existing credits remain readable with paid Stripe checkout disabled',async({page})=>{
- await page.addInitScript(()=>localStorage.setItem('vv_token','fixture-user'));
+
+test('wallet balance and activity remain viewable when AI credit pack checkout is OFF',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
- await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',packs:[{sku:'fixture',credits:120,amount:599,currency:'eur'}]}}));
- await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:330,reserved:20,debt:0}}));
- await page.route('**/api/ai-wallet/history',r=>r.fulfill({json:{items:[{kind:'welcome_grant',available_delta:350,reserved_delta:0,debt_delta:0,created_at:'2026-10-15T10:00:00Z'}]}}));
- let checkoutRequests=0;await page.route('**/api/ai-billing/checkout',r=>{checkoutRequests++;return r.fulfill({status:503,json:{error:'PAYMENTS_NOT_ACTIVATED'}});});
+ await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',livePaymentsEnabled:false,
+  unit:'AI credits',packs:[],rates:[],revision:null,reason:'PAYMENTS_NOT_ACTIVATED'}}));
+ let walletReads=0,historyReads=0,checkoutPosts=0;
+ await page.route('**/api/ai-wallet/balance',r=>{walletReads++;return r.fulfill({json:{available:42,reserved:8,debt:0}})});
+ await page.route('**/api/ai-wallet/history',r=>{historyReads++;return r.fulfill({json:{items:[{kind:'reserve',
+  available_delta:-8,reserved_delta:8,debt_delta:0,created_at:'2026-10-15T10:00:00Z'}]}})});
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/ai-billing/checkout'))checkoutPosts++});
  await page.goto('/generate-studio.html?studio=image');
  await expect(page.locator('#walletButton')).toBeVisible();
- await expect(page.locator('#walletBalance')).toHaveText('330');
+ await expect(page.locator('#walletBalance')).toHaveText('42');
  await page.locator('#walletButton').click();
- await expect(page.locator('#walletDialog')).toBeVisible();
- await expect(page.locator('#walletHistory')).toContainText('welcome_grant');
- await expect(page.locator('#creditPacks button')).toHaveCount(0);
- await expect(page.locator('#walletMode')).toContainText('not active');
- expect(checkoutRequests).toBe(0);
+ await expect(page.locator('#walletSummary')).toContainText('42');
+ await expect(page.locator('#walletSummary')).toContainText('8');
+ await expect(page.locator('#walletHistory')).toContainText('Generation reserve');
+ await expect(page.locator('#walletMode')).toContainText('Credit purchases are not active');
+ await expect(page.locator('#creditPacks article')).toHaveCount(0);
+ expect(walletReads).toBeGreaterThan(0);
+ expect(historyReads).toBeGreaterThan(0);
+ expect(checkoutPosts).toBe(0);
 });
 
 test('Studio shows a server-priced credit estimate without sending prompt or media',async({page})=>{
