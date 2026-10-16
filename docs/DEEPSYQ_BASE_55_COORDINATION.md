@@ -84,7 +84,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 51 | First commercial vertical slice | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS — PR #158 dual Image+Video pricing/rates gate; 16/16 isolated PASS, CI QUEUED; #130/#142 merged; LIVE BLOCKED | Agent D / PR #158 / base51-image-video-pricing-gate-20261016 |
 | 52 | Required implementation order | IN PROGRESS | D | AUDIT IMPLEMENTATION; FINISH GAP | Stage 19 preview live at older SHA `f90bafc`, behind current BASE `d7ed4df`; end-to-end staging/payments/backups/device gates NOT VERIFIED (read-only Render inspection, 2026-10-16) | Agent D / PROJECT_STATUS BASE #52 stage 19 read-only |
 | 53 | Explicit non-goals for now | DONE / RULE | — | DO NOT REBUILD | — | — |
-| 54 | BASE readiness criteria | NOT MET | D | FINAL GATE | IN PROGRESS — read-only 15-step owner acceptance matrix and external-blocker evidence; no live verification | Agent D / base54-first-pass-acceptance-matrix-20261016 |
+| 54 | BASE readiness criteria | NOT MET | D | FINAL GATE | AUDIT MERGED TO BASE (#171; 15/15 user & 5/5 admin evidence mapped; STRICT NOT MET / no live verification) | Agent D / PR #171 merged `b4e841ab` / base54-first-pass-acceptance-matrix-20261016 |
 | 55 | Required final report | PENDING | D | FINAL GATE | — | — |
 
 ## Release outcome required for BASE #54–55
