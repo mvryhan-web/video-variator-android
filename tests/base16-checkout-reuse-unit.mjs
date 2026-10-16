@@ -72,7 +72,7 @@ test('BASE #16: HTTP idempotent checkout reuses one mock live Stripe session, wi
   throw Error('Unexpected SQL: '+sql);
  }};
  const env={AI_BILLING_ENABLED:'true',AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'true',
-  STRIPE_SECRET_KEY:'sk_live_mock_only',DATABASE_URL:'mock',APP_JWT_SECRET:'mock-secret',
+  STRIPE_SECRET_KEY:'sk_live_mock_only',STRIPE_WEBHOOK_SECRET:'whsec_mock_checkout_signing',DATABASE_URL:'mock',APP_JWT_SECRET:'mock-secret',
   AI_CREDIT_PACKS_JSON:JSON.stringify([livePack]),AI_CREDIT_RATES_JSON:'[]'};
  const app=express();app.use(express.json());
  installGenerationBilling(app,{auth:(req,_res,next)=>{req.user={id:userId,email:'customer@example.invalid'};next();},pool,stripe,appUrl:'https://example.test',env});
