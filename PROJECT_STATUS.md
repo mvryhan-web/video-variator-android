@@ -2,6 +2,10 @@
 
 ## Agent D — BASE #51 Image + Video pricing readiness / IN PROGRESS (2026-10-16)
 
+- **Latest PR:** [#158](https://github.com/mvryhan-web/video-variator-android/pull/158), head `b7c0a91cdde9c05bf9a5daa3a550e8bd75f32b76` (DRAFT, UNMERGED). Exactly 3 files: readiness code + focused unit tests + new doc. Required `imageVideoPricing` checks approved model pricing entries and credit rates for **both** `image` and `video`; no actual prices or customer billing are changed. Existing `launchReady:true` synthetic fixture updated to represent both categories, new fail-closed tests added for Image-only/Video-only and independent kill switch. 16/16 isolated expression combinations PASS; current-head GitHub Actions 38943624483, 38943624510, 38943624464, 38943624576, 38943624761 are QUEUED. Code is NOT yet full CI VERIFIED, full BASE #51 PARTIAL / NOT LIVE.
+
+
+
 - **Specific new gap:** generationReadiness currently counts any approved model rate and any AI credit rate, so its overall launchReady can be true with Image-only priced generation despite original BASE §51 requiring both Image and Video commercial creation. Do not alter unit prices or provider dispatch. Add a fail-closed, independently named Image+Video price/credit-rate coverage gate to owner preflight; all other readiness gates, optional feature switches, provider and legacy checkout behavior remain unchanged.
 - **Owner/branch:** Agent D, `base51-image-video-pricing-gate-20261016`, target `deepsyq-platform`. Only `server/generation-readiness.js`, its existing focused unit tests, and a scoped doc. Existing BASE #51 #130/#142 remain merged; status still PARTIAL / NO LIVE launch.
 - **Non-overlap:** Agent B edits video routing in `server/generation-studio.js`, A Home/History, C utility/navigation; none touched. Independent D PRs #148 (Price ID) and #153 (webhook public diagnostics) remain DRAFT with GitHub CI queue and do not overlap readiness.
