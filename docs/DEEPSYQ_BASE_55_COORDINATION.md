@@ -48,7 +48,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 15 | Credit reservation | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 16 | Stripe subscriptions + credit packs | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 17 | Unit economics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
-| 18 | Pricing engine | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS | BASE-D-ProviderPricing / base55-d-provider-pricing-20261016 |
+| 18 | Pricing engine | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED (scoped) · PR #66 / CI 38900266382 PASS; MERGE/LIVE PENDING | BASE-D-ProviderPricing / base55-d-provider-pricing-20261016 |
 | 19 | AI Apps | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 20 | Product Video workflow | PARTIAL | C | REORDER+PRESERVE COMPLETE; DURATION BRIDGE AND LIVE GATED | CODE VERIFIED / MERGED TO BASE (partial) | ChatGPT BASE lane C / PR #63 / run 38899612960 / merge b8dc6c18 |
 | 21 | AI Agents | NOT STARTED (BASE) | C | VERIFY BASE SCOPE; NO BLOCK DUPLICATE | — | — |
