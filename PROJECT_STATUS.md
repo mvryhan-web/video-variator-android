@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — canonical BASE 55 translated task-title drift guard / IN PROGRESS (2026-10-16)
+
+- **Owner/scope:** Agent 5 independent technical QA, isolated branch `agent5-base55-label-guard-20261016`, no BASE A–D feature claim. 
+- **Verified gap:** Original immutable Russian BASE headings and source blob stay checked, and the English coordination board/checklist titles must agree with one another. But both translated tracking titles can currently be renamed **together**, silently changing the established English task identity while original BASE stays unchanged.
+- **Planned exact work:** lock the 55 existing English tracking titles in read-only verifier code, check each coordination title independently of checklist title, add in-memory dual-rename regression and keep ordinary state/owner/CI updates permitted. No original TXT, locked Home, generation code, Stripe, provider, DB or production edits. Separate scoped PR and focused CI before merge.
+
 ## Agent 5 — BASE 55 verifier accepts zero active agent claims / CODE VERIFIED, PR #111 (2026-10-16)
 
 - **Scope owner:** Agent 5 technical QA only, branch `agent5-base55-zero-claims-ci-20261016`. No BASE feature task A/B/C/D claimed or overwritten.
