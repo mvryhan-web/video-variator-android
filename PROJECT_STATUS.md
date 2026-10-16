@@ -90,6 +90,13 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent A — BASE #46 Homepage conversion: selected featured template handoff / CLAIMED (2026-10-16)
+
+- **Owner/scope:** Agent A Issue #72, original BASE #46, branch `agent-a-base46-featured-template-deeplink-20261016`. Existing feature-gated Home already renders owner-approved active featured workflow tiles in `deepsyq.js::loadFeaturedWorkflows()`. Existing AI Apps already supports `?q=` search state in `ai-apps.js::restoreFiltersFromUrl()` (no new API, provider, wallet, DB or new page).
+- **Verified gap:** currently every featured workflow tile links only to `ai-apps.html`, so a visitor must find the same workflow again after clicking. Add a safe, encoded specific-title search link `ai-apps.html?q=...`, preserving all Home layout/imagery/CTA copy and AI Apps' preview + explicit Use template button before existing Studio generation. No automatic paid calls.
+- **Tests:** exact URL encode / named catalog result in Chromium + WebKit, mock rights-cleared published templates without real images/payment; separately verify no POST to paid job endpoint. Release/SEO/owner-approved media gates remain unresolved.
+- **Pre-code:** claim recorded, not implementation or CI verified.
+
 ## Agent D — BASE #16 duplicate Stripe Price-ID risk / MERGED TO BASE (2026-10-16)
 
 - **Completed:** PR #148 `7d19224c` MERGED TO BASE after 8/8 current-head GitHub Actions SUCCESS. Original full BASE #16 remains PARTIAL / NOT LIVE.
