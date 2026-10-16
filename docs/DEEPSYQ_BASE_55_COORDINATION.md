@@ -50,7 +50,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 17 | Unit economics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 18 | Pricing engine | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 19 | AI Apps | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
-| 20 | Product Video workflow | PARTIAL | C | DURATION PREF HANDOFF — existing workflow preserved | IN PROGRESS | ChatGPT BASE lane C / `base20-product-video-duration-20261016` |
+| 20 | Product Video workflow | PARTIAL | C | REORDER+PRESERVE COMPLETE; DURATION BRIDGE AND LIVE GATED | CODE VERIFIED / MERGED TO BASE (partial) | ChatGPT BASE lane C / PR #63 / run 38899612960 / merge b8dc6c18 |
 | 21 | AI Agents | NOT STARTED (BASE) | C | VERIFY BASE SCOPE; NO BLOCK DUPLICATE | — | — |
 | 22 | Inspiration / Discover | NOT STARTED (BASE) | C | VERIFY BASE SCOPE; NO BLOCK DUPLICATE | — | — |
 | 23 | Template system | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
