@@ -277,3 +277,70 @@ test('video History checks an existing task without resubmitting or downloading 
  expect(jobPosts).toBe(0);
  expect(mediaDownloads).toBe(0); // Only the explicit Open action may fetch video bytes.
 });
+
+test('BASE 24: latest History filter wins when an earlier server response arrives late',async({page})=>{
+ // Two real browser HTTP responses deliberately complete out of order.
+ // Filtering is read-only and must never submit a paid generation task.
+ let firstRequest,releaseOld,olderDone;
+ const olderSeen=new Promise(resolve=>firstRequest=resolve);
+ const oldRelease=new Promise(resolve=>releaseOld=resolve);
+ const oldCompleted=new Promise(resolve=>olderDone=resolve);
+ let posts=0;
+ page.on('request',request=>{if(request.method()==='POST')posts++;});
+ await page.route('**/api/studio/jobs?filter=*',async route=>{
+  const filter=new URL(route.request().url()).searchParams.get('filter');
+  const entry=filter==='all'?
+   {id:'old',kind:'video',status:'failed',model:'old-model',prompt:'Old result from All'}:
+   {id:'new',kind:'image',status:'ready',model:'new-model',prompt:'Current image result'};
+  if(filter==='all'){
+   firstRequest();
+   await oldRelease;
+  }
+  try{await route.fulfill({json:{items:[entry]}});}catch(_){}
+  if(filter==='all')olderDone();
+ });
+ await page.goto('/generate-studio.html?studio=image');
+ await page.locator('#showHistory').click();
+ await olderSeen;
+ await page.locator('[data-history-filter=image]').click();
+ await expect(page.locator('.history-card')).toHaveCount(1);
+ await expect(page.locator('.history-card')).toContainText('Current image result');
+ releaseOld();
+ await oldCompleted;
+ await page.waitForTimeout(150);
+ await expect(page.locator('.history-card')).toHaveCount(1);
+ await expect(page.locator('.history-card')).toContainText('Current image result');
+ await expect(page.locator('.history-card')).not.toContainText('Old result from All');
+ await expect(page.locator('[data-history-filter=image]')).toHaveAttribute('aria-pressed','true');
+ expect(posts).toBe(0);
+});
+
+test('BASE 24: leaving History invalidates its in-flight result before another visit',async({page})=>{
+ let releaseFirst,firstSeen,firstDone,allCalls=0;
+ const firstStarted=new Promise(resolve=>firstSeen=resolve);
+ const oldRelease=new Promise(resolve=>releaseFirst=resolve);
+ const oldCompleted=new Promise(resolve=>firstDone=resolve);
+ await page.route('**/api/studio/jobs?filter=all',async route=>{
+  allCalls++;
+  const old=allCalls===1;
+  if(old){firstSeen();await oldRelease;}
+  try{await route.fulfill({json:{items:[{id:old?'older':'latest',kind:'image',status:'ready',
+   model:old?'old-model':'latest-model',prompt:old?'Earlier History visit':'New History visit'}]}});}catch(_){}
+  if(old)firstDone();
+ });
+ let posts=0;
+ page.on('request',request=>{if(request.method()==='POST')posts++;});
+ await page.goto('/generate-studio.html?studio=image');
+ await page.locator('#showHistory').click();
+ await firstStarted;
+ await page.locator('#showCreate').click();
+ await expect(page.locator('#historyList')).toBeHidden();
+ await page.locator('#showHistory').click();
+ await expect(page.locator('.history-card')).toContainText('New History visit');
+ releaseFirst();
+ await oldCompleted;
+ await page.waitForTimeout(150);
+ await expect(page.locator('.history-card')).toHaveCount(1);
+ await expect(page.locator('.history-card')).toContainText('New History visit');
+ expect(posts).toBe(0);
+});
