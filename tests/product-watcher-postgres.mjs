@@ -189,7 +189,9 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
 
     const history=await request('GET','/api/product-watcher/admin/status');
     assert.equal(history.statusCode,200);assert.equal(history.body.runs[0].status,'warning');
-    assert.equal(history.body.schedulerActive,false);
+    // A previous private-worker tick wrote a real fresh heartbeat. The WEB
+    // process's absent scheduler flag must not mask that observed signal.
+    assert.equal(history.body.schedulerActive,true);
     const observed=await pool.query('SELECT id,source,code,observations,acknowledged_at FROM vv_product_watcher_alerts ORDER BY id');
     assert.ok(observed.rows.some(x=>x.source==='operations'&&x.code==='COST_VISIBILITY_GAP'));
     const list=await request('GET','/api/product-watcher/admin/alerts');

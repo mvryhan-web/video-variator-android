@@ -53,9 +53,9 @@ function db({paused=false,missing=false,heartbeat=null}={}){
 }
 
 function fixture({settings=env,pool=db(),fetchFn=async()=>({ok:true,status:200,headers:{get:()=>null},json:async()=>({ok:true})})}={}){
- const {app,call}=fakeApp();
+ const {app,call,routes}=fakeApp();
  installProductWatcher(app,{auth:(req,_res,next)=>next(),pool,env:settings,fetchFn});
- return {call,pool};
+ return {call,pool,routes};
 }
 
 test('strict owner policy refuses email sign-in and empty ADMIN_EMAIL',()=>{
