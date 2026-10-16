@@ -1,6 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
-## Agent D — BASE #54 15-step first-pass release acceptance matrix / AUDIT IN PROGRESS (2026-10-16)
+## Agent D — BASE #54 15-step first-pass acceptance audit MERGED / OVERALL NOT MET (2026-10-16)
+
+- **Merged documentation-only:** [PR #171](https://github.com/mvryhan-web/video-variator-android/pull/171), squash `b4e841ab96e897af528b5751dc5e09a7f383ab86`. Exact single file `docs/BASE_54_FIRST_PASS_ACCEPTANCE_MATRIX.md`; static evidence check verified 15/15 original end-user steps and 5/5 owner diagnostics present, release status marked NOT MET and NOT LIVE VERIFIED. No CI triggered for doc-only PR; it does NOT establish live success.
+- **New gap escalated to Agent B:** after `server/generation-studio.js` clears transient `operation` on job completion, owner jobs response does not return durable provider task ID. [Issue #73 comment](https://github.com/mvryhan-web/video-variator-android/issues/73#issuecomment-6222440023) handed to B as owner of provider/job state, no D duplicate implementation.
+- **Actual-cost gap:** `estimated_cost` has a config quote; owner `actualCost` may be null, provider real invoice/currency and gross margin require grounded evidence before pricing claims. This is NOT a fabricated margin or missing-feature workaround.
+- **Remaining:** separate staging worker, verified DB backup/restore, real signed Stripe test purchase/refund, real approved Image+Video BytePlus/model output, media retention, mobile QA and SEO/AI-search Issue #156. Original BASE #54 stays NOT MET; BASE #55 remains PENDING full readiness.
+
+## Agent D — BASE #54 15-step first-pass release acceptance matrix / HISTORICAL INITIAL CLAIM (2026-10-16)
 
 - **Original BASE §54:** 15 user-visible new-user milestones plus provider/model/task/cost/credits/error admin detail. Full green release cannot be inferred from unit tests, isolated synthetic examples or a live older no-secret visual preview.
 - **Claimed bounded task:** author a read-only acceptance matrix with precise current code/test evidence, explicit NOT VERIFIED statuses for actual provider, paid credit purchase/refund, durable History re-open, legacy preservation and owner physical-device/staging acceptance. Provide ordered acceptance procedure without secrets, paid actions, production migration or requiring another agent to duplicate work.
