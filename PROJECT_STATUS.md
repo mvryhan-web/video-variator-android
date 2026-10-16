@@ -7,6 +7,11 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent C — BASE #28 unique Photo Compression tile / IN PROGRESS (2026-10-16)
+
+- **Scoped claim:** isolated C task `base28-unique-utility-tiles-20261016`, preserving previous PRs #67/#113/#121 and all free tool engines. Actual `mobile-utility-links.js` pushes `photo-compress` into `tools`, renders the full array, and then appends a second Photo Compression link manually; duplicate CTA harms mobile navigation clarity. Keep registry entry, exactly one visible tile and real `data-utility` link routing; no new backend/service.
+- **Boundaries:** existing BASE #30 PR #144 is independently pending GitHub runner availability and remains reserved; this #28 change touches only mobile utility tile render and its focused verification. No shared Home/Stripe/providers/auth/DB/main edits. Not yet CODE VERIFIED or deployed.
+
 ## Agent C — BASE #30 mobile drawer navigation acceptance / IN PROGRESS (2026-10-16)
 
 - **Recovery:** prior Agent C Issue #74 HANDOFF after PR #110; this is a new bounded scoped task (not takeover of already merged code). Existing PR #79 and #110 functionality preserved.
