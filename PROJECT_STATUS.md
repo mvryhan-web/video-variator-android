@@ -91,7 +91,9 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Scope:** narrow opt-out kill switches (`AI_IMAGE_ENABLED`, `AI_VIDEO_ENABLED`, `BYTEPLUS_ENABLED`) in existing catalog/estimate/create rejection. OFF global public AI remains mandatory, do not inadvertently disable owner pilot or history. Only code/test evidence supports scoped completion. No planned activation in Render.
 - **Collision:** BASE #16 currently independently owned; #18/#43/#49 merged; #48 release review and #30 mobile work separate. Check for concurrent Studio/provider changes before merging.
 
-## BASE #16 checkout UI error handoff — IN PROGRESS (2026-10-16)
+## BASE #16 checkout UI error handoff — MERGED TO BASE / CODE VERIFIED (2026-10-16)
+
+- **Result:** [PR #86](https://github.com/mvryhan-web/video-variator-android/pull/86) merged into `deepsyq-platform`, squash commit `ef6283d86d31dc0a5583d096365eb50858e446e2`; [CI 38905622293](https://github.com/mvryhan-web/video-variator-android/actions/runs/38905622293) PASS (existing pricing tests plus new checkout uncertainty test). Changed only `ai-pricing.js`, `ai-pricing-display.js`, pricing unit tests. HTTP 409 and uncertain Stripe errors no longer say a charge definitely did not occur; redirect to wallet/payment history or refresh changed pack. Builds directly on merged BASE #16 server PR #85. **Original BASE #16 remains PARTIAL**, real Stripe invoices/webhook and owner approval external. No live charge/provider/Render/main/Home changes.
 
 - Same BASE-D-CheckoutReuse owner continues after successful server PR #85; no independent new billing module. Isolated `base16-checkout-errors-20261016`, BASE parent, Pricing UI only; no locked Home.
 - **Verified gap:** `ai-pricing.js` reports "No payment was completed" after generic Stripe errors or expired/already-paid session HTTP 409; a prior charge may have completed, so that assertion is not justified. Update error copy to direct users to check wallet/payment history and refresh changed pack; add focused unit tests, no real Stripe call, no billing provider/ledger alteration.
