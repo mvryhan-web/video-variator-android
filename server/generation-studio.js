@@ -9,6 +9,7 @@ import {createObjectStorage} from './generation-storage.js';
 import {installGenerationReferenceUpload} from './generation-reference-upload.js';
 import {resolveGenerationModel,orderedGenerationCandidates} from './generation-routing.js';
 import {normalizeGenerationError,publicGenerationError} from './generation-errors.js';
+import {publicProviderPerformanceRow} from './generation-provider-performance.js';
 import {claimProviderPoll} from './generation-polling.js';
 import {recordAdminAudit,listAdminAudit} from './admin-audit.js';
 import {generationEntitlements,generationEntitlementForUser} from './generation-entitlements.js';
@@ -299,7 +300,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
    WHERE ${where.join(' AND ')}
    GROUP BY provider,model,kind,COALESCE(cost_currency,'unknown')
    ORDER BY jobs DESC,provider,model,cost_currency`,args);
-  res.json({window,items:rows.map(r=>({provider:r.provider||null,model:r.model||null,kind:r.kind,jobs:Number(r.jobs||0),succeeded:Number(r.succeeded||0),failed:Number(r.failed||0),processing:Number(r.processing||0),successRate:Number(r.jobs||0)?Number(r.succeeded||0)/Number(r.jobs||0):0,failureRate:Number(r.jobs||0)?Number(r.failed||0)/Number(r.jobs||0):0,averageSeconds:r.avg_seconds==null?null:Number(r.avg_seconds),actualCost:Number(r.actual_cost||0),costCurrency:r.cost_currency,creditsCharged:Number(r.credits_charged||0)}))});
+  res.json({window,items:rows.map(publicProviderPerformanceRow)});
  }catch(_){res.status(503).json({error:'STUDIO_ANALYTICS_UNAVAILABLE'});}});
   app.get('/api/studio/jobs',auth,generationUser,async(req,res)=>{try{
   await init();const filter=String(req.query.filter||'all'),allowed=new Set(['all','image','video','failed','processing']);if(!allowed.has(filter))return res.status(400).json({error:'INVALID_HISTORY_FILTER'});
