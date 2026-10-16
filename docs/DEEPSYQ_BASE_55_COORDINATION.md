@@ -67,7 +67,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 34 | Server-side rate/concurrency limits | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 35 | Security | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 36 | Privacy | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
-| 37 | Business analytics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS | BASE-D-Analytics-ChatGPT / base55-d-business-analytics-20261016 |
+| 37 | Business analytics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / BASE MERGED (partial) | BASE-D-Analytics-ChatGPT / PR #64 · CI 38899113996 |
 | 38 | Admin dashboard | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 39 | Provider performance | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 40 | Model routing registry | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
