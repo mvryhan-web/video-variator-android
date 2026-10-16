@@ -9,6 +9,8 @@ import {bytePlusDownloadsConfigured} from './generation-byteplus.js';
 export function generationReadiness(env={}){
  const pricing=pricingCatalog(env),pricingCurrenciesExplicit=pricing.configured&&pricing.entries.every(e=>!!e.currency),billing=billingCatalog(env),billingRuntime=generationBillingRuntime(env),entitlements=generationEntitlements(env),storage=objectStorageConfig(env),policy=generationPolicy(env);
  const featureSwitches=generationFeatureSwitches(env);
+ const studioMaxCalls=Number(env.AI_STUDIO_MAX_CALLS||0);
+ const studioKinds=String(env.AI_STUDIO_ALLOWED_KINDS||'').split(',');
  const gates=[
   {id:'database',label:'PostgreSQL',ready:!!env.DATABASE_URL,required:true},
   {id:'jwt',label:'Server JWT signing key',ready:!!env.APP_JWT_SECRET,required:true},
@@ -16,6 +18,8 @@ export function generationReadiness(env={}){
   {id:'byteplusMedia',label:'BytePlus approved media hosts',ready:!env.BYTEPLUS_API_KEY||bytePlusDownloadsConfigured(env.BYTEPLUS_MEDIA_HOSTS),required:!!env.BYTEPLUS_API_KEY},
   {id:'pricing',label:'Approved model pricing + currency',ready:pricingCurrenciesExplicit,required:true},
   {id:'studioEnabled',label:'Generation Studio enabled',ready:env.AI_STUDIO_ENABLED==='true',required:true},
+  {id:'studioOperator',label:'Studio owner and bounded generation call limit',ready:!!env.ADMIN_EMAIL&&Number.isInteger(studioMaxCalls)&&studioMaxCalls>0&&studioMaxCalls<=20,required:true},
+  {id:'imageVideoKinds',label:'Studio explicitly allows Image and Video',ready:['image','video'].every(kind=>studioKinds.includes(kind)),required:true},
   {id:'wallet',label:'AI wallet generation gate',ready:env.AI_STUDIO_WALLET_ENABLED==='true',required:true},
   {id:'creditPacks',label:'AI credit packs + rates',ready:billing.packs.length>0&&billing.rates.length>0,required:true},
   {id:'stripeMode',label:'Stripe AI billing mode/key',ready:billingRuntime.keyMatches,required:true},
