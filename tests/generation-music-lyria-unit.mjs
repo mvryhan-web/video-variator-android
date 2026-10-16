@@ -66,6 +66,12 @@ test('ID3-tagged MP3 and legitimate raw MPEG frame accepted, incomplete tags rej
  const corrupt=Buffer.from(header);corrupt[6]=0xff;
  assert.equal(looksLikeMp3(Buffer.concat([corrupt,mp3])),false);
  assert.equal(looksLikeMp3(Buffer.alloc(128)),false);
+ // MPEG Layer II and Layer I are NOT MP3, even with a valid-looking sync byte.
+ const mp2=Buffer.from(mp3),mp1=Buffer.from(mp3);
+ mp2[1]=0xfd;mp1[1]=0xff;
+ assert.equal(looksLikeMp3(mp2),false);
+ assert.equal(looksLikeMp3(mp1),false);
+ assert.throws(()=>parseLyriaClipResult(providerResponse(mp2.toString('base64'))),/INVALID_PROVIDER_MEDIA/);
 });
 
 test('without any approved live API no paid calls occur in validation and parsing fixtures',()=>{

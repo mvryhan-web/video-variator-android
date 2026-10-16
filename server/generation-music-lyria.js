@@ -56,7 +56,7 @@ function hasMpegFrame(bytes,offset){
  if(offset<0||offset+4>bytes.length)return false;
  const a=bytes[offset],b=bytes[offset+1],c=bytes[offset+2];
  return a===255&&(b&0xe0)===0xe0&&(b&0x18)!==0x08&&
-  (b&0x06)!==0&&(c&0xf0)!==0&&(c&0xf0)!==0xf0&&(c&0x0c)!==0x0c;
+  (b&0x06)===0x02&&(c&0xf0)!==0&&(c&0xf0)!==0xf0&&(c&0x0c)!==0x0c;
 }
 export function looksLikeMp3(bytes){
  if(!Buffer.isBuffer(bytes)||bytes.length<32)return false;
