@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent D — BASE #52 stage 19 Render deployment provenance / READ-ONLY VERIFIED (2026-10-16)
+
+- **Exact Render evidence (read-only):** Production web service `video-variator-android` (`srv-dalqnkoae00c73caj8vg`), branch `main`, autoDeploy=yes, last live deployment `14de5163c8c3f45f32e5703f7e2a30def9928684` (2026-10-14). Separate Deepsyq visual preview `deepsyq-visual-preview-20261016` (`srv-db91k1vf3r2c73fpj350`), branch `deepsyq-platform`, autoDeploy=no, last live deployment `f90bafc033762acde7b3a3ed4fd055128feb2224` on 2026-10-16 16:15 UTC.
+- **Not current acceptance:** GitHub BASE head had advanced to `d7ed4df7ffef11742fa4ebb9005af0609858b610` when compared with the live preview, so current PR #148/#153/#158 and subsequent BASE commits are **not evidenced by that preview deploy**. A Render `live` status only confirms preview process deployment, not paid image/video provider, signed Stripe transaction, S3, recovery backup, Android/iOS or migration acceptance. Stage 19 remains BLOCKED/UNVERIFIED as end-to-end staging.
+- No deploy was triggered, no production or customer data queried, no feature flags or paid provider/Stripe account modified. Informational status evidence, not a duplicate feature claim or product rollout authorization.
+
+
 ## Agent D — BASE #51 Image + Video pricing readiness / IN PROGRESS (2026-10-16)
 
 - **Latest PR:** [#158](https://github.com/mvryhan-web/video-variator-android/pull/158), head `b7c0a91cdde9c05bf9a5daa3a550e8bd75f32b76` (DRAFT, UNMERGED). Exactly 3 files: readiness code + focused unit tests + new doc. Required `imageVideoPricing` checks approved model pricing entries and credit rates for **both** `image` and `video`; no actual prices or customer billing are changed. Existing `launchReady:true` synthetic fixture updated to represent both categories, new fail-closed tests added for Image-only/Video-only and independent kill switch. 16/16 isolated expression combinations PASS; current-head GitHub Actions 38943624483, 38943624510, 38943624464, 38943624576, 38943624761 are QUEUED. Code is NOT yet full CI VERIFIED, full BASE #51 PARTIAL / NOT LIVE.
