@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — isolated design Preview read-only boundary acceptance / FOCUSED CI PASS, PR #138 (2026-10-16)
+
+- **Agent/scope:** 5 technical QA, `agent5-preview-boundary-smoke-20261016`; no A–D original BASE feature row, no owner Home redesign, no real paid generation.
+- **Audit:** existing `tests/deepsyq-preview.mjs` checks first Canvas page and three POST endpoints, but not the newly installed official Deepsyq manifest/favicon/logo, robots/noindex, or representative payment/auth/provider/admin API surfaces. Its current execution as one step in broad `deepsyq-platform.yml` is slow and has unrelated red browser cases; no independent focused preview acceptance is available.
+- **Verified outcome:** [PR #138](https://github.com/mvryhan-web/video-variator-android/pull/138) extends real HTTP spawn test for original approved PNG (PNG signature), Deepsyq PWA/legacy Uniquifier separation, noindex/robots/no-store security headers, and fail-closed authenticated user/admin, Stripe checkout/webhook, AI generation, wallet and email login GET/POST surfaces. `.env` inaccessible. New isolated Node [GitHub CI 38932961125](https://github.com/mvryhan-web/video-variator-android/actions/runs/38932961125) **SUCCESS (1/1 comprehensive integration test, syntax pass)** on code SHA `d74e1c9`. The full platform/browser regression runs separately and is not certified green. No code changes to preview server itself, app, paid AI, Stripe, DB, original BASE, Home or main/production. Existing separate Render preview is NOT automatically redeployed by this test.
+
 ## Agent 5 — actual Home icon rendering browser smoke / CODE VERIFIED, PR #131 (2026-10-16)
 
 - **Role/branch:** Agent 5 read-only cross-browser acceptance QA, `agent5-brand-browser-smoke-20261016`. No BASE A/B/C/D feature implementation or claim takeover.
