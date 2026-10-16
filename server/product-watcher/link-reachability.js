@@ -26,7 +26,8 @@ export function safeSameOriginAsset(raw, origin) {
       || !PUBLIC_ASSET_EXTENSION.test(raw)) return null;
   try {
     const url = new URL(raw, origin);
-    if (url.origin !== origin || !['https:', 'http:'].includes(url.protocol)) return null;
+    if (url.origin !== origin || !['https:', 'http:'].includes(url.protocol)
+        || /^\/(?:api|admin|account|billing|logout)(?:\/|$)/i.test(url.pathname)) return null;
     return url.toString();
   } catch { return null; }
 }
