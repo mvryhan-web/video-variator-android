@@ -91,3 +91,8 @@ Reference: https://ai.byteplus.com/lumina/en ; https://docs.byteplus.com/en/docs
 - **Agent 5 — coordinator:** update overlap/readiness matrix, publish issue assignments and decision log, compare visual evidence to approved reference, report real progress and blockers to owner. No live-chat control or automatic watcher is implied.
 
 **Every agent's closeout:** exact BASE requirement, existing implementation reused, changed files, targeted CI link, PR link, status `CODE VERIFIED / READY TO MERGE / MERGED TO BASE / LIVE VERIFIED` as justified, and next unclaimed task. Do not advertise real video creation, DB charge settlement, or deployed UX without the evidence.
+
+
+### Confirmed isolated preview deploy (2026-10-16 12:36 UTC)
+- **Render deploy SUCCESS / LIVE**: service `srv-db91k1vf3r2c73fpj350`, first deploy `dep-db91k2nf3r2c73fpj4v0`, URL `https://deepsyq-visual-preview-20261016.onrender.com`; source branch `deepsyq-platform`, deployment commit `6d3ee3409c8f6da313c7f3ae21299a0730c850c1`. Explicit Render service plan `free`, auto-deploy `no`; no DB/Stripe/provider env variables supplied. This is a separate **visual-only, disposable preview**, not a new commercial backend.
+- **Verification boundary:** Render reported successful deploy; actual browser screenshot, matching exact locked mockup, mobile interaction, external HTTP reachability from the evaluator and live hero videos are **NOT VERIFIED**. Agent A should inspect and provide screenshot evidence and actionable deltas. The isolated inspection environment could not resolve public Render DNS, so do not label external HTTP/screenshot test passed.
