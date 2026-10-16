@@ -70,7 +70,11 @@ export async function pollBytePlus(operation,{key,downloadHosts='',fetcher=fetch
  const r=await fetcher(safeBytePlusMediaUrl(d.content.video_url,downloadHosts),{redirect:'error',signal:AbortSignal.timeout(120000)});
  if(!r.ok)throw Error('VIDEO_DOWNLOAD_FAILED');
  const bytes=await readLimited(r,MAX);
- if(bytes.subarray(4,8).toString()!=='ftyp')throw Error('INVALID_PROVIDER_MEDIA');
+ const firstBoxSize=bytes.length>=8?bytes.readUInt32BE(0):0;
+ // Check the container, not just a coincidental ftyp substring in junk.
+ // Basic MP4 file-type validation is not a full codec/malware scan.
+ if(bytes.length<16||bytes.subarray(4,8).toString('ascii')!=='ftyp'||
+    firstBoxSize<16||firstBoxSize>bytes.length)throw Error('INVALID_PROVIDER_MEDIA');
  return {mime:'video/mp4',bytes,text:''};
 }
 
