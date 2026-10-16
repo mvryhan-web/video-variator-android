@@ -1,0 +1,42 @@
+name: Deepsyq local audio trimmer acceptance
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/audio-studio.js'
+      - 'app/src/main/assets/audio-studio.html'
+      - 'app/src/main/assets/audio-trim-core.js'
+      - 'tests/audio-trim-core.mjs'
+      - 'tests/audio-trim.spec.mjs'
+      - '.github/workflows/deepsyq-audio-trim.yml'
+  pull_request:
+    paths:
+      - 'app/src/main/assets/audio-studio.js'
+      - 'app/src/main/assets/audio-studio.html'
+      - 'app/src/main/assets/audio-trim-core.js'
+      - 'tests/audio-trim-core.mjs'
+      - 'tests/audio-trim.spec.mjs'
+      - '.github/workflows/deepsyq-audio-trim.yml'
+jobs:
+  local-audio:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Check audio runtime and unit tests
+        run: |
+          node --check app/src/main/assets/audio-trim-core.js
+          node --check app/src/main/assets/audio-studio.js
+          node --check tests/audio-trim-core.mjs
+          node --test tests/audio-trim-core.mjs
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify local audio workflow desktop and mobile
+        run: npx playwright test tests/audio-trim.spec.mjs --project=chromium --project=mobile-chromium
