@@ -1,5 +1,6 @@
 import {createHash,createHmac,timingSafeEqual,randomUUID} from 'node:crypto';
 import {GenerationWallet} from './generation-wallet.js';
+import {grantPaidSubscriptionInvoice} from './generation-subscription-credits.js';
 import {MODELS,validateGeneration} from './generation-provider.js';
 
 const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -156,6 +157,11 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
   async function handleEvent(event) {
     // Invoked only after the existing Stripe webhook signature check.
     const r=runtime();
+    if(event.type==='invoice.paid'){
+      await grantPaidSubscriptionInvoice({event,env,pool,wallet});
+      // Preserve the established subscription-cycle usage reset in server.js.
+      return false;
+    }
     if(event.type==='charge.refunded'){
       const aiMarked=hasAiWalletRefundMarker(event),charge=event.data?.object||{};
       if(!enabled()){
