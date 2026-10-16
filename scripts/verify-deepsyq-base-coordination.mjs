@@ -34,7 +34,20 @@ export function boardRows(board=''){
  return rows;
 }
 
-export function verifyBaseCoordination(spec,board){
+export function checklistRows(checklist=''){
+ const rows=[];
+ for(const line of String(checklist).split(/\r?\n/)){
+  if(!/^\|\s*\d+\s*\|/.test(line))continue;
+  // Detailed BASE checklist has 4 cells: number, same title, status, evidence.
+  const cells=line.split('|').slice(1,-1).map(cell=>cell.trim());
+  rows.push({number:Number(cells[0]),title:cells[1]||'',status:cells[2]||'',
+   evidence:cells[3]||'',width:cells.length});
+ }
+ return rows;
+}
+
+export function verifyBaseCoordination(spec,board,checklist){
+
  const issues=[];
  const source=originalBaseNumbers(spec),rows=boardRows(board);
  if(JSON.stringify(source)!==JSON.stringify(EXPECTED)){
@@ -60,13 +73,33 @@ export function verifyBaseCoordination(spec,board){
    issues.push('UNOWNED_ACTIVE_CLAIM: '+row.number);
   }
  }
- return {ok:issues.length===0,issues,items:rows.length,sourceHeadings:source.length};
+ if(checklist!==undefined){
+  const detailed=checklistRows(checklist),checkCounts=new Map();
+  for(const item of detailed)checkCounts.set(item.number,(checkCounts.get(item.number)||0)+1);
+  for(const n of EXPECTED){
+   if(!checkCounts.has(n))issues.push('MISSING_CHECKLIST_ROW: '+n);
+   if((checkCounts.get(n)||0)>1)issues.push('DUPLICATE_CHECKLIST_ROW: '+n);
+  }
+  for(const n of checkCounts.keys())if(!EXPECTED.includes(n))issues.push('UNEXPECTED_CHECKLIST_ROW: '+n);
+  const boardByNumber=new Map(rows.filter(r=>counts.get(r.number)===1).map(r=>[r.number,r]));
+  for(const item of detailed){
+   if(item.width!==4)issues.push('INVALID_CHECKLIST_WIDTH: '+item.number+' ('+item.width+')');
+   if(!item.title||item.title==='—')issues.push('MISSING_CHECKLIST_TITLE: '+item.number);
+   const match=boardByNumber.get(item.number);
+   if(match&&checkCounts.get(item.number)===1&&match.title!==item.title){
+    issues.push('CHECKLIST_TITLE_MISMATCH: '+item.number);
+   }
+  }
+ }
+ return {ok:issues.length===0,issues,items:rows.length,sourceHeadings:source.length,
+  checklistItems:checklist===undefined?null:checklistRows(checklist).length};
 }
 
 export function verifyCurrentFiles(){
  return verifyBaseCoordination(
   readFileSync('docs/DEEPSYQ_PLATFORM_SPEC.md','utf8'),
-  readFileSync('docs/DEEPSYQ_BASE_55_COORDINATION.md','utf8')
+  readFileSync('docs/DEEPSYQ_BASE_55_COORDINATION.md','utf8'),
+  readFileSync('docs/DEEPSYQ_BASE_CHECKLIST.md','utf8')
  );
 }
 
@@ -76,6 +109,6 @@ if(process.argv[1]&&fileURLToPath(import.meta.url)===process.argv[1]){
   process.stderr.write(result.issues.join('\n')+'\n');
   process.exitCode=1;
  }else{
-  process.stdout.write('BASE 55 coordination board: 55 original headings and 55 uniquely owned-lane rows verified. Active claim owners validated.\n');
+  process.stdout.write('BASE 55 source, shared coordination and detailed checklist: 55 unique aligned items and titles verified. Active claim owners validated.\n');
  }
 }
