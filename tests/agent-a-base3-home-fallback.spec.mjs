@@ -278,3 +278,19 @@ test('BASE 3: cross-tab account switch clears unsent prompts and reference previ
  await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(0);
  await expect(page.locator('#quickCreateStatus')).toContainText('Account changed');
 });
+
+test('BASE 3: offline platform config never hides the permanent original Hero gallery',async({page})=>{
+ await mockSafeHome(page,[]);
+ await page.route('**/api/config',route=>route.fulfill({status:503,json:{error:'CONFIG_UNAVAILABLE'}}));
+ let paidPosts=0;
+ page.on('request',request=>{if(request.method()==='POST'&&/\/api\/studio\/jobs/.test(request.url()))paidPosts++;});
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+ await expect(page.locator('#homeHeroCarousel')).toHaveClass(/is-empty/);
+ await expect(page.locator('#homeHeroEmpty')).toBeVisible();
+ await expect(page.locator('#homeHeroStatus')).toContainText('No approved playable featured video');
+ await expect(page.locator('.hero-stage h1')).toContainText('beyond limits');
+ await expect(page.locator('#homeQuickForm')).toBeVisible();
+ await expect(page.locator('#paymentStatus')).toContainText('Plans could not load');
+ expect(paidPosts).toBe(0);
+});
