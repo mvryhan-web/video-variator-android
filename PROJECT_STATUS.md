@@ -1,6 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
 
+
+## Agent C — BASE #35 AI Apps logout pending prompt scrub / CLAIMED (2026-10-16)
+
+- **Gap:** `ai-apps.js` saves a prepared template prompt/product name under tab-global `sessionStorage.deepsyq_template_start` for Studio. Current AI Apps Logout removes `localStorage.vv_token` but leaves that previous user's pending text in tab session storage. Do not claim Studio reader is account-bound.
+- **Scoped C fix:** branch `base35-ai-apps-logout-template-scrub-20261016`, target `deepsyq-platform`; change only C-owned AI Apps logout and dedicated browser regression. Always remove pending local template on this logout even if token has expired; do not erase unrelated legitimate Studio jobs or alter shared `studio-handoff.js` (currently Agent A PR #170) or Studio consumer (A/B coordination).
+- **Remaining boundary:** changing/switching account elsewhere in same tab may still expose a stale `deepsyq_template_start`; Studio-side account binding requires separate A/B handoff and full positive/negative tests. The logout-only mitigation is not full #35 security completion.
+- **Status:** CLAIMED / browser CI and integration pending; no provider, wallet, database, main or production change.
 ## Agent C — BASE #21 simple AI chat MVP audit / SCOPED, NOT PRODUCT BUILD (2026-10-16)
 
 - **Authority:** Original BASE #21 requires Agents page and allows workflow-based first stage; original Block 2 demands a real autonomous orchestrator and is a separate future scope. Owner #172 specifically prioritizes a **minimal honest AI chat** before advanced agent; owner #182 prohibits owner- or agent-funded paid AI tests and billable free grants.
