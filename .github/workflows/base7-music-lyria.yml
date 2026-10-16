@@ -1,0 +1,28 @@
+name: BASE 7 Music Lyria Clip contract
+on:
+  pull_request:
+    paths:
+      - 'server/generation-provider.js'
+      - 'server/generation-music-lyria.js'
+      - 'tests/generation-studio-unit.mjs'
+      - 'tests/generation-music-lyria-unit.mjs'
+      - '.github/workflows/base7-music-lyria.yml'
+permissions:
+  contents: read
+jobs:
+  music-no-spend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Syntax and music contract checks
+        run: |
+          node --check server/generation-music-lyria.js
+          node --check server/generation-provider.js
+          node --check tests/generation-music-lyria-unit.mjs
+          node --test tests/generation-music-lyria-unit.mjs
