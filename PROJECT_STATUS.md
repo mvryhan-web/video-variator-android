@@ -47,6 +47,8 @@ This file is the shared live progress board for all coding agents.
 
 - **2026-10-16 account-switch hardening:** Authenticated first-run GET/POST must stay bound to the exact browser login token that initiated them. New guards refuse stale GET options, refuse buttons after token change, refuse a late successful POST redirect/clearing setup for a different account; tests cover both artificially delayed GET and POST. Commit `416f5b65` and test `529f4f55`. The server still persists Image/Video only; Product Ads/Avatar remain D schema/option gated. Chromium/WebKit CI pending.
 
+- **Direct safety verification of new guards (continuation):** Exercised the exact authored `maybeShowOnboarding` source Git blob `d8f8e8967a69dd6a92313b2a73e7feea6be98cff` in isolated V8 with controllable deferred GET/POST and real allowlist helper. **3/3 PASS:** stale GET did not open modal or clear setup; POST definitely started before switch; stale POST did not redirect and left setup pending. This is NOT browser/network GitHub CI or real account acceptance.
+
 ## Agent D — BASE #16 duplicate Stripe Price-ID risk / IN PROGRESS (2026-10-16)
 
 - **Progress:** PR #148 latest 9fdb2da8. Isolated 5/5 config checks PASS. Added mocked Checkout fail-closed test, not yet CI-verified; GitHub Actions pending. Full BASE #16 remains PARTIAL / NOT LIVE.
