@@ -252,6 +252,12 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Bounded change:** fail-closed safe, machine-readable allowlisted error codes (connection/schema/migration vs generic) with no raw message; tests using deliberately secret-bearing synthetic exception, no real DB/provider/Stripe call, no production variables or flag changes.
 - **Original BASE #48 remains PARTIAL** until real staging backup, migration/restore, login, existing subscriptions, Tools, mobile and rollback verification.
 
+## Agent D BASE #37 — owner AI generation-kind breakdown — IN PROGRESS (2026-10-16)
+
+- **Original BASE TXT §37** and existing analytics. PR #64 already merged user conversion/first-success metrics and must NOT be duplicated.
+- **Observed gap:** owner Business overview has top AI model but no recorded breakdown by Image, Video, Music/Voice generation jobs. Existing `vv_generation_jobs.kind` already stores that safely. Add aggregate owner-only counts and success/failure by known creation type; exclude deleted jobs; UI label MUST say recorded AI generations, NOT total legacy-tool usage. No user identifiers, new tracking, AI provider calls or money estimates.
+- **Claim:** `base37-generation-kind-breakdown-20261016` with dedicated server endpoint fixture tests and existing admin display only. No approved Home design change. Preserve `unverifiedMetrics.mostUsedTool=null`, because legacy tools are not tracked consistently; keep production main/Stripe/Render untouched.
+
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
 **ACTIVE OWNER PRIORITY NOW:** all four coding-agent sessions focus on the **original BASE TXT / 55-point checklist**, not new Roadmap Blocks 1–7 or duplicated Product Watcher. Shared 55-item claim board and proposed collision-safe work lanes: [`docs/DEEPSYQ_BASE_55_COORDINATION.md`](docs/DEEPSYQ_BASE_55_COORDINATION.md). This new owner instruction overrides older prose suggesting BASE is owned by just one agent or that Agents E/Block 5 should keep expanding their scope. **Already verified:** 55 rows exist in the BASE checklist; #47 and #53 are DONE/RULE; **53 other rows are not fully DONE** and mostly have significant existing code. `PARTIAL` does NOT mean “build from scratch.”
