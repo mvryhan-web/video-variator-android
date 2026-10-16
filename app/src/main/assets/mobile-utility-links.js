@@ -41,5 +41,18 @@ if(grid){
   const small=document.createElement('small');small.textContent=tool.note;
   a.append(badge,strong,small);grid.append(a);
  }
+ // BASE #28: a separate, implemented in-browser photo collage (not an unimplemented mobile-utility mode).
+ const collageText={
+  en:['Photo Collage','Arrange 2–9 photos into one PNG'],
+  ru:['Фотоколлаж','Объединить 2–9 фото в PNG'],
+  fr:['Collage photo','Assembler 2 à 9 photos en PNG'],
+  uk:['Фотоколаж','Об’єднати 2–9 фото у PNG']
+ }[lang]||['Photo Collage','Arrange 2–9 photos into one PNG'];
+ const a=document.createElement('a');a.className='hub-tile mobile-utility-tile';
+ a.href='photo-collage.html';a.dataset.utility='photo-collage';
+ const badge=document.createElement('span');badge.className='utility-tile-icon';badge.setAttribute('aria-hidden','true');badge.textContent='▦';
+ const title=document.createElement('strong');title.textContent=collageText[0];
+ const note=document.createElement('small');note.textContent=collageText[1];
+ a.append(badge,title,note);grid.append(a);
 }
 })();
