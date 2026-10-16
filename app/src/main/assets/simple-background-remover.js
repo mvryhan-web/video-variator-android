@@ -1,14 +1,18 @@
 import {eraseConnectedColor} from './simple-background-remover-core.mjs';
 const $=id=>document.getElementById(id);
 const source=$('original'),result=$('result'),srcCtx=source.getContext('2d',{willReadFrequently:true}),outCtx=result.getContext('2d');
-let original=null,selected={x:0,y:0},photoName='photo',generation=0;
+let original=null,selected={x:0,y:0},photoName='photo',generation=0,exportUrl=null;
 const setStatus=message=>{$('status').textContent=message;};
 const setSample=()=>{
  const i=(selected.y*source.width+selected.x)*4,d=original.data;
  $('sampleStatus').textContent='Background sample at '+(selected.x+1)+', '+(selected.y+1)+' · RGB '+d[i]+', '+d[i+1]+', '+d[i+2];
 };
+function discardExport(){
+ if(exportUrl){URL.revokeObjectURL(exportUrl);exportUrl=null;}
+ $('download').disabled=true;
+}
 function resetResult(){
- generation++;$('download').disabled=true;result.width=result.height=1;
+ generation++;discardExport();result.width=result.height=1;
  outCtx.clearRect(0,0,1,1);
 }
 function clearCurrent({clearInput=false}={}){
@@ -81,31 +85,42 @@ source.addEventListener('keydown',event=>{
 });
 $('topLeft').onclick=()=>{if(!original)return;selected={x:0,y:0};resetResult();setSample();};
 $('tolerance').oninput=()=>{$('toleranceValue').textContent=$('tolerance').value;resetResult();};
-$('erase').onclick=()=>{
+$('erase').onclick=async()=>{
  if(!original)return;
- $('erase').disabled=true;setStatus('Removing matching connected pixels on your device…');
+ // Prepare the PNG while processing, rather than after the download click.
+ // Safari/iOS requires the eventual download to use a direct user gesture.
+ resetResult();const epoch=generation;
+ $('erase').disabled=true;
+ setStatus('Removing matching background pixels and preparing PNG on your device…');
  try{
   const removed=eraseConnectedColor(original.data,source.width,source.height,selected.x,selected.y,Number($('tolerance').value));
   result.width=source.width;result.height=source.height;
   outCtx.putImageData(new ImageData(removed.rgba,source.width,source.height),0,0);
-  $('download').disabled=removed.removedPixels===0;
-  setStatus(removed.removedPixels
-   ?'Transparent preview ready. Removed '+removed.removedPixels.toLocaleString()+' pixels. Review edges before downloading.'
-   :'No matching connected pixels found. Pick a background color and retry.');
+  if(!removed.removedPixels){
+   setStatus('No matching connected pixels found. Pick a background color and retry.');
+   return;
+  }
+  const blob=await new Promise(resolve=>result.toBlob(resolve,'image/png'));
+  if(epoch!==generation)return; // Selection, photo, or tolerance was changed mid-encode.
+  if(!blob)throw new Error('PNG_ENCODE_FAILED');
+  exportUrl=URL.createObjectURL(blob);
+  $('download').disabled=false;
+  setStatus('Transparent PNG ready. Removed '+removed.removedPixels.toLocaleString()+' pixels. Review edges before downloading.');
  }catch(e){
-  setStatus(e.message==='SAMPLE_IS_TRANSPARENT'?'Pixel is already transparent. Choose an opaque background color.':'Could not process this image.');
- }finally{$('erase').disabled=false;}
+  if(epoch===generation)setStatus(e.message==='SAMPLE_IS_TRANSPARENT'
+   ?'Pixel is already transparent. Choose an opaque background color.'
+   :'Could not prepare the transparent PNG. Try a smaller image.');
+ }finally{$('erase').disabled=!original;}
 };
 $('download').onclick=()=>{
- if($('download').disabled||!original)return;
- $('download').disabled=true;
- result.toBlob(blob=>{
-  if(blob){
-   const url=URL.createObjectURL(blob),link=document.createElement('a');
-   link.href=url;link.download=photoName+'-transparent.png';document.body.append(link);link.click();link.remove();
-   setTimeout(()=>URL.revokeObjectURL(url),12000);
-   setStatus('Transparent PNG downloaded. The original photo was not changed.');
-  }else setStatus('Could not save PNG. Try a smaller image.');
-  $('download').disabled=false;
- },'image/png');
+ if($('download').disabled||!original||!exportUrl)return;
+ // Click an already prepared local Blob URL synchronously with this gesture.
+ const link=document.createElement('a');
+ link.href=exportUrl;link.download=photoName+'-transparent.png';
+ document.body.append(link);link.click();link.remove();
+ setStatus('Transparent PNG downloaded. The original photo was not changed.');
 };
+window.addEventListener('pagehide',()=>{
+ discardExport();
+ if(original?.data)original.data.fill(0);
+});
