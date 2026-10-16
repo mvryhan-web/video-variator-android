@@ -31,22 +31,41 @@ document.querySelectorAll('[data-quick-starter]').forEach(button=>button.addEven
 }));
 
 let quickReferences=[],quickPreviewUrls=[];
-// Small session-only Canvas draft: never stores uploaded files or sends drafts to the server.
-const QUICK_DRAFT_KEY='deepsyq_quick_canvas_draft_v1';
+// Canvas drafts are local-only and private to the account that wrote them.
+// Never store a bearer token (or uploaded files) in the draft key or payload.
+const QUICK_DRAFT_LEGACY_KEY='deepsyq_quick_canvas_draft_v1';
+const quickDraftOwner=localStorage.getItem('vv_token')||'guest';
+let quickDraftEpoch=0;
+const quickDraftKeyPromise=(async()=>{
+ try{
+  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(quickDraftOwner));
+  return 'deepsyq_quick_canvas_draft_v2_'+Array.from(new Uint8Array(digest).slice(0,16),b=>b.toString(16).padStart(2,'0')).join('');
+ }catch(_){return null;} // No Web Crypto: editing stays available, no unsafe fallback storage.
+})();
+function sameQuickDraftAccount(){return (localStorage.getItem('vv_token')||'guest')===quickDraftOwner;}
 function saveQuickDraft(){
  const draft={prompt:$('quickCreatePrompt').value.slice(0,2000),kind:$('quickCreateKind').value,ratio:$('quickCreateRatio').value};
- try{sessionStorage.setItem(QUICK_DRAFT_KEY,JSON.stringify(draft));}catch(_){/* Browsers may deny storage; creation still works. */}
+ const epoch=++quickDraftEpoch;
+ void quickDraftKeyPromise.then(key=>{
+  if(!key||epoch!==quickDraftEpoch||!sameQuickDraftAccount())return;
+  try{sessionStorage.setItem(key,JSON.stringify(draft));}catch(_){/* Keep in-memory editor usable. */}
+ });
 }
-function restoreQuickDraft(){
+async function restoreQuickDraft(){
+ populateQuickRatios();
+ try{sessionStorage.removeItem(QUICK_DRAFT_LEGACY_KEY);}catch(_){}
+ const epoch=quickDraftEpoch;
+ const key=await quickDraftKeyPromise;
+ if(!key||epoch!==quickDraftEpoch||!sameQuickDraftAccount()||$('quickCreatePrompt').value)return;
  try{
-  const draft=JSON.parse(sessionStorage.getItem(QUICK_DRAFT_KEY)||'null');
-  if(!draft||typeof draft.prompt!=='string'||!['image','video'].includes(draft.kind)){populateQuickRatios();return;}
+  const draft=JSON.parse(sessionStorage.getItem(key)||'null');
+  if(!draft||typeof draft.prompt!=='string'||!['image','video'].includes(draft.kind))return;
   $('quickCreatePrompt').value=draft.prompt.slice(0,2000);
   $('quickCreateKind').value=draft.kind;
   populateQuickRatios(typeof draft.ratio==='string'?draft.ratio:'');
- }catch(_){populateQuickRatios();/* Ignore corrupt or inaccessible session data. */}
+ }catch(_){/* Ignore corrupt or inaccessible account-scoped draft. */}
 }
-restoreQuickDraft();
+void restoreQuickDraft();
 $('quickCreatePrompt').addEventListener('input',saveQuickDraft);
 $('quickCreateKind').addEventListener('change',()=>{populateQuickRatios();saveQuickDraft();});
 $('quickCreateRatio').addEventListener('change',saveQuickDraft);
@@ -55,7 +74,9 @@ $('quickCreateClear').addEventListener('click',()=>{
  if(hasDraft&&!confirm('Clear this Canvas draft and remove its selected reference photos?'))return;
  $('quickCreatePrompt').value='';$('quickCreateKind').value='image';populateQuickRatios();
  quickReferences=[];$('quickCreateFiles').value='';renderQuickReferences();
- try{sessionStorage.removeItem(QUICK_DRAFT_KEY);}catch(_){}
+ ++quickDraftEpoch;
+  void quickDraftKeyPromise.then(key=>{if(key&&sameQuickDraftAccount())try{sessionStorage.removeItem(key);}catch(_){}});
+  try{sessionStorage.removeItem(QUICK_DRAFT_LEGACY_KEY);}catch(_){}
  $('quickCreateStatus').textContent='Canvas draft cleared. No files were uploaded.';
  $('quickCreatePrompt').focus();
 });
@@ -74,6 +95,15 @@ function renderQuickReferences(){
   item.append(img,name,remove);previews.append(item);
  });
 }
+// Other-tab logout/account replacement must remove old private prompt and unsent
+// reference photos from this open page, not merely from the next reload.
+window.addEventListener('storage',event=>{
+ if(event.key!=='vv_token')return;
+ ++quickDraftEpoch;
+ $('quickCreatePrompt').value='';$('quickCreateKind').value='image';populateQuickRatios();
+ quickReferences=[];renderQuickReferences();
+ $('quickCreateStatus').textContent='Account changed. Reload to start a private draft for this account.';
+});
 function setQuickReferences(files,{append=false}={}){
  const candidates=[...(append?quickReferences:[]),...Array.from(files||[])];
  if(candidates.length>QUICK_MAX_FILES||candidates.some(file=>!['image/png','image/jpeg'].includes(file.type)||file.size>QUICK_MAX_BYTES||file.size===0)){
