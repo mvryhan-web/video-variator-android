@@ -36,7 +36,16 @@ test('BASE #30: real mobile opener, scrollable owned drawer, Escape, outside tap
   expect(rect.left).toBeGreaterThanOrEqual(-1);
   expect(rect.right).toBeLessThanOrEqual(rect.viewport+1);
   expect(rect.overflow).toBe('auto');
-  await sidebar.locator('#sidebarToggle').click();
+  // A sticky header or language picker must not intercept the real drawer
+  // close button; previous mobile Chromium/WebKit CI failed on this.
+  const drawerClose=sidebar.locator('#sidebarToggle');
+  const hitTarget=await drawerClose.evaluate(button=>{
+   const r=button.getBoundingClientRect();
+   const center=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+   return center===button||button.contains(center);
+  });
+  expect(hitTarget,'The open drawer close button must receive pointer input').toBe(true);
+  await drawerClose.click();
   await expect(page.locator('body')).not.toHaveClass(/menu-open/);
   await expect(menu).toBeFocused();
   await expect(sidebar).toHaveJSProperty('inert',true);
