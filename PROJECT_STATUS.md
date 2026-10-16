@@ -335,6 +335,12 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Scope:** reuse *existing* transactional purchase/refund ledger for paid subscription invoices; use real invoice payment intent, amount/currency and invoice ID (not synthetic client metadata), preserve `subscription_grant` ledger type and per-invoice idempotency. Route signed refund to existing wallet when the subscription AI grant flag is enabled even if credit-pack Checkout is disabled. Flag defaults OFF; no new schema, no real payments, no old subscriptions changed. Prove cumulative and duplicate refund against disposable PostgreSQL. No #17/#37 edits, Home, Render, main, provider or production changes.
 - **Remaining:** real Stripe event/API-version acceptance and owner-approved amounts still blocked.
 
+## Agent D BASE #51 — Image + Video launch switches checked by readiness / IN PROGRESS (2026-10-16)
+
+- **Branch:** `base51-image-video-launch-switches-20261016`; original BASE TXT §51 first commercial slice demands Image and Video. Existing `generationReadiness` can report launchReady when explicit per-kind Image or Video kill switch is OFF.
+- **Changes:** reuse `generationFeatureSwitches`, add Image/Video enabled readiness gate, small negative and backward compatibility unit tests, owner-only readiness response unchanged except an additional boolean gate. No flag enabled, provider billing/Stripe/router/DB/Home modified.
+- **Check:** create isolated PR, pass targeted tests, reconcile shared status; full BASE #51 remains PARTIAL until real commercial end-to-end.
+
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
 **ACTIVE OWNER PRIORITY NOW:** all four coding-agent sessions focus on the **original BASE TXT / 55-point checklist**, not new Roadmap Blocks 1–7 or duplicated Product Watcher. Shared 55-item claim board and proposed collision-safe work lanes: [`docs/DEEPSYQ_BASE_55_COORDINATION.md`](docs/DEEPSYQ_BASE_55_COORDINATION.md). This new owner instruction overrides older prose suggesting BASE is owned by just one agent or that Agents E/Block 5 should keep expanding their scope. **Already verified:** 55 rows exist in the BASE checklist; #47 and #53 are DONE/RULE; **53 other rows are not fully DONE** and mostly have significant existing code. `PARTIAL` does NOT mean “build from scratch.”
