@@ -42,6 +42,57 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
    assert.equal((await response.json()).error,'PREVIEW_ONLY');
   }
   assert.equal((await fetch(base+'/api/me')).status,503);
+
+  // A design preview must stay safe even after production adds new payment,
+  // generation, admin or signup endpoints. Exercise representative surfaces
+  // through the real isolated HTTP server (no Stripe/provider/database).
+  const health=await fetch(base+'/api/health');
+  assert.equal(health.status,200);
+  assert.deepEqual(await health.json(),{
+   ok:true,service:'deepsyq-design-preview',paymentsEnabled:false,aiGenerationEnabled:false
+  });
+  for(const route of ['/api/me','/api/ai-wallet/balance','/api/studio/admin/business',
+                      '/api/studio/jobs','/api/billing/checkout','/api/auth/email/login']){
+   const response=await fetch(base+route);
+   assert.equal(response.status,503,'GET '+route);
+   assert.equal((await response.json()).error,'PREVIEW_ONLY','GET '+route);
+  }
+  for(const route of ['/api/studio/generate','/api/ai-wallet/welcome',
+                      '/api/studio/jobs','/api/auth/email/login',
+                      '/api/billing/checkout','/api/webhooks/stripe']){
+   const response=await fetch(base+route,{method:'POST',headers:{'content-type':'application/json'},body:'{}'});
+   assert.equal(response.status,503,'POST '+route);
+   assert.equal((await response.json()).error,'PREVIEW_ONLY','POST '+route);
+  }
+  const robots=await fetch(base+'/robots.txt');
+  assert.equal(robots.status,200);
+  assert.match(await robots.text(),/Disallow:\s*\//);
+  for(const route of ['/','/deepsyq.html','/deepsyq-logo.png','/deepsyq.webmanifest']){
+   const response=await fetch(base+route);
+   assert.equal(response.status,200,route);
+   assert.match(response.headers.get('x-robots-tag')||'',/noindex/i,route);
+   assert.equal(response.headers.get('cache-control'),'no-store',route);
+   assert.equal(response.headers.get('x-content-type-options'),'nosniff',route);
+  }
+  const logo=await fetch(base+'/deepsyq-logo.png');
+  assert.match(logo.headers.get('content-type')||'',/image\/png/);
+  const magic=new Uint8Array(await logo.arrayBuffer()).slice(0,8);
+  assert.deepEqual([...magic],[137,80,78,71,13,10,26,10],'approved original PNG must render');
+  const manifestResponse=await fetch(base+'/deepsyq.webmanifest');
+  assert.equal(manifestResponse.status,200);
+  const manifest=await manifestResponse.json();
+  assert.equal(manifest.short_name,'Deepsyq');
+  assert.equal(manifest.start_url,'/deepsyq.html');
+  for(const icon of manifest.icons){
+   const response=await fetch(base+'/'+icon.src);
+   assert.equal(response.status,200,'Missing PWA brand image: '+icon.src);
+   assert.match(response.headers.get('content-type')||'',/image\/png/);
+  }
+  const legacy=await(await fetch(base+'/manifest.webmanifest')).json();
+  assert.equal(legacy.short_name,'Uniquifier','existing video tool identity must not be overwritten');
+  const forbidden=await fetch(base+'/.env');
+  assert.equal(forbidden.status,404,'preview must not expose project-level secrets');
+
  }finally{
   child.kill();
   if(child.exitCode===null&&child.signalCode===null)await once(child,'exit');
