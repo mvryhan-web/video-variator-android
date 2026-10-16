@@ -23,20 +23,24 @@ test('BASE #28 Tools links to working local Photo Collage with PNG download, no 
  await expect(page.locator('#collageResult')).toBeVisible();
  await expect(page.locator('#collagePreview')).toHaveJSProperty('complete',true);
  await expect(page.locator('#collageDownload')).toBeVisible();
- const output=await page.locator('#collagePreview').evaluate(async img=>{
-  const source=await fetch(img.src);const blob=await source.blob();
-  const bitmap=await createImageBitmap(blob),canvas=document.createElement('canvas');
-  canvas.width=bitmap.width;canvas.height=bitmap.height;
-  const ctx=canvas.getContext('2d');ctx.drawImage(bitmap,0,0);
-  const left=Array.from(ctx.getImageData(100,100,1,1).data),right=Array.from(ctx.getImageData(1000,100,1,1).data);
-  const result={width:bitmap.width,height:bitmap.height,type:blob.type,left,right};
-  bitmap.close();return result;
+ const output=await page.locator('#collagePreview').evaluate(img=>{
+  const canvas=document.createElement('canvas');
+  canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+  const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0);
+  return {
+   width:canvas.width,height:canvas.height,
+   left:Array.from(ctx.getImageData(100,100,1,1).data),
+   right:Array.from(ctx.getImageData(1000,100,1,1).data)
+  };
  });
- expect(output.width).toBe(1200);expect(output.type).toBe('image/png');
+ expect(output.width).toBe(1200);
  expect(output.left.slice(0,3)).toEqual([255,0,0]);expect(output.right.slice(0,3)).toEqual([0,0,255]);
  const downloaded=page.waitForEvent('download');
  await page.locator('#collageDownload').click();
- expect((await downloaded).suggestedFilename()).toBe('deepsyq-collage.png');
+ const file=await downloaded;
+ expect(file.suggestedFilename()).toBe('deepsyq-collage.png');
+ const chunks=[];for await(const chunk of await file.createReadStream())chunks.push(chunk);
+ expect(Buffer.concat(chunks).subarray(0,8).toString('hex')).toBe('89504e470d0a1a0a');
  expect(serverPosts).toBe(0);
 });
 test('Photo Collage rejects invalid files without network and safely clears output',async({page})=>{
