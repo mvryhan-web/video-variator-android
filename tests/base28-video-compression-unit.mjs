@@ -24,4 +24,5 @@ test('BASE #28: report measured savings without promising smaller output',()=>{
  assert.deepEqual(videoCompressionSummary(1000,1300),{savedPercent:-30,smaller:false});
  assert.throws(()=>videoCompressionSummary(0,100),/INVALID_VIDEO_SIZE/);
  assert.throws(()=>videoCompressionSummary(200,-3),/INVALID_VIDEO_SIZE/);
+ assert.throws(()=>videoCompressionSummary(200,0),/INVALID_VIDEO_SIZE/); // Empty FFmpeg output is never 100% saved.
 });
