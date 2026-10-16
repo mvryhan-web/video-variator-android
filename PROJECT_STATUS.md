@@ -77,6 +77,7 @@ The exact completion state of older components must be verified from the current
 
 | Workstream | Owner / Agent | Branch / PR | Status | Rule |
 |---|---|---|---|---|
+| BASE #29 — AI Apps navigation to existing History/Credits | ChatGPT BASE lane C (this session) | `base29-ai-apps-account-nav-20261016` / PR pending | **IN PROGRESS** 2026-10-16 | Only existing AI Apps header/navigation, no owner-locked Home, no auth/billing/provider/server changes; link existing Studio History and credits routes, browser test. |
 | BASE #20 — Product Video reference ordering | ChatGPT BASE lane C / this session | PR #63 → `deepsyq-platform` | **CODE VERIFIED / MERGED TO BASE / ITEM STILL PARTIAL / NOT LIVE** — 2026-10-16 | Existing local workflow now reorders 1–3 product images and preserves valid selection on invalid replacement; browser CI 38899612960 PASSED 8/8 desktop/mobile Chromium/WebKit; merge `b8dc6c18`. Video Studio durationPreference still needs coordinated B-owner handoff. No paid provider call, production deploy, Stripe or migration. |
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
