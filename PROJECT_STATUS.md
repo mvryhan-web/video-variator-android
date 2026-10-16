@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — isolated design Preview read-only boundary acceptance / IN PROGRESS (2026-10-16)
+
+- **Agent/scope:** 5 technical QA, `agent5-preview-boundary-smoke-20261016`; no A–D original BASE feature row, no owner Home redesign, no real paid generation.
+- **Audit:** existing `tests/deepsyq-preview.mjs` checks first Canvas page and three POST endpoints, but not the newly installed official Deepsyq manifest/favicon/logo, robots/noindex, or representative payment/auth/provider/admin API surfaces. Its current execution as one step in broad `deepsyq-platform.yml` is slow and has unrelated red browser cases; no independent focused preview acceptance is available.
+- **Planned bounded work:** extend only this existing safe preview integration test with rights-safe public brand and fail-closed HTTP checks; add a narrowly scoped dedicated Node GitHub Actions job running the same existing test, no app/backend/Stripe/DB/providers/locked Home/source TXT changes. Keep free Render preview separate; no production service, credentials or live write operations. Complete after focused CI and verified merge to `deepsyq-platform`.
+
 ## Agent 5 — actual Home icon rendering browser smoke / CODE VERIFIED, PR #131 (2026-10-16)
 
 - **Role/branch:** Agent 5 read-only cross-browser acceptance QA, `agent5-brand-browser-smoke-20261016`. No BASE A/B/C/D feature implementation or claim takeover.
