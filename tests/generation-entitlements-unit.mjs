@@ -40,7 +40,7 @@ test('BASE #44: free/trial AI acquisition requires explicit flags, starter funds
  ]) {
   const disabled=generationEntitlementForUser(newAccount,{...base,...changed});
   assert.equal(disabled.allowed,false,JSON.stringify(changed));
-  assert.equal(disabled.reason,changed.AI_FREE_GENERATION_ENABLED==='false'?'AI_PLAN_INACTIVE':changed.AI_PLAN_ENTITLEMENTS_JSON==='[]'?'AI_ENTITLEMENTS_NOT_CONFIGURED':'AI_FREE_PLAN_NOT_CONFIGURED');
+  assert.equal(disabled.reason,changed.AI_FREE_GENERATION_ENABLED==='false'?'AI_PLAN_NOT_ENTITLED':changed.AI_PLAN_ENTITLEMENTS_JSON==='[]'?'AI_ENTITLEMENTS_NOT_CONFIGURED':'AI_FREE_PLAN_NOT_CONFIGURED');
  }
  assert.equal(generationEntitlementForUser(newAccount,{...base,AI_PUBLIC_GENERATION_ENABLED:'false'}).reason,'PUBLIC_AI_DISABLED');
  assert.equal(generationEntitlementForUser({...newAccount,has_subscribed:true},base).allowed,false);
