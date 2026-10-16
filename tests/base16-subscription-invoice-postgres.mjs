@@ -15,7 +15,7 @@ const env={
 };
 const invoice=(change={})=>({
  type:'invoice.paid',livemode:false,data:{object:{
-  id:'in_fixture1',status:'paid',paid:true,livemode:false,
+  id:'in_fixture1',status:'paid',paid:true,livemode:false,billing_reason:'subscription_cycle',
   amount_paid:900,subscription:'sub_fixture1',customer:'cus_fixture1',
   lines:{has_more:false,data:[{price:{id:'price_subfixture'},quantity:1}]},
   ...change
@@ -84,6 +84,10 @@ test('BASE #16: a signed, paid invoice grants once per invoice on disposable Pos
   await assert.rejects(()=>installed.handleEvent(wrongMode),/AI_SUBSCRIPTION_INVOICE_INVALID/);
   const zeroCharge=invoice({amount_paid:0,id:'in_zero'});
   await assert.rejects(()=>installed.handleEvent(zeroCharge),/AI_SUBSCRIPTION_INVOICE_INVALID/);
+  const prorated=invoice({id:'in_prorate',billing_reason:'subscription_update'});
+  await assert.rejects(()=>installed.handleEvent(prorated),/AI_SUBSCRIPTION_INVOICE_INVALID/);
+  const notApproved=invoice({id:'in_unapproved',livemode:true});
+  await assert.rejects(()=>grantPaidSubscriptionInvoice({event:{...notApproved,livemode:true},env:{...env,AI_BILLING_MODE:'live'},pool,wallet}),/AI_SUBSCRIPTION_LIVE_NOT_APPROVED/);
   const ambiguous=invoice({lines:{has_more:false,data:[
     {price:{id:'price_subfixture'},quantity:1},{price:{id:'price_other'},quantity:1}]},id:'in_ambiguous'});
   await assert.rejects(()=>installed.handleEvent(ambiguous),/AI_SUBSCRIPTION_INVOICE_INVALID/);
