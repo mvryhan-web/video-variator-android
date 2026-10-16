@@ -130,6 +130,32 @@ test('BASE #16: a signed, paid invoice grants once per invoice on disposable Pos
   assert.equal((await wallet.balance(user.id)).debt,150);
   const refundRows=(await wallet.history(user.id)).filter(x=>x.kind==='payment_refund');
   assert.equal(refundRows.length,3,'cumulative duplicate refunds cannot double-revoke');
+
+  // A later approved plan credit change must not retroactively alter old
+  // credited invoices or poison Stripe retries of the historical invoice.
+  const changedUser='subscription-repricing-fixture';
+  await pool.query('INSERT INTO vv_users(id,plan,stripe_customer_id,stripe_subscription_id,subscription_status) VALUES($1,$2,$3,$4,$5)',
+   [changedUser,'basic','cus_pricechange','sub_pricechange','active']);
+  const oldInvoice=invoice({id:'in_tariffone',payment_intent:'pi_tariffone',
+   customer:'cus_pricechange',subscription:'sub_pricechange'});
+  await installed.handleEvent(oldInvoice);
+  assert.equal((await wallet.balance(changedUser)).available,120);
+  env.AI_SUBSCRIPTION_CREDITS_JSON=JSON.stringify({basic:250});
+  await installed.handleEvent(oldInvoice);
+  assert.equal((await wallet.balance(changedUser)).available,120,'historical invoice cannot grant new tariff credits');
+  const newInvoice=invoice({id:'in_tarifftwo',payment_intent:'pi_tarifftwo',
+   customer:'cus_pricechange',subscription:'sub_pricechange'});
+  await installed.handleEvent(newInvoice);
+  assert.equal((await wallet.balance(changedUser)).available,370);
+  const grants=await pool.query('SELECT session_id,credits FROM vv_ai_purchase WHERE user_id=$1 ORDER BY session_id',[changedUser]);
+  assert.deepEqual(grants.rows,[{session_id:'in_tariffone',credits:120},{session_id:'in_tarifftwo',credits:250}]);
+  // The historic-replay flag never allows changing the credits on a one-time pack purchase.
+  await wallet.grant({userId:'pack-fixture',sessionId:'cs_test_packfixture',
+    paymentIntent:'pi_packfixture',credits:20,amount:900,currency:'eur'});
+  await assert.rejects(()=>wallet.grant({userId:'pack-fixture',sessionId:'cs_test_packfixture',
+    paymentIntent:'pi_packfixture',credits:250,amount:900,currency:'eur',
+    allowHistoricalSubscriptionReplay:true}),/PURCHASE_CONFLICT/);
+
  }finally{await pool.end();}
 });
 
