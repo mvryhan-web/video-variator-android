@@ -59,7 +59,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 26 | Canvas | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 27 | Existing Video Uniquifier preserved under Tools | PARTIAL | C | ROOT SWITCH/PRODUCTION REGRESSION GATED | CODE VERIFIED (BASE, not live) | ChatGPT Lane C / PR #61 / `base-27-video-uniquifier-tools-20261016` / CI 38898789990 |
 | 28 | Utilities gathered in Tools | PARTIAL — AUDIO TOOLS CODE VERIFIED | C | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS | ChatGPT Lane C / `base28-photo-collage-20261016` |
-| 29 | Final navigation | PARTIAL | C | AI APPS → EXISTING HISTORY/CREDITS LINKS ONLY | IN PROGRESS | ChatGPT lane C / `base29-ai-apps-account-nav-20261016` |
+| 29 | Final navigation | PARTIAL | C | AI APPS → REAL HISTORY / CREDITS / PRICING CODE VERIFIED; WHOLE APP PENDING | CODE VERIFIED / MERGED TO BASE (partial) | ChatGPT lane C / PR #68 / CI 38900798943 / merge df1a4463 |
 | 30 | Desktop / Android / iPhone responsive | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 31 | Generation UX/status | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 32 | Friendly error handling | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
