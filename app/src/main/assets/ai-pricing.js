@@ -1,4 +1,4 @@
-import {validPlanPrice,validToolLimit,validLifetimeCurrency,validAiPack,validWalletAmount,aiCheckoutMode,checkoutErrorMessage} from './ai-pricing-display.js';
+import {validPlanPrice,validToolLimit,validLifetimeCurrency,validAiPack,validWalletAmount,aiCheckoutMode,checkoutErrorMessage,approvedSubscriptionCredits} from './ai-pricing-display.js';
 const $=id=>document.getElementById(id);
 const token=()=>localStorage.getItem('vv_token');
 async function json(path,options={}){const r=await fetch(path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(token()?{Authorization:'Bearer '+token()}:{})}}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'REQUEST_FAILED');return d;}
@@ -7,13 +7,16 @@ function minor(amount,currency){return new Intl.NumberFormat('en-US',{style:'cur
 function card(title,price,description,buttonText,onClick,{disabled=false,className=''}={}){const a=document.createElement('article');a.className='price-card '+className;const h=document.createElement('h3');h.textContent=title;const p=document.createElement('div');p.className='price';p.textContent=price;const d=document.createElement('p');d.textContent=description;const b=document.createElement('button');b.type='button';b.textContent=buttonText;b.disabled=disabled;b.onclick=onClick||(()=>{});a.append(h,p,d,b);return a;}
 async function loadToolPlans(){
  try{
-  const c=await json('/api/config'),root=$('toolPlans');
+  const c=await json('/api/config'),subscriptionConfig=await json('/api/ai-billing/config').catch(()=>({})),root=$('toolPlans');
   root.replaceChildren();$('toolStatus').textContent='';
   for(const key of ['basic','pro','business']){
    const plan=c.plans?.[key];if(!plan)continue;
    const price=validPlanPrice(plan),limit=validToolLimit(plan);
-   const description=limit===null?'Monthly allowance unavailable. Check your current plan details in your account.'
+   const toolDescription=limit===null?'Monthly allowance unavailable. Check your current plan details in your account.'
      :limit.toLocaleString()+' existing video-tool credits per month.';
+   const monthlyAiCredits=approvedSubscriptionCredits(subscriptionConfig,key);
+   const description=toolDescription+(monthlyAiCredits===null?'':
+     ' + '+monthlyAiCredits.toLocaleString()+' AI-creation credits after each paid subscription invoice.');
    root.append(card(key[0].toUpperCase()+key.slice(1),
      price===null?'Price unavailable':money(price,'USD')+' / month',
      description,'View account',()=>location.assign('index.html#profile')));

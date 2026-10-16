@@ -1,6 +1,6 @@
 import {createHash,createHmac,timingSafeEqual,randomUUID} from 'node:crypto';
 import {GenerationWallet} from './generation-wallet.js';
-import {grantPaidSubscriptionInvoice} from './generation-subscription-credits.js';
+import {grantPaidSubscriptionInvoice,publicSubscriptionCreditGrants} from './generation-subscription-credits.js';
 import {MODELS,validateGeneration} from './generation-provider.js';
 
 const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -109,7 +109,7 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
   app.post('/api/ai-wallet/welcome',auth,async(req,res)=>{const c=welcomeCreditConfig(env);if(!c.enabled)return res.status(503).json({error:'AI_WELCOME_CREDITS_NOT_ENABLED'});try{const balance=await wallet.grantOnce({userId:req.user.id,kind:'welcome',credits:c.credits});res.json({ok:true,credits:c.credits,balance});}catch(_){res.status(503).json({error:'WALLET_UNAVAILABLE'});}});
   app.get('/api/ai-billing/config',(_req,res)=>{
     const c=billingCatalog(env);
-    const r=runtime();res.json({enabled:enabled(),mode:r.mode,livePaymentsEnabled:enabled()&&r.livemode,unit:'AI credits',packs:c.packs.map(({priceId,...p})=>p),rates:c.rates,revision:c.revision,reason:enabled()?null:'PAYMENTS_NOT_ACTIVATED'});
+    const r=runtime();res.json({enabled:enabled(),mode:r.mode,livePaymentsEnabled:enabled()&&r.livemode,unit:'AI credits',subscriptionCredits:publicSubscriptionCreditGrants(env),packs:c.packs.map(({priceId,...p})=>p),rates:c.rates,revision:c.revision,reason:enabled()?null:'PAYMENTS_NOT_ACTIVATED'});
   });
   app.use('/api/ai-billing',(_req,res,next)=>enabled()?next():res.status(503).json({error:'PAYMENTS_NOT_ACTIVATED'}));
   app.get('/api/ai-billing/balance',auth,async(req,res)=>{try{res.json(await wallet.balance(req.user.id));}catch(_){res.status(503).json({error:'WALLET_UNAVAILABLE'});}});
