@@ -35,6 +35,12 @@ This file is the shared live progress board for all coding agents.
 - **Evidence:** [Draft PR #66](https://github.com/mvryhan-web/video-variator-android/pull/66), implementation `6538fe8e8046f0ecb89529594774e0c2becd7bc9`, 5 new tests `5d0899d0b6d793e3c00545d819d983f5f21460cf`, [GitHub Actions 38900266382](https://github.com/mvryhan-web/video-variator-android/actions/runs/38900266382) **PASS** (new + prior generation pricing tests + syntax).
 - **State:** scoped **CODE VERIFIED**, entire BASE #18 **PARTIAL / NOT MAIN / NOT DEPLOYED**; real pricing-provider evidence and commercial launch gates remain external. No Stripe/Render/main edits.
 
+## BASE #49 — Migration read-only checks and ledger drift / IN PROGRESS (2026-10-16)
+
+- **Agent:** BASE-D-MigrationSafety, branch `base55-d-migration-readonly-20261016`, parent BASE `deepsyq-platform`. Specific row #49 claimed first in coordination board.
+- **Audit:** `runAiMigrations(pool,{checkOnly:true})` runs `CREATE TABLE IF NOT EXISTS` via `ensureLedger` before deciding it is check-only. Thus `npm run migrate:ai:check` is *not truly read-only*. Also existing `aiMigrationStatus` omits applied ledger names missing from current manifest, so obsolete/unexpected migrations can go unreported. PR #45 concerns separate preflight files; leave them untouched.
+- **Scope:** Fix check-only side effects and fail-closed unknown migration-ledger rows in `server/ai-migrations.js`; add bounded no-database unit tests and CI. Do not apply migrations, change schema/SQL files, touch Render or launch production.
+
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
 **ACTIVE OWNER PRIORITY NOW:** all four coding-agent sessions focus on the **original BASE TXT / 55-point checklist**, not new Roadmap Blocks 1–7 or duplicated Product Watcher. Shared 55-item claim board and proposed collision-safe work lanes: [`docs/DEEPSYQ_BASE_55_COORDINATION.md`](docs/DEEPSYQ_BASE_55_COORDINATION.md). This new owner instruction overrides older prose suggesting BASE is owned by just one agent or that Agents E/Block 5 should keep expanding their scope. **Already verified:** 55 rows exist in the BASE checklist; #47 and #53 are DONE/RULE; **53 other rows are not fully DONE** and mostly have significant existing code. `PARTIAL` does NOT mean “build from scratch.”
