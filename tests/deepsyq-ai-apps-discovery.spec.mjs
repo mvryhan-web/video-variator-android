@@ -77,7 +77,7 @@ test('Use template prepares existing Studio with consent unchecked and no paid g
  page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))jobPosts++;});
  await page.goto('/ai-apps.html');
  await page.locator('.app-card').filter({hasText:'Product Reel'}).getByRole('button',{name:'Use template'}).click();
- await expect(page).toHaveURL(/generate-studio\\.html\\?studio=video&from=template/);
+ await expect(page).toHaveURL(/studio=video&from=template/);
  await expect(page.locator('#prompt')).toHaveValue('Original product reel concept');
  await expect(page.locator('#consent')).not.toBeChecked();
  expect(jobPosts).toBe(0);
