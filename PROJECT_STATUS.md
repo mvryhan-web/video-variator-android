@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — Issues #72–75 coordination acceptance review (2026-10-16)
+
+- **Owner:** Agent 5 (technical coordinator; **not** coding lanes A/B/C/D).
+- **Status:** **COORDINATION REVIEWED / READY TO INTEGRATE INTO BASE / NOT MAIN / NOT LIVE**. Separate review-only [PR #78](https://github.com/mvryhan-web/video-variator-android/pull/78); complete evidence in `docs/DEEPSYQ_AGENT5_ISSUES_72_75_REVIEW_20261016.md` and updated follow-up commit `3cf3d0ad`. No BASE feature row claimed.
+- **Outcome:** reviewed #72 A, #73 B, #74 C, #75 D and their patches/CI. BASE #44 duplicate resolved by Agent D: #70 merged, #65 closed unmerged and #80 merged truthful status; #49 original PR #69 replaced with a reviewed BASE fix. Owner clarified original Hero Girl + twelve miniatures and always-visible carousel (draft approval PR #76); Agent A must still implement/verify. C is working on #30 in PR #79. PR #42 remains large/draft/unmergeable into main. No app, design, wallet, provider, Stripe, database, Render or production mutation; original V01–V13 video assets/verified DB restore and live purchase/generation gates still pending.
+
 ## BASE #37 / first-generation and AI-paid conversion analytics — CODE VERIFIED, MERGED TO BASE / NOT LIVE (2026-10-16)
 
 - **Agent:** BASE-D-Analytics-ChatGPT; **isolated branch:** `base55-d-business-analytics-20261016` based on current `deepsyq-platform`.
