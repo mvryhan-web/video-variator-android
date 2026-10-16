@@ -221,3 +221,60 @@ test('BASE 3: independent rights-cleared Hero survives failed preview and option
  await expect(page.locator('#inspirationPreview')).toBeHidden();
  await expect(page.locator('#agentExamples')).toBeHidden();
 });
+
+test('BASE 3: Canvas draft cannot be restored by a different account sharing this browser tab',async({page})=>{
+ await mockSafeHome(page,[]);
+ await page.addInitScript(()=>{
+  if(!localStorage.getItem('vv_token'))localStorage.setItem('vv_token','fixture-account-A');
+ });
+ await page.route('**/api/me',route=>route.fulfill({json:{user:{id:'test-user',name:'Account A',isAdmin:false}}}));
+ let paidPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/studio\/jobs/.test(r.url()))paidPosts++;});
+ await page.goto('/deepsyq.html');
+ const aPrompt='PRIVATE ACCOUNT A: winter fashion concept';
+ const bPrompt='PRIVATE ACCOUNT B: independent product design';
+ await page.locator('#quickCreatePrompt').fill(aPrompt);
+ await expect.poll(()=>page.evaluate(()=>{
+  const keys=Object.keys(sessionStorage).filter(k=>k.startsWith('deepsyq_quick_canvas_draft_v2_'));
+  return keys.some(key=>JSON.parse(sessionStorage.getItem(key)||'null')?.prompt==='PRIVATE ACCOUNT A: winter fashion concept');
+ })).toBe(true);
+ await page.reload();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue(aPrompt);
+ await page.evaluate(()=>localStorage.setItem('vv_token','fixture-account-B'));
+ await page.reload();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+ await page.locator('#quickCreatePrompt').fill(bPrompt);
+ await expect.poll(()=>page.evaluate(()=>Object.keys(sessionStorage)
+  .filter(key=>key.startsWith('deepsyq_quick_canvas_draft_v2_'))
+  .some(key=>JSON.parse(sessionStorage.getItem(key)||'null')?.prompt==='PRIVATE ACCOUNT B: independent product design'))).toBe(true);
+ await page.reload();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue(bPrompt);
+ await page.evaluate(()=>localStorage.setItem('vv_token','fixture-account-A'));
+ await page.reload();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue(aPrompt);
+ const keys=await page.evaluate(()=>Object.keys(sessionStorage).filter(k=>k.startsWith('deepsyq_quick_canvas_draft_v2_')));
+ expect(keys.length).toBeGreaterThanOrEqual(2);
+ expect(keys.some(key=>key.includes('fixture-account-A')||key.includes('fixture-account-B'))).toBe(false);
+ expect(paidPosts).toBe(0);
+});
+
+test('BASE 3: cross-tab account switch clears unsent prompts and reference previews on Home',async({page})=>{
+ await mockSafeHome(page,[]);
+ await page.addInitScript(()=>localStorage.setItem('vv_token','fixture-account-A'));
+ await page.route('**/api/me',route=>route.fulfill({json:{user:{id:'owner',name:'Account A',isAdmin:false}}}));
+ await page.goto('/deepsyq.html');
+ await page.locator('#quickCreatePrompt').fill('PRIVATE OLD CANVAS PROMPT');
+ await page.locator('#homeQuickPrompt').fill('PRIVATE OLD HOME IDEA');
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.locator('#quickCreateFiles').setInputFiles({name:'private-reference.png',mimeType:'image/png',buffer:png});
+ await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(1);
+ await page.evaluate(()=>{
+  localStorage.setItem('vv_token','fixture-account-B');
+  dispatchEvent(new StorageEvent('storage',{key:'vv_token',newValue:'fixture-account-B'}));
+ });
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+ await expect(page.locator('#homeQuickPrompt')).toHaveValue('');
+ await expect(page.locator('#quickCreateFiles')).toHaveValue('');
+ await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(0);
+ await expect(page.locator('#quickCreateStatus')).toContainText('Account changed');
+});
