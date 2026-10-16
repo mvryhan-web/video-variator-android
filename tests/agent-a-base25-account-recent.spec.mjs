@@ -60,3 +60,15 @@ test('BASE 25: a freshly authenticated response still displays only four safe re
  await expect(links.first()).toHaveAttribute('href','generate-studio.html?view=history');
  expect(post).toBe(0);
 });
+
+test('BASE 25: local logout clears sensitive cards synchronously before navigation',async({page})=>{
+ await stubSignedInHome(page);
+ await page.route('**/api/studio/jobs?filter=all',r=>r.fulfill({json:{items:[oldUserJob]}}));
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#recentCreationsGrid')).toContainText('PRIVATE: Account A');
+ // An actual click removes account-local data immediately, even if the
+ // subsequent browser reload has not completed yet.
+ await page.locator('#logout').click({noWaitAfter:true});
+ await expect(page.locator('#recentCreationsGrid')).not.toContainText('PRIVATE: Account A');
+ await expect(page.locator('#recentCreationsStatus')).toContainText('Sign in');
+});
