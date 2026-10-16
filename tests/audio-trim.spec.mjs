@@ -39,3 +39,34 @@ test('Russian audio trimmer validates range before doing any encoding',async({br
  await expect(page.locator('#trimGenerate')).toBeDisabled();
  await context.close();
 });
+
+function syntheticWav(){
+ const samples=8000*3,bytes=Buffer.alloc(44+samples*2);
+ bytes.write('RIFF',0);bytes.writeUInt32LE(bytes.length-8,4);bytes.write('WAVE',8);
+ bytes.write('fmt ',12);bytes.writeUInt32LE(16,16);bytes.writeUInt16LE(1,20);
+ bytes.writeUInt16LE(1,22);bytes.writeUInt32LE(8000,24);bytes.writeUInt32LE(16000,28);
+ bytes.writeUInt16LE(2,32);bytes.writeUInt16LE(16,34);
+ bytes.write('data',36);bytes.writeUInt32LE(samples*2,40);
+ for(let i=0;i<samples;i++)bytes.writeInt16LE(Math.round(Math.sin(2*Math.PI*440*i/8000)*8000),44+i*2);
+ return bytes;
+}
+test('real bundled FFmpeg.wasm trims synthetic WAV into a valid downloadable MP3 without API calls',async({page})=>{
+ test.setTimeout(120000);
+ let calls=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(speech|studio|generation)/.test(r.url()))calls++;});
+ await page.goto('/audio-studio.html');
+ await page.locator('#trimFile').setInputFiles({name:'sine-wave.wav',mimeType:'audio/wav',buffer:syntheticWav()});
+ await page.locator('#trimStart').fill('0.5');
+ await page.locator('#trimEnd').fill('1.5');
+ await page.locator('#trimGenerate').click();
+ await expect(page.locator('#trimStatus')).toHaveText('Done. Review the result before using it.',{timeout:110000});
+ const downloadPromise=page.waitForEvent('download');
+ await page.locator('#trimResult').getByRole('button',{name:'Download'}).click();
+ const file=await downloadPromise;
+ expect(file.suggestedFilename()).toBe('Deepsyq-sine-wave-trimmed.mp3');
+ const {readFile}=await import('node:fs/promises');
+ const bytes=await readFile(await file.path());
+ expect(bytes.length).toBeGreaterThan(1024);
+ expect(bytes.subarray(0,3).toString()==='ID3'||(bytes[0]===0xff&&(bytes[1]&0xe0)===0xe0)).toBe(true);
+ expect(calls).toBe(0);
+});
