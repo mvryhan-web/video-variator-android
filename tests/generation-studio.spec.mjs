@@ -74,7 +74,7 @@ test('AI wallet shows configured packs and opens Stripe only after click',async(
  await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'live',livePaymentsEnabled:true,unit:'AI credits',packs:[{sku:'starter',credits:1000,amount:499,currency:'eur'}],rates:[],revision:'r1'}}));
- await page.route('**/api/ai-billing/balance',r=>r.fulfill({json:{available:120,reserved:10,debt:0}}));
+ await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:120,reserved:10,debt:0}}));
  let checkoutCalls=0;await page.route('**/api/ai-billing/checkout',async r=>{checkoutCalls++;return r.fulfill({json:{url:'https://checkout.stripe.com/c/pay/cs_test_fixture',id:'cs_fixture',mode:'live'}});});
  await page.route('https://checkout.stripe.com/**',r=>r.fulfill({contentType:'text/html',body:'<title>Stripe fixture</title><h1>Stripe Checkout</h1>'}));
  await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#walletButton')).toBeVisible();await expect(page.locator('#walletBalance')).toHaveText('120');expect(checkoutCalls).toBe(0);
@@ -86,12 +86,30 @@ test('wallet activity and Stripe return never claim payment before webhook confi
  await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'live',livePaymentsEnabled:true,packs:[],rates:[],revision:'r1'}}));
- await page.route('**/api/ai-billing/balance',r=>r.fulfill({json:{available:850,reserved:50,debt:0}}));
- await page.route('**/api/ai-billing/history',r=>r.fulfill({json:{items:[{kind:'purchase',available_delta:1000,reserved_delta:0,debt_delta:0,created_at:'2026-10-15T10:00:00Z'},{kind:'reserve',available_delta:-50,reserved_delta:50,debt_delta:0,created_at:'2026-10-15T10:05:00Z'},{kind:'captured',available_delta:0,reserved_delta:-50,debt_delta:0,created_at:'2026-10-15T10:06:00Z'}]}}));
+ await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:850,reserved:50,debt:0}}));
+ await page.route('**/api/ai-wallet/history',r=>r.fulfill({json:{items:[{kind:'purchase',available_delta:1000,reserved_delta:0,debt_delta:0,created_at:'2026-10-15T10:00:00Z'},{kind:'reserve',available_delta:-50,reserved_delta:50,debt_delta:0,created_at:'2026-10-15T10:05:00Z'},{kind:'captured',available_delta:0,reserved_delta:-50,debt_delta:0,created_at:'2026-10-15T10:06:00Z'}]}}));
  await page.goto('/generate-studio.html?studio=image&ai_checkout=returned');
  await expect(page.locator('#walletDialog')).toBeVisible();await expect(page.locator('#walletStatus')).toContainText('Credits appear only after Stripe confirms');await expect(page.locator('#walletHistory')).toContainText('Credit purchase');await expect(page.locator('#walletHistory')).toContainText('Generation reserve');await expect(page.locator('#walletBalance')).toHaveText('850');
 });
 
+
+test('BASE #13: existing credits remain readable with paid Stripe checkout disabled',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','fixture-user'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',packs:[{sku:'fixture',credits:120,amount:599,currency:'eur'}]}}));
+ await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:330,reserved:20,debt:0}}));
+ await page.route('**/api/ai-wallet/history',r=>r.fulfill({json:{items:[{kind:'welcome_grant',available_delta:350,reserved_delta:0,debt_delta:0,created_at:'2026-10-15T10:00:00Z'}]}}));
+ let checkoutRequests=0;await page.route('**/api/ai-billing/checkout',r=>{checkoutRequests++;return r.fulfill({status:503,json:{error:'PAYMENTS_NOT_ACTIVATED'}});});
+ await page.goto('/generate-studio.html?studio=image');
+ await expect(page.locator('#walletButton')).toBeVisible();
+ await expect(page.locator('#walletBalance')).toHaveText('330');
+ await page.locator('#walletButton').click();
+ await expect(page.locator('#walletDialog')).toBeVisible();
+ await expect(page.locator('#walletHistory')).toContainText('welcome_grant');
+ await expect(page.locator('#creditPacks button')).toHaveCount(0);
+ await expect(page.locator('#walletMode')).toContainText('not active');
+ expect(checkoutRequests).toBe(0);
+});
 
 test('Studio shows a server-priced credit estimate without sending prompt or media',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vv_token','owner'));
