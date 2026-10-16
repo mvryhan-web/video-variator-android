@@ -15,7 +15,8 @@ const empty = () => ({
   recentOrdersWithCheckoutSession24h:0,
   oldUnmatchedCheckoutSessions7d:0,
   orphanCreditPurchases:0,
-  overRefundedPurchases:0
+  overRefundedPurchases:0,
+  invalidCreditPurchases:0
 });
 const integer = value => {
   const n=Number(value);
@@ -33,19 +34,21 @@ export function summarizeBillingReconciliation({orders={},purchases={}}={}) {
     recentOrdersWithCheckoutSession24h:integer(orders.recent_checkout_sessions_24h),
     oldUnmatchedCheckoutSessions7d:integer(orders.unmatched_old_sessions_7d),
     orphanCreditPurchases:integer(purchases.orphan_credit_purchases),
-    overRefundedPurchases:integer(purchases.over_refunded_purchases)
+    overRefundedPurchases:integer(purchases.over_refunded_purchases),
+    invalidCreditPurchases:integer(purchases.invalid_credit_purchases)
   };
   if(Object.values(counters).some(v=>v===null)) {
     return {status:'warning',code:'BILLING_METRICS_INVALID',
       coverage:'incomplete',stripeWebhookVerified:false,stripeApiChecked:false,
       counters:empty(),reviewRequired:true};
   }
-  const inconsistent=counters.overRefundedPurchases>0;
+  const inconsistent=counters.overRefundedPurchases>0 || counters.invalidCreditPurchases>0;
   const suspicious=counters.oldUnmatchedCheckoutSessions7d>=3 ||
     counters.orphanCreditPurchases>0;
   return {
     status:inconsistent?'critical':suspicious?'warning':'healthy',
-    code:inconsistent?'AI_REFUND_LEDGER_INCONSISTENT':
+    code:counters.overRefundedPurchases>0?'AI_REFUND_LEDGER_INCONSISTENT':
+      counters.invalidCreditPurchases>0?'AI_PURCHASE_LEDGER_INCONSISTENT':
       suspicious?'AI_PAYMENT_RECONCILIATION_REVIEW':'BILLING_LEDGER_NO_SIGNAL',
     coverage:'internal_ledger_only',
     stripeWebhookVerified:false,
@@ -54,7 +57,8 @@ export function summarizeBillingReconciliation({orders={},purchases={}}={}) {
     counters,
     notes:[
       'Unmatched Checkout sessions may be unpaid, cancelled or expired; they are not proof of Stripe webhook failure.',
-      'These are existing AI credit ledger metadata, not Stripe balances, revenue, payment success or refund verification.'
+      'These are existing AI credit ledger metadata, not Stripe balances, revenue, payment success or refund verification.',
+      'Invalid purchase amount, credit count, refund sign or currency require manual ledger investigation, never automatic charge/refund/regrant.'
     ]
   };
 }
@@ -88,7 +92,22 @@ export async function checkBillingReconciliation(client,{enabled=false}={}) {
     const purchases=await client.query([
       "SELECT",
       "COUNT(*) FILTER (WHERE o.id IS NULL)::int AS orphan_credit_purchases,",
-      "COUNT(*) FILTER (WHERE p.refunded_amount>p.amount)::int AS over_refunded_purchases",
+      "COUNT(*) FILTER (WHERE p.refunded_amount>p.amount)::int AS over_refunded_purchases,",
+      "COUNT(*) FILTER (WHERE p.credits<=0 OR p.amount<=0 OR p.refunded_amount<0",
+      "OR p.currency IS NULL OR btrim(p.currency) !~* '^[a-z]{3}      "FROM vv_ai_purchase p LEFT JOIN vv_ai_order o ON o.session_id=p.session_id"
+    ].join(' '));
+    return summarizeBillingReconciliation({
+      orders:orders.rows?.[0]||{},
+      purchases:purchases.rows?.[0]||{}
+    });
+  } catch {
+    // Do not return SQL exception details; they can contain identifiers/secrets.
+    return {status:'warning',code:'AI_BILLING_LEDGER_UNAVAILABLE',
+      coverage:'unavailable',stripeWebhookVerified:false,stripeApiChecked:false,
+      reviewRequired:false};
+  }
+}
+)::int AS invalid_credit_purchases",
       "FROM vv_ai_purchase p LEFT JOIN vv_ai_order o ON o.session_id=p.session_id"
     ].join(' '));
     return summarizeBillingReconciliation({
