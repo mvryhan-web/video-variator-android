@@ -7,7 +7,7 @@ test('launch readiness is fail-closed and never contains secret values',()=>{
  const env={
   DATABASE_URL:'postgres://hidden',APP_JWT_SECRET:'jwt-hidden',GEMINI_API_KEY:'gemini-hidden',
   AI_MODEL_PRICING_JSON:JSON.stringify([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:10,providerCostMicros:1000,currency:'usd'},{model:'veo-3.1-fast-generate-preview',provider:'Google',kind:'video',credits:20,providerCostMicros:9000,currency:'usd'}]),
-  AI_STUDIO_ENABLED:'true',
+  AI_STUDIO_ENABLED:'true',ADMIN_EMAIL:'owner@example.invalid',AI_STUDIO_MAX_CALLS:'4',AI_STUDIO_ALLOWED_KINDS:'image,video',
   AI_STUDIO_WALLET_ENABLED:'true',
   AI_CREDIT_PACKS_JSON:JSON.stringify([{sku:'starter',priceId:'price_Test123',credits:100,amount:99,currency:'usd'}]),
   AI_CREDIT_RATES_JSON:JSON.stringify([{kind:'image',credits:10},{kind:'video',credits:20}]),
@@ -122,4 +122,31 @@ test('BASE #51 commercial readiness requires BOTH Image and Video price entries 
  assert.equal(gate(disabled).ready,true,'pricing coverage does not silently override existing Image kill switch');
  assert.ok(generationReadiness(disabled).blockers.includes('imageVideo'));
  assert.equal(generationReadiness(disabled).launchReady,false);
+});
+
+
+test('BASE #51 launch prerequisites reflect actual Studio owner, call limit and allowed creation kinds',()=>{
+ const base={AI_STUDIO_ENABLED:'true',ADMIN_EMAIL:'owner@example.invalid',AI_STUDIO_MAX_CALLS:'4',AI_STUDIO_ALLOWED_KINDS:'image,video'};
+ const gate=(env,id)=>generationReadiness(env).gates.find(g=>g.id===id)?.ready;
+ assert.equal(gate(base,'studioOperator'),true);
+ assert.equal(gate(base,'imageVideoKinds'),true);
+ for(const changes of [
+  {ADMIN_EMAIL:''},{ADMIN_EMAIL:undefined},
+  {AI_STUDIO_MAX_CALLS:undefined},{AI_STUDIO_MAX_CALLS:'0'},
+  {AI_STUDIO_MAX_CALLS:'21'},{AI_STUDIO_MAX_CALLS:'not-a-number'},
+  {AI_STUDIO_MAX_CALLS:'1.5'}
+ ]){
+  const report=generationReadiness({...base,...changes});
+  assert.equal(report.gates.find(g=>g.id==='studioOperator').ready,false,JSON.stringify(changes));
+  assert.ok(report.blockers.includes('studioOperator'));
+  assert.equal(report.launchReady,false);
+ }
+ for(const kinds of ['', 'image', 'video', 'music', 'image, video','video,image,video_bad']){
+  const report=generationReadiness({...base,AI_STUDIO_ALLOWED_KINDS:kinds});
+  assert.equal(report.gates.find(g=>g.id==='imageVideoKinds').ready,false,kinds);
+  assert.ok(report.blockers.includes('imageVideoKinds'));
+  assert.equal(report.launchReady,false);
+ }
+ const valid=generationReadiness({...base,AI_STUDIO_ALLOWED_KINDS:'video,image'});
+ assert.equal(valid.gates.find(g=>g.id==='imageVideoKinds').ready,true);
 });
