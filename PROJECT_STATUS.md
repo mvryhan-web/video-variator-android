@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Active per-item claim: BASE #43 / Pricing integrity — IN PROGRESS (2026-10-16)
+
+- **Agent:** BASE-D-ChatGPT; **isolated branch:** `base55-d-pricing-integrity-20261016` (BASE PR #42 parent, not main).
+- **Ownership:** BASE #43 Pricing page only; `app/src/main/assets/ai-pricing.js` and focused tests. Safe display from actual server config, no invented prices/limits, test/live checkout separation. No Stripe/wallet/server changes, no locked Home, no deployment.
+- **Claim:** shared board row #43 is IN PROGRESS; implementation/tests pending. Other agents must not duplicate.
+
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
 **ACTIVE OWNER PRIORITY NOW:** all four coding-agent sessions focus on the **original BASE TXT / 55-point checklist**, not new Roadmap Blocks 1–7 or duplicated Product Watcher. Shared 55-item claim board and proposed collision-safe work lanes: [`docs/DEEPSYQ_BASE_55_COORDINATION.md`](docs/DEEPSYQ_BASE_55_COORDINATION.md). This new owner instruction overrides older prose suggesting BASE is owned by just one agent or that Agents E/Block 5 should keep expanding their scope. **Already verified:** 55 rows exist in the BASE checklist; #47 and #53 are DONE/RULE; **53 other rows are not fully DONE** and mostly have significant existing code. `PARTIAL` does NOT mean “build from scratch.”
