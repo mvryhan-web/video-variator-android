@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {planPreDispatchFallback} from '../server/generation-fallback-policy.js';
+import {estimateGenerationPricing} from '../server/generation-pricing.js';
+import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 
 const model=(id,provider,overrides={})=>({
  id,provider,kind:'video',enabled:true,adapter:true,quality:'720p',references:1,ratios:['16:9'],
@@ -9,7 +11,7 @@ const model=(id,provider,overrides={})=>({
 });
 const primary=model('primary','BytePlus'),backup=model('backup','Google');
 const request={kind:'video',ratio:'16:9',references:[],videoInputMode:'text',videoResolution:'720p',videoDuration:8};
-const quotes=new Map([['primary',{credits:80,providerCostMicros:200000,currency:'USD'}],['backup',{credits:80,providerCostMicros:180000,currency:'USD'}]]);
+const quotes=new Map([['primary',{credits:80,providerCostMicros:200000,currency:'usd'}],['backup',{credits:80,providerCostMicros:180000,currency:'usd'}]]);
 const quoteFor=m=>quotes.get(m.id)||null;
 const opts=()=>({request,primary,candidates:[primary,backup],quoteFor,smart:true,providerStarted:false});
 
@@ -29,9 +31,9 @@ test('BASE #8: never fallback after provider submission or for explicit model se
 
 test('BASE #8: refuse customer credit changes, currency changes or higher internal cost',()=>{
  for(const item of [
-  {credits:81,providerCostMicros:180000,currency:'USD'},
-  {credits:80,providerCostMicros:180000,currency:'EUR'},
-  {credits:80,providerCostMicros:210000,currency:'USD'}
+  {credits:81,providerCostMicros:180000,currency:'usd'},
+  {credits:80,providerCostMicros:180000,currency:'eur'},
+  {credits:80,providerCostMicros:210000,currency:'usd'}
  ]){
   const p=planPreDispatchFallback({...opts(),quoteFor:m=>m.id==='backup'?item:quoteFor(m)});
   assert.deepEqual(p.eligible,[]);
@@ -43,7 +45,7 @@ test('BASE #8: refuse customer credit changes, currency changes or higher intern
 test('BASE #8: fail closed when prices are absent, invalid or quoting throws',()=>{
  assert.equal(planPreDispatchFallback({...opts(),quoteFor:()=>null}).reason,'PRIMARY_PRICE_NOT_APPROVED');
  assert.equal(planPreDispatchFallback({...opts(),quoteFor:()=>{throw Error('pricing unavailable')}}).reason,'PRIMARY_PRICE_NOT_APPROVED');
- const plan=planPreDispatchFallback({...opts(),quoteFor:m=>m.id==='primary'?quoteFor(m):{credits:80,providerCostMicros:0,currency:'USD'}});
+ const plan=planPreDispatchFallback({...opts(),quoteFor:m=>m.id==='primary'?quoteFor(m):{credits:80,providerCostMicros:0,currency:'usd'}});
  assert.deepEqual(plan.eligible,[]);assert.equal(plan.blocked[0].reason,'FALLBACK_PRICE_NOT_APPROVED');
 });
 
@@ -65,4 +67,18 @@ test('BASE #8: reject disabled, non-distinct, maintenance or incompatible fallba
 test('BASE #8: refuse malformed ref counts and unsupported media types',()=>{
  assert.equal(planPreDispatchFallback({...opts(),request:{...request,references:null,referenceCount:1.5}}).reason,'INVALID_REFERENCES');
  assert.equal(planPreDispatchFallback({...opts(),request:{...request,kind:'music'}}).reason,'FALLBACK_UNAVAILABLE');
+});
+
+test('BASE #8: real approved pricing registry permits lowercase usd fallback parity',()=>{
+ const seedance={...MODEL_CATALOG.find(m=>m.id==='byteplus-seedance-2'),enabled:true};
+ const veo={...MODEL_CATALOG.find(m=>m.id==='veo-3.1-lite-generate-preview'),enabled:true};
+ assert.ok(seedance&&veo);
+ const env={AI_MODEL_PRICING_JSON:JSON.stringify([
+  {model:seedance.id,provider:'BytePlus',kind:'video',credits:80,providerCostMicros:200000,currency:'usd',quality:'720p',durationSeconds:8},
+  {model:veo.id,provider:'Google',kind:'video',credits:80,providerCostMicros:180000,currency:'usd',quality:'720p',durationSeconds:8}
+ ])};
+ const quoteFor=(m,q)=>estimateGenerationPricing({...q,model:m.id},m,env);
+ const plan=planPreDispatchFallback({request,primary:seedance,candidates:[seedance,veo],quoteFor,smart:true,providerStarted:false});
+ assert.equal(plan.reason,'READY');
+ assert.deepEqual(plan.eligible,[{id:veo.id,provider:'Google'}]);
 });
