@@ -125,3 +125,19 @@ test('AI Apps reveals large real API catalogs in batches and resets paging on fi
  await page.locator('#search').fill('');
  await expect(page.locator('.app-card')).toHaveCount(12);
 });
+
+test('AI Apps catalog remains usable without page-level horizontal overflow',async({page})=>{
+ const enough=Array.from({length:16},(_,index)=>({
+  id:'mobile-'+index,title:'Mobile-ready template '+index,description:'Active original template',
+  category:'Creative',generationType:'image',promptTemplate:'Create an original scene'
+ }));
+ await page.route('**/api/templates',route=>route.fulfill({json:{items:enough}}));
+ await page.goto('/ai-apps.html');
+ await expect(page.locator('.app-card')).toHaveCount(12);
+ await expect(page.locator('#search')).toBeVisible();
+ await expect(page.locator('#type')).toBeVisible();
+ await expect(page.locator('#loadMore')).toBeVisible();
+ await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+ await page.getByRole('button',{name:/Load more templates/}).click();
+ await expect(page.locator('.app-card')).toHaveCount(16);
+});
