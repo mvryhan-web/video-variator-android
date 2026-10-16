@@ -344,3 +344,58 @@ test('BASE 24: leaving History invalidates its in-flight result before another v
  await expect(page.locator('.history-card')).toContainText('New History visit');
  expect(posts).toBe(0);
 });
+
+test('BASE 24: late image media after changing filters never creates a stale object URL',async({page})=>{
+ await page.addInitScript(()=>{
+  window.__historyUrlCreated=0;
+  const native=URL.createObjectURL.bind(URL);
+  URL.createObjectURL=function(blob){window.__historyUrlCreated++;return native(blob);};
+ });
+ let mediaStarted,releaseMedia,completed;
+ const mediaSeen=new Promise(resolve=>mediaStarted=resolve);
+ const mediaRelease=new Promise(resolve=>releaseMedia=resolve);
+ const mediaCompleted=new Promise(resolve=>completed=resolve);
+ await page.route('**/api/studio/jobs?filter=*',r=>{
+  const filter=new URL(r.request().url()).searchParams.get('filter');
+  const image={id:'late-photo',kind:'image',status:'ready',prompt:'Old image media',model:'image-fixture'};
+  const video={id:'current-video',kind:'video',status:'processing',prompt:'Current video only',model:'video-fixture'};
+  return r.fulfill({json:{items:filter==='video'?[video]:[image]}});
+ });
+ await page.route('**/api/studio/jobs/late-photo/media',async r=>{
+  mediaStarted();await mediaRelease;
+  try{await r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')});}catch(_){}
+  completed();
+ });
+ await page.goto('/generate-studio.html?studio=image');
+ await page.locator('#showHistory').click();
+ await mediaSeen;
+ await page.locator('[data-history-filter=video]').click();
+ await expect(page.locator('.history-card')).toContainText('Current video only');
+ const before=await page.evaluate(()=>window.__historyUrlCreated);
+ releaseMedia();await mediaCompleted;
+ await page.waitForTimeout(150);
+ expect(await page.evaluate(()=>window.__historyUrlCreated)).toBe(before);
+ await expect(page.locator('.history-card')).not.toContainText('Old image media');
+});
+
+test('BASE 24: leaving History revokes already-created temporary image URLs',async({page})=>{
+ await page.addInitScript(()=>{
+  window.__historyUrlCreated=0;window.__historyUrlRevoked=0;
+  const create=URL.createObjectURL.bind(URL),revoke=URL.revokeObjectURL.bind(URL);
+  URL.createObjectURL=function(blob){window.__historyUrlCreated++;return create(blob);};
+  URL.revokeObjectURL=function(url){window.__historyUrlRevoked++;return revoke(url);};
+ });
+ await page.route('**/api/studio/jobs?filter=all',r=>r.fulfill({json:{items:[
+  {id:'thumb-photo',kind:'image',status:'ready',prompt:'Owned thumbnail',model:'fixture'}
+ ]}}));
+ await page.route('**/api/studio/jobs/thumb-photo/media',r=>r.fulfill({contentType:'image/png',
+  body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
+ await page.goto('/generate-studio.html?studio=image');
+ await page.locator('#showHistory').click();
+ await expect(page.locator('.history-thumb')).toBeVisible();
+ const before=await page.evaluate(()=>({created:window.__historyUrlCreated,revoked:window.__historyUrlRevoked}));
+ expect(before.created).toBeGreaterThan(0);
+ await page.locator('#showCreate').click();
+ await expect(page.locator('#historyList')).toBeHidden();
+ await expect.poll(()=>page.evaluate(()=>window.__historyUrlRevoked)).toBeGreaterThan(before.revoked);
+});
