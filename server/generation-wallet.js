@@ -55,14 +55,15 @@ export class GenerationWallet {
     await c.query('INSERT INTO vv_ai_ledger(user_id,reference,kind,available_delta,reserved_delta,debt_delta) VALUES($1,$2,$3,$4,$5,$6)', [userId,reference,kind,a,r,d]);
     return next;
   }
-  async grant({userId,sessionId,paymentIntent,credits,amount,currency}) {
+  async grant({userId,sessionId,paymentIntent,credits,amount,currency,allowHistoricalSubscriptionReplay=false}) {
     identifier(sessionId); identifier(paymentIntent); integer(credits,'CREDITS',10_000_000); integer(amount,'AMOUNT',100_000_000);
     if (!/^[a-z]{3}$/.test(currency)) throw new Error('INVALID_CURRENCY');
     return this.transaction(userId, async(c,w) => {
       const old = await c.query('SELECT * FROM vv_ai_purchase WHERE session_id=$1', [sessionId]);
       if (old.rows.length) {
         const p=old.rows[0];
-        if (p.user_id!==userId || p.payment_intent!==paymentIntent || p.credits!==credits || p.amount!==amount || p.currency!==currency) throw new Error('PURCHASE_CONFLICT');
+        if (p.user_id!==userId || p.payment_intent!==paymentIntent || p.amount!==amount || p.currency!==currency ||
+            (p.credits!==credits && !(allowHistoricalSubscriptionReplay && sessionId.startsWith('in_')))) throw new Error('PURCHASE_CONFLICT');
         return {...w, duplicate:true};
       }
       await c.query('INSERT INTO vv_ai_purchase(session_id,user_id,payment_intent,credits,amount,currency) VALUES($1,$2,$3,$4,$5,$6)', [sessionId,userId,paymentIntent,credits,amount,currency]);
