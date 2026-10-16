@@ -2,6 +2,10 @@
 
 ## Agent D — BASE #37 completed generation failure-rate accuracy / IN PROGRESS (2026-10-16)
 
+- **New scoped PR:** [#179](https://github.com/mvryhan-web/video-variator-android/pull/179), head `cc46e635b7b0f7a14a470d015203c9c4908af846`, DRAFT UNMERGED. 6 files: owner Business response adds `completedJobs` and null-safe `completedFailureRate=failed/(ready+failed)`, leaves existing all-job `failureRate` untouched; owner UI labels completed cohort. Existing BASE #37 workflow extended with strict pure Node tests, no new workflow. Exact committed helper evaluated in-session: **441/441 valid integer cohorts PASS, 11/11 invalid inputs rejected**. Full current-head GitHub Actions pending, not code-verified by CI yet. Original BASE #37 remains PARTIAL (real provider costs, margin, churn, trial-to-paid and revenue/user not established), NOT LIVE.
+
+
+
 - **Exact scope:** existing owner Business analytics `failureRate = failed / all jobs` includes queued/processing/finalizing tasks, diluting the failure percentage while providers are pending. Add separately named `completedFailureRate = failed / (ready + failed)` with a **null when no completed jobs**, preserve original legacy field for compatibility and clearly label the new metric in owner-only admin UI. No fake provider costs/revenue/churn or altered pricing.
 - **Agent D claim:** original BASE §37; branch `base37-completed-failure-rate-20261016`, target `deepsyq-platform`. Minimal owner-only `server/generation-studio.js` business aggregate and `app/src/main/assets/deepsyq-admin.js` owner dashboard, plus pure narrow unit tests and explanatory doc. Does NOT change provider dispatch/jobs, media, public Home, wallet, DB migrations or Agent B active PR #160 provider metrics and #175 task audit.
 - **Already merged prior work:** BASE #37 PRs #64 + #119; overall analytics still PARTIAL / NOT LIVE. Full GitHub CI necessary before merge, and owner launch is not authorized.
