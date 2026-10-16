@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent A — BASE #4 OpenAI GPT Image API M0 / CLAIMED (2026-10-16)
+
+- **Authority:** original BASE #4, owner MVP Issue #178 and Issue #72; safety override #182. New isolated adapter contract ONLY, without calls to paid providers or production. Scope free of competing active Image #4 claim on shared board when reserved.
+- **Scope:** branch `agent-a-base4-openai-gpt-image-m0-20261016`, target `deepsyq-platform`. New `server/generation-openai-image.js` and focused offline tests/docs only. Existing central B-owned `server/generation-studio.js`, `server/generation-provider.js`, `generate-models.js`, C/D billing/router, Home, existing Images/Video untouched. No API calls in tests.
+- **Gate:** adapter not connected to model catalog/dispatch/UI until Agent B interface and D purchased-credit pricing/consent reviews, validated customer-funded billing and durable storage. No live Image generation, no model subscription, no public launch. CI and PR pending.
+
+
 
 
 ## Agent C — BASE #35 AI Apps logout pending prompt scrub / IN PROGRESS, PR #192 (2026-10-16)
