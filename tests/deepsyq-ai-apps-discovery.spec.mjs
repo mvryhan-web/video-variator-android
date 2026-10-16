@@ -141,3 +141,25 @@ test('AI Apps catalog remains usable without page-level horizontal overflow',asy
  await page.getByRole('button',{name:/Load more templates/}).click();
  await expect(page.locator('.app-card')).toHaveCount(16);
 });
+
+test('Product Video accepts a real product name, prepares the personalized prompt and never generates automatically',async({page})=>{
+ const product={id:'owned-product',title:'Product Story',category:'Marketing',description:'A branded product demo',
+  generationType:'product_video',requiredInputTypes:['image','product_name'],
+  promptTemplate:'Film {{product_name}} with soft lighting. Finish with {{ product_name }} on screen.',active:true};
+ let jobs=0;
+ await page.route('**/api/templates',r=>r.fulfill({json:{items:[product]}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')jobs++;});
+ await page.goto('/ai-apps.html');
+ const card=page.locator('.app-card').filter({hasText:'Product Story'});
+ await expect(card.getByLabel('Product name')).toBeVisible();
+ await card.getByRole('button',{name:'Use template'}).click();
+ await expect(card).toContainText('Enter your product name');
+ await expect(page).toHaveURL(/ai-apps\.html/);
+ await card.getByLabel('Product name').fill('Velvet Tote');
+ await card.getByRole('button',{name:'Use template'}).click();
+ await expect(page).toHaveURL(/studio=video&from=template/);
+ await expect(page.locator('#prompt')).toHaveValue('Film Velvet Tote with soft lighting. Finish with Velvet Tote on screen.');
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(jobs).toBe(0);
+});
