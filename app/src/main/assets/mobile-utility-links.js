@@ -41,6 +41,22 @@ if(grid){
   const small=document.createElement('small');small.textContent=tool.note;
   a.append(badge,strong,small);grid.append(a);
  }
+ // BASE #28: distinct local photo compression using the existing safe browser image pipeline.
+ const compressText={
+  en:['Compress photo','Adjust JPEG quality · compare file sizes'],
+  ru:['Сжать фотографию','Выбрать качество JPEG · сравнить размеры'],
+  fr:['Compresser une photo','Régler la qualité JPEG · comparer les tailles'],
+  uk:['Стиснути фото','Якість JPEG · порівняти розмір']
+ }[lang]||['Compress photo','Adjust JPEG quality · compare file sizes'];
+ const compressLink=document.createElement('a');compressLink.className='hub-tile mobile-utility-tile';
+ compressLink.href='mobile-utility.html?tool=photo-compress';compressLink.dataset.utility='photo-compress';
+ const compressBadge=document.createElement('span');compressBadge.className='utility-tile-icon';
+ compressBadge.setAttribute('aria-hidden','true');compressBadge.textContent='◫';
+ const compressTitle=document.createElement('strong');compressTitle.textContent=compressText[0];
+ const compressNote=document.createElement('small');compressNote.textContent=compressText[1];
+ compressLink.append(compressBadge,compressTitle,compressNote);grid.append(compressLink);
+ // Ensure the existing utility router sees this separately implemented tool.
+ tools.push({id:'photo-compress',title:compressText[0],note:compressText[1]});
  // BASE #28: a separate, implemented in-browser photo collage (not an unimplemented mobile-utility mode).
  const collageText={
   en:['Photo Collage','Arrange 2–9 photos into one PNG'],
