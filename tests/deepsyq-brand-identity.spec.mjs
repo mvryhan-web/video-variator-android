@@ -55,7 +55,7 @@ const approvedTransparentExports=Object.freeze({
  'assets/deepsyq-icon-512.png':'3bc7a810417afdc00a3d178b48c864a21cb01b6fc8ed0d57a88443ca4143b0ef'
 });
 function gitBlobSha(bytes){
- return createHash('sha1').update('blob '+bytes.length+'\\0').update(bytes).digest('hex');
+ return createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
 }
 function pngSize(bytes){
  assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10],'PNG signature required');
@@ -96,5 +96,5 @@ test('maskable/mobile brand exports are parseable pictures, not empty placeholde
 
 test('adaptive launcher is available throughout the supported Android API range',()=>{
  const gradle=readFileSync(new URL('../app/build.gradle',import.meta.url),'utf8');
- assert.match(gradle,/\\bminSdk\\s*=\\s*26\\b/,'version-26 XML launcher is safe only because app minSdk is 26+');
+ assert.match(gradle,/\bminSdk\s*=\s*26\b/,'version-26 XML launcher is safe only because app minSdk is 26+');
 });
