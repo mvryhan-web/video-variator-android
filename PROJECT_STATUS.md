@@ -85,10 +85,10 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Files:** `server/generation-billing.js`, `tests/base16-checkout-reuse-unit.mjs`, `.github/workflows/base16-checkout-reuse.yml`. Existing idempotent Checkout resume no longer returns hard-coded test mode for live requests; it checks original order snapshot and current pack, Stripe owner/order metadata, amount/currency, live/test mode, open status, expiry and HTTPS Checkout domain before reusing a session. Unsafe/expired sessions return 409. Verified webhook source-of-truth and credit ledger untouched.
 - **Status:** scoped code `MERGED TO BASE / CODE VERIFIED`; original BASE #16 still **PARTIAL / NOT MAIN / NOT LIVE** until Stripe owner-approved Products/Prices, real signed webhook and test-mode purchase/refund acceptance. No live payment/Render/main/home change.
 
-## Agent D BASE #50 — individual Image/Video/BytePlus feature switches — IN PROGRESS (2026-10-16)
+## Agent D BASE #50 — Image/Video/BytePlus kill switches — CODE VERIFIED, MERGED TO BASE / NOT LIVE (2026-10-16)
 
 - **Claim:** original `docs/DEEPSYQ_PLATFORM_SPEC.md` section 50, branch `base50-feature-switches-20261016` and isolated PR to `deepsyq-platform`. Existing owner-controlled Studio model catalog and global disabled public AI gate reused; no second router, Studio renderer, payment or database. No editing owner-locked Home.
-- **Scope:** narrow opt-out kill switches (`AI_IMAGE_ENABLED`, `AI_VIDEO_ENABLED`, `BYTEPLUS_ENABLED`) in existing catalog/estimate/create rejection. OFF global public AI remains mandatory, do not inadvertently disable owner pilot or history. Only code/test evidence supports scoped completion. No planned activation in Render.
+- **Scope:** narrow opt-out kill switches (`AI_IMAGE_ENABLED`, `AI_VIDEO_ENABLED`, `BYTEPLUS_ENABLED`) in existing catalog/estimate/create rejection. OFF global public AI remains mandatory, do not inadvertently disable owner pilot or history. Original scope code verified in PR #87, merged into BASE commit b598c1d8. Focused HTTP and policy CI 38905747621 SUCCESS; no main/Render activation. Full BASE #50 remains PARTIAL pending actual rollout/owner approval.
 - **Collision:** BASE #16 currently independently owned; #18/#43/#49 merged; #48 release review and #30 mobile work separate. Check for concurrent Studio/provider changes before merging.
 
 ## BASE #16 checkout UI error handoff — MERGED TO BASE / CODE VERIFIED (2026-10-16)
@@ -97,6 +97,12 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 
 - Same BASE-D-CheckoutReuse owner continues after successful server PR #85; no independent new billing module. Isolated `base16-checkout-errors-20261016`, BASE parent, Pricing UI only; no locked Home.
 - **Verified gap:** `ai-pricing.js` reports "No payment was completed" after generic Stripe errors or expired/already-paid session HTTP 409; a prior charge may have completed, so that assertion is not justified. Update error copy to direct users to check wallet/payment history and refresh changed pack; add focused unit tests, no real Stripe call, no billing provider/ledger alteration.
+
+## Agent D BASE #17 — private provider unit economics — IN PROGRESS (2026-10-16)
+
+- **Claim:** `docs/DEEPSYQ_PLATFORM_SPEC.md` §17, branch `base17-private-unit-economics-20261016`. Existing customer History JSON currently includes raw estimated/actual provider cost and its currency even though original BASE requires the frontend to work in AI credits only. Owner admin/business metrics must retain provider cost visibility.
+- **Scope:** remove internal provider cost fields from authenticated customer History read response while preserving credits and existing owner-only cost telemetry. Add functional route regression tests. Do not change Stripe, wallet, accounting ledger or live provider costs.
+- **External:** authoritative provider billing, currency conversion, infra cost, gross margin and revenue still NOT verified. This is a privacy/cost-presentation correction, not a pretend margin calculation.
 
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
