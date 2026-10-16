@@ -59,3 +59,29 @@ test('pricing never invents a currency when operator economics omit it',()=>{
  const e=pricingCatalog({AI_MODEL_PRICING_JSON:JSON.stringify([{model:'m',provider:'P',kind:'image',credits:1,providerCostMicros:100}])});assert.equal(e.configured,true);assert.equal(e.entries[0].currency,null);
  assert.equal(pricingCatalog({AI_MODEL_PRICING_JSON:JSON.stringify([{model:'m',provider:'P',kind:'image',credits:1,providerCostMicros:100,currency:'EURO'}])}).configured,false);
 });
+
+test('equally-specific overlapping approved rates fail closed, irrespective of JSON row order',()=>{
+ const m={id:'image-model',provider:'Google',kind:'image',quality:'1024',capabilities:{outputFormats:['auto']}};
+ const ratio={model:m.id,provider:'Google',kind:'image',ratio:'1:1',credits:40,providerCostMicros:100000,currency:'usd'};
+ const quality={model:m.id,provider:'Google',kind:'image',quality:'1024',credits:80,providerCostMicros:200000,currency:'usd'};
+ const req={kind:'image',model:m.id,ratio:'1:1',resolution:'1024'};
+ for(const entries of [[ratio,quality],[quality,ratio]]){
+  const env={AI_MODEL_PRICING_JSON:JSON.stringify(entries)};
+  assert.equal(pricingCatalog(env).configured,true);
+  assert.equal(estimateGenerationPricing(req,m,env),null,'cannot choose first rate based on operator JSON order');
+ }
+ const exact={...ratio,quality:'1024',credits:95,providerCostMicros:250000};
+ const env={AI_MODEL_PRICING_JSON:JSON.stringify([ratio,quality,exact])};
+ assert.equal(estimateGenerationPricing(req,m,env).credits,95,'a unique more-specific approved rate wins');
+ assert.equal(estimateGenerationPricing({...req,ratio:'16:9'},m,env).credits,80,'non-overlapping selection still works');
+ assert.equal(estimateGenerationPricing({...req,resolution:'512'},m,env),null,'new image quality needs an exact approved price');
+});
+
+test('equal-score overlaps are provider-isolated, and no price is ever invented',()=>{
+ const m={id:'shared-model',provider:'BytePlus',kind:'image',quality:'1024',capabilities:{outputFormats:['auto']}};
+ const approved={model:m.id,provider:'BytePlus',kind:'image',credits:19,providerCostMicros:50000,currency:'eur'};
+ const other={...approved,provider:'Google',credits:4};
+ const e={AI_MODEL_PRICING_JSON:JSON.stringify([approved,other])};
+ assert.equal(estimateGenerationPricing({kind:'image',model:m.id,ratio:'1:1',resolution:'1024'},m,e).credits,19);
+ assert.equal(estimateGenerationPricing({kind:'image',model:m.id,ratio:'1:1',resolution:'1024'},m,{}),null);
+});
