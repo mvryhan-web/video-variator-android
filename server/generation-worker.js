@@ -54,5 +54,7 @@ async function shutdown(signal){
 }
 process.once('SIGTERM',()=>void shutdown('SIGTERM'));
 process.once('SIGINT',()=>void shutdown('SIGINT'));
-process.on('uncaughtException',e=>{console.error('[generation worker] uncaught exception',e?.message||e);void shutdown('uncaughtException');});
-process.on('unhandledRejection',e=>{console.error('[generation worker] unhandled rejection',e?.message||e);void shutdown('unhandledRejection');});
+// Fatal errors can contain prompts, reference URLs or credentials supplied by SDKs.
+// The worker exits; keep stable event labels without serializing rejection reasons.
+process.on('uncaughtException',()=>{console.error('[generation worker] uncaught exception (details redacted)');void shutdown('uncaughtException');});
+process.on('unhandledRejection',()=>{console.error('[generation worker] unhandled rejection (details redacted)');void shutdown('unhandledRejection');});
