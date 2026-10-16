@@ -164,12 +164,14 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
     }
     if(event.type==='charge.refunded'){
       const aiMarked=hasAiWalletRefundMarker(event),charge=event.data?.object||{};
-      if(!enabled()){
+      if(!enabled()&&env.AI_SUBSCRIPTION_CREDITS_ENABLED!=='true'){
         // This webhook also receives refunds for pre-existing subscriptions.
         // Never fail their signed delivery because optional AI billing is OFF.
         if(aiMarked)throw Error('AI_BILLING_WEBHOOK_DISABLED');
         return false;
       }
+      // Even if one-time AI Checkout is OFF, signed subscription refunds
+      // must reach the same durable wallet purchase ledger as paid invoices.
       if(!aiMarked&&(event.livemode!==r.livemode||charge.livemode!==r.livemode))
         return false; // unrelated Stripe product/mode, not an AI wallet refund
       const refund=stripeRefundData(event,{livemode:r.livemode});if(!refund)return false;
