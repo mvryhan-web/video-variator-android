@@ -165,10 +165,10 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
     }
     if(event.type==='charge.refunded'){
       const aiMarked=hasAiWalletRefundMarker(event),charge=event.data?.object||{};
-      if(!enabled()&&env.AI_SUBSCRIPTION_CREDITS_ENABLED!=='true'){
-        // This webhook also receives refunds for pre-existing subscriptions.
-        // Never fail their signed delivery because optional AI billing is OFF.
-        if(aiMarked)throw Error('AI_BILLING_WEBHOOK_DISABLED');
+      if(!enabled()&&env.AI_SUBSCRIPTION_CREDITS_ENABLED!=='true'&&!aiMarked){
+        // Unrelated legacy refunds must not touch the disabled AI wallet.
+        // AI-marked *historical* refunds must still revoke previously sold
+        // credits after Checkout is switched OFF; this does not permit sales.
         return false;
       }
       // Even if one-time AI Checkout is OFF, signed subscription refunds
