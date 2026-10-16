@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {buildLyriaClipPrompt,parseLyriaClipResult,looksLikeMp3} from '../server/generation-music-lyria.js';
+import {buildLyriaClipPrompt,parseLyriaClipResult,looksLikeMp3,normalizeLyriaClipControls} from '../server/generation-music-lyria.js';
 import {generateGoogle,validateGeneration} from '../server/generation-provider.js';
 import {installGenerationStudio} from '../server/generation-studio.js';
 import express from 'express';
@@ -92,4 +92,33 @@ test('estimate refuses unsupported structured music controls before any cost quo
   assert.equal((await r.json()).error,'UNSUPPORTED_MUSIC_CONTROL');
   assert.equal(paid,0);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});
+
+test('Issue #177 eight genres, moods, instruments and original lyrics compose safe text-only Lyria prompt',()=>{
+ const full={...request(),musicGenre:'lofi',musicMood:'warm',
+  musicInstruments:['piano','bass'],musicLanguage:'fr',
+  musicTitle:'Nuit tranquille',musicLyrics:'[Verse]\nNotre belle chanson'};
+ full.musicMode='song';
+ const normalized=normalizeLyriaClipControls(full);
+ assert.equal(normalized.musicGenre,'lofi');
+ assert.deepEqual(normalized.musicInstruments,['piano','bass']);
+ const prompt=buildLyriaClipPrompt(full);
+ assert.match(prompt,/Genre: Lo-fi/);assert.match(prompt,/Instruments: piano, bass/);
+ assert.match(prompt,/User-provided lyrics/);assert.match(prompt,/Notre belle chanson/);
+ assert.match(prompt,/30-second/);
+ assert.equal(normalized.musicLanguage,'fr');
+});
+
+test('Music settings reject unsupported duration, unsafe styles, and instrumental lyrics without calling provider',()=>{
+ for(const options of [
+  {musicGenre:'soul'},
+  {musicMood:'angry!'},
+  {musicInstruments:['piano','piano']},
+  {musicInstruments:['electric violin']},
+  {musicLanguage:'not-locale'},
+  {musicTitle:'X'.repeat(81)},
+  {musicLyrics:'[Verse] hello',musicMode:'instrumental'}
+ ])assert.throws(()=>validateGeneration({...request(),consent:true,...options}),/UNSUPPORTED_MUSIC_CONTROL/);
+ const valid=validateGeneration({...request(),musicGenre:'ambient',musicMood:'dreamy',consent:true});
+ assert.equal(valid.musicGenre,'ambient');assert.equal(valid.musicMood,'dreamy');
 });

@@ -21,3 +21,7 @@ Scope: original BASE #7 provider adapter (music extension), owner issue #177. No
 ## Release outcome
 
 CODE PREPARED / OFFLINE TESTS and GitHub final-head CI to be recorded separately. Not merged/main/deployed/live or eligible for public music billing. ORIGINAL BASE #7 overall remains PARTIAL.
+
+## Subsequent no-spend server-side Music composition contract
+
+For later Agent A UI wiring, backend-only optional properties: `musicGenre` (lofi, pop, hiphop, edm, rock, cinematic, jazz, ambient), `musicMood` (warm/calm/energetic/melancholic/dreamy/dark), `musicInstruments` (up to 4 from a validated initial set), `musicTitle`, `musicLanguage` (initial 7 locale tags) and `musicLyrics` (up to 1500 characters; song-only). These are validated server-side and converted to **ordinary text instructions**, not advertised as distinct Lyria native API parameters. Duration remains fixed 30s. Music estimate validates exactly the same controls before credit quote; job request includes settings for subsequent History. UI, lyrics rights and real provider fidelity still require independent validation. Google documents custom lyrics as text included in prompt: https://ai.google.dev/gemini-api/docs/generate-content/music-generation#provide-custom-lyrics .

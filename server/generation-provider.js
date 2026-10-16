@@ -1,6 +1,6 @@
 // Server-only Google adapter. No account cookies or consumer subscription automation.
 import {MODELS,MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
-import {buildLyriaClipPrompt,parseLyriaClipResult} from './generation-music-lyria.js';
+import {buildLyriaClipPrompt,parseLyriaClipResult,normalizeLyriaClipControls} from './generation-music-lyria.js';
 export {MODELS,MODEL_CATALOG};
 const ROOT='https://generativelanguage.googleapis.com/v1beta/';
 export function validateGeneration(body){
@@ -42,12 +42,13 @@ export function validateGeneration(body){
  if(body.kind==='video'&&m.provider==='Google'&&videoResolution==='1080p'&&videoDuration!==8)throw new Error('UNSUPPORTED_VIDEO_DURATION');
  if(body.kind!=='video'&&(body.videoResolution!=null||body.videoDuration!=null))throw new Error('UNSUPPORTED_VIDEO_SETTINGS');
  if(body.kind==='music'&&!['song','instrumental'].includes(body.musicMode))throw new Error('INVALID_MUSIC_MODE');
+ const musicControls=body.kind==='music'?normalizeLyriaClipControls(body):null;
  // Genre, lyrics and exact duration are not separate native controls on the
  // currently connected Clip composer. Do not silently accept fictitious inputs.
  if(body.kind==='music'&&[
   'musicDuration','durationSeconds','genre','lyrics','vocalStyle','musicLanguage'
  ].some(field=>body[field]!=null))throw new Error('UNSUPPORTED_MUSIC_CONTROL');
- return {kind:body.kind,model:m.id,prompt:body.prompt.trim(),ratio:body.ratio,references,musicMode:body.musicMode,...(body.kind==='image'?{resolution,outputFormat}:{}),...(body.kind==='video'?{videoResolution,videoDuration,videoInputMode}:{})};
+ return {kind:body.kind,model:m.id,prompt:body.prompt.trim(),ratio:body.ratio,references,musicMode:body.musicMode,...(musicControls||{}),...(body.kind==='image'?{resolution,outputFormat}:{}),...(body.kind==='video'?{videoResolution,videoDuration,videoInputMode}:{})};
 }
 export function safeGoogleUrl(value){const u=new URL(value);if(u.protocol!=='https:'||u.hostname!=='generativelanguage.googleapis.com'||u.username||u.password)throw new Error('UNSAFE_PROVIDER_URL');return u.toString();}
 export async function googleJson(relative,{key,body,fetcher=fetch}){

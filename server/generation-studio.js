@@ -14,6 +14,7 @@ import {recordAdminAudit,listAdminAudit} from './admin-audit.js';
 import {generationEntitlements,generationEntitlementForUser} from './generation-entitlements.js';
 import {generationRequestId,findGenerationRequest} from './generation-idempotency.js';
 import {generationReadiness} from './generation-readiness.js';
+import {normalizeLyriaClipControls} from './generation-music-lyria.js';
 import {generationFeatureEnabled,generationFeatureSwitches} from './generation-feature-flags.js';
 import {aiMigrationStatus} from './ai-migrations.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch}={}){
@@ -89,6 +90,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(kind!=='video'&&(body?.videoResolution!=null||body?.videoDuration!=null))throw Error('UNSUPPORTED_VIDEO_SETTINGS');
   if(count>Number(selected.references||0))throw Error('INVALID_REFERENCES');
   if(kind==='music'&&!['song','instrumental'].includes(musicMode))throw Error('INVALID_MUSIC_MODE');
+  if(kind==='music')normalizeLyriaClipControls(body);
   if(kind==='music'&&['musicDuration','durationSeconds','genre','lyrics','vocalStyle','musicLanguage'].some(field=>body?.[field]!=null))throw Error('UNSUPPORTED_MUSIC_CONTROL');
   return {request:{kind,model:selected.id,ratio,musicMode,...(kind==='image'?{resolution,outputFormat}:{}),...(kind==='video'?{videoResolution,videoDuration,videoInputMode,referenceCount:count}:{})},selected,routing};
  }
@@ -275,7 +277,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
    const access=req.generationAccess||{scope:'owner'};
    await enforceGenerationPolicy(c,{userId:req.user.id,env,policyOverride:access.scope==='public'?{enabled:true,maxConcurrentPerUser:access.maxConcurrent,maxJobsPerHourPerUser:access.maxPerHour}:null});
    if(access.scope==='owner'){const count=await c.query('SELECT count(*)::int AS n FROM vv_generation_jobs');if(count.rows[0].n>=Number(env.AI_STUDIO_MAX_CALLS)){await c.query('ROLLBACK');return res.status(429).json({error:'PILOT_LIMIT_REACHED'});}}
-   const settings={ratio:request.ratio,resolution:request.resolution||null,outputFormat:request.outputFormat||null,videoResolution:request.videoResolution||null,videoDuration:request.videoDuration??null,videoInputMode:request.videoInputMode||null,musicMode:request.musicMode||null,referenceCount:request.references?.length||0,routing};
+   const settings={ratio:request.ratio,resolution:request.resolution||null,outputFormat:request.outputFormat||null,videoResolution:request.videoResolution||null,videoDuration:request.videoDuration??null,videoInputMode:request.videoInputMode||null,musicMode:request.musicMode||null,musicGenre:request.musicGenre||null,musicMood:request.musicMood||null,musicLanguage:request.musicLanguage||null,musicTitle:request.musicTitle||null,musicLyrics:request.musicLyrics||null,musicInstruments:request.musicInstruments||[],referenceCount:request.references?.length||0,routing};
    await c.query('INSERT INTO vv_generation_jobs(id,user_id,kind,status,provider,model,prompt,client_request_id,request_fingerprint,started_at,settings,estimated_cost,cost_currency) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),$10::jsonb,$11,$12)',[id,req.user.id,request.kind,walletEnabled()?'queued':'processing',selected.provider||null,selected.id,request.prompt,clientRequestId,fingerprint,JSON.stringify(settings),quote?quote.providerCostMicros/1_000_000:null,quote?.currency||null]);await c.query('COMMIT');
   }catch(e){if(c)await c.query('ROLLBACK').catch(()=>{});if(['AI_CONCURRENCY_LIMIT','AI_RATE_LIMIT'].includes(e.message))return res.status(429).json({error:e.message});if(e.message==='GENERATION_REQUEST_CONFLICT')return res.status(409).json({error:e.message});return res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}finally{c?.release();}
   if(walletEnabled())try{
