@@ -2,6 +2,10 @@
 
 ## Agent D — BASE #48 Stripe webhook public error redaction / IN PROGRESS (2026-10-16)
 
+- **Latest PR:** [#153](https://github.com/mvryhan-web/video-variator-android/pull/153), head `6bcb509e9ea40167012d59d40561007a2a515b5f`, 4 scoped files. Actual Express route body now returns fixed `Invalid Stripe webhook signature` after any signature verification exception; signature verification and signed billing dispatch unchanged. Three isolated executions of the *actual route callback* (invalid signature, missing secret, signed accepted event) PASS. Latest focused CI #38941632829 QUEUED. PR remains DRAFT, UNMERGED. Overall #48 PARTIAL / NOT LIVE; never claim live Stripe verified.
+
+
+
 - **New bounded claim:** existing shared Stripe webhook `/api/webhooks/stripe` returns raw `e.message` after signature verification fails. Raw SDK/user-content details are not suitable for a public HTTP response. Return a generic error while preserving HTTP 400, Stripe `constructEvent` verification, routing and webhook acknowledgement behavior. Keep legacy subscriptions, signed AI credit grants and provider processing unchanged.
 - **Isolated branch:** `base48-stripe-signature-error-redaction-20261016`, target `deepsyq-platform`; code scope existing `server/server.js` plus narrowly scoped verification. Do not edit Home, app assets, Stripe account, provider, DB or main. Previous #48 PRs #117/#123 remain merged; BASE #48 overall PARTIAL / NOT LIVE.
 - **Independent BASE #16:** PR #148 is still DRAFT and CI queued; no shared code edits with this security patch.
