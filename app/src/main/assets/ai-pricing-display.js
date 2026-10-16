@@ -41,3 +41,20 @@ export function aiCheckoutMode(config) {
   if (!config?.enabled) return null;
   return config.mode === 'live' || config.mode === 'test' ? config.mode : null;
 }
+
+/**
+ * A rejected Checkout request does not prove that no payment occurred.
+ * Retry/recovery copy must stay accurate even after an uncertain network reply.
+ */
+export function checkoutErrorMessage(code) {
+  if (code === 'CHECKOUT_SESSION_NOT_REUSABLE') {
+    return 'This checkout is no longer open. Check your AI wallet and payment history before starting a new checkout.';
+  }
+  if (code === 'CHECKOUT_REQUEST_CONFLICT') {
+    return 'Your selected credit pack or price changed. Refresh this page before creating a new checkout.';
+  }
+  if (code === 'AI_CHECKOUT_UNAVAILABLE' || code === 'PAYMENTS_NOT_ACTIVATED') {
+    return 'Stripe Checkout is temporarily unavailable. Check your AI wallet or payment history if you already attempted to pay.';
+  }
+  return 'Checkout could not be confirmed. Check your AI wallet or payment history before trying again.';
+}
