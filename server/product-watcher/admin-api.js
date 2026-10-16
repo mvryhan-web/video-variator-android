@@ -47,12 +47,16 @@ export function installProductWatcher(app, { auth, pool, env = process.env, fetc
       const schedulerActive = heartbeat > 0 &&
         heartbeat <= observedAt && observedAt - heartbeat < 180000;
       const recent = runs[0]?.checkedAt ? new Date(runs[0].checkedAt).getTime() : null;
-      const nextRun = schedulerActive && !state.rows[0].paused && Number.isFinite(recent)
-        ? new Date(recent + WATCHER_INTERVAL_MS).toISOString() : null;
+      const dueAt = schedulerActive && !state.rows[0].paused && Number.isFinite(recent)
+        ? recent + WATCHER_INTERVAL_MS : null;
+      // An overdue timestamp is not a future appointment. The heartbeat only
+      // proves a worker tick, not that a health report was persisted on time.
+      const scheduleOverdue = dueAt !== null && dueAt <= observedAt;
+      const nextRun = dueAt !== null && !scheduleOverdue ? new Date(dueAt).toISOString() : null;
       return res.json({
         enabled: true, status: state.rows[0].paused ? 'paused' : 'ready',
         paused: !!state.rows[0].paused, schedulerActive,
-        nextRun, lastRun: runs[0] || null, runs
+        nextRun, scheduleOverdue, lastRun: runs[0] || null, runs
       });
     } catch {
       return error(res, 503, 'WATCHER_STATUS_UNAVAILABLE');
