@@ -36,6 +36,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent A — BASE #45 server-authorized onboarding choices / CLAIMED (2026-10-16)
+
+- **Owner:** Agent A Issue #72, original BASE #45 only. Dedicated branch `agent-a-base45-onboarding-options-20261016` -> `deepsyq-platform`. Existing email/Google/Apple registration, Home design and auth/DB/Stripe owned by D, mobile menu by C, providers by B. Other A draft PRs #145/#152/#154/#155 remain separate.
+- **Concrete partial gap:** BASE specifies Image, Video, Product Ads, Avatar first-run choices. Real product-video and avatar-studio routes exist, but existing SQL `vv_ai_onboarding` CHECK accepts only image/video, and server `GET /api/onboarding` currently publishes only these two options. D #75 notified of required migration; **A will not run or edit migrations**.
+- **Narrow implementation:** client supports only exact known, server-authorized onboarding options and routes. Today only image/video render; if the secured backend later advertises Product Ads/Avatar after D schema change, those choices can render and persist via the existing authenticated POST, never client-enable disabled features or create a second onboarding service. Browser and Node tests, staged draft PR, no live acceptance claim.
+
 ## Agent D — BASE #16 duplicate Stripe Price-ID risk / IN PROGRESS (2026-10-16)
 
 - **Progress:** PR #148 latest 9fdb2da8. Isolated 5/5 config checks PASS. Added mocked Checkout fail-closed test, not yet CI-verified; GitHub Actions pending. Full BASE #16 remains PARTIAL / NOT LIVE.
