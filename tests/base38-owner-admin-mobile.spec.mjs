@@ -34,7 +34,8 @@ test('BASE #38 owner Admin is usable at 320/390px without page overflow or enabl
       return {element:el.tagName.toLowerCase()+(el.id?'#'+el.id:el.className&&typeof el.className==='string'?'.'+el.className.split(' ').slice(0,2).join('.'):''),
         right:Math.round(r.right),left:Math.round(r.left),width:Math.round(r.width)};
     }).filter(item=>item.right>viewport+1||item.left< -1).slice(0,25);
-    return {width:viewport,document:document.documentElement.scrollWidth,offenders};
+    const scrollers=[document.documentElement,document.body,...document.querySelectorAll('body *')].filter(el=>!el.closest?.('.table-wrap')&&el.scrollWidth>el.clientWidth+1).map(el=>({element:el.tagName.toLowerCase()+(el.id?'#'+el.id:el.className&&typeof el.className==='string'?'.'+el.className.split(' ').slice(0,2).join('.'):''),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,overflowX:getComputedStyle(el).overflowX})).slice(0,18);
+    return {width:viewport,document:document.documentElement.scrollWidth,offenders,scrollers};
   });
   expect(overflow,'Overflow diagnostics for admin '+width+'px: '+JSON.stringify(overflow)).toMatchObject({width,document:width,offenders:[]});
   await expect(page.locator('#models article button',{hasText:'Save'})).toBeVisible();
