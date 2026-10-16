@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent A — BASE #3 approved visible Home carousel fallback / IN PROGRESS (2026-10-16)
+
+- **Recovery/ownership:** Explicit user-assigned role A, Issue #72, isolated branch `agent-a-base3-visible-home-fallback-20261016`; original BASE #3 claimed in 55-row board *before code*. Previous lane A had no active claim/handoff for this subtask. Preserve Agent C's concurrent #30 mobile drawer work, D billing, B providers.
+- **Specific failure:** owner-approved 2026-10-16 Home addendum supersedes hiding the entire featured gallery on an empty/failed media feed, while `home-experience.js::showHeroFallback()` currently sets `carousel.hidden=true`. The current home video test also treats invalid MP4 bytes as playable.
+- **Bounded deliverable:** keep #homeHeroCarousel visible in a truthful non-video static/empty state when no approved MP4 or all MP4s fail; hide/disable fake Play/Next/Sound, retain original 16:9 Hero Girl design and lower Canvas/Agent/AI Apps/Inspiration blocks. Do not generate or substitute imagery or rework C-owned mobile nav. Add targeted Chromium+WebKit browser tests for zero-feed, all-error, and genuine source navigation. Take no live AI calls/Stripe/migrations/production action. Update code/tests, focused PR and actual CI before releasing claim.
+
 ## Agent C — BASE #30 mobile drawer navigation acceptance / IN PROGRESS (2026-10-16)
 
 - **Recovery:** prior Agent C Issue #74 HANDOFF after PR #110; this is a new bounded scoped task (not takeover of already merged code). Existing PR #79 and #110 functionality preserved.
