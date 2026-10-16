@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {BASE_LANES,originalBaseNumbers,boardRows,verifyBaseCoordination,verifyCurrentFiles} from '../scripts/verify-deepsyq-base-coordination.mjs';
+import {BASE_LANES,originalBaseNumbers,boardRows,checklistRows,verifyBaseCoordination,verifyCurrentFiles} from '../scripts/verify-deepsyq-base-coordination.mjs';
 
 const spec=readFileSync('docs/DEEPSYQ_PLATFORM_SPEC.md','utf8');
 const board=readFileSync('docs/DEEPSYQ_BASE_55_COORDINATION.md','utf8');
+const checklist=readFileSync('docs/DEEPSYQ_BASE_CHECKLIST.md','utf8');
 const edited=(n,fn)=>board.split('\n').map(line=>new RegExp('^\\|\\s*'+n+'\\s*\\|').test(line)?fn(line):line).join('\n');
 
 test('canonical original BASE and active coordination board contain one item for all 55 requirements',()=>{
@@ -57,4 +58,42 @@ test('malformed table shape and missing requirement title are detected',()=>{
  assert.ok(truncated.issues.some(issue=>issue.startsWith('INVALID_ROW_WIDTH: 23')));
  const missingTitle=verifyBaseCoordination(spec,edited(23,line=>line.replace('| Template system |','| — |')));
  assert.ok(missingTitle.issues.includes('MISSING_ITEM_TITLE: 23'));
+});
+
+const editChecklist=(n,fn)=>checklist.split('\n').map(line=>new RegExp('^\\|\\s*'+n+'\\s*\\|').test(line)?fn(line):line).join('\n');
+
+test('original BASE detailed checklist stays in one-to-one parity with canonical coordination',()=>{
+ const result=verifyCurrentFiles();
+ assert.equal(result.ok,true,JSON.stringify(result.issues));
+ assert.equal(result.checklistItems,55);
+ assert.equal(checklistRows(checklist).length,55);
+ const base=new Map(boardRows(board).map(x=>[x.number,x.title]));
+ for(const item of checklistRows(checklist))assert.equal(item.title,base.get(item.number),'BASE '+item.number+' title mismatch');
+});
+
+test('removed, duplicated and unlisted checklist numbers fail read-only audit',()=>{
+ const missing=verifyBaseCoordination(spec,board,editChecklist(19,()=>''));
+ assert.ok(missing.issues.includes('MISSING_CHECKLIST_ROW: 19'),JSON.stringify(missing.issues));
+ const line=checklist.split('\n').find(x=>/^\|\s*19\s*\|/.test(x));
+ const duplicated=verifyBaseCoordination(spec,board,checklist+'\n'+line);
+ assert.ok(duplicated.issues.includes('DUPLICATE_CHECKLIST_ROW: 19'));
+ const outOfScope=verifyBaseCoordination(spec,board,checklist+'\n| 56 | invented | PARTIAL | Never accepted |');
+ assert.ok(outOfScope.issues.includes('UNEXPECTED_CHECKLIST_ROW: 56'));
+});
+
+test('drifting title or malformed checklist table fails independently of existing source board',()=>{
+ const rename=verifyBaseCoordination(spec,board,editChecklist(23,line=>line.replace('Template system','Completely new feature')));
+ assert.ok(rename.issues.includes('CHECKLIST_TITLE_MISMATCH: 23'),JSON.stringify(rename.issues));
+ const corrupt=verifyBaseCoordination(spec,board,editChecklist(23,line=>{
+  const parts=line.split('|');parts.splice(parts.length-2,1);return parts.join('|');
+ }));
+ assert.ok(corrupt.issues.some(x=>x.startsWith('INVALID_CHECKLIST_WIDTH: 23')),JSON.stringify(corrupt.issues));
+ const noTitle=verifyBaseCoordination(spec,board,editChecklist(23,line=>line.replace('| Template system |','| — |')));
+ assert.ok(noTitle.issues.includes('MISSING_CHECKLIST_TITLE: 23'));
+});
+
+test('different descriptive progress wording between checklist and board is allowed',()=>{
+ const changed=editChecklist(30,line=>line.replace('| PARTIAL |','| PARTIAL — scoped CI checked |'));
+ const result=verifyBaseCoordination(spec,board,changed);
+ assert.equal(result.ok,true,JSON.stringify(result.issues));
 });
