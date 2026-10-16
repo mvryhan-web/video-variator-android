@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent D — BASE #50 public platform flags invalid values / IN PROGRESS (2026-10-16)
+
+- **Exact existing gap:** `platformFeatureEnabled()` in `server/server.js` treats every non-`false` value as enabled for non-production, so `AI_APPS_ENABLED=0`, `AI_INSPIRATION_ENABLED=TRUE`, `AI_PRODUCT_VIDEO_ENABLED=garbage` erroneously expose opt-in routes. Production behavior already requires literal `true`.
+- **Bounded claim:** preserve unset legacy preview/dev fallback while fail-closing **explicit but invalid** values in all environments. Use a shared pure Node helper and unit tests; server-wide config JSON and guarded routes must rely on one source of truth, no static Home/visual changes or public provider/Stripe switch changes.
+- **Branch/ownership:** `base50-platform-public-flag-policy-20261016`, target `deepsyq-platform`, Agent D §50 Issue #75, minimal `server/server.js`, new pure helper and tests, existing base50 CI workflow/doc. No `main`, Render, auth, payment, DB, or production env actions. Prior #87 merged; full BASE #50 still PARTIAL.
+
+
 
 
 ## Agent C — BASE #20 Product Video header official logo / IN PROGRESS, PR #185 (2026-10-16)
