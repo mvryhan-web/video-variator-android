@@ -128,17 +128,45 @@ function syncMenu(){
  }
  closeModelFlyout();
 }
-function toggleSidebar(){
- if(mobileMenu.matches)document.body.classList.toggle('menu-open');
- else{collapsedSidebar=!collapsedSidebar;try{localStorage.setItem(SIDEBAR_STATE_KEY,collapsedSidebar?'1':'0');}catch(_){}}
+function closeMobileDrawer(restoreFocus=false){
+ if(!mobileMenu.matches||!document.body.classList.contains('menu-open'))return false;
+ document.body.classList.remove('menu-open');
  syncMenu();
+ if(restoreFocus)$('menu').focus();
+ return true;
+}
+function toggleSidebar(){
+ if(mobileMenu.matches){
+  // The header button is always visible; the rail button exists only inside
+  // the open drawer. Return keyboard focus to the visible header on close.
+  if(!closeMobileDrawer(document.activeElement===$('sidebarToggle'))){
+   document.body.classList.add('menu-open');
+   syncMenu();
+  }
+ }else{
+  collapsedSidebar=!collapsedSidebar;
+  try{localStorage.setItem(SIDEBAR_STATE_KEY,collapsedSidebar?'1':'0');}catch(_){}
+  syncMenu();
+ }
 }
 mobileMenu.addEventListener('change',syncMenu);
 $('menu').onclick=toggleSidebar;
 $('sidebarToggle').onclick=toggleSidebar;
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&mobileMenu.matches&&document.body.classList.contains('menu-open')
+  &&$('authModal').hidden&&!document.querySelector('dialog[open]')){
+  event.preventDefault();
+  closeMobileDrawer(true);
+ }
+});
+// An outside tap closes the open mobile drawer, without toggling it back open
+// when the tap was on the real header menu button.
+document.querySelector('.content').addEventListener('pointerdown',event=>{
+ if(!event.target.closest('#menu'))closeMobileDrawer();
+});
 document.querySelectorAll('#sidebar nav a').forEach(a=>a.addEventListener('click',()=>{
- if(mobileMenu.matches)document.body.classList.remove('menu-open');
- syncMenu();
+ if(mobileMenu.matches)closeMobileDrawer();
+ else syncMenu();
 }));
 
 // Model options are discovered from the existing Studio config. Prepared or disabled models
@@ -225,7 +253,7 @@ document.querySelectorAll('[data-social]').forEach(button=>button.addEventListen
  window.open(kind==='discord'?'https://discord.com/channels/@me':'https://www.instagram.com/','_blank','noopener,noreferrer');
 }));
 let authOpener;function openAuth(){if(window.AndroidBridge){location.assign('index.html#signin');return;}authOpener=document.activeElement;$('authModal').hidden=false;setTimeout(()=>$('emailAuthEmail')?.focus(),0);initGoogle();}function closeAuth(){$('authModal').hidden=true;authOpener?.focus();}
-$('accountButton').onclick=openAuth;document.querySelectorAll('[data-close-auth]').forEach(b=>b.onclick=closeAuth);
+$('accountButton').onclick=()=>{closeMobileDrawer(true);openAuth();};document.querySelectorAll('[data-close-auth]').forEach(b=>b.onclick=closeAuth);
 document.addEventListener('keydown',e=>{if($('authModal').hidden)return;if(e.key==='Escape')closeAuth();if(e.key==='Tab'){const items=[...$('authModal').querySelectorAll('button:not(:disabled),input:not(:disabled)')].filter(e=>e.getClientRects().length);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}});
 $('logout').onclick=()=>{localStorage.removeItem('vv_token');sessionStorage.removeItem('vu_generation_job');location.reload();};
 let config;let googleReady=false;
