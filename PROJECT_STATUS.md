@@ -16,6 +16,13 @@ This file is the shared live progress board for all coding agents.
 - **Branch:** `base16-price-id-uniqueness-20261016` targeting `deepsyq-platform`; exact code scope `server/generation-billing.js` plus isolated Node test/workflow, no changes to Stripe account/configuration/ledger/DB schema, Home, main or Render.
 - **Separate existing D #49:** PR #139 remains DRAFT and is waiting for GitHub Actions queue at last checkpoint; no simultaneous change to its migration code. All BASE #16 earlier merged evidence stays valid; full #16 PARTIAL / NOT LIVE.
 
+## Agent D — BASE #49 PostgreSQL advisory-lock cleanup / BASE MERGED (2026-10-16)
+
+- [PR #139](https://github.com/mvryhan-web/video-variator-android/pull/139) successfully merged to `deepsyq-platform`, squash `dbe4a468161959ef12ebf3067c616ab00a0a6c22`. Scoped three files only: migration runner, synthetic unlock regression, dedicated workflow. Previous BASE #120 concurrency runner preserved. Session advisory lock failures (unlock false/exception/missing and uncertain acquire) now discard the client; no potentially locked session returns to the pool.
+- **Latest PR head CI:** 38936179884 concurrent PostgreSQL SUCCESS; 38936179931 advisory unlock SUCCESS; 38936179868 migration --check read-only SUCCESS; 38936179892 template rights/PostgreSQL SUCCESS. Five isolated V8 lock scenarios also PASS; not a replacement for staging DB restoration.
+- **Overall BASE #49 remains PARTIAL / NOT MAIN / NOT LIVE.** Staging backup/restore and owner-authorized production migration have NOT occurred. Render, Stripe, original TXT, prod DB, owner Home and main not changed.
+- **Next D:** existing claimed BASE #16 Stripe pack Price ID uniqueness [PR #148](https://github.com/mvryhan-web/video-variator-android/pull/148) awaits GitHub CI; reconcile if BASE moved; no duplicate billing work.
+
 ## Agent D — BASE #16 Price ID safety patch authored / CI pending (2026-10-16)
 
 - **Scoped PR:** [#148](https://github.com/mvryhan-web/video-variator-android/pull/148), branch `base16-price-id-uniqueness-20261016`, latest SHA `9fdb2da88a5d1a59f7dac912902d57afc6817818`, still DRAFT and UNMERGED. `billingCatalog` rejects multiple credit packs with the same Stripe Price ID, even if SKUs/credits differ. New four-case Node unit and mocked HTTP test refuse Checkout before database/Stripe access; existing billing tests run in focused workflow. The production code change is 2 added lines / 1 deleted line; no credit or real payment change.
