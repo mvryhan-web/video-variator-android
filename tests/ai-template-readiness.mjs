@@ -20,7 +20,7 @@ test('owner metadata detects legacy unverified actives and unsupported Studio in
  assert.equal(r.publicEligible,3);assert.equal(r.actionable,1);
  assert.equal(r.missingRights,2);assert.equal(r.noThumbnail,3);
  assert.ok(r.blockers.some(x=>x.includes('Unverified legacy')&&x.includes('public API hides')));
- assert.ok(r.blockers.some(x=>x.includes('Product campaign')&&x.includes('Studio handoff')));
+ assert.ok(r.blockers.some(x=>x.includes('Product campaign')&&x.includes('logo')));
  assert.ok(r.blockers.some(x=>x.includes('Future avatar')));
  assert.ok(!r.blockers.some(x=>x.includes('Owner photo')));
 });
