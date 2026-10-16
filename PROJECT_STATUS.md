@@ -10,8 +10,8 @@ This file is the shared live progress board for all coding agents.
 ## Agent 5 — Issues #72–75 coordination acceptance review (2026-10-16)
 
 - **Owner:** Agent 5 (technical coordinator; **not** coding lanes A/B/C/D).
-- **Status:** **IN PROGRESS** on isolated branch `agent5-issues72-75-review-20261016`; this is a coordination/PR-collision and source-code evidence task, **not** a new BASE feature-row claim.
-- **Scope:** reconcile up-to-date issue dispatch (#72 A, #73 B, #74 C, #75 D), PR #65/#70 duplicate #44 work, protected Home references, confirmed tests and release gates. Do not edit application code, owner-locked visuals, Stripe/DB/provider or `main`; deliver a separate review PR targeting `deepsyq-platform`.
+- **Status:** **COORDINATION REVIEWED / DRAFT PR #78 / OWNER REVIEW REQUIRED / NOT MAIN / NOT LIVE**. Separate branch `agent5-issues72-75-review-20261016`; reviewed source code and current issue/PR/CI status with details in `docs/DEEPSYQ_AGENT5_ISSUES_72_75_REVIEW_20261016.md` (report commit `c3efb991`). This is **not** a new BASE feature-row claim and no application feature was changed.
+- **Scope / outcome:** reviewed #72 A, #73 B, #74 C, #75 D. Confirmed #70 merged / #65 open draft with 3 *identical* code/CI/test patches (do not double-merge; #65 has unique `.env.example` and stale checklist text for D to reconcile). #42 remains draft and too large/unmergeable for production. Verified focused CI status via GitHub, and current Home carousel code without original V01–V13 media. No direct #42 feature commit; separate [PR #78](https://github.com/mvryhan-web/video-variator-android/pull/78) targets BASE only; no Home design, Stripe, DB, provider, billing or `main` changes. Real licensed video, owner choice of two different Home visual references, tested DB restore and live generation/payment acceptance remain blocked.
 
 ## BASE #37 / first-generation and AI-paid conversion analytics — CODE VERIFIED, MERGED TO BASE / NOT LIVE (2026-10-16)
 
