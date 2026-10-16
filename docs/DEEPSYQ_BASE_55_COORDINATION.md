@@ -42,7 +42,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 9 | Provider config in admin | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | CODE READY FOR REVIEW (EDIT CLAIM RELEASED) / GitHub-source harness 6/6 PASS, GH CI QUEUED; NOT LIVE (2026-10-16) | Agent B / Issue #73 / stacked [PR #150](https://github.com/mvryhan-web/video-variator-android/pull/150) `66b24eb` depends on PR #149 |
 | 10 | Normal generation-job database entity | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 11 | Permanent object storage | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
-| 12 | Background jobs | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 12 | Background jobs | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS / BACKGROUND CLEANUP SHUTDOWN SAFETY (2026-10-16) | Agent B / Issue #73 / `base12-worker-cleanup-drain-20261016` |
 | 13 | Internal AI credit system | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / BROWSER REGRESSION VERIFIED (#96 + #104; CI 38912419194 and 38912155019 PASS; LIVE BLOCKED) | BASE-D-StudioWallet / base13-studio-wallet-20261016 |
 | 14 | Credit ledger | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (scoped; PR #90 · CI 38906957706) | Agent-D |
 | 15 | Credit reservation | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / BASE MERGED (scoped; PR #102 · PostgreSQL CI 38911667162) | Agent-D |
