@@ -170,11 +170,11 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Assigned branch:** `base15-partial-settlement-20261016` from latest BASE. Extend **existing** wallet primitive with trusted optional `actualCredits` (never from browser), preserving default full-reserve capture. Ensure debt-first surplus release, zero overspend, retry idempotency and mismatch detection, with PostgreSQL tests.
 - **Boundaries:** Other agent's BASE #16 Stripe paths, DB migrations, Home and public provider pricing left unchanged. No production usage-based cost mapping or enabled public calls without real invoices and approval.
 
-## BASE #51 public rate policy rollout guard — IN PROGRESS (2026-10-16)
+## BASE #51 public rate policy rollout guard — CODE VERIFIED / MERGED TO BASE (2026-10-16)
  
 - Same BASE-D-PolicyGuard owner continues previously merged BASE #51; branch `base51-public-policy-launch-gate-20261016`. Shared board updated **before code**.
 - Current `generationReadiness` may report `launchReady:true` with `AI_PUBLIC_GENERATION_ENABLED=true` but `AI_STUDIO_PUBLIC_POLICY_ENABLED` unset/false; `generationPolicy` returns disabled, and any route that does not use the Studio's plan-bound override might bypass global throttling. Studio itself enforces entitlements, so this is **additional fail-closed launch preflight** rather than claiming currently unlimited Studio.
-- Scope: require explicit global policy ON with valid positive bounded limits for public launch readiness, while preserving owner-only pilot mode and no live flags. Unit negative/positive checks; do not edit other agents' files or prices.
+- **Result:** [PR #101](https://github.com/mvryhan-web/video-variator-android/pull/101) merged into BASE, squash `4c0b101d2e260b9ec9d23783b4f43b15af29aa99`; [CI #38911625488](https://github.com/mvryhan-web/video-variator-android/actions/runs/38911625488) **PASS** after the focused readiness test fixed its own publicFlag fixture. Public launch readiness now requires explicit enabled bounded global job policy; owner pilot stays unaffected. Changed `server/generation-readiness.js` and `tests/generation-readiness-unit.mjs` only. No public AI activated, provider spend or main/Render changes. BASE #51 remains PARTIAL until live purchase/generation/media/backup acceptance.
 
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
