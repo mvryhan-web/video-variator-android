@@ -5,6 +5,7 @@ on:
     branches: [deepsyq-platform]
     paths:
       - 'app/src/main/assets/generate-studio.js'
+      - 'app/src/main/assets/generate-studio.html'
       - 'tests/generation-studio.spec.mjs'
       - 'tests/agent-a-base24-history-sql-unit.mjs'
       - 'tests/agent-a-base24-history-route-unit.mjs'
@@ -13,6 +14,7 @@ on:
   pull_request:
     paths:
       - 'app/src/main/assets/generate-studio.js'
+      - 'app/src/main/assets/generate-studio.html'
       - 'tests/generation-studio.spec.mjs'
       - 'tests/agent-a-base24-history-sql-unit.mjs'
       - 'tests/agent-a-base24-history-route-unit.mjs'
