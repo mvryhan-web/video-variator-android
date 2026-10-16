@@ -15,7 +15,7 @@ const env={
 };
 const invoice=(change={})=>({
  type:'invoice.paid',livemode:false,data:{object:{
-  id:'in_sub_fixture1',status:'paid',paid:true,livemode:false,
+  id:'in_fixture1',status:'paid',paid:true,livemode:false,
   amount_paid:900,subscription:'sub_fixture1',customer:'cus_fixture1',
   lines:{has_more:false,data:[{price:{id:'price_subfixture'},quantity:1}]},
   ...change
@@ -26,7 +26,7 @@ const user={id:'subscription-fixture-user',plan:'basic',stripe_customer_id:'cus_
 
 test('BASE #16 subscription credits disabled without explicitly approved quantities',()=>{
  assert.deepEqual(subscriptionCreditConfig({}),{enabled:false,entries:[]});
- assert.deepEqual(subscriptionCreditConfig({AI_SUBSCRIPTION_CREDITS_ENABLED:'true'}),{enabled:false,entries:[]});
+ assert.throws(()=>subscriptionCreditConfig({AI_SUBSCRIPTION_CREDITS_ENABLED:'true'}),/AI_SUBSCRIPTION_CONFIG_INVALID/);
 });
 
 test('BASE #16 never interprets old tool credits as AI credits or uses unknown Stripe prices',()=>{
@@ -71,21 +71,21 @@ test('BASE #16: a signed, paid invoice grants once per invoice on disposable Pos
   assert.equal(events[0].kind,'subscription_grant');
   assert.equal(Number(events[0].available_delta),120);
   const record=await pool.query('SELECT kind,credits FROM vv_ai_grant WHERE user_id=$1',[user.id]);
-  assert.deepEqual(record.rows,[{kind:'subscription:in_sub_fixture1',credits:120}]);
+  assert.deepEqual(record.rows,[{kind:'subscription:in_fixture1',credits:120}]);
 
-  await installed.handleEvent(invoice({id:'in_sub_fixture2'}));
+  await installed.handleEvent(invoice({id:'in_fixture2'}));
   assert.equal((await wallet.balance(user.id)).available,240);
-  const noUser=invoice({subscription:'sub_unknown',id:'in_sub_unknown'});
+  const noUser=invoice({subscription:'sub_unknown',id:'in_unknown'});
   await assert.rejects(()=>installed.handleEvent(noUser),/AI_SUBSCRIPTION_ACCOUNT_PENDING/);
   assert.equal((await wallet.balance(user.id)).available,240);
-  const foreignCustomer=invoice({customer:'cus_attacker',id:'in_sub_foreign'});
+  const foreignCustomer=invoice({customer:'cus_attacker',id:'in_foreign'});
   await assert.rejects(()=>installed.handleEvent(foreignCustomer),/AI_SUBSCRIPTION_ACCOUNT_PENDING/);
-  const wrongMode=invoice({livemode:true,id:'in_sub_wrongmode'});
+  const wrongMode=invoice({livemode:true,id:'in_wrongmode'});
   await assert.rejects(()=>installed.handleEvent(wrongMode),/AI_SUBSCRIPTION_INVOICE_INVALID/);
-  const zeroCharge=invoice({amount_paid:0,id:'in_sub_zero'});
+  const zeroCharge=invoice({amount_paid:0,id:'in_zero'});
   await assert.rejects(()=>installed.handleEvent(zeroCharge),/AI_SUBSCRIPTION_INVOICE_INVALID/);
   const ambiguous=invoice({lines:{has_more:false,data:[
-    {price:{id:'price_subfixture'},quantity:1},{price:{id:'price_other'},quantity:1}]},id:'in_sub_ambiguous'});
+    {price:{id:'price_subfixture'},quantity:1},{price:{id:'price_other'},quantity:1}]},id:'in_ambiguous'});
   await assert.rejects(()=>installed.handleEvent(ambiguous),/AI_SUBSCRIPTION_INVOICE_INVALID/);
   assert.equal((await wallet.balance(user.id)).available,240);
   assert.equal((await wallet.history(user.id)).length,2);
