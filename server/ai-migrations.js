@@ -7,7 +7,8 @@ export const AI_MIGRATION_FILES=Object.freeze([
  '20261015-ai-onboarding.sql',
  '20261015-ai-templates.sql',
  '20261015-generation-jobs.sql',
- '20261015-generation-reference-assets.sql'
+ '20261015-generation-reference-assets.sql',
+ '20261016-ai-template-rights.sql'
 ]);
 export const migrationChecksum=sql=>createHash('sha256').update(String(sql)).digest('hex');
 
