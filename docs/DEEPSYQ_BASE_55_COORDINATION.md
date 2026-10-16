@@ -39,7 +39,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 6 | BytePlus first provider adapter | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 7 | AI Provider Router | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | SCOPED NATIVE VIDEO ROUTING MERGED TO BASE / ALL 7 GITHUB WORKFLOWS PASS (2026-10-16); NOT LIVE/FULL BASE #7 DONE | Agent B / Issue #73 / [PR #143](https://github.com/mvryhan-web/video-variator-android/pull/143) merge `4b5361f` |
 | 8 | Fallback | PARTIAL / SAFETY-GATED | B | AUDIT IMPLEMENTATION; FINISH GAP | CODE READY FOR REVIEW (EDIT CLAIM RELEASED) / 8/8 GitHub-source tests PASS (incl. real Video + Image 2K pricing), GitHub CI QUEUED; NOT LIVE (2026-10-16) | Agent B / Issue #73 / [PR #149](https://github.com/mvryhan-web/video-variator-android/pull/149) -> deepsyq-platform · `d782d4c` |
-| 9 | Provider config in admin | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | CODE PREPARED / GitHub-source harness 5/5 PASS, GH CI QUEUED; NOT LIVE (2026-10-16) | Agent B / Issue #73 / stacked [PR #150](https://github.com/mvryhan-web/video-variator-android/pull/150) `805da50` depends on PR #149 |
+| 9 | Provider config in admin | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | CODE PREPARED / GitHub-source harness 6/6 PASS, GH CI QUEUED; NOT LIVE (2026-10-16) | Agent B / Issue #73 / stacked [PR #150](https://github.com/mvryhan-web/video-variator-android/pull/150) `66b24eb` depends on PR #149 |
 | 10 | Normal generation-job database entity | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 11 | Permanent object storage | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 12 | Background jobs | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
