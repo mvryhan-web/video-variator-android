@@ -78,7 +78,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 45 | Onboarding | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 46 | Homepage conversion | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 47 | Do not expose BytePlus as our product | DONE | — | DO NOT REBUILD | — | — |
-| 48 | Production safety / regression | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 48 | Production safety / regression | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS (Issue #75 read-only release review) | BASE-D / base55-d-release-review-issue75-20261016 |
 | 49 | Database migrations | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED (scoped) · PR #69 / CI 38900828078 PASS; MAIN/LIVE PENDING | BASE-D-MigrationSafety / base55-d-migration-readonly-20261016 |
 | 50 | Feature flags | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 51 | First commercial vertical slice | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
