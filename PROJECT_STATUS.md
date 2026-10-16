@@ -2,6 +2,10 @@
 
 ## Agent D — BASE #16 post-disable refunds + explicit billing mode / PR #164 CODE PUSHED, CI QUEUED (2026-10-16)
 
+- **Historical paid Checkout settlement after sales OFF (new bounded code and tests):** amended [PR #164](https://github.com/mvryhan-web/video-variator-android/pull/164) latest commit `2aec8b03602a6334bc439998e1f6518d5fa37771`. Both signed `checkout.session.completed` and `checkout.session.async_payment_succeeded` can reconcile PRE-EXISTING persisted orders with verified live/test mode, valid Stripe session retrieved server-side, exact user/Price ID/amount/currency and idempotent `wallet.grant`. New sales, unknown/foreign orders and missing credentials stay blocked. Current handler executed via isolated V8 against 2/2 valid positive and 10/10 invalid negative cases PASS, not a replacement for full GitHub CI.
+- **Current HEAD test status:** updated `tests/generation-billing-unit.mjs` with 2 positive event types, 6 wrong-order/session cases and 3 invalid credential/mode cases. The 8 focused/related GitHub Actions are all QUEUED at code commit `2aec8b03`: 38949464651, 38949464656, 38949464721, 38949464695, 38949464682, 38949464747, 38949464982, 38949464951. Never claim CI complete, MERGED or LIVE. Shared board `6cc9c660` records exact code; original §16 overall PARTIAL.
+
+
 - **Follow-up gap claimed before code:** after setting `AI_BILLING_ENABLED=false`, a late signed `checkout.session.completed` or `checkout.session.async_payment_succeeded` for a checkout created **before shutdown** is rejected; a customer may already have paid while the purchased credits stay ungranted. Extend SAME scoped PR #164 only to replay existing persisted orders with exact verified Stripe session, mode/amount/price/user metadata and existing idempotent wallet grant; never reopen Checkout, accept arbitrary unrecorded orders, or ignore missing credentials. Original signed webhook boundary is still required. Claim board commit `78a5e294`.
 
 
