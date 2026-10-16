@@ -67,6 +67,10 @@
 
 ## Agent D — BASE #51 Image + Video pricing readiness / IN PROGRESS (2026-10-16)
 
+- **Updated same PR #158 HEAD:** `afc48d8b608f9286be6c2805bf0447fd5e58ef45`, DRAFT/UNMERGED. Added required owner preflight `studioOperator` (ADMIN_EMAIL + bounded AI_STUDIO_MAX_CALLS 1–20) and `imageVideoKinds` (exact Image/Video in AI_STUDIO_ALLOWED_KINDS), since real Studio config already depends on these fields but prior readiness did not. Existing original dual pricing gate unchanged. New full synthetic fixture includes owner/call limit/kinds, dedicated negative tests and docs. Isolated exact-gate evaluation **7/7 PASS**, previously dual-pricing **16/16 PASS**; GitHub CI on updated HEAD still REQUIRED. Actual provider/paid end-to-end not proven, overall #51 PARTIAL/NOT LIVE. Earlier quoted head `b7c0a91c`/CI IDs below are historical and superseded by this new head.
+
+
+
 - **New scoped follow-up claim, before source edit:** owner readiness also reports Studio ready when `ADMIN_EMAIL` missing, `AI_STUDIO_MAX_CALLS` invalid, or `AI_STUDIO_ALLOWED_KINDS` excludes Image or Video; actual `studioConfig` would reject those creation models. Extend SAME D PR #158 with independent, fail-closed Studio operator setup and required Image/Video kind coverage gates. Keep protected Home, public flags, provider, model list, checkout, usage/ledger and original TXT untouched. New claim in board `ecfc46d8`, status prior to code.
 
 
