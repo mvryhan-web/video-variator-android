@@ -7,6 +7,10 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Mandatory owner TXT specification hierarchy (2026-10-16)
+
+**Owner's latest standing instruction applies to EVERY agent:** implement the assigned requirements from the **complete, original TXT** for **BASE** or exactly one of **Blocks 1–7**; never substitute a roadmap paraphrase, newly proposed features, handoff notes or repetitive hardening for unfinished TXT items. Canonical read order and immutable source-file mapping are recorded in `AGENTS.md`. The original BASE TXT is verbatim `docs/DEEPSYQ_PLATFORM_SPEC.md`; the seven separate unchanged originals are now accessible to all repo agents under `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_1.txt` through `DEEPSYQ_BLOCK_7.txt` (all 7 compared against original owner Library files: exact text). BASE is separate from Block 1; respective block owners keep their existing isolated assignments. Implement next incomplete requirement, then one coherent final acceptance check; keep `CODE VERIFIED`, `MERGED TO MAIN` and `DEPLOYED` separate. Do not overwrite the source TXT. This rule supersedes optional agent-discovered task ideas, without overriding production safety, explicit ownership or existing owner-approved design.
+
 ## Current priority gate
 
 **ACTIVE NOW:** finish the currently assigned production/TXT scope already being handled by the current ChatGPT Work agent.
