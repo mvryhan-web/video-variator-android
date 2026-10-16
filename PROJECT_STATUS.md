@@ -1,5 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+
+## Agent C — BASE #19 AI Apps canonical logo / CLAIMED (2026-10-16)
+
+- **Owner-approved source:** Agent A cross-lane Issue #74 QA #6222953396 identified AI Apps temporary `d.` logo; the canonical existing site/app icon is `app/src/main/assets/deepsyq-logo.png`. A keeps ownership of Home design and brand review, C owns AI Apps.
+- **Claimed branch:** `base19-ai-apps-official-brand-20261016` targeting `deepsyq-platform`, scoped to the existing AI Apps header brand markup and local style; a focused browser regression/workflow. No icon redrawing or asset changes, no locked Home, provider/Stripe, templates/API/auth, original TXT, main or production.
+- **Acceptance:** actual icon resource loads on desktop and mobile 320px, brand link accessible, no navigation/layout regression. Independent of open draft PRs #144/#151/#173, whose CI is still queued.
+- **Status:** CLAIMED / NOT CODE VERIFIED / NOT LIVE pending browser CI and integration.
+
 ## Agent D — BASE #37 completed generation failure-rate accuracy / IN PROGRESS (2026-10-16)
 
 - **New scoped PR:** [#179](https://github.com/mvryhan-web/video-variator-android/pull/179), head `cc46e635b7b0f7a14a470d015203c9c4908af846`, DRAFT UNMERGED. 6 files: owner Business response adds `completedJobs` and null-safe `completedFailureRate=failed/(ready+failed)`, leaves existing all-job `failureRate` untouched; owner UI labels completed cohort. Existing BASE #37 workflow extended with strict pure Node tests, no new workflow. Exact committed helper evaluated in-session: **441/441 valid integer cohorts PASS, 11/11 invalid inputs rejected**. Full current-head GitHub Actions pending, not code-verified by CI yet. Original BASE #37 remains PARTIAL (real provider costs, margin, churn, trial-to-paid and revenue/user not established), NOT LIVE.
