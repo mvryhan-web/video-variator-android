@@ -16,7 +16,7 @@ test('fatal worker errors do not serialize provider exceptions, prompts, URLs or
   assert.match(handler,/^\(\)=>\{console\.error\('\[generation worker\] /);
   assert.ok(handler.includes(label+' (details redacted)'),'must provide only static operator context');
   assert.ok(handler.includes("void shutdown('"+kind+"')"),'must still shut down after a fatal failure');
-  assert.doesNotMatch(handler,/\b(e|err|error|reason|payload)\b|\.message|JSON\.stringify|String\(|\.stack/,'fatal handler must never serialize the rejection reason');
+  assert.doesNotMatch(handler,/[,(\s](?:e|err|error|reason|payload)(?:[,)\s.]|$)|\.message|JSON\.stringify|String\(|\.stack/,'fatal handler must never serialize the rejection reason');
  }
  assert.doesNotMatch(code,/console\.(?:error|log)\([^\n]*(?:e\?\.message|error\?\.message|e\.stack|reason\?\.message)/);
 });
