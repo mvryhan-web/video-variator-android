@@ -15,6 +15,7 @@ export function generationReadiness(env={}){
   {id:'provider',label:'At least one AI provider key',ready:!!(env.GEMINI_API_KEY||env.BYTEPLUS_API_KEY),required:true},
   {id:'byteplusMedia',label:'BytePlus approved media hosts',ready:!env.BYTEPLUS_API_KEY||bytePlusDownloadsConfigured(env.BYTEPLUS_MEDIA_HOSTS),required:!!env.BYTEPLUS_API_KEY},
   {id:'pricing',label:'Approved model pricing + currency',ready:pricingCurrenciesExplicit,required:true},
+  {id:'studioEnabled',label:'Generation Studio enabled',ready:env.AI_STUDIO_ENABLED==='true',required:true},
   {id:'wallet',label:'AI wallet generation gate',ready:env.AI_STUDIO_WALLET_ENABLED==='true',required:true},
   {id:'creditPacks',label:'AI credit packs + rates',ready:billing.packs.length>0&&billing.rates.length>0,required:true},
   {id:'stripeMode',label:'Stripe AI billing mode/key',ready:billingRuntime.keyMatches,required:true},
