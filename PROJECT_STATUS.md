@@ -27,6 +27,12 @@ This file is the shared live progress board for all coding agents.
 - **Scope:** existing free/trial-account entitlement path and dedicated tests; reuse current one-time welcome grant + wallet, enforce explicit free opt-in and bounded plan rate/concurrency. No Stripe changes, no free credits minted, no new prices, no production toggles. Do not edit independently claimed BASE #43 pricing UI or BASE #20 Product Video.
 - **Status:** code work pending, must pass tests and be reconciled into BASE; do not mark whole #44 done until real approved free economics and anti-abuse validation.
 
+## BASE #18 — Provider-specific pricing registry / IN PROGRESS (2026-10-16)
+
+- **Agent:** BASE-D-ProviderPricing; **branch:** `base55-d-provider-pricing-20261016` (from BASE `deepsyq-platform`). Separate from BASE #43 Pricing UI, BASE #37 analytics, BASE #44 Free plan and video provider/router branches.
+- **Audit:** existing `server/generation-pricing.js` validates server-approved pricing and estimates per model/provider, but collision/duplicate keys omit provider; equal logical model IDs on two valid providers disable the whole pricing catalog. No work on Stripe, wallet, approvals, live prices or public server.
+- **Bounded task:** make pricing uniqueness provider-aware, preserve fail-closed identical-provider duplicates and verify independent provider quotes by a focused test / CI. Remaining production provider costs/Stripe approval stay blocked.
+
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
 **ACTIVE OWNER PRIORITY NOW:** all four coding-agent sessions focus on the **original BASE TXT / 55-point checklist**, not new Roadmap Blocks 1–7 or duplicated Product Watcher. Shared 55-item claim board and proposed collision-safe work lanes: [`docs/DEEPSYQ_BASE_55_COORDINATION.md`](docs/DEEPSYQ_BASE_55_COORDINATION.md). This new owner instruction overrides older prose suggesting BASE is owned by just one agent or that Agents E/Block 5 should keep expanding their scope. **Already verified:** 55 rows exist in the BASE checklist; #47 and #53 are DONE/RULE; **53 other rows are not fully DONE** and mostly have significant existing code. `PARTIAL` does NOT mean “build from scratch.”
