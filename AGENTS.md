@@ -1,5 +1,11 @@
 # AGENTS.md — Deepsyq shared rules for all coding agents
 
+## Official Deepsyq brand mark — website AND downloadable app (OWNER LOCK 2026-10-16)
+
+**Canonical website and app icon** is the owner's exact approved cyan/blue/violet/purple overlapping-petal graphical mark **WITHOUT** any white text in the image. Original transparent master is saved under `/Deepsyq/Official Brand/DEEPSYQ_OFFICIAL_LOGO_SITE_AND_APP_TRANSPARENT_MASTER.png` in the owner's ChatGPT Library; immutable SHA-256 `c1d11ed2acdd509209557af6fc8224a3ef5c2325491be19cee0c6cf511dba710`. Full 16–1024px image and installer export package is in that Library folder. Source, accepted visual appearance, UI/Android/iOS integration boundaries and status are in [`docs/DEEPSYQ_OFFICIAL_BRAND.md`](docs/DEEPSYQ_OFFICIAL_BRAND.md); coordination [Issue #115](https://github.com/mvryhan-web/video-variator-android/issues/115).
+
+**Do not regenerate, alter or replace this mark**, including with a whale, old Video Uniquifier play logo, alternative glyph or generic SVG. Keep `Deepsyq` wordmark as separate website text if needed. A owns Home display of the real approved file, C owns Android/PWA/iOS install assets after checking exact file ownership. Preserve legacy Video Uniquifier until a verified branded cutover; do not claim website/app icon has changed in production merely because assets are in Library or documents mention them. Original BASE/Blocks TXT are unchanged.
+
 This repository is the single production codebase for Deepsyq (formerly Video Variator / Video Uniquifier). These rules apply to every coding agent, cloud agent, AI assistant, and human contributor working in this repository.
 
 ## Mandatory new-Chat continuity and session handoff (owner instruction 2026-10-16)
