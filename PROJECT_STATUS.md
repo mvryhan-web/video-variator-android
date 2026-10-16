@@ -2,11 +2,12 @@
 
 
 
-## Agent C — BASE #20 Product Video header official logo / CLAIMED (2026-10-16)
+## Agent C — BASE #20 Product Video header official logo / IN PROGRESS, PR #185 (2026-10-16)
 
 - **Evidence:** the existing `product-video.html` header uses temporary `<span>d.</span>` and a green fake badge, while owner approved the official `deepsyq-logo.png` used on Home; AI Apps brand is independently prepared in C PR #183. Product Video remains a guided, no-auto-generation workflow.
 - **Isolated claim:** `base20-product-video-official-brand-20261016`, target `deepsyq-platform`, only Product Video header markup/local CSS and focused desktop+mobile page acceptance. Do NOT edit original logo, Home/Agent A design, Block3 Inspiration (belongs to another agent), guided Product Video prompts/refs/API, paid models, Stripe, DB, main or production.
-- **Status:** CLAIMED / NOT CODE VERIFIED / NOT LIVE. Static and four-browser QA required before reviewed BASE merge.
+- **Code & proof:** [draft PR #185](https://github.com/mvryhan-web/video-variator-android/pull/185), HEAD `e97bc246556f0c93947d62b4248d83f9cc3305fa`. Uses existing official `deepsyq-logo.png` at prior 31px badge footprint, removes temporary green `d.`, preserves exact Product Video guided `<form id="workflow">`, AI Apps/Video Studio navigation. Source/resource sanity checks PASS. Dedicated 4-browser CI [38955527160](https://github.com/mvryhan-web/video-variator-android/actions/runs/38955527160) QUEUED: verifies actual icon decoding, visible brand, existing form, zero POST. No paid AI.
+- **Status:** IN PROGRESS / NOT CODE VERIFIED / NOT LIVE. No BASE merge or public rollout.
 
 ## Agent C — BASE #19 AI Apps canonical logo / CLAIMED (2026-10-16)
 
