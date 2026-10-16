@@ -1,4 +1,4 @@
-import {validPlanPrice,validToolLimit,validLifetimeCurrency,validAiPack,validWalletAmount,aiCheckoutMode} from './ai-pricing-display.js';
+import {validPlanPrice,validToolLimit,validLifetimeCurrency,validAiPack,validWalletAmount,aiCheckoutMode,checkoutErrorMessage} from './ai-pricing-display.js';
 const $=id=>document.getElementById(id);
 const token=()=>localStorage.getItem('vv_token');
 async function json(path,options={}){const r=await fetch(path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(token()?{Authorization:'Bearer '+token()}:{})}}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'REQUEST_FAILED');return d;}
@@ -73,5 +73,5 @@ async function loadAiPacks(){
    :'AI credit packs are prepared but checkout is not activated.';
  }catch(_){$('aiPacks').replaceChildren();$('aiStatus').textContent='AI credit pack configuration is unavailable. Checkout is not available.';}
 }
-async function checkout(pack){if(!validAiPack(pack)){$('aiStatus').textContent='Invalid AI credit pack; checkout is unavailable.';return;}if(!token()){location.assign('deepsyq.html');return;}try{const d=await json('/api/ai-billing/checkout',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID(),sku:pack.sku})}),u=new URL(d.url);if(u.protocol!=='https:'||u.hostname!=='checkout.stripe.com')throw Error('UNSAFE_CHECKOUT_URL');location.assign(u);}catch(e){$('aiStatus').textContent=e.message==='AI_CHECKOUT_UNAVAILABLE'?'Stripe Checkout is temporarily unavailable. No payment was completed.':'Could not start checkout. No payment was completed.';}}
+async function checkout(pack){if(!validAiPack(pack)){$('aiStatus').textContent='Invalid AI credit pack; checkout is unavailable.';return;}if(!token()){location.assign('deepsyq.html');return;}try{const d=await json('/api/ai-billing/checkout',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID(),sku:pack.sku})}),u=new URL(d.url);if(u.protocol!=='https:'||u.hostname!=='checkout.stripe.com')throw Error('UNSAFE_CHECKOUT_URL');location.assign(u);}catch(e){$('aiStatus').textContent=checkoutErrorMessage(e.message);}}
 await Promise.all([loadToolPlans(),loadAiPacks(),loadWelcomeCredits(),loadWallet()]);
