@@ -302,9 +302,9 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   res.json({window,items:rows.map(r=>({provider:r.provider||null,model:r.model||null,kind:r.kind,jobs:Number(r.jobs||0),succeeded:Number(r.succeeded||0),failed:Number(r.failed||0),processing:Number(r.processing||0),successRate:Number(r.jobs||0)?Number(r.succeeded||0)/Number(r.jobs||0):0,failureRate:Number(r.jobs||0)?Number(r.failed||0)/Number(r.jobs||0):0,averageSeconds:r.avg_seconds==null?null:Number(r.avg_seconds),actualCost:Number(r.actual_cost||0),costCurrency:r.cost_currency,creditsCharged:Number(r.credits_charged||0)}))});
  }catch(_){res.status(503).json({error:'STUDIO_ANALYTICS_UNAVAILABLE'});}});
   app.get('/api/studio/jobs',auth,generationUser,async(req,res)=>{try{
-  await init();const filter=String(req.query.filter||'all'),allowed=new Set(['all','image','video','failed','processing']);if(!allowed.has(filter))return res.status(400).json({error:'INVALID_HISTORY_FILTER'});
+  await init();const filter=String(req.query.filter||'all'),allowed=new Set(['all','image','video','music','failed','processing']);if(!allowed.has(filter))return res.status(400).json({error:'INVALID_HISTORY_FILTER'});
   const where=['user_id=$1','deleted=false'],args=[req.user.id];
-  if(filter==='image'||filter==='video'){args.push(filter);where.push(`kind=$${args.length}`);}
+  if(['image','video','music'].includes(filter)){args.push(filter);where.push(`kind=${args.length}`);}
   else if(filter==='failed')where.push("status='failed'");
   else if(filter==='processing')where.push("status IN ('queued','processing','finalizing')");
   const {rows}=await pool.query(`SELECT id,kind,status,provider,model,prompt,settings,error,result_text,mime,output_assets,created_at,started_at,completed_at,failed_at,credits_reserved,credits_charged FROM vv_generation_jobs WHERE ${where.join(' AND ')} ORDER BY created_at DESC LIMIT 50`,args);
