@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {generationWorkerReady,generationWorkerPlan,referenceCleanupMigrationReady,createCoalescingWorkerTask,drainWorkerTask} from '../server/generation-worker-runtime.js';
+import {generationWorkerReady,generationWorkerPlan,referenceCleanupMigrationReady,createCoalescingWorkerTask,drainWorkerTask,closeWorkerDatabasePool} from '../server/generation-worker-runtime.js';
 
 test('generation worker is fail-closed until DB, studio, polling and provider key are configured',()=>{
  const pool={};
@@ -97,4 +97,18 @@ test('BASE #12: a failed cleanup does not permanently block the next scheduled c
  await assert.rejects(task.run(),/TEMPORARY_CLEANUP_FAILURE/);
  assert.equal(await task.run(),true);
  assert.equal(attempts,2);
+});
+
+test('BASE #12: DB pool shutdown closes once, rejects failure, and times out on hung socket',async()=>{
+ let calls=0;
+ const quick={end:async()=>{calls++;}};
+ assert.equal(await closeWorkerDatabasePool(quick,{timeoutMs:100}),true);
+ assert.equal(calls,1);
+ const broken={end:()=>Promise.reject(Error('DB_CLOSE_FAILED'))};
+ assert.equal(await closeWorkerDatabasePool(broken,{timeoutMs:100}),false);
+ let hungCalls=0;
+ const hung={end:()=>{hungCalls++;return new Promise(()=>{});}};
+ assert.equal(await closeWorkerDatabasePool(hung,{timeoutMs:10}),false);
+ assert.equal(hungCalls,1);
+ assert.equal(await closeWorkerDatabasePool(null,{timeoutMs:10}),false);
 });

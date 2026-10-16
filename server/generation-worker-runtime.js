@@ -67,3 +67,11 @@ export async function drainWorkerTask(task,{timeoutMs=5000}={}){
   ]);
  }finally{clearTimeout(timer);}
 }
+
+// DB connection close can also hang when a previously issued query or socket
+// never finishes. Supervisor shutdown must not wait on pool.end() indefinitely.
+// An unresolved promise is safely abandoned only when the process exits.
+export async function closeWorkerDatabasePool(pool,{timeoutMs=5000}={}){
+ if(!pool||typeof pool.end!=='function')return false;
+ return drainWorkerTask({drain:()=>pool.end()},{timeoutMs});
+}
