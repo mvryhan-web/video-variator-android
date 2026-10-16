@@ -15,6 +15,8 @@ This file is the shared live progress board for all coding agents.
 
 - **Later narrow fix (same #24 claim):** existing lazy History image preview could resolve after the filter/tab was replaced, creating a detached image Blob URL and retaining it. Added `epoch` + `preview.isConnected` guards before URL creation, invalidation and revocation on leaving History or pagehide. Added two dedicated Playwright regressions; source commit `6533719f`, tests `ea3e01a9`. Pending new exact-head CI, no test PASS or merge claim.
 
+- **New authenticated SQL filter correction (2026-10-16):** While validating native server code, found `where.push(\`kind=\${args.length}\`)` rendered unbound `kind=2` for image/video in `GET /api/studio/jobs`, although `args.push(filter)` supplied a text parameter. Scoped fix changes that exact shared route clause to PostgreSQL `kind=$2`, preserving mandatory `user_id=$1` and all creation/provider paths. A informed B in Issue #73 comment 6221619413 before editing this shared file. Exact source blob `d7fda56e5da61b956cb5adebf67f27db7193700a` independently evaluated to **kind=$2 for both image and video**. Added Node regression `tests/agent-a-base24-history-sql-unit.mjs` and scoped CI step; commits `b5b046be`, `510f8694`, `22817390`. Actual database/browser CI still **QUEUED/NOT PASS**.
+
 ## Agent D — BASE #16 duplicate Stripe Price-ID risk / IN PROGRESS (2026-10-16)
 
 - **Progress:** PR #148 latest 9fdb2da8. Isolated 5/5 config checks PASS. Added mocked Checkout fail-closed test, not yet CI-verified; GitHub Actions pending. Full BASE #16 remains PARTIAL / NOT LIVE.
