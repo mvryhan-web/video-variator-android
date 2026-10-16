@@ -110,7 +110,10 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Observed gap:** `GenerationWallet.history` includes internal ledger `reference` in both customer `/api/ai-wallet/history` and `/api/ai-billing/history`. Current client UIs use only kind, date and deltas. Filter returned customer fields without changing stored records or owner reports.
 - **Collision guard:** concurrent #16 owns `server/generation-billing.js`; do NOT change their routes, webhook flows or Stripe. Single change in `generation-wallet.js` plus isolated HTTP/mock validation. No production/migration changes.
 
-## BASE #16 PostgreSQL Checkout fixture regression — IN PROGRESS (2026-10-16)
+## BASE #16 PostgreSQL Checkout fixture regression — MERGED TO BASE / TESTS PASS (2026-10-16)
+
+- **Result:** [PR #91](https://github.com/mvryhan-web/video-variator-android/pull/91), squash merge `b05cce6cfc4fef55458d36ded5e99d43a8af041f` into `deepsyq-platform`; [CI #38907092954](https://github.com/mvryhan-web/video-variator-android/actions/runs/38907092954) PASS (real disposable PostgreSQL 16 wallet contract + mock Stripe retry, Node syntax). Updated `tests/generation-wallet-postgres.mjs` fixture to include Stripe `status:'open'`, valid `expires_at` fields; scoped workflow added. Production Checkout fail-closed validation from #85 remains unchanged. Shared AI Studio suite had failed only the old incomplete mock, now fixed. No live payment/provider, Render, `main` or production DB change.
+- **Remaining:** original BASE #16 remains PARTIAL / real Stripe and owner economics NOT VERIFIED.
 
 - **Same owner:** BASE-D-CheckoutReuse; new isolated branch `base16-checkout-pg-fixture-20261016`. Existing payment fix PR #85 is merged and security checks should remain strict.
 - **Observed failure:** AI Studio [CI 38906352455](https://github.com/mvryhan-web/video-variator-android/actions/runs/38906352455) PostgreSQL test `tests/generation-wallet-postgres.mjs:76` expects idempotent existing-session reuse to return 200. Its Stripe fixture omits `status:'open'` and `expires_at`; real Stripe Checkout sessions carry those fields and `existingCheckoutResponse` correctly rejects unknown/expired state with 409. Repair **synthetic fixture only**, not the hardened production server or payment rules; targeted real disposable PostgreSQL CI and commit before merging.
