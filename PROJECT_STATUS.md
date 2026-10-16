@@ -14,6 +14,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent A — BASE #31 generation UX: server-accepted job stages and real reserved credits / CLAIMED (2026-10-16)
+
+- **Claim/owner:** Agent A Issue #72, original BASE #31 only, branch `agent-a-base31-job-progress-20261016`; previous A #3/#24 draft PRs remain separate and await CI. Scope is existing Image/Video/Audio Studio user-facing presentation and focused acceptance only; no new billing, Stripe, provider, wallet, database, route or Home modifications.
+- **Confirmed gap:** the existing accepted /api/studio/jobs POST already returns `status:'processing',creditsReserved` and user-scoped job GET includes states, but Studio UI discards reserved credits and shows generic `Generating` without clear queued/processing/finalizing distinction or status explanation that accepted work survives leaving the page.
+- **Plan:** small accessible Studio status panel; render only server-confirmed reservation and real server state, label unknown/failed without asserting refund or a safe retry. Keep per-request consent and no extra POST. Focused native/Playwright checks, one draft PR targeting BASE, hold until actual CI. **Not CODE VERIFIED or deployed.**
+
 ## Agent D — BASE #16 duplicate Stripe Price-ID risk / IN PROGRESS (2026-10-16)
 
 - **Progress:** PR #148 latest 9fdb2da8. Isolated 5/5 config checks PASS. Added mocked Checkout fail-closed test, not yet CI-verified; GitHub Actions pending. Full BASE #16 remains PARTIAL / NOT LIVE.
