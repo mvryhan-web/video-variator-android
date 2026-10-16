@@ -24,4 +24,5 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
       - name: Wallet+Stripe UI, Chromium desktop and mobile
-        run: npx playwright test tests/generation-studio.spec.mjs --grep "AI wallet shows configured packs|wallet activity and Stripe return|BASE #13: existing credits" --project=chromium --project=mobile-chromium
+        run: |
+          npx playwright test tests/generation-studio.spec.mjs --grep 'AI wallet shows configured packs|wallet activity and Stripe return|BASE #13: existing credits' --project=chromium --project=mobile-chromium
