@@ -343,6 +343,7 @@ async function processPDF(){
 }
 async function processMedia(){
  const f=files()[0],video=tool!=='audio-trim';
+ if(tool==='video-compress'&&f.size===0)throw Error(label('Choose a non-empty video file.','Выберите видеофайл с данными.'));
  let start=0,end=0;
  if(tool!=='video-mute'&&tool!=='video-compress'){start=settingsNum('utilityStart');end=settingsNum('utilityEnd');if(end<=start||end-start>3600)throw Error(label('End must be after start; maximum 60 minutes.','Конец должен быть позже начала. Максимум 60 минут.'));}
  engine=await createEngine();if(abort)return;
