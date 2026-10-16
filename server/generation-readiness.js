@@ -19,7 +19,7 @@ export function generationReadiness(env={}){
   {id:'liveBillingApproval',label:'Live AI billing approval',ready:billingRuntime.livePaymentsEnabled,required:true},
   {id:'storage',label:'Permanent object storage',ready:storage.configured,required:true},
   {id:'worker',label:'Background generation worker flag',ready:env.AI_STUDIO_BACKGROUND_POLLING==='true',required:true},
-  {id:'publicJobPolicy',label:'Configured public job spend-rate limits',ready:!policy.enabled||(policy.maxConcurrentPerUser>0&&policy.maxJobsPerHourPerUser>0),required:policy.enabled},
+  {id:'publicJobPolicy',label:'Enabled bounded public job spend-rate limits',ready:policy.enabled&&policy.maxConcurrentPerUser>0&&policy.maxJobsPerHourPerUser>0,required:env.AI_PUBLIC_GENERATION_ENABLED==='true'},
   {id:'entitlements',label:'Public plan entitlements',ready:entitlements.configured,required:true},
   {id:'publicFlag',label:'Public AI generation flag',ready:env.AI_PUBLIC_GENERATION_ENABLED==='true',required:true}
  ];
