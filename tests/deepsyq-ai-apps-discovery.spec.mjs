@@ -202,3 +202,26 @@ test('AI Apps template preview renders untrusted prompt as text and stays useful
  expect(await page.evaluate(()=>window.__promptExecuted===true)).toBe(false);
  await expect(card.locator('.template-preview-content')).toContainText('logo');
 });
+
+
+test('BASE #29 AI Apps navigation reaches existing History, Credits and Pricing without triggering paid generation',async({page})=>{
+ await page.route('**/api/templates',route=>route.fulfill({json:{items:[]}}));
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ let paidJobs=0;
+ page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')paidJobs++;});
+ await page.goto('/ai-apps.html');
+ const nav=page.getByRole('navigation',{name:'Main navigation'});
+ const history=nav.getByRole('link',{name:'My Creations and History'});
+ const credits=nav.getByRole('link',{name:'Credits'});
+ const pricing=nav.getByRole('link',{name:'Pricing'});
+ await expect(history).toHaveAttribute('href','generate-studio.html?studio=image&view=history');
+ await expect(credits).toHaveAttribute('href','ai-pricing.html#aiCreditSection');
+ await expect(pricing).toHaveAttribute('href','ai-pricing.html');
+ await credits.click();
+ await expect(page).toHaveURL(/ai-pricing\\.html#aiCreditSection$/);
+ await page.goto('/ai-apps.html');
+ await page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'My Creations and History'}).click();
+ await expect(page).toHaveURL(/generate-studio\\.html\\?studio=image&view=history$/);
+ await expect(page.locator('#showHistory')).toHaveAttribute('aria-pressed','true');
+ expect(paidJobs).toBe(0);
+});
