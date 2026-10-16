@@ -99,3 +99,6 @@
 .job-progress p{font-size:12px;color:#b8b4c9;line-height:1.5;margin:0}
 .job-progress[data-status=failed],.job-progress[data-status=unknown],.job-progress[data-status=unconfirmed]{border-color:#805469}
 .job-progress[hidden]{display:none!important}
+
+/* Hide progress in History without competing with BASE #24's setHistory request-epoch fix. */
+#historyEmpty:not([hidden]) ~ #jobProgress{display:none!important}
