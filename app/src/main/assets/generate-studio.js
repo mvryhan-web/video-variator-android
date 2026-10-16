@@ -10,7 +10,7 @@ let kind=requested==='image'?'image':requested==='audio'?'music':'video';
 let config={enabled:false,models:[]},catalog=MODEL_CATALOG.map(m=>({...m,enabled:false}));
 let refs=[],modelId=MODELS[kind].id,url,blob,job,busy=false,generation=0,historyView=false,historyFilter='all';
 let estimateTimer=null,estimateSignature='';
-let historyThumbUrls=[];
+let historyThumbUrls=[],historyMediaUrl=null,historyMediaPlayer=null,historyMediaButton=null,historyMediaEpoch=0;
 const drafts={};
 let activeVideoWatchId=null; // Current browser polling only; the provider job is server-owned.
 const imageBatchQuantity=()=>kind==='image'&&config?.imageBatchEnabled?Number($('imageQuantity').value||1):1;
@@ -525,6 +525,63 @@ function observeHistoryThumbnail(item,preview){
  const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){observer.disconnect();void loadHistoryImageThumbnail(item,preview);}},{rootMargin:'180px'});
  observer.observe(preview);
 }
+
+// Preview only on explicit user interaction. This is an authenticated read of the user's
+// existing result; no provider dispatch, regeneration, or new credit reservation.
+const HISTORY_PREVIEW_MAX_BYTES=128*1024*1024;
+function clearHistoryMediaPreview(){
+ ++historyMediaEpoch;
+ if(historyMediaPlayer){
+  historyMediaPlayer.pause();
+  historyMediaPlayer.removeAttribute('src');
+  historyMediaPlayer.load();
+  historyMediaPlayer=null;
+ }
+ if(historyMediaUrl){URL.revokeObjectURL(historyMediaUrl);historyMediaUrl=null;}
+ if(historyMediaButton?.isConnected){
+  historyMediaButton.disabled=false;
+  historyMediaButton.textContent=say('Preview media','Просмотр');
+ }
+ historyMediaButton=null;
+}
+async function previewHistoryMedia(item,holder,button){
+ if(historyMediaButton===button&&historyMediaPlayer){
+  clearHistoryMediaPreview();holder.replaceChildren();return;
+ }
+ clearHistoryMediaPreview();
+ const epoch=historyMediaEpoch;
+ historyMediaButton=button;button.disabled=true;
+ button.textContent=say('Loading preview…','Загружаем…');
+ holder.replaceChildren();
+ try{
+  const response=await api('/api/studio/jobs/'+encodeURIComponent(item.id)+'/media');
+  const reportedSize=Number(response.headers.get('content-length')||0);
+  if(reportedSize>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
+  const blob=await response.blob();
+  if(epoch!==historyMediaEpoch||!historyView||!button.isConnected)return;
+  if(blob.size>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
+  const expected=item.kind==='video'?'video/':'audio/';
+  if(!blob.type.toLowerCase().startsWith(expected))throw Error('PREVIEW_UNSUPPORTED_FORMAT');
+  const player=document.createElement(item.kind==='video'?'video':'audio');
+  player.controls=true;player.preload='metadata';player.autoplay=false;
+  if(item.kind==='video')player.playsInline=true;
+  player.setAttribute('aria-label',item.kind==='video'?say('Saved video preview','Просмотр сохранённого видео'):say('Saved audio preview','Прослушать сохранённое аудио'));
+  const objectUrl=URL.createObjectURL(blob);
+  player.src=objectUrl;historyMediaUrl=objectUrl;historyMediaPlayer=player;
+  holder.replaceChildren(player);button.disabled=false;
+  button.textContent=say('Close preview','Закрыть просмотр');
+ }catch(error){
+  if(epoch!==historyMediaEpoch||!button.isConnected)return;
+  button.disabled=false;button.textContent=say('Preview media','Просмотр');
+  const message=document.createElement('p');message.className='hint';
+  message.textContent=error.message==='PREVIEW_TOO_LARGE'?
+   say('This file is too large for an in-page preview. Use Download.','Файл слишком большой для просмотра. Используйте «Скачать».'):
+   error.message==='PREVIEW_UNSUPPORTED_FORMAT'?
+   say('The saved file is not a supported video/audio preview. Use Download.','Формат файла не подходит для просмотра. Используйте «Скачать».'):
+   say('Preview is unavailable. Your saved result was not changed.','Предпросмотр недоступен. Сохранённый результат не изменён.');
+  holder.replaceChildren(message);
+ }
+}
 function historyState(status){return status==='ready'?say('Ready','Готово'):status==='queued'?say('Queued','В очереди'):status==='processing'?say('Processing','В работе'):status==='finalizing'?say('Finalizing','Завершаем'):status==='failed'?say('Failed','Ошибка'):status;}
 function historyDate(value){try{return new Intl.DateTimeFormat(navigator.language||'en',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));}catch(_){return String(value||'');}}
 function historyCredits(item){const n=Number(item.creditsCharged||item.creditsReserved||0);return n>0?say(n+' AI credits',n+' AI-кредитов'):'';}
@@ -595,7 +652,7 @@ async function openHistoryJob(id){
  const epoch=++generation;try{await watch(id,epoch);if(epoch===generation)setHistory(false);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
 }
 async function loadHistory(){
- const list=$('historyList');list.hidden=false;clearHistoryThumbs();list.replaceChildren();const loading=document.createElement('p');loading.className='hint';loading.textContent=say('Loading results…','Загружаем результаты…');list.append(loading);
+ const list=$('historyList');list.hidden=false;clearHistoryMediaPreview();clearHistoryThumbs();list.replaceChildren();const loading=document.createElement('p');loading.className='hint';loading.textContent=say('Loading results…','Загружаем результаты…');list.append(loading);
  try{
   const d=await(await api('/api/studio/jobs?filter='+encodeURIComponent(historyFilter))).json();list.replaceChildren();
   if(!d.items?.length){const p=document.createElement('p');p.className='hint';p.textContent=say('No results in this filter yet.','В этом фильтре пока нет результатов.');list.append(p);return;}
@@ -627,12 +684,21 @@ async function loadHistory(){
     check.onclick=()=>void checkHistoryVideo(item);
     actions.append(check);
    }
-   actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions);list.append(card);observeHistoryThumbnail(item,preview);
+   const inlinePreview=document.createElement('div');inlinePreview.className='history-inline-media';
+   if(item.status==='ready'&&['video','music','audio'].includes(item.kind)){
+    const previewButton=document.createElement('button');previewButton.type='button';
+    previewButton.textContent=say('Preview media','Просмотр');
+    previewButton.title=say('Load your saved media on demand. No new AI generation or charge.','Загрузить готовый результат по нажатию. Новая генерация и списание не выполняются.');
+    previewButton.onclick=()=>void previewHistoryMedia(item,inlinePreview,previewButton);
+    actions.append(previewButton);
+   }
+   actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions,inlinePreview);list.append(card);observeHistoryThumbnail(item,preview);
   }
  }catch(e){list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
 }
 document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclick=()=>{historyFilter=button.dataset.historyFilter;document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));void loadHistory();});
-function setHistory(on){historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
+function setHistory(on){if(!on)clearHistoryMediaPreview();historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
+window.addEventListener('pagehide',()=>{clearHistoryMediaPreview();clearHistoryThumbs();});
 $('showCreate').onclick=()=>{const u=new URL(location.href);u.searchParams.delete('view');history.replaceState(null,'',u);setHistory(false);};$('showHistory').onclick=()=>setHistory(true);
 function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
 async function watch(id,epoch){
