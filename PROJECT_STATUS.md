@@ -300,11 +300,11 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Verified remaining leak:** `server/migrate-ai.js` is the actual `npm run migrate:ai[:check]` CLI. It uses a top-level try/finally with no catch, so a PostgreSQL/URI driver rejection is emitted by Node as an **unhandled error with raw `e.message`/stack**, potentially including DATABASE_URL credentials. The approved migration command should report a safe fixed error classification and keep a non-zero exit code, without touching migration SQL or DDL behavior.
 - **Scope:** reuse the previously tested pure `safeAiPreflightError` helper, preserve checksum drift error category (but not its raw detail), no production DB, Stripe, auth, provider, main or Home changes. Add focused synthetic tests and CI; full release acceptance remains pending.
 
-## Agent D BASE #17 — show markup settings are not yet applied to customer credits — IN PROGRESS (2026-10-16)
+## Agent D BASE #17 — truthful owner markup disclosure — CODE VERIFIED / BASE MERGED / NOT LIVE (2026-10-16)
 
 - **Original §17:** provider cost, explicit markup, true commercial margin; UI currently exposes `Markup (bps)` as editable model setting. Existing backend stores this owner metadata but the approved customer-credit quote uses `AI_MODEL_PRICING_JSON` and DOES NOT compute a new charge from the markup field. This is easy to misread as price activation.
 - **Scope:** isolated `base17-markup-disclosure-20261016`, warn in owner Admin Model Controls and on save that markup/internal-cost are reference settings only until approved model rates and actual credit economics are wired. Add Playwright owner-only DOM/save fixture and ensure no Stripe/provider/checkout calls. No changes to already approved amounts, model control storage, wallet, routing, owner-locked Home or original TXT.
-- **Validation:** scoped browser test + regression; status must remain PARTIAL for live margin/markup activation, never mark credits calculated from absent FX or invoices.
+- **Validation:** [PR #124](https://github.com/mvryhan-web/video-variator-android/pull/124) MERGED to BASE as `cc9598c7`. [Playwright CI 38925241210](https://github.com/mvryhan-web/video-variator-android/actions/runs/38925241210) **SUCCESS** (Chromium and mobile WebKit); separate new-head follow-up CI pending. No real AI price, markup quote, payment, provider, Home or Render change. Full §17 remains PARTIAL until an approved price→credit mapping and actual provider/infra invoices permit margin/markup accounting.
 
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
