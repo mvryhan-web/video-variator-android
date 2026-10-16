@@ -25,6 +25,8 @@ test('BASE #20: Product Video header reuses the approved Deepsyq icon and guided
  expect(badge).toEqual({placeholderText:'',background:'none',width:31,height:31,insideViewport:true});
  await expect(page.locator('header a[href="ai-apps.html"]')).toBeVisible();
  await expect(page.locator('header a[href="generate-studio.html?studio=video"]')).toBeVisible();
+ const headerLinks=await page.locator('header a').evaluateAll(links=>links.map(link=>({right:link.getBoundingClientRect().right,left:link.getBoundingClientRect().left,viewport:innerWidth})));
+ for(const link of headerLinks){expect(link.left).toBeGreaterThanOrEqual(-1);expect(link.right).toBeLessThanOrEqual(link.viewport+1);}
  await expect(page.locator('#workflow')).toBeVisible();
  await expect(page.locator('#photos')).toHaveAttribute('multiple','');
  await expect(page.locator('#continue')).toBeVisible();
