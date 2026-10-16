@@ -2,6 +2,10 @@
 
 This repository is the single production codebase for Deepsyq (formerly Video Variator / Video Uniquifier). These rules apply to every coding agent, cloud agent, AI assistant, and human contributor working in this repository.
 
+## Owner priority update — FOUR AGENTS ON BASE 1–55 (2026-10-16)
+
+**Current owner instruction overrides older lane assignments:** four coding agents should focus on completing the 55 original BASE requirements, not starting new Blocks 1–7 or rewriting their finished code. Mandatory shared 55-row inventory, recommended non-overlapping lanes A–D and atomic claim protocol: [`docs/DEEPSYQ_BASE_55_COORDINATION.md`](docs/DEEPSYQ_BASE_55_COORDINATION.md). `docs/DEEPSYQ_PLATFORM_SPEC.md` remains the complete authoritative original BASE TXT; `docs/DEEPSYQ_BASE_CHECKLIST.md` is its detailed evidence/status map. Read both in full before coding. All four lanes are **suggested, not confirmation that other agent sessions are running**; check actual ownership in `PROJECT_STATUS.md` and live branches before marking any task `IN PROGRESS`. Each agent must push a visible per-item claim before code edits, avoid files another agent owns, work until code/tests support the original requirement, update statuses and keep going with the next unclaimed, unblocked BASE item. Respect locked Home, feature flags, existing Stripe/auth/router/database and production rollout gates. Do not claim 55/55 DONE today when paid providers, production DB or owner approvals are not verified.
+
 ## Mandatory read order before any work
 
 Before changing code, always read and reconcile:
