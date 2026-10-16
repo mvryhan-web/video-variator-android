@@ -15,4 +15,15 @@
 </div>
 <div class="actions"><button id="trimGenerate" disabled data-s="trimGenerate">Trim to MP3</button><button id="trimCancel" disabled data-s="cancel">Cancel</button></div>
 <p id="trimStatus" role="status"></p><div id="trimResult"></div>
+</section>
+<section class="tool-card" id="videoAudioSection">
+<h2 data-s="vtaTitle">Video → MP3</h2>
+<p data-s="vtaNote">Extract a video's soundtrack on this device — no upload or AI credits.</p>
+<label><span data-s="vtaFile">Video file (MP4, MOV, WebM, MKV — max 80 MB)</span>
+<input id="vtaFile" type="file" accept="video/mp4,video/quicktime,video/webm,video/x-matroska,.mp4,.m4v,.mov,.webm,.mkv"></label>
+<video id="vtaPreview" controls playsinline preload="metadata" hidden style="width:100%;max-height:260px"></video>
+<div class="actions"><button id="vtaGenerate" data-s="vtaGenerate" disabled>Extract MP3</button>
+<button id="vtaCancel" data-s="cancel" disabled>Cancel</button></div>
+<p id="vtaStatus" role="status" aria-live="polite"></p>
+<div id="vtaResult"></div>
 </section></main><script src="file-share.js"></script><script src="tool-access.js"></script><script type="module" src="audio-studio.js"></script><script src="tools-hub.js"></script></body></html>
