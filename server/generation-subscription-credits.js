@@ -28,6 +28,23 @@ const subscriptionId=invoice=>{
  const value=invoice?.subscription??invoice?.parent?.subscription_details?.subscription;
  return typeof value==='string'?value:value?.id;
 };
+// Stripe invoice objects have used both direct payment_intent and the newer
+// invoice.payments list. Only one real, provable payment intent can be used
+// for a given paid invoice; do not manufacture a Stripe reference.
+export function invoicePaymentIntent(invoice){
+ const direct=typeof invoice?.payment_intent==='string'
+  ?invoice.payment_intent:invoice?.payment_intent?.id;
+ const payments=invoice?.payments?.data;
+ const fromPayments=Array.isArray(payments)
+  ?payments.filter(p=>p?.payment?.type==='payment_intent')
+    .map(p=>typeof p.payment.payment_intent==='string'
+      ?p.payment.payment_intent:p.payment.payment_intent?.id)
+    .filter(Boolean):[];
+ const all=[direct,...fromPayments].filter(Boolean);
+ if(!all.length||new Set(all).size!==1||!stripeId(all[0],'pi_'))
+  throw Error('AI_SUBSCRIPTION_PAYMENT_INTENT_INVALID');
+ return all[0];
+}
 
 export async function grantPaidSubscriptionInvoice({event,env={},pool,wallet}){
  if(event?.type!=='invoice.paid')return false;
@@ -57,8 +74,10 @@ export async function grantPaidSubscriptionInvoice({event,env={},pool,wallet}){
  const grant=config.entries.find(e=>e.priceId===matching[0].price.id);
  const id=subscriptionId(invoice);
  if(!stripeId(id,'sub_')||!stripeId(invoice.id,'in_')||
-    !stripeId(invoice.customer,'cus_'))
+    !stripeId(invoice.customer,'cus_')||
+    !/^[a-z]{3}$/.test(invoice.currency||''))
   throw Error('AI_SUBSCRIPTION_INVOICE_INVALID');
+ const paymentIntent=invoicePaymentIntent(invoice);
  // Existing legacy subscription/account is the canonical owner. No lookup by
  // untrusted invoice metadata/email, and no synthetic user gets credit.
  const {rows}=await pool.query(
@@ -69,8 +88,10 @@ export async function grantPaidSubscriptionInvoice({event,env={},pool,wallet}){
     rows[0].stripe_customer_id!==invoice.customer||
     !['active','trialing'].includes(rows[0].subscription_status))
    throw Error('AI_SUBSCRIPTION_ACCOUNT_PENDING');
- // grantOnce already uses a transactional (user_id,kind) uniqueness gate and
- // repays debt before issuing available balance. One kind per *paid invoice*.
- await wallet.grantOnce({userId:rows[0].id,kind:'subscription:'+invoice.id,credits:grant.credits});
+ // Reuse the SAME durable (invoice ID, payment intent) purchase ledger as
+ // packs. The existing cumulative charge.refunded handler can now revoke
+ // credits proportionally and apply debt instead of leaving refunded credits.
+ await wallet.grant({userId:rows[0].id,sessionId:invoice.id,
+  paymentIntent,credits:grant.credits,amount:invoice.amount_paid,currency:invoice.currency});
  return true; // caller must ALSO process the existing legacy invoice.paid event
 }

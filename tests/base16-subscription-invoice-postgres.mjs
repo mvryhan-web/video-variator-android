@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import pg from 'pg';
 import {GenerationWallet} from '../server/generation-wallet.js';
 import {installGenerationBilling} from '../server/generation-billing.js';
-import {subscriptionCreditConfig,grantPaidSubscriptionInvoice} from '../server/generation-subscription-credits.js';
+import {subscriptionCreditConfig,invoicePaymentIntent,grantPaidSubscriptionInvoice} from '../server/generation-subscription-credits.js';
 
 const dsn=process.env.AI_TEST_DATABASE_URL;
 const env={
@@ -16,7 +16,7 @@ const env={
 const invoice=(change={})=>({
  type:'invoice.paid',livemode:false,data:{object:{
   id:'in_fixture1',status:'paid',paid:true,livemode:false,billing_reason:'subscription_cycle',
-  amount_paid:900,subscription:'sub_fixture1',customer:'cus_fixture1',
+  amount_paid:900,currency:'eur',payment_intent:'pi_invoicefixture1',subscription:'sub_fixture1',customer:'cus_fixture1',
   lines:{has_more:false,data:[{price:{id:'price_subfixture'},quantity:1}]},
   ...change
  }}
@@ -38,6 +38,19 @@ test('BASE #16 never interprets old tool credits as AI credits or uses unknown S
  }
  assert.deepEqual(subscriptionCreditConfig(env).entries,
   [{plan:'basic',credits:120,priceId:'price_subfixture'}]);
+});
+
+test('BASE #16: subscription invoice requires a real unique Stripe payment intent',()=>{
+ assert.equal(invoicePaymentIntent({payment_intent:'pi_invoice1'}),'pi_invoice1');
+ assert.equal(invoicePaymentIntent({payments:{data:[{payment:{
+  type:'payment_intent',payment_intent:'pi_invoice2'}}]}}),'pi_invoice2');
+ assert.equal(invoicePaymentIntent({payment_intent:'pi_invoice1',payments:{data:[
+  {payment:{type:'payment_intent',payment_intent:'pi_invoice1'}}]}}),'pi_invoice1');
+ for(const candidate of [{},{payment_intent:'a_fake'},{
+   payment_intent:'pi_invoice1',payments:{data:[{payment:{type:'payment_intent',payment_intent:'pi_other'}}]}
+ }]){
+  assert.throws(()=>invoicePaymentIntent(candidate),/AI_SUBSCRIPTION_PAYMENT_INTENT_INVALID/);
+ }
 });
 
 test('BASE #16: a signed, paid invoice grants once per invoice on disposable PostgreSQL', {skip:!dsn},async()=>{
@@ -70,10 +83,10 @@ test('BASE #16: a signed, paid invoice grants once per invoice on disposable Pos
   assert.equal(events.length,1);
   assert.equal(events[0].kind,'subscription_grant');
   assert.equal(Number(events[0].available_delta),120);
-  const record=await pool.query('SELECT kind,credits FROM vv_ai_grant WHERE user_id=$1',[user.id]);
-  assert.deepEqual(record.rows,[{kind:'subscription:in_fixture1',credits:120}]);
+  const record=await pool.query('SELECT session_id,payment_intent,credits,amount,currency FROM vv_ai_purchase WHERE user_id=$1',[user.id]);
+  assert.deepEqual(record.rows,[{session_id:'in_fixture1',payment_intent:'pi_invoicefixture1',credits:120,amount:900,currency:'eur'}]);
 
-  await installed.handleEvent(invoice({id:'in_fixture2'}));
+  await installed.handleEvent(invoice({id:'in_fixture2',payment_intent:'pi_invoicefixture2'}));
   assert.equal((await wallet.balance(user.id)).available,240);
   const noUser=invoice({subscription:'sub_unknown',id:'in_unknown'});
   await assert.rejects(()=>installed.handleEvent(noUser),/AI_SUBSCRIPTION_ACCOUNT_PENDING/);
@@ -93,6 +106,30 @@ test('BASE #16: a signed, paid invoice grants once per invoice on disposable Pos
   await assert.rejects(()=>installed.handleEvent(ambiguous),/AI_SUBSCRIPTION_INVOICE_INVALID/);
   assert.equal((await wallet.balance(user.id)).available,240);
   assert.equal((await wallet.history(user.id)).length,2);
+
+  const refund=(paymentIntent,cumulative)=>({
+   type:'charge.refunded',livemode:false,data:{object:{
+    livemode:false,payment_intent:paymentIntent,amount_refunded:cumulative
+   }}
+  });
+  // Pack checkout remains disabled; signed subscription invoice refunds are
+  // still reconciled using the existing purchase/refund ledger.
+  assert.equal(await installed.handleEvent(refund('pi_invoicefixture1',450)),true);
+  assert.equal((await wallet.balance(user.id)).available,180);
+  assert.equal(await installed.handleEvent(refund('pi_invoicefixture1',450)),true);
+  assert.equal((await wallet.balance(user.id)).available,180);
+  // Charge more of the available credits before a full subscription refund:
+  // the missing balance must become debt, not silently remain free AI usage.
+  await wallet.reserve({userId:user.id,jobId:'job_sub_fixture',credits:150,fingerprint:'fingerprint'});
+  await wallet.settle({userId:user.id,jobId:'job_sub_fixture',outcome:'success'});
+  assert.equal(await installed.handleEvent(refund('pi_invoicefixture1',900)),true);
+  assert.deepEqual(await wallet.balance(user.id),{available:0,reserved:0,debt:30});
+  assert.equal(await installed.handleEvent(refund('pi_invoicefixture2',900)),true);
+  assert.deepEqual(await wallet.balance(user.id),{available:0,reserved:0,debt:150});
+  assert.equal(await installed.handleEvent(refund('pi_invoicefixture2',900)),true);
+  assert.equal((await wallet.balance(user.id)).debt,150);
+  const refundRows=(await wallet.history(user.id)).filter(x=>x.kind==='payment_refund');
+  assert.equal(refundRows.length,3,'cumulative duplicate refunds cannot double-revoke');
  }finally{await pool.end();}
 });
 
