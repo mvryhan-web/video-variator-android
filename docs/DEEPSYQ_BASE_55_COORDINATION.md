@@ -72,7 +72,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 39 | Provider performance | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | CODE READY / STAGED LOCAL NODE 4/4 PASS; GH CI QUEUED (2026-10-16; NOT VERIFIED) | Agent B / Issue #73 / [PR #160](https://github.com/mvryhan-web/video-variator-android/pull/160) · `a2fd61b` |
 | 40 | Model routing registry | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | CODE READY / LOCAL NODE 8/8 PASS / GH CI QUEUED (2026-10-16; NOT VERIFIED/MERGED) | Agent B / Issue #73 / [PR #163](https://github.com/mvryhan-web/video-variator-android/pull/163) · `4179d94` |
 | 41 | Internal model capabilities | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS / SAFE CATALOG METADATA (2026-10-16; CLAIMED) | Agent B / Issue #73 / `base41-model-capability-fidelity-20261016` (independent BASE branch; no fake provider support) |
-| 42 | Persist BytePlus output in our storage | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
+| 42 | Persist BytePlus output in our storage | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | B OWNED / scoped safe-public-S3 pre-dispatch guard IN PROGRESS; no external calls | Agent B / Issue #73 / `base42-byteplus-durable-public-gate-20261016` |
 | 43 | Pricing page | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (PR #132 · CI 38929739219 + 38929739237 PASS, LIVE BLOCKED) | BASE-D-ChatGPT / base55-d-pricing-integrity-20261016 |
 | 44 | Free plan | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (scope only) | Agent D PR #70; Issue #75 audit |
 | 45 | Onboarding | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
