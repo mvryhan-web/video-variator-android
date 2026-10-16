@@ -21,6 +21,14 @@ export function planPreDispatchFallback({request,primary,candidates=[],quoteFor,
   }:{
    resolution:request.resolution??primary.quality
   })};
+ // Never imply a backup can safely replace a request which the primary cannot
+ // represent. Image resolution/output format must be checked independently:
+ // the shared router's legacy image path only checks ratio/reference count.
+ if(!orderedGenerationCandidates(effective,[primary]).length||
+    primary.kind==='image'&&(
+     !primary.capabilities?.resolutions?.includes(effective.resolution)||
+     effective.outputFormat&&!primary.capabilities?.outputFormats?.includes(effective.outputFormat)
+    ))return unavailable('PRIMARY_CAPABILITIES_INVALID');
  const price=model=>{try{
   const q=quoteFor(model,effective);
   if(!q||!Number.isSafeInteger(q.credits)||q.credits<=0||
