@@ -157,9 +157,12 @@ test('BASE 3: all 13 original scene identities can navigate with only real API p
   HTMLMediaElement.prototype.pause=function(){};
   HTMLMediaElement.prototype.play=function(){return Promise.resolve();};
  });
- const names=['Hero Girl','Red Dress','Castle','Portrait','Snow Mountains','Neon Vehicle',
-  'Astronaut','Fantasy Landscape','Product Film','Music Concept','Cinematic Travel',
-  'Pink Cherry Tree Glass House','Dusk Waterfront Glass House'];
+ // Names correspond one-for-one to docs/DEEPSYQ_HOME_13_VIDEO_MASTER_SHOTLIST.md.
+// Synthetic transport paths here are fixtures, not publishable imagery.
+ const names=['Hero Girl','Dream Red Dress','Explore Castle','Portraits Beauty',
+  'Discover Snow Mountains','Visualize White Tiger','Create Astronaut',
+  'Transform Blossom House','Neon Car','Glamour Jewelry',
+  'Waterfront House Dusk','Blue Fantasy','Red Silhouette'];
  const common={kind:'video',actionTarget:'studio',category:'Cinematic',aspectRatio:'16:9',active:true,featured:true};
  const scenes=names.map((title,i)=>({...common,id:'owner-identity-'+(i+1),title,
   previewUrl:'/approved-identity-'+(i+1)+'.mp4',previewPosterUrl:'/approved-poster-'+(i+1)+'.png'}));
@@ -177,14 +180,16 @@ test('BASE 3: all 13 original scene identities can navigate with only real API p
  await expect(page.locator('#homeHeroDots button')).toHaveCount(13);
  expect(exactVideoFeed).toBe(true);
  await expect(page.locator('#homeHeroDots img')).toHaveCount(13);
+ await expect(page.locator('#homeHeroDots button').nth(7)).toHaveAttribute('aria-label',/Transform Blossom House/);
+ await expect(page.locator('#homeHeroDots button').nth(10)).toHaveAttribute('aria-label',/Waterfront House Dusk/);
  await expect(page.locator('#homeHeroDots button').first()).toHaveAttribute('aria-current','true');
  await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 13');
  await page.locator('#homeHeroPrevious').click();
- await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Dusk Waterfront Glass House');
+ await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Red Silhouette');
  await expect(page.locator('#homeHeroCounter')).toHaveText('Video 13 of 13');
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Hero Girl');
  await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 13');
- await expect(page.locator('#homeHeroDots button').last()).toHaveAttribute('aria-label',/Dusk Waterfront Glass House/);
+ await expect(page.locator('#homeHeroDots button').last()).toHaveAttribute('aria-label',/Red Silhouette/);
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
 });
