@@ -50,6 +50,14 @@ export function existingCheckoutResponse({order,pack,session,runtime,userId,nowS
   return {url:session.url,id:session.id,mode:runtime.mode};
 }
 
+// A single signed webhook endpoint also serves legacy subscriptions. This
+// marker is *positive* evidence only: old AI charge events may lack charge
+// metadata, so look up their intent in the AI wallet when modes match.
+export function hasAiWalletRefundMarker(event){
+ const c=event?.data?.object;
+ return c?.metadata?.aiWallet==='v1'||c?.payment_intent?.metadata?.aiWallet==='v1';
+}
+
 export function stripeRefundData(event,{livemode}={}){
   if(event?.type!=='charge.refunded')return null;
   const charge=event.data?.object||{},eventLive=!!event.livemode,chargeLive=!!charge.livemode;
@@ -140,9 +148,20 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
     // Invoked only after the existing Stripe webhook signature check.
     const r=runtime();
     if(event.type==='charge.refunded'){
-      if(!enabled())throw Error('AI_BILLING_WEBHOOK_DISABLED');
+      const aiMarked=hasAiWalletRefundMarker(event),charge=event.data?.object||{};
+      if(!enabled()){
+        // This webhook also receives refunds for pre-existing subscriptions.
+        // Never fail their signed delivery because optional AI billing is OFF.
+        if(aiMarked)throw Error('AI_BILLING_WEBHOOK_DISABLED');
+        return false;
+      }
+      if(!aiMarked&&(event.livemode!==r.livemode||charge.livemode!==r.livemode))
+        return false; // unrelated Stripe product/mode, not an AI wallet refund
       const refund=stripeRefundData(event,{livemode:r.livemode});if(!refund)return false;
       const result=await wallet.refund(refund.paymentIntent,refund.cumulativeAmount);
+      // A clearly AI-tagged refund arriving before the grant must be retried,
+      // not acknowledged and lost. No credit is created without the paid webhook.
+      if(result?.ignored&&aiMarked)throw Error('AI_REFUND_PURCHASE_PENDING');
       return !result?.ignored;
     }
     if (!['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type)) return false;
