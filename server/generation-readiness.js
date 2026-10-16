@@ -30,7 +30,7 @@ export function generationReadiness(env={}){
   blockers,
   gates,
   providers:{googleConfigured:!!env.GEMINI_API_KEY,bytePlusConfigured:!!env.BYTEPLUS_API_KEY},
-  billing:{mode:billingRuntime.mode,liveAiPaymentsImplemented:true,liveAiPaymentsEnabled:billingRuntime.livePaymentsEnabled,creditPackCount:billing.packs.length,rateCount:billing.rates.length},
+  billing:{mode:billingRuntime.mode,liveAiPaymentsImplemented:true,liveAiPaymentsEnabled:billingRuntime.livePaymentsEnabled&&stripeWebhookConfigured(env),creditPackCount:billing.packs.length,rateCount:billing.rates.length},
   pricing:{configured:pricing.configured,currenciesExplicit:pricingCurrenciesExplicit},
   storage:{configured:storage.configured},
   entitlements:{configured:entitlements.configured,planCount:entitlements.plans.length}
