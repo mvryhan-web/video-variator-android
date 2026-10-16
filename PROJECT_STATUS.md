@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — avoid running full browser regression for coordination-only test changes / IN PROGRESS (2026-10-16)
+
+- **Owner/scope:** Agent 5 QA on isolated `agent5-scope-coordinator-ci-filter-20261016`, not an A/B/C/D BASE row claim; no feature work overwritten.
+- **Verified CI inefficiency:** `.github/workflows/deepsyq-platform.yml` broadly matches `tests/deepsyq*` on PRs, so harmless updates to `tests/deepsyq-base55-coordination-unit.mjs` trigger full Playwright Chromium/Firefox/WebKit Studio/browser regression in addition to the dedicated BASE 55 Node integrity workflow. Observed on PR #118 (run 38923812410), even though application code was unchanged.
+- **Bounded task:** add a single exact negative GitHub path-pattern for the Agent5-only test file while retaining every existing positive app and browser-test trigger; add a focused structural regression assertion; verify dedicated CI and workflow scope before separate PR merge. Original BASE, locked Home, providers, Stripe, Render, database and main untouched. Whole-app CI continues for app/test/workflow changes that matter.
+
 ## Agent 5 — canonical BASE 55 translated task-title drift guard / CODE VERIFIED, PR #118 (2026-10-16)
 
 - **Owner/scope:** Agent 5 independent technical QA, isolated branch `agent5-base55-label-guard-20261016`, no BASE A–D feature claim. 
