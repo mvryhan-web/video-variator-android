@@ -45,6 +45,9 @@ export function buildOpenAIImageRequest(request,config){
  if(!Array.isArray(refs)||refs.length>3||!Number.isInteger(config.maxReferences)||
     config.maxReferences<0||refs.length>config.maxReferences)reject('INVALID_REFERENCES');
  const size=verifySize(config.sizes?.[request.ratio]?.[request.resolution||'1K']);
+ // Pre-2 image models accept only standard sizes, irrespective of config typos.
+ if(config.id==='gpt-image-1.5'&&
+    !['1024x1024','1536x1024','1024x1536'].includes(size))reject('UNSUPPORTED_RESOLUTION');
  const format=request.outputFormat==null||request.outputFormat==='auto'?'png':request.outputFormat;
  if(!Object.hasOwn(MIME,format)||!Array.isArray(config.formats)||
     !config.formats.includes(format))reject('UNSUPPORTED_IMAGE_FORMAT');
@@ -112,5 +115,9 @@ export async function generateOpenAIImage(request,{
  if(!response.ok)reject(responseCode(response.status));
  let json;
  try{json=await response.json();}catch(_){reject('INVALID_PROVIDER_MEDIA');}
+ // Never accept a billed output at a different reported size or quality by surprise.
+ if(json?.size&&json.size!==prepared.size)reject('INVALID_PROVIDER_MEDIA');
+ if(json?.quality&&prepared.quality!=='auto'&&json.quality!==prepared.quality)
+   reject('INVALID_PROVIDER_MEDIA');
  return decodeOpenAIImageResponse(json,prepared.output_format);
 }
