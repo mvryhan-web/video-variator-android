@@ -7,11 +7,11 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
-## Agent 5 — canonical BASE 55 translated task-title drift guard / IN PROGRESS (2026-10-16)
+## Agent 5 — canonical BASE 55 translated task-title drift guard / CODE VERIFIED, PR #118 (2026-10-16)
 
 - **Owner/scope:** Agent 5 independent technical QA, isolated branch `agent5-base55-label-guard-20261016`, no BASE A–D feature claim. 
 - **Verified gap:** Original immutable Russian BASE headings and source blob stay checked, and the English coordination board/checklist titles must agree with one another. But both translated tracking titles can currently be renamed **together**, silently changing the established English task identity while original BASE stays unchanged.
-- **Planned exact work:** lock the 55 existing English tracking titles in read-only verifier code, check each coordination title independently of checklist title, add in-memory dual-rename regression and keep ordinary state/owner/CI updates permitted. No original TXT, locked Home, generation code, Stripe, provider, DB or production edits. Separate scoped PR and focused CI before merge.
+- **Implemented / verified:** [PR #118](https://github.com/mvryhan-web/video-variator-android/pull/118) pins all 55 existing English *tracking captions* independently from both mutable status tables, rejects a simultaneous rename in board+checklist, and permits ordinary status/owner/CI edits; the canonical **Russian BASE TXT is unchanged and remains authoritative**. Focused [GitHub CI 38923598443](https://github.com/mvryhan-web/video-variator-android/actions/runs/38923598443) **SUCCESS: 13/13 Node tests** on code SHA `aab259d8`; broader platform regression was running at review and is not called green. PR targets `deepsyq-platform` only, no Home, product code, Stripe, DB, providers, `main` or production edits.
 
 ## Agent 5 — BASE 55 verifier accepts zero active agent claims / CODE VERIFIED, PR #111 (2026-10-16)
 
