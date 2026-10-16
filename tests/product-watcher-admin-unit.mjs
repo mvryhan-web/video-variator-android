@@ -19,7 +19,7 @@ function fakeApp(){
  return {app,call,routes};
 }
 
-function db({paused=false,missing=false,heartbeat=null}={}){
+function db({paused=false,missing=false,heartbeat=null,runAt='2026-10-15T01:00:00Z'}={}){
  const seen=[];
  const query=async(sql,args)=>{
   seen.push([sql,args]);
@@ -35,7 +35,7 @@ function db({paused=false,missing=false,heartbeat=null}={}){
   if(sql.startsWith('SELECT id,source_key,provider,source_url,review_status'))return{rows:[]};
   if(sql.startsWith('UPDATE vv_product_watcher_proposals'))return{rows:[{id:9}]};
   if(sql.startsWith('UPDATE vv_product_watcher_alerts'))return{rows:[{id:'9'}]};
-  if(sql.startsWith('SELECT id, status, checks'))return{rows:[{id:'9',status:'warning',checks:{http:{status:'healthy'}},findings:[{code:'GENERATION_ATTENTION'}],created_at:'2026-10-15T01:00:00Z'}]};
+  if(sql.startsWith('SELECT id, status, checks'))return{rows:[{id:'9',status:'warning',checks:{http:{status:'healthy'}},findings:[{code:'GENERATION_ATTENTION'}],created_at:runAt}]};
   if(sql==='BEGIN'||sql==='COMMIT'||sql==='ROLLBACK')return{rows:[]};
   if(sql.startsWith('UPDATE vv_product_watcher_control')){paused=args[0];return{rows:missing?[]:[{paused,updated_at:'2026-10-15T02:00:00Z'}]};}
   if(sql.startsWith('INSERT INTO vv_admin_audit'))return{rows:[]};
@@ -88,16 +88,28 @@ test('ALL owner endpoints fail closed for anonymous, impersonating and missing-i
 
 test('separate worker heartbeat is authoritative even if web scheduler flag is OFF',async()=>{
  const workerHeartbeat=new Date(Date.now()-10000);
- const f=fixture({pool:db({heartbeat:workerHeartbeat}),
+ const recentRun=new Date(Date.now()-60000);
+ const f=fixture({pool:db({heartbeat:workerHeartbeat,runAt:recentRun}),
    settings:{...env,PRODUCT_WATCHER_SCHEDULER_ENABLED:'false'}});
  const response=await f.call('GET','/api/product-watcher/admin/status');
  assert.equal(response.statusCode,200);
  assert.equal(response.body.schedulerActive,true);
- assert.ok(response.body.nextRun,'last report provides next-run estimate');
+ assert.ok(response.body.nextRun,'a recent report supports a future due estimate');
+ assert.equal(response.body.scheduleOverdue,false);
  const stale=fixture({pool:db({heartbeat:new Date(Date.now()-300000)}),
    settings:{...env,PRODUCT_WATCHER_SCHEDULER_ENABLED:'true'}});
  const old=await stale.call('GET','/api/product-watcher/admin/status');
  assert.equal(old.body.schedulerActive,false,'stale heartbeat cannot be masked by flag');
+ assert.equal(old.body.nextRun,null);
+ assert.equal(old.body.scheduleOverdue,false);
+ const overdue=fixture({pool:db({heartbeat:workerHeartbeat})});
+ const overdueStatus=await overdue.call('GET','/api/product-watcher/admin/status');
+ assert.equal(overdueStatus.body.schedulerActive,true);
+ assert.equal(overdueStatus.body.nextRun,null,'never offer a past date as next scheduled run');
+ assert.equal(overdueStatus.body.scheduleOverdue,true);
+ const paused=fixture({pool:db({paused:true,heartbeat:workerHeartbeat})});
+ const pausedStatus=await paused.call('GET','/api/product-watcher/admin/status');
+ assert.equal(pausedStatus.body.scheduleOverdue,false,'paused owner should not be warned about skipped checks');
 });
 
 test('owner policy additionally requires a valid authenticated user id',()=>{
