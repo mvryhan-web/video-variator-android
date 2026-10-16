@@ -6,7 +6,7 @@ async function setup(page,options,postedTarget=null){
   localStorage.setItem('deepsyq_onboarding_pending','1');
  });
  await page.route('**/api/config',r=>r.fulfill({json:{googleClientId:'',billingConfigured:false,
-  plans:{},features:{aiApps:false,productVideo:false,inspiration:false,onboarding:true}}}));
+  plans:{},features:{aiApps:false,productVideo:true,inspiration:false,onboarding:true}}}));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{id:'new-user',name:'New user',isAdmin:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:false}}));
@@ -59,4 +59,23 @@ test('BASE 45: unsafe server redirect cannot leave this origin or clear pending 
  await expect(page).toHaveURL(/deepsyq.html/);
  expect(await page.evaluate(()=>localStorage.getItem('deepsyq_onboarding_pending'))).toBe('1');
  expect(sent).toEqual(['image']);
+});
+
+test('BASE 45: Product Ads remains hidden while the existing feature flag is disabled',async({page})=>{
+ await page.addInitScript(()=>{
+  localStorage.setItem('vv_token','new-user-test');
+  localStorage.setItem('deepsyq_onboarding_pending','1');
+ });
+ await page.route('**/api/config',r=>r.fulfill({json:{googleClientId:'',plans:{},
+  features:{inspiration:false,aiApps:false,productVideo:false,onboarding:true}}}));
+ await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'New user',isAdmin:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[]}}));
+ await page.route('**/api/onboarding',r=>r.fulfill({json:{completed:false,options:[
+  {id:'image',target:'/generate-studio.html?studio=image'},
+  {id:'product_ads',target:'/product-video.html'}
+ ]}}));
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#onboardingModal')).toBeVisible();
+ await expect(page.locator('[data-onboarding-goal=image]')).toHaveCount(1);
+ await expect(page.locator('[data-onboarding-goal=product_ads]')).toHaveCount(0);
 });
