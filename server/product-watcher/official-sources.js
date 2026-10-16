@@ -124,6 +124,7 @@ export async function runOfficialSourcesOnce({pool,env={},fetchFn=globalThis.fet
       result.attempted++;
       const checkedAt=now().toISOString();
       let hash=null,error=null,bytes=null,topicDigests=null;
+      let topicComparison={compared:false,possibleTopics:[]};
       try{
         const fetched=await fetchOfficialFingerprint(source,{fetchFn});
         hash=fetched.contentHash;bytes=fetched.byteLength;topicDigests=fetched.topicDigests;
@@ -141,7 +142,7 @@ export async function runOfficialSourcesOnce({pool,env={},fetchFn=globalThis.fet
           'topic_digests=COALESCE(EXCLUDED.topic_digests,vv_product_watcher_official_sources.topic_digests)'
         ].join(' '),[source.key,source.provider,source.url,hash,checkedAt,error,
           topicDigests===null?null:JSON.stringify(topicDigests)]);
-        const topicComparison=compareOfficialTopicDigests(prev?.topic_digests,topicDigests);
+        topicComparison=compareOfficialTopicDigests(prev?.topic_digests,topicDigests);
         if(hash&&prev?.content_hash&&prev.content_hash!==hash){
           await client.query([
             'INSERT INTO vv_product_watcher_proposals(source_key,provider,source_url,previous_hash,current_hash,review_status,possible_topics,topics_compared)',
