@@ -17,6 +17,10 @@ This file is the shared live progress board for all coding agents.
 
 All seven source blocks are preserved verbatim in `docs/execution/DEEPSYQ_BLOCKS_1-7_CANONICAL.txt`; seven per-block checklists in `docs/execution/BLOCK_1_CHECKLIST.md` … `BLOCK_7_CHECKLIST.md` contain **131 ordered acceptance stages**. All seven embedded original text sections match their canonical repository section character-for-character; see `docs/execution/VALIDATION.md`. The execution index and AGENTS.md now point to these files; BASE remains a **separate 55-point workstream** in PR #42. Documentation status: **VERIFIED**. Functional implementation/deployment status: **unchanged**. No Render, DB, Stripe or provider actions were performed for this docs task. Next agent: take its already-assigned isolated block, reconcile live PR/code with its numbered checklist, and record actual verified steps rather than reimplementing completed work.
 
+## Block 5 numbered progress — 2026-10-16
+
+B5-01 ✅ VERIFIED (code inventory only): PR #50 at `d52890e`; push CI 38800150157 and PR CI 38800157436 passed. B5-02 🟡 PARTIAL: owner-only isolated implementation exists but explicit complete queue/budget separation still needs tests. Do not imply deployment. Canonical checklists now have a network-free GitHub Actions integrity gate. **Next action:** verify B5-02 without changing other agents' modules.
+
 ## Current priority gate
 
 **ACTIVE NOW:** finish the currently assigned production/TXT scope already being handled by the current ChatGPT Work agent.
