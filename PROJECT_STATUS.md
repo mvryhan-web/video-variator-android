@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent D — BASE #48 Stripe webhook public error redaction / IN PROGRESS (2026-10-16)
+
+- **New bounded claim:** existing shared Stripe webhook `/api/webhooks/stripe` returns raw `e.message` after signature verification fails. Raw SDK/user-content details are not suitable for a public HTTP response. Return a generic error while preserving HTTP 400, Stripe `constructEvent` verification, routing and webhook acknowledgement behavior. Keep legacy subscriptions, signed AI credit grants and provider processing unchanged.
+- **Isolated branch:** `base48-stripe-signature-error-redaction-20261016`, target `deepsyq-platform`; code scope existing `server/server.js` plus narrowly scoped verification. Do not edit Home, app assets, Stripe account, provider, DB or main. Previous #48 PRs #117/#123 remain merged; BASE #48 overall PARTIAL / NOT LIVE.
+- **Independent BASE #16:** PR #148 is still DRAFT and CI queued; no shared code edits with this security patch.
+
+
 Last updated: 2026-10-15
 Repository: `mvryhan-web/video-variator-android`
 Brand: **Deepsyq**
