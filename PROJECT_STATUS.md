@@ -39,9 +39,17 @@ The exact completion state of older components must be verified from the current
 |---|---|---|---|---|
 | Current TXT / generation-studio scope | Current ChatGPT Work agent | `ai-generation-studio` / PR #40 | IN PROGRESS / OPEN PR | Preserve provider and billing foundations. |
 | Deepsyq BASE / current TXT continuation | Current ChatGPT Work agent | `deepsyq-platform` / PR #42 | IN PROGRESS | Reuse existing auth/database/Stripe/providers. Commercial job + wallet foundations are feature-gated; no live billing/provider activation. |
+| BASE AI Apps discovery (search / Image, Video, Audio, categories) | ChatGPT continuation / PR #51 | `base-ai-apps-discovery-20261015` → `deepsyq-platform` | CODE VERIFIED / BASE REVIEW | Search, category/type filters, URL sharing, empty/error states, responsive page. Focused desktop + mobile Playwright CI 38798472864 PASSED; unrelated Google Veo regression failure tracked by BASE Video owner. Production OFF. |
 | BASE Video / reference intake, cleanup and Seedance preflight | ChatGPT continuation (handoff `90ee2b7`) | `deepsyq-platform` / PR #42 | TRUSTED REAL FFPROBE + ISOLATED S3/POSTGRES CI PASSED / CLOUD & BYTEPLUS BLOCKED | Video URL planner no longer accepts forged inspector verdict; mandatory owner MP4 GET + real FFprobe & Seedance checks before signing, 2nd ledger ready/TTL check; reference CI 38887304221: 62/62 unit, 9/9 isolated PG/fake S3 green. MinIO+PG 38798448778 green. New transfer flags OFF; no real cloud/BytePlus/Stripe/production. |
 
 When another agent joins, add one row per claimed workstream before substantial implementation. One agent should own one bounded workstream at a time.
+
+### BASE AI Apps — PR #51 integration (2026-10-16)
+
+- Preserved 5 isolated files from PR #51 atop the current BASE without altering Home/hero, Studio, providers, Image/Video, Stripe, wallet, migrations, user data or production. The standalone AI Apps catalog consumes only the owner-active `/api/templates` API and locally prepares existing Studio handoff; it does not start paid generation.
+- Source PR #51 focused browser acceptance **PASSED** desktop and mobile Chromium: [workflow 38798472864](https://github.com/mvryhan-web/video-variator-android/actions/runs/38798472864). The shared regression failure on Google Veo is outside this workstream and requires separate BASE Video ownership.
+- Merge scope is PR #51 → existing `deepsyq-platform` only; final `main` / Render release and owner/real-template acceptance are separate gates. Do not merge PR #42 into `main` as part of AI Apps integration.
+
 
 ## Approved queued roadmap
 
