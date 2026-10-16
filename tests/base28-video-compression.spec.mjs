@@ -5,7 +5,7 @@ const localEngineMock=[
  ' return {',
  '  async writeFile(name,bytes){window.__ffmpegSpy.input={name,size:bytes.byteLength};},',
  '  async exec(args){window.__ffmpegSpy.args=args;return 0;},',
- '  async readFile(name){window.__ffmpegSpy.outputName=name;return new Uint8Array(window.__ffmpegSpy.outputSize||200);},',
+ '  async readFile(name){window.__ffmpegSpy.outputName=name;return new Uint8Array(window.__ffmpegSpy.outputSize??200);},',
  '  terminate(){window.__ffmpegSpy.terminated=true;}',
  ' };',
  '}',
@@ -71,5 +71,23 @@ test('BASE #28: zero-byte video is rejected without initializing FFmpeg or uploa
  await page.locator('#utilityRun').click();
  await expect(page.locator('#utilityStatus')).toContainText('non-empty video');
  await expect(page.locator('#utilityResults')).toBeEmpty();
+ expect(posts).toBe(0);
+});
+
+test('BASE #28: empty codec output reports failure and must not offer a bogus 100% saved download',async({page})=>{
+ let posts=0;
+ page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.route('**/ai-media.js',r=>r.fulfill({status:200,contentType:'text/javascript',body:localEngineMock}));
+ await page.goto('/mobile-utility.html?tool=video-compress');
+ await page.evaluate(()=>{window.__ffmpegSpy={outputSize:0};});
+ await page.locator('#utilityFiles').setInputFiles({
+  name:'broken.mp4',mimeType:'video/mp4',buffer:Buffer.alloc(1000,1)
+ });
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityStatus')).toContainText('video codec produced no output');
+ await expect(page.locator('#utilityResults')).toBeEmpty();
+ await expect(page.locator('#utilityRun')).toBeEnabled();
+ const spy=await page.evaluate(()=>window.__ffmpegSpy);
+ expect(spy.terminated).toBe(true);
  expect(posts).toBe(0);
 });
