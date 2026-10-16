@@ -67,7 +67,7 @@ export class GenerationWallet {
       }
       await c.query('INSERT INTO vv_ai_purchase(session_id,user_id,payment_intent,credits,amount,currency) VALUES($1,$2,$3,$4,$5,$6)', [sessionId,userId,paymentIntent,credits,amount,currency]);
       const paidDebt=Math.min(w.debt,credits);
-      return this.change(c,userId,w,sessionId,'purchase',credits-paidDebt,0,-paidDebt);
+      return this.change(c,userId,w,sessionId,sessionId.startsWith('in_')?'subscription_grant':'purchase',credits-paidDebt,0,-paidDebt);
     });
   }
   async grantOnce({userId,kind='welcome',credits}) {
