@@ -66,6 +66,33 @@ function useTemplate(template,productName='',feedback=null){
  }
  location.assign('generate-studio.html?studio='+destination(template)+'&from=template');
 }
+function templatePreview(template){
+ const details=document.createElement('details');
+ details.className='template-preview';
+ const summary=document.createElement('summary');summary.textContent='Preview workflow';
+ const content=document.createElement('div');content.className='template-preview-content';
+ const label=(title,value)=>{
+  const group=document.createElement('div');group.className='template-preview-row';
+  const heading=document.createElement('strong');heading.textContent=title;
+  const text=document.createElement('span');text.textContent=String(value);
+  group.append(heading,text);content.append(group);
+ };
+ label('Create',String(template.generationType||'').replace('_',' ')||'Not specified');
+ const inputs=Array.isArray(template.requiredInputTypes)?template.requiredInputTypes:[];
+ label('Required inputs',inputs.length?inputs.map(x=>String(x).replaceAll('_',' ')).join(', '):'Text prompt');
+ if(typeof template.defaultModel==='string'&&template.defaultModel.trim())label('Preferred model',template.defaultModel);
+ const settings=template.defaultSettings&&typeof template.defaultSettings==='object'&&!Array.isArray(template.defaultSettings)?template.defaultSettings:{};
+ for(const [key,title] of [['ratio','Aspect ratio'],['durationSeconds','Duration (seconds)'],['quality','Quality'],['outputFormat','Output format']]){
+  if(typeof settings[key]==='string'||typeof settings[key]==='number')label(title,String(settings[key]).slice(0,60));
+ }
+ const promptLabel=document.createElement('strong');promptLabel.textContent='Original template prompt';
+ const prompt=document.createElement('pre');prompt.textContent=String(template.promptTemplate||'');
+ prompt.className='template-preview-prompt';
+ content.append(promptLabel,prompt);
+ const note=document.createElement('p');note.textContent='Preview only. A model or format shown here is a template preference, not proof that it is enabled. Use template to review in Studio before any paid generation.';
+ content.append(note);details.append(summary,content);
+ return details;
+}
 function empty(message,{retry=false}={}){
  const box=document.createElement('div');
  box.className='empty';
@@ -141,7 +168,7 @@ function render(){
   });
   const hint=inputHint(item);
   if(hint){const note=document.createElement('p');note.className='input-hint';note.textContent=hint;body.append(note);}
-  body.append(meta,button,feedback);card.append(visual,body);root.append(card);
+  body.append(meta,templatePreview(item),button,feedback);card.append(visual,body);root.append(card);
  }
 }
 async function load(){

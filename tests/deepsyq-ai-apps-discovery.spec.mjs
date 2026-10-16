@@ -163,3 +163,42 @@ test('Product Video accepts a real product name, prepares the personalized promp
  await expect(page.locator('#consent')).not.toBeChecked();
  expect(jobs).toBe(0);
 });
+
+
+test('AI Apps displays real template prompt and supported settings only after Preview, without spending',async({page})=>{
+ const owner={
+  id:'owned-preview',title:'Product Preview',description:'Approved original creative workflow',
+  category:'Marketing',generationType:'product_video',requiredInputTypes:['image','product_name'],
+  promptTemplate:'Film {{product_name}} against a violet backdrop.',defaultModel:'owner-configured-model',
+  defaultSettings:{ratio:'9:16',durationSeconds:8,privateAuditToken:'MUST_NOT_APPEAR'},active:true
+ };
+ let posts=0;
+ await page.route('**/api/templates',route=>route.fulfill({json:{items:[owner]}}));
+ page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))posts++;});
+ await page.goto('/ai-apps.html');
+ const card=page.locator('.app-card');
+ await expect(card.locator('.template-preview-prompt')).toBeHidden();
+ await card.getByText('Preview workflow').click();
+ await expect(card.locator('.template-preview-prompt')).toHaveText(owner.promptTemplate);
+ await expect(card.locator('.template-preview-content')).toContainText('owner-configured-model');
+ await expect(card.locator('.template-preview-content')).toContainText('9:16');
+ await expect(card.locator('.template-preview-content')).toContainText('Duration (seconds)');
+ await expect(card.locator('.template-preview-content')).not.toContainText('MUST_NOT_APPEAR');
+ await expect(card.getByLabel('Product name')).toBeVisible();
+ expect(posts).toBe(0);
+});
+
+test('AI Apps template preview renders untrusted prompt as text and stays useful for unavailable workflows',async({page})=>{
+ const template={id:'blocked-preview',title:'Offline reference workflow',description:'No working logo upload',
+  category:'Ads',generationType:'video',requiredInputTypes:['logo'],
+  promptTemplate:'<img src=x onerror="window.__promptExecuted=true"> Write an original ad.',active:true};
+ await page.route('**/api/templates',route=>route.fulfill({json:{items:[template]}}));
+ await page.goto('/ai-apps.html');
+ const card=page.locator('.app-card');
+ await expect(card.getByRole('button',{name:'Workflow pending'})).toBeDisabled();
+ await card.getByText('Preview workflow').click();
+ await expect(card.locator('.template-preview-prompt')).toContainText('<img src=x onerror=');
+ await expect(card.locator('.template-preview-prompt img')).toHaveCount(0);
+ expect(await page.evaluate(()=>window.__promptExecuted===true)).toBe(false);
+ await expect(card.locator('.template-preview-content')).toContainText('logo');
+});
