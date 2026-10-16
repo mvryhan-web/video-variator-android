@@ -7,9 +7,9 @@ test('BASE #28 Teleprompter scrolls owner text locally and supports pause/reset 
  await expect(page).toHaveURL(/\/teleprompter\.html$/);
  await page.locator('#teleScript').fill(('My original product video speech.\n').repeat(80));
  await expect(page.locator('#telePreview')).toContainText('My original product video speech.');
- await page.locator('#teleSize').fill('48');
+ await page.locator('#teleSize').evaluate(el=>{el.value='48';el.dispatchEvent(new Event('input',{bubbles:true}));});
  await expect(page.locator('#telePreview')).toHaveCSS('font-size','48px');
- await page.locator('#teleSpeed').fill('120');
+ await page.locator('#teleSpeed').evaluate(el=>{el.value='120';el.dispatchEvent(new Event('input',{bubbles:true}));});
  await page.locator('#telePlay').click();
  await expect(page.locator('#telePlay')).toContainText(/Pause|Пауза|Pause/);
  await expect.poll(()=>page.locator('#teleViewport').evaluate(e=>e.scrollTop),{timeout:4000}).toBeGreaterThan(5);
