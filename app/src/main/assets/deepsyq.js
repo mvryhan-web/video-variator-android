@@ -284,15 +284,36 @@ function renderPlans(){const descriptions={basic:'For occasional video projects.
 try{config=await api('/api/config');applyPlatformFeatures();renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);}catch(_){$('paymentStatus').textContent='Plans could not load. Please try again later.';}
 window.addEventListener('load',initGoogle);
 try{const c=await api('/api/studio/config');studioModelMenuConfig=c;if(openModelsKind)renderModelFlyout(openModelsKind);$('studioStatus').textContent=c.ownerOnly?'AI generation is in owner preview. Explore the studios; existing tools remain available.':c.enabled?'Open a studio to see the available models.':'AI generation is not available yet. Existing tools remain available.';}catch(_){$('studioStatus').textContent='Studio availability could not be checked. Existing tools remain available.';}
-// Read-only dashboard overview: reuses the existing authenticated Studio history.
-// Never embeds media blobs, starts jobs, or exposes another user's results.
+// Read-only dashboard overview. Backend user_id scope is authoritative;
+// never render a late private response after a session/account switch.
+let recentCreationsEpoch=0;
+const recentAccountChanged='Account changed. Reload to view creations for the current account.';
+function clearRecentCreations(message){
+ ++recentCreationsEpoch;
+ $('recentCreationsGrid')?.replaceChildren();
+ const status=$('recentCreationsStatus');if(status)status.textContent=message;
+}
+window.addEventListener('storage',event=>{
+ if(event.key==='vv_token'){
+  clearRecentCreations(event.newValue?recentAccountChanged:'Sign in to see your saved Studio creations.');
+ }
+});
 async function loadRecentCreations(){
  const status=$('recentCreationsStatus'),grid=$('recentCreationsGrid');if(!status||!grid)return;
+ const requestedToken=localStorage.getItem('vv_token'),epoch=++recentCreationsEpoch;
+ const isCurrent=()=>epoch===recentCreationsEpoch&&requestedToken===localStorage.getItem('vv_token');
  grid.replaceChildren();
- if(!localStorage.getItem('vv_token')){status.textContent='Sign in to see your saved Studio creations.';return;}
+ if(!requestedToken){status.textContent='Sign in to see your saved Studio creations.';return;}
  status.textContent='Loading your recent creations…';
  try{
-  const response=await api('/api/studio/jobs?filter=all'),items=Array.isArray(response.items)?response.items.slice(0,4):[];
+  const response=await api('/api/studio/jobs?filter=all');
+  // A token rotation can occur before the fetch settles; no old prompts may
+  // be inserted for a new account, even if an earlier server response is valid.
+  if(!isCurrent()){
+   if(epoch===recentCreationsEpoch)clearRecentCreations(recentAccountChanged);
+   return;
+  }
+  const items=Array.isArray(response.items)?response.items.slice(0,4):[];
   if(!items.length){status.textContent='No saved creations yet. Start with Canvas or a Studio.';return;}
   const label={ready:'Ready',queued:'Queued',processing:'Processing',finalizing:'Finalizing',failed:'Failed'};
   for(const item of items){
@@ -307,7 +328,10 @@ async function loadRecentCreations(){
    card.append(head,prompt,date);grid.append(card);
   }
   status.textContent=grid.childElementCount?'Select a creation to open your Studio history.':'No saved creations yet.';
- }catch(_){status.textContent='Studio history is not available for this account right now.';}
+ }catch(_){
+  if(isCurrent())status.textContent='Studio history is not available for this account right now.';
+  else if(epoch===recentCreationsEpoch)clearRecentCreations(recentAccountChanged);
+ }
 }
 async function loadAIWallet(){
  const chip=$('aiWalletLink');if(!chip)return;
