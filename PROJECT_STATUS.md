@@ -7,11 +7,11 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
-## Agent A — BASE #3 approved visible Home carousel fallback / IN PROGRESS (2026-10-16)
+## Agent A — BASE #3 approved visible Home carousel fallback / CODE PREPARED, PR #145 CI QUEUED, NOT LIVE (2026-10-16)
 
 - **Recovery/ownership:** Explicit user-assigned role A, Issue #72, isolated branch `agent-a-base3-visible-home-fallback-20261016`; original BASE #3 claimed in 55-row board *before code*. Previous lane A had no active claim/handoff for this subtask. Preserve Agent C's concurrent #30 mobile drawer work, D billing, B providers.
 - **Specific failure:** owner-approved 2026-10-16 Home addendum supersedes hiding the entire featured gallery on an empty/failed media feed, while `home-experience.js::showHeroFallback()` currently sets `carousel.hidden=true`. The current home video test also treats invalid MP4 bytes as playable.
-- **Bounded deliverable:** keep #homeHeroCarousel visible in a truthful non-video static/empty state when no approved MP4 or all MP4s fail; hide/disable fake Play/Next/Sound, retain original 16:9 Hero Girl design and lower Canvas/Agent/AI Apps/Inspiration blocks. Do not generate or substitute imagery or rework C-owned mobile nav. Add targeted Chromium+WebKit browser tests for zero-feed, all-error, and genuine source navigation. Take no live AI calls/Stripe/migrations/production action. Update code/tests, focused PR and actual CI before releasing claim.
+- **Result on isolated branch:** [draft PR #145](https://github.com/mvryhan-web/video-variator-android/pull/145) changes existing Home HTML/controller/CSS and stale related assertions. Carousel visible at initial paint, on empty rights-filtered feed, and after all media error; static status labelled honestly, empty video links/Play/Sound/arrow controls are hidden/disabled, approved gradient/CTAs and Canvas/Agent/AI Apps/Inspiration remain. Added focused Playwright Chromium/WebKit desktop/mobile tests and 1448px/390px screenshots in CI artifacts. See `docs/DEEPSYQ_AGENT_A_HOME_GALLERY_ACCEPTANCE_20261016.md` for exact original owner image sources, lack of genuine V01–V13 approved playable MP4, and remaining visual gates. **GitHub CI 38936499388 was PENDING, not PASS** on initial test head; newer pushed status commits will be retested. **NOT merged, NOT DONE, NOT live.** Original 640×360 same-girl clean photographic crop inspected from owner source, not silently published to GitHub. Agent C separately owns responsive/mobile drawer; no cross-lane code changes.
 
 ## Agent C — BASE #30 mobile drawer navigation acceptance / IN PROGRESS (2026-10-16)
 
