@@ -19,13 +19,13 @@ function fakeApp(){
  return {app,call,routes};
 }
 
-function db({paused=false,missing=false}={}){
+function db({paused=false,missing=false,heartbeat=null}={}){
  const seen=[];
  const query=async(sql,args)=>{
   seen.push([sql,args]);
   if(sql.includes('CREATE TABLE IF NOT EXISTS vv_admin_audit'))return{rows:[]};
   if(sql.startsWith('SELECT paused, updated_at'))return{rows:missing?[]:[{paused,updated_at:'2026-10-15T00:00:00Z'}]};
-  if(sql.startsWith('SELECT heartbeat_at FROM vv_product_watcher_scheduler'))return{rows:[{heartbeat_at:null}]};
+  if(sql.startsWith('SELECT heartbeat_at FROM vv_product_watcher_scheduler'))return{rows:[{heartbeat_at:heartbeat}]};
   if(sql.startsWith('SELECT id,source,code,severity'))return{rows:[]};
   if(sql.startsWith('SELECT source_key,provider,source_url,last_checked_at'))return{rows:[]};
   if(sql.startsWith('SELECT id,kind,period_key,content,created_at'))return{rows:[]};
@@ -63,6 +63,47 @@ test('strict owner policy refuses email sign-in and empty ADMIN_EMAIL',()=>{
  assert.equal(isWatcherOwner(denied,env),false);
  assert.equal(isWatcherOwner({...owner,email:''},{ADMIN_EMAIL:''}),false);
  assert.equal(isWatcherOwner({...owner,email:'not-owner@tld'},env),false);
+});
+
+test('ALL owner endpoints fail closed for anonymous, impersonating and missing-id callers',async()=>{
+ const {call,pool,routes}=fixture();
+ assert.equal(routes.size,11);
+ for(const key of routes.keys()){
+  const space=key.indexOf(' '),method=key.slice(0,space),path=key.slice(space+1);
+  for(const user of [
+   undefined,
+   {id:'customer',provider:'google',email:'customer@example.test'},
+   {id:'customer',provider:'email',email:'owner@example.test'},
+   {id:'',provider:'google',email:'owner@example.test'},
+   {provider:'google',email:'owner@example.test'}
+  ]){
+   // Explicit null: fake request helper would default undefined to owner.
+   const r=await call(method,path,{user:user??null,body:{action:'resume',alertId:9,confirmAlertId:9}});
+   assert.equal(r.statusCode,403,key+' must deny unauthorized identity');
+   assert.equal(r.body.error,'WATCHER_OWNER_ONLY');
+  }
+ }
+ assert.equal(pool.seen.length,0,'denied calls do not even read owner data');
+});
+
+test('separate worker heartbeat is authoritative even if web scheduler flag is OFF',async()=>{
+ const workerHeartbeat=new Date(Date.now()-10000);
+ const f=fixture({pool:db({heartbeat:workerHeartbeat}),
+   settings:{...env,PRODUCT_WATCHER_SCHEDULER_ENABLED:'false'}});
+ const response=await f.call('GET','/api/product-watcher/admin/status');
+ assert.equal(response.statusCode,200);
+ assert.equal(response.body.schedulerActive,true);
+ assert.ok(response.body.nextRun,'last report provides next-run estimate');
+ const stale=fixture({pool:db({heartbeat:new Date(Date.now()-300000)}),
+   settings:{...env,PRODUCT_WATCHER_SCHEDULER_ENABLED:'true'}});
+ const old=await stale.call('GET','/api/product-watcher/admin/status');
+ assert.equal(old.body.schedulerActive,false,'stale heartbeat cannot be masked by flag');
+});
+
+test('owner policy additionally requires a valid authenticated user id',()=>{
+ assert.equal(isWatcherOwner({provider:'google',email:'owner@example.test'},env),false);
+ assert.equal(isWatcherOwner({id:'',provider:'google',email:'owner@example.test'},env),false);
+ assert.equal(isWatcherOwner(owner,env),true);
 });
 
 test('non-owner cannot read logs, pause or trigger checks',async()=>{

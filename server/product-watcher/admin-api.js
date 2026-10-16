@@ -12,7 +12,7 @@ import {watcherDeploymentReadiness} from './readiness.js';
 // An empty ADMIN_EMAIL must never authorize a user with an empty email.
 export function isWatcherOwner(user, env = {}) {
   const adminEmail = String(env.ADMIN_EMAIL || '').trim().toLowerCase();
-  return !!(adminEmail && user?.provider === 'google' && String(user.email || '').trim().toLowerCase() === adminEmail);
+  return !!(adminEmail && String(user?.id ?? '').trim() && user?.provider === 'google' && String(user.email || '').trim().toLowerCase() === adminEmail);
 }
 
 function error(res, status, code) {
@@ -40,8 +40,12 @@ export function installProductWatcher(app, { auth, pool, env = process.env, fetc
       }));
       if (!worker.rows?.length) return error(res, 503, 'WATCHER_SCHEMA_NOT_READY');
       const heartbeat = worker.rows[0].heartbeat_at ? new Date(worker.rows[0].heartbeat_at).getTime() : 0;
-      const schedulerActive = env.PRODUCT_WATCHER_SCHEDULER_ENABLED === 'true' &&
-        heartbeat > 0 && heartbeat <= Date.now() && Date.now() - heartbeat < 180000;
+      // Scheduler runs in a DIFFERENT private service: its feature flag may
+      // intentionally differ from the web process environment. Trust only
+      // an actually observed, fresh heartbeat, never the web flag alone.
+      const observedAt = Date.now();
+      const schedulerActive = heartbeat > 0 &&
+        heartbeat <= observedAt && observedAt - heartbeat < 180000;
       const recent = runs[0]?.checkedAt ? new Date(runs[0].checkedAt).getTime() : null;
       const nextRun = schedulerActive && !state.rows[0].paused && Number.isFinite(recent)
         ? new Date(recent + WATCHER_INTERVAL_MS).toISOString() : null;
