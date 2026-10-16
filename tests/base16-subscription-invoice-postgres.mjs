@@ -26,6 +26,12 @@ const user={id:'subscription-fixture-user',plan:'basic',stripe_customer_id:'cus_
 
 test('BASE #16 subscription credits disabled without explicitly approved quantities',()=>{
  assert.deepEqual(subscriptionCreditConfig({}),{enabled:false,entries:[]});
+ for(const bad of [
+  {...env,AI_BILLING_MODE:undefined},
+  {...env,AI_BILLING_MODE:'production'},
+  {...env,AI_BILLING_MODE:'TEST'},
+  {...env,AI_BILLING_MODE:'test',NODE_ENV:'production'}
+ ])assert.throws(()=>subscriptionCreditConfig(bad),/AI_SUBSCRIPTION_CONFIG_INVALID/);
  assert.throws(()=>subscriptionCreditConfig({AI_SUBSCRIPTION_CREDITS_ENABLED:'true'}),/AI_SUBSCRIPTION_CONFIG_INVALID/);
 });
 

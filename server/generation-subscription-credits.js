@@ -7,6 +7,11 @@ const validCredits=n=>Number.isSafeInteger(n)&&n>0&&n<=10_000_000;
 
 export function subscriptionCreditConfig(env={}){
  if(env.AI_SUBSCRIPTION_CREDITS_ENABLED!=='true')return {enabled:false,entries:[]};
+ // Never interpret unknown billing mode as Stripe test by accident. In a
+ // production deployment, a test-only monthly grant cannot serve live buyers.
+ if(!['test','live'].includes(env.AI_BILLING_MODE)||
+    (env.NODE_ENV==='production'&&env.AI_BILLING_MODE!=='live'))
+  throw Error('AI_SUBSCRIPTION_CONFIG_INVALID');
  let amounts;
  try{amounts=JSON.parse(env.AI_SUBSCRIPTION_CREDITS_JSON||'{}');}
  catch(_){throw Error('AI_SUBSCRIPTION_CONFIG_INVALID');}
