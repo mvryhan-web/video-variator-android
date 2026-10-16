@@ -1,6 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
 
+
+## Agent C — BASE #20 Product Video header official logo / CLAIMED (2026-10-16)
+
+- **Evidence:** the existing `product-video.html` header uses temporary `<span>d.</span>` and a green fake badge, while owner approved the official `deepsyq-logo.png` used on Home; AI Apps brand is independently prepared in C PR #183. Product Video remains a guided, no-auto-generation workflow.
+- **Isolated claim:** `base20-product-video-official-brand-20261016`, target `deepsyq-platform`, only Product Video header markup/local CSS and focused desktop+mobile page acceptance. Do NOT edit original logo, Home/Agent A design, Block3 Inspiration (belongs to another agent), guided Product Video prompts/refs/API, paid models, Stripe, DB, main or production.
+- **Status:** CLAIMED / NOT CODE VERIFIED / NOT LIVE. Static and four-browser QA required before reviewed BASE merge.
+
 ## Agent C — BASE #19 AI Apps canonical logo / CLAIMED (2026-10-16)
 
 - **Owner-approved source:** Agent A cross-lane Issue #74 QA #6222953396 identified AI Apps temporary `d.` logo; the canonical existing site/app icon is `app/src/main/assets/deepsyq-logo.png`. A keeps ownership of Home design and brand review, C owns AI Apps.
