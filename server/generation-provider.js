@@ -64,7 +64,11 @@ export async function generateGoogle(request,{key,fetcher=fetch}){
  if(request.kind==='video'){
   const ref=request.references[0];
   const data=await googleJson(`models/${model.id}:predictLongRunning`,{key,fetcher,body:{instances:[{prompt:request.prompt,...(ref?{image:{bytesBase64Encoded:ref.data,mimeType:ref.mimeType}}:{})}],parameters:{aspectRatio:request.ratio,resolution:request.videoResolution||model.quality,durationSeconds:request.videoDuration??model.capabilities.durationSeconds,sampleCount:1}}});
-  if(typeof data.name!=='string')throw new Error('EMPTY_OPERATION');
+  // Persist only IDs that the polling endpoint can actually address.
+  // Arbitrary provider strings would strand a paid asynchronous job.
+  if(typeof data.name!=='string'||data.name.length>512||
+     !/^(?:operations\/[A-Za-z0-9_-]+|models\/[a-z0-9.-]+\/operations\/[A-Za-z0-9_-]+)$/.test(data.name))
+    throw new Error('EMPTY_OPERATION');
   return {operation:data.name};
  }
  const prompt=request.kind==='music'?`${request.musicMode==='instrumental'?'Instrumental only, no vocals.':'Create a song with vocals.'}\n${request.prompt}`:request.prompt;

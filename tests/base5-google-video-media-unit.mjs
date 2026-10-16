@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {pollGoogle,safeGoogleUrl} from '../server/generation-provider.js';
+import {generateGoogle,pollGoogle,safeGoogleUrl} from '../server/generation-provider.js';
 
 const GOOGLE='https://generativelanguage.googleapis.com/v1beta/files/fixture?alt=media';
 const operation='operations/fixture';
@@ -59,5 +59,29 @@ test('BASE #5 failed Veo task stays terminal; no media fetch and no new provider
  let calls=0;
  const fetcher=async()=>{calls++;return new Response(JSON.stringify({done:true,error:{message:'not for logs'}}));};
  await assert.rejects(()=>pollGoogle(operation,{key:'fixture-key',fetcher}),e=>e.message==='PROVIDER_TASK_FAILED'&&e.terminal===true);
+ assert.equal(calls,1);
+});
+
+test('BASE #5 rejected malformed Google operation IDs never become unpollable stored jobs',async()=>{
+ const request={kind:'video',model:'veo-3.1-lite-generate-preview',ratio:'16:9',prompt:'Source grounded product',references:[],videoResolution:'720p',videoDuration:8};
+ for(const name of [
+  'https://example.test/operations/secret',
+  'operations/../../escape',
+  'operations/test?key=secret',
+  'models/model/operations/',
+  '',
+  'operations/'+('a'.repeat(600))
+ ]){
+  let calls=0;
+  await assert.rejects(()=>generateGoogle(request,{key:'fixture',fetcher:async()=>{
+   calls++;return new Response(JSON.stringify({name}));
+  }}),/EMPTY_OPERATION/);
+  assert.equal(calls,1);
+ }
+ let calls=0;
+ const valid=await generateGoogle(request,{key:'fixture',fetcher:async()=>{
+  calls++;return new Response(JSON.stringify({name:'models/veo-3.1-lite-generate-preview/operations/task_id'}));
+ }});
+ assert.equal(valid.operation,'models/veo-3.1-lite-generate-preview/operations/task_id');
  assert.equal(calls,1);
 });
