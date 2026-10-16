@@ -76,7 +76,7 @@ export class GenerationWallet {
       const old=await c.query('SELECT * FROM vv_ai_grant WHERE user_id=$1 AND kind=$2',[userId,kind]);
       if(old.rows.length)return {...w,duplicate:true,granted:Number(old.rows[0].credits)};
       await c.query('INSERT INTO vv_ai_grant(user_id,kind,credits) VALUES($1,$2,$3)',[userId,kind,credits]);
-      const debtPaid=Math.min(w.debt,credits),next=await this.change(c,userId,w,kind,'welcome_grant',credits-debtPaid,0,-debtPaid);
+      const debtPaid=Math.min(w.debt,credits),ledgerKind=kind.startsWith('subscription:')?'subscription_grant':'welcome_grant',next=await this.change(c,userId,w,kind,ledgerKind,credits-debtPaid,0,-debtPaid);
       return {...next,duplicate:false,granted:credits};
     });
   }
