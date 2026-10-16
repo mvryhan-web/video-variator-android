@@ -131,7 +131,7 @@ test('BASE #51 launch prerequisites reflect actual Studio owner, call limit and 
  assert.equal(gate(base,'studioOperator'),true);
  assert.equal(gate(base,'imageVideoKinds'),true);
  for(const changes of [
-  {ADMIN_EMAIL:''},{ADMIN_EMAIL:undefined},
+  {ADMIN_EMAIL:''},{ADMIN_EMAIL:'   '},{ADMIN_EMAIL:undefined},
   {AI_STUDIO_MAX_CALLS:undefined},{AI_STUDIO_MAX_CALLS:'0'},
   {AI_STUDIO_MAX_CALLS:'21'},{AI_STUDIO_MAX_CALLS:'not-a-number'},
   {AI_STUDIO_MAX_CALLS:'1.5'}
