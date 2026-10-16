@@ -76,9 +76,13 @@
 - **Non-overlap:** Agent B edits video routing in `server/generation-studio.js`, A Home/History, C utility/navigation; none touched. Independent D PR #148 (Price ID) is MERGED after 8/8 green CI. PR #153 (webhook public diagnostics) and #164 (refund/mode) remain DRAFT/CI queued and do not overlap readiness.
  
 
-## Agent D — BASE #48 Stripe webhook public error redaction / IN PROGRESS (2026-10-16)
+## Agent D — BASE #48 Stripe webhook public error redaction MERGED / BASE STILL PARTIAL (2026-10-16)
 
-- **Latest PR:** [#153](https://github.com/mvryhan-web/video-variator-android/pull/153), head `6bcb509e9ea40167012d59d40561007a2a515b5f`, 4 scoped files. Actual Express route body now returns fixed `Invalid Stripe webhook signature` after any signature verification exception; signature verification and signed billing dispatch unchanged. Three isolated executions of the *actual route callback* (invalid signature, missing secret, signed accepted event) PASS. Latest focused CI #38941632829 QUEUED. PR remains DRAFT, UNMERGED. Overall #48 PARTIAL / NOT LIVE; never claim live Stripe verified.
+- [PR #153](https://github.com/mvryhan-web/video-variator-android/pull/153) **SQUASH MERGED to `deepsyq-platform`** SHA `727b130012c7b01415b6931845ea0a638dfe5f29`, original tested head `6bcb509e9ea40167012d59d40561007a2a515b5f`. Dedicated Actions #38941632829 **SUCCESS** on tested code. Earlier 3/3 actual mocked route executions PASS. Invalid signed Stripe webhook HTTP 400 no longer reflects Stripe SDK error messages; valid signed AI+legacy payment handlers unchanged. Full BASE #48 remains PARTIAL / NOT LIVE pending DB backup/restoration, staging regression, signed test purchase/refund, physical mobile QA and approved release. No Stripe/live/main/Render/prod DB changes.
+
+## Agent D — BASE #48 Stripe webhook public error redaction / HISTORICAL CLAIM SUPERSEDED BY MERGE (2026-10-16)
+
+- **Latest PR:** [#153](https://github.com/mvryhan-web/video-variator-android/pull/153), head `6bcb509e9ea40167012d59d40561007a2a515b5f`, 4 scoped files. Actual Express route body now returns fixed `Invalid Stripe webhook signature` after any signature verification exception; signature verification and signed billing dispatch unchanged. Three isolated executions of the *actual route callback* (invalid signature, missing secret, signed accepted event) PASS. Latest focused CI #38941632829 SUCCESS; PR #153 MERGED to BASE as `727b1300`. Overall #48 PARTIAL / NOT LIVE; never claim live Stripe verified.
 
 
 
