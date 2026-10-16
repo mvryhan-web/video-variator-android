@@ -46,7 +46,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 13 | Internal AI credit system | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / BROWSER REGRESSION VERIFIED (#96 + #104; CI 38912419194 and 38912155019 PASS; LIVE BLOCKED) | BASE-D-StudioWallet / base13-studio-wallet-20261016 |
 | 14 | Credit ledger | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (scoped; PR #90 · CI 38906957706) | Agent-D |
 | 15 | Credit reservation | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / BASE MERGED (scoped; PR #102 · PostgreSQL CI 38911667162) | Agent-D |
-| 16 | Stripe subscriptions + credit packs | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | WEBHOOK READINESS IN PROGRESS (existing checkout/refund code merged) | BASE-D-CheckoutReuse / base16-checkout-reuse-20261016 |
+| 16 | Stripe subscriptions + credit packs | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (#106 CI 38912856318 PASS; webhook gate; LIVE BLOCKED) | BASE-D-CheckoutReuse / base16-checkout-reuse-20261016 |
 | 17 | Unit economics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (partial; #89) | Agent-D / CI 38906320339 |
 | 18 | Pricing engine | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (partial; PR #83 · CI 38904230756 · 775cc805; MAIN/LIVE BLOCKED) | BASE-D-ProviderPricing / base55-d-provider-pricing-20261016 |
 | 19 | AI Apps | PARTIAL | C | EXISTING PRODUCT VIDEO FALLBACK VERIFIED; REAL TEMPLATE ASSETS + LIVE GATED | CODE VERIFIED / MERGED TO BASE (partial) | ChatGPT lane C / PR #71 / CI 38901487492 / merge 59dea3d3 |
