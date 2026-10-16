@@ -18,11 +18,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
-## Agent A — BASE #32 safe unknown Studio errors / IN PROGRESS (2026-10-16)
+## Agent A — BASE #32 safe unknown Studio errors / CODE PREPARED, FOCUSED JS CHECKS 5/5 (2026-10-16)
 
 - **Claim:** Issue #72 / original BASE #32 only; `agent-a-base32-safe-unknown-errors-20261016` targeting `deepsyq-platform`, separate from previously prepared PR #145/#152/#154. A owns the single fallback expression in `app/src/main/assets/generate-studio.js::errorText` and focused browser acceptance; no changes to B's generation error normalization, provider logs, D wallet, C navigation, owner Home or production.
 - **Verified real gap:** existing `errorText(e)` has a long translated safe-code table but returns `e.message` for an unmapped code. Raw upstream errors and arbitrary API messages could therefore surface to customers (contradicts BASE #32). Preserve all mapped friendly errors; unknown errors must show a stable, localized public-safe message and no internal details or refund claims.
-- **Status:** pre-code claim saved; no change yet, no tests/merge/production acceptance.
+- **Implemented:** `errorText(e)` keeps every existing known code's localized explanation, but unknown API/provider text is now replaced with a consistent translated safe message. Explicit own-key lookup (`Object.hasOwn`) prevents inherited object keys such as `__proto__` from bypassing the fallback. No provider/logger/auth/wallet logic changed.
+- **Checks:** Extracted and evaluated exact GitHub handler blob `3d53b3b201b5afa114276a97dd6c059a89021f1a`: **5/5 isolated V8 cases PASS** (unknown raw, known normalized provider, prototype-like key, undefined, known auth). New Chromium/WebKit tests simulate server error strings with fake secrets and check user-visible sanitization. Focused GitHub CI workflow submitted but **not yet browser-verified**, not merged or live.
 
 ## Agent D — BASE #16 duplicate Stripe Price-ID risk / IN PROGRESS (2026-10-16)
 
