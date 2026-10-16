@@ -362,7 +362,7 @@ body.sidebar-collapsed #sidebar nav .sidebar-social button{justify-content:cente
 .home-quick-ideas button,.home-quick-ideas a{font-size:10px;border-radius:999px;border:1px solid #48405c;color:#d3c5e8;background:#211a31;padding:7px 10px;text-decoration:none;cursor:pointer}
 .home-quick-ideas button:hover,.home-quick-ideas a:hover{border-color:#b38be5;color:#fff}
 .home-quick-status{font-size:10px!important;line-height:1.6!important;color:#aaa0be!important;margin:10px 0 0!important}
-.hero:has(.home-hero-carousel:not([hidden])) .orb{display:none}
+.hero:has(.home-hero-carousel:not([hidden]):not(.is-empty)) .orb{display:none}
 #homeHeroPrevious:focus-visible,#homeHeroNext:focus-visible,.home-hero-dots button:focus-visible{outline:3px solid #f7c0ff;outline-offset:3px}
 @media(max-width:900px){.hero-stage{aspect-ratio:16/10}.home-hero-footer{right:14px;bottom:13px;max-width:45%}.home-hero-carousel-actions{inset-inline:10px}.home-hero-carousel-actions button{width:40px;height:40px}}
 @media(max-width:760px){.hero-stage{aspect-ratio:4/5;min-height:400px}.home-hero-footer{max-width:100%;left:15px;right:15px;bottom:12px;align-items:center}.home-hero-slide-details{padding:8px 11px;text-align:center;max-width:70%}.home-hero-carousel-actions{top:49%}.home-hero-slide-details strong{font-size:14px}.home-quick-bar{margin:13px auto 22px;padding:13px}.home-quick-form-bottom{align-items:stretch;flex-direction:column}.home-quick-mode button{padding:8px 11px}#homeQuickSubmit{width:100%}}
@@ -383,3 +383,20 @@ body.sidebar-collapsed #sidebar nav .sidebar-social button{justify-content:cente
 
 /* Approved Deepsyq official mark: retain exact logo colors, shape and transparency. */
 .mark img,.top-mark img{display:block;width:100%;height:100%;object-fit:contain}
+
+
+/* Owner-locked empty-media experience: preserve the 16:9 gallery footprint,
+   original purple Hero and genuine CTA without pretending a still is a video. */
+.home-hero-carousel.is-empty{pointer-events:none}
+.home-hero-carousel.is-empty::after{display:none}
+.home-hero-carousel.is-empty .home-hero-carousel-actions,
+.home-hero-carousel.is-empty .home-hero-player{display:none}
+.home-hero-carousel.is-empty .home-hero-footer{pointer-events:none}
+.home-hero-carousel:not(.is-empty) .home-hero-empty{display:none}
+.home-hero-empty{max-width:300px;margin:0;color:#e3d6ef;font-size:12px;line-height:1.5}
+.home-hero-slide-details [hidden]{display:none!important}
+@media(max-width:760px){
+ .home-hero-carousel.is-empty .home-hero-footer{max-width:100%;left:15px;right:15px;bottom:12px}
+ .home-hero-carousel.is-empty .home-hero-slide-details{max-width:100%}
+ .home-hero-empty{font-size:11px}
+}
