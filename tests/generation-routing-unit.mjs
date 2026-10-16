@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {orderedGenerationCandidates,resolveGenerationModel,mayUsePreDispatchFallback} from '../server/generation-routing.js';
+import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 
 const catalog=[
  {id:'expensive',kind:'video',enabled:true,maintenance:false,ratios:['16:9'],references:1,control:{priority:20,internalCostMicros:5000}},
@@ -67,4 +68,14 @@ test('BASE #7: credit estimate referenceCount and generate reference arrays rout
  for(const invalid of [{...options,referenceCount:3},{...options,referenceCount:2.5},{...options,referenceCount:-1}]){
   assert.deepEqual(orderedGenerationCandidates(invalid,models),[]);
  }
+});
+
+test('BASE #7: routes actual Google and BytePlus capability catalog, not only mock models',()=>{
+ const videoModels=MODEL_CATALOG.filter(m=>m.kind==='video').map(m=>({...m,enabled:true,priority:m.provider==='Google'?1:10}));
+ const firstLast={kind:'video',ratio:'16:9',videoInputMode:'first_last',videoResolution:'1080p',videoDuration:15,references:[{},{}]};
+ assert.deepEqual(orderedGenerationCandidates(firstLast,videoModels).map(m=>m.id),['byteplus-seedance-2']);
+ const veoTooShort={kind:'video',ratio:'16:9',videoInputMode:'first_frame',videoResolution:'1080p',videoDuration:6,references:[{}]};
+ assert.deepEqual(orderedGenerationCandidates(veoTooShort,videoModels),[]);
+ const veoText={kind:'video',ratio:'16:9',videoInputMode:'text',videoResolution:'720p',videoDuration:6,references:[]};
+ assert.ok(orderedGenerationCandidates(veoText,videoModels).some(m=>m.provider==='Google'));
 });
