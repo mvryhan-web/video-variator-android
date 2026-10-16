@@ -381,6 +381,9 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 
 ## BASE #49 advisory lock connection release — IN PROGRESS (2026-10-16)
 
+- **Pushed PR #139 / CI 38933005898 QUEUED:** [PR #139](https://github.com/mvryhan-web/video-variator-android/pull/139), branch `base49-release-lock-failure-20261016`, code SHA `35a729aaff230eeb6545fe7cc920d369183176a3`, latest PR SHA `f5cfbfaa379d52830b16926d5f0535207ca560f6`. Real bug: `pg_advisory_unlock` failure/missing false outcome was silently ignored and pooled connection potentially retained migration lock. New code discards it via `client.release(true)` when unlock unconfirmed; preserves existing primary migration error. Four synthetic unit cases + previous read-only/manifest tests in new CI. [CI 38933005898](https://github.com/mvryhan-web/video-variator-android/actions/runs/38933005898) still **QUEUED**, do not merge or claim verified. Existing real PostgreSQL concurrency [CI 38933005579](https://github.com/mvryhan-web/video-variator-android/actions/runs/38933005579) **PASS** on PR head. BASE #49 remains IN PROGRESS / LIVE BLOCKED. No production DB, Render, Stripe, Home or main mutation.
+
+
 - Same previously assigned BASE-D-MigrationSafety owner; isolated `base49-release-lock-failure-20261016`. Confirmed gap: `runAiMigrations` swallows failure of `pg_advisory_unlock` and returns the same pooled connection to other callers while it may retain its session-level migration lock. Fix must destroy that connection on unlock failure and preserve any prior error. Synthetic tests and existing PostgreSQL run; no new schema or production DB access.
 
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
