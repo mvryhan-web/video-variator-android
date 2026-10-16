@@ -24,10 +24,6 @@ The user can paste the single universal role-neutral startup message provided in
 
 There are **four BASE coding lanes A–D and a fifth coordination/review agent**. Agent 5 does not claim or overwrite BASE feature rows, parallel modules, original TXT files or owner-locked Home. Its scope is cross-agent claim/PR collision review, requirements consistency, Lumina-direction UX audit, release-risk verification and concise owner reports. The coordinating audit and snapshot are in [`docs/DEEPSYQ_AGENT5_COORDINATION_2026-10-16.md`](docs/DEEPSYQ_AGENT5_COORDINATION_2026-10-16.md). This dated audit is advisory and subordinate to original owner TXT, latest owner instruction, shared claim board, verified code/tests and production-safety gates. Other running agent sessions do not automatically receive instructions: they must fetch the updated file. Agent 5 does **not** run a background watcher or authorize deployment and does not replace Block 5 Product Watcher.
 
-## Integrated main-branch ordered-stage checklist references (secondary)
-
-The existing `main` history carries `docs/execution/README.md`, the seven `BLOCK_<N>_CHECKLIST.md` acceptance-stage checklists, `docs/execution/DEEPSYQ_BLOCKS_1-7_CANONICAL.txt`, and their validator. These provide **supplemental ordered execution tracking** only: the owner's seven original separate `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_N.txt` files remain authoritative, and BASE's separate original 55 requirements in `docs/DEEPSYQ_PLATFORM_SPEC.md` stay first priority. Do not substitute or silently rewrite original TXT using checklist paraphrases. Keeping both paths prevents loss of the existing main-branch execution records during PR #42 conflict reconciliation.
-
 ## Mandatory read order before any work
 
 Before changing code, always read and reconcile:

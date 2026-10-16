@@ -7,13 +7,6 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
-
-## Agent 5 — PR #42 main-branch documentation reconciliation (prepared 2026-10-16)
-
-- **Nonproduction merge-resolution proposal only**: reconcile `main`'s previously added, ordered `docs/execution/` files (11 files: seven block stage checklists, canonical combined source, validator/readme) into `deepsyq-platform` without changing owner BASE TXT or the seven separate original Block TXT. Git merge history retains `main` as a parent instead of flattening its history.
-- Preserve latest BASE `AGENTS.md`, whole `PROJECT_STATUS.md` and `docs/DEEPSYQ_ROADMAP.md` (roadmap content is already semantically identical); add one supplementary execution-doc reference to AGENTS. Preserve all runtime/build files, Home design, icon, API/Stripe/PostgreSQL, active owner claims and `main` untouched.
-- This **does not** certify BASE product readiness or solve A-owned Home fallback, C-owned mobile navigation, D-owned paid-gate checks, full platform CI, backup or real external provider acceptance. PR #42 must remain draft and must not be merged to `main` until those issues are verified and owner approves production rollout.
-
 ## Agent 5 — actual Home icon rendering browser smoke / CODE VERIFIED, PR #131 (2026-10-16)
 
 - **Role/branch:** Agent 5 read-only cross-browser acceptance QA, `agent5-brand-browser-smoke-20261016`. No BASE A/B/C/D feature implementation or claim takeover.
@@ -376,6 +369,12 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - Same original BASE-D-CheckoutReuse / Issue #75 / BASE §16, isolated branch `base16-invoice-replay-rate-change-20261016`. Shared claim before code.
 - **Verified operational gap:** `wallet.grant` rightly rejects mismatched credits on idempotent credit-pack purchase. The now-implemented signed **subscription** invoice grant reuses it; if an operator changes the approved monthly AI-credit allocation while Stripe retries an older invoice under unchanged Stripe Price ID, `PURCHASE_CONFLICT` blocks the signed delivery/legacy subscription renewal despite that invoice already having been credited correctly. Prior paid invoice must not grant again, but must remain replay-safe after future allocation changes.
 - **Bounded fix:** add a trusted-server-only, subscription-invoice-specific idempotent replay allowance for *previously persisted* same owner + PI + money/currency. Leave changed ownership/PI/amount, credit packs and all first-time grants strict. Test tariff update + duplicate webhook on disposable PostgreSQL. No new live pricing, Stripe call, schemas/DB migrations, Home, provider or main changes.
+
+## BASE #16 explicit subscription Stripe mode — IN PROGRESS (2026-10-16)
+
+- Same BASE-D-CheckoutReuse owner / Issue #75; continuation of original §16 via isolated `base16-explicit-subscription-billing-mode-20261016`. Claim before code.
+- **Validated gap:** monthly subscription AI grants are opt-in, but when `AI_SUBSCRIPTION_CREDITS_ENABLED=true` and `AI_BILLING_MODE` is missing/invalid, current parsing silently interprets it as test. The Pricing cards may advertise approved AI credits even on a live website though actual existing live Stripe invoices cannot pass the event-mode check. Prevent unapproved customer promises and misdirected Stripe event handling.
+- **Scope:** require an explicit `AI_BILLING_MODE=test|live` when subscription grants are enabled, reject test-only subscription grants in actual `NODE_ENV=production`; OFF mode remains backward compatible. Add focused parsing/public-projection/real mock invoice tests in original focused CI. No new rates, Home, DB schema, payment, provider, `main` or Render edits.
 
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
