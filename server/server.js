@@ -113,7 +113,7 @@ async function grantLifetimeFromCheckoutSession(s){
 
 app.post('/api/webhooks/stripe',express.raw({type:'application/json'}),async(req,res)=>{
   if(!process.env.STRIPE_WEBHOOK_SECRET)return res.status(503).send('Stripe webhook is not configured');let event;
-  try{event=stripeWebhookClient.webhooks.constructEvent(req.body,req.headers['stripe-signature'],process.env.STRIPE_WEBHOOK_SECRET);}catch(e){return res.status(400).send(`Webhook signature error: ${e.message}`);}
+  try{event=stripeWebhookClient.webhooks.constructEvent(req.body,req.headers['stripe-signature'],process.env.STRIPE_WEBHOOK_SECRET);}catch(_){return res.status(400).send('Invalid Stripe webhook signature');}
   try{
     if(await generationBilling.handleEvent(event))return res.json({received:true});
     if(event.type==='checkout.session.completed'){
