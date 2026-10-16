@@ -98,11 +98,17 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - Same BASE-D-CheckoutReuse owner continues after successful server PR #85; no independent new billing module. Isolated `base16-checkout-errors-20261016`, BASE parent, Pricing UI only; no locked Home.
 - **Verified gap:** `ai-pricing.js` reports "No payment was completed" after generic Stripe errors or expired/already-paid session HTTP 409; a prior charge may have completed, so that assertion is not justified. Update error copy to direct users to check wallet/payment history and refresh changed pack; add focused unit tests, no real Stripe call, no billing provider/ledger alteration.
 
-## Agent D BASE #17 — private provider unit economics — IN PROGRESS (2026-10-16)
+## Agent D BASE #17 — private provider unit economics — CODE VERIFIED / BASE MERGED / NOT LIVE (2026-10-16)
 
 - **Claim:** `docs/DEEPSYQ_PLATFORM_SPEC.md` §17, branch `base17-private-unit-economics-20261016`. Existing customer History JSON currently includes raw estimated/actual provider cost and its currency even though original BASE requires the frontend to work in AI credits only. Owner admin/business metrics must retain provider cost visibility.
-- **Scope:** remove internal provider cost fields from authenticated customer History read response while preserving credits and existing owner-only cost telemetry. Add functional route regression tests. Do not change Stripe, wallet, accounting ledger or live provider costs.
+- **Scope:** remove internal provider cost fields from authenticated customer History read response while preserving credits and existing owner-only cost telemetry. Implemented customer-only History cost filtering (SQL select + JSON), preserving owner cost reports and customer credit balances. Merged PR #89, commit cd31b923; targeted HTTP CI 38906320339 PASS and Video core 38906352706 PASS. Shared AI Studio suite 38906352455 failed in separately owned BASE #16 Checkout replay fixture (409/200), not falsely claimed green. No Stripe, wallet, accounting ledger or provider changes.
 - **External:** authoritative provider billing, currency conversion, infra cost, gross margin and revenue still NOT verified. This is a privacy/cost-presentation correction, not a pretend margin calculation.
+
+## Agent D BASE #14 — protect wallet ledger references from customer APIs — IN PROGRESS (2026-10-16)
+
+- **Claim:** original owner BASE §14 `docs/DEEPSYQ_PLATFORM_SPEC.md`, new isolated branch `base14-private-ledger-refs-20261016`. Existing durable ledger retains references, timestamps, per-user deltas, Stripe/order IDs for internal idempotency and audit.
+- **Observed gap:** `GenerationWallet.history` includes internal ledger `reference` in both customer `/api/ai-wallet/history` and `/api/ai-billing/history`. Current client UIs use only kind, date and deltas. Filter returned customer fields without changing stored records or owner reports.
+- **Collision guard:** concurrent #16 owns `server/generation-billing.js`; do NOT change their routes, webhook flows or Stripe. Single change in `generation-wallet.js` plus isolated HTTP/mock validation. No production/migration changes.
 
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
