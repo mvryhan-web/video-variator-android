@@ -7,6 +7,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — BASE 55-claim-board integrity verifier / CODE VERIFIED, PR #95 (2026-10-16)
+
+- **Agent / isolated branch:** Agent 5 coordinator (not A–D feature owner), `agent5-base55-board-integrity-20261016`.
+- **Claim scope:** new read-only Node script + isolated unit tests + guarded GH Actions workflow to assert 55 exact original BASE rows, correct non-overlapping A/B/C/D lane mapping, and a named assignee for an explicit `IN PROGRESS` claim. It must not change any original TXT, product feature, approved Home, provider/router, Stripe, DB or `main`.
+- **Result / evidence:** New read-only `scripts/verify-deepsyq-base-coordination.mjs`, `tests/deepsyq-base55-coordination-unit.mjs` (7 negative/positive tests), `.github/workflows/deepsyq-base55-coordination-integrity.yml` (targeted BASE push and PR checks). Checks 55 original headings and 55 unique rows, exact lane mapping, invalid/missing claims and table structure without changing any data. Initial new test fixture incorrectly assumed stale #23 blank owner and FAILED; repaired fixture to work with occupied #23, then latest [CI 38908454054](https://github.com/mvryhan-web/video-variator-android/actions/runs/38908454054) **SUCCESS (7/7)** on code commit `c28d109c`. Whole-site regression is separate and not certified. Scoped [PR #95](https://github.com/mvryhan-web/video-variator-android/pull/95) targets BASE only; no production or app changes. Other agents' existing claims are preserved.
+
 ## Agent 5 — scoped CI regression ownership / IN PROGRESS (2026-10-16)
 
 - **Agent / branch:** Agent 5 / `agent5-regression-handoff-20261016`, independent quality handoff; no BASE A/B/C/D feature claim. **SCOPED REVIEW VERIFIED / PR PENDING / NOT MAIN / NOT LIVE.**

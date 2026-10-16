@@ -1,0 +1,81 @@
+/**
+ * Read-only consistency check for the immutable original Deepsyq BASE spec and
+ * the shared 55-row coordination board. Agent 5 scope: team safety only.
+ *
+ * It does not claim, unlock, deploy, generate media, or change user/product data.
+ */
+import {readFileSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+
+export const BASE_LANES=Object.freeze({
+ A:[1,3,4,24,25,26,31,32,45,46],
+ B:[5,6,7,8,9,10,11,12,33,34,39,40,41,42],
+ C:[19,20,21,22,23,27,28,29,30,35,36,38],
+ D:[2,13,14,15,16,17,18,37,43,44,48,49,50,51,52,54,55]
+});
+export const UNASSIGNED=new Set([47,53]);
+const EXPECTED=Array.from({length:55},(_,index)=>index+1);
+const LANE_BY_NUMBER=new Map(Object.entries(BASE_LANES).flatMap(([lane,nums])=>nums.map(n=>[n,lane])));
+
+export function originalBaseNumbers(spec=''){
+ return [...String(spec).matchAll(/^#\s+(\d+)\.\s+[^\n]+$/gm)].map(match=>Number(match[1]));
+}
+
+export function boardRows(board=''){
+ const rows=[];
+ for(const line of String(board).split(/\r?\n/)){
+  if(!/^\|\s*\d+\s*\|/.test(line))continue;
+  // The table has 7 columns: item, title, state, lane, action, claim, owner.
+  const cells=line.split('|').slice(1,-1).map(cell=>cell.trim());
+  rows.push({number:Number(cells[0]),title:cells[1]||'',state:cells[2]||'',
+   lane:cells[3]||'',action:cells[4]||'',claim:cells[5]||'',owner:cells[6]||'',
+   width:cells.length});
+ }
+ return rows;
+}
+
+export function verifyBaseCoordination(spec,board){
+ const issues=[];
+ const source=originalBaseNumbers(spec),rows=boardRows(board);
+ if(JSON.stringify(source)!==JSON.stringify(EXPECTED)){
+  issues.push('ORIGINAL_BASE_HEADINGS: expected exactly numbered #1–#55 in order (do not edit source TXT)');
+ }
+ const counts=new Map();
+ for(const row of rows)counts.set(row.number,(counts.get(row.number)||0)+1);
+ for(const n of EXPECTED){
+  if(!counts.has(n))issues.push('MISSING_BASE_ROW: '+n);
+  if((counts.get(n)||0)>1)issues.push('DUPLICATE_BASE_ROW: '+n);
+ }
+ for(const n of counts.keys())if(!EXPECTED.includes(n))issues.push('UNEXPECTED_BASE_ROW: '+n);
+ for(const row of rows){
+  if(row.width!==7)issues.push('INVALID_ROW_WIDTH: '+row.number+' ('+row.width+')');
+  const expected=LANE_BY_NUMBER.get(row.number)||(UNASSIGNED.has(row.number)?'—':null);
+  if(expected&&row.lane!==expected){
+   issues.push('WRONG_LANE: '+row.number+' expected '+expected+' got '+row.lane);
+  }
+  if(!row.title||row.title==='—')issues.push('MISSING_ITEM_TITLE: '+row.number);
+  // Only a *claim column* IN PROGRESS is an active reservation. BASE item #52
+  // may have a general state IN PROGRESS while no specific agent has claimed it.
+  if(/\bIN PROGRESS\b/i.test(row.claim)&&(!row.owner||/^(—|–|-)$/.test(row.owner))){
+   issues.push('UNOWNED_ACTIVE_CLAIM: '+row.number);
+  }
+ }
+ return {ok:issues.length===0,issues,items:rows.length,sourceHeadings:source.length};
+}
+
+export function verifyCurrentFiles(){
+ return verifyBaseCoordination(
+  readFileSync('docs/DEEPSYQ_PLATFORM_SPEC.md','utf8'),
+  readFileSync('docs/DEEPSYQ_BASE_55_COORDINATION.md','utf8')
+ );
+}
+
+if(process.argv[1]&&fileURLToPath(import.meta.url)===process.argv[1]){
+ const result=verifyCurrentFiles();
+ if(!result.ok){
+  process.stderr.write(result.issues.join('\n')+'\n');
+  process.exitCode=1;
+ }else{
+  process.stdout.write('BASE 55 coordination board: 55 original headings and 55 uniquely owned-lane rows verified. Active claim owners validated.\n');
+ }
+}
