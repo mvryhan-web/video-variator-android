@@ -236,6 +236,12 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Claim:** branch `base18-ambiguous-pricing-20261016`, independent pure pricing helper and unit tests only, no Stripe or provider API or operator price modifications. Reject ambiguity rather than invent a price; deterministic exact approved quote remains unchanged. Keep public prices disabled by existing approval flags; do not change provider/router ownership.
 - **Acceptance:** targeted Node pricing CI + relevant Studio policy regression; return partial status, no live-ready claims. Agent 5 retains Home design control.
 
+## BASE #16 initial Checkout Session invariants — IN PROGRESS (2026-10-16)
+
+- **Owner:** BASE-D-CheckoutReuse, same previously claimed #16, isolated branch `base16-checkout-create-validate-20261016`; Issue #75. Old #108 is merged and not being replayed. Claim recorded before any code edits.
+- **Actual code-level gap:** `server/generation-billing.js` uses strict `existingCheckoutResponse` for stored Stripe Checkout Sessions, but the *first* freshly created session only checks livemode and URL hostname. It does not validate HTTPS, embedded credentials/port, session status/expiry, user, metadata/order, amount/currency before persisting and handing out the payment link. The trusted Stripe API ordinarily returns correct fields, but malformed or inconsistent responses must fail closed.
+- **Scope:** reuse existing exact invariants for first-session creation with an ephemeral checked order, without modifying legacy Stripe, ledger, account auth, owner Home, provider, production config or `main`; add focused mocked HTTP cases and a scoped CI workflow. No real Stripe/provider spend.
+
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
 **ACTIVE OWNER PRIORITY NOW:** all four coding-agent sessions focus on the **original BASE TXT / 55-point checklist**, not new Roadmap Blocks 1–7 or duplicated Product Watcher. Shared 55-item claim board and proposed collision-safe work lanes: [`docs/DEEPSYQ_BASE_55_COORDINATION.md`](docs/DEEPSYQ_BASE_55_COORDINATION.md). This new owner instruction overrides older prose suggesting BASE is owned by just one agent or that Agents E/Block 5 should keep expanding their scope. **Already verified:** 55 rows exist in the BASE checklist; #47 and #53 are DONE/RULE; **53 other rows are not fully DONE** and mostly have significant existing code. `PARTIAL` does NOT mean “build from scratch.”
