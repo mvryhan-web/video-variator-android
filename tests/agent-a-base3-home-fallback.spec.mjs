@@ -105,3 +105,46 @@ test('BASE 3: mocked navigation preserves real authorized slide metadata and wra
  await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 2');
  await expect(page.locator('#homeHeroSlideLink')).toHaveAttribute('href',/kind=video/);
 });
+
+test('BASE 3: one authorized video disables arrows and avoids dead carousel controls',async({page})=>{
+ // Transport-only stub; does not claim actual playable source bytes.
+ await page.addInitScript(()=>{
+  HTMLMediaElement.prototype.load=function(){};
+  HTMLMediaElement.prototype.pause=function(){};
+  HTMLMediaElement.prototype.play=function(){return Promise.resolve();};
+ });
+ await mockSafeHome(page,[{id:'single',kind:'video',title:'Only approved video',
+  category:'Cinematic',aspectRatio:'16:9',actionTarget:'studio',active:true,featured:true,
+  previewUrl:'/single-owner-video.mp4'}]);
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+ await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 1');
+ await expect(page.locator('#homeHeroPrevious')).toBeDisabled();
+ await expect(page.locator('#homeHeroNext')).toBeDisabled();
+ await expect(page.locator('#homeHeroDots button')).toHaveCount(1);
+ await expect(page.locator('#homeHeroDots button')).toBeEnabled();
+});
+
+test('BASE 3: one failed source cannot leave useless arrows active on the sole surviving slide',async({page})=>{
+ await page.addInitScript(()=>{
+  HTMLMediaElement.prototype.load=function(){};
+  HTMLMediaElement.prototype.pause=function(){};
+  HTMLMediaElement.prototype.play=function(){return Promise.resolve();};
+ });
+ const common={kind:'video',actionTarget:'studio',category:'Cinematic',
+  aspectRatio:'16:9',active:true,featured:true};
+ await mockSafeHome(page,[
+  {...common,id:'a',title:'Broken approved clip',previewUrl:'/clip-a.mp4'},
+  {...common,id:'b',title:'Remaining approved clip',previewUrl:'/clip-b.mp4'}
+ ]);
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#homeHeroNext')).toBeEnabled();
+ await page.locator('#inspirationHeroVideo').evaluate(el=>el.dispatchEvent(new Event('error')));
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/clip-b.mp4');
+ await expect(page.locator('#homeHeroCounter')).toHaveText('Video 2 of 2');
+ await expect(page.locator('#homeHeroNext')).toBeDisabled();
+ await expect(page.locator('#homeHeroPrevious')).toBeDisabled();
+ await expect(page.locator('#homeHeroDots button').first()).toBeDisabled();
+ await expect(page.locator('#homeHeroDots button').last()).toBeEnabled();
+ await expect(page.locator('#homeHeroCarousel')).not.toHaveClass(/is-empty/);
+});
