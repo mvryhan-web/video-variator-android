@@ -37,8 +37,8 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 4 | Image generation | PARTIAL / BLOCKED | A | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 5 | Video generation | CORE CODE VERIFIED / ADVANCED & LIVE BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 6 | BytePlus first provider adapter | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
-| 7 | AI Provider Router | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | SCOPED CODE VERIFIED (GitHub source 8/8 harness), PR #143 REVIEW OPEN; CI QUEUED / NOT MERGED OR LIVE (2026-10-16) | Agent B / Issue #73 / PR #143 · `f3e8e9b` (edit claim released; integration pending) |
-| 8 | Fallback | PARTIAL / SAFETY-GATED | B | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS / SAFE PRE-DISPATCH ONLY (2026-10-16; CLAIM) | Agent B / Issue #73 / stacked branch `base8-preflight-fallback-20261016` after PR #143; no paid fallback |
+| 7 | AI Provider Router | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | SCOPED CODE VERIFIED (GitHub source 8/8 harness), PR #143 REVIEW OPEN; AI Studio CI PASS, Video Core IN PROGRESS, BASE 7 CI QUEUED / NOT MERGED OR LIVE (2026-10-16) | Agent B / Issue #73 / PR #143 · `f3e8e9b` (edit claim released; integration pending) |
+| 8 | Fallback | PARTIAL / SAFETY-GATED | B | AUDIT IMPLEMENTATION; FINISH GAP | CODE PREPARED / source-harness 6/6 PASS, GitHub CI QUEUED; NOT LIVE (2026-10-16) | Agent B / Issue #73 / stacked [PR #149](https://github.com/mvryhan-web/video-variator-android/pull/149) · `76f7f0d`; depends on PR #143 |
 | 9 | Provider config in admin | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 10 | Normal generation-job database entity | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 11 | Permanent object storage | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
