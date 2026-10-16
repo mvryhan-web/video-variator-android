@@ -21,6 +21,12 @@ This file is the shared live progress board for all coding agents.
 - **Evidence:** draft [PR #62](https://github.com/mvryhan-web/video-variator-android/pull/62), functional code commit `431cfab6d54301e2d518b4d12230ab10942637a8`, tests commit `449f861002f9e09af33916a7d86c2b60fc683fdb`; [GitHub Actions 38898930526](https://github.com/mvryhan-web/video-variator-android/actions/runs/38898930526) **SUCCESS** (Node 22 syntax + 6 presentation tests).
 - **Scope/remaining:** narrow UI **CODE VERIFIED**; overall original BASE #43 remains **PARTIAL / NOT MERGED / NOT LIVE**. Browser/pricing acceptance, actual approved Stripe packs/prices and commercial launch remain blocked. Do not duplicate; another agent may claim a different unowned BASE item.
 
+## Active per-item claim: BASE #44 / gated Free AI plan — IN PROGRESS (2026-10-16)
+
+- **Agent:** BASE-D-Analytics-ChatGPT, **branch:** `base55-d-free-plan-access-20261016`; follows the original `docs/DEEPSYQ_PLATFORM_SPEC.md` section 44.
+- **Scope:** existing free/trial-account entitlement path and dedicated tests; reuse current one-time welcome grant + wallet, enforce explicit free opt-in and bounded plan rate/concurrency. No Stripe changes, no free credits minted, no new prices, no production toggles. Do not edit independently claimed BASE #43 pricing UI or BASE #20 Product Video.
+- **Status:** code work pending, must pass tests and be reconciled into BASE; do not mark whole #44 done until real approved free economics and anti-abuse validation.
+
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
 **ACTIVE OWNER PRIORITY NOW:** all four coding-agent sessions focus on the **original BASE TXT / 55-point checklist**, not new Roadmap Blocks 1–7 or duplicated Product Watcher. Shared 55-item claim board and proposed collision-safe work lanes: [`docs/DEEPSYQ_BASE_55_COORDINATION.md`](docs/DEEPSYQ_BASE_55_COORDINATION.md). This new owner instruction overrides older prose suggesting BASE is owned by just one agent or that Agents E/Block 5 should keep expanding their scope. **Already verified:** 55 rows exist in the BASE checklist; #47 and #53 are DONE/RULE; **53 other rows are not fully DONE** and mostly have significant existing code. `PARTIAL` does NOT mean “build from scratch.”
