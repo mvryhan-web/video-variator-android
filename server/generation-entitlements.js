@@ -41,6 +41,9 @@ export function generationEntitlementForUser(user,env={}){
   if(free.enabled)return {allowed:true,scope:'public',plan:'trial',
     maxConcurrent:free.maxConcurrent,maxPerHour:free.maxPerHour};
  }
+ // The legacy trial plan is not a paid subscription tier. A changed or
+ // inconsistent subscription status must never bypass the Free opt-in.
+ if(user.plan==='trial')return {allowed:false,reason:'AI_PLAN_NOT_ENTITLED'};
  if(!['active','trialing'].includes(String(user.subscription_status||'')))return {allowed:false,reason:'AI_PLAN_INACTIVE'};
  const plan=catalog.plans.find(p=>p.plan===user.plan);if(!plan)return {allowed:false,reason:'AI_PLAN_NOT_ENTITLED'};
  return {allowed:true,scope:'public',plan:plan.plan,maxConcurrent:plan.maxConcurrent,maxPerHour:plan.maxPerHour};
