@@ -209,4 +209,14 @@ $('clearFilters').addEventListener('click',()=>{
  changed();$('search').focus();
 });
 addEventListener('popstate',restoreFiltersFromUrl);
+// Existing account and billing are managed in Video Uniquifier's Profile & Settings.
+// Only clear the shared account token; never invent a second billing/logout service.
+const accountLogout=$('appsLogout');
+if(accountLogout){
+ accountLogout.hidden=!localStorage.getItem('vv_token');
+ accountLogout.addEventListener('click',()=>{
+  localStorage.removeItem('vv_token');
+  location.assign('deepsyq.html');
+ });
+}
 load();
