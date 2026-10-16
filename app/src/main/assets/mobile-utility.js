@@ -362,9 +362,11 @@ async function processMedia(){
  const code=await engine.exec(args);if(abort)return;if(code!==0)throw Error(label('The file codec is not supported.','Кодек файла не поддерживается.'));
  const bytes=await engine.readFile(out),mime=video?'video/mp4':'audio/mp4';
  const converted=new File([bytes],base(f)+'-'+out,{type:mime});
+ // Validate a real, non-empty conversion before adding any Download action.
+ const compressionStats=tool==='video-compress'?videoCompressionSummary(f.size,converted.size):null;
  await result(converted);
  if(tool==='video-compress'){
-  const stats=videoCompressionSummary(f.size,converted.size);
+  const stats=compressionStats;
   const note=document.createElement('p');note.className='utility-size-note';
   const before=(f.size/1048576).toFixed(2),after=(converted.size/1048576).toFixed(2);
   note.textContent=label('Original','Оригинал')+' '+before+' MB → '+after+' MB · '+
