@@ -58,6 +58,20 @@ if(grid){
  const compressNote=document.createElement('small');compressNote.textContent=compressText[1];
  compressLink.append(compressBadge,compressTitle,compressNote);grid.append(compressLink);
  // Ensure the existing utility router sees this separately implemented tool.
+ // BASE #28: local, owner-entered Teleprompter; no recording, uploads or provider calls.
+ const prompterText={
+  en:['Teleprompter','Read and scroll your own script'],
+  ru:['Телесуфлёр','Читать текст с плавной прокруткой'],
+  fr:['Téléprompteur','Lire son texte avec défilement'],
+  uk:['Телесуфлер','Читати текст з прокруткою']
+ }[lang]||['Teleprompter','Read and scroll your own script'];
+ const prompter=document.createElement('a');prompter.className='hub-tile mobile-utility-tile';
+ prompter.href='teleprompter.html';prompter.dataset.utility='teleprompter';
+ const prompterBadge=document.createElement('span');prompterBadge.className='utility-tile-icon';
+ prompterBadge.setAttribute('aria-hidden','true');prompterBadge.textContent='▤';
+ const prompterTitle=document.createElement('strong');prompterTitle.textContent=prompterText[0];
+ const prompterNote=document.createElement('small');prompterNote.textContent=prompterText[1];
+ prompter.append(prompterBadge,prompterTitle,prompterNote);grid.append(prompter);
  // BASE #28: a separate, implemented in-browser photo collage (not an unimplemented mobile-utility mode).
  const collageText={
   en:['Photo Collage','Arrange 2–9 photos into one PNG'],
