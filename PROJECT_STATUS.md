@@ -14,7 +14,7 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
-## Agent A — BASE #31 generation UX: server-accepted job stages and real reserved credits / CLAIMED (2026-10-16)
+## Agent A — BASE #31 generation UX: server-accepted job stages and real reserved credits / CODE PREPARED / FOCUSED JS CHECK PASS / CI PENDING (2026-10-16)
 
 - **Claim/owner:** Agent A Issue #72, original BASE #31 only, branch `agent-a-base31-job-progress-20261016`; previous A #3/#24 draft PRs remain separate and await CI. Scope is existing Image/Video/Audio Studio user-facing presentation and focused acceptance only; no new billing, Stripe, provider, wallet, database, route or Home modifications.
 - **Confirmed gap:** the existing accepted /api/studio/jobs POST already returns `status:'processing',creditsReserved` and user-scoped job GET includes states, but Studio UI discards reserved credits and shows generic `Generating` without clear queued/processing/finalizing distinction or status explanation that accepted work survives leaving the page.
