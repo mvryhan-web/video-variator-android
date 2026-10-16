@@ -42,10 +42,16 @@ test('claimed IN PROGRESS requires a recorded owner, general item state does not
  assert.ok(active,'fixture requires one genuinely claimed BASE task');
  const unowned=verifyBaseCoordination(spec,edited(active.number,line=>line.replace(/\|\s*[^|]+\s*\|\s*$/, '| — |')));
  assert.ok(unowned.issues.includes('UNOWNED_ACTIVE_CLAIM: '+active.number),JSON.stringify(unowned.issues));
- // General BASE #52 status may be IN PROGRESS without any exclusive claim.
- const general=current.find(row=>row.number===52);
+ // The general BASE #52 state can be IN PROGRESS without an exclusive claim.
+ // Isolate that invariant in a copy: another agent may legitimately claim #52
+ // while CI is running. Do not hardcode the live board's claim as always free.
+ const neutral=edited(52,line=>{
+  const cells=line.split('|');cells[6]=' — ';cells[7]=' — ';return cells.join('|');
+ });
+ const general=boardRows(neutral).find(row=>row.number===52);
  assert.equal(general.state,'IN PROGRESS');
  assert.equal(general.claim,'—');
+ assert.equal(verifyBaseCoordination(spec,neutral,checklist).ok,true);
  assert.equal(verifyCurrentFiles().ok,true);
 });
 test('tampered original requirement numbering is rejected without modifying the real TXT',()=>{
