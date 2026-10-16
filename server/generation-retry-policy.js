@@ -3,7 +3,10 @@
 // automated recovery actions; unknown/ambiguous starts remain review-only.
 export function safeGenerationRecoveryAction(job){
  if(!job||job.deleted===true||job.providerTerminal===true)return 'hold_for_review';
- if(job.status==='finalizing'&&!job.operation)return 'settle_existing_wallet';
+ // BASE #10 retains provider operation for audit even after bytes are saved.
+ // Once status is finalizing, the only allowed action is to settle the
+ // existing wallet reservation; never repeat provider dispatch or polling.
+ if(job.status==='finalizing')return 'settle_existing_wallet';
  if(job.status==='processing'&&typeof job.operation==='string'&&job.operation.trim())
   return 'poll_existing_operation';
  return 'hold_for_review';

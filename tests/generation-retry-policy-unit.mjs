@@ -12,7 +12,10 @@ test('BASE #33: existing provider operation can only be polled, never resubmitte
 
 test('BASE #33: completed provider result may only re-settle existing wallet',()=>{
  assert.equal(safeGenerationRecoveryAction({status:'finalizing',operation:null}),'settle_existing_wallet');
- assert.equal(safeGenerationRecoveryAction({status:'finalizing',operation:'byteplus:task'}),'hold_for_review');
+ assert.equal(safeGenerationRecoveryAction({status:'finalizing',operation:'byteplus:task'}),'settle_existing_wallet');
+ assert.equal(safeGenerationRecoveryAction({status:'finalizing',operation:'models/veo/operations/task'}),'settle_existing_wallet');
+ assert.equal(safeGenerationRecoveryAction({status:'finalizing',operation:'byteplus:task',deleted:true}),'hold_for_review');
+ assert.equal(safeGenerationRecoveryAction({status:'finalizing',operation:'byteplus:task',providerTerminal:true}),'hold_for_review');
 });
 
 test('BASE #33: terminal, deleted, failed and unknown jobs cannot auto-retry',()=>{
