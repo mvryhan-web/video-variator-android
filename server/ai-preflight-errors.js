@@ -18,6 +18,9 @@ const SAFE_CODES=Object.freeze({
 });
 
 export function safeAiPreflightError(error){
+  // Preserve actionable drift classification without leaking a ledger name or a raw database exception.
+  if(typeof error?.message==='string'&&error.message.startsWith('MIGRATION_CHECKSUM_MISMATCH:'))
+    return 'PREFLIGHT_MIGRATION_CHECKSUM_MISMATCH';
   // The code field itself is attacker-/driver-controlled. Never echo it:
   // return only constant, reviewed literals.
   const code=typeof error?.code==='string'?error.code:'';

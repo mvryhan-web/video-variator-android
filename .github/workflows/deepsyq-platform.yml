@@ -3,7 +3,13 @@ on:
   push:
     branches: [deepsyq-platform]
   pull_request:
-    paths: ['app/src/main/assets/deepsyq*', 'tests/deepsyq*', '.github/workflows/deepsyq-platform.yml']
+    paths:
+      - 'app/src/main/assets/deepsyq*'
+      - 'tests/deepsyq*'
+      # BASE 55 coordination has its own narrow Node CI; never run the full
+      # multi-browser platform suite for this standalone read-only unit test.
+      - '!tests/deepsyq-base55-coordination-unit.mjs'
+      - '.github/workflows/deepsyq-platform.yml'
 jobs:
   verify:
     runs-on: ubuntu-latest

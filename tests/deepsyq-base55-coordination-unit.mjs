@@ -151,3 +151,16 @@ test('canonical 55 translated tracking labels are stable even if both live table
  const statusOnly=edited(23,line=>line.replace('| PARTIAL', '| PARTIAL — scoped verification'));
  assert.equal(verifyBaseCoordination(spec,statusOnly,checklist).ok,true);
 });
+
+
+test('full browser PR regression skips only isolated BASE coordinator tests, retaining all product triggers',()=>{
+ const workflow=readFileSync('.github/workflows/deepsyq-platform.yml','utf8');
+ const paths=workflow.match(/\bpull_request:\s*\n([\s\S]*?)\njobs:/)?.[1]||'';
+ const app=paths.indexOf("'app/src/main/assets/deepsyq*'");
+ const allTests=paths.indexOf("'tests/deepsyq*'");
+ const excluded=paths.indexOf("'!tests/deepsyq-base55-coordination-unit.mjs'");
+ const itself=paths.indexOf("'.github/workflows/deepsyq-platform.yml'");
+ assert.ok(app>=0&&allTests>=0&&itself>=0,'app code, all regular Deepsyq tests and the workflow itself still trigger platform CI');
+ assert.ok(excluded>allTests&&excluded<itself,'only the coordinator-only test is excluded after the broad prefix');
+ assert.match(workflow,/push:\s*\n\s+branches:\s*\[deepsyq-platform\]/,'full post-merge BASE push checks are preserved');
+});
