@@ -46,7 +46,7 @@ export function validateGeneration(body){
  // Genre, lyrics and exact duration are not separate native controls on the
  // currently connected Clip composer. Do not silently accept fictitious inputs.
  if(body.kind==='music'&&[
-  'musicDuration','durationSeconds','genre','lyrics','vocalStyle','musicLanguage'
+  'musicDuration','durationSeconds','genre','lyrics','vocalStyle'
  ].some(field=>body[field]!=null))throw new Error('UNSUPPORTED_MUSIC_CONTROL');
  return {kind:body.kind,model:m.id,prompt:body.prompt.trim(),ratio:body.ratio,references,musicMode:body.musicMode,...(musicControls||{}),...(body.kind==='image'?{resolution,outputFormat}:{}),...(body.kind==='video'?{videoResolution,videoDuration,videoInputMode}:{})};
 }
@@ -69,7 +69,7 @@ export async function generateGoogle(request,{key,fetcher=fetch}){
  }
  if(request.kind==='music'){
   if(model.id!=='lyria-3-clip-preview')throw new Error('MODEL_NOT_CONNECTED');
-  const prompt=buildLyriaClipPrompt(request);
+  const prompt=buildLyriaClipPrompt({...request,model:model.id});
   const response=await googleJson(`models/${model.id}:generateContent`,{key,fetcher,
    body:{contents:[{parts:[{text:prompt}]}]}});
   return parseLyriaClipResult(response);

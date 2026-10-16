@@ -19,7 +19,7 @@ test('owner #177 official Lyria Clip contract: exactly one 30-second prompt, no 
  assert.match(prompt,/30-second/);assert.match(prompt,/Instrumental only, no vocals/);
  for(const option of [
   {musicDuration:90},{durationSeconds:120},{genre:'ambient'},
-  {lyrics:'fake native structured control'},{musicLanguage:'ru'},{vocalStyle:'dramatic'}
+  {lyrics:'fake native structured control'},{vocalStyle:'dramatic'}
  ])assert.throws(()=>validateGeneration({...r,consent:true,...option}),/UNSUPPORTED_MUSIC_CONTROL/);
  assert.throws(()=>buildLyriaClipPrompt({...r,model:'lyria-3.5'}),/INVALID_MUSIC_REQUEST/);
  assert.throws(()=>buildLyriaClipPrompt({...r,musicMode:'voice'}),/INVALID_MUSIC_REQUEST/);
@@ -121,4 +121,54 @@ test('Music settings reject unsupported duration, unsafe styles, and instrumenta
  ])assert.throws(()=>validateGeneration({...request(),consent:true,...options}),/UNSUPPORTED_MUSIC_CONTROL/);
  const valid=validateGeneration({...request(),musicGenre:'ambient',musicMood:'dreamy',consent:true});
  assert.equal(valid.musicGenre,'ambient');assert.equal(valid.musicMood,'dreamy');
+});
+
+
+test('music language is permitted as a prompt preference, not a fake native Google parameter',async()=>{
+ const r=validateGeneration({
+  kind:'music',model:'lyria-3-clip-preview',prompt:'French lounge original song',ratio:'',
+  references:[],musicMode:'song',musicLanguage:'fr',musicGenre:'jazz',
+  musicLyrics:'[Verse]\\nChanson originale',consent:true
+ });
+ assert.equal(r.musicLanguage,'fr');
+ assert.equal(r.musicGenre,'jazz');
+ let calls=0,body;
+ const out=await generateGoogle(r,{key:'fixture-only',fetcher:async(_url,options)=>{
+  calls++;body=JSON.parse(options.body);
+  return new Response(JSON.stringify(providerResponse()),{headers:{'Content-Type':'application/json'}});
+ }});
+ assert.equal(calls,1);
+ assert.equal(out.mime,'audio/mpeg');
+ assert.match(body.contents[0].parts[0].text,/Requested lyrics language: fr/);
+ assert.match(body.contents[0].parts[0].text,/Genre: Jazz/);
+ assert.match(body.contents[0].parts[0].text,/Chanson originale/);
+ assert.equal(body.generationConfig,undefined);
+});
+
+test('HTTP owner music estimate accepts supported locale and lyrics when quote is explicitly configured',async()=>{
+ const env={
+  AI_STUDIO_ENABLED:'true',GEMINI_API_KEY:'fixture',DATABASE_URL:'fixture',
+  ADMIN_EMAIL:'owner@example.test',AI_STUDIO_MAX_CALLS:'3',
+  AI_STUDIO_ALLOWED_KINDS:'music',
+  AI_MODEL_PRICING_JSON:JSON.stringify([{model:'lyria-3-clip-preview',
+   kind:'music',provider:'Google',credits:12,providerCostMicros:40000,currency:'usd'}])
+ };
+ let paid=0;
+ const app=express();app.use(express.json());
+ installGenerationStudio(app,{env,pool:{query:async()=>({rows:[]})},
+  provider:async()=>{paid++;throw Error('never start provider');},
+  auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});
+ const server=app.listen(0);await new Promise(resolve=>server.once('listening',resolve));
+ try{
+  const response=await fetch('http://127.0.0.1:'+server.address().port+'/api/studio/estimate',{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({kind:'music',model:'lyria-3-clip-preview',ratio:'',musicMode:'song',
+    musicGenre:'lofi',musicLanguage:'fr',musicLyrics:'[Verse]\\nMa chanson'})
+  });
+  assert.equal(response.status,200);
+  const quote=await response.json();
+  assert.equal(quote.credits,12);
+  assert.equal(quote.model,'lyria-3-clip-preview');
+  assert.equal(paid,0);
+ }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
 });

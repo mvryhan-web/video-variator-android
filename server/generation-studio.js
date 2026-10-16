@@ -91,7 +91,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(count>Number(selected.references||0))throw Error('INVALID_REFERENCES');
   if(kind==='music'&&!['song','instrumental'].includes(musicMode))throw Error('INVALID_MUSIC_MODE');
   if(kind==='music')normalizeLyriaClipControls(body);
-  if(kind==='music'&&['musicDuration','durationSeconds','genre','lyrics','vocalStyle','musicLanguage'].some(field=>body?.[field]!=null))throw Error('UNSUPPORTED_MUSIC_CONTROL');
+  if(kind==='music'&&['musicDuration','durationSeconds','genre','lyrics','vocalStyle'].some(field=>body?.[field]!=null))throw Error('UNSUPPORTED_MUSIC_CONTROL');
   return {request:{kind,model:selected.id,ratio,musicMode,...(kind==='image'?{resolution,outputFormat}:{}),...(kind==='video'?{videoResolution,videoDuration,videoInputMode,referenceCount:count}:{})},selected,routing};
  }
  async function resolveRequest(body){
