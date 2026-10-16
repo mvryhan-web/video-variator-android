@@ -29,6 +29,22 @@
   a.innerHTML=`<span class="hub-icon">${icon(i)}</span><strong></strong><small></small>`;a.querySelector('strong').textContent=c.names[i];a.querySelector('small').textContent=c.notes[i];grid.append(a);
   if(!['tts','stt'].includes(mode))a.onclick=e=>{e.preventDefault();navigate(mode);};
  });
+ // The original Video Uniquifier is an existing independent app, not a renamed
+ // local utility. Enter it through Tools without replacing its auth, modes or history.
+ const legacyText={
+  en:['Video Uniquifier','Your original video editor · Gentle, Balance & Dynamic'],
+  ru:['Уникализация видео','Исходный видеоредактор · Gentle, Balance и Dynamic'],
+  fr:['Video Uniquifier','Votre éditeur vidéo d’origine · Gentle, Balance et Dynamic'],
+  uk:['Унікалізація відео','Початковий відеоредактор · Gentle, Balance і Dynamic']
+ }[lang]||['Video Uniquifier','Your original video editor · Gentle, Balance & Dynamic'];
+ const legacyLink=document.createElement('a');
+ legacyLink.className='hub-tile';legacyLink.dataset.legacyTool='video-uniquifier';
+ legacyLink.href='index.html';
+ const legacyIcon=document.createElement('span');legacyIcon.className='hub-icon';
+ legacyIcon.setAttribute('aria-hidden','true');legacyIcon.textContent='▤';
+ const legacyTitle=document.createElement('strong');legacyTitle.textContent=legacyText[0];
+ const legacyNote=document.createElement('small');legacyNote.textContent=legacyText[1];
+ legacyLink.append(legacyIcon,legacyTitle,legacyNote);grid.append(legacyLink);
  // Extra everyday utilities: direct access, same styling as existing tool tiles.
  const extra=lang==='ru'?
   [['smart-reminders.html','Умные напоминания','Даты, повторы и уведомления'],['smart-reminders.html#quick-notes','Быстрые заметки','Синхронизация с аккаунтом']]:
