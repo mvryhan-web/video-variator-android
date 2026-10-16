@@ -19,6 +19,8 @@ This file is the shared live progress board for all coding agents.
 
 - **Read-only Express route regression:** Added `tests/agent-a-base24-history-route-unit.mjs` (commit `5b4fe7bb`) to call actual authenticated History GET via in-memory Express and fake database, assert owner-1 vs other-2 scoping, image/video `kind=$2` parameters, filtered/all lists and invalid-filter 400. CI workflow now runs this plus the SQL unit ahead of the Chromium/WebKit history checks (commit `cd824baf`). This is a code-level regression, **not a real PostgreSQL or production authorization acceptance**. No cross-user records uploaded or customer data accessed.
 
+- **2026-10-16 truthful History wallet labels:** Server exposes `creditsReserved` and `creditsCharged` separately. Previous History UI merged them as a generic `N AI credits`, risking mistaken charge claims. In the EXISTING draft PR #152, `historyCredits` now says **Charged** only for positive server-reported `creditsCharged`; otherwise says **Reserved per server** only for positive `creditsReserved`; zero/missing displays no invented amount. Browser regression added with ready, processing, failed job cards and zero POST. Code commit `f32c24a8`, test `dc7334c5`. Exact-head GitHub CI pending; no wallet or Stripe changes.
+
 ## Agent D — BASE #16 duplicate Stripe Price-ID risk / IN PROGRESS (2026-10-16)
 
 - **Progress:** PR #148 latest 9fdb2da8. Isolated 5/5 config checks PASS. Added mocked Checkout fail-closed test, not yet CI-verified; GitHub Actions pending. Full BASE #16 remains PARTIAL / NOT LIVE.
