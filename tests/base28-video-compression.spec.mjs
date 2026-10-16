@@ -60,3 +60,16 @@ test('BASE #28: high-quality mode cannot promise a size reduction if output grow
  expect(args[args.indexOf('-crf')+1]).toBe('23');
  expect(args[args.indexOf('-b:a')+1]).toBe('160k');
 });
+
+test('BASE #28: zero-byte video is rejected without initializing FFmpeg or uploading',async({page})=>{
+ let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.route('**/ai-media.js',r=>r.fulfill({status:200,contentType:'text/javascript',body:localEngineMock}));
+ await page.goto('/mobile-utility.html?tool=video-compress');
+ await page.locator('#utilityFiles').setInputFiles({
+  name:'empty.mp4',mimeType:'video/mp4',buffer:Buffer.alloc(0)
+ });
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityStatus')).toContainText('non-empty video');
+ await expect(page.locator('#utilityResults')).toBeEmpty();
+ expect(posts).toBe(0);
+});
