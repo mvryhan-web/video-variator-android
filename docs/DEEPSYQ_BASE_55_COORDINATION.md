@@ -53,7 +53,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 20 | Product Video workflow | PARTIAL | C | REORDER+PRESERVE COMPLETE; DURATION BRIDGE AND LIVE GATED | CODE VERIFIED / MERGED TO BASE (partial) | ChatGPT BASE lane C / PR #63 / run 38899612960 / merge b8dc6c18 |
 | 21 | AI Agents | NOT STARTED (BASE) | C | VERIFY BASE SCOPE; NO BLOCK DUPLICATE | — | — |
 | 22 | Inspiration / Discover | NOT STARTED (BASE) | C | VERIFY BASE SCOPE; NO BLOCK DUPLICATE | — | — |
-| 23 | Template system | PARTIAL | C | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 23 | Template system | PARTIAL | C | Active product_name placeholder parity | IN PROGRESS | Agent C / Issue #74 / `base23-product-placeholder-publication-20261016` |
 | 24 | History | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 25 | My Creations | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 26 | Canvas | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
