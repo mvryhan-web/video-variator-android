@@ -118,8 +118,8 @@ export async function checkContentAssetReachability({
     }));
   }
   return {
-    status: counts.broken ? 'attention' : counts.unverified ? 'inconclusive' : 'checked',
-    code: counts.broken ? 'CONTENT_ASSET_BROKEN' : counts.unverified ? 'CONTENT_ASSET_UNVERIFIED' : 'CONTENT_ASSET_CHECKED',
+    status: counts.checked === 0 ? 'not_applicable' : counts.broken ? 'attention' : counts.unverified ? 'inconclusive' : 'checked',
+    code: counts.checked === 0 ? 'NO_SAFE_PUBLIC_ASSETS' : counts.broken ? 'CONTENT_ASSET_BROKEN' : counts.unverified ? 'CONTENT_ASSET_UNVERIFIED' : 'CONTENT_ASSET_CHECKED',
     ...counts,
     findings: findings.slice(0, 10),
     scope: 'Active template/inspiration same-origin public static assets (HEAD only; max 12).',
