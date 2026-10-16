@@ -1,6 +1,7 @@
 import {createEngine,saveLocal,subtitleFiles} from './ai-media.js';
 import {voices,languages,synthesize,toMp3} from './speech-client.js';
 import {audioTrimSettings,trimAudioLocal} from './audio-trim-core.js';
+import {videoToAudioSettings,videoToMp3Local} from './video-to-audio-core.js';
 const $=id=>document.getElementById(id),lang=(navigator.language||'en').slice(0,2);
 const copy={
  en:{setup:'Google voices are waiting for owner setup. Local transcription is available below.',available:'Free preview: up to 3 requests per account/day, 1,000 characters each. Shared daily quota applies. Sign in from the home page first.',working:'Processing… Keep this page open.',loading:'Downloading the speech model…',done:'Done. Review the result before using it.',cancelled:'Canceled',error:'Could not process this file. Try a shorter recording, check your connection and free device memory.',choose:'Choose a file first.',limit:'Use a recording of 5 minutes or less, up to 150 MB.',download:'Download MP3',share:'Share',delete:'Delete',copied:'Copied',login:'Sign in from the home page first.',quota:'The free voice quota is used up. Try again later.',consent:'I agree to send this text to Google to generate speech. Do not include private information.'},
@@ -14,8 +15,14 @@ const trimCopy={
  fr:{trimTitle:'Découper un audio',trimNote:'Découpez un fichier sur votre appareil sans le téléverser. Exportez en MP3.',trimFile:'Fichier audio (50 Mo max.)',trimStart:'Début (secondes)',trimEnd:'Fin (secondes)',trimGenerate:'Découper en MP3',trimInvalid:'Choisissez un fichier audio et un intervalle valide (10 minutes max.).'},
  uk:{trimTitle:'Обрізати аудіо',trimNote:'Обрізайте запис на своєму пристрої без завантаження на сервер. Експортуйте у MP3.',trimFile:'Аудіофайл (до 50 МБ)',trimStart:'Початок (секунди)',trimEnd:'Кінець (секунди)',trimGenerate:'Обрізати у MP3',trimInvalid:'Оберіть аудіофайл і правильний інтервал (до 10 хвилин).'}
 };
-const t=k=>copy[lang]?.[k]||trimCopy[lang]?.[k]||copy.en[k]||trimCopy.en[k]||k;
-document.querySelectorAll('[data-s]').forEach(el=>{const translated=copy[lang]?.[el.dataset.s]||trimCopy[lang]?.[el.dataset.s];if(translated)el.textContent=translated;});
+const videoAudioCopy={
+ en:{vtaTitle:'Video → MP3',vtaNote:"Extract a video's soundtrack on this device — no upload or AI credits.",vtaFile:'Video file (MP4, MOV, WebM, MKV — max 80 MB)',vtaGenerate:'Extract MP3',vtaWorking:'Extracting audio locally…',vtaInvalid:'Choose a supported video up to 80 MB.',vtaNoAudio:'No supported audio track was found. Try another video.',vtaDone:'MP3 ready. Play or save it below.'},
+ ru:{vtaTitle:'Видео → MP3',vtaNote:'Извлеките звук из видео прямо на устройстве — без загрузки на сервер и без AI-кредитов.',vtaFile:'Видеофайл (MP4, MOV, WebM, MKV — до 80 МБ)',vtaGenerate:'Извлечь MP3',vtaWorking:'Извлекаем звук на устройстве…',vtaInvalid:'Выберите поддерживаемое видео размером до 80 МБ.',vtaNoAudio:'В видео нет подходящей звуковой дорожки. Попробуйте другое видео.',vtaDone:'MP3 готов. Прослушайте или сохраните его.'},
+ fr:{vtaTitle:'Vidéo → MP3',vtaNote:'Extrayez le son localement, sans téléversement ni crédits IA.',vtaFile:'Vidéo (MP4, MOV, WebM, MKV — 80 Mo max.)',vtaGenerate:'Extraire en MP3',vtaWorking:'Extraction du son sur cet appareil…',vtaInvalid:'Choisissez une vidéo prise en charge de 80 Mo maximum.',vtaNoAudio:'Aucune piste audio compatible. Essayez une autre vidéo.',vtaDone:'MP3 prêt. Écoutez-le ou enregistrez-le.'},
+ uk:{vtaTitle:'Відео → MP3',vtaNote:'Витягніть звук із відео на пристрої — без завантаження та AI-кредитів.',vtaFile:'Відео (MP4, MOV, WebM, MKV — до 80 МБ)',vtaGenerate:'Витягнути MP3',vtaWorking:'Витягуємо звук на пристрої…',vtaInvalid:'Оберіть підтримуване відео до 80 МБ.',vtaNoAudio:'У відео немає сумісної звукової доріжки.',vtaDone:'MP3 готовий. Прослухайте або збережіть.'}
+};
+const t=k=>copy[lang]?.[k]||trimCopy[lang]?.[k]||videoAudioCopy[lang]?.[k]||copy.en[k]||trimCopy.en[k]||videoAudioCopy.en[k]||k;
+document.querySelectorAll('[data-s]').forEach(el=>{const translated=copy[lang]?.[el.dataset.s]||trimCopy[lang]?.[el.dataset.s]||videoAudioCopy[lang]?.[el.dataset.s];if(translated)el.textContent=translated;});
 for(const [value,name] of Object.entries(languages)){for(const id of ['speechLanguage','transcribeLanguage']){if(id==='transcribeLanguage'&&value==='en-GB')continue;const o=document.createElement('option');o.value=id==='transcribeLanguage'?value.split('-')[0]:value;o.textContent=name;$(id).append(o);}}
 voices.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;$('speechVoice').append(o);});
 let enabled=false,ttsAbort=null,ttsEngine=null,worker=null,sttEngine=null,sttBusy=false,sttId=0,resultURL=null,srt='';
@@ -113,4 +120,67 @@ $('trimGenerate').onclick=async()=>{
  finally{trimBusy=false;trimEngine=null;trimAbort=null;$('trimCancel').disabled=true;trimReady();}
 };
 $('trimCancel').onclick=()=>{trimAbort?.abort();try{trimEngine?.terminate();}catch(_){/* cancelled worker */}};
-window.addEventListener('pagehide',()=>{ttsAbort?.abort();ttsEngine?.terminate();sttEngine?.terminate();worker?.terminate();if(resultURL)URL.revokeObjectURL(resultURL);trimAbort?.abort();try{trimEngine?.terminate();}catch(_){}if(trimSourceURL)URL.revokeObjectURL(trimSourceURL);if(trimResultURL)URL.revokeObjectURL(trimResultURL);});
+
+// Everyday Tools: video soundtrack extraction, exclusively in local FFmpeg.wasm.
+// Original media, prompt and output are never POSTed to Studio/Speech/providers.
+let vtaBusy=false,vtaAbort=null,vtaEngine=null,vtaPreviewURL=null,vtaOutputURL=null;
+const videoPreview=$('vtaPreview');
+function vtaReady(){
+ if(vtaBusy){$('vtaGenerate').disabled=true;return;}
+ try{videoToAudioSettings($('vtaFile').files[0]);$('vtaGenerate').disabled=false;}
+ catch(_){$('vtaGenerate').disabled=true;}
+}
+$('vtaFile').addEventListener('change',()=>{
+ if(vtaPreviewURL){URL.revokeObjectURL(vtaPreviewURL);vtaPreviewURL=null;}
+ videoPreview.pause();videoPreview.removeAttribute('src');videoPreview.hidden=true;
+ if(vtaOutputURL){URL.revokeObjectURL(vtaOutputURL);vtaOutputURL=null;$('vtaResult').replaceChildren();}
+ const file=$('vtaFile').files[0];
+ try{
+  videoToAudioSettings(file);
+  vtaPreviewURL=URL.createObjectURL(file);videoPreview.src=vtaPreviewURL;videoPreview.hidden=false;
+  $('vtaStatus').textContent='';
+ }catch(_){$('vtaStatus').textContent=file?t('vtaInvalid'):'';}
+ vtaReady();
+});
+$('vtaGenerate').onclick=async()=>{
+ if(vtaBusy||trimBusy||sttBusy||ttsAbort)return;
+ const file=$('vtaFile').files[0];
+ try{videoToAudioSettings(file);}catch(_){$('vtaStatus').textContent=t('vtaInvalid');return;}
+ vtaBusy=true;vtaAbort=new AbortController();vtaReady();$('vtaCancel').disabled=false;
+ $('vtaStatus').textContent=t('vtaWorking');
+ try{
+  const result=await videoToMp3Local(file,{createEngine,
+   onEngine:engine=>{vtaEngine=engine;},signal:vtaAbort.signal});
+  if(vtaAbort.signal.aborted)return;
+  if(vtaOutputURL)URL.revokeObjectURL(vtaOutputURL);
+  vtaOutputURL=URL.createObjectURL(result);
+  const player=document.createElement('audio');player.controls=true;player.src=vtaOutputURL;
+  const actions=document.createElement('div');actions.className='actions';
+  for(const [key,action]of [
+   ['download',()=>saveLocal(result)],
+   ['share',()=>window.VUShareFile({name:result.name,blob:result})],
+   ['delete',()=>{
+    player.pause();player.removeAttribute('src');
+    if(vtaOutputURL)URL.revokeObjectURL(vtaOutputURL);vtaOutputURL=null;
+    $('vtaResult').replaceChildren();
+   }]
+  ]){
+   const button=document.createElement('button');button.textContent=t(key);
+   button.onclick=()=>Promise.resolve().then(action).catch(()=>$('vtaStatus').textContent=t('error'));
+   actions.append(button);
+  }
+  $('vtaResult').replaceChildren(player,actions);
+  $('vtaStatus').textContent=t('vtaDone');
+ }catch(e){
+  $('vtaStatus').textContent=vtaAbort?.signal.aborted?t('cancelled'):
+   e.message==='VIDEO_AUDIO_NO_AUDIO_OR_UNSUPPORTED'?t('vtaNoAudio'):t('error');
+ }finally{
+  vtaBusy=false;vtaAbort=null;vtaEngine=null;
+  $('vtaCancel').disabled=true;vtaReady();
+ }
+};
+$('vtaCancel').onclick=()=>{
+ vtaAbort?.abort();try{vtaEngine?.terminate();}catch(_){/* already cancelled */}
+ $('vtaStatus').textContent=t('cancelled');
+};
+window.addEventListener('pagehide',()=>{ttsAbort?.abort();ttsEngine?.terminate();sttEngine?.terminate();worker?.terminate();if(resultURL)URL.revokeObjectURL(resultURL);trimAbort?.abort();try{trimEngine?.terminate();}catch(_){}if(trimSourceURL)URL.revokeObjectURL(trimSourceURL);if(trimResultURL)URL.revokeObjectURL(trimResultURL);vtaAbort?.abort();try{vtaEngine?.terminate();}catch(_){}if(vtaPreviewURL)URL.revokeObjectURL(vtaPreviewURL);if(vtaOutputURL)URL.revokeObjectURL(vtaOutputURL);});
