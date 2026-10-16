@@ -24,6 +24,12 @@ test('BASE 31: accepted Studio job shows server reserve and lifecycle; no extra 
  await expect(page.locator('#jobProgressCredits')).not.toContainText('charged');
  await expect(page.locator('#jobProgressHint')).toContainText('History');
  expect(jobsSubmitted).toBe(1);
+ // This must coexist with A24's independent History request-epoch fix:
+ // toggling the view should hide status visually without rewriting setHistory.
+ await page.locator('#showHistory').click();
+ await expect(page.locator('#jobProgress')).toBeHidden();
+ await page.locator('#showCreate').click();
+ await expect(page.locator('#jobProgress')).toBeVisible();
  stage='ready';
  await expect(page.locator('#jobProgress')).toHaveAttribute('data-status','ready',{timeout:20000});
  await expect(page.locator('#jobProgressCredits')).toContainText('17 AI credits charged');
