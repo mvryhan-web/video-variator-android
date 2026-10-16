@@ -137,3 +137,8 @@ Source: the original owner TXT in `main:docs/execution/DEEPSYQ_BLOCKS_1-7_CANONI
 ## B5-08 — truthful owner scheduler timestamps (code only, 2026-10-16)
 
 Owner status now separates a **fresh private-worker heartbeat** from the expected schedule. The next-check estimate is shown only when the worker heartbeat is fresh, the Watcher is not paused and the latest saved report implies a future due time. If that due time has already passed, the owner sees `scheduleOverdue=true` instead of a misleading next-run date in the past. Missing or stale heartbeat never claims that checks are live. The owner panel displays the schedule estimate and the existing B5-07 invalid-purchase count. Tests cover fresh/overdue/stale/paused states. Render service, real periodic runs and end-to-end browser acceptance still require an approved deployment; code/CI alone is not B5-08 DONE.
+
+
+## Optional public-asset reachability slice (2026-10-16; isolated branch)
+
+The existing 06:00 content audit can additionally check a bounded sample of **same-origin public static** active thumbnail/inspiration URLs when `PRODUCT_WATCHER_LINK_CHECKS_ENABLED=true` is explicitly configured on the private worker. It returns only counts plus content record IDs and 404/410 codes, without storing URLs or following redirects. External/signed/private media and actual workflows are intentionally not probed; 403/405/5xx/network failures are inconclusive. The flag defaults OFF. For safeguards, tests and rollout gates see `docs/PRODUCT_WATCHER_LINK_CHECKS.md`. This is code only — not deployed, no migrations, no media playback verification.

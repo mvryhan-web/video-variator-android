@@ -718,3 +718,11 @@ Per original Block 5 TXT and numbered checklist, independently advanced B5-06 on
 ### Block 5 / B5-08 — owner check-schedule truthfulness (2026-10-16)
 
 - **IMPLEMENTED / TARGETED CI PENDING / NOT DEPLOYED — draft PR #50:** Private owner status/UI now displays the freshest observed worker heartbeat, exposes a future **estimate** only when its due time has not passed, and explicitly marks a check overdue when no new report follows an active worker heartbeat. Stale heartbeat/owner pause do not fabricate a live next run. Unit fixtures cover expected, overdue, paused and stale cases. B5-08 **PARTIAL** until browser owner-auth and real Render worker acceptance. No website Home, paid providers, DB migration, billing writes, main or production touched.
+
+
+### Block 5 — daily public-media link availability (2026-10-16)
+
+- **Original source:** `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_5.txt` — production broken links/template monitoring. Isolated branch `deepsyq-block5-link-reachability-20261016` based on Block 5 PR #50; **IN PROGRESS / NOT MERGED / NOT DEPLOYED**. This does not change or replace any BASE or other block's code.
+- New `server/product-watcher/link-reachability.js` performs optional short-lived, rate-bounded, unauthenticated `HEAD` checks of at most 12 active **same-origin static template and Inspiration assets**, only on existing private 06:00 daily content tasks; gated by additional `PRODUCT_WATCHER_LINK_CHECKS_ENABLED=true`, default OFF. Results are counts and IDs/status only; HTTPS root restriction, redirect blocking, signed/external/private URLs skipped; no URL, media body or provider/personal data persisted. HTTP 404/410 counted broken; 403/405/5xx/network marked inconclusive, not verified failures.
+- Existing 07:00 task does not fetch links. All external URLs, skills/workflows, actual media playback and sitewide navigation remain unchecked. No live Render schedule, provider, wallet, Stripe, migration or main change. Targeted tests and CI acceptance pending at this handoff; do not mark DONE before verified.
+- Detailed gates and limits: `docs/PRODUCT_WATCHER_LINK_CHECKS.md`. Next: accept targeted CI, then develop actual bounded skills/workflow monitoring only within Block 5 per source TXT, and separately satisfy private worker/staging production gates.
