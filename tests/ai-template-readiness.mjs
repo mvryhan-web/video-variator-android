@@ -20,7 +20,7 @@ test('owner metadata detects legacy unverified actives and unsupported Studio in
  assert.equal(r.publicEligible,3);assert.equal(r.actionable,1);
  assert.equal(r.missingRights,2);assert.equal(r.noThumbnail,3);
  assert.ok(r.blockers.some(x=>x.includes('Unverified legacy')&&x.includes('public API hides')));
- assert.ok(r.blockers.some(x=>x.includes('Product campaign')&&x.includes('Studio handoff')));
+ assert.ok(r.blockers.some(x=>x.includes('Product campaign')&&x.includes('logo')));
  assert.ok(r.blockers.some(x=>x.includes('Future avatar')));
  assert.ok(!r.blockers.some(x=>x.includes('Owner photo')));
 });
@@ -28,4 +28,15 @@ test('rights metadata alone is never treated as proof of working provider integr
  const r=summarizeAiTemplateReadiness([{title:'Approved prompt',active:true,generationType:'image',requiredInputTypes:[],rightsBasis:'owned',rightsNote:'Internal original copy record'}]);
  assert.equal(r.actionable,1);assert.equal(r.noThumbnail,1);
  assert.equal(r.publicEligible,1);
+});
+
+test('owner readiness reflects actual product-name AI Apps action',()=>{
+ const base={title:'Owned product reel',generationType:'product_video',active:true,requiredInputTypes:['image','product_name'],rightsBasis:'owned',rightsNote:'Original internal asset record',thumbnail:'/owner.webp'};
+ const good=summarizeAiTemplateReadiness([{...base,promptTemplate:'Show {{product_name}}'}]);
+ assert.equal(good.publicEligible,1);assert.equal(good.actionable,1);assert.equal(good.blockers.length,0);
+ const invalid=summarizeAiTemplateReadiness([{...base,promptTemplate:'Show the product with no field'}]);
+ assert.equal(invalid.publicEligible,1);assert.equal(invalid.actionable,0);
+ assert.ok(invalid.blockers.some(x=>x.includes('product name')&&x.includes('placeholder')));
+ const logo=summarizeAiTemplateReadiness([{...base,requiredInputTypes:['logo','product_name'],promptTemplate:'Film {{product_name}}'}]);
+ assert.equal(logo.actionable,0);assert.ok(logo.blockers.some(x=>x.includes('logo')));
 });
