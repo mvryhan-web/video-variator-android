@@ -67,6 +67,10 @@
 
 ## Agent D — BASE #51 Image + Video pricing readiness / IN PROGRESS (2026-10-16)
 
+- **New scoped follow-up claim, before source edit:** owner readiness also reports Studio ready when `ADMIN_EMAIL` missing, `AI_STUDIO_MAX_CALLS` invalid, or `AI_STUDIO_ALLOWED_KINDS` excludes Image or Video; actual `studioConfig` would reject those creation models. Extend SAME D PR #158 with independent, fail-closed Studio operator setup and required Image/Video kind coverage gates. Keep protected Home, public flags, provider, model list, checkout, usage/ledger and original TXT untouched. New claim in board `ecfc46d8`, status prior to code.
+
+
+
 - **Latest PR:** [#158](https://github.com/mvryhan-web/video-variator-android/pull/158), head `b7c0a91cdde9c05bf9a5daa3a550e8bd75f32b76` (DRAFT, UNMERGED). Exactly 3 files: readiness code + focused unit tests + new doc. Required `imageVideoPricing` checks approved model pricing entries and credit rates for **both** `image` and `video`; no actual prices or customer billing are changed. Existing `launchReady:true` synthetic fixture updated to represent both categories, new fail-closed tests added for Image-only/Video-only and independent kill switch. 16/16 isolated expression combinations PASS; current-head GitHub Actions 38943624483, 38943624510, 38943624464, 38943624576, 38943624761 are QUEUED. Code is NOT yet full CI VERIFIED, full BASE #51 PARTIAL / NOT LIVE.
 
 
