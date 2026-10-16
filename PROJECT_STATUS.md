@@ -14,11 +14,12 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
-## Agent A — BASE #31 generation UX: server-accepted job stages and real reserved credits / CODE PREPARED / FOCUSED JS CHECK PASS / CI PENDING (2026-10-16)
+## Agent A — BASE #31 generation UX: server-accepted job stages and real reserved credits / CODE PREPARED, 7/7 UNIT LOGIC CHECKS / CI QUEUED (2026-10-16)
 
-- **Claim/owner:** Agent A Issue #72, original BASE #31 only, branch `agent-a-base31-job-progress-20261016`; previous A #3/#24 draft PRs remain separate and await CI. Scope is existing Image/Video/Audio Studio user-facing presentation and focused acceptance only; no new billing, Stripe, provider, wallet, database, route or Home modifications.
-- **Confirmed gap:** the existing accepted /api/studio/jobs POST already returns `status:'processing',creditsReserved` and user-scoped job GET includes states, but Studio UI discards reserved credits and shows generic `Generating` without clear queued/processing/finalizing distinction or status explanation that accepted work survives leaving the page.
-- **Plan:** small accessible Studio status panel; render only server-confirmed reservation and real server state, label unknown/failed without asserting refund or a safe retry. Keep per-request consent and no extra POST. Focused native/Playwright checks, one draft PR targeting BASE, hold until actual CI. **Not CODE VERIFIED or deployed.**
+- **Claim/owner:** Agent A Issue #72, original BASE #31 only, dedicated branch `agent-a-base31-job-progress-20261016` and draft PR #154. This is existing Studio presentation only, not provider, subscription, Stripe or wallet code. Other A #3/#24/#32/#45 claims are tracked separately.
+- **Implemented:** `app/src/main/assets/studio-job-progress.js` formats only server-returned status and credit values. `generate-studio.js/.html/.css` render accessible confirmation, queued, processing, finalizing, ready, failed, unknown and unconfirmed states, and explain that accepted server jobs can be checked later via History. Reserved credits are **not** called charged; `creditsCharged` is shown only on confirmed-ready state. No new paid calls or automatic retries.
+- **Collision resolution:** Existing #24 PR #152 owns History filter epoch cleanup. To avoid overriding that logic, PR #154 now leaves `setHistory()` byte-identical to BASE. Scoped CSS hides the progress panel when `#historyEmpty` is visible; progress remains in memory without touching the shared History loader. Follow-up commits `6c97903d`, `39192ef6`, `35af4832`.
+- **Checks:** 7/7 isolated formatter evaluations passed on exact helper source blob `b7569a19`. Added `tests/agent-a-base31-progress-unit.mjs`, Chromium/WebKit `tests/agent-a-base31-job-progress.spec.mjs`, and `.github/workflows/base31-job-progress.yml`. **GitHub Node and browser CI are queued, NOT passed**. No production, live billing, real-provider, physical-device or 55-point DONE claim.
 
 ## Agent D — BASE #16 duplicate Stripe Price-ID risk / IN PROGRESS (2026-10-16)
 
