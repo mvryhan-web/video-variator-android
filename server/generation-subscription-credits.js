@@ -104,6 +104,7 @@ export async function grantPaidSubscriptionInvoice({event,env={},pool,wallet}){
  // packs. The existing cumulative charge.refunded handler can now revoke
  // credits proportionally and apply debt instead of leaving refunded credits.
  await wallet.grant({userId:rows[0].id,sessionId:invoice.id,
-  paymentIntent,credits:grant.credits,amount:invoice.amount_paid,currency:invoice.currency});
+  paymentIntent,credits:grant.credits,amount:invoice.amount_paid,currency:invoice.currency,
+  allowHistoricalSubscriptionReplay:true});
  return true; // caller must ALSO process the existing legacy invoice.paid event
 }
