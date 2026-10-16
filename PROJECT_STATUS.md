@@ -7,6 +7,11 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
+## Agent 5 — verified PR #118/#122 closeout and broad browser CI ownership / IN PROGRESS (2026-10-16)
+
+- **Agent/branch:** Agent 5 coordination-only, `agent5-qa-status-closeout-20261016`; no A–D BASE feature row claimed.
+- **Claimed scope:** reconcile stale `PROJECT_STATUS.md` labels for merged #118/#122 against actual GitHub merge SHAs and successful focused CI, document confirmed **global CI 38923812410 FAIL** with clear existing A/C/D ownership. Only this Agent5 status section may change; no TXT, logo/artwork, app, checkout, database, provider, Home, main/production work.
+
 ## Agent 5 — avoid running full browser regression for coordination-only test changes / STRUCTURE VERIFIED, PR #122 (2026-10-16)
 
 - **Owner/scope:** Agent 5 QA on isolated `agent5-scope-coordinator-ci-filter-20261016`, not an A/B/C/D BASE row claim; no feature work overwritten.
