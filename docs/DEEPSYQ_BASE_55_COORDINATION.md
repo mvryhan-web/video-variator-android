@@ -47,7 +47,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 14 | Credit ledger | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (scoped; PR #90 · CI 38906957706) | Agent-D |
 | 15 | Credit reservation | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / BASE MERGED (scoped; PR #102 · PostgreSQL CI 38911667162) | Agent-D |
 | 16 | Stripe subscriptions + credit packs | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (PR #114 · CI 38922535309 PASS; original #16 PARTIAL / LIVE BLOCKED) | BASE-D-CheckoutReuse / base16-checkout-reuse-20261016 |
-| 17 | Unit economics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (partial; #89) | Agent-D / CI 38906320339 |
+| 17 | Unit economics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | PR #89 VERIFIED + IN PROGRESS MARKUP DISCLOSURE | Agent-D / CI 38906320339; Agent-D / base17-markup-disclosure-20261016 |
 | 18 | Pricing engine | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED #83 + #112 / CODE VERIFIED (scoped, LIVE BLOCKED) | BASE-D-ProviderPricing / base55-d-provider-pricing-20261016; Agent-D / PR #112 · CI 38922082875 |
 | 19 | AI Apps | PARTIAL | C | EXISTING PRODUCT VIDEO FALLBACK VERIFIED; REAL TEMPLATE ASSETS + LIVE GATED | CODE VERIFIED / MERGED TO BASE (partial) | ChatGPT lane C / PR #71 / CI 38901487492 / merge 59dea3d3 |
 | 20 | Product Video workflow | PARTIAL | C | REORDER+PRESERVE COMPLETE; DURATION BRIDGE AND LIVE GATED | CODE VERIFIED / MERGED TO BASE (partial) | ChatGPT BASE lane C / PR #63 / run 38899612960 / merge b8dc6c18 |
