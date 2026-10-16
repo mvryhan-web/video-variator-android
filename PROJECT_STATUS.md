@@ -7,11 +7,11 @@ This file is the shared live progress board for all coding agents.
 
 > Read `AGENTS.md` first. Do not mark anything DONE without implementation + verification.
 
-## Agent 5 — BASE checklist ↔ coordination consistency CI (IN PROGRESS, 2026-10-16)
+## Agent 5 — BASE checklist ↔ coordination consistency CI (SCOPED CODE VERIFIED, PR #100, 2026-10-16)
 
 - **Ownership:** Agent 5 independent read-only QA (`agent5-base55-checklist-consistency-20261016`), no new A–D BASE feature-row claim.
 - **Before code audit:** original 55 headings, live coordination board and detailed checklist all have 55 rows, with exact matching titles. Existing `verify-deepsyq-base-coordination.mjs` checks original TXT and coordination board but **does not inspect the detailed checklist**, so removing/duplicating a checklist row or silently renaming it is undetected.
-- **Scope:** extend only existing read-only checker/unit tests/targeted workflow to validate all 55 detailed checklist rows + exact titles against coordination, with negative tests and no source TXT, real site, Home, auth, Stripe, DB/provider or production changes. Complete once scoped CI passes on isolated PR; no unrelated feature work.
+- **Result:** [PR #100](https://github.com/mvryhan-web/video-variator-android/pull/100) extends the read-only validator to detailed checklist row count/order, unique IDs, exact original coordination titles, malformed row/title rejection while permitting different truthful progress descriptions. Added 4 unit tests (11/11 total) and checklist-triggered workflow; focused [CI 38911485653](https://github.com/mvryhan-web/video-variator-android/actions/runs/38911485653) **SUCCESS**, code commit `3cd7bc53`, pending BASE merge. Global platform/browser regression is separate; NOT declared green or production-ready. Original TXT and A-D task owners unchanged.
 
 ## Agent 5 — BASE 55-claim-board integrity verifier / CODE VERIFIED, PR #95 (2026-10-16)
 
