@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {generationWorkerReady,generationWorkerPlan,referenceCleanupMigrationReady,createCoalescingWorkerTask,drainWorkerTask,closeWorkerDatabasePool} from '../server/generation-worker-runtime.js';
+import {generationWorkerReady,generationWorkerPlan,referenceCleanupMigrationReady,createCoalescingWorkerTask,drainWorkerTask,closeWorkerDatabasePool,workerExitCode} from '../server/generation-worker-runtime.js';
 
 test('generation worker is fail-closed until DB, studio, polling and provider key are configured',()=>{
  const pool={};
@@ -111,4 +111,11 @@ test('BASE #12: DB pool shutdown closes once, rejects failure, and times out on 
  assert.equal(await closeWorkerDatabasePool(hung,{timeoutMs:10}),false);
  assert.equal(hungCalls,1);
  assert.equal(await closeWorkerDatabasePool(null,{timeoutMs:10}),false);
+});
+
+test('BASE #12: fatal worker errors are nonzero; ordinary shutdown is clean',()=>{
+ assert.equal(workerExitCode('SIGTERM'),0);
+ assert.equal(workerExitCode('SIGINT'),0);
+ assert.equal(workerExitCode('uncaughtException'),1);
+ assert.equal(workerExitCode('unhandledRejection'),1);
 });

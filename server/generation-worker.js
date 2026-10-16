@@ -5,7 +5,7 @@ import {GenerationWallet} from './generation-wallet.js';
 import {installGenerationStudio} from './generation-studio.js';
 import {createObjectStorage} from './generation-storage.js';
 import {createGenerationReferenceLedger} from './generation-reference-ledger.js';
-import {generationWorkerPlan,referenceCleanupMigrationReady,createCoalescingWorkerTask,drainWorkerTask,closeWorkerDatabasePool} from './generation-worker-runtime.js';
+import {generationWorkerPlan,referenceCleanupMigrationReady,createCoalescingWorkerTask,drainWorkerTask,closeWorkerDatabasePool,workerExitCode} from './generation-worker-runtime.js';
 import {aiMigrationStatus} from './ai-migrations.js';
 
 const storage=createObjectStorage({env:process.env});
@@ -59,7 +59,7 @@ async function shutdown(signal){
   console.error('[generation worker] cleanup still active at shutdown deadline');
  if(!await closeWorkerDatabasePool(pool,{timeoutMs:5000}))
   console.error('[generation worker] DB pool close incomplete at shutdown deadline');
- process.exit(0);
+ process.exit(workerExitCode(signal));
 }
 process.once('SIGTERM',()=>void shutdown('SIGTERM'));
 process.once('SIGINT',()=>void shutdown('SIGINT'));
