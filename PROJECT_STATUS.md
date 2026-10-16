@@ -110,6 +110,12 @@ The same already-claimed changes were reconciled onto the freshest BASE without 
 - **Observed gap:** `GenerationWallet.history` includes internal ledger `reference` in both customer `/api/ai-wallet/history` and `/api/ai-billing/history`. Current client UIs use only kind, date and deltas. Filter returned customer fields without changing stored records or owner reports.
 - **Collision guard:** concurrent #16 owns `server/generation-billing.js`; do NOT change their routes, webhook flows or Stripe. Single change in `generation-wallet.js` plus isolated HTTP/mock validation. No production/migration changes.
 
+## BASE #16 PostgreSQL Checkout fixture regression — IN PROGRESS (2026-10-16)
+
+- **Same owner:** BASE-D-CheckoutReuse; new isolated branch `base16-checkout-pg-fixture-20261016`. Existing payment fix PR #85 is merged and security checks should remain strict.
+- **Observed failure:** AI Studio [CI 38906352455](https://github.com/mvryhan-web/video-variator-android/actions/runs/38906352455) PostgreSQL test `tests/generation-wallet-postgres.mjs:76` expects idempotent existing-session reuse to return 200. Its Stripe fixture omits `status:'open'` and `expires_at`; real Stripe Checkout sessions carry those fields and `existingCheckoutResponse` correctly rejects unknown/expired state with 409. Repair **synthetic fixture only**, not the hardened production server or payment rules; targeted real disposable PostgreSQL CI and commit before merging.
+- **No overlap:** #14 owner modifying `server/generation-wallet.js`; no change there. No Stripe call, main, Home or Render changes.
+
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
 **ACTIVE OWNER PRIORITY NOW:** all four coding-agent sessions focus on the **original BASE TXT / 55-point checklist**, not new Roadmap Blocks 1–7 or duplicated Product Watcher. Shared 55-item claim board and proposed collision-safe work lanes: [`docs/DEEPSYQ_BASE_55_COORDINATION.md`](docs/DEEPSYQ_BASE_55_COORDINATION.md). This new owner instruction overrides older prose suggesting BASE is owned by just one agent or that Agents E/Block 5 should keep expanding their scope. **Already verified:** 55 rows exist in the BASE checklist; #47 and #53 are DONE/RULE; **53 other rows are not fully DONE** and mostly have significant existing code. `PARTIAL` does NOT mean “build from scratch.”
