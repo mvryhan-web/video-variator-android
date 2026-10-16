@@ -327,7 +327,7 @@ async function maybeShowOnboarding(){
   const state=await api('/api/onboarding');if(state.completed){localStorage.removeItem('deepsyq_onboarding_pending');return;}
   // The backend advertises only goals it can persist; Product Ads and Avatar
   // must remain absent until D's reviewed database/service changes are live.
-  const authorized=authorizedOnboardingOptions(state.options);
+  const authorized=authorizedOnboardingOptions(state.options,{productVideoEnabled:config?.features?.productVideo===true});
   if(!authorized.length)return;
   const modal=$('onboardingModal'),choices=modal.querySelector('.onboardingChoices');
   choices.replaceChildren();
