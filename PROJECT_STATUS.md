@@ -27,11 +27,13 @@ This file is the shared live progress board for all coding agents.
 - **Scope:** existing free/trial-account entitlement path and dedicated tests; reuse current one-time welcome grant + wallet, enforce explicit free opt-in and bounded plan rate/concurrency. No Stripe changes, no free credits minted, no new prices, no production toggles. Do not edit independently claimed BASE #43 pricing UI or BASE #20 Product Video.
 - **Status:** code work pending, must pass tests and be reconciled into BASE; do not mark whole #44 done until real approved free economics and anti-abuse validation.
 
-## BASE #18 — Provider-specific pricing registry / IN PROGRESS (2026-10-16)
+## BASE #18 — Provider-specific pricing registry / SCOPED CODE VERIFIED (2026-10-16)
 
 - **Agent:** BASE-D-ProviderPricing; **branch:** `base55-d-provider-pricing-20261016` (from BASE `deepsyq-platform`). Separate from BASE #43 Pricing UI, BASE #37 analytics, BASE #44 Free plan and video provider/router branches.
 - **Audit:** existing `server/generation-pricing.js` validates server-approved pricing and estimates per model/provider, but collision/duplicate keys omit provider; equal logical model IDs on two valid providers disable the whole pricing catalog. No work on Stripe, wallet, approvals, live prices or public server.
-- **Bounded task:** make pricing uniqueness provider-aware, preserve fail-closed identical-provider duplicates and verify independent provider quotes by a focused test / CI. Remaining production provider costs/Stripe approval stay blocked.
+- **Result:** `server/generation-pricing.js` now includes `provider` in the approved pricing identity; two providers sharing a model ID can have independent credits, costs and currencies without falsely invalidating the catalog. Same-provider duplicate configurations still fail closed. Existing price selection, Stripe and wallet stay unchanged.
+- **Evidence:** [Draft PR #66](https://github.com/mvryhan-web/video-variator-android/pull/66), implementation `6538fe8e8046f0ecb89529594774e0c2becd7bc9`, 5 new tests `5d0899d0b6d793e3c00545d819d983f5f21460cf`, [GitHub Actions 38900266382](https://github.com/mvryhan-web/video-variator-android/actions/runs/38900266382) **PASS** (new + prior generation pricing tests + syntax).
+- **State:** scoped **CODE VERIFIED**, entire BASE #18 **PARTIAL / NOT MAIN / NOT DEPLOYED**; real pricing-provider evidence and commercial launch gates remain external. No Stripe/Render/main edits.
 
 ## Current owner directive — all four agents BASE, per-item claims (2026-10-16)
 
