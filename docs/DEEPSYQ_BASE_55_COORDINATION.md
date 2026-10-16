@@ -75,7 +75,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 42 | Persist BytePlus output in our storage | PARTIAL / BLOCKED | B | FINISH SAFE CODE; EXTERNAL GATE | — | — |
 | 43 | Pricing page | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | MERGED TO BASE / CODE VERIFIED (PR #132 · CI 38929739219 + 38929739237 PASS, LIVE BLOCKED) | BASE-D-ChatGPT / base55-d-pricing-integrity-20261016 |
 | 44 | Free plan | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | CODE VERIFIED / MERGED TO BASE (scope only) | Agent D PR #70; Issue #75 audit |
-| 45 | Onboarding | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 45 | Onboarding | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS — server-authorized four-choice client readiness; schema migration remains D gate | Agent A / agent-a-base45-onboarding-options-20261016 / Issue #72 |
 | 46 | Homepage conversion | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 47 | Do not expose BytePlus as our product | DONE | — | DO NOT REBUILD | — | — |
 | 48 | Production safety / regression | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS — PR #153 signature diagnostics redacted; isolated handler 3/3 PASS, CI QUEUED; #117/#123 earlier merged; LIVE BLOCKED | Agent D / PR #153 / base48-stripe-signature-error-redaction-20261016 |
