@@ -26,6 +26,9 @@ test('public template API exposes active templates and owner can create one',asy
   if(sql.includes('CREATE TABLE IF NOT EXISTS vv_admin_audit'))return {rows:[]};
   if(sql.startsWith('INSERT INTO vv_admin_audit('))return {rows:[]};
   if(sql.startsWith('SELECT * FROM vv_ai_template WHERE active=true')){assert.match(sql,/rights_basis IN/);assert.match(sql,/length\(trim\(rights_note\)\)/);return {rows};}
+  if(sql.includes('SELECT * FROM vv_ai_template WHERE slug=$1')){assert.match(sql,/rights_basis IN/);return {rows};}
+  if(sql.startsWith('SELECT * FROM vv_ai_template WHERE id=$1'))return {rows};
+  if(sql.startsWith('UPDATE vv_ai_template SET')){const result={...rows[0],title:args[1],slug:args[2],category:args[3],description:args[4],thumbnail:args[5],generation_type:args[6],prompt_template:args[7],default_model:args[8],required_input_types:JSON.parse(args[9]),default_settings:JSON.parse(args[10]),active:args[11],featured:args[12],sort_order:args[13],rights_basis:args[14],rights_note:args[15]};return {rows:[result]};}
   if(sql.startsWith('INSERT INTO vv_ai_template')){const r={...rows[0],id:args[0],title:args[1],slug:args[2],category:args[3],description:args[4],thumbnail:args[5],generation_type:args[6],prompt_template:args[7],default_model:args[8],required_input_types:JSON.parse(args[9]),default_settings:JSON.parse(args[10]),active:args[11],featured:args[12],sort_order:args[13],rights_basis:args[15],rights_note:args[16]};return {rows:[r]};}
   throw new Error(sql);
  }};
@@ -34,6 +37,11 @@ test('public template API exposes active templates and owner can create one',asy
  const server=app.listen(0);await new Promise(r=>server.once('listening',r));const base=`http://127.0.0.1:${server.address().port}`;
  try{
   let r=await fetch(base+'/api/templates?featured=true');assert.equal(r.status,200);let d=await r.json();assert.equal(d.items.length,1);assert.equal(d.items[0].slug,'photo-ad');assert.equal(Object.hasOwn(d.items[0],'rightsNote'),false);
+  r=await fetch(base+'/api/templates/photo-ad');assert.equal(r.status,200);d=await r.json();assert.equal(d.template.slug,'photo-ad');assert.equal(Object.hasOwn(d.template,'rightsNote'),false);
+  r=await fetch(base+'/api/studio/admin/templates',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Unverified offer',slug:'unverified-offer',category:'ads',generationType:'image',promptTemplate:'An original design',active:true,featured:false})});
+  assert.equal(r.status,400);assert.equal((await r.json()).error,'TEMPLATE_RIGHTS_REQUIRED');
+  r=await fetch(base+'/api/studio/admin/templates/t-1',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({rightsBasis:'licensed',rightsNote:'License receipt kept in internal archive',active:true,featured:true})});
+  assert.equal(r.status,200);d=await r.json();assert.equal(d.template.rightsBasis,'licensed');assert.equal(d.template.rightsNote,'License receipt kept in internal archive');
   r=await fetch(base+'/api/studio/admin/templates',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Video ad',slug:'video-ad',category:'ads',generationType:'video',promptTemplate:'Create a short product video',requiredInputTypes:['image'],defaultSettings:{ratio:'16:9'},active:false,featured:false,sortOrder:30})});assert.equal(r.status,201);d=await r.json();assert.equal(d.template.slug,'video-ad');assert.equal(d.template.active,false);assert.equal(d.template.rightsBasis,null);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
