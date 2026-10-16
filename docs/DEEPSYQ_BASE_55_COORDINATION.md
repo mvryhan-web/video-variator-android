@@ -64,7 +64,7 @@ Each listed item belongs to **exactly one** lane here, but a lane assignment is 
 | 31 | Generation UX/status | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 32 | Friendly error handling | PARTIAL | A | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
 | 33 | Safe retry | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
-| 34 | Server-side rate/concurrency limits | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | — | — |
+| 34 | Server-side rate/concurrency limits | PARTIAL | B | AUDIT IMPLEMENTATION; FINISH GAP | IN PROGRESS / AGENT B / LIMIT ENFORCEMENT REGRESSION TESTS (2026-10-16) | Agent B / Issue #73 / `base34-generation-policy-tests-20261016` |
 | 35 | Security | PARTIAL — TEMPLATE OWNER AUTHORIZATION CI VERIFIED | C | OTHER IDOR/UPLOAD/WEBHOOK/KEY/PRODUCTION REVIEWS PENDING | CODE VERIFIED / MERGED TO BASE (PR #94) | Agent C / Issue #74 / merge `6a3b2d2a` / PostgreSQL CI 38907935442 |
 | 36 | Privacy | PARTIAL — WORKER CRASH REDACTION CODE VERIFIED | C | TERMS/MEDIA PROVIDER PAYLOADS + LIVE PRIVACY REVIEW REMAIN | CODE VERIFIED / MERGED TO BASE (PR #109) | Agent C / Issue #74 / merge `e89aefc7` / focused CI 38914175144 |
 | 37 | Business analytics | PARTIAL | D | AUDIT IMPLEMENTATION; FINISH GAP | PR #64 + #119 / CODE VERIFIED (scoped, NOT LIVE) | BASE-D-Analytics-ChatGPT / PR #64 · CI 38899113996; Agent-D / PR #119 · CI 38924145417 |
