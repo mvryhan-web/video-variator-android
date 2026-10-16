@@ -25,7 +25,7 @@ export function planPreDispatchFallback({request,primary,candidates=[],quoteFor,
   const q=quoteFor(model,effective);
   if(!q||!Number.isSafeInteger(q.credits)||q.credits<=0||
      !Number.isSafeInteger(q.providerCostMicros)||q.providerCostMicros<=0||
-     typeof q.currency!=='string'||!/^[A-Z]{3}$/.test(q.currency))return null;
+     typeof q.currency!=='string'||!/^[a-z]{3}$/.test(q.currency))return null;
   return q;
  }catch{return null;}};
  const base=price(primary);
