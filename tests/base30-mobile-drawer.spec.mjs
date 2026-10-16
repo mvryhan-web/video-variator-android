@@ -41,7 +41,8 @@ test('BASE #30: real mobile opener, scrollable owned drawer, Escape, outside tap
   await expect(menu).toHaveAttribute('aria-expanded','false');
   await expect(menu).toBeFocused();
   await menu.click();
-  await page.locator('#workspace').click({position:{x:15,y:15}});
+  // Tap an uncovered point to the right of the 240px mobile drawer.
+  await page.mouse.click(width-12,140);
   await expect(page.locator('body')).not.toHaveClass(/menu-open/);
   await expect(sidebar).toHaveJSProperty('inert',true);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
