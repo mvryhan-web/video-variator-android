@@ -36,6 +36,14 @@ export function validWalletAmount(amount) {
   return n !== null && Number.isSafeInteger(n) && n >= 0 ? n : null;
 }
 
+// Server sends an opt-in price-free map only after explicit approval.
+// A missing allocation means NO verified AI credits for this subscription.
+export function approvedSubscriptionCredits(config,plan){
+ if(!['basic','pro','business'].includes(plan))return null;
+ const amount=config?.subscriptionCredits?.[plan];
+ return Number.isSafeInteger(amount)&&amount>0&&amount<=10_000_000?amount:null;
+}
+
 export function aiCheckoutMode(config) {
   // An unknown or absent mode is NOT presumed to mean test or live.
   if (!config?.enabled) return null;
