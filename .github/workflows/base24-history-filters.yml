@@ -6,11 +6,15 @@ on:
     paths:
       - 'app/src/main/assets/generate-studio.js'
       - 'tests/generation-studio.spec.mjs'
+      - 'tests/agent-a-base24-history-sql-unit.mjs'
+      - 'server/generation-studio.js'
       - '.github/workflows/base24-history-filters.yml'
   pull_request:
     paths:
       - 'app/src/main/assets/generate-studio.js'
       - 'tests/generation-studio.spec.mjs'
+      - 'tests/agent-a-base24-history-sql-unit.mjs'
+      - 'server/generation-studio.js'
       - '.github/workflows/base24-history-filters.yml'
   workflow_dispatch:
 
@@ -36,6 +40,8 @@ jobs:
         run: |
           node --check app/src/main/assets/generate-studio.js
           node --check tests/generation-studio.spec.mjs
+      - name: Verify authenticated History SQL placeholder without production DB
+        run: node --test tests/agent-a-base24-history-sql-unit.mjs
       - run: npx playwright install --with-deps chromium webkit
       - name: Run only BASE 24 out-of-order History cases on actual browsers
         run: npx playwright test tests/generation-studio.spec.mjs --project=chromium --project=webkit --grep 'BASE 24:'
