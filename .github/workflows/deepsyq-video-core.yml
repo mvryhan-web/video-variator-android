@@ -1,0 +1,48 @@
+name: Deepsyq Video core acceptance
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-provider.js'
+      - 'server/generation-byteplus.js'
+      - 'server/generation-studio.js'
+      - 'app/src/main/assets/generate-studio.js'
+      - 'app/src/main/assets/generate-studio.html'
+      - 'app/src/main/assets/generate-models.js'
+      - 'tests/generation-studio-unit.mjs'
+      - 'tests/generation-byteplus-unit.mjs'
+      - 'tests/generation-studio.spec.mjs'
+      - '.github/workflows/deepsyq-video-core.yml'
+  pull_request:
+    paths:
+      - 'server/generation-provider.js'
+      - 'server/generation-byteplus.js'
+      - 'server/generation-studio.js'
+      - 'app/src/main/assets/generate-studio.js'
+      - 'tests/generation-studio-unit.mjs'
+      - 'tests/generation-byteplus-unit.mjs'
+      - 'tests/generation-studio.spec.mjs'
+      - '.github/workflows/deepsyq-video-core.yml'
+jobs:
+  core-video:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify actual video provider adapter and job control tests
+        run: |
+          node --check server/generation-provider.js
+          node --check server/generation-byteplus.js
+          node --check app/src/main/assets/generate-studio.js
+          node --test tests/generation-studio-unit.mjs tests/generation-byteplus-unit.mjs
+      - name: Install desktop and mobile Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify Video Studio real UI workflows without AI charges
+        run: npx playwright test tests/generation-studio.spec.mjs --project=chromium --project=mobile-chromium
