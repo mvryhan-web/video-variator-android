@@ -36,22 +36,42 @@ test('lane collisions and unexpected rows fail closed',()=>{
  const unexpected=verifyBaseCoordination(spec,board+'\n| 56 | Fake new spec task | PARTIAL | A | — | — | — |');
  assert.ok(unexpected.issues.includes('UNEXPECTED_BASE_ROW: 56'));
 });
-test('claimed IN PROGRESS requires a recorded owner, general item state does not',()=>{
- const current=boardRows(board);
- const active=current.find(row=>/\bIN PROGRESS\b/.test(row.claim));
- assert.ok(active,'fixture requires one genuinely claimed BASE task');
- const unowned=verifyBaseCoordination(spec,edited(active.number,line=>line.replace(/\|\s*[^|]+\s*\|\s*$/, '| — |')));
- assert.ok(unowned.issues.includes('UNOWNED_ACTIVE_CLAIM: '+active.number),JSON.stringify(unowned.issues));
- // The general BASE #52 state can be IN PROGRESS without an exclusive claim.
- // Isolate that invariant in a copy: another agent may legitimately claim #52
- // while CI is running. Do not hardcode the live board's claim as always free.
- const neutral=edited(52,line=>{
-  const cells=line.split('|');cells[6]=' — ';cells[7]=' — ';return cells.join('|');
- });
+test('active task claims require real owners; a board with zero claims is valid',()=>{
+ // Current concurrent agents may have zero, one, or several legitimate active
+ // task claims. Build deterministic in-memory fixtures instead of depending
+ // on their changing GitHub board when this workflow is queued or retried.
+ const neutral=board.split('\n').map(line=>{
+  if(!/^\|\s*\d+\s*\|/.test(line))return line;
+  const cells=line.split('|');
+  if(/\bIN PROGRESS\b/i.test(cells[6]||'')){
+   cells[6]=' — ';cells[7]=' — ';
+  }
+  return cells.join('|');
+ }).join('\n');
+ assert.equal(boardRows(neutral).filter(row=>/\bIN PROGRESS\b/.test(row.claim)).length,0);
  const general=boardRows(neutral).find(row=>row.number===52);
  assert.equal(general.state,'IN PROGRESS');
  assert.equal(general.claim,'—');
  assert.equal(verifyBaseCoordination(spec,neutral,checklist).ok,true);
+
+ // Claiming a real D-lane row with a named owner is valid; dropping that
+ // owner must fail even though the item's overall state need not change.
+ const claimed=neutral.split('\n').map(line=>{
+  if(!/^\|\s*52\s*\|/.test(line))return line;
+  const cells=line.split('|');
+  cells[6]=' IN PROGRESS ';
+  cells[7]=' Agent D / isolated test claim ';
+  return cells.join('|');
+ }).join('\n');
+ assert.equal(verifyBaseCoordination(spec,claimed,checklist).ok,true);
+ const unowned=claimed.split('\n').map(line=>{
+  if(!/^\|\s*52\s*\|/.test(line))return line;
+  const cells=line.split('|');
+  cells[7]=' — ';
+  return cells.join('|');
+ }).join('\n');
+ const result=verifyBaseCoordination(spec,unowned,checklist);
+ assert.ok(result.issues.includes('UNOWNED_ACTIVE_CLAIM: 52'),JSON.stringify(result.issues));
  assert.equal(verifyCurrentFiles().ok,true);
 });
 test('tampered original requirement numbering is rejected without modifying the real TXT',()=>{
