@@ -94,20 +94,7 @@ export async function checkBillingReconciliation(client,{enabled=false}={}) {
       "COUNT(*) FILTER (WHERE o.id IS NULL)::int AS orphan_credit_purchases,",
       "COUNT(*) FILTER (WHERE p.refunded_amount>p.amount)::int AS over_refunded_purchases,",
       "COUNT(*) FILTER (WHERE p.credits<=0 OR p.amount<=0 OR p.refunded_amount<0",
-      "OR p.currency IS NULL OR btrim(p.currency) !~* '^[a-z]{3}      "FROM vv_ai_purchase p LEFT JOIN vv_ai_order o ON o.session_id=p.session_id"
-    ].join(' '));
-    return summarizeBillingReconciliation({
-      orders:orders.rows?.[0]||{},
-      purchases:purchases.rows?.[0]||{}
-    });
-  } catch {
-    // Do not return SQL exception details; they can contain identifiers/secrets.
-    return {status:'warning',code:'AI_BILLING_LEDGER_UNAVAILABLE',
-      coverage:'unavailable',stripeWebhookVerified:false,stripeApiChecked:false,
-      reviewRequired:false};
-  }
-}
-)::int AS invalid_credit_purchases",
+      "OR p.currency IS NULL OR btrim(p.currency) !~* '^[a-z]{3}$')::int AS invalid_credit_purchases",
       "FROM vv_ai_purchase p LEFT JOIN vv_ai_order o ON o.session_id=p.session_id"
     ].join(' '));
     return summarizeBillingReconciliation({
@@ -115,7 +102,7 @@ export async function checkBillingReconciliation(client,{enabled=false}={}) {
       purchases:purchases.rows?.[0]||{}
     });
   } catch {
-    // Do not return SQL exception details; they can contain identifiers/secrets.
+    // No raw database exception details, payment identifiers, or credentials.
     return {status:'warning',code:'AI_BILLING_LEDGER_UNAVAILABLE',
       coverage:'unavailable',stripeWebhookVerified:false,stripeApiChecked:false,
       reviewRequired:false};

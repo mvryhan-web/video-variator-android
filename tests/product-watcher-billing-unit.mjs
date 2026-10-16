@@ -107,7 +107,7 @@ test('B5-07 invalid credit count, purchase amount, refund sign or currency are i
  assert.equal(both.counters.invalidCreditPurchases,2);
 });
 
-test('B5-07 query validates impossible ledger shapes without exposing personal or payment data',async()=>{
+test('B5-07 query validates impossible purchase shapes with read-only, private aggregates',async()=>{
  const f=fake(),r=await checkBillingReconciliation(f.client,{enabled:true});
  assert.equal(r.status,'healthy');
  assert.equal(r.counters.invalidCreditPurchases,0);
@@ -115,27 +115,13 @@ test('B5-07 query validates impossible ledger shapes without exposing personal o
  assert.ok(q.includes('p.credits<=0'));
  assert.ok(q.includes('p.amount<=0'));
  assert.ok(q.includes('p.refunded_amount<0'));
- assert.ok(q.includes("btrim(p.currency) !~* '^[a-z]{3}
- const invalid=summarizeBillingReconciliation({
-  orders:{...orders,unmatched_old_sessions_7d:-2},purchases
- });
- assert.equal(invalid.status,'warning');
- assert.equal(invalid.code,'BILLING_METRICS_INVALID');
- const f=fake({throwSecret:true}),r=await checkBillingReconciliation(f.client,{enabled:true});
- assert.equal(r.status,'warning');
- assert.equal(r.code,'AI_BILLING_LEDGER_UNAVAILABLE');
- assert.equal(JSON.stringify(r).includes('password'),false);
-});
-
-test('all returned fields are safe aggregates or fixed labels, never user/session IDs',async()=>{
- const f=fake(),r=await checkBillingReconciliation(f.client,{enabled:true});
- const text=JSON.stringify(r);
- assert.ok(!text.includes('cus_')&&!text.includes('pi_')&&!text.includes('cs_'));
- assert.ok(!('userId' in r));
+ assert.ok(q.includes("btrim(p.currency) !~* '^[a-z]{3}$'"));
+ assert.ok(q.includes('invalid_credit_purchases'));
+ assert.ok(f.seen.every(sql=>/^SELECT\\b/.test(sql)));
+ assert.ok(!f.seen.join('\n').includes('user_id'));
+ assert.ok(!f.seen.join('\n').includes('payment_intent'));
  assert.ok(!('sessionId' in r));
-});
-"));
- assert.ok(f.seen.every(sql=>/^SELECT/.test(sql)));
+ assert.equal(r.stripeWebhookVerified,false);
 });
 
 test('invalid counters or errors never invent a clean status or reveal credentials',async()=>{
