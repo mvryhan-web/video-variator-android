@@ -218,10 +218,10 @@ test('BASE #29 AI Apps navigation reaches existing History, Credits and Pricing 
  await expect(credits).toHaveAttribute('href','ai-pricing.html#aiCreditSection');
  await expect(pricing).toHaveAttribute('href','ai-pricing.html');
  await credits.click();
- await expect(page).toHaveURL(/ai-pricing\\.html#aiCreditSection$/);
+ await expect(page).toHaveURL(/ai-pricing\.html#aiCreditSection$/);
  await page.goto('/ai-apps.html');
  await page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'My Creations and History'}).click();
- await expect(page).toHaveURL(/generate-studio\\.html\\?studio=image&view=history$/);
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=image&view=history$/);
  await expect(page.locator('#showHistory')).toHaveAttribute('aria-pressed','true');
  expect(paidJobs).toBe(0);
 });
