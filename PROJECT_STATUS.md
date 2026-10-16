@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent D — BASE #51 Image + Video pricing readiness / IN PROGRESS (2026-10-16)
+
+- **Specific new gap:** generationReadiness currently counts any approved model rate and any AI credit rate, so its overall launchReady can be true with Image-only priced generation despite original BASE §51 requiring both Image and Video commercial creation. Do not alter unit prices or provider dispatch. Add a fail-closed, independently named Image+Video price/credit-rate coverage gate to owner preflight; all other readiness gates, optional feature switches, provider and legacy checkout behavior remain unchanged.
+- **Owner/branch:** Agent D, `base51-image-video-pricing-gate-20261016`, target `deepsyq-platform`. Only `server/generation-readiness.js`, its existing focused unit tests, and a scoped doc. Existing BASE #51 #130/#142 remain merged; status still PARTIAL / NO LIVE launch.
+- **Non-overlap:** Agent B edits video routing in `server/generation-studio.js`, A Home/History, C utility/navigation; none touched. Independent D PRs #148 (Price ID) and #153 (webhook public diagnostics) remain DRAFT with GitHub CI queue and do not overlap readiness.
+ 
+
 ## Agent D — BASE #48 Stripe webhook public error redaction / IN PROGRESS (2026-10-16)
 
 - **Latest PR:** [#153](https://github.com/mvryhan-web/video-variator-android/pull/153), head `6bcb509e9ea40167012d59d40561007a2a515b5f`, 4 scoped files. Actual Express route body now returns fixed `Invalid Stripe webhook signature` after any signature verification exception; signature verification and signed billing dispatch unchanged. Three isolated executions of the *actual route callback* (invalid signature, missing secret, signed accepted event) PASS. Latest focused CI #38941632829 QUEUED. PR remains DRAFT, UNMERGED. Overall #48 PARTIAL / NOT LIVE; never claim live Stripe verified.
