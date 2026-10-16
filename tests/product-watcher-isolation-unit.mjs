@@ -51,7 +51,10 @@ test('no paid provider origin and operationally bounded separate scheduling/noti
  assert.ok(WATCHER_INTERVAL_MS>=15*60*1000);
  assert.ok(OFFICIAL_SOURCE_INTERVAL_MS>=6*60*60*1000);
  assert.ok(OFFICIAL_SOURCE_MAX_BYTES<=1024*1024);
- assert.ok(OFFICIAL_SOURCES.length>0 && OFFICIAL_SOURCES.length<=3);
+ // Seven pinned public docs at most; this bounds worst-case download volume to 7 MiB / six hours.
+ assert.ok(OFFICIAL_SOURCES.length>0 && OFFICIAL_SOURCES.length<=7);
+ assert.ok(OFFICIAL_SOURCES.length*OFFICIAL_SOURCE_MAX_BYTES<=7*1024*1024);
+ assert.equal(new Set(OFFICIAL_SOURCES.map(s=>s.key)).size,OFFICIAL_SOURCES.length);
  for(const source of OFFICIAL_SOURCES){
   const host=new URL(source.url).hostname;
   assert.ok(['docs.byteplus.com','ai.google.dev','developers.openai.com'].includes(host));
