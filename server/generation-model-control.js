@@ -1,4 +1,5 @@
 import {readFile} from 'node:fs/promises';
+import {initAdminAudit,recordAdminAudit} from './admin-audit.js';
 
 let initPromise;
 export async function initModelControls(pool){
@@ -76,4 +77,49 @@ export async function updateModelControl(pool,{modelId,userId,patch,catalog}){
 export function applyModelControl(model,control){
  if(!control)return model;
  return {...model,enabled:!!model.enabled&&control.enabledOverride!==false&&!control.maintenance,priority:control.priority,maintenance:control.maintenance,markupBps:control.markupBps};
+}
+
+// BASE #9: owner-only route calls this bounded bulk edit. Existing per-model
+// controls stay the source of truth, so no second provider config table exists.
+// One SQL transaction + audit record protects partial provider-group updates.
+export function validateProviderGroupPatch(body){
+ if(!body||typeof body!=='object'||Array.isArray(body))throw Error('INVALID_PROVIDER_GROUP_PATCH');
+ const keys=Object.keys(body),allowed=new Set(['enabled','priority','maintenance']);
+ if(!keys.length||keys.some(k=>!allowed.has(k)))throw Error('INVALID_PROVIDER_GROUP_PATCH');
+ const patch={};
+ if(Object.hasOwn(body,'enabled')){
+  if(body.enabled!==null&&typeof body.enabled!=='boolean')throw Error('INVALID_PROVIDER_GROUP_PATCH');
+  patch.enabled=body.enabled;
+ }
+ if(Object.hasOwn(body,'priority')){
+  if(!Number.isSafeInteger(body.priority)||body.priority<0||body.priority>10000)throw Error('INVALID_PROVIDER_GROUP_PATCH');
+  patch.priority=body.priority;
+ }
+ if(Object.hasOwn(body,'maintenance')){
+  if(typeof body.maintenance!=='boolean')throw Error('INVALID_PROVIDER_GROUP_PATCH');
+  patch.maintenance=body.maintenance;
+ }
+ return patch;
+}
+export async function updateProviderGroupControls(pool,{provider,kind,userId,patch,catalog=[]}={}){
+ const p=validateProviderGroupPatch(patch);
+ if(!['image','video'].includes(kind)||typeof provider!=='string'||!/^[A-Za-z0-9._:-]{1,120}$/.test(provider)||
+    !userId||!Array.isArray(catalog))throw Error('INVALID_PROVIDER_GROUP_PATCH');
+ const models=catalog.filter(m=>m.provider===provider&&m.kind===kind&&m.adapter===true);
+ if(!models.length||models.length>25)throw Error('PROVIDER_NOT_FOUND');
+ await initModelControls(pool);
+ await initAdminAudit(pool);
+ const client=await pool.connect();
+ try{
+  await client.query('BEGIN');
+  await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',['ai-provider-group:'+kind+':'+provider]);
+  for(const model of models)await updateModelControl(client,{modelId:model.id,userId,patch:p,catalog});
+  await recordAdminAudit(client,{actorUserId:userId,action:'provider_control.group_update',targetType:'provider',
+   targetId:kind+':'+provider,details:{kind,provider,models:models.map(m=>m.id),patch:p}});
+  await client.query('COMMIT');
+  return {kind,provider,modelIds:models.map(m=>m.id),applied:p};
+ }catch(error){
+  await client.query('ROLLBACK').catch(()=>{});
+  throw error;
+ }finally{client.release();}
 }
