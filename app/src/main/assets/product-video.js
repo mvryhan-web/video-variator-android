@@ -8,7 +8,7 @@ function renderFiles(){
   const item=document.createElement('div');item.className='photo-item';
   const img=document.createElement('img'),u=URL.createObjectURL(f);previewUrls.push(u);
   img.src=u;img.alt='Product photo '+(index+1);
-  const title=document.createElement('small');title.textContent='Photo '+(index+1)+' of '+photos.length;
+  const title=document.createElement('small');title.textContent=(index+1)+'. '+(f.name||'Product photo');title.title=f.name||'Product photo';
   const actions=document.createElement('div');actions.className='photo-order';
   for(const [label,delta] of [['Earlier',-1],['Later',1]]){
    const button=document.createElement('button');button.type='button';button.textContent=delta<0?'←':'→';
