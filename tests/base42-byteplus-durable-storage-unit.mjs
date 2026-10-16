@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import express from 'express';
 import {bytePlusPublicDurableStorageReady} from '../server/generation-byteplus-storage-gate.js';
 import {studioConfig,installGenerationStudio} from '../server/generation-studio.js';
+import {applyModelControl} from '../server/generation-model-control.js';
 
 const byteplus={kind:'video',provider:'BytePlus',id:'byteplus-seedance-2'};
 const google={kind:'video',provider:'Google',id:'veo-3.1-lite-generate-preview'};
@@ -42,6 +43,17 @@ test('BASE #42 configured private S3 keeps existing BytePlus adapter available, 
  assert.equal(bytePlusPublicDurableStorageReady(image,env),true);
  assert.equal(bytePlusPublicDurableStorageReady(byteplus,{...env,AI_PUBLIC_GENERATION_ENABLED:'false'}),true);
  // Configured is NOT proof that the cloud bucket really exists or may be used in production.
+});
+
+test('BASE #42 owner admin override cannot bypass missing S3 durability prerequisite',()=>{
+ const model=studioConfig(env).catalog.find(m=>m.id===videoModel);
+ assert.equal(model.enabled,false);
+ const overridden=applyModelControl(model,{enabledOverride:true,priority:0,maintenance:false});
+ assert.equal(overridden.enabled,false);
+ assert.equal(overridden.priority,0);
+ const enabled=studioConfig({...env,...storage}).catalog.find(m=>m.id===videoModel);
+ assert.equal(applyModelControl(enabled,{enabledOverride:true,priority:0,maintenance:false}).enabled,true);
+ assert.equal(applyModelControl(enabled,{enabledOverride:false,priority:0,maintenance:false}).enabled,false);
 });
 
 test('BASE #42 a public-mode owner quote rejects absent S3 before any provider or credit action',async()=>{
