@@ -7,7 +7,7 @@
 
 
 - **Gap and claim:** one-time AI Checkout can be turned OFF to stop new sales, but current `handleEvent('charge.refunded')` throws `AI_BILLING_WEBHOOK_DISABLED` even on clearly AI-tagged previously sold payment refund. Retrying webhook indefinitely risks stale spendable refunded credits. New bounded fix will permit signed, same-mode, AI-tagged historical refund to reach existing durable wallet reversal regardless of new Checkout activation, without re-enabling new sales or grants. Unrelated legacy refunds remain unchanged, wrong-mode AI refunds stay blocked and missing original purchase remains retriable.
-- **Scope:** branch `base16-refunds-after-checkout-off-20261016`, target `deepsyq-platform`, `server/generation-billing.js` + existing focused tests/doc. Preserve merged PR #148, all existing signed Stripe replay protections, subscription grants, admin+UI, provider, DB, owner Home and public flags. No real Stripe connection.
+- **Scope (expanded before code):** branch `base16-refunds-after-checkout-off-20261016`, target `deepsyq-platform`, `server/generation-billing.js` + existing focused tests/doc. In addition to refund safety, reject unknown or missing `AI_BILLING_MODE` instead of implicitly enabling Stripe **test** Checkout when someone supplies a test key and `AI_BILLING_ENABLED=true`. Explicit modes `test` and `live` remain unchanged. Preserve merged PR #148, all existing signed Stripe replay protections, subscriptions, admin+UI, provider, DB, owner Home and public flags. No real Stripe connection.
 - **Separate D:** #153 webhook public error patch and #158 launch pricing check are independent DRAFT and pending GitHub CI. Full original #16 PARTIAL/NOT LIVE.
 
 
