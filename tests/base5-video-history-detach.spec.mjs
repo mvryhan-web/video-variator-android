@@ -87,3 +87,43 @@ test('BASE #5: video History uses original queued/running/succeeded/failed label
  expect(paid).toBe(0);
  expect(deleteCalls).toBe(0);
 });
+
+
+test('BASE #5: lost Video POST response keeps the identical requestId across reload, never charges a changed prompt',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await setup(page);
+ const submissions=[];
+ await page.route('**/api/studio/jobs',async route=>{
+  if(route.request().method()!=='POST')return route.continue();
+  submissions.push(route.request().postDataJSON());
+  if(submissions.length===1)return route.abort('failed'); // Server may still have accepted it.
+  return route.fulfill({status:200,json:{id:'existing-video-id',status:'processing',reused:true}});
+ });
+ await page.route('**/api/studio/jobs/existing-video-id',route=>route.fulfill({json:{
+  id:'existing-video-id',kind:'video',status:'failed',error:'GENERATION_FAILED',retryAfterSeconds:0
+ }}));
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#prompt').fill('One exact video prompt');
+ await page.locator('#consent').check();
+ await page.locator('#generate').click();
+ await expect.poll(()=>submissions.length).toBe(1);
+ await expect(page.locator('#generate')).toBeEnabled(); // First transport failure did not charge another job.
+ const pending=await page.evaluate(()=>Object.entries(sessionStorage).filter(([k])=>k.startsWith('deepsyq_video_pending_request_v1_')));
+ expect(pending).toHaveLength(1);
+ expect(pending[0][1]).not.toContain('One exact video prompt');
+ await page.reload();
+ await expect(page.locator('#prompt')).toHaveValue('One exact video prompt');
+ await page.locator('#prompt').fill('Different payable prompt');
+ await page.locator('#consent').check();
+ await page.locator('#generate').click();
+ await expect(page.locator('#status')).toContainText('A previous Video request may have reached the provider');
+ expect(submissions).toHaveLength(1); // Different payload was blocked before the network.
+ await page.locator('#prompt').fill('One exact video prompt');
+ await page.locator('#consent').check();
+ await page.locator('#generate').click();
+ await expect.poll(()=>submissions.length).toBe(2);
+ await expect.poll(async()=>page.locator('#status').textContent()).toContain('Generation failed');
+ expect(submissions[0].requestId).toBe(submissions[1].requestId);
+ expect(submissions[0].prompt).toBe(submissions[1].prompt);
+ const after=await page.evaluate(()=>Object.keys(sessionStorage).filter(k=>k.startsWith('deepsyq_video_pending_request_v1_')));
+ expect(after).toHaveLength(0); // Existing server job ID was received; no orphan client lock.
+});
