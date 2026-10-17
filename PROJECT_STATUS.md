@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent C — only BASE #28 ongoing redaction privacy acceptance (2026-10-17)
+
+- Single ACTIVE original row #28, state BLOCKED_EXTERNAL, LIVE_VERIFIED=false, 0 full original rows DONE. Other C rows paused under ONE_ITEM_TO_DONE; original BASE untouched.
+- Draft PR #207 (https://github.com/mvryhan-web/video-variator-android/pull/207) current HEAD d14f724f9f02004c0299f778afe94bb11a3469d1: existing authorized photo-batch local ZIP (no duplicate/billing bypass), real PDF and irreversible redaction output acceptance, 11 Tools routes, OCR cancel+download and owner-disabled Text→Audio tests. New fixes: latest private photo wins asynchronous image loads, old private preview/output discarded immediately, Run/export waits for current photo, file input locked during export, X/Y outward-rounded mask pixels, Cancel during PNG encode prevents download, full-res canvas always cleared. Added real-browser regressions for stale preview/PNG cancel; ZIP filenames Windows safe.
+- Exact-head GitHub Actions 39022251481 (focused), 39022251517 (photo), 39022251519 (video) remain QUEUED, NOT VERIFIED. Source JS parse and direct bounding rectangle geometry test PASS. PR207 not merged; no main/production/paid model calls. Historical merged FFmpeg PR173 CI 39014696743 SUCCESS does not validate PR207 HEAD.
+- Whole-row external blockers: owner Google speech credentials/approved provider quota and enabled flag, owner/D paid/trial batch interpretation, owner limited flat-background-remover scope acceptance, Agent A technical SEO issue #156, physical Android/iPhone and Agent5/owner authorized main/Render release. Exact escalation issue #74 comment 6232329034. Do NOT switch rows without Agent5 recorded reassignment.
+
 ## Agent C — BASE #28 ONLY / 2026-10-17 continued redaction privacy acceptance
 
 - **One active original BASE row #28; status BLOCKED_EXTERNAL, LIVE_VERIFIED=false; zero entire rows DONE.** AGENTS.md and ONE_ITEM_TO_DONE protocol checked again against original #28. Other C row PRs remain paused pending Agent 5 reassignment. No original TXT, production/main or paid provider changes.
