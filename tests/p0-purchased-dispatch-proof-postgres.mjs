@@ -103,12 +103,27 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   // The first 80-credit invoice has already fully funded a held reservation;
   // a partial refund makes the second invoice ineligible for new paid spend.
   await wallet.refund('pi_SubSafe2',1);
-  const partialJob=await job('sub_customer','job_sub_refunded',20);
+  // Without the bonus there are only 79 available credits; add 100 promo
+  // credits to verify they cannot cover a one-credit purchased shortfall.
+  await wallet.grantOnce({userId:'sub_customer',kind:'welcome',credits:100});
+  const partialJob=await job('sub_customer','job_sub_refunded',80);
   await assert.rejects(()=>wallet.claimPurchasedDispatch(partialJob,{env}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+  // Conversely a genuine still-paid remainder of a partially refunded
+  // LIVE subscription must be usable: 80 original - ceil(80*1/100) = 79.
+  await pool.query(`INSERT INTO vv_users(id,plan,stripe_customer_id,stripe_subscription_id,subscription_status)
+    VALUES('sub_partial_ok','basic','cus_PartialOK','sub_PartialOK','active')`);
+  const partialInvoice=subEvent('in_PartialOK','pi_PartialOK',{
+    subscription:'sub_PartialOK',customer:'cus_PartialOK'});
+  assert.equal(await grantPaidSubscriptionInvoice({event:partialInvoice,env:subEnv,pool,wallet}),true);
+  await wallet.refund('pi_PartialOK',1);
+  const legitimate=await job('sub_partial_ok','job_sub_partial_ok',70);
+  const partialProof=await wallet.claimPurchasedDispatch(legitimate,{env});
+  assert.equal(partialProof.purchasedCreditsAvailableBeforeReserve,79);
+  assert.equal(partialProof.source,'settled_stripe_purchase');
   assert.equal(await grantPaidSubscriptionInvoice({event:subEvent('in_Unpaid','pi_Unpaid',{amount_paid:0}),env:subEnv,pool,wallet}),false);
 
   const total=await pool.query('SELECT count(*)::int AS n FROM vv_ai_purchased_dispatch_claim');
-  assert.equal(total.rows[0].n,3,'one pack, one mixed-funding pack, and one paid subscription; no replay/refund claim');
+  assert.equal(total.rows[0].n,4,'pack, mixed-funding pack, subscription, and valid partially paid subscription only');
  }finally{
   await pool.end();
   await admin.query('DROP SCHEMA IF EXISTS '+schema+' CASCADE').catch(()=>{});
