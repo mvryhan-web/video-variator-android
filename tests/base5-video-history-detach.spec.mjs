@@ -91,7 +91,11 @@ test('BASE #5: video History uses original queued/running/succeeded/failed label
 
 test('BASE #5: lost Video POST response keeps the identical requestId across reload, never charges a changed prompt',async({page})=>{
  await page.setViewportSize({width:390,height:844});await setup(page);
- const submissions=[];
+ const submissions=[],lookups=[];
+ await page.route('**/api/studio/jobs/by-request/*',route=>{
+  lookups.push(route.request().url());
+  return route.fulfill({json:{id:'existing-video-id',kind:'video',status:'processing'}});
+ });
  await page.route('**/api/studio/jobs',async route=>{
   if(route.request().method()!=='POST')return route.continue();
   submissions.push(route.request().postDataJSON());
@@ -120,10 +124,10 @@ test('BASE #5: lost Video POST response keeps the identical requestId across rel
  await page.locator('#prompt').fill('One exact video prompt');
  await page.locator('#consent').check();
  await page.locator('#generate').click();
- await expect.poll(()=>submissions.length).toBe(2);
+ await expect.poll(()=>lookups.length).toBe(1);
  await expect.poll(async()=>page.locator('#status').textContent()).toContain('Generation could not finish');
- expect(submissions[0].requestId).toBe(submissions[1].requestId);
- expect(submissions[0].prompt).toBe(submissions[1].prompt);
+ expect(submissions).toHaveLength(1); // Reattached to the original, no second paid POST.
+ expect(lookups[0]).toContain(submissions[0].requestId);
  const after=await page.evaluate(()=>Object.keys(sessionStorage).filter(k=>k.startsWith('deepsyq_video_pending_request_v1_')));
  expect(after).toHaveLength(0); // Existing server job ID was received; no orphan client lock.
 });
