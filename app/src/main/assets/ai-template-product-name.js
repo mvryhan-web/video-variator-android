@@ -10,6 +10,7 @@ export function templateSupport(template){
  const hasToken=NAME_TOKEN.test(String(template?.promptTemplate??''));
  const needsProductName=required.includes('product_name')||hasToken;
  if(!VALID_TYPES.has(template?.generationType))return {supported:false,requiresProductName:false,reason:'This workflow is not available in Studio yet.'};
+ if(!String(template?.promptTemplate??'').trim())return {supported:false,requiresProductName:false,reason:'This template has no prompt. Ask the template owner to complete it.'};
  if(unsupported.length)return {supported:false,requiresProductName:false,reason:'This workflow requires '+unsupported.map(v=>String(v).replaceAll('_',' ')).join(', ')+' input support not yet available through Studio.'};
  if(needsProductName&&!hasToken)return {supported:false,requiresProductName:false,reason:'This template asks for a product name but has no {{product_name}} placeholder in its prompt.'};
  // Never advertise a usable workflow whose full prepared prompt would be silently truncated.
