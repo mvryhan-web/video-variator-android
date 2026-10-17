@@ -12,7 +12,7 @@ export async function quarantineUncertainVideoSubmit({pool,jobId,failure}){
      failed_at=NULL,metadata=COALESCE(metadata,'{}'::jsonb)||
        jsonb_build_object('providerSubmitUncertain',true,'failure',
          jsonb_build_object('category',$3,'stage',$4,'sourceCode',$5,'retryable',false))
- WHERE id=$1 AND status IN ('queued','processing') AND operation IS NULL AND deleted=false
+ WHERE id=$1 AND kind='video' AND status IN ('queued','processing') AND operation IS NULL AND deleted=false
  RETURNING id`,[jobId,VIDEO_SUBMISSION_UNCERTAIN,
   String(failure?.category||'unknown').slice(0,64),
   'provider_submit',String(failure?.sourceCode||'UNKNOWN').slice(0,80)]);
