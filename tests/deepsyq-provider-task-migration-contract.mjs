@@ -8,7 +8,7 @@ import {AI_MIGRATION_FILES,aiMigrationStatus,migrationChecksum} from '../server/
 const historical=readFileSync(new URL('../server/migrations/20261015-generation-jobs.sql', import.meta.url),'utf8');
 const sql=readFileSync(new URL('../server/migrations/20261017-provider-task-id-legacy.sql', import.meta.url),'utf8');
 const legacyName='20261015-generation-jobs.sql',newName='20261017-provider-task-id-legacy.sql';
-const gitBlobSha=text=>createHash('sha1').update('blob '+Buffer.byteLength(text)+'\\0').update(text).digest('hex');
+const gitBlobSha=text=>createHash('sha1').update('blob '+Buffer.byteLength(text)+'\0').update(text).digest('hex');
 
 test('original applied generation SQL is byte-for-byte immutable (Git blob SHA)',()=>{
   assert.equal(gitBlobSha(historical),'8445816e16a3590139100eeb9e2d7f55d5ddfbe5');
@@ -21,9 +21,9 @@ test('only a NEW append-only file repairs the legacy generated column and index'
   assert.equal(AI_MIGRATION_FILES.filter(x=>x===newName).length,1);
   assert.ok(AI_MIGRATION_FILES.indexOf(legacyName)<AI_MIGRATION_FILES.indexOf(newName));
   assert.deepEqual(AI_MIGRATION_FILES,[...AI_MIGRATION_FILES].sort());
-  assert.match(sql,/ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS provider_task_id TEXT GENERATED ALWAYS AS \\(\\s*CASE\\s+WHEN operation LIKE 'byteplus:%' THEN substring\\(operation FROM 10\\)\\s+ELSE operation\\s+END\\s*\\) STORED;/);
-  assert.match(sql,/CREATE INDEX IF NOT EXISTS vv_generation_jobs_provider_task_idx\\s+ON vv_generation_jobs\\(provider,provider_task_id\\)/);
-  assert.doesNotMatch(sql,/DROP TABLE|DROP COLUMN|UPDATE vv_generation_jobs\\s+SET provider_task_id/i);
+  assert.match(sql,/ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS provider_task_id TEXT GENERATED ALWAYS AS \(\s*CASE\s+WHEN operation LIKE 'byteplus:%' THEN substring\(operation FROM 10\)\s+ELSE operation\s+END\s*\) STORED;/);
+  assert.match(sql,/CREATE INDEX IF NOT EXISTS vv_generation_jobs_provider_task_idx\s+ON vv_generation_jobs\(provider,provider_task_id\)/);
+  assert.doesNotMatch(sql,/DROP TABLE|DROP COLUMN|UPDATE vv_generation_jobs\s+SET provider_task_id/i);
 });
 
 test('historical migration ledger checksum stays valid; new migration is pending',async()=>{
