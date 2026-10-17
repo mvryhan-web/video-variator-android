@@ -170,10 +170,10 @@ export class GenerationWallet {
   // Only the privileged provider-dispatch path may request a single-use proof.
   // It MUST be used together with the B-owned consent/model/quote authorization.
   // No call to this method starts or pays a provider. Existing reserve() is NOT proof.
-  async claimPurchasedDispatch({userId,jobId,credits,fingerprint,modelId,provider},{env=process.env}={}) {
+  async claimPurchasedDispatch({userId,jobId,kind,credits,fingerprint,modelId,provider},{env=process.env}={}) {
     try {
       return await this.transaction(userId,async(c,w)=>claimPurchasedGeneration(c,{
-        env,userId,jobId,credits,fingerprint,modelId,provider,wallet:w
+        env,userId,jobId,kind,credits,fingerprint,modelId,provider,wallet:w
       }));
     } catch (_) { throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED'); }
   }
