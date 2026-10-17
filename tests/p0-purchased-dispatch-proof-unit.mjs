@@ -4,7 +4,7 @@ import {claimPurchasedGeneration,purchasedFundingProof} from '../server/generati
 import {grantPaidSubscriptionInvoice} from '../server/generation-subscription-credits.js';
 
 const env={AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true'};
-const options=()=>({env,userId:'paid_user',jobId:'job_live_a',credits:100,fingerprint:'sha256abc',modelId:'model_v',provider:'Google',wallet:{available:0,reserved:100,debt:0}});
+const options=()=>({env,userId:'paid_user',jobId:'job_live_a',kind:'video',credits:100,fingerprint:'sha256abc',modelId:'model_v',provider:'Google',wallet:{available:0,reserved:100,debt:0}});
 function db({paidCredits=200,otherSpent=80,sourceId='cs_live_paid1',held={},job={},inserted=true}={}){
  const statements=[];
  const query=async(sql,args)=>{
@@ -12,7 +12,7 @@ function db({paidCredits=200,otherSpent=80,sourceId='cs_live_paid1',held={},job=
   if(sql.includes('eligible_paid_purchases'))return {rows:[{paid_credits:String(paidCredits),source_id:sourceId}]};
   if(sql.includes('FROM vv_ai_reservation WHERE user_id='))return {rows:[{used:String(otherSpent)}]};
   if(sql.includes('FROM vv_ai_reservation')&&sql.includes('FOR UPDATE'))return {rows:held===null?[]:[{user_id:'paid_user',credits:100,fingerprint:'sha256abc',status:'held',...held}]};
-  if(sql.includes('FROM vv_generation_jobs')&&sql.includes('FOR UPDATE'))return {rows:job===null?[]:[{user_id:'paid_user',model:'model_v',provider:'Google',status:'processing',operation:null,deleted:false,request_fingerprint:'sha256abc',credits_reserved:100,...job}]};
+  if(sql.includes('FROM vv_generation_jobs')&&sql.includes('FOR UPDATE'))return {rows:job===null?[]:[{user_id:'paid_user',kind:'video',model:'model_v',provider:'Google',status:'processing',operation:null,deleted:false,request_fingerprint:'sha256abc',credits_reserved:100,...job}]};
   if(sql.includes('INSERT INTO vv_ai_purchased_dispatch_claim'))return {rows:inserted?[{job_id:'job_live_a'}]:[]};
   throw Error('UNEXPECTED_SQL');
  };
@@ -64,7 +64,7 @@ test('P0 no opt-in or non-live/test credentials ever allow a purchased dispatch 
 test('P0 job/request/reservation state must match prior to the irreversible claim',async()=>{
  const cases=[{held:null},{held:{status:'captured'}},{held:{fingerprint:'other'}},
   {job:null},{job:{status:'ready'}},{job:{deleted:true}},{job:{operation:'byteplus:already_started'}},
-  {job:{provider:'other'}},{job:{model:'other'}},{job:{request_fingerprint:'other'}},
+  {job:{provider:'other'}},{job:{kind:'image'}},{job:{model:'other'}},{job:{request_fingerprint:'other'}},
   {job:{credits_reserved:99}},{inserted:false}];
  for(const changed of cases){
   const c=db(changed);
