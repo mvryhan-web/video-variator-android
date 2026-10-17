@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent C BASE #28 — batch photo compression scope claim (2026-10-17)
+
+- Existing single-photo JPG/PNG/WebP quality-controlled local tool is CODE VERIFIED (prior focused CI 38924678343), and local FFmpeg video compressor has MERGED via PR #173. Do not duplicate tool tiles or alter existing Video Compression, PDF, ZIP, admin, provider or payment paths.
+- New C-owned isolated work: reuse the same `photo-compress` utility tile to permit **2–8 photos** processed sequentially in browser; preserve existing one-photo output/quality semantics; provide individual outputs and (if safely supported) a local ZIP of compressed JPGs. Fail closed for invalid MIME and oversized batch; safely handle cancel and release canvases; do not upload images or debit credits. Branch `agent-c-base28-batch-photo-compression-20261017`, Issue #74, BASE #28 original source. Code only C-owned mobile utility script and focused tests/workflow.
+- Remains PARTIAL until exact PR-head CI browser and device acceptance; no shipping to `main`.
+
+
 ## Agent B — BASE #39 provider terminal-outcome metrics reconciled (2026-10-17)
 
 - Existing B-only [PR #160](https://github.com/mvryhan-web/video-variator-android/pull/160) HEAD `55bd0737b7e7b4ed2cd4c0a3e5e38b64ce8194fb`, two-parent **non-force** branch reconciliation against then-current BASE `d475d4f`. Existing source helper `generation-provider-performance.js` + tests + focused workflow carried intact, while latest shared `generation-studio.js` changed only read-only admin analytics `rows.map(...)` formatter + safe import. GitHub compare confirms precisely four B paths; D wallet/Stripe/provider routing untouched.
