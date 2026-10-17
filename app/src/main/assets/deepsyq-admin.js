@@ -19,8 +19,53 @@ async function loadPurchases(){try{
  $('purchasesStatus').textContent=d.items?.length?'':'No confirmed AI credit purchases recorded.';
  }catch(e){$('purchasesStatus').textContent=e.message;}}
 
-async function loadUsers(){try{const q=$('userQuery').value.trim();$('usersStatus').textContent='Loading…';const d=await api('/api/studio/admin/users?q='+encodeURIComponent(q));$('usersTable').replaceChildren();for(const u of d.items||[]){const tr=document.createElement('tr'),vals=[(u.name||'—')+(u.email?' · '+u.email:''),u.plan+' · '+u.status,`${u.aiWallet.available} available · ${u.aiWallet.reserved} held · ${u.aiWallet.debt} debt`,u.generationCount,u.aiPurchaseCount,date(u.createdAt)];for(const v of vals){const td=document.createElement('td');td.textContent=String(v);tr.append(td);}$('usersTable').append(tr);}$('usersStatus').textContent=d.items?.length?'':'No matching users.';}catch(e){$('usersStatus').textContent=e.message;}}
-async function loadJobs(){try{const f=$('jobFilter').value;$('jobsStatus').textContent='Loading…';const d=await api('/api/studio/admin/jobs?status='+encodeURIComponent(f));$('jobsTable').replaceChildren();for(const j of d.items||[]){const tr=document.createElement('tr'),vals=[j.id,j.userEmail||j.userId,j.status,[j.provider,j.model].filter(Boolean).join(' · ')||'—',j.durationSeconds==null?'—':j.durationSeconds.toFixed(1)+' s',j.actualCost==null?(j.estimatedCost==null?'—':'est. '+costLabel(j.estimatedCost,j.costCurrency)):costLabel(j.actualCost,j.costCurrency),`${j.creditsCharged} charged · ${j.creditsReserved} held`,j.error||'—'];for(const v of vals){const td=document.createElement('td');td.textContent=String(v);tr.append(td);}$('jobsTable').append(tr);}$('jobsStatus').textContent=d.items?.length?'':'No jobs in this filter.';}catch(e){$('jobsStatus').textContent=e.message;}}
+// Ignore responses from obsolete admin searches/filter selections. Also prevent
+// old owner-account responses from repainting this page after session rotation.
+let userListRequest=0,jobListRequest=0;
+const stillCurrent=(version,latest,token)=>version===latest&&localStorage.getItem('vv_token')===token;
+
+async function loadUsers(){
+ const request=++userListRequest,token=localStorage.getItem('vv_token'),q=$('userQuery').value.trim();
+ $('usersStatus').textContent='Loading…';
+ $('usersTable').replaceChildren();
+ try{
+  const d=await api('/api/studio/admin/users?q='+encodeURIComponent(q));
+  if(!stillCurrent(request,userListRequest,token))return;
+  for(const u of d.items||[]){
+   const tr=document.createElement('tr');
+   const vals=[(u.name||'—')+(u.email?' · '+u.email:''),u.plan+' · '+u.status,
+    `${u.aiWallet.available} available · ${u.aiWallet.reserved} held · ${u.aiWallet.debt} debt`,
+    u.generationCount,u.aiPurchaseCount,date(u.createdAt)];
+   for(const v of vals){const td=document.createElement('td');td.textContent=String(v);tr.append(td);}
+   $('usersTable').append(tr);
+  }
+  $('usersStatus').textContent=d.items?.length?'':'No matching users.';
+ }catch(e){
+  if(stillCurrent(request,userListRequest,token))$('usersStatus').textContent=e.message;
+ }
+}
+async function loadJobs(){
+ const request=++jobListRequest,token=localStorage.getItem('vv_token'),f=$('jobFilter').value;
+ $('jobsStatus').textContent='Loading…';
+ $('jobsTable').replaceChildren();
+ try{
+  const d=await api('/api/studio/admin/jobs?status='+encodeURIComponent(f));
+  if(!stillCurrent(request,jobListRequest,token))return;
+  for(const j of d.items||[]){
+   const tr=document.createElement('tr');
+   const vals=[j.id,j.userEmail||j.userId,j.status,
+    [j.provider,j.model].filter(Boolean).join(' · ')||'—',
+    j.durationSeconds==null?'—':j.durationSeconds.toFixed(1)+' s',
+    j.actualCost==null?(j.estimatedCost==null?'—':'est. '+costLabel(j.estimatedCost,j.costCurrency)):costLabel(j.actualCost,j.costCurrency),
+    `${j.creditsCharged} charged · ${j.creditsReserved} held`,j.error||'—'];
+   for(const v of vals){const td=document.createElement('td');td.textContent=String(v);tr.append(td);}
+   $('jobsTable').append(tr);
+  }
+  $('jobsStatus').textContent=d.items?.length?'':'No jobs in this filter.';
+ }catch(e){
+  if(stillCurrent(request,jobListRequest,token))$('jobsStatus').textContent=e.message;
+ }
+}
 
 function field(label,input){const wrap=document.createElement('label'),span=document.createElement('span');span.textContent=label;wrap.append(span,input);return wrap;}
 function input(type,value,min,max){const e=document.createElement('input');e.type=type;if(value!=null)e.value=value;if(min!=null)e.min=min;if(max!=null)e.max=max;return e;}
@@ -136,6 +181,18 @@ async function loadBillingReview(){try{$('billingStatus').textContent='Loading�
 async function verifyOwner(){try{const {user}=await api('/api/me');if(!user?.isAdmin)throw Error('OWNER_ONLY');await Promise.all([loadReadiness(),loadBusiness(),loadPurchases(),loadUsers(),loadJobs(),loadAudit(),loadModels(),loadMetrics(),loadBillingReview(),loadTemplates(),loadInspirationAdmin()]);}catch(e){$('modelStatus').textContent=e.message==='AUTH_REQUIRED'?'Sign in with the owner account first.':'Owner access required.';$('metricsStatus').textContent='';}}
 
 $('creditAdjustForm').onsubmit=async e=>{e.preventDefault();const userId=$('creditUserId').value.trim(),delta=Number($('creditDelta').value),reason=$('creditReason').value.trim(),status=$('creditAdjustStatus');if(!userId||!Number.isSafeInteger(delta)||delta===0||reason.length<3){status.textContent='Enter exact user ID, a non-zero whole credit amount, and a reason.';return;}const verb=delta>0?'ADD':'REMOVE',amount=Math.abs(delta);if(!confirm(`${verb} ${amount} AI credits ${delta>0?'to':'from'} user ${userId}?\n\nReason: ${reason}\n\nThis does not change Stripe.`))return;status.textContent='Applying audited adjustment…';const requestId=crypto.randomUUID();try{const d=await api('/api/studio/admin/users/'+encodeURIComponent(userId)+'/credits/adjust',{method:'POST',body:JSON.stringify({requestId,confirmUserId:userId,delta,reason})});status.textContent=`Saved. Available: ${d.balance.available}, held: ${d.balance.reserved}, debt: ${d.balance.debt}.`;await Promise.all([loadUsers(),loadBusiness()]);}catch(err){status.textContent=err.message==='OWNER_CREDIT_ADJUSTMENTS_DISABLED'?'Manual credit adjustment is safely disabled on the server.':err.message==='INSUFFICIENT_AVAILABLE_AI_CREDITS'?'Cannot remove more credits than the user currently has available.':err.message;}};
+
+// Across-tab logout/account switching sends a native storage event. Clear the
+// rendered owner dashboard synchronously before navigating away; the dashboard
+// must not keep another account's user/job data visible while async fetches end.
+const ownerTokenAtOpen=localStorage.getItem('vv_token');
+window.addEventListener('storage',event=>{
+ if((event.key!=='vv_token'&&event.key!==null)||event.storageArea!==localStorage)return;
+ if(localStorage.getItem('vv_token')===ownerTokenAtOpen)return;
+ userListRequest++;jobListRequest++;
+ document.body.style.visibility='hidden';
+ location.replace('deepsyq.html');
+});
 
 $('userSearch').onsubmit=e=>{e.preventDefault();void loadUsers();};
 $('jobFilter').onchange=()=>void loadJobs();
