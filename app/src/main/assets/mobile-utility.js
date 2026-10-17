@@ -21,7 +21,7 @@ const fileTypes={
  'scan-pdf':['image/*',true],'pdf-merge':['application/pdf,.pdf',true],
  'pdf-split':['application/pdf,.pdf',false],'pdf-sign':['application/pdf,.pdf',false],
  'pdf-compress':['application/pdf,.pdf',false],
- 'photo-convert':['image/*',false],'photo-resize':['image/*',false],'photo-compress':['image/jpeg,image/png,image/webp',false],
+ 'photo-convert':['image/*',false],'photo-resize':['image/*',false],'photo-compress':['image/jpeg,image/png,image/webp',true],
  'photo-redact':['image/*',false],'photo-ocr':['image/*',false],
  'video-trim':['video/*',false],'video-mute':['video/*',false],'video-compress':['video/*',false],
  'audio-trim':['audio/*',false],'qr':['',false],
@@ -75,7 +75,7 @@ function init(){
   const slider=document.createElement('input');slider.type='range';slider.id='compressQuality';slider.min='20';slider.max='95';slider.step='5';slider.value='70';
   slider.addEventListener('input',()=>value.textContent=slider.value+'%');
   row.append(title,slider,value);$('settingsRow').append(row);
-  help('Local JPEG compression. Smaller files are not guaranteed; original is unchanged.','Локальное сжатие JPEG. Уменьшение файла не гарантировано; оригинал остаётся без изменений.');
+  help('Compress one photo, or select up to 8 photos for individual JPGs and a ZIP. Everything stays on-device. Smaller files are not guaranteed.','Сжимайте одно фото или до 8 сразу: JPG по отдельности и ZIP. Всё на устройстве. Файлы могут не уменьшиться.');
  }
  for(const f of ['start','end'])field(f,timeModes.includes(tool));
  for(const f of ['width','height'])field(f,tool==='photo-resize');
@@ -173,24 +173,55 @@ async function convertPhoto(){
  c.width=c.height=1;
 }
 async function compressPhoto(){
- const f=files()[0];
- if(!['image/jpeg','image/png','image/webp'].includes(f.type))throw Error(label('Choose JPG, PNG or WebP.','Выберите JPG, PNG или WebP.'));
+ const selected=files();
+ // Keep the old one-photo path working unchanged. Batch processing is bounded
+ // separately to avoid exhausting phone memory or silently truncating inputs.
+ if(selected.length>8||(selected.length>1&&selected.reduce((total,f)=>total+f.size,0)>64*1048576))
+  throw Error(label('Choose at most 8 photos (64 MB total per batch).','Выберите не более 8 фото (до 64 МБ за раз).'));
+ if(selected.some(f=>!['image/jpeg','image/png','image/webp'].includes(f.type)))
+  throw Error(label('Choose JPG, PNG or WebP.','Выберите JPG, PNG или WebP.'));
  const quality=Number($('compressQuality').value)/100;
  if(!Number.isFinite(quality)||quality<.2||quality>.95)throw Error('Invalid quality');
- const canvas=await openImage(f);
- try{
-  // JPEG has no alpha; paint onto white to avoid accidental black transparent regions.
-  const opaque=document.createElement('canvas');opaque.width=canvas.width;opaque.height=canvas.height;
-  const ctx=opaque.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,opaque.width,opaque.height);ctx.drawImage(canvas,0,0);
-  const blob=await blobFrom(opaque,'image/jpeg',quality);
-  opaque.width=opaque.height=1;
-  const labelSize=n=>(n/1048576).toFixed(2)+' MB';
-  await result(new File([blob],base(f)+'-compressed.jpg',{type:'image/jpeg'}));
-  const report=document.createElement('p');
-  report.textContent=label('Original: ','Исходный размер: ')+labelSize(f.size)+label(' · Result: ',' · Результат: ')+labelSize(blob.size)+
-   (blob.size>=f.size?label(' · Result is not smaller.',' · Файл не стал меньше.'):'');
-  $('utilityResults').lastElementChild?.append(report);
- }finally{canvas.width=canvas.height=1;}
+ const generated=[];
+ const labelSize=n=>(n/1048576).toFixed(2)+' MB';
+ for(let i=0;i<selected.length;i++){
+  if(abort)throw Error('Canceled');
+  const f=selected[i];
+  status(label('Compressing photo ','Сжатие фото ')+(i+1)+'/'+selected.length+'…');
+  const canvas=await openImage(f);
+  let opaque=null;
+  try{
+   // JPEG has no alpha: preserve the old white compositing and quality policy.
+   opaque=document.createElement('canvas');opaque.width=canvas.width;opaque.height=canvas.height;
+   const ctx=opaque.getContext('2d',{alpha:false});
+   ctx.fillStyle='#fff';ctx.fillRect(0,0,opaque.width,opaque.height);ctx.drawImage(canvas,0,0);
+   const blob=await blobFrom(opaque,'image/jpeg',quality);
+   if(abort)throw Error('Canceled');
+   const prefix=selected.length>1?String(i+1).padStart(2,'0')+'-':'';
+   const jpg=new File([blob],prefix+base(f)+'-compressed.jpg',{type:'image/jpeg'});
+   generated.push(jpg);
+   await result(jpg);
+   const report=document.createElement('p');
+   report.textContent=label('Original: ','Исходный размер: ')+labelSize(f.size)+
+    label(' · Result: ',' · Результат: ')+labelSize(blob.size)+
+    (blob.size>=f.size?label(' · Result is not smaller.',' · Файл не стал меньше.'):'');
+   $('utilityResults').lastElementChild?.append(report);
+  }finally{
+   // Sequential release is essential on low-memory Android/iPhone browsers.
+   canvas.width=canvas.height=1;
+   if(opaque)opaque.width=opaque.height=1;
+  }
+ }
+ if(generated.length>1){
+  if(abort)throw Error('Canceled');
+  status(label('Creating local ZIP…','Создание ZIP на устройстве…'));
+  await jszip();
+  const zip=new window.JSZip();
+  for(const file of generated)zip.file(file.name,file);
+  const zipped=await zip.generateAsync({type:'blob',compression:'STORE'});
+  if(abort)throw Error('Canceled');
+  await result(new File([zipped],'compressed-photos.zip',{type:'application/zip'}));
+ }
 }
 async function resizePhoto(){
  const f=files()[0],im=await openImage(f);
