@@ -21,7 +21,7 @@ async function loadPurchases(){try{
 
 // Ignore responses from obsolete admin searches/filter selections. Also prevent
 // old owner-account responses from repainting this page after session rotation.
-let userListRequest=0,jobListRequest=0;
+let userListRequest=0,jobListRequest=0,metricsListRequest=0;
 const stillCurrent=(version,latest,token)=>version===latest&&localStorage.getItem('vv_token')===token;
 
 async function loadUsers(){
@@ -81,7 +81,27 @@ function renderModels(items){$('models').replaceChildren();for(const m of items)
  advisory.textContent='Markup and internal cost are reference settings only. They do not change customer AI-credit prices; only separately approved server pricing can do that.';
  card.append(head,form,advisory,save,msg);$('models').append(card);}}
 async function loadModels(){try{$('modelStatus').textContent='Loading…';const d=await api('/api/studio/admin/models');renderModels(d.items||[]);$('modelStatus').textContent=d.items?.length?'':'No model records.';}catch(e){$('models').replaceChildren();$('modelStatus').textContent=e.message==='MODEL_ADMIN_NOT_ENABLED'?'Model controls are prepared but the feature flag is OFF. No settings were changed.':e.message;}}
-async function loadMetrics(){try{const window=$('metricsWindow')?.value||'7d';$('metricsStatus').textContent='Loading…';const d=await api('/api/studio/admin/metrics?window='+encodeURIComponent(window));$('metrics').replaceChildren();for(const m of d.items||[]){const tr=document.createElement('tr');for(const v of [m.provider||'—',m.model||'—',m.kind,m.jobs,m.succeeded,m.failed,m.processing,pct(m.successRate),m.averageSeconds??'—',costLabel(m.actualCost,m.costCurrency),m.creditsCharged]){const td=document.createElement('td');td.textContent=String(v);tr.append(td);}$('metrics').append(tr);}$('metricsStatus').textContent=d.items?.length?'Window: '+d.window:'No generation data in this window.';}catch(e){$('metricsStatus').textContent=e.message;}}
+async function loadMetrics(){
+ const request=++metricsListRequest,token=localStorage.getItem('vv_token');
+ const window=$('metricsWindow')?.value||'7d';
+ $('metricsStatus').textContent='Loading…';
+ $('metrics').replaceChildren();
+ try{
+  const d=await api('/api/studio/admin/metrics?window='+encodeURIComponent(window));
+  if(!stillCurrent(request,metricsListRequest,token))return;
+  for(const m of d.items||[]){
+   const tr=document.createElement('tr');
+   for(const v of [m.provider||'—',m.model||'—',m.kind,m.jobs,m.succeeded,m.failed,m.processing,
+    pct(m.successRate),m.averageSeconds??'—',costLabel(m.actualCost,m.costCurrency),m.creditsCharged]){
+    const td=document.createElement('td');td.textContent=String(v);tr.append(td);
+   }
+   $('metrics').append(tr);
+  }
+  $('metricsStatus').textContent=d.items?.length?'Window: '+d.window:'No generation data in this window.';
+ }catch(e){
+  if(stillCurrent(request,metricsListRequest,token))$('metricsStatus').textContent=e.message;
+ }
+}
 
 
 
@@ -189,7 +209,7 @@ const ownerTokenAtOpen=localStorage.getItem('vv_token');
 window.addEventListener('storage',event=>{
  if((event.key!=='vv_token'&&event.key!==null)||event.storageArea!==localStorage)return;
  if(localStorage.getItem('vv_token')===ownerTokenAtOpen)return;
- userListRequest++;jobListRequest++;
+ userListRequest++;jobListRequest++;metricsListRequest++;
  document.body.style.visibility='hidden';
  location.replace('deepsyq.html');
 });
