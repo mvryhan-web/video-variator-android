@@ -45,3 +45,68 @@ test('BASE #27 Tools label is localized without altering legacy editor',async({b
   await expect(page.locator('#mode option')).toHaveCount(3);
  }finally{await context.close();}
 });
+
+
+test('BASE #27 keeps existing local history and media across Video Uniquifier → Tools → Video Uniquifier',async({page})=>{
+ // Synthetic, local-only legacy file and metadata. Do not call a provider,
+ // alter server-side history, spend tool credits, or require live credentials.
+ const writes=[];
+ page.on('request',request=>{
+  if(/\\/api\\/(?:history|studio\\/jobs|ai-billing|billing|stripe)/.test(new URL(request.url()).pathname)
+      && request.method()!=='GET')writes.push(request.method()+' '+new URL(request.url()).pathname);
+ });
+
+ await page.goto('/index.html');
+ await expect.poll(()=>page.evaluate(()=>Boolean(window.VUPersistentMedia?.put))).toBe(true);
+ const seed=await page.evaluate(async()=>{
+  const item={
+   id:'base27-original-history-2026',
+   name:'my-existing-video.mp4',
+   createdAt:'2026-10-15T10:30:00.000Z',
+   type:'video',
+   resolution:'1080p',
+   aspectRatio:'16:9',
+   credits:1,
+   saved:true,
+   mediaCacheKey:'base27-original-local-media'
+  };
+  const bytes=new Uint8Array([0,0,0,24,102,116,121,112,105,115,111,109]);
+  localStorage.setItem('vv_history',JSON.stringify([item]));
+  localStorage.setItem('vv_trial_used','7');
+  await window.VUPersistentMedia.put(item.mediaCacheKey,new Blob([bytes],{type:'video/mp4'}));
+  return {item,bytes:[...bytes]};
+ });
+ await page.reload();
+ await expect(page.locator('#mode option')).toHaveCount(3);
+
+ // Use the existing editor's actual Tools navigation, then the actual hub
+ // entry. Both pages share one origin but must not reset storage.
+ await page.locator('#freeToolsLink').click();
+ await expect(page).toHaveURL(/\\/free-tools\\.html$/);
+ const legacy=page.locator('[data-legacy-tool=video-uniquifier]');
+ await expect(legacy).toBeVisible();
+ await legacy.click();
+ await expect(page).toHaveURL(/\\/index\\.html$/);
+ await expect(page).toHaveTitle(/Video Uniquifier/);
+ expect(await page.locator('#mode option').evaluateAll(nodes=>nodes.map(x=>x.value)))
+  .toEqual(['gentle','balanced','dynamic']);
+
+ // The legacy History view is a local UI view; never fake a generated file.
+ // Trigger its existing click handler even when the sidebar is collapsed on
+ // mobile, then inspect the actual rendered record and persisted media.
+ await page.locator('[data-view=history]').evaluate(button=>button.click());
+ await expect(page.locator('#historyList .historyItem h4'))
+  .toContainText([seed.item.name]);
+ const retained=await page.evaluate(async key=>{
+  const blob=await window.VUPersistentMedia.get(key);
+  return {
+   history:JSON.parse(localStorage.getItem('vv_history')||'null'),
+   trial:localStorage.getItem('vv_trial_used'),
+   mediaBytes:blob?[...new Uint8Array(await blob.arrayBuffer())]:null
+  };
+ },seed.item.mediaCacheKey);
+ expect(retained.history).toEqual([seed.item]);
+ expect(retained.trial).toBe('7');
+ expect(retained.mediaBytes).toEqual(seed.bytes);
+ expect(writes).toEqual([]);
+});
