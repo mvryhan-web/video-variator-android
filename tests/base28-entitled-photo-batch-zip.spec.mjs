@@ -81,3 +81,29 @@ test('BASE #28: one photo remains free, with no ZIP or new tool entitlement',asy
  await expect(page.locator('.photo-batch-zip')).toHaveCount(0);
  expect(access.calls.filter(c=>c.path==='/api/tools/runs')).toHaveLength(0);
 });
+
+
+test('BASE #28: single-photo compositor failed draw purges its private canvas',async({page})=>{
+ const access=await mockToolAccess(page,{authenticated:false});
+ await page.goto('/free-tools.html?tool=photo');
+ const png=await randomPng(page);
+ await page.evaluate(()=>{
+  window.__base28PhotoCanvases=[];
+  const create=document.createElement.bind(document);
+  document.createElement=function(tag,...args){
+   const el=create(tag,...args);
+   if(tag==='canvas')window.__base28PhotoCanvases.push(el);
+   return el;
+  };
+  CanvasRenderingContext2D.prototype.drawImage=function(){throw Error('TEST_DRAW_ERROR');};
+ });
+ await page.locator('#files').setInputFiles({name:'private-photo.png',mimeType:'image/png',buffer:png});
+ await page.locator('#run').click();
+ await expect(page.locator('#run')).toBeEnabled();
+ await expect(page.locator('#status')).toContainText('Could not process');
+ await expect(page.locator('#outputs article')).toHaveCount(0);
+ const dimensions=await page.evaluate(()=>window.__base28PhotoCanvases.map(c=>[c.width,c.height]));
+ expect(dimensions.length).toBeGreaterThanOrEqual(1);
+ expect(dimensions.every(([w,h])=>w===1&&h===1)).toBe(true);
+ expect(access.calls.filter(c=>c.path==='/api/tools/runs')).toHaveLength(0);
+});
