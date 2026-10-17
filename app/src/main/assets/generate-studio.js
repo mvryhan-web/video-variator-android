@@ -780,6 +780,14 @@ window.addEventListener('storage',event=>{
 window.addEventListener('focus',()=>{
  if(historyView&&historyBoundToken&&!historySessionCurrent(historyBoundToken))clearHistoryForAccountChange();
 });
+ // Account rotation in this SAME tab emits no native storage event. Capture
+ // clicks before old History-card callbacks can reuse a prior user's prompt.
+ $('historyList').addEventListener('click',event=>{
+  if(historyView&&!historySessionCurrent(historyBoundToken)){
+   event.preventDefault();event.stopImmediatePropagation();
+   clearHistoryForAccountChange();
+  }
+ },true);
 $('showCreate').onclick=()=>{const u=new URL(location.href);u.searchParams.delete('view');history.replaceState(null,'',u);setHistory(false);};$('showHistory').onclick=()=>setHistory(true);
 function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
 async function watch(id,epoch){
