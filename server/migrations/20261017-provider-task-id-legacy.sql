@@ -13,7 +13,7 @@ ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS provider_task_id TEXT GE
 -- ADD COLUMN IF NOT EXISTS does not validate a pre-existing column. Refuse
 -- unsafe schemas where that name is a normal/wrong-typed column, rather than
 -- silently treating untrusted task IDs as generated audit provenance.
-DO $
+DO $$
 BEGIN
   IF EXISTS (
     SELECT 1
@@ -25,7 +25,7 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'GENERATION_PROVIDER_TASK_COLUMN_CONFLICT';
   END IF;
-END $;
+END $$;
 
 -- CREATE INDEX IF NOT EXISTS in the original migration was only run for the
 -- schema that existed on its first application. Fill the legacy index gap.
