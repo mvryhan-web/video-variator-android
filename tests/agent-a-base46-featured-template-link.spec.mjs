@@ -24,7 +24,11 @@ test('BASE 46: selected featured Home card opens the matching AI Apps workflow w
  await page.goto('/deepsyq.html');
  await expect(page.locator('#featuredWorkflowGrid a')).toHaveCount(2);
  const first=page.locator('#featuredWorkflowGrid a').first();
- await expect(first).toHaveAttribute('href','ai-apps.html?q=Cinematic%20Product%20Photo%20%26%20Launch');
+ const picked=new URL(await first.getAttribute('href'),'http://example.test/');
+ expect(picked.pathname).toBe('/ai-apps.html');
+ expect(picked.searchParams.get('q')).toBe('Cinematic Product Photo & Launch');
+ expect(picked.searchParams.get('type')).toBe('image');
+ expect(picked.searchParams.get('category')).toBe('Commerce');
  await first.click();
  await expect(page).toHaveURL(/ai-apps\.html\?q=Cinematic/);
  await expect(page.locator('#search')).toHaveValue('Cinematic Product Photo & Launch');
@@ -46,6 +50,37 @@ test('BASE 46: server-authored title is encoded as one search argument (not a UR
  const parsed=new URL(href,'http://example.test/');
  expect(parsed.pathname).toBe('/ai-apps.html');
  expect(parsed.searchParams.get('q')).toBe(dangerous.title);
- expect(parsed.searchParams.has('type')).toBe(false);
+ expect(parsed.searchParams.get('type')).toBe('image');
+ expect(parsed.searchParams.get('category')).toBe('Commerce');
  expect(parsed.searchParams.has('source')).toBe(false);
+});
+
+test('BASE 46: featured workflows with the same title open the selected category and type',async({page})=>{
+ const sameTitle='Cinematic Portrait Starter';
+ const choices=[
+  {...templates[0],id:'featured-image',slug:'featured-image',title:sameTitle,category:'Portrait',
+   generationType:'image',promptTemplate:'An editorial still photograph'},
+  {...templates[1],id:'featured-video',slug:'featured-video',title:sameTitle,category:'Motion',
+   generationType:'video',promptTemplate:'A short moving portrait scene'}
+ ];
+ await page.route('**/api/config',r=>r.fulfill({json:{plans:{},googleClientId:'',
+  features:{aiApps:true,inspiration:false,onboarding:false,productVideo:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
+ await page.route('**/api/templates*',r=>r.fulfill({json:{items:choices}}));
+ let paidPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))paidPosts++;});
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#featuredWorkflowGrid a')).toHaveCount(2);
+ const videoCard=page.locator('#featuredWorkflowGrid a').nth(1);
+ const selected=new URL(await videoCard.getAttribute('href'),'http://example.test/');
+ expect(selected.searchParams.get('q')).toBe(sameTitle);
+ expect(selected.searchParams.get('type')).toBe('video');
+ expect(selected.searchParams.get('category')).toBe('Motion');
+ await videoCard.click();
+ await expect(page).toHaveURL(/ai-apps\.html/);
+ await expect(page.locator('#type')).toHaveValue('video');
+ await expect(page.locator('#category')).toHaveValue('Motion');
+ await expect(page.locator('#apps .app-card')).toHaveCount(1);
+ await expect(page.locator('#apps .app-card h3')).toHaveText(sameTitle);
+ expect(paidPosts).toBe(0);
 });
