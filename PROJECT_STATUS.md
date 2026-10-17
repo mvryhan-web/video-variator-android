@@ -1,5 +1,11 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #5 original Video job read-only reconnection and identical retry (2026-10-17)
+
+- **Agent B BASE #5 2026-10-17 ORIGINAL JOB RECOVERY**: B PR #174 HEAD `0a964a2` adds owner-scoped read-only Video lookup by original request UUID (`GET /api/studio/jobs/by-request/:requestId`), user_id/UUID/kind/deleted guards and four no-fee API route mocks; ambiguous provider dispatch remains processing/unknown, no credit release or retry. B PR #186 HEAD `a1f3712` first GET-recovers original persisted Video job without second POST; only explicit 404 permits POST with **SAME** persisted SHA256-scoped v4 ID; network/503 fail-closed, changed media/prompt blocked, History uncertain blocks replay. New no-spend browser fixtures + Node suites authored. B PR #203 stacked HEAD `92cc413` preserves logo guard, five scoped B diff files. Both exact GitHub helper blobs independently verified by local git SHA, **9/9 actual Node22 focused helper mock tests PASS**; exact-head CI #39024056480 (B174), #39024135969 (B186), #39024203788 (B203) plus companions QUEUED/PENDING, no full browser/Node workflow PASS. S3/worker/live Seedance/Veo/provider cancellation/authorized purchased credits still BLOCKED, NO DONE / LIVE.
+- Required merge sequence after exact-head green CI + Agent5 review: independently B #174 backend Video provider+recovery, shared A #152/#170 History API/Studio collisions, B #186 UI client request ID and unknown-status, stacked B #203 Product Video logo guard. D #204 signed-settled purchased-only atomic dispatch, D #199 database migration and B #198 pre-dispatch enforcement remain external and unmerged. B did **not** invoke billable provider, Stripe, S3 or touch main/Render/production. Status BLOCKED_DEPENDENCY / CI_PENDING; whole original BASE #5 still not DONE. All other B BASE rows remain PARKED.
+
+
 ## Agent C — only original BASE #28: BFCache privacy/ZIP checkpoint (2026-10-17)
 
 - Original BASE #28 (11 utilities gathered in Tools) remains the ONE active Agent C row. Read current AGENTS 1ae4783c, ONE_ITEM protocol 41829d6d, SESSION_RESUME e738435b, original BASE/checklist/status. Entire original row is BLOCKED_EXTERNAL, LIVE_VERIFIED=false, no complete numbered items in session. Other C rows paused.
