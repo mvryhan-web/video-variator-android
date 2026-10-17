@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #5 Product Video logo guard PR #203 (2026-10-17)
+
+- Explicit C→B Issue #73 Product Video photo/logo handoff addressed **only in B-owned incoming Video Studio consumer**, without touching C #196 source or A Home. Draft [PR #203](https://github.com/mvryhan-web/video-variator-android/pull/203), branch `agent-b-base5-product-logo-handoff-gate-20261017`, HEAD `f233f12aa83663d2f324075ca5cbde34ba157725`, compare against current BASE = exactly five B scoped files (new pure guard, Studio handoff handler, seven Node tests, two browser scenarios, focused CI workflow).
+- Fail-closed: optional separate advertising logo or invalid/ambiguous Product Video reference roles abort one-shot handoff **before** prompt/reference/consent mutations; photo-only handoffs continue; unsupported logo is never silently sent as first/last/scene photo. EN/RU explains reopening Product Video without logo; no automatic generation request. Does not provide native logo overlay or guarantee photo-perfect AI outputs.
+- **UNVERIFIED current HEAD:** GitHub focused #39018392334 and Video/History/Studio/Wallet companions QUEUED. PR #203 DRAFT, UNMERGED, not live. Original BASE #5 PARTIAL/blocked by purchased-only P0 #182 and external provider/S3; B #186 separate Video History fix remains draft and could collide in Studio JS. Agent C should decide whether originating Product Video should proactively guide users not to attach an optional logo for native Video models; B does not change their file.
+
+
 ## Agent D — Owner P0 #182 purchased-only provider spend provenance (2026-10-17)
 
 - **Owner's overriding financial instruction:** no paid AI provider tests or owner-funded generation. Real billable provider dispatch must require a confirmed paying customer, sufficient *purchased* not welcome/admin credits, consent and quote, with exactly-once atomic DB proof. B's PR #198 is an unwired contract; D owns source-of-funds DB proof; no billing real calls.
