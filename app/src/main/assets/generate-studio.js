@@ -870,10 +870,27 @@ $('creator').onsubmit=async e=>{
   const videoClaim=kind==='video'?await claimVideoRequestId({
    payload,token:localStorage.getItem('vv_token'),storage:sessionStorage
   }):null;
-  const response=await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({
-   requestId:videoClaim?.requestId||crypto.randomUUID(),...payload
-  })});
-  const d=await response.json();
+  let d=null;
+  if(videoClaim?.reused){
+   // The previous HTTP reply may have been lost AFTER the server created and
+   // reserved the original paid task. Read it first, with current-user auth;
+   // do not send another POST when its job row is already persisted.
+   try{
+    const existing=await(await api('/api/studio/jobs/by-request/'+encodeURIComponent(videoClaim.requestId))).json();
+    if(existing.kind!=='video'||typeof existing.id!=='string'||!existing.id)throw Error('STUDIO_STORAGE_UNAVAILABLE');
+    d=existing;
+   }catch(error){
+    // Only an explicit server 404 allows retrying with the SAME requestId.
+    // A network/503/ambiguous lookup failure must never silently dispatch.
+    if(error.message!=='NOT_FOUND')throw error;
+   }
+  }
+  if(!d){
+   const response=await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({
+    requestId:videoClaim?.requestId||crypto.randomUUID(),...payload
+   })});
+   d=await response.json();
+  }
   if(!d?.id)throw Error('STUDIO_STORAGE_UNAVAILABLE');
   job=d.id;
   sessionStorage.setItem('vu_generation_job',job);
