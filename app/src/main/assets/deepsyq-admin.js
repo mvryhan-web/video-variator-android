@@ -206,12 +206,23 @@ $('creditAdjustForm').onsubmit=async e=>{e.preventDefault();const userId=$('cred
 // rendered owner dashboard synchronously before navigating away; the dashboard
 // must not keep another account's user/job data visible while async fetches end.
 const ownerTokenAtOpen=localStorage.getItem('vv_token');
-window.addEventListener('storage',event=>{
- if((event.key!=='vv_token'&&event.key!==null)||event.storageArea!==localStorage)return;
- if(localStorage.getItem('vv_token')===ownerTokenAtOpen)return;
+let ownerViewInvalidated=false;
+function checkOwnerSession(){
+ if(ownerViewInvalidated||localStorage.getItem('vv_token')===ownerTokenAtOpen)return;
+ ownerViewInvalidated=true;
  userListRequest++;jobListRequest++;metricsListRequest++;
  document.body.style.visibility='hidden';
  location.replace('deepsyq.html');
+}
+window.addEventListener('storage',event=>{
+ if((event.key!=='vv_token'&&event.key!==null)||event.storageArea!==localStorage)return;
+ checkOwnerSession();
+});
+// BFCache can restore a page without rerunning module code. Check the original
+// owner session before making a previously visible owner dashboard interactive.
+window.addEventListener('pageshow',checkOwnerSession);
+document.addEventListener('visibilitychange',()=>{
+ if(!document.hidden)checkOwnerSession();
 });
 
 $('userSearch').onsubmit=e=>{e.preventDefault();void loadUsers();};
