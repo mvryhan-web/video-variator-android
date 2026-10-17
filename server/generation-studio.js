@@ -6,9 +6,11 @@ import {pricingCatalog,estimateGenerationPricing} from './generation-pricing.js'
 import {listModelControls,getModelControl,updateModelControl,applyModelControl} from './generation-model-control.js';
 import {enforceGenerationPolicy,generationPolicy} from './generation-policy.js';
 import {createObjectStorage} from './generation-storage.js';
+import {bytePlusPublicDurableStorageReady} from './generation-byteplus-storage-gate.js';
 import {installGenerationReferenceUpload} from './generation-reference-upload.js';
 import {resolveGenerationModel,orderedGenerationCandidates} from './generation-routing.js';
 import {normalizeGenerationError,publicGenerationError} from './generation-errors.js';
+import {publicProviderPerformanceRow} from './generation-provider-performance.js';
 import {claimProviderPoll} from './generation-polling.js';
 import {recordAdminAudit,listAdminAudit} from './admin-audit.js';
 import {generationEntitlements,generationEntitlementForUser} from './generation-entitlements.js';
@@ -29,7 +31,7 @@ export function studioConfig(env=process.env){
  const enabled=env.AI_STUDIO_ENABLED==='true'&&!!(env.GEMINI_API_KEY||env.BYTEPLUS_API_KEY)&&!!env.DATABASE_URL&&!!env.ADMIN_EMAIL&&Number.isInteger(calls)&&calls>0&&calls<=20;
  const allowed=(env.AI_STUDIO_ALLOWED_KINDS||'').split(',');
  const explicit=(env.AI_STUDIO_ALLOWED_MODELS||'').split(',');
- const catalog=MODEL_CATALOG.map(m=>({...m,priority:m.id===MODELS[m.kind]?.id?50:100,enabled:enabled&&m.adapter&&generationFeatureEnabled(m.kind,m.provider,env)&&(m.provider!=='BytePlus'||m.kind!=='video'||bytePlusDownloadsConfigured(env.BYTEPLUS_MEDIA_HOSTS))&&!!(m.provider==='BytePlus'?env.BYTEPLUS_API_KEY:env.GEMINI_API_KEY)&&allowed.includes(m.kind)&&(m.id===MODELS[m.kind]?.id||explicit.includes(m.id))}));
+ const catalog=MODEL_CATALOG.map(m=>({...m,priority:m.id===MODELS[m.kind]?.id?50:100,enabled:enabled&&m.adapter&&generationFeatureEnabled(m.kind,m.provider,env)&&(m.provider!=='BytePlus'||m.kind!=='video'||bytePlusDownloadsConfigured(env.BYTEPLUS_MEDIA_HOSTS))&&!!(m.provider==='BytePlus'?env.BYTEPLUS_API_KEY:env.GEMINI_API_KEY)&&bytePlusPublicDurableStorageReady(m,env)&&allowed.includes(m.kind)&&(m.id===MODELS[m.kind]?.id||explicit.includes(m.id))}));
  const pricingConfigured=pricingCatalog(env).configured,entitlements=generationEntitlements(env),publicReady=env.AI_PUBLIC_GENERATION_ENABLED==='true'&&env.AI_STUDIO_WALLET_ENABLED==='true'&&pricingConfigured&&entitlements.configured;
  const imageBatchEnabled=env.AI_STUDIO_IMAGE_BATCH_ENABLED==='true'&&env.AI_STUDIO_WALLET_ENABLED==='true'&&pricingConfigured;
  return {pilot:!publicReady,ownerOnly:!publicReady,publicGenerationEnabled:publicReady,entitlementsConfigured:entitlements.configured,enabled,pricingConfigured,imageBatchEnabled,featureSwitches:generationFeatureSwitches(env),publicPolicy:generationPolicy(env),reason:enabled?null:'OWNER_SETUP_REQUIRED',models:Object.entries(MODELS).map(([kind,m])=>({kind,...m,enabled:catalog.find(c=>c.id===m.id)?.enabled||false})),catalog,translation:{enabled:false,reason:'PROVIDER_NOT_CONNECTED'}};
@@ -299,7 +301,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
    WHERE ${where.join(' AND ')}
    GROUP BY provider,model,kind,COALESCE(cost_currency,'unknown')
    ORDER BY jobs DESC,provider,model,cost_currency`,args);
-  res.json({window,items:rows.map(r=>({provider:r.provider||null,model:r.model||null,kind:r.kind,jobs:Number(r.jobs||0),succeeded:Number(r.succeeded||0),failed:Number(r.failed||0),processing:Number(r.processing||0),successRate:Number(r.jobs||0)?Number(r.succeeded||0)/Number(r.jobs||0):0,failureRate:Number(r.jobs||0)?Number(r.failed||0)/Number(r.jobs||0):0,averageSeconds:r.avg_seconds==null?null:Number(r.avg_seconds),actualCost:Number(r.actual_cost||0),costCurrency:r.cost_currency,creditsCharged:Number(r.credits_charged||0)}))});
+  res.json({window,items:rows.map(publicProviderPerformanceRow)});
  }catch(_){res.status(503).json({error:'STUDIO_ANALYTICS_UNAVAILABLE'});}});
   app.get('/api/studio/jobs',auth,generationUser,async(req,res)=>{try{
   await init();const filter=String(req.query.filter||'all'),allowed=new Set(['all','image','video','failed','processing']);if(!allowed.has(filter))return res.status(400).json({error:'INVALID_HISTORY_FILTER'});
