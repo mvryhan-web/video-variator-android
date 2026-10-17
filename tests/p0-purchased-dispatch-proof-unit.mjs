@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {claimPurchasedGeneration,purchasedFundingProof} from '../server/generation-purchased-proof.js';
 import {grantPaidSubscriptionInvoice} from '../server/generation-subscription-credits.js';
+import {GenerationWallet} from '../server/generation-wallet.js';
+
 
 const env={AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true'};
 const options=()=>({env,userId:'paid_user',jobId:'job_live_a',kind:'video',credits:100,fingerprint:'sha256abc',modelId:'model_v',provider:'Google',wallet:{available:0,reserved:100,debt:0}});
@@ -132,4 +134,36 @@ test('BASE #16 paid subscription receipt conflict never authenticates a differen
  }};
  await assert.rejects(()=>grantPaidSubscriptionInvoice({event,env,pool,wallet:{grant:async()=>{}}}),
   /AI_SUBSCRIPTION_PURCHASE_PROVENANCE_CONFLICT/);
+});
+
+test('P0 D-to-B callback projection preserves server trusted fingerprint and locked paid receipt',async()=>{
+ const c=db(),wallet=new GenerationWallet(null);
+ wallet.transaction=async(userId,fn)=>{
+  assert.equal(userId,'paid_user');
+  return fn(c,options().wallet);
+ };
+ const verifyPurchasedReservation=wallet.purchasedDispatchVerifier({env});
+ // Match the exact named callback keys in B's approved pre-provider contract.
+ const expected={userId:'paid_user',jobId:'job_live_a',kind:'video',
+  modelId:'model_v',provider:'Google',requestFingerprint:'sha256abc',credits:100};
+ const proof=await verifyPurchasedReservation(Object.freeze(expected));
+ assert.equal(proof.source,'settled_stripe_purchase');
+ assert.equal(proof.requestFingerprint,expected.requestFingerprint);
+ assert.equal(proof.creditsReserved,expected.credits);
+ assert.equal(proof.jobId,expected.jobId);
+ assert.equal(proof.dispatchClaimedExactlyOnce,true);
+ assert.equal(c.statements.length,5);
+ const before=c.statements.length;
+ await assert.rejects(()=>verifyPurchasedReservation({...expected,requestFingerprint:undefined}),
+  /AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+ await assert.rejects(()=>verifyPurchasedReservation({...expected,requestFingerprint:''}),
+  /AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+ assert.equal(c.statements.length,before,'malformed B callback cannot reach database or provider');
+ const cOther=db();
+ const otherWallet=new GenerationWallet(null);
+ otherWallet.transaction=async(_,fn)=>fn(cOther,options().wallet);
+ await assert.rejects(()=>otherWallet.purchasedDispatchVerifier({env:{
+  ...env,AI_LIVE_BILLING_APPROVED:'false'}})(expected),
+  /AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+ assert.equal(cOther.statements.length,0,'unapproved live mode must fail before DB proof');
 });
