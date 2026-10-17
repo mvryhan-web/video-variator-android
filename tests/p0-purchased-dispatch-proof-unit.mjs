@@ -8,7 +8,7 @@ function db({paidCredits=200,otherSpent=80,sourceId='cs_live_paid1',held={},job=
  const statements=[];
  const query=async(sql,args)=>{
   statements.push({sql,args});
-  if(sql.includes('FROM vv_ai_purchase p JOIN vv_ai_order o'))return {rows:[{paid_credits:String(paidCredits),source_id:sourceId}]};
+  if(sql.includes('eligible_paid_purchases'))return {rows:[{paid_credits:String(paidCredits),source_id:sourceId}]};
   if(sql.includes('FROM vv_ai_reservation WHERE user_id='))return {rows:[{used:String(otherSpent)}]};
   if(sql.includes('FROM vv_ai_reservation')&&sql.includes('FOR UPDATE'))return {rows:held===null?[]:[{user_id:'paid_user',credits:100,fingerprint:'sha256abc',status:'held',...held}]};
   if(sql.includes('FROM vv_generation_jobs')&&sql.includes('FOR UPDATE'))return {rows:job===null?[]:[{user_id:'paid_user',model:'model_v',provider:'Google',status:'processing',operation:null,deleted:false,request_fingerprint:'sha256abc',credits_reserved:100,...job}]};
@@ -28,6 +28,9 @@ test('P0 only the locked, verifiable, unrefunded live Stripe order can claim ONE
  assert.equal(c.statements.length,5);
  assert.match(c.statements[0].sql,/o\.snapshot->>'billingMode'='live'/);
  assert.match(c.statements[0].sql,/p\.refunded_amount=0/);
+ assert.match(c.statements[0].sql,/JOIN vv_ai_verified_subscription_invoice v/);
+ assert.match(c.statements[0].sql,/v\.livemode=true/);
+ assert.match(c.statements[0].sql,/v\.payment_intent=p\.payment_intent/);
  assert.match(c.statements[1].sql,/status IN \('held','captured'\)/);
  assert.match(c.statements[2].sql,/FOR UPDATE/);
  assert.match(c.statements[3].sql,/FOR UPDATE/);
