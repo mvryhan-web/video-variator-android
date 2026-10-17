@@ -130,10 +130,16 @@ function syncMenu(){
 }
 function closeMobileDrawer(restoreFocus=false){
  if(!mobileMenu.matches||!document.body.classList.contains('menu-open'))return false;
+ // A hidden inert rail must never retain keyboard focus after dismissal.
+ const wasInside=$('sidebar').contains(document.activeElement);
  document.body.classList.remove('menu-open');
  syncMenu();
- if(restoreFocus)$('menu').focus();
+ if(restoreFocus||wasInside)$('menu').focus();
  return true;
+}
+function drawerTabStops(){
+ return [...$('sidebar').querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+  .filter(el=>el.getClientRects().length>0&&!el.hidden&&getComputedStyle(el).visibility!=='hidden');
 }
 function toggleSidebar(event){
  if(mobileMenu.matches){
@@ -142,6 +148,8 @@ function toggleSidebar(event){
   if(!closeMobileDrawer(event?.currentTarget===$('sidebarToggle')||document.activeElement===$('sidebarToggle'))){
    document.body.classList.add('menu-open');
    syncMenu();
+   // Place first keyboard focus inside the only exposed mobile navigation.
+   $('sidebarToggle').focus();
   }
  }else{
   collapsedSidebar=!collapsedSidebar;
@@ -153,10 +161,20 @@ mobileMenu.addEventListener('change',syncMenu);
 $('menu').onclick=toggleSidebar;
 $('sidebarToggle').onclick=toggleSidebar;
 document.addEventListener('keydown',event=>{
- if(event.key==='Escape'&&mobileMenu.matches&&document.body.classList.contains('menu-open')
-  &&$('authModal').hidden&&!document.querySelector('dialog[open]')){
+ if(!mobileMenu.matches||!document.body.classList.contains('menu-open')||
+  !$('authModal').hidden||document.querySelector('dialog[open]'))return;
+ if(event.key==='Escape'){
   event.preventDefault();
   closeMobileDrawer(true);
+ }else if(event.key==='Tab'){
+  // Keep keyboard focus within the current mobile drawer until it closes.
+  const nodes=drawerTabStops(),first=nodes[0],last=nodes.at(-1);
+  if(!first)return;
+  if(event.shiftKey&&(document.activeElement===first||!$('sidebar').contains(document.activeElement))){
+   event.preventDefault();last.focus();
+  }else if(!event.shiftKey&&(document.activeElement===last||!$('sidebar').contains(document.activeElement))){
+   event.preventDefault();first.focus();
+  }
  }
 });
 // An outside tap closes the open mobile drawer, without toggling it back open
