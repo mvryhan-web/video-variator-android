@@ -298,7 +298,7 @@ test('BASE 3: offline platform config never hides the permanent original Hero ga
 test('BASE 3: narrow 320px Home Hero has no intrinsic-width overflow without clipping the approved gallery',async({page},info)=>{
  await mockSafeHome(page,[]);
  let paidJobs=0;
- page.on('request',req=>{if(req.method()==='POST'&&/\\/api\\/studio\\/jobs/.test(req.url()))paidJobs++;});
+ page.on('request',req=>{if(req.method()==='POST'&&req.url().includes('/api/studio/jobs'))paidJobs++;});
  await page.setViewportSize({width:320,height:740});
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
