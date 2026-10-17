@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent D — BASE #43 server-approved approximate generation counts / IN PROGRESS (2026-10-17)
+
+- **Original gap:** BASE §43 Pricing cards must give approximate generations from known credit allowances. The current AI pack and subscription card descriptions show credits only; no approximate Image/Video count.
+- **Claimed scope:** add display-only server-configured base-rate helper in `ai-pricing-display.js`, update `ai-pricing.js` pack and subscription descriptions, update strict `tests/ai-pricing-display-unit.mjs` and short explanatory doc. Estimate only if server returns valid, distinct positive Image and Video rates, safe credit quantity; no inference of unapproved model prices. Label each type as alternative, not additive, and warn resolution/model/quantity may change use.
+- **Branch:** `base43-server-derived-generation-estimates-20261017`, target `deepsyq-platform`. Previous PR #132 merged; no changes to server-authoritative billing, Stripe, real prices, Home/hero, other agents' files, production. Original #43 PARTIAL/NOT LIVE.
+
+
 ## Agent D — BASE #50 + #51 exact-head green CI and merges (2026-10-17)
 
 - **BASE #51 PR #158:** [merged](https://github.com/mvryhan-web/video-variator-android/pull/158) squash `da5f92b45fd684c4c916dd5f7195cb2539bfd413`, tested head `caf0136ae72340bf2af1a4d17ac6b9ca4f1fe09b`, full **5/5 current-head GitHub Actions SUCCESS**: #38959859931, #38959859936, #38959859823, #38959859944, #38959859934. Adds Image and Video approved price/rate gate plus required Studio owner, bounded max call quota and explicit Image/Video kind coverage. No billing/model/provider/public activation. Original #51 PARTIAL/NOT LIVE.
