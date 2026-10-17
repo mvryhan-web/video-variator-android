@@ -1,0 +1,41 @@
+name: BASE 16 PostgreSQL checkout replay contract
+on:
+  push:
+    branches: [base16-checkout-pg-fixture-20261016]
+    paths:
+      - 'tests/generation-wallet-postgres.mjs'
+      - '.github/workflows/base16-checkout-postgres.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'tests/generation-wallet-postgres.mjs'
+      - '.github/workflows/base16-checkout-postgres.yml'
+permissions:
+  contents: read
+jobs:
+  checkout-fixture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fixture
+          POSTGRES_PASSWORD: fixture
+          POSTGRES_DB: vv_ai_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax
+        run: node --check tests/generation-wallet-postgres.mjs
+      - name: Real isolated PostgreSQL wallet checkout replay and billing unit regression
+        run: node --test tests/generation-wallet-postgres.mjs tests/base16-checkout-reuse-unit.mjs
+        env:
+          NODE_ENV: test
+          AI_TEST_DATABASE_URL: postgres://fixture:fixture@127.0.0.1:5432/vv_ai_test

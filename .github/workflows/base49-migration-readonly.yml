@@ -1,0 +1,31 @@
+name: BASE 49 AI migration read-only safety
+on:
+  push:
+    branches: [base49-clean-merge-20261016]
+    paths:
+      - 'server/ai-migrations.js'
+      - 'tests/base49-migration-readonly-unit.mjs'
+      - '.github/workflows/base49-migration-readonly.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/ai-migrations.js'
+      - 'tests/base49-migration-readonly-unit.mjs'
+      - '.github/workflows/base49-migration-readonly.yml'
+permissions:
+  contents: read
+jobs:
+  check-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Node syntax
+        run: |
+          node --check server/ai-migrations.js
+          node --check tests/base49-migration-readonly-unit.mjs
+      - name: Check migration read-only safety and existing manifest regression
+        run: node --test tests/base49-migration-readonly-unit.mjs tests/ai-migrations-unit.mjs
