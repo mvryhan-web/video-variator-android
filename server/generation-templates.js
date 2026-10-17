@@ -3,6 +3,8 @@ import {readFile} from 'node:fs/promises';
 import {recordAdminAudit} from './admin-audit.js';
 
 const TYPES=new Set(['image','video','product_video','avatar','audio']);
+const STUDIO_PROMPT_LIMIT=2000;
+const NAME_TOKEN=/\{\{\s*product_name\s*\}\}/i;
 const INPUTS=new Set(['image','video','audio','logo','product_name','text']);
 const initByPool=new WeakMap();
 const RIGHTS=new Set(['owned','licensed']);
@@ -47,6 +49,8 @@ export function validateTemplate(value,current={}){
  const prompt=text(value.promptTemplate??current.promptTemplate,4000,{required:true});
  // Keep published Product Name templates usable through the real AI Apps handoff.
  if(active&&requiredInputs.includes('product_name')&&!/\{\{\s*product_name\s*\}\}/i.test(prompt))throw Error('TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED');
+ // Unpublished drafts may exceed the handoff limit; never activate a prompt that Studio would truncate.
+ if(active&&!NAME_TOKEN.test(prompt)&&prompt.length>STUDIO_PROMPT_LIMIT)throw Error('TEMPLATE_STUDIO_PROMPT_TOO_LONG');
  if(active&&(!rightsBasis||rightsNote.length<3))throw Error('TEMPLATE_RIGHTS_REQUIRED');
  if(featured&&!active)throw Error('INVALID_TEMPLATE');
  return {
@@ -88,12 +92,12 @@ export function installGenerationTemplates(app,{auth,pool,env=process.env}){
    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11::jsonb,$12,$13,$14,$15,$16,$17) RETURNING *`,
    [id,t.title,t.slug,t.category,t.description,t.thumbnail,t.generationType,t.promptTemplate,t.defaultModel,JSON.stringify(t.requiredInputTypes),JSON.stringify(t.defaultSettings),t.active,t.featured,t.sortOrder,req.user.id,t.rightsBasis,t.rightsNote]);
   const created=row(rows[0],{ownerView:true});await recordAdminAudit(pool,{actorUserId:req.user.id,action:'template.create',targetType:'template',targetId:id,details:{slug:created.slug,category:created.category,generationType:created.generationType,active:created.active,featured:created.featured,sortOrder:created.sortOrder}});res.status(201).json({template:created});
- }catch(e){res.status(e?.code==='23505'?409:(e.message==='INVALID_TEMPLATE'||e.message==='TEMPLATE_RIGHTS_REQUIRED'||e.message==='TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED')?400:503).json({error:e?.code==='23505'?'TEMPLATE_SLUG_EXISTS':e.message==='INVALID_TEMPLATE'?'INVALID_TEMPLATE':e.message==='TEMPLATE_RIGHTS_REQUIRED'?'TEMPLATE_RIGHTS_REQUIRED':e.message==='TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED'?'TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED':'TEMPLATES_UNAVAILABLE'});}});
+ }catch(e){res.status(e?.code==='23505'?409:(e.message==='INVALID_TEMPLATE'||e.message==='TEMPLATE_RIGHTS_REQUIRED'||(e.message==='TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED'||e.message==='TEMPLATE_STUDIO_PROMPT_TOO_LONG'))?400:503).json({error:e?.code==='23505'?'TEMPLATE_SLUG_EXISTS':e.message==='INVALID_TEMPLATE'?'INVALID_TEMPLATE':e.message==='TEMPLATE_RIGHTS_REQUIRED'?'TEMPLATE_RIGHTS_REQUIRED':e.message==='TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED'?'TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED':e.message==='TEMPLATE_STUDIO_PROMPT_TOO_LONG'?'TEMPLATE_STUDIO_PROMPT_TOO_LONG':'TEMPLATES_UNAVAILABLE'});}});
  app.patch('/api/studio/admin/templates/:id',auth,onlyOwner,async(req,res)=>{try{
   await initTemplates(pool,env);const current=await pool.query('SELECT * FROM vv_ai_template WHERE id=$1',[req.params.id]);if(!current.rows.length)return res.status(404).json({error:'TEMPLATE_NOT_FOUND'});
   const t=validateTemplate(req.body,row(current.rows[0],{ownerView:true}));
   const {rows}=await pool.query(`UPDATE vv_ai_template SET title=$2,slug=$3,category=$4,description=$5,thumbnail=$6,generation_type=$7,prompt_template=$8,default_model=$9,required_input_types=$10::jsonb,default_settings=$11::jsonb,active=$12,featured=$13,sort_order=$14,rights_basis=$15,rights_note=$16,updated_at=NOW() WHERE id=$1 RETURNING *`,
    [req.params.id,t.title,t.slug,t.category,t.description,t.thumbnail,t.generationType,t.promptTemplate,t.defaultModel,JSON.stringify(t.requiredInputTypes),JSON.stringify(t.defaultSettings),t.active,t.featured,t.sortOrder,t.rightsBasis,t.rightsNote]);
   const updated=row(rows[0],{ownerView:true});await recordAdminAudit(pool,{actorUserId:req.user.id,action:'template.update',targetType:'template',targetId:req.params.id,details:{slug:updated.slug,category:updated.category,generationType:updated.generationType,active:updated.active,featured:updated.featured,sortOrder:updated.sortOrder}});res.json({template:updated});
- }catch(e){res.status(e?.code==='23505'?409:(e.message==='INVALID_TEMPLATE'||e.message==='TEMPLATE_RIGHTS_REQUIRED'||e.message==='TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED')?400:503).json({error:e?.code==='23505'?'TEMPLATE_SLUG_EXISTS':e.message==='INVALID_TEMPLATE'?'INVALID_TEMPLATE':e.message==='TEMPLATE_RIGHTS_REQUIRED'?'TEMPLATE_RIGHTS_REQUIRED':e.message==='TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED'?'TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED':'TEMPLATES_UNAVAILABLE'});}});
+ }catch(e){res.status(e?.code==='23505'?409:(e.message==='INVALID_TEMPLATE'||e.message==='TEMPLATE_RIGHTS_REQUIRED'||(e.message==='TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED'||e.message==='TEMPLATE_STUDIO_PROMPT_TOO_LONG'))?400:503).json({error:e?.code==='23505'?'TEMPLATE_SLUG_EXISTS':e.message==='INVALID_TEMPLATE'?'INVALID_TEMPLATE':e.message==='TEMPLATE_RIGHTS_REQUIRED'?'TEMPLATE_RIGHTS_REQUIRED':e.message==='TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED'?'TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED':e.message==='TEMPLATE_STUDIO_PROMPT_TOO_LONG'?'TEMPLATE_STUDIO_PROMPT_TOO_LONG':'TEMPLATES_UNAVAILABLE'});}});
 }
