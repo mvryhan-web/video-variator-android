@@ -5,6 +5,7 @@ on:
     paths:
       - 'server/generation-purchased-proof.js'
       - 'server/generation-wallet.js'
+      - 'server/generation-subscription-credits.js'
       - 'server/generation-readiness.js'
       - 'tests/generation-readiness-unit.mjs'
       - 'server/ai-migrations.js'
@@ -42,6 +43,7 @@ jobs:
         run: |
           node --check server/generation-purchased-proof.js
           node --check server/generation-wallet.js
+          node --check server/generation-subscription-credits.js
           node --check server/generation-readiness.js
           node --check tests/generation-readiness-unit.mjs
           node --check server/ai-migrations.js
