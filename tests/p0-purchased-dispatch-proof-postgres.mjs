@@ -41,7 +41,10 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   }
   await paid('customer_paid','cs_live_paid',200);
   const paidJob=await job('customer_paid','job_paid_a',100);
-  const proof=await wallet.claimPurchasedDispatch(paidJob,{env});
+  const contenders=await Promise.allSettled(Array.from({length:4},()=>wallet.claimPurchasedDispatch(paidJob,{env})));
+  assert.equal(contenders.filter(x=>x.status==='fulfilled').length,1,'only one purchased claim may win the lock');
+  assert.equal(contenders.filter(x=>x.status==='rejected').length,3,'concurrent replays must not claim again');
+  const proof=contenders.find(x=>x.status==='fulfilled').value;
   assert.equal(proof.source,'settled_stripe_purchase');
   assert.equal(proof.purchasedCreditsAvailableBeforeReserve,200);
   assert.equal(proof.purchaseId,'cs_live_paid');
