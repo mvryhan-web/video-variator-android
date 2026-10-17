@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {claimPurchasedGeneration,purchasedFundingProof} from '../server/generation-purchased-proof.js';
 import {grantPaidSubscriptionInvoice} from '../server/generation-subscription-credits.js';
 
-const env={AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_BILLING_MODE:'live',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true'};
+const env={AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true'};
 const options=()=>({env,userId:'paid_user',jobId:'job_live_a',credits:100,fingerprint:'sha256abc',modelId:'model_v',provider:'Google',wallet:{available:0,reserved:100,debt:0}});
 function db({paidCredits=200,otherSpent=80,sourceId='cs_live_paid1',held={},job={},inserted=true}={}){
  const statements=[];
@@ -52,6 +52,7 @@ test('P0 no opt-in or non-live/test credentials ever allow a purchased dispatch 
  for(const changed of [
   {AI_PURCHASED_ONLY_DISPATCH_ENABLED:'false'}, {AI_PURCHASED_ONLY_DISPATCH_ENABLED:undefined},
   {AI_BILLING_MODE:'test'}, {AI_BILLING_MODE:undefined},
+  {AI_LIVE_BILLING_APPROVED:'false'}, {AI_LIVE_BILLING_APPROVED:undefined},
   {AI_PUBLIC_GENERATION_ENABLED:'false'}, {AI_STUDIO_WALLET_ENABLED:'false'}
  ]){
   const c=db();
