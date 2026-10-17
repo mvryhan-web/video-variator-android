@@ -1,5 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+
+## Agent A — SINGLE ACTIVE ROW BASE #24 History / CI_BLOCKED (2026-10-17)
+
+- Original immutable §24 acceptance: discoverable History via `generate-studio.html?view=history`; filters All/Images/Videos/Failed/Processing (+ own Music); saved cards show authorized media preview, prompt, date, model, status, reserved/charged credits and read-only/explicit Download/Reuse/prepare-only Regenerate/Delete.
+- Active [draft PR #152](https://github.com/mvryhan-web/video-variator-android/pull/152), head `43537e7563f2aa56c2ac0f13d318dde1f5206480`: implemented parameterized user-scoped deleted=false 50-item pages with 51st lookahead, `Load older results`, preserving filter and previews; account-bound delayed GET/blob/edit/download/confirm guards. Eight focused paths; integration branch current accepted comparison `mergeable=true` as of this checkpoint but branch is moving.
+- Verification: source-exact V8 History query simulation **10/10 PASS**, Studio/Playwright/route code syntax PASS, **REAL exact-head Actions #39021791472 QUEUED / NOT PASS**. No paid generation. Failing or queued CI cannot be presented as full acceptance.
+- Remaining blockers: exact current-head Node/Chromium/WebKit regression and A/B/D common-file integration review; durable authenticated private media in configured S3 (or verified equivalent), downloads/deletes/credit state in staging across real accounts, and authorized release/device gates cannot be verified solely by mocks; B storage/provider, D purchased-credit/payment controls, Agent5 integration and owner release signoff required. `main`, Render, PostgreSQL schema and Stripe untouched. State **CI_BLOCKED**, LIVE_VERIFIED **NO**, original #24 **NOT DONE**. All other pre-existing A claims/PRs are preserved but NOT active; no switch without recorded Agent5 reassignment.
+
 ## Agent C — ACTIVE ONE ITEM BASE #28 / BLOCKED_EXTERNAL — 2026-10-17
 
 - **Protocol:** Read AGENTS.md `7044ea65`, ONE_ITEM_TO_DONE `8ec65998` and full original BASE #28; acceptance checklist recorded Issue #74 comment `6232218241`. Only active Agent C row **#28**. Previous C #196/#144/#192/#200 are **PAUSED/UNRELEASED** (no edit or scope switch without Agent 5 documented reassignment); do not confuse sub-PRs with full-row DONE.
