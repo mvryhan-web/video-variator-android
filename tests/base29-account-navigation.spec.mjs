@@ -122,7 +122,8 @@ test('BASE #29 History opens existing Studio history with real filter controls',
  const link=page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'History',exact:true});
  await expect(link).toHaveAttribute('href','generate-studio.html?view=history');
  await link.click();
- await expect(page).toHaveURL(/\/generate-studio\.html\?view=history$/);
+ await expect(page).toHaveURL(/\/generate-studio\.html\?/);
+ await expect.poll(()=>page.evaluate(()=>new URL(location.href).searchParams.get('view'))).toBe('history');
  await expect(page.locator('#showHistory')).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('#historyFilters')).toBeVisible();
  expect(paidWrites).toBe(0);
