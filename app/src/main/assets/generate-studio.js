@@ -1116,7 +1116,7 @@ async function useResultAsImageReference(result,{suggestedPrompt='',historyAccou
 $('continueImage').onclick=async()=>{
  if(!blob||busy||!blob.type.startsWith('image/'))return;
  busy=true;availability();$('status').textContent=say('Preparing this image as your next reference…','Готовим изображение для следующей редакции…');
- try{await useResultAsImageReference(blob);}
+ try{await useResultAsImageReference(blob,{historyAccountToken:historyOpenedResultToken});}
  catch(_){$('status').textContent=say('Could not prepare this image. Download it and add it manually.','Не удалось подготовить изображение. Скачайте его и добавьте вручную.');}
  finally{busy=false;availability();}
 };
