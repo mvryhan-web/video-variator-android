@@ -149,7 +149,7 @@ async function run(){
  status(label('Processing locally…','Обработка на устройстве…'));
  try{await perform();if(!abort)status(label('Ready — download the result.','Готово — скачайте результат.'));}
  catch(e){if(!abort)status(label('Could not complete: ','Не удалось выполнить: ')+String(e?.message||e));}
- finally{try{engine?.terminate();}catch(_){}engine=null;active=false;$('utilityRun').disabled=false;$('utilityCancel').disabled=true;}
+ finally{if(abort&&tool==='photo-compress'&&$('utilityFiles').files.length>1)$('utilityResults').replaceChildren();try{engine?.terminate();}catch(_){}engine=null;active=false;$('utilityRun').disabled=false;$('utilityCancel').disabled=true;}
 }
 async function perform(){
  switch(tool){
