@@ -61,7 +61,7 @@ async function renderPhotoBatchArchive(items){
  if(canceled)return;
  const archive=new window.JSZip();
  for(const [index,file] of items.entries()){
-  const basename=String(file.name||'photo').replace(/[\\/\x00-\x1f]/g,'_').slice(0,100)||'photo';
+  const basename=String(file.name||'photo').replace(/[\\/\x00-\x1f<>:"|?*]/g,'_').slice(0,100)||'photo';
   archive.file(String(index+1).padStart(2,'0')+'-'+basename,file);
  }
  const bytes=await archive.generateAsync({type:'blob',compression:'STORE'});
