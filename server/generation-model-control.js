@@ -92,6 +92,29 @@ export function applyModelControl(model,control){
  return {...model,enabled:!!model.enabled&&control.enabledOverride!==false&&!control.maintenance,priority:control.priority,maintenance:control.maintenance,markupBps:control.markupBps};
 }
 
+// Individual and group edits must share the same atomic audit guarantee.
+// Schema initialization happens outside BEGIN, so a failed audit cannot roll
+// back CREATE TABLE while leaving module-level initialization marked ready.
+export async function updateModelControlAudited(pool,{modelId,userId,patch,catalog}={}){
+ if(!validModelId(modelId)||!Array.isArray(catalog)||!catalog.some(m=>m.id===modelId))throw Error('MODEL_NOT_FOUND');
+ const validated=validateModelControlPatch(patch);
+ await initModelControls(pool);
+ await initAdminAudit(pool);
+ const client=await pool.connect();
+ try{
+  await client.query('BEGIN');
+  const control=await updateModelControl(client,{modelId,userId,patch:validated,catalog});
+  await recordAdminAudit(client,{actorUserId:userId,action:'model_control.update',targetType:'model',targetId:modelId,
+   details:{enabledOverride:control.enabledOverride,priority:control.priority,
+    markupBps:control.markupBps,internalCostMicros:control.internalCostMicros,maintenance:control.maintenance}});
+  await client.query('COMMIT');
+  return control;
+ }catch(error){
+  await client.query('ROLLBACK').catch(()=>{});
+  throw error;
+ }finally{client.release();}
+}
+
 // BASE #9: owner-only route calls this bounded bulk edit. Existing per-model
 // controls stay the source of truth, so no second provider config table exists.
 // One SQL transaction + audit record protects partial provider-group updates.
