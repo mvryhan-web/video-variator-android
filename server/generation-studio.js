@@ -1,6 +1,6 @@
 import {randomUUID,createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
-import {MODELS,MODEL_CATALOG,validateGeneration,generateGoogle,pollGoogle} from './generation-provider.js';
+import {MODELS,MODEL_CATALOG,validateGeneration,rejectUnsupportedVideoControls,generateGoogle,pollGoogle} from './generation-provider.js';
 import {generateBytePlus,pollBytePlus,bytePlusDownloadsConfigured} from './generation-byteplus.js';
 import {pricingCatalog,estimateGenerationPricing} from './generation-pricing.js';
 import {listModelControls,getModelControl,updateModelControl,applyModelControl} from './generation-model-control.js';
@@ -60,6 +60,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  async function resolveEstimateRequest(body){
   const catalog=await effectiveCatalog(),kind=String(body?.kind||''),ratio=String(body?.ratio||''),musicMode=body?.musicMode==null?null:String(body.musicMode),count=Number(body?.referenceCount||0);
   if(!['image','video','music'].includes(kind)||!Number.isInteger(count)||count<0||count>10)throw Error('INVALID_REQUEST');
+  rejectUnsupportedVideoControls(body);
   if(body&&('seed'in body||'negativePrompt'in body||'negative_prompt'in body))throw Error('UNSUPPORTED_IMAGE_CONTROL');
   let selected,routing;
   if(env.AI_SMART_ROUTING_ENABLED==='true'&&(body?.model==='smart'||!body?.model)){
@@ -274,14 +275,14 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   const totalCredits=quote.credits*quantity;
   if(!Number.isSafeInteger(totalCredits)||totalCredits>10_000_000)return res.status(400).json({error:'INVALID_IMAGE_QUANTITY'});
   res.json({credits:totalCredits,perImageCredits:quote.credits,quantity,unit:'AI credits',model:quote.model,kind:quote.kind,routing});
- }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_VIDEO_INPUT_MODE','INVALID_VIDEO_REFERENCES','INVALID_REFERENCES','INVALID_MUSIC_MODE'].includes(e.message);res.status(bad?400:503).json({error:bad?e.message:e.message||'AI_PRICING_NOT_APPROVED'});}});
+ }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_VIDEO_INPUT_MODE','INVALID_VIDEO_REFERENCES','INVALID_REFERENCES','INVALID_MUSIC_MODE','UNSUPPORTED_VIDEO_CONTROL'].includes(e.message);res.status(bad?400:503).json({error:bad?e.message:e.message||'AI_PRICING_NOT_APPROVED'});}});
   app.post('/api/studio/jobs',auth,generationUser,async(req,res)=>{
   let request,selected,routing,clientRequestId;try{
    // The job endpoint always creates ONE image. Multi-image batches must use distinct, independently idempotent jobs.
    if(req.body?.quantity!=null&&req.body.quantity!==1)throw Error('INVALID_IMAGE_QUANTITY');
    ({request,selected,routing}=await resolveRequest(req.body));
    clientRequestId=generationRequestId(req.body?.requestId,{required:req.generationAccess?.scope==='public'});
-  }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_VIDEO_INPUT_MODE','INVALID_VIDEO_REFERENCES','INVALID_REFERENCES','INVALID_MUSIC_MODE','GENERATION_REQUEST_ID_REQUIRED','INVALID_GENERATION_REQUEST_ID','INVALID_IMAGE_QUANTITY'].includes(e.message);return res.status(bad?400:503).json({error:e.message||'MODEL_NOT_ENABLED'});}
+  }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_VIDEO_INPUT_MODE','INVALID_VIDEO_REFERENCES','INVALID_REFERENCES','INVALID_MUSIC_MODE','UNSUPPORTED_VIDEO_CONTROL','GENERATION_REQUEST_ID_REQUIRED','INVALID_GENERATION_REQUEST_ID','INVALID_IMAGE_QUANTITY'].includes(e.message);return res.status(bad?400:503).json({error:e.message||'MODEL_NOT_ENABLED'});}
   const premiumVideo=request.kind==='video'&&(request.videoResolution!==selected.quality||request.videoDuration!==selected.capabilities?.durationSeconds||!['text','first_frame'].includes(request.videoInputMode)||request.references?.length>1);
   const quote=walletEnabled()||premiumVideo?estimateGenerationPricing(request,selected,env):null;
   if((walletEnabled()||premiumVideo)&&!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
