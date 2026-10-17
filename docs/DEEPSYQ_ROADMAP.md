@@ -1,5 +1,10 @@
 # DEEPSYQ ROADMAP — approved next product phase
 
+## OWNER POSITIONING CLARIFICATION — global AI platform (2026-10-17)
+
+**Read [`DEEPSYQ_GLOBAL_POSITIONING_REVENUE_VISUAL_SEO.md`](DEEPSYQ_GLOBAL_POSITIONING_REVENUE_VISUAL_SEO.md) before selecting a feature, writing Home/SEO copy or describing target customers.** Deepsyq is a worldwide AI creative platform built for image, video, voice, Canvas, agents, apps, inspiration and creation workflows — **not a single-storefront or single-marketplace solution**. Any individual advertisement or listing example is optional creative output, NOT the platform's identity, homepage, SEO target or default monetization. This editable derived roadmap removes marketplace-specific examples; **the seven original owner TXT files remain byte-identical** and still govern technical scope. Preserve existing unfinished branches and original BASE 55 without claiming the user approved deletion of their requirements. Focus visual Home/real 13-video showcase, first secure paid Image/Video vertical slice, global SEO/AI-search and genuine conversion; no automatic paid AI or production changes.
+
+
 This file preserves the approved future product requirements so new agents do not lose them.
 
 ## Integration and release destination (owner instruction, 2026-10-15)
@@ -103,7 +108,7 @@ Build/extend a shared **Agent Orchestrator** able to:
 - prepare a final deliverable.
 
 Example quick starts:
-- Create an Etsy listing;
+- Create an original multi-format creative content pack;
 - Create a TikTok ad from product photos;
 - Create a 30-second product promo;
 - Create social-media content;
@@ -195,7 +200,7 @@ Using a template must create/clone a user-owned project in My Workspace. Never e
 Initial workflows:
 - Create Product Ad;
 - Create UGC Video;
-- Create Etsy Listing;
+- Create Social Media Content Pack;
 - Create TikTok Ad;
 - Turn Image into Video;
 - Create Social Campaign;
@@ -364,7 +369,7 @@ Examples:
 - create project;
 - start Agent Skill;
 - create TikTok/product ad;
-- create Etsy listing;
+- prepare an original creative content pack;
 - image/video tasks;
 - permitted Everyday/Video tools.
 
