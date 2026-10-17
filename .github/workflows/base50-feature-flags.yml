@@ -5,6 +5,9 @@ on:
   pull_request:
     paths:
       - 'server/generation-feature-flags.js'
+      - 'server/platform-feature-flags.js'
+      - 'server/server.js'
+      - 'tests/base50-platform-feature-flags-unit.mjs'
       - 'server/generation-studio.js'
       - 'tests/base50-feature-flags-unit.mjs'
 permissions:
@@ -25,4 +28,6 @@ jobs:
           node --check server/generation-feature-flags.js
           node --check server/generation-studio.js
           node --check tests/base50-feature-flags-unit.mjs
-          node --test tests/base50-feature-flags-unit.mjs
+          node --check server/platform-feature-flags.js
+          node --check server/server.js
+          node --test tests/base50-feature-flags-unit.mjs tests/base50-platform-feature-flags-unit.mjs

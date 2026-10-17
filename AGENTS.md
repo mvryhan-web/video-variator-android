@@ -1,5 +1,10 @@
 # AGENTS.md — Deepsyq shared rules for all coding agents
 
+## Mandatory global SEO and AI-search checks (owner instruction 2026-10-16)
+
+**Every agent working on public tools/pages or release readiness MUST read [`docs/DEEPSYQ_SEO_RELEASE_CHECKLIST.md`](docs/DEEPSYQ_SEO_RELEASE_CHECKLIST.md) and review [Issue #156](https://github.com/mvryhan-web/video-variator-android/issues/156).** Verify outstanding SEO work and alert the owner before launch even if the owner does not remember to ask. A created issue is not proof of implementation. Do not duplicate other agents' work or alter the locked Home.
+
+
 ## Official Deepsyq brand mark — website AND downloadable app (OWNER LOCK 2026-10-16)
 
 **Canonical website and app icon** is the owner's exact approved cyan/blue/violet/purple overlapping-petal graphical mark **WITHOUT** any white text in the image. Original transparent master is saved under `/Deepsyq/Official Brand/DEEPSYQ_OFFICIAL_LOGO_SITE_AND_APP_TRANSPARENT_MASTER.png` in the owner's ChatGPT Library; immutable SHA-256 `c1d11ed2acdd509209557af6fc8224a3ef5c2325491be19cee0c6cf511dba710`. Full 16–1024px image and installer export package is in that Library folder. Source, accepted visual appearance, UI/Android/iOS integration boundaries and status are in [`docs/DEEPSYQ_OFFICIAL_BRAND.md`](docs/DEEPSYQ_OFFICIAL_BRAND.md); coordination [Issue #115](https://github.com/mvryhan-web/video-variator-android/issues/115).

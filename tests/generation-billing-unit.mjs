@@ -82,3 +82,86 @@ test('one-time welcome grant is idempotent and pays wallet debt first',async()=>
  let b=await wallet.grantOnce({userId:'user-1',kind:'welcome',credits:20});assert.equal(b.available,18);assert.equal(b.debt,0);assert.equal(b.granted,20);assert.equal(ledger.length,1);
  b=await wallet.grantOnce({userId:'user-1',kind:'welcome',credits:20});assert.equal(b.duplicate,true);assert.equal(walletRows.get('user-1').available,18);assert.equal(ledger.length,1);
 });
+
+
+test('BASE #16: explicit Stripe AI billing mode is mandatory; unknown mode cannot activate Checkout',async()=>{
+ const common={AI_BILLING_ENABLED:'true',STRIPE_SECRET_KEY:'sk_test_fixture',DATABASE_URL:'fixture',APP_JWT_SECRET:'test-signing-only'};
+ const explicit=generationBillingRuntime({...common,AI_BILLING_MODE:'test'});
+ assert.equal(explicit.keyMatches,true);
+ for(const value of [undefined,'','prod','TEST','0',null]){
+  const r=generationBillingRuntime({...common,AI_BILLING_MODE:value});
+  assert.equal(r.keyMatches,false,'unknown AI_BILLING_MODE='+String(value));
+  assert.equal(r.livePaymentsEnabled,false);
+ }
+ const app=express();app.use(express.json());let dbCalls=0,stripeCalls=0;
+ installGenerationBilling(app,{
+  auth:(req,_res,next)=>{req.user={id:'test-owner'};next();},
+  pool:{query(){dbCalls++;throw Error('DB must not be touched');}},
+  stripe:{checkout:{sessions:{create(){stripeCalls++;throw Error('Stripe must not be called');}}}},
+  appUrl:'https://example.invalid',env:{...common,AI_BILLING_MODE:'not-a-valid-mode'}
+ });
+ const server=app.listen(0);await new Promise(resolve=>server.once('listening',resolve));
+ try{
+  const base='http://127.0.0.1:'+server.address().port;
+  const config=await fetch(base+'/api/ai-billing/config').then(r=>r.json());
+  assert.equal(config.enabled,false);
+  const response=await fetch(base+'/api/ai-billing/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sku:'anything',requestId:'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa'})});
+  assert.equal(response.status,503);
+  assert.equal(dbCalls,0);
+  assert.equal(stripeCalls,0);
+ }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
+});
+
+
+test('BASE #16: late signed paid checkout is granted after Checkout disabled only for a persisted verified order',async()=>{
+ const orderId='order_prior',userId='user_prior',sessionId='cs_test_prior',paymentIntent='pi_prior';
+ const oldOrder={id:orderId,user_id:userId,sku:'old',session_id:sessionId,snapshot:{
+  billingMode:'test',sku:'old',priceId:'price_old',amount:900,currency:'eur',credits:120
+ }};
+ const make=({eventType='checkout.session.completed',order=oldOrder,sessionOverride={},mode='test',enabled='false',credentials=true}={})=>{
+  let dbCalls=0,retrieveCalls=0;const grants=[];
+  const pool={async query(sql,args=[]){
+   dbCalls++;
+   if(sql.includes('CREATE TABLE IF NOT EXISTS'))return {rows:[]};
+   if(sql.startsWith('SELECT * FROM vv_ai_order'))return {rows:order?[order]:[]};
+   if(sql.startsWith('UPDATE vv_ai_order SET session_id'))return {rows:[]};
+   throw Error('Unexpected query '+sql);
+  }};
+  const env={AI_BILLING_ENABLED:enabled,AI_BILLING_MODE:mode,
+   STRIPE_SECRET_KEY:credentials?'sk_test_fixture':'',APP_JWT_SECRET:'fixture',DATABASE_URL:'fixture'};
+  const session={id:sessionId,payment_status:'paid',livemode:false,mode:'payment',
+   metadata:{aiWallet:'v1',orderId},client_reference_id:userId,
+   amount_total:900,currency:'eur',
+   line_items:{has_more:false,data:[{price:{id:'price_old'},quantity:1}]},
+   payment_intent:paymentIntent,...sessionOverride};
+  const stripe={checkout:{sessions:{async retrieve(){retrieveCalls++;return session;}}}};
+  const installed=installGenerationBilling({get(){},post(){},use(){}},
+   {auth:()=>{},pool,stripe,appUrl:'https://example.invalid',env});
+  installed.wallet.grant=async args=>{grants.push(args);return {available:120};};
+  const event={type:eventType,livemode:false,
+   data:{object:{id:sessionId,metadata:{aiWallet:'v1',orderId}}}};
+  return {installed,event,grants,getDb:()=>dbCalls,getStripe:()=>retrieveCalls};
+ };
+ for(const type of ['checkout.session.completed','checkout.session.async_payment_succeeded']){
+  const h=make({eventType:type});
+  assert.equal(await h.installed.handleEvent(h.event),true);
+  assert.equal(h.getStripe(),1);
+  assert.deepEqual(h.grants,[{userId,sessionId,paymentIntent,credits:120,amount:900,currency:'eur'}]);
+ }
+ for(const options of [{order:null},{sessionOverride:{amount_total:1}},
+  {sessionOverride:{client_reference_id:'wrong_user'}},
+  {sessionOverride:{line_items:{has_more:false,data:[{price:{id:'other'},quantity:1}]}}},
+  {sessionOverride:{livemode:true}},
+  {order:{...oldOrder,session_id:'cs_other'}}]){
+  const h=make(options);
+  await assert.rejects(()=>h.installed.handleEvent(h.event));
+  assert.equal(h.grants.length,0,'unverified purchase must never receive credits');
+ }
+ for(const options of [{mode:'garbage'},{credentials:false},{enabled:'true',mode:'garbage'}]){
+  const h=make(options);
+  await assert.rejects(()=>h.installed.handleEvent(h.event),/AI_BILLING_WEBHOOK_DISABLED/);
+  assert.equal(h.getDb(),0,'invalid reconciliation must fail before DB access');
+  assert.equal(h.getStripe(),0);
+  assert.equal(h.grants.length,0);
+ }
+});
