@@ -1,5 +1,15 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent C — BASE #28 PR207 non-force latest BASE integration (2026-10-17)
+
+- **Single active ORIGINAL #28** from BASE TXT, unchanged role/claim, state BLOCKED_EXTERNAL / not DONE / LIVE_VERIFIED=false. Existing DRAFT PR [#207](https://github.com/mvryhan-web/video-variator-android/pull/207) on `agent-c-base28-entitled-photo-batch-zip-20261017` now HEAD `7e91ad4469b50dd08a7b74617f2c350a0e1a66fd`.
+- **Meaningful completed GitHub work:** two-parent, no-force merge of latest `deepsyq-platform` `9b9f983d0d3a006a4f2eef3b204c7ad287efde01` with previous PR HEAD `144dec2ae6b462f1535efec74cc2f729456568f9`. GitHub compare: ahead 29 / behind 0, original **five** modified/added Tools #28 paths only, PR mergeable true. Both changed source files on BASE matched the common ancestor byte-for-byte before merge; all unrelated base content preserved. No direct main changes.
+- **New exact-head CI not yet complete:** [39026316793](https://github.com/mvryhan-web/video-variator-android/actions/runs/39026316793) batch PDF/OCR/privacy/ZIP; [39026316801](https://github.com/mvryhan-web/video-variator-android/actions/runs/39026316801) photo; [39026316805](https://github.com/mvryhan-web/video-variator-android/actions/runs/39026316805) video; **all QUEUED**, NOT PASS. Previously source-equivalent checks are not equivalent to Playwright.
+- **Original #28 missing acceptance:** Google Text→Audio owner-approved provider/free quota/terms; owner+D Basic/trial entitlement decision under free Tools; owner acceptance of limited flat-color eraser; Agent A SEO #156 public/indexed Tool landings; physical Android/iPhone; owner/Agent 5-approved release and real-user checks. Existing dependency escalation [Issue #74](https://github.com/mvryhan-web/video-variator-android/issues/74#issuecomment-6232329034). Nothing switched; no billable provider, Stripe, production, migrations or owner Home touched.
+- **NEXT same #28 step:** consume actual exact-head Playwright runs when jobs start; fix any C-owned failures, review/merge PR207 only after evidence and approvals; keep #28 BLOCKED_EXTERNAL until full owner/device/live acceptance. No invented DONE.
+
+
+
 ## Agent C — ONE active BASE #28 / Photo→PDF and OCR cancellation safety (2026-10-17)
 
 - Original 55-point BASE #28 only, active Agent C scope, BLOCKED_EXTERNAL, LIVE_VERIFIED=false, **0 whole original BASE items DONE**. Read newest AGENTS.md 926819ca, canonical 16 rules 41e94a54 and four owner locks dcfe0559. All other C rows/PRs remain paused.
