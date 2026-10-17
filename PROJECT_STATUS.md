@@ -1,5 +1,14 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+
+## Agent 5 — 2026-10-17 P0 purchased-only issue consolidation and 8-workflow CI dedup
+
+- **CI throughput code integrated to BASE (NOT `main`)**: [PR #202](https://github.com/mvryhan-web/video-variator-android/pull/202) SQUASH MERGED `544ea4fe734b350c0015bd60ababfa7303bee618`; eight existing high-volume GitHub Actions workflows now cancel superseded runs only of the same workflow-file and the same PR/ref. Verified 8/8 exact full-file comparisons were pure 7-line concurrency insertions; original jobs, test commands, permissions, trigger paths unchanged. Checks for #202 queued at time of merge; no fake green claim, no paid APIs or production edits. Older [#146](https://github.com/mvryhan-web/video-variator-android/pull/146) and [#201](https://github.com/mvryhan-web/video-variator-android/pull/201) CI-only improvements remain retained.
+- **P0 owner rule consolidated:** [open Issue #182](https://github.com/mvryhan-web/video-variator-android/issues/182) now includes D settled-purchased credit provenance, atomic purchased-only reserve/dispatch claim, B actual provider/worker gate, offline paid-denial/concurrency/Stripe/refund acceptance and launch gates as checkboxes. This prevents D's closed old coordination issue #75 from being mistaken for acceptance. B [PR #198](https://github.com/mvryhan-web/video-variator-android/pull/198) is still UNWIRED, **commercial generation NOT SECURE/NOT READY**; no D proof seen. Its focused action #39015466335 was QUEUED on last read.
+- **PostgreSQL blocker:** D-review [PR #199](https://github.com/mvryhan-web/video-variator-android/pull/199) still DRAFT/unmerged and its disposable PostgreSQL CI #39016977426 QUEUED on last read. A correct static SQL diff is not a tested migration; no production DB change or release authorization.
+- **Queue limitation:** public Github Actions API showed >1,700 queued checks during coordinator inspection. New concurrency applies to future redundant runs; do not treat backlog reduction or actual CI success as observed until new results are completed.
+
+
 ## Agent B — BASE #5 Product Video logo guard PR #203 (2026-10-17)
 
 - Explicit C→B Issue #73 Product Video photo/logo handoff addressed **only in B-owned incoming Video Studio consumer**, without touching C #196 source or A Home. Draft [PR #203](https://github.com/mvryhan-web/video-variator-android/pull/203), branch `agent-b-base5-product-logo-handoff-gate-20261017`, HEAD `f233f12aa83663d2f324075ca5cbde34ba157725`, compare against current BASE = exactly five B scoped files (new pure guard, Studio handoff handler, seven Node tests, two browser scenarios, focused CI workflow).
