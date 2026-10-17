@@ -1,5 +1,10 @@
 # DEEPSYQ — New Chat / Agent Continuity & Handoff Protocol
 
+## Mandatory owner rule — SAME ROW ON RESUME, NO SHORT-TASK HOPPING (2026-10-17)
+
+**Read [`docs/DEEPSYQ_ONE_ITEM_TO_DONE_PROTOCOL.md`](DEEPSYQ_ONE_ITEM_TO_DONE_PROTOCOL.md).** The replacement session resumes the **same original BASE #N and its existing PRs**. A CHECKPOINT, one finished code subtask, old green test run or new session does **not** free the claimed row. Continue fixing its remaining original acceptance criteria until whole-row DONE; do not spread work across multiple numbered BASE rows. For genuine external/CI/cross-lane blocking, finish all safe work, save exact unblocking condition and request a documented Agent-5 reassignment **before** another row; preserve the old claim/PR for resumption. No automatic assignment inferred from chat silence. The old "move to next item after finished task" command is overridden by the stricter meaning **finished original numbered requirement**.
+
+
 **Owner-approved policy (2026-10-16).** Canonical repository: `mvryhan-web/video-variator-android`; BASE integration branch `deepsyq-platform`; production integration branch `main`. **This document describes session recovery and coordination only; it does not change any original BASE or Block 1–7 requirement and does not authorize production actions.**
 
 ## What this solves / does not solve
@@ -34,7 +39,7 @@ The same message is deliberately **role-neutral**: the owner does not have to re
 4. **If more than one plausible interrupted workstream, ask one direct question** ("Продолжаем A #... или C #...?"). **Never assert knowledge of which chat reached the limit**; GitHub does not reveal that event. If exactly one candidate is explicit in available evidence *and* no competing active owner, propose it for confirmation unless owner had already instructed this exact continuation.
 5. Once identified, read **the whole original scope TXT**: for BASE use `docs/DEEPSYQ_PLATFORM_SPEC.md`; for an explicitly permitted Block N use `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_N.txt`. Read `docs/DEEPSYQ_BASE_CHECKLIST.md`, affected source files and tests. Never infer completeness from docs alone.
 6. For resuming an already-claimed row: **reuse the old branch/PR**, if safe and authorized; note `TAKEOVER` on the corresponding issue. The old row does not become "free" merely because a chat ended. A second independently running session must not continue in parallel. If owner confirms the predecessor chat is ended, an explicit takeover is allowed; preserve existing work.
-7. Only then make bounded edits, targeted tests, commit, open/update a scoped PR targeting `deepsyq-platform`, and maintain board/status state with optimistic SHA re-fetch. **No unrelated feature commits directly to giant PR #42**, no force push, no direct `main` production deployment.
+7. Only then resume the SAME numbered BASE row until the whole original acceptance is DONE, not merely a subtask; do bounded edits, targeted tests, commit, open/update existing scoped PR targeting `deepsyq-platform`, and maintain board/status with optimistic SHA re-fetch. Do not switch rows for external block without documented Agent-5 approval. **No unrelated feature commits directly to giant PR #42**, no force push, no direct `main` production deployment.
 8. Reply to owner concisely in Russian: `Продолжаю роль [A/B/C/D/5], BASE #[n], Issue #[n], PR #[n], уже сделано [...], дальше [...], риски [...]`. If unknown say UNKNOWN, not "done".
 
 ## Every continuing session: leave durable CHECKPOINTS, not just an end-of-chat note
