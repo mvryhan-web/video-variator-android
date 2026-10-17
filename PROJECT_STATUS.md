@@ -1,5 +1,11 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #6 Seedance MP4 container branch update (2026-10-17)
+
+- Existing B [draft PR #176](https://github.com/mvryhan-web/video-variator-android/pull/176) HEAD `d0ed7417851a6d08080601117428a2e8fbc79496`: preserved original BytePlus source and no-fee test blobs over verified unchanged BASE ancestors by a non-force two-parent commit. Only three original B paths in current compare. MP4 major-brand/ftyp size verification rejects AVIF/HEIC/arbitrary bytes before durable result storage; does not claim codec or malware scanning.
+- Prior exact-head GitHub workflows **3/3 SUCCESS** (`39014543367`, `39014543252`, `39014543188`); current head focused #39019839522 + Video core #39019839596 + Studio #39019839510 **QUEUED / NOT VERIFIED**. Draft, no main/production or live provider call. BASE #6 PARTIAL pending real provider/storage/owner paid gates.
+
+
 ## Agent B — BASE #41 capability fidelity handoff (2026-10-17)
 
 - Existing claimed Agent B BASE #41 branch `base41-model-capability-fidelity-20261016` recovered from `b905972a`, reconciled onto current BASE with **non-force two-parent commit** `8c76cee0df08209eae99344969de2fa9a840fd36`, no branch reset/force. [Draft PR #206](https://github.com/mvryhan-web/video-variator-android/pull/206) current HEAD `38bd46c31d1dff61cd9ff81d364e69ab1a7f4dbe` changes only `app/src/main/assets/generate-models.js`, dedicated 7-case test and dedicated GitHub Actions workflow. No other agent modules changed.
