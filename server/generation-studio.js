@@ -3,7 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {MODELS,MODEL_CATALOG,validateGeneration,generateGoogle,pollGoogle} from './generation-provider.js';
 import {generateBytePlus,pollBytePlus,bytePlusDownloadsConfigured} from './generation-byteplus.js';
 import {pricingCatalog,estimateGenerationPricing} from './generation-pricing.js';
-import {listModelControls,getModelControl,updateModelControl,applyModelControl,updateProviderGroupControls} from './generation-model-control.js';
+import {listModelControls,getModelControl,updateModelControlAudited,applyModelControl,updateProviderGroupControls} from './generation-model-control.js';
 import {enforceGenerationPolicy,generationPolicy} from './generation-policy.js';
 import {createObjectStorage} from './generation-storage.js';
 import {bytePlusPublicDurableStorageReady} from './generation-byteplus-storage-gate.js';
@@ -131,7 +131,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   }
  });
  app.post('/api/studio/admin/route-preview',auth,owner,async(req,res)=>{if(env.AI_SMART_ROUTING_ENABLED!=='true')return res.status(503).json({error:'SMART_ROUTING_NOT_ENABLED'});try{const catalog=await effectiveCatalog();const candidates=orderedGenerationCandidates(req.body,catalog);if(!candidates.length)return res.status(503).json({error:'NO_COMPATIBLE_MODEL'});res.json({primary:candidates[0].id,candidates:candidates.map(m=>({id:m.id,provider:m.provider,priority:Number(m.control?.priority??m.priority??100),quality:m.capabilities?.quality??m.quality??null,durationSeconds:m.capabilities?.durationSeconds??null,maxReferences:m.capabilities?.maxReferences??m.references??0,ratios:m.capabilities?.ratios??m.ratios??[]}))});}catch(_){res.status(503).json({error:'SMART_ROUTING_UNAVAILABLE'});}});
- app.patch('/api/studio/admin/models/:id',auth,owner,async(req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const control=await updateModelControl(pool,{modelId:req.params.id,userId:req.user.id,patch:req.body,catalog:studioConfig(env).catalog});await recordAdminAudit(pool,{actorUserId:req.user.id,action:'model_control.update',targetType:'model',targetId:req.params.id,details:{enabledOverride:control.enabledOverride,priority:control.priority,markupBps:control.markupBps,internalCostMicros:control.internalCostMicros,maintenance:control.maintenance}});res.json({modelId:req.params.id,control});}catch(e){const status=e.message==='MODEL_NOT_FOUND'?404:e.message==='INVALID_MODEL_CONTROL'?400:503;res.status(status).json({error:status===503?'MODEL_ADMIN_UNAVAILABLE':e.message});}});
+ app.patch('/api/studio/admin/models/:id',auth,owner,async(req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const control=await updateModelControlAudited(pool,{modelId:req.params.id,userId:req.user.id,patch:req.body,catalog:studioConfig(env).catalog});res.json({modelId:req.params.id,control});}catch(e){const status=e.message==='MODEL_NOT_FOUND'?404:e.message==='INVALID_MODEL_CONTROL'?400:503;res.status(status).json({error:status===503?'MODEL_ADMIN_UNAVAILABLE':e.message});}});
 
  app.get('/api/studio/admin/billing-review',auth,owner,async(_req,res)=>{if(!wallet)return res.status(503).json({error:'AI_WALLET_UNAVAILABLE'});try{
   await init();await wallet.init();
