@@ -285,9 +285,14 @@ async function loadRedaction(){
   }
  }
 }
-function drawCovers(context,r,scale=1){
- const x=Math.min(r.start.x,r.end.x)*scale,y=Math.min(r.start.y,r.end.y)*scale,w=Math.abs(r.start.x-r.end.x)*scale,h=Math.abs(r.start.y-r.end.y)*scale;
- context.fillStyle='#000';context.fillRect(x,y,w,h);
+function drawCovers(context,r,scaleX=1,scaleY=scaleX){
+ // Opaque redaction must cover outward-rounded export pixels even when the
+ // preview width and height use slightly different integer scaling.
+ const left=Math.floor(Math.min(r.start.x,r.end.x)*scaleX);
+ const top=Math.floor(Math.min(r.start.y,r.end.y)*scaleY);
+ const right=Math.ceil(Math.max(r.start.x,r.end.x)*scaleX);
+ const bottom=Math.ceil(Math.max(r.start.y,r.end.y)*scaleY);
+ context.fillStyle='#000';context.fillRect(left,top,right-left,bottom-top);
 }
 function renderRedactions(){
  if(!redactBase||!redactImage)return;const c=$('redactCanvas');
@@ -299,8 +304,8 @@ async function exportRedaction(){
  const f=files()[0];if(redactLoading||!redactSource||redactSource!==f||!redactImage||!redactRects.length)throw Error(label('Select the current image and cover at least one area.','Выберите текущее фото и закройте хотя бы одну область.'));
  const full=document.createElement('canvas');full.width=redactImage.width;full.height=redactImage.height;
  const x=full.getContext('2d');x.drawImage(redactImage,0,0);
- const scale=full.width/$('redactCanvas').width;
- for(const r of redactRects)drawCovers(x,r,scale);
+ const scaleX=full.width/$('redactCanvas').width,scaleY=full.height/$('redactCanvas').height;
+ for(const r of redactRects)drawCovers(x,r,scaleX,scaleY);
  // Opaque blocks replace pixels; exporting does not retain image layers.
  const blob=await blobFrom(full,'image/png');
  await result(new File([blob],base(f)+'-redacted.png',{type:'image/png'}));
