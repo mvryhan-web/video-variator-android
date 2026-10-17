@@ -559,7 +559,7 @@ async function acceptFiles(files,{append=false,shouldAccept=()=>true}={}){
   }
   // Only History editing supplies a session guard. All other reference inputs
   // preserve their established behavior while old-account async loads fail closed.
-  if(!shouldAccept())throw Error('HISTORY_ACCOUNT_CHANGED');
+  if(!shouldAccept())return false;
   refs=next;$('consent').checked=false;accepted=true;
   $('status').textContent=optimizedCount?say(optimizedCount+' large photo(s) optimized locally to fit the 1 MB reference limit. Original files were unchanged.','Больших фотографий уменьшено: '+optimizedCount+'. Подготовка выполнена на устройстве; оригиналы не изменены.'):say('Reference photos are ready. Generate will start only after your approval.','Фотографии готовы. Генерация начнётся только после вашего подтверждения.');
  }catch(e){$('status').textContent=errorText(e);}
