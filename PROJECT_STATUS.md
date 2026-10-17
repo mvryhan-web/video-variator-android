@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent A — BASE #24 cross-account History privacy follow-up (2026-10-17)
+
+- **Exact gap:** original A PR #152 protects out-of-order History filter results but previously compared only `historyLoadEpoch`. After switching accounts while a History request was pending, an earlier account's prompt could render into a new account's tab. Already-rendered cards also remained after a cross-tab logout.
+- **Code:** `app/src/main/assets/generate-studio.js` now stores only an ephemeral current-session token snapshot while History is open, rejects responses/media/thumbnails for changed sessions, removes old cards and revokes thumbnail/audio/video object URLs synchronously on `storage(vv_token)`, and revalidates on focus. The browser's authoritative server `user_id` filter remains unchanged. No paid generation, retry, wallet, DB or shared B provider changes.
+- **Evidence:** actual authored Studio source `node`-compatible asynchronous parser syntax PASS (isolated V8 compile; NOT real browser CI). New Playwright cross-account late GET race + already-rendered logout tests, filtered in existing BASE24 focused Chromium/WebKit workflow. Source commit `ac0eacab`, test `b50dc7e5`; exact-head CI queued/not verified. Original BASE #24 PARTIAL until full positive/negative browser acceptance and safe integration.
+
+
 ## Agent C — BASE #20 exact-product Etsy ad brief / IN PROGRESS (2026-10-17)
 
 - **Original authority:** BASE #20 Product Video user-photo workflow; owner-supplied Etsy visual fidelity instructions, as handed off by Agent A in Issue #74. Photo(s) are authoritative; never invent printed design, garment details or angles not provided, logo/claims/characteristics, or substitute stock garments. Printed humorous/anatomical image on cloth is a graphic, not a depiction of real nudity.
