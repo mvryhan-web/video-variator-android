@@ -182,17 +182,76 @@ test('BASE #5: ambiguous Video submission is immediately marked uncertain even b
  });
 });
 
-test('BASE #5: provider-operation Video and ready/failed/queued jobs remain untouched',()=>{
+test('BASE #5: provider-operation Video and ready/failed jobs remain untouched',()=>{
  const base={kind:'video',status:'processing',operation:'byteplus:remote_123',created_at:'2026-10-17T08:00:00.000Z',error:null};
  for(const value of [
   base,{...base,status:'ready',operation:null},
   {...base,status:'failed',operation:null,error:'PROVIDER_ERROR'},
-  {...base,status:'queued',operation:null},
   {...base,kind:'image',operation:null},
   {...base,kind:'music',operation:null}
  ])assert.deepEqual(videoHistoryPublicStatus(value,{nowMs:Date.parse(base.created_at)+500000}),{
   status:value.status,error:value.error
  });
+});
+
+test('BASE #5: stale untracked QUEUED video receives review-only status without DB or wallet mutation',()=>{
+ const created_at='2026-10-17T08:00:00.000Z';
+ const base={kind:'video',status:'queued',operation:null,created_at,error:null};
+ const start=Date.parse(created_at);
+ assert.deepEqual(videoHistoryPublicStatus(base,{nowMs:start+179999}),{status:'queued',error:null});
+ assert.deepEqual(videoHistoryPublicStatus(base,{nowMs:start+180001}),{
+  status:'queued',error:VIDEO_SUBMISSION_UNCERTAIN
+ });
+ assert.deepEqual(videoHistoryPublicStatus({...base,operation:'operations/saved'},{nowMs:start+360000}),{
+  status:'queued',error:null
+ });
+ // Only the outgoing History representation changes; preserve actual DB state.
+ assert.equal(base.status,'queued');assert.equal(base.error,null);
+});
+
+test('BASE #5: authenticated single-job GET leaves fresh queued video queued and reports stale untracked video as unknown',async()=>{
+ const source=await readFile(new URL('../server/generation-studio.js',import.meta.url),'utf8');
+ const start=source.indexOf("app.get('/api/studio/jobs/:id',auth,generationUser");
+ const end=source.indexOf("app.get('/api/studio/jobs/:id/media'",start);
+ assert.ok(start>=0&&end>start,'Existing Video job GET route preserved');
+ const handlers=[];
+ const auth=()=>{},generationUser=()=>{};
+ const app={get(path,...middleware){handlers.push({path,middleware});}};
+ let charges=0,providerCalls=0,dbUpdates=0;
+ const pool={async query(){dbUpdates++;throw Error('should remain read-only')}};
+ const walletEnabled=()=>false;
+ const claimProviderPoll=async()=>{providerCalls++;return false;};
+ const poller=async()=>{providerCalls++;throw Error('unexpected provider poll')};
+ const finish=async()=>{providerCalls++;throw Error('unexpected finish')};
+ const failTerminalProviderJob=async()=>{charges++;throw Error('unexpected terminal wallet settlement')};
+ const factory=new Function('app','auth','generationUser','getJob','walletEnabled',
+  'videoHistoryPublicStatus','VIDEO_SUBMISSION_UNCERTAIN','pool','claimProviderPoll','poller',
+  'finish','failTerminalProviderJob','publicGenerationError',
+  source.slice(start,end));
+ let job;
+ factory(app,auth,generationUser,async()=>job,walletEnabled,videoHistoryPublicStatus,
+  VIDEO_SUBMISSION_UNCERTAIN,pool,claimProviderPoll,poller,finish,failTerminalProviderJob,()=>({error:'err'}));
+ assert.equal(handlers.length,1);
+ assert.equal(handlers[0].path,'/api/studio/jobs/:id');
+ assert.equal(handlers[0].middleware[0],auth);
+ assert.equal(handlers[0].middleware[1],generationUser);
+ const respond=async()=>{
+  const result={status:200,body:null};
+  const res={status(code){result.status=code;return this;},json(body){result.body=body;return this;}};
+  await handlers[0].middleware[2]({params:{id:'owned-job'},user:{id:'owned-user'}},res);
+  return result;
+ };
+ job={id:'owned-job',kind:'video',status:'queued',operation:null,error:null,
+  created_at:new Date(Date.now()-181000).toISOString()};
+ assert.deepEqual(await respond(),{
+  status:200,body:{id:'owned-job',kind:'video',status:'unknown',
+   error:VIDEO_SUBMISSION_UNCERTAIN,retryAfterSeconds:0}
+ });
+ job={...job,created_at:new Date(Date.now()-1000).toISOString()};
+ const recent=await respond();
+ assert.equal(recent.status,200);assert.equal(recent.body.status,'queued');
+ assert.equal(recent.body.retryAfterSeconds,5);
+ assert.equal(providerCalls,0);assert.equal(charges,0);assert.equal(dbUpdates,0);
 });
 
 test('BASE #5: missing/invalid Video timestamps fail closed without inventing a settled status',()=>{
