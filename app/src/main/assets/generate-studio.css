@@ -90,3 +90,8 @@
 .history-inline-media video,.history-inline-media audio{display:block;width:100%;max-width:100%;border-radius:10px;background:#080b10}
 .history-inline-media video{max-height:310px;object-fit:contain}
 .history-inline-media .hint{font-size:11px;margin:4px 0}
+
+/* BASE #24: older saved results are loaded on demand, not via provider retries. */
+.history-more{justify-self:center;min-height:44px;max-width:100%;padding:10px 18px;margin:8px auto 16px;border:1px solid var(--line);border-radius:999px;background:#242c2c;color:var(--mint);cursor:pointer}
+.history-more:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
+.history-more:disabled{opacity:.6;cursor:wait}
