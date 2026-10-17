@@ -1,0 +1,62 @@
+import {test,expect} from '@playwright/test';
+import {readFile} from 'node:fs/promises';
+
+async function fixture(page){
+ const values=await page.evaluate(async()=>{
+  const c=document.createElement('canvas');c.width=120;c.height=80;
+  const x=c.getContext('2d');x.fillStyle='#e02020';x.fillRect(0,0,c.width,c.height);
+  const b=await new Promise(ok=>c.toBlob(ok,'image/png'));
+  return Array.from(new Uint8Array(await b.arrayBuffer()));
+ });
+ return Buffer.from(values);
+}
+
+test('BASE #28: real Photo to PDF creates a downloadable PDF entirely within Tools',async({page})=>{
+ let rawUploads=0;
+ page.on('request',r=>{if(r.method()==='POST')rawUploads++;});
+ await page.goto('/free-tools.html');
+ await expect(page.locator('[data-utility="scan-pdf"]')).toHaveAttribute('href','mobile-utility.html?tool=scan-pdf');
+ await page.locator('[data-utility="scan-pdf"]').click();
+ await expect(page).toHaveURL(/mobile-utility\.html\?tool=scan-pdf$/);
+ await page.locator('#utilityFiles').setInputFiles({name:'owner-photo.png',mimeType:'image/png',buffer:await fixture(page)});
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityResults .utility-result')).toContainText('scanned-documents.pdf');
+ const next=page.waitForEvent('download');
+ await page.locator('#utilityResults .utility-result button').click();
+ const downloaded=await next,bytes=await readFile(await downloaded.path());
+ expect(downloaded.suggestedFilename()).toBe('scanned-documents.pdf');
+ expect(bytes.subarray(0,5).toString()).toBe('%PDF-');
+ expect(bytes.length).toBeGreaterThan(100);
+ expect(rawUploads).toBe(0);
+});
+
+test('BASE #28: opaque sensitive-data mask permanently changes downloaded image pixels',async({page},info)=>{
+ test.skip(info.project.name.includes('mobile-'),'Precise pointer drag contract is desktop only; device acceptance remains separate');
+ let rawUploads=0;page.on('request',r=>{if(r.method()==='POST')rawUploads++;});
+ await page.goto('/mobile-utility.html?tool=photo-redact');
+ await page.locator('#utilityFiles').setInputFiles({name:'private.png',mimeType:'image/png',buffer:await fixture(page)});
+ const canvas=page.locator('#redactCanvas');
+ await expect.poll(()=>canvas.evaluate(c=>c.width===120&&c.height===80&&c.getContext('2d').getImageData(2,2,1,1).data[0]===224)).toBe(true);
+ const b=await canvas.boundingBox();
+ await page.mouse.move(b.x+b.width*.2,b.y+b.height*.2);
+ await page.mouse.down();
+ await page.mouse.move(b.x+b.width*.7,b.y+b.height*.7,{steps:7});
+ await page.mouse.up();
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityResults .utility-result')).toContainText('private-redacted.png');
+ const next=page.waitForEvent('download');
+ await page.locator('#utilityResults .utility-result button').click();
+ const output=await next,bytes=await readFile(await output.path());
+ expect(bytes.subarray(0,8).toString('hex')).toBe('89504e470d0a1a0a');
+ const samples=await page.evaluate(async array=>{
+  const img=new Image();const u=URL.createObjectURL(new Blob([new Uint8Array(array)],{type:'image/png'}));
+  try{
+   img.src=u;await img.decode();const c=document.createElement('canvas');c.width=img.width;c.height=img.height;
+   const x=c.getContext('2d');x.drawImage(img,0,0);
+   return {blocked:[...x.getImageData(50,40,1,1).data],clear:[...x.getImageData(4,4,1,1).data]};
+  }finally{URL.revokeObjectURL(u);}
+ },Array.from(bytes));
+ expect(samples.blocked).toEqual([0,0,0,255]);
+ expect(samples.clear).toEqual([224,32,32,255]);
+ expect(rawUploads).toBe(0);
+});
