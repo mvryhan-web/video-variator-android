@@ -24,6 +24,8 @@ test('only a NEW append-only file repairs the legacy generated column and index'
   assert.match(sql,/ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS provider_task_id TEXT GENERATED ALWAYS AS \(\s*CASE\s+WHEN operation LIKE 'byteplus:%' THEN substring\(operation FROM 10\)\s+ELSE operation\s+END\s*\) STORED;/);
   assert.match(sql,/CREATE INDEX IF NOT EXISTS vv_generation_jobs_provider_task_idx\s+ON vv_generation_jobs\(provider,provider_task_id\)/);
   assert.doesNotMatch(sql,/DROP TABLE|DROP COLUMN|UPDATE vv_generation_jobs\s+SET provider_task_id/i);
+  assert.match(sql,/a\.attgenerated <> 's' OR a\.atttypid <> 'text'::regtype/);
+  assert.match(sql,/GENERATION_PROVIDER_TASK_COLUMN_CONFLICT/);
 });
 
 test('historical migration ledger checksum stays valid; new migration is pending',async()=>{
