@@ -1,7 +1,7 @@
 import {saveLocal} from './ai-media.js';
 import {MODEL_CATALOG,MODELS} from './generate-models.js';
 import {takeStudioHandoff} from './studio-handoff.js';
-import {claimVideoRequestId,acknowledgeVideoRequestId,videoOwnerScopeFromClaim,videoResumeScopeMatches} from './studio-video-request-id.mjs';
+import {claimVideoRequestId,acknowledgeVideoRequestId,releaseRejectedVideoRequestId,videoOwnerScopeFromClaim,videoResumeScopeMatches} from './studio-video-request-id.mjs';
 import {studioCreditWalletState} from './studio-credit-wallet.js';
 const $=id=>document.getElementById(id),ru=navigator.language.startsWith('ru');
 // Never trust tab-local Video draft/last-job identity after login changes without a reload.
@@ -902,10 +902,19 @@ $('creator').onsubmit=async e=>{
   }
   if(videoClaim&&localStorage.getItem('vv_token')!==videoAccountToken)throw Error('VIDEO_ACCOUNT_CHANGED');
   if(!d){
-   const response=await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({
-    requestId:videoClaim?.requestId||crypto.randomUUID(),...payload
-   })});
-   d=await response.json();
+   try{
+    const response=await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({
+     requestId:videoClaim?.requestId||crypto.randomUUID(),...payload
+    })});
+    d=await response.json();
+   }catch(error){
+    // Server-side request validation happens before job insertion/charge.
+    // Release this pending ID ONLY for whitelisted definitive denials;
+    // all ambiguous provider/DB/transport failures retain exactly-once ID.
+    if(videoClaim&&localStorage.getItem('vv_token')===videoAccountToken)
+     releaseRejectedVideoRequestId({storage:sessionStorage,...videoClaim,errorCode:error.message});
+    throw error;
+   }
   }
   if(!d?.id)throw Error('STUDIO_STORAGE_UNAVAILABLE');
   if(videoClaim&&localStorage.getItem('vv_token')!==videoAccountToken)throw Error('VIDEO_ACCOUNT_CHANGED');
