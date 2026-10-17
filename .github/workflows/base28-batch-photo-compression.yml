@@ -1,0 +1,25 @@
+name: BASE 28 safe batch photo compression
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/mobile-utility.js'
+      - 'tests/base28-batch-photo-compression.spec.mjs'
+      - '.github/workflows/base28-batch-photo-compression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  photo-batch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/mobile-utility.js && node --check tests/base28-batch-photo-compression.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Existing single-file compression and batch ZIP across browser engines
+        run: npx playwright test tests/base28-photo-compression.spec.mjs tests/base28-batch-photo-compression.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit
