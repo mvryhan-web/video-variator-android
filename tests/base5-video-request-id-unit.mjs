@@ -172,7 +172,7 @@ test('BASE #5: authenticated Video media response cannot be shown after account 
 test('BASE #5: rejected video input frees only definitively pre-dispatch-invalid request IDs',async()=>{
  for(const code of ['INVALID_VIDEO_REFERENCES','UNSUPPORTED_VIDEO_RESOLUTION',
    'UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_VIDEO_INPUT_MODE',
-   'INVALID_REQUEST','INVALID_REFERENCES']){
+   'INVALID_REQUEST','INVALID_REFERENCES','UNSUPPORTED_VIDEO_CONTROL']){
   const s=storage(),p=payload(),old=await claimVideoRequestId({payload:p,token:'user-A',storage:s,cryptoApi});
   assert.equal(releaseRejectedVideoRequestId({storage:s,...old,errorCode:code}),true);
   assert.equal(s.saved.size,0);
