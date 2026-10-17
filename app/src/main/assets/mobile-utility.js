@@ -28,6 +28,7 @@ const fileTypes={
  'zip':['*/*',true],'captions':['video/*,audio/*',false]};
 const timeModes=['video-trim','audio-trim'];
 let active=false,abort=false,engine=null,redactRects=[],redactImage=null,redactBase=null,redactDragging=null;
+let redactSelectionEpoch=0,redactSource=null,redactLoading=false;
 function init(){
  $('utilityTitle').textContent=mode.title;document.title=mode.title+' · Video Uniquifier';
  $('utilityDescription').textContent=mode.note;document.getElementById('utilityBack').textContent=label('← Everyday Tools','← Повседневные инструменты');
@@ -144,12 +145,16 @@ function addResizeOption(){
 }
 async function run(){
  if(active)return;
+ if(tool==='photo-redact'&&(redactLoading||!redactImage||!redactSource||redactSource!==$('utilityFiles').files[0])){
+  status(label('Finish loading the current photo before redacting.','Дождитесь загрузки текущего фото перед скрытием данных.'));return;
+ }
  if(tool==='captions'){location.href='audio-studio.html?tool=stt';return;}
  active=true;abort=false;$('utilityRun').disabled=true;$('utilityCancel').disabled=false;$('utilityResults').replaceChildren();
+ if(tool==='photo-redact')$('utilityFiles').disabled=true;
  status(label('Processing locally…','Обработка на устройстве…'));
  try{await perform();if(!abort)status(label('Ready — download the result.','Готово — скачайте результат.'));}
  catch(e){if(!abort)status(label('Could not complete: ','Не удалось выполнить: ')+String(e?.message||e));}
- finally{try{engine?.terminate();}catch(_){}engine=null;active=false;$('utilityRun').disabled=false;$('utilityCancel').disabled=true;}
+ finally{try{engine?.terminate();}catch(_){}engine=null;active=false;$('utilityRun').disabled=tool==='photo-redact'&&(!redactImage||redactLoading);$('utilityCancel').disabled=true;if(tool==='photo-redact')$('utilityFiles').disabled=false;}
 }
 async function perform(){
  switch(tool){
@@ -257,9 +262,28 @@ function setupRedaction(){
  $('redactReset').onclick=()=>{redactRects=[];renderRedactions();};
 }
 async function loadRedaction(){
- const c=$('redactCanvas'),f=$('utilityFiles').files[0];
- redactRects=[];redactBase=null;if(!f)return;
- try{redactImage=await openImage(f);const scale=Math.min(1,920/Math.max(redactImage.width,redactImage.height));c.width=Math.max(1,Math.round(redactImage.width*scale));c.height=Math.max(1,Math.round(redactImage.height*scale));redactBase=c.getContext('2d');renderRedactions();}catch(e){status(String(e.message||e));}
+ const c=$('redactCanvas'),f=$('utilityFiles').files[0],epoch=++redactSelectionEpoch;
+ // Discard the previous private preview before loading another file.
+ redactLoading=!!f;redactRects=[];redactDragging=null;redactBase=null;redactSource=null;
+ if(redactImage){redactImage.width=redactImage.height=1;redactImage=null;}
+ c.getContext('2d').clearRect(0,0,c.width,c.height);
+ $('utilityResults').replaceChildren();
+ $('utilityRun').disabled=true;
+ if(!f){redactLoading=false;return;}
+ try{
+  const decoded=await openImage(f);
+  if(epoch!==redactSelectionEpoch){decoded.width=decoded.height=1;return;}
+  redactImage=decoded;redactSource=f;
+  const scale=Math.min(1,920/Math.max(decoded.width,decoded.height));
+  c.width=Math.max(1,Math.round(decoded.width*scale));
+  c.height=Math.max(1,Math.round(decoded.height*scale));
+  redactBase=c.getContext('2d');renderRedactions();
+ }catch(e){if(epoch===redactSelectionEpoch)status(String(e.message||e));}
+ finally{
+  if(epoch===redactSelectionEpoch){
+   redactLoading=false;$('utilityRun').disabled=!redactImage;
+  }
+ }
 }
 function drawCovers(context,r,scale=1){
  const x=Math.min(r.start.x,r.end.x)*scale,y=Math.min(r.start.y,r.end.y)*scale,w=Math.abs(r.start.x-r.end.x)*scale,h=Math.abs(r.start.y-r.end.y)*scale;
@@ -272,7 +296,7 @@ function renderRedactions(){
  if(redactDragging)drawCovers(redactBase,redactDragging);
 }
 async function exportRedaction(){
- const f=files()[0];if(!redactImage||!redactRects.length)throw Error(label('Select an image and cover at least one area.','Выберите фото и закройте хотя бы одну область.'));
+ const f=files()[0];if(redactLoading||!redactSource||redactSource!==f||!redactImage||!redactRects.length)throw Error(label('Select the current image and cover at least one area.','Выберите текущее фото и закройте хотя бы одну область.'));
  const full=document.createElement('canvas');full.width=redactImage.width;full.height=redactImage.height;
  const x=full.getContext('2d');x.drawImage(redactImage,0,0);
  const scale=full.width/$('redactCanvas').width;
