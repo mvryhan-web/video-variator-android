@@ -578,6 +578,33 @@ test('BASE 24: delayed old-account History Download cannot save another account 
  expect(paidPosts).toBe(0);
 });
 
+for(const operation of ['Download','Edit image']){
+ test('BASE 24: old-account History '+operation+' HTTP error never appears in new-account status',async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('vv_token','old-error-owner-A'));
+  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+  const media={id:'old-image-for-error',kind:'image',status:'ready',
+   prompt:'OLD ACCOUNT PRIVATE IMAGE',model:'fixture-image',createdAt:'2026-10-17T08:00:00Z'};
+  await page.route('**/api/studio/jobs?filter=*',r=>r.fulfill({json:{items:[media]}}));
+  let resolveStarted,release,paidPosts=0;
+  const started=new Promise(resolve=>resolveStarted=resolve),held=new Promise(resolve=>release=resolve);
+  page.on('request',request=>{if(request.method()==='POST'&&new URL(request.url()).pathname==='/api/studio/jobs')paidPosts++;});
+  await page.route('**/api/studio/jobs/old-image-for-error/media',async route=>{
+   resolveStarted();await held;
+   try{await route.fulfill({status:503,json:{error:'PRIVATE_A_ERROR_MUST_NOT_DISPLAY'}});}catch(_){}
+  });
+  await page.goto('/generate-studio.html?studio=image&view=history');
+  await expect(page.locator('.history-card')).toContainText('OLD ACCOUNT PRIVATE IMAGE');
+  await page.locator('.history-card').getByRole('button',{name:operation,exact:true}).click();
+  await started;
+  await page.evaluate(()=>localStorage.setItem('vv_token','new-error-owner-B'));
+  release();
+  await expect(page.locator('.history-card')).toHaveCount(0);
+  await expect(page.locator('#historyList')).not.toContainText('OLD ACCOUNT PRIVATE IMAGE');
+  await expect(page.locator('#status')).not.toContainText('PRIVATE_A_ERROR_MUST_NOT_DISPLAY');
+  expect(paidPosts).toBe(0);
+ });
+}
+
 test('BASE 24: a changed account cannot confirm deletion of a previous account result',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vv_token','delete-account-A'));
  await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
