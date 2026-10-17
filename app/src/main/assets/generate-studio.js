@@ -838,6 +838,8 @@ async function createImageBatch(){
    submitted++;
    job=reply.id;
    sessionStorage.setItem('vu_generation_job',job);
+   // Shared last-job slot now points to Image; discard prior Video owner marker.
+   sessionStorage.removeItem('vu_generation_video_owner_scope');
    await watch(job,epoch);
    ready++;
   }catch(e){
@@ -904,6 +906,7 @@ $('creator').onsubmit=async e=>{
   job=d.id;
   sessionStorage.setItem('vu_generation_job',job);
   if(videoClaim)sessionStorage.setItem('vu_generation_video_owner_scope',videoOwnerScopeFromClaim(videoClaim));
+  else sessionStorage.removeItem('vu_generation_video_owner_scope');
   // Once the server confirms the original ID, it is safe to allow a future,
   // deliberately distinct Video request. Never clear on timeout or 5xx.
   if(videoClaim)acknowledgeVideoRequestId({storage:sessionStorage,...videoClaim,jobId:job});
