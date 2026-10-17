@@ -103,3 +103,63 @@ test('BASE #5: non-Video generation preserves existing error state behavior',asy
  assert.equal(trace.updates.length,1);
  assert.match(trace.updates[0].sql,/status='failed'/);
 });
+
+
+async function recoveredVideoLookup({userId='u-1',requestId='11111111-1111-4111-8111-111111111111',
+ poolQuery=async()=>({rows:[{id:'existing-original-video',kind:'video',status:'processing'}]})}={}){
+ const source=await readFile(new URL('../server/generation-studio.js',import.meta.url),'utf8');
+ const start=source.indexOf("app.get('/api/studio/jobs/by-request/:requestId'");
+ const end=source.indexOf(" const getJob=async",start);
+ assert.ok(start>=0&&end>start,'Exact owner-scoped read-only Video request lookup exists');
+ const body=source.slice(start,end);
+ const calls=[],auth=()=>{},generationUser=()=>{};
+ const app={get(path,...handlers){calls.push({path,handlers});}};
+ let queries=0,params;
+ const pool={async query(sql,args){queries++;params=args;
+  assert.match(sql,/WHERE user_id=\$1 AND client_request_id=\$2 AND kind='video' AND deleted=false/);
+  assert.match(sql,/SELECT id,kind,status FROM/);
+  assert.doesNotMatch(sql,/INSERT|UPDATE|DELETE|provider|Stripe|credits_reserved|output_assets/);
+  return poolQuery(sql,args);
+ }};
+ const readOnly=new Function('app','auth','generationUser','init','pool','generationRequestId',
+  body);
+ const validateId=id=>{if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))throw Error('INVALID_GENERATION_REQUEST_ID');return id;};
+ readOnly(app,auth,generationUser,async()=>{},pool,validateId);
+ assert.equal(calls.length,1);
+ assert.equal(calls[0].path,'/api/studio/jobs/by-request/:requestId');
+ assert.equal(calls[0].handlers.length,3);
+ assert.equal(calls[0].handlers[0],auth);
+ assert.equal(calls[0].handlers[1],generationUser);
+ const result={status:200,body:null};
+ const res={status(n){result.status=n;return this;},json(payload){result.body=payload;return this;}};
+ await calls[0].handlers[2]({params:{requestId},user:{id:userId}},res);
+ return {result,queries,params};
+}
+
+test('BASE #5: lost Video POST response is resolved read-only to original user-owned job, no charges',async()=>{
+ const {result,queries,params}=await recoveredVideoLookup();
+ assert.deepEqual(result,{status:200,body:{id:'existing-original-video',kind:'video',status:'processing'}});
+ assert.equal(queries,1);
+ assert.deepEqual(params,['u-1','11111111-1111-4111-8111-111111111111']);
+});
+
+test('BASE #5: unknown/cross-account Video request returns 404, never searches other users',async()=>{
+ const response=await recoveredVideoLookup({userId:'unrelated-user',poolQuery:async(_sql,args)=>{
+  assert.equal(args[0],'unrelated-user');
+  return {rows:[]};
+ }});
+ assert.deepEqual(response.result,{status:404,body:{error:'NOT_FOUND'}});
+ assert.equal(response.queries,1);
+});
+
+test('BASE #5: malformed client request UUID is rejected before database access',async()=>{
+ const response=await recoveredVideoLookup({requestId:"' OR true --"});
+ assert.deepEqual(response.result,{status:400,body:{error:'INVALID_GENERATION_REQUEST_ID'}});
+ assert.equal(response.queries,0);
+});
+
+test('BASE #5: unavailable read-only lookup never falls back to a new paid provider operation',async()=>{
+ const response=await recoveredVideoLookup({poolQuery:async()=>{throw Error('database down');}});
+ assert.deepEqual(response.result,{status:503,body:{error:'STUDIO_STORAGE_UNAVAILABLE'}});
+ assert.equal(response.queries,1);
+});
