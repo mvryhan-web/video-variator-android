@@ -1,7 +1,7 @@
 import {summarizeAiTemplateReadiness} from './ai-template-readiness.js';
 const $=id=>document.getElementById(id);
 let base='';try{base=window.AndroidBridge?.getApiBase?.()||'';}catch(_){}base=String(base||window.VV_API_BASE||location.origin).replace(/\/$/,'');
-async function api(path,options={}){const token=localStorage.getItem('vv_token');if(!token)throw Error('AUTH_REQUIRED');const r=await fetch(base+path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),Authorization:`Bearer ${token}`}});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'REQUEST_FAILED');return d;}
+async function api(path,options={}){const token=localStorage.getItem('vv_token');if(!token)throw Error('AUTH_REQUIRED');const r=await fetch(base+path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),Authorization:`Bearer ${token}`}});const d=await r.json().catch(()=>({}));if(r.status===401&&verifiedOwnerSession)checkOwnerSession(true);if(!r.ok)throw Error(d.error||'REQUEST_FAILED');return d;}
 
 async function loadReadiness(){try{$('readinessStatus').textContent='Loading…';const [d,m]=await Promise.all([api('/api/studio/admin/readiness'),api('/api/studio/admin/migrations')]),root=$('launchGates');root.replaceChildren();const gates=[...(d.gates||[]),{id:'migrations',label:'AI database migrations',ready:!!m.ready,required:true}];for(const g of gates){const card=document.createElement('article');card.className='gate-card';card.dataset.ready=String(!!g.ready);const state=document.createElement('strong');state.textContent=g.ready?'Ready':'Blocked';const label=document.createElement('span');label.textContent=g.label;const need=document.createElement('small');need.textContent=g.id==='migrations'?(m.items||[]).map(x=>x.name+': '+(x.applied?(x.checksumMatches?'ok':'checksum mismatch'):'pending')).join(' · '):(g.required?'Required for public AI':'Optional / test-only');card.append(state,label,need);root.append(card);}const blockers=[...(d.blockers||[]),...(!m.ready?['migrations']:[])],b=$('launchBlockers');b.textContent=!blockers.length?'All repository/config/schema launch gates report ready. Live provider/payment/storage smoke tests are still required before launch.':'Blocked by: '+blockers.join(', ')+'.';$('readinessStatus').textContent=d.billing?.liveAiPaymentsEnabled?'Live AI billing gates are enabled. A real controlled Stripe/provider smoke test is still required before public launch.':'Live AI billing remains disabled until mode, live key and explicit owner approval are all enabled.';}catch(e){$('readinessStatus').textContent=e.message;}}
 
@@ -22,7 +22,7 @@ async function loadPurchases(){try{
 // Ignore responses from obsolete admin searches/filter selections. Also prevent
 // old owner-account responses from repainting this page after session rotation.
 let userListRequest=0,jobListRequest=0,metricsListRequest=0;
-const stillCurrent=(version,latest,token)=>version===latest&&localStorage.getItem('vv_token')===token;
+const stillCurrent=(version,latest,token)=>!ownerViewInvalidated&&version===latest&&localStorage.getItem('vv_token')===token;
 
 async function loadUsers(){
  const request=++userListRequest,token=localStorage.getItem('vv_token'),q=$('userQuery').value.trim();
@@ -198,7 +198,7 @@ function renderBillingReview(items){
 }
 async function loadBillingReview(){try{$('billingStatus').textContent='Loading…';const d=await api('/api/studio/admin/billing-review');renderBillingReview(d.items||[]);$('billingStatus').textContent='';}catch(e){$('billingReview').replaceChildren();$('billingStatus').textContent=e.message==='AI_WALLET_UNAVAILABLE'?'AI wallet review is not available yet.':e.message;}}
 
-async function verifyOwner(){try{const {user}=await api('/api/me');if(!user?.isAdmin)throw Error('OWNER_ONLY');await Promise.all([loadReadiness(),loadBusiness(),loadPurchases(),loadUsers(),loadJobs(),loadAudit(),loadModels(),loadMetrics(),loadBillingReview(),loadTemplates(),loadInspirationAdmin()]);}catch(e){$('modelStatus').textContent=e.message==='AUTH_REQUIRED'?'Sign in with the owner account first.':'Owner access required.';$('metricsStatus').textContent='';}}
+async function verifyOwner(){try{const {user}=await api('/api/me');if(!user?.isAdmin)throw Error('OWNER_ONLY');verifiedOwnerSession=true;await Promise.all([loadReadiness(),loadBusiness(),loadPurchases(),loadUsers(),loadJobs(),loadAudit(),loadModels(),loadMetrics(),loadBillingReview(),loadTemplates(),loadInspirationAdmin()]);}catch(e){$('modelStatus').textContent=e.message==='AUTH_REQUIRED'?'Sign in with the owner account first.':'Owner access required.';$('metricsStatus').textContent='';}}
 
 $('creditAdjustForm').onsubmit=async e=>{e.preventDefault();const userId=$('creditUserId').value.trim(),delta=Number($('creditDelta').value),reason=$('creditReason').value.trim(),status=$('creditAdjustStatus');if(!userId||!Number.isSafeInteger(delta)||delta===0||reason.length<3){status.textContent='Enter exact user ID, a non-zero whole credit amount, and a reason.';return;}const verb=delta>0?'ADD':'REMOVE',amount=Math.abs(delta);if(!confirm(`${verb} ${amount} AI credits ${delta>0?'to':'from'} user ${userId}?\n\nReason: ${reason}\n\nThis does not change Stripe.`))return;status.textContent='Applying audited adjustment…';const requestId=crypto.randomUUID();try{const d=await api('/api/studio/admin/users/'+encodeURIComponent(userId)+'/credits/adjust',{method:'POST',body:JSON.stringify({requestId,confirmUserId:userId,delta,reason})});status.textContent=`Saved. Available: ${d.balance.available}, held: ${d.balance.reserved}, debt: ${d.balance.debt}.`;await Promise.all([loadUsers(),loadBusiness()]);}catch(err){status.textContent=err.message==='OWNER_CREDIT_ADJUSTMENTS_DISABLED'?'Manual credit adjustment is safely disabled on the server.':err.message==='INSUFFICIENT_AVAILABLE_AI_CREDITS'?'Cannot remove more credits than the user currently has available.':err.message;}};
 
@@ -206,9 +206,9 @@ $('creditAdjustForm').onsubmit=async e=>{e.preventDefault();const userId=$('cred
 // rendered owner dashboard synchronously before navigating away; the dashboard
 // must not keep another account's user/job data visible while async fetches end.
 const ownerTokenAtOpen=localStorage.getItem('vv_token');
-let ownerViewInvalidated=false;
-function checkOwnerSession(){
- if(ownerViewInvalidated||localStorage.getItem('vv_token')===ownerTokenAtOpen)return;
+let ownerViewInvalidated=false,verifiedOwnerSession=false;
+function checkOwnerSession(force=false){
+ if(ownerViewInvalidated||(!force&&localStorage.getItem('vv_token')===ownerTokenAtOpen))return;
  ownerViewInvalidated=true;
  userListRequest++;jobListRequest++;metricsListRequest++;
  document.body.style.visibility='hidden';
