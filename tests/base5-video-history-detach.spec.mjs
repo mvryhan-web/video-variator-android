@@ -89,6 +89,30 @@ test('BASE #5: video History uses original queued/running/succeeded/failed label
 });
 
 
+
+test('BASE #5: stale queued Video with lost provider task ID requires review and cannot spawn a history replay',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await setup(page);
+ let generationPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))generationPosts++;});
+ await page.route('**/api/studio/jobs?filter=*',route=>route.fulfill({json:{items:[{
+  id:'stale-queued-video',kind:'video',status:'queued',
+  error:'STATUS_UNKNOWN_NO_AUTOMATIC_RETRY',provider:'Google',
+  model:'veo-3.1-lite-generate-preview',prompt:'Unique paid video request',
+  createdAt:'2026-10-17T08:00:00.000Z',settings:{videoInputMode:'text',referenceCount:0}
+ }]}}));
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#showHistory').click();
+ const card=page.locator('.history-card');
+ await expect(card.locator('.history-status')).toHaveAttribute('data-status','queued');
+ await expect(card.locator('.history-status')).toContainText('Status uncertain');
+ await expect(card.locator('.history-status')).toHaveAttribute('title',/No new generation or automatic refund/);
+ await expect(card.locator('.history-actions button').filter({hasText:'Regenerate'})).toBeDisabled();
+ await expect(card.locator('.history-actions button').filter({hasText:'Reuse prompt'})).toBeDisabled();
+ await expect(card.locator('.history-actions button').filter({hasText:'Check status'})).toBeEnabled();
+ await expect(card.locator('.history-actions button').filter({hasText:'Delete'})).toBeDisabled();
+ expect(generationPosts).toBe(0);
+});
+
 test('BASE #5: lost Video POST response keeps the identical requestId across reload, never charges a changed prompt',async({page})=>{
  await page.setViewportSize({width:390,height:844});await setup(page);
  const submissions=[],lookups=[];

@@ -22,11 +22,11 @@ export async function quarantineUncertainVideoSubmit({pool,jobId,failure}){
 }
 
 
-// Present stale/ambiguous VIDEO submissions honestly in History without
+// Present stale/ambiguous queued or processing VIDEO submissions in History without
 // changing database/wallet state. Original server operation stays private.
 export function videoHistoryPublicStatus(job,{nowMs=Date.now()}={}){
  const status=job?.status??null,error=job?.error??null;
- if(job?.kind!=='video'||status!=='processing'||job.operation)
+ if(job?.kind!=='video'||!['queued','processing'].includes(status)||job.operation)
   return {status,error};
  const createdMs=Date.parse(job.created_at);
  const stale=Number.isFinite(createdMs)&&Number.isFinite(nowMs)&&
