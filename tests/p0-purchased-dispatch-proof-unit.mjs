@@ -71,6 +71,6 @@ test('P0 funding invariant is exact integer conservative under paid/refunded/use
   const valid=paid-consumed>=reserve;
   assert.equal(purchasedFundingProof({paidCredits:paid,otherSpentCredits:consumed,requiredCredits:reserve}),valid);
  }
- for(const value of [-1,1.1,'oops',Number.MAX_SAFE_INTEGER+1])
+ for(const value of [-1,1.1,'oops',Number.MAX_SAFE_INTEGER+1,true,false,null,undefined,'',{},[]])
   assert.throws(()=>purchasedFundingProof({paidCredits:value,otherSpentCredits:0,requiredCredits:1}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
 });
