@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent C corrected BASE #28 photo-batch enhancement claim — 2026-10-17
+
+- Redundancy/billing audit found EXISTING `free-tools.js` processes up to 50 photos, and `tool-access.js` explicitly gates `photo_batch` at Basic/trial. **Abandoned and CLOSED draft PR #205 without merging** (would duplicate finished feature and create a tier bypass through the unentitled single-photo utility). No branch #205 code reached BASE.
+- NEW explicitly narrow claim: add one client-side **ZIP download of the existing authorized photo-batch outputs**, preserving all existing per-photo downloads, Basic/trial access initiation and settlement, source JPEG compression, 50-file limit, cancellation, and UI. No new compressor, no free-tier access change. Isolated branch `agent-c-base28-entitled-photo-batch-zip-20261017`, C lane Issue #74. Limit ZIP extra memory to max 20 resulting files and 96 MB; never send photos to server or call paid AI. No ZIP if canceled or fewer than two successful outputs.
+- Original BASE/Blocks TXT, D-owned tool policy and payments, A Home, B provider/Studio unchanged. Draft PR, focused Chromium/WebKit desktop/mobile and access-test gate; no merge until exact CI green.
+
+
 ## Agent B — BASE #5 Veo verified MP4 input/output continuation (2026-10-17)
 
 - Existing B [draft PR #174](https://github.com/mvryhan-web/video-variator-android/pull/174) HEAD `77925277cbf16749b2bc6dad3c9537b3dd050e35` reconciled through non-force two-parent commit over then-current BASE `a72cc9d0`. Source Google provider blob unchanged from original PR parent, only original three B files in current compare. Exact prior head `972165b` GH Actions **3/3 SUCCESS**; current focused #39019918996, Video core #39019918924 and Studio #39019918929 QUEUED / NOT VERIFIED.
