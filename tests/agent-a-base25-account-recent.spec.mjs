@@ -72,3 +72,40 @@ test('BASE 25: local logout clears sensitive cards synchronously before navigati
  await expect(page.locator('#recentCreationsGrid')).not.toContainText('PRIVATE: Account A');
  await expect(page.locator('#recentCreationsStatus')).toContainText('Sign in');
 });
+
+
+for(const interaction of ['click old card','keyboard old card','focus old card']){
+ test('BASE 25: same-tab owner switch blocks '+interaction+' and removes private recent cards',async({page})=>{
+  await stubSignedInHome(page);
+  await page.route('**/api/studio/jobs?filter=all',r=>r.fulfill({json:{items:[oldUserJob]}}));
+  let paidPosts=0;
+  page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')paidPosts++;});
+  await page.goto('/deepsyq.html');
+  await expect(page.locator('#recentCreationsGrid')).toContainText('PRIVATE: Account A');
+  await page.evaluate(()=>localStorage.setItem('vv_token','fixture-account-B'));
+  const recent=page.locator('#recentCreationsGrid .recent-creation').first();
+  if(interaction==='click old card')await recent.click({force:true,noWaitAfter:true});
+  else if(interaction==='keyboard old card'){
+   // Dispatch the keyboard event on the stale link so its capture listener
+   // prevents activation before the old owner is wiped.
+   await recent.evaluate(el=>el.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true})));
+  }else await recent.evaluate(el=>el.dispatchEvent(new FocusEvent('focusin',{bubbles:true,cancelable:true})));
+  await expect(page.locator('#recentCreationsGrid .recent-creation')).toHaveCount(0);
+  await expect(page.locator('#recentCreationsStatus')).toContainText('Account changed');
+  await expect(page.locator('#recentCreationsGrid')).not.toContainText('PRIVATE: Account A');
+  expect(new URL(page.url()).pathname).toBe('/deepsyq.html');
+  expect(paidPosts).toBe(0);
+ });
+}
+test('BASE 25: returning window focus scrubs previous account recent cards before click',async({page})=>{
+ await stubSignedInHome(page);
+ await page.route('**/api/studio/jobs?filter=all',r=>r.fulfill({json:{items:[oldUserJob]}}));
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#recentCreationsGrid')).toContainText('PRIVATE: Account A');
+ await page.evaluate(()=>{
+  localStorage.setItem('vv_token','fixture-account-B');
+  dispatchEvent(new Event('focus'));
+ });
+ await expect(page.locator('#recentCreationsGrid .recent-creation')).toHaveCount(0);
+ await expect(page.locator('#recentCreationsStatus')).toContainText('Account changed');
+});
