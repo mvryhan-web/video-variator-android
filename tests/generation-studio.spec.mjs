@@ -951,6 +951,49 @@ test('BASE 24: delayed old-account video status check cannot update the new user
 });
 
 
+for(const action of ['Reuse prompt','Regenerate']){
+ test('BASE 24: History '+action+' prompt is scrubbed before the next account edits Studio',async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('vv_token','history-draft-A'));
+  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+  let paid=0;
+  page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')paid++;});
+  await page.route('**/api/studio/jobs?filter=*',r=>{
+   const owner=r.request().headers()['authorization']==='Bearer history-draft-A';
+   return r.fulfill({json:{items:owner?[{
+    id:'private-history-prompt',kind:'video',status:'failed',prompt:'SECRET HISTORY ORIGINAL PROMPT A',
+    createdAt:'2026-10-17T08:00:00Z',model:'test-video'
+   }]:[]}});
+  });
+  await page.goto('/generate-studio.html?studio=video&view=history');
+  await page.locator('.history-card').getByRole('button',{name:action,exact:true}).click();
+  await expect(page.locator('#prompt')).toHaveValue('SECRET HISTORY ORIGINAL PROMPT A');
+  await page.evaluate(()=>localStorage.setItem('vv_token','history-draft-B'));
+  await page.locator('#prompt').click();
+  await expect(page.locator('#prompt')).toHaveValue('');
+  await page.locator('#showHistory').click();
+  await expect(page.locator('.history-card')).toHaveCount(0);
+  await expect(page.locator('#historyList')).not.toContainText('SECRET HISTORY ORIGINAL PROMPT A');
+  expect(paid).toBe(0);
+ });
+}
+test('BASE 24: switched account cannot recover History prompt via an earlier Studio kind draft',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-other-kind-A'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/studio/jobs?filter=*',r=>r.fulfill({json:{items:[
+  {id:'saved-kind-A',kind:'image',status:'failed',prompt:'ACCOUNT A HISTORY IMAGE PRIVATE PROMPT',
+   createdAt:'2026-10-17T08:00:00Z'}
+ ]}}));
+ let paid=0;page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')paid++;});
+ await page.goto('/generate-studio.html?studio=video&view=history');
+ await page.locator('.history-card').getByRole('button',{name:'Reuse prompt'}).click();
+ await expect(page.locator('#prompt')).toHaveValue('ACCOUNT A HISTORY IMAGE PRIVATE PROMPT');
+ await page.locator('[data-kind=video]').click();
+ await page.evaluate(()=>localStorage.setItem('vv_token','history-other-kind-B'));
+ await page.locator('[data-kind=image]').click();
+ await expect(page.locator('#prompt')).toHaveValue('');
+ expect(paid).toBe(0);
+});
+
 test('BASE 24: History Edit image may not append old-account reference after delayed local decode',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vv_token','history-edit-A'));
  await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
