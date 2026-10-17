@@ -24,6 +24,8 @@ test('template validation enforces data-driven schema and safe fields',()=>{
  assert.equal(validateTemplate({...t,active:true,featured:false,requiredInputTypes:['image'],promptTemplate:'Z'.repeat(2000)}).active,true);
  // Product-name substitutions may shorten placeholders; actual final-length gate stays in Studio.
  assert.equal(validateTemplate({...t,active:true,featured:false,requiredInputTypes:['image','product_name'],promptTemplate:'Z'.repeat(1988)+' {{product_name}}'}).active,true);
+ assert.throws(()=>validateTemplate({...t,active:true,featured:false,requiredInputTypes:['product_name'],promptTemplate:'Z'.repeat(2001)+'{{product_name}}'}),/TEMPLATE_STUDIO_PROMPT_TOO_LONG/);
+ assert.equal(validateTemplate({...t,active:true,featured:false,requiredInputTypes:['product_name'],promptTemplate:'Z'.repeat(1999)+'{{product_name}}'}).active,true);
  assert.ok(validateTemplate({...t,promptTemplate:'Photo for {{ PRODUCT_NAME }}'}).promptTemplate.includes('PRODUCT_NAME'));
  const draft=validateTemplate({...t,active:false,featured:false,rightsBasis:null,rightsNote:''});
  assert.equal(draft.rightsBasis,null);
