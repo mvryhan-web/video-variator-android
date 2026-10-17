@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {claimPurchasedGeneration,purchasedFundingProof} from '../server/generation-purchased-proof.js';
+import {grantPaidSubscriptionInvoice} from '../server/generation-subscription-credits.js';
 
 const env={AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_BILLING_MODE:'live',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true'};
 const options=()=>({env,userId:'paid_user',jobId:'job_live_a',credits:100,fingerprint:'sha256abc',modelId:'model_v',provider:'Google',wallet:{available:0,reserved:100,debt:0}});
@@ -76,4 +77,54 @@ test('P0 funding invariant is exact integer conservative under paid/refunded/use
  }
  for(const value of [-1,1.1,'oops',Number.MAX_SAFE_INTEGER+1,true,false,null,undefined,'',{},[]])
   assert.throws(()=>purchasedFundingProof({paidCredits:value,otherSpentCredits:0,requiredCredits:1}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+});
+
+
+test('BASE #16 verified LIVE paid subscription invoice alone records paid provenance',async()=>{
+ const events=[],inserts=[],walletCalls=[];
+ const env={AI_SUBSCRIPTION_CREDITS_ENABLED:'true',AI_SUBSCRIPTION_CREDITS_JSON:JSON.stringify({basic:70}),
+  STRIPE_PRICE_BASIC:'price_Verified123',AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'true',
+  AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true'};
+ const event=(change={})=>({type:'invoice.paid',livemode:true,data:{object:{
+  id:'in_Verified123',status:'paid',paid:true,livemode:true,billing_reason:'subscription_cycle',
+  amount_paid:700,currency:'usd',payment_intent:'pi_Verified123',
+  customer:'cus_Verified123',subscription:'sub_Verified123',
+  lines:{has_more:false,data:[{price:{id:'price_Verified123'},quantity:1}]},...change}}});
+ const pool={query:async(sql,vals)=>{events.push(sql);
+  if(sql.includes('FROM vv_users WHERE stripe_subscription_id'))return {rows:[{id:'user_verified',plan:'basic',stripe_customer_id:'cus_Verified123',subscription_status:'active'}]};
+  if(sql.includes('INSERT INTO vv_ai_verified_subscription_invoice')){inserts.push(vals);return {rows:[]}}
+  if(sql.includes('FROM vv_ai_verified_subscription_invoice WHERE invoice_id'))return {rows:[{user_id:'user_verified',payment_intent:'pi_Verified123',livemode:true}]};
+  throw Error('UNEXPECTED_DB_SQL');
+ }};
+ const wallet={grant:async args=>{walletCalls.push(args);return {available:70}}};
+ assert.equal(await grantPaidSubscriptionInvoice({event:event(),env,pool,wallet}),true);
+ assert.equal(walletCalls.length,1);
+ assert.deepEqual(inserts,[['in_Verified123','user_verified','pi_Verified123']]);
+ assert.equal(events.length,3);
+ // A free, wrong-mode or foreign paid event cannot write provenance.
+ for(const invalid of [{amount_paid:0},{livemode:false},{customer:'cus_Attacker'},
+  {lines:{has_more:false,data:[{price:{id:'price_Mismatch'},quantity:1}]}}]){
+  const prior=inserts.length;
+  try{await grantPaidSubscriptionInvoice({event:event(invalid),env,pool,wallet})}catch{}
+  assert.equal(inserts.length,prior);
+ }
+});
+
+test('BASE #16 paid subscription receipt conflict never authenticates a different invoice owner',async()=>{
+ const env={AI_SUBSCRIPTION_CREDITS_ENABLED:'true',AI_SUBSCRIPTION_CREDITS_JSON:JSON.stringify({basic:40}),
+  STRIPE_PRICE_BASIC:'price_Protect123',AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'true',
+  AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true'};
+ const event={type:'invoice.paid',livemode:true,data:{object:{
+  id:'in_Protect123',status:'paid',paid:true,livemode:true,billing_reason:'subscription_cycle',
+  amount_paid:500,currency:'usd',payment_intent:'pi_Protect123',
+  customer:'cus_Protect123',subscription:'sub_Protect123',
+  lines:{has_more:false,data:[{price:{id:'price_Protect123'},quantity:1}]}}}};
+ const pool={query:async sql=>{
+  if(sql.includes('FROM vv_users'))return {rows:[{id:'real_owner',plan:'basic',stripe_customer_id:'cus_Protect123',subscription_status:'active'}]};
+  if(sql.includes('INSERT INTO vv_ai_verified_subscription_invoice'))return {rows:[]};
+  if(sql.includes('FROM vv_ai_verified_subscription_invoice'))return {rows:[{user_id:'other_owner',payment_intent:'pi_Protect123',livemode:true}]};
+  throw Error('UNEXPECTED_DB_SQL');
+ }};
+ await assert.rejects(()=>grantPaidSubscriptionInvoice({event,env,pool,wallet:{grant:async()=>{}}}),
+  /AI_SUBSCRIPTION_PURCHASE_PROVENANCE_CONFLICT/);
 });
