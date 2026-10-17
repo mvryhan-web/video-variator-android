@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent D — BASE #43 trustworthy customer generation estimates (2026-10-17)
+
+- Claimed gap before source changes in original 55-row board SHA `c55cb822` and PROJECT_STATUS claim `f7ab8c4e`. [PR #197](https://github.com/mvryhan-web/video-variator-android/pull/197), draft head `279fbb4ad29381d929cd1ffa50744d3ee732438d`, 4 paths: `ai-pricing-display.js` server-derived estimate helper, `ai-pricing.js` conditional card copy for prepaid and approved monthly AI credit allowances, tests, documentation. No invented model prices, unchecked free credits, Stripe or paid flags. If server sends no valid unique per-kind Image/Video rate, no estimate is displayed; each output kind shown as alternative, not additive. 705/705 isolated configurations PASS; focused CI #39014625772 + #39014625847 QUEUED. **DRAFT/UNMERGED**, BASE #43 PARTIAL/NOT LIVE.
+- Other D: #158, #189, #164 MERGED after 5/5,2/2,9/9 exact-head GH Actions respectively. [PR #179](https://github.com/mvryhan-web/video-variator-android/pull/179) **10/11** CI passed; failed browser suite #38953646025 on owner-locked Home media / Pricing copy / timeouts, not an owner Business calculation change. Escalated to Agent A Issue #72 comment #6231291510 and Agent 5 PR #146 comment #6231292095. PR #179 not merged, owner product parity unknown.
+- Commercial BASE #54 still NOT MET. No `main`, Render, real paid provider, Stripe live, DB migration, or approved brand media changes.
+
+
 ## Agent D — BASE #43 server-approved approximate generation counts / IN PROGRESS (2026-10-17)
 
 - **Original gap:** BASE §43 Pricing cards must give approximate generations from known credit allowances. The current AI pack and subscription card descriptions show credits only; no approximate Image/Video count.
