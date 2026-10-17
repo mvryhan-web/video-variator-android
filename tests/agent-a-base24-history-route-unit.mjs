@@ -17,6 +17,10 @@ test('BASE 24/25: user-owned History filters bind kind=$2 and never expose anoth
  const pool={async query(sql,args=[]){
   queryTrace.push({statement:sql.slice(0,150),args:[...args]});
   if(sql.includes('CREATE TABLE')||sql.includes('ALTER TABLE')||sql.includes('CREATE INDEX'))return {rows:[]};
+  if(sql.startsWith('SELECT * FROM vv_generation_jobs WHERE id=$1 AND user_id=$2 AND deleted=false')){
+   const selected=fixtures.find(row=>row.id===args[0]&&row.user_id===args[1]&&!row.deleted);
+   return {rows:selected?[{...selected,mime:'image/png',media:Buffer.from('PRIVATE '+selected.id),output_assets:[]}]:[]};
+  }
   if(sql.startsWith('SELECT id,kind,status,provider,model,prompt,settings,error,result_text,mime,output_assets,created_at')){
    observed.push({sql,args:[...args]});
    assert.match(sql,/WHERE user_id=\$1 AND deleted=false/);
@@ -46,12 +50,14 @@ test('BASE 24/25: user-owned History filters bind kind=$2 and never expose anoth
   ]){
    const response=await fetch(root+'/api/studio/jobs?filter='+kind,{headers:{'X-Test-User':user}});
    assert.equal(response.status,200,'History route status; synthetic SQL trace: '+JSON.stringify(queryTrace)+'; body: '+await response.clone().text());
+   assert.equal(response.headers.get('cache-control'),'private, no-store');
    const body=await response.json();
    assert.deepEqual(body.items.map(item=>item.id),kind==='image'&&user==='owner-1'?['owner-failed','owner-photo']:[expected]);
    assert.equal(body.items.find(item=>item.id===expected)?.prompt,fixtures.find(f=>f.id===expected).prompt);
   }
   const owner=await fetch(root+'/api/studio/jobs?filter=all',{headers:{'X-Test-User':'owner-1'}});
   assert.equal(owner.status,200);
+  assert.equal(owner.headers.get('cache-control'),'private, no-store');
   assert.deepEqual((await owner.json()).items.map(item=>item.id),['owner-failed','owner-music','owner-video','owner-photo']);
   for(const [filter,ids] of [
    ['failed',['owner-failed']],
@@ -62,6 +68,30 @@ test('BASE 24/25: user-owned History filters bind kind=$2 and never expose anoth
    const payload=await response.json();
    assert.deepEqual(payload.items.map(row=>row.id),ids);
    assert.ok(payload.items.every(row=>!row.prompt.includes('PRIVATE DELETED')));
+  }
+  // Cache prevention applies to user-specific metadata AND binary results; no
+  // private image bytes or prompts may be reused from another signed-in owner.
+  for(const [user,jobId,status] of [
+   ['owner-1','owner-photo',200],
+   ['other-2','owner-photo',404],
+   ['other-2','other-photo',200],
+   ['owner-1','other-photo',404],
+   ['owner-1','owner-deleted',404]
+  ]){
+   for(const suffix of ['', '/media']){
+    const response=await fetch(root+'/api/studio/jobs/'+jobId+suffix,{headers:{'X-Test-User':user}});
+    assert.equal(response.status,status,'private saved History result '+user+'/'+jobId+suffix);
+    assert.equal(response.headers.get('cache-control'),'private, no-store');
+    if(status===200&&suffix==='/media'){
+     assert.equal(response.headers.get('content-type'),'image/png');
+     assert.equal(await response.text(),'PRIVATE '+jobId);
+    }
+    if(status===200&&!suffix){
+     const body=await response.json();
+     assert.equal(body.id,jobId);
+     assert.equal(body.prompt,fixtures.find(f=>f.id===jobId).prompt);
+    }
+   }
   }
   const invalid=await fetch(root+'/api/studio/jobs?filter=unknown');
   assert.equal(invalid.status,400);
