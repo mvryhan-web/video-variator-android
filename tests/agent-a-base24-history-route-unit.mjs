@@ -20,11 +20,13 @@ test('BASE 24/25: user-owned History filters bind kind=$2 and never expose anoth
   if(sql.startsWith('SELECT id,kind,status,provider,model,prompt,settings,error,result_text,mime,output_assets,created_at')){
    observed.push({sql,args:[...args]});
    assert.match(sql,/WHERE user_id=\$1 AND deleted=false/);
-   assert.equal(args.length,sql.includes('kind=$2')?2:1);
+   assert.equal(args.length,sql.includes('kind=$2')?3:2);
+   assert.match(sql,/ORDER BY created_at DESC,id DESC LIMIT 51 OFFSET \$[23]/);
+   assert.equal(args.at(-1)%50,0);
    return {rows:fixtures.filter(row=>row.user_id===args[0]&&!row.deleted
      &&(!sql.includes('kind=$2')||row.kind===args[1])
      &&(!sql.includes("status='failed'")||row.status==='failed')
-     &&(!sql.includes("status IN ('queued','processing','finalizing')")||['queued','processing','finalizing'].includes(row.status)))};
+     &&(!sql.includes("status IN ('queued','processing','finalizing')")||['queued','processing','finalizing'].includes(row.status))).slice(args.at(-1),args.at(-1)+51)};
   }
   throw Error('Unexpected SQL in read-only History test');
  }};
@@ -62,6 +64,16 @@ test('BASE 24/25: user-owned History filters bind kind=$2 and never expose anoth
   }
   const invalid=await fetch(root+'/api/studio/jobs?filter=unknown');
   assert.equal(invalid.status,400);
+  for(const offset of ['-1','2','51','999999','abc','0%20OR%201=1']){
+   const bad=await fetch(root+'/api/studio/jobs?filter=all&offset='+offset,{headers:{'X-Test-User':'owner-1'}});
+   assert.equal(bad.status,400,'reject unbounded or non-page History offset '+offset);
+   assert.equal((await bad.json()).error,'INVALID_HISTORY_OFFSET');
+  }
+  const older=await fetch(root+'/api/studio/jobs?filter=all&offset=50',{headers:{'X-Test-User':'owner-1'}});
+  assert.equal(older.status,200);
+  assert.deepEqual((await older.json()).items,[]);
+  assert.ok(observed.some(q=>q.sql.includes('OFFSET $3')&&q.args[1]==='image'&&q.args[2]===0));
+  assert.ok(observed.some(q=>q.sql.includes('OFFSET $2')&&q.args[1]===50));
   assert.ok(observed.some(q=>q.sql.includes('kind=$2')&&q.args[1]==='image'));
   assert.ok(observed.some(q=>q.sql.includes('kind=$2')&&q.args[1]==='video'));
   assert.ok(observed.some(q=>q.sql.includes('kind=$2')&&q.args[1]==='music'));
