@@ -654,9 +654,13 @@ function historyCredits(item){
 }
 function prepareHistoryItem(item,{settings=false}={}){
  if(busy)return;
+ const accountToken=historyBoundToken;
+ if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
  const previousCount=kind==='video'?refs.length:(drafts.video?.refs?.length||0);
  const oldPhotos=settings&&item.kind==='video'&&Number.isInteger(item.settings?.referenceCount)&&item.settings.referenceCount>0;
  if(oldPhotos&&previousCount&&!confirm(say('Preparing this historical video will detach your current video photos. Continue?','Для подготовки прежнего видео потребуется убрать текущие фотографии из редактора. Продолжить?')))return;
+ // A blocking confirmation can outlive a session change on another tab.
+ if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
  select(item.kind==='music'?'music':item.kind);
  if(item.model&&catalog.some(m=>m.id===item.model&&m.kind===(item.kind==='music'?'music':item.kind))){modelId=item.model;renderModel();}
  $('prompt').value=item.prompt||'';
@@ -718,17 +722,21 @@ async function deleteHistoryItem(item){
 // A single, authenticated status check for an existing Video job. Never creates or retries a paid task.
 async function checkHistoryVideo(item){
  if(busy||item.kind!=='video'||!['queued','processing','finalizing'].includes(item.status))return;
+ const accountToken=historyBoundToken;
+ if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
  busy=true;availability();
  $('status').textContent=say('Checking this video job…','Проверяем состояние видеозадачи…');
  try{
   const d=await(await api('/api/studio/jobs/'+encodeURIComponent(item.id))).json();
+  if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
   if(d.id!==item.id||(d.kind&&d.kind!=='video'))throw Error('STUDIO_STORAGE_UNAVAILABLE');
   if(d.status==='ready')$('status').textContent=say('Video is ready. Select Open in History to view or download it.','Видео готово. Нажмите «Открыть» в Истории, чтобы посмотреть или скачать его.');
   else if(d.status==='failed')$('status').textContent=say('Video generation failed. No automatic retry was started.','Генерация видео завершилась ошибкой. Автоматического повтора не было.');
   else if(d.status==='unknown')$('status').textContent=say('Video status is uncertain. No new task was submitted or charged. Do not regenerate until the original task is reviewed.','Статус видео неизвестен. Новая задача не отправлялась. Не запускайте повтор, пока не проверена исходная задача.');
   else $('status').textContent=say('Video is still '+(d.status==='queued'?'queued':d.status==='finalizing'?'finalizing':'processing')+'. The server task continues without this page open.','Видео ещё '+(d.status==='queued'?'в очереди':d.status==='finalizing'?'завершается':'обрабатывается')+'. Серверная задача продолжается без открытой страницы.');
   await loadHistory();
- }catch(e){$('status').textContent=errorText(e);}
+ }catch(e){if(historySessionCurrent(accountToken))$('status').textContent=errorText(e);
+  else clearHistoryForAccountChange();}
  finally{busy=false;availability();}
 }
 async function openHistoryJob(id){
