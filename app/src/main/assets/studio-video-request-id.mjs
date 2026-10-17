@@ -50,3 +50,20 @@ export function acknowledgeVideoRequestId({storage,key,requestId,jobId}={}){
   storage.removeItem(key);return true;
  }catch(_){return false;}
 }
+
+const DRAFT_PREFIX='deepsyq_video_draft_v1_';
+export function videoOwnerScopeFromClaim(claim){
+ const key=claim?.key||'';
+ const scope=typeof key==='string'&&key.startsWith(PREFIX)?key.slice(PREFIX.length):'';
+ if(!/^[0-9a-f]{32}$/.test(scope))throw Error('VIDEO_SUBMISSION_SAFETY_UNAVAILABLE');
+ return scope;
+}
+export function videoResumeScopeMatches(storedScope,videoDraftKey){
+ // Legacy video jobs without a scope still rely on server user_id checks.
+ // Any recorded scope MUST match current authenticated token digest; never
+ // silently attach old account's job or trust an arbitrary unverified scope.
+ if(storedScope===null)return true;
+ if(typeof storedScope!=='string'||!/^[0-9a-f]{32}$/.test(storedScope))
+  return false;
+ return videoDraftKey===DRAFT_PREFIX+storedScope;
+}
