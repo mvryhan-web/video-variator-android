@@ -15,3 +15,7 @@ Owner rule: never run paid AI tests or any owner-funded paid provider requests. 
 - Agent B and D coordinate a single verified pre-dispatch integration **before** `provider(...)`, a safe transactional job preflight and no automatic retries of ambiguous provider spends. No billable dispatch is allowed before this gate is on for every model/queue path. Owner approval + real customer payment is a separate production requirement, never an agent-funded test.
 
 BASE #16/#44/#51 and launch #54 remain PARTIAL/BLOCKED until the complete paid-only control is integrated and audited. This is a proof mechanism, not end-to-end spend authorization.
+
+## Commercial readiness stays BLOCKED while the proof remains unwired
+
+`generationReadiness()` now includes a required `purchasedOnlyDispatch` launch gate with `ready:false`. This is deliberate and cannot be bypassed by manually setting `AI_PURCHASED_ONLY_DISPATCH_ENABLED=true`, supplying mock live Stripe keys or configuring valid generation prices. The D wallet proof is not wired to B's server-side consent/approved-model/quote pre-dispatch contract, and the old Studio still has a provider invocation path; a green config-only response would be misleading. The gate should be made ready **only** alongside audited B+D integration that verifies the atomic claim *immediately before every billable provider submission* without any paid model tests. The owner still must approve actual public publication. New unit tests assert the false readiness under all values of the enable flag.
