@@ -1,4 +1,8 @@
 name: BASE 10 Durable Provider Task Audit
+
+concurrency:
+  group: ci-base10-task-audit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 on:
   pull_request:
     paths:
