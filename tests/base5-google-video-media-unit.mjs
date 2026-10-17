@@ -29,6 +29,18 @@ test('BASE #5 Veo only permits exact official Google HTTPS download origin',()=>
  ])assert.throws(()=>safeGoogleUrl(bad),/UNSAFE_PROVIDER_URL/);
 });
 
+test('Veo rejects absent Google credentials before any provider POST or polling GET',async()=>{
+ let calls=0;
+ const fetcher=async()=>{calls++;throw Error('MUST_NOT_DISPATCH');};
+ const request={kind:'video',model:'veo-3.1-lite-generate-preview',ratio:'16:9',
+  prompt:'Original product video',references:[],videoResolution:'720p',videoDuration:8};
+ for(const key of [undefined,null,'','   ']){
+  await assert.rejects(()=>generateGoogle(request,{key,fetcher}),/PROVIDER_KEY_REQUIRED/);
+  await assert.rejects(()=>pollGoogle(operation,{key,fetcher}),/PROVIDER_KEY_REQUIRED/);
+ }
+ assert.equal(calls,0);
+});
+
 test('BASE #5 successful Veo video returns original verified bytes and never exposes key to a third party',async()=>{
  const result=await runPoll(new Response(box),'not-public');
  assert.equal(result.value.mime,'video/mp4');

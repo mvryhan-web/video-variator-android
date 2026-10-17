@@ -52,6 +52,7 @@ export function safeGoogleUrl(value){
  return u.toString();
 }
 export async function googleJson(relative,{key,body,fetcher=fetch}){
+ if(typeof key!=='string'||!key.trim())throw new Error('PROVIDER_KEY_REQUIRED');
  if(!/^(models\/[a-z0-9.-]+:(generateContent|predictLongRunning)|models\/[a-z0-9.-]+\/operations\/[A-Za-z0-9_-]+|operations\/[A-Za-z0-9_-]+)$/.test(relative))throw new Error('INVALID_OPERATION');
  const r=await fetcher(ROOT+relative,{method:body?'POST':'GET',redirect:'error',signal:AbortSignal.timeout(120000),headers:{'x-goog-api-key':key,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
  if(!r.ok)throw new Error(r.status===429?'PROVIDER_BUSY':'PROVIDER_ERROR');
