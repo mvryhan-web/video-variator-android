@@ -1,5 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+
+## Agent A — BASE #3 mobile Hero intrinsic width / CODE PREPARED, BROWSER CI PENDING (2026-10-17)
+
+- **Exact C→A handoff:** Issue #72 comment [6231637949](https://github.com/mvryhan-web/video-variator-android/issues/72#issuecomment-6231637949) reports width **338px at viewport 320px** and right edge overflow of 18px in owner-locked `.hero-stage` and `.hero-stage-copy` under C's BASE #30 WebKit run #39014324951. C correctly did not edit A-owned Home.
+- **Root CSS geometry / narrow-only fix:** existing `.hero-stage{aspect-ratio:4/5;min-height:400px}` implies a minimum ratio-transferred width of 320px, but 320px device has only 284px content width after 18px main padding each side. In the existing A-owned [draft PR #145](https://github.com/mvryhan-web/video-variator-android/pull/145), only for viewport width <=355px, keep 400px hero height but use `aspect-ratio:auto;min-width:0;width:100%`; permit headings to wrap inside copy without document-wide clipping. Keep original border, color, artwork, media, typography and conversion links untouched. At 390px the approved 4:5 ratio remains.
+- **New scoped Playwright regression:** `tests/agent-a-base3-home-fallback.spec.mjs` checks 320/340/355/390px full hero/copy bounds, minimum visual height, 390px intended ratio, whole-document scrollWidth and no paid generation; workflow runs Chromium, WebKit and mobile projects; screenshots in artifacts if runner executes. Source commit `151f4315`, test `99595928`. **CI not yet verified; do NOT mark fixed in real browsers, merged or production-ready.** No owner media generated, no locked Home redesign.
+
+
 ## Agent C — BASE #28 conflict-safe PR head reconciliation (2026-10-17)
 
 - [PR #151](https://github.com/mvryhan-web/video-variator-android/pull/151) local flat-color eraser: preserved all 8 C paths atop then-current BASE tree with two-parent **non-force** Git merge commit `bd08b5f01592d95be1474747dd697eb9160eecf5` on original branch `base28-simple-background-remover-20261016`. Only 8 original changed paths; existing shared original tool page from latest BASE augmented with one guided card. New exact-head [CI 39014596525](https://github.com/mvryhan-web/video-variator-android/actions/runs/39014596525) QUEUED at last check. GitHub initial PR mergeability still computing/UNKNOWN, do not claim verified conflict resolution or merge. Existing prior head CI 38949657491 SUCCESS; that does not verify new merge head.
