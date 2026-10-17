@@ -579,7 +579,8 @@ function clearHistoryThumbs(){for(const u of historyThumbUrls)URL.revokeObjectUR
 async function loadHistoryImageThumbnail(item,preview,epoch){
  try{
   const response=await api(`/api/studio/jobs/${encodeURIComponent(item.id)}/media`),b=await response.blob();
-   if(epoch!==historyLoadEpoch||!historyView||!historySessionCurrent(historyBoundToken)||!preview.isConnected||!b.type.startsWith('image/'))return;
+   if(!historySessionCurrent(historyBoundToken)){clearHistoryForAccountChange();return;}
+   if(epoch!==historyLoadEpoch||!historyView||!preview.isConnected||!b.type.startsWith('image/'))return;
   const u=URL.createObjectURL(b);historyThumbUrls.push(u);const img=document.createElement('img');img.className='history-thumb';img.src=u;img.alt=say('Generated image preview','Предпросмотр созданного изображения');img.loading='lazy';preview.replaceChildren(img);
  }catch(_){/* Keep the lightweight placeholder if preview retrieval fails. */}
 }
@@ -615,7 +616,7 @@ async function previewHistoryMedia(item,holder,button){
  }
  clearHistoryMediaPreview();
  const epoch=historyMediaEpoch,accountToken=historyBoundToken;
- if(!historySessionCurrent(accountToken))return;
+ if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
  historyMediaButton=button;button.disabled=true;
  button.textContent=say('Loading preview…','Загружаем…');
  holder.replaceChildren();
@@ -624,7 +625,8 @@ async function previewHistoryMedia(item,holder,button){
   const reportedSize=Number(response.headers.get('content-length')||0);
   if(reportedSize>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
   const blob=await response.blob();
-  if(epoch!==historyMediaEpoch||!historyView||!historySessionCurrent(accountToken)||!button.isConnected)return;
+  if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
+  if(epoch!==historyMediaEpoch||!historyView||!button.isConnected)return;
   if(blob.size>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
   const expected=item.kind==='video'?'video/':'audio/';
   if(!blob.type.toLowerCase().startsWith(expected))throw Error('PREVIEW_UNSUPPORTED_FORMAT');
@@ -637,7 +639,8 @@ async function previewHistoryMedia(item,holder,button){
   holder.replaceChildren(player);button.disabled=false;
   button.textContent=say('Close preview','Закрыть просмотр');
  }catch(error){
-  if(epoch!==historyMediaEpoch||!historySessionCurrent(accountToken)||!button.isConnected)return;
+  if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
+  if(epoch!==historyMediaEpoch||!button.isConnected)return;
   button.disabled=false;button.textContent=say('Preview media','Просмотр');
   const message=document.createElement('p');message.className='hint';
   message.textContent=error.message==='PREVIEW_TOO_LARGE'?
