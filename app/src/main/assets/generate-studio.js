@@ -15,11 +15,13 @@ let historyThumbUrls=[],historyMediaUrl=null,historyMediaPlayer=null,historyMedi
 const drafts={};
 let activeVideoWatchId=null; // Current browser polling only; the provider job is server-owned.
 let historyLoadEpoch=0; // Latest History filter/visit wins over delayed earlier responses.
+let historyNextOffset=0,historyHasMore=false,historyLoadingPage=false; // At most 50 owner-scoped rows per request.
 let historyBoundToken=null; // Ephemeral account guard; never persisted in DOM or storage.
 const historySessionCurrent=token=>!!token&&localStorage.getItem('vv_token')===token;
 function clearHistoryForAccountChange(){
  ++historyLoadEpoch;
  historyBoundToken=null;
+ historyNextOffset=0;historyHasMore=false;historyLoadingPage=false;
  clearHistoryMediaPreview();clearHistoryThumbs();
  const list=$('historyList');
  if(list){list.replaceChildren();if(historyView){
@@ -735,21 +737,39 @@ async function openHistoryJob(id){
  job=id;sessionStorage.setItem('vu_generation_job',id);if(sessionStorage.getItem('vu_generation_background_job')===id)sessionStorage.removeItem('vu_generation_background_job');busy=true;availability();$('status').textContent=say('Opening saved result…','Открываем сохранённый результат…');
  const epoch=++generation;try{await watch(id,epoch);if(epoch===generation)setHistory(false);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
 }
-async function loadHistory(){
- const epoch=++historyLoadEpoch,requestedFilter=historyFilter,accountToken=localStorage.getItem('vv_token');
+async function loadHistory({append=false}={}){
+ if(append&&(!historyHasMore||historyLoadingPage||!historyView))return;
+ const epoch=append?historyLoadEpoch:++historyLoadEpoch;
+ const requestedFilter=historyFilter,accountToken=localStorage.getItem('vv_token');
+ const offset=append?historyNextOffset:0;
  historyBoundToken=accountToken;
- const list=$('historyList');list.hidden=false;clearHistoryMediaPreview();clearHistoryThumbs();list.replaceChildren();const loading=document.createElement('p');loading.className='hint';loading.textContent=say('Loading results…','Загружаем результаты…');list.append(loading);
+ const list=$('historyList');list.hidden=false;
+ if(append){
+  historyLoadingPage=true;
+  list.querySelector('[data-history-page-error]')?.remove();
+  const button=list.querySelector('[data-history-more]');if(button)button.disabled=true;
+ }else{
+  historyNextOffset=0;historyHasMore=false;historyLoadingPage=false;
+  clearHistoryMediaPreview();clearHistoryThumbs();list.replaceChildren();
+  const loading=document.createElement('p');loading.className='hint';
+  loading.textContent=say('Loading results…','Загружаем результаты…');list.append(loading);
+ }
  if(!historySessionCurrent(accountToken)){
   list.replaceChildren();const p=document.createElement('p');p.className='hint';
   p.textContent=say('Sign in to view your saved results.','Войдите в аккаунт, чтобы увидеть сохранённые результаты.');
   list.append(p);return;
  }
  try{
-  const d=await(await api('/api/studio/jobs?filter='+encodeURIComponent(requestedFilter))).json();
-   if(epoch!==historyLoadEpoch||!historyView)return; // Ignore superseded filter/tab results.
+  const d=await(await api('/api/studio/jobs?filter='+encodeURIComponent(requestedFilter)+'&offset='+offset)).json();
+   if(epoch!==historyLoadEpoch||!historyView)return; // Ignore superseded filter/tab/page results.
    if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
-   list.replaceChildren();
-  if(!d.items?.length){const p=document.createElement('p');p.className='hint';p.textContent=say('No results in this filter yet.','В этом фильтре пока нет результатов.');list.append(p);return;}
+   if(append)list.querySelector('[data-history-more]')?.remove();
+   else list.replaceChildren();
+  if(!d.items?.length){
+   historyHasMore=false;historyNextOffset=0;
+   if(!append){const p=document.createElement('p');p.className='hint';p.textContent=say('No results in this filter yet.','В этом фильтре пока нет результатов.');list.append(p);}
+   return;
+  }
   for(const item of d.items){
    const card=document.createElement('article');card.className='history-card';
    const preview=document.createElement('div');preview.className='history-preview';preview.dataset.kind=item.kind;preview.textContent=item.kind==='image'?'✧':item.kind==='video'?'▷':'♫';preview.setAttribute('aria-hidden','true');
@@ -788,7 +808,21 @@ async function loadHistory(){
    }
    actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions,inlinePreview);list.append(card);observeHistoryThumbnail(item,preview,epoch);
   }
- }catch(e){if(epoch!==historyLoadEpoch||!historyView)return;if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
+  historyHasMore=d.hasMore===true&&Number.isSafeInteger(d.nextOffset)&&d.nextOffset>offset&&d.nextOffset<=50000;
+  historyNextOffset=historyHasMore?d.nextOffset:0;
+  if(historyHasMore){
+   const more=document.createElement('button');more.type='button';more.className='history-more';
+   more.dataset.historyMore='';more.textContent=say('Load older results','Загрузить более ранние результаты');
+   more.onclick=()=>void loadHistory({append:true});list.append(more);
+  }
+ }catch(e){
+  if(epoch!==historyLoadEpoch||!historyView)return;
+  if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
+  if(!append)list.replaceChildren();
+  else{const retry=list.querySelector('[data-history-more]');if(retry)retry.disabled=false;}
+  const p=document.createElement('p');p.className='hint';p.dataset.historyPageError='';
+  p.textContent=errorText(e);list.append(p);
+ }finally{if(epoch===historyLoadEpoch)historyLoadingPage=false;}
 }
 document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclick=()=>{historyFilter=button.dataset.historyFilter;document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));void loadHistory();});
 function setHistory(on){if(!on){++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();}historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
