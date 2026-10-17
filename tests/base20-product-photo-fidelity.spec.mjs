@@ -75,3 +75,28 @@ test('BASE #20: keyboard form submit cannot skip pending file signature validati
  await expect(page.locator('#photoPreview')).toContainText('reviewed-product.png');
  expect(jobs).toBe(0);
 });
+
+
+test('BASE #20: rapid file picker change cannot reintroduce an earlier product reference',async({page})=>{
+ let uploads=0;
+ page.on('request',r=>{if(r.method()==='POST')uploads++;});
+ await page.goto('/product-video.html');
+ await page.evaluate(()=>{
+  const nativeSlice=File.prototype.slice;
+  File.prototype.slice=function(...args){
+   const sample=nativeSlice.apply(this,args),name=this.name;
+   return {arrayBuffer:async()=>{
+    if(name==='outdated-product.png')await new Promise(resolve=>setTimeout(resolve,700));
+    return sample.arrayBuffer();
+   }};
+  };
+ });
+ const valid=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.locator('#photos').setInputFiles({name:'outdated-product.png',mimeType:'image/png',buffer:valid});
+ await page.locator('#photos').setInputFiles({name:'final-product.png',mimeType:'image/png',buffer:valid});
+ await expect(page.locator('#photoPreview')).toContainText('final-product.png');
+ await page.waitForTimeout(900);
+ await expect(page.locator('#photoPreview')).not.toContainText('outdated-product');
+ await expect(page.locator('#continue')).toBeEnabled();
+ expect(uploads).toBe(0);
+});
