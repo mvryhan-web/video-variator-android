@@ -46,7 +46,10 @@ export function validateTemplate(value,current={}){
  const rightsBasis=rights(value.rightsBasis===undefined?current.rightsBasis:value.rightsBasis);
  const rightsNote=text(value.rightsNote===undefined?current.rightsNote:value.rightsNote,300);
  const requiredInputs=inputTypes(value.requiredInputTypes===undefined?current.requiredInputTypes:value.requiredInputTypes);
- const prompt=text(value.promptTemplate??current.promptTemplate,4000,{required:true});
+ const promptValue=value.promptTemplate??current.promptTemplate;
+ // A published prompt is authored text, never implicit JSON object/array/number coercion.
+ if(typeof promptValue!=='string')throw Error('INVALID_TEMPLATE');
+ const prompt=text(promptValue,4000,{required:true});
  // Keep published Product Name templates usable through the real AI Apps handoff.
  if(active&&requiredInputs.includes('product_name')&&!/\{\{\s*product_name\s*\}\}/i.test(prompt))throw Error('TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED');
  // Unpublished drafts may exceed the handoff limit; never activate a prompt that Studio would truncate.
