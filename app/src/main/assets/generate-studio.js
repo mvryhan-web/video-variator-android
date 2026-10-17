@@ -30,6 +30,9 @@ function clearHistoryForAccountChange(){
   info.textContent=say('Account changed. Open History to load this account’s results.','Аккаунт изменён. Откройте Историю, чтобы загрузить результаты текущего аккаунта.');
   list.append(info);
  }}
+ // Scrub any saved History result already opened in the main Studio player.
+ // List actions and silent account changes must not leave old media visible.
+ clearHistoryOpenedResultForAccountChange();
 }
 
 const imageBatchQuantity=()=>kind==='image'&&config?.imageBatchEnabled?Number($('imageQuantity').value||1):1;
