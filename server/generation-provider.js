@@ -2,10 +2,34 @@
 import {MODELS,MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 export {MODELS,MODEL_CATALOG};
 const ROOT='https://generativelanguage.googleapis.com/v1beta/';
+// BASE #5: video/audio input transport and native camera/motion controls are
+// not wired to a verified provider adapter. Never silently discard a user's
+// reference or promised paid control while creating a chargeable Video task.
+const UNWIRED_VIDEO_CONTROLS=[
+ 'referenceVideo','referenceVideos','videoReference','videoReferences',
+ 'referenceAudio','referenceAudios','audioReference','audioReferences',
+ 'reference_video','reference_audio','videoUrl','audioUrl',
+ 'camera','cameraMotion','camera_motion','motion','motionControls','motion_controls',
+ 'generateAudio','generate_audio','watermark'
+];
+export function rejectUnsupportedVideoControls(body){
+ if(body?.kind!=='video'||!body||typeof body!=='object')return;
+ if(UNWIRED_VIDEO_CONTROLS.some(k=>Object.prototype.hasOwnProperty.call(body,k)))
+  throw new Error('UNSUPPORTED_VIDEO_CONTROL');
+ // Video uses an explicit accepted request/quote contract. A future UI field
+ // must not become a paid promise until the provider adapter supports it.
+ const allowed=new Set(['kind','model','prompt','consent','ratio','references',
+  'videoInputMode','videoResolution','videoDuration','musicMode',
+  'requestId','referenceCount','expectedCredits','quantity']);
+ const legacyImageErrors=new Set(['seed','negativePrompt','negative_prompt']);
+ if(Object.keys(body).some(k=>!allowed.has(k)&&!legacyImageErrors.has(k)))
+  throw new Error('UNSUPPORTED_VIDEO_CONTROL');
+}
 export function validateGeneration(body){
  const selectedModelId=body?.model||MODELS[body?.kind]?.id;
  const m=MODEL_CATALOG.find(candidate=>candidate.id===selectedModelId&&candidate.kind===body?.kind&&candidate.adapter);
  if(!m||typeof body.prompt!=='string'||!body.prompt.trim()||body.prompt.length>2000||body.consent!==true)throw new Error('INVALID_REQUEST');
+ rejectUnsupportedVideoControls(body);
  // Existing Image providers have no verified seed/negative-prompt API support.
  // Reject explicit fields instead of silently ignoring a promised control.
  if(body&&('seed'in body||'negativePrompt'in body||'negative_prompt'in body))throw new Error('UNSUPPORTED_IMAGE_CONTROL');
@@ -43,11 +67,36 @@ export function validateGeneration(body){
  if(body.kind==='music'&&!['song','instrumental'].includes(body.musicMode))throw new Error('INVALID_MUSIC_MODE');
  return {kind:body.kind,model:m.id,prompt:body.prompt.trim(),ratio:body.ratio,references,musicMode:body.musicMode,...(body.kind==='image'?{resolution,outputFormat}:{}),...(body.kind==='video'?{videoResolution,videoDuration,videoInputMode}:{})};
 }
-export function safeGoogleUrl(value){const u=new URL(value);if(u.protocol!=='https:'||u.hostname!=='generativelanguage.googleapis.com'||u.username||u.password)throw new Error('UNSAFE_PROVIDER_URL');return u.toString();}
+export function safeGoogleUrl(value){
+ let u;try{u=new URL(value);}catch{throw new Error('UNSAFE_PROVIDER_URL');}
+ // Never send the server API key to nonstandard ports, userinfo or fragments.
+ // Veo may require ?alt=media on the legitimate Google API HTTPS origin.
+ if(u.protocol!=='https:'||u.hostname!=='generativelanguage.googleapis.com'||
+    u.username||u.password||u.port||u.hash)throw new Error('UNSAFE_PROVIDER_URL');
+ return u.toString();
+}
 export async function googleJson(relative,{key,body,fetcher=fetch}){
+ if(typeof key!=='string'||!key.trim())throw new Error('PROVIDER_KEY_REQUIRED');
  if(!/^(models\/[a-z0-9.-]+:(generateContent|predictLongRunning)|models\/[a-z0-9.-]+\/operations\/[A-Za-z0-9_-]+|operations\/[A-Za-z0-9_-]+)$/.test(relative))throw new Error('INVALID_OPERATION');
  const r=await fetcher(ROOT+relative,{method:body?'POST':'GET',redirect:'error',signal:AbortSignal.timeout(120000),headers:{'x-goog-api-key':key,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
  if(!r.ok)throw new Error(r.status===429?'PROVIDER_BUSY':'PROVIDER_ERROR');
+ // Native fetch responses are streamed and hard-capped. The provider may omit
+ // or forge Content-Length, so enforce the decoded byte limit while reading.
+ // The json() fallback is for narrowly mocked fetchers without a body stream.
+ const maxJson=42*1024*1024;
+ if(Number(r.headers?.get?.('content-length'))>maxJson)throw new Error('RESULT_TOO_LARGE');
+ if(r.body?.getReader){
+  const reader=r.body.getReader(),chunks=[];let size=0;
+  try{
+   for(;;){const {value,done}=await reader.read();if(done)break;
+    size+=value.length;if(size>maxJson)throw new Error('RESULT_TOO_LARGE');
+    chunks.push(Buffer.from(value));
+   }
+  }finally{await reader.cancel().catch(()=>{});}
+  if(!size)throw new Error('EMPTY_GENERATION');
+  try{return JSON.parse(Buffer.concat(chunks).toString('utf8'));}
+  catch{throw new Error('INVALID_PROVIDER_MEDIA');}
+ }
  return r.json();
 }
 export async function generateGoogle(request,{key,fetcher=fetch}){
@@ -57,7 +106,11 @@ export async function generateGoogle(request,{key,fetcher=fetch}){
  if(request.kind==='video'){
   const ref=request.references[0];
   const data=await googleJson(`models/${model.id}:predictLongRunning`,{key,fetcher,body:{instances:[{prompt:request.prompt,...(ref?{image:{bytesBase64Encoded:ref.data,mimeType:ref.mimeType}}:{})}],parameters:{aspectRatio:request.ratio,resolution:request.videoResolution||model.quality,durationSeconds:request.videoDuration??model.capabilities.durationSeconds,sampleCount:1}}});
-  if(typeof data.name!=='string')throw new Error('EMPTY_OPERATION');
+  // Persist only IDs that the polling endpoint can actually address.
+  // Arbitrary provider strings would strand a paid asynchronous job.
+  if(typeof data.name!=='string'||data.name.length>512||
+     !/^(?:operations\/[A-Za-z0-9_-]+|models\/[a-z0-9.-]+\/operations\/[A-Za-z0-9_-]+)$/.test(data.name))
+    throw new Error('EMPTY_OPERATION');
   return {operation:data.name};
  }
  const prompt=request.kind==='music'?`${request.musicMode==='instrumental'?'Instrumental only, no vocals.':'Create a song with vocals.'}\n${request.prompt}`:request.prompt;
@@ -83,7 +136,20 @@ export async function pollGoogle(operation,{key,fetcher=fetch}){
  if(!uri)throw new Error('EMPTY_GENERATION');
  const r=await fetcher(safeGoogleUrl(uri),{redirect:'error',signal:AbortSignal.timeout(120000),headers:{'x-goog-api-key':key}});
  if(!r.ok)throw new Error('VIDEO_DOWNLOAD_FAILED');
+ const limit=30*1024*1024;
+ if(Number(r.headers?.get?.('content-length'))>limit)throw new Error('RESULT_TOO_LARGE');
+ if(!r.body?.getReader)throw new Error('INVALID_PROVIDER_MEDIA');
  const reader=r.body.getReader(),chunks=[];let size=0;
- try{for(;;){const {value,done}=await reader.read();if(done)break;size+=value.length;if(size>30*1024*1024)throw new Error('RESULT_TOO_LARGE');chunks.push(Buffer.from(value));}}finally{await reader.cancel();}
- if(!size)throw new Error('EMPTY_GENERATION');return {mime:'video/mp4',bytes:Buffer.concat(chunks),text:''};
+ try{for(;;){const {value,done}=await reader.read();if(done)break;size+=value.length;if(size>limit)throw new Error('RESULT_TOO_LARGE');chunks.push(Buffer.from(value));}}finally{await reader.cancel();}
+ if(!size)throw new Error('EMPTY_GENERATION');
+ const bytes=Buffer.concat(chunks),headerSize=bytes.length>=8?bytes.readUInt32BE(0):0;
+ // Never report HTML/JSON/error pages as completed MP4 output. Use a minimal
+ // ISO-BMFF file-type box check; this is NOT a codec or malware verdict.
+ const brand=bytes.toString('ascii',8,12);
+ // AVIF/HEIC and arbitrary ISO-BMFF boxes also start with 'ftyp'. Only
+ // recognized video MP4 major brands may be served as video/mp4 here.
+ const mp4Brand=/^(?:isom|iso[2-9]|mp4[12]|avc1|hvc1|hev1|M4V |dash|msdh|f4v )$/.test(brand);
+ if(bytes.length<16||bytes.subarray(4,8).toString('ascii')!=='ftyp'||
+    headerSize<16||headerSize>bytes.length||!mp4Brand)throw new Error('INVALID_PROVIDER_MEDIA');
+ return {mime:'video/mp4',bytes,text:''};
 }
