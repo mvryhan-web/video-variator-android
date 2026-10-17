@@ -1,5 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent A — original BASE #3 and #24 new scoped fixes (2026-10-17)
+
+- **BASE #3 locked Home mobile Hero / existing draft PR #145:** C reported WebKit 320px horizontal overflow. Ratio `4/5` plus `min-height:400px` transfers 320px of minimum width into an available 284px content area. A implemented only for viewport <=355px: retain 400px hero height, ratio auto and min-width zero, wrap copy; 390px approved ratio, colors, buttons, posters/logo remain unchanged. Commits `151f4315` source, `99595928` Playwright 320/340/355/390 screenshots/overflow assertions; per-PR checkpoint `dcd0e075`. Chromium/WebKit CI **QUEUED/UNVERIFIED**, no owner-approved V01–V13 real playable videos.
+- **BASE #24 private History / existing draft PR #152:** previous A account history filters now also bind list, image thumbnails and video/audio previews to the ephemeral signed-in account token. Cross-tab `storage(vv_token)` immediately clears previous prompts/media; focus and capture-phase History-card clicks protect same-tab token swaps. New Playwright scenarios: delayed prior-user response after account change, already-rendered logout, silent same-tab reuse action. Changes `ac0eacab`, `117c208b`; tests `b50dc7e5`, `26b0ae7c`. JS async parser syntax PASS; real Node/Chromium/WebKit CI **QUEUED/UNVERIFIED**. No DB/auth/Stripe/router/paid-provider changes.
+- **BASE #4 optional Images adapter / existing draft PR #193:** latest standalone module checks bounded PNG IHDR/IEND and JPEG SOF/SOS structure; 16 authored offline tests; docs corrected to match JPEG parser in commit `982603ca`. Only previous 14/14 real Node CI run `39014059215` PASSED; current version's Node CI still QUEUED. Unwired, customer-owned paid credits/price/storage router by B/D still unapproved. All three PRs DRAFT/not live.
+- **Cross-agent:** C Issue #74 received precise overflow scope handoff; original BASE and Blocks source TXT unchanged, no production/main/Render deploy.
+
+
 ## Agent B — BASE #11 private output SHA-256 integrity guard reconciled (2026-10-17)
 
 - Existing Agent B [draft PR #184](https://github.com/mvryhan-web/video-variator-android/pull/184) HEAD `846e8fa88f09145c61dbea461c9312e57cfe73a7` safely reconciled non-force via two-parent commit onto current BASE `576eed424`. Verified storage+tests original prepatch SHA unchanged and patched just the existing authenticated user-owned Studio media GET call to provide recorded `sha256` as `expectedSha256`; carried existing S3 digest put/get module + no-fee fixture tests. GitHub compare = four B files only. No D wallet, A Home, C Product Video or unrelated Studio logic replaced.
