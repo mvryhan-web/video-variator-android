@@ -735,7 +735,10 @@ async function openHistoryJob(id){
  if(busy)return;
  if(!historySessionCurrent(historyBoundToken)){clearHistoryForAccountChange();return;}
  job=id;sessionStorage.setItem('vu_generation_job',id);if(sessionStorage.getItem('vu_generation_background_job')===id)sessionStorage.removeItem('vu_generation_background_job');busy=true;availability();$('status').textContent=say('Opening saved result…','Открываем сохранённый результат…');
- const epoch=++generation;try{await watch(id,epoch);if(epoch===generation)setHistory(false);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
+ const accountToken=historyBoundToken,epoch=++generation;
+ try{await watch(id,epoch,{historyAccountToken:accountToken});if(epoch===generation&&historySessionCurrent(accountToken))setHistory(false);}
+ catch(e){if(epoch!==generation)return;if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
+  activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
 }
 async function loadHistory({append=false}={}){
  if(append&&(!historyHasMore||historyLoadingPage||!historyView))return;
@@ -843,17 +846,29 @@ window.addEventListener('focus',()=>{
  },true);
 $('showCreate').onclick=()=>{const u=new URL(location.href);u.searchParams.delete('view');history.replaceState(null,'',u);setHistory(false);};$('showHistory').onclick=()=>setHistory(true);
 function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
-async function watch(id,epoch){
+async function watch(id,epoch,{historyAccountToken=null}={}){
+ // A pending old-account History Open may complete after logout or account switch.
+ // Only History readers have this guard; ordinary server generation remains unchanged.
+ const historyStillOwned=()=>{
+  if(historyAccountToken===null)return true;
+  if(historySessionCurrent(historyAccountToken))return true;
+  clearHistoryForAccountChange();
+  if(job===id){++generation;job=null;activeVideoWatchId=null;
+   if(sessionStorage.getItem('vu_generation_job')===id)sessionStorage.removeItem('vu_generation_job');
+   clearResult();busy=false;availability();}
+  return false;
+ };
  for(let i=0;i<120&&epoch===generation;i++){
+  if(!historyStillOwned())return;
   const d=await(await api('/api/studio/jobs/'+encodeURIComponent(id))).json();
-  // The user can stop browser polling at any moment; ignore late HTTP responses.
-  if(epoch!==generation)return;
+  // The user can stop browser polling or change account before HTTP resolves.
+  if(epoch!==generation||!historyStillOwned())return;
   if(d.kind==='video'&&['queued','processing','finalizing'].includes(d.status)){
    activeVideoWatchId=id;availability();
   }
   if(d.status==='ready'){
    const b=await(await api('/api/studio/jobs/'+encodeURIComponent(id)+'/media')).blob();
-   if(epoch!==generation)return;
+   if(epoch!==generation||!historyStillOwned())return;
    activeVideoWatchId=null;
    clearResult();blob=b;url=URL.createObjectURL(b);
    const tag=d.mime.startsWith('image/')?'img':d.mime.startsWith('video/')?'video':'audio';
