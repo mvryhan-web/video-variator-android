@@ -231,6 +231,18 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(objectStorage.configured&&result.bytes){
    try{asset=await objectStorage.putGeneration({userId,jobId:id,mime:result.mime,bytes:result.bytes});media=null;}
    catch(_){
+    // A produced Video is already a potentially billable provider result.
+    // S3 outage is not proof that the AI call failed: never refund a held
+    // reservation or automatically resubmit an expensive Video generation.
+    // If provider task ID was already stored, preserve it so the worker may
+    // retrieve the SAME result again when object storage recovers.
+    const recorded=await pool.query('SELECT kind FROM vv_generation_jobs WHERE id=$1',[id]);
+    if(recorded.rows?.[0]?.kind==='video'){
+     await quarantineUncertainVideoSubmit({pool,jobId:id,failure:{
+      category:'storage',sourceCode:'OBJECT_STORAGE_FAILED'
+     }});
+     return;
+    }
     await failTerminalProviderJob(id,userId,Error('OBJECT_STORAGE_FAILED'),'storage');
     return;
    }
