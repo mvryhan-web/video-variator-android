@@ -1,5 +1,10 @@
 # AGENTS.md — Deepsyq shared rules for all coding agents
 
+## Owner priority clarification — GLOBAL AI CREATIVE PLATFORM, not a niche storefront (2026-10-17)
+
+**READ [`docs/DEEPSYQ_GLOBAL_POSITIONING_REVENUE_VISUAL_SEO.md`](docs/DEEPSYQ_GLOBAL_POSITIONING_REVENUE_VISUAL_SEO.md) before new Home, SEO, templates, marketing or commercial scope.** This corrects a narrow mistaken recommendation in the previous Lumina comparison. Deepsyq is a **global** standalone Image/Video/Canvas/Agent/AI Apps/Inspiration/Voice product for a broad audience; a particular product advertisement is one OPTIONAL content example, not site identity, Home priority, SEO keyword strategy or audience constraint. Avoid building a platform around a single seller, shop, marketplace or promotional clip. **Owner business priorities:** highly compelling REAL hero / 13 owner-approved original moving media scenes and exact locked design; genuine working, safely paid Image/Video creation with preserved results; global Google/Bing/AI-search indexability, organic acquisition, conversion and provider-cost-adjusted profit. See SEO Issue #156 and purchased-only payment safety Issue #182. Original BASE and all seven original TXT remain unchanged; ongoing A–D one-item claims and exact latest GH evidence still override any new assignment. No paid video/image generation, production main, or provider credentials without owner's explicit required authorization.
+
+
 ## OWNER OVERRIDE — ONE BASE ROW TO DONE (2026-10-17, higher priority than old task-hopping text)
 
 ### Owner update — KEEP WORKING UNTIL WHOLE ITEM DONE OR TECHNICAL LIMIT
