@@ -39,16 +39,48 @@ function verifyJpegFrame(bytes){
  }
  return false;
 }
+// Provider bytes are billable outputs. Checking only the PNG signature and
+// final IEND marker can accept broken/forged IDAT payloads as successful jobs.
+// Validate bounded chunk structure and CRC before handing the image to storage.
+const PNG_CRC_TABLE=Uint32Array.from({length:256},(_,n)=>{
+ let c=n;
+ for(let j=0;j<8;j++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);
+ return c>>>0;
+});
+function pngChunkCrc(bytes,from,to){
+ let crc=0xffffffff;
+ for(let n=from;n<to;n++)crc=PNG_CRC_TABLE[(crc^bytes[n])&255]^(crc>>>8);
+ return (crc^0xffffffff)>>>0;
+}
+function validPng(bytes){
+ if(bytes.length<57||!bytes.subarray(0,8).equals(PNG))return false;
+ let pos=8,seenHeader=false,seenPixels=false;
+ while(pos+12<=bytes.length){
+  const size=bytes.readUInt32BE(pos);
+  if(size>bytes.length-pos-12)return false;
+  const end=pos+12+size;
+  const type=bytes.toString('ascii',pos+4,pos+8);
+  if(!/^[A-Za-z]{4}$/.test(type))return false;
+  if(pngChunkCrc(bytes,pos+4,pos+8+size)!==bytes.readUInt32BE(pos+8+size))return false;
+  if(!seenHeader){
+   if(type!=='IHDR'||size!==13)return false;
+   const w=bytes.readUInt32BE(pos+8),h=bytes.readUInt32BE(pos+12);
+   const depth=bytes[pos+16],color=bytes[pos+17];
+   if(!w||!h||w>8192||h>8192||
+      !({0:[1,2,4,8,16],2:[8,16],3:[1,2,4,8],4:[8,16],6:[8,16]}[color]?.includes(depth))||
+      bytes[pos+18]!==0||bytes[pos+19]!==0||bytes[pos+20]>1)return false;
+   seenHeader=true;
+  }else if(type==='IHDR')return false;
+  if(type==='IDAT'){if(!size)return false;seenPixels=true;}
+  if(type==='IEND')return size===0&&seenPixels&&end===bytes.length;
+  pos=end;
+ }
+ return false;
+}
 function verifyImage(bytes,mime){
  if(!bytes.length||bytes.length>MAX_IMAGE)reject('INVALID_PROVIDER_MEDIA');
  if(mime==='image/png'){
-  if(bytes.length<57||!bytes.subarray(0,8).equals(PNG)||
-      bytes.readUInt32BE(8)!==13||bytes.toString('ascii',12,16)!=='IHDR'||
-      bytes.readUInt32BE(16)===0||bytes.readUInt32BE(20)===0||
-      bytes.readUInt32BE(16)>8192||bytes.readUInt32BE(20)>8192||
-      bytes.readUInt32BE(bytes.length-12)!==0||
-      bytes.toString('ascii',bytes.length-8,bytes.length-4)!=='IEND')
-     reject('INVALID_PROVIDER_MEDIA');
+  if(!validPng(bytes))reject('INVALID_PROVIDER_MEDIA');
  }else if(mime==='image/jpeg'){
   if(bytes.length<64||bytes[0]!==255||bytes[1]!==216||bytes[2]!==255||
      bytes.at(-2)!==255||bytes.at(-1)!==217||!verifyJpegFrame(bytes))reject('INVALID_PROVIDER_MEDIA');
