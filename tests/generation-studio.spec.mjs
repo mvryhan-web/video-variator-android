@@ -733,6 +733,51 @@ for(const authChange of ['cross-tab logout','silent same-tab account switch','si
  });
 }
 
+for(const streamingCase of ['missing Content-Length exceeds 128 MiB','account changes midstream']){
+ test('BASE 24: saved media stream '+streamingCase+' fails closed without a paid POST',async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('vv_token','stream-history-account-A'));
+  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+  await page.route('**/api/studio/jobs?filter=*',r=>r.fulfill({json:{items:[
+   {id:'streamed-private-video',kind:'video',status:'ready',
+    prompt:'ACCOUNT A STREAMED PRIVATE MEDIA',mime:'video/mp4',createdAt:'2026-10-17T08:00:00Z'}
+  ]}}));
+  let paidPosts=0;page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')paidPosts++;});
+  await page.goto('/generate-studio.html?studio=video&view=history');
+  await expect(page.locator('.history-card')).toContainText('ACCOUNT A STREAMED PRIVATE MEDIA');
+  await page.evaluate(mode=>{
+   const fetchOriginal=window.fetch.bind(window);
+   window.__historyStreamCancelled=false;
+   window.fetch=(input,opts)=>{
+    if(!String(input).includes('/api/studio/jobs/streamed-private-video/media'))return fetchOriginal(input,opts);
+    let count=0;
+    return Promise.resolve({
+     headers:new Headers({'content-type':'video/mp4'}),
+     body:{getReader:()=>({
+      read:async()=>{
+       count++;
+       if(mode==='account changes midstream')localStorage.setItem('vv_token','stream-history-account-B');
+       if(count<=2)return {done:false,value:{byteLength:70*1024*1024}};
+       return {done:true};
+      },
+      cancel:async()=>{window.__historyStreamCancelled=true;},
+      releaseLock:()=>{}
+     })}
+    });
+   };
+  },streamingCase);
+  await page.getByRole('button',{name:'Preview media'}).click();
+  await expect.poll(()=>page.evaluate(()=>window.__historyStreamCancelled)).toBe(true);
+  await expect(page.locator('.history-inline-media video')).toHaveCount(0);
+  if(streamingCase==='account changes midstream'){
+   await expect(page.locator('.history-card')).toHaveCount(0);
+   await expect(page.locator('#historyList')).toContainText('Account changed');
+  }else{
+   await expect(page.locator('#historyList')).toContainText('too large');
+  }
+  expect(paidPosts).toBe(0);
+ });
+}
+
 for(const mediaOutcome of ['200','503']){
  test('BASE 24: delayed inline History preview '+mediaOutcome+' clears old account after silent login change',async({page})=>{
   await page.addInitScript(()=>localStorage.setItem('vv_token','preview-flight-A'));
