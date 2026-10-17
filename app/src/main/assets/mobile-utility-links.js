@@ -44,20 +44,13 @@ if(grid){
  for(const tool of tools){
   const a=document.createElement('a');a.className='hub-tile mobile-utility-tile';
   a.href='mobile-utility.html?tool='+encodeURIComponent(tool.id);
-  const badge=document.createElement('span');badge.className='utility-tile-icon';badge.textContent=tool.title.slice(0,1);
+  a.dataset.utility=tool.id;
+  const badge=document.createElement('span');badge.className='utility-tile-icon';
+  badge.setAttribute('aria-hidden','true');badge.textContent=tool.id==='photo-compress'?'◫':tool.title.slice(0,1);
   const strong=document.createElement('strong');strong.textContent=tool.title;
   const small=document.createElement('small');small.textContent=tool.note;
   a.append(badge,strong,small);grid.append(a);
  }
- // BASE #28: distinct local photo compression using the existing safe browser image pipeline.
- const compressLink=document.createElement('a');compressLink.className='hub-tile mobile-utility-tile';
- compressLink.href='mobile-utility.html?tool=photo-compress';compressLink.dataset.utility='photo-compress';
- const compressBadge=document.createElement('span');compressBadge.className='utility-tile-icon';
- compressBadge.setAttribute('aria-hidden','true');compressBadge.textContent='◫';
- const compressTitle=document.createElement('strong');compressTitle.textContent=compressText[0];
- const compressNote=document.createElement('small');compressNote.textContent=compressText[1];
- compressLink.append(compressBadge,compressTitle,compressNote);grid.append(compressLink);
- // Ensure the existing utility router sees this separately implemented tool.
  // BASE #28: local, owner-entered Teleprompter; no recording, uploads or provider calls.
  const prompterText={
   en:['Teleprompter','Read and scroll your own script'],
