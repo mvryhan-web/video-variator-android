@@ -1,7 +1,7 @@
 import {saveLocal} from './ai-media.js';
 import {MODEL_CATALOG,MODELS} from './generate-models.js';
 import {takeStudioHandoff} from './studio-handoff.js';
-import {claimVideoRequestId,acknowledgeVideoRequestId} from './studio-video-request-id.mjs';
+import {claimVideoRequestId,acknowledgeVideoRequestId,videoOwnerScopeFromClaim,videoResumeScopeMatches} from './studio-video-request-id.mjs';
 import {studioCreditWalletState} from './studio-credit-wallet.js';
 const $=id=>document.getElementById(id),ru=navigator.language.startsWith('ru');
 const say=(en,r)=>ru?r:en;
@@ -699,7 +699,7 @@ async function checkHistoryVideo(item){
  finally{busy=false;availability();}
 }
 async function openHistoryJob(id,itemKind){
- if(busy)return;job=id;sessionStorage.setItem('vu_generation_job',id);if(sessionStorage.getItem('vu_generation_background_job')===id)sessionStorage.removeItem('vu_generation_background_job');busy=true;availability();$('status').textContent=say('Opening saved result…','Открываем сохранённый результат…');
+ if(busy)return;job=id;sessionStorage.setItem('vu_generation_job',id);if(itemKind==='video'&&videoDraftKey?.startsWith('deepsyq_video_draft_v1_'))sessionStorage.setItem('vu_generation_video_owner_scope',videoDraftKey.slice('deepsyq_video_draft_v1_'.length));else if(itemKind!=='video')sessionStorage.removeItem('vu_generation_video_owner_scope');if(sessionStorage.getItem('vu_generation_background_job')===id)sessionStorage.removeItem('vu_generation_background_job');busy=true;availability();$('status').textContent=say('Opening saved result…','Открываем сохранённый результат…');
  const epoch=++generation;try{await watch(id,epoch,itemKind==='video'?localStorage.getItem('vv_token'):null);if(epoch===generation)setHistory(false);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
 }
 async function loadHistory(){
@@ -903,6 +903,7 @@ $('creator').onsubmit=async e=>{
   if(videoClaim&&localStorage.getItem('vv_token')!==videoAccountToken)throw Error('VIDEO_ACCOUNT_CHANGED');
   job=d.id;
   sessionStorage.setItem('vu_generation_job',job);
+  if(videoClaim)sessionStorage.setItem('vu_generation_video_owner_scope',videoOwnerScopeFromClaim(videoClaim));
   // Once the server confirms the original ID, it is safe to allow a future,
   // deliberately distinct Video request. Never clear on timeout or 5xx.
   if(videoClaim)acknowledgeVideoRequestId({storage:sessionStorage,...videoClaim,jobId:job});
@@ -993,14 +994,14 @@ function applyTemplateStart(){
   $('consent').checked=false;availability();$('status').textContent=say('Template prepared. Review the prompt, references and settings before generating.','Шаблон подготовлен. Проверьте запрос, фотографии и настройки перед генерацией.');return true;
  }catch(_){$('status').textContent=say('The template could not be prepared.','Не удалось подготовить шаблон.');return false;}
 }
-$('resumeJob').onclick=()=>{if(busy)return;const previous=sessionStorage.getItem('vu_generation_job');if(!previous)return;job=previous;if(sessionStorage.getItem('vu_generation_background_job')===job)sessionStorage.removeItem('vu_generation_background_job');busy=true;availability();const epoch=++generation;watch(job,epoch,kind==='video'?localStorage.getItem('vv_token'):null).catch(e=>{if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();});};
+$('resumeJob').onclick=()=>{if(busy)return;const previous=sessionStorage.getItem('vu_generation_job');if(!previous)return;if(!videoResumeScopeMatches(sessionStorage.getItem('vu_generation_video_owner_scope'),videoDraftKey)){$('status').textContent=say('The saved video belongs to another account. Open this account’s History.','Сохранённое видео принадлежит другому аккаунту. Откройте Историю текущего аккаунта.');return;}job=previous;if(sessionStorage.getItem('vu_generation_background_job')===job)sessionStorage.removeItem('vu_generation_background_job');busy=true;availability();const epoch=++generation;watch(job,epoch,kind==='video'?localStorage.getItem('vv_token'):null).catch(e=>{if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();});};
 await initializeImageDraft();
 await initializeVideoDraft();
 select(kind,{remember:false});
 try{config=await(await api('/api/studio/config')).json();await loadGenerationAccess();catalog=config.catalog||[...config.models.map(m=>({...m,id:m.id||MODELS[m.kind]?.id,adapter:true,provider:'Google'})),...MODEL_CATALOG.filter(m=>!config.models.some(c=>(c.id||MODELS[c.kind]?.id)===m.id)).map(m=>({...m,enabled:false}))];const preferred=config.models?.find(m=>m.kind===kind&&m.enabled);if(preferred?.id&&!(kind==='image'&&imageDraftLoaded)&&!(kind==='video'&&videoDraftLoaded))modelId=preferred.id;renderModel();if(kind==='image'&&imageDraftLoaded){const d=drafts.image;if(currentModel()?.ratios?.includes(d?.ratio))$('ratio').value=d.ratio;if(currentModel()?.capabilities?.resolutions?.includes(d?.resolution))$('imageResolution').value=d.resolution;if(currentModel()?.capabilities?.outputFormats?.includes(d?.outputFormat))$('imageOutputFormat').value=d.outputFormat;if(config.imageBatchEnabled===true&&Number.isInteger(d?.quantity)&&d.quantity>=1&&d.quantity<=4)$('imageQuantity').value=String(d.quantity);updateRatioSelection();}if(kind==='video'&&videoDraftLoaded){const d=drafts.video;if(currentModel()?.ratios?.includes(d?.ratio))$('ratio').value=d.ratio;if(currentModel()?.capabilities?.resolutions?.includes(d?.videoResolution))$('videoResolution').value=d.videoResolution;renderVideoSettings();if([...$('videoDuration').options].some(o=>o.value===String(d?.videoDuration)))$('videoDuration').value=String(d.videoDuration);updateRatioSelection();}}catch(_){availability();}
 const restored=await applyLocalStudioHandoff();if(!restored)applyTemplateStart();
 imageDraftReady=true;videoDraftReady=true;if(kind==='image'){showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}
-const previous=sessionStorage.getItem('vu_generation_job');if(previous&&config.enabled&&sessionStorage.getItem('vu_generation_background_job')!==previous){job=previous;busy=true;availability();const epoch=++generation;watch(job,epoch,kind==='video'?localStorage.getItem('vv_token'):null).catch(e=>{if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();});}else if(previous&&sessionStorage.getItem('vu_generation_background_job')===previous){job=previous;setHistory(true);$('status').textContent=say('The video job is being tracked in History. Check its status when ready.','Видеозадача находится в Истории. Проверяйте её статус там.');}
+const previous=videoResumeScopeMatches(sessionStorage.getItem('vu_generation_video_owner_scope'),videoDraftKey)?sessionStorage.getItem('vu_generation_job'):null;if(previous&&config.enabled&&sessionStorage.getItem('vu_generation_background_job')!==previous){job=previous;busy=true;availability();const epoch=++generation;watch(job,epoch,kind==='video'?localStorage.getItem('vv_token'):null).catch(e=>{if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();});}else if(previous&&sessionStorage.getItem('vu_generation_background_job')===previous){job=previous;setHistory(true);$('status').textContent=say('The video job is being tracked in History. Check its status when ready.','Видеозадача находится в Истории. Проверяйте её статус там.');}
 
 if(new URLSearchParams(location.search).get('view')==='history')setHistory(true);
 
