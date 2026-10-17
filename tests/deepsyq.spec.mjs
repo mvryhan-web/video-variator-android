@@ -28,12 +28,24 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
  }}));
  await page.goto('/deepsyq.html');
  await expect(page.locator('#sidebar nav a').first()).toHaveAttribute('aria-label','Home');
- await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
- await page.locator('#sidebarToggle').click();
- await expect(page.locator('body')).toHaveClass(/sidebar-collapsed/);
- await expect(page.locator('#sidebar a[aria-label="Home"]')).toBeVisible();
- await page.locator('#menu').click();
- await expect(page.locator('body')).not.toHaveClass(/sidebar-collapsed/);
+ const isMobile=await page.evaluate(()=>matchMedia('(max-width:760px)').matches);
+ if(isMobile){
+  // On phones the sidebar is inert and off-canvas until the visible header menu opens.
+  await expect(page.locator('#sidebar')).toHaveJSProperty('inert',true);
+  await page.locator('#menu').click();
+  await expect(page.locator('body')).toHaveClass(/menu-open/);
+  await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
+  await page.locator('#sidebarToggle').click();
+  await expect(page.locator('body')).not.toHaveClass(/menu-open/);
+  await page.locator('#menu').click();
+ }else{
+  await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
+  await page.locator('#sidebarToggle').click();
+  await expect(page.locator('body')).toHaveClass(/sidebar-collapsed/);
+  await expect(page.locator('#sidebar a[aria-label="Home"]')).toBeVisible();
+  await page.locator('#menu').click();
+  await expect(page.locator('body')).not.toHaveClass(/sidebar-collapsed/);
+ }
  await page.locator('[data-model-menu="image"]').hover();
  await expect(page.locator('#modelFlyout')).toBeVisible();
  await expect(page.locator('#modelFlyout')).toContainText('Connected image');
@@ -140,13 +152,14 @@ test('existing email component logs in and logout clears session and latest resu
  await page.route('**/api/auth/email/login',async r=>{payload=r.request().postDataJSON();await r.fulfill({json:{token:'test-session'}});});
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Test creator'}}}));
  await page.goto('/deepsyq.html');
- if(await page.locator('#menu').isVisible())await page.locator('#menu').click();
+ const isMobile=await page.evaluate(()=>matchMedia('(max-width:760px)').matches);
+ if(isMobile)await page.locator('#menu').click();
  await page.locator('#accountButton').click();
  await page.locator('#emailAuthEmail').fill('creator@example.test');await page.locator('#emailAuthPassword').fill('fixture-only-password');await page.locator('#emailAuthSubmit').click();
  await expect(page.locator('#accountButton')).toHaveText('Account settings');
  expect(payload.email).toBe('creator@example.test');
  expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBe('test-session');
- if(await page.locator('#menu').isVisible()&&!(await page.locator('body').evaluate(el=>el.classList.contains('menu-open'))))await page.locator('#menu').click();
+ if(isMobile&&!(await page.locator('body').evaluate(el=>el.classList.contains('menu-open'))))await page.locator('#menu').click();
  await page.locator('#logout').click();await expect(page.locator('#logout')).toBeHidden();
  expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBeNull();
 });
@@ -180,7 +193,7 @@ test('owner sees AI control entry and admin page exposes only safe model control
  await page.route('**/api/studio/admin/billing-review',r=>r.fulfill({json:{items:[{jobId:'job-review-1',userId:'user-1',credits:17,kind:'video',provider:'BytePlus',model:'byteplus-seedance-2',status:'failed',error:'GENERATION_FAILED_NO_AUTOMATIC_RETRY',createdAt:'2026-10-15T08:00:00Z'}]}}));
  await page.route('**/api/studio/admin/route-preview',r=>r.fulfill({json:{primary:'byteplus-seedance-2',candidates:[{id:'byteplus-seedance-2',provider:'BytePlus',priority:10,quality:'720p',duration:'5 seconds'}]}}));
  await page.route('**/api/studio/admin/templates',r=>r.fulfill({json:{items:[{id:'t-1',title:'Original Product Template',slug:'original-product-template',category:'ecommerce',description:'Owned workflow',thumbnail:null,generationType:'image',promptTemplate:'Create a product image',defaultModel:null,requiredInputTypes:['image'],defaultSettings:{ratio:'1:1'},active:true,featured:true,sortOrder:10}]}}));
- await page.goto('/deepsyq.html');if(await page.locator('#menu').isVisible())await page.locator('#menu').click();await expect(page.locator('#adminAiControl')).toBeVisible();await page.locator('#adminAiControl').click();
+ await page.goto('/deepsyq.html');if(await page.evaluate(()=>matchMedia('(max-width:760px)').matches))await page.locator('#menu').click();await expect(page.locator('#adminAiControl')).toBeVisible();await page.locator('#adminAiControl').click();
  await expect(page).toHaveURL(/deepsyq-admin.html/);await expect(page.locator('#businessOverview')).toContainText('Users');await expect(page.locator('#purchasesTable')).toContainText('creator@example.test');await expect(page.locator('#purchasesTable')).toContainText('€7.49');await expect(page.locator('#usersTable')).toContainText('creator@example.test');await expect(page.locator('#jobsTable')).toContainText('job-1');await expect(page.getByText('Seedance 2.0')).toBeVisible();await expect(page.locator('#metrics')).toContainText('BytePlus');await page.locator('#metricsWindow').selectOption('24h');await expect(page.locator('#billingReview')).toContainText('17 credits');await expect(page.locator('#templates input[name=title]').first()).toHaveValue('Original Product Template');
  await page.locator('#routeKind').selectOption('video');await page.locator('#routeRatio').selectOption('16:9');await page.locator('#routePreview').click();await expect(page.locator('#routeResult')).toContainText('byteplus-seedance-2');await expect(page.locator('#routeStatus')).toContainText('No provider call was made');
  await expect(page.locator('body')).not.toContainText('API key');await expect(page.locator('body')).not.toContainText('secret');
@@ -570,11 +583,18 @@ test('homepage inspiration All Image Video filters only owned API cards',async({
 
 test('owner-approved social share section stays in left rail without invented official accounts',async({page})=>{
  await fixtures(page);await page.goto('/deepsyq.html');
+ const isMobile=await page.evaluate(()=>matchMedia('(max-width:760px)').matches);
+ if(isMobile)await page.locator('#menu').click();
  await expect(page.locator('.sidebar-social')).toBeVisible();
  await expect(page.locator('.sidebar-social [data-social=discord]')).toBeVisible();
  await expect(page.locator('.sidebar-social [data-social=x]')).toBeVisible();
  await expect(page.locator('.sidebar-social [data-social=instagram]')).toBeVisible();
  await page.locator('#sidebarToggle').click();
- await expect(page.locator('body')).toHaveClass(/sidebar-collapsed/);
- await expect(page.locator('.sidebar-social [data-social=x]')).toBeVisible();
+ if(isMobile){
+  await expect(page.locator('body')).not.toHaveClass(/menu-open/);
+  await expect(page.locator('#menu')).toBeFocused();
+ }else{
+  await expect(page.locator('body')).toHaveClass(/sidebar-collapsed/);
+  await expect(page.locator('.sidebar-social [data-social=x]')).toBeVisible();
+ }
 });
