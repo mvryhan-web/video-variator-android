@@ -450,3 +450,61 @@ test('BASE 24: Music History filter is visible on narrow screens, read-only and 
  expect(posts).toBe(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
+
+test('BASE 24: account rotation clears History and rejects a delayed previous-user response',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-account-A'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ let started,releaseOld,finished,paidPosts=0;
+ const oldSeen=new Promise(resolve=>started=resolve);
+ const oldRelease=new Promise(resolve=>releaseOld=resolve);
+ const oldFinished=new Promise(resolve=>finished=resolve);
+ page.on('request',req=>{if(req.method()==='POST'&&req.url().includes('/api/studio/jobs'))paidPosts++;});
+ await page.route('**/api/studio/jobs?filter=*',async route=>{
+  const headers=route.request().headers(),account=headers.authorization||'';
+  if(account==='Bearer history-account-A'){
+   started();await oldRelease;
+   try{await route.fulfill({json:{items:[{id:'account-a',kind:'music',status:'ready',
+    prompt:'PRIVATE ACCOUNT A ORIGINAL SONG'}]}});}catch(_){}
+   finished();
+  }else{
+   await route.fulfill({json:{items:[{id:'account-b',kind:'music',status:'ready',
+    prompt:'Account B independent song'}]}});
+  }
+ });
+ await page.goto('/generate-studio.html?studio=audio');
+ await page.locator('#showHistory').click();
+ await oldSeen;
+ await page.evaluate(()=>{
+  localStorage.setItem('vv_token','history-account-B');
+  dispatchEvent(new StorageEvent('storage',{key:'vv_token',newValue:'history-account-B'}));
+ });
+ await expect(page.locator('#historyList')).toContainText('Account changed');
+ await expect(page.locator('.history-card')).toHaveCount(0);
+ await page.locator('[data-history-filter=music]').click();
+ await expect(page.locator('.history-card')).toContainText('Account B independent song');
+ releaseOld();await oldFinished;
+ await expect(page.locator('.history-card')).toHaveCount(1);
+ await expect(page.locator('#historyList')).not.toContainText('PRIVATE ACCOUNT A');
+ expect(paidPosts).toBe(0);
+});
+
+test('BASE 24: a previously displayed private History card disappears on cross-tab logout',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-account-A'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ let paidPosts=0;
+ page.on('request',req=>{if(req.method()==='POST'&&req.url().includes('/api/studio/jobs'))paidPosts++;});
+ await page.route('**/api/studio/jobs?filter=*',r=>r.fulfill({json:{items:[
+  {id:'a-saved',kind:'video',status:'failed',prompt:'PRIVATE ACCOUNT A SECRET PROMPT'}
+ ]}}));
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#showHistory').click();
+ await expect(page.locator('#historyList')).toContainText('PRIVATE ACCOUNT A SECRET PROMPT');
+ await page.evaluate(()=>{
+  localStorage.removeItem('vv_token');
+  dispatchEvent(new StorageEvent('storage',{key:'vv_token',newValue:null}));
+ });
+ await expect(page.locator('.history-card')).toHaveCount(0);
+ await expect(page.locator('#historyList')).not.toContainText('PRIVATE ACCOUNT A');
+ await expect(page.locator('#historyList')).toContainText('Account changed');
+ expect(paidPosts).toBe(0);
+});
