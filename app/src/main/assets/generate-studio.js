@@ -626,7 +626,7 @@ async function previewHistoryMedia(item,holder,button){
  }
 }
 function historyState(status,jobKind){
- if(jobKind==='video')return ({queued:say('Queued','В очереди'),processing:say('Running','Выполняется'),finalizing:say('Running · settling','Выполняется · расчёт'),ready:say('Succeeded','Успешно'),failed:say('Failed','Ошибка'),cancelled:say('Cancelled','Отменено')})[status]||status;
+ if(jobKind==='video')return ({queued:say('Queued','В очереди'),processing:say('Running','Выполняется'),finalizing:say('Running','Выполняется'),ready:say('Succeeded','Успешно'),failed:say('Failed','Ошибка'),cancelled:say('Cancelled','Отменено')})[status]||status;
  return status==='ready'?say('Ready','Готово'):status==='queued'?say('Queued','В очереди'):status==='processing'?say('Processing','В работе'):status==='finalizing'?say('Finalizing','Завершаем'):status==='failed'?say('Failed','Ошибка'):status;
 }
 function historyDate(value){try{return new Intl.DateTimeFormat(navigator.language||'en',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));}catch(_){return String(value||'');}}
@@ -710,7 +710,7 @@ async function loadHistory(){
    const preview=document.createElement('div');preview.className='history-preview';preview.dataset.kind=item.kind;preview.textContent=item.kind==='image'?'✧':item.kind==='video'?'▷':'♫';preview.setAttribute('aria-hidden','true');
    const head=document.createElement('div');head.className='history-card-head';
    const title=document.createElement('strong');title.textContent=(item.kind==='music'?say('Audio','Аудио'):item.kind==='image'?say('Image','Изображение'):say('Video','Видео'))+(item.model?' · '+item.model:'');
-   const state=document.createElement('span');state.className='history-status';state.dataset.status=item.status;state.textContent=historyState(item.status,item.kind);head.append(title,state);
+   const state=document.createElement('span');state.className='history-status';state.dataset.status=item.status;state.textContent=historyState(item.status,item.kind);if(item.kind==='video'&&item.status==='finalizing')state.title=say('The provider result is being stored and credits are being settled. This is not completed yet.','Результат сохраняется и рассчитываются кредиты. Задача ещё не завершена.');head.append(title,state);
    const meta=document.createElement('small');meta.textContent=[historyDate(item.createdAt),item.provider,historyCredits(item)].filter(Boolean).join(' · ');
    const prompt=document.createElement('p');prompt.className='history-prompt';prompt.textContent=item.prompt||'';
    const actions=document.createElement('div');actions.className='history-actions';
