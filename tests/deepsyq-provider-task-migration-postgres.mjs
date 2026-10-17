@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {randomUUID} from 'node:crypto';
 import pg from 'pg';
+import {aiMigrationStatus,migrationChecksum} from '../server/ai-migrations.js';
 const urlString=process.env.DEEPSYQ_TEST_DATABASE_URL;
 if(urlString){
   const u=new URL(urlString);
@@ -62,6 +63,29 @@ test('fresh generation jobs schema remains valid and reapplicable', {skip:!urlSt
   } finally {
     await c.query('RESET search_path').catch(()=>{});
     await c.query('DROP SCHEMA IF EXISTS '+name+' CASCADE').catch(()=>{});
+    await c.end();
+  }
+});
+
+test('historical migration ledger in disposable PG preserves checksum and marks new file pending', {skip:!urlString}, async()=>{
+  const c=new pg.Client({connectionString:urlString});
+  await c.connect();
+  try {
+    // The CI service is a fresh disposable DB; never connect a real database.
+    await c.query('CREATE TABLE IF NOT EXISTS public.vv_schema_migration (name TEXT PRIMARY KEY, checksum TEXT NOT NULL, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())');
+    await c.query('INSERT INTO public.vv_schema_migration(name,checksum) VALUES ($1,$2) ON CONFLICT (name) DO NOTHING',[
+      '20261015-generation-jobs.sql',migrationChecksum(historical)
+    ]);
+    const rows=await aiMigrationStatus(c);
+    const orig=rows.find(x=>x.name==='20261015-generation-jobs.sql');
+    const upgrade=rows.find(x=>x.name==='20261017-provider-task-id-legacy.sql');
+    assert.equal(orig.applied,true);
+    assert.equal(orig.checksumMatches,true);
+    assert.equal(upgrade.applied,false);
+    assert.equal(upgrade.checksumMatches,true);
+  } finally {
+    await c.query("DELETE FROM public.vv_schema_migration WHERE name='20261015-generation-jobs.sql'").catch(()=>{});
+    await c.query('DROP TABLE IF EXISTS public.vv_schema_migration').catch(()=>{});
     await c.end();
   }
 });
