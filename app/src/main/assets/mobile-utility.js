@@ -136,6 +136,9 @@ function files(){
 function safeName(s){return (s||'result').replace(/[^a-zA-Z0-9._-]/g,'_').replace(/^\.+/,'').slice(0,100)||'result';}
 function base(f){return safeName(f.name.replace(/\.[^.]+$/,''));}
 async function result(file){
+ // Cancel may happen while an upstream PDF/ZIP/media serializer is still awaited.
+ // No stale result or download is published after an explicit Cancel.
+ if(abort)return;
  const row=document.createElement('div');row.className='utility-result';
  const p=document.createElement('p');p.textContent=file.name+' · '+(file.size/1048576).toFixed(2)+' MB';
  const b=document.createElement('button');b.type='button';b.textContent=label('Download','Скачать');b.onclick=()=>saveLocal(file);
