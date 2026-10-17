@@ -387,6 +387,8 @@ async function runOCR(){
   logger:info=>{if(info.status)status(String(info.status)+' '+Math.round((info.progress||0)*100)+'%');}
  });
  try{
+  // An OCR model may finish loading after Cancel. Do not recognize afterward.
+  if(abort)return;
   const resultData=await worker.recognize(f);
   if(abort)return;
   await textResult(resultData.data.text||'',base(f)+'-text.txt');
