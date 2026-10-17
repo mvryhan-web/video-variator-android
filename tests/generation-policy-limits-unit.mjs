@@ -75,3 +75,23 @@ test('BASE #34: sliding-hour quota rejects at threshold and allows below thresho
  await enforceGenerationPolicy(ok.client,{userId:'u',policyOverride:valid});
  assert.equal(ok.calls.length,3);
 });
+
+
+test('BASE #34: user identity stays SQL-parameterized and cannot alter lock or quota SQL',async()=>{
+ const injected="user-42' OR TRUE --";
+ const db=fakeDb({concurrent:0,hourly:0});
+ await enforceGenerationPolicy(db.client,{userId:injected,policyOverride:valid});
+ assert.equal(db.calls.length,3);
+ for(const {sql} of db.calls)assert.equal(sql.includes(injected),false);
+ assert.deepEqual(db.calls[0].params,['ai-user:'+injected]);
+ assert.deepEqual(db.calls[1].params,[injected]);
+ assert.deepEqual(db.calls[2].params,[injected]);
+});
+
+test('BASE #34: advisory-lock/DB failures must reject generation instead of approving quotas',async()=>{
+ const failure=Error('database unavailable');
+ let calls=0;
+ const client={async query(){calls++;throw failure;}};
+ await assert.rejects(enforceGenerationPolicy(client,{userId:'user-42',policyOverride:valid}),e=>e===failure);
+ assert.equal(calls,1); // Quota reads must not race ahead after a missing transaction lock.
+});
