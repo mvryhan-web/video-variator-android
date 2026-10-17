@@ -266,3 +266,25 @@ test('BASE #5: late Video History status response from an old account is ignored
  await expect(page.locator('#status')).not.toContainText('Video is ready');
  expect(providerCalls).toBe(0);
 });
+
+
+test('BASE #5: switching login without reload cannot open prior Video History task',async({page})=>{
+ await setup(page);
+ let oldJobReads=0,paid=0;
+ await page.route('**/api/studio/jobs?filter=*',route=>route.fulfill({json:{items:[{
+  id:'old-account-video',kind:'video',status:'ready',mime:'video/mp4',
+  provider:'Google',prompt:'Old account Video result',createdAt:'2026-10-17T08:00:00Z'
+ }]}}));
+ await page.route('**/api/studio/jobs/old-account-video',route=>{
+  oldJobReads++;return route.fulfill({json:{id:'old-account-video',kind:'video',status:'ready',mime:'video/mp4'}});
+ });
+ page.on('request',req=>{if(req.method()==='POST'&&req.url().includes('/api/studio/jobs'))paid++});
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#showHistory').click();
+ await expect(page.locator('.history-card')).toHaveCount(1);
+ await page.evaluate(()=>localStorage.setItem('vv_token','changed-login'));
+ await page.locator('.history-card .history-actions button').filter({hasText:'Open'}).click();
+ await expect(page.locator('#status')).toContainText('Your signed-in account changed');
+ expect(oldJobReads).toBe(0);
+ expect(paid).toBe(0);
+});
