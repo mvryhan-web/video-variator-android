@@ -72,3 +72,29 @@ test('BASE #28: cancellation during the batch does not publish an incomplete out
  await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
  expect(posts).toBe(0);
 });
+
+
+test('BASE #28: cancellation after one image removes misleading partial batch downloads',async({page})=>{
+ let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.goto('/mobile-utility.html?tool=photo-compress');
+ await page.evaluate(()=>{
+  const original=HTMLCanvasElement.prototype.toBlob;
+  let calls=0;
+  HTMLCanvasElement.prototype.toBlob=function(cb,...args){
+   const count=++calls;
+   return original.call(this,blob=>setTimeout(()=>cb(blob),count===1?10:900),...args);
+  };
+ });
+ await page.locator('#utilityFiles').setInputFiles([
+  {name:'first.png',mimeType:'image/png',buffer:samplePng},
+  {name:'second.png',mimeType:'image/png',buffer:samplePng}
+ ]);
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityResults .utility-result')).toHaveCount(1);
+ await expect(page.locator('#utilityStatus')).toContainText('Compressing photo 2/2');
+ await page.locator('#utilityCancel').click();
+ await expect(page.locator('#utilityRun')).toBeEnabled();
+ await expect(page.locator('#utilityStatus')).toContainText('Canceled');
+ await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
+ expect(posts).toBe(0);
+});
