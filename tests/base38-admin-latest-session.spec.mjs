@@ -99,3 +99,18 @@ test('BASE #38: owner dashboard exits immediately when token rotates in another 
  await expect(page).toHaveURL(/\/deepsyq\.html$/);
  await other.close();
 });
+
+
+test('BASE #38: restored history page cannot expose previous owner after a session change',async({page})=>{
+ await setup(page,(route,url)=>{
+  if(url.pathname==='/api/studio/admin/users'||url.pathname==='/api/studio/admin/jobs')return route.fulfill({json:{items:[]}});
+  return null;
+ });
+ await page.evaluate(()=>{
+  // Model the same-tab account replacement while a dashboard is suspended.
+  // A native BFCache restore emits pageshow without rerunning this module.
+  localStorage.setItem('vv_token','new-account-synthetic-token');
+  window.dispatchEvent(new Event('pageshow'));
+ });
+ await expect(page).toHaveURL(/\/deepsyq\.html$/);
+});
