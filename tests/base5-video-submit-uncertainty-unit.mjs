@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {quarantineUncertainVideoSubmit,VIDEO_SUBMISSION_UNCERTAIN} from '../server/generation-video-submit-uncertainty.js';
+import {quarantineUncertainVideoSubmit,VIDEO_SUBMISSION_UNCERTAIN,videoHistoryPublicStatus} from '../server/generation-video-submit-uncertainty.js';
 
 const fail={category:'provider_transport',sourceCode:'PROVIDER_TIMEOUT'};
 function db(rowCount=1){
@@ -162,4 +162,60 @@ test('BASE #5: unavailable read-only lookup never falls back to a new paid provi
  const response=await recoveredVideoLookup({poolQuery:async()=>{throw Error('database down');}});
  assert.deepEqual(response.result,{status:503,body:{error:'STUDIO_STORAGE_UNAVAILABLE'}});
  assert.equal(response.queries,1);
+});
+
+
+test('BASE #5: stale Video without remote task id appears uncertain in History, not safely regeneratable',()=>{
+ const item={kind:'video',status:'processing',operation:null,created_at:'2026-10-17T08:00:00.000Z',error:null};
+ assert.deepEqual(videoHistoryPublicStatus(item,{nowMs:Date.parse(item.created_at)+180001}),{
+  status:'processing',error:VIDEO_SUBMISSION_UNCERTAIN
+ });
+ assert.deepEqual(videoHistoryPublicStatus(item,{nowMs:Date.parse(item.created_at)+180000}),{
+  status:'processing',error:null
+ });
+});
+
+test('BASE #5: ambiguous Video submission is immediately marked uncertain even before timeout',()=>{
+ const item={kind:'video',status:'processing',operation:null,error:VIDEO_SUBMISSION_UNCERTAIN,created_at:'2026-10-17T08:00:00.000Z'};
+ assert.deepEqual(videoHistoryPublicStatus(item,{nowMs:Date.parse(item.created_at)+3000}),{
+  status:'processing',error:VIDEO_SUBMISSION_UNCERTAIN
+ });
+});
+
+test('BASE #5: provider-operation Video and ready/failed/queued jobs remain untouched',()=>{
+ const base={kind:'video',status:'processing',operation:'byteplus:remote_123',created_at:'2026-10-17T08:00:00.000Z',error:null};
+ for(const value of [
+  base,{...base,status:'ready',operation:null},
+  {...base,status:'failed',operation:null,error:'PROVIDER_ERROR'},
+  {...base,status:'queued',operation:null},
+  {...base,kind:'image',operation:null},
+  {...base,kind:'music',operation:null}
+ ])assert.deepEqual(videoHistoryPublicStatus(value,{nowMs:Date.parse(base.created_at)+500000}),{
+  status:value.status,error:value.error
+ });
+});
+
+test('BASE #5: missing/invalid Video timestamps fail closed without inventing a settled status',()=>{
+ for(const created_at of [null,'','garbage']){
+  const item={kind:'video',status:'processing',operation:null,created_at,error:null};
+  assert.deepEqual(videoHistoryPublicStatus(item,{nowMs:Date.now()}),{
+   status:'processing',error:null
+  });
+ }
+});
+
+test('BASE #5: owner History projection selects provider task operation only internally, never serializes it',async()=>{
+ const source=await readFile(new URL('../server/generation-studio.js',import.meta.url),'utf8');
+ const begin=source.indexOf("app.get('/api/studio/jobs',auth,generationUser");
+ const end=source.indexOf("app.get('/api/studio/jobs/:id'",begin);
+ assert.ok(begin>=0&&end>begin);
+ const handler=source.slice(begin,end);
+ assert.match(handler,/SELECT id,kind,status,operation,provider/);
+ assert.match(handler,/WHERE \$\{where.join\(' AND '\)\}/);
+ assert.match(handler,/\.\.\.videoHistoryPublicStatus\(j\)/);
+ // Provider operation must be used solely for safe status classification, not
+ // exposed to clients alongside personal prompt, S3 metadata or billing.
+ const projection=handler.slice(handler.indexOf('res.json({filter,items:'));
+ assert.doesNotMatch(projection,/operation\s*:\s*j\.operation/);
+ assert.doesNotMatch(projection,/\bproviderTaskId\s*:/);
 });
