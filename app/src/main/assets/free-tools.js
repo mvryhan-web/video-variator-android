@@ -39,6 +39,42 @@ async function creatorMedia(file,mode){
  }return outputs;
 }
 async function mediaFile(file,mode){if(['clips','motion'].includes(mode))return creatorMedia(file,mode);await loadEngine();if(canceled)throw Error('Canceled');await engine.writeFile('input',new Uint8Array(await file.arrayBuffer()));const out=mode==='audio'?'audio.m4a':'compressed.mp4';const args=mode==='audio'?['-i','input','-map','0:a:0','-vn','-c:a','aac','-b:a','128k',out]:['-i','input','-map','0:v:0','-map','0:a:0?','-vf',"scale=w='min(1280,iw)':h='min(1280,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2",'-c:v','libx264','-preset','ultrafast','-crf','30','-pix_fmt','yuv420p','-c:a','aac','-b:a','96k','-movflags','+faststart',out];const code=await engine.exec(args);if(code!==0)throw Error('Processing failed');const data=await engine.readFile(out),mime=mode==='audio'?'audio/mp4':'video/mp4';const output=new File([data],file.name.replace(/\.[^.]+$/,'')+'-'+out,{type:mime});return mode==='video'&&output.size>=file.size?file:output;}
+// Additional archive is for the EXISTING Basic/trial-gated photo_batch run.
+// Never expose a separate unrestricted batch path or change plan settlement.
+async function renderPhotoBatchArchive(items){
+ if(items.length<2||canceled)return;
+ const total=items.reduce((sum,file)=>sum+file.size,0);
+ // Bounded ZIP memory, without reducing existing per-file processing limits.
+ if(items.length>20||total>96*1048576){
+  const p=document.createElement('p');
+  p.textContent=({ru:'ZIP пропущен для большого набора — скачайте файлы по отдельности.',fr:'Archive ZIP non créée pour ce lot volumineux — fichiers individuels disponibles.',uk:'ZIP пропущено для великого набору — завантажте файли окремо.'})[lang]||'ZIP skipped for a large batch; individual downloads remain available.';
+  $('outputs').append(p);return;
+ }
+ if(!window.JSZip){
+  await new Promise((resolve,reject)=>{
+   const script=document.createElement('script');script.src='/vendor/jszip/jszip.min.js';
+   script.onload=()=>window.JSZip?resolve():reject(Error('ZIP unavailable'));
+   script.onerror=()=>reject(Error('ZIP script unavailable'));
+   document.head.append(script);
+  });
+ }
+ if(canceled)return;
+ const archive=new window.JSZip();
+ for(const [index,file] of items.entries()){
+  const basename=String(file.name||'photo').replace(/[\\/\x00-\x1f]/g,'_').slice(0,100)||'photo';
+  archive.file(String(index+1).padStart(2,'0')+'-'+basename,file);
+ }
+ const bytes=await archive.generateAsync({type:'blob',compression:'STORE'});
+ if(canceled)return;
+ const zipped=new File([bytes],'deepsyq-photo-batch.zip',{type:'application/zip'});
+ const card=document.createElement('article');card.className='photo-batch-zip';
+ const label=document.createElement('p');
+ label.textContent=({ru:'Все фото одним ZIP',fr:'Toutes les photos en ZIP',uk:'Усі фото одним ZIP'})[lang]||'All processed photos in one ZIP';
+ const button=document.createElement('button');button.type='button';
+ button.textContent=({ru:'Скачать ZIP',fr:'Télécharger le ZIP',uk:'Завантажити ZIP'})[lang]||'Download ZIP';
+ button.onclick=async()=>{button.disabled=true;try{await save(zipped);}catch(_){status(t('failed'));}finally{button.disabled=false;}};
+ card.append(label,button);$('outputs').append(card);
+}
 $('cancel').onclick=()=>{canceled=true;try{engine?.terminate();}catch(_){}status(t('cancelled'));};
 $('run').onclick=async()=>{
  if(busy)return;const files=Array.from($('files').files),mode=$('operation').value;
@@ -47,17 +83,18 @@ $('run').onclick=async()=>{
  const feature=mode==='photo'&&files.length>1?'photo_batch':mode;
  busy=true;canceled=false;status(t('processing'));$('run').disabled=true;$('cancel').disabled=false;$('operation').disabled=true;$('files').disabled=true;
  document.querySelectorAll('.tool-choice,#creatorToolSettings select').forEach(e=>e.disabled=true);
- let failures=0,successes=0,permit=null,settled=false;
+ let failures=0,successes=0,permit=null,settled=false;const photoBatchOutputs=[];
  try{
   if(!['photo','audio'].includes(feature)){if(!window.VUToolAccess)throw Error('TOOLS_UNAVAILABLE');permit=await window.VUToolAccess.begin(feature);}
   if(canceled)return;release();$('outputs').replaceChildren();
   for(let i=0;i<files.length&&!canceled;i++){
    status(`${t('processing')} ${i+1}/${files.length}`);
    try{const output=mode==='photo'?await compressPhoto(files[i]):await mediaFile(files[i],mode);
-    if(!canceled){for(const item of (Array.isArray(output)?output:[output])){if(canceled)break;result(item,files[i],item===files[i]?t('smaller'):'');if(window.AndroidBridge)await save(item);successes++;}}
+    if(!canceled){for(const item of (Array.isArray(output)?output:[output])){if(canceled)break;result(item,files[i],item===files[i]?t('smaller'):'');if(mode==='photo'&&files.length>1)photoBatchOutputs.push(item);if(window.AndroidBridge)await save(item);successes++;}}
    }catch(e){if(!canceled){failures++;const p=document.createElement('p');p.textContent=files[i].name+': '+t('failed');$('outputs').append(p);}}
   }
   if(permit){settled=true;await(canceled||!successes?permit.cancel():permit.complete());}
+  if(!canceled&&mode==='photo'&&photoBatchOutputs.length>1){try{await renderPhotoBatchArchive(photoBatchOutputs);}catch(_){const p=document.createElement('p');p.textContent='ZIP unavailable — download photos individually.';$('outputs').append(p);}}
   status(canceled?t('cancelled'):failures?t('failed'):(window.AndroidBridge?t('done')+' · Gallery / VideoUniquifier':t('done')));
  }catch(e){status(window.VUToolAccess?.message(e)||t('failed'));}
  finally{
