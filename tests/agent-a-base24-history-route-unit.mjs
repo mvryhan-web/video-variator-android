@@ -26,7 +26,8 @@ test('BASE 24/25: user-owned History filters bind kind=$2 and never expose anoth
    return {rows:fixtures.filter(row=>row.user_id===args[0]&&!row.deleted
      &&(!sql.includes('kind=$2')||row.kind===args[1])
      &&(!sql.includes("status='failed'")||row.status==='failed')
-     &&(!sql.includes("status IN ('queued','processing','finalizing')")||['queued','processing','finalizing'].includes(row.status))).slice(args.at(-1),args.at(-1)+51)};
+     &&(!sql.includes("status IN ('queued','processing','finalizing')")||['queued','processing','finalizing'].includes(row.status))).sort((a,b)=>b.created_at-a.created_at||String(b.id).localeCompare(String(a.id)))
+     .slice(args.at(-1),args.at(-1)+51)};
   }
   throw Error('Unexpected SQL in read-only History test');
  }};
@@ -46,12 +47,12 @@ test('BASE 24/25: user-owned History filters bind kind=$2 and never expose anoth
    const response=await fetch(root+'/api/studio/jobs?filter='+kind,{headers:{'X-Test-User':user}});
    assert.equal(response.status,200,'History route status; synthetic SQL trace: '+JSON.stringify(queryTrace)+'; body: '+await response.clone().text());
    const body=await response.json();
-   assert.deepEqual(body.items.map(item=>item.id),kind==='image'&&user==='owner-1'?[expected,'owner-failed']:[expected]);
-   assert.equal(body.items[0].prompt,fixtures.find(f=>f.id===expected).prompt);
+   assert.deepEqual(body.items.map(item=>item.id),kind==='image'&&user==='owner-1'?['owner-failed','owner-photo']:[expected]);
+   assert.equal(body.items.find(item=>item.id===expected)?.prompt,fixtures.find(f=>f.id===expected).prompt);
   }
   const owner=await fetch(root+'/api/studio/jobs?filter=all',{headers:{'X-Test-User':'owner-1'}});
   assert.equal(owner.status,200);
-  assert.deepEqual((await owner.json()).items.map(item=>item.id),['owner-photo','owner-video','owner-music','owner-failed']);
+  assert.deepEqual((await owner.json()).items.map(item=>item.id),['owner-failed','owner-music','owner-video','owner-photo']);
   for(const [filter,ids] of [
    ['failed',['owner-failed']],
    ['processing',['owner-video']]
