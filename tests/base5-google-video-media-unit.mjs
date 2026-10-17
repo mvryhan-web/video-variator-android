@@ -183,3 +183,31 @@ test('BASE #5: both price quote and Video generation POST reject unsupported con
  assert.match(post,/UNSUPPORTED_VIDEO_CONTROL/);
  assert.match(beforeEstimate,/videoInputMode/);
 });
+
+
+test('BASE #5: arbitrary future paid Video fields must not be silently discarded',()=>{
+ const standard={kind:'video',model:'veo-3.1-lite-generate-preview',prompt:'Original item video',
+  ratio:'16:9',videoInputMode:'text',videoDuration:8,videoResolution:'720p',
+  references:[],consent:true,requestId:'11111111-1111-4111-8111-111111111111'};
+ for(const future of [
+  {videoControls:{advancedCamera:'zoom'}},
+  {cameraPath:'orbit'},
+  {audioPrompt:'sing an original melody'},
+  {reference3d:{url:'private://object'}},
+  {productVideoLogo:'separate-brand'},
+  {providerOptions:{watermark:false}},
+  {videoStrength:0.9}
+ ]){
+  assert.throws(()=>validateGeneration({...standard,...future}),/UNSUPPORTED_VIDEO_CONTROL/);
+ }
+ assert.doesNotThrow(()=>validateGeneration(standard));
+ // A quote does not have prompt or photo bytes: it still accepts its own
+ // narrow shared fields but does not silently swallow unconnected options.
+ assert.doesNotThrow(()=>rejectUnsupportedVideoControls({
+  kind:'video',model:standard.model,ratio:'16:9',referenceCount:0,
+  quantity:1,videoInputMode:'text',videoResolution:'720p',videoDuration:8
+ }));
+ // Keep existing special error semantics for historical unsupported Image
+ // controls instead of changing prior Video caller expectations.
+ assert.doesNotThrow(()=>rejectUnsupportedVideoControls({...standard,seed:7}));
+});
