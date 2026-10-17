@@ -12,11 +12,12 @@ if(urlString){
   if(!['127.0.0.1','localhost','::1'].includes(u.hostname)||u.pathname!=='/deepsyq_migration_test')
     throw Error('TEST_DB_MUST_BE_LOCAL_DISPOSABLE');
 }
-const migration=readFileSync(new URL('../server/migrations/20261015-generation-jobs.sql',import.meta.url),'utf8');
+const historical=readFileSync(new URL('../server/migrations/20261015-generation-jobs.sql',import.meta.url),'utf8');
+const migration=readFileSync(new URL('../server/migrations/20261017-provider-task-id-legacy.sql',import.meta.url),'utf8');
 const schema=()=> 'p0_migration_'+randomUUID().replaceAll('-','');
 const legacyTable=`CREATE TABLE vv_generation_jobs (
   id TEXT PRIMARY KEY,user_id TEXT NOT NULL,kind TEXT NOT NULL,
-  status TEXT NOT NULL,operation TEXT,
+  status TEXT NOT NULL,provider TEXT,operation TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),deleted BOOLEAN NOT NULL DEFAULT false
 )`;
 
@@ -51,6 +52,8 @@ test('fresh generation jobs schema remains valid and reapplicable', {skip:!urlSt
   try {
     await c.query('CREATE SCHEMA '+name);
     await c.query('SET search_path TO '+name);
+    await c.query(historical);
+    await c.query(historical);
     await c.query(migration);
     await c.query(migration);
     await c.query("INSERT INTO vv_generation_jobs(id,user_id,kind,status,operation) VALUES ('fresh','u','video','queued','byteplus:task_fresh')");
