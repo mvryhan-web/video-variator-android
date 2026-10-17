@@ -685,10 +685,12 @@ async function deleteHistoryItem(item){
 // A single, authenticated status check for an existing Video job. Never creates or retries a paid task.
 async function checkHistoryVideo(item){
  if(busy||item.kind!=='video'||!['queued','processing','finalizing'].includes(item.status))return;
+ const videoAccountToken=localStorage.getItem('vv_token');
  busy=true;availability();
  $('status').textContent=say('Checking this video job…','Проверяем состояние видеозадачи…');
  try{
   const d=await(await api('/api/studio/jobs/'+encodeURIComponent(item.id))).json();
+  if(localStorage.getItem('vv_token')!==videoAccountToken)throw Error('VIDEO_ACCOUNT_CHANGED');
   if(d.id!==item.id||(d.kind&&d.kind!=='video'))throw Error('STUDIO_STORAGE_UNAVAILABLE');
   if(d.status==='ready')$('status').textContent=say('Video is ready. Select Open in History to view or download it.','Видео готово. Нажмите «Открыть» в Истории, чтобы посмотреть или скачать его.');
   else if(d.status==='failed')$('status').textContent=say('Video generation failed. No automatic retry was started.','Генерация видео завершилась ошибкой. Автоматического повтора не было.');
