@@ -19,7 +19,13 @@ function bytesFromBase64(value,limit,error){
 function verifyImage(bytes,mime){
  if(!bytes.length||bytes.length>MAX_IMAGE)reject('INVALID_PROVIDER_MEDIA');
  if(mime==='image/png'){
-  if(bytes.length<24||!bytes.subarray(0,8).equals(PNG))reject('INVALID_PROVIDER_MEDIA');
+  if(bytes.length<57||!bytes.subarray(0,8).equals(PNG)||
+      bytes.readUInt32BE(8)!==13||bytes.toString('ascii',12,16)!=='IHDR'||
+      bytes.readUInt32BE(16)===0||bytes.readUInt32BE(20)===0||
+      bytes.readUInt32BE(16)>8192||bytes.readUInt32BE(20)>8192||
+      bytes.readUInt32BE(bytes.length-12)!==0||
+      bytes.toString('ascii',bytes.length-8,bytes.length-4)!=='IEND')
+     reject('INVALID_PROVIDER_MEDIA');
  }else if(mime==='image/jpeg'){
   if(bytes.length<4||bytes[0]!==255||bytes[1]!==216||bytes[2]!==255||
      bytes.at(-2)!==255||bytes.at(-1)!==217)reject('INVALID_PROVIDER_MEDIA');
