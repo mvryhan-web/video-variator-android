@@ -24,6 +24,8 @@ test('reference photo preview, draft retention and clear are local',async({page}
 test('consent names the provider and resets when model or studio changes',async({page})=>{await page.goto('/generate-studio.html?studio=image');await page.locator('#consent').check();await page.locator('#modelButton').click();await page.getByRole('button',{name:/Seedream 4.5/}).click();await expect(page.locator('#consent')).not.toBeChecked();await expect(page.locator('[data-t=consent]')).toContainText('BytePlus');await page.locator('#consent').check();await page.locator('[data-kind=video]').click();await expect(page.locator('#consent')).not.toBeChecked();await expect(page.locator('[data-t=consent]')).toContainText('Google');});
 
 test('saved generation history renders and reopens a durable result',async({page})=>{
+ // Existing History mock simulates a signed-in owner; real History rejects guests.
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-mocked-owner'));
  const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
  await page.route('**/api/studio/jobs**',r=>{
@@ -51,6 +53,8 @@ test('Studio honors server-selected preferred enabled model',async({page})=>{
 
 
 test('history filters and actions never auto-regenerate a paid job',async({page})=>{
+ // Existing History mock simulates a signed-in owner; real History rejects guests.
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-mocked-owner'));
  const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1','16:9'],references:0,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1','16:9'],references:0,enabled:true,adapter:true,provider:'Google'}]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
  let posts=0,lastFilter='';
@@ -253,6 +257,8 @@ test('recovered Seedance first and last frames require both photos again, never 
  expect(jobPosts).toBe(0);
 });
 test('video History checks an existing task without resubmitting or downloading media',async({page})=>{
+ // Existing History mock simulates a signed-in owner; real History rejects guests.
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-mocked-owner'));
  const cfg={enabled:true,models:[{kind:'video',label:'Video fixture',id:'fixture-video',ratios:['16:9'],references:0,enabled:true}],catalog:[{kind:'video',label:'Video fixture',id:'fixture-video',ratios:['16:9'],references:0,enabled:true,adapter:true,provider:'Google'}]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
  let statusChecks=0,mediaDownloads=0,jobPosts=0,jobStatus='processing';
@@ -279,6 +285,8 @@ test('video History checks an existing task without resubmitting or downloading 
 });
 
 test('BASE 24: latest History filter wins when an earlier server response arrives late',async({page})=>{
+ // Existing History mock simulates a signed-in owner; real History rejects guests.
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-mocked-owner'));
  // Two real browser HTTP responses deliberately complete out of order.
  // Filtering is read-only and must never submit a paid generation task.
  let firstRequest,releaseOld,olderDone;
@@ -316,6 +324,8 @@ test('BASE 24: latest History filter wins when an earlier server response arrive
 });
 
 test('BASE 24: leaving History invalidates its in-flight result before another visit',async({page})=>{
+ // Existing History mock simulates a signed-in owner; real History rejects guests.
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-mocked-owner'));
  let releaseFirst,firstSeen,firstDone,allCalls=0;
  const firstStarted=new Promise(resolve=>firstSeen=resolve);
  const oldRelease=new Promise(resolve=>releaseFirst=resolve);
@@ -401,6 +411,8 @@ test('BASE 24: leaving History revokes already-created temporary image URLs',asy
 });
 
 test('BASE 24: History cards label reserved credits separately from server-confirmed charges',async({page})=>{
+ // Existing History mock simulates a signed-in owner; real History rejects guests.
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-mocked-owner'));
  const items=[
   {id:'charged-image',kind:'image',status:'ready',model:'image-fixture',prompt:'Confirmed settled image',creditsReserved:12,creditsCharged:10},
   {id:'reserved-video',kind:'video',status:'processing',model:'video-fixture',prompt:'Pending server job',creditsReserved:8,creditsCharged:0},
@@ -424,6 +436,8 @@ test('BASE 24: History cards label reserved credits separately from server-confi
 });
 
 test('BASE 24: Music History filter is visible on narrow screens, read-only and does not show other kinds',async({page})=>{
+ // Existing History mock simulates a signed-in owner; real History rejects guests.
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-mocked-owner'));
  await page.setViewportSize({width:320,height:740});
  const cfg={enabled:false,ownerOnly:true,models:[],catalog:[]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
