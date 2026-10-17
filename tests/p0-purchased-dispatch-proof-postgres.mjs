@@ -130,3 +130,52 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   await admin.end();
  }
 });
+
+test('BASE #16 subscriber-only fresh DB needs no prior Checkout to prove paid credits',
+ {skip:!urlString},async()=>{
+ const schema='p0_onlysub_'+randomUUID().replaceAll('-',''),admin=new pg.Client({connectionString:urlString});
+ await admin.connect();
+ await admin.query('CREATE SCHEMA '+schema);
+ const pool=new pg.Pool({connectionString:urlString,options:'-c search_path='+schema});
+ try{
+  const wallet=new GenerationWallet(pool);await wallet.init();
+  await pool.query(`CREATE TABLE vv_users(id TEXT PRIMARY KEY,plan TEXT,
+   stripe_customer_id TEXT,stripe_subscription_id TEXT,subscription_status TEXT)`);
+  await pool.query(`CREATE TABLE vv_generation_jobs(id TEXT PRIMARY KEY,user_id TEXT NOT NULL,
+   kind TEXT NOT NULL,model TEXT,provider TEXT,status TEXT,operation TEXT,
+   deleted BOOLEAN NOT NULL DEFAULT false,request_fingerprint TEXT,
+   credits_reserved INTEGER NOT NULL DEFAULT 0)`);
+  await pool.query(sql);await pool.query(sql);
+  const order=await pool.query("SELECT to_regclass('vv_ai_order') AS rel");
+  assert.ok(order.rows[0].rel,'versioned migration must create lazy AI order table without pack checkout');
+  const subEnv={AI_SUBSCRIPTION_CREDITS_ENABLED:'true',
+   AI_SUBSCRIPTION_CREDITS_JSON:JSON.stringify({basic:50}),
+   STRIPE_PRICE_BASIC:'price_OnlyApproved1',AI_BILLING_MODE:'live',
+   AI_LIVE_BILLING_APPROVED:'true',AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true'};
+  const signedInvoiceFixture={type:'invoice.paid',livemode:true,data:{object:{
+   id:'in_Only1',status:'paid',paid:true,livemode:true,billing_reason:'subscription_cycle',
+   amount_paid:500,currency:'eur',payment_intent:'pi_Only1',
+   subscription:'sub_Only1',customer:'cus_Only1',
+   lines:{has_more:false,data:[{price:{id:'price_OnlyApproved1'},quantity:1}]}}}};
+  await pool.query(`INSERT INTO vv_users(id,plan,stripe_customer_id,stripe_subscription_id,subscription_status)
+   VALUES('user_only_sub','basic','cus_Only1','sub_Only1','active')`);
+  assert.equal(await grantPaidSubscriptionInvoice({event:signedInvoiceFixture,env:subEnv,pool,wallet}),true);
+  await pool.query(`INSERT INTO vv_generation_jobs(id,user_id,kind,model,provider,status,request_fingerprint,credits_reserved)
+   VALUES('job_only_sub','user_only_sub','image','model_i','Google','processing','fp_only_sub',40)`);
+  await wallet.reserve({userId:'user_only_sub',jobId:'job_only_sub',credits:40,fingerprint:'fp_only_sub'});
+  const proof=await wallet.claimPurchasedDispatch({
+   userId:'user_only_sub',jobId:'job_only_sub',kind:'image',modelId:'model_i',
+   provider:'Google',credits:40,fingerprint:'fp_only_sub'},{env});
+  assert.equal(proof.source,'settled_stripe_purchase');
+  assert.equal(proof.purchaseId,'in_Only1');
+  assert.equal(proof.purchasedCreditsAvailableBeforeReserve,50);
+  await assert.rejects(()=>wallet.claimPurchasedDispatch({
+   userId:'user_only_sub',jobId:'job_only_sub',kind:'image',modelId:'model_i',
+   provider:'Google',credits:40,fingerprint:'fp_only_sub'},{env}),
+   /AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+ }finally{
+  await pool.end();
+  await admin.query('DROP SCHEMA IF EXISTS '+schema+' CASCADE').catch(()=>{});
+  await admin.end();
+ }
+});
