@@ -125,5 +125,17 @@ $('run').onclick=async()=>{
  }
 };
 window.VUFreeTools={get busy(){return busy;},save,share,renderRecording:file=>result(file,file,'',$('cameraResults'))};
-window.addEventListener('beforeunload',e=>{if(busy){e.preventDefault();e.returnValue='';}});window.addEventListener('pagehide',()=>{release();try{engine?.terminate();}catch(_){}});window.vuHandleAndroidBack=()=>{if(busy){$('cancel').click();return true;}location.href='index.html';return true;};
+window.addEventListener('beforeunload',e=>{if(busy){e.preventDefault();e.returnValue='';}});window.addEventListener('pagehide',()=>{
+ // BFCache may restore a page after a private photo has been processed.
+ // Invalidate in-flight work before its next await resumes, and purge both
+ // selected source files and already rendered photo/video previews.
+ canceled=true;
+ release();
+ $('files').value='';
+ $('selection').textContent='';
+ $('outputs').replaceChildren();
+ const cameraResults=$('cameraResults');
+ if(cameraResults)cameraResults.replaceChildren();
+ try{engine?.terminate();}catch(_){}
+});window.vuHandleAndroidBack=()=>{if(busy){$('cancel').click();return true;}location.href='index.html';return true;};
 })();
