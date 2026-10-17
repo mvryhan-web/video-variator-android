@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   validPlanPrice,validToolLimit,validLifetimeCurrency,
-  validAiPack,validWalletAmount,aiCheckoutMode,checkoutErrorMessage
+  validAiPack,validWalletAmount,aiCheckoutMode,checkoutErrorMessage,approvedGenerationEstimates
 } from '../app/src/main/assets/ai-pricing-display.js';
 
 test('BASE #43: configured tool plan prices are passed through, never guessed',()=>{
@@ -66,4 +66,24 @@ test('BASE #16: checkout failures never assert an uncertain payment was not made
  assert.match(checkoutErrorMessage('CHECKOUT_SESSION_NOT_REUSABLE'),/wallet.*payment history/i);
  assert.match(checkoutErrorMessage('CHECKOUT_REQUEST_CONFLICT'),/refresh/i);
  assert.match(checkoutErrorMessage('AI_CHECKOUT_UNAVAILABLE'),/temporarily unavailable/i);
+});
+
+test('BASE #43 generation estimates use ONLY approved server Image/Video rates',()=>{
+ const approved={rates:[{kind:'image',credits:10},{kind:'video',credits:35}]};
+ assert.deepEqual(approvedGenerationEstimates(approved,100),[{kind:'image',count:10},{kind:'video',count:2}]);
+ assert.deepEqual(approvedGenerationEstimates(approved,9),[],'insufficient prepaid credits never imply a full generation');
+ assert.deepEqual(approvedGenerationEstimates({rates:[{kind:'video',credits:25}]},100),[{kind:'video',count:4}]);
+ for(const config of [null,{}, {rates:[]},{rates:'image:10'},
+  {rates:[{kind:'video',credits:0}]}, {rates:[{kind:'video',credits:'10'}]},
+  {rates:[{kind:'image',credits:12},{kind:'image',credits:15}]}])
+  assert.deepEqual(approvedGenerationEstimates(config,100),[],'never guess a missing/invalid/ambiguous kind rate');
+});
+
+test('BASE #43 invalid pack balances and irrelevant rate kinds do not invent generations',()=>{
+ const config={rates:[{kind:'music',credits:10},{kind:'voice',credits:12}]};
+ for(const credits of [undefined,null,'100',0,-1,NaN,Infinity,1.5,Number.MAX_SAFE_INTEGER,10_000_001])
+  assert.deepEqual(approvedGenerationEstimates({rates:[{kind:'image',credits:10}]},credits),[]);
+ assert.deepEqual(approvedGenerationEstimates(config,1000),[]);
+ assert.deepEqual(approvedGenerationEstimates({rates:[{kind:'image',credits:1},{kind:'video',credits:1}]},10_000_000),
+  [{kind:'image',count:10_000_000},{kind:'video',count:10_000_000}]);
 });
