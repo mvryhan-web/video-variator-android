@@ -18,8 +18,8 @@ const make=({enabled=false}={})=>{
  }};
  const env={AI_BILLING_ENABLED:enabled?'true':'false',AI_BILLING_MODE:'test',
   STRIPE_SECRET_KEY:'sk_test_mock',DATABASE_URL:'fixture',APP_JWT_SECRET:'fixture'};
- const {handleEvent}=installGenerationBilling({get(){},post(){},use(){}},{auth:()=>{},pool,stripe:{},appUrl:'https://example.invalid',env});
- return {handleEvent,getQueries:()=>dbQueries};
+ const {handleEvent,wallet}=installGenerationBilling({get(){},post(){},use(){}},{auth:()=>{},pool,stripe:{},appUrl:'https://example.invalid',env});
+ return {handleEvent,wallet,getQueries:()=>dbQueries};
 };
 
 test('BASE #16: AI refund marker is positive evidence on charge/payment intent only',()=>{
@@ -37,9 +37,30 @@ test('BASE #16: legacy Stripe refund does not crash shared webhook with AI billi
  assert.equal(h.getQueries(),0,'disabled AI must not read/modify wallet for unrelated refund');
 });
 
-test('BASE #16: a clearly AI-tagged refund cannot be silently ignored when AI billing OFF',async()=>{
+test('BASE #16: AI-tagged historical refund is retried if its grant is not yet recorded even after Checkout OFF',async()=>{
  const h=make({enabled:false});
- await assert.rejects(()=>h.handleEvent(refund({aiMarked:true})),/AI_BILLING_WEBHOOK_DISABLED/);
+ await assert.rejects(()=>h.handleEvent(refund({aiMarked:true})),/AI_REFUND_PURCHASE_PENDING/);
+ assert.ok(h.getQueries()>0,'a tagged historical refund must consult the durable purchase ledger');
+});
+
+test('BASE #16: signed historical AI refund still reverses credits with Checkout OFF',async()=>{
+ const h=make({enabled:false}),calls=[];
+ h.wallet.refund=async(paymentIntent,cumulativeAmount)=>{
+  calls.push({paymentIntent,cumulativeAmount});
+  return {available:0,debt:7};
+ };
+ assert.equal(await h.handleEvent(refund({aiMarked:true})),true);
+ assert.deepEqual(calls,[{paymentIntent:'pi_unrelated',cumulativeAmount:200}]);
+ assert.equal(await h.handleEvent(refund()),false,'unrelated legacy refunds bypass disabled AI wallet');
+ assert.deepEqual(calls,[{paymentIntent:'pi_unrelated',cumulativeAmount:200}]);
+ assert.equal(h.getQueries(),0,'dispatcher delegates tagged refunds only, unrelated refund never creates tables');
+});
+
+test('BASE #16: historical AI refunds still reject cross-mode events after Checkout OFF',async()=>{
+ const h=make({enabled:false}),calls=[];
+ h.wallet.refund=async(...args)=>{calls.push(args);return {};};
+ await assert.rejects(()=>h.handleEvent(refund({aiMarked:true,livemode:true})),/AI_PAYMENT_MODE_MISMATCH/);
+ assert.deepEqual(calls,[]);
  assert.equal(h.getQueries(),0);
 });
 
