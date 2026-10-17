@@ -49,6 +49,15 @@ test('BASE #5 invalid response bytes never become a purported finished MP4',asyn
  await assert.rejects(()=>runPoll(new Response(invalidSize)),/INVALID_PROVIDER_MEDIA/);
 });
 
+test('Veo accepts ordinary video brands before returning completed MP4',async()=>{
+ for(const brand of ['isom','mp42','iso6','avc1','M4V ']){
+  const video=Buffer.from(box);video.write(brand,8,'ascii');
+  const r=await runPoll(new Response(video));
+  assert.equal(r.value.mime,'video/mp4');
+  assert.deepEqual(r.value.bytes,video);
+ }
+});
+
 test('Veo refuses AVIF/HEIC and arbitrary ftyp brands mislabeled as video/mp4',async()=>{
  for(const brand of ['avif','mif1','heic','junk']){
   const image=Buffer.from(box);image.write(brand,8,'ascii');
