@@ -67,3 +67,18 @@ export function videoResumeScopeMatches(storedScope,videoDraftKey){
   return false;
  return videoDraftKey===DRAFT_PREFIX+storedScope;
 }
+
+const DEFINITE_PRE_DISPATCH_VIDEO_REJECTIONS=new Set([
+ 'INVALID_REQUEST','INVALID_REFERENCES','INVALID_VIDEO_REFERENCES',
+ 'UNSUPPORTED_VIDEO_INPUT_MODE','UNSUPPORTED_VIDEO_RESOLUTION',
+ 'UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS'
+]);
+// Only error codes emitted by synchronous validation BEFORE the server inserts
+// a generation job. A 5xx/timeout/unknown/provider failure must never clear
+// a potentially billable pending Video requestId.
+export function releaseRejectedVideoRequestId({storage,key,requestId,errorCode}={}){
+ if(!DEFINITE_PRE_DISPATCH_VIDEO_REJECTIONS.has(errorCode))return false;
+ return acknowledgeVideoRequestId({
+  storage,key,requestId,jobId:'definitive-pre-dispatch-validation-rejection'
+ });
+}
