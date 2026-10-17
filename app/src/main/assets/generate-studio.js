@@ -857,7 +857,7 @@ async function loadHistory({append=false}={}){
  }finally{if(epoch===historyLoadEpoch)historyLoadingPage=false;}
 }
 document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclick=()=>{historyFilter=button.dataset.historyFilter;document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));void loadHistory();});
-function setHistory(on){if(!on){++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();}historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
+function setHistory(on){clearHistoryOpenedResultForAccountChange();if(!on){++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();}historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
 window.addEventListener('pagehide',()=>{++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();});
 window.addEventListener('storage',event=>{
  if(event.key!=='vv_token')return;
@@ -900,6 +900,11 @@ function clearHistoryOpenedResultForAccountChange(){
 // Same-tab localStorage changes emit no storage event. Capture an action before
 // Download/Share/Use-as-reference/Delete can use old-account History media.
 $('actions').addEventListener('click',event=>{
+ if(clearHistoryOpenedResultForAccountChange()){event.preventDefault();event.stopImmediatePropagation();}
+},true);
+// Preview controls (including a keyboard-started video) also belong to the
+// original authenticated History owner, not the next signed-in user.
+for(const name of ['click','play','keydown'])$('media').addEventListener(name,event=>{
  if(clearHistoryOpenedResultForAccountChange()){event.preventDefault();event.stopImmediatePropagation();}
 },true);
 async function watch(id,epoch,{historyAccountToken=null}={}){
