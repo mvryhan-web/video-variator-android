@@ -1,5 +1,10 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #5 Video account-bound recovery and ordered integration (2026-10-17)
+
+**SINGLE ACTIVE ORIGINAL BASE #5 (not DONE/LIVE).** [PR #174](https://github.com/mvryhan-web/video-variator-android/pull/174) HEAD `0a964a2` remains source for Video backend uncertainty and user-scoped original-job GET. [PR #186](https://github.com/mvryhan-web/video-variator-android/pull/186) HEAD `16388117d6ff6a998198e00472b2d9a21448296c` is now **stacked on PR #174** (base `base5-veo-output-validation-20261016`, non-force 2-parent), exactly 5 B client/test/workflow files in comparison. Video client prevents old-account delayed submission/poll/media response and stores hash-only user scope for saved last-job resume; new Node and Playwright scenarios authored. Source-exact isolated V8 account-scope assertions **10/10 PASS** (not full tests). [PR #203](https://github.com/mvryhan-web/video-variator-android/pull/203) HEAD `9712af0f79446b9c76c507913f9664ee4bf39920` remains stacked on #186 with exactly 5 B product-reference files. Integration order fixed: #174 → #186 → #203, after current SHA CI and A #152/#170 shared History and C #196 source collision review. Exact focused GitHub workflows #174 `39024056480`, #186 `39026378030`, #203 `39026468434` all **QUEUED/NOT PASSED**. D #204 purchased-only atomic claim + B #198 dispatch guard, S3/worker/provider real acceptance, safe cancellation and owner live approval **still BLOCK**. No paid AI, Stripe, production, main, migrations; complete original BASE #5 items closed this session **ZERO**.
+
+
 ## Agent C — ONLY original BASE #28: Tools PDF/OCR/Collage acceptance checkpoint (2026-10-17)
 
 - Single Agent C row #28, status BLOCKED_EXTERNAL and LIVE_VERIFIED=false. Current governing 4-owner-priority lock, 16 canonical rules and original BASE §28 read. Do not switch to other C tasks or Blocks without Agent5 approval; entire original row DONE=NO.
