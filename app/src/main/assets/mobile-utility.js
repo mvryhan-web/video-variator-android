@@ -346,16 +346,36 @@ async function processPDF(){
  const lib=await pdf(),{PDFDocument,StandardFonts,rgb}=lib,fs=files();
  if(tool==='scan-pdf'){
   const doc=await PDFDocument.create();
-  for(const f of fs){if(abort)throw Error('Canceled');const canvas=await openImage(f);
-   const max=2400,scale=Math.min(1,max/Math.max(canvas.width,canvas.height));
-   const imgCanvas=document.createElement('canvas');imgCanvas.width=Math.max(1,Math.floor(canvas.width*scale));imgCanvas.height=Math.max(1,Math.floor(canvas.height*scale));
-   const cx=imgCanvas.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,imgCanvas.width,imgCanvas.height);cx.drawImage(canvas,0,0,imgCanvas.width,imgCanvas.height);
-   const blob=await blobFrom(imgCanvas,'image/jpeg',.84),img=await doc.embedJpg(await blob.arrayBuffer());
-   const width=595,height=Math.max(120,Math.min(842,width*img.height/img.width));const page=doc.addPage([width,height]);
-   const ratio=Math.min(width/img.width,height/img.height);page.drawImage(img,{x:(width-img.width*ratio)/2,y:(height-img.height*ratio)/2,width:img.width*ratio,height:img.height*ratio});
-   canvas.width=canvas.height=imgCanvas.width=imgCanvas.height=1;
+  for(const f of fs){
+   if(abort)throw Error('Canceled');
+   const canvas=await openImage(f);
+   let imgCanvas=null;
+   try{
+    if(abort)throw Error('Canceled');
+    const max=2400,scale=Math.min(1,max/Math.max(canvas.width,canvas.height));
+    imgCanvas=document.createElement('canvas');
+    imgCanvas.width=Math.max(1,Math.floor(canvas.width*scale));
+    imgCanvas.height=Math.max(1,Math.floor(canvas.height*scale));
+    const cx=imgCanvas.getContext('2d');cx.fillStyle='#fff';
+    cx.fillRect(0,0,imgCanvas.width,imgCanvas.height);
+    cx.drawImage(canvas,0,0,imgCanvas.width,imgCanvas.height);
+    const blob=await blobFrom(imgCanvas,'image/jpeg',.84);
+    if(abort)throw Error('Canceled');
+    const img=await doc.embedJpg(await blob.arrayBuffer());
+    if(abort)throw Error('Canceled');
+    const width=595,height=Math.max(120,Math.min(842,width*img.height/img.width));
+    const page=doc.addPage([width,height]);
+    const ratio=Math.min(width/img.width,height/img.height);
+    page.drawImage(img,{x:(width-img.width*ratio)/2,y:(height-img.height*ratio)/2,width:img.width*ratio,height:img.height*ratio});
+   }finally{
+    canvas.width=canvas.height=1;
+    if(imgCanvas)imgCanvas.width=imgCanvas.height=1;
+   }
   }
-  return result(new File([await doc.save({useObjectStreams:true})],'scanned-documents.pdf',{type:'application/pdf'}));
+  if(abort)throw Error('Canceled');
+  const bytes=await doc.save({useObjectStreams:true});
+  if(abort)return; // Do not publish a PDF after Cancel during serialization.
+  return result(new File([bytes],'scanned-documents.pdf',{type:'application/pdf'}));
  }
  if(tool==='pdf-merge'){
   const doc=await PDFDocument.create();
