@@ -90,7 +90,7 @@ $('run').onclick=async()=>{
   for(let i=0;i<files.length&&!canceled;i++){
    status(`${t('processing')} ${i+1}/${files.length}`);
    try{const output=mode==='photo'?await compressPhoto(files[i]):await mediaFile(files[i],mode);
-    if(!canceled){for(const item of (Array.isArray(output)?output:[output])){if(canceled)break;result(item,files[i],item===files[i]?t('smaller'):'');if(mode==='photo'&&files.length>1)photoBatchOutputs.push(item);if(window.AndroidBridge)await save(item);successes++;}}
+    if(!canceled){for(const item of (Array.isArray(output)?output:[output])){if(canceled)break;result(item,files[i],item===files[i]?t('smaller'):'');if(window.AndroidBridge)await save(item);successes++;if(mode==='photo'&&files.length>1)photoBatchOutputs.push(item);}}
    }catch(e){if(!canceled){failures++;const p=document.createElement('p');p.textContent=files[i].name+': '+t('failed');$('outputs').append(p);}}
   }
   if(permit){settled=true;await(canceled||!successes?permit.cancel():permit.complete());}
