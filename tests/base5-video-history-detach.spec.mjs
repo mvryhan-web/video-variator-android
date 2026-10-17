@@ -55,23 +55,24 @@ test('BASE #5: video History uses original queued/running/succeeded/failed label
   if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))paid++;
   if(r.method()==='DELETE'&&r.url().includes('/api/studio/jobs'))deleteCalls++;
  });
- const statusRows=['queued','processing','finalizing','ready','failed','cancelled'];
+ const statusRows=['queued','processing','finalizing','ready','failed','cancelled','processing'];
  await page.route('**/api/studio/jobs?filter=*',route=>route.fulfill({json:{items:statusRows.map((status,i)=>({
-  id:'lifecycle-'+i,kind:'video',status,provider:'Google',
+  id:'lifecycle-'+i,kind:'video',status,error:i===6?'STATUS_UNKNOWN_NO_AUTOMATIC_RETRY':null,provider:'Google',
   model:'veo-3.1-lite-generate-preview',prompt:'Lifecycle status test',
   settings:{ratio:'16:9',videoInputMode:'text',referenceCount:0},
   createdAt:'2026-10-17T08:00:00.000Z'
  }))}}));
  await page.goto('/generate-studio.html?studio=video');
  await page.locator('#showHistory').click();
- await expect(page.locator('.history-card')).toHaveCount(6);
- const labels=['Queued','Running','Running','Succeeded','Failed','Cancelled'];
+ await expect(page.locator('.history-card')).toHaveCount(7);
+ const labels=['Queued','Running','Running','Succeeded','Failed','Cancelled','Status uncertain · review needed'];
  for(let i=0;i<statusRows.length;i++){
   const card=page.locator('.history-card').nth(i);
   await expect(card.locator('.history-status')).toHaveAttribute('data-status',statusRows[i]);
   await expect(card.locator('.history-status')).toHaveText(labels[i]);
  }
  await expect(page.locator('.history-card').nth(2).locator('.history-status')).toHaveAttribute('title',/credits are being settled/);
+ await expect(page.locator('.history-card').nth(6).locator('.history-status')).toHaveAttribute('title',/No new generation or automatic refund/);
  const running=page.locator('.history-card').nth(1);
  const remove=running.locator('.history-actions button').filter({hasText:'Delete'});
  await expect(remove).toBeDisabled();
