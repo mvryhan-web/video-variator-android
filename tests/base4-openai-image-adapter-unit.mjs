@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import {buildOpenAIImageRequest,decodeOpenAIImageResponse,generateOpenAIImage} from '../server/generation-openai-image.js';
 
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMQCegBAAFsAPH6cDjBAAAAAElFTkSuQmCC','base64');
-// Verified 2x2 baseline JPEG: 284 bytes, Pillow offline encode/decode, SHA-256\n// 72c93e614ae74ce5211ae911a19a78c1f9b53308b712f3e80fc23532244301dd.\n// Split base64 into fixed-width groups to prevent accidentally truncating DQT.\n// Prior malformed 1x1 fixture was correctly rejected by the strict JPEG parser.
+// Verified 2x2 baseline JPEG: 284 bytes, Pillow offline encode/decode, SHA-256
+// 72c93e614ae74ce5211ae911a19a78c1f9b53308b712f3e80fc23532244301dd.
+// Split base64 into fixed-width groups to prevent accidentally truncating DQT.
+// Prior malformed 1x1 fixture was correctly rejected by the strict JPEG parser.
 const jpg=Buffer.from([
  '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBD',
  'AAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkS',
