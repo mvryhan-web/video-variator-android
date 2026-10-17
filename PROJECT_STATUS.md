@@ -1,5 +1,11 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #9 atomic provider group settings stacked dependency (2026-10-17)
+
+- Existing [PR #150](https://github.com/mvryhan-web/video-variator-android/pull/150) HEAD `7451d10145979e90416f4f97f43e570537ddf04f` is **stacked on B PR #149**, not ready to merge directly into shared BASE first. Non-force two-parent reconciling on #149 head `b7dec7dd`; exactly 4 B files in stacked comparison. Current Studio preserves B #8 admin fallback route-preview; only owner-only provider-group PATCH route/import added. Existing model-control source handles all-or-nothing PostgreSQL transaction, audit record, rollback, existing configured model priority, never enables providers without credentials.
+- Original PR head `66b24eb` GH Actions 8/8 SUCCESS. Fresh head dedicated #39020150208 and companion workflows QUEUED/NOT VERIFIED. No database migration, live provider activation, Stripe changes, production/main deploy. BASE #9 PARTIAL pending #149 acceptance, CI and real admin staging.
+
+
 ## Agent B — BASE #8 safe fallback preview reconciled (2026-10-17)
 
 - Existing Agent B [PR #149](https://github.com/mvryhan-web/video-variator-android/pull/149) HEAD `b7dec7ddad40b2941eebab58ce64d9ecd61932a8`: preserved prior 8/8 exact-head GitHub success on `bc559ca`, recomposed only original four B scoped paths over then-current BASE `cd0e936`, non-force two-parent commit. Shared Studio changed only import + read-only owner `/api/studio/admin/route-preview`; D wallet and paid dispatch untouched.
