@@ -1,5 +1,10 @@
 # DEEPSYQ — ЕДИНЫЕ РАБОЧИЕ ПРАВИЛА (17.10.2026)
 
+## OWNER OVERRIDE — 2026-10-17: confirmed external block permits safe independent BASE claim
+
+The owner explicitly amended the prior “one BASE item until full DONE” rule: complete and test all safely possible work on the current row; when external CI runners, authorized staging, owner permission, or another agent-owned component genuinely block full acceptance, record exact blocker/evidence, owner and fastest safe unblock in PROJECT_STATUS + claim board + lane Issue, **preserve the current PR/SHA and unfinished status**, then claim the next independent AVAILABLE BASE row in the SAME lane after checking all PR/file collisions. Notify coordinator #5 in the shared Issue; a second owner authorization for that documented safe switch is NOT required. Do not turn a fixable bug or merely inconvenient test into a blocker, do not fake DONE or auto-merge, and return to blocked row through the board after its dependency clears. Scope/security/paid-provider/Stripe/production/locked-Home restrictions remain binding. This paragraph supersedes contrary older reassign/only-one-active language in this document; all original BASE requirements remain unchanged.
+
+
 **Обязательно** для A–D, координатора №5, будущих координаторов, кураторов и новых чатов. Это короткий рабочий регламент вместо повторения десятков однотипных инструкций; исходные требования и технические runbooks остаются действительными.
 
 ## Неприкосновенная цель — четыре правила владельца
