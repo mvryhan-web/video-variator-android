@@ -595,16 +595,20 @@ test('homepage inspiration All Image Video filters only owned API cards',async({
 
 test('owner-approved social share section stays in left rail without invented official accounts',async({page})=>{
  await fixtures(page);await page.goto('/deepsyq.html');
+ const mobile=await page.evaluate(()=>matchMedia('(max-width:760px)').matches);
+ if(mobile){
+  // Check content only after opening the actual mobile drawer.
+  await expect(page.locator('#sidebar')).toHaveJSProperty('inert',true);
+  await page.locator('#menu').click();
+  await expect(page.locator('body')).toHaveClass(/menu-open/);
+  await expect(page.locator('#sidebar')).toHaveJSProperty('inert',false);
+ }
  await expect(page.locator('.sidebar-social')).toBeVisible();
  await expect(page.locator('.sidebar-social [data-social=discord]')).toBeVisible();
  await expect(page.locator('.sidebar-social [data-social=x]')).toBeVisible();
  await expect(page.locator('.sidebar-social [data-social=instagram]')).toBeVisible();
- const mobile=await page.evaluate(()=>matchMedia('(max-width:760px)').matches);
  if(mobile){
-  // On phones the header menu opens the drawer; the rail toggle closes it.
-  await page.locator('#menu').click();
-  await expect(page.locator('body')).toHaveClass(/menu-open/);
-  await expect(page.locator('#sidebar')).toHaveJSProperty('inert',false);
+  // The in-drawer toggle closes it and makes content non-interactive.
   await page.locator('#sidebarToggle').click();
   await expect(page.locator('body')).not.toHaveClass(/menu-open/);
   await expect(page.locator('#sidebar')).toHaveJSProperty('inert',true);
