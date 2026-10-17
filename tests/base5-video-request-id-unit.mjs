@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {webcrypto} from 'node:crypto';
-import {claimVideoRequestId,acknowledgeVideoRequestId} from '../app/src/main/assets/studio-video-request-id.mjs';
+import {claimVideoRequestId,acknowledgeVideoRequestId,videoOwnerScopeFromClaim,videoResumeScopeMatches} from '../app/src/main/assets/studio-video-request-id.mjs';
 
 function storage(){const saved=new Map();return {
  saved,getItem:k=>saved.get(k)??null,setItem:(k,v)=>saved.set(k,v),
@@ -99,4 +99,28 @@ test('BASE #5: non-Video request cannot enter video-only idempotency store',asyn
  await assert.rejects(()=>claimVideoRequestId({payload:{...payload(),kind:'image'},token:'person',storage:s,cryptoApi}),
   /VIDEO_SUBMISSION_SAFETY_UNAVAILABLE/);
  assert.equal(s.saved.size,0);
+});
+
+test('BASE #5: saved Video job-owner scope is token-hash only and rejects a changed account',async()=>{
+ const shared=storage(),original=await claimVideoRequestId({
+  payload:payload(),token:'private-login-token',storage:shared,cryptoApi
+ });
+ const scope=videoOwnerScopeFromClaim(original);
+ assert.match(scope,/^[0-9a-f]{32}$/);
+ assert.ok(!scope.includes('private-login-token'));
+ assert.equal(videoResumeScopeMatches(scope,'deepsyq_video_draft_v1_'+scope),true);
+ const changed=await claimVideoRequestId({
+  payload:payload(),token:'different-account',storage:shared,cryptoApi
+ });
+ const newScope=videoOwnerScopeFromClaim(changed);
+ assert.notEqual(scope,newScope);
+ assert.equal(videoResumeScopeMatches(scope,'deepsyq_video_draft_v1_'+newScope),false);
+ assert.equal(videoResumeScopeMatches(scope,null),false);
+});
+
+test('BASE #5: corrupted saved Video scope fails closed while old unscoped session uses authenticated GET',()=>{
+ assert.equal(videoResumeScopeMatches('invalid','deepsyq_video_draft_v1_invalid'),false);
+ assert.equal(videoResumeScopeMatches('f'.repeat(32),'wrong-prefix'+('f'.repeat(32))),false);
+ assert.equal(videoResumeScopeMatches(null,'deepsyq_video_draft_v1_'+('f'.repeat(32))),true);
+ assert.throws(()=>videoOwnerScopeFromClaim({key:'unsafe-path'}),/VIDEO_SUBMISSION_SAFETY_UNAVAILABLE/);
 });
