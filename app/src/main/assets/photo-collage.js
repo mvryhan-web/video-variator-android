@@ -68,6 +68,6 @@ $('collageCreate').addEventListener('click',async()=>{
 });
 window.addEventListener('pagehide',()=>{
  ++collageGeneration;revoke();
- $('collageFiles').value='';$('collageFileInfo').textContent='';
+ $('collageFiles').value='';$('collageFileInfo').textContent='';info('');
  busy=false;setCollageControlsBusy(false);
 });
