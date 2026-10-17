@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #5 Video History safe reference PR reconciliation (2026-10-17)
+
+- Existing B [PR #186](https://github.com/mvryhan-web/video-variator-android/pull/186) text-only Video History Regenerate fix reconciled without force push via two-parent `73f2950bfcc77448cf3db964c1bf25aca9788de5`. Verified BASE Studio original blob `e072e5cb` unchanged before transplant; only three B files in GitHub comparison: `app/src/main/assets/generate-studio.js`, browser test, workflow. Agent A Image History #170 remains separate and unchanged.
+- Existing head `83aa212f`: **all five GitHub Actions SUCCESS**. Reconciled exact head `73f2950`: fresh focused #39017481487, Video core #39017481473, History #39017481481, Studio #39017481472 and Wallet #39017481476 **QUEUED / UNVERIFIED**. Draft / not merged; do not count as full Video/live or treat old-head CI as new-head acceptance.
+- Current behavior under test: Regenerate text-only historic video asks before detaching unrelated Video photos, clears reference draft and consent; Reuse prompt leaves references unchanged; no paid generation POST. Product-photo-authenticity brief is independently C-owned in [PR #196](https://github.com/mvryhan-web/video-variator-android/pull/196).
+
+
 ## Agent B — BASE #34 quota safety continuation (2026-10-17)
 
 - Original BASE #34 / Issue #73; existing Agent B PR #157 reconciled by non-force two-parent merge commit `5f1f83dc` and extended by test commit `71b5b79`. Exact comparison vs integration branch contains only two B files: `.github/workflows/base34-generation-quota.yml` and `tests/generation-policy-limits-unit.mjs`. No server runtime policy changed.
