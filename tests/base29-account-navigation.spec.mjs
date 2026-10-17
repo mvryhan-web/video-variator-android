@@ -87,8 +87,43 @@ test('BASE #29 all seven main destinations remain discoverable at narrow mobile 
    await expect(nav.getByRole('link',{name,exact:true})).toHaveCount(1);
   }
   await expect(nav.getByRole('link',{name:'AI Agents — coming soon'})).toHaveCount(1);
+  await expect(nav.getByRole('link',{name:'My Creations',exact:true})).toHaveCount(1);
+  await expect(nav.getByRole('link',{name:'History',exact:true})).toHaveCount(1);
   await expect(nav.getByRole('link',{name:'Billing in existing Profile and Settings'})).toHaveCount(1);
   await expect(nav.getByRole('link',{name:'Account Settings in existing Profile'})).toHaveCount(1);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  }
+});
+
+
+test('BASE #29 My Creations opens existing Home Recent creations, not a fake library',async({page})=>{
+ let paidWrites=0;
+ page.on('request',r=>{
+  if(r.method()==='POST'&&['/api/studio/jobs','/api/speech','/api/billing','/api/payments'].some(s=>new URL(r.url()).pathname.startsWith(s)))paidWrites++;
+ });
+ await page.goto('/ai-apps.html');
+ const link=page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'My Creations',exact:true});
+ await expect(link).toHaveAttribute('href','deepsyq.html#recentCreations');
+ await link.click();
+ await expect(page).toHaveURL(/\/deepsyq\.html#recentCreations$/);
+ const panel=page.locator('#recentCreations');
+ await expect(panel).toBeAttached();
+ await expect(panel.locator('#recentCreationsGrid')).toBeAttached();
+ await expect(panel.locator('#recentCreationsStatus')).toBeAttached();
+ expect(paidWrites).toBe(0);
+});
+
+test('BASE #29 History opens existing Studio history with real filter controls',async({page})=>{
+ let paidWrites=0;
+ page.on('request',r=>{
+  if(r.method()==='POST'&&['/api/studio/jobs','/api/speech','/api/billing','/api/payments'].some(s=>new URL(r.url()).pathname.startsWith(s)))paidWrites++;
+ });
+ await page.goto('/ai-apps.html');
+ const link=page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'History',exact:true});
+ await expect(link).toHaveAttribute('href','generate-studio.html?view=history');
+ await link.click();
+ await expect(page).toHaveURL(/\/generate-studio\.html\?view=history$/);
+ await expect(page.locator('#showHistory')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#historyFilters')).toBeVisible();
+ expect(paidWrites).toBe(0);
 });
