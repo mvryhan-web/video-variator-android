@@ -508,3 +508,24 @@ test('BASE 24: a previously displayed private History card disappears on cross-t
  await expect(page.locator('#historyList')).toContainText('Account changed');
  expect(paidPosts).toBe(0);
 });
+
+test('BASE 24: History card actions cannot reuse previous-account prompts after silent same-tab token rotation',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','silent-account-A'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/studio/jobs?filter=*',r=>r.fulfill({json:{items:[
+  {id:'account-a-private',kind:'image',status:'failed',
+   prompt:'PRIVATE ACCOUNT A ARTWORK PROMPT',createdAt:'2026-10-17T08:00:00Z'}
+ ]}}));
+ let paidPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))paidPosts++;});
+ await page.goto('/generate-studio.html?studio=image');
+ await page.locator('#showHistory').click();
+ await expect(page.locator('#historyList')).toContainText('PRIVATE ACCOUNT A ARTWORK PROMPT');
+ await page.evaluate(()=>localStorage.setItem('vv_token','silent-account-B'));
+ // There is deliberately no storage event within the same browser tab.
+ await page.getByRole('button',{name:'Reuse prompt'}).click();
+ await expect(page.locator('#historyList')).not.toContainText('PRIVATE ACCOUNT A');
+ await expect(page.locator('#historyList')).toContainText('Account changed');
+ await expect(page.locator('#prompt')).not.toHaveValue('PRIVATE ACCOUNT A ARTWORK PROMPT');
+ expect(paidPosts).toBe(0);
+});
