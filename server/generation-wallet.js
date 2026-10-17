@@ -177,6 +177,19 @@ export class GenerationWallet {
       }));
     } catch (_) { throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED'); }
   }
+  // Agent B's trusted server-only P0 gate supplies requestFingerprint, while
+  // the existing D wallet proof expects fingerprint. Keep one explicit,
+  // privileged projection: never infer authorization from the user's JSON.
+  // The B gate must validate user, consent, model and server quote first.
+  purchasedDispatchVerifier({env=process.env}={}) {
+    return async ({userId,jobId,kind,modelId,provider,requestFingerprint,credits}={}) => {
+      if (typeof requestFingerprint!=='string' || !requestFingerprint)
+        throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED');
+      return this.claimPurchasedDispatch({
+        userId,jobId,kind,modelId,provider,credits,fingerprint:requestFingerprint
+      },{env});
+    };
+  }
   async balance(userId) {
     identifier(userId); await this.init();
     const {rows}=await this.pool.query('SELECT available,reserved,debt FROM vv_ai_wallet WHERE user_id=$1',[userId]);
