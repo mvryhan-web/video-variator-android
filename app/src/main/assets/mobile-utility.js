@@ -303,13 +303,15 @@ function renderRedactions(){
 async function exportRedaction(){
  const f=files()[0];if(redactLoading||!redactSource||redactSource!==f||!redactImage||!redactRects.length)throw Error(label('Select the current image and cover at least one area.','Выберите текущее фото и закройте хотя бы одну область.'));
  const full=document.createElement('canvas');full.width=redactImage.width;full.height=redactImage.height;
- const x=full.getContext('2d');x.drawImage(redactImage,0,0);
- const scaleX=full.width/$('redactCanvas').width,scaleY=full.height/$('redactCanvas').height;
- for(const r of redactRects)drawCovers(x,r,scaleX,scaleY);
- // Opaque blocks replace pixels; exporting does not retain image layers.
- const blob=await blobFrom(full,'image/png');
- await result(new File([blob],base(f)+'-redacted.png',{type:'image/png'}));
- full.width=full.height=1;
+ try{
+  const x=full.getContext('2d');x.drawImage(redactImage,0,0);
+  const scaleX=full.width/$('redactCanvas').width,scaleY=full.height/$('redactCanvas').height;
+  for(const r of redactRects)drawCovers(x,r,scaleX,scaleY);
+  // Opaque blocks replace pixels; exporting does not retain image layers.
+  const blob=await blobFrom(full,'image/png');
+  if(abort)return; // Cancel during encoding must not publish a download.
+  await result(new File([blob],base(f)+'-redacted.png',{type:'image/png'}));
+ }finally{full.width=full.height=1;}
 }
 
 async function processPDF(){
