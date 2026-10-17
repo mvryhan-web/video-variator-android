@@ -20,3 +20,17 @@ export async function quarantineUncertainVideoSubmit({pool,jobId,failure}){
  // overwrite either or create a second provider call from this function.
  return {quarantined:Number(rowCount??rows?.length??0)===1};
 }
+
+
+// Present stale/ambiguous VIDEO submissions honestly in History without
+// changing database/wallet state. Original server operation stays private.
+export function videoHistoryPublicStatus(job,{nowMs=Date.now()}={}){
+ const status=job?.status??null,error=job?.error??null;
+ if(job?.kind!=='video'||status!=='processing'||job.operation)
+  return {status,error};
+ const createdMs=Date.parse(job.created_at);
+ const stale=Number.isFinite(createdMs)&&Number.isFinite(nowMs)&&
+  nowMs-createdMs>180000;
+ return {status,error:error===VIDEO_SUBMISSION_UNCERTAIN||stale?
+  VIDEO_SUBMISSION_UNCERTAIN:error};
+}
