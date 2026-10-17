@@ -735,18 +735,7 @@ for(const authChange of ['cross-tab logout','silent same-tab account switch','si
 
 test('BASE 24: switching filter aborts an in-flight private image thumbnail fetch',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vv_token','history-thumbnails-owner-A'));
- await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
- let paid=0;page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')paid++;});
- await page.route('**/api/studio/jobs?filter=*',r=>{
-  const filter=new URL(r.request().url()).searchParams.get('filter');
-  return r.fulfill({json:{items:filter==='all'?[
-   {id:'private-thumb-A',kind:'image',status:'ready',prompt:'OLD PRIVATE THUMB A',
-    createdAt:'2026-10-17T08:00:00Z'}
-  ]:[]}});
- });
- await page.goto('/generate-studio.html?studio=image&view=history');
- await expect(page.locator('.history-card')).toContainText('OLD PRIVATE THUMB A');
- await page.evaluate(()=>{
+ await page.addInitScript(()=>{
   const fetchOriginal=window.fetch.bind(window);
   window.__thumbStarted=false;window.__thumbCancelled=false;
   window.fetch=(input,options)=>{
@@ -760,7 +749,18 @@ test('BASE 24: switching filter aborts an in-flight private image thumbnail fetc
    });
   };
  });
- // Visible thumbnail is lazy; force it into the observer threshold after the mock.
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ let paid=0;page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')paid++;});
+ await page.route('**/api/studio/jobs?filter=*',r=>{
+  const filter=new URL(r.request().url()).searchParams.get('filter');
+  return r.fulfill({json:{items:filter==='all'?[
+   {id:'private-thumb-A',kind:'image',status:'ready',prompt:'OLD PRIVATE THUMB A',
+    createdAt:'2026-10-17T08:00:00Z'}
+  ]:[]}});
+ });
+ await page.goto('/generate-studio.html?studio=image&view=history');
+ await expect(page.locator('.history-card')).toContainText('OLD PRIVATE THUMB A');
+ // Lazy thumbnail should be observed after the early fetch interceptor installed.
  await page.locator('.history-preview').scrollIntoViewIfNeeded();
  await expect.poll(()=>page.evaluate(()=>window.__thumbStarted)).toBe(true);
  await page.locator('[data-history-filter=failed]').click();
