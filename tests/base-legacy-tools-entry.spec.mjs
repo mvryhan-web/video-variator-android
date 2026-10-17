@@ -52,7 +52,7 @@ test('BASE #27 keeps existing local history and media across Video Uniquifier â†
  // alter server-side history, spend tool credits, or require live credentials.
  const writes=[];
  page.on('request',request=>{
-  if(/\\/api\\/(?:history|studio\\/jobs|ai-billing|billing|stripe)/.test(new URL(request.url()).pathname)
+  if(/\/api\/(?:history|studio\/jobs|ai-billing|billing|stripe)/.test(new URL(request.url()).pathname)
       && request.method()!=='GET')writes.push(request.method()+' '+new URL(request.url()).pathname);
  });
 
@@ -81,12 +81,15 @@ test('BASE #27 keeps existing local history and media across Video Uniquifier â†
 
  // Use the existing editor's actual Tools navigation, then the actual hub
  // entry. Both pages share one origin but must not reset storage.
- await page.locator('#freeToolsLink').click();
- await expect(page).toHaveURL(/\\/free-tools\\.html$/);
+ const toolsLink=page.locator('#freeToolsLink');
+ if(!(await toolsLink.isVisible()))await page.locator('#menuBtn').click();
+ await expect(toolsLink).toBeVisible();
+ await toolsLink.click();
+ await expect(page).toHaveURL(/\/free-tools\.html$/);
  const legacy=page.locator('[data-legacy-tool=video-uniquifier]');
  await expect(legacy).toBeVisible();
  await legacy.click();
- await expect(page).toHaveURL(/\\/index\\.html$/);
+ await expect(page).toHaveURL(/\/index\.html$/);
  await expect(page).toHaveTitle(/Video Uniquifier/);
  expect(await page.locator('#mode option').evaluateAll(nodes=>nodes.map(x=>x.value)))
   .toEqual(['gentle','balanced','dynamic']);
@@ -96,7 +99,7 @@ test('BASE #27 keeps existing local history and media across Video Uniquifier â†
  // mobile, then inspect the actual rendered record and persisted media.
  await page.locator('[data-view=history]').evaluate(button=>button.click());
  await expect(page.locator('#historyList .historyItem h4'))
-  .toContainText([seed.item.name]);
+  .toHaveText(seed.item.name);
  const retained=await page.evaluate(async key=>{
   const blob=await window.VUPersistentMedia.get(key);
   return {
