@@ -291,3 +291,29 @@ test('BASE #28: Cancel during Photo to PDF JPEG encode cannot publish a PDF',asy
  await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
  expect(posts).toBe(0);
 });
+
+
+test('BASE #28: Cancel while OCR library script loads never creates a language worker',async({page})=>{
+ let uploads=0;
+ page.on('request',r=>{if(r.method()==='POST')uploads++;});
+ await page.addInitScript(()=>{window.__ocrScriptSpy={workerCreations:0};});
+ await page.route('**/vendor/ocr/tesseract.min.js',async route=>{
+  await new Promise(resolve=>setTimeout(resolve,650));
+  await route.fulfill({
+   status:200,contentType:'application/javascript',
+   body:'window.Tesseract={createWorker:async()=>{window.__ocrScriptSpy.workerCreations++;return {recognize:async()=>({data:{text:"wrong"}}),terminate:async()=>{}}}};'
+  });
+ });
+ await page.goto('/mobile-utility.html?tool=photo-ocr');
+ await page.locator('#utilityFiles').setInputFiles({
+  name:'private.jpg',mimeType:'image/jpeg',buffer:Buffer.from([255,216,255,217])
+ });
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityCancel')).toBeEnabled();
+ await page.locator('#utilityCancel').click();
+ await expect(page.locator('#utilityStatus')).toContainText('Canceled');
+ await expect(page.locator('#utilityRun')).toBeEnabled();
+ expect(await page.evaluate(()=>window.__ocrScriptSpy.workerCreations)).toBe(0);
+ await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
+ expect(uploads).toBe(0);
+});
