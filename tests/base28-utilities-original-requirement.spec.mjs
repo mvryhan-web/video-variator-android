@@ -593,3 +593,110 @@ test('BASE #28: OCR recognition finishing after pagehide never restores private 
  expect(await page.evaluate(()=>window.__base28OcrLate.finished)).toBe(1);
  expect(posts).toBe(0);
 });
+
+test('BASE #28: audio/text BFCache pagehide clears sensitive inputs, media previews and downloads',async({page})=>{
+ let posts=0;
+ page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.addInitScript(()=>{
+  window.__base28AudioURLs={created:[],revoked:[]};
+  const create=URL.createObjectURL,revoke=URL.revokeObjectURL;
+  URL.createObjectURL=function(blob){
+   const url=create.call(URL,blob);
+   window.__base28AudioURLs.created.push(url);
+   return url;
+  };
+  URL.revokeObjectURL=function(url){
+   window.__base28AudioURLs.revoked.push(url);
+   return revoke.call(URL,url);
+  };
+ });
+ await page.goto('/audio-studio.html');
+ await page.locator('#speechText').fill('PRIVATE OWNER SCRIPT');
+ await page.locator('#speechConsent').check();
+ await page.locator('#transcript').fill('PRIVATE RECOGNIZED TRANSCRIPT');
+ await page.locator('#transcribeFile').setInputFiles({
+  name:'private-voice.wav',mimeType:'audio/wav',buffer:Buffer.from([0,0,0,0])
+ });
+ await page.locator('#trimFile').setInputFiles({
+  name:'private-trim.wav',mimeType:'audio/wav',buffer:Buffer.from([0,0,0,0])
+ });
+ await page.locator('#vtaFile').setInputFiles({
+  name:'private-video.mp4',mimeType:'video/mp4',buffer:Buffer.from([0,0,0,0])
+ });
+ const before=await page.evaluate(()=>{
+  for(const id of ['speechResult','trimResult','vtaResult']){
+   const el=document.createElement('button');el.textContent='PRIVATE DOWNLOAD';
+   document.getElementById(id).append(el);
+  }
+  return window.__base28AudioURLs.created.slice();
+ });
+ expect(before.length).toBeGreaterThanOrEqual(2);
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+ for(const id of ['speechText','transcript','transcribeFile','trimFile','vtaFile']){
+  await expect(page.locator('#'+id)).toHaveValue('');
+ }
+ await expect(page.locator('#speechConsent')).not.toBeChecked();
+ for(const id of ['speechResult','trimResult','vtaResult']){
+  await expect(page.locator('#'+id)).toBeEmpty();
+ }
+ await expect(page.locator('#trimSourcePreview')).toBeHidden();
+ await expect(page.locator('#vtaPreview')).toBeHidden();
+ await expect(page.locator('#copyText')).toBeDisabled();
+ await expect(page.locator('#saveText')).toBeDisabled();
+ await expect(page.locator('#saveSrt')).toBeDisabled();
+ const urls=await page.evaluate(()=>window.__base28AudioURLs);
+ expect(urls.created.length).toBeGreaterThanOrEqual(2);
+ expect(urls.created.every(u=>urls.revoked.includes(u))).toBe(true);
+ await page.evaluate(()=>window.dispatchEvent(new Event('pageshow')));
+ await expect(page.locator('#transcript')).toHaveValue('');
+ expect(posts).toBe(0);
+});
+
+test('BASE #28: audio STT pagehide cancels a pending worker and blocks late private transcription',async({page})=>{
+ let posts=0;
+ page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.route('**/ai-media.js',route=>route.fulfill({
+  status:200,contentType:'text/javascript',body:`
+   export async function createEngine(){return {
+    async writeFile(){},async exec(){return 0;},
+    async readFile(){return new Uint8Array([0,0,0,0]);},
+    terminate(){}
+   }}
+   export async function saveLocal(){}
+   export function subtitleFiles(){return {srt:'PRIVATE SRT'}}
+  `
+ }));
+ await page.goto('/audio-studio.html');
+ await page.evaluate(()=>{
+  window.__base28Stt={workers:[],cancelled:0,completed:0};
+  window.VUToolAccess={
+   async begin(){return {
+    async complete(){window.__base28Stt.completed++},
+    async cancel(){window.__base28Stt.cancelled++}
+   }},
+   message(){return 'unavailable'}
+  };
+  window.Worker=class {
+   constructor(){this.terminated=false;window.__base28Stt.workers.push(this)}
+   postMessage(){}
+   terminate(){this.terminated=true}
+  };
+ });
+ await page.locator('#transcribeFile').setInputFiles({
+  name:'private-audio.wav',mimeType:'audio/wav',buffer:Buffer.from([0,0,0,0])
+ });
+ await page.locator('#transcribeStart').click();
+ await expect.poll(()=>page.evaluate(()=>window.__base28Stt.workers.length)).toBe(1);
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+ await expect.poll(()=>page.evaluate(()=>window.__base28Stt.cancelled)).toBe(1);
+ await page.evaluate(()=>{
+  const worker=window.__base28Stt.workers[0];
+  worker.onmessage({data:{type:'result',result:{text:'LATE PRIVATE TEXT',chunks:[]}}});
+ });
+ expect(await page.evaluate(()=>window.__base28Stt.workers[0].terminated)).toBe(true);
+ await expect(page.locator('#transcribeFile')).toHaveValue('');
+ await expect(page.locator('#transcript')).toHaveValue('');
+ await expect(page.locator('#saveText')).toBeDisabled();
+ expect(await page.evaluate(()=>window.__base28Stt.completed)).toBe(0);
+ expect(posts).toBe(0);
+});
