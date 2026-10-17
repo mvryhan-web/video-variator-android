@@ -183,3 +183,30 @@ test('BASE #5: failed original-job lookup blocks retry without spending a second
  await expect(page.locator('#status')).toContainText('STUDIO_STORAGE_UNAVAILABLE');
  expect(posts).toHaveLength(1);
 });
+
+
+test('BASE #5: Video account change during a delayed POST never attaches the previous account result',async({page})=>{
+ await setup(page);
+ let resolveResponse=null,submits=0,oldAccountReads=0;
+ await page.route('**/api/studio/jobs/old-account-video',route=>{
+  oldAccountReads++;return route.fulfill({json:{id:'old-account-video',kind:'video',status:'ready',mime:'video/mp4'}});
+ });
+ await page.route('**/api/studio/jobs',async route=>{
+  if(route.request().method()!=='POST')return route.continue();
+  submits++;
+  await new Promise(resolve=>{resolveResponse=resolve;});
+  return route.fulfill({status:202,json:{id:'old-account-video',kind:'video',status:'processing'}});
+ });
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#prompt').fill('Video for the first account only');
+ await page.locator('#consent').check();
+ await page.locator('#generate').click();
+ await expect.poll(()=>submits).toBe(1);
+ await page.evaluate(()=>localStorage.setItem('vv_token','second-fixture-account'));
+ resolveResponse();
+ await expect(page.locator('#status')).toContainText('Your signed-in account changed');
+ expect(oldAccountReads).toBe(0);
+ expect(submits).toBe(1);
+ const pending=await page.evaluate(()=>[...Object.keys(sessionStorage)].filter(k=>k.startsWith('deepsyq_video_pending_request_v1_')));
+ expect(pending).toHaveLength(1); // Preserve first account's request for its own recovery.
+});
