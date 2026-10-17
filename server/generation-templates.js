@@ -50,7 +50,8 @@ export function validateTemplate(value,current={}){
  // Keep published Product Name templates usable through the real AI Apps handoff.
  if(active&&requiredInputs.includes('product_name')&&!/\{\{\s*product_name\s*\}\}/i.test(prompt))throw Error('TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED');
  // Unpublished drafts may exceed the handoff limit; never activate a prompt that Studio would truncate.
- if(active&&!NAME_TOKEN.test(prompt)&&prompt.length>STUDIO_PROMPT_LIMIT)throw Error('TEMPLATE_STUDIO_PROMPT_TOO_LONG');
+ // Placeholder substitution must fit Studio even for the shortest valid one-character name.
+ if(active&&(NAME_TOKEN.test(prompt)?prompt.replace(/\{\{\s*product_name\s*\}\}/gi,'X').length:prompt.length)>STUDIO_PROMPT_LIMIT)throw Error('TEMPLATE_STUDIO_PROMPT_TOO_LONG');
  if(active&&(!rightsBasis||rightsNote.length<3))throw Error('TEMPLATE_RIGHTS_REQUIRED');
  if(featured&&!active)throw Error('INVALID_TEMPLATE');
  return {
