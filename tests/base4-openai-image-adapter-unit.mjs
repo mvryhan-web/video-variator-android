@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {buildOpenAIImageRequest,decodeOpenAIImageResponse,generateOpenAIImage} from '../server/generation-openai-image.js';
 
-const png=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),Buffer.alloc(24)]);
+const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMQCegBAAFsAPH6cDjBAAAAAElFTkSuQmCC','base64');
 const jpg=Buffer.from([255,216,255,224,4,5,6,7,255,217]);
 const model={id:'gpt-image-2.5-flare',enabled:true,quality:'low',
  sizes:{'1:1':{'1K':'1024x1024'},'3:2':{'1K':'1536x1024'}},
@@ -130,4 +130,16 @@ test('output mismatch in provider-declared size and quality is rejected before s
  await assert.rejects(call({},model,{fetcher:async()=>answer({...apiImage,size:'1536x1024'})}),/INVALID_PROVIDER_MEDIA/);
  await assert.rejects(call({},model,{fetcher:async()=>answer({...apiImage,quality:'max'})}),/INVALID_PROVIDER_MEDIA/);
  assert.equal((await call({},model,{fetcher:async()=>answer({...apiImage,size:'1024x1024',quality:'low'})})).mime,'image/png');
+});
+
+test('reject signature-only forged or truncated PNG output and reference photos',()=>{
+ const fake=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),Buffer.alloc(64)]);
+ const withFake={...apiImage,data:[{b64_json:fake.toString('base64')}]};
+ assert.throws(()=>decodeOpenAIImageResponse(withFake,'png'),/INVALID_PROVIDER_MEDIA/);
+ const ref={mimeType:'image/png',data:fake.toString('base64')};
+ assert.throws(()=>buildOpenAIImageRequest({...input,references:[ref]},model),/INVALID_REFERENCES/);
+ const invalidEnd=Buffer.from(png);invalidEnd[invalidEnd.length-8]=0;
+ assert.throws(()=>decodeOpenAIImageResponse({data:[{b64_json:invalidEnd.toString('base64')}]},'png'),/INVALID_PROVIDER_MEDIA/);
+ const invalidDimension=Buffer.from(png);invalidDimension.writeUInt32BE(0,16);
+ assert.throws(()=>decodeOpenAIImageResponse({data:[{b64_json:invalidDimension.toString('base64')}]},'png'),/INVALID_PROVIDER_MEDIA/);
 });
