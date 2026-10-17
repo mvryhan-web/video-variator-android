@@ -1,0 +1,31 @@
+name: BASE 5 Product Video Logo Role Guard
+on:
+  pull_request:
+    branches: [deepsyq-platform, base5-video-history-detach-20261016]
+    paths:
+      - 'app/src/main/assets/studio-product-video-role-guard.mjs'
+      - 'app/src/main/assets/generate-studio.js'
+      - 'tests/base5-product-video-role-guard-unit.mjs'
+      - 'tests/base5-product-video-role-handoff.spec.mjs'
+      - '.github/workflows/base5-product-video-logo-role.yml'
+permissions:
+  contents: read
+jobs:
+  video-logo-role:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Parse and test fail-closed incoming photo/logo roles
+        run: |
+          node --check app/src/main/assets/generate-studio.js
+          node --check app/src/main/assets/studio-product-video-role-guard.mjs
+          node --test tests/base5-product-video-role-guard-unit.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Verify real no-spend IndexedDB handoff in desktop and Safari
+        run: npx playwright test tests/base5-product-video-role-handoff.spec.mjs --project=chromium --project=webkit
