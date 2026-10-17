@@ -13,7 +13,9 @@ test('personalized product name is substituted locally for every supported place
 test('empty, overlong and excessively large personalized prompts never reach Studio',()=>{
  assert.throws(()=>prepareTemplatePrompt(product,'   '),/Enter your product name/);
  assert.throws(()=>prepareTemplatePrompt(product,'x'.repeat(81)),/80 characters/);
- assert.throws(()=>prepareTemplatePrompt({...product,promptTemplate:'x'.repeat(2000)+' {{product_name}}'},'Bag'),/too long/);
+ const cannotFit={...product,promptTemplate:'x'.repeat(2000)+' {{product_name}}'};
+ assert.equal(templateSupport(cannotFit).supported,false);
+ assert.throws(()=>prepareTemplatePrompt(cannotFit,'Bag'),/not ready for Studio/);
 });
 test('unsupported media and missing placeholder stay disabled without changing existing text/image workflows',()=>{
  assert.equal(templateSupport({...product,requiredInputTypes:['logo','product_name']}).supported,false);
