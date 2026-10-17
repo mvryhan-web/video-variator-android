@@ -17,6 +17,7 @@ let activeVideoWatchId=null; // Current browser polling only; the provider job i
 let historyLoadEpoch=0; // Latest History filter/visit wins over delayed earlier responses.
 let historyNextOffset=0,historyHasMore=false,historyLoadingPage=false; // At most 50 owner-scoped rows per request.
 let historyBoundToken=null; // Ephemeral account guard; never persisted in DOM or storage.
+let historyOpenedResultToken=null,historyOpenedResultId=null; // Saved History Open only, never ordinary new generation.
 const historySessionCurrent=token=>!!token&&localStorage.getItem('vv_token')===token;
 function clearHistoryForAccountChange(){
  ++historyLoadEpoch;
@@ -859,10 +860,13 @@ document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclic
 function setHistory(on){if(!on){++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();}historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
 window.addEventListener('pagehide',()=>{++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();});
 window.addEventListener('storage',event=>{
- if(event.key==='vv_token'&&event.newValue!==historyBoundToken)clearHistoryForAccountChange();
+ if(event.key!=='vv_token')return;
+ if(event.newValue!==historyBoundToken)clearHistoryForAccountChange();
+ clearHistoryOpenedResultForAccountChange();
 });
 window.addEventListener('focus',()=>{
  if(historyView&&historyBoundToken&&!historySessionCurrent(historyBoundToken))clearHistoryForAccountChange();
+ clearHistoryOpenedResultForAccountChange();
 });
  // Account rotation in this SAME tab emits no native storage event. Capture
  // clicks before old History-card callbacks can reuse a prior user's prompt.
@@ -873,7 +877,31 @@ window.addEventListener('focus',()=>{
   }
  },true);
 $('showCreate').onclick=()=>{const u=new URL(location.href);u.searchParams.delete('view');history.replaceState(null,'',u);setHistory(false);};$('showHistory').onclick=()=>setHistory(true);
-function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
+function clearResult(){
+ historyOpenedResultToken=null;historyOpenedResultId=null;
+ if(url)URL.revokeObjectURL(url);url=null;blob=null;
+ $('media').replaceChildren();$('lyrics').textContent='';
+ $('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;
+}
+function clearHistoryOpenedResultForAccountChange(){
+ const oldAccount=historyOpenedResultToken,oldId=historyOpenedResultId;
+ if(!oldAccount||historySessionCurrent(oldAccount))return false;
+ // Saved History Open becomes a full Studio result. Logout or token rotation
+ // must revoke its private blob URL and disable the old account's actions.
+ clearResult();
+ if(job===oldId){
+  ++generation;job=null;activeVideoWatchId=null;busy=false;
+  if(sessionStorage.getItem('vu_generation_job')===oldId)sessionStorage.removeItem('vu_generation_job');
+  if(sessionStorage.getItem('vu_generation_background_job')===oldId)sessionStorage.removeItem('vu_generation_background_job');
+ }
+ $('status').textContent=say('Account changed. The previous saved result was hidden.','Аккаунт изменён. Сохранённый результат предыдущего аккаунта скрыт.');
+ availability();return true;
+}
+// Same-tab localStorage changes emit no storage event. Capture an action before
+// Download/Share/Use-as-reference/Delete can use old-account History media.
+$('actions').addEventListener('click',event=>{
+ if(clearHistoryOpenedResultForAccountChange()){event.preventDefault();event.stopImmediatePropagation();}
+},true);
 async function watch(id,epoch,{historyAccountToken=null}={}){
  // A pending old-account History Open may complete after logout or account switch.
  // Only History readers have this guard; ordinary server generation remains unchanged.
@@ -899,6 +927,7 @@ async function watch(id,epoch,{historyAccountToken=null}={}){
    if(epoch!==generation||!historyStillOwned())return;
    activeVideoWatchId=null;
    clearResult();blob=b;url=URL.createObjectURL(b);
+   if(historyAccountToken!==null){historyOpenedResultToken=historyAccountToken;historyOpenedResultId=id;}
    const tag=d.mime.startsWith('image/')?'img':d.mime.startsWith('video/')?'video':'audio';
    const media=document.createElement(tag);media.src=url;
    if(tag==='img')media.alt=say('Generated image','Созданное изображение');else media.controls=true;
