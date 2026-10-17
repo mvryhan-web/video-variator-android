@@ -610,12 +610,9 @@ const HISTORY_PREVIEW_MAX_BYTES=128*1024*1024;
 async function readHistoryPreviewBlob(response,stillOwned){
  const declared=Number(response.headers.get('content-length')||0);
  if(declared>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
- if(!response.body?.getReader){
-  const fallback=await response.blob();
-  if(!stillOwned())throw Error('PREVIEW_ABORTED');
-  if(fallback.size>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
-  return fallback;
- }
+ // Without streaming there is no trustworthy way to cap the bytes BEFORE
+ // allocation. Keep the original Download available instead of risking OOM.
+ if(!response.body?.getReader)throw Error('PREVIEW_STREAM_UNAVAILABLE');
  const reader=response.body.getReader(),chunks=[];
  let bytes=0;
  try{
