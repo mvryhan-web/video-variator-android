@@ -14,14 +14,25 @@ export async function claimPurchasedGeneration(c,{env={},userId,jobId,credits,fi
  if(!textId(userId)||!textId(jobId)||!textId(fingerprint)||!textId(modelId)||!textId(provider)||
     !Number.isSafeInteger(credits)||credits<1||credits>10_000_000||
     !wallet||!Number.isSafeInteger(wallet.reserved)||wallet.reserved<credits||wallet.debt!==0)deny();
- // This is not proof from a client balance. A signed Stripe grant creates
- // vv_ai_purchase, tied to the original server-created Checkout order.
+ // A verified signed Stripe grant creates vv_ai_purchase. Credit packs
+ // require original LIVE Checkout; subscriptions additionally require an
+ // invoice provenance row written after fully validated, LIVE invoice.paid.
  const order=await c.query(`SELECT
-  COALESCE(SUM(p.credits),0)::bigint AS paid_credits,MIN(p.session_id) AS source_id
-  FROM vv_ai_purchase p JOIN vv_ai_order o ON o.session_id=p.session_id
-  WHERE p.user_id=$1 AND o.user_id=$1 AND o.snapshot->>'billingMode'='live'
-   AND p.session_id LIKE 'cs_live_%' AND p.payment_intent LIKE 'pi_%'
-   AND p.refunded_amount=0 AND p.amount>0 AND p.credits>0`,[userId]);
+  COALESCE(SUM(credits),0)::bigint AS paid_credits,MIN(session_id) AS source_id
+  FROM (
+    SELECT p.credits,p.session_id FROM vv_ai_purchase p
+    JOIN vv_ai_order o ON o.session_id=p.session_id
+    WHERE p.user_id=$1 AND o.user_id=$1 AND o.snapshot->>'billingMode'='live'
+      AND p.session_id LIKE 'cs_live_%' AND p.payment_intent LIKE 'pi_%'
+      AND p.refunded_amount=0 AND p.amount>0 AND p.credits>0
+    UNION ALL
+    SELECT p.credits,p.session_id FROM vv_ai_purchase p
+    JOIN vv_ai_verified_subscription_invoice v ON v.invoice_id=p.session_id
+      AND v.user_id=p.user_id AND v.payment_intent=p.payment_intent
+    WHERE p.user_id=$1 AND v.livemode=true
+      AND p.session_id LIKE 'in_%' AND p.payment_intent LIKE 'pi_%'
+      AND p.refunded_amount=0 AND p.amount>0 AND p.credits>0
+  ) eligible_paid_purchases`,[userId]);
  const paidCredits=safeCount(order.rows[0]?.paid_credits),purchaseId=order.rows[0]?.source_id;
  if(!textId(purchaseId))deny();
  // Count EVERY other held/captured reservation against purchases, including
