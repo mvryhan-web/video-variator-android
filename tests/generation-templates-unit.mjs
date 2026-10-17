@@ -24,6 +24,14 @@ test('template validation enforces data-driven schema and safe fields',()=>{
  assert.equal(validateTemplate({...t,active:true,featured:false,requiredInputTypes:['image'],promptTemplate:'Z'.repeat(2000)}).active,true);
  // Product-name substitutions may shorten placeholders; actual final-length gate stays in Studio.
  assert.equal(validateTemplate({...t,active:true,featured:false,requiredInputTypes:['image','product_name'],promptTemplate:'Z'.repeat(1988)+' {{product_name}}'}).active,true);
+ // An active personalized template must fit Studio even with the shortest allowed product name.
+ assert.throws(()=>validateTemplate({...t,active:true,featured:false,requiredInputTypes:['product_name'],promptTemplate:'Z'.repeat(2000)+'{{product_name}}'}),/TEMPLATE_STUDIO_PROMPT_TOO_LONG/);
+ // Long owner drafts remain editable until ready for publication.
+ assert.equal(validateTemplate({...t,active:false,featured:false,requiredInputTypes:['product_name'],promptTemplate:'Z'.repeat(2000)+'{{product_name}}'}).active,false);
+ // Replacing the placeholder with one character fits the exact boundary.
+ assert.equal(validateTemplate({...t,active:true,featured:false,requiredInputTypes:['product_name'],promptTemplate:'Z'.repeat(1999)+'{{product_name}}'}).active,true);
+ // Never skip the shortest-name check if a template uses a token without declaring the product_name input.
+ assert.throws(()=>validateTemplate({...t,active:true,featured:false,requiredInputTypes:['image'],promptTemplate:'Z'.repeat(2000)+'{{ product_name }}'}),/TEMPLATE_STUDIO_PROMPT_TOO_LONG/);
  assert.throws(()=>validateTemplate({...t,active:true,featured:false,requiredInputTypes:['product_name'],promptTemplate:'Z'.repeat(2001)+'{{product_name}}'}),/TEMPLATE_STUDIO_PROMPT_TOO_LONG/);
  assert.equal(validateTemplate({...t,active:true,featured:false,requiredInputTypes:['product_name'],promptTemplate:'Z'.repeat(1999)+'{{product_name}}'}).active,true);
  assert.ok(validateTemplate({...t,promptTemplate:'Photo for {{ PRODUCT_NAME }}'}).promptTemplate.includes('PRODUCT_NAME'));
