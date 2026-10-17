@@ -356,6 +356,7 @@ test('BASE 24: leaving History invalidates its in-flight result before another v
 });
 
 test('BASE 24: late image media after changing filters never creates a stale object URL',async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('vv_token','history-synthetic-thumbnail-owner'));
  await page.addInitScript(()=>{
   window.__historyUrlCreated=0;
   const native=URL.createObjectURL.bind(URL);
@@ -389,6 +390,7 @@ test('BASE 24: late image media after changing filters never creates a stale obj
 });
 
 test('BASE 24: leaving History revokes already-created temporary image URLs',async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('vv_token','history-synthetic-thumbnail-owner'));
  await page.addInitScript(()=>{
   window.__historyUrlCreated=0;window.__historyUrlRevoked=0;
   const create=URL.createObjectURL.bind(URL),revoke=URL.revokeObjectURL.bind(URL);
