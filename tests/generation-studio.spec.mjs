@@ -654,6 +654,48 @@ for(const deleteStatus of [200,503]){
  });
 }
 
+for(const authChange of ['cross-tab logout','silent same-tab account switch']){
+ test('BASE 24: opened saved History video is revoked on '+authChange,async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('vv_token','opened-result-account-A'));
+  await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+  let generated=0,downloaded=0;
+  page.on('request',request=>{if(request.method()==='POST'&&new URL(request.url()).pathname==='/api/studio/jobs')generated++;});
+  page.on('download',()=>downloaded++);
+  await page.route('**/api/studio/jobs?filter=*',route=>route.fulfill({json:{items:[
+   {id:'old-ready-video',kind:'video',status:'ready',prompt:'ACCOUNT A PRIVATE VIDEO',model:'fixture-video',
+    mime:'video/mp4',createdAt:'2026-10-17T08:00:00Z'}
+  ]}}));
+  await page.route('**/api/studio/jobs/old-ready-video',route=>route.fulfill({json:{
+   id:'old-ready-video',kind:'video',status:'ready',model:'fixture-video',mime:'video/mp4'
+  }}));
+  await page.route('**/api/studio/jobs/old-ready-video/media',route=>route.fulfill({
+   contentType:'video/mp4',body:Buffer.from('FAKE VIDEO BYTES IN PRIVATE HISTORY TEST')
+  }));
+  await page.goto('/generate-studio.html?studio=video&view=history');
+  await expect(page.locator('.history-card')).toContainText('ACCOUNT A PRIVATE VIDEO');
+  await page.locator('.history-card').getByRole('button',{name:'Open',exact:true}).click();
+  await expect(page.locator('#media video')).toHaveCount(1);
+  await expect(page.locator('#actions')).toBeVisible();
+  expect(await page.evaluate(()=>sessionStorage.getItem('vu_generation_job'))).toBe('old-ready-video');
+  if(authChange==='cross-tab logout'){
+   await page.evaluate(()=>{
+    localStorage.removeItem('vv_token');
+    dispatchEvent(new StorageEvent('storage',{key:'vv_token',oldValue:'opened-result-account-A',newValue:null}));
+   });
+  }else{
+   await page.evaluate(()=>localStorage.setItem('vv_token','opened-result-account-B'));
+   // The same-tab change has no storage event. The Download action must be intercepted.
+   await page.locator('#actions #download').click();
+  }
+  await expect(page.locator('#media video')).toHaveCount(0);
+  await expect(page.locator('#actions')).toBeHidden();
+  await expect(page.locator('#status')).toContainText('previous saved result was hidden');
+  expect(await page.evaluate(()=>sessionStorage.getItem('vu_generation_job'))).toBeNull();
+  expect(generated).toBe(0);
+  expect(downloaded).toBe(0);
+ });
+}
+
 test('BASE 24: 51 saved results remain accessible in user-owned History without a second paid job',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vv_token','fixture-history-owner'));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
