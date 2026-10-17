@@ -5,6 +5,7 @@ import {randomUUID} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import pg from 'pg';
 import {GenerationWallet} from '../server/generation-wallet.js';
+import {grantPaidSubscriptionInvoice} from '../server/generation-subscription-credits.js';
 const urlString=process.env.P0_PURCHASED_TEST_DB_URL;
 if(urlString){
  const u=new URL(urlString);
@@ -28,6 +29,8 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
     model TEXT,provider TEXT,status TEXT,operation TEXT,deleted BOOLEAN NOT NULL DEFAULT false,
     request_fingerprint TEXT,credits_reserved INTEGER NOT NULL DEFAULT 0)`);
   await pool.query(sql);await pool.query(sql);
+  await pool.query(`CREATE TABLE vv_users (id TEXT PRIMARY KEY,plan TEXT,
+    stripe_customer_id TEXT,stripe_subscription_id TEXT,subscription_status TEXT)`);
   async function job(userId,jobId,credits){
     await pool.query('INSERT INTO vv_generation_jobs(id,user_id,model,provider,status,request_fingerprint,credits_reserved) VALUES($1,$2,$3,$4,$5,$6,$7)',
        [jobId,userId,'model_v','Google','processing','sha256abc',credits]);
@@ -68,6 +71,46 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   await wallet.claimPurchasedDispatch(first,{env});
   const second=await job('customer_mix','job_mixed_second',50);
   await assert.rejects(()=>wallet.claimPurchasedDispatch(second,{env}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+  // A *real invoice.paid grant path* (simulated signed-webhook input, no Stripe
+  // API call) is different from Checkout. It must record separate LIVE proof.
+  const subEnv={AI_SUBSCRIPTION_CREDITS_ENABLED:'true',
+   AI_SUBSCRIPTION_CREDITS_JSON:JSON.stringify({basic:80}),
+   STRIPE_PRICE_BASIC:'price_SubSafe123',AI_BILLING_MODE:'live',
+   AI_LIVE_BILLING_APPROVED:'true',AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true'};
+  const subEvent=(id='in_SubSafe1',intent='pi_SubSafe1',change={})=>({
+   type:'invoice.paid',livemode:true,data:{object:{
+    id,status:'paid',paid:true,livemode:true,billing_reason:'subscription_cycle',
+    amount_paid:100,currency:'eur',payment_intent:intent,
+    subscription:'sub_SubSafe1',customer:'cus_SubSafe1',
+    lines:{has_more:false,data:[{price:{id:'price_SubSafe123'},quantity:1}]},...change
+   }}});
+  await pool.query(`INSERT INTO vv_users(id,plan,stripe_customer_id,stripe_subscription_id,subscription_status)
+    VALUES('sub_customer','basic','cus_SubSafe1','sub_SubSafe1','active')`);
+  assert.equal(await grantPaidSubscriptionInvoice({event:subEvent(),env:subEnv,pool,wallet}),true);
+  // A matching replay remains idempotent, and cannot add extra bought credits.
+  assert.equal(await grantPaidSubscriptionInvoice({event:subEvent(),env:subEnv,pool,wallet}),true);
+  const receipt=await pool.query('SELECT invoice_id,user_id,payment_intent,livemode FROM vv_ai_verified_subscription_invoice');
+  assert.deepEqual(receipt.rows,[{invoice_id:'in_SubSafe1',user_id:'sub_customer',payment_intent:'pi_SubSafe1',livemode:true}]);
+  const paidSubJob=await job('sub_customer','job_sub_1',50);
+  const subProof=await wallet.claimPurchasedDispatch(paidSubJob,{env});
+  assert.equal(subProof.source,'settled_stripe_purchase');
+  assert.equal(subProof.purchaseId,'in_SubSafe1');
+  await assert.rejects(()=>wallet.claimPurchasedDispatch(paidSubJob,{env}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+  // A valid paid invoice whose Stripe amount is partially refunded must no
+  // longer authorize provider spend, even if leftover credits cover the job.
+  const secondInvoice=subEvent('in_SubSafe2','pi_SubSafe2');
+  assert.equal(await grantPaidSubscriptionInvoice({event:secondInvoice,env:subEnv,pool,wallet}),true);
+  // Remove the previously spent/held 50 credits from purchase capacity;
+  // this second 80-credit invoice has enough residual cash-backed credits.
+  await wallet.refund('pi_SubSafe2',1);
+  const partialJob=await job('sub_customer','job_sub_refunded',20);
+  // After the partial refund, the first 80-credit invoice's 50-credit use
+  // leaves only 30 eligible credits: a 20-credit job could still be covered
+  // by first invoice. Spend that headroom to test the strict no-refund filter.
+  await pool.query(`UPDATE vv_ai_reservation SET credits=80 WHERE job_id='job_sub_1'`);
+  await assert.rejects(()=>wallet.claimPurchasedDispatch(partialJob,{env}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+  await assert.rejects(()=>grantPaidSubscriptionInvoice({event:subEvent('in_Unpaid','pi_Unpaid',{amount_paid:0}),env:subEnv,pool,wallet}).then(x=>{assert.equal(x,false);throw Error('NO_GRANT')}),/NO_GRANT/);
+
   const total=await pool.query('SELECT count(*)::int AS n FROM vv_ai_purchased_dispatch_claim');
   assert.equal(total.rows[0].n,2);
  }finally{
