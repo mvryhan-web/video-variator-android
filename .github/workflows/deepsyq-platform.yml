@@ -2,6 +2,11 @@ name: Deepsyq platform regression
 on:
   push:
     branches: [deepsyq-platform]
+    # Docs-only updates cannot change browser runtime; keep full regression for all other pushes.
+    # GitHub skips a run only when ALL modified files match these ignore patterns.
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
   pull_request:
     paths:
       - 'app/src/main/assets/deepsyq*'
