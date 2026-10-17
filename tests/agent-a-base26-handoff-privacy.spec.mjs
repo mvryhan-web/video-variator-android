@@ -3,6 +3,9 @@ import {test,expect} from '@playwright/test';
 test('BASE 26: cross-account Studio handoff cannot reveal another user prompt or reference photo',async({page})=>{
  let paidPosts=0;
  page.on('request',request=>{if(request.method()==='POST'&&/\/api\/studio\/jobs(?:\?|$)/.test(request.url()))paidPosts++;});
+ // Keep the real module, origin, IndexedDB and localStorage, but exclude
+ // unrelated Home auth initialization from this deterministic unit-in-browser test.
+ await page.route('**/deepsyq.html',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html><head><title>Private handoff fixture</title></head><body></body></html>'}));
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
  const actual=await page.evaluate(async()=>{
   const {saveStudioHandoff,takeStudioHandoff}=await import('/studio-handoff.js');
@@ -22,6 +25,9 @@ test('BASE 26: cross-account Studio handoff cannot reveal another user prompt or
 });
 
 test('BASE 26: same account can consume a local handoff once without storing raw bearer token',async({page})=>{
+ // Keep the real module, origin, IndexedDB and localStorage, but exclude
+ // unrelated Home auth initialization from this deterministic unit-in-browser test.
+ await page.route('**/deepsyq.html',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html><head><title>Private handoff fixture</title></head><body></body></html>'}));
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
  const state=await page.evaluate(async()=>{
   const {saveStudioHandoff,takeStudioHandoff}=await import('/studio-handoff.js');
@@ -40,6 +46,9 @@ test('BASE 26: same account can consume a local handoff once without storing raw
 });
 
 test('BASE 26: legacy IndexedDB handoff without account binding is rejected and consumed',async({page})=>{
+ // Keep the real module, origin, IndexedDB and localStorage, but exclude
+ // unrelated Home auth initialization from this deterministic unit-in-browser test.
+ await page.route('**/deepsyq.html',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html><head><title>Private handoff fixture</title></head><body></body></html>'}));
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
  const result=await page.evaluate(async()=>{
   localStorage.setItem('vv_token','account-B');
