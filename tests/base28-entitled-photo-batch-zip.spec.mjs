@@ -4,8 +4,8 @@ import {mockToolAccess} from './helpers/tool-access-fixture.mjs';
 
 async function randomPng(page){
  const values=await page.evaluate(async()=>{
-  const canvas=document.createElement('canvas');canvas.width=800;canvas.height=600;
-  const ctx=canvas.getContext('2d'),data=ctx.createImageData(800,600);
+  const canvas=document.createElement('canvas');canvas.width=320;canvas.height=240;
+  const ctx=canvas.getContext('2d'),data=ctx.createImageData(320,240);
   let seed=17;
   for(let i=0;i<data.data.length;i+=4){
    seed=(Math.imul(seed,1664525)+1013904223)|0;data.data[i]=seed>>>24;
