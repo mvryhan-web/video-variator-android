@@ -540,7 +540,7 @@ async function prepareReferenceUpload(source){
   throw Error(say('Could not make this image small enough. Please choose a different photo.','Не удалось уменьшить фотографию до 1 МБ. Выберите другую.'));
  }finally{bitmap.close();}
 }
-async function acceptFiles(files,{append=false}={}){
+async function acceptFiles(files,{append=false,shouldAccept=()=>true}={}){
  if(busy||cropApplying)return false;
  let accepted=false;
  try{
@@ -557,6 +557,9 @@ async function acceptFiles(files,{append=false}={}){
    const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file);});
    next.push({file,mimeType:file.type,data});
   }
+  // Only History editing supplies a session guard. All other reference inputs
+  // preserve their established behavior while old-account async loads fail closed.
+  if(!shouldAccept())throw Error('HISTORY_ACCOUNT_CHANGED');
   refs=next;$('consent').checked=false;accepted=true;
   $('status').textContent=optimizedCount?say(optimizedCount+' large photo(s) optimized locally to fit the 1 MB reference limit. Original files were unchanged.','Больших фотографий уменьшено: '+optimizedCount+'. Подготовка выполнена на устройстве; оригиналы не изменены.'):say('Reference photos are ready. Generate will start only after your approval.','Фотографии готовы. Генерация начнётся только после вашего подтверждения.');
  }catch(e){$('status').textContent=errorText(e);}
@@ -689,7 +692,7 @@ async function editHistoryImage(item){
   const response=await api('/api/studio/jobs/'+encodeURIComponent(item.id)+'/media');
   const savedImage=await response.blob();
   if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
-  await useResultAsImageReference(savedImage,{suggestedPrompt:item.prompt||''});
+  await useResultAsImageReference(savedImage,{suggestedPrompt:item.prompt||'',historyAccountToken:accountToken});
  }catch(e){
   $('status').textContent=['IMAGE_RESULT_REQUIRED','IMAGE_PREPARE_FAILED','IMAGE_REFERENCE_PREPARE_FAILED','IMAGE_REFERENCE_UNSUPPORTED'].includes(e.message)?
    say('Unable to prepare this saved image as a reference. Your existing draft was kept.','Не удалось подготовить сохранённое изображение. Ваш текущий черновик сохранён.'):errorText(e);
@@ -990,8 +993,12 @@ $('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)ret
  }finally{bitmap.close();}
 }
 // Shared History and recent-result editing path. Conversion is local; no paid provider action.
-async function useResultAsImageReference(result,{suggestedPrompt=''}={}){
+async function useResultAsImageReference(result,{suggestedPrompt='',historyAccountToken=null}={}){
+ const historyStillOwned=()=>historyAccountToken===null||historySessionCurrent(historyAccountToken);
+ if(!historyStillOwned()){clearHistoryForAccountChange();return false;}
  const file=await imageResultReference(result);
+ // Image decoding and resizing can finish after a cross-account token change.
+ if(!historyStillOwned()){clearHistoryForAccountChange();return false;}
  // Release the local preparation lock before using existing Studio draft controls.
  busy=false;
  if(kind!=='image')select('image',{remember:true});
@@ -1001,9 +1008,14 @@ async function useResultAsImageReference(result,{suggestedPrompt=''}={}){
   $('status').textContent=say('Your existing references are unchanged.','Ваши фотографии оставлены без изменений.');
   return false;
  }
+ if(!historyStillOwned()){clearHistoryForAccountChange();return false;}
  const append=refs.length>0&&refs.length<maxRefs;
  const hadPrompt=!!$('prompt').value.trim();
- if(!await acceptFiles([file],{append}))throw Error('IMAGE_REFERENCE_PREPARE_FAILED');
+ if(!await acceptFiles([file],{append,shouldAccept:historyStillOwned})){
+  if(!historyStillOwned()){clearHistoryForAccountChange();return false;}
+  throw Error('IMAGE_REFERENCE_PREPARE_FAILED');
+ }
+ if(!historyStillOwned()){clearHistoryForAccountChange();return false;}
  if(!hadPrompt&&suggestedPrompt)$('prompt').value=String(suggestedPrompt).slice(0,2000);
  $('consent').checked=false;
  setHistory(false);$('prompt').focus();availability();
