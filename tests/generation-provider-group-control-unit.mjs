@@ -64,6 +64,47 @@ test('BASE #9: owner cannot override a model lacking configured provider credent
  assert.equal(applyModelControl(base,{enabledOverride:true,maintenance:false,priority:1}).enabled,false);
 });
 
+test('BASE #9: concurrent owner model edits preserve fields absent from each patch',async()=>{
+ const pool=mockPool();
+ const model={...googleVideo[0],priority:17};
+ const edits=[
+  [{enabled:false},[true,false,false,false,false]],
+  [{markupBps:22500},[false,false,true,false,false]],
+  [{priority:4,maintenance:true},[false,true,false,false,true]],
+  [{internalCostMicros:12000},[false,false,false,true,false]]
+ ];
+ for(const [patch,flags] of edits){
+  await updateModelControl(pool,{modelId:model.id,userId:'owner-user',patch,catalog:[model]});
+  const writes=pool.calls.filter(x=>x.sql.startsWith('INSERT INTO vv_ai_model_control'));
+  const {sql,args}=writes.at(-1);
+  // Per-field CASE predicates are evaluated by PostgreSQL ON CONFLICT while
+  // holding the row lock: a racing group edit cannot reset omitted settings.
+  for(const [column,parameter] of [
+   ['enabled_override',8],['priority',9],['markup_bps',10],
+   ['internal_cost_micros',11],['maintenance',12]
+  ])assert.ok(sql.includes(column+'=CASE WHEN ,async()=>{
+ const pool=mockPool();
+ const choice={...googleVideo[0],priority:17};
+ await updateModelControl(pool,{modelId:choice.id,userId:'owner-user',patch:{enabled:false},catalog:[choice]});
+ const insert=pool.calls.find(x=>x.sql.startsWith('INSERT INTO vv_ai_model_control'));
+ assert.ok(insert);
+ assert.equal(insert.args[0],choice.id);
+ assert.equal(insert.args[1],false);
+ assert.equal(insert.args[2],17);
+});
++parameter+'::boolean THEN EXCLUDED.'+column+' ELSE vv_ai_model_control.'+column+' END'));
+  assert.deepEqual(args.slice(7),flags);
+  assert.equal(args[2],patch.priority??17); // correct default for first INSERT
+ }
+});
+
+test('BASE #9: null priority fails as a client validation error before database',async()=>{
+ const pool=mockPool();
+ await assert.rejects(()=>updateModelControl(pool,{modelId:googleVideo[0].id,userId:'owner-user',
+  patch:{priority:null},catalog:googleVideo}),/INVALID_MODEL_CONTROL/);
+ assert.equal(pool.calls.some(x=>x.sql.startsWith('INSERT INTO vv_ai_model_control')),false);
+});
+
 test('BASE #9: first admin toggle preserves configured default routing priority',async()=>{
  const pool=mockPool();
  const choice={...googleVideo[0],priority:17};
