@@ -810,6 +810,35 @@ for(const endPreview of ['leave History','cross-tab logout']){
  });
 }
 
+test('BASE 24: no streaming body refuses unbounded preview but leaves owner Download available',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-streamless-owner'));
+ await page.addInitScript(()=>{
+  const original=window.fetch.bind(window);
+  window.__historyStreamlessBlobCalled=false;
+  window.fetch=(input,options)=>{
+   if(!String(input).includes('/api/studio/jobs/history-streamless-video/media'))return original(input,options);
+   return Promise.resolve({
+    headers:new Headers({'content-type':'video/mp4'}),
+    body:null,
+    blob:async()=>{window.__historyStreamlessBlobCalled=true;throw Error('EAGER_BLOB_MUST_NOT_BE_CALLED');}
+   });
+  };
+ });
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/studio/jobs?filter=*',r=>r.fulfill({json:{items:[
+  {id:'history-streamless-video',kind:'video',status:'ready',prompt:'SAVED VIDEO REQUIRES STREAM',
+   createdAt:'2026-10-17T08:00:00Z'}
+ ]}}));
+ let paid=0;page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')paid++;});
+ await page.goto('/generate-studio.html?studio=video&view=history');
+ await page.getByRole('button',{name:'Preview media'}).click();
+ await expect(page.locator('#historyList')).toContainText('Preview is unavailable');
+ await expect(page.locator('.history-card').getByRole('button',{name:'Download'})).toBeEnabled();
+ await expect(page.locator('.history-inline-media video')).toHaveCount(0);
+ expect(await page.evaluate(()=>window.__historyStreamlessBlobCalled)).toBe(false);
+ expect(paid).toBe(0);
+});
+
 for(const streamingCase of ['missing Content-Length exceeds 128 MiB','account changes midstream']){
  test('BASE 24: saved media stream '+streamingCase+' fails closed without a paid POST',async({page})=>{
   await page.addInitScript(()=>localStorage.setItem('vv_token','stream-history-account-A'));
