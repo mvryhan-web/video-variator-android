@@ -11,7 +11,7 @@ let kind=requested==='image'?'image':requested==='audio'?'music':'video';
 let config={enabled:false,models:[]},catalog=MODEL_CATALOG.map(m=>({...m,enabled:false}));
 let refs=[],modelId=MODELS[kind].id,url,blob,job,busy=false,generation=0,historyView=false,historyFilter='all';
 let estimateTimer=null,estimateSignature='';
-let historyThumbUrls=[],historyMediaUrl=null,historyMediaPlayer=null,historyMediaButton=null,historyMediaEpoch=0,historyMediaAbort=null;
+let historyThumbUrls=[],historyThumbAbort=null,historyMediaUrl=null,historyMediaPlayer=null,historyMediaButton=null,historyMediaEpoch=0,historyMediaAbort=null;
 const drafts={};
 let activeVideoWatchId=null; // Current browser polling only; the provider job is server-owned.
 let historyLoadEpoch=0; // Latest History filter/visit wins over delayed earlier responses.
@@ -580,10 +580,16 @@ $('references').onchange=()=>void acceptFiles(Array.from($('references').files),
 $('clearRefs').onclick=()=>{if(busy)return;refs=[];$('consent').checked=false;renderRefs();availability();};document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>select(b.dataset.kind));$('prompt').oninput=()=>{$('consent').checked=false;availability();};$('consent').onchange=availability;$('ratio').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageResolution').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageOutputFormat').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageQuantity').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('videoResolution').onchange=()=>{$('consent').checked=false;renderVideoSettings();updateRatioSelection();availability();};$('videoDuration').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('videoInputMode').onchange=()=>{$('consent').checked=false;availability();};
 $('musicMode').onchange=()=>{$('consent').checked=false;modelId='';renderModel();};
 $('modelButton').onclick=()=>{renderModels();$('modelDialog').showModal();};$('settingsButton').onclick=()=>$('settingsDialog').showModal();document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
-function clearHistoryThumbs(){for(const u of historyThumbUrls)URL.revokeObjectURL(u);historyThumbUrls=[];}
+function clearHistoryThumbs(){
+ if(historyThumbAbort){historyThumbAbort.abort();historyThumbAbort=null;}
+ for(const u of historyThumbUrls)URL.revokeObjectURL(u);
+ historyThumbUrls=[];
+}
 async function loadHistoryImageThumbnail(item,preview,epoch){
+ if(epoch!==historyLoadEpoch||!historyView||!historySessionCurrent(historyBoundToken)||!preview.isConnected)return;
  try{
-  const response=await api(`/api/studio/jobs/${encodeURIComponent(item.id)}/media`),b=await response.blob();
+  const controller=historyThumbAbort||(historyThumbAbort=new AbortController());
+  const response=await api(`/api/studio/jobs/${encodeURIComponent(item.id)}/media`,{signal:controller.signal}),b=await response.blob();
    if(!historySessionCurrent(historyBoundToken)){clearHistoryForAccountChange();return;}
    if(epoch!==historyLoadEpoch||!historyView||!preview.isConnected||!b.type.startsWith('image/'))return;
   const u=URL.createObjectURL(b);historyThumbUrls.push(u);const img=document.createElement('img');img.className='history-thumb';img.src=u;img.alt=say('Generated image preview','Предпросмотр созданного изображения');img.loading='lazy';preview.replaceChildren(img);
