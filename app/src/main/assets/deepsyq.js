@@ -309,7 +309,10 @@ function protectRecentCreationsAccount(){
 }
 for(const eventName of ['click','keydown','focusin'])
  document.addEventListener(eventName,event=>{
-  if(protectRecentCreationsAccount()&&event.target?.closest?.('#recentCreationsGrid a')){
+  // Remember origin BEFORE clearing: removing the card detaches its parent
+  // and closest('#recentCreationsGrid a') could then no longer find the link.
+  const fromRecentCard=!!event.target?.closest?.('#recentCreationsGrid a');
+  if(protectRecentCreationsAccount()&&fromRecentCard){
    event.preventDefault();event.stopImmediatePropagation();
   }
  },true);
