@@ -1,5 +1,11 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #5 Product Video logo-reference handoff claim (2026-10-17)
+
+- **IN PROGRESS / B-owned Video Studio consumer only.** Explicit Agent C handoff Issue #73: current Product Video source='product-video' handoff appends optional logo to product photos, but existing Video Studio and provider model role catalog treat all images as visual product/scene references; no verified separate advertising logo overlay role. Original BASE #5 + #20 preserve user-supplied product appearance. C #196 owns originating Product Video prompt/files; B owns Studio incoming reference-role safety. Do not edit C-owned code.
+- Claim goal: default-deny applying a Product Video handoff containing an unsupported separate logo or ambiguous role, before any reference upload/Generate; provide clear user guidance, no hidden logo-as-product transformation, zero provider calls. Create focused pure no-fee helper + Node/browser regressions and scoped PR to `deepsyq-platform`. Retain separate existing B #186 Video History and other A/D overlaps. No main or production.
+
+
 ## Agent C — BASE integration completed 2026-10-17 (three narrow PRs)
 
 - **BASE #28 / Tools:** PR [#151](https://github.com/mvryhan-web/video-variator-android/pull/151) local transparent PNG flat-color background eraser MERGED to deepsyq-platform via squash `d8733615cb88cea1eaaa756c30d16220ef12e296`. Exact merged PR head `bd08b5f01592d95be1474747dd697eb9160eecf5`; four-browser/unit GitHub CI [39014596525](https://github.com/mvryhan-web/video-variator-android/actions/runs/39014596525) SUCCESS. No provider/paid job, no main/production. Entire #28 remains PARTIAL due other tools and real device/live acceptance.
