@@ -607,6 +607,51 @@ test('BASE 24: a changed account cannot confirm deletion of a previous account r
 });
 
 
+for(const deleteStatus of [200,503]){
+ test('BASE 24: delayed History Delete '+deleteStatus+' after silent account change cannot alter next session',async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('vv_token','delayed-delete-account-A'));
+  await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+  let reads=0,deleted=0,paidPosts=0;
+  page.on('request',request=>{
+   if(request.method()==='POST'&&new URL(request.url()).pathname==='/api/studio/jobs')paidPosts++;
+  });
+  await page.route('**/api/studio/jobs?filter=*',route=>{
+   reads++;
+   const own=route.request().headers().authorization==='Bearer delayed-delete-account-A';
+   return route.fulfill({json:{items:own?
+    [{id:'old-delayed-delete',kind:'video',status:'failed',prompt:'PRIVATE A DELAYED DELETE',createdAt:'2026-10-17T08:00:00Z'}]:
+    [{id:'new-owned-save',kind:'video',status:'failed',prompt:'B INDEPENDENT SAVED RESULT',createdAt:'2026-10-17T09:00:00Z'}]}});
+  });
+  let deleteArrived,releaseDelete,deleteResponded;
+  const started=new Promise(resolve=>deleteArrived=resolve);
+  const held=new Promise(resolve=>releaseDelete=resolve);
+  const finished=new Promise(resolve=>deleteResponded=resolve);
+  await page.route('**/api/studio/jobs/old-delayed-delete',async route=>{
+   if(route.request().method()!=='DELETE')return route.fulfill({status:405});
+   deleted++;deleteArrived();await held;
+   try{await route.fulfill(deleteStatus===200?{json:{ok:true}}:{status:503,json:{error:'STUDIO_STORAGE_UNAVAILABLE'}});}catch(_){}
+   deleteResponded();
+  });
+  await page.goto('/generate-studio.html?studio=video&view=history');
+  await expect(page.locator('.history-card')).toContainText('PRIVATE A DELAYED DELETE');
+  page.once('dialog',dialog=>dialog.accept());
+  await page.getByRole('button',{name:'Delete'}).click();
+  await started;
+  // A real silent token switch in the same tab emits no native storage event.
+  await page.evaluate(()=>localStorage.setItem('vv_token','delayed-delete-account-B'));
+  releaseDelete();await finished;
+  await expect(page.locator('#historyList')).toContainText('Account changed');
+  await expect(page.locator('#historyList')).not.toContainText('PRIVATE A DELAYED DELETE');
+  await expect(page.locator('#status')).not.toContainText('Result deleted.');
+  expect(deleted).toBe(1);
+  expect(reads).toBe(1); // A's delayed response must not silently fetch B's History.
+  await page.locator('[data-history-filter=video]').click();
+  await expect(page.locator('.history-card')).toContainText('B INDEPENDENT SAVED RESULT');
+  await expect(page.locator('.history-card')).not.toContainText('PRIVATE A');
+  expect(paidPosts).toBe(0);
+ });
+}
+
 test('BASE 24: 51 saved results remain accessible in user-owned History without a second paid job',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vv_token','fixture-history-owner'));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
