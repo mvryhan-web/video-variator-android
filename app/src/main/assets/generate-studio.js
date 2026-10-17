@@ -625,7 +625,8 @@ async function previewHistoryMedia(item,holder,button){
   holder.replaceChildren(message);
  }
 }
-function historyState(status,jobKind){
+function historyState(status,jobKind,error){
+ if(jobKind==='video'&&status==='processing'&&error==='STATUS_UNKNOWN_NO_AUTOMATIC_RETRY')return say('Status uncertain · review needed','Статус неизвестен · нужна проверка');
  if(jobKind==='video')return ({queued:say('Queued','В очереди'),processing:say('Running','Выполняется'),finalizing:say('Running','Выполняется'),ready:say('Succeeded','Успешно'),failed:say('Failed','Ошибка'),cancelled:say('Cancelled','Отменено')})[status]||status;
  return status==='ready'?say('Ready','Готово'):status==='queued'?say('Queued','В очереди'):status==='processing'?say('Processing','В работе'):status==='finalizing'?say('Finalizing','Завершаем'):status==='failed'?say('Failed','Ошибка'):status;
 }
@@ -710,7 +711,7 @@ async function loadHistory(){
    const preview=document.createElement('div');preview.className='history-preview';preview.dataset.kind=item.kind;preview.textContent=item.kind==='image'?'✧':item.kind==='video'?'▷':'♫';preview.setAttribute('aria-hidden','true');
    const head=document.createElement('div');head.className='history-card-head';
    const title=document.createElement('strong');title.textContent=(item.kind==='music'?say('Audio','Аудио'):item.kind==='image'?say('Image','Изображение'):say('Video','Видео'))+(item.model?' · '+item.model:'');
-   const state=document.createElement('span');state.className='history-status';state.dataset.status=item.status;state.textContent=historyState(item.status,item.kind);if(item.kind==='video'&&item.status==='finalizing')state.title=say('The provider result is being stored and credits are being settled. This is not completed yet.','Результат сохраняется и рассчитываются кредиты. Задача ещё не завершена.');head.append(title,state);
+   const state=document.createElement('span');state.className='history-status';state.dataset.status=item.status;state.textContent=historyState(item.status,item.kind,item.error);if(item.kind==='video'&&item.status==='finalizing')state.title=say('The provider result is being stored and credits are being settled. This is not completed yet.','Результат сохраняется и рассчитываются кредиты. Задача ещё не завершена.');if(item.kind==='video'&&item.status==='processing'&&item.error==='STATUS_UNKNOWN_NO_AUTOMATIC_RETRY')state.title=say('The provider may have accepted this paid task. No new generation or automatic refund is allowed until the original operation is reviewed.','Провайдер мог принять платную задачу. До проверки исходной операции новая генерация и автоматический возврат запрещены.');head.append(title,state);
    const meta=document.createElement('small');meta.textContent=[historyDate(item.createdAt),item.provider,historyCredits(item)].filter(Boolean).join(' · ');
    const prompt=document.createElement('p');prompt.className='history-prompt';prompt.textContent=item.prompt||'';
    const actions=document.createElement('div');actions.className='history-actions';
