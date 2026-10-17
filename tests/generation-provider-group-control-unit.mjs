@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateProviderGroupPatch,updateProviderGroupControls,updateModelControl,updateModelControlAudited,applyModelControl} from '../server/generation-model-control.js';
+import {validateProviderGroupPatch,updateProviderGroupControls,updateModelControl,updateModelControlAudited,applyModelControl,publicModelCatalog} from '../server/generation-model-control.js';
 import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 
 function mockPool({failAtModelInsert=0,failAudit=false}={}){
@@ -147,4 +147,20 @@ test('BASE #9: first admin toggle preserves configured default routing priority'
  assert.equal(insert.args[0],choice.id);
  assert.equal(insert.args[1],false);
  assert.equal(insert.args[2],17);
+});
+
+
+test('BASE #9: public Studio catalog hides owner-only provider costs while preserving route controls',()=>{
+ const ownerCatalog=[{id:'safe-video',kind:'video',provider:'Google',enabled:true,priority:6,
+  markupBps:17500,internalCostMicros:120000,
+  control:{enabledOverride:true,priority:6,maintenance:false,updatedAt:'2026-10-17',markupBps:17500,internalCostMicros:120000}}];
+ const expectedOwner=structuredClone(ownerCatalog);
+ const publicCatalog=publicModelCatalog(ownerCatalog);
+ assert.deepEqual(publicCatalog,[{id:'safe-video',kind:'video',provider:'Google',enabled:true,priority:6,
+  control:{enabledOverride:true,priority:6,maintenance:false,updatedAt:'2026-10-17'}}]);
+ assert.deepEqual(ownerCatalog,expectedOwner,'owner-only control must remain intact for admin views');
+ assert.equal(JSON.stringify(publicCatalog).includes('17500'),false);
+ assert.equal(JSON.stringify(publicCatalog).includes('120000'),false);
+ assert.deepEqual(publicModelCatalog([{id:'uncontrolled',kind:'image',enabled:false}]),
+  [{id:'uncontrolled',kind:'image',enabled:false}]);
 });
