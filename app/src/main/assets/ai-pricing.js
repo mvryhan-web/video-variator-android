@@ -1,9 +1,10 @@
-import {validPlanPrice,validToolLimit,validLifetimeCurrency,validAiPack,validWalletAmount,aiCheckoutMode,checkoutErrorMessage,approvedSubscriptionCredits} from './ai-pricing-display.js';
+import {validPlanPrice,validToolLimit,validLifetimeCurrency,validAiPack,validWalletAmount,aiCheckoutMode,checkoutErrorMessage,approvedSubscriptionCredits,approvedGenerationEstimates} from './ai-pricing-display.js';
 const $=id=>document.getElementById(id);
 const token=()=>localStorage.getItem('vv_token');
 async function json(path,options={}){const r=await fetch(path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(token()?{Authorization:'Bearer '+token()}:{})}}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'REQUEST_FAILED');return d;}
 function money(amount,currency='USD'){return new Intl.NumberFormat('en-US',{style:'currency',currency,maximumFractionDigits:Number.isInteger(amount)?0:2}).format(amount);}
 function minor(amount,currency){return new Intl.NumberFormat('en-US',{style:'currency',currency:String(currency||'usd').toUpperCase()}).format(Number(amount||0)/100);}
+function generationEstimateCopy(config,credits){const items=approvedGenerationEstimates(config,credits);if(!items.length)return '';return ' Approximate if spent entirely on one type at the current base rate: '+items.map(x=>x.count.toLocaleString()+' '+(x.kind==='image'?'image':'video')+' generation'+(x.count===1?'':'s')).join(' or ')+'. Model, quality, duration and output quantity can change credit usage.';}
 function card(title,price,description,buttonText,onClick,{disabled=false,className=''}={}){const a=document.createElement('article');a.className='price-card '+className;const h=document.createElement('h3');h.textContent=title;const p=document.createElement('div');p.className='price';p.textContent=price;const d=document.createElement('p');d.textContent=description;const b=document.createElement('button');b.type='button';b.textContent=buttonText;b.disabled=disabled;b.onclick=onClick||(()=>{});a.append(h,p,d,b);return a;}
 async function loadToolPlans(){
  try{
@@ -16,7 +17,7 @@ async function loadToolPlans(){
      :limit.toLocaleString()+' existing video-tool credits per month.';
    const monthlyAiCredits=approvedSubscriptionCredits(subscriptionConfig,key);
    const description=toolDescription+(monthlyAiCredits===null?'':
-     ' + '+monthlyAiCredits.toLocaleString()+' AI-creation credits after each paid subscription invoice.');
+     ' + '+monthlyAiCredits.toLocaleString()+' AI-creation credits after each paid subscription invoice.'+generationEstimateCopy(subscriptionConfig,monthlyAiCredits));
    root.append(card(key[0].toUpperCase()+key.slice(1),
      price===null?'Price unavailable':money(price,'USD')+' / month',
      description,'View account',()=>location.assign('index.html#profile')));
@@ -65,7 +66,7 @@ async function loadAiPacks(){
   const mode=aiCheckoutMode(c);
   for(const p of valid){
    root.append(card(p.credits.toLocaleString()+' AI credits',
-     minor(p.amount,p.currency),'Prepaid AI-generation wallet credits.',
+     minor(p.amount,p.currency),'Prepaid AI-generation wallet credits.'+generationEstimateCopy(c,p.credits),
      mode==='live'?'Continue to Stripe':mode==='test'?'Open Stripe test checkout':'Not available yet',
      ()=>void checkout(p),{disabled:mode===null}));
   }
