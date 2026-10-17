@@ -410,8 +410,9 @@ test('BASE #28: Cancel during PDF merge save never publishes a late result, norm
  await page.locator('#utilityCancel').click();
  await expect(page.locator('#utilityStatus')).toContainText('Canceled');
  await expect.poll(()=>page.evaluate(()=>window.__base28PdfLate.saveCompleted)).toBe(1);
- await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
+ // Wait until the original async operation fully settles before asserting no late output.
  await expect(page.locator('#utilityRun')).toBeEnabled();
+ await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
  // A subsequent explicit user run clears the old cancellation flag.
  await page.locator('#utilityRun').click();
  await expect.poll(()=>page.evaluate(()=>window.__base28PdfLate.saveCompleted)).toBe(2);
