@@ -31,3 +31,20 @@ test('BASE #20: local prompt preview does not fake a generation when no referenc
  await expect(page.locator('#status')).toContainText('Add at least one product photo first');
  await expect(page).toHaveURL(/product-video\.html$/);
 });
+
+
+test('BASE #20: spoofed/malformed image replacement never displaces the actual uploaded SKU',async({page})=>{
+ let uploads=0;
+ page.on('request',r=>{if(r.method()==='POST')uploads++;});
+ await page.goto('/product-video.html');
+ const valid=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.locator('#photos').setInputFiles({name:'approved-sku.png',mimeType:'image/png',buffer:valid});
+ await expect(page.locator('#photoPreview')).toContainText('approved-sku.png');
+ const before=await page.locator('#promptPreview').inputValue();
+ await page.locator('#photos').setInputFiles({name:'spoofed-source.png',mimeType:'image/png',buffer:Buffer.from('this is not real PNG data')});
+ await expect(page.locator('#status')).toContainText('Your previous photos are preserved');
+ await expect(page.locator('#photoPreview')).toContainText('approved-sku.png');
+ await expect(page.locator('#photoPreview')).not.toContainText('spoofed-source');
+ await expect(page.locator('#promptPreview')).toHaveValue(before);
+ expect(uploads).toBe(0);
+});
