@@ -1,5 +1,14 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+
+## Agent 5 — 2026-10-17 P0 CI queue and safe migration coordination
+
+- **Real Actions backlog:** read-only GitHub API reported 1,103–1,128 workflows queued and 18–20 running at inspection; of 1,000 queued sampled, ~900 were on shared `deepsyq-platform` and 58 were full Deepsyq platform regression. These are historical queue snapshots; newer scheduling rules will not necessarily cancel unrelated old queued workflows.
+- **CI-only safe merges to integration BASE, not production:** [PR #146](https://github.com/mvryhan-web/video-variator-android/pull/146) squash `73afdecc658f22a8875c6498b47aaa79e9127c40` adds same-PR/ref full-browser concurrency cancellation (different agents' PRs not cancelled); [PR #201](https://github.com/mvryhan-web/video-variator-android/pull/201) squash `af8cfb7b9d3f1bbf048b05d3f4519049449d9a1d` skips full-browser **push** jobs for Markdown/docs-only changes while preserving mixed code+docs and runtime/test triggers. Both exact patches were checked as workflow-only additive changes; #146 old red browser functional CI not represented as fixed. No test command removed. Other workflow/backlog issues remain.
+- **Legacy PostgreSQL P0:** [draft PR #199](https://github.com/mvryhan-web/video-variator-android/pull/199) has four isolated SQL/source-test/disposable PG workflow files; two-parent reconciliation commit `8eb70a26a3689b8188d0e050cb2097d0791e6aac` preserved B/D integration BASE commits. SQL adds generated `provider_task_id` to existing tables before task index. Exact static contract 4/4 PASS; disposable PostgreSQL workflow queued (latest inspected PR run #39016977426), NOT marked PostgreSQL-tested or production-safe until D reviews.
+- **Financial P0 #182 remains OPEN:** mixed welcome/purchase `available` and owner unreserved provider path remain in reviewed BASE source. B [PR #198](https://github.com/mvryhan-web/video-variator-android/pull/198) UNWIRED deny-by-default provider contract; D's verified signed settled-purchase ledger + atomic purchased-only reserved dispatch claim STILL REQUIRED before B can wire. Precise D/B handoffs in #75/#73. No fee-bearing API tests or Live Stripe, Render, database migration or `main` changes by Agent 5.
+
+
 ## Agent C — 2026-10-17 follow-on CHECKPOINT (BASE #20/#28/#30/#35/#38)
 
 - **BASE #20:** Etsy photo-only fidelity draft [PR #196](https://github.com/mvryhan-web/video-variator-android/pull/196): CI 39014269179 failed solely on mismatched test assertion for intended 3-reference clamp. Fixed focused test commit 6397d5c865fa1e09f943191e0de2d4cf1d831737. New exact-head CI 39016739612 QUEUED. No actual media, provider call or MP4.
