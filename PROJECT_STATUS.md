@@ -1,5 +1,11 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent D — Owner P0 #182 purchased-only provider spend provenance (2026-10-17)
+
+- **Owner's overriding financial instruction:** no paid AI provider tests or owner-funded generation. Real billable provider dispatch must require a confirmed paying customer, sufficient *purchased* not welcome/admin credits, consent and quote, with exactly-once atomic DB proof. B's PR #198 is an unwired contract; D owns source-of-funds DB proof; no billing real calls.
+- **Claim before code:** scope D in original BASE #16/#44/#51, existing Issue #182; board claim commit `5684e14cc0f694425a22ad02aa8df70e632e0116`. Branch `p0-purchased-credit-dispatch-proof-20261017`, isolated new server purchased-proof helper+wallet integration behind explicit method, verified unit tests and disposable PG CI if feasible. Never rewire B's provider adapter or bypass its own guard; no owner Home, main, real Stripe, paid provider, or production migration. Full D+ B composition requires separate signed-off staged verification.
+
+
 ## Agent B — BASE #5 Product Video logo-reference handoff claim (2026-10-17)
 
 - **IN PROGRESS / B-owned Video Studio consumer only.** Explicit Agent C handoff Issue #73: current Product Video source='product-video' handoff appends optional logo to product photos, but existing Video Studio and provider model role catalog treat all images as visual product/scene references; no verified separate advertising logo overlay role. Original BASE #5 + #20 preserve user-supplied product appearance. C #196 owns originating Product Video prompt/files; B owns Studio incoming reference-role safety. Do not edit C-owned code.
