@@ -18,6 +18,7 @@ let historyLoadEpoch=0; // Latest History filter/visit wins over delayed earlier
 let historyNextOffset=0,historyHasMore=false,historyLoadingPage=false; // At most 50 owner-scoped rows per request.
 let historyBoundToken=null; // Ephemeral account guard; never persisted in DOM or storage.
 let historyOpenedResultToken=null,historyOpenedResultId=null; // Saved History Open only, never ordinary new generation.
+let historyPreparedDraftToken=null,historyPreparedDraftKinds=new Set(); // Only data copied from a saved History row.
 const historySessionCurrent=token=>!!token&&localStorage.getItem('vv_token')===token;
 function clearHistoryForAccountChange(){
  ++historyLoadEpoch;
@@ -33,6 +34,7 @@ function clearHistoryForAccountChange(){
  // Scrub any saved History result already opened in the main Studio player.
  // List actions and silent account changes must not leave old media visible.
  clearHistoryOpenedResultForAccountChange();
+ clearHistoryPreparedDraftForAccountChange();
 }
 
 const imageBatchQuantity=()=>kind==='image'&&config?.imageBatchEnabled?Number($('imageQuantity').value||1):1;
@@ -688,6 +690,7 @@ function prepareHistoryItem(item,{settings=false}={}){
  if(settings&&item.kind==='video'){if(item.settings?.referenceCount>0&&!refs.length)$('status').textContent=say('Previous video referenced photos that were not saved in this draft. Re-add them and choose the reference mode before generating.','В прежнем видео использовались фотографии, которые не сохранились в черновике. Добавьте их заново и выберите режим референсов перед генерацией.');if(currentModel()?.capabilities?.resolutions?.includes(item.settings?.videoResolution))$('videoResolution').value=item.settings.videoResolution;renderVideoSettings();if(currentModel()?.capabilities?.durations?.includes(item.settings?.videoDuration)&&[...$('videoDuration').options].some(o=>o.value===String(item.settings.videoDuration)))$('videoDuration').value=String(item.settings.videoDuration);updateRatioSelection();}
  if(settings&&item.kind==='video'&&currentModel()?.capabilities?.videoInputModes?.includes(item.settings?.videoInputMode)&&[...$('videoInputMode').options].some(o=>o.value===item.settings.videoInputMode))$('videoInputMode').value=item.settings.videoInputMode;
  if(settings&&item.kind==='music'&&['song','instrumental'].includes(item.settings?.musicMode)){$('musicMode').value=item.settings.musicMode;renderModel();}
+ markHistoryPreparedDraft(accountToken);
  $('consent').checked=false;availability();setHistory(false);$('prompt').focus();
 }
 async function editHistoryImage(item){
@@ -780,6 +783,7 @@ async function openHistoryJob(id){
   activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
 }
 async function loadHistory({append=false}={}){
+ clearHistoryPreparedDraftForAccountChange();
  // A filter change is outside the History-card click guard. Never carry a
  // previously opened saved result across an in-tab user switch.
  clearHistoryOpenedResultForAccountChange();
@@ -876,10 +880,12 @@ window.addEventListener('storage',event=>{
  if(event.key!=='vv_token')return;
  if(event.newValue!==historyBoundToken)clearHistoryForAccountChange();
  clearHistoryOpenedResultForAccountChange();
+ clearHistoryPreparedDraftForAccountChange();
 });
 window.addEventListener('focus',()=>{
  if(historyView&&historyBoundToken&&!historySessionCurrent(historyBoundToken))clearHistoryForAccountChange();
  clearHistoryOpenedResultForAccountChange();
+ clearHistoryPreparedDraftForAccountChange();
 });
  // Account rotation in this SAME tab emits no native storage event. Capture
  // clicks before old History-card callbacks can reuse a prior user's prompt.
@@ -921,6 +927,31 @@ $('actions').addEventListener('click',event=>{
 // original authenticated History owner, not the next signed-in user.
 for(const name of ['click','play','keydown'])$('media').addEventListener(name,event=>{
  if(clearHistoryOpenedResultForAccountChange()){event.preventDefault();event.stopImmediatePropagation();}
+},true);
+function markHistoryPreparedDraft(token){
+ // Record provenance for History Reuse/Regenerate and saved-image Edit only.
+ // New ordinary image/video/audio drafts are not marked or scrubbed here.
+ if(!historySessionCurrent(token)){clearHistoryForAccountChange();return false;}
+ if(historyPreparedDraftToken&&historyPreparedDraftToken!==token)clearHistoryPreparedDraftForAccountChange();
+ historyPreparedDraftToken=token;historyPreparedDraftKinds.add(kind);
+ return true;
+}
+function clearHistoryPreparedDraftForAccountChange(){
+ const token=historyPreparedDraftToken;
+ if(!token||historySessionCurrent(token))return false;
+ const currentWasHistory=historyPreparedDraftKinds.has(kind);
+ for(const k of historyPreparedDraftKinds)delete drafts[k];
+ historyPreparedDraftKinds.clear();historyPreparedDraftToken=null;
+ if(currentWasHistory){
+  refs=[];$('prompt').value='';$('consent').checked=false;
+  renderRefs();availability();
+ }
+ return true;
+}
+// Same-tab token rotation emits no storage event. Intercept editing and
+// submission before private History-sourced prompts/photos can be reused.
+for(const eventName of ['click','keydown','focusin'])document.addEventListener(eventName,()=>{
+ clearHistoryPreparedDraftForAccountChange();
 },true);
 async function watch(id,epoch,{historyAccountToken=null}={}){
  // A pending old-account History Open may complete after logout or account switch.
@@ -1076,6 +1107,7 @@ async function useResultAsImageReference(result,{suggestedPrompt='',historyAccou
  }
  if(!historyStillOwned()){clearHistoryForAccountChange();return false;}
  if(!hadPrompt&&suggestedPrompt)$('prompt').value=String(suggestedPrompt).slice(0,2000);
+ if(historyAccountToken!==null&&!markHistoryPreparedDraft(historyAccountToken))return false;
  $('consent').checked=false;
  setHistory(false);$('prompt').focus();availability();
  $('status').textContent=say('Image ready as a reference. Describe your changes and review the model before generating. No AI request was started.','Изображение готово как референс. Опишите изменения и проверьте модель. AI-генерация не запускалась.');
