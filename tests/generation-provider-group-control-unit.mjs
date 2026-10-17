@@ -5,14 +5,29 @@ import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 
 function mockPool({failAtModelInsert=0,failAudit=false}={}){
  const calls=[];
- let inserts=0;
+ let inserts=0,rows=new Map(),beforeTransaction=null;
+ const clone=items=>new Map([...items].map(([id,row])=>[id,{...row}]));
  const query=async(sql,args=[])=>{
   calls.push({sql,args});
-  if(sql.startsWith('INSERT INTO vv_ai_model_control')&&++inserts===failAtModelInsert)throw Error('SIMULATED_DB_FAILURE');
+  if(sql==='BEGIN')beforeTransaction=clone(rows);
+  if(sql==='ROLLBACK'&&beforeTransaction){rows=beforeTransaction;beforeTransaction=null;}
+  if(sql==='COMMIT')beforeTransaction=null;
+  if(sql.startsWith('INSERT INTO vv_ai_model_control')){
+   if(++inserts===failAtModelInsert)throw Error('SIMULATED_DB_FAILURE');
+   const id=args[0];
+   const current=rows.get(id)||{model_id:id,enabled_override:args[1],priority:args[2],
+    markup_bps:args[3],internal_cost_micros:args[4],maintenance:args[5],updated_at:null};
+   if(rows.has(id))for(const [index,field] of [
+    'enabled_override','priority','markup_bps','internal_cost_micros','maintenance'
+   ].entries())if(args[7+index])current[field]=args[1+index];
+   rows.set(id,current);
+  }
   if(sql.startsWith('INSERT INTO vv_admin_audit')&&failAudit)throw Error('SIMULATED_AUDIT_FAILURE');
+  if(sql.startsWith('SELECT model_id,enabled_override')&&sql.includes('WHERE model_id=$1'))
+   return {rows:rows.has(args[0])?[{...rows.get(args[0])}]:[]};
   return {rows:[]};
  };
- return {calls,query,connect:async()=>({query,release:()=>{calls.push({sql:'RELEASE'});}})};
+ return {calls,query,rows:()=>clone(rows),connect:async()=>({query,release:()=>{calls.push({sql:'RELEASE'});}})};
 }
 const googleVideo=MODEL_CATALOG.filter(m=>m.provider==='Google'&&m.kind==='video');
 test('BASE #9: provider group patch permits only enable/maintenance/priority',()=>{
