@@ -26,7 +26,28 @@ async function nativeSave(file,share){const bridge=window.AndroidBridge;if(!brid
 async function save(file){if(await nativeSave(file,false))return;const a=document.createElement('a'),u=URL.createObjectURL(file);urls.push(u);a.href=u;a.download=file.name;document.body.append(a);a.click();a.remove();}
 async function share(file){if(window.AndroidBridge&&await nativeSave(file,true))return;if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'Video Uniquifier'});return;}await save(file);status(t('unsupported'));}
 function result(file,source,note='',target=$('outputs')){const row=document.createElement('article'),p=document.createElement('p');p.textContent=`${file.name} · ${(source.size/1048576).toFixed(2)} MB → ${(file.size/1048576).toFixed(2)} MB ${note}`;row.append(p);const media=document.createElement(file.type.startsWith('image/')?'img':file.type.startsWith('audio/')?'audio':'video');const u=URL.createObjectURL(file);urls.push(u);media.src=u;if(media.tagName==='IMG')media.alt=file.name;else media.controls=true;row.append(media);const actions=document.createElement('div');actions.className='actions';for(const [key,fn]of [['download',save],['share',share]]){const b=document.createElement('button');b.textContent=t(key);b.onclick=async()=>{b.disabled=true;try{await fn(file);}catch(e){if(e.name!=='AbortError')status(t('failed'));}finally{b.disabled=false;}};actions.append(b);}const del=document.createElement('button');del.textContent=({ru:'Удалить',fr:'Supprimer',uk:'Видалити'})[lang]||'Delete';del.onclick=()=>{if(media.pause)media.pause();media.removeAttribute('src');URL.revokeObjectURL(u);row.remove();};actions.append(del);row.append(actions);target.append(row);}
-async function compressPhoto(file){const u=URL.createObjectURL(file),img=new Image();try{await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=u;});if(img.naturalWidth*img.naturalHeight>40000000)throw Error('Image too large');const c=document.createElement('canvas'),scale=Math.min(1,2560/Math.max(img.naturalWidth,img.naturalHeight));c.width=Math.max(1,Math.round(img.naturalWidth*scale));c.height=Math.max(1,Math.round(img.naturalHeight*scale));const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',Number($('quality').value)/100));c.width=c.height=1;if(!blob)throw Error('Encode failed');return blob.size<file.size?new File([blob],file.name.replace(/\.[^.]+$/,'')+'-compressed.jpg',{type:'image/jpeg'}):file;}finally{URL.revokeObjectURL(u);}}
+async function compressPhoto(file){
+ const u=URL.createObjectURL(file),img=new Image();
+ let canvas=null;
+ try{
+  await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=u;});
+  if(img.naturalWidth*img.naturalHeight>40000000)throw Error('Image too large');
+  const scale=Math.min(1,2560/Math.max(img.naturalWidth,img.naturalHeight));
+  canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+  canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+  const ctx=canvas.getContext('2d');if(!ctx)throw Error('Image canvas unavailable');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  const blob=await new Promise(r=>canvas.toBlob(r,'image/jpeg',Number($('quality').value)/100));
+  if(!blob)throw Error('Encode failed');
+  return blob.size<file.size?new File([blob],file.name.replace(/\.[^.]+$/,'')+'-compressed.jpg',{type:'image/jpeg'}):file;
+ }finally{
+  // Local photos should not retain decoded pixels if drawing or encoding fails.
+  if(canvas)canvas.width=canvas.height=1;
+  URL.revokeObjectURL(u);
+ }
+}
 async function loadEngine(){status(t('loading'));const base=location.protocol==='file:'?(window.AndroidBridge?.getApiBase?.()||'https://video-variator-android.onrender.com'):location.origin;if(!window.FFmpegWASM?.FFmpeg)await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=base+'/vendor/ffmpeg/ffmpeg.js';script.onload=resolve;script.onerror=reject;document.head.append(script);});if(canceled)throw Error('Canceled');engine=new window.FFmpegWASM.FFmpeg();const response=await fetch(new URL('ffmpeg-worker.js',location.href));if(!response.ok)throw Error('Worker unavailable');workerURL=URL.createObjectURL(await response.blob());await engine.load({classWorkerURL:workerURL,coreURL:base+'/vendor/ffmpeg/ffmpeg-core.js',wasmURL:base+'/vendor/ffmpeg/ffmpeg-core.wasm'});engine.on('progress',({progress})=>{if(!canceled)status(t('processing')+' '+Math.round(Math.max(0,Math.min(1,progress))*100)+'%');});}
 async function creatorMedia(file,mode){
  const tool=window.VUCreatorTools,settings=tool.settings();
