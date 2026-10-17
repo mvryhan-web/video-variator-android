@@ -4,6 +4,7 @@ on:
     paths:
       - 'app/src/main/assets/free-tools.js'
       - 'app/src/main/assets/mobile-utility.js'
+      - 'app/src/main/assets/audio-studio.js'
       - 'app/src/main/assets/photo-collage.js'
       - 'tests/base28-entitled-photo-batch-zip.spec.mjs'
       - 'tests/base28-utilities-original-requirement.spec.mjs'
@@ -22,7 +23,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - run: node --check app/src/main/assets/free-tools.js && node --check app/src/main/assets/mobile-utility.js && node --check app/src/main/assets/photo-collage.js && node --check tests/base28-entitled-photo-batch-zip.spec.mjs && node --check tests/base28-utilities-original-requirement.spec.mjs
+      - run: node --check app/src/main/assets/free-tools.js && node --check app/src/main/assets/mobile-utility.js && node --check app/src/main/assets/audio-studio.js && node --check app/src/main/assets/photo-collage.js && node --check tests/base28-entitled-photo-batch-zip.spec.mjs && node --check tests/base28-utilities-original-requirement.spec.mjs
       - run: npx playwright install --with-deps chromium webkit
       - name: Authorized photo batch local ZIP, denied access and free single photo
         run: npx playwright test tests/base28-entitled-photo-batch-zip.spec.mjs tests/base28-utilities-original-requirement.spec.mjs tests/photo-collage.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit
