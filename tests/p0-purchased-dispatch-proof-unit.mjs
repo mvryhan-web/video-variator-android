@@ -1,0 +1,76 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {claimPurchasedGeneration,purchasedFundingProof} from '../server/generation-purchased-proof.js';
+
+const env={AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_BILLING_MODE:'live',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true'};
+const options=()=>({env,userId:'paid_user',jobId:'job_live_a',credits:100,fingerprint:'sha256abc',modelId:'model_v',provider:'Google',wallet:{available:0,reserved:100,debt:0}});
+function db({paidCredits=200,otherSpent=80,sourceId='cs_live_paid1',held={},job={},inserted=true}={}){
+ const statements=[];
+ const query=async(sql,args)=>{
+  statements.push({sql,args});
+  if(sql.includes('FROM vv_ai_purchase p JOIN vv_ai_order o'))return {rows:[{paid_credits:String(paidCredits),source_id:sourceId}]};
+  if(sql.includes('FROM vv_ai_reservation WHERE user_id='))return {rows:[{used:String(otherSpent)}]};
+  if(sql.includes('FROM vv_ai_reservation')&&sql.includes('FOR UPDATE'))return {rows:held===null?[]:[{user_id:'paid_user',credits:100,fingerprint:'sha256abc',status:'held',...held}]};
+  if(sql.includes('FROM vv_generation_jobs')&&sql.includes('FOR UPDATE'))return {rows:job===null?[]:[{user_id:'paid_user',model:'model_v',provider:'Google',status:'processing',operation:null,deleted:false,request_fingerprint:'sha256abc',credits_reserved:100,...job}]};
+  if(sql.includes('INSERT INTO vv_ai_purchased_dispatch_claim'))return {rows:inserted?[{job_id:'job_live_a'}]:[]};
+  throw Error('UNEXPECTED_SQL');
+ };
+ return {query,statements};
+}
+
+test('P0 only the locked, verifiable, unrefunded live Stripe order can claim ONE dispatch',async()=>{
+ const c=db(),receipt=await claimPurchasedGeneration(c,options());
+ assert.equal(receipt.source,'settled_stripe_purchase');
+ assert.equal(receipt.dispatchClaimedExactlyOnce,true);
+ assert.equal(receipt.creditsReserved,100);
+ assert.equal(receipt.purchasedCreditsAvailableBeforeReserve,120);
+ assert.equal(receipt.purchaseId,'cs_live_paid1');
+ assert.equal(c.statements.length,5);
+ assert.match(c.statements[0].sql,/o\.snapshot->>'billingMode'='live'/);
+ assert.match(c.statements[0].sql,/p\.refunded_amount=0/);
+ assert.match(c.statements[1].sql,/status IN \('held','captured'\)/);
+ assert.match(c.statements[2].sql,/FOR UPDATE/);
+ assert.match(c.statements[3].sql,/FOR UPDATE/);
+ assert.match(c.statements[4].sql,/ON CONFLICT \(job_id\) DO NOTHING RETURNING job_id/);
+});
+
+test('P0 never spend on admin/bonus balance or a missing confirmed paid order',async()=>{
+ for(const changes of [{paidCredits:0,sourceId:null},{paidCredits:99},
+  {paidCredits:150,otherSpent:51},{sourceId:null},{paidCredits:100,otherSpent:1}]){
+  const c=db(changes);
+  await assert.rejects(()=>claimPurchasedGeneration(c,options()),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+  assert.ok(!c.statements.some(x=>x.sql.includes('INSERT INTO vv_ai_purchased_dispatch_claim')));
+ }
+});
+
+test('P0 no opt-in or non-live/test credentials ever allow a purchased dispatch claim',async()=>{
+ for(const changed of [
+  {AI_PURCHASED_ONLY_DISPATCH_ENABLED:'false'}, {AI_PURCHASED_ONLY_DISPATCH_ENABLED:undefined},
+  {AI_BILLING_MODE:'test'}, {AI_BILLING_MODE:undefined},
+  {AI_PUBLIC_GENERATION_ENABLED:'false'}, {AI_STUDIO_WALLET_ENABLED:'false'}
+ ]){
+  const c=db();
+  await assert.rejects(()=>claimPurchasedGeneration(c,{...options(),env:{...env,...changed}}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+  assert.equal(c.statements.length,0,'must stop before database proof or any provider call');
+ }
+});
+
+test('P0 job/request/reservation state must match prior to the irreversible claim',async()=>{
+ const cases=[{held:null},{held:{status:'captured'}},{held:{fingerprint:'other'}},
+  {job:null},{job:{status:'ready'}},{job:{deleted:true}},{job:{operation:'byteplus:already_started'}},
+  {job:{provider:'other'}},{job:{model:'other'}},{job:{request_fingerprint:'other'}},
+  {job:{credits_reserved:99}},{inserted:false}];
+ for(const changed of cases){
+  const c=db(changed);
+  await assert.rejects(()=>claimPurchasedGeneration(c,options()),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+ }
+});
+
+test('P0 funding invariant is exact integer conservative under paid/refunded/used mixtures',()=>{
+ for(let paid=0;paid<=40;paid++)for(let consumed=0;consumed<=40;consumed++)for(let reserve=1;reserve<=15;reserve++){
+  const valid=paid-consumed>=reserve;
+  assert.equal(purchasedFundingProof({paidCredits:paid,otherSpentCredits:consumed,requiredCredits:reserve}),valid);
+ }
+ for(const value of [-1,1.1,'oops',Number.MAX_SAFE_INTEGER+1])
+  assert.throws(()=>purchasedFundingProof({paidCredits:value,otherSpentCredits:0,requiredCredits:1}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+});
