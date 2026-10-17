@@ -1,7 +1,7 @@
 // Offline integrity and legacy-migration manifest checks; no production DB.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {existsSync,readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {AI_MIGRATION_FILES,aiMigrationStatus,migrationChecksum} from '../server/ai-migrations.js';
 
@@ -27,6 +27,20 @@ test('only a NEW append-only file repairs the legacy generated column and index'
   assert.match(sql,/a\.attgenerated <> 's' OR a\.atttypid <> 'text'::regtype/);
   assert.match(sql,/GENERATION_PROVIDER_TASK_COLUMN_CONFLICT/);
   assert.match(sql,/DO \$\$\s+BEGIN[\s\S]*END \$\$;/,'PostgreSQL procedural guard must use paired dollar quoting');
+});
+
+test('D purchased-only additive migration cannot disappear from merged manifest',()=>{
+  // D PR #204 owns this independent SQL. Its file may not exist until that
+  // PR is integrated. If it does exist, the merge must retain BOTH filenames.
+  const sibling='20261017-purchased-dispatch-claim.sql';
+  const siblingPath=new URL('../server/migrations/'+sibling,import.meta.url);
+  if(!existsSync(siblingPath))return; // unmerged D branch: no false failure
+  assert.ok(AI_MIGRATION_FILES.includes(sibling),
+    'D purchased-dispatch migration exists but was lost from AI_MIGRATION_FILES');
+  assert.ok(AI_MIGRATION_FILES.includes(newName),
+    'legacy provider-task migration must remain registered alongside D migration');
+  assert.ok(AI_MIGRATION_FILES.indexOf(newName)<AI_MIGRATION_FILES.indexOf(sibling),
+    'keep both 20261017 migrations in lexicographic order');
 });
 
 test('historical migration ledger checksum stays valid; new migration is pending',async()=>{
