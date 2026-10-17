@@ -1,5 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## C / #29 FINAL exact-head reconciliation and concurrent-writer protection (2026-10-17)
+
+- Existing **[DRAFT PR #226](https://github.com/mvryhan-web/video-variator-android/pull/226)** current last verified HEAD `15fea6001a259bfb549e20cfdbcb2d8891a043ca`, two scoped files. Another C session advanced same branch from `518588ad` to `f6a0c69` then `15fea600` while this reviewer was gathering evidence. **No new source commit was made by this session; do not clobber concurrent writer or force push.** Current public nav now gives truthful distinct **My Creations → existing Home #recentCreations**, **History → existing Studio ?view=history** plus Canvas→actual Home draft, Agent→Coming Soon and earlier complete account links. Newest small change relaxed an overly strict History URL equality assertion to validate `view=history` query parameter even when Studio normalizes the URL, with test still asserting actual history controls.
+- **Actual exact-head CI [#39035294449](https://github.com/mvryhan-web/video-variator-android/actions/runs/39035294449), [#39035294285](https://github.com/mvryhan-web/video-variator-android/actions/runs/39035294285), [#39035294280](https://github.com/mvryhan-web/video-variator-android/actions/runs/39035294280) QUEUED**, none finished. Coordinator #5 owns repository-wide CI scheduling diagnostic [Issue #227](https://github.com/mvryhan-web/video-variator-android/issues/227). No current-HEAD full Playwright PASS/physical phone/live verified; no production or paid tests.
+- **Original #29 remains C CLAIMED / CODE PREPARED / CI_BLOCKED / NOT DONE.** Original #28 remains PAUSED/BLOCKED, unchanged. Safe release plan: #5 designate ONE active source writer and restore runner → real exact-HEAD CI → C fix authentic failures → approved safe merge into `deepsyq-platform` and full-app/device tests. All other C BASE rows currently overlap active #44 Block3 Inspiration, #209 #27, #196 #20, #190 #21 provider, #144 mobile, #192 security, #200 Admin, or require owner-legal/asset/external approval; no unclaimed unblocked independent row can honestly reach DONE now. No redundant PR or cloned system.
+
+
+
 ## Agent C — BASE #29 separate My Creations and History / same PR #226 (2026-10-17)
 
 - **Owner-authorized current active ORIGINAL BASE #29 Final navigation** (not a new task or new PR); earlier BASE #28 preserved as BLOCKED_EXTERNAL / CI_BLOCKED on its own existing draft PR #207 HEAD `48ba0e720da1ec242ae9e44b6d6300ef232a1f1f`. Coordinator #5 issued explicit single-C-claim conflict resolution, Issue #74 comment #6234072228. #29 remains **CODE PREPARED / CI_BLOCKED, NOT DONE, NOT LIVE_VERIFIED**.
