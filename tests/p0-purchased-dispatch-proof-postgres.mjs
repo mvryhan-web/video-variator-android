@@ -108,7 +108,7 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   assert.equal(await grantPaidSubscriptionInvoice({event:subEvent('in_Unpaid','pi_Unpaid',{amount_paid:0}),env:subEnv,pool,wallet}),false);
 
   const total=await pool.query('SELECT count(*)::int AS n FROM vv_ai_purchased_dispatch_claim');
-  assert.equal(total.rows[0].n,2);
+  assert.equal(total.rows[0].n,3,'one pack, one mixed-funding pack, and one paid subscription; no replay/refund claim');
  }finally{
   await pool.end();
   await admin.query('DROP SCHEMA IF EXISTS '+schema+' CASCADE').catch(()=>{});
