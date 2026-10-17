@@ -29,6 +29,11 @@ const fileTypes={
 const timeModes=['video-trim','audio-trim'];
 let active=false,abort=false,engine=null,redactRects=[],redactImage=null,redactBase=null,redactDragging=null;
 let redactSelectionEpoch=0,redactSource=null,redactLoading=false;
+const redactPreviewUrls=new Set();
+function clearRedactPreviewUrls(){
+ for(const url of redactPreviewUrls)URL.revokeObjectURL(url);
+ redactPreviewUrls.clear();
+}
 // Do not restore a previous owner's sensitive pixels from browser BFCache.
 function purgeRedactionOnPagehide(){
  if(tool!=='photo-redact')return;
@@ -36,6 +41,7 @@ function purgeRedactionOnPagehide(){
  abort=true;
  redactRects=[];redactDragging=null;redactBase=null;redactSource=null;redactLoading=false;
  if(redactImage){redactImage.width=redactImage.height=1;redactImage=null;}
+ clearRedactPreviewUrls();
  const canvas=$('redactCanvas');canvas.width=canvas.height=1;
  $('utilityFiles').value='';
  $('utilityResults').replaceChildren();
@@ -134,7 +140,7 @@ async function result(file){
  const p=document.createElement('p');p.textContent=file.name+' · '+(file.size/1048576).toFixed(2)+' MB';
  const b=document.createElement('button');b.type='button';b.textContent=label('Download','Скачать');b.onclick=()=>saveLocal(file);
  row.append(p);
- if(file.type.startsWith('image/')){const img=new Image();const url=URL.createObjectURL(file);img.src=url;img.alt=file.name;img.onload=()=>setTimeout(()=>URL.revokeObjectURL(url),60000);row.append(img);}
+ if(file.type.startsWith('image/')){const img=new Image();const url=URL.createObjectURL(file);if(tool==='photo-redact')redactPreviewUrls.add(url);img.src=url;img.alt=file.name;img.onload=()=>setTimeout(()=>{URL.revokeObjectURL(url);redactPreviewUrls.delete(url);},60000);row.append(img);}
  row.append(b);$('utilityResults').append(row);
  return file;
 }
@@ -288,6 +294,7 @@ async function loadRedaction(){
  redactLoading=!!f;redactRects=[];redactDragging=null;redactBase=null;redactSource=null;
  if(redactImage){redactImage.width=redactImage.height=1;redactImage=null;}
  c.getContext('2d').clearRect(0,0,c.width,c.height);
+ clearRedactPreviewUrls();
  $('utilityResults').replaceChildren();
  $('utilityRun').disabled=true;
  if(!f){redactLoading=false;return;}
