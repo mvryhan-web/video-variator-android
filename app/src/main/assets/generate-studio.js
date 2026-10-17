@@ -780,6 +780,9 @@ async function openHistoryJob(id){
   activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
 }
 async function loadHistory({append=false}={}){
+ // A filter change is outside the History-card click guard. Never carry a
+ // previously opened saved result across an in-tab user switch.
+ clearHistoryOpenedResultForAccountChange();
  if(append&&(!historyHasMore||historyLoadingPage||!historyView))return;
  const epoch=append?historyLoadEpoch:++historyLoadEpoch;
  const requestedFilter=historyFilter,accountToken=localStorage.getItem('vv_token');
