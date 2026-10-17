@@ -89,3 +89,22 @@ test('historical migration ledger in disposable PG preserves checksum and marks 
     await c.end();
   }
 });
+
+test('preexisting incompatible plain-text task column fails closed without data loss', {skip:!urlString}, async()=>{
+  const c=new pg.Client({connectionString:urlString});
+  await c.connect();const name=schema();
+  try {
+    await c.query('CREATE SCHEMA '+name);
+    await c.query('SET search_path TO '+name);
+    await c.query(legacyTable);
+    await c.query('ALTER TABLE vv_generation_jobs ADD COLUMN provider_task_id TEXT');
+    await c.query("INSERT INTO vv_generation_jobs(id,user_id,kind,status,operation,provider_task_id) VALUES ('old','u','video','processing','byteplus:task_old','FORGED')");
+    await assert.rejects(c.query(migration),/GENERATION_PROVIDER_TASK_COLUMN_CONFLICT/);
+    const {rows}=await c.query("SELECT id,provider_task_id FROM vv_generation_jobs WHERE id='old'");
+    assert.deepEqual(rows,[{id:'old',provider_task_id:'FORGED'}]);
+  } finally {
+    await c.query('RESET search_path').catch(()=>{});
+    await c.query('DROP SCHEMA IF EXISTS '+name+' CASCADE').catch(()=>{});
+    await c.end();
+  }
+});
