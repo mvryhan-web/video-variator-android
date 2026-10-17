@@ -114,3 +114,26 @@ test('BASE #38: restored history page cannot expose previous owner after a sessi
  });
  await expect(page).toHaveURL(/\/deepsyq\.html$/);
 });
+
+
+test('BASE #38: server-revoked owner token hides existing admin tables on HTTP 401',async({page})=>{
+ let revoked=false;
+ const mutations=await setup(page,(route,url)=>{
+  if(url.pathname==='/api/studio/admin/users'){
+   if(revoked)return route.fulfill({status:401,json:{error:'AUTH_REQUIRED'}});
+   return route.fulfill({json:{items:[{
+    name:'Prior owner data',email:'private-record@example.test',
+    plan:'pro',status:'active',aiWallet:{available:0,reserved:0,debt:0},
+    generationCount:0,aiPurchaseCount:0,createdAt:'2026-01-01'
+   }]}});
+  }
+  if(url.pathname==='/api/studio/admin/jobs')return route.fulfill({json:{items:[]}});
+  return null;
+ });
+ await expect(page.locator('#usersTable')).toContainText('private-record@example.test');
+ revoked=true;
+ await page.locator('#userQuery').fill('recheck');
+ await page.locator('#userSearch button').click();
+ await expect(page).toHaveURL(/\/deepsyq\.html$/);
+ expect(mutations()).toBe(0);
+});
