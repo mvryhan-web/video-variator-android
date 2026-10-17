@@ -165,3 +165,41 @@ test('BASE #28: leaving Tools during delayed private JPEG encoding never publish
  await expect(page.locator('#outputs')).toBeEmpty();
  expect(access.calls.filter(c=>c.path==='/api/tools/runs')).toHaveLength(0);
 });
+
+
+test('BASE #28: leaving Tools during native Android file transfer cancels the partial save',async({page})=>{
+ const access=await mockToolAccess(page,{authenticated:false});
+ await page.addInitScript(()=>{
+  window.__base28NativeSave={started:0,appended:0,finished:0,canceled:0,bufferReads:0};
+  window.AndroidBridge={
+   startToolFile(){window.__base28NativeSave.started++;return true;},
+   appendToolChunk(){window.__base28NativeSave.appended++;return true;},
+   finishToolFile(){window.__base28NativeSave.finished++;return true;},
+   cancelToolFile(){window.__base28NativeSave.canceled++;return true;}
+  };
+ });
+ await page.goto('/free-tools.html?tool=photo');
+ const png=await randomPng(page);
+ await page.evaluate(()=>{
+  const read=Blob.prototype.arrayBuffer;
+  Blob.prototype.arrayBuffer=async function(...args){
+   if(window.__base28NativeSave.started){
+    window.__base28NativeSave.bufferReads++;
+    await new Promise(resolve=>setTimeout(resolve,650));
+   }
+   return read.apply(this,args);
+  };
+ });
+ await page.locator('#files').setInputFiles({name:'private-android.png',mimeType:'image/png',buffer:png});
+ await page.locator('#run').click();
+ await expect.poll(()=>page.evaluate(()=>window.__base28NativeSave.bufferReads)).toBe(1);
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+ await expect.poll(()=>page.evaluate(()=>window.__base28NativeSave.canceled)).toBe(1);
+ await expect(page.locator('#run')).toBeEnabled();
+ expect(await page.evaluate(()=>window.__base28NativeSave)).toEqual({
+  started:1,appended:0,finished:0,canceled:1,bufferReads:1
+ });
+ await expect(page.locator('#files')).toHaveValue('');
+ await expect(page.locator('#outputs')).toBeEmpty();
+ expect(access.calls.filter(c=>c.path==='/api/tools/runs')).toHaveLength(0);
+});
