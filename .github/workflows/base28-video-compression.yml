@@ -1,0 +1,44 @@
+name: BASE 28 local Video Compression contract
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/video-compression-args.mjs'
+      - 'app/src/main/assets/mobile-utility.js'
+      - 'app/src/main/assets/mobile-utility-links.js'
+      - 'tests/base28-video-compression*.mjs'
+      - 'tests/base28-unique-utility-tiles.spec.mjs'
+      - '.github/workflows/base28-video-compression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  local-compression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax, validated FFmpeg command and measured file-size contract
+        run: |
+          node --check app/src/main/assets/video-compression-args.mjs
+          node --check app/src/main/assets/mobile-utility.js
+          node --check app/src/main/assets/mobile-utility-links.js
+          node --test tests/base28-video-compression-unit.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Free tool routing and mocked no-upload WASM adapter (not real transcode)
+        run: npx playwright test tests/base28-video-compression.spec.mjs tests/base28-unique-utility-tiles.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit
+      - name: Generate small original rights-free MP4 sample on CI runner
+        run: |
+          mkdir -p tests/fixtures
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update && sudo apt-get install -y ffmpeg; fi
+          ffmpeg -hide_banner -loglevel error -f lavfi -i color=c=blue:s=96x96:r=12 -t 1 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -y tests/fixtures/video-compress-tiny.mp4
+          test -s tests/fixtures/video-compress-tiny.mp4
+      - name: Actual browser FFmpeg/WASM encode (Chromium, no upload)
+        run: npx playwright test tests/base28-video-compression-real.spec.mjs --project=chromium --workers=1
