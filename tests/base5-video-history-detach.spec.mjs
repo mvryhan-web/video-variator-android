@@ -210,3 +210,34 @@ test('BASE #5: Video account change during a delayed POST never attaches the pre
  const pending=await page.evaluate(()=>[...Object.keys(sessionStorage)].filter(k=>k.startsWith('deepsyq_video_pending_request_v1_')));
  expect(pending).toHaveLength(1); // Preserve first account's request for its own recovery.
 });
+
+
+test('BASE #5: Video last-job auto-resume is account-scoped after reload',async({page})=>{
+ await setup(page);
+ let oldJobReads=0,submitted=0;
+ await page.route('**/api/studio/jobs/old-account-video',route=>{
+  oldJobReads++;return route.fulfill({json:{
+   id:'old-account-video',kind:'video',status:'processing',retryAfterSeconds:20
+  }});
+ });
+ await page.route('**/api/studio/jobs',route=>{
+  if(route.request().method()!=='POST')return route.continue();
+  submitted++;return route.fulfill({status:202,json:{id:'old-account-video',status:'processing'}});
+ });
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#prompt').fill('Old account private Video job');
+ await page.locator('#consent').check();
+ await page.locator('#generate').click();
+ await expect.poll(()=>submitted).toBe(1);
+ await expect.poll(()=>oldJobReads).toBeGreaterThan(0);
+ const saved=await page.evaluate(()=>sessionStorage.getItem('vu_generation_video_owner_scope'));
+ expect(saved).toMatch(/^[0-9a-f]{32}$/);
+ await page.evaluate(()=>localStorage.setItem('vv_token','a-second-account'));
+ const beforeReload=oldJobReads;
+ await page.reload();
+ await page.waitForTimeout(200);
+ expect(oldJobReads).toBe(beforeReload);
+ expect(submitted).toBe(1);
+ await expect(page.locator('#resumeJob')).toBeHidden();
+ expect(await page.evaluate(()=>sessionStorage.getItem('vu_generation_video_owner_scope'))).toBe(saved);
+});
