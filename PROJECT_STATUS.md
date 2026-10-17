@@ -1,5 +1,11 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #5 staged Studio History then Product Video safety (2026-10-17)
+
+- Same single active original BASE #5 under latest one-item protocol. Existing B [PR #203](https://github.com/mvryhan-web/video-variator-android/pull/203) now HEAD `9dce9bd21376736e6dd890dcae96bd3100826463` and BASE branch `base5-video-history-detach-20261016` (stacked after B [PR #186](https://github.com/mvryhan-web/video-variator-android/pull/186) HEAD `73f2950`). Non-force two-parent commit with 2 exactly matched unique Studio hunks; both `videoRegenerate` stale-reference detach and `inspectProductVideoHandoff` optional-logo role guard preserved in combined source. GitHub comparison of stacked PR203 to PR186 = exactly five original B logo-safety paths.
+- No Image History A #170 edits or C Product Video #196 source changes. CI for latest stacked PR203 head not yet verified and may need workflow dispatch/queue; earlier PR203 focused #39018392334 was for OLD unstacked head and is NOT acceptance. Required integration sequence: PR186 (after exact-head CI/A collision review), then PR203 (new-head browser checks). Neither merged/main/deployed or real product AI-verified.
+
+
 ## Agent B — SINGLE ACTIVE BASE #5 acceptance lock (owner one-item directive, 2026-10-17)
 
 - **SINGLE ACTIVE ROW = original BASE #5 Video Generation; state BLOCKED_DEPENDENCY / CI_PENDING, LIVE_VERIFIED=false, completed BASE rows in this session=0.** New owner protocol: docs/DEEPSYQ_ONE_ITEM_TO_DONE_PROTOCOL.md. Exact original-scope acceptance checklist, already verified code and missing provider/worker/storage/cancellation/payment proof are persisted at [Issue #73 comment #6232207528](https://github.com/mvryhan-web/video-variator-android/issues/73#issuecomment-6232207528).
