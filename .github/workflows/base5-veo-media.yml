@@ -6,6 +6,9 @@ on:
       - 'tests/base5-google-video-media-unit.mjs'
       - 'server/generation-video-cancel.js'
       - 'tests/base5-provider-video-cancellation-unit.mjs'
+      - 'server/generation-video-submit-uncertainty.js'
+      - 'server/generation-studio.js'
+      - 'tests/base5-video-submit-uncertainty-unit.mjs'
       - '.github/workflows/base5-veo-media.yml'
 permissions:
   contents: read
@@ -24,5 +27,8 @@ jobs:
           node --check tests/base5-google-video-media-unit.mjs
           node --check server/generation-video-cancel.js
           node --check tests/base5-provider-video-cancellation-unit.mjs
+          node --check server/generation-video-submit-uncertainty.js
+          node --check server/generation-studio.js
+          node --check tests/base5-video-submit-uncertainty-unit.mjs
       - name: Non-paid Veo result security regressions
-        run: node --test tests/base5-google-video-media-unit.mjs tests/base5-provider-video-cancellation-unit.mjs
+        run: node --test tests/base5-google-video-media-unit.mjs tests/base5-provider-video-cancellation-unit.mjs tests/base5-video-submit-uncertainty-unit.mjs
