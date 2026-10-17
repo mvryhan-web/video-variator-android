@@ -179,3 +179,27 @@ test('BASE 45: late failed onboarding POST cannot show old-user errors or consum
  expect(await page.evaluate(()=>localStorage.getItem('deepsyq_onboarding_pending'))).toBe('1');
  expect(new URL(page.url()).pathname).toBe('/deepsyq.html');
 });
+
+
+for(const operation of ['click previous option','focus previous modal','keyboard previous option','return to tab']){
+ test('BASE 45: silent account switch must scrub stale modal before '+operation,async({page})=>{
+  const posted=await setup(page,[{id:'image',target:'/generate-studio.html?studio=image'}]);
+  await page.goto('/deepsyq.html');
+  await expect(page.locator('#onboardingModal')).toBeVisible();
+  await page.evaluate(()=>localStorage.setItem('vv_token','other-session-account-B'));
+  if(operation==='click previous option')
+   await page.locator('[data-onboarding-goal=image]').evaluate(el=>
+    el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));
+  else if(operation==='focus previous modal')
+   await page.locator('#onboardingLater').evaluate(el=>
+    el.dispatchEvent(new FocusEvent('focusin',{bubbles:true,cancelable:true})));
+  else if(operation==='keyboard previous option')
+   await page.locator('[data-onboarding-goal=image]').evaluate(el=>
+    el.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true})));
+  else await page.evaluate(()=>dispatchEvent(new Event('focus')));
+  await expect(page.locator('#onboardingModal')).toBeHidden();
+  expect(await page.evaluate(()=>localStorage.getItem('deepsyq_onboarding_pending'))).toBe('1');
+  expect(posted).toEqual([]);
+  expect(new URL(page.url()).pathname).toBe('/deepsyq.html');
+ });
+}
