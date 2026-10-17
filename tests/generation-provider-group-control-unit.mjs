@@ -1,14 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateProviderGroupPatch,updateProviderGroupControls,updateModelControl,applyModelControl} from '../server/generation-model-control.js';
+import {validateProviderGroupPatch,updateProviderGroupControls,updateModelControl,updateModelControlAudited,applyModelControl} from '../server/generation-model-control.js';
 import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 
-function mockPool({failAtModelInsert=0}={}){
+function mockPool({failAtModelInsert=0,failAudit=false}={}){
  const calls=[];
  let inserts=0;
  const query=async(sql,args=[])=>{
   calls.push({sql,args});
   if(sql.startsWith('INSERT INTO vv_ai_model_control')&&++inserts===failAtModelInsert)throw Error('SIMULATED_DB_FAILURE');
+  if(sql.startsWith('INSERT INTO vv_admin_audit')&&failAudit)throw Error('SIMULATED_AUDIT_FAILURE');
   return {rows:[]};
  };
  return {calls,query,connect:async()=>({query,release:()=>{calls.push({sql:'RELEASE'});}})};
@@ -103,6 +104,33 @@ test('BASE #9: null priority fails as a client validation error before database'
  await assert.rejects(()=>updateModelControl(pool,{modelId:googleVideo[0].id,userId:'owner-user',
   patch:{priority:null},catalog:googleVideo}),/INVALID_MODEL_CONTROL/);
  assert.equal(pool.calls.some(x=>x.sql.startsWith('INSERT INTO vv_ai_model_control')),false);
+});
+
+test('BASE #9: individual owner edit and audit commit atomically',async()=>{
+ const pool=mockPool(),model={...googleVideo[0],priority:9};
+ await updateModelControlAudited(pool,{modelId:model.id,userId:'owner-user',patch:{enabled:false},catalog:[model]});
+ const queries=pool.calls.map(x=>x.sql);
+ assert.equal(queries.filter(x=>x==='BEGIN').length,1);
+ assert.equal(queries.filter(x=>x.startsWith('INSERT INTO vv_ai_model_control')).length,1);
+ assert.equal(queries.filter(x=>x.startsWith('INSERT INTO vv_admin_audit')).length,1);
+ assert.equal(queries.filter(x=>x==='COMMIT').length,1);
+ assert.equal(queries.filter(x=>x==='ROLLBACK').length,0);
+ assert.ok(queries.indexOf('COMMIT')>queries.indexOf('INSERT INTO vv_admin_audit'));
+ assert.equal(queries.at(-1),'RELEASE');
+});
+
+test('BASE #9: failed individual-model audit rolls back the model change',async()=>{
+ const pool=mockPool({failAudit:true}),model={...googleVideo[0],priority:9};
+ await assert.rejects(()=>updateModelControlAudited(pool,{modelId:model.id,userId:'owner-user',
+  patch:{priority:7},catalog:[model]}),/SIMULATED_AUDIT_FAILURE/);
+ const queries=pool.calls.map(x=>x.sql);
+ assert.equal(queries.filter(x=>x==='BEGIN').length,1);
+ assert.equal(queries.filter(x=>x.startsWith('INSERT INTO vv_ai_model_control')).length,1);
+ assert.equal(queries.filter(x=>x.startsWith('INSERT INTO vv_admin_audit')).length,1);
+ assert.equal(queries.filter(x=>x==='COMMIT').length,0);
+ assert.equal(queries.filter(x=>x==='ROLLBACK').length,1);
+ assert.ok(queries.indexOf('ROLLBACK')>queries.indexOf('INSERT INTO vv_admin_audit'));
+ assert.equal(queries.at(-1),'RELEASE');
 });
 
 test('BASE #9: first admin toggle preserves configured default routing priority',async()=>{
