@@ -681,17 +681,20 @@ for(const deleteStatus of [200,503]){
  });
 }
 
-for(const authChange of ['cross-tab logout','silent same-tab account switch','silent same-tab video interaction','silent same-tab History navigation']){
+for(const authChange of ['cross-tab logout','silent same-tab account switch','silent same-tab video interaction','silent same-tab History navigation','silent same-tab History filter switch']){
  test('BASE 24: opened saved History video is revoked on '+authChange,async({page})=>{
   await page.addInitScript(()=>localStorage.setItem('vv_token','opened-result-account-A'));
   await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
   let generated=0,downloaded=0;
   page.on('request',request=>{if(request.method()==='POST'&&new URL(request.url()).pathname==='/api/studio/jobs')generated++;});
   page.on('download',()=>downloaded++);
-  await page.route('**/api/studio/jobs?filter=*',route=>route.fulfill({json:{items:[
-   {id:'old-ready-video',kind:'video',status:'ready',prompt:'ACCOUNT A PRIVATE VIDEO',model:'fixture-video',
-    mime:'video/mp4',createdAt:'2026-10-17T08:00:00Z'}
-  ]}}));
+  await page.route('**/api/studio/jobs?filter=*',route=>{
+   const own=route.request().headers()['authorization']==='Bearer opened-result-account-A';
+   return route.fulfill({json:{items:own?[
+    {id:'old-ready-video',kind:'video',status:'ready',prompt:'ACCOUNT A PRIVATE VIDEO',model:'fixture-video',
+     mime:'video/mp4',createdAt:'2026-10-17T08:00:00Z'}
+   ]:[]}});
+  });
   await page.route('**/api/studio/jobs/old-ready-video',route=>route.fulfill({json:{
    id:'old-ready-video',kind:'video',status:'ready',model:'fixture-video',mime:'video/mp4'
   }}));
@@ -710,10 +713,15 @@ for(const authChange of ['cross-tab logout','silent same-tab account switch','si
     dispatchEvent(new StorageEvent('storage',{key:'vv_token',oldValue:'opened-result-account-A',newValue:null}));
    });
   }else{
+   if(authChange==='silent same-tab History filter switch'){
+    await page.locator('#showHistory').click();
+    await expect(page.locator('.history-card')).toContainText('ACCOUNT A PRIVATE VIDEO');
+   }
    await page.evaluate(()=>localStorage.setItem('vv_token','opened-result-account-B'));
    // Same-tab account changes emit no native storage event. Guard all entry points.
    if(authChange==='silent same-tab video interaction')await page.locator('#media video').click({force:true});
    else if(authChange==='silent same-tab History navigation')await page.locator('#showHistory').click();
+   else if(authChange==='silent same-tab History filter switch')await page.locator('[data-history-filter=image]').click();
    else await page.locator('#actions #download').click();
   }
   await expect(page.locator('#media video')).toHaveCount(0);
