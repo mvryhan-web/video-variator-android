@@ -684,13 +684,13 @@ test('BASE 24: an old-account History Open never displays a late saved-media res
  await page.route('**/api/studio/jobs/private-open',async route=>{
   started();
   await blocked;
-  try{await route.fulfill({json:{id:'private-open',kind:'image',status:'ready',mime:'video/mp4'}});}catch(_){}
+  try{await route.fulfill({json:{id:'private-open',kind:'video',status:'ready',mime:'video/mp4'}});}catch(_){}
  });
  await page.route('**/api/studio/jobs/private-open/media',route=>{
   mediaRequests++;
   return route.fulfill({contentType:'video/mp4',body:Buffer.from('OLD_PRIVATE_PHOTO')});
  });
- await page.goto('/generate-studio.html?studio=image&view=history');
+ await page.goto('/generate-studio.html?studio=video&view=history');
  await expect(page.locator('.history-card')).toHaveCount(1);
  await page.locator('.history-card').getByRole('button',{name:'Open'}).click();
  await seen;
@@ -711,7 +711,7 @@ test('BASE 24: an old-account History Open cannot show delayed private ready med
    createdAt:'2026-10-17T08:00:00.000Z',creditsReserved:0,creditsCharged:0}
  ]}}));
  await page.route('**/api/studio/jobs/private-ready',route=>route.fulfill({
-  json:{id:'private-ready',kind:'image',status:'ready',mime:'video/mp4'}}));
+  json:{id:'private-ready',kind:'video',status:'ready',mime:'video/mp4'}}));
  let started,release,paidPosts=0;
  const seen=new Promise(resolve=>started=resolve);
  const blocked=new Promise(resolve=>release=resolve);
@@ -720,7 +720,7 @@ test('BASE 24: an old-account History Open cannot show delayed private ready med
   started();await blocked;
   try{await route.fulfill({contentType:'video/mp4',body:Buffer.from('PRIVATE_OLD_ACCOUNT_IMAGE')});}catch(_){}
  });
- await page.goto('/generate-studio.html?studio=image&view=history');
+ await page.goto('/generate-studio.html?studio=video&view=history');
  await expect(page.locator('.history-card')).toHaveCount(1);
  await page.locator('.history-card').getByRole('button',{name:'Open'}).click();
  await seen;
