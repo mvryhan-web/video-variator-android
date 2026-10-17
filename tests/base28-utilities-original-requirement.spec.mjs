@@ -150,3 +150,43 @@ test('BASE #28: simulated OCR worker output can be downloaded as actual TXT with
  expect(bytes.toString()).toBe('User-visible OCR sample');
  expect(posts).toBe(0);
 });
+
+
+test('BASE #28: older private redaction preview cannot replace a newer selected photo',async({page})=>{
+ let posts=0;page.on('request',request=>{if(request.method()==='POST')posts++;});
+ await page.addInitScript(()=>{
+  const NativeImage=window.Image;
+  let created=0;
+  window.Image=function(...args){
+   const image=new NativeImage(...args),index=++created;
+   Object.defineProperty(image,'onload',{
+    configurable:true,set(fn){
+     image.addEventListener('load',event=>{
+      if(index===1)setTimeout(()=>fn.call(image,event),650);
+      else fn.call(image,event);
+     },{once:true});
+    }
+   });
+   return image;
+  };
+ });
+ await page.goto('/mobile-utility.html?tool=photo-redact');
+ const bytes=await page.evaluate(async()=>{
+  const encode=async color=>{
+   const canvas=document.createElement('canvas');canvas.width=120;canvas.height=80;
+   const ctx=canvas.getContext('2d');ctx.fillStyle=color;ctx.fillRect(0,0,120,80);
+   const blob=await new Promise(ok=>canvas.toBlob(ok,'image/png'));
+   return Array.from(new Uint8Array(await blob.arrayBuffer()));
+  };
+  return {older:await encode('rgb(210,20,20)'),current:await encode('rgb(20,20,210)')};
+ });
+ await page.locator('#utilityFiles').setInputFiles({name:'older-private.png',mimeType:'image/png',buffer:Buffer.from(bytes.older)});
+ await expect(page.locator('#utilityRun')).toBeDisabled();
+ await page.locator('#utilityFiles').setInputFiles({name:'current-private.png',mimeType:'image/png',buffer:Buffer.from(bytes.current)});
+ await expect.poll(()=>page.locator('#redactCanvas').evaluate(canvas=>[...canvas.getContext('2d').getImageData(4,4,1,1).data].join(','))).toBe('20,20,210,255');
+ await expect(page.locator('#utilityRun')).toBeEnabled();
+ await page.waitForTimeout(800); // The older image load now resolves; it must be ignored.
+ const pixels=await page.locator('#redactCanvas').evaluate(canvas=>[...canvas.getContext('2d').getImageData(4,4,1,1).data]);
+ expect(pixels).toEqual([20,20,210,255]);
+ expect(posts).toBe(0);
+});
