@@ -1,5 +1,11 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #5 Veo verified MP4 input/output continuation (2026-10-17)
+
+- Existing B [draft PR #174](https://github.com/mvryhan-web/video-variator-android/pull/174) HEAD `77925277cbf16749b2bc6dad3c9537b3dd050e35` reconciled through non-force two-parent commit over then-current BASE `a72cc9d0`. Source Google provider blob unchanged from original PR parent, only original three B files in current compare. Exact prior head `972165b` GH Actions **3/3 SUCCESS**; current focused #39019918996, Video core #39019918924 and Studio #39019918929 QUEUED / NOT VERIFIED.
+- Veo security: strict Google HTTPS host without bad ports/userinfo/fragment, no absent-key call, bounded streaming JSON, valid pollable operation IDs, MP4 type/major-brand+box-size check rejects AVIF/HEIC/HTML; does not promise full video codec scanning. No Google API/provider charge, no main/production or provider secrets modified. BASE #5 still PARTIAL/BLOCKED.
+
+
 ## Agent B — BASE #6 Seedance MP4 container branch update (2026-10-17)
 
 - Existing B [draft PR #176](https://github.com/mvryhan-web/video-variator-android/pull/176) HEAD `d0ed7417851a6d08080601117428a2e8fbc79496`: preserved original BytePlus source and no-fee test blobs over verified unchanged BASE ancestors by a non-force two-parent commit. Only three original B paths in current compare. MP4 major-brand/ftyp size verification rejects AVIF/HEIC/arbitrary bytes before durable result storage; does not claim codec or malware scanning.
