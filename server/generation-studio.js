@@ -6,6 +6,7 @@ import {pricingCatalog,estimateGenerationPricing} from './generation-pricing.js'
 import {listModelControls,getModelControl,updateModelControl,applyModelControl} from './generation-model-control.js';
 import {enforceGenerationPolicy,generationPolicy} from './generation-policy.js';
 import {createObjectStorage} from './generation-storage.js';
+import {bytePlusPublicDurableStorageReady} from './generation-byteplus-storage-gate.js';
 import {installGenerationReferenceUpload} from './generation-reference-upload.js';
 import {resolveGenerationModel,orderedGenerationCandidates} from './generation-routing.js';
 import {normalizeGenerationError,publicGenerationError} from './generation-errors.js';
@@ -29,7 +30,7 @@ export function studioConfig(env=process.env){
  const enabled=env.AI_STUDIO_ENABLED==='true'&&!!(env.GEMINI_API_KEY||env.BYTEPLUS_API_KEY)&&!!env.DATABASE_URL&&!!env.ADMIN_EMAIL&&Number.isInteger(calls)&&calls>0&&calls<=20;
  const allowed=(env.AI_STUDIO_ALLOWED_KINDS||'').split(',');
  const explicit=(env.AI_STUDIO_ALLOWED_MODELS||'').split(',');
- const catalog=MODEL_CATALOG.map(m=>({...m,priority:m.id===MODELS[m.kind]?.id?50:100,enabled:enabled&&m.adapter&&generationFeatureEnabled(m.kind,m.provider,env)&&(m.provider!=='BytePlus'||m.kind!=='video'||bytePlusDownloadsConfigured(env.BYTEPLUS_MEDIA_HOSTS))&&!!(m.provider==='BytePlus'?env.BYTEPLUS_API_KEY:env.GEMINI_API_KEY)&&allowed.includes(m.kind)&&(m.id===MODELS[m.kind]?.id||explicit.includes(m.id))}));
+ const catalog=MODEL_CATALOG.map(m=>({...m,priority:m.id===MODELS[m.kind]?.id?50:100,enabled:enabled&&m.adapter&&generationFeatureEnabled(m.kind,m.provider,env)&&(m.provider!=='BytePlus'||m.kind!=='video'||bytePlusDownloadsConfigured(env.BYTEPLUS_MEDIA_HOSTS))&&!!(m.provider==='BytePlus'?env.BYTEPLUS_API_KEY:env.GEMINI_API_KEY)&&bytePlusPublicDurableStorageReady(m,env)&&allowed.includes(m.kind)&&(m.id===MODELS[m.kind]?.id||explicit.includes(m.id))}));
  const pricingConfigured=pricingCatalog(env).configured,entitlements=generationEntitlements(env),publicReady=env.AI_PUBLIC_GENERATION_ENABLED==='true'&&env.AI_STUDIO_WALLET_ENABLED==='true'&&pricingConfigured&&entitlements.configured;
  const imageBatchEnabled=env.AI_STUDIO_IMAGE_BATCH_ENABLED==='true'&&env.AI_STUDIO_WALLET_ENABLED==='true'&&pricingConfigured;
  return {pilot:!publicReady,ownerOnly:!publicReady,publicGenerationEnabled:publicReady,entitlementsConfigured:entitlements.configured,enabled,pricingConfigured,imageBatchEnabled,featureSwitches:generationFeatureSwitches(env),publicPolicy:generationPolicy(env),reason:enabled?null:'OWNER_SETUP_REQUIRED',models:Object.entries(MODELS).map(([kind,m])=>({kind,...m,enabled:catalog.find(c=>c.id===m.id)?.enabled||false})),catalog,translation:{enabled:false,reason:'PROVIDER_NOT_CONNECTED'}};

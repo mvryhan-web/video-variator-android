@@ -215,10 +215,8 @@ const accountLogout=$('appsLogout');
 if(accountLogout){
  accountLogout.hidden=!localStorage.getItem('vv_token');
  accountLogout.addEventListener('click',()=>{
-  // A prepared product name/prompt is local account data. Never carry it into
-  // the next sign-in on this tab when leaving from AI Apps.
-  // Storage may be denied in strict/private browser modes. An unavailable
-  // tab store must never prevent the real logout token from being revoked.
+  // Remove locally prepared product prompts when exiting this AI Apps account.
+  // Denied tab storage must not block existing bearer-token logout.
   try{sessionStorage.removeItem('deepsyq_template_start');}catch(_){}
   localStorage.removeItem('vv_token');
   location.assign('deepsyq.html');
