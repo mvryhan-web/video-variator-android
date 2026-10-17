@@ -30,7 +30,7 @@ test('BASE #5: photo-only Product Video still hands off the original image witho
  await page.locator('#photos').setInputFiles(photo('actual-product.png'));
  await page.locator('#continue').click();
  await expect(page).toHaveURL(/generate-studio\.html\?studio=video/);
- await expect(page.locator('#prompt')).toContainText('reference image');
+ await expect(page.locator('#prompt')).toHaveValue(/reference image/);
  await expect(page.locator('#refPreview img')).toHaveCount(1);
  await expect(page.locator('#consent')).not.toBeChecked();
  expect(paid()).toBe(0);
