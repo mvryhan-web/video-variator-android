@@ -98,17 +98,7 @@ test('BASE #9: concurrent owner model edits preserve fields absent from each pat
   for(const [column,parameter] of [
    ['enabled_override',8],['priority',9],['markup_bps',10],
    ['internal_cost_micros',11],['maintenance',12]
-  ])assert.ok(sql.includes(column+'=CASE WHEN ,async()=>{
- const pool=mockPool();
- const choice={...googleVideo[0],priority:17};
- await updateModelControl(pool,{modelId:choice.id,userId:'owner-user',patch:{enabled:false},catalog:[choice]});
- const insert=pool.calls.find(x=>x.sql.startsWith('INSERT INTO vv_ai_model_control'));
- assert.ok(insert);
- assert.equal(insert.args[0],choice.id);
- assert.equal(insert.args[1],false);
- assert.equal(insert.args[2],17);
-});
-+parameter+'::boolean THEN EXCLUDED.'+column+' ELSE vv_ai_model_control.'+column+' END'));
+  ])assert.ok(sql.includes(column+'=CASE WHEN $'+parameter+'::boolean THEN EXCLUDED.'+column+' ELSE vv_ai_model_control.'+column+' END'));
   assert.deepEqual(args.slice(7),flags);
   assert.equal(args[2],patch.priority??17); // correct default for first INSERT
  }
