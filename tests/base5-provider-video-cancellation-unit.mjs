@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {cancelQueuedBytePlusVideo} from '../server/generation-video-cancel.js';
 
-const response=(status,code=200)=>new Response(status===null?'':JSON.stringify({status}),{
+const response=(status,code=200)=>new Response(code===204?null:(status===null?'':JSON.stringify({status})),{
  status:code,headers:{'content-type':'application/json'}
 });
 const task='byteplus:cgt_2026-10-17_queued';
