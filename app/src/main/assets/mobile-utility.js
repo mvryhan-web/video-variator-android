@@ -459,6 +459,7 @@ async function processMedia(){
 async function runOCR(){
  const f=files()[0];
  const T=await loadScript('/vendor/ocr/tesseract.min.js','Tesseract');
+ if(abort)return; // Cancel while the library itself loads must prevent worker download.
  const lang=$('utilityLang').value;
  const worker=await T.createWorker(lang,1,{
   workerPath:'/vendor/ocr/worker.min.js',corePath:'/vendor/ocr-core/tesseract-core-simd.wasm.js',
