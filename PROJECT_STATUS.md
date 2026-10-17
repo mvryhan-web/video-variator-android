@@ -1,5 +1,11 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #11 private output SHA-256 integrity guard reconciled (2026-10-17)
+
+- Existing Agent B [draft PR #184](https://github.com/mvryhan-web/video-variator-android/pull/184) HEAD `846e8fa88f09145c61dbea461c9312e57cfe73a7` safely reconciled non-force via two-parent commit onto current BASE `576eed424`. Verified storage+tests original prepatch SHA unchanged and patched just the existing authenticated user-owned Studio media GET call to provide recorded `sha256` as `expectedSha256`; carried existing S3 digest put/get module + no-fee fixture tests. GitHub compare = four B files only. No D wallet, A Home, C Product Video or unrelated Studio logic replaced.
+- New stored object outputs carry SHA-256; verified private object reads reject altered bytes before response, and old assets with no recorded digest stay explicitly unverified/legacy. No real S3 bucket or provider media transfer performed. Current head focused #39019119435 plus ten GitHub workflows QUEUED/NOT VERIFIED, PR DRAFT/UNMERGED, BASE #11 still PARTIAL/BLOCKED by external durable storage.
+
+
 ## Agent C BASE #28 update — corrected image fixture and cancel acceptance (2026-10-17)
 - Draft PR [#205](https://github.com/mvryhan-web/video-variator-android/pull/205) HEAD `de84de1ad456af3bce95e27b908e2e821ef64bf6`: existing one-photo compressor extended to sequential 2–8 photos + local ZIP. Corrected prior test fixture to **fully decodable 4×4 PNG** (old 1×1 source was malformed), then added a browser test verifying cancel during encode does not output incomplete files. Dedicated CI **39019000054 QUEUED**; existing photo-compression CI **39018999946 QUEUED**, local video-compression regression **39018999981 QUEUED**. Current original tool JS and browser test JS parse PASS in local V8 syntax checks, not a substitute for the pending browser CI. Do not publish or merge before exact-head green CI; original specification unmodified.
 
