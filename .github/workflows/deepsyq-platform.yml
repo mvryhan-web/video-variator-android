@@ -10,6 +10,13 @@ on:
       # multi-browser platform suite for this standalone read-only unit test.
       - '!tests/deepsyq-base55-coordination-unit.mjs'
       - '.github/workflows/deepsyq-platform.yml'
+# Keep evidence for the newest commit in each branch/PR. A rapid series of
+# agent commits must not leave hundreds of superseded full Playwright runs.
+# Different PR numbers stay independent, so A/B/C/D checks never cancel one another.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
