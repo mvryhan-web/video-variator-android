@@ -1,7 +1,7 @@
 // Owner P0 #182. Server-only database-backed proof; NEVER grants credits or calls a provider.
 // Caller must hold the matching vv_ai_wallet user row FOR UPDATE throughout this function.
 const textId=(v,max=200)=>typeof v==='string'&&v.length>0&&v.length<=max&&/^[A-Za-z0-9._:@-]+$/.test(v);
-const safeCount=v=>{const n=Number(v);if(!Number.isSafeInteger(n)||n<0)throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED');return n;};
+const safeCount=v=>{if((typeof v!=='number'&&typeof v!=='string')||(typeof v==='string'&&!/^\d+$/.test(v)))throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED');const n=Number(v);if(!Number.isSafeInteger(n)||n<0)throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED');return n;};
 const deny=()=>{throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED');};
 export function purchasedFundingProof({paidCredits,otherSpentCredits,requiredCredits}={}){
  const paid=safeCount(paidCredits),used=safeCount(otherSpentCredits),required=safeCount(requiredCredits);
