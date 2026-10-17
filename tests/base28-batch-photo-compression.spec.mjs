@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 
-const samplePng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+const samplePng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAG0lEQVR4nGNgYPh/4j8Dw384jcJh+H+CgaAKAPRlHinUv26iAAAAAElFTkSuQmCC','base64');
 
 test('BASE #28: existing photo compressor supports two offline JPG results plus an actual ZIP with unique names',async({page})=>{
  let posts=0;
