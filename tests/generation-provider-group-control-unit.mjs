@@ -154,7 +154,7 @@ test('BASE #9: public Studio catalog hides owner-only provider costs while prese
  const ownerCatalog=[{id:'safe-video',kind:'video',provider:'Google',enabled:true,priority:6,
   markupBps:17500,internalCostMicros:120000,
   control:{enabledOverride:true,priority:6,maintenance:false,updatedAt:'2026-10-17',markupBps:17500,internalCostMicros:120000}}];
- const expectedOwner=structuredClone(ownerCatalog);
+ const expectedOwner=JSON.parse(JSON.stringify(ownerCatalog));
  const publicCatalog=publicModelCatalog(ownerCatalog);
  assert.deepEqual(publicCatalog,[{id:'safe-video',kind:'video',provider:'Google',enabled:true,priority:6,
   control:{enabledOverride:true,priority:6,maintenance:false,updatedAt:'2026-10-17'}}]);
