@@ -149,6 +149,21 @@ test('output mismatch in provider-declared size and quality is rejected before s
  assert.equal((await call({},model,{fetcher:async()=>answer({...apiImage,size:'1024x1024',quality:'low'})})).mime,'image/png');
 });
 
+test('reject corrupted PNG IDAT CRC, extra trailing data and forged pixels in paid results',()=>{
+ const tampered=Buffer.from(png);
+ // Preserve IHDR and IEND bytes, but corrupt a single IDAT payload byte.
+ // A signature-and-tail-only validator previously accepted this corruption.
+ tampered[44]^=1;
+ assert.throws(()=>decodeOpenAIImageResponse({data:[{b64_json:tampered.toString('base64')}]},'png'),
+   /INVALID_PROVIDER_MEDIA/);
+ assert.throws(()=>buildOpenAIImageRequest({...input,references:[{
+  mimeType:'image/png',data:tampered.toString('base64')
+ }]},model),/INVALID_REFERENCES/);
+ const trailing=Buffer.concat([png,Buffer.from([1,2,3,4])]);
+ assert.throws(()=>decodeOpenAIImageResponse({data:[{b64_json:trailing.toString('base64')}]},'png'),
+   /INVALID_PROVIDER_MEDIA/);
+ assert.equal(decodeOpenAIImageResponse(apiImage,'png').mime,'image/png');
+});
 test('reject signature-only forged or truncated PNG output and reference photos',()=>{
  const fake=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),Buffer.alloc(64)]);
  const withFake={...apiImage,data:[{b64_json:fake.toString('base64')}]};
