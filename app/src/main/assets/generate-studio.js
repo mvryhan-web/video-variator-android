@@ -625,7 +625,10 @@ async function previewHistoryMedia(item,holder,button){
   holder.replaceChildren(message);
  }
 }
-function historyState(status){return status==='ready'?say('Ready','Готово'):status==='queued'?say('Queued','В очереди'):status==='processing'?say('Processing','В работе'):status==='finalizing'?say('Finalizing','Завершаем'):status==='failed'?say('Failed','Ошибка'):status;}
+function historyState(status,jobKind){
+ if(jobKind==='video')return ({queued:say('Queued','В очереди'),processing:say('Running','Выполняется'),finalizing:say('Running · settling','Выполняется · расчёт'),ready:say('Succeeded','Успешно'),failed:say('Failed','Ошибка'),cancelled:say('Cancelled','Отменено')})[status]||status;
+ return status==='ready'?say('Ready','Готово'):status==='queued'?say('Queued','В очереди'):status==='processing'?say('Processing','В работе'):status==='finalizing'?say('Finalizing','Завершаем'):status==='failed'?say('Failed','Ошибка'):status;
+}
 function historyDate(value){try{return new Intl.DateTimeFormat(navigator.language||'en',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));}catch(_){return String(value||'');}}
 function historyCredits(item){const n=Number(item.creditsCharged||item.creditsReserved||0);return n>0?say(n+' AI credits',n+' AI-кредитов'):'';}
 function prepareHistoryItem(item,{settings=false}={}){
@@ -707,15 +710,15 @@ async function loadHistory(){
    const preview=document.createElement('div');preview.className='history-preview';preview.dataset.kind=item.kind;preview.textContent=item.kind==='image'?'✧':item.kind==='video'?'▷':'♫';preview.setAttribute('aria-hidden','true');
    const head=document.createElement('div');head.className='history-card-head';
    const title=document.createElement('strong');title.textContent=(item.kind==='music'?say('Audio','Аудио'):item.kind==='image'?say('Image','Изображение'):say('Video','Видео'))+(item.model?' · '+item.model:'');
-   const state=document.createElement('span');state.className='history-status';state.dataset.status=item.status;state.textContent=historyState(item.status);head.append(title,state);
+   const state=document.createElement('span');state.className='history-status';state.dataset.status=item.status;state.textContent=historyState(item.status,item.kind);head.append(title,state);
    const meta=document.createElement('small');meta.textContent=[historyDate(item.createdAt),item.provider,historyCredits(item)].filter(Boolean).join(' · ');
    const prompt=document.createElement('p');prompt.className='history-prompt';prompt.textContent=item.prompt||'';
    const actions=document.createElement('div');actions.className='history-actions';
-   const open=document.createElement('button');open.type='button';open.textContent=say('Open','Открыть');open.onclick=()=>openHistoryJob(item.id);open.disabled=item.status==='failed';
+   const open=document.createElement('button');open.type='button';open.textContent=say('Open','Открыть');open.onclick=()=>openHistoryJob(item.id);open.disabled=['failed','cancelled'].includes(item.status);
    const download=document.createElement('button');download.type='button';download.textContent=say('Download','Скачать');download.disabled=item.status!=='ready';download.onclick=()=>void downloadHistoryItem(item);
    const reuse=document.createElement('button');reuse.type='button';reuse.textContent=say('Reuse prompt','Повторить запрос');reuse.disabled=!item.prompt;reuse.onclick=()=>prepareHistoryItem(item);
    const regenerate=document.createElement('button');regenerate.type='button';regenerate.textContent=say('Regenerate','Создать снова');regenerate.disabled=!item.prompt;regenerate.title=say('Prepares the previous prompt and settings. It does not start a paid generation.','Подготавливает прошлый запрос и настройки. Платная генерация сама не запускается.');regenerate.onclick=()=>prepareHistoryItem(item,{settings:true});
-   const remove=document.createElement('button');remove.type='button';remove.textContent=say('Delete','Удалить');remove.disabled=['queued','processing','finalizing'].includes(item.status);remove.onclick=()=>void deleteHistoryItem(item);
+   const remove=document.createElement('button');remove.type='button';remove.textContent=say('Delete','Удалить');remove.disabled=['queued','processing','finalizing'].includes(item.status);remove.title=remove.disabled?say('Deleting a running Video job is not cancellation. The provider may still be processing and charging.','Удаление выполняющегося видео не отменяет генерацию. Провайдер может продолжать обработку и начислять плату.'):'';remove.onclick=()=>void deleteHistoryItem(item);
    if(item.kind==='image'&&item.status==='ready'){
     const edit=document.createElement('button');edit.type='button';
     edit.textContent=say('Edit image','Редактировать изображение');
