@@ -190,3 +190,32 @@ test('BASE #28: older private redaction preview cannot replace a newer selected 
  expect(pixels).toEqual([20,20,210,255]);
  expect(posts).toBe(0);
 });
+
+
+test('BASE #28: redaction canceled during PNG encoding cannot publish sensitive output',async({page},info)=>{
+ test.skip(info.project.name.includes('mobile-'),'Precise desktop pointer path; physical mobile acceptance remains separate');
+ let uploads=0;page.on('request',r=>{if(r.method()==='POST')uploads++;});
+ await page.goto('/mobile-utility.html?tool=photo-redact');
+ const png=await fixture(page);
+ await page.locator('#utilityFiles').setInputFiles({name:'private.png',mimeType:'image/png',buffer:png});
+ const canvas=page.locator('#redactCanvas');
+ await expect(page.locator('#utilityRun')).toBeEnabled();
+ const box=await canvas.boundingBox();
+ await page.mouse.move(box.x+box.width*.2,box.y+box.height*.2);
+ await page.mouse.down();
+ await page.mouse.move(box.x+box.width*.75,box.y+box.height*.8,{steps:6});
+ await page.mouse.up();
+ await page.evaluate(()=>{
+  const toBlob=HTMLCanvasElement.prototype.toBlob;
+  HTMLCanvasElement.prototype.toBlob=function(callback,...args){
+   return toBlob.call(this,blob=>setTimeout(()=>callback(blob),650),...args);
+  };
+ });
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityCancel')).toBeEnabled();
+ await page.locator('#utilityCancel').click();
+ await expect(page.locator('#utilityRun')).toBeEnabled();
+ await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
+ await expect(page.locator('#utilityStatus')).toContainText('Canceled');
+ expect(uploads).toBe(0);
+});
