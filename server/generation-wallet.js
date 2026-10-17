@@ -1,3 +1,4 @@
+import {claimPurchasedGeneration} from './generation-purchased-proof.js';
 // Separate prepaid AI ledger. Existing subscription/trial credits are never read here.
 export const MAX_CREDITS = 1_000_000_000;
 function integer(value, name, max = MAX_CREDITS) {
@@ -165,6 +166,16 @@ export class GenerationWallet {
       await c.query('INSERT INTO vv_ai_adjustment(id,user_id,owner_user_id,delta,reason) VALUES($1,$2,$3,$4,$5)',[adjustmentId,userId,ownerUserId,delta,note]);
       return this.change(c,userId,w,adjustmentId,'owner_adjustment',delta,0,0);
     });
+  }
+  // Only the privileged provider-dispatch path may request a single-use proof.
+  // It MUST be used together with the B-owned consent/model/quote authorization.
+  // No call to this method starts or pays a provider. Existing reserve() is NOT proof.
+  async claimPurchasedDispatch({userId,jobId,credits,fingerprint,modelId,provider},{env=process.env}={}) {
+    try {
+      return await this.transaction(userId,async(c,w)=>claimPurchasedGeneration(c,{
+        env,userId,jobId,credits,fingerprint,modelId,provider,wallet:w
+      }));
+    } catch (_) { throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED'); }
   }
   async balance(userId) {
     identifier(userId); await this.init();
