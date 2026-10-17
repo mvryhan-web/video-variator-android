@@ -6,6 +6,11 @@ import {validateTemplate,installGenerationTemplates} from '../server/generation-
 test('template validation enforces data-driven schema and safe fields',()=>{
  const t=validateTemplate({title:'Product photo',slug:'product-photo',category:'ecommerce',generationType:'image',promptTemplate:'Create a clean product image of {{product_name}}',defaultModel:'gemini-3.1-flash-image',requiredInputTypes:['image','product_name'],defaultSettings:{ratio:'1:1'},rightsBasis:'owned',rightsNote:'Original Deepsyq-created prompt, no third-party media',active:true,featured:false,sortOrder:20});
  assert.equal(t.slug,'product-photo');assert.equal(t.generationType,'image');assert.deepEqual(t.requiredInputTypes,['image','product_name']);
+ // A JSON owner request must not publish an implicit '[object Object]', array, number or boolean.
+ for(const promptTemplate of [{instruction:'Create product image'},['Create product image'],42,true]){
+  assert.throws(()=>validateTemplate({...t,promptTemplate}),/INVALID_TEMPLATE/);
+  assert.throws(()=>validateTemplate({...t,active:false,featured:false,promptTemplate}),/INVALID_TEMPLATE/);
+ }
  assert.throws(()=>validateTemplate({...t,slug:'Bad slug'}),/INVALID_TEMPLATE/);
  assert.throws(()=>validateTemplate({...t,requiredInputTypes:['image','image']}),/INVALID_TEMPLATE/);
  assert.throws(()=>validateTemplate({...t,thumbnail:'http://unsafe.example/x.png'}),/INVALID_TEMPLATE/);
@@ -63,6 +68,11 @@ test('public template API exposes active templates and owner can create one',asy
   assert.equal(r.status,400);assert.equal((await r.json()).error,'TEMPLATE_RIGHTS_REQUIRED');
   r=await fetch(base+'/api/studio/admin/templates',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Missing Name',slug:'missing-name',category:'ads',generationType:'image',promptTemplate:'Original photo without a name variable',requiredInputTypes:['product_name'],rightsBasis:'owned',rightsNote:'Original prompt evidence',active:true})});
   assert.equal(r.status,400);assert.equal((await r.json()).error,'TEMPLATE_PRODUCT_NAME_PLACEHOLDER_REQUIRED');
+  // Reject malformed JSON prompt types through both owner HTTP API paths as well.
+  r=await fetch(base+'/api/studio/admin/templates',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Malformed prompt',slug:'malformed-prompt',category:'ads',generationType:'image',promptTemplate:{instruction:'Create an ad'},rightsBasis:'owned',rightsNote:'Original owned text rights',active:true})});
+  assert.equal(r.status,400);assert.equal((await r.json()).error,'INVALID_TEMPLATE');
+  r=await fetch(base+'/api/studio/admin/templates/t-1',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({promptTemplate:['Not a text field']})});
+  assert.equal(r.status,400);assert.equal((await r.json()).error,'INVALID_TEMPLATE');
   // HTTP submission of an overlong active prompt must return the documented validation error,
   // never an insert/update or a generic 503 (no provider or payment is involved).
   r=await fetch(base+'/api/studio/admin/templates',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:'Oversized prompt',slug:'oversized-prompt',category:'ads',generationType:'image',promptTemplate:'X'.repeat(2001),rightsBasis:'owned',rightsNote:'Original owned text rights',active:true})});
