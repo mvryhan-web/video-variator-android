@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {completedGenerationSummary} from '../server/generation-business-rates.js';
+import {completedGenerationSummary,trackedToolUsageSummary} from '../server/generation-business-rates.js';
 
 test('BASE #37 pending jobs cannot dilute completed generation failures',()=>{
  const completed=completedGenerationSummary({ready:9,failed:1});
@@ -28,4 +28,24 @@ test('BASE #37 malformed, negative or overflowing counters never fake business m
   assert.throws(()=>completedGenerationSummary({ready:bad,failed:0}),/INVALID_GENERATION_COUNT/);
  }
  assert.throws(()=>completedGenerationSummary({ready:Number.MAX_SAFE_INTEGER,failed:1}),/INVALID_GENERATION_COUNT/);
+});
+
+test('BASE #37 ranks only completed tracked tool runs, with stable ties',async()=>{
+ const statements=[];
+ const pool={query:async sql=>{statements.push(sql);return sql.includes('to_regclass')?{rows:[{reg:'vv_tool_runs'}]}:{rows:[{tool:'photo_batch',completed_runs:'11'}]};}};
+ assert.deepEqual(await trackedToolUsageSummary(pool),{trackedToolsAvailable:true,topTrackedTool:{tool:'photo_batch',completedRuns:11}});
+ assert.match(statements[1],/WHERE state='completed'/);
+ assert.match(statements[1],/ORDER BY completed_runs DESC,tool ASC LIMIT 1/);
+});
+test('BASE #37 absent tracking schema or no completions does not invent tool use',async()=>{
+ const missing={query:async sql=>{assert.match(sql,/to_regclass/);return {rows:[{reg:null}]};}};
+ assert.deepEqual(await trackedToolUsageSummary(missing),{trackedToolsAvailable:false,topTrackedTool:null});
+ const empty={query:async sql=>sql.includes('to_regclass')?{rows:[{reg:'vv_tool_runs'}]}:{rows:[]}};
+ assert.deepEqual(await trackedToolUsageSummary(empty),{trackedToolsAvailable:true,topTrackedTool:null});
+});
+test('BASE #37 invalid tracked tool ledger statistics fail closed',async()=>{
+ for(const item of [{tool:'video',completed_runs:'9007199254740992'},{tool:'../../private',completed_runs:'5'},{tool:'video',completed_runs:'0'},{tool:null,completed_runs:'3'}]){
+  const pool={query:async sql=>sql.includes('to_regclass')?{rows:[{reg:'vv_tool_runs'}]}:{rows:[item]}};
+  await assert.rejects(()=>trackedToolUsageSummary(pool),/INVALID_TRACKED_TOOL_METRIC/);
+ }
 });

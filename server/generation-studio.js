@@ -19,7 +19,7 @@ import {generationReadiness} from './generation-readiness.js';
 import {ownerProviderTaskId} from './generation-provider-task-id.js';
 import {generationFeatureEnabled,generationFeatureSwitches} from './generation-feature-flags.js';
 import {aiMigrationStatus} from './ai-migrations.js';
-import {completedGenerationSummary} from './generation-business-rates.js';
+import {completedGenerationSummary,trackedToolUsageSummary} from './generation-business-rates.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch}={}){
  const model=MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter);
  if(!model)throw Error('MODEL_NOT_CONNECTED');
@@ -205,13 +205,14 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
      FROM vv_ai_purchase p JOIN vv_users u ON u.id=p.user_id
      WHERE p.amount>0 AND p.amount>p.refunded_amount`)
   ]);
+  const trackedToolUsage=await trackedToolUsageSummary(pool);
   const typeCounts=creationTypes.rows.map(x=>({kind:x.kind,jobs:Number(x.jobs||0),ready:Number(x.ready||0),failed:Number(x.failed||0)})),u=users.rows[0]||{},j=jobs.rows[0]||{},total=Number(u.users||0),generating=Number(j.generating_users||0),jobCount=Number(j.jobs||0),failed=Number(j.failed||0),
    paid=Math.min(total,Math.max(0,Number(paidAccounts.rows[0]?.paying_accounts||0))),
    firstSuccess=Number(firstGenerations.rows[0]?.first_success_users||0),
    firstSuccess30d=Number(firstGenerations.rows[0]?.first_success_30d||0);
   res.json({users:{total,registrations30d:Number(u.registrations_30d||0),everSubscribed:Number(u.ever_subscribed||0),inactiveAfterSubscription:Number(u.inactive_after_subscription||0),generationAdoptionRate:total?generating/total:0,everSubscribedRate:total?Number(u.ever_subscribed||0)/total:0,
    aiCreditBuyers:paid,aiCreditBuyerConversionRate:total?paid/total:0},generation:{jobs:jobCount,generatingUsers:generating,
-   firstSuccessfulUsers:firstSuccess,firstSuccessfulUsers30d:firstSuccess30d,ready:Number(j.ready||0),failed,processing:Number(j.processing||0),failureRate:jobCount?failed/jobCount:0,...completedGenerationSummary({ready:Number(j.ready||0),failed}),jobsPerGeneratingUser:generating?jobCount/generating:0,averageSeconds:j.avg_seconds==null?null:Number(j.avg_seconds),providerCosts:costs.rows.map(c=>({currency:c.currency,amount:Number(c.amount||0),
+   firstSuccessfulUsers:firstSuccess,firstSuccessfulUsers30d:firstSuccess30d,...trackedToolUsage,ready:Number(j.ready||0),failed,processing:Number(j.processing||0),failureRate:jobCount?failed/jobCount:0,...completedGenerationSummary({ready:Number(j.ready||0),failed}),jobsPerGeneratingUser:generating?jobCount/generating:0,averageSeconds:j.avg_seconds==null?null:Number(j.avg_seconds),providerCosts:costs.rows.map(c=>({currency:c.currency,amount:Number(c.amount||0),
     readyPricedJobs:Number(c.ready_priced_jobs||0),
     averageReadyJobCost:c.avg_ready_cost==null?null:Number(c.avg_ready_cost)})),creditsCharged:Number(j.credits_charged||0),topModel:model.rows[0]?.model||null,creationTypes:typeCounts,topCreationType:typeCounts[0]?.kind||null},aiPurchases:purchases.rows.map(p=>({currency:p.currency,purchases:Number(p.purchases||0),netAmountMinor:Number(p.net_amount_minor||0),creditsPurchased:Number(p.credits_purchased||0)})),grossMargin:null,grossMarginReason:'Provider cost currency and live AI revenue economics are not yet verified.',
    unverifiedMetrics:{trialToPaid:null,churnRate:null,revenuePerUser:null,mostUsedTool:null},
