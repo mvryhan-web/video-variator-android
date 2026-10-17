@@ -720,7 +720,17 @@ async function deleteHistoryItem(item){
  if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
  if(!confirm(say('Delete this saved result? Downloaded copies are not affected.','Удалить сохранённый результат? Скачанные копии останутся.')))return;
  if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
- busy=true;availability();try{await api(`/api/studio/jobs/${encodeURIComponent(item.id)}`,{method:'DELETE'});if(job===item.id){++generation;clearResult();sessionStorage.removeItem('vu_generation_job');job=null;}$('status').textContent=say('Result deleted.','Результат удалён.');await loadHistory();}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}
+ busy=true;availability();try{
+   await api(`/api/studio/jobs/${encodeURIComponent(item.id)}`,{method:'DELETE'});
+   // A completed old-account DELETE must never alter the next account's open job,
+   // status or History after a silent same-tab account change.
+   if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
+   if(job===item.id){++generation;clearResult();sessionStorage.removeItem('vu_generation_job');job=null;}
+   $('status').textContent=say('Result deleted.','Результат удалён.');await loadHistory();
+  }catch(e){
+   if(!historySessionCurrent(accountToken))clearHistoryForAccountChange();
+   else $('status').textContent=errorText(e);
+  }finally{busy=false;availability();}
 }
 // A single, authenticated status check for an existing Video job. Never creates or retries a paid task.
 async function checkHistoryVideo(item){
