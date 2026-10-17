@@ -373,3 +373,48 @@ test('BASE #28: collage BFCache exit cannot reveal a late prior photo or result'
  await expect(page.locator('#collageStatus')).toBeEmpty();
  expect(posts).toBe(0);
 });
+
+
+test('BASE #28: Cancel during PDF merge save never publishes a late result, normal retry still works',async({page})=>{
+ let uploads=0;
+ page.on('request',r=>{if(r.method()==='POST')uploads++;});
+ // The PDF library is mocked only to force a deterministic slow serialization.
+ // No provider, upload or actual file content leaves the browser.
+ await page.addInitScript(()=>{
+  window.__base28PdfLate={saveEntered:0,saveCompleted:0};
+  window.PDFLib={
+   PDFDocument:{
+    async load(){return {getPageIndices:()=>[0]};},
+    async create(){return {
+     async copyPages(){return [{}];},
+     addPage(){},
+     async save(){
+      window.__base28PdfLate.saveEntered++;
+      await new Promise(resolve=>setTimeout(resolve,500));
+      window.__base28PdfLate.saveCompleted++;
+      return new Uint8Array([37,80,68,70,45,49,46,55]); // mock %PDF-1.7
+     }
+    };}
+   },
+   StandardFonts:{},
+   rgb:()=>({})
+  };
+ });
+ await page.goto('/mobile-utility.html?tool=pdf-merge');
+ await page.locator('#utilityFiles').setInputFiles({
+  name:'test-document.pdf',mimeType:'application/pdf',buffer:Buffer.from('%PDF-1.7 mock')
+ });
+ await page.locator('#utilityRun').click();
+ await expect.poll(()=>page.evaluate(()=>window.__base28PdfLate.saveEntered)).toBe(1);
+ await expect(page.locator('#utilityCancel')).toBeEnabled();
+ await page.locator('#utilityCancel').click();
+ await expect(page.locator('#utilityStatus')).toContainText('Canceled');
+ await expect.poll(()=>page.evaluate(()=>window.__base28PdfLate.saveCompleted)).toBe(1);
+ await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
+ await expect(page.locator('#utilityRun')).toBeEnabled();
+ // A subsequent explicit user run clears the old cancellation flag.
+ await page.locator('#utilityRun').click();
+ await expect.poll(()=>page.evaluate(()=>window.__base28PdfLate.saveCompleted)).toBe(2);
+ await expect(page.locator('#utilityResults .utility-result')).toContainText('merged.pdf');
+ expect(uploads).toBe(0);
+});
