@@ -1,4 +1,4 @@
-name: BASE #4 OpenAI Images M0 (offline)
+name: 'BASE #4 OpenAI Images M0 (offline)'
 on:
   pull_request:
     paths:
