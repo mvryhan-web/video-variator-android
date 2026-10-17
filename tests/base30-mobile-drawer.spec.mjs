@@ -136,3 +136,37 @@ test('BASE #30: desktop retains original rail collapse and stays keyboard access
  await expect(page.locator('body')).not.toHaveClass(/sidebar-collapsed/);
  await expect(rail.locator('a[aria-label="Video Uniquifier"]')).toBeVisible();
 });
+
+
+test('BASE #30: keyboard Tab remains inside the mobile drawer and focus returns to the opener',async({page},info)=>{
+ test.skip(!info.project.name.startsWith('mobile-'),'mobile viewport only');
+ await prepare(page);
+ await page.setViewportSize({width:320,height:780});
+ await page.goto('/deepsyq.html');
+ await page.locator('#menu').click();
+ await expect(page.locator('#sidebar')).not.toHaveJSProperty('inert',true);
+ await expect(page.locator('#sidebarToggle')).toBeFocused();
+ const firstAndLast=await page.locator('#sidebar').evaluate(el=>{
+  const nodes=[...el.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+   .filter(item=>item.getClientRects().length>0&&!item.hidden&&getComputedStyle(item).visibility!=='hidden');
+  return [nodes[0]?.id||nodes[0]?.outerHTML.slice(0,100),nodes.at(-1)?.id||nodes.at(-1)?.outerHTML.slice(0,100)];
+ });
+ expect(firstAndLast[0]).toBeTruthy();
+ expect(firstAndLast[1]).toBeTruthy();
+ await page.locator('#sidebar').evaluate(el=>{
+  const nodes=[...el.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+   .filter(item=>item.getClientRects().length>0&&!item.hidden&&getComputedStyle(item).visibility!=='hidden');
+  nodes.at(-1).focus();
+ });
+ await page.keyboard.press('Tab');
+ expect(await page.locator('#sidebar').evaluate(el=>document.activeElement===
+  [...el.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+  .filter(item=>item.getClientRects().length>0&&!item.hidden&&getComputedStyle(item).visibility!=='hidden')[0])).toBe(true);
+ await page.keyboard.press('Shift+Tab');
+ expect(await page.locator('#sidebar').evaluate(el=>document.activeElement===
+  [...el.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+  .filter(item=>item.getClientRects().length>0&&!item.hidden&&getComputedStyle(item).visibility!=='hidden').at(-1))).toBe(true);
+ await page.keyboard.press('Escape');
+ await expect(page.locator('#menu')).toBeFocused();
+ await expect(page.locator('#sidebar')).toHaveJSProperty('inert',true);
+});
