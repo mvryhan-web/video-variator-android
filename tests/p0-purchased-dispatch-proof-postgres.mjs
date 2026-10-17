@@ -26,16 +26,16 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   await pool.query(`CREATE TABLE vv_ai_order(id TEXT PRIMARY KEY,user_id TEXT NOT NULL,
     session_id TEXT UNIQUE,snapshot JSONB NOT NULL)`);
   await pool.query(`CREATE TABLE vv_generation_jobs(id TEXT PRIMARY KEY,user_id TEXT NOT NULL,
-    model TEXT,provider TEXT,status TEXT,operation TEXT,deleted BOOLEAN NOT NULL DEFAULT false,
+    kind TEXT NOT NULL,model TEXT,provider TEXT,status TEXT,operation TEXT,deleted BOOLEAN NOT NULL DEFAULT false,
     request_fingerprint TEXT,credits_reserved INTEGER NOT NULL DEFAULT 0)`);
   await pool.query(sql);await pool.query(sql);
   await pool.query(`CREATE TABLE vv_users (id TEXT PRIMARY KEY,plan TEXT,
     stripe_customer_id TEXT,stripe_subscription_id TEXT,subscription_status TEXT)`);
   async function job(userId,jobId,credits){
-    await pool.query('INSERT INTO vv_generation_jobs(id,user_id,model,provider,status,request_fingerprint,credits_reserved) VALUES($1,$2,$3,$4,$5,$6,$7)',
-       [jobId,userId,'model_v','Google','processing','sha256abc',credits]);
+    await pool.query('INSERT INTO vv_generation_jobs(id,user_id,kind,model,provider,status,request_fingerprint,credits_reserved) VALUES($1,$2,$3,$4,$5,$6,$7,$8)',
+       [jobId,userId,'video','model_v','Google','processing','sha256abc',credits]);
     await wallet.reserve({userId,jobId,credits,fingerprint:'sha256abc'});
-    return {userId,jobId,credits,fingerprint:'sha256abc',modelId:'model_v',provider:'Google'};
+    return {userId,jobId,kind:'video',credits,fingerprint:'sha256abc',modelId:'model_v',provider:'Google'};
   }
   async function paid(userId,sessionId,credits){
     await pool.query('INSERT INTO vv_ai_order(id,user_id,session_id,snapshot) VALUES($1,$2,$3,$4)',
