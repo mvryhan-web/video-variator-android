@@ -48,3 +48,30 @@ test('BASE #20: spoofed/malformed image replacement never displaces the actual u
  await expect(page.locator('#promptPreview')).toHaveValue(before);
  expect(uploads).toBe(0);
 });
+
+
+test('BASE #20: keyboard form submit cannot skip pending file signature validation',async({page})=>{
+ let jobs=0;
+ page.on('request',req=>{if(req.method()==='POST'&&/\/api\/studio\/jobs/.test(req.url()))jobs++;});
+ await page.goto('/product-video.html');
+ await page.evaluate(()=>{
+  const nativeSlice=File.prototype.slice;
+  File.prototype.slice=function(...args){
+   const sample=nativeSlice.apply(this,args);
+   return {arrayBuffer:()=>new Promise((resolve,reject)=>{
+    setTimeout(()=>sample.arrayBuffer().then(resolve,reject),800);
+   })};
+  };
+ });
+ const original=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.locator('#photos').setInputFiles({name:'reviewed-product.png',mimeType:'image/png',buffer:original});
+ await expect(page.locator('#continue')).toBeDisabled();
+ // Native requestSubmit can run despite the disabled button. This must fail
+ // closed until both product image and optional logo have finished validation.
+ await page.locator('#workflow').evaluate(form=>form.requestSubmit());
+ await expect(page.locator('#status')).toContainText('Finish checking your images');
+ await expect(page).toHaveURL(/product-video\.html$/);
+ await expect(page.locator('#continue')).toBeEnabled();
+ await expect(page.locator('#photoPreview')).toContainText('reviewed-product.png');
+ expect(jobs).toBe(0);
+});
