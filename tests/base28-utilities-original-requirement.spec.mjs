@@ -512,3 +512,84 @@ test('BASE #28: invalid resized-photo dimensions also purge the original private
  expect(sizes.length).toBeGreaterThanOrEqual(1);
  expect(sizes.every(([w,h])=>w===1&&h===1)).toBe(true);
 });
+
+
+test('BASE #28: OCR text and selected source are cleared on BFCache pagehide',async({page})=>{
+ let posts=0;
+ page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.addInitScript(()=>{
+  window.Tesseract={createWorker:async()=>({
+   async recognize(){return {data:{text:'PRIVATE ID OCR CONTENT'}};},
+   async terminate(){}
+  })};
+ });
+ await page.goto('/mobile-utility.html?tool=photo-ocr');
+ await page.locator('#utilityFiles').setInputFiles({
+  name:'confidential-ocr.png',mimeType:'image/png',buffer:await fixture(page)
+ });
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityResults textarea')).toHaveValue('PRIVATE ID OCR CONTENT');
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+ await expect(page.locator('#utilityFiles')).toHaveValue('');
+ await expect(page.locator('#utilityResults')).toBeEmpty();
+ await page.evaluate(()=>window.dispatchEvent(new Event('pageshow')));
+ await expect(page.locator('#utilityResults textarea')).toHaveCount(0);
+ expect(posts).toBe(0);
+});
+
+test('BASE #28: mobile photo output blob is revoked when leaving for BFCache',async({page})=>{
+ const png=await page.goto('/mobile-utility.html?tool=photo-convert').then(()=>fixture(page));
+ let posts=0;
+ page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.evaluate(()=>{
+  window.__base28RevokedPhotoUrls=[];
+  const revoke=URL.revokeObjectURL;
+  URL.revokeObjectURL=function(url){
+   window.__base28RevokedPhotoUrls.push(url);
+   return revoke.call(URL,url);
+  };
+ });
+ await page.locator('#utilityFiles').setInputFiles({
+  name:'confidential-photo.png',mimeType:'image/png',buffer:png
+ });
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityResults .utility-result img')).toBeVisible();
+ const url=await page.locator('#utilityResults .utility-result img').getAttribute('src');
+ expect(url).toMatch(/^blob:/);
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+ await expect(page.locator('#utilityFiles')).toHaveValue('');
+ await expect(page.locator('#utilityResults')).toBeEmpty();
+ expect(await page.evaluate(url=>window.__base28RevokedPhotoUrls.includes(url),url)).toBe(true);
+ expect(posts).toBe(0);
+});
+
+test('BASE #28: OCR recognition finishing after pagehide never restores private output',async({page})=>{
+ let posts=0;
+ page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.addInitScript(()=>{
+  window.__base28OcrLate={started:0,finished:0,terminated:0};
+  window.Tesseract={createWorker:async()=>({
+   async recognize(){
+    window.__base28OcrLate.started++;
+    await new Promise(done=>setTimeout(done,650));
+    window.__base28OcrLate.finished++;
+    return {data:{text:'LATE PRIVATE DOCUMENT'}};
+   },
+   async terminate(){window.__base28OcrLate.terminated++;}
+  })};
+ });
+ await page.goto('/mobile-utility.html?tool=photo-ocr');
+ await page.locator('#utilityFiles').setInputFiles({
+  name:'confidential-late.png',mimeType:'image/png',buffer:await fixture(page)
+ });
+ await page.locator('#utilityRun').click();
+ await expect.poll(()=>page.evaluate(()=>window.__base28OcrLate.started)).toBe(1);
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+ await expect(page.locator('#utilityFiles')).toHaveValue('');
+ await expect.poll(()=>page.evaluate(()=>window.__base28OcrLate.terminated)).toBe(1);
+ await expect(page.locator('#utilityResults')).toBeEmpty();
+ await page.evaluate(()=>window.dispatchEvent(new Event('pageshow')));
+ await expect(page.locator('#utilityResults textarea')).toHaveCount(0);
+ expect(await page.evaluate(()=>window.__base28OcrLate.finished)).toBe(1);
+ expect(posts).toBe(0);
+});
