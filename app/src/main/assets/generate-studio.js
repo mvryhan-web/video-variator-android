@@ -1,6 +1,7 @@
 import {saveLocal} from './ai-media.js';
 import {MODEL_CATALOG,MODELS} from './generate-models.js';
 import {takeStudioHandoff} from './studio-handoff.js';
+import {inspectProductVideoHandoff} from './studio-product-video-role-guard.mjs';
 import {studioCreditWalletState} from './studio-credit-wallet.js';
 const $=id=>document.getElementById(id),ru=navigator.language.startsWith('ru');
 const say=(en,r)=>ru?r:en;
@@ -895,6 +896,18 @@ $('remove').onclick=async()=>{if(!job||busy)return;busy=true;availability();try{
 async function applyLocalStudioHandoff(){
  try{
   const h=await takeStudioHandoff();if(!h)return false;
+  // A Product Video logo is NOT a product photo, first/last frame or scene
+  // reference. No current Video model supports a distinct advertising overlay.
+  // Reject the one-shot handoff *before* mutating prompt, refs or consent.
+  const productRoles=inspectProductVideoHandoff(h);
+  if(!productRoles.allowed){
+   $('consent').checked=false;availability();
+   $('status').textContent=productRoles.reason==='PRODUCT_VIDEO_LOGO_OVERLAY_UNSUPPORTED'
+    ?say('Product Video was not imported: this Video model cannot use a separate ad-logo overlay. The logo was NOT attached as a product photo. Return to Product Video, remove the optional logo, and open Studio again. No generation started.','Product Video не импортирован: эта видеомодель не умеет накладывать отдельный рекламный логотип. Логотип НЕ добавлен как фото товара. Вернитесь в Product Video, уберите дополнительный логотип и повторите переход. Генерация не запускалась.')
+    :say('Product Video was not imported because photo/logo roles are ambiguous. Return to Product Video and prepare the original photos again. No generation started.','Product Video не импортирован: роли фотографий и логотипа не определены. Вернитесь в Product Video и заново подготовьте исходные фото товара. Генерация не запускалась.');
+   return 'blocked'; // Do not silently apply a different workflow template.
+  }
+
   const target=h.kind==='music'?'music':h.kind;if(target!==kind)select(target);if(target==='video'){videoDraftNeedsPhotos=false;videoDraftExpectedRefs=0;videoDraftPendingMode='text';}
   if(h.defaultModel&&catalog.some(m=>m.id===h.defaultModel&&m.kind===target)){modelId=h.defaultModel;renderModel();}
   $('prompt').value=String(h.prompt||'').slice(0,2000);
