@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {buildOpenAIImageRequest,decodeOpenAIImageResponse,generateOpenAIImage} from '../server/generation-openai-image.js';
 
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMQCegBAAFsAPH6cDjBAAAAAElFTkSuQmCC','base64');
-const jpg=Buffer.from([255,216,255,224,4,5,6,7,255,217]);
+const jpg=Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDhKKKK+kPAP//Z','base64');
 const model={id:'gpt-image-2.5-flare',enabled:true,quality:'low',
  sizes:{'1:1':{'1K':'1024x1024'},'3:2':{'1K':'1536x1024'}},
  formats:['png','jpeg'],maxReferences:3};
@@ -142,4 +142,14 @@ test('reject signature-only forged or truncated PNG output and reference photos'
  assert.throws(()=>decodeOpenAIImageResponse({data:[{b64_json:invalidEnd.toString('base64')}]},'png'),/INVALID_PROVIDER_MEDIA/);
  const invalidDimension=Buffer.from(png);invalidDimension.writeUInt32BE(0,16);
  assert.throws(()=>decodeOpenAIImageResponse({data:[{b64_json:invalidDimension.toString('base64')}]},'png'),/INVALID_PROVIDER_MEDIA/);
+});
+
+test('reject forged/truncated JPEG reference or output with valid magic but no frame',()=>{
+ const forged=Buffer.concat([Buffer.from([255,216,255,224]),Buffer.alloc(130),Buffer.from([255,217])]);
+ assert.throws(()=>decodeOpenAIImageResponse({data:[{b64_json:forged.toString('base64')}]},'jpeg'),/INVALID_PROVIDER_MEDIA/);
+ assert.throws(()=>buildOpenAIImageRequest({...input,references:[{mimeType:'image/jpeg',data:forged.toString('base64')}]},model),/INVALID_REFERENCES/);
+ const broken=Buffer.from(jpg);
+ const sof=broken.indexOf(Buffer.from([255,192]));assert.ok(sof>0);
+ broken.writeUInt16BE(0,sof+5);
+ assert.throws(()=>decodeOpenAIImageResponse({data:[{b64_json:broken.toString('base64')}]},'jpeg'),/INVALID_PROVIDER_MEDIA/);
 });
