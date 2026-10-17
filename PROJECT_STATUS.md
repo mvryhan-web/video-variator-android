@@ -1,5 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #34 quota safety continuation (2026-10-17)
+
+- Original BASE #34 / Issue #73; existing Agent B PR #157 reconciled by non-force two-parent merge commit `5f1f83dc` and extended by test commit `71b5b79`. Exact comparison vs integration branch contains only two B files: `.github/workflows/base34-generation-quota.yml` and `tests/generation-policy-limits-unit.mjs`. No server runtime policy changed.
+- Now eight no-provider Node test declarations, adding malicious userId SQL parameterization and DB advisory-lock failure fail-closed. Previous exact-head #719e170 GitHub Actions 2/2 SUCCESS; current #71b5b79 GitHub #39017338900 and #39017338894 QUEUED — **new head NOT VERIFIED / DRAFT / UNMERGED**. Do not mark full BASE #34 DONE.
+- B PR #186 Video History: five earlier GitHub checks successful, but current GitHub mergeable=false; held to protect A's overlapping Image History #170. B PR #198 purchased-only contract remains UNWIRED pending D signed, settled-payment/atomic single-dispatch handoff; B #165/#195 already merged to BASE, not main/live.
+- Etsy strict product-photo fidelity is scoped to C PR #196; no product image/MP4 supplied to the coding task. No real AI spend, Stripe, S3, DB migration, provider activation, locked Home/logo modification, main/Render deployment.
+
+
 
 ## Agent 5 — 2026-10-17 P0 CI queue and safe migration coordination
 
