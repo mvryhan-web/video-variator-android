@@ -237,3 +237,34 @@ test('BASE #28: sensitive redaction source is purged before browser history rest
  await expect(page.locator('#utilityRun')).toBeDisabled();
  expect(uploads).toBe(0);
 });
+
+
+test('BASE #28: changing photo or leaving revokes private redaction blob preview URLs',async({page},info)=>{
+ test.skip(info.project.name.includes('mobile-'),'Desktop pointer flow only; physical mobile acceptance separate');
+ await page.goto('/mobile-utility.html?tool=photo-redact');
+ await page.evaluate(()=>{
+  const revoke=URL.revokeObjectURL;
+  window.__privateRevocations=[];
+  URL.revokeObjectURL=function(url){window.__privateRevocations.push(url);return revoke.call(URL,url);};
+ });
+ await page.locator('#utilityFiles').setInputFiles({name:'private-first.png',mimeType:'image/png',buffer:await fixture(page)});
+ await expect(page.locator('#utilityRun')).toBeEnabled();
+ const box=await page.locator('#redactCanvas').boundingBox();
+ await page.mouse.move(box.x+box.width*.2,box.y+box.height*.2);
+ await page.mouse.down();
+ await page.mouse.move(box.x+box.width*.7,box.y+box.height*.7,{steps:5});
+ await page.mouse.up();
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityResults .utility-result img')).toBeVisible();
+ const preview=await page.locator('#utilityResults .utility-result img').getAttribute('src');
+ expect(preview).toMatch(/^blob:/);
+ await page.locator('#utilityFiles').setInputFiles({name:'private-second.png',mimeType:'image/png',buffer:await fixture(page)});
+ await expect.poll(()=>page.evaluate(url=>window.__privateRevocations.includes(url),preview)).toBe(true);
+ await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
+ await expect(page.locator('#utilityRun')).toBeEnabled();
+ const current=await page.locator('#utilityFiles').inputValue();
+ expect(current).toContain('private-second.png');
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+ await expect(page.locator('#utilityFiles')).toHaveValue('');
+ await expect(page.locator('#redactCanvas')).toHaveJSProperty('width',1);
+});
