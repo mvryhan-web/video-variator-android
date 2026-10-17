@@ -20,7 +20,12 @@ export function validateModelControlPatch(body){
   if(body.enabled!==null&&typeof body.enabled!=='boolean')throw Error('INVALID_MODEL_CONTROL');
   out.enabled=body.enabled;
  }
- if(Object.hasOwn(body,'priority'))out.priority=integerOrNull(body.priority,0,10000);
+ // PostgreSQL priority is NOT NULL. Treat invalid null as an owner input error,
+ // rather than issuing a write that fails as a misleading 503 DB outage.
+ if(Object.hasOwn(body,'priority')){
+  if(body.priority===null)throw Error('INVALID_MODEL_CONTROL');
+  out.priority=integerOrNull(body.priority,0,10000);
+ }
  if(Object.hasOwn(body,'markupBps'))out.markupBps=integerOrNull(body.markupBps,0,100000);
  if(Object.hasOwn(body,'internalCostMicros'))out.internalCostMicros=integerOrNull(body.internalCostMicros,0,1_000_000_000_000);
  if(Object.hasOwn(body,'maintenance')){
@@ -60,18 +65,25 @@ export async function updateModelControl(pool,{modelId,userId,patch,catalog}){
  if(!validModelId(modelId)||!catalog.some(m=>m.id===modelId))throw Error('MODEL_NOT_FOUND');
  const p=validateModelControlPatch(patch);await initModelControls(pool);
  const modelDefault=catalog.find(m=>m.id===modelId);
- const current=await getModelControl(pool,modelId)||{enabledOverride:null,priority:Number(modelDefault?.control?.priority??modelDefault?.priority??100),markupBps:null,internalCostMicros:null,maintenance:false};
- const next={
-  enabledOverride:Object.hasOwn(p,'enabled')?p.enabled:current.enabledOverride,
-  priority:Object.hasOwn(p,'priority')?p.priority:current.priority,
-  markupBps:Object.hasOwn(p,'markupBps')?p.markupBps:current.markupBps,
-  internalCostMicros:Object.hasOwn(p,'internalCostMicros')?p.internalCostMicros:current.internalCostMicros,
-  maintenance:Object.hasOwn(p,'maintenance')?p.maintenance:current.maintenance
- };
+ const defaultPriority=Number(modelDefault?.control?.priority??modelDefault?.priority??100);
+ // A group update and an individual owner edit can run concurrently.
+ // Read-then-write of every field would overwrite unrelated changes made by
+ // the other request. One PostgreSQL UPSERT locks the row and updates ONLY
+ // the fields explicitly present in this validated owner patch.
+ const present=key=>Object.hasOwn(p,key);
  await pool.query(`INSERT INTO vv_ai_model_control(model_id,enabled_override,priority,markup_bps,internal_cost_micros,maintenance,updated_by,updated_at)
  VALUES($1,$2,$3,$4,$5,$6,$7,NOW())
- ON CONFLICT(model_id) DO UPDATE SET enabled_override=EXCLUDED.enabled_override,priority=EXCLUDED.priority,markup_bps=EXCLUDED.markup_bps,internal_cost_micros=EXCLUDED.internal_cost_micros,maintenance=EXCLUDED.maintenance,updated_by=EXCLUDED.updated_by,updated_at=NOW()`,
- [modelId,next.enabledOverride,next.priority,next.markupBps,next.internalCostMicros,next.maintenance,userId||null]);
+ ON CONFLICT(model_id) DO UPDATE SET
+ enabled_override=CASE WHEN $8::boolean THEN EXCLUDED.enabled_override ELSE vv_ai_model_control.enabled_override END,
+ priority=CASE WHEN $9::boolean THEN EXCLUDED.priority ELSE vv_ai_model_control.priority END,
+ markup_bps=CASE WHEN $10::boolean THEN EXCLUDED.markup_bps ELSE vv_ai_model_control.markup_bps END,
+ internal_cost_micros=CASE WHEN $11::boolean THEN EXCLUDED.internal_cost_micros ELSE vv_ai_model_control.internal_cost_micros END,
+ maintenance=CASE WHEN $12::boolean THEN EXCLUDED.maintenance ELSE vv_ai_model_control.maintenance END,
+ updated_by=EXCLUDED.updated_by,updated_at=NOW()`,
+ [modelId,p.enabled??null,present('priority')?p.priority:defaultPriority,
+  p.markupBps??null,p.internalCostMicros??null,p.maintenance??false,userId||null,
+  present('enabled'),present('priority'),present('markupBps'),
+  present('internalCostMicros'),present('maintenance')]);
  return getModelControl(pool,modelId);
 }
 
