@@ -15,6 +15,13 @@ on:
 permissions:
   contents: read
 
+# Unique workflow-file key: several existing workflows share the display name "BASE".
+# Cancel only superseded runs of THIS workflow on the SAME PR or ref.
+# Never cancel another agent's different PR or disable a safety assertion.
+concurrency:
+  group: agent5-deepsyq-ai-apps-discovery-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ai-apps-discovery:
     runs-on: ubuntu-latest
