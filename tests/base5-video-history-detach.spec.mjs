@@ -45,3 +45,39 @@ test('BASE #5: History Reuse prompt-only retains current Video photos',async({pa
  await expect(page.locator('#refPreview img')).toHaveCount(1);
  expect(paid).toBe(0);
 });
+
+
+test('BASE #5: video History uses original queued/running/succeeded/failed labels, never treats Delete as Cancel',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await setup(page);
+ let paid=0,deleteCalls=0;
+ page.on('request',r=>{
+  if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))paid++;
+  if(r.method()==='DELETE'&&r.url().includes('/api/studio/jobs'))deleteCalls++;
+ });
+ const statusRows=['queued','processing','finalizing','ready','failed','cancelled'];
+ await page.route('**/api/studio/jobs?filter=*',route=>route.fulfill({json:{items:statusRows.map((status,i)=>({
+  id:'lifecycle-'+i,kind:'video',status,provider:'Google',
+  model:'veo-3.1-lite-generate-preview',prompt:'Lifecycle status test',
+  settings:{ratio:'16:9',videoInputMode:'text',referenceCount:0},
+  createdAt:'2026-10-17T08:00:00.000Z'
+ }))}}));
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#showHistory').click();
+ await expect(page.locator('.history-card')).toHaveCount(6);
+ const labels=['Queued','Running','Running','Succeeded','Failed','Cancelled'];
+ for(let i=0;i<statusRows.length;i++){
+  const card=page.locator('.history-card').nth(i);
+  await expect(card.locator('.history-status')).toHaveAttribute('data-status',statusRows[i]);
+  await expect(card.locator('.history-status')).toHaveText(labels[i]);
+ }
+ await expect(page.locator('.history-card').nth(2).locator('.history-status')).toHaveAttribute('title',/credits are being settled/);
+ const running=page.locator('.history-card').nth(1);
+ const remove=running.locator('.history-actions button').filter({hasText:'Delete'});
+ await expect(remove).toBeDisabled();
+ await expect(remove).toHaveAttribute('title',/not cancellation/);
+ const cancelled=page.locator('.history-card').nth(5);
+ await expect(cancelled.locator('.history-actions button').filter({hasText:'Open'})).toBeDisabled();
+ expect(paid).toBe(0);
+ expect(deleteCalls).toBe(0);
+});
