@@ -994,6 +994,34 @@ test('BASE 24: switched account cannot recover History prompt via an earlier Stu
  expect(paid).toBe(0);
 });
 
+test('BASE 24: saved History Open Continue Image reference is cleared on account rotation',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','open-edit-image-A'));
+ const model={kind:'image',label:'Fixture image',id:'image-fixture-owner-scope',ratios:['1:1'],
+  references:2,enabled:true,adapter:true,provider:'Test',quality:'1K'};
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[model],catalog:[model]}}));
+ let submitted=0;page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')submitted++;});
+ await page.route('**/api/studio/jobs?filter=*',r=>r.fulfill({json:{items:[{
+  id:'saved-open-image-A',kind:'image',status:'ready',model:model.id,
+  prompt:'PRIVATE IMAGE OPEN ACCOUNT A',createdAt:'2026-10-17T08:00:00Z'
+ }]}}));
+ await page.route('**/api/studio/jobs/saved-open-image-A',r=>r.fulfill({json:{
+  id:'saved-open-image-A',kind:'image',status:'ready',mime:'image/png'
+ }}));
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.route('**/api/studio/jobs/saved-open-image-A/media',r=>r.fulfill({contentType:'image/png',body:png}));
+ await page.goto('/generate-studio.html?studio=image&view=history');
+ await expect(page.locator('.history-card')).toContainText('PRIVATE IMAGE OPEN ACCOUNT A');
+ await page.locator('.history-card').getByRole('button',{name:'Open',exact:true}).click();
+ await expect(page.locator('#continueImage')).toBeVisible();
+ await page.locator('#continueImage').click();
+ await expect(page.locator('#refPreview img')).toHaveCount(1);
+ await page.evaluate(()=>localStorage.setItem('vv_token','open-edit-image-B'));
+ await page.locator('#prompt').click();
+ await expect(page.locator('#refPreview img')).toHaveCount(0);
+ await expect(page.locator('#prompt')).toHaveValue('');
+ expect(submitted).toBe(0);
+});
+
 test('BASE 24: History Edit image may not append old-account reference after delayed local decode',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vv_token','history-edit-A'));
  await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
