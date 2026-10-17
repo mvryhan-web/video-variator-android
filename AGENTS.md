@@ -19,7 +19,7 @@
 - [Approved Home design](docs/DEEPSYQ_OWNER_APPROVED_HOME_DESIGN.md), [exact original 13-video shot list](docs/DEEPSYQ_HOME_13_VIDEO_MASTER_SHOTLIST.md), [sole official site + app logo](docs/DEEPSYQ_OFFICIAL_BRAND.md). No changes to owner-locked visuals without permission; never fake media/demo/social features.
 - [Global SEO/AI-search release checklist](docs/DEEPSYQ_SEO_RELEASE_CHECKLIST.md), Issue [#156](https://github.com/mvryhan-web/video-variator-android/issues/156).
 - [Production AI deployment gates](docs/AI_PRODUCTION_ROLLOUT.md) and `PRODUCTION_DEPLOYMENT_SPEC.md`; purchased-only gate Issue [#182](https://github.com/mvryhan-web/video-variator-android/issues/182).
-- [Roadmap](docs/DEEPSYQ_ROADMAP.md) and original Blocks 1–7 preserved. BASE-first remains effective for four agents; do not auto-reassign.
+- [Roadmap](docs/DEEPSYQ_ROADMAP.md) and all **eight** approved roadmap blocks registered: original Blocks 1–7 plus separately owner-approved [Block 8 — «Волшебный нюх»](docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_8.txt) ([Issue #187](https://github.com/mvryhan-web/video-variator-android/issues/187); source merged via PR #188). BASE-first remains effective for four agents; Block 8 is post-MVP and not assigned or implemented. Do not auto-reassign.
 - **Repository:** `mvryhan-web/video-variator-android`; development/integration `deepsyq-platform`; `main` auto-deploys Render production. No direct risky merge, destructive DB migration, provider expenses, live billing or production/root activation without required owner authorizations, backups and testing. Protect existing Video Uniquifier and user's data.
 
 ## 4. Required update for every meaningful work block
