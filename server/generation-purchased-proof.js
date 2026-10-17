@@ -10,7 +10,8 @@ export function purchasedFundingProof({paidCredits,otherSpentCredits,requiredCre
 }
 export async function claimPurchasedGeneration(c,{env={},userId,jobId,credits,fingerprint,modelId,provider,wallet}={}){
  if(env.AI_PURCHASED_ONLY_DISPATCH_ENABLED!=='true'||env.AI_BILLING_MODE!=='live'||
-    env.AI_PUBLIC_GENERATION_ENABLED!=='true'||env.AI_STUDIO_WALLET_ENABLED!=='true')deny();
+    env.AI_LIVE_BILLING_APPROVED!=='true'||env.AI_PUBLIC_GENERATION_ENABLED!=='true'||
+    env.AI_STUDIO_WALLET_ENABLED!=='true')deny();
  if(!textId(userId)||!textId(jobId)||!textId(fingerprint)||!textId(modelId)||!textId(provider)||
     !Number.isSafeInteger(credits)||credits<1||credits>10_000_000||
     !wallet||!Number.isSafeInteger(wallet.reserved)||wallet.reserved<credits||wallet.debt!==0)deny();
