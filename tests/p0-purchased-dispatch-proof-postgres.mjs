@@ -71,6 +71,23 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   await wallet.claimPurchasedDispatch(first,{env});
   const second=await job('customer_mix','job_mixed_second',50);
   await assert.rejects(()=>wallet.claimPurchasedDispatch(second,{env}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+  // Only the ACTUAL captured amount is paid provider spend. A historical
+  // 60-credit reservation settled at 20 returns 40; remaining paid budget
+  // must permit a separate valid 60-credit reservation from a 100-credit pack.
+  await paid('customer_partial_settle','cs_live_partialsettle',100);
+  const settled=await job('customer_partial_settle','job_partial_settle',60);
+  await wallet.settle({userId:settled.userId,jobId:settled.jobId,
+    outcome:'success',actualCredits:20});
+  const allowedAfterReturn=await job('customer_partial_settle','job_after_return',60);
+  const returnedProof=await wallet.claimPurchasedDispatch(allowedAfterReturn,{env});
+  assert.equal(returnedProof.purchasedCreditsAvailableBeforeReserve,80);
+  // Missing or contradictory capture audit MUST NOT be interpreted as a
+  // valid credit return. The same 60 spent reservation then counts in full.
+  await pool.query("DELETE FROM vv_ai_ledger WHERE user_id='customer_partial_settle' AND reference='job_partial_settle' AND kind='captured'");
+  const noAudit=await job('customer_partial_settle','job_without_audit',10);
+  await assert.rejects(()=>wallet.claimPurchasedDispatch(noAudit,{env}),
+    /AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+
   // A *real invoice.paid grant path* (simulated signed-webhook input, no Stripe
   // API call) is different from Checkout. It must record separate LIVE proof.
   const subEnv={AI_SUBSCRIPTION_CREDITS_ENABLED:'true',
@@ -123,7 +140,7 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   assert.equal(await grantPaidSubscriptionInvoice({event:subEvent('in_Unpaid','pi_Unpaid',{amount_paid:0}),env:subEnv,pool,wallet}),false);
 
   const total=await pool.query('SELECT count(*)::int AS n FROM vv_ai_purchased_dispatch_claim');
-  assert.equal(total.rows[0].n,4,'pack, mixed-funding pack, subscription, and valid partially paid subscription only');
+  assert.equal(total.rows[0].n,5,'pack, mixed-funding pack, net-settled pack, subscription and valid partially paid subscription only');
  }finally{
   await pool.end();
   await admin.query('DROP SCHEMA IF EXISTS '+schema+' CASCADE').catch(()=>{});
