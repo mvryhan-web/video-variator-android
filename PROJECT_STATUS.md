@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent D — P0 #182 purchased credit wallet and launch gate HEAD (2026-10-17)
+
+- [PR #204](https://github.com/mvryhan-web/video-variator-android/pull/204) **DRAFT UNMERGED**, branch `p0-purchased-credit-dispatch-proof-20261017`, latest pushed code HEAD `7a3e09b46ed5388c566569b4f4aa054ce0afb0ae`. D-only atomic `GenerationWallet.claimPurchasedDispatch` verifies settled *live*, zero-refunded Stripe order + purchase, conservatively subtracts all held/captured jobs, requires exact processing job/user/model/provider/fingerprint and creates single-use unique PostgreSQL claim. New additive versioned migration `20261017-purchased-dispatch-claim.sql`; separate DB-only concurrent 4-claimer acceptance and pure unit tests. Synthetic source-exact **25,215/25,215 integer funding cases PASS, 12/12 malformed cases denied**, positive proof 5-step transaction mock PASS.
+- **Mandatory release safety extension CLAIMED before source:** board `b28b14cfd5ae4ddd730afe2a7474dd3921816a8e`, status `503ed0fbddf5774853f4eb3750e2dae46d3abaa8`. `server/generation-readiness.js` now has required `purchasedOnlyDispatch` gate `ready:false` even with every Stripe/provider/flag configured. Exact source evaluated **5/5 otherwise ready synthetic envs blocked solely by this gate**. `tests/generation-readiness-unit.mjs` updated to assert no false green. This is intentional until B #198 authorizes user/consent/model/quote AND D atomic DB claim before every paid provider call.
+- GitHub current-head P0 disposable PG #39019437853 and related ~12 other workflows still QUEUED as last inspected. Do not claim full CI/pass, do not merge, enable public AI, run paid AI tests or call Stripe/live providers. PR #199 additive migration was corrected by coordinator after D checksum drift review; disposable PG CI still pending; B #175 provider-task feature depends on it. Owner P0 #182 remains BLOCKING, no production or `main` edits.
+
+
 
 ## Agent 5 — 2026-10-17 corrected P0 migration after D checksum review
 
