@@ -29,6 +29,14 @@ const fileTypes={
 const timeModes=['video-trim','audio-trim'];
 let active=false,abort=false,engine=null,redactRects=[],redactImage=null,redactBase=null,redactDragging=null;
 let redactSelectionEpoch=0,redactSource=null,redactLoading=false;
+// FileList getters are allowed to return distinct File wrappers on some engines.
+// The change event immediately clears redactSource; this identity comparison
+// uses stable metadata only within that selected epoch.
+function isCurrentRedactSource(file){
+ return !!(file&&redactSource&&!redactLoading&&
+  file.name===redactSource.name&&file.type===redactSource.type&&
+  file.size===redactSource.size&&file.lastModified===redactSource.lastModified);
+}
 function init(){
  $('utilityTitle').textContent=mode.title;document.title=mode.title+' · Video Uniquifier';
  $('utilityDescription').textContent=mode.note;document.getElementById('utilityBack').textContent=label('← Everyday Tools','← Повседневные инструменты');
@@ -145,7 +153,7 @@ function addResizeOption(){
 }
 async function run(){
  if(active)return;
- if(tool==='photo-redact'&&(redactLoading||!redactImage||!redactSource||redactSource!==$('utilityFiles').files[0])){
+ if(tool==='photo-redact'&&(redactLoading||!redactImage||!isCurrentRedactSource($('utilityFiles').files[0]))){
   status(label('Finish loading the current photo before redacting.','Дождитесь загрузки текущего фото перед скрытием данных.'));return;
  }
  if(tool==='captions'){location.href='audio-studio.html?tool=stt';return;}
@@ -301,7 +309,7 @@ function renderRedactions(){
  if(redactDragging)drawCovers(redactBase,redactDragging);
 }
 async function exportRedaction(){
- const f=files()[0];if(redactLoading||!redactSource||redactSource!==f||!redactImage||!redactRects.length)throw Error(label('Select the current image and cover at least one area.','Выберите текущее фото и закройте хотя бы одну область.'));
+ const f=files()[0];if(redactLoading||!isCurrentRedactSource(f)||!redactImage||!redactRects.length)throw Error(label('Select the current image and cover at least one area.','Выберите текущее фото и закройте хотя бы одну область.'));
  const full=document.createElement('canvas');full.width=redactImage.width;full.height=redactImage.height;
  try{
   const x=full.getContext('2d');x.drawImage(redactImage,0,0);
