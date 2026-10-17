@@ -698,6 +698,36 @@ for(const authChange of ['cross-tab logout','silent same-tab account switch','si
  });
 }
 
+for(const interaction of ['play','keydown']){
+ test('BASE 24: old-account inline saved video cannot be accessed through '+interaction+' without a click',async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('vv_token','history-preview-owner-A'));
+  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+  let paidPosts=0;
+  page.on('request',request=>{if(request.method()==='POST'&&new URL(request.url()).pathname==='/api/studio/jobs')paidPosts++;});
+  await page.route('**/api/studio/jobs?filter=*',r=>r.fulfill({json:{items:[
+   {id:'private-inline-media-A',kind:'video',status:'ready',prompt:'PRIVATE INLINE ACCOUNT A',model:'fixture-video',
+    mime:'video/mp4',createdAt:'2026-10-17T08:00:00Z'}
+  ]}}));
+  await page.route('**/api/studio/jobs/private-inline-media-A/media',r=>r.fulfill({
+   contentType:'video/mp4',body:Buffer.from('FAKE PRIVATE VIDEO')
+  }));
+  await page.goto('/generate-studio.html?studio=video&view=history');
+  await expect(page.locator('.history-card')).toContainText('PRIVATE INLINE ACCOUNT A');
+  await page.getByRole('button',{name:'Preview media'}).click();
+  await expect(page.locator('.history-inline-media video')).toHaveCount(1);
+  await page.evaluate(()=>localStorage.setItem('vv_token','history-preview-owner-B'));
+  await page.evaluate(type=>{
+   const media=document.querySelector('.history-inline-media video');
+   if(type==='play')media.dispatchEvent(new Event('play',{bubbles:false,cancelable:true}));
+   else media.dispatchEvent(new KeyboardEvent('keydown',{key:' ',bubbles:true,cancelable:true}));
+  },interaction);
+  await expect(page.locator('.history-inline-media video')).toHaveCount(0);
+  await expect(page.locator('.history-card')).toHaveCount(0);
+  await expect(page.locator('#historyList')).toContainText('Account changed');
+  expect(paidPosts).toBe(0);
+ });
+}
+
 test('BASE 24: 51 saved results remain accessible in user-owned History without a second paid job',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vv_token','fixture-history-owner'));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
