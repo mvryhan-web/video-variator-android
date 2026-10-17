@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
 async function setup(page){
- await page.addInitScript(()=>localStorage.setItem('vv_token','fixture'));
+ await page.addInitScript(()=>{if(!localStorage.getItem('vv_token'))localStorage.setItem('vv_token','fixture');});
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,
   models:[{kind:'video',id:'veo-3.1-lite-generate-preview',enabled:true}],
   catalog:[{kind:'video',id:'veo-3.1-lite-generate-preview',label:'Veo',
