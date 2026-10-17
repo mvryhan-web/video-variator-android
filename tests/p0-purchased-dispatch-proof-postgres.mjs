@@ -14,7 +14,7 @@ if(urlString){
     u.pathname!=='/deepsyq_purchased_test')throw Error('P0_TEST_DB_MUST_BE_DISPOSABLE_LOCALHOST');
 }
 const sql=readFileSync(new URL('../server/migrations/20261017-purchased-dispatch-claim.sql',import.meta.url),'utf8');
-const env={AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_BILLING_MODE:'live',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true'};
+const env={AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true'};
 test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus denied, refund denied',
  {skip:!urlString},async()=>{
  const schema='p0_purchased_'+randomUUID().replaceAll('-',''),admin=new pg.Client({connectionString:urlString});
