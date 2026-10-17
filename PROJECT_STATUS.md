@@ -1,5 +1,10 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent A — BASE #26 CI incident and offline test isolation (2026-10-17)
+
+- Exact GitHub Actions #39014495997 failed: Chromium cross-account test passed retry, same-account test failed `LOCAL_HANDOFF_SESSION_CHANGED` twice; WebKit and Regenerate checks passed. Root-cause hypothesis is concurrent Home auth changing the test's synthetic session. Test-only commit `3297fe76` isolates three same-origin browser fixtures from Home boot, still imports the REAL `studio-handoff.js` and uses real IndexedDB/sessionStorage. Latest head CI QUEUED, NOT PASS; no live data or payment changes. Original BASE #26 PARTIAL until fresh browser CI and integration.
+
+
 ## Agent D — BASE #50 + #51 exact-head green CI and merges (2026-10-17)
 
 - **BASE #51 PR #158:** [merged](https://github.com/mvryhan-web/video-variator-android/pull/158) squash `da5f92b45fd684c4c916dd5f7195cb2539bfd413`, tested head `caf0136ae72340bf2af1a4d17ac6b9ca4f1fe09b`, full **5/5 current-head GitHub Actions SUCCESS**: #38959859931, #38959859936, #38959859823, #38959859944, #38959859934. Adds Image and Video approved price/rate gate plus required Studio owner, bounded max call quota and explicit Image/Video kind coverage. No billing/model/provider/public activation. Original #51 PARTIAL/NOT LIVE.
