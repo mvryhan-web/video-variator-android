@@ -1,5 +1,15 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent C — 2026-10-17 follow-on CHECKPOINT (BASE #20/#28/#30/#35/#38)
+
+- **BASE #20:** Etsy photo-only fidelity draft [PR #196](https://github.com/mvryhan-web/video-variator-android/pull/196): CI 39014269179 failed solely on mismatched test assertion for intended 3-reference clamp. Fixed focused test commit 6397d5c865fa1e09f943191e0de2d4cf1d831737. New exact-head CI 39016739612 QUEUED. No actual media, provider call or MP4.
+- **BASE #30:** scoped mobile drawer [PR #144](https://github.com/mvryhan-web/video-variator-android/pull/144): Mobile WebKit 320px CI 39014324951 measured horizontal 338px scrollWidth caused by A-owned locked Home .hero-stage (right 338px) and .hero-stage-copy (right 337px). C did not change these. Drawer-specific no-added-overflow contract committed 62efd6ea4e656c30ca8ea200c51367380b5a45ea, focused CI 39016776627 QUEUED. Separate A scope alerted in [Issue #72 comment 6231637949](https://github.com/mvryhan-web/video-variator-android/issues/72#issuecomment-6231637949). Whole-site 320px overflow remains NOT FIXED.
+- **BASE #35:** C-only AI Apps logout pending template scrub PR #192 prior head 9fb92bcd focused CI 38961304648 SUCCESS; no-force forward merge against newer BASE commit 3db603448c321a7f2e184855c60f65f08985ff0f; exact-head CI 39016879153 QUEUED. No approval/merge; same-tab other-account Studio consumer remains A/B handoff.
+- **BASE #28:** Background eraser [PR #151](https://github.com/mvryhan-web/video-variator-android/pull/151) reconciled head bd08b5f CI 39014596525 QUEUED; local video compression [PR #173](https://github.com/mvryhan-web/video-variator-android/pull/173) reconciled head 0ded5bc CI 39014696743 QUEUED. Old head success is not new head validation; no device acceptance.
+- **NEW BASE #38:** after atomic claim in PROJECT_STATUS and 55-row board, isolated draft [PR #200](https://github.com/mvryhan-web/video-variator-android/pull/200) branch agent-c-base38-admin-latest-session-20261017 HEAD 894547108256b86f4e8469f3d15e88222e5acf9c. Owner admin now discards obsolete Users search, Jobs status, Provider Metrics window results/errors and immediately hides/navigates away on cross-tab token rotation. Four synthetic browser scenarios, CI 39017157103 QUEUED. No admin API auth, payments/credits, model execution, original TXT, Home, main or production changed. #38 remains PARTIAL.
+
+- All these new heads are unmerged and cannot be marked CODE VERIFIED until exact current CI is green. Review each small scoped diff then safely integrate into deepsyq-platform; keep PR #42 draft to main.
+
 ## Agent C — BASE #38 admin latest-query/session acceptance (2026-10-17)
 
 - **Observed gap:** in `app/src/main/assets/deepsyq-admin.js` owner admin Users and Jobs list requests can resolve out of order and repaint stale search/filter data. Owner session changes from another tab are not reflected in a currently opened owner-admin page. Sensitive user/workload metadata should never remain exposed after the session changes. Existing server-side owner authorization, Stripe and credit adjustments remain authoritative and untouched.
