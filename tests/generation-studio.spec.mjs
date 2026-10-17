@@ -733,6 +733,43 @@ for(const authChange of ['cross-tab logout','silent same-tab account switch','si
  });
 }
 
+test('BASE 24: switching filter aborts an in-flight private image thumbnail fetch',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-thumbnails-owner-A'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ let paid=0;page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')paid++;});
+ await page.route('**/api/studio/jobs?filter=*',r=>{
+  const filter=new URL(r.request().url()).searchParams.get('filter');
+  return r.fulfill({json:{items:filter==='all'?[
+   {id:'private-thumb-A',kind:'image',status:'ready',prompt:'OLD PRIVATE THUMB A',
+    createdAt:'2026-10-17T08:00:00Z'}
+  ]:[]}});
+ });
+ await page.goto('/generate-studio.html?studio=image&view=history');
+ await expect(page.locator('.history-card')).toContainText('OLD PRIVATE THUMB A');
+ await page.evaluate(()=>{
+  const fetchOriginal=window.fetch.bind(window);
+  window.__thumbStarted=false;window.__thumbCancelled=false;
+  window.fetch=(input,options)=>{
+   if(!String(input).includes('/api/studio/jobs/private-thumb-A/media'))return fetchOriginal(input,options);
+   window.__thumbStarted=true;
+   return new Promise((_resolve,reject)=>{
+    const signal=options?.signal;
+    if(!signal){reject(Error('MISSING_THUMB_ABORT_SIGNAL'));return;}
+    const cancel=()=>{window.__thumbCancelled=true;reject(new DOMException('aborted','AbortError'));};
+    if(signal.aborted)cancel();else signal.addEventListener('abort',cancel,{once:true});
+   });
+  };
+ });
+ // Visible thumbnail is lazy; force it into the observer threshold after the mock.
+ await page.locator('.history-preview').scrollIntoViewIfNeeded();
+ await expect.poll(()=>page.evaluate(()=>window.__thumbStarted)).toBe(true);
+ await page.locator('[data-history-filter=failed]').click();
+ await expect.poll(()=>page.evaluate(()=>window.__thumbCancelled)).toBe(true);
+ await expect(page.locator('.history-thumb')).toHaveCount(0);
+ await expect(page.locator('#historyList')).not.toContainText('OLD PRIVATE THUMB A');
+ expect(paid).toBe(0);
+});
+
 for(const endPreview of ['leave History','cross-tab logout']){
  test('BASE 24: active saved media fetch is aborted when user '+endPreview,async({page})=>{
   await page.addInitScript(()=>localStorage.setItem('vv_token','history-abort-owner-A'));
