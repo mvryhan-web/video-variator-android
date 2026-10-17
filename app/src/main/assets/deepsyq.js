@@ -286,9 +286,10 @@ window.addEventListener('load',initGoogle);
 try{const c=await api('/api/studio/config');studioModelMenuConfig=c;if(openModelsKind)renderModelFlyout(openModelsKind);$('studioStatus').textContent=c.ownerOnly?'AI generation is in owner preview. Explore the studios; existing tools remain available.':c.enabled?'Open a studio to see the available models.':'AI generation is not available yet. Existing tools remain available.';}catch(_){$('studioStatus').textContent='Studio availability could not be checked. Existing tools remain available.';}
 // Read-only dashboard overview. Backend user_id scope is authoritative;
 // never render a late private response after a session/account switch.
-let recentCreationsEpoch=0;
+let recentCreationsEpoch=0,recentRenderedOwnerToken=null;
 const recentAccountChanged='Account changed. Reload to view creations for the current account.';
 function clearRecentCreations(message){
+ recentRenderedOwnerToken=null;
  ++recentCreationsEpoch;
  $('recentCreationsGrid')?.replaceChildren();
  const status=$('recentCreationsStatus');if(status)status.textContent=message;
@@ -298,6 +299,22 @@ window.addEventListener('storage',event=>{
   clearRecentCreations(event.newValue?recentAccountChanged:'Sign in to see your saved Studio creations.');
  }
 });
+// A same-tab token change does NOT fire a native storage event. Clear
+// private prompt cards before the next user interaction, even if that click
+// immediately navigates to the saved result. Do not alter other Studio state.
+function protectRecentCreationsAccount(){
+ if(recentRenderedOwnerToken===null||recentRenderedOwnerToken===localStorage.getItem('vv_token'))return false;
+ clearRecentCreations(localStorage.getItem('vv_token')?recentAccountChanged:'Sign in to see your saved Studio creations.');
+ return true;
+}
+for(const eventName of ['click','keydown','focusin'])
+ document.addEventListener(eventName,event=>{
+  if(protectRecentCreationsAccount()&&event.target?.closest?.('#recentCreationsGrid a')){
+   event.preventDefault();event.stopImmediatePropagation();
+  }
+ },true);
+window.addEventListener('focus',protectRecentCreationsAccount);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)protectRecentCreationsAccount();});
 async function loadRecentCreations(){
  const status=$('recentCreationsStatus'),grid=$('recentCreationsGrid');if(!status||!grid)return;
  const requestedToken=localStorage.getItem('vv_token'),epoch=++recentCreationsEpoch;
@@ -327,6 +344,7 @@ async function loadRecentCreations(){
    date.textContent=Number.isFinite(timestamp.getTime())?timestamp.toLocaleDateString():'Open in Studio';
    card.append(head,prompt,date);grid.append(card);
   }
+  recentRenderedOwnerToken=grid.childElementCount?requestedToken:null;
   status.textContent=grid.childElementCount?'Select a creation to open your Studio history.':'No saved creations yet.';
  }catch(_){
   if(isCurrent())status.textContent='Studio history is not available for this account right now.';
