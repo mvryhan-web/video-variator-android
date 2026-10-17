@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {webcrypto} from 'node:crypto';
+import {readFile} from 'node:fs/promises';
 import {claimVideoRequestId,acknowledgeVideoRequestId,videoOwnerScopeFromClaim,videoResumeScopeMatches} from '../app/src/main/assets/studio-video-request-id.mjs';
 
 function storage(){const saved=new Map();return {
@@ -123,4 +124,46 @@ test('BASE #5: corrupted saved Video scope fails closed while old unscoped sessi
  assert.equal(videoResumeScopeMatches('f'.repeat(32),'wrong-prefix'+('f'.repeat(32))),false);
  assert.equal(videoResumeScopeMatches(null,'deepsyq_video_draft_v1_'+('f'.repeat(32))),true);
  assert.throws(()=>videoOwnerScopeFromClaim({key:'unsafe-path'}),/VIDEO_SUBMISSION_SAFETY_UNAVAILABLE/);
+});
+
+async function videoWatcherHarness({jobState='processing',switchAfter='wait'}={}){
+ const source=await readFile(new URL('../app/src/main/assets/generate-studio.js',import.meta.url),'utf8');
+ const start=source.indexOf('async function watch(id,epoch,videoAccountToken=null){');
+ const stop=source.indexOf("$('backgroundVideo').onclick=",start);
+ assert.ok(start>=0&&stop>start,'Find exact Video watcher from current Studio source');
+ const body=source.slice(start,stop);
+ let account='original',reads=0,cleared=0,availabilityCalls=0;
+ const current={getItem:()=>account};
+ const api=async path=>{
+  reads++;
+  if(path.endsWith('/media')){
+   if(switchAfter==='media')account='second-user';
+   return {blob:async()=>new Blob(['fake-video'],{type:'video/mp4'})};
+  }
+  if(jobState==='ready')return {json:async()=>({
+   id:'job-1',kind:'video',status:'ready',mime:'video/mp4'
+  })};
+  return {json:async()=>({id:'job-1',kind:'video',status:'processing',retryAfterSeconds:3})};
+ };
+ const immediate=(cb)=>{if(switchAfter==='wait')account='second-user';cb();};
+ const fn=new Function('api','localStorage','availability','generation','setTimeout','clearResult',
+   'let activeVideoWatchId=null;'+body+';return watch;')(
+    api,current,()=>{availabilityCalls++},42,immediate,()=>{cleared++});
+ let rejection;
+ try{await fn('job-1',42,'original');}catch(e){rejection=e;}
+ return {rejection,reads,cleared,availabilityCalls};
+}
+
+test('BASE #5: active Video watcher stops before polling twice after account changes',async()=>{
+ const result=await videoWatcherHarness({switchAfter:'wait'});
+ assert.equal(result.rejection?.message,'VIDEO_ACCOUNT_CHANGED');
+ assert.equal(result.reads,1);
+ assert.equal(result.cleared,0);
+});
+
+test('BASE #5: authenticated Video media response cannot be shown after account changed during download',async()=>{
+ const result=await videoWatcherHarness({jobState:'ready',switchAfter:'media'});
+ assert.equal(result.rejection?.message,'VIDEO_ACCOUNT_CHANGED');
+ assert.equal(result.reads,2);
+ assert.equal(result.cleared,0);
 });
