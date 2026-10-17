@@ -1,5 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent C checkpoint — 2026-10-17 continued work after prior 6231783790 handoff
+
+- **BASE #28 local video compression NOW MERGED:** [PR #173](https://github.com/mvryhan-web/video-variator-android/pull/173), squash merge **8dfd064766896cb2cf3a17e79c7f5f6b10d902d7** into `deepsyq-platform`. Exact PR HEAD `0ded5bc95d325a780c97a8696b097418186a41a0`, focused CI [39014696743](https://github.com/mvryhan-web/video-variator-android/actions/runs/39014696743) **SUCCESS**: Node tests, 24 mocked browser UI checks desktop/mobile Chromium/WebKit, and one actual Chromium local FFmpeg/WASM MP4 encode with fixture, valid MP4 download and no provider POST. Related exact-head photo compression run 39014696740 SUCCESS; teleprompter 39014696746 SUCCESS. The three existing shared C file blobs matched PR base identically at merge check, no overwrite of other agents. A photo-collage related run still queued at merge, real phones/live not verified. Entire BASE #28 remains PARTIAL.
+- **BASE #20 Product Video fidelity [PR #196](https://github.com/mvryhan-web/video-variator-android/pull/196) draft, HEAD `71a3d260f8a50f6d99df2682ffc90ccef445a4d9`:** Added blocked Enter/requestSubmit during async image signature validation and concurrent handoff; stale earlier picker result cannot overwrite newer validated user photo. Browser tests for both, in addition to exact product-only prompt and malformed PNG/JPEG rejection. Source JS and browser test scripts parsed successfully in V8; last exact-head CI 39018249942 QUEUED. Not merged or real MP4 generated, no product photo available to visually validate. B logo-role concern Issue #73 remains.
+- **BASE #38 owner admin [PR #200](https://github.com/mvryhan-web/video-variator-android/pull/200) draft, HEAD `f20f8852795e15cba7f37ed3d5034d65d534f23c`:** latest-result-only Users/Jobs/Metrics, other-tab token change and BFCache/pageshow/refocus invalidation, and after a verified owner API returns HTTP 401, dashboard must hide + redirect. Six synthetic Playwright tests including revoked token; exact-head focused CI 39018454782 QUEUED. No backend auth, credits or payment changes; overall BASE #38 PARTIAL.
+- **Other exact-head pending:** #144 C drawer focus/overflow CI 39016776627 QUEUED (separate A-owned Home 338px/320px WebKit defect already handed off Issue #72); #192 AI Apps logout privacy HEAD 3db6034 CI 39016879153 QUEUED, READY FOR REVIEW but not merged. No rework of merged #151, #183, #185.
+- **Boundaries:** user original BASE 55 + 7 original Block TXT read-only, no other agents' code, no `main`/production/Render/purchases/paid providers; PR #42 still coordinator DRAFT.
+
 
 ## Agent 5 — 2026-10-17 P0 purchased-only issue consolidation and 8-workflow CI dedup
 
