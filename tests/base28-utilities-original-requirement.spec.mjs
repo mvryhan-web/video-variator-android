@@ -60,3 +60,42 @@ test('BASE #28: opaque sensitive-data mask permanently changes downloaded image 
  expect(samples.clear).toEqual([224,32,32,255]);
  expect(rawUploads).toBe(0);
 });
+
+
+test('BASE #28: all eleven original utility types remain reachable in secondary Tools',async({page})=>{
+ let providerWrites=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:studio\/jobs|speech|ai-wallet|billing)/.test(new URL(r.url()).pathname))providerWrites++;});
+ await page.goto('/free-tools.html');
+ const selectors={
+  photoToPdf:'#mobileUtilityGrid [data-utility="scan-pdf"]',
+  collage:'#mobileUtilityGrid [data-utility="photo-collage"]',
+  hideDetails:'#mobileUtilityGrid [data-utility="photo-redact"]',
+  videoToAudio:'[data-hub-tool="audio"]',
+  audioTrimmer:'#mobileUtilityGrid [data-utility="audio-trim"]',
+  photoCompression:'[data-hub-tool="photo"]',
+  videoCompression:'[data-hub-tool="video"]',
+  backgroundRemover:'a[href="simple-background-remover.html"]',
+  teleprompter:'[data-hub-tool="prompter"]',
+  ocr:'#mobileUtilityGrid [data-utility="photo-ocr"]',
+  textToAudio:'[data-hub-tool="tts"]'
+ };
+ for(const [key,selector] of Object.entries(selectors)){
+  await expect(page.locator(selector),key).toHaveCount(1);
+  await expect(page.locator(selector),key).toBeVisible();
+ }
+ await expect(page.locator(selectors.textToAudio)).toHaveAttribute('href','audio-studio.html?tool=tts');
+ await expect(page.locator(selectors.backgroundRemover)).toContainText('Simple Background Remover');
+ expect(providerWrites).toBe(0);
+});
+
+test('BASE #28: unavailable owner Google TTS remains clearly gated, never makes provider POST',async({page})=>{
+ let writes=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/speech/.test(new URL(r.url()).pathname))writes++;});
+ await page.route('**/api/speech/config',r=>r.fulfill({json:{enabled:false,reason:'OWNER_SETUP_REQUIRED'}}));
+ await page.goto('/audio-studio.html?tool=tts');
+ await expect(page.locator('#speechAvailability')).toContainText('waiting for owner setup');
+ await page.locator('#speechText').fill('One sentence for a speech sample');
+ await page.locator('#speechConsent').check();
+ await expect(page.locator('#speechGenerate')).toBeDisabled();
+ expect(writes).toBe(0);
+});
