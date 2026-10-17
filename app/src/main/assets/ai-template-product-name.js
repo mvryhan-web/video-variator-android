@@ -14,6 +14,8 @@ export function templateSupport(template){
  if(needsProductName&&!hasToken)return {supported:false,requiresProductName:false,reason:'This template asks for a product name but has no {{product_name}} placeholder in its prompt.'};
  // Never advertise a usable workflow whose full prepared prompt would be silently truncated.
  if(!needsProductName&&String(template?.promptTemplate??'').length>STUDIO_PROMPT_LIMIT)return {supported:false,requiresProductName:false,reason:'This template prompt exceeds the 2,000-character Studio limit. Ask the template owner to shorten it.'};
+ // Even the shortest valid one-character product name must fit; otherwise every use would fail.
+ if(needsProductName&&String(template?.promptTemplate??'').replace(/\{\{\s*product_name\s*\}\}/gi,'X').length>STUDIO_PROMPT_LIMIT)return {supported:false,requiresProductName:false,reason:'This personalized template is too long for Studio, even with a short product name. Ask the template owner to shorten it.'};
  return {supported:true,requiresProductName:needsProductName,reason:''};
 }
 
