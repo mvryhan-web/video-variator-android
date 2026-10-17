@@ -674,7 +674,7 @@ test('BASE 24: an old-account History Open never displays a late saved-media res
  await page.addInitScript(()=>localStorage.setItem('vv_token','history-open-A'));
  await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/studio/jobs?filter=*',route=>route.fulfill({json:{items:[
-  {id:'private-open',kind:'image',status:'ready',model:'fixture',prompt:'SECRET ACCOUNT A PHOTO',
+  {id:'private-open',kind:'video',status:'ready',model:'fixture',prompt:'SECRET ACCOUNT A PHOTO',
    createdAt:'2026-10-17T08:00:00.000Z',creditsReserved:0,creditsCharged:0}
  ]}}));
  let started,release,mediaRequests=0,paidPosts=0;
@@ -684,11 +684,11 @@ test('BASE 24: an old-account History Open never displays a late saved-media res
  await page.route('**/api/studio/jobs/private-open',async route=>{
   started();
   await blocked;
-  try{await route.fulfill({json:{id:'private-open',kind:'image',status:'ready',mime:'image/png'}});}catch(_){}
+  try{await route.fulfill({json:{id:'private-open',kind:'image',status:'ready',mime:'video/mp4'}});}catch(_){}
  });
  await page.route('**/api/studio/jobs/private-open/media',route=>{
   mediaRequests++;
-  return route.fulfill({contentType:'image/png',body:Buffer.from('OLD_PRIVATE_PHOTO')});
+  return route.fulfill({contentType:'video/mp4',body:Buffer.from('OLD_PRIVATE_PHOTO')});
  });
  await page.goto('/generate-studio.html?studio=image&view=history');
  await expect(page.locator('.history-card')).toHaveCount(1);
@@ -697,7 +697,7 @@ test('BASE 24: an old-account History Open never displays a late saved-media res
  await page.evaluate(()=>localStorage.setItem('vv_token','history-open-B'));
  release();
  await expect(page.locator('#historyList')).not.toContainText('SECRET ACCOUNT A PHOTO');
- await expect(page.locator('#media img')).toHaveCount(0);
+ await expect(page.locator('#media video')).toHaveCount(0);
  await expect.poll(()=>page.evaluate(()=>sessionStorage.getItem('vu_generation_job'))).toBeNull();
  expect(mediaRequests).toBe(0);
  expect(paidPosts).toBe(0);
@@ -707,18 +707,18 @@ test('BASE 24: an old-account History Open cannot show delayed private ready med
  await page.addInitScript(()=>localStorage.setItem('vv_token','history-media-A'));
  await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/studio/jobs?filter=*',route=>route.fulfill({json:{items:[
-  {id:'private-ready',kind:'image',status:'ready',model:'fixture',prompt:'SECRET PREVIOUS IMAGE',
+  {id:'private-ready',kind:'video',status:'ready',model:'fixture',prompt:'SECRET PREVIOUS IMAGE',
    createdAt:'2026-10-17T08:00:00.000Z',creditsReserved:0,creditsCharged:0}
  ]}}));
  await page.route('**/api/studio/jobs/private-ready',route=>route.fulfill({
-  json:{id:'private-ready',kind:'image',status:'ready',mime:'image/png'}}));
+  json:{id:'private-ready',kind:'image',status:'ready',mime:'video/mp4'}}));
  let started,release,paidPosts=0;
  const seen=new Promise(resolve=>started=resolve);
  const blocked=new Promise(resolve=>release=resolve);
  page.on('request',req=>{if(req.method()==='POST'&&/\/api\/studio\/jobs/.test(req.url()))paidPosts++;});
  await page.route('**/api/studio/jobs/private-ready/media',async route=>{
   started();await blocked;
-  try{await route.fulfill({contentType:'image/png',body:Buffer.from('PRIVATE_OLD_ACCOUNT_IMAGE')});}catch(_){}
+  try{await route.fulfill({contentType:'video/mp4',body:Buffer.from('PRIVATE_OLD_ACCOUNT_IMAGE')});}catch(_){}
  });
  await page.goto('/generate-studio.html?studio=image&view=history');
  await expect(page.locator('.history-card')).toHaveCount(1);
@@ -727,7 +727,7 @@ test('BASE 24: an old-account History Open cannot show delayed private ready med
  await page.evaluate(()=>localStorage.setItem('vv_token','history-media-B'));
  release();
  await expect(page.locator('#historyList')).not.toContainText('SECRET PREVIOUS IMAGE');
- await expect(page.locator('#media img')).toHaveCount(0);
+ await expect(page.locator('#media video')).toHaveCount(0);
  await expect.poll(()=>page.evaluate(()=>sessionStorage.getItem('vu_generation_job'))).toBeNull();
  expect(paidPosts).toBe(0);
 });
