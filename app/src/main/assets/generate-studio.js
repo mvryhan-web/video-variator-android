@@ -870,7 +870,9 @@ window.addEventListener('focus',()=>{
 });
  // Account rotation in this SAME tab emits no native storage event. Capture
  // clicks before old History-card callbacks can reuse a prior user's prompt.
- $('historyList').addEventListener('click',event=>{
+ // A media element can start by keyboard shortcut or programmatic playback
+ // without a click. Non-bubbling 'play' is observed in the capture phase.
+ for(const eventName of ['click','keydown','play'])$('historyList').addEventListener(eventName,event=>{
   if(historyView&&!historySessionCurrent(historyBoundToken)){
    event.preventDefault();event.stopImmediatePropagation();
    clearHistoryForAccountChange();
