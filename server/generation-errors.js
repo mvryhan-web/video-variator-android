@@ -1,3 +1,5 @@
+import {publicExistingJobRetryable} from './generation-retry-policy.js';
+
 const KNOWN=new Map([
  ['PROVIDER_BUSY',{code:'AI_PROVIDER_BUSY',retryable:true,category:'capacity'}],
  ['PROVIDER_KEY_REQUIRED',{code:'AI_PROVIDER_NOT_CONFIGURED',retryable:false,category:'configuration'}],
@@ -24,4 +26,4 @@ export function normalizeGenerationError(error,{stage='generation'}={}){
  if(raw==='PROVIDER_ERROR')return {code:'AI_PROVIDER_FAILED',retryable:true,category:'provider',stage,sourceCode:raw};
  return {code:'AI_GENERATION_FAILED',retryable:false,category:'unknown',stage,sourceCode:SAFE.test(raw)?raw:'UNKNOWN'};
 }
-export function publicGenerationError(error,options){const n=normalizeGenerationError(error,options);return {error:n.code,retryable:n.retryable};}
+export function publicGenerationError(error,options){const n=normalizeGenerationError(error,options);return {error:n.code,retryable:publicExistingJobRetryable(n)};}
