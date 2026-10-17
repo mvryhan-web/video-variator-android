@@ -1,5 +1,11 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #8 safe fallback preview reconciled (2026-10-17)
+
+- Existing Agent B [PR #149](https://github.com/mvryhan-web/video-variator-android/pull/149) HEAD `b7dec7ddad40b2941eebab58ce64d9ecd61932a8`: preserved prior 8/8 exact-head GitHub success on `bc559ca`, recomposed only original four B scoped paths over then-current BASE `cd0e936`, non-force two-parent commit. Shared Studio changed only import + read-only owner `/api/studio/admin/route-preview`; D wallet and paid dispatch untouched.
+- Fallback helper must be Smart + before any provider starts; compare matching input capabilities, explicitly approved customer credits/currency and no higher provider internal cost. No automatic fallback dispatch or second paid call. New exact-head GitHub focused #39020026306 and seven companion workflows QUEUED, NOT PASSED. PR remains OPEN UNMERGED, **not LIVE**. Original BASE #8 PARTIAL; optional stacked B #9 PR150 depends on merging/reviewing #149 and must not be merged out of order.
+
+
 ## Agent C corrected BASE #28 photo-batch enhancement claim — 2026-10-17
 
 - Redundancy/billing audit found EXISTING `free-tools.js` processes up to 50 photos, and `tool-access.js` explicitly gates `photo_batch` at Basic/trial. **Abandoned and CLOSED draft PR #205 without merging** (would duplicate finished feature and create a tier bypass through the unentitled single-photo utility). No branch #205 code reached BASE.
