@@ -30,5 +30,5 @@ test('BASE20: unsupported editor settings fail back to known local options witho
  assert.match(brief,/Art direction: clean studio/);
  assert.match(brief,/Frame: 9:16/);
  assert.match(brief,/Duration preference: selected model duration/);
- assert.match(brief,/source photo product consistent/);
+ assert.match(brief,/same exact product consistent across all 3 uploaded product-photo references/); // Explicitly clamp bad external counts to the local three-photo limit.
 });
