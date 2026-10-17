@@ -1,7 +1,9 @@
 import {saveStudioHandoff} from './studio-handoff.js';
 import {buildProductVideoPrompt} from './product-video-prompt.mjs';
+import {validProductPhoto} from './product-video-file-safety.mjs';
 const $=id=>document.getElementById(id);let photos=[],logo=null,previewUrls=[];
-function validFile(f){return !!f&&['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024;}
+let photoSelectionEpoch=0,logoSelectionEpoch=0,photoPending=false,logoPending=false;
+function syncContinue(){if(photoPending||logoPending)$('continue').disabled=true;else $('continue').disabled=false;}
 function clearUrls(){for(const u of previewUrls)URL.revokeObjectURL(u);previewUrls=[];}
 function renderFiles(){
  clearUrls();$('photoPreview').replaceChildren();$('logoPreview').replaceChildren();
@@ -32,8 +34,31 @@ function renderFiles(){
 }
 function prompt(){return buildProductVideoPrompt({productName:$('productName').value,style:$('style').value,ratio:$('ratio').value,duration:$('duration').value,hasLogo:!!logo,photoCount:photos.length});}
 function updatePrompt(){$('promptPreview').value=prompt();}
-$('photos').onchange=()=>{const list=Array.from($('photos').files||[]);if(list.length>3||list.some(f=>!validFile(f))){$('status').textContent='Use up to 3 PNG/JPG product photos, each under 1 MB. Your previous valid selection is preserved.';$('photos').value='';}else{$('status').textContent='';photos=list;}renderFiles();};
-$('logo').onchange=()=>{const f=$('logo').files?.[0]||null;if(f&&!validFile(f)){$('status').textContent='Logo must be PNG/JPG under 1 MB. Your previous logo is preserved.';$('logo').value='';}else{$('status').textContent='';logo=f;}renderFiles();};
+$('photos').onchange=async()=>{
+ const epoch=++photoSelectionEpoch,list=Array.from($('photos').files||[]);
+ photoPending=true;syncContinue();
+ $('status').textContent='Checking selected product photos locally…';
+ const checks=await Promise.all(list.map(validProductPhoto));
+ if(epoch!==photoSelectionEpoch)return;
+ photoPending=false;syncContinue();
+ if(list.length>3||!checks.every(Boolean)){
+  $('status').textContent='Use up to 3 valid PNG/JPG product photos under 1 MB each. Your previous photos are preserved.';
+  $('photos').value='';
+ }else{$('status').textContent='';photos=list;}
+ renderFiles();
+};
+$('logo').onchange=async()=>{
+ const epoch=++logoSelectionEpoch,f=$('logo').files?.[0]||null;
+ logoPending=true;syncContinue();
+ const valid=!f||await validProductPhoto(f);
+ if(epoch!==logoSelectionEpoch)return;
+ logoPending=false;syncContinue();
+ if(!valid){
+  $('status').textContent='Logo must be a valid PNG/JPG under 1 MB. Your previous logo is preserved.';
+  $('logo').value='';
+ }else{$('status').textContent='';logo=f;}
+ renderFiles();
+};
 for(const id of ['productName','style','ratio','duration'])$(id).addEventListener(id==='productName'?'input':'change',updatePrompt);
 $('workflow').onsubmit=async e=>{e.preventDefault();if(!photos.length){$('status').textContent='Add at least one product photo first.';return;}const button=$('continue');button.disabled=true;$('status').textContent='Preparing your Studio locally…';try{await saveStudioHandoff({kind:'video',prompt:prompt(),settings:{ratio:$('ratio').value,durationPreference:$('duration').value},files:[...photos,...(logo?[logo]:[])],source:'product-video',meta:{productName:$('productName').value.trim(),style:$('style').value,hasLogo:!!logo}});location.assign('generate-studio.html?studio=video&from=product-video');}catch(err){$('status').textContent=err.message==='LOCAL_HANDOFF_UNAVAILABLE'?'This browser could not prepare the local handoff. Open Video Studio and add the files there.':'Could not prepare the workflow. Check the files and try again.';button.disabled=false;}};
 updatePrompt();window.addEventListener('pagehide',clearUrls);
