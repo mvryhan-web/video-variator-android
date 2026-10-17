@@ -99,3 +99,54 @@ test('BASE #28: unavailable owner Google TTS remains clearly gated, never makes 
  await expect(page.locator('#speechGenerate')).toBeDisabled();
  expect(writes).toBe(0);
 });
+
+
+test('BASE #28: OCR cancellation while language worker loads never runs recognize()',async({page})=>{
+ let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.addInitScript(()=>{
+  window.__ocrSpy={created:0,recognized:0,terminated:0};
+  window.Tesseract={
+   async createWorker(){
+    window.__ocrSpy.created++;
+    await new Promise(resolve=>setTimeout(resolve,400));
+    return {
+     async recognize(){window.__ocrSpy.recognized++;return {data:{text:'SHOULD NOT RUN'}};},
+     async terminate(){window.__ocrSpy.terminated++;}
+    };
+   }
+  };
+ });
+ await page.goto('/mobile-utility.html?tool=photo-ocr');
+ await page.locator('#utilityFiles').setInputFiles({name:'image.jpg',mimeType:'image/jpeg',buffer:Buffer.from([255,216,255,217])});
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityCancel')).toBeEnabled();
+ await page.locator('#utilityCancel').click();
+ await expect.poll(()=>page.evaluate(()=>window.__ocrSpy.terminated)).toBe(1);
+ expect(await page.evaluate(()=>window.__ocrSpy)).toEqual({created:1,recognized:0,terminated:1});
+ await expect(page.locator('#utilityResults textarea')).toHaveCount(0);
+ await expect(page.locator('#utilityStatus')).toContainText('Canceled');
+ expect(posts).toBe(0);
+});
+
+test('BASE #28: simulated OCR worker output can be downloaded as actual TXT without server upload',async({page})=>{
+ let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.addInitScript(()=>{
+  window.Tesseract={
+   async createWorker(){return {
+    async recognize(){return {data:{text:'User-visible OCR sample'}};},
+    async terminate(){}
+   };}
+  };
+ });
+ await page.goto('/mobile-utility.html?tool=photo-ocr');
+ await page.locator('#utilityFiles').setInputFiles({name:'note.jpg',mimeType:'image/jpeg',buffer:Buffer.from([255,216,255,217])});
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityResults textarea')).toHaveValue('User-visible OCR sample');
+ const next=page.waitForEvent('download');
+ await page.locator('#utilityResults').getByRole('button',{name:'Download TXT'}).click();
+ const downloaded=await next;
+ expect(downloaded.suggestedFilename()).toBe('note-text.txt');
+ const bytes=await readFile(await downloaded.path());
+ expect(bytes.toString()).toBe('User-visible OCR sample');
+ expect(posts).toBe(0);
+});
