@@ -17,6 +17,18 @@ function capability(model){
   durationSeconds:durationSeconds(model.duration),
   supportsPrompt:true,
   supportsImageReferences:maxReferences>0,
+  // Truthful public API/UI metadata. Provider-side video/audio reference
+  // transport and watermark controls are NOT connected for customers yet.
+  supportsTextToVideo:model.kind==='video'&&(model.videoInputModes||['text','first_frame']).includes('text'),
+  supportsImageToVideo:model.kind==='video'&&maxReferences>0&&
+   (model.videoInputModes||['text','first_frame']).some(x=>['first_frame','first_last','reference_image'].includes(x)),
+  supportsVideoReferences:false,
+  supportsAudioReferences:false,
+  maxDurationSeconds:model.kind==='video'?
+   (Math.max(0,...(model.durations||[durationSeconds(model.duration)]).filter(v=>Number.isSafeInteger(v)&&v>0))||null):
+   (model.kind==='music'?durationSeconds(model.duration):null),
+  watermarkOptions:Object.freeze([]),
+  supportsWatermarkControl:false,
   supportsSeed:false,
   supportsNegativePrompt:false
  });
