@@ -16,6 +16,29 @@ function bytesFromBase64(value,limit,error){
  if(!bytes.length||bytes.length>limit||bytes.toString('base64')!==value)reject(error);
  return bytes;
 }
+// Reject signature-only JPEG impostors. Not a replacement for full codec decode.
+function verifyJpegFrame(bytes){
+ let at=2,seenFrame=false;
+ while(at<bytes.length-2){
+  if(bytes[at++]!==255)return false;
+  while(bytes[at]===255)at++;
+  const marker=bytes[at++];
+  if(!marker||marker===217||at>=bytes.length-2)return false;
+  if(marker===1||(marker>=208&&marker<=215))continue;
+  if(at+2>bytes.length-2)return false;
+  const length=bytes.readUInt16BE(at);
+  if(length<2||at+length>bytes.length-2)return false;
+  if(marker===218)return seenFrame&&length>=6&&at+length<bytes.length-2;
+  if(marker>=192&&marker<=207&&![196,200,204].includes(marker)){
+   if(length<7)return false;
+   const h=bytes.readUInt16BE(at+3),w=bytes.readUInt16BE(at+5);
+   if(!w||!h||w>8192||h>8192)return false;
+   seenFrame=true;
+  }
+  at+=length;
+ }
+ return false;
+}
 function verifyImage(bytes,mime){
  if(!bytes.length||bytes.length>MAX_IMAGE)reject('INVALID_PROVIDER_MEDIA');
  if(mime==='image/png'){
@@ -27,8 +50,8 @@ function verifyImage(bytes,mime){
       bytes.toString('ascii',bytes.length-8,bytes.length-4)!=='IEND')
      reject('INVALID_PROVIDER_MEDIA');
  }else if(mime==='image/jpeg'){
-  if(bytes.length<4||bytes[0]!==255||bytes[1]!==216||bytes[2]!==255||
-     bytes.at(-2)!==255||bytes.at(-1)!==217)reject('INVALID_PROVIDER_MEDIA');
+  if(bytes.length<64||bytes[0]!==255||bytes[1]!==216||bytes[2]!==255||
+     bytes.at(-2)!==255||bytes.at(-1)!==217||!verifyJpegFrame(bytes))reject('INVALID_PROVIDER_MEDIA');
  }else reject('UNSUPPORTED_PROVIDER_MEDIA');
 }
 function verifySize(value){
