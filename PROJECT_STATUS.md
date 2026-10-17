@@ -1,5 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+
+## P0 dual launch blocker handoff — 2026-10-17 / Agent 5
+
+- **Owner request:** implement purchased-customer-only billable generation (#182) and repair the legacy provider_task_id migration. Keep D finance/DB ownership and B provider-dispatch ownership; do not touch production, original TXT, owner Home or Blocks 3/5.
+- **Actual SQL code:** isolated draft [PR #199](https://github.com/mvryhan-web/video-variator-android/pull/199), HEAD `75ee5e1eec84b790165e93d2bab7e65f81f0979c`, four scoped files. Old `vv_generation_jobs` receives idempotent stored generated `provider_task_id` after `operation`, before provider-task index; static exact-source checks 4/4 PASS. Separate local-only disposable PostgreSQL 16 integration/CI added, [run #39016526840](https://github.com/mvryhan-web/video-variator-android/actions/runs/39016526840) QUEUED at last check; **actual PG application NOT VERIFIED**, D review/backup/rollback required; no main/production migration applied.
+- **Purchased-only finance NOT FIXED:** BASE wallet still mixes purchased and promo in available/reserve; owner pilot can bypass reserve. B [draft PR #198](https://github.com/mvryhan-web/video-variator-android/pull/198) is an UNWIRED deny-by-default contract, not a deployed dispatch guard. D's exact required verified signed settled Stripe purchase provenance, atomic purchased-only reserve/claim, refund/reconciliation and no-fee test handoff: [Issue #75 comment](https://github.com/mvryhan-web/video-variator-android/issues/75#issuecomment-6231588750); B dispatch handoff: [#73 comment](https://github.com/mvryhan-web/video-variator-android/issues/73#issuecomment-6231589102). Owner P0 #182 remains OPEN. No paid model/provider tests, checkout, Render, main, or existing BASE code changed by coordinator.
+
+
 ## Agent C — BASE #28 conflict-safe PR head reconciliation (2026-10-17)
 
 - [PR #151](https://github.com/mvryhan-web/video-variator-android/pull/151) local flat-color eraser: preserved all 8 C paths atop then-current BASE tree with two-parent **non-force** Git merge commit `bd08b5f01592d95be1474747dd697eb9160eecf5` on original branch `base28-simple-background-remover-20261016`. Only 8 original changed paths; existing shared original tool page from latest BASE augmented with one guided card. New exact-head [CI 39014596525](https://github.com/mvryhan-web/video-variator-android/actions/runs/39014596525) QUEUED at last check. GitHub initial PR mergeability still computing/UNKNOWN, do not claim verified conflict resolution or merge. Existing prior head CI 38949657491 SUCCESS; that does not verify new merge head.
