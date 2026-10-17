@@ -366,6 +366,15 @@ body.sidebar-collapsed #sidebar nav .sidebar-social button{justify-content:cente
 #homeHeroPrevious:focus-visible,#homeHeroNext:focus-visible,.home-hero-dots button:focus-visible{outline:3px solid #f7c0ff;outline-offset:3px}
 @media(max-width:900px){.hero-stage{aspect-ratio:16/10}.home-hero-footer{right:14px;bottom:13px;max-width:45%}.home-hero-carousel-actions{inset-inline:10px}.home-hero-carousel-actions button{width:40px;height:40px}}
 @media(max-width:760px){.hero-stage{aspect-ratio:4/5;min-height:400px}.home-hero-footer{max-width:100%;left:15px;right:15px;bottom:12px;align-items:center}.home-hero-slide-details{padding:8px 11px;text-align:center;max-width:70%}.home-hero-carousel-actions{top:49%}.home-hero-slide-details strong{font-size:14px}.home-quick-bar{margin:13px auto 22px;padding:13px}.home-quick-form-bottom{align-items:stretch;flex-direction:column}.home-quick-mode button{padding:8px 11px}#homeQuickSubmit{width:100%}}
+/* BASE #3 narrow-device geometry: the 4/5 ratio + 400px minimum height
+   can transfer an intrinsic 320px MINIMUM WIDTH into a 284px content column
+   at a 320px viewport (18px horizontal overflow). Preserve the 400px visual
+   height, borders and approved artwork; drop the ratio ONLY when the content
+   column is narrower than 320px. No document-wide clipping or shrinking text. */
+@media(max-width:355px){
+ .hero-stage{aspect-ratio:auto;min-height:400px;min-width:0;width:100%}
+ .hero-stage-copy{min-width:0;max-width:100%;overflow-wrap:break-word}
+}
 @media(max-width:490px){.home-hero-slide-details{max-width:100%}.home-hero-player{max-width:100%}.home-hero-dots button{width:18px}.home-hero-dots button[aria-current="true"]{width:24px}.home-hero-carousel-actions button{width:35px;height:35px}.hero-stage-copy{padding:26px 18px 125px}.home-quick-bar-heading h2{font-size:18px}}
 @media(prefers-reduced-motion:reduce){.home-hero-carousel video{animation:none!important}.home-quick-bar *{scroll-behavior:auto}}
 
