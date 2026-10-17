@@ -67,7 +67,7 @@ async function renderPhotoBatchArchive(items){
  const bytes=await archive.generateAsync({type:'blob',compression:'STORE'});
  if(canceled)return;
  const zipped=new File([bytes],'deepsyq-photo-batch.zip',{type:'application/zip'});
- const card=document.createElement('article');card.className='photo-batch-zip';
+ const card=document.createElement('div');card.className='photo-batch-zip';
  const label=document.createElement('p');
  label.textContent=({ru:'Все фото одним ZIP',fr:'Toutes les photos en ZIP',uk:'Усі фото одним ZIP'})[lang]||'All processed photos in one ZIP';
  const button=document.createElement('button');button.type='button';
