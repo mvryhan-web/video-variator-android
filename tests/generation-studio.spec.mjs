@@ -591,3 +591,67 @@ test('BASE 24: a changed account cannot confirm deletion of a previous account r
  expect(deletes).toBe(0);
  expect(paidPosts).toBe(0);
 });
+
+
+test('BASE 24: 51 saved results remain accessible in user-owned History without a second paid job',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','fixture-history-owner'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ const originals=Array.from({length:51},(_,i)=>({
+  id:'owned-old-'+String(i).padStart(3,'0'),kind:'video',status:'failed',
+  prompt:'Original saved prompt '+i,model:'fixture-video',createdAt:'2026-10-17T08:00:00Z'
+ }));
+ const offsets=[],paidPosts=[];
+ page.on('request',req=>{if(req.method()==='POST'&&req.url().includes('/api/studio/jobs'))paidPosts.push(req.url());});
+ await page.route('**/api/studio/jobs?filter=*',r=>{
+  const url=new URL(r.request().url()),filter=url.searchParams.get('filter'),offset=Number(url.searchParams.get('offset')||0);
+  offsets.push({filter,offset});
+  const filtered=filter==='all'?originals:[];
+  return r.fulfill({json:{items:filtered.slice(offset,offset+50),
+   hasMore:offset+50<filtered.length,nextOffset:offset+50<filtered.length?offset+50:null}});
+ });
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/generate-studio.html?studio=video&view=history');
+ await expect(page.locator('.history-card')).toHaveCount(50);
+ await expect(page.locator('[data-history-more]')).toHaveText('Load older results');
+ await page.locator('[data-history-more]').click();
+ await expect(page.locator('.history-card')).toHaveCount(51);
+ await expect(page.locator('.history-card').last()).toContainText('Original saved prompt 50');
+ await expect(page.locator('[data-history-more]')).toHaveCount(0);
+ await expect(page.locator('[data-history-filter=all]')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('[data-history-filter=image]')).toBeVisible();
+ await page.locator('[data-history-filter=image]').click();
+ await expect(page.locator('.history-card')).toHaveCount(0);
+ await expect(page.locator('[data-history-more]')).toHaveCount(0);
+ expect(offsets).toEqual([{filter:'all',offset:0},{filter:'all',offset:50},{filter:'image',offset:0}]);
+ expect(paidPosts).toEqual([]);
+});
+
+test('BASE 24: delayed older History page cannot overwrite a new filter or leak stale results',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','fixture-history-owner'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ let started,release,completed,paidPosts=0;
+ const oldSeen=new Promise(resolve=>started=resolve),oldRelease=new Promise(resolve=>release=resolve);
+ const oldDone=new Promise(resolve=>completed=resolve);
+ page.on('request',req=>{if(req.method()==='POST'&&req.url().includes('/api/studio/jobs'))paidPosts++;});
+ await page.route('**/api/studio/jobs?filter=*',async r=>{
+  const u=new URL(r.request().url()),filter=u.searchParams.get('filter'),offset=Number(u.searchParams.get('offset')||0);
+  if(filter==='all'&&offset===50){
+   started();await oldRelease;
+   try{await r.fulfill({json:{items:[{id:'stale-older',kind:'music',status:'failed',prompt:'STALE OLDER PRIVATE PAGE'}],hasMore:false,nextOffset:null}});}catch(_){}
+   completed();return;
+  }
+  const image={id:'current-photo',kind:'image',status:'failed',prompt:'Current Images filter only'};
+  const items=filter==='image'?[image]:[{id:'first-page',kind:'video',status:'failed',prompt:'First page entry'}];
+  return r.fulfill({json:{items,hasMore:filter==='all',nextOffset:filter==='all'?50:null}});
+ });
+ await page.goto('/generate-studio.html?view=history');
+ await expect(page.locator('[data-history-more]')).toBeVisible();
+ await page.locator('[data-history-more]').click();
+ await oldSeen;
+ await page.locator('[data-history-filter=image]').click();
+ await expect(page.locator('.history-card')).toContainText('Current Images filter only');
+ release();await oldDone;
+ await expect(page.locator('.history-card')).toHaveCount(1);
+ await expect(page.locator('#historyList')).not.toContainText('STALE OLDER PRIVATE PAGE');
+ expect(paidPosts).toBe(0);
+});
