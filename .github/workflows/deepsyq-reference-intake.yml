@@ -20,6 +20,13 @@ on:
       - 'tests/generation-worker-runtime-unit.mjs'
       - 'tests/generation-reference-*.mjs'
       - '.github/workflows/deepsyq-reference-intake.yml'
+# Unique workflow-file key: several existing workflows share the display name "BASE".
+# Cancel only superseded runs of THIS workflow on the SAME PR or ref.
+# Never cancel another agent's different PR or disable a safety assertion.
+concurrency:
+  group: agent5-deepsyq-reference-intake-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   reference-intake:
     runs-on: ubuntu-latest
