@@ -53,6 +53,18 @@ export async function listModelControls(pool,catalog){
  });
 }
 
+// Public studio configuration must never expose owner-only model economics.
+// Retain routing/capability flags and priorities needed by the client, but
+// keep price inputs exclusive to authenticated owner admin endpoints.
+export function publicModelCatalog(catalog){
+ return catalog.map(model=>{
+  const {internalCostMicros:_internalCost,markupBps:_markup,control,...visible}=model;
+  if(!control)return visible;
+  const {internalCostMicros:_controlInternalCost,markupBps:_controlMarkup,...publicControl}=control;
+  return {...visible,control:publicControl};
+ });
+}
+
 export async function getModelControl(pool,modelId){
  if(!validModelId(modelId))throw Error('INVALID_MODEL_CONTROL');
  await initModelControls(pool);
