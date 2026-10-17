@@ -11,8 +11,9 @@ test('BASE 24/25: user-owned History filters bind kind=$2 and never expose anoth
   {id:'other-music',user_id:'other-2',kind:'music',status:'ready',prompt:'Private other account song',settings:{},deleted:false,created_at:new Date('2026-10-16T08:03:00Z')},
   {id:'other-photo',user_id:'other-2',kind:'image',status:'ready',prompt:'Other private prompt',settings:{},deleted:false,created_at:new Date('2026-10-16T09:00:00Z')}
  ];
- const observed=[];
+ const observed=[],queryTrace=[];
  const pool={async query(sql,args=[]){
+  queryTrace.push({statement:sql.slice(0,150),args:[...args]});
   if(sql.includes('CREATE TABLE')||sql.includes('ALTER TABLE')||sql.includes('CREATE INDEX'))return {rows:[]};
   if(sql.startsWith('SELECT id,kind,status,provider,model,prompt,settings,error,result_text,mime,output_assets,created_at')){
    observed.push({sql,args:[...args]});
@@ -39,7 +40,7 @@ test('BASE 24/25: user-owned History filters bind kind=$2 and never expose anoth
    ['other-2','image','other-photo']
   ]){
    const response=await fetch(root+'/api/studio/jobs?filter='+kind,{headers:{'X-Test-User':user}});
-   assert.equal(response.status,200);
+   assert.equal(response.status,200,'History route status; synthetic SQL trace: '+JSON.stringify(queryTrace)+'; body: '+await response.clone().text());
    const body=await response.json();
    assert.deepEqual(body.items.map(item=>item.id),[expected]);
    assert.equal(body.items[0].prompt,fixtures.find(f=>f.id===expected).prompt);
