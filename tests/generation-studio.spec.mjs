@@ -733,6 +733,46 @@ for(const authChange of ['cross-tab logout','silent same-tab account switch','si
  });
 }
 
+for(const endPreview of ['leave History','cross-tab logout']){
+ test('BASE 24: active saved media fetch is aborted when user '+endPreview,async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('vv_token','history-abort-owner-A'));
+  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+  await page.route('**/api/studio/jobs?filter=*',r=>r.fulfill({json:{items:[
+   {id:'history-abort-video',kind:'video',status:'ready',
+    prompt:'PRIVATE IN-FLIGHT VIDEO A',createdAt:'2026-10-17T08:00:00Z'}
+  ]}}));
+  let paid=0;page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')paid++;});
+  await page.goto('/generate-studio.html?studio=video&view=history');
+  await page.evaluate(()=>{
+   const original=window.fetch.bind(window);window.__mediaFetchStarted=false;window.__mediaFetchAborted=false;
+   window.fetch=(input,options)=>{
+    if(!String(input).includes('/api/studio/jobs/history-abort-video/media'))return original(input,options);
+    window.__mediaFetchStarted=true;
+    return new Promise((_resolve,reject)=>{
+     const signal=options?.signal;
+     if(!signal){reject(Error('MISSING_PREVIEW_ABORT_SIGNAL'));return;}
+     const abort=()=>{window.__mediaFetchAborted=true;reject(new DOMException('aborted','AbortError'));};
+     if(signal.aborted)abort();else signal.addEventListener('abort',abort,{once:true});
+    });
+   };
+  });
+  await page.getByRole('button',{name:'Preview media'}).click();
+  await expect.poll(()=>page.evaluate(()=>window.__mediaFetchStarted)).toBe(true);
+  if(endPreview==='leave History')await page.locator('#showCreate').click();
+  else await page.evaluate(()=>{
+   localStorage.setItem('vv_token','history-abort-owner-B');
+   dispatchEvent(new StorageEvent('storage',{key:'vv_token',oldValue:'history-abort-owner-A',newValue:'history-abort-owner-B'}));
+  });
+  await expect.poll(()=>page.evaluate(()=>window.__mediaFetchAborted)).toBe(true);
+  await expect(page.locator('.history-inline-media video')).toHaveCount(0);
+  if(endPreview==='cross-tab logout'){
+   await expect(page.locator('.history-card')).toHaveCount(0);
+   await expect(page.locator('#historyList')).not.toContainText('PRIVATE IN-FLIGHT VIDEO A');
+  }
+  expect(paid).toBe(0);
+ });
+}
+
 for(const streamingCase of ['missing Content-Length exceeds 128 MiB','account changes midstream']){
  test('BASE 24: saved media stream '+streamingCase+' fails closed without a paid POST',async({page})=>{
   await page.addInitScript(()=>localStorage.setItem('vv_token','stream-history-account-A'));
