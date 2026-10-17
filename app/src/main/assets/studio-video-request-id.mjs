@@ -71,7 +71,8 @@ export function videoResumeScopeMatches(storedScope,videoDraftKey){
 const DEFINITE_PRE_DISPATCH_VIDEO_REJECTIONS=new Set([
  'INVALID_REQUEST','INVALID_REFERENCES','INVALID_VIDEO_REFERENCES',
  'UNSUPPORTED_VIDEO_INPUT_MODE','UNSUPPORTED_VIDEO_RESOLUTION',
- 'UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS'
+ 'UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS',
+ 'UNSUPPORTED_VIDEO_CONTROL'
 ]);
 // Only error codes emitted by synchronous validation BEFORE the server inserts
 // a generation job. A 5xx/timeout/unknown/provider failure must never clear
