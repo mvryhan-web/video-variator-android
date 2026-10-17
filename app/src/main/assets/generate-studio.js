@@ -695,6 +695,7 @@ async function editHistoryImage(item){
   if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
   await useResultAsImageReference(savedImage,{suggestedPrompt:item.prompt||'',historyAccountToken:accountToken});
  }catch(e){
+  if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
   $('status').textContent=['IMAGE_RESULT_REQUIRED','IMAGE_PREPARE_FAILED','IMAGE_REFERENCE_PREPARE_FAILED','IMAGE_REFERENCE_UNSUPPORTED'].includes(e.message)?
    say('Unable to prepare this saved image as a reference. Your existing draft was kept.','Не удалось подготовить сохранённое изображение. Ваш текущий черновик сохранён.'):errorText(e);
  }finally{busy=false;availability();}
@@ -713,7 +714,10 @@ async function downloadHistoryItem(item){
   const ext=b.type.startsWith('video/')?'mp4':b.type==='image/jpeg'?'jpg':b.type.startsWith('image/')?'png':b.type==='audio/wav'?'wav':'mp3';
   await saveLocal(new File([b],`Deepsyq-${item.id}.${ext}`,{type:b.type}));
  }
- catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}
+ catch(e){
+  if(!historySessionCurrent(accountToken))clearHistoryForAccountChange();
+  else $('status').textContent=errorText(e);
+ }finally{busy=false;availability();}
 }
 async function deleteHistoryItem(item){
  if(busy||['queued','processing','finalizing'].includes(item.status))return;
