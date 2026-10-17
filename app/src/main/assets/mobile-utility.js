@@ -48,6 +48,19 @@ function purgeRedactionOnPagehide(){
  $('utilityRun').disabled=true;
 }
 window.addEventListener('pagehide',purgeRedactionOnPagehide);
+window.addEventListener('pagehide',()=>{
+ // On BFCache restore, neither private file pickers nor OCR/PDF contents
+ // should survive; invalidate pending encoding/recognition before publication.
+ abort=true;
+ try{engine?.terminate();}catch(_){}
+ clearRedactPreviewUrls();
+ $('utilityFiles').value='';
+ $('utilityResults').replaceChildren();
+ $('utilityQr').value='';
+ $('utilityText').value='';
+ const signature=$('utilitySignature');
+ if(signature)signature.getContext('2d')?.clearRect(0,0,signature.width,signature.height);
+});
 // FileList getters are allowed to return distinct File wrappers on some engines.
 // The change event immediately clears redactSource; this identity comparison
 // uses stable metadata only within that selected epoch.
@@ -143,7 +156,7 @@ async function result(file){
  const p=document.createElement('p');p.textContent=file.name+' · '+(file.size/1048576).toFixed(2)+' MB';
  const b=document.createElement('button');b.type='button';b.textContent=label('Download','Скачать');b.onclick=()=>saveLocal(file);
  row.append(p);
- if(file.type.startsWith('image/')){const img=new Image();const url=URL.createObjectURL(file);if(tool==='photo-redact')redactPreviewUrls.add(url);img.src=url;img.alt=file.name;img.onload=()=>setTimeout(()=>{URL.revokeObjectURL(url);redactPreviewUrls.delete(url);},60000);row.append(img);}
+ if(file.type.startsWith('image/')){const img=new Image();const url=URL.createObjectURL(file);redactPreviewUrls.add(url);/* All local previews must be revoked on BFCache pagehide. */img.src=url;img.alt=file.name;img.onload=()=>setTimeout(()=>{URL.revokeObjectURL(url);redactPreviewUrls.delete(url);},60000);row.append(img);}
  row.append(b);$('utilityResults').append(row);
  return file;
 }
