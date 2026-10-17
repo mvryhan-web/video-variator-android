@@ -203,3 +203,43 @@ test('BASE #28: leaving Tools during native Android file transfer cancels the pa
  await expect(page.locator('#outputs')).toBeEmpty();
  expect(access.calls.filter(c=>c.path==='/api/tools/runs')).toHaveLength(0);
 });
+
+
+test('BASE #28: Android native save cancels partial multi-chunk file before finish on pagehide',async({page})=>{
+ let serverPosts=0;page.on('request',r=>{if(r.method()==='POST')serverPosts++;});
+ await page.addInitScript(()=>{
+  window.__base28BridgeChunks={started:0,appended:0,finished:0,canceled:0,reads:0};
+  window.AndroidBridge={
+   startToolFile(){window.__base28BridgeChunks.started++;return true;},
+   appendToolChunk(){window.__base28BridgeChunks.appended++;return true;},
+   finishToolFile(){window.__base28BridgeChunks.finished++;return true;},
+   cancelToolFile(){window.__base28BridgeChunks.canceled++;return true;}
+  };
+ });
+ await page.goto('/free-tools.html?tool=photo');
+ await page.evaluate(()=>{
+  const read=Blob.prototype.arrayBuffer;
+  Blob.prototype.arrayBuffer=async function(...args){
+   window.__base28BridgeChunks.reads++;
+   if(window.__base28BridgeChunks.reads===2)
+    await new Promise(resolve=>setTimeout(resolve,650));
+   return read.apply(this,args);
+  };
+  const privateFile=new File([new Uint8Array(600_000)],'private-owner-file.bin',{
+   type:'application/octet-stream'
+  });
+  window.__base28BridgePromise=window.VUFreeTools.save(privateFile).catch(e=>{
+   window.__base28BridgeError=e.message;
+  });
+ });
+ await expect.poll(()=>page.evaluate(()=>window.__base28BridgeChunks.reads)).toBe(2);
+ await expect.poll(()=>page.evaluate(()=>window.__base28BridgeChunks.appended)).toBe(1);
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+ await expect.poll(()=>page.evaluate(()=>window.__base28BridgeChunks.canceled)).toBe(1);
+ await page.evaluate(()=>window.__base28BridgePromise);
+ expect(await page.evaluate(()=>window.__base28BridgeChunks)).toEqual({
+  started:1,appended:1,finished:0,canceled:1,reads:2
+ });
+ expect(await page.evaluate(()=>window.__base28BridgeError)).toBe('Canceled');
+ expect(serverPosts).toBe(0);
+});
