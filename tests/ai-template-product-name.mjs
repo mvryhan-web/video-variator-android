@@ -53,3 +53,17 @@ test('long plain prompts stay disabled instead of losing suffix in Studio',()=>{
  assert.equal(templateSupport(justFits).supported,true);
  assert.equal(prepareTemplatePrompt(justFits,'X').length,2000);
 });
+
+
+test('missing or whitespace-only template prompts remain disabled, without Studio handoff',()=>{
+ for(const prompt of [undefined,null,'','   ','\n\t ']){
+  const template={generationType:'image',requiredInputTypes:['image'],promptTemplate:prompt};
+  const support=templateSupport(template);
+  assert.equal(support.supported,false,'empty prompt must not advertise a ready workflow');
+  assert.match(support.reason,/has no prompt/);
+  assert.throws(()=>prepareTemplatePrompt(template),/not ready for Studio/);
+ }
+ const ready={generationType:'image',requiredInputTypes:['image'],promptTemplate:'Create a simple example'};
+ assert.equal(templateSupport(ready).supported,true);
+ assert.equal(prepareTemplatePrompt(ready),'Create a simple example');
+});
