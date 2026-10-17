@@ -737,7 +737,14 @@ async function openHistoryJob(id){
  job=id;sessionStorage.setItem('vu_generation_job',id);if(sessionStorage.getItem('vu_generation_background_job')===id)sessionStorage.removeItem('vu_generation_background_job');busy=true;availability();$('status').textContent=say('Opening saved result…','Открываем сохранённый результат…');
  const accountToken=historyBoundToken,epoch=++generation;
  try{await watch(id,epoch,{historyAccountToken:accountToken});if(epoch===generation&&historySessionCurrent(accountToken))setHistory(false);}
- catch(e){if(epoch!==generation)return;if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
+ catch(e){if(epoch!==generation)return;
+  if(!historySessionCurrent(accountToken)){
+   clearHistoryForAccountChange();
+   if(job===id){++generation;job=null;activeVideoWatchId=null;
+    if(sessionStorage.getItem('vu_generation_job')===id)sessionStorage.removeItem('vu_generation_job');
+    clearResult();busy=false;availability();}
+   return;
+  }
   activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
 }
 async function loadHistory({append=false}={}){
