@@ -2,10 +2,26 @@
 import {MODELS,MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 export {MODELS,MODEL_CATALOG};
 const ROOT='https://generativelanguage.googleapis.com/v1beta/';
+// BASE #5: video/audio input transport and native camera/motion controls are
+// not wired to a verified provider adapter. Never silently discard a user's
+// reference or promised paid control while creating a chargeable Video task.
+const UNWIRED_VIDEO_CONTROLS=[
+ 'referenceVideo','referenceVideos','videoReference','videoReferences',
+ 'referenceAudio','referenceAudios','audioReference','audioReferences',
+ 'reference_video','reference_audio','videoUrl','audioUrl',
+ 'camera','cameraMotion','camera_motion','motion','motionControls','motion_controls',
+ 'generateAudio','generate_audio','watermark'
+];
+export function rejectUnsupportedVideoControls(body){
+ if(body?.kind!=='video'||!body||typeof body!=='object')return;
+ if(UNWIRED_VIDEO_CONTROLS.some(k=>Object.prototype.hasOwnProperty.call(body,k)))
+  throw new Error('UNSUPPORTED_VIDEO_CONTROL');
+}
 export function validateGeneration(body){
  const selectedModelId=body?.model||MODELS[body?.kind]?.id;
  const m=MODEL_CATALOG.find(candidate=>candidate.id===selectedModelId&&candidate.kind===body?.kind&&candidate.adapter);
  if(!m||typeof body.prompt!=='string'||!body.prompt.trim()||body.prompt.length>2000||body.consent!==true)throw new Error('INVALID_REQUEST');
+ rejectUnsupportedVideoControls(body);
  // Existing Image providers have no verified seed/negative-prompt API support.
  // Reject explicit fields instead of silently ignoring a promised control.
  if(body&&('seed'in body||'negativePrompt'in body||'negative_prompt'in body))throw new Error('UNSUPPORTED_IMAGE_CONTROL');
