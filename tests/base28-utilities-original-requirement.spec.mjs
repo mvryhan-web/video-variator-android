@@ -502,8 +502,8 @@ test('BASE #28: invalid resized-photo dimensions also purge the original private
   };
  });
  await page.locator('#utilityFiles').setInputFiles({name:'private.png',mimeType:'image/png',buffer:png});
- await page.locator('#utilityWidth').fill('100000');
- await page.locator('#utilityHeight').fill('100000');
+ await page.locator('#utilityWidth').fill('8000');
+ await page.locator('#utilityHeight').fill('8000');
  await page.locator('#utilityRun').click();
  await expect(page.locator('#utilityStatus')).toContainText('Dimensions must be within 40 megapixels');
  await expect(page.locator('#utilityRun')).toBeEnabled();
