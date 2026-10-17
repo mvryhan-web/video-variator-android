@@ -84,7 +84,7 @@ for(const interaction of ['click old card','keyboard old card','focus old card']
   await expect(page.locator('#recentCreationsGrid')).toContainText('PRIVATE: Account A');
   await page.evaluate(()=>localStorage.setItem('vv_token','fixture-account-B'));
   const recent=page.locator('#recentCreationsGrid .recent-creation').first();
-  if(interaction==='click old card')await recent.click({force:true,noWaitAfter:true});
+  if(interaction==='click old card')await recent.evaluate(el=>el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));
   else if(interaction==='keyboard old card'){
    // Dispatch the keyboard event on the stale link so its capture listener
    // prevents activation before the old owner is wiped.
