@@ -4,6 +4,13 @@ on:
     branches: [ai-generation-studio]
   pull_request:
     paths: ['server/generation-*.js', 'app/src/main/assets/generate-studio.*', 'app/src/main/assets/generate-models.js', 'tests/generation-*', '.github/workflows/ai-studio.yml']
+# Unique workflow-file key: several existing workflows share the display name "BASE".
+# Cancel only superseded runs of THIS workflow on the SAME PR or ref.
+# Never cancel another agent's different PR or disable a safety assertion.
+concurrency:
+  group: agent5-ai-studio-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
