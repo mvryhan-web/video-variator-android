@@ -15,6 +15,20 @@ let historyThumbUrls=[],historyMediaUrl=null,historyMediaPlayer=null,historyMedi
 const drafts={};
 let activeVideoWatchId=null; // Current browser polling only; the provider job is server-owned.
 let historyLoadEpoch=0; // Latest History filter/visit wins over delayed earlier responses.
+let historyBoundToken=null; // Ephemeral account guard; never persisted in DOM or storage.
+const historySessionCurrent=token=>!!token&&localStorage.getItem('vv_token')===token;
+function clearHistoryForAccountChange(){
+ ++historyLoadEpoch;
+ historyBoundToken=null;
+ clearHistoryMediaPreview();clearHistoryThumbs();
+ const list=$('historyList');
+ if(list){list.replaceChildren();if(historyView){
+  const info=document.createElement('p');info.className='hint';
+  info.textContent=say('Account changed. Open History to load this account’s results.','Аккаунт изменён. Откройте Историю, чтобы загрузить результаты текущего аккаунта.');
+  list.append(info);
+ }}
+}
+
 const imageBatchQuantity=()=>kind==='image'&&config?.imageBatchEnabled?Number($('imageQuantity').value||1):1;
 let imageDraftKey=null,imageDraftReady=false,imageDraftLoaded=false,imageDraftNeedsPhotos=false;
 async function initializeImageDraft(){
@@ -559,14 +573,14 @@ function clearHistoryThumbs(){for(const u of historyThumbUrls)URL.revokeObjectUR
 async function loadHistoryImageThumbnail(item,preview,epoch){
  try{
   const response=await api(`/api/studio/jobs/${encodeURIComponent(item.id)}/media`),b=await response.blob();
-   if(epoch!==historyLoadEpoch||!historyView||!preview.isConnected||!b.type.startsWith('image/'))return;
+   if(epoch!==historyLoadEpoch||!historyView||!historySessionCurrent(historyBoundToken)||!preview.isConnected||!b.type.startsWith('image/'))return;
   const u=URL.createObjectURL(b);historyThumbUrls.push(u);const img=document.createElement('img');img.className='history-thumb';img.src=u;img.alt=say('Generated image preview','Предпросмотр созданного изображения');img.loading='lazy';preview.replaceChildren(img);
  }catch(_){/* Keep the lightweight placeholder if preview retrieval fails. */}
 }
 function observeHistoryThumbnail(item,preview,epoch){
  if(item.kind!=='image'||item.status!=='ready')return;
  if(!('IntersectionObserver'in window)){void loadHistoryImageThumbnail(item,preview,epoch);return;}
- const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){observer.disconnect();if(epoch===historyLoadEpoch&&historyView&&preview.isConnected)void loadHistoryImageThumbnail(item,preview,epoch);}},{rootMargin:'180px'});
+ const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){observer.disconnect();if(epoch===historyLoadEpoch&&historyView&&historySessionCurrent(historyBoundToken)&&preview.isConnected)void loadHistoryImageThumbnail(item,preview,epoch);}},{rootMargin:'180px'});
  observer.observe(preview);
 }
 
@@ -594,7 +608,8 @@ async function previewHistoryMedia(item,holder,button){
   clearHistoryMediaPreview();holder.replaceChildren();return;
  }
  clearHistoryMediaPreview();
- const epoch=historyMediaEpoch;
+ const epoch=historyMediaEpoch,accountToken=historyBoundToken;
+ if(!historySessionCurrent(accountToken))return;
  historyMediaButton=button;button.disabled=true;
  button.textContent=say('Loading preview…','Загружаем…');
  holder.replaceChildren();
@@ -603,7 +618,7 @@ async function previewHistoryMedia(item,holder,button){
   const reportedSize=Number(response.headers.get('content-length')||0);
   if(reportedSize>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
   const blob=await response.blob();
-  if(epoch!==historyMediaEpoch||!historyView||!button.isConnected)return;
+  if(epoch!==historyMediaEpoch||!historyView||!historySessionCurrent(accountToken)||!button.isConnected)return;
   if(blob.size>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
   const expected=item.kind==='video'?'video/':'audio/';
   if(!blob.type.toLowerCase().startsWith(expected))throw Error('PREVIEW_UNSUPPORTED_FORMAT');
@@ -616,7 +631,7 @@ async function previewHistoryMedia(item,holder,button){
   holder.replaceChildren(player);button.disabled=false;
   button.textContent=say('Close preview','Закрыть просмотр');
  }catch(error){
-  if(epoch!==historyMediaEpoch||!button.isConnected)return;
+  if(epoch!==historyMediaEpoch||!historySessionCurrent(accountToken)||!button.isConnected)return;
   button.disabled=false;button.textContent=say('Preview media','Просмотр');
   const message=document.createElement('p');message.className='hint';
   message.textContent=error.message==='PREVIEW_TOO_LARGE'?
@@ -702,11 +717,18 @@ async function openHistoryJob(id){
  const epoch=++generation;try{await watch(id,epoch);if(epoch===generation)setHistory(false);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
 }
 async function loadHistory(){
- const epoch=++historyLoadEpoch,requestedFilter=historyFilter;
+ const epoch=++historyLoadEpoch,requestedFilter=historyFilter,accountToken=localStorage.getItem('vv_token');
+ historyBoundToken=accountToken;
  const list=$('historyList');list.hidden=false;clearHistoryMediaPreview();clearHistoryThumbs();list.replaceChildren();const loading=document.createElement('p');loading.className='hint';loading.textContent=say('Loading results…','Загружаем результаты…');list.append(loading);
+ if(!historySessionCurrent(accountToken)){
+  list.replaceChildren();const p=document.createElement('p');p.className='hint';
+  p.textContent=say('Sign in to view your saved results.','Войдите в аккаунт, чтобы увидеть сохранённые результаты.');
+  list.append(p);return;
+ }
  try{
   const d=await(await api('/api/studio/jobs?filter='+encodeURIComponent(requestedFilter))).json();
    if(epoch!==historyLoadEpoch||!historyView)return; // Ignore superseded filter/tab results.
+   if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
    list.replaceChildren();
   if(!d.items?.length){const p=document.createElement('p');p.className='hint';p.textContent=say('No results in this filter yet.','В этом фильтре пока нет результатов.');list.append(p);return;}
   for(const item of d.items){
@@ -747,11 +769,17 @@ async function loadHistory(){
    }
    actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions,inlinePreview);list.append(card);observeHistoryThumbnail(item,preview,epoch);
   }
- }catch(e){if(epoch!==historyLoadEpoch||!historyView)return;list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
+ }catch(e){if(epoch!==historyLoadEpoch||!historyView)return;if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
 }
 document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclick=()=>{historyFilter=button.dataset.historyFilter;document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));void loadHistory();});
 function setHistory(on){if(!on){++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();}historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
 window.addEventListener('pagehide',()=>{++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();});
+window.addEventListener('storage',event=>{
+ if(event.key==='vv_token'&&event.newValue!==historyBoundToken)clearHistoryForAccountChange();
+});
+window.addEventListener('focus',()=>{
+ if(historyView&&historyBoundToken&&!historySessionCurrent(historyBoundToken))clearHistoryForAccountChange();
+});
 $('showCreate').onclick=()=>{const u=new URL(location.href);u.searchParams.delete('view');history.replaceState(null,'',u);setHistory(false);};$('showHistory').onclick=()=>setHistory(true);
 function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
 async function watch(id,epoch){
