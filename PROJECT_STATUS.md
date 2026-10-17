@@ -1,5 +1,9 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent C BASE #28 update — corrected image fixture and cancel acceptance (2026-10-17)
+- Draft PR [#205](https://github.com/mvryhan-web/video-variator-android/pull/205) HEAD `de84de1ad456af3bce95e27b908e2e821ef64bf6`: existing one-photo compressor extended to sequential 2–8 photos + local ZIP. Corrected prior test fixture to **fully decodable 4×4 PNG** (old 1×1 source was malformed), then added a browser test verifying cancel during encode does not output incomplete files. Dedicated CI **39019000054 QUEUED**; existing photo-compression CI **39018999946 QUEUED**, local video-compression regression **39018999981 QUEUED**. Current original tool JS and browser test JS parse PASS in local V8 syntax checks, not a substitute for the pending browser CI. Do not publish or merge before exact-head green CI; original specification unmodified.
+
+
 ## Agent B — BASE #33 safe retry PR #159 integration reconciliation (2026-10-17)
 
 - Existing B [PR #159](https://github.com/mvryhan-web/video-variator-android/pull/159) HEAD `91fa8dd16c0cbcd50fd78d9e4130fb8b400614a3` reconciled safely into the current BASE ancestry via **non-force two-parent commit**, checking source error-normalizer and tests still matched original prepatch blobs. Comparison to integration shows exactly five B-owned paths: retry-policy, error normalizer, two test suites and focused workflow. B PR #175 future retained operation compatibility preserved.
