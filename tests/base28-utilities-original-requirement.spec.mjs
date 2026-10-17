@@ -268,3 +268,26 @@ test('BASE #28: changing photo or leaving revokes private redaction blob preview
  await expect(page.locator('#utilityFiles')).toHaveValue('');
  await expect(page.locator('#redactCanvas')).toHaveJSProperty('width',1);
 });
+
+
+test('BASE #28: Cancel during Photo to PDF JPEG encode cannot publish a PDF',async({page})=>{
+ let posts=0;
+ page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.goto('/mobile-utility.html?tool=scan-pdf');
+ await page.locator('#utilityFiles').setInputFiles({
+  name:'private-photo.png',mimeType:'image/png',buffer:await fixture(page)
+ });
+ await page.evaluate(()=>{
+  const native=HTMLCanvasElement.prototype.toBlob;
+  HTMLCanvasElement.prototype.toBlob=function(cb,...args){
+   return native.call(this,blob=>setTimeout(()=>cb(blob),650),...args);
+  };
+ });
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityCancel')).toBeEnabled();
+ await page.locator('#utilityCancel').click();
+ await expect(page.locator('#utilityStatus')).toContainText('Canceled');
+ await expect(page.locator('#utilityRun')).toBeEnabled();
+ await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
+ expect(posts).toBe(0);
+});
