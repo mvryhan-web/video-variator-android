@@ -294,3 +294,37 @@ test('BASE 3: offline platform config never hides the permanent original Hero ga
  await expect(page.locator('#paymentStatus')).toContainText('Plans could not load');
  expect(paidPosts).toBe(0);
 });
+
+test('BASE 3: narrow 320px Home Hero has no intrinsic-width overflow without clipping the approved gallery',async({page},info)=>{
+ await mockSafeHome(page,[]);
+ let paidJobs=0;
+ page.on('request',req=>{if(req.method()==='POST'&&/\\/api\\/studio\\/jobs/.test(req.url()))paidJobs++;});
+ await page.setViewportSize({width:320,height:740});
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+ await expect(page.locator('.hero-stage h1')).toContainText('beyond limits');
+ for(const width of [320,340,355,390]){
+  await page.setViewportSize({width,height:740});
+  const layout=await page.evaluate(()=>{
+   const hero=document.querySelector('.hero-stage').getBoundingClientRect();
+   const copy=document.querySelector('.hero-stage-copy').getBoundingClientRect();
+   const stage=document.querySelector('.hero').getBoundingClientRect();
+   return {viewport:innerWidth,page:document.documentElement.scrollWidth,
+    stageLeft:hero.left,stageRight:hero.right,stageWidth:hero.width,stageHeight:hero.height,
+    copyLeft:copy.left,copyRight:copy.right,heroRight:stage.right};
+  });
+  // The owner artwork remains visibly full-width INSIDE the 18px main padding.
+  expect(layout.stageLeft).toBeGreaterThanOrEqual(17);
+  expect(layout.stageRight).toBeLessThanOrEqual(width-17);
+  expect(layout.copyLeft).toBeGreaterThanOrEqual(layout.stageLeft-1);
+  expect(layout.copyRight).toBeLessThanOrEqual(layout.stageRight+1);
+  expect(layout.page).toBeLessThanOrEqual(width);
+  expect(layout.stageHeight).toBeGreaterThanOrEqual(399);
+  if(width===390){
+   expect(layout.stageWidth/layout.stageHeight).toBeGreaterThan(0.77);
+   expect(layout.stageWidth/layout.stageHeight).toBeLessThan(0.83);
+  }
+  if(width===320||width===390)await page.screenshot({path:info.outputPath('owner-hero-fit-'+width+'.png'),fullPage:false});
+ }
+ expect(paidJobs).toBe(0);
+});
