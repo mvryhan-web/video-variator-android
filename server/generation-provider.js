@@ -103,7 +103,11 @@ export async function pollGoogle(operation,{key,fetcher=fetch}){
  const bytes=Buffer.concat(chunks),headerSize=bytes.length>=8?bytes.readUInt32BE(0):0;
  // Never report HTML/JSON/error pages as completed MP4 output. Use a minimal
  // ISO-BMFF file-type box check; this is NOT a codec or malware verdict.
+ const brand=bytes.toString('ascii',8,12);
+ // AVIF/HEIC and arbitrary ISO-BMFF boxes also start with 'ftyp'. Only
+ // recognized video MP4 major brands may be served as video/mp4 here.
+ const mp4Brand=/^(?:isom|iso[2-9]|mp4[12]|avc1|hvc1|hev1|M4V |dash|msdh|f4v )$/.test(brand);
  if(bytes.length<16||bytes.subarray(4,8).toString('ascii')!=='ftyp'||
-    headerSize<16||headerSize>bytes.length)throw new Error('INVALID_PROVIDER_MEDIA');
+    headerSize<16||headerSize>bytes.length||!mp4Brand)throw new Error('INVALID_PROVIDER_MEDIA');
  return {mime:'video/mp4',bytes,text:''};
 }

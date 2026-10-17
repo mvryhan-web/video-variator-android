@@ -49,6 +49,13 @@ test('BASE #5 invalid response bytes never become a purported finished MP4',asyn
  await assert.rejects(()=>runPoll(new Response(invalidSize)),/INVALID_PROVIDER_MEDIA/);
 });
 
+test('Veo refuses AVIF/HEIC and arbitrary ftyp brands mislabeled as video/mp4',async()=>{
+ for(const brand of ['avif','mif1','heic','junk']){
+  const image=Buffer.from(box);image.write(brand,8,'ascii');
+  await assert.rejects(()=>runPoll(new Response(image)),/INVALID_PROVIDER_MEDIA/,brand);
+ }
+});
+
 test('BASE #5 claimed oversized Veo response fails before streaming media',async()=>{
  await assert.rejects(()=>runPoll(new Response(Buffer.from('small'),{
   headers:{'Content-Length':String(30*1024*1024+1)}
