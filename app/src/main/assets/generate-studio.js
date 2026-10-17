@@ -11,7 +11,7 @@ let kind=requested==='image'?'image':requested==='audio'?'music':'video';
 let config={enabled:false,models:[]},catalog=MODEL_CATALOG.map(m=>({...m,enabled:false}));
 let refs=[],modelId=MODELS[kind].id,url,blob,job,busy=false,generation=0,historyView=false,historyFilter='all';
 let estimateTimer=null,estimateSignature='';
-let historyThumbUrls=[],historyMediaUrl=null,historyMediaPlayer=null,historyMediaButton=null,historyMediaEpoch=0;
+let historyThumbUrls=[],historyMediaUrl=null,historyMediaPlayer=null,historyMediaButton=null,historyMediaEpoch=0,historyMediaAbort=null;
 const drafts={};
 let activeVideoWatchId=null; // Current browser polling only; the provider job is server-owned.
 let historyLoadEpoch=0; // Latest History filter/visit wins over delayed earlier responses.
@@ -628,6 +628,7 @@ async function readHistoryPreviewBlob(response,stillOwned){
 }
 function clearHistoryMediaPreview(){
  ++historyMediaEpoch;
+ if(historyMediaAbort){historyMediaAbort.abort();historyMediaAbort=null;}
  if(historyMediaPlayer){
   historyMediaPlayer.pause();
   historyMediaPlayer.removeAttribute('src');
@@ -650,10 +651,12 @@ async function previewHistoryMedia(item,holder,button){
  const epoch=historyMediaEpoch,accountToken=historyBoundToken;
  if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
  historyMediaButton=button;button.disabled=true;
+ historyMediaAbort=new AbortController();
+ const signal=historyMediaAbort.signal;
  button.textContent=say('Loading preview…','Загружаем…');
  holder.replaceChildren();
  try{
-  const response=await api('/api/studio/jobs/'+encodeURIComponent(item.id)+'/media');
+  const response=await api('/api/studio/jobs/'+encodeURIComponent(item.id)+'/media',{signal});
   const blob=await readHistoryPreviewBlob(response,
    ()=>epoch===historyMediaEpoch&&historyView&&historySessionCurrent(accountToken)&&button.isConnected);
   if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
