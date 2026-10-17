@@ -243,3 +243,42 @@ test('BASE #28: Android native save cancels partial multi-chunk file before fini
  expect(await page.evaluate(()=>window.__base28BridgeError)).toBe('Canceled');
  expect(serverPosts).toBe(0);
 });
+
+
+test('BASE #28: browser download fallback also stops if pagehide wins its async turn',async({page})=>{
+ await page.goto('/free-tools.html?tool=photo');
+ const result=await page.evaluate(async()=>{
+  // Intercept anchors to inspect whether a local file would be downloaded.
+  const original=HTMLAnchorElement.prototype.click;
+  const downloadUrls=[];
+  HTMLAnchorElement.prototype.click=function(){
+   downloadUrls.push(this.href);
+  };
+  const source=new File([new Uint8Array([1,2,3,4])],'private-file.jpg',{
+   type:'image/jpeg'
+  });
+  const pending=window.VUFreeTools.save(source);
+  window.dispatchEvent(new Event('pagehide'));
+  await pending;
+  const canceled={clicks:downloadUrls.length};
+  // A deliberate later user save is allowed after a fresh page navigation.
+  HTMLAnchorElement.prototype.click=original;
+  return canceled;
+ });
+ expect(result).toEqual({clicks:0});
+ await page.goto('/free-tools.html?tool=photo');
+ const normal=await page.evaluate(async()=>{
+  const original=HTMLAnchorElement.prototype.click;
+  let clicks=0;
+  HTMLAnchorElement.prototype.click=function(){clicks++;};
+  try{
+   await window.VUFreeTools.save(new File([new Uint8Array([1,2,3])],'photo.jpg',{
+    type:'image/jpeg'
+   }));
+  }finally{
+   HTMLAnchorElement.prototype.click=original;
+  }
+  return clicks;
+ });
+ expect(normal).toBe(1);
+});
