@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent C — BASE #38 admin latest-query/session acceptance (2026-10-17)
+
+- **Observed gap:** in `app/src/main/assets/deepsyq-admin.js` owner admin Users and Jobs list requests can resolve out of order and repaint stale search/filter data. Owner session changes from another tab are not reflected in a currently opened owner-admin page. Sensitive user/workload metadata should never remain exposed after the session changes. Existing server-side owner authorization, Stripe and credit adjustments remain authoritative and untouched.
+- **Claim:** isolated C branch `agent-c-base38-admin-latest-session-20261017`, target `deepsyq-platform`, Issue #74 / original BASE #38 (with BASE #35 privacy boundary). Restrict to C-owned admin page script and exact focused browser/no-cost tests/workflow; leave admin API, auth backend, D-owned ledger and billing, A Home/brand, original TXT and production unchanged.
+- **Acceptance:** latest search/filter request wins; obsolete network responses and errors do not update lists; cross-tab `vv_token` change invalidates owner page and redirects out, with owner-only nonproduction synthetic API fixtures, no paid or live server actions. Distinguish simulation CI from real multi-device auth/production verification; overall BASE #38 remains PARTIAL.
+
+
 
 ## P0 dual launch blocker handoff — 2026-10-17 / Agent 5
 
