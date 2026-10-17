@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {webcrypto} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
-import {claimVideoRequestId,acknowledgeVideoRequestId,videoOwnerScopeFromClaim,videoResumeScopeMatches} from '../app/src/main/assets/studio-video-request-id.mjs';
+import {claimVideoRequestId,acknowledgeVideoRequestId,releaseRejectedVideoRequestId,videoOwnerScopeFromClaim,videoResumeScopeMatches} from '../app/src/main/assets/studio-video-request-id.mjs';
 
 function storage(){const saved=new Map();return {
  saved,getItem:k=>saved.get(k)??null,setItem:(k,v)=>saved.set(k,v),
@@ -166,4 +166,32 @@ test('BASE #5: authenticated Video media response cannot be shown after account 
  assert.equal(result.rejection?.message,'VIDEO_ACCOUNT_CHANGED');
  assert.equal(result.reads,2);
  assert.equal(result.cleared,0);
+});
+
+
+test('BASE #5: rejected video input frees only definitively pre-dispatch-invalid request IDs',async()=>{
+ for(const code of ['INVALID_VIDEO_REFERENCES','UNSUPPORTED_VIDEO_RESOLUTION',
+   'UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_VIDEO_INPUT_MODE',
+   'INVALID_REQUEST','INVALID_REFERENCES']){
+  const s=storage(),p=payload(),old=await claimVideoRequestId({payload:p,token:'user-A',storage:s,cryptoApi});
+  assert.equal(releaseRejectedVideoRequestId({storage:s,...old,errorCode:code}),true);
+  assert.equal(s.saved.size,0);
+  const revised=await claimVideoRequestId({payload:{...p,prompt:'corrected input'},token:'user-A',storage:s,cryptoApi});
+  assert.notEqual(revised.requestId,old.requestId);
+ }
+});
+
+test('BASE #5: ambiguous provider/DB/status, rate limits and conflicts preserve original request ID',async()=>{
+ const s=storage(),p=payload(),claim=await claimVideoRequestId({payload:p,token:'user-A',storage:s,cryptoApi});
+ for(const code of ['AI_PROVIDER_TIMEOUT','STUDIO_STORAGE_UNAVAILABLE',
+  'STATUS_UNKNOWN_NO_AUTOMATIC_RETRY','REQUEST_FAILED','AI_PRICING_NOT_APPROVED',
+  'GENERATION_REQUEST_CONFLICT','AI_RATE_LIMIT','AI_WALLET_UNAVAILABLE','VALIDATION_ERROR',
+  undefined,'']){
+  assert.equal(releaseRejectedVideoRequestId({storage:s,...claim,errorCode:code}),false);
+  assert.equal(s.saved.size,1);
+  const same=await claimVideoRequestId({payload:p,token:'user-A',storage:s,cryptoApi});
+  assert.equal(same.requestId,claim.requestId);
+ }
+ assert.equal(releaseRejectedVideoRequestId({storage:s,key:claim.key,requestId:'00000000-0000-4000-8000-000000000000',errorCode:'INVALID_REFERENCES'}),false);
+ assert.equal(s.saved.size,1);
 });
