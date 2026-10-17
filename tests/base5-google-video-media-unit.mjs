@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {generateGoogle,pollGoogle,safeGoogleUrl,googleJson} from '../server/generation-provider.js';
+import {generateGoogle,pollGoogle,safeGoogleUrl,googleJson,validateGeneration,rejectUnsupportedVideoControls} from '../server/generation-provider.js';
 
 const GOOGLE='https://generativelanguage.googleapis.com/v1beta/files/fixture?alt=media';
 const operation='operations/fixture';
@@ -132,4 +132,54 @@ test('BASE #5 rejected malformed Google operation IDs never become unpollable st
  }});
  assert.equal(valid.operation,'models/veo-3.1-lite-generate-preview/operations/task_id');
  assert.equal(calls,1);
+});
+
+
+test('BASE #5: unimplemented video/audio references never disappear silently into a paid Video request',()=>{
+ const ordinary={kind:'video',model:'veo-3.1-lite-generate-preview',prompt:'Reference-guided scene',ratio:'16:9',consent:true,
+  references:[],videoDuration:8,videoResolution:'720p',videoInputMode:'text'};
+ for(const extra of [
+  {referenceVideo:'https://invalid.example/movie.mp4'},
+  {referenceAudio:'https://invalid.example/song.mp3'},
+  {videoReferences:[{url:'https://invalid.example/movie.mp4'}]},
+  {audioReferences:[{url:'https://invalid.example/song.mp3'}]},
+  {videoUrl:'https://invalid.example/video.mp4'},
+  {reference_video:'https://invalid.example/video.mp4'},
+  {audioUrl:null},
+  {reference_audio:null}
+ ]){
+  assert.throws(()=>validateGeneration({...ordinary,...extra}),/UNSUPPORTED_VIDEO_CONTROL/);
+ }
+});
+
+test('BASE #5: undocumented camera/motion/audio/watermark controls reject before provider or credits',()=>{
+ const clean={kind:'video',model:'veo-3.1-lite-generate-preview',prompt:'Clean Video',ratio:'16:9',
+  consent:true,references:[],videoDuration:8,videoResolution:'720p',videoInputMode:'text'};
+ for(const extra of [{camera:'pan'},{cameraMotion:'orbit'},{motion:{strength:10}},
+  {motionControls:{foo:'bar'}},{generateAudio:true},{watermark:false},
+  {camera_motion:null},{generate_audio:false}]){
+  assert.throws(()=>validateGeneration({...clean,...extra}),/UNSUPPORTED_VIDEO_CONTROL/);
+  assert.throws(()=>rejectUnsupportedVideoControls({...clean,...extra}),/UNSUPPORTED_VIDEO_CONTROL/);
+ }
+});
+
+test('BASE #5: existing supported text-only Video and ordinary Image generation do not gain false rejections',()=>{
+ const good={kind:'video',model:'veo-3.1-lite-generate-preview',prompt:'Safe text scene',ratio:'16:9',
+  consent:true,references:[],videoDuration:8,videoResolution:'720p',videoInputMode:'text'};
+ assert.equal(validateGeneration(good).videoInputMode,'text');
+ assert.doesNotThrow(()=>rejectUnsupportedVideoControls({kind:'image',camera:'unused-by-image-guard'}));
+});
+
+test('BASE #5: both price quote and Video generation POST reject unsupported controls before billed dispatch',async()=>{
+ const source=await (await import('node:fs/promises')).readFile(
+  new URL('../server/generation-studio.js',import.meta.url),'utf8');
+ const estStart=source.indexOf('async function resolveEstimateRequest(body){');
+ const postStart=source.indexOf("app.post('/api/studio/jobs',auth,generationUser");
+ assert.ok(estStart>=0&&postStart>estStart);
+ const beforeEstimate=source.slice(estStart,source.indexOf('async function resolveRequest(body)',estStart));
+ assert.match(beforeEstimate,/rejectUnsupportedVideoControls\(body\)/);
+ const post=source.slice(postStart,source.indexOf('// Read-only recovery of a Video POST',postStart));
+ assert.match(post,/resolveRequest\(req.body\)/);
+ assert.match(post,/UNSUPPORTED_VIDEO_CONTROL/);
+ assert.match(beforeEstimate,/videoInputMode/);
 });
