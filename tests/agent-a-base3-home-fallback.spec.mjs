@@ -328,3 +328,46 @@ test('BASE 3: narrow 320px Home Hero has no intrinsic-width overflow without cli
  }
  expect(paidJobs).toBe(0);
 });
+
+
+test('BASE 3: approved Studio hero appears before the slow Inspiration mosaic responds',async({page})=>{
+ await page.addInitScript(()=>{
+  HTMLMediaElement.prototype.load=function(){};
+  HTMLMediaElement.prototype.pause=function(){};
+  HTMLMediaElement.prototype.play=function(){return Promise.resolve();};
+ });
+ await mockSafeHome(page,[]);
+ let releaseMosaic;
+ const mosaicHeld=new Promise(resolve=>releaseMosaic=resolve);
+ let heroRequested=false,mosaicRequested=false,paidPosts=0;
+ page.on('request',r=>{
+  if(r.method()==='POST'&&['/api/studio/jobs','/api/billing/checkout','/api/ai-wallet/purchase'].includes(new URL(r.url()).pathname))paidPosts++;
+ });
+ await page.route('**/api/inspiration**',async route=>{
+  const q=new URL(route.request().url()).searchParams;
+  if(q.get('kind')==='video'&&q.get('limit')==='13'){
+   heroRequested=true;
+   if(q.get('target')!=='studio')return route.fulfill({status:400,json:{error:'STUDIO_TARGET_REQUIRED'}});
+   return route.fulfill({json:{items:[{
+    id:'studio-approved-hero',kind:'video',actionTarget:'studio',
+    title:'Approved moving hero for test transport only',category:'Cinematic',
+    aspectRatio:'16:9',previewUrl:'/placeholder-transport-hero.mp4'
+   }],categories:[],ratios:[]}});
+  }
+  if(q.get('limit')==='12'){
+   mosaicRequested=true;
+   await mosaicHeld;
+   return route.fulfill({json:{items:[],categories:[],ratios:[]}});
+  }
+  return route.fulfill({json:{items:[],categories:[],ratios:[]}});
+ });
+ try{
+  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Approved moving hero for test transport only');
+  await expect(page.locator('#homeHeroCarousel')).not.toHaveClass(/is-empty/);
+  expect(heroRequested).toBe(true);
+  expect(mosaicRequested).toBe(true);
+  await expect(page.locator('#canvasFeature')).toBeVisible();
+  expect(paidPosts).toBe(0);
+ }finally{releaseMosaic();}
+});
