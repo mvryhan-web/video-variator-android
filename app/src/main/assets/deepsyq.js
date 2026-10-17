@@ -387,6 +387,23 @@ window.addEventListener('storage',event=>{
  if(event.key==='vv_token'&&onboardingModalOwnerToken&&
     event.newValue!==onboardingModalOwnerToken)closeOnboarding();
 });
+// A same-tab login does not emit 'storage'. No previous account's authorized
+// choices may remain interactive (or visible after tab focus) for a new user.
+function scrubStaleOnboardingOwner(){
+ if(!onboardingModalOwnerToken||onboardingModalOwnerToken===localStorage.getItem('vv_token'))return false;
+ closeOnboarding();return true;
+}
+for(const type of ['click','keydown','focusin'])document.addEventListener(type,event=>{
+ const staleModalAction=!!event.target?.closest?.('#onboardingModal');
+ if(scrubStaleOnboardingOwner()&&staleModalAction){
+  event.preventDefault();
+  event.stopImmediatePropagation();
+ }
+},true);
+window.addEventListener('focus',scrubStaleOnboardingOwner);
+document.addEventListener('visibilitychange',()=>{
+ if(!document.hidden)scrubStaleOnboardingOwner();
+});
 document.querySelectorAll('[data-close-onboarding]').forEach(b=>b.onclick=dismissOnboarding);
 $('onboardingLater').onclick=dismissOnboarding;
 
