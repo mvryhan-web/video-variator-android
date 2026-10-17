@@ -1,5 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent C additional BASE #28 result — 2026-10-17, batch photo compressor
+
+- PR [#205](https://github.com/mvryhan-web/video-variator-android/pull/205), **DRAFT/UNMERGED**, branch `agent-c-base28-batch-photo-compression-20261017`, HEAD `f2e409f8b2def9b5f024ce8b19fdc59558ebd4ac`. This was explicitly claimed before edits via PROJECT_STATUS `f91b3214eff47d20b52bef7efdd71970f674ccc9` and BASE 55 board `e0eceaa2e9da69c9d13861b86adcf4ed7d19d5f6`.
+- Extends **existing** `photo-compress` utility tile, no extra duplicate feature or page: now accepts one photo or 2–8 JPG/PNG/WebP at once; enforces 64 MB total cap for a batch, processes sequentially to release expensive canvas allocations between photos, exposes original/encoded size for each JPEG, and includes local `compressed-photos.zip` containing uniquely numbered JPGs. Honors cancellation, never posts images or invokes billable model; keeps the one-photo output and quality settings.
+- Added two new browser tests for real ZIP file entries and 9-file safe refusal. Dedicated CI 39018796168 queued at last check; related existing photo compression and Video Compression workflows 39018796137 / 39018796240 queued. Both new JS files parsed under V8 successfully, but no GitHub browser acceptance yet. Do not mark CODE VERIFIED or merge until exact HEAD CI passes; no physical iPhone/Android test.
+- Other work in this continuation: BASE #28 actual FFmpeg video compression #173 **MERGED** via `8dfd064766896cb2cf3a17e79c7f5f6b10d902d7`, real H.264/WASM end-to-end CI 39014696743 SUCCESS (24 mocked web tests plus 1 real codec). C #196 product fidelity latest 71a3d26 CI 39018249942 queued, C #200 admin privacy latest f20f885 CI 39018454782 queued, #144 mobile CI 39016776627 queued, #192 AI Apps logout CI 39016879153 queued.
+- Original BASE 55 and seven original Blocks TXT unchanged, no other agents' responsibilities or main/production changes.
+
 ## Agent B — BASE #40 routing ambiguity guard (2026-10-17)
 
 - Existing Agent B [PR #163](https://github.com/mvryhan-web/video-variator-android/pull/163) HEAD `92c2e9eeb8f3aca5144deb1da7c590e5831171ba`; reconciled with shared BASE via non-force two-parent commit based on `e0eceaa2`. Only B-owned `server/generation-routing.js` and `tests/generation-routing-unit.mjs` in current GitHub comparison, no overwrite of A/C/D.
