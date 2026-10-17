@@ -219,3 +219,81 @@ test('BASE #5: owner History projection selects provider task operation only int
  assert.doesNotMatch(projection,/operation\s*:\s*j\.operation/);
  assert.doesNotMatch(projection,/\bproviderTaskId\s*:/);
 });
+
+
+async function simulateS3Failure(kind,{dbOutage=false,alreadyHasOperation=false}={}){
+ const source=await readFile(new URL('../server/generation-studio.js',import.meta.url),'utf8');
+ const start=source.indexOf('async function finish(id,result,userId){');
+ const end=source.indexOf(' async function run(id,request,userId)',start);
+ assert.ok(start>=0&&end>start);
+ const body=source.slice(start,end);
+ let released=0,walletSettled=0,quarantines=0,puts=0;
+ const statements=[];
+ const pool={async query(sql,args){
+  statements.push({sql,args});
+  if(sql==='SELECT kind FROM vv_generation_jobs WHERE id=$1'){
+   if(dbOutage)throw Error('db unavailable');
+   return {rows:[{kind}]};
+  }
+  if(sql.includes("operation IS NULL")){
+   assert.equal(kind,'video');
+   assert.match(sql,/kind='video'/);
+   return {rows:alreadyHasOperation?[]:[{id:'video-existing'}],rowCount:alreadyHasOperation?0:1};
+  }
+  throw Error('Unexpected non-video DB query '+sql.slice(0,60));
+ }};
+ const storage={configured:true,async putGeneration(){puts++;throw Error('S3_STORAGE_OFFLINE')}};
+ const wallet={async settle(){walletSettled++;throw Error('wallet must not settle uncertain storage')}};
+ const quarantiner=async arg=>{
+  quarantines++;
+  assert.equal(arg.jobId,'video-existing');
+  assert.equal(arg.failure?.category,'storage');
+  assert.equal(arg.failure?.sourceCode,'OBJECT_STORAGE_FAILED');
+  const update=await pool.query("UPDATE vv_generation_jobs SET kind='video' WHERE id=$1 AND kind='video' AND operation IS NULL",['video-existing']);
+  return {quarantined:!!update.rowCount};
+ };
+ const finish=new Function('pool','objectStorage','walletEnabled','wallet','failTerminalProviderJob','quarantineUncertainVideoSubmit',
+  body+';return finish;')(pool,storage,()=>true,wallet,async(_id,_user,error,stage)=>{
+   assert.equal(kind,'image');
+   assert.equal(error.message,'OBJECT_STORAGE_FAILED');
+   assert.equal(stage,'storage');released++;
+  },quarantiner);
+ const execution=finish('video-existing',{mime:kind==='video'?'video/mp4':'image/png',bytes:Buffer.from('mock-output')},'owner-id');
+ let error=null;
+ try{await execution;}catch(e){error=e}
+ return {error,released,walletSettled,quarantines,puts,statements};
+}
+
+test('BASE #5: S3 outage after Video provider success never labels provider failed or releases held funds',async()=>{
+ const x=await simulateS3Failure('video');
+ assert.equal(x.error,null);
+ assert.deepEqual({released:x.released,walletSettled:x.walletSettled,quarantines:x.quarantines,puts:x.puts},
+  {released:0,walletSettled:0,quarantines:1,puts:1});
+ assert.equal(x.statements[0].sql,'SELECT kind FROM vv_generation_jobs WHERE id=$1');
+ assert.equal(x.statements.some(c=>/status='failed'|credits_reserved=|captured/.test(c.sql)),false);
+});
+
+test('BASE #5: failed S3 after polled Video keeps saved operation for result retrieval, never a new AI charge',async()=>{
+ const x=await simulateS3Failure('video',{alreadyHasOperation:true});
+ assert.equal(x.error,null);
+ assert.equal(x.quarantines,1);
+ assert.equal(x.released,0);
+ assert.equal(x.walletSettled,0);
+ assert.ok(x.statements[1].sql.includes('operation IS NULL'));
+});
+
+test('BASE #5: old Image storage-failure handling stays unchanged (B touches only Video)',async()=>{
+ const x=await simulateS3Failure('image');
+ assert.equal(x.error,null);
+ assert.equal(x.quarantines,0);
+ assert.equal(x.released,1);
+ assert.equal(x.walletSettled,0);
+});
+
+test('BASE #5: S3 and database both down cannot invent a captured/refunded Video result',async()=>{
+ const x=await simulateS3Failure('video',{dbOutage:true});
+ assert.equal(x.error?.message,'db unavailable');
+ assert.equal(x.released,0);
+ assert.equal(x.quarantines,0);
+ assert.equal(x.walletSettled,0);
+});
