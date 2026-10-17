@@ -1,0 +1,39 @@
+name: BASE 52 Wallet Studio Browser Regression
+on:
+  push:
+    branches: [base52-studio-wallet-regression-20261016]
+  pull_request:
+    paths:
+      - 'tests/generation-studio.spec.mjs'
+      - '.github/workflows/base52-wallet-browser-regression.yml'
+permissions:
+  contents: read
+# Unique workflow-file key: several existing workflows share the display name "BASE".
+# Cancel only superseded runs of THIS workflow on the SAME PR or ref.
+# Never cancel another agent's different PR or disable a safety assertion.
+concurrency:
+  group: agent5-base52-wallet-browser-regression-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  wallet-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify syntax
+        run: node --check tests/generation-studio.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Existing wallet API, checkout-off and webhook-return browser acceptance
+        run: npx playwright test tests/generation-studio.spec.mjs --project=chromium --project=webkit --grep 'AI wallet shows|wallet activity|wallet balance and activity remain viewable'
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: base52-wallet-browser-traces
+          path: test-results/
+          retention-days: 7
