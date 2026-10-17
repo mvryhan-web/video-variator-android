@@ -292,6 +292,22 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   }catch(e){await pool.query("UPDATE vv_generation_jobs SET status='failed',error=$2,error_message=$2,failed_at=NOW() WHERE id=$1",[id,e.message==='INSUFFICIENT_AI_CREDITS'?'INSUFFICIENT_AI_CREDITS':'AI_WALLET_RESERVATION_FAILED']).catch(()=>{});return res.status(e.message==='INSUFFICIENT_AI_CREDITS'?402:503).json({error:e.message==='INSUFFICIENT_AI_CREDITS'?'INSUFFICIENT_AI_CREDITS':'AI_WALLET_UNAVAILABLE'});}
   res.status(202).json({id,status:'processing',creditsReserved:quote?.credits||0});void run(id,request,req.user.id).catch(()=>{});
  });
+ // Read-only recovery of a Video POST whose HTTP reply was lost. This
+ // NEVER dispatches/retries a provider, reserves credits or returns media.
+ app.get('/api/studio/jobs/by-request/:requestId',auth,generationUser,async(req,res)=>{
+  let requestId;
+  try{requestId=generationRequestId(req.params.requestId,{required:true});}
+  catch(_){return res.status(400).json({error:'INVALID_GENERATION_REQUEST_ID'});}
+  try{
+   await init();
+   const {rows}=await pool.query(
+    "SELECT id,kind,status FROM vv_generation_jobs WHERE user_id=$1 AND client_request_id=$2 AND kind='video' AND deleted=false LIMIT 1",
+    [req.user.id,requestId]);
+   const original=rows[0];
+   if(!original)return res.status(404).json({error:'NOT_FOUND'});
+   res.json({id:original.id,kind:'video',status:original.status});
+  }catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}
+ });
  const getJob=async(req)=>{await init();const r=await pool.query('SELECT * FROM vv_generation_jobs WHERE id=$1 AND user_id=$2 AND deleted=false',[req.params.id,req.user.id]);return r.rows[0];};
  app.get('/api/studio/admin/metrics',auth,owner,async(req,res)=>{try{
   await init();const window=String(req.query.window||'7d'),windows={'24h':'1 day','7d':'7 days','30d':'30 days',all:null};if(!(window in windows))return res.status(400).json({error:'INVALID_METRICS_WINDOW'});
