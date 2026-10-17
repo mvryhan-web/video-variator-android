@@ -452,3 +452,63 @@ test('BASE #28: nine-image collage closes bitmaps one-by-one before next decode'
  expect(m).toEqual({live:0,maxLive:1,closed:9});
  expect(posts).toBe(0);
 });
+
+
+test('BASE #28: failed private photo transforms release all canvases and publish no result',async({page})=>{
+ const png=await fixture(page);
+ let uploads=0;
+ page.on('request',r=>{if(r.method()==='POST')uploads++;});
+ for(const tool of ['photo-convert','photo-compress','photo-resize']){
+  await page.goto('/mobile-utility.html?tool='+tool);
+  await page.evaluate(()=>{
+   window.__base28PrivateCanvases=[];
+   const make=document.createElement.bind(document);
+   document.createElement=function(tag,...args){
+    const element=make(tag,...args);
+    if(tag==='canvas')window.__base28PrivateCanvases.push(element);
+    return element;
+   };
+   // Browser canvas encoding can fail due to unsupported formats or memory pressure.
+   HTMLCanvasElement.prototype.toBlob=function(cb){cb(null);};
+  });
+  await page.locator('#utilityFiles').setInputFiles({
+   name:'private-owner-photo.png',mimeType:'image/png',buffer:png
+  });
+  if(tool==='photo-resize'){
+   await page.locator('#utilityWidth').fill('900');
+   await page.locator('#utilityHeight').fill('700');
+  }
+  await page.locator('#utilityRun').click();
+  await expect(page.locator('#utilityStatus')).toContainText('Could not complete:');
+  await expect(page.locator('#utilityRun')).toBeEnabled();
+  await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
+  const pixels=await page.evaluate(()=>window.__base28PrivateCanvases.map(c=>[c.width,c.height]));
+  expect(pixels.length,tool).toBeGreaterThanOrEqual(1);
+  expect(pixels.every(([w,h])=>w===1&&h===1),tool).toBe(true);
+ }
+ expect(uploads).toBe(0);
+});
+
+test('BASE #28: invalid resized-photo dimensions also purge the original private canvas',async({page})=>{
+ await page.goto('/mobile-utility.html?tool=photo-resize');
+ const png=await fixture(page);
+ await page.evaluate(()=>{
+  window.__base28PrivateCanvases=[];
+  const make=document.createElement.bind(document);
+  document.createElement=function(tag,...args){
+   const el=make(tag,...args);
+   if(tag==='canvas')window.__base28PrivateCanvases.push(el);
+   return el;
+  };
+ });
+ await page.locator('#utilityFiles').setInputFiles({name:'private.png',mimeType:'image/png',buffer:png});
+ await page.locator('#utilityWidth').fill('100000');
+ await page.locator('#utilityHeight').fill('100000');
+ await page.locator('#utilityRun').click();
+ await expect(page.locator('#utilityStatus')).toContainText('Dimensions must be within 40 megapixels');
+ await expect(page.locator('#utilityRun')).toBeEnabled();
+ await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
+ const sizes=await page.evaluate(()=>window.__base28PrivateCanvases.map(c=>[c.width,c.height]));
+ expect(sizes.length).toBeGreaterThanOrEqual(1);
+ expect(sizes.every(([w,h])=>w===1&&h===1)).toBe(true);
+});
