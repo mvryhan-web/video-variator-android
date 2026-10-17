@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 test('BASE 24 History SQL: image/video/music kind filter binds a parameter, not a numeric literal',async()=>{
  const server=await readFile(new URL('../server/generation-studio.js',import.meta.url),'utf8');
  const start=server.indexOf("app.get('/api/studio/jobs',");
- const end=server.indexOf("app.get('/api/studio/jobs/:id',start);
+ const end=server.indexOf("app.get('/api/studio/jobs/:id'",start);
  assert.ok(start>=0&&end>start,'Find the authenticated user History route');
  const history=server.slice(start,end);
  // The query must always preserve user_id=$1; the kind is an additional
