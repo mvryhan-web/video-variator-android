@@ -20,21 +20,24 @@ export async function claimPurchasedGeneration(c,{env={},userId,jobId,credits,fi
  const order=await c.query(`SELECT
   COALESCE(SUM(credits),0)::bigint AS paid_credits,MIN(session_id) AS source_id
   FROM (
-    SELECT p.credits,p.session_id FROM vv_ai_purchase p
+    SELECT (p.credits-CEIL(p.credits::numeric*p.refunded_amount/p.amount))::bigint AS credits,p.session_id FROM vv_ai_purchase p
     JOIN vv_ai_order o ON o.session_id=p.session_id
     WHERE p.user_id=$1 AND o.user_id=$1 AND o.snapshot->>'billingMode'='live'
       AND p.session_id LIKE 'cs_live_%' AND p.payment_intent LIKE 'pi_%'
-      AND p.refunded_amount=0 AND p.amount>0 AND p.credits>0
+      AND p.refunded_amount>=0 AND p.refunded_amount<p.amount AND p.amount>0 AND p.credits>0
     UNION ALL
-    SELECT p.credits,p.session_id FROM vv_ai_purchase p
+    SELECT (p.credits-CEIL(p.credits::numeric*p.refunded_amount/p.amount))::bigint AS credits,p.session_id FROM vv_ai_purchase p
     JOIN vv_ai_verified_subscription_invoice v ON v.invoice_id=p.session_id
       AND v.user_id=p.user_id AND v.payment_intent=p.payment_intent
     WHERE p.user_id=$1 AND v.livemode=true
       AND p.session_id LIKE 'in_%' AND p.payment_intent LIKE 'pi_%'
-      AND p.refunded_amount=0 AND p.amount>0 AND p.credits>0
+      AND p.refunded_amount>=0 AND p.refunded_amount<p.amount AND p.amount>0 AND p.credits>0
   ) eligible_paid_purchases`,[userId]);
  const paidCredits=safeCount(order.rows[0]?.paid_credits),purchaseId=order.rows[0]?.source_id;
  if(!textId(purchaseId))deny();
+ // Each paid source is reduced by CEIL(refund_ratio * original_credits),
+ // exactly matching wallet.refund's cumulative revocation math. Zero paid
+ // remainder contributes zero; bonus/admin credits never increase paid funding.
  // Count EVERY other held/captured reservation against purchases, including
  // historical, promotional, admin and subscription jobs. This deliberately
  // undercounts spendable purchased credits rather than subsidizing a provider.
