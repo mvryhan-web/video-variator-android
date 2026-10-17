@@ -1,4 +1,5 @@
 import {saveStudioHandoff} from './studio-handoff.js';
+import {buildProductVideoPrompt} from './product-video-prompt.mjs';
 const $=id=>document.getElementById(id);let photos=[],logo=null,previewUrls=[];
 function validFile(f){return !!f&&['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024;}
 function clearUrls(){for(const u of previewUrls)URL.revokeObjectURL(u);previewUrls=[];}
@@ -29,7 +30,7 @@ function renderFiles(){
  }
  updatePrompt();
 }
-function prompt(){const name=$('productName').value.trim(),style=$('style').value,ratio=$('ratio').value,duration=$('duration').value;return `Create a ${style} advertising video for ${name?name:'the product shown in the reference image'}. Keep the product recognizable and visually consistent with the supplied reference image${photos.length===1?'':'s'}. Compose the creative for a ${ratio} format. Duration preference: ${duration}. Focus on the product, clear commercial presentation, coherent lighting and natural motion. ${logo?'Use the supplied logo only as a brand reference and keep it undistorted. ':''}Do not invent product features, claims, packaging text or brand details that are not visible in the references.`.slice(0,2000);}
+function prompt(){return buildProductVideoPrompt({productName:$('productName').value,style:$('style').value,ratio:$('ratio').value,duration:$('duration').value,hasLogo:!!logo,photoCount:photos.length});}
 function updatePrompt(){$('promptPreview').value=prompt();}
 $('photos').onchange=()=>{const list=Array.from($('photos').files||[]);if(list.length>3||list.some(f=>!validFile(f))){$('status').textContent='Use up to 3 PNG/JPG product photos, each under 1 MB. Your previous valid selection is preserved.';$('photos').value='';}else{$('status').textContent='';photos=list;}renderFiles();};
 $('logo').onchange=()=>{const f=$('logo').files?.[0]||null;if(f&&!validFile(f)){$('status').textContent='Logo must be PNG/JPG under 1 MB. Your previous logo is preserved.';$('logo').value='';}else{$('status').textContent='';logo=f;}renderFiles();};
