@@ -3,10 +3,21 @@ import assert from 'node:assert/strict';
 import {buildOpenAIImageRequest,decodeOpenAIImageResponse,generateOpenAIImage} from '../server/generation-openai-image.js';
 
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMQCegBAAFsAPH6cDjBAAAAAElFTkSuQmCC','base64');
-// Real 2x2 baseline RGB JPEG, independently encoded and decoded offline with Pillow.
-// The older fixture had a truncated DQT segment (declared 67 bytes but FF C0 at
-// byte 143), and correctly failed our strict provider/reference media parser.
-const jpg=Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAACAAIDAREAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDJr9NPgT//2Q==','base64');
+// Verified 2x2 baseline JPEG: 284 bytes, Pillow offline encode/decode, SHA-256\n// 72c93e614ae74ce5211ae911a19a78c1f9b53308b712f3e80fc23532244301dd.\n// Split base64 into fixed-width groups to prevent accidentally truncating DQT.\n// Prior malformed 1x1 fixture was correctly rejected by the strict JPEG parser.
+const jpg=Buffer.from([
+ '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBD',
+ 'AAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkS',
+ 'Ew8UHRofHh0aHBwgJC4nICIsIxwcKDcp',
+ 'LDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJ',
+ 'CQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIy',
+ 'MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIy',
+ 'MjIyMjIyMjIyMjIyMjL/wAARCAACAAID',
+ 'AREAAhEBAxEB/8QAFAABAAAAAAAAAAAA',
+ 'AAAAAAAABP/EABQQAQAAAAAAAAAAAAAA',
+ 'AAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAA',
+ 'AAAG/8QAFBEBAAAAAAAAAAAAAAAAAAAA',
+ 'AP/aAAwDAQACEQMRAD8ACVjj/9k='
+].join(''),'base64');
 const model={id:'gpt-image-2.5-flare',enabled:true,quality:'low',
  sizes:{'1:1':{'1K':'1024x1024'},'3:2':{'1K':'1536x1024'}},
  formats:['png','jpeg'],maxReferences:3};
