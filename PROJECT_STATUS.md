@@ -1,5 +1,11 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #10 provider task ID retention with D migration hold (2026-10-17)
+
+- Continued existing B [PR #175](https://github.com/mvryhan-web/video-variator-android/pull/175), HEAD `4b82f975fc9931b7f08dde65df5901b0cf7b111c`, non-force two-parent commit after applying exactly 3 previously reviewed `server/generation-studio.js` hunks on current BASE with unique context. New helper provides whitelisted provider_task_id in OWNER-ONLY audit API, never public History. Ready/finalizing generation retains opaque provider operation for owner inspection, while background recovery still only polls processing status. GitHub comparison 4 B paths only.
+- Prior head `9f9b9bf` **8/8 exact-head GitHub Actions SUCCESS**. Latest focused #39020458324 + 8 workflows QUEUED, NOT VERIFIED. **BLOCKER:** D-owned [PR #199](https://github.com/mvryhan-web/video-variator-android/pull/199) idempotent old-table generated `provider_task_id` migration still requires disposable PostgreSQL acceptance and staging gate, not merged. Do not merge B #175 into public BASE/production ahead of D compatibility approval. No DB write/live AI charges by B.
+
+
 ## Agent B — BASE #7 Lyria Clip provider contract safe reconciliation (2026-10-17)
 
 - Continued existing [Agent B PR #180](https://github.com/mvryhan-web/video-variator-android/pull/180) issue #177. HEAD `efbaacaf7e49ef0ff2433fdd93e5315227e967c5` reconciled with current BASE via non-force two-parent commit and uniquely matching exact original provider/Studio/unit-test diff hunks; exactly 7 B paths. Previous exact-head GitHub CI at `b92b2a14` **8/8 SUCCESS**; latest focused #39020305372 + eight companions **QUEUED/NOT VERIFIED**. DRAFT/UNMERGED/NOT LIVE.
