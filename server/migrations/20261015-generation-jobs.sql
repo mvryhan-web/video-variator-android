@@ -43,15 +43,6 @@ CREATE TABLE IF NOT EXISTS vv_generation_jobs(
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS provider TEXT;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS model TEXT;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS operation TEXT;
--- Existing deployments may have vv_generation_jobs without the generated provider_task_id.
--- CREATE TABLE IF NOT EXISTS above does not add columns to a pre-existing table.
--- operation must exist before the generated expression below is evaluated.
-ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS provider_task_id TEXT GENERATED ALWAYS AS (
-  CASE
-    WHEN operation LIKE 'byteplus:%' THEN substring(operation FROM 10)
-    ELSE operation
-  END
-) STORED;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS prompt TEXT;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS client_request_id TEXT;
 ALTER TABLE vv_generation_jobs ADD COLUMN IF NOT EXISTS request_fingerprint TEXT;
