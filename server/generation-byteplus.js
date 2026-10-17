@@ -73,8 +73,12 @@ export async function pollBytePlus(operation,{key,downloadHosts='',fetcher=fetch
  const firstBoxSize=bytes.length>=8?bytes.readUInt32BE(0):0;
  // Check the container, not just a coincidental ftyp substring in junk.
  // Basic MP4 file-type validation is not a full codec/malware scan.
+ const brand=bytes.toString('ascii',8,12);
+ // AVIF/HEIC and arbitrary ISO-BMFF boxes also start with 'ftyp'. Only
+ // recognized video MP4 major brands may be served as video/mp4 here.
+ const mp4Brand=/^(?:isom|iso[2-9]|mp4[12]|avc1|hvc1|hev1|M4V |dash|msdh|f4v )$/.test(brand);
  if(bytes.length<16||bytes.subarray(4,8).toString('ascii')!=='ftyp'||
-    firstBoxSize<16||firstBoxSize>bytes.length)throw Error('INVALID_PROVIDER_MEDIA');
+    firstBoxSize<16||firstBoxSize>bytes.length||!mp4Brand)throw Error('INVALID_PROVIDER_MEDIA');
  return {mime:'video/mp4',bytes,text:''};
 }
 
