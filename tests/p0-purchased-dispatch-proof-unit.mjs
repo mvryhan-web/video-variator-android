@@ -28,7 +28,8 @@ test('P0 only the locked, verifiable, unrefunded live Stripe order can claim ONE
  assert.equal(receipt.purchaseId,'cs_live_paid1');
  assert.equal(c.statements.length,5);
  assert.match(c.statements[0].sql,/o\.snapshot->>'billingMode'='live'/);
- assert.match(c.statements[0].sql,/p\.refunded_amount=0/);
+ assert.match(c.statements[0].sql,/CEIL\(p\.credits::numeric\*p\.refunded_amount\/p\.amount\)/);
+ assert.match(c.statements[0].sql,/p\.refunded_amount<p\.amount/);
  assert.match(c.statements[0].sql,/JOIN vv_ai_verified_subscription_invoice v/);
  assert.match(c.statements[0].sql,/v\.livemode=true/);
  assert.match(c.statements[0].sql,/v\.payment_intent=p\.payment_intent/);
