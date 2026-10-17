@@ -219,3 +219,21 @@ test('BASE #28: redaction canceled during PNG encoding cannot publish sensitive 
  await expect(page.locator('#utilityStatus')).toContainText('Canceled');
  expect(uploads).toBe(0);
 });
+
+
+test('BASE #28: sensitive redaction source is purged before browser history restoration',async({page})=>{
+ let uploads=0;page.on('request',r=>{if(r.method()==='POST')uploads++;});
+ await page.goto('/mobile-utility.html?tool=photo-redact');
+ await page.locator('#utilityFiles').setInputFiles({name:'private-person.png',mimeType:'image/png',buffer:await fixture(page)});
+ await expect(page.locator('#redactCanvas')).toHaveJSProperty('width',120);
+ await expect(page.locator('#utilityRun')).toBeEnabled();
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+ await expect(page.locator('#utilityFiles')).toHaveValue('');
+ await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
+ await expect(page.locator('#utilityRun')).toBeDisabled();
+ await expect(page.locator('#redactCanvas')).toHaveJSProperty('width',1);
+ await expect(page.locator('#redactCanvas')).toHaveJSProperty('height',1);
+ await page.evaluate(()=>window.dispatchEvent(new Event('pageshow')));
+ await expect(page.locator('#utilityRun')).toBeDisabled();
+ expect(uploads).toBe(0);
+});
