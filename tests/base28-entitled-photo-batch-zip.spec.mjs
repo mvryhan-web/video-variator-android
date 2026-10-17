@@ -107,3 +107,61 @@ test('BASE #28: single-photo compositor failed draw purges its private canvas',a
  expect(dimensions.every(([w,h])=>w===1&&h===1)).toBe(true);
  expect(access.calls.filter(c=>c.path==='/api/tools/runs')).toHaveLength(0);
 });
+
+
+test('BASE #28: leaving Tools purges private photo picker, previews, and object URLs before BFCache restore',async({page})=>{
+ const access=await mockToolAccess(page,{authenticated:false});
+ await page.goto('/free-tools.html?tool=photo');
+ const png=await randomPng(page);
+ await page.evaluate(()=>{
+  window.__base28Revoked=[];
+  const original=URL.revokeObjectURL;
+  URL.revokeObjectURL=function(url){window.__base28Revoked.push(url);return original.call(URL,url);};
+ });
+ await page.locator('#files').setInputFiles({name:'owner-private-photo.png',mimeType:'image/png',buffer:png});
+ await page.locator('#run').click();
+ await expect(page.locator('#status')).toHaveText('Done');
+ await expect(page.locator('#outputs article')).toHaveCount(1);
+ const photoUrl=await page.locator('#outputs article img').getAttribute('src');
+ expect(photoUrl).toMatch(/^blob:/);
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+ await expect(page.locator('#files')).toHaveValue('');
+ await expect(page.locator('#selection')).toBeEmpty();
+ await expect(page.locator('#outputs')).toBeEmpty();
+ await expect(page.locator('#cameraResults')).toBeEmpty();
+ expect(await page.evaluate(url=>window.__base28Revoked.includes(url),photoUrl)).toBe(true);
+ await page.evaluate(()=>window.dispatchEvent(new Event('pageshow')));
+ await expect(page.locator('#outputs article')).toHaveCount(0);
+ expect(access.calls.filter(c=>c.path==='/api/tools/runs')).toHaveLength(0);
+});
+
+test('BASE #28: leaving Tools during delayed private JPEG encoding never publishes a stale photo',async({page})=>{
+ const access=await mockToolAccess(page,{authenticated:false});
+ await page.goto('/free-tools.html?tool=photo');
+ const png=await randomPng(page);
+ await page.evaluate(()=>{
+  window.__base28PendingPhotoEncoding={started:0,completed:0};
+  const original=HTMLCanvasElement.prototype.toBlob;
+  HTMLCanvasElement.prototype.toBlob=function(callback,...args){
+   window.__base28PendingPhotoEncoding.started++;
+   return original.call(this,blob=>setTimeout(()=>{
+    window.__base28PendingPhotoEncoding.completed++;
+    callback(blob);
+   },650),...args);
+  };
+ });
+ await page.locator('#files').setInputFiles({name:'owner-private-photo.png',mimeType:'image/png',buffer:png});
+ await page.locator('#run').click();
+ await expect.poll(()=>page.evaluate(()=>window.__base28PendingPhotoEncoding.started)).toBe(1);
+ await expect(page.locator('#cancel')).toBeEnabled();
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+ await expect(page.locator('#files')).toHaveValue('');
+ await expect(page.locator('#selection')).toBeEmpty();
+ await expect.poll(()=>page.evaluate(()=>window.__base28PendingPhotoEncoding.completed)).toBe(1);
+ await expect(page.locator('#run')).toBeEnabled();
+ await expect(page.locator('#outputs article')).toHaveCount(0);
+ await expect(page.locator('.photo-batch-zip')).toHaveCount(0);
+ await page.evaluate(()=>window.dispatchEvent(new Event('pageshow')));
+ await expect(page.locator('#outputs')).toBeEmpty();
+ expect(access.calls.filter(c=>c.path==='/api/tools/runs')).toHaveLength(0);
+});
