@@ -26,6 +26,7 @@ test('only a NEW append-only file repairs the legacy generated column and index'
   assert.doesNotMatch(sql,/DROP TABLE|DROP COLUMN|UPDATE vv_generation_jobs\s+SET provider_task_id/i);
   assert.match(sql,/a\.attgenerated <> 's' OR a\.atttypid <> 'text'::regtype/);
   assert.match(sql,/GENERATION_PROVIDER_TASK_COLUMN_CONFLICT/);
+  assert.match(sql,/DO \$\$\s+BEGIN[\s\S]*END \$\$;/,'PostgreSQL procedural guard must use paired dollar quoting');
 });
 
 test('historical migration ledger checksum stays valid; new migration is pending',async()=>{
