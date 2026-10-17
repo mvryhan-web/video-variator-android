@@ -1,5 +1,11 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #39 provider terminal-outcome metrics reconciled (2026-10-17)
+
+- Existing B-only [PR #160](https://github.com/mvryhan-web/video-variator-android/pull/160) HEAD `55bd0737b7e7b4ed2cd4c0a3e5e38b64ce8194fb`, two-parent **non-force** branch reconciliation against then-current BASE `d475d4f`. Existing source helper `generation-provider-performance.js` + tests + focused workflow carried intact, while latest shared `generation-studio.js` changed only read-only admin analytics `rows.map(...)` formatter + safe import. GitHub compare confirms precisely four B paths; D wallet/Stripe/provider routing untouched.
+- Metrics calculate success/failure rates from **terminal succeeded+failed jobs**, not all queued/processing jobs. No automatic model switch or paid query. Old exact-head eight GitHub Actions **8/8 SUCCESS**, newest `55bd0737` focused #39018647457 + eight companions **QUEUED/NOT VERIFIED** at checkpoint. Draft, unmerged, not live. Original BASE #39 PARTIAL pending approved/live provider analytics evidence.
+
+
 ## Agent C checkpoint — 2026-10-17 continued work after prior 6231783790 handoff
 
 - **BASE #28 local video compression NOW MERGED:** [PR #173](https://github.com/mvryhan-web/video-variator-android/pull/173), squash merge **8dfd064766896cb2cf3a17e79c7f5f6b10d902d7** into `deepsyq-platform`. Exact PR HEAD `0ded5bc95d325a780c97a8696b097418186a41a0`, focused CI [39014696743](https://github.com/mvryhan-web/video-variator-android/actions/runs/39014696743) **SUCCESS**: Node tests, 24 mocked browser UI checks desktop/mobile Chromium/WebKit, and one actual Chromium local FFmpeg/WASM MP4 encode with fixture, valid MP4 download and no provider POST. Related exact-head photo compression run 39014696740 SUCCESS; teleprompter 39014696746 SUCCESS. The three existing shared C file blobs matched PR base identically at merge check, no overwrite of other agents. A photo-collage related run still queued at merge, real phones/live not verified. Entire BASE #28 remains PARTIAL.
