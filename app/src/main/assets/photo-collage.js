@@ -12,7 +12,11 @@ for(const [id,keys] of [['collageGap',['none','small','wide']],['collageBg',['wh
  [...$(id).options].forEach((option,index)=>option.textContent=t[keys[index]]);
 }
 document.title=t.title+' — Deepsyq Tools';
-let busy=false,previewUrl=null;
+let busy=false,previewUrl=null,collageGeneration=0;
+function setCollageControlsBusy(value){
+ $('collageCreate').disabled=value;$('collageClear').disabled=value;
+ for(const id of ['collageFiles','collageColumns','collageGap','collageBg'])$(id).disabled=value;
+}
 function revoke(){if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;$('collagePreview').removeAttribute('src');$('collageDownload').removeAttribute('href');$('collageDownload').hidden=true;$('collageResult').hidden=true;}
 function info(message){$('collageStatus').textContent=message;}
 function validFiles(files){
@@ -31,28 +35,39 @@ $('collageCreate').addEventListener('click',async()=>{
  if(busy)return;revoke();
  const files=Array.from($('collageFiles').files);
  if(!validFiles(files)){info(t.invalid);return;}
- busy=true;$('collageCreate').disabled=true;$('collageClear').disabled=true;info(t.busy);
- const bitmaps=[];
+ const generation=++collageGeneration;
+ busy=true;setCollageControlsBusy(true);info(t.busy);
+ const bitmaps=[];let canvas=null;
  try{
   const columns=Number($('collageColumns').value),gap=Number($('collageGap').value);
   const geom=collageGeometry(files.length,columns,gap);
-  const canvas=document.createElement('canvas');canvas.width=geom.width;canvas.height=geom.height;
+  canvas=document.createElement('canvas');canvas.width=geom.width;canvas.height=geom.height;
   const ctx=canvas.getContext('2d',{alpha:false});if(!ctx)throw Error('COLLAGE_CANVAS');
   ctx.fillStyle=$('collageBg').value;ctx.fillRect(0,0,geom.width,geom.height);
   for(let i=0;i<files.length;i++){
    const image=await decodePhoto(files[i]);bitmaps.push(image);
+   if(generation!==collageGeneration)throw Error('COLLAGE_CANCELLED');
    const col=i%geom.columns,row=Math.floor(i/geom.columns),x=Math.round(geom.gap+col*(geom.cell+geom.gap)),y=Math.round(geom.gap+row*(geom.cell+geom.gap));
    const size=Math.ceil(geom.cell),crop=centerCrop(image.width,image.height,size,size);
    ctx.drawImage(image,crop.sx,crop.sy,crop.sw,crop.sh,x,y,size,size);
   }
   const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
-  canvas.width=1;canvas.height=1;
+  if(generation!==collageGeneration)throw Error('COLLAGE_CANCELLED');
   if(!blob||!blob.size)throw Error('COLLAGE_EXPORT');
   previewUrl=URL.createObjectURL(blob);
   $('collagePreview').src=previewUrl;$('collageDownload').href=previewUrl;
   $('collageDownload').hidden=false;$('collageResult').hidden=false;
   $('collageResultInfo').textContent=t.ready(geom.width,geom.height);info(t.ready(geom.width,geom.height));
- }catch(error){revoke();info(error.message==='COLLAGE_EXPORT'?t.export:t.fail);}
- finally{for(const image of bitmaps)image.close();busy=false;$('collageCreate').disabled=false;$('collageClear').disabled=false;}
+ }catch(error){
+  if(generation===collageGeneration){revoke();info(error.message==='COLLAGE_EXPORT'?t.export:t.fail);}
+ }finally{
+  if(canvas)canvas.width=canvas.height=1;
+  for(const image of bitmaps)image.close();
+  if(generation===collageGeneration){busy=false;setCollageControlsBusy(false);}
+ }
 });
-window.addEventListener('pagehide',revoke);
+window.addEventListener('pagehide',()=>{
+ ++collageGeneration;revoke();
+ $('collageFiles').value='';$('collageFileInfo').textContent='';
+ busy=false;setCollageControlsBusy(false);
+});
