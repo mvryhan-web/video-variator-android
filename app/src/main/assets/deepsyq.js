@@ -149,7 +149,7 @@ function toggleSidebar(event){
    document.body.classList.add('menu-open');
    syncMenu();
    // Place first keyboard focus inside the only exposed mobile navigation.
-   $('sidebarToggle').focus();
+   $('sidebarToggle').focus({preventScroll:true});
   }
  }else{
   collapsedSidebar=!collapsedSidebar;
