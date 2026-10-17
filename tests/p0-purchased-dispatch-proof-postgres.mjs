@@ -91,7 +91,7 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   assert.equal(await grantPaidSubscriptionInvoice({event:subEvent(),env:subEnv,pool,wallet}),true);
   const receipt=await pool.query('SELECT invoice_id,user_id,payment_intent,livemode FROM vv_ai_verified_subscription_invoice');
   assert.deepEqual(receipt.rows,[{invoice_id:'in_SubSafe1',user_id:'sub_customer',payment_intent:'pi_SubSafe1',livemode:true}]);
-  const paidSubJob=await job('sub_customer','job_sub_1',50);
+  const paidSubJob=await job('sub_customer','job_sub_1',80);
   const subProof=await wallet.claimPurchasedDispatch(paidSubJob,{env});
   assert.equal(subProof.source,'settled_stripe_purchase');
   assert.equal(subProof.purchaseId,'in_SubSafe1');
@@ -100,16 +100,12 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   // longer authorize provider spend, even if leftover credits cover the job.
   const secondInvoice=subEvent('in_SubSafe2','pi_SubSafe2');
   assert.equal(await grantPaidSubscriptionInvoice({event:secondInvoice,env:subEnv,pool,wallet}),true);
-  // Remove the previously spent/held 50 credits from purchase capacity;
-  // this second 80-credit invoice has enough residual cash-backed credits.
+  // The first 80-credit invoice has already fully funded a held reservation;
+  // a partial refund makes the second invoice ineligible for new paid spend.
   await wallet.refund('pi_SubSafe2',1);
   const partialJob=await job('sub_customer','job_sub_refunded',20);
-  // After the partial refund, the first 80-credit invoice's 50-credit use
-  // leaves only 30 eligible credits: a 20-credit job could still be covered
-  // by first invoice. Spend that headroom to test the strict no-refund filter.
-  await pool.query(`UPDATE vv_ai_reservation SET credits=80 WHERE job_id='job_sub_1'`);
   await assert.rejects(()=>wallet.claimPurchasedDispatch(partialJob,{env}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
-  await assert.rejects(()=>grantPaidSubscriptionInvoice({event:subEvent('in_Unpaid','pi_Unpaid',{amount_paid:0}),env:subEnv,pool,wallet}).then(x=>{assert.equal(x,false);throw Error('NO_GRANT')}),/NO_GRANT/);
+  assert.equal(await grantPaidSubscriptionInvoice({event:subEvent('in_Unpaid','pi_Unpaid',{amount_paid:0}),env:subEnv,pool,wallet}),false);
 
   const total=await pool.query('SELECT count(*)::int AS n FROM vv_ai_purchased_dispatch_claim');
   assert.equal(total.rows[0].n,2);
