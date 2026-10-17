@@ -760,7 +760,7 @@ async function loadHistory({append=false}={}){
   list.append(p);return;
  }
  try{
-  const d=await(await api('/api/studio/jobs?filter='+encodeURIComponent(requestedFilter)+'&offset='+offset)).json();
+  const d=await(await api('/api/studio/jobs?filter='+encodeURIComponent(requestedFilter)+(offset?'&offset='+offset:''))).json();
    if(epoch!==historyLoadEpoch||!historyView)return; // Ignore superseded filter/tab/page results.
    if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
    if(append)list.querySelector('[data-history-more]')?.remove();
