@@ -62,7 +62,7 @@ test('real PostgreSQL AI wallet and sandbox payment contract', {skip:!db}, async
    assert.equal((await wallet.balance(prefix+'h')).available,0);assert.equal((await wallet.history(prefix+'h')).length,0);
   });
   await t.test('Checkout price validation, pending payment, replay and snapshot persistence',async()=>{
-   const env={AI_BILLING_ENABLED:'true',DATABASE_URL:db,APP_JWT_SECRET:'fixture',STRIPE_SECRET_KEY:'sk_test_fixture',AI_CREDIT_PACKS_JSON:'[{"sku":"fixture","priceId":"price_fixture","amount":100,"credits":100,"currency":"eur"}]'};
+   const env={AI_BILLING_ENABLED:'true',AI_BILLING_MODE:'test',DATABASE_URL:db,APP_JWT_SECRET:'fixture',STRIPE_SECRET_KEY:'sk_test_fixture',AI_CREDIT_PACKS_JSON:'[{"sku":"fixture","priceId":"price_fixture","amount":100,"credits":100,"currency":"eur"}]'};
    let creates=0,paid=false,wrongPrice=false;const sessions=new Map();
    const stripe={prices:{retrieve:async()=>({active:true,type:'one_time',unit_amount:wrongPrice?999:100,currency:'eur',livemode:false})},checkout:{sessions:{
     create:async(args,{idempotencyKey})=>{assert.equal(args.payment_method_types,undefined);creates++;let s=sessions.get(idempotencyKey);if(!s){s={...args,id:'cs_test_'+randomUUID(),url:'https://checkout.stripe.com/c/test',livemode:false,status:'open',expires_at:Math.floor(Date.now()/1000)+3600,payment_intent:'pi_test_'+randomUUID(),amount_total:100,currency:'eur',line_items:{data:[{price:{id:'price_fixture'},quantity:1}],has_more:false}};sessions.set(idempotencyKey,s);}return s;},
