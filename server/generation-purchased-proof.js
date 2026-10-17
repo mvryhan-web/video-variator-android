@@ -40,12 +40,26 @@ export async function claimPurchasedGeneration(c,{env={},userId,jobId,kind,credi
  // Each paid source is reduced by CEIL(refund_ratio * original_credits),
  // exactly matching wallet.refund's cumulative revocation math. Zero paid
  // remainder contributes zero; bonus/admin credits never increase paid funding.
- // Count EVERY other held/captured reservation against purchases, including
- // historical, promotional, admin and subscription jobs. This deliberately
- // undercounts spendable purchased credits rather than subsidizing a provider.
- const other=await c.query(`SELECT COALESCE(SUM(credits),0)::bigint AS used
-  FROM vv_ai_reservation WHERE user_id=$1 AND job_id<>$2
-  AND status IN ('held','captured')`,[userId,jobId]);
+ // Account for actual trusted captured usage, not merely the original
+ // reservation. Settle returns surplus via (available_delta - debt_delta);
+ // exactly ONE matching captured ledger entry is required to trust a return.
+ // If audit is missing, duplicated or malformed count the FULL reserved sum.
+ // Count held/captured historical, promotional, admin and subscription jobs
+ // against paid funds so bonuses never subsidize provider requests.
+ const other=await c.query(`SELECT COALESCE(SUM(
+  CASE WHEN res.status='captured' AND audit.entries=1
+      AND audit.returned>=0 AND audit.returned<=res.credits
+    THEN res.credits-audit.returned
+    ELSE res.credits END),0)::bigint AS used
+  FROM vv_ai_reservation res
+  LEFT JOIN (
+    SELECT reference,COUNT(*)::int AS entries,
+     MAX(available_delta-debt_delta)::bigint AS returned
+    FROM vv_ai_ledger WHERE user_id=$1 AND kind='captured'
+    GROUP BY reference
+  ) audit ON audit.reference=res.job_id
+  WHERE res.user_id=$1 AND res.job_id<>$2
+    AND res.status IN ('held','captured')`,[userId,jobId]);
  const otherSpent=safeCount(other.rows[0]?.used);
  if(!purchasedFundingProof({paidCredits,otherSpentCredits:otherSpent,requiredCredits:credits}))deny();
  const reserve=await c.query(`SELECT user_id,credits,fingerprint,status FROM vv_ai_reservation
