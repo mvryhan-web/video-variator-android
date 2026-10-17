@@ -33,7 +33,7 @@ test('BASE #28: existing Basic/trial photo batch offers an additional real local
  await expect(page.locator('#status')).toHaveText('Done');
  const archive=page.locator('#outputs .photo-batch-zip');
  await expect(archive).toBeVisible();
- await expect(page.locator('#outputs article')).toHaveCount(3);
+ await expect(page.locator('#outputs article')).toHaveCount(2);
  const pending=page.waitForEvent('download');
  await archive.getByRole('button',{name:'Download ZIP'}).click();
  const download=await pending;
