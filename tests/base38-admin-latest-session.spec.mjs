@@ -61,6 +61,33 @@ test('BASE #38: rapid job status filter cannot render a stale response',async({p
  expect(mutations()).toBe(0);
 });
 
+test('BASE #38: latest metrics time window wins over a delayed obsolete range',async({page})=>{
+ let heldOld,oldStarted=false;
+ const mutations=await setup(page,(route,url)=>{
+  if(url.pathname==='/api/studio/admin/users'||url.pathname==='/api/studio/admin/jobs')return route.fulfill({json:{items:[]}});
+  if(url.pathname==='/api/studio/admin/metrics'){
+   const win=url.searchParams.get('window');
+   if(win==='24h'){heldOld=route;oldStarted=true;return true;}
+   return route.fulfill({json:{window:win,items:win==='30d'?[{
+    provider:'new-range',model:'fixture',kind:'video',jobs:1,succeeded:1,failed:0,processing:0,
+    successRate:1,averageSeconds:2,actualCost:0,costCurrency:'usd',creditsCharged:0
+   }]:[]}});
+  }
+  return null;
+ });
+ await page.locator('#metricsWindow').selectOption('24h');
+ await expect.poll(()=>oldStarted).toBe(true);
+ await page.locator('#metricsWindow').selectOption('30d');
+ await expect(page.locator('#metrics')).toContainText('new-range');
+ await heldOld.fulfill({json:{window:'24h',items:[{
+  provider:'stale-range',model:'fixture',kind:'image',jobs:2,succeeded:1,failed:1,processing:0,
+  successRate:.5,averageSeconds:4,actualCost:0,costCurrency:'usd',creditsCharged:0
+ }]}});
+ await expect(page.locator('#metrics')).not.toContainText('stale-range');
+ await expect(page.locator('#metricsStatus')).toContainText('30d');
+ expect(mutations()).toBe(0);
+});
+
 test('BASE #38: owner dashboard exits immediately when token rotates in another tab',async({page,context})=>{
  await setup(page,(route,url)=>{
   if(url.pathname==='/api/studio/admin/users'||url.pathname==='/api/studio/admin/jobs')return route.fulfill({json:{items:[]}});
