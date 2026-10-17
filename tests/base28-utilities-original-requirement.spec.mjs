@@ -317,3 +317,59 @@ test('BASE #28: Cancel while OCR library script loads never creates a language w
  await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
  expect(uploads).toBe(0);
 });
+
+
+test('BASE #28: malformed collage input releases temporary pixel canvas and unlocks picker',async({page})=>{
+ let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.goto('/photo-collage.html');
+ const png=await fixture(page);
+ await page.locator('#collageFiles').setInputFiles([
+  {name:'good.png',mimeType:'image/png',buffer:png},
+  {name:'invalid.png',mimeType:'image/png',buffer:Buffer.from('this is not an image')}
+ ]);
+ await page.evaluate(()=>{
+  window.__collageTempCanvases=[];
+  const native=document.createElement.bind(document);
+  document.createElement=function(name,...args){
+   const element=native(name,...args);
+   if(name==='canvas')window.__collageTempCanvases.push(element);
+   return element;
+  };
+ });
+ await page.locator('#collageCreate').click();
+ await expect(page.locator('#collageStatus')).toContainText('Could not decode');
+ await expect(page.locator('#collageFiles')).toBeEnabled();
+ await expect(page.locator('#collageDownload')).toBeHidden();
+ const leaked=await page.evaluate(()=>window.__collageTempCanvases.some(c=>c.width!==1||c.height!==1));
+ expect(leaked).toBe(false);
+ expect(posts).toBe(0);
+});
+
+test('BASE #28: collage BFCache exit cannot reveal a late prior photo or result',async({page})=>{
+ let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.goto('/photo-collage.html');
+ const png=await fixture(page);
+ await page.locator('#collageFiles').setInputFiles([
+  {name:'private-one.png',mimeType:'image/png',buffer:png},
+  {name:'private-two.png',mimeType:'image/png',buffer:png}
+ ]);
+ await page.evaluate(()=>{
+  const original=window.createImageBitmap.bind(window);
+  window.createImageBitmap=async(...args)=>{
+   const bitmap=await original(...args);
+   await new Promise(ok=>setTimeout(ok,650));
+   return bitmap;
+  };
+ });
+ await page.locator('#collageCreate').click();
+ await expect(page.locator('#collageFiles')).toBeDisabled();
+ await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+ await expect(page.locator('#collageFiles')).toHaveValue('');
+ await expect(page.locator('#collageFiles')).toBeEnabled();
+ await expect(page.locator('#collageResult')).toBeHidden();
+ await expect(page.locator('#collageDownload')).toBeHidden();
+ await page.waitForTimeout(850);
+ await expect(page.locator('#collageResult')).toBeHidden();
+ await expect(page.locator('#collageStatus')).toBeEmpty();
+ expect(posts).toBe(0);
+});
