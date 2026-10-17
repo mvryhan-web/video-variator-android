@@ -4,6 +4,21 @@ import {validProductPhoto} from './product-video-file-safety.mjs';
 const $=id=>document.getElementById(id);let photos=[],logo=null,previewUrls=[];
 let photoSelectionEpoch=0,logoSelectionEpoch=0,photoPending=false,logoPending=false,handoffPending=false;
 function syncContinue(){$('continue').disabled=photoPending||logoPending||handoffPending;}
+// A matching PNG/JPEG header is not enough: confirm the browser can actually
+// decode the source image, and reject decompression-size surprises early.
+async function validDecodableProductImage(file){
+ if(!await validProductPhoto(file))return false;
+ const url=URL.createObjectURL(file);
+ const image=new Image();
+ try{
+  image.src=url;
+  if(typeof image.decode==='function')await image.decode();
+  else await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=reject;});
+  return image.naturalWidth>0&&image.naturalHeight>0&&
+   image.naturalWidth*image.naturalHeight<=40000000;
+ }catch(_){return false;}
+ finally{URL.revokeObjectURL(url);}
+}
 function clearUrls(){for(const u of previewUrls)URL.revokeObjectURL(u);previewUrls=[];}
 function renderFiles(){
  clearUrls();$('photoPreview').replaceChildren();$('logoPreview').replaceChildren();
@@ -38,7 +53,7 @@ $('photos').onchange=async()=>{
  const epoch=++photoSelectionEpoch,list=Array.from($('photos').files||[]);
  photoPending=true;syncContinue();
  $('status').textContent='Checking selected product photos locally…';
- const checks=await Promise.all(list.map(validProductPhoto));
+ const checks=await Promise.all(list.map(validDecodableProductImage));
  if(epoch!==photoSelectionEpoch)return;
  photoPending=false;syncContinue();
  if(list.length>3||!checks.every(Boolean)){
@@ -50,7 +65,7 @@ $('photos').onchange=async()=>{
 $('logo').onchange=async()=>{
  const epoch=++logoSelectionEpoch,f=$('logo').files?.[0]||null;
  logoPending=true;syncContinue();
- const valid=!f||await validProductPhoto(f);
+ const valid=!f||await validDecodableProductImage(f);
  if(epoch!==logoSelectionEpoch)return;
  logoPending=false;syncContinue();
  if(!valid){
