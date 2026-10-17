@@ -731,3 +731,33 @@ test('BASE 24: an old-account History Open cannot show delayed private ready med
  await expect.poll(()=>page.evaluate(()=>sessionStorage.getItem('vu_generation_job'))).toBeNull();
  expect(paidPosts).toBe(0);
 });
+
+test('BASE 24: delayed old-account video status check cannot update the new user\'s History',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-video-A'));
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/studio/jobs?filter=*',route=>route.fulfill({json:{items:[
+  {id:'private-video-status',kind:'video',status:'processing',prompt:'PRIVATE ACCOUNT A VIDEO',
+   model:'private-model',createdAt:'2026-10-17T08:00:00Z'}
+ ]}}));
+ let started,release,mediaReads=0,paidPosts=0;
+ const seen=new Promise(resolve=>started=resolve),held=new Promise(resolve=>release=resolve);
+ page.on('request',req=>{if(req.method()==='POST'&&req.url().includes('/api/studio/jobs'))paidPosts++;});
+ await page.route('**/api/studio/jobs/private-video-status',async route=>{
+  started();await held;
+  try{await route.fulfill({json:{id:'private-video-status',kind:'video',status:'ready',mime:'video/mp4'}});}catch(_){}
+ });
+ await page.route('**/api/studio/jobs/private-video-status/media',route=>{
+  mediaReads++;return route.fulfill({contentType:'video/mp4',body:'FORBIDDEN_PRIVATE_MEDIA'});
+ });
+ await page.goto('/generate-studio.html?studio=video&view=history');
+ await expect(page.locator('.history-card')).toContainText('PRIVATE ACCOUNT A VIDEO');
+ await page.locator('.history-card').getByRole('button',{name:'Check status'}).click();
+ await seen;
+ await page.evaluate(()=>localStorage.setItem('vv_token','history-video-B'));
+ release();
+ await expect(page.locator('#historyList')).not.toContainText('PRIVATE ACCOUNT A VIDEO');
+ await expect(page.locator('.history-card')).toHaveCount(0);
+ await expect(page.locator('#status')).not.toContainText('Video is ready');
+ expect(mediaReads).toBe(0);
+ expect(paidPosts).toBe(0);
+});
