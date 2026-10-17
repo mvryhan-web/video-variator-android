@@ -8,11 +8,12 @@ export function purchasedFundingProof({paidCredits,otherSpentCredits,requiredCre
  if(required<1||required>10_000_000||paid<required||paid-used<required)return false;
  return true;
 }
-export async function claimPurchasedGeneration(c,{env={},userId,jobId,credits,fingerprint,modelId,provider,wallet}={}){
+export async function claimPurchasedGeneration(c,{env={},userId,jobId,kind,credits,fingerprint,modelId,provider,wallet}={}){
  if(env.AI_PURCHASED_ONLY_DISPATCH_ENABLED!=='true'||env.AI_BILLING_MODE!=='live'||
     env.AI_LIVE_BILLING_APPROVED!=='true'||env.AI_PUBLIC_GENERATION_ENABLED!=='true'||
     env.AI_STUDIO_WALLET_ENABLED!=='true')deny();
- if(!textId(userId)||!textId(jobId)||!textId(fingerprint)||!textId(modelId)||!textId(provider)||
+ if(!textId(userId)||!textId(jobId)||!['image','video','music','voice'].includes(kind)||
+    !textId(fingerprint)||!textId(modelId)||!textId(provider)||
     !Number.isSafeInteger(credits)||credits<1||credits>10_000_000||
     !wallet||!Number.isSafeInteger(wallet.reserved)||wallet.reserved<credits||wallet.debt!==0)deny();
  // A verified signed Stripe grant creates vv_ai_purchase. Credit packs
@@ -51,10 +52,10 @@ export async function claimPurchasedGeneration(c,{env={},userId,jobId,credits,fi
   WHERE job_id=$1 AND user_id=$2 FOR UPDATE`,[jobId,userId]);
  const held=reserve.rows[0];
  if(!held||held.status!=='held'||Number(held.credits)!==credits||held.fingerprint!==fingerprint)deny();
- const job=await c.query(`SELECT user_id,model,provider,status,operation,deleted,request_fingerprint,credits_reserved
+ const job=await c.query(`SELECT user_id,kind,model,provider,status,operation,deleted,request_fingerprint,credits_reserved
   FROM vv_generation_jobs WHERE id=$1 AND user_id=$2 FOR UPDATE`,[jobId,userId]);
  const j=job.rows[0];
- if(!j||j.status!=='processing'||j.deleted!==false||j.operation!=null||
+ if(!j||j.kind!==kind||j.status!=='processing'||j.deleted!==false||j.operation!=null||
     j.model!==modelId||j.provider!==provider||
     j.request_fingerprint!==fingerprint||Number(j.credits_reserved)!==credits)deny();
  const claim=await c.query(`INSERT INTO vv_ai_purchased_dispatch_claim
