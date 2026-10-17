@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #40 routing ambiguity guard (2026-10-17)
+
+- Existing Agent B [PR #163](https://github.com/mvryhan-web/video-variator-android/pull/163) HEAD `92c2e9eeb8f3aca5144deb1da7c590e5831171ba`; reconciled with shared BASE via non-force two-parent commit based on `e0eceaa2`. Only B-owned `server/generation-routing.js` and `tests/generation-routing-unit.mjs` in current GitHub comparison, no overwrite of A/C/D.
+- Preserves original no-Smart incompatible default model fail-closed and explicit duplicate ID rejection, extends unique paid model ID contract to Smart Routing candidates and quote helper; same logical identifier across different generation kinds remains permitted. New offline regression for duplicate IDs and no automatic provider dispatch.
+- Previous exact-head GitHub Studio + Video Smart Routing workflows 2/2 **SUCCESS** at `4179d94`; current head dedicated #39018792922 and Studio #39018793155 **QUEUED / NOT VERIFIED**. Draft, not merged, no live routing, no provider requests or credits. BASE #40 remains PARTIAL: true independent internal model alias registry and provider switch remain broader release work.
+
+
 ## Agent C BASE #28 — batch photo compression scope claim (2026-10-17)
 
 - Existing single-photo JPG/PNG/WebP quality-controlled local tool is CODE VERIFIED (prior focused CI 38924678343), and local FFmpeg video compressor has MERGED via PR #173. Do not duplicate tool tiles or alter existing Video Compression, PDF, ZIP, admin, provider or payment paths.
