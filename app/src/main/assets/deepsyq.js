@@ -320,6 +320,7 @@ async function loadAIWallet(){
  }catch(_){chip.hidden=true;}
 }
 
+let onboardingModalOwnerToken=null;
 async function maybeShowOnboarding(){
  if(config?.features?.onboarding===false)return;
  const requestedToken=localStorage.getItem('vv_token');
@@ -355,6 +356,7 @@ async function maybeShowOnboarding(){
      localStorage.removeItem('deepsyq_onboarding_pending');
      location.assign(target);
     }catch(e){
+     if(!sameAccount()){closeOnboarding();return;}
      status.textContent=e.message==='ONBOARDING_UNAVAILABLE'?
       'Onboarding is temporarily unavailable. You can still use the studios from the dashboard.':
       'Could not save your choice. Please try again.';
@@ -365,13 +367,28 @@ async function maybeShowOnboarding(){
   }
   if(!sameAccount())return; // A logout while building buttons must not expose prior state.
   $('onboardingStatus').textContent='';
+  onboardingModalOwnerToken=requestedToken;
   modal.hidden=false;
   setTimeout(()=>{if(sameAccount()&&!modal.hidden)choices.querySelector('button')?.focus();},0);
  }catch(_){/* Keep pending marker so setup can be retried later. */}
 }
-function closeOnboarding(){const modal=$('onboardingModal');if(modal)modal.hidden=true;}
-document.querySelectorAll('[data-close-onboarding]').forEach(b=>b.onclick=()=>{localStorage.removeItem('deepsyq_onboarding_pending');closeOnboarding();});
-$('onboardingLater').onclick=()=>{localStorage.removeItem('deepsyq_onboarding_pending');closeOnboarding();};
+function closeOnboarding(){
+ const modal=$('onboardingModal');if(modal)modal.hidden=true;
+ onboardingModalOwnerToken=null;
+}
+function dismissOnboarding(){
+ // A stale previous-user modal must not delete a freshly signed-in user's
+ // pending setup marker when the token rotates silently within this tab.
+ if(onboardingModalOwnerToken===localStorage.getItem('vv_token'))
+  localStorage.removeItem('deepsyq_onboarding_pending');
+ closeOnboarding();
+}
+window.addEventListener('storage',event=>{
+ if(event.key==='vv_token'&&onboardingModalOwnerToken&&
+    event.newValue!==onboardingModalOwnerToken)closeOnboarding();
+});
+document.querySelectorAll('[data-close-onboarding]').forEach(b=>b.onclick=dismissOnboarding);
+$('onboardingLater').onclick=dismissOnboarding;
 
 if(localStorage.getItem('vv_token'))try{const {user}=await api('/api/me');$('accountLabel').textContent=user.name||'Your workspace';$('accountButton').textContent='Account settings';$('accountButton').onclick=()=>location.assign('index.html#profile');$('logout').hidden=false;if(user.isAdmin&&!document.getElementById('adminAiControl')){const a=document.createElement('a');a.id='adminAiControl';a.href='deepsyq-admin.html';a.textContent='Owner AI Control';document.querySelector('.sidebar-bottom').prepend(a);}await Promise.all([maybeShowOnboarding(),loadAIWallet(),loadRecentCreations()]);}catch(e){if(e.message==='INVALID_SESSION'||e.message==='USER_NOT_FOUND'){localStorage.removeItem('vv_token');localStorage.removeItem('deepsyq_onboarding_pending');}}
 if(new URLSearchParams(location.search).get('checkout')==='success')$('paymentStatus').textContent='Your checkout has returned. Access is updated only after Stripe confirms payment. Open your account to see its current status.';
