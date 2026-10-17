@@ -1,10 +1,11 @@
-// BASE #5: BytePlus queued-only cancellation *provider protocol*.
-// NEVER call this without an authenticated, user-owned, locked Video job and
-// an approved purchased-only settlement workflow. No public endpoint wired.
-// BytePlus DELETE deletes succeeded/failed records; NEVER send it unless a
-// fresh provider GET has established the task is still queued.
-// GET -> DELETE races are expected. Only GET-confirmed 'cancelled' is proof.
-// Source: https://ai.byteplus.com/ark/region:ap-southeast-1/docs/cancel-or-delete-video-generation-tasks-api
+// BASE #5 Video cancellation safety (server-only and NOT publicly wired).
+// BytePlus task DELETE has dual semantics: queued -> cancelled,
+// succeeded/failed -> permanently DELETE result record.
+// A GET queued immediately before DELETE is not atomic: task can complete in
+// between. The published API has no documented expected-status precondition.
+// Therefore this module is READ-ONLY. NEVER attempt provider DELETE or issue
+// a customer credit refund based on this preflight result.
+// Reference: https://ai.byteplus.com/ark/region:ap-southeast-1/docs/cancel-or-delete-video-generation-tasks-api
 const ROOT='https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks/';
 const LIMIT=64*1024;
 function taskId(operation){
@@ -13,7 +14,7 @@ function taskId(operation){
  return operation.slice('byteplus:'.length);
 }
 async function jsonBounded(response){
- if(!response.ok)throw Error('CANCEL_STATUS_UNVERIFIED');
+ if(!response?.ok)throw Error('CANCEL_STATUS_UNVERIFIED');
  if(Number(response.headers?.get?.('content-length')||0)>LIMIT)throw Error('CANCEL_STATUS_UNVERIFIED');
  const reader=response.body?.getReader?.();
  if(!reader)throw Error('CANCEL_STATUS_UNVERIFIED');
@@ -32,19 +33,14 @@ async function jsonBounded(response){
   throw Error('CANCEL_STATUS_UNVERIFIED');
  return data.status;
 }
-export async function cancelQueuedBytePlusVideo(operation,{key,fetcher=fetch}={}){
+export async function inspectBytePlusVideoCancellation(operation,{key,fetcher=fetch}={}){
  const id=taskId(operation);
  if(typeof key!=='string'||!key)throw Error('PROVIDER_KEY_REQUIRED');
- const url=ROOT+id,headers={Authorization:'Bearer '+key};
- const call=async method=>fetcher(url,{method,headers,redirect:'error',signal:AbortSignal.timeout(15000)});
- // First check. A finished task DELETE is destructive, not cancellation.
- const before=await jsonBounded(await call('GET'));
- if(before!=='queued')return {confirmed:false,reason:'PROVIDER_NOT_QUEUED'};
- // Not a guaranteed cancellation: task can start while request travels.
- const response=await call('DELETE');
- if(!response.ok)return {confirmed:false,reason:'CANCEL_NOT_ACCEPTED'};
- // An HTTP 2xx DELETE alone is NEVER permission to refund/mark cancelled.
- const after=await jsonBounded(await call('GET'));
- if(after!=='cancelled')return {confirmed:false,reason:'CANCEL_NOT_CONFIRMED'};
- return {confirmed:true,status:'cancelled'};
+ const response=await fetcher(ROOT+id,{method:'GET',headers:{Authorization:'Bearer '+key},
+  redirect:'error',signal:AbortSignal.timeout(15000)});
+ const status=await jsonBounded(response);
+ // Even if status=queued, never give callers a false guarantee: BytePlus's
+ // DELETE would destroy a terminal result if the status changed in transit.
+ return {canCancel:false,status,reason:status==='queued'?
+  'PROVIDER_DELETE_NOT_ATOMIC':'PROVIDER_NOT_QUEUED'};
 }
