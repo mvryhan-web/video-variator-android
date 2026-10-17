@@ -56,6 +56,23 @@ export async function googleJson(relative,{key,body,fetcher=fetch}){
  if(!/^(models\/[a-z0-9.-]+:(generateContent|predictLongRunning)|models\/[a-z0-9.-]+\/operations\/[A-Za-z0-9_-]+|operations\/[A-Za-z0-9_-]+)$/.test(relative))throw new Error('INVALID_OPERATION');
  const r=await fetcher(ROOT+relative,{method:body?'POST':'GET',redirect:'error',signal:AbortSignal.timeout(120000),headers:{'x-goog-api-key':key,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
  if(!r.ok)throw new Error(r.status===429?'PROVIDER_BUSY':'PROVIDER_ERROR');
+ // Native fetch responses are streamed and hard-capped. The provider may omit
+ // or forge Content-Length, so enforce the decoded byte limit while reading.
+ // The json() fallback is for narrowly mocked fetchers without a body stream.
+ const maxJson=42*1024*1024;
+ if(Number(r.headers?.get?.('content-length'))>maxJson)throw new Error('RESULT_TOO_LARGE');
+ if(r.body?.getReader){
+  const reader=r.body.getReader(),chunks=[];let size=0;
+  try{
+   for(;;){const {value,done}=await reader.read();if(done)break;
+    size+=value.length;if(size>maxJson)throw new Error('RESULT_TOO_LARGE');
+    chunks.push(Buffer.from(value));
+   }
+  }finally{await reader.cancel().catch(()=>{});}
+  if(!size)throw new Error('EMPTY_GENERATION');
+  try{return JSON.parse(Buffer.concat(chunks).toString('utf8'));}
+  catch{throw new Error('INVALID_PROVIDER_MEDIA');}
+ }
  return r.json();
 }
 export async function generateGoogle(request,{key,fetcher=fetch}){

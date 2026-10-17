@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {generateGoogle,pollGoogle,safeGoogleUrl} from '../server/generation-provider.js';
+import {generateGoogle,pollGoogle,safeGoogleUrl,googleJson} from '../server/generation-provider.js';
 
 const GOOGLE='https://generativelanguage.googleapis.com/v1beta/files/fixture?alt=media';
 const operation='operations/fixture';
@@ -16,6 +16,26 @@ async function runPoll(download,key='fixture-key'){
  try{return {value:await pollGoogle(operation,{key,fetcher}),calls};}
  catch(error){error.calls=calls;throw error;}
 }
+
+test('Google JSON rejects advertised and streamed oversized provider responses before parsing',async()=>{
+ const key='fixture-only',max=42*1024*1024;
+ const header=await assert.rejects(()=>googleJson('operations/fixture',{key,
+  fetcher:async()=>new Response('{}',{headers:{'Content-Length':String(max+1)}})}),/RESULT_TOO_LARGE/);
+ let reads=0,cancelled=0;
+ const limit={ok:true,headers:{get:()=>null},body:{getReader:()=>({
+  read:async()=>({value:new Uint8Array(1024*1024),done:false}),
+  cancel:async()=>{cancelled++;}})}};
+ await assert.rejects(()=>googleJson('operations/fixture',{key,fetcher:async()=>{reads++;return limit;}}),/RESULT_TOO_LARGE/);
+ assert.equal(reads,1);assert.equal(cancelled,1);
+});
+
+test('Google JSON accepts small valid streaming results and refuses invalid provider JSON',async()=>{
+ const key='fixture-only';
+ const good=await googleJson('operations/fixture',{key,fetcher:async()=>new Response('{"done":false}')});
+ assert.equal(good.done,false);
+ await assert.rejects(()=>googleJson('operations/fixture',{key,
+  fetcher:async()=>new Response('<html>bad provider gateway</html>')}),/INVALID_PROVIDER_MEDIA/);
+});
 
 test('BASE #5 Veo only permits exact official Google HTTPS download origin',()=>{
  assert.equal(safeGoogleUrl(GOOGLE),GOOGLE);
