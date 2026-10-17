@@ -8,6 +8,8 @@ test('BASE 24/25: user-owned History filters bind kind=$2 and never expose anoth
   {id:'owner-photo',user_id:'owner-1',kind:'image',status:'ready',prompt:'Private owner photo',settings:{},deleted:false,created_at:new Date('2026-10-16T08:00:00Z')},
   {id:'owner-video',user_id:'owner-1',kind:'video',status:'processing',prompt:'Owner pending video',settings:{},deleted:false,created_at:new Date('2026-10-16T08:01:00Z')},
   {id:'owner-music',user_id:'owner-1',kind:'music',status:'ready',prompt:'Owner original audio',settings:{},deleted:false,created_at:new Date('2026-10-16T08:02:00Z')},
+  {id:'owner-failed',user_id:'owner-1',kind:'image',status:'failed',prompt:'Owner failed draft',settings:{},deleted:false,created_at:new Date('2026-10-16T08:04:00Z')},
+  {id:'owner-deleted',user_id:'owner-1',kind:'image',status:'ready',prompt:'PRIVATE DELETED IMAGE',settings:{},deleted:true,created_at:new Date('2026-10-16T08:05:00Z')},
   {id:'other-music',user_id:'other-2',kind:'music',status:'ready',prompt:'Private other account song',settings:{},deleted:false,created_at:new Date('2026-10-16T08:03:00Z')},
   {id:'other-photo',user_id:'other-2',kind:'image',status:'ready',prompt:'Other private prompt',settings:{},deleted:false,created_at:new Date('2026-10-16T09:00:00Z')}
  ];
@@ -42,12 +44,22 @@ test('BASE 24/25: user-owned History filters bind kind=$2 and never expose anoth
    const response=await fetch(root+'/api/studio/jobs?filter='+kind,{headers:{'X-Test-User':user}});
    assert.equal(response.status,200,'History route status; synthetic SQL trace: '+JSON.stringify(queryTrace)+'; body: '+await response.clone().text());
    const body=await response.json();
-   assert.deepEqual(body.items.map(item=>item.id),[expected]);
+   assert.deepEqual(body.items.map(item=>item.id),kind==='image'&&user==='owner-1'?[expected,'owner-failed']:[expected]);
    assert.equal(body.items[0].prompt,fixtures.find(f=>f.id===expected).prompt);
   }
   const owner=await fetch(root+'/api/studio/jobs?filter=all',{headers:{'X-Test-User':'owner-1'}});
   assert.equal(owner.status,200);
-  assert.deepEqual((await owner.json()).items.map(item=>item.id),['owner-photo','owner-video','owner-music']);
+  assert.deepEqual((await owner.json()).items.map(item=>item.id),['owner-photo','owner-video','owner-music','owner-failed']);
+  for(const [filter,ids] of [
+   ['failed',['owner-failed']],
+   ['processing',['owner-video']]
+  ]){
+   const response=await fetch(root+'/api/studio/jobs?filter='+filter,{headers:{'X-Test-User':'owner-1'}});
+   assert.equal(response.status,200);
+   const payload=await response.json();
+   assert.deepEqual(payload.items.map(row=>row.id),ids);
+   assert.ok(payload.items.every(row=>!row.prompt.includes('PRIVATE DELETED')));
+  }
   const invalid=await fetch(root+'/api/studio/jobs?filter=unknown');
   assert.equal(invalid.status,400);
   assert.ok(observed.some(q=>q.sql.includes('kind=$2')&&q.args[1]==='image'));
