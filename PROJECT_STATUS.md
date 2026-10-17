@@ -1,5 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent D — BASE #50 + #51 exact-head green CI and merges (2026-10-17)
+
+- **BASE #51 PR #158:** [merged](https://github.com/mvryhan-web/video-variator-android/pull/158) squash `da5f92b45fd684c4c916dd5f7195cb2539bfd413`, tested head `caf0136ae72340bf2af1a4d17ac6b9ca4f1fe09b`, full **5/5 current-head GitHub Actions SUCCESS**: #38959859931, #38959859936, #38959859823, #38959859944, #38959859934. Adds Image and Video approved price/rate gate plus required Studio owner, bounded max call quota and explicit Image/Video kind coverage. No billing/model/provider/public activation. Original #51 PARTIAL/NOT LIVE.
+- **BASE #50 PR #189:** [merged](https://github.com/mvryhan-web/video-variator-android/pull/189) squash `d0f52499bd52364bf404040192005b0d9a967954`, tested head `f379c3cc00291461ce4712f6f67159321e5a8cd9`, **2/2 current-head GitHub Actions SUCCESS**: focused BASE50 job #38960006758 and Stripe webhook regression #38960006577. Explicitly invalid public discovery flags fail closed on all stages; omitted nonprod preview default preserved, existing paid AI keys unaffected. Exact pure-helper 160/160 scenarios PASS. Original #50 PARTIAL/NOT LIVE.
+- **Pending D:** BASE #16 PR #164 7/8 CI PASS, remaining AI Studio preview unit failed in legacy PostgreSQL Checkout test due missing explicit `AI_BILLING_MODE`. Fixed fixture in PR #164 HEAD `7bc86d1deeacf225a7905c552f765aad1858c1df`; new-head CI pending, no merge. BASE #37 PR #179 10/11 CI PASS, Deepsyq platform browser regression fails on existing Pricing text/Home reference and timeouts (outside owner Business aggregate change); investigate/reconcile with other agents, do not merge on known failed CI.
+- **Launch:** BASE #54 NOT MET, #55 pending; no main, Stripe live, Render, DB migration, real generation or payment used.
+
+
 ## Agent C — BASE #20 exact-product Etsy ad brief / IN PROGRESS (2026-10-17)
 
 - **Original authority:** BASE #20 Product Video user-photo workflow; owner-supplied Etsy visual fidelity instructions, as handed off by Agent A in Issue #74. Photo(s) are authoritative; never invent printed design, garment details or angles not provided, logo/claims/characteristics, or substitute stock garments. Printed humorous/anatomical image on cloth is a graphic, not a depiction of real nudity.
