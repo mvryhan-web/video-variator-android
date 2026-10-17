@@ -1,5 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent C — ONLY original BASE #28: Tools PDF/OCR/Collage acceptance checkpoint (2026-10-17)
+
+- Single Agent C row #28, status BLOCKED_EXTERNAL and LIVE_VERIFIED=false. Current governing 4-owner-priority lock, 16 canonical rules and original BASE §28 read. Do not switch to other C tasks or Blocks without Agent5 approval; entire original row DONE=NO.
+- Existing DRAFT [PR #207](https://github.com/mvryhan-web/video-variator-android/pull/207) HEAD `972790b465d3c0433e2a12f7bfa2b64d767dd61f`, NOT MERGED. New same-row corrections: (a) scan Photo→PDF Cancel during delayed JPEG or PDF save prevents downloadable output and canvas allocations are freed with finally; (b) OCR Cancel while Tesseract *JavaScript library* loads prevents worker start; (c) Collage corrupt image error releases large workspace canvas and bitmaps, picker/settings locked during creation; pagehide invalidates pending bitmap work and clears image source/result for BFCache privacy. Playwright regressions + old collage acceptance in focused workflow. Original ZIP of entitled photo batch, redaction privacy, other eleven Tools and historical merged #151/#173 untouched.
+- Exact-source local async tests PASS for normal two-image PDF and cancel, OCR before/after worker init, collage corrupt bitmap and page-exit cancellation. NOT current browser CI. Current-head GitHub Actions focused 39026454456, collage 39026454459, photo 39026454473, video 39026454467 all QUEUED, not PASSED. No production or paid provider calls.
+- Original #28 external blockers: owner-approved Google Text→Audio credentials/quota/free-vs-paid costs; owner+D decision on Basic/trial `photo_batch` versus original 'free utilities'; accept flat-color-only remover scope; Agent A SEO Issue #156 indexability; real iPhone/Android and owner/Agent5 controlled main/Render launch; Actions runner capacity. Precise escalation Issue #74 #6232329034 unresolved. Same next action = exact-head CI when terminal, fix focused regressions, safe review/merge to `deepsyq-platform`, then authorized whole-row acceptance.
+
+
 ## Agent C — BASE #28 PR207 non-force latest BASE integration (2026-10-17)
 
 - **Single active ORIGINAL #28** from BASE TXT, unchanged role/claim, state BLOCKED_EXTERNAL / not DONE / LIVE_VERIFIED=false. Existing DRAFT PR [#207](https://github.com/mvryhan-web/video-variator-android/pull/207) on `agent-c-base28-entitled-photo-batch-zip-20261017` now HEAD `7e91ad4469b50dd08a7b74617f2c350a0e1a66fd`.
