@@ -1,0 +1,26 @@
+name: BASE 41 Model Capability Fidelity
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/generate-models.js'
+      - 'tests/base41-model-capability-fidelity-unit.mjs'
+      - '.github/workflows/base41-model-capability-fidelity.yml'
+  push:
+    branches: [base41-model-capability-fidelity-20261016]
+permissions:
+  contents: read
+jobs:
+  capability-fidelity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and immutable actual video model capabilities
+        run: |
+          node --check app/src/main/assets/generate-models.js
+          node --check tests/base41-model-capability-fidelity-unit.mjs
+          node --test tests/base41-model-capability-fidelity-unit.mjs tests/generation-model-capabilities-unit.mjs

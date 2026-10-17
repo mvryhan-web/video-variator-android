@@ -24,3 +24,4 @@ Users must keep Telegram open while FFmpeg processes. A browser WebView may run 
 ## Release notes
 
 Changes only in this branch. Existing live Render deployments are not changed until merge and activation. Stripe endpoints, products, prices, web checkout and website's subscription UI are not touched. Original draft PR #38 (Telegram Stars) is superseded by the free-preview-only implementation.
+
