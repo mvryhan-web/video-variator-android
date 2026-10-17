@@ -419,3 +419,36 @@ test('BASE #28: Cancel during PDF merge save never publishes a late result, norm
  await expect(page.locator('#utilityResults .utility-result')).toContainText('merged.pdf');
  expect(uploads).toBe(0);
 });
+
+
+test('BASE #28: nine-image collage closes bitmaps one-by-one before next decode',async({page})=>{
+ let posts=0;
+ page.on('request',r=>{if(r.method()==='POST')posts++;});
+ await page.goto('/photo-collage.html');
+ const png=await fixture(page);
+ await page.locator('#collageFiles').setInputFiles(Array.from({length:9},(_,i)=>({
+  name:'photo-'+(i+1)+'.png',mimeType:'image/png',buffer:png
+ })));
+ await page.evaluate(()=>{
+  window.__collageBitmapMemory={live:0,maxLive:0,closed:0};
+  const originalCreate=window.createImageBitmap.bind(window);
+  const originalClose=ImageBitmap.prototype.close;
+  window.createImageBitmap=async(...args)=>{
+   const image=await originalCreate(...args);
+   const m=window.__collageBitmapMemory;
+   m.live++;m.maxLive=Math.max(m.maxLive,m.live);
+   return image;
+  };
+  ImageBitmap.prototype.close=function(...args){
+   const m=window.__collageBitmapMemory;
+   m.closed++;m.live--;
+   return originalClose.apply(this,args);
+  };
+ });
+ await page.locator('#collageCreate').click();
+ await expect(page.locator('#collageResult')).toBeVisible();
+ await expect(page.locator('#collageDownload')).toHaveAttribute('href',/^blob:/);
+ const m=await page.evaluate(()=>window.__collageBitmapMemory);
+ expect(m).toEqual({live:0,maxLive:1,closed:9});
+ expect(posts).toBe(0);
+});
