@@ -11,7 +11,8 @@ export function billingCatalog(env={}) {
     const packs=JSON.parse(env.AI_CREDIT_PACKS_JSON||'[]'), rates=JSON.parse(env.AI_CREDIT_RATES_JSON||'[]');
     if (!Array.isArray(packs)||!Array.isArray(rates)||packs.length>10||rates.length>3) throw Error();
     if (packs.some(p=>!/^[a-z0-9_-]{1,40}$/.test(p.sku)||!/^price_[A-Za-z0-9]+$/.test(p.priceId)||!positive(p.credits)||!positive(p.amount)||!['eur','usd'].includes(p.currency))) throw Error();
-    if (new Set(packs.map(p=>p.sku)).size!==packs.length) throw Error();
+    if (new Set(packs.map(p=>p.sku)).size!==packs.length||
+        new Set(packs.map(p=>p.priceId)).size!==packs.length) throw Error();
     if (rates.some(r=>!MODELS[r.kind]||!positive(r.credits))||new Set(rates.map(r=>r.kind)).size!==rates.length) throw Error();
     return {packs,rates,revision:hash({packs,rates})};
   } catch (_) { return {packs:[],rates:[],revision:null}; }
@@ -28,7 +29,8 @@ export function stripeWebhookConfigured(env={}){
 }
 export function generationBillingRuntime(env={}){
   const mode=env.AI_BILLING_MODE==='live'?'live':'test',key=String(env.STRIPE_SECRET_KEY||'');
-  const keyMatches=mode==='live'?/^(sk_live_|rk_live_)/.test(key):/^(sk_test_|rk_test_)/.test(key);
+  const explicitMode=env.AI_BILLING_MODE==='test'||env.AI_BILLING_MODE==='live';
+  const keyMatches=explicitMode&&(mode==='live'?/^(sk_live_|rk_live_)/.test(key):/^(sk_test_|rk_test_)/.test(key));
   const liveApproved=env.AI_LIVE_BILLING_APPROVED==='true';
   const activationRequested=env.AI_BILLING_ENABLED==='true';
   return {mode,livemode:mode==='live',keyMatches,liveApproved,activationRequested,livePaymentsEnabled:activationRequested&&mode==='live'&&liveApproved&&keyMatches};
@@ -164,10 +166,10 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
     }
     if(event.type==='charge.refunded'){
       const aiMarked=hasAiWalletRefundMarker(event),charge=event.data?.object||{};
-      if(!enabled()&&env.AI_SUBSCRIPTION_CREDITS_ENABLED!=='true'){
-        // This webhook also receives refunds for pre-existing subscriptions.
-        // Never fail their signed delivery because optional AI billing is OFF.
-        if(aiMarked)throw Error('AI_BILLING_WEBHOOK_DISABLED');
+      if(!enabled()&&env.AI_SUBSCRIPTION_CREDITS_ENABLED!=='true'&&!aiMarked){
+        // Unrelated legacy refunds must not touch the disabled AI wallet.
+        // AI-marked *historical* refunds must still revoke previously sold
+        // credits after Checkout is switched OFF; this does not permit sales.
         return false;
       }
       // Even if one-time AI Checkout is OFF, signed subscription refunds
@@ -184,7 +186,12 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
     if (!['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type)) return false;
     const object=event.data.object;
     if (object.metadata?.aiWallet!=='v1') return false;
-    if (!enabled()) throw Error('AI_BILLING_WEBHOOK_DISABLED');
+    // Turning OFF new Checkout must not strand an already-paid, signed event
+    // for an order persisted before shutdown. Reconciliation still requires
+    // matching Stripe credentials, mode, the original order and session.
+    const historicalPaidSettlement=!r.activationRequested&&r.keyMatches&&!!pool&&
+      !!stripe?.checkout?.sessions?.retrieve&&!!env.DATABASE_URL&&!!env.APP_JWT_SECRET;
+    if (!enabled()&&!historicalPaidSettlement) throw Error('AI_BILLING_WEBHOOK_DISABLED');
     await init();
     const {rows}=await pool.query('SELECT * FROM vv_ai_order WHERE id=$1',[object.metadata.orderId]);
     if (!rows.length) throw Error('AI_ORDER_NOT_FOUND');

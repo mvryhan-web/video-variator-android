@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import express from 'express';
 import {MODELS,MODEL_CATALOG} from '../server/generation-provider.js';
 import {generationFeatureSwitches,generationFeatureEnabled} from '../server/generation-feature-flags.js';
+import {platformFeatureEnabled} from '../server/platform-feature-flags.js';
 import {studioConfig,installGenerationStudio} from '../server/generation-studio.js';
 
 const base={
@@ -71,4 +72,17 @@ test('disabled Video quote and create return 503 before DB write or paid provide
   assert.equal(queryCount,0,'must block before touching PostgreSQL');
   assert.equal(providers,0,'must block before any charge/provider');
  } finally {await new Promise(r=>server.close(r))}
+});
+
+
+test('BASE #50 public discovery flags fail closed in non-production for explicit invalid values',()=>{
+ const names=['AI_APPS_ENABLED','AI_INSPIRATION_ENABLED','AI_PRODUCT_VIDEO_ENABLED','AI_ONBOARDING_ENABLED'];
+ for(const name of names){
+  for(const value of ['false','0','TRUE','', 'disabled']){
+   assert.equal(platformFeatureEnabled(name,{NODE_ENV:'staging',[name]:value}),false,name+' = '+value);
+  }
+  assert.equal(platformFeatureEnabled(name,{NODE_ENV:'staging'}),true,'unset preview stays visible');
+  assert.equal(platformFeatureEnabled(name,{NODE_ENV:'production'}),false,'unset production stays blocked');
+  assert.equal(platformFeatureEnabled(name,{NODE_ENV:'production',[name]:'true'}),true);
+ }
 });
