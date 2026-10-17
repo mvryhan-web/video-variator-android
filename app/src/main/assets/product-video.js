@@ -2,8 +2,8 @@ import {saveStudioHandoff} from './studio-handoff.js';
 import {buildProductVideoPrompt} from './product-video-prompt.mjs';
 import {validProductPhoto} from './product-video-file-safety.mjs';
 const $=id=>document.getElementById(id);let photos=[],logo=null,previewUrls=[];
-let photoSelectionEpoch=0,logoSelectionEpoch=0,photoPending=false,logoPending=false;
-function syncContinue(){if(photoPending||logoPending)$('continue').disabled=true;else $('continue').disabled=false;}
+let photoSelectionEpoch=0,logoSelectionEpoch=0,photoPending=false,logoPending=false,handoffPending=false;
+function syncContinue(){$('continue').disabled=photoPending||logoPending||handoffPending;}
 function clearUrls(){for(const u of previewUrls)URL.revokeObjectURL(u);previewUrls=[];}
 function renderFiles(){
  clearUrls();$('photoPreview').replaceChildren();$('logoPreview').replaceChildren();
@@ -60,5 +60,27 @@ $('logo').onchange=async()=>{
  renderFiles();
 };
 for(const id of ['productName','style','ratio','duration'])$(id).addEventListener(id==='productName'?'input':'change',updatePrompt);
-$('workflow').onsubmit=async e=>{e.preventDefault();if(!photos.length){$('status').textContent='Add at least one product photo first.';return;}const button=$('continue');button.disabled=true;$('status').textContent='Preparing your Studio locally…';try{await saveStudioHandoff({kind:'video',prompt:prompt(),settings:{ratio:$('ratio').value,durationPreference:$('duration').value},files:[...photos,...(logo?[logo]:[])],source:'product-video',meta:{productName:$('productName').value.trim(),style:$('style').value,hasLogo:!!logo}});location.assign('generate-studio.html?studio=video&from=product-video');}catch(err){$('status').textContent=err.message==='LOCAL_HANDOFF_UNAVAILABLE'?'This browser could not prepare the local handoff. Open Video Studio and add the files there.':'Could not prepare the workflow. Check the files and try again.';button.disabled=false;}};
+$('workflow').onsubmit=async e=>{
+ e.preventDefault();
+ // A keyboard submit or requestSubmit() may fire even while the button is disabled.
+ // Never hand Studio unvalidated images or start two overlapping local writes.
+ if(handoffPending)return;
+ if(photoPending||logoPending){$('status').textContent='Finish checking your images before continuing.';return;}
+ if(!photos.length){$('status').textContent='Add at least one product photo first.';return;}
+ handoffPending=true;syncContinue();$('status').textContent='Preparing your Studio locally…';
+ try{
+  await saveStudioHandoff({
+   kind:'video',prompt:prompt(),
+   settings:{ratio:$('ratio').value,durationPreference:$('duration').value},
+   files:[...photos,...(logo?[logo]:[])],source:'product-video',
+   meta:{productName:$('productName').value.trim(),style:$('style').value,hasLogo:!!logo}
+  });
+  location.assign('generate-studio.html?studio=video&from=product-video');
+ }catch(err){
+  $('status').textContent=err.message==='LOCAL_HANDOFF_UNAVAILABLE'
+   ?'This browser could not prepare the local handoff. Open Video Studio and add the files there.'
+   :'Could not prepare the workflow. Check the files and try again.';
+  handoffPending=false;syncContinue();
+ }
+};
 updatePrompt();window.addEventListener('pagehide',clearUrls);
