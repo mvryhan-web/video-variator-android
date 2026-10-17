@@ -10,6 +10,7 @@ import {bytePlusPublicDurableStorageReady} from './generation-byteplus-storage-g
 import {installGenerationReferenceUpload} from './generation-reference-upload.js';
 import {resolveGenerationModel,orderedGenerationCandidates} from './generation-routing.js';
 import {normalizeGenerationError,publicGenerationError} from './generation-errors.js';
+import {quarantineUncertainVideoSubmit,VIDEO_SUBMISSION_UNCERTAIN} from './generation-video-submit-uncertainty.js';
 import {claimProviderPoll} from './generation-polling.js';
 import {recordAdminAudit,listAdminAudit} from './admin-audit.js';
 import {generationEntitlements,generationEntitlementForUser} from './generation-entitlements.js';
@@ -242,6 +243,13 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  }
  async function run(id,request,userId){try{await finish(id,await provider(request,{env}),userId);}catch(e){
   const failure=normalizeGenerationError(e,{stage:'provider_submit'});
+  if(request.kind==='video'){
+   // Submission may already be billable remotely. Preserve one original job
+   // and held credits for audit; never label a potentially running video failed.
+   await quarantineUncertainVideoSubmit({pool,jobId:id,failure});
+   if(walletEnabled())await wallet.settle({userId,jobId:id,outcome:'unknown'}).catch(()=>{});
+   return;
+  }
   await pool.query("UPDATE vv_generation_jobs SET status='failed',error=$2,error_message=$3,metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object('failure',jsonb_build_object('category',$4,'stage',$5,'sourceCode',$6,'retryable',$7)),failed_at=NOW() WHERE id=$1",[id,failure.code,walletEnabled()?'AI_WALLET_REVIEW_REQUIRED':null,failure.category,failure.stage,failure.sourceCode,failure.retryable]);
   if(walletEnabled())await wallet.settle({userId,jobId:id,outcome:'unknown'}).catch(()=>{});
  }}
@@ -315,6 +323,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   let j=await getJob(req);if(!j)return res.status(404).json({error:'NOT_FOUND'});
   if(j.status==='finalizing'&&walletEnabled()){try{await wallet.settle({userId:req.user.id,jobId:j.id,outcome:'success'});await pool.query("UPDATE vv_generation_jobs SET status='ready',credits_charged=credits_reserved,error_message=null,completed_at=NOW() WHERE id=$1 AND status='finalizing'",[j.id]);j=await getJob(req);}catch(_){/* Keep durable finalizing state; background/user polling may retry capture. */}}
   if(j.status==='processing'&&j.operation){try{const claimed=await claimProviderPoll(pool,j.id,{minSeconds:5});if(claimed){const result=await poller(j.operation,{env});if(!result.pending){await finish(j.id,result,req.user.id);j=await getJob(req);}}}catch(e){if(e.terminal){await failTerminalProviderJob(j.id,req.user.id,e,'provider_poll');j=await getJob(req);}else return res.status(502).json(publicGenerationError(e,{stage:'provider_poll'}));}}
+  if(j.kind==='video'&&j.status==='processing'&&!j.operation&&j.error===VIDEO_SUBMISSION_UNCERTAIN)return res.json({id:j.id,kind:'video',status:'unknown',error:VIDEO_SUBMISSION_UNCERTAIN,retryAfterSeconds:0});
   if(j.status==='processing'&&!j.operation&&Date.now()-new Date(j.created_at).getTime()>180000)return res.json({id:j.id,status:'unknown',error:'STATUS_UNKNOWN_NO_AUTOMATIC_RETRY',retryAfterSeconds:0});
   res.json({id:j.id,kind:j.kind,status:j.status,provider:j.provider||null,model:j.model||null,prompt:j.prompt||'',error:j.error,text:j.result_text||'',mime:j.mime,createdAt:j.created_at,creditsReserved:Number(j.credits_reserved||0),creditsCharged:Number(j.credits_charged||0),retryAfterSeconds:['queued','processing','finalizing'].includes(j.status)?5:0});
  }catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
