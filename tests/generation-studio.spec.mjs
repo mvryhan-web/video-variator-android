@@ -529,3 +529,65 @@ test('BASE 24: History card actions cannot reuse previous-account prompts after 
  await expect(page.locator('#prompt')).not.toHaveValue('PRIVATE ACCOUNT A ARTWORK PROMPT');
  expect(paidPosts).toBe(0);
 });
+
+
+test('BASE 24: delayed old-account History Download cannot save another account media',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','saved-account-A'));
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ const audio={id:'old-owned-music',kind:'music',status:'ready',prompt:'PRIVATE ACCOUNT A MUSIC',
+  createdAt:'2026-10-17T08:00:00Z',model:'saved-music'};
+ await page.route('**/api/studio/jobs?filter=*',route=>route.fulfill({json:{items:[audio]}}));
+ let markStarted,release,finished,downloads=0,paidPosts=0;
+ const started=new Promise(resolve=>markStarted=resolve);
+ const held=new Promise(resolve=>release=resolve);
+ const settled=new Promise(resolve=>finished=resolve);
+ page.on('download',()=>downloads++);
+ page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))paidPosts++;});
+ await page.route('**/api/studio/jobs/old-owned-music/media',async route=>{
+  markStarted();await held;
+  try{await route.fulfill({body:Buffer.from('SYNTHETIC PRIVATE AUDIO'),contentType:'audio/mpeg'});}catch(_){}
+  finished();
+ });
+ await page.goto('/generate-studio.html?studio=audio');
+ await page.locator('#showHistory').click();
+ await expect(page.locator('.history-card')).toContainText('PRIVATE ACCOUNT A MUSIC');
+ await page.locator('.history-card').getByRole('button',{name:'Download'}).click();
+ await started;
+ // Native storage events are not delivered to the tab that calls setItem.
+ await page.evaluate(()=>localStorage.setItem('vv_token','saved-account-B'));
+ release();await settled;
+ await expect(page.locator('.history-card')).toHaveCount(0);
+ await expect(page.locator('#historyList')).not.toContainText('PRIVATE ACCOUNT A');
+ expect(downloads).toBe(0);
+ expect(paidPosts).toBe(0);
+});
+
+test('BASE 24: a changed account cannot confirm deletion of a previous account result',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','delete-account-A'));
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/studio/jobs?filter=*',route=>route.fulfill({json:{items:[
+  {id:'old-owned-delete',kind:'video',status:'failed',prompt:'PRIVATE ACCOUNT A FAILED JOB',
+   createdAt:'2026-10-17T08:00:00Z'}
+ ]}}));
+ let deletes=0,paidPosts=0;
+ page.on('request',req=>{
+  if(req.method()==='DELETE'&&req.url().includes('/api/studio/jobs/'))deletes++;
+  if(req.method()==='POST'&&req.url().includes('/api/studio/jobs'))paidPosts++;
+ });
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#showHistory').click();
+ await expect(page.locator('.history-card')).toContainText('PRIVATE ACCOUNT A FAILED JOB');
+ // Hold a synchronous confirmation only while the account token rotates via
+ // the browser's dialog handler; the delete operation checks session again.
+ // Use addInitScript replacement to make the confirmation rotate the token.
+ await page.evaluate(()=>{
+  window.confirm=()=>{
+   localStorage.setItem('vv_token','delete-account-B');
+   return true;
+  };
+ });
+ await page.locator('.history-card').getByRole('button',{name:'Delete'}).click();
+ await expect(page.locator('#historyList')).not.toContainText('PRIVATE ACCOUNT A');
+ expect(deletes).toBe(0);
+ expect(paidPosts).toBe(0);
+});
