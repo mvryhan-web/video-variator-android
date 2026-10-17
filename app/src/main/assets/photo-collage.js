@@ -37,7 +37,7 @@ $('collageCreate').addEventListener('click',async()=>{
  if(!validFiles(files)){info(t.invalid);return;}
  const generation=++collageGeneration;
  busy=true;setCollageControlsBusy(true);info(t.busy);
- const bitmaps=[];let canvas=null;
+ let canvas=null;
  try{
   const columns=Number($('collageColumns').value),gap=Number($('collageGap').value);
   const geom=collageGeometry(files.length,columns,gap);
@@ -45,11 +45,16 @@ $('collageCreate').addEventListener('click',async()=>{
   const ctx=canvas.getContext('2d',{alpha:false});if(!ctx)throw Error('COLLAGE_CANVAS');
   ctx.fillStyle=$('collageBg').value;ctx.fillRect(0,0,geom.width,geom.height);
   for(let i=0;i<files.length;i++){
-   const image=await decodePhoto(files[i]);bitmaps.push(image);
-   if(generation!==collageGeneration)throw Error('COLLAGE_CANCELLED');
-   const col=i%geom.columns,row=Math.floor(i/geom.columns),x=Math.round(geom.gap+col*(geom.cell+geom.gap)),y=Math.round(geom.gap+row*(geom.cell+geom.gap));
-   const size=Math.ceil(geom.cell),crop=centerCrop(image.width,image.height,size,size);
-   ctx.drawImage(image,crop.sx,crop.sy,crop.sw,crop.sh,x,y,size,size);
+   const image=await decodePhoto(files[i]);
+   try{
+    if(generation!==collageGeneration)throw Error('COLLAGE_CANCELLED');
+    const col=i%geom.columns,row=Math.floor(i/geom.columns),x=Math.round(geom.gap+col*(geom.cell+geom.gap)),y=Math.round(geom.gap+row*(geom.cell+geom.gap));
+    const size=Math.ceil(geom.cell),crop=centerCrop(image.width,image.height,size,size);
+    ctx.drawImage(image,crop.sx,crop.sy,crop.sw,crop.sh,x,y,size,size);
+   }finally{
+    // Free each decoded source immediately, not after all nine photos/PNG export.
+    image.close();
+   }
   }
   const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
   if(generation!==collageGeneration)throw Error('COLLAGE_CANCELLED');
@@ -62,7 +67,7 @@ $('collageCreate').addEventListener('click',async()=>{
   if(generation===collageGeneration){revoke();info(error.message==='COLLAGE_EXPORT'?t.export:t.fail);}
  }finally{
   if(canvas)canvas.width=canvas.height=1;
-  for(const image of bitmaps)image.close();
+
   if(generation===collageGeneration){busy=false;setCollageControlsBusy(false);}
  }
 });
