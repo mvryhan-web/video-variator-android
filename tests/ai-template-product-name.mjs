@@ -45,4 +45,11 @@ test('long plain prompts stay disabled instead of losing suffix in Studio',()=>{
  assert.equal(templateSupport(personalized).supported,true);
  assert.equal(prepareTemplatePrompt(personalized,'A').length,1977);
  assert.throws(()=>prepareTemplatePrompt(personalized,'A'.repeat(70)),/too long/);
+ const impossible={generationType:'product_video',requiredInputTypes:['product_name'],promptTemplate:'Z'.repeat(2001)+'{{product_name}}'};
+ assert.equal(templateSupport(impossible).supported,false,'a published template must not offer a button that always fails');
+ assert.match(templateSupport(impossible).reason,/even with a short product name/);
+ assert.throws(()=>prepareTemplatePrompt(impossible,'X'),/not ready for Studio/);
+ const justFits={...impossible,promptTemplate:'Z'.repeat(1999)+'{{product_name}}'};
+ assert.equal(templateSupport(justFits).supported,true);
+ assert.equal(prepareTemplatePrompt(justFits,'X').length,2000);
 });
