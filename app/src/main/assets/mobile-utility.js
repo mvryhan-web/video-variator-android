@@ -203,9 +203,13 @@ async function perform(){
 
 async function convertPhoto(){
  const f=files()[0],c=await openImage(f),type=$('utilityFormat').value;
- const b=await blobFrom(c,type,.92),ext=type==='image/png'?'png':type==='image/webp'?'webp':'jpg';
- await result(new File([b],base(f)+'-converted.'+ext,{type}));
- c.width=c.height=1;
+ try{
+  const b=await blobFrom(c,type,.92),ext=type==='image/png'?'png':type==='image/webp'?'webp':'jpg';
+  await result(new File([b],base(f)+'-converted.'+ext,{type}));
+ }finally{
+  // The selected image may contain private pixels; free even when encoding fails.
+  c.width=c.height=1;
+ }
 }
 async function compressPhoto(){
  const f=files()[0];
@@ -213,32 +217,41 @@ async function compressPhoto(){
  const quality=Number($('compressQuality').value)/100;
  if(!Number.isFinite(quality)||quality<.2||quality>.95)throw Error('Invalid quality');
  const canvas=await openImage(f);
+ let opaque=null;
  try{
   // JPEG has no alpha; paint onto white to avoid accidental black transparent regions.
-  const opaque=document.createElement('canvas');opaque.width=canvas.width;opaque.height=canvas.height;
+  opaque=document.createElement('canvas');opaque.width=canvas.width;opaque.height=canvas.height;
   const ctx=opaque.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,opaque.width,opaque.height);ctx.drawImage(canvas,0,0);
   const blob=await blobFrom(opaque,'image/jpeg',quality);
-  opaque.width=opaque.height=1;
   const labelSize=n=>(n/1048576).toFixed(2)+' MB';
   await result(new File([blob],base(f)+'-compressed.jpg',{type:'image/jpeg'}));
   const report=document.createElement('p');
   report.textContent=label('Original: ','Исходный размер: ')+labelSize(f.size)+label(' · Result: ',' · Результат: ')+labelSize(blob.size)+
    (blob.size>=f.size?label(' · Result is not smaller.',' · Файл не стал меньше.'):'');
   $('utilityResults').lastElementChild?.append(report);
- }finally{canvas.width=canvas.height=1;}
+ }finally{
+  if(opaque)opaque.width=opaque.height=1;
+  canvas.width=canvas.height=1;
+ }
 }
 async function resizePhoto(){
  const f=files()[0],im=await openImage(f);
- const width=Math.round(settingsNum('utilityWidth')),height=Math.round(settingsNum('utilityHeight'));
- if(width<1||height<1||width*height>40000000)throw Error(label('Dimensions must be within 40 megapixels.','Максимальный размер 40 мегапикселей.'));
- const c=document.createElement('canvas');c.width=width;c.height=height;const x=c.getContext('2d');
- const crop=$('resizeMode').value==='cover',scale=crop?Math.max(width/im.width,height/im.height):Math.min(width/im.width,height/im.height);
- const dw=im.width*scale,dh=im.height*scale;
- x.fillStyle='#fff';x.fillRect(0,0,width,height);x.drawImage(im,(width-dw)/2,(height-dh)/2,dw,dh);
- const type=$('utilityFormat').value,blob=await blobFrom(c,type,.92);
- const ext=type==='image/png'?'png':type==='image/webp'?'webp':'jpg';
- await result(new File([blob],base(f)+'-'+width+'x'+height+'.'+ext,{type}));
- im.width=im.height=c.width=c.height=1;
+ let c=null;
+ try{
+  const width=Math.round(settingsNum('utilityWidth')),height=Math.round(settingsNum('utilityHeight'));
+  if(width<1||height<1||width*height>40000000)throw Error(label('Dimensions must be within 40 megapixels.','Максимальный размер 40 мегапикселей.'));
+  c=document.createElement('canvas');c.width=width;c.height=height;const x=c.getContext('2d');
+  const crop=$('resizeMode').value==='cover',scale=crop?Math.max(width/im.width,height/im.height):Math.min(width/im.width,height/im.height);
+  const dw=im.width*scale,dh=im.height*scale;
+  x.fillStyle='#fff';x.fillRect(0,0,width,height);x.drawImage(im,(width-dw)/2,(height-dh)/2,dw,dh);
+  const type=$('utilityFormat').value,blob=await blobFrom(c,type,.92);
+  const ext=type==='image/png'?'png':type==='image/webp'?'webp':'jpg';
+  await result(new File([blob],base(f)+'-'+width+'x'+height+'.'+ext,{type}));
+ }finally{
+  // Both source and output canvases can contain user photos: purge on all exits.
+  im.width=im.height=1;
+  if(c)c.width=c.height=1;
+ }
 }
 async function makeQR(){
  const text=$('utilityQr').value.trim();if(!text)throw Error(label('Enter text or a URL first.','Введите ссылку или текст.'));
