@@ -131,3 +131,55 @@ test('BASE #5: lost Video POST response keeps the identical requestId across rel
  const after=await page.evaluate(()=>Object.keys(sessionStorage).filter(k=>k.startsWith('deepsyq_video_pending_request_v1_')));
  expect(after).toHaveLength(0); // Existing server job ID was received; no orphan client lock.
 });
+
+
+test('BASE #5: explicit 404 permits the same original Video requestId, never a fresh paid ID',async({page})=>{
+ await setup(page);
+ const posts=[];let lookups=0;
+ await page.route('**/api/studio/jobs/by-request/*',route=>{
+  lookups++;return route.fulfill({status:404,json:{error:'NOT_FOUND'}});
+ });
+ await page.route('**/api/studio/jobs',route=>{
+  if(route.request().method()!=='POST')return route.continue();
+  posts.push(route.request().postDataJSON());
+  if(posts.length===1)return route.abort('failed');
+  return route.fulfill({status:200,json:{id:'recovered-existing-video',kind:'video',reused:true}});
+ });
+ await page.route('**/api/studio/jobs/recovered-existing-video',route=>route.fulfill({json:{
+  id:'recovered-existing-video',kind:'video',status:'failed',error:'AI_GENERATION_FAILED'
+ }}));
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#prompt').fill('Unchanged video for safe retry');
+ await page.locator('#consent').check();
+ await page.locator('#generate').click();
+ await expect.poll(()=>posts.length).toBe(1);
+ await expect(page.locator('#generate')).toBeEnabled();
+ await page.locator('#generate').click();
+ await expect.poll(()=>posts.length).toBe(2);
+ await expect.poll(()=>lookups).toBe(1);
+ expect(posts[0].requestId).toBe(posts[1].requestId);
+ await expect.poll(async()=>page.locator('#status').textContent()).toContain('Generation could not finish');
+});
+
+test('BASE #5: failed original-job lookup blocks retry without spending a second provider request',async({page})=>{
+ await setup(page);
+ const posts=[];let lookups=0;
+ await page.route('**/api/studio/jobs/by-request/*',route=>{
+  lookups++;return route.fulfill({status:503,json:{error:'STUDIO_STORAGE_UNAVAILABLE'}});
+ });
+ await page.route('**/api/studio/jobs',route=>{
+  if(route.request().method()!=='POST')return route.continue();
+  posts.push(route.request().postDataJSON());
+  return route.abort('failed');
+ });
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#prompt').fill('Never duplicate an uncertain video');
+ await page.locator('#consent').check();
+ await page.locator('#generate').click();
+ await expect.poll(()=>posts.length).toBe(1);
+ await expect(page.locator('#generate')).toBeEnabled();
+ await page.locator('#generate').click();
+ await expect.poll(()=>lookups).toBe(1);
+ await expect(page.locator('#status')).toContainText('STUDIO_STORAGE_UNAVAILABLE');
+ expect(posts).toHaveLength(1);
+});
