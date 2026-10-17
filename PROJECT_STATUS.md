@@ -1,5 +1,10 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #5 Video History account-switch guard checkpoint (2026-10-17)
+
+**2026-10-17 B #5 account-switch History safety:** existing B PR #186 HEAD `1ff671de` (stacked after #174 `0a964a2`): authentic user snapshot blocks previous-account Video History Open and ignores delayed Check-status replies, no provider POST or old-user media GET; Playwright browser cases added, reload fixture corrected to retain changed account token. Source-exact isolated V8 account-changed Check-status 1/1, normal Check-status 1/1, blocked Video Open 1/1, syntax PASS; **not full GitHub CI**. Stacked B PR #203 HEAD `5923a543` preserves B Product Video logo-role only five files. Latest focused CI B186 #39029102340 and B203 #39029193718 QUEUED/PENDING, B174 #39024056480 QUEUED. Whole original BASE #5 BLOCKED_DEPENDENCY/CI_PENDING, LIVE_VERIFIED=false, no DONE or paid/provider/production test.
+
+
 ## Agent C — BASE #28 reviewed six-path reconciliation, still owner/CI blocked (2026-10-17)
 
 - Only **original BASE #28** active for Agent C, no other row reopened. Existing [DRAFT PR #207](https://github.com/mvryhan-web/video-variator-android/pull/207) existing branch `agent-c-base28-entitled-photo-batch-zip-20261017`, exact checkpoint HEAD `17d3e33fa5489a53fcd5fcb3ecbcb1a8985cac04`. Non-force two-parent merge from C commit `2d83af90203f9e40230a5dcfe72bf1a1465fa031` and then-current BASE `2796372a04954eac80be586c221c6e14a43909eb`: verified all three modified JS BASE blobs identical to original common ancestor, kept full BASE tree and only overlaid six existing C-owned paths. Immediately after integration GitHub compare ahead 39, behind 0, exactly six C files, mergeable true; still DRAFT, UNMERGED, not live. New BASE documentation commits may subsequently move BASE head.
