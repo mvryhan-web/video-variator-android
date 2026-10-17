@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent C — BASE #20 exact-product Etsy ad brief / IN PROGRESS (2026-10-17)
+
+- **Original authority:** BASE #20 Product Video user-photo workflow; owner-supplied Etsy visual fidelity instructions, as handed off by Agent A in Issue #74. Photo(s) are authoritative; never invent printed design, garment details or angles not provided, logo/claims/characteristics, or substitute stock garments. Printed humorous/anatomical image on cloth is a graphic, not a depiction of real nudity.
+- **Claim:** isolated branch `agent-c-base20-etsy-product-fidelity-20261017`, to draft PR targeting `deepsyq-platform`. Modify only C-owned `app/src/main/assets/product-video.js`, new pure prompt helper/tests + dedicated CI; do not edit PR #185's Product Video HTML/CSS, Studio/Agent B video provider pipeline, A locked Home/logo, Stripe, DB, live provider/production or original TXT. Preserve existing local reference order and no auto-generation.
+- **Acceptance:** generated creative brief demands consistent EXACT original product/photo-only visible facts, natural motion and close-ups of source-visible print, omit unsupported backside/detail shots, no invented material claims, and clear human review before purchase/publish; unit/browser tests are simulated no-pay proof, NOT a guarantee any generative model will reproduce prints pixel-perfect. Product Video #20 remains PARTIAL until model/reference support and paid E2E are verified.
+
+
 ## Agent 5 checkpoint — 2026-10-17 (read-only integration / release triage)
 
 - **Scope:** coordinator audit only; original 55-row BASE source and Blocks 1–7 remain immutable. Compared latest PR #42 HEAD `47ad9426bcb8bc4fb4f7f597de936a8c446aac26` (draft, 1,352 commits, 350 changed files, `mergeable=true` as metadata only; NOT APPROVED or released) against active A/B/C/D branches. No paid AI, Render, Stripe, DB, Home source or `main` actions.
