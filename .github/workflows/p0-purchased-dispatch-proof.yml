@@ -5,6 +5,8 @@ on:
     paths:
       - 'server/generation-purchased-proof.js'
       - 'server/generation-wallet.js'
+      - 'server/generation-readiness.js'
+      - 'tests/generation-readiness-unit.mjs'
       - 'server/ai-migrations.js'
       - 'server/migrations/20261017-purchased-dispatch-claim.sql'
       - 'tests/p0-purchased-dispatch-proof-*.mjs'
@@ -40,8 +42,10 @@ jobs:
         run: |
           node --check server/generation-purchased-proof.js
           node --check server/generation-wallet.js
+          node --check server/generation-readiness.js
+          node --check tests/generation-readiness-unit.mjs
           node --check server/ai-migrations.js
           node --check tests/p0-purchased-dispatch-proof-unit.mjs
           node --check tests/p0-purchased-dispatch-proof-postgres.mjs
       - name: Run pure wallet proof and disposable PostgreSQL single-use tests
-        run: node --test tests/p0-purchased-dispatch-proof-unit.mjs tests/p0-purchased-dispatch-proof-postgres.mjs tests/ai-migrations-unit.mjs
+        run: node --test tests/p0-purchased-dispatch-proof-unit.mjs tests/p0-purchased-dispatch-proof-postgres.mjs tests/ai-migrations-unit.mjs tests/generation-readiness-unit.mjs
