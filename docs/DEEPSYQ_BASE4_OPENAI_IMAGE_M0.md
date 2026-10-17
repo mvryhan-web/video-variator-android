@@ -43,3 +43,9 @@ This object is a sample of the **adapter input contract**, not a proposed live m
 ## Continued verification (2026-10-16)
 
 Provider API documentation reconfirmed allowed standard sizes for older GPT Image models and custom 16-pixel-multiple sizes for the newer flexible-size models. Adapter now rejects custom sizes for `gpt-image-1.5` even if a server config is mistaken, and rejects provider-reported size/quality mismatches before private storage. Test count **14**. Exact actual GitHub source + the actual authored test bodies evaluated in a contained V8 harness with emulated Node Buffer/FormData/Blob/assert: **14/14 PASS**; GitHub Node CI remains QUEUED and is not represented as passed. No live provider requests.
+
+## Source-matched PNG media-validation hardening (2026-10-17)
+
+The adapter no longer accepts a PNG solely because it starts with the 8-byte PNG signature. Its server-side response/reference validator now requires a standard IHDR chunk, a nonzero bounded width/height and a terminal IEND chunk. This reduces corrupted or spoofed MIME payloads being accepted into a private result. JPEG currently remains checked by signature/EOI only; full codec decoding/CRC/asset validation remains a further provider/storage acceptance requirement. The offline test fixture now uses an actual 1×1 PNG rather than a fake signature-only buffer; the new negative test covers forged signatures, missing IEND and zero dimensions. 
+
+**Evidence:** 15/15 actual authored unit test callbacks executed against actual GitHub source in an isolated V8 harness with emulated Node primitives, **PASS** (NOT real Node CI). Previous exact-head real GitHub Node run [39014059215](https://github.com/mvryhan-web/video-variator-android/actions/runs/39014059215) passed 14/14, before this change. New 15-test exact-head GitHub Node CI outcome still pending. No real provider calls, fees, keys or production activation. 
