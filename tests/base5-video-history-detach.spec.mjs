@@ -288,3 +288,31 @@ test('BASE #5: switching login without reload cannot open prior Video History ta
  expect(oldJobReads).toBe(0);
  expect(paid).toBe(0);
 });
+
+
+test('BASE #5: definite pre-dispatch Video rejection allows correcting prompt, no provider retry',async({page})=>{
+ await setup(page);
+ const posts=[];
+ await page.route('**/api/studio/jobs',route=>{
+  if(route.request().method()!=='POST')return route.continue();
+  posts.push(route.request().postDataJSON());
+  if(posts.length===1)return route.fulfill({status:400,json:{error:'INVALID_VIDEO_REFERENCES'}});
+  return route.fulfill({status:202,json:{id:'corrected-video-job',kind:'video',status:'processing'}});
+ });
+ await page.route('**/api/studio/jobs/corrected-video-job',route=>route.fulfill({json:{
+  id:'corrected-video-job',kind:'video',status:'failed',error:'AI_GENERATION_FAILED'
+ }}));
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#prompt').fill('Incorrect original reference settings');
+ await page.locator('#consent').check();
+ await page.locator('#generate').click();
+ await expect.poll(()=>posts.length).toBe(1);
+ await expect(page.locator('#generate')).toBeEnabled();
+ const afterValidation=await page.evaluate(()=>Object.keys(sessionStorage).filter(k=>k.startsWith('deepsyq_video_pending_request_v1_')));
+ expect(afterValidation).toHaveLength(0);
+ await page.locator('#prompt').fill('Corrected safe Video prompt');
+ await page.locator('#generate').click();
+ await expect.poll(()=>posts.length).toBe(2);
+ expect(posts[0].requestId).not.toBe(posts[1].requestId);
+ await expect.poll(async()=>page.locator('#status').textContent()).toContain('Generation could not finish');
+});
