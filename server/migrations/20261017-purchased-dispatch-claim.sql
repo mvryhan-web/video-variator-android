@@ -1,5 +1,17 @@
 -- Owner P0 #182: purchased-only dispatch claims. Additive, no provider calls.
 -- Applied only through the existing versioned AI migration runner.
+-- Stripe Checkout orders were previously created lazily by the AI-billing
+-- route. Ensure subscription-only customers can still run the purchased
+-- proof query without relying on a prior pack checkout ever occurring.
+CREATE TABLE IF NOT EXISTS vv_ai_order (
+ id TEXT PRIMARY KEY,
+ user_id TEXT NOT NULL,
+ sku TEXT NOT NULL,
+ snapshot JSONB NOT NULL,
+ session_id TEXT UNIQUE,
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS vv_ai_purchased_dispatch_claim (
  job_id TEXT PRIMARY KEY,
  user_id TEXT NOT NULL,
