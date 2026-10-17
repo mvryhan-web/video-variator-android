@@ -29,6 +29,19 @@ const fileTypes={
 const timeModes=['video-trim','audio-trim'];
 let active=false,abort=false,engine=null,redactRects=[],redactImage=null,redactBase=null,redactDragging=null;
 let redactSelectionEpoch=0,redactSource=null,redactLoading=false;
+// Do not restore a previous owner's sensitive pixels from browser BFCache.
+function purgeRedactionOnPagehide(){
+ if(tool!=='photo-redact')return;
+ ++redactSelectionEpoch;
+ abort=true;
+ redactRects=[];redactDragging=null;redactBase=null;redactSource=null;redactLoading=false;
+ if(redactImage){redactImage.width=redactImage.height=1;redactImage=null;}
+ const canvas=$('redactCanvas');canvas.width=canvas.height=1;
+ $('utilityFiles').value='';
+ $('utilityResults').replaceChildren();
+ $('utilityRun').disabled=true;
+}
+window.addEventListener('pagehide',purgeRedactionOnPagehide);
 // FileList getters are allowed to return distinct File wrappers on some engines.
 // The change event immediately clears redactSource; this identity comparison
 // uses stable metadata only within that selected epoch.
