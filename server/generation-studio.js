@@ -3,7 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {MODELS,MODEL_CATALOG,validateGeneration,generateGoogle,pollGoogle} from './generation-provider.js';
 import {generateBytePlus,pollBytePlus,bytePlusDownloadsConfigured} from './generation-byteplus.js';
 import {pricingCatalog,estimateGenerationPricing} from './generation-pricing.js';
-import {listModelControls,getModelControl,updateModelControlAudited,applyModelControl,updateProviderGroupControls} from './generation-model-control.js';
+import {listModelControls,getModelControl,updateModelControlAudited,applyModelControl,updateProviderGroupControls,publicModelCatalog} from './generation-model-control.js';
 import {enforceGenerationPolicy,generationPolicy} from './generation-policy.js';
 import {createObjectStorage} from './generation-storage.js';
 import {bytePlusPublicDurableStorageReady} from './generation-byteplus-storage-gate.js';
@@ -115,7 +115,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   }catch(_){}
   res.json({allowed:!!access.allowed,scope:access.scope||'public',plan:access.plan||req.user.plan||null,maxConcurrent:access.maxConcurrent??null,maxPerHour:access.maxPerHour??null,activeJobs,jobsThisHour,reason:access.reason||null,walletReady:walletEnabled(),pricingConfigured:pricingCatalog(env).configured});
  });
- app.get('/api/studio/config',async(_req,res)=>{const base=studioConfig(env);if(env.AI_PROVIDER_ADMIN_ENABLED!=='true'||!pool)return res.json(base);try{const controlled=await listModelControls(pool,base.catalog);const defaults=base.models.map(m=>{const best=controlled.filter(x=>x.kind===m.kind&&x.enabled).sort((a,b)=>(a.control?.priority??100)-(b.control?.priority??100))[0];return best?{kind:m.kind,id:best.id,label:best.label,ratios:best.ratios,references:best.references,enabled:true}: {...m,enabled:false};});res.json({...base,catalog:controlled,models:defaults});}catch(_){res.json(base);}});
+ app.get('/api/studio/config',async(_req,res)=>{const base=studioConfig(env);if(env.AI_PROVIDER_ADMIN_ENABLED!=='true'||!pool)return res.json(base);try{const controlled=await listModelControls(pool,base.catalog);const defaults=base.models.map(m=>{const best=controlled.filter(x=>x.kind===m.kind&&x.enabled).sort((a,b)=>(a.control?.priority??100)-(b.control?.priority??100))[0];return best?{kind:m.kind,id:best.id,label:best.label,ratios:best.ratios,references:best.references,enabled:true}: {...m,enabled:false};});res.json({...base,catalog:publicModelCatalog(controlled),models:defaults});}catch(_){res.json(base);}});
  const modelAdminEnabled=()=>env.AI_PROVIDER_ADMIN_ENABLED==='true'&&!!pool;
  app.get('/api/studio/admin/models',auth,owner,async(_req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const items=await listModelControls(pool,studioConfig(env).catalog);res.json({items});}catch(_){res.status(503).json({error:'MODEL_ADMIN_UNAVAILABLE'});}});
  app.patch('/api/studio/admin/providers/:provider',auth,owner,async(req,res)=>{
