@@ -241,3 +241,28 @@ test('BASE #5: Video last-job auto-resume is account-scoped after reload',async(
  await expect(page.locator('#resumeJob')).toBeHidden();
  expect(await page.evaluate(()=>sessionStorage.getItem('vu_generation_video_owner_scope'))).toBe(saved);
 });
+
+
+test('BASE #5: late Video History status response from an old account is ignored',async({page})=>{
+ await setup(page);
+ let release,checks=0,providerCalls=0;
+ await page.route('**/api/studio/jobs?filter=*',route=>route.fulfill({json:{items:[{
+  id:'same-old-video',kind:'video',status:'processing',error:null,
+  provider:'Google',prompt:'Private video from first user',createdAt:'2026-10-17T08:00:00Z'
+ }]}}));
+ await page.route('**/api/studio/jobs/same-old-video',async route=>{
+  checks++;
+  await new Promise(done=>{release=done});
+  return route.fulfill({json:{id:'same-old-video',kind:'video',status:'ready',mime:'video/mp4'}});
+ });
+ page.on('request',req=>{if(req.method()==='POST'&&req.url().includes('/api/studio/jobs'))providerCalls++});
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#showHistory').click();
+ await page.locator('.history-card .history-actions button').filter({hasText:'Check status'}).click();
+ await expect.poll(()=>checks).toBe(1);
+ await page.evaluate(()=>localStorage.setItem('vv_token','another-account'));
+ release();
+ await expect(page.locator('#status')).toContainText('Your signed-in account changed');
+ await expect(page.locator('#status')).not.toContainText('Video is ready');
+ expect(providerCalls).toBe(0);
+});
