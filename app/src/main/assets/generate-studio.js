@@ -676,10 +676,13 @@ function prepareHistoryItem(item,{settings=false}={}){
 }
 async function editHistoryImage(item){
  if(busy||item.kind!=='image'||item.status!=='ready')return;
+ const accountToken=historyBoundToken;
+ if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
  busy=true;availability();$('status').textContent=say('Preparing the saved image for editing…','Готовим сохранённое изображение для редактирования…');
  try{
   const response=await api('/api/studio/jobs/'+encodeURIComponent(item.id)+'/media');
   const savedImage=await response.blob();
+  if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
   await useResultAsImageReference(savedImage,{suggestedPrompt:item.prompt||''});
  }catch(e){
   $('status').textContent=['IMAGE_RESULT_REQUIRED','IMAGE_PREPARE_FAILED','IMAGE_REFERENCE_PREPARE_FAILED','IMAGE_REFERENCE_UNSUPPORTED'].includes(e.message)?
@@ -687,13 +690,27 @@ async function editHistoryImage(item){
  }finally{busy=false;availability();}
 }
 async function downloadHistoryItem(item){
- if(item.status!=='ready'||busy)return;busy=true;availability();
- try{const response=await api(`/api/studio/jobs/${encodeURIComponent(item.id)}/media`),b=await response.blob();const ext=b.type.startsWith('video/')?'mp4':b.type==='image/jpeg'?'jpg':b.type.startsWith('image/')?'png':b.type==='audio/wav'?'wav':'mp3';await saveLocal(new File([b],`Deepsyq-${item.id}.${ext}`,{type:b.type}));}
+ if(item.status!=='ready'||busy)return;
+ const accountToken=historyBoundToken;
+ if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
+ busy=true;availability();
+ try{
+  const response=await api(`/api/studio/jobs/${encodeURIComponent(item.id)}/media`);
+  const b=await response.blob();
+  // A same-tab logout/account switch does not emit a native storage event.
+  // Never save a previous user's private binary after a delayed response.
+  if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
+  const ext=b.type.startsWith('video/')?'mp4':b.type==='image/jpeg'?'jpg':b.type.startsWith('image/')?'png':b.type==='audio/wav'?'wav':'mp3';
+  await saveLocal(new File([b],`Deepsyq-${item.id}.${ext}`,{type:b.type}));
+ }
  catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}
 }
 async function deleteHistoryItem(item){
  if(busy||['queued','processing','finalizing'].includes(item.status))return;
+ const accountToken=historyBoundToken;
+ if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
  if(!confirm(say('Delete this saved result? Downloaded copies are not affected.','Удалить сохранённый результат? Скачанные копии останутся.')))return;
+ if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
  busy=true;availability();try{await api(`/api/studio/jobs/${encodeURIComponent(item.id)}`,{method:'DELETE'});if(job===item.id){++generation;clearResult();sessionStorage.removeItem('vu_generation_job');job=null;}$('status').textContent=say('Result deleted.','Результат удалён.');await loadHistory();}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}
 }
 // A single, authenticated status check for an existing Video job. Never creates or retries a paid task.
@@ -713,7 +730,9 @@ async function checkHistoryVideo(item){
  finally{busy=false;availability();}
 }
 async function openHistoryJob(id){
- if(busy)return;job=id;sessionStorage.setItem('vu_generation_job',id);if(sessionStorage.getItem('vu_generation_background_job')===id)sessionStorage.removeItem('vu_generation_background_job');busy=true;availability();$('status').textContent=say('Opening saved result…','Открываем сохранённый результат…');
+ if(busy)return;
+ if(!historySessionCurrent(historyBoundToken)){clearHistoryForAccountChange();return;}
+ job=id;sessionStorage.setItem('vu_generation_job',id);if(sessionStorage.getItem('vu_generation_background_job')===id)sessionStorage.removeItem('vu_generation_background_job');busy=true;availability();$('status').textContent=say('Opening saved result…','Открываем сохранённый результат…');
  const epoch=++generation;try{await watch(id,epoch);if(epoch===generation)setHistory(false);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
 }
 async function loadHistory(){
