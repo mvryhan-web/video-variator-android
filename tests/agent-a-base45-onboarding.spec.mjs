@@ -135,3 +135,47 @@ test('BASE 45: switching accounts while onboarding POST is pending cannot redire
  await expect(page).toHaveURL(/deepsyq.html/);
  expect(await page.evaluate(()=>localStorage.getItem('deepsyq_onboarding_pending'))).toBe('1');
 });
+
+
+for(const ownerCase of ['same owner','silently switched account']){
+ test('BASE 45: dismiss onboarding for '+ownerCase+' preserves only the correct pending marker',async({page})=>{
+  await setup(page,[{id:'image',target:'/generate-studio.html?studio=image'}]);
+  await page.goto('/deepsyq.html');
+  await expect(page.locator('#onboardingModal')).toBeVisible();
+  if(ownerCase==='silently switched account')
+   await page.evaluate(()=>localStorage.setItem('vv_token','second-account-B'));
+  await page.locator('#onboardingLater').click();
+  await expect(page.locator('#onboardingModal')).toBeHidden();
+  const marker=await page.evaluate(()=>localStorage.getItem('deepsyq_onboarding_pending'));
+  expect(marker).toBe(ownerCase==='same owner'?null:'1');
+ });
+}
+test('BASE 45: late failed onboarding POST cannot show old-user errors or consume new-user setup',async({page})=>{
+ await page.addInitScript(()=>{
+  localStorage.setItem('vv_token','new-user-test');
+  localStorage.setItem('deepsyq_onboarding_pending','1');
+ });
+ await page.route('**/api/config',r=>r.fulfill({json:{plans:{},googleClientId:'',
+  features:{onboarding:true,productVideo:false,aiApps:false,inspiration:false}}}));
+ await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Original user',isAdmin:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[]}}));
+ let seen,release,finished;
+ const started=new Promise(resolve=>seen=resolve),hold=new Promise(resolve=>release=resolve),done=new Promise(resolve=>finished=resolve);
+ await page.route('**/api/onboarding',async route=>{
+  if(route.request().method()==='GET')return route.fulfill({json:{completed:false,options:[
+   {id:'image',target:'/generate-studio.html?studio=image'}]}});
+  seen();await hold;
+  try{await route.fulfill({status:503,json:{error:'ONBOARDING_UNAVAILABLE'}});}catch(_){}
+  finished();
+ });
+ await page.goto('/deepsyq.html');
+ await expect(page.locator('#onboardingModal')).toBeVisible();
+ await page.locator('[data-onboarding-goal=image]').click({noWaitAfter:true});
+ await started;
+ await page.evaluate(()=>localStorage.setItem('vv_token','new-account-B'));
+ release();await done;
+ await expect(page.locator('#onboardingModal')).toBeHidden();
+ await expect(page.locator('#onboardingStatus')).not.toContainText('Could not save your choice');
+ expect(await page.evaluate(()=>localStorage.getItem('deepsyq_onboarding_pending'))).toBe('1');
+ expect(new URL(page.url()).pathname).toBe('/deepsyq.html');
+});
