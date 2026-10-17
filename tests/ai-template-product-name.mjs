@@ -27,3 +27,22 @@ test('product name is not HTML-interpreted and does not trigger any paid request
  assert.ok(prepared.includes('<My Brand> & Friends'));
  assert.ok(!prepared.includes('{{product_name}}'));
 });
+
+
+test('long plain prompts stay disabled instead of losing suffix in Studio',()=>{
+ const exactlyLimit='A'.repeat(1993)+'ENDMARK'; // 2,000 characters exactly
+ assert.equal(exactlyLimit.length,2000);
+ assert.equal(templateSupport({generationType:'image',promptTemplate:exactlyLimit}).supported,true);
+ assert.equal(prepareTemplatePrompt({generationType:'image',promptTemplate:exactlyLimit}),exactlyLimit);
+ const oversized=exactlyLimit+' USER-REQUIRED ENDING';
+ const blocked=templateSupport({generationType:'image',promptTemplate:oversized});
+ assert.equal(blocked.supported,false);
+ assert.match(blocked.reason,/2,000-character Studio limit/);
+ assert.throws(()=>prepareTemplatePrompt({generationType:'image',promptTemplate:oversized}),/not ready for Studio/);
+ // Personalized templates with a short replacement remain functional within the same limit.
+ const personalized={generationType:'product_video',requiredInputTypes:['product_name'],
+  promptTemplate:'X'.repeat(1975)+' {{product_name}}'};
+ assert.equal(templateSupport(personalized).supported,true);
+ assert.equal(prepareTemplatePrompt(personalized,'A').length,1977);
+ assert.throws(()=>prepareTemplatePrompt(personalized,'A'.repeat(70)),/too long/);
+});
