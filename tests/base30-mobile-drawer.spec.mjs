@@ -58,7 +58,18 @@ test('BASE #30: real mobile opener, scrollable owned drawer, Escape, outside tap
   await page.mouse.click(width-12,140);
   await expect(page.locator('body')).not.toHaveClass(/menu-open/);
   await expect(sidebar).toHaveJSProperty('inert',true);
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  // Preserve the real no-overflow assertion and report the actual offending
+  // nodes if Mobile Safari sees a wider document. Avoid hiding a real layout
+  // defect with overflow clipping before owning component is identified.
+  const overflow=await page.evaluate(()=>({
+   actual:document.documentElement.scrollWidth,
+   viewport:innerWidth,
+   suspects:[...document.querySelectorAll('body *')].filter(el=>{
+    const box=el.getBoundingClientRect(),css=getComputedStyle(el);
+    return box.width>0&&box.right>innerWidth+1&&css.display!=='none'&&css.visibility!=='hidden';
+   }).slice(0,12).map(el=>({tag:el.tagName,id:el.id,klass:String(el.className).slice(0,65),right:Math.round(el.getBoundingClientRect().right),width:Math.round(el.getBoundingClientRect().width)}))
+  }));
+  expect(overflow.actual,JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.viewport+1);
  }
  expect(paidCalls).toBe(0);
 });
