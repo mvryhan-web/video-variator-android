@@ -2,6 +2,11 @@
 
 ## OWNER OVERRIDE — ONE BASE ROW TO DONE (2026-10-17, higher priority than old task-hopping text)
 
+### Owner update — KEEP WORKING UNTIL WHOLE ITEM DONE OR TECHNICAL LIMIT
+
+**Read [`docs/DEEPSYQ_AGENT_SESSION_RESUME_COMMANDS.md`](docs/DEEPSYQ_AGENT_SESSION_RESUME_COMMANDS.md).** After a small successful step, error fix, CI check or pushed PR, **continue with the NEXT needed action on the SAME row immediately** while safe authorized work remains; do not voluntarily end the session, ask "OK GO", or switch scope merely because one subtask is complete. Work as long as the conversation/tool session permits. Upon hard conversation/tool limit, write a precise GitHub CHECKPOINT/HANDOFF and have the next chat recover the exact role, original row, branch, PR and next unfinished action, not restart from zero. A truly blocked external dependency is documented rather than spun on indefinitely; switching still requires documented Agent-5 approval. **ChatGPT does not automatically run in the background or control other chat tabs.** These rules govern *what to do whenever a session is active*, not a guarantee of perpetual execution. Coordinator 5 likewise continues useful unblocked integration/review work until real completion or session limit.
+
+
 **MANDATORY FOR A/B/C/D AND COORDINATOR 5.** Read and follow [`docs/DEEPSYQ_ONE_ITEM_TO_DONE_PROTOCOL.md`](docs/DEEPSYQ_ONE_ITEM_TO_DONE_PROTOCOL.md) **before further coding or selecting another BASE row**. The old phrase "finished a task, move to the next free point" means **completed entire numbered original BASE requirement** — never a helper, patch, test, checkpoint, PR or isolated subtask. One active BASE row per agent until the full original acceptance is satisfied and verifiably DONE. Preserve and finish existing PRs for that row instead of opening unrelated ones. For a genuine external/other-agent/CI blocker, finish available work, leave exact blocker + evidence and request Agent 5's explicit documented reassignment before changing rows; do not abandon silently. Do not ask for routine "OK GO"; do not bypass external paid-provider, Stripe, production, rights, owner design or deployment gates. Agent 5 must actively police scope jumps, dependency handoffs and truthful 55-row closure evidence, NOT create endless extra tests or coordination PRs.
 
 

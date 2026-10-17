@@ -2,6 +2,11 @@
 
 ## Mandatory owner rule — SAME ROW ON RESUME, NO SHORT-TASK HOPPING (2026-10-17)
 
+### Read the exact replacement-chat and repeat-command templates
+
+See [`DEEPSYQ_AGENT_SESSION_RESUME_COMMANDS.md`](DEEPSYQ_AGENT_SESSION_RESUME_COMMANDS.md) for **separate ready-to-paste startup messages for agent 5 and A/B/C/D** and the short repeat command to send when a chat voluntarily pauses. The messages supersede older generic messages where "finish a task" was ambiguous. At an impending system/context limit preserve `current BASE #N / current PR / last SHA / completed criteria / remaining acceptance / exact next action`. **Only a technical session limit, real blocker, necessary owner approval or genuine full DONE** justifies ending an active row's work; a test/commit/PR is NOT a stop point. Do not promise a next chat automatically opens or work continues between prompts.
+
+
 **Read [`docs/DEEPSYQ_ONE_ITEM_TO_DONE_PROTOCOL.md`](DEEPSYQ_ONE_ITEM_TO_DONE_PROTOCOL.md).** The replacement session resumes the **same original BASE #N and its existing PRs**. A CHECKPOINT, one finished code subtask, old green test run or new session does **not** free the claimed row. Continue fixing its remaining original acceptance criteria until whole-row DONE; do not spread work across multiple numbered BASE rows. For genuine external/CI/cross-lane blocking, finish all safe work, save exact unblocking condition and request a documented Agent-5 reassignment **before** another row; preserve the old claim/PR for resumption. No automatic assignment inferred from chat silence. The old "move to next item after finished task" command is overridden by the stricter meaning **finished original numbered requirement**.
 
 
