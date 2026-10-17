@@ -21,7 +21,7 @@ function capability(model){
   // transport and watermark controls are NOT connected for customers yet.
   supportsTextToVideo:model.kind==='video'&&(model.videoInputModes||['text','first_frame']).includes('text'),
   supportsImageToVideo:model.kind==='video'&&maxReferences>0&&
-   (model.videoInputModes||['text','first_frame']).some(x=>x!=='text'),
+   (model.videoInputModes||['text','first_frame']).some(x=>['first_frame','first_last','reference_image'].includes(x)),
   supportsVideoReferences:false,
   supportsAudioReferences:false,
   maxDurationSeconds:model.kind==='video'?
