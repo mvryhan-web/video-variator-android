@@ -761,3 +761,38 @@ test('BASE 24: delayed old-account video status check cannot update the new user
  expect(mediaReads).toBe(0);
  expect(paidPosts).toBe(0);
 });
+
+
+test('BASE 24: History Edit image may not append old-account reference after delayed local decode',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-edit-A'));
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/studio/jobs?filter=*',route=>route.fulfill({json:{items:[
+  {id:'old-account-photo',kind:'image',status:'ready',model:'fixture-image',
+   prompt:'SECRET OLD ACCOUNT IMAGE',createdAt:'2026-10-17T08:00:00Z'}
+ ]}}));
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.route('**/api/studio/jobs/old-account-photo/media',route=>route.fulfill({contentType:'image/png',body:png}));
+ let paidPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))paidPosts++;});
+ await page.goto('/generate-studio.html?studio=image&view=history');
+ await expect(page.locator('.history-card')).toContainText('SECRET OLD ACCOUNT IMAGE');
+ await page.evaluate(()=>{
+  const native=window.createImageBitmap.bind(window);
+  window.createImageBitmap=async(...args)=>{
+   window.__historyBitmapStarted=true;
+   await new Promise(resolve=>{window.__historyBitmapRelease=resolve;});
+   return native(...args);
+  };
+ });
+ await page.locator('.history-card').getByRole('button',{name:'Edit image'}).click();
+ await expect.poll(()=>page.evaluate(()=>!!window.__historyBitmapStarted)).toBe(true);
+ await page.evaluate(()=>{
+  localStorage.setItem('vv_token','history-edit-B');
+  document.querySelector('#prompt').value='CURRENT USER B DRAFT';
+  window.__historyBitmapRelease();
+ });
+ await expect(page.locator('#historyList')).not.toContainText('SECRET OLD ACCOUNT IMAGE');
+ await expect(page.locator('#prompt')).toHaveValue('CURRENT USER B DRAFT');
+ await expect(page.locator('#refPreview img')).toHaveCount(0);
+ expect(paidPosts).toBe(0);
+});
