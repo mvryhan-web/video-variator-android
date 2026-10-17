@@ -599,6 +599,33 @@ function observeHistoryThumbnail(item,preview,epoch){
 // Preview only on explicit user interaction. This is an authenticated read of the user's
 // existing result; no provider dispatch, regeneration, or new credit reservation.
 const HISTORY_PREVIEW_MAX_BYTES=128*1024*1024;
+// Limit actual received bytes as they arrive, even when the server omits or
+// misreports Content-Length. Do not allocate a giant private video Blob first.
+async function readHistoryPreviewBlob(response,stillOwned){
+ const declared=Number(response.headers.get('content-length')||0);
+ if(declared>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
+ if(!response.body?.getReader){
+  const fallback=await response.blob();
+  if(!stillOwned())throw Error('PREVIEW_ABORTED');
+  if(fallback.size>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
+  return fallback;
+ }
+ const reader=response.body.getReader(),chunks=[];
+ let bytes=0;
+ try{
+  while(true){
+   if(!stillOwned())throw Error('PREVIEW_ABORTED');
+   const part=await reader.read();
+   if(!stillOwned())throw Error('PREVIEW_ABORTED');
+   if(part.done)break;
+   bytes+=part.value.byteLength;
+   if(bytes>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
+   chunks.push(part.value);
+  }
+ }catch(e){try{await reader.cancel();}catch(_){}throw e;}
+ finally{reader.releaseLock();}
+ return new Blob(chunks,{type:response.headers.get('content-type')||''});
+}
 function clearHistoryMediaPreview(){
  ++historyMediaEpoch;
  if(historyMediaPlayer){
@@ -627,9 +654,8 @@ async function previewHistoryMedia(item,holder,button){
  holder.replaceChildren();
  try{
   const response=await api('/api/studio/jobs/'+encodeURIComponent(item.id)+'/media');
-  const reportedSize=Number(response.headers.get('content-length')||0);
-  if(reportedSize>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
-  const blob=await response.blob();
+  const blob=await readHistoryPreviewBlob(response,
+   ()=>epoch===historyMediaEpoch&&historyView&&historySessionCurrent(accountToken)&&button.isConnected);
   if(!historySessionCurrent(accountToken)){clearHistoryForAccountChange();return;}
   if(epoch!==historyMediaEpoch||!historyView||!button.isConnected)return;
   if(blob.size>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
