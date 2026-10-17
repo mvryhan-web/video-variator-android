@@ -73,6 +73,11 @@ test('BASE #5: video History uses original queued/running/succeeded/failed label
  }
  await expect(page.locator('.history-card').nth(2).locator('.history-status')).toHaveAttribute('title',/credits are being settled/);
  await expect(page.locator('.history-card').nth(6).locator('.history-status')).toHaveAttribute('title',/No new generation or automatic refund/);
+ const uncertain=page.locator('.history-card').nth(6);
+ await expect(uncertain.locator('.history-actions button').filter({hasText:'Reuse prompt'})).toBeDisabled();
+ await expect(uncertain.locator('.history-actions button').filter({hasText:'Regenerate'})).toBeDisabled();
+ await expect(uncertain.locator('.history-actions button').filter({hasText:'Regenerate'})).toHaveAttribute('title',/Do not submit or charge/);
+ await expect(uncertain.locator('.history-actions button').filter({hasText:'Check status'})).toBeEnabled();
  const running=page.locator('.history-card').nth(1);
  const remove=running.locator('.history-actions button').filter({hasText:'Delete'});
  await expect(remove).toBeDisabled();
