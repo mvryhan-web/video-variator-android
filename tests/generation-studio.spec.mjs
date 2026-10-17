@@ -725,6 +725,38 @@ for(const authChange of ['cross-tab logout','silent same-tab account switch','si
  });
 }
 
+for(const mediaOutcome of ['200','503']){
+ test('BASE 24: delayed inline History preview '+mediaOutcome+' clears old account after silent login change',async({page})=>{
+  await page.addInitScript(()=>localStorage.setItem('vv_token','preview-flight-A'));
+  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+  let startedResolve,release,paid=0;
+  const started=new Promise(resolve=>startedResolve=resolve),held=new Promise(resolve=>release=resolve);
+  page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')paid++;});
+  await page.route('**/api/studio/jobs?filter=*',r=>r.fulfill({json:{items:[
+   {id:'saved-video-old',kind:'video',status:'ready',prompt:'PRIVATE OLD USER A PREVIEW',
+    mime:'video/mp4',createdAt:'2026-10-17T08:00:00Z'}
+  ]}}));
+  await page.route('**/api/studio/jobs/saved-video-old/media',async r=>{
+   startedResolve();await held;
+   try{
+    if(mediaOutcome==='503')await r.fulfill({status:503,json:{error:'PRIVATE_OLD_USER_A_NETWORK_FAILURE'}});
+    else await r.fulfill({contentType:'video/mp4',body:Buffer.from('SYNTHETIC OLD USER VIDEO')});
+   }catch(_){}
+  });
+  await page.goto('/generate-studio.html?studio=video&view=history');
+  await expect(page.locator('.history-card')).toContainText('PRIVATE OLD USER A PREVIEW');
+  await page.getByRole('button',{name:'Preview media'}).click();
+  await started;
+  await page.evaluate(()=>localStorage.setItem('vv_token','preview-flight-B'));
+  release();
+  await expect(page.locator('.history-card')).toHaveCount(0);
+  await expect(page.locator('.history-inline-media video')).toHaveCount(0);
+  await expect(page.locator('#historyList')).toContainText('Account changed');
+  await expect(page.locator('#status')).not.toContainText('PRIVATE_OLD_USER_A_NETWORK_FAILURE');
+  expect(paid).toBe(0);
+ });
+}
+
 for(const interaction of ['play','keydown']){
  test('BASE 24: old-account inline saved video cannot be accessed through '+interaction+' without a click',async({page})=>{
   await page.addInitScript(()=>localStorage.setItem('vv_token','history-preview-owner-A'));
