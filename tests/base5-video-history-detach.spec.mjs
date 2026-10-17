@@ -99,7 +99,7 @@ test('BASE #5: lost Video POST response keeps the identical requestId across rel
   return route.fulfill({status:200,json:{id:'existing-video-id',status:'processing',reused:true}});
  });
  await page.route('**/api/studio/jobs/existing-video-id',route=>route.fulfill({json:{
-  id:'existing-video-id',kind:'video',status:'failed',error:'GENERATION_FAILED',retryAfterSeconds:0
+  id:'existing-video-id',kind:'video',status:'failed',error:'AI_GENERATION_FAILED',retryAfterSeconds:0
  }}));
  await page.goto('/generate-studio.html?studio=video');
  await page.locator('#prompt').fill('One exact video prompt');
@@ -121,7 +121,7 @@ test('BASE #5: lost Video POST response keeps the identical requestId across rel
  await page.locator('#consent').check();
  await page.locator('#generate').click();
  await expect.poll(()=>submissions.length).toBe(2);
- await expect.poll(async()=>page.locator('#status').textContent()).toContain('Generation failed');
+ await expect.poll(async()=>page.locator('#status').textContent()).toContain('Generation could not finish');
  expect(submissions[0].requestId).toBe(submissions[1].requestId);
  expect(submissions[0].prompt).toBe(submissions[1].prompt);
  const after=await page.evaluate(()=>Object.keys(sessionStorage).filter(k=>k.startsWith('deepsyq_video_pending_request_v1_')));
