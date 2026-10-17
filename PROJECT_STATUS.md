@@ -1,5 +1,11 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #5 lifecycle labels + provider-cancellation safety (2026-10-17)
+
+- **B #5 Video lifecycle/cancellation 2026-10-17**: original requested video statuses displayed without falsely changing DB: PR #186 HEAD `8d435a63` shows Queued/Running/Succeeded/Failed/(future) Cancelled, running Delete labelled NOT cancellation, Playwright 6-status no-spend test authored; PR #203 stacked HEAD `157befaf` retains History + Product Video logo safety. PR #174 HEAD `906b5946`: BytePlus cancellation inspection READ-ONLY, NO DELETE because provider queued GET→DELETE race could delete a completed video; exact-source mocked V8 7/7 PASS, 7 Node suites authored and CI QUEUED (#39021891046). Owner release gates pending: D #204/#198 funding, provider-side safe cancel/atomic local dispatch lock, real S3/worker/History, no paid testing.
+- Current PR186 exact HEAD GitHub workflows including focused #39021414946 QUEUED/PENDING, current PR203 focused #39021507551 QUEUED, PR174 focused #39021891046 QUEUED; **NO new-head PASS claimed**. Original BASE #5 remains **BLOCKED_DEPENDENCY / CI_PENDING**, LIVE_VERIFIED=false. BytePlus docs: https://ai.byteplus.com/ark/region:ap-southeast-1/docs/cancel-or-delete-video-generation-tasks-api ; D handoff Issue #75 comment #6232400071. No paid inference/API tests or main/Render production change.
+
+
 
 ## Agent A — SINGLE ACTIVE ROW BASE #24 History / CI_BLOCKED (2026-10-17)
 
