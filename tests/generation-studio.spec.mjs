@@ -654,7 +654,7 @@ for(const deleteStatus of [200,503]){
  });
 }
 
-for(const authChange of ['cross-tab logout','silent same-tab account switch']){
+for(const authChange of ['cross-tab logout','silent same-tab account switch','silent same-tab video interaction','silent same-tab History navigation']){
  test('BASE 24: opened saved History video is revoked on '+authChange,async({page})=>{
   await page.addInitScript(()=>localStorage.setItem('vv_token','opened-result-account-A'));
   await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
@@ -684,8 +684,10 @@ for(const authChange of ['cross-tab logout','silent same-tab account switch']){
    });
   }else{
    await page.evaluate(()=>localStorage.setItem('vv_token','opened-result-account-B'));
-   // The same-tab change has no storage event. The Download action must be intercepted.
-   await page.locator('#actions #download').click();
+   // Same-tab account changes emit no native storage event. Guard all entry points.
+   if(authChange==='silent same-tab video interaction')await page.locator('#media video').click({force:true});
+   else if(authChange==='silent same-tab History navigation')await page.locator('#showHistory').click();
+   else await page.locator('#actions #download').click();
   }
   await expect(page.locator('#media video')).toHaveCount(0);
   await expect(page.locator('#actions')).toBeHidden();
