@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## Agent B — BASE #41 capability fidelity handoff (2026-10-17)
+
+- Existing claimed Agent B BASE #41 branch `base41-model-capability-fidelity-20261016` recovered from `b905972a`, reconciled onto current BASE with **non-force two-parent commit** `8c76cee0df08209eae99344969de2fa9a840fd36`, no branch reset/force. [Draft PR #206](https://github.com/mvryhan-web/video-variator-android/pull/206) current HEAD `38bd46c31d1dff61cd9ff81d364e69ab1a7f4dbe` changes only `app/src/main/assets/generate-models.js`, dedicated 7-case test and dedicated GitHub Actions workflow. No other agent modules changed.
+- Truthful capabilities: explicit Text→Video, whitelisted usable Image→Video mode names, maximum currently declared duration, supported ratios/resolutions, disabled/unwired audio/video reference transport and watermark controls, never invent 4K video support. Offline copied source-equivalent Node 22 fixture **7/7 PASS**; exact-current-HEAD GitHub CI is **PENDING/NOT VERIFIED**, includes original `generation-model-capabilities-unit.mjs` regression suite. No provider calls.
+- BASE #41 stays **PARTIAL / CODE PREPARED** until CI and release gates. Product Photo fidelity prompt C #196, purchased-only gate D/B #182, real video provider/S3 external controls untouched; no main/Render migration/Stripe/paid provider work.
+
+
 ## Agent D — P0 #182 purchased credit wallet and launch gate HEAD (2026-10-17)
 
 - [PR #204](https://github.com/mvryhan-web/video-variator-android/pull/204) **DRAFT UNMERGED**, branch `p0-purchased-credit-dispatch-proof-20261017`, latest pushed code HEAD `7a3e09b46ed5388c566569b4f4aa054ce0afb0ae`. D-only atomic `GenerationWallet.claimPurchasedDispatch` verifies settled *live*, zero-refunded Stripe order + purchase, conservatively subtracts all held/captured jobs, requires exact processing job/user/model/provider/fingerprint and creates single-use unique PostgreSQL claim. New additive versioned migration `20261017-purchased-dispatch-claim.sql`; separate DB-only concurrent 4-claimer acceptance and pure unit tests. Synthetic source-exact **25,215/25,215 integer funding cases PASS, 12/12 malformed cases denied**, positive proof 5-step transaction mock PASS.
