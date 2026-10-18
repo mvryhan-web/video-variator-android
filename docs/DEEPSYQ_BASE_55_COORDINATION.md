@@ -1,5 +1,11 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## [AGENT C / 2026-10-18 22:36 Europe/Paris / §27/30 MOBILE SHARE-IMPORT TEST-ONLY CLAIM]
+
+- Previous C PR196/#20, PR209/#27, PR207/#28, PR144/#30, PR200/#38 ACTUALLY DEV MERGED, 5/5 or focused CI. Full original BASE remains PARTIAL pending actual owner-device/production. No repeat.
+- Coordinator #5 Issue233 6254842296 directs C share-import mobile/browser regression QA; latest DEV 9792a36b existing `tests/share-import.spec.mjs` 4/4 Chromium SUCCESS on web-ci #39162812502, but current general CI red for *UNRELATED Agent A-owned Firefox Home cross-account Canvas draft*, not share import. Current CSS `creator-pages.css` already final 48x48 hit-area rule. **CLAIM ONLY** (1) existing `tests/share-import.spec.mjs` to add 320px keyboard/touch-target clickable 48x48 browser acceptance, (2) NEW `.github/workflows/agent-c-share-import-mobile.yml` no-cost 5 project Playwright Chromium/Firefox/WebKit + two simulated mobile projects, same existing live source. Isolated new TEST-ONLY PR based on DEV; no open unmerged previous C original feature PR to reuse, and no duplicate system. No source runtime/CSS, A Home, B provider, D Stripe, Video Uniquifier history/user media or DB changes. Current-head native CI required before scoped Ready; original §27/#30 remain PARTIAL, real phones & D release external. [Issue74 claim](https://github.com/mvryhan-web/video-variator-android/issues/74#issuecomment-6254885951).
+
+
 ## COORDINATOR #5 — 18 Oct 2026 — VERIFIED WAVE 3 MERGE DELTA
 
 - Original BASE FULL DONE #47/#53 = 2/55 unchanged; source merges do not imply live DONE.
