@@ -6,6 +6,7 @@ test('all fourteen connected design pages share owner-approved palette',()=>{
  const pages=['ai-apps.html','ai-pricing.html','ai-privacy.html','audio-studio.html','avatar-studio.html','deepsyq-admin.html','deepsyq-vs-deepseek.html','deepsyq.html','free-tools.html','generate-studio.html','index.html','inspiration.html','mobile-utility.html','product-video.html'];
  for(const page of pages)assert.ok(read(page).includes('deepsyq-global-theme.css'),page);
  assert.ok(read('deepsyq.html').includes('hero-stage-cinematic'));
+ assert.ok(read('deepsyq.html').includes('<meta name="robots" content="index,follow">'));
  assert.ok(read('deepsyq.html').includes('home-feature-triptych'));
  assert.ok(read('deepsyq.html').includes('home-hero-recommended'));
  assert.ok(existsSync(new URL('deepsyq-logo.png',assets)));
