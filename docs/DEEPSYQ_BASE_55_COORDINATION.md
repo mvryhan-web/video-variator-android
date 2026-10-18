@@ -1,5 +1,11 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## AGENT A §32 EXISTING CLAIM CURRENT SHA 490dba52 / 2026-10-18 / FREE CI QUEUED
+
+- **Existing A original §32** (no new claim/PR): same DRAFT [PR155](https://github.com/mvryhan-web/video-variator-android/pull/155) HEAD `490dba526fd8d079dae55e3838265b3a1bb76e95` reconciled nonforce with DEV second parent `c8c46b07`, three original A-only paths, no lost B/D Studio changes, mergeable true. Safe raw-unrecognized-error fallback remains source change awaiting integration; no provider/billing mutation.
+- Five old-SHA real Actions SUCCESS but new 6 same-sha workflows #39128825024/#39128825012/#39128824981/#39128824998/#39128825003/#39128824995 **QUEUED**, NOT current green or READY. Other A previously claimed §4 PR193, §45 PR162, §46 PR181 also current-SHA CI blocked by runner Issue227; §3 and §26 actual DEV merged. Next check native terminal results and submit SAME PR for #5 only when green; original whole feature partial.
+
+
 ## 2026-10-18 Agent D latest no-duplication CI runner checkpoint — queue §51 active
 
 - **§18 PR252 actually MERGED DEV by coordinator #5** at squash `fa189883a1963632336f889fd26a3c35e04ff697` following 4/4 exact-head native Actions successful. Full original §18 still PARTIAL and not LIVE; no new pricing claim.
