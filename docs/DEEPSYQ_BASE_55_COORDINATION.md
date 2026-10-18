@@ -1,5 +1,18 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## COORDINATOR #5 / 2026-10-18 / VERIFIED LANE CLAIM RECONCILIATION AFTER PR50 W5.1
+
+This is a coordinator overlay; do NOT overwrite original 55 BASE TXT, reopen DONE code, or count merged DEV feature as complete LIVE. Source and all PR/SHA/CI at top of [PROJECT_STATUS.md](../PROJECT_STATUS.md).
+
+- **A owner Home + Image + SEO**: #3 Home six featured original identities / 13 total DEV source merged via PR259 but licensed real 16:9 films + owner staging unavailable. #4 Image adapter DEV merged, paid provider still gated. §24 History PR152 old shared Studio hold; §25/§31/§32 parked CI/owner staging. SEO Issue156 current 4-file PR267 editorial/visual-only (CI pending), avoid public noindex change before launch.
+- **B**: existing §5 Video PR174→186→203 with genuine current-head red CI; repair in same PRs, coordinate A History and D prepaid-only gate; §7 Music/Audio existing PR180, §8 fallback merged.
+- **C**: original §27 PR209 `7a0df61a`, §28 PR207 `cd9dfe11`, §38 PR200 `c02e812b` source MERGED DEV current exact-head native 1/1, 5/5, 8/8 success respectively; §30 previously DEV merged. Full original numbered rows PARTIAL. Next §21 AI Agents UX after Block2 plan handoff; §22 Inspiration reuse existing PR44, no rewrite. C local Audio Tools §28.
+- **D**: P0 purchased-only guard, §49 migrations, §51 pricing readiness code merged DEV; original payments/staging/owner approved economics still BLOCKED, no new D claim.
+- **Jules1 Block5 W5.1**: bot PR266 236-file DRAFT unsafe; two exact original W5.1 blobs integrated into original Block5 PR50, `4faee05f` native push workflow watcher+Postgres BOTH success. SAME PR50 then securely nonforce-reconciled onto current DEV as `1b2c4a97` with 42 new files + ONLY `server/server.js`, stale PROJECT_STATUS removed, no DEV merge yet; current-head CI queued. Watcher feature default OFF, migrations unexecuted, worker not launched. No new PR or Block5 DONE.
+- **Jules2 Block2**: bad 428-file PR260 quarantine; new coordinator source extraction PR268 native 1/1 CI green but superseded by independent stronger DEV merge `e6a3a0cb` (unverified tool IDs UNAVAILABLE + executionReady false + native ESM). PR268 CLOSED unmerged as duplicate. Block2 contract source only, not autonomous agent. Jules3 original Block1 source code DEV merged PR258, further tasks require bot claim verification.
+- **No owner spend/production/main/real Stripe/unsafe migration**. Exact next step PR50 current head CI then safe DEV review, not duplicate history/agents/SEO files.
+
+
 ## AGENT A SEO ISSUE156 / PR267 EXACT FOUR OWNED PATHS — 2026-10-18
 
 - Original A assigned editorial SEO #156 is not new BASE claim. Same existing [PR267](https://github.com/mvryhan-web/video-variator-android/pull/267) HEAD **`6c2c6c9442c23334a203f979b3e83e620bdfe0e7`**, DRAFT. Exact 4 A isolated paths: `deepsyq-vs-deepseek.html`, its own `deepsyq-seo.css` now violet instead of legacy mint (preclaimed), new `tests/deepsyq-seo-comparison-unit.mjs` with five no-fee checks, new `.github/workflows/agent-a-seo-comparison.yml`; no shared global Home/Studio/C/B/D route or production changes. Focused #39143319395 queued, platform #39143319399 pending current SHA. NOT READY; coordinator #5 DEV only after required green. Original §3 UI PR259 was already DEV merged (full 13 videos still externally blocked); §24 PR152 shared source blocked. Full SEO tech/indexing/unverified traffic not claimed or activated.
