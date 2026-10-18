@@ -375,3 +375,32 @@ test('BASE 3: approved Studio hero appears before the slow Inspiration mosaic re
   expect(paidPosts).toBe(0);
  }finally{releaseMosaic();}
 });
+
+
+test('BASE 3: owner violet-pink Home and Canvas CTAs stay consistent on desktop and phone',async({page})=>{
+ await mockSafeHome(page,[]);
+ let jobs=0;
+ page.on('request',request=>{
+  if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))jobs++;
+ });
+ await page.setViewportSize({width:1448,height:900});
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ for(const width of [1448,390]){
+  await page.setViewportSize({width,height:900});
+  const css=await page.evaluate(()=>{
+   const hero=getComputedStyle(document.querySelector('.hero-stage-copy .primary'));
+   const canvas=getComputedStyle(document.querySelector('#quickCreateSubmit'));
+   return {heroBackground:hero.backgroundImage,heroColor:hero.color,
+    canvasBackground:canvas.backgroundImage,canvasColor:canvas.color};
+  });
+  for(const image of [css.heroBackground,css.canvasBackground]){
+   expect(image).toContain('linear-gradient');
+   expect(image).not.toContain('rgb(210, 247, 174)'); // obsolete mint CTA
+  }
+  expect(css.heroColor).toBe('rgb(255, 255, 255)');
+  expect(css.canvasColor).toBe('rgb(255, 255, 255)');
+  await expect(page.locator('.hero-stage h1')).toHaveCount(0);
+  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+ }
+ expect(jobs).toBe(0);
+});
