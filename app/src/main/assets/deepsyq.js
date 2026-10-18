@@ -160,17 +160,63 @@ function syncMenu(){
  }
  closeModelFlyout();
 }
-function toggleSidebar(){
- if(mobileMenu.matches)document.body.classList.toggle('menu-open');
- else{collapsedSidebar=!collapsedSidebar;try{localStorage.setItem(SIDEBAR_STATE_KEY,collapsedSidebar?'1':'0');}catch(_){}}
+function closeMobileDrawer(restoreFocus=false){
+ if(!mobileMenu.matches||!document.body.classList.contains('menu-open'))return false;
+ // A hidden inert rail must never retain keyboard focus after dismissal.
+ const wasInside=$('sidebar').contains(document.activeElement);
+ document.body.classList.remove('menu-open');
  syncMenu();
+ if(restoreFocus||wasInside)$('menu').focus();
+ return true;
+}
+function drawerTabStops(){
+ return [...$('sidebar').querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+  .filter(el=>el.getClientRects().length>0&&!el.hidden&&getComputedStyle(el).visibility!=='hidden');
+}
+function toggleSidebar(event){
+ if(mobileMenu.matches){
+  // The header button is always visible; the rail button exists only inside
+  // the open drawer. Return keyboard focus to the visible header on close.
+  if(!closeMobileDrawer(event?.currentTarget===$('sidebarToggle')||document.activeElement===$('sidebarToggle'))){
+   document.body.classList.add('menu-open');
+   syncMenu();
+   // Place first keyboard focus inside the only exposed mobile navigation.
+   $('sidebarToggle').focus({preventScroll:true});
+  }
+ }else{
+  collapsedSidebar=!collapsedSidebar;
+  try{localStorage.setItem(SIDEBAR_STATE_KEY,collapsedSidebar?'1':'0');}catch(_){}
+  syncMenu();
+ }
 }
 mobileMenu.addEventListener('change',syncMenu);
 $('menu').onclick=toggleSidebar;
 $('sidebarToggle').onclick=toggleSidebar;
+document.addEventListener('keydown',event=>{
+ if(!mobileMenu.matches||!document.body.classList.contains('menu-open')||
+  !$('authModal').hidden||document.querySelector('dialog[open]'))return;
+ if(event.key==='Escape'){
+  event.preventDefault();
+  closeMobileDrawer(true);
+ }else if(event.key==='Tab'){
+  // Keep keyboard focus within the current mobile drawer until it closes.
+  const nodes=drawerTabStops(),first=nodes[0],last=nodes.at(-1);
+  if(!first)return;
+  if(event.shiftKey&&(document.activeElement===first||!$('sidebar').contains(document.activeElement))){
+   event.preventDefault();last.focus();
+  }else if(!event.shiftKey&&(document.activeElement===last||!$('sidebar').contains(document.activeElement))){
+   event.preventDefault();first.focus();
+  }
+ }
+});
+// An outside tap closes the open mobile drawer, without toggling it back open
+// when the tap was on the real header menu button.
+document.querySelector('.content').addEventListener('pointerdown',event=>{
+ if(!event.target.closest('#menu'))closeMobileDrawer();
+});
 document.querySelectorAll('#sidebar nav a').forEach(a=>a.addEventListener('click',()=>{
- if(mobileMenu.matches)document.body.classList.remove('menu-open');
- syncMenu();
+ if(mobileMenu.matches)closeMobileDrawer();
+ else syncMenu();
 }));
 
 // Model options are discovered from the existing Studio config. Prepared or disabled models
@@ -259,7 +305,7 @@ document.querySelectorAll('[data-social]').forEach(button=>button.addEventListen
  window.open(kind==='discord'?'https://discord.com/channels/@me':'https://www.instagram.com/','_blank','noopener,noreferrer');
 }));
 let authOpener;function openAuth(){if(window.AndroidBridge){location.assign('index.html#signin');return;}authOpener=document.activeElement;$('authModal').hidden=false;setTimeout(()=>$('emailAuthEmail')?.focus(),0);initGoogle();}function closeAuth(){$('authModal').hidden=true;authOpener?.focus();}
-$('accountButton').onclick=openAuth;document.querySelectorAll('[data-close-auth]').forEach(b=>b.onclick=closeAuth);
+$('accountButton').onclick=()=>{closeMobileDrawer(true);openAuth();};document.querySelectorAll('[data-close-auth]').forEach(b=>b.onclick=closeAuth);
 document.addEventListener('keydown',e=>{if($('authModal').hidden)return;if(e.key==='Escape')closeAuth();if(e.key==='Tab'){const items=[...$('authModal').querySelectorAll('button:not(:disabled),input:not(:disabled)')].filter(e=>e.getClientRects().length);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}});
 $('logout').onclick=()=>{localStorage.removeItem('vv_token');sessionStorage.removeItem('vu_generation_job');location.reload();};
 let config;let googleReady=false;
@@ -279,7 +325,12 @@ const homeLang=$('homeLanguage');const homeI18n={
 function applyHomeLanguage(code){const v=homeI18n[code]||homeI18n.en;const hero=document.querySelector('.hero-stage-copy h1');if(hero)hero.innerHTML=v.hero;for(const [id,key] of [['canvasFeatureTitle','canvas'],['agentFeatureTitle','agent'],['appsFeatureTitle','apps'],['inspirationPreviewTitle','inspiration']]){const el=$(id);if(el)el.textContent=v[key];}if(homeLang)homeLang.value=homeI18n[code]?code:'en';}
 if(homeLang){const saved=localStorage.getItem('deepsyq_home_language');applyHomeLanguage(saved||'en');homeLang.onchange=()=>{localStorage.setItem('deepsyq_home_language',homeLang.value);applyHomeLanguage(homeLang.value);};}
 const promo=$('promoDialog');$('topPromo')?.addEventListener('click',()=>promo?.showModal());$('promoShare')?.addEventListener('click',()=>{$('navShare')?.click();promo?.close();});$('topInvite')?.addEventListener('click',()=>$('navShare')?.click());
-$('topLogin')?.addEventListener('click',()=>{$('accountButton')?.click();});
+// Header sign-in must not depend on dispatching a click to the inert,
+// off-canvas mobile sidebar account button.
+$('topLogin')?.addEventListener('click',()=>{
+ if(localStorage.getItem('vv_token'))location.assign('index.html#profile');
+ else openAuth();
+});
 function markHomeLogin(){const b=$('topLogin');if(b)b.textContent=localStorage.getItem('vv_token')?'Account':'Log in';}
 markHomeLogin();
 let featuredInspirationKind='all';
