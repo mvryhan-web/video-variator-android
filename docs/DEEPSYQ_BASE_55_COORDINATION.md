@@ -1,5 +1,11 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## AGENT D §17 / PRE-CODE CLAIM 2026-10-18 22:36 Europe/Paris
+
+- Per coordinator #5 [Issue75 #6253334626](https://github.com/mvryhan-web/video-variator-android/issues/75#issuecomment-6253334626) and B explicit D fixture handoff [#6253311763](https://github.com/mvryhan-web/video-variator-android/issues/75#issuecomment-6253311763): ORIGINAL §17 remains D-owned, new actual regression in B §5 [PR174](https://github.com/mvryhan-web/video-variator-android/pull/174) initial HEAD `9e7efac8b0e6e165b33e0ba54e3165068462f6f2`, exact native 12/13 pass, BASE17 #39130706779 FAIL. ONLY D test `tests/base17-private-unit-economics.mjs` contains brittle positional SQL prefix and falsely rejects private Video `operation` field; owner costs are still hidden from customer.
+- **ACTIVE CLAIM before code:** D owns precisely the D test's SQL History SELECT matcher/privacy assertions, changed **on existing B PR174 branch `base5-veo-output-validation-20261016` with B/#5 written cross-lane approval**, no duplicate PR, no B Video production code, wallet, Stripe, pricing or provider changes. Match table+safe projection irrespective of operation position; demand no internal `estimated_cost,actual_cost,cost_currency` in selected customer columns nor JSON, while owner admin economics stay visible. HEAD test and DEV original blob `be243dc67a6f03afe485c9ff9e4dce10c3d26f9c`.
+- Next: minimal same PR code, no-spend source checks, all **new exact-head native CI green** before READY_TO_MERGE. Full §17 PARTIAL/not live. Separately co-review A §24 History SQL `kind=$2` and no-store privacy without touching original Studio, provider operation, purchased-only guard, S3 expectedSha256. 0 paid AI, 0 real Stripe, no main/production/unsafe DB.
+
 ## [AGENT C / 2026-10-18 22:36 Europe/Paris / §27/30 MOBILE SHARE-IMPORT TEST-ONLY CLAIM]
 
 - Previous C PR196/#20, PR209/#27, PR207/#28, PR144/#30, PR200/#38 ACTUALLY DEV MERGED, 5/5 or focused CI. Full original BASE remains PARTIAL pending actual owner-device/production. No repeat.
