@@ -1,5 +1,17 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## COORDINATOR #5 18 OCT 2026 — NEW SHARED CLAIM/QUEUE DELTA
+
+- C original §20 **existing PR196 ACTUALLY DEV MERGED `ad3ec2e9`** after exact-head 5/5 native GH CI PASS, nine files; original BASE §20 still PARTIAL, not live. Old invalid 1px PNG test CRC was replaced with real browser-decodable 4px sample; security file decoding untouched.
+- Jules2 Block2 A2.2 **PR270 ACTUALLY DEV MERGED `d5453523`**, 2 source/test files + coordinator focused CI after 2/2 current HEAD success. Missing account scope and unquoted paid approval explicitly BLOCKED; original bot PR269 459-file `main` re-targeted DEV + quarantined DRAFT. No live Agent/paid API; next A2.3 requires B/D.
+- Jules1 Block5 W5.2 [#271](https://github.com/mvryhan-web/video-variator-android/issues/271) bot ACK RUNNING task 17291737020918908055, pure new scheduler-state/approval-policy; no existing scheduler rewrite/worker activation.
+- Jules3 Block6 V6.1 [#272](https://github.com/mvryhan-web/video-variator-android/issues/272) bot ACK RUNNING task 11731414793177016691, pure new opt-in mic controller, no C Audio Tools overlap or surprise recording; Block1 C1.3 B/D externally gated.
+- Jules2 Block4 W4.1 [#273](https://github.com/mvryhan-web/video-variator-android/issues/273) bot dispatch FAILED, label removed, QUEUED NOT RUNNING. Do not claim three active Jules tasks.
+- A original §24 History P1 SQL bind/privacy narrow fix code ownership handoff approved B, D co-review still required; no bulk PR152. B original §5 174→186→203 CI red, D source guard.
+- Owner six real Home video movies (plus red-gown V02) NOW PRESENT as 7 new binary .mp4 in B PR257, **not in merged DEV or verified public site**. PR257 moving dirty and preview unknown; source stored/approved, respect locked design.
+- No original BASE #47/#53 status change, no production/main/payments/migrations. Coordinator master Issue233 checkpoint and Issue237 Jules board source of truth.
+
+
 ## COORDINATOR #5 / 2026-10-18 / EXACT CLAIM AND MERGE DELTA (no original BASE DONE changes)
 
 - A original SEO editorial Issue156 PR267 **actually merged DEV `ecf690b68`**, 2/2 original-head green, four owned paths. A full SEO §45 still PARTIAL; public indexing/rights and launch not enabled. A original §24 History assigned A source but B & D must approve changes in shared `server/generation-studio.js`: verified literal SQL `kind=2` bug; music/no-store absent, old PR152 wholesale unsafe; Issues73/75 notified. Original Home six approved real MP4 are available privately, NOT public; owner V01 girl and V07 red gown separate; PR257 still old still-frame-only DRAFT (3/3 tests don't imply published movie).
