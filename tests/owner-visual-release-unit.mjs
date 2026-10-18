@@ -33,3 +33,18 @@ test('legacy checkout and webhook remain in original server and Video Uniquifier
  assert.ok(read('index.html').includes('Video Uniquifier'));
  assert.ok(!s.includes('submitPurchasedProviderRequest'));
 });
+
+test('owner Home groups and every shared-sidebar button points to an existing route',()=>{
+ const js=read('deepsyq-site-shell.js');
+ for(const section of ['Home','Creation','Tools','Library','Community','More']) assert.ok(js.includes("section:'"+section+"'"),section);
+ const links=[...js.matchAll(/url:'([^']+)'/g)].map(v=>v[1]);
+ for(const dest of links){
+  const file=dest.split(/[?#]/)[0];
+  assert.ok(existsSync(new URL(file,assets)),dest+' missing');
+ }
+ for(const label of ['Agent','Favorites','Challenges','Affiliate']) {
+  assert.ok(js.includes("label:'"+label+"'"),label);
+  assert.ok(js.includes('pending:true'));
+ }
+ assert.ok(!js.includes('fetch('),'Shared sidebar cannot submit network requests');
+});
