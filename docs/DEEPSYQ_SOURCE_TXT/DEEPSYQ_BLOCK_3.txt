@@ -2,6 +2,8 @@ BLOCK 3 — INSPIRATION / CREATE YOURS
 ============================================================
 
 GOAL
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. КАНОН Block 3: единая таблица/каталог Inspiration И шаблонов как данные; без второго PR/бэкенда/таблицы. Примеры — только свои или доказанно бесплатно созданные (без риска списания), либо ЗАГЛУШКИ С ПОНЯТНОЙ ПОМЕТКОЙ. Платная AI-генерация примеров без отдельного разрешения владельца ЗАПРЕЩЕНА.
 Create a polished Inspiration experience similar in sophistication to modern AI creative platforms.
 
 UX reference:
@@ -50,6 +52,8 @@ AI Apps:
 - Inspiration connects to real AI Apps/workflows
 
 Data-driven:
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Единственная уже существующая data-driven таблица шаблонов; Studio в Block 4 только показывает и использует их.
 - templates/examples stored as data
 - not one hardcoded architecture per card
 - owner/admin can activate/deactivate/feature/reorder
