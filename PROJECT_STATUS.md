@@ -1,3 +1,12 @@
+## 2026-10-18 — Owner-approved neon Home carousel (Work integration)
+
+- Same PR #257 / existing branch; runtime `f55f12912a3fa99be9011ecad34ac4bbd2c2eb8c`.
+- Owner neon reference implemented: smaller curved 16:9 film, real angled neighboring videos, cyan/violet floor glow; removed marketing overlay, scene sidebar, thumbnails and visible Pause/Sound controls. Keyboard/reduced-motion pause remains accessible.
+- All six original supplied MP4s retain approved order and complete-film 1→2→3→4→5→6→1 autoplay. Red-gown remains separate V02. Caption is honest `CREATED IN Google Flow` (exact model not supplied).
+- GitHub Actions run 39157783772 SUCCESS: Node 6/6, four full genuine-MP4 browser projects (desktop/mobile Chromium/WebKit) first attempt, 32 fallback/navigation/reduced-motion regressions passed.
+- Existing free read-only preview LIVE at https://deepsyq-visual-preview-20261016.onrender.com/ on tested runtime f55f129; deploy `dep-dbahnoe1egvs73aor6e0` finished 19:21:08 UTC. Live browser confirms three muted real 1920×1080 videos playing, smaller central 16:9 curved panel and centered Google Flow credit.
+- No main/production/auth/Stripe/database/provider changes. This is scoped Home integration, not completion of all BASE work.
+
 ## [DEEPSYQ HANDOFF] Work integration — owner Flow carousel publication, 2026-10-18
 
 Existing PR #257 and existing free preview service srv-db91k1vf3r2c73fpj350 only. Owner confirmed these seven supplied MP4s were created in Google Flow and expressly authorized publication. Close-up woman remains first, followed by portal, underwater woman, neon motorcycle, sky whale, golden forest; red-gown film remains separate V02 and its genuine frame replaces the cancelled butterfly-image card. Older HeyGen Free restrictions are NOT removed. Main production, database/catalog, auth, Stripe, provider generation and Video Uniquifier engine unchanged.

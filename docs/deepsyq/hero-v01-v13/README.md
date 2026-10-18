@@ -1,3 +1,12 @@
+## 2026-10-18 — Owner-approved neon Home carousel (Work integration)
+
+- Same PR #257 / existing branch; runtime `f55f12912a3fa99be9011ecad34ac4bbd2c2eb8c`.
+- Owner neon reference implemented: smaller curved 16:9 film, real angled neighboring videos, cyan/violet floor glow; removed marketing overlay, scene sidebar, thumbnails and visible Pause/Sound controls. Keyboard/reduced-motion pause remains accessible.
+- All six original supplied MP4s retain approved order and complete-film 1→2→3→4→5→6→1 autoplay. Red-gown remains separate V02. Caption is honest `CREATED IN Google Flow` (exact model not supplied).
+- GitHub Actions run 39157783772 SUCCESS: Node 6/6, four full genuine-MP4 browser projects (desktop/mobile Chromium/WebKit) first attempt, 32 fallback/navigation/reduced-motion regressions passed.
+- Existing free read-only preview LIVE at https://deepsyq-visual-preview-20261016.onrender.com/ on tested runtime f55f129; deploy `dep-dbahnoe1egvs73aor6e0` finished 19:21:08 UTC. Live browser confirms three muted real 1920×1080 videos playing, smaller central 16:9 curved panel and centered Google Flow credit.
+- No main/production/auth/Stripe/database/provider changes. This is scoped Home integration, not completion of all BASE work.
+
 ## Owner neon carousel reference — 2026-10-18 20:46 Paris
 
 Owner's latest screenshots explicitly authorize smaller central16:9film, curved cyan outline, angled genuine previous/next clips at both sides and blue/violet ambient floor. Remove overlaid marketing copy, scene-name/counter side box, sound toggle and thumbnail strip. Preserve exact6MP4order and EOF recovery. User selected "Google Flow пока" in secure clarification: provider label "CREATED IN Google Flow" until exact model confirmed; never invent Veo version. Reuse defaultSettings.creationProvider/creationModel metadata; no schema or generation changes. Keep keyboard/swipe/arrows, offscreen focusable pause and reduced-motion manual Play. Scope only hero; existing QuickCreate below unchanged. Continue same PR257 and existing preview; no new infrastructure or main release. New visual/real-playback CI pending.
