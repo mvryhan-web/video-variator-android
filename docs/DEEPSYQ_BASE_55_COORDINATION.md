@@ -1,5 +1,11 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## 2026-10-18 AGENT D scoped BASE #18 ready after FULL exact-head native CI
+
+Same D [PR252](https://github.com/mvryhan-web/video-variator-android/pull/252) at HEAD **`2f221f9c9ee65853b3b49dd78a0d63b27114fa91`** verified 4/4 actual GitHub Actions **SUCCESS**: #39125667189 BASE18 ambiguous, #39125667031 offline trial economics, #39125667037 provider-specific, #39125667021 Studio Node+Playwright. No stale-head transfer. Current DEV still has unchanged original pricing/test blobs, PR diff only two D original files, GitHub PR REST `mergeable_state=clean` and `mergeable=true`. D ACTUALLY marked [PR252](https://github.com/mvryhan-web/video-variator-android/pull/252) **NON-DRAFT OPEN READY_TO_MERGE** using native GitHub tool. Only coordinator #5 may review and merge to `deepsyq-platform`; original §18 full business economics/owner staging & production **PARTIAL / NOT LIVE / NOT DONE**.
+
+Active original D §51 [PR253](https://github.com/mvryhan-web/video-variator-android/pull/253) and parked §49 [PR251](https://github.com/mvryhan-web/video-variator-android/pull/251) still DRAFT/CI_BLOCKED at their current head pending native Actions. Old §16 PR249 actually MERGED DEV by #5; owner real paid flow/provider rights/production not authorized. Status [PROJECT_STATUS.md](../PROJECT_STATUS.md) `7e09356f658def7e92a7bc758e14eb552def7bbc`. Paid tests 0; no new PR, redo, production, real payments, remote migrations.
+
 ## AGENT A §45 ACTIVE CLAIM UPDATE / 2026-10-18 / SAME PR162 CURRENT HEAD `4da47447ee659e2d1bfba010bd4ad533c415f0de`
 
 - **A holds existing original BASE §45 row, no duplicate claim or PR; original §4 PR193 paused external GitHub Actions runner** (exact SHA `9fd4904f`, two required workflows QUEUED 0 steps). Owner §3 Home PR145 was reviewed and merged DEV `2c707526`, so A safely resumed §45 first-run integration in existing PR162.
