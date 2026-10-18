@@ -1,5 +1,22 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## 2026-10-18 latest OWNER 7-agent queues / cross-lane reservation overlay
+
+Direct owner command, recorded in [PROJECT_STATUS.md](../PROJECT_STATUS.md) and [canonical 25 rules](DEEPSYQ_CANONICAL_OPERATING_RULES.md): all paid test limit **0**, certainly free mocks/Stripe test-mode/no-spend CI/lint/build permitted; `CI_BLOCKED` recognized. A code agent's acceptance stops at `READY_TO_MERGE` (open PR + required green no-spend CI); #5 integrates safely into DEV; D is ONLY production release owner with explicit owner permission; whole original item `DONE` only after `LIVE_VERIFIED`. **Do not convert older governance DONE #47/#53 to unproven LIVE.** Prior snapshots/protocol sentences below that demand coordinator preapproval for safe external-block queue switches are obsolete under rule #12.
+
+| Assigned executor | Future candidate BASE queue (not simultaneous claims) | New topic jurisdiction |
+|---|---|---|
+| A | #3, #4, #26, #45 | Home/Image/Canvas |
+| B | #41, #9, #12, #11 | Video/Providers/Storage; **Audio** |
+| C | #28, #23, #29, #27 | AI Apps/Tools/Navigation; **SEO** |
+| D | #43, #16, #49, #18, #51 | Stripe/Credits/DB/Pricing/Production release ONLY with owner approval |
+| Jules 1 | #22, #19, #20 | **Inspiration** + Product/AI Apps discovery, existing Block5 history preserved |
+| Jules 2 | #21, #24, #25 | **AI Agents + History/My Creations**, existing Block2 history preserved |
+| Jules 3 | #7, #8, #40 | Compare/Smart routing, existing Block1 history preserved |
+
+**Owner-lane collision overrides table suggestions below only as future allocation, NOT existing live PR claims.** Jules 1 #19/#20 previously C; Jules 2 #24/#25 previously A; Jules 3 #7/#8/#40 previously B. These are **CONDITIONAL RESERVED candidates** and require verified explicit prior-agent file-owner handoff, collision check and new claim BEFORE edits. Jules #234–236 previous QA tasks/#238–240 deferred Blocks remain preserved and may still be bot-active; do NOT dispatch parallel Jules jobs automatically or assert running. A/B/C/D similarly work one current item until READY_TO_MERGE or real documented BLOCKED; do not jump just because queue exists or PR merged into dev. No alteration to original 55 entries or historical claims was made by this overlay.
+
+
 ## 2026-10-18 Agent5 accepted 8 DEV integrations — not original full BASE DONE
 
 **Verified development branch:** eight actual reviewed PRs have merged into `deepsyq-platform`: B #9 [PR150](https://github.com/mvryhan-web/video-variator-android/pull/150); D #18 [PR232](https://github.com/mvryhan-web/video-variator-android/pull/232); D #43 [PR242](https://github.com/mvryhan-web/video-variator-android/pull/242); C #29 [PR226](https://github.com/mvryhan-web/video-variator-android/pull/226); C #23 [PR229](https://github.com/mvryhan-web/video-variator-android/pull/229); coordinator CI #227 [PR231](https://github.com/mvryhan-web/video-variator-android/pull/231); D #37 [PR179](https://github.com/mvryhan-web/video-variator-android/pull/179); and legacy+D purchase proof [PR244](https://github.com/mvryhan-web/video-variator-android/pull/244), merge SHA `72b5b4b29edd44e79a902b0187672e385af817b9`. Agent5 performed collision/source review and exact-head real CI inspection; full hashes/tests in [PROJECT_STATUS.md](../PROJECT_STATUS.md) and [Issue #233](https://github.com/mvryhan-web/video-variator-android/issues/233). **Old original PR199 and PR204 were closed *as superseded* after their exact 14 non-manifest source blobs were verified in dev; do not re-merge their SQL or wallet.** Combined nine-entry SQL manifest ordered and unchanged historical checksum.
