@@ -1,0 +1,28 @@
+name: BASE 12 Worker Cleanup Drain
+on:
+  pull_request:
+    paths:
+      - 'server/generation-worker.js'
+      - 'server/generation-worker-runtime.js'
+      - 'tests/generation-worker-runtime-unit.mjs'
+      - '.github/workflows/base12-worker-cleanup.yml'
+  push:
+    branches:
+      - base12-worker-cleanup-drain-20261016
+permissions:
+  contents: read
+jobs:
+  shutdown:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate worker scripts
+        run: |
+          node --check server/generation-worker.js
+          node --check server/generation-worker-runtime.js
+      - name: Test worker mode gates and bounded cleanup drain
+        run: node --test tests/generation-worker-runtime-unit.mjs
