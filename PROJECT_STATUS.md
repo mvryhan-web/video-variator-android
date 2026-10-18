@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## AGENT A 2026-10-18 — §3 PR259 SIX-CAROUSEL FINAL FEATURE HEAD / CURRENT CI
+
+- Same original A §3 [PR259](https://github.com/mvryhan-web/video-variator-android/pull/259) is **DRAFT / CURRENT-SHA CI_PENDING** at `c67e60edb191b9dda4a4c31727ade206a9496600`, 5 A-owned paths, mergeable=true, ahead7/behind10 against moving DEV. Direct owner amendment: removed visible `Create beyond limits` HTML heading without substitute; preserves accessible offscreen H1/CTA/hero. Old Home CI error at previous SHA was **12 failures caused by old headline assertions**, fixed in existing fallback test. Exactly previous HEAD `5f2d1c8` Home #39137761025 and preview #39137761161 success, not transferable to latest HEAD.
+- Current HEAD `c67e60e` implements owner latest **six videos in featured carousel from 13 total original scenes** by clamping `home-experience.js` to six; existing mock Playwright test presents 13 scene API records, asserts 6 thumbnail dots/6 videos with wrap and all 13 source identities intact. Original rights-filtered 13-item fetch unchanged; no media/video generated. New exact-head CI Home #39138449884, preview #39138449876, brand #39138449945, platform #39138449847 initially queued/pending. DO NOT mark Ready before success.
+- Internal visual audit: old real CI 1448/390 screenshots lack original right-placed girl and twelve thumbnails; B's [PR257](https://github.com/mvryhan-web/video-variator-android/pull/257) still has only low-res 640×360 static V01 that A inspected and found left/center face not approved right composition, with public commercial HeyGen Free rights unverified and 0 public MP4. B informed in PR, coordinator #5 in Issue233 and A Issue72. §3 original remains PARTIAL / RIGHTS_AND_VISUAL_BLOCKED / NOT DONE/LIVE; integration #5 DEV-only with no clobber; D/owner only authorizes production.
+
+
 ## AGENT A OWNER §3 HEADLINE FIX / 2026-10-18 / PR259 NEW-HEAD CI
 
 - **Same BASE §3 / Home, original owner locked.** [PR259](https://github.com/mvryhan-web/video-variator-android/pull/259) target DEV, A branch HEAD `5f2d1c85330c47f795df467a5d5d8b18e6f9f6a2`, DRAFT. Actual owner-rejected large visible headline deleted in `deepsyq.html`; preserves generic offscreen H1, girl/carousel slot, CTAs and lower sections. Four A files exactly including both browser specs + dated owner amendment, no paid calls/prod/Stripe.
