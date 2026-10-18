@@ -35,7 +35,7 @@ test('saved generation history renders and reopens a durable result',async({page
  await page.goto('/generate-studio.html?studio=image');await page.locator('#showHistory').click();
  await expect(page.locator('.history-card')).toHaveCount(1);await expect(page.locator('.history-card')).toContainText('fixture');await expect(page.locator('.history-card')).toContainText('Google');await expect(page.locator('.history-card')).toContainText('Saved product prompt');
  await page.getByRole('button',{name:'Reuse prompt'}).click();await expect(page.locator('#prompt')).toHaveValue('Saved product prompt');await page.locator('#showHistory').click();
- await page.getByRole('button',{name:'Open'}).click();await expect(page.locator('#media img')).toBeVisible();await expect(page.locator('#showCreate')).toHaveAttribute('aria-pressed','true');
+ await page.locator('.history-card').getByRole('button',{name:'Open',exact:true}).click();await expect(page.locator('#media img')).toBeVisible();await expect(page.locator('#showCreate')).toHaveAttribute('aria-pressed','true');
 });
 
 test('Studio honors server-selected preferred enabled model',async({page})=>{

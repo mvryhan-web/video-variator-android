@@ -3,7 +3,7 @@ import {test,expect} from '@playwright/test';
 test('BASE #20: Product Video header reuses the approved Deepsyq icon and guided workflow stays untouched',async({page})=>{
  let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});
  await page.goto('/product-video.html');
- const brand=page.getByRole('link',{name:'Deepsyq Home'});
+ const brand=page.getByRole('link',{name:'Deepsyq Home',exact:true});
  await expect(brand).toBeVisible();
  await expect(brand).toHaveAttribute('href','deepsyq.html');
  await expect(brand.locator('.brand-name')).toHaveText('Deepsyq');
