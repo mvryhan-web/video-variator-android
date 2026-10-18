@@ -1,3 +1,4 @@
+import {mockToolAccess} from './helpers/tool-access-fixture.mjs';
 import {test,expect} from '@playwright/test';
 import {execFileSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
@@ -34,12 +35,12 @@ test('local avatar has measurable portrait motion with steady speech and stops d
  expect(Buffer.compare(frame(.1),frame(.65))).not.toBe(0);expect(Buffer.compare(frame(1.4),frame(1.8))).toBe(0);
 });
 test('real local MP3 and video transcription without uploading media',async({page},info)=>{
- test.skip(info.project.name!=='chromium');test.setTimeout(300000);
+ test.skip(info.project.name!=='chromium');test.setTimeout(300000);await mockToolAccess(page);
  const wav=info.outputPath('speech.wav'),mp3=info.outputPath('speech.mp3'),video=info.outputPath('speech.mp4');
  execFileSync('espeak-ng',['-v','en-us','-s','140','-w',wav,'Hello, welcome to the video studio. This is a test of speech recognition.']);
  execFileSync('ffmpeg',['-y','-i',wav,'-c:a','libmp3lame',mp3],{stdio:'ignore'});
  execFileSync('ffmpeg',['-y','-f','lavfi','-i','color=blue:size=160x90:rate=15','-i',wav,'-shortest','-c:v','libx264','-c:a','aac',video],{stdio:'ignore'});
- const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
+ const posts=[];page.on('request',r=>{if(r.method()==='POST'&&!new URL(r.url()).pathname.startsWith('/api/tools/'))posts.push(r.url());});
  await page.goto('/audio-studio.html');await page.locator('#transcribeLanguage').selectOption('en');
  for(const [name,type,path] of [['speech.mp3','audio/mpeg',mp3],['speech.mp4','video/mp4',video]]){
   await page.locator('#transcribeFile').setInputFiles({name,mimeType:type,buffer:readFileSync(path)});await page.locator('#transcribeStart').click();await expect(page.locator('#transcript')).toHaveValue(/welcome|studio|recognition/i,{timeout:240000});
@@ -49,7 +50,7 @@ test('real local MP3 and video transcription without uploading media',async({pag
 });
 
 test('text narration uses explicit consent and exports a real MP3 with working download, share and delete',async({page},info)=>{
- test.skip(info.project.name!=='chromium');test.setTimeout(120000);
+ test.skip(info.project.name!=='chromium');test.setTimeout(120000);await mockToolAccess(page);
  const wav=info.outputPath('tts-fixture.wav');execFileSync('ffmpeg',['-y','-f','lavfi','-i','sine=frequency=400:sample_rate=24000:duration=1','-c:a','pcm_s16le',wav],{stdio:'ignore'});
  let submitted;
  await page.addInitScript(()=>{localStorage.setItem('vv_token','test-only-token');window.sharedFiles=[];Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true});Object.defineProperty(navigator,'share',{configurable:true,value:async x=>{window.sharedFiles.push(x.files[0].name);}});});
