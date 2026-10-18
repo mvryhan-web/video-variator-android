@@ -35,6 +35,9 @@ The target product structure includes, as appropriate: Ask Deepsyq, Compare AI, 
 
 # BLOCK 1 — Multi-AI Compare + Smart Model Routing
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Цены, кредиты и Trial относятся ТОЛЬКО к Block 7. Issue #182: каждый AI-вызов/синтез — только на подтверждённо КУПЛЕННЫЕ кредиты; никакого бесплатного AI или free allowances. Trial $0.99 пока отключён, срок/кредиты не утверждены.
+
+
 ## User experience
 
 On the main AI screen, place **Smart** and **Compare AI** as clear adjacent modes.
@@ -82,9 +85,15 @@ Track provider/model, tokens/usage, estimated/actual cost, credits consumed, sta
 
 Trial $0.99 may receive a limited sample. No unlimited multi-provider usage unless economics are proven.
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Эта прежняя строка сохранена как ИСТОРИЯ; она НЕ означает одобренный allowance или активацию Trial. Только Block 7 после решения владельца и подтверждения покупки.
+
+
 ---
 
 # BLOCK 2 — User Agent / “Do it for me”
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** ЭТАП 1 — готовые workflow-сценарии по BASE §21, явная цена/согласие, без автономного оркестратора. ЭТАП 2 — полнофункциональный оркестратор только ПОСЛЕ коммерческой цепочки BASE §51, подтверждённой LIVE_VERIFIED, и отдельной авторизации. Технические пункты ниже сохранены как будущее, не как обязательство стадии 1. Коммерция только Block 7; Issue #182.
+
 
 Create a primary user-facing navigation item:
 
@@ -122,9 +131,15 @@ Use existing auth, credits, provider router, jobs and Workspace. Do not build a 
 
 Trial $0.99 gets limited agent usage. Track real costs.
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Предыдущее обещание Trial Agent allowance — ИСТОРИЧЕСКОЕ; ни бесплатного AI, ни утверждённых Trial credits пока нет. Trial не включать; смотреть Block 7.
+
+
 ---
 
 # BLOCK 3 — Inspiration / Create Yours
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** ЕДИНСТВЕННЫЙ канон Inspiration + шаблоны: один уже существующий data-driven каталог/таблица шаблонов, без второй реализации или PR. Примеры — собственные, доказанно бесплатно сгенерированные без риска списаний или заглушки с явной пометкой; платную AI-генерацию примеров без согласия не запускать.
+
 
 Build a rich, original **Inspiration** experience using Deepsyq-owned or properly licensed examples.
 
@@ -159,6 +174,9 @@ Do not show fake integrations or examples implying a workflow works when it does
 ---
 
 # BLOCK 4 — Studio + My Workspace
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** ЕДИНСТВЕННЫЙ канон Workspace, History, My Creations — Block 4 на уже существующих таблицах generation jobs с проверкой владельца. Не создавать вторую таблицу проектов, History или второй PR. Studio только ПОКАЗЫВАЕТ шаблоны из единого Block 3, не хранит другой master-template каталог.
+
 
 Keep these as two related but distinct concepts.
 
@@ -197,6 +215,9 @@ Template card:
 
 Using a template must create/clone a user-owned project in My Workspace. Never edit the master template.
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Create/clone = пользовательское представление/связь поверх существующих jobs/Workspace, а НЕ новая база; оригинал шаблона хранит только Block 3.
+
+
 ## Agent Skills
 
 Initial workflows:
@@ -234,6 +255,9 @@ Reuse existing auth and database.
 ---
 
 # BLOCK 5 — Internal Product Watcher Agent
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** ЭТАП 1 — LITE: доступность сайта, ошибки Stripe, аномальные расходы и EMAIL владельцу при проблемах; owner-only monitoring, БЕЗ автоматических критических изменений. ЭТАП 2 — остальные новости/рекомендации/автономизация из сохранённого списка ниже только после LIVE_VERIFIED BASE §51 и отдельного допуска. Это устраняет противоречие с BASE §53.
+
 
 Create a separate owner/admin-only server-side background agent named **Product Watcher**.
 
@@ -308,6 +332,9 @@ Use persistent job/state storage so restarts do not silently lose work.
 ---
 
 # BLOCK 6 — Deepsyq Voice Agent
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Voice/озвучка/AI-запросы только для оплативших пользователей на купленные кредиты из Block 7; бесплатных Voice AI requests, free first-win и бесплатного AI allowance НЕТ. Локальный scan без платного cloud AI может быть Everyday Tool, но не бесплатным голосовым тарифом. Trial $0.99 пока не включён.
+
 
 Create one shared **Deepsyq Voice Agent** as a voice interface over the whole platform, not a separate AI product.
 
@@ -433,6 +460,9 @@ Track:
 
 Trial $0.99 may include a limited Voice allowance. Do not advertise unlimited voice unless economics support it.
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Исторические free/first-win voice exchanges и Trial allowance выше ОТМЕНЕНЫ. Точные Trial-кредиты, срок, renewal/refunds/anti-abuse — вопросы владельцу; без решения ни один Voice AI-call не разрешён.
+
+
 ## Owner mode + Product Watcher
 
 Keep Product Watcher technically separate with its own permissions, but allow the owner to talk to it through the Deepsyq Voice Agent in protected owner/admin mode.
@@ -471,6 +501,9 @@ Prepare, without forcing immediate implementation:
 ---
 
 # BLOCK 7 — Pricing, Credits, Stripe & Unit Economics
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Единственный коммерческий канон для BASE §§13–18/43–44, Blocks 1/2/6: НЕТ Free AI plan или стартовых бесплатных кредитов. AI вход — планируемый Trial $0.99, но НЕ активировать без срока/кредитов/продления/возвратов/защиты от повторов. Оплаченный, подтверждённый Stripe Trial = ПОКУПКА по Issue #182, не бесплатный допуск. Everyday Tools бесплатны КАЖДЫЙ ДЕНЬ при локальном выполнении/нулевом платном cloud AI; иначе нужна локальная замена или ЖЁСТКИЙ дневной per-user лимит с гарантией отсутствия списаний/перерасхода. Цены не менять.
+
 
 Extend the existing billing foundation. Do **not** create a second Stripe integration, second customer system, or duplicate ledger.
 
@@ -555,6 +588,9 @@ No false profitability estimates.
 ---
 
 # BLOCK 8 — Virtual Pet Companion / «Волшебный нюх» (Magic Nose)
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Зависимости БЕЗ дублирования: user-owned Workspace/History/My Creations = Block 4; Inspiration/шаблоны = Block 3; купленные кредиты/Trial = Block 7. В Block 8 не создавать второй кошелёк/БД/History/таблицу/PR и не запускать платный AI без решения владельца.
+
 
 **New owner-approved Block 8 (2026-10-16):** full source and exact requirements: [`DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_8.txt`](DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_8.txt). Tracking: [Issue #187](https://github.com/mvryhan-web/video-variator-android/issues/187); documentation-only source [PR #188](https://github.com/mvryhan-web/video-variator-android/pull/188).
 
