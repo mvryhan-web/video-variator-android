@@ -269,10 +269,12 @@ test('video History checks an existing task without resubmitting or downloading 
  await expect(page.getByRole('button',{name:'Check status'})).toBeVisible();
  await page.getByRole('button',{name:'Check status'}).click();
  await expect(page.locator('#status')).toContainText('still processing');
- await expect(page.locator('.history-status')).toHaveText('Processing');
+ await expect(page.locator('.history-status')).toHaveText('Running');
+ await expect(page.locator('.history-status')).toHaveAttribute('data-status','processing');
  await page.getByRole('button',{name:'Check status'}).click();
  await expect(page.locator('#status')).toContainText('Video is ready');
- await expect(page.locator('.history-status')).toHaveText('Ready');
+ await expect(page.locator('.history-status')).toHaveText('Succeeded');
+ await expect(page.locator('.history-status')).toHaveAttribute('data-status','ready');
  expect(statusChecks).toBe(2);
  expect(jobPosts).toBe(0);
  expect(mediaDownloads).toBe(0); // Only the explicit Open action may fetch video bytes.
