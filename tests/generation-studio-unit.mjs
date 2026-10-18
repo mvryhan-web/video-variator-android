@@ -45,17 +45,30 @@ test('model selection routes explicitly and unconnected models never fall back t
  assert.equal(studioConfig({...env,AI_STUDIO_ALLOWED_MODELS:'byteplus-seedance-2'}).catalog.find(m=>m.id==='byteplus-seedance-2').enabled,false);
 });
 import express from 'express';import {installGenerationStudio} from '../server/generation-studio.js';
-test('owner pilot cap persists across installation; deletion never restores attempts',async()=>{
- const jobs=[];const pool={async query(sql,args=[]){if(sql.startsWith('CREATE'))return {};if(sql.startsWith('SELECT id,kind,status'))return {rows:jobs.filter(j=>j.user_id===args[0]&&!j.deleted).map(j=>({...j,created_at:j.created_at||new Date()}))};if(sql.startsWith('SELECT *'))return {rows:jobs.filter(j=>j.id===args[0]&&j.user_id===args[1]&&!j.deleted)};if(sql.startsWith('UPDATE')&&sql.includes('deleted=true')){jobs.find(j=>j.id===args[0]).deleted=true;return {};}if(sql.startsWith("UPDATE vv_generation_jobs SET status='ready'")){const j=jobs.find(j=>j.id===args[0]);Object.assign(j,{status:'ready',operation:null,mime:args[1],media:args[2],result_text:args[3]});return {};}if(sql.startsWith('UPDATE')){const j=jobs.find(j=>j.id===args[0]);Object.assign(j,{status:args[1],operation:args[2],mime:args[3],media:args[4],result_text:args[5]});return {};}throw new Error(sql);},async connect(){return {query:async(sql,args=[])=>{if(sql.startsWith('SELECT count'))return {rows:[{n:jobs.length}]};if(sql.startsWith('INSERT'))jobs.push({id:args[0],user_id:args[1],kind:args[2],status:args[3],provider:args[4]||null,model:args[5]||null,prompt:args[6]||'',settings:args[7]?JSON.parse(args[7]):{},created_at:new Date(),started_at:new Date(),credits_reserved:0,credits_charged:0});return {};},release(){}};}};
- const env={AI_STUDIO_ENABLED:'true',AI_STUDIO_MAX_CALLS:'1',AI_STUDIO_ALLOWED_KINDS:'image',GEMINI_API_KEY:'test-secret',DATABASE_URL:'test',ADMIN_EMAIL:'owner@example.test'};
- const app=express();app.use(express.json());installGenerationStudio(app,{env,pool,auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:req.headers['x-test-email']||'owner@example.test'};next();},provider:async()=>({mime:'image/png',bytes:Buffer.from('fixture')})});
- const server=app.listen(0);await new Promise(r=>server.once('listening',r));const base=`http://127.0.0.1:${server.address().port}`;
- try{let r=await fetch(base+'/api/studio/jobs',{method:'POST',headers:{'Content-Type':'application/json','x-test-email':'other@example.test'},body:JSON.stringify({kind:'image',prompt:'Test',ratio:'1:1',consent:true})});assert.equal(r.status,403);assert.equal(jobs.length,0);
- r=await fetch(base+'/api/studio/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'image',prompt:'Test',ratio:'1:1',consent:true})});assert.equal(r.status,202);const job=await r.json();await new Promise(r=>setTimeout(r,10));
- r=await fetch(base+'/api/studio/jobs');assert.equal(r.status,200);let history=await r.json();assert.equal(history.items.length,1);assert.equal(history.items[0].id,job.id);assert.equal(history.items[0].kind,'image');assert.equal(history.items[0].status,'ready');assert.equal(history.items[0].provider,'Google');assert.equal(history.items[0].model,'gemini-3.1-flash-image');assert.equal('media' in history.items[0],false);
- r=await fetch(base+`/api/studio/jobs/${job.id}`,{method:'DELETE'});assert.equal(r.status,200);r=await fetch(base+'/api/studio/jobs');history=await r.json();assert.equal(history.items.length,0);
- r=await fetch(base+'/api/studio/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'image',prompt:'Test',ratio:'1:1',consent:true})});assert.equal(r.status,429);assert.equal(jobs.length,1);
- }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+test('owner pilot may read existing work but cannot enqueue a billable AI call without Stripe purchase',async()=>{
+ const jobs=[];let calls=0;
+ const pool={async query(sql){if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};
+  if(sql.startsWith('SELECT id,kind,status'))return {rows:jobs};
+  throw Error('unexpected DB access: '+sql.slice(0,75));
+ }};
+ const env={AI_STUDIO_ENABLED:'true',AI_STUDIO_MAX_CALLS:'1',AI_STUDIO_ALLOWED_KINDS:'image',
+  GEMINI_API_KEY:'fixture-only',DATABASE_URL:'fixture-only',ADMIN_EMAIL:'owner@example.test'};
+ const app=express();app.use(express.json());installGenerationStudio(app,{env,pool,
+  auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:req.headers['x-test-email']||'owner@example.test'};next()},
+  provider:async()=>{calls++;return {mime:'image/png',bytes:Buffer.from('fixture')} }
+ });
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));
+ const base='http://127.0.0.1:'+server.address().port;
+ try{
+  const payload=JSON.stringify({kind:'image',prompt:'Test',ratio:'1:1',consent:true});
+  let r=await fetch(base+'/api/studio/jobs',{method:'POST',headers:{'Content-Type':'application/json','x-test-email':'other@example.test'},body:payload});
+  assert.equal(r.status,403);
+  r=await fetch(base+'/api/studio/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:payload});
+  assert.equal(r.status,503);assert.equal((await r.json()).error,'AI_PURCHASED_DISPATCH_NOT_AUTHORIZED');
+  assert.equal(jobs.length,0);assert.equal(calls,0);
+  r=await fetch(base+'/api/studio/jobs');
+  assert.equal(r.status,200);assert.deepEqual((await r.json()).items,[]);
+ }finally{server.closeAllConnections();await new Promise(r=>server.close(r))}
 });
 
 test('owner metrics expose aggregate provider performance without secrets',async()=>{
@@ -101,66 +114,45 @@ test('recovery polls only an existing provider operation and never starts a repl
 });
 
 
-test('wallet-gated Studio reserves before provider use and captures only after durable output',async()=>{
- const jobs=[];const walletCalls=[];
- const wallet={
-  async reserve(v){walletCalls.push(['reserve',v]);return {available:93,reserved:7,debt:0};},
-  async settle(v){walletCalls.push(['settle',v]);return {available:93,reserved:0,debt:0,status:'captured'};}
- };
- const pool={
-  async query(sql,args=[]){
-   if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};
-   if(sql.startsWith('SELECT * FROM vv_generation_jobs'))return {rows:jobs.filter(j=>j.id===args[0]&&j.user_id===args[1]&&!j.deleted)};
-   if(sql.startsWith("UPDATE vv_generation_jobs SET status='processing',credits_reserved")){const j=jobs.find(j=>j.id===args[0]);j.status='processing';j.credits_reserved=args[1];return {rows:[]};}
-   if(sql.startsWith("UPDATE vv_generation_jobs SET status='finalizing'")){const j=jobs.find(j=>j.id===args[0]);Object.assign(j,{status:'finalizing',mime:args[1],media:args[2],result_text:args[3]});return {rows:[]};}
-   if(sql.startsWith("UPDATE vv_generation_jobs SET status='ready',credits_charged")){const j=jobs.find(j=>j.id===args[0]);j.status='ready';j.credits_charged=j.credits_reserved;return {rows:[]};}
-   if(sql.startsWith('SELECT id,kind,status'))return {rows:jobs};
-   throw new Error(sql);
-  },
-  async connect(){return {async query(sql,args=[]){
-   if(sql==='BEGIN'||sql==='COMMIT'||sql==='ROLLBACK'||sql.startsWith('SELECT pg_advisory_xact_lock'))return {rows:[]};
-   if(sql.startsWith('SELECT count'))return {rows:[{n:jobs.length}]};
-   if(sql.startsWith('INSERT INTO vv_generation_jobs')){jobs.push({id:args[0],user_id:args[1],kind:args[2],status:args[3],provider:args[4],model:args[5],prompt:args[6],settings:JSON.parse(args[9]),estimated_cost:args[10],created_at:new Date(),started_at:new Date(),credits_reserved:0,credits_charged:0,deleted:false});return {rows:[]};}
-   throw new Error(sql);
-  },release(){}};}
- };
- const env={AI_STUDIO_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',GEMINI_API_KEY:'fixture',DATABASE_URL:'fixture',ADMIN_EMAIL:'owner@example.test',AI_MODEL_PRICING_JSON:JSON.stringify([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:7,providerCostMicros:1200}])};
- let providerSawReservation=false;
- const app=express();app.use(express.json());installGenerationStudio(app,{env,pool,wallet,auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();},provider:async()=>{providerSawReservation=walletCalls.some(([name])=>name==='reserve');return {mime:'image/png',bytes:Buffer.from('fixture')};}});
- const server=app.listen(0);await new Promise(r=>server.once('listening',r));const base=`http://127.0.0.1:${server.address().port}`;
+test('owner mixed wallet balance cannot reserve or call a paid model without verified Stripe purchase',async()=>{
+ let calls=0,claims=0,reserves=0;
+ const env={AI_STUDIO_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',
+  AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_STUDIO_MAX_CALLS:'3',
+  AI_STUDIO_ALLOWED_KINDS:'image',GEMINI_API_KEY:'fixture-only',DATABASE_URL:'fixture',
+  ADMIN_EMAIL:'owner@example.test',AI_MODEL_PRICING_JSON:JSON.stringify([
+   {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:7,providerCostMicros:1200,currency:'usd'}])};
+ const wallet={async reserve(){reserves++},purchasedDispatchVerifier:()=>async()=>{claims++}};
+ const pool={async query(sql){if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};throw Error(sql)}};
+ const app=express();app.use(express.json());installGenerationStudio(app,{env,pool,wallet,
+  auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next()},
+  provider:async()=>{calls++;return {mime:'image/png',bytes:Buffer.from('fixture')}}});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));
  try{
-  const r=await fetch(base+'/api/studio/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'image',prompt:'Test',ratio:'1:1',consent:true})});assert.equal(r.status,202);const d=await r.json();assert.equal(d.creditsReserved,7);
-  await new Promise(r=>setTimeout(r,20));assert.equal(providerSawReservation,true);assert.deepEqual(walletCalls.map(x=>x[0]),['reserve','settle']);assert.equal(walletCalls[1][1].outcome,'success');assert.equal(jobs[0].status,'ready');assert.equal(jobs[0].credits_reserved,7);assert.equal(jobs[0].credits_charged,7);assert.equal(jobs[0].estimated_cost,0.0012);
- }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+  const res=await fetch('http://127.0.0.1:'+server.address().port+'/api/studio/jobs',
+   {method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({kind:'image',prompt:'Test',ratio:'1:1',consent:true})});
+  assert.equal(res.status,503);assert.equal((await res.json()).error,'AI_PURCHASED_DISPATCH_NOT_AUTHORIZED');
+  assert.equal(calls,0);assert.equal(reserves,0);assert.equal(claims,0);
+ }finally{server.closeAllConnections();await new Promise(r=>server.close(r))}
 });
 
-
-test('object-storage enabled Studio keeps generated bytes out of PostgreSQL',async()=>{
- const jobs=[],storageCalls=[];
- const storage={configured:true,async putGeneration(v){storageCalls.push(['put',v]);return {storage:'s3',key:'deepsyq/users/hash/'+v.jobId+'.png',mime:v.mime,size:v.bytes.length};},async get(){return Buffer.from('fixture');},async delete(){}};
- const pool={
-  async query(sql,args=[]){
-   if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};
-   if(sql.startsWith("UPDATE vv_generation_jobs SET status='ready'")){const j=jobs.find(x=>x.id===args[0]);Object.assign(j,{status:'ready',mime:args[1],media:args[2],result_text:args[3],output_assets:JSON.parse(args[4])});return {rows:[]};}
-   if(sql.startsWith('SELECT * FROM vv_generation_jobs'))return {rows:jobs.filter(j=>j.id===args[0]&&j.user_id===args[1]&&!j.deleted)};
-   throw new Error(sql);
-  },
-  async connect(){return {async query(sql,args=[]){
-   if(sql==='BEGIN'||sql==='COMMIT'||sql==='ROLLBACK'||sql.startsWith('SELECT pg_advisory_xact_lock'))return {rows:[]};
-   if(sql.startsWith('SELECT count'))return {rows:[{n:jobs.length}]};
-   if(sql.startsWith('INSERT INTO vv_generation_jobs')){jobs.push({id:args[0],user_id:args[1],kind:args[2],status:args[3],provider:args[4],model:args[5],prompt:args[6],settings:JSON.parse(args[7]),created_at:new Date(),deleted:false,credits_reserved:0,credits_charged:0});return {rows:[]};}
-   throw new Error(sql);
-  },release(){}};}
- };
- const env={AI_STUDIO_ENABLED:'true',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',GEMINI_API_KEY:'fixture',DATABASE_URL:'fixture',ADMIN_EMAIL:'owner@example.test'};
- const app=express();app.use(express.json());installGenerationStudio(app,{env,pool,storage,auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();},provider:async()=>({mime:'image/png',bytes:Buffer.from('fixture')})});
- const server=app.listen(0);await new Promise(r=>server.once('listening',r));const base=`http://127.0.0.1:${server.address().port}`;
+test('unpaid owner attempt cannot put generated content into private object storage',async()=>{
+ let calls=0,stores=0;
+ const storage={configured:true,async putGeneration(){stores++;throw Error('unsafe write')}};
+ const pool={async query(sql){if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};throw Error(sql)}};
+ const env={AI_STUDIO_ENABLED:'true',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',
+  GEMINI_API_KEY:'fixture-only',DATABASE_URL:'fixture',ADMIN_EMAIL:'owner@example.test'};
+ const app=express();app.use(express.json());installGenerationStudio(app,{pool,storage,env,
+  auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next()},
+  provider:async()=>{calls++;return {mime:'image/png',bytes:Buffer.from('fixture')}}});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));
  try{
-  const r=await fetch(base+'/api/studio/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'image',prompt:'Stored',ratio:'1:1',consent:true})});assert.equal(r.status,202);
-  await new Promise(r=>setTimeout(r,20));assert.equal(storageCalls.length,1);assert.equal(jobs[0].status,'ready');assert.equal(jobs[0].media,null);assert.equal(jobs[0].output_assets[0].storage,'s3');
- }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+  const res=await fetch('http://127.0.0.1:'+server.address().port+'/api/studio/jobs',
+   {method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({kind:'image',prompt:'Stored',ratio:'1:1',consent:true})});
+  assert.equal(res.status,503);assert.equal(calls,0);assert.equal(stores,0);
+ }finally{server.closeAllConnections();await new Promise(r=>server.close(r))}
 });
-
 
 test('owner read-only analytics omit auth and Stripe secrets',async()=>{
  const seen=[];
