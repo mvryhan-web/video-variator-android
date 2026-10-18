@@ -1,4 +1,5 @@
 import {pricingCatalog} from './generation-pricing.js';
+import {MODEL_CATALOG} from './generation-provider.js';
 import {billingCatalog,generationBillingRuntime,stripeWebhookConfigured} from './generation-billing.js';
 import {generationEntitlements} from './generation-entitlements.js';
 import {generationPolicy} from './generation-policy.js';
@@ -35,7 +36,15 @@ export function generationReadiness(env={}){
   // Make ready ONLY in the PR that genuinely enforces both gates before every provider dispatch.
   {id:'purchasedOnlyDispatch',label:'Purchased live-credit customer authorization enforced before provider dispatch',ready:false,required:true},
   {id:'imageVideo',label:'Image and Video generation switches',ready:featureSwitches.image&&featureSwitches.video,required:true},
-  {id:'imageVideoPricing',label:'Approved Image and Video prices and credit rates',ready:['image','video'].every(kind=>pricing.entries.some(p=>p.kind===kind)&&billing.rates.some(rate=>rate.kind===kind)),required:true}
+  // A syntactically valid rate for a fictional model/provider cannot price
+  // any real Studio call. Require an actual adapter-enabled catalog identity;
+  // provider keys, feature kill-switches and public entitlements have their own
+  // independent launch gates and are never bypassed by this coverage check.
+  {id:'imageVideoPricing',label:'Approved Image and Video prices and credit rates',ready:['image','video'].every(kind=>
+   billing.rates.some(rate=>rate.kind===kind)&&
+   pricing.entries.some(price=>MODEL_CATALOG.some(model=>
+    model.adapter===true&&model.kind===kind&&
+    model.id===price.model&&model.provider===price.provider))),required:true}
  ];
  const blockers=gates.filter(g=>g.required&&!g.ready).map(g=>g.id);
  return {

@@ -164,3 +164,39 @@ test('P0 #182: no env configuration can make paid AI launch ready before purchas
   assert.equal(report.launchReady,false);
  }
 });
+
+
+test('BASE #51: phantom model or wrong provider price must not count as launch price coverage',()=>{
+ const image={model:'gemini-3.1-flash-image',provider:'Google',kind:'image',
+  credits:10,providerCostMicros:1000,currency:'usd'};
+ const video={model:'veo-3.1-fast-generate-preview',provider:'Google',kind:'video',
+  credits:20,providerCostMicros:9000,currency:'usd'};
+ const rates=[{kind:'image',credits:10},{kind:'video',credits:20}];
+ const coverage=rows=>generationReadiness({
+  AI_MODEL_PRICING_JSON:JSON.stringify(rows),
+  AI_CREDIT_RATES_JSON:JSON.stringify(rates)
+ }).gates.find(g=>g.id==='imageVideoPricing').ready;
+ assert.equal(coverage([image,video]),true,'real adapter-backed Image and Video models remain covered');
+ for(const bad of [
+  [{...image,model:'nonexistent-image-model'},video],
+  [image,{...video,model:'nonexistent-video-model'}],
+  [{...image,provider:'BytePlus'},video],
+  [image,{...video,provider:'BytePlus'}],
+  [{...image,model:'google-tts-preview',kind:'image'},video],
+  [{...image,model:'nonexistent-image-model'},{...video,model:'nonexistent-video-model'}]
+ ]){
+  assert.equal(coverage(bad),false,'unroutable or wrong-provider price cannot authorize setup '+JSON.stringify(bad));
+ }
+ // An unrecognized extra price does not invalidate a separate genuinely
+ // supported and explicitly priced route; the live payment P0 still blocks launch.
+ assert.equal(coverage([image,video,{...video,model:'unrecognized-optional-video'}]),true);
+ const unsafe=generationReadiness({
+  AI_MODEL_PRICING_JSON:JSON.stringify([image,{...video,provider:'BytePlus'}]),
+  AI_CREDIT_RATES_JSON:JSON.stringify(rates),
+  AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true'
+ });
+ assert.equal(unsafe.launchReady,false);
+ assert.ok(unsafe.blockers.includes('imageVideoPricing'));
+ assert.ok(unsafe.blockers.includes('purchasedOnlyDispatch'),
+  'new guard must not relax mandatory customer-purchased proof');
+});
