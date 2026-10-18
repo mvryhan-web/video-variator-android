@@ -1,13 +1,15 @@
 import {test,expect} from '@playwright/test';
 
 test('BASE #35: AI Apps logout clears pending product prompts only, preserving unrelated drafts',async({page})=>{
- await page.goto('/deepsyq.html');
+ // Stay on AI Apps: Home can asynchronously invalidate this synthetic /api/me session.
+ await page.goto('/ai-apps.html');
  await page.evaluate(()=>{
   localStorage.setItem('vv_token','test-local-session-only');
   sessionStorage.setItem('deepsyq_template_start',JSON.stringify({promptTemplate:'Private product name Luna',generationType:'image'}));
   sessionStorage.setItem('unrelated-user-preference','preserve');
  });
- await page.goto('/ai-apps.html');
+ // Reload AI Apps so its module initializes against the already-seeded token.
+ await page.reload();
  const logout=page.locator('#appsLogout');
  await expect(logout).toBeVisible();
  await logout.click();
@@ -38,12 +40,13 @@ test('BASE #35: logout still removes the account token when tab storage cleanup 
    return previous.call(this,key);
   };
  });
- await page.goto('/deepsyq.html');
+ // Avoid an unrelated Home /api/me reply removing the synthetic token before AI Apps loads.
+ await page.goto('/ai-apps.html');
  await page.evaluate(()=>{
   localStorage.setItem('vv_token','test-local-session-only');
   sessionStorage.setItem('deepsyq_template_start','test-private-product');
  });
- await page.goto('/ai-apps.html');
+ await page.reload();
  await expect(page.locator('#appsLogout')).toBeVisible();
  await page.locator('#appsLogout').click();
  await expect(page).toHaveURL(/\/deepsyq\.html$/);
