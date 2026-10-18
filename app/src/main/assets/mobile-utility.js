@@ -31,7 +31,7 @@ const timeModes=['video-trim','audio-trim'];
 let active=false,abort=false,engine=null,redactRects=[],redactImage=null,redactBase=null,redactDragging=null;
 function init(){
  $('utilityTitle').textContent=mode.title;document.title=mode.title+' · Video Uniquifier';
- $('utilityDescription').textContent=mode.note;document.getElementById('utilityBack').textContent=label('← Free tools','← Бесплатные инструменты');
+ $('utilityDescription').textContent=mode.note;document.getElementById('utilityBack').textContent=label('← Everyday Tools','← Повседневные инструменты');
  $('utilityKicker').textContent=label('FREE • ON DEVICE','БЕСПЛАТНО • НА УСТРОЙСТВЕ');
  $('utilityFileLabel').textContent=label('Choose files','Выберите файлы');
  $('utilityRun').textContent=label('Create result','Создать результат');
