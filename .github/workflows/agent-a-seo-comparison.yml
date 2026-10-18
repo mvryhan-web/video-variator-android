@@ -4,6 +4,7 @@ on:
     branches: [deepsyq-platform]
     paths:
       - 'app/src/main/assets/deepsyq-vs-deepseek.html'
+      - 'app/src/main/assets/deepsyq-seo.css'
       - 'tests/deepsyq-seo-comparison-unit.mjs'
       - '.github/workflows/agent-a-seo-comparison.yml'
 permissions:
