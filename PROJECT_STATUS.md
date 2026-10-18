@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## 2026-10-18 / AGENT D — ACTIVE ORIGINAL BASE #16 / WALLET FINANCE REPLAY SAFETY
+
+- **CLAIM retained before code:** BASE #16 Stripe/AI credits remains D-owned `PARTIAL / BLOCKED_DEPENDENCY`, previous superseded #204/#199 integrated to DEV through #244; **NEW same-row feature branch** `agent-d-base16-released-capture-deny-20261018`. Claim board commit `57c7275491ff2ff3af04604a8d66272870bd4c9a`. Do not take or duplicate B provider/worker Studio.
+- **Observed exact missing safety case:** in `GenerationWallet.settle`, an already `released` reservation with `outcome:'success'` and **omitted** optional `actualCredits` currently returns success-shaped result instead of denying. Existing Studio `finish`/recovery marks job `ready` on any resolved success promise, risking an uncharged paid result. Fix to refuse released→success while preserving captured→success idempotency and release→confirmed_failure idempotency. Scoped code `server/generation-wallet.js` + existing disposable PostgreSQL regression `tests/generation-wallet-postgres.mjs`. No owner money/provider/production/migrations.
+- **NEXT:** write scoped fail-closed guard+PG regression on feature branch, run permitted exact-head CI; prepare PR for coordinator #5; D §16 NOT DONE. Whole purchased-only pre-provider guard still B+#5 Issue #182 UNWIRED and owner licensed costs/staging/live payments unauthorized.
+
+
 ## 2026-10-18 — СРОЧНОЕ УТОЧНЕНИЕ ВЛАДЕЛЬЦА: настоящие БЕСПЛАТНЫЕ AI-тесты разрешены
 
 **LATEST OWNER RULE #7 — supersedes any stale “mock-only / zero real AI calls” phrase in older snapshots below; all other source/claim/queue data preserved.** Paid tests = **0 (zero)** for A/B/C/D/Jules1–3/#5, live Stripe, owner expense, production, unsafe migrations always require owner's explicit permission. **REAL free AI tests ARE ALLOWED without permission** on a *demonstrably FREE tier, free credit allocation or free model*, as are certainly free unit/mock/Stripe TEST MODE/CI/build/lint; there must be **NO POSSIBLE monetary charge** even when the free balance runs out. Free trial credits are insufficient if later requests auto-bill.
