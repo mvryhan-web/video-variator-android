@@ -1,0 +1,30 @@
+name: P0 Purchased-Only Provider Boundary
+on:
+  pull_request:
+    paths:
+      - server/generation-studio.js
+      - server/generation-purchased-provider-boundary.js
+      - tests/generation-purchased-provider-boundary-unit.mjs
+      - .github/workflows/p0-purchased-provider-boundary.yml
+permissions:
+  contents: read
+concurrency:
+  group: p0-purchased-boundary-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  no-spend-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Fail-closed provider spy tests and syntax
+        run: |
+          node --check server/generation-studio.js
+          node --check server/generation-purchased-provider-boundary.js
+          node --check tests/generation-purchased-provider-boundary-unit.mjs
+          node --test tests/generation-purchased-provider-boundary-unit.mjs
