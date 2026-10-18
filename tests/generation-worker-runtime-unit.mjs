@@ -119,3 +119,15 @@ test('BASE #12: fatal worker errors are nonzero; ordinary shutdown is clean',()=
  assert.equal(workerExitCode('uncaughtException'),1);
  assert.equal(workerExitCode('unhandledRejection'),1);
 });
+
+test('BASE #12: a fatal event DURING graceful worker shutdown remains nonzero at process exit',()=>{
+ let code=workerExitCode('SIGTERM');
+ assert.equal(code,0);
+ // The first shutdown is awaiting an in-flight storage/DB drain when this
+ // second event arrives; it must update the eventual process exit status.
+ code=workerExitCode('unhandledRejection',code);
+ assert.equal(code,1);
+ assert.equal(workerExitCode('SIGINT',code),1);
+ assert.equal(workerExitCode('uncaughtException',0),1);
+ assert.equal(workerExitCode('SIGTERM',0),0);
+});
