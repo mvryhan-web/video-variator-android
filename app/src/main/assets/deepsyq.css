@@ -596,3 +596,12 @@ body.home-neon{background:#030b18;color:#eff6ff}
 @media(max-width:1100px){.home-neon .home-global-search{max-width:220px;flex-basis:220px;margin-left:12px}.home-neon .home-feature-spotlight>span{max-width:78%}}
 @media(max-width:760px){.home-neon .top-brand{display:flex}.home-neon .home-global-search{min-width:0;max-width:none;flex:1 1 95px;margin:0 4px;padding:3px 8px}.home-neon .home-global-search input{font-size:10px}.home-neon .home-global-search button{display:none}.home-neon .home-hero-recommended{top:3px;right:3%;padding:5px 9px;font-size:9px}.home-neon .home-feature-triptych{grid-template-columns:1fr;gap:8px}.home-neon .home-feature-spotlight{min-height:128px}.home-neon .home-feature-spotlight>span{max-width:65%;padding:12px}.home-neon .home-feature-spotlight strong{font-size:20px}}
 @media(prefers-reduced-motion:reduce){.home-neon .home-feature-spotlight{transition:none}}
+
+/* Narrow phones: wrap the search on its own row to avoid 320px document overflow. */
+@media(max-width:480px){
+ .home-neon .top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:7px 6px;max-width:100%;overflow:visible}
+ .home-neon .top-brand{max-width:calc(100% - 65px)}
+ .home-neon .top-actions{order:3;width:100%;max-width:100%;min-width:0;flex:0 1 100%;margin-left:0;justify-content:space-around;gap:4px}
+ .home-neon .home-global-search{order:4;display:flex;flex:1 1 100%;width:100%;min-width:0;max-width:100%;margin:0;padding:4px 10px}
+ .home-neon .home-global-search button{display:block}
+}
