@@ -326,7 +326,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
    // No provider has been invoked at this point. A wallet reserve can
    // succeed while writing its matching job credits fails. Return any
    // successfully held credits, never strand a charge for a failed start.
-   if(walletEnabled())await wallet.settle({userId:req.user.id,jobId:id,outcome:'confirmed_failure'}).catch(()=>{});
+   if(walletEnabled())try{await wallet.settle({userId:req.user.id,jobId:id,outcome:'confirmed_failure'});}catch(_){/* No provider was called; preserve auditable held state on refund DB failure. */}
    await pool.query("UPDATE vv_generation_jobs SET status='failed',error=$2,error_message=$2,failed_at=NOW() WHERE id=$1",[id,e.message==='INSUFFICIENT_AI_CREDITS'?'INSUFFICIENT_AI_CREDITS':'AI_WALLET_RESERVATION_FAILED']).catch(()=>{});
    return res.status(e.message==='INSUFFICIENT_AI_CREDITS'?402:503).json({error:e.message==='INSUFFICIENT_AI_CREDITS'?'INSUFFICIENT_AI_CREDITS':'AI_WALLET_UNAVAILABLE'});
   }
