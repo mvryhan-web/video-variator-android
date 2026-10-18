@@ -226,7 +226,9 @@ for(const entry of document.querySelectorAll('[data-model-menu]')){
  const kind=entry.dataset.modelMenu,btn=entry.querySelector('[data-open-models]');
  entry.addEventListener('mouseenter',()=>showModelFlyout(kind,entry));
  entry.addEventListener('mouseleave',scheduleModelClose);
- entry.addEventListener('focusin',()=>showModelFlyout(kind,entry));
+ // Mobile tap first focuses the model trigger; do not let focus open the
+ // overlay before click reaches the button. Keyboard Enter/Space still click it.
+ entry.addEventListener('focusin',()=>{if(!mobileMenu.matches)showModelFlyout(kind,entry);});
  entry.addEventListener('focusout',scheduleModelClose);
  btn.onclick=()=>{if(openModelsKind===kind&&!$('modelFlyout').hidden)closeModelFlyout();else showModelFlyout(kind,entry);};
 }
