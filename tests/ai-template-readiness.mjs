@@ -10,7 +10,7 @@ test('AI Apps readiness is truthful for an empty catalog and never invents conte
 test('owner metadata detects legacy unverified actives and unsupported Studio inputs',()=>{
  const records=[
   {title:'Unverified legacy',active:true,featured:true,generationType:'image',requiredInputTypes:['image'],rightsBasis:null,rightsNote:'',thumbnail:null},
-  {title:'Owner photo',active:true,generationType:'image',requiredInputTypes:['image'],rightsBasis:'owned',rightsNote:'Original asset evidence reference',thumbnail:'/assets/owner.webp'},
+  {title:'Owner photo',active:true,generationType:'image',requiredInputTypes:['image'],promptTemplate:'Create an original portrait from the uploaded reference',rightsBasis:'owned',rightsNote:'Original asset evidence reference',thumbnail:'/assets/owner.webp'},
   {title:'Product campaign',active:true,generationType:'product_video',requiredInputTypes:['logo','product_name'],rightsBasis:'licensed',rightsNote:'Licensed promo package',thumbnail:'/assets/product.webp'},
   {title:'Draft',active:false,generationType:'image',requiredInputTypes:[],rightsBasis:null,rightsNote:'',thumbnail:null},
   {title:'Future avatar',active:true,generationType:'avatar',rightsBasis:'owned',rightsNote:'Original owner avatar',thumbnail:null}
@@ -25,9 +25,13 @@ test('owner metadata detects legacy unverified actives and unsupported Studio in
  assert.ok(!r.blockers.some(x=>x.includes('Owner photo')));
 });
 test('rights metadata alone is never treated as proof of working provider integration',()=>{
- const r=summarizeAiTemplateReadiness([{title:'Approved prompt',active:true,generationType:'image',requiredInputTypes:[],rightsBasis:'owned',rightsNote:'Internal original copy record'}]);
+ const r=summarizeAiTemplateReadiness([{title:'Approved prompt',active:true,generationType:'image',requiredInputTypes:[],promptTemplate:'Make an original photographic product scene',rightsBasis:'owned',rightsNote:'Internal original copy record'}]);
  assert.equal(r.actionable,1);assert.equal(r.noThumbnail,1);
  assert.equal(r.publicEligible,1);
+ // An owner right alone must never mark a missing-prompt workflow usable.
+ const incomplete=summarizeAiTemplateReadiness([{title:'Owner metadata only',active:true,generationType:'image',requiredInputTypes:[],rightsBasis:'owned',rightsNote:'Original owner record'}]);
+ assert.equal(incomplete.publicEligible,1);assert.equal(incomplete.actionable,0);
+ assert.ok(incomplete.blockers.some(x=>x.includes('no prompt')));
 });
 
 test('owner readiness reflects actual product-name AI Apps action',()=>{
