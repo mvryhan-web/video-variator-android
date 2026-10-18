@@ -32,7 +32,10 @@ function simulate({receiptStatus='paid',user={id:'customer-1',email:'buyer@examp
     const j=jobs.find(x=>x.id===args[0]);j.status='ready';j.credits_charged=j.credits_reserved;return {rows:[]};
    }
    if(sql.startsWith("UPDATE vv_generation_jobs SET status='failed'")){
-    const j=jobs.find(x=>x.id===args[0]);j.status='failed';j.error=args[1];return {rows:[]};
+    const j=jobs.find(x=>x.id===args[0]);j.status='failed';
+    if(sql.includes('credits_reserved=CASE WHEN')){j.credits_reserved=args[1]?0:j.credits_reserved;j.error=args[2];}
+    else j.error=args[1];
+    return {rows:[]};
    }
    throw Error('Unexpected fake DB SQL: '+sql.slice(0,85));
   },
@@ -52,7 +55,7 @@ function simulate({receiptStatus='paid',user={id:'customer-1',email:'buyer@examp
  };
  const wallet={
   async reserve(value){walletEvents.push(['reserve',value]);return {available:93,reserved:7,debt:0}},
-  async settle(value){walletEvents.push(['settle',value]);return {status:value.outcome==='success'?'captured':'held'}},
+  async settle(value){walletEvents.push(['settle',value]);return {status:value.outcome==='success'?'captured':value.outcome==='confirmed_failure'?'released':'held'}},
   purchasedDispatchVerifier(){return async v=>{
    walletEvents.push(['purchasedClaim',v]);
    if(receiptStatus==='reject')throw Error('unpaid or refunded source');
@@ -96,7 +99,8 @@ test('HTTP bonus/welcome/unknown funding cannot trigger provider; hold for revie
   await withHttp(sim,async post=>{
    const res=await post();assert.equal(res.status,202);await settle();
    assert.equal(sim.providerCalls(),0);assert.equal(sim.jobs[0].status,'failed');
-   assert.equal(sim.walletEvents.at(-1)[1].outcome,'unknown');
+   assert.equal(sim.walletEvents.at(-1)[1].outcome,'confirmed_failure');
+   assert.equal(sim.jobs[0].credits_reserved,0,'refuse before provider, release ALL reserved credits');
   });
  }
 });
