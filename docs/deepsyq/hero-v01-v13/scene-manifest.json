@@ -1,0 +1,156 @@
+{
+  "project": "Deepsyq",
+  "date": "2026-10-18",
+  "goal": "13 owner-locked cinematic 16:9 real-motion videos V01-V13",
+  "sceneCount": 13,
+  "videoFilesPresent": 0,
+  "framesAreVideos": false,
+  "cleanFirstFrame": "app/src/main/assets/media/home/v01-owner-clean-first-frame.jpg",
+  "requiredDelivery": "13 real moving H.264 MP4 1920x1080 24fps plus clean posters, user rights verified",
+  "note": "Reference JPEG crops are from the owner-approved UI storyboard. Original sources have baked UI text/play symbols. Never put these into the carousel as playable videos or advertise them as authorized generated outputs.",
+  "scenes": [
+    {
+      "id": "V01",
+      "title": "Hero Girl",
+      "reference": "source-references/01_HERO_GIRL.jpg",
+      "motionPrompt": "Natural blink, breathing, moving damp hair; exact owner-original face/framing",
+      "targetMp4": "app/src/main/assets/media/home/v01.mp4",
+      "targetPoster": "app/src/main/assets/media/home/v01.jpg",
+      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
+      "commercialRights": "UNVERIFIED",
+      "publish": false
+    },
+    {
+      "id": "V02",
+      "title": "Dream Red Dress",
+      "reference": "source-references/02_DREAM_RED_DRESS.jpg",
+      "motionPrompt": "Red silk fabric and hair move independently in a soft mountain breeze",
+      "targetMp4": "app/src/main/assets/media/home/v02.mp4",
+      "targetPoster": "app/src/main/assets/media/home/v02.jpg",
+      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
+      "commercialRights": "UNVERIFIED",
+      "publish": false
+    },
+    {
+      "id": "V03",
+      "title": "Explore Castle",
+      "reference": "source-references/03_EXPLORE_CASTLE.jpg",
+      "motionPrompt": "Fog/cloud banks move among castle towers and waterfalls flow naturally",
+      "targetMp4": "app/src/main/assets/media/home/v03.mp4",
+      "targetPoster": "app/src/main/assets/media/home/v03.jpg",
+      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
+      "commercialRights": "UNVERIFIED",
+      "publish": false
+    },
+    {
+      "id": "V04",
+      "title": "Portraits Beauty",
+      "reference": "source-references/04_PORTRAITS_BEAUTY.jpg",
+      "motionPrompt": "Natural blink, soft head micro-motion and specular highlights, identical portrait",
+      "targetMp4": "app/src/main/assets/media/home/v04.mp4",
+      "targetPoster": "app/src/main/assets/media/home/v04.jpg",
+      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
+      "commercialRights": "UNVERIFIED",
+      "publish": false
+    },
+    {
+      "id": "V05",
+      "title": "Discover Snow Mountains",
+      "reference": "source-references/05_DISCOVER_SNOW_MOUNTAINS.jpg",
+      "motionPrompt": "Moving mist and blowing snow in the mountains, stable architecture of peaks",
+      "targetMp4": "app/src/main/assets/media/home/v05.mp4",
+      "targetPoster": "app/src/main/assets/media/home/v05.jpg",
+      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
+      "commercialRights": "UNVERIFIED",
+      "publish": false
+    },
+    {
+      "id": "V06",
+      "title": "Create Astronaut",
+      "reference": "source-references/06_CREATE_ASTRONAUT.jpg",
+      "motionPrompt": "Natural helmet visor reflections and subtle astronaut breathing",
+      "targetMp4": "app/src/main/assets/media/home/v06.mp4",
+      "targetPoster": "app/src/main/assets/media/home/v06.jpg",
+      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
+      "commercialRights": "UNVERIFIED",
+      "publish": false
+    },
+    {
+      "id": "V07",
+      "title": "Transform Blossom House",
+      "reference": "source-references/07_TRANSFORM_BLOSSOM_HOUSE.jpg",
+      "motionPrompt": "Flowing petals and reflections across glass house, original warm lighting",
+      "targetMp4": "app/src/main/assets/media/home/v07.mp4",
+      "targetPoster": "app/src/main/assets/media/home/v07.jpg",
+      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
+      "commercialRights": "UNVERIFIED",
+      "publish": false
+    },
+    {
+      "id": "V08",
+      "title": "Visualize White Tiger",
+      "reference": "source-references/08_VISUALIZE_WHITE_TIGER.jpg",
+      "motionPrompt": "White tiger natural blink, visible subtle breathing and fur movement",
+      "targetMp4": "app/src/main/assets/media/home/v08.mp4",
+      "targetPoster": "app/src/main/assets/media/home/v08.jpg",
+      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
+      "commercialRights": "UNVERIFIED",
+      "publish": false
+    },
+    {
+      "id": "V09",
+      "title": "Neon Car",
+      "reference": "source-references/09_NEON_CAR.jpg",
+      "motionPrompt": "Moving wet-city reflections and cinematic vehicle movement",
+      "targetMp4": "app/src/main/assets/media/home/v09.mp4",
+      "targetPoster": "app/src/main/assets/media/home/v09.jpg",
+      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
+      "commercialRights": "UNVERIFIED",
+      "publish": false
+    },
+    {
+      "id": "V10",
+      "title": "Glamour Jewelry",
+      "reference": "source-references/10_GLAMOUR_JEWELRY.jpg",
+      "motionPrompt": "Jewelry catches physically coherent light as subject subtly moves",
+      "targetMp4": "app/src/main/assets/media/home/v10.mp4",
+      "targetPoster": "app/src/main/assets/media/home/v10.jpg",
+      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
+      "commercialRights": "UNVERIFIED",
+      "publish": false
+    },
+    {
+      "id": "V11",
+      "title": "Waterfront House Dusk",
+      "reference": "source-references/11_WATERFRONT_HOUSE_DUSK.jpg",
+      "motionPrompt": "Gentle waterfront waves, reflections and warm architectural illumination",
+      "targetMp4": "app/src/main/assets/media/home/v11.mp4",
+      "targetPoster": "app/src/main/assets/media/home/v11.jpg",
+      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
+      "commercialRights": "UNVERIFIED",
+      "publish": false
+    },
+    {
+      "id": "V12",
+      "title": "Blue Fantasy",
+      "reference": "source-references/12_BLUE_FANTASY.jpg",
+      "motionPrompt": "Underwater fabric, hair, particles move naturally with depth",
+      "targetMp4": "app/src/main/assets/media/home/v12.mp4",
+      "targetPoster": "app/src/main/assets/media/home/v12.jpg",
+      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
+      "commercialRights": "UNVERIFIED",
+      "publish": false
+    },
+    {
+      "id": "V13",
+      "title": "Red Silhouette",
+      "reference": "source-references/13_RED_SILHOUETTE.jpg",
+      "motionPrompt": "Moving red atmospheric haze, leaves and fabric with natural subject breathing",
+      "targetMp4": "app/src/main/assets/media/home/v13.mp4",
+      "targetPoster": "app/src/main/assets/media/home/v13.jpg",
+      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
+      "commercialRights": "UNVERIFIED",
+      "publish": false
+    }
+  ]
+}
