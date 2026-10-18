@@ -2,6 +2,8 @@ BLOCK 5 — INTERNAL PRODUCT WATCHER AGENT
 ============================================================
 
 GOAL
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. ЭТАП 1 PRODUCT WATCHER LITE: сайт жив / uptime, ошибки Stripe, аномальные траты, EMAIL владельцу при проблеме. Только безопасное наблюдение, owner-only, без автономного изменения критичного production и платных AI. Все остальные сохранённые ниже функции и расписания — план ЭТАПА 2 только ПОСЛЕ LIVE_VERIFIED BASE §51 и отдельного разрешения (BASE §53).
 Owner/admin-only autonomous internal agent for monitoring and maintaining Deepsyq.
 
 Important:
@@ -57,6 +59,8 @@ Admin page:
 - costs
 
 Auto-apply:
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. На ЭТАПЕ 1 никаких auto-apply: только обнаружение и email, никакого автономного edit/upgrade/Stripe/price change. Исходная функция ниже — будущее ЭТАПА 2.
 Only safe, reversible metadata/content updates, and only if owner policy explicitly allows them.
 
 Require approval:
