@@ -818,6 +818,7 @@ test('BASE 24: no streaming body refuses unbounded preview but leaves owner Down
   window.fetch=(input,options)=>{
    if(!String(input).includes('/api/studio/jobs/history-streamless-video/media'))return original(input,options);
    return Promise.resolve({
+    ok:true, // Emulate a successful fetch Response; exercise streaming guard, not API error.
     headers:new Headers({'content-type':'video/mp4'}),
     body:null,
     blob:async()=>{window.__historyStreamlessBlobCalled=true;throw Error('EAGER_BLOB_MUST_NOT_BE_CALLED');}
@@ -857,6 +858,7 @@ for(const streamingCase of ['missing Content-Length exceeds 128 MiB','account ch
     if(!String(input).includes('/api/studio/jobs/streamed-private-video/media'))return fetchOriginal(input,opts);
     let count=0;
     return Promise.resolve({
+     ok:true, // A 2xx mocked response is required to reach readHistoryPreviewBlob.
      headers:new Headers({'content-type':'video/mp4'}),
      body:{getReader:()=>({
       read:async()=>{
@@ -1138,9 +1140,9 @@ test('BASE 24: switched account cannot recover History prompt via an earlier Stu
  await page.goto('/generate-studio.html?studio=video&view=history');
  await page.locator('.history-card').getByRole('button',{name:'Reuse prompt'}).click();
  await expect(page.locator('#prompt')).toHaveValue('ACCOUNT A HISTORY IMAGE PRIVATE PROMPT');
- await page.locator('[data-kind=video]').click();
+ await page.locator('button[data-kind=video]').click();
  await page.evaluate(()=>localStorage.setItem('vv_token','history-other-kind-B'));
- await page.locator('[data-kind=image]').click();
+ await page.locator('button[data-kind=image]').click();
  await expect(page.locator('#prompt')).toHaveValue('');
  expect(paid).toBe(0);
 });
