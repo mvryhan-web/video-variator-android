@@ -46,15 +46,15 @@ test('owner retains internal costs; same generation is credit-only in customer H
   // Locate the customer-facing History projection by its query identity,
   // not the position of private operational fields used for safe Video polling.
   const historySql=seen.find(sql=>{
-   const normalized=sql.replace(/\\s+/g,' ').trim();
-   return /^SELECT\\s+id\\s*,\\s*kind\\s*,\\s*status\\s*,/i.test(normalized)&&
-    /\\bFROM\\s+vv_generation_jobs\\b/i.test(normalized)&&
-    /\\bORDER\\s+BY\\s+created_at\\s+DESC\\s+LIMIT\\s+50\\b/i.test(normalized);
+   const normalized=sql.replace(/\s+/g,' ').trim();
+   return /^SELECT\s+id\s*,\s*kind\s*,\s*status\s*,/i.test(normalized)&&
+    /\bFROM\s+vv_generation_jobs\b/i.test(normalized)&&
+    /\bORDER\s+BY\s+created_at\s+DESC\s+LIMIT\s+50\b/i.test(normalized);
   });
   assert.ok(historySql,'customer History SELECT must exist');
-  const projection=historySql.split(/\\bFROM\\s+vv_generation_jobs\\b/i)[0];
+  const projection=historySql.split(/\bFROM\s+vv_generation_jobs\b/i)[0];
   for(const field of ['estimated_cost','actual_cost','cost_currency'])
-   assert.doesNotMatch(projection,new RegExp('\\\\b'+field+'\\\\b','i'),field+' must not be selected for customer History');
+   assert.doesNotMatch(projection,new RegExp('\\b'+field+'\\b','i'),field+' must not be selected for customer History');
   const detailRes=await fetch(root+'/api/studio/jobs/job-1');
   assert.equal(detailRes.status,200);
   const detail=await detailRes.json();
