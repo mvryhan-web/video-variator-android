@@ -18,9 +18,11 @@ export function rejectUnsupportedVideoControls(body){
   throw new Error('UNSUPPORTED_VIDEO_CONTROL');
  // Video uses an explicit accepted request/quote contract. A future UI field
  // must not become a paid promise until the provider adapter supports it.
+ // `credits` is a legacy untrusted quote hint, never a provider control or
+ // server-authoritative price. validateGeneration drops it before pricing.
  const allowed=new Set(['kind','model','prompt','consent','ratio','references',
   'videoInputMode','videoResolution','videoDuration','musicMode',
-  'requestId','referenceCount','expectedCredits','quantity']);
+  'requestId','referenceCount','expectedCredits','quantity','credits']);
  const legacyImageErrors=new Set(['seed','negativePrompt','negative_prompt']);
  if(Object.keys(body).some(k=>!allowed.has(k)&&!legacyImageErrors.has(k)))
   throw new Error('UNSUPPORTED_VIDEO_CONTROL');
