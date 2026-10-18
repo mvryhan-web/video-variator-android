@@ -1,5 +1,10 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## AGENT A §24 / PARAMETER BIND AND MUSIC FILTER DEV REGRESSION TRIAGE — 2026-10-18
+
+- A original §24 retained [PR152](https://github.com/mvryhan-web/video-variator-android/pull/152) and latest shared DEV server checked: currently History kind filter builds `kind=2` instead of `kind=$2`, no Music allowed, no private/no-store response headers on owned list/detail/media and no paging. Old A PR152 has exact fixes but an **unsafe older `objectStorage.get(key)` media path** vs current DEV `objectStorage.get(key,{expectedSha256})`. NEVER bulk-merge this old 8-file PR over B/D. Coordinator #5/B/D approve **surgical current-source GET-only History patch**, preserve current integrity/provider/wallet/security invariants; run no-fee two-account tests, zero paid API, no prod. [Review comment](https://github.com/mvryhan-web/video-variator-android/pull/152#issuecomment-6252107969). §24 PARTIAL/BLOCKED; not merged, tested live or DONE.
+
+
 ## [AGENT C / 2026-10-18 / CURRENT ORIGINAL BASE §20 claim after §27/#28/#38 DEV MERGED]
 
 - **Previous C scoped CODE now DEV MERGED by coordinator #5:** §27 PR209 squash `7a0df61a`, §28 PR207 `cd9dfe11`, §38 PR200 `c02e812b` with 8/8 exact-head native SUCCESS; §30 PR144 merged. **Original full rows still PARTIAL** awaiting true device/owner/production. DO NOT repeat.
