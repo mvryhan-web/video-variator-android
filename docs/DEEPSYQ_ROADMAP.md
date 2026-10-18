@@ -1,10 +1,17 @@
 # DEEPSYQ ROADMAP — approved next product phase
 
+> **2026-10-17 — IMPORTANT: THE ROADMAP HAS EIGHT BLOCKS.** The original seven separate owner TXT Blocks 1–7 remain unchanged, and the owner approved a distinct **Block 8 — Virtual Pet Companion / «Волшебный нюх»** on 2026-10-16. The [complete Block 8 source TXT](DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_8.txt) (1,134 lines) entered `deepsyq-platform` through [PR #188](https://github.com/mvryhan-web/video-variator-android/pull/188); see [Issue #187](https://github.com/mvryhan-web/video-variator-android/issues/187). **This registration does NOT mean the virtual pets/animations are implemented or allowed into production.** Block 8 is a post-first-MVP independent roadmap workstream and may not interrupt A–D's existing BASE claims. Four owner-locked priorities remain unchanged.
+
+## OWNER POSITIONING CLARIFICATION — global AI platform (2026-10-17)
+
+**Read [`DEEPSYQ_GLOBAL_POSITIONING_REVENUE_VISUAL_SEO.md`](DEEPSYQ_GLOBAL_POSITIONING_REVENUE_VISUAL_SEO.md) before selecting a feature, writing Home/SEO copy or describing target customers.** Deepsyq is a worldwide AI creative platform built for image, video, voice, Canvas, agents, apps, inspiration and creation workflows — **not a single-storefront or single-marketplace solution**. Any individual advertisement or listing example is optional creative output, NOT the platform's identity, homepage, SEO target or default monetization. This editable derived roadmap removes marketplace-specific examples; **the seven earlier original owner TXT files remain byte-identical, while the separate eighth approved TXT is now recorded** and still govern technical scope. Preserve existing unfinished branches and original BASE 55 without claiming the user approved deletion of their requirements. Focus visual Home/real 13-video showcase, first secure paid Image/Video vertical slice, global SEO/AI-search and genuine conversion; no automatic paid AI or production changes.
+
+
 This file preserves the approved future product requirements so new agents do not lose them.
 
 ## Integration and release destination (owner instruction, 2026-10-15)
 
-**One canonical release branch: `main` for BASE and Blocks 1–7.** The seven blocks are components of the same Deepsyq app, not separate permanent branches or separately deployed products. Agents may develop on isolated branches to avoid conflicts, but every completed, reviewed and tested block must be integrated into the shared BASE and ultimately merged into `main` after satisfying dependency and production-safety gates.
+**One canonical release branch: `main` for BASE and approved Blocks 1–8 (each only after its acceptance, dependencies and explicit release approvals).** The eight blocks are roadmap components of the same Deepsyq app, not separate permanent branches or separately deployed products. Agents may develop on isolated branches to avoid conflicts, but every completed, reviewed and tested block must be integrated into the shared BASE and ultimately merged into `main` after satisfying dependency and production-safety gates.
 
 Use `AGENTS.md` and `PROJECT_STATUS.md` for the merge owner, PR links, current status, test evidence and deployment blockers. Track **feature code complete**, **merged to main** and **deployed/verified** as distinct states. Render follows `main` with automatic deploy, so a feature merge must not precede verified PostgreSQL continuity/backup and required migration, auth, billing, provider, compatibility and rollback checks. This rule does not authorize enabling paid features or changing production secrets.
 
@@ -103,7 +110,7 @@ Build/extend a shared **Agent Orchestrator** able to:
 - prepare a final deliverable.
 
 Example quick starts:
-- Create an Etsy listing;
+- Create an original multi-format creative content pack;
 - Create a TikTok ad from product photos;
 - Create a 30-second product promo;
 - Create social-media content;
@@ -195,7 +202,7 @@ Using a template must create/clone a user-owned project in My Workspace. Never e
 Initial workflows:
 - Create Product Ad;
 - Create UGC Video;
-- Create Etsy Listing;
+- Create Social Media Content Pack;
 - Create TikTok Ad;
 - Turn Image into Video;
 - Create Social Campaign;
@@ -364,7 +371,7 @@ Examples:
 - create project;
 - start Agent Skill;
 - create TikTok/product ad;
-- create Etsy listing;
+- prepare an original creative content pack;
 - image/video tasks;
 - permitted Everyday/Video tools.
 
@@ -547,7 +554,18 @@ No false profitability estimates.
 
 ---
 
-# Shared acceptance principles for blocks 1–7
+# BLOCK 8 — Virtual Pet Companion / «Волшебный нюх» (Magic Nose)
+
+**New owner-approved Block 8 (2026-10-16):** full source and exact requirements: [`DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_8.txt`](DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_8.txt). Tracking: [Issue #187](https://github.com/mvryhan-web/video-variator-android/issues/187); documentation-only source [PR #188](https://github.com/mvryhan-web/video-variator-android/pull/188).
+
+- Optional friendly, original animated 3D **dog or cat** selected explicitly by the user; name, Calm / Playful / Off, accessible and nonintrusive behavior on mobile and desktop. No forced pet or hidden profiling.
+- **«Волшебный нюх» / «Волшебный щит»:** 16 enumerated S01–S16 help/quality scenarios (draft recovery, prevent duplicate generation and unintended credit usage, safe format/capability hints, owned READY results and History). The first no-cost prototype demonstrates five scenarios; it is NOT a functioning production AI agent.
+- Detailed design bible D0–D9 for original Blender geometry, editable rigs, animations and transparent sprites; executor steps P0–P7 include eventual agent-managed publication **only after owner review and explicit paid/security/production authorizations**. Any external specialists or payments require owner's separate consent; do not shift manual 3D production to the owner.
+- **Current factual state:** approved specification merged; 3D assets, software integration and live pet are **NOT IMPLEMENTED**, and no dedicated agent is currently assigned. Do not interfere with active four BASE development claims; no paid AI tests; preserve owner-approved Home. Release of first Image/Video/Music/AI Chat MVP has priority.
+
+---
+
+# Shared acceptance principles for blocks 1–8
 
 For every block:
 - use real APIs only when actually connected;
