@@ -10,8 +10,8 @@ export function pricingCatalog(env={}){
   if(!Array.isArray(rows)||rows.length>100)throw Error();
   const entries=rows.map(r=>{
    if(!r||!id(r.model)||!id(r.provider)||!['image','video','music','voice'].includes(r.kind)||!positive(r.credits,MAX_CREDITS)||!positive(r.providerCostMicros,MAX_MICROS))throw Error();
-   if(r.ratio!=null&&typeof r.ratio!=='string')throw Error();
-   if(r.quality!=null&&typeof r.quality!=='string')throw Error();
+   if(r.ratio!=null&&(typeof r.ratio!=='string'||!r.ratio.trim()))throw Error();
+   if(r.quality!=null&&(typeof r.quality!=='string'||!r.quality.trim()))throw Error();
    if(r.outputFormat!=null&&(!['auto','png','jpeg'].includes(r.outputFormat)||r.kind!=='image'))throw Error();
    if(r.videoInputMode!=null&&(!['text','first_frame','first_last','reference_image'].includes(r.videoInputMode)||r.kind!=='video'))throw Error();
    if(r.referenceCount!=null&&(!Number.isSafeInteger(r.referenceCount)||r.referenceCount<0||r.referenceCount>3||r.kind!=='video'))throw Error();
