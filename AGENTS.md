@@ -1,5 +1,8 @@
 # AGENTS.md — Deepsyq: START HERE (all agents and coordinators)
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](DECISIONS.md).** Последнее обязательное решение: **нет Free AI plan/welcome credits; Trial $0.99 пока НЕ включён; деньги пользователя подтверждает Stripe, provider call только за КУПЛЕННЫЕ credits (Issue #182)**. Бесплатные ИМЕННО тесты (mock/CI/Stripe test-mode и доказанно бесплатные реальные AI-вызовы с жёстким отказом вместо платных перерасходов) разрешены после pre-call CHECKPOINT. Предыдущие строки ниже о free-tier AI относятся **только к тестовому тарифу**, а не к публичному бесплатному продукту. 4 главных приоритета 1–4 не изменены. Состояния CI_BLOCKED, READY_TO_MERGE и DONE=LIVE_VERIFIED действуют; зоны и единый Jules ≤3 задач см. правила #9/#21.
+
+
 ## OWNER ORDER 2026-10-18 (LATEST): VERIFIED FREE REAL AI TESTS / ZERO CHARGES
 
 **Superseding owner test policy (verbatim details: [25 canonical rules, #7](docs/DEEPSYQ_CANONICAL_OPERATING_RULES.md)): ALL genuinely FREE tests may run without asking permission, INCLUDING real AI API/model requests on an authenticated FREE tier, free credits, or truly free model; Stripe TEST mode, unit/mock, free CI/lint/build. ALL tests that charge OR COULD charge the owner's money are forbidden. PAID budget remains 0 for EVERY A–D, Jules1–3 and coordinator #5.** It is NOT correct to prohibit verified genuine free provider calls categorically.
