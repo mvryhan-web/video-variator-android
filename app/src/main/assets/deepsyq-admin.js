@@ -220,7 +220,9 @@ window.addEventListener('storage',event=>{
 });
 // BFCache can restore a page without rerunning module code. Check the original
 // owner session before making a previously visible owner dashboard interactive.
-window.addEventListener('pageshow',checkOwnerSession);
+// Do not pass the pageshow Event as checkOwnerSession(force): a truthy Event
+// would bypass the same-token check and evict even a valid owner session.
+window.addEventListener('pageshow',()=>checkOwnerSession());
 document.addEventListener('visibilitychange',()=>{
  if(!document.hidden)checkOwnerSession();
 });
