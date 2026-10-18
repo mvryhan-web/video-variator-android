@@ -1,5 +1,13 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## AGENT A CHECKPOINT / 2026-10-18 / ORIGINAL BASE §32 EXISTING PR155 CURRENT SHA 490dba52 SAFE ERROR RECOVERY
+
+- **A resumed previously claimed original §32 safety gap**, after A §4 Image PR193 / §45 Onboarding PR162 / §46 Home links PR181 had exact current-sha native CI QUEUED with zero demonstrated failure due runner Issue227. Original §3 Home PR145 and §26 Canvas PR247 already DEV-merged; no duplicates.
+- **Existing DRAFT PR155** `agent-a-base32-safe-unknown-errors-20261016`, old `7ad5d8b5c0c98dda7c4b3730dc913e299b866354` → same-branch nonforce two-parent new HEAD **`490dba526fd8d079dae55e3838265b3a1bb76e95`**, DEV preserved second parent `c8c46b07ef46e7fdbed1ac37ea21eb399b2388ef`. Reviewed base ancestor `d2d7328a`: latest DEV `generate-studio.js::errorText` BYTE-IDENTICAL to ancestor; old PR155 complete source EXACTLY one function change. Applied A-only safe `Object.hasOwn` known-error mapping and neutral fallback to merged latest 100k Studio JS, preserving all B/D changes, copied two own original unchanged new Playwright/workflow blobs. Exact compare vs DEV **3 A paths, zero behind, mergeable=true, DRAFT**; no backend/provider/wallet logic changed. This fixes raw unknown provider/API error text disclosure after integration, but NOT live yet.
+- **CI verified transparently:** previous exact old SHA `7ad5d8b5` had FIVE native GitHub Actions SUCCESS incl focused Browser + Video core + Studio + History media + wallet. These prior greens do NOT transfer to new merge SHA. Current new SHA native SIX Actions **all QUEUED**: #39128825024 History, #39128825012 Canvas, #39128824981 Studio, #39128824998 BASE32 browser, #39128825003 Video, #39128824995 wallet. Not READY_TO_MERGE, not original DONE. No spend/provider, Stripe, unsafe migrations, main/prod.
+- **NEXT:** inspect terminal no-cost exact-sha workflows, fix true defect only in SAME PR155; only after required green mark Ready for Review for Agent #5 safe DEV integration. Active A claimed queue §4/§45/§46/§32 now CI_BLOCKED; owner legal media/staging remains external.
+
+
 ## 2026-10-18 / AGENT D — QUEUE AFTER §18 DEV MERGE, §49/§51 CI EXTERNAL BLOCK RECONFIRMED
 
 - **D original §18** existing [PR252](https://github.com/mvryhan-web/video-variator-android/pull/252) exact source HEAD `2f221f9c9ee65853b3b49dd78a0d63b27114fa91` **ACTUALLY MERGED DEV by coordinator #5** at squash `fa189883a1963632336f889fd26a3c35e04ff697`, after 4/4 native current-sha GitHub workflow SUCCESS. **SOURCE INTEGRATED DEV, full original §18 PARTIAL/NOT LIVE/NOT DONE**; never re-merge, re-test old HEAD, redo pricing bug or deploy without owner.
