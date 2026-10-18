@@ -1,0 +1,36 @@
+name: Deepsyq BASE 55 Coordination Integrity
+on:
+  push:
+    branches: [deepsyq-platform, agent5-base55-board-integrity-20261016, agent5-base55-checklist-consistency-20261016]
+    paths:
+      - 'docs/DEEPSYQ_PLATFORM_SPEC.md'
+      - 'docs/DEEPSYQ_BASE_55_COORDINATION.md'
+      - 'docs/DEEPSYQ_BASE_CHECKLIST.md'
+      - 'scripts/verify-deepsyq-base-coordination.mjs'
+      - 'tests/deepsyq-base55-coordination-unit.mjs'
+      - '.github/workflows/deepsyq-base55-coordination-integrity.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'docs/DEEPSYQ_PLATFORM_SPEC.md'
+      - 'docs/DEEPSYQ_BASE_55_COORDINATION.md'
+      - 'docs/DEEPSYQ_BASE_CHECKLIST.md'
+      - 'scripts/verify-deepsyq-base-coordination.mjs'
+      - 'tests/deepsyq-base55-coordination-unit.mjs'
+      - '.github/workflows/deepsyq-base55-coordination-integrity.yml'
+permissions:
+  contents: read
+jobs:
+  coordination:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify original BASE, coordination and detailed checklist parity
+        run: |
+          node --check scripts/verify-deepsyq-base-coordination.mjs
+          node scripts/verify-deepsyq-base-coordination.mjs
+          node --test tests/deepsyq-base55-coordination-unit.mjs

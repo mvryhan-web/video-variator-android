@@ -1,0 +1,29 @@
+name: BASE 20 Product Video official logo
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/product-video.html'
+      - 'app/src/main/assets/product-video.css'
+      - 'tests/base20-product-video-logo.spec.mjs'
+      - '.github/workflows/base20-product-video-logo.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  product-video-logo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check tests/base20-product-video-logo.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Actual existing icon and guided workflow remain available on desktop/iPhone/Android
+        run: npx playwright test tests/base20-product-video-logo.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit
