@@ -1,7 +1,7 @@
 import {summarizeAiTemplateReadiness} from './ai-template-readiness.js';
 const $=id=>document.getElementById(id);
 let base='';try{base=window.AndroidBridge?.getApiBase?.()||'';}catch(_){}base=String(base||window.VV_API_BASE||location.origin).replace(/\/$/,'');
-async function api(path,options={}){const token=localStorage.getItem('vv_token');if(!token)throw Error('AUTH_REQUIRED');const r=await fetch(base+path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),Authorization:`Bearer ${token}`}});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'REQUEST_FAILED');return d;}
+async function api(path,options={}){const token=localStorage.getItem('vv_token');if(!token)throw Error('AUTH_REQUIRED');const r=await fetch(base+path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),Authorization:`Bearer ${token}`}});const d=await r.json().catch(()=>({}));if(r.status===401&&verifiedOwnerSession)checkOwnerSession(true);if(!r.ok)throw Error(d.error||'REQUEST_FAILED');return d;}
 
 async function loadReadiness(){try{$('readinessStatus').textContent='Loading…';const [d,m]=await Promise.all([api('/api/studio/admin/readiness'),api('/api/studio/admin/migrations')]),root=$('launchGates');root.replaceChildren();const gates=[...(d.gates||[]),{id:'migrations',label:'AI database migrations',ready:!!m.ready,required:true}];for(const g of gates){const card=document.createElement('article');card.className='gate-card';card.dataset.ready=String(!!g.ready);const state=document.createElement('strong');state.textContent=g.ready?'Ready':'Blocked';const label=document.createElement('span');label.textContent=g.label;const need=document.createElement('small');need.textContent=g.id==='migrations'?(m.items||[]).map(x=>x.name+': '+(x.applied?(x.checksumMatches?'ok':'checksum mismatch'):'pending')).join(' · '):(g.required?'Required for public AI':'Optional / test-only');card.append(state,label,need);root.append(card);}const blockers=[...(d.blockers||[]),...(!m.ready?['migrations']:[])],b=$('launchBlockers');b.textContent=!blockers.length?'All repository/config/schema launch gates report ready. Live provider/payment/storage smoke tests are still required before launch.':'Blocked by: '+blockers.join(', ')+'.';$('readinessStatus').textContent=d.billing?.liveAiPaymentsEnabled?'Live AI billing gates are enabled. A real controlled Stripe/provider smoke test is still required before public launch.':'Live AI billing remains disabled until mode, live key and explicit owner approval are all enabled.';}catch(e){$('readinessStatus').textContent=e.message;}}
 
@@ -19,8 +19,53 @@ async function loadPurchases(){try{
  $('purchasesStatus').textContent=d.items?.length?'':'No confirmed AI credit purchases recorded.';
  }catch(e){$('purchasesStatus').textContent=e.message;}}
 
-async function loadUsers(){try{const q=$('userQuery').value.trim();$('usersStatus').textContent='Loading…';const d=await api('/api/studio/admin/users?q='+encodeURIComponent(q));$('usersTable').replaceChildren();for(const u of d.items||[]){const tr=document.createElement('tr'),vals=[(u.name||'—')+(u.email?' · '+u.email:''),u.plan+' · '+u.status,`${u.aiWallet.available} available · ${u.aiWallet.reserved} held · ${u.aiWallet.debt} debt`,u.generationCount,u.aiPurchaseCount,date(u.createdAt)];for(const v of vals){const td=document.createElement('td');td.textContent=String(v);tr.append(td);}$('usersTable').append(tr);}$('usersStatus').textContent=d.items?.length?'':'No matching users.';}catch(e){$('usersStatus').textContent=e.message;}}
-async function loadJobs(){try{const f=$('jobFilter').value;$('jobsStatus').textContent='Loading…';const d=await api('/api/studio/admin/jobs?status='+encodeURIComponent(f));$('jobsTable').replaceChildren();for(const j of d.items||[]){const tr=document.createElement('tr'),vals=[j.id,j.userEmail||j.userId,j.status,[j.provider,j.model].filter(Boolean).join(' · ')||'—',j.durationSeconds==null?'—':j.durationSeconds.toFixed(1)+' s',j.actualCost==null?(j.estimatedCost==null?'—':'est. '+costLabel(j.estimatedCost,j.costCurrency)):costLabel(j.actualCost,j.costCurrency),`${j.creditsCharged} charged · ${j.creditsReserved} held`,j.error||'—'];for(const v of vals){const td=document.createElement('td');td.textContent=String(v);tr.append(td);}$('jobsTable').append(tr);}$('jobsStatus').textContent=d.items?.length?'':'No jobs in this filter.';}catch(e){$('jobsStatus').textContent=e.message;}}
+// Ignore responses from obsolete admin searches/filter selections. Also prevent
+// old owner-account responses from repainting this page after session rotation.
+let userListRequest=0,jobListRequest=0,metricsListRequest=0;
+const stillCurrent=(version,latest,token)=>!ownerViewInvalidated&&version===latest&&localStorage.getItem('vv_token')===token;
+
+async function loadUsers(){
+ const request=++userListRequest,token=localStorage.getItem('vv_token'),q=$('userQuery').value.trim();
+ $('usersStatus').textContent='Loading…';
+ $('usersTable').replaceChildren();
+ try{
+  const d=await api('/api/studio/admin/users?q='+encodeURIComponent(q));
+  if(!stillCurrent(request,userListRequest,token))return;
+  for(const u of d.items||[]){
+   const tr=document.createElement('tr');
+   const vals=[(u.name||'—')+(u.email?' · '+u.email:''),u.plan+' · '+u.status,
+    `${u.aiWallet.available} available · ${u.aiWallet.reserved} held · ${u.aiWallet.debt} debt`,
+    u.generationCount,u.aiPurchaseCount,date(u.createdAt)];
+   for(const v of vals){const td=document.createElement('td');td.textContent=String(v);tr.append(td);}
+   $('usersTable').append(tr);
+  }
+  $('usersStatus').textContent=d.items?.length?'':'No matching users.';
+ }catch(e){
+  if(stillCurrent(request,userListRequest,token))$('usersStatus').textContent=e.message;
+ }
+}
+async function loadJobs(){
+ const request=++jobListRequest,token=localStorage.getItem('vv_token'),f=$('jobFilter').value;
+ $('jobsStatus').textContent='Loading…';
+ $('jobsTable').replaceChildren();
+ try{
+  const d=await api('/api/studio/admin/jobs?status='+encodeURIComponent(f));
+  if(!stillCurrent(request,jobListRequest,token))return;
+  for(const j of d.items||[]){
+   const tr=document.createElement('tr');
+   const vals=[j.id,j.userEmail||j.userId,j.status,
+    [j.provider,j.model].filter(Boolean).join(' · ')||'—',
+    j.durationSeconds==null?'—':j.durationSeconds.toFixed(1)+' s',
+    j.actualCost==null?(j.estimatedCost==null?'—':'est. '+costLabel(j.estimatedCost,j.costCurrency)):costLabel(j.actualCost,j.costCurrency),
+    `${j.creditsCharged} charged · ${j.creditsReserved} held`,j.error||'—'];
+   for(const v of vals){const td=document.createElement('td');td.textContent=String(v);tr.append(td);}
+   $('jobsTable').append(tr);
+  }
+  $('jobsStatus').textContent=d.items?.length?'':'No jobs in this filter.';
+ }catch(e){
+  if(stillCurrent(request,jobListRequest,token))$('jobsStatus').textContent=e.message;
+ }
+}
 
 function field(label,input){const wrap=document.createElement('label'),span=document.createElement('span');span.textContent=label;wrap.append(span,input);return wrap;}
 function input(type,value,min,max){const e=document.createElement('input');e.type=type;if(value!=null)e.value=value;if(min!=null)e.min=min;if(max!=null)e.max=max;return e;}
@@ -36,7 +81,27 @@ function renderModels(items){$('models').replaceChildren();for(const m of items)
  advisory.textContent='Markup and internal cost are reference settings only. They do not change customer AI-credit prices; only separately approved server pricing can do that.';
  card.append(head,form,advisory,save,msg);$('models').append(card);}}
 async function loadModels(){try{$('modelStatus').textContent='Loading…';const d=await api('/api/studio/admin/models');renderModels(d.items||[]);$('modelStatus').textContent=d.items?.length?'':'No model records.';}catch(e){$('models').replaceChildren();$('modelStatus').textContent=e.message==='MODEL_ADMIN_NOT_ENABLED'?'Model controls are prepared but the feature flag is OFF. No settings were changed.':e.message;}}
-async function loadMetrics(){try{const window=$('metricsWindow')?.value||'7d';$('metricsStatus').textContent='Loading…';const d=await api('/api/studio/admin/metrics?window='+encodeURIComponent(window));$('metrics').replaceChildren();for(const m of d.items||[]){const tr=document.createElement('tr');for(const v of [m.provider||'—',m.model||'—',m.kind,m.jobs,m.succeeded,m.failed,m.processing,pct(m.successRate),m.averageSeconds??'—',costLabel(m.actualCost,m.costCurrency),m.creditsCharged]){const td=document.createElement('td');td.textContent=String(v);tr.append(td);}$('metrics').append(tr);}$('metricsStatus').textContent=d.items?.length?'Window: '+d.window:'No generation data in this window.';}catch(e){$('metricsStatus').textContent=e.message;}}
+async function loadMetrics(){
+ const request=++metricsListRequest,token=localStorage.getItem('vv_token');
+ const window=$('metricsWindow')?.value||'7d';
+ $('metricsStatus').textContent='Loading…';
+ $('metrics').replaceChildren();
+ try{
+  const d=await api('/api/studio/admin/metrics?window='+encodeURIComponent(window));
+  if(!stillCurrent(request,metricsListRequest,token))return;
+  for(const m of d.items||[]){
+   const tr=document.createElement('tr');
+   for(const v of [m.provider||'—',m.model||'—',m.kind,m.jobs,m.succeeded,m.failed,m.processing,
+    pct(m.successRate),m.averageSeconds??'—',costLabel(m.actualCost,m.costCurrency),m.creditsCharged]){
+    const td=document.createElement('td');td.textContent=String(v);tr.append(td);
+   }
+   $('metrics').append(tr);
+  }
+  $('metricsStatus').textContent=d.items?.length?'Window: '+d.window:'No generation data in this window.';
+ }catch(e){
+  if(stillCurrent(request,metricsListRequest,token))$('metricsStatus').textContent=e.message;
+ }
+}
 
 
 
@@ -133,9 +198,34 @@ function renderBillingReview(items){
 }
 async function loadBillingReview(){try{$('billingStatus').textContent='Loading…';const d=await api('/api/studio/admin/billing-review');renderBillingReview(d.items||[]);$('billingStatus').textContent='';}catch(e){$('billingReview').replaceChildren();$('billingStatus').textContent=e.message==='AI_WALLET_UNAVAILABLE'?'AI wallet review is not available yet.':e.message;}}
 
-async function verifyOwner(){try{const {user}=await api('/api/me');if(!user?.isAdmin)throw Error('OWNER_ONLY');await Promise.all([loadReadiness(),loadBusiness(),loadPurchases(),loadUsers(),loadJobs(),loadAudit(),loadModels(),loadMetrics(),loadBillingReview(),loadTemplates(),loadInspirationAdmin()]);}catch(e){$('modelStatus').textContent=e.message==='AUTH_REQUIRED'?'Sign in with the owner account first.':'Owner access required.';$('metricsStatus').textContent='';}}
+async function verifyOwner(){try{const {user}=await api('/api/me');if(!user?.isAdmin)throw Error('OWNER_ONLY');verifiedOwnerSession=true;await Promise.all([loadReadiness(),loadBusiness(),loadPurchases(),loadUsers(),loadJobs(),loadAudit(),loadModels(),loadMetrics(),loadBillingReview(),loadTemplates(),loadInspirationAdmin()]);}catch(e){$('modelStatus').textContent=e.message==='AUTH_REQUIRED'?'Sign in with the owner account first.':'Owner access required.';$('metricsStatus').textContent='';}}
 
 $('creditAdjustForm').onsubmit=async e=>{e.preventDefault();const userId=$('creditUserId').value.trim(),delta=Number($('creditDelta').value),reason=$('creditReason').value.trim(),status=$('creditAdjustStatus');if(!userId||!Number.isSafeInteger(delta)||delta===0||reason.length<3){status.textContent='Enter exact user ID, a non-zero whole credit amount, and a reason.';return;}const verb=delta>0?'ADD':'REMOVE',amount=Math.abs(delta);if(!confirm(`${verb} ${amount} AI credits ${delta>0?'to':'from'} user ${userId}?\n\nReason: ${reason}\n\nThis does not change Stripe.`))return;status.textContent='Applying audited adjustment…';const requestId=crypto.randomUUID();try{const d=await api('/api/studio/admin/users/'+encodeURIComponent(userId)+'/credits/adjust',{method:'POST',body:JSON.stringify({requestId,confirmUserId:userId,delta,reason})});status.textContent=`Saved. Available: ${d.balance.available}, held: ${d.balance.reserved}, debt: ${d.balance.debt}.`;await Promise.all([loadUsers(),loadBusiness()]);}catch(err){status.textContent=err.message==='OWNER_CREDIT_ADJUSTMENTS_DISABLED'?'Manual credit adjustment is safely disabled on the server.':err.message==='INSUFFICIENT_AVAILABLE_AI_CREDITS'?'Cannot remove more credits than the user currently has available.':err.message;}};
+
+// Across-tab logout/account switching sends a native storage event. Clear the
+// rendered owner dashboard synchronously before navigating away; the dashboard
+// must not keep another account's user/job data visible while async fetches end.
+const ownerTokenAtOpen=localStorage.getItem('vv_token');
+let ownerViewInvalidated=false,verifiedOwnerSession=false;
+function checkOwnerSession(force=false){
+ if(ownerViewInvalidated||(!force&&localStorage.getItem('vv_token')===ownerTokenAtOpen))return;
+ ownerViewInvalidated=true;
+ userListRequest++;jobListRequest++;metricsListRequest++;
+ document.body.style.visibility='hidden';
+ location.replace('deepsyq.html');
+}
+window.addEventListener('storage',event=>{
+ if((event.key!=='vv_token'&&event.key!==null)||event.storageArea!==localStorage)return;
+ checkOwnerSession();
+});
+// BFCache can restore a page without rerunning module code. Check the original
+// owner session before making a previously visible owner dashboard interactive.
+// Do not pass the pageshow Event as checkOwnerSession(force): a truthy Event
+// would bypass the same-token check and evict even a valid owner session.
+window.addEventListener('pageshow',()=>checkOwnerSession());
+document.addEventListener('visibilitychange',()=>{
+ if(!document.hidden)checkOwnerSession();
+});
 
 $('userSearch').onsubmit=e=>{e.preventDefault();void loadUsers();};
 $('jobFilter').onchange=()=>void loadJobs();
