@@ -1,0 +1,22 @@
+name: Deepsyq SEO comparison editorial (free offline)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/deepsyq-vs-deepseek.html'
+      - 'app/src/main/assets/deepsyq-seo.css'
+      - 'tests/deepsyq-seo-comparison-unit.mjs'
+      - '.github/workflows/agent-a-seo-comparison.yml'
+permissions:
+  contents: read
+jobs:
+  editorial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check original comparison page metadata, safety and internal routes
+        run: node --test tests/deepsyq-seo-comparison-unit.mjs
