@@ -7,7 +7,14 @@ const photo=name=>({name,mimeType:'image/png',buffer:tinyPng});
 async function start(page){
  let paidPosts=0;
  page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))paidPosts++;});
- await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ // Studio generation is OFF, but a known disabled model still advertises its
+ // local reference-file capacity: the draft can retain photos without any AI call.
+ const offlineModel={kind:'video',id:'veo-3.1-lite-generate-preview',label:'Veo offline draft',
+  provider:'Google',adapter:true,enabled:false,references:3,ratios:['16:9'],quality:'720p',
+  capabilities:{maxReferences:3,videoInputModes:['text','first_frame','reference_image'],
+   resolutions:['720p'],durations:[8],durationSeconds:8}};
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{
+  enabled:false,ownerOnly:true,models:[],catalog:[offlineModel]}}));
  await page.goto('/product-video.html');
  return ()=>paidPosts;
 }
