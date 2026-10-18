@@ -1,4 +1,8 @@
 name: BASE 49 concurrent AI migrations
+
+concurrency:
+  group: ci-base49-migration-concurrency-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 on:
   push:
     branches: [base49-serialize-ai-migrations-20261016]
