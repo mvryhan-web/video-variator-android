@@ -361,7 +361,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   app.get('/api/studio/jobs',auth,generationUser,async(req,res)=>{res.set('Cache-Control','private, no-store');try{
   await init();const filter=String(req.query.filter||'all'),allowed=new Set(['all','image','video','music','failed','processing']);if(!allowed.has(filter))return res.status(400).json({error:'INVALID_HISTORY_FILTER'});
   const where=['user_id=$1','deleted=false'],args=[req.user.id];
-  if(filter==='image'||filter==='video'||filter==='music'){args.push(filter);where.push(`kind=${args.length}`);}
+  if(filter==='image'||filter==='video'||filter==='music'){args.push(filter);where.push(`kind=$${args.length}`);}
   else if(filter==='failed')where.push("status='failed'");
   else if(filter==='processing')where.push("status IN ('queued','processing','finalizing')");
   const {rows}=await pool.query(`SELECT id,kind,status,provider,model,prompt,settings,error,result_text,mime,output_assets,created_at,started_at,completed_at,failed_at,credits_reserved,credits_charged FROM vv_generation_jobs WHERE ${where.join(' AND ')} ORDER BY created_at DESC LIMIT 50`,args);
