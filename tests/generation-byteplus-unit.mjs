@@ -80,3 +80,33 @@ test('failed tasks are terminal, malformed IDs rejected, absent credentials make
  await assert.rejects(()=>pollBytePlus('byteplus:../../evil',{key:'fixture'}),/INVALID_OPERATION/);
  let calls=0;await assert.rejects(()=>generateBytePlus(req(),{fetcher:async()=>{calls++;}}),/PROVIDER_KEY_REQUIRED/);assert.equal(calls,0);
 });
+
+test('Seedance accepts supported MP4 major brands without another provider submission',async()=>{
+ const host='fixture.tos-ap-southeast-1.bytepluses.com';
+ for(const brand of ['isom','mp42','iso6','avc1','M4V ']){
+  const bytes=Buffer.concat([Buffer.from([0,0,0,16]),Buffer.from('ftypisom'),Buffer.alloc(4)]);
+  bytes.write(brand,8,'ascii');let calls=0;
+  const result=await pollBytePlus('byteplus:cgt-test',{key:'fixture',downloadHosts:host,fetcher:async()=>{
+   calls++;if(calls===1)return json({status:'succeeded',content:{video_url:'https://'+host+'/result.mp4'}});
+   return new Response(bytes);
+  }});
+  assert.equal(calls,2);assert.equal(result.mime,'video/mp4');assert.deepEqual(result.bytes,bytes);
+ }
+});
+
+test('Seedance rejects counterfeit ftyp and truncated MP4 results before storage',async()=>{
+ const host='fixture.tos-ap-southeast-1.bytepluses.com';
+ const good=Buffer.concat([Buffer.from([0,0,0,16]),Buffer.from('ftypisom'),Buffer.alloc(4)]);
+ const incorrect=Buffer.from(good);incorrect.writeUInt32BE(128,0);
+ const short=Buffer.from([0,0,0,12,102,116,121,112,105,115,111,109]);
+ for(const bytes of [incorrect,short,Buffer.from('<html>provider error</html>'),
+  ...['avif','mif1','heic','junk'].map(brand=>{const bad=Buffer.from(good);bad.write(brand,8,'ascii');return bad;})]){
+  let calls=0;
+  await assert.rejects(()=>pollBytePlus('byteplus:known-task',{key:'fixture',downloadHosts:host,fetcher:async()=>{
+   calls++;
+   if(calls===1)return json({status:'succeeded',content:{video_url:'https://'+host+'/result.mp4'}});
+   return new Response(bytes);
+  }}),/INVALID_PROVIDER_MEDIA/);
+  assert.equal(calls,2);
+ }
+});

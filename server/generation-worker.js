@@ -32,6 +32,7 @@ if(state.recovery){
 } else console.log('[generation worker] cleanup-only: no provider, wallet or AI job initialization');
 
 let stopping=false;
+let shutdownExitCode=0;
 // The expiry worker must remain available even if intake is disabled for rollback.
 const references=state.cleanup?createGenerationReferenceLedger({pool,storage,env:process.env}):null;
 const cleanupTask=createCoalescingWorkerTask(async()=>{
@@ -49,6 +50,8 @@ if(references)void cleanupReferenceBatch();
 
 const heartbeat=setInterval(()=>{},60_000);
 async function shutdown(signal){
+ // A late fatal event during a SIGTERM drain must never exit as success.
+ shutdownExitCode=workerExitCode(signal,shutdownExitCode);
  if(stopping)return;stopping=true;console.log('[generation worker] stopping:',signal);
  clearInterval(heartbeat);
  if(referenceCleanupTimer)clearInterval(referenceCleanupTimer);
@@ -59,7 +62,7 @@ async function shutdown(signal){
   console.error('[generation worker] cleanup still active at shutdown deadline');
  if(!await closeWorkerDatabasePool(pool,{timeoutMs:5000}))
   console.error('[generation worker] DB pool close incomplete at shutdown deadline');
- process.exit(workerExitCode(signal));
+ process.exit(shutdownExitCode);
 }
 process.once('SIGTERM',()=>void shutdown('SIGTERM'));
 process.once('SIGINT',()=>void shutdown('SIGINT'));
