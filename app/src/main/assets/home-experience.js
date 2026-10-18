@@ -29,10 +29,12 @@ function updateNeighbors(){
  });
 }
 function renderCredit(item){
+ const showcase=item?.defaultSettings?.homeShowcase;
  const model=String(item?.defaultSettings?.creationModel||'').trim();
  const provider=String(item?.defaultSettings?.creationProvider||'').trim();
- $('homeHeroCreditLabel').textContent=model?'CREATED WITH':provider?'CREATED IN':'';
- $('homeHeroModel').textContent=model||provider;
+ $('homeHeroCreditLabel').textContent=showcase?.title?String(showcase.label||'EXPLORE'):model?'CREATED WITH':provider?'CREATED IN':'';
+ $('homeHeroModel').textContent=String(showcase?.title||model||provider);
+ $('homeHeroModel').title=showcase?.title?String(showcase.note||'Feature showcase, not generation attribution.'):'';
 }
 function setPlayLabel(){const b=$('homeHeroPlay');if(!b)return;b.textContent=userPaused?'Play video':'Pause video';b.setAttribute('aria-label',userPaused?'Play video':'Pause video');}
 function showHeroFallback(){
@@ -145,10 +147,11 @@ function choose(kind){
  chosen=kind;
  $('homeQuickPrompt').required=kind!=='agent';
  for(const b of document.querySelectorAll('[data-home-kind]'))b.setAttribute('aria-pressed',String(b.dataset.homeKind===kind));
- $('homeQuickSubmit').textContent=kind==='agent'?'See Agent preview ↗':'Open in Studio ↗';
+ $('homeQuickSubmitLabel').textContent=kind==='agent'?'See Agent preview ↗':'Open in Studio ↗';
+ $('homeQuickSubmit').setAttribute('aria-label',kind==='agent'?'See Agent preview':'Open in Studio');
 }
 if($('homeQuickForm')){
- document.querySelectorAll('[data-home-kind]').forEach(b=>b.addEventListener('click',()=>{choose(b.dataset.homeKind);if(chosen==='agent')$('homeQuickStatus').textContent='Agent execution is coming soon. Explore the preview below.';}));
+ document.querySelectorAll('[data-home-kind]').forEach(b=>b.addEventListener('click',()=>{choose(b.dataset.homeKind);if(chosen==='agent'){$('homeQuickStatus').classList.add('is-visible');$('homeQuickStatus').textContent='Agent execution is coming soon. Explore the preview below.';}}));
  document.querySelectorAll('[data-home-idea]').forEach(b=>b.addEventListener('click',()=>{
   const idea=ideas[b.dataset.homeIdea];if(!idea)return;
   const prompt=$('homeQuickPrompt');
@@ -159,6 +162,7 @@ if($('homeQuickForm')){
  $('homeQuickForm').addEventListener('submit',async e=>{
   e.preventDefault();if(busy)return;
   const prompt=$('homeQuickPrompt').value.trim(),status=$('homeQuickStatus'),button=$('homeQuickSubmit');
+  status.classList.add('is-visible');
   if(chosen==='agent'){status.textContent='AI Agent execution is not available yet. Explore the preview below.';$('agentFeature').scrollIntoView({behavior:'smooth',block:'start'});return;}
   if(!prompt||prompt.length>2000){status.textContent='Enter a description of up to 2,000 characters.';return;}
   const studio=modeToStudio[chosen];if(!studio){status.textContent='Choose Image, Video or Audio.';return;}

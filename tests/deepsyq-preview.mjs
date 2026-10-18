@@ -26,6 +26,12 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
   assert.match(html,/id="quickCreatePrompt"/);
   assert.match(html,/id="quickCreateFiles"/);
   assert.match(html,/design preview/);
+  assert.match(html,/<body class="home-neon"><div role="status"/);
+  assert.match(html,/id="createWithDeepsyq"/);
+  for(const name of ['audio','agent','apps','canvas']){
+   const art=await fetch(base+'/media/home/neon-20261018/'+name+'.webp');
+   assert.equal(art.status,200);assert.match(art.headers.get('content-type'),/image\/webp/);
+  }
   const cfg=await(await fetch(base+'/api/config')).json();
   assert.equal(cfg.billingConfigured,false);
   assert.equal(cfg.googleClientId,'');

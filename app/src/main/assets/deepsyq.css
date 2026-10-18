@@ -499,3 +499,75 @@ body button:focus-visible,
 @media(prefers-reduced-motion:reduce){
  .hero-motion-control{clip-path:none;width:auto;height:auto;margin:0;z-index:8;top:10px;left:50%;transform:translateX(-50%);padding:7px 13px;border:1px solid #75dfff;border-radius:999px;background:#08101de8;color:white}
 }
+
+/* Owner's neon Home reference, 2026-10-18. Scoped to Home; shared tools keep their UI. */
+body.home-neon{background:#030b18;color:#eff6ff}
+.home-neon .content{background:radial-gradient(ellipse at 55% 5%,#09204288,transparent 35%),#030b18}
+.home-neon main{max-width:1600px;padding:16px 22px 0}
+.home-neon aside{background:linear-gradient(180deg,#040c19,#020a14);border-color:#12304b;padding:22px 16px}
+.home-neon aside nav a.active{background:linear-gradient(110deg,#391bb8,#142c5c);color:white;border:1px solid #4955c6;box-shadow:0 0 16px #244bff20}
+.home-neon .top{background:#040c19ec;border-color:#15253a}
+.home-neon .hero{padding:0 0 8px}
+.home-neon .hero-stage.hero-stage-cinematic{background:radial-gradient(ellipse at 50% 100%,#123ea755,transparent 65%),#020a16}
+.home-neon .home-quick-bar{max-width:900px;margin:8px auto 14px;padding:0;border:0;background:none;box-shadow:none}
+.home-neon .home-quick-form{display:flex;align-items:center;gap:12px;min-height:60px;padding:6px 8px 6px 18px;border:1px solid #8b86d2;border-radius:999px;background:linear-gradient(110deg,#141e45cc,#071427e8);box-shadow:inset 0 0 14px #465be21c,0 0 28px #1648cc14}
+.home-neon .home-quick-form svg,.home-tile-icon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;display:block}
+.home-neon .home-quick-form textarea{display:block;flex:1;width:auto;min-width:0;min-height:42px;height:42px;max-height:90px;resize:none;border:0;border-radius:12px;background:transparent;color:#eaf0ff;padding:11px 0;font:inherit;font-size:13px;line-height:20px;box-shadow:none}
+.home-neon .home-quick-form textarea::placeholder{color:#b4bdd5}
+.home-neon .home-quick-form textarea:focus-visible{outline:1px solid #738fe3;outline-offset:1px}
+.home-neon .home-reference-link,.home-neon .home-settings-link{flex:none;display:grid;place-items:center;width:30px;height:38px;color:#c9d6f5}
+.home-neon #homeQuickSubmit{display:grid;place-items:center;flex:none;width:46px;height:46px;padding:0;border:1px solid #8893ff;border-radius:50%;background:linear-gradient(125deg,#ab35f7,#7e48ff 40%,#13daf4);box-shadow:0 0 14px #6263ff80;color:white;cursor:pointer}
+.home-neon #homeQuickSubmit svg{width:23px;height:23px}
+.home-neon .home-quick-status{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%)}
+.home-neon .home-quick-status.is-visible{position:static;width:auto;height:auto;margin:8px 14px;padding:0;clip-path:none;font-size:11px;color:#bdcde8}
+.home-neon .home-launch-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin:0 0 4px}
+.home-launch-tile{--tile:#8652f7;display:flex;align-items:center;gap:9px;min-width:0;min-height:58px;padding:9px 10px;text-align:left;border:1px solid color-mix(in srgb,var(--tile),#172038 45%);border-radius:9px;color:#e9eeff;background:linear-gradient(110deg,color-mix(in srgb,var(--tile) 18%,#061125),#081221);cursor:pointer;font:inherit}
+.home-launch-tile[aria-pressed=true],.home-launch-tile:hover{border-color:var(--tile);box-shadow:inset 0 0 18px color-mix(in srgb,var(--tile) 18%,transparent),0 0 12px color-mix(in srgb,var(--tile) 12%,transparent)}
+.home-tile-icon{display:grid;place-items:center;flex:none;width:35px;height:35px;border:1px solid color-mix(in srgb,var(--tile) 60%,transparent);border-radius:8px;color:#e9f5ff;background:linear-gradient(135deg,color-mix(in srgb,var(--tile) 75%,transparent),color-mix(in srgb,var(--tile) 22%,#09182f));box-shadow:inset 0 0 12px #ffffff16,0 0 13px color-mix(in srgb,var(--tile) 18%,transparent)}
+.home-launch-tile>span:last-child{min-width:0;display:grid;gap:4px}
+.home-launch-tile strong{font-size:11px;font-weight:600;white-space:nowrap}
+.home-launch-tile small{font-size:9px;line-height:1.35;color:#b9c7e4}
+.tile-image{--tile:#942df7}.tile-video{--tile:#216aff}.tile-audio{--tile:#05d7be}.tile-agent{--tile:#e3b648}.tile-apps{--tile:#813aff}.tile-canvas{--tile:#2f9beb}.tile-tools{--tile:#6c83bc}
+.home-neon .home-prompt-ideas{font-size:10px;color:#8092b7;max-width:900px;margin:3px auto;text-align:right}
+.home-neon .home-prompt-ideas summary{display:inline-block;cursor:pointer;padding:3px 0}
+.home-neon .home-quick-ideas{padding:8px 0;justify-content:flex-end;margin:0;flex-wrap:wrap}
+.home-neon .hero .availability{font-size:10px;line-height:1.4;margin:5px 0 0;max-width:none;color:#7f90ae}
+.home-neon .home-create-section{margin:14px 0 16px;padding:0}
+.home-neon .home-create-section .section-head{margin:0 0 13px;align-items:center;gap:12px}
+.home-neon .home-create-section h2{font-size:25px;letter-spacing:-.8px;line-height:1.25}
+.home-neon .home-create-section h2 em{font-style:normal;background:linear-gradient(100deg,#f7deff,#f39cec);background-clip:text;color:transparent}
+.home-neon .home-create-section .section-head p{font-size:12px;color:#acb9cc;margin:5px 0 0}
+.home-view-tools{flex:none;display:inline-flex;align-items:center;border:1px solid #24528a;border-radius:999px;color:#47ebf7;padding:8px 14px;font-size:11px}
+.home-create-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.home-create-card{--tile:#9349ff;position:relative;isolation:isolate;display:grid;grid-template-columns:30px minmax(0,1fr);align-content:start;gap:10px;aspect-ratio:1.65;min-height:116px;border:1px solid #334871;border-radius:10px;overflow:hidden;background:#091327;padding:12px 10px;transition:border-color .2s,transform .2s}
+.home-create-card>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.home-create-card::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#071326eb 0%,#071326c9 35%,#07132635 100%);z-index:-1}
+.home-create-card .home-tile-icon{width:30px;height:30px;border-radius:7px}
+.home-create-card .home-tile-icon svg{width:20px;height:20px}
+.home-create-copy{display:grid;gap:5px;min-width:0}
+.home-create-copy strong{font-size:13px;font-weight:600}
+.home-create-copy>span{font-size:10px;line-height:1.5;color:#d0dcf0;max-width:105px}
+.home-create-copy small{font-size:8px;color:#c0c8e7}
+.home-card-arrow{position:absolute;left:12px;bottom:11px;width:26px;height:26px;border:1px solid #849acb66;border-radius:50%;background:#ffffff09;display:grid;place-items:center;font-size:24px;line-height:1}
+.home-create-card:hover{border-color:#7e8ffc;transform:translateY(-2px)}
+.home-neon #inspirationPreview{margin:16px 0 24px}
+.home-neon #inspirationPreview .section-heading{margin-bottom:12px;align-items:center}
+.home-neon #inspirationPreviewTitle{font-size:24px}
+.home-neon #inspirationPreview .section-heading>a{font-size:11px;color:#64e6ff}
+.home-neon .inspiration-preview-lead{font-size:11px;margin:-5px 0 10px;color:#98a8c1}
+.home-neon .inspiration-home-tabs{justify-content:flex-end;margin:-32px 0 13px;gap:5px}
+.home-neon .inspiration-home-tabs button{padding:5px 12px;font-size:10px;border-color:#263851;background:#081425;color:#bccae3}
+.home-neon .inspiration-home-tabs button[aria-pressed=true]{background:linear-gradient(110deg,#c13af0,#3dd8ef);color:white;border-color:#9857ed}
+.home-neon .inspiration-preview-categories{display:none}
+.home-neon .inspiration-preview-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-auto-rows:155px;gap:9px}
+.home-neon .inspiration-preview-grid .inspiration-preview-card,.home-neon .inspiration-preview-grid .inspiration-preview-card:first-child,.home-neon .inspiration-preview-grid .inspiration-preview-card[data-kind=video]:first-child{grid-column:auto;grid-row:auto;min-height:0;border-color:#284564;border-radius:9px}
+.home-neon .inspiration-preview-grid .inspiration-preview-card>div:last-child{padding:34px 10px 10px}
+.home-neon .inspiration-preview-grid .inspiration-preview-card strong{font-size:11px}
+.home-neon .inspiration-video-label{font-size:0;background:#0005;border:1px solid #cde8ffbb;width:28px;height:28px;inset:40% auto auto 44%;border-radius:50%;display:grid;place-items:center;padding:0}
+.home-neon .inspiration-video-label::after{content:"▶";font-size:11px;color:white}
+.home-neon .landing-feature{background:linear-gradient(130deg,#0c1831,#071223);border-color:#203956}
+.home-neon .landing-feature h2,.home-neon .landing-feature h3{color:#e4efff}
+@media(min-width:1100px){.home-neon #inspirationPreview .section-heading{padding-right:180px}.home-neon .inspiration-preview-lead{max-width:65%}}
+@media(max-width:1150px){.home-launch-tile{padding:8px;gap:6px}.home-launch-tile .home-tile-icon{width:28px;height:30px}.home-launch-tile small{display:none}.home-create-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.home-create-card{aspect-ratio:2.3;min-height:125px}.home-create-copy>span{max-width:150px}.home-neon .inspiration-preview-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:760px){.home-neon main{padding:12px 12px 0}.home-neon .home-quick-form{gap:7px;min-height:54px;padding:5px 6px 5px 12px}.home-neon .home-quick-form textarea{font-size:12px}.home-neon #homeQuickSubmit{width:40px;height:40px}.home-neon .home-launch-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.home-launch-tile{min-height:48px;justify-content:center;flex-direction:column;gap:5px;padding:7px 3px}.home-launch-tile strong{font-size:10px}.home-launch-tile .home-tile-icon{width:27px;height:27px}.home-launch-tile .home-tile-icon svg{width:19px;height:19px}.home-neon .home-reference-link{width:23px}.home-neon .home-settings-link{width:22px}.home-neon .home-create-section h2{font-size:21px}.home-neon .home-create-section .section-head p{font-size:10px;max-width:240px}.home-view-tools{font-size:10px;padding:7px 9px}.home-create-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-create-card{aspect-ratio:1.6;min-height:125px;gap:7px}.home-create-copy strong{font-size:12px}.home-create-copy>span{font-size:10px}.home-create-card .home-tile-icon{width:27px;height:27px}.home-neon .inspiration-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:150px}.home-neon .inspiration-home-tabs{margin:0 0 10px;justify-content:flex-start}.home-neon .inspiration-preview-lead{max-width:none}.home-neon #inspirationPreview .section-heading{align-items:center}.home-neon #inspirationPreviewTitle{font-size:22px}.home-neon .home-prompt-ideas{margin-bottom:0}}
+@media(prefers-reduced-motion:reduce){.home-create-card{transition:none}.home-create-card:hover{transform:none}}

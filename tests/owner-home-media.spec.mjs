@@ -19,7 +19,7 @@ test('owner-supplied MP4: real muted autoplay, six complete films wrap, arrows, 
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
  const video=page.locator('#inspirationHeroVideo');
  await expect(page.locator('#homeHeroDots,#homeHeroSound,.hero-stage-copy,.home-hero-footer')).toHaveCount(0);
- await expect(page.locator('#homeHeroModel')).toHaveText('Google Flow');
+ await expect(page.locator('#homeHeroModel')).toHaveText('AI Canvas');
  await expect(page.locator('#homeHeroPreviousVideo')).toHaveAttribute('src',clips[5].previewUrl);
  await expect(page.locator('#homeHeroNextVideo')).toHaveAttribute('src',clips[1].previewUrl);
  const center=await page.locator('#inspirationHeroFeature').evaluate(v=>{const r=v.getBoundingClientRect();return {ratio:r.width/r.height,width:r.width,stage:v.closest('.hero-stage').getBoundingClientRect().width};});
@@ -41,6 +41,8 @@ test('owner-supplied MP4: real muted autoplay, six complete films wrap, arrows, 
  });
  for(let n=0;n<6;n++){
   await expect(video).toHaveAttribute('src',clips[n].previewUrl);
+  await expect(page.locator('#homeHeroModel')).toHaveText(clips[n].defaultSettings.homeShowcase.title);
+  await expect(page.locator('#homeHeroModel')).toHaveAttribute('title',/not source attribution/);
   await expect.poll(()=>video.evaluate(v=>v.readyState),{timeout:20000}).toBeGreaterThanOrEqual(2);
   await expect.poll(()=>video.evaluate(v=>v.currentTime),{timeout:20000}).toBeGreaterThan(0.1);
   const size=await video.evaluate(v=>({width:v.videoWidth,height:v.videoHeight,duration:v.duration}));

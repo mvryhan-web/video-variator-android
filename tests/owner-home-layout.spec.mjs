@@ -1,0 +1,46 @@
+import {test,expect} from '@playwright/test';
+import {readFile} from 'node:fs/promises';
+const bundle=JSON.parse(await readFile(new URL('../app/src/main/assets/media/home/owner-20261018/manifest.json',import.meta.url)));
+async function home(page){
+ await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}},googleClientId:'',billingConfigured:false,features:{inspiration:true,aiApps:false,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:new URL(r.request().url()).searchParams.get('target')==='agent'?[]:bundle.items.filter(x=>x.featured),categories:['Cinematic']}}));
+ await page.goto('/deepsyq.html');
+}
+test('Owner neon layout: reference section order, real card images and mobile bounds',async({page},info)=>{
+ const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
+ await home(page);
+ await expect(page.locator('#homeHeroModel')).toHaveText('AI Canvas');
+ await expect(page.locator('.home-launch-grid > *')).toHaveCount(7);
+ await expect(page.locator('.home-create-card')).toHaveCount(6);
+ await expect(page.locator('.home-create-copy strong')).toHaveText(['Image','Video','Audio','AI Agent','AI Apps','Canvas']);
+ for(const width of [1448,390,320]){
+  await page.setViewportSize({width,height:1086});
+  await page.locator('#createWithDeepsyq').scrollIntoViewIfNeeded();
+  await expect.poll(()=>page.locator('.home-create-card img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
+  const layout=await page.evaluate(()=>{
+   const ids=['homeHeroCarousel','homeQuickBar','createWithDeepsyq','inspirationPreview','canvasFeature'];
+   const tops=ids.map(id=>document.getElementById(id).getBoundingClientRect().top);
+   const fits=[...document.querySelectorAll('.home-launch-grid,.home-create-grid,.home-create-card,#homeQuickBar')].every(el=>{const r=el.getBoundingClientRect();return r.left>=-1&&r.right<=innerWidth+1;});
+   return {ordered:tops.every((v,i)=>i===0||v>tops[i-1]),fits};
+  });
+  expect(layout).toEqual({ordered:true,fits:true});
+  await page.screenshot({path:info.outputPath('neon-home-'+width+'.png'),fullPage:true});
+ }
+ expect(posts).toEqual([]);
+});
+test('Owner neon layout: feature shortcuts use existing destinations and showcase is not source credit',async({page})=>{
+ await home(page);
+ await expect(page.locator('.home-launch-grid a[href="ai-apps.html"]')).toBeVisible();
+ await expect(page.locator('.home-launch-grid a[href="free-tools.html"]')).toBeVisible();
+ await expect(page.locator('.home-create-card.tile-agent')).toHaveAttribute('href','#agentFeature');
+ await expect(page.locator('.home-create-card.tile-agent')).toContainText('Coming soon');
+ await page.locator('#homeHeroNext').click();
+ await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.0');
+ await expect(page.locator('#homeHeroModel')).toHaveAttribute('title',/created in Google Flow/);
+ await expect(page.locator('#homeHeroCreditLabel')).toHaveText('EXPLORE VIDEO MODELS');
+ await page.locator('#homeHeroNext').click();
+ await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.5');
+ await page.locator('.home-create-card.tile-canvas').click();
+ await expect(page.locator('#quickCreateForm')).toBeInViewport();
+});

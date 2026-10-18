@@ -28,7 +28,12 @@
       "requiredInputTypes": [],
       "defaultSettings": {
         "ownerSceneId": "carousel-1",
-        "creationProvider": "Google Flow"
+        "creationProvider": "Google Flow",
+        "homeShowcase": {
+          "title": "AI Canvas",
+          "label": "CREATIVE WORKSPACE",
+          "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio."
+        }
       },
       "actionTarget": "studio",
       "rightsBasis": "licensed",
@@ -59,7 +64,12 @@
       "requiredInputTypes": [],
       "defaultSettings": {
         "ownerSceneId": "carousel-2",
-        "creationProvider": "Google Flow"
+        "creationProvider": "Google Flow",
+        "homeShowcase": {
+          "title": "Seedance 2.0",
+          "label": "EXPLORE VIDEO MODELS",
+          "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio."
+        }
       },
       "actionTarget": "studio",
       "rightsBasis": "licensed",
@@ -90,7 +100,12 @@
       "requiredInputTypes": [],
       "defaultSettings": {
         "ownerSceneId": "carousel-3",
-        "creationProvider": "Google Flow"
+        "creationProvider": "Google Flow",
+        "homeShowcase": {
+          "title": "Seedance 2.5",
+          "label": "EXPLORE VIDEO MODELS",
+          "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio."
+        }
       },
       "actionTarget": "studio",
       "rightsBasis": "licensed",
@@ -121,7 +136,12 @@
       "requiredInputTypes": [],
       "defaultSettings": {
         "ownerSceneId": "carousel-4",
-        "creationProvider": "Google Flow"
+        "creationProvider": "Google Flow",
+        "homeShowcase": {
+          "title": "Video Studio",
+          "label": "CREATE WITH DEEPSYQ",
+          "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio."
+        }
       },
       "actionTarget": "studio",
       "rightsBasis": "licensed",
@@ -152,7 +172,12 @@
       "requiredInputTypes": [],
       "defaultSettings": {
         "ownerSceneId": "carousel-5",
-        "creationProvider": "Google Flow"
+        "creationProvider": "Google Flow",
+        "homeShowcase": {
+          "title": "AI Agent",
+          "label": "CREATIVE CO-PILOT · COMING SOON",
+          "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio."
+        }
       },
       "actionTarget": "studio",
       "rightsBasis": "licensed",
@@ -183,7 +208,12 @@
       "requiredInputTypes": [],
       "defaultSettings": {
         "ownerSceneId": "carousel-6",
-        "creationProvider": "Google Flow"
+        "creationProvider": "Google Flow",
+        "homeShowcase": {
+          "title": "Image Studio",
+          "label": "CREATE WITH DEEPSYQ",
+          "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio."
+        }
       },
       "actionTarget": "studio",
       "rightsBasis": "licensed",
