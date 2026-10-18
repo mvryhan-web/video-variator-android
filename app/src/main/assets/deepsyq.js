@@ -319,9 +319,9 @@ function updateInspirationHero(items){renderHomeCarousel(items);}
 
 // Owner-approved Home enhancements: no extra provider/credit/auth APIs are created.
 const homeLang=$('homeLanguage');const homeI18n={
- en:{hero:'Create<br><em>beyond limits.</em>',canvas:'Canvas — your creative workspace',agent:'AI Agent — bring bigger ideas to life',apps:'AI Apps — discover ways to create',inspiration:'Inspiration — Images & Videos'},
- fr:{hero:'Créez<br><em>sans limites.</em>',canvas:'Canvas — votre espace créatif',agent:'Agent IA — imaginez plus grand',apps:'AI Apps — explorez la création',inspiration:'Inspiration — Images et vidéos'},
- ru:{hero:'Создавайте<br><em>без границ.</em>',canvas:'Canvas — ваше творческое пространство',agent:'AI Agent — больше возможностей',apps:'AI Apps — инструменты творчества',inspiration:'Вдохновение — изображения и видео'}
+ en:{hero:'Create<br><em>beyond limits.</em>',canvas:'Canvas — your creative workspace',agent:'AI Agent — bring bigger ideas to life',apps:'AI Apps — discover ways to create',inspiration:'Inspiration'},
+ fr:{hero:'Créez<br><em>sans limites.</em>',canvas:'Canvas — votre espace créatif',agent:'Agent IA — imaginez plus grand',apps:'AI Apps — explorez la création',inspiration:'Inspiration'},
+ ru:{hero:'Создавайте<br><em>без границ.</em>',canvas:'Canvas — ваше творческое пространство',agent:'AI Agent — больше возможностей',apps:'AI Apps — инструменты творчества',inspiration:'Вдохновение'}
 };
 function applyHomeLanguage(code){const v=homeI18n[code]||homeI18n.en;const hero=document.querySelector('.hero-stage-copy h1');if(hero)hero.innerHTML=v.hero;for(const [id,key] of [['canvasFeatureTitle','canvas'],['agentFeatureTitle','agent'],['appsFeatureTitle','apps'],['inspirationPreviewTitle','inspiration']]){const el=$(id);if(el)el.textContent=v[key];}if(homeLang)homeLang.value=homeI18n[code]?code:'en';}
 if(homeLang){const saved=localStorage.getItem('deepsyq_home_language');applyHomeLanguage(saved||'en');homeLang.onchange=()=>{localStorage.setItem('deepsyq_home_language',homeLang.value);applyHomeLanguage(homeLang.value);};}
