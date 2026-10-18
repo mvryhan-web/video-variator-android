@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync,statSync} from 'node:fs';
 const assets=new URL('../app/src/main/assets/',import.meta.url),read=n=>readFileSync(new URL(n,assets),'utf8');
-test('all fourteen connected design pages share owner-approved palette',()=>{
- const pages=['ai-apps.html','ai-pricing.html','ai-privacy.html','audio-studio.html','avatar-studio.html','deepsyq-admin.html','deepsyq-vs-deepseek.html','deepsyq.html','free-tools.html','generate-studio.html','index.html','inspiration.html','mobile-utility.html','product-video.html'];
+test('all twenty site pages share owner-approved palette; standalone/owner shells stay safe',()=>{
+ const pages=['ai-apps.html','ai-pricing.html','ai-privacy.html','audio-studio.html','avatar-studio.html','deepsyq-admin.html','deepsyq-vs-deepseek.html','deepsyq.html','free-tools.html','generate-studio.html','index.html','inspiration.html','mobile-utility.html','product-video.html','photo-collage.html','simple-background-remover.html','smart-reminders.html','teleprompter.html','telegram-free-mini.html','product-watcher-admin.html'];
  for(const page of pages)assert.ok(read(page).includes('deepsyq-global-theme.css'),page);
+ for(const page of pages){const useShell=read(page).includes('deepsyq-site-shell.js');assert.equal(useShell,!['deepsyq.html','index.html','deepsyq-admin.html','telegram-free-mini.html','product-watcher-admin.html'].includes(page),page+' shell mismatch');}
  assert.ok(read('deepsyq.html').includes('hero-stage-cinematic'));
  assert.ok(read('deepsyq.html').includes('<meta name="robots" content="index,follow">'));
  assert.ok(read('deepsyq.html').includes('home-feature-triptych'));
