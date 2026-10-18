@@ -1,5 +1,10 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## AGENT A / SEO #156 PR267 SCOPED SOURCE / 2026-10-18
+
+- **A claims exact isolated editorial slice** Issue156 on current owner-approved global SEO track; original Home §3 PR259 now DEV merged, original History §24 PR152 cross-lane blocked, no duplicate old PR. [PR267](https://github.com/mvryhan-web/video-variator-android/pull/267) `agent-a-seo156-comparison-editorial-20261018` exact SHA **`3983348801940b8a1e3252b3d9f4c3ac903e34a2`**, **3 exact file paths**, DRAFT: existing `deepsyq-vs-deepseek.html` comparison safe marketing text/metadata, new isolated no-fee Node 4-case spec, new focused CI workflow. No shared Home, CSS, server, B/C/D feature or indexation changes. [Focused #39142953164](https://github.com/mvryhan-web/video-variator-android/actions/runs/39142953164) and [platform #39142953256](https://github.com/mvryhan-web/video-variator-android/actions/runs/39142953256) current-head QUEUED, NOT READY / NOT MERGED. Full SEO technical crawler release UNASSIGNED, full original §3 PARTIAL. Only #5 DEV merge after exact-head CI success; owner/D prod authorization separate.
+
+
 ## AGENT A / SEO ISSUE156 ISOLATED PUBLIC COMPARISON COPY CLAIM — 2026-10-18
 
 - Owner-approved A editorial SEO Issue156: **claim only** `app/src/main/assets/deepsyq-vs-deepseek.html` and new `tests/deepsyq-seo-comparison-unit.mjs` plus a **new isolated no-spend CI workflow** `.github/workflows/agent-a-seo-comparison.yml` to improve accurate broad AI-platform-vs-chat editorial copy/unique title and metadata, accessible internal links and offline no-unverified-claims regression. Search for exact filename in current open PR and issue titles/bodies shows no claim; check SHA before writing. No rewrite of Home owner design, no robots/indexation changes, server routing/sitemap, B/C/D code/Stripe or creative model activation. Before merge require source/CI green and coordinator DEV integration; original §3 Home DEV merged but rights/live PARTIAL; §24 existing PR152 cross-lane BLOCKED. Full SEO technical launch not claimed.
