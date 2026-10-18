@@ -49,4 +49,3 @@ test.describe('Free Telegram Mini App with five previews and no purchases',()=>{
   expect(page.url()).toContain('/telegram-free-mini.html');
  });
 });
-

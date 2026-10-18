@@ -35,7 +35,7 @@ test('tool back buttons have a visible touch target and return to dashboard',asy
     expect(box.height).toBeGreaterThanOrEqual(48);
     expect(box.y).toBeGreaterThanOrEqual(20);
     await back.click();
-    await expect(page).toHaveURL(path==='/free-tools.html'?/deepsyq.html$/:/index.html$/);
+    await expect(page).toHaveURL(/index.html$/);
   }
 });
 

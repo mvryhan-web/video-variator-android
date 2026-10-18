@@ -24,4 +24,3 @@ test('duplicate fields and wrong bot secret rejected',()=>{
  assert.equal(verifyTelegramInitData(signed(12345)+'&user=forged',token,now),null);
  assert.equal(verifyTelegramInitData(signed(12345),'other:token',now),null);
 });
-

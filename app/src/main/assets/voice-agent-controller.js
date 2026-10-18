@@ -142,30 +142,15 @@ export class VoiceAgentController {
    */
   async requestMicrophone(options = {}) {
     // Guard concurrent presses while already requesting or live
-    if (this.state === VOICE_AGENT_STATES.REQUESTING || this.state === VOICE_AGENT_STATES.LIVE || this.state === VOICE_AGENT_STATES.MUTED) {
-      return null; // Never create a second active stream or duplicate a pending permission request.
+    if (this.state === VOICE_AGENT_STATES.REQUESTING) {
+      return null;
     }
 
     const currentRequestId = ++this.requestId;
     const currentAccountId = this.accountId;
 
-    // Lock synchronously BEFORE the first await; two rapid clicks must never race.
-    this.state = VOICE_AGENT_STATES.REQUESTING;
-    this.error = null;
-    this._notify();
-
-    let permStatus;
-    try {
-      permStatus = await this.checkPermissionStatus();
-    } catch (_) {
-      if (this.requestId !== currentRequestId || this.accountId !== currentAccountId) return null;
-      this.state = VOICE_AGENT_STATES.ERROR;
-      this.error = new Error('MIC_PERMISSION_PREFLIGHT_FAILED');
-      this._notify();
-      return null;
-    }
-    // A late denied preflight must not override Stop or an account switch.
-    if (this.requestId !== currentRequestId || this.accountId !== currentAccountId) return null;
+    // Permission preflight check
+    const permStatus = await this.checkPermissionStatus();
     if (permStatus === 'denied') {
       this.state = VOICE_AGENT_STATES.PERMISSION_DENIED;
       this.error = new Error('Microphone permission denied by user preflight');
@@ -177,6 +162,10 @@ export class VoiceAgentController {
     if (this.requestId !== currentRequestId || this.accountId !== currentAccountId) {
       return null;
     }
+
+    this.state = VOICE_AGENT_STATES.REQUESTING;
+    this.error = null;
+    this._notify();
 
     const adapter = this._getAdapter();
     if (!adapter || typeof adapter.getUserMedia !== 'function') {
