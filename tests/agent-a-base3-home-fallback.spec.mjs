@@ -38,8 +38,7 @@ test('BASE 3: empty rights-cleared video feed keeps visible honest 16:9 gallery 
  await expect(page.locator('#canvasFeature')).toBeVisible();
  await expect(page.locator('#homeQuickForm')).toBeVisible();
  const desktopRatio=await page.locator('.hero-stage').evaluate(el=>{const r=el.getBoundingClientRect();return r.width/r.height;});
- expect(desktopRatio).toBeGreaterThan(1.73);
- expect(desktopRatio).toBeLessThan(1.82);
+ expect(desktopRatio).toBeCloseTo(2.15,1);
  await page.screenshot({path:info.outputPath('home-no-approved-media-1448.png'),fullPage:true});
  await page.setViewportSize({width:390,height:844});
  await expect(gallery).toBeVisible();
@@ -98,14 +97,14 @@ test('BASE 3: mocked navigation preserves real authorized slide metadata and wra
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await expect(page.locator('#homeHeroCarousel')).not.toHaveClass(/is-empty/);
  await expect(page.locator('#homeHeroEmpty')).toBeHidden();
- await expect(page.locator('#homeHeroDots button')).toHaveCount(2);
- await expect(page.locator('#homeHeroPlay')).toBeVisible();
+ await expect(page.locator('#homeHeroDots')).toHaveCount(0);
+ await expect(page.locator('#homeHeroPlay')).not.toBeInViewport();
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
  await page.locator('#homeHeroPrevious').click();
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 2 of 2');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 2 of 2/);
  await page.locator('#homeHeroNext').click();
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 2');
- await expect(page.locator('#homeHeroSlideLink')).toHaveAttribute('href',/kind=video/);
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 1 of 2/);
+ await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href',/kind=video/);
 });
 
 test('BASE 3: one authorized video disables arrows and avoids dead carousel controls',async({page})=>{
@@ -120,11 +119,12 @@ test('BASE 3: one authorized video disables arrows and avoids dead carousel cont
   previewUrl:'/single-owner-video.mp4'}]);
  await page.goto('/deepsyq.html');
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 1');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 1 of 1/);
  await expect(page.locator('#homeHeroPrevious')).toBeDisabled();
  await expect(page.locator('#homeHeroNext')).toBeDisabled();
- await expect(page.locator('#homeHeroDots button')).toHaveCount(1);
- await expect(page.locator('#homeHeroDots button')).toBeEnabled();
+ await expect(page.locator('#homeHeroDots')).toHaveCount(0);
+ await expect(page.locator('#homeHeroPreviousVideo').locator('..')).toBeHidden();
+ await expect(page.locator('#homeHeroNextVideo').locator('..')).toBeHidden();
 });
 
 test('BASE 3: one failed source cannot leave useless arrows active on the sole surviving slide',async({page})=>{
@@ -143,11 +143,10 @@ test('BASE 3: one failed source cannot leave useless arrows active on the sole s
  await expect(page.locator('#homeHeroNext')).toBeEnabled();
  await page.locator('#inspirationHeroVideo').evaluate(el=>el.dispatchEvent(new Event('error')));
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/clip-b.mp4');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 2 of 2');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 2 of 2/);
  await expect(page.locator('#homeHeroNext')).toBeDisabled();
  await expect(page.locator('#homeHeroPrevious')).toBeDisabled();
- await expect(page.locator('#homeHeroDots button').first()).toBeDisabled();
- await expect(page.locator('#homeHeroDots button').last()).toBeEnabled();
+ await expect(page.locator('#homeHeroDots')).toHaveCount(0);
  await expect(page.locator('#homeHeroCarousel')).not.toHaveClass(/is-empty/);
 });
 
@@ -185,13 +184,13 @@ test('BASE 3: six featured carousel slots preserve thirteen original source scen
  await expect(page.locator('#homeHeroDots button').nth(5)).toHaveAttribute('aria-label',/Visualize White Tiger/);
  expect(scenes).toHaveLength(13); // Seven additional owner scene identities stay in the feed.
  await expect(page.locator('#homeHeroDots button').first()).toHaveAttribute('aria-current','true');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 6');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 1 of 6/);
  await page.locator('#homeHeroPrevious').click();
  await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Visualize White Tiger');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 6 of 6');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 6 of 6/);
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Hero Girl');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 6');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 1 of 6/);
  await expect(page.locator('#homeHeroDots button').last()).toHaveAttribute('aria-label',/Visualize White Tiger/);
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
 });

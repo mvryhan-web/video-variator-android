@@ -1,3 +1,7 @@
+## Owner neon carousel reference — 2026-10-18 20:46 Paris
+
+Owner's latest screenshots explicitly authorize smaller central16:9film, curved cyan outline, angled genuine previous/next clips at both sides and blue/violet ambient floor. Remove overlaid marketing copy, scene-name/counter side box, sound toggle and thumbnail strip. Preserve exact6MP4order and EOF recovery. User selected "Google Flow пока" in secure clarification: provider label "CREATED IN Google Flow" until exact model confirmed; never invent Veo version. Reuse defaultSettings.creationProvider/creationModel metadata; no schema or generation changes. Keep keyboard/swipe/arrows, offscreen focusable pause and reduced-motion manual Play. Scope only hero; existing QuickCreate below unchanged. Continue same PR257 and existing preview; no new infrastructure or main release. New visual/real-playback CI pending.
+
 ## [DEEPSYQ HANDOFF] Work integration — owner Flow carousel publication, 2026-10-18
 
 Existing PR #257 and existing free preview service srv-db91k1vf3r2c73fpj350 only. Owner confirmed these seven supplied MP4s were created in Google Flow and expressly authorized publication. Close-up woman remains first, followed by portal, underwater woman, neon motorcycle, sky whale, golden forest; red-gown film remains separate V02 and its genuine frame replaces the cancelled butterfly-image card. Older HeyGen Free restrictions are NOT removed. Main production, database/catalog, auth, Stripe, provider generation and Video Uniquifier engine unchanged.

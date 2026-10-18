@@ -18,7 +18,13 @@ test('owner-supplied MP4: real muted autoplay, six complete films wrap, arrows, 
  });
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
  const video=page.locator('#inspirationHeroVideo');
- await expect(page.locator('#homeHeroDots button')).toHaveCount(6);
+ await expect(page.locator('#homeHeroDots,#homeHeroSound,.hero-stage-copy,.home-hero-footer')).toHaveCount(0);
+ await expect(page.locator('#homeHeroModel')).toHaveText('Google Flow');
+ await expect(page.locator('#homeHeroPreviousVideo')).toHaveAttribute('src',clips[5].previewUrl);
+ await expect(page.locator('#homeHeroNextVideo')).toHaveAttribute('src',clips[1].previewUrl);
+ const center=await page.locator('#inspirationHeroFeature').evaluate(v=>{const r=v.getBoundingClientRect();return {ratio:r.width/r.height,width:r.width,stage:v.closest('.hero-stage').getBoundingClientRect().width};});
+ expect(center.ratio).toBeCloseTo(16/9,1);expect(center.width).toBeLessThan(center.stage*.9);
+ await expect(page.locator('#homeHeroPlay')).not.toBeInViewport();
  await expect(video).toHaveAttribute('src',clips[0].previewUrl);
  await expect(video).toHaveJSProperty('muted',true);
  await expect(video).toHaveJSProperty('playsInline',true);

@@ -4,27 +4,48 @@ import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id);
 const video=$('inspirationHeroVideo');
 const carousel=$('homeHeroCarousel');
+const neighborVideos=[$('homeHeroPreviousVideo'),$('homeHeroNextVideo')].filter(Boolean);
 let slides=[],index=0,visible=false,userPaused=false,observer=null,failedSlides=new Set();
 let completionTimer=null,playbackSerial=0;
 function resetCompletion(){clearTimeout(completionTimer);completionTimer=null;playbackSerial++;}
 function advanceCompletedSlide(){if(!ambientAllowed())return;if(slides.length>1)setSlide(index+1);else if(slides.length===1){resetCompletion();video.currentTime=0;ambientPlay();}}
 function ambientAllowed(){return !document.hidden&&visible&&!userPaused&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData;}
-function ambientPlay(){if(!video?.getAttribute('src')||!ambientAllowed())return;void video.play().catch(()=>{userPaused=true;setPlayLabel();});}
-function setPlayLabel(){const b=$('homeHeroPlay');if(!b)return;b.textContent=userPaused?'Play':'Pause';b.setAttribute('aria-label',userPaused?'Play video':'Pause video');}
-function setSoundLabel(){const b=$('homeHeroSound');if(!b||!video)return;b.textContent=video.muted?'Sound off':'Sound on';b.setAttribute('aria-label',video.muted?'Turn sound on':'Turn sound off');b.setAttribute('aria-pressed',String(!video.muted));}
+function pauseFilms(){video?.pause();neighborVideos.forEach(v=>v.pause());}
+function ambientPlay(){
+ if(!video?.getAttribute('src')||!ambientAllowed())return;
+ const serial=playbackSerial;
+ void video.play().catch(error=>{if(serial!==playbackSerial||error.name==='AbortError')return;userPaused=true;pauseFilms();setPlayLabel();});
+ neighborVideos.forEach(v=>{if(v.getAttribute('src'))void v.play().catch(()=>{});});
+}
+function updateNeighbors(){
+ neighborVideos.forEach((v,side)=>{
+  const direction=side===0?-1:1;
+  let at=(index+direction+slides.length)%slides.length;
+  for(let n=0;n<slides.length&&failedSlides.has(at);n++)at=(at+direction+slides.length)%slides.length;
+  const item=slides[at];
+  v.parentElement.hidden=!item||at===index;
+  if(!item||at===index){v.pause();v.removeAttribute('src');v.load();return;}
+  if(v.getAttribute('src')!==item.previewUrl){v.pause();v.src=item.previewUrl;if(item.previewPosterUrl)v.poster=item.previewPosterUrl;else v.removeAttribute('poster');v.muted=true;v.load();}
+ });
+}
+function renderCredit(item){
+ const model=String(item?.defaultSettings?.creationModel||'').trim();
+ const provider=String(item?.defaultSettings?.creationProvider||'').trim();
+ $('homeHeroCreditLabel').textContent=model?'CREATED WITH':provider?'CREATED IN':'';
+ $('homeHeroModel').textContent=model||provider;
+}
+function setPlayLabel(){const b=$('homeHeroPlay');if(!b)return;b.textContent=userPaused?'Play video':'Pause video';b.setAttribute('aria-label',userPaused?'Play video':'Pause video');}
 function showHeroFallback(){
  resetCompletion();
  // Owner-approved Home keeps the real gallery region visible even when no
  // rights-cleared video can play. Do not invent a clip, thumbnail or Play UI.
- video.pause();video.removeAttribute('src');video.removeAttribute('poster');video.load();
+ pauseFilms();video.removeAttribute('src');video.removeAttribute('poster');video.load();
+ neighborVideos.forEach(v=>{v.removeAttribute('src');v.load();v.parentElement.hidden=true;});renderCredit(null);
  carousel.hidden=false;carousel.classList.add('is-empty');$('inspirationHeroFeature').hidden=true;
  observer?.disconnect();observer=null;visible=false;userPaused=true;
  $('homeHeroPrevious').disabled=true;$('homeHeroNext').disabled=true;
- $('homeHeroPlay').disabled=true;$('homeHeroSound').disabled=true;
- $('homeHeroDots').replaceChildren();
- $('homeHeroCounter').textContent='Gallery preview';
- $('homeHeroSlideTitle').textContent='Featured videos are not available yet';
- $('homeHeroSlideLink').hidden=true;$('homeHeroEmpty').hidden=false;
+ $('homeHeroPlay').disabled=true;
+ $('homeHeroEmpty').hidden=false;
  $('homeHeroStatus').textContent='No approved playable featured video is available. The original Home gallery remains visible.';
 }
 function syncSlideControls(){
@@ -33,11 +54,7 @@ function syncSlideControls(){
  const canNavigate=slides.length-failedSlides.size>1;
  $('homeHeroPrevious').disabled=!canNavigate;
  $('homeHeroNext').disabled=!canNavigate;
- for(const dot of $('homeHeroDots').querySelectorAll('button')){
-  const bad=failedSlides.has(Number(dot.dataset.index));
-  dot.disabled=bad;
-  if(bad)dot.setAttribute('aria-label','Video '+(Number(dot.dataset.index)+1)+' unavailable');
- }
+
 }
 function setSlide(next,direction=1){
  if(!slides.length||!video||failedSlides.size===slides.length)return;
@@ -49,46 +66,44 @@ function setSlide(next,direction=1){
  video.pause();video.src=item.previewUrl;
  if(item.previewPosterUrl)video.poster=item.previewPosterUrl;else video.removeAttribute('poster');
  video.load();
- $('inspirationHeroTitle').textContent=item.title||'Original video';
  $('inspirationHeroFeature').href=link;
- $('homeHeroSlideLink').href=link;
- $('homeHeroSlideTitle').textContent=item.title||'Original video';
- $('homeHeroCounter').textContent='Video '+(index+1)+' of '+slides.length;
+ renderCredit(item);updateNeighbors();
+ carousel.setAttribute('aria-label','Featured Deepsyq creative gallery, video '+(index+1)+' of '+slides.length);
  $('homeHeroStatus').textContent='Featured video '+(index+1)+' of '+slides.length+': '+(item.title||'Original video');
- for(const dot of $('homeHeroDots').querySelectorAll('button'))dot.setAttribute('aria-current',String(Number(dot.dataset.index)===index));
  ambientPlay();
 }
 export function renderHomeCarousel(items){
  if(!carousel||!video||!Array.isArray(items))return;
  slides=items.filter(x=>x.kind==='video'&&x.actionTarget==='studio'&&typeof x.previewUrl==='string'&&x.previewUrl.trim()).slice(0,6);
- userPaused=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||!!navigator.connection?.saveData;index=0;failedSlides=new Set();video.pause();video.muted=true;setSoundLabel();observer?.disconnect();observer=null;
+ userPaused=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||!!navigator.connection?.saveData;index=0;failedSlides=new Set();video.pause();video.muted=true;observer?.disconnect();observer=null;
  if(!slides.length){showHeroFallback();return;}
  video.loop=false;
  carousel.hidden=false;carousel.classList.remove('is-empty');$('inspirationHeroFeature').hidden=false;
- $('homeHeroEmpty').hidden=true;$('homeHeroSlideLink').hidden=false;
- $('homeHeroPlay').disabled=false;$('homeHeroSound').disabled=false;
+ $('homeHeroEmpty').hidden=true;
+ $('homeHeroPlay').disabled=false;
  setPlayLabel();
- $('homeHeroDots').replaceChildren();
- slides.forEach((x,i)=>{const b=document.createElement('button');b.type='button';b.dataset.index=String(i);b.setAttribute('aria-label','Show video '+(i+1)+': '+(x.title||'Original video'));
- // Thumbnails use only owner-authorized posters from the existing rights-filtered API.
- if(x.previewPosterUrl){const img=document.createElement('img');img.src=x.previewPosterUrl;img.alt='';img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';b.classList.add('has-poster');b.append(img);}
- b.addEventListener('click',()=>setSlide(i));$('homeHeroDots').append(b);});
  syncSlideControls();
  visible=!('IntersectionObserver'in window);
- if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{for(const e of entries){visible=e.isIntersecting;if(visible)ambientPlay();else video.pause();}},{threshold:.25});observer.observe(carousel);}
+ if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{for(const e of entries){visible=e.isIntersecting;if(visible)ambientPlay();else pauseFilms();}},{threshold:.25});observer.observe(carousel);}
  setSlide(0);
 }
 if(video&&carousel){
+ carousel.addEventListener('keydown',e=>{
+  if(e.target!==carousel)return;
+  if(e.key==='ArrowLeft'){e.preventDefault();setSlide(index-1,-1);}
+  else if(e.key==='ArrowRight'){e.preventDefault();setSlide(index+1,1);}
+  else if(e.key===' '){e.preventDefault();$('homeHeroPlay').click();}
+ });
+ let touchStart=null;
+ carousel.addEventListener('touchstart',e=>{const t=e.changedTouches[0];touchStart={x:t.clientX,y:t.clientY};},{passive:true});
+ carousel.addEventListener('touchend',e=>{if(!touchStart)return;const t=e.changedTouches[0],dx=t.clientX-touchStart.x,dy=t.clientY-touchStart.y;touchStart=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.5)setSlide(index+(dx<0?1:-1),dx<0?1:-1);},{passive:true});
  $('homeHeroPrevious')?.addEventListener('click',()=>setSlide(index-1,-1));
  $('homeHeroNext')?.addEventListener('click',()=>setSlide(index+1,1));
  $('homeHeroPlay')?.addEventListener('click',()=>{
   userPaused=!userPaused;setPlayLabel();
-  if(userPaused)video.pause();else if(!document.hidden&&visible)void video.play().catch(()=>{userPaused=true;setPlayLabel();$('homeHeroStatus').textContent='Video playback unavailable.';});
- });
- $('homeHeroSound')?.addEventListener('click',()=>{
-  video.muted=!video.muted;setSoundLabel();
-  // Unmuting is never automatic: only a direct click can activate the soundtrack.
-  // Play remains a separate opt-in when reduced-motion or data saver is enabled.
+  if(userPaused)pauseFilms();
+  else if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches&&!document.hidden&&visible)void video.play().catch(()=>{userPaused=true;setPlayLabel();});
+  else ambientPlay();
  });
  video.addEventListener('ended',advanceCompletedSlide);
  video.addEventListener('timeupdate',()=>{
@@ -114,7 +129,7 @@ if(video&&carousel){
   $('homeHeroStatus').textContent='This video is unavailable. Showing the next available creation.';
   setSlide(index+1);
  });
- document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else ambientPlay();});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseFilms();else ambientPlay();});
 }
 // Quick Create is not a new generator. It opens the existing Studio with a local, unpaid draft.
 const ideas={

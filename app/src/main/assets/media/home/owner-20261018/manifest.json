@@ -27,7 +27,8 @@
       "aspectRatio": "16:9",
       "requiredInputTypes": [],
       "defaultSettings": {
-        "ownerSceneId": "carousel-1"
+        "ownerSceneId": "carousel-1",
+        "creationProvider": "Google Flow"
       },
       "actionTarget": "studio",
       "rightsBasis": "licensed",
@@ -57,7 +58,8 @@
       "aspectRatio": "16:9",
       "requiredInputTypes": [],
       "defaultSettings": {
-        "ownerSceneId": "carousel-2"
+        "ownerSceneId": "carousel-2",
+        "creationProvider": "Google Flow"
       },
       "actionTarget": "studio",
       "rightsBasis": "licensed",
@@ -87,7 +89,8 @@
       "aspectRatio": "16:9",
       "requiredInputTypes": [],
       "defaultSettings": {
-        "ownerSceneId": "carousel-3"
+        "ownerSceneId": "carousel-3",
+        "creationProvider": "Google Flow"
       },
       "actionTarget": "studio",
       "rightsBasis": "licensed",
@@ -117,7 +120,8 @@
       "aspectRatio": "16:9",
       "requiredInputTypes": [],
       "defaultSettings": {
-        "ownerSceneId": "carousel-4"
+        "ownerSceneId": "carousel-4",
+        "creationProvider": "Google Flow"
       },
       "actionTarget": "studio",
       "rightsBasis": "licensed",
@@ -147,7 +151,8 @@
       "aspectRatio": "16:9",
       "requiredInputTypes": [],
       "defaultSettings": {
-        "ownerSceneId": "carousel-5"
+        "ownerSceneId": "carousel-5",
+        "creationProvider": "Google Flow"
       },
       "actionTarget": "studio",
       "rightsBasis": "licensed",
@@ -177,7 +182,8 @@
       "aspectRatio": "16:9",
       "requiredInputTypes": [],
       "defaultSettings": {
-        "ownerSceneId": "carousel-6"
+        "ownerSceneId": "carousel-6",
+        "creationProvider": "Google Flow"
       },
       "actionTarget": "studio",
       "rightsBasis": "licensed",
@@ -207,7 +213,8 @@
       "aspectRatio": "16:9",
       "requiredInputTypes": [],
       "defaultSettings": {
-        "ownerSceneId": "V02"
+        "ownerSceneId": "V02",
+        "creationProvider": "Google Flow"
       },
       "actionTarget": "studio",
       "rightsBasis": "licensed",
@@ -234,5 +241,6 @@
     "previewUrl": "/media/home/owner-20261018/v02-red-gown.jpg",
     "title": "Red gown dream",
     "replaces": "Previously requested butterfly-woman card; cancelled by owner 2026-10-18."
-  }
+  },
+  "creationModelDisclosure": "Owner selected Google Flow provider label until exact generating model is confirmed; do not invent Veo version."
 }
