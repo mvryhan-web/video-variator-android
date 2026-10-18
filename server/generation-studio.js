@@ -322,7 +322,14 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(walletEnabled())try{
    await wallet.reserve({userId:req.user.id,jobId:id,credits:quote.credits,fingerprint});
    await pool.query("UPDATE vv_generation_jobs SET status='processing',credits_reserved=$2 WHERE id=$1",[id,quote.credits]);
-  }catch(e){await pool.query("UPDATE vv_generation_jobs SET status='failed',error=$2,error_message=$2,failed_at=NOW() WHERE id=$1",[id,e.message==='INSUFFICIENT_AI_CREDITS'?'INSUFFICIENT_AI_CREDITS':'AI_WALLET_RESERVATION_FAILED']).catch(()=>{});return res.status(e.message==='INSUFFICIENT_AI_CREDITS'?402:503).json({error:e.message==='INSUFFICIENT_AI_CREDITS'?'INSUFFICIENT_AI_CREDITS':'AI_WALLET_UNAVAILABLE'});}
+  }catch(e){
+   // No provider has been invoked at this point. A wallet reserve can
+   // succeed while writing its matching job credits fails. Return any
+   // successfully held credits, never strand a charge for a failed start.
+   if(walletEnabled())await wallet.settle({userId:req.user.id,jobId:id,outcome:'confirmed_failure'}).catch(()=>{});
+   await pool.query("UPDATE vv_generation_jobs SET status='failed',error=$2,error_message=$2,failed_at=NOW() WHERE id=$1",[id,e.message==='INSUFFICIENT_AI_CREDITS'?'INSUFFICIENT_AI_CREDITS':'AI_WALLET_RESERVATION_FAILED']).catch(()=>{});
+   return res.status(e.message==='INSUFFICIENT_AI_CREDITS'?402:503).json({error:e.message==='INSUFFICIENT_AI_CREDITS'?'INSUFFICIENT_AI_CREDITS':'AI_WALLET_UNAVAILABLE'});
+  }
   res.status(202).json({id,status:'processing',creditsReserved:quote.credits});void run(id,request,{id:req.user.id,email:req.user.email,provider:req.user.provider},selected,quote,fingerprint).catch(()=>{});
  });
  const getJob=async(req)=>{await init();const r=await pool.query('SELECT * FROM vv_generation_jobs WHERE id=$1 AND user_id=$2 AND deleted=false',[req.params.id,req.user.id]);return r.rows[0];};
