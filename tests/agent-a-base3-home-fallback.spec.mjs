@@ -33,7 +33,8 @@ test('BASE 3: empty rights-cleared video feed keeps visible honest 16:9 gallery 
  await expect(page.locator('#homeHeroDots button')).toHaveCount(0);
  await expect(page.locator('#homeHeroSlideLink')).toBeHidden();
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
- await expect(page.locator('.hero-stage h1')).toContainText('beyond limits');
+ await expect(page.locator('main > h1.sr-only')).toHaveText('Deepsyq AI creative platform');
+ await expect(page.locator('.hero-stage h1')).toHaveCount(0);
  await expect(page.locator('#canvasFeature')).toBeVisible();
  await expect(page.locator('#homeQuickForm')).toBeVisible();
  const desktopRatio=await page.locator('.hero-stage').evaluate(el=>{const r=el.getBoundingClientRect();return r.width/r.height;});
@@ -43,7 +44,8 @@ test('BASE 3: empty rights-cleared video feed keeps visible honest 16:9 gallery 
  await page.setViewportSize({width:390,height:844});
  await expect(gallery).toBeVisible();
  await expect(page.locator('#homeHeroEmpty')).toBeVisible();
- await expect(page.locator('.hero-stage h1')).toBeVisible();
+ await expect(page.locator('.hero-stage')).toBeVisible();
+ await expect(page.locator('.hero-stage h1')).toHaveCount(0);
  await expect(page.locator('#canvasFeature')).toBeVisible();
  // Measure this A-owned hero only; C separately owns mobile drawer/top-nav acceptance.
  const fits=await gallery.evaluate(el=>{const a=el.getBoundingClientRect(),b=el.closest('.hero-stage').getBoundingClientRect();return a.left>=-1&&a.right<=innerWidth+1&&b.left>=-1&&b.right<=innerWidth+1;});
@@ -289,7 +291,8 @@ test('BASE 3: offline platform config never hides the permanent original Hero ga
  await expect(page.locator('#homeHeroCarousel')).toHaveClass(/is-empty/);
  await expect(page.locator('#homeHeroEmpty')).toBeVisible();
  await expect(page.locator('#homeHeroStatus')).toContainText('No approved playable featured video');
- await expect(page.locator('.hero-stage h1')).toContainText('beyond limits');
+ await expect(page.locator('main > h1.sr-only')).toHaveText('Deepsyq AI creative platform');
+ await expect(page.locator('.hero-stage h1')).toHaveCount(0);
  await expect(page.locator('#homeQuickForm')).toBeVisible();
  await expect(page.locator('#paymentStatus')).toContainText('Plans could not load');
  expect(paidPosts).toBe(0);
@@ -302,7 +305,8 @@ test('BASE 3: narrow 320px Home Hero has no intrinsic-width overflow without cli
  await page.setViewportSize({width:320,height:740});
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
- await expect(page.locator('.hero-stage h1')).toContainText('beyond limits');
+ await expect(page.locator('main > h1.sr-only')).toHaveText('Deepsyq AI creative platform');
+ await expect(page.locator('.hero-stage h1')).toHaveCount(0);
  for(const width of [320,340,355,390]){
   await page.setViewportSize({width,height:740});
   const layout=await page.evaluate(()=>{
