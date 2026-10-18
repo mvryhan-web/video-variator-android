@@ -20,7 +20,8 @@ export async function claimPurchasedGeneration(c,{env={},userId,jobId,kind,credi
  // require original LIVE Checkout; subscriptions additionally require an
  // invoice provenance row written after fully validated, LIVE invoice.paid.
  const order=await c.query(`SELECT
-  COALESCE(SUM(credits),0)::bigint AS paid_credits,MIN(session_id) AS source_id
+  COALESCE(SUM(credits),0)::bigint AS paid_credits,
+   MIN(session_id) FILTER (WHERE credits>0) AS source_id
   FROM (
     SELECT (p.credits-CEIL(p.credits::numeric*p.refunded_amount/p.amount))::bigint AS credits,p.session_id FROM vv_ai_purchase p
     JOIN vv_ai_order o ON o.session_id=p.session_id

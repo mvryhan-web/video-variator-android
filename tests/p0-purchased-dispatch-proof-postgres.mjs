@@ -139,8 +139,24 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   assert.equal(partialProof.source,'settled_stripe_purchase');
   assert.equal(await grantPaidSubscriptionInvoice({event:subEvent('in_Unpaid','pi_Unpaid',{amount_paid:0}),env:subEnv,pool,wallet}),false);
 
+  // Refund rounding can exhaust a 1-credit pack on a tiny *partial*
+  // amount refund. MIN(session_id) must not attach the immutable dispatch
+  // claim to that zero-funded pack when a different LIVE pack covers it.
+  await paid('customer_positive_source','cs_live_A_zero',1);
+  await paid('customer_positive_source','cs_live_Z_valid',100);
+  await wallet.refund('pi_cs_live_A_zero',1); // ceil(1 * 1 / 100) = 1 credit
+  const provenanceJob=await job('customer_positive_source','job_positive_source',80);
+  const provenance=await wallet.claimPurchasedDispatch(provenanceJob,{env});
+  assert.equal(provenance.purchasedCreditsAvailableBeforeReserve,100);
+  assert.equal(provenance.purchaseId,'cs_live_Z_valid',
+    'single-use dispatch reference must name a source with positive paid credits');
+  const storedSource=await pool.query(
+    'SELECT purchase_reference FROM vv_ai_purchased_dispatch_claim WHERE job_id=$1',
+    [provenanceJob.jobId]);
+  assert.equal(storedSource.rows[0].purchase_reference,'cs_live_Z_valid');
+
   const total=await pool.query('SELECT count(*)::int AS n FROM vv_ai_purchased_dispatch_claim');
-  assert.equal(total.rows[0].n,5,'pack, mixed-funding pack, net-settled pack, subscription and valid partially paid subscription only');
+  assert.equal(total.rows[0].n,6,'pack, mixed, net-settled, subscriptions and positive-source provenance');
  }finally{
   await pool.end();
   await admin.query('DROP SCHEMA IF EXISTS '+schema+' CASCADE').catch(()=>{});
