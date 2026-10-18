@@ -7,6 +7,8 @@ on:
     paths:
       - 'server/generation-studio.js'
       - 'tests/generation-studio-unit.mjs'
+      - 'tests/base37-completed-failure-rate-unit.mjs'
+      - 'server/generation-business-rates.js'
       - 'app/src/main/assets/deepsyq-admin.js'
       - '.github/workflows/base37-kind-analytics.yml'
 permissions:
@@ -26,4 +28,5 @@ jobs:
           node --check server/generation-studio.js
           node --check app/src/main/assets/deepsyq-admin.js
           node --check tests/generation-studio-unit.mjs
-          node --test tests/generation-studio-unit.mjs tests/generation-pricing-unit.mjs
+          node --check server/generation-business-rates.js
+          node --test tests/generation-studio-unit.mjs tests/generation-pricing-unit.mjs tests/base37-completed-failure-rate-unit.mjs

@@ -204,24 +204,31 @@ test('AI Apps template preview renders untrusted prompt as text and stays useful
 });
 
 
-test('BASE #29 AI Apps navigation reaches existing History, Credits and Pricing without triggering paid generation',async({page})=>{
+test('BASE #29 AI Apps navigation reaches separate My Creations, History, Credits and Pricing without paid generation',async({page})=>{
  await page.route('**/api/templates',route=>route.fulfill({json:{items:[]}}));
  await page.route('**/api/studio/config',route=>route.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  let paidJobs=0;
  page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')paidJobs++;});
  await page.goto('/ai-apps.html');
  const nav=page.getByRole('navigation',{name:'Main navigation'});
- const history=nav.getByRole('link',{name:'My Creations and History'});
- const credits=nav.getByRole('link',{name:'Credits'});
- const pricing=nav.getByRole('link',{name:'Pricing'});
- await expect(history).toHaveAttribute('href','generate-studio.html?studio=image&view=history');
+ const creations=nav.getByRole('link',{name:'My Creations',exact:true});
+ const historyLink=nav.getByRole('link',{name:'History',exact:true});
+ const credits=nav.getByRole('link',{name:'Credits',exact:true});
+ const pricing=nav.getByRole('link',{name:'Pricing',exact:true});
+ await expect(creations).toHaveAttribute('href','deepsyq.html#recentCreations');
+ await expect(historyLink).toHaveAttribute('href','generate-studio.html?view=history');
  await expect(credits).toHaveAttribute('href','ai-pricing.html#aiCreditSection');
  await expect(pricing).toHaveAttribute('href','ai-pricing.html');
  await credits.click();
  await expect(page).toHaveURL(/ai-pricing\.html#aiCreditSection$/);
  await page.goto('/ai-apps.html');
- await page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'My Creations and History'}).click();
- await expect(page).toHaveURL(/generate-studio\.html\?studio=image&view=history$/);
+ await page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'My Creations',exact:true}).click();
+ await expect(page).toHaveURL(/deepsyq\.html#recentCreations$/);
+ await expect(page.locator('#recentCreations')).toBeAttached();
+ await page.goto('/ai-apps.html');
+ await page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'History',exact:true}).click();
+ await expect(page).toHaveURL(/generate-studio\.html\?/);
+ await expect.poll(()=>page.evaluate(()=>new URL(location.href).searchParams.get('view'))).toBe('history');
  await expect(page.locator('#showHistory')).toHaveAttribute('aria-pressed','true');
  expect(paidJobs).toBe(0);
 });

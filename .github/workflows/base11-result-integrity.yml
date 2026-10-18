@@ -1,0 +1,26 @@
+name: BASE 11 Generated Output Integrity
+on:
+  pull_request:
+    paths:
+      - 'server/generation-storage.js'
+      - 'server/generation-studio.js'
+      - 'tests/generation-storage-unit.mjs'
+      - '.github/workflows/base11-result-integrity.yml'
+permissions:
+  contents: read
+jobs:
+  output-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Syntax and private digest read tests
+        run: |
+          node --check server/generation-storage.js
+          node --check server/generation-studio.js
+          node --test tests/generation-storage-unit.mjs
