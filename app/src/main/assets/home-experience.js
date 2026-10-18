@@ -56,7 +56,7 @@ function setSlide(next,direction=1){
 }
 export function renderHomeCarousel(items){
  if(!carousel||!video||!Array.isArray(items))return;
- slides=items.filter(x=>x.kind==='video'&&x.actionTarget==='studio'&&typeof x.previewUrl==='string'&&x.previewUrl.trim()).slice(0,13);
+ slides=items.filter(x=>x.kind==='video'&&x.actionTarget==='studio'&&typeof x.previewUrl==='string'&&x.previewUrl.trim()).slice(0,6);
  userPaused=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||!!navigator.connection?.saveData;index=0;failedSlides=new Set();video.pause();video.muted=true;setSoundLabel();observer?.disconnect();observer=null;
  if(!slides.length){showHeroFallback();return;}
  video.loop=false;
