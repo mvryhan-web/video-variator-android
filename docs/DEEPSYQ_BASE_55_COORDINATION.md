@@ -1,5 +1,12 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## [AGENT C 2026-10-18 / OWNER RULE #12 CLAIM SWITCH §38 → §30]
+
+**Claim:** Agent C returns to EXISTING original BASE #30 mobile/Android/iPhone (not new system), existing DRAFT [PR144](https://github.com/mvryhan-web/video-variator-android/pull/144), branch `base30-mobile-drawer-acceptance-20261016`, previous code SHA `eac5843aa0900151cded5b370fcc357277a1789c`. Prior dedicated real browser CI #39019648493 and Home #39019648482 / Brand #39019648494 SUCCESS, platform broad #39019648491 FAIL. New scope: safely transplant tested mobile drawer accessibility onto MOVING DEV, preserve A's merged Home CSS/z-index/current tests, use SAME PR and new exact-head no-spend CI. No changes to locked Home visual layout, raw hero, model provider or payment. Original §30 PARTIAL, real-device/staging/owner production external.
+
+**Previous claim §38 PARKED, not DONE:** existing [PR200](https://github.com/mvryhan-web/video-variator-android/pull/200) SHA `0c863fedfaa53727e36d7958c1e62692bc103782` focused exact-head CI #39132889932 QUEUED/NO RUNNER at switch; old head focused 39125367767 SUCCESS. Raw PR historical 148 files unsafe; fresh DEV ref compare isolates 3 C files; #5 review/DEV-only integration. Precise GitHub [Issue74 CHECKPOINT](https://github.com/mvryhan-web/video-variator-android/issues/74#issuecomment-6250726834). No new claims outside lane or duplicates.
+
+
 ## AGENT A 2026-10-18 — VERIFIED §45/§46 EXACT-SHA GREEN AND SAME-PR READY FOR REVIEW
 
 - **§45 A-owned claimed PR162** HEAD `4da47447ee659e2d1bfba010bd4ad533c415f0de` unchanged. Focused #39128139575 + platform #39128139559 + Home #39128139578 = **3/3 GitHub Actions SUCCESS; 5/5 native jobs SUCCESS**, now non-DRAFT Ready for Review by A. Exact 5 A paths, no new PR; full original BASE §45 PARTIAL until coordinator-only DEV integration, backend-authorized additional goal choices, owner 2-account/device QA.
