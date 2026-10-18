@@ -605,3 +605,6 @@ body.home-neon{background:#030b18;color:#eff6ff}
  .home-neon .home-global-search{order:4;display:flex;flex:1 1 100%;width:100%;min-width:0;max-width:100%;margin:0;padding:4px 10px}
  .home-neon .home-global-search button{display:block}
 }
+
+/* A denied autoplay/stuck native media clock must leave an accessible recovery action. */
+.hero-stage-cinematic .home-hero-carousel.needs-play:not(.is-empty) .hero-motion-control{clip-path:none;width:auto;height:auto;margin:0;z-index:8;top:10px;left:50%;transform:translateX(-50%);padding:7px 13px;border:1px solid #75dfff;border-radius:999px;background:#08101de8;color:white}

@@ -50,3 +50,26 @@ test('Owner neon layout: feature shortcuts use existing destinations and showcas
  await page.locator('.home-create-card.tile-canvas').click();
  await expect(page.locator('#quickCreateForm')).toBeInViewport();
 });
+
+// TEST ONLY: reproduce the native ready-but-stalled clock. Genuine film playback
+// is independently checked without mocks in owner-home-media.spec.mjs.
+test('Owner neon layout: a stuck startup clock retries the same film and respects user pause',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.addInitScript(()=>{
+  Object.defineProperty(HTMLMediaElement.prototype,'readyState',{get(){return 4;}});
+  Object.defineProperty(HTMLMediaElement.prototype,'currentTime',{get(){return .003;},set(){}});
+  HTMLMediaElement.prototype.load=function(){};
+  HTMLMediaElement.prototype.play=function(){if(this.id==='inspirationHeroVideo')window.__mainPlays=(window.__mainPlays||0)+1;return Promise.resolve();};
+  HTMLMediaElement.prototype.pause=function(){};
+ });
+ await home(page);
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src',bundle.items[0].previewUrl);
+ const initial=await page.evaluate(()=>window.__mainPlays||0);
+ await expect.poll(()=>page.evaluate(()=>window.__mainPlays),{timeout:5000}).toBeGreaterThan(initial);
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src',bundle.items[0].previewUrl);
+ await page.locator('#homeHeroCarousel').press('Space');
+ await expect(page.locator('#homeHeroPlay')).toHaveText('Play video');
+ const stopped=await page.evaluate(()=>window.__mainPlays);
+ await page.waitForTimeout(2200); // deliberate: prove a queued 1800ms retry stays cancelled
+ expect(await page.evaluate(()=>window.__mainPlays)).toBe(stopped);
+});

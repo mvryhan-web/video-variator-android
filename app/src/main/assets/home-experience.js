@@ -9,16 +9,33 @@ const neighborVideos=[$('homeHeroPreviousVideo'),$('homeHeroNextVideo')].filter(
 // main decoder available for smooth iOS playback, especially higher bitrate clips.
 const compactPreview=window.matchMedia?.('(max-width: 760px)');
 let slides=[],index=0,visible=false,userPaused=false,observer=null,failedSlides=new Set();
-let completionTimer=null,playbackSerial=0;
-function resetCompletion(){clearTimeout(completionTimer);completionTimer=null;playbackSerial++;}
+let completionTimer=null,startupTimer=null,startupRecoveries=0,playbackSerial=0;
+function resetCompletion(){clearTimeout(completionTimer);clearTimeout(startupTimer);completionTimer=null;startupTimer=null;startupRecoveries=0;playbackSerial++;}
 function advanceCompletedSlide(){if(!ambientAllowed())return;if(slides.length>1)setSlide(index+1);else if(slides.length===1){resetCompletion();video.currentTime=0;ambientPlay();}}
 function ambientAllowed(){return !document.hidden&&visible&&!userPaused&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData;}
-function pauseFilms(){video?.pause();neighborVideos.forEach(v=>v.pause());}
+function pauseFilms(){clearTimeout(startupTimer);startupTimer=null;video?.pause();neighborVideos.forEach(v=>v.pause());}
+function recoverStartupClock(){
+ if(startupTimer||!ambientAllowed()||!video?.getAttribute('src')||video.currentTime>=.1)return;
+ const serial=playbackSerial;
+ startupTimer=setTimeout(()=>{
+  startupTimer=null;
+  if(serial!==playbackSerial||!ambientAllowed()||video.ended||video.currentTime>=.1)return;
+  if(video.readyState<2){recoverStartupClock();return;}
+  // Real iOS WebKit evidence: loaded/playing, readyState4, paused=false,
+  // but clock remains at ~0.003s. Toggle pause/play at the SAME position.
+  // Never seek, skip a film, reset a running clip, or override a user pause.
+  if(startupRecoveries>=2){userPaused=true;pauseFilms();setPlayLabel();return;}
+  startupRecoveries++;video.pause();
+  void video.play().catch(error=>{if(serial!==playbackSerial||error.name==='AbortError')return;userPaused=true;pauseFilms();setPlayLabel();});
+  recoverStartupClock();
+ },1800);
+}
 function ambientPlay(){
  if(!video?.getAttribute('src')||!ambientAllowed())return;
  const serial=playbackSerial;
  void video.play().catch(error=>{if(serial!==playbackSerial||error.name==='AbortError')return;userPaused=true;pauseFilms();setPlayLabel();});
  neighborVideos.forEach(v=>{if(compactPreview?.matches)v.pause();else if(v.getAttribute('src'))void v.play().catch(()=>{});});
+ recoverStartupClock();
 }
 compactPreview?.addEventListener?.('change',()=>{pauseFilms();ambientPlay();});
 function updateNeighbors(){
@@ -40,7 +57,7 @@ function renderCredit(item){
  $('homeHeroModel').textContent=String(showcase?.title||model||provider);
  $('homeHeroModel').title=showcase?.title?String(showcase.note||'Feature showcase, not generation attribution.'):'';
 }
-function setPlayLabel(){const b=$('homeHeroPlay');if(!b)return;b.textContent=userPaused?'Play video':'Pause video';b.setAttribute('aria-label',userPaused?'Play video':'Pause video');}
+function setPlayLabel(){carousel?.classList.toggle('needs-play',userPaused);const b=$('homeHeroPlay');if(!b)return;b.textContent=userPaused?'Play video':'Pause video';b.setAttribute('aria-label',userPaused?'Play video':'Pause video');}
 function showHeroFallback(){
  resetCompletion();
  // Owner-approved Home keeps the real gallery region visible even when no
