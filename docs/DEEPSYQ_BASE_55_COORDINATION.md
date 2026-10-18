@@ -1,5 +1,10 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## AGENT A 2026-10-18 — P1 HOME REAL VISUAL/MEDIA AUDIT, coordinator Issue72
+
+Existing A BASE #3 owner-locked Home: independently inspected Library original 1448x1086 approved PNG SHA256 7198fb20b8300e8f8d90c4788a0288570a49be569df23cb82f06da29e1b0db47; 13 exact crop archive (13 PNG references, 0 videos), first-six Runway production kit (clean V01 640x360 exact-pixel crop SHA efb312dce69323d1773978afeb50543601ec272dfc81135acd263d6eee487a3f, 0 generated clips), original design archive (PNG/readme only). Current DEV tree 580 entries contains no V01-V13 playable movie masters. NO legal permission for public poster/video usage independently confirmed. No real 1448/390 live preview screenshot: browser DNS unavailable; prior visual-preview URL known but latest Render deploy SHA not verified. No unapproved stock/redesign, payment or launch. Complete detailed evidence appended in docs/DEEPSYQ_AGENT_A_HOME_GALLERY_ACCEPTANCE_20261016.md. Coordinator #5 must verify chosen preview workspace, deployed SHA, browser screenshots, owner V01 rights/provenance and high-res source; only then A safe Home fixes and real video acceptance. BASE #3 original PARTIAL/BLOCKED_VISUAL_MEDIA, no PR duplication, no publication. BASE #4 PR193 2 native green/Ready for Review is server-only and not an Image/video asset release.
+
+
 ## AGENT A 2026-10-18 / OWN CLAIM CONTINUATION — §4 GREEN PR193; §24 PR152 TEST FIXES; §25 PR168 NEW 5310aa35
 
 - **A original §4** same [PR193](https://github.com/mvryhan-web/video-variator-android/pull/193) exact SHA `9fd4904fabb1e4d03571b1a1070322e3a7dd2345`: TWO current-sha native CI SUCCESS (offline Image and Studio, 8+12 CI steps), raw GitHub PR mergeable=true/clean, four A files, A marked non-DRAFT Ready for Review. **Scoped SOURCE READY_TO_MERGE for #5 DEV REVIEW**, not full original DONE or provider/paid/public activation. B/D purchased-only/owner licensed model staging external. No duplicate claim.
