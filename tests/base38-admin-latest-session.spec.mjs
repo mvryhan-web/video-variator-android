@@ -18,6 +18,21 @@ async function setup(page,onRequest=()=>null){
  return ()=>mutationPosts;
 }
 
+test('BASE #38: pageshow with the same owner token must not force logout',async({page})=>{
+ const mutations=await setup(page,(route,url)=>{
+  if(url.pathname==='/api/studio/admin/users'||url.pathname==='/api/studio/admin/jobs')
+   return route.fulfill({json:{items:[]}});
+  return null;
+ });
+ // A BFCache page restore emits a truthy event argument. It must not be
+ // misinterpreted as checkOwnerSession(force=true).
+ await page.evaluate(()=>window.dispatchEvent(new Event('pageshow')));
+ await expect(page).toHaveURL(/\\/deepsyq-admin\\.html$/);
+ await expect(page.locator('#userQuery')).toBeVisible();
+ expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBe('owner-test-token');
+ expect(mutations()).toBe(0);
+});
+
 test('BASE #38: newer user search wins over late older result, with no admin writes',async({page})=>{
  let heldOld,oldStarted=false;
  const mutations=await setup(page,(route,url)=>{
