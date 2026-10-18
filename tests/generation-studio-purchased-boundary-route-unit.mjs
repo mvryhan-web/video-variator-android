@@ -14,7 +14,7 @@ const baseEnv={AI_STUDIO_ENABLED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',
  GEMINI_API_KEY:'test-only-not-an-api-key',DATABASE_URL:'test-only',ADMIN_EMAIL:'owner@example.test',
  AI_MODEL_PRICING_JSON:JSON.stringify([pricing]),
  AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:12}])};
-function simulate({receiptStatus='paid',user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
+function simulate({receiptStatus='paid',providerThrows=false,user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
  const jobs=[],walletEvents=[];let providerCalls=0;
  const pool={
   async query(sql,args=[]){
@@ -68,7 +68,7 @@ function simulate({receiptStatus='paid',user={id:'customer-1',email:'buyer@examp
  };
  const app=express();app.use(express.json());
  installGenerationStudio(app,{pool,wallet,env:{...baseEnv,...envOverrides},auth:(req,_res,next)=>{req.user=user;next()},
-  provider:async()=>{providerCalls++;return {mime:'image/png',bytes:Buffer.from('mock-only-image')}}});
+  provider:async()=>{providerCalls++;if(providerThrows)throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED');return {mime:'image/png',bytes:Buffer.from('mock-only-image')}}});
  return {app,jobs,walletEvents,providerCalls:()=>providerCalls};
 }
 async function withHttp(sim,fn){
@@ -93,7 +93,7 @@ test('HTTP purchased customer: durable consent+server quote, atomic proof, provi
   assert.equal(sim.walletEvents.at(-1)[1].outcome,'success');
  });
 });
-test('HTTP bonus/welcome/unknown funding cannot trigger provider; hold for review, no automatic retry',async()=>{
+test('HTTP bonus/welcome/unknown funding cannot reach provider and automatically returns held credits',async()=>{
  for(const receiptStatus of ['bonus','reject']){
   const sim=simulate({receiptStatus});
   await withHttp(sim,async post=>{
@@ -121,5 +121,17 @@ test('HTTP without explicit user consent fails before reservation or provider',a
  const sim=simulate();await withHttp(sim,async post=>{
   const res=await post({consent:false});assert.equal(res.status,400);
   assert.equal(sim.jobs.length,0);assert.equal(sim.providerCalls(),0);
+ });
+});
+
+test('HTTP ambiguous provider error never triggers refund, even with denial-like message',async()=>{
+ const sim=simulate({providerThrows:true});
+ await withHttp(sim,async post=>{
+  const res=await post();assert.equal(res.status,202);await settle();
+  assert.equal(sim.providerCalls(),1,'the paid provider was invoked just once');
+  assert.equal(sim.jobs[0].status,'failed');
+  assert.equal(sim.jobs[0].credits_reserved,7,'ambiguous acceptance must remain held');
+  assert.deepEqual(sim.walletEvents.map(x=>x[0]),['reserve','purchasedClaim','settle']);
+  assert.equal(sim.walletEvents.at(-1)[1].outcome,'unknown');
  });
 });
