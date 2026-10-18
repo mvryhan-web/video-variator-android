@@ -1,0 +1,38 @@
+name: Deepsyq AI Apps owner readiness
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/ai-template-readiness.js'
+      - 'app/src/main/assets/deepsyq-admin.html'
+      - 'app/src/main/assets/deepsyq-admin.js'
+      - 'tests/ai-template-readiness.mjs'
+      - '.github/workflows/deepsyq-ai-template-readiness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Unique workflow-file key: several existing workflows share the display name "BASE".
+# Cancel only superseded runs of THIS workflow on the SAME PR or ref.
+# Never cancel another agent's different PR or disable a safety assertion.
+concurrency:
+  group: agent5-deepsyq-ai-template-readiness-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  readiness-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify isolated owner readiness checks
+        run: |
+          node --check app/src/main/assets/deepsyq-admin.js
+          node --check app/src/main/assets/ai-template-readiness.js
+          node --test tests/ai-template-readiness.mjs
