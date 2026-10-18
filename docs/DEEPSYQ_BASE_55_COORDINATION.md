@@ -1,5 +1,10 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## [AGENT A §3 / PR259 CURRENT HEAD SIX OF THIRTEEN / 2026-10-18]
+
+Claim preserved: §3 original A Home owner design. [PR259](https://github.com/mvryhan-web/video-variator-android/pull/259) exact `c67e60edb191b9dda4a4c31727ade206a9496600` DRAFT, 5 A files, behind moving DEV 10 (must no-clobber merge). Owner-ordered large visible slogan removed; carousel now six featured slots from thirteen source scenes with a 13→6 browser navigation test. Predecessor native Home #39137761025 SUCCESS after fixing 12 stale test failures; new current SHA Actions #39138449884/#39138449876/#39138449945/#39138449847 pending. Full §3 PARTIAL/CI_PENDING + owner girl/media source/rights/visual acceptance blocked, not Ready/Done/Live; detailed Issue72 latest checkpoint and Coordinator #233. No paid provider/main/prod/Stripe/unsafe DB.
+
+
 ## [AGENT A §3 / OWNER DELETED HERO HEADLINE / 2026-10-18]
 
 **Existing A claim (§3), NOT a new BASE claim:** [PR259](https://github.com/mvryhan-web/video-variator-android/pull/259) new HEAD `5f2d1c85330c47f795df467a5d5d8b18e6f9f6a2` is DRAFT, exactly four A-owned files; deleted owner-rejected visible Home headline and updated both browser specs. Previous exact-head Home run #39135602801 yielded 36 PASS/12 FAIL all from four outdated headline assertions in fallback tests; same PR source now fixes all four (new CI #39137761025, preview #39137761161, brand #39137761000, regression #39137761103). **CI_PENDING, §3 FULL PARTIAL/BLOCKED_MEDIA/OWNER_VISUAL; NOT READY_TO_MERGE, NOT DONE, NOT LIVE.** Previous SHA preview/brand green cannot substitute for current. 1448/390 screenshot comparison from old CI artifact showed no girl/12 thumbnails. B PR257 still poster-only V01 with right-positioning and noncommercial license blockers; zero licensed public MP4. Coordinator #5 DEV-only no-clobber integration; D/owner only production after rights. Full handoff [Issue72](https://github.com/mvryhan-web/video-variator-android/issues/72).
