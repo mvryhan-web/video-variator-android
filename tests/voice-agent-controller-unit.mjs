@@ -222,3 +222,62 @@ test('Format user-supplied mock transcript with "preview only" label and zero ne
   assert.equal(transcript.mock, true);
   assert.ok(typeof transcript.timestamp === 'number');
 });
+
+
+test('Two rapid mic clicks during asynchronous permission preflight produce only one getUserMedia request', async () => {
+  let releasePermission;
+  const gate = new Promise(resolve => { releasePermission = resolve; });
+  const adapter = new FakeMediaAdapter();
+  adapter.queryPermission = async () => { adapter.queryPermissionCalls++; await gate; return 'granted'; };
+  const controller = new VoiceAgentController({ mediaAdapter: adapter, accountId: 'owner-1' });
+  const first = controller.requestMicrophone();
+  const second = controller.requestMicrophone();
+  assert.equal(controller.state, VOICE_AGENT_STATES.REQUESTING);
+  assert.equal(await second, null);
+  assert.equal(adapter.queryPermissionCalls, 1);
+  releasePermission();
+  await first;
+  assert.equal(adapter.getUserMediaCalls, 1);
+  assert.equal(controller.state, VOICE_AGENT_STATES.LIVE);
+  controller.destroy();
+});
+
+test('A second call while live or muted cannot open another microphone stream', async () => {
+  const adapter = new FakeMediaAdapter();
+  const controller = new VoiceAgentController({ mediaAdapter: adapter });
+  const stream = await controller.requestMicrophone();
+  assert.ok(stream);
+  assert.equal(await controller.requestMicrophone(), null);
+  controller.setMute(true);
+  assert.equal(await controller.requestMicrophone(), null);
+  assert.equal(adapter.getUserMediaCalls, 1);
+  assert.equal(stream.getAudioTracks()[0].stopped, false);
+  controller.destroy();
+});
+
+test('Late permission denial after stop or account switch never resurrects a cancelled session', async () => {
+  let denyPermission;
+  const permission = new Promise(resolve => { denyPermission = resolve; });
+  const adapter = new FakeMediaAdapter();
+  adapter.queryPermission = async () => { await permission; return 'denied'; };
+  const controller = new VoiceAgentController({ mediaAdapter: adapter, accountId: 'owner-1' });
+  const first = controller.requestMicrophone();
+  controller.setAccountId('owner-2');
+  denyPermission();
+  assert.equal(await first, null);
+  assert.equal(controller.state, VOICE_AGENT_STATES.IDLE);
+  assert.equal(controller.accountId, 'owner-2');
+  assert.equal(adapter.getUserMediaCalls, 0);
+  controller.destroy();
+});
+
+test('Permission preflight rejection fails closed without an orphaned REQUESTING state', async () => {
+  const adapter = new FakeMediaAdapter();
+  adapter.queryPermission = async () => { throw new Error('permission adapter detail'); };
+  const controller = new VoiceAgentController({ mediaAdapter: adapter });
+  assert.equal(await controller.requestMicrophone(), null);
+  assert.equal(controller.state, VOICE_AGENT_STATES.ERROR);
+  assert.equal(controller.getStatus().error, 'MIC_PERMISSION_PREFLIGHT_FAILED');
+  assert.equal(adapter.getUserMediaCalls, 0);
+  controller.destroy();
+});
