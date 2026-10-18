@@ -1,5 +1,11 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## AGENT A 2026-10-18 — ORIGINAL §32 SAME PR155 6/6 REAL NATIVE GREEN, READY FOR REVIEW
+
+- A original §32 existing [PR155](https://github.com/mvryhan-web/video-variator-android/pull/155) unchanged HEAD `490dba526fd8d079dae55e3838265b3a1bb76e95`: focused BASE32 #39128824998, Studio #39128824981, Video #39128825003, Canvas #39128825012, Wallet #39128824995, History #39128825024 **6/6 workflow success and 6/6 native jobs success**, 0 failed steps. Actually marked non-DRAFT Ready for Review, no new PR. SOURCE READY_TO_MERGE for #5 only; full original §32 remains PARTIAL until DEV integration, owner staging/prod/live, not original DONE.
+- A other source-ready original claims §4 PR193, §45 PR162, §46 PR181 as verified earlier; §24 PR152 broken PNG fixture corrected on same PR HEAD `be65cbb` but unresolved History browser and shared source; §31 PR154 some native runs in progress, §25 PR168 queued. No owner money/Stripe/production or unsafe DB changes.
+
+
 ## AGENT A 2026-10-18 — §24 VERIFIED CORRUPT PNG FIX / SAME EXISTING PR152 / NO BROWSER GREEN CLAIM
 
 - Existing A-owned original BASE §24 PR152 now HEAD **`be65cbb87756c9871136564a6d2a1193ac7136f5`**: targeted test-only change in `tests/generation-studio.spec.mjs` replaces broken base64 1×1 saved result PNG fixture (Pillow decode failed) with authentic 2×2 RGB PNG (Pillow decode succeeded). One existing test in original PR; no shared server/Studio JS changes, no weakened privacy checks or duplicate PR. GitHub new-head CI not registered yet, Playwright unavailable locally, old Reuse/Regenerate browser regressions unresolved; full §24 PARTIAL/CI_PENDING + B/D cross-lane integration BLOCKED, NOT READY/DONE.
