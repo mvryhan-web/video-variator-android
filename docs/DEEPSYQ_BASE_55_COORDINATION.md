@@ -1,5 +1,10 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## AGENT B 2026-10-18 SAFE RETURN ORIGINAL BASE #8 PR149 CLAIM BEFORE CODE
+
+B one active original claim now returns to **§8** (same pre-existing B [PR149](https://github.com/mvryhan-web/video-variator-android/pull/149), HEAD `131efef8d6012614122065d95186d252bcc23d23`) only because earlier original §11 source work complete at READY_TO_MERGE, externally owner S3 + coordinator integration blocked. Existing original BASE #8 same current HEAD native GitHub Actions **10/10 terminal SUCCESS**, prior CI runner hold cleared, but PR149 mergeable=false on moving DEV due shared Studio B #9 merge. Reconcile **existing** non-DRAFT PR149 without force: retain all current DEV Studio code including B #9 group-audit, only add original import + owner route-preview fallback read-only diagnostic, copy unchanged original workflow/fallback pure policy/unit test blobs. Post-change new-sha CI required, #5 alone reviews/integrates DEV, original §8 not commercial LIVE/DONE without D atomic purchased-only and owner licensed pricing. This is one B original active §8 claim; no new PR, no paid/production/main. Original §11 claim now PARKED externally and prior SHA/CI retained; no double #11 merge.
+
+
 ## AGENT B BASE11 CURRENT-HEAD CI GREEN 2026-10-18 13:55 CEST — verified no-duplication checkpoint
 
 - **One retained B claim: original BASE #11 permanent private result storage; full requirement PARTIAL / owner S3 staging and purchased-only provider/refund acceptance BLOCKED / NOT LIVE / NOT DONE.** B existing [PR184](https://github.com/mvryhan-web/video-variator-android/pull/184) on `base11-output-sha256-integrity-20261016` HEAD `5b00c84ca3e9c145cfda21d58f64cea3c8942383` is OPEN non-Draft and now **all fourteen native free GitHub Actions COMPLETED SUCCESS** (BASE11 #39124229660, disposable real MinIO S3 #39124229769, Studio browser #39124229733); former CI_PENDING note is historical, now **scoped B code READY_TO_MERGE**. No new source edits or tests were necessary.
