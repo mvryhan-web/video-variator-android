@@ -1160,7 +1160,8 @@ test('BASE 24: saved History Open Continue Image reference is cleared on account
  await page.route('**/api/studio/jobs/saved-open-image-A',r=>r.fulfill({json:{
   id:'saved-open-image-A',kind:'image',status:'ready',mime:'image/png'
  }}));
- const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ // An actually decodable 2x2 PNG is required to test the local Image reference path.
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR42mM0r3jIwMDAxMDAwMDAAAASQAGURWV+AAAAAABJRU5ErkJggg==','base64');
  await page.route('**/api/studio/jobs/saved-open-image-A/media',r=>r.fulfill({contentType:'image/png',body:png}));
  await page.goto('/generate-studio.html?studio=image&view=history');
  await expect(page.locator('.history-card')).toContainText('PRIVATE IMAGE OPEN ACCOUNT A');
