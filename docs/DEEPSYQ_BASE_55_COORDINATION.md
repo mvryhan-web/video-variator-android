@@ -1,3 +1,7 @@
+## [DEEPSYQ CHECKPOINT] Work integration — 2026-10-18 owner Flow media preview release
+
+Continuing existing PR #257; no new repo/service/DB/auth/billing. Owner confirms seven newly supplied MP4s are Google Flow outputs and explicitly authorizes publication. Carousel is exactly close-up woman → portal → underwater woman → neon motorcycle → sky whale → golden forest → first, muted 1080p original video streams. Red gown remains outside carousel (V02); its actual frame replaces the cancelled butterfly-image card. Owner's source/publication confirmation supersedes prior pending items for these seven files only, not old HeyGen Free outputs. Existing isolated Render preview srv-db91k1vf3r2c73fpj350 is publication target. Read-only Inspiration endpoint added only there; production main/DB/catalog remain untouched. Preview contract verifies exact order, red card, MP4 HTTP Range and no write/auth/billing/provider routes. Existing media CI success39150923561 retained with mobile-WebKit retry disclosure; new checks pending. No paid generation/API/CI or purchase.
+
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
 ## OWNER MEDIA / SOURCE SAVED + ACTUAL BROWSER CI / 2026-10-18

@@ -26,7 +26,7 @@ app.get('/robots.txt',(_req,res)=>res.type('text/plain').send('User-agent: *\nDi
 app.get('/api/health',(_req,res)=>res.json({ok:true,service:'deepsyq-design-preview',paymentsEnabled:false,aiGenerationEnabled:false}));
 app.get('/api/config',(_req,res)=>res.json({
  googleClientId:'',appleClientId:'',emailAuth:false,billingConfigured:false,trialLimit:0,
- features:{aiApps:true,productVideo:true,onboarding:false},
+ features:{aiApps:true,productVideo:true,inspiration:true,onboarding:false},
  plans:{
   basic:{price:9,limit:750},pro:{price:24,limit:2250},
   business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}
@@ -36,6 +36,22 @@ app.get('/api/studio/config',(_req,res)=>res.json({
  enabled:false,ownerOnly:true,publicGenerationEnabled:false,pricingConfigured:false,
  models:[],catalog:MODEL_CATALOG.map(m=>({...m,enabled:false})),translation:{enabled:false,reason:'PREVIEW_ONLY'}
 }));
+// Read-only preview of the owner's approved bundled media. This is the same
+// Inspiration response consumed by Home, without production DB/admin writes.
+const ownerMedia=JSON.parse(await readFile(path.join(assets,'media/home/owner-20261018/manifest.json'),'utf8'));
+const approvedPreview=ownerMedia.previewPublicationApproved===true&&ownerMedia.commercialRightsConfirmed===true;
+const previewItems=approvedPreview?ownerMedia.items.map(({slug,title,kind,category,description,previewUrl,previewPosterUrl,prompt,defaultModel,aspectRatio,requiredInputTypes,defaultSettings,actionTarget,featured,sortOrder})=>({id:slug,slug,title,kind,category,description,previewUrl,previewPosterUrl,prompt,defaultModel,aspectRatio,requiredInputTypes,defaultSettings,actionTarget,featured,sortOrder})):[];
+if(approvedPreview&&ownerMedia.standaloneCard){
+ const source=previewItems.find(item=>item.slug===ownerMedia.standaloneCard.sourceSlug);
+ if(source)previewItems.push({...source,id:source.id+'-card',slug:source.slug+'-card',kind:'image',previewUrl:ownerMedia.standaloneCard.previewUrl,featured:true,sortOrder:0});
+}
+app.get('/api/inspiration',(req,res)=>{
+ const q=req.query;
+ let items=previewItems.filter(item=>(q.featured!=='true'||item.featured)&&(!q.kind||q.kind==='all'||item.kind===q.kind)&&(!q.target||item.actionTarget===q.target)&&(!q.category||item.category===q.category)&&(!q.ratio||item.aspectRatio===q.ratio)&&(!q.q||item.title.toLowerCase().includes(String(q.q).toLowerCase()))).sort((a,b)=>a.sortOrder-b.sortOrder);
+ const total=items.length,limit=Math.min(60,Math.max(1,Number(q.limit)||12));
+ const page=Math.max(1,Number(q.page)||1);items=items.slice((page-1)*limit,page*limit);
+ res.json({items,categories:['Cinematic'],ratios:['16:9'],pagination:{page,limit,total,hasMore:page*limit<total}});
+});
 app.get('/api/templates',(_req,res)=>res.json({items:[]}));
 app.get('/api/auth/email/status',(_req,res)=>res.json({configured:false}));
 app.use('/api',(_req,res)=>res.status(503).json(disabled));

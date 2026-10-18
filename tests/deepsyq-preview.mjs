@@ -42,6 +42,22 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
    assert.equal((await response.json()).error,'PREVIEW_ONLY');
   }
   assert.equal((await fetch(base+'/api/me')).status,503);
+  const feed=await(await fetch(base+'/api/inspiration?featured=true&kind=video&target=studio&limit=13')).json();
+  assert.deepEqual(feed.items.map(item=>item.title),['Close-up woman','Futuristic portal','Underwater woman','Neon motorcycle','Whale among the clouds','Golden forest']);
+  assert.equal(feed.items.some(item=>item.previewUrl.includes('red-gown')),false);
+  for(const item of feed.items){
+   assert.equal(item.sourceFilename,undefined,'do not expose private attachment metadata');
+   const media=await fetch(base+item.previewUrl,{headers:{Range:'bytes=0-127'}});
+   assert.equal(media.status,206);assert.match(media.headers.get('content-type'),/video\/mp4/);
+   assert.equal((await media.arrayBuffer()).byteLength,128);
+  }
+  const gallery=await(await fetch(base+'/api/inspiration?featured=true&limit=12')).json();
+  const red=gallery.items.find(item=>item.kind==='image');
+  assert.equal(red.previewUrl,'/media/home/owner-20261018/v02-red-gown.jpg');
+  assert.equal(gallery.items.some(item=>item.slug.includes('butterfly')||item.slug.includes('lake')),false);
+  assert.equal((await(await fetch(base+'/api/inspiration?featured=true&target=agent')).json()).items.length,0);
+  assert.equal((await fetch(base+'/api/inspiration',{method:'POST'})).status,503);
+
 
   // A design preview must stay safe even after production adds new payment,
   // generation, admin or signup endpoints. Exercise representative surfaces

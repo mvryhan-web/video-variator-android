@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "status": "PREPARED_NOT_PUBLISHED",
+  "status": "OWNER_APPROVED_PREVIEW_PUBLICATION",
   "ownerArtisticApproval": true,
-  "commercialRightsConfirmed": false,
-  "productionPublicationApproved": false,
-  "source": "Owner-provided seven MP4 attachments, 2026-10-18. Generation service/license not independently attested.",
+  "commercialRightsConfirmed": true,
+  "productionPublicationApproved": true,
+  "source": "Owner confirms these seven supplied MP4s were generated in Google Flow; owner approved public Deepsyq placement on 2026-10-18. This does not license older HeyGen Free outputs.",
   "carouselOrder": [
     "owner-01-close-up-woman",
     "owner-02-futuristic-portal",
@@ -19,7 +19,7 @@
       "title": "Close-up woman",
       "kind": "video",
       "category": "Cinematic",
-      "description": "Close-up woman \u2014 owner-selected cinematic scene.",
+      "description": "Close-up woman — owner-selected cinematic scene.",
       "previewUrl": "/media/home/owner-20261018/01-close-up-woman.mp4",
       "previewPosterUrl": "/media/home/owner-20261018/01-close-up-woman.jpg",
       "prompt": "Create an original cinematic scene inspired by close-up woman. Use your own source material.",
@@ -49,7 +49,7 @@
       "title": "Futuristic portal",
       "kind": "video",
       "category": "Cinematic",
-      "description": "Futuristic portal \u2014 owner-selected cinematic scene.",
+      "description": "Futuristic portal — owner-selected cinematic scene.",
       "previewUrl": "/media/home/owner-20261018/02-futuristic-portal.mp4",
       "previewPosterUrl": "/media/home/owner-20261018/02-futuristic-portal.jpg",
       "prompt": "Create an original cinematic scene inspired by futuristic portal. Use your own source material.",
@@ -65,7 +65,7 @@
       "active": false,
       "featured": true,
       "sortOrder": 20,
-      "sourceFilename": "Figure_standing_beneath_floating\u2026_1080p_20261018175305(3).mp4",
+      "sourceFilename": "Figure_standing_beneath_floating…_1080p_20261018175305(3).mp4",
       "sourceSha256": "de14920f2989b8e4d007d2481db3d88405afc97302533922f45f765d9a3892fd",
       "sha256": "ae3a0f54a05fa5f93671257817d89746b1343b2cab853818b647fc932c3ce1a7",
       "sizeBytes": 9284531,
@@ -79,7 +79,7 @@
       "title": "Underwater woman",
       "kind": "video",
       "category": "Cinematic",
-      "description": "Underwater woman \u2014 owner-selected cinematic scene.",
+      "description": "Underwater woman — owner-selected cinematic scene.",
       "previewUrl": "/media/home/owner-20261018/03-underwater-woman.mp4",
       "previewPosterUrl": "/media/home/owner-20261018/03-underwater-woman.jpg",
       "prompt": "Create an original cinematic scene inspired by underwater woman. Use your own source material.",
@@ -95,7 +95,7 @@
       "active": false,
       "featured": true,
       "sortOrder": 30,
-      "sourceFilename": "Woman_floating_in_underwater_dre\u2026_20261018180322(3).mp4",
+      "sourceFilename": "Woman_floating_in_underwater_dre…_20261018180322(3).mp4",
       "sourceSha256": "eac80cbb3f21c5b910bb01f9a3dd005c4a0ee3647818b749b041499fdc48c6ef",
       "sha256": "7191ae844de9f44151484162828ae3d33ab7fde65ad70fb4a91f434e988e5707",
       "sizeBytes": 6740745,
@@ -109,7 +109,7 @@
       "title": "Neon motorcycle",
       "kind": "video",
       "category": "Cinematic",
-      "description": "Neon motorcycle \u2014 owner-selected cinematic scene.",
+      "description": "Neon motorcycle — owner-selected cinematic scene.",
       "previewUrl": "/media/home/owner-20261018/04-neon-motorcycle.mp4",
       "previewPosterUrl": "/media/home/owner-20261018/04-neon-motorcycle.jpg",
       "prompt": "Create an original cinematic scene inspired by neon motorcycle. Use your own source material.",
@@ -139,7 +139,7 @@
       "title": "Whale among the clouds",
       "kind": "video",
       "category": "Cinematic",
-      "description": "Whale among the clouds \u2014 owner-selected cinematic scene.",
+      "description": "Whale among the clouds — owner-selected cinematic scene.",
       "previewUrl": "/media/home/owner-20261018/05-sky-whale.mp4",
       "previewPosterUrl": "/media/home/owner-20261018/05-sky-whale.jpg",
       "prompt": "Create an original cinematic scene inspired by whale among the clouds. Use your own source material.",
@@ -169,7 +169,7 @@
       "title": "Golden forest",
       "kind": "video",
       "category": "Cinematic",
-      "description": "Golden forest \u2014 owner-selected cinematic scene.",
+      "description": "Golden forest — owner-selected cinematic scene.",
       "previewUrl": "/media/home/owner-20261018/06-golden-forest.mp4",
       "previewPosterUrl": "/media/home/owner-20261018/06-golden-forest.jpg",
       "prompt": "Create an original cinematic scene inspired by golden forest. Use your own source material.",
@@ -199,7 +199,7 @@
       "title": "Red gown dream",
       "kind": "video",
       "category": "Cinematic",
-      "description": "Red gown dream \u2014 owner-selected cinematic scene.",
+      "description": "Red gown dream — owner-selected cinematic scene.",
       "previewUrl": "/media/home/owner-20261018/v02-red-gown.mp4",
       "previewPosterUrl": "/media/home/owner-20261018/v02-red-gown.jpg",
       "prompt": "Create an original cinematic scene inspired by red gown dream. Use your own source material.",
@@ -225,10 +225,14 @@
       "carouselOrder": null
     }
   ],
-  "pending": [
-    {
-      "task": "Replace separate V01 card with exact owner-approved butterfly-woman image",
-      "reason": "Exact image not yet unambiguously identified; never substitute the carousel close-up or a generated image."
-    }
-  ]
+  "pending": [],
+  "previewPublicationApproved": true,
+  "rightsAttestation": "Owner-supplied Google Flow outputs; owner authorizes site publication. Not an independent verification of the owner Google account or third-party source rights.",
+  "standaloneCard": {
+    "sourceSlug": "owner-v02-red-gown",
+    "kind": "image",
+    "previewUrl": "/media/home/owner-20261018/v02-red-gown.jpg",
+    "title": "Red gown dream",
+    "replaces": "Previously requested butterfly-woman card; cancelled by owner 2026-10-18."
+  }
 }
