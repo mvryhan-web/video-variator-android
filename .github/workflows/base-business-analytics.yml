@@ -1,0 +1,30 @@
+name: BASE 37 Business Analytics
+on:
+  push:
+    branches: [base55-d-business-analytics-20261016]
+  pull_request:
+    paths:
+      - 'server/generation-studio.js'
+      - 'app/src/main/assets/deepsyq-admin.js'
+      - 'tests/generation-studio-unit.mjs'
+      - '.github/workflows/base-business-analytics.yml'
+permissions:
+  contents: read
+jobs:
+  verify-business-metrics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax checks
+        run: |
+          node --check server/generation-studio.js
+          node --check app/src/main/assets/deepsyq-admin.js
+          node --check tests/generation-studio-unit.mjs
+      - name: Owner analytics, authorization and generation smoke
+        run: node --test tests/generation-studio-unit.mjs

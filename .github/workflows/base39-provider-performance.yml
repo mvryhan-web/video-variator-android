@@ -1,0 +1,28 @@
+name: BASE 39 Provider Performance Metrics
+on:
+  pull_request:
+    paths:
+      - 'server/generation-provider-performance.js'
+      - 'server/generation-studio.js'
+      - 'tests/generation-provider-performance-unit.mjs'
+      - '.github/workflows/base39-provider-performance.yml'
+  push:
+    branches:
+      - base39-provider-performance-20261016
+permissions:
+  contents: read
+jobs:
+  metrics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse metrics and Studio
+        run: |
+          node --check server/generation-provider-performance.js
+          node --check server/generation-studio.js
+      - name: Validate terminal-only provider outcome rates
+        run: node --test tests/generation-provider-performance-unit.mjs
