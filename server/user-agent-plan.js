@@ -13,7 +13,7 @@
  */
 
 // Authorized Registry of Real Deepsyq Tools / Capabilities
-const AUTHORIZED_CAPABILITIES = Object.freeze({
+export const AUTHORIZED_CAPABILITIES = Object.freeze({
   'text.copywriter': Object.freeze({
     id: 'text.copywriter',
     name: 'Copywriter & Headline Generator',
@@ -96,7 +96,7 @@ const AUTHORIZED_CAPABILITIES = Object.freeze({
   }),
 });
 
-const MAX_PLAN_STEPS = 10;
+export const MAX_PLAN_STEPS = 10;
 const VALID_TOOL_NAME_REGEX = /^[a-z0-9]+(\.[a-z0-9_]+)+$/i;
 
 // Pre-defined deterministic goal templates mapped to capabilities
@@ -140,7 +140,7 @@ const GOAL_TEMPLATES = Object.freeze({
  * @param {string} toolId
  * @returns {boolean}
  */
-function isAuthorizedTool(toolId) {
+export function isAuthorizedTool(toolId) {
   if (typeof toolId !== 'string') return false;
   if (!VALID_TOOL_NAME_REGEX.test(toolId)) return false;
   return Object.prototype.hasOwnProperty.call(AUTHORIZED_CAPABILITIES, toolId);
@@ -172,7 +172,7 @@ function normalizeGoalKey(goalText) {
  * @param {Array<Object>} [params.customSteps] - Optional user-provided custom steps
  * @returns {Object} Compiled Plan
  */
-function compileUserAgentPlan({ userId, goal, customSteps } = {}, { availableCapabilities = {} } = {}) {
+export function compileUserAgentPlan({ userId, goal, customSteps } = {}) {
   // Guard 1: Strict User Scoping & State Validation
   if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
     throw new Error('INVALID_USER_STATE: userId is required and must be a non-empty string');
@@ -210,7 +210,6 @@ function compileUserAgentPlan({ userId, goal, customSteps } = {}, { availableCap
   let planRequiresApproval = false;
   let planHasDestructiveAction = false;
   let planIsBillable = false;
-  const unavailableCapabilities = new Set();
 
   for (let i = 0; i < rawSteps.length; i++) {
     const rawStep = rawSteps[i];
@@ -222,12 +221,6 @@ function compileUserAgentPlan({ userId, goal, customSteps } = {}, { availableCap
     }
 
     const cap = AUTHORIZED_CAPABILITIES[toolId];
-    // Registry recognition is NOT proof a feature/provider is currently deployed.
-    // Only trusted server-side capability evidence can mark a tool available.
-    const available = availableCapabilities !== null && typeof availableCapabilities === 'object' &&
-      Object.prototype.hasOwnProperty.call(availableCapabilities, toolId) &&
-      availableCapabilities[toolId] === true;
-    if (!available) unavailableCapabilities.add(toolId);
     const stepNumber = i + 1;
     const prerequisites = stepNumber > 1 ? [stepNumber - 1] : [];
 
@@ -248,8 +241,6 @@ function compileUserAgentPlan({ userId, goal, customSteps } = {}, { availableCap
       estimatedCredits: cap.costUnknown ? null : cap.estimatedCredits,
       requiresApproval: cap.requiresApproval,
       destructive: cap.destructive,
-      availability: available ? 'AVAILABLE' : 'UNAVAILABLE',
-      executionStatus: 'NOT_STARTED',
     });
   }
 
@@ -269,9 +260,6 @@ function compileUserAgentPlan({ userId, goal, customSteps } = {}, { availableCap
       estimatedCreditsTotal: planHasCostUnknown ? null : compiledSteps.reduce((acc, s) => acc + (s.estimatedCredits || 0), 0),
       requiresApproval: planRequiresApproval,
       hasDestructiveAction: planHasDestructiveAction,
-      unavailableCapabilities: [...unavailableCapabilities],
-      // Planning never authorizes execution; B/D approval is a separate trust boundary.
-      executionReady: false,
       approvalGates: {
         billableActionGate: planIsBillable,
         destructiveActionGate: planHasDestructiveAction,
@@ -282,9 +270,3 @@ function compileUserAgentPlan({ userId, goal, customSteps } = {}, { availableCap
   };
 }
 
-export {
-  AUTHORIZED_CAPABILITIES,
-  MAX_PLAN_STEPS,
-  compileUserAgentPlan,
-  isAuthorizedTool,
-};

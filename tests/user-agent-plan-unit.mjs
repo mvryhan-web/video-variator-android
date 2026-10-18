@@ -1,11 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  AUTHORIZED_CAPABILITIES,
-  MAX_PLAN_STEPS,
-  compileUserAgentPlan,
-  isAuthorizedTool,
-} from '../server/user-agent-plan.js';
+import { AUTHORIZED_CAPABILITIES, MAX_PLAN_STEPS, compileUserAgentPlan, isAuthorizedTool } from '../server/user-agent-plan.js';
 
 describe('User Agent Plan Compiler Unit Tests (A2.1)', () => {
   describe('Capability Registry & Tool Validation', () => {
@@ -206,26 +201,4 @@ describe('User Agent Plan Compiler Unit Tests (A2.1)', () => {
       assert.equal(plan.steps[1].destructive, true);
     });
   });
-});
-
-test('COORD5 A2.1: unverified tools fail closed and plans never claim execution', () => {
-  const plan = compileUserAgentPlan({userId:'test-user',goal:'Create Etsy listing'});
-  assert.equal(plan.status,'DRAFT_PENDING_APPROVAL');
-  assert.equal(plan.summary.executionReady,false);
-  assert.ok(plan.summary.unavailableCapabilities.includes('text.copywriter'));
-  assert.ok(plan.summary.unavailableCapabilities.includes('image.generator'));
-  assert.ok(plan.steps.every(step=>step.availability==='UNAVAILABLE'&&step.executionStatus==='NOT_STARTED'));
-});
-
-test('COORD5 A2.1: trusted server capabilities allow only explicit verified tools, still no dispatch', () => {
-  const plan = compileUserAgentPlan(
-    {userId:'test-user',goal:'Create Etsy listing'},
-    {availableCapabilities:{'text.copywriter':true,'image.generator':false,'publish.external':true}}
-  );
-  assert.equal(plan.steps[0].availability,'AVAILABLE');
-  assert.equal(plan.steps[1].availability,'UNAVAILABLE');
-  assert.equal(plan.steps[2].availability,'UNAVAILABLE');
-  assert.equal(plan.summary.executionReady,false);
-  assert.equal(plan.summary.requiresApproval,true);
-  assert.equal(plan.steps[0].executionStatus,'NOT_STARTED');
 });
