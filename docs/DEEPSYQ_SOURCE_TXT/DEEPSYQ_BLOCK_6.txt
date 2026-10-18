@@ -122,6 +122,8 @@ Delete:
 - prefer Trash / Recently Deleted when supported
 
 VOICE COST / PLANS
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. НЕТ бесплатной озвучки, Voice-first-win, бесплатных AI-запросов или стартовых credits. Voice/TTS/STT/AI доступны только оплачивающим по подтверждённо купленным кредитам; канон Block 7, Issue #182. Trial $0.99 как покупка ЕЩЁ НЕ АКТИВЕН, кредиты/срок/возвраты/повторы не согласованы.
 Track:
 - realtime audio input
 - audio output
@@ -138,10 +140,14 @@ Limits:
 - credits
 
 Trial $0.99:
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Ниже прежний small voice allowance не утверждён; условия только в Block 7 после отдельного решения владельца, никаких бесплатных Voice credits.
 - small voice allowance
 - no unlimited voice
 
 Free/first-win may include:
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. ПРЕЖНИЙ FREE/FIRST-WIN список ниже ИСТОРИЧЕСКИЙ И ОТМЕНЁН: не давать AI allowance/free voice. Локальная проверка дублей файлов (без платного cloud AI) — Everyday Tools, не бесплатный Voice.
 - small voice allowance
 - small device scan/duplicate preview
 - some AI requests

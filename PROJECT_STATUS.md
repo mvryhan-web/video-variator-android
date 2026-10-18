@@ -1,5 +1,16 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## OWNER DECISIONS CHECKPOINT — 2026-10-18 (DOCS ONLY)
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](DECISIONS.md).** Это главная новая запись о статусе документации, она **переопределяет более ранние, противоречащие ей бесплатные AI/Trial/автономные-планы в исторических разделах ниже, но НЕ удаляет их**. Подробности, аудит пересечений кода и ВОПРОСЫ владельцу: [docs/DEEPSYQ_OWNER_DECISIONS_CHECKPOINT_20261018.md](docs/DEEPSYQ_OWNER_DECISIONS_CHECKPOINT_20261018.md).
+
+- **Без Free AI:** BASE §44 упразднён как текущий продукт; ежедневные Everyday Tools бесплатны локально/без платных AI; при облачном вызове нужны локальный вариант либо жёсткий дневной лимит per-user без платного перерасхода. Только будущий платный Trial $0.99, **НЕ ВКЛЮЧАТЬ** до решения владельца о длительности/кредитах/продлении/возвратах/повторных регистрациях.
+- **Issue #182:** любой оплачиваемый provider call — только на подтверждённо приобретённые credits; Trial считается покупкой только после подтверждённой оплаты и отдельного утверждения условий. Для тестов действует правило #7: только бесплатные с предварительным доказательным GitHub CHECKPOINT, иначе BLOCKED; цена тестов = $0.
+- **BASE §53 ↔ Blocks 2/5:** Block 2 Stage1 готовые workflow; Block 5 Stage1 LITE uptime/Stripe errors/spend anomalies/email; full autonomy Stage2 только после LIVE_VERIFIED BASE §51.
+- **Один канон:** Block 4 = Workspace/History/My Creations существующих jobs; Block 3 = Inspiration/templates (каталог); Block 7 = pricing/credit/Trial; повторный код/таблица/PR запрещены. Две исторические таблицы vv_ai_template/vv_ai_inspiration найдены, **НЕ мигрировать** без решения владельца.
+- **Агенты/статусы:** CI_BLOCKED; рабочий финиш READY_TO_MERGE, DONE только после LIVE_VERIFIED. Audio B/C, Agents C/Jules2/B+D, Inspiration C, History A+B/D, SEO A/C/D; один Jules с максимум тремя подтверждёнными активными заданиями; см. правило #9.
+- **DOCS-ONLY CHECKPOINT:** только Markdown/TXT, ноль кодовых/DB/Stripe/production/provider изменений, ноль платных тестов; нет новых полноценных BASE DONE. Текущие ниже PR/SHA-истории сохранены и не представляют собой новую авторизацию.
+
 ## AGENT A §24 PR284 — EXACT 16/16 CI GREEN / SOURCE READY, D REVIEW REQUIRED — 2026-10-18
 
 - **ACTUALLY DELIVERED:** original A BASE §24 only narrowly extracted from unsafe 8-file Draft PR152 into existing [PR284](https://github.com/mvryhan-web/video-variator-android/pull/284) branch `agent-a-base24-history-get-surgical-20261018`, exact feature SHA **`21aee38a6ff70ce9bc9c3f43eb90ce06cf05d212`**, only 3 A scope paths: `server/generation-studio.js` three private History GET handlers (SQL correct bound `kind=$2` for image/video/music + `private,no-store` on list, owned detail & media), isolated actual-handler no-spend DB/S3 fixture and free workflow. Existing auth, private Video operation, D one-shot purchased-only dispatch/wallet/private-cost protection, S3 `expectedSha256`, DELETE route and provider calls unchanged.

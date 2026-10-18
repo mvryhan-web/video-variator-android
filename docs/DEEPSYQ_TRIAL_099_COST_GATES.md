@@ -1,5 +1,7 @@
 # Deepsyq $0.99 / 3-day / no-auto-renew — economic safety gate
 
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. ../DECISIONS.md. Прежние расчёты Trial $0.99/кредитов/срока ниже — только ИСТОРИЧЕСКИЕ предположения; никаких условий (длительность, credits, renewal, refunds, anti-abuse) пока не утверждено. Trial не активировать, цены не менять, Issue #182 купленные credits.
+
 Updated 2026-10-15. This is a **READ-ONLY operator analysis**, not a new paid tier or alternate wallet.
 
 ## Owners and scope
