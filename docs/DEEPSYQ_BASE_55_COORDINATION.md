@@ -1,5 +1,10 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## OWNER LATEST 2026-10-18: verified genuinely free LIVE AI tests permitted
+
+**Superseding test order, NOT a new claim or release:** all seven executors may perform actual AI API calls on a confirmed FREE tier, free-credit allowance, or truly free model WITHOUT permission **only when excess quota hard-refuses without ANY charge**, and they log a **PRE-CALL GitHub CHECKPOINT** with supplier/model, evidence of no-charge plan, numerical usage limits/headroom if available, proof of hard over-limit refusal, and dated source. Otherwise **DO NOT CALL**, mark `BLOCKED` and retain source/PR. Unit/mock, Stripe TEST MODE no money, definitely free CI/lint/build remain unconditionally allowed. **PAID test budget=0**; owner controls all real Stripe charges, spending, unsafe migrations, production. If no safe free way to verify original BASE, leave `BLOCKED` until owner resolution; candidate BASE queues may be used via #12 with no duplicate claims. This policy replaces any older mock-only phrasing later in this historical board; no code/task status is magically DONE. Canonical [rule #7](DEEPSYQ_CANONICAL_OPERATING_RULES.md), full checklist in [PROJECT_STATUS.md](../PROJECT_STATUS.md). All prior lane allocation, Jules activity and queued BASE numbers remain unchanged.
+
+
 ## 2026-10-18 latest OWNER 7-agent queues / cross-lane reservation overlay
 
 Direct owner command, recorded in [PROJECT_STATUS.md](../PROJECT_STATUS.md) and [canonical 25 rules](DEEPSYQ_CANONICAL_OPERATING_RULES.md): all paid test limit **0**, certainly free mocks/Stripe test-mode/no-spend CI/lint/build permitted; `CI_BLOCKED` recognized. A code agent's acceptance stops at `READY_TO_MERGE` (open PR + required green no-spend CI); #5 integrates safely into DEV; D is ONLY production release owner with explicit owner permission; whole original item `DONE` only after `LIVE_VERIFIED`. **Do not convert older governance DONE #47/#53 to unproven LIVE.** Prior snapshots/protocol sentences below that demand coordinator preapproval for safe external-block queue switches are obsolete under rule #12.
