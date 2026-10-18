@@ -1,5 +1,10 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## AGENT A / SEO #156 PR267 BROAD RED REAL TEST FIX AND NEW SHA — 2026-10-18
+
+- Same A-owned Issue156 editorial [PR267](https://github.com/mvryhan-web/video-variator-android/pull/267), original 4-file claim retained. Actual previous SHA `6c2c6c9`: SEO offline CI #39143319395 SUCCESS; broad real browser CI #39143319399 FAILED specifically legacy independent/no-chat copy comparison expected exact text across 4 browsers, with one unrelated Firefox Home navigation timeout. Same PR updated only original owner A comparison HTML + own offline test (assertions of non-chat, non-affiliation) HEAD **`ac019e51e29d6309611669517e8d21734b456601`**, no A/C Home/test/Studio/provider shared file edits, no duplicate PR. NEW HEAD focused CI **#39147430847 SUCCESS**, broad platform #39147430880 PENDING. **DRAFT / CI_PENDING, not Ready or SEO launch**; main/prod/paid/Stripe unchanged. Next check exact head broad CI, preserve ownership and report true separate Firefox instability if repeated.
+
+
 ## AGENT A §24 / PARAMETER BIND AND MUSIC FILTER DEV REGRESSION TRIAGE — 2026-10-18
 
 - A original §24 retained [PR152](https://github.com/mvryhan-web/video-variator-android/pull/152) and latest shared DEV server checked: currently History kind filter builds `kind=2` instead of `kind=$2`, no Music allowed, no private/no-store response headers on owned list/detail/media and no paging. Old A PR152 has exact fixes but an **unsafe older `objectStorage.get(key)` media path** vs current DEV `objectStorage.get(key,{expectedSha256})`. NEVER bulk-merge this old 8-file PR over B/D. Coordinator #5/B/D approve **surgical current-source GET-only History patch**, preserve current integrity/provider/wallet/security invariants; run no-fee two-account tests, zero paid API, no prod. [Review comment](https://github.com/mvryhan-web/video-variator-android/pull/152#issuecomment-6252107969). §24 PARTIAL/BLOCKED; not merged, tested live or DONE.
