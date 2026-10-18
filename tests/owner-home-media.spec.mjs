@@ -25,15 +25,15 @@ test('owner-supplied MP4: real muted autoplay, six native ends wrap, arrows, mob
  // Never patch play/load, use fake media, or dispatch a synthetic ended event.
  await expect.poll(()=>video.evaluate(v=>v.currentTime),{timeout:20000}).toBeGreaterThan(0.2);
  await video.evaluate(v=>{v.__testEnded=0;v.__testErrors=[];v.addEventListener('ended',()=>v.__testEnded++);v.addEventListener('error',()=>v.__testErrors.push(v.error?.code));});
- await page.screenshot({path:info.outputPath('owner-carousel-real-first-frame.png'),fullPage:true});
  for(let n=0;n<6;n++){
   await expect(video).toHaveAttribute('src',clips[n].previewUrl);
   await expect.poll(()=>video.evaluate(v=>v.readyState),{timeout:20000}).toBeGreaterThanOrEqual(2);
   await expect.poll(()=>video.evaluate(v=>v.currentTime),{timeout:20000}).toBeGreaterThan(0.1);
   const size=await video.evaluate(v=>({width:v.videoWidth,height:v.videoHeight,duration:v.duration}));
   expect(size.width).toBe(1920);expect(size.height).toBe(1080);expect(size.duration).toBeGreaterThan(7.9);
-  await video.evaluate(v=>{v.currentTime=v.duration-0.4;});
-  await expect(video).toHaveAttribute('src',clips[(n+1)%6].previewUrl,{timeout:15000});
+  // Let every entire real film finish. Seeking near the end is not the
+  // owner's autoplay journey and WebKit may suspend playback during a seek.
+  await expect(video).toHaveAttribute('src',clips[(n+1)%6].previewUrl,{timeout:20000});
  }
  expect(await video.evaluate(v=>v.__testEnded)).toBe(6);
  mediaErrors.push(...await video.evaluate(v=>v.__testErrors));expect(mediaErrors).toEqual([]);
@@ -45,4 +45,7 @@ test('owner-supplied MP4: real muted autoplay, six native ends wrap, arrows, mob
  expect(hero.left).toBeGreaterThanOrEqual(-1);expect(hero.right).toBeLessThanOrEqual(hero.width+1);
  expect(clips.some(x=>x.previewUrl.includes('red-gown'))).toBe(false);
  expect(mutations).toEqual([]);
+ // Screenshot only AFTER playback assertions: full-page WebKit capture can
+ // take longer than one eight-second film and change viewport visibility.
+ await page.screenshot({path:info.outputPath('owner-carousel-after-real-cycle.png'),fullPage:false});
 });
