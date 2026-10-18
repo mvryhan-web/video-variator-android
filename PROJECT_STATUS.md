@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## AGENT A §24 — P1 NARROW HISTORY SECURITY REPAIR CLAIM / 2026-10-18
+
+- Original BASE §24 Agent A. Agent B consent [Issue72 #6253311361](https://github.com/mvryhan-web/video-variator-android/issues/72#issuecomment-6253311361), coordinator authorized narrow implementation with D co-review [#6253331326](https://github.com/mvryhan-web/video-variator-android/issues/72#issuecomment-6253331326). Old PR152 8 stale files not safely mergeable, its outdated S3 media get would regress DEV expectedSha256.
+- **Before-code A exact claim:** ONLY GET History list/detail/media handlers in current `server/generation-studio.js` (blob `28008305a646d80c28c3f9be00c8a0310fd182f6`), plus NEW `tests/agent-a-history-get-contract.mjs` and `.github/workflows/agent-a-history-get.yml`. Fix SQL bound placeholder, add supported Music kind (server already uses kind music), private no-store on all authenticated read responses. Keep all other source unchanged: auth, B Video operation, D purchased-only guard and wallet, objectStorage S3 expectedSha256. No migration/pagination until review.
+- Clean isolated extraction PR needed, explicitly supersedes ONLY unsafe old PR152 History hunks; old PR152 stays DRAFT and coordinator reconciles/closes after review. **D co-review BEFORE any DEV merge**, no paid AI/Stripe/production/unsafe migration.
+
+
 ## 2026-10-18 / AGENT B — RESUME BASE #5: FINANCE TEST FIX IN ACTIVE PARENT PR174, CI_PENDING
 
 - **B / original BASE #5 Video / PARTIAL / CI_PENDING + D_OWNER_FIXTURE, NOT LIVE/DONE.** Restored from latest B Issue73 handoff. Parent [PR174](https://github.com/mvryhan-web/video-variator-android/pull/174) old HEAD `9e7efac8` passed **12/13 actual native GitHub Actions**, the lone BASE17 D-owned privacy test `tests/base17-private-unit-economics.mjs` used stale exact SQL prefix while B only adds PRIVATE operation column for uncertain Video tasks. Existing [PR186](https://github.com/mvryhan-web/video-variator-android/pull/186) HEAD `863fde60699a8fc9ae1ca7c9799697cb2cd171c3` **6/6 exact-head native CI SUCCESS**; [PR203](https://github.com/mvryhan-web/video-variator-android/pull/203) HEAD `d7f56ed0118177b3a40a19dfb95f62acedf96eb4` **6/6 native CI SUCCESS**, both open/non-draft/unmerged. Required order 174→186→203; only #5 DEV merges.
