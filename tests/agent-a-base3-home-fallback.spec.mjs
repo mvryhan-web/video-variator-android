@@ -178,20 +178,21 @@ test('BASE 3: six featured carousel slots preserve thirteen original source scen
   return route.fulfill({json:{items:scenes.slice(0,2),categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false}}});
  });
  await page.goto('/deepsyq.html');
- await expect(page.locator('#homeHeroDots button')).toHaveCount(6);
+ await expect(page.locator('#homeHeroDots')).toHaveCount(0);
+ await expect(page.locator('#homeHeroNextVideo')).toHaveAttribute('src','/approved-identity-2.mp4');
+ await expect(page.locator('#homeHeroPreviousVideo')).toHaveAttribute('src','/approved-identity-6.mp4');
  expect(exactVideoFeed).toBe(true);
- await expect(page.locator('#homeHeroDots img')).toHaveCount(6);
- await expect(page.locator('#homeHeroDots button').nth(5)).toHaveAttribute('aria-label',/Visualize White Tiger/);
+ await expect(page.locator('#homeHeroCarousel img')).toHaveCount(0);
  expect(scenes).toHaveLength(13); // Seven additional owner scene identities stay in the feed.
- await expect(page.locator('#homeHeroDots button').first()).toHaveAttribute('aria-current','true');
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/approved-identity-1.mp4');
  await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 1 of 6/);
  await page.locator('#homeHeroPrevious').click();
- await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Visualize White Tiger');
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/approved-identity-6.mp4');
  await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 6 of 6/);
  await page.locator('#homeHeroNext').click();
- await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Hero Girl');
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/approved-identity-1.mp4');
  await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 1 of 6/);
- await expect(page.locator('#homeHeroDots button').last()).toHaveAttribute('aria-label',/Visualize White Tiger/);
+ await expect(page.locator('#homeHeroPreviousVideo')).toHaveAttribute('src','/approved-identity-6.mp4');
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
 });
 
@@ -217,8 +218,8 @@ test('BASE 3: independent rights-cleared Hero survives failed preview and option
  });
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
  await expect.poll(()=>receivedOwnerQuery).toBe(true);
- await expect(page.locator('#homeHeroDots button')).toHaveCount(1);
- await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Owner-authorized scene fixture');
+ await expect(page.locator('#homeHeroDots')).toHaveCount(0);
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/fixture-not-published.mp4');
  await expect(page.locator('#inspirationPreview')).toBeHidden();
  await expect(page.locator('#agentExamples')).toBeHidden();
 });
@@ -310,7 +311,7 @@ test('BASE 3: narrow 320px Home Hero has no intrinsic-width overflow without cli
   await page.setViewportSize({width,height:740});
   const layout=await page.evaluate(()=>{
    const hero=document.querySelector('.hero-stage').getBoundingClientRect();
-   const copy=document.querySelector('.hero-stage-copy').getBoundingClientRect();
+   const copy=document.querySelector('#homeHeroCarousel').getBoundingClientRect();
    const stage=document.querySelector('.hero').getBoundingClientRect();
    return {viewport:innerWidth,page:document.documentElement.scrollWidth,
     stageLeft:hero.left,stageRight:hero.right,stageWidth:hero.width,stageHeight:hero.height,
@@ -322,11 +323,8 @@ test('BASE 3: narrow 320px Home Hero has no intrinsic-width overflow without cli
   expect(layout.copyLeft).toBeGreaterThanOrEqual(layout.stageLeft-1);
   expect(layout.copyRight).toBeLessThanOrEqual(layout.stageRight+1);
   expect(layout.page).toBeLessThanOrEqual(width);
-  expect(layout.stageHeight).toBeGreaterThanOrEqual(399);
-  if(width===390){
-   expect(layout.stageWidth/layout.stageHeight).toBeGreaterThan(0.77);
-   expect(layout.stageWidth/layout.stageHeight).toBeLessThan(0.83);
-  }
+  expect(layout.stageHeight).toBeGreaterThan(120);
+  expect(layout.stageWidth/layout.stageHeight).toBeCloseTo(1.82,1);
   if(width===320||width===390)await page.screenshot({path:info.outputPath('owner-hero-fit-'+width+'.png'),fullPage:false});
  }
  expect(paidJobs).toBe(0);
@@ -366,7 +364,7 @@ test('BASE 3: approved Studio hero appears before the slow Inspiration mosaic re
  });
  try{
   await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
-  await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Approved moving hero for test transport only');
+  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/placeholder-transport-hero.mp4');
   await expect(page.locator('#homeHeroCarousel')).not.toHaveClass(/is-empty/);
   expect(heroRequested).toBe(true);
   expect(mosaicRequested).toBe(true);
@@ -387,7 +385,7 @@ test('BASE 3: owner violet-pink Home and Canvas CTAs stay consistent on desktop 
  for(const width of [1448,390]){
   await page.setViewportSize({width,height:900});
   const css=await page.evaluate(()=>{
-   const hero=getComputedStyle(document.querySelector('.hero-stage-copy .primary'));
+   const hero=getComputedStyle(document.querySelector('#homeQuickSubmit'));
    const canvas=getComputedStyle(document.querySelector('#quickCreateSubmit'));
    return {heroBackground:hero.backgroundImage,heroColor:hero.color,
     canvasBackground:canvas.backgroundImage,canvasColor:canvas.color};

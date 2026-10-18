@@ -11,6 +11,8 @@ on:
       - 'tests/deepsyq-preview.mjs'
       - 'scripts/publish-owner-home-media.mjs'
       - 'tests/owner-home-media*'
+      - 'tests/agent-a-base3-home-fallback.spec.mjs'
+      - 'tests/deepsyq.spec.mjs'
       - '.github/workflows/owner-home-media.yml'
   push:
     branches: [agent-b-home-v01-v13-original-frames-20261018]
@@ -23,6 +25,8 @@ on:
       - 'tests/deepsyq-preview.mjs'
       - 'scripts/publish-owner-home-media.mjs'
       - 'tests/owner-home-media*'
+      - 'tests/agent-a-base3-home-fallback.spec.mjs'
+      - 'tests/deepsyq.spec.mjs'
       - '.github/workflows/owner-home-media.yml'
 permissions:
   contents: read

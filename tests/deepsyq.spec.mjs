@@ -366,7 +366,7 @@ test('approved video appears in the real homepage hero but does not erase Canvas
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'approved-film',title:'Original mountain film',slug:'original-mountain-film',kind:'video',category:'Cinematic',actionTarget:'studio',previewUrl:'/owner-owned-film.mp4',previewPosterUrl:'/owner-owned-poster.jpg',aspectRatio:'16:9',prompt:'Cinematic natural camera movement',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false}}}));
  await page.goto('/deepsyq.html');
  await expect(page.locator('#inspirationHeroFeature')).toBeVisible();
- await expect(page.locator('#inspirationHeroTitle')).toHaveText('Original mountain film');
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src',/\.mp4$/);
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/owner-owned-film.mp4');
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('poster','/owner-owned-poster.jpg');
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
