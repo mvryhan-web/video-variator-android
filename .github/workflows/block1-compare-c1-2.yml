@@ -1,0 +1,25 @@
+name: Block 1 Compare C1.2 mocked worker acceptance
+on:
+  pull_request:
+    paths:
+      - 'server/compare-ai-mock-worker.js'
+      - 'tests/compare-ai-mock-worker-unit.mjs'
+      - '.github/workflows/block1-compare-c1-2.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate syntax
+        run: |
+          node --check server/compare-ai-mock-worker.js
+          node --check tests/compare-ai-mock-worker-unit.mjs
+      - name: Run real native Node no-spend mock tests
+        run: node --test tests/compare-ai-mock-worker-unit.mjs

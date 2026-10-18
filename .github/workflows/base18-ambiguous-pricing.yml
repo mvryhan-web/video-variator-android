@@ -1,0 +1,27 @@
+name: BASE 18 Ambiguous Price Safety
+on:
+  push:
+    branches: [base18-ambiguous-pricing-20261016]
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-pricing.js'
+      - 'tests/generation-pricing-unit.mjs'
+      - '.github/workflows/base18-ambiguous-pricing.yml'
+permissions:
+  contents: read
+jobs:
+  price-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax and approved rate selection
+        run: |
+          node --check server/generation-pricing.js
+          node --check tests/generation-pricing-unit.mjs
+          node --test tests/generation-pricing-unit.mjs tests/generation-studio-unit.mjs tests/generation-entitlements-unit.mjs

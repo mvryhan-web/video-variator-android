@@ -1,0 +1,37 @@
+name: Deepsyq BASE 27 legacy Tools entry
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/tools-hub.js'
+      - 'tests/base-legacy-tools-entry.spec.mjs'
+      - '.github/workflows/deepsyq-base27-legacy-tools.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  legacy-tools-entry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify JS and dedicated BASE #27 test
+        run: |
+          node --check app/src/main/assets/tools-hub.js
+          node --check tests/base-legacy-tools-entry.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Verify legacy link desktop and mobile, without paid requests
+        run: npx playwright test tests/base-legacy-tools-entry.spec.mjs --project=chromium --project=mobile-chromium --project=webkit --project=mobile-webkit
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: base27-tools-evidence
+          path: test-results/
+          retention-days: 7
