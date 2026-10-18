@@ -1,4 +1,8 @@
 name: BASE 6 BytePlus MP4 Result Verification
+
+concurrency:
+  group: ci-base6-byteplus-media-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 on:
   pull_request:
     paths:
