@@ -1,0 +1,87 @@
+name: Deepsyq Home UI acceptance
+
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/ai-pricing.html'
+      - 'app/src/main/assets/ai-pricing.css'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq.css'
+      - 'app/src/main/assets/deepsyq.js'
+      - 'app/src/main/assets/home-experience.js'
+      - 'app/src/main/assets/studio-handoff.js'
+      - 'tests/deepsyq.spec.mjs'
+      - 'tests/agent-a-base3-home-fallback.spec.mjs'
+      - '.github/workflows/deepsyq-home-ui.yml'
+  pull_request:
+    paths:
+      - 'app/src/main/assets/ai-pricing.html'
+      - 'app/src/main/assets/ai-pricing.css'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq.css'
+      - 'app/src/main/assets/deepsyq.js'
+      - 'app/src/main/assets/home-experience.js'
+      - 'app/src/main/assets/studio-handoff.js'
+      - 'tests/deepsyq.spec.mjs'
+      - 'tests/agent-a-base3-home-fallback.spec.mjs'
+      - '.github/workflows/deepsyq-home-ui.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deepsyq-home-ui-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  visual-interactions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Check Home controller and Playwright spec syntax
+        run: |
+          node --check app/src/main/assets/home-experience.js
+          node --check app/src/main/assets/deepsyq.js
+          node --check tests/deepsyq.spec.mjs
+      - run: npx playwright install --with-deps chromium
+      - name: Test approved design, carousel, accessibility preferences and safe Studio launch
+        run: npx playwright test tests/deepsyq.spec.mjs --project=chromium --grep 'video carousel switches only|failed owner media clips never trap|reduced-motion users get|Home Quick Create hands off|owner-approved homepage layout|homepage inspiration All Image Video|pricing shows the planned|pricing mobile trial keeps'
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: deepsyq-home-ui-evidence
+          path: test-results/
+          retention-days: 7
+
+  owner-hero-fallback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Validate owner Home controller and scoped browser tests
+        run: |
+          node --check app/src/main/assets/home-experience.js
+          node --check tests/agent-a-base3-home-fallback.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Owner-visible static gallery desktop/mobile Chromium and WebKit
+        run: npx playwright test tests/agent-a-base3-home-fallback.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agent-a-home-no-media-desktop-mobile-evidence
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
