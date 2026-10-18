@@ -17,7 +17,7 @@ test('Product Video orders multiple existing image references and preserves vali
  expect(await orderedNames()).toEqual(['1. detail.png','2. front.png']);
  await expect(page.locator('#status')).toContainText('Photo order updated');
  await page.locator('#photos').setInputFiles({name:'too-large.png',mimeType:'image/png',buffer:Buffer.alloc(1024*1024+1)});
- await expect(page.locator('#status')).toContainText('previous valid selection is preserved');
+ await expect(page.locator('#status')).toContainText('Your previous photos are preserved.');
  expect(await orderedNames()).toEqual(['1. detail.png','2. front.png']);
  await page.locator('#productName').fill('Handmade Mini Bag');
  await page.locator('#duration').selectOption('about 8 seconds');

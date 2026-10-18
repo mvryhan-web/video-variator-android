@@ -1,0 +1,28 @@
+name: BASE 20 Product Video source-photo fidelity
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/product-video.js'
+      - 'app/src/main/assets/product-video-prompt.mjs'
+      - 'app/src/main/assets/product-video-file-safety.mjs'
+      - 'tests/base20-product-photo-fidelity-unit.mjs'
+      - 'tests/base20-product-file-safety-unit.mjs'
+      - 'tests/base20-product-photo-fidelity.spec.mjs'
+      - '.github/workflows/base20-product-photo-fidelity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  product-video-brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/product-video.js && node --check app/src/main/assets/product-video-prompt.mjs && node --check app/src/main/assets/product-video-file-safety.mjs && node --test tests/base20-product-photo-fidelity-unit.mjs tests/base20-product-file-safety-unit.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npx playwright test tests/base20-product-photo-fidelity.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit
