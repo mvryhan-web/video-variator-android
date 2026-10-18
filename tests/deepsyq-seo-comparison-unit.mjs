@@ -63,3 +63,11 @@ test('comparison remains independent editorial HTML: no paid requests, scripts, 
  match(/class="comparison"/);
  match(/<main class="editorial">/);
 });
+
+
+test('owner-approved editorial links use violet accents rather than the retired mint palette',async()=>{
+ const css=await readFile(resolve(assets,'deepsyq-seo.css'),'utf8');
+ assert.match(css,/\.editorial p a,\.comparison a,\.editorial footer a\{color:#deb5ff/);
+ assert.match(css,/\.editorial a:focus-visible\{outline:2px solid #efb9ff/);
+ assert.doesNotMatch(css,/#d4f5b5|#d2f7ae|#c4fa89/i);
+});
