@@ -78,6 +78,8 @@ export async function closeWorkerDatabasePool(pool,{timeoutMs=5000}={}){
 
 // Supervisor restarts are critical after fatal asynchronous code errors. A
 // successful operator stop remains 0; a fatal runtime exit must not look clean.
-export function workerExitCode(signal){
- return signal==='uncaughtException'||signal==='unhandledRejection'?1:0;
+export function workerExitCode(signal,previous=0){
+ // A fatal error arriving while graceful async drains are still running must
+ // upgrade (never downgrade) the supervisor exit status to nonzero.
+ return previous===1||signal==='uncaughtException'||signal==='unhandledRejection'?1:0;
 }
