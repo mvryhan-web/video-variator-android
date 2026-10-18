@@ -82,8 +82,15 @@ test('BASE #27 keeps existing local history and media across Video Uniquifier â†
  // Use the existing editor's actual Tools navigation, then the actual hub
  // entry. Both pages share one origin but must not reset storage.
  const toolsLink=page.locator('#freeToolsLink');
- if(!(await toolsLink.isVisible()))await page.locator('#menuBtn').click();
+ // Playwright's isVisible() includes offscreen mobile sidebars. Check the
+ // actual mobile Menu control, not the offscreen link's CSS visibility.
+ const menu=page.locator('#menuBtn');
+ if(await menu.isVisible()){
+  await menu.click();
+  await expect(page.locator('.sidebar')).toHaveClass(/\bopen\b/);
+ }
  await expect(toolsLink).toBeVisible();
+ await expect(toolsLink).toBeInViewport();
  await toolsLink.click();
  await expect(page).toHaveURL(/\/free-tools\.html$/);
  const legacy=page.locator('[data-legacy-tool=video-uniquifier]');
