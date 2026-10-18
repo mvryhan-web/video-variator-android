@@ -1,9 +1,9 @@
 import {pricingCatalog} from './generation-pricing.js';
-import {MODEL_CATALOG} from './generation-provider.js';
+import {MODELS,MODEL_CATALOG} from './generation-provider.js';
 import {billingCatalog,generationBillingRuntime,stripeWebhookConfigured} from './generation-billing.js';
 import {generationEntitlements} from './generation-entitlements.js';
 import {generationPolicy} from './generation-policy.js';
-import {generationFeatureSwitches} from './generation-feature-flags.js';
+import {generationFeatureSwitches,generationFeatureEnabled} from './generation-feature-flags.js';
 import {objectStorageConfig} from './generation-storage.js';
 import {bytePlusDownloadsConfigured} from './generation-byteplus.js';
 
@@ -12,6 +12,17 @@ export function generationReadiness(env={}){
  const featureSwitches=generationFeatureSwitches(env);
  const studioMaxCalls=Number(env.AI_STUDIO_MAX_CALLS||0);
  const studioKinds=String(env.AI_STUDIO_ALLOWED_KINDS||'').split(',');
+ const explicitlyAllowedModels=String(env.AI_STUDIO_ALLOWED_MODELS||'').split(',');
+ // Mirror Studio's *static* provider-key/model allowlist preflight. A price
+ // from a real model is insufficient if Studio never permits that model.
+ // Per-user entitlements and audited DB model controls need separate runtime checks.
+ const hasPricedStudioRoute=kind=>pricing.entries.some(price=>
+  MODEL_CATALOG.some(model=>model.adapter===true&&model.kind===kind&&
+   model.id===price.model&&model.provider===price.provider&&
+   (model.id===MODELS[kind]?.id||explicitlyAllowedModels.includes(model.id))&&
+   generationFeatureEnabled(kind,model.provider,env)&&
+   !!(model.provider==='BytePlus'?env.BYTEPLUS_API_KEY:
+      model.provider==='Google'?env.GEMINI_API_KEY:null)));
  const gates=[
   {id:'database',label:'PostgreSQL',ready:!!env.DATABASE_URL,required:true},
   {id:'jwt',label:'Server JWT signing key',ready:!!env.APP_JWT_SECRET,required:true},
@@ -44,7 +55,8 @@ export function generationReadiness(env={}){
    billing.rates.some(rate=>rate.kind===kind)&&
    pricing.entries.some(price=>MODEL_CATALOG.some(model=>
     model.adapter===true&&model.kind===kind&&
-    model.id===price.model&&model.provider===price.provider))),required:true}
+    model.id===price.model&&model.provider===price.provider))),required:true},
+  {id:'imageVideoProviderModels',label:'A priced provider-key-backed Studio model for both Image and Video',ready:['image','video'].every(hasPricedStudioRoute),required:true}
  ];
  const blockers=gates.filter(g=>g.required&&!g.ready).map(g=>g.id);
  return {

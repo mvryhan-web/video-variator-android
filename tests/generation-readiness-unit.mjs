@@ -200,3 +200,59 @@ test('BASE #51: phantom model or wrong provider price must not count as launch p
  assert.ok(unsafe.blockers.includes('purchasedOnlyDispatch'),
   'new guard must not relax mandatory customer-purchased proof');
 });
+
+
+test('BASE #51: both Image and Video need a priced model actually allowed by Studio with its own provider key',()=>{
+ const img={model:'gemini-3.1-flash-image',provider:'Google',kind:'image',
+  credits:12,providerCostMicros:1900,currency:'usd'};
+ const googleVideo={model:'veo-3.1-fast-generate-preview',provider:'Google',kind:'video',
+  credits:80,providerCostMicros:50000,currency:'usd'};
+ const seedImage={model:'byteplus-seedream-4-5',provider:'BytePlus',kind:'image',
+  credits:15,providerCostMicros:2000,currency:'usd'};
+ const seedVideo={model:'byteplus-seedance-2',provider:'BytePlus',kind:'video',
+  credits:85,providerCostMicros:60000,currency:'usd'};
+ const kinds=[{kind:'image',credits:12},{kind:'video',credits:80}];
+ const base={
+  AI_MODEL_PRICING_JSON:JSON.stringify([img,googleVideo]),
+  AI_CREDIT_RATES_JSON:JSON.stringify(kinds)
+ };
+ const check=(overrides={})=>generationReadiness({...base,...overrides}).gates.find(
+  gate=>gate.id==='imageVideoProviderModels')?.ready;
+ assert.equal(check({GEMINI_API_KEY:'synthetic-no-network'}),false,
+  'Veo Fast is not a default Studio-enabled model');
+ assert.equal(check({GEMINI_API_KEY:'synthetic-no-network',
+  AI_STUDIO_ALLOWED_MODELS:googleVideo.model}),true,
+  'operator opted in and Google key is present for both priced routes');
+ assert.equal(check({BYTEPLUS_API_KEY:'synthetic-no-network',
+  AI_STUDIO_ALLOWED_MODELS:googleVideo.model}),false,
+  'some provider key is not proof Google models can run');
+ assert.equal(check({AI_STUDIO_ALLOWED_MODELS:googleVideo.model}),false,
+  'an approved catalog price alone cannot replace the provider key');
+ assert.equal(check({GEMINI_API_KEY:'synthetic-no-network',
+  AI_STUDIO_ALLOWED_MODELS:googleVideo.model,AI_VIDEO_ENABLED:'false'}),false);
+ assert.equal(check({GEMINI_API_KEY:'synthetic-no-network',
+  AI_STUDIO_ALLOWED_MODELS:googleVideo.model,AI_IMAGE_ENABLED:'false'}),false);
+ assert.equal(check({GEMINI_API_KEY:'synthetic-no-network',
+  AI_STUDIO_ALLOWED_MODELS:googleVideo.model,
+  AI_MODEL_PRICING_JSON:JSON.stringify([img,{...googleVideo,model:'ghost-video'}])}),false);
+ const defaultVideo={...googleVideo,model:'veo-3.1-lite-generate-preview'};
+ assert.equal(check({GEMINI_API_KEY:'synthetic-no-network',
+  AI_MODEL_PRICING_JSON:JSON.stringify([img,defaultVideo])}),true,
+  'the actually configured Studio default video is allowed without extra opt-in');
+ assert.equal(check({BYTEPLUS_API_KEY:'synthetic-no-network',
+  AI_STUDIO_ALLOWED_MODELS:[seedImage.model,seedVideo.model].join(','),
+  AI_MODEL_PRICING_JSON:JSON.stringify([seedImage,seedVideo])}),true,
+  'BytePlus-only allows explicitly enabled image and video models with its key');
+ assert.equal(check({BYTEPLUS_API_KEY:'synthetic-no-network',
+  AI_STUDIO_ALLOWED_MODELS:[seedImage.model,seedVideo.model].join(','),
+  AI_MODEL_PRICING_JSON:JSON.stringify([seedImage,seedVideo]),
+  BYTEPLUS_ENABLED:'false'}),false,
+  'BytePlus kill switch must block apparently priced routes');
+ const configured=generationReadiness({...base,
+  GEMINI_API_KEY:'synthetic-no-network',
+  AI_STUDIO_ALLOWED_MODELS:googleVideo.model,
+  AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true'});
+ assert.equal(configured.gates.find(g=>g.id==='imageVideoProviderModels').ready,true);
+ assert.equal(configured.gates.find(g=>g.id==='purchasedOnlyDispatch').ready,false);
+ assert.equal(configured.launchReady,false,'P0 paid-only cannot be overridden by provider setup');
+});
