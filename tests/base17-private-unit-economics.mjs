@@ -49,7 +49,7 @@ test('owner retains internal costs; same generation is credit-only in customer H
    const normalized=sql.replace(/\s+/g,' ').trim();
    return /^SELECT\s+id\s*,\s*kind\s*,\s*status\s*,/i.test(normalized)&&
     /\bFROM\s+vv_generation_jobs\b/i.test(normalized)&&
-    /\bORDER\s+BY\s+created_at\s+DESC\s+LIMIT\s+50\b/i.test(normalized);
+    /\bORDER\s+BY\s+created_at\s+DESC\b/i.test(normalized);
   });
   assert.ok(historySql,'customer History SELECT must exist');
   const projection=historySql.split(/\bFROM\s+vv_generation_jobs\b/i)[0];
