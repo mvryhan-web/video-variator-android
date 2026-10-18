@@ -1,4 +1,8 @@
 name: BASE 33 Owner P0 Purchased Only Dispatch Contract
+
+concurrency:
+  group: ci-base33-p0-dispatch-contract-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 on:
   pull_request:
     paths:
