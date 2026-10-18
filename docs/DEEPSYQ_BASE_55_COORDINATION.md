@@ -1,5 +1,14 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## COORDINATOR #5 — 18 Oct 2026 — VERIFIED WAVE 3 MERGE DELTA
+
+- Original BASE FULL DONE #47/#53 = 2/55 unchanged; source merges do not imply live DONE.
+- Jules1 Block5 W5.2 original PR275 native 2/2 SUCCESS; DEV squash b42cdb559b3ff58ac5e581b639050709cd21697b. Worker OFF, full Block5 PARTIAL.
+- Jules3 Block6 V6.1 original PR274 final tested head c8733ac67aca662de9c2b75c30a1d906e7cab05e exact 3 allowed files, native Voice Actions 39158419599 SUCCESS and Watcher 39158419633 SUCCESS; DEV squash f210acf23edfde1401bff9ec6f608021e96fc7c5. Pure microphone policy, no live app integration, full Block6 PARTIAL.
+- Both bot PRs' unclaimed shared QA agent file was removed before merge. Jules2 Block4 Issue273 task creation FAILED; QUEUED_NOT_RUNNING, no duplicate Jules label.
+- Owner Home PR257 new head 97100c620aaa07d6de9644fa9d2e855e576eda9f is DRAFT dirty 45 files, no exact-head production approval; no overwrite of A Home.
+- Prior original 55 claims and prior five-topic allocation still apply. A History owner, B Video/Audio, C Tool UI, D economics/release; Jules roadmaps isolated. No main, production, Stripe or charged AI.
+
 ## COORDINATOR #5 / 2026-10-18 21:25+ Europe/Paris — VERIFIED WAVE 3 CLAIM DELTA
 
 - Original BASE full DONE only #47 and #53 (2/55); all prior original row entries below preserved.
