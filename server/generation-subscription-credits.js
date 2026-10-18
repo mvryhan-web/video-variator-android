@@ -111,5 +111,22 @@ export async function grantPaidSubscriptionInvoice({event,env={},pool,wallet}){
  await wallet.grant({userId:rows[0].id,sessionId:invoice.id,
   paymentIntent,credits:grant.credits,amount:invoice.amount_paid,currency:invoice.currency,
   allowHistoricalSubscriptionReplay:true});
+ // A subscription has no Checkout session_id, so its purchased credit origin
+ // needs a SECOND verified trail: only the live, signed invoice.paid path
+ // that passed all price/customer/payment validation above may write this.
+ // A missing/failed migration leaves its AI credits unusable for paid provider
+ // dispatch, and webhook retries safely reconcile after migration is applied.
+ if(mode&&env.AI_PURCHASED_ONLY_DISPATCH_ENABLED==='true'){
+  await pool.query(`INSERT INTO vv_ai_verified_subscription_invoice
+   (invoice_id,user_id,payment_intent,livemode)
+   VALUES($1,$2,$3,true) ON CONFLICT (invoice_id) DO NOTHING`,
+   [invoice.id,rows[0].id,paymentIntent]);
+  const verified=await pool.query(`SELECT user_id,payment_intent,livemode
+   FROM vv_ai_verified_subscription_invoice WHERE invoice_id=$1`,[invoice.id]);
+  const match=verified.rows[0];
+  if(verified.rows.length!==1||match.user_id!==rows[0].id||
+     match.payment_intent!==paymentIntent||match.livemode!==true)
+   throw Error('AI_SUBSCRIPTION_PURCHASE_PROVENANCE_CONFLICT');
+ }
  return true; // caller must ALSO process the existing legacy invoice.paid event
 }

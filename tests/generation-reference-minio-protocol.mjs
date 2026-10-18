@@ -147,6 +147,23 @@ test('real MinIO accepts correctly signed private GET, then denies forgery, expi
   assert.equal(expiredResponse.status,403,'expired signed links must not be usable');
   await store.deleteStagedReference({userId:owner,key:getKey});
   const deleted=await local('GET',u.pathname+u.search);
+  await t.test('BASE #11: real private MinIO generated output verifies bytes, detects tamper and supports legacy read',async()=>{
+   // Real S3-compatible PUT/GET, but ONLY against this disposable loopback
+   // bucket. No paid storage, external endpoint or provider generation.
+   const jobId=randomUUID(),media=Buffer.from(bytes);
+   const asset=await store.putGeneration({userId:owner,jobId,mime:'video/mp4',bytes:media});
+   assert.equal(asset.sha256,hash(media));
+   assert.equal(asset.mime,'video/mp4');
+   try{
+    assert.deepEqual(await store.get(asset.key,{expectedSha256:asset.sha256}),media);
+    const changed=Buffer.concat([media,Buffer.from([0])]);
+    // Independently overwrite the same key with changed bytes, keeping the
+    // original recorded digest: the protected read must fail closed.
+    await store.putGeneration({userId:owner,jobId,mime:'video/mp4',bytes:changed});
+    await assert.rejects(()=>store.get(asset.key,{expectedSha256:asset.sha256}),/OBJECT_STORAGE_CHECKSUM_MISMATCH/);
+    assert.deepEqual(await store.get(asset.key),changed); // digestless legacy mode, not verified
+   }finally{await store.delete(asset.key);}
+  });
   await t.test('real PostgreSQL reference ledger expires and deletes real MinIO object with intake OFF',async()=>{
    const database=process.env.AI_TEST_DATABASE_URL||'';
    const dbUrl=new URL(database);

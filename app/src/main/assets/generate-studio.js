@@ -638,11 +638,21 @@ function historyDate(value){try{return new Intl.DateTimeFormat(navigator.languag
 function historyCredits(item){const n=Number(item.creditsCharged||item.creditsReserved||0);return n>0?say(n+' AI credits',n+' AI-кредитов'):'';}
 function prepareHistoryItem(item,{settings=false}={}){
  if(busy)return;
+ const targetKind=item.kind==='music'?'music':item.kind;
  const previousCount=kind==='video'?refs.length:(drafts.video?.refs?.length||0);
  const videoRegenerate=settings&&item.kind==='video';
  if(videoRegenerate&&previousCount&&!confirm(say('Preparing this historical video will detach your current video photos. Continue?','Для подготовки прежнего видео потребуется убрать текущие фотографии из редактора. Продолжить?')))return;
- select(item.kind==='music'?'music':item.kind);
- if(item.model&&catalog.some(m=>m.id===item.model&&m.kind===(item.kind==='music'?'music':item.kind))){modelId=item.model;renderModel();}
+ // Never reuse unrelated current Canvas reference photos in regenerated jobs.
+ const imageRefs=targetKind===kind?refs:(drafts.image?.refs||[]);
+ if(settings&&item.kind==='image'&&imageRefs.length&&!confirm(say(
+  'Preparing this saved image will detach your current Image draft photos. The saved job is unchanged. Continue?',
+  'Подготовка сохранённого изображения уберёт фото из текущего черновика. Сохранённый результат не изменится. Продолжить?')))return;
+ select(targetKind);
+ if(settings&&item.kind==='image'){
+  refs=[];if(drafts.image)drafts.image.refs=[];
+  imageDraftNeedsPhotos=false;renderRefs();
+ }
+ if(item.model&&catalog.some(m=>m.id===item.model&&m.kind===targetKind)){modelId=item.model;renderModel();}
  $('prompt').value=item.prompt||'';
  if(settings&&item.kind==='video'){
   // Historic references are never restored from another live draft, even for text-only video.
@@ -662,6 +672,9 @@ function prepareHistoryItem(item,{settings=false}={}){
  if(settings&&item.kind==='music'&&['song','instrumental'].includes(item.settings?.musicMode)){$('musicMode').value=item.settings.musicMode;renderModel();}
  if(videoRegenerate)storeDraft(); // Prevent stale photos returning after tab switch.
  $('consent').checked=false;availability();setHistory(false);$('prompt').focus();
+ if(settings&&item.kind==='image')$('status').textContent=say(
+  'Saved prompt and settings are ready. Old reference photos are not restored. Add photos if needed and review consent before generating.',
+  'Запрос и настройки готовы. Старые фотографии не восстановлены. При необходимости добавьте фото и подтвердите согласие перед генерацией.');
 }
 async function editHistoryImage(item){
  if(busy||item.kind!=='image'||item.status!=='ready')return;

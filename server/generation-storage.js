@@ -140,7 +140,10 @@ export function createObjectStorage({env=process.env,fetcher=fetch,now=()=>new D
   async putGeneration({userId,jobId,mime,bytes}){
    requireReady();if(!MIME_EXT.has(mime)||!Buffer.isBuffer(bytes)||!bytes.length||bytes.length>50*1024*1024)throw Error('OBJECT_STORAGE_INVALID_MEDIA');
    const owner=sha(String(userId)).slice(0,24),key=`${cfg.prefix}/users/${owner}/${jobId}.${MIME_EXT.get(mime)}`;
-   await request('PUT',key,{bytes,mime});return {storage:'s3',key,mime,size:bytes.length};
+   await request('PUT',key,{bytes,mime});
+   // Immutable content digest travels with output_assets in the existing job
+   // JSON, without a schema migration or exposing a signed private URL.
+   return {storage:'s3',key,mime,size:bytes.length,sha256:sha(bytes)};
   },
   // Prepared for a future authenticated upload ledger. No HTTP route calls these
   // methods yet; staging is OFF unless explicitly approved after retention design.
@@ -174,7 +177,16 @@ export function createObjectStorage({env=process.env,fetcher=fetch,now=()=>new D
       !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(mp4|wav)$/.test(key.slice(base.length)))throw Error('REFERENCE_MEDIA_ACCESS_DENIED');
    await request('DELETE',key);return true;
   },
-  async get(key,{maxBytes=50*1024*1024}={}){const r=await request('GET',key);return readLimited(r,maxBytes);},
+  async get(key,{maxBytes=50*1024*1024,expectedSha256=null}={}){
+   // Old assets without a digest stay readable, but never claim verified.
+   if(expectedSha256!=null&&
+      (typeof expectedSha256!=='string'||!/^[a-f0-9]{64}$/.test(expectedSha256)))
+    throw Error('OBJECT_STORAGE_INVALID_CHECKSUM');
+   const r=await request('GET',key),bytes=await readLimited(r,maxBytes);
+   if(expectedSha256!=null&&sha(bytes)!==expectedSha256)
+    throw Error('OBJECT_STORAGE_CHECKSUM_MISMATCH');
+   return bytes;
+  },
   async delete(key){await request('DELETE',key);return true;}
  };
 }
