@@ -10,8 +10,8 @@ export function pricingCatalog(env={}){
   if(!Array.isArray(rows)||rows.length>100)throw Error();
   const entries=rows.map(r=>{
    if(!r||!id(r.model)||!id(r.provider)||!['image','video','music','voice'].includes(r.kind)||!positive(r.credits,MAX_CREDITS)||!positive(r.providerCostMicros,MAX_MICROS))throw Error();
-   if(r.ratio!=null&&typeof r.ratio!=='string')throw Error();
-   if(r.quality!=null&&typeof r.quality!=='string')throw Error();
+   if(r.ratio!=null&&(typeof r.ratio!=='string'||!r.ratio.trim()))throw Error();
+   if(r.quality!=null&&(typeof r.quality!=='string'||!r.quality.trim()))throw Error();
    if(r.outputFormat!=null&&(!['auto','png','jpeg'].includes(r.outputFormat)||r.kind!=='image'))throw Error();
    if(r.videoInputMode!=null&&(!['text','first_frame','first_last','reference_image'].includes(r.videoInputMode)||r.kind!=='video'))throw Error();
    if(r.referenceCount!=null&&(!Number.isSafeInteger(r.referenceCount)||r.referenceCount<0||r.referenceCount>3||r.kind!=='video'))throw Error();
@@ -35,6 +35,17 @@ export function estimateGenerationPricing(request,model,env={}){
  const candidates=catalog.entries.filter(e=>e.model===model.id&&e.kind===model.kind&&e.provider===model.provider);
  const inputMode=request.kind==='video'?(request.videoInputMode||((request.referenceCount??request.references?.length??0)?'first_frame':'text')):null;
  const referenceCount=request.kind==='video'?(request.referenceCount??request.references?.length??0):0;
+ // Generic text/first-frame tariffs are NOT approved for malformed multi-image
+ // roles. Enforce the mode/count contract here, independently of the caller's
+ // provider input validation, before considering any wildcard pricing row.
+ if(request.kind==='video'){
+  if(!Number.isSafeInteger(referenceCount)||referenceCount<0||
+     !['text','first_frame','first_last','reference_image'].includes(inputMode)||
+     (inputMode==='text'&&referenceCount!==0)||
+     (inputMode==='first_frame'&&referenceCount!==1)||
+     (inputMode==='first_last'&&referenceCount!==2)||
+     (inputMode==='reference_image'&&(referenceCount<1||referenceCount>3)))return null;
+ }
  const score=e=>{
   if(e.ratio&&e.ratio!==request.ratio)return -1;
   const quality=request.kind==='image'?(request.resolution||model.quality):request.kind==='video'?(request.videoResolution||model.quality):(model.capabilities?.quality??model.quality);

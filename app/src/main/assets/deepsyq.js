@@ -31,22 +31,41 @@ document.querySelectorAll('[data-quick-starter]').forEach(button=>button.addEven
 }));
 
 let quickReferences=[],quickPreviewUrls=[];
-// Small session-only Canvas draft: never stores uploaded files or sends drafts to the server.
-const QUICK_DRAFT_KEY='deepsyq_quick_canvas_draft_v1';
+// Canvas drafts are local-only and private to the account that wrote them.
+// Never store a bearer token (or uploaded files) in the draft key or payload.
+const QUICK_DRAFT_LEGACY_KEY='deepsyq_quick_canvas_draft_v1';
+const quickDraftOwner=localStorage.getItem('vv_token')||'guest';
+let quickDraftEpoch=0;
+const quickDraftKeyPromise=(async()=>{
+ try{
+  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(quickDraftOwner));
+  return 'deepsyq_quick_canvas_draft_v2_'+Array.from(new Uint8Array(digest).slice(0,16),b=>b.toString(16).padStart(2,'0')).join('');
+ }catch(_){return null;} // No Web Crypto: editing stays available, no unsafe fallback storage.
+})();
+function sameQuickDraftAccount(){return (localStorage.getItem('vv_token')||'guest')===quickDraftOwner;}
 function saveQuickDraft(){
  const draft={prompt:$('quickCreatePrompt').value.slice(0,2000),kind:$('quickCreateKind').value,ratio:$('quickCreateRatio').value};
- try{sessionStorage.setItem(QUICK_DRAFT_KEY,JSON.stringify(draft));}catch(_){/* Browsers may deny storage; creation still works. */}
+ const epoch=++quickDraftEpoch;
+ void quickDraftKeyPromise.then(key=>{
+  if(!key||epoch!==quickDraftEpoch||!sameQuickDraftAccount())return;
+  try{sessionStorage.setItem(key,JSON.stringify(draft));}catch(_){/* Keep in-memory editor usable. */}
+ });
 }
-function restoreQuickDraft(){
+async function restoreQuickDraft(){
+ populateQuickRatios();
+ try{sessionStorage.removeItem(QUICK_DRAFT_LEGACY_KEY);}catch(_){}
+ const epoch=quickDraftEpoch;
+ const key=await quickDraftKeyPromise;
+ if(!key||epoch!==quickDraftEpoch||!sameQuickDraftAccount()||$('quickCreatePrompt').value)return;
  try{
-  const draft=JSON.parse(sessionStorage.getItem(QUICK_DRAFT_KEY)||'null');
-  if(!draft||typeof draft.prompt!=='string'||!['image','video'].includes(draft.kind)){populateQuickRatios();return;}
+  const draft=JSON.parse(sessionStorage.getItem(key)||'null');
+  if(!draft||typeof draft.prompt!=='string'||!['image','video'].includes(draft.kind))return;
   $('quickCreatePrompt').value=draft.prompt.slice(0,2000);
   $('quickCreateKind').value=draft.kind;
   populateQuickRatios(typeof draft.ratio==='string'?draft.ratio:'');
- }catch(_){populateQuickRatios();/* Ignore corrupt or inaccessible session data. */}
+ }catch(_){/* Ignore corrupt or inaccessible account-scoped draft. */}
 }
-restoreQuickDraft();
+void restoreQuickDraft();
 $('quickCreatePrompt').addEventListener('input',saveQuickDraft);
 $('quickCreateKind').addEventListener('change',()=>{populateQuickRatios();saveQuickDraft();});
 $('quickCreateRatio').addEventListener('change',saveQuickDraft);
@@ -55,7 +74,9 @@ $('quickCreateClear').addEventListener('click',()=>{
  if(hasDraft&&!confirm('Clear this Canvas draft and remove its selected reference photos?'))return;
  $('quickCreatePrompt').value='';$('quickCreateKind').value='image';populateQuickRatios();
  quickReferences=[];$('quickCreateFiles').value='';renderQuickReferences();
- try{sessionStorage.removeItem(QUICK_DRAFT_KEY);}catch(_){}
+ ++quickDraftEpoch;
+  void quickDraftKeyPromise.then(key=>{if(key&&sameQuickDraftAccount())try{sessionStorage.removeItem(key);}catch(_){}});
+  try{sessionStorage.removeItem(QUICK_DRAFT_LEGACY_KEY);}catch(_){}
  $('quickCreateStatus').textContent='Canvas draft cleared. No files were uploaded.';
  $('quickCreatePrompt').focus();
 });
@@ -74,6 +95,17 @@ function renderQuickReferences(){
   item.append(img,name,remove);previews.append(item);
  });
 }
+// Other-tab logout/account replacement must remove old private prompt and unsent
+// reference photos from this open page, not merely from the next reload.
+window.addEventListener('storage',event=>{
+ if(event.key!=='vv_token')return;
+ ++quickDraftEpoch;
+ $('quickCreatePrompt').value='';$('quickCreateKind').value='image';populateQuickRatios();
+ $('quickCreateFiles').value='';
+ const quickBarPrompt=$('homeQuickPrompt');if(quickBarPrompt)quickBarPrompt.value='';
+ quickReferences=[];renderQuickReferences();
+ $('quickCreateStatus').textContent='Account changed. Reload to start a private draft for this account.';
+});
 function setQuickReferences(files,{append=false}={}){
  const candidates=[...(append?quickReferences:[]),...Array.from(files||[])];
  if(candidates.length>QUICK_MAX_FILES||candidates.some(file=>!['image/png','image/jpeg'].includes(file.type)||file.size>QUICK_MAX_BYTES||file.size===0)){
@@ -192,9 +224,11 @@ function showModelFlyout(kind,entry){
 }
 for(const entry of document.querySelectorAll('[data-model-menu]')){
  const kind=entry.dataset.modelMenu,btn=entry.querySelector('[data-open-models]');
- entry.addEventListener('mouseenter',()=>showModelFlyout(kind,entry));
+ entry.addEventListener('mouseenter',()=>{if(!mobileMenu.matches)showModelFlyout(kind,entry);});
  entry.addEventListener('mouseleave',scheduleModelClose);
- entry.addEventListener('focusin',()=>showModelFlyout(kind,entry));
+ // Mobile tap first focuses the model trigger; do not let focus open the
+ // overlay before click reaches the button. Keyboard Enter/Space still click it.
+ entry.addEventListener('focusin',()=>{if(!mobileMenu.matches)showModelFlyout(kind,entry);});
  entry.addEventListener('focusout',scheduleModelClose);
  btn.onclick=()=>{if(openModelsKind===kind&&!$('modelFlyout').hidden)closeModelFlyout();else showModelFlyout(kind,entry);};
 }
@@ -268,7 +302,15 @@ function showInspirationVideos(root){
 document.addEventListener('visibilitychange',()=>{if(document.hidden)document.querySelectorAll('#inspirationPreview video').forEach(v=>v.pause());});
 async function loadInspirationPreview(){
  const section=$('inspirationPreview'),root=$('inspirationPreviewGrid'),agentSection=$('agentExamples'),agentRoot=$('agentExamplesGrid');if(!section||config?.features?.inspiration===false){updateInspirationHero([]);return;}
- try{const r=await fetch(base+'/api/inspiration?featured=true&limit=12',{cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||!Array.isArray(d.items))return;const studio=d.items.filter(x=>x.actionTarget==='studio').sort((a,b)=>Number(b.kind==='video')-Number(a.kind==='video')).slice(0,10),cats=$('inspirationPreviewCategories');root.replaceChildren();cats?.replaceChildren();for(const category of (d.categories||[]).slice(0,8)){const link=document.createElement('a');link.href='inspiration.html?category='+encodeURIComponent(category);link.textContent=category;cats?.append(link);}updateInspirationHero(studio);for(const item of studio){const a=document.createElement('a');a.className='inspiration-preview-card';a.dataset.kind=item.kind;a.href='inspiration.html?kind='+encodeURIComponent(item.kind||'all')+'&category='+encodeURIComponent(item.category||'')+'&ratio='+encodeURIComponent(item.aspectRatio||'')+'&q='+encodeURIComponent(item.title||'');const visual=document.createElement('div');visual.className='inspiration-preview-media';if(item.kind==='video'){const video=document.createElement('video');video.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';video.setAttribute('aria-hidden','true');if(item.previewPosterUrl)video.poster=item.previewPosterUrl;visual.append(video);const label=document.createElement('span');label.className='inspiration-video-label';label.textContent='Watch video · Explore idea ↗';visual.append(label);}else{const img=document.createElement('img');img.src=item.previewUrl;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';visual.append(img);}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const meta=document.createElement('span');meta.textContent=[item.kind,item.category,item.aspectRatio].filter(Boolean).join(' · ');copy.append(title,meta);a.append(visual,copy);root.append(a);}showInspirationVideos(root);section.hidden=!studio.length;const ar=await fetch(base+'/api/inspiration?featured=true&target=agent&limit=3',{cache:'no-store'}),ad=await ar.json().catch(()=>({}));const agents=ar.ok&&Array.isArray(ad.items)?ad.items:[];agentRoot.replaceChildren();for(const item of agents){const card=document.createElement(item.actionPath?'a':'article');card.className='inspiration-preview-card agent-example';if(item.actionPath){card.href=item.actionPath+'?from=inspiration';card.onclick=()=>sessionStorage.setItem('deepsyq_agent_inspiration_start',JSON.stringify({id:item.id,title:item.title,generationType:item.kind,promptTemplate:item.prompt||'',defaultModel:item.defaultModel||null,requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],defaultSettings:{...(item.defaultSettings||{}),ratio:item.aspectRatio},source:'inspiration',action:'create'}));}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const desc=document.createElement('span');desc.textContent=item.description||item.prompt;copy.append(title,desc);card.append(copy);agentRoot.append(card);}agentSection.hidden=!agents.length;}catch(_){updateInspirationHero([]);section.hidden=true;agentSection.hidden=true;}
+ try{
+  // Hero and the inspiration mosaic are independent reads: a slow mosaic must
+  // not withhold a published, rights-cleared playable featured Studio film.
+  // The owner-locked carousel never promotes Agent-only entries into a Studio CTA.
+  void fetch(base+'/api/inspiration?featured=true&kind=video&target=studio&limit=13',{cache:'no-store'})
+   .then(async response=>response.ok?response.json():null)
+   .then(feed=>updateInspirationHero(Array.isArray(feed?.items)?feed.items:[]))
+   .catch(()=>updateInspirationHero([]));
+  const d=await fetch(base+'/api/inspiration?featured=true&limit=12',{cache:'no-store'}).then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));const studio=(Array.isArray(d.items)?d.items:[]).filter(x=>x.actionTarget==='studio').sort((a,b)=>Number(b.kind==='video')-Number(a.kind==='video')).slice(0,10),cats=$('inspirationPreviewCategories');root.replaceChildren();cats?.replaceChildren();for(const category of (d.categories||[]).slice(0,8)){const link=document.createElement('a');link.href='inspiration.html?category='+encodeURIComponent(category);link.textContent=category;cats?.append(link);}for(const item of studio){const a=document.createElement('a');a.className='inspiration-preview-card';a.dataset.kind=item.kind;a.href='inspiration.html?kind='+encodeURIComponent(item.kind||'all')+'&category='+encodeURIComponent(item.category||'')+'&ratio='+encodeURIComponent(item.aspectRatio||'')+'&q='+encodeURIComponent(item.title||'');const visual=document.createElement('div');visual.className='inspiration-preview-media';if(item.kind==='video'){const video=document.createElement('video');video.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';video.setAttribute('aria-hidden','true');if(item.previewPosterUrl)video.poster=item.previewPosterUrl;visual.append(video);const label=document.createElement('span');label.className='inspiration-video-label';label.textContent='Watch video · Explore idea ↗';visual.append(label);}else{const img=document.createElement('img');img.src=item.previewUrl;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';visual.append(img);}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const meta=document.createElement('span');meta.textContent=[item.kind,item.category,item.aspectRatio].filter(Boolean).join(' · ');copy.append(title,meta);a.append(visual,copy);root.append(a);}showInspirationVideos(root);section.hidden=!studio.length;const ad=await fetch(base+'/api/inspiration?featured=true&target=agent&limit=3',{cache:'no-store'}).then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));const agents=Array.isArray(ad.items)?ad.items:[];agentRoot.replaceChildren();for(const item of agents){const card=document.createElement(item.actionPath?'a':'article');card.className='inspiration-preview-card agent-example';if(item.actionPath){card.href=item.actionPath+'?from=inspiration';card.onclick=()=>sessionStorage.setItem('deepsyq_agent_inspiration_start',JSON.stringify({id:item.id,title:item.title,generationType:item.kind,promptTemplate:item.prompt||'',defaultModel:item.defaultModel||null,requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],defaultSettings:{...(item.defaultSettings||{}),ratio:item.aspectRatio},source:'inspiration',action:'create'}));}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const desc=document.createElement('span');desc.textContent=item.description||item.prompt;copy.append(title,desc);card.append(copy);agentRoot.append(card);}agentSection.hidden=!agents.length;}catch(_){section.hidden=true;agentSection.hidden=true;}
 }
 
 async function loadFeaturedWorkflows(){
@@ -281,7 +323,7 @@ async function loadFeaturedWorkflows(){
 
 function applyPlatformFeatures(){for(const el of document.querySelectorAll('[data-feature]')){const key=el.dataset.feature;if(config?.features&&config.features[key]===false)el.hidden=true;}}
 function renderPlans(){const descriptions={basic:'For occasional video projects.',pro:'For a regular creator workflow.',business:'For a high-volume video workflow.'};$('plans').replaceChildren();for(const key of ['basic','pro','business']){const p=config.plans?.[key];if(!p)continue;const card=document.createElement('article');card.className='plan';const heading=document.createElement('h3');heading.textContent=key[0].toUpperCase()+key.slice(1);const price=document.createElement('div');price.className='price';price.textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(p.price);const period=document.createElement('small');period.textContent=' / month';price.append(period);const desc=document.createElement('p');desc.textContent=descriptions[key];const usage=document.createElement('p');usage.textContent=`${Number(p.limit).toLocaleString('en-US')} video credits per month. Existing tool access applies.`;const b=document.createElement('button');b.textContent='Choose '+heading.textContent;b.onclick=()=>checkout(key);card.append(heading,price,desc,usage,b);$('plans').append(card);}const p=config.plans?.lifetime;if(p){$('lifetimePrice').textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:p.currency||'EUR',maximumFractionDigits:0}).format(p.price)+' · one payment';$('lifetimeCheckout').disabled=false;$('lifetimeCheckout').onclick=()=>checkout('lifetime');}}
-try{config=await api('/api/config');applyPlatformFeatures();renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);}catch(_){$('paymentStatus').textContent='Plans could not load. Please try again later.';}
+try{config=await api('/api/config');applyPlatformFeatures();renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);}catch(_){updateInspirationHero([]);$('paymentStatus').textContent='Plans could not load. Please try again later.';}
 window.addEventListener('load',initGoogle);
 try{const c=await api('/api/studio/config');studioModelMenuConfig=c;if(openModelsKind)renderModelFlyout(openModelsKind);$('studioStatus').textContent=c.ownerOnly?'AI generation is in owner preview. Explore the studios; existing tools remain available.':c.enabled?'Open a studio to see the available models.':'AI generation is not available yet. Existing tools remain available.';}catch(_){$('studioStatus').textContent='Studio availability could not be checked. Existing tools remain available.';}
 // Read-only dashboard overview. Backend user_id scope is authoritative;
