@@ -7,7 +7,10 @@ async function fixtures(page){
 }
 test('dashboard keeps tools secondary, honest availability and supported navigation',async({page},info)=>{
  await fixtures(page);await page.goto('/deepsyq.html');
- await expect(page.locator('.hero-stage h1')).toContainText('beyond limits');
+ await expect(page.locator('main > h1.sr-only')).toHaveText('Deepsyq AI creative platform');
+ await expect(page.locator('.hero-stage h1')).toHaveCount(0);
+ await expect(page.locator('.hero-stage')).not.toContainText('beyond limits');
+ await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await expect(page.locator('nav a[href="#quickCreateForm"]')).toContainText('Canvas');
  await expect(page.locator('#studioStatus')).toContainText('owner preview');
  await expect(page.locator('.plan')).toHaveCount(3);
@@ -562,7 +565,10 @@ test('Block 3 gallery loads more without replacing existing cards',async({page})
 test('owner-approved homepage layout keeps the real Canvas and section order',async({page})=>{
  await fixtures(page);
  await page.goto('/deepsyq.html');
- await expect(page.locator('.hero-stage h1')).toContainText('beyond limits');
+ await expect(page.locator('main > h1.sr-only')).toHaveText('Deepsyq AI creative platform');
+ await expect(page.locator('.hero-stage h1')).toHaveCount(0);
+ await expect(page.locator('.hero-stage')).not.toContainText('beyond limits');
+ await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await expect(page.locator('#topPromo')).toBeVisible();
  await page.locator('#topPromo').click();
  await expect(page.locator('#promoDialog')).toBeVisible();

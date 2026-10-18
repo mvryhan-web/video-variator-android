@@ -33,7 +33,8 @@ test('BASE 3: empty rights-cleared video feed keeps visible honest 16:9 gallery 
  await expect(page.locator('#homeHeroDots button')).toHaveCount(0);
  await expect(page.locator('#homeHeroSlideLink')).toBeHidden();
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
- await expect(page.locator('.hero-stage h1')).toContainText('beyond limits');
+ await expect(page.locator('main > h1.sr-only')).toHaveText('Deepsyq AI creative platform');
+ await expect(page.locator('.hero-stage h1')).toHaveCount(0);
  await expect(page.locator('#canvasFeature')).toBeVisible();
  await expect(page.locator('#homeQuickForm')).toBeVisible();
  const desktopRatio=await page.locator('.hero-stage').evaluate(el=>{const r=el.getBoundingClientRect();return r.width/r.height;});
@@ -43,7 +44,8 @@ test('BASE 3: empty rights-cleared video feed keeps visible honest 16:9 gallery 
  await page.setViewportSize({width:390,height:844});
  await expect(gallery).toBeVisible();
  await expect(page.locator('#homeHeroEmpty')).toBeVisible();
- await expect(page.locator('.hero-stage h1')).toBeVisible();
+ await expect(page.locator('.hero-stage')).toBeVisible();
+ await expect(page.locator('.hero-stage h1')).toHaveCount(0);
  await expect(page.locator('#canvasFeature')).toBeVisible();
  // Measure this A-owned hero only; C separately owns mobile drawer/top-nav acceptance.
  const fits=await gallery.evaluate(el=>{const a=el.getBoundingClientRect(),b=el.closest('.hero-stage').getBoundingClientRect();return a.left>=-1&&a.right<=innerWidth+1&&b.left>=-1&&b.right<=innerWidth+1;});
@@ -149,7 +151,7 @@ test('BASE 3: one failed source cannot leave useless arrows active on the sole s
  await expect(page.locator('#homeHeroCarousel')).not.toHaveClass(/is-empty/);
 });
 
-test('BASE 3: all 13 original scene identities can navigate with only real API poster metadata',async({page})=>{
+test('BASE 3: six featured carousel slots preserve thirteen original source scene identities',async({page})=>{
  // Test fixture has synthetic paths and mocked media methods, not actual
  // licensed playable V01–V13 movies or recreated owner imagery.
  await page.addInitScript(()=>{
@@ -177,20 +179,20 @@ test('BASE 3: all 13 original scene identities can navigate with only real API p
   return route.fulfill({json:{items:scenes.slice(0,2),categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false}}});
  });
  await page.goto('/deepsyq.html');
- await expect(page.locator('#homeHeroDots button')).toHaveCount(13);
+ await expect(page.locator('#homeHeroDots button')).toHaveCount(6);
  expect(exactVideoFeed).toBe(true);
- await expect(page.locator('#homeHeroDots img')).toHaveCount(13);
- await expect(page.locator('#homeHeroDots button').nth(7)).toHaveAttribute('aria-label',/Transform Blossom House/);
- await expect(page.locator('#homeHeroDots button').nth(10)).toHaveAttribute('aria-label',/Waterfront House Dusk/);
+ await expect(page.locator('#homeHeroDots img')).toHaveCount(6);
+ await expect(page.locator('#homeHeroDots button').nth(5)).toHaveAttribute('aria-label',/Visualize White Tiger/);
+ expect(scenes).toHaveLength(13); // Seven additional owner scene identities stay in the feed.
  await expect(page.locator('#homeHeroDots button').first()).toHaveAttribute('aria-current','true');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 13');
+ await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 6');
  await page.locator('#homeHeroPrevious').click();
- await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Red Silhouette');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 13 of 13');
+ await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Visualize White Tiger');
+ await expect(page.locator('#homeHeroCounter')).toHaveText('Video 6 of 6');
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Hero Girl');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 13');
- await expect(page.locator('#homeHeroDots button').last()).toHaveAttribute('aria-label',/Red Silhouette/);
+ await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 6');
+ await expect(page.locator('#homeHeroDots button').last()).toHaveAttribute('aria-label',/Visualize White Tiger/);
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
 });
 
@@ -289,7 +291,8 @@ test('BASE 3: offline platform config never hides the permanent original Hero ga
  await expect(page.locator('#homeHeroCarousel')).toHaveClass(/is-empty/);
  await expect(page.locator('#homeHeroEmpty')).toBeVisible();
  await expect(page.locator('#homeHeroStatus')).toContainText('No approved playable featured video');
- await expect(page.locator('.hero-stage h1')).toContainText('beyond limits');
+ await expect(page.locator('main > h1.sr-only')).toHaveText('Deepsyq AI creative platform');
+ await expect(page.locator('.hero-stage h1')).toHaveCount(0);
  await expect(page.locator('#homeQuickForm')).toBeVisible();
  await expect(page.locator('#paymentStatus')).toContainText('Plans could not load');
  expect(paidPosts).toBe(0);
@@ -302,7 +305,8 @@ test('BASE 3: narrow 320px Home Hero has no intrinsic-width overflow without cli
  await page.setViewportSize({width:320,height:740});
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
- await expect(page.locator('.hero-stage h1')).toContainText('beyond limits');
+ await expect(page.locator('main > h1.sr-only')).toHaveText('Deepsyq AI creative platform');
+ await expect(page.locator('.hero-stage h1')).toHaveCount(0);
  for(const width of [320,340,355,390]){
   await page.setViewportSize({width,height:740});
   const layout=await page.evaluate(()=>{
@@ -370,4 +374,33 @@ test('BASE 3: approved Studio hero appears before the slow Inspiration mosaic re
   await expect(page.locator('#canvasFeature')).toBeVisible();
   expect(paidPosts).toBe(0);
  }finally{releaseMosaic();}
+});
+
+
+test('BASE 3: owner violet-pink Home and Canvas CTAs stay consistent on desktop and phone',async({page})=>{
+ await mockSafeHome(page,[]);
+ let jobs=0;
+ page.on('request',request=>{
+  if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))jobs++;
+ });
+ await page.setViewportSize({width:1448,height:900});
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ for(const width of [1448,390]){
+  await page.setViewportSize({width,height:900});
+  const css=await page.evaluate(()=>{
+   const hero=getComputedStyle(document.querySelector('.hero-stage-copy .primary'));
+   const canvas=getComputedStyle(document.querySelector('#quickCreateSubmit'));
+   return {heroBackground:hero.backgroundImage,heroColor:hero.color,
+    canvasBackground:canvas.backgroundImage,canvasColor:canvas.color};
+  });
+  for(const image of [css.heroBackground,css.canvasBackground]){
+   expect(image).toContain('linear-gradient');
+   expect(image).not.toContain('rgb(210, 247, 174)'); // obsolete mint CTA
+  }
+  expect(css.heroColor).toBe('rgb(255, 255, 255)');
+  expect(css.canvasColor).toBe('rgb(255, 255, 255)');
+  await expect(page.locator('.hero-stage h1')).toHaveCount(0);
+  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+ }
+ expect(jobs).toBe(0);
 });
