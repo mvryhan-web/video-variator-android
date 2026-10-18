@@ -286,13 +286,24 @@ test('BASE #28: Cancel during Photo to PDF JPEG encode cannot publish a PDF',asy
  });
  await page.evaluate(()=>{
   const native=HTMLCanvasElement.prototype.toBlob;
+  let releaseEncode;
+  const afterCancel=new Promise(resolve=>{releaseEncode=resolve;});
+  window.__pdfEncodeStarted=0;
+  window.__releasePdfEncode=()=>releaseEncode();
+  // Hold a REAL browser JPEG encode result until after Cancel is clicked.
+  // A 650ms fixed timer allowed WebKit's Cancel to disable first.
   HTMLCanvasElement.prototype.toBlob=function(cb,...args){
-   return native.call(this,blob=>setTimeout(()=>cb(blob),650),...args);
+   return native.call(this,blob=>{
+    window.__pdfEncodeStarted++;
+    void afterCancel.then(()=>cb(blob));
+   },...args);
   };
  });
  await page.locator('#utilityRun').click();
+ await expect.poll(()=>page.evaluate(()=>window.__pdfEncodeStarted)).toBeGreaterThan(0);
  await expect(page.locator('#utilityCancel')).toBeEnabled();
  await page.locator('#utilityCancel').click();
+ await page.evaluate(()=>window.__releasePdfEncode());
  await expect(page.locator('#utilityStatus')).toContainText('Canceled');
  await expect(page.locator('#utilityRun')).toBeEnabled();
  await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
