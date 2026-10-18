@@ -74,7 +74,7 @@ test('AI wallet shows configured packs and opens Stripe only after click',async(
  await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'live',livePaymentsEnabled:true,unit:'AI credits',packs:[{sku:'starter',credits:1000,amount:499,currency:'eur'}],rates:[],revision:'r1'}}));
- await page.route('**/api/ai-billing/balance',r=>r.fulfill({json:{available:120,reserved:10,debt:0}}));
+ await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:120,reserved:10,debt:0}}));
  let checkoutCalls=0;await page.route('**/api/ai-billing/checkout',async r=>{checkoutCalls++;return r.fulfill({json:{url:'https://checkout.stripe.com/c/pay/cs_test_fixture',id:'cs_fixture',mode:'live'}});});
  await page.route('https://checkout.stripe.com/**',r=>r.fulfill({contentType:'text/html',body:'<title>Stripe fixture</title><h1>Stripe Checkout</h1>'}));
  await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#walletButton')).toBeVisible();await expect(page.locator('#walletBalance')).toHaveText('120');expect(checkoutCalls).toBe(0);
@@ -86,12 +86,37 @@ test('wallet activity and Stripe return never claim payment before webhook confi
  await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'live',livePaymentsEnabled:true,packs:[],rates:[],revision:'r1'}}));
- await page.route('**/api/ai-billing/balance',r=>r.fulfill({json:{available:850,reserved:50,debt:0}}));
- await page.route('**/api/ai-billing/history',r=>r.fulfill({json:{items:[{kind:'purchase',available_delta:1000,reserved_delta:0,debt_delta:0,created_at:'2026-10-15T10:00:00Z'},{kind:'reserve',available_delta:-50,reserved_delta:50,debt_delta:0,created_at:'2026-10-15T10:05:00Z'},{kind:'captured',available_delta:0,reserved_delta:-50,debt_delta:0,created_at:'2026-10-15T10:06:00Z'}]}}));
+ await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:850,reserved:50,debt:0}}));
+ await page.route('**/api/ai-wallet/history',r=>r.fulfill({json:{items:[{kind:'purchase',available_delta:1000,reserved_delta:0,debt_delta:0,created_at:'2026-10-15T10:00:00Z'},{kind:'reserve',available_delta:-50,reserved_delta:50,debt_delta:0,created_at:'2026-10-15T10:05:00Z'},{kind:'captured',available_delta:0,reserved_delta:-50,debt_delta:0,created_at:'2026-10-15T10:06:00Z'}]}}));
  await page.goto('/generate-studio.html?studio=image&ai_checkout=returned');
  await expect(page.locator('#walletDialog')).toBeVisible();await expect(page.locator('#walletStatus')).toContainText('Credits appear only after Stripe confirms');await expect(page.locator('#walletHistory')).toContainText('Credit purchase');await expect(page.locator('#walletHistory')).toContainText('Generation reserve');await expect(page.locator('#walletBalance')).toHaveText('850');
 });
 
+
+
+test('wallet balance and activity remain viewable when AI credit pack checkout is OFF',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',livePaymentsEnabled:false,
+  unit:'AI credits',packs:[],rates:[],revision:null,reason:'PAYMENTS_NOT_ACTIVATED'}}));
+ let walletReads=0,historyReads=0,checkoutPosts=0;
+ await page.route('**/api/ai-wallet/balance',r=>{walletReads++;return r.fulfill({json:{available:42,reserved:8,debt:0}})});
+ await page.route('**/api/ai-wallet/history',r=>{historyReads++;return r.fulfill({json:{items:[{kind:'reserve',
+  available_delta:-8,reserved_delta:8,debt_delta:0,created_at:'2026-10-15T10:00:00Z'}]}})});
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/ai-billing/checkout'))checkoutPosts++});
+ await page.goto('/generate-studio.html?studio=image');
+ await expect(page.locator('#walletButton')).toBeVisible();
+ await expect(page.locator('#walletBalance')).toHaveText('42');
+ await page.locator('#walletButton').click();
+ await expect(page.locator('#walletSummary')).toContainText('42');
+ await expect(page.locator('#walletSummary')).toContainText('8');
+ await expect(page.locator('#walletHistory')).toContainText('Generation reserve');
+ await expect(page.locator('#walletMode')).toContainText('Credit purchases are not active');
+ await expect(page.locator('#creditPacks article')).toHaveCount(0);
+ expect(walletReads).toBeGreaterThan(0);
+ expect(historyReads).toBeGreaterThan(0);
+ expect(checkoutPosts).toBe(0);
+});
 
 test('Studio shows a server-priced credit estimate without sending prompt or media',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vv_token','owner'));
@@ -131,14 +156,14 @@ test('video selectors follow real Veo/Seedance capabilities without submitting j
  await page.locator('#videoResolution').selectOption('1080p');
  await expect(page.locator('#videoDuration')).toHaveValue('8');
  await expect(page.locator('#videoDuration option')).toHaveCount(1);
- await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
  await page.locator('#modelButton').click();
  await page.getByRole('button',{name:/Seedance 2.0/}).click();
  await page.locator('#settingsButton').click();
  await expect(page.locator('#videoDuration option')).toHaveCount(5);
  await page.locator('#videoDuration').selectOption('15');
  await expect(page.locator('#videoDuration')).toHaveValue('15');
- await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
  await page.locator('[data-kind=image]').click();
  await expect(page.locator('#videoDurationLabel')).toBeHidden();
  expect(posts).toBe(0);
@@ -152,23 +177,23 @@ test('Seedance image modes follow attached photo count without posting paid jobs
  const image={name:'frame.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')};
  await page.locator('#settingsButton').click();
  await expect(page.locator('#videoInputMode')).toHaveValue('text');
- await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
  await page.locator('#references').setInputFiles(image);
  await page.locator('#settingsButton').click();
  await expect(page.locator('#videoInputMode')).toHaveValue('first_frame');
  await page.locator('#videoInputMode').selectOption('reference_image');
- await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
  await page.locator('#references').setInputFiles({...image,name:'last.png'});
  await page.locator('#settingsButton').click();
  await expect(page.locator('#videoInputMode')).toHaveValue('reference_image');
  await expect(page.locator('#videoInputMode option')).toHaveCount(2);
  await page.locator('#videoInputMode').selectOption('first_last');
- await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
  await page.locator('#references').setInputFiles({...image,name:'third.png'});
  await page.locator('#settingsButton').click();
  await expect(page.locator('#videoInputMode')).toHaveValue('reference_image');
  await expect(page.locator('#videoInputMode option')).toHaveCount(1);
- await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
  await page.locator('#clearRefs').click();
  await page.locator('#settingsButton').click();
  await expect(page.locator('#videoInputMode')).toHaveValue('text');
@@ -185,7 +210,7 @@ test('video prompt and model settings restore privately after tab reload without
  await page.locator('#settingsButton').click();
  await page.locator('#videoResolution').selectOption('1080p');
  await page.locator('#videoDuration').selectOption('15');
- await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
  await page.reload();
  await expect(page.locator('#prompt')).toHaveValue('A calm mountain sunrise with slowly moving clouds');
  await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');
@@ -212,7 +237,7 @@ test('recovered Seedance first and last frames require both photos again, never 
  await expect(page.locator('#refPreview img')).toHaveCount(2);
  await page.locator('#settingsButton').click();
  await page.locator('#videoInputMode').selectOption('first_last');
- await page.locator('#settingsDialog [data-close=settingsDialog]').click();
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
  await page.reload();
  await expect(page.locator('#refPreview img')).toHaveCount(0);
  await expect(page.locator('#videoDraftMessage')).toContainText('Attach 2 reference photo');

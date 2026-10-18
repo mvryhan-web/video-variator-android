@@ -1,6 +1,7 @@
 import {saveStudioHandoff} from './studio-handoff.js';
 import {renderHomeCarousel} from './home-experience.js';
 import {MODEL_CATALOG} from './generate-models.js';
+import {authorizedOnboardingOptions,onboardingResponseTarget} from './onboarding-options.js';
 const $=id=>document.getElementById(id);
 const quickCreateForm=$('quickCreateForm');
 const quickCreateDropzone=$('quickCreateDropzone');
@@ -31,22 +32,41 @@ document.querySelectorAll('[data-quick-starter]').forEach(button=>button.addEven
 }));
 
 let quickReferences=[],quickPreviewUrls=[];
-// Small session-only Canvas draft: never stores uploaded files or sends drafts to the server.
-const QUICK_DRAFT_KEY='deepsyq_quick_canvas_draft_v1';
+// Canvas drafts are local-only and private to the account that wrote them.
+// Never store a bearer token (or uploaded files) in the draft key or payload.
+const QUICK_DRAFT_LEGACY_KEY='deepsyq_quick_canvas_draft_v1';
+const quickDraftOwner=localStorage.getItem('vv_token')||'guest';
+let quickDraftEpoch=0;
+const quickDraftKeyPromise=(async()=>{
+ try{
+  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(quickDraftOwner));
+  return 'deepsyq_quick_canvas_draft_v2_'+Array.from(new Uint8Array(digest).slice(0,16),b=>b.toString(16).padStart(2,'0')).join('');
+ }catch(_){return null;} // No Web Crypto: editing stays available, no unsafe fallback storage.
+})();
+function sameQuickDraftAccount(){return (localStorage.getItem('vv_token')||'guest')===quickDraftOwner;}
 function saveQuickDraft(){
  const draft={prompt:$('quickCreatePrompt').value.slice(0,2000),kind:$('quickCreateKind').value,ratio:$('quickCreateRatio').value};
- try{sessionStorage.setItem(QUICK_DRAFT_KEY,JSON.stringify(draft));}catch(_){/* Browsers may deny storage; creation still works. */}
+ const epoch=++quickDraftEpoch;
+ void quickDraftKeyPromise.then(key=>{
+  if(!key||epoch!==quickDraftEpoch||!sameQuickDraftAccount())return;
+  try{sessionStorage.setItem(key,JSON.stringify(draft));}catch(_){/* Keep in-memory editor usable. */}
+ });
 }
-function restoreQuickDraft(){
+async function restoreQuickDraft(){
+ populateQuickRatios();
+ try{sessionStorage.removeItem(QUICK_DRAFT_LEGACY_KEY);}catch(_){}
+ const epoch=quickDraftEpoch;
+ const key=await quickDraftKeyPromise;
+ if(!key||epoch!==quickDraftEpoch||!sameQuickDraftAccount()||$('quickCreatePrompt').value)return;
  try{
-  const draft=JSON.parse(sessionStorage.getItem(QUICK_DRAFT_KEY)||'null');
-  if(!draft||typeof draft.prompt!=='string'||!['image','video'].includes(draft.kind)){populateQuickRatios();return;}
+  const draft=JSON.parse(sessionStorage.getItem(key)||'null');
+  if(!draft||typeof draft.prompt!=='string'||!['image','video'].includes(draft.kind))return;
   $('quickCreatePrompt').value=draft.prompt.slice(0,2000);
   $('quickCreateKind').value=draft.kind;
   populateQuickRatios(typeof draft.ratio==='string'?draft.ratio:'');
- }catch(_){populateQuickRatios();/* Ignore corrupt or inaccessible session data. */}
+ }catch(_){/* Ignore corrupt or inaccessible account-scoped draft. */}
 }
-restoreQuickDraft();
+void restoreQuickDraft();
 $('quickCreatePrompt').addEventListener('input',saveQuickDraft);
 $('quickCreateKind').addEventListener('change',()=>{populateQuickRatios();saveQuickDraft();});
 $('quickCreateRatio').addEventListener('change',saveQuickDraft);
@@ -55,7 +75,9 @@ $('quickCreateClear').addEventListener('click',()=>{
  if(hasDraft&&!confirm('Clear this Canvas draft and remove its selected reference photos?'))return;
  $('quickCreatePrompt').value='';$('quickCreateKind').value='image';populateQuickRatios();
  quickReferences=[];$('quickCreateFiles').value='';renderQuickReferences();
- try{sessionStorage.removeItem(QUICK_DRAFT_KEY);}catch(_){}
+ ++quickDraftEpoch;
+  void quickDraftKeyPromise.then(key=>{if(key&&sameQuickDraftAccount())try{sessionStorage.removeItem(key);}catch(_){}});
+  try{sessionStorage.removeItem(QUICK_DRAFT_LEGACY_KEY);}catch(_){}
  $('quickCreateStatus').textContent='Canvas draft cleared. No files were uploaded.';
  $('quickCreatePrompt').focus();
 });
@@ -74,6 +96,17 @@ function renderQuickReferences(){
   item.append(img,name,remove);previews.append(item);
  });
 }
+// Other-tab logout/account replacement must remove old private prompt and unsent
+// reference photos from this open page, not merely from the next reload.
+window.addEventListener('storage',event=>{
+ if(event.key!=='vv_token')return;
+ ++quickDraftEpoch;
+ $('quickCreatePrompt').value='';$('quickCreateKind').value='image';populateQuickRatios();
+ $('quickCreateFiles').value='';
+ const quickBarPrompt=$('homeQuickPrompt');if(quickBarPrompt)quickBarPrompt.value='';
+ quickReferences=[];renderQuickReferences();
+ $('quickCreateStatus').textContent='Account changed. Reload to start a private draft for this account.';
+});
 function setQuickReferences(files,{append=false}={}){
  const candidates=[...(append?quickReferences:[]),...Array.from(files||[])];
  if(candidates.length>QUICK_MAX_FILES||candidates.some(file=>!['image/png','image/jpeg'].includes(file.type)||file.size>QUICK_MAX_BYTES||file.size===0)){
@@ -128,17 +161,63 @@ function syncMenu(){
  }
  closeModelFlyout();
 }
-function toggleSidebar(){
- if(mobileMenu.matches)document.body.classList.toggle('menu-open');
- else{collapsedSidebar=!collapsedSidebar;try{localStorage.setItem(SIDEBAR_STATE_KEY,collapsedSidebar?'1':'0');}catch(_){}}
+function closeMobileDrawer(restoreFocus=false){
+ if(!mobileMenu.matches||!document.body.classList.contains('menu-open'))return false;
+ // A hidden inert rail must never retain keyboard focus after dismissal.
+ const wasInside=$('sidebar').contains(document.activeElement);
+ document.body.classList.remove('menu-open');
  syncMenu();
+ if(restoreFocus||wasInside)$('menu').focus();
+ return true;
+}
+function drawerTabStops(){
+ return [...$('sidebar').querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+  .filter(el=>el.getClientRects().length>0&&!el.hidden&&getComputedStyle(el).visibility!=='hidden');
+}
+function toggleSidebar(event){
+ if(mobileMenu.matches){
+  // The header button is always visible; the rail button exists only inside
+  // the open drawer. Return keyboard focus to the visible header on close.
+  if(!closeMobileDrawer(event?.currentTarget===$('sidebarToggle')||document.activeElement===$('sidebarToggle'))){
+   document.body.classList.add('menu-open');
+   syncMenu();
+   // Place first keyboard focus inside the only exposed mobile navigation.
+   $('sidebarToggle').focus({preventScroll:true});
+  }
+ }else{
+  collapsedSidebar=!collapsedSidebar;
+  try{localStorage.setItem(SIDEBAR_STATE_KEY,collapsedSidebar?'1':'0');}catch(_){}
+  syncMenu();
+ }
 }
 mobileMenu.addEventListener('change',syncMenu);
 $('menu').onclick=toggleSidebar;
 $('sidebarToggle').onclick=toggleSidebar;
+document.addEventListener('keydown',event=>{
+ if(!mobileMenu.matches||!document.body.classList.contains('menu-open')||
+  !$('authModal').hidden||document.querySelector('dialog[open]'))return;
+ if(event.key==='Escape'){
+  event.preventDefault();
+  closeMobileDrawer(true);
+ }else if(event.key==='Tab'){
+  // Keep keyboard focus within the current mobile drawer until it closes.
+  const nodes=drawerTabStops(),first=nodes[0],last=nodes.at(-1);
+  if(!first)return;
+  if(event.shiftKey&&(document.activeElement===first||!$('sidebar').contains(document.activeElement))){
+   event.preventDefault();last.focus();
+  }else if(!event.shiftKey&&(document.activeElement===last||!$('sidebar').contains(document.activeElement))){
+   event.preventDefault();first.focus();
+  }
+ }
+});
+// An outside tap closes the open mobile drawer, without toggling it back open
+// when the tap was on the real header menu button.
+document.querySelector('.content').addEventListener('pointerdown',event=>{
+ if(!event.target.closest('#menu'))closeMobileDrawer();
+});
 document.querySelectorAll('#sidebar nav a').forEach(a=>a.addEventListener('click',()=>{
- if(mobileMenu.matches)document.body.classList.remove('menu-open');
- syncMenu();
+ if(mobileMenu.matches)closeMobileDrawer();
+ else syncMenu();
 }));
 
 // Model options are discovered from the existing Studio config. Prepared or disabled models
@@ -192,9 +271,11 @@ function showModelFlyout(kind,entry){
 }
 for(const entry of document.querySelectorAll('[data-model-menu]')){
  const kind=entry.dataset.modelMenu,btn=entry.querySelector('[data-open-models]');
- entry.addEventListener('mouseenter',()=>showModelFlyout(kind,entry));
+ entry.addEventListener('mouseenter',()=>{if(!mobileMenu.matches)showModelFlyout(kind,entry);});
  entry.addEventListener('mouseleave',scheduleModelClose);
- entry.addEventListener('focusin',()=>showModelFlyout(kind,entry));
+ // Mobile tap first focuses the model trigger; do not let focus open the
+ // overlay before click reaches the button. Keyboard Enter/Space still click it.
+ entry.addEventListener('focusin',()=>{if(!mobileMenu.matches)showModelFlyout(kind,entry);});
  entry.addEventListener('focusout',scheduleModelClose);
  btn.onclick=()=>{if(openModelsKind===kind&&!$('modelFlyout').hidden)closeModelFlyout();else showModelFlyout(kind,entry);};
 }
@@ -225,9 +306,9 @@ document.querySelectorAll('[data-social]').forEach(button=>button.addEventListen
  window.open(kind==='discord'?'https://discord.com/channels/@me':'https://www.instagram.com/','_blank','noopener,noreferrer');
 }));
 let authOpener;function openAuth(){if(window.AndroidBridge){location.assign('index.html#signin');return;}authOpener=document.activeElement;$('authModal').hidden=false;setTimeout(()=>$('emailAuthEmail')?.focus(),0);initGoogle();}function closeAuth(){$('authModal').hidden=true;authOpener?.focus();}
-$('accountButton').onclick=openAuth;document.querySelectorAll('[data-close-auth]').forEach(b=>b.onclick=closeAuth);
+$('accountButton').onclick=()=>{closeMobileDrawer(true);openAuth();};document.querySelectorAll('[data-close-auth]').forEach(b=>b.onclick=closeAuth);
 document.addEventListener('keydown',e=>{if($('authModal').hidden)return;if(e.key==='Escape')closeAuth();if(e.key==='Tab'){const items=[...$('authModal').querySelectorAll('button:not(:disabled),input:not(:disabled)')].filter(e=>e.getClientRects().length);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}});
-$('logout').onclick=()=>{localStorage.removeItem('vv_token');sessionStorage.removeItem('vu_generation_job');location.reload();};
+$('logout').onclick=()=>{clearRecentCreations('Sign in to see your saved Studio creations.');localStorage.removeItem('vv_token');sessionStorage.removeItem('vu_generation_job');location.reload();};
 let config;let googleReady=false;
 function initGoogle(){if(googleReady||!config)return;if(!config.googleClientId){$('googleButton').textContent='Google sign-in is currently unavailable. Use email below.';return;}if(!window.google?.accounts?.id)return;googleReady=true;google.accounts.id.initialize({client_id:config.googleClientId,callback:async({credential})=>{try{const d=await api('/api/auth/google',{method:'POST',body:JSON.stringify({credential})});localStorage.setItem('vv_token',d.token);if(d.newAccount===true)localStorage.setItem('deepsyq_onboarding_pending','1');location.reload();}catch(_){$('paymentStatus').textContent='Sign-in could not complete. Please try again.';}}});$('googleButton').replaceChildren();google.accounts.id.renderButton($('googleButton'),{theme:'outline',size:'large',width:280,text:'continue_with'});}
 let pending=false;
@@ -245,7 +326,12 @@ const homeLang=$('homeLanguage');const homeI18n={
 function applyHomeLanguage(code){const v=homeI18n[code]||homeI18n.en;const hero=document.querySelector('.hero-stage-copy h1');if(hero)hero.innerHTML=v.hero;for(const [id,key] of [['canvasFeatureTitle','canvas'],['agentFeatureTitle','agent'],['appsFeatureTitle','apps'],['inspirationPreviewTitle','inspiration']]){const el=$(id);if(el)el.textContent=v[key];}if(homeLang)homeLang.value=homeI18n[code]?code:'en';}
 if(homeLang){const saved=localStorage.getItem('deepsyq_home_language');applyHomeLanguage(saved||'en');homeLang.onchange=()=>{localStorage.setItem('deepsyq_home_language',homeLang.value);applyHomeLanguage(homeLang.value);};}
 const promo=$('promoDialog');$('topPromo')?.addEventListener('click',()=>promo?.showModal());$('promoShare')?.addEventListener('click',()=>{$('navShare')?.click();promo?.close();});$('topInvite')?.addEventListener('click',()=>$('navShare')?.click());
-$('topLogin')?.addEventListener('click',()=>{$('accountButton')?.click();});
+// Header sign-in must not depend on dispatching a click to the inert,
+// off-canvas mobile sidebar account button.
+$('topLogin')?.addEventListener('click',()=>{
+ if(localStorage.getItem('vv_token'))location.assign('index.html#profile');
+ else openAuth();
+});
 function markHomeLogin(){const b=$('topLogin');if(b)b.textContent=localStorage.getItem('vv_token')?'Account':'Log in';}
 markHomeLogin();
 let featuredInspirationKind='all';
@@ -268,31 +354,86 @@ function showInspirationVideos(root){
 document.addEventListener('visibilitychange',()=>{if(document.hidden)document.querySelectorAll('#inspirationPreview video').forEach(v=>v.pause());});
 async function loadInspirationPreview(){
  const section=$('inspirationPreview'),root=$('inspirationPreviewGrid'),agentSection=$('agentExamples'),agentRoot=$('agentExamplesGrid');if(!section||config?.features?.inspiration===false){updateInspirationHero([]);return;}
- try{const r=await fetch(base+'/api/inspiration?featured=true&limit=12',{cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||!Array.isArray(d.items))return;const studio=d.items.filter(x=>x.actionTarget==='studio').sort((a,b)=>Number(b.kind==='video')-Number(a.kind==='video')).slice(0,10),cats=$('inspirationPreviewCategories');root.replaceChildren();cats?.replaceChildren();for(const category of (d.categories||[]).slice(0,8)){const link=document.createElement('a');link.href='inspiration.html?category='+encodeURIComponent(category);link.textContent=category;cats?.append(link);}updateInspirationHero(studio);for(const item of studio){const a=document.createElement('a');a.className='inspiration-preview-card';a.dataset.kind=item.kind;a.href='inspiration.html?kind='+encodeURIComponent(item.kind||'all')+'&category='+encodeURIComponent(item.category||'')+'&ratio='+encodeURIComponent(item.aspectRatio||'')+'&q='+encodeURIComponent(item.title||'');const visual=document.createElement('div');visual.className='inspiration-preview-media';if(item.kind==='video'){const video=document.createElement('video');video.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';video.setAttribute('aria-hidden','true');if(item.previewPosterUrl)video.poster=item.previewPosterUrl;visual.append(video);const label=document.createElement('span');label.className='inspiration-video-label';label.textContent='Watch video · Explore idea ↗';visual.append(label);}else{const img=document.createElement('img');img.src=item.previewUrl;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';visual.append(img);}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const meta=document.createElement('span');meta.textContent=[item.kind,item.category,item.aspectRatio].filter(Boolean).join(' · ');copy.append(title,meta);a.append(visual,copy);root.append(a);}showInspirationVideos(root);section.hidden=!studio.length;const ar=await fetch(base+'/api/inspiration?featured=true&target=agent&limit=3',{cache:'no-store'}),ad=await ar.json().catch(()=>({}));const agents=ar.ok&&Array.isArray(ad.items)?ad.items:[];agentRoot.replaceChildren();for(const item of agents){const card=document.createElement(item.actionPath?'a':'article');card.className='inspiration-preview-card agent-example';if(item.actionPath){card.href=item.actionPath+'?from=inspiration';card.onclick=()=>sessionStorage.setItem('deepsyq_agent_inspiration_start',JSON.stringify({id:item.id,title:item.title,generationType:item.kind,promptTemplate:item.prompt||'',defaultModel:item.defaultModel||null,requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],defaultSettings:{...(item.defaultSettings||{}),ratio:item.aspectRatio},source:'inspiration',action:'create'}));}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const desc=document.createElement('span');desc.textContent=item.description||item.prompt;copy.append(title,desc);card.append(copy);agentRoot.append(card);}agentSection.hidden=!agents.length;}catch(_){updateInspirationHero([]);section.hidden=true;agentSection.hidden=true;}
+ try{
+  // Hero and the inspiration mosaic are independent reads: a slow mosaic must
+  // not withhold a published, rights-cleared playable featured Studio film.
+  // The owner-locked carousel never promotes Agent-only entries into a Studio CTA.
+  void fetch(base+'/api/inspiration?featured=true&kind=video&target=studio&limit=13',{cache:'no-store'})
+   .then(async response=>response.ok?response.json():null)
+   .then(feed=>updateInspirationHero(Array.isArray(feed?.items)?feed.items:[]))
+   .catch(()=>updateInspirationHero([]));
+  const d=await fetch(base+'/api/inspiration?featured=true&limit=12',{cache:'no-store'}).then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));const studio=(Array.isArray(d.items)?d.items:[]).filter(x=>x.actionTarget==='studio').sort((a,b)=>Number(b.kind==='video')-Number(a.kind==='video')).slice(0,10),cats=$('inspirationPreviewCategories');root.replaceChildren();cats?.replaceChildren();for(const category of (d.categories||[]).slice(0,8)){const link=document.createElement('a');link.href='inspiration.html?category='+encodeURIComponent(category);link.textContent=category;cats?.append(link);}for(const item of studio){const a=document.createElement('a');a.className='inspiration-preview-card';a.dataset.kind=item.kind;a.href='inspiration.html?kind='+encodeURIComponent(item.kind||'all')+'&category='+encodeURIComponent(item.category||'')+'&ratio='+encodeURIComponent(item.aspectRatio||'')+'&q='+encodeURIComponent(item.title||'');const visual=document.createElement('div');visual.className='inspiration-preview-media';if(item.kind==='video'){const video=document.createElement('video');video.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';video.setAttribute('aria-hidden','true');if(item.previewPosterUrl)video.poster=item.previewPosterUrl;visual.append(video);const label=document.createElement('span');label.className='inspiration-video-label';label.textContent='Watch video · Explore idea ↗';visual.append(label);}else{const img=document.createElement('img');img.src=item.previewUrl;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';visual.append(img);}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const meta=document.createElement('span');meta.textContent=[item.kind,item.category,item.aspectRatio].filter(Boolean).join(' · ');copy.append(title,meta);a.append(visual,copy);root.append(a);}showInspirationVideos(root);section.hidden=!studio.length;const ad=await fetch(base+'/api/inspiration?featured=true&target=agent&limit=3',{cache:'no-store'}).then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));const agents=Array.isArray(ad.items)?ad.items:[];agentRoot.replaceChildren();for(const item of agents){const card=document.createElement(item.actionPath?'a':'article');card.className='inspiration-preview-card agent-example';if(item.actionPath){card.href=item.actionPath+'?from=inspiration';card.onclick=()=>sessionStorage.setItem('deepsyq_agent_inspiration_start',JSON.stringify({id:item.id,title:item.title,generationType:item.kind,promptTemplate:item.prompt||'',defaultModel:item.defaultModel||null,requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],defaultSettings:{...(item.defaultSettings||{}),ratio:item.aspectRatio},source:'inspiration',action:'create'}));}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const desc=document.createElement('span');desc.textContent=item.description||item.prompt;copy.append(title,desc);card.append(copy);agentRoot.append(card);}agentSection.hidden=!agents.length;}catch(_){section.hidden=true;agentSection.hidden=true;}
 }
 
 async function loadFeaturedWorkflows(){
  const section=$('featuredWorkflows'),root=$('featuredWorkflowGrid');if(!section||config?.features?.aiApps===false)return;
  try{
   const r=await fetch(base+'/api/templates?featured=true',{cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||!Array.isArray(d.items)||!d.items.length)return;
-  root.replaceChildren();for(const t of d.items.slice(0,6)){const a=document.createElement('a');a.className='featured-workflow-card';a.href='ai-apps.html';const visual=document.createElement('div');visual.className='featured-workflow-visual';if(t.thumbnail){const img=document.createElement('img');img.src=t.thumbnail;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';visual.append(img);}else visual.textContent=t.generationType==='image'?'✧':t.generationType==='audio'?'♫':'▷';const copy=document.createElement('div');copy.className='featured-workflow-copy';const title=document.createElement('strong');title.textContent=t.title;const desc=document.createElement('p');desc.textContent=t.description||'Open this active workflow in Deepsyq.';const meta=document.createElement('div');meta.className='featured-workflow-meta';for(const value of [t.category,String(t.generationType||'').replace('_',' ')].filter(Boolean)){const span=document.createElement('span');span.textContent=value;meta.append(span);}copy.append(title,desc,meta);a.append(visual,copy);root.append(a);}section.hidden=false;
+  root.replaceChildren();for(const t of d.items.slice(0,6)){const a=document.createElement('a');a.className='featured-workflow-card';const type=t.generationType==='product_video'?'video':t.generationType;
+ const supportedType=['image','video','audio'].includes(type)?type:null;
+ // AI Apps already understands q/type/category. Carry the selected use case
+ // so similarly named Image and Video featured cards do not get mixed up.
+ a.href='ai-apps.html?q='+encodeURIComponent(String(t.title||'').slice(0,100))+
+   (supportedType?'&type='+encodeURIComponent(supportedType):'')+
+   (typeof t.category==='string'&&t.category.trim()?'&category='+encodeURIComponent(t.category.slice(0,80)):'');const visual=document.createElement('div');visual.className='featured-workflow-visual';if(t.thumbnail){const img=document.createElement('img');img.src=t.thumbnail;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';visual.append(img);}else visual.textContent=t.generationType==='image'?'✧':t.generationType==='audio'?'♫':'▷';const copy=document.createElement('div');copy.className='featured-workflow-copy';const title=document.createElement('strong');title.textContent=t.title;const desc=document.createElement('p');desc.textContent=t.description||'Open this active workflow in Deepsyq.';const meta=document.createElement('div');meta.className='featured-workflow-meta';for(const value of [t.category,String(t.generationType||'').replace('_',' ')].filter(Boolean)){const span=document.createElement('span');span.textContent=value;meta.append(span);}copy.append(title,desc,meta);a.append(visual,copy);root.append(a);}section.hidden=false;
  }catch(_){section.hidden=true;}
 }
 
 function applyPlatformFeatures(){for(const el of document.querySelectorAll('[data-feature]')){const key=el.dataset.feature;if(config?.features&&config.features[key]===false)el.hidden=true;}}
 function renderPlans(){const descriptions={basic:'For occasional video projects.',pro:'For a regular creator workflow.',business:'For a high-volume video workflow.'};$('plans').replaceChildren();for(const key of ['basic','pro','business']){const p=config.plans?.[key];if(!p)continue;const card=document.createElement('article');card.className='plan';const heading=document.createElement('h3');heading.textContent=key[0].toUpperCase()+key.slice(1);const price=document.createElement('div');price.className='price';price.textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(p.price);const period=document.createElement('small');period.textContent=' / month';price.append(period);const desc=document.createElement('p');desc.textContent=descriptions[key];const usage=document.createElement('p');usage.textContent=`${Number(p.limit).toLocaleString('en-US')} video credits per month. Existing tool access applies.`;const b=document.createElement('button');b.textContent='Choose '+heading.textContent;b.onclick=()=>checkout(key);card.append(heading,price,desc,usage,b);$('plans').append(card);}const p=config.plans?.lifetime;if(p){$('lifetimePrice').textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:p.currency||'EUR',maximumFractionDigits:0}).format(p.price)+' · one payment';$('lifetimeCheckout').disabled=false;$('lifetimeCheckout').onclick=()=>checkout('lifetime');}}
-try{config=await api('/api/config');applyPlatformFeatures();renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);}catch(_){$('paymentStatus').textContent='Plans could not load. Please try again later.';}
+try{config=await api('/api/config');applyPlatformFeatures();renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);}catch(_){updateInspirationHero([]);$('paymentStatus').textContent='Plans could not load. Please try again later.';}
 window.addEventListener('load',initGoogle);
 try{const c=await api('/api/studio/config');studioModelMenuConfig=c;if(openModelsKind)renderModelFlyout(openModelsKind);$('studioStatus').textContent=c.ownerOnly?'AI generation is in owner preview. Explore the studios; existing tools remain available.':c.enabled?'Open a studio to see the available models.':'AI generation is not available yet. Existing tools remain available.';}catch(_){$('studioStatus').textContent='Studio availability could not be checked. Existing tools remain available.';}
-// Read-only dashboard overview: reuses the existing authenticated Studio history.
-// Never embeds media blobs, starts jobs, or exposes another user's results.
+// Read-only dashboard overview. Backend user_id scope is authoritative;
+// never render a late private response after a session/account switch.
+let recentCreationsEpoch=0,recentRenderedOwnerToken=null;
+const recentAccountChanged='Account changed. Reload to view creations for the current account.';
+function clearRecentCreations(message){
+ recentRenderedOwnerToken=null;
+ ++recentCreationsEpoch;
+ $('recentCreationsGrid')?.replaceChildren();
+ const status=$('recentCreationsStatus');if(status)status.textContent=message;
+}
+window.addEventListener('storage',event=>{
+ if(event.key==='vv_token'){
+  clearRecentCreations(event.newValue?recentAccountChanged:'Sign in to see your saved Studio creations.');
+ }
+});
+// A same-tab token change does NOT fire a native storage event. Clear
+// private prompt cards before the next user interaction, even if that click
+// immediately navigates to the saved result. Do not alter other Studio state.
+function protectRecentCreationsAccount(){
+ if(recentRenderedOwnerToken===null||recentRenderedOwnerToken===localStorage.getItem('vv_token'))return false;
+ clearRecentCreations(localStorage.getItem('vv_token')?recentAccountChanged:'Sign in to see your saved Studio creations.');
+ return true;
+}
+for(const eventName of ['click','keydown','focusin'])
+ document.addEventListener(eventName,event=>{
+  // Remember origin BEFORE clearing: removing the card detaches its parent
+  // and closest('#recentCreationsGrid a') could then no longer find the link.
+  const fromRecentCard=!!event.target?.closest?.('#recentCreationsGrid a');
+  if(protectRecentCreationsAccount()&&fromRecentCard){
+   event.preventDefault();event.stopImmediatePropagation();
+  }
+ },true);
+window.addEventListener('focus',protectRecentCreationsAccount);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)protectRecentCreationsAccount();});
 async function loadRecentCreations(){
  const status=$('recentCreationsStatus'),grid=$('recentCreationsGrid');if(!status||!grid)return;
+ const requestedToken=localStorage.getItem('vv_token'),epoch=++recentCreationsEpoch;
+ const isCurrent=()=>epoch===recentCreationsEpoch&&requestedToken===localStorage.getItem('vv_token');
  grid.replaceChildren();
- if(!localStorage.getItem('vv_token')){status.textContent='Sign in to see your saved Studio creations.';return;}
+ if(!requestedToken){status.textContent='Sign in to see your saved Studio creations.';return;}
  status.textContent='Loading your recent creations…';
  try{
-  const response=await api('/api/studio/jobs?filter=all'),items=Array.isArray(response.items)?response.items.slice(0,4):[];
+  const response=await api('/api/studio/jobs?filter=all');
+  // A token rotation can occur before the fetch settles; no old prompts may
+  // be inserted for a new account, even if an earlier server response is valid.
+  if(!isCurrent()){
+   if(epoch===recentCreationsEpoch)clearRecentCreations(recentAccountChanged);
+   return;
+  }
+  const items=Array.isArray(response.items)?response.items.slice(0,4):[];
   if(!items.length){status.textContent='No saved creations yet. Start with Canvas or a Studio.';return;}
   const label={ready:'Ready',queued:'Queued',processing:'Processing',finalizing:'Finalizing',failed:'Failed'};
   for(const item of items){
@@ -306,8 +447,12 @@ async function loadRecentCreations(){
    date.textContent=Number.isFinite(timestamp.getTime())?timestamp.toLocaleDateString():'Open in Studio';
    card.append(head,prompt,date);grid.append(card);
   }
+  recentRenderedOwnerToken=grid.childElementCount?requestedToken:null;
   status.textContent=grid.childElementCount?'Select a creation to open your Studio history.':'No saved creations yet.';
- }catch(_){status.textContent='Studio history is not available for this account right now.';}
+ }catch(_){
+  if(isCurrent())status.textContent='Studio history is not available for this account right now.';
+  else if(epoch===recentCreationsEpoch)clearRecentCreations(recentAccountChanged);
+ }
 }
 async function loadAIWallet(){
  const chip=$('aiWalletLink');if(!chip)return;
@@ -319,22 +464,92 @@ async function loadAIWallet(){
  }catch(_){chip.hidden=true;}
 }
 
+let onboardingModalOwnerToken=null;
 async function maybeShowOnboarding(){
  if(config?.features?.onboarding===false)return;
- if(localStorage.getItem('deepsyq_onboarding_pending')!=='1'||!localStorage.getItem('vv_token'))return;
+ const requestedToken=localStorage.getItem('vv_token');
+ if(localStorage.getItem('deepsyq_onboarding_pending')!=='1'||!requestedToken)return;
+ const sameAccount=()=>requestedToken===localStorage.getItem('vv_token');
  try{
-  const state=await api('/api/onboarding');if(state.completed){localStorage.removeItem('deepsyq_onboarding_pending');return;}
-  const modal=$('onboardingModal');modal.hidden=false;setTimeout(()=>$('onboardingModal').querySelector('[data-onboarding-goal]')?.focus(),0);
+  const state=await api('/api/onboarding');
+  if(!sameAccount())return; // A different login must fetch its own first-run state.
+  if(state.completed){localStorage.removeItem('deepsyq_onboarding_pending');return;}
+  // The backend advertises only goals it can persist; Product Ads and Avatar
+  // must remain absent until D's reviewed database/service changes are live.
+  const authorized=authorizedOnboardingOptions(state.options,{productVideoEnabled:config?.features?.productVideo===true});
+  if(!authorized.length)return;
+  const modal=$('onboardingModal'),choices=modal.querySelector('.onboardingChoices');
+  choices.replaceChildren();
+  for(const option of authorized){
+   const button=document.createElement('button');button.type='button';button.dataset.onboardingGoal=option.id;
+   const title=document.createElement('strong');title.textContent=option.label;
+   const detail=document.createElement('span');detail.textContent=option.description;
+   button.append(title,detail);
+   button.addEventListener('click',async()=>{
+    if(!sameAccount()){
+     closeOnboarding();
+     return;
+    }
+    const status=$('onboardingStatus'),buttons=[...choices.querySelectorAll('button')];
+    buttons.forEach(b=>b.disabled=true);status.textContent='Saving your starting point…';
+    try{
+     const response=await api('/api/onboarding',{method:'POST',body:JSON.stringify({goal:option.id})});
+     if(!sameAccount()){closeOnboarding();return;}
+     const target=onboardingResponseTarget(response,option.id,authorized);
+     if(!target)throw Error('ONBOARDING_TARGET_NOT_AUTHORIZED');
+     localStorage.removeItem('deepsyq_onboarding_pending');
+     location.assign(target);
+    }catch(e){
+     if(!sameAccount()){closeOnboarding();return;}
+     status.textContent=e.message==='ONBOARDING_UNAVAILABLE'?
+      'Onboarding is temporarily unavailable. You can still use the studios from the dashboard.':
+      'Could not save your choice. Please try again.';
+     buttons.forEach(b=>b.disabled=false);
+    }
+   });
+   choices.append(button);
+  }
+  if(!sameAccount())return; // A logout while building buttons must not expose prior state.
+  $('onboardingStatus').textContent='';
+  onboardingModalOwnerToken=requestedToken;
+  modal.hidden=false;
+  setTimeout(()=>{if(sameAccount()&&!modal.hidden)choices.querySelector('button')?.focus();},0);
  }catch(_){/* Keep pending marker so setup can be retried later. */}
 }
-function closeOnboarding(){const modal=$('onboardingModal');if(modal)modal.hidden=true;}
-document.querySelectorAll('[data-close-onboarding]').forEach(b=>b.onclick=()=>{localStorage.removeItem('deepsyq_onboarding_pending');closeOnboarding();});
-$('onboardingLater').onclick=()=>{localStorage.removeItem('deepsyq_onboarding_pending');closeOnboarding();};
-document.querySelectorAll('[data-onboarding-goal]').forEach(button=>button.onclick=async()=>{
- const status=$('onboardingStatus'),buttons=[...document.querySelectorAll('[data-onboarding-goal]')];buttons.forEach(b=>b.disabled=true);status.textContent='Saving your starting point…';
- try{const d=await api('/api/onboarding',{method:'POST',body:JSON.stringify({goal:button.dataset.onboardingGoal})});localStorage.removeItem('deepsyq_onboarding_pending');location.assign(d.target);}
- catch(e){status.textContent=e.message==='ONBOARDING_UNAVAILABLE'?'Onboarding is temporarily unavailable. You can still use the studios from the dashboard.':'Could not save your choice. Please try again.';buttons.forEach(b=>b.disabled=false);}
+function closeOnboarding(){
+ const modal=$('onboardingModal');if(modal)modal.hidden=true;
+ onboardingModalOwnerToken=null;
+}
+function dismissOnboarding(){
+ // A stale previous-user modal must not delete a freshly signed-in user's
+ // pending setup marker when the token rotates silently within this tab.
+ if(onboardingModalOwnerToken===localStorage.getItem('vv_token'))
+  localStorage.removeItem('deepsyq_onboarding_pending');
+ closeOnboarding();
+}
+window.addEventListener('storage',event=>{
+ if(event.key==='vv_token'&&onboardingModalOwnerToken&&
+    event.newValue!==onboardingModalOwnerToken)closeOnboarding();
 });
+// A same-tab login does not emit 'storage'. No previous account's authorized
+// choices may remain interactive (or visible after tab focus) for a new user.
+function scrubStaleOnboardingOwner(){
+ if(!onboardingModalOwnerToken||onboardingModalOwnerToken===localStorage.getItem('vv_token'))return false;
+ closeOnboarding();return true;
+}
+for(const type of ['click','keydown','focusin'])document.addEventListener(type,event=>{
+ const staleModalAction=!!event.target?.closest?.('#onboardingModal');
+ if(scrubStaleOnboardingOwner()&&staleModalAction){
+  event.preventDefault();
+  event.stopImmediatePropagation();
+ }
+},true);
+window.addEventListener('focus',scrubStaleOnboardingOwner);
+document.addEventListener('visibilitychange',()=>{
+ if(!document.hidden)scrubStaleOnboardingOwner();
+});
+document.querySelectorAll('[data-close-onboarding]').forEach(b=>b.onclick=dismissOnboarding);
+$('onboardingLater').onclick=dismissOnboarding;
 
 if(localStorage.getItem('vv_token'))try{const {user}=await api('/api/me');$('accountLabel').textContent=user.name||'Your workspace';$('accountButton').textContent='Account settings';$('accountButton').onclick=()=>location.assign('index.html#profile');$('logout').hidden=false;if(user.isAdmin&&!document.getElementById('adminAiControl')){const a=document.createElement('a');a.id='adminAiControl';a.href='deepsyq-admin.html';a.textContent='Owner AI Control';document.querySelector('.sidebar-bottom').prepend(a);}await Promise.all([maybeShowOnboarding(),loadAIWallet(),loadRecentCreations()]);}catch(e){if(e.message==='INVALID_SESSION'||e.message==='USER_NOT_FOUND'){localStorage.removeItem('vv_token');localStorage.removeItem('deepsyq_onboarding_pending');}}
 if(new URLSearchParams(location.search).get('checkout')==='success')$('paymentStatus').textContent='Your checkout has returned. Access is updated only after Stripe confirms payment. Open your account to see its current status.';

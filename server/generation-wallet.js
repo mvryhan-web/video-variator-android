@@ -1,3 +1,4 @@
+import {claimPurchasedGeneration} from './generation-purchased-proof.js';
 // Separate prepaid AI ledger. Existing subscription/trial credits are never read here.
 export const MAX_CREDITS = 1_000_000_000;
 function integer(value, name, max = MAX_CREDITS) {
@@ -55,19 +56,20 @@ export class GenerationWallet {
     await c.query('INSERT INTO vv_ai_ledger(user_id,reference,kind,available_delta,reserved_delta,debt_delta) VALUES($1,$2,$3,$4,$5,$6)', [userId,reference,kind,a,r,d]);
     return next;
   }
-  async grant({userId,sessionId,paymentIntent,credits,amount,currency}) {
+  async grant({userId,sessionId,paymentIntent,credits,amount,currency,allowHistoricalSubscriptionReplay=false}) {
     identifier(sessionId); identifier(paymentIntent); integer(credits,'CREDITS',10_000_000); integer(amount,'AMOUNT',100_000_000);
     if (!/^[a-z]{3}$/.test(currency)) throw new Error('INVALID_CURRENCY');
     return this.transaction(userId, async(c,w) => {
       const old = await c.query('SELECT * FROM vv_ai_purchase WHERE session_id=$1', [sessionId]);
       if (old.rows.length) {
         const p=old.rows[0];
-        if (p.user_id!==userId || p.payment_intent!==paymentIntent || p.credits!==credits || p.amount!==amount || p.currency!==currency) throw new Error('PURCHASE_CONFLICT');
+        if (p.user_id!==userId || p.payment_intent!==paymentIntent || p.amount!==amount || p.currency!==currency ||
+            (p.credits!==credits && !(allowHistoricalSubscriptionReplay && sessionId.startsWith('in_')))) throw new Error('PURCHASE_CONFLICT');
         return {...w, duplicate:true};
       }
       await c.query('INSERT INTO vv_ai_purchase(session_id,user_id,payment_intent,credits,amount,currency) VALUES($1,$2,$3,$4,$5,$6)', [sessionId,userId,paymentIntent,credits,amount,currency]);
       const paidDebt=Math.min(w.debt,credits);
-      return this.change(c,userId,w,sessionId,'purchase',credits-paidDebt,0,-paidDebt);
+      return this.change(c,userId,w,sessionId,sessionId.startsWith('in_')?'subscription_grant':'purchase',credits-paidDebt,0,-paidDebt);
     });
   }
   async grantOnce({userId,kind='welcome',credits}) {
@@ -76,7 +78,7 @@ export class GenerationWallet {
       const old=await c.query('SELECT * FROM vv_ai_grant WHERE user_id=$1 AND kind=$2',[userId,kind]);
       if(old.rows.length)return {...w,duplicate:true,granted:Number(old.rows[0].credits)};
       await c.query('INSERT INTO vv_ai_grant(user_id,kind,credits) VALUES($1,$2,$3)',[userId,kind,credits]);
-      const debtPaid=Math.min(w.debt,credits),next=await this.change(c,userId,w,kind,'welcome_grant',credits-debtPaid,0,-debtPaid);
+      const debtPaid=Math.min(w.debt,credits),ledgerKind=kind.startsWith('subscription:')?'subscription_grant':'welcome_grant',next=await this.change(c,userId,w,kind,ledgerKind,credits-debtPaid,0,-debtPaid);
       return {...next,duplicate:false,granted:credits};
     });
   }
@@ -94,18 +96,48 @@ export class GenerationWallet {
       return this.change(c,userId,w,jobId,'reserve',-credits,credits);
     });
   }
-  async settle({userId,jobId,outcome}) {
+  async settle({userId,jobId,outcome,actualCredits}) {
     identifier(jobId);
     if (!['success','confirmed_failure','unknown'].includes(outcome)) throw new Error('INVALID_OUTCOME');
+    // Only a trusted server-side final usage quote may supply actualCredits.
+    // Older callers omit it and still capture the full reservation.
+    if (actualCredits!==undefined&&(outcome!=='success'||!Number.isSafeInteger(actualCredits)||actualCredits<1))
+      throw new Error('INVALID_ACTUAL_CREDITS');
     return this.transaction(userId,async(c,w) => {
       const {rows} = await c.query('SELECT * FROM vv_ai_reservation WHERE job_id=$1 AND user_id=$2', [jobId,userId]);
       if (!rows.length) throw new Error('RESERVATION_NOT_FOUND');
-      const p=rows[0];
-      if (outcome==='unknown' || p.status!=='held') return {...w,status:p.status};
-      const refund=outcome==='confirmed_failure', debtPaid=refund?Math.min(w.debt,p.credits):0;
-      const status=refund?'released':'captured';
+      const p=rows[0],reserved=Number(p.credits);
+      if (actualCredits!==undefined&&actualCredits>reserved) throw new Error('INVALID_ACTUAL_CREDITS');
+      if (outcome==='unknown') return {...w,status:p.status};
+      if (p.status!=='held') {
+        // A failed job has already returned its reserved credits. Never let
+        // a delayed success/recovery callback report a second paid capture:
+        // Studio marks the result ready when this promise resolves. This also
+        // applies when older callers omit the optional actualCredits amount.
+        if (outcome==='success'&&p.status==='released') throw new Error('SETTLEMENT_ALREADY_RELEASED');
+        // An explicit retry at a different final amount must never silently
+        // accept a prior capture. The existing captured ledger row durably
+        // records returned surplus (available_delta - debt_delta), even when
+        // a concurrent Stripe refund left the user in debt.
+        if (outcome==='success'&&actualCredits!==undefined) {
+          if (p.status!=='captured') throw new Error('SETTLEMENT_ALREADY_RELEASED');
+          const prior=await c.query("SELECT available_delta,debt_delta FROM vv_ai_ledger WHERE user_id=$1 AND reference=$2 AND kind='captured' ORDER BY id DESC LIMIT 2",[userId,jobId]);
+          if (prior.rows.length!==1) throw new Error('SETTLEMENT_AUDIT_MISSING');
+          const returned=Number(prior.rows[0].available_delta)-Number(prior.rows[0].debt_delta);
+          if (!Number.isSafeInteger(returned)||returned<0||returned>reserved||actualCredits!==reserved-returned)
+            throw new Error('SETTLEMENT_AMOUNT_CONFLICT');
+        }
+        return {...w,status:p.status};
+      }
+      const refund=outcome==='confirmed_failure';
+      const charge=refund?0:(actualCredits===undefined?reserved:actualCredits);
+      const remainder=reserved-charge;
+      // Refund surplus first against any outstanding payment debt. Otherwise
+      // a disputed/refunded checkout could manufacture spendable credits.
+      const debtPaid=Math.min(w.debt,remainder),status=refund?'released':'captured';
       await c.query('UPDATE vv_ai_reservation SET status=$2 WHERE job_id=$1', [jobId,status]);
-      return {...await this.change(c,userId,w,jobId,status,refund?p.credits-debtPaid:0,-p.credits,-debtPaid),status};
+      const balance=await this.change(c,userId,w,jobId,status,remainder-debtPaid,-reserved,-debtPaid);
+      return {...balance,status,...(refund?{}:{capturedCredits:charge,returnedCredits:remainder})};
     });
   }
   // Stripe cumulative refunded amount makes out-of-order / duplicate events harmless.
@@ -140,6 +172,29 @@ export class GenerationWallet {
       return this.change(c,userId,w,adjustmentId,'owner_adjustment',delta,0,0);
     });
   }
+  // Only the privileged provider-dispatch path may request a single-use proof.
+  // It MUST be used together with the B-owned consent/model/quote authorization.
+  // No call to this method starts or pays a provider. Existing reserve() is NOT proof.
+  async claimPurchasedDispatch({userId,jobId,kind,credits,fingerprint,modelId,provider},{env=process.env}={}) {
+    try {
+      return await this.transaction(userId,async(c,w)=>claimPurchasedGeneration(c,{
+        env,userId,jobId,kind,credits,fingerprint,modelId,provider,wallet:w
+      }));
+    } catch (_) { throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED'); }
+  }
+  // Agent B's trusted server-only P0 gate supplies requestFingerprint, while
+  // the existing D wallet proof expects fingerprint. Keep one explicit,
+  // privileged projection: never infer authorization from the user's JSON.
+  // The B gate must validate user, consent, model and server quote first.
+  purchasedDispatchVerifier({env=process.env}={}) {
+    return async ({userId,jobId,kind,modelId,provider,requestFingerprint,credits}={}) => {
+      if (typeof requestFingerprint!=='string' || !requestFingerprint)
+        throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED');
+      return this.claimPurchasedDispatch({
+        userId,jobId,kind,modelId,provider,credits,fingerprint:requestFingerprint
+      },{env});
+    };
+  }
   async balance(userId) {
     identifier(userId); await this.init();
     const {rows}=await this.pool.query('SELECT available,reserved,debt FROM vv_ai_wallet WHERE user_id=$1',[userId]);
@@ -147,7 +202,12 @@ export class GenerationWallet {
   }
   async history(userId) {
     identifier(userId); await this.init();
-    const {rows}=await this.pool.query('SELECT kind,reference,available_delta,reserved_delta,debt_delta,created_at FROM vv_ai_ledger WHERE user_id=$1 ORDER BY id DESC LIMIT 50',[userId]);
-    return rows;
+    // Keep Stripe checkout/session refs and job IDs in the durable internal
+    // ledger for idempotency/audit; expose only amounts/type/time to customers.
+    const {rows}=await this.pool.query('SELECT kind,available_delta,reserved_delta,debt_delta,created_at FROM vv_ai_ledger WHERE user_id=$1 ORDER BY id DESC LIMIT 50',[userId]);
+    return rows.map(row=>({
+      kind:row.kind,available_delta:row.available_delta,reserved_delta:row.reserved_delta,
+      debt_delta:row.debt_delta,created_at:row.created_at
+    }));
   }
 }

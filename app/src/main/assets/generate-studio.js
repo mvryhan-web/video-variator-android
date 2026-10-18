@@ -1,6 +1,8 @@
 import {saveLocal} from './ai-media.js';
 import {MODEL_CATALOG,MODELS} from './generate-models.js';
 import {takeStudioHandoff} from './studio-handoff.js';
+import {studioCreditWalletState} from './studio-credit-wallet.js';
+import {progressView} from './studio-job-progress.js';
 const $=id=>document.getElementById(id),ru=navigator.language.startsWith('ru');
 const say=(en,r)=>ru?r:en;
 const strings={back:'← Назад',pilot:'Предпросмотр студии',workspace:'ВАША СТУДИЯ',video:'Видео',image:'Изображения',audio:'Аудио',dashboard:'Главная ↗',translation:'Перевод · позже',create:'Создать',history:'Мои результаты',label:'ТВОРЧЕСКАЯ СТУДИЯ',headline:'Ваша идея. Создайте её.',prompt:'Опишите, что хотите создать',addPhoto:'Фото',clear:'Убрать фото',generate:'Создать ✦',consent:'Я согласен отправить запрос и фотографии в Google для генерации.',pilotNote:'Предпросмотр студии. Оплата не включена.',chooseModel:'Выберите модель',modelHint:'Выберите инструмент для своей задачи. У каждой модели указан статус подключения.',settings:'Настройки',format:'Формат',capabilityNote:'Настройки соответствуют выбранной модели. Неподдерживаемые параметры не отправляются.',trackType:'Тип аудио',song:'Песня с вокалом',instrumental:'Без слов',voiceoverMode:'Озвучка · подключение готовится',voiceover:'Открыть существующий инструмент озвучки →',language:'Язык',voice:'Голос',done:'Готово',download:'Скачать',share:'Поделиться',delete:'Удалить',saveNote:'Сохраните копию. Удаление результата не удаляет скачанные файлы.',historyHint:'Здесь доступны сохранённые результаты студии. Генерация не запускается автоматически.',checkResult:'Проверить последний результат',historyLoading:'Загружаем результаты…',historyNone:'Сохранённых результатов пока нет.',historyOpen:'Открыть',historyReady:'Готово',historyProcessing:'В работе',historyFailed:'Ошибка',filterAll:'Все',filterImages:'Изображения',filterVideos:'Видео',filterFailed:'Ошибки',filterProcessing:'В работе'};
@@ -10,9 +12,19 @@ let kind=requested==='image'?'image':requested==='audio'?'music':'video';
 let config={enabled:false,models:[]},catalog=MODEL_CATALOG.map(m=>({...m,enabled:false}));
 let refs=[],modelId=MODELS[kind].id,url,blob,job,busy=false,generation=0,historyView=false,historyFilter='all';
 let estimateTimer=null,estimateSignature='';
-let historyThumbUrls=[];
+let historyThumbUrls=[],historyMediaUrl=null,historyMediaPlayer=null,historyMediaButton=null,historyMediaEpoch=0;
 const drafts={};
 let activeVideoWatchId=null; // Current browser polling only; the provider job is server-owned.
+let lastJobProgress=null;
+function updateJobProgress(status,amounts={}){
+ lastJobProgress=progressView(status,{...amounts,locale:ru?'ru':'en'});
+ const panel=$('jobProgress');if(!panel)return;
+ $('jobProgressStage').textContent=lastJobProgress.heading;
+ $('jobProgressCredits').textContent=lastJobProgress.credits;
+ $('jobProgressHint').textContent=lastJobProgress.hint;
+ panel.dataset.status=lastJobProgress.status;
+ panel.hidden=false; // CSS hides status while History is visible.
+}
 const imageBatchQuantity=()=>kind==='image'&&config?.imageBatchEnabled?Number($('imageQuantity').value||1):1;
 let imageDraftKey=null,imageDraftReady=false,imageDraftLoaded=false,imageDraftNeedsPhotos=false;
 async function initializeImageDraft(){
@@ -160,14 +172,55 @@ function renderWalletHistory(items){
  for(const item of items.slice(0,20)){const row=document.createElement('article');row.className='wallet-ledger';const title=document.createElement('strong'),labels=walletKinds[item.kind]||[item.kind,item.kind];title.textContent=ru?labels[1]:labels[0];const date=document.createElement('small');try{date.textContent=new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(new Date(item.created_at||item.createdAt));}catch(_){date.textContent='';}const deltas=document.createElement('div');deltas.className='wallet-deltas';for(const node of [ledgerDelta(say('available','доступно'),Number(item.available_delta??item.availableDelta??0)),ledgerDelta(say('held','резерв'),Number(item.reserved_delta??item.reservedDelta??0)),ledgerDelta(say('debt','долг'),Number(item.debt_delta??item.debtDelta??0))])if(node)deltas.append(node);row.append(title,date,deltas);root.append(row);}
 }
 async function loadAiWallet(){
+ const btn=$('walletButton'),summary=$('walletSummary'),packs=$('creditPacks');
+ // An authenticated customer's existing AI wallet is readable even when
+ // credit-pack checkout is disabled. Checkout and wallet are separate gates.
+ btn.hidden=false;$('walletBalance').textContent='—';
+ summary.replaceChildren();packs.replaceChildren();renderWalletHistory([]);
+ let cfg={};
  try{
-  const response=await fetch(apiBase()+'/api/ai-billing/config',{cache:'no-store'}),cfg=await response.json().catch(()=>({}));if(!response.ok||!cfg.enabled){$('walletButton').hidden=true;return false;}
-  aiBilling=cfg;$('walletButton').hidden=false;$('walletMode').textContent=cfg.mode==='live'?say('Live Stripe checkout. Payment is completed on Stripe.','Оплата через live Stripe Checkout. Платёж завершается на Stripe.'):say('Stripe test checkout. No real charge should be made in test mode.','Тестовый Stripe Checkout. В тестовом режиме реального списания быть не должно.');
-  $('creditPacks').replaceChildren();for(const p of cfg.packs||[]){const card=document.createElement('article');card.className='credit-pack';const title=document.createElement('strong');title.textContent=Number(p.credits).toLocaleString()+' AI credits';const price=document.createElement('small');price.textContent=moneyMinor(p.amount,p.currency);const b=document.createElement('button');b.type='button';b.textContent=cfg.mode==='live'?say('Continue to Stripe','Перейти в Stripe'):say('Open test checkout','Открыть тестовую оплату');b.onclick=()=>void buyCredits(p,b);card.append(title,price,b);$('creditPacks').append(card);}
-  if(!localStorage.getItem('vv_token')){$('walletBalance').textContent='—';$('walletSummary').replaceChildren();renderWalletHistory([]);$('walletStatus').textContent=say('Sign in to view your AI credit balance or buy credits.','Войдите, чтобы увидеть баланс AI-кредитов или купить кредиты.');return true;}
-  const [balance,history]=await Promise.all([api('/api/ai-billing/balance').then(r=>r.json()),api('/api/ai-billing/history').then(r=>r.json()).catch(()=>({items:[]}))]);
-  $('walletBalance').textContent=Number(balance.available||0).toLocaleString();$('walletSummary').replaceChildren(walletStat(say('Available','Доступно'),Number(balance.available||0).toLocaleString()),walletStat(say('Held','В резерве'),Number(balance.reserved||0).toLocaleString()),walletStat(say('Debt','Долг'),Number(balance.debt||0).toLocaleString()));renderWalletHistory(history.items||[]);$('walletStatus').textContent='';return true;
- }catch(_){$('walletButton').hidden=true;return false;}
+  const response=await fetch(apiBase()+'/api/ai-billing/config',{cache:'no-store'});
+  if(response.ok)cfg=await response.json().catch(()=>({}));
+ }catch(_){/* Checkout config unavailable: continue reading existing wallet. */}
+ const state=studioCreditWalletState(cfg);
+ aiBilling=state.checkoutMode?cfg:null;
+ $('walletMode').textContent=state.checkoutMode==='live'
+  ?say('Live Stripe checkout. Credits are added only after a confirmed webhook.','Оплата через Stripe. Кредиты поступают только после подтверждённого webhook.')
+  :state.checkoutMode==='test'
+  ?say('Stripe test checkout. No real charge is made in test mode.','Тестовая оплата Stripe. Реальные деньги не списываются.')
+  :say('Credit purchases are not active. Your existing AI credits remain available to view.','Покупка кредитов неактивна. Свои AI-кредиты можно просматривать.');
+ for(const p of state.packs){
+  const card=document.createElement('article');card.className='credit-pack';
+  const title=document.createElement('strong');title.textContent=p.credits.toLocaleString()+' AI credits';
+  const price=document.createElement('small');price.textContent=moneyMinor(p.amount,p.currency);
+  const button=document.createElement('button');button.type='button';
+  button.textContent=state.checkoutMode==='live'?say('Continue to Stripe','Перейти в Stripe'):say('Open test checkout','Открыть тестовую оплату');
+  button.onclick=()=>void buyCredits(p,button);card.append(title,price,button);packs.append(card);
+ }
+ if(!localStorage.getItem('vv_token')){
+  $('walletStatus').textContent=say('Sign in to view your AI credit balance.','Войдите, чтобы увидеть баланс AI-кредитов.');
+  return true;
+ }
+ try{
+  const [balance,history]=await Promise.all([
+   api('/api/ai-wallet/balance').then(r=>r.json()),
+   api('/api/ai-wallet/history').then(r=>r.json()).catch(()=>({items:[]}))
+  ]);
+  const totals=studioCreditWalletState(cfg,balance).totals;
+  if(!totals)throw Error('INVALID_WALLET_TOTALS');
+  $('walletBalance').textContent=totals.available.toLocaleString();
+  summary.replaceChildren(
+   walletStat(say('Available','Доступно'),totals.available.toLocaleString()),
+   walletStat(say('Held','В резерве'),totals.reserved.toLocaleString()),
+   walletStat(say('Debt','Долг'),totals.debt.toLocaleString())
+  );
+  renderWalletHistory(Array.isArray(history.items)?history.items:[]);
+  $('walletStatus').textContent='';return true;
+ }catch(_){
+  $('walletBalance').textContent='—';summary.replaceChildren();renderWalletHistory([]);
+  $('walletStatus').textContent=say('AI wallet information is temporarily unavailable. Please refresh later.','Информация об AI-кредитах временно недоступна. Обновите позже.');
+  return false;
+ }
 }
 async function buyCredits(pack,button){
  if(!localStorage.getItem('vv_token')){$('walletStatus').textContent=say('Sign in before opening checkout.','Войдите перед оплатой.');return;}
@@ -184,7 +237,10 @@ $('walletRefresh').onclick=async()=>{$('walletRefresh').disabled=true;$('walletS
 const modelKind=()=>kind==='music'&&$('musicMode').value==='voice'?'voice':kind;
 const currentModel=()=>catalog.find(m=>m.id===modelId&&m.kind===modelKind());
 const connected=m=>!!m?.adapter&&!!m.enabled;
-function errorText(e){return ({AUTH_REQUIRED:say('Sign in from the dashboard first.','Сначала войдите в аккаунт на главной.'),INVALID_SESSION:say('Your session expired. Sign in again.','Сессия истекла. Войдите снова.'),OWNER_PILOT_ONLY:say('Generation is currently limited to the owner preview.','Генерация пока доступна только владельцу.'),PUBLIC_AI_DISABLED:say('Public AI generation is not enabled yet.','Публичная AI-генерация пока не включена.'),AI_ENTITLEMENTS_NOT_CONFIGURED:say('AI plan access is not configured yet.','Доступ к AI по тарифам пока не настроен.'),AI_PLAN_NOT_ENTITLED:say('Your current plan does not include this AI generation workflow.','Ваш текущий тариф не включает эту AI-генерацию.'),AI_PLAN_INACTIVE:say('An active eligible plan is required for AI generation.','Для AI-генерации нужен активный подходящий тариф.'),PUBLIC_AI_NOT_READY:say('AI billing is not ready for public generation yet. No request was started.','AI-биллинг ещё не готов для публичной генерации. Запрос не запускался.'),GENERATION_REQUEST_ID_REQUIRED:say('A safe request identifier is required before generation can start.','Перед генерацией нужен безопасный идентификатор запроса.'),INVALID_GENERATION_REQUEST_ID:say('The generation request identifier is invalid.','Идентификатор запроса генерации недействителен.'),GENERATION_REQUEST_CONFLICT:say('This request identifier was already used for different generation settings. No second generation was started.','Этот идентификатор уже использован с другими настройками. Вторая генерация не запускалась.'),PAYMENTS_NOT_ACTIVATED:say('AI credit payments are not activated yet.','Оплата AI-кредитов пока не включена.'),AI_CHECKOUT_UNAVAILABLE:say('Stripe Checkout is temporarily unavailable. No payment was completed.','Stripe Checkout временно недоступен. Платёж не был завершён.'),CHECKOUT_MODE_CONFLICT:say('This checkout request belongs to a different Stripe mode. Start a new checkout.','Этот запрос оплаты относится к другому режиму Stripe. Начните новую оплату.'),UNSAFE_CHECKOUT_URL:say('Checkout was blocked because the returned payment address was not Stripe.','Оплата заблокирована: полученный адрес не принадлежит Stripe.'),PILOT_LIMIT_REACHED:say('The approved test limit has been reached.','Согласованный тестовый лимит исчерпан.'),INSUFFICIENT_AI_CREDITS:say('You do not have enough AI credits for this request.','Недостаточно AI-кредитов для этого запроса.'),AI_WALLET_UNAVAILABLE:say('AI credit reservation is temporarily unavailable. No generation was started.','Резервирование AI-кредитов временно недоступно. Генерация не запускалась.'),BILLING_REVIEW_REQUIRED:say('This result has a held credit reservation that must be reviewed before deletion.','У этого результата есть резерв кредитов, который нужно проверить перед удалением.'),PROCESSING_CANNOT_BE_CANCELLED:say('This generation is still active and cannot be deleted yet.','Эта генерация ещё выполняется и пока не может быть удалена.'),GENERATION_FAILED_NO_AUTOMATIC_RETRY:say('Generation could not finish. No automatic retry was started.','Генерация не завершилась. Повторный запрос автоматически не запускался.'),AI_PROVIDER_BUSY:say('The AI provider is busy right now. You can try again later; no automatic retry was started.','AI-провайдер сейчас перегружен. Можно повторить позже; автоматический повтор не запускался.'),AI_PROVIDER_NOT_CONFIGURED:say('This AI provider is not available yet. Choose another enabled model.','Этот AI-провайдер пока недоступен. Выберите другую включённую модель.'),AI_MODEL_NOT_AVAILABLE:say('This model is not available right now. Choose another enabled model.','Эта модель сейчас недоступна. Выберите другую включённую модель.'),AI_MODEL_MAINTENANCE:say('This model is temporarily under maintenance. Choose another model or try later.','Эта модель временно на обслуживании. Выберите другую или попробуйте позже.'),AI_GENERATION_REJECTED:say('The provider could not complete this generation. No automatic retry was started.','Провайдер не смог завершить эту генерацию. Автоматический повтор не запускался.'),AI_PROVIDER_RESPONSE_INVALID:say('The provider returned an incomplete response. No automatic retry was started.','Провайдер вернул неполный ответ. Автоматический повтор не запускался.'),AI_RESULT_UNAVAILABLE:say('The provider did not return a usable result. No automatic retry was started.','Провайдер не вернул пригодный результат. Автоматический повтор не запускался.'),AI_RESULT_TOO_LARGE:say('The generated result is larger than the current safe download limit.','Созданный результат превышает текущий безопасный лимит загрузки.'),AI_RESULT_DOWNLOAD_FAILED:say('The result was created but could not be downloaded from the provider yet. Try checking it again later.','Результат создан, но пока не удалось скачать его у провайдера. Попробуйте проверить позже.'),AI_PROVIDER_STATUS_INVALID:say('The provider returned an unexpected job status. No duplicate generation was started.','Провайдер вернул неожиданный статус задачи. Дублирующая генерация не запускалась.'),AI_PROVIDER_RESULT_BLOCKED:say('The provider result link was blocked by Deepsyq security checks.','Ссылка на результат провайдера была заблокирована проверкой безопасности Deepsyq.'),AI_STORAGE_FAILED:say('The result could not be saved safely. No automatic regeneration was started.','Не удалось безопасно сохранить результат. Автоматическая повторная генерация не запускалась.'),AI_PROVIDER_TIMEOUT:say('The provider took too long to respond. No automatic retry was started.','Провайдер слишком долго не отвечал. Автоматический повтор не запускался.'),AI_PROVIDER_FAILED:say('The AI provider returned an error. No automatic retry was started.','AI-провайдер вернул ошибку. Автоматический повтор не запускался.'),AI_GENERATION_FAILED:say('Generation could not finish. No automatic retry was started.','Генерация не завершилась. Автоматический повтор не запускался.'),AI_RATE_LIMIT:say('You reached the current hourly AI generation limit. Try again later.','Достигнут текущий часовой лимит AI-генераций. Попробуйте позже.'),AI_CONCURRENCY_LIMIT:say('You already have the maximum number of active generations. Wait for one to finish.','Уже запущено максимальное количество одновременных генераций. Дождитесь завершения одной из них.'),UNSUPPORTED_VIDEO_RESOLUTION:say('This model does not support that video resolution.','Эта модель не поддерживает выбранное разрешение видео.'),UNSUPPORTED_VIDEO_DURATION:say('The chosen video length is not compatible with these model settings.','Выбранная длительность видео несовместима с настройками модели.'),UNSUPPORTED_VIDEO_INPUT_MODE:say('The selected input mode is not supported by this video model.','Эта модель не поддерживает выбранный режим референсов.'),INVALID_VIDEO_REFERENCES:say('The number of reference photos does not match the selected video mode.','Количество фотографий не соответствует режиму видео.'),UNSUPPORTED_VIDEO_SETTINGS:say('Video options are not supported for this generation.','Параметры видео не поддерживаются для этой генерации.'),UNSUPPORTED_RESOLUTION:say('This image resolution is not supported by the selected model.','Выбранная модель не поддерживает это разрешение.'),INVALID_IMAGE_QUANTITY:say('Choose between 1 and 4 images for a batch.','Выберите от 1 до 4 изображений.'),IMAGE_BATCH_NOT_ENABLED:say('Multiple-image batches are not enabled. No jobs started.','Пакетная генерация ещё не включена. Задачи не запускались.'),AI_ESTIMATE_CHANGED:say('The approved price changed. No new image was started. Review your credits quote again.','Цена изменилась. Новое изображение не запущено. Проверьте расчёт кредитов снова.'),UNSUPPORTED_IMAGE_CONTROL:say('Seed or Negative Prompt is not supported by this model. Describe exclusions in the main prompt.','Эта модель не поддерживает отдельные Seed или Negative Prompt. Опишите ограничения в основном запросе.'),UNSUPPORTED_IMAGE_FORMAT:say('This output format is not supported by the selected model.','Эта модель не поддерживает выбранный формат изображения.'),AI_PRICING_NOT_APPROVED:say('Pricing for this AI model, resolution or format is not approved yet. No request was started.','Стоимость этой AI-модели, разрешения или формата ещё не утверждена. Запрос не запускался.'),STILL_PROCESSING_RELOAD_TO_CHECK:say('Still processing. Check this result again later.','Ещё обрабатывается. Проверьте этот результат позже.')})[e.message]||e.message;}
+function errorText(e){const messages={AUTH_REQUIRED:say('Sign in from the dashboard first.','Сначала войдите в аккаунт на главной.'),INVALID_SESSION:say('Your session expired. Sign in again.','Сессия истекла. Войдите снова.'),OWNER_PILOT_ONLY:say('Generation is currently limited to the owner preview.','Генерация пока доступна только владельцу.'),PUBLIC_AI_DISABLED:say('Public AI generation is not enabled yet.','Публичная AI-генерация пока не включена.'),AI_ENTITLEMENTS_NOT_CONFIGURED:say('AI plan access is not configured yet.','Доступ к AI по тарифам пока не настроен.'),AI_PLAN_NOT_ENTITLED:say('Your current plan does not include this AI generation workflow.','Ваш текущий тариф не включает эту AI-генерацию.'),AI_PLAN_INACTIVE:say('An active eligible plan is required for AI generation.','Для AI-генерации нужен активный подходящий тариф.'),PUBLIC_AI_NOT_READY:say('AI billing is not ready for public generation yet. No request was started.','AI-биллинг ещё не готов для публичной генерации. Запрос не запускался.'),GENERATION_REQUEST_ID_REQUIRED:say('A safe request identifier is required before generation can start.','Перед генерацией нужен безопасный идентификатор запроса.'),INVALID_GENERATION_REQUEST_ID:say('The generation request identifier is invalid.','Идентификатор запроса генерации недействителен.'),GENERATION_REQUEST_CONFLICT:say('This request identifier was already used for different generation settings. No second generation was started.','Этот идентификатор уже использован с другими настройками. Вторая генерация не запускалась.'),PAYMENTS_NOT_ACTIVATED:say('AI credit payments are not activated yet.','Оплата AI-кредитов пока не включена.'),AI_CHECKOUT_UNAVAILABLE:say('Stripe Checkout is temporarily unavailable. No payment was completed.','Stripe Checkout временно недоступен. Платёж не был завершён.'),CHECKOUT_MODE_CONFLICT:say('This checkout request belongs to a different Stripe mode. Start a new checkout.','Этот запрос оплаты относится к другому режиму Stripe. Начните новую оплату.'),UNSAFE_CHECKOUT_URL:say('Checkout was blocked because the returned payment address was not Stripe.','Оплата заблокирована: полученный адрес не принадлежит Stripe.'),PILOT_LIMIT_REACHED:say('The approved test limit has been reached.','Согласованный тестовый лимит исчерпан.'),INSUFFICIENT_AI_CREDITS:say('You do not have enough AI credits for this request.','Недостаточно AI-кредитов для этого запроса.'),AI_WALLET_UNAVAILABLE:say('AI credit reservation is temporarily unavailable. No generation was started.','Резервирование AI-кредитов временно недоступно. Генерация не запускалась.'),BILLING_REVIEW_REQUIRED:say('This result has a held credit reservation that must be reviewed before deletion.','У этого результата есть резерв кредитов, который нужно проверить перед удалением.'),PROCESSING_CANNOT_BE_CANCELLED:say('This generation is still active and cannot be deleted yet.','Эта генерация ещё выполняется и пока не может быть удалена.'),GENERATION_FAILED_NO_AUTOMATIC_RETRY:say('Generation could not finish. No automatic retry was started.','Генерация не завершилась. Повторный запрос автоматически не запускался.'),AI_PROVIDER_BUSY:say('The AI provider is busy right now. You can try again later; no automatic retry was started.','AI-провайдер сейчас перегружен. Можно повторить позже; автоматический повтор не запускался.'),AI_PROVIDER_NOT_CONFIGURED:say('This AI provider is not available yet. Choose another enabled model.','Этот AI-провайдер пока недоступен. Выберите другую включённую модель.'),AI_MODEL_NOT_AVAILABLE:say('This model is not available right now. Choose another enabled model.','Эта модель сейчас недоступна. Выберите другую включённую модель.'),AI_MODEL_MAINTENANCE:say('This model is temporarily under maintenance. Choose another model or try later.','Эта модель временно на обслуживании. Выберите другую или попробуйте позже.'),AI_GENERATION_REJECTED:say('The provider could not complete this generation. No automatic retry was started.','Провайдер не смог завершить эту генерацию. Автоматический повтор не запускался.'),AI_PROVIDER_RESPONSE_INVALID:say('The provider returned an incomplete response. No automatic retry was started.','Провайдер вернул неполный ответ. Автоматический повтор не запускался.'),AI_RESULT_UNAVAILABLE:say('The provider did not return a usable result. No automatic retry was started.','Провайдер не вернул пригодный результат. Автоматический повтор не запускался.'),AI_RESULT_TOO_LARGE:say('The generated result is larger than the current safe download limit.','Созданный результат превышает текущий безопасный лимит загрузки.'),AI_RESULT_DOWNLOAD_FAILED:say('The result was created but could not be downloaded from the provider yet. Try checking it again later.','Результат создан, но пока не удалось скачать его у провайдера. Попробуйте проверить позже.'),AI_PROVIDER_STATUS_INVALID:say('The provider returned an unexpected job status. No duplicate generation was started.','Провайдер вернул неожиданный статус задачи. Дублирующая генерация не запускалась.'),AI_PROVIDER_RESULT_BLOCKED:say('The provider result link was blocked by Deepsyq security checks.','Ссылка на результат провайдера была заблокирована проверкой безопасности Deepsyq.'),AI_STORAGE_FAILED:say('The result could not be saved safely. No automatic regeneration was started.','Не удалось безопасно сохранить результат. Автоматическая повторная генерация не запускалась.'),AI_PROVIDER_TIMEOUT:say('The provider took too long to respond. No automatic retry was started.','Провайдер слишком долго не отвечал. Автоматический повтор не запускался.'),AI_PROVIDER_FAILED:say('The AI provider returned an error. No automatic retry was started.','AI-провайдер вернул ошибку. Автоматический повтор не запускался.'),AI_GENERATION_FAILED:say('Generation could not finish. No automatic retry was started.','Генерация не завершилась. Автоматический повтор не запускался.'),AI_RATE_LIMIT:say('You reached the current hourly AI generation limit. Try again later.','Достигнут текущий часовой лимит AI-генераций. Попробуйте позже.'),AI_CONCURRENCY_LIMIT:say('You already have the maximum number of active generations. Wait for one to finish.','Уже запущено максимальное количество одновременных генераций. Дождитесь завершения одной из них.'),UNSUPPORTED_VIDEO_RESOLUTION:say('This model does not support that video resolution.','Эта модель не поддерживает выбранное разрешение видео.'),UNSUPPORTED_VIDEO_DURATION:say('The chosen video length is not compatible with these model settings.','Выбранная длительность видео несовместима с настройками модели.'),UNSUPPORTED_VIDEO_INPUT_MODE:say('The selected input mode is not supported by this video model.','Эта модель не поддерживает выбранный режим референсов.'),INVALID_VIDEO_REFERENCES:say('The number of reference photos does not match the selected video mode.','Количество фотографий не соответствует режиму видео.'),UNSUPPORTED_VIDEO_SETTINGS:say('Video options are not supported for this generation.','Параметры видео не поддерживаются для этой генерации.'),UNSUPPORTED_RESOLUTION:say('This image resolution is not supported by the selected model.','Выбранная модель не поддерживает это разрешение.'),INVALID_IMAGE_QUANTITY:say('Choose between 1 and 4 images for a batch.','Выберите от 1 до 4 изображений.'),IMAGE_BATCH_NOT_ENABLED:say('Multiple-image batches are not enabled. No jobs started.','Пакетная генерация ещё не включена. Задачи не запускались.'),AI_ESTIMATE_CHANGED:say('The approved price changed. No new image was started. Review your credits quote again.','Цена изменилась. Новое изображение не запущено. Проверьте расчёт кредитов снова.'),UNSUPPORTED_IMAGE_CONTROL:say('Seed or Negative Prompt is not supported by this model. Describe exclusions in the main prompt.','Эта модель не поддерживает отдельные Seed или Negative Prompt. Опишите ограничения в основном запросе.'),UNSUPPORTED_IMAGE_FORMAT:say('This output format is not supported by the selected model.','Эта модель не поддерживает выбранный формат изображения.'),AI_PRICING_NOT_APPROVED:say('Pricing for this AI model, resolution or format is not approved yet. No request was started.','Стоимость этой AI-модели, разрешения или формата ещё не утверждена. Запрос не запускался.'),STILL_PROCESSING_RELOAD_TO_CHECK:say('Still processing. Check this result again later.','Ещё обрабатывается. Проверьте этот результат позже.')};return Object.hasOwn(messages,e?.message)?messages[e.message]:say(
+ 'Unable to complete this request. Check your results and wallet before trying again.',
+ 'Не удалось выполнить запрос. Перед повтором проверьте результаты и кошелёк.'
+);}
 async function loadGenerationAccess(){
  const el=$('accessInfo');if(!el||!localStorage.getItem('vv_token')){if(el)el.hidden=true;return;}
  try{
@@ -525,16 +581,84 @@ function observeHistoryThumbnail(item,preview){
  const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){observer.disconnect();void loadHistoryImageThumbnail(item,preview);}},{rootMargin:'180px'});
  observer.observe(preview);
 }
+
+// Preview only on explicit user interaction. This is an authenticated read of the user's
+// existing result; no provider dispatch, regeneration, or new credit reservation.
+const HISTORY_PREVIEW_MAX_BYTES=128*1024*1024;
+function clearHistoryMediaPreview(){
+ ++historyMediaEpoch;
+ if(historyMediaPlayer){
+  historyMediaPlayer.pause();
+  historyMediaPlayer.removeAttribute('src');
+  historyMediaPlayer.load();
+  historyMediaPlayer.remove();
+  historyMediaPlayer=null;
+ }
+ if(historyMediaUrl){URL.revokeObjectURL(historyMediaUrl);historyMediaUrl=null;}
+ if(historyMediaButton?.isConnected){
+  historyMediaButton.disabled=false;
+  historyMediaButton.textContent=say('Preview media','Просмотр');
+ }
+ historyMediaButton=null;
+}
+async function previewHistoryMedia(item,holder,button){
+ if(historyMediaButton===button&&historyMediaPlayer){
+  clearHistoryMediaPreview();holder.replaceChildren();return;
+ }
+ clearHistoryMediaPreview();
+ const epoch=historyMediaEpoch;
+ historyMediaButton=button;button.disabled=true;
+ button.textContent=say('Loading preview…','Загружаем…');
+ holder.replaceChildren();
+ try{
+  const response=await api('/api/studio/jobs/'+encodeURIComponent(item.id)+'/media');
+  const reportedSize=Number(response.headers.get('content-length')||0);
+  if(reportedSize>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
+  const blob=await response.blob();
+  if(epoch!==historyMediaEpoch||!historyView||!button.isConnected)return;
+  if(blob.size>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
+  const expected=item.kind==='video'?'video/':'audio/';
+  if(!blob.type.toLowerCase().startsWith(expected))throw Error('PREVIEW_UNSUPPORTED_FORMAT');
+  const player=document.createElement(item.kind==='video'?'video':'audio');
+  player.controls=true;player.preload='metadata';player.autoplay=false;
+  if(item.kind==='video')player.playsInline=true;
+  player.setAttribute('aria-label',item.kind==='video'?say('Saved video preview','Просмотр сохранённого видео'):say('Saved audio preview','Прослушать сохранённое аудио'));
+  const objectUrl=URL.createObjectURL(blob);
+  player.src=objectUrl;historyMediaUrl=objectUrl;historyMediaPlayer=player;
+  holder.replaceChildren(player);button.disabled=false;
+  button.textContent=say('Close preview','Закрыть просмотр');
+ }catch(error){
+  if(epoch!==historyMediaEpoch||!button.isConnected)return;
+  button.disabled=false;button.textContent=say('Preview media','Просмотр');
+  const message=document.createElement('p');message.className='hint';
+  message.textContent=error.message==='PREVIEW_TOO_LARGE'?
+   say('This file is too large for an in-page preview. Use Download.','Файл слишком большой для просмотра. Используйте «Скачать».'):
+   error.message==='PREVIEW_UNSUPPORTED_FORMAT'?
+   say('The saved file is not a supported video/audio preview. Use Download.','Формат файла не подходит для просмотра. Используйте «Скачать».'):
+   say('Preview is unavailable. Your saved result was not changed.','Предпросмотр недоступен. Сохранённый результат не изменён.');
+  holder.replaceChildren(message);
+ }
+}
 function historyState(status){return status==='ready'?say('Ready','Готово'):status==='queued'?say('Queued','В очереди'):status==='processing'?say('Processing','В работе'):status==='finalizing'?say('Finalizing','Завершаем'):status==='failed'?say('Failed','Ошибка'):status;}
 function historyDate(value){try{return new Intl.DateTimeFormat(navigator.language||'en',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));}catch(_){return String(value||'');}}
 function historyCredits(item){const n=Number(item.creditsCharged||item.creditsReserved||0);return n>0?say(n+' AI credits',n+' AI-кредитов'):'';}
 function prepareHistoryItem(item,{settings=false}={}){
  if(busy)return;
+ const targetKind=item.kind==='music'?'music':item.kind;
  const previousCount=kind==='video'?refs.length:(drafts.video?.refs?.length||0);
  const oldPhotos=settings&&item.kind==='video'&&Number.isInteger(item.settings?.referenceCount)&&item.settings.referenceCount>0;
  if(oldPhotos&&previousCount&&!confirm(say('Preparing this historical video will detach your current video photos. Continue?','Для подготовки прежнего видео потребуется убрать текущие фотографии из редактора. Продолжить?')))return;
- select(item.kind==='music'?'music':item.kind);
- if(item.model&&catalog.some(m=>m.id===item.model&&m.kind===(item.kind==='music'?'music':item.kind))){modelId=item.model;renderModel();}
+ // Never reuse unrelated current Canvas reference photos in regenerated jobs.
+ const imageRefs=targetKind===kind?refs:(drafts.image?.refs||[]);
+ if(settings&&item.kind==='image'&&imageRefs.length&&!confirm(say(
+  'Preparing this saved image will detach your current Image draft photos. The saved job is unchanged. Continue?',
+  'Подготовка сохранённого изображения уберёт фото из текущего черновика. Сохранённый результат не изменится. Продолжить?')))return;
+ select(targetKind);
+ if(settings&&item.kind==='image'){
+  refs=[];if(drafts.image)drafts.image.refs=[];
+  imageDraftNeedsPhotos=false;renderRefs();
+ }
+ if(item.model&&catalog.some(m=>m.id===item.model&&m.kind===targetKind)){modelId=item.model;renderModel();}
  $('prompt').value=item.prompt||'';
  if(settings&&item.kind==='video'){
   videoDraftNeedsPhotos=false;videoDraftExpectedRefs=0;videoDraftPendingMode='text';
@@ -551,6 +675,9 @@ function prepareHistoryItem(item,{settings=false}={}){
  if(settings&&item.kind==='video'&&currentModel()?.capabilities?.videoInputModes?.includes(item.settings?.videoInputMode)&&[...$('videoInputMode').options].some(o=>o.value===item.settings.videoInputMode))$('videoInputMode').value=item.settings.videoInputMode;
  if(settings&&item.kind==='music'&&['song','instrumental'].includes(item.settings?.musicMode)){$('musicMode').value=item.settings.musicMode;renderModel();}
  $('consent').checked=false;availability();setHistory(false);$('prompt').focus();
+ if(settings&&item.kind==='image')$('status').textContent=say(
+  'Saved prompt and settings are ready. Old reference photos are not restored. Add photos if needed and review consent before generating.',
+  'Запрос и настройки готовы. Старые фотографии не восстановлены. При необходимости добавьте фото и подтвердите согласие перед генерацией.');
 }
 async function editHistoryImage(item){
  if(busy||item.kind!=='image'||item.status!=='ready')return;
@@ -595,7 +722,7 @@ async function openHistoryJob(id){
  const epoch=++generation;try{await watch(id,epoch);if(epoch===generation)setHistory(false);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
 }
 async function loadHistory(){
- const list=$('historyList');list.hidden=false;clearHistoryThumbs();list.replaceChildren();const loading=document.createElement('p');loading.className='hint';loading.textContent=say('Loading results…','Загружаем результаты…');list.append(loading);
+ const list=$('historyList');list.hidden=false;clearHistoryMediaPreview();clearHistoryThumbs();list.replaceChildren();const loading=document.createElement('p');loading.className='hint';loading.textContent=say('Loading results…','Загружаем результаты…');list.append(loading);
  try{
   const d=await(await api('/api/studio/jobs?filter='+encodeURIComponent(historyFilter))).json();list.replaceChildren();
   if(!d.items?.length){const p=document.createElement('p');p.className='hint';p.textContent=say('No results in this filter yet.','В этом фильтре пока нет результатов.');list.append(p);return;}
@@ -627,12 +754,21 @@ async function loadHistory(){
     check.onclick=()=>void checkHistoryVideo(item);
     actions.append(check);
    }
-   actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions);list.append(card);observeHistoryThumbnail(item,preview);
+   const inlinePreview=document.createElement('div');inlinePreview.className='history-inline-media';
+   if(item.status==='ready'&&['video','music','audio'].includes(item.kind)){
+    const previewButton=document.createElement('button');previewButton.type='button';
+    previewButton.textContent=say('Preview media','Просмотр');
+    previewButton.title=say('Load your saved media on demand. No new AI generation or charge.','Загрузить готовый результат по нажатию. Новая генерация и списание не выполняются.');
+    previewButton.onclick=()=>void previewHistoryMedia(item,inlinePreview,previewButton);
+    actions.append(previewButton);
+   }
+   actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions,inlinePreview);list.append(card);observeHistoryThumbnail(item,preview);
   }
  }catch(e){list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
 }
 document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclick=()=>{historyFilter=button.dataset.historyFilter;document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));void loadHistory();});
-function setHistory(on){historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
+function setHistory(on){if(!on)clearHistoryMediaPreview();historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
+window.addEventListener('pagehide',()=>{clearHistoryMediaPreview();clearHistoryThumbs();});
 $('showCreate').onclick=()=>{const u=new URL(location.href);u.searchParams.delete('view');history.replaceState(null,'',u);setHistory(false);};$('showHistory').onclick=()=>setHistory(true);
 function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
 async function watch(id,epoch){
@@ -640,6 +776,7 @@ async function watch(id,epoch){
   const d=await(await api('/api/studio/jobs/'+encodeURIComponent(id))).json();
   // The user can stop browser polling at any moment; ignore late HTTP responses.
   if(epoch!==generation)return;
+  updateJobProgress(d.status,{creditsReserved:d.creditsReserved,creditsCharged:d.creditsCharged});
   if(d.kind==='video'&&['queued','processing','finalizing'].includes(d.status)){
    activeVideoWatchId=id;availability();
   }
@@ -704,6 +841,7 @@ async function createImageBatch(){
  let submitted=0,ready=0;
  setHistory(false);clearResult();
  for(let index=0;index<quantity;index++){
+  job=null;updateJobProgress('submitting');
   busy=true;availability();
   $('status').textContent=say('Creating image '+(index+1)+' of '+quantity+'…','Создаём изображение '+(index+1)+' из '+quantity+'…');
   try{
@@ -716,9 +854,11 @@ async function createImageBatch(){
    submitted++;
    job=reply.id;
    sessionStorage.setItem('vu_generation_job',job);
+   updateJobProgress(reply.status||'processing',{creditsReserved:reply.creditsReserved});
    await watch(job,epoch);
    ready++;
   }catch(e){
+   if(!job)updateJobProgress('unconfirmed');
    $('status').textContent=say(
     'Batch stopped after '+submitted+' submitted and '+ready+' completed image(s). '+errorText(e)+' Check History: a job may still be processing. No automatic retries were made.',
     'Пакет остановлен: отправлено '+submitted+', готово '+ready+'. '+errorText(e)+' Проверьте Историю: одна из задач ещё может выполняться. Автоматических повторов не было.'
@@ -728,7 +868,7 @@ async function createImageBatch(){
  }
  $('status').textContent=say('Batch complete: '+ready+' images saved as separate results in History.','Пакет завершён: '+ready+' изображения сохранены отдельно в Истории.');
 }
-$('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)return;busy=true;availability();if(kind==='image'&&imageBatchQuantity()>1){try{await createImageBatch();}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}return;}setHistory(false);clearResult();const epoch=++generation;$('status').textContent=say('Submitting your request…','Отправляем запрос…');try{const d=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID(),kind,model:modelId,prompt:$('prompt').value,ratio:$('ratio').value,...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),...(kind==='video'?{videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value}:{}),musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked})})).json();job=d.id;sessionStorage.setItem('vu_generation_job',job);if(kind==='video'){activeVideoWatchId=job;availability();}$('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');await watch(job,epoch);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}};
+$('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)return;busy=true;availability();if(kind==='image'&&imageBatchQuantity()>1){try{await createImageBatch();}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}return;}setHistory(false);clearResult();job=null;updateJobProgress('submitting');const epoch=++generation;$('status').textContent=say('Submitting your request…','Отправляем запрос…');try{const d=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID(),kind,model:modelId,prompt:$('prompt').value,ratio:$('ratio').value,...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),...(kind==='video'?{videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value}:{}),musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked})})).json();if(!d.id)throw Error('STUDIO_STORAGE_UNAVAILABLE');job=d.id;sessionStorage.setItem('vu_generation_job',job);updateJobProgress(d.status||'processing',{creditsReserved:d.creditsReserved});if(kind==='video'){activeVideoWatchId=job;availability();}$('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');await watch(job,epoch);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;if(!job)updateJobProgress('unconfirmed');$('status').textContent=errorText(e);busy=false;availability();}};
 // Continue from an existing image in the same browser without an API call.
  // The reference is explicitly prepared for a new Image request; Generate stays manual.
  async function imageResultReference(input){

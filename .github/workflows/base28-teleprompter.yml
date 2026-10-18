@@ -1,0 +1,31 @@
+name: BASE 28 local Teleprompter
+
+concurrency:
+  group: ci-base28-teleprompter-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/mobile-utility-links.js'
+      - 'app/src/main/assets/teleprompter.html'
+      - 'app/src/main/assets/teleprompter.css'
+      - 'app/src/main/assets/teleprompter.js'
+      - 'tests/base28-teleprompter.spec.mjs'
+      - '.github/workflows/base28-teleprompter.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/teleprompter.js && node --check tests/base28-teleprompter.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npx playwright test tests/base28-teleprompter.spec.mjs --project=chromium --project=mobile-chromium --project=webkit --project=mobile-webkit

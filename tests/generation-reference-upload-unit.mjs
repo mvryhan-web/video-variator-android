@@ -130,3 +130,41 @@ test('unsupported codec maps to 415 before any private upload',async()=>{
   assert.equal(x.calls.length,0);
  }finally{await x.close();}
 });
+
+test('owner upload admits at most 2 concurrent bodies/probes before PostgreSQL; releases slots on completion',async()=>{
+ let resolveBoth,releaseStage,entered=0,probeCount=0;
+ const both=new Promise(resolve=>{resolveBoth=resolve;});
+ const held=new Promise(resolve=>{releaseStage=resolve;});
+ const x=await webServer({probe:async()=>{probeCount++;return {audioCodec:'pcm_s16le'};},
+  stage:async()=>{entered++;if(entered===2)resolveBoth();await held;
+   return {id:'fixture',size:16044,mime:'audio/wav',durationSeconds:1};}});
+ const send=()=>fetch(x.url,{method:'POST',headers:{Authorization:'owner','Content-Type':'audio/wav'},body:wav()});
+ try{
+  const first=send(),second=send();
+  await Promise.race([both,new Promise((_,reject)=>setTimeout(()=>reject(Error('owner staging not reached')),5000))]);
+  assert.equal(entered,2);assert.equal(probeCount,2);
+  const denied=await send();
+  assert.equal(denied.status,429);
+  assert.equal((await denied.json()).error,'REFERENCE_UPLOAD_BUSY');
+  assert.equal(entered,2,'third request must not reach the staging ledger');
+  assert.equal(probeCount,2,'third request must not invoke expensive ffprobe');
+  releaseStage();
+  assert.deepEqual([(await first).status,(await second).status],[201,201]);
+  assert.equal((await send()).status,201,'finished owner upload releases the slot');
+  assert.equal(entered,3);
+ }finally{releaseStage();await x.close();}
+});
+
+test('owner admission is released after probe failures and malformed bodies',async()=>{
+ let n=0;
+ const x=await webServer({probe:async()=>{n++;if(n<=2)throw Error('REFERENCE_MEDIA_PROBE_UNAVAILABLE');return {audioCodec:'pcm_s16le'};}});
+ const send=body=>fetch(x.url,{method:'POST',headers:{Authorization:'owner','Content-Type':'audio/wav'},body});
+ try{
+  assert.equal((await send(wav())).status,503);
+  assert.equal((await send(wav())).status,503);
+  assert.equal((await send(Buffer.from('not wav'))).status,400);
+  assert.equal((await send(wav())).status,201,'probe errors and raw parser denial must release admission');
+  assert.equal(n,3);
+  assert.equal(x.calls.length,1);
+ }finally{await x.close();}
+});

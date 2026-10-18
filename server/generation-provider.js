@@ -51,7 +51,8 @@ export async function googleJson(relative,{key,body,fetcher=fetch}){
  return r.json();
 }
 export async function generateGoogle(request,{key,fetcher=fetch}){
- const model=request.model?MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter):MODELS[request.kind];
+ const selectedId=request.model||MODELS[request.kind]?.id;
+ const model=MODEL_CATALOG.find(m=>m.id===selectedId&&m.kind===request.kind&&m.adapter);
  if(!model||(model.provider&&model.provider!=='Google'))throw new Error('MODEL_NOT_CONNECTED');
  if(request.kind==='video'){
   const ref=request.references[0];
