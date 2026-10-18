@@ -458,7 +458,7 @@ body button:focus-visible,
 .hero-stage.hero-stage-cinematic::after{display:none}
 .hero-stage-cinematic .home-hero-carousel{inset:0;z-index:2;outline:none;touch-action:pan-y}
 .hero-stage-cinematic .home-hero-carousel::after{inset:0;background:linear-gradient(90deg,#080d19e8,transparent 14%,transparent 86%,#080d19e8);z-index:3;pointer-events:none}
-.hero-stage-cinematic .inspiration-hero-feature{inset:auto;left:var(--film-left);top:5%;width:var(--film-width);height:auto;aspect-ratio:16/9;z-index:2;clip-path:url(#homeHeroCurve);background:#03060d;pointer-events:auto}
+.hero-stage-cinematic .inspiration-hero-feature{min-height:0;min-width:0;max-height:none;margin:0;inset:auto;left:var(--film-left);top:5%;width:var(--film-width);height:auto;aspect-ratio:16/9;z-index:2;clip-path:url(#homeHeroCurve);background:#03060d;pointer-events:auto}
 .hero-stage-cinematic .inspiration-hero-feature video{object-fit:contain;width:100%;height:100%}
 .hero-film-outline{position:absolute;z-index:3;left:var(--film-left);top:5%;width:var(--film-width);height:auto;aspect-ratio:16/9;pointer-events:none;overflow:visible;filter:drop-shadow(0 0 5px #195bffbb)}
 .hero-film-outline path{fill:none;stroke:#4fdcfa;stroke-width:1.8;vector-effect:non-scaling-stroke}
