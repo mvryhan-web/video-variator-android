@@ -110,6 +110,11 @@ export class GenerationWallet {
       if (actualCredits!==undefined&&actualCredits>reserved) throw new Error('INVALID_ACTUAL_CREDITS');
       if (outcome==='unknown') return {...w,status:p.status};
       if (p.status!=='held') {
+        // A failed job has already returned its reserved credits. Never let
+        // a delayed success/recovery callback report a second paid capture:
+        // Studio marks the result ready when this promise resolves. This also
+        // applies when older callers omit the optional actualCredits amount.
+        if (outcome==='success'&&p.status==='released') throw new Error('SETTLEMENT_ALREADY_RELEASED');
         // An explicit retry at a different final amount must never silently
         // accept a prior capture. The existing captured ledger row durably
         // records returned surplus (available_delta - debt_delta), even when
