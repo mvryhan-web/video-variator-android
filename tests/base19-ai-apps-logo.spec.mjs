@@ -4,7 +4,7 @@ test('BASE #19: AI Apps uses the actual approved Deepsyq image asset, not a plac
  let writes=0;
  page.on('request',r=>{if(r.method()==='POST')writes++;});
  await page.goto('/ai-apps.html');
- const brand=page.getByRole('link',{name:'Deepsyq Home'});
+ const brand=page.getByRole('link',{name:'Deepsyq Home',exact:true});
  await expect(brand).toBeVisible();
  await expect(brand).toHaveAttribute('href','deepsyq.html');
  await expect(brand.locator('.brand-name')).toHaveText('Deepsyq');

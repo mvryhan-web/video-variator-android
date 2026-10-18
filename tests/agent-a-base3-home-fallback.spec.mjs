@@ -397,7 +397,7 @@ test('BASE 3: owner violet-pink Home and Canvas CTAs stay consistent on desktop 
    expect(image).toContain('linear-gradient');
    expect(image).not.toContain('rgb(210, 247, 174)'); // obsolete mint CTA
   }
-  expect(css.heroColor).toBe('rgb(255, 255, 255)');
+  expect(css.heroColor).toBe('rgb(16, 11, 35)'); // approved dark-ink on neon CTA
   expect(css.canvasColor).toBe('rgb(255, 255, 255)');
   await expect(page.locator('.hero-stage h1')).toHaveCount(0);
   await expect(page.locator('#homeHeroCarousel')).toBeVisible();
