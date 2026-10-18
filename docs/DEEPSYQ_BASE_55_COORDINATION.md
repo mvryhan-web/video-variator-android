@@ -1,5 +1,12 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## AGENT A §45 ACTIVE CLAIM UPDATE / 2026-10-18 / SAME PR162 CURRENT HEAD `4da47447ee659e2d1bfba010bd4ad533c415f0de`
+
+- **A holds existing original BASE §45 row, no duplicate claim or PR; original §4 PR193 paused external GitHub Actions runner** (exact SHA `9fd4904f`, two required workflows QUEUED 0 steps). Owner §3 Home PR145 was reviewed and merged DEV `2c707526`, so A safely resumed §45 first-run integration in existing PR162.
+- **Code checkpoint:** verified current DEV onboarding JS block byte-identical to original PR162 ancestor, applied only A's import/modal token/onboarding hunk onto latest merged DEV using nonforce 2-parent commit `4da47447`; retained original four A-only feature blobs; GitHub current PR diff five expected files, mergeable=true, no other claims or protected design overwritten.
+- **Zero-spend verification pending runners:** PR162 current SHA Actions #39128139575 / #39128139559 / #39128139578 all QUEUED, FIVE jobs 0 steps, **NOT READY_TO_MERGE**; old focused green is historical. §45 original PARTIAL and awaits Agent D approved backend schema/options, owner two no-fee device/staging accounts, coordinator integration. #5 runner backlog Issue227. Next A check terminal CI/fix genuine same-PR defect; no paid AI/Stripe/main/production/migrations.
+
+
 ## COORDINATOR #5 CLAIM COLLISION AUDIT / 2026-10-18 14:33 EUROPE/PARIS — NO NEW ACTIVE CLAIMS
 
 - **A #3 / PR145** reviewed 8 files + 4/4 exact-head native CI success and **MERGED DEV** as `2c7075261cb377192c2a0f34999076be7408130d`. Full original #3 STILL **PARTIAL** (owner-approved Girl, 13 real rights-cleared films, visual/mobile/staging acceptance). A active **#4 PR193** `9fd4904f`, DRAFT/CI queued; original A candidate queue #3→#4→#26→#45 remains, old #26 PR247 already DEV merged but not live.
