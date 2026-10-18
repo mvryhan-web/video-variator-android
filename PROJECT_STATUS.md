@@ -1,5 +1,10 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## AGENT A §24 ACTUAL CURRENT DEV HISTORY SQL FINDING / 2026-10-18
+
+- **Original A §24 [PR152](https://github.com/mvryhan-web/video-variator-android/pull/152) remains DRAFT / CROSS_LANE_BLOCKED**, old HEAD `be65cbb`, shared source ahead104/behind466 at audit. Current DEV `server/generation-studio.js` blob `28008305a646d80c28c3f9be00c8a0310fd182f6`: list route `where.push(`kind=${args.length}`)` produces SQL **`kind=2`**, not bind parameter `kind=$2` for image/video. Music excluded from current allowed filters; History list/detail/media lack explicit `Cache-Control:private,no-store` and list has no paging. Old PR152 fixes these, but wholesale old server source would remove newer DEV S3 `expectedSha256` integrity validation. **NO shared source changed** due B/D owner safety. Surgical safe-transplant requested via [PR152 comment #6252107969](https://github.com/mvryhan-web/video-variator-android/pull/152#issuecomment-6252107969) and #5; keep all newer server code, focused mocked 2-owner route/binary/privacy/offset tests before DEV merge. Real DB behavior not tested. This is a concrete source regression report, NOT a claim that affected production.
+
+
 ## COORDINATOR #5 / 2026-10-18 / NEXT REAL CYCLE — SAFE DEV + ORIGINAL BLOCKS
 
 **Coordinator role ONLY (no own BASE), live GitHub source not agent chats.** Latest source checkout DEV `fc660ee1d3dfc7e899a453eafac789992b883c3d`. Original BASE whole `DONE` stays §47/§53 only (**2/55**). No changes main, Render production, real Stripe, paid AI (limit 0), customer content or actual database migrations. Older role checkpoints/claims preserved.
