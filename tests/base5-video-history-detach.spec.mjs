@@ -335,6 +335,11 @@ test('BASE #5: definite pre-dispatch Video rejection allows correcting prompt, n
  const afterValidation=await page.evaluate(()=>Object.keys(sessionStorage).filter(k=>k.startsWith('deepsyq_video_pending_request_v1_')));
  expect(afterValidation).toHaveLength(0);
  await page.locator('#prompt').fill('Corrected safe Video prompt');
+ // Editing a provider-bound prompt revokes consent on purpose; a corrected
+ // Video request must obtain fresh explicit approval before any POST.
+ await expect(page.locator('#consent')).not.toBeChecked();
+ await page.locator('#consent').check();
+ await expect(page.locator('#generate')).toBeEnabled();
  await page.locator('#generate').click();
  await expect.poll(()=>posts.length).toBe(2);
  expect(posts[0].requestId).not.toBe(posts[1].requestId);
