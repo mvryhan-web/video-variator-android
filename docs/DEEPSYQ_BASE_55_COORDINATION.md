@@ -1,5 +1,17 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## COORDINATOR #5 / 18-Oct later cycle — status and ownership reservation (append-only, not new claims)
+
+- **Already DEV-MERGED this cycle:** D §49 PR251 `3a6509f2`; A §45 PR162 `aafef09e`; A §46 PR181 `41778de6`; A §32 PR155 `e190dbf4`; A §31 PR154 `8f4e11c6`; A §25 PR168 `4552f7f5`. All were exact original PR SHA fully native green and reviewed. Do NOT recreate their code; original full BASE rows remain PARTIAL/LIVE unverified. Current full checkpoint at beginning of [PROJECT_STATUS.md](../PROJECT_STATUS.md).
+- **Current A §3 owner amendment**: delete visible hero headline “Create beyond limits”, retain original girl/layout/16:9 video area and 12 other scene identities. NEW existing focused PR259 HEAD `5f2d1c85`, **CI pending**. Do not merge before exact SHA green; no new hero or change beyond approved deletion.
+- **B Video**: §5 PR174→PR186→PR203 stack current; §7 Audio/Music existing PR180; owner approved Media Library frames 13; B draft PR257 stills for review only. HeyGen **Free** V01/V02 outputs NOT approved for commercial/public launch under recorded license: keep `publish:false`, no public MP4, no false 16:9 V01 (actual 1344×768). Do not confuse 13 scene reference PNGs with licensed real movies.
+- **C current §30** PR144 head `94edf24f` 3/3 native Actions green but stale ~180-file PR diff; only ~3 source-level differences vs newer DEV. No blind merge; preserve A Home JS; C §38 PR200 5/7 CI, 2 FAIL; C §28 PR207 5/5 CI but 89 stale diff. C original §21 AI Agents follows Jules2 isolated Block2, §22 Inspiration MUST reuse existing Block3 PR44; Audio Tools C §28.
+- **D original §49/§51 and pre-paid guard** now integrated DEV, not live. Own Stripe real payment/production unsafe until owner permission, continue collision surveillance and exact UI/DB tests.
+- **Jules:** #238 Jules1 bot working Block5, #239 Jules2 bot working Block2, Jules3 #240 bot ready with rejected 420-file PR255 and exact extracted [PR258](https://github.com/mvryhan-web/video-variator-android/pull/258) 2 original files + #5-approved 1 no-spend Node workflow; run #39137791503 queued, 11/11 V8 mock assertion callbacks PASS is NOT official native PASS. PR256 unsafe DRAFT Dev unmerged. Hold new Jules dispatch until accepted.
+- **Original BASE 55 completed**: #47/#53 ONLY (2/55). **NEXT coordinator operation**: validate true PR259 current-head native CI, then DEV-only no-clobber merge if green, otherwise diagnose; follow PR258 Node CI. Never main/prod/paid tests, dangerous migrations or override licensed media restrictions.
+
+
+
 ## AGENT A 2026-10-18 — ORIGINAL §32 SAME PR155 6/6 REAL NATIVE GREEN, READY FOR REVIEW
 
 - A original §32 existing [PR155](https://github.com/mvryhan-web/video-variator-android/pull/155) unchanged HEAD `490dba526fd8d079dae55e3838265b3a1bb76e95`: focused BASE32 #39128824998, Studio #39128824981, Video #39128825003, Canvas #39128825012, Wallet #39128824995, History #39128825024 **6/6 workflow success and 6/6 native jobs success**, 0 failed steps. Actually marked non-DRAFT Ready for Review, no new PR. SOURCE READY_TO_MERGE for #5 only; full original §32 remains PARTIAL until DEV integration, owner staging/prod/live, not original DONE.
