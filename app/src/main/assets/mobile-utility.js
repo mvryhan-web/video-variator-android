@@ -1,5 +1,6 @@
 /* Free mobile utilities: processing on-device, no raw file uploads. */
 import {createEngine,saveLocal,subtitleFiles} from './ai-media.js';
+import {videoCompressionArgs,videoCompressionSummary,videoCompressionInputSupported} from './video-compression-args.mjs';
 const $=id=>document.getElementById(id);
 const catalog=window.VUMobileToolsCatalog,tool=new URLSearchParams(location.search).get('tool');
 const mode=catalog?.tools.find(x=>x.id===tool);
@@ -22,7 +23,7 @@ const fileTypes={
  'pdf-compress':['application/pdf,.pdf',false],
  'photo-convert':['image/*',false],'photo-resize':['image/*',false],'photo-compress':['image/jpeg,image/png,image/webp',false],
  'photo-redact':['image/*',false],'photo-ocr':['image/*',false],
- 'video-trim':['video/*',false],'video-mute':['video/*',false],
+ 'video-trim':['video/*',false],'video-mute':['video/*',false],'video-compress':['video/*',false],
  'audio-trim':['audio/*',false],'qr':['',false],
  'zip':['*/*',true],'captions':['video/*,audio/*',false]};
 const timeModes=['video-trim','audio-trim'];
@@ -55,7 +56,19 @@ function init(){
  $('textLine').hidden=tool!=='pdf-sign';
  $('utilityTextLabel').textContent=label('Text to add (optional)','Текст для добавления (необязательно)');
  $('formatLine').hidden=!['photo-convert','photo-resize'].includes(tool);
- if(tool==='photo-compress'){
+ if(tool==='video-compress'){
+   const row=document.createElement('label');row.id='videoCompressQualityLine';
+   const title=document.createElement('span');title.textContent=label('Output quality / file size','Качество / размер файла');
+   const select=document.createElement('select');select.id='videoCompressQuality';
+   for(const [id,en,russian] of [
+    ['small','Smaller file (more loss)','Меньше размер (ниже качество)'],
+    ['balanced','Balanced (recommended)','Баланс (рекомендуется)'],
+    ['quality','Higher quality (larger file)','Выше качество (больше размер)']]){
+    const option=document.createElement('option');option.value=id;option.textContent=label(en,russian);select.add(option);
+   }
+   select.value='balanced';row.append(title,select);$('settingsRow').append(row);
+  }
+  if(tool==='photo-compress'){
   const row=document.createElement('label');row.id='compressQualityLine';
   const title=document.createElement('span');title.textContent=label('JPEG quality','Качество JPEG');
   const value=document.createElement('output');value.id='compressQualityValue';value.textContent='70%';
@@ -72,7 +85,8 @@ function init(){
  if(tool==='pdf-sign'){$('utilityPages').value='1';setupSignature();help('Add visible text or a drawn signature to a chosen page. This is not a cryptographic digital signature.','Добавьте текст или нарисованную подпись на выбранную страницу. Это не криптографическая цифровая подпись.');}
  else if(tool==='pdf-compress')help('Rewrites the PDF with object streams. Scanned image PDFs may not become smaller.','Оптимизирует структуру PDF. Сканированные файлы могут не уменьшиться.');
  else if(tool==='photo-ocr')help('First use downloads a free language model. Recognized text may contain mistakes.','При первом запуске загрузится бесплатная языковая модель. Проверьте распознанный текст.');
- else if(tool==='captions')help('Uses local transcription to create an SRT file. SRT can be imported into a video editor.','Распознаёт речь на устройстве и создаёт SRT. Файл можно добавить в видеоредактор.');
+ else if(tool==='video-compress')help('Local H.264 MP4 conversion. Smaller output is not guaranteed; large videos may exceed device memory. Original unchanged.','Локальная конвертация в H.264 MP4. Файл не всегда меньше; большие видео могут не поместиться в памяти. Оригинал не изменяется.');
+  else if(tool==='captions')help('Uses local transcription to create an SRT file. SRT can be imported into a video editor.','Распознаёт речь на устройстве и создаёт SRT. Файл можно добавить в видеоредактор.');
  else help('Processing stays in this browser or on your device. Keep the page open.','Обработка выполняется здесь, на устройстве. Не закрывайте страницу.');
  if(tool==='photo-resize')addResizeOption();
  if(tool==='photo-redact')setupRedaction();
@@ -145,7 +159,7 @@ async function perform(){
   case 'photo-redact':return exportRedaction();
   case 'qr':return makeQR();
   case 'zip':return manageZip();
-  case 'video-trim':case 'video-mute':case 'audio-trim':return processMedia();
+  case 'video-trim':case 'video-mute':case 'video-compress':case 'audio-trim':return processMedia();
   case 'scan-pdf':case 'pdf-merge':case 'pdf-split':case 'pdf-sign':case 'pdf-compress':return processPDF();
   case 'photo-ocr':return runOCR();
   default:throw Error('Unsupported operation');
@@ -329,14 +343,18 @@ async function processPDF(){
 }
 async function processMedia(){
  const f=files()[0],video=tool!=='audio-trim';
+ if(tool==='video-compress'&&!videoCompressionInputSupported(f))throw Error(label('Choose a video file (MP4, MOV, WebM and other video formats).','Выберите видеофайл (MP4, MOV, WebM или другой видеоформат).'));
+ if(tool==='video-compress'&&f.size===0)throw Error(label('Choose a non-empty video file.','Выберите видеофайл с данными.'));
  let start=0,end=0;
- if(tool!=='video-mute'){start=settingsNum('utilityStart');end=settingsNum('utilityEnd');if(end<=start||end-start>3600)throw Error(label('End must be after start; maximum 60 minutes.','Конец должен быть позже начала. Максимум 60 минут.'));}
+ if(tool!=='video-mute'&&tool!=='video-compress'){start=settingsNum('utilityStart');end=settingsNum('utilityEnd');if(end<=start||end-start>3600)throw Error(label('End must be after start; maximum 60 minutes.','Конец должен быть позже начала. Максимум 60 минут.'));}
  engine=await createEngine();if(abort)return;
  await engine.writeFile('input',new Uint8Array(await f.arrayBuffer()));
  if(abort)return;
  let out,args;
  if(tool==='video-mute'){
   out='silent.mp4';args=['-i','input','-map','0:v:0','-an','-c:v','libx264','-preset','ultrafast','-crf','25','-pix_fmt','yuv420p','-movflags','+faststart',out];
+ }else if(tool==='video-compress'){
+  out='compressed.mp4';args=videoCompressionArgs($('videoCompressQuality').value,out);
  }else if(tool==='video-trim'){
   out='trimmed.mp4';args=['-ss',String(start),'-i','input','-t',String(end-start),'-map','0:v:0','-map','0:a:0?','-c:v','libx264','-preset','ultrafast','-crf','25','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-movflags','+faststart',out];
  }else{
@@ -344,7 +362,20 @@ async function processMedia(){
  }
  const code=await engine.exec(args);if(abort)return;if(code!==0)throw Error(label('The file codec is not supported.','Кодек файла не поддерживается.'));
  const bytes=await engine.readFile(out),mime=video?'video/mp4':'audio/mp4';
- return result(new File([bytes],base(f)+'-'+out,{type:mime}));
+ const converted=new File([bytes],base(f)+'-'+out,{type:mime});
+ if(tool==='video-compress'&&converted.size===0)throw Error(label('The video codec produced no output. Try another file or quality.','Видеокодек не создал файл. Попробуйте другое видео или качество.'));
+ // Validate a real, non-empty conversion before adding any Download action.
+ const compressionStats=tool==='video-compress'?videoCompressionSummary(f.size,converted.size):null;
+ await result(converted);
+ if(tool==='video-compress'){
+  const stats=compressionStats;
+  const note=document.createElement('p');note.className='utility-size-note';
+  const before=(f.size/1048576).toFixed(2),after=(converted.size/1048576).toFixed(2);
+  note.textContent=label('Original','Оригинал')+' '+before+' MB → '+after+' MB · '+
+   (stats.smaller?label('Saved ','Экономия ')+stats.savedPercent+'%':label('Output is not smaller; keep your original if preferred.','Итоговый файл не меньше исходного; при желании оставьте оригинал.'));
+  $('utilityResults').lastElementChild?.append(note);
+ }
+ return converted;
 }
 async function runOCR(){
  const f=files()[0];

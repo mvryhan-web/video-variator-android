@@ -23,6 +23,13 @@ on:
       - 'tests/generation-byteplus-unit.mjs'
       - 'tests/generation-studio.spec.mjs'
       - '.github/workflows/deepsyq-video-core.yml'
+# Unique workflow-file key: several existing workflows share the display name "BASE".
+# Cancel only superseded runs of THIS workflow on the SAME PR or ref.
+# Never cancel another agent's different PR or disable a safety assertion.
+concurrency:
+  group: agent5-deepsyq-video-core-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   core-video:
     runs-on: ubuntu-latest

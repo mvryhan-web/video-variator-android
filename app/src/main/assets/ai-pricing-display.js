@@ -66,3 +66,20 @@ export function checkoutErrorMessage(code) {
   }
   return 'Checkout could not be confirmed. Check your AI wallet or payment history before trying again.';
 }
+
+// Marketing estimates are alternative ways to spend a fixed amount of AI credits,
+// never a combined allocation or guarantee for higher quality/model options.
+// Only server-approved base credit rates are eligible. No guessed defaults.
+export function approvedGenerationEstimates(config,credits){
+ if(!Number.isSafeInteger(credits)||credits<=0||credits>10_000_000||!Array.isArray(config?.rates))return [];
+ const allowed=['image','video'],result=[];
+ for(const kind of allowed){
+  const matches=config.rates.filter(rate=>rate?.kind===kind);
+  if(matches.length!==1)continue; // duplicate/missing rates are not trustworthy
+  const rate=matches[0]?.credits;
+  if(!Number.isSafeInteger(rate)||rate<=0||rate>10_000_000)continue;
+  const count=Math.floor(credits/rate);
+  if(count>0)result.push({kind,count});
+ }
+ return result;
+}

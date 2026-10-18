@@ -44,6 +44,23 @@ test('real PostgreSQL AI wallet and sandbox payment contract', {skip:!db}, async
    await assert.rejects(()=>wallet.reserve({...job,credits:-1}),/INVALID_CREDITS/);
    await assert.rejects(()=>wallet.settle({userId:prefix+'stranger',jobId:job.jobId,outcome:'success'}),/RESERVATION_NOT_FOUND/);
   });
+  await t.test('late success after confirmed generation failure cannot capture released credits',async()=>{
+   const p=purchase('releasedReplay','releasedReplay');await wallet.grant(p);
+   const job={userId:p.userId,jobId:prefix+'releasedReplay',credits:45,fingerprint:'original-generation'};
+   await wallet.reserve(job);
+   assert.deepEqual(await wallet.balance(p.userId),{available:55,reserved:45,debt:0});
+   const failed=await wallet.settle({userId:p.userId,jobId:job.jobId,outcome:'confirmed_failure'});
+   assert.equal(failed.status,'released');
+   assert.deepEqual(await wallet.balance(p.userId),{available:100,reserved:0,debt:0});
+   // Old (unspecified actualCredits) and usage-rated success paths must BOTH
+   // reject, rather than letting Studio mark a free generation as ready.
+   await assert.rejects(()=>wallet.settle({userId:p.userId,jobId:job.jobId,outcome:'success'}),/SETTLEMENT_ALREADY_RELEASED/);
+   await assert.rejects(()=>wallet.settle({userId:p.userId,jobId:job.jobId,outcome:'success',actualCredits:20}),/SETTLEMENT_ALREADY_RELEASED/);
+   const repeated=await wallet.settle({userId:p.userId,jobId:job.jobId,outcome:'confirmed_failure'});
+   assert.equal(repeated.status,'released');
+   assert.deepEqual(await wallet.balance(p.userId),{available:100,reserved:0,debt:0});
+   assert.equal((await wallet.history(p.userId)).filter(item=>item.kind==='captured').length,0);
+  });
   await t.test('payment refund removes credits; spent balance creates debt, not free usage',async()=>{
    const p=purchase('e','e');await wallet.grant(p);await wallet.reserve({userId:p.userId,jobId:prefix+'e',credits:80,fingerprint:'hash'});
    await wallet.settle({userId:p.userId,jobId:prefix+'e',outcome:'success'});
@@ -62,7 +79,7 @@ test('real PostgreSQL AI wallet and sandbox payment contract', {skip:!db}, async
    assert.equal((await wallet.balance(prefix+'h')).available,0);assert.equal((await wallet.history(prefix+'h')).length,0);
   });
   await t.test('Checkout price validation, pending payment, replay and snapshot persistence',async()=>{
-   const env={AI_BILLING_ENABLED:'true',DATABASE_URL:db,APP_JWT_SECRET:'fixture',STRIPE_SECRET_KEY:'sk_test_fixture',AI_CREDIT_PACKS_JSON:'[{"sku":"fixture","priceId":"price_fixture","amount":100,"credits":100,"currency":"eur"}]'};
+   const env={AI_BILLING_ENABLED:'true',AI_BILLING_MODE:'test',DATABASE_URL:db,APP_JWT_SECRET:'fixture',STRIPE_SECRET_KEY:'sk_test_fixture',AI_CREDIT_PACKS_JSON:'[{"sku":"fixture","priceId":"price_fixture","amount":100,"credits":100,"currency":"eur"}]'};
    let creates=0,paid=false,wrongPrice=false;const sessions=new Map();
    const stripe={prices:{retrieve:async()=>({active:true,type:'one_time',unit_amount:wrongPrice?999:100,currency:'eur',livemode:false})},checkout:{sessions:{
     create:async(args,{idempotencyKey})=>{assert.equal(args.payment_method_types,undefined);creates++;let s=sessions.get(idempotencyKey);if(!s){s={...args,id:'cs_test_'+randomUUID(),url:'https://checkout.stripe.com/c/test',livemode:false,status:'open',expires_at:Math.floor(Date.now()/1000)+3600,payment_intent:'pi_test_'+randomUUID(),amount_total:100,currency:'eur',line_items:{data:[{price:{id:'price_fixture'},quantity:1}],has_more:false}};sessions.set(idempotencyKey,s);}return s;},
