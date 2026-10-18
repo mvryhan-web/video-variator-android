@@ -24,7 +24,14 @@ test('owner-supplied MP4: real muted autoplay, six native ends wrap, arrows, mob
  await expect(video).toHaveJSProperty('playsInline',true);
  // Never patch play/load, use fake media, or dispatch a synthetic ended event.
  await expect.poll(()=>video.evaluate(v=>v.currentTime),{timeout:20000}).toBeGreaterThan(0.2);
- await video.evaluate(v=>{v.__testEnded=0;v.__testErrors=[];v.addEventListener('ended',()=>v.__testEnded++);v.addEventListener('error',()=>v.__testErrors.push(v.error?.code));});
+ await video.evaluate(v=>{
+  v.__testEnded=0;v.__testErrors=[];v.__mediaEvents=[];
+  for(const type of ['play','playing','pause','ended','waiting','stalled','suspend','error','loadeddata','timeupdate'])v.addEventListener(type,()=>{
+   v.__mediaEvents.push({type,src:v.getAttribute('src'),time:v.currentTime,duration:v.duration,paused:v.paused,ended:v.ended,ready:v.readyState,hidden:document.hidden});
+   if(v.__mediaEvents.length>60)v.__mediaEvents.shift();
+  });
+  v.addEventListener('ended',()=>v.__testEnded++);v.addEventListener('error',()=>v.__testErrors.push(v.error?.code));
+ });
  for(let n=0;n<6;n++){
   await expect(video).toHaveAttribute('src',clips[n].previewUrl);
   await expect.poll(()=>video.evaluate(v=>v.readyState),{timeout:20000}).toBeGreaterThanOrEqual(2);
@@ -33,7 +40,12 @@ test('owner-supplied MP4: real muted autoplay, six native ends wrap, arrows, mob
   expect(size.width).toBe(1920);expect(size.height).toBe(1080);expect(size.duration).toBeGreaterThan(7.9);
   // Let every entire real film finish. Seeking near the end is not the
   // owner's autoplay journey and WebKit may suspend playback during a seek.
-  await expect(video).toHaveAttribute('src',clips[(n+1)%6].previewUrl,{timeout:20000});
+  try{await expect(video).toHaveAttribute('src',clips[(n+1)%6].previewUrl,{timeout:20000});}
+  catch(error){
+   const state=await video.evaluate(v=>({src:v.getAttribute('src'),time:v.currentTime,duration:v.duration,paused:v.paused,ended:v.ended,ready:v.readyState,hidden:document.hidden,events:v.__mediaEvents,playLabel:document.getElementById('homeHeroPlay').getAttribute('aria-label')}));
+   await test.info().attach('playback-state.json',{body:JSON.stringify(state,null,2),contentType:'application/json'});
+   throw new Error(error.message+'\nPLAYBACK_STATE '+JSON.stringify(state));
+  }
  }
  expect(await video.evaluate(v=>v.__testEnded)).toBe(6);
  mediaErrors.push(...await video.evaluate(v=>v.__testErrors));expect(mediaErrors).toEqual([]);
