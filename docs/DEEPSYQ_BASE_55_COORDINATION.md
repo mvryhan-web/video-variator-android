@@ -1,5 +1,17 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## COORDINATOR #5 CLAIM COLLISION AUDIT / 2026-10-18 14:33 EUROPE/PARIS — NO NEW ACTIVE CLAIMS
+
+- **A #3 / PR145** reviewed 8 files + 4/4 exact-head native CI success and **MERGED DEV** as `2c7075261cb377192c2a0f34999076be7408130d`. Full original #3 STILL **PARTIAL** (owner-approved Girl, 13 real rights-cleared films, visual/mobile/staging acceptance). A active **#4 PR193** `9fd4904f`, DRAFT/CI queued; original A candidate queue #3→#4→#26→#45 remains, old #26 PR247 already DEV merged but not live.
+- **B active #5**, unchanged claims PR174 `dc304b09` 56 changed files (CROSS-LANE DRIFT), stacked PR186 `6626b3eb`, PR203 `c3a42c3d`; no safe mass merge. Parked #7/#8 no current native CI terminal; #11 DEV-integrated PR248 only code scope. **Audio→B** topic reservation, not new claim.
+- **C active #38 PR200** `5a02a60b`, 129 changed files historic drift and CI pending (DRAFT). **#35 PR192** `6c4eb5ce` has 3/3 native CI green for scoped work BUT 130 changed paths, therefore coordinator converted whole PR to DRAFT; **#28 PR207** 89 changed paths and **#27 PR209** 93 changed paths also converted to DRAFT. Protected original code; each requires reviewed focused nonforce integration on newest DEV and exact-head CI, no bulk merge. #23 and #29 already DEV merged scoped not LIVE. Existing C queue #28→#23→#29→#27 preserved; **global SEO→C**, shared infra cross-lane coordination #5/D.
+- **D active #51 PR253** `50c0812e` six exact SHA official workflows queued; previous #49 PR251 `84afac13` seven queued, #18 PR252 `2f221f9c` four queued, #16 PR249 already DEV merged; no DONE, preserve original queue #43→#16→#49→#18→#51. D alone may production-release only with owner permission.
+- **Jules1 Inspiration / Block5 Issue238** task creation failed/not active; **Jules2 AI Agents+History / #235** on-it, Block2 #239 queued; **Jules3 Block1 #240** on-it; historical QA PR243 401 files Draft, do not merge. Reserve original BASE J1 #22→#19→#20; J2 #21→#24→#25; J3 #7→#8→#40 without active claims/handoff until previous A/B/C ownership released. Blocks 1–8 preserved, no duplicate Jules dispatch.
+- **P0 cross-lane** coordinator PR250 `0bc448c9` 7 paths, 13 exact-head CI queued/pending; never merge until required success/security review; paid AI budget 0, no real Stripe/production/unsafe migration. All truly free AI must be individually proven pre-call to hard-stop before overage per canonical rule7.
+
+**Collision resolution:** PR192/#207/#209 switched Draft and explanatory PR comments added; PR145 safe DEV merge verified. Candidate queue entries NOT active claims. Latest coordinator full matrix in `PROJECT_STATUS.md` commit `47d933dab0ace0435699b3a846e769ccdc34b045`; latest plan Issue #233. **Next sole action:** exact-current-head CI PR250 and actual runner/quota diagnosis Issue #227; if terminal green, coordinator security review then DEV-only merge. No changes to original BASE table owner claims or DONE counts.
+
+
 ## AGENT B BASE5 FINAL STACK SOURCE CHECKPOINT 18 OCT 2026 PR174 PR186 PR203 — CLAIM §5 RETAINED; CI RUNNERS EXTERNAL
 
 - **Agent B single active original BASE §5 Video / safe source scope DONE but original full PARTIAL, NOT LIVE/DONE.** Previous owned BASE §11 original S3 PR184/coordinator PR248 14/14 green coordinator-only DEV integration, BASE §8 PR149 source `a3e04aae` current-head 12 queued, BASE §7 Music PR180 `9cb9ca5b` current-head 13 queued; all their source claims parked for real runner/owner/D purchased-only. Never merge DEV/main or duplicate PR.
