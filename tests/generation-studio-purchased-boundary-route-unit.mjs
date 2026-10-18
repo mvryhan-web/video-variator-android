@@ -14,7 +14,7 @@ const baseEnv={AI_STUDIO_ENABLED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',
  GEMINI_API_KEY:'test-only-not-an-api-key',DATABASE_URL:'test-only',ADMIN_EMAIL:'owner@example.test',
  AI_MODEL_PRICING_JSON:JSON.stringify([pricing]),
  AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:12}])};
-function simulate({receiptStatus='paid',providerThrows=false,user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
+function simulate({receiptStatus='paid',providerThrows=false,reservationPersistFails=false,user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
  const jobs=[],walletEvents=[];let providerCalls=0;
  const pool={
   async query(sql,args=[]){
@@ -23,6 +23,7 @@ function simulate({receiptStatus='paid',providerThrows=false,user={id:'customer-
     return {rows:jobs.filter(j=>j.id===args[0]&&j.user_id===args[1])};
    }
    if(sql.startsWith("UPDATE vv_generation_jobs SET status='processing',credits_reserved")){
+    if(reservationPersistFails)throw Error('mock job persistence failed after wallet reserve');
     const j=jobs.find(x=>x.id===args[0]);j.status='processing';j.credits_reserved=args[1];return {rows:[]};
    }
    if(sql.startsWith("UPDATE vv_generation_jobs SET status='finalizing'")){
@@ -133,5 +134,18 @@ test('HTTP ambiguous provider error never triggers refund, even with denial-like
   assert.equal(sim.jobs[0].credits_reserved,7,'ambiguous acceptance must remain held');
   assert.deepEqual(sim.walletEvents.map(x=>x[0]),['reserve','purchasedClaim','settle']);
   assert.equal(sim.walletEvents.at(-1)[1].outcome,'unknown');
+ });
+});
+
+test('HTTP job persistence fails AFTER wallet reserve: release credits, NO provider call',async()=>{
+ const sim=simulate({reservationPersistFails:true});
+ await withHttp(sim,async post=>{
+  const res=await post();assert.equal(res.status,503);
+  assert.equal((await res.json()).error,'AI_WALLET_UNAVAILABLE');
+  assert.equal(sim.jobs.length,1);
+  assert.equal(sim.jobs[0].status,'failed');
+  assert.equal(sim.providerCalls(),0);
+  assert.deepEqual(sim.walletEvents.map(x=>x[0]),['reserve','settle']);
+  assert.equal(sim.walletEvents[1][1].outcome,'confirmed_failure');
  });
 });
