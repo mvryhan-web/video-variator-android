@@ -113,3 +113,15 @@ body.deepsyq-sitewide-shell :is(main,footer) {max-width:min(1240px,100%)}
  body.deepsyq-sitewide-shell main {max-width:100%}
 }
 @media(prefers-reduced-motion:reduce) {.ds-site-sidebar {transition:none}}
+
+
+/* Same grouped owner Home sidebar on every secondary route.
+   Pending capabilities must never masquerade as working links. */
+.ds-site-sidebar nav .ds-site-pending {
+ display:flex;align-items:center;gap:11px;padding:10px 11px;min-height:42px;
+ color:#838ba9;font-size:12px;cursor:default;user-select:none;
+}
+.ds-site-sidebar .ds-site-pending .ds-icon {width:19px;text-align:center;font-size:17px}
+.ds-site-sidebar .ds-site-pending small {font-size:10px;color:#919cbd;margin-left:auto}
+.ds-site-sidebar .ds-site-footer {display:flex;flex-wrap:wrap;gap:12px}
+.ds-site-sidebar .ds-site-caption {text-transform:uppercase}
