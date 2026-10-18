@@ -5,6 +5,9 @@ const $=id=>document.getElementById(id);
 const video=$('inspirationHeroVideo');
 const carousel=$('homeHeroCarousel');
 const neighborVideos=[$('homeHeroPreviousVideo'),$('homeHeroNextVideo')].filter(Boolean);
+// Thin phone-side previews use their real poster frames. Keep the single
+// main decoder available for smooth iOS playback, especially higher bitrate clips.
+const compactPreview=window.matchMedia?.('(max-width: 760px)');
 let slides=[],index=0,visible=false,userPaused=false,observer=null,failedSlides=new Set();
 let completionTimer=null,playbackSerial=0;
 function resetCompletion(){clearTimeout(completionTimer);completionTimer=null;playbackSerial++;}
@@ -15,8 +18,9 @@ function ambientPlay(){
  if(!video?.getAttribute('src')||!ambientAllowed())return;
  const serial=playbackSerial;
  void video.play().catch(error=>{if(serial!==playbackSerial||error.name==='AbortError')return;userPaused=true;pauseFilms();setPlayLabel();});
- neighborVideos.forEach(v=>{if(v.getAttribute('src'))void v.play().catch(()=>{});});
+ neighborVideos.forEach(v=>{if(compactPreview?.matches)v.pause();else if(v.getAttribute('src'))void v.play().catch(()=>{});});
 }
+compactPreview?.addEventListener?.('change',()=>{pauseFilms();ambientPlay();});
 function updateNeighbors(){
  neighborVideos.forEach((v,side)=>{
   const direction=side===0?-1:1;

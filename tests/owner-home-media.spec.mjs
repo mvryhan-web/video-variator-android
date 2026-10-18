@@ -5,6 +5,11 @@ const clips=bundle.items.filter(x=>x.featured);
 
 test('owner-supplied MP4: real muted autoplay, six complete films wrap, arrows, mobile layout',async({page},info)=>{
  test.setTimeout(120000);
+ const diagnoseFailure=async()=>{
+  const state=await page.locator('#inspirationHeroVideo').evaluate(v=>({src:v.getAttribute('src'),time:v.currentTime,duration:v.duration,paused:v.paused,ended:v.ended,ready:v.readyState,hidden:document.hidden,events:v.__mediaEvents,neighbors:[...document.querySelectorAll('.hero-neighbor video')].map(n=>({src:n.getAttribute('src'),time:n.currentTime,paused:n.paused,ready:n.readyState})),label:document.getElementById('homeHeroPlay').getAttribute('aria-label')})).catch(()=>null);
+  console.log('PASSIVE_PLAYBACK_STATE '+JSON.stringify(state));
+ };
+ try{
  const mutations=[],mediaErrors=[];
  page.on('request',r=>{if(r.method()!=='GET'&&new URL(r.url()).pathname.startsWith('/api/'))mutations.push(r.url());});
  await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}},googleClientId:'',billingConfigured:false,features:{inspiration:true,aiApps:false,productVideo:false,onboarding:false}}}));
@@ -28,6 +33,7 @@ test('owner-supplied MP4: real muted autoplay, six complete films wrap, arrows, 
  await expect(video).toHaveAttribute('src',clips[0].previewUrl);
  await expect(video).toHaveJSProperty('muted',true);
  await expect(video).toHaveJSProperty('playsInline',true);
+ if(info.project.name.startsWith('mobile'))await expect.poll(()=>page.locator('.hero-neighbor video').evaluateAll(videos=>videos.every(v=>v.paused))).toBe(true);
  // Never patch play/load, use fake media, or dispatch a synthetic ended event.
  await expect.poll(()=>video.evaluate(v=>v.currentTime),{timeout:20000}).toBeGreaterThan(0.2);
  await video.evaluate(v=>{
@@ -70,4 +76,5 @@ test('owner-supplied MP4: real muted autoplay, six complete films wrap, arrows, 
  // Screenshot only AFTER playback assertions: full-page WebKit capture can
  // take longer than one eight-second film and change viewport visibility.
  await page.screenshot({path:info.outputPath('owner-carousel-after-real-cycle.png'),fullPage:false});
+ }catch(error){await diagnoseFailure();throw error;}
 });
