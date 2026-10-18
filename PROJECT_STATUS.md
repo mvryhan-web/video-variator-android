@@ -1,5 +1,24 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## 2026-10-18 — СРОЧНОЕ УТОЧНЕНИЕ ВЛАДЕЛЬЦА: настоящие БЕСПЛАТНЫЕ AI-тесты разрешены
+
+**LATEST OWNER RULE #7 — supersedes any stale “mock-only / zero real AI calls” phrase in older snapshots below; all other source/claim/queue data preserved.** Paid tests = **0 (zero)** for A/B/C/D/Jules1–3/#5, live Stripe, owner expense, production, unsafe migrations always require owner's explicit permission. **REAL free AI tests ARE ALLOWED without permission** on a *demonstrably FREE tier, free credit allocation or free model*, as are certainly free unit/mock/Stripe TEST MODE/CI/build/lint; there must be **NO POSSIBLE monetary charge** even when the free balance runs out. Free trial credits are insufficient if later requests auto-bill.
+
+**Mandatory GitHub CHECKPOINT BEFORE each real AI-provider request** (not afterward):
+
+| Verification field | Required recorded evidence |
+|---|---|
+| AI service / model | Exact supplier, product and model or API endpoint description, without secret keys |
+| Free usage entitlement | Evidence of active free tariff/free credits/free model available for that precise request |
+| Quota and headroom | Explicit numeric/time quota and unused balance when viewable, sufficient for test |
+| HARD overage refusal | Provider contract/dashboard evidence that hitting quota or zero credits causes **request DENIAL with no automatic paid rollover or charge** |
+| Proof and timestamp | Dated source/document or safe dashboard confirmation (no credentials), plus test's owner/BASE/item scope |
+
+**Decision:** all confirmed → authorized real zero-charge AI test; any missing/ambiguous point → **NO REQUEST**, record exact `BLOCKED` and owner/unblocking condition in CHECKPOINT. If no safely free way to verify the original BASE acceptance exists, the row remains `BLOCKED` awaiting owner's choice, and safe independent unclaimed BASE work may proceed under #12. **Never spend owner funds to turn a blocked row green.** Permission for free verification does NOT mean production/customer release or `DONE`: worker READY_TO_MERGE, D-only owner-approved production, whole LIVE_VERIFIED before DONE (rules #13/#22).
+
+**Coordination impact:** retain all seven already allocated BASE candidate queues and owners (A #3/#4/#26/#45; B #41/#9/#12/#11; C #28/#23/#29/#27; D #43/#16/#49/#18/#51; Jules1 #22/#19/#20; Jules2 #21/#24/#25; Jules3 #7/#8/#40). No new claims/PR duplication, no change to existing 8 DEV integration mergers; this entry is a **policy CHECKPOINT, not evidence an AI call occurred**. Latest exact rule is [25-rule canonical](docs/DEEPSYQ_CANONICAL_OPERATING_RULES.md), commit `03d14e22cd1450373be9ed4552f67c2710afe8a6`.
+
+
 ## 2026-10-18 — ВЛАДЕЛЕЦ: бесплатные тесты, 7 очередей BASE и распределение зон
 
 **Статус: COORDINATION / ASSIGNED CANDIDATES, NOT ACTIVE CLAIMS OR CODE-VERIFIED.** Приказ владельца 18.10.2026. Точный первоисточник — [25 правил](docs/DEEPSYQ_CANONICAL_OPERATING_RULES.md), commit `087eeba66100f842107462f75a5d5153837ed450`. **Бюджет платных тестов = 0 для ВСЕХ A/B/C/D/Jules/№5.** Бесплатно без согласования: локальные unit, mock, Stripe test-mode без настоящих платежей, заведомо бесплатные GitHub CI, линтеры, сборки. Если нет уверенности, что запуск бесплатный, **НЕ ЗАПУСКАТЬ**. Любой платный AI, реальный Stripe, production, опасные миграции и расходы — только по новому разрешению владельца.
