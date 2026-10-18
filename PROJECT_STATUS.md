@@ -1,5 +1,16 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## OWNER DECISIONS CHECKPOINT — 2026-10-18 (DOCS ONLY)
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](DECISIONS.md).** Это главная новая запись о статусе документации, она **переопределяет более ранние, противоречащие ей бесплатные AI/Trial/автономные-планы в исторических разделах ниже, но НЕ удаляет их**. Подробности, аудит пересечений кода и ВОПРОСЫ владельцу: [docs/DEEPSYQ_OWNER_DECISIONS_CHECKPOINT_20261018.md](docs/DEEPSYQ_OWNER_DECISIONS_CHECKPOINT_20261018.md).
+
+- **Без Free AI:** BASE §44 упразднён как текущий продукт; ежедневные Everyday Tools бесплатны локально/без платных AI; при облачном вызове нужны локальный вариант либо жёсткий дневной лимит per-user без платного перерасхода. Только будущий платный Trial $0.99, **НЕ ВКЛЮЧАТЬ** до решения владельца о длительности/кредитах/продлении/возвратах/повторных регистрациях.
+- **Issue #182:** любой оплачиваемый provider call — только на подтверждённо приобретённые credits; Trial считается покупкой только после подтверждённой оплаты и отдельного утверждения условий. Для тестов действует правило #7: только бесплатные с предварительным доказательным GitHub CHECKPOINT, иначе BLOCKED; цена тестов = $0.
+- **BASE §53 ↔ Blocks 2/5:** Block 2 Stage1 готовые workflow; Block 5 Stage1 LITE uptime/Stripe errors/spend anomalies/email; full autonomy Stage2 только после LIVE_VERIFIED BASE §51.
+- **Один канон:** Block 4 = Workspace/History/My Creations существующих jobs; Block 3 = Inspiration/templates (каталог); Block 7 = pricing/credit/Trial; повторный код/таблица/PR запрещены. Две исторические таблицы vv_ai_template/vv_ai_inspiration найдены, **НЕ мигрировать** без решения владельца.
+- **Агенты/статусы:** CI_BLOCKED; рабочий финиш READY_TO_MERGE, DONE только после LIVE_VERIFIED. Audio B/C, Agents C/Jules2/B+D, Inspiration C, History A+B/D, SEO A/C/D; один Jules с максимум тремя подтверждёнными активными заданиями; см. правило #9.
+- **DOCS-ONLY CHECKPOINT:** только Markdown/TXT, ноль кодовых/DB/Stripe/production/provider изменений, ноль платных тестов; нет новых полноценных BASE DONE. Текущие ниже PR/SHA-истории сохранены и не представляют собой новую авторизацию.
+
 ## OWNER 18 OCT — APPROVED NEON DESIGN / ALL 20 ROUTES / RELEASE PR280 + PR281
 
 - **Owner authorization:** make the shown neon homepage identity consistent throughout Deepsyq; publish DEV and production after exact-head checks. Existing production-release governance remains coordinator #5 DEV-only and agent D production-only with owner permission.
