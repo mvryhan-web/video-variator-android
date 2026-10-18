@@ -117,9 +117,12 @@ export function evaluateProposedChange(proposal) {
  * Deterministically evaluate scheduler state based on sanitized owner facts.
  */
 export function evaluateSchedulerState(facts = {}) {
+  // A policy contract must never invent a live clock or mutate state on bad input.
+  if (!facts || typeof facts !== 'object' || Array.isArray(facts)) {
+    return { status: SCHEDULER_STATUSES.WORKER_UNSEEN, reason: 'INVALID_STATE_FACTS', ok: false };
+  }
   const cleanFacts = sanitizeStateFacts(facts);
-  const nowFn = typeof facts.now === 'function' ? facts.now : () => facts.now || new Date();
-  const nowVal = nowFn();
+  const nowVal = typeof facts.now === 'function' ? facts.now() : facts.now;
   const nowMs = nowVal instanceof Date ? nowVal.getTime() : (typeof nowVal === 'number' ? nowVal : Date.parse(nowVal));
 
   if (!Number.isFinite(nowMs) || nowMs <= 0) {
@@ -212,6 +215,10 @@ export function evaluateSchedulerState(facts = {}) {
  * Prevents false fresh heartbeats and duplicate transitions.
  */
 export function deduplicateStateTransition({ previousRunId, currentRunId, previousStatus, currentStatus, heartbeatAt, lastHeartbeatAt }) {
+  // Missing or invalid run identity must not generate an apparent fresh heartbeat.
+  if (typeof currentRunId !== 'string' || !currentRunId.trim() || !heartbeatAt) {
+    return { deduplicated: true, status: previousStatus || 'WORKER_UNSEEN', heartbeatUpdated: false, reason: 'UNVERIFIED_RUN_OR_HEARTBEAT', effectiveHeartbeatAt: lastHeartbeatAt || null };
+  }
   const sameRunId = previousRunId != null && currentRunId != null && String(previousRunId) === String(currentRunId);
 
   if (sameRunId) {
