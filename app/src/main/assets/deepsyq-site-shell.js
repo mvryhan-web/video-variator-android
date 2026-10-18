@@ -5,7 +5,7 @@
  ['Home','⌂','deepsyq.html','home'],['Image','▧','generate-studio.html?studio=image','image'],
  ['Video','▷','generate-studio.html?studio=video','video'],['Audio','♫','generate-studio.html?studio=audio','audio'],
  ['Tools','⊞','free-tools.html','tools'],['AI Apps','◇','ai-apps.html','apps'],
- ['Canvas','✎','deepsyq.html#canvas','canvas'],['Video Uniquifier','▤','index.html','legacy'],
+ ['Canvas','✎','deepsyq.html#canvasFeature','canvas'],['Video Uniquifier','▤','index.html','legacy'],
  ['Inspiration','◌','inspiration.html','inspiration'],['Assets','▦','deepsyq.html#recentCreations','assets'],
  ['Pricing','＄','ai-pricing.html','pricing']
  ];
