@@ -35,7 +35,9 @@ test('Owner neon layout: feature shortcuts use existing destinations and showcas
  await expect(page.locator('.home-launch-grid a[href="free-tools.html"]')).toBeVisible();
  await expect(page.locator('.home-create-card.tile-agent')).toHaveAttribute('href','#agentFeature');
  await expect(page.locator('.home-create-card.tile-agent')).toContainText('Coming soon');
+ await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','#canvasFeature');
  await page.locator('#homeHeroNext').click();
+ await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','generate-studio.html?studio=video');
  await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.0');
  await expect(page.locator('#homeHeroModel')).toHaveAttribute('title',/created in Google Flow/);
  await expect(page.locator('#homeHeroCreditLabel')).toHaveText('EXPLORE VIDEO MODELS');

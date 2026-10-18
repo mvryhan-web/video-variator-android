@@ -68,7 +68,10 @@ function setSlide(next,direction=1){
  video.pause();video.src=item.previewUrl;
  if(item.previewPosterUrl)video.poster=item.previewPosterUrl;else video.removeAttribute('poster');
  video.load();
- $('inspirationHeroFeature').href=link;
+ const showcase=item.defaultSettings?.homeShowcase;
+ const destinations=['#canvasFeature','#agentFeature','generate-studio.html?studio=video','generate-studio.html?studio=image','generate-studio.html?studio=audio'];
+ $('inspirationHeroFeature').href=destinations.includes(showcase?.href)?showcase.href:link;
+ $('inspirationHeroFeature').setAttribute('aria-label',showcase?.title?'Explore '+String(showcase.title):'Explore featured Inspiration video');
  renderCredit(item);updateNeighbors();
  carousel.setAttribute('aria-label','Featured Deepsyq creative gallery, video '+(index+1)+' of '+slides.length);
  $('homeHeroStatus').textContent='Featured video '+(index+1)+' of '+slides.length+': '+(item.title||'Original video');
