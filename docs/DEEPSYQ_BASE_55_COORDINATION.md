@@ -1,5 +1,11 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## AGENT A §31 CURRENT CLAIM / 2026-10-18 / PR154 NEW fc4402f2 7-PATH SOURCE CHECKPOINT
+
+- Current existing A original §31 job accepted/progress [PR154](https://github.com/mvryhan-web/video-variator-android/pull/154) same DRAFT branch exact new SHA **`fc4402f2162493ad4ef7ee88321bf3cba47a20f8`** nonforce two-parent merge onto DEV `5dbaf7a6`; seven own files exactly, six JS hunk/one CSS/one HTML hunk unique and reversibly cherry-picked; four feature file blobs unchanged, all other B/D Studio updates retained. Latest GH comparison zero behind, mergeable true. Original helper only shows server-confirmed job statuses/reservations/charges; no payment/AI calls.
+- Prior feature SHA 5/5 native Actions green not transitive. New head six workflow runs #39129176462, #39129176509, #39129176503, #39129176518, #39129176484, #39129176481 **QUEUED**, no green. Original FULL PARTIAL, scoped CI_BLOCKED, remains draft. §4 PR193 `9fd4904f`, §45 PR162 `4da47447`, §46 PR181 `da04d690`, §32 PR155 `490dba52` also native CI QUEUED (runner Issue227); §3 Home and §26 Canvas coordinator already DEV merged. Park previous A §24 PR152 and §25 PR168 without duplication; #5 controls safe DEV merges, D+owner licensed/purchased-only+staging. Paid calls 0, no real Stripe, production/main/migrations. Next inspect terminal exact head CI rather than retry backlog.
+
+
 ## AGENT A §32 EXISTING CLAIM CURRENT SHA 490dba52 / 2026-10-18 / FREE CI QUEUED
 
 - **Existing A original §32** (no new claim/PR): same DRAFT [PR155](https://github.com/mvryhan-web/video-variator-android/pull/155) HEAD `490dba526fd8d079dae55e3838265b3a1bb76e95` reconciled nonforce with DEV second parent `c8c46b07`, three original A-only paths, no lost B/D Studio changes, mergeable true. Safe raw-unrecognized-error fallback remains source change awaiting integration; no provider/billing mutation.
