@@ -1,5 +1,12 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## 2026-10-18 / AGENT B — ORIGINAL BASE #12 ACTIVE CLAIM / WORKER FATAL SHUTDOWN
+
+- **Agent B; original BASE #12 Background jobs**: owner-safe switch from original #9 after exact-head PR #150 merged to DEV (11/11 native CI green). #9 STILL PARTIAL/BLOCKED_CROSS_LANE+OWNER: Video/Image explicit primary and fallback None selectors depend shared C/D admin UI, B+D purchased-dispatch contract and owner-approved licensed provider staging; no direct paid calls or production. Park old evidence; no full DONE.
+- **NEW ONE ACTIVE claim** original §12, previously partial due worker live/S3/paid dependency. Scoped nonproduction reproducible defect in existing `server/generation-worker.js`: SIGTERM/SIGINT initiates asynchronous bounded shutdown; subsequent uncaughtException/unhandledRejection sees `stopping=true` and returns, so the first graceful signal leaves an exit-0 status and conceals a fatal worker crash. Fix by accumulating fatal exit severity while draining; extend existing worker-runtime Node regression using zero-provider mocks only. Worker-runtime and test paths appear in **older parked same-B #174** but contain equivalent previously merged §12 shutdown implementation; coordinator #5 must preserve hunks during any later stale #174 merge; no other active coder claim detected on #12. Target feature `agent-b-base12-fatal-shutdown-20261018`, PR TBD, HEAD TBD, green CI not yet established; **IN_PROGRESS, NOT DONE/NOT LIVE**.
+- **NEXT:** isolated 3-file patch + offline Node/mock tests and exact-head GitHub Actions. When READY_TO_MERGE ask #5 DEV-only review/integration; production worker/credit refund/actual paid job requires owner/D, budget paid 0. No changes to payment ledger, secrets, approved Home or Video Uniquifier.
+
+
 ## 2026-10-18 / AGENT D — ACTIVE ORIGINAL BASE #16 / WALLET FINANCE REPLAY SAFETY
 
 - **CLAIM retained before code:** BASE #16 Stripe/AI credits remains D-owned `PARTIAL / BLOCKED_DEPENDENCY`, previous superseded #204/#199 integrated to DEV through #244; **NEW same-row feature branch** `agent-d-base16-released-capture-deny-20261018`. Claim board commit `57c7275491ff2ff3af04604a8d66272870bd4c9a`. Do not take or duplicate B provider/worker Studio.
