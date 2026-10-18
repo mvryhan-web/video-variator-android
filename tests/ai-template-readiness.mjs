@@ -11,7 +11,7 @@ test('owner metadata detects legacy unverified actives and unsupported Studio in
  const records=[
   {title:'Unverified legacy',active:true,featured:true,generationType:'image',requiredInputTypes:['image'],rightsBasis:null,rightsNote:'',thumbnail:null},
   {title:'Owner photo',active:true,generationType:'image',requiredInputTypes:['image'],promptTemplate:'Create an original portrait from the uploaded reference',rightsBasis:'owned',rightsNote:'Original asset evidence reference',thumbnail:'/assets/owner.webp'},
-  {title:'Product campaign',active:true,generationType:'product_video',requiredInputTypes:['logo','product_name'],rightsBasis:'licensed',rightsNote:'Licensed promo package',thumbnail:'/assets/product.webp'},
+  {title:'Product campaign',active:true,generationType:'product_video',requiredInputTypes:['logo','product_name'],promptTemplate:'Create a brand-safe video of {{product_name}} using the supplied logo',rightsBasis:'licensed',rightsNote:'Licensed promo package',thumbnail:'/assets/product.webp'},
   {title:'Draft',active:false,generationType:'image',requiredInputTypes:[],rightsBasis:null,rightsNote:'',thumbnail:null},
   {title:'Future avatar',active:true,generationType:'avatar',rightsBasis:'owned',rightsNote:'Original owner avatar',thumbnail:null}
  ];
