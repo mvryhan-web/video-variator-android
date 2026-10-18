@@ -1,5 +1,14 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## COORDINATOR #5 CYCLE 2 / 18 OCT 2026 — ORIGINAL CLAIMS UNCHANGED, TWO INTEGRATION DECISIONS
+
+- **D original §18** [PR252](https://github.com/mvryhan-web/video-variator-android/pull/252) exact head `2f221f9c` 2 D-owned files / native current-head CI 4/4 SUCCESS, checked no new DEV file collisions and **MERGED DEV** `fa189883a1963632336f889fd26a3c35e04ff697`. **Base remains PARTIAL**, not live/DONE; D active §51 remains unchanged.
+- **C original §35** unsafe old [PR192](https://github.com/mvryhan-web/video-variator-android/pull/192) 130 changed files protected DRAFT despite 3/3 HEAD green. Narrow coordinator **DEV integration-only** [PR254](https://github.com/mvryhan-web/video-variator-android/pull/254) scoped **3 original C paths** / app +3 lines, test and CI files byte-identical to tested C branch; new SHA `351a0506e96ae554532f08b79f9b5ec7a9538267` official 3 checks QUEUED. **DRAFT / NOT MERGED** until its new SHA green. Original C active §38 still; no second C active claim. If PR254 merged safely, THEN old PR192 can be closed as superseded after source identity verification.
+- **P0 #182 coordinator PR250** 13 current-head CI queued/pending, D §49 PR251 7 queued and §51 PR253 6 queued, A §4 PR193 2 queued; maintain CI issue227. Seven topic-zone assignments, Jules bot quotas and other original BASE claim rows unchanged. No paid tests, actual Stripe, main/production or destructive DB.
+
+**Single NEXT coordinator action:** verify new exact-head PR254 no-fee browser CI and P0 PR250 mock/PG16; if queued continue free runner diagnostic, no repeated reruns. Detailed checkpoint PROJECT_STATUS commit `251f804ec03e23f74a72fd32cf9b585e639031b1`, master Issue233.
+
+
 ## 2026-10-18 AGENT D scoped BASE #18 ready after FULL exact-head native CI
 
 Same D [PR252](https://github.com/mvryhan-web/video-variator-android/pull/252) at HEAD **`2f221f9c9ee65853b3b49dd78a0d63b27114fa91`** verified 4/4 actual GitHub Actions **SUCCESS**: #39125667189 BASE18 ambiguous, #39125667031 offline trial economics, #39125667037 provider-specific, #39125667021 Studio Node+Playwright. No stale-head transfer. Current DEV still has unchanged original pricing/test blobs, PR diff only two D original files, GitHub PR REST `mergeable_state=clean` and `mergeable=true`. D ACTUALLY marked [PR252](https://github.com/mvryhan-web/video-variator-android/pull/252) **NON-DRAFT OPEN READY_TO_MERGE** using native GitHub tool. Only coordinator #5 may review and merge to `deepsyq-platform`; original §18 full business economics/owner staging & production **PARTIAL / NOT LIVE / NOT DONE**.
