@@ -193,3 +193,26 @@ test('parseAndValidateTimestamp fails closed on malformed, negative, or future i
   assert.equal(parseAndValidateTimestamp(mockNowMs + 1000, mockNowMs), null); // Future timestamp
   assert.equal(parseAndValidateTimestamp(mockNowMs, mockNowMs), mockNowMs);
 });
+
+
+test('No implicit wall-clock: missing clock and malformed owner facts fail closed', () => {
+  assert.equal(evaluateSchedulerState({ enabled: true, heartbeatAt: mockNowMs }).status, SCHEDULER_STATUSES.WORKER_UNSEEN);
+  assert.equal(evaluateSchedulerState(null).reason, 'INVALID_STATE_FACTS');
+  assert.equal(evaluateSchedulerState([]).reason, 'INVALID_STATE_FACTS');
+  assert.equal(evaluateSchedulerState({ enabled: true, now: () => NaN }).reason, 'INVALID_NOW_TIMESTAMP');
+});
+
+test('Missing run identity or heartbeat cannot claim a new worker heartbeat', () => {
+  const noRun = deduplicateStateTransition({
+    previousRunId: 'run-001', currentRunId: null, previousStatus: 'NOT_DUE',
+    currentStatus: 'READY_FOR_OWNER_REVIEW', heartbeatAt: mockNowMs, lastHeartbeatAt: mockNowMs - 1000
+  });
+  assert.equal(noRun.heartbeatUpdated, false);
+  assert.equal(noRun.deduplicated, true);
+  assert.equal(noRun.status, 'NOT_DUE');
+  const missingHeartbeat = deduplicateStateTransition({
+    previousRunId: 'run-001', currentRunId: 'run-002',
+    currentStatus: 'READY_FOR_OWNER_REVIEW', heartbeatAt: null, lastHeartbeatAt: mockNowMs - 1000
+  });
+  assert.equal(missingHeartbeat.heartbeatUpdated, false);
+});
