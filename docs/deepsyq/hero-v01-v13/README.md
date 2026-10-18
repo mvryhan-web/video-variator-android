@@ -1,3 +1,7 @@
+### Native technical verification (latest)
+
+Code SHA `48e89d19869457616a75c0deee87f856b4eafb40`, [CI39150923561](https://github.com/mvryhan-web/video-variator-android/actions/runs/39150923561): completed SUCCESS, 5 Node tests PASS + real full-film sequential playback and wrap in all four browser profiles. Chromium desktop/mobile and WebKit desktop passed first attempt; mobile WebKit passed retry, so Playwright reports **3 passed / 1 flaky**. First mobile run stalled on underwater→motorcycle; exact HTTP200 media transferred, underlying pause/end cause NOT established or fixed. This is not physical iPhone testing or a production-ready claim. Original seek-accelerated run39150606999 FAILED, retained for audit; it was replaced with natural playback of complete films and screenshot AFTER assertions, without modifying the player. Existing Inspiration unit regression also 7/7 PASS. No real catalog publish/deploy happened. Rights, owner release permission and exact V01 butterfly-image remain pending.
+
 ## Owner MP4 delivery — 2026-10-18 (latest; separate from earlier HeyGen renders)
 
 Seven NEW owner-uploaded MP4s are now staged under `app/src/main/assets/media/home/owner-20261018/`. The following is not a license attestation for the older HeyGen Free outputs documented below. Do not substitute those older outputs.
