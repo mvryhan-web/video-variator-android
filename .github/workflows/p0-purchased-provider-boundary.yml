@@ -5,6 +5,7 @@ on:
       - server/generation-studio.js
       - server/generation-purchased-provider-boundary.js
       - tests/generation-purchased-provider-boundary-unit.mjs
+      - tests/generation-studio-purchased-boundary-route-unit.mjs
       - .github/workflows/p0-purchased-provider-boundary.yml
 permissions:
   contents: read
@@ -27,4 +28,5 @@ jobs:
           node --check server/generation-studio.js
           node --check server/generation-purchased-provider-boundary.js
           node --check tests/generation-purchased-provider-boundary-unit.mjs
-          node --test tests/generation-purchased-provider-boundary-unit.mjs
+          node --check tests/generation-studio-purchased-boundary-route-unit.mjs
+          node --test tests/generation-purchased-provider-boundary-unit.mjs tests/generation-studio-purchased-boundary-route-unit.mjs
