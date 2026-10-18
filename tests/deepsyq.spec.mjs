@@ -11,14 +11,14 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('.hero-stage h1')).toHaveCount(0);
  await expect(page.locator('.hero-stage')).not.toContainText('beyond limits');
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
- await expect(page.locator('nav a[href="#quickCreateForm"]')).toContainText('Canvas');
+ await expect(page.locator('#sidebar nav a[href="#quickCreateForm"]')).toContainText('Canvas');
  await expect(page.locator('#studioStatus')).toContainText('owner preview');
  await expect(page.locator('.plan')).toHaveCount(3);
  await expect(page.locator('.trial-details-link')).toHaveAttribute('href','ai-pricing.html#trialOffer');
  await expect(page.locator('.lifetime')).toContainText('does not provide unlimited');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:info.outputPath('deepsyq.png'),fullPage:true});
- await page.locator('.studio-card.image').click();await expect(page).toHaveURL(/studio=image/);
+ await page.locator('[data-home-kind="image"]').click();await page.locator('#homeQuickPrompt').fill('Test creative image');await page.locator('#homeQuickSubmit').click();await expect(page).toHaveURL(/studio=image/);
  await expect(page.locator('#taskTitle')).toContainText('image');
  await page.locator('.topbar .back').click();await expect(page).toHaveURL(/deepsyq.html/);
 });
@@ -239,7 +239,7 @@ test('AI Apps shows only active API templates and prepares Studio without genera
 
 test('Product Video keeps references local until Studio review and never auto-generates',async({page})=>{
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,models:[{kind:'video',id:'video-fixture',label:'Video Fixture',ratios:['16:9','9:16','1:1'],references:2,enabled:true}],catalog:[{kind:'video',id:'video-fixture',label:'Video Fixture',ratios:['16:9','9:16','1:1'],references:2,enabled:true,adapter:true,provider:'Google',duration:'8 seconds'}]}}));
- let jobPosts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')jobPosts++;});await page.goto('/product-video.html');const img=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');await page.locator('#photos').setInputFiles({name:'product.png',mimeType:'image/png',buffer:img});await page.locator('#productName').fill('Luna Bag');await page.locator('#style').selectOption('cinematic');await page.locator('#ratio').selectOption('9:16');await expect(page.locator('#promptPreview')).toHaveValue(/Luna Bag/);await expect(page.locator('#promptPreview')).toHaveValue(/cinematic/);await page.locator('#continue').click();await expect(page).toHaveURL(/generate-studio\.html\?studio=video/);await expect(page.locator('#prompt')).toHaveValue(/Luna Bag/);await expect(page.locator('#ratio')).toHaveValue('9:16');await expect(page.locator('#refPreview img')).toHaveCount(1);await expect(page.locator('#consent')).not.toBeChecked();expect(jobPosts).toBe(0);
+ let jobPosts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')jobPosts++;});await page.goto('/product-video.html');const img=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAG0lEQVR4nGNgYPh/4j8Dw384jcJh+H+CgaAKAPRlHinUv26iAAAAAElFTkSuQmCC','base64');await page.locator('#photos').setInputFiles({name:'product.png',mimeType:'image/png',buffer:img});await page.locator('#productName').fill('Luna Bag');await page.locator('#style').selectOption('cinematic');await page.locator('#ratio').selectOption('9:16');await expect(page.locator('#promptPreview')).toHaveValue(/Luna Bag/);await expect(page.locator('#promptPreview')).toHaveValue(/cinematic/);await page.locator('#continue').click();await expect(page).toHaveURL(/generate-studio\.html\?studio=video/);await expect(page.locator('#prompt')).toHaveValue(/Luna Bag/);await expect(page.locator('#ratio')).toHaveValue('9:16');await expect(page.locator('#refPreview img')).toHaveCount(1);await expect(page.locator('#consent')).not.toBeChecked();expect(jobPosts).toBe(0);
 });
 
 
@@ -353,8 +353,8 @@ test('featured owned video is promoted but original homepage sections and images
  await expect(page.locator('#inspirationPreviewGrid video')).toHaveCount(1);
  await expect(page.locator('#inspirationPreviewGrid video')).toHaveJSProperty('muted',true);
  await expect(page.locator('#inspirationPreviewGrid video')).toHaveJSProperty('loop',true);
- expect(await page.evaluate(()=>!!(document.querySelector('#inspirationPreview').compareDocumentPosition(document.querySelector('[aria-labelledby="createTitle"]'))&Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
- await expect(page.locator('.studio-card')).toHaveCount(4);
+ expect(await page.evaluate(()=>!!(document.querySelector('#createWithDeepsyq').compareDocumentPosition(document.querySelector('#inspirationPreview'))&Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+ await expect(page.locator('.home-launch-grid .home-launch-tile')).toHaveCount(7);await expect(page.locator('.home-feature-triptych .home-feature-spotlight')).toHaveCount(3);
  await expect(page.getByRole('link',{name:/Video Uniquifier history/})).toBeVisible();
 });
 test('approved video appears in the real homepage hero but does not erase Canvas or original sections',async({page})=>{
@@ -372,7 +372,7 @@ test('approved video appears in the real homepage hero but does not erase Canvas
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href',/inspiration\.html\?kind=video/);
  await expect(page.locator('#quickCreateForm')).toBeVisible();
- await expect(page.locator('.studio-card')).toHaveCount(4);
+ await expect(page.locator('.home-launch-grid .home-launch-tile')).toHaveCount(7);await expect(page.locator('.home-feature-triptych .home-feature-spotlight')).toHaveCount(3);
 });
 test('video carousel switches only among owner-approved videos and retains existing media',async({page})=>{
  // Mock the transport layer: this test verifies navigation, not fake MP4 playback.
