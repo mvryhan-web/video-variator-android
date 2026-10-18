@@ -211,3 +211,17 @@ test('BASE #5: arbitrary future paid Video fields must not be silently discarded
  // controls instead of changing prior Video caller expectations.
  assert.doesNotThrow(()=>rejectUnsupportedVideoControls({...standard,seed:7}));
 });
+
+test('BASE #5 legacy client credits cannot influence validated Video or trusted server rates',()=>{
+ const clean={kind:'video',model:'veo-3.1-lite-generate-preview',prompt:'Unchanged quote request',
+  ratio:'16:9',consent:true,references:[],videoResolution:'720p',videoDuration:8,videoInputMode:'text'};
+ const canonical=validateGeneration(clean);
+ for(const credits of [1,10,1000000,'free',-50,null]){
+  const normalized=validateGeneration({...clean,credits});
+  assert.deepEqual(normalized,canonical,'legacy credits are entirely stripped from normalized input');
+  assert.equal(Object.hasOwn(normalized,'credits'),false);
+ }
+ for(const field of ['price','creditAmount','providerCost','walletBalance']){
+  assert.throws(()=>validateGeneration({...clean,[field]:1}),/UNSUPPORTED_VIDEO_CONTROL/);
+ }
+});
