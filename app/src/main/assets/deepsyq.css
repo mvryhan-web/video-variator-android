@@ -539,7 +539,7 @@ body.home-neon{background:#030b18;color:#eff6ff}
 .home-neon .home-create-section .section-head p{font-size:12px;color:#acb9cc;margin:5px 0 0}
 .home-view-tools{flex:none;display:inline-flex;align-items:center;border:1px solid #24528a;border-radius:999px;color:#47ebf7;padding:8px 14px;font-size:11px}
 .home-create-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
-.home-create-card{position:relative;isolation:isolate;display:grid;grid-template-columns:30px minmax(0,1fr);align-content:start;gap:10px;aspect-ratio:1.65;min-height:116px;border:1px solid #334871;border-radius:10px;overflow:hidden;background:#091327;padding:12px 10px;transition:border-color .2s,transform .2s}
+.home-create-card{min-width:0;width:100%;max-width:100%;position:relative;isolation:isolate;display:grid;grid-template-columns:30px minmax(0,1fr);align-content:start;gap:10px;aspect-ratio:1.65;min-height:116px;border:1px solid #334871;border-radius:10px;overflow:hidden;background:#091327;padding:12px 10px;transition:border-color .2s,transform .2s}
 .home-create-card>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
 .home-create-card::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#071326eb 0%,#071326c9 35%,#07132635 100%);z-index:-1}
 .home-create-card .home-tile-icon{width:30px;height:30px;border-radius:7px}

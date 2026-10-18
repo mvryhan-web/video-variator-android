@@ -18,7 +18,7 @@ test('Owner neon layout: reference section order, real card images and mobile bo
   await page.setViewportSize({width,height:1086});
   await page.locator('#createWithDeepsyq').scrollIntoViewIfNeeded();
   await expect.poll(()=>page.locator('.home-create-card img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
-  // Poll settled geometry after the existing sidebar/content resize animation.
+  // Check settled bounds and report exact overflowing cards if a layout regresses.
   await expect.poll(()=>page.evaluate(()=>{
    const ids=['homeHeroCarousel','homeQuickBar','createWithDeepsyq','inspirationPreview','canvasFeature'];
    const tops=ids.map(id=>document.getElementById(id).getBoundingClientRect().top);
