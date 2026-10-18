@@ -215,6 +215,9 @@ const accountLogout=$('appsLogout');
 if(accountLogout){
  accountLogout.hidden=!localStorage.getItem('vv_token');
  accountLogout.addEventListener('click',()=>{
+  // Remove locally prepared product prompts when exiting this AI Apps account.
+  // Denied tab storage must not block existing bearer-token logout.
+  try{sessionStorage.removeItem('deepsyq_template_start');}catch(_){}
   localStorage.removeItem('vv_token');
   location.assign('deepsyq.html');
  });
