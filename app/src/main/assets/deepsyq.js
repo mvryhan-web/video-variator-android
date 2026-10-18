@@ -262,7 +262,7 @@ document.querySelectorAll('[data-social]').forEach(button=>button.addEventListen
 let authOpener;function openAuth(){if(window.AndroidBridge){location.assign('index.html#signin');return;}authOpener=document.activeElement;$('authModal').hidden=false;setTimeout(()=>$('emailAuthEmail')?.focus(),0);initGoogle();}function closeAuth(){$('authModal').hidden=true;authOpener?.focus();}
 $('accountButton').onclick=openAuth;document.querySelectorAll('[data-close-auth]').forEach(b=>b.onclick=closeAuth);
 document.addEventListener('keydown',e=>{if($('authModal').hidden)return;if(e.key==='Escape')closeAuth();if(e.key==='Tab'){const items=[...$('authModal').querySelectorAll('button:not(:disabled),input:not(:disabled)')].filter(e=>e.getClientRects().length);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}});
-$('logout').onclick=()=>{localStorage.removeItem('vv_token');sessionStorage.removeItem('vu_generation_job');location.reload();};
+$('logout').onclick=()=>{clearRecentCreations('Sign in to see your saved Studio creations.');localStorage.removeItem('vv_token');sessionStorage.removeItem('vu_generation_job');location.reload();};
 let config;let googleReady=false;
 function initGoogle(){if(googleReady||!config)return;if(!config.googleClientId){$('googleButton').textContent='Google sign-in is currently unavailable. Use email below.';return;}if(!window.google?.accounts?.id)return;googleReady=true;google.accounts.id.initialize({client_id:config.googleClientId,callback:async({credential})=>{try{const d=await api('/api/auth/google',{method:'POST',body:JSON.stringify({credential})});localStorage.setItem('vv_token',d.token);if(d.newAccount===true)localStorage.setItem('deepsyq_onboarding_pending','1');location.reload();}catch(_){$('paymentStatus').textContent='Sign-in could not complete. Please try again.';}}});$('googleButton').replaceChildren();google.accounts.id.renderButton($('googleButton'),{theme:'outline',size:'large',width:280,text:'continue_with'});}
 let pending=false;
@@ -333,15 +333,56 @@ function renderPlans(){const descriptions={basic:'For occasional video projects.
 try{config=await api('/api/config');applyPlatformFeatures();renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);}catch(_){updateInspirationHero([]);$('paymentStatus').textContent='Plans could not load. Please try again later.';}
 window.addEventListener('load',initGoogle);
 try{const c=await api('/api/studio/config');studioModelMenuConfig=c;if(openModelsKind)renderModelFlyout(openModelsKind);$('studioStatus').textContent=c.ownerOnly?'AI generation is in owner preview. Explore the studios; existing tools remain available.':c.enabled?'Open a studio to see the available models.':'AI generation is not available yet. Existing tools remain available.';}catch(_){$('studioStatus').textContent='Studio availability could not be checked. Existing tools remain available.';}
-// Read-only dashboard overview: reuses the existing authenticated Studio history.
-// Never embeds media blobs, starts jobs, or exposes another user's results.
+// Read-only dashboard overview. Backend user_id scope is authoritative;
+// never render a late private response after a session/account switch.
+let recentCreationsEpoch=0,recentRenderedOwnerToken=null;
+const recentAccountChanged='Account changed. Reload to view creations for the current account.';
+function clearRecentCreations(message){
+ recentRenderedOwnerToken=null;
+ ++recentCreationsEpoch;
+ $('recentCreationsGrid')?.replaceChildren();
+ const status=$('recentCreationsStatus');if(status)status.textContent=message;
+}
+window.addEventListener('storage',event=>{
+ if(event.key==='vv_token'){
+  clearRecentCreations(event.newValue?recentAccountChanged:'Sign in to see your saved Studio creations.');
+ }
+});
+// A same-tab token change does NOT fire a native storage event. Clear
+// private prompt cards before the next user interaction, even if that click
+// immediately navigates to the saved result. Do not alter other Studio state.
+function protectRecentCreationsAccount(){
+ if(recentRenderedOwnerToken===null||recentRenderedOwnerToken===localStorage.getItem('vv_token'))return false;
+ clearRecentCreations(localStorage.getItem('vv_token')?recentAccountChanged:'Sign in to see your saved Studio creations.');
+ return true;
+}
+for(const eventName of ['click','keydown','focusin'])
+ document.addEventListener(eventName,event=>{
+  // Remember origin BEFORE clearing: removing the card detaches its parent
+  // and closest('#recentCreationsGrid a') could then no longer find the link.
+  const fromRecentCard=!!event.target?.closest?.('#recentCreationsGrid a');
+  if(protectRecentCreationsAccount()&&fromRecentCard){
+   event.preventDefault();event.stopImmediatePropagation();
+  }
+ },true);
+window.addEventListener('focus',protectRecentCreationsAccount);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)protectRecentCreationsAccount();});
 async function loadRecentCreations(){
  const status=$('recentCreationsStatus'),grid=$('recentCreationsGrid');if(!status||!grid)return;
+ const requestedToken=localStorage.getItem('vv_token'),epoch=++recentCreationsEpoch;
+ const isCurrent=()=>epoch===recentCreationsEpoch&&requestedToken===localStorage.getItem('vv_token');
  grid.replaceChildren();
- if(!localStorage.getItem('vv_token')){status.textContent='Sign in to see your saved Studio creations.';return;}
+ if(!requestedToken){status.textContent='Sign in to see your saved Studio creations.';return;}
  status.textContent='Loading your recent creations…';
  try{
-  const response=await api('/api/studio/jobs?filter=all'),items=Array.isArray(response.items)?response.items.slice(0,4):[];
+  const response=await api('/api/studio/jobs?filter=all');
+  // A token rotation can occur before the fetch settles; no old prompts may
+  // be inserted for a new account, even if an earlier server response is valid.
+  if(!isCurrent()){
+   if(epoch===recentCreationsEpoch)clearRecentCreations(recentAccountChanged);
+   return;
+  }
+  const items=Array.isArray(response.items)?response.items.slice(0,4):[];
   if(!items.length){status.textContent='No saved creations yet. Start with Canvas or a Studio.';return;}
   const label={ready:'Ready',queued:'Queued',processing:'Processing',finalizing:'Finalizing',failed:'Failed'};
   for(const item of items){
@@ -355,8 +396,12 @@ async function loadRecentCreations(){
    date.textContent=Number.isFinite(timestamp.getTime())?timestamp.toLocaleDateString():'Open in Studio';
    card.append(head,prompt,date);grid.append(card);
   }
+  recentRenderedOwnerToken=grid.childElementCount?requestedToken:null;
   status.textContent=grid.childElementCount?'Select a creation to open your Studio history.':'No saved creations yet.';
- }catch(_){status.textContent='Studio history is not available for this account right now.';}
+ }catch(_){
+  if(isCurrent())status.textContent='Studio history is not available for this account right now.';
+  else if(epoch===recentCreationsEpoch)clearRecentCreations(recentAccountChanged);
+ }
 }
 async function loadAIWallet(){
  const chip=$('aiWalletLink');if(!chip)return;
