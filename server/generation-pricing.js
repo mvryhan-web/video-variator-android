@@ -35,6 +35,17 @@ export function estimateGenerationPricing(request,model,env={}){
  const candidates=catalog.entries.filter(e=>e.model===model.id&&e.kind===model.kind&&e.provider===model.provider);
  const inputMode=request.kind==='video'?(request.videoInputMode||((request.referenceCount??request.references?.length??0)?'first_frame':'text')):null;
  const referenceCount=request.kind==='video'?(request.referenceCount??request.references?.length??0):0;
+ // Generic text/first-frame tariffs are NOT approved for malformed multi-image
+ // roles. Enforce the mode/count contract here, independently of the caller's
+ // provider input validation, before considering any wildcard pricing row.
+ if(request.kind==='video'){
+  if(!Number.isSafeInteger(referenceCount)||referenceCount<0||
+     !['text','first_frame','first_last','reference_image'].includes(inputMode)||
+     (inputMode==='text'&&referenceCount!==0)||
+     (inputMode==='first_frame'&&referenceCount!==1)||
+     (inputMode==='first_last'&&referenceCount!==2)||
+     (inputMode==='reference_image'&&(referenceCount<1||referenceCount>3)))return null;
+ }
  const score=e=>{
   if(e.ratio&&e.ratio!==request.ratio)return -1;
   const quality=request.kind==='image'?(request.resolution||model.quality):request.kind==='video'?(request.videoResolution||model.quality):(model.capabilities?.quality??model.quality);
