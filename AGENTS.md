@@ -1,5 +1,11 @@
 # AGENTS.md — Deepsyq: START HERE (all agents and coordinators)
 
+## OWNER ORDER 2026-10-18 (LATEST): FREE TESTS / SEVEN BASE QUEUES / FINAL STATUS
+
+The [canonical 25 rules](docs/DEEPSYQ_CANONICAL_OPERATING_RULES.md) were updated by direct owner command: **paid test budget is exactly ZERO for every A/B/C/D/Jules/#5**. Only certainly free unit/mock, no-money Stripe TEST MODE, truly free CI, lint and builds may run without asking. If uncertain whether free, treat as paid and DO NOT RUN. No paid AI, real Stripe, any owner spending, unsafe migrations or production without explicit owner permission. New `CI_BLOCKED` is a valid intermediate state. A coding agent's terminal work product is `READY_TO_MERGE` **only if scoped code, open PR and all required no-cost CI are green**; coordinator integrates on `deepsyq-platform`, **D alone deploys production with owner permission**, and `DONE` only after entire requirement `LIVE_VERIFIED`. Never convert prior DEV merge into LIVE.
+
+**Exact seven 3–5 candidate BASE queues, five unowned-zone allocations, and inter-lane handoff safeguards:** [PROJECT_STATUS.md / owner queue table](PROJECT_STATUS.md#2026-10-18--владелец-бесплатные-тесты-7-очередей-base-и-распределение-зон). **These queues are planning reserves, never simultaneous claims or a reason to abandon a nonblocked BASE after a commit.** Preserve Jules old S2/U2/G2 and Block issues #238–240; inspect bot slot/claims before changing Jules work. Audio=B; AI Agents=Jules2; Inspiration=Jules1; History=Jules2; SEO=C; Jules3 owns only future approved Compare/Smart bounded parts, not B's in-progress router without explicit file-owner handoff. #5 prevents collisions and documents readiness, without commandeering A–D files.
+
 ## LATEST OWNER DIRECTIVE — 2026-10-18: EXACT 25 RULES (4 + 16 + 5)
 
 **The controlling, verbatim owner rules are [docs/DEEPSYQ_CANONICAL_OPERATING_RULES.md](docs/DEEPSYQ_CANONICAL_OPERATING_RULES.md), rules 1–25.** This new edition supersedes older conflicting operating instructions here and in ONE_ITEM_TO_DONE, but does NOT alter original 55 BASE or eight Blocks, approved Home/media, prior checkpoints, existing claims, or completed work. Four original priorities remain owner-locked, word for word.
