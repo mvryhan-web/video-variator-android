@@ -5,7 +5,14 @@ import {generateGoogle,pollGoogle,safeGoogleUrl,googleJson,validateGeneration,re
 const GOOGLE='https://generativelanguage.googleapis.com/v1beta/files/fixture?alt=media';
 const operation='operations/fixture';
 const providerResult={done:true,response:{generateVideoResponse:{generatedSamples:[{video:{uri:GOOGLE}}]}}};
-const box=Buffer.alloc(16);box.writeUInt32BE(16,0);box.write('ftypisom',4,'ascii');
+const ftyp=Buffer.alloc(16);ftyp.writeUInt32BE(16,0);ftyp.write('ftypisom',4,'ascii');
+const atom=(kind,data=Buffer.alloc(0))=>{
+ const header=Buffer.alloc(8);header.writeUInt32BE(8+data.length,0);header.write(kind,4,'ascii');
+ return Buffer.concat([header,data]);
+};
+const movie=atom('moov',Buffer.concat([atom('mvhd',Buffer.alloc(4)),atom('trak',Buffer.alloc(4))]));
+const payload=atom('mdat',Buffer.from([1,2,3,4]));
+const box=Buffer.concat([ftyp,movie,payload]);
 async function runPoll(download,key='fixture-key'){
  const calls=[];
  const fetcher=async(url,options)=>{
@@ -95,6 +102,22 @@ test('Veo refuses AVIF/HEIC and arbitrary ftyp brands mislabeled as video/mp4',a
   const image=Buffer.from(box);image.write(brand,8,'ascii');
   await assert.rejects(()=>runPoll(new Response(image)),/INVALID_PROVIDER_MEDIA/,brand);
  }
+});
+
+test('BASE #5 ftyp-only or incomplete MP4 container is never charged as a finished movie',async()=>{
+ const omitted=[
+  ftyp,
+  Buffer.concat([ftyp,movie]),
+  Buffer.concat([ftyp,payload]),
+  Buffer.concat([ftyp,atom('moov',atom('mvhd')),payload]),
+  Buffer.concat([ftyp,atom('moov',atom('trak')),payload])
+ ];
+ for(const incomplete of omitted)
+  await assert.rejects(()=>runPoll(new Response(incomplete)),/INVALID_PROVIDER_MEDIA/);
+ const truncated=Buffer.from(box);truncated.writeUInt32BE(999999,ftyp.length);
+ await assert.rejects(()=>runPoll(new Response(truncated)),/INVALID_PROVIDER_MEDIA/);
+ const extraTrailing=Buffer.concat([box,Buffer.from([99,99])]);
+ await assert.rejects(()=>runPoll(new Response(extraTrailing)),/INVALID_PROVIDER_MEDIA/);
 });
 
 test('BASE #5 claimed oversized Veo response fails before streaming media',async()=>{
