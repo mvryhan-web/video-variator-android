@@ -16,8 +16,8 @@
       "motionPrompt": "Natural blink, breathing, moving damp hair; exact owner-original face/framing",
       "targetMp4": "app/src/main/assets/media/home/v01.mp4",
       "targetPoster": "app/src/main/assets/media/home/v01.jpg",
-      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
-      "commercialRights": "UNVERIFIED",
+      "status": "PROVIDER_RENDER_COMPLETED; INTERNAL_REVIEW_ONLY; NOT_PUBLISHED",
+      "commercialRights": "HEYGEN FREE OUTPUT RESTRICTED TO INTERNAL EVALUATION — COMMERCIAL PUBLICATION PROHIBITED",
       "publish": false
     },
     {
@@ -27,8 +27,8 @@
       "motionPrompt": "Red silk fabric and hair move independently in a soft mountain breeze",
       "targetMp4": "app/src/main/assets/media/home/v02.mp4",
       "targetPoster": "app/src/main/assets/media/home/v02.jpg",
-      "status": "REFERENCE_ONLY; VIDEO_NOT_GENERATED",
-      "commercialRights": "UNVERIFIED",
+      "status": "AI_VIDEO_GENERATION_STARTED; PENDING",
+      "commercialRights": "HEYGEN FREE OUTPUT RESTRICTED TO INTERNAL EVALUATION — COMMERCIAL PUBLICATION PROHIBITED",
       "publish": false
     },
     {
@@ -152,5 +152,29 @@
       "commercialRights": "UNVERIFIED",
       "publish": false
     }
-  ]
+  ],
+  "updated": "2026-10-18",
+  "v01Generation": {
+    "provider": "HeyGen",
+    "model": "heygen-video-1",
+    "videoId": "9bb52df1963741749e2417cb82859502",
+    "providerStatus": "completed",
+    "durationSec": 8,
+    "width": 1344,
+    "height": 768,
+    "ratio": "7:4",
+    "license": "HEYGEN FREE: personal / internal evaluation only; no commercial publication or redistribution",
+    "copyrightSource": "owner original input rights awaiting verification",
+    "publication": "HOLD_NON_COMMERCIAL_LICENSE"
+  },
+  "v02Generation": {
+    "provider": "HeyGen",
+    "model": "heygen-video-1",
+    "videoId": "c4d1bc52a3164bbd952c41684dfa82f7",
+    "providerStatus": "processing",
+    "durationRequestedSec": 8,
+    "sourceImage": "app/src/main/assets/media/home/v02-clean-internal-review.jpg",
+    "license": "HEYGEN FREE: internal evaluation only",
+    "publication": "HOLD_NON_COMMERCIAL_LICENSE"
+  }
 }
