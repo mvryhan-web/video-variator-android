@@ -2,7 +2,7 @@
 
 ## AGENT A / SEO ISSUE156 ISOLATED PUBLIC COMPARISON COPY CLAIM — 2026-10-18
 
-- Owner-approved A editorial SEO Issue156: **claim only** `app/src/main/assets/deepsyq-vs-deepseek.html` and new `tests/deepsyq-seo-comparison-unit.mjs` to improve accurate broad AI-platform-vs-chat editorial copy/unique title and metadata, accessible internal links and offline no-unverified-claims regression. Search for exact filename in current open PR and issue titles/bodies shows no claim; check SHA before writing. No rewrite of Home owner design, no robots/indexation changes, server routing/sitemap, B/C/D code/Stripe or creative model activation. Before merge require source/CI green and coordinator DEV integration; original §3 Home DEV merged but rights/live PARTIAL; §24 existing PR152 cross-lane BLOCKED. Full SEO technical launch not claimed.
+- Owner-approved A editorial SEO Issue156: **claim only** `app/src/main/assets/deepsyq-vs-deepseek.html` and new `tests/deepsyq-seo-comparison-unit.mjs` plus a **new isolated no-spend CI workflow** `.github/workflows/agent-a-seo-comparison.yml` to improve accurate broad AI-platform-vs-chat editorial copy/unique title and metadata, accessible internal links and offline no-unverified-claims regression. Search for exact filename in current open PR and issue titles/bodies shows no claim; check SHA before writing. No rewrite of Home owner design, no robots/indexation changes, server routing/sitemap, B/C/D code/Stripe or creative model activation. Before merge require source/CI green and coordinator DEV integration; original §3 Home DEV merged but rights/live PARTIAL; §24 existing PR152 cross-lane BLOCKED. Full SEO technical launch not claimed.
 
 
 ## [AGENT C / 2026-10-18 / §28 READY, RECLAIM §38 + DECLARED SHARED QA TEST HUNKS]
