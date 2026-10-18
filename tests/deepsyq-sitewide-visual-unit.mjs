@@ -31,3 +31,19 @@ test('shared shell is navigation only, no money or AI operations',()=>{
  for(const banned of ['fetch(', 'XMLHttpRequest','checkout','stripe','.play(']) assert.ok(!js.includes(banned),banned);
  assert.ok(js.includes('aria-expanded'));
 });
+
+
+test('every secondary navigation destination exists; pending features are not links',()=>{
+ const js=readFileSync(new URL('deepsyq-site-shell.js',root),'utf8');
+ for(const group of ["Home","Creation","Tools","Library","Community","More"]) assert.ok(js.includes("section:'"+group+"'"),group);
+ for(const label of ['Agent','Favorites','Challenges','Affiliate']) assert.ok(js.includes("label:'"+label+"',icon:")&&js.includes("pending:true"),label);
+ const urls=[...js.matchAll(/url:'([^']+)'/g)].map(x=>x[1]);
+ for(const url of urls){
+  const file=url.split(/[?#]/)[0];
+  assert.ok(file.endsWith('.html'),url);
+  assert.doesNotThrow(()=>readFileSync(new URL(file,root),'utf8'),url);
+ }
+ for(const required of ['generate-studio.html?studio=image','generate-studio.html?studio=video',
+   'generate-studio.html?studio=audio','deepsyq.html#quickCreateForm',
+   'generate-studio.html?view=history','free-tools.html','ai-apps.html']) assert.ok(urls.includes(required),required);
+});
