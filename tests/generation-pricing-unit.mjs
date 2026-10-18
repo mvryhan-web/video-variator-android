@@ -85,3 +85,25 @@ test('equal-score overlaps are provider-isolated, and no price is ever invented'
  assert.equal(estimateGenerationPricing({kind:'image',model:m.id,ratio:'1:1',resolution:'1024'},m,e).credits,19);
  assert.equal(estimateGenerationPricing({kind:'image',model:m.id,ratio:'1:1',resolution:'1024'},m,{}),null);
 });
+
+
+test('explicitly blank ratio or quality must never become an approved wildcard price',()=>{
+ const base={model:model.id,provider:model.provider,kind:'video',credits:1,providerCostMicros:50,currency:'usd'};
+ const request={kind:'video',model:model.id,ratio:'9:16',videoResolution:'720p',videoDuration:5};
+ // An operator typo (an explicit blank dimension) used to silently create
+ // a wildcard row, allowing an arbitrary aspect ratio to inherit cheap credits.
+ for(const key of ['ratio','quality']){
+  for(const invalid of ['', ' ', '\t', '\n']){
+   const env={AI_MODEL_PRICING_JSON:JSON.stringify([{...base,[key]:invalid}])};
+   assert.equal(pricingCatalog(env).configured,false,key+' '+JSON.stringify(invalid));
+   assert.equal(estimateGenerationPricing(request,model,env),null,'never price from malformed configured selector');
+  }
+ }
+ // A genuinely absent/null qualifier is still the intentional default-price
+ // wildcard; exact approved selectors continue matching normally.
+ for(const row of [base,{...base,ratio:null,quality:null},{...base,ratio:'9:16',quality:'720p'}]){
+  const env={AI_MODEL_PRICING_JSON:JSON.stringify([row])};
+  assert.equal(pricingCatalog(env).configured,true);
+  assert.equal(estimateGenerationPricing(request,model,env).credits,1);
+ }
+});
