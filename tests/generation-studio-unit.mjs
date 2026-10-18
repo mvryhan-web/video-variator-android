@@ -177,6 +177,9 @@ test('owner read-only analytics omit auth and Stripe secrets',async()=>{
   if(sql.startsWith("SELECT COALESCE(cost_currency,'unknown') AS currency"))return {rows:[{currency:'usd',amount:0.4,ready_priced_jobs:2,avg_ready_cost:0.12}]};
   if(sql.startsWith('SELECT COUNT(*)::int AS first_success_users'))return {rows:[{first_success_users:2,first_success_30d:1}]};
   if(sql.startsWith('SELECT COUNT(DISTINCT p.user_id)::int AS paying_accounts'))return {rows:[{paying_accounts:1}]};
+  // BASE #37 source-backed tracked Tools are read-only and completed only.
+  if(sql.startsWith("SELECT to_regclass('public.vv_tool_runs') AS reg"))return {rows:[{reg:'vv_tool_runs'}]};
+  if(sql.startsWith('SELECT tool,COUNT(*)::bigint AS completed_runs'))return {rows:[{tool:'photo_batch',completed_runs:'11'}]};
   throw new Error(sql);
  }};
  const wallet={async init(){}},env={ADMIN_EMAIL:'owner@example.test'};
@@ -192,6 +195,13 @@ test('owner read-only analytics omit auth and Stripe secrets',async()=>{
   assert.deepEqual(d.generation.creationTypes,[{kind:'image',jobs:2,ready:2,failed:0},{kind:'video',jobs:1,ready:0,failed:1}]);
   assert.equal(d.generation.topCreationType,'image');
   assert.equal(d.generation.providerCosts[0].averageReadyJobCost,0.12);
+  assert.equal(d.generation.completedJobs,4);
+  assert.equal(d.generation.completedFailureRate,0.25);
+  assert.equal(d.generation.jobsPerGeneratingUser,2);
+  assert.equal(d.generation.trackedToolsAvailable,true);
+  assert.deepEqual(d.generation.topTrackedTool,{tool:'photo_batch',completedRuns:11});
+  assert.ok(seen.some(q=>q.includes("FROM vv_tool_runs WHERE state='completed'")&&q.includes('GROUP BY tool')));
+
   assert.deepEqual(d.unverifiedMetrics,{trialToPaid:null,churnRate:null,revenuePerUser:null,mostUsedTool:null});
   assert.ok(seen.some(q=>q.includes('MIN(COALESCE(completed_at,created_at))')&&q.includes("status='ready'")));
   assert.ok(seen.some(q=>q.includes('COUNT(DISTINCT p.user_id)')&&q.includes('p.amount>p.refunded_amount')));

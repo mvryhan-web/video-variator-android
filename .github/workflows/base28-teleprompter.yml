@@ -1,4 +1,8 @@
 name: BASE 28 local Teleprompter
+
+concurrency:
+  group: ci-base28-teleprompter-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 on:
   pull_request:
     paths:
