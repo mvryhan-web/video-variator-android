@@ -18,14 +18,14 @@ test('Owner neon layout: reference section order, real card images and mobile bo
   await page.setViewportSize({width,height:1086});
   await page.locator('#createWithDeepsyq').scrollIntoViewIfNeeded();
   await expect.poll(()=>page.locator('.home-create-card img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
-  const layout=await page.evaluate(()=>{
+  // Poll settled geometry after the existing sidebar/content resize animation.
+  await expect.poll(()=>page.evaluate(()=>{
    const ids=['homeHeroCarousel','homeQuickBar','createWithDeepsyq','inspirationPreview','canvasFeature'];
    const tops=ids.map(id=>document.getElementById(id).getBoundingClientRect().top);
-   const fits=[...document.querySelectorAll('.home-launch-grid,.home-create-grid,.home-create-card,#homeQuickBar')].every(el=>{const r=el.getBoundingClientRect();return r.left>=-1&&r.right<=innerWidth+1;});
-   return {ordered:tops.every((v,i)=>i===0||v>tops[i-1]),fits};
-  });
-  expect(layout).toEqual({ordered:true,fits:true});
-  await page.screenshot({path:info.outputPath('neon-home-'+width+'.png'),fullPage:true});
+   const offenders=[...document.querySelectorAll('.home-launch-grid,.home-create-grid,.home-create-card,#homeQuickBar')].flatMap(el=>{const r=el.getBoundingClientRect();return r.left>=-1&&r.right<=innerWidth+1?[]:[{class:el.className,left:r.left,right:r.right,viewport:innerWidth}];});
+   return {ordered:tops.every((v,i)=>i===0||v>tops[i-1]),offenders};
+  })).toEqual({ordered:true,offenders:[]});
+  await page.screenshot({path:info.outputPath('neon-home-'+width+'.png'),fullPage:false});
  }
  expect(posts).toEqual([]);
 });
@@ -35,7 +35,7 @@ test('Owner neon layout: feature shortcuts use existing destinations and showcas
  await expect(page.locator('.home-launch-grid a[href="free-tools.html"]')).toBeVisible();
  await expect(page.locator('.home-create-card.tile-agent')).toHaveAttribute('href','#agentFeature');
  await expect(page.locator('.home-create-card.tile-agent')).toContainText('Coming soon');
- await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','#canvasFeature');
+ await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','#quickCreateForm');
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','generate-studio.html?studio=video');
  await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.0');

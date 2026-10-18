@@ -33,7 +33,7 @@
           "title": "AI Canvas",
           "label": "CREATIVE WORKSPACE",
           "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio.",
-          "href": "#canvasFeature"
+          "href": "#quickCreateForm"
         }
       },
       "actionTarget": "studio",

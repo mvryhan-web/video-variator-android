@@ -55,10 +55,10 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: node --test tests/owner-home-media-unit.mjs tests/deepsyq-preview.mjs
       - run: npx playwright install --with-deps chromium webkit
-      - name: Real supplied MP4 playback, ended transitions and mobile bounds
-        run: npx playwright test tests/owner-home-media.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=1
       - name: Existing fallback, navigation and reduced-motion regression
         run: npx playwright test tests/agent-a-base3-home-fallback.spec.mjs tests/deepsyq.spec.mjs tests/owner-home-layout.spec.mjs --grep 'BASE 3:|video carousel switches|failed owner media|reduced-motion users|Home Quick Create|Owner neon layout:' --project=chromium --project=mobile-webkit --workers=1
+      - name: Real supplied MP4 playback, ended transitions and mobile bounds
+        run: npx playwright test tests/owner-home-media.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=1
       - uses: actions/upload-artifact@v4
         if: always()
         with:

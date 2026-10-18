@@ -317,9 +317,9 @@ test('BASE 3: narrow 320px Home Hero has no intrinsic-width overflow without cli
     stageLeft:hero.left,stageRight:hero.right,stageWidth:hero.width,stageHeight:hero.height,
     copyLeft:copy.left,copyRight:copy.right,heroRight:stage.right};
   });
-  // The owner artwork remains visibly full-width INSIDE the 18px main padding.
-  expect(layout.stageLeft).toBeGreaterThanOrEqual(17);
-  expect(layout.stageRight).toBeLessThanOrEqual(width-17);
+  // Updated owner neon layout uses 12px phone padding; content must still fit.
+  expect(layout.stageLeft).toBeGreaterThanOrEqual(11);
+  expect(layout.stageRight).toBeLessThanOrEqual(width-11);
   expect(layout.copyLeft).toBeGreaterThanOrEqual(layout.stageLeft-1);
   expect(layout.copyRight).toBeLessThanOrEqual(layout.stageRight+1);
   expect(layout.page).toBeLessThanOrEqual(width);

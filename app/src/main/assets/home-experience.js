@@ -69,7 +69,7 @@ function setSlide(next,direction=1){
  if(item.previewPosterUrl)video.poster=item.previewPosterUrl;else video.removeAttribute('poster');
  video.load();
  const showcase=item.defaultSettings?.homeShowcase;
- const destinations=['#canvasFeature','#agentFeature','generate-studio.html?studio=video','generate-studio.html?studio=image','generate-studio.html?studio=audio'];
+ const destinations=['#canvasFeature','#quickCreateForm','#agentFeature','generate-studio.html?studio=video','generate-studio.html?studio=image','generate-studio.html?studio=audio'];
  $('inspirationHeroFeature').href=destinations.includes(showcase?.href)?showcase.href:link;
  $('inspirationHeroFeature').setAttribute('aria-label',showcase?.title?'Explore '+String(showcase.title):'Explore featured Inspiration video');
  renderCredit(item);updateNeighbors();
