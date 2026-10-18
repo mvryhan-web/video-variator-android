@@ -20,6 +20,8 @@ Example tasks:
 - Turn product photos into marketing content
 
 AGENT ORCHESTRATOR
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. ЭТАП 1 = готовые BASE §21 workflow с явным одобрением и без автономного оркестратора; оркестратор ниже — сохранённое будущее ЭТАПА 2 только ПОСЛЕ LIVE_VERIFIED BASE §51. Разделение по BASE §53. Существующие auth/provider/router/jobs, без дубликатов.
 This must not be just a chat.
 
 Flow:
@@ -51,6 +53,8 @@ Requirements:
 - async jobs
 - resumable progress
 - history
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. History/Workspace — только канон Block 4 на существующих таблицах jobs, НЕ новая проектная таблица.
 - strict user ownership
 - credits
 - limits
@@ -60,6 +64,8 @@ Requirements:
 - no fake integrations
 
 Trial:
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Исторические строки ниже НЕ утверждают allowance: бесплатных AI/agent credits нет, оплаченный Trial $0.99 пока НЕ включён и условия неизвестны. Цены/кредиты только Block 7, Issue #182.
 - $0.99 trial gets limited Agent allowance
 - no unlimited AI
 

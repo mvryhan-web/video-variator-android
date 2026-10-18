@@ -1,5 +1,7 @@
 # Deepsyq $0.99 paid trial — persistent purchase design / implementation handoff
 
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. ../DECISIONS.md. Записанные ранее 72 часа/одноразовость/сроки Trial — ИСТОРИЧЕСКАЯ staging гипотеза, не утверждённый контракт. Никаких миграций, Trial activation или купленных кредитов до отдельного решения владельца.
+
 **Current implementation state:** PERSISTENCE CONTRACT VERIFIED IN ISOLATED STAGING ONLY. This is a proposed design, **not** a deployed checkout, production migration, new wallet, or active account entitlement.
 
 **Product terms prepared for owner review:** exactly $0.99 USD, one non-renewing purchase, 72 hours after confirmed payment, no auto-renewal. Trial *credit amount remains unapproved* until real Stripe and provider costs are supplied. Existing Home, Video Uniquifier/Everyday Tools, subscriptions, AI wallet, provider and Stripe webhook must be preserved.

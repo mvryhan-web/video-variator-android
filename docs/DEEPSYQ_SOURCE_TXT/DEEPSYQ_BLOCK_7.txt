@@ -29,6 +29,8 @@ Lifetime:
 - NOT lifetime access to every future provider call
 
 TRIAL
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Единственный коммерческий канон — Block 7: бесплатного AI-плана и стартовых бесплатных кредитов НЕТ. Trial $0.99 — ПЛАТНЫЙ вход, но строго OFF пока не утверждены срок, кредиты, продление, возвраты, anti-multiple-signup. Trial считается покупкой только после verified Stripe webhook; Issue #182 купленные кредиты перед каждым provider call.
 Add a prominent:
 Trial — $0.99
 
@@ -92,6 +94,8 @@ FAQ should explain:
 - refunds only after policy approval
 
 AI CREDIT SYSTEM
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Вся логика credit/ledger/reservation/refund определяется ТОЛЬКО ЗДЕСЬ; BASE §§13–18,43–44 и Blocks 1/2/6 ссылаются сюда и не создают параллельные сервисы.
 Need:
 - AI wallet
 - auditable ledger
@@ -246,6 +250,11 @@ Never:
 - silently switch an expensive job to a much more expensive fallback model without approved routing policy
 
 EVERYDAY TOOLS
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Жёсткий дневной per-user limit НЕ даёт права бесплатного обращения к платному AI-provider: Issue #182 требует сначала ПРИОБРЕТЁННЫЕ AI-кредиты. Для бесплатного Everyday Tools нужны локальная обработка/доказанная нулевая себестоимость, либо не-AI облачный hard-limit без списаний.
+
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. РЕШЕНИЕ: ежедневный БЕСПЛАТНЫЙ доступ без обязательного AI-плана, только локально или без платного cloud AI. Если инструмент вызывает платный облачный сервис, применять ЛОКАЛЬНУЮ замену ИЛИ жёсткий дневной per-user лимит с гарантированным отказом вместо денежного перерасхода; иначе BLOCKED. Исторические строки «free/limited first use, then upgrade» ниже отменены, не удалены.
 - may have free/limited first use
 - then upgrade/plan/limits
 - do not confuse cheap/local tools with expensive paid AI provider operations

@@ -1,5 +1,13 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## OWNER DOCS DECISIONS — 2026-10-18 / NO FREE AI / NO CODE TOUCH
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [../DECISIONS.md](../DECISIONS.md).** Подробный [CHECKPOINT](DEEPSYQ_OWNER_DECISIONS_CHECKPOINT_20261018.md) — новая нормативная надстройка над оригинальными историческими claims ниже; не удалять старые записи. **НЕТ Free AI plan или welcome AI credits**. Ежедневные Everyday Tools бесплатны локально/при беззатратном облачном режиме с жёсткими per-user дневными лимитами; будущий Trial $0.99 OFF до согласования условий. Все платные AI запросы Issue #182 только на подтверждённо купленные кредиты.
+
+**Каноны/владельцы:** Block 4 — Workspace/History/My Creations существующих jobs (A UX, B/D shared privacy), Block 3 — Inspiration/templates (C, A/B media по handoff), Block 7 — Stripe/credits/Trial (D); Block 2 User Agent Stage1 workflow (C UI, Jules2 isolated plan, B/D billing), Block 5 Watcher Stage1 LITE (сайт, Stripe, cost anomaly, email). Audio B provider/C local Tools; SEO A editorial/C owned nav/D release. **Jules ОДИН исполнитель ≤3 bot-confirmed параллельных задачи**, no ACK = QUEUED_NOT_RUNNING. CODE_VERIFIED/CI/DEV не означает DONE; готовый рабочий агент READY_TO_MERGE, DONE только LIVE_VERIFIED.
+
+**Документация-only:** существующие claims и активные A/B/C/D/Jules PR сохраняются; не создавать конкурирующие PR, не активировать Trial/платные тесты, не делать миграции или production changes. **Вопросы владельцу:** Trial duration/credits/renewal/refunds/repeat signup, одна из уже существующих таблиц vv_ai_template vs vv_ai_inspiration, cloud Everyday Tools caps. Полный аудит см. CHECKPOINT.
+
 ## AGENT A §24 PR284 — EXACT 16/16 CI GREEN / SOURCE READY, D REVIEW REQUIRED — 2026-10-18
 
 - **ACTUALLY DELIVERED:** original A BASE §24 only narrowly extracted from unsafe 8-file Draft PR152 into existing [PR284](https://github.com/mvryhan-web/video-variator-android/pull/284) branch `agent-a-base24-history-get-surgical-20261018`, exact feature SHA **`21aee38a6ff70ce9bc9c3f43eb90ce06cf05d212`**, only 3 A scope paths: `server/generation-studio.js` three private History GET handlers (SQL correct bound `kind=$2` for image/video/music + `private,no-store` on list, owned detail & media), isolated actual-handler no-spend DB/S3 fixture and free workflow. Existing auth, private Video operation, D one-shot purchased-only dispatch/wallet/private-cost protection, S3 `expectedSha256`, DELETE route and provider calls unchanged.

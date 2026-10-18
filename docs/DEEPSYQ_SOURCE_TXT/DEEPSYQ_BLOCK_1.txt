@@ -55,6 +55,8 @@ Technical requirements:
 - no fake results
 
 Trial:
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. ПРЕЖНИЙ Trial allowance (строки ниже) — история, НЕ право на бесплатные AI-запросы. Block 7 является единственным источником цены/Trial; $0.99 — покупка ТОЛЬКО после Stripe confirmation и будущего решения владельца о credits/сроке/возвратах. Issue #182 запрещает provider call без купленных кредитов.
 - $0.99 trial gets limited Compare/Smart usage
 - no unlimited AI
 

@@ -1,5 +1,8 @@
 # BASE #44 — Free AI acquisition gate (code-only, not a public offer)
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Эта Free AI схема ОТМЕНЕНА решением владельца, архив ниже сохранён только как code-only история, никаких welcome grants/AI Free планов/стартовых credits. Существующие legacy флаги/код НЕ тронуты в этом docs-only задании; необходимо отдельно проверить отключение и исключить публичную рекламу. Канон коммерции Block 7: платный Trial $0.99 НЕ запускать до утверждения срока/кредитов/renewal/refunds/anti-abuse, и Issue #182 purchased-only.
+
+
 Original owner requirements: `docs/DEEPSYQ_PLATFORM_SPEC.md`, section 44. This is a bounded addition to existing authentication, AI Studio entitlements, price checks and wallet ledger, **not** a new trial/payment architecture.
 
 Default: `AI_FREE_GENERATION_ENABLED=false`. No user-facing credits, charges, model calls or free plan activation occur from this commit.
