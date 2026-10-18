@@ -18,6 +18,8 @@ test('Owner neon layout: reference section order, real card images and mobile bo
  await expect(page.locator('.home-feature-spotlight')).toHaveCount(3);
  await expect(page.locator('.home-hero-recommended')).toContainText('Recommended');
  await expect(page.locator('.home-create-copy strong')).toHaveText(['Image','Video','Audio','AI Agent','AI Apps','Canvas']);
+ await expect.poll(()=>page.locator('.inspiration-video-label').first().evaluate(el=>getComputedStyle(el).fontSize)).toBe('0px');
+ await expect.poll(()=>page.locator('#inspirationPreview').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
  for(const width of [1448,390,320]){
   await page.setViewportSize({width,height:1086});
   await page.locator('#createWithDeepsyq').scrollIntoViewIfNeeded();

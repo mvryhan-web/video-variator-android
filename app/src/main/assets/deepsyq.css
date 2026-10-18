@@ -608,3 +608,12 @@ body.home-neon{background:#030b18;color:#eff6ff}
 
 /* A denied autoplay/stuck native media clock must leave an accessible recovery action. */
 .hero-stage-cinematic .home-hero-carousel.needs-play:not(.is-empty) .hero-motion-control{clip-path:none;width:auto;height:auto;margin:0;z-index:8;top:10px;left:50%;transform:translateX(-50%);padding:7px 13px;border:1px solid #75dfff;border-radius:999px;background:#08101de8;color:white}
+
+/* Match the reference gallery: no legacy purple panel or wrapped text in Play circles. */
+.home-neon #inspirationPreview{padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+.home-neon .inspiration-video-label{font-size:0!important;line-height:0;letter-spacing:0;color:transparent!important}
+.home-neon .inspiration-video-label::after{font-size:11px;line-height:1;color:white}
+/* The isolated preview notice occupies the content rail, never the fixed brand rail. */
+.home-neon>.deepsyq-preview-notice{margin-left:224px}
+.home-neon.sidebar-collapsed>.deepsyq-preview-notice{margin-left:76px}
+@media(max-width:760px){.home-neon>.deepsyq-preview-notice,.home-neon.sidebar-collapsed>.deepsyq-preview-notice{margin-left:0}}

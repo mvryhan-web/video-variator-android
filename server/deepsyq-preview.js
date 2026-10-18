@@ -55,7 +55,7 @@ app.get('/api/inspiration',(req,res)=>{
 app.get('/api/templates',(_req,res)=>res.json({items:[]}));
 app.get('/api/auth/email/status',(_req,res)=>res.json({configured:false}));
 app.use('/api',(_req,res)=>res.status(503).json(disabled));
-const banner='<div role="status" style="position:relative;z-index:90;padding:12px 20px;text-align:center;background:#3d3320;color:#f6e9cb;font:600 13px system-ui">Deepsyq design preview · Work in progress · Sign-in, payments and paid AI generation are disabled.</div>';
+const banner='<div role="status" class="deepsyq-preview-notice" style="position:relative;z-index:90;padding:12px 20px;text-align:center;background:#3d3320;color:#f6e9cb;font:600 13px system-ui">Deepsyq design preview · Work in progress · Sign-in, payments and paid AI generation are disabled.</div>';
 async function homepage(_req,res){
  try{
   const html=await readFile(path.join(assets,'deepsyq.html'),'utf8');
