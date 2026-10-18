@@ -224,7 +224,7 @@ function showModelFlyout(kind,entry){
 }
 for(const entry of document.querySelectorAll('[data-model-menu]')){
  const kind=entry.dataset.modelMenu,btn=entry.querySelector('[data-open-models]');
- entry.addEventListener('mouseenter',()=>showModelFlyout(kind,entry));
+ entry.addEventListener('mouseenter',()=>{if(!mobileMenu.matches)showModelFlyout(kind,entry);});
  entry.addEventListener('mouseleave',scheduleModelClose);
  // Mobile tap first focuses the model trigger; do not let focus open the
  // overlay before click reaches the button. Keyboard Enter/Space still click it.
