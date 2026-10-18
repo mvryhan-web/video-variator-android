@@ -4,6 +4,9 @@
 
 ## OWNER POSITIONING CLARIFICATION — global AI platform (2026-10-17)
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Ранее написано, что оригинальные Block1–7 TXT «byte-identical»; на дату 18 октября владелец **прямо разрешил** добавить датированные пояснения к исходникам без удаления исходных слов. Кроме того, для бесплатных Everyday Tools дневной cap **не разрешает платный AI-provider вызов без купленных credits (Issue #182)**. Историческая фраза ниже сохранена, но не является текущей версией политики.
+
+
 **Read [`DEEPSYQ_GLOBAL_POSITIONING_REVENUE_VISUAL_SEO.md`](DEEPSYQ_GLOBAL_POSITIONING_REVENUE_VISUAL_SEO.md) before selecting a feature, writing Home/SEO copy or describing target customers.** Deepsyq is a worldwide AI creative platform built for image, video, voice, Canvas, agents, apps, inspiration and creation workflows — **not a single-storefront or single-marketplace solution**. Any individual advertisement or listing example is optional creative output, NOT the platform's identity, homepage, SEO target or default monetization. This editable derived roadmap removes marketplace-specific examples; **the seven earlier original owner TXT files remain byte-identical, while the separate eighth approved TXT is now recorded** and still govern technical scope. Preserve existing unfinished branches and original BASE 55 without claiming the user approved deletion of their requirements. Focus visual Home/real 13-video showcase, first secure paid Image/Video vertical slice, global SEO/AI-search and genuine conversion; no automatic paid AI or production changes.
 
 
