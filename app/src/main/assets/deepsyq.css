@@ -398,7 +398,15 @@ body.sidebar-collapsed #sidebar nav .sidebar-social button{justify-content:cente
 
 /* Owner-locked empty-media experience: preserve the 16:9 gallery footprint,
    original purple Hero and genuine CTA without pretending a still is a video. */
-.home-hero-carousel.is-empty{pointer-events:none}
+/* First-party owner-extracted V01 reference, not a playable movie. The
+   original unavailable-video notice and disabled play controls remain honest. */
+.home-hero-carousel.is-empty{
+ pointer-events:none;
+ background-image:linear-gradient(90deg,#100f1df7 0%,#100f1dd9 34%,#100f1d88 60%,#100f1d15 100%),url("media/home/v01-owner-clean-first-frame.jpg");
+ background-size:cover;
+ background-position:center center;
+ background-repeat:no-repeat;
+}
 .home-hero-carousel.is-empty::after{display:none}
 .home-hero-carousel.is-empty .home-hero-carousel-actions,
 .home-hero-carousel.is-empty .home-hero-player{display:none}
