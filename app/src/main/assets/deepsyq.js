@@ -1,6 +1,7 @@
 import {saveStudioHandoff} from './studio-handoff.js';
 import {renderHomeCarousel} from './home-experience.js';
 import {MODEL_CATALOG} from './generate-models.js';
+import {authorizedOnboardingOptions,onboardingResponseTarget} from './onboarding-options.js';
 const $=id=>document.getElementById(id);
 const quickCreateForm=$('quickCreateForm');
 const quickCreateDropzone=$('quickCreateDropzone');
@@ -307,7 +308,7 @@ document.querySelectorAll('[data-social]').forEach(button=>button.addEventListen
 let authOpener;function openAuth(){if(window.AndroidBridge){location.assign('index.html#signin');return;}authOpener=document.activeElement;$('authModal').hidden=false;setTimeout(()=>$('emailAuthEmail')?.focus(),0);initGoogle();}function closeAuth(){$('authModal').hidden=true;authOpener?.focus();}
 $('accountButton').onclick=()=>{closeMobileDrawer(true);openAuth();};document.querySelectorAll('[data-close-auth]').forEach(b=>b.onclick=closeAuth);
 document.addEventListener('keydown',e=>{if($('authModal').hidden)return;if(e.key==='Escape')closeAuth();if(e.key==='Tab'){const items=[...$('authModal').querySelectorAll('button:not(:disabled),input:not(:disabled)')].filter(e=>e.getClientRects().length);const first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}});
-$('logout').onclick=()=>{localStorage.removeItem('vv_token');sessionStorage.removeItem('vu_generation_job');location.reload();};
+$('logout').onclick=()=>{clearRecentCreations('Sign in to see your saved Studio creations.');localStorage.removeItem('vv_token');sessionStorage.removeItem('vu_generation_job');location.reload();};
 let config;let googleReady=false;
 function initGoogle(){if(googleReady||!config)return;if(!config.googleClientId){$('googleButton').textContent='Google sign-in is currently unavailable. Use email below.';return;}if(!window.google?.accounts?.id)return;googleReady=true;google.accounts.id.initialize({client_id:config.googleClientId,callback:async({credential})=>{try{const d=await api('/api/auth/google',{method:'POST',body:JSON.stringify({credential})});localStorage.setItem('vv_token',d.token);if(d.newAccount===true)localStorage.setItem('deepsyq_onboarding_pending','1');location.reload();}catch(_){$('paymentStatus').textContent='Sign-in could not complete. Please try again.';}}});$('googleButton').replaceChildren();google.accounts.id.renderButton($('googleButton'),{theme:'outline',size:'large',width:280,text:'continue_with'});}
 let pending=false;
@@ -368,7 +369,13 @@ async function loadFeaturedWorkflows(){
  const section=$('featuredWorkflows'),root=$('featuredWorkflowGrid');if(!section||config?.features?.aiApps===false)return;
  try{
   const r=await fetch(base+'/api/templates?featured=true',{cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||!Array.isArray(d.items)||!d.items.length)return;
-  root.replaceChildren();for(const t of d.items.slice(0,6)){const a=document.createElement('a');a.className='featured-workflow-card';a.href='ai-apps.html';const visual=document.createElement('div');visual.className='featured-workflow-visual';if(t.thumbnail){const img=document.createElement('img');img.src=t.thumbnail;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';visual.append(img);}else visual.textContent=t.generationType==='image'?'✧':t.generationType==='audio'?'♫':'▷';const copy=document.createElement('div');copy.className='featured-workflow-copy';const title=document.createElement('strong');title.textContent=t.title;const desc=document.createElement('p');desc.textContent=t.description||'Open this active workflow in Deepsyq.';const meta=document.createElement('div');meta.className='featured-workflow-meta';for(const value of [t.category,String(t.generationType||'').replace('_',' ')].filter(Boolean)){const span=document.createElement('span');span.textContent=value;meta.append(span);}copy.append(title,desc,meta);a.append(visual,copy);root.append(a);}section.hidden=false;
+  root.replaceChildren();for(const t of d.items.slice(0,6)){const a=document.createElement('a');a.className='featured-workflow-card';const type=t.generationType==='product_video'?'video':t.generationType;
+ const supportedType=['image','video','audio'].includes(type)?type:null;
+ // AI Apps already understands q/type/category. Carry the selected use case
+ // so similarly named Image and Video featured cards do not get mixed up.
+ a.href='ai-apps.html?q='+encodeURIComponent(String(t.title||'').slice(0,100))+
+   (supportedType?'&type='+encodeURIComponent(supportedType):'')+
+   (typeof t.category==='string'&&t.category.trim()?'&category='+encodeURIComponent(t.category.slice(0,80)):'');const visual=document.createElement('div');visual.className='featured-workflow-visual';if(t.thumbnail){const img=document.createElement('img');img.src=t.thumbnail;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';visual.append(img);}else visual.textContent=t.generationType==='image'?'✧':t.generationType==='audio'?'♫':'▷';const copy=document.createElement('div');copy.className='featured-workflow-copy';const title=document.createElement('strong');title.textContent=t.title;const desc=document.createElement('p');desc.textContent=t.description||'Open this active workflow in Deepsyq.';const meta=document.createElement('div');meta.className='featured-workflow-meta';for(const value of [t.category,String(t.generationType||'').replace('_',' ')].filter(Boolean)){const span=document.createElement('span');span.textContent=value;meta.append(span);}copy.append(title,desc,meta);a.append(visual,copy);root.append(a);}section.hidden=false;
  }catch(_){section.hidden=true;}
 }
 
@@ -377,15 +384,56 @@ function renderPlans(){const descriptions={basic:'For occasional video projects.
 try{config=await api('/api/config');applyPlatformFeatures();renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);}catch(_){updateInspirationHero([]);$('paymentStatus').textContent='Plans could not load. Please try again later.';}
 window.addEventListener('load',initGoogle);
 try{const c=await api('/api/studio/config');studioModelMenuConfig=c;if(openModelsKind)renderModelFlyout(openModelsKind);$('studioStatus').textContent=c.ownerOnly?'AI generation is in owner preview. Explore the studios; existing tools remain available.':c.enabled?'Open a studio to see the available models.':'AI generation is not available yet. Existing tools remain available.';}catch(_){$('studioStatus').textContent='Studio availability could not be checked. Existing tools remain available.';}
-// Read-only dashboard overview: reuses the existing authenticated Studio history.
-// Never embeds media blobs, starts jobs, or exposes another user's results.
+// Read-only dashboard overview. Backend user_id scope is authoritative;
+// never render a late private response after a session/account switch.
+let recentCreationsEpoch=0,recentRenderedOwnerToken=null;
+const recentAccountChanged='Account changed. Reload to view creations for the current account.';
+function clearRecentCreations(message){
+ recentRenderedOwnerToken=null;
+ ++recentCreationsEpoch;
+ $('recentCreationsGrid')?.replaceChildren();
+ const status=$('recentCreationsStatus');if(status)status.textContent=message;
+}
+window.addEventListener('storage',event=>{
+ if(event.key==='vv_token'){
+  clearRecentCreations(event.newValue?recentAccountChanged:'Sign in to see your saved Studio creations.');
+ }
+});
+// A same-tab token change does NOT fire a native storage event. Clear
+// private prompt cards before the next user interaction, even if that click
+// immediately navigates to the saved result. Do not alter other Studio state.
+function protectRecentCreationsAccount(){
+ if(recentRenderedOwnerToken===null||recentRenderedOwnerToken===localStorage.getItem('vv_token'))return false;
+ clearRecentCreations(localStorage.getItem('vv_token')?recentAccountChanged:'Sign in to see your saved Studio creations.');
+ return true;
+}
+for(const eventName of ['click','keydown','focusin'])
+ document.addEventListener(eventName,event=>{
+  // Remember origin BEFORE clearing: removing the card detaches its parent
+  // and closest('#recentCreationsGrid a') could then no longer find the link.
+  const fromRecentCard=!!event.target?.closest?.('#recentCreationsGrid a');
+  if(protectRecentCreationsAccount()&&fromRecentCard){
+   event.preventDefault();event.stopImmediatePropagation();
+  }
+ },true);
+window.addEventListener('focus',protectRecentCreationsAccount);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)protectRecentCreationsAccount();});
 async function loadRecentCreations(){
  const status=$('recentCreationsStatus'),grid=$('recentCreationsGrid');if(!status||!grid)return;
+ const requestedToken=localStorage.getItem('vv_token'),epoch=++recentCreationsEpoch;
+ const isCurrent=()=>epoch===recentCreationsEpoch&&requestedToken===localStorage.getItem('vv_token');
  grid.replaceChildren();
- if(!localStorage.getItem('vv_token')){status.textContent='Sign in to see your saved Studio creations.';return;}
+ if(!requestedToken){status.textContent='Sign in to see your saved Studio creations.';return;}
  status.textContent='Loading your recent creations…';
  try{
-  const response=await api('/api/studio/jobs?filter=all'),items=Array.isArray(response.items)?response.items.slice(0,4):[];
+  const response=await api('/api/studio/jobs?filter=all');
+  // A token rotation can occur before the fetch settles; no old prompts may
+  // be inserted for a new account, even if an earlier server response is valid.
+  if(!isCurrent()){
+   if(epoch===recentCreationsEpoch)clearRecentCreations(recentAccountChanged);
+   return;
+  }
+  const items=Array.isArray(response.items)?response.items.slice(0,4):[];
   if(!items.length){status.textContent='No saved creations yet. Start with Canvas or a Studio.';return;}
   const label={ready:'Ready',queued:'Queued',processing:'Processing',finalizing:'Finalizing',failed:'Failed'};
   for(const item of items){
@@ -399,8 +447,12 @@ async function loadRecentCreations(){
    date.textContent=Number.isFinite(timestamp.getTime())?timestamp.toLocaleDateString():'Open in Studio';
    card.append(head,prompt,date);grid.append(card);
   }
+  recentRenderedOwnerToken=grid.childElementCount?requestedToken:null;
   status.textContent=grid.childElementCount?'Select a creation to open your Studio history.':'No saved creations yet.';
- }catch(_){status.textContent='Studio history is not available for this account right now.';}
+ }catch(_){
+  if(isCurrent())status.textContent='Studio history is not available for this account right now.';
+  else if(epoch===recentCreationsEpoch)clearRecentCreations(recentAccountChanged);
+ }
 }
 async function loadAIWallet(){
  const chip=$('aiWalletLink');if(!chip)return;
@@ -412,22 +464,92 @@ async function loadAIWallet(){
  }catch(_){chip.hidden=true;}
 }
 
+let onboardingModalOwnerToken=null;
 async function maybeShowOnboarding(){
  if(config?.features?.onboarding===false)return;
- if(localStorage.getItem('deepsyq_onboarding_pending')!=='1'||!localStorage.getItem('vv_token'))return;
+ const requestedToken=localStorage.getItem('vv_token');
+ if(localStorage.getItem('deepsyq_onboarding_pending')!=='1'||!requestedToken)return;
+ const sameAccount=()=>requestedToken===localStorage.getItem('vv_token');
  try{
-  const state=await api('/api/onboarding');if(state.completed){localStorage.removeItem('deepsyq_onboarding_pending');return;}
-  const modal=$('onboardingModal');modal.hidden=false;setTimeout(()=>$('onboardingModal').querySelector('[data-onboarding-goal]')?.focus(),0);
+  const state=await api('/api/onboarding');
+  if(!sameAccount())return; // A different login must fetch its own first-run state.
+  if(state.completed){localStorage.removeItem('deepsyq_onboarding_pending');return;}
+  // The backend advertises only goals it can persist; Product Ads and Avatar
+  // must remain absent until D's reviewed database/service changes are live.
+  const authorized=authorizedOnboardingOptions(state.options,{productVideoEnabled:config?.features?.productVideo===true});
+  if(!authorized.length)return;
+  const modal=$('onboardingModal'),choices=modal.querySelector('.onboardingChoices');
+  choices.replaceChildren();
+  for(const option of authorized){
+   const button=document.createElement('button');button.type='button';button.dataset.onboardingGoal=option.id;
+   const title=document.createElement('strong');title.textContent=option.label;
+   const detail=document.createElement('span');detail.textContent=option.description;
+   button.append(title,detail);
+   button.addEventListener('click',async()=>{
+    if(!sameAccount()){
+     closeOnboarding();
+     return;
+    }
+    const status=$('onboardingStatus'),buttons=[...choices.querySelectorAll('button')];
+    buttons.forEach(b=>b.disabled=true);status.textContent='Saving your starting point…';
+    try{
+     const response=await api('/api/onboarding',{method:'POST',body:JSON.stringify({goal:option.id})});
+     if(!sameAccount()){closeOnboarding();return;}
+     const target=onboardingResponseTarget(response,option.id,authorized);
+     if(!target)throw Error('ONBOARDING_TARGET_NOT_AUTHORIZED');
+     localStorage.removeItem('deepsyq_onboarding_pending');
+     location.assign(target);
+    }catch(e){
+     if(!sameAccount()){closeOnboarding();return;}
+     status.textContent=e.message==='ONBOARDING_UNAVAILABLE'?
+      'Onboarding is temporarily unavailable. You can still use the studios from the dashboard.':
+      'Could not save your choice. Please try again.';
+     buttons.forEach(b=>b.disabled=false);
+    }
+   });
+   choices.append(button);
+  }
+  if(!sameAccount())return; // A logout while building buttons must not expose prior state.
+  $('onboardingStatus').textContent='';
+  onboardingModalOwnerToken=requestedToken;
+  modal.hidden=false;
+  setTimeout(()=>{if(sameAccount()&&!modal.hidden)choices.querySelector('button')?.focus();},0);
  }catch(_){/* Keep pending marker so setup can be retried later. */}
 }
-function closeOnboarding(){const modal=$('onboardingModal');if(modal)modal.hidden=true;}
-document.querySelectorAll('[data-close-onboarding]').forEach(b=>b.onclick=()=>{localStorage.removeItem('deepsyq_onboarding_pending');closeOnboarding();});
-$('onboardingLater').onclick=()=>{localStorage.removeItem('deepsyq_onboarding_pending');closeOnboarding();};
-document.querySelectorAll('[data-onboarding-goal]').forEach(button=>button.onclick=async()=>{
- const status=$('onboardingStatus'),buttons=[...document.querySelectorAll('[data-onboarding-goal]')];buttons.forEach(b=>b.disabled=true);status.textContent='Saving your starting point…';
- try{const d=await api('/api/onboarding',{method:'POST',body:JSON.stringify({goal:button.dataset.onboardingGoal})});localStorage.removeItem('deepsyq_onboarding_pending');location.assign(d.target);}
- catch(e){status.textContent=e.message==='ONBOARDING_UNAVAILABLE'?'Onboarding is temporarily unavailable. You can still use the studios from the dashboard.':'Could not save your choice. Please try again.';buttons.forEach(b=>b.disabled=false);}
+function closeOnboarding(){
+ const modal=$('onboardingModal');if(modal)modal.hidden=true;
+ onboardingModalOwnerToken=null;
+}
+function dismissOnboarding(){
+ // A stale previous-user modal must not delete a freshly signed-in user's
+ // pending setup marker when the token rotates silently within this tab.
+ if(onboardingModalOwnerToken===localStorage.getItem('vv_token'))
+  localStorage.removeItem('deepsyq_onboarding_pending');
+ closeOnboarding();
+}
+window.addEventListener('storage',event=>{
+ if(event.key==='vv_token'&&onboardingModalOwnerToken&&
+    event.newValue!==onboardingModalOwnerToken)closeOnboarding();
 });
+// A same-tab login does not emit 'storage'. No previous account's authorized
+// choices may remain interactive (or visible after tab focus) for a new user.
+function scrubStaleOnboardingOwner(){
+ if(!onboardingModalOwnerToken||onboardingModalOwnerToken===localStorage.getItem('vv_token'))return false;
+ closeOnboarding();return true;
+}
+for(const type of ['click','keydown','focusin'])document.addEventListener(type,event=>{
+ const staleModalAction=!!event.target?.closest?.('#onboardingModal');
+ if(scrubStaleOnboardingOwner()&&staleModalAction){
+  event.preventDefault();
+  event.stopImmediatePropagation();
+ }
+},true);
+window.addEventListener('focus',scrubStaleOnboardingOwner);
+document.addEventListener('visibilitychange',()=>{
+ if(!document.hidden)scrubStaleOnboardingOwner();
+});
+document.querySelectorAll('[data-close-onboarding]').forEach(b=>b.onclick=dismissOnboarding);
+$('onboardingLater').onclick=dismissOnboarding;
 
 if(localStorage.getItem('vv_token'))try{const {user}=await api('/api/me');$('accountLabel').textContent=user.name||'Your workspace';$('accountButton').textContent='Account settings';$('accountButton').onclick=()=>location.assign('index.html#profile');$('logout').hidden=false;if(user.isAdmin&&!document.getElementById('adminAiControl')){const a=document.createElement('a');a.id='adminAiControl';a.href='deepsyq-admin.html';a.textContent='Owner AI Control';document.querySelector('.sidebar-bottom').prepend(a);}await Promise.all([maybeShowOnboarding(),loadAIWallet(),loadRecentCreations()]);}catch(e){if(e.message==='INVALID_SESSION'||e.message==='USER_NOT_FOUND'){localStorage.removeItem('vv_token');localStorage.removeItem('deepsyq_onboarding_pending');}}
 if(new URLSearchParams(location.search).get('checkout')==='success')$('paymentStatus').textContent='Your checkout has returned. Access is updated only after Stripe confirms payment. Open your account to see its current status.';

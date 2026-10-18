@@ -1,5 +1,34 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## COORDINATOR #5 / 18-Oct later cycle — status and ownership reservation (append-only, not new claims)
+
+- **Already DEV-MERGED this cycle:** D §49 PR251 `3a6509f2`; A §45 PR162 `aafef09e`; A §46 PR181 `41778de6`; A §32 PR155 `e190dbf4`; A §31 PR154 `8f4e11c6`; A §25 PR168 `4552f7f5`. All were exact original PR SHA fully native green and reviewed. Do NOT recreate their code; original full BASE rows remain PARTIAL/LIVE unverified. Current full checkpoint at beginning of [PROJECT_STATUS.md](../PROJECT_STATUS.md).
+- **Current A §3 owner amendment**: delete visible hero headline “Create beyond limits”, retain original girl/layout/16:9 video area and 12 other scene identities. NEW existing focused PR259 HEAD `5f2d1c85`, **CI pending**. Do not merge before exact SHA green; no new hero or change beyond approved deletion.
+- **B Video**: §5 PR174→PR186→PR203 stack current; §7 Audio/Music existing PR180; owner approved Media Library frames 13; B draft PR257 stills for review only. HeyGen **Free** V01/V02 outputs NOT approved for commercial/public launch under recorded license: keep `publish:false`, no public MP4, no false 16:9 V01 (actual 1344×768). Do not confuse 13 scene reference PNGs with licensed real movies.
+- **C current §30** PR144 head `94edf24f` 3/3 native Actions green but stale ~180-file PR diff; only ~3 source-level differences vs newer DEV. No blind merge; preserve A Home JS; C §38 PR200 5/7 CI, 2 FAIL; C §28 PR207 5/5 CI but 89 stale diff. C original §21 AI Agents follows Jules2 isolated Block2, §22 Inspiration MUST reuse existing Block3 PR44; Audio Tools C §28.
+- **D original §49/§51 and pre-paid guard** now integrated DEV, not live. Own Stripe real payment/production unsafe until owner permission, continue collision surveillance and exact UI/DB tests.
+- **Jules:** #238 Jules1 bot working Block5, #239 Jules2 bot working Block2, Jules3 #240 bot ready with rejected 420-file PR255 and exact extracted [PR258](https://github.com/mvryhan-web/video-variator-android/pull/258) 2 original files + #5-approved 1 no-spend Node workflow; run #39137791503 queued, 11/11 V8 mock assertion callbacks PASS is NOT official native PASS. PR256 unsafe DRAFT Dev unmerged. Hold new Jules dispatch until accepted.
+- **Original BASE 55 completed**: #47/#53 ONLY (2/55). **NEXT coordinator operation**: validate true PR259 current-head native CI, then DEV-only no-clobber merge if green, otherwise diagnose; follow PR258 Node CI. Never main/prod/paid tests, dangerous migrations or override licensed media restrictions.
+
+
+
+## AGENT A 2026-10-18 — ORIGINAL §32 SAME PR155 6/6 REAL NATIVE GREEN, READY FOR REVIEW
+
+- A original §32 existing [PR155](https://github.com/mvryhan-web/video-variator-android/pull/155) unchanged HEAD `490dba526fd8d079dae55e3838265b3a1bb76e95`: focused BASE32 #39128824998, Studio #39128824981, Video #39128825003, Canvas #39128825012, Wallet #39128824995, History #39128825024 **6/6 workflow success and 6/6 native jobs success**, 0 failed steps. Actually marked non-DRAFT Ready for Review, no new PR. SOURCE READY_TO_MERGE for #5 only; full original §32 remains PARTIAL until DEV integration, owner staging/prod/live, not original DONE.
+- A other source-ready original claims §4 PR193, §45 PR162, §46 PR181 as verified earlier; §24 PR152 broken PNG fixture corrected on same PR HEAD `be65cbb` but unresolved History browser and shared source; §31 PR154 some native runs in progress, §25 PR168 queued. No owner money/Stripe/production or unsafe DB changes.
+
+
+## AGENT A 2026-10-18 — §24 VERIFIED CORRUPT PNG FIX / SAME EXISTING PR152 / NO BROWSER GREEN CLAIM
+
+- Existing A-owned original BASE §24 PR152 now HEAD **`be65cbb87756c9871136564a6d2a1193ac7136f5`**: targeted test-only change in `tests/generation-studio.spec.mjs` replaces broken base64 1×1 saved result PNG fixture (Pillow decode failed) with authentic 2×2 RGB PNG (Pillow decode succeeded). One existing test in original PR; no shared server/Studio JS changes, no weakened privacy checks or duplicate PR. GitHub new-head CI not registered yet, Playwright unavailable locally, old Reuse/Regenerate browser regressions unresolved; full §24 PARTIAL/CI_PENDING + B/D cross-lane integration BLOCKED, NOT READY/DONE.
+- §32 same PR155 SHA `490dba52` has five actual workflow successes and Studio workflow still in progress, no READY before 6/6. §45 PR162 and §46 PR181 are original A scoped READY FOR REVIEW after current-head green, not live. Coordinator #5 alone reviews DEV merges; no paid/production.
+
+
+## [AGENT C / BASE #30 2026-10-18 ACTUAL CODE CHECKPOINT — CI QUEUED]
+
+- **Claim:** C current original §30, previously claimed on board at `a23d5fb3`; earlier #38 externally CI_BLOCKED/PARTIAL. SAME [PR144](https://github.com/mvryhan-web/video-variator-android/pull/144), nonforce CAS feature HEAD **`94edf24fc7a6f85613311d17b9d9c887d422776b`**, first parent DEV `3a04e1ffef25c8df0621ef978c6fd06a94ffd6e5`, second prior feature `eac5843a`; latest DEV→C compare **3 C files, behind=0**, no old A CSS/test overwrite. Reconciled `deepsyq.js` mobile drawer focus/Escape/Tab/outside tap/header sign-in, original Playwright and workflow. V8 syntax/invariants 7/7 PASS (not native CI). Prior HEAD focused real mobile browsers #39019648493 SUCCESS; NEW SHA native focused [39133721687](https://github.com/mvryhan-web/video-variator-android/actions/runs/39133721687), Home 39133721790, broad 39133721660 ALL **QUEUED/runner unassigned**, **NOT READY_TO_MERGE/DONE/LIVE**. Native PR144 old historical REST diff shows 180 files; fresh compare proves ONLY 3; #5 must independently audit and DEV-only integrate, never mass-merge old PR. External owner Android/iOS/staging and D production approvals still outstanding. [C checkpoint Issue74](https://github.com/mvryhan-web/video-variator-android/issues/74#issuecomment-6250778619); [coordinator Issue233](https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6250785302). No paid AI, live Stripe, main, production, unsafe migration or altered Home design.
+
+
 ## [AGENT C 2026-10-18 / OWNER RULE #12 CLAIM SWITCH §38 → §30]
 
 **Claim:** Agent C returns to EXISTING original BASE #30 mobile/Android/iPhone (not new system), existing DRAFT [PR144](https://github.com/mvryhan-web/video-variator-android/pull/144), branch `base30-mobile-drawer-acceptance-20261016`, previous code SHA `eac5843aa0900151cded5b370fcc357277a1789c`. Prior dedicated real browser CI #39019648493 and Home #39019648482 / Brand #39019648494 SUCCESS, platform broad #39019648491 FAIL. New scope: safely transplant tested mobile drawer accessibility onto MOVING DEV, preserve A's merged Home CSS/z-index/current tests, use SAME PR and new exact-head no-spend CI. No changes to locked Home visual layout, raw hero, model provider or payment. Original §30 PARTIAL, real-device/staging/owner production external.

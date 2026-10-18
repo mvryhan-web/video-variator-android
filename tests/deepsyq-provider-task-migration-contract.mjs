@@ -45,7 +45,8 @@ test('D purchased-only additive migration cannot disappear from merged manifest'
 
 test('historical migration ledger checksum stays valid; new migration is pending',async()=>{
   const fakePool={query:async query=>{
-    if(query.includes("to_regclass('public.vv_schema_migration')"))return {rows:[{reg:'vv_schema_migration'}]};
+    // BASE49 reads the ledger using the active PostgreSQL search_path, not public.
+    if(query.includes("to_regclass('vv_schema_migration')"))return {rows:[{reg:'vv_schema_migration'}]};
     if(query.includes('FROM vv_schema_migration ORDER BY name'))return {rows:[{name:legacyName,checksum:migrationChecksum(historical),applied_at:new Date('2026-10-15T00:00:00Z')}]};
     throw Error('UNEXPECTED_QUERY');
   }};
