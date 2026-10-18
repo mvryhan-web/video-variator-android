@@ -37,6 +37,7 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
   await page.locator('#menu').click();
   await expect(page.locator('body')).toHaveClass(/menu-open/);
   await expect(page.locator('#sidebar')).toHaveJSProperty('inert',false);
+  await expect(page.locator('#sidebar')).toBeInViewport();
  }else{
   await page.locator('#sidebarToggle').click();
   await expect(page.locator('body')).toHaveClass(/sidebar-collapsed/);
@@ -44,13 +45,16 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
   await page.locator('#sidebarToggle').click();
   await expect(page.locator('body')).not.toHaveClass(/sidebar-collapsed/);
  }
- await page.locator('[data-model-menu="image"]').hover();
+ if(mobile)await page.locator('[data-open-models="image"]').click();
+ else await page.locator('[data-model-menu="image"]').hover();
  await expect(page.locator('#modelFlyout')).toBeVisible();
  await expect(page.locator('#modelFlyout')).toContainText('Connected image');
  await expect(page.locator('#modelFlyout')).toContainText('Pending image');
  await expect(page.locator('#modelFlyout .model-flyout-option').first()).toBeEnabled();
  await expect(page.locator('#modelFlyout .model-flyout-option').nth(1)).toBeDisabled();
- await page.locator('[data-model-menu="video"]').hover();
+ // The mobile panel overlays the narrow rail; close it before tapping a new menu.
+ if(mobile){await page.locator('#modelFlyoutClose').click();await page.locator('[data-open-models="video"]').click();}
+ else await page.locator('[data-model-menu="video"]').hover();
  await expect(page.locator('#modelFlyoutTitle')).toHaveText('Video models');
  await expect(page.locator('#modelFlyout')).toContainText('Connected video');
  await page.locator('#modelFlyoutClose').click();
