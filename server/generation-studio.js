@@ -20,7 +20,7 @@ import {ownerProviderTaskId} from './generation-provider-task-id.js';
 import {generationFeatureEnabled,generationFeatureSwitches} from './generation-feature-flags.js';
 import {aiMigrationStatus} from './ai-migrations.js';
 import {completedGenerationSummary,trackedToolUsageSummary} from './generation-business-rates.js';
-import {submitPurchasedProviderRequest} from './generation-purchased-provider-boundary.js';
+import {submitPurchasedProviderRequest,PurchasedDispatchDenied} from './generation-purchased-provider-boundary.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch}={}){
  const model=MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter);
  if(!model)throw Error('MODEL_NOT_CONNECTED');
@@ -267,6 +267,13 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   const result=await submitPurchasedProviderRequest({env,wallet,user:{id:user.id,email:user.email,isOwner:isOwner(user)},job,request,model:selected,quote,originalQuote,fingerprint,provider});
   await finish(id,result,user.id);
  }catch(e){
+  // A verified pre-provider refusal cannot have incurred an AI provider cost.
+  // Return the held reservation exactly once; an ambiguous provider result
+  // is NEVER auto-refunded and remains reserved for reconciliation.
+  if(e instanceof PurchasedDispatchDenied){
+   await failTerminalProviderJob(id,user.id,e,'pre_provider_authorization');
+   return;
+  }
   const failure=normalizeGenerationError(e,{stage:'provider_submit'});
   await pool.query("UPDATE vv_generation_jobs SET status='failed',error=$2,error_message=$3,metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object('failure',jsonb_build_object('category',$4,'stage',$5,'sourceCode',$6,'retryable',$7)),failed_at=NOW() WHERE id=$1",[id,failure.code,walletEnabled()?'AI_WALLET_REVIEW_REQUIRED':null,failure.category,failure.stage,failure.sourceCode,failure.retryable]);
   if(walletEnabled())await wallet.settle({userId:user.id,jobId:id,outcome:'unknown'}).catch(()=>{});
