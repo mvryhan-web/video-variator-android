@@ -193,7 +193,11 @@ test('legacy video history and profile deep links open actual views',async({page
 });
 
 test('owner sees AI control entry and admin page exposes only safe model controls',async({page})=>{
- await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','owner-fixture'));
+ await fixtures(page);
+ // Only the named fixtures are success. An unrelated protected admin route
+ // must fail as HTTP 403 (missing test fixture), NOT fake a revoked owner
+ // HTTP 401 that correctly hides the private dashboard and redirects Home.
+ await page.route('**/api/studio/admin/**',route=>route.fulfill({status:403,json:{error:'UNMOCKED_ADMIN_FIXTURE'}}));await page.addInitScript(()=>localStorage.setItem('vv_token','owner-fixture'));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Owner',isAdmin:true}}}));
  await page.route('**/api/studio/admin/business',r=>r.fulfill({json:{users:{total:2,registrations30d:1,everSubscribed:1,inactiveAfterSubscription:0,generationAdoptionRate:.5,everSubscribedRate:.5},generation:{jobs:3,generatingUsers:1,ready:2,failed:1,processing:0,failureRate:.333,jobsPerGeneratingUser:3,averageSeconds:12,providerCosts:[{currency:'eur',amount:.5}],creditsCharged:80,topModel:'byteplus-seedance-2'},aiPurchases:[{currency:'eur',purchases:1,netAmountMinor:500,creditsPurchased:100}],grossMargin:null,grossMarginReason:'unverified'}}));
  await page.route('**/api/studio/admin/purchases',r=>r.fulfill({json:{items:[{userId:'u1',userEmail:'creator@example.test',credits:1000,amountMinor:999,refundedMinor:250,netMinor:749,currency:'eur',createdAt:'2026-10-15T10:00:00Z'}]}}));
@@ -520,7 +524,11 @@ test('public Inspiration shortcuts display only published category labels',async
  await expect.poll(()=>new URL(page.url()).searchParams.get('category')).toBe('Fashion & Beauty');
 });
 test('owner can manage Block 3 inspiration without exposing rights internals publicly',async({page})=>{
- await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','owner-fixture'));await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Owner',isAdmin:true}}}));
+ await fixtures(page);
+ // Only the named fixtures are success. An unrelated protected admin route
+ // must fail as HTTP 403 (missing test fixture), NOT fake a revoked owner
+ // HTTP 401 that correctly hides the private dashboard and redirects Home.
+ await page.route('**/api/studio/admin/**',route=>route.fulfill({status:403,json:{error:'UNMOCKED_ADMIN_FIXTURE'}}));await page.addInitScript(()=>localStorage.setItem('vv_token','owner-fixture'));await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Owner',isAdmin:true}}}));
  const empty={items:[]};for(const p of ['business','purchases','users','jobs','audit','models','metrics','billing-review','templates'])await page.route('**/api/studio/admin/'+p+'**',r=>r.fulfill({json:p==='business'?{users:{total:0,registrations30d:0,everSubscribed:0,inactiveAfterSubscription:0,generationAdoptionRate:0,everSubscribedRate:0},generation:{jobs:0,generatingUsers:0,ready:0,failed:0,processing:0,failureRate:0,jobsPerGeneratingUser:0,averageSeconds:null,providerCosts:[],creditsCharged:0,topModel:null},aiPurchases:[],grossMargin:null}:empty}));
  await page.route('**/api/studio/admin/readiness',r=>r.fulfill({json:{gates:[],blockers:[]}}));
  let item={id:'i1',title:'Owned Fashion Film',slug:'owned-fashion-film',kind:'video',category:'Fashion',description:'Original',previewUrl:'/owned.mp4',previewPosterUrl:'/owned.jpg',prompt:'Fashion film prompt',defaultModel:null,aspectRatio:'9:16',requiredInputTypes:['image'],defaultSettings:{ratio:'9:16'},actionTarget:'studio',rightsBasis:'owned',rightsNote:'Created in house',active:true,featured:true,sortOrder:10};
