@@ -12,4 +12,9 @@
     const retry=document.createElement('button');retry.textContent=ru?'Обновить':'Reload';retry.onclick=()=>location.reload();help.append(text,retry);(document.body||root).append(help);
   },6000);
   document.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(ready),{once:true});
+  // BFCache restores do not replay DOMContentLoaded. A suspended RAF could
+  // otherwise leave the page hidden behind the startup overlay after Back.
+  window.addEventListener('pageshow',()=>{
+    if(document.readyState!=='loading')ready();
+  });
 })();
