@@ -2,6 +2,8 @@
 
 ## AGENT A / SEO #156 PR267 SCOPED SOURCE / 2026-10-18
 
+- **Visual scope addendum (before edit):** Agent A also claims only `app/src/main/assets/deepsyq-seo.css` (comparison-page-specific CSS, current DEV blob `ca5205b03290a5ee6a653becd880d6c8cc9b782e`), to remove legacy mint links and align this page's focus/link palette with the approved violet/pink Home brand. No general `deepsyq.css` edits or other pages. Existing isolated PR267 and dedicated CI workflow will be amended and rerun on a new SHA. Changes remain owner A design lane.
+
 - **A claims exact isolated editorial slice** Issue156 on current owner-approved global SEO track; original Home §3 PR259 now DEV merged, original History §24 PR152 cross-lane blocked, no duplicate old PR. [PR267](https://github.com/mvryhan-web/video-variator-android/pull/267) `agent-a-seo156-comparison-editorial-20261018` exact SHA **`3983348801940b8a1e3252b3d9f4c3ac903e34a2`**, **3 exact file paths**, DRAFT: existing `deepsyq-vs-deepseek.html` comparison safe marketing text/metadata, new isolated no-fee Node 4-case spec, new focused CI workflow. No shared Home, CSS, server, B/C/D feature or indexation changes. [Focused #39142953164](https://github.com/mvryhan-web/video-variator-android/actions/runs/39142953164) and [platform #39142953256](https://github.com/mvryhan-web/video-variator-android/actions/runs/39142953256) current-head QUEUED, NOT READY / NOT MERGED. Full SEO technical crawler release UNASSIGNED, full original §3 PARTIAL. Only #5 DEV merge after exact-head CI success; owner/D prod authorization separate.
 
 
