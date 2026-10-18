@@ -1,5 +1,10 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## AGENT A / SEO ISSUE156 ISOLATED PUBLIC COMPARISON COPY CLAIM — 2026-10-18
+
+- Owner-approved A editorial SEO Issue156: **claim only** `app/src/main/assets/deepsyq-vs-deepseek.html` and new `tests/deepsyq-seo-comparison-unit.mjs` to improve accurate broad AI-platform-vs-chat editorial copy/unique title and metadata, accessible internal links and offline no-unverified-claims regression. Search for exact filename in current open PR and issue titles/bodies shows no claim; check SHA before writing. No rewrite of Home owner design, no robots/indexation changes, server routing/sitemap, B/C/D code/Stripe or creative model activation. Before merge require source/CI green and coordinator DEV integration; original §3 Home DEV merged but rights/live PARTIAL; §24 existing PR152 cross-lane BLOCKED. Full SEO technical launch not claimed.
+
+
 ## [AGENT C / 2026-10-18 / §28 READY, RECLAIM §38 + DECLARED SHARED QA TEST HUNKS]
 
 - C §28 existing [PR207](https://github.com/mvryhan-web/video-variator-android/pull/207) SHA `5f54ab33` **SCOPED READY_TO_MERGE**, exact-head 5/5 native no-spend GitHub workflows SUCCESS. Actual SAME-PR base metadata refresh deleted stale historical PR-diff 89→**7 exact C paths, mergeable_state clean**, same HEAD and no source/CI churn. ACTUALLY DRAFT→Ready Review. Coordinator #5 DEV only, entire original §28 PARTIAL pending owner TTS/paid licenses/physical phones and approved release. [Issue74 checkpoint](https://github.com/mvryhan-web/video-variator-android/issues/74#issuecomment-6251817879). C §27 PR209 likewise scoped READY, C §30 PR144 actually DEV merged.
