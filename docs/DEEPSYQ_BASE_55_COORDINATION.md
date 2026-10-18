@@ -1,5 +1,10 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## [AGENT A §3 PR259 / OWNER CTA VISUAL REGRESSION FIX / 18 OCT]
+
+- Same A-owned original **§3** [PR259](https://github.com/mvryhan-web/video-variator-android/pull/259), HEAD `e322931a2e1a103536f7ac6f08b7e57c8c7ebe57`, DRAFT, 6 focused A paths. Previous exact HEAD `c67e60e` native Home owner-hero-fallback SUCCESS and original real screenshots 1448/390 via artifact #12140942997 revealed green Hero Create CTA, violates purple/pink approved design. New same PR CSS `97156a5` restores violet-to-pink Home/Create+Canvas accents and focused test `e322931` checks computed styles, retains six-of-13 carousel and deleted headline. Current HEAD GitHub Actions regression #39139878851, Home #39139878745, brand #39139878761, preview #39139878793 queued/pending; **NOT READY / FULL §3 PARTIAL CI_PENDING and real licensed girl + motion + owner visual blocked**. B PR257 same `deepsyq.css` independent fallback hunk and V06 numbering discrepancy need #5 non-clobber + rights checks. No paid model/live Stripe/main/production or unsafe DB.
+    
+
 ## [AGENT C / 2026-10-18 / §38 SHARED TEST FIXTURE BLOCK, CLAIM §27 ORIGINAL LEGACY TOOLS TEST]
 
 - **§38 original C parked PARTIAL / CROSS_LANE_FIXTURE_BLOCK**: same [PR200](https://github.com/mvryhan-web/video-variator-android/pull/200) `0c863fed`, current SHA 5/7 native CI SUCCESS, owner readiness #39132889919 and broad #39132889998 failed. Broad admin fixtures omit protected endpoints → artificial HTTP401 → securely hides dashboard/navigation. Do not weaken revocation privacy; needs #5 coordination for shared `tests/deepsyq.spec.mjs`. C §23 legacy owner readiness tests omit promptTemplate and expected actionable 1, now correctly 0; #5/C §23 test-only work after documented coordination. Raw PR200 148 historical paths unsafe; latest source compare 3 C paths. [Evidence/checkpoint](https://github.com/mvryhan-web/video-variator-android/issues/74#issuecomment-6251567311).
