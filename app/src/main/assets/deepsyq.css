@@ -156,10 +156,9 @@
 #navShareStatus:empty{display:none}
 body.sidebar-collapsed #sidebar{width:76px;padding:17px 10px}
 body.sidebar-collapsed .content{margin-left:76px}
-body.sidebar-collapsed .sidebar-head{justify-content:center}
+body.sidebar-collapsed .sidebar-head{justify-content:center;flex-direction:column;gap:7px}
 body.sidebar-collapsed .sidebar-head .brand{margin:auto}
 body.sidebar-collapsed .sidebar-head .brand-name,
-body.sidebar-collapsed #sidebarToggle,
 body.sidebar-collapsed .sidebar-caption,
 body.sidebar-collapsed #sidebar nav .nav-label,
 body.sidebar-collapsed #sidebar nav .nav-divider,
@@ -174,6 +173,8 @@ body.sidebar-collapsed .sidebar-bottom #accountButton{font-size:0;padding:10px 4
 body.sidebar-collapsed .sidebar-bottom #accountButton::before{content:"◎";font-size:22px;line-height:25px}
 @media(max-width:760px){
  #sidebar{width:240px;transform:translateX(-100%)}
+ /* The id selector must not override the open mobile drawer transform. */
+ body.menu-open #sidebar{transform:translateX(0)}
  body.sidebar-collapsed #sidebar{width:240px;padding:17px 20px}
  body.sidebar-collapsed #sidebar .brand-name,
  body.sidebar-collapsed #sidebarToggle,
@@ -183,7 +184,7 @@ body.sidebar-collapsed .sidebar-bottom #accountButton::before{content:"◎";font
  body.sidebar-collapsed #sidebar nav .model-menu-toggle,
  body.sidebar-collapsed .sidebar-bottom>a,
  body.sidebar-collapsed .sidebar-bottom #logout{display:initial}
- body.sidebar-collapsed #sidebar .sidebar-head{justify-content:space-between}
+ body.sidebar-collapsed #sidebar .sidebar-head{justify-content:space-between;flex-direction:row}
  body.sidebar-collapsed #sidebar .sidebar-head .brand{margin:0}
  body.sidebar-collapsed #sidebar nav a,
  body.sidebar-collapsed #sidebar nav .nav-pending,
