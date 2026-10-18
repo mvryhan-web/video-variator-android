@@ -1,5 +1,10 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## [AGENT A §3 / OWNER DELETED HERO HEADLINE / 2026-10-18]
+
+**Existing A claim (§3), NOT a new BASE claim:** [PR259](https://github.com/mvryhan-web/video-variator-android/pull/259) new HEAD `5f2d1c85330c47f795df467a5d5d8b18e6f9f6a2` is DRAFT, exactly four A-owned files; deleted owner-rejected visible Home headline and updated both browser specs. Previous exact-head Home run #39135602801 yielded 36 PASS/12 FAIL all from four outdated headline assertions in fallback tests; same PR source now fixes all four (new CI #39137761025, preview #39137761161, brand #39137761000, regression #39137761103). **CI_PENDING, §3 FULL PARTIAL/BLOCKED_MEDIA/OWNER_VISUAL; NOT READY_TO_MERGE, NOT DONE, NOT LIVE.** Previous SHA preview/brand green cannot substitute for current. 1448/390 screenshot comparison from old CI artifact showed no girl/12 thumbnails. B PR257 still poster-only V01 with right-positioning and noncommercial license blockers; zero licensed public MP4. Coordinator #5 DEV-only no-clobber integration; D/owner only production after rights. Full handoff [Issue72](https://github.com/mvryhan-web/video-variator-android/issues/72).
+
+
 ## COORDINATOR #5 / 18-Oct later cycle — status and ownership reservation (append-only, not new claims)
 
 - **Already DEV-MERGED this cycle:** D §49 PR251 `3a6509f2`; A §45 PR162 `aafef09e`; A §46 PR181 `41778de6`; A §32 PR155 `e190dbf4`; A §31 PR154 `8f4e11c6`; A §25 PR168 `4552f7f5`. All were exact original PR SHA fully native green and reviewed. Do NOT recreate their code; original full BASE rows remain PARTIAL/LIVE unverified. Current full checkpoint at beginning of [PROJECT_STATUS.md](../PROJECT_STATUS.md).
