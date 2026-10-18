@@ -37,7 +37,14 @@ test('BASE 24/25: user-owned History filters bind kind=$2 and never expose anoth
  }};
  const app=express();
  const auth=(req,_res,next)=>{req.user={id:String(req.get('X-Test-User')||'owner-1'),email:'owner@example.test',provider:'google'};next();};
- installGenerationStudio(app,{auth,pool,env:{ADMIN_EMAIL:'owner@example.test',NODE_ENV:'test'}});
+ // Harmless, offline config is needed to pass the Studio availability gate.
+ // The injected pool is synthetic and the test invokes GET routes only: no
+ // real PostgreSQL connection, credential, AI provider or paid job is used.
+ installGenerationStudio(app,{auth,pool,env:{
+  ADMIN_EMAIL:'owner@example.test',NODE_ENV:'test',AI_STUDIO_ENABLED:'true',
+  AI_STUDIO_MAX_CALLS:'1',GEMINI_API_KEY:'OFFLINE_TEST_ONLY_NO_PROVIDER_CALLS',
+  DATABASE_URL:'postgresql://offline.invalid/never_connected'
+ }});
  const server=app.listen(0);await new Promise(resolve=>server.once('listening',resolve));
  const root='http://127.0.0.1:'+server.address().port;
  try{
