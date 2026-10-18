@@ -10,6 +10,9 @@ Status legend:
 - **BLOCKED** — repository work is prepared as far as practical; external credentials/account/service/owner approval is required.
 - **NOT STARTED** — no meaningful implementation yet.
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Для Everyday Tools жёсткий per-user cap не отменяет Issue #182: платный AI-provider — только при купленных AI-кредитах, не бесплатный план.
+
+
 This checklist covers only the original BASE/TXT. Roadmap Blocks 1–7 remain separate in `docs/DEEPSYQ_ROADMAP.md`.
 
 | # | Original requirement | Status | Current state / next action |
