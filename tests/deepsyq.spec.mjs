@@ -239,7 +239,7 @@ test('AI Apps shows only active API templates and prepares Studio without genera
 
 test('Product Video keeps references local until Studio review and never auto-generates',async({page})=>{
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,models:[{kind:'video',id:'video-fixture',label:'Video Fixture',ratios:['16:9','9:16','1:1'],references:2,enabled:true}],catalog:[{kind:'video',id:'video-fixture',label:'Video Fixture',ratios:['16:9','9:16','1:1'],references:2,enabled:true,adapter:true,provider:'Google',duration:'8 seconds'}]}}));
- let jobPosts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')jobPosts++;});await page.goto('/product-video.html');const img=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAG0lEQVR4nGNgYPh/4j8Dw384jcJh+H+CgaAKAPRlHinUv26iAAAAAElFTkSuQmCC','base64');await page.locator('#photos').setInputFiles({name:'product.png',mimeType:'image/png',buffer:img});await page.locator('#productName').fill('Luna Bag');await page.locator('#style').selectOption('cinematic');await page.locator('#ratio').selectOption('9:16');await expect(page.locator('#promptPreview')).toHaveValue(/Luna Bag/);await expect(page.locator('#promptPreview')).toHaveValue(/cinematic/);await page.locator('#continue').click();await expect(page).toHaveURL(/generate-studio\.html\?studio=video/);await expect(page.locator('#prompt')).toHaveValue(/Luna Bag/);await expect(page.locator('#ratio')).toHaveValue('9:16');await expect(page.locator('#refPreview img')).toHaveCount(1);await expect(page.locator('#consent')).not.toBeChecked();expect(jobPosts).toBe(0);
+ let jobPosts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')jobPosts++;});await page.goto('/product-video.html');const img=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');await page.locator('#photos').setInputFiles({name:'product.png',mimeType:'image/png',buffer:img});await page.locator('#productName').fill('Luna Bag');await page.locator('#style').selectOption('cinematic');await page.locator('#ratio').selectOption('9:16');await expect(page.locator('#promptPreview')).toHaveValue(/Luna Bag/);await expect(page.locator('#promptPreview')).toHaveValue(/cinematic/);await page.locator('#continue').click();await expect(page).toHaveURL(/generate-studio\.html\?studio=video/);await expect(page.locator('#prompt')).toHaveValue(/Luna Bag/);await expect(page.locator('#ratio')).toHaveValue('9:16');await expect(page.locator('#refPreview img')).toHaveCount(1);await expect(page.locator('#consent')).not.toBeChecked();expect(jobPosts).toBe(0);
 });
 
 
@@ -366,7 +366,7 @@ test('approved video appears in the real homepage hero but does not erase Canvas
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'approved-film',title:'Original mountain film',slug:'original-mountain-film',kind:'video',category:'Cinematic',actionTarget:'studio',previewUrl:'/owner-owned-film.mp4',previewPosterUrl:'/owner-owned-poster.jpg',aspectRatio:'16:9',prompt:'Cinematic natural camera movement',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false}}}));
  await page.goto('/deepsyq.html');
  await expect(page.locator('#inspirationHeroFeature')).toBeVisible();
- await expect(page.locator('#inspirationHeroTitle')).toHaveText('Original mountain film');
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src',/\.mp4$/);
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/owner-owned-film.mp4');
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('poster','/owner-owned-poster.jpg');
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
@@ -392,19 +392,14 @@ test('video carousel switches only among owner-approved videos and retains exist
  ],categories:['Cinematic'],ratios:['16:9']}}));
  await page.goto('/deepsyq.html');
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
- await expect(page.locator('#homeHeroDots button')).toHaveCount(2);
+ await expect(page.locator('#homeHeroDots')).toHaveCount(0);
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/one.mp4');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 2');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 1 of 2/);
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
- await page.locator('#homeHeroSound').click();
- await expect(page.locator('#homeHeroSound')).toHaveText('Sound on');
- await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',false);
- await page.locator('#homeHeroSound').click();
- await expect(page.locator('#homeHeroSound')).toHaveText('Sound off');
- await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
+ await expect(page.locator('#homeHeroSound,.home-hero-footer,.hero-stage-copy')).toHaveCount(0);
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/two.mp4');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 2 of 2');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 2 of 2/);
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/one.mp4');
  await page.locator('#homeHeroPrevious').click();
@@ -429,7 +424,7 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/broken-one.mp4');
  await page.locator('#inspirationHeroVideo').evaluate(v=>v.dispatchEvent(new Event('error')));
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/broken-two.mp4');
- await expect(page.locator('#homeHeroDots button').first()).toBeDisabled();
+ await expect(page.locator('#homeHeroPrevious')).toBeDisabled();
  await page.locator('#inspirationHeroVideo').evaluate(v=>v.dispatchEvent(new Event('error')));
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await expect(page.locator('#homeHeroCarousel')).toHaveClass(/is-empty/);
@@ -455,7 +450,7 @@ test('reduced-motion users get a manual Play button for genuine videos',async({p
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'clip',title:'Approved original clip',kind:'video',previewUrl:'/approved.mp4',actionTarget:'studio',category:'Cinematic',aspectRatio:'16:9'}],categories:['Cinematic'],ratios:['16:9']}}));
  await page.goto('/deepsyq.html');
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
- await expect(page.locator('#homeHeroPlay')).toHaveText('Play');
+ await expect(page.locator('#homeHeroPlay')).toHaveText('Play video');
  await expect(page.locator('#homeHeroNext')).toBeDisabled();
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
 });
@@ -587,7 +582,7 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  await expect(page.locator('#appsFeature')).toBeVisible();
  await expect(page.locator('#inspirationPreview')).toHaveCount(1);
  const inDocumentOrder=await page.evaluate(()=>{
-  const nodes=['canvasFeature','agentFeature','appsFeature','inspirationPreview'].map(id=>document.getElementById(id));
+  const nodes=[document.getElementById('homeQuickBar'),document.getElementById('createWithDeepsyq'),document.querySelector('.home-feature-triptych'),document.getElementById('inspirationPreview'),document.getElementById('canvasFeature'),document.getElementById('agentFeature'),document.getElementById('appsFeature')];
   return nodes.every((node,i)=>node&&(i===nodes.length-1||Boolean(node.compareDocumentPosition(nodes[i+1])&Node.DOCUMENT_POSITION_FOLLOWING)));
  });
  expect(inDocumentOrder).toBe(true);
