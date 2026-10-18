@@ -27,7 +27,7 @@ test('BASE #38: pageshow with the same owner token must not force logout',async(
  // A BFCache page restore emits a truthy event argument. It must not be
  // misinterpreted as checkOwnerSession(force=true).
  await page.evaluate(()=>window.dispatchEvent(new Event('pageshow')));
- await expect(page).toHaveURL(/\\/deepsyq-admin\\.html$/);
+ await expect(page).toHaveURL(/\/deepsyq-admin\.html$/);
  await expect(page.locator('#userQuery')).toBeVisible();
  expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBe('owner-test-token');
  expect(mutations()).toBe(0);
