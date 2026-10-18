@@ -60,15 +60,15 @@ html[data-theme=light].creator-pages .tools:is(.free-tools-page,.avatar-studio) 
 }
 @media(max-width:720px){
   .creator-pages .tools:is(.free-tools-page,.avatar-studio) header .tool-back{
-    height:42px;padding:0 11px;font-size:12px;border-radius:12px;
+    min-height:48px;padding:0 11px;font-size:12px;border-radius:12px;
   }
 }
 @media(max-width:440px){
-  .creator-pages .tools:is(.free-tools-page,.avatar-studio) header .tool-back{height:40px;padding:0 9px}
+  .creator-pages .tools:is(.free-tools-page,.avatar-studio) header .tool-back{min-height:48px;padding:0 9px}
 }
 @media(max-width:370px){
   .creator-pages .tools:is(.free-tools-page,.avatar-studio) header .tool-back{
-    font-size:0;padding:0;width:40px;
+    font-size:0;padding:0;min-width:48px;min-height:48px;
   }
   .creator-pages .tools:is(.free-tools-page,.avatar-studio) header .tool-back::after{
     content:'←';font-size:18px;
