@@ -64,10 +64,9 @@ test('BASE #49: --check reads versioned migration ledger in active non-public sc
    const localLedger=await scoped.query(
      "SELECT count(*)::int AS n FROM vv_schema_migration");
    assert.equal(localLedger.rows[0].n,AI_MIGRATION_FILES.length);
-   const publicSchema=await admin.query(
-     "SELECT to_regclass('public.vv_schema_migration') AS reg");
-   // Public history is a separate relation and must not affect scoped status.
-   assert.ok(publicSchema.rows[0].reg==null||typeof publicSchema.rows[0].reg==='string');
+   const owner=await scoped.query(
+     "SELECT n.nspname AS schema_name FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.oid=to_regclass('vv_schema_migration')");
+   assert.equal(owner.rows[0]?.schema_name,schema,'history must be the scoped schema ledger');
    const status=await aiMigrationStatus(scoped);
    assert.ok(status.every(row=>row.applied&&row.checksumMatches));
    const readOnly=await runAiMigrations(scoped,{checkOnly:true});
