@@ -118,3 +118,107 @@ test('minimum interval is rechecked inside lock before HTTP or insertion',async(
  assert.equal(report.status,'not_due');assert.equal(calls,0);
  assert.ok(pool.seen.some(([s])=>s.includes('pg_advisory_unlock')));
 });
+
+function makeStreamResponse({ chunks = [], contentLength = null, ok = true, status = 200 }) {
+  let cancelled = false;
+  let chunkIdx = 0;
+  const stream = {
+    getReader() {
+      return {
+        async read() {
+          if (cancelled || chunkIdx >= chunks.length) {
+            return { done: true, value: undefined };
+          }
+          const value = chunks[chunkIdx++];
+          return { done: false, value };
+        },
+        async cancel() {
+          cancelled = true;
+        }
+      };
+    }
+  };
+  return {
+    ok,
+    status,
+    headers: {
+      get: (h) => (h.toLowerCase() === 'content-length' ? contentLength : null)
+    },
+    body: stream,
+    get isCancelled() {
+      return cancelled;
+    }
+  };
+}
+
+test('httpHealth handles valid small {ok:true} streamed JSON', async () => {
+  const pool = mockPool();
+  const resp = makeStreamResponse({
+    chunks: [new TextEncoder().encode('{"ok":true}')]
+  });
+  const r = await runProductWatcherOnce({ pool, env, fetchFn: async () => resp });
+  assert.equal(r.checks.http.status, 'healthy');
+  assert.equal(r.checks.http.code, 'HTTP_OK');
+});
+
+test('httpHealth caps streamed body to 16KiB and cancels reader if body exceeds limit (lying small Content-Length header)', async () => {
+  const pool = mockPool();
+  const bigChunk = new Uint8Array(17000);
+  const resp = makeStreamResponse({
+    contentLength: '100',
+    chunks: [bigChunk]
+  });
+  const r = await runProductWatcherOnce({ pool, env, fetchFn: async () => resp });
+  assert.equal(r.checks.http.status, 'critical');
+  assert.equal(r.checks.http.code, 'HEALTH_RESPONSE_TOO_LARGE');
+  assert.equal(resp.isCancelled, true);
+});
+
+test('httpHealth caps chunked 17KiB stream across multiple chunks and cancels reader', async () => {
+  const pool = mockPool();
+  const chunk1 = new Uint8Array(8192);
+  const chunk2 = new Uint8Array(8192);
+  const chunk3 = new Uint8Array(1024);
+  const resp = makeStreamResponse({
+    contentLength: null,
+    chunks: [chunk1, chunk2, chunk3]
+  });
+  const r = await runProductWatcherOnce({ pool, env, fetchFn: async () => resp });
+  assert.equal(r.checks.http.status, 'critical');
+  assert.equal(r.checks.http.code, 'HEALTH_RESPONSE_TOO_LARGE');
+  assert.equal(resp.isCancelled, true);
+});
+
+test('httpHealth returns HEALTH_CHECK_FAILED for malformed/truncated JSON body', async () => {
+  const pool = mockPool();
+  const resp = makeStreamResponse({
+    chunks: [new TextEncoder().encode('{"ok": tr')]
+  });
+  const r = await runProductWatcherOnce({ pool, env, fetchFn: async () => resp });
+  assert.equal(r.checks.http.status, 'critical');
+  assert.equal(r.checks.http.code, 'HEALTH_CHECK_FAILED');
+});
+
+test('httpHealth redacts exception details and returns safe error code on reader throw', async () => {
+  const pool = mockPool();
+  const resp = {
+    ok: true,
+    status: 200,
+    headers: { get: () => null },
+    body: {
+      getReader() {
+        return {
+          async read() {
+            throw Error('https://secret:api_key_12345@private.internal/stream_failure');
+          },
+          async cancel() {}
+        };
+      }
+    }
+  };
+  const r = await runProductWatcherOnce({ pool, env, fetchFn: async () => resp });
+  assert.equal(r.checks.http.status, 'critical');
+  assert.equal(r.checks.http.code, 'HTTP_CHECK_ERROR');
+  assert.equal(JSON.stringify(r).includes('api_key_12345'), false);
+  assert.equal(JSON.stringify(r).includes('secret'), false);
+});

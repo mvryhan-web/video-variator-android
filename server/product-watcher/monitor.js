@@ -30,9 +30,54 @@ async function httpHealth({ fetchFn, healthUrl, timeoutMs }) {
     const response = await fetchFn(healthUrl, { method: 'GET', redirect: 'error', signal: AbortSignal.timeout(timeoutMs), headers: { Accept: 'application/json' } });
     if (!response.ok) return { status: 'critical', code: 'HTTP_UNAVAILABLE', httpStatus: response.status };
     if (Number(response.headers?.get?.('content-length') || 0) > 16384) return { status: 'critical', code: 'HEALTH_RESPONSE_TOO_LARGE' };
-    const body = await response.json();
-    if (body?.ok !== true) return { status: 'critical', code: 'HEALTH_CHECK_FAILED' };
-    return { status: 'healthy', code: 'HTTP_OK' };
+
+    if (response.body && typeof response.body.getReader === 'function') {
+      const reader = response.body.getReader();
+      let totalBytes = 0;
+      const chunks = [];
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (value) {
+            totalBytes += value.byteLength || value.length || 0;
+            if (totalBytes > 16384) {
+              try { await reader.cancel(); } catch {}
+              return { status: 'critical', code: 'HEALTH_RESPONSE_TOO_LARGE' };
+            }
+            chunks.push(value);
+          }
+        }
+      } catch {
+        try { await reader.cancel(); } catch {}
+        return { status: 'critical', code: 'HTTP_CHECK_ERROR' };
+      }
+      const combined = new Uint8Array(totalBytes);
+      let offset = 0;
+      for (const chunk of chunks) {
+        const arr = chunk instanceof Uint8Array ? chunk : new Uint8Array(chunk);
+        combined.set(arr, offset);
+        offset += arr.length;
+      }
+      let body;
+      try {
+        body = JSON.parse(new TextDecoder('utf-8').decode(combined));
+      } catch {
+        return { status: 'critical', code: 'HEALTH_CHECK_FAILED' };
+      }
+      if (body?.ok !== true) return { status: 'critical', code: 'HEALTH_CHECK_FAILED' };
+      return { status: 'healthy', code: 'HTTP_OK' };
+    } else if (typeof response.json === 'function') {
+      let body;
+      try {
+        body = await response.json();
+      } catch {
+        return { status: 'critical', code: 'HEALTH_CHECK_FAILED' };
+      }
+      if (body?.ok !== true) return { status: 'critical', code: 'HEALTH_CHECK_FAILED' };
+      return { status: 'healthy', code: 'HTTP_OK' };
+    }
+    return { status: 'critical', code: 'HEALTH_CHECK_FAILED' };
   } catch {
     // Network exceptions can contain credential-bearing URLs. Never return raw errors.
     return { status: 'critical', code: 'HTTP_CHECK_ERROR' };
