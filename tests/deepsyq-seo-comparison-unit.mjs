@@ -32,6 +32,8 @@ test('editorial copy disclaims affiliation and distinguishes working tools from 
  match(/do not grant unlimited paid AI generation/,'pricing distinction');
  match(/planned offer is not open for purchase/,'do not promise 99 cent checkout');
  match(/not a general-purpose conversational assistant/,'not a fake AI chat');
+ match(/does not currently offer a general-purpose AI chat/,'preserve browser-visible AI chat limitation');
+ match(/not affiliated with DeepSeek/,'preserve browser-visible independence disclaimer');
  assert.doesNotMatch(source,/\b(guaranteed|#1|best in the world|official DeepSeek partner)\b/i);
 });
 
