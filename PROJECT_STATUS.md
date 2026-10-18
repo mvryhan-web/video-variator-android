@@ -1,5 +1,21 @@
 # PROJECT_STATUS.md — Deepsyq live project state
 
+## COORDINATOR #5 — 18 Oct 2026 — CYCLE 2: TWO JULES DEV MERGES ACTUALLY DONE
+
+Role: Coordinator only, no own original BASE. Original 55 BASE full DONE remains only #47 and #53 (2/55); all other original acceptance PARTIAL/BLOCKED/NOT LIVE.
+
+- Jules1 Block5 W5.2 PR275 exact scope 3 original policy/unit/workflow files, same HEAD f0f15c5f5abfa49d6a6d4332e2cf9d496efdd1bb, native CI 2/2 SUCCESS, squash MERGED DEV b42cdb559b3ff58ac5e581b639050709cd21697b. Product Watcher worker remains OFF, no DB migration, Block5 not full DONE.
+- Jules3 Block6 V6.1 PR274 same preexisting bot PR; removed unclaimed shared QA file, guarded double microphone requests and late cross-account/stop race, added 4 no-spend tests and isolated CI. Current final HEAD c8733ac67aca662de9c2b75c30a1d906e7cab05e; exactly controller + tests + workflow. Current SHA native Voice #39158419599 SUCCESS and Watcher #39158419633 SUCCESS, 2/2. Ready review and actually SQUASH MERGED DEV f210acf23edfde1401bff9ec6f608021e96fc7c5. Block6 FULL remains PARTIAL; no microphone live UI, no provider/customer audio; no automatic getUserMedia.
+- Jules2 Block4 W4.1 Issue273 bot task creation FAILED and Jules label removed; QUEUED/NOT RUNNING. Block2 A2.1/A2.2 previously source-accepted DEV; no duplicate code.
+- Owner Home B PR257 new exact head 97100c620aaa07d6de9644fa9d2e855e576eda9f remains 45-file DRAFT, mergeable=false. PR now describes real six Google Flow MP4 carousel with neon angled adjacent slides + center 16:9 and red gown V02 separate. Last documented successful browser run relates to an older PR head, not new 97100c6. Do not bulk merge stale docs/CSS/HTML over A owner-locked Home; request exact-head native browser + preview/rights and A visual review. No production.
+- A: original #3 Home code accepted DEV, full Home PARTIAL; original #24 History PR152 stale shared Studio, real kind=2 vs parameter kind=$2 SQL bug, must use B handoff and D co-review, preserve purchased-only/S3 SHA. SEO PR267 source accepted DEV, global live SEO still PARTIAL.
+- B: original #5 stacked PR174 DRAFT (12/13 native tests green, failed D BASE17 economics SQL matcher), then PR186 Ready 6/6 then PR203 Ready 6/6; parent first, no unsafe children merge. #7 Audio PR180 parked. Home PR257 held.
+- C: original #20 PR196 scoped code merged DEV ad3ec2e9 after 5/5 success; other #27/#28/#30/#38 source integrated previously, full original rows PARTIAL. Next independent share-import browser regression assessment, then #21 simple Chat UI after B/D route and #22 existing PR44 Inspiration acceptance.
+- D: original #49/#51 plus purchased-only code DEV accepted, full real commerce blocked by owner/provider/production. Next repair D BASE17 customer History private SQL test matcher with new B Video operation column, then co-review A #24; protect redaction/refund/purchased dispatch.
+- Topic borders preserved from earlier checkpoint: Audio B provider/C tools/Jules3 Voice; Agents C UX/Jules2 mock/B+D billing; Inspiration C original #22 existing PR44/A-B media; History A #24 with B/D backend guard; SEO A editorial/C owned nav/D index release. No new original claim transfer.
+
+ONE next coordinator action: check D BASE17 fixture fix/Issue75 and A surgically updated History PR; keep B parent PR174 unmerged until exact-head 100% free CI green. Independently review PR257 current HEAD before dev media merge, no main/production.
+
 ## COORDINATOR #5 / 18 Oct 2026, 21:25 Europe/Paris / VERIFIED WAVE 3 CYCLE
 
 **Coordinator role only; no personal BASE claim.** Source: current GitHub Issues #233/#72–75/#237/#271–273, PR metadata, native CI and shared claim board. Only original BASE #47 and #53 are FULL DONE (2/55). Every other BASE remains PARTIAL/BLOCKED/NOT LIVE per detailed preserved checklist. Zero charged AI tests, no real Stripe, migrations, main or production.
