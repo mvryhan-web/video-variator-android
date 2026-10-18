@@ -105,10 +105,15 @@ test('BASE #28: OCR cancellation while language worker loads never runs recogniz
  let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});
  await page.addInitScript(()=>{
   window.__ocrSpy={created:0,recognized:0,terminated:0};
+  // Keep model initialization pending until the test explicitly releases it.
+  // A 400ms sleep raced WebKit's Playwright click; Cancel was already disabled.
+  let releaseWorker;
+  const workerReady=new Promise(resolve=>{releaseWorker=resolve;});
+  window.__releaseOcrWorker=()=>releaseWorker();
   window.Tesseract={
    async createWorker(){
     window.__ocrSpy.created++;
-    await new Promise(resolve=>setTimeout(resolve,400));
+    await workerReady;
     return {
      async recognize(){window.__ocrSpy.recognized++;return {data:{text:'SHOULD NOT RUN'}};},
      async terminate(){window.__ocrSpy.terminated++;}
@@ -119,8 +124,10 @@ test('BASE #28: OCR cancellation while language worker loads never runs recogniz
  await page.goto('/mobile-utility.html?tool=photo-ocr');
  await page.locator('#utilityFiles').setInputFiles({name:'image.jpg',mimeType:'image/jpeg',buffer:Buffer.from([255,216,255,217])});
  await page.locator('#utilityRun').click();
+ await expect.poll(()=>page.evaluate(()=>window.__ocrSpy.created)).toBe(1);
  await expect(page.locator('#utilityCancel')).toBeEnabled();
  await page.locator('#utilityCancel').click();
+ await page.evaluate(()=>window.__releaseOcrWorker());
  await expect.poll(()=>page.evaluate(()=>window.__ocrSpy.terminated)).toBe(1);
  expect(await page.evaluate(()=>window.__ocrSpy)).toEqual({created:1,recognized:0,terminated:1});
  await expect(page.locator('#utilityResults textarea')).toHaveCount(0);
