@@ -1,5 +1,8 @@
 # Deepsyq — $0.99 trial and professional Lumina UX review
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Старые даты **«3 дня», «299 credits», «one-time / no auto-renewal»** ниже сохранены как исторический обзор конкурента/ранней гипотезы и **НЕ одобрены для Deepsyq**. Обязательна покупка за $0.99, но её срок, размер кредитов, продление, refunds и anti-multiple-signup ОТКРЫТЫ; ничего не включать, цены не менять; канон Block 7.
+
+
 Date: 2026-10-15. Owner reconfirmed the planned **$0.99 entry offer**, then replied **ok go** to a direct question proposing **3-day, one-time, no auto-renewal** terms, and requested a more professional Lumina-inspired navigation/pricing/media experience. Treat that as approval to PREPARE THE OFFER PRESENTATION, **not** a mandate to activate Stripe, assign unpriced credits or launch live sales. The existing owner-approved Deepsyq Home screenshot and `docs/DEEPSYQ_OWNER_APPROVED_HOME_DESIGN.md` remain the non-negotiable visual identity; this document does **not** authorize copying third-party Lumina footage, artwork, UI source, trademarks or entire visual compositions.
 
 ## Verified competitor behavior (public research, 15 October 2026)
