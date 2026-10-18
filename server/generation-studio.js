@@ -9,6 +9,7 @@ import {createObjectStorage} from './generation-storage.js';
 import {bytePlusPublicDurableStorageReady} from './generation-byteplus-storage-gate.js';
 import {installGenerationReferenceUpload} from './generation-reference-upload.js';
 import {resolveGenerationModel,orderedGenerationCandidates} from './generation-routing.js';
+import {planPreDispatchFallback} from './generation-fallback-policy.js';
 import {normalizeGenerationError,publicGenerationError} from './generation-errors.js';
 import {publicProviderPerformanceRow} from './generation-provider-performance.js';
 import {claimProviderPoll} from './generation-polling.js';
@@ -20,6 +21,7 @@ import {ownerProviderTaskId} from './generation-provider-task-id.js';
 import {generationFeatureEnabled,generationFeatureSwitches} from './generation-feature-flags.js';
 import {aiMigrationStatus} from './ai-migrations.js';
 import {completedGenerationSummary,trackedToolUsageSummary} from './generation-business-rates.js';
+import {submitPurchasedProviderRequest,PurchasedDispatchDenied} from './generation-purchased-provider-boundary.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch}={}){
  const model=MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter);
  if(!model)throw Error('MODEL_NOT_CONNECTED');
@@ -131,7 +133,14 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
    res.status(status).json({error:status===503?'MODEL_ADMIN_UNAVAILABLE':e.message});
   }
  });
- app.post('/api/studio/admin/route-preview',auth,owner,async(req,res)=>{if(env.AI_SMART_ROUTING_ENABLED!=='true')return res.status(503).json({error:'SMART_ROUTING_NOT_ENABLED'});try{const catalog=await effectiveCatalog();const candidates=orderedGenerationCandidates(req.body,catalog);if(!candidates.length)return res.status(503).json({error:'NO_COMPATIBLE_MODEL'});res.json({primary:candidates[0].id,candidates:candidates.map(m=>({id:m.id,provider:m.provider,priority:Number(m.control?.priority??m.priority??100),quality:m.capabilities?.quality??m.quality??null,durationSeconds:m.capabilities?.durationSeconds??null,maxReferences:m.capabilities?.maxReferences??m.references??0,ratios:m.capabilities?.ratios??m.ratios??[]}))});}catch(_){res.status(503).json({error:'SMART_ROUTING_UNAVAILABLE'});}});
+ app.post('/api/studio/admin/route-preview',auth,owner,async(req,res)=>{if(env.AI_SMART_ROUTING_ENABLED!=='true')return res.status(503).json({error:'SMART_ROUTING_NOT_ENABLED'});try{const catalog=await effectiveCatalog();const candidates=orderedGenerationCandidates(req.body,catalog);if(!candidates.length)return res.status(503).json({error:'NO_COMPATIBLE_MODEL'});
+  const first=candidates[0],refs=Array.isArray(req.body?.references)?req.body.references.length:req.body?.referenceCount??0;
+  const fallback=planPreDispatchFallback({
+   smart:true,providerStarted:false,primary:first,candidates,
+   request:{...req.body,referenceCount:refs},
+   quoteFor:(m,request)=>estimateGenerationPricing({...request,model:m.id},m,env)
+  });
+  res.json({fallback:{reason:fallback.reason,eligible:fallback.eligible,blocked:fallback.blocked},primary:candidates[0].id,candidates:candidates.map(m=>({id:m.id,provider:m.provider,priority:Number(m.control?.priority??m.priority??100),quality:m.capabilities?.quality??m.quality??null,durationSeconds:m.capabilities?.durationSeconds??null,maxReferences:m.capabilities?.maxReferences??m.references??0,ratios:m.capabilities?.ratios??m.ratios??[]}))});}catch(_){res.status(503).json({error:'SMART_ROUTING_UNAVAILABLE'});}});
  app.patch('/api/studio/admin/models/:id',auth,owner,async(req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const control=await updateModelControlAudited(pool,{modelId:req.params.id,userId:req.user.id,patch:req.body,catalog:studioConfig(env).catalog});res.json({modelId:req.params.id,control});}catch(e){const status=e.message==='MODEL_NOT_FOUND'?404:e.message==='INVALID_MODEL_CONTROL'?400:503;res.status(status).json({error:status===503?'MODEL_ADMIN_UNAVAILABLE':e.message});}});
 
  app.get('/api/studio/admin/billing-review',auth,owner,async(_req,res)=>{if(!wallet)return res.status(503).json({error:'AI_WALLET_UNAVAILABLE'});try{
@@ -258,10 +267,24 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   try{await wallet.settle({userId,jobId:id,outcome:'success'});await pool.query("UPDATE vv_generation_jobs SET status='ready',credits_charged=credits_reserved,error_message=null,completed_at=NOW() WHERE id=$1",[id]);}
   catch(_){/* Durable finalizing state is retried by recoveryTick; never regenerate provider output. */}
  }
- async function run(id,request,userId){try{await finish(id,await provider(request,{env}),userId);}catch(e){
+ async function run(id,request,user,selected,originalQuote,fingerprint){try{
+  // Re-read durable owner, request, consent and quote AFTER reserving the wallet.
+  const {rows}=await pool.query('SELECT user_id,kind,model,provider,status,operation,deleted,request_fingerprint,credits_reserved,settings,estimated_cost,cost_currency FROM vv_generation_jobs WHERE id=$1 AND user_id=$2',[id,user.id]);
+  const job=rows[0]?{...rows[0],id,userId:rows[0].user_id,requestFingerprint:rows[0].request_fingerprint,creditsReserved:Number(rows[0].credits_reserved)}:null;
+  const quote=estimateGenerationPricing(request,selected,env);
+  const result=await submitPurchasedProviderRequest({env,wallet,user:{id:user.id,email:user.email,isOwner:isOwner(user)},job,request,model:selected,quote,originalQuote,fingerprint,provider});
+  await finish(id,result,user.id);
+ }catch(e){
+  // A verified pre-provider refusal cannot have incurred an AI provider cost.
+  // Return the held reservation exactly once; an ambiguous provider result
+  // is NEVER auto-refunded and remains reserved for reconciliation.
+  if(e instanceof PurchasedDispatchDenied){
+   await failTerminalProviderJob(id,user.id,e,'pre_provider_authorization');
+   return;
+  }
   const failure=normalizeGenerationError(e,{stage:'provider_submit'});
   await pool.query("UPDATE vv_generation_jobs SET status='failed',error=$2,error_message=$3,metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object('failure',jsonb_build_object('category',$4,'stage',$5,'sourceCode',$6,'retryable',$7)),failed_at=NOW() WHERE id=$1",[id,failure.code,walletEnabled()?'AI_WALLET_REVIEW_REQUIRED':null,failure.category,failure.stage,failure.sourceCode,failure.retryable]);
-  if(walletEnabled())await wallet.settle({userId,jobId:id,outcome:'unknown'}).catch(()=>{});
+  if(walletEnabled())await wallet.settle({userId:user.id,jobId:id,outcome:'unknown'}).catch(()=>{});
  }}
  app.post('/api/studio/estimate',auth,generationUser,async(req,res)=>{try{
   const {request,selected,routing}=await resolveEstimateRequest(req.body);
@@ -283,6 +306,12 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   const premiumVideo=request.kind==='video'&&(request.videoResolution!==selected.quality||request.videoDuration!==selected.capabilities?.durationSeconds||!['text','first_frame'].includes(request.videoInputMode)||request.references?.length>1);
   const quote=walletEnabled()||premiumVideo?estimateGenerationPricing(request,selected,env):null;
   if((walletEnabled()||premiumVideo)&&!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
+  // No owner pilot or promotional/unknown funding may reach a possibly billable
+  // provider: B's gate + D's atomic verified purchase are both mandatory.
+  if(!walletEnabled()||typeof wallet?.purchasedDispatchVerifier!=='function'||
+    env.AI_PURCHASED_ONLY_DISPATCH_ENABLED!=='true'||isOwner(req.user)||
+    !quote||!quote.currency)
+   return res.status(503).json({error:'AI_PURCHASED_DISPATCH_NOT_AUTHORIZED'});
   // Fail before insertion/reservation if prices changed after the user confirmed the batch quote.
   if(req.body?.expectedCredits!=null&&(!walletEnabled()||!Number.isSafeInteger(req.body.expectedCredits)||req.body.expectedCredits!==quote?.credits))
    return res.status(409).json({error:'AI_ESTIMATE_CHANGED'});
@@ -293,14 +322,23 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
    const access=req.generationAccess||{scope:'owner'};
    await enforceGenerationPolicy(c,{userId:req.user.id,env,policyOverride:access.scope==='public'?{enabled:true,maxConcurrentPerUser:access.maxConcurrent,maxJobsPerHourPerUser:access.maxPerHour}:null});
    if(access.scope==='owner'){const count=await c.query('SELECT count(*)::int AS n FROM vv_generation_jobs');if(count.rows[0].n>=Number(env.AI_STUDIO_MAX_CALLS)){await c.query('ROLLBACK');return res.status(429).json({error:'PILOT_LIMIT_REACHED'});}}
-   const settings={ratio:request.ratio,resolution:request.resolution||null,outputFormat:request.outputFormat||null,videoResolution:request.videoResolution||null,videoDuration:request.videoDuration??null,videoInputMode:request.videoInputMode||null,musicMode:request.musicMode||null,referenceCount:request.references?.length||0,routing};
+   const settings={ratio:request.ratio,resolution:request.resolution||null,outputFormat:request.outputFormat||null,videoResolution:request.videoResolution||null,videoDuration:request.videoDuration??null,videoInputMode:request.videoInputMode||null,musicMode:request.musicMode||null,referenceCount:request.references?.length||0,routing,
+    dispatchConsent:req.body?.consent===true,
+    purchasedQuote:{model:quote.model,provider:quote.provider,kind:quote.kind,credits:quote.credits,providerCostMicros:quote.providerCostMicros,currency:quote.currency}};
    await c.query('INSERT INTO vv_generation_jobs(id,user_id,kind,status,provider,model,prompt,client_request_id,request_fingerprint,started_at,settings,estimated_cost,cost_currency) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),$10::jsonb,$11,$12)',[id,req.user.id,request.kind,walletEnabled()?'queued':'processing',selected.provider||null,selected.id,request.prompt,clientRequestId,fingerprint,JSON.stringify(settings),quote?quote.providerCostMicros/1_000_000:null,quote?.currency||null]);await c.query('COMMIT');
   }catch(e){if(c)await c.query('ROLLBACK').catch(()=>{});if(['AI_CONCURRENCY_LIMIT','AI_RATE_LIMIT'].includes(e.message))return res.status(429).json({error:e.message});if(e.message==='GENERATION_REQUEST_CONFLICT')return res.status(409).json({error:e.message});return res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}finally{c?.release();}
   if(walletEnabled())try{
    await wallet.reserve({userId:req.user.id,jobId:id,credits:quote.credits,fingerprint});
    await pool.query("UPDATE vv_generation_jobs SET status='processing',credits_reserved=$2 WHERE id=$1",[id,quote.credits]);
-  }catch(e){await pool.query("UPDATE vv_generation_jobs SET status='failed',error=$2,error_message=$2,failed_at=NOW() WHERE id=$1",[id,e.message==='INSUFFICIENT_AI_CREDITS'?'INSUFFICIENT_AI_CREDITS':'AI_WALLET_RESERVATION_FAILED']).catch(()=>{});return res.status(e.message==='INSUFFICIENT_AI_CREDITS'?402:503).json({error:e.message==='INSUFFICIENT_AI_CREDITS'?'INSUFFICIENT_AI_CREDITS':'AI_WALLET_UNAVAILABLE'});}
-  res.status(202).json({id,status:'processing',creditsReserved:quote?.credits||0});void run(id,request,req.user.id).catch(()=>{});
+  }catch(e){
+   // No provider has been invoked at this point. A wallet reserve can
+   // succeed while writing its matching job credits fails. Return any
+   // successfully held credits, never strand a charge for a failed start.
+   if(walletEnabled())try{await wallet.settle({userId:req.user.id,jobId:id,outcome:'confirmed_failure'});}catch(_){/* No provider was called; preserve auditable held state on refund DB failure. */}
+   await pool.query("UPDATE vv_generation_jobs SET status='failed',error=$2,error_message=$2,failed_at=NOW() WHERE id=$1",[id,e.message==='INSUFFICIENT_AI_CREDITS'?'INSUFFICIENT_AI_CREDITS':'AI_WALLET_RESERVATION_FAILED']).catch(()=>{});
+   return res.status(e.message==='INSUFFICIENT_AI_CREDITS'?402:503).json({error:e.message==='INSUFFICIENT_AI_CREDITS'?'INSUFFICIENT_AI_CREDITS':'AI_WALLET_UNAVAILABLE'});
+  }
+  res.status(202).json({id,status:'processing',creditsReserved:quote.credits});void run(id,request,{id:req.user.id,email:req.user.email,provider:req.user.provider},selected,quote,fingerprint).catch(()=>{});
  });
  const getJob=async(req)=>{await init();const r=await pool.query('SELECT * FROM vv_generation_jobs WHERE id=$1 AND user_id=$2 AND deleted=false',[req.params.id,req.user.id]);return r.rows[0];};
  app.get('/api/studio/admin/metrics',auth,owner,async(req,res)=>{try{

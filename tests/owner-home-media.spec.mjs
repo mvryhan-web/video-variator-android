@@ -1,0 +1,48 @@
+import {test,expect} from '@playwright/test';
+import {readFile} from 'node:fs/promises';
+const bundle=JSON.parse(await readFile(new URL('../app/src/main/assets/media/home/owner-20261018/manifest.json',import.meta.url)));
+const clips=bundle.items.filter(x=>x.featured);
+
+test('owner-supplied MP4: real muted autoplay, six native ends wrap, arrows, mobile layout',async({page},info)=>{
+ test.setTimeout(120000);
+ const mutations=[],mediaErrors=[];
+ page.on('request',r=>{if(r.method()!=='GET'&&new URL(r.url()).pathname.startsWith('/api/'))mutations.push(r.url());});
+ await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}},googleClientId:'',billingConfigured:false,features:{inspiration:true,aiApps:false,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/inspiration**',r=>{
+  const u=new URL(r.request().url());
+  // TEST ONLY: this stands in for the existing admin-published feed. It does
+  // not attest rights or activate the supplied inactive records in any DB.
+  const items=u.searchParams.get('target')==='agent'?[]:clips;
+  return r.fulfill({json:{items,categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false}}});
+ });
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ const video=page.locator('#inspirationHeroVideo');
+ await expect(page.locator('#homeHeroDots button')).toHaveCount(6);
+ await expect(video).toHaveAttribute('src',clips[0].previewUrl);
+ await expect(video).toHaveJSProperty('muted',true);
+ await expect(video).toHaveJSProperty('playsInline',true);
+ // Never patch play/load, use fake media, or dispatch a synthetic ended event.
+ await expect.poll(()=>video.evaluate(v=>v.currentTime),{timeout:20000}).toBeGreaterThan(0.2);
+ await video.evaluate(v=>{v.__testEnded=0;v.__testErrors=[];v.addEventListener('ended',()=>v.__testEnded++);v.addEventListener('error',()=>v.__testErrors.push(v.error?.code));});
+ await page.screenshot({path:info.outputPath('owner-carousel-real-first-frame.png'),fullPage:true});
+ for(let n=0;n<6;n++){
+  await expect(video).toHaveAttribute('src',clips[n].previewUrl);
+  await expect.poll(()=>video.evaluate(v=>v.readyState),{timeout:20000}).toBeGreaterThanOrEqual(2);
+  await expect.poll(()=>video.evaluate(v=>v.currentTime),{timeout:20000}).toBeGreaterThan(0.1);
+  const size=await video.evaluate(v=>({width:v.videoWidth,height:v.videoHeight,duration:v.duration}));
+  expect(size.width).toBe(1920);expect(size.height).toBe(1080);expect(size.duration).toBeGreaterThan(7.9);
+  await video.evaluate(v=>{v.currentTime=v.duration-0.4;});
+  await expect(video).toHaveAttribute('src',clips[(n+1)%6].previewUrl,{timeout:15000});
+ }
+ expect(await video.evaluate(v=>v.__testEnded)).toBe(6);
+ mediaErrors.push(...await video.evaluate(v=>v.__testErrors));expect(mediaErrors).toEqual([]);
+ await page.getByRole('button',{name:'Previous video',exact:true}).click();
+ await expect(video).toHaveAttribute('src',clips[5].previewUrl);
+ await page.getByRole('button',{name:'Next video',exact:true}).click();
+ await expect(video).toHaveAttribute('src',clips[0].previewUrl);
+ const hero=await page.locator('#homeHeroCarousel').evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:innerWidth};});
+ expect(hero.left).toBeGreaterThanOrEqual(-1);expect(hero.right).toBeLessThanOrEqual(hero.width+1);
+ expect(clips.some(x=>x.previewUrl.includes('red-gown'))).toBe(false);
+ expect(mutations).toEqual([]);
+});

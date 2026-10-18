@@ -426,3 +426,35 @@ body.sidebar-collapsed #sidebar nav .sidebar-social button{justify-content:cente
 .home-hero-dots button.has-poster img{display:block;width:100%;height:100%;object-fit:cover}
 .home-hero-dots button.has-poster[aria-current="true"]{border-color:#f5a6df}
 @media(max-width:760px){.home-hero-dots:has(button.has-poster){max-width:min(260px,70vw)}.home-hero-dots button.has-poster,.home-hero-dots button.has-poster[aria-current="true"]{flex-basis:38px;width:38px;height:29px}}
+
+
+/* OWNER DESIGN 2026-10-18: restore approved magenta-violet Home/Canvas controls */
+:root{
+ --home-owner-violet:#9354f4;
+ --home-owner-pink:#d879d3;
+ --home-owner-focus:#edb2ff;
+}
+.hero-stage-copy .primary,
+.quick-create button#quickCreateSubmit{
+ background:linear-gradient(100deg,var(--home-owner-violet),var(--home-owner-pink));
+ color:#fff;
+ border:1px solid #efc4ff66;
+ box-shadow:0 8px 26px #9854f33d;
+}
+.hero-stage-copy .primary:hover,
+.quick-create button#quickCreateSubmit:hover{filter:brightness(1.09)}
+body a:focus-visible,
+body button:focus-visible,
+.quick-create textarea:focus-visible,
+.quick-create select:focus-visible,
+.quick-create .quick-starters button:focus-visible,
+.quick-create-advanced summary:focus-visible{outline-color:var(--home-owner-focus)}
+.quick-create-dropzone.drag-over,
+.quick-create-dropzone:focus-within{border-color:var(--home-owner-violet);background:#31233f}
+.featured-workflows .section-heading>a,
+.inspiration-preview .section-heading>a,
+.recent-creations .section-heading>a{color:var(--home-owner-focus)}
+.inspiration-preview-categories a:hover{
+ border-color:var(--home-owner-violet);
+ color:var(--home-owner-focus);
+}

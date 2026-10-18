@@ -25,7 +25,7 @@ test('BASE #49: --check on fresh database never creates migration ledger',async(
  assert.equal(result.applied.length,0);
  assert.equal(result.status.length,AI_MIGRATION_FILES.length);
  assert.equal(statements.length,1);
- assert.match(statements[0],/to_regclass/);
+ assert.equal(statements[0],"SELECT to_regclass('vv_schema_migration') AS reg",'ledger existence must follow same session search_path as CREATE/INSERT/SELECT');
  assert.ok(statements.every(sql=>/^SELECT\b/i.test(sql)));
 });
 

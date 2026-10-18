@@ -17,7 +17,7 @@
       "targetMp4": "app/src/main/assets/media/home/v01.mp4",
       "targetPoster": "app/src/main/assets/media/home/v01.jpg",
       "status": "PROVIDER_RENDER_COMPLETED; INTERNAL_REVIEW_ONLY; NOT_PUBLISHED",
-      "commercialRights": "HEYGEN FREE OUTPUT RESTRICTED TO INTERNAL EVALUATION — COMMERCIAL PUBLICATION PROHIBITED",
+      "commercialRights": "HEYGEN FREE OUTPUT RESTRICTED TO INTERNAL EVALUATION \u2014 COMMERCIAL PUBLICATION PROHIBITED",
       "publish": false
     },
     {
@@ -28,7 +28,7 @@
       "targetMp4": "app/src/main/assets/media/home/v02.mp4",
       "targetPoster": "app/src/main/assets/media/home/v02.jpg",
       "status": "AI_VIDEO_GENERATION_STARTED; PENDING",
-      "commercialRights": "HEYGEN FREE OUTPUT RESTRICTED TO INTERNAL EVALUATION — COMMERCIAL PUBLICATION PROHIBITED",
+      "commercialRights": "HEYGEN FREE OUTPUT RESTRICTED TO INTERNAL EVALUATION \u2014 COMMERCIAL PUBLICATION PROHIBITED",
       "publish": false
     },
     {
@@ -176,5 +176,7 @@
     "sourceImage": "app/src/main/assets/media/home/v02-clean-internal-review.jpg",
     "license": "HEYGEN FREE: internal evaluation only",
     "publication": "HOLD_NON_COMMERCIAL_LICENSE"
-  }
+  },
+  "ownerUploadedBundle": "app/src/main/assets/media/home/owner-20261018/manifest.json",
+  "ownerUploadedBundleNote": "Seven later owner-provided 1080p MP4s, separate provenance from previous HeyGen Free renders. Six carousel order and separate V02 recorded in referenced bundle. Rights/publication pending; old reference identities below preserved."
 }

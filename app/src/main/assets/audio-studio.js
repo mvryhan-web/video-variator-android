@@ -183,4 +183,45 @@ $('vtaCancel').onclick=()=>{
  vtaAbort?.abort();try{vtaEngine?.terminate();}catch(_){/* already cancelled */}
  $('vtaStatus').textContent=t('cancelled');
 };
-window.addEventListener('pagehide',()=>{ttsAbort?.abort();ttsEngine?.terminate();sttEngine?.terminate();worker?.terminate();if(resultURL)URL.revokeObjectURL(resultURL);trimAbort?.abort();try{trimEngine?.terminate();}catch(_){}if(trimSourceURL)URL.revokeObjectURL(trimSourceURL);if(trimResultURL)URL.revokeObjectURL(trimResultURL);vtaAbort?.abort();try{vtaEngine?.terminate();}catch(_){}if(vtaPreviewURL)URL.revokeObjectURL(vtaPreviewURL);if(vtaOutputURL)URL.revokeObjectURL(vtaOutputURL);});
+// Keep sensitive local audio, transcripts and owner scripts out of BFCache restores.
+// This is a navigation-only cleanup; do not change ToolAccess, credits or providers.
+window.addEventListener('pagehide',()=>{
+ // Invalidate asynchronous STT callbacks before rejecting/terminating the worker.
+ sttId++;
+ cancelRecognition?.();
+ ttsAbort?.abort();
+ trimAbort?.abort();
+ vtaAbort?.abort();
+ for(const engine of [ttsEngine,sttEngine,worker,trimEngine,vtaEngine]){
+  try{engine?.terminate();}catch(_){/* A terminated worker must not skip private-data cleanup. */}
+ }
+ worker=sttEngine=trimEngine=vtaEngine=null;
+ cancelRecognition=null;
+ for(const url of [resultURL,trimSourceURL,trimResultURL,vtaPreviewURL,vtaOutputURL]){
+  if(url)URL.revokeObjectURL(url);
+ }
+ resultURL=trimSourceURL=trimResultURL=vtaPreviewURL=vtaOutputURL=null;
+ for(const id of ['speechResult','trimResult','vtaResult']){
+  $(id).querySelectorAll('audio,video').forEach(media=>{
+   try{media.pause();media.removeAttribute('src');}catch(_){}
+  });
+  $(id).replaceChildren();
+ }
+ for(const media of [trimPreview,videoPreview]){
+  try{media.pause();media.removeAttribute('src');}catch(_){}
+  media.hidden=true;
+ }
+ for(const id of ['speechText','transcript','transcribeFile','trimFile','vtaFile']){
+  $(id).value='';
+ }
+ $('speechConsent').checked=false;
+ srt='';
+ $('saveSrt').disabled=true;
+ for(const id of ['speechStatus','transcribeStatus','trimStatus','vtaStatus']){
+  $(id).textContent='';
+ }
+ editReady();
+ ready();
+ trimReady();
+ vtaReady();
+});

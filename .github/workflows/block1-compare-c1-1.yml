@@ -1,0 +1,25 @@
+name: Block 1 Compare AI C1.1 no-spend Node acceptance
+on:
+  pull_request:
+    paths:
+      - 'server/compare-ai-policy.js'
+      - 'tests/compare-ai-policy-unit.mjs'
+      - '.github/workflows/block1-compare-c1-1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pure-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Source and tests syntax
+        run: |
+          node --check server/compare-ai-policy.js
+          node --check tests/compare-ai-policy-unit.mjs
+      - name: Execute original Jules pure policy tests without provider requests
+        run: node --test tests/compare-ai-policy-unit.mjs
