@@ -37,6 +37,14 @@ const compressText={
 }[lang]||['Compress photo','Adjust JPEG quality · compare file sizes'];
 
 tools.push({id:'photo-compress',title:compressText[0],note:compressText[1]});
+// BASE #28: reuse the existing on-device FFmpeg engine for video compression.
+const videoText={
+ en:['Compress video','Local H.264 MP4 · choose size/quality balance'],
+ ru:['Сжать видео','Локальный MP4 (H.264) · выбрать качество'],
+ fr:['Compresser une vidéo','MP4 H.264 local · choisir la qualité'],
+ uk:['Стиснути відео','Локальний MP4 H.264 · обрати якість']
+}[lang]||['Compress video','Local H.264 MP4 · choose quality'];
+tools.push({id:'video-compress',title:videoText[0],note:videoText[1]});
 const grid=document.getElementById('mobileUtilityGrid');
 if(grid){
  document.getElementById('extraToolsTitle').textContent=t.heading;

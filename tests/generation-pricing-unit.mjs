@@ -85,3 +85,56 @@ test('equal-score overlaps are provider-isolated, and no price is ever invented'
  assert.equal(estimateGenerationPricing({kind:'image',model:m.id,ratio:'1:1',resolution:'1024'},m,e).credits,19);
  assert.equal(estimateGenerationPricing({kind:'image',model:m.id,ratio:'1:1',resolution:'1024'},m,{}),null);
 });
+
+
+test('explicitly blank ratio or quality must never become an approved wildcard price',()=>{
+ const base={model:model.id,provider:model.provider,kind:'video',credits:1,providerCostMicros:50,currency:'usd'};
+ const request={kind:'video',model:model.id,ratio:'9:16',videoResolution:'720p',videoDuration:5};
+ // An operator typo (an explicit blank dimension) used to silently create
+ // a wildcard row, allowing an arbitrary aspect ratio to inherit cheap credits.
+ for(const key of ['ratio','quality']){
+  for(const invalid of ['', ' ', '\t', '\n']){
+   const env={AI_MODEL_PRICING_JSON:JSON.stringify([{...base,[key]:invalid}])};
+   assert.equal(pricingCatalog(env).configured,false,key+' '+JSON.stringify(invalid));
+   assert.equal(estimateGenerationPricing(request,model,env),null,'never price from malformed configured selector');
+  }
+ }
+ // A genuinely absent/null qualifier is still the intentional default-price
+ // wildcard; exact approved selectors continue matching normally.
+ for(const row of [base,{...base,ratio:null,quality:null},{...base,ratio:'9:16',quality:'720p'}]){
+  const env={AI_MODEL_PRICING_JSON:JSON.stringify([row])};
+  assert.equal(pricingCatalog(env).configured,true);
+  assert.equal(estimateGenerationPricing(request,model,env).credits,1);
+ }
+});
+
+test('BASE #18: unrecognized Video roles and impossible reference counts never inherit cheap text tariffs',()=>{
+ const base={model:model.id,provider:model.provider,kind:'video',
+  credits:1,providerCostMicros:100,currency:'usd'};
+ const approvedLast={...base,credits:120,providerCostMicros:250000,
+  videoInputMode:'first_last',referenceCount:2};
+ const approvedScene={...base,credits:130,providerCostMicros:300000,
+  videoInputMode:'reference_image',referenceCount:3};
+ const env={AI_MODEL_PRICING_JSON:JSON.stringify([base,approvedLast,approvedScene])};
+ const price=(mode,count)=>estimateGenerationPricing({
+  kind:'video',model:model.id,ratio:'16:9',videoInputMode:mode,referenceCount:count,
+ },model,env);
+ assert.equal(price('text',0)?.credits,1);
+ assert.equal(price('first_frame',1)?.credits,1);
+ assert.equal(price('first_last',2)?.credits,120);
+ assert.equal(price('reference_image',3)?.credits,130);
+ for(const [mode,count] of [
+  ['text',1],['text',2],['first_frame',0],['first_frame',2],
+  ['first_frame',3],['first_last',0],['first_last',1],['first_last',3],
+  ['reference_image',0],['reference_image',4],['reference_image',-1],
+  ['unrecognized',0],['reference_images',2],['',2],
+  ['text',-1],['text',1.5],['first_frame','1'],['text',9999]
+ ]){
+  assert.equal(price(mode,count),null,
+   'malformed provider role '+JSON.stringify([mode,count])+' must not get any price');
+ }
+ assert.equal(estimateGenerationPricing({
+  kind:'video',model:model.id,ratio:'16:9',
+  referenceCount:3 // Legacy auto-first_frame formerly inherited the text price.
+ },model,env),null);
+});
