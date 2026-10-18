@@ -29,18 +29,32 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
  await page.goto('/deepsyq.html');
  await expect(page.locator('#sidebar nav a').first()).toHaveAttribute('aria-label','Home');
  await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
- await page.locator('#sidebarToggle').click();
- await expect(page.locator('body')).toHaveClass(/sidebar-collapsed/);
- await expect(page.locator('#sidebar a[aria-label="Home"]')).toBeVisible();
- await page.locator('#menu').click();
- await expect(page.locator('body')).not.toHaveClass(/sidebar-collapsed/);
- await page.locator('[data-model-menu="image"]').hover();
+ // Desktop uses icon-only collapse; mobile keeps its drawer inert until
+ // the visible top navigation button opens it. Exercise the real control.
+ const mobile=await page.evaluate(()=>matchMedia('(max-width:760px)').matches);
+ if(mobile){
+  await expect(page.locator('#sidebar')).toHaveJSProperty('inert',true);
+  await page.locator('#menu').click();
+  await expect(page.locator('body')).toHaveClass(/menu-open/);
+  await expect(page.locator('#sidebar')).toHaveJSProperty('inert',false);
+  await expect(page.locator('#sidebar')).toBeInViewport();
+ }else{
+  await page.locator('#sidebarToggle').click();
+  await expect(page.locator('body')).toHaveClass(/sidebar-collapsed/);
+  await expect(page.locator('#sidebar a[aria-label="Home"]')).toBeVisible();
+  await page.locator('#sidebarToggle').click();
+  await expect(page.locator('body')).not.toHaveClass(/sidebar-collapsed/);
+ }
+ if(mobile)await page.locator('[data-open-models="image"]').click();
+ else await page.locator('[data-model-menu="image"]').hover();
  await expect(page.locator('#modelFlyout')).toBeVisible();
  await expect(page.locator('#modelFlyout')).toContainText('Connected image');
  await expect(page.locator('#modelFlyout')).toContainText('Pending image');
  await expect(page.locator('#modelFlyout .model-flyout-option').first()).toBeEnabled();
  await expect(page.locator('#modelFlyout .model-flyout-option').nth(1)).toBeDisabled();
- await page.locator('[data-model-menu="video"]').hover();
+ // The mobile panel overlays the narrow rail; close it before tapping a new menu.
+ if(mobile){await page.locator('#modelFlyoutClose').click();await page.locator('[data-open-models="video"]').click();}
+ else await page.locator('[data-model-menu="video"]').hover();
  await expect(page.locator('#modelFlyoutTitle')).toHaveText('Video models');
  await expect(page.locator('#modelFlyout')).toContainText('Connected video');
  await page.locator('#modelFlyoutClose').click();
@@ -84,6 +98,11 @@ test('Canvas saves only text and kind within this tab; refresh drops photos and 
  await page.locator('#quickCreateKind').selectOption('video');
  await page.locator('#quickCreateFiles').setInputFiles({name:'private-photo.png',mimeType:'image/png',buffer:png});
  await expect(page.locator('.quick-reference')).toHaveCount(1);
+ // The account-specific SHA-256 storage key is resolved asynchronously; wait
+ // for the real local write before testing a hard refresh.
+ await expect.poll(()=>page.evaluate(()=>Object.keys(sessionStorage)
+  .filter(key=>key.startsWith('deepsyq_quick_canvas_draft_v2_'))
+  .some(key=>JSON.parse(sessionStorage.getItem(key)||'null')?.prompt==='A very specific personal product video idea'))).toBe(true);
  await page.reload();
  await expect(page.locator('#quickCreatePrompt')).toHaveValue('A very specific personal product video idea');
  await expect(page.locator('#quickCreateKind')).toHaveValue('video');
@@ -94,6 +113,8 @@ test('Canvas saves only text and kind within this tab; refresh drops photos and 
  await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
  await expect(page.locator('#quickCreateKind')).toHaveValue('image');
  expect(await page.evaluate(()=>sessionStorage.getItem('deepsyq_quick_canvas_draft_v1'))).toBeNull();
+ await expect.poll(()=>page.evaluate(()=>Object.keys(sessionStorage)
+  .filter(key=>key.startsWith('deepsyq_quick_canvas_draft_v2_')).length)).toBe(0);
  expect(jobPosts).toBe(0);
 });
 
@@ -254,7 +275,7 @@ test('pricing mobile trial keeps three-day terms and clean accessible layout',as
 test('pricing keeps existing Lifetime separate from AI credit packs and uses server prices only',async({page})=>{
  await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur',unlimited:true}}}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',livePaymentsEnabled:false,packs:[{sku:'configured',credits:4200,amount:1900,currency:'usd'}],rates:[]}}));
- await page.goto('/ai-pricing.html');await expect(page.locator('#toolPlans')).toContainText('Lifetime');await expect(page.locator('#toolPlans')).toContainText('not unlimited AI-generation credit');await expect(page.locator('#aiPacks')).toContainText('4,200 AI credits');await expect(page.locator('#aiPacks')).toContainText('$19');await expect(page.locator('#aiPacks button')).toBeDisabled();
+ await page.goto('/ai-pricing.html');await expect(page.locator('#toolPlans')).toContainText('Lifetime');await expect(page.locator('#toolPlans')).toContainText('does not include unlimited AI-generation credits');await expect(page.locator('#aiPacks')).toContainText('4,200 AI credits');await expect(page.locator('#aiPacks')).toContainText('$19');await expect(page.locator('#aiPacks button')).toBeDisabled();
 });
 
 
@@ -330,6 +351,8 @@ test('featured owned video is promoted but original homepage sections and images
  await expect(page.getByRole('link',{name:/Video Uniquifier history/})).toBeVisible();
 });
 test('approved video appears in the real homepage hero but does not erase Canvas or original sections',async({page})=>{
+ // Navigation/media-element assertions are separate from serving real MP4 bytes.
+ await page.addInitScript(()=>{HTMLMediaElement.prototype.load=function(){};HTMLMediaElement.prototype.pause=function(){};HTMLMediaElement.prototype.play=function(){return Promise.resolve();};});
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
@@ -401,7 +424,12 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/broken-two.mp4');
  await expect(page.locator('#homeHeroDots button').first()).toBeDisabled();
  await page.locator('#inspirationHeroVideo').evaluate(v=>v.dispatchEvent(new Event('error')));
- await expect(page.locator('#homeHeroCarousel')).toBeHidden();
+ await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+ await expect(page.locator('#homeHeroCarousel')).toHaveClass(/is-empty/);
+ await expect(page.locator('#homeHeroEmpty')).toBeVisible();
+ await expect(page.locator('#homeHeroPlay')).toBeHidden();
+ await expect(page.locator('#homeHeroNext')).toBeHidden();
+ await expect(page.locator('#homeHeroSlideLink')).toBeHidden();
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
  await expect(page.locator('#inspirationPreviewGrid')).toContainText('Original owner still');
@@ -452,7 +480,8 @@ test('Home Quick Create hands off an unpaid draft and Agent remains a preview',a
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  let posts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
  await page.goto('/deepsyq.html');
- await expect(page.locator('#homeHeroCarousel')).toBeHidden();
+ await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+ await expect(page.locator('#homeHeroEmpty')).toBeVisible();
  await page.locator('[data-home-kind="agent"]').click();
  await page.locator('#homeQuickSubmit').click();
  await expect(page.locator('#homeQuickStatus')).toContainText('not available yet');
@@ -570,11 +599,26 @@ test('homepage inspiration All Image Video filters only owned API cards',async({
 
 test('owner-approved social share section stays in left rail without invented official accounts',async({page})=>{
  await fixtures(page);await page.goto('/deepsyq.html');
+ const mobile=await page.evaluate(()=>matchMedia('(max-width:760px)').matches);
+ if(mobile){
+  // Check content only after opening the actual mobile drawer.
+  await expect(page.locator('#sidebar')).toHaveJSProperty('inert',true);
+  await page.locator('#menu').click();
+  await expect(page.locator('body')).toHaveClass(/menu-open/);
+  await expect(page.locator('#sidebar')).toHaveJSProperty('inert',false);
+ }
  await expect(page.locator('.sidebar-social')).toBeVisible();
  await expect(page.locator('.sidebar-social [data-social=discord]')).toBeVisible();
  await expect(page.locator('.sidebar-social [data-social=x]')).toBeVisible();
  await expect(page.locator('.sidebar-social [data-social=instagram]')).toBeVisible();
- await page.locator('#sidebarToggle').click();
- await expect(page.locator('body')).toHaveClass(/sidebar-collapsed/);
- await expect(page.locator('.sidebar-social [data-social=x]')).toBeVisible();
+ if(mobile){
+  // The in-drawer toggle closes it and makes content non-interactive.
+  await page.locator('#sidebarToggle').click();
+  await expect(page.locator('body')).not.toHaveClass(/menu-open/);
+  await expect(page.locator('#sidebar')).toHaveJSProperty('inert',true);
+ }else{
+  await page.locator('#sidebarToggle').click();
+  await expect(page.locator('body')).toHaveClass(/sidebar-collapsed/);
+  await expect(page.locator('.sidebar-social [data-social=x]')).toBeVisible();
+ }
 });

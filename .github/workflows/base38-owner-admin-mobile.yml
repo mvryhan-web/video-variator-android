@@ -1,5 +1,9 @@
 name: BASE 38 owner Admin mobile layout
 
+concurrency:
+  group: ci-base38-owner-admin-mobile-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
     paths:
