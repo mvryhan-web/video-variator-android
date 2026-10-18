@@ -131,6 +131,42 @@ export async function generateGoogle(request,{key,fetcher=fetch}){
  }
  return {mime,bytes,text:parts.map(p=>p.text||'').join('\n').slice(0,12000)};
 }
+// A file-type signature is not a playable result. Require a complete top-level
+// MP4 box sequence, movie metadata with a track and nonempty media payload.
+// This is structural validation only, not a codec or malware assessment.
+function mp4Box(data,offset,end){
+ if(offset+8>end)return null;
+ let length=data.readUInt32BE(offset),header=8;
+ if(length===1){
+  if(offset+16>end)return null;
+  const extended=data.readBigUInt64BE(offset+8);
+  if(extended>BigInt(end-offset))return null;
+  length=Number(extended);header=16;
+ }else if(length===0)length=end-offset;
+ if(length<header||offset+length>end)return null;
+ return {kind:data.toString('ascii',offset+4,offset+8),start:offset+header,end:offset+length};
+}
+function completeMp4Media(bytes){
+ let pos=0,top=0,hasMovie=false,hasMedia=false;
+ while(pos<bytes.length&&++top<=4096){
+  const box=mp4Box(bytes,pos,bytes.length);if(!box)return false;
+  if(box.kind==='mdat'&&box.end>box.start)hasMedia=true;
+  if(box.kind==='moov'){
+   let childPos=box.start,nested=0,hasHeader=false,hasTrack=false;
+   while(childPos<box.end&&++nested<=4096){
+    const child=mp4Box(bytes,childPos,box.end);if(!child)return false;
+    if(child.kind==='mvhd')hasHeader=true;
+    if(child.kind==='trak')hasTrack=true;
+    childPos=child.end;
+   }
+   if(childPos!==box.end||!hasHeader||!hasTrack)return false;
+   hasMovie=true;
+  }
+  pos=box.end;
+ }
+ return pos===bytes.length&&top<=4096&&hasMovie&&hasMedia;
+}
+
 export async function pollGoogle(operation,{key,fetcher=fetch}){
  const d=await googleJson(operation,{key,fetcher});if(!d.done)return {pending:true};
  if(d.error){const failure=new Error('PROVIDER_TASK_FAILED');failure.terminal=true;throw failure;}
@@ -152,6 +188,6 @@ export async function pollGoogle(operation,{key,fetcher=fetch}){
  // recognized video MP4 major brands may be served as video/mp4 here.
  const mp4Brand=/^(?:isom|iso[2-9]|mp4[12]|avc1|hvc1|hev1|M4V |dash|msdh|f4v )$/.test(brand);
  if(bytes.length<16||bytes.subarray(4,8).toString('ascii')!=='ftyp'||
-    headerSize<16||headerSize>bytes.length||!mp4Brand)throw new Error('INVALID_PROVIDER_MEDIA');
+    headerSize<16||headerSize>bytes.length||!mp4Brand||!completeMp4Media(bytes))throw new Error('INVALID_PROVIDER_MEDIA');
  return {mime:'video/mp4',bytes,text:''};
 }
