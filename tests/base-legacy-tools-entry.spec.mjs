@@ -85,7 +85,10 @@ test('BASE #27 keeps existing local history and media across Video Uniquifier â†
  // Playwright's isVisible() includes offscreen mobile sidebars. Check the
  // actual mobile Menu control, not the offscreen link's CSS visibility.
  const menu=page.locator('#menuBtn');
- if(await menu.isVisible()){
+ // On phones, wait for the real Menu button: isVisible() can return false
+ // during the initial startup screen while the nav is still offscreen.
+ if(await page.evaluate(()=>innerWidth<=900)){
+  await expect(menu).toBeVisible();
   await menu.click();
   await expect(page.locator('.sidebar')).toHaveClass(/\bopen\b/);
  }
