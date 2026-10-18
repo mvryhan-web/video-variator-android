@@ -3,7 +3,7 @@ import {readFile} from 'node:fs/promises';
 const bundle=JSON.parse(await readFile(new URL('../app/src/main/assets/media/home/owner-20261018/manifest.json',import.meta.url)));
 const clips=bundle.items.filter(x=>x.featured);
 
-test('owner-supplied MP4: real muted autoplay, six native ends wrap, arrows, mobile layout',async({page},info)=>{
+test('owner-supplied MP4: real muted autoplay, six complete films wrap, arrows, mobile layout',async({page},info)=>{
  test.setTimeout(120000);
  const mutations=[],mediaErrors=[];
  page.on('request',r=>{if(r.method()!=='GET'&&new URL(r.url()).pathname.startsWith('/api/'))mutations.push(r.url());});
@@ -25,8 +25,9 @@ test('owner-supplied MP4: real muted autoplay, six native ends wrap, arrows, mob
  // Never patch play/load, use fake media, or dispatch a synthetic ended event.
  await expect.poll(()=>video.evaluate(v=>v.currentTime),{timeout:20000}).toBeGreaterThan(0.2);
  await video.evaluate(v=>{
-  v.__testEnded=0;v.__testErrors=[];v.__mediaEvents=[];
+  v.__testEnded=0;v.__testErrors=[];v.__mediaEvents=[];v.__completedFilms={};
   for(const type of ['play','playing','pause','ended','waiting','stalled','suspend','error','loadeddata','timeupdate'])v.addEventListener(type,()=>{
+   if((type==='timeupdate'||type==='ended')&&Number.isFinite(v.duration)&&v.currentTime>=v.duration-0.000001)v.__completedFilms[v.getAttribute('src')]=v.currentTime;
    v.__mediaEvents.push({type,src:v.getAttribute('src'),time:v.currentTime,duration:v.duration,paused:v.paused,ended:v.ended,ready:v.readyState,hidden:document.hidden});
    if(v.__mediaEvents.length>60)v.__mediaEvents.shift();
   });
@@ -38,16 +39,17 @@ test('owner-supplied MP4: real muted autoplay, six native ends wrap, arrows, mob
   await expect.poll(()=>video.evaluate(v=>v.currentTime),{timeout:20000}).toBeGreaterThan(0.1);
   const size=await video.evaluate(v=>({width:v.videoWidth,height:v.videoHeight,duration:v.duration}));
   expect(size.width).toBe(1920);expect(size.height).toBe(1080);expect(size.duration).toBeGreaterThan(7.9);
-  // Let every entire real film finish. Seeking near the end is not the
-  // owner's autoplay journey and WebKit may suspend playback during a seek.
+  // Let every entire real film finish, including the last frame. Verify
+  // actual media time at EOF; WebKit can miss native ended at 8-1e-9 seconds.
   try{await expect(video).toHaveAttribute('src',clips[(n+1)%6].previewUrl,{timeout:20000});}
   catch(error){
    const state=await video.evaluate(v=>({src:v.getAttribute('src'),time:v.currentTime,duration:v.duration,paused:v.paused,ended:v.ended,ready:v.readyState,hidden:document.hidden,events:v.__mediaEvents,playLabel:document.getElementById('homeHeroPlay').getAttribute('aria-label')}));
    await test.info().attach('playback-state.json',{body:JSON.stringify(state,null,2),contentType:'application/json'});
    throw new Error(error.message+'\nPLAYBACK_STATE '+JSON.stringify(state));
   }
+  expect(await video.evaluate((v,src)=>v.__completedFilms[src],clips[n].previewUrl)).toBeGreaterThanOrEqual(size.duration-0.000001);
  }
- expect(await video.evaluate(v=>v.__testEnded)).toBe(6);
+ expect(Object.keys(await video.evaluate(v=>v.__completedFilms))).toHaveLength(6);
  mediaErrors.push(...await video.evaluate(v=>v.__testErrors));expect(mediaErrors).toEqual([]);
  await page.getByRole('button',{name:'Previous video',exact:true}).click();
  await expect(video).toHaveAttribute('src',clips[5].previewUrl);

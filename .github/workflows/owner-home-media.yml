@@ -4,6 +4,7 @@ on:
     branches: [deepsyq-platform]
     paths:
       - 'app/src/main/assets/media/home/owner-20261018/**'
+      - 'app/src/main/assets/home-experience.js'
       - 'server/deepsyq-preview.js'
       - 'tests/deepsyq-preview.mjs'
       - 'scripts/publish-owner-home-media.mjs'
@@ -13,6 +14,7 @@ on:
     branches: [agent-b-home-v01-v13-original-frames-20261018]
     paths:
       - 'app/src/main/assets/media/home/owner-20261018/**'
+      - 'app/src/main/assets/home-experience.js'
       - 'server/deepsyq-preview.js'
       - 'tests/deepsyq-preview.mjs'
       - 'scripts/publish-owner-home-media.mjs'

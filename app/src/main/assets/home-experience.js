@@ -5,11 +5,15 @@ const $=id=>document.getElementById(id);
 const video=$('inspirationHeroVideo');
 const carousel=$('homeHeroCarousel');
 let slides=[],index=0,visible=false,userPaused=false,observer=null,failedSlides=new Set();
+let completionTimer=null,playbackSerial=0;
+function resetCompletion(){clearTimeout(completionTimer);completionTimer=null;playbackSerial++;}
+function advanceCompletedSlide(){if(!ambientAllowed())return;if(slides.length>1)setSlide(index+1);else if(slides.length===1){resetCompletion();video.currentTime=0;ambientPlay();}}
 function ambientAllowed(){return !document.hidden&&visible&&!userPaused&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData;}
 function ambientPlay(){if(!video?.getAttribute('src')||!ambientAllowed())return;void video.play().catch(()=>{userPaused=true;setPlayLabel();});}
 function setPlayLabel(){const b=$('homeHeroPlay');if(!b)return;b.textContent=userPaused?'Play':'Pause';b.setAttribute('aria-label',userPaused?'Play video':'Pause video');}
 function setSoundLabel(){const b=$('homeHeroSound');if(!b||!video)return;b.textContent=video.muted?'Sound off':'Sound on';b.setAttribute('aria-label',video.muted?'Turn sound on':'Turn sound off');b.setAttribute('aria-pressed',String(!video.muted));}
 function showHeroFallback(){
+ resetCompletion();
  // Owner-approved Home keeps the real gallery region visible even when no
  // rights-cleared video can play. Do not invent a clip, thumbnail or Play UI.
  video.pause();video.removeAttribute('src');video.removeAttribute('poster');video.load();
@@ -39,7 +43,7 @@ function setSlide(next,direction=1){
  if(!slides.length||!video||failedSlides.size===slides.length)return;
  let selected=((next%slides.length)+slides.length)%slides.length;
  for(let n=0;n<slides.length&&failedSlides.has(selected);n++)selected=(selected+direction+slides.length)%slides.length;
- index=selected;
+ resetCompletion();index=selected;
  const item=slides[index];
  const link='inspiration.html?kind=video&category='+encodeURIComponent(item.category||'')+'&ratio='+encodeURIComponent(item.aspectRatio||'')+'&q='+encodeURIComponent(item.title||'');
  video.pause();video.src=item.previewUrl;
@@ -86,7 +90,21 @@ if(video&&carousel){
   // Unmuting is never automatic: only a direct click can activate the soundtrack.
   // Play remains a separate opt-in when reduced-motion or data saver is enabled.
  });
- video.addEventListener('ended',()=>{if(!ambientAllowed())return;if(slides.length>1)setSlide(index+1);else if(slides.length===1){video.currentTime=0;ambientPlay();}});
+ video.addEventListener('ended',advanceCompletedSlide);
+ video.addEventListener('timeupdate',()=>{
+  // Observed in real WebKit playback: 7.999999999 / 8 seconds, readyState=4,
+  // paused=false and ended=false forever. Recover only sub-microsecond EOF
+  // rounding, never a missing frame, buffering stall or user pause. Give the
+  // native ended task first chance; a source change invalidates this timer.
+  const remaining=video.duration-video.currentTime;
+  if(completionTimer!==null||!ambientAllowed()||video.paused||video.ended||video.readyState<2||!Number.isFinite(remaining)||remaining<=0||remaining>0.000001)return;
+  const serial=playbackSerial;
+  completionTimer=setTimeout(()=>{
+   completionTimer=null;
+   const left=video.duration-video.currentTime;
+   if(serial===playbackSerial&&!video.paused&&!video.ended&&Number.isFinite(left)&&left>=0&&left<=0.000001)advanceCompletedSlide();
+  },50);
+ });
  video.addEventListener('loadeddata',ambientPlay);
  video.addEventListener('error',()=>{
   if(!slides.length||!video.getAttribute('src'))return;
