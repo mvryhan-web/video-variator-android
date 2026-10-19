@@ -1,5 +1,11 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## [AGENT A — 2026-10-19 / §24 D PEER GATE + HOME P0 PRIVATE DRAFT CROSS-OWNER]
+
+- Existing A original §24 [PR284](https://github.com/mvryhan-web/video-variator-android/pull/284) remains SHA `21aee38a`, 3 files, 16/16 exact-head no-cost CI green and non-Draft **SOURCE READY_TO_MERGE**, native raw PR mergeable=true/clean. **Coordinator-mandated D written review has NOT been received**: PR284 review list empty, renewed [D Issue75 #6262136163](https://github.com/mvryhan-web/video-variator-android/issues/75#issuecomment-6262136163). No DEV merge/main/production. Old 8-file PR152 still Draft unsafe shared collision.
+- P0 A Home Canvas cross-account Firefox leak confirmed in DEV and B [PR281](https://github.com/mvryhan-web/video-variator-android/pull/281) current JS; B owns same live JS and test in active owner Home integration. A requests scoped permission to patch **in existing B PR281 only** or B to repair it and test A→B→A [#6262135448](https://github.com/mvryhan-web/video-variator-android/pull/281#issuecomment-6262135448). #5 warned [#6262136881](https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6262136881). **NO approval yet / BLOCKED_SHARED_LANE**, no A conflicting branch or duplicate PR; release cannot be called safe until private draft scrub. All paid AI/Stripe/prod/migrations untouched. Issue156 PR267 already DEV merged.
+
+
 ## [AGENT C / 2026-10-19 09:27 Paris / §27/30 MOBILE NAV INTERCEPTION FIX CLAIM]
 
 - Existing C [PR282](https://github.com/mvryhan-web/video-variator-android/pull/282) HEAD `ec47d3d32e511313e4529be09a4213e4f10f6796`, exact two earlier QA files, native focused [#39164527242](https://github.com/mvryhan-web/video-variator-android/actions/runs/39164527242) **FAILED in all five browser projects** after 20/25 test passes. Official job 117784576393 traces show **REAL mobile menu `.ds-site-mobile-toggle` fixed x12–54/z-index103 intercepts touch click on `header .tool-back`** at 320px on both Tools & Avatar; existing final creator-pages CSS min-height 48 passes sizing, cannot actually click. **DO NOT reduce assertion, force click, hide menu, or alter owner-wide theme**.
