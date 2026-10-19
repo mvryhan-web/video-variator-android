@@ -30,3 +30,19 @@
  body.deepsyq-sitewide-shell > header nav a.active{display:none}
  body.deepsyq-sitewide-shell > header nav a{padding:8px 6px}
 }
+
+/* BASE1-C3: owner-approved inner-page neon colors only. The surviving
+   lime-green video badge and category chips predate the shared Deepsyq skin;
+   preserve the current actual card layout, media, buttons, and behaviors. */
+html:not([data-theme="light"]) .gallery .card[data-kind="video"]{
+ border-color:var(--ds-line);
+}
+html:not([data-theme="light"]) .gallery .card[data-kind="video"] .type-badge{
+ background:linear-gradient(120deg,var(--ds-violet),var(--ds-blue));
+ color:var(--ds-text);
+}
+html:not([data-theme="light"]) .category-chips button:not([aria-pressed="true"]){
+ border-color:var(--ds-line);
+ background:var(--ds-surface);
+ color:var(--ds-text);
+}
