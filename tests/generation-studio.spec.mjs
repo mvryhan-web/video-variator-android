@@ -280,7 +280,8 @@ test('video History checks an existing task without resubmitting or downloading 
 
 // Owner acceptance: real Home destinations and native centered windows; no provider dispatch.
 for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320,height:740},{width:844,height:390}]){
- test(`studio model/settings windows stay centered and usable at ${viewport.width}x${viewport.height}`,async({page})=>{
+ for(const [studio,title] of [['image','Create an image'],['video','Create a video'],['audio','Create audio']]){
+ test(`studio model/settings windows: ${studio} stays centered and usable at ${viewport.width}x${viewport.height}`,async({page})=>{
   await page.setViewportSize(viewport);
   let posts=0;page.on('request',request=>{if(request.method()==='POST')posts++;});
   const assertCentered=async dialog=>{
@@ -293,7 +294,6 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    expect(bounds.y+bounds.height).toBeLessThanOrEqual(viewport.height-12);
    expect(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
   };
-  for(const [studio,title] of [['image','Create an image'],['video','Create a video'],['audio','Create audio']]){
    await page.goto('/deepsyq.html');
    if(viewport.width<=760)await page.locator('#menu').click();
    const trigger=page.locator(`[data-open-models="${studio}"]`);
@@ -304,7 +304,7 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    await page.keyboard.press('Escape');await expect(chooser).not.toBeVisible();
    await expect(trigger).toHaveAttribute('aria-expanded','false');await expect(trigger).toBeFocused();
    // Close the mobile drawer through its actual control before using the content cards.
-   if(viewport.width<=760)await page.locator('#menu').click();
+   if(viewport.width<=760){await page.locator('#sidebarToggle').click();await expect(page.locator('body')).not.toHaveClass(/menu-open/);}
    await page.locator(`.home-create-card[href="generate-studio.html?studio=${studio}"]`).click();
    await expect(page).toHaveURL(new RegExp('studio='+studio));
    await expect(page.locator('#taskTitle')).toHaveText(title);
@@ -326,7 +326,7 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    await expect(page.locator('#prompt')).toHaveValue('My local draft');
    await expect(page.locator('#generate')).toBeDisabled();
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  }
   expect(posts).toBe(0);
  });
+ }
 }
