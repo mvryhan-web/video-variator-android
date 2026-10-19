@@ -35,7 +35,11 @@ jobs:
       - run: node --check app/src/main/assets/deepsyq.js && node --check tests/agent-a-base3-home-fallback.spec.mjs
       - run: npx playwright install --with-deps chromium firefox webkit
       - name: Private Canvas A to B to A and zero paid generation in all three engines
-        run: npx playwright test tests/agent-a-base3-home-fallback.spec.mjs --project=chromium --project=firefox --project=webkit --grep 'BASE 3: Canvas draft cannot be restored by a different account sharing this browser tab' --workers=1
+        run: |
+          npx playwright test tests/agent-a-base3-home-fallback.spec.mjs \
+            --project=chromium --project=firefox --project=webkit \
+            --grep 'BASE 3: Canvas draft cannot be restored by a different account sharing this browser tab' \
+            --workers=1
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
