@@ -242,18 +242,10 @@ document.querySelectorAll('#sidebar nav a').forEach(a=>a.addEventListener('click
 
 // Model options are discovered from the existing Studio config. Prepared or disabled models
 // are visible but cannot be selected as if they were live integrations.
-let studioModelMenuConfig=null,openModelsKind=null,modelCloseTimer=null;
+let studioModelMenuConfig=null,openModelsKind=null;
 function closeModelFlyout(){
- clearTimeout(modelCloseTimer);
  $('modelFlyout').hidden=true;openModelsKind=null;
  document.querySelectorAll('[data-open-models]').forEach(b=>b.setAttribute('aria-expanded','false'));
-}
-function scheduleModelClose(){
- clearTimeout(modelCloseTimer);
- modelCloseTimer=setTimeout(()=>{
-  const focus=document.activeElement;
-  if(!$('modelFlyout').contains(focus)&&!focus?.closest?.('[data-model-menu]'))closeModelFlyout();
- },160);
 }
 function renderModelFlyout(kind){
  const list=$('modelFlyoutList');list.replaceChildren();
@@ -279,29 +271,19 @@ function renderModelFlyout(kind){
  if(!models.length){const msg=document.createElement('p');msg.textContent='No models listed yet. Open Studio for updates.';list.append(msg);}
  const go=document.createElement('a');go.className='model-flyout-all';go.href='generate-studio.html?studio='+kind;go.textContent='View all in Studio →';list.append(go);
 }
-function showModelFlyout(kind,entry){
+function showModelFlyout(kind){
  if(!['image','video'].includes(kind)||mobileMenu.matches&&!document.body.classList.contains('menu-open'))return;
- clearTimeout(modelCloseTimer);openModelsKind=kind;
+ openModelsKind=kind;
  const panel=$('modelFlyout');$('modelFlyoutTitle').textContent=kind==='image'?'Image models':'Video models';
  renderModelFlyout(kind);panel.hidden=false;
- const rect=entry.getBoundingClientRect(),sidebar=$('sidebar').getBoundingClientRect();
- panel.style.left=Math.min(window.innerWidth-panel.offsetWidth-12,sidebar.right+10)+'px';
- panel.style.top=Math.max(12,Math.min(rect.top,window.innerHeight-panel.offsetHeight-12))+'px';
  document.querySelectorAll('[data-open-models]').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.openModels===kind)));
 }
+// A deliberate click opens a centered model picker on desktop and mobile.
+// Hover/focus alone must never obscure the approved Home videos.
 for(const entry of document.querySelectorAll('[data-model-menu]')){
  const kind=entry.dataset.modelMenu,btn=entry.querySelector('[data-open-models]');
- entry.addEventListener('mouseenter',()=>{if(!mobileMenu.matches)showModelFlyout(kind,entry);});
- entry.addEventListener('mouseleave',scheduleModelClose);
- // Mobile tap first focuses the model trigger; do not let focus open the
- // overlay before click reaches the button. Keyboard Enter/Space still click it.
- entry.addEventListener('focusin',()=>{if(!mobileMenu.matches)showModelFlyout(kind,entry);});
- entry.addEventListener('focusout',scheduleModelClose);
- btn.onclick=()=>{if(openModelsKind===kind&&!$('modelFlyout').hidden)closeModelFlyout();else showModelFlyout(kind,entry);};
+ btn.onclick=()=>{if(openModelsKind===kind&&!$('modelFlyout').hidden)closeModelFlyout();else showModelFlyout(kind);};
 }
-$('modelFlyout').addEventListener('mouseenter',()=>clearTimeout(modelCloseTimer));
-$('modelFlyout').addEventListener('mouseleave',scheduleModelClose);
-$('modelFlyout').addEventListener('focusout',scheduleModelClose);
 $('modelFlyoutClose').onclick=closeModelFlyout;
 document.addEventListener('pointerdown',e=>{if(!$('modelFlyout').contains(e.target)&&!e.target.closest?.('[data-model-menu]'))closeModelFlyout();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModelFlyout();});

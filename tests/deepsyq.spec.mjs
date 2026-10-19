@@ -48,16 +48,24 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
   await page.locator('#sidebarToggle').click();
   await expect(page.locator('body')).not.toHaveClass(/sidebar-collapsed/);
  }
- if(mobile)await page.locator('[data-open-models="image"]').click();
- else await page.locator('[data-model-menu="image"]').hover();
+ // Desktop hover is a preview of the navigation item, never an open modal.
+ await page.locator('[data-model-menu="image"]').hover();
+ await expect(page.locator('#modelFlyout')).toBeHidden();
+ await page.locator('[data-open-models="image"]').click();
  await expect(page.locator('#modelFlyout')).toBeVisible();
+ const modalOffset=await page.locator('#modelFlyout').evaluate(el=>{
+  const r=el.getBoundingClientRect();
+  return {x:Math.abs(r.left+r.width/2-innerWidth/2),y:Math.abs(r.top+r.height/2-innerHeight/2),fits:r.left>=-1&&r.right<=innerWidth+1};
+ });
+ expect(modalOffset.x).toBeLessThan(3);expect(modalOffset.y).toBeLessThan(3);
+ expect(modalOffset.fits).toBe(true);
  await expect(page.locator('#modelFlyout')).toContainText('Connected image');
  await expect(page.locator('#modelFlyout')).toContainText('Pending image');
  await expect(page.locator('#modelFlyout .model-flyout-option').first()).toBeEnabled();
  await expect(page.locator('#modelFlyout .model-flyout-option').nth(1)).toBeDisabled();
- // The mobile panel overlays the narrow rail; close it before tapping a new menu.
- if(mobile){await page.locator('#modelFlyoutClose').click();await page.locator('[data-open-models="video"]').click();}
- else await page.locator('[data-model-menu="video"]').hover();
+ // Close the centered modal before switching models; no hover-open side flyout.
+ await page.locator('#modelFlyoutClose').click();
+ await page.locator('[data-open-models="video"]').click();
  await expect(page.locator('#modelFlyoutTitle')).toHaveText('Video models');
  await expect(page.locator('#modelFlyout')).toContainText('Connected video');
  await page.locator('#modelFlyoutClose').click();
