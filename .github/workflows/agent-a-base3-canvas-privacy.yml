@@ -39,7 +39,7 @@ jobs:
           npx playwright test tests/agent-a-base3-home-fallback.spec.mjs \
             --project=chromium --project=firefox --project=webkit \
             --project=mobile-chromium --project=mobile-webkit \
-            --grep 'BASE 3: (Canvas draft cannot be restored|logout and browser Back|mobile Canvas references)' \
+            --grep 'BASE 3: (Canvas draft cannot be restored|logout and browser Back|mobile Canvas references|unsupported Video model)' \
             --workers=1
       - uses: actions/upload-artifact@v4
         if: failure()
