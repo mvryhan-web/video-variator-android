@@ -1,3 +1,23 @@
+## COORDINATOR #5 — CYCLE 3 / 2026-10-19 — ORDINARY BASE COORDINATION (LATEST)
+
+**Owner instruction supersedes earlier tool-expansion TODO:** stop additional Graphify/Ponytail modifications; continue the original coordinator A/B/C/D/Jules management. The existing persistent safe map and skills stay as previously merged; NO new tool, no map coverage-expansion PR. Use CHECKPOINT/map first, then only exact relevant current GitHub diffs.
+
+**This cycle actual DEV merge:** Google Jules1 Block5 W5.4 bot source original [PR293](https://github.com/mvryhan-web/video-variator-android/pull/293) wrongly targets `main` with **535 source-diff paths**; #5 quarantined it DRAFT (never main-merge). Extracted only the two ORIGINAL source/test files, plus an isolated GitHub no-spend test workflow, into [PR295](https://github.com/mvryhan-web/video-variator-android/pull/295), exact head `7cb051eab0ce010f1ec2415bfbcebeb6668b5356`, current DEV compare only 3 paths, ahead 4/behind 0, mergeable true; official Actions #39228270163 SUCCESS **9/9** tests (including 10-alert / 2KB boundaries), Product Watcher CI #39228270238 SUCCESS; **actual DEV squash merge `69aa4ba442cd72a85728b2df3f699e8d9f2a3cb0`.** This is an UNSENT plain-text owner email *draft formatter only*, not enabled watcher, cron, SMTP, real email, payment, provider or production service. Jules1 W5.4 isolated feature DEV_INTEGRATED, full Block5 Stage1 LIVE_NOT_VERIFIED.
+
+**A:** original §24 History DEV merged in #284, whole §24 PARTIAL. NEXT: one exact A-owned private Canvas/Firefox A→B→A quick-draft patch inside existing B #281 branch + 3-browser no-spend tests; no second PR, do not change owner six-film Home.
+
+**B:** original §5 [PR174](https://github.com/mvryhan-web/video-variator-android/pull/174) exact source head `39bc07dfaa15e7e90260738acce10b7bae5971f5`, 16/16 no-spend CI on that OLD head, but **mergeable=false and no D exact-current-HEAD peer PASS**. NEXT: reconcile latest DEV non-force in SAME PR174, preserving A §24 GET privacy and D one-use purchased-only wallet guards; new CI, request D written co-review. Children #186 then #203 only AFTER parent. Owner screenshot-matched #281 remains DRAFT/P0 privacy and stale tests; #280 main DRAFT production only via authorized D. Original six 16:9 video order and 13 separate storyboard scenes must not be confused.
+
+**C:** §27/#30 narrow #282 DEV-merged but real-phone/LIVE acceptance PARTIAL. NEXT: read-only rights/licensing §22 Inspiration modern code vs stale #44; one isolated owned gap, no duplicate tables/DB migration. §21 Chat provider/credits externally gated by B/D; §28 local Audio Tools distinct from B paid Music.
+
+**D:** existing wallet/Stripe/release code DEV only; never treat revenue path LIVE verified. NEXT: B174 **new** exact-head private-credit/payment/security PASS or BLOCKED after reconciliation; no live billing or release without explicit owner approval. D Issue75 handoff refreshed this cycle.
+
+**Jules1:** W5.3 #287 and now W5.4 #295 both DEV integrated source-only, original main #286/#293 quarantined DRAFT. NEXT: no duplicate Jules task; independent later W5.5 only after fresh coordination and separate bounded claim. **Jules2:** W4.1 #283 integrated, W4.2 #289 bot FAILED / QUEUED_NOT_RUNNING; one retry only after 2026-10-20T07:40:36Z and quota/cap checks, no duplicate issue. **Jules3:** opt-in Voice V6.2 #278 bot last confirmed ACTIVE, await same Issue's result, no paid voice/mic-by-default.
+
+**Claims:** Audio B paid/C free/Jules3 Voice/D economics; AI Agents C UX/Jules2 plan/B dispatch/D wallet; Inspiration C catalog/A editorial licensed/B approved videos; History A privacy/B job status/D costs/Jules2 pure Workspace; SEO A editorial/C public pages/D release. No active duplicate ownership change. Only original BASE #47 and #53 fully DONE (2/55); all scoped DEV merges do not mark original 55 full requirements complete.
+
+**Single coordinator NEXT:** when B174 receives non-force reconciled current SHA, verify exact diff/current-head native CI and written D purchased/privacy PASS; only then consider safe DEV-only merge. No `main`, production, real Stripe, paid AI, unsafe migrations.
+
 ## COORDINATOR #5 — Graphify persistent map correction (2026-10-19)
 
 ## COORDINATOR #5 — GRAPHIFY SHARED MAP LIVE (2026-10-19)
