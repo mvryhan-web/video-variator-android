@@ -187,13 +187,13 @@ test('BASE1-C owned AI Apps/Inspiration/Tools remain usable at 320, 375 and 768p
   // The old Avatar card was removed without a replacement in the hub.
   // This one C-owned shortcut restores only the missing real destination.
   const avatar=page.getByRole('navigation',{name:'Avatar studio shortcut'})
-   .locator('a[href="avatar-studio.html"]');
+   .locator('a[href="avatar-studio.html?from=tools"]');
   await expect(avatar).toBeVisible();
   expect(await avatar.evaluate(el=>el.getBoundingClientRect().height),
    'Avatar shortcut accessible touch height at '+width).toBeGreaterThanOrEqual(44);
   if(width===320){
    await avatar.click();
-   await expect(page).toHaveURL(/\/avatar-studio\.html$/);
+   await expect(page).toHaveURL(/\/avatar-studio\.html\?from=tools$/);
    await page.goto('/free-tools.html');
   }else if(width===375){
    await audio.click();
@@ -250,10 +250,10 @@ test('BASE1-C2 Avatar Back: preserve legacy entry and record Tools-origin misrou
   await page.setViewportSize({width,height:812});
   await page.goto('/free-tools.html');
   const toolsEntry=page.getByRole('navigation',{name:'Avatar studio shortcut'})
-   .locator('a[href="avatar-studio.html"]');
+   .locator('a[href="avatar-studio.html?from=tools"]');
   await expect(toolsEntry).toBeVisible();
   await toolsEntry.click();
-  await expect(page).toHaveURL(/\/avatar-studio\.html$/);
+  await expect(page).toHaveURL(/\/avatar-studio\.html\?from=tools$/);
   const actualBack=page.locator('a.tool-back[data-av="back"]');
   const observed=await actualBack.getAttribute('href');
   expect(observed,'Document the present destination until Avatar owner grants a patch').toBe('index.html');
