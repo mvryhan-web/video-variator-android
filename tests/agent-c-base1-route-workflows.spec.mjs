@@ -67,7 +67,9 @@ test('BASE1-C 13 named screens exist; Home paths preserve PR296 History and real
   ['History','generate-studio.html?view=history'],
   ['Canvas','#quickCreateForm']
  ]){
-  await expect(sidebar.getByRole('link',{name:label})).toHaveAttribute('href',href);
+  // Mobile Home deliberately keeps its rail inert until the user opens it;
+  // inspect the actual anchor's destination without falsely requiring visibility.
+  await expect(sidebar.locator('a[aria-label="'+label+'"]')).toHaveAttribute('href',href);
  }
  await page.goto('/ai-apps.html');
  const nav=page.getByRole('navigation',{name:'Main navigation'});
