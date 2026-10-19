@@ -354,7 +354,12 @@ test('featured owned video is promoted but original homepage sections and images
  await expect(page.locator('#inspirationPreviewGrid video')).toHaveJSProperty('muted',true);
  await expect(page.locator('#inspirationPreviewGrid video')).toHaveJSProperty('loop',true);
  expect(await page.evaluate(()=>!!(document.querySelector('#createWithDeepsyq').compareDocumentPosition(document.querySelector('#inspirationPreview'))&Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
- await expect(page.locator('.home-launch-grid .home-launch-tile')).toHaveCount(7);await expect(page.locator('.home-feature-triptych .home-feature-spotlight')).toHaveCount(3);
+ await expect(page.locator('.home-create-grid .home-create-card')).toHaveCount(6);
+ await expect(page.locator('.home-feature-triptych .home-feature-spotlight')).toHaveCount(3);
+ await expect(page.locator('.home-create-grid .tile-image')).toHaveAttribute('href','generate-studio.html?studio=image');
+ await expect(page.locator('.home-create-grid .tile-video')).toHaveAttribute('href','generate-studio.html?studio=video');
+ await expect(page.locator('.home-create-grid .tile-audio')).toHaveAttribute('href','generate-studio.html?studio=audio');
+ await expect(page.locator('a[aria-label="History"]')).toHaveAttribute('href','generate-studio.html?view=history');
  await expect(page.getByRole('link',{name:/Video Uniquifier history/})).toBeVisible();
 });
 test('approved video appears in the real homepage hero but does not erase Canvas or original sections',async({page})=>{
@@ -372,7 +377,12 @@ test('approved video appears in the real homepage hero but does not erase Canvas
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href',/inspiration\.html\?kind=video/);
  await expect(page.locator('#quickCreateForm')).toBeVisible();
- await expect(page.locator('.home-launch-grid .home-launch-tile')).toHaveCount(7);await expect(page.locator('.home-feature-triptych .home-feature-spotlight')).toHaveCount(3);
+ await expect(page.locator('.home-create-grid .home-create-card')).toHaveCount(6);
+ await expect(page.locator('.home-feature-triptych .home-feature-spotlight')).toHaveCount(3);
+ await expect(page.locator('.home-create-grid .tile-image')).toHaveAttribute('href','generate-studio.html?studio=image');
+ await expect(page.locator('.home-create-grid .tile-video')).toHaveAttribute('href','generate-studio.html?studio=video');
+ await expect(page.locator('.home-create-grid .tile-audio')).toHaveAttribute('href','generate-studio.html?studio=audio');
+ await expect(page.locator('a[aria-label="History"]')).toHaveAttribute('href','generate-studio.html?view=history');
 });
 test('video carousel switches only among owner-approved videos and retains existing media',async({page})=>{
  // Mock the transport layer: this test verifies navigation, not fake MP4 playback.
