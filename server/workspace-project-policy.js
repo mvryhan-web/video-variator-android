@@ -234,6 +234,15 @@ export function duplicateProjectRecord(sourceProject, params = {}, options = {})
     throw new WorkspacePolicyError('MISSING_USER_ID', 'Target owner userId is required to duplicate a project');
   }
 
+  // A private Workspace project may only be duplicated by its authenticated owner.
+  // Public Block3 templates require a trusted SERVER-INJECTED allow decision;
+  // a client-controlled template flag or claimed owner is never sufficient.
+  const publicTemplateAllowed = typeof options.authorizePublicTemplate === 'function'
+    && options.authorizePublicTemplate(sourceProject, userId) === true;
+  if (sourceProject.ownerUserId !== userId && !publicTemplateAllowed) {
+    throw new WorkspacePolicyError('UNAUTHORIZED_SOURCE', 'Source must be owned by the user or verified as a public template');
+  }
+
   const id = resolveProjectId(options);
   const nowStr = resolveTimestamp(options);
 
