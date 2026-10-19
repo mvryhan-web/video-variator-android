@@ -61,10 +61,11 @@ test('Owner neon layout: feature shortcuts keep routes and show truthful Flow so
 test('Home creator picker: studio model/settings windows are centered, model-aware and no-spend',async({page})=>{
  await home(page);let paidPosts=0;
  page.on('request',request=>{if(request.method()==='POST'&&/\/api\/studio\/(jobs|estimate)/.test(new URL(request.url()).pathname))paidPosts++;});
- const mode=page.locator('#homeCreateMode');
- await expect(mode).toBeVisible();
- expect(await mode.locator('option').evaluateAll(options=>options.map(option=>option.value))).toEqual(['image','video','music','agent']);
- await mode.selectOption('video');
+ await expect(page.locator('#homeQuickForm [data-home-kind]')).toHaveCount(4);
+ await expect(page.locator('[data-home-kind="image"]')).toBeVisible();
+ await expect(page.locator('[data-home-kind="video"]')).toBeVisible();
+ await expect(page.locator('[data-home-kind="music"]')).toContainText('Audio');
+ await page.locator('[data-home-kind="video"]').click();
  await expect(page.locator('[data-home-kind="video"]')).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('#homeModelPicker')).toHaveAttribute('data-open-models','video');
  await page.locator('#homeModelPicker').click();
