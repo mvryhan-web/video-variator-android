@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {BASE_LANES,BASE_TRACKING_LABELS,ORIGINAL_BASE_SPEC_BLOB_SHA,gitBlobSha,originalBaseNumbers,boardRows,checklistRows,verifyBaseCoordination,verifyCurrentFiles} from '../scripts/verify-deepsyq-base-coordination.mjs';
+import {BASE_LANES,BASE_TRACKING_LABELS,ORIGINAL_BASE_SPEC_BLOB_SHA,gitBlobSha,normalizeOwnerApprovedBase,APPROVED_OWNER_NOTE_COUNT,APPROVED_OWNER_NOTES_BLOB_SHA,originalBaseNumbers,boardRows,checklistRows,verifyBaseCoordination,verifyCurrentFiles} from '../scripts/verify-deepsyq-base-coordination.mjs';
 
 const spec=readFileSync('docs/DEEPSYQ_PLATFORM_SPEC.md','utf8');
 const board=readFileSync('docs/DEEPSYQ_BASE_55_COORDINATION.md','utf8');
@@ -125,7 +125,11 @@ test('different descriptive progress wording between checklist and board is allo
 });
 
 test('original owner BASE TXT is frozen by exact Git blob SHA, not headings alone',()=>{
- assert.equal(gitBlobSha(spec),ORIGINAL_BASE_SPEC_BLOB_SHA);
+ const normalized=normalizeOwnerApprovedBase(spec);
+ assert.equal(normalized.valid,true);
+ assert.equal(normalized.notes.length,APPROVED_OWNER_NOTE_COUNT);
+ assert.equal(gitBlobSha(normalized.notes.join('\n')+'\n'),APPROVED_OWNER_NOTES_BLOB_SHA);
+ assert.equal(gitBlobSha(normalized.original),ORIGINAL_BASE_SPEC_BLOB_SHA);
  const changed=spec.replace('Video Variator','Video Varietator');
  assert.notEqual(changed,spec,'fixture must modify a real BASE paragraph');
  assert.deepEqual(originalBaseNumbers(changed),originalBaseNumbers(spec),'all numbered headings remain unchanged');
@@ -163,4 +167,13 @@ test('full browser PR regression skips only isolated BASE coordinator tests, ret
  assert.ok(app>=0&&allTests>=0&&itself>=0,'app code, all regular Deepsyq tests and the workflow itself still trigger platform CI');
  assert.ok(excluded>allTests&&excluded<itself,'only the coordinator-only test is excluded after the broad prefix');
  assert.match(workflow,/push:\s*\n\s+branches:\s*\[deepsyq-platform\]/,'full post-merge BASE push checks are preserved');
+});
+
+test('owner annotations are pinned separately: tampering any decision note or original paragraph fails closed',()=>{
+ const modified=spec.replace('КУПЛЕННЫЕ кредиты','БЕСПЛАТНЫЕ кредиты');
+ assert.notEqual(modified,spec);
+ assert.ok(verifyBaseCoordination(modified,board,checklist).issues.some(x=>x.startsWith('ORIGINAL_BASE_SOURCE_CHANGED')));
+ const removed=spec.split('\n').filter(l=>!l.startsWith('**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА')).join('\n');
+ assert.ok(!normalizeOwnerApprovedBase(removed).valid);
+ assert.ok(verifyBaseCoordination(removed,board,checklist).issues.some(x=>x.startsWith('ORIGINAL_BASE_SOURCE_CHANGED')));
 });
