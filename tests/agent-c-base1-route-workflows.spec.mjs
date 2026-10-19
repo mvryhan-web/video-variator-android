@@ -177,23 +177,27 @@ test('BASE1-C owned AI Apps/Inspiration/Tools remain usable at 320, 375 and 768p
    return p===link||link.contains(p);
   });
   expect(canReceiveTap,'Tools Back is overlapped at '+width).toBe(true);
-  const shortcuts=page.getByRole('navigation',{name:'Additional audio and avatar tools'});
-  const audio=shortcuts.locator('a[href="audio-studio.html"]');
-  const avatar=shortcuts.locator('a[href="avatar-studio.html"]');
+  // The current hub removes its obsolete Audio card on purpose; verify the
+  // actually rendered TTS/STT destinations instead of forcing duplicate links.
+  const audio=page.locator('a.hub-tile[data-hub-tool="tts"]');
+  const transcript=page.locator('a.hub-tile[data-hub-tool="stt"]');
   await expect(audio).toBeVisible();
+  await expect(audio).toHaveAttribute('href','audio-studio.html?tool=tts');
+  await expect(transcript).toHaveAttribute('href','audio-studio.html?tool=stt');
+  // The old Avatar card was removed without a replacement in the hub.
+  // This one C-owned shortcut restores only the missing real destination.
+  const avatar=page.getByRole('navigation',{name:'Avatar studio shortcut'})
+   .locator('a[href="avatar-studio.html"]');
   await expect(avatar).toBeVisible();
-  for(const link of [audio,avatar]){
-   expect(await link.evaluate(el=>el.getBoundingClientRect().height),
-    'Tools direct link has accessible touch height at '+width).toBeGreaterThanOrEqual(44);
-  }
-  // Exercise actual destinations, not the original cards removed by tools-hub.js.
+  expect(await avatar.evaluate(el=>el.getBoundingClientRect().height),
+   'Avatar shortcut accessible touch height at '+width).toBeGreaterThanOrEqual(44);
   if(width===320){
    await avatar.click();
    await expect(page).toHaveURL(/\/avatar-studio\.html$/);
    await page.goto('/free-tools.html');
   }else if(width===375){
    await audio.click();
-   await expect(page).toHaveURL(/\/audio-studio\.html$/);
+   await expect(page).toHaveURL(/\/audio-studio\.html\?tool=tts$/);
    await page.goto('/free-tools.html');
   }
   await page.locator('main.tools header a.tool-back').click();
