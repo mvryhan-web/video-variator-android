@@ -1,6 +1,6 @@
 import {randomUUID,createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
-import {MODELS,MODEL_CATALOG,validateGeneration,generateGoogle,pollGoogle} from './generation-provider.js';
+import {MODELS,MODEL_CATALOG,validateGeneration,rejectUnsupportedVideoControls,generateGoogle,pollGoogle} from './generation-provider.js';
 import {generateBytePlus,pollBytePlus,bytePlusDownloadsConfigured} from './generation-byteplus.js';
 import {pricingCatalog,estimateGenerationPricing} from './generation-pricing.js';
 import {listModelControls,getModelControl,updateModelControlAudited,applyModelControl,updateProviderGroupControls,publicModelCatalog} from './generation-model-control.js';
@@ -11,6 +11,7 @@ import {installGenerationReferenceUpload} from './generation-reference-upload.js
 import {resolveGenerationModel,orderedGenerationCandidates} from './generation-routing.js';
 import {planPreDispatchFallback} from './generation-fallback-policy.js';
 import {normalizeGenerationError,publicGenerationError} from './generation-errors.js';
+import {quarantineUncertainVideoSubmit,VIDEO_SUBMISSION_UNCERTAIN,videoHistoryPublicStatus} from './generation-video-submit-uncertainty.js';
 import {publicProviderPerformanceRow} from './generation-provider-performance.js';
 import {claimProviderPoll} from './generation-polling.js';
 import {recordAdminAudit,listAdminAudit} from './admin-audit.js';
@@ -64,6 +65,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  async function resolveEstimateRequest(body){
   const catalog=await effectiveCatalog(),kind=String(body?.kind||''),ratio=String(body?.ratio||''),musicMode=body?.musicMode==null?null:String(body.musicMode),count=Number(body?.referenceCount||0);
   if(!['image','video','music'].includes(kind)||!Number.isInteger(count)||count<0||count>10)throw Error('INVALID_REQUEST');
+  rejectUnsupportedVideoControls(body);
   if(body&&('seed'in body||'negativePrompt'in body||'negative_prompt'in body))throw Error('UNSUPPORTED_IMAGE_CONTROL');
   let selected,routing;
   if(env.AI_SMART_ROUTING_ENABLED==='true'&&(body?.model==='smart'||!body?.model)){
@@ -255,6 +257,18 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(objectStorage.configured&&result.bytes){
    try{asset=await objectStorage.putGeneration({userId,jobId:id,mime:result.mime,bytes:result.bytes});media=null;}
    catch(_){
+    // A produced Video is already a potentially billable provider result.
+    // S3 outage is not proof that the AI call failed: never refund a held
+    // reservation or automatically resubmit an expensive Video generation.
+    // If provider task ID was already stored, preserve it so the worker may
+    // retrieve the SAME result again when object storage recovers.
+    const recorded=await pool.query('SELECT kind FROM vv_generation_jobs WHERE id=$1',[id]);
+    if(recorded.rows?.[0]?.kind==='video'){
+     await quarantineUncertainVideoSubmit({pool,jobId:id,failure:{
+      category:'storage',sourceCode:'OBJECT_STORAGE_FAILED'
+     }});
+     return;
+    }
     await failTerminalProviderJob(id,userId,Error('OBJECT_STORAGE_FAILED'),'storage');
     return;
    }
@@ -283,6 +297,13 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
    return;
   }
   const failure=normalizeGenerationError(e,{stage:'provider_submit'});
+  if(request.kind==='video'){
+   // Submission may already be billable remotely. Preserve one original job
+   // and held credits for audit; never label a potentially running video failed.
+   await quarantineUncertainVideoSubmit({pool,jobId:id,failure});
+   if(walletEnabled())await wallet.settle({userId:user.id,jobId:id,outcome:'unknown'}).catch(()=>{});
+   return;
+  }
   await pool.query("UPDATE vv_generation_jobs SET status='failed',error=$2,error_message=$3,metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object('failure',jsonb_build_object('category',$4,'stage',$5,'sourceCode',$6,'retryable',$7)),failed_at=NOW() WHERE id=$1",[id,failure.code,walletEnabled()?'AI_WALLET_REVIEW_REQUIRED':null,failure.category,failure.stage,failure.sourceCode,failure.retryable]);
   if(walletEnabled())await wallet.settle({userId:user.id,jobId:id,outcome:'unknown'}).catch(()=>{});
  }}
@@ -295,14 +316,14 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   const totalCredits=quote.credits*quantity;
   if(!Number.isSafeInteger(totalCredits)||totalCredits>10_000_000)return res.status(400).json({error:'INVALID_IMAGE_QUANTITY'});
   res.json({credits:totalCredits,perImageCredits:quote.credits,quantity,unit:'AI credits',model:quote.model,kind:quote.kind,routing});
- }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_VIDEO_INPUT_MODE','INVALID_VIDEO_REFERENCES','INVALID_REFERENCES','INVALID_MUSIC_MODE'].includes(e.message);res.status(bad?400:503).json({error:bad?e.message:e.message||'AI_PRICING_NOT_APPROVED'});}});
+ }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_VIDEO_INPUT_MODE','INVALID_VIDEO_REFERENCES','INVALID_REFERENCES','INVALID_MUSIC_MODE','UNSUPPORTED_VIDEO_CONTROL'].includes(e.message);res.status(bad?400:503).json({error:bad?e.message:e.message||'AI_PRICING_NOT_APPROVED'});}});
   app.post('/api/studio/jobs',auth,generationUser,async(req,res)=>{
   let request,selected,routing,clientRequestId;try{
    // The job endpoint always creates ONE image. Multi-image batches must use distinct, independently idempotent jobs.
    if(req.body?.quantity!=null&&req.body.quantity!==1)throw Error('INVALID_IMAGE_QUANTITY');
    ({request,selected,routing}=await resolveRequest(req.body));
    clientRequestId=generationRequestId(req.body?.requestId,{required:req.generationAccess?.scope==='public'});
-  }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_VIDEO_INPUT_MODE','INVALID_VIDEO_REFERENCES','INVALID_REFERENCES','INVALID_MUSIC_MODE','GENERATION_REQUEST_ID_REQUIRED','INVALID_GENERATION_REQUEST_ID','INVALID_IMAGE_QUANTITY'].includes(e.message);return res.status(bad?400:503).json({error:e.message||'MODEL_NOT_ENABLED'});}
+  }catch(e){const bad=['INVALID_REQUEST','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_IMAGE_CONTROL','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_VIDEO_INPUT_MODE','INVALID_VIDEO_REFERENCES','INVALID_REFERENCES','INVALID_MUSIC_MODE','UNSUPPORTED_VIDEO_CONTROL','GENERATION_REQUEST_ID_REQUIRED','INVALID_GENERATION_REQUEST_ID','INVALID_IMAGE_QUANTITY'].includes(e.message);return res.status(bad?400:503).json({error:e.message||'MODEL_NOT_ENABLED'});}
   const premiumVideo=request.kind==='video'&&(request.videoResolution!==selected.quality||request.videoDuration!==selected.capabilities?.durationSeconds||!['text','first_frame'].includes(request.videoInputMode)||request.references?.length>1);
   const quote=walletEnabled()||premiumVideo?estimateGenerationPricing(request,selected,env):null;
   if((walletEnabled()||premiumVideo)&&!quote)return res.status(503).json({error:'AI_PRICING_NOT_APPROVED'});
@@ -340,6 +361,22 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   }
   res.status(202).json({id,status:'processing',creditsReserved:quote.credits});void run(id,request,{id:req.user.id,email:req.user.email,provider:req.user.provider},selected,quote,fingerprint).catch(()=>{});
  });
+ // Read-only recovery of a Video POST whose HTTP reply was lost. This
+ // NEVER dispatches/retries a provider, reserves credits or returns media.
+ app.get('/api/studio/jobs/by-request/:requestId',auth,generationUser,async(req,res)=>{
+  let requestId;
+  try{requestId=generationRequestId(req.params.requestId,{required:true});}
+  catch(_){return res.status(400).json({error:'INVALID_GENERATION_REQUEST_ID'});}
+  try{
+   await init();
+   const {rows}=await pool.query(
+    "SELECT id,kind,status FROM vv_generation_jobs WHERE user_id=$1 AND client_request_id=$2 AND kind='video' AND deleted=false LIMIT 1",
+    [req.user.id,requestId]);
+   const original=rows[0];
+   if(!original)return res.status(404).json({error:'NOT_FOUND'});
+   res.json({id:original.id,kind:'video',status:original.status});
+  }catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}
+ });
  const getJob=async(req)=>{await init();const r=await pool.query('SELECT * FROM vv_generation_jobs WHERE id=$1 AND user_id=$2 AND deleted=false',[req.params.id,req.user.id]);return r.rows[0];};
  app.get('/api/studio/admin/metrics',auth,owner,async(req,res)=>{try{
   await init();const window=String(req.query.window||'7d'),windows={'24h':'1 day','7d':'7 days','30d':'30 days',all:null};if(!(window in windows))return res.status(400).json({error:'INVALID_METRICS_WINDOW'});
@@ -364,13 +401,16 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(filter==='image'||filter==='video'){args.push(filter);where.push(`kind=${args.length}`);}
   else if(filter==='failed')where.push("status='failed'");
   else if(filter==='processing')where.push("status IN ('queued','processing','finalizing')");
-  const {rows}=await pool.query(`SELECT id,kind,status,provider,model,prompt,settings,error,result_text,mime,output_assets,created_at,started_at,completed_at,failed_at,credits_reserved,credits_charged FROM vv_generation_jobs WHERE ${where.join(' AND ')} ORDER BY created_at DESC LIMIT 50`,args);
-  res.json({filter,items:rows.map(j=>({id:j.id,kind:j.kind,status:j.status,provider:j.provider||null,model:j.model||null,prompt:j.prompt||'',settings:j.settings||{},error:j.error||null,text:j.result_text||'',mime:j.mime||null,storedExternally:Array.isArray(j.output_assets)&&j.output_assets.length>0,createdAt:j.created_at,startedAt:j.started_at||null,completedAt:j.completed_at||null,failedAt:j.failed_at||null,creditsReserved:Number(j.credits_reserved||0),creditsCharged:Number(j.credits_charged||0)}))});
+  const {rows}=await pool.query(`SELECT id,kind,status,operation,provider,model,prompt,settings,error,result_text,mime,output_assets,created_at,started_at,completed_at,failed_at,credits_reserved,credits_charged FROM vv_generation_jobs WHERE ${where.join(' AND ')} ORDER BY created_at DESC LIMIT 50`,args);
+  res.json({filter,items:rows.map(j=>({id:j.id,kind:j.kind,status:j.status,provider:j.provider||null,model:j.model||null,prompt:j.prompt||'',settings:j.settings||{},error:j.error||null,...videoHistoryPublicStatus(j),text:j.result_text||'',mime:j.mime||null,storedExternally:Array.isArray(j.output_assets)&&j.output_assets.length>0,createdAt:j.created_at,startedAt:j.started_at||null,completedAt:j.completed_at||null,failedAt:j.failed_at||null,creditsReserved:Number(j.credits_reserved||0),creditsCharged:Number(j.credits_charged||0)}))});
  }catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
  app.get('/api/studio/jobs/:id',auth,generationUser,async(req,res)=>{try{
   let j=await getJob(req);if(!j)return res.status(404).json({error:'NOT_FOUND'});
   if(j.status==='finalizing'&&walletEnabled()){try{await wallet.settle({userId:req.user.id,jobId:j.id,outcome:'success'});await pool.query("UPDATE vv_generation_jobs SET status='ready',credits_charged=credits_reserved,error_message=null,completed_at=NOW() WHERE id=$1 AND status='finalizing'",[j.id]);j=await getJob(req);}catch(_){/* Keep durable finalizing state; background/user polling may retry capture. */}}
   if(j.status==='processing'&&j.operation){try{const claimed=await claimProviderPoll(pool,j.id,{minSeconds:5});if(claimed){const result=await poller(j.operation,{env});if(!result.pending){await finish(j.id,result,req.user.id);j=await getJob(req);}}}catch(e){if(e.terminal){await failTerminalProviderJob(j.id,req.user.id,e,'provider_poll');j=await getJob(req);}else return res.status(502).json(publicGenerationError(e,{stage:'provider_poll'}));}}
+  // A queued Video without an operation may have reached the provider even if
+   // the acknowledgement was lost. Do not offer a fresh paid dispatch.
+   if(j.kind==='video'&&!j.operation&&videoHistoryPublicStatus(j).error===VIDEO_SUBMISSION_UNCERTAIN)return res.json({id:j.id,kind:'video',status:'unknown',error:VIDEO_SUBMISSION_UNCERTAIN,retryAfterSeconds:0});
   if(j.status==='processing'&&!j.operation&&Date.now()-new Date(j.created_at).getTime()>180000)return res.json({id:j.id,status:'unknown',error:'STATUS_UNKNOWN_NO_AUTOMATIC_RETRY',retryAfterSeconds:0});
   res.json({id:j.id,kind:j.kind,status:j.status,provider:j.provider||null,model:j.model||null,prompt:j.prompt||'',error:j.error,text:j.result_text||'',mime:j.mime,createdAt:j.created_at,creditsReserved:Number(j.credits_reserved||0),creditsCharged:Number(j.credits_charged||0),retryAfterSeconds:['queued','processing','finalizing'].includes(j.status)?5:0});
  }catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
