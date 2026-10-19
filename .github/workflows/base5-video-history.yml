@@ -1,0 +1,29 @@
+name: BASE 5 Video History Safe References
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/generate-studio.js'
+      - 'tests/base5-video-history-detach.spec.mjs'
+      - 'app/src/main/assets/studio-video-request-id.mjs'
+      - 'tests/base5-video-request-id-unit.mjs'
+      - '.github/workflows/base5-video-history.yml'
+permissions:
+  contents: read
+jobs:
+  video-history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: No-fee session Video idempotency regressions
+        run: |
+          node --check app/src/main/assets/generate-studio.js
+          node --check app/src/main/assets/studio-video-request-id.mjs
+          node --test tests/base5-video-request-id-unit.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npx playwright test tests/base5-video-history-detach.spec.mjs --project=chromium --project=webkit
