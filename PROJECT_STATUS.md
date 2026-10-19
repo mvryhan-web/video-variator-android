@@ -1,3 +1,7 @@
+## 2026-10-19 — Work integration / Home lower blocks correction — IN PROGRESS
+
+Same branch `agent-b-home-v01-v13-original-frames-20261018`, PR #257 and existing read-only preview. Owner resent neon portrait mockup and identified duplicate tool rows. Scope: remove redundant seven-tile launch row; keep creation-type chips inside existing prompt form; one illustrated Image/Video/Audio/Agent/Apps/Canvas row, then Create with Deepsyq with exactly three workspace spotlights, then Inspiration. Existing Canvas draft handling, six original films/order, source credit, links and provider/payment gates preserved. No production main/auth/Stripe/DB/engine changes. Previous f1790e30 CI39163110931 completed SUCCESS (Node6,42 browser regressions,all4 real-film projects); prior preview still341b. New layout checks/preview deploy pending; not DONE.
+
 ## 2026-10-18 — Owner-approved neon Home carousel (Work integration)
 
 - Same PR #257 / existing branch; runtime `f55f12912a3fa99be9011ecad34ac4bbd2c2eb8c`.

@@ -11,7 +11,12 @@ test('Owner neon layout: reference section order, real card images and mobile bo
  const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
  await home(page);
  await expect(page.locator('#homeHeroModel')).toHaveText('AI Canvas');
- await expect(page.locator('.home-launch-grid > *')).toHaveCount(7);
+ await expect(page.locator('.home-launch-grid')).toHaveCount(0);
+ await expect(page.locator('#homeQuickForm [data-home-kind]')).toHaveCount(4);
+ await expect(page.locator('#homeCreativeTools')).toHaveCount(1);
+ await expect(page.locator('#homeCreativeTools .home-create-card')).toHaveCount(6);
+ await expect(page.locator('#createWithDeepsyq .home-create-card')).toHaveCount(0);
+ await expect(page.locator('#createWithDeepsyq .home-feature-spotlight')).toHaveCount(3);
  await expect(page.locator('.home-create-card')).toHaveCount(6);
  await expect(page.getByRole('search').getByRole('searchbox',{name:'Search creative tools'})).toBeVisible();
  await expect(page.locator('.home-global-search')).toHaveAttribute('action','ai-apps.html');
@@ -22,13 +27,13 @@ test('Owner neon layout: reference section order, real card images and mobile bo
  await expect.poll(()=>page.locator('#inspirationPreview').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
  for(const width of [1448,390,320]){
   await page.setViewportSize({width,height:1086});
-  await page.locator('#createWithDeepsyq').scrollIntoViewIfNeeded();
+  await page.locator('#homeCreativeTools').scrollIntoViewIfNeeded();
   await expect.poll(()=>page.locator('.home-create-card img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
   // Check settled bounds and report exact overflowing cards if a layout regresses.
   await expect.poll(()=>page.evaluate(()=>{
-   const ids=['homeHeroCarousel','homeQuickBar','createWithDeepsyq','inspirationPreview','canvasFeature'];
+   const ids=['homeHeroCarousel','homeQuickBar','homeCreativeTools','createWithDeepsyq','inspirationPreview','canvasFeature'];
    const tops=ids.map(id=>document.getElementById(id).getBoundingClientRect().top);
-   const offenders=[...document.querySelectorAll('.home-launch-grid,.home-create-grid,.home-create-card,.home-feature-triptych,.home-feature-spotlight,#homeQuickBar')].flatMap(el=>{const r=el.getBoundingClientRect();return r.left>=-1&&r.right<=innerWidth+1?[]:[{class:el.className,left:r.left,right:r.right,viewport:innerWidth}];});
+   const offenders=[...document.querySelectorAll('.home-compose-modes,.home-create-grid,.home-create-card,.home-feature-triptych,.home-feature-spotlight,#homeQuickBar')].flatMap(el=>{const r=el.getBoundingClientRect();return r.left>=-1&&r.right<=innerWidth+1?[]:[{class:el.className,left:r.left,right:r.right,viewport:innerWidth}];});
    return {ordered:tops.every((v,i)=>i===0||v>tops[i-1]),offenders};
   })).toEqual({ordered:true,offenders:[]});
   await page.screenshot({path:info.outputPath('neon-home-'+width+'.png'),fullPage:false});
@@ -37,8 +42,8 @@ test('Owner neon layout: reference section order, real card images and mobile bo
 });
 test('Owner neon layout: feature shortcuts use existing destinations and showcase is not source credit',async({page})=>{
  await home(page);
- await expect(page.locator('.home-launch-grid a[href="ai-apps.html"]')).toBeVisible();
- await expect(page.locator('.home-launch-grid a[href="free-tools.html"]')).toBeVisible();
+ await expect(page.locator('#homeCreativeTools a[href="ai-apps.html"]')).toBeVisible();
+ await expect(page.locator('#homeQuickForm a[href="free-tools.html"]')).toBeVisible();
  await expect(page.locator('.home-create-card.tile-agent')).toHaveAttribute('href','#agentFeature');
  await expect(page.locator('.home-create-card.tile-agent')).toContainText('Coming soon');
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','#quickCreateForm');
