@@ -19,3 +19,16 @@ button:disabled{opacity:.45;cursor:not-allowed}#erase{background:#6f4db2;border-
 .controls{display:grid;gap:11px}.controls label{font-size:14px;font-weight:700}.controls input{width:100%;max-width:430px;accent-color:#bb97ff}.actions{display:flex;flex-wrap:wrap;gap:10px}
 #status,#sampleStatus{min-height:20px}#status{color:#c4e6bc;font-weight:650}.footer-note{margin-top:23px}
 @media(max-width:680px){.work-area{grid-template-columns:1fr}.image-well{height:260px}header{padding:16px}.panel{padding:15px}}
+
+/* Owner BASE1-C4: only the enabled existing action adopts Deepsyq's
+   neon CTA; the unavailable state stays subdued and non-interactive. */
+html:not([data-theme="light"]) #erase{border-radius:12px}
+html:not([data-theme="light"]) #erase:not(:disabled){
+ background:linear-gradient(110deg,var(--ds-violet),var(--ds-pink));
+ border-color:var(--ds-violet);color:#130b29;
+ box-shadow:0 7px 24px #925bff54;
+}
+html:not([data-theme="light"]) #erase:disabled{
+ background:var(--ds-surface);border-color:var(--ds-line);
+ color:var(--ds-muted);box-shadow:none;opacity:.55;
+}
