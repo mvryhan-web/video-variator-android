@@ -298,6 +298,69 @@ test('BASE 3: cross-tab account switch clears unsent prompts and reference previ
  await expect(page.locator('#quickCreateStatus')).toContainText('Account changed');
 });
 
+test("BASE 3: logout and browser Back never show another account's Canvas draft",async({page})=>{
+ await mockSafeHome(page,[]);
+ await page.route('**/api/me',route=>route.fulfill({json:{user:{id:'owner-a',name:'Creator A',isAdmin:false}}}));
+ let paidJobs=0;
+ page.on('request',request=>{
+  if(request.method()==='POST'&&/\/api\/studio\/jobs/.test(request.url()))paidJobs++;
+ });
+ await page.goto('/deepsyq.html');
+ await page.evaluate(()=>localStorage.setItem('vv_token','fixture-owner-A'));
+ await page.reload();
+ await expect(page.locator('#logout')).toBeVisible();
+ const secret='PRIVATE A Canvas draft must not appear for logged-out visitors';
+ await page.locator('#quickCreatePrompt').fill(secret);
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.locator('#quickCreateFiles').setInputFiles({name:'private-owner-A.png',mimeType:'image/png',buffer:png});
+ await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(1);
+ await expect.poll(()=>page.evaluate(text=>Object.keys(sessionStorage)
+  .filter(key=>key.startsWith('deepsyq_quick_canvas_draft_v2_'))
+  .some(key=>JSON.parse(sessionStorage.getItem(key)||'null')?.prompt===text),secret)).toBe(true);
+ // Exercise the actual Home Logout control, not a simulated storage event.
+ await page.locator('#logout').click();
+ await expect(page.locator('#logout')).toBeHidden();
+ expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBeNull();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+ await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(0);
+ await page.goto('/ai-apps.html');
+ await page.goBack();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+ // A different signed-in identity must not see A's saved text either.
+ await page.evaluate(()=>localStorage.setItem('vv_token','fixture-owner-B'));
+ await page.reload();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+ // A can still recover their OWN account-scoped draft after signing back in.
+ await page.evaluate(()=>localStorage.setItem('vv_token','fixture-owner-A'));
+ await page.reload();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue(secret);
+ expect(paidJobs).toBe(0);
+});
+
+test('BASE 3: mobile Canvas references and video prompt hand off to Studio without paid generation',async({page})=>{
+ await mockSafeHome(page,[]);
+ await page.setViewportSize({width:390,height:844});
+ let paidJobs=0;
+ page.on('request',request=>{
+  if(request.method()==='POST'&&/\/api\/studio\/jobs/.test(request.url()))paidJobs++;
+ });
+ await page.goto('/deepsyq.html');
+ const prompt='Portrait video of the approved owner product in natural light';
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.locator('#quickCreatePrompt').fill(prompt);
+ await page.locator('#quickCreateKind').selectOption('video');
+ await page.locator('#quickCreateFiles').setInputFiles({name:'approved-reference.png',mimeType:'image/png',buffer:png});
+ await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(1);
+ await expect(page.locator('#quickCreateSubmit')).toBeVisible();
+ await page.locator('#quickCreateSubmit').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=dashboard/);
+ await expect(page.locator('#prompt')).toHaveValue(prompt);
+ await expect(page.locator('#consent')).not.toBeChecked();
+ // Files are passed to the local studio handoff, never uploaded to an AI provider here.
+ await expect(page.locator('#refPreview img')).toHaveCount(1);
+ expect(paidJobs).toBe(0);
+});
+
 test('BASE 3: offline platform config never hides the permanent original Hero gallery',async({page})=>{
  await mockSafeHome(page,[]);
  await page.route('**/api/config',route=>route.fulfill({status:503,json:{error:'CONFIG_UNAVAILABLE'}}));
