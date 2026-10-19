@@ -1,5 +1,12 @@
 ## COORDINATOR #5 — Graphify persistent map correction (2026-10-19)
 
+## COORDINATOR #5 — GRAPHIFY SHARED MAP LIVE (2026-10-19)
+
+**Verified:** [PR #294](https://github.com/mvryhan-web/video-variator-android/pull/294) merged `a59f6d8b8279a52c499e3eb826c281224871376d`; GitHub Actions [run #39226431319](https://github.com/mvryhan-web/video-variator-android/actions/runs/39226431319) both `graphify-code-only=SUCCESS` and `publish-safe-map=SUCCESS`. A *separate* bot commit on `deepsyq-platform` `813d3953cdaa8cf83943d5462e4a8adf6f54c706` contains real [docs/DEEPSYQ_CODE_MAP.md](docs/DEEPSYQ_CODE_MAP.md) and [docs/DEEPSYQ_CODE_MAP.json](docs/DEEPSYQ_CODE_MAP.json), source SHA `a59f6d8b8279a52c499e3eb826c281224871376d` (source-only, subsequent doc bot commit doesn't stale server code). **Persisted safe server index: 48 files / 128 nodes / 48 relations.** Graphify original code extract scanned 97 source files; safe exporter is deliberately lossy and does **not** cover all source symbols or Android `app/src`. Agents A/B/C/D/#5/Jules should start at this map for server navigation, then inspect the specific live code/PR SHA, not full history. Separate compatible host CLI is not required to *read* the map. Ponytail stays in AGENTS instructions; its automatic runtime availability remains unproven. Raw Graphify graph remains uncommitted and deleted from runner. No main/production, paid AI, real Stripe or site changes.
+
+**Next coordinator action:** close gap in safe coverage (unmapped server symbols and Android) via a *separate audited DEV PR*, without rerunning full-archive reviews or claiming all agents automatically loaded a skill. All BASE/claims unchanged.
+
+
 **Owner intent:** A/B/C/D/#5/Jules need a **persisted code map** to avoid repeating full code/history reads. Original Graphify test destroyed raw `graphify-out/graph.json` on purpose for secret safety. Prior PRs #290/#291/#292 merged only an ephemeral test and guidance; no durable map had been installed.
 
 **Work in separate branch `tools/graphify-shared-map-20261019`:** conservative Graphify AST exporter, tests against secret/data exposure, automated DEV-only map publishing to `docs/DEEPSYQ_CODE_MAP.md` and `.json`. Until GitHub CI PASS and resulting bot file commit is verified on DEV, mark `MAP_PENDING`, not DONE. Scope server-only, raw graph never committed. All existing claims, BASE statuses, Ponytail pilot, payment/production blocks unchanged.
