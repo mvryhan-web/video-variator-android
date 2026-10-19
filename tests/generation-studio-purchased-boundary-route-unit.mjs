@@ -78,7 +78,7 @@ async function withHttp(sim,fn){
   const url='http://127.0.0.1:'+server.address().port+'/api/studio/jobs';
   await fn(async(body)=>fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
    body:JSON.stringify({requestId:randomUUID(),kind:'image',prompt:'owned flower',ratio:'1:1',
-    model,consent:true,...body})}));
+    model,consent:true,expectedCredits:pricing.credits,...body})}));
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r))}
 }
 const settle=()=>new Promise(resolve=>setTimeout(resolve,40));
