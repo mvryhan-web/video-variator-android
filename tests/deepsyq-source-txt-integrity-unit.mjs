@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {ORIGINAL_SOURCE_TXT_BLOB_SHAS,verifyOriginalSourceTxt} from '../scripts/verify-deepsyq-source-txt.mjs';
+import {ORIGINAL_SOURCE_TXT_BLOB_SHAS,verifyOriginalSourceTxt,normalizeVerifiedSourceTxt,APPROVED_BLOCK_OWNER_NOTES} from '../scripts/verify-deepsyq-source-txt.mjs';
 import {gitBlobSha,ORIGINAL_BASE_SPEC_BLOB_SHA} from '../scripts/verify-deepsyq-base-coordination.mjs';
 
 const paths=Object.keys(ORIGINAL_SOURCE_TXT_BLOB_SHAS);
@@ -29,7 +29,9 @@ test('mutating the body of ANY one original TXT fails without rewriting other so
   );
   assert.deepEqual(result.issues,['ORIGINAL_TXT_CHANGED: '+path],'must detect '+path);
   assert.equal(result.ok,false);
-  assert.equal(gitBlobSha(fromMemory(path)),ORIGINAL_SOURCE_TXT_BLOB_SHAS[path],'fixture must not mutate disk');
+  const original=normalizeVerifiedSourceTxt(path,fromMemory(path));
+  assert.ok(original.valid,'approved owner annotations must validate');
+  assert.equal(gitBlobSha(original.original),ORIGINAL_SOURCE_TXT_BLOB_SHAS[path],'fixture must not mutate owner text');
  }
 });
 
@@ -48,4 +50,15 @@ test('a non-string read result fails closed; pure fixture checks do not alter so
  assert.deepEqual(verifyOriginalSourceTxt(file=>file===path?null:fromMemory(file)).issues,
   ['ORIGINAL_TXT_CHANGED: '+path]);
  assert.deepEqual(verifyOriginalSourceTxt(fromMemory),{ok:true,checked:8,issues:[]});
+});
+
+test('all seven annotated owner TXT blocks are independently pinned; altered owner notes fail closed',()=>{
+ assert.equal(Object.keys(APPROVED_BLOCK_OWNER_NOTES).length,7);
+ for(const path of paths.slice(1)){
+  const normalized=normalizeVerifiedSourceTxt(path,fromMemory(path));
+  assert.ok(normalized.valid,path);
+  const modified=fromMemory(path).replace('ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА','ИЗМЕНЕНО БЕЗ РЕШЕНИЯ ВЛАДЕЛЬЦА');
+  assert.notEqual(modified,fromMemory(path));
+  assert.deepEqual(verifyOriginalSourceTxt(file=>file===path?modified:fromMemory(file)).issues,['ORIGINAL_TXT_CHANGED: '+path]);
+ }
 });

@@ -2,25 +2,75 @@
 // This is presentation-only and reuses the existing Inspiration feed and Studio handoff.
 import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id);
+// WebKit can round a demuxed EOF up to the next millisecond.
+const EOF_ROUNDING_SECONDS=.001;
 const video=$('inspirationHeroVideo');
 const carousel=$('homeHeroCarousel');
+const neighborVideos=[$('homeHeroPreviousVideo'),$('homeHeroNextVideo')].filter(Boolean);
+// Thin phone-side previews use their real poster frames. Keep the single
+// main decoder available for smooth iOS playback, especially higher bitrate clips.
+const compactPreview=window.matchMedia?.('(max-width: 760px)');
 let slides=[],index=0,visible=false,userPaused=false,observer=null,failedSlides=new Set();
+let completionTimer=null,startupTimer=null,startupRecoveries=0,playbackSerial=0;
+function resetCompletion(){clearTimeout(completionTimer);clearTimeout(startupTimer);completionTimer=null;startupTimer=null;startupRecoveries=0;playbackSerial++;}
+function advanceCompletedSlide(){if(!ambientAllowed())return;if(slides.length>1)setSlide(index+1);else if(slides.length===1){resetCompletion();video.currentTime=0;ambientPlay();}}
 function ambientAllowed(){return !document.hidden&&visible&&!userPaused&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData;}
-function ambientPlay(){if(!video?.getAttribute('src')||!ambientAllowed())return;void video.play().catch(()=>{userPaused=true;setPlayLabel();});}
-function setPlayLabel(){const b=$('homeHeroPlay');if(!b)return;b.textContent=userPaused?'Play':'Pause';b.setAttribute('aria-label',userPaused?'Play video':'Pause video');}
-function setSoundLabel(){const b=$('homeHeroSound');if(!b||!video)return;b.textContent=video.muted?'Sound off':'Sound on';b.setAttribute('aria-label',video.muted?'Turn sound on':'Turn sound off');b.setAttribute('aria-pressed',String(!video.muted));}
+function pauseFilms(){clearTimeout(startupTimer);startupTimer=null;video?.pause();neighborVideos.forEach(v=>v.pause());}
+function recoverStartupClock(){
+ if(startupTimer||!ambientAllowed()||!video?.getAttribute('src')||video.currentTime>=.1)return;
+ const serial=playbackSerial;
+ startupTimer=setTimeout(()=>{
+  startupTimer=null;
+  if(serial!==playbackSerial||!ambientAllowed()||video.ended||video.currentTime>=.1)return;
+  if(video.readyState<2){recoverStartupClock();return;}
+  // Real iOS WebKit evidence: loaded/playing, readyState4, paused=false,
+  // but clock remains at ~0.003s. Toggle pause/play at the SAME position.
+  // Never seek, skip a film, reset a running clip, or override a user pause.
+  if(startupRecoveries>=2){userPaused=true;pauseFilms();setPlayLabel();return;}
+  startupRecoveries++;video.pause();
+  void video.play().catch(error=>{if(serial!==playbackSerial||error.name==='AbortError')return;userPaused=true;pauseFilms();setPlayLabel();});
+  recoverStartupClock();
+ },1800);
+}
+function ambientPlay(){
+ if(!video?.getAttribute('src')||!ambientAllowed())return;
+ const serial=playbackSerial;
+ void video.play().catch(error=>{if(serial!==playbackSerial||error.name==='AbortError')return;userPaused=true;pauseFilms();setPlayLabel();});
+ neighborVideos.forEach(v=>{if(compactPreview?.matches)v.pause();else if(v.getAttribute('src'))void v.play().catch(()=>{});});
+ recoverStartupClock();
+}
+compactPreview?.addEventListener?.('change',()=>{pauseFilms();ambientPlay();});
+function updateNeighbors(){
+ neighborVideos.forEach((v,side)=>{
+  const direction=side===0?-1:1;
+  let at=(index+direction+slides.length)%slides.length;
+  for(let n=0;n<slides.length&&failedSlides.has(at);n++)at=(at+direction+slides.length)%slides.length;
+  const item=slides[at];
+  v.parentElement.hidden=!item||at===index;
+  if(!item||at===index){v.pause();v.removeAttribute('src');v.load();return;}
+  if(v.getAttribute('src')!==item.previewUrl){v.pause();v.src=item.previewUrl;if(item.previewPosterUrl)v.poster=item.previewPosterUrl;else v.removeAttribute('poster');v.muted=true;v.load();}
+ });
+}
+function renderCredit(item){
+ const showcase=item?.defaultSettings?.homeShowcase;
+ const model=String(item?.defaultSettings?.creationModel||'').trim();
+ const provider=String(item?.defaultSettings?.creationProvider||'').trim();
+ $('homeHeroCreditLabel').textContent=showcase?.title?String(showcase.label||'EXPLORE'):model?'CREATED WITH':provider?'CREATED IN':'';
+ $('homeHeroModel').textContent=String(showcase?.title||model||provider);
+ $('homeHeroModel').title=showcase?.title?String(showcase.note||'Feature showcase, not generation attribution.'):'';
+}
+function setPlayLabel(){carousel?.classList.toggle('needs-play',userPaused);const b=$('homeHeroPlay');if(!b)return;b.textContent=userPaused?'Play video':'Pause video';b.setAttribute('aria-label',userPaused?'Play video':'Pause video');}
 function showHeroFallback(){
+ resetCompletion();
  // Owner-approved Home keeps the real gallery region visible even when no
  // rights-cleared video can play. Do not invent a clip, thumbnail or Play UI.
- video.pause();video.removeAttribute('src');video.removeAttribute('poster');video.load();
+ pauseFilms();video.removeAttribute('src');video.removeAttribute('poster');video.load();
+ neighborVideos.forEach(v=>{v.removeAttribute('src');v.load();v.parentElement.hidden=true;});renderCredit(null);
  carousel.hidden=false;carousel.classList.add('is-empty');$('inspirationHeroFeature').hidden=true;
  observer?.disconnect();observer=null;visible=false;userPaused=true;
  $('homeHeroPrevious').disabled=true;$('homeHeroNext').disabled=true;
- $('homeHeroPlay').disabled=true;$('homeHeroSound').disabled=true;
- $('homeHeroDots').replaceChildren();
- $('homeHeroCounter').textContent='Gallery preview';
- $('homeHeroSlideTitle').textContent='Featured videos are not available yet';
- $('homeHeroSlideLink').hidden=true;$('homeHeroEmpty').hidden=false;
+ $('homeHeroPlay').disabled=true;
+ $('homeHeroEmpty').hidden=false;
  $('homeHeroStatus').textContent='No approved playable featured video is available. The original Home gallery remains visible.';
 }
 function syncSlideControls(){
@@ -29,64 +79,75 @@ function syncSlideControls(){
  const canNavigate=slides.length-failedSlides.size>1;
  $('homeHeroPrevious').disabled=!canNavigate;
  $('homeHeroNext').disabled=!canNavigate;
- for(const dot of $('homeHeroDots').querySelectorAll('button')){
-  const bad=failedSlides.has(Number(dot.dataset.index));
-  dot.disabled=bad;
-  if(bad)dot.setAttribute('aria-label','Video '+(Number(dot.dataset.index)+1)+' unavailable');
- }
+
 }
 function setSlide(next,direction=1){
  if(!slides.length||!video||failedSlides.size===slides.length)return;
  let selected=((next%slides.length)+slides.length)%slides.length;
  for(let n=0;n<slides.length&&failedSlides.has(selected);n++)selected=(selected+direction+slides.length)%slides.length;
- index=selected;
+ resetCompletion();index=selected;
  const item=slides[index];
  const link='inspiration.html?kind=video&category='+encodeURIComponent(item.category||'')+'&ratio='+encodeURIComponent(item.aspectRatio||'')+'&q='+encodeURIComponent(item.title||'');
  video.pause();video.src=item.previewUrl;
  if(item.previewPosterUrl)video.poster=item.previewPosterUrl;else video.removeAttribute('poster');
  video.load();
- $('inspirationHeroTitle').textContent=item.title||'Original video';
- $('inspirationHeroFeature').href=link;
- $('homeHeroSlideLink').href=link;
- $('homeHeroSlideTitle').textContent=item.title||'Original video';
- $('homeHeroCounter').textContent='Video '+(index+1)+' of '+slides.length;
+ const showcase=item.defaultSettings?.homeShowcase;
+ const destinations=['#canvasFeature','#quickCreateForm','#agentFeature','generate-studio.html?studio=video','generate-studio.html?studio=image','generate-studio.html?studio=audio'];
+ $('inspirationHeroFeature').href=destinations.includes(showcase?.href)?showcase.href:link;
+ $('inspirationHeroFeature').setAttribute('aria-label',showcase?.title?'Explore '+String(showcase.title):'Explore featured Inspiration video');
+ renderCredit(item);updateNeighbors();
+ carousel.setAttribute('aria-label','Featured Deepsyq creative gallery, video '+(index+1)+' of '+slides.length);
  $('homeHeroStatus').textContent='Featured video '+(index+1)+' of '+slides.length+': '+(item.title||'Original video');
- for(const dot of $('homeHeroDots').querySelectorAll('button'))dot.setAttribute('aria-current',String(Number(dot.dataset.index)===index));
  ambientPlay();
 }
 export function renderHomeCarousel(items){
  if(!carousel||!video||!Array.isArray(items))return;
  slides=items.filter(x=>x.kind==='video'&&x.actionTarget==='studio'&&typeof x.previewUrl==='string'&&x.previewUrl.trim()).slice(0,6);
- userPaused=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||!!navigator.connection?.saveData;index=0;failedSlides=new Set();video.pause();video.muted=true;setSoundLabel();observer?.disconnect();observer=null;
+ userPaused=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||!!navigator.connection?.saveData;index=0;failedSlides=new Set();video.pause();video.muted=true;observer?.disconnect();observer=null;
  if(!slides.length){showHeroFallback();return;}
  video.loop=false;
  carousel.hidden=false;carousel.classList.remove('is-empty');$('inspirationHeroFeature').hidden=false;
- $('homeHeroEmpty').hidden=true;$('homeHeroSlideLink').hidden=false;
- $('homeHeroPlay').disabled=false;$('homeHeroSound').disabled=false;
+ $('homeHeroEmpty').hidden=true;
+ $('homeHeroPlay').disabled=false;
  setPlayLabel();
- $('homeHeroDots').replaceChildren();
- slides.forEach((x,i)=>{const b=document.createElement('button');b.type='button';b.dataset.index=String(i);b.setAttribute('aria-label','Show video '+(i+1)+': '+(x.title||'Original video'));
- // Thumbnails use only owner-authorized posters from the existing rights-filtered API.
- if(x.previewPosterUrl){const img=document.createElement('img');img.src=x.previewPosterUrl;img.alt='';img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';b.classList.add('has-poster');b.append(img);}
- b.addEventListener('click',()=>setSlide(i));$('homeHeroDots').append(b);});
  syncSlideControls();
  visible=!('IntersectionObserver'in window);
- if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{for(const e of entries){visible=e.isIntersecting;if(visible)ambientPlay();else video.pause();}},{threshold:.25});observer.observe(carousel);}
+ if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{for(const e of entries){visible=e.isIntersecting;if(visible)ambientPlay();else pauseFilms();}},{threshold:.25});observer.observe(carousel);}
  setSlide(0);
 }
 if(video&&carousel){
+ carousel.addEventListener('keydown',e=>{
+  if(e.target!==carousel)return;
+  if(e.key==='ArrowLeft'){e.preventDefault();setSlide(index-1,-1);}
+  else if(e.key==='ArrowRight'){e.preventDefault();setSlide(index+1,1);}
+  else if(e.key===' '){e.preventDefault();$('homeHeroPlay').click();}
+ });
+ let touchStart=null;
+ carousel.addEventListener('touchstart',e=>{const t=e.changedTouches[0];touchStart={x:t.clientX,y:t.clientY};},{passive:true});
+ carousel.addEventListener('touchend',e=>{if(!touchStart)return;const t=e.changedTouches[0],dx=t.clientX-touchStart.x,dy=t.clientY-touchStart.y;touchStart=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.5)setSlide(index+(dx<0?1:-1),dx<0?1:-1);},{passive:true});
  $('homeHeroPrevious')?.addEventListener('click',()=>setSlide(index-1,-1));
  $('homeHeroNext')?.addEventListener('click',()=>setSlide(index+1,1));
  $('homeHeroPlay')?.addEventListener('click',()=>{
   userPaused=!userPaused;setPlayLabel();
-  if(userPaused)video.pause();else if(!document.hidden&&visible)void video.play().catch(()=>{userPaused=true;setPlayLabel();$('homeHeroStatus').textContent='Video playback unavailable.';});
+  if(userPaused)pauseFilms();
+  else if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches&&!document.hidden&&visible)void video.play().catch(()=>{userPaused=true;setPlayLabel();});
+  else ambientPlay();
  });
- $('homeHeroSound')?.addEventListener('click',()=>{
-  video.muted=!video.muted;setSoundLabel();
-  // Unmuting is never automatic: only a direct click can activate the soundtrack.
-  // Play remains a separate opt-in when reduced-motion or data saver is enabled.
+ video.addEventListener('ended',advanceCompletedSlide);
+ video.addEventListener('timeupdate',()=>{
+  // Real WebKit: fully played 7.958333s MP4 reports duration7.959s,
+  // paused=false and ended=false. Bound recovery to <1ms demuxer rounding,
+  // never a missing frame, buffering stall or user pause. Give the
+  // native ended task first chance; a source change invalidates this timer.
+  const remaining=video.duration-video.currentTime;
+  if(completionTimer!==null||!ambientAllowed()||video.paused||video.ended||video.readyState<2||!Number.isFinite(remaining)||remaining<=0||remaining>EOF_ROUNDING_SECONDS)return;
+  const serial=playbackSerial;
+  completionTimer=setTimeout(()=>{
+   completionTimer=null;
+   const left=video.duration-video.currentTime;
+   if(serial===playbackSerial&&!video.paused&&!video.ended&&Number.isFinite(left)&&left>=0&&left<=EOF_ROUNDING_SECONDS)advanceCompletedSlide();
+  },50);
  });
- video.addEventListener('ended',()=>{if(!ambientAllowed())return;if(slides.length>1)setSlide(index+1);else if(slides.length===1){video.currentTime=0;ambientPlay();}});
  video.addEventListener('loadeddata',ambientPlay);
  video.addEventListener('error',()=>{
   if(!slides.length||!video.getAttribute('src'))return;
@@ -96,7 +157,7 @@ if(video&&carousel){
   $('homeHeroStatus').textContent='This video is unavailable. Showing the next available creation.';
   setSlide(index+1);
  });
- document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else ambientPlay();});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseFilms();else ambientPlay();});
 }
 // Quick Create is not a new generator. It opens the existing Studio with a local, unpaid draft.
 const ideas={
@@ -112,10 +173,11 @@ function choose(kind){
  chosen=kind;
  $('homeQuickPrompt').required=kind!=='agent';
  for(const b of document.querySelectorAll('[data-home-kind]'))b.setAttribute('aria-pressed',String(b.dataset.homeKind===kind));
- $('homeQuickSubmit').textContent=kind==='agent'?'See Agent preview ↗':'Open in Studio ↗';
+ $('homeQuickSubmitLabel').textContent=kind==='agent'?'See Agent preview ↗':'Open in Studio ↗';
+ $('homeQuickSubmit').setAttribute('aria-label',kind==='agent'?'See Agent preview':'Open in Studio');
 }
 if($('homeQuickForm')){
- document.querySelectorAll('[data-home-kind]').forEach(b=>b.addEventListener('click',()=>{choose(b.dataset.homeKind);if(chosen==='agent')$('homeQuickStatus').textContent='Agent execution is coming soon. Explore the preview below.';}));
+ document.querySelectorAll('[data-home-kind]').forEach(b=>b.addEventListener('click',()=>{choose(b.dataset.homeKind);if(chosen==='agent'){$('homeQuickStatus').classList.add('is-visible');$('homeQuickStatus').textContent='Agent execution is coming soon. Explore the preview below.';}}));
  document.querySelectorAll('[data-home-idea]').forEach(b=>b.addEventListener('click',()=>{
   const idea=ideas[b.dataset.homeIdea];if(!idea)return;
   const prompt=$('homeQuickPrompt');
@@ -126,6 +188,7 @@ if($('homeQuickForm')){
  $('homeQuickForm').addEventListener('submit',async e=>{
   e.preventDefault();if(busy)return;
   const prompt=$('homeQuickPrompt').value.trim(),status=$('homeQuickStatus'),button=$('homeQuickSubmit');
+  status.classList.add('is-visible');
   if(chosen==='agent'){status.textContent='AI Agent execution is not available yet. Explore the preview below.';$('agentFeature').scrollIntoView({behavior:'smooth',block:'start'});return;}
   if(!prompt||prompt.length>2000){status.textContent='Enter a description of up to 2,000 characters.';return;}
   const studio=modeToStudio[chosen];if(!studio){status.textContent='Choose Image, Video or Audio.';return;}

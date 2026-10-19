@@ -11,14 +11,14 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('.hero-stage h1')).toHaveCount(0);
  await expect(page.locator('.hero-stage')).not.toContainText('beyond limits');
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
- await expect(page.locator('nav a[href="#quickCreateForm"]')).toContainText('Canvas');
+ await expect(page.locator('#sidebar nav a[href="#quickCreateForm"]')).toContainText('Canvas');
  await expect(page.locator('#studioStatus')).toContainText('owner preview');
  await expect(page.locator('.plan')).toHaveCount(3);
  await expect(page.locator('.trial-details-link')).toHaveAttribute('href','ai-pricing.html#trialOffer');
  await expect(page.locator('.lifetime')).toContainText('does not provide unlimited');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:info.outputPath('deepsyq.png'),fullPage:true});
- await page.locator('.studio-card.image').click();await expect(page).toHaveURL(/studio=image/);
+ await page.locator('[data-home-kind="image"]').click();await page.locator('#homeQuickPrompt').fill('Test creative image');await page.locator('#homeQuickSubmit').click();await expect(page).toHaveURL(/studio=image/);
  await expect(page.locator('#taskTitle')).toContainText('image');
  await page.locator('.topbar .back').click();await expect(page).toHaveURL(/deepsyq.html/);
 });
@@ -48,16 +48,24 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
   await page.locator('#sidebarToggle').click();
   await expect(page.locator('body')).not.toHaveClass(/sidebar-collapsed/);
  }
- if(mobile)await page.locator('[data-open-models="image"]').click();
- else await page.locator('[data-model-menu="image"]').hover();
+ // Desktop hover is a preview of the navigation item, never an open modal.
+ await page.locator('[data-model-menu="image"]').hover();
+ await expect(page.locator('#modelFlyout')).toBeHidden();
+ await page.locator('[data-open-models="image"]').click();
  await expect(page.locator('#modelFlyout')).toBeVisible();
+ const modalOffset=await page.locator('#modelFlyout').evaluate(el=>{
+  const r=el.getBoundingClientRect();
+  return {x:Math.abs(r.left+r.width/2-innerWidth/2),y:Math.abs(r.top+r.height/2-innerHeight/2),fits:r.left>=-1&&r.right<=innerWidth+1};
+ });
+ expect(modalOffset.x).toBeLessThan(3);expect(modalOffset.y).toBeLessThan(3);
+ expect(modalOffset.fits).toBe(true);
  await expect(page.locator('#modelFlyout')).toContainText('Connected image');
  await expect(page.locator('#modelFlyout')).toContainText('Pending image');
  await expect(page.locator('#modelFlyout .model-flyout-option').first()).toBeEnabled();
  await expect(page.locator('#modelFlyout .model-flyout-option').nth(1)).toBeDisabled();
- // The mobile panel overlays the narrow rail; close it before tapping a new menu.
- if(mobile){await page.locator('#modelFlyoutClose').click();await page.locator('[data-open-models="video"]').click();}
- else await page.locator('[data-model-menu="video"]').hover();
+ // Close the centered modal before switching models; no hover-open side flyout.
+ await page.locator('#modelFlyoutClose').click();
+ await page.locator('[data-open-models="video"]').click();
  await expect(page.locator('#modelFlyoutTitle')).toHaveText('Video models');
  await expect(page.locator('#modelFlyout')).toContainText('Connected video');
  await page.locator('#modelFlyoutClose').click();
@@ -257,22 +265,22 @@ test('pricing shows the planned $0.99 trial without creating misleading live che
  await page.goto('/ai-pricing.html#trialOffer');
  await expect(page.locator('#trialOffer')).toBeVisible();
  await expect(page.locator('#trialOffer')).toContainText('$0.99');
- await expect(page.locator('#trialOffer')).toContainText('3-day access');
- await expect(page.locator('#trialOffer')).toContainText('No auto-renewal');
+ await expect(page.locator('#trialOffer')).toContainText('Credits shown before checkout');
+ await expect(page.locator('#trialOffer')).toContainText('No charges in this preview');
  await expect(page.locator('#trialOffer')).toContainText('Not available to purchase yet.');
  await expect(page.locator('#trialOffer button')).toBeDisabled();
  await expect(page.locator('#trialOffer a')).toHaveAttribute('href','deepsyq.html#homeQuickBar');
  await expect(page.locator('#toolPlans')).toContainText('Basic');
  await expect(page.locator('#aiStatus')).toContainText('No AI credit packs');
 });
-test('pricing mobile trial keeps three-day terms and clean accessible layout',async({page})=>{
+test('pricing mobile trial discloses disconnected checkout and keeps accessible layout',async({page})=>{
  await page.setViewportSize({width:390,height:844});
  await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000}}}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',packs:[]}}));
  await page.goto('/ai-pricing.html#trialOffer');
  await expect(page.locator('#trialOffer')).toBeVisible();
- await expect(page.locator('#trialOffer')).toContainText('three days');
- await expect(page.locator('#trialOffer')).toContainText('no automatic renewal');
+ await expect(page.locator('#trialOffer')).toContainText('Credit accounting is implemented');
+ await expect(page.locator('#trialOffer')).toContainText('not connected to the AI wallet');
  await expect(page.locator('#trialOffer button')).toBeDisabled();
  await expect(page.locator('#toolPlans')).toContainText('Basic');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
@@ -353,8 +361,13 @@ test('featured owned video is promoted but original homepage sections and images
  await expect(page.locator('#inspirationPreviewGrid video')).toHaveCount(1);
  await expect(page.locator('#inspirationPreviewGrid video')).toHaveJSProperty('muted',true);
  await expect(page.locator('#inspirationPreviewGrid video')).toHaveJSProperty('loop',true);
- expect(await page.evaluate(()=>!!(document.querySelector('#inspirationPreview').compareDocumentPosition(document.querySelector('[aria-labelledby="createTitle"]'))&Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
- await expect(page.locator('.studio-card')).toHaveCount(4);
+ expect(await page.evaluate(()=>!!(document.querySelector('#createWithDeepsyq').compareDocumentPosition(document.querySelector('#inspirationPreview'))&Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+ await expect(page.locator('.home-create-grid .home-create-card')).toHaveCount(6);
+ await expect(page.locator('.home-feature-triptych .home-feature-spotlight')).toHaveCount(3);
+ await expect(page.locator('.home-create-grid .tile-image')).toHaveAttribute('href','generate-studio.html?studio=image');
+ await expect(page.locator('.home-create-grid .tile-video')).toHaveAttribute('href','generate-studio.html?studio=video');
+ await expect(page.locator('.home-create-grid .tile-audio')).toHaveAttribute('href','generate-studio.html?studio=audio');
+ await expect(page.locator('a[aria-label="History"]')).toHaveAttribute('href','generate-studio.html?view=history');
  await expect(page.getByRole('link',{name:/Video Uniquifier history/})).toBeVisible();
 });
 test('approved video appears in the real homepage hero but does not erase Canvas or original sections',async({page})=>{
@@ -366,13 +379,18 @@ test('approved video appears in the real homepage hero but does not erase Canvas
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'approved-film',title:'Original mountain film',slug:'original-mountain-film',kind:'video',category:'Cinematic',actionTarget:'studio',previewUrl:'/owner-owned-film.mp4',previewPosterUrl:'/owner-owned-poster.jpg',aspectRatio:'16:9',prompt:'Cinematic natural camera movement',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false}}}));
  await page.goto('/deepsyq.html');
  await expect(page.locator('#inspirationHeroFeature')).toBeVisible();
- await expect(page.locator('#inspirationHeroTitle')).toHaveText('Original mountain film');
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src',/\.mp4$/);
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/owner-owned-film.mp4');
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('poster','/owner-owned-poster.jpg');
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href',/inspiration\.html\?kind=video/);
  await expect(page.locator('#quickCreateForm')).toBeVisible();
- await expect(page.locator('.studio-card')).toHaveCount(4);
+ await expect(page.locator('.home-create-grid .home-create-card')).toHaveCount(6);
+ await expect(page.locator('.home-feature-triptych .home-feature-spotlight')).toHaveCount(3);
+ await expect(page.locator('.home-create-grid .tile-image')).toHaveAttribute('href','generate-studio.html?studio=image');
+ await expect(page.locator('.home-create-grid .tile-video')).toHaveAttribute('href','generate-studio.html?studio=video');
+ await expect(page.locator('.home-create-grid .tile-audio')).toHaveAttribute('href','generate-studio.html?studio=audio');
+ await expect(page.locator('a[aria-label="History"]')).toHaveAttribute('href','generate-studio.html?view=history');
 });
 test('video carousel switches only among owner-approved videos and retains existing media',async({page})=>{
  // Mock the transport layer: this test verifies navigation, not fake MP4 playback.
@@ -392,19 +410,14 @@ test('video carousel switches only among owner-approved videos and retains exist
  ],categories:['Cinematic'],ratios:['16:9']}}));
  await page.goto('/deepsyq.html');
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
- await expect(page.locator('#homeHeroDots button')).toHaveCount(2);
+ await expect(page.locator('#homeHeroDots')).toHaveCount(0);
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/one.mp4');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 2');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 1 of 2/);
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
- await page.locator('#homeHeroSound').click();
- await expect(page.locator('#homeHeroSound')).toHaveText('Sound on');
- await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',false);
- await page.locator('#homeHeroSound').click();
- await expect(page.locator('#homeHeroSound')).toHaveText('Sound off');
- await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
+ await expect(page.locator('#homeHeroSound,.home-hero-footer,.hero-stage-copy')).toHaveCount(0);
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/two.mp4');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 2 of 2');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 2 of 2/);
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/one.mp4');
  await page.locator('#homeHeroPrevious').click();
@@ -429,7 +442,7 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/broken-one.mp4');
  await page.locator('#inspirationHeroVideo').evaluate(v=>v.dispatchEvent(new Event('error')));
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/broken-two.mp4');
- await expect(page.locator('#homeHeroDots button').first()).toBeDisabled();
+ await expect(page.locator('#homeHeroPrevious')).toBeDisabled();
  await page.locator('#inspirationHeroVideo').evaluate(v=>v.dispatchEvent(new Event('error')));
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await expect(page.locator('#homeHeroCarousel')).toHaveClass(/is-empty/);
@@ -455,7 +468,7 @@ test('reduced-motion users get a manual Play button for genuine videos',async({p
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'clip',title:'Approved original clip',kind:'video',previewUrl:'/approved.mp4',actionTarget:'studio',category:'Cinematic',aspectRatio:'16:9'}],categories:['Cinematic'],ratios:['16:9']}}));
  await page.goto('/deepsyq.html');
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
- await expect(page.locator('#homeHeroPlay')).toHaveText('Play');
+ await expect(page.locator('#homeHeroPlay')).toHaveText('Play video');
  await expect(page.locator('#homeHeroNext')).toBeDisabled();
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
 });
@@ -587,7 +600,7 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  await expect(page.locator('#appsFeature')).toBeVisible();
  await expect(page.locator('#inspirationPreview')).toHaveCount(1);
  const inDocumentOrder=await page.evaluate(()=>{
-  const nodes=['canvasFeature','agentFeature','appsFeature','inspirationPreview'].map(id=>document.getElementById(id));
+  const nodes=[document.getElementById('homeQuickBar'),document.getElementById('createWithDeepsyq'),document.querySelector('.home-feature-triptych'),document.getElementById('inspirationPreview'),document.getElementById('canvasFeature'),document.getElementById('agentFeature'),document.getElementById('appsFeature')];
   return nodes.every((node,i)=>node&&(i===nodes.length-1||Boolean(node.compareDocumentPosition(nodes[i+1])&Node.DOCUMENT_POSITION_FOLLOWING)));
  });
  expect(inDocumentOrder).toBe(true);

@@ -1,3 +1,7 @@
+## OWNER CANONICAL VISUAL MOCKUP — 2026-10-19 — READ BEFORE UI WORK
+
+**[docs/DEEPSYQ_OWNER_VISUAL_REFERENCE.md](docs/DEEPSYQ_OWNER_VISUAL_REFERENCE.md) is the owner's approved screenshot-based visual standard for ALL Deepsyq pages.** Use the dark navy + cyan/blue/violet/magenta neon colors, matching buttons, rounded luminous cards (“big squares”), compact header/sidebar and existing shared style across all real pages. **The currently working Home carousel and Home content blocks are protected: DO NOT touch, re-render, reorder, recreate or change their source/design.** Do NOT rewrite existing functional code; first verify a genuine difference against the owner's screenshot, then correct only the smallest safe, owner-approved visual mismatch on the owning agent's file/PR. Keep routes and all features working, only no-spend tests. The screenshot itself is attached to the owner's 2026-10-19 chat, not yet stored as a PNG binary in this repository; do not claim literal pixel-level screenshot verification solely from these GitHub docs. This is a DEV documentation constraint, NOT publication authority.
+
 # AGENTS.md — Deepsyq: START HERE (all agents and coordinators)
 
 ## OWNER DIRECTIVE — GRAPHIFY SHARED CODE MAP (19 OCT 2026)
