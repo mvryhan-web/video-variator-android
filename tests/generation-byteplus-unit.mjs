@@ -18,7 +18,7 @@ test('BytePlus needs its own key, explicit model permission, and video download 
 });
 test('Seedream dispatch preserves ratio and references; one image, no paid retries',async()=>{
  let seen,calls=0;const r=await dispatchGeneration({...req(),references:[{mimeType:'image/png',data:png.toString('base64')}]},{env:{BYTEPLUS_API_KEY:'fixture'},fetcher:async(url,opts)=>{calls++;seen={url,opts};return json({data:[{b64_json:png.toString('base64')}]});}});
- const b=JSON.parse(seen.opts.body);assert.equal(calls,1);assert.equal(b.model,'seedream-5-0-lite-260128');assert.equal(b.size,'2848x1600');assert.equal(b.output_format,'png');assert.equal(b.sequential_image_generation,'disabled');assert.equal(b.response_format,'b64_json');assert.ok(b.image[0].startsWith('data:image/png;base64,'));assert.equal(seen.opts.redirect,'error');assert.equal(r.mime,'image/png');assert.ok(seen.url.endsWith('/images/generations'));
+ const b=JSON.parse(seen.opts.body);assert.equal(calls,1);assert.equal(b.model,'seedream-5-0-260128');assert.equal(b.size,'2848x1600');assert.equal(b.output_format,'png');assert.equal(b.sequential_image_generation,'disabled');assert.equal(b.response_format,'b64_json');assert.ok(b.image[0].startsWith('data:image/png;base64,'));assert.equal(seen.opts.redirect,'error');assert.equal(r.mime,'image/png');assert.ok(seen.url.endsWith('/images/generations'));
  await assert.rejects(()=>generateBytePlus(req(),{key:'fixture',fetcher:async()=>new Response('',{status:429})}),/PROVIDER_BUSY/);
 });
 test('Seedream 4.5 does not request unsupported PNG output',async()=>{
