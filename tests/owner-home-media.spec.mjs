@@ -36,15 +36,16 @@ test('owner-supplied MP4: real muted autoplay, six complete films wrap, arrows, 
  if(info.project.name.startsWith('mobile'))await expect.poll(()=>page.locator('.hero-neighbor video').evaluateAll(videos=>videos.every(v=>v.paused))).toBe(true);
  // Never patch play/load, use fake media, or dispatch a synthetic ended event.
  await expect.poll(()=>video.evaluate(v=>v.currentTime),{timeout:20000}).toBeGreaterThan(0.2);
- await video.evaluate(v=>{
+ await video.evaluate((v,actualEnds)=>{
+  v.__actualEnds=actualEnds;
   v.__testEnded=0;v.__testErrors=[];v.__mediaEvents=[];v.__completedFilms={};
   for(const type of ['play','playing','pause','ended','waiting','stalled','suspend','error','loadeddata','timeupdate'])v.addEventListener(type,()=>{
-   if((type==='timeupdate'||type==='ended')&&Number.isFinite(v.duration)&&v.currentTime>=v.duration-0.000001)v.__completedFilms[v.getAttribute('src')]=v.currentTime;
+   if((type==='timeupdate'||type==='ended')&&Number.isFinite(v.duration)&&v.currentTime>=v.__actualEnds[v.getAttribute('src')]-0.000001)v.__completedFilms[v.getAttribute('src')]=v.currentTime;
    v.__mediaEvents.push({type,src:v.getAttribute('src'),time:v.currentTime,duration:v.duration,paused:v.paused,ended:v.ended,ready:v.readyState,hidden:document.hidden});
    if(v.__mediaEvents.length>60)v.__mediaEvents.shift();
   });
   v.addEventListener('ended',()=>v.__testEnded++);v.addEventListener('error',()=>v.__testErrors.push(v.error?.code));
- });
+ },Object.fromEntries(clips.map(clip=>[clip.previewUrl,clip.durationSeconds])));
  for(let n=0;n<6;n++){
   await expect(video).toHaveAttribute('src',clips[n].previewUrl);
   await expect(page.locator('#homeHeroModel')).toHaveText(clips[n].defaultSettings.homeShowcase.title);
@@ -54,14 +55,15 @@ test('owner-supplied MP4: real muted autoplay, six complete films wrap, arrows, 
   const size=await video.evaluate(v=>({width:v.videoWidth,height:v.videoHeight,duration:v.duration}));
   expect(size.width).toBe(1920);expect(size.height).toBe(1080);expect(size.duration).toBeGreaterThan(7.9);
   // Let every entire real film finish, including the last frame. Verify
-  // actual media time at EOF; WebKit can miss native ended at 8-1e-9 seconds.
+  // actual media time at the ffprobe-verified stream EOF, not the browser
+  // duration that WebKit can round upward by <1 millisecond.
   try{await expect(video).toHaveAttribute('src',clips[(n+1)%6].previewUrl,{timeout:20000});}
   catch(error){
    const state=await video.evaluate(v=>({src:v.getAttribute('src'),time:v.currentTime,duration:v.duration,paused:v.paused,ended:v.ended,ready:v.readyState,hidden:document.hidden,events:v.__mediaEvents,playLabel:document.getElementById('homeHeroPlay').getAttribute('aria-label')}));
    await test.info().attach('playback-state.json',{body:JSON.stringify(state,null,2),contentType:'application/json'});
    throw new Error(error.message+'\nPLAYBACK_STATE '+JSON.stringify(state));
   }
-  expect(await video.evaluate((v,src)=>v.__completedFilms[src],clips[n].previewUrl)).toBeGreaterThanOrEqual(size.duration-0.000001);
+  expect(await video.evaluate((v,src)=>v.__completedFilms[src],clips[n].previewUrl)).toBeGreaterThanOrEqual(clips[n].durationSeconds-0.000001);
  }
  expect(Object.keys(await video.evaluate(v=>v.__completedFilms))).toHaveLength(6);
  mediaErrors.push(...await video.evaluate(v=>v.__testErrors));expect(mediaErrors).toEqual([]);

@@ -2,6 +2,8 @@
 // This is presentation-only and reuses the existing Inspiration feed and Studio handoff.
 import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id);
+// WebKit can round a demuxed EOF up to the next millisecond.
+const EOF_ROUNDING_SECONDS=.001;
 const video=$('inspirationHeroVideo');
 const carousel=$('homeHeroCarousel');
 const neighborVideos=[$('homeHeroPreviousVideo'),$('homeHeroNextVideo')].filter(Boolean);
@@ -133,17 +135,17 @@ if(video&&carousel){
  });
  video.addEventListener('ended',advanceCompletedSlide);
  video.addEventListener('timeupdate',()=>{
-  // Observed in real WebKit playback: 7.999999999 / 8 seconds, readyState=4,
-  // paused=false and ended=false forever. Recover only sub-microsecond EOF
-  // rounding, never a missing frame, buffering stall or user pause. Give the
+  // Real WebKit: fully played 7.958333s MP4 reports duration7.959s,
+  // paused=false and ended=false. Bound recovery to <1ms demuxer rounding,
+  // never a missing frame, buffering stall or user pause. Give the
   // native ended task first chance; a source change invalidates this timer.
   const remaining=video.duration-video.currentTime;
-  if(completionTimer!==null||!ambientAllowed()||video.paused||video.ended||video.readyState<2||!Number.isFinite(remaining)||remaining<=0||remaining>0.000001)return;
+  if(completionTimer!==null||!ambientAllowed()||video.paused||video.ended||video.readyState<2||!Number.isFinite(remaining)||remaining<=0||remaining>EOF_ROUNDING_SECONDS)return;
   const serial=playbackSerial;
   completionTimer=setTimeout(()=>{
    completionTimer=null;
    const left=video.duration-video.currentTime;
-   if(serial===playbackSerial&&!video.paused&&!video.ended&&Number.isFinite(left)&&left>=0&&left<=0.000001)advanceCompletedSlide();
+   if(serial===playbackSerial&&!video.paused&&!video.ended&&Number.isFinite(left)&&left>=0&&left<=EOF_ROUNDING_SECONDS)advanceCompletedSlide();
   },50);
  });
  video.addEventListener('loadeddata',ambientPlay);

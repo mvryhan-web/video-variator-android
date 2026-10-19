@@ -18,6 +18,7 @@ test('owner media: seven exact silent 1080p MP4s decode, hashes and six ordered 
   const meta=JSON.parse(probe.stdout);assert.equal(meta.streams.length,1);
   const v=meta.streams[0];assert.equal(v.codec_name,'h264');assert.equal(v.width,1920);assert.equal(v.height,1080);assert.equal(v.pix_fmt,'yuv420p');assert.equal(v.r_frame_rate,'24/1');
   assert.ok(Number(meta.format.duration)>7.9&&Number(meta.format.duration)<=8.1);
+  assert.ok(Math.abs(Number(v.duration)-item.durationSeconds)<0.000001,'manifest EOF must match the actual video stream within one microsecond');
   const decode=spawnSync('ffmpeg',['-v','error','-i',path.pathname,'-f','null','-'],{encoding:'utf8'});assert.equal(decode.status,0);assert.equal(decode.stderr,'');
   assert.ok(bytes.indexOf(Buffer.from('moov'))<bytes.indexOf(Buffer.from('mdat')),'faststart');
   const poster=await readFile(new URL('../app/src/main/assets'+item.previewPosterUrl,import.meta.url));assert.ok(poster.length>1000);
