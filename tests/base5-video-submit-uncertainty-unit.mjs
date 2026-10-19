@@ -283,7 +283,7 @@ test('BASE #5: authenticated single-job GET leaves fresh queued video queued and
  assert.equal(handlers[0].middleware[1],generationUser);
  const respond=async()=>{
   const result={status:200,body:null};
-  const res={status(code){result.status=code;return this;},json(body){result.body=body;return this;}};
+  const res={set(name,value){assert.equal(name,'Cache-Control');assert.equal(value,'private, no-store');return this;},status(code){result.status=code;return this;},json(body){result.body=body;return this;}};
   await handlers[0].middleware[2]({params:{id:'owned-job'},user:{id:'owned-user'}},res);
   return result;
  };
