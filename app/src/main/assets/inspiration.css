@@ -19,3 +19,14 @@
 .gallery .card .media img{transition:transform .7s ease}
 .gallery .card:hover .media img,.gallery .card:focus-within .media img{transform:scale(1.065)}
 @media(prefers-reduced-motion:reduce){.gallery .card .media img{transition:none}.gallery .card:hover .media img,.gallery .card:focus-within .media img{transform:none}}
+
+/* BASE1-C: at 320px the original four-link header had a 371px intrinsic width.
+   The shared 42px mobile menu occupies x12..54. Keep Studio reachable, hide
+   only the redundant current-page label (also present in the global drawer),
+   and avoid the fixed menu without changing site-wide theme or desktop layout. */
+@media(max-width:620px){
+ body.deepsyq-sitewide-shell > header{padding-left:64px;padding-right:12px;gap:8px;min-width:0}
+ body.deepsyq-sitewide-shell > header nav{gap:0;min-width:0}
+ body.deepsyq-sitewide-shell > header nav a.active{display:none}
+ body.deepsyq-sitewide-shell > header nav a{padding:8px 6px}
+}
