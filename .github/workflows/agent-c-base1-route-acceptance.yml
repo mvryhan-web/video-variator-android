@@ -7,7 +7,9 @@ on:
       - app/src/main/assets/ai-apps.html
       - app/src/main/assets/ai-apps.js
       - app/src/main/assets/inspiration.html
+      - app/src/main/assets/inspiration.css
       - app/src/main/assets/free-tools.html
+      - app/src/main/assets/free-tools.css
       - .github/workflows/agent-c-base1-route-acceptance.yml
   workflow_dispatch:
 
