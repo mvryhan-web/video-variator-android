@@ -1,5 +1,12 @@
 # AGENTS.md — Deepsyq: START HERE (all agents and coordinators)
 
+## OWNER DIRECTIVE — GRAPHIFY SHARED CODE MAP (19 OCT 2026)
+
+**Every agent A/B/C/D/#5/Jules: map-first, not history-first.** Before broad source searching, open the durable `docs/DEEPSYQ_CODE_MAP.md` and its small relationship index `docs/DEEPSYQ_CODE_MAP.json` **if they exist on current `deepsyq-platform`**. Find the exact symbol/file/line and then inspect only the affected current code or changes since map `source_sha`. The index is a navigation aid, never a substitute for security/financial/acceptance tests. **Current coverage is ONLY `server/`**, not Android UI, docs or other code. If missing, outdated or incomplete, do *narrow* GitHub source search/diff, not full archive/history. Do not claim map present until the generator successfully publishes it.
+
+Graphify source pin unchanged. A GitHub Actions updater builds the real offline AST, removes the raw graph, and persists **only a sanitised source-path/function/edge index** on DEV after passing secret-exclusion tests. It triggers on relevant DEV source changes; a separate manual action can regenerate it. Never publish raw `graphify-out/`. **Ponytail** still applies on every coding task: smallest *complete and tested* change without weakening any BASE requirement. Agents with no Graphify runtime can still READ the shared map through GitHub. `main`/production, users, payments and paid AI remain untouched.
+
+
 **ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](DECISIONS.md).** Последнее обязательное решение: **нет Free AI plan/welcome credits; Trial $0.99 пока НЕ включён; деньги пользователя подтверждает Stripe, provider call только за КУПЛЕННЫЕ credits (Issue #182)**. Бесплатные ИМЕННО тесты (mock/CI/Stripe test-mode и доказанно бесплатные реальные AI-вызовы с жёстким отказом вместо платных перерасходов) разрешены после pre-call CHECKPOINT. Предыдущие строки ниже о free-tier AI относятся **только к тестовому тарифу**, а не к публичному бесплатному продукту. 4 главных приоритета 1–4 не изменены. Состояния CI_BLOCKED, READY_TO_MERGE и DONE=LIVE_VERIFIED действуют; зоны и единый Jules ≤3 задач см. правила #9/#21.
 
 

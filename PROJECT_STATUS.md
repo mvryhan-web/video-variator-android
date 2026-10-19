@@ -1,3 +1,9 @@
+## COORDINATOR #5 — Graphify persistent map correction (2026-10-19)
+
+**Owner intent:** A/B/C/D/#5/Jules need a **persisted code map** to avoid repeating full code/history reads. Original Graphify test destroyed raw `graphify-out/graph.json` on purpose for secret safety. Prior PRs #290/#291/#292 merged only an ephemeral test and guidance; no durable map had been installed.
+
+**Work in separate branch `tools/graphify-shared-map-20261019`:** conservative Graphify AST exporter, tests against secret/data exposure, automated DEV-only map publishing to `docs/DEEPSYQ_CODE_MAP.md` and `.json`. Until GitHub CI PASS and resulting bot file commit is verified on DEV, mark `MAP_PENDING`, not DONE. Scope server-only, raw graph never committed. All existing claims, BASE statuses, Ponytail pilot, payment/production blocks unchanged.
+
 ## COORDINATOR #5 — 2026-10-19 / OWNER TOOL DIRECTIVE: Graphify + Ponytail
 
 **VERIFIED actual DEV merges:** Graphify original fixed upstream SHA `86c57be8204673c2a1b9849a3292a7dd3ab373d8`, [PR290](https://github.com/mvryhan-web/video-variator-android/pull/290) squash `ee680e1e10f0274751631fba9ab3fc5d6bcaf471`; Ponytail original fixed upstream SHA `09c434ab73ca43761c5d8b0c5d341926c2fba710`, [PR291](https://github.com/mvryhan-web/video-variator-android/pull/291) squash `82aafde066c922b946f1ab3afa0db80ae1278690`. No site, paid API, Stripe, main or production touched. Both two-of-two native CI green before merge. See owner instructions at [AGENTS.md](AGENTS.md) and [tool operating guide](docs/DEEPSYQ_AGENT_TOOLS.md).
