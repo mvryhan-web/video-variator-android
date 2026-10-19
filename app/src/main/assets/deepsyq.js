@@ -52,10 +52,21 @@ function saveQuickDraft(){
   try{sessionStorage.setItem(key,JSON.stringify(draft));}catch(_){/* Keep in-memory editor usable. */}
  });
 }
-async function restoreQuickDraft(){
+// Browser session/history restoration can prefill a textarea from a DIFFERENT
+// signed-in user. The hashed current-account session draft is the only trusted
+// source on load or pageshow. Reset synchronously before awaiting Web Crypto.
+function clearVisibleQuickDraft(){
+ $('quickCreatePrompt').value='';
+ $('quickCreateKind').value='image';
  populateQuickRatios();
+ $('quickCreateFiles').value='';
+ const quickBarPrompt=$('homeQuickPrompt');if(quickBarPrompt)quickBarPrompt.value='';
+ quickReferences=[];renderQuickReferences();
+}
+async function restoreQuickDraft(){
+ const epoch=++quickDraftEpoch;
+ clearVisibleQuickDraft();
  try{sessionStorage.removeItem(QUICK_DRAFT_LEGACY_KEY);}catch(_){}
- const epoch=quickDraftEpoch;
  const key=await quickDraftKeyPromise;
  if(!key||epoch!==quickDraftEpoch||!sameQuickDraftAccount()||$('quickCreatePrompt').value)return;
  try{
@@ -67,6 +78,8 @@ async function restoreQuickDraft(){
  }catch(_){/* Ignore corrupt or inaccessible account-scoped draft. */}
 }
 void restoreQuickDraft();
+// pageshow also runs when Firefox restores form values or a tab from BFCache.
+window.addEventListener('pageshow',()=>{void restoreQuickDraft();});
 $('quickCreatePrompt').addEventListener('input',saveQuickDraft);
 $('quickCreateKind').addEventListener('change',()=>{populateQuickRatios();saveQuickDraft();});
 $('quickCreateRatio').addEventListener('change',saveQuickDraft);
@@ -98,14 +111,21 @@ function renderQuickReferences(){
 }
 // Other-tab logout/account replacement must remove old private prompt and unsent
 // reference photos from this open page, not merely from the next reload.
-window.addEventListener('storage',event=>{
- if(event.key!=='vv_token')return;
+function guardQuickDraftAccount(){
+ if(sameQuickDraftAccount())return;
  ++quickDraftEpoch;
- $('quickCreatePrompt').value='';$('quickCreateKind').value='image';populateQuickRatios();
- $('quickCreateFiles').value='';
- const quickBarPrompt=$('homeQuickPrompt');if(quickBarPrompt)quickBarPrompt.value='';
- quickReferences=[];renderQuickReferences();
+ clearVisibleQuickDraft();
  $('quickCreateStatus').textContent='Account changed. Reload to start a private draft for this account.';
+}
+// Same-tab localStorage changes do NOT trigger a native storage event.
+// Scrub before the next user interaction, focus return, or visibility change.
+for(const type of ['pointerdown','keydown','focusin']){
+ document.addEventListener(type,guardQuickDraftAccount,true);
+}
+window.addEventListener('focus',guardQuickDraftAccount);
+document.addEventListener('visibilitychange',guardQuickDraftAccount);
+window.addEventListener('storage',event=>{
+ if(event.key==='vv_token')guardQuickDraftAccount();
 });
 function setQuickReferences(files,{append=false}={}){
  const candidates=[...(append?quickReferences:[]),...Array.from(files||[])];
