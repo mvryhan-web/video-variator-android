@@ -34,11 +34,12 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: node --check app/src/main/assets/deepsyq.js && node --check tests/agent-a-base3-home-fallback.spec.mjs
       - run: npx playwright install --with-deps chromium firefox webkit
-      - name: Private Canvas A to B to A and zero paid generation in all three engines
+      - name: Private Canvas, logout Back and mobile Studio handoff with zero paid POST
         run: |
           npx playwright test tests/agent-a-base3-home-fallback.spec.mjs \
             --project=chromium --project=firefox --project=webkit \
-            --grep 'BASE 3: Canvas draft cannot be restored by a different account sharing this browser tab' \
+            --project=mobile-chromium --project=mobile-webkit \
+            --grep 'BASE 3: (Canvas draft cannot be restored|logout and browser Back|mobile Canvas references)' \
             --workers=1
       - uses: actions/upload-artifact@v4
         if: failure()
