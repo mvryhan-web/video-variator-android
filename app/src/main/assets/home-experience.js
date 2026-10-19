@@ -194,7 +194,6 @@ if($('homeQuickForm')){
   $('homeSettingsModelNote').textContent=kind==='music'?'Audio format settings are selected in the Audio Studio.':ratios.length?'Resolution and duration are chosen in Studio from the selected model’s supported settings.':'No aspect-ratio preference is available for this mode.';
  }
  createMode?.addEventListener('change',()=>document.querySelector(`[data-home-kind="${createMode.value}"]`)?.click());
- modelPicker?.addEventListener('click',()=>{if(chosen==='agent')return;});
  $('homeSettingsOpen')?.addEventListener('click',()=>{
   populateHomeSettings();
   if(settingsDialog&&!settingsDialog.open)settingsDialog.showModal();
