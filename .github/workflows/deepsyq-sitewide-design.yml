@@ -6,6 +6,7 @@ on:
       - 'app/src/main/assets/deepsyq-global-theme.css'
       - 'app/src/main/assets/deepsyq-site-shell.js'
       - 'tests/deepsyq-sitewide-visual-unit.mjs'
+      - 'tests/deepsyq-navigation-contract-unit.mjs'
       - '.github/workflows/deepsyq-sitewide-design.yml'
   workflow_dispatch:
 permissions:
@@ -19,4 +20,4 @@ jobs:
         with:
           node-version: '22'
       - run: node --check app/src/main/assets/deepsyq-site-shell.js
-      - run: node --test tests/deepsyq-sitewide-visual-unit.mjs
+      - run: node --test tests/deepsyq-sitewide-visual-unit.mjs tests/deepsyq-navigation-contract-unit.mjs

@@ -1,4 +1,6 @@
 BLOCK 4 — STUDIO + MY WORKSPACE
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Единственный канон Workspace + History + My Creations — ЭТОТ Block 4 поверх существующих generation-jobs; никаких вторых проектных/history таблиц/PR. BASE §24–25 и Block 8 ссылаются сюда.
 ============================================================
 
 CONCEPT
@@ -23,6 +25,8 @@ Sections:
 - filters
 
 TEMPLATES
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Источник шаблонов — только Block 3 и его единая таблица; этот раздел Studio только ВЫВОДИТ/ИСПОЛЬЗУЕТ их, НЕ хранит вторую таблицу или master-template.
 Base categories:
 - Product Ad
 - UGC Ad
@@ -91,6 +95,8 @@ Workspace links with:
 - Studio
 
 Data:
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Исходные записи ниже сохранены; они означают reuse existing job tables and user ownership, не создание дублей.
 - reuse existing auth
 - reuse PostgreSQL
 - strict user ownership
