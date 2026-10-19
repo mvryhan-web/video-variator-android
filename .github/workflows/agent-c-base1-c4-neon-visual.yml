@@ -1,0 +1,33 @@
+name: Agent C BASE1 C4 existing-neon-card acceptance
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - app/src/main/assets/ai-apps.css
+      - app/src/main/assets/simple-background-remover.css
+      - tests/agent-c-base1-c4-neon-visual.spec.mjs
+      - .github/workflows/agent-c-base1-c4-neon-visual.yml
+  workflow_dispatch:
+jobs:
+  no-spend-neon-card-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Syntax of dedicated browser test
+        run: node --check tests/agent-c-base1-c4-neon-visual.spec.mjs
+      - name: Test actual UI 320/375/768/1280 and local-only PNG
+        run: npx playwright test tests/agent-c-base1-c4-neon-visual.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-webkit --project=mobile-chromium
+      - name: Preserve failures for diagnosis
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-c-base1-c4-ui-evidence
+          path: test-results/
+          if-no-files-found: ignore
