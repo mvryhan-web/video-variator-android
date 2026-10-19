@@ -214,7 +214,12 @@ test('duplicateProjectRecord isolates master template, forces draft status, stri
     }
   });
 
-  const diDup = mockDi('proj_bob_copy', '2026-10-18T14:00:00.000Z');
+  // Only a server-side Block 3 published-template authorizer can permit
+  // cloning a master template owned by another account.
+  const diDup = {
+    ...mockDi('proj_bob_copy', '2026-10-18T14:00:00.000Z'),
+    authorizePublicTemplate: (source, userId) => source.id === 'template_product_ad' && userId === 'user_bob'
+  };
 
   const bobCopy = duplicateProjectRecord(masterTemplate, {
     userId: 'user_bob'
@@ -234,6 +239,15 @@ test('duplicateProjectRecord isolates master template, forces draft status, stri
   // Source template is completely untouched
   assert.equal(masterTemplate.status, 'ready');
   assert.equal(masterTemplate.metadata.apiKey, 'secret_template_key');
+});
+
+test('private cross-user project duplication denied unless server verifies Block3 public template', () => {
+  const privateProject = createProjectRecord({userId:'user_alice', title:'Secret launch', metadata:{details:'Private project material'}}, mockDi('alice_proj','2026-10-18T12:00:00.000Z'));
+  assert.throws(() => duplicateProjectRecord(privateProject,{userId:'user_eve'},mockDi('eve_copy','2026-10-18T13:00:00.000Z')), e=>e.code==='UNAUTHORIZED_SOURCE');
+  assert.throws(() => duplicateProjectRecord(privateProject,{userId:'user_eve'}, {...mockDi('eve_copy','2026-10-18T13:00:00.000Z'), authorizePublicTemplate:()=>false}), e=>e.code==='UNAUTHORIZED_SOURCE');
+  const ownCopy = duplicateProjectRecord(privateProject,{userId:'user_alice'},mockDi('alice_copy','2026-10-18T13:00:00.000Z'));
+  assert.equal(ownCopy.ownerUserId, 'user_alice');
+  assert.equal(ownCopy.metadata.details, 'Private project material');
 });
 
 test('archive and restore flow transitions status correctly', () => {
