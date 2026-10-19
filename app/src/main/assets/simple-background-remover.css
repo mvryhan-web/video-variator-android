@@ -19,3 +19,13 @@ button:disabled{opacity:.45;cursor:not-allowed}#erase{background:#6f4db2;border-
 .controls{display:grid;gap:11px}.controls label{font-size:14px;font-weight:700}.controls input{width:100%;max-width:430px;accent-color:#bb97ff}.actions{display:flex;flex-wrap:wrap;gap:10px}
 #status,#sampleStatus{min-height:20px}#status{color:#c4e6bc;font-weight:650}.footer-note{margin-top:23px}
 @media(max-width:680px){.work-area{grid-template-columns:1fr}.image-well{height:260px}header{padding:16px}.panel{padding:15px}}
+
+/* BASE1-C4: owner neon treatment applies only when the local erase action
+   is available; keep native disabled, canvas checkerboard and algorithms. */
+html:not([data-theme="light"]) #erase:not(:disabled){
+ background:linear-gradient(110deg,var(--ds-violet,#925bff),var(--ds-pink,#ee80d2));
+ border-color:#b17cff;color:#100b23;box-shadow:0 8px 24px #793ef04a;
+}
+html:not([data-theme="light"]) #erase:not(:disabled):hover{
+ border-color:#d5b2ff;box-shadow:0 10px 28px #793ef077,0 0 18px #4c9cf42c;
+}
