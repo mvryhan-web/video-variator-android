@@ -75,6 +75,22 @@ function studio({kind='image',expectedCredits,quantity,serverCredits=7}={}){
  return {counters,run:async()=>{await handler(req,response);return response;}};
 }
 
+// Strictly-positive owner requirement also applies when an upstream pricing
+// configuration accidentally returns zero: never infer zero-price authorization.
+for(const kind of ['image','video','music']){
+ test('BASE1-D5 '+kind+' refuses even a matching zero-credit server quote',async()=>{
+  const t=studio({kind,expectedCredits:0,serverCredits:0});
+  const res=await t.run();
+  assert.equal(res.statusCode,409,'zero price can never authorize purchased dispatch');
+  assert.equal(res.payload?.error,'AI_ESTIMATE_CHANGED');
+  assert.equal(t.counters.dbInit,0);
+  assert.equal(t.counters.dbConnect,0);
+  assert.equal(t.counters.dbWrites,0);
+  assert.equal(t.counters.walletReserve,0);
+  assert.equal(t.counters.providerDispatch,0);
+ });
+}
+
 const denied=[
  ['missing',undefined],['null',null],['zero',0],['negative',-1],
  ['fraction',3.5],['numeric string','7'],['boolean',true],
