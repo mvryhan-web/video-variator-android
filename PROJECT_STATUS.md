@@ -1,3 +1,7 @@
+## AGENT C / 1-C4 / 2026-10-19 / PRE-CODE OWNED VISUAL-SCOPE CLAIM
+
+Existing original §1 remains PARTIAL; prior C PR301/297 already DEV MERGED with native CI. Single C4 isolated change: current `ai-apps.css` `.app-card` missing subtle layered neon glow and `simple-background-remover.css` enabled `#erase` still flat old purple (read-only evidence A3 Issue74 #6266615772). Claim branch `agent-c-base1-c4-neon-cards-20261019`, tiny CSS only plus free responsive tests/workflow, no HTML/JS/flows/media/global/production. Original owner design unchanged, no duplicate cards, disabled must remain honest. Precode source proof and coordinator notice Issue74 #6271964005; Graphify UI CLI unavailable in host.
+
 ## COORDINATOR #5 — CYCLE 6 / 2026-10-19 — BASE1-C4 INSPIRATION INTEGRATED (CURRENT)
 
 **ROLE:** coordinator only, DEV integration; original BASE §1 PARTIAL/BLOCKED_EXTERNAL. Original fully DONE: §47 and §53 only (2/55). Owner Home girl/6-film carousel/finished blocks frozen. No production/main, paid AI, Stripe, unsafe migrations.
