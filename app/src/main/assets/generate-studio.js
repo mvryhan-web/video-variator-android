@@ -905,6 +905,7 @@ $('creator').onsubmit=async e=>{
   $('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');
   await watch(job,epoch);
  }catch(e){
+  if(!job)updateJobProgress('unconfirmed');
   $('status').textContent=errorText(e);busy=false;availability();
  }
 };
