@@ -8,8 +8,8 @@
  }
 }
 
-/* BASE1-C: genuine Audio / Avatar destinations must survive the hub's replacement
-   of its legacy cards. Scope styling to the Tools hub, retain owner theme tokens. */
+/* BASE1-C: the hub retains Audio TTS/STT tiles but drops its Avatar card.
+   Style only the missing Avatar shortcut without duplicating existing tools. */
 .tools-hub .tools-direct-launches{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 12px}
 .tools-hub .tools-direct-launches a{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:10px 15px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);text-decoration:none;font-size:13px}
 .tools-hub .tools-direct-launches a:hover{border-color:#9383ed}
