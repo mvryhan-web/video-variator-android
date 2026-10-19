@@ -10,7 +10,7 @@ async function home(page){
 test('Owner neon layout: reference section order, real card images and mobile bounds',async({page},info)=>{
  const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
  await home(page);
- await expect(page.locator('#homeHeroModel')).toHaveText('AI Canvas');
+ await expect(page.locator('#homeHeroModel')).toHaveText('Sample video, created in Google Flow');
  await expect(page.locator('.home-launch-grid')).toHaveCount(0);
  await expect(page.locator('#homeQuickForm [data-home-kind]')).toHaveCount(4);
  await expect(page.locator('#homeCreativeTools')).toHaveCount(1);
@@ -80,3 +80,25 @@ test('Owner neon layout: a stuck startup clock retries the same film and respect
  await page.waitForTimeout(2200); // deliberate: prove a queued 1800ms retry stays cancelled
  expect(await page.evaluate(()=>window.__mainPlays)).toBe(stopped);
 });
+
+// TEST ONLY: bounded WebKit EOF clock reproduction; real films have separate native acceptance.
+for(const clock of [{name:'rounded demuxer EOF',time:7.958333333,paused:false,advances:true},{name:'unplayed final frame',time:7.939,paused:false,advances:false},{name:'paused at EOF',time:7.958333333,paused:true,advances:false}]){
+ test(`Owner neon layout: EOF recovery handles ${clock.name} without skipping content`,async({page})=>{
+  await page.addInitScript(()=>{
+   window.__clockTime=7.9;window.__clockPaused=false;
+   Object.defineProperty(HTMLMediaElement.prototype,'duration',{get(){return 7.959;}});
+   Object.defineProperty(HTMLMediaElement.prototype,'currentTime',{get(){return window.__clockTime;},set(){}});
+   Object.defineProperty(HTMLMediaElement.prototype,'readyState',{get(){return 4;}});
+   Object.defineProperty(HTMLMediaElement.prototype,'paused',{get(){return window.__clockPaused;}});
+   Object.defineProperty(HTMLMediaElement.prototype,'ended',{get(){return false;}});
+   HTMLMediaElement.prototype.play=function(){return Promise.resolve();};
+   HTMLMediaElement.prototype.pause=function(){};
+  });
+  await home(page);
+  const video=page.locator('#inspirationHeroVideo');await expect(video).toHaveAttribute('src',bundle.items[0].previewUrl);
+  await expect(video).toBeInViewport();
+  await video.evaluate((v,clock)=>{window.__clockTime=clock.time;window.__clockPaused=clock.paused;v.dispatchEvent(new Event('timeupdate'));},clock);
+  if(clock.advances)await expect(video).toHaveAttribute('src',bundle.items[1].previewUrl);
+  else{await page.waitForTimeout(150);await expect(video).toHaveAttribute('src',bundle.items[0].previewUrl);}
+ });
+}

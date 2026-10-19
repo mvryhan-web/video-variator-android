@@ -102,3 +102,8 @@
 
 /* Hide progress in History without competing with BASE #24's setHistory request-epoch fix. */
 #historyEmpty:not([hidden]) ~ #jobProgress{display:none!important}
+
+/* Keep the existing native modal in the viewport, including short phone landscapes. */
+:is(#modelDialog,#settingsDialog){position:fixed;inset:0;margin:auto;max-width:calc(100vw - 32px);max-height:min(85svh,calc(100dvh - 32px));overscroll-behavior:contain;scrollbar-gutter:stable}
+:is(#modelDialog,#settingsDialog) .dialog-head{position:sticky;top:0;z-index:1;background:#191d27;padding-block:4px}
+#modelDialog .model-card{min-width:0;overflow-wrap:anywhere}
