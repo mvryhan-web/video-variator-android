@@ -9,7 +9,13 @@ test('owner retains internal costs; same generation is credit-only in customer H
  const seen=[];
  const row={
   id:'job-1',user_id:'account-1',kind:'image',status:'ready',provider:'Google',
-  model:'gemini-3.1-flash-image',prompt:'portrait',settings:{ratio:'1:1'},
+  model:'gemini-3.1-flash-image',prompt:'portrait',settings:{
+   ratio:'1:1',resolution:'2K',outputFormat:'png',videoResolution:'1080p',
+   videoDuration:8,videoInputMode:'first_frame',musicMode:'song',referenceCount:1,
+   purchasedQuote:{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:7,providerCostMicros:987654321,currency:'SECRET_MARGIN_CURRENCY'},
+   routing:{internal:'SECRET_ROUTER_DIAGNOSTIC'},dispatchConsent:true,
+   resolutionPrivate:{providerCostMicros:222222222},secretMetadata:'SECRET_SYSTEM'
+  },
   error:null,result_text:'done',mime:'image/png',output_assets:[],
   created_at:new Date('2026-10-15T12:00:00.000Z'),started_at:new Date('2026-10-15T12:00:00.000Z'),
   completed_at:new Date('2026-10-15T12:00:03.000Z'),failed_at:null,
@@ -43,6 +49,16 @@ test('owner retains internal costs; same generation is credit-only in customer H
    assert.equal(Object.hasOwn(list.items[0],field),false,field+' must not be returned to customers');
   assert.ok(!JSON.stringify(list).includes('0.09'));
   assert.ok(!JSON.stringify(list).includes('usd'));
+  const publicItem=list.items[0],publicJson=JSON.stringify(list);
+  assert.deepEqual(publicItem.settings,{
+   ratio:'1:1',resolution:'2K',outputFormat:'png',videoResolution:'1080p',
+   videoInputMode:'first_frame',musicMode:'song',videoDuration:8,referenceCount:1
+  },'History must retain only supported Image/Video/Audio UI fields');
+  for(const secret of ['987654321','222222222','providerCostMicros','purchasedQuote',
+   'SECRET_MARGIN_CURRENCY','SECRET_ROUTER_DIAGNOSTIC','SECRET_SYSTEM','dispatchConsent','routing'])
+   assert.equal(publicJson.includes(secret),false,'private job settings leaked to customer: '+secret);
+  assert.equal(row.settings.purchasedQuote.providerCostMicros,987654321,
+   'durable purchased quote remains unmodified for one-use dispatch');
   // Locate the customer-facing History projection by its query identity,
   // not the position of private operational fields used for safe Video polling.
   const historySql=seen.find(sql=>{

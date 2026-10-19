@@ -402,7 +402,20 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   else if(filter==='failed')where.push("status='failed'");
   else if(filter==='processing')where.push("status IN ('queued','processing','finalizing')");
   const {rows}=await pool.query(`SELECT id,kind,status,operation,provider,model,prompt,settings,error,result_text,mime,output_assets,created_at,started_at,completed_at,failed_at,credits_reserved,credits_charged FROM vv_generation_jobs WHERE ${where.join(' AND ')} ORDER BY created_at DESC LIMIT 50`,args);
-  res.json({filter,items:rows.map(j=>({id:j.id,kind:j.kind,status:j.status,provider:j.provider||null,model:j.model||null,prompt:j.prompt||'',settings:j.settings||{},error:j.error||null,...videoHistoryPublicStatus(j),text:j.result_text||'',mime:j.mime||null,storedExternally:Array.isArray(j.output_assets)&&j.output_assets.length>0,createdAt:j.created_at,startedAt:j.started_at||null,completedAt:j.completed_at||null,failedAt:j.failed_at||null,creditsReserved:Number(j.credits_reserved||0),creditsCharged:Number(j.credits_charged||0)}))});
+  // The durable job must retain purchasedQuote and routing for single-use
+  // purchased-provider authorization. Only UI-safe scalar fields leave History.
+  const publicSettings=stored=>{
+   const src=stored&&typeof stored==='object'&&!Array.isArray(stored)?stored:{};
+   const safe={};
+   for(const name of ['ratio','resolution','outputFormat','videoResolution','videoInputMode','musicMode']){
+    if(typeof src[name]==='string'&&src[name].length<=32&&/^[a-zA-Z0-9:._-]+$/.test(src[name]))safe[name]=src[name];
+   }
+   for(const [name,max] of [['videoDuration',120],['referenceCount',10]]){
+    if(Number.isSafeInteger(src[name])&&src[name]>=0&&src[name]<=max)safe[name]=src[name];
+   }
+   return safe;
+  };
+  res.json({filter,items:rows.map(j=>({id:j.id,kind:j.kind,status:j.status,provider:j.provider||null,model:j.model||null,prompt:j.prompt||'',settings:publicSettings(j.settings),error:j.error||null,...videoHistoryPublicStatus(j),text:j.result_text||'',mime:j.mime||null,storedExternally:Array.isArray(j.output_assets)&&j.output_assets.length>0,createdAt:j.created_at,startedAt:j.started_at||null,completedAt:j.completed_at||null,failedAt:j.failed_at||null,creditsReserved:Number(j.credits_reserved||0),creditsCharged:Number(j.credits_charged||0)}))});
  }catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
  app.get('/api/studio/jobs/:id',auth,generationUser,async(req,res)=>{res.set('Cache-Control','private, no-store');try{
   let j=await getJob(req);if(!j)return res.status(404).json({error:'NOT_FOUND'});
