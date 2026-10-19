@@ -32,6 +32,10 @@ jobs:
           python-version: '3.12'
       - name: Install original Graphify pinned immutable GitHub commit (not latest)
         run: python -m pip install --disable-pip-version-check --no-cache-dir "git+https://github.com/Graphify-Labs/graphify.git@86c57be8204673c2a1b9849a3292a7dd3ab373d8"
+      - name: Add synthetic excluded file to prove denylist is actually honored
+        run: |
+          mkdir -p server/customer-data
+          printf 'export const GRAPHIFY_SECRET_SENTINEL = "SYNTHETIC_DO_NOT_INDEX";\n' > server/customer-data/graphify-exclude-probe.js
       - name: Build code-only AST; no docs, model, API, cloud, user files, hooks, or graph artifact
         run: |
           graphify extract server --code-only --no-viz --no-cluster
@@ -41,7 +45,9 @@ jobs:
           GRAPH=graphify-out/graph.json
           test -f "$GRAPH" || GRAPH=server/graphify-out/graph.json
           node tools/graphify/verify-graph.mjs "$GRAPH"
-          graphify query "submitPurchasedProviderRequest"
+          (cd server && graphify query "submitPurchasedProviderRequest")
       - name: Delete private graph regardless of outcome
         if: always()
-        run: rm -rf graphify-out server/graphify-out
+        run: |
+          rm -rf graphify-out server/graphify-out
+          rm -f server/customer-data/graphify-exclude-probe.js
