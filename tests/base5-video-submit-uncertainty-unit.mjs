@@ -50,25 +50,60 @@ test('BASE #5: DB outage fails closed and never claims a successful quarantine',
 
 async function runtime({
  kind='video',providerError=Error('PROVIDER_TIMEOUT'),
- finishError=null,walletOn=true,settleError=null
+ finishError=null,walletOn=true,settleError=null,denyBeforeProvider=false
 }={}){
  const source=await readFile(new URL('../server/generation-studio.js',import.meta.url),'utf8');
- const start=source.indexOf('async function run(id,request,userId)');
- const stop=source.indexOf(" app.post('/api/studio/estimate'",start);
- assert.ok(start>=0&&stop>start,'Exact server Video dispatch catch function exists');
+ const start=source.indexOf('async function run(');
+ const stop=source.indexOf("app.post('/api/studio/estimate'",start);
+ assert.ok(start>=0&&stop>start,'Exact current Studio dispatch function exists');
  const fnSource=source.slice(start,stop);
- const trace={provider:0,finish:0,quarantine:0,settle:0,updates:[]};
+ const purchasedBoundary=fnSource.includes('submitPurchasedProviderRequest(');
+ // Pull-request Actions checkout the GitHub synthetic merge, whose D-owned
+ // purchased-only guard has a longer run(...) signature than the B feature
+ // head. Mock that guard; never remove it or directly call a real provider.
+ if(purchasedBoundary){
+  assert.match(fnSource,/submitPurchasedProviderRequest\(/);
+  assert.doesNotMatch(fnSource,/await provider\(request,\{env\}\)/);
+ }
+ const trace={provider:0,finish:0,quarantine:0,settle:0,authorization:0,denied:0,updates:[]};
  const provider=async()=>{trace.provider++;if(providerError)throw providerError;return {operation:'byteplus:task_1'};};
  const finish=async()=>{trace.finish++;if(finishError)throw finishError;};
  const quarantine=async obj=>{trace.quarantine++;assert.equal(obj.jobId,'video-id');return {quarantined:true};};
  const wallet={async settle(x){trace.settle++;assert.equal(x.outcome,'unknown');if(settleError)throw settleError;}};
- const pool={async query(sql,args){trace.updates.push({sql,args});return {rowCount:1}}};
- const errorNormalize=()=>({code:'PROVIDER_TIMEOUT',category:'transport',stage:'provider_submit',sourceCode:'NETWORK',retryable:true});
- const factory=new Function('finish','provider','env','normalizeGenerationError','quarantineUncertainVideoSubmit','pool','walletEnabled','wallet',
-   fnSource+';return run;');
- const run=factory(finish,provider,{},errorNormalize,quarantine,pool,()=>walletOn,wallet);
- await run('video-id',{kind},'owner-id');
- return trace;
+ const pool={async query(sql,args){
+  trace.updates.push({sql,args});
+  if(sql.startsWith('SELECT user_id,kind,model,provider,status,operation,deleted,request_fingerprint')){
+   assert.deepEqual(args,['video-id','owner-id']);
+   return {rows:[{user_id:'owner-id',kind,model:'fixture-model',provider:'BytePlus',
+    status:'processing',operation:null,deleted:false,request_fingerprint:'fixture',
+    credits_reserved:1,settings:{},estimated_cost:1,cost_currency:'USD'}]};
+  }
+  return {rowCount:1};
+ }};
+ const normalize=()=>({code:'PROVIDER_TIMEOUT',category:'transport',stage:'provider_submit',sourceCode:'NETWORK',retryable:true});
+ class PurchasedDispatchDenied extends Error {}
+ const purchasedDispatcher=async args=>{
+  trace.authorization++;
+  assert.equal(args.user?.id,'owner-id');
+  assert.equal(args.job?.userId,'owner-id');
+  assert.equal(args.request?.kind,kind);
+  if(denyBeforeProvider)throw new PurchasedDispatchDenied('PRE_PROVIDER_DENIED');
+  return args.provider(args.request,{env:args.env});
+ };
+ const failDenied=async()=>{trace.denied++;};
+ const factory=new Function('finish','provider','env','normalizeGenerationError','quarantineUncertainVideoSubmit',
+  'pool','walletEnabled','wallet','submitPurchasedProviderRequest','PurchasedDispatchDenied',
+  'estimateGenerationPricing','isOwner','failTerminalProviderJob',
+  fnSource+';return run;');
+ const run=factory(finish,provider,{},normalize,quarantine,pool,()=>walletOn,wallet,
+  purchasedDispatcher,PurchasedDispatchDenied,()=>({credits:1}),()=>false,failDenied);
+ if(purchasedBoundary)await run('video-id',{kind},{id:'owner-id',email:'fixture@example.invalid'},
+  {id:'fixture-model'},{credits:1},'fixture');
+ else{
+  assert.equal(denyBeforeProvider,false,'Purchased-only denial requires the modern guard');
+  await run('video-id',{kind},'owner-id');
+ }
+ return {...trace,updates:trace.updates.filter(x=>!x.sql.startsWith('SELECT user_id,kind,model,provider,status,operation,deleted,request_fingerprint'))};
 }
 
 test('BASE #5: network-ambiguous Video submission never creates second provider call or marks failed',async()=>{
@@ -104,6 +139,17 @@ test('BASE #5: non-Video generation preserves existing error state behavior',asy
  assert.match(trace.updates[0].sql,/status='failed'/);
 });
 
+
+test('BASE #5: current purchased-only guard denies Video before provider dispatch',async()=>{
+ const source=await readFile(new URL('../server/generation-studio.js',import.meta.url),'utf8');
+ if(!source.includes('submitPurchasedProviderRequest('))return; // Original B feature head predates D guard; PR merge must contain it.
+ const trace=await runtime({denyBeforeProvider:true});
+ assert.equal(trace.authorization,1);
+ assert.equal(trace.denied,1);
+ assert.equal(trace.provider,0);
+ assert.equal(trace.quarantine,0);
+ assert.equal(trace.settle,0);
+});
 
 async function recoveredVideoLookup({userId='u-1',requestId='11111111-1111-4111-8111-111111111111',
  poolQuery=async()=>({rows:[{id:'existing-original-video',kind:'video',status:'processing'}]})}={}){
@@ -283,7 +329,7 @@ test('BASE #5: owner History projection selects provider task operation only int
 async function simulateS3Failure(kind,{dbOutage=false,alreadyHasOperation=false}={}){
  const source=await readFile(new URL('../server/generation-studio.js',import.meta.url),'utf8');
  const start=source.indexOf('async function finish(id,result,userId){');
- const end=source.indexOf(' async function run(id,request,userId)',start);
+ const end=source.indexOf('async function run(',start);
  assert.ok(start>=0&&end>start);
  const body=source.slice(start,end);
  let released=0,walletSettled=0,quarantines=0,puts=0;
