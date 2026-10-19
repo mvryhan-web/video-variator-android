@@ -1,10 +1,20 @@
 # DEEPSYQ ROADMAP — approved next product phase
 
+> **2026-10-17 — IMPORTANT: THE ROADMAP HAS EIGHT BLOCKS.** The original seven separate owner TXT Blocks 1–7 remain unchanged, and the owner approved a distinct **Block 8 — Virtual Pet Companion / «Волшебный нюх»** on 2026-10-16. The [complete Block 8 source TXT](DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_8.txt) (1,134 lines) entered `deepsyq-platform` through [PR #188](https://github.com/mvryhan-web/video-variator-android/pull/188); see [Issue #187](https://github.com/mvryhan-web/video-variator-android/issues/187). **This registration does NOT mean the virtual pets/animations are implemented or allowed into production.** Block 8 is a post-first-MVP independent roadmap workstream and may not interrupt A–D's existing BASE claims. Four owner-locked priorities remain unchanged.
+
+## OWNER POSITIONING CLARIFICATION — global AI platform (2026-10-17)
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Ранее написано, что оригинальные Block1–7 TXT «byte-identical»; на дату 18 октября владелец **прямо разрешил** добавить датированные пояснения к исходникам без удаления исходных слов. Кроме того, для бесплатных Everyday Tools дневной cap **не разрешает платный AI-provider вызов без купленных credits (Issue #182)**. Историческая фраза ниже сохранена, но не является текущей версией политики.
+
+
+**Read [`DEEPSYQ_GLOBAL_POSITIONING_REVENUE_VISUAL_SEO.md`](DEEPSYQ_GLOBAL_POSITIONING_REVENUE_VISUAL_SEO.md) before selecting a feature, writing Home/SEO copy or describing target customers.** Deepsyq is a worldwide AI creative platform built for image, video, voice, Canvas, agents, apps, inspiration and creation workflows — **not a single-storefront or single-marketplace solution**. Any individual advertisement or listing example is optional creative output, NOT the platform's identity, homepage, SEO target or default monetization. This editable derived roadmap removes marketplace-specific examples; **the seven earlier original owner TXT files remain byte-identical, while the separate eighth approved TXT is now recorded** and still govern technical scope. Preserve existing unfinished branches and original BASE 55 without claiming the user approved deletion of their requirements. Focus visual Home/real 13-video showcase, first secure paid Image/Video vertical slice, global SEO/AI-search and genuine conversion; no automatic paid AI or production changes.
+
+
 This file preserves the approved future product requirements so new agents do not lose them.
 
 ## Integration and release destination (owner instruction, 2026-10-15)
 
-**One canonical release branch: `main` for BASE and Blocks 1–7.** The seven blocks are components of the same Deepsyq app, not separate permanent branches or separately deployed products. Agents may develop on isolated branches to avoid conflicts, but every completed, reviewed and tested block must be integrated into the shared BASE and ultimately merged into `main` after satisfying dependency and production-safety gates.
+**One canonical release branch: `main` for BASE and approved Blocks 1–8 (each only after its acceptance, dependencies and explicit release approvals).** The eight blocks are roadmap components of the same Deepsyq app, not separate permanent branches or separately deployed products. Agents may develop on isolated branches to avoid conflicts, but every completed, reviewed and tested block must be integrated into the shared BASE and ultimately merged into `main` after satisfying dependency and production-safety gates.
 
 Use `AGENTS.md` and `PROJECT_STATUS.md` for the merge owner, PR links, current status, test evidence and deployment blockers. Track **feature code complete**, **merged to main** and **deployed/verified** as distinct states. Render follows `main` with automatic deploy, so a feature merge must not precede verified PostgreSQL continuity/backup and required migration, auth, billing, provider, compatibility and rollback checks. This rule does not authorize enabling paid features or changing production secrets.
 
@@ -27,6 +37,9 @@ The target product structure includes, as appropriate: Ask Deepsyq, Compare AI, 
 ---
 
 # BLOCK 1 — Multi-AI Compare + Smart Model Routing
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Цены, кредиты и Trial относятся ТОЛЬКО к Block 7. Issue #182: каждый AI-вызов/синтез — только на подтверждённо КУПЛЕННЫЕ кредиты; никакого бесплатного AI или free allowances. Trial $0.99 пока отключён, срок/кредиты не утверждены.
+
 
 ## User experience
 
@@ -75,9 +88,15 @@ Track provider/model, tokens/usage, estimated/actual cost, credits consumed, sta
 
 Trial $0.99 may receive a limited sample. No unlimited multi-provider usage unless economics are proven.
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Эта прежняя строка сохранена как ИСТОРИЯ; она НЕ означает одобренный allowance или активацию Trial. Только Block 7 после решения владельца и подтверждения покупки.
+
+
 ---
 
 # BLOCK 2 — User Agent / “Do it for me”
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** ЭТАП 1 — готовые workflow-сценарии по BASE §21, явная цена/согласие, без автономного оркестратора. ЭТАП 2 — полнофункциональный оркестратор только ПОСЛЕ коммерческой цепочки BASE §51, подтверждённой LIVE_VERIFIED, и отдельной авторизации. Технические пункты ниже сохранены как будущее, не как обязательство стадии 1. Коммерция только Block 7; Issue #182.
+
 
 Create a primary user-facing navigation item:
 
@@ -103,7 +122,7 @@ Build/extend a shared **Agent Orchestrator** able to:
 - prepare a final deliverable.
 
 Example quick starts:
-- Create an Etsy listing;
+- Create an original multi-format creative content pack;
 - Create a TikTok ad from product photos;
 - Create a 30-second product promo;
 - Create social-media content;
@@ -115,9 +134,15 @@ Use existing auth, credits, provider router, jobs and Workspace. Do not build a 
 
 Trial $0.99 gets limited agent usage. Track real costs.
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Предыдущее обещание Trial Agent allowance — ИСТОРИЧЕСКОЕ; ни бесплатного AI, ни утверждённых Trial credits пока нет. Trial не включать; смотреть Block 7.
+
+
 ---
 
 # BLOCK 3 — Inspiration / Create Yours
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** ЕДИНСТВЕННЫЙ канон Inspiration + шаблоны: один уже существующий data-driven каталог/таблица шаблонов, без второй реализации или PR. Примеры — собственные, доказанно бесплатно сгенерированные без риска списаний или заглушки с явной пометкой; платную AI-генерацию примеров без согласия не запускать.
+
 
 Build a rich, original **Inspiration** experience using Deepsyq-owned or properly licensed examples.
 
@@ -152,6 +177,9 @@ Do not show fake integrations or examples implying a workflow works when it does
 ---
 
 # BLOCK 4 — Studio + My Workspace
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** ЕДИНСТВЕННЫЙ канон Workspace, History, My Creations — Block 4 на уже существующих таблицах generation jobs с проверкой владельца. Не создавать вторую таблицу проектов, History или второй PR. Studio только ПОКАЗЫВАЕТ шаблоны из единого Block 3, не хранит другой master-template каталог.
+
 
 Keep these as two related but distinct concepts.
 
@@ -190,12 +218,15 @@ Template card:
 
 Using a template must create/clone a user-owned project in My Workspace. Never edit the master template.
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Create/clone = пользовательское представление/связь поверх существующих jobs/Workspace, а НЕ новая база; оригинал шаблона хранит только Block 3.
+
+
 ## Agent Skills
 
 Initial workflows:
 - Create Product Ad;
 - Create UGC Video;
-- Create Etsy Listing;
+- Create Social Media Content Pack;
 - Create TikTok Ad;
 - Turn Image into Video;
 - Create Social Campaign;
@@ -227,6 +258,9 @@ Reuse existing auth and database.
 ---
 
 # BLOCK 5 — Internal Product Watcher Agent
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** ЭТАП 1 — LITE: доступность сайта, ошибки Stripe, аномальные расходы и EMAIL владельцу при проблемах; owner-only monitoring, БЕЗ автоматических критических изменений. ЭТАП 2 — остальные новости/рекомендации/автономизация из сохранённого списка ниже только после LIVE_VERIFIED BASE §51 и отдельного допуска. Это устраняет противоречие с BASE §53.
+
 
 Create a separate owner/admin-only server-side background agent named **Product Watcher**.
 
@@ -302,6 +336,9 @@ Use persistent job/state storage so restarts do not silently lose work.
 
 # BLOCK 6 — Deepsyq Voice Agent
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Voice/озвучка/AI-запросы только для оплативших пользователей на купленные кредиты из Block 7; бесплатных Voice AI requests, free first-win и бесплатного AI allowance НЕТ. Локальный scan без платного cloud AI может быть Everyday Tool, но не бесплатным голосовым тарифом. Trial $0.99 пока не включён.
+
+
 Create one shared **Deepsyq Voice Agent** as a voice interface over the whole platform, not a separate AI product.
 
 Final assistant name can be chosen later. Do not use JARVIS as the commercial product name and do not imitate a specific actor’s voice.
@@ -364,7 +401,7 @@ Examples:
 - create project;
 - start Agent Skill;
 - create TikTok/product ad;
-- create Etsy listing;
+- prepare an original creative content pack;
 - image/video tasks;
 - permitted Everyday/Video tools.
 
@@ -426,6 +463,9 @@ Track:
 
 Trial $0.99 may include a limited Voice allowance. Do not advertise unlimited voice unless economics support it.
 
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Исторические free/first-win voice exchanges и Trial allowance выше ОТМЕНЕНЫ. Точные Trial-кредиты, срок, renewal/refunds/anti-abuse — вопросы владельцу; без решения ни один Voice AI-call не разрешён.
+
+
 ## Owner mode + Product Watcher
 
 Keep Product Watcher technically separate with its own permissions, but allow the owner to talk to it through the Deepsyq Voice Agent in protected owner/admin mode.
@@ -464,6 +504,9 @@ Prepare, without forcing immediate implementation:
 ---
 
 # BLOCK 7 — Pricing, Credits, Stripe & Unit Economics
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Единственный коммерческий канон для BASE §§13–18/43–44, Blocks 1/2/6: НЕТ Free AI plan или стартовых бесплатных кредитов. AI вход — планируемый Trial $0.99, но НЕ активировать без срока/кредитов/продления/возвратов/защиты от повторов. Оплаченный, подтверждённый Stripe Trial = ПОКУПКА по Issue #182, не бесплатный допуск. Everyday Tools бесплатны КАЖДЫЙ ДЕНЬ при локальном выполнении/нулевом платном cloud AI; иначе нужна локальная замена или ЖЁСТКИЙ дневной per-user лимит с гарантией отсутствия списаний/перерасхода. Цены не менять.
+
 
 Extend the existing billing foundation. Do **not** create a second Stripe integration, second customer system, or duplicate ledger.
 
@@ -547,7 +590,21 @@ No false profitability estimates.
 
 ---
 
-# Shared acceptance principles for blocks 1–7
+# BLOCK 8 — Virtual Pet Companion / «Волшебный нюх» (Magic Nose)
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Зависимости БЕЗ дублирования: user-owned Workspace/History/My Creations = Block 4; Inspiration/шаблоны = Block 3; купленные кредиты/Trial = Block 7. В Block 8 не создавать второй кошелёк/БД/History/таблицу/PR и не запускать платный AI без решения владельца.
+
+
+**New owner-approved Block 8 (2026-10-16):** full source and exact requirements: [`DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_8.txt`](DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_8.txt). Tracking: [Issue #187](https://github.com/mvryhan-web/video-variator-android/issues/187); documentation-only source [PR #188](https://github.com/mvryhan-web/video-variator-android/pull/188).
+
+- Optional friendly, original animated 3D **dog or cat** selected explicitly by the user; name, Calm / Playful / Off, accessible and nonintrusive behavior on mobile and desktop. No forced pet or hidden profiling.
+- **«Волшебный нюх» / «Волшебный щит»:** 16 enumerated S01–S16 help/quality scenarios (draft recovery, prevent duplicate generation and unintended credit usage, safe format/capability hints, owned READY results and History). The first no-cost prototype demonstrates five scenarios; it is NOT a functioning production AI agent.
+- Detailed design bible D0–D9 for original Blender geometry, editable rigs, animations and transparent sprites; executor steps P0–P7 include eventual agent-managed publication **only after owner review and explicit paid/security/production authorizations**. Any external specialists or payments require owner's separate consent; do not shift manual 3D production to the owner.
+- **Current factual state:** approved specification merged; 3D assets, software integration and live pet are **NOT IMPLEMENTED**, and no dedicated agent is currently assigned. Do not interfere with active four BASE development claims; no paid AI tests; preserve owner-approved Home. Release of first Image/Video/Music/AI Chat MVP has priority.
+
+---
+
+# Shared acceptance principles for blocks 1–8
 
 For every block:
 - use real APIs only when actually connected;

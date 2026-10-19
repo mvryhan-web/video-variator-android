@@ -1,0 +1,32 @@
+name: BASE 16 newly created Stripe Checkout contract
+on:
+  push:
+    branches: [base16-checkout-create-validate-20261016]
+    paths:
+      - 'server/generation-billing.js'
+      - 'tests/base16-checkout-create-contract-unit.mjs'
+      - '.github/workflows/base16-checkout-create-contract.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-billing.js'
+      - 'tests/base16-checkout-create-contract-unit.mjs'
+      - '.github/workflows/base16-checkout-create-contract.yml'
+permissions:
+  contents: read
+jobs:
+  checkout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Validate syntax
+        run: |
+          node --check server/generation-billing.js
+          node --check tests/base16-checkout-create-contract-unit.mjs
+      - name: Newly created and replayed Checkout, existing AI billing and refund contracts
+        run: node --test tests/base16-checkout-create-contract-unit.mjs tests/base16-checkout-reuse-unit.mjs tests/base16-shared-stripe-refund-unit.mjs tests/generation-billing-unit.mjs
