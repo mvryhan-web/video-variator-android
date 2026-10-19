@@ -114,3 +114,16 @@ footer p{margin:0}
 .empty .guided-product-video{display:inline-block;margin-left:18px;font-weight:700}
 .empty .guided-product-note{font-size:11px;line-height:1.5;margin:10px 0 0;color:var(--muted)}
 @media(max-width:640px){.empty .guided-product-video{display:block;margin:14px 0 0}}
+
+/* Owner BASE1-C4: existing real application cards receive only depth/glow,
+   with zero reflow, no new artwork, unchanged actions and disabled controls. */
+html:not([data-theme="light"]) .app-card{
+ box-shadow:0 12px 30px #060d24a8,inset 0 0 0 1px #4c9cf432;
+ transition:border-color .15s,box-shadow .15s;
+}
+html:not([data-theme="light"]) .app-card:is(:hover,:focus-within){
+ box-shadow:0 0 0 1px #925bff80,0 15px 34px #925bff38,0 6px 25px #4c9cf42b;
+}
+@media(prefers-reduced-motion:reduce){
+ html:not([data-theme="light"]) .app-card{transition:none}
+}
