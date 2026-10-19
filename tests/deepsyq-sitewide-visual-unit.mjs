@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const root=new URL('../app/src/main/assets/',import.meta.url);
-const pages=["deepsyq.html","generate-studio.html","inspiration.html","ai-apps.html","ai-pricing.html","audio-studio.html","avatar-studio.html","product-video.html","free-tools.html","deepsyq-admin.html","ai-privacy.html","mobile-utility.html","index.html","deepsyq-vs-deepseek.html"];
+const pages=["deepsyq.html","generate-studio.html","inspiration.html","ai-apps.html","ai-pricing.html","audio-studio.html","avatar-studio.html","product-video.html","free-tools.html","deepsyq-admin.html","ai-privacy.html","mobile-utility.html","index.html","deepsyq-vs-deepseek.html","photo-collage.html","simple-background-remover.html","smart-reminders.html","teleprompter.html","telegram-free-mini.html","product-watcher-admin.html"];
 test('all site pages load the approved shared visual language',()=>{
  const style=readFileSync(new URL('deepsyq-global-theme.css',root),'utf8');
  for(const token of ['#080d1d','#925bff','#ee80d2','#4c9cf4']) assert.ok(style.includes(token));
@@ -16,7 +16,7 @@ test('secondary pages have shared sidebar without altering Home, legacy or admin
  for(const page of pages){
   const html=readFileSync(new URL(page,root),'utf8');
   const has=html.includes('src="deepsyq-site-shell.js"');
-  assert.equal(has,!['deepsyq.html','index.html','deepsyq-admin.html'].includes(page),page);
+  assert.equal(has,!['deepsyq.html','index.html','deepsyq-admin.html','product-watcher-admin.html','telegram-free-mini.html'].includes(page),page);
  }
 });
 test('replace d. placeholders with exact official image',()=>{
@@ -30,4 +30,20 @@ test('shared shell is navigation only, no money or AI operations',()=>{
  const js=readFileSync(new URL('deepsyq-site-shell.js',root),'utf8');
  for(const banned of ['fetch(', 'XMLHttpRequest','checkout','stripe','.play(']) assert.ok(!js.includes(banned),banned);
  assert.ok(js.includes('aria-expanded'));
+});
+
+
+test('every secondary navigation destination exists; pending features are not links',()=>{
+ const js=readFileSync(new URL('deepsyq-site-shell.js',root),'utf8');
+ for(const group of ["Home","Creation","Tools","Library","Community","More"]) assert.ok(js.includes("section:'"+group+"'"),group);
+ for(const label of ['Agent','Favorites','Challenges','Affiliate']) assert.ok(js.includes("label:'"+label+"',icon:")&&js.includes("pending:true"),label);
+ const urls=[...js.matchAll(/url:'([^']+)'/g)].map(x=>x[1]);
+ for(const url of urls){
+  const file=url.split(/[?#]/)[0];
+  assert.ok(file.endsWith('.html'),url);
+  assert.doesNotThrow(()=>readFileSync(new URL(file,root),'utf8'),url);
+ }
+ for(const required of ['generate-studio.html?studio=image','generate-studio.html?studio=video',
+   'generate-studio.html?studio=audio','deepsyq.html#quickCreateForm',
+   'generate-studio.html?view=history','free-tools.html','ai-apps.html']) assert.ok(urls.includes(required),required);
 });

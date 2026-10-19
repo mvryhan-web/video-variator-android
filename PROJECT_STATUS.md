@@ -1,3 +1,7 @@
+## [COORDINATOR #5 / C297 FINAL DOC HISTORY RECONCILIATION — 2026-10-19]
+
+Retained below: original C §22 scope and its existing coordinator reconciliation; the latest DEV owner + Home/BASE55 entries after these notes are authoritative. No original 55 rows or existing accepted design source modified.
+
 ## [COORDINATOR #5 / C297 HISTORICAL CLAIM NON-FORCE RECONCILIATION]
 
 This preexisting Agent C §22 claim is retained verbatim as historical evidence; newer Cycle4.1 and verified 55 BASE governance below remain authoritative. No functional rewrites or owner-locked Home changes.
@@ -5,6 +9,14 @@ This preexisting Agent C §22 claim is retained verbatim as historical evidence;
 ## AGENT C — 2026-10-19 / BASE §22 INSPIRATION HANDOFF STORAGE-DENIAL CLAIM (PRE-CODE)
 
 **Owner lane C, one isolated acceptance gap:** modern DEV `app/src/main/assets/inspiration.js` blob `1ac2e2b3eb6d51ebc76f467e753dc49fea78305b` attempts sessionStorage handoff to Studio/Agent without catching browser storage exceptions. User clicking Create Yours / Use Prompt / Clone can see a silent/uncaught failure and no navigation. C claimed small fail-closed handoff with card-local accessible feedback and no AI POST, including browser regression, via [Issue74 claim](https://github.com/mvryhan-web/video-variator-android/issues/74#issuecomment-6265040282). Feature branch `agent-c-base22-inspiration-storage-20261019`, separate narrow PR forthcoming. **CLAIMED/NOT YET VERIFIED**, not full §22 DONE. Old stale 19-path PR44 unchanged; no schema/rights/preview/noindex/approved media, shared Home/admin/Studio or payment edits. Coordinator notified Issue233. Owner table and licensed content remain blocked; no paid AI/Stripe/production.
+
+## [COORDINATOR #5 / C301 NON-FORCE HISTORICAL CLAIM RECONCILIATION / 2026-10-19]
+
+The following original Agent C pre-code claim is retained verbatim as HISTORY; it does NOT supersede current Cycle4.1 functional PASS/current CI status or owner locks. This merge keeps the latest DEV coordination queue and original 55 rows, without weakening BASE55 governance.
+
+## AGENT C / BASE 1-C — 2026-10-19 / OWNER #298 ROUTE/MOBILE ACCEPTANCE CLAIM (BEFORE CODE)
+
+**Claimed one isolated C-owned BASE1-C acceptance** in [Issue298](https://github.com/mvryhan-web/video-variator-android/issues/298#issuecomment-6265288479) and [Issue74](https://github.com/mvryhan-web/video-variator-android/issues/74#issuecomment-6265289153): branch `agent-c-base1-route-acceptance-20261019`, dedicated no-spend browser route/mobility tests + focused CI, read-only inspection of A/B/D pages and existing working links. Preserve DEV-merged History PR296, existing C storage guard Draft PR297 on separate §22 branch, B Home PR281 and admin PR257. Only narrow confirmed C-owned UI defect may be patched; no duplicate PR44/schema/media, no paid requests/Stripe/main/prod. **STATUS CLAIMED/PRE-TEST**, full BASE1 still PARTIAL. Graphify map server-only, CLI unavailable in this host.
 
 ## [COORDINATOR #5 / C301 NON-FORCE HISTORICAL CLAIM RECONCILIATION / 2026-10-19]
 
