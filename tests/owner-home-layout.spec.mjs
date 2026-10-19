@@ -40,7 +40,7 @@ test('Owner neon layout: reference section order, real card images and mobile bo
  }
  expect(posts).toEqual([]);
 });
-test('Owner neon layout: feature shortcuts use existing destinations and showcase is not source credit',async({page})=>{
+test('Owner neon layout: feature shortcuts keep routes and show truthful Flow source credit',async({page})=>{
  await home(page);
  await expect(page.locator('#homeCreativeTools a[href="ai-apps.html"]')).toBeVisible();
  await expect(page.locator('#homeQuickForm a[href="free-tools.html"]')).toBeVisible();
@@ -49,11 +49,11 @@ test('Owner neon layout: feature shortcuts use existing destinations and showcas
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','#quickCreateForm');
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','generate-studio.html?studio=video');
- await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.0');
+ await expect(page.locator('#homeHeroModel')).toHaveText('Sample video, created in Google Flow');
  await expect(page.locator('#homeHeroModel')).toHaveAttribute('title',/created in Google Flow/);
- await expect(page.locator('#homeHeroCreditLabel')).toHaveText('EXPLORE VIDEO MODELS');
+ await expect(page.locator('#homeHeroCreditLabel')).toHaveText('FEATURED VIDEO');
  await page.locator('#homeHeroNext').click();
- await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.5');
+ await expect(page.locator('#homeHeroModel')).toHaveText('Sample video, created in Google Flow');
  await page.locator('.home-create-card.tile-canvas').click();
  await expect(page.locator('#quickCreateForm')).toBeInViewport();
 });
