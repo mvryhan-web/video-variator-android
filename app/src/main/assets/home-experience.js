@@ -173,7 +173,7 @@ function choose(kind){
  if(!['image','video','music','agent'].includes(kind))return;
  chosen=kind;
  const modelButton=$('homeModelPicker');
- if(modelButton){modelButton.dataset.openModels=kind==='music'?'audio':kind;modelButton.disabled=kind==='agent';modelButton.textContent=kind==='agent'?'Models in Studio':`Choose ${kind==='music'?'audio':kind} model`;}
+ if(modelButton){modelButton.dataset.homeModelKind=kind==='music'?'audio':kind;modelButton.disabled=kind==='agent';modelButton.textContent=kind==='agent'?'Models in Studio':`Choose ${kind==='music'?'audio':kind} model`;}
  $('homeQuickPrompt').required=kind!=='agent';
  for(const b of document.querySelectorAll('[data-home-kind]'))b.setAttribute('aria-pressed',String(b.dataset.homeKind===kind));
  $('homeQuickSubmitLabel').textContent=kind==='agent'?'See Agent preview ↗':'Open in Studio ↗';
@@ -183,6 +183,13 @@ if($('homeQuickForm')){
  document.querySelectorAll('[data-home-kind]').forEach(b=>b.addEventListener('click',()=>{choose(b.dataset.homeKind);if(chosen==='agent'){$('homeQuickStatus').classList.add('is-visible');$('homeQuickStatus').textContent='Agent execution is coming soon. Explore the preview below.';}}));
  const modelPicker=$('homeModelPicker'),settingsDialog=$('homeSettingsDialog'),ratioPicker=$('homePreferredRatio');
  let preferredRatio='';
+ modelPicker?.addEventListener('click',()=>{
+  if(chosen==='agent')return;
+  const kind=chosen==='music'?'audio':chosen;
+  const existingTrigger=document.querySelector(`#sidebar [data-open-models="${kind}"]`);
+  if(existingTrigger){modelPicker.setAttribute('aria-expanded','true');existingTrigger.click();}
+ });
+ $('modelFlyout')?.addEventListener('close',()=>modelPicker?.setAttribute('aria-expanded','false'));
  function populateHomeSettings(kind=chosen){
   if(!ratioPicker)return;
   const catalogKind=kind==='music'?'music':kind;
