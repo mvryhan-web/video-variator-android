@@ -20,6 +20,12 @@
 <div class="free-tools-hero">
   <h1 data-t="title">Everyday Tools</h1>
   <p data-t="privacy">Everyday tasks for photos, video and audio. Availability depends on the tool.</p>
+  <!-- The hub intentionally replaces its legacy tiles at runtime. Keep actual
+       independent Audio & Text / Avatar tools reachable as explicit shortcuts. -->
+  <nav class="tools-direct-launches" aria-label="Additional audio and avatar tools">
+    <a href="audio-studio.html">Audio &amp; Text tools →</a>
+    <a href="avatar-studio.html">Avatar Narrator · preview →</a>
+  </nav>
   <label class="theme-line"><span data-t="theme">Theme</span><select id="themeChoice"><option value="system" data-t="system">System</option><option value="dark" data-t="dark">Dark</option><option value="light" data-t="light">Light</option></select></label>
 </div>
 
