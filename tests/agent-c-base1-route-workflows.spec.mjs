@@ -143,7 +143,23 @@ test('BASE1-C owned AI Apps/Inspiration/Tools remain usable at 320, 375 and 768p
   await expect(page.locator('#gallery .card')).toHaveCount(1);
   await expect(page.getByRole('button',{name:'Create yours'})).toBeVisible();
   const gallery=await checkViewport(page);
+  if(gallery.scrollWidth>width+1){
+   const offenders=await page.evaluate(()=>[...document.querySelectorAll('body *')]
+    .filter(el=>{const rect=el.getBoundingClientRect();return rect.right>innerWidth+1&&rect.width>0;})
+    .slice(0,8).map(el=>({tag:el.tagName,cls:String(el.className).slice(0,90),
+     right:Math.round(el.getBoundingClientRect().right)})));
+   console.log('Inspiration overflow diagnostic',width,JSON.stringify(offenders));
+  }
   expect(gallery.scrollWidth,'Inspiration horizontal overflow '+width).toBeLessThanOrEqual(width+1);
+  if(width===320){
+   const brand=page.locator('body > header a.brand');
+   const brandTap=await brand.evaluate(link=>{
+    const r=link.getBoundingClientRect();
+    const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+    return hit===link||link.contains(hit);
+   });
+   expect(brandTap,'Inspiration brand must not sit underneath mobile drawer toggle').toBe(true);
+  }
   const toggle=page.locator('.ds-site-mobile-toggle');
   if(await toggle.isVisible()){
    await toggle.click();
