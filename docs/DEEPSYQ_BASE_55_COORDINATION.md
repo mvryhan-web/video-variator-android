@@ -1,3 +1,18 @@
+## [COORDINATOR #5 — 2026-10-19 / CLAIM COLLISIONS + FOUR VERIFIED DEV MERGES]
+
+**Newest verified claim-board reconciliation; older evidence retained below.** Coordinator #5 has **NO personal BASE claim**. Only #47/#53 remain original fully DONE / LIVE_VERIFIED; merged source != complete original requirement.
+
+**Merged DEV, close only old PR review gate, NOT original incomplete BASE claim:** C §27/§30 [PR282](https://github.com/mvryhan-web/video-variator-android/pull/282) source `cfc0423c` 2/2 CI → DEV `a125ce9c`; A §24 [PR284](https://github.com/mvryhan-web/video-variator-android/pull/284) source `21aee38a` 16/16 + formal D peer PASS → DEV `e8b956d2`; Jules1 Stage1 Block5 W5.3 [PR287](https://github.com/mvryhan-web/video-variator-android/pull/287) source `9ca50263` 2/2 CI → DEV `e5bcb29c`; Jules2 Block4 W4.1 [PR283](https://github.com/mvryhan-web/video-variator-android/pull/283) source `4c061f6e` 2/2 CI with two-account source duplication deny → DEV `f7c636e0`. All production/main/paid AI/real Stripe/DB migrations untouched.
+
+**Exact conflict/ownership boundaries effective NOW:**
+- **A §3 Privacy P0 / B Home media PR281:** B granted A only `app/src/main/assets/deepsyq.js` quick-draft/account-restore hunks + scoped cross-account three-browser test, [Issue72 #6262263397](https://github.com/mvryhan-web/video-variator-android/issues/72#issuecomment-6262263397). B keeps hero/6 original MP4/16:9 and owner neon Home. No other agent may edit A's privacy hunks until A merge/release; no second PR. PR281 and main PR280 blocked until privacy test green.
+- **B original §5 Video:** existing [PR174](https://github.com/mvryhan-web/video-variator-android/pull/174) exact head `39bc07dfaa15e7e90260738acce10b7bae5971f5` with B-reported 16/16 exact-head Actions SUCCESS; source vs current DEV must be RECHECKED after A §24 DEV merge. D must formally approve private costs, wallet and purchased-only dispatch before #5 DEV integration. Child PR186 → PR203 only after parent and new tests. Do not bulk merge stale Studio code.
+- **C original §22 Inspiration:** stale 19-file [PR44](https://github.com/mvryhan-web/video-variator-android/pull/44) not safe to bulk merge. Modern rights-filtered catalog and existing `vv_ai_template`/`vv_ai_inspiration` ambiguity; no duplicate table, migration or rights bypass. C only read-only isolate one missing acceptance.
+- **Five explicit functional topic handoffs (not duplicate active claims):** Audio = B paid Music/provider §7 + C local Audio Tools §28 + Jules3 standalone Block6 opt-in Voice + D credits; AI Agents = C §21 UI / Jules2 Block2 pure planner / B+D purchased provider; Inspiration = C §22 catalog/rights + A licensed editorial media + B original video handoff; History = A §24 GET + B durable Studio/Video + D private economics + Jules2 Block4 pure Workspace policy/card; SEO = A Issue156 content + C accessible pages + D index/release checks. Cross-lane file transfer requires precise written lease/owner.
+- **Jules source conflicts:** original main-target PR279/286 quarantine DRAFT. Jules1 W5.4 Issue288 BOT ACTIVE, Jules3 V6.2 Issue278 BOT ACTIVE. Jules2 W4.2 Issue289 bot rejected → QUEUED_NOT_RUNNING; no duplicate or retry before 2026-10-20T07:40:36Z (UTC), check three-slot cap.
+
+**Single next coordinator operation:** source/security review existing B174 current HEAD with D written approval; then exact-head CI and no-overlap DEV-only merge. Full agent queues and SHA in newest [PROJECT_STATUS.md](../PROJECT_STATUS.md). Coordinator CHECKPOINT [Issue233](https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6262363277).
+
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
 ## [AGENT A — 2026-10-19 / §24 D PEER GATE + HOME P0 PRIVATE DRAFT CROSS-OWNER]
