@@ -172,7 +172,6 @@ let chosen='image',busy=false;
 function choose(kind){
  if(!['image','video','music','agent'].includes(kind))return;
  chosen=kind;
- const modeSelect=$('homeCreateMode');if(modeSelect&&modeSelect.value!==kind)modeSelect.value=kind;
  const modelButton=$('homeModelPicker');
  if(modelButton){modelButton.dataset.openModels=kind==='music'?'audio':kind;modelButton.disabled=kind==='agent';modelButton.textContent=kind==='agent'?'Models in Studio':`Choose ${kind==='music'?'audio':kind} model`;}
  $('homeQuickPrompt').required=kind!=='agent';
@@ -182,7 +181,7 @@ function choose(kind){
 }
 if($('homeQuickForm')){
  document.querySelectorAll('[data-home-kind]').forEach(b=>b.addEventListener('click',()=>{choose(b.dataset.homeKind);if(chosen==='agent'){$('homeQuickStatus').classList.add('is-visible');$('homeQuickStatus').textContent='Agent execution is coming soon. Explore the preview below.';}}));
- const createMode=$('homeCreateMode'),modelPicker=$('homeModelPicker'),settingsDialog=$('homeSettingsDialog'),ratioPicker=$('homePreferredRatio');
+ const modelPicker=$('homeModelPicker'),settingsDialog=$('homeSettingsDialog'),ratioPicker=$('homePreferredRatio');
  let preferredRatio='';
  function populateHomeSettings(kind=chosen){
   if(!ratioPicker)return;
@@ -193,7 +192,6 @@ if($('homeQuickForm')){
   ratioPicker.value=ratios.includes(preferredRatio)?preferredRatio:'';
   $('homeSettingsModelNote').textContent=kind==='music'?'Audio format settings are selected in the Audio Studio.':ratios.length?'Resolution and duration are chosen in Studio from the selected model’s supported settings.':'No aspect-ratio preference is available for this mode.';
  }
- createMode?.addEventListener('change',()=>document.querySelector(`[data-home-kind="${createMode.value}"]`)?.click());
  $('homeSettingsOpen')?.addEventListener('click',()=>{
   populateHomeSettings();
   if(settingsDialog&&!settingsDialog.open)settingsDialog.showModal();
