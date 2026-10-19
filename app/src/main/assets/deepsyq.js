@@ -52,10 +52,21 @@ function saveQuickDraft(){
   try{sessionStorage.setItem(key,JSON.stringify(draft));}catch(_){/* Keep in-memory editor usable. */}
  });
 }
-async function restoreQuickDraft(){
+// Browser session/history restoration can prefill a textarea from a DIFFERENT
+// signed-in user. The hashed current-account session draft is the only trusted
+// source on load or pageshow. Reset synchronously before awaiting Web Crypto.
+function clearVisibleQuickDraft(){
+ $('quickCreatePrompt').value='';
+ $('quickCreateKind').value='image';
  populateQuickRatios();
+ $('quickCreateFiles').value='';
+ const quickBarPrompt=$('homeQuickPrompt');if(quickBarPrompt)quickBarPrompt.value='';
+ quickReferences=[];renderQuickReferences();
+}
+async function restoreQuickDraft(){
+ const epoch=++quickDraftEpoch;
+ clearVisibleQuickDraft();
  try{sessionStorage.removeItem(QUICK_DRAFT_LEGACY_KEY);}catch(_){}
- const epoch=quickDraftEpoch;
  const key=await quickDraftKeyPromise;
  if(!key||epoch!==quickDraftEpoch||!sameQuickDraftAccount()||$('quickCreatePrompt').value)return;
  try{
@@ -67,6 +78,8 @@ async function restoreQuickDraft(){
  }catch(_){/* Ignore corrupt or inaccessible account-scoped draft. */}
 }
 void restoreQuickDraft();
+// pageshow also runs when Firefox restores form values or a tab from BFCache.
+window.addEventListener('pageshow',()=>{void restoreQuickDraft();});
 $('quickCreatePrompt').addEventListener('input',saveQuickDraft);
 $('quickCreateKind').addEventListener('change',()=>{populateQuickRatios();saveQuickDraft();});
 $('quickCreateRatio').addEventListener('change',saveQuickDraft);
@@ -98,14 +111,21 @@ function renderQuickReferences(){
 }
 // Other-tab logout/account replacement must remove old private prompt and unsent
 // reference photos from this open page, not merely from the next reload.
-window.addEventListener('storage',event=>{
- if(event.key!=='vv_token')return;
+function guardQuickDraftAccount(){
+ if(sameQuickDraftAccount())return;
  ++quickDraftEpoch;
- $('quickCreatePrompt').value='';$('quickCreateKind').value='image';populateQuickRatios();
- $('quickCreateFiles').value='';
- const quickBarPrompt=$('homeQuickPrompt');if(quickBarPrompt)quickBarPrompt.value='';
- quickReferences=[];renderQuickReferences();
+ clearVisibleQuickDraft();
  $('quickCreateStatus').textContent='Account changed. Reload to start a private draft for this account.';
+}
+// Same-tab localStorage changes do NOT trigger a native storage event.
+// Scrub before the next user interaction, focus return, or visibility change.
+for(const type of ['pointerdown','keydown','focusin']){
+ document.addEventListener(type,guardQuickDraftAccount,true);
+}
+window.addEventListener('focus',guardQuickDraftAccount);
+document.addEventListener('visibilitychange',guardQuickDraftAccount);
+window.addEventListener('storage',event=>{
+ if(event.key==='vv_token')guardQuickDraftAccount();
 });
 function setQuickReferences(files,{append=false}={}){
  const candidates=[...(append?quickReferences:[]),...Array.from(files||[])];
@@ -222,23 +242,17 @@ document.querySelectorAll('#sidebar nav a').forEach(a=>a.addEventListener('click
 
 // Model options are discovered from the existing Studio config. Prepared or disabled models
 // are visible but cannot be selected as if they were live integrations.
-let studioModelMenuConfig=null,openModelsKind=null,modelCloseTimer=null;
+let studioModelMenuConfig=null,openModelsKind=null;
 function closeModelFlyout(){
- clearTimeout(modelCloseTimer);
- $('modelFlyout').hidden=true;openModelsKind=null;
+ const panel=$('modelFlyout');
+ if(panel.open)panel.close();
+ panel.hidden=true;openModelsKind=null;
  document.querySelectorAll('[data-open-models]').forEach(b=>b.setAttribute('aria-expanded','false'));
-}
-function scheduleModelClose(){
- clearTimeout(modelCloseTimer);
- modelCloseTimer=setTimeout(()=>{
-  const focus=document.activeElement;
-  if(!$('modelFlyout').contains(focus)&&!focus?.closest?.('[data-model-menu]'))closeModelFlyout();
- },160);
 }
 function renderModelFlyout(kind){
  const list=$('modelFlyoutList');list.replaceChildren();
  const configured=Array.isArray(studioModelMenuConfig?.catalog)?studioModelMenuConfig.catalog:MODEL_CATALOG;
- const models=configured.filter(m=>m.kind===kind);
+ const models=configured.filter(m=>m.kind===(kind==='audio'?'music':kind));
  const allowedIds=new Set((studioModelMenuConfig?.models||[]).filter(m=>m.enabled===true).map(m=>m.id));
  const studioActive=studioModelMenuConfig?.enabled===true;
  const note=$('modelFlyoutNote');
@@ -257,35 +271,23 @@ function renderModelFlyout(kind){
   list.append(b);
  }
  if(!models.length){const msg=document.createElement('p');msg.textContent='No models listed yet. Open Studio for updates.';list.append(msg);}
+ if(kind==='audio'){const voice=document.createElement('a');voice.className='model-flyout-all';voice.href='audio-studio.html';voice.textContent='Voiceovers & transcription →';list.append(voice);}
  const go=document.createElement('a');go.className='model-flyout-all';go.href='generate-studio.html?studio='+kind;go.textContent='View all in Studio →';list.append(go);
 }
-function showModelFlyout(kind,entry){
- if(!['image','video'].includes(kind)||mobileMenu.matches&&!document.body.classList.contains('menu-open'))return;
- clearTimeout(modelCloseTimer);openModelsKind=kind;
- const panel=$('modelFlyout');$('modelFlyoutTitle').textContent=kind==='image'?'Image models':'Video models';
+function showModelFlyout(kind){
+ if(!['image','video','audio'].includes(kind))return;
+ const panel=$('modelFlyout');
+ openModelsKind=kind;
+ $('modelFlyoutTitle').textContent={image:'Image models',video:'Video models',audio:'Audio models'}[kind];
  renderModelFlyout(kind);panel.hidden=false;
- const rect=entry.getBoundingClientRect(),sidebar=$('sidebar').getBoundingClientRect();
- panel.style.left=Math.min(window.innerWidth-panel.offsetWidth-12,sidebar.right+10)+'px';
- panel.style.top=Math.max(12,Math.min(rect.top,window.innerHeight-panel.offsetHeight-12))+'px';
+ if(!panel.open)panel.showModal();
  document.querySelectorAll('[data-open-models]').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.openModels===kind)));
 }
-for(const entry of document.querySelectorAll('[data-model-menu]')){
- const kind=entry.dataset.modelMenu,btn=entry.querySelector('[data-open-models]');
- entry.addEventListener('mouseenter',()=>{if(!mobileMenu.matches)showModelFlyout(kind,entry);});
- entry.addEventListener('mouseleave',scheduleModelClose);
- // Mobile tap first focuses the model trigger; do not let focus open the
- // overlay before click reaches the button. Keyboard Enter/Space still click it.
- entry.addEventListener('focusin',()=>{if(!mobileMenu.matches)showModelFlyout(kind,entry);});
- entry.addEventListener('focusout',scheduleModelClose);
- btn.onclick=()=>{if(openModelsKind===kind&&!$('modelFlyout').hidden)closeModelFlyout();else showModelFlyout(kind,entry);};
+for(const btn of document.querySelectorAll('[data-open-models]')){
+ btn.onclick=()=>showModelFlyout(btn.dataset.openModels);
 }
-$('modelFlyout').addEventListener('mouseenter',()=>clearTimeout(modelCloseTimer));
-$('modelFlyout').addEventListener('mouseleave',scheduleModelClose);
-$('modelFlyout').addEventListener('focusout',scheduleModelClose);
 $('modelFlyoutClose').onclick=closeModelFlyout;
-document.addEventListener('pointerdown',e=>{if(!$('modelFlyout').contains(e.target)&&!e.target.closest?.('[data-model-menu]'))closeModelFlyout();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModelFlyout();});
-window.addEventListener('resize',closeModelFlyout);
+$('modelFlyout').addEventListener('close',closeModelFlyout);
 syncMenu();
 
 $('navShare').onclick=async()=>{
@@ -319,9 +321,9 @@ function updateInspirationHero(items){renderHomeCarousel(items);}
 
 // Owner-approved Home enhancements: no extra provider/credit/auth APIs are created.
 const homeLang=$('homeLanguage');const homeI18n={
- en:{hero:'Create<br><em>beyond limits.</em>',canvas:'Canvas — your creative workspace',agent:'AI Agent — bring bigger ideas to life',apps:'AI Apps — discover ways to create',inspiration:'Inspiration — Images & Videos'},
- fr:{hero:'Créez<br><em>sans limites.</em>',canvas:'Canvas — votre espace créatif',agent:'Agent IA — imaginez plus grand',apps:'AI Apps — explorez la création',inspiration:'Inspiration — Images et vidéos'},
- ru:{hero:'Создавайте<br><em>без границ.</em>',canvas:'Canvas — ваше творческое пространство',agent:'AI Agent — больше возможностей',apps:'AI Apps — инструменты творчества',inspiration:'Вдохновение — изображения и видео'}
+ en:{hero:'Create<br><em>beyond limits.</em>',canvas:'Canvas — your creative workspace',agent:'AI Agent — bring bigger ideas to life',apps:'AI Apps — discover ways to create',inspiration:'Inspiration'},
+ fr:{hero:'Créez<br><em>sans limites.</em>',canvas:'Canvas — votre espace créatif',agent:'Agent IA — imaginez plus grand',apps:'AI Apps — explorez la création',inspiration:'Inspiration'},
+ ru:{hero:'Создавайте<br><em>без границ.</em>',canvas:'Canvas — ваше творческое пространство',agent:'AI Agent — больше возможностей',apps:'AI Apps — инструменты творчества',inspiration:'Вдохновение'}
 };
 function applyHomeLanguage(code){const v=homeI18n[code]||homeI18n.en;const hero=document.querySelector('.hero-stage-copy h1');if(hero)hero.innerHTML=v.hero;for(const [id,key] of [['canvasFeatureTitle','canvas'],['agentFeatureTitle','agent'],['appsFeatureTitle','apps'],['inspirationPreviewTitle','inspiration']]){const el=$(id);if(el)el.textContent=v[key];}if(homeLang)homeLang.value=homeI18n[code]?code:'en';}
 if(homeLang){const saved=localStorage.getItem('deepsyq_home_language');applyHomeLanguage(saved||'en');homeLang.onchange=()=>{localStorage.setItem('deepsyq_home_language',homeLang.value);applyHomeLanguage(homeLang.value);};}

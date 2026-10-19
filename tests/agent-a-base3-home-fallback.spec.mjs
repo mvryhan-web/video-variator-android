@@ -38,8 +38,7 @@ test('BASE 3: empty rights-cleared video feed keeps visible honest 16:9 gallery 
  await expect(page.locator('#canvasFeature')).toBeVisible();
  await expect(page.locator('#homeQuickForm')).toBeVisible();
  const desktopRatio=await page.locator('.hero-stage').evaluate(el=>{const r=el.getBoundingClientRect();return r.width/r.height;});
- expect(desktopRatio).toBeGreaterThan(1.73);
- expect(desktopRatio).toBeLessThan(1.82);
+ expect(desktopRatio).toBeCloseTo(2.15,1);
  await page.screenshot({path:info.outputPath('home-no-approved-media-1448.png'),fullPage:true});
  await page.setViewportSize({width:390,height:844});
  await expect(gallery).toBeVisible();
@@ -98,14 +97,14 @@ test('BASE 3: mocked navigation preserves real authorized slide metadata and wra
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await expect(page.locator('#homeHeroCarousel')).not.toHaveClass(/is-empty/);
  await expect(page.locator('#homeHeroEmpty')).toBeHidden();
- await expect(page.locator('#homeHeroDots button')).toHaveCount(2);
- await expect(page.locator('#homeHeroPlay')).toBeVisible();
+ await expect(page.locator('#homeHeroDots')).toHaveCount(0);
+ await expect(page.locator('#homeHeroPlay')).not.toBeInViewport();
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
  await page.locator('#homeHeroPrevious').click();
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 2 of 2');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 2 of 2/);
  await page.locator('#homeHeroNext').click();
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 2');
- await expect(page.locator('#homeHeroSlideLink')).toHaveAttribute('href',/kind=video/);
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 1 of 2/);
+ await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href',/kind=video/);
 });
 
 test('BASE 3: one authorized video disables arrows and avoids dead carousel controls',async({page})=>{
@@ -120,11 +119,12 @@ test('BASE 3: one authorized video disables arrows and avoids dead carousel cont
   previewUrl:'/single-owner-video.mp4'}]);
  await page.goto('/deepsyq.html');
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 1');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 1 of 1/);
  await expect(page.locator('#homeHeroPrevious')).toBeDisabled();
  await expect(page.locator('#homeHeroNext')).toBeDisabled();
- await expect(page.locator('#homeHeroDots button')).toHaveCount(1);
- await expect(page.locator('#homeHeroDots button')).toBeEnabled();
+ await expect(page.locator('#homeHeroDots')).toHaveCount(0);
+ await expect(page.locator('#homeHeroPreviousVideo').locator('..')).toBeHidden();
+ await expect(page.locator('#homeHeroNextVideo').locator('..')).toBeHidden();
 });
 
 test('BASE 3: one failed source cannot leave useless arrows active on the sole surviving slide',async({page})=>{
@@ -143,11 +143,10 @@ test('BASE 3: one failed source cannot leave useless arrows active on the sole s
  await expect(page.locator('#homeHeroNext')).toBeEnabled();
  await page.locator('#inspirationHeroVideo').evaluate(el=>el.dispatchEvent(new Event('error')));
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/clip-b.mp4');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 2 of 2');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 2 of 2/);
  await expect(page.locator('#homeHeroNext')).toBeDisabled();
  await expect(page.locator('#homeHeroPrevious')).toBeDisabled();
- await expect(page.locator('#homeHeroDots button').first()).toBeDisabled();
- await expect(page.locator('#homeHeroDots button').last()).toBeEnabled();
+ await expect(page.locator('#homeHeroDots')).toHaveCount(0);
  await expect(page.locator('#homeHeroCarousel')).not.toHaveClass(/is-empty/);
 });
 
@@ -179,20 +178,21 @@ test('BASE 3: six featured carousel slots preserve thirteen original source scen
   return route.fulfill({json:{items:scenes.slice(0,2),categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false}}});
  });
  await page.goto('/deepsyq.html');
- await expect(page.locator('#homeHeroDots button')).toHaveCount(6);
+ await expect(page.locator('#homeHeroDots')).toHaveCount(0);
+ await expect(page.locator('#homeHeroNextVideo')).toHaveAttribute('src','/approved-identity-2.mp4');
+ await expect(page.locator('#homeHeroPreviousVideo')).toHaveAttribute('src','/approved-identity-6.mp4');
  expect(exactVideoFeed).toBe(true);
- await expect(page.locator('#homeHeroDots img')).toHaveCount(6);
- await expect(page.locator('#homeHeroDots button').nth(5)).toHaveAttribute('aria-label',/Visualize White Tiger/);
+ await expect(page.locator('#homeHeroCarousel img')).toHaveCount(0);
  expect(scenes).toHaveLength(13); // Seven additional owner scene identities stay in the feed.
- await expect(page.locator('#homeHeroDots button').first()).toHaveAttribute('aria-current','true');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 6');
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/approved-identity-1.mp4');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 1 of 6/);
  await page.locator('#homeHeroPrevious').click();
- await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Visualize White Tiger');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 6 of 6');
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/approved-identity-6.mp4');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 6 of 6/);
  await page.locator('#homeHeroNext').click();
- await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Hero Girl');
- await expect(page.locator('#homeHeroCounter')).toHaveText('Video 1 of 6');
- await expect(page.locator('#homeHeroDots button').last()).toHaveAttribute('aria-label',/Visualize White Tiger/);
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/approved-identity-1.mp4');
+ await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 1 of 6/);
+ await expect(page.locator('#homeHeroPreviousVideo')).toHaveAttribute('src','/approved-identity-6.mp4');
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
 });
 
@@ -218,8 +218,8 @@ test('BASE 3: independent rights-cleared Hero survives failed preview and option
  });
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
  await expect.poll(()=>receivedOwnerQuery).toBe(true);
- await expect(page.locator('#homeHeroDots button')).toHaveCount(1);
- await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Owner-authorized scene fixture');
+ await expect(page.locator('#homeHeroDots')).toHaveCount(0);
+ await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/fixture-not-published.mp4');
  await expect(page.locator('#inspirationPreview')).toBeHidden();
  await expect(page.locator('#agentExamples')).toBeHidden();
 });
@@ -243,13 +243,30 @@ test('BASE 3: Canvas draft cannot be restored by a different account sharing thi
  await page.reload();
  await expect(page.locator('#quickCreatePrompt')).toHaveValue(aPrompt);
  await page.evaluate(()=>localStorage.setItem('vv_token','fixture-account-B'));
+ // Same-tab token changes do not fire native storage; the first keyboard
+ // interaction must not expose A's still-open private form to account B.
+ await page.locator('#quickCreatePrompt').press('Tab');
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
  await page.reload();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+ // Emulate Firefox history/form restoration *after* the JS startup. The
+ // pageshow handler must discard A's stale value before restoring only B.
+ await page.evaluate(oldPrompt=>{
+  document.getElementById('quickCreatePrompt').value=oldPrompt;
+  window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
+ },aPrompt);
  await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
  await page.locator('#quickCreatePrompt').fill(bPrompt);
  await expect.poll(()=>page.evaluate(()=>Object.keys(sessionStorage)
   .filter(key=>key.startsWith('deepsyq_quick_canvas_draft_v2_'))
   .some(key=>JSON.parse(sessionStorage.getItem(key)||'null')?.prompt==='PRIVATE ACCOUNT B: independent product design'))).toBe(true);
  await page.reload();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue(bPrompt);
+ // A's restored DOM must never win over this account's hashed B draft.
+ await page.evaluate(oldPrompt=>{
+  document.getElementById('quickCreatePrompt').value=oldPrompt;
+  window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
+ },aPrompt);
  await expect(page.locator('#quickCreatePrompt')).toHaveValue(bPrompt);
  await page.evaluate(()=>localStorage.setItem('vv_token','fixture-account-A'));
  await page.reload();
@@ -279,6 +296,108 @@ test('BASE 3: cross-tab account switch clears unsent prompts and reference previ
  await expect(page.locator('#quickCreateFiles')).toHaveValue('');
  await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(0);
  await expect(page.locator('#quickCreateStatus')).toContainText('Account changed');
+});
+
+test("BASE 3: logout and browser Back never show another account's Canvas draft",async({page})=>{
+ await mockSafeHome(page,[]);
+ await page.route('**/api/me',route=>route.fulfill({json:{user:{id:'owner-a',name:'Creator A',isAdmin:false}}}));
+ let paidJobs=0;
+ page.on('request',request=>{
+  if(request.method()==='POST'&&/\/api\/studio\/jobs/.test(request.url()))paidJobs++;
+ });
+ await page.goto('/deepsyq.html');
+ await page.evaluate(()=>localStorage.setItem('vv_token','fixture-owner-A'));
+ await page.reload();
+ await expect(page.locator('#logout')).toBeVisible();
+ const secret='PRIVATE A Canvas draft must not appear for logged-out visitors';
+ await page.locator('#quickCreatePrompt').fill(secret);
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.locator('#quickCreateFiles').setInputFiles({name:'private-owner-A.png',mimeType:'image/png',buffer:png});
+ await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(1);
+ await expect.poll(()=>page.evaluate(text=>Object.keys(sessionStorage)
+  .filter(key=>key.startsWith('deepsyq_quick_canvas_draft_v2_'))
+  .some(key=>JSON.parse(sessionStorage.getItem(key)||'null')?.prompt===text),secret)).toBe(true);
+ // Exercise the actual Home Logout control, not a simulated storage event.
+ // On phones, the sidebar is inert until the visible menu button opens it.
+ if(await page.evaluate(()=>matchMedia('(max-width:760px)').matches))
+  await page.locator('#menu').click();
+ await page.locator('#logout').click();
+ await expect(page.locator('#logout')).toBeHidden();
+ expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBeNull();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+ await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(0);
+ await page.goto('/ai-apps.html');
+ await page.goBack();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+ // A different signed-in identity must not see A's saved text either.
+ await page.evaluate(()=>localStorage.setItem('vv_token','fixture-owner-B'));
+ await page.reload();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+ // A can still recover their OWN account-scoped draft after signing back in.
+ await page.evaluate(()=>localStorage.setItem('vv_token','fixture-owner-A'));
+ await page.reload();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue(secret);
+ expect(paidJobs).toBe(0);
+});
+
+test('BASE 3: mobile Canvas references and video prompt hand off to Studio without paid generation',async({page})=>{
+ await mockSafeHome(page,[]);
+ // Unlike an unconfigured Studio, this test explicitly offers one video model
+ // with a single photo slot. With catalog:[] the correct behavior is to drop
+ // unsupported references, not to invent model capability.
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{
+  enabled:false,ownerOnly:true,models:[],
+  catalog:[{
+   id:'veo-3.1-lite-generate-preview',label:'Veo 3.1 Lite',kind:'video',
+   provider:'Google',adapter:true,enabled:false,references:1,
+   ratios:['16:9','9:16'],quality:'720p',duration:'8 seconds',
+   capabilities:{videoInputModes:['text','first_frame'],resolutions:['720p','1080p'],
+    durations:[4,6,8],durationSeconds:8,maxReferences:1}
+  }]
+ }}));
+ await page.setViewportSize({width:390,height:844});
+ let paidJobs=0;
+ page.on('request',request=>{
+  if(request.method()==='POST'&&/\/api\/studio\/jobs/.test(request.url()))paidJobs++;
+ });
+ await page.goto('/deepsyq.html');
+ const prompt='Portrait video of the approved owner product in natural light';
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.locator('#quickCreatePrompt').fill(prompt);
+ await page.locator('#quickCreateKind').selectOption('video');
+ await page.locator('#quickCreateFiles').setInputFiles({name:'approved-reference.png',mimeType:'image/png',buffer:png});
+ await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(1);
+ await expect(page.locator('#quickCreateSubmit')).toBeVisible();
+ await page.locator('#quickCreateSubmit').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=dashboard/);
+ await expect(page.locator('#prompt')).toHaveValue(prompt);
+ await expect(page.locator('#consent')).not.toBeChecked();
+ // Files are passed to the local studio handoff, never uploaded to an AI provider here.
+ await expect(page.locator('#refPreview img')).toHaveCount(1);
+ expect(paidJobs).toBe(0);
+});
+
+test('BASE 3: unsupported Video model rejects Canvas reference with honest warning',async({page})=>{
+ await mockSafeHome(page,[]); // No authorized Video model: the photo must NOT carry over.
+ await page.setViewportSize({width:390,height:844});
+ let paidJobs=0;
+ page.on('request',request=>{
+  if(request.method()==='POST'&&/\/api\/studio\/jobs/.test(request.url()))paidJobs++;
+ });
+ await page.goto('/deepsyq.html');
+ const prompt='Video idea with optional source image and no available photo-capable model';
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.locator('#quickCreatePrompt').fill(prompt);
+ await page.locator('#quickCreateKind').selectOption('video');
+ await page.locator('#quickCreateFiles').setInputFiles({name:'unsupported-reference.png',mimeType:'image/png',buffer:png});
+ await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(1);
+ await page.locator('#quickCreateSubmit').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=dashboard/);
+ await expect(page.locator('#prompt')).toHaveValue(prompt);
+ await expect(page.locator('#refPreview img')).toHaveCount(0);
+ await expect(page.locator('#status')).toContainText('This model accepts 0 reference file(s)');
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(paidJobs).toBe(0);
 });
 
 test('BASE 3: offline platform config never hides the permanent original Hero gallery',async({page})=>{
@@ -311,23 +430,20 @@ test('BASE 3: narrow 320px Home Hero has no intrinsic-width overflow without cli
   await page.setViewportSize({width,height:740});
   const layout=await page.evaluate(()=>{
    const hero=document.querySelector('.hero-stage').getBoundingClientRect();
-   const copy=document.querySelector('.hero-stage-copy').getBoundingClientRect();
+   const copy=document.querySelector('#homeHeroCarousel').getBoundingClientRect();
    const stage=document.querySelector('.hero').getBoundingClientRect();
    return {viewport:innerWidth,page:document.documentElement.scrollWidth,
     stageLeft:hero.left,stageRight:hero.right,stageWidth:hero.width,stageHeight:hero.height,
     copyLeft:copy.left,copyRight:copy.right,heroRight:stage.right};
   });
-  // The owner artwork remains visibly full-width INSIDE the 18px main padding.
-  expect(layout.stageLeft).toBeGreaterThanOrEqual(17);
-  expect(layout.stageRight).toBeLessThanOrEqual(width-17);
+  // Updated owner neon layout uses 12px phone padding; content must still fit.
+  expect(layout.stageLeft).toBeGreaterThanOrEqual(11);
+  expect(layout.stageRight).toBeLessThanOrEqual(width-11);
   expect(layout.copyLeft).toBeGreaterThanOrEqual(layout.stageLeft-1);
   expect(layout.copyRight).toBeLessThanOrEqual(layout.stageRight+1);
   expect(layout.page).toBeLessThanOrEqual(width);
-  expect(layout.stageHeight).toBeGreaterThanOrEqual(399);
-  if(width===390){
-   expect(layout.stageWidth/layout.stageHeight).toBeGreaterThan(0.77);
-   expect(layout.stageWidth/layout.stageHeight).toBeLessThan(0.83);
-  }
+  expect(layout.stageHeight).toBeGreaterThan(120);
+  expect(layout.stageWidth/layout.stageHeight).toBeCloseTo(1.82,1);
   if(width===320||width===390)await page.screenshot({path:info.outputPath('owner-hero-fit-'+width+'.png'),fullPage:false});
  }
  expect(paidJobs).toBe(0);
@@ -367,7 +483,7 @@ test('BASE 3: approved Studio hero appears before the slow Inspiration mosaic re
  });
  try{
   await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
-  await expect(page.locator('#homeHeroSlideTitle')).toHaveText('Approved moving hero for test transport only');
+  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/placeholder-transport-hero.mp4');
   await expect(page.locator('#homeHeroCarousel')).not.toHaveClass(/is-empty/);
   expect(heroRequested).toBe(true);
   expect(mosaicRequested).toBe(true);
@@ -388,7 +504,7 @@ test('BASE 3: owner violet-pink Home and Canvas CTAs stay consistent on desktop 
  for(const width of [1448,390]){
   await page.setViewportSize({width,height:900});
   const css=await page.evaluate(()=>{
-   const hero=getComputedStyle(document.querySelector('.hero-stage-copy .primary'));
+   const hero=getComputedStyle(document.querySelector('#homeQuickSubmit'));
    const canvas=getComputedStyle(document.querySelector('#quickCreateSubmit'));
    return {heroBackground:hero.backgroundImage,heroColor:hero.color,
     canvasBackground:canvas.backgroundImage,canvasColor:canvas.color};
@@ -397,7 +513,7 @@ test('BASE 3: owner violet-pink Home and Canvas CTAs stay consistent on desktop 
    expect(image).toContain('linear-gradient');
    expect(image).not.toContain('rgb(210, 247, 174)'); // obsolete mint CTA
   }
-  expect(css.heroColor).toBe('rgb(16, 11, 35)'); // approved dark-ink on neon CTA
+  expect(css.heroColor).toBe('rgb(255, 255, 255)');
   expect(css.canvasColor).toBe('rgb(255, 255, 255)');
   await expect(page.locator('.hero-stage h1')).toHaveCount(0);
   await expect(page.locator('#homeHeroCarousel')).toBeVisible();
