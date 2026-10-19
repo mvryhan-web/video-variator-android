@@ -46,3 +46,12 @@ html:not([data-theme="light"]) .category-chips button:not([aria-pressed="true"])
  background:var(--ds-surface);
  color:var(--ds-text);
 }
+
+/* BASE1-C7: actual five-browser computed hover showed legacy lime #d2f7ae
+   on the enabled Load More CTA. Use existing owner neon tokens in dark theme
+   without changing pagination, disabled/loading state, cards, or light theme. */
+html:not([data-theme="light"]) .load-more-wrap button:not(:disabled):hover {
+ border-color:var(--ds-violet);
+ color:var(--ds-focus);
+ box-shadow:0 0 0 1px #925bff33,0 0 14px #925bff30;
+}
