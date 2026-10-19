@@ -1,191 +1,124 @@
 /**
- * Pure Owner Status View Adapter for Product Watcher
- *
- * Transforms raw or synthetic snapshot data into a deterministic, bounded,
- * and owner-safe telemetry payload for owner dashboard consumption.
- *
- * Pure functions only. Zero side-effects, zero DB calls, zero networks.
- * Uses injected clock `now` (never Date.now()).
- * Uses scheduler-state-policy.js public functions for state and safety evaluations.
+ * Product Watcher owner-only status projection (pure, no I/O).
+ * Only an authenticated server caller may provide verifyHeartbeat().
+ * Input timestamps, free-form findings, and client booleans NEVER prove worker origin.
+ * No raw customer, billing, provider, media, or error data may enter this output.
  */
-
+import { Buffer } from 'node:buffer';
 import {
-  evaluateSchedulerState,
-  getScheduleIntervalHints,
-  evaluateProposedChange,
-  parseAndValidateTimestamp,
-  WORKER_HEARTBEAT_TTL_MS
+  evaluateSchedulerState, getScheduleIntervalHints,
+  evaluateProposedChange, parseAndValidateTimestamp, WORKER_HEARTBEAT_TTL_MS
 } from './scheduler-state-policy.js';
 
-const MAX_RECENT_SUMMARIES = 10;
+const MAX_RECENT = 10;
 const MAX_PROPOSALS = 10;
-const MAX_STRING_LENGTH = 200;
+const MAX_JSON_BYTES = 8192;
+const RUN_STATUSES = new Set(['ok', 'warning', 'critical', 'error', 'unknown']);
+const PROPOSAL_TYPES = new Set(['model_switch', 'provider_change', 'price_change', 'route_change', 'code_change', 'unknown']);
 
-// Sensitive keys pattern for blocklisting specific property names
-const SENSITIVE_KEY_PATTERNS = [
-  /token/i, /secret/i, /password/i, /key/i, /auth/i, /credential/i, /bearer/i,
-  /prompt/i, /customer/i, /user_?id/i, /email/i, /sql/i, /db_?error/i, /media/i
-];
-
-// Sensitive content patterns to sanitize strings regardless of key name (e.g. SQL statements, bearer tokens, error dumps)
-const SENSITIVE_VALUE_PATTERNS = [
-  /SELECT\s+.+?\s+FROM/i,
-  /INSERT\s+INTO/i,
-  /UPDATE\s+.+?\s+SET/i,
-  /DELETE\s+FROM/i,
-  /bearer\s+[a-z0-9._~+/-]+=*/i,
-  /sk_live_[a-zA-Z0-9]+/i,
-  /sk_test_[a-zA-Z0-9]+/i
-];
-
-/**
- * Truncate a string to MAX_STRING_LENGTH.
- */
-function truncateString(str) {
-  if (typeof str !== 'string') return '';
-  const cleaned = str.replace(/[\r\n\t]+/g, ' ').trim();
-  if (cleaned.length <= MAX_STRING_LENGTH) return cleaned;
-  return cleaned.slice(0, MAX_STRING_LENGTH) + '...';
+function count(value) {
+  return Number.isSafeInteger(value) && value >= 0 ? Math.min(value, 100000) : 0;
+}
+function safeRunStatus(value) {
+  const s = typeof value === 'string' ? value.toLowerCase() : '';
+  return RUN_STATUSES.has(s) ? s : 'unknown';
+}
+function safeProposalId(value) {
+  return typeof value === 'string' && /^[a-zA-Z0-9_-]{1,48}$/.test(value) ? value : null;
+}
+function safeProposalType(value) {
+  const s = typeof value === 'string' ? value.toLowerCase() : '';
+  return PROPOSAL_TYPES.has(s) ? s : 'unknown';
+}
+function timestamp(value, nowMs) {
+  const ms = parseAndValidateTimestamp(value, nowMs);
+  return ms === null ? null : new Date(ms).toISOString();
+}
+function fallback(reason) {
+  return {
+    enabled: false, paused: false, status: 'WORKER_UNSEEN', reason,
+    checkedAt: null, lastRunAt: null, nextRunAt: null,
+    verifiedWorkerHeartbeat: { active: false, heartbeatAt: null, ageMs: null },
+    schedules: getScheduleIntervalHints(), boundedRecentSummaries: [],
+    pendingApprovalCount: 0, pendingProposals: []
+  };
 }
 
 /**
- * Sanitize and scrub sensitive fields or prompt/sql/customer identifiers from an object or value.
- */
-function redactAndSanitize(val, depth = 0) {
-  if (val === null || val === undefined) return null;
-  if (typeof val === 'boolean' || typeof val === 'number') return val;
-  if (typeof val === 'string') {
-    if (SENSITIVE_VALUE_PATTERNS.some(p => p.test(val))) {
-      return '[REDACTED]';
-    }
-    return truncateString(val);
-  }
-  if (depth > 3) return '[DEPTH_EXCEEDED]';
-
-  if (Array.isArray(val)) {
-    return val.slice(0, 10).map(item => redactAndSanitize(item, depth + 1));
-  }
-
-  if (typeof val === 'object') {
-    const cleanObj = {};
-    for (const [k, v] of Object.entries(val)) {
-      if (SENSITIVE_KEY_PATTERNS.some(p => p.test(k))) {
-        cleanObj[k] = '[REDACTED]';
-      } else {
-        cleanObj[k] = redactAndSanitize(v, depth + 1);
-      }
-    }
-    return cleanObj;
-  }
-
-  return String(val);
-}
-
-/**
- * Pure adapter generating an owner-safe status view JSON snapshot.
- *
- * @param {Object} snapshot - Injected read-only snapshot facts.
- * @param {Object} options - Options containing injected `now` clock.
- * @returns {Object} Deterministic owner-safe status view telemetry object.
+ * options.verifyHeartbeat(timestampMs, nowMs) must be an injected, trusted
+ * server-side verifier for a persisted worker heartbeat. Never wire this
+ * callback from request JSON or from client-provided flags.
  */
 export function renderOwnerStatusView(snapshot = {}, options = {}) {
-  // Extract and resolve injected `now` clock
+  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) return fallback('INVALID_SNAPSHOT');
   const rawNow = options.now ?? snapshot.now;
-  const nowVal = typeof rawNow === 'function' ? rawNow() : rawNow;
-  const nowMs = nowVal instanceof Date
-    ? nowVal.getTime()
-    : (typeof nowVal === 'number' ? nowVal : Date.parse(nowVal));
+  const val = typeof rawNow === 'function' ? rawNow() : rawNow;
+  const nowMs = val instanceof Date ? val.getTime() : typeof val === 'number' ? val : Date.parse(val);
+  if (!Number.isFinite(nowMs) || nowMs <= 0) return fallback('INVALID_NOW_TIMESTAMP');
 
-  if (!Number.isFinite(nowMs) || nowMs <= 0) {
-    return {
-      enabled: false,
-      paused: false,
-      status: 'WORKER_UNSEEN',
-      reason: 'INVALID_NOW_TIMESTAMP',
-      checkedAt: null,
-      lastRunAt: null,
-      nextRunAt: null,
-      verifiedWorkerHeartbeat: { active: false, heartbeatAt: null, ageMs: null },
-      schedules: getScheduleIntervalHints(),
-      boundedRecentSummaries: [],
-      pendingApprovalCount: 0,
-      pendingProposals: []
-    };
+  const enabled = snapshot.enabled === true;
+  const paused = snapshot.paused === true;
+  const heartbeatMs = parseAndValidateTimestamp(snapshot.heartbeatAt, nowMs);
+  const fresh = heartbeatMs !== null && nowMs - heartbeatMs <= WORKER_HEARTBEAT_TTL_MS;
+  let originVerified = false;
+  if (fresh && typeof options.verifyHeartbeat === 'function') {
+    try { originVerified = options.verifyHeartbeat(heartbeatMs, nowMs) === true; }
+    catch { originVerified = false; }
   }
+  const trustedFresh = fresh && originVerified;
+  // Pass only fixed, bounded facts to the underlying scheduler evaluator.
+  // An attacker-supplied timestamp alone must never imply a live worker.
+  const rawProposals = Array.isArray(snapshot.pendingProposals) ? snapshot.pendingProposals :
+    Array.isArray(snapshot.proposals) ? snapshot.proposals : [];
+  const state = evaluateSchedulerState({
+    enabled, paused, heartbeatAt: trustedFresh ? heartbeatMs : null,
+    lastRunAt: snapshot.lastRunAt ?? null,
+    approvalPending: snapshot.approvalPending === true || rawProposals.length > 0,
+    now: nowMs
+  });
 
-  const checkedAtIso = new Date(nowMs).toISOString();
+  const runs = Array.isArray(snapshot.recentRuns) ? snapshot.recentRuns :
+    Array.isArray(snapshot.runs) ? snapshot.runs : [];
+  const boundedRecentSummaries = runs.slice(0, MAX_RECENT).filter(
+    run => run && typeof run === 'object' && !Array.isArray(run)
+  ).map(run => ({
+    id: Number.isSafeInteger(run.id) && run.id >= 0 ? run.id : null,
+    status: safeRunStatus(run.status),
+    checkedAt: timestamp(run.checkedAt ?? run.createdAt ?? run.timestamp, nowMs),
+    checksCount: typeof run.checks === 'number' ? count(run.checks) :
+      Array.isArray(run.checks) ? Math.min(run.checks.length, 100000) : 0,
+    // Strictly enumerated aggregate counters; NEVER copy findings/summary.
+    findingsSummary: {
+      warningCount: count(run.warningCount),
+      criticalCount: count(run.criticalCount)
+    }
+  }));
 
-  // Validate facts via scheduler-state-policy
-  const factsInput = { ...snapshot, now: nowMs };
-  const evaluatedState = evaluateSchedulerState(factsInput);
-
-  const enabled = snapshot?.enabled === true;
-  const paused = snapshot?.paused === true;
-
-  // Heartbeat verification
-  const heartbeatMs = parseAndValidateTimestamp(snapshot?.heartbeatAt, nowMs);
-  const isHeartbeatFresh = heartbeatMs !== null && (nowMs - heartbeatMs <= WORKER_HEARTBEAT_TTL_MS);
-  const verifiedWorkerHeartbeat = {
-    active: isHeartbeatFresh && enabled && !paused,
-    heartbeatAt: heartbeatMs ? new Date(heartbeatMs).toISOString() : null,
-    ageMs: heartbeatMs ? nowMs - heartbeatMs : null
-  };
-
-  // Last run validation
-  const lastRunMs = parseAndValidateTimestamp(snapshot?.lastRunAt, nowMs);
-  const lastRunIso = lastRunMs ? new Date(lastRunMs).toISOString() : null;
-  const nextRunIso = evaluatedState.nextDueAt || null;
-
-  // Recent summaries processing (bounded and redacted)
-  const rawRuns = Array.isArray(snapshot?.recentRuns || snapshot?.runs) ? (snapshot.recentRuns || snapshot.runs) : [];
-  const boundedRecentSummaries = rawRuns
-    .slice(0, MAX_RECENT_SUMMARIES)
-    .map(run => {
-      if (!run || typeof run !== 'object') return null;
-      const runTs = parseAndValidateTimestamp(run.checkedAt || run.createdAt || run.timestamp, nowMs);
-      return {
-        id: Number.isSafeInteger(Number(run.id)) ? Number(run.id) : null,
-        status: typeof run.status === 'string' ? truncateString(run.status) : 'unknown',
-        checkedAt: runTs ? new Date(runTs).toISOString() : null,
-        checksCount: typeof run.checks === 'number' ? Math.max(0, Math.floor(run.checks)) : (Array.isArray(run.checks) ? run.checks.length : 0),
-        findingsSummary: redactAndSanitize(run.findings || run.summary || run.findingsSummary || {})
-      };
-    })
-    .filter(Boolean);
-
-  // Process proposals and enforce human approval required
-  const rawProposals = Array.isArray(snapshot?.pendingProposals || snapshot?.proposals)
-    ? (snapshot.pendingProposals || snapshot.proposals)
-    : [];
-
-  const pendingProposals = rawProposals
-    .slice(0, MAX_PROPOSALS)
-    .map(p => {
-      const evalRes = evaluateProposedChange(p);
-      return {
-        id: p?.id ? truncateString(String(p.id)) : null,
-        type: evalRes.type,
-        approvalRequired: true,
-        autoApply: false,
-        reason: evalRes.reason,
-        details: redactAndSanitize(p?.details || p?.proposal || {})
-      };
-    });
-
-  const pendingApprovalCount = pendingProposals.length;
-
-  return {
-    enabled,
-    paused,
-    status: evaluatedState.status,
-    reason: evaluatedState.reason,
-    checkedAt: checkedAtIso,
-    lastRunAt: lastRunIso,
-    nextRunAt: nextRunIso,
-    verifiedWorkerHeartbeat,
+  const pendingProposals = rawProposals.slice(0, MAX_PROPOSALS).map(p => {
+    const type = safeProposalType(p?.type);
+    // Keep approval decision from existing pure policy, but never expose
+    // its unbounded raw details or untrusted strings.
+    const decision = evaluateProposedChange({ type });
+    return {
+      id: safeProposalId(p?.id), type, approvalRequired: decision.approvalRequired === true,
+      autoApply: false, reason: 'OWNER_APPROVAL_REQUIRED_FOR_ALL_PROPOSED_CHANGES'
+    };
+  });
+  const result = {
+    enabled, paused, status: state.status, reason: state.reason,
+    checkedAt: new Date(nowMs).toISOString(),
+    lastRunAt: timestamp(snapshot.lastRunAt, nowMs),
+    nextRunAt: state.nextDueAt || null,
+    verifiedWorkerHeartbeat: {
+      active: trustedFresh && enabled && !paused,
+      heartbeatAt: trustedFresh ? new Date(heartbeatMs).toISOString() : null,
+      ageMs: trustedFresh ? nowMs - heartbeatMs : null
+    },
     schedules: getScheduleIntervalHints(),
-    boundedRecentSummaries,
-    pendingApprovalCount,
-    pendingProposals
+    boundedRecentSummaries, pendingApprovalCount: pendingProposals.length, pendingProposals
   };
+  if (Buffer.byteLength(JSON.stringify(result), 'utf8') > MAX_JSON_BYTES) {
+    return fallback('OUTPUT_TOO_LARGE');
+  }
+  return result;
 }
