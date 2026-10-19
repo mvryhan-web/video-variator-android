@@ -109,5 +109,25 @@ test('shared provider/payment guard is retained untouched by History GET fix',()
  assert.match(server,/submitPurchasedProviderRequest/);
  assert.match(server,/expectedSha256:asset\.sha256\?\?null/);
  assert.match(server,/app\.delete\('\/api\/studio\/jobs\/:id'/);
- assert.equal([...server.matchAll(/app\.get\('\/api\/studio\/jobs(?:\/|')/g)].length,3);
+ const historyRoutes=[...server.matchAll(/app\.get\('(\/api\/studio\/jobs(?:\/[^']*)?)',auth,generationUser,/g)].map(match=>match[1]);
+ assert.deepEqual(historyRoutes,[
+  '/api/studio/jobs/by-request/:requestId',
+  '/api/studio/jobs',
+  '/api/studio/jobs/:id',
+  '/api/studio/jobs/:id/media'
+ ],'Every History/recovery GET must remain individually authenticated; no unguarded extra route');
+ const recoveryStart=server.indexOf("app.get('/api/studio/jobs/by-request/:requestId',auth,generationUser");
+ const recoveryEnd=server.indexOf(' const getJob=async',recoveryStart);
+ assert.ok(recoveryStart>=0&&recoveryEnd>recoveryStart,'Existing owned Video recovery handler is present');
+ const recovery=server.slice(recoveryStart,recoveryEnd);
+ assert.match(recovery,/res\.set\('Cache-Control','private, no-store'\)/,
+  'Lost-Video-POST lookup cannot be cached between accounts');
+ assert.match(recovery,/WHERE user_id=\$1 AND client_request_id=\$2 AND kind='video' AND deleted=false/,
+  'Recovery SQL must bind both user and request, only non-deleted Video');
+ assert.match(recovery,/\[req\.user\.id,requestId\]/,
+  'Recovery query must bind authenticated owner, not arbitrary caller input');
+ assert.match(recovery,/generationRequestId\(req\.params\.requestId,\{required:true\}\)/,
+  'Recovery route must reject malformed request identifiers');
+ assert.doesNotMatch(recovery,/submitPurchasedProviderRequest|wallet\.|generateGoogle|generateBytePlus/,
+  'Read-only recovery must not charge, reserve or dispatch another provider call');
 });
