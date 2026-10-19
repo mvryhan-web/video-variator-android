@@ -63,7 +63,7 @@ test('Home creator picker: studio model/settings windows are centered, model-awa
  page.on('request',request=>{if(request.method()==='POST'&&/\/api\/studio\/(jobs|estimate)/.test(new URL(request.url()).pathname))paidPosts++;});
  const mode=page.locator('#homeCreateMode');
  await expect(mode).toBeVisible();
- await expect(mode.locator('option')).toHaveText(['▧  Image','▷  Video','♫  Audio','✧  AI Agent · Coming soon']);
+ expect(await mode.locator('option').evaluateAll(options=>options.map(option=>option.value))).toEqual(['image','video','music','agent']);
  await mode.selectOption('video');
  await expect(page.locator('[data-home-kind="video"]')).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('#homeModelPicker')).toHaveAttribute('data-open-models','video');
@@ -77,7 +77,8 @@ test('Home creator picker: studio model/settings windows are centered, model-awa
  await expect(page.locator('#homeSettingsDialog')).toBeVisible();
  const settingsCenter=await page.locator('#homeSettingsDialog').evaluate(el=>{const r=el.getBoundingClientRect();return {x:Math.abs(r.left+r.width/2-innerWidth/2),y:Math.abs(r.top+r.height/2-innerHeight/2),inside:r.left>=0&&r.right<=innerWidth};});
  expect(settingsCenter.x).toBeLessThan(3);expect(settingsCenter.y).toBeLessThan(3);expect(settingsCenter.inside).toBe(true);
- await expect(page.locator('#homePreferredRatio option')).toContainText(['16:9','9:16']);
+ const supportedRatios=await page.locator('#homePreferredRatio option').evaluateAll(options=>options.map(option=>option.value));
+ expect(supportedRatios).toContain('16:9');expect(supportedRatios).toContain('9:16');
  await page.locator('#homePreferredRatio').selectOption('9:16');
  await page.locator('#homeSettingsApply').click();
  await expect(page.locator('#homeSettingsDialog')).toBeHidden();
