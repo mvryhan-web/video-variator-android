@@ -1,6 +1,26 @@
+## [COORDINATOR #5 / C301 NON-FORCE HISTORICAL CLAIM RECONCILIATION / 2026-10-19]
+
+The following original Agent C pre-code claim is retained verbatim as HISTORY; it does NOT supersede current Cycle4.1 functional PASS/current CI status or owner locks. This merge keeps the latest DEV coordination queue and original 55 rows, without weakening BASE55 governance.
+
 ## AGENT C / 2026-10-19 / OWNER ISSUE298 BASE1-C EXACT-SCOPE CLAIM BEFORE CODE
 
 Existing BASE1 parent stays team-owned / PARTIAL. **C isolated subtask**: verify named destinations of all specified real pages read-only, AI Apps/Inspiration prompt/type handoff and zero auto paid POST, C page mobile 320/375/768 Back/menu/overflow/model-link behavior. Claim branch `agent-c-base1-route-acceptance-20261019` + dedicated tests/workflow; issue authority [#298](https://github.com/mvryhan-web/video-variator-android/issues/298#issuecomment-6265288479). Other-owner defects reported, never edited; preserve History→Studio #296 and C §22 PR297 independently; no duplicate PR44, tables, Home, Studio/server, Stripe/production. **STATUS CLAIMED / BEFORE TEST CODE**. GRAPHIFY_UNAVAILABLE_IN_HOST, source map reviewed.
+
+## COORDINATOR #5 — CYCLE 4.1 / CURRENT C301 BROWSER FIX EVIDENCE
+
+**Source status update (no new BASE claim):** C existing PR301 `7e07012d462b6b6e4a68509ebe69cbaf60bc491d` now has exact-head five-browser navigation test [#39249335196](https://github.com/mvryhan-web/video-variator-android/actions/runs/39249335196) **SUCCESS**, fixing Tools→Avatar→Back and preserving legacy/direct paths via CSP-compatible small handler. Previous Cycle4 C `b74854b9` 30 PASS / 5 FAIL remains a historical failing snapshot, **not current**. General BASE55 integrity remains FAILED on the 21 independently reproduced pre-existing DEV governance issues; C PR301 is still DRAFT, concurrent C PR297 retains separate Inspiration storage safety and overlaps only claim/status docs. No duplicate source merge until exact docs reconciliation + correct current-head native checks. Owner original 55/locked Home unchanged. Updated full status: [PROJECT_STATUS.md](../PROJECT_STATUS.md) commit `aef69d6b261f918c92390b39989bae449886becf`.
+
+## COORDINATOR #5 — CYCLE 4 / 2026-10-19 — LATEST CLAIM/CONFLICT DECISION
+
+**Coordinator owns zero personal BASE rows. Owner BASE §1 TEAM sprint Issue298 stays PARTIAL; ONLY §47 and §53 DONE (2/55).** Updated full per-agent queue, current SHA/tests and blockers are at top of [PROJECT_STATUS.md](../PROJECT_STATUS.md); Cycle4 status commit `8ab7c48d8735d1be42ca20280d53d8425a9e905f`. The approved owner Home carousel/blocks are frozen; no new active duplicate claims.
+
+- **A/B Home lease:** A completed read-only neon inner-page PASS/GAP/UNVERIFIED audit on Issue72; B owns old [PR281](https://github.com/mvryhan-web/video-variator-android/pull/281) `5947fc8f` (17/17 current-head native PASS, DRAFT, diverged DEV). Keep A Canvas privacy and B approved media; no Home edits without owner agreement; exact PNG source not in GitHub so no pixel-perfect assertion.
+- **B/D purchased-only review gate:** B [PR174](https://github.com/mvryhan-web/video-variator-android/pull/174) `378e845e00705b04e8bc1d5bfd5cfeaf954062de`, 17/17 current native PASS; **NO independent D approval for this exact SHA** (earlier BLOCKED for real nested provider-cost leak, B has now fixed it). D must give written PASS DEV-source-only or BLOCKED on new SHA; #5 alone may then review DEV integration; PR186/203 stacked only after parent. Single-submit `expectedCredits` + real purchased provider remain LIVE blockers.
+- **C old/new doc collision:** [PR301](https://github.com/mvryhan-web/video-variator-android/pull/301) `b74854b9`, 30/35 five-browser native tests; five FAIL at Avatar Back href despite granted foreign-only `avatar-studio.html` lease. C fixes same PR, no parallel duplicate. [PR297](https://github.com/mvryhan-web/video-variator-android/pull/297) distinct `inspiration.js` fail-closed storage change has focused browser PASS but same PROJECT_STATUS/claim-board prefaces; serialize or port exact claimed append-only metadata before DEV merge, preserving both versions. **Both** blocked by pre-existing shared BASE55 governance CI (21 source/lanes/width/title defects), original 55 unchanged pending owner provenance decision.
+- **Jules bot truth:** Jules1 W5.4 source-only PR295 DEV merged `69aa4ba4`, unsafe main PR293 DRAFT; Jules2 W4.2 bot START FAILED (Issue289, no retry until 2026-10-20T07:40:36Z); Jules3 V6.2 **bot TASK FAILED with unexpected error** (Issue278 latest Jules comment), NOT ACTIVE and not done. No new duplicate Jules issue/session.
+- **Five stable subject lanes (NOT new simultaneous BASE claims):** Audio B paid/C local/Jules3 opt-in Voice/D purchased; Agents C UX/Jules2 planner/B dispatch/D wallet; Inspiration C canonical catalog/A licensed SEO/B existing owner video; History A private GET/B durable job/D economics/Jules2 pure Workspace; SEO A editorial/C public truth/D launch-index gate. Conflicts require exact file/hunk lease.
+
+**Next single coordinator release gate:** new D PR174 exact-head signed review; then re-evaluate latest DEV non-force mergeability/current SHA CI. No main/prod, live Stripe, paid AI or destructive DB.
 
 ## COORDINATOR #5 — CYCLE 3 / 2026-10-19 — CLAIM/PR DELTA (LATEST)
 
