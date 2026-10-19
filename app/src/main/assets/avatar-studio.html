@@ -15,13 +15,7 @@
 <body>
 <main class="tools avatar-studio">
 <header><a class="tool-back" href="index.html" data-av="back">← Back</a><span>Video Uniquifier</span></header>
-<script>
-/* BASE1-C3: only our explicit Tools entry selects Tools as Back destination.
-   Legacy Uniquifier and direct-opening routes retain the original index.html. */
-if (new URLSearchParams(location.search).get('from') === 'tools') {
-  document.querySelector('a.tool-back[data-av="back"]').href = 'free-tools.html';
-}
-</script>
+<script src="avatar-back-origin.js"></script>
 <div class="avatar-hero">
   <span class="pill accent" data-av="included">720p · 1080p · 4K — available to everyone</span>
   <h1 data-av="title">Avatar Narrator</h1>
