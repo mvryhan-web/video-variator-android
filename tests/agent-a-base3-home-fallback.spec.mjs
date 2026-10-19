@@ -243,13 +243,30 @@ test('BASE 3: Canvas draft cannot be restored by a different account sharing thi
  await page.reload();
  await expect(page.locator('#quickCreatePrompt')).toHaveValue(aPrompt);
  await page.evaluate(()=>localStorage.setItem('vv_token','fixture-account-B'));
+ // Same-tab token changes do not fire native storage; the first keyboard
+ // interaction must not expose A's still-open private form to account B.
+ await page.locator('#quickCreatePrompt').press('Tab');
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
  await page.reload();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+ // Emulate Firefox history/form restoration *after* the JS startup. The
+ // pageshow handler must discard A's stale value before restoring only B.
+ await page.evaluate(oldPrompt=>{
+  document.getElementById('quickCreatePrompt').value=oldPrompt;
+  window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
+ },aPrompt);
  await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
  await page.locator('#quickCreatePrompt').fill(bPrompt);
  await expect.poll(()=>page.evaluate(()=>Object.keys(sessionStorage)
   .filter(key=>key.startsWith('deepsyq_quick_canvas_draft_v2_'))
   .some(key=>JSON.parse(sessionStorage.getItem(key)||'null')?.prompt==='PRIVATE ACCOUNT B: independent product design'))).toBe(true);
  await page.reload();
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue(bPrompt);
+ // A's restored DOM must never win over this account's hashed B draft.
+ await page.evaluate(oldPrompt=>{
+  document.getElementById('quickCreatePrompt').value=oldPrompt;
+  window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
+ },aPrompt);
  await expect(page.locator('#quickCreatePrompt')).toHaveValue(bPrompt);
  await page.evaluate(()=>localStorage.setItem('vv_token','fixture-account-A'));
  await page.reload();
