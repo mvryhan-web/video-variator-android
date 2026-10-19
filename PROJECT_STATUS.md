@@ -1,3 +1,7 @@
+## AGENT C / BASE 1-C — 2026-10-19 / OWNER #298 ROUTE/MOBILE ACCEPTANCE CLAIM (BEFORE CODE)
+
+**Claimed one isolated C-owned BASE1-C acceptance** in [Issue298](https://github.com/mvryhan-web/video-variator-android/issues/298#issuecomment-6265288479) and [Issue74](https://github.com/mvryhan-web/video-variator-android/issues/74#issuecomment-6265289153): branch `agent-c-base1-route-acceptance-20261019`, dedicated no-spend browser route/mobility tests + focused CI, read-only inspection of A/B/D pages and existing working links. Preserve DEV-merged History PR296, existing C storage guard Draft PR297 on separate §22 branch, B Home PR281 and admin PR257. Only narrow confirmed C-owned UI defect may be patched; no duplicate PR44/schema/media, no paid requests/Stripe/main/prod. **STATUS CLAIMED/PRE-TEST**, full BASE1 still PARTIAL. Graphify map server-only, CLI unavailable in this host.
+
 ## COORDINATOR #5 — CYCLE 3 / 2026-10-19 — ORDINARY BASE COORDINATION (LATEST)
 
 **Owner instruction supersedes earlier tool-expansion TODO:** stop additional Graphify/Ponytail modifications; continue the original coordinator A/B/C/D/Jules management. The existing persistent safe map and skills stay as previously merged; NO new tool, no map coverage-expansion PR. Use CHECKPOINT/map first, then only exact relevant current GitHub diffs.
