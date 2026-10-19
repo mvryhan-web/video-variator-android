@@ -87,8 +87,10 @@ for(const kind of ['image','video','music']){
    const t=studio({kind,expectedCredits});
    const res=await t.run();
    assert.equal(res.statusCode,409,kind+' / '+description+' MUST fail before job creation');
-   assert.deepEqual(res.payload,{error:'AI_ESTIMATE_CHANGED'},
+   assert.equal(res.payload?.error,'AI_ESTIMATE_CHANGED',
     kind+' / '+description+' must use agreed stable API error');
+   assert.deepEqual(Object.keys(res.payload||{}),['error'],
+    kind+' / '+description+' error payload must expose only public code');
    assert.deepEqual(t.counters,{dbInit:0,dbConnect:0,dbWrites:0,walletReserve:0,
     providerDispatch:0,statements:[]},kind+' / '+description+' must not touch SQL, credits or provider');
   }
