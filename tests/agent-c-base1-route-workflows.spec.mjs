@@ -229,8 +229,14 @@ test('BASE1-C2 Avatar Back: preserve legacy entry and record Tools-origin misrou
  await page.setViewportSize({width:375,height:812});
  await page.goto('/index.html');
  // Old Video Uniquifier still owns this legitimate entry; its Back must remain index.html.
- const legacy=page.locator('a[href="avatar-studio.html"]').first();
+ const legacy=page.locator('#avatarStudioLink[href="avatar-studio.html"]');
  await expect(legacy).toHaveCount(1);
+ // On 375px the legacy navigation rail is intentionally off-canvas until opened.
+ // Use the actual existing menu control rather than clicking a hidden link.
+ await expect(page.locator('#menuBtn')).toBeVisible();
+ await page.locator('#menuBtn').click();
+ await expect(page.locator('.sidebar')).toHaveClass(/open/);
+ await expect(legacy).toBeVisible();
  await legacy.click();
  await expect(page).toHaveURL(/\/avatar-studio\.html$/);
  const avatarBack=page.locator('a.tool-back[data-av="back"]');
