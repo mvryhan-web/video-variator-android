@@ -264,3 +264,44 @@ test('BASE1-C2 Avatar Back: preserve legacy entry and record Tools-origin misrou
  }
  expect(paid()).toBe(0);
 });
+
+
+test('BASE1-C3 Inspiration real video card uses existing owner neon tokens without touching routes',async({page})=>{
+ await mocks(page);
+ const paid=writeCounter(page);
+ // A synthetic, never-published rights-neutral fixture verifies presentation only.
+ const video={...inspiration[0],id:'fixture-neon-video',title:'Synthetic video palette fixture',
+  kind:'video',aspectRatio:'16:9',previewUrl:'/synthetic-test-not-a-real-video.mp4'};
+ await page.route('**/api/inspiration?**',route=>route.fulfill({json:{
+  items:[video],categories:['Editorial'],ratios:['16:9'],
+  pagination:{limit:24,offset:0,nextOffset:null,hasMore:false}
+ }}));
+ for(const width of [320,375,768]){
+  await page.setViewportSize({width,height:812});
+  await page.goto('/inspiration.html');
+  const card=page.locator('#gallery .card[data-kind="video"]');
+  await expect(card).toHaveCount(1);
+  await expect(card.locator('.type-badge')).toHaveText('video');
+  await expect(page.locator('#categoryChips button[aria-pressed="false"]')).toHaveCount(1);
+  const s=await page.evaluate(()=>{
+   const video=document.querySelector('#gallery .card[data-kind="video"]');
+   const badge=video.querySelector('.type-badge');
+   const chip=document.querySelector('#categoryChips button[aria-pressed="false"]');
+   const sidebar=document.querySelector('#dsSiteSidebar');
+   return {
+    videoBorder:getComputedStyle(video).borderTopColor,
+    sidebarBorder:getComputedStyle(sidebar).borderRightColor,
+    badgeFill:getComputedStyle(badge).backgroundImage,
+    chipFill:getComputedStyle(chip).backgroundColor,
+    chipBorder:getComputedStyle(chip).borderTopColor,
+    videoRect:video.getBoundingClientRect().right,
+    viewport:innerWidth
+   };
+  });
+  expect(s.videoBorder,'Video card must inherit the shared Deepsyq border').toBe(s.sidebarBorder);
+  expect(s.badgeFill,'Video badge must use the neon gradient, not old lime').toContain('linear-gradient');
+  expect(s.chipBorder,'Filter chips must use the shared neon-dark border').toBe(s.sidebarBorder);
+  expect(s.videoRect,'Video card stays within viewport').toBeLessThanOrEqual(s.viewport+1);
+  expect(paid()).toBe(0);
+ }
+});
