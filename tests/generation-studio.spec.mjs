@@ -277,3 +277,56 @@ test('video History checks an existing task without resubmitting or downloading 
  expect(jobPosts).toBe(0);
  expect(mediaDownloads).toBe(0); // Only the explicit Open action may fetch video bytes.
 });
+
+// Owner acceptance: real Home destinations and native centered windows; no provider dispatch.
+for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320,height:740},{width:844,height:390}]){
+ test(`studio model/settings windows stay centered and usable at ${viewport.width}x${viewport.height}`,async({page})=>{
+  await page.setViewportSize(viewport);
+  let posts=0;page.on('request',request=>{if(request.method()==='POST')posts++;});
+  const assertCentered=async dialog=>{
+   await expect(dialog).toBeVisible();
+   const bounds=await dialog.boundingBox();expect(bounds).not.toBeNull();
+   expect(Math.abs(bounds.x+bounds.width/2-viewport.width/2)).toBeLessThan(3);
+   expect(Math.abs(bounds.y+bounds.height/2-viewport.height/2)).toBeLessThan(3);
+   expect(bounds.x).toBeGreaterThanOrEqual(12);expect(bounds.y).toBeGreaterThanOrEqual(12);
+   expect(bounds.x+bounds.width).toBeLessThanOrEqual(viewport.width-12);
+   expect(bounds.y+bounds.height).toBeLessThanOrEqual(viewport.height-12);
+   expect(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
+  };
+  for(const [studio,title] of [['image','Create an image'],['video','Create a video'],['audio','Create audio']]){
+   await page.goto('/deepsyq.html');
+   if(viewport.width<=760)await page.locator('#menu').click();
+   const trigger=page.locator(`[data-open-models="${studio}"]`);
+   await trigger.click();
+   const chooser=page.getByRole('dialog',{name:studio[0].toUpperCase()+studio.slice(1)+' models',exact:true});
+   await assertCentered(chooser);
+   await expect(trigger).toHaveAttribute('aria-expanded','true');
+   await page.keyboard.press('Escape');await expect(chooser).not.toBeVisible();
+   await expect(trigger).toHaveAttribute('aria-expanded','false');await expect(trigger).toBeFocused();
+   // Close the mobile drawer through its actual control before using the content cards.
+   if(viewport.width<=760)await page.locator('#menu').click();
+   await page.locator(`.home-create-card[href="generate-studio.html?studio=${studio}"]`).click();
+   await expect(page).toHaveURL(new RegExp('studio='+studio));
+   await expect(page.locator('#taskTitle')).toHaveText(title);
+   await page.locator('#prompt').fill('My local draft');
+   await page.locator('#modelButton').click();
+   const models=page.getByRole('dialog',{name:'Choose a model',exact:true});await assertCentered(models);
+   const choices=models.locator('.model-card');await expect(choices.first()).toBeVisible();
+   const choice=choices.nth(Math.min(1,await choices.count()-1));const label=await choice.locator('strong').innerText();
+   await choice.click();await expect(models).not.toBeVisible();
+   await expect(page.locator('#modelButton')).toContainText(label);await expect(page.locator('#modelButton')).toBeFocused();
+   await page.locator('#modelButton').click();
+   await expect(models.locator('.model-card[aria-pressed="true"] strong')).toHaveText(label);
+   await page.keyboard.press('Escape');await expect(models).not.toBeVisible();
+   await expect(page.locator('#modelButton')).toBeFocused();
+   await page.locator('#settingsButton').click();
+   const settings=page.getByRole('dialog',{name:'Settings',exact:true});await assertCentered(settings);
+   await settings.getByRole('button',{name:'Done',exact:true}).click();await expect(settings).not.toBeVisible();
+   await expect(page.locator('#settingsButton')).toBeFocused();
+   await expect(page.locator('#prompt')).toHaveValue('My local draft');
+   await expect(page.locator('#generate')).toBeDisabled();
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  }
+  expect(posts).toBe(0);
+ });
+}

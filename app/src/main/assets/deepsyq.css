@@ -646,3 +646,10 @@ body.home-neon{background:#030b18;color:#eff6ff}
  .home-neon .home-compose-body textarea{font-size:11px}
  .home-creative-tools .home-create-card{aspect-ratio:1.8;min-height:105px}
 }
+
+/* Owner: choose models in a centered native modal, never an accidental hover flyout. */
+.model-flyout{inset:0;margin:auto;width:min(520px,calc(100vw - 32px));max-height:min(85svh,calc(100dvh - 32px));color:#f3f4ff;overscroll-behavior:contain;scrollbar-gutter:stable}
+.model-flyout::backdrop{background:#050916b8;backdrop-filter:blur(5px)}
+.model-flyout-head{position:sticky;top:0;z-index:1;background:#1f1d2d;padding-block:4px}
+.model-flyout-head button{width:44px;height:44px;min-width:44px}
+.model-flyout-option{min-width:0;overflow-wrap:anywhere}

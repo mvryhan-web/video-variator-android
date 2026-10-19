@@ -222,23 +222,17 @@ document.querySelectorAll('#sidebar nav a').forEach(a=>a.addEventListener('click
 
 // Model options are discovered from the existing Studio config. Prepared or disabled models
 // are visible but cannot be selected as if they were live integrations.
-let studioModelMenuConfig=null,openModelsKind=null,modelCloseTimer=null;
+let studioModelMenuConfig=null,openModelsKind=null;
 function closeModelFlyout(){
- clearTimeout(modelCloseTimer);
- $('modelFlyout').hidden=true;openModelsKind=null;
+ const panel=$('modelFlyout');
+ if(panel.open)panel.close();
+ panel.hidden=true;openModelsKind=null;
  document.querySelectorAll('[data-open-models]').forEach(b=>b.setAttribute('aria-expanded','false'));
-}
-function scheduleModelClose(){
- clearTimeout(modelCloseTimer);
- modelCloseTimer=setTimeout(()=>{
-  const focus=document.activeElement;
-  if(!$('modelFlyout').contains(focus)&&!focus?.closest?.('[data-model-menu]'))closeModelFlyout();
- },160);
 }
 function renderModelFlyout(kind){
  const list=$('modelFlyoutList');list.replaceChildren();
  const configured=Array.isArray(studioModelMenuConfig?.catalog)?studioModelMenuConfig.catalog:MODEL_CATALOG;
- const models=configured.filter(m=>m.kind===kind);
+ const models=configured.filter(m=>m.kind===(kind==='audio'?'music':kind));
  const allowedIds=new Set((studioModelMenuConfig?.models||[]).filter(m=>m.enabled===true).map(m=>m.id));
  const studioActive=studioModelMenuConfig?.enabled===true;
  const note=$('modelFlyoutNote');
@@ -257,35 +251,23 @@ function renderModelFlyout(kind){
   list.append(b);
  }
  if(!models.length){const msg=document.createElement('p');msg.textContent='No models listed yet. Open Studio for updates.';list.append(msg);}
+ if(kind==='audio'){const voice=document.createElement('a');voice.className='model-flyout-all';voice.href='audio-studio.html';voice.textContent='Voiceovers & transcription →';list.append(voice);}
  const go=document.createElement('a');go.className='model-flyout-all';go.href='generate-studio.html?studio='+kind;go.textContent='View all in Studio →';list.append(go);
 }
-function showModelFlyout(kind,entry){
- if(!['image','video'].includes(kind)||mobileMenu.matches&&!document.body.classList.contains('menu-open'))return;
- clearTimeout(modelCloseTimer);openModelsKind=kind;
- const panel=$('modelFlyout');$('modelFlyoutTitle').textContent=kind==='image'?'Image models':'Video models';
+function showModelFlyout(kind){
+ if(!['image','video','audio'].includes(kind))return;
+ const panel=$('modelFlyout');
+ openModelsKind=kind;
+ $('modelFlyoutTitle').textContent={image:'Image models',video:'Video models',audio:'Audio models'}[kind];
  renderModelFlyout(kind);panel.hidden=false;
- const rect=entry.getBoundingClientRect(),sidebar=$('sidebar').getBoundingClientRect();
- panel.style.left=Math.min(window.innerWidth-panel.offsetWidth-12,sidebar.right+10)+'px';
- panel.style.top=Math.max(12,Math.min(rect.top,window.innerHeight-panel.offsetHeight-12))+'px';
+ if(!panel.open)panel.showModal();
  document.querySelectorAll('[data-open-models]').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.openModels===kind)));
 }
-for(const entry of document.querySelectorAll('[data-model-menu]')){
- const kind=entry.dataset.modelMenu,btn=entry.querySelector('[data-open-models]');
- entry.addEventListener('mouseenter',()=>{if(!mobileMenu.matches)showModelFlyout(kind,entry);});
- entry.addEventListener('mouseleave',scheduleModelClose);
- // Mobile tap first focuses the model trigger; do not let focus open the
- // overlay before click reaches the button. Keyboard Enter/Space still click it.
- entry.addEventListener('focusin',()=>{if(!mobileMenu.matches)showModelFlyout(kind,entry);});
- entry.addEventListener('focusout',scheduleModelClose);
- btn.onclick=()=>{if(openModelsKind===kind&&!$('modelFlyout').hidden)closeModelFlyout();else showModelFlyout(kind,entry);};
+for(const btn of document.querySelectorAll('[data-open-models]')){
+ btn.onclick=()=>showModelFlyout(btn.dataset.openModels);
 }
-$('modelFlyout').addEventListener('mouseenter',()=>clearTimeout(modelCloseTimer));
-$('modelFlyout').addEventListener('mouseleave',scheduleModelClose);
-$('modelFlyout').addEventListener('focusout',scheduleModelClose);
 $('modelFlyoutClose').onclick=closeModelFlyout;
-document.addEventListener('pointerdown',e=>{if(!$('modelFlyout').contains(e.target)&&!e.target.closest?.('[data-model-menu]'))closeModelFlyout();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModelFlyout();});
-window.addEventListener('resize',closeModelFlyout);
+$('modelFlyout').addEventListener('close',closeModelFlyout);
 syncMenu();
 
 $('navShare').onclick=async()=>{
