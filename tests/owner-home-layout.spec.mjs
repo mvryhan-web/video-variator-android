@@ -58,6 +58,35 @@ test('Owner neon layout: feature shortcuts keep routes and show truthful Flow so
  await expect(page.locator('#quickCreateForm')).toBeInViewport();
 });
 
+test('Home creator picker opens real model and supported settings panels without paid generation',async({page})=>{
+ await home(page);let paidPosts=0;
+ page.on('request',request=>{if(request.method()==='POST'&&/\/api\/studio\/(jobs|estimate)/.test(new URL(request.url()).pathname))paidPosts++;});
+ const mode=page.locator('#homeCreateMode');
+ await expect(mode).toBeVisible();
+ await expect(mode.locator('option')).toHaveText(['▧  Image','▷  Video','♫  Audio','✧  AI Agent · Coming soon']);
+ await mode.selectOption('video');
+ await expect(page.locator('[data-home-kind="video"]')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#homeModelPicker')).toHaveAttribute('data-open-models','video');
+ await page.locator('#homeModelPicker').click();
+ await expect(page.locator('#modelFlyout')).toBeVisible();
+ await expect(page.locator('#modelFlyoutTitle')).toHaveText('Video models');
+ const modelCenter=await page.locator('#modelFlyout').evaluate(el=>{const r=el.getBoundingClientRect();return {x:Math.abs(r.left+r.width/2-innerWidth/2),y:Math.abs(r.top+r.height/2-innerHeight/2),inside:r.left>=0&&r.right<=innerWidth};});
+ expect(modelCenter.x).toBeLessThan(3);expect(modelCenter.y).toBeLessThan(3);expect(modelCenter.inside).toBe(true);
+ await page.locator('#modelFlyoutClose').click();
+ await page.locator('#homeSettingsOpen').click();
+ await expect(page.locator('#homeSettingsDialog')).toBeVisible();
+ const settingsCenter=await page.locator('#homeSettingsDialog').evaluate(el=>{const r=el.getBoundingClientRect();return {x:Math.abs(r.left+r.width/2-innerWidth/2),y:Math.abs(r.top+r.height/2-innerHeight/2),inside:r.left>=0&&r.right<=innerWidth};});
+ expect(settingsCenter.x).toBeLessThan(3);expect(settingsCenter.y).toBeLessThan(3);expect(settingsCenter.inside).toBe(true);
+ await expect(page.locator('#homePreferredRatio option')).toContainText(['16:9','9:16']);
+ await page.locator('#homePreferredRatio').selectOption('9:16');
+ await page.locator('#homeSettingsApply').click();
+ await expect(page.locator('#homeSettingsDialog')).toBeHidden();
+ await page.locator('#homeQuickPrompt').fill('A quiet cinematic landscape');
+ await page.locator('#homeQuickSubmit').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=home/);
+ await expect(page.locator('#ratio')).toHaveValue('9:16');
+ expect(paidPosts).toBe(0);
+});
 // TEST ONLY: reproduce the native ready-but-stalled clock. Genuine film playback
 // is independently checked without mocks in owner-home-media.spec.mjs.
 test('Owner neon layout: a stuck startup clock retries the same film and respects user pause',async({page})=>{
