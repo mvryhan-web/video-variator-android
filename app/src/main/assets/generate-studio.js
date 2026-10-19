@@ -868,7 +868,46 @@ async function createImageBatch(){
  }
  $('status').textContent=say('Batch complete: '+ready+' images saved as separate results in History.','Пакет завершён: '+ready+' изображения сохранены отдельно в Истории.');
 }
-$('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)return;busy=true;availability();if(kind==='image'&&imageBatchQuantity()>1){try{await createImageBatch();}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}return;}setHistory(false);clearResult();job=null;updateJobProgress('submitting');const epoch=++generation;$('status').textContent=say('Submitting your request…','Отправляем запрос…');try{const d=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID(),kind,model:modelId,prompt:$('prompt').value,ratio:$('ratio').value,...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),...(kind==='video'?{videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value}:{}),musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked})})).json();if(!d.id)throw Error('STUDIO_STORAGE_UNAVAILABLE');job=d.id;sessionStorage.setItem('vu_generation_job',job);updateJobProgress(d.status||'processing',{creditsReserved:d.creditsReserved});if(kind==='video'){activeVideoWatchId=job;availability();}$('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');await watch(job,epoch);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;if(!job)updateJobProgress('unconfirmed');$('status').textContent=errorText(e);busy=false;availability();}};
+$('creator').onsubmit=async e=>{
+ e.preventDefault();
+ if($('generate').disabled)return;
+ busy=true;availability();
+ $('status').textContent=say('Checking the current credit quote…','Проверяем текущую стоимость в кредитах…');
+ try{
+  // The estimate endpoint receives settings only, never the prompt or reference bytes.
+  const quoteInput={kind,model:modelId,ratio:$('ratio').value,
+   ...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),
+   ...(kind==='video'?{videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value}:{}),
+   musicMode:$('musicMode').value,referenceCount:refs.length,quantity:1};
+  const quote=await(await api('/api/studio/estimate',{method:'POST',body:JSON.stringify(quoteInput)})).json();
+  if(quote.kind!==kind||quote.quantity!==1||!Number.isSafeInteger(quote.credits)||quote.credits<1||typeof quote.model!=='string')
+   throw Error(quote.error||'AI_PRICING_NOT_APPROVED');
+  const label=catalog.find(m=>m.id===quote.model)?.label||quote.model;
+  const accepted=confirm(say(
+   'This generation uses '+quote.credits.toLocaleString()+' AI credits with '+label+'. Continue?',
+   'Эта генерация использует '+quote.credits.toLocaleString()+' AI-кредитов с моделью '+label+'. Продолжить?'
+  ));
+  if(!accepted){
+   $('status').textContent=say('Generation cancelled. No credits were reserved.','Генерация отменена. Кредиты не резервировались.');
+   busy=false;availability();return;
+  }
+  setHistory(false);clearResult();job=null;updateJobProgress('submitting');const epoch=++generation;
+  $('status').textContent=say('Submitting your request…','Отправляем запрос…');
+  const d=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({
+   requestId:crypto.randomUUID(),expectedCredits:quote.credits,kind,model:modelId,prompt:$('prompt').value,
+   ratio:$('ratio').value,...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),
+   ...(kind==='video'?{videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value}:{}),
+   musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked
+  })})).json();
+  if(!d.id)throw Error('STUDIO_STORAGE_UNAVAILABLE');
+  job=d.id;sessionStorage.setItem('vu_generation_job',job);updateJobProgress(d.status||'processing',{creditsReserved:d.creditsReserved});
+  if(kind==='video'){activeVideoWatchId=job;availability();}
+  $('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');
+  await watch(job,epoch);
+ }catch(e){
+  $('status').textContent=errorText(e);busy=false;availability();
+ }
+};
 // Continue from an existing image in the same browser without an API call.
  // The reference is explicitly prepared for a new Image request; Generate stays manual.
  async function imageResultReference(input){

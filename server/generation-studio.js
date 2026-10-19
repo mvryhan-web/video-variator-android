@@ -333,8 +333,9 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
     env.AI_PURCHASED_ONLY_DISPATCH_ENABLED!=='true'||isOwner(req.user)||
     !quote||!quote.currency)
    return res.status(503).json({error:'AI_PURCHASED_DISPATCH_NOT_AUTHORIZED'});
-  // Fail before insertion/reservation if prices changed after the user confirmed the batch quote.
-  if(req.body?.expectedCredits!=null&&(!walletEnabled()||!Number.isSafeInteger(req.body.expectedCredits)||req.body.expectedCredits!==quote?.credits))
+  // Every billable job must carry the current server quote the user explicitly accepted.
+  // Missing, malformed or stale quotes fail before insertion, reservation or provider dispatch.
+  if(!Number.isSafeInteger(req.body?.expectedCredits)||req.body.expectedCredits!==quote?.credits)
    return res.status(409).json({error:'AI_ESTIMATE_CHANGED'});
   const fingerprint=requestFingerprint(request);let c,id=randomUUID(),reused=null;try{
    await init();c=await pool.connect();await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(hashtext($1))',['ai-create:'+req.user.id]);
