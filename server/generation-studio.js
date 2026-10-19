@@ -363,7 +363,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  });
  // Read-only recovery of a Video POST whose HTTP reply was lost. This
  // NEVER dispatches/retries a provider, reserves credits or returns media.
- app.get('/api/studio/jobs/by-request/:requestId',auth,generationUser,async(req,res)=>{
+ app.get('/api/studio/jobs/by-request/:requestId',auth,generationUser,async(req,res)=>{res.set('Cache-Control','private, no-store');
   let requestId;
   try{requestId=generationRequestId(req.params.requestId,{required:true});}
   catch(_){return res.status(400).json({error:'INVALID_GENERATION_REQUEST_ID'});}

@@ -177,7 +177,7 @@ async function recoveredVideoLookup({userId='u-1',requestId='11111111-1111-4111-
  assert.equal(calls[0].handlers[0],auth);
  assert.equal(calls[0].handlers[1],generationUser);
  const result={status:200,body:null};
- const res={status(n){result.status=n;return this;},json(payload){result.body=payload;return this;}};
+ const res={set(name,value){assert.equal(name,'Cache-Control');assert.equal(value,'private, no-store');return this;},status(n){result.status=n;return this;},json(payload){result.body=payload;return this;}};
  await calls[0].handlers[2]({params:{requestId},user:{id:userId}},res);
  return {result,queries,params};
 }
