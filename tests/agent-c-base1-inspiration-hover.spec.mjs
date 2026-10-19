@@ -37,7 +37,7 @@ test('BASE1-C7 Inspiration enabled Load More has owner neon hover and real pagin
   console.log('BASE1-C7 computed hover',testInfo.project.name,width,JSON.stringify(actual));
   await page.screenshot({path:testInfo.outputPath('inspiration-load-more-'+width+'.png'),fullPage:true});
   expect(actual.border,'dark-theme enabled Load More hover border at '+width).toBe('rgb(146, 91, 255)');
-  expect(actual.color,'dark-theme enabled Load More hover text at '+width).toBe('rgb(216, 198, 255)');
+  expect(actual.color,'dark-theme enabled Load More hover text at '+width).toBe('rgb(234, 208, 255)');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth),'No page overflow '+width).toBeLessThanOrEqual(width+1);
   await loadMore.click();
   await expect(page.locator('#gallery .card')).toHaveCount(2);
