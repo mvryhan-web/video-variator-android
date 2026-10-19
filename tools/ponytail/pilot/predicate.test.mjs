@@ -18,6 +18,7 @@ const cases = [
   ['no closed PR', {...base(), state: 'closed'}, false],
   ['no Draft PR', {...base(), draft: true}, false],
   ['no stale source SHA', {...base(), expectedHeadSha: 'old'}, false],
+  ['no nonstring commit SHA', {...base(), headSha: 17, expectedHeadSha: 17, checks: [{headSha: 17, status: 'completed', conclusion: 'success'}]}, false],
   ['no checks', {...base(), checks: []}, false],
   ['no unfinished exact-head CI', {...base(), checks: [{headSha: SHA, status: 'queued'}]}, false],
   ['no failing checks', {...base(), checks: [{headSha: SHA, status: 'completed', conclusion: 'failure'}]}, false],
