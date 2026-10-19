@@ -199,3 +199,43 @@ test('pure execution with no DB/HTTP/Stripe/SMTP network calls', () => {
     globalThis.fetch = originalFetch;
   }
 });
+
+
+test('caps unique watcher alerts at ten while retaining true total', () => {
+  const alerts = Array.from({ length: 15 }, (_, i) => ({
+    code: 'RECORDED_SPEND_SPIKE',
+    provider: `Provider_${i}`,
+    currency: 'usd',
+    ratio: 2 + i
+  }));
+  const result = formatLiteOwnerEmailDraft({
+    operations: { status: 'warning', code: 'OPERATIONAL_ATTENTION', alerts }
+  }, { now: '2026-10-19T09:00:00.000Z' });
+  assert.equal(result.alertCount, 15);
+  assert.equal(result.includedAlertCount, 10);
+  assert.equal(result.truncated, true);
+  assert.ok(result.text.includes('5 additional alert(s) omitted'));
+  assert.equal(result.sent, false);
+});
+
+test('truncates long sanitized owner draft text to at most 2048 UTF-8 bytes', () => {
+  const alerts = Array.from({ length: 10 }, (_, i) => ({
+    code: 'RECORDED_SPEND_SPIKE',
+    provider: `Vendor_${String(i).padStart(2, '0')}_${'X'.repeat(35)}`,
+    currency: 'usd',
+    jobs: 1000, previousJobs: 950, failed: 600, rate: 0.88,
+    ratio: 99.9, trackedJobsLastHour: 1000,
+    readyJobsWithoutActualCostLastHour: 35,
+    recentSamples: 80, baselineSamples: 70,
+    averageMsLastHour: 99999, baselineAverageMs: 88888
+  }));
+  const result = formatLiteOwnerEmailDraft({
+    operations: { status: 'warning', code: 'OPERATIONAL_ATTENTION', alerts }
+  }, { now: '2026-10-19T09:00:00.000Z' });
+  assert.equal(result.includedAlertCount, 10);
+  assert.equal(result.truncated, true);
+  assert.ok(Buffer.byteLength(result.text, 'utf8') <= 2048);
+  assert.ok(result.text.includes('[DRAFT TEXT TRUNCATED TO 2KB LIMIT]'));
+  assert.equal(result.draftOnly, true);
+  assert.equal(result.sent, false);
+});
