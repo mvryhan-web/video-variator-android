@@ -20,6 +20,11 @@
 <div class="free-tools-hero">
   <h1 data-t="title">Everyday Tools</h1>
   <p data-t="privacy">Everyday tasks for photos, video and audio. Availability depends on the tool.</p>
+  <!-- The hub already exposes real Audio via tts/stt tiles, but removes its
+       original Avatar card. Preserve ONLY the missing independent destination. -->
+  <nav class="tools-direct-launches" aria-label="Avatar studio shortcut">
+    <a href="avatar-studio.html?from=tools">Avatar Studio · preview →</a>
+  </nav>
   <label class="theme-line"><span data-t="theme">Theme</span><select id="themeChoice"><option value="system" data-t="system">System</option><option value="dark" data-t="dark">Dark</option><option value="light" data-t="light">Light</option></select></label>
 </div>
 

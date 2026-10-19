@@ -26,6 +26,27 @@ export function gitBlobSha(text=''){
  return createHash('sha1').update('blob '+Buffer.byteLength(data,'utf8')+'\0').update(data,'utf8').digest('hex');
 }
 
+
+/** Preserve the original owner's immutable Git blob *and* the 16 separately
+ * owner-authorized, DECISIONS.md-linked historical annotations. Never repin
+ * the original SHA or accept arbitrary extra prose. A deliberate annotations
+ * edit requires changing this separate approved-notes blob and new review. */
+export const APPROVED_OWNER_NOTE_COUNT=16;
+export const APPROVED_OWNER_NOTES_BLOB_SHA='bab33105c00a41b0bd25f52a9517fdb1d64fd2e7';
+const OWNER_NOTE_PREFIX='**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).**';
+export function normalizeOwnerApprovedBase(spec=''){
+ const lines=String(spec).split('\n'),notes=[],original=[];
+ for(let i=0;i<lines.length;i++){
+  if(lines[i].startsWith(OWNER_NOTE_PREFIX)){
+   if(lines[i+1]!==''||lines[i+2]!=='')return {valid:false,original:'',notes:[]};
+   notes.push(lines[i]);i+=2;
+  }else original.push(lines[i]);
+ }
+ const valid=notes.length===APPROVED_OWNER_NOTE_COUNT&&
+  gitBlobSha(notes.join('\n')+'\n')===APPROVED_OWNER_NOTES_BLOB_SHA;
+ return {valid,original:original.join('\n'),notes};
+}
+
 /**
  * Historical 1–55 English tracking captions (editorial labels, NOT the original
  * Russian requirements). Pinning them independently prevents a simultaneous
@@ -126,7 +147,8 @@ export function verifyBaseCoordination(spec,board,checklist){
 
  const issues=[];
  const source=originalBaseNumbers(spec),rows=boardRows(board);
- if(gitBlobSha(spec)!==ORIGINAL_BASE_SPEC_BLOB_SHA){
+ const normalized=normalizeOwnerApprovedBase(spec);
+  if(!normalized.valid||gitBlobSha(normalized.original)!==ORIGINAL_BASE_SPEC_BLOB_SHA){
   issues.push('ORIGINAL_BASE_SOURCE_CHANGED: original owner BASE TXT body differs from approved immutable Git blob');
  }
  if(JSON.stringify(source)!==JSON.stringify(EXPECTED)){
@@ -191,6 +213,6 @@ if(process.argv[1]&&fileURLToPath(import.meta.url)===process.argv[1]){
   process.stderr.write(result.issues.join('\n')+'\n');
   process.exitCode=1;
  }else{
-  process.stdout.write('BASE original Git blob verified; 55 source headings, board and detailed checklist items aligned. Active claim owners validated.\n');
+  process.stdout.write('BASE original Git blob + 16 pinned owner-decision annotations verified; 55 source headings, board and checklist rows aligned.\n');
  }
 }
