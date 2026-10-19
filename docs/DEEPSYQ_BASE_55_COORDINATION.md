@@ -1,3 +1,7 @@
+## AGENT C / 2026-10-19 / OWNER ISSUE298 BASE1-C EXACT-SCOPE CLAIM BEFORE CODE
+
+Existing BASE1 parent stays team-owned / PARTIAL. **C isolated subtask**: verify named destinations of all specified real pages read-only, AI Apps/Inspiration prompt/type handoff and zero auto paid POST, C page mobile 320/375/768 Back/menu/overflow/model-link behavior. Claim branch `agent-c-base1-route-acceptance-20261019` + dedicated tests/workflow; issue authority [#298](https://github.com/mvryhan-web/video-variator-android/issues/298#issuecomment-6265288479). Other-owner defects reported, never edited; preserve History→Studio #296 and C §22 PR297 independently; no duplicate PR44, tables, Home, Studio/server, Stripe/production. **STATUS CLAIMED / BEFORE TEST CODE**. GRAPHIFY_UNAVAILABLE_IN_HOST, source map reviewed.
+
 ## COORDINATOR #5 — CYCLE 3 / 2026-10-19 — CLAIM/PR DELTA (LATEST)
 
 **No change to original 55 BASE ownership (only §47 and §53 fully DONE); no fresh simultaneous claim; no Graphify/Ponytail expansion per owner STOP.** Same five nonoverlapping lanes remain: Audio B paid/C local/Jules3 Voice/D wallet; AI Agents C UX/Jules2 planner/B provider/D paid; Inspiration C rights and catalog/A licensed SEO/B approved media; History A private GET/B durable Video/D finance/Jules2 pure Workspace; SEO A content/C public metadata/D release. Cross-owner file lease required.
