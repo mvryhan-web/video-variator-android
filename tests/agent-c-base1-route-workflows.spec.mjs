@@ -223,44 +223,44 @@ test('BASE1-C Studio real Model chooser is reachable at small widths without pai
 });
 
 
-test('BASE1-C2 Avatar Back: preserve legacy entry and record Tools-origin misroute pending owner lease',async({page})=>{
+test('BASE1-C3 Avatar Back returns to the actual caller, retaining legacy and direct fallback',async({page})=>{
  await mocks(page);
  const paid=writeCounter(page);
  await page.setViewportSize({width:375,height:812});
  await page.goto('/index.html');
- // Old Video Uniquifier still owns this legitimate entry; its Back must remain index.html.
  const legacy=page.locator('#avatarStudioLink[href="avatar-studio.html"]');
  await expect(legacy).toHaveCount(1);
- // On 375px the legacy navigation rail is intentionally off-canvas until opened.
- // Use the actual existing menu control rather than clicking a hidden link.
- await expect(page.locator('#menuBtn')).toBeVisible();
+ // Existing legacy navigation is intentionally hidden on mobile until opened.
  await page.locator('#menuBtn').click();
  await expect(page.locator('.sidebar')).toHaveClass(/open/);
- await expect(legacy).toBeVisible();
  await legacy.click();
  await expect(page).toHaveURL(/\/avatar-studio\.html$/);
- const avatarBack=page.locator('a.tool-back[data-av="back"]');
- await expect(avatarBack).toHaveAttribute('href','index.html');
- await avatarBack.click();
+ const back=page.locator('a.tool-back[data-av="back"]');
+ await expect(back).toHaveAttribute('href','index.html');
+ await back.click();
  await expect(page).toHaveURL(/\/index\.html$/);
 
- // New Tools entry exists, but Avatar currently cannot distinguish the caller.
- // This is a measured known cross-owner defect; we do NOT classify this path READY.
+ // Both unmarked direct loads and unrecognized hints must retain the safe
+ // original destination; no arbitrary return URL may be accepted.
+ for(const href of ['/avatar-studio.html','/avatar-studio.html?from=untrusted']){
+  await page.goto(href);
+  await expect(page.locator('a.tool-back[data-av="back"]')).toHaveAttribute('href','index.html');
+ }
  for(const width of [320,375,768]){
   await page.setViewportSize({width,height:812});
   await page.goto('/free-tools.html');
-  const toolsEntry=page.getByRole('navigation',{name:'Avatar studio shortcut'})
+  const entry=page.getByRole('navigation',{name:'Avatar studio shortcut'})
    .locator('a[href="avatar-studio.html?from=tools"]');
-  await expect(toolsEntry).toBeVisible();
-  await toolsEntry.click();
+  await expect(entry).toBeVisible();
+  await entry.click();
   await expect(page).toHaveURL(/\/avatar-studio\.html\?from=tools$/);
-  const actualBack=page.locator('a.tool-back[data-av="back"]');
-  const observed=await actualBack.getAttribute('href');
-  expect(observed,'Document the present destination until Avatar owner grants a patch').toBe('index.html');
-  console.log('BASE1_C2_BLOCKED_FOREIGN_AVATAR_BACK',
-   JSON.stringify({viewport:width,entry:'free-tools.html',observed,desired:'free-tools.html'}));
-  await actualBack.click();
-  await expect(page).toHaveURL(/\/index\.html$/);
+  const toolsBack=page.locator('a.tool-back[data-av="back"]');
+  await expect(toolsBack).toHaveAttribute('href','free-tools.html');
+  // A browser reload must preserve the explicitly selected safe origin.
+  await page.reload();
+  await expect(page.locator('a.tool-back[data-av="back"]')).toHaveAttribute('href','free-tools.html');
+  await page.locator('a.tool-back[data-av="back"]').click();
+  await expect(page).toHaveURL(/\/free-tools\.html$/);
  }
  expect(paid()).toBe(0);
 });
