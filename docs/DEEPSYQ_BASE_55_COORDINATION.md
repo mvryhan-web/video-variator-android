@@ -1,3 +1,11 @@
+## [COORDINATOR #5 / C301 NON-FORCE HISTORICAL CLAIM RECONCILIATION / 2026-10-19]
+
+The following original Agent C pre-code claim is retained verbatim as HISTORY; it does NOT supersede current Cycle4.1 functional PASS/current CI status or owner locks. This merge keeps the latest DEV coordination queue and original 55 rows, without weakening BASE55 governance.
+
+## AGENT C / 2026-10-19 / OWNER ISSUE298 BASE1-C EXACT-SCOPE CLAIM BEFORE CODE
+
+Existing BASE1 parent stays team-owned / PARTIAL. **C isolated subtask**: verify named destinations of all specified real pages read-only, AI Apps/Inspiration prompt/type handoff and zero auto paid POST, C page mobile 320/375/768 Back/menu/overflow/model-link behavior. Claim branch `agent-c-base1-route-acceptance-20261019` + dedicated tests/workflow; issue authority [#298](https://github.com/mvryhan-web/video-variator-android/issues/298#issuecomment-6265288479). Other-owner defects reported, never edited; preserve History→Studio #296 and C §22 PR297 independently; no duplicate PR44, tables, Home, Studio/server, Stripe/production. **STATUS CLAIMED / BEFORE TEST CODE**. GRAPHIFY_UNAVAILABLE_IN_HOST, source map reviewed.
+
 ## COORDINATOR #5 — CYCLE 4.1 / CURRENT C301 BROWSER FIX EVIDENCE
 
 **Source status update (no new BASE claim):** C existing PR301 `7e07012d462b6b6e4a68509ebe69cbaf60bc491d` now has exact-head five-browser navigation test [#39249335196](https://github.com/mvryhan-web/video-variator-android/actions/runs/39249335196) **SUCCESS**, fixing Tools→Avatar→Back and preserving legacy/direct paths via CSP-compatible small handler. Previous Cycle4 C `b74854b9` 30 PASS / 5 FAIL remains a historical failing snapshot, **not current**. General BASE55 integrity remains FAILED on the 21 independently reproduced pre-existing DEV governance issues; C PR301 is still DRAFT, concurrent C PR297 retains separate Inspiration storage safety and overlaps only claim/status docs. No duplicate source merge until exact docs reconciliation + correct current-head native checks. Owner original 55/locked Home unchanged. Updated full status: [PROJECT_STATUS.md](../PROJECT_STATUS.md) commit `aef69d6b261f918c92390b39989bae449886becf`.
