@@ -1,5 +1,13 @@
 # Deepsyq — Graphify + Ponytail: agent operating guide (2026-10-19)
 
+## SHARED SAFE GRAPHIFY CODE MAP — use before code/history reads
+
+- **Read:** `docs/DEEPSYQ_CODE_MAP.md` (topic and file→symbol/line pointers); `docs/DEEPSYQ_CODE_MAP.json` (allowlisted Graphify AST nodes/relations). On a new task read only the relevant entries, not the whole archive. Both files appear **only after** their first successful publishing workflow on `deepsyq-platform`.
+- **Freshness:** `source_sha` must correspond to the indexed source. When current code has changed since SHA, inspect only affected files/diff, or regenerate with the pinned CI. Missing/stale map → narrow search; never fabricate coverage.
+- **Generation:** `.github/workflows/graphify-offline-pilot.yml` indexes only `server/` safely with the pinned offline `--code-only` Graphify CLI, tests exclusion of a synthetic secret, then writes *only the allowlisted symbol and relation index*. Raw graph is removed after CI and never published. On DEV pushes, the CI bot attempts to commit the sanitised index back to DEV. If GitHub branch protection blocks this, CHECKPOINT must report that rather than claim publication.
+- **Every host:** A/B/C/D/#5 and Jules can use a normal GitHub file reader for this map even if the host cannot launch Graphify CLI or auto-load a skill. Ponytail remains the minimum complete tested diff, not permission to omit requirements. Scope of index is server only until separately tested expansion.
+
+
 Only these two original tools are approved. This on-demand guide supplements, never supersedes, AGENTS.md, 25 owner rules, BASE 55 or protected Home design.
 
 ## Pinned originals already merged to deepsyq-platform
