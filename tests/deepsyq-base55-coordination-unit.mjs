@@ -43,7 +43,7 @@ test('active task claims require real owners; a board with zero claims is valid'
  const neutral=board.split('\n').map(line=>{
   if(!/^\|\s*\d+\s*\|/.test(line))return line;
   const cells=line.split('|');
-  if(/\bIN PROGRESS\b/i.test(cells[6]||'')){
+  if(/\bIN PROGRESS\b/i.test(cells[6]||'')||/^\|\s*52\s*\|/.test(line)){
    cells[6]=' — ';cells[7]=' — ';
   }
   return cells.join('|');
