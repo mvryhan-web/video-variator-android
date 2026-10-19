@@ -1,0 +1,214 @@
+BLOCK 6 — DEEPSYQ VOICE AGENT
+============================================================
+
+Working name:
+Deepsyq Voice Agent
+
+Final unique name may be chosen later.
+
+Do NOT:
+- use JARVIS commercially
+- imitate Paul Bettany/JARVIS voice
+- imply Marvel affiliation
+
+Voice personality:
+- original
+- intelligent
+- calm
+- confident
+- premium
+- friendly male
+- moderately low timbre
+- light international / British-ish flavor
+- natural diction
+- light humor
+- not an imitation of a real actor/character
+
+Voice is an interface to all of Deepsyq:
+- Ask / Smart
+- Multi-AI Compare
+- User Agent
+- Studio
+- My Workspace
+- Agent Skills
+- Everyday Tools
+- Video Tools
+- Image Tools
+- History
+- current-info/web tools
+- approved owner Product Watcher access
+
+Pipeline:
+voice input
+→ realtime voice/model
+→ Agent Orchestrator
+→ tool/API
+→ result
+→ voice response
+
+Requirements:
+- realtime/streaming where supported
+- barge-in/interruption
+- Voice/Text switch
+- transcript
+- Stop
+- Mute
+- End
+- truthful tool status
+- never claim unavailable tools worked
+
+VOICE ONBOARDING
+No surprise autoplay of microphone/audio.
+
+First screen:
+“Meet your Deepsyq Assistant”
+
+Button:
+“Start voice introduction”
+
+Then a short 20–30 sec introduction.
+
+Options:
+- Ask me something
+- Try a quick task
+- Help me organize my device
+- Not now
+
+DEVICE CLEANUP / STORAGE ASSISTANT
+This is part of Block 6, NOT Block 7.
+
+Browser:
+- cannot access the whole device
+- only explicitly selected files/folders
+- use File System Access API only where supported
+
+Native:
+- Android/iOS/Desktop only through official OS permissions
+
+Spoken “yes” does not replace OS/browser permission dialogs.
+
+No:
+- hidden access
+- hidden scanning
+- hidden recording
+- background deletion without permission
+
+Scan categories:
+- exact duplicate photos
+- exact duplicate videos
+- visually similar
+- large files/videos
+- screenshots
+- old downloads
+- blurry media
+- repeated/bursty media
+- temp/export only if accessible
+
+Show:
+- counts
+- estimated storage
+- categories
+- exact duplicates separately from similar media
+
+Actions:
+- Review Files
+- Select duplicates
+- Keep everything
+- Delete selected
+
+Delete:
+- never auto-delete
+- final confirmation
+- prefer Trash / Recently Deleted when supported
+
+VOICE COST / PLANS
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. НЕТ бесплатной озвучки, Voice-first-win, бесплатных AI-запросов или стартовых credits. Voice/TTS/STT/AI доступны только оплачивающим по подтверждённо купленным кредитам; канон Block 7, Issue #182. Trial $0.99 как покупка ЕЩЁ НЕ АКТИВЕН, кредиты/срок/возвраты/повторы не согласованы.
+Track:
+- realtime audio input
+- audio output
+- model usage
+- tool calls
+- Multi-AI
+- Agent calls
+
+Limits:
+- per user
+- per session
+- per month
+- idle timeout
+- credits
+
+Trial $0.99:
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Ниже прежний small voice allowance не утверждён; условия только в Block 7 после отдельного решения владельца, никаких бесплатных Voice credits.
+- small voice allowance
+- no unlimited voice
+
+Free/first-win may include:
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. ПРЕЖНИЙ FREE/FIRST-WIN список ниже ИСТОРИЧЕСКИЙ И ОТМЕНЁН: не давать AI allowance/free voice. Локальная проверка дублей файлов (без платного cloud AI) — Everyday Tools, не бесплатный Voice.
+- small voice allowance
+- small device scan/duplicate preview
+- some AI requests
+- then upgrade
+
+VOICE PRIVACY
+- visible mic indicator
+- no hidden recording
+- minimize raw audio retention
+- confirmation for destructive/external/purchase/account actions
+
+Mobile-first:
+- Android
+- iPhone
+- mobile web
+
+Account for:
+- mic permissions
+- Bluetooth
+- speaker routing
+- background restrictions
+- browser limits
+
+Provider abstraction, config-based:
+- realtime provider
+- STT
+- TTS
+- voice ID
+- model
+- language
+- cost
+- enabled flag
+
+Do not hardcode current model IDs.
+
+Future-ready:
+- wake word
+- hands-free
+- proactive notifications
+- email/calendar/apps
+- navigation
+- desktop local actions
+- glasses
+- car
+- wearables
+- robotics
+
+OWNER MODE / PRODUCT WATCHER
+The same voice persona may read Product Watcher only in authenticated owner/admin mode.
+
+Owner examples:
+- “What changed overnight?”
+- read Daily Brief
+- problems
+- costs
+- provider status
+- pending approvals
+
+Do not merge Voice/User Agent/Product Watcher into one root service.
+Voice is an interface.
+Product Watcher keeps separate permissions/audit.
+Critical changes still require owner approval.
+
+============================================================

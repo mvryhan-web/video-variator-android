@@ -1,3 +1,12 @@
+import {initToolAccess,installToolAccess} from './tool-access.js';
+import {installGenerationStudio} from './generation-studio.js';
+import {installProductWatcher} from './product-watcher/admin-api.js';
+import {platformFeatureEnabled} from './platform-feature-flags.js';
+import {installGenerationBilling} from './generation-billing.js';
+import {installGenerationTemplates} from './generation-templates.js';
+import {installInspiration} from './generation-inspiration.js';
+import {installOnboarding} from './generation-onboarding.js';
+import {pool as generationPool} from './db.js';
 import {installSpeech} from './speech.js';
 import {installTelegramBot} from './telegram.js';
 import {installReminders,initRemindersDb,startReminderScheduler} from './reminders.js';
@@ -10,7 +19,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {installEmailAuth} from './email-auth.js';
 import {
-  initDb,upsertUser,getUser,publicUser,setStripeCustomer,applySubscription,applyLifetime,updateSubscriptionByStripeId,
+  initDb,upsertUser,getUser,getUserByProvider,publicUser,setStripeCustomer,applySubscription,applyLifetime,updateSubscriptionByStripeId,
   resetPeriodUsageBySubscription,consumeUsage,addHistory,listHistory,clearHistory,deleteHistoryItem,reserveSpeech,addEvent,getAnalytics
 } from './db.js';
 
@@ -39,6 +48,7 @@ function fromUnix(v){return v?new Date(Number(v)*1000):null;}
 function requireServerConfig(){if(!jwtSecret)throw new Error('APP_JWT_SECRET is not configured');}
 function sameOriginFallback(){try{return new URL(appUrl).origin;}catch(_){return'';}}
 function billingConfigured(){return Object.values(plans).every(p=>p.paymentLink||(stripe&&p.priceId));}
+
 function paymentLinkUrl(base,user){const url=new URL(base);url.searchParams.set('client_reference_id',user.id);if(user.email)url.searchParams.set('prefilled_email',user.email);return url.toString();}
 async function cancelPreviousSubscriptionForLifetime(subscriptionId){
   if(!subscriptionId||!stripe)return;
@@ -88,7 +98,8 @@ app.use((req,res,next)=>{
 app.use('/api',(req,res,next)=>{
   res.setHeader('Cache-Control','no-store, private');
   const type=String(req.headers['content-type']||'').toLowerCase();
-  if(type.startsWith('video/')||type.includes('multipart/form-data'))return res.status(415).json({error:'RAW_VIDEO_UPLOAD_DISABLED',message:'Video files are processed locally on the user device.'});
+  const approvedReferencePilot=req.method==='POST'&&req.path==='/studio/references'&&type==='video/mp4'&&process.env.AI_STUDIO_REFERENCE_UPLOAD_ENABLED==='true';
+  if((type.startsWith('video/')||type.includes('multipart/form-data'))&&!approvedReferencePilot)return res.status(415).json({error:'RAW_VIDEO_UPLOAD_DISABLED',message:'Video files are processed locally on the user device.'});
   next();
 });
 
@@ -104,8 +115,9 @@ async function grantLifetimeFromCheckoutSession(s){
 
 app.post('/api/webhooks/stripe',express.raw({type:'application/json'}),async(req,res)=>{
   if(!process.env.STRIPE_WEBHOOK_SECRET)return res.status(503).send('Stripe webhook is not configured');let event;
-  try{event=stripeWebhookClient.webhooks.constructEvent(req.body,req.headers['stripe-signature'],process.env.STRIPE_WEBHOOK_SECRET);}catch(e){return res.status(400).send(`Webhook signature error: ${e.message}`);}
+  try{event=stripeWebhookClient.webhooks.constructEvent(req.body,req.headers['stripe-signature'],process.env.STRIPE_WEBHOOK_SECRET);}catch(_){return res.status(400).send('Invalid Stripe webhook signature');}
   try{
+    if(await generationBilling.handleEvent(event))return res.json({received:true});
     if(event.type==='checkout.session.completed'){
       const s=event.data.object,userId=s.metadata?.userId||s.client_reference_id,plan=s.metadata?.plan;
       if(plan==='lifetime')await grantLifetimeFromCheckoutSession(s);
@@ -119,11 +131,13 @@ app.post('/api/webhooks/stripe',express.raw({type:'application/json'}),async(req
   }catch(e){console.error('[stripe webhook]',e);res.status(500).send('Webhook processing failed');}
 });
 
+app.use('/api/studio/jobs',express.json({limit:'5mb'}));
 app.use(express.json({limit:'1mb'}));
 const registerTelegramWebhook=installTelegramBot(app,{appUrl});
 async function signAppToken(user){requireServerConfig();const key=new TextEncoder().encode(jwtSecret);return new SignJWT({email:user.email||'',name:user.name||''}).setProtectedHeader({alg:'HS256'}).setSubject(user.id).setIssuer('video-variator').setAudience('video-variator-client').setIssuedAt().setExpirationTime('7d').sign(key);}
 async function auth(req,res,next){try{requireServerConfig();const token=(req.headers.authorization||'').replace(/^Bearer\s+/i,'');if(!token)return res.status(401).json({error:'AUTH_REQUIRED'});const key=new TextEncoder().encode(jwtSecret),{payload}=await jwtVerify(token,key,{issuer:'video-variator',audience:'video-variator-client'}),user=await getUser(payload.sub);if(!user)return res.status(401).json({error:'USER_NOT_FOUND'});req.user=user;next();}catch(_){res.status(401).json({error:'INVALID_SESSION'});}}
 installEmailAuth(app,{signAppToken});
+installToolAccess(app,{auth});
 installSpeech(app,{auth,reserve:reserveSpeech});
 installReminders(app,{auth});
 
@@ -131,11 +145,11 @@ app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',ht
 app.get('/api/version',(req,res)=>res.json({webVersion:process.env.WEB_VERSION||'5.3.0',androidVersion:process.env.ANDROID_VERSION||'5.3.0',androidVersionCode:Number(process.env.ANDROID_VERSION_CODE||5),latestApkUrl:process.env.LATEST_APK_URL||'https://github.com/mvryhan-web/video-variator-android/releases/latest/download/VideoUniquifier.apk'}));
 app.get('/api/config',(req,res)=>res.json({
   googleClientId:process.env.GOOGLE_CLIENT_ID||'',appleClientId:process.env.APPLE_CLIENT_ID||'',appleRedirectUri:process.env.APPLE_REDIRECT_URI||'',emailAuth:true,trialLimit:100,billingConfigured:billingConfigured(),
-  introOfferText:process.env.INTRO_OFFER_TEXT||'Intro discount available on your first subscription',privacy:{httpsRequired:isProduction,localVideoProcessing:true,rawVideoUploadDisabled:true},plans:{basic:{price:9,limit:750,unit:'credits'},pro:{price:24,limit:2250,unit:'credits'},business:{price:99,limit:15000,unit:'credits'},lifetime:{price:2999,currency:'eur',unlimited:true,allFeatures:true,oneTime:true}}
+  introOfferText:process.env.INTRO_OFFER_TEXT||'Intro discount available on your first subscription',features:{aiApps:platformFeatureEnabled('AI_APPS_ENABLED'),inspiration:platformFeatureEnabled('AI_INSPIRATION_ENABLED'),productVideo:platformFeatureEnabled('AI_PRODUCT_VIDEO_ENABLED'),onboarding:platformFeatureEnabled('AI_ONBOARDING_ENABLED')},privacy:{httpsRequired:isProduction,localVideoProcessing:true,rawVideoUploadDisabled:true},plans:{basic:{price:9,limit:750,unit:'credits'},pro:{price:24,limit:2250,unit:'credits'},business:{price:99,limit:15000,unit:'credits'},lifetime:{price:2999,currency:'eur',unlimited:true,allFeatures:true,oneTime:true}}
 }));
 
-app.post('/api/auth/google',async(req,res)=>{try{if(!process.env.GOOGLE_CLIENT_ID)return res.status(503).json({error:'GOOGLE_AUTH_NOT_CONFIGURED'});const credential=req.body?.credential;if(!credential)return res.status(400).json({error:'MISSING_GOOGLE_CREDENTIAL'});const {payload}=await jwtVerify(credential,googleJwks,{audience:process.env.GOOGLE_CLIENT_ID,issuer:['https://accounts.google.com','accounts.google.com']});const email=payload.email_verified===false?null:payload.email;const user=await upsertUser({provider:'google',providerSub:payload.sub,email,name:payload.name});res.json({token:await signAppToken(user),user:publicUser(user)});}catch(e){console.error('[google auth]',e);res.status(401).json({error:'GOOGLE_AUTH_FAILED'});}});
-app.post('/api/auth/apple',async(req,res)=>{try{if(!process.env.APPLE_CLIENT_ID)return res.status(503).json({error:'APPLE_AUTH_NOT_CONFIGURED'});const idToken=req.body?.idToken;if(!idToken)return res.status(400).json({error:'MISSING_APPLE_TOKEN'});const {payload}=await jwtVerify(idToken,appleJwks,{audience:process.env.APPLE_CLIENT_ID,issuer:'https://appleid.apple.com'}),supplied=req.body?.user||{},fullName=supplied?.name?[supplied.name.firstName,supplied.name.lastName].filter(Boolean).join(' '):null,user=await upsertUser({provider:'apple',providerSub:payload.sub,email:payload.email||supplied.email||null,name:fullName});res.json({token:await signAppToken(user),user:publicUser(user)});}catch(e){console.error('[apple auth]',e);res.status(401).json({error:'APPLE_AUTH_FAILED'});}});
+app.post('/api/auth/google',async(req,res)=>{try{if(!process.env.GOOGLE_CLIENT_ID)return res.status(503).json({error:'GOOGLE_AUTH_NOT_CONFIGURED'});const credential=req.body?.credential;if(!credential)return res.status(400).json({error:'MISSING_GOOGLE_CREDENTIAL'});const {payload}=await jwtVerify(credential,googleJwks,{audience:process.env.GOOGLE_CLIENT_ID,issuer:['https://accounts.google.com','accounts.google.com']});const email=payload.email_verified===false?null:payload.email,existing=await getUserByProvider('google',payload.sub);const user=await upsertUser({provider:'google',providerSub:payload.sub,email,name:payload.name});res.json({token:await signAppToken(user),user:publicUser(user),newAccount:!existing});}catch(e){console.error('[google auth]',e);res.status(401).json({error:'GOOGLE_AUTH_FAILED'});}});
+app.post('/api/auth/apple',async(req,res)=>{try{if(!process.env.APPLE_CLIENT_ID)return res.status(503).json({error:'APPLE_AUTH_NOT_CONFIGURED'});const idToken=req.body?.idToken;if(!idToken)return res.status(400).json({error:'MISSING_APPLE_TOKEN'});const {payload}=await jwtVerify(idToken,appleJwks,{audience:process.env.APPLE_CLIENT_ID,issuer:'https://appleid.apple.com'}),supplied=req.body?.user||{},fullName=supplied?.name?[supplied.name.firstName,supplied.name.lastName].filter(Boolean).join(' '):null,existing=await getUserByProvider('apple',payload.sub),user=await upsertUser({provider:'apple',providerSub:payload.sub,email:payload.email||supplied.email||null,name:fullName});res.json({token:await signAppToken(user),user:publicUser(user),newAccount:!existing});}catch(e){console.error('[apple auth]',e);res.status(401).json({error:'APPLE_AUTH_FAILED'});}});
 app.get('/api/me',auth,(req,res)=>res.json({user:publicUser(req.user)}));
 
 app.post('/api/usage/consume',auth,async(req,res)=>{try{const user=await consumeUsage(req.user.id,{seconds:req.body?.seconds,sourceCount:req.body?.sourceCount??req.body?.count});await addEvent(req.user.id,{type:'processing_success',category:'usage'});res.json({user:publicUser(user)});}catch(e){if(e.code==='CREDIT_LIMIT_REACHED'||e.message==='CREDIT_LIMIT_REACHED')return res.status(402).json({error:'CREDIT_LIMIT_REACHED'});console.error(e);res.status(500).json({error:'USAGE_UPDATE_FAILED'});}});
@@ -166,7 +180,23 @@ app.post('/api/billing/checkout',auth,async(req,res)=>{try{
 app.post('/api/billing/portal',auth,async(req,res)=>{try{if(publicUser(req.user)?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});if(!stripe||!req.user.stripe_customer_id)return res.status(400).json({error:'BILLING_PORTAL_UNAVAILABLE'});const session=await stripe.billingPortal.sessions.create({customer:req.user.stripe_customer_id,return_url:`${appUrl}/`});res.json({url:session.url});}catch(e){console.error('[portal]',e);res.status(500).json({error:'BILLING_PORTAL_FAILED'});}});
 app.post('/api/billing/cancel',auth,async(req,res)=>{try{const current=publicUser(req.user);if(current?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});if(current?.usage?.plan==='lifetime')return res.status(409).json({error:'LIFETIME_HAS_NO_SUBSCRIPTION'});if(!stripe||!req.user.stripe_subscription_id)return res.status(400).json({error:'NO_ACTIVE_SUBSCRIPTION'});const sub=await stripe.subscriptions.update(req.user.stripe_subscription_id,{cancel_at_period_end:true});await updateSubscriptionByStripeId({subscriptionId:sub.id,status:sub.status,currentPeriodEnd:fromUnix(sub.current_period_end)});res.json({ok:true,cancelAtPeriodEnd:!!sub.cancel_at_period_end,currentPeriodEnd:fromUnix(sub.current_period_end)});}catch(e){console.error('[cancel]',e);res.status(500).json({error:'SUBSCRIPTION_CANCEL_FAILED'});}});
 
+const generationBilling=installGenerationBilling(app,{auth,pool:generationPool,stripe,appUrl});
+installGenerationTemplates(app,{auth,pool:generationPool});
+installInspiration(app,{auth,pool:generationPool});
+installOnboarding(app,{auth,pool:generationPool});
+const generationStudio=installGenerationStudio(app,{auth,pool:generationPool,wallet:generationBilling.wallet});
+installProductWatcher(app,{auth,pool:generationPool});
+// Opt-in platform entry. Legacy auth/payment returns retain their existing handler.
+app.get('/',(req,res,next)=>{
+  if(process.env.DEEPSYQ_HOME_ENABLED!=='true'||req.query.mobileAuth||req.query.checkout)return next();
+  res.setHeader('Cache-Control','no-cache');
+  res.sendFile(path.join(staticDir,'deepsyq.html'));
+});
+app.get('/dashboard',(req,res)=>res.sendFile(path.join(staticDir,'deepsyq.html')));
+app.get(['/ai-apps','/ai-apps.html'],(req,res,next)=>platformFeatureEnabled('AI_APPS_ENABLED')?next():res.status(404).type('text/plain').send('Not found'));
+app.get(['/inspiration','/inspiration.html'],(req,res,next)=>platformFeatureEnabled('AI_INSPIRATION_ENABLED')?next():res.status(404).type('text/plain').send('Not found'));
+app.get(['/product-video','/product-video.html'],(req,res,next)=>platformFeatureEnabled('AI_PRODUCT_VIDEO_ENABLED')?next():res.status(404).type('text/plain').send('Not found'));
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
 
-await initDb();await initRemindersDb();app.listen(port,()=>{console.log(`Video Uniquifier running on ${appUrl}`);void registerTelegramWebhook?.();startReminderScheduler();});
+await initDb();await initToolAccess();await initRemindersDb();app.listen(port,()=>{console.log(`Video Uniquifier running on ${appUrl}`);void registerTelegramWebhook?.();startReminderScheduler();generationStudio?.startRecovery?.();});

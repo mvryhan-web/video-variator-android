@@ -1,0 +1,23 @@
+name: 'BASE #4 OpenAI Images M0 (offline)'
+on:
+  pull_request:
+    paths:
+      - 'server/generation-openai-image.js'
+      - 'tests/base4-openai-image-adapter-unit.mjs'
+      - '.github/workflows/base4-openai-image-adapter.yml'
+  workflow_dispatch:
+jobs:
+  adapter-no-spend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JS syntax (no secrets)
+        run: node --check server/generation-openai-image.js
+      - name: Offline fixture tests only (no external generation)
+        run: node --test tests/base4-openai-image-adapter-unit.mjs

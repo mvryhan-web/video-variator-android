@@ -1,0 +1,33 @@
+name: BASE 29 AI Apps account navigation
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/ai-apps.html'
+      - 'app/src/main/assets/ai-apps.js'
+      - 'app/src/main/assets/ai-apps.css'
+      - 'tests/base29-account-navigation.spec.mjs'
+      - '.github/workflows/base29-account-navigation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  account-nav:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Validate account navigation syntax
+        run: |
+          node --check app/src/main/assets/ai-apps.js
+          node --check tests/base29-account-navigation.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Verify real Profile navigation and safe Logout on desktop and mobile
+        run: npx playwright test tests/base29-account-navigation.spec.mjs --project=chromium --project=mobile-chromium --project=webkit --project=mobile-webkit

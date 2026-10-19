@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080d1d"><title>Creative Studio · Deepsyq</title>
+<link rel="stylesheet" href="generate-studio.css"><script defer src="file-share.js"></script><script type="module" src="generate-studio.js"></script>
+<link rel="stylesheet" href="deepsyq-global-theme.css"><script defer src="deepsyq-site-shell.js"></script></head>
+<body>
+<header class="topbar"><a href="deepsyq.html" class="back" data-t="back">← Back</a><a href="deepsyq.html" class="brand"><span class="brand-mark" aria-hidden="true"><img src="deepsyq-logo.png" alt="" width="31" height="31" decoding="async"></span>Deepsyq</a><button id="walletButton" class="wallet-button" type="button" hidden>AI credits <strong id="walletBalance">—</strong></button><span class="badge" data-t="pilot">Studio preview</span></header>
+<div class="studio-shell">
+<nav class="studio-nav" aria-label="Studios">
+<span class="nav-caption" data-t="workspace">YOUR WORKSPACE</span>
+<button data-kind="video" aria-pressed="true"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="4"/><path d="m10 9 5 3-5 3z"/></svg></span><span data-t="video">Video</span></button>
+<button data-kind="image" aria-pressed="false"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="8" r="1.5"/><path d="m5 18 5-5 3 3 3-5 4 6"/></svg></span><span data-t="image">Images</span></button>
+<button data-kind="music" aria-pressed="false"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4m4-7v10m4-14v18m4-14v10m4-7v4"/></svg></span><span data-t="audio">Audio</span></button>
+<div class="nav-footer"><a href="deepsyq.html" data-t="dashboard">Dashboard ↗</a><button data-kind="translation" aria-pressed="false" class="future" data-t="translation">Translation · pending</button></div>
+</nav>
+<main>
+<div class="stage-tabs"><button id="showCreate" aria-pressed="true" data-t="create">Create</button><button id="showHistory" aria-pressed="false" data-t="history">My results</button></div>
+<section class="stage result" aria-label="Generated result">
+<div id="empty" class="intro"><div class="hero-art" aria-hidden="true"><span></span><span></span><span></span></div><small data-t="label">CREATIVE STUDIO</small><h1 data-t="headline">Your idea. Make it real.</h1><h2 id="taskTitle">Create a video</h2><p id="taskDescription"></p><div class="examples" id="examples"></div></div>
+<div id="historyEmpty" hidden><h2 data-t="history">My results</h2><p data-t="historyHint">Your saved studio results appear here. Nothing is generated automatically.</p><div id="historyFilters" class="history-filters" aria-label="History filters"><button type="button" data-history-filter="all" aria-pressed="true" data-t="filterAll">All</button><button type="button" data-history-filter="image" aria-pressed="false" data-t="filterImages">Images</button><button type="button" data-history-filter="video" aria-pressed="false" data-t="filterVideos">Videos</button><button type="button" data-history-filter="failed" aria-pressed="false" data-t="filterFailed">Failed</button><button type="button" data-history-filter="processing" aria-pressed="false" data-t="filterProcessing">Processing</button></div><button id="resumeJob" hidden data-t="checkResult">Check latest result</button></div><div id="historyList" class="history-list" hidden aria-live="polite"></div>
+<div id="media"></div><p id="status" role="status" aria-live="polite"></p><section id="jobProgress" class="job-progress" role="status" aria-live="polite" aria-label="Generation progress" hidden><strong id="jobProgressStage"></strong><span id="jobProgressCredits"></span><p id="jobProgressHint"></p></section>
+<div id="videoBackgroundControls" class="video-background-controls" hidden>
+ <button id="backgroundVideo" type="button">Continue in background →</button>
+ <p class="hint">Stop waiting on this page without cancelling the server video job. Return to History later to check the result. Closing this page will not automatically stop the job.</p>
+</div>
+<pre id="lyrics"></pre>
+<div id="actions" hidden><button id="download" data-t="download">Download</button><button id="share" data-t="share">Share</button><button id="continueImage" type="button" hidden>Use as image reference ↗</button><button id="remove" data-t="delete">Delete</button></div>
+<p id="saveNote" class="hint" hidden data-t="saveNote">Save a copy to keep it. Deleting a result does not delete downloaded copies.</p>
+</section>
+<form id="creator" class="composer">
+<div class="prompt-row"><label class="upload" id="referenceBox"><span aria-hidden="true">+</span><span data-t="addPhoto">Add photo</span><input id="references" type="file" accept="image/jpeg,image/png" multiple aria-label="Reference photos"></label><label class="prompt-label"><span class="sr-only" data-t="prompt">Describe what you want to create</span><textarea id="prompt" maxlength="2000" rows="3" required placeholder="Describe the video you want to create…"></textarea></label></div>
+<div id="refPreview"></div><div id="imageEditPresets" class="image-edit-presets" hidden><span>Quick image edits</span><button type="button" data-image-edit="background">Change background</button><button type="button" data-image-edit="lighting">Improve lighting</button><button type="button" data-image-edit="detail">Enhance details</button><button type="button" data-image-edit="style">Change style</button></div><div class="ref-meta"><p class="hint" id="refHint"></p><button type="button" id="clearRefs" hidden data-t="clear">Clear photos</button></div>
+<div id="imageDraftBar" class="image-draft-bar" hidden><span id="imageDraftMessage" role="status">Image prompt and settings are saved in this tab; reference photos are not stored.</span><button type="button" id="imageDraftSkipPhotos" hidden>Continue without photos</button><button type="button" id="clearImageDraft">Clear draft</button></div>
+<div id="videoDraftBar" class="image-draft-bar" hidden><span id="videoDraftMessage" role="status">Video prompt and settings are saved in this tab for up to 24 hours; reference photos are not stored.</span><button type="button" id="videoDraftSkipPhotos" hidden>Continue without old photos</button><button type="button" id="clearVideoDraft">Clear video draft</button></div>
+<div class="composer-controls"><button type="button" id="modelButton" class="pill" aria-haspopup="dialog">Model <span aria-hidden="true">⌄</span></button><button type="button" id="settingsButton" class="pill" aria-haspopup="dialog">Settings <span aria-hidden="true">⌄</span></button><button id="generate" class="primary" disabled data-t="generate">Generate ✦</button></div>
+<p id="creditEstimate" class="credit-estimate" hidden aria-live="polite"></p><label class="consent"><input type="checkbox" id="consent"><span data-t="consent">I agree to send this prompt and reference photos to Google for generation.</span></label><p id="availability" role="status"></p><p id="accessInfo" class="hint access-info" hidden></p><p class="hint" data-t="pilotNote">Studio preview. Payments are not activated.</p><p class="hint"><a href="ai-pricing.html">Pricing & AI credits →</a> · <a href="ai-privacy.html">How AI media is handled →</a></p>
+</form>
+</main>
+</div>
+<dialog id="modelDialog"><div class="dialog-head"><h2 data-t="chooseModel">Choose a model</h2><button type="button" data-close="modelDialog" aria-label="Close">×</button></div><p class="hint" data-t="modelHint">Choose the tool for your task. Connection status is shown for every model.</p><div id="modelChoices" class="model-choices"></div></dialog>
+<dialog id="settingsDialog"><div class="dialog-head"><h2 data-t="settings">Settings</h2><button type="button" data-close="settingsDialog" aria-label="Close">×</button></div>
+<label id="ratioLabel"><span data-t="format">Format</span><select id="ratio"></select></label><div id="ratioChoices" class="ratio-choices"></div><label id="videoInputModeLabel" hidden><span>How to use reference photos</span><select id="videoInputMode"><option value="text">Text to video</option></select></label>
+<p id="videoInputModeNote" class="hint" hidden>First frame uses exactly one photo; first + last frames require exactly two; Reference images guides the scene with 1–3 photos. These modes cannot be mixed. Video and audio reference uploads are not enabled until secure provider-accessible media storage is ready.</p>
+<label id="videoResolutionLabel" hidden><span>Video resolution</span><select id="videoResolution"><option value="720p">720p</option></select></label>
+<label id="videoDurationLabel" hidden><span>Video duration</span><select id="videoDuration"><option value="">Model default</option></select></label>
+<p id="videoSettingsNote" class="hint" hidden>Available options depend on the model. For Veo, 1080p and image-guided generation require an 8-second clip. Nondefault settings need their own approved credit price.</p>
+<label id="imageResolutionLabel" hidden><span>Output resolution</span><select id="imageResolution"><option value="">Model default</option></select></label><p id="imageResolutionNote" class="hint" hidden>Higher resolution may use more AI credits. Only separately priced options can be purchased.</p><label id="imageOutputFormatLabel" hidden><span>Output file format</span><select id="imageOutputFormat"><option value="auto">Provider default</option></select></label><p id="imageOutputFormatNote" class="hint" hidden>PNG or JPEG is requested from supported models. Other models return their own file format. Alternate output formats require approved credit pricing.</p><label id="imageQuantityLabel" hidden><span>Images per batch</span><select id="imageQuantity"><option value="1">1 image</option><option value="2">2 images</option><option value="3">3 images</option><option value="4">4 images</option></select></label>
+<p id="imageQuantityNote" class="hint" hidden>Each image is a separate job and is charged separately. The batch runs sequentially, stops on an error and never retries automatically. You must approve the total quote before any job starts.</p>
+<p id="imageUnsupportedControls" class="hint" hidden>Seed and Negative Prompt are not separate API controls for these connected image models. To describe what should be avoided, include it in your main prompt. No unsupported field is sent to the provider.</p>
+<div class="specs"><span id="qualityValue"></span><span id="durationValue"></span></div><p class="hint" data-t="capabilityNote">Settings follow the selected model. Unsupported options are not sent.</p>
+<div id="musicOptions" hidden><label><span data-t="trackType">Audio type</span><select id="musicMode"><option value="song" data-t="song">Song with vocals</option><option value="instrumental" data-t="instrumental">Instrumental</option><option value="voice" data-t="voiceoverMode">Voiceover · setup pending</option></select></label><div id="voiceSettings" hidden><label><span data-t="language">Language</span><select id="voiceLanguage"><option>American English</option><option>German</option><option>Russian</option><option>French</option><option>Spanish</option></select></label><label><span data-t="voice">Voice</span><select id="voiceChoice"><option>Kore</option><option>Puck</option><option>Charon</option><option>Aoede</option></select></label></div><a href="audio-studio.html" class="tool-link" data-t="voiceover">Open existing voiceover tool →</a></div>
+<button type="button" class="primary" data-close="settingsDialog" data-t="done">Done</button>
+</dialog>
+<dialog id="cropReferenceDialog" class="reference-crop-dialog" aria-labelledby="cropReferenceTitle">
+ <div class="dialog-head"><h2 id="cropReferenceTitle">Crop reference photo</h2><button id="cropReferenceClose" type="button" aria-label="Close crop editor">×</button></div>
+ <p class="hint">Crop this reference locally before generation. Drag the preview to move the photo, or use the sliders below. Your original file stays on your device.</p>
+ <div class="reference-crop-stage"><canvas id="cropReferencePreview" width="480" height="320" aria-label="Cropping preview"></canvas></div>
+ <div class="reference-crop-controls">
+  <label>Crop shape <select id="cropReferenceRatio"><option value="original">Original</option><option value="1:1">Square · 1:1</option><option value="4:5">Portrait · 4:5</option><option value="9:16">Vertical · 9:16</option><option value="3:2">Landscape · 3:2</option><option value="16:9">Widescreen · 16:9</option></select></label>
+  <label>Zoom <input id="cropReferenceZoom" type="range" min="1" max="3" step="0.05" value="1"></label>
+  <label>Horizontal position <input id="cropReferenceX" type="range" min="0" max="100" step="1" value="50"></label>
+  <label>Vertical position <input id="cropReferenceY" type="range" min="0" max="100" step="1" value="50"></label>
+ </div>
+ <p class="hint">Only the selected reference is changed. The result is optimized for the existing 1 MB image-reference limit.</p>
+ <p id="cropReferenceStatus" role="status" aria-live="polite"></p>
+ <div class="reference-crop-actions"><button id="cropReferenceReset" type="button">Reset view</button><button id="cropReferenceCancel" type="button">Cancel</button><button id="cropReferenceApply" type="button" class="primary">Apply crop</button></div>
+</dialog>
+<dialog id="walletDialog"><div class="dialog-head"><h2>AI credits</h2><button type="button" data-close="walletDialog" aria-label="Close">×</button></div><p id="walletMode" class="hint"></p><div id="walletSummary" class="wallet-summary"></div><div class="wallet-actions"><button id="walletRefresh" type="button">Refresh balance</button></div><div id="creditPacks" class="credit-packs"></div><section class="wallet-history"><h3>Recent activity</h3><div id="walletHistory"></div></section><p id="walletStatus" role="status"></p><p class="hint">Credits are added only after Stripe confirms a successful payment.</p></dialog>
+</body></html>
