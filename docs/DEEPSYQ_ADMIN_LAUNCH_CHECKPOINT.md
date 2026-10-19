@@ -1,0 +1,31 @@
+# Deepsyq administrator — 19 October 2026 checkpoint
+
+Role: owner-appointed main administrator (direct 19Oct instruction; ordinary code/merge/deploy authority, zero paid tests). Existing project only. BASE scope: #3/#43/#44 UI accuracy; #13–18/#35/#48/#51 external integration and acceptance. Original55 not marked DONE.
+
+## Verified read-only four-day audit
+
+Read current DEV43eb546c, safe Graphify map sourcea59f6d8b (server-only, not full code map), AGENTS/DECISIONS and55 checklist/claims; only changed history since previous5ca434ab checkpoint. 15–19Oct:2100 commits reachable from DEV;22 from main, all documentation. Authors on shared GitHub identity cannot establish who operated a chat. Representative actual DEV merges:276design,282Tools,284History;281integration and42platform still open. Production existing service remains14de5163/deploydep-db7l8naa8les73d54s8g from14Oct10:09UTC. New Deepsyq preview live815f89f only; sign-in/payments/generation intentionally disabled. Real production health200,email configured=true,Google empty,Studio/wallet API404. This is why DEV work did not appear in commercial production.
+
+## Actual external actions
+
+- Existing video-uniquifier-db available, external access closed. Fresh complete logical export created19Oct11:10Paris and completion verified in Recovery; PITR3-day window visible. No backup URL/secret saved. No schema/env/credential changes.
+- REAL production API: synthetic QA account register201; /api/me200; omitted session401; relogin SAME account200; new session/me same UUID200; wrong password401. QA UUID8e260ae4-971a-4e5e-8752-896ebd0991ea, clearly named QA Admin audit20261019. Password/token only memory, never saved/printed. This is cross-session DB persistence, not physical-device logout or restart evidence.
+- Existing Stripe MrRyhan TEST mode explicitly says no real transactions. All-products view empty before creation. Created ONLY TEST productprod_VT92f4mK7fmn8f and priceprice_1USCk7LR9hQMNEjM3Qn7sVZo, one-off99USDcents. Product title TEST ONLY, no customer credit promise. Existing live IDs/prices/keys unchanged. No payment submitted. Rollback archive only this test product; no whole-account restoration needed.
+
+## Real blockers, not unfinished code called done
+
+- Trial entitlement BLOCKED: current DECISIONS D04/Block7 explicitly disallow adopting299credits/3days from Lumina benchmark. No approved customer credit amount, expiry/refund eligibility, no connected Trial webhook/credit grant. Trial policy returns accessGranted:false; old Video Uniquifier100 free source videos are NOT AI credits. Need one explicit owner allowance/access decision, then use existing wallet/order/billing modules. Do not invent a second wallet or grant from browser return.
+- Stripe TEST product exists, but test key/webhook is not wired to a full test app. Preview is read-only and Frankfurt; existing PostgreSQL/production are Ohio, so its internal DB URL cannot simply be copied into this preview. Do not open DB external access or replace production live Stripe key with test key.
+- Nano Banana2 official current API nameGemini3.1FlashImage/modelgemini-3.1-flash-image, https://ai.google.dev/gemini-api/docs/pricing Free TierNot available. No call made.
+- Seedream account quota/no-overage guarantee UNVERIFIED. Existing ModelArk console displays mandatory legal Agreement checkbox/OK and Log in; requires OWNER confirmation, not administrator acceptance. https://console.byteplus.com/ark/region:ap-southeast-1/overview . No provider call, no paid test, no free-quota claim.
+- Chain payment→credits→reserve→REAL generation→result→history remains BLOCKED by those external prerequisites.46 existing Node no-network tests PASS on exact DEV43eb546c (billing/runtime/privacy/mode gate/wallet/purchased boundary/route/storage/trial economics); these are not a genuine cloud end-to-end result.
+
+## Current focused code changes (same existing PR257; not a duplicate release PR)
+
+All6carousel captions truthfully read Sample video, created in Google Flow; original films/order/hash unchanged. Trial copy no longer claims credits are still being calculated/finalized or adopts unapproved3-day/no-renewal terms; states wallet accounting implemented, checkout not connected and included terms required. Four linked Terms/Refund/Contact/Cookie owner-review drafts reuse existing CSS; no fabricated operator identity/contact/form. Drafts remain noindex. Prepared robots/sitemap and WebSite/WebPage JSON-LD; preview remains noindex/robotsDisallowAll. Remove public noindex only after actual Deepsyq launch/canonical/domain and legal/AI acceptance; never index non-working preview. Legal operator/public support still needs owner review. Local6media/preview tests PASS. New native exact-source CI pending; no publication of untested changes.
+
+## Rollback and single next action
+
+No production deployment in this cycle. Existing prod rollback14de5163; preview rollback815f89f. Fresh DB export retained in Render. Before later DB/auth/billing changes require targeted rollback preserving concurrent customers; never blind restore because of one QA row.
+
+SINGLE NEXT: finish exact-source native CI, deploy this tested UI-only correction to SAME existing read-only preview, verify live bytes/health/screenshots; then hand off exact BytePlus consent screen to owner. After consent verify real remaining Seedream quota and hard no-charge stop BEFORE any real AI call; record pre-call checkpoint. Do not repeat already verified email/46 tests if source unchanged.

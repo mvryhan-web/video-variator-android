@@ -32,6 +32,20 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
    const art=await fetch(base+'/media/home/neon-20261018/'+name+'.webp');
    assert.equal(art.status,200);assert.match(art.headers.get('content-type'),/image\/webp/);
   }
+  for(const slug of ['terms','refund','contact','cookie']){
+   const page=await fetch(base+'/'+slug+'.html');
+   assert.equal(page.status,200);assert.match(page.headers.get('x-robots-tag')||'',/noindex/);
+   const body=await page.text();assert.match(body,/OWNER REVIEW DRAFT/);
+   assert.match(body,/<meta name="robots" content="noindex,follow">/);
+   const schema=JSON.parse(body.match(/<script type="application\/ld\+json">([^<]+)<\/script>/)[1]);
+   assert.equal(schema['@type'],'WebPage');assert.equal(schema.url,'https://video-variator-android.onrender.com/'+slug+'.html');
+  }
+  const pricing=await(await fetch(base+'/ai-pricing.html')).text();
+  assert.match(pricing,/Credit accounting is implemented/);
+  assert.doesNotMatch(pricing,/still being finalized|still being calculated|3-day access/);
+  // Preview must stay non-indexable even though launch robots/sitemap are prepared.
+  assert.match(await(await fetch(base+'/robots.txt')).text(),/Disallow: \/\n/);
+  assert.equal((await fetch(base+'/sitemap.xml')).status,200);
   const cfg=await(await fetch(base+'/api/config')).json();
   assert.equal(cfg.billingConfigured,false);
   assert.equal(cfg.googleClientId,'');

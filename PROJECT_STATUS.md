@@ -1,3 +1,7 @@
+## ADMINISTRATOR / 19Oct2026 — ACTUAL EXTERNAL INTEGRATION (PARTIAL)
+
+Owner-appointed administrator; paid-test budget0. [Current compact checkpoint](docs/DEEPSYQ_ADMIN_LAUNCH_CHECKPOINT.md) is the continuation source. Fresh existing-DB backup completed; real production email signup/relogin SAME account verified; Google not configured. StripeTEST-only one-off Trial99USDcents product/price created (no real payment, live setup untouched). Trial entitlements not approved; no-charge Seedream account blocked on owner agreement, Google NanoBanana2 API not free.46 no-network existing billing/wallet/storage/policy testsPASS on DEV43eb546c; not real AI acceptance. Same PR257 prepares honest Flow source captions, accurate Trial copy, legal review drafts/search files; exact native CI/publish pending. No main/auth/env/schema changes. NextONLYexact CI→same preview verification→owner BytePlus consent. Full55 not DONE.
+
 ## 2026-10-19 — Work integration / owner Home correction — VERIFIED LIVE PREVIEW
 
 Authoritative scoped checkpoint, superseding earlier Home-only pending notes below; not a full BASE or production release. Same PR #257 / branch `agent-b-home-v01-v13-original-frames-20261018` / existing free read-only preview only.

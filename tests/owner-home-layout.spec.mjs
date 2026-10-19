@@ -10,7 +10,7 @@ async function home(page){
 test('Owner neon layout: reference section order, real card images and mobile bounds',async({page},info)=>{
  const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
  await home(page);
- await expect(page.locator('#homeHeroModel')).toHaveText('AI Canvas');
+ await expect(page.locator('#homeHeroModel')).toHaveText('Sample video, created in Google Flow');
  await expect(page.locator('.home-launch-grid')).toHaveCount(0);
  await expect(page.locator('#homeQuickForm [data-home-kind]')).toHaveCount(4);
  await expect(page.locator('#homeCreativeTools')).toHaveCount(1);
@@ -49,11 +49,11 @@ test('Owner neon layout: feature shortcuts use existing destinations and showcas
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','#quickCreateForm');
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','generate-studio.html?studio=video');
- await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.0');
+ await expect(page.locator('#homeHeroModel')).toHaveText('Sample video, created in Google Flow');
  await expect(page.locator('#homeHeroModel')).toHaveAttribute('title',/created in Google Flow/);
- await expect(page.locator('#homeHeroCreditLabel')).toHaveText('EXPLORE VIDEO MODELS');
+ await expect(page.locator('#homeHeroCreditLabel')).toHaveText('FEATURED VIDEO');
  await page.locator('#homeHeroNext').click();
- await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.5');
+ await expect(page.locator('#homeHeroModel')).toHaveText('Sample video, created in Google Flow');
  await page.locator('.home-create-card.tile-canvas').click();
  await expect(page.locator('#quickCreateForm')).toBeInViewport();
 });
