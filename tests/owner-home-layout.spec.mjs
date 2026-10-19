@@ -58,7 +58,7 @@ test('Owner neon layout: feature shortcuts keep routes and show truthful Flow so
  await expect(page.locator('#quickCreateForm')).toBeInViewport();
 });
 
-test('Home creator picker opens real model and supported settings panels without paid generation',async({page})=>{
+test('Home creator picker: studio model/settings windows are centered, model-aware and no-spend',async({page})=>{
  await home(page);let paidPosts=0;
  page.on('request',request=>{if(request.method()==='POST'&&/\/api\/studio\/(jobs|estimate)/.test(new URL(request.url()).pathname))paidPosts++;});
  const mode=page.locator('#homeCreateMode');
