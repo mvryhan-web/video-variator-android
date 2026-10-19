@@ -10,6 +10,8 @@ on:
       - app/src/main/assets/inspiration.css
       - app/src/main/assets/free-tools.html
       - app/src/main/assets/free-tools.css
+      - app/src/main/assets/avatar-studio.html
+      - app/src/main/assets/avatar-back-origin.js
       - .github/workflows/agent-c-base1-route-acceptance.yml
   workflow_dispatch:
 
