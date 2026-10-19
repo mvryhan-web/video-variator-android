@@ -94,6 +94,14 @@ test('HTTP purchased customer: durable consent+server quote, atomic proof, provi
   assert.equal(sim.walletEvents.at(-1)[1].outcome,'success');
  });
 });
+test('HTTP rejects zero-credit quote before job, wallet reserve or provider dispatch',async()=>{
+ const sim=simulate({envOverrides:{AI_MODEL_PRICING_JSON:JSON.stringify([{...pricing,credits:0}])}});
+ await withHttp(sim,async post=>{
+  const res=await post({expectedCredits:0});assert.equal(res.status,409);
+  assert.equal((await res.json()).error,'AI_ESTIMATE_CHANGED');
+  assert.equal(sim.jobs.length,0);assert.equal(sim.walletEvents.length,0);assert.equal(sim.providerCalls(),0);
+ });
+});
 test('HTTP bonus/welcome/unknown funding cannot reach provider and automatically returns held credits',async()=>{
  for(const receiptStatus of ['bonus','reject']){
   const sim=simulate({receiptStatus});
