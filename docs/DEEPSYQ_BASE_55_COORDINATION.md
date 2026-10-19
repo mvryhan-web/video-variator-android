@@ -1,3 +1,23 @@
+## [COORDINATOR #5 / C297 FINAL DOC HISTORY RECONCILIATION — 2026-10-19]
+
+Retained below: original C §22 scope and its existing coordinator reconciliation; the latest DEV owner + Home/BASE55 entries after these notes are authoritative. No original 55 rows or existing accepted design source modified.
+
+## [COORDINATOR #5 / C297 HISTORICAL CLAIM NON-FORCE RECONCILIATION]
+
+This preexisting Agent C §22 claim is retained verbatim as historical evidence; newer Cycle4.1 and verified 55 BASE governance below remain authoritative. No functional rewrites or owner-locked Home changes.
+
+## [AGENT C / 2026-10-19 / ORIGINAL §22 ONE NARROW STORAGE HANDOFF CLAIM BEFORE CODE]
+
+**ACTIVE C §22 scoped claim:** modern DEV Inspiration `app/src/main/assets/inspiration.js` blob `1ac2e2b3` lacks fail-closed handling of sessionStorage failure during public Create Yours/Use Prompt/Clone; AI Apps already has this guard. Claim exact file + new no-spend Playwright test + C-only workflow in branch `agent-c-base22-inspiration-storage-20261019`, to report accessible in-card storage denial, keep gallery, do not navigate/no paid POST. [Issue74 claim](https://github.com/mvryhan-web/video-variator-android/issues/74#issuecomment-6265040282), [coordinator notice](https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6265040903). PRE-CODE, NOT READY, original §22 remains PARTIAL/OWNER_DATA_TABLE_AND_MEDIA_BLOCKED. Do not duplicate old 19-file PR44, rights gate, database, provider, Home, nav PR296 or admin model modal PR257. GRAPHIFY_UNAVAILABLE_IN_HOST; map source server-only and current UI blob inspected. No live/paid/production.
+
+## [COORDINATOR #5 / C301 NON-FORCE HISTORICAL CLAIM RECONCILIATION / 2026-10-19]
+
+The following original Agent C pre-code claim is retained verbatim as HISTORY; it does NOT supersede current Cycle4.1 functional PASS/current CI status or owner locks. This merge keeps the latest DEV coordination queue and original 55 rows, without weakening BASE55 governance.
+
+## AGENT C / 2026-10-19 / OWNER ISSUE298 BASE1-C EXACT-SCOPE CLAIM BEFORE CODE
+
+Existing BASE1 parent stays team-owned / PARTIAL. **C isolated subtask**: verify named destinations of all specified real pages read-only, AI Apps/Inspiration prompt/type handoff and zero auto paid POST, C page mobile 320/375/768 Back/menu/overflow/model-link behavior. Claim branch `agent-c-base1-route-acceptance-20261019` + dedicated tests/workflow; issue authority [#298](https://github.com/mvryhan-web/video-variator-android/issues/298#issuecomment-6265288479). Other-owner defects reported, never edited; preserve History→Studio #296 and C §22 PR297 independently; no duplicate PR44, tables, Home, Studio/server, Stripe/production. **STATUS CLAIMED / BEFORE TEST CODE**. GRAPHIFY_UNAVAILABLE_IN_HOST, source map reviewed.
+
 ## [COORDINATOR #5 / C301 NON-FORCE HISTORICAL CLAIM RECONCILIATION / 2026-10-19]
 
 The following original Agent C pre-code claim is retained verbatim as HISTORY; it does NOT supersede current Cycle4.1 functional PASS/current CI status or owner locks. This merge keeps the latest DEV coordination queue and original 55 rows, without weakening BASE55 governance.
