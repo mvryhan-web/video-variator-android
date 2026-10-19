@@ -675,3 +675,5 @@ body.home-neon{background:#030b18;color:#eff6ff}
 .home-settings-actions button:focus-visible{outline:2px solid #c9a9ff;outline-offset:2px}
 @media(max-width:560px){.home-compose-toolbar{gap:7px}.home-create-mode-select{flex:1 1 100%;width:100%}.home-control-button{flex:1}.home-compose-toolbar .home-compose-more{margin-left:0;padding:10px 2px}.home-settings-dialog{padding:18px}.home-settings-head h2{font-size:19px}}
 @media(prefers-reduced-motion:reduce){.home-control-button{transition:none}}
+
+@media(max-width:760px){.home-neon .home-compose-toolbar #homeSettingsOpen{display:inline-flex;align-items:center;justify-content:center;width:auto;min-width:0;height:auto}}
