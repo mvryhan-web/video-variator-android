@@ -9,7 +9,7 @@
 
 - `pilot/before.mjs`: deliberately explicit baseline implementation of the SAME required behavior.
 - `pilot/after.mjs`: small implementation using Ponytail's reuse/minimal-diff approach.
-- `pilot/predicate.test.mjs`: SAME test cases against both variants, including 10 negative/security cases; tests may not be weakened to improve code size.
+- `pilot/predicate.test.mjs`: SAME test cases against both variants, including strict SHA-type and other negative/security cases; tests may not be weakened to improve code size.
 - This is an **isolated code-size/requirements pilot**, not a controlled proof of LLM token savings (we cannot run independent model sessions in this connector chat). `PILOT_RESULTS.md` must give test counts, files/LOC, any skipped requirement and whether it is safe to expand. The helper is not imported into site or production code.
 
 **Safety gate:** Ponytail's literal skill says *never cut validation, loss-prevention, security, accessibility, or requested requirements*. Our owner 25 rules and full BASE55 always override stylistic minimalism. Source code remains unused until actual focused tests pass. PR stays DRAFT unless the exact-head native workflow is green, both variants satisfy the same requirements, the coordinator reviews the change and reports an honest evaluation.
