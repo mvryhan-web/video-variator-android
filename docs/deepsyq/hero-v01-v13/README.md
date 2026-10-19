@@ -1,3 +1,14 @@
+## 2026-10-19 — Work integration / owner Home correction — VERIFIED LIVE PREVIEW
+
+Authoritative scoped checkpoint, superseding earlier Home-only pending notes below; not a full BASE or production release. Same PR #257 / branch `agent-b-home-v01-v13-original-frames-20261018` / existing free read-only preview only.
+
+- Owner resent neon portrait mockup and identified duplicate tool rows. Removed seven-tile row from markup, moved four creation mode controls inside existing composer. Correct order: hero → composer → ONE illustrated Image/Video/Audio/AI Agent/AI Apps/Canvas row → Create with Deepsyq + exactly THREE Canvas/Agent/Apps workspace cards → Inspiration. Tools remains in sidebar and composer +. Existing Canvas/uploads/draft handlers and six original approved films/order untouched.
+- Retains four original neon WebP cards (audio/agent/apps/canvas; prompts/provenance at `app/src/main/assets/media/home/neon-20261018/README.md`). AI Canvas / Seedance2.0 / Seedance2.5 / Video Studio / AI Agent / Image Studio are showcase headings, not false original-video attribution; source metadata/tooltip remains Google Flow. No unavailable provider activation claim.
+- Exact runtime `815f89fffc9312de41796b0a4e90620219bbf1f1`: local HTML nesting/unique IDs/syntax/diff checks PASS; native CI [39216173504](https://github.com/mvryhan-web/video-variator-android/actions/runs/39216173504), job117940433103 SUCCESS: Node6, browser regression42, four genuine full-film browser projects PASS FIRST ATTEMPT/no flaky. Layout tested1448/390/320px, no overflow; no physical iPhone claim.
+- Existing Render preview deployment `dep-dbasg5cs728c739gpoi0` LIVE2026-10-19T07:35:47Z, exact runtime815f89f. https://deepsyq-visual-preview-20261016.onrender.com/ returns health200; live HTML(minus preview notice), CSS, Home controller and all4WebP images match tested bytes. Browser confirms zero redundant launch grids, six loaded tool images, three feature cards, correct order and native muted1920x1080 playback. Final actual-browser screenshot `/workspace/scratch/deepsyq-home-lower-final-20261019.jpg`; startup logs healthy.
+- f1790e30 cosmetic fixes (clean play glyphs/transparent Inspiration panel/banner clear of logo) included and tested. Auth restored using secure browserAuth, no new credentials/accounts/resources, no paid AI. Preview write/auth/billing/generation disabled/noindex preserved; main production/auth/Stripe/DB/video engine unchanged.
+- Coordinator handoff: PR281 uses older341b Home; port ONLY815f89f HTML/CSS/test delta on top of integrated theme, preserve all newer shared code and claims, reconcile obsolete seven-tile assertions, run exact-source CI before merge/release. No blind PR257 merge (conflicts), no main release from this task. See PR281 comment6262086964.
+
 ## 2026-10-18 — Owner-approved neon Home carousel (Work integration)
 
 - Same PR #257 / existing branch; runtime `f55f12912a3fa99be9011ecad34ac4bbd2c2eb8c`.
