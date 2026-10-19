@@ -318,6 +318,9 @@ test("BASE 3: logout and browser Back never show another account's Canvas draft"
   .filter(key=>key.startsWith('deepsyq_quick_canvas_draft_v2_'))
   .some(key=>JSON.parse(sessionStorage.getItem(key)||'null')?.prompt===text),secret)).toBe(true);
  // Exercise the actual Home Logout control, not a simulated storage event.
+ // On phones, the sidebar is inert until the visible menu button opens it.
+ if(await page.evaluate(()=>matchMedia('(max-width:760px)').matches))
+  await page.locator('#menu').click();
  await page.locator('#logout').click();
  await expect(page.locator('#logout')).toBeHidden();
  expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBeNull();
