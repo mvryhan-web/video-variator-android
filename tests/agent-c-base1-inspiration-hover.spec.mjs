@@ -13,7 +13,7 @@ const entry=(id)=>({
 test('BASE1-C7 Inspiration enabled Load More has owner neon hover and real pagination, never paid POST',async({page},testInfo)=>{
  const paid=[];
  page.on('request',request=>{
-  if(request.method()==='POST'&&/\\/api\\/(?:studio\\/jobs|billing|payments|ai-wallet|speech\\/generate)/.test(new URL(request.url()).pathname))paid.push(request.url());
+  if(request.method()==='POST'&&/\/api\/(?:studio\/jobs|billing|payments|ai-wallet|speech\/generate)/.test(new URL(request.url()).pathname))paid.push(request.url());
  });
  await page.route('**/api/inspiration?**',route=>{
   const offset=Number(new URL(route.request().url()).searchParams.get('offset')||'0');
