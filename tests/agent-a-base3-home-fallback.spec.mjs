@@ -342,6 +342,19 @@ test("BASE 3: logout and browser Back never show another account's Canvas draft"
 
 test('BASE 3: mobile Canvas references and video prompt hand off to Studio without paid generation',async({page})=>{
  await mockSafeHome(page,[]);
+ // Unlike an unconfigured Studio, this test explicitly offers one video model
+ // with a single photo slot. With catalog:[] the correct behavior is to drop
+ // unsupported references, not to invent model capability.
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{
+  enabled:false,ownerOnly:true,models:[],
+  catalog:[{
+   id:'veo-3.1-lite-generate-preview',label:'Veo 3.1 Lite',kind:'video',
+   provider:'Google',adapter:true,enabled:false,references:1,
+   ratios:['16:9','9:16'],quality:'720p',duration:'8 seconds',
+   capabilities:{videoInputModes:['text','first_frame'],resolutions:['720p','1080p'],
+    durations:[4,6,8],durationSeconds:8,maxReferences:1}
+  }]
+ }}));
  await page.setViewportSize({width:390,height:844});
  let paidJobs=0;
  page.on('request',request=>{
