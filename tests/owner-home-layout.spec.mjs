@@ -60,6 +60,7 @@ test('Owner neon layout: feature shortcuts keep routes and show truthful Flow so
 
 test('Home creator picker: studio model/settings windows are centered, model-aware and no-spend',async({page})=>{
  await home(page);let paidPosts=0;
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{ownerOnly:true,enabled:false,models:[{id:'fixture-video',kind:'video',enabled:true}],catalog:[{id:'fixture-video',label:'Fixture video model',provider:'Fixture',kind:'video',enabled:true,ratios:['16:9','9:16'],resolutions:['720p'],durations:[4,8],references:0,capabilities:{ratios:['16:9','9:16'],resolutions:['720p'],durations:[4,8]}}]}}));
  page.on('request',request=>{if(request.method()==='POST'&&/\/api\/studio\/(jobs|estimate)/.test(new URL(request.url()).pathname))paidPosts++;});
  await expect(page.locator('#homeQuickForm [data-home-kind]')).toHaveCount(4);
  await expect(page.locator('[data-home-kind="image"]')).toBeVisible();
