@@ -4,6 +4,7 @@ test('BASE 31: accepted Studio job shows server reserve and lifecycle; no extra 
  const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true}],
   catalog:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
+ await page.route('**/api/studio/estimate',r=>r.fulfill({json:{kind:'image',model:'fixture',credits:17,quantity:1}}));
  let jobsSubmitted=0,stage='processing';
  await page.route('**/api/studio/jobs',r=>{
   if(r.request().method()==='POST'){jobsSubmitted++;return r.fulfill({status:202,json:{id:'accepted-fixture',status:'processing',creditsReserved:17}});}
@@ -17,6 +18,7 @@ test('BASE 31: accepted Studio job shows server reserve and lifecycle; no extra 
  await page.goto('/generate-studio.html?studio=image');
  await page.locator('#prompt').fill('Illustrate a product for the customer');
  await page.locator('#consent').check();
+ page.once('dialog',d=>d.accept());
  await page.locator('#generate').click();
  await expect(page.locator('#jobProgress')).toBeVisible();
  await expect(page.locator('#jobProgress')).toHaveAttribute('data-status','processing');
@@ -41,10 +43,12 @@ test('BASE 31: denied or uncertain submission never invents a charged amount',as
  const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true}],
   catalog:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
+ await page.route('**/api/studio/estimate',r=>r.fulfill({json:{kind:'image',model:'fixture',credits:17,quantity:1}}));
  await page.route('**/api/studio/jobs',r=>r.fulfill({status:503,json:{error:'AI_PROVIDER_UNAVAILABLE'}}));
  await page.goto('/generate-studio.html?studio=image');
  await page.locator('#prompt').fill('Product still');
  await page.locator('#consent').check();
+ page.once('dialog',d=>d.accept());
  await page.locator('#generate').click();
  await expect(page.locator('#jobProgress')).toHaveAttribute('data-status','unconfirmed');
  await expect(page.locator('#jobProgressCredits')).toBeEmpty();
