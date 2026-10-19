@@ -377,6 +377,29 @@ test('BASE 3: mobile Canvas references and video prompt hand off to Studio witho
  expect(paidJobs).toBe(0);
 });
 
+test('BASE 3: unsupported Video model rejects Canvas reference with honest warning',async({page})=>{
+ await mockSafeHome(page,[]); // No authorized Video model: the photo must NOT carry over.
+ await page.setViewportSize({width:390,height:844});
+ let paidJobs=0;
+ page.on('request',request=>{
+  if(request.method()==='POST'&&/\/api\/studio\/jobs/.test(request.url()))paidJobs++;
+ });
+ await page.goto('/deepsyq.html');
+ const prompt='Video idea with optional source image and no available photo-capable model';
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ await page.locator('#quickCreatePrompt').fill(prompt);
+ await page.locator('#quickCreateKind').selectOption('video');
+ await page.locator('#quickCreateFiles').setInputFiles({name:'unsupported-reference.png',mimeType:'image/png',buffer:png});
+ await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(1);
+ await page.locator('#quickCreateSubmit').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=dashboard/);
+ await expect(page.locator('#prompt')).toHaveValue(prompt);
+ await expect(page.locator('#refPreview img')).toHaveCount(0);
+ await expect(page.locator('#status')).toContainText('This model accepts 0 reference file(s)');
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(paidJobs).toBe(0);
+});
+
 test('BASE 3: offline platform config never hides the permanent original Hero gallery',async({page})=>{
  await mockSafeHome(page,[]);
  await page.route('**/api/config',route=>route.fulfill({status:503,json:{error:'CONFIG_UNAVAILABLE'}}));
