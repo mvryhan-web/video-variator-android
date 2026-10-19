@@ -74,6 +74,13 @@ test('Home creator picker: studio model/settings windows are centered, model-awa
  const modelCenter=await page.locator('#modelFlyout').evaluate(el=>{const r=el.getBoundingClientRect();return {x:Math.abs(r.left+r.width/2-innerWidth/2),y:Math.abs(r.top+r.height/2-innerHeight/2),inside:r.left>=0&&r.right<=innerWidth};});
  expect(modelCenter.x).toBeLessThan(3);expect(modelCenter.y).toBeLessThan(3);expect(modelCenter.inside).toBe(true);
  await page.locator('#modelFlyoutClose').click();
+ for(const width of [320,390,1280]){
+  await page.setViewportSize({width,height:844});
+  await expect(page.locator('#homeModelPicker')).toBeVisible();
+  await expect(page.locator('#homeSettingsOpen')).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+ }
+ await page.setViewportSize({width:390,height:844});
  await page.locator('#homeSettingsOpen').click();
  await expect(page.locator('#homeSettingsDialog')).toBeVisible();
  const settingsCenter=await page.locator('#homeSettingsDialog').evaluate(el=>{const r=el.getBoundingClientRect();return {x:Math.abs(r.left+r.width/2-innerWidth/2),y:Math.abs(r.top+r.height/2-innerHeight/2),inside:r.left>=0&&r.right<=innerWidth};});
