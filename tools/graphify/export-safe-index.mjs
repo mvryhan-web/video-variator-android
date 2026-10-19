@@ -91,8 +91,19 @@ for (const file of sortedFiles) {
   md += symbols.map(s=>esc(s.name)+' (L'+s.line+')').join(' · ')+'\n\n';
 }
 md += '## Link traversal\n\n';
-md += 'Graphify source links were checked in memory but are not exported as raw graph data. Look up a symbol above and inspect that file; source code and tests override the map.\n';
+md += 'Safe relationship edges are available in `docs/DEEPSYQ_CODE_MAP.json` (numeric node indices). This is a navigation hint, not evidence of runtime behavior.\n';
 if (badFragment.test(md) || badPath.test(md)) throw new Error('Unsafe text in proposed map');
+const safeGraph = {
+  schema: 1, source_sha:sourceSha, scope:'server/', graphify_commit:'86c57be8204673c2a1b9849a3292a7dd3ab373d8',
+  nodes: items.map(x=>[x.file,x.name,x.line]),
+  edges: links.map(x=>[x.a,x.b,x.relation])
+};
+const packed = JSON.stringify(safeGraph);
+if (badFragment.test(packed) || badPath.test(packed)) throw new Error('Unsafe text in proposed graph index');
+const graphOut = outPath.replace(/\.md$/,'.json');
+if (graphOut === outPath) throw new Error('Markdown output expected');
+writeFileSync(graphOut, packed + '\n');
+
 mkdirSync(dirname(outPath), {recursive:true});
 writeFileSync(outPath, md);
 console.log('SAFE_CODE_MAP files='+files.size+' symbols='+items.length+' edges='+links.length+' sha='+sourceSha);
