@@ -1,5 +1,11 @@
 # Deepsyq BASE — 55-item parallel work coordination (2026-10-16)
 
+## [AGENT C / 2026-10-19 09:27 Paris / §27/30 MOBILE NAV INTERCEPTION FIX CLAIM]
+
+- Existing C [PR282](https://github.com/mvryhan-web/video-variator-android/pull/282) HEAD `ec47d3d32e511313e4529be09a4213e4f10f6796`, exact two earlier QA files, native focused [#39164527242](https://github.com/mvryhan-web/video-variator-android/actions/runs/39164527242) **FAILED in all five browser projects** after 20/25 test passes. Official job 117784576393 traces show **REAL mobile menu `.ds-site-mobile-toggle` fixed x12–54/z-index103 intercepts touch click on `header .tool-back`** at 320px on both Tools & Avatar; existing final creator-pages CSS min-height 48 passes sizing, cannot actually click. **DO NOT reduce assertion, force click, hide menu, or alter owner-wide theme**.
+- C claims **EXACT ONLY** `app/src/main/assets/free-tools.css` (C local Tools CSS) with scoped `@media(max-width:900px)` `body.deepsyq-sitewide-shell main.tools:is(.free-tools-page,.avatar-studio)>header{padding-left:52px}` to move just these two Tools header back buttons right of mobile menu fixed 12px+42px, maintain 48px target/visible owner neon theme. Reuse SAME PR282; prior two QA files untouched, no HTML/global CSS/Site Shell changes. Latest DEV CSS preimage verified before applying, current DEV source preserved with two-parent non-force CAS, focused exact-head five-browser CI mandatory, no paid tests. Owner B global shell untouched; if C local CSS cannot cleanly solve without design change, coordinate B/#5 before edit. Original §27/#30 remain PARTIAL to real phones/live gate.
+
+
 ## OWNER DOCS DECISIONS — 2026-10-18 / NO FREE AI / NO CODE TOUCH
 
 **ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [../DECISIONS.md](../DECISIONS.md).** Подробный [CHECKPOINT](DEEPSYQ_OWNER_DECISIONS_CHECKPOINT_20261018.md) — новая нормативная надстройка над оригинальными историческими claims ниже; не удалять старые записи. **НЕТ Free AI plan или welcome AI credits**. Ежедневные Everyday Tools бесплатны локально/при беззатратном облачном режиме с жёсткими per-user дневными лимитами; будущий Trial $0.99 OFF до согласования условий. Все платные AI запросы Issue #182 только на подтверждённо купленные кредиты.
