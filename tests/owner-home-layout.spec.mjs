@@ -68,7 +68,7 @@ test('Home creator picker: studio model/settings windows are centered, model-awa
  await expect(page.locator('[data-home-kind="music"]')).toContainText('Audio');
  await page.locator('[data-home-kind="video"]').click();
  await expect(page.locator('[data-home-kind="video"]')).toHaveAttribute('aria-pressed','true');
- await expect(page.locator('#homeModelPicker')).toHaveAttribute('data-open-models','video');
+ await expect(page.locator('#homeModelPicker')).toHaveAttribute('data-home-model-kind','video');
  await page.locator('#homeModelPicker').click();
  await expect(page.locator('#modelFlyout')).toBeVisible();
  await expect(page.locator('#modelFlyoutTitle')).toHaveText('Video models');
