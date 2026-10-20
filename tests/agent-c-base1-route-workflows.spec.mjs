@@ -45,11 +45,11 @@ function checkViewport(page){
  return page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth}));
 }
 
-test('BASE1-C 13 named screens exist; Home paths preserve PR296 History and real Studio types',async({page})=>{
+test('BASE1-C 12 supported screens exist and retired Product Video routes stay 404; Studio routes remain functional',async({page})=>{
  await mocks(page);
  const routes=[
   'deepsyq.html','generate-studio.html?studio=image','generate-studio.html?studio=video',
-  'generate-studio.html?studio=audio','ai-apps.html','inspiration.html','product-video.html',
+  'generate-studio.html?studio=audio','ai-apps.html','inspiration.html',
   'free-tools.html','avatar-studio.html','generate-studio.html?view=history',
   'ai-pricing.html','index.html#profile','audio-studio.html'
  ];
@@ -57,6 +57,10 @@ test('BASE1-C 13 named screens exist; Home paths preserve PR296 History and real
   const response=await page.request.get('/'+route);
   expect(response.status(),route).toBe(200);
   expect(await response.text(),route).toContain('<html');
+ }
+ // A stale discovery flag must not bring back the cancelled feature.
+ for(const retired of ['product-video','product-video.html']){
+  expect((await page.request.get('/'+retired)).status(),retired).toBe(404);
  }
  await page.goto('/deepsyq.html');
  const sidebar=page.locator('#sidebar');
@@ -84,20 +88,19 @@ test('BASE1-C 13 named screens exist; Home paths preserve PR296 History and real
  await expect(nav.getByRole('link',{name:'AI Agents — coming soon'})).toHaveAttribute('href','deepsyq.html#agentFeature');
 });
 
-test('BASE1-C all four supported AI Apps types prepare the correct Studio prompt, no paid POST',async({page})=>{
+test('BASE1-C three supported AI Apps prepare prompts; the cancelled type stays hidden, no paid POST',async({page})=>{
  await mocks(page);
  const paid=writeCounter(page);
  const expected=[
   ['Fixture Image','image','An original watercolor city'],
   ['Fixture Video','video','Slow orbit around a fictional landscape'],
-  ['Fixture Audio','audio','A short original ambient melody'],
-  ['Fixture Product','video','Show Sample Tote with warm studio lighting']
+  ['Fixture Audio','audio','A short original ambient melody']
  ];
  for(const [title,kind,prompt] of expected){
   await page.goto('/ai-apps.html');
-  await expect(page.locator('.app-card')).toHaveCount(4);
+  await expect(page.locator('.app-card')).toHaveCount(3);
+  await expect(page.locator('.app-card').filter({hasText:'Fixture Product'})).toHaveCount(0);
   const card=page.locator('.app-card').filter({hasText:title});
-  if(title==='Fixture Product')await card.getByLabel('Product name').fill('Sample Tote');
   await card.getByRole('button',{name:'Use template'}).click();
   await expect(page).toHaveURL(new RegExp('studio='+kind+'&from=template'));
   await expect(page.locator('#prompt')).toHaveValue(prompt);
@@ -136,7 +139,8 @@ test('BASE1-C owned AI Apps/Inspiration/Tools remain usable at 320, 375 and 768p
   await page.goto('/ai-apps.html');
   await expect(page.locator('#search')).toBeVisible();
   await expect(page.locator('#type')).toBeVisible();
-  await expect(page.locator('.app-card')).toHaveCount(4);
+  await expect(page.locator('.app-card')).toHaveCount(3);
+  await expect(page.locator('.app-card').filter({hasText:'Fixture Product'})).toHaveCount(0);
   const apps=await checkViewport(page);
   expect(apps.scrollWidth,'AI Apps horizontal overflow '+width).toBeLessThanOrEqual(width+1);
   await page.goto('/inspiration.html');
