@@ -305,3 +305,44 @@ test('BASE1-C3 Inspiration real video card uses existing owner neon tokens witho
   expect(paid()).toBe(0);
  }
 });
+
+
+test('BASE1-C4 owner neon cards and enabled-only local action preserve real routes and state',async({page})=>{
+ await mocks(page);
+ const paid=writeCounter(page);
+ for(const width of [320,375,768,1280]){
+  await page.setViewportSize({width,height:820});
+  await page.goto('/ai-apps.html');
+  const card=page.locator('.app-card').first();
+  await expect(card).toBeVisible();
+  const baseShadow=await card.evaluate(el=>getComputedStyle(el).boxShadow);
+  expect(baseShadow,'Existing template card must have restrained depth').not.toBe('none');
+  await card.getByRole('button',{name:'Use template'}).focus();
+  await expect.poll(()=>card.evaluate(el=>getComputedStyle(el).borderTopColor))
+   .toBe('rgb(146, 91, 255)');
+  const focusedShadow=await card.evaluate(el=>getComputedStyle(el).boxShadow);
+  expect(focusedShadow,'Keyboard focus must visibly highlight original template card').not.toBe('none');
+  expect((await checkViewport(page)).scrollWidth,'Apps must not overflow at '+width).toBeLessThanOrEqual(width+1);
+
+  // This pre-existing local-only tool is protected from paid API calls.
+  // Temporarily toggle DOM disabled solely to inspect the enabled CSS contract.
+  // The tool algorithm, upload and genuine enabled/disabled behavior are unchanged.
+  await page.goto('/simple-background-remover.html');
+  const erase=page.locator('#erase');
+  await expect(erase).toBeDisabled();
+  const disabledImage=await erase.evaluate(el=>getComputedStyle(el).backgroundImage);
+  expect(disabledImage,'No inviting enabled-style gradient while unavailable').toBe('none');
+  const enabledStyle=await erase.evaluate(el=>{
+   el.disabled=false;
+   const style=getComputedStyle(el);
+   const value={backgroundImage:style.backgroundImage,boxShadow:style.boxShadow};
+   el.disabled=true;
+   return value;
+  });
+  expect(enabledStyle.backgroundImage,'Enabled local erase uses owner gradient').toContain('linear-gradient');
+  expect(enabledStyle.boxShadow,'Enabled local erase has neon depth').not.toBe('none');
+  await expect(erase).toBeDisabled();
+  expect((await checkViewport(page)).scrollWidth,'Eraser must not overflow at '+width).toBeLessThanOrEqual(width+1);
+ }
+ expect(paid(),'No paid AI, Stripe, or customer jobs').toBe(0);
+});

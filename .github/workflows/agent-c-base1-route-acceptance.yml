@@ -6,6 +6,8 @@ on:
       - tests/agent-c-base1-route-workflows.spec.mjs
       - app/src/main/assets/ai-apps.html
       - app/src/main/assets/ai-apps.js
+      - app/src/main/assets/ai-apps.css
+      - app/src/main/assets/simple-background-remover.css
       - app/src/main/assets/inspiration.html
       - app/src/main/assets/inspiration.css
       - app/src/main/assets/free-tools.html
