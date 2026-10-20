@@ -316,3 +316,17 @@ html:not([data-theme="light"]) body:not(.home-neon) :is(
     transition: none;
   }
 }
+
+/* OWNER 2026-10-20 / restore pre-existing C browser visual contract after the
+   inner-page neon overlay (PR321): keep keyboard focus purple and gallery
+   borders aligned with the shared sidebar. Existing content/layout untouched.
+   Scoped to non-Home dark inner routes only. */
+html:not([data-theme="light"]) body:not(.home-neon) .app-card:focus-within {
+  border-color: #925bff;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .gallery .card {
+  border-color: #253d71;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .category-chips button:not([aria-pressed="true"]) {
+  border-color: #253d71;
+}
