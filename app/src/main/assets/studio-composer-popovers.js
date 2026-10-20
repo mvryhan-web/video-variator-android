@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  function syncDuration(){const options=[...duration.options];range.max=String(Math.max(0,options.length-1));range.value=String(Math.max(0,options.findIndex(o=>o.value===duration.value)));range.disabled=duration.disabled||options.length<2;output.value=options[Number(range.value)]?.textContent||'';}
  range.addEventListener('input',()=>{const option=duration.options[Number(range.value)];if(!option)return;duration.value=option.value;duration.dispatchEvent(new Event('change',{bubbles:true}));syncDuration();});
  new MutationObserver(syncDuration).observe(duration,{subtree:true,childList:true,attributes:true});duration.addEventListener('change',syncDuration);
- function syncSettings(){settingsSync.forEach(sync=>sync());syncDuration();}
+ function syncSettings(){ratioTitle.hidden=$('ratioLabel').hidden||!$('ratio').options.length;$('ratioChoices').hidden=ratioTitle.hidden;settingsSync.forEach(sync=>sync());syncDuration();}
  const reset=document.createElement('button');reset.type='button';reset.className='composer-settings-reset';reset.textContent=text('↻ Reset','↻ Сбросить');
  reset.addEventListener('click',()=>{for(const id of ['ratio','imageResolution','videoResolution','videoDuration']){const select=$(id);if(select.disabled||select.closest('[hidden]'))continue;const option=[...select.options].find(o=>!o.disabled);if(option){select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));}}syncSettings();reposition();});
  $('settingsDialog').querySelector('.dialog-head').insertBefore(reset,$('settingsDialog').querySelector('[data-close]'));

@@ -338,6 +338,7 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    await expect(page.locator('#modelButton')).toBeFocused();
    await page.locator('#settingsButton').click();
    const settings=page.locator('#settingsDialog');await assertAnchored(settings,page.locator('#settingsButton'));
+   if(studio==='audio'){await expect(settings.locator('.composer-setting-title')).toBeHidden();await expect(settings.locator('#ratioChoices')).toBeHidden();}else await expect(settings.locator('.composer-setting-title')).toBeVisible();
    if(viewport.width===1448)await page.screenshot({path:info.outputPath(studio+'-settings-popover.png')});
    await settings.getByRole('button',{name:'Done',exact:true}).click();await expect(settings).not.toBeVisible();
    await expect(page.locator('#settingsButton')).toBeFocused();
