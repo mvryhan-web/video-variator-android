@@ -49,7 +49,7 @@ test('AI privacy choice can be reopened, revoked, and re-enabled after initial c
   }
   return route.fulfill({json:saved});
  });
- const cfg={enabled:true,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',provider:'Google',adapter:true,ratios:['1:1'],references:0,enabled:true}]};
+ const cfg={enabled:true,models:[{kind:'image',id:'fixture',label:'Fixture',provider:'Google',adapter:true,ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',provider:'Google',adapter:true,ratios:['1:1'],references:0,enabled:true}]};
  await page.route('**/api/studio/config',route=>route.fulfill({json:cfg}));
  await page.goto('/generate-studio.html?studio=image');
  await expect(page.locator('#generate')).toBeEnabled();
