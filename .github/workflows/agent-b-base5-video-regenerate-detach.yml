@@ -1,0 +1,24 @@
+name: Agent B BASE5 Video Regenerate owner-reference safety (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/generate-studio.js'
+      - 'tests/agent-b-base5-video-regenerate-detach-unit.mjs'
+      - '.github/workflows/agent-b-base5-video-regenerate-detach.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  saved-video-detach:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate source and tests
+        run: node --check app/src/main/assets/generate-studio.js && node --check tests/agent-b-base5-video-regenerate-detach-unit.mjs
+      - name: Real History handler, inert API/Stripe/provider, no charge
+        run: node --test tests/agent-b-base5-video-regenerate-detach-unit.mjs
