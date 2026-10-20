@@ -151,11 +151,11 @@ test('History lazily previews ready images without touching video media',async({
 });
 
 
-test('Studio explains the signed-in plan generation limits',async({page})=>{
+test('Studio keeps signed-in plan limits accurate even when quickstart hides the verbose preflight panel',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vv_token','basic-user'));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,pricingConfigured:false,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]}}));
  await page.route('**/api/studio/access',r=>r.fulfill({json:{allowed:true,scope:'public',plan:'basic',maxConcurrent:2,maxPerHour:12,activeJobs:1,jobsThisHour:4,reason:null,walletReady:true,pricingConfigured:true}}));
- await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#accessInfo')).toBeVisible();await expect(page.locator('#accessInfo')).toContainText('2 active generation');await expect(page.locator('#accessInfo')).toContainText('12 per hour');await expect(page.locator('#accessInfo')).toContainText('1/2 active');await expect(page.locator('#accessInfo')).toContainText('4/12 in the last hour');
+ await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#accessInfo')).toBeHidden();await expect(page.locator('#accessInfo')).toContainText('2 active generation');await expect(page.locator('#accessInfo')).toContainText('12 per hour');await expect(page.locator('#accessInfo')).toContainText('1/2 active');await expect(page.locator('#accessInfo')).toContainText('4/12 in the last hour');
 });
 
 test('video selectors follow real Veo/Seedance capabilities without submitting jobs',async({page})=>{
@@ -230,10 +230,12 @@ test('video prompt and model settings restore privately after tab reload without
  await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');
  await expect(page.locator('#videoResolution')).toHaveValue('1080p');
  await expect(page.locator('#videoDuration')).toHaveValue('15');
- await expect(page.locator('#videoDraftBar')).toBeVisible();
+ // Compact quickstart intentionally hides the verbose banner when no photo recovery is required.
+ await expect(page.locator('#videoDraftBar')).toBeHidden();
  await expect(page.locator('#consent')).not.toBeChecked();
  page.once('dialog',d=>d.accept());
- await page.locator('#clearVideoDraft').click();
+ // The existing clear handler must still work even while quickstart hides its verbose banner.
+ await page.locator('#clearVideoDraft').evaluate(button=>button.click());
  await page.reload();
  await expect(page.locator('#prompt')).toHaveValue('');
  expect(jobPosts).toBe(0);
