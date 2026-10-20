@@ -1,5 +1,11 @@
 import {test,expect} from '@playwright/test';
 
+async function consentFixture(page){
+ await page.addInitScript(()=>{if(!localStorage.getItem('vv_token'))localStorage.setItem('vv_token','synthetic-consenting-test-account');});
+ await page.route('**/api/studio/consent',route=>route.fulfill({json:{version:'2026-10-20',termsAccepted:true,privacyAcknowledged:true,providerAccepted:true}}));
+}
+
+
 // No-spend consumer contract: all HTTP replies/media are stubs. This does NOT
 // prove a real Stripe payment, live authentication or real provider output.
 const image=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
@@ -12,6 +18,7 @@ function modelFor(kind){
  return {...data[kind],kind,provider:'Google',adapter:true,enabled:true};
 }
 async function mockedConsumer(page,kind,{quoteReply}={}){
+ await consentFixture(page);
  const model=modelFor(kind),jobs=[],estimates=[],mediaCalls=[];
  const mime=kind==='image'?'image/png':kind==='video'?'video/mp4':'audio/mpeg';
  await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:true,pricingConfigured:false,models:[model],catalog:[model]}}));
@@ -39,7 +46,7 @@ for(const [mode,kind,tag] of [['image','image','img'],['video','video','video'],
   await page.goto('/generate-studio.html?studio='+mode);
   await expect(page.locator('#modelButton')).toContainText(fixture.model.label);
   await page.locator('#prompt').fill('One '+mode+' creation for owner review');
-  await page.locator('#consent').check();
+  await expect(page.locator('#consent')).toBeChecked();
   page.once('dialog',dialog=>{expect(dialog.message()).toContain('7 AI credits');return dialog.dismiss();});
   await page.locator('#generate').click();
   await expect(page.locator('#status')).toContainText('cancelled');
@@ -62,7 +69,7 @@ test('B8 quote from a different model is rejected before confirmation, reservati
  const fixture=await mockedConsumer(page,'image',{quoteReply:()=>({kind:'image',model:'other-model',credits:7,quantity:1})});
  await page.goto('/generate-studio.html?studio=image');
  await page.locator('#prompt').fill('Keep selected model and quoted model identical');
- await page.locator('#consent').check();
+ await expect(page.locator('#consent')).toBeChecked();
  let dialogs=0;page.on('dialog',dialog=>{dialogs++;return dialog.dismiss();});
  await page.locator('#generate').click();
  await expect(page.locator('#status')).toContainText('No job was submitted');
@@ -82,7 +89,7 @@ test('B8 old-account quote cannot dispatch after account switch while request is
  });
  await page.goto('/generate-studio.html?studio=image');
  await page.locator('#prompt').fill('Never send old-account paid request in new account');
- await page.locator('#consent').check();
+ await expect(page.locator('#consent')).toBeChecked();
  await page.locator('#generate').click();
  await started;
  await page.evaluate(()=>localStorage.setItem('vv_token','mock-B'));
