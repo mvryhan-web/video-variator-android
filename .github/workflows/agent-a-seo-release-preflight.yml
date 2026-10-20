@@ -1,0 +1,29 @@
+name: Agent A international SEO release preflight (offline)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'tests/agent-a-seo-release-preflight.test.mjs'
+      - '.github/workflows/agent-a-seo-release-preflight.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'tests/agent-a-seo-release-preflight.test.mjs'
+      - '.github/workflows/agent-a-seo-release-preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    name: seo-static-and-preview-safety
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@v4
+      - name: Install Node (no application services)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run free offline SEO source preflight
+        run: node --test tests/agent-a-seo-release-preflight.test.mjs
