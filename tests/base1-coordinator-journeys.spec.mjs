@@ -39,10 +39,8 @@ for(const entry of [
     await mockPublicPreview(page);
     const paid=forbidPaidRequest(page);
     await page.goto('/deepsyq.html');
-    await page.locator('[data-home-kind="'+entry.mode+'"]').click();
-    await expect(page.locator('[data-home-kind="'+entry.mode+'"]')).toHaveAttribute('aria-pressed','true');
     await page.locator('#homeQuickPrompt').fill(entry.prompt);
-    await page.locator('#homeQuickSubmit').click();
+    await page.locator('[data-home-kind="'+entry.mode+'"]').click();
     await expect(page).toHaveURL(new RegExp('generate-studio\\.html\\?studio='+entry.studio+'&from=home'));
     await expect(page.locator('#prompt')).toHaveValue(entry.prompt);
     await expect(page.locator('#consent')).not.toBeChecked();
@@ -57,7 +55,7 @@ test('BASE §1 unavailable Agent CTA stays a truthful no-spend preview, not a fa
   await page.locator('[data-home-kind="agent"]').click();
   await expect(page.locator('#homeQuickSubmit')).toContainText('Agent preview');
   await page.locator('#homeQuickSubmit').click();
-  await expect(page).toHaveURL(/\/deepsyq\.html$/);
+  await expect(page).toHaveURL(/\/deepsyq\.html#agentFeature$/);
   await expect(page.locator('#homeQuickStatus')).toContainText('not available yet');
   expect(paid).toEqual([]);
 });

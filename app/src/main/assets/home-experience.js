@@ -1,7 +1,6 @@
 // Deepsyq Home: owner-approved genuine-video carousel and local Quick Create.
 // This is presentation-only and reuses the existing Inspiration feed and Studio handoff.
 import {saveStudioHandoff} from './studio-handoff.js';
-import {MODEL_CATALOG} from './generate-models.js';
 import {ownerHomeShowcase} from './owner-home-hero-headings.js';
 const $=id=>document.getElementById(id);
 // WebKit can round a demuxed EOF up to the next millisecond.
@@ -173,52 +172,38 @@ let chosen='image',busy=false;
 function choose(kind){
  if(!['image','video','music','agent'].includes(kind))return;
  chosen=kind;
- const modelButton=$('homeModelPicker');
- if(modelButton){modelButton.dataset.homeModelKind=kind==='music'?'audio':kind;modelButton.disabled=kind==='agent';modelButton.textContent=kind==='agent'?'Models in Studio':`Choose ${kind==='music'?'audio':kind} model`;}
  $('homeQuickPrompt').required=kind!=='agent';
- for(const b of document.querySelectorAll('[data-home-kind]'))b.setAttribute('aria-pressed',String(b.dataset.homeKind===kind));
+ for(const b of document.querySelectorAll('[data-home-kind]'))b.setAttribute('aria-current',b.dataset.homeKind===kind?'true':'false');
  $('homeQuickSubmitLabel').textContent=kind==='agent'?'See Agent preview ↗':'Open in Studio ↗';
  $('homeQuickSubmit').setAttribute('aria-label',kind==='agent'?'See Agent preview':'Open in Studio');
 }
 if($('homeQuickForm')){
- document.querySelectorAll('[data-home-kind]').forEach(b=>b.addEventListener('click',()=>{choose(b.dataset.homeKind);if(chosen==='agent'){$('homeQuickStatus').classList.add('is-visible');$('homeQuickStatus').textContent='Agent execution is coming soon. Explore the preview below.';}}));
- const modelPicker=$('homeModelPicker'),settingsDialog=$('homeSettingsDialog'),ratioPicker=$('homePreferredRatio');
- let preferredRatio='';
- modelPicker?.addEventListener('click',()=>{
-  if(chosen==='agent')return;
-  const kind=chosen==='music'?'audio':chosen;
-  const existingTrigger=document.querySelector(`#sidebar [data-open-models="${kind}"]`);
-  if(existingTrigger){modelPicker.setAttribute('aria-expanded','true');existingTrigger.click();}
- });
- $('modelFlyout')?.addEventListener('close',()=>modelPicker?.setAttribute('aria-expanded','false'));
- function populateHomeSettings(kind=chosen){
-  if(!ratioPicker)return;
-  const catalogKind=kind==='music'?'music':kind;
-  const ratios=[...new Set(MODEL_CATALOG.filter(model=>model.kind===catalogKind).flatMap(model=>model.capabilities?.ratios||model.ratios||[]))];
-  ratioPicker.replaceChildren(new Option('Let the model decide',''),...ratios.map(ratio=>new Option(ratio,ratio)));
-  ratioPicker.disabled=ratios.length===0;
-  ratioPicker.value=ratios.includes(preferredRatio)?preferredRatio:'';
-  $('homeSettingsModelNote').textContent=kind==='music'?'Audio format settings are selected in the Audio Studio.':ratios.length?'Resolution and duration are chosen in Studio from the selected model’s supported settings.':'No aspect-ratio preference is available for this mode.';
- }
- $('homeSettingsOpen')?.addEventListener('click',()=>{
-  populateHomeSettings();
-  if(settingsDialog&&!settingsDialog.open)settingsDialog.showModal();
- });
- function closeHomeSettings(){if(settingsDialog?.open)settingsDialog.close();}
- $('homeSettingsClose')?.addEventListener('click',closeHomeSettings);
- $('homeSettingsCancel')?.addEventListener('click',closeHomeSettings);
- settingsDialog?.addEventListener('click',event=>{if(event.target===settingsDialog)closeHomeSettings();});
- $('homeSettingsApply')?.addEventListener('click',()=>{
-  preferredRatio=ratioPicker?.value||'';
-  const canvasRatio=$('quickCreateRatio');
-  if(canvasRatio){
-   const supported=[...canvasRatio.options].some(option=>option.value===preferredRatio);
-   canvasRatio.value=preferredRatio&&supported?preferredRatio:'';
-   canvasRatio.dispatchEvent(new Event('change',{bubbles:true}));
+ window.addEventListener('pageshow',()=>{busy=false;$('homeQuickSubmit').disabled=false;});
+ const preferredRatio='';
+ document.querySelectorAll('[data-home-kind]').forEach(link=>link.addEventListener('click',async event=>{
+  // Real links still work without JavaScript and with modifier/new-tab clicks.
+  if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+  const kind=link.dataset.homeKind;
+  choose(kind);
+  if(kind==='agent'){
+   $('homeQuickStatus').classList.add('is-visible');
+   $('homeQuickStatus').textContent='AI Agent execution is not available yet. Explore the preview below.';
+   return;
   }
-  $('homeQuickStatus').textContent=preferredRatio?'Format preference saved for Studio. The selected model will confirm support.':'Studio will choose the format supported by your selected model.';
-  closeHomeSettings();
- });
+  const prompt=$('homeQuickPrompt').value.trim();
+  if(!prompt)return;
+  event.preventDefault();
+  if(busy)return;
+  busy=true;
+  try{
+   await saveStudioHandoff({kind,prompt,settings:{},source:'home-quick-create'});
+   location.assign(link.href);
+  }catch(_){
+   busy=false;
+   $('homeQuickStatus').classList.add('is-visible');
+   $('homeQuickStatus').textContent='Could not prepare the draft in this browser. Your text remains here; please try again.';
+  }
+ }));
  document.querySelectorAll('[data-home-idea]').forEach(b=>b.addEventListener('click',()=>{
   const idea=ideas[b.dataset.homeIdea];if(!idea)return;
   const prompt=$('homeQuickPrompt');
