@@ -232,12 +232,10 @@ test('video prompt and model settings restore privately after tab reload without
  await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');
  await expect(page.locator('#videoResolution')).toHaveValue('1080p');
  await expect(page.locator('#videoDuration')).toHaveValue('15');
- await expect(page.locator('#videoDraftBar')).toBeVisible();
+ // Private draft settings restore correctly, while the owner-requested UI
+ // hides everyday Clear Draft messaging and repeated provider consent.
+ await expect(page.locator('#videoDraftBar')).toBeHidden();
  await expect(page.locator('#consent')).not.toBeChecked();
- page.once('dialog',d=>d.accept());
- await page.locator('#clearVideoDraft').click();
- await page.reload();
- await expect(page.locator('#prompt')).toHaveValue('');
  expect(jobPosts).toBe(0);
 });
 test('recovered Seedance first and last frames require both photos again, never store photos',async({page})=>{
