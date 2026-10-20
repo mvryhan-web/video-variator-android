@@ -11,7 +11,7 @@ test('owner metadata detects legacy unverified actives and unsupported Studio in
  const records=[
   {title:'Unverified legacy',active:true,featured:true,generationType:'image',requiredInputTypes:['image'],rightsBasis:null,rightsNote:'',thumbnail:null},
   {title:'Owner photo',active:true,generationType:'image',requiredInputTypes:['image'],promptTemplate:'Create an original portrait from the uploaded reference',rightsBasis:'owned',rightsNote:'Original asset evidence reference',thumbnail:'/assets/owner.webp'},
-  {title:'Product campaign',active:true,generationType:'product_video',requiredInputTypes:['logo','product_name'],promptTemplate:'Create a brand-safe video of {{product_name}} using the supplied logo',rightsBasis:'licensed',rightsNote:'Licensed promo package',thumbnail:'/assets/product.webp'},
+  {title:'Commercial campaign',active:true,generationType:'video',requiredInputTypes:['logo','product_name'],promptTemplate:'Create a brand-safe video of {{product_name}} using the supplied logo',rightsBasis:'licensed',rightsNote:'Licensed promo package',thumbnail:'/assets/product.webp'},
   {title:'Draft',active:false,generationType:'image',requiredInputTypes:[],rightsBasis:null,rightsNote:'',thumbnail:null},
   {title:'Future avatar',active:true,generationType:'avatar',rightsBasis:'owned',rightsNote:'Original owner avatar',thumbnail:null}
  ];
@@ -20,7 +20,7 @@ test('owner metadata detects legacy unverified actives and unsupported Studio in
  assert.equal(r.publicEligible,3);assert.equal(r.actionable,1);
  assert.equal(r.missingRights,2);assert.equal(r.noThumbnail,3);
  assert.ok(r.blockers.some(x=>x.includes('Unverified legacy')&&x.includes('public API hides')));
- assert.ok(r.blockers.some(x=>x.includes('Product campaign')&&x.includes('logo')));
+ assert.ok(r.blockers.some(x=>x.includes('Commercial campaign')&&x.includes('logo')));
  assert.ok(r.blockers.some(x=>x.includes('Future avatar')));
  assert.ok(!r.blockers.some(x=>x.includes('Owner photo')));
 });
@@ -34,8 +34,8 @@ test('rights metadata alone is never treated as proof of working provider integr
  assert.ok(incomplete.blockers.some(x=>x.includes('no prompt')));
 });
 
-test('owner readiness reflects actual product-name AI Apps action',()=>{
- const base={title:'Owned product reel',generationType:'product_video',active:true,requiredInputTypes:['image','product_name'],rightsBasis:'owned',rightsNote:'Original internal asset record',thumbnail:'/owner.webp'};
+test('owner readiness retains product-name placeholders for regular Video workflows',()=>{
+ const base={title:'Owned named video',generationType:'video',active:true,requiredInputTypes:['image','product_name'],rightsBasis:'owned',rightsNote:'Original internal asset record',thumbnail:'/owner.webp'};
  const good=summarizeAiTemplateReadiness([{...base,promptTemplate:'Show {{product_name}}'}]);
  assert.equal(good.publicEligible,1);assert.equal(good.actionable,1);assert.equal(good.blockers.length,0);
  const invalid=summarizeAiTemplateReadiness([{...base,promptTemplate:'Show the product with no field'}]);
