@@ -1,5 +1,15 @@
 # DEEPSYQ ROADMAP — approved next product phase
 
+## OWNER D17 — ACTIVE ROADMAP TERMINOLOGY AND WAVES (2026-10-20)
+
+**CURRENT RULE — READ THIS BEFORE THE HISTORICAL BLOCK HEADINGS BELOW.** The owner renamed the eight platform workstreams: **F1=Block 1 Compare AI/Smart; F2=Block 2 User Agent; F3=Block 3 Inspiration; F4=Block 4 Studio/My Workspace; F5=Block 5 Product Watcher; F6=Block 6 Voice Agent; F7=Block 7 Pricing/Credits/Stripe; F8=Block 8 Virtual Pet.** `Block N` in this roadmap and existing Issues/PRs means `FN`. This is a naming change, **not** eight new implementations. Original source TXT specifications, requirement numbers, existing PRs and completed work remain untouched.
+
+**The approved active scheduling/acceptance overlay is [DEEPSYQ — BASE 55 + F1–F8 execution plan](DEEPSYQ_BASE55_F1_F8_EXECUTION_PLAN_20261020.md) (owner decision D17 in [DECISIONS.md](../DECISIONS.md), operating instructions in [AGENTS.md](../AGENTS.md)).** Wave 0 = protect approved Home, existing features, security/legal/SEO readiness; Wave 1 = verified registration → test purchase/credits → Image/Video generation → private result/History/download → ledger and margin, with F7 essential; independent safe no-spend SEO/mobile/security/F5 Lite work continues in parallel; Wave 2 = expanded F4 Workspace, F3 Inspiration, AI Apps and F1 Compare/Smart; Wave 3 = F2 guided User Agent workflows and expanded F5; Wave 4 = fuller F6 Voice and F8 Pet (F8 only after launch and owner's direct permission). Some F features span waves; waves are **priorities**, not renamed features.
+
+**Precedence:** the D17 execution plan and D16 A–D safe self-merge rules supersede any older roadmap sentence that freezes all Block work, assigns outdated agent permissions or implies immediate `main` release. Historical Block 1–8 descriptions below are kept as source detail/traceability, **not** a competing active priority schedule. No automatic paid AI, real Stripe payments, `main`/production release, unsafe migrations or changes to the owner's approved Home. Mark complete only with the required acceptance evidence; DEV merge is not LIVE_VERIFIED.
+
+---
+
 > **2026-10-17 — IMPORTANT: THE ROADMAP HAS EIGHT BLOCKS.** The original seven separate owner TXT Blocks 1–7 remain unchanged, and the owner approved a distinct **Block 8 — Virtual Pet Companion / «Волшебный нюх»** on 2026-10-16. The [complete Block 8 source TXT](DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_8.txt) (1,134 lines) entered `deepsyq-platform` through [PR #188](https://github.com/mvryhan-web/video-variator-android/pull/188); see [Issue #187](https://github.com/mvryhan-web/video-variator-android/issues/187). **This registration does NOT mean the virtual pets/animations are implemented or allowed into production.** Block 8 is a post-first-MVP independent roadmap workstream and may not interrupt A–D's existing BASE claims. Four owner-locked priorities remain unchanged.
 
 ## OWNER POSITIONING CLARIFICATION — global AI platform (2026-10-17)
