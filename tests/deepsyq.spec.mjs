@@ -19,7 +19,7 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:info.outputPath('deepsyq.png'),fullPage:true});
  await page.locator('#homeQuickPrompt').fill('Test creative image');await page.locator('[data-home-kind="image"]').click();await expect(page).toHaveURL(/studio=image/);
- await expect(page.locator('#taskTitle')).toContainText('image');
+ await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await expect(page.locator('[data-kind="image"]')).toHaveAttribute('aria-pressed','true');await expect(page.locator('#prompt')).toHaveValue('Test creative image');
  await page.locator('.topbar .back').click();await expect(page).toHaveURL(/deepsyq.html/);
 });
 
@@ -80,7 +80,7 @@ test('dashboard quick-create prepares a local image draft without any paid reque
  await page.locator('#quickCreateKind').selectOption('image');
  await page.locator('#quickCreateSubmit').click();
  await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=dashboard/);
- await expect(page.locator('#taskTitle')).toHaveText('Create an image');
+ await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await expect(page.locator('[data-kind="image"]')).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('#prompt')).toHaveValue('A watercolor greenhouse filled with sunlight');
  await expect(page.locator('#consent')).not.toBeChecked();
  expect(jobPosts).toBe(0);
