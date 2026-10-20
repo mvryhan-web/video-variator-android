@@ -15,8 +15,8 @@ function normalizeStatus(rawStatus) {
   if (typeof rawStatus !== 'string') return 'UNKNOWN';
   const s = rawStatus.trim().toLowerCase();
   if (['queued', 'pending', 'choosing'].includes(s)) return 'queued';
-  if (['processing', 'running', 'generating'].includes(s)) return 'processing';
-  if (['completed', 'done', 'finished', 'success'].includes(s)) return 'completed';
+  if (['processing', 'running', 'generating', 'finalizing'].includes(s)) return 'processing';
+  if (['completed', 'done', 'finished', 'success', 'ready'].includes(s)) return 'completed';
   if (['failed', 'error'].includes(s)) return 'failed';
   if (['cancelled', 'canceled'].includes(s)) return 'cancelled';
   if (ALLOWED_STATUSES.has(s)) return s;
@@ -162,7 +162,12 @@ export function projectWorkspaceJobView(arg1, arg2) {
         job.output_ready === true ||
         (typeof job.output_count === 'number' && job.output_count > 0) ||
         job.hasPreview === true ||
-        Boolean(job.output_sha256 || job.output_key || job.output_id));
+        Boolean(job.output_sha256 || job.output_key || job.output_id) ||
+        // Existing Studio persists verified external output as private S3 descriptors.
+        // Expose ONLY a Boolean, never keys, URLs, hashes or media metadata.
+        (Array.isArray(job.output_assets) && job.output_assets.some(asset =>
+          asset && typeof asset === 'object' && !Array.isArray(asset) &&
+          asset.storage === 's3' && typeof asset.key === 'string' && asset.key.length > 0)));
 
     const hasPreview = Boolean(hasEvidenceOfOutput);
 
