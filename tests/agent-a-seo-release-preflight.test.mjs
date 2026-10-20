@@ -148,3 +148,30 @@ test('report truthful international SEO blockers; explicit strict release check 
  if(process.env.SEO_RELEASE_STRICT==='1')assert.deepEqual(findings,[],'public SEO release gate intentionally fails on unremedied/unverified requirements');
  else assert.ok(findings.some(f=>f.code==='LIVE_INDEXING_UNVERIFIED'),'preflight must never claim static source proves indexing');
 });
+
+
+test('preflight GitHub Actions reruns when actual SEO input pages/robots/sitemap/preview change',async()=>{
+ const workflow=await read('.github/workflows/agent-a-seo-release-preflight.yml');
+ const pr=workflow.split('\n  pull_request:\n')[1]?.split('\n  push:\n')[0]||'';
+ const push=workflow.split('\n  push:\n')[1]?.split('\n  workflow_dispatch:\n')[0]||'';
+ const inputs=[
+  'app/src/main/assets/sitemap.xml',
+  'app/src/main/assets/robots.txt',
+  ...pages.map(name=>'app/src/main/assets/'+name),
+  'server/deepsyq-preview.js',
+  'app/src/main/assets/product-video.html',
+  'app/src/main/assets/product-video.js'
+ ];
+ for(const [event,scope] of [['pull_request',pr],['push',push]]){
+  assert.match(scope,/^\s+paths:\s*$/m,event+' must filter by files');
+  for(const path of inputs){
+   assert.ok(scope.split('\n').some(line=>line.trim()==="- '"+path+"'"),
+    event+' must automatically run SEO preflight when '+path+' changes');
+  }
+ }
+ assert.match(workflow,/workflow_dispatch:\s*\n\s+inputs:/,'manual offline strict SEO launch audit must be exposed');
+ assert.match(workflow,/\brelease_strict:\s*\n/,'manual strict opt-in must be explicit');
+ assert.match(workflow,/\bpublic_origin:\s*\n/,'manual public hostname input must be explicit');
+ assert.match(workflow,/\bSEO_RELEASE_STRICT:/,'manual strict flag must reach Node test');
+ assert.match(workflow,/\bSEO_PUBLIC_ORIGIN:/,'manual owner-approved origin must reach Node test');
+});
