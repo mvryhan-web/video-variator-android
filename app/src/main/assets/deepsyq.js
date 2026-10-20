@@ -3,6 +3,7 @@ import {renderHomeCarousel} from './home-experience.js';
 import {MODEL_CATALOG} from './generate-models.js';
 import {authorizedOnboardingOptions,onboardingResponseTarget} from './onboarding-options.js';
 import {presentConsent} from './studio-consent-ui.js';
+import {translateText} from './deepsyq-locale.js';
 const $=id=>document.getElementById(id);
 const quickCreateForm=$('quickCreateForm');
 const quickCreateDropzone=$('quickCreateDropzone');
@@ -327,7 +328,7 @@ const homeLang=$('homeLanguage');const homeI18n={
  ru:{hero:'Создавайте<br><em>без границ.</em>',canvas:'Canvas — ваше творческое пространство',agent:'AI Agent — больше возможностей',apps:'AI Apps — инструменты творчества',inspiration:'Вдохновение'}
 };
 function applyHomeLanguage(code){const v=homeI18n[code]||homeI18n.en;const hero=document.querySelector('.hero-stage-copy h1');if(hero)hero.innerHTML=v.hero;for(const [id,key] of [['canvasFeatureTitle','canvas'],['agentFeatureTitle','agent'],['appsFeatureTitle','apps'],['inspirationPreviewTitle','inspiration']]){const el=$(id);if(el)el.textContent=v[key];}if(homeLang)homeLang.value=homeI18n[code]?code:'en';}
-if(homeLang){const saved=localStorage.getItem('deepsyq_home_language');applyHomeLanguage(saved||'en');homeLang.onchange=()=>{localStorage.setItem('deepsyq_home_language',homeLang.value);applyHomeLanguage(homeLang.value);};}
+if(homeLang){const saved=localStorage.getItem('deepsyq_home_language');applyHomeLanguage(saved||'en');homeLang.onchange=()=>{localStorage.setItem('deepsyq_home_language',homeLang.value);applyHomeLanguage(homeLang.value);translateText(document.body);window.dispatchEvent(new Event('deepsyq:localechange'));};}
 const promo=$('promoDialog');$('topPromo')?.addEventListener('click',()=>promo?.showModal());$('promoShare')?.addEventListener('click',()=>{$('navShare')?.click();promo?.close();});$('topInvite')?.addEventListener('click',()=>$('navShare')?.click());
 // Header sign-in must not depend on dispatching a click to the inert,
 // off-canvas mobile sidebar account button.
