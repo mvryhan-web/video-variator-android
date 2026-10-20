@@ -30,8 +30,8 @@
         "ownerSceneId": "carousel-1",
         "creationProvider": "Google Flow",
         "homeShowcase": {
-          "title": "Sample video, created in Google Flow",
-          "label": "FEATURED VIDEO",
+          "title": "AI Canvas",
+          "label": "CREATIVE WORKSPACE",
           "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio.",
           "href": "#quickCreateForm"
         }
@@ -67,8 +67,8 @@
         "ownerSceneId": "carousel-2",
         "creationProvider": "Google Flow",
         "homeShowcase": {
-          "title": "Sample video, created in Google Flow",
-          "label": "FEATURED VIDEO",
+          "title": "Seedance 2.0",
+          "label": "EXPLORE VIDEO MODELS",
           "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio.",
           "href": "generate-studio.html?studio=video"
         }
@@ -104,8 +104,8 @@
         "ownerSceneId": "carousel-3",
         "creationProvider": "Google Flow",
         "homeShowcase": {
-          "title": "Sample video, created in Google Flow",
-          "label": "FEATURED VIDEO",
+          "title": "Seedance 2.5",
+          "label": "EXPLORE VIDEO MODELS",
           "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio.",
           "href": "generate-studio.html?studio=video"
         }
@@ -141,8 +141,8 @@
         "ownerSceneId": "carousel-4",
         "creationProvider": "Google Flow",
         "homeShowcase": {
-          "title": "Sample video, created in Google Flow",
-          "label": "FEATURED VIDEO",
+          "title": "Video Studio",
+          "label": "CREATE WITH DEEPSYQ",
           "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio.",
           "href": "generate-studio.html?studio=video"
         }
@@ -178,8 +178,8 @@
         "ownerSceneId": "carousel-5",
         "creationProvider": "Google Flow",
         "homeShowcase": {
-          "title": "Sample video, created in Google Flow",
-          "label": "FEATURED VIDEO",
+          "title": "AI Agent",
+          "label": "CREATIVE CO-PILOT · COMING SOON",
           "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio.",
           "href": "#agentFeature"
         }
@@ -215,8 +215,8 @@
         "ownerSceneId": "carousel-6",
         "creationProvider": "Google Flow",
         "homeShowcase": {
-          "title": "Sample video, created in Google Flow",
-          "label": "FEATURED VIDEO",
+          "title": "Image Studio",
+          "label": "CREATE WITH DEEPSYQ",
           "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio.",
           "href": "generate-studio.html?studio=image"
         }
