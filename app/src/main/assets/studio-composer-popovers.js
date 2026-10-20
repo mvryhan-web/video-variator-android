@@ -58,9 +58,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   // dialog in the same event. Run after that handler too: native dialog
   // layout can still report the temporary (0, 0) position during capture.
   anchor.addEventListener('click',()=>{
-   const place=()=>requestAnimationFrame(reposition);
+   const place=()=>requestAnimationFrame(()=>position(panel,anchor));
    setTimeout(place,0);
-   requestAnimationFrame(()=>requestAnimationFrame(reposition));
+   requestAnimationFrame(()=>requestAnimationFrame(()=>position(panel,anchor)));
+   setTimeout(()=>position(panel,anchor),80);
   });
  }
  for(const panel of [menu,$('modelDialog'),$('settingsDialog')]){
