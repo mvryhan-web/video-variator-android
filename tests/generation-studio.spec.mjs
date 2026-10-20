@@ -385,3 +385,5 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   expect(posts).toBe(0);
  });
+ }
+}
