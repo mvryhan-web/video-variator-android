@@ -88,7 +88,7 @@
 
 - **F4**: расширенные Recent/Drafts/Completed/Favorites, Open/Rename/Duplicate/Archive/Delete (с подтверждением), templates/Agent Skills links; поверх единого существующего jobs/workspace, **не** второй базы.
 - **F3**: единый rights-gated data-driven каталог Inspiration/шаблонов с owner CRUD/feature/reorder; Use Prompt/Create yours/Clone and Try только готовые реальные маршруты и без автозапуска генерации.
-- BASE AI Apps, Product Video и богатый Canvas/Studio в дополнение к минимальному коммерческому пути; функции, реально зависящие от F2, показывать честно disabled/coming soon.
+- BASE AI Apps и богатый Canvas/Studio в дополнение к минимальному коммерческому пути; функции, реально зависящие от F2, показывать честно disabled/coming soon.
 - **F1**: Compare сначала безопасные mock и частичный сбой, затем реальные бесплатные лимиты с подтверждением; Smart с серверным ценовым ограничением. Не скрывать дополнительный cost синтеза и не вызывать непокупные платные модели.
 
 ### Волна 3 — продуктовый рост
@@ -127,7 +127,7 @@
 | 17 | Unit economics | В1, F7, owner-only |
 | 18 | Pricing engine | В1, F7 |
 | 19 | AI Apps | В2, уже готовое сохранить |
-| 20 | Product Video | В2, уже готовое сохранить |
+| 20 | ~~Product Video~~ | **ОТМЕНЁН РЕШЕНИЕМ ВЛАДЕЛЬЦА 2026-10-20**, см. DECISIONS.md; удалён из действующего UX, не возвращать |
 | 21 | AI Agents | В3/F2 |
 | 22 | Inspiration | В2/F3, безопасная подготовка параллельно В1 |
 | 23 | Templates | В2/F3 |
