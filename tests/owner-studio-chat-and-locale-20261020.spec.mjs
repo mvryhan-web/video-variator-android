@@ -37,6 +37,8 @@ test('French device language is selected by default and static Studio copy is tr
  await expect(page.locator('#taskTitle')).toHaveText('Donnez vie à vos créations avec Deepsyq');
  await expect(page.locator('[data-t="historyHint"]')).toHaveText('Vos résultats enregistrés apparaissent ici. Aucune génération ne démarre automatiquement.');
  await expect(page.locator('[data-t="pilotNote"]')).toHaveText('Aperçu du studio. Les paiements ne sont pas activés.');
+ await expect(page.locator('#prompt')).toHaveAttribute('placeholder','Décrivez le son, l’ambiance et la langue. Ajoutez les paroles ou le texte de la voix off…');
+ await expect(page.locator('#examples button').first()).toHaveText('Une chanson pop joyeuse en anglais sur un nouveau départ');
 });
 
 test('Existing Studio jobs become a private chat-like stream without submitting AI or Stripe requests',async({page})=>{
