@@ -61,6 +61,10 @@ document.addEventListener('DOMContentLoaded',()=>{
  }
  const reposition=()=>{if(activePanel?.open&&activeAnchor)position(activePanel,activeAnchor);};
  window.addEventListener('resize',reposition);window.addEventListener('scroll',reposition,{capture:true,passive:true});
+ // Audio voice options and model-dependent controls can change panel height.
+ // Re-anchor after those real content changes, including iOS WebKit.
+ const panelResize=new ResizeObserver(()=>requestAnimationFrame(reposition));
+ for(const panel of [menu,$('modelDialog'),$('settingsDialog')])panelResize.observe(panel);
  function decorateModels(){
   for(const card of $('modelChoices').querySelectorAll('.model-card')){
    if(card.querySelector('.model-provider-mark'))continue;
