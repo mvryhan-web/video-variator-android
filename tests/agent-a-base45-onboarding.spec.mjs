@@ -6,7 +6,7 @@ async function setup(page,options,postedTarget=null){
   localStorage.setItem('deepsyq_onboarding_pending','1');
  });
  await page.route('**/api/config',r=>r.fulfill({json:{googleClientId:'',billingConfigured:false,
-  plans:{},features:{aiApps:false,productVideo:true,inspiration:false,onboarding:true}}}));
+  plans:{},features:{aiApps:false,inspiration:false,onboarding:true}}}));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{id:'new-user',name:'New user',isAdmin:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:false}}));
@@ -37,13 +37,12 @@ test('BASE 45: without D schema migration, new account sees only approved Image/
 test('BASE 45: backend-authorized Avatar can route to existing workflow without a paid job',async({page})=>{
  const options=[{id:'image',target:'/generate-studio.html?studio=image'},
   {id:'video',target:'/generate-studio.html?studio=video'},
-  {id:'product_ads',target:'/product-video.html'},
   {id:'avatar',target:'/avatar-studio.html'}];
  const sent=await setup(page,options);
  let paidPosts=0;page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))paidPosts++;});
  await page.goto('/deepsyq.html');
- await expect(page.locator('[data-onboarding-goal]')).toHaveCount(4);
- await expect(page.locator('[data-onboarding-goal=product_ads]')).toContainText('Product Ads');
+ await expect(page.locator('[data-onboarding-goal]')).toHaveCount(3);
+ await expect(page.locator('[data-onboarding-goal=product_ads]')).toHaveCount(0);
  await page.locator('[data-onboarding-goal=avatar]').click();
  await expect(page).toHaveURL(/avatar-studio.html/);
  expect(sent).toEqual(['avatar']);expect(paidPosts).toBe(0);
@@ -61,13 +60,13 @@ test('BASE 45: unsafe server redirect cannot leave this origin or clear pending 
  expect(sent).toEqual(['image']);
 });
 
-test('BASE 45: Product Ads remains hidden while the existing feature flag is disabled',async({page})=>{
+test('BASE 45: cancelled product goal remains hidden even if the backend offers it',async({page})=>{
  await page.addInitScript(()=>{
   localStorage.setItem('vv_token','new-user-test');
   localStorage.setItem('deepsyq_onboarding_pending','1');
  });
  await page.route('**/api/config',r=>r.fulfill({json:{googleClientId:'',plans:{},
-  features:{inspiration:false,aiApps:false,productVideo:false,onboarding:true}}}));
+  features:{inspiration:false,aiApps:false,onboarding:true}}}));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'New user',isAdmin:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[]}}));
  await page.route('**/api/onboarding',r=>r.fulfill({json:{completed:false,options:[
@@ -86,7 +85,7 @@ test('BASE 45: old account onboarding GET cannot open the new account modal',asy
   localStorage.setItem('deepsyq_onboarding_pending','1');
  });
  await page.route('**/api/config',r=>r.fulfill({json:{googleClientId:'',plans:{},
-  features:{inspiration:false,aiApps:false,productVideo:false,onboarding:true}}}));
+  features:{inspiration:false,aiApps:false,onboarding:true}}}));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Account A',isAdmin:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[]}}));
  let start,release,finished;
@@ -112,7 +111,7 @@ test('BASE 45: switching accounts while onboarding POST is pending cannot redire
   localStorage.setItem('deepsyq_onboarding_pending','1');
  });
  await page.route('**/api/config',r=>r.fulfill({json:{googleClientId:'',plans:{},
-  features:{inspiration:false,aiApps:false,productVideo:false,onboarding:true}}}));
+  features:{inspiration:false,aiApps:false,onboarding:true}}}));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Account A',isAdmin:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[]}}));
  let start,release,finished;
@@ -156,7 +155,7 @@ test('BASE 45: late failed onboarding POST cannot show old-user errors or consum
   localStorage.setItem('deepsyq_onboarding_pending','1');
  });
  await page.route('**/api/config',r=>r.fulfill({json:{plans:{},googleClientId:'',
-  features:{onboarding:true,productVideo:false,aiApps:false,inspiration:false}}}));
+  features:{onboarding:true,aiApps:false,inspiration:false}}}));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Original user',isAdmin:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[]}}));
  let seen,release,finished;

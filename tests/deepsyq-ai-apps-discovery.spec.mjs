@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 
 const templates=[
  {id:'owned-image',title:'Editorial Portrait',description:'Original editorial lighting',category:'Editorial',generationType:'image',promptTemplate:'Original portrait concept',active:true},
- {id:'owned-video',title:'Product Reel',description:'A short product video concept',category:'Marketing',generationType:'product_video',promptTemplate:'Original product reel concept',active:true},
+ {id:'owned-video',title:'Demo Reel',description:'An original demonstration concept',category:'Marketing',generationType:'video',promptTemplate:'Original demonstration film concept',active:true},
  {id:'owned-audio',title:'Brand Voiceover',description:'Narration workflow',category:'Marketing',generationType:'audio',promptTemplate:'Original voiceover concept',active:true}
 ];
 
@@ -16,18 +16,18 @@ test('AI Apps local search, formats, categories and shareable URL preserve real 
  await expect(page.locator('.app-card')).toHaveCount(1);
  await expect(page.locator('#apps')).toContainText('Editorial Portrait');
 
- await page.locator('#search').fill('product');
+ await page.locator('#search').fill('demo');
  await page.locator('#type').selectOption('video');
  await page.locator('#category').selectOption('Marketing');
  await expect(page.locator('.app-card')).toHaveCount(1);
- await expect(page.locator('#apps')).toContainText('Product Reel');
+ await expect(page.locator('#apps')).toContainText('Demo Reel');
  await expect(page.locator('#status')).toHaveText('1 of 3 active templates shown.');
  await expect.poll(()=>new URL(page.url()).searchParams.get('category')).toBe('Marketing');
  await expect.poll(()=>new URL(page.url()).searchParams.get('type')).toBe('video');
 
  await page.reload();
  await expect(page.locator('#category')).toHaveValue('Marketing');
- await expect(page.locator('#search')).toHaveValue('product');
+ await expect(page.locator('#search')).toHaveValue('demo');
  await expect(page.locator('.app-card')).toHaveCount(1);
 
  await page.getByRole('button',{name:'Clear filters'}).click();
@@ -76,9 +76,9 @@ test('Use template prepares existing Studio with consent unchecked and no paid g
  await page.route('**/api/studio/config',route=>route.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))jobPosts++;});
  await page.goto('/ai-apps.html');
- await page.locator('.app-card').filter({hasText:'Product Reel'}).getByRole('button',{name:'Use template'}).click();
+ await page.locator('.app-card').filter({hasText:'Demo Reel'}).getByRole('button',{name:'Use template'}).click();
  await expect(page).toHaveURL(/studio=video&from=template/);
- await expect(page.locator('#prompt')).toHaveValue('Original product reel concept');
+ await expect(page.locator('#prompt')).toHaveValue('Original demonstration film concept');
  await expect(page.locator('#consent')).not.toBeChecked();
  expect(jobPosts).toBe(0);
 });
@@ -86,7 +86,7 @@ test('Use template prepares existing Studio with consent unchecked and no paid g
 test('AI Apps only enables workflows with inputs supported by the existing Studio handoff',async({page})=>{
  const variants=[
   {id:'needs-video',title:'Video reference workflow',description:'Must upload video',category:'Commercial',generationType:'video',requiredInputTypes:['video'],promptTemplate:'Original video scene'},
-  {id:'needs-logo',title:'Product logo workflow',description:'Must upload logo and name',category:'Commercial',generationType:'product_video',requiredInputTypes:['logo','product_name'],promptTemplate:'Original product ad'},
+  {id:'needs-logo',title:'Logo-required video workflow',description:'Must upload logo and name',category:'Commercial',generationType:'video',requiredInputTypes:['logo','product_name'],promptTemplate:'Original product ad'},
   {id:'needs-photo',title:'Image reference workflow',description:'Add a photo yourself',category:'Photography',generationType:'image',requiredInputTypes:['image'],promptTemplate:'Original image styling'}
  ];
  let jobPosts=0;
@@ -94,7 +94,7 @@ test('AI Apps only enables workflows with inputs supported by the existing Studi
  page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))jobPosts++;});
  await page.goto('/ai-apps.html');
  const video=page.locator('.app-card').filter({hasText:'Video reference workflow'});
- const logo=page.locator('.app-card').filter({hasText:'Product logo workflow'});
+ const logo=page.locator('.app-card').filter({hasText:'Logo-required video workflow'});
  const image=page.locator('.app-card').filter({hasText:'Image reference workflow'});
  await expect(video.getByRole('button',{name:'Workflow pending'})).toBeDisabled();
  await expect(logo.getByRole('button',{name:'Workflow pending'})).toBeDisabled();
@@ -142,34 +142,11 @@ test('AI Apps catalog remains usable without page-level horizontal overflow',asy
  await expect(page.locator('.app-card')).toHaveCount(16);
 });
 
-test('Product Video accepts a real product name, prepares the personalized prompt and never generates automatically',async({page})=>{
- const product={id:'owned-product',title:'Product Story',category:'Marketing',description:'A branded product demo',
-  generationType:'product_video',requiredInputTypes:['image','product_name'],
-  promptTemplate:'Film {{product_name}} with soft lighting. Finish with {{ product_name }} on screen.',active:true};
- let jobs=0;
- await page.route('**/api/templates',r=>r.fulfill({json:{items:[product]}}));
- await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
- page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')jobs++;});
- await page.goto('/ai-apps.html');
- const card=page.locator('.app-card').filter({hasText:'Product Story'});
- await expect(card.getByLabel('Product name')).toBeVisible();
- await card.getByRole('button',{name:'Use template'}).click();
- await expect(card).toContainText('Enter your product name');
- await expect(page).toHaveURL(/ai-apps\.html/);
- await card.getByLabel('Product name').fill('Velvet Tote');
- await card.getByRole('button',{name:'Use template'}).click();
- await expect(page).toHaveURL(/studio=video&from=template/);
- await expect(page.locator('#prompt')).toHaveValue('Film Velvet Tote with soft lighting. Finish with Velvet Tote on screen.');
- await expect(page.locator('#consent')).not.toBeChecked();
- expect(jobs).toBe(0);
-});
-
-
 test('AI Apps displays real template prompt and supported settings only after Preview, without spending',async({page})=>{
  const owner={
-  id:'owned-preview',title:'Product Preview',description:'Approved original creative workflow',
-  category:'Marketing',generationType:'product_video',requiredInputTypes:['image','product_name'],
-  promptTemplate:'Film {{product_name}} against a violet backdrop.',defaultModel:'owner-configured-model',
+  id:'owned-preview',title:'Video Preview',description:'Approved original creative workflow',
+  category:'Creative',generationType:'video',requiredInputTypes:['image'],
+  promptTemplate:'Film a creative portrait against a violet backdrop.',defaultModel:'owner-configured-model',
   defaultSettings:{ratio:'9:16',durationSeconds:8,privateAuditToken:'MUST_NOT_APPEAR'},active:true
  };
  let posts=0;
@@ -184,7 +161,6 @@ test('AI Apps displays real template prompt and supported settings only after Pr
  await expect(card.locator('.template-preview-content')).toContainText('9:16');
  await expect(card.locator('.template-preview-content')).toContainText('Duration (seconds)');
  await expect(card.locator('.template-preview-content')).not.toContainText('MUST_NOT_APPEAR');
- await expect(card.getByLabel('Product name')).toBeVisible();
  expect(posts).toBe(0);
 });
 
@@ -233,29 +209,12 @@ test('BASE #29 AI Apps navigation reaches separate My Creations, History, Credit
  expect(paidJobs).toBe(0);
 });
 
-test('BASE #19 empty AI Apps offers a REAL guided Product Video path, without fake templates or paid generation',async({page})=>{
- let generationPosts=0;
- page.on('request',request=>{if(request.url().includes('/api/studio/jobs')&&request.method()==='POST')generationPosts++;});
- await page.route('**/api/templates',route=>route.fulfill({json:{items:[]}}));
- await page.goto('/ai-apps.html');
- await expect(page.locator('.app-card')).toHaveCount(0);
- await expect(page.locator('#status')).toContainText('No active AI Apps templates');
- const guided=page.getByRole('link',{name:'Prepare Product Video'});
- await expect(guided).toHaveAttribute('href','product-video.html');
- await expect(page.locator('.guided-product-note')).toContainText('No AI generation starts automatically');
- await guided.click();
- await expect(page).toHaveURL(/product-video\.html$/);
- await expect(page.locator('#workflow')).toBeVisible();
- await expect(page.locator('#photoPreview')).toBeEmpty();
- expect(generationPosts).toBe(0);
-});
-
-test('BASE #19 catalog outage still offers local product briefing without misrepresenting service status',async({page})=>{
+test('BASE #19 catalog outage retains retry without a retired workflow link',async({page})=>{
  await page.route('**/api/templates',route=>route.fulfill({status:503,json:{error:'TEMPLATES_UNAVAILABLE'}}));
  await page.goto('/ai-apps.html');
  await expect(page.locator('#status')).toContainText('temporarily unavailable');
  await expect(page.getByRole('button',{name:'Retry loading templates'})).toBeVisible();
- await expect(page.getByRole('link',{name:'Prepare Product Video'})).toHaveAttribute('href','product-video.html');
+ await expect(page.locator('a[href*="product-video"]')).toHaveCount(0);
  await expect(page.locator('.app-card')).toHaveCount(0);
 });
 
