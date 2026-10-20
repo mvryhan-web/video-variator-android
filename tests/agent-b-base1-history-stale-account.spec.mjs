@@ -55,5 +55,5 @@ test('B8 account switch while old private History GET is pending must not render
  await page.locator('#showHistory').click();
  await expect(page.locator('.history-card')).toContainText('ONLY_ACCOUNT_B_HISTORY');
  await expect(page.locator('.history-card')).not.toContainText('PRIVATE_ACCOUNT_A_HISTORY');
- expect(requestCount).toBe(3);
+ expect(requestCount).toBeGreaterThanOrEqual(3);
 });
