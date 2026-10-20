@@ -68,6 +68,17 @@ const frenchPhrases={
  'Submitting your request…':'Envoi de votre demande…',
  'Generating. This can take a few minutes.':'Génération en cours. Cela peut prendre quelques minutes.',
  'Ready. Preview and save your creation.':'Votre création est prête. Prévisualisez-la et enregistrez-la.',
+ 'seconds':'secondes','Provider default':'Valeur par défaut du fournisseur','Audio settings ⌄':'Réglages audio ⌄',
+ 'How to use reference photos':'Utilisation des photos de référence',
+ 'First frame uses exactly one photo; first + last frames require exactly two; Reference images guide the scene with 1–3 photos. These modes cannot be mixed. Video and audio reference uploads are not enabled until secure provider-accessible media storage is ready.':'La première image utilise exactement une photo ; la première et la dernière en utilisent exactement deux ; les images de référence guident la scène avec 1 à 3 photos. Ces modes ne peuvent pas être combinés. L’envoi de références vidéo et audio sera disponible lorsque le stockage sécurisé accessible au fournisseur sera prêt.',
+ 'Video resolution':'Résolution vidéo','Video duration':'Durée de la vidéo',
+ 'Available options depend on the model. For Veo, 1080p and image-guided generation require an 8-second clip. Nondefault settings need their own approved credit price.':'Les options disponibles dépendent du modèle. Pour Veo, le 1080p et la génération guidée par image nécessitent une vidéo de 8 secondes. Les réglages non standard nécessitent un tarif de crédits approuvé.',
+ 'Output resolution':'Résolution de sortie','Higher resolution may use more AI credits. Only separately priced options can be purchased.':'Une résolution supérieure peut consommer davantage de crédits IA. Seules les options tarifées séparément peuvent être achetées.',
+ 'Output file format':'Format du fichier de sortie','PNG or JPEG is requested from supported models. Other models return their own file format. Alternate output formats require approved credit pricing.':'Les modèles compatibles reçoivent une demande au format PNG ou JPEG. Les autres renvoient leur propre format. Les formats alternatifs nécessitent un tarif de crédits approuvé.',
+ 'Images per batch':'Images par lot','Each image is a separate job and is charged separately. The batch runs sequentially, stops on an error and never retries automatically. You must approve the total quote before any job starts.':'Chaque image constitue une tâche et un coût distincts. Le lot est traité dans l’ordre, s’arrête en cas d’erreur et n’est jamais relancé automatiquement. Vous devez confirmer le coût total avant le démarrage.',
+ 'Seed and Negative Prompt are not separate API controls for these connected image models. To describe what should be avoided, include it in your main prompt. No unsupported field is sent to the provider.':'Seed et Negative Prompt ne sont pas des paramètres API distincts pour ces modèles d’image. Indiquez les éléments à éviter dans votre demande principale. Aucun paramètre non pris en charge n’est envoyé au fournisseur.',
+ 'Adapter prepared':'Adaptateur prêt','API connection pending':'Connexion API en attente',
+ 'Text to video':'Texte en vidéo','Photo as first frame':'Photo comme première image','First and last frames':'Première et dernière images','Reference images (scene guidance)':'Images de référence (guidage de la scène)',
  'Create a video':'Créer une vidéo','Create an image':'Créer une image','Create audio':'Créer un audio',
  'Create':'Créer','My results':'Mes créations','Generate ✦':'Générer ✦',
  'Ready':'Prêt','Queued':'En attente','Processing':'En cours','Finalizing':'Finalisation','Failed':'Échec',
@@ -397,6 +408,9 @@ function renderVideoInputMode(){
  if(ru&&active){
   $('videoInputModeLabel').querySelector('span').textContent='Роль фотографий в видео';
   $('videoInputModeNote').textContent='Первый кадр — ровно 1 фото; первый и последний кадры — ровно 2; референсы для сцены — 1–3. Эти режимы нельзя смешивать. Загрузка видео- и аудиореференсов пока недоступна: сначала необходимо безопасное хранилище с доступом для провайдера.';
+ }else if(fr&&active){
+  $('videoInputModeLabel').querySelector('span').textContent=say('How to use reference photos','');
+  $('videoInputModeNote').textContent=say('First frame uses exactly one photo; first + last frames require exactly two; Reference images guide the scene with 1–3 photos. These modes cannot be mixed. Video and audio reference uploads are not enabled until secure provider-accessible media storage is ready.','');
  }
 }
 function renderVideoSettings(){
@@ -419,6 +433,10 @@ function renderVideoSettings(){
   $('videoResolutionLabel').querySelector('span').textContent='Разрешение видео';
   $('videoDurationLabel').querySelector('span').textContent='Длительность видео';
   $('videoSettingsNote').textContent='Доступные параметры зависят от модели. Для Veo при 1080p или использовании фотографии длительность должна составлять 8 секунд. Нестандартным настройкам нужна отдельно утверждённая стоимость в AI-кредитах.';
+ }else if(fr&&video){
+  $('videoResolutionLabel').querySelector('span').textContent=say('Video resolution','');
+  $('videoDurationLabel').querySelector('span').textContent=say('Video duration','');
+  $('videoSettingsNote').textContent=say('Available options depend on the model. For Veo, 1080p and image-guided generation require an 8-second clip. Nondefault settings need their own approved credit price.','');
  }
 }
 function renderImageResolution(){
@@ -429,6 +447,7 @@ function renderImageResolution(){
  else if(choices.includes(model?.quality))select.value=model.quality;
  $('imageResolutionLabel').hidden=kind!=='image'||!choices.length;
  $('imageResolutionNote').hidden=kind!=='image'||choices.length<2;
+ if(fr&&kind==='image'){$('imageResolutionLabel').querySelector('span').textContent=say('Output resolution','');$('imageResolutionNote').textContent=say('Higher resolution may use more AI credits. Only separately priced options can be purchased.','');}
 }
 function renderImageOutputFormat(){
  const select=$('imageOutputFormat'),model=currentModel(),choices=kind==='image'?(model?.capabilities?.outputFormats||['auto']):[];
@@ -437,6 +456,7 @@ function renderImageOutputFormat(){
  if(choices.includes(previous))select.value=previous;
  $('imageOutputFormatLabel').hidden=kind!=='image'||choices.length<2;
  $('imageOutputFormatNote').hidden=kind!=='image'||choices.length<2;
+ if(fr&&kind==='image'){$('imageOutputFormatLabel').querySelector('span').textContent=say('Output file format','');$('imageOutputFormatNote').textContent=say('PNG or JPEG is requested from supported models. Other models return their own file format. Alternate output formats require approved credit pricing.','');}
 }
 function renderImageQuantity(){
  const enabled=kind==='image'&&config.imageBatchEnabled===true;
