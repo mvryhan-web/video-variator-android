@@ -721,6 +721,9 @@ Object.assign(dictionaries.ru, {
   "This tool only displays your own text locally. No camera, microphone, AI generation or credits.": "Этот инструмент только отображает ваш текст на устройстве. Камера, микрофон, AI-генерация и кредиты не используются."
 });
 
+Object.assign(dictionaries.fr, {"Deepsyq — Your creative workspace":"Deepsyq — votre espace créatif","No charges in this preview":"Aucun paiement dans cet aperçu"});
+Object.assign(dictionaries.ru, {"Deepsyq — Your creative workspace":"Deepsyq — ваше творческое пространство","No charges in this preview":"В этом предпросмотре платежи не списываются"});
+
 const original=new WeakMap();
 const originalAttrs=new WeakMap();
 // Home hero and its live accessibility status are controlled by the already-approved
