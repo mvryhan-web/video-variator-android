@@ -7,8 +7,9 @@ const event=(type='charge.dispute.created',change={})=>({id:'evt_fixture',type,l
  amount:50,currency:'eur',...change}}});
 test('D18 signed dispute references bind mode, charge, payment and amount; malformed input cannot write',async()=>{
  const good=stripeDisputeData(event());assert.equal(good.paymentIntent,'pi_fixture');
+ assert.equal(stripeDisputeData(event(undefined,{payment_intent:null})).paymentIntent,null);
  assert.equal(stripeDisputeData({type:'invoice.paid'}),null);
- for(const change of [{id:'bad'},{charge:'ch_bad_suffix'},{payment_intent:null},{amount:0},{amount:1.5},
+ for(const change of [{id:'bad'},{charge:'ch_bad_suffix'},{payment_intent:'bad'},{amount:0},{amount:1.5},
   {currency:'EU'},{livemode:false}]){
   let writes=0;
   await assert.rejects(quarantineSignedDispute({event:event(undefined,change),

@@ -167,7 +167,7 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   // A signed dispute received BEFORE the grant quarantines later receipts;
   // another healthy pack cannot cover the unresolved dispute/fee exposure.
   const disputeEvent=type=>({id:'evt_disputed',type,livemode:true,data:{object:{
-   id:'du_disputed',charge:'ch_cslivedisputed',payment_intent:'pi_cslivedisputed',
+   id:'du_disputed',charge:'ch_cslivedisputed',payment_intent:null,
    amount:20,currency:'eur',livemode:true,status:'won'}}});
   await quarantineSignedDispute({event:disputeEvent('charge.dispute.created'),pool,wallet});
   await paid('customer_disputed','cs_live_disputed',100);

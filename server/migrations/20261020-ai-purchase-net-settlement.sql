@@ -63,7 +63,7 @@ CREATE INDEX IF NOT EXISTS vv_ai_refund_event_payment_intent
 
 -- Monotonic signed dispute evidence; preserve pending evidence before paid grants.
 CREATE TABLE IF NOT EXISTS vv_ai_dispute_quarantine (
- payment_intent TEXT PRIMARY KEY, stripe_charge_id TEXT NOT NULL, stripe_dispute_id TEXT NOT NULL,
+ payment_intent TEXT, stripe_charge_id TEXT PRIMARY KEY, stripe_dispute_id TEXT NOT NULL,
  first_event_id TEXT NOT NULL, livemode BOOLEAN NOT NULL, currency TEXT NOT NULL,
  disputed_amount BIGINT NOT NULL CHECK(disputed_amount>0), received_at TIMESTAMPTZ NOT NULL DEFAULT now());
 
