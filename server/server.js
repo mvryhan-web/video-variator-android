@@ -204,6 +204,8 @@ app.get('/',(req,res,next)=>{
  res.sendFile(path.join(staticDir,'deepsyq.html'));
 });
 app.get('/dashboard',(_req,res)=>res.sendFile(path.join(staticDir,'deepsyq.html')));
+// Retired by the owner. Explicitly deny both legacy URLs before SPA/legacy fallback.
+app.get(['/product-video','/product-video.html'],(_req,res)=>res.status(404).type('text/plain').send('Not found'));
 
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});

@@ -938,7 +938,7 @@ async function applyLocalStudioHandoff(){
 function applyTemplateStart(){
  const raw=sessionStorage.getItem('deepsyq_template_start');if(!raw)return false;sessionStorage.removeItem('deepsyq_template_start');
  try{
-  const t=JSON.parse(raw),target=t.generationType==='image'?'image':t.generationType==='audio'?'music':['video','product_video'].includes(t.generationType)?'video':null;if(!target)return false;
+  const t=JSON.parse(raw),target=t.generationType==='image'?'image':t.generationType==='audio'?'music':t.generationType==='video'?'video':null;if(!target)return false;
   if(target!==kind)select(target);
   if(target==='video'){videoDraftNeedsPhotos=false;videoDraftExpectedRefs=0;videoDraftPendingMode='text';}
   if(t.defaultModel&&catalog.some(m=>m.id===t.defaultModel&&m.kind===target)){modelId=t.defaultModel;renderModel();}

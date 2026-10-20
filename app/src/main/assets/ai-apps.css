@@ -110,7 +110,3 @@ footer p{margin:0}
 }
 @media(prefers-reduced-motion:reduce){.app-card{transition:none}}
 
-/* A real guided Product Video route is offered only when catalog entries are unavailable. */
-.empty .guided-product-video{display:inline-block;margin-left:18px;font-weight:700}
-.empty .guided-product-note{font-size:11px;line-height:1.5;margin:10px 0 0;color:var(--muted)}
-@media(max-width:640px){.empty .guided-product-video{display:block;margin:14px 0 0}}

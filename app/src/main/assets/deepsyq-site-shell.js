@@ -24,7 +24,6 @@
   {label:'Challenges',icon:'✥',pending:true},
   {label:'Affiliate',icon:'↗',pending:true},
   {section:'More'},
-  {label:'Product Video',icon:'▹',url:'product-video.html',key:'product'},
   {label:'Pricing',icon:'＄',url:'ai-pricing.html',key:'pricing'}
  ];
  const path=location.pathname.split('/').pop() || 'deepsyq.html';
@@ -34,7 +33,7 @@
    query.get('studio')==='video'?'video':
    ['audio','music'].includes(query.get('studio'))?'audio':'image'):
   path==='ai-apps.html'?'apps':path==='inspiration.html'?'inspiration':
-  path==='ai-pricing.html'?'pricing':path==='product-video.html'?'product':
+  path==='ai-pricing.html'?'pricing':
   path==='index.html'?'legacy':
   ['free-tools.html','audio-studio.html','avatar-studio.html','mobile-utility.html',
    'photo-collage.html','simple-background-remover.html','smart-reminders.html','teleprompter.html'].includes(path)?'tools':'';

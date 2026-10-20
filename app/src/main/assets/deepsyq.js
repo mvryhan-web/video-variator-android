@@ -389,7 +389,7 @@ async function loadFeaturedWorkflows(){
  const section=$('featuredWorkflows'),root=$('featuredWorkflowGrid');if(!section||config?.features?.aiApps===false)return;
  try{
   const r=await fetch(base+'/api/templates?featured=true',{cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||!Array.isArray(d.items)||!d.items.length)return;
-  root.replaceChildren();for(const t of d.items.slice(0,6)){const a=document.createElement('a');a.className='featured-workflow-card';const type=t.generationType==='product_video'?'video':t.generationType;
+  root.replaceChildren();const approved=d.items.filter(t=>['image','video','audio'].includes(t?.generationType)).slice(0,6);if(!approved.length){section.hidden=true;return;}for(const t of approved){const a=document.createElement('a');a.className='featured-workflow-card';const type=t.generationType;
  const supportedType=['image','video','audio'].includes(type)?type:null;
  // AI Apps already understands q/type/category. Carry the selected use case
  // so similarly named Image and Video featured cards do not get mixed up.
@@ -494,9 +494,8 @@ async function maybeShowOnboarding(){
   const state=await api('/api/onboarding');
   if(!sameAccount())return; // A different login must fetch its own first-run state.
   if(state.completed){localStorage.removeItem('deepsyq_onboarding_pending');return;}
-  // The backend advertises only goals it can persist; Product Ads and Avatar
-  // must remain absent until D's reviewed database/service changes are live.
-  const authorized=authorizedOnboardingOptions(state.options,{productVideoEnabled:config?.features?.productVideo===true});
+  // The backend advertises only goals it can persist; unsupported goals stay unavailable.
+  const authorized=authorizedOnboardingOptions(state.options);
   if(!authorized.length)return;
   const modal=$('onboardingModal'),choices=modal.querySelector('.onboardingChoices');
   choices.replaceChildren();

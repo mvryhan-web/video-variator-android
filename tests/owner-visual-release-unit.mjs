@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {readFileSync,existsSync,statSync} from 'node:fs';
 import vm from 'node:vm';
 const assets=new URL('../app/src/main/assets/',import.meta.url),read=n=>readFileSync(new URL(n,assets),'utf8');
-test('all twenty site pages share owner-approved palette; standalone/owner shells stay safe',()=>{
- const pages=['ai-apps.html','ai-pricing.html','ai-privacy.html','audio-studio.html','avatar-studio.html','deepsyq-admin.html','deepsyq-vs-deepseek.html','deepsyq.html','free-tools.html','generate-studio.html','index.html','inspiration.html','mobile-utility.html','product-video.html','photo-collage.html','simple-background-remover.html','smart-reminders.html','teleprompter.html','telegram-free-mini.html','product-watcher-admin.html'];
+test('all nineteen remaining site pages share owner-approved palette; standalone/owner shells stay safe',()=>{
+ const pages=['ai-apps.html','ai-pricing.html','ai-privacy.html','audio-studio.html','avatar-studio.html','deepsyq-admin.html','deepsyq-vs-deepseek.html','deepsyq.html','free-tools.html','generate-studio.html','index.html','inspiration.html','mobile-utility.html','photo-collage.html','simple-background-remover.html','smart-reminders.html','teleprompter.html','telegram-free-mini.html','product-watcher-admin.html'];
  for(const page of pages)assert.ok(read(page).includes('deepsyq-global-theme.css'),page);
  for(const page of pages){const useShell=read(page).includes('deepsyq-site-shell.js');assert.equal(useShell,!['deepsyq.html','index.html','deepsyq-admin.html','telegram-free-mini.html','product-watcher-admin.html'].includes(page),page+' shell mismatch');}
  assert.ok(read('deepsyq.html').includes('hero-stage-cinematic'));
@@ -103,4 +103,18 @@ test('introductory offer stays disabled without unapproved credit or duration pr
  }
  assert.ok(read('home-experience.js').includes("import {ownerHomeShowcase} from './owner-home-hero-headings.js'"));
  assert.ok(read('home-experience.js').includes('ownerHomeShowcase(item)'));
+});
+
+test('retired Product Video stays absent from visual release, main and preview routes',()=>{
+ for(const path of ['product-video-file-safety.mjs','product-video-prompt.mjs','product-video.css','product-video.html','product-video.js'])assert.equal(existsSync(new URL(path,assets)),false,path+' must not be published');
+ for(const path of ['deepsyq.html','deepsyq-site-shell.js','ai-apps.js','onboarding-options.js','ai-privacy.html','generate-studio.js']){
+  const body=read(path);
+  assert.ok(!body.includes('product-video.html')&&!body.includes('product_video')&&!body.includes('productVideo'),path+' must not reactivate retired product');
+ }
+ const server=readFileSync(new URL('../server/server.js',import.meta.url),'utf8');
+ const preview=readFileSync(new URL('../server/deepsyq-preview.js',import.meta.url),'utf8');
+ for(const source of [server,preview]){
+  assert.ok(source.includes("app.get(['/product-video','/product-video.html']"),'both retired routes must get explicit 404');
+  assert.ok(source.indexOf("app.get(['/product-video','/product-video.html']")<source.indexOf('app.use(express.static'),'404 before static');
+ }
 });

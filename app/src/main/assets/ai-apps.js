@@ -15,7 +15,7 @@ function destination(template){
  return template.generationType==='image'?'image':template.generationType==='audio'?'audio':'video';
 }
 function templateKind(template){
- return template.generationType==='product_video'?'video':template.generationType;
+ return template.generationType;
 }
 function renderCategories(){
  const select=$('category'),current=select.value;
@@ -93,7 +93,7 @@ function templatePreview(template){
  content.append(note);details.append(summary,content);
  return details;
 }
-function empty(message,{retry=false,showGuidedProductVideo=false}={}){
+function empty(message,{retry=false}={}){
  const box=document.createElement('div');
  box.className='empty';
  const p=document.createElement('p');p.textContent=message;
@@ -106,15 +106,6 @@ function empty(message,{retry=false,showGuidedProductVideo=false}={}){
   box.append(again);
  }
  box.append(a);
- if(showGuidedProductVideo){
-  // This is the already-existing local Product Video form, not an invented published template.
-  const guided=document.createElement('a');guided.href='product-video.html';
-  guided.textContent='Prepare Product Video →';
-  guided.className='guided-product-video';
-  const explanation=document.createElement('p');explanation.className='guided-product-note';
-  explanation.textContent='Upload your own product photos and review a generated brief in Video Studio. No AI generation starts automatically.';
-  box.append(guided,explanation);
- }
  $('apps').append(box);
 }
 function render(){
@@ -133,7 +124,7 @@ function render(){
  $('clearFilters').disabled=!(term||type||category);
  if(!all.length){
   $('status').textContent='No active AI Apps templates are published yet.';
-  empty('Browse Studio while new workflows are being prepared. No templates or results are being invented.',{showGuidedProductVideo:true});
+  empty('Browse Studio while new workflows are being prepared. No templates or results are being invented.',{});
   return;
  }
  $('status').textContent=items.length>shownLimit?
@@ -188,13 +179,13 @@ async function load(){
   const response=await fetch('/api/templates',{cache:'no-store'});
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw Error('TEMPLATES_UNAVAILABLE');
-  all=Array.isArray(data.items)?data.items:[];
+  all=(Array.isArray(data.items)?data.items:[]).filter(item=>TYPES.has(item.generationType));
   renderCategories();restoreFiltersFromUrl();
  }catch(_){
   $('clearFilters').disabled=true;
   $('status').textContent='Active templates are temporarily unavailable. No generation was started.';
   $('apps').replaceChildren();
-  empty('Please try again later, or use Studio without a template.',{retry:true,showGuidedProductVideo:true});
+  empty('Please try again later, or use Studio without a template.',{retry:true});
  }
 }
 $('search').addEventListener('input',changed);
