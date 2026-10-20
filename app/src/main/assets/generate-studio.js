@@ -617,9 +617,15 @@ $('musicMode').onchange=()=>{$('consent').checked=false;modelId='';renderModel()
 $('modelButton').onclick=()=>{renderModels();$('modelDialog').showModal();};$('settingsButton').onclick=()=>$('settingsDialog').showModal();document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
 function clearHistoryThumbs(){for(const u of historyThumbUrls)URL.revokeObjectURL(u);historyThumbUrls=[];}
 async function loadHistoryImageThumbnail(item,preview){
+ const owner=localStorage.getItem('vv_token');
+ if(!owner||!preview.isConnected)return;
  try{
-  const response=await api(`/api/studio/jobs/${encodeURIComponent(item.id)}/media`),b=await response.blob();if(!b.type.startsWith('image/'))return;
-  const u=URL.createObjectURL(b);historyThumbUrls.push(u);const img=document.createElement('img');img.className='history-thumb';img.src=u;img.alt=say('Generated image preview','Предпросмотр созданного изображения');img.loading='lazy';preview.replaceChildren(img);
+  const response=await api(`/api/studio/jobs/${encodeURIComponent(item.id)}/media`);
+  if(!response.ok||Number(response.headers.get('content-length')||0)>16*1024*1024)return;
+  const b=await response.blob();
+  if(!preview.isConnected||owner!==localStorage.getItem('vv_token')||b.size>16*1024*1024||!b.type.startsWith('image/'))return;
+  const u=URL.createObjectURL(b);historyThumbUrls.push(u);
+  const img=document.createElement('img');img.className='history-thumb';img.src=u;img.alt=say('Generated image preview','Предпросмотр созданного изображения');img.loading='lazy';preview.replaceChildren(img);
  }catch(_){/* Keep the lightweight placeholder if preview retrieval fails. */}
 }
 function observeHistoryThumbnail(item,preview){
@@ -649,6 +655,8 @@ function clearHistoryMediaPreview(){
  historyMediaButton=null;
 }
 async function previewHistoryMedia(item,holder,button){
+ const owner=localStorage.getItem('vv_token');
+ if(!owner)return;
  if(historyMediaButton===button&&historyMediaPlayer){
   clearHistoryMediaPreview();holder.replaceChildren();return;
  }
@@ -662,7 +670,7 @@ async function previewHistoryMedia(item,holder,button){
   const reportedSize=Number(response.headers.get('content-length')||0);
   if(reportedSize>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
   const blob=await response.blob();
-  if(epoch!==historyMediaEpoch||!historyView||!button.isConnected)return;
+  if(epoch!==historyMediaEpoch||owner!==localStorage.getItem('vv_token')||(!historyView&&!holder.closest('#conversationThread'))||!button.isConnected)return;
   if(blob.size>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
   const expected=item.kind==='video'?'video/':'audio/';
   if(!blob.type.toLowerCase().startsWith(expected))throw Error('PREVIEW_UNSUPPORTED_FORMAT');
@@ -675,7 +683,7 @@ async function previewHistoryMedia(item,holder,button){
   holder.replaceChildren(player);button.disabled=false;
   button.textContent=say('Close preview','Закрыть просмотр');
  }catch(error){
-  if(epoch!==historyMediaEpoch||!button.isConnected)return;
+  if(epoch!==historyMediaEpoch||owner!==localStorage.getItem('vv_token')||!button.isConnected)return;
   button.disabled=false;button.textContent=say('Preview media','Просмотр');
   const message=document.createElement('p');message.className='hint';
   message.textContent=error.message==='PREVIEW_TOO_LARGE'?
@@ -859,20 +867,30 @@ async function loadConversation(){
   if(epoch!==conversationEpoch||account!==localStorage.getItem('vv_token')||selectedKind!==kind||historyView)return;
   const jobs=(Array.isArray(data.items)?data.items:[]).filter(item=>item&&item.kind===selectedKind&&typeof item.id==='string'&&typeof item.prompt==='string'&&item.prompt.trim()).slice(0,15).reverse();
   if(!jobs.length)return;
-  const fragment=document.createDocumentFragment();
+  const fragment=document.createDocumentFragment(),imagePreviews=[];
   for(const item of jobs){
    const card=document.createElement('article');card.className='conversation-item';card.setAttribute('role','listitem');
    const request=document.createElement('div');request.className='conversation-user';request.textContent=item.prompt.slice(0,2000);
    const response=document.createElement('div');response.className='conversation-response';
    const state=document.createElement('span');state.textContent=historyState(item.status);response.append(state);
    if(item.status==='ready'){
+    if(item.kind==='image'){
+     const preview=document.createElement('div');preview.className='conversation-preview';
+     response.append(preview);imagePreviews.push([item,preview]);
+    }
     const open=document.createElement('button');open.type='button';open.textContent=say('View result','Посмотреть результат');
-    open.addEventListener('click',()=>{if(!busy)void openHistoryJob(item.id);});
-    response.append(open);
+    if(item.kind==='image')open.addEventListener('click',()=>{if(!busy)void openHistoryJob(item.id);});
+    else{
+     const mediaHolder=document.createElement('div');mediaHolder.className='conversation-inline-media';
+     open.addEventListener('click',()=>{if(!busy)void previewHistoryMedia(item,mediaHolder,open);});
+     response.append(open,mediaHolder);
+    }
+    if(item.kind==='image')response.append(open);
    }
    card.append(request,response);fragment.append(card);
   }
   root.append(fragment);
+  for(const [item,preview] of imagePreviews)observeHistoryThumbnail(item,preview);
   document.querySelector('.stage').classList.add('has-conversation');
   $('empty').hidden=true;
  }catch(_){/* The editor remains usable when a read-only history request fails. */}
