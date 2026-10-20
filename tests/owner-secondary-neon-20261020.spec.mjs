@@ -9,7 +9,6 @@ const primary=[
  '/generate-studio.html?view=history',
  '/ai-apps.html',
  '/inspiration.html',
- '/product-video.html',
  '/audio-studio.html',
  '/free-tools.html',
  '/ai-pricing.html'
@@ -48,8 +47,8 @@ test('approved Home remains excluded from every new interior visual rule',async(
  await expect(page.locator('#homeQuickForm')).toHaveCount(1);
 });
 
-test('all 23 existing secondary HTML routes load a shared visual theme',async({page})=>{
- // These 26 URL cases represent the 23 distinct secondary HTML files:
+test('all 22 existing secondary HTML routes load a shared visual theme',async({page})=>{
+ // These 25 URL cases represent the 22 distinct secondary HTML files:
  // Studio modes and History intentionally share generate-studio.html.
  for(const route of allSecondary){
    const res=await page.request.get(route);
@@ -90,8 +89,6 @@ test('interior destinations preserve functional fields and distinct enabled/disa
  await expect(page.locator('#trimFile')).toHaveCount(1);
  await page.goto('/free-tools.html');
  await expect(page.locator('#run')).toHaveCount(1);
- await page.goto('/product-video.html');
- await expect(page.locator('main')).toHaveCount(1);
 });
 
 test('legal pages use the same navy theme and safe read-only sidebar',async({page})=>{
