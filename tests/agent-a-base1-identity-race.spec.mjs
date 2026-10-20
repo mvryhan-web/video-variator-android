@@ -54,5 +54,6 @@ test('A9 already displayed identity and wallet are scrubbed before other account
  await expect(page.locator('#accountLabel')).not.toContainText('SECRET_ACCOUNT_A_NAME');
  await expect(page.locator('#adminAiControl')).toHaveCount(0);
  await expect(page.locator('#aiWalletLink')).toBeHidden();
+ await expect(page.locator('#aiWalletAvailable')).not.toHaveText('999,999');
  await expect(page.locator('#logout')).toBeHidden();
 });
