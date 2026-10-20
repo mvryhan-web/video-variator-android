@@ -46,6 +46,7 @@ test('B11 text-only saved Video always detaches unrelated live photo after expli
  assert.equal(counts.confirm,1,'removing current video photo requires acknowledgement');
  assert.equal(counts.select,1);
  assert.equal(ctx.refs.length,0,'text-only historical Video cannot inherit one current image');
+ assert.equal(ctx.drafts.video.refs.length,0,'saved Video draft must also discard stale photos');
  assert.equal(counts.renderRefs,1);
  assert.equal(ctx.videoDraftNeedsPhotos,false);
  assert.equal(fields.get('prompt').value,'Historical owner video');
@@ -56,6 +57,7 @@ test('B11 declining photo detachment preserves original draft and never submits 
  const {ctx,counts,fields}=probe({savedReferenceCount:0,accept:false});
  assert.equal(counts.confirm,1);assert.equal(counts.select,0);
  assert.equal(ctx.refs.length,1);
+ assert.equal(ctx.drafts.video.refs.length,1,'declined action cannot alter draft refs');
  assert.equal(counts.renderRefs,0);
  assert.equal(fields.get('prompt').value,'Current local Video draft');
  assert.equal(counts.api,0);assert.equal(counts.provider,0);
@@ -66,12 +68,14 @@ test('B11 historic first-frame Video detaches current photo and requires re-atta
  assert.equal(ctx.videoDraftNeedsPhotos,true);
  assert.equal(ctx.videoDraftExpectedRefs,1);
  assert.equal(ctx.videoDraftPendingMode,'first_frame');
+ assert.equal(ctx.drafts.video.refs.length,0);
  assert.ok(counts.renderRefs>=1);
  assert.equal(counts.api,0);assert.equal(counts.provider,0);
 });
 test('B11 reuse prompt without Regenerate preserves local reference and makes no AI call',()=>{
  const {ctx,counts}=probe({savedReferenceCount:0,regenerate:false});
  assert.equal(counts.confirm,0);assert.equal(ctx.refs.length,1);
+ assert.equal(ctx.drafts.video.refs.length,1);
  assert.equal(counts.api,0);assert.equal(counts.provider,0);
 });
 test('B11 text-only historical Video with no current references does not ask for pointless confirmation',()=>{
