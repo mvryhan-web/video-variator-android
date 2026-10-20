@@ -8,7 +8,7 @@ This runbook applies to the existing production project. It does **not** authori
    - `DEEPSYQ_HOME_ENABLED=false`
    - `AI_PUBLIC_GENERATION_ENABLED=false`
    - `AI_BILLING_ENABLED=false`
-   - AI Apps/Product Video/Onboarding remain OFF unless individually approved.
+   - AI Apps/Onboarding remain OFF unless individually approved; retired BASE §20 has no activation switch or public route.
 
 2. **Back up production PostgreSQL outside the app process.**
    - Record backup time/location.
@@ -84,7 +84,7 @@ This runbook applies to the existing production project. It does **not** authori
     - Only then set `AI_PUBLIC_GENERATION_ENABLED=true`.
 
 13. **Feature rollout.**
-    - Enable AI Apps/Product Video/Onboarding individually only after their public acceptance checks.
+    - Enable AI Apps/Onboarding individually only after their public acceptance checks. The owner-cancelled former §20 must NOT be enabled, published or restored.
     - Use owner-approved templates/assets only.
     - Do not seed copied Lumina/BytePlus content.
 
