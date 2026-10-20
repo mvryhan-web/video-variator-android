@@ -1,6 +1,7 @@
 // Deepsyq Home: owner-approved genuine-video carousel and local Quick Create.
 // This is presentation-only and reuses the existing Inspiration feed and Studio handoff.
 import {saveStudioHandoff} from './studio-handoff.js';
+import {ownerHomeShowcase} from './owner-home-hero-headings.js';
 const $=id=>document.getElementById(id);
 const video=$('inspirationHeroVideo');
 const carousel=$('homeHeroCarousel');
@@ -50,7 +51,7 @@ function updateNeighbors(){
  });
 }
 function renderCredit(item){
- const showcase=item?.defaultSettings?.homeShowcase;
+ const showcase=ownerHomeShowcase(item);
  const model=String(item?.defaultSettings?.creationModel||'').trim();
  const provider=String(item?.defaultSettings?.creationProvider||'').trim();
  $('homeHeroCreditLabel').textContent=showcase?.title?String(showcase.label||'EXPLORE'):model?'CREATED WITH':provider?'CREATED IN':'';
@@ -89,7 +90,7 @@ function setSlide(next,direction=1){
  video.pause();video.src=item.previewUrl;
  if(item.previewPosterUrl)video.poster=item.previewPosterUrl;else video.removeAttribute('poster');
  video.load();
- const showcase=item.defaultSettings?.homeShowcase;
+ const showcase=ownerHomeShowcase(item);
  const destinations=['#canvasFeature','#quickCreateForm','#agentFeature','generate-studio.html?studio=video','generate-studio.html?studio=image','generate-studio.html?studio=audio'];
  $('inspirationHeroFeature').href=destinations.includes(showcase?.href)?showcase.href:link;
  $('inspirationHeroFeature').setAttribute('aria-label',showcase?.title?'Explore '+String(showcase.title):'Explore featured Inspiration video');
