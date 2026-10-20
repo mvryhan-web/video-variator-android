@@ -1,5 +1,10 @@
 # DEEPSYQ — ONE BASE ITEM UNTIL DONE (owner directive, 2026-10-17)
 
+## OWNER OVERRIDE 2026-10-20 — A/B/C/D COMPLETE, TEST AND MERGE THEMSELVES
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-20, см. [DECISIONS.md](../DECISIONS.md) D16.** Старые пункты ниже «agent stops READY_TO_MERGE», «coordinator #5 approves/merges DEV» теперь **исторические** для A/B/C/D. **Действует цикл каждого агента:** восстанови claim и последний SHA → исправь собственную задачу → протестируй финальный SHA/регрессии, самостоятельно исправь красный CI → проверь конфликты и точный PR diff → получи независимое заключение D при коммерческой/приватной B↔D границе → **сам squash/merge проверенный PR в `deepsyq-platform`**, без отправки координатору → перепроверь DEV → опубликуй и проверь разрешённый безопасный preview, если доступен → CHECKPOINT → продолжай следующий свой шаг BASE. Координатор может читать статус, **не предоставляет разрешение для DEV**. При внешнем GitHub permissions/branch gate ставить `MERGE_PERMISSION_BLOCKED`, не обходить правила. Не делать main/production, real Stripe/платные API, опасные миграции или locked Home captions без отдельного owner approval. Полный протокол: [DEEPSYQ_A_D_SELF_MERGE_RULE.md](DEEPSYQ_A_D_SELF_MERGE_RULE.md). Jules не меняется.
+
+
 **ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](../DECISIONS.md).** Исторические строки ниже сохранены. Бесплатные ПРОВЕРЕННЫЕ реальные AI-запросы допустимы только для ТЕСТОВ после pre-call CHECKPOINT с доказанной безопасностью лимита; **бесплатного клиентского AI-плана и бесплатных стартовых AI-кредитов нет**. Issue #182: paid provider calls только на купленные кредиты. Trial $0.99 выключен до решения владельца. Финал агента READY_TO_MERGE, DONE только после LIVE_VERIFIED; CI_BLOCKED отдельно.
 
 
