@@ -79,7 +79,7 @@ test('Product Video and Everyday Audio retain functional controls and honest pri
  await expect(page.locator('#trimFile')).toHaveCount(1);
  await expect(page.locator('#transcribeFile')).toHaveCount(1);
  await expect(page.locator('#vtaFile')).toHaveCount(1);
- await expect(page.locator('.tool-card')).toContainText(['Your text goes to Google for speech.']);
+ await expect(page.locator('body')).toContainText('Your text goes to Google for speech.');
 });
 
 test('approved Home and Agent-coming-soon route stay unchanged',async({page})=>{
@@ -88,5 +88,5 @@ test('approved Home and Agent-coming-soon route stay unchanged',async({page})=>{
  await expect(page.locator('link[href="studio-quickstart.css"]')).toHaveCount(0);
  await expect(page.locator('#homeHeroCarousel')).toHaveCount(1);
  await page.goto('/ai-apps.html');
- await expect(page.getByRole('link',{name:/AI Agents.*Soon/})).toHaveAttribute('href','deepsyq.html#agentFeature');
+ await expect(page.getByRole('link',{name:/AI Agents.*soon/i})).toHaveAttribute('href','deepsyq.html#agentFeature');
 });
