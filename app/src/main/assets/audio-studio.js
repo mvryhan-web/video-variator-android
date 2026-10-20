@@ -60,12 +60,23 @@ $('clearText').onclick=()=>{$('transcript').value='';srt='';$('saveSrt').disable
 // runtime but never calls /api/speech, ToolAccess quota, wallets or AI services.
 let trimBusy=false,trimEngine=null,trimAbort=null,trimSourceURL=null,trimResultURL=null;
 const trimPreview=$('trimSourcePreview');
+// Track only validation-owned feedback; never erase a completed export or
+// FFmpeg runtime failure just because controls are recalculated.
+let trimValidationError=false;
 function trimReady(){
  if(trimBusy){$('trimGenerate').disabled=true;return;}
  try{
   audioTrimSettings($('trimFile').files[0],$('trimStart').value,$('trimEnd').value);
   $('trimGenerate').disabled=false;
- }catch(_){$('trimGenerate').disabled=true;}
+  if(trimValidationError){$('trimStatus').textContent='';trimValidationError=false;}
+ }catch(_){
+  $('trimGenerate').disabled=true;
+  if($('trimFile').files.length){
+   $('trimStatus').textContent=t('trimInvalid');trimValidationError=true;
+  }else if(trimValidationError){
+   $('trimStatus').textContent='';trimValidationError=false;
+  }
+ }
 }
 for(const id of ['trimStart','trimEnd'])$(id).addEventListener('input',trimReady);
 $('trimFile').addEventListener('change',()=>{
