@@ -82,3 +82,33 @@ body.studio-quickstart .ref-meta:has(#clearRefs[hidden]) #refHint { display: non
   body.studio-quickstart .stage #empty #taskTitle { font-size: 25px; }
   body.studio-quickstart .conversation-user { max-width: 92%; }
 }
+
+/* Inline only verified user-owned result previews; preserve the original
+   bottom composer and existing History actions on every viewport. */
+body.studio-quickstart .conversation-preview {
+  width: min(100%, 650px);
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 14px;
+}
+body.studio-quickstart .conversation-preview:empty { display: none; }
+body.studio-quickstart .conversation-preview img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(50svh, 530px);
+  border-radius: inherit;
+  object-fit: contain;
+}
+body.studio-quickstart .conversation-inline-media video {
+  display: block;
+  width: min(650px, 100%);
+  max-height: 50svh;
+  border-radius: 14px;
+}
+body.studio-quickstart .conversation-inline-media audio {
+  display: block;
+  width: min(550px, 100%);
+}
+body.studio-quickstart .conversation-inline-media:empty { display: none; }
