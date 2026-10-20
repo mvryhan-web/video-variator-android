@@ -20,6 +20,7 @@ test('Language selected from Home persists to Studio navigation and translated c
  await expect(page.locator('html')).toHaveAttribute('lang','fr');
  await expect(page.locator('#showCreate')).toHaveText('Créer');
  await expect(page.locator('body')).toContainText('Donnez vie à vos créations avec Deepsyq');
+ await expect(page.locator('#taskTitle')).toHaveText('Donnez vie à vos créations avec Deepsyq');
  await page.goto('/generate-studio.html?studio=image');
  await expect(page.locator('html')).toHaveAttribute('lang','fr');
  await expect(page.locator('#showHistory')).toHaveText('Mes résultats');
