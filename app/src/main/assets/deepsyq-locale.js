@@ -196,7 +196,10 @@ const dictionaries={fr:{
  "Return Home": "На главную"
 }};
 const original=new WeakMap();
-const exclusions='script,style,noscript,textarea,pre,code,[contenteditable],#conversationThread,#historyList,#recentCreationsGrid,#media,#apps,#gallery,#inspirationPreviewGrid';
+const originalAttrs=new WeakMap();
+// Home hero and its live accessibility status are controlled by the already-approved
+// carousel. Translating static copy must never overwrite dynamic aria-label changes.
+const exclusions='script,style,noscript,textarea,pre,code,[contenteditable],#conversationThread,#historyList,#recentCreationsGrid,#media,#apps,#gallery,#inspirationPreviewGrid,#homeHeroCarousel,#homeHeroStatus';
 function language(){let v='en';try{v=localStorage.getItem('deepsyq_home_language')||'en';}catch(_){}return ['en','fr','ru'].includes(v)?v:'en';}
 function excluded(node){
  const p=node.parentElement;return !p||Boolean(p.closest(exclusions));
@@ -226,15 +229,17 @@ function translateText(root=document.body){
   root.querySelectorAll('[placeholder],[aria-label],[title]'):[];
  for(const node of nodesWithAttrs){
   if(node.closest(exclusions))continue;
+  let saved=originalAttrs.get(node);if(!saved){saved=new Map();originalAttrs.set(node,saved);}
   for(const attr of attrs){
    if(!node.hasAttribute(attr))continue;
    const now=node.getAttribute(attr)||'';
-   const key='ds-i18n-'+attr;
-   const saved=node.dataset[key.replace(/-([a-z])/g,(_,c)=>c.toUpperCase())]||now;
-   const dataKey=key.replace(/-([a-z])/g,(_,c)=>c.toUpperCase());
-   if(!node.dataset[dataKey])node.dataset[dataKey]=saved;
-   const next=locale==='en'?saved:convert(saved,dict);
+   // A dynamic attribute may be updated by its owning widget at any time.
+   // Preserve that newest value instead of restoring an old snapshot.
+   let entry=saved.get(attr);
+   if(!entry||now!==entry.output)entry={source:now,output:now};
+   const next=locale==='en'?entry.source:convert(entry.source,dict);
    if(now!==next)node.setAttribute(attr,next);
+   saved.set(attr,{source:entry.source,output:next});
   }
  }
 }
