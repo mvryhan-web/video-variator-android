@@ -1,3 +1,7 @@
+## [AGENT A / A9-P0 PRE-CODE CLAIM / 2026-10-20]
+
+Active one-item A-owned account identity race fix under original BASE §1, Issue72 claim [#6287820456](https://github.com/mvryhan-web/video-variator-android/issues/72#issuecomment-6287820456), coordinator Issue233 [#6287820975](https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6287820975). Base DEV `eb5f4160bda13ca5c90fb9fba362b97bb6311123`, branch `agent-a-base1-identity-race-20261020`. Exact hunk: `app/src/main/assets/deepsyq.js` async account identity / owner AI wallet response rendering only (existing lines 459–467,556), plus **new** `tests/agent-a-base1-identity-race.spec.mjs` and **new** `.github/workflows/agent-a-base1-identity-race.yml`. Privacy guards only; Home media/captions/style locked, no B/D provider/credits/backend/Stripe/production, no edits to PR312. Status CLAIMED_BEFORE_CODE / TEST_PENDING, not original §1 DONE.
+
 ## COORDINATOR #5 — CYCLE 6 / CLAIM RELEASE + CODE INTEGRATION (2026-10-19)
 
 **Not original BASE DONE:** §1 remains PARTIAL/BLOCKED_EXTERNAL, only §47 + §53 fully DONE (2/55). Historical 55 canonical numbered rows beneath are unchanged; this is a current claim-status overlay.
