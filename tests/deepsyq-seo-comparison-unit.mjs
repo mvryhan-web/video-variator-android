@@ -59,7 +59,7 @@ test('all public internal links and brand assets exist inside the same static we
 test('comparison remains independent editorial HTML: no paid requests, scripts, or invented review ratings',()=>{
  const scriptTags=[...source.matchAll(/<script\b[^>]*>[\s\S]*?<\/script>/gi)].map(m=>m[0]);
  assert.equal((source.match(/<script\b/gi)||[]).length,scriptTags.length,'disallow malformed script tags');
- assert.deepEqual(scriptTags,['<script defer src="deepsyq-site-shell.js"></script>'],'permit only audited local navigation script; no inline or remote code');
+ assert.deepEqual(scriptTags,['<script defer src="deepsyq-site-shell.js"></script>','<script type="module" src="deepsyq-locale.js"></script>'],'permit only audited local navigation and EN/FR/RU translation scripts; no inline or remote code');
  assert.doesNotMatch(source,/application\/ld\+json/i);
  assert.doesNotMatch(source,/\bAggregateRating\b|\breviewCount\b/);
  assert.doesNotMatch(source,/data:text\/html|javascript:/i);
