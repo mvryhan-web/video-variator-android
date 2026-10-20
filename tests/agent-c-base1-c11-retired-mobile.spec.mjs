@@ -11,7 +11,7 @@ const models=[
  {id:'c11-old',title:'Retired Product Video template',category:'Retired',generationType:'product_video',promptTemplate:'Retired'}
 ];
 const inspiration=[
- {id:'fictional-image',slug:'fictional-image',title:'Fictional painting',description:'Synthetic, no real licensed photo',category:'Paintings',kind:'image',aspectRatio:'1:1',prompt:'Original fictional painting of flowers',previewUrl:'/unavailable-fixture.png',actionTarget:'studio',requiredInputTypes:[],rightsBasis:'owned',rightsNote:'Synthetic test only'},
+ {id:'fictional-image',slug:'fictional-image',title:'Fictional painting',description:'Synthetic, no real licensed photo',category:'Paintings',kind:'image',aspectRatio:'1:1',prompt:'Original fictional painting of flowers',defaultModel:'c11-unconnected-provider-model',previewUrl:'/unavailable-fixture.png',actionTarget:'studio',requiredInputTypes:[],rightsBasis:'owned',rightsNote:'Synthetic test only'},
  {id:'fictional-video',slug:'fictional-video',title:'Fictional animation',description:'Synthetic, no real licensed clip',category:'Motion',kind:'video',aspectRatio:'16:9',prompt:'Original animation of a floating island',previewUrl:'/unavailable-fixture.mp4',actionTarget:'studio',requiredInputTypes:[],rightsBasis:'owned',rightsNote:'Synthetic test only'}
 ];
 async function fixtures(page){
@@ -129,6 +129,9 @@ test('C11 Inspiration existing rights-gated API fixtures: filters, categories an
   await page.setViewportSize({width,height:850});
   await page.goto('/inspiration.html');
   await expect(page.locator('#gallery .card')).toHaveCount(2);
+  // Model preferences are NOT evidence of a configured/available paid provider.
+  await expect(page.locator('#gallery .card').filter({hasText:'Fictional painting'}))
+   .not.toContainText('c11-unconnected-provider-model');
   await fit(page,width,'Inspiration');
   await expect(page.locator('#category option')).toHaveCount(3);
   await page.getByRole('button',{name:'Videos',exact:true}).click();
