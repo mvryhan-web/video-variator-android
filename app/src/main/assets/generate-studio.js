@@ -871,17 +871,36 @@ async function createImageBatch(){
 $('creator').onsubmit=async e=>{
  e.preventDefault();
  if($('generate').disabled)return;
+ if(kind==='image'&&imageBatchQuantity()>1){
+  busy=true;availability();
+  try{await createImageBatch();}
+  catch(error){$('status').textContent=errorText(error);}
+  finally{busy=false;availability();}
+  return;
+ }
  busy=true;availability();
  $('status').textContent=say('Checking the current credit quote…','Проверяем текущую стоимость в кредитах…');
  try{
-  // The estimate endpoint receives settings only, never the prompt or reference bytes.
-  const quoteInput={kind,model:modelId,ratio:$('ratio').value,
+  // Freeze choices before async quote; prompt and bytes must not enter estimate.
+  const original={kind,model:modelId,prompt:$('prompt').value,ratio:$('ratio').value,
    ...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),
    ...(kind==='video'?{videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value}:{}),
-   musicMode:$('musicMode').value,referenceCount:refs.length,quantity:1};
+   musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked};
+  const originalRefs=refs.slice(),tokenAtClick=typeof localStorage==='undefined'?null:localStorage.getItem('vv_token');
+  const state=()=>[kind,modelId,$('prompt').value,$('ratio').value,$('imageResolution').value,$('imageOutputFormat').value,$('videoResolution').value,$('videoDuration').value,$('videoInputMode').value,$('musicMode').value,$('consent').checked];
+  const originalState=state();
+  const stillAccepted=()=>(
+   (typeof localStorage==='undefined'||localStorage.getItem('vv_token')===tokenAtClick)&&
+   original.consent&&state().every((v,i)=>v===originalState[i])&&
+   refs.length===originalRefs.length&&refs.every((v,i)=>v===originalRefs[i]&&v.mimeType===original.references[i].mimeType&&v.data===original.references[i].data)
+  );
+  const abortPrice=()=>{$('status').textContent=say('The approved model, price or request changed. No job was submitted.','Модель, цена или запрос изменились. Задание не отправлено.');busy=false;availability();};
+  const quoteInput={kind:original.kind,model:original.model,ratio:original.ratio,
+   ...(original.kind==='image'?{resolution:original.resolution,outputFormat:original.outputFormat}:{}),
+   ...(original.kind==='video'?{videoResolution:original.videoResolution,videoDuration:original.videoDuration,videoInputMode:original.videoInputMode}:{}),
+   musicMode:original.musicMode,referenceCount:original.references.length,quantity:1};
   const quote=await(await api('/api/studio/estimate',{method:'POST',body:JSON.stringify(quoteInput)})).json();
-  if(quote.kind!==kind||quote.quantity!==1||!Number.isSafeInteger(quote.credits)||quote.credits<1||typeof quote.model!=='string')
-   throw Error(quote.error||'AI_PRICING_NOT_APPROVED');
+  if(quote.kind!==original.kind||quote.model!==original.model||quote.quantity!==1||!Number.isSafeInteger(quote.credits)||quote.credits<1||!stillAccepted()){abortPrice();return;}
   const label=catalog.find(m=>m.id===quote.model)?.label||quote.model;
   const accepted=confirm(say(
    'This generation uses '+quote.credits.toLocaleString()+' AI credits with '+label+'. Continue?',
@@ -891,13 +910,11 @@ $('creator').onsubmit=async e=>{
    $('status').textContent=say('Generation cancelled. No credits were reserved.','Генерация отменена. Кредиты не резервировались.');
    busy=false;availability();return;
   }
+  if(!stillAccepted()){abortPrice();return;}
   setHistory(false);clearResult();job=null;updateJobProgress('submitting');const epoch=++generation;
   $('status').textContent=say('Submitting your request…','Отправляем запрос…');
   const d=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({
-   requestId:crypto.randomUUID(),expectedCredits:quote.credits,kind,model:modelId,prompt:$('prompt').value,
-   ratio:$('ratio').value,...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),
-   ...(kind==='video'?{videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value}:{}),
-   musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked
+   ...original,requestId:crypto.randomUUID(),expectedCredits:quote.credits
   })})).json();
   if(!d.id)throw Error('STUDIO_STORAGE_UNAVAILABLE');
   job=d.id;sessionStorage.setItem('vu_generation_job',job);updateJobProgress(d.status||'processing',{creditsReserved:d.creditsReserved});
