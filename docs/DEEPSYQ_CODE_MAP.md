@@ -3,13 +3,13 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `0ce9b3b9412fa020a2755e325b7508de4460dd4d`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` | Indexed files: 50 | Named symbols: 132 | Checked relations: 48
+Source commit: `7d7f8a66f4694f9fbc4458cec472b2bd6a4bf8be`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` | Indexed files: 52 | Named symbols: 134 | Checked relations: 48
 
 ## Topic finder (matching filenames)
 
 - **Credits, payments and pricing:** `server/generation-purchased-provider-boundary.js`, `server/generation-subscription-credits.js`, `server/generation-wallet.js`
-- **Video, providers and jobs:** `server/compare-ai-mock-worker.js`, `server/generation-purchased-provider-boundary.js`, `server/generation-storage.js`, `server/generation-worker.js`, `server/product-watcher/worker.js`, `server/telegram-video-core.js`, `server/telegram-video.js`
+- **Video, providers and jobs:** `server/compare-ai-mock-worker.js`, `server/generation-provider.js`, `server/generation-purchased-provider-boundary.js`, `server/generation-storage.js`, `server/generation-video-submit-uncertainty.js`, `server/generation-worker.js`, `server/product-watcher/worker.js`, `server/telegram-video-core.js`, `server/telegram-video.js`
 - **Image, Canvas and Home:** `server/deepsyq-preview.js`, `server/generation-openai-image.js`
 - **Audio and voice:** `server/speech.js`
 - **AI Apps, Inspiration, History:** `server/generation-inspiration.js`, `server/tool-policy.js`, `server/workspace-job-view.js`, `server/workspace-project-policy.js`
@@ -65,6 +65,10 @@ TARGETS (L10)
 
 MODELS (L4) · QUALITY (L7) · MIME (L8) · PNG (L10) · PNG_CRC_TABLE (L45)
 
+### `server/generation-provider.js`
+
+UNWIRED_VIDEO_CONTROLS (L8)
+
 ### `server/generation-purchased-provider-boundary.js`
 
 PurchasedDispatchDenied (L7)
@@ -104,6 +108,10 @@ TYPES (L5) · INPUTS (L8) · initByPool (L9) · RIGHTS (L10)
 ### `server/generation-trial-policy.js`
 
 TRIAL_PREVIEW_DURATION_MS (L54)
+
+### `server/generation-video-submit-uncertainty.js`
+
+VIDEO_SUBMISSION_UNCERTAIN (L6)
 
 ### `server/generation-wallet.js`
 
