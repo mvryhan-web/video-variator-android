@@ -291,3 +291,56 @@ test('Workspace Job View - malformed IDs are rejected, never normalized into dup
   ];
   assert.deepEqual(projectWorkspaceJobView({ userId: 'alice', jobs }).map(c => c.id), ['j4', 'valid_2']);
 });
+
+
+test('Real Studio ready status with actual private S3 output_assets produces only a safe Boolean preview', () => {
+  const secretKey = 'private/alice/never-publish-this-asset.mp4';
+  const jobs = [
+    { id:'ready-owner', user_id:'alice', kind:'video', status:'ready',
+      created_at:'2026-10-20T10:00:00.000Z',
+      output_assets:[{storage:'s3',key:secretKey,sha256:'private-checksum',mime:'video/mp4'}],
+      prompt:'confidential',providerCostMicros:999999, stripeCustomerId:'cus_secret' },
+    { id:'ready-foreign', user_id:'bob', kind:'image', status:'ready',
+      output_assets:[{storage:'s3',key:'private/bob/foreign.png'}] },
+  ];
+  const alice = projectWorkspaceJobView({userId:'alice',jobs});
+  assert.equal(alice.length,1);
+  assert.equal(alice[0].id,'ready-owner');
+  assert.equal(alice[0].status,'completed');
+  assert.equal(alice[0].isCompleted,true);
+  assert.equal(alice[0].hasPreview,true);
+  assert.equal(alice[0].previewPlaceholder.ready,true);
+  const displayed = JSON.stringify(alice);
+  for(const secret of [secretKey,'private-checksum','confidential','999999','cus_secret','private/bob']){
+    assert.equal(displayed.includes(secret),false,secret);
+  }
+  assert.deepEqual(projectWorkspaceJobView({userId:'bob',jobs}).map(c=>c.id),['ready-foreign']);
+});
+
+test('Studio finalizing stays processing even with stored S3 assets until wallet capture completes',()=>{
+  const cards=projectWorkspaceJobView({userId:'alice',jobs:[{
+    id:'capture-pending',user_id:'alice',status:'finalizing',kind:'video',
+    output_assets:[{storage:'s3',key:'private/alice/result.mp4'}],
+    output_ready:true,created_at:'2026-10-20T11:00:00.000Z'
+  }]});
+  assert.equal(cards[0].status,'processing');
+  assert.equal(cards[0].isProcessing,true);
+  assert.equal(cards[0].isCompleted,false);
+  assert.equal(cards[0].hasPreview,false);
+  assert.equal(cards[0].previewPlaceholder.label,'Generating...');
+});
+
+test('Unsupported/empty output assets never create fake finished media',()=>{
+  const statuses=['ready','finalizing','failed','cancelled','UNKNOWN'];
+  const items=statuses.map((status,i)=>({
+    id:'bad-'+i,user_id:'alice',status,kind:'video',
+    output_assets:[null,{}, {storage:'other',key:'abc'}, {storage:'s3',key:''}, 'foreign-url'],
+  }));
+  const cards=projectWorkspaceJobView({userId:'alice',jobs:items});
+  for(const card of cards){
+    assert.equal(card.hasPreview,false);
+    assert.equal(card.previewPlaceholder.ready,false);
+  }
+  assert.equal(cards.find(c=>c.id==='bad-0').isCompleted,true);
+  assert.equal(cards.find(c=>c.id==='bad-1').isCompleted,false);
+});
