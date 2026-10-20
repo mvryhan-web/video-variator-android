@@ -8,45 +8,43 @@ export function purchasedFundingProof({paidCredits,otherSpentCredits,requiredCre
  if(required<1||required>10_000_000||paid<required||paid-used<required)return false;
  return true;
 }
-export async function claimPurchasedGeneration(c,{env={},userId,jobId,kind,credits,fingerprint,modelId,provider,wallet}={}){
- if(env.AI_PURCHASED_ONLY_DISPATCH_ENABLED!=='true'||env.AI_BILLING_MODE!=='live'||
-    env.AI_LIVE_BILLING_APPROVED!=='true'||env.AI_PUBLIC_GENERATION_ENABLED!=='true'||
-    env.AI_STUDIO_WALLET_ENABLED!=='true')deny();
- if(!textId(userId)||!textId(jobId)||!['image','video','music','voice'].includes(kind)||
-    !textId(fingerprint)||!textId(modelId)||!textId(provider)||
-    !Number.isSafeInteger(credits)||credits<1||credits>10_000_000||
-    !wallet||!Number.isSafeInteger(wallet.reserved)||wallet.reserved<credits||wallet.debt!==0)deny();
- // A verified signed Stripe grant creates vv_ai_purchase. Credit packs
- // require original LIVE Checkout; subscriptions additionally require an
- // invoice provenance row written after fully validated, LIVE invoice.paid.
- const order=await c.query(`SELECT
-  COALESCE(SUM(credits),0)::bigint AS paid_credits,
-   MIN(session_id) FILTER (WHERE credits>0) AS source_id
-  FROM (
-    SELECT (p.credits-CEIL(p.credits::numeric*p.refunded_amount/p.amount))::bigint AS credits,p.session_id FROM vv_ai_purchase p
-    JOIN vv_ai_order o ON o.session_id=p.session_id
-    WHERE p.user_id=$1 AND o.user_id=$1 AND o.snapshot->>'billingMode'='live'
-      AND p.session_id LIKE 'cs_live_%' AND p.payment_intent LIKE 'pi_%'
-      AND p.refunded_amount>=0 AND p.refunded_amount<p.amount AND p.amount>0 AND p.credits>0
-    UNION ALL
-    SELECT (p.credits-CEIL(p.credits::numeric*p.refunded_amount/p.amount))::bigint AS credits,p.session_id FROM vv_ai_purchase p
-    JOIN vv_ai_verified_subscription_invoice v ON v.invoice_id=p.session_id
-      AND v.user_id=p.user_id AND v.payment_intent=p.payment_intent
-    WHERE p.user_id=$1 AND v.livemode=true
-      AND p.session_id LIKE 'in_%' AND p.payment_intent LIKE 'pi_%'
-      AND p.refunded_amount>=0 AND p.refunded_amount<p.amount AND p.amount>0 AND p.credits>0
-  ) eligible_paid_purchases`,[userId]);
- const paidCredits=safeCount(order.rows[0]?.paid_credits),purchaseId=order.rows[0]?.source_id;
- if(!textId(purchaseId))deny();
- // Each paid source is reduced by CEIL(refund_ratio * original_credits),
- // exactly matching wallet.refund's cumulative revocation math. Zero paid
- // remainder contributes zero; bonus/admin credits never increase paid funding.
- // Account for actual trusted captured usage, not merely the original
- // reservation. Settle returns surplus via (available_delta - debt_delta);
- // exactly ONE matching captured ledger entry is required to trust a return.
- // If audit is missing, duplicated or malformed count the FULL reserved sum.
- // Count held/captured historical, promotional, admin and subscription jobs
- // against paid funds so bonuses never subsidize provider requests.
+export function purchasedMarginProof({paidCredits,otherSpentCredits,requiredCredits,
+ worstNetRevenueMicros,worstRemainingCredits,providerCostMicros}={}){
+ if(!purchasedFundingProof({paidCredits,otherSpentCredits,requiredCredits}))return false;
+ const net=safeCount(worstNetRevenueMicros),remaining=safeCount(worstRemainingCredits),cost=safeCount(providerCostMicros);
+ if(remaining<1||cost<1)return false;
+ // Compare rationals with BigInt, avoiding a rounded per-credit margin.
+ return BigInt(net)*BigInt(requiredCredits)>=2n*BigInt(cost)*BigInt(remaining);
+}
+async function purchasedEconomics(c,{userId,jobId=null,currency}={}){
+ const order=await c.query(`WITH sources AS (
+  SELECT p.session_id,
+   (p.credits-CEIL(p.credits::numeric*p.refunded_amount/p.amount))::bigint AS remaining_credits,
+   GREATEST(p.net_revenue_micros::numeric-p.refunded_amount::numeric*10000,0)::numeric AS remaining_net_revenue_micros
+  FROM vv_ai_purchase p
+  LEFT JOIN vv_ai_order o ON o.session_id=p.session_id
+  WHERE p.user_id=$1 AND p.currency=$2
+    AND p.net_revenue_micros IS NOT NULL AND p.settlement_verified_at IS NOT NULL
+    AND p.processor_fee_amount IS NOT NULL AND p.tax_amount IS NOT NULL
+    AND p.settlement_livemode=true
+    AND p.refunded_amount>=0 AND p.refunded_amount<p.amount AND p.amount>0 AND p.credits>0
+    AND ((p.session_id ~ '^cs_live_[A-Za-z0-9]+$' AND p.payment_intent ~ '^pi_[A-Za-z0-9]+$' AND o.user_id=$1
+          AND o.snapshot->>'billingMode'='live' AND o.snapshot->>'currency'=p.currency
+          AND o.snapshot->>'credits'=p.credits::text
+          AND o.snapshot->>'priceId' ~ '^price_[A-Za-z0-9]+$'
+          AND CASE WHEN o.snapshot->>'amount' ~ '^[0-9]+$'
+                   THEN p.amount=(o.snapshot->>'amount')::bigint+p.tax_amount ELSE FALSE END))
+ ), live_sources AS (
+  SELECT * FROM sources WHERE remaining_credits>0 AND remaining_net_revenue_micros>0
+ ), worst AS (
+  SELECT session_id,remaining_credits,remaining_net_revenue_micros
+  FROM live_sources
+  ORDER BY remaining_net_revenue_micros/remaining_credits ASC,session_id ASC LIMIT 1
+ )
+ SELECT COALESCE((SELECT SUM(remaining_credits) FROM live_sources),0)::bigint AS paid_credits,
+  (SELECT session_id FROM worst) AS source_id,
+  (SELECT remaining_net_revenue_micros::text FROM worst) AS worst_net_revenue_micros,
+  (SELECT remaining_credits FROM worst) AS worst_remaining_credits`,[userId,currency]);
  const other=await c.query(`SELECT COALESCE(SUM(
   CASE WHEN res.status='captured' AND audit.entries=1
       AND audit.returned>=0 AND audit.returned<=res.credits
@@ -59,10 +57,47 @@ export async function claimPurchasedGeneration(c,{env={},userId,jobId,kind,credi
     FROM vv_ai_ledger WHERE user_id=$1 AND kind='captured'
     GROUP BY reference
   ) audit ON audit.reference=res.job_id
-  WHERE res.user_id=$1 AND res.job_id<>$2
+  WHERE res.user_id=$1 AND ($2::text IS NULL OR res.job_id<>$2)
     AND res.status IN ('held','captured')`,[userId,jobId]);
- const otherSpent=safeCount(other.rows[0]?.used);
- if(!purchasedFundingProof({paidCredits,otherSpentCredits:otherSpent,requiredCredits:credits}))deny();
+ return {paidCredits:safeCount(order.rows[0]?.paid_credits),sourceId:order.rows[0]?.source_id||null,
+  worstNetRevenueMicros:order.rows[0]?.worst_net_revenue_micros||null,
+  worstRemainingCredits:order.rows[0]?.worst_remaining_credits??null,
+  otherSpentCredits:safeCount(other.rows[0]?.used)};
+}
+export async function checkPurchasedGenerationMargin(c,{userId,jobId=null,kind,credits,fingerprint,modelId,provider,
+ providerCostMicros,currency,wallet}={}){
+ if(!textId(userId)||!Number.isSafeInteger(credits)||credits<1||
+    !Number.isSafeInteger(providerCostMicros)||providerCostMicros<1||!['eur','usd'].includes(currency))return false;
+ const economics=await purchasedEconomics(c,{userId,jobId,currency});
+ const allowed=purchasedMarginProof({...economics,requiredCredits:credits,providerCostMicros});
+ return allowed?{...economics,allowed:true}:false;
+}
+export async function claimPurchasedGeneration(c,{env={},userId,jobId,kind,credits,fingerprint,modelId,provider,
+ providerCostMicros,currency,wallet}={}){
+ if(env.AI_PURCHASED_ONLY_DISPATCH_ENABLED!=='true'||env.AI_BILLING_MODE!=='live'||
+    env.AI_LIVE_BILLING_APPROVED!=='true'||env.AI_PUBLIC_GENERATION_ENABLED!=='true'||
+    env.AI_STUDIO_WALLET_ENABLED!=='true')deny();
+ if(!textId(userId)||!textId(jobId)||!['image','video','music','voice'].includes(kind)||
+    !textId(fingerprint)||!textId(modelId)||!textId(provider)||
+   !Number.isSafeInteger(credits)||credits<1||credits>10_000_000||
+   !Number.isSafeInteger(providerCostMicros)||providerCostMicros<1||!['eur','usd'].includes(currency)||
+    !wallet||!Number.isSafeInteger(wallet.reserved)||wallet.reserved<credits||wallet.debt!==0)deny();
+ // Only verified Stripe settlement rows in the provider-cost currency count.
+ // Refunded gross is subtracted from revenue without assuming tax was returned;
+ // this intentionally underestimates margin and fails closed.
+ const economics=await purchasedEconomics(c,{userId,jobId,currency});
+ const paidCredits=economics.paidCredits,purchaseId=economics.sourceId;
+ if(!textId(purchaseId)||!purchasedMarginProof({...economics,requiredCredits:credits,providerCostMicros}))deny();
+ // Each paid source is reduced by CEIL(refund_ratio * original_credits),
+ // exactly matching wallet.refund's cumulative revocation math. Zero paid
+ // remainder contributes zero; bonus/admin credits never increase paid funding.
+ // Account for actual trusted captured usage, not merely the original
+ // reservation. Settle returns surplus via (available_delta - debt_delta);
+ // exactly ONE matching captured ledger entry is required to trust a return.
+ // If audit is missing, duplicated or malformed count the FULL reserved sum.
+ // Count held/captured historical, promotional, admin and subscription jobs
+ // against paid funds so bonuses never subsidize provider requests.
+ const otherSpent=economics.otherSpentCredits;
  const reserve=await c.query(`SELECT user_id,credits,fingerprint,status FROM vv_ai_reservation
   WHERE job_id=$1 AND user_id=$2 FOR UPDATE`,[jobId,userId]);
  const held=reserve.rows[0];

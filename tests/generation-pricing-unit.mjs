@@ -58,17 +58,14 @@ test('multiframe Seedance pricing requires explicit mode and exact reference cou
  const malformed={AI_MODEL_PRICING_JSON:JSON.stringify([{...base,videoInputMode:'first_last',referenceCount:5}])};
  assert.equal(pricingCatalog(malformed).configured,false);
 });
-test('pricing rejects missing or mismatched economics and enforces the exact 2:1 floor',()=>{
- const base={model:'m',provider:'P',kind:'image',credits:1,providerCostMicros:100,currency:'usd',netRevenueCurrency:'usd'};
- for(const row of [
-  {...base,netRevenueMicros:199},
-  {...base,netRevenueMicros:201,netRevenueCurrency:'eur'},
-  {...base,netRevenueMicros:200,currency:'EURO'},
-  {...base,netRevenueMicros:200,netRevenueCurrency:'USD'},
- ])assert.equal(pricingCatalog({AI_MODEL_PRICING_JSON:JSON.stringify([row])}).configured,false);
- const atFloor=pricingCatalog({AI_MODEL_PRICING_JSON:JSON.stringify([{...base,netRevenueMicros:200}])});
- assert.equal(atFloor.configured,true);assert.equal(atFloor.entries[0].netRevenueMicros,200);
- assert.equal(pricingCatalog({AI_MODEL_PRICING_JSON:JSON.stringify([{model:'m',provider:'P',kind:'image',credits:1,providerCostMicros:100,currency:'EURO'}])}).configured,false);
+test('D18 never accepts operator revenue assertions as customer margin evidence',()=>{
+ const base={model:'m',provider:'P',kind:'image',credits:1,providerCostMicros:100,currency:'usd'};
+ const row={...base,netRevenueMicros:999999999,netRevenueCurrency:'eur'};
+ const catalog=pricingCatalog({AI_MODEL_PRICING_JSON:JSON.stringify([row])});
+ assert.equal(catalog.configured,true);
+ assert.equal(Object.hasOwn(catalog.entries[0],'netRevenueMicros'),false);
+ assert.equal(Object.hasOwn(catalog.entries[0],'netRevenueCurrency'),false);
+ assert.equal(pricingCatalog({AI_MODEL_PRICING_JSON:JSON.stringify([{...base,currency:'EURO'}])}).configured,false);
 });
 
 test('equally-specific overlapping approved rates fail closed, irrespective of JSON row order',()=>{

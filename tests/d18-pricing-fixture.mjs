@@ -1,10 +1,5 @@
-// No-network fixture helper. This records an explicit same-currency net
-// customer-revenue allocation at the exact D18 2:1 floor for approved rows.
-// Negative tests should construct rows without this helper on purpose.
-export const d18Rows=rows=>rows.map(row=>({
-  ...row,
-  currency:row.currency||'usd',
-  netRevenueCurrency:row.netRevenueCurrency||row.currency||'usd',
-  netRevenueMicros:row.netRevenueMicros??row.providerCostMicros*2,
-}));
+// No-network fixture helper: default only to the existing wallet currency.
+// Customer revenue is deliberately absent; only verified Stripe settlement
+// rows may prove the D18 margin at dispatch.
+export const d18Rows=rows=>rows.map(row=>({...row,currency:row.currency||'usd'}));
 export const d18PricingJson=rows=>JSON.stringify(d18Rows(rows));

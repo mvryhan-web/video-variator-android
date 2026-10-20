@@ -1,0 +1,44 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {retrieveStripeNetRevenue,verifyStripeNetRevenue,stripeCheckoutTaxAmount,stripeInvoiceTaxAmount} from '../server/generation-stripe-net-revenue.js';
+
+const paymentIntent=({live=false,amount=1200,fee=55,tax=200}={})=>({
+ id:'pi_fixture',status:'succeeded',livemode:live,amount_received:amount,currency:'eur',
+ latest_charge:{id:'ch_fixture',paid:true,captured:true,livemode:live,currency:'eur',amount_captured:amount,
+  balance_transaction:{id:'txn_fixture',source:'ch_fixture',type:'charge',currency:'eur',amount,fee,net:amount-fee}}
+});
+const args=(overrides={})=>({paymentIntent:paymentIntent(),expectedAmount:1200,expectedCurrency:'eur',taxAmount:200,expectedLivemode:false,...overrides});
+
+test('D18 verified Stripe settlement excludes processor fee and tax from received revenue',()=>{
+ assert.deepEqual(verifyStripeNetRevenue(args()),{
+  currency:'eur',processorFeeAmount:55,taxAmount:200,netRevenueMicros:9_450_000,
+  stripeChargeId:'ch_fixture',stripeBalanceTransactionId:'txn_fixture',livemode:false
+ });
+});
+test('D18 receipt verification rejects payment, mode, charge, balance transaction and tax mismatches',()=>{
+ const p=paymentIntent();
+ for(const change of [
+  {paymentIntent:{...p,status:'processing'}},{paymentIntent:{...p,livemode:true}},
+  {paymentIntent:{...p,amount_received:1199}},{paymentIntent:{...p,latest_charge:{...p.latest_charge,paid:false}}},
+  {paymentIntent:{...p,latest_charge:{...p.latest_charge,balance_transaction:{...p.latest_charge.balance_transaction,fee:1201}}}},
+  {taxAmount:1200},{taxAmount:-1},{expectedCurrency:'usd'}
+ ])assert.throws(()=>verifyStripeNetRevenue(args(change)),/AI_SETTLEMENT_/);
+});
+test('D18 safely retrieves expanded or separately referenced Charge and BalanceTransaction',async()=>{
+ let piCalls=0,chargeCalls=0,balanceCalls=0;
+ const stripe={paymentIntents:{async retrieve(id,options){piCalls++;assert.equal(id,'pi_fixture');assert.deepEqual(options.expand,['latest_charge.balance_transaction']);return {...paymentIntent(),latest_charge:'ch_fixture'};}},
+  charges:{async retrieve(id,options){chargeCalls++;assert.equal(id,'ch_fixture');assert.deepEqual(options.expand,['balance_transaction']);return {...paymentIntent().latest_charge,balance_transaction:'txn_fixture'};}},
+  balanceTransactions:{async retrieve(id){balanceCalls++;assert.equal(id,'txn_fixture');return paymentIntent().latest_charge.balance_transaction;}}
+ };
+ const settlement=await retrieveStripeNetRevenue({stripe,paymentIntentId:'pi_fixture',expectedAmount:1200,expectedCurrency:'eur',taxAmount:200,expectedLivemode:false});
+ assert.equal(settlement.netRevenueMicros,9_450_000);assert.deepEqual([piCalls,chargeCalls,balanceCalls],[1,1,1]);
+});
+test('D18 Checkout and Invoice tax evidence must be present and internally consistent',()=>{
+ assert.equal(stripeCheckoutTaxAmount({amount_subtotal:1000,amount_total:1200,total_details:{amount_tax:200,amount_discount:0,amount_shipping:0}}),200);
+ assert.equal(stripeCheckoutTaxAmount({amount_subtotal:1000,amount_total:1000,total_details:{amount_tax:0,amount_discount:0,amount_shipping:0}}),0);
+ assert.equal(stripeInvoiceTaxAmount({total_taxes:[{amount:200}],total_tax_amounts:[{amount:200}]}),200);
+ assert.equal(stripeInvoiceTaxAmount({total_taxes:[]}),0);
+ assert.throws(()=>stripeCheckoutTaxAmount({amount_subtotal:1000,amount_total:1200,total_details:{amount_tax:0,amount_discount:0,amount_shipping:0}}),/AI_SETTLEMENT_TOTAL_MISMATCH/);
+ assert.throws(()=>stripeInvoiceTaxAmount({}),/AI_SETTLEMENT_TAX_UNVERIFIED/);
+ assert.throws(()=>stripeInvoiceTaxAmount({total_taxes:[{amount:1}],total_tax_amounts:[{amount:2}]}),/AI_SETTLEMENT_TAX_CONFLICT/);
+});

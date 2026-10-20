@@ -6,6 +6,8 @@ import express from 'express';
 import {GenerationWallet} from '../server/generation-wallet.js';
 import {installGenerationBilling} from '../server/generation-billing.js';
 const db=process.env.AI_TEST_DATABASE_URL;
+let refundSeq=0;
+const refundProof=(chargeId='ch_fixture',livemode=false)=>({eventId:'evt_test'+(++refundSeq),chargeId,livemode});
 test('real PostgreSQL AI wallet and sandbox payment contract', {skip:!db}, async t=>{
  const url=new URL(db);
  assert.equal(process.env.NODE_ENV,'test');assert.ok(['localhost','127.0.0.1'].includes(url.hostname));assert.equal(url.pathname,'/vv_ai_test');
@@ -64,14 +66,14 @@ test('real PostgreSQL AI wallet and sandbox payment contract', {skip:!db}, async
   await t.test('payment refund removes credits; spent balance creates debt, not free usage',async()=>{
    const p=purchase('e','e');await wallet.grant(p);await wallet.reserve({userId:p.userId,jobId:prefix+'e',credits:80,fingerprint:'hash'});
    await wallet.settle({userId:p.userId,jobId:prefix+'e',outcome:'success'});
-   await wallet.refund(p.paymentIntent,50);await wallet.refund(p.paymentIntent,25);await wallet.refund(p.paymentIntent,50);
+   await wallet.refund(p.paymentIntent,50,refundProof());await wallet.refund(p.paymentIntent,25,refundProof());await wallet.refund(p.paymentIntent,50,refundProof());
    assert.deepEqual(await wallet.balance(p.userId),{available:0,reserved:0,debt:30});
-   await wallet.refund(p.paymentIntent,100);assert.equal((await wallet.balance(p.userId)).debt,80);
+   await wallet.refund(p.paymentIntent,100,refundProof());assert.equal((await wallet.balance(p.userId)).debt,80);
    await wallet.grant({...purchase('e','e2'),credits:100});assert.deepEqual(await wallet.balance(p.userId),{available:20,reserved:0,debt:0});
   });
   await t.test('refund of held credits followed by generation failure does not create free credit',async()=>{
    const p=purchase('f','f');await wallet.grant(p);await wallet.reserve({userId:p.userId,jobId:prefix+'f',credits:80,fingerprint:'hash'});
-   await wallet.refund(p.paymentIntent,100);await wallet.settle({userId:p.userId,jobId:prefix+'f',outcome:'confirmed_failure'});
+   await wallet.refund(p.paymentIntent,100,refundProof());await wallet.settle({userId:p.userId,jobId:prefix+'f',outcome:'confirmed_failure'});
    assert.deepEqual(await wallet.balance(p.userId),{available:0,reserved:0,debt:0});
   });
   await t.test('database rolls back a second session with same payment intent',async()=>{

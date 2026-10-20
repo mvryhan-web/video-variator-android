@@ -15,7 +15,7 @@ const baseEnv={AI_STUDIO_ENABLED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',
  GEMINI_API_KEY:'test-only-not-an-api-key',DATABASE_URL:'test-only',ADMIN_EMAIL:'owner@example.test',
  AI_MODEL_PRICING_JSON:d18PricingJson([pricing]),
  AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:12}])};
-function simulate({receiptStatus='paid',providerThrows=false,reservationPersistFails=false,user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
+function simulate({receiptStatus='paid',providerThrows=false,reservationPersistFails=false,marginReady=true,user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
  const jobs=[],walletEvents=[];let providerCalls=0;
  const pool={
   async query(sql,args=[]){
@@ -56,6 +56,7 @@ function simulate({receiptStatus='paid',providerThrows=false,reservationPersistF
   },release(){}}}
  };
  const wallet={
+  async preflightPurchasedMargin(){return marginReady;},
   async reserve(value){walletEvents.push(['reserve',value]);return {available:93,reserved:7,debt:0}},
   async settle(value){walletEvents.push(['settle',value]);return {status:value.outcome==='success'?'captured':value.outcome==='confirmed_failure'?'released':'held'}},
   purchasedDispatchVerifier(){return async v=>{
@@ -103,13 +104,13 @@ test('HTTP rejects zero accepted credits against the positive server quote befor
   assert.equal(sim.jobs.length,0);assert.equal(sim.walletEvents.length,0);assert.equal(sim.providerCalls(),0);
  });
 });
-test('HTTP below-floor margin configuration rejects before DB insert, wallet reserve, or provider dispatch',async()=>{
- const sim=simulate({envOverrides:{AI_MODEL_PRICING_JSON:JSON.stringify([{
-  ...pricing,netRevenueMicros:pricing.providerCostMicros*2-1,netRevenueCurrency:'usd'
+test('HTTP operator revenue assertion cannot substitute for a verified per-customer receipt',async()=>{
+ const sim=simulate({marginReady:false,envOverrides:{AI_MODEL_PRICING_JSON:JSON.stringify([{
+  ...pricing,netRevenueMicros:pricing.providerCostMicros*999,netRevenueCurrency:'usd'
  }])}});
  await withHttp(sim,async post=>{
   const res=await post();assert.equal(res.status,503);
-  assert.equal((await res.json()).error,'PUBLIC_AI_NOT_READY');
+  assert.equal((await res.json()).error,'AI_PURCHASED_MARGIN_NOT_VERIFIED');
   assert.equal(sim.jobs.length,0,'unapproved economics must not persist a generation job');
   assert.equal(sim.walletEvents.length,0,'unapproved economics must not reserve customer credits');
   assert.equal(sim.providerCalls(),0,'unapproved economics must not reach any provider');

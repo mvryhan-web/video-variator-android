@@ -337,6 +337,16 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   // Missing, malformed or stale quotes fail before insertion, reservation or provider dispatch.
   if(!Number.isSafeInteger(req.body?.expectedCredits)||req.body.expectedCredits<=0||req.body.expectedCredits!==quote?.credits)
    return res.status(409).json({error:'AI_ESTIMATE_CHANGED'});
+  // Customer revenue comes from verified Stripe settlements, not operator
+  // assertions in AI_MODEL_PRICING_JSON. Preflight before job persistence or
+  // credit reservation; the dispatch claim repeats this atomically.
+  if(typeof wallet.preflightPurchasedMargin!=='function')
+   return res.status(503).json({error:'AI_PURCHASED_MARGIN_NOT_VERIFIED'});
+  try{
+   const marginReady=await wallet.preflightPurchasedMargin({userId:req.user.id,credits:quote.credits,
+    providerCostMicros:quote.providerCostMicros,currency:quote.currency});
+   if(!marginReady)return res.status(503).json({error:'AI_PURCHASED_MARGIN_NOT_VERIFIED'});
+  }catch(_){return res.status(503).json({error:'AI_PURCHASED_MARGIN_NOT_VERIFIED'});}
   const fingerprint=requestFingerprint(request);let c,id=randomUUID(),reused=null;try{
    await init();c=await pool.connect();await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(hashtext($1))',['ai-create:'+req.user.id]);
    reused=await findGenerationRequest(c,{userId:req.user.id,requestId:clientRequestId,fingerprint});
