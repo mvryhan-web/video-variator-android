@@ -571,6 +571,7 @@ function scrubStaleDashboardAccount(){
  $('logout').hidden=true;
  document.getElementById('adminAiControl')?.remove();
  const chip=$('aiWalletLink');if(chip){chip.hidden=true;chip.removeAttribute('data-debt');}
+ const available=$('aiWalletAvailable'),held=$('aiWalletHeld');if(available)available.textContent='—';if(held)held.textContent='—';
  return true;
 }
 document.addEventListener('click',event=>{
