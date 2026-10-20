@@ -103,6 +103,18 @@ test('HTTP rejects zero accepted credits against the positive server quote befor
   assert.equal(sim.jobs.length,0);assert.equal(sim.walletEvents.length,0);assert.equal(sim.providerCalls(),0);
  });
 });
+test('HTTP below-floor margin configuration rejects before DB insert, wallet reserve, or provider dispatch',async()=>{
+ const sim=simulate({envOverrides:{AI_MODEL_PRICING_JSON:JSON.stringify([{
+  ...pricing,netRevenueMicros:pricing.providerCostMicros*2-1,netRevenueCurrency:'usd'
+ }])}});
+ await withHttp(sim,async post=>{
+  const res=await post();assert.equal(res.status,503);
+  assert.equal((await res.json()).error,'PUBLIC_AI_NOT_READY');
+  assert.equal(sim.jobs.length,0,'unapproved economics must not persist a generation job');
+  assert.equal(sim.walletEvents.length,0,'unapproved economics must not reserve customer credits');
+  assert.equal(sim.providerCalls(),0,'unapproved economics must not reach any provider');
+ });
+});
 test('HTTP bonus/welcome/unknown funding cannot reach provider and automatically returns held credits',async()=>{
  for(const receiptStatus of ['bonus','reject']){
   const sim=simulate({receiptStatus});
