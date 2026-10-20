@@ -23,12 +23,16 @@ test('BASE1-C7 Inspiration enabled Load More has owner neon hover and real pagin
    pagination:{limit:24,offset,nextOffset:offset===0?24:null,hasMore:offset===0}
   }});
  });
- for(const width of [320,375,768,1448]){
+ for(const width of [320,375,390,768,1448]){
   await page.setViewportSize({width,height:820});
   await page.goto('/inspiration.html');
   const loadMore=page.getByRole('button',{name:'Load more inspiration'});
   await expect(loadMore).toBeVisible();
   await expect(loadMore).toBeEnabled();
+  // Existing rights-neutral image card actions remain accessible; do not navigate/pay.
+  const card=page.locator('#gallery .card').first();
+  await expect(card.getByRole('button',{name:'Create yours'})).toBeEnabled();
+  await expect(card.getByRole('button',{name:'Clone and Try'})).toBeEnabled();
   await loadMore.hover();
   const actual=await loadMore.evaluate(el=>{
    const s=getComputedStyle(el);
