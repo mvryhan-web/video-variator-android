@@ -178,6 +178,7 @@ function choose(kind){
  $('homeQuickSubmit').setAttribute('aria-label',kind==='agent'?'See Agent preview':'Open in Studio');
 }
 if($('homeQuickForm')){
+ window.addEventListener('pageshow',()=>{busy=false;$('homeQuickSubmit').disabled=false;});
  const preferredRatio='';
  document.querySelectorAll('[data-home-kind]').forEach(link=>link.addEventListener('click',async event=>{
   // Real links still work without JavaScript and with modifier/new-tab clicks.
