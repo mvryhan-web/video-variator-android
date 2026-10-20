@@ -3,6 +3,8 @@
 > **OWNER DECISION — 19 October 2026 — applies to every page and every A/B/C/D/#5/Jules change.**
 > **SOURCE OF TRUTH:** owner-supplied screenshot in the Deepsyq coordinator chat, filename `Неоновая главная Deepsyq с портретом(4).png` (1448 × 1086 pixels, original SHA-256 `be30d8ed55cd7b1c6c584cecfe13d3012f2d2150ae48546b8bd6b215db709388`). This is the **canonical Home composition and site-wide visual language**, not a request to redesign working functionality.
 >
+> **OWNER-SUPPLIED CANONICAL FILE RE-VERIFIED ON 20 OCTOBER 2026:** The owner attached `Неоновая главная Deepsyq с портретом(7).png` in the current coordinator conversation. SHA-256 was computed directly from the actual 1448 × 1086 RGBA PNG bytes: **`be30d8ed55cd7b1c6c584cecfe13d3012f2d2150ae48546b8bd6b215db709388` — EXACT MATCH** to the earlier owner-approved `(4).png` fingerprint above. The `(7)` suffix is an attachment filename variant, **not a redesign/new version**. This resolves identity/provenance uncertainty; it **does not** mean the binary was uploaded to GitHub or automatically made available inside A/B/C/D/Jules chats. The original PNG remains owner-supplied, not re-generated. [Interior-page acceptance blueprint](DEEPSYQ_INNER_PAGES_VISUAL_ACCEPTANCE_20261020.md).
+>
 > **MEDIA STATUS:** As of this document's creation, the original PNG itself remains an attachment in the owner's ChatGPT conversation; **its binary is NOT in this GitHub repository**. This document makes the owner directive discoverable in GitHub but **does not falsely claim a pixel-perfect comparison is possible from text alone**. If the reference PNG becomes available in GitHub, verify its SHA-256 and add a relative Markdown image link here. Do not substitute generated/lookalike images or change the reference fingerprint silently.
 
 ## NON-NEGOTIABLE — ALREADY WORKING, DO NOT TOUCH
@@ -32,7 +34,7 @@ Follow the screenshot's **visual tokens and component treatments** while retaini
 2. **Only modify a proven mismatch**, in its real current owner/agent's isolated files, smallest complete diff; first obtain a file/hunk lease for any cross-agent overlap.
 3. **Do not touch the working carousel or Home content blocks** to fix unrelated site-wide styles; prefer shared safe CSS tokens and page-specific styles only where needed.
 4. Photograph/screenshot before/after using no-cost browser tests where possible. Preserve all routes, mobile navigation, model pickers, logged-in privacy, credits, and download. Run the existing CI (not paid AI).
-5. Coordinator #5 controls site-wide audit and DEV merge. Any main/production deployment remains held to D's owner-authorized release gates; design approval never waives payment/security checks.
+5. **D16 / 2026-10-20 owner override:** Coordinator #5 may organize site-wide audit/claims but is **not** a mandatory approval/merge gate. A–D themselves verify and safe self-merge their scoped DEV PRs after exact-head free CI and required B↔D financial/privacy peer checks. Any main/production deployment remains held to separate release gates; design approval never waives payment/security checks.
 6. Report `EXACT_MATCH / VISUAL_GAP / UNVERIFIED_REFERENCE` per affected page. Because the PNG binary is not yet in GitHub, **do not mark pixel-perfect screenshot match verified from GitHub alone.**
 
 ## RELATED
