@@ -61,6 +61,11 @@ document.addEventListener('DOMContentLoaded',()=>{
  }
  const reposition=()=>{if(activePanel?.open&&activeAnchor)position(activePanel,activeAnchor);};
  window.addEventListener('resize',reposition);window.addEventListener('scroll',reposition,{capture:true,passive:true});
+ // A settings dialog can open before its first layout pass has a measurable
+ // box. Reposition again after the native dialog's open attribute is applied,
+ // so the first click is anchored just like later opens.
+ const panelOpen=new MutationObserver(()=>requestAnimationFrame(reposition));
+ for(const panel of [menu,$('modelDialog'),$('settingsDialog')])panelOpen.observe(panel,{attributes:true,attributeFilter:['open']});
  // Audio voice options and model-dependent controls can change panel height.
  // Re-anchor after those real content changes, including iOS WebKit.
  const panelResize=new ResizeObserver(()=>requestAnimationFrame(reposition));
