@@ -10,13 +10,13 @@
 .composer-popover::backdrop{background:transparent!important;backdrop-filter:none!important}
 .composer-popover .dialog-head{background:#1b1b1b!important;border-bottom:1px solid #353535;padding:0 0 12px!important;margin-bottom:14px;gap:8px}
 .composer-popover .dialog-head h2{font-size:16px;line-height:1.4;font-weight:550;margin-right:auto}
-.composer-popover .dialog-head>[data-close]{width:32px;min-width:32px;min-height:32px;height:32px;font-size:20px}
+.composer-popover .dialog-head>[data-close]{width:44px;min-width:44px;min-height:44px;height:44px;font-size:20px}
 .composer-popover .hint{color:#9d9d9d}
 .studio-type-menu{width:170px;padding:7px!important;scrollbar-gutter:auto}
-.studio-type-menu .studio-nav{display:flex;flex-direction:column;padding:0;border:0;gap:3px;background:transparent}
+#studioTypeMenu .studio-nav{display:flex;flex-direction:column;padding:0;border:0;gap:3px;background:transparent}
 .studio-type-menu .nav-caption,.studio-type-menu .nav-footer{display:none}
-.studio-type-menu .studio-nav>button{flex:none;min-height:42px;border:0;border-radius:7px;padding:8px 10px;background:transparent;font-size:14px;gap:10px}
-.studio-type-menu .studio-nav>button[aria-pressed=true]{color:#fff;background:#2c2c2c}
+.studio-type-menu .studio-nav>button{flex:none;min-height:44px;border:0;border-radius:7px;padding:8px 10px;background:transparent;font-size:14px;gap:10px}
+#studioTypeMenu .studio-nav>button[aria-pressed=true]{color:#fff;background:#2c2c2c}
 .studio-type-menu .studio-nav>button[aria-pressed=true]::after{content:'✓';margin-left:auto}
 .studio-type-menu .nav-icon{width:18px;height:18px;display:flex}
 .studio-type-menu .nav-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6}

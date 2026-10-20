@@ -30,6 +30,9 @@ document.addEventListener('DOMContentLoaded',()=>{
  }
  function prepare(panel,anchor){
   panel.classList.add('composer-popover');activePanel=panel;activeAnchor=anchor;
+  const kind=nav.querySelector('[aria-pressed="true"]')?.dataset.kind||'video';
+  if(panel.id==='modelDialog')$('modelDialogTitle').textContent={image:text('Picture model','Модель изображения'),video:text('Video model','Модель видео'),music:text('Audio model','Модель аудио')}[kind];
+  if(panel.id==='settingsDialog')$('settingsDialogTitle').textContent={image:text('Image settings','Настройки изображения'),video:text('Video settings','Настройки видео'),music:text('Audio settings','Настройки аудио')}[kind];
   anchor.setAttribute('aria-expanded','true');
   requestAnimationFrame(()=>{position(panel,anchor);if(panel===$('modelDialog'))decorateModels();if(panel===$('settingsDialog'))syncSettings();});
  }
@@ -38,13 +41,16 @@ document.addEventListener('DOMContentLoaded',()=>{
  function syncType(){
   const selected=nav.querySelector('[data-kind][aria-pressed="true"]');
   const kind=selected?.dataset.kind||'video';
+  const history=$('showHistory').getAttribute('aria-pressed')==='true';
+  for(const link of document.querySelectorAll('#dsSiteSidebar nav a[href^="generate-studio.html"]')){const url=new URL(link.href);const current=history?url.searchParams.get('view')==='history':url.searchParams.get('studio')===(kind==='music'?'audio':kind);if(current)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');}
+  for(const button of nav.querySelectorAll('[data-kind]')){const label=button.querySelector('[data-t]');if(label&&types[button.dataset.kind])label.textContent=types[button.dataset.kind];}
   picker.replaceChildren();
   const icon=selected?.querySelector('.nav-icon')?.cloneNode(true);if(icon){icon.setAttribute('aria-hidden','true');picker.append(icon);}
   const label=document.createElement('span');label.textContent=types[kind]||text('Creation type','Тип создания');picker.append(label);
   const arrow=document.createElement('span');arrow.className='composer-chevron';arrow.textContent='⌄';arrow.setAttribute('aria-hidden','true');picker.append(arrow);
  }
  nav.addEventListener('click',event=>{if(event.target.closest('[data-kind]')){syncType();menu.close();}});
- new MutationObserver(syncType).observe(nav,{subtree:true,attributes:true,attributeFilter:['aria-pressed','disabled']});syncType();
+ new MutationObserver(syncType).observe(nav,{subtree:true,attributes:true,attributeFilter:['aria-pressed','disabled']});new MutationObserver(syncType).observe($('showHistory'),{attributes:true,attributeFilter:['aria-pressed']});syncType();
  for(const [id,anchorId] of [['modelDialog','modelButton'],['settingsDialog','settingsButton']]){
   const panel=$(id),anchor=$(anchorId);
   anchor.addEventListener('click',()=>prepare(panel,anchor),{capture:true});

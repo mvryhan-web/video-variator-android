@@ -282,7 +282,7 @@ test('video History checks an existing task without resubmitting or downloading 
 // Owner acceptance: Home keeps its dialog; Studio panels anchor to composer controls. No provider dispatch.
 for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320,height:740},{width:844,height:390}]){
  for(const [studio,title] of [['image','Create an image'],['video','Create a video'],['audio','Create audio']]){
- test(`studio model/settings windows: ${studio} uses button-anchored panels at ${viewport.width}x${viewport.height}`,async({page})=>{
+ test(`studio model/settings windows: ${studio} uses button-anchored panels at ${viewport.width}x${viewport.height}`,async({page},info)=>{
   await page.setViewportSize(viewport);
   let posts=0;page.on('request',request=>{if(request.method()==='POST')posts++;});
   const assertCentered=async dialog=>{
@@ -327,6 +327,7 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    await page.locator('#prompt').fill('My local draft');
    await page.locator('#modelButton').click();
    const models=page.locator('#modelDialog');await assertAnchored(models,page.locator('#modelButton'));
+   if(viewport.width===1448)await page.screenshot({path:info.outputPath(studio+'-model-popover.png')});
    const choices=models.locator('.model-card');await expect(choices.first()).toBeVisible();
    const choice=choices.nth(Math.min(1,await choices.count()-1));const label=await choice.locator('strong').innerText();
    await choice.click();await expect(models).not.toBeVisible();
@@ -337,6 +338,7 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    await expect(page.locator('#modelButton')).toBeFocused();
    await page.locator('#settingsButton').click();
    const settings=page.locator('#settingsDialog');await assertAnchored(settings,page.locator('#settingsButton'));
+   if(viewport.width===1448)await page.screenshot({path:info.outputPath(studio+'-settings-popover.png')});
    await settings.getByRole('button',{name:'Done',exact:true}).click();await expect(settings).not.toBeVisible();
    await expect(page.locator('#settingsButton')).toBeFocused();
    await expect(page.locator('#prompt')).toHaveValue('My local draft');
