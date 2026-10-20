@@ -1,3 +1,15 @@
+## COORDINATOR #5 / CYCLE17.1 LATE DEVELOPMENTS (SUPERSEDES ONLY B329 STATUS)
+
+As of fresh GitHub read at 2026-10-20, **Agent B independently self-MERGED [PR329](https://github.com/mvryhan-web/video-variator-android/pull/329)** exact source head `f68bed276263cb8acb1ed6ccee03b2fd0e18dba7` (native 16/16 success, D technical source PASS; GitHub did not require impossible same-account formal self-approve) into `deepsyq-platform` as **current DEV HEAD `6caf14431af40dfb7c047b89cd4f8447e6da4eb0`**. GitHub `merged=true`, source and merge read back. This SUPERSEDES any older “PR329 DRAFT / next self-merge” in the earlier Cycle16/17 snapshots, not a second B task. Scope: Video History Regenerate text-only reference detachment, not wallet or PR323. **B next:** validated owner PR323 client wallet/token A→B 777/18 ledger leak and earlier Video/Image/account races remain P0 BLOCKED. Owner has exclusive PR323 Studio file; B independently re-review owner’s NEW corrected SHA and create no conflicting patch until exact lease. If owner stalled, choose another verified independent B claim only after collision check; do not repeat #329.
+
+**C next:** [PR331](https://github.com/mvryhan-web/video-variator-android/pull/331) opened same C12 claim, source HEAD `ed276cf4f857f47b08f8d928aee790469ce12097` at sample, 3 C-owned paths, final-head six Actions partly in progress. Continue THIS PR and existing red→fix test cycle, no new C12 PR. Separate newly verified whole-DEV browser regression: [Validate Video Variator Web #39461113713](https://github.com/mvryhan-web/video-variator-android/actions/runs/39461113713) FAIL on Inspiration hover at 320px, not yet proven fixture vs CSS. C must triage separately after C12 rather than silently alter the existing claim or relax owner styling.
+
+**D release next:** owner deletion PR280 MAIN-target draft at `9d0bee20a027c83997599466430bbe1afe30c083`, actual new-HEAD 5/5 Actions SUCCESS, no retired Product Video assets; previous D checkpoint alleging still contains those assets is STALE. Review legacy authentication/Stripe/Webhooks, approved Home videos, route 404, production auto-deploy/rollback and give written PASS/BLOCKED; zero main/prod merges or charges. PR323 remains independent B+D BLOCKED.
+
+**Jules 1/2/3 unchanged:** actual bot ACK on #316/#317/#278; no Ready/accepted new PR in task-named search. Do not duplicate dispatch.
+
+---
+
 ## COORDINATOR #5 — CYCLE17 LIVE ADDENDUM / 20 OCT 2026 — AFTER C11 MERGE AND OWNER PRODUCT REMOVAL
 
 **Authoritative live observations (not promises of future state):** DEV exact HEAD observed `5a51720fad0f669d39f93a424ba055f639228a2f`. Original C #327 finally **DEV-MERGED** `5a51720f` after 5/5 exact-HEAD Actions SUCCESS (including 15/15 five-engine/five-width). A #328 already DEV-MERGED `18229e01` and A12 latest Issue72 #6296381155 READ-ONLY privacy/editorial PASS/GAP handoffs. These supersede older C11/A pending entries below; old snapshots remain for provenance only.
