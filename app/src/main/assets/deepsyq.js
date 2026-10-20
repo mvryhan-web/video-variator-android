@@ -371,7 +371,9 @@ async function loadFeaturedWorkflows(){
  const section=$('featuredWorkflows'),root=$('featuredWorkflowGrid');if(!section||config?.features?.aiApps===false)return;
  try{
   const r=await fetch(base+'/api/templates?featured=true',{cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||!Array.isArray(d.items)||!d.items.length)return;
-  root.replaceChildren();for(const t of d.items.filter(item=>item.generationType!=='product_video').slice(0,6)){const a=document.createElement('a');a.className='featured-workflow-card';const type=t.generationType;
+  const liveItems=d.items.filter(item=>item.generationType!=='product_video').slice(0,6);
+  if(!liveItems.length){section.hidden=true;return;}
+  root.replaceChildren();for(const t of liveItems){const a=document.createElement('a');a.className='featured-workflow-card';const type=t.generationType;
  const supportedType=['image','video','audio'].includes(type)?type:null;
  // AI Apps already understands q/type/category. Carry the selected use case
  // so similarly named Image and Video featured cards do not get mixed up.
