@@ -2,7 +2,7 @@ import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {recordAdminAudit} from './admin-audit.js';
 
-const TYPES=new Set(['image','video','product_video','avatar','audio']);
+const TYPES=new Set(['image','video','avatar','audio']);
 const STUDIO_PROMPT_LIMIT=2000;
 const NAME_TOKEN=/\{\{\s*product_name\s*\}\}/i;
 const INPUTS=new Set(['image','video','audio','logo','product_name','text']);
@@ -80,16 +80,16 @@ function row(r,{ownerView=false}={}){
 
 export function installGenerationTemplates(app,{auth,pool,env=process.env}){
  app.get('/api/templates',async(req,res)=>{if(!featureEnabled(env))return res.status(503).json({error:'AI_APPS_NOT_ENABLED'});try{
-  await initTemplates(pool,env);const where=["active=true","rights_basis IN ('owned','licensed')","length(trim(rights_note))>=3"],args=[];
+  await initTemplates(pool,env);const where=["active=true","generation_type!='product_video'","rights_basis IN ('owned','licensed')","length(trim(rights_note))>=3"],args=[];
   if(req.query.category){args.push(String(req.query.category).slice(0,80));where.push(`category=$${args.length}`);}
   if(req.query.type){args.push(String(req.query.type).slice(0,40));where.push(`generation_type=$${args.length}`);}
   if(req.query.featured==='true')where.push('featured=true');
   const {rows}=await pool.query(`SELECT * FROM vv_ai_template WHERE ${where.join(' AND ')} ORDER BY featured DESC,sort_order ASC,title ASC LIMIT 100`,args);
   res.json({items:rows.map(row)});
  }catch(_){res.status(503).json({error:'TEMPLATES_UNAVAILABLE'});}});
- app.get('/api/templates/:slug',async(req,res)=>{if(!featureEnabled(env))return res.status(503).json({error:'AI_APPS_NOT_ENABLED'});try{await initTemplates(pool,env);const {rows}=await pool.query("SELECT * FROM vv_ai_template WHERE slug=$1 AND active=true AND rights_basis IN ('owned','licensed') AND length(trim(rights_note))>=3",[req.params.slug]);if(!rows.length)return res.status(404).json({error:'TEMPLATE_NOT_FOUND'});res.json({template:row(rows[0])});}catch(_){res.status(503).json({error:'TEMPLATES_UNAVAILABLE'});}});
+ app.get('/api/templates/:slug',async(req,res)=>{if(!featureEnabled(env))return res.status(503).json({error:'AI_APPS_NOT_ENABLED'});try{await initTemplates(pool,env);const {rows}=await pool.query("SELECT * FROM vv_ai_template WHERE slug=$1 AND active=true AND generation_type!='product_video' AND rights_basis IN ('owned','licensed') AND length(trim(rights_note))>=3",[req.params.slug]);if(!rows.length)return res.status(404).json({error:'TEMPLATE_NOT_FOUND'});res.json({template:row(rows[0])});}catch(_){res.status(503).json({error:'TEMPLATES_UNAVAILABLE'});}});
  const onlyOwner=(req,res,next)=>owner(req.user,env)?next():res.status(403).json({error:'OWNER_ONLY'});
- app.get('/api/studio/admin/templates',auth,onlyOwner,async(_req,res)=>{try{await initTemplates(pool,env);const {rows}=await pool.query('SELECT * FROM vv_ai_template ORDER BY sort_order ASC,title ASC');res.json({items:rows.map(r=>row(r,{ownerView:true}))});}catch(_){res.status(503).json({error:'TEMPLATES_UNAVAILABLE'});}});
+ app.get('/api/studio/admin/templates',auth,onlyOwner,async(_req,res)=>{try{await initTemplates(pool,env);const {rows}=await pool.query("SELECT * FROM vv_ai_template WHERE generation_type!='product_video' ORDER BY sort_order ASC,title ASC");res.json({items:rows.map(r=>row(r,{ownerView:true}))});}catch(_){res.status(503).json({error:'TEMPLATES_UNAVAILABLE'});}});
  app.post('/api/studio/admin/templates',auth,onlyOwner,async(req,res)=>{try{
   await initTemplates(pool,env);const t=validateTemplate(req.body),id=randomUUID();
   const {rows}=await pool.query(`INSERT INTO vv_ai_template(id,title,slug,category,description,thumbnail,generation_type,prompt_template,default_model,required_input_types,default_settings,active,featured,sort_order,created_by,rights_basis,rights_note)

@@ -7,7 +7,7 @@ on:
       - 'app/src/main/assets/studio-quickstart.css'
       - 'app/src/main/assets/ai-apps.html'
       - 'app/src/main/assets/inspiration.html'
-      - 'app/src/main/assets/product-video.html'
+
       - 'app/src/main/assets/audio-studio.html'
       - 'app/src/main/assets/free-tools.html'
       - 'tests/owner-quick-creation-20261020.spec.mjs'

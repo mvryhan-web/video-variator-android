@@ -26,7 +26,7 @@ app.get('/robots.txt',(_req,res)=>res.type('text/plain').send('User-agent: *\nDi
 app.get('/api/health',(_req,res)=>res.json({ok:true,service:'deepsyq-design-preview',paymentsEnabled:false,aiGenerationEnabled:false}));
 app.get('/api/config',(_req,res)=>res.json({
  googleClientId:'',appleClientId:'',emailAuth:false,billingConfigured:false,trialLimit:0,
- features:{aiApps:true,productVideo:true,inspiration:true,onboarding:false},
+ features:{aiApps:true,inspiration:true,onboarding:false},
  plans:{
   basic:{price:9,limit:750},pro:{price:24,limit:2250},
   business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}
@@ -63,6 +63,8 @@ async function homepage(_req,res){
  }catch(_){res.status(503).type('text/plain').send('Preview assets are unavailable');}
 }
 app.get(['/','/dashboard','/deepsyq.html'],homepage);
+// The deleted owner-cancelled workflow is never reachable in this preview.
+app.get(['/product-video','/product-video.html'],(_req,res)=>res.status(404).type('text/plain').send('Not found'));
 app.use(express.static(assets,{extensions:['html'],index:false,fallthrough:true}));
 app.use((req,res)=>{
  if(req.method!=='GET'&&req.method!=='HEAD')return res.status(405).type('text/plain').send('PREVIEW_READ_ONLY');

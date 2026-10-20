@@ -162,7 +162,6 @@ if(video&&carousel){
 }
 // Quick Create is not a new generator. It opens the existing Studio with a local, unpaid draft.
 const ideas={
- product:{kind:'video',prompt:'Create a cinematic product video advertisement with natural camera motion, an appealing opening frame and accurate product shape.'},
  short:{kind:'video',prompt:'Create an original short cinematic scene with clear visual storytelling, gentle camera motion and atmospheric lighting.'},
  image:{kind:'image',prompt:'Create an original high-quality editorial photograph with expressive styling and realistic lighting.'},
  music:{kind:'music',prompt:'Create an original cinematic music track with a clear rhythm, uplifting atmosphere and carefully layered instruments.'}

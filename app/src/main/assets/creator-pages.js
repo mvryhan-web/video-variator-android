@@ -10,7 +10,7 @@ en:{
  workspace:'Your workspace',workspaceSub:'Choose a file above, then adjust the options below. Keep this page open until processing finishes.',
  promptLead:'Keep your eyes on the camera. Keep your story flowing.',promptIntro:'Paste your script, find a comfortable reading speed and record with your text over the camera preview. The saved video contains your recording, without the scrolling text.',
  avatarCard:'Give your video a voice and a familiar face. Combine your footage, a portrait and your narration in one vertical video.',
- avatarHero:['YOUR STORY. YOUR FACE. YOUR POINT OF VIEW.','Show what happened. Explain why it matters.','Turn a demonstration, product video or tutorial into a narrated story: your footage above, your portrait below. Add your own recording or use a device voice in the Android app.'],
+ avatarHero:['YOUR STORY. YOUR FACE. YOUR POINT OF VIEW.','Show what happened. Explain why it matters.','Turn a demonstration or tutorial into a narrated story: your footage above, your portrait below. Add your own recording or use a device voice in the Android app.'],
  avatarBadge:'Try at 720p · Pro: 1080p · Business & Lifetime: 4K',
  avatarSteps:[['Choose the story','Add your video and a portrait you have permission to use.'],['Make it sound like you','Record your voice or upload audio. Android also supports exporting installed device voices.'],['Keep a finished video','Create a vertical video, then download or share it. The portrait animation reacts to narration loudness and pauses.']],
  avatarNote:'In the web version, use My voice to record or upload your narration. Device voice export requires the Android app. This is simple audio-reactive portrait animation, not precise phoneme lip-sync.',
