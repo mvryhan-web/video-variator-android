@@ -255,3 +255,39 @@ test('Workspace Job View - Flexible calling parameter signatures', () => {
   assert.equal(res2[0].id, 'p1');
   assert.equal(res3[0].id, 'p1');
 });
+
+test('Workspace Job View - conflicting owner aliases fail closed', () => {
+  const jobs = [
+    { id: 'conflict', user_id: 'alice', ownerId: 'bob', status: 'completed' },
+    { id: 'valid', user_id: 'alice', ownerId: 'alice', status: 'completed' },
+    { id: 'master', user_id: 'alice', is_master_template: true, status: 'completed' },
+  ];
+  assert.deepEqual(projectWorkspaceJobView({ userId: 'alice', jobs }).map(c => c.id), ['valid']);
+  assert.deepEqual(projectWorkspaceJobView({ userId: 'bob', jobs }), []);
+});
+
+test('Workspace Job View - arbitrary titles cannot leak phone/address/private details', () => {
+  const jobs = [
+    { id: 'phone', user_id: 'alice', title: 'Call me at +33 6 12 34 56 78', type: 'video' },
+    { id: 'address', user_id: 'alice', title: 'Meet at 42 Rue des Fleurs Paris', type: 'image' },
+    { id: 'secret', user_id: 'alice', title: 'Confidential client identity', type: 'audio' },
+  ];
+  const cards = projectWorkspaceJobView({ userId: 'alice', jobs });
+  assert.deepEqual(cards.map(c => c.title).sort(), [
+    'Audio Generation Job', 'Image Creation Job', 'Video Generation Job'
+  ]);
+  const output = JSON.stringify(cards);
+  for (const fragment of ['+33 6 12', 'Rue des Fleurs', 'Confidential client']) {
+    assert.equal(output.includes(fragment), false);
+  }
+});
+
+test('Workspace Job View - malformed IDs are rejected, never normalized into duplicates', () => {
+  const jobs = [
+    { id: 'j/4', user_id: 'alice' },
+    { id: 'j4', user_id: 'alice' },
+    { id: '../secret', user_id: 'alice' },
+    { id: 'valid_2', user_id: 'alice' },
+  ];
+  assert.deepEqual(projectWorkspaceJobView({ userId: 'alice', jobs }).map(c => c.id), ['j4', 'valid_2']);
+});

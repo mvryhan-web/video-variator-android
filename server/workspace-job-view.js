@@ -39,33 +39,15 @@ function normalizeType(rawType) {
 /**
  * Sanitizes and generates a title-safe fallback without leaking prompts, URLs, or PII.
  */
-function deriveSafeTitle(job, type) {
-  const candidate = job.title || job.name;
-  if (typeof candidate === 'string' && candidate.trim()) {
-    const trimmed = candidate.trim();
-    // Exclude candidate if it looks like a prompt, script, URL, email, or contains code/markup
-    const looksLikeUrl = /(https?:\/\/|s3:\/\/|file:\/\/|www\.)/i.test(trimmed);
-    const looksLikePromptOrPii = /(prompt:|script:|negative_prompt:|email:|password:|@)/i.test(trimmed) || trimmed.length > 80;
-    const containsMarkup = /<[^>]*>/g.test(trimmed);
-
-    if (!looksLikeUrl && !looksLikePromptOrPii && !containsMarkup) {
-      // Clean controls and truncate
-      return trimmed.replace(/[\r\n\t]+/g, ' ').slice(0, 60).trim();
-    }
-  }
-
-  // Fallback title by type
+function deriveSafeTitle(_job, type) {
+  // Raw job titles may contain arbitrary private information. Fail closed until
+  // a separately trusted public-title provenance contract is available.
   switch (type) {
-    case 'video':
-      return 'Video Generation Job';
-    case 'image':
-      return 'Image Creation Job';
-    case 'audio':
-      return 'Audio Generation Job';
-    case 'text':
-      return 'Text Generation Job';
-    default:
-      return 'Workspace Job';
+    case 'video': return 'Video Generation Job';
+    case 'image': return 'Image Creation Job';
+    case 'audio': return 'Audio Generation Job';
+    case 'text': return 'Text Generation Job';
+    default: return 'Workspace Job';
   }
 }
 
@@ -119,29 +101,35 @@ export function projectWorkspaceJobView(arg1, arg2) {
     const job = jobs[i];
     if (!job || typeof job !== 'object') continue;
 
-    // Strict account ownership check: authenticated userId MUST match job's owner identifier
-    const owner = job.user_id || job.userId || job.owner_id || job.ownerId || job.owner;
-    if (!owner || String(owner).trim() !== userId) {
+    // Caller MUST derive userId from trusted server authentication, not input.
+    // Reject conflicting owner aliases instead of trusting the first one.
+    const ownerFields = ['user_id', 'userId', 'owner_id', 'ownerId', 'owner'];
+    const owners = ownerFields
+      .filter((field) => Object.prototype.hasOwnProperty.call(job, field))
+      .map((field) => job[field]);
+    if (!owners.length || owners.some((owner) =>
+      (typeof owner !== 'string' && typeof owner !== 'number') ||
+      String(owner).trim() !== userId
+    )) {
       continue;
     }
 
-    // Exclude master templates or unpermitted Block3 templates unless explicitly owned
+    // System/master templates are not personal Workspace generation jobs.
     if (
-      (job.is_master_template === true ||
-        job.isMasterTemplate === true ||
-        job.template_type === 'master' ||
-        job.is_system_template === true) &&
-      job.user_id !== userId &&
-      job.userId !== userId
+      job.is_master_template === true ||
+      job.isMasterTemplate === true ||
+      job.template_type === 'master' ||
+      job.is_system_template === true
     ) {
       continue;
     }
 
-    // Sanitize and derive Card ID
-    const rawId = job.id || job.job_id || job.jobId || job.uuid;
-    if (!rawId || (typeof rawId !== 'string' && typeof rawId !== 'number')) continue;
-    const sanitizedId = String(rawId).replace(/[^a-zA-Z0-9_\-]/g, '');
-    if (!sanitizedId) continue;
+    // Reject malformed IDs; rewriting them can create cross-job collisions.
+    const rawId = job.id ?? job.job_id ?? job.jobId ?? job.uuid;
+    if (typeof rawId !== 'string' &&
+        !(typeof rawId === 'number' && Number.isSafeInteger(rawId) && rawId >= 0)) continue;
+    const sanitizedId = String(rawId);
+    if (!/^[a-zA-Z0-9_-]{1,128}$/.test(sanitizedId)) continue;
 
     // Status mapping & Allowed statuses
     const status = normalizeStatus(job.status);
