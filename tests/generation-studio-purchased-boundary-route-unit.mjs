@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {d18PricingJson} from './d18-pricing-fixture.mjs';
 import express from 'express';
 import {randomUUID} from 'node:crypto';
 import {installGenerationStudio} from '../server/generation-studio.js';
@@ -12,7 +13,7 @@ const baseEnv={AI_STUDIO_ENABLED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',
  AI_STUDIO_WALLET_ENABLED:'true',AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',
  AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',
  GEMINI_API_KEY:'test-only-not-an-api-key',DATABASE_URL:'test-only',ADMIN_EMAIL:'owner@example.test',
- AI_MODEL_PRICING_JSON:JSON.stringify([pricing]),
+ AI_MODEL_PRICING_JSON:d18PricingJson([pricing]),
  AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:12}])};
 function simulate({receiptStatus='paid',providerThrows=false,reservationPersistFails=false,user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
  const jobs=[],walletEvents=[];let providerCalls=0;

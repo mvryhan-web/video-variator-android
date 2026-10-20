@@ -1,8 +1,10 @@
 // Server-side AI pricing registry. No invented defaults: empty config means pricing is not approved.
 const MAX_CREDITS=10_000_000;
 const MAX_MICROS=1_000_000_000;
+const MAX_NET_REVENUE_MICROS=2_000_000_000;
 const id=v=>typeof v==='string'&&/^[A-Za-z0-9._:-]{1,120}$/.test(v);
 const positive=(v,max)=>Number.isSafeInteger(v)&&v>0&&v<=max;
+const currency=v=>typeof v==='string'&&/^[a-z]{3}$/.test(v);
 
 export function pricingCatalog(env={}){
  try{
@@ -10,14 +12,19 @@ export function pricingCatalog(env={}){
   if(!Array.isArray(rows)||rows.length>100)throw Error();
   const entries=rows.map(r=>{
    if(!r||!id(r.model)||!id(r.provider)||!['image','video','music','voice'].includes(r.kind)||!positive(r.credits,MAX_CREDITS)||!positive(r.providerCostMicros,MAX_MICROS))throw Error();
+   // D18: every generation price must carry a same-currency net revenue
+   // allocation (after payment fees, excluding tax/VAT) and clear a strict
+   // 2:1 revenue-to-direct-cost floor. Missing or stale economics disables
+   // the complete catalog instead of silently inheriting an older price.
+   if(!currency(r.currency)||!currency(r.netRevenueCurrency)||r.currency!==r.netRevenueCurrency||
+      !positive(r.netRevenueMicros,MAX_NET_REVENUE_MICROS)||r.netRevenueMicros<2*r.providerCostMicros)throw Error();
    if(r.ratio!=null&&(typeof r.ratio!=='string'||!r.ratio.trim()))throw Error();
    if(r.quality!=null&&(typeof r.quality!=='string'||!r.quality.trim()))throw Error();
    if(r.outputFormat!=null&&(!['auto','png','jpeg'].includes(r.outputFormat)||r.kind!=='image'))throw Error();
    if(r.videoInputMode!=null&&(!['text','first_frame','first_last','reference_image'].includes(r.videoInputMode)||r.kind!=='video'))throw Error();
    if(r.referenceCount!=null&&(!Number.isSafeInteger(r.referenceCount)||r.referenceCount<0||r.referenceCount>3||r.kind!=='video'))throw Error();
    if(r.durationSeconds!=null&&!positive(r.durationSeconds,3600))throw Error();
-   if(r.currency!=null&&!/^[a-z]{3}$/.test(r.currency))throw Error();
-   return {model:r.model,provider:r.provider,kind:r.kind,credits:r.credits,providerCostMicros:r.providerCostMicros,currency:r.currency||null,ratio:r.ratio||null,quality:r.quality||null,outputFormat:r.outputFormat||null,videoInputMode:r.videoInputMode||null,referenceCount:r.referenceCount??null,durationSeconds:r.durationSeconds||null};
+   return {model:r.model,provider:r.provider,kind:r.kind,credits:r.credits,providerCostMicros:r.providerCostMicros,currency:r.currency,netRevenueMicros:r.netRevenueMicros,netRevenueCurrency:r.netRevenueCurrency,ratio:r.ratio||null,quality:r.quality||null,outputFormat:r.outputFormat||null,videoInputMode:r.videoInputMode||null,referenceCount:r.referenceCount??null,durationSeconds:r.durationSeconds||null};
   });
   // Provider is part of the commercial price identity. Different adapters may expose the same logical model ID.
   // Do not reject their independent approved rates as duplicates or conflate their costs.
