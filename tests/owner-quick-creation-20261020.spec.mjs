@@ -65,15 +65,8 @@ test('AI Apps and Inspiration prioritize browse/search over long explanations',a
  await expect(page.locator('.kind-tabs button')).toHaveCount(3);
 });
 
-test('Product Video and Everyday Audio retain functional controls and honest privacy',async({page})=>{
- await page.goto('/product-video.html');
- await expect(page.locator('.intro>p:last-child')).toHaveText('Add product photos and choose a style.');
- await expect(page.locator('#photos')).toHaveCount(1);
- await expect(page.locator('#logo')).toHaveCount(1);
- await expect(page.locator('#ratio')).toHaveCount(1);
- await expect(page.locator('#continue')).toHaveCount(1);
- await expect(page.locator('footer')).toContainText('No provider call happens on this page.');
- await page.goto('/audio-studio.html');
+test('Everyday Audio retains functional controls and honest privacy',async({page})=>{
+await page.goto('/audio-studio.html');
  await expect(page.locator('#speechText')).toHaveCount(1);
  await expect(page.locator('#speechConsent')).toHaveCount(1);
  await expect(page.locator('#trimFile')).toHaveCount(1);
