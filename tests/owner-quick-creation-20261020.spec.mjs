@@ -45,7 +45,7 @@ test('Image Video Audio keep existing model/settings/consent/dialog navigation',
  await page.locator('[data-close="modelDialog"]').click();
  await page.locator('#settingsButton').click();
  await expect(page.locator('#settingsDialog')).toBeVisible();
- await page.locator('[data-close="settingsDialog"]').click();
+ await page.locator('[data-close="settingsDialog"]').first().click();
  await expect(page.locator('#settingsDialog')).toBeHidden();
  await page.locator('#showHistory').click();
  await expect(page.locator('#showHistory')).toHaveAttribute('aria-pressed','true');
