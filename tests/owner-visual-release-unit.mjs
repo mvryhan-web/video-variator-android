@@ -99,7 +99,7 @@ test('introductory offer stays disabled without unapproved credit or duration pr
  for(const [index,slug] of m.carouselOrder.entries()){
   const title=m.items.find(item=>item.slug===slug).defaultSettings.homeShowcase.title;
   assert.equal(title,approved[index],slug+' must retain owner-approved heading');
-  assert.ok(locked.includes(JSON.stringify(title)),slug+' owner heading lock must remain imported');
+  assert.ok(locked.includes("title: '"+title+"'"),slug+' owner heading lock must match the approved title');
  }
  assert.ok(read('home-experience.js').includes("import {ownerHomeShowcase} from './owner-home-hero-headings.js'"));
  assert.ok(read('home-experience.js').includes('ownerHomeShowcase(item)'));
