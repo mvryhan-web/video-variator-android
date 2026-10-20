@@ -24,7 +24,7 @@ A ChatGPT conversation may reach its context or interaction limit. A new ChatGPT
 | --- | --- | --- |
 | **A** | BASE Image / Canvas / Home visual fidelity / UX | [#72](https://github.com/mvryhan-web/video-variator-android/issues/72) |
 | **B** | BASE Video / provider adapters / jobs / storage | [#73](https://github.com/mvryhan-web/video-variator-android/issues/73) |
-| **C** | BASE AI Apps / Tools / product video / responsive / navigation | [#74](https://github.com/mvryhan-web/video-variator-android/issues/74) |
+| **C** | BASE AI Apps / Tools / local Audio / responsive / navigation (former §20 cancelled by owner) | [#74](https://github.com/mvryhan-web/video-variator-android/issues/74) |
 | **D** | BASE Stripe / wallet / pricing / DB migration and release review | [#75](https://github.com/mvryhan-web/video-variator-android/issues/75) |
 | **5** | Technical coordinator / audit / collision/release-quality reviewer. **Not a fifth feature-coding lane.** | [PR #42 coordination](https://github.com/mvryhan-web/video-variator-android/pull/42), dated Agent 5 audit |
 

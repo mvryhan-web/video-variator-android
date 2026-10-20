@@ -73,7 +73,7 @@ export const BASE_TRACKING_LABELS=Object.freeze([
  "Unit economics",
  "Pricing engine",
  "AI Apps",
- "Product Video workflow",
+ "Retired by owner (2026-10-20)",
  "AI Agents",
  "Inspiration / Discover",
  "Template system",
