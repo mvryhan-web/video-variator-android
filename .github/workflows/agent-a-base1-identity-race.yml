@@ -1,0 +1,46 @@
+name: Agent A BASE1 identity and wallet account-race privacy
+
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/deepsyq.js'
+      - 'tests/agent-a-base1-identity-race.spec.mjs'
+      - '.github/workflows/agent-a-base1-identity-race.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-a-identity-private-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  identity-private-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/deepsyq.js && node --check tests/agent-a-base1-identity-race.spec.mjs
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: A/B/A delayed identity and wallet tests (no paid POST)
+        run: npx playwright test tests/agent-a-base1-identity-race.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: agent-a-identity-private-failure
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
