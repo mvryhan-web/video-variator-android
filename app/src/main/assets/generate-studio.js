@@ -584,7 +584,7 @@ function openStudioDialog(id,anchor){
 }
 function repositionStudioDialogs(){for(const [dialog,anchor] of studioDialogAnchors)placeStudioDialog(dialog,anchor);}
 window.addEventListener('resize',repositionStudioDialogs,{passive:true});
-window.addEventListener('scroll',repositionStudioDialogs,{passive:true,capture:true});
+
 $('modelButton').onclick=()=>{renderModels();openStudioDialog('modelDialog',$('modelButton'));};$('settingsButton').onclick=()=>openStudioDialog('settingsDialog',$('settingsButton'));document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());document.querySelectorAll('#modelDialog,#settingsDialog').forEach(d=>d.addEventListener('close',()=>{studioDialogAnchors.delete(d);for(const prop of ['position','margin','left','top','right','bottom'])d.style.removeProperty(prop);}));
 function clearHistoryThumbs(){for(const u of historyThumbUrls)URL.revokeObjectURL(u);historyThumbUrls=[];}
 async function loadHistoryImageThumbnail(item,preview){
