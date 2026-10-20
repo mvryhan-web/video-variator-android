@@ -1,3 +1,5 @@
+<!-- Owner 2026-10-20: former BASE §20 retired. Visual parity acceptance applies only to existing live pages; removed page is not a design target. Historical test data stays in Git history. -->
+
 # DEEPSYQ — ИНТЕРЬЕРНЫЕ СТРАНИЦЫ В СТИЛЕ УТВЕРЖДЁННОЙ HOME
 ## Owner screenshot verified / visual acceptance proposal / 20 Oct 2026
 
@@ -43,7 +45,6 @@
 | **Audio & Text Tools** `audio-studio.html` | `free-tools.css`, `theme.css`, `creator-pages.css` и общая тема наслаиваются; контролы/карточки частично живут в отдельных стилях | Проверить реальные результирующие цвета, оформить только отклонения. Рабочие MP3, TTS/STT, trim, copy/download, согласие и disabled states сохранить |
 | **AI Apps** `ai-apps.html` | `ai-apps.css`: `--background:#100e1c`, `--panel:#1a1629`, `--panel-raised:#211a34`; собственные `.app-card`/filter/hover оттенки | Неподходящие фон/границы карточек и фильтров привести к общим navy/blue/violet/cyan; сохранить статус карточек и data-driven catalog |
 | **Inspiration** `inspiration.html` | `inspiration.css`: body #111318, старые зелёные accent #d2f7ae и #172113 на части компонентов | Равномерные тёмно-синие карточки и яркие границы/CTA. **Не** менять лицензии, media, настоящие routes, prompt handoff |
-| **Product Video** `product-video.html` | `product-video.css`: body #111318; старые серые/зелёные акценты #d2f7ae | Только skin заголовков, panels, полей и CTA по эталону. Не менять upload, модели, credits и маршруты |
 | **Everyday Tools** `free-tools.html` | `free-tools.css`: `:root --bg:#080b12`, `--panel:#101624`, старый `system-ui`; плюс другие стили | Проверить computed cascade; выровнять визуально, но без изменения локальных файловых инструментов и пользовательской темы без разрешения |
 | **History / My Creations** `generate-studio.html?view=history` | тот же `generate-studio.css`: `.history-card` #11141c, `.history-preview` #191e27, зелёный фильтр, `.credit-estimate` зелёный | Карточки, бейджи и tabs по общему Home, но оставить распознаваемые success/failure статусы и privacy/history ownership |
 | **Pricing / Avatar / Account / остальные** | Глобальная тема может присутствовать, но готовый скриншот и computed styles в текущем аудите не проверены | **UNVERIFIED**, сначала снимок и список точных gaps; ничего слепо не перекрашивать и не менять payment/login |
