@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import pg from 'pg';
+import {quarantineSignedDispute} from '../server/generation-dispute-quarantine.js';
 import {GenerationWallet} from '../server/generation-wallet.js';
 import {grantPaidSubscriptionInvoice} from '../server/generation-subscription-credits.js';
 const urlString=process.env.P0_PURCHASED_TEST_DB_URL;
@@ -150,18 +151,39 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   // Refund rounding can exhaust a 1-credit pack on a tiny *partial*
   // amount refund. MIN(session_id) must not attach the immutable dispatch
   // claim to that zero-funded pack when a different LIVE pack covers it.
-  await paid('customer_positive_source','cs_live_A_zero',1);
-  await paid('customer_positive_source','cs_live_Z_valid',100);
+  await paid('customer_positive_source','cs_live_Azero',1);
+  await paid('customer_positive_source','cs_live_Zvalid',100);
   await wallet.refund('pi_csliveAzero',1,{eventId:'evt_zero',chargeId:'ch_csliveAzero',livemode:true}); // ceil(1 * 1 / 100) = 1 credit
   const provenanceJob=await job('customer_positive_source','job_positive_source',80);
   const provenance=await wallet.claimPurchasedDispatch(provenanceJob,{env});
   assert.equal(provenance.purchasedCreditsAvailableBeforeReserve,100);
-  assert.equal(provenance.purchaseId,'cs_live_Z_valid',
+  assert.equal(provenance.purchaseId,'cs_live_Zvalid',
     'single-use dispatch reference must name a source with positive paid credits');
   const storedSource=await pool.query(
     'SELECT purchase_reference FROM vv_ai_purchased_dispatch_claim WHERE job_id=$1',
     [provenanceJob.jobId]);
-  assert.equal(storedSource.rows[0].purchase_reference,'cs_live_Z_valid');
+  assert.equal(storedSource.rows[0].purchase_reference,'cs_live_Zvalid');
+
+  // A signed dispute received BEFORE the grant quarantines later receipts;
+  // another healthy pack cannot cover the unresolved dispute/fee exposure.
+  const disputeEvent=type=>({id:'evt_disputed',type,livemode:true,data:{object:{
+   id:'du_disputed',charge:'ch_cslivedisputed',payment_intent:'pi_cslivedisputed',
+   amount:20,currency:'eur',livemode:true,status:'won'}}});
+  await quarantineSignedDispute({event:disputeEvent('charge.dispute.created'),pool,wallet});
+  await paid('customer_disputed','cs_live_disputed',100);
+  await paid('customer_disputed','cs_live_healthy',100);
+  const disputedJob=await job('customer_disputed','job_disputed',10);
+  for(const type of ['charge.dispute.created','charge.dispute.closed','charge.dispute.funds_reinstated']){
+   await quarantineSignedDispute({event:disputeEvent(type),pool,wallet});
+   await assert.rejects(()=>wallet.claimPurchasedDispatch(disputedJob,{env}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+   assert.equal(await wallet.preflightPurchasedMargin({userId:'customer_disputed',credits:10,
+    providerCostMicros:1000,currency:'eur'}),false);
+  }
+  // Refund and failure release keep the existing credit arithmetic; dispute
+  // quarantine never debits twice or creates additional available credits.
+  await wallet.refund('pi_cslivedisputed',20,{eventId:'evt_disputerefund',chargeId:'ch_cslivedisputed',livemode:true});
+  await wallet.settle({userId:'customer_disputed',jobId:'job_disputed',outcome:'confirmed_failure'});
+  assert.deepEqual(await wallet.balance('customer_disputed'),{available:180,reserved:0,debt:0});
 
   const total=await pool.query('SELECT count(*)::int AS n FROM vv_ai_purchased_dispatch_claim');
   assert.equal(total.rows[0].n,4,'only independently purchased AI credit packs may fund dispatch');

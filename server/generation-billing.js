@@ -1,3 +1,4 @@
+import {quarantineSignedDispute} from './generation-dispute-quarantine.js';
 import {createHash,createHmac,timingSafeEqual,randomUUID} from 'node:crypto';
 import {GenerationWallet} from './generation-wallet.js';
 import {grantPaidSubscriptionInvoice,publicSubscriptionCreditGrants} from './generation-subscription-credits.js';
@@ -163,6 +164,7 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
   async function handleEvent(event) {
     // Invoked only after the existing Stripe webhook signature check.
     const r=runtime();
+    if(event.type?.startsWith('charge.dispute.'))return quarantineSignedDispute({event,pool,wallet});
     if(event.type==='invoice.paid'){
       await grantPaidSubscriptionInvoice({event,env,pool,wallet,stripe});
       // Preserve the established subscription-cycle usage reset in server.js.

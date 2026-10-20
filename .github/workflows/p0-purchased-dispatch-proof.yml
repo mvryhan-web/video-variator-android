@@ -3,6 +3,9 @@ on:
   pull_request:
     branches: [deepsyq-platform]
     paths:
+      - 'server/generation-dispute-quarantine.js'
+      - 'tests/d18-dispute-quarantine-unit.mjs'
+      - 'server/migrations/20261020-ai-purchase-net-settlement.sql'
       - 'server/generation-purchased-proof.js'
       - 'server/generation-wallet.js'
       - 'server/generation-subscription-credits.js'
@@ -50,4 +53,4 @@ jobs:
           node --check tests/p0-purchased-dispatch-proof-unit.mjs
           node --check tests/p0-purchased-dispatch-proof-postgres.mjs
       - name: Run pure wallet proof and disposable PostgreSQL single-use tests
-        run: node --test tests/p0-purchased-dispatch-proof-unit.mjs tests/p0-purchased-dispatch-proof-postgres.mjs tests/ai-migrations-unit.mjs tests/generation-readiness-unit.mjs
+        run: node --test tests/d18-dispute-quarantine-unit.mjs tests/p0-purchased-dispatch-proof-unit.mjs tests/p0-purchased-dispatch-proof-postgres.mjs tests/ai-migrations-unit.mjs tests/generation-readiness-unit.mjs

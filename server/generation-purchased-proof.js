@@ -24,6 +24,11 @@ async function purchasedEconomics(c,{userId,jobId=null,currency}={}){
   FROM vv_ai_purchase p
   LEFT JOIN vv_ai_order o ON o.session_id=p.session_id
   WHERE p.user_id=$1 AND p.currency=$2
+    -- Freeze the whole account's paid dispatch, including other packs, while
+    -- ANY receipt has dispute exposure/fees not independently reconciled.
+    AND NOT EXISTS (SELECT 1 FROM vv_ai_dispute_quarantine d
+      JOIN vv_ai_purchase disputed ON disputed.payment_intent=d.payment_intent
+      WHERE disputed.user_id=$1)
     AND p.net_revenue_micros IS NOT NULL AND p.settlement_verified_at IS NOT NULL
     AND p.processor_fee_amount IS NOT NULL AND p.tax_amount IS NOT NULL
     AND p.settlement_livemode=true

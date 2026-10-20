@@ -1,3 +1,4 @@
+import {disputeQuarantineSchema} from './generation-dispute-quarantine.js';
 import {claimPurchasedGeneration,checkPurchasedGenerationMargin} from './generation-purchased-proof.js';
 // Separate prepaid AI ledger. Existing subscription/trial credits are never read here.
 export const MAX_CREDITS = 1_000_000_000;
@@ -13,6 +14,7 @@ export class GenerationWallet {
   constructor(pool) { this.pool = pool; }
   async init() {
     if (!this.initializing) this.initializing = this.pool.query(`
+      ${disputeQuarantineSchema}
       CREATE TABLE IF NOT EXISTS vv_ai_wallet (
         user_id TEXT PRIMARY KEY, available BIGINT NOT NULL DEFAULT 0 CHECK(available BETWEEN 0 AND 1000000000),
         reserved BIGINT NOT NULL DEFAULT 0 CHECK(reserved BETWEEN 0 AND 1000000000),

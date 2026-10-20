@@ -61,7 +61,14 @@ CREATE TABLE IF NOT EXISTS vv_ai_refund_event (
 CREATE INDEX IF NOT EXISTS vv_ai_refund_event_payment_intent
   ON vv_ai_refund_event(payment_intent,received_at DESC);
 
+-- Monotonic signed dispute evidence; preserve pending evidence before paid grants.
+CREATE TABLE IF NOT EXISTS vv_ai_dispute_quarantine (
+ payment_intent TEXT PRIMARY KEY, stripe_charge_id TEXT NOT NULL, stripe_dispute_id TEXT NOT NULL,
+ first_event_id TEXT NOT NULL, livemode BOOLEAN NOT NULL, currency TEXT NOT NULL,
+ disputed_amount BIGINT NOT NULL CHECK(disputed_amount>0), received_at TIMESTAMPTZ NOT NULL DEFAULT now());
+
 -- Rollback (only after a verified DB snapshot):
+-- DROP TABLE IF EXISTS vv_ai_dispute_quarantine;
 -- DROP INDEX IF EXISTS vv_ai_purchase_verified_margin;
 -- DROP INDEX IF EXISTS vv_ai_refund_event_payment_intent;
 -- DROP TABLE IF EXISTS vv_ai_refund_event;
