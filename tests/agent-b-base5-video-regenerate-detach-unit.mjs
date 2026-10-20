@@ -59,7 +59,7 @@ test('B11 declining photo detachment preserves original draft and never submits 
  assert.equal(ctx.refs.length,1);
  assert.equal(ctx.drafts.video.refs.length,1,'declined action cannot alter draft refs');
  assert.equal(counts.renderRefs,0);
- assert.equal(fields.get('prompt').value,'Current local Video draft');
+ assert.equal(ctx.$('prompt').value,'Current local Video draft');
  assert.equal(counts.api,0);assert.equal(counts.provider,0);
 });
 test('B11 historic first-frame Video detaches current photo and requires re-attaching the original',()=>{
