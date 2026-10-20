@@ -16,6 +16,7 @@ import {publicProviderPerformanceRow} from './generation-provider-performance.js
 import {claimProviderPoll} from './generation-polling.js';
 import {recordAdminAudit,listAdminAudit} from './admin-audit.js';
 import {generationEntitlements,generationEntitlementForUser} from './generation-entitlements.js';
+import {hasStoredGenerationConsent} from './generation-consent.js';
 import {generationRequestId,findGenerationRequest} from './generation-idempotency.js';
 import {generationReadiness} from './generation-readiness.js';
 import {ownerProviderTaskId} from './generation-provider-task-id.js';
@@ -337,6 +338,13 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   // Missing, malformed or stale quotes fail before insertion, reservation or provider dispatch.
   if(!Number.isSafeInteger(req.body?.expectedCredits)||req.body.expectedCredits<=0||req.body.expectedCredits!==quote?.credits)
    return res.status(409).json({error:'AI_ESTIMATE_CHANGED'});
+  // A browser checkbox or consent:true payload is not authorization to disclose media.
+  // Require a versioned, authenticated, server-stored decision BEFORE job insertion,
+  // wallet reservation, or any external provider request.
+  let providerAllowed=false;
+  try{providerAllowed=await hasStoredGenerationConsent(pool,req.user.id);}
+  catch(_){return res.status(503).json({error:'CONSENT_STORAGE_UNAVAILABLE'});}
+  if(!providerAllowed)return res.status(403).json({error:'PROVIDER_CONSENT_REQUIRED'});
   const fingerprint=requestFingerprint(request);let c,id=randomUUID(),reused=null;try{
    await init();c=await pool.connect();await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(hashtext($1))',['ai-create:'+req.user.id]);
    reused=await findGenerationRequest(c,{userId:req.user.id,requestId:clientRequestId,fingerprint});
