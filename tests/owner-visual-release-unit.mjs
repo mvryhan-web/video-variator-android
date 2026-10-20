@@ -94,5 +94,13 @@ test('introductory offer stays disabled without unapproved credit or duration pr
  assert.match(trial,/<button[^>]*disabled/);
  assert.ok(!/three days|3-day|no auto-renewal|being calculated|being finalized/i.test(trial));
  const m=JSON.parse(read('media/home/owner-20261018/manifest.json'));
- for(const slug of m.carouselOrder)assert.equal(m.items.find(item=>item.slug===slug).defaultSettings.homeShowcase.title,'Sample video, created in Google Flow');
+ const locked=read('owner-home-hero-headings.js');
+ const approved=['AI Canvas','Seedance 2.0','Seedance 2.5','Video Studio','AI Agent','Image Studio'];
+ for(const [index,slug] of m.carouselOrder.entries()){
+  const title=m.items.find(item=>item.slug===slug).defaultSettings.homeShowcase.title;
+  assert.equal(title,approved[index],slug+' must retain owner-approved heading');
+  assert.ok(locked.includes(JSON.stringify(title)),slug+' owner heading lock must remain imported');
+ }
+ assert.ok(read('home-experience.js').includes("import {ownerHomeShowcase} from './owner-home-hero-headings.js'"));
+ assert.ok(read('home-experience.js').includes('ownerHomeShowcase(item)'));
 });
