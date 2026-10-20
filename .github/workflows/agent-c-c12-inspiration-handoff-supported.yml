@@ -1,0 +1,38 @@
+name: Agent C C12 Inspiration truthful supported handoff
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'tests/agent-c-c12-inspiration-handoff-supported.spec.mjs'
+      - '.github/workflows/agent-c-c12-inspiration-handoff-supported.yml'
+      - 'app/src/main/assets/inspiration.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspiration-supported-no-spend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check tests/agent-c-c12-inspiration-handoff-supported.spec.mjs
+      - run: node --check app/src/main/assets/inspiration.js
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Assert no false supported inputs, keep real Image/Video Studio routes
+        run: npx playwright test tests/agent-c-c12-inspiration-handoff-supported.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-c-c12-handoff-error
+          path: test-results/
+          if-no-files-found: ignore
