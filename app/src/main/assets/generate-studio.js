@@ -664,8 +664,8 @@ function prepareHistoryItem(item,{settings=false}={}){
  if(busy)return;
  const targetKind=item.kind==='music'?'music':item.kind;
  const previousCount=kind==='video'?refs.length:(drafts.video?.refs?.length||0);
- const oldPhotos=settings&&item.kind==='video'&&Number.isInteger(item.settings?.referenceCount)&&item.settings.referenceCount>0;
- if(oldPhotos&&previousCount&&!confirm(say('Preparing this historical video will detach your current video photos. Continue?','Для подготовки прежнего видео потребуется убрать текущие фотографии из редактора. Продолжить?')))return;
+ const videoRegenerate=settings&&item.kind==='video';
+ if(videoRegenerate&&previousCount&&!confirm(say('Preparing this historical video will detach your current video photos. Continue?','Для подготовки прежнего видео потребуется убрать текущие фотографии из редактора. Продолжить?')))return;
  // Never reuse unrelated current Canvas reference photos in regenerated jobs.
  const imageRefs=targetKind===kind?refs:(drafts.image?.refs||[]);
  if(settings&&item.kind==='image'&&imageRefs.length&&!confirm(say(
@@ -679,6 +679,8 @@ function prepareHistoryItem(item,{settings=false}={}){
  if(item.model&&catalog.some(m=>m.id===item.model&&m.kind===targetKind)){modelId=item.model;renderModel();}
  $('prompt').value=item.prompt||'';
  if(settings&&item.kind==='video'){
+  // Regenerate never borrows live draft photos, even when the saved Video was text-only.
+  refs=[];if(drafts.video)drafts.video.refs=[];renderRefs();
   videoDraftNeedsPhotos=false;videoDraftExpectedRefs=0;videoDraftPendingMode='text';
   const n=Number(item.settings?.referenceCount||0),oldMode=item.settings?.videoInputMode||(n===1?'first_frame':'unsupported');
   // Legacy History jobs may lack videoInputMode; one old photo always meant first_frame.
