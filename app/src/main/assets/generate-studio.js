@@ -3,10 +3,26 @@ import {MODEL_CATALOG,MODELS} from './generate-models.js';
 import {takeStudioHandoff} from './studio-handoff.js';
 import {studioCreditWalletState} from './studio-credit-wallet.js';
 import {progressView} from './studio-job-progress.js';
-const $=id=>document.getElementById(id),ru=navigator.language.startsWith('ru');
-const say=(en,r)=>ru?r:en;
+const $=id=>document.getElementById(id);
+const savedLocale=(()=>{try{return localStorage.getItem('deepsyq_home_language');}catch(_){return null;}})();
+const studioLocale=['en','fr','ru'].includes(savedLocale)?savedLocale:((navigator.language||'en').slice(0,2)==='ru'?'ru':'en');
+const ru=studioLocale==='ru',fr=studioLocale==='fr';
+const frenchPhrases={
+ 'Create a video':'Créer une vidéo','Create an image':'Créer une image','Create audio':'Créer un audio',
+ 'Create':'Créer','My results':'Mes créations','Generate ✦':'Générer ✦',
+ 'Ready':'Prêt','Queued':'En attente','Processing':'En cours','Finalizing':'Finalisation','Failed':'Échec',
+ 'Open':'Ouvrir','Download':'Télécharger','Delete':'Supprimer','Share':'Partager',
+ 'Image':'Image','Video':'Vidéo','Audio':'Audio','Settings':'Paramètres','Model':'Modèle',
+ 'Loading results…':'Chargement des résultats…','No results in this filter yet.':'Aucun résultat pour ce filtre.',
+ 'View result':'Voir le résultat','Result pending':'Résultat en cours','Generation failed':'Génération échouée',
+ 'Back':'Retour','Cancel':'Annuler','Done':'Terminé'
+};
+const say=(en,r)=>ru?r:fr?(frenchPhrases[en]||en):en;
+document.documentElement.lang=studioLocale;
 const strings={back:'← Назад',pilot:'Предпросмотр студии',workspace:'ВАША СТУДИЯ',video:'Видео',image:'Изображения',audio:'Аудио',dashboard:'Главная ↗',translation:'Перевод · позже',create:'Создать',history:'Мои результаты',label:'ТВОРЧЕСКАЯ СТУДИЯ',headline:'Ваша идея. Создайте её.',prompt:'Опишите, что хотите создать',addPhoto:'Фото',clear:'Убрать фото',generate:'Создать ✦',consent:'Я согласен отправить запрос и фотографии в Google для генерации.',pilotNote:'Предпросмотр студии. Оплата не включена.',chooseModel:'Выберите модель',modelHint:'Выберите инструмент для своей задачи. У каждой модели указан статус подключения.',settings:'Настройки',format:'Формат',capabilityNote:'Настройки соответствуют выбранной модели. Неподдерживаемые параметры не отправляются.',trackType:'Тип аудио',song:'Песня с вокалом',instrumental:'Без слов',voiceoverMode:'Озвучка · подключение готовится',voiceover:'Открыть существующий инструмент озвучки →',language:'Язык',voice:'Голос',done:'Готово',download:'Скачать',share:'Поделиться',delete:'Удалить',saveNote:'Сохраните копию. Удаление результата не удаляет скачанные файлы.',historyHint:'Здесь доступны сохранённые результаты студии. Генерация не запускается автоматически.',checkResult:'Проверить последний результат',historyLoading:'Загружаем результаты…',historyNone:'Сохранённых результатов пока нет.',historyOpen:'Открыть',historyReady:'Готово',historyProcessing:'В работе',historyFailed:'Ошибка',filterAll:'Все',filterImages:'Изображения',filterVideos:'Видео',filterFailed:'Ошибки',filterProcessing:'В работе'};
-if(ru){document.documentElement.lang='ru';document.querySelectorAll('[data-t]').forEach(e=>e.textContent=strings[e.dataset.t]||e.textContent);$('backgroundVideo').textContent='Продолжить в фоне →';document.querySelector('#videoBackgroundControls .hint').textContent='Остановить ожидание в этой вкладке без отмены серверной видеозадачи. Вернитесь в Историю позже, чтобы проверить результат. Закрытие вкладки само по себе не отменяет задачу.';}
+const frenchStatic={back:'← Retour',pilot:'Aperçu du studio',workspace:'VOTRE STUDIO',video:'Vidéo',image:'Images',audio:'Audio',dashboard:'Accueil ↗',translation:'Traduction · bientôt',create:'Créer',history:'Mes résultats',prompt:'Décrivez ce que vous souhaitez créer',addPhoto:'Photo',clear:'Effacer',generate:'Générer ✦',chooseModel:'Choisir un modèle',modelHint:'Choisissez un modèle disponible.',settings:'Paramètres',format:'Format',trackType:'Type audio',song:'Chanson',instrumental:'Instrumental',language:'Langue',voice:'Voix',done:'Terminé',download:'Télécharger',share:'Partager',delete:'Supprimer',filterAll:'Tout',filterImages:'Images',filterVideos:'Vidéos',filterFailed:'Échecs',filterProcessing:'En cours'};
+if(ru||fr){document.querySelectorAll('[data-t]').forEach(e=>e.textContent=(ru?strings:frenchStatic)[e.dataset.t]||e.textContent);}
+if(ru){$('backgroundVideo').textContent='Продолжить в фоне →';document.querySelector('#videoBackgroundControls .hint').textContent='Остановить ожидание в этой вкладке без отмены серверной видеозадачи. Вернитесь в Историю позже, чтобы проверить результат. Закрытие вкладки само по себе не отменяет задачу.';}
 const requested=new URLSearchParams(location.search).get('studio');
 let kind=requested==='image'?'image':requested==='audio'?'music':'video';
 let config={enabled:false,models:[]},catalog=MODEL_CATALOG.map(m=>({...m,enabled:false}));
@@ -344,7 +360,7 @@ function renderModel(){let m=currentModel();if(!m){m=catalog.find(m=>m.kind===mo
  $('imageUnsupportedControls').hidden=kind!=='image'||Boolean(m?.capabilities?.supportsSeed||m?.capabilities?.supportsNegativePrompt);
  if(ru)$('imageUnsupportedControls').textContent='Seed и Negative Prompt не являются отдельными параметрами API у этих моделей. Укажите нежелательные элементы в основном запросе, например «Без текста и логотипов». Неподдерживаемые поля провайдеру не отправляются.';
  renderRatios();renderRefs();renderModels();$('qualityValue').textContent=kind==='image'?'':kind==='video'?$('videoResolution').value:(m?.quality||'');$('durationValue').textContent=kind==='video'?$('videoDuration').value+'s':m?.duration||'';$('voiceSettings').hidden=modelKind()!=='voice';availability();}
-function select(next,{remember=true}={}){if(busy)return;if(remember)storeDraft();kind=next;$('imageDraftBar').hidden=kind!=='image';$('videoDraftBar').hidden=kind!=='video';$('consent').checked=false;const d=drafts[kind];refs=d?.refs||[];$('prompt').value=d?.prompt||'';$('musicMode').value=d?.musicMode||'song';modelId=d?.modelId||config.models?.find(m=>m.kind===kind)?.id||MODELS[kind]?.id||'';document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.kind===kind)));$('taskTitle').textContent={video:say('Create a video','Создать видео'),image:say('Create an image','Создать изображение'),music:say('Create audio','Создать аудио'),translation:say('Translate your file','Перевести файл')}[kind];$('taskDescription').textContent={video:say('Describe a scene or add a photo. Choose your model and bring the idea to life.','Опишите сцену или добавьте фото. Выберите модель и оживите свою идею.'),image:say('Start with a description. Add reference photos to guide the look.','Начните с описания. Добавьте фотографии, чтобы задать нужный образ.'),music:say('Create a short song, an instrumental, or prepare a voiceover.','Создайте короткую песню, музыку без слов или подготовьте озвучку.'),translation:say('Translation will be added after the studio is ready.','Перевод добавим после подготовки студии.')}[kind];$('musicOptions').hidden=kind!=='music';$('prompt').placeholder=kind==='music'?say('Describe the sound, mood and language. Add your lyrics or voiceover text…','Опишите звучание, настроение и язык. Добавьте текст песни или озвучки…'):kind==='image'?say('Describe your image: subject, style, colours and light…','Опишите изображение: объект, стиль, цвета и свет…'):say('Describe your video: scene, movement and atmosphere…','Опишите видео: сцену, движение и атмосферу…');$('examples').replaceChildren();const examples=kind==='video'?[['A cinematic product reveal with soft studio light','Презентация товара с мягким студийным светом'],['A calm ocean at sunset, gentle camera movement','Спокойный океан на закате и плавное движение камеры']]:kind==='image'?[['A premium product photo on a clean background','Фото товара на чистом фоне'],['A colourful illustrated poster','Яркий иллюстрированный постер']]:kind==='music'?[['A joyful pop song in English about a fresh start','Позитивная поп-песня на английском о новом начале'],['Instrumental relaxing piano for a travel video','Спокойное фортепиано для видео о путешествии']]:[];for(const [en,r] of examples){const b=document.createElement('button');b.type='button';b.textContent=say(en,r);b.onclick=()=>{if(busy)return;const next=say(en,r),existing=$('prompt').value.trim();if(existing&&existing!==next&&!confirm(say('Replace your current description with this example?','Заменить ваше описание этим примером?')))return;$('prompt').value=next;$('consent').checked=false;availability();$('prompt').focus();};$('examples').append(b);}renderModel();if(d?.ratio&&currentModel()?.ratios.includes(d.ratio)){$('ratio').value=d.ratio;updateRatioSelection();}if(kind==='image'&&currentModel()?.capabilities?.resolutions?.includes(d?.resolution)){$('imageResolution').value=d.resolution;updateRatioSelection();}if(kind==='image'&&currentModel()?.capabilities?.outputFormats?.includes(d?.outputFormat)){$('imageOutputFormat').value=d.outputFormat;updateRatioSelection();}if(kind==='image'&&config.imageBatchEnabled===true&&Number.isInteger(d?.quantity)&&d.quantity>=1&&d.quantity<=4){$('imageQuantity').value=String(d.quantity);updateRatioSelection();}if(kind==='video'&&currentModel()?.capabilities?.videoInputModes?.includes(d?.videoInputMode)&&[...$('videoInputMode').options].some(o=>o.value===d.videoInputMode))$('videoInputMode').value=d.videoInputMode;if(kind==='video'&&currentModel()?.capabilities?.resolutions?.includes(d?.videoResolution)){$('videoResolution').value=d.videoResolution;renderVideoSettings();}if(kind==='video'&&currentModel()?.capabilities?.durations?.includes(d?.videoDuration)&&[...$('videoDuration').options].some(o=>o.value===String(d.videoDuration))){$('videoDuration').value=String(d.videoDuration);updateRatioSelection();}if(kind!=='translation'){const u=new URL(location.href);u.searchParams.set('studio',kind==='music'?'audio':kind);history.replaceState(null,'',u);}setHistory(false);if(kind==='image'){showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}}
+function select(next,{remember=true}={}){if(busy)return;if(remember)storeDraft();kind=next;$('imageDraftBar').hidden=kind!=='image';$('videoDraftBar').hidden=kind!=='video';$('consent').checked=false;const d=drafts[kind];refs=d?.refs||[];$('prompt').value=d?.prompt||'';$('musicMode').value=d?.musicMode||'song';modelId=d?.modelId||config.models?.find(m=>m.kind===kind)?.id||MODELS[kind]?.id||'';document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.kind===kind)));$('taskTitle').textContent='Light up your creation with Deepsyq';$('taskDescription').textContent={video:say('Describe a scene or add a photo. Choose your model and bring the idea to life.','Опишите сцену или добавьте фото. Выберите модель и оживите свою идею.'),image:say('Start with a description. Add reference photos to guide the look.','Начните с описания. Добавьте фотографии, чтобы задать нужный образ.'),music:say('Create a short song, an instrumental, or prepare a voiceover.','Создайте короткую песню, музыку без слов или подготовьте озвучку.'),translation:say('Translation will be added after the studio is ready.','Перевод добавим после подготовки студии.')}[kind];$('musicOptions').hidden=kind!=='music';$('prompt').placeholder=kind==='music'?say('Describe the sound, mood and language. Add your lyrics or voiceover text…','Опишите звучание, настроение и язык. Добавьте текст песни или озвучки…'):kind==='image'?say('Describe your image: subject, style, colours and light…','Опишите изображение: объект, стиль, цвета и свет…'):say('Describe your video: scene, movement and atmosphere…','Опишите видео: сцену, движение и атмосферу…');$('examples').replaceChildren();const examples=kind==='video'?[['A cinematic product reveal with soft studio light','Презентация товара с мягким студийным светом'],['A calm ocean at sunset, gentle camera movement','Спокойный океан на закате и плавное движение камеры']]:kind==='image'?[['A premium product photo on a clean background','Фото товара на чистом фоне'],['A colourful illustrated poster','Яркий иллюстрированный постер']]:kind==='music'?[['A joyful pop song in English about a fresh start','Позитивная поп-песня на английском о новом начале'],['Instrumental relaxing piano for a travel video','Спокойное фортепиано для видео о путешествии']]:[];for(const [en,r] of examples){const b=document.createElement('button');b.type='button';b.textContent=say(en,r);b.onclick=()=>{if(busy)return;const next=say(en,r),existing=$('prompt').value.trim();if(existing&&existing!==next&&!confirm(say('Replace your current description with this example?','Заменить ваше описание этим примером?')))return;$('prompt').value=next;$('consent').checked=false;availability();$('prompt').focus();};$('examples').append(b);}renderModel();if(d?.ratio&&currentModel()?.ratios.includes(d.ratio)){$('ratio').value=d.ratio;updateRatioSelection();}if(kind==='image'&&currentModel()?.capabilities?.resolutions?.includes(d?.resolution)){$('imageResolution').value=d.resolution;updateRatioSelection();}if(kind==='image'&&currentModel()?.capabilities?.outputFormats?.includes(d?.outputFormat)){$('imageOutputFormat').value=d.outputFormat;updateRatioSelection();}if(kind==='image'&&config.imageBatchEnabled===true&&Number.isInteger(d?.quantity)&&d.quantity>=1&&d.quantity<=4){$('imageQuantity').value=String(d.quantity);updateRatioSelection();}if(kind==='video'&&currentModel()?.capabilities?.videoInputModes?.includes(d?.videoInputMode)&&[...$('videoInputMode').options].some(o=>o.value===d.videoInputMode))$('videoInputMode').value=d.videoInputMode;if(kind==='video'&&currentModel()?.capabilities?.resolutions?.includes(d?.videoResolution)){$('videoResolution').value=d.videoResolution;renderVideoSettings();}if(kind==='video'&&currentModel()?.capabilities?.durations?.includes(d?.videoDuration)&&[...$('videoDuration').options].some(o=>o.value===String(d.videoDuration))){$('videoDuration').value=String(d.videoDuration);updateRatioSelection();}if(kind!=='translation'){const u=new URL(location.href);u.searchParams.set('studio',kind==='music'?'audio':kind);history.replaceState(null,'',u);}setHistory(false);if(kind==='image'){showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}}
 const imageEditPrompts={
  background:'Replace the background with a clean studio setting. Preserve the referenced subject, details, colors and any visible branding.',
  lighting:'Improve lighting with natural highlights and balanced shadows. Preserve the subject, identity, texture and composition.',
@@ -774,7 +790,43 @@ async function loadHistory(){
  }catch(e){if(!isCurrent())return;list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
 }
 document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclick=()=>{historyFilter=button.dataset.historyFilter;document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));void loadHistory();});
-function setHistory(on){if(!on){++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();$('historyList').replaceChildren();}historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
+
+// Conversation is a read-only view of EXISTING server-owned Studio jobs.
+// No parallel message database, generated result spoofing, or additional AI call.
+let conversationEpoch=0;
+async function loadConversation(){
+ const root=$('conversationThread');if(!root)return;
+ const epoch=++conversationEpoch,account=localStorage.getItem('vv_token'),selectedKind=kind;
+ root.replaceChildren();
+ $('empty').hidden=false;
+ document.querySelector('.stage').classList.remove('has-conversation');
+ if(!account||historyView)return;
+ try{
+  const response=await api('/api/studio/jobs?filter=all');
+  if(!response.ok)throw Error('HISTORY_UNAVAILABLE');
+  const data=await response.json();
+  if(epoch!==conversationEpoch||account!==localStorage.getItem('vv_token')||selectedKind!==kind||historyView)return;
+  const jobs=(Array.isArray(data.items)?data.items:[]).filter(item=>item&&item.kind===selectedKind&&typeof item.id==='string'&&typeof item.prompt==='string'&&item.prompt.trim()).slice(0,15).reverse();
+  if(!jobs.length)return;
+  const fragment=document.createDocumentFragment();
+  for(const item of jobs){
+   const card=document.createElement('article');card.className='conversation-item';card.setAttribute('role','listitem');
+   const request=document.createElement('div');request.className='conversation-user';request.textContent=item.prompt.slice(0,2000);
+   const response=document.createElement('div');response.className='conversation-response';
+   const state=document.createElement('span');state.textContent=historyState(item.status);response.append(state);
+   if(item.status==='ready'){
+    const open=document.createElement('button');open.type='button';open.textContent=say('View result','Посмотреть результат');
+    open.addEventListener('click',()=>{if(!busy)void openHistoryJob(item.id);});
+    response.append(open);
+   }
+   card.append(request,response);fragment.append(card);
+  }
+  root.append(fragment);
+  document.querySelector('.stage').classList.add('has-conversation');
+  $('empty').hidden=true;
+ }catch(_){/* The editor remains usable when a read-only history request fails. */}
+}
+function setHistory(on){if(!on){++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();$('historyList').replaceChildren();}historyView=on;$('conversationThread').hidden=on;document.querySelector('.stage').classList.toggle('has-conversation',!on&&$('conversationThread').childElementCount>0);$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();else void loadConversation();}
 window.addEventListener('pagehide',()=>{++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();});
 $('showCreate').onclick=()=>{const u=new URL(location.href);u.searchParams.delete('view');history.replaceState(null,'',u);setHistory(false);};$('showHistory').onclick=()=>setHistory(true);
 function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
@@ -801,7 +853,7 @@ async function watch(id,epoch){
    $('saveNote').hidden=false;
    $('status').textContent=say('Ready. Preview and save your creation.','Готово. Посмотрите и сохраните результат.');
    if(sessionStorage.getItem('vu_generation_background_job')===id)sessionStorage.removeItem('vu_generation_background_job');
-   busy=false;availability();return;
+   busy=false;availability();void loadConversation();return;
   }
   if(d.status==='failed'||d.status==='unknown'){activeVideoWatchId=null;throw Error(d.error||'GENERATION_FAILED');}
   const wait=Math.max(3000,Math.min(20000,Number(d.retryAfterSeconds||5)*1000));
@@ -861,6 +913,7 @@ async function createImageBatch(){
    submitted++;
    job=reply.id;
    sessionStorage.setItem('vu_generation_job',job);
+   void loadConversation();
    updateJobProgress(reply.status||'processing',{creditsReserved:reply.creditsReserved});
    await watch(job,epoch);
    ready++;
@@ -924,7 +977,7 @@ $('creator').onsubmit=async e=>{
    ...original,requestId:crypto.randomUUID(),expectedCredits:quote.credits
   })})).json();
   if(!d.id)throw Error('STUDIO_STORAGE_UNAVAILABLE');
-  job=d.id;sessionStorage.setItem('vu_generation_job',job);updateJobProgress(d.status||'processing',{creditsReserved:d.creditsReserved});
+  job=d.id;sessionStorage.setItem('vu_generation_job',job);void loadConversation();updateJobProgress(d.status||'processing',{creditsReserved:d.creditsReserved});
   if(kind==='video'){activeVideoWatchId=job;availability();}
   $('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');
   await watch(job,epoch);
