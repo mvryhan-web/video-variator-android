@@ -926,12 +926,15 @@ document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclic
 // No parallel message database, generated result spoofing, or additional AI call.
 let conversationEpoch=0;
 let visibleStudioAccount=localStorage.getItem('vv_token');
+let conversationAccountRendered=visibleStudioAccount;
+let conversationKindRendered=null;
 // Account-scoped results and prompts may not remain on screen after switching
 // accounts in this tab or another tab, including while an asynchronous job loads.
 function scrubStudioAccount(){
  const current=localStorage.getItem('vv_token');
  if(current===visibleStudioAccount)return false;
  visibleStudioAccount=current;
+ conversationAccountRendered=current;conversationKindRendered=null;
  ++conversationEpoch;++historyLoadEpoch;++generation;
  $('conversationThread').replaceChildren();$('historyList').replaceChildren();
  document.querySelector('.stage').classList.remove('has-conversation');
@@ -948,18 +951,28 @@ window.addEventListener('focus',scrubStudioAccount);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)scrubStudioAccount();});
 async function loadConversation(){
  const root=$('conversationThread');if(!root)return;
+ // Scrub immediately on identity changes before retaining any rendered prompt.
+ scrubStudioAccount();
  const epoch=++conversationEpoch,account=localStorage.getItem('vv_token'),selectedKind=kind;
- root.replaceChildren();
- $('empty').hidden=!!blob||historyView;
- document.querySelector('.stage').classList.remove('has-conversation');
  if(!account||historyView)return;
+ const sameView=conversationAccountRendered===account&&conversationKindRendered===selectedKind;
+ if(!sameView){
+  root.replaceChildren();
+  document.querySelector('.stage').classList.remove('has-conversation');
+  $('empty').hidden=!!blob||historyView;
+ }
  try{
   const response=await api('/api/studio/jobs?filter=all');
   if(!response.ok)throw Error('HISTORY_UNAVAILABLE');
   const data=await response.json();
   if(epoch!==conversationEpoch||account!==localStorage.getItem('vv_token')||selectedKind!==kind||historyView)return;
   const jobs=(Array.isArray(data.items)?data.items:[]).filter(item=>item&&item.kind===selectedKind&&typeof item.id==='string'&&typeof item.prompt==='string'&&item.prompt.trim()).slice(0,15).reverse();
-  if(!jobs.length)return;
+  if(!jobs.length){
+   root.replaceChildren();conversationAccountRendered=account;conversationKindRendered=selectedKind;
+   document.querySelector('.stage').classList.remove('has-conversation');
+   $('empty').hidden=!!blob||historyView;
+   return;
+  }
   const fragment=document.createDocumentFragment(),imagePreviews=[];
   for(const item of jobs){
    const card=document.createElement('article');card.className='conversation-item';card.setAttribute('role','listitem');
@@ -982,11 +995,14 @@ async function loadConversation(){
    }
    card.append(request,response);fragment.append(card);
   }
-  root.append(fragment);
+  root.replaceChildren(fragment);
+  conversationAccountRendered=account;conversationKindRendered=selectedKind;
   for(const [item,preview] of imagePreviews)observeHistoryThumbnail(item,preview);
   document.querySelector('.stage').classList.add('has-conversation');
   $('empty').hidden=true;
- }catch(_){/* The editor remains usable when a read-only history request fails. */}
+ }catch(_){
+  // Keep the last successful same-account, same-studio conversation visible.
+ }
 }
 function setHistory(on){if(!on){++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();$('historyList').replaceChildren();}historyView=on;$('conversationThread').hidden=on;document.querySelector('.stage').classList.toggle('has-conversation',!on&&$('conversationThread').childElementCount>0);$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();else void loadConversation();}
 window.addEventListener('pagehide',()=>{++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();});
