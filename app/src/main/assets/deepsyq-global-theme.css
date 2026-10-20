@@ -125,3 +125,194 @@ body.deepsyq-sitewide-shell :is(main,footer) {max-width:min(1240px,100%)}
 .ds-site-sidebar .ds-site-pending small {font-size:10px;color:#919cbd;margin-left:auto}
 .ds-site-sidebar .ds-site-footer {display:flex;flex-wrap:wrap;gap:12px}
 .ds-site-sidebar .ds-site-caption {text-transform:uppercase}
+
+
+/* OWNER 2026-10-20: inner pages only — approved Home remains untouched.
+   Visual-only overrides: existing IDs, routes, AI requests, wallets, outputs and
+   original Home (body.home-neon) are never styled by this block.
+   Colors/treatments derived from the owner-approved 1448x1086 neon reference.
+   Apply after each page's original CSS; never blanket-hide elements. */
+
+html:not([data-theme="light"]) body:not(.home-neon) {
+  --ds-bg: #030b1c;
+  --ds-sidebar: #020b1b;
+  --ds-surface: #0b1934;
+  --ds-raised: #102349;
+  --ds-line: #294b8b;
+  --ds-text: #f4f5ff;
+  --ds-muted: #b7c3dc;
+  --ds-violet: #9552ff;
+  --ds-pink: #db45f2;
+  --ds-blue: #059aff;
+  --bg: var(--ds-bg);
+  --background: var(--ds-bg);
+  --panel: var(--ds-surface);
+  --panel2: var(--ds-raised);
+  --panel-raised: var(--ds-raised);
+  --line: var(--ds-line);
+  --text: var(--ds-text);
+  --muted: var(--ds-muted);
+  --accent: #c49cff;
+  --mint: #60dbff;
+  --cp-bg: var(--ds-bg);
+  --cp-card: var(--ds-surface);
+  --cp-text: var(--ds-text);
+  --cp-muted: var(--ds-muted);
+  --cp-line: var(--ds-line);
+  --cp-accent: #c49cff;
+  --cp-soft: #9552ff20;
+  color: var(--ds-text);
+  background:
+    radial-gradient(ellipse 760px 390px at 62% -180px, #154f9a4d, transparent 80%),
+    radial-gradient(ellipse 630px 470px at 4% 39%, #33135a45, transparent 75%),
+    linear-gradient(160deg, #020917, #030b1c 65%, #06132d);
+}
+
+/* The outer page chrome is shared by Image/Video/Audio Studio, galleries,
+   maker tools, Pricing and owner/legal subpages. No geometry is changed. */
+html:not([data-theme="light"]) body:not(.home-neon) :is(.topbar, .content>.top, body>header, .tools>header, .studio-nav, .sidebar, .ds-site-sidebar) {
+  border-color: #253d71;
+  color: var(--ds-text);
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.topbar, .content>.top, body>header, .tools>header) {
+  background: linear-gradient(112deg, #020919f5, #0b1c40f0);
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.studio-nav, .ds-site-sidebar, .sidebar) {
+  background-color: var(--ds-sidebar);
+}
+html:not([data-theme="light"]) body:not(.home-neon) .ds-site-sidebar nav a[aria-current="page"],
+html:not([data-theme="light"]) body:not(.home-neon) .studio-nav>button[aria-pressed="true"] {
+  background: linear-gradient(110deg, #264defa6, #4a21a6b8);
+  border-color: #645eff;
+  box-shadow: inset 2px 0 #20c7ff, 0 0 18px #513dff35;
+  color: #fff;
+}
+
+/* Dark media-ready surfaces and luminous edge, not a new layout. */
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  .composer, .panel, .app-card, .price-card, .card, .tool-card,
+  .history-card, .history-preview, .wallet-stat, .credit-pack,
+  .collage-workspace, .utility-workspace, .teleprompter-workspace,
+  .reminder-entry, .review-card, .model-card, .upload,
+  .hero, .intro, .cp-feature, .hub-tile, .selected-tool-panel
+) {
+  background-color: var(--ds-surface);
+  border-color: #294c8e;
+  color: var(--ds-text);
+  box-shadow: 0 10px 38px #00071648, inset 0 1px #748dff12;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  .composer, .app-card, .price-card, .card, .tool-card,
+  .panel, .cp-feature, .hub-tile, .history-card
+):hover {
+  border-color: #8065ff;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .composer {
+  background: linear-gradient(128deg, #0f1b3b 0%, #0a1733 70%, #102346);
+  border: 1px solid #7163dc;
+  border-radius: 20px;
+  box-shadow: 0 0 0 1px #09b5ff16, 0 15px 54px #0009188a, 0 0 30px #5e34dc23;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.app-thumb, .media, .previews, .image-well, .hero-art) {
+  border-color: #3b55a0;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  .history-preview, .history-filters button, .examples button, .pill,
+  .stage-tabs, .ratio-choices button, .specs span,
+  .wallet-actions button, .image-draft-bar,
+  .video-background-controls, .reference-crop-stage,
+  .studio-reference-tile>.reference-crop-action,
+  .studio-reference-tile>.reference-undo-action,
+  .studio-reference-tile .reference-order-controls button
+) {
+  background-color: #0e2040;
+  border-color: #365793;
+  color: #dce8ff;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  .credit-estimate, .job-progress, .history-status
+) {
+  background-color: #13234a;
+  border-color: #455ca2;
+  color: #dce8ff;
+}
+/* Preserve semantic success/failure and eligibility colours. */
+html:not([data-theme="light"]) body:not(.home-neon) .job-progress[data-status="failed"],
+html:not([data-theme="light"]) body:not(.home-neon) .job-progress[data-status="unknown"],
+html:not([data-theme="light"]) body:not(.home-neon) .job-progress[data-status="unconfirmed"] {
+  border-color: #a76b8e;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .history-status[data-status="ready"] {
+  color: #9ef4da;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .history-status[data-status="failed"] {
+  color: #ffb5c7;
+}
+
+/* Only existing buttons that already represent a primary action get the bright
+   gradient; disabled/cancel/remove remain governed by their original states. */
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  button.primary:not(:disabled), .actions button.primary:not(:disabled),
+  .review button:not(:disabled), .price-card button:not(:disabled),
+  .cp-action:not([aria-disabled="true"]), .cp-cta a:not([aria-disabled="true"]),
+  .tools-hub #run:not(:disabled), .tools-hub .compact-actions button:first-child:not(:disabled),
+  .collage-actions button:not(:disabled), .tele-actions button:not(:disabled),
+  .video-background-controls button:not(:disabled),
+  #speechGenerate:not(:disabled), #trimGenerate:not(:disabled),
+  #vtaGenerate:not(:disabled), #transcribeStart:not(:disabled)
+) {
+  background: linear-gradient(112deg, #7a43ff, #b845f8 67%, #0acbff);
+  border: 1px solid #b26aff;
+  color: #fff;
+  box-shadow: 0 4px 20px #5e35ff65, inset 0 1px #ffffff2c;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  .stage-tabs button[aria-pressed="true"],
+  .history-filters button[aria-pressed="true"],
+  .kind-tabs button[aria-pressed="true"],
+  .ratio-choices button[aria-pressed="true"],
+  .hub-presets button[aria-pressed="true"],
+  .modes button.selected,
+  .model-card[aria-pressed="true"],
+  .category-chips button[aria-pressed="true"]
+) {
+  background: linear-gradient(115deg, #5129b0, #163f8a);
+  border-color: #8e66ff;
+  color: #fff;
+  box-shadow: 0 0 18px #5e35ff33;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea, select
+) {
+  border-color: #405995;
+  background-color: #0b1b37;
+  color: var(--ds-text);
+}
+html:not([data-theme="light"]) body:not(.home-neon) .composer textarea {
+  background: transparent;
+  border: 0;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  .hero h1, .intro h1, h1, .section-head h2,
+  .section-heading h2, .panel h2, .tool-card h2
+) {
+  color: #f8f8ff;
+  font-family: var(--ds-font);
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  .eyebrow, .nav-caption, .caption, .step, .tool-kicker, .cp-kicker
+) {
+  color: #cbb0ff;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  a, button, input, select, textarea, summary
+):focus-visible {
+  outline: 2px solid #7ce8ff;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-theme="light"]) body:not(.home-neon) :is(.app-card,.card,.panel,.tool-card) {
+    transition: none;
+  }
+}
