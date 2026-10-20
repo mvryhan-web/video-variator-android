@@ -85,6 +85,15 @@ test('Owner neon layout: Home creation links open the existing destinations with
   await expect(page.locator('#prompt')).toBeVisible();
  }
  await home(page);
+ await page.locator('#homeQuickPrompt').fill('A private idea kept across Back navigation');
+ await page.locator('[data-home-kind="image"]').click();
+ await expect(page.locator('#prompt')).toHaveValue('A private idea kept across Back navigation');
+ await page.goBack();
+ await page.locator('#homeQuickPrompt').fill('A second private video idea');
+ await page.locator('[data-home-kind="video"]').click();
+ await expect(page).toHaveURL(/studio=video&from=home/);
+ await expect(page.locator('#prompt')).toHaveValue('A second private video idea');
+ await home(page);
  await page.locator('[data-home-kind="agent"]').click();
  await expect(page).toHaveURL(/#agentFeature$/);
  await expect(page.locator('#agentFeature')).toBeInViewport();
