@@ -51,7 +51,7 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   async function paid(userId,sessionId,credits){
     await pool.query('INSERT INTO vv_ai_order(id,user_id,session_id,snapshot) VALUES($1,$2,$3,$4)',
      [sessionId+'_order',userId,sessionId,JSON.stringify({billingMode:'live',amount:100,credits,currency:'eur',priceId:'price_test'})]);
-    await wallet.grant({userId,sessionId,paymentIntent:'pi_'+sessionId,credits,amount:100,currency:'eur',settlement:settlement(sessionId)});
+    await wallet.grant({userId,sessionId,paymentIntent:'pi_'+stripeSafe(sessionId),credits,amount:100,currency:'eur',settlement:settlement(sessionId)});
   }
   await paid('customer_paid','cs_live_paid',200);
   const paidJob=await job('customer_paid','job_paid_a',100);
@@ -72,7 +72,7 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   // Refund after reservation must never spend with an outstanding debt.
   await paid('customer_refund','cs_live_refunded',100);
   const refundJob=await job('customer_refund','job_refund',50);
-  await wallet.refund('pi_cs_live_refunded',100,{eventId:'evt_refunded',chargeId:'ch_'+stripeSafe('cs_live_refunded'),livemode:true});
+  await wallet.refund('pi_csliverefunded',100,{eventId:'evt_refunded',chargeId:'ch_'+stripeSafe('cs_live_refunded'),livemode:true});
   await assert.rejects(()=>wallet.claimPurchasedDispatch(refundJob,{env}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
   // Even an artificially mixed/promotional wallet cannot spend past the
   // settled-purchase budget: other held/captured jobs count against all paid credits.
@@ -152,7 +152,7 @@ test('P0 disposable PostgreSQL: paid purchased reservation single-use, bonus den
   // claim to that zero-funded pack when a different LIVE pack covers it.
   await paid('customer_positive_source','cs_live_A_zero',1);
   await paid('customer_positive_source','cs_live_Z_valid',100);
-  await wallet.refund('pi_cs_live_A_zero',1,{eventId:'evt_zero',chargeId:'ch_csliveAzero',livemode:true}); // ceil(1 * 1 / 100) = 1 credit
+  await wallet.refund('pi_csliveAzero',1,{eventId:'evt_zero',chargeId:'ch_csliveAzero',livemode:true}); // ceil(1 * 1 / 100) = 1 credit
   const provenanceJob=await job('customer_positive_source','job_positive_source',80);
   const provenance=await wallet.claimPurchasedDispatch(provenanceJob,{env});
   assert.equal(provenance.purchasedCreditsAvailableBeforeReserve,100);
@@ -209,7 +209,7 @@ test('BASE #16 subscriber-only fresh DB cannot attribute general subscription pr
    userId:'user_only_sub',jobId:'job_only_sub',kind:'image',modelId:'model_i',
    provider:'Google',credits:40,fingerprint:'fp_only_sub',providerCostMicros:1_000,currency:'eur'},{env}),
    /AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
-  assert.equal((await wallet.balance('user_only_sub')).available,50,'subscription credits remain in the wallet');
+  assert.deepEqual(await wallet.balance('user_only_sub'),{available:10,reserved:40,debt:0},'denied dispatch preserves the existing reservation without consuming credits');
   await assert.rejects(()=>wallet.claimPurchasedDispatch({
    userId:'user_only_sub',jobId:'job_only_sub',kind:'image',modelId:'model_i',
    provider:'Google',credits:40,fingerprint:'fp_only_sub',providerCostMicros:1_000,currency:'eur'},{env}),

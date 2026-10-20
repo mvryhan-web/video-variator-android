@@ -52,7 +52,7 @@ test('P0: PostgreSQL16 real wallet + purchase + once-only dispatch + denied cred
    const sid='cs_live_'+id;
    await pool.query('INSERT INTO vv_ai_order(id,user_id,session_id,snapshot) VALUES($1,$2,$3,$4::jsonb)',
     [sid+'_order',id,sid,JSON.stringify({billingMode:'live',amount:1000,credits:100,currency:'usd',priceId:'price_fixture'})]);
-   await wallet.grant({userId:id,sessionId:sid,paymentIntent:'pi_'+sid,credits:100,amount:1000,currency:'usd',settlement:paidSettlement(sid)});
+   await wallet.grant({userId:id,sessionId:sid,paymentIntent:'pi_'+stripeSafe(sid),credits:100,amount:1000,currency:'usd',settlement:paidSettlement(sid)});
    return sid;
   }
   async function insertJob(id,uid,change={}){
@@ -90,7 +90,7 @@ test('P0: PostgreSQL16 real wallet + purchase + once-only dispatch + denied cred
 
   await paid('refunded');
   const refunded=await insertJob('job-refunded','refunded');
-  await wallet.refund('pi_cs_live_refunded',1000,refundProof('cs_live_refunded','evt_refunded'));
+  await wallet.refund('pi_csliverefunded',1000,refundProof('cs_live_refunded','evt_refunded'));
   await assert.rejects(dispatch('refunded',refunded),PurchasedDispatchDenied);
   assert.equal((await wallet.settle({userId:'refunded',jobId:'job-refunded',outcome:'confirmed_failure'})).status,'released');
   assert.deepEqual(await wallet.balance('refunded'),{available:0,reserved:0,debt:0},

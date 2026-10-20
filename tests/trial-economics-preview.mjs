@@ -40,9 +40,15 @@ test('one expensive model limits all credits and may make trial commercially unw
  const highFees=analyzeTrialEconomics(scenario({processorFixedCents:95}));
  assert.equal(highFees.reason,'NOT_ENOUGH_REVENUE_AFTER_FEES');
 });
-test('an offline Trial scenario still blocks provider rates below the D18 2:1 floor',()=>{
- const underpriced={...rate('underpriced','image',20,50000),netRevenueMicros:99999};
- assert.equal(analyzeTrialEconomics(scenario({eligibleRates:[underpriced]})).reason,'UNAPPROVED_MODEL_PRICES');
+test('offline scenario never treats operator revenue assertions as verified D18 evidence',()=>{
+ const rates=[rate('hypothetical','image',20,50000)];
+ const baseline=analyzeTrialEconomics(scenario({eligibleRates:rates}));
+ for(const netRevenueMicros of [0,99999,100000,999999999]){
+  const result=analyzeTrialEconomics(scenario({eligibleRates:rates.map(r=>({...r,netRevenueMicros}))}));
+  assert.deepEqual(result,baseline);
+  assert.equal(result.launchApproved,false);
+  assert.equal(result.status,'SCENARIO_ONLY');
+ }
 });
 test('missing currency, duplicate rates, garbage price and zero provider cost block launch',()=>{
  assert.equal(analyzeTrialEconomics(scenario({currency:'usd/usd'})).reason,'INVALID_CURRENCY');
