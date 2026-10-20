@@ -6,6 +6,7 @@ import {installGenerationBilling} from './generation-billing.js';
 import {installGenerationTemplates} from './generation-templates.js';
 import {installInspiration} from './generation-inspiration.js';
 import {installOnboarding} from './generation-onboarding.js';
+import {installGenerationConsent} from './generation-consent.js';
 import {pool as generationPool} from './db.js';
 import {installSpeech} from './speech.js';
 import {installTelegramBot} from './telegram.js';
@@ -184,6 +185,7 @@ const generationBilling=installGenerationBilling(app,{auth,pool:generationPool,s
 installGenerationTemplates(app,{auth,pool:generationPool});
 installInspiration(app,{auth,pool:generationPool});
 installOnboarding(app,{auth,pool:generationPool});
+installGenerationConsent(app,{auth,pool:generationPool});
 const generationStudio=installGenerationStudio(app,{auth,pool:generationPool,wallet:generationBilling.wallet});
 installProductWatcher(app,{auth,pool:generationPool});
 // Opt-in platform entry. Legacy auth/payment returns retain their existing handler.
