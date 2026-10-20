@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(panel.id==='modelDialog')$('modelDialogTitle').textContent={image:text('Picture model','Модель изображения'),video:text('Video model','Модель видео'),music:text('Audio model','Модель аудио')}[kind];
   if(panel.id==='settingsDialog')$('settingsDialogTitle').textContent={image:text('Image settings','Настройки изображения'),video:text('Video settings','Настройки видео'),music:text('Audio settings','Настройки аудио')}[kind];
   anchor.setAttribute('aria-expanded','true');
-  requestAnimationFrame(()=>{position(panel,anchor);if(panel===$('modelDialog'))decorateModels();if(panel===$('settingsDialog'))syncSettings();});
+  requestAnimationFrame(()=>{if(panel===$('modelDialog'))decorateModels();if(panel===$('settingsDialog'))syncSettings();position(panel,anchor);});
  }
  function openTypes(){prepare(menu,picker);if(!menu.open)menu.showModal();position(menu,picker);}
  picker.addEventListener('click',openTypes);
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  function syncDuration(){const options=[...duration.options];range.max=String(Math.max(0,options.length-1));range.value=String(Math.max(0,options.findIndex(o=>o.value===duration.value)));range.disabled=duration.disabled||options.length<2;output.value=options[Number(range.value)]?.textContent||'';}
  range.addEventListener('input',()=>{const option=duration.options[Number(range.value)];if(!option)return;duration.value=option.value;duration.dispatchEvent(new Event('change',{bubbles:true}));syncDuration();});
  new MutationObserver(syncDuration).observe(duration,{subtree:true,childList:true,attributes:true});duration.addEventListener('change',syncDuration);
- function syncSettings(){settingsSync.forEach(sync=>sync());syncDuration();}
+ function syncSettings(){ratioTitle.hidden=$('ratioLabel').hidden||!$('ratio').options.length;$('ratioChoices').hidden=ratioTitle.hidden;settingsSync.forEach(sync=>sync());syncDuration();}
  const reset=document.createElement('button');reset.type='button';reset.className='composer-settings-reset';reset.textContent=text('↻ Reset','↻ Сбросить');
  reset.addEventListener('click',()=>{for(const id of ['ratio','imageResolution','videoResolution','videoDuration']){const select=$(id);if(select.disabled||select.closest('[hidden]'))continue;const option=[...select.options].find(o=>!o.disabled);if(option){select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));}}syncSettings();reposition();});
  $('settingsDialog').querySelector('.dialog-head').insertBefore(reset,$('settingsDialog').querySelector('[data-close]'));
