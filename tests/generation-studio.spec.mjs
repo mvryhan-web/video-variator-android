@@ -52,6 +52,7 @@ test('AI privacy choice can be reopened, revoked, and re-enabled after initial c
  const cfg={enabled:true,models:[{kind:'image',id:'fixture',label:'Fixture',provider:'Google',adapter:true,ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',provider:'Google',adapter:true,ratios:['1:1'],references:0,enabled:true}]};
  await page.route('**/api/studio/config',route=>route.fulfill({json:cfg}));
  await page.goto('/generate-studio.html?studio=image');
+ await page.locator('#prompt').fill('Consent lifecycle fixture');
  await expect(page.locator('#generate')).toBeEnabled();
  await page.locator('#manageAiConsent').click();await expect(page.locator('.ds-consent-modal')).toBeVisible();
  await expect(page.locator('.ds-consent-modal input[type=checkbox]').nth(0)).toBeChecked();
