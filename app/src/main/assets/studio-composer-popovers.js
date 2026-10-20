@@ -54,6 +54,14 @@ document.addEventListener('DOMContentLoaded',()=>{
  for(const [id,anchorId] of [['modelDialog','modelButton'],['settingsDialog','settingsButton']]){
   const panel=$(id),anchor=$(anchorId);
   anchor.addEventListener('click',()=>prepare(panel,anchor),{capture:true});
+  // The Studio's original click handler calls showModal() and measures the
+  // dialog in the same event. Run after that handler too: native dialog
+  // layout can still report the temporary (0, 0) position during capture.
+  anchor.addEventListener('click',()=>{
+   const place=()=>requestAnimationFrame(reposition);
+   setTimeout(place,0);
+   requestAnimationFrame(()=>requestAnimationFrame(reposition));
+  });
  }
  for(const panel of [menu,$('modelDialog'),$('settingsDialog')]){
   panel.addEventListener('close',()=>{const anchor=panel===menu?picker:$(panel.id==='modelDialog'?'modelButton':'settingsButton');anchor?.setAttribute('aria-expanded','false');if(activePanel===panel){activePanel=null;activeAnchor=null;}});
