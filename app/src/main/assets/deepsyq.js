@@ -456,14 +456,20 @@ async function loadRecentCreations(){
   else if(epoch===recentCreationsEpoch)clearRecentCreations(recentAccountChanged);
  }
 }
+// A stale credit balance must never render under a later account.
 async function loadAIWallet(){
  const chip=$('aiWalletLink');if(!chip)return;
- if(!localStorage.getItem('vv_token')){chip.hidden=true;return;}
+ const requestedToken=localStorage.getItem('vv_token');
+ const isCurrent=()=>!!requestedToken&&requestedToken===localStorage.getItem('vv_token');
+ if(!requestedToken){chip.hidden=true;return;}
  try{
-  const [billing,welcome]=await Promise.all([api('/api/ai-billing/config').catch(()=>({enabled:false})),api('/api/ai-wallet/config').catch(()=>({welcomeEnabled:false}))]);if(!billing.enabled&&!welcome.welcomeEnabled){chip.hidden=true;return;}
-  const balance=await api('/api/ai-wallet/balance');const available=Number(balance.available||0),reserved=Number(balance.reserved||0),debt=Number(balance.debt||0);
+  const [billing,welcome]=await Promise.all([api('/api/ai-billing/config').catch(()=>({enabled:false})),api('/api/ai-wallet/config').catch(()=>({welcomeEnabled:false}))]);
+  if(!isCurrent()||(!billing.enabled&&!welcome.welcomeEnabled)){chip.hidden=true;return;}
+  const balance=await api('/api/ai-wallet/balance');
+  if(!isCurrent()){chip.hidden=true;return;}
+  const available=Number(balance.available||0),reserved=Number(balance.reserved||0),debt=Number(balance.debt||0);
   $('aiWalletAvailable').textContent=available.toLocaleString();$('aiWalletHeld').textContent=debt>0?`${debt.toLocaleString()} debt`:reserved>0?`${reserved.toLocaleString()} held`:'available';chip.dataset.debt=String(debt>0);chip.hidden=false;
- }catch(_){chip.hidden=true;}
+ }catch(_){if(isCurrent())chip.hidden=true;}
 }
 
 let onboardingModalOwnerToken=null;
@@ -553,5 +559,50 @@ document.addEventListener('visibilitychange',()=>{
 document.querySelectorAll('[data-close-onboarding]').forEach(b=>b.onclick=dismissOnboarding);
 $('onboardingLater').onclick=dismissOnboarding;
 
-if(localStorage.getItem('vv_token'))try{const {user}=await api('/api/me');$('accountLabel').textContent=user.name||'Your workspace';$('accountButton').textContent='Account settings';$('accountButton').onclick=()=>location.assign('index.html#profile');$('logout').hidden=false;if(user.isAdmin&&!document.getElementById('adminAiControl')){const a=document.createElement('a');a.id='adminAiControl';a.href='deepsyq-admin.html';a.textContent='Owner AI Control';document.querySelector('.sidebar-bottom').prepend(a);}await Promise.all([maybeShowOnboarding(),loadAIWallet(),loadRecentCreations()]);}catch(e){if(e.message==='INVALID_SESSION'||e.message==='USER_NOT_FOUND'){localStorage.removeItem('vv_token');localStorage.removeItem('deepsyq_onboarding_pending');}}
+// Bind the displayed identity to the exact authenticated token that /api/me
+// answered. Same-tab changes do not dispatch the storage event.
+let dashboardAccountOwnerToken=null;
+function scrubStaleDashboardAccount(){
+ if(!dashboardAccountOwnerToken||dashboardAccountOwnerToken===localStorage.getItem('vv_token'))return false;
+ dashboardAccountOwnerToken=null;
+ $('accountLabel').textContent='Your workspace';
+ $('accountButton').textContent='Reload for current account';
+ $('accountButton').onclick=()=>location.reload();
+ $('logout').hidden=true;
+ document.getElementById('adminAiControl')?.remove();
+ const chip=$('aiWalletLink');if(chip){chip.hidden=true;chip.removeAttribute('data-debt');}
+ return true;
+}
+document.addEventListener('click',event=>{
+ const stale=!!dashboardAccountOwnerToken&&dashboardAccountOwnerToken!==localStorage.getItem('vv_token');
+ if(stale){
+  const protectedAction=!!event.target?.closest?.('#adminAiControl,#aiWalletLink,#accountButton,#logout');
+  scrubStaleDashboardAccount();
+  if(protectedAction){event.preventDefault();event.stopImmediatePropagation();}
+ }
+},true);
+for(const type of ['keydown','focusin'])document.addEventListener(type,scrubStaleDashboardAccount,true);
+window.addEventListener('focus',scrubStaleDashboardAccount);
+window.addEventListener('storage',event=>{if(event.key==='vv_token')scrubStaleDashboardAccount();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)scrubStaleDashboardAccount();});
+const requestedIdentityToken=localStorage.getItem('vv_token');
+if(requestedIdentityToken)try{
+ const {user}=await api('/api/me');
+ if(requestedIdentityToken===localStorage.getItem('vv_token')){
+  dashboardAccountOwnerToken=requestedIdentityToken;
+  $('accountLabel').textContent=user.name||'Your workspace';
+  $('accountButton').textContent='Account settings';
+  $('accountButton').onclick=()=>location.assign('index.html#profile');
+  $('logout').hidden=false;
+  if(user.isAdmin&&!document.getElementById('adminAiControl')){
+   const a=document.createElement('a');a.id='adminAiControl';a.href='deepsyq-admin.html';a.textContent='Owner AI Control';document.querySelector('.sidebar-bottom').prepend(a);
+  }
+  await Promise.all([maybeShowOnboarding(),loadAIWallet(),loadRecentCreations()]);
+ }
+}catch(e){
+ if(requestedIdentityToken===localStorage.getItem('vv_token')&&
+  (e.message==='INVALID_SESSION'||e.message==='USER_NOT_FOUND')){
+  localStorage.removeItem('vv_token');localStorage.removeItem('deepsyq_onboarding_pending');
+ }
+}
 if(new URLSearchParams(location.search).get('checkout')==='success')$('paymentStatus').textContent='Your checkout has returned. Access is updated only after Stripe confirms payment. Open your account to see its current status.';
