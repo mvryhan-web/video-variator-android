@@ -8,7 +8,7 @@ test('all twenty site pages share owner-approved palette; standalone/owner shell
  for(const page of pages)assert.ok(read(page).includes('deepsyq-global-theme.css'),page);
  for(const page of pages){const useShell=read(page).includes('deepsyq-site-shell.js');assert.equal(useShell,!['deepsyq.html','index.html','deepsyq-admin.html','telegram-free-mini.html','product-watcher-admin.html'].includes(page),page+' shell mismatch');}
  assert.ok(read('deepsyq.html').includes('hero-stage-cinematic'));
- assert.ok(read('deepsyq.html').includes('<meta name="robots" content="index,follow">'));
+ assert.ok(read('deepsyq.html').includes('<meta name="robots" content="noindex,follow">'));
  assert.ok(read('deepsyq.html').includes('home-feature-triptych'));
  assert.ok(read('deepsyq.html').includes('home-hero-recommended'));
  assert.ok(existsSync(new URL('deepsyq-logo.png',assets)));
@@ -84,4 +84,15 @@ test('Stripe and Android auth returns keep the legacy handler with Home enabled'
 
 test('explicit dashboard remains available without changing the default root',()=>{
  assert.equal(inspectHomeRoute('/dashboard').sent,'/assets/deepsyq.html');
+});
+
+
+test('introductory offer stays disabled without unapproved credit or duration promises',()=>{
+ const pricing=read('ai-pricing.html');
+ const trial=pricing.slice(pricing.indexOf('<section id="trialOffer"'),pricing.indexOf('</section>',pricing.indexOf('<section id="trialOffer"')));
+ assert.ok(trial.includes('$0.99'));
+ assert.match(trial,/<button[^>]*disabled/);
+ assert.ok(!/three days|3-day|no auto-renewal|being calculated|being finalized/i.test(trial));
+ const m=JSON.parse(read('media/home/owner-20261018/manifest.json'));
+ for(const slug of m.carouselOrder)assert.equal(m.items.find(item=>item.slug===slug).defaultSettings.homeShowcase.title,'Sample video, created in Google Flow');
 });
