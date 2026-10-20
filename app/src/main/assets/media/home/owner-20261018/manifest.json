@@ -30,8 +30,8 @@
         "ownerSceneId": "carousel-1",
         "creationProvider": "Google Flow",
         "homeShowcase": {
-          "title": "Sample video, created in Google Flow",
-          "label": "FEATURED VIDEO",
+          "title": "AI Canvas",
+          "label": "CREATIVE WORKSPACE",
           "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio.",
           "href": "#quickCreateForm"
         }
@@ -46,7 +46,7 @@
       "sourceSha256": "fd3d92f0a8197821ca9c3c443170b33c6552557b14156c84582b008a697e1fad",
       "sha256": "5f16283ff63b27dee7143d4edb7b81af99c7e687d09c21057d4a2ccb59ebd86a",
       "sizeBytes": 4172380,
-      "durationSeconds": 8.0,
+      "durationSeconds": 8,
       "videoStreamUnchanged": true,
       "audioTracks": 0,
       "carouselOrder": 1
@@ -67,8 +67,8 @@
         "ownerSceneId": "carousel-2",
         "creationProvider": "Google Flow",
         "homeShowcase": {
-          "title": "Sample video, created in Google Flow",
-          "label": "FEATURED VIDEO",
+          "title": "Seedance 2.0",
+          "label": "EXPLORE VIDEO MODELS",
           "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio.",
           "href": "generate-studio.html?studio=video"
         }
@@ -83,7 +83,7 @@
       "sourceSha256": "de14920f2989b8e4d007d2481db3d88405afc97302533922f45f765d9a3892fd",
       "sha256": "ae3a0f54a05fa5f93671257817d89746b1343b2cab853818b647fc932c3ce1a7",
       "sizeBytes": 9284531,
-      "durationSeconds": 8.0,
+      "durationSeconds": 8,
       "videoStreamUnchanged": true,
       "audioTracks": 0,
       "carouselOrder": 2
@@ -104,8 +104,8 @@
         "ownerSceneId": "carousel-3",
         "creationProvider": "Google Flow",
         "homeShowcase": {
-          "title": "Sample video, created in Google Flow",
-          "label": "FEATURED VIDEO",
+          "title": "Seedance 2.5",
+          "label": "EXPLORE VIDEO MODELS",
           "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio.",
           "href": "generate-studio.html?studio=video"
         }
@@ -120,7 +120,7 @@
       "sourceSha256": "eac80cbb3f21c5b910bb01f9a3dd005c4a0ee3647818b749b041499fdc48c6ef",
       "sha256": "7191ae844de9f44151484162828ae3d33ab7fde65ad70fb4a91f434e988e5707",
       "sizeBytes": 6740745,
-      "durationSeconds": 8.0,
+      "durationSeconds": 8,
       "videoStreamUnchanged": true,
       "audioTracks": 0,
       "carouselOrder": 3
@@ -141,8 +141,8 @@
         "ownerSceneId": "carousel-4",
         "creationProvider": "Google Flow",
         "homeShowcase": {
-          "title": "Sample video, created in Google Flow",
-          "label": "FEATURED VIDEO",
+          "title": "Video Studio",
+          "label": "CREATE WITH DEEPSYQ",
           "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio.",
           "href": "generate-studio.html?studio=video"
         }
@@ -157,7 +157,7 @@
       "sourceSha256": "579abcfae8a1ccf70c95da3bf8b93bfc30c8fa15bb92774435e1dc43493e03f0",
       "sha256": "99e47b20fd2416dbcb278ecc56cf258d2c4beeca90c36bbda0289f7df75fb31a",
       "sizeBytes": 12148378,
-      "durationSeconds": 8.0,
+      "durationSeconds": 8,
       "videoStreamUnchanged": true,
       "audioTracks": 0,
       "carouselOrder": 4
@@ -178,8 +178,8 @@
         "ownerSceneId": "carousel-5",
         "creationProvider": "Google Flow",
         "homeShowcase": {
-          "title": "Sample video, created in Google Flow",
-          "label": "FEATURED VIDEO",
+          "title": "AI Agent",
+          "label": "CREATIVE CO-PILOT · COMING SOON",
           "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio.",
           "href": "#agentFeature"
         }
@@ -194,7 +194,7 @@
       "sourceSha256": "9a0be3d15bd16a9ee66982c83895fab57cf380777ab10641ff8ae550eeab8f30",
       "sha256": "0e441812faa6020f6df74e719605c64230ae8b944f9523d8b0f890ffe9384c19",
       "sizeBytes": 11679517,
-      "durationSeconds": 8.0,
+      "durationSeconds": 8,
       "videoStreamUnchanged": true,
       "audioTracks": 0,
       "carouselOrder": 5
@@ -215,8 +215,8 @@
         "ownerSceneId": "carousel-6",
         "creationProvider": "Google Flow",
         "homeShowcase": {
-          "title": "Sample video, created in Google Flow",
-          "label": "FEATURED VIDEO",
+          "title": "Image Studio",
+          "label": "CREATE WITH DEEPSYQ",
           "note": "Feature showcase title, not source attribution. This sample video was created in Google Flow. Available models are shown in Studio.",
           "href": "generate-studio.html?studio=image"
         }
@@ -262,7 +262,7 @@
       "sourceSha256": "a211ccfcbc68f2bab59cc78d63a3bfbab6f934026d2d51ef50fa11967b403330",
       "sha256": "6574243a262ea5d8bf10ae857dac4d0a34c2b64e141b2578113fb9f6df82455c",
       "sizeBytes": 8116525,
-      "durationSeconds": 8.0,
+      "durationSeconds": 8,
       "videoStreamUnchanged": true,
       "audioTracks": 0,
       "carouselOrder": null
