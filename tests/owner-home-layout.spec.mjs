@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 const bundle=JSON.parse(await readFile(new URL('../app/src/main/assets/media/home/owner-20261018/manifest.json',import.meta.url)));
 async function home(page){
- await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}},googleClientId:'',billingConfigured:false,features:{inspiration:true,aiApps:false,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}},googleClientId:'',billingConfigured:false,features:{inspiration:true,aiApps:false,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:new URL(r.request().url()).searchParams.get('target')==='agent'?[]:bundle.items.filter(x=>x.featured),categories:['Cinematic']}}));
  await page.goto('/deepsyq.html');
@@ -74,4 +74,14 @@ test('Owner neon layout: a stuck startup clock retries the same film and respect
  const stopped=await page.evaluate(()=>window.__mainPlays);
  await page.waitForTimeout(2200); // deliberate: prove a queued 1800ms retry stays cancelled
  expect(await page.evaluate(()=>window.__mainPlays)).toBe(stopped);
+});
+
+// Owner-cancelled standalone BASE #20 must never be served or promoted by visual preview.
+test('retired Product Video URLs return 404 and do not appear in navigation',async({page,request})=>{
+ await home(page);
+ await expect(page.locator('a[href*="product-video"]')).toHaveCount(0);
+ for(const path of ['/product-video','/product-video.html']){
+  const response=await request.get(path);
+  expect(response.status(),path).toBe(404);
+ }
 });
