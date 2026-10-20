@@ -133,3 +133,75 @@ test('BASE1-D5 existing batch image per-item credit contract is left intact',asy
  assert.equal(t.counters.walletReserve,1);
  assert.equal(t.counters.providerDispatch,1);
 });
+
+
+// D7: exercise the genuine B single-create event handler, not a mock clone.
+// All estimate/job responses and checkout/provider actions are local stubs.
+// A mismatch or mutation must abort BEFORE POST; successful batch tests above
+// remain wholly unchanged.
+function clientSubmitProbe({quoteModel='fixture-model',mutateModelAfterEstimate=false}={}){
+ const ui=new Map();
+ const field=(id)=>{
+  if(!ui.has(id)){
+   const values={generate:{disabled:false},ratio:{value:'1:1'},
+    imageResolution:{value:'2K'},imageOutputFormat:{value:'png'},
+    musicMode:{value:'song'},videoResolution:{value:'720p'},
+    videoDuration:{value:'8'},videoInputMode:{value:'text'},
+    prompt:{value:'Synthetic prompt with no real input data'},
+    consent:{checked:true},status:{textContent:''}};
+   ui.set(id,values[id]||{value:''});
+  }
+  return ui.get(id);
+ };
+ const calls={estimate:0,post:0,submitted:[]};
+ const first=client.indexOf("$('creator').onsubmit=async e=>{");
+ const last=client.indexOf('// Continue from an existing image',first);
+ assert.ok(first>=0&&last>first,'Extract the actual single-create handler from B client source');
+ const singleHandler=client.slice(first,last);
+ let accepted=0;
+ const scope={
+  $:field,kind:'image',modelId:'fixture-model',refs:[],busy:false,
+  generation:0,job:null,config:{imageBatchEnabled:true},
+  catalog:[{id:'fixture-model',label:'Approved Fixture Model'},
+   {id:'wrong-model',label:'Different model with identical AI credit price'}],
+  imageBatchQuantity:()=>1,
+  availability:()=>{},setHistory:()=>{},clearResult:()=>{},
+  updateJobProgress:()=>{},watch:async()=>{},say:s=>s,
+  confirm:()=>{accepted++;return true;},
+  crypto:{randomUUID:()=> 'e64cd4ba-67c2-46a2-ade6-2d98c7e00e88'},
+  sessionStorage:{setItem:()=>{}},
+  api:async(url,init={})=>{
+   if(url==='/api/studio/estimate'){
+    calls.estimate++;
+    const input=JSON.parse(init.body);
+    assert.equal(input.model,'fixture-model','quote must initially address clicked model');
+    if(mutateModelAfterEstimate)scope.modelId='wrong-model';
+    return {json:async()=>({kind:'image',model:quoteModel,credits:7,
+      perImageCredits:7,quantity:1})};
+   }
+   if(url==='/api/studio/jobs'){
+    calls.post++;calls.submitted.push(JSON.parse(init.body));
+    return {json:async()=>({id:'fake-no-cost-job',status:'processing',creditsReserved:7})};
+   }
+   throw Error('NO_UNEXPECTED_NETWORK_OR_PAYMENT');
+  }
+ };
+ vm.runInNewContext(singleHandler,scope,{timeout:1500,filename:'real-studio-single-submit.js'});
+ const trigger=field('creator').onsubmit;
+ assert.equal(typeof trigger,'function');
+ return {run:async()=>trigger({preventDefault(){}}),calls,accepted};
+}
+
+test('BASE1-D7 estimate for DIFFERENT model cannot be confirmed and sent to another model',async()=>{
+ const h=clientSubmitProbe({quoteModel:'wrong-model'});
+ await h.run();
+ assert.equal(h.calls.estimate,1);
+ assert.equal(h.calls.post,0,'mismatched server model must never submit a paid job');
+});
+
+test('BASE1-D7 state changed while awaiting fresh estimate cannot reuse old accepted quote',async()=>{
+ const h=clientSubmitProbe({mutateModelAfterEstimate:true});
+ await h.run();
+ assert.equal(h.calls.estimate,1);
+ assert.equal(h.calls.post,0,'changed model cannot be submitted using original quote');
+});
