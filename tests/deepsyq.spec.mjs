@@ -105,7 +105,7 @@ test('Canvas saves only text and kind within this tab; refresh drops photos and 
  let jobPosts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')jobPosts++;});
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
  await page.goto('/deepsyq.html');
- await page.locator('#quickCreatePrompt').fill('A very specific personal product video idea');
+ await page.locator('#quickCreatePrompt').fill('A very specific personal video idea');
  await page.locator('#quickCreateKind').selectOption('video');
  await page.locator('#quickCreateFiles').setInputFiles({name:'private-photo.png',mimeType:'image/png',buffer:png});
  await expect(page.locator('.quick-reference')).toHaveCount(1);
@@ -113,13 +113,13 @@ test('Canvas saves only text and kind within this tab; refresh drops photos and 
  // for the real local write before testing a hard refresh.
  await expect.poll(()=>page.evaluate(()=>Object.keys(sessionStorage)
   .filter(key=>key.startsWith('deepsyq_quick_canvas_draft_v2_'))
-  .some(key=>JSON.parse(sessionStorage.getItem(key)||'null')?.prompt==='A very specific personal product video idea'))).toBe(true);
+  .some(key=>JSON.parse(sessionStorage.getItem(key)||'null')?.prompt==='A very specific personal video idea'))).toBe(true);
  await page.reload();
- await expect(page.locator('#quickCreatePrompt')).toHaveValue('A very specific personal product video idea');
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('A very specific personal video idea');
  await expect(page.locator('#quickCreateKind')).toHaveValue('video');
  await expect(page.locator('.quick-reference')).toHaveCount(0);
  page.once('dialog',d=>d.dismiss());await page.locator('#quickCreateClear').click();
- await expect(page.locator('#quickCreatePrompt')).toHaveValue('A very specific personal product video idea');
+ await expect(page.locator('#quickCreatePrompt')).toHaveValue('A very specific personal video idea');
  page.once('dialog',d=>d.accept());await page.locator('#quickCreateClear').click();
  await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
  await expect(page.locator('#quickCreateKind')).toHaveValue('image');
@@ -245,15 +245,9 @@ test('AI Apps shows only active API templates and prepares Studio without genera
 });
 
 
-test('Product Video keeps references local until Studio review and never auto-generates',async({page})=>{
- await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,models:[{kind:'video',id:'video-fixture',label:'Video Fixture',ratios:['16:9','9:16','1:1'],references:2,enabled:true}],catalog:[{kind:'video',id:'video-fixture',label:'Video Fixture',ratios:['16:9','9:16','1:1'],references:2,enabled:true,adapter:true,provider:'Google',duration:'8 seconds'}]}}));
- let jobPosts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')jobPosts++;});await page.goto('/product-video.html');const img=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAG0lEQVR4nGNgYPh/4j8Dw384jcJh+H+CgaAKAPRlHinUv26iAAAAAElFTkSuQmCC','base64');await page.locator('#photos').setInputFiles({name:'product.png',mimeType:'image/png',buffer:img});await page.locator('#productName').fill('Luna Bag');await page.locator('#style').selectOption('cinematic');await page.locator('#ratio').selectOption('9:16');await expect(page.locator('#promptPreview')).toHaveValue(/Luna Bag/);await expect(page.locator('#promptPreview')).toHaveValue(/cinematic/);await page.locator('#continue').click();await expect(page).toHaveURL(/generate-studio\.html\?studio=video/);await expect(page.locator('#prompt')).toHaveValue(/Luna Bag/);await expect(page.locator('#ratio')).toHaveValue('9:16');await expect(page.locator('#refPreview img')).toHaveCount(1);await expect(page.locator('#consent')).not.toBeChecked();expect(jobPosts).toBe(0);
-});
-
-
 test('dashboard featured workflows are data-driven and disappear when empty',async({page})=>{
  await fixtures(page);
- await page.route('**/api/config',r=>r.fulfill({json:{googleClientId:'',appleClientId:'',emailAuth:true,billingConfigured:false,features:{aiApps:true,productVideo:true,onboarding:true},plans:{}}}));
+ await page.route('**/api/config',r=>r.fulfill({json:{googleClientId:'',appleClientId:'',emailAuth:true,billingConfigured:false,features:{aiApps:true,onboarding:true},plans:{}}}));
  await page.route('**/api/templates?featured=true',r=>r.fulfill({json:{items:[{id:'f1',title:'Owner Featured Workflow',slug:'owner-featured',category:'ecommerce',description:'Approved workflow',thumbnail:null,generationType:'image',active:true,featured:true}]}}));
  await page.goto('/deepsyq.html');await expect(page.locator('#featuredWorkflows')).toBeVisible();await expect(page.locator('#featuredWorkflowGrid')).toContainText('Owner Featured Workflow');
 });
@@ -340,12 +334,12 @@ test('Inspiration ignores stale filter responses and keeps the latest search res
 });
 
 test('dashboard inspiration preview is data-driven and hides Agent examples when none are connected',async({page})=>{
- await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));await page.route('**/api/inspiration**',r=>{const u=new URL(r.request().url());if(u.searchParams.get('target')==='agent')return r.fulfill({json:{items:[],categories:[]}});return r.fulfill({json:{items:[{id:'f1',title:'Owned Video Mood',slug:'owned-video-mood',kind:'video',category:'Cinematic',description:'Original example',previewUrl:'/owned.mp4',previewPosterUrl:null,prompt:'Cinematic scene',defaultModel:null,aspectRatio:'16:9',requiredInputTypes:[],defaultSettings:{ratio:'16:9'},actionTarget:'studio',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false,nextOffset:null}}});});await page.goto('/deepsyq.html');await expect(page.locator('#inspirationPreview')).toBeVisible();await expect(page.locator('#inspirationPreviewGrid')).toContainText('Owned Video Mood');await expect(page.locator('#inspirationPreviewCategories')).toContainText('Cinematic');await expect(page.locator('#inspirationPreviewCategories a')).toHaveAttribute('href','inspiration.html?category=Cinematic');await expect(page.locator('#inspirationPreviewGrid a').first()).toHaveAttribute('href',/inspiration\.html\?kind=video.*category=Cinematic.*ratio=16%3A9.*q=Owned%20Video%20Mood/);await expect(page.locator('#agentExamples')).toBeHidden();
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,onboarding:false}}}));await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));await page.route('**/api/inspiration**',r=>{const u=new URL(r.request().url());if(u.searchParams.get('target')==='agent')return r.fulfill({json:{items:[],categories:[]}});return r.fulfill({json:{items:[{id:'f1',title:'Owned Video Mood',slug:'owned-video-mood',kind:'video',category:'Cinematic',description:'Original example',previewUrl:'/owned.mp4',previewPosterUrl:null,prompt:'Cinematic scene',defaultModel:null,aspectRatio:'16:9',requiredInputTypes:[],defaultSettings:{ratio:'16:9'},actionTarget:'studio',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false,nextOffset:null}}});});await page.goto('/deepsyq.html');await expect(page.locator('#inspirationPreview')).toBeVisible();await expect(page.locator('#inspirationPreviewGrid')).toContainText('Owned Video Mood');await expect(page.locator('#inspirationPreviewCategories')).toContainText('Cinematic');await expect(page.locator('#inspirationPreviewCategories a')).toHaveAttribute('href','inspiration.html?category=Cinematic');await expect(page.locator('#inspirationPreviewGrid a').first()).toHaveAttribute('href',/inspiration\.html\?kind=video.*category=Cinematic.*ratio=16%3A9.*q=Owned%20Video%20Mood/);await expect(page.locator('#agentExamples')).toBeHidden();
 });
 
 
 test('featured owned video is promoted but original homepage sections and images remain',async({page})=>{
- await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  const common={description:'Original',defaultModel:null,requiredInputTypes:[],defaultSettings:{},actionTarget:'studio',active:true,featured:true};
@@ -373,7 +367,7 @@ test('featured owned video is promoted but original homepage sections and images
 test('approved video appears in the real homepage hero but does not erase Canvas or original sections',async({page})=>{
  // Navigation/media-element assertions are separate from serving real MP4 bytes.
  await page.addInitScript(()=>{HTMLMediaElement.prototype.load=function(){};HTMLMediaElement.prototype.pause=function(){};HTMLMediaElement.prototype.play=function(){return Promise.resolve();};});
- await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'approved-film',title:'Original mountain film',slug:'original-mountain-film',kind:'video',category:'Cinematic',actionTarget:'studio',previewUrl:'/owner-owned-film.mp4',previewPosterUrl:'/owner-owned-poster.jpg',aspectRatio:'16:9',prompt:'Cinematic natural camera movement',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false}}}));
@@ -399,7 +393,7 @@ test('video carousel switches only among owner-approved videos and retains exist
   HTMLMediaElement.prototype.play=function(){return Promise.resolve();};
   HTMLMediaElement.prototype.pause=function(){};
  });
- await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  const shared={category:'Cinematic',actionTarget:'studio',aspectRatio:'16:9',active:true,featured:true};
@@ -432,7 +426,7 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
   HTMLMediaElement.prototype.play=function(){return Promise.resolve();};
   HTMLMediaElement.prototype.pause=function(){};
  });
- await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  const common={actionTarget:'studio',category:'Cinematic',aspectRatio:'16:9',featured:true,active:true};
@@ -462,7 +456,7 @@ test('reduced-motion users get a manual Play button for genuine videos',async({p
   HTMLMediaElement.prototype.pause=function(){};
  });
  await page.emulateMedia({reducedMotion:'reduce'});
- await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'clip',title:'Approved original clip',kind:'video',previewUrl:'/approved.mp4',actionTarget:'studio',category:'Cinematic',aspectRatio:'16:9'}],categories:['Cinematic'],ratios:['16:9']}}));
@@ -473,7 +467,7 @@ test('reduced-motion users get a manual Play button for genuine videos',async({p
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
 });
 test('Home Quick Create hands off Audio and Video prompts to existing Studio without AI jobs',async({page})=>{
- await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:false,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:false,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  let posts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')posts++;});
@@ -493,7 +487,7 @@ test('Home Quick Create hands off Audio and Video prompts to existing Studio wit
  expect(posts).toBe(0);
 });
 test('Home Quick Create hands off an unpaid draft and Agent remains a preview',async({page})=>{
- await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:false,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:false,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  let posts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
@@ -512,7 +506,7 @@ test('Home Quick Create hands off an unpaid draft and Agent remains a preview',a
  expect(posts).toBe(0);
 });
 test('dashboard never fabricates a featured hero when only approved images exist',async({page})=>{
- await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'still',title:'Owned castle still',kind:'image',category:'Cinematic',actionTarget:'studio',previewUrl:'/castle.png',aspectRatio:'16:9',prompt:'Original castle',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9']}}));
@@ -567,7 +561,7 @@ test('all three Block 3 actions preserve their intended prefill semantics withou
 
 
 test('Block 3 Agent examples stay hidden until a real configured route exists',async({page})=>{
- await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,productVideo:false,onboarding:false}}}));await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,onboarding:false}}}));await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  const agent={id:'agent-1',title:'Campaign Builder',slug:'campaign-builder',kind:'video',category:'Campaign',description:'Prepare a campaign workflow',previewUrl:'/agent.webp',previewPosterUrl:null,prompt:'Build a social campaign',defaultModel:null,aspectRatio:'9:16',requiredInputTypes:['image'],defaultSettings:{ratio:'9:16'},actionTarget:'agent',actionPath:'/agent-test.html',active:true,featured:true};
  await page.route('**/api/inspiration**',r=>{const u=new URL(r.request().url());return r.fulfill({json:u.searchParams.get('target')==='agent'?{items:[agent],categories:['Campaign'],ratios:['9:16']}:{items:[],categories:[],ratios:[]}});});
  await page.route('**/agent-test.html**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Agent test</title><h1>Agent test</h1>'}));
@@ -605,7 +599,7 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
 });
 test('homepage inspiration All Image Video filters only owned API cards',async({page})=>{
- await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:true,inspiration:true,productVideo:false,onboarding:false}}}));
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:true,inspiration:true,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'i',title:'Existing image',kind:'image',previewUrl:'/owned.png',category:'Editorial',aspectRatio:'1:1',actionTarget:'studio'},{id:'v',title:'Existing video',kind:'video',previewUrl:'/owned.mp4',category:'Cinematic',aspectRatio:'16:9',actionTarget:'studio'}],categories:['Editorial','Cinematic']}}));
  await page.goto('/deepsyq.html');
