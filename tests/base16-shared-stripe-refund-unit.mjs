@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {hasAiWalletRefundMarker,installGenerationBilling} from '../server/generation-billing.js';
 
 const refund=({aiMarked=false,livemode=false,chargeLive=livemode}={})=>({
- id:'evt_refund_fixture',type:'charge.refunded',livemode,data:{object:{
-  id:'ch_refund_fixture',livemode:chargeLive,payment_intent:'pi_unrelated',amount_refunded:200,
+ id:'evt_refundfixture',type:'charge.refunded',livemode,data:{object:{
+  id:'ch_refundfixture',livemode:chargeLive,payment_intent:'pi_unrelated',amount_refunded:200,
   metadata:aiMarked?{aiWallet:'v1'}:{legacyPlan:'basic'}
  }}
 });

@@ -121,7 +121,7 @@ test('BASE #16: a signed, paid invoice grants once per invoice on disposable Pos
   let refundSeq=0;
   const refund=(paymentIntent,cumulative)=>({
    id:'evt_refund'+(++refundSeq),type:'charge.refunded',livemode:false,data:{object:{
-    id:'ch_'+paymentIntent,livemode:false,payment_intent:paymentIntent,amount_refunded:cumulative
+    id:'ch_'+paymentIntent.slice(3),livemode:false,payment_intent:paymentIntent,amount_refunded:cumulative
    }}
   });
   // Pack checkout remains disabled; signed subscription invoice refunds are
