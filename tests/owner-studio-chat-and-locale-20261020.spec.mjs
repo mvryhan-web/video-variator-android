@@ -26,6 +26,19 @@ test('Language selected from Home persists to Studio navigation and translated c
  await expect(page.locator('#showHistory')).toHaveText('Mes résultats');
 });
 
+
+test('French device language is selected by default and static Studio copy is translated',async({page})=>{
+ await page.addInitScript(()=>{
+  localStorage.removeItem('deepsyq_home_language');
+  Object.defineProperty(navigator,'language',{configurable:true,value:'fr-FR'});
+ });
+ await page.goto('/generate-studio.html?studio=audio');
+ await expect(page.locator('html')).toHaveAttribute('lang','fr');
+ await expect(page.locator('#taskTitle')).toHaveText('Donnez vie à vos créations avec Deepsyq');
+ await expect(page.locator('[data-t="historyHint"]')).toHaveText('Vos résultats enregistrés apparaissent ici. Aucune génération ne démarre automatiquement.');
+ await expect(page.locator('[data-t="pilotNote"]')).toHaveText('Aperçu du studio. Les paiements ne sont pas activés.');
+});
+
 test('Existing Studio jobs become a private chat-like stream without submitting AI or Stripe requests',async({page})=>{
  await page.addInitScript(()=>{localStorage.setItem('vv_token','playwright-synthetic-session');});
  await page.route('**/api/studio/jobs?filter=all',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:[
