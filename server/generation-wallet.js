@@ -32,7 +32,7 @@ export class GenerationWallet {
           stripe_balance_transaction_id IS NOT NULL AND settlement_livemode IS NOT NULL AND
           processor_fee_amount>=0 AND tax_amount>=0 AND net_revenue_micros>0 AND
           amount::bigint>processor_fee_amount+tax_amount AND
-          net_revenue_micros=(amount::bigint-processor_fee_amount-tax_amount)*10000::bigint));
+          net_revenue_micros=(amount::bigint-processor_fee_amount-tax_amount)*10000::bigint)));
       ALTER TABLE vv_ai_purchase ADD COLUMN IF NOT EXISTS processor_fee_amount BIGINT;
       ALTER TABLE vv_ai_purchase ADD COLUMN IF NOT EXISTS tax_amount BIGINT;
       ALTER TABLE vv_ai_purchase ADD COLUMN IF NOT EXISTS net_revenue_micros BIGINT;
