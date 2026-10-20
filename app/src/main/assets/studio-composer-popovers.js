@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(panel.id==='modelDialog')$('modelDialogTitle').textContent={image:text('Picture model','Модель изображения'),video:text('Video model','Модель видео'),music:text('Audio model','Модель аудио')}[kind];
   if(panel.id==='settingsDialog')$('settingsDialogTitle').textContent={image:text('Image settings','Настройки изображения'),video:text('Video settings','Настройки видео'),music:text('Audio settings','Настройки аудио')}[kind];
   anchor.setAttribute('aria-expanded','true');
-  requestAnimationFrame(()=>{position(panel,anchor);if(panel===$('modelDialog'))decorateModels();if(panel===$('settingsDialog'))syncSettings();});
+  requestAnimationFrame(()=>{if(panel===$('modelDialog'))decorateModels();if(panel===$('settingsDialog'))syncSettings();position(panel,anchor);});
  }
  function openTypes(){prepare(menu,picker);if(!menu.open)menu.showModal();position(menu,picker);}
  picker.addEventListener('click',openTypes);
