@@ -1,3 +1,9 @@
+## COORDINATOR #5 — CYCLE 11.1 / 2026-10-20 — JULES2 W4.3 RETRY CONFIRMED
+
+Supersedes **only** C11's provisional Jules2 `DISPATCH_UNCONFIRMED` status, not its PR/head/CI snapshot or path leases. Same [Issue317](https://github.com/mvryhan-web/video-variator-android/issues/317#issuecomment-6293467416) now has a NEW authenticated Jules bot ACK: [task 15999298883849600168](https://jules.google.com/task/15999298883849600168). **Jules2 W4.3 ACTIVE**, not READY/merged; older FAILED_TO_CREATE_TASK was superseded by one controlled retry, no duplicate Issue/PR. Jules1 #316 and Jules3 #278 also ACTIVE at last check: three slots total. W4.3 allowed paths remain only `server/workspace-card-sections.js` and `tests/workspace-card-sections-unit.mjs`; verify future code targets DEV and excludes original DB. Coordinator docs/claim C11 commits `1008434b` and `4707cf0c`; actual DEV branch currently `4707cf0c619260de6ac0680396c22d2524854b69` (docs-only after original source SHA `7156e01c`). **Single next coordinator action unchanged:** owner PR324 final-HEAD Video CI, then PR323 serial source integration and B↔D consent gate. No main, production, payment or paid AI.
+
+---
+
 ## COORDINATOR #5 — CYCLE 11 / 2026-10-20 — D17 OWNER PR323/324 COLLISION & QUEUES
 
 **ROLE:** Coordinator #5, no personal BASE. Original §1 PARTIAL; only §47 and §53 original fully DONE (2/55). D17 approved `docs/DEEPSYQ_BASE55_F1_F8_EXECUTION_PLAN_20261020.md` is priority overlay, not a rewrite of BASE/Blocks. Owner D16: A/B/C/D self-test/self-merge scoped final-head GREEN PRs to DEV; coordinator does NOT gate them; B↔D finance/privacy peer review remains mandatory. No main/production, real Stripe, paid/possibly billed AI, unsafe migrations. Home six owner videos and finished layout frozen unless direct owner later override.
