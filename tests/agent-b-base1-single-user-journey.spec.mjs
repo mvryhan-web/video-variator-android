@@ -19,7 +19,7 @@ async function mockedConsumer(page,kind,{quoteReply}={}){
   const input=route.request().postDataJSON();estimates.push(input);
   return route.fulfill({json:quoteReply?quoteReply(input):{kind,model:model.id,quantity:1,credits:7,perImageCredits:7}});
  });
- await page.route('**/api/studio/jobs',route=>{
+ await page.route(url=>new URL(url).pathname==='/api/studio/jobs',route=>{
   if(route.request().method()==='POST'){
    jobs.push(route.request().postDataJSON());
    return route.fulfill({status:202,json:{id:'fixture-job',status:'processing',creditsReserved:7}});
