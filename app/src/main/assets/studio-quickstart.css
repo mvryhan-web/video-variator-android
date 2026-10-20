@@ -1,6 +1,7 @@
 /* Owner-approved Deepsyq Studio: keep original bottom composer position.
    The prior quickstart override collapsed .stage and moved form upward.
    Never alter Home or generator/billing/private job logic. */
+body.studio-quickstart #creator .consent[hidden] { display: none !important; }
 body.studio-quickstart .stage:has(#empty:not([hidden])) {
   flex: 1 1 auto;
   min-height: 330px;
