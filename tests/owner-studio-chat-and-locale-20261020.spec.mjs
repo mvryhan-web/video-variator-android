@@ -44,14 +44,33 @@ test('French device language is selected by default and static Studio copy is tr
 test('Existing Studio jobs become a private chat-like stream without submitting AI or Stripe requests',async({page})=>{
  await page.addInitScript(()=>{localStorage.setItem('vv_token','playwright-synthetic-session');});
  await page.route('**/api/studio/jobs?filter=all',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:[
-  {id:'synthetic-job-one',kind:'image',prompt:'A paper crane in evening light',status:'ready',createdAt:'2026-10-20T12:00:00Z'},
-  {id:'synthetic-job-two',kind:'video',prompt:'Different video prompt',status:'ready'}
+  {id:'synthetic-job-newest',kind:'image',prompt:'A paper crane under the moon',status:'ready',createdAt:'2026-10-20T13:00:00Z'},
+  {id:'synthetic-job-oldest',kind:'image',prompt:'A paper crane in evening light',status:'ready',createdAt:'2026-10-20T12:00:00Z'},
+  {id:'synthetic-job-video',kind:'video',prompt:'Different video prompt',status:'ready'}
  ]})}));
  await page.goto('/generate-studio.html?studio=image');
- await expect(page.locator('#conversationThread .conversation-item')).toHaveCount(1);
- await expect(page.locator('#conversationThread .conversation-user')).toHaveText('A paper crane in evening light');
+ await expect(page.locator('#conversationThread .conversation-item')).toHaveCount(2);
+ await expect(page.locator('#conversationThread .conversation-user')).toHaveText(['A paper crane in evening light','A paper crane under the moon']);
  await expect(page.locator('#conversationThread .conversation-response button')).toHaveText(/View result|Посмотреть результат|Voir le résultat/);
  await expect(page.locator('#creator')).toBeVisible();
+});
+
+test('A failed History refresh keeps the last successful same-account conversation visible',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','playwright-synthetic-session'));
+ let requests=0;
+ await page.route('**/api/studio/jobs?filter=all',route=>{
+  requests++;
+  if(requests===1)return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:[
+   {id:'stable-job-newest',kind:'image',prompt:'Newest saved prompt',status:'ready'},
+   {id:'stable-job-oldest',kind:'image',prompt:'Earlier saved prompt',status:'ready'}
+  ]})});
+  return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'STUDIO_STORAGE_UNAVAILABLE'})});
+ });
+ await page.goto('/generate-studio.html?studio=image');
+ await expect(page.locator('#conversationThread .conversation-item')).toHaveCount(2);
+ await page.locator('#showCreate').click();
+ await expect.poll(()=>requests).toBe(2);
+ await expect(page.locator('#conversationThread .conversation-user')).toHaveText(['Earlier saved prompt','Newest saved prompt']);
 });
 
 test('No account and no saved provider consent never enable an AI job',async({page})=>{
