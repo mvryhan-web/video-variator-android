@@ -798,7 +798,7 @@ async function loadConversation(){
  const root=$('conversationThread');if(!root)return;
  const epoch=++conversationEpoch,account=localStorage.getItem('vv_token'),selectedKind=kind;
  root.replaceChildren();
- $('empty').hidden=false;
+ $('empty').hidden=!!blob||historyView;
  document.querySelector('.stage').classList.remove('has-conversation');
  if(!account||historyView)return;
  try{
