@@ -105,7 +105,9 @@ test('introductory offer stays disabled without unapproved credit or duration pr
  assert.ok(read('home-experience.js').includes('ownerHomeShowcase(item)'));
 });
 
-test('retired Product Video stays absent from visual release, main and preview routes',()=>{
+test('retired Product Video stays absent from visual release, main, preview and admin controls',()=>{
+ assert.ok(!read('deepsyq-admin.html').includes('value="product_video"'),'Admin cannot offer retired template creation');
+ assert.ok(!read('deepsyq-admin.js').includes("'product_video'"),'Admin JS cannot offer retired type');
  for(const path of ['product-video-file-safety.mjs','product-video-prompt.mjs','product-video.css','product-video.html','product-video.js'])assert.equal(existsSync(new URL(path,assets)),false,path+' must not be published');
  for(const path of ['deepsyq.html','deepsyq-site-shell.js','ai-apps.js','onboarding-options.js','ai-privacy.html','generate-studio.js']){
   const body=read(path);
