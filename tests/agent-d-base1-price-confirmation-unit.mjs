@@ -35,6 +35,9 @@ function studio({kind='image',expectedCredits,quantity,serverCredits=7}={}){
   resolveRequest:async()=>({request,selected,routing:{smart:false}}),
   generationRequestId:()=> 'e64cd4ba-67c2-46a2-ade6-2d98c7e00e88',
   estimateGenerationPricing:()=>quote,
+  // Accepted, versioned server-stored provider decision in this inert purchaser fixture.
+  // The actual consent route and cross-account denial have separate tests.
+  hasStoredGenerationConsent:async(_pool,userId)=>userId==='fixture-purchaser',
   walletEnabled:()=>true,
   wallet:{
    purchasedDispatchVerifier:()=>async()=>({source:'mock-only-never-dispatched'}),

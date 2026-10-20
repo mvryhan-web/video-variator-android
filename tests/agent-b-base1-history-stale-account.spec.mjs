@@ -36,13 +36,17 @@ test('B8 account switch while old private History GET is pending must not render
  const held=new Promise(resolve=>release=resolve);
  await page.route(url=>new URL(url).pathname==='/api/studio/jobs',async route=>{
   requestCount++;
-  if(requestCount===1){
+  // The new owner-approved ChatGPT-like creation thread makes an additional
+  // read-only, account-scoped History GET on opening the Studio.
+  if(requestCount===1)return route.fulfill({json:{items:[]}});
+  if(requestCount===2){
    notify();await held;
    return route.fulfill({json:{items:[item('account-A','PRIVATE_ACCOUNT_A_HISTORY')]}});
   }
   return route.fulfill({json:{items:[item('account-B','ONLY_ACCOUNT_B_HISTORY')]}});
  });
  await page.goto('/generate-studio.html?studio=video');
+ await expect.poll(()=>requestCount).toBe(1);
  await page.locator('#showHistory').click();await seen;
  await page.evaluate(()=>localStorage.setItem('vv_token','fake-account-B'));
  release();
@@ -51,5 +55,5 @@ test('B8 account switch while old private History GET is pending must not render
  await page.locator('#showHistory').click();
  await expect(page.locator('.history-card')).toContainText('ONLY_ACCOUNT_B_HISTORY');
  await expect(page.locator('.history-card')).not.toContainText('PRIVATE_ACCOUNT_A_HISTORY');
- expect(requestCount).toBe(2);
+ expect(requestCount).toBeGreaterThanOrEqual(3);
 });

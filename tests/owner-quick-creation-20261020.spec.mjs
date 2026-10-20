@@ -3,7 +3,7 @@ import {test,expect} from '@playwright/test';
 // Owner-approved concise creative UX, all tests GET-only; never issue paid
 // API requests, Stripe checkout, media uploads or generation POST.
 const modes=[
-  ['image','Create an image'],['video','Create a video'],['audio','Create audio']
+  ['image','Light up your creation with Deepsyq'],['video','Light up your creation with Deepsyq'],['audio','Light up your creation with Deepsyq']
 ];
 
 test('Image Video Audio open directly to one concise heading and actual creator',async({page})=>{

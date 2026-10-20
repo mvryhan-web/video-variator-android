@@ -1,8 +1,15 @@
 import {test,expect} from '@playwright/test';
 
+async function consentFixture(page){
+ await page.addInitScript(()=>{if(!localStorage.getItem('vv_token'))localStorage.setItem('vv_token','synthetic-consenting-test-account');});
+ await page.route('**/api/studio/consent',route=>route.fulfill({json:{version:'2026-10-20',termsAccepted:true,privacyAcknowledged:true,providerAccepted:true}}));
+}
+
+
 test('BASE 31: accepted Studio job shows server reserve and lifecycle; no extra paid submission',async({page})=>{
  const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true}],
   catalog:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]};
+ await consentFixture(page);
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
  await page.route('**/api/studio/estimate',r=>r.fulfill({json:{kind:'image',model:'fixture',credits:17,quantity:1}}));
  let jobsSubmitted=0,stage='processing';
@@ -17,7 +24,7 @@ test('BASE 31: accepted Studio job shows server reserve and lifecycle; no extra 
  await page.route('**/api/studio/jobs/accepted-fixture/media',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
  await page.goto('/generate-studio.html?studio=image');
  await page.locator('#prompt').fill('Illustrate a product for the customer');
- await page.locator('#consent').check();
+ await expect(page.locator('#consent')).toBeChecked();
  page.once('dialog',d=>d.accept());
  await page.locator('#generate').click();
  await expect(page.locator('#jobProgress')).toBeVisible();
@@ -42,12 +49,13 @@ test('BASE 31: accepted Studio job shows server reserve and lifecycle; no extra 
 test('BASE 31: denied or uncertain submission never invents a charged amount',async({page})=>{
  const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true}],
   catalog:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]};
+ await consentFixture(page);
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
  await page.route('**/api/studio/estimate',r=>r.fulfill({json:{kind:'image',model:'fixture',credits:17,quantity:1}}));
  await page.route('**/api/studio/jobs',r=>r.fulfill({status:503,json:{error:'AI_PROVIDER_UNAVAILABLE'}}));
  await page.goto('/generate-studio.html?studio=image');
  await page.locator('#prompt').fill('Product still');
- await page.locator('#consent').check();
+ await expect(page.locator('#consent')).toBeChecked();
  page.once('dialog',d=>d.accept());
  await page.locator('#generate').click();
  await expect(page.locator('#jobProgress')).toHaveAttribute('data-status','unconfirmed');

@@ -3,10 +3,30 @@ import {MODEL_CATALOG,MODELS} from './generate-models.js';
 import {takeStudioHandoff} from './studio-handoff.js';
 import {studioCreditWalletState} from './studio-credit-wallet.js';
 import {progressView} from './studio-job-progress.js';
-const $=id=>document.getElementById(id),ru=navigator.language.startsWith('ru');
-const say=(en,r)=>ru?r:en;
-const strings={back:'← Назад',pilot:'Предпросмотр студии',workspace:'ВАША СТУДИЯ',video:'Видео',image:'Изображения',audio:'Аудио',dashboard:'Главная ↗',translation:'Перевод · позже',create:'Создать',history:'Мои результаты',label:'ТВОРЧЕСКАЯ СТУДИЯ',headline:'Ваша идея. Создайте её.',prompt:'Опишите, что хотите создать',addPhoto:'Фото',clear:'Убрать фото',generate:'Создать ✦',consent:'Я согласен отправить запрос и фотографии в Google для генерации.',pilotNote:'Предпросмотр студии. Оплата не включена.',chooseModel:'Выберите модель',modelHint:'Выберите инструмент для своей задачи. У каждой модели указан статус подключения.',settings:'Настройки',format:'Формат',capabilityNote:'Настройки соответствуют выбранной модели. Неподдерживаемые параметры не отправляются.',trackType:'Тип аудио',song:'Песня с вокалом',instrumental:'Без слов',voiceoverMode:'Озвучка · подключение готовится',voiceover:'Открыть существующий инструмент озвучки →',language:'Язык',voice:'Голос',done:'Готово',download:'Скачать',share:'Поделиться',delete:'Удалить',saveNote:'Сохраните копию. Удаление результата не удаляет скачанные файлы.',historyHint:'Здесь доступны сохранённые результаты студии. Генерация не запускается автоматически.',checkResult:'Проверить последний результат',historyLoading:'Загружаем результаты…',historyNone:'Сохранённых результатов пока нет.',historyOpen:'Открыть',historyReady:'Готово',historyProcessing:'В работе',historyFailed:'Ошибка',filterAll:'Все',filterImages:'Изображения',filterVideos:'Видео',filterFailed:'Ошибки',filterProcessing:'В работе'};
-if(ru){document.documentElement.lang='ru';document.querySelectorAll('[data-t]').forEach(e=>e.textContent=strings[e.dataset.t]||e.textContent);$('backgroundVideo').textContent='Продолжить в фоне →';document.querySelector('#videoBackgroundControls .hint').textContent='Остановить ожидание в этой вкладке без отмены серверной видеозадачи. Вернитесь в Историю позже, чтобы проверить результат. Закрытие вкладки само по себе не отменяет задачу.';}
+import {readConsent,presentConsent} from './studio-consent-ui.js';
+const $=id=>document.getElementById(id);
+const savedLocale=(()=>{try{return localStorage.getItem('deepsyq_home_language');}catch(_){return null;}})();
+const studioLocale=['en','fr','ru'].includes(savedLocale)?savedLocale:((navigator.language||'en').slice(0,2)==='ru'?'ru':'en');
+const ru=studioLocale==='ru',fr=studioLocale==='fr';
+const frenchPhrases={
+ 'Light up your creation with Deepsyq':'Donnez vie à vos créations avec Deepsyq',
+ 'Create a video':'Créer une vidéo','Create an image':'Créer une image','Create audio':'Créer un audio',
+ 'Create':'Créer','My results':'Mes créations','Generate ✦':'Générer ✦',
+ 'Ready':'Prêt','Queued':'En attente','Processing':'En cours','Finalizing':'Finalisation','Failed':'Échec',
+ 'Open':'Ouvrir','Download':'Télécharger','Delete':'Supprimer','Share':'Partager',
+ 'Image':'Image','Video':'Vidéo','Audio':'Audio','Settings':'Paramètres','Model':'Modèle',
+ 'Loading results…':'Chargement des résultats…','No results in this filter yet.':'Aucun résultat pour ce filtre.',
+ 'View result':'Voir le résultat','Result pending':'Résultat en cours','Generation failed':'Génération échouée',
+ 'Back':'Retour','Cancel':'Annuler','Done':'Terminé',
+ 'Sign in to manage your AI privacy choices.':'Connectez-vous pour gérer vos choix de confidentialité IA.',
+ 'Privacy settings are unavailable right now. No AI request was sent.':'Les paramètres de confidentialité sont indisponibles. Aucune demande IA n’a été envoyée.'
+};
+const say=(en,r)=>ru?r:fr?(frenchPhrases[en]||en):en;
+document.documentElement.lang=studioLocale;
+const strings={back:'← Назад',pilot:'Предпросмотр студии',workspace:'ВАША СТУДИЯ',video:'Видео',image:'Изображения',audio:'Аудио',dashboard:'Главная ↗',translation:'Перевод · позже',create:'Создать',history:'Мои результаты',label:'ТВОРЧЕСКАЯ СТУДИЯ',headline:'Ваша идея. Создайте её.',prompt:'Опишите, что хотите создать',addPhoto:'Фото',clear:'Убрать фото',generate:'Создать ✦',consent:'Я согласен отправить запрос и фотографии в Google для генерации.',pilotNote:'Предпросмотр студии. Оплата не включена.',chooseModel:'Выберите модель',modelHint:'Выберите инструмент для своей задачи. У каждой модели указан статус подключения.',settings:'Настройки',format:'Формат',capabilityNote:'Настройки соответствуют выбранной модели. Неподдерживаемые параметры не отправляются.',trackType:'Тип аудио',song:'Песня с вокалом',instrumental:'Без слов',voiceoverMode:'Озвучка · подключение готовится',voiceover:'Открыть существующий инструмент озвучки →',language:'Язык',voice:'Голос',done:'Готово',download:'Скачать',share:'Поделиться',delete:'Удалить',saveNote:'Сохраните копию. Удаление результата не удаляет скачанные файлы.',historyHint:'Здесь доступны сохранённые результаты студии. Генерация не запускается автоматически.',checkResult:'Проверить последний результат',historyLoading:'Загружаем результаты…',historyNone:'Сохранённых результатов пока нет.',historyOpen:'Открыть',historyReady:'Готово',historyProcessing:'В работе',historyFailed:'Ошибка',filterAll:'Все',filterImages:'Изображения',filterVideos:'Видео',filterFailed:'Ошибки',filterProcessing:'В работе',manageAiConsent:'Настройки конфиденциальности AI'};
+const frenchStatic={back:'← Retour',pilot:'Aperçu du studio',workspace:'VOTRE STUDIO',video:'Vidéo',image:'Images',audio:'Audio',dashboard:'Accueil ↗',translation:'Traduction · bientôt',create:'Créer',history:'Mes résultats',prompt:'Décrivez ce que vous souhaitez créer',addPhoto:'Photo',clear:'Effacer',generate:'Générer ✦',chooseModel:'Choisir un modèle',modelHint:'Choisissez un modèle disponible.',settings:'Paramètres',format:'Format',trackType:'Type audio',song:'Chanson',instrumental:'Instrumental',language:'Langue',voice:'Voix',done:'Terminé',download:'Télécharger',share:'Partager',delete:'Supprimer',filterAll:'Tout',filterImages:'Images',filterVideos:'Vidéos',filterFailed:'Échecs',filterProcessing:'En cours',manageAiConsent:'Préférences de confidentialité IA'};
+if(ru||fr){document.querySelectorAll('[data-t]').forEach(e=>e.textContent=(ru?strings:frenchStatic)[e.dataset.t]||e.textContent);}
+if(ru){$('backgroundVideo').textContent='Продолжить в фоне →';document.querySelector('#videoBackgroundControls .hint').textContent='Остановить ожидание в этой вкладке без отмены серверной видеозадачи. Вернитесь в Историю позже, чтобы проверить результат. Закрытие вкладки само по себе не отменяет задачу.';}
 const requested=new URLSearchParams(location.search).get('studio');
 let kind=requested==='image'?'image':requested==='audio'?'music':'video';document.body.classList.toggle('image-studio',kind==='image');
 let config={enabled:false,models:[]},catalog=MODEL_CATALOG.map(m=>({...m,enabled:false}));
@@ -15,6 +35,38 @@ let estimateTimer=null,estimateSignature='';
 let historyThumbUrls=[],historyMediaUrl=null,historyMediaPlayer=null,historyMediaButton=null,historyMediaEpoch=0;
 let historyLoadEpoch=0; // Prevent stale filter/account responses entering another History view.
 const drafts={};
+let acceptedProviderToken=null;
+let acceptedProviderConsent=false;
+function consentForCurrentAccount(){return acceptedProviderConsent&&acceptedProviderToken===localStorage.getItem('vv_token');}
+function setProviderConsent(state,expectedToken){
+ if(expectedToken!==localStorage.getItem('vv_token'))return;
+ acceptedProviderToken=expectedToken;acceptedProviderConsent=state?.providerAccepted===true;
+ $('consent').checked=acceptedProviderConsent;
+ // Agreement is collected in the dedicated account dialog, not every generation.
+ document.querySelector('#creator .consent').hidden=true;
+ availability();
+}
+async function checkProviderConsent(){
+ const t=localStorage.getItem('vv_token');if(!t)return;
+ let state;try{state=await readConsent();}catch(_){availability();return;}
+ if(t!==localStorage.getItem('vv_token'))return;
+ if(!state.termsAccepted){
+  state=await presentConsent();
+ }
+ // An existing account that never opted in can consent once via the same dialog.
+ // Declining remains a valid choice; the provider job stays server-blocked.
+ else if(!state.providerAccepted&&!state.privacyAcknowledged){
+  state=await presentConsent({force:true});
+ }
+ setProviderConsent(state,t);
+}
+$('manageAiConsent').onclick=async()=>{
+ const t=localStorage.getItem('vv_token');
+ if(!t){$('status').textContent=say('Sign in to manage your AI privacy choices.','Войдите в аккаунт, чтобы изменить настройки конфиденциальности AI.');return;}
+ const state=await presentConsent({force:true});
+ if(state?.storageUnavailable){$('status').textContent=say('Privacy settings are unavailable right now. No AI request was sent.','Настройки конфиденциальности сейчас недоступны. Запрос AI не отправлялся.');return;}
+ setProviderConsent(state,t);availability();
+};
 let activeVideoWatchId=null; // Current browser polling only; the provider job is server-owned.
 let lastJobProgress=null;
 function updateJobProgress(status,amounts={}){
@@ -263,7 +315,7 @@ async function loadEstimate(key){
   if(key!==estimateKey())return;estimateSignature=key;el.textContent=d.quantity>1?say(`Batch estimate: ${d.quantity} separate image jobs × ${d.perImageCredits.toLocaleString()} = ${d.credits.toLocaleString()} AI credits. No generation started.`,`Пакет: ${d.quantity} отдельных изображения × ${d.perImageCredits.toLocaleString()} = ${d.credits.toLocaleString()} AI-кредитов. Генерация не запускалась.`):say(`Estimated cost: ${d.credits.toLocaleString()} AI credits · no generation started`,`Ориентировочная стоимость: ${d.credits.toLocaleString()} AI-кредитов · генерация не запускалась`);el.hidden=false;
  }catch(e){if(key!==estimateKey())return;estimateSignature=key;if(e.message==='AI_PRICING_NOT_APPROVED'){el.textContent=errorText(e);el.hidden=false;}else{el.hidden=true;el.textContent='';}}
 }
-function availability(){const m=currentModel();$('videoBackgroundControls').hidden=!(busy&&activeVideoWatchId&&activeVideoWatchId===job);scheduleEstimate();document.querySelector('[data-t=consent]').textContent=say('I agree to send this prompt and reference photos to '+(m?.provider||'the selected provider')+' for generation.','Я согласен отправить запрос и фотографии в '+(m?.provider||'выбранный сервис')+' для генерации.');$('generate').disabled=busy||!connected(m)||!$('consent').checked||!$('prompt').value.trim()||(kind==='image'&&imageDraftNeedsPhotos&&!refs.length)||(kind==='video'&&videoDraftNeedsPhotos);$('modelButton').disabled=busy;$('settingsButton').disabled=busy;$('references').disabled=busy;$('prompt').disabled=busy||kind==='translation';$('availability').textContent=kind==='translation'?say('File translation is not connected yet. No file will be uploaded.','Перевод файлов ещё не подключён. Файл не будет загружен.'):!m?.adapter?say('This model is not connected yet. You can prepare your settings; no request will be sent.','Модель пока не подключена. Можно выбрать настройки; запрос не отправляется.'):connected(m)?say('Owner preview. Each attempt uses the approved test quota.','Тест владельца. Каждая попытка расходует согласованный лимит.'):say('Generation is not enabled. Provider access and test budget need approval.','Генерация не включена. Нужно подключение и согласованный бюджет.');if(kind==='image'){if(refs.length)imageDraftNeedsPhotos=false;showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}}
+function availability(){const m=currentModel();$('consent').checked=consentForCurrentAccount();$('videoBackgroundControls').hidden=!(busy&&activeVideoWatchId&&activeVideoWatchId===job);scheduleEstimate();document.querySelector('[data-t=consent]').textContent=say('I agree to send this prompt and reference photos to '+(m?.provider||'the selected provider')+' for generation.','Я согласен отправить запрос и фотографии в '+(m?.provider||'выбранный сервис')+' для генерации.');$('generate').disabled=busy||!connected(m)||!consentForCurrentAccount()||!$('consent').checked||!$('prompt').value.trim()||(kind==='image'&&imageDraftNeedsPhotos&&!refs.length)||(kind==='video'&&videoDraftNeedsPhotos);$('modelButton').disabled=busy;$('settingsButton').disabled=busy;$('references').disabled=busy;$('prompt').disabled=busy||kind==='translation';$('availability').textContent=kind==='translation'?say('File translation is not connected yet. No file will be uploaded.','Перевод файлов ещё не подключён. Файл не будет загружен.'):!m?.adapter?say('This model is not connected yet. You can prepare your settings; no request will be sent.','Модель пока не подключена. Можно выбрать настройки; запрос не отправляется.'):connected(m)?say('Owner preview. Each attempt uses the approved test quota.','Тест владельца. Каждая попытка расходует согласованный лимит.'):say('Generation is not enabled. Provider access and test budget need approval.','Генерация не включена. Нужно подключение и согласованный бюджет.');if(kind==='image'){if(refs.length)imageDraftNeedsPhotos=false;showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}}
 function storeDraft(){drafts[kind]={prompt:$('prompt').value,modelId,ratio:$('ratio').value,resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value,quantity:imageBatchQuantity(),videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value,refs,musicMode:$('musicMode').value};if(kind==='image')saveImageDraft();}
 function renderModels(){const list=catalog.filter(m=>m.kind===modelKind());$('modelChoices').replaceChildren();for(const m of list){const b=document.createElement('button');b.type='button';b.className='model-card';b.dataset.connected=String(m.adapter);b.setAttribute('aria-pressed',String(m.id===modelId));const title=document.createElement('strong');title.textContent=m.label;const description=document.createElement('small');description.textContent=ru?m.descriptionRu||m.description||'':m.description||'';const state=document.createElement('span');state.className='connection';state.textContent=m.provider+' · '+(m.adapter?say('Adapter prepared','Адаптер подготовлен'):say('API connection pending','API не подключён'));b.append(title,description,state);b.onclick=()=>{if(busy)return;const limit=Number(m.references||0);if(refs.length>limit&&!confirm(say('This model supports '+limit+' references. Remove '+(refs.length-limit)+' photo(s) to switch models?','Эта модель поддерживает '+limit+' изображений. Убрать '+(refs.length-limit)+' фото для переключения?')))return;refs=refs.slice(0,limit);modelId=m.id;$('consent').checked=false;renderModel();$('modelDialog').close();};$('modelChoices').append(b);}}
 function renderRatios(){const m=currentModel(),previous=$('ratio').value;$('ratio').replaceChildren();for(const r of m?.ratios||[])$('ratio').add(new Option(r,r));if(m?.ratios.includes(previous))$('ratio').value=previous;$('ratioLabel').hidden=!m?.ratios.length;$('ratioChoices').replaceChildren();for(const r of m?.ratios||[]){const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',r);b.setAttribute('aria-pressed',String(r===$('ratio').value));const shape=document.createElement('span');shape.className='ratio-drawing';const [w,h]=r.split(':').map(Number);shape.style.width=Math.round(Math.min(38,27*w/h))+'px';shape.style.height=Math.round(Math.min(27,38*h/w))+'px';const text=document.createElement('span');text.textContent=r;b.append(shape,text);b.onclick=()=>{$('ratio').value=r;$('consent').checked=false;updateRatioSelection();availability();};$('ratioChoices').append(b);}updateRatioSelection();}
@@ -344,7 +396,7 @@ function renderModel(){let m=currentModel();if(!m){m=catalog.find(m=>m.kind===mo
  $('imageUnsupportedControls').hidden=kind!=='image'||Boolean(m?.capabilities?.supportsSeed||m?.capabilities?.supportsNegativePrompt);
  if(ru)$('imageUnsupportedControls').textContent='Seed и Negative Prompt не являются отдельными параметрами API у этих моделей. Укажите нежелательные элементы в основном запросе, например «Без текста и логотипов». Неподдерживаемые поля провайдеру не отправляются.';
  renderRatios();renderRefs();renderModels();$('qualityValue').textContent=kind==='image'?'':kind==='video'?$('videoResolution').value:(m?.quality||'');$('durationValue').textContent=kind==='video'?$('videoDuration').value+'s':m?.duration||'';$('voiceSettings').hidden=modelKind()!=='voice';availability();}
-function select(next,{remember=true}={}){if(busy)return;if(remember)storeDraft();kind=next;document.body.classList.toggle('image-studio',kind==='image');$('imageDraftBar').hidden=kind!=='image';$('videoDraftBar').hidden=kind!=='video';$('consent').checked=false;const d=drafts[kind];refs=d?.refs||[];$('prompt').value=d?.prompt||'';$('musicMode').value=d?.musicMode||'song';modelId=d?.modelId||config.models?.find(m=>m.kind===kind)?.id||MODELS[kind]?.id||'';document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.kind===kind)));$('taskTitle').textContent={video:say('Create a video','Создать видео'),image:say('Create an image','Создать изображение'),music:say('Create audio','Создать аудио'),translation:say('Translate your file','Перевести файл')}[kind];$('taskDescription').textContent={video:say('Describe a scene or add a photo. Choose your model and bring the idea to life.','Опишите сцену или добавьте фото. Выберите модель и оживите свою идею.'),image:say('Start with a description. Add reference photos to guide the look.','Начните с описания. Добавьте фотографии, чтобы задать нужный образ.'),music:say('Create a short song, an instrumental, or prepare a voiceover.','Создайте короткую песню, музыку без слов или подготовьте озвучку.'),translation:say('Translation will be added after the studio is ready.','Перевод добавим после подготовки студии.')}[kind];$('musicOptions').hidden=kind!=='music';$('prompt').placeholder=kind==='music'?say('Describe the sound, mood and language. Add your lyrics or voiceover text…','Опишите звучание, настроение и язык. Добавьте текст песни или озвучки…'):kind==='image'?say('Describe your image: subject, style, colours and light…','Опишите изображение: объект, стиль, цвета и свет…'):say('Describe your video: scene, movement and atmosphere…','Опишите видео: сцену, движение и атмосферу…');$('examples').replaceChildren();const examples=kind==='video'?[['A cinematic product reveal with soft studio light','Презентация товара с мягким студийным светом'],['A calm ocean at sunset, gentle camera movement','Спокойный океан на закате и плавное движение камеры']]:kind==='image'?[['A premium product photo on a clean background','Фото товара на чистом фоне'],['A colourful illustrated poster','Яркий иллюстрированный постер']]:kind==='music'?[['A joyful pop song in English about a fresh start','Позитивная поп-песня на английском о новом начале'],['Instrumental relaxing piano for a travel video','Спокойное фортепиано для видео о путешествии']]:[];for(const [en,r] of examples){const b=document.createElement('button');b.type='button';b.textContent=say(en,r);b.onclick=()=>{if(busy)return;const next=say(en,r),existing=$('prompt').value.trim();if(existing&&existing!==next&&!confirm(say('Replace your current description with this example?','Заменить ваше описание этим примером?')))return;$('prompt').value=next;$('consent').checked=false;availability();$('prompt').focus();};$('examples').append(b);}renderModel();if(d?.ratio&&currentModel()?.ratios.includes(d.ratio)){$('ratio').value=d.ratio;updateRatioSelection();}if(kind==='image'&&currentModel()?.capabilities?.resolutions?.includes(d?.resolution)){$('imageResolution').value=d.resolution;updateRatioSelection();}if(kind==='image'&&currentModel()?.capabilities?.outputFormats?.includes(d?.outputFormat)){$('imageOutputFormat').value=d.outputFormat;updateRatioSelection();}if(kind==='image'&&config.imageBatchEnabled===true&&Number.isInteger(d?.quantity)&&d.quantity>=1&&d.quantity<=4){$('imageQuantity').value=String(d.quantity);updateRatioSelection();}if(kind==='video'&&currentModel()?.capabilities?.videoInputModes?.includes(d?.videoInputMode)&&[...$('videoInputMode').options].some(o=>o.value===d.videoInputMode))$('videoInputMode').value=d.videoInputMode;if(kind==='video'&&currentModel()?.capabilities?.resolutions?.includes(d?.videoResolution)){$('videoResolution').value=d.videoResolution;renderVideoSettings();}if(kind==='video'&&currentModel()?.capabilities?.durations?.includes(d?.videoDuration)&&[...$('videoDuration').options].some(o=>o.value===String(d.videoDuration))){$('videoDuration').value=String(d.videoDuration);updateRatioSelection();}if(kind!=='translation'){const u=new URL(location.href);u.searchParams.set('studio',kind==='music'?'audio':kind);history.replaceState(null,'',u);}setHistory(false);if(kind==='image'){showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}}
+function select(next,{remember=true}={}){if(busy)return;if(remember)storeDraft();kind=next;document.body.classList.toggle('image-studio',kind==='image');$('imageDraftBar').hidden=kind!=='image';$('videoDraftBar').hidden=kind!=='video';$('consent').checked=false;const d=drafts[kind];refs=d?.refs||[];$('prompt').value=d?.prompt||'';$('musicMode').value=d?.musicMode||'song';modelId=d?.modelId||config.models?.find(m=>m.kind===kind)?.id||MODELS[kind]?.id||'';document.querySelectorAll('[data-kind]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.kind===kind)));$('taskTitle').textContent=say('Light up your creation with Deepsyq','Оживите свою идею с Deepsyq');$('taskDescription').textContent={video:say('Describe a scene or add a photo. Choose your model and bring the idea to life.','Опишите сцену или добавьте фото. Выберите модель и оживите свою идею.'),image:say('Start with a description. Add reference photos to guide the look.','Начните с описания. Добавьте фотографии, чтобы задать нужный образ.'),music:say('Create a short song, an instrumental, or prepare a voiceover.','Создайте короткую песню, музыку без слов или подготовьте озвучку.'),translation:say('Translation will be added after the studio is ready.','Перевод добавим после подготовки студии.')}[kind];$('musicOptions').hidden=kind!=='music';$('prompt').placeholder=kind==='music'?say('Describe the sound, mood and language. Add your lyrics or voiceover text…','Опишите звучание, настроение и язык. Добавьте текст песни или озвучки…'):kind==='image'?say('Describe your image: subject, style, colours and light…','Опишите изображение: объект, стиль, цвета и свет…'):say('Describe your video: scene, movement and atmosphere…','Опишите видео: сцену, движение и атмосферу…');$('examples').replaceChildren();const examples=kind==='video'?[['A cinematic product reveal with soft studio light','Презентация товара с мягким студийным светом'],['A calm ocean at sunset, gentle camera movement','Спокойный океан на закате и плавное движение камеры']]:kind==='image'?[['A premium product photo on a clean background','Фото товара на чистом фоне'],['A colourful illustrated poster','Яркий иллюстрированный постер']]:kind==='music'?[['A joyful pop song in English about a fresh start','Позитивная поп-песня на английском о новом начале'],['Instrumental relaxing piano for a travel video','Спокойное фортепиано для видео о путешествии']]:[];for(const [en,r] of examples){const b=document.createElement('button');b.type='button';b.textContent=say(en,r);b.onclick=()=>{if(busy)return;const next=say(en,r),existing=$('prompt').value.trim();if(existing&&existing!==next&&!confirm(say('Replace your current description with this example?','Заменить ваше описание этим примером?')))return;$('prompt').value=next;$('consent').checked=false;availability();$('prompt').focus();};$('examples').append(b);}renderModel();if(d?.ratio&&currentModel()?.ratios.includes(d.ratio)){$('ratio').value=d.ratio;updateRatioSelection();}if(kind==='image'&&currentModel()?.capabilities?.resolutions?.includes(d?.resolution)){$('imageResolution').value=d.resolution;updateRatioSelection();}if(kind==='image'&&currentModel()?.capabilities?.outputFormats?.includes(d?.outputFormat)){$('imageOutputFormat').value=d.outputFormat;updateRatioSelection();}if(kind==='image'&&config.imageBatchEnabled===true&&Number.isInteger(d?.quantity)&&d.quantity>=1&&d.quantity<=4){$('imageQuantity').value=String(d.quantity);updateRatioSelection();}if(kind==='video'&&currentModel()?.capabilities?.videoInputModes?.includes(d?.videoInputMode)&&[...$('videoInputMode').options].some(o=>o.value===d.videoInputMode))$('videoInputMode').value=d.videoInputMode;if(kind==='video'&&currentModel()?.capabilities?.resolutions?.includes(d?.videoResolution)){$('videoResolution').value=d.videoResolution;renderVideoSettings();}if(kind==='video'&&currentModel()?.capabilities?.durations?.includes(d?.videoDuration)&&[...$('videoDuration').options].some(o=>o.value===String(d.videoDuration))){$('videoDuration').value=String(d.videoDuration);updateRatioSelection();}if(kind!=='translation'){const u=new URL(location.href);u.searchParams.set('studio',kind==='music'?'audio':kind);history.replaceState(null,'',u);}setHistory(false);if(kind==='image'){showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}}
 const imageEditPrompts={
  background:'Replace the background with a clean studio setting. Preserve the referenced subject, details, colors and any visible branding.',
  lighting:'Improve lighting with natural highlights and balanced shadows. Preserve the subject, identity, texture and composition.',
@@ -566,31 +618,24 @@ async function acceptFiles(files,{append=false}={}){
  return accepted;
 }
 $('references').onchange=()=>void acceptFiles(Array.from($('references').files),{append:true});$('creator').ondragover=e=>{if(currentModel()?.references)e.preventDefault();};$('creator').ondrop=e=>{e.preventDefault();if(currentModel()?.references)void acceptFiles(Array.from(e.dataTransfer.files),{append:true});};
-$('clearRefs').onclick=()=>{if(busy)return;refs=[];$('consent').checked=false;renderRefs();availability();};document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>select(b.dataset.kind));$('prompt').oninput=()=>{$('consent').checked=false;availability();};$('consent').onchange=availability;$('ratio').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageResolution').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageOutputFormat').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageQuantity').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('videoResolution').onchange=()=>{$('consent').checked=false;renderVideoSettings();updateRatioSelection();availability();};$('videoDuration').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('videoInputMode').onchange=()=>{$('consent').checked=false;availability();};
+$('clearRefs').onclick=()=>{if(busy)return;refs=[];$('consent').checked=false;renderRefs();availability();};document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>select(b.dataset.kind));$('prompt').oninput=()=>{$('consent').checked=false;availability();};$('consent').onchange=()=>{
+ $('consent').checked=false;
+ void presentConsent({force:true}).then(state=>setProviderConsent(state,localStorage.getItem('vv_token')));
+ availability();
+};$('ratio').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageResolution').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageOutputFormat').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageQuantity').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('videoResolution').onchange=()=>{$('consent').checked=false;renderVideoSettings();updateRatioSelection();availability();};$('videoDuration').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('videoInputMode').onchange=()=>{$('consent').checked=false;availability();};
 $('musicMode').onchange=()=>{$('consent').checked=false;modelId='';renderModel();};
-const studioDialogAnchors=new Map();
-function placeStudioDialog(dialog,anchor){
- if(!dialog.open||!anchor?.isConnected)return;
- const target=anchor.getBoundingClientRect(),box=dialog.getBoundingClientRect(),pad=12,gap=8;
- const left=Math.max(pad,Math.min(target.left,innerWidth-box.width-pad));
- const above=target.top-box.height-gap;
- const top=above>=pad?above:Math.max(pad,Math.min(innerHeight-box.height-pad,target.bottom+gap));
- dialog.style.left=Math.round(left)+'px';dialog.style.top=Math.round(top)+'px';
-}
-function openStudioDialog(id,anchor){
- const dialog=$(id);studioDialogAnchors.set(dialog,anchor);
- dialog.style.position='fixed';dialog.style.margin='0';dialog.style.right='auto';dialog.style.bottom='auto';
- dialog.style.left='0px';dialog.style.top='0px';dialog.showModal();placeStudioDialog(dialog,anchor);
-}
-function repositionStudioDialogs(){for(const [dialog,anchor] of studioDialogAnchors)placeStudioDialog(dialog,anchor);}
-window.addEventListener('resize',repositionStudioDialogs,{passive:true});
-
-$('modelButton').onclick=()=>{renderModels();openStudioDialog('modelDialog',$('modelButton'));};$('settingsButton').onclick=()=>openStudioDialog('settingsDialog',$('settingsButton'));document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());document.querySelectorAll('#modelDialog,#settingsDialog').forEach(d=>d.addEventListener('close',()=>{studioDialogAnchors.delete(d);for(const prop of ['position','margin','left','top','right','bottom'])d.style.removeProperty(prop);}));
+$('modelButton').onclick=()=>{renderModels();$('modelDialog').showModal();};$('settingsButton').onclick=()=>$('settingsDialog').showModal();document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
 function clearHistoryThumbs(){for(const u of historyThumbUrls)URL.revokeObjectURL(u);historyThumbUrls=[];}
 async function loadHistoryImageThumbnail(item,preview){
+ const owner=localStorage.getItem('vv_token');
+ if(!owner||!preview.isConnected)return;
  try{
-  const response=await api(`/api/studio/jobs/${encodeURIComponent(item.id)}/media`),b=await response.blob();if(!b.type.startsWith('image/'))return;
-  const u=URL.createObjectURL(b);historyThumbUrls.push(u);const img=document.createElement('img');img.className='history-thumb';img.src=u;img.alt=say('Generated image preview','Предпросмотр созданного изображения');img.loading='lazy';preview.replaceChildren(img);
+  const response=await api(`/api/studio/jobs/${encodeURIComponent(item.id)}/media`);
+  if(!response.ok||Number(response.headers.get('content-length')||0)>16*1024*1024)return;
+  const b=await response.blob();
+  if(!preview.isConnected||owner!==localStorage.getItem('vv_token')||b.size>16*1024*1024||!b.type.startsWith('image/'))return;
+  const u=URL.createObjectURL(b);historyThumbUrls.push(u);
+  const img=document.createElement('img');img.className='history-thumb';img.src=u;img.alt=say('Generated image preview','Предпросмотр созданного изображения');img.loading='lazy';preview.replaceChildren(img);
  }catch(_){/* Keep the lightweight placeholder if preview retrieval fails. */}
 }
 function observeHistoryThumbnail(item,preview){
@@ -620,6 +665,8 @@ function clearHistoryMediaPreview(){
  historyMediaButton=null;
 }
 async function previewHistoryMedia(item,holder,button){
+ const owner=localStorage.getItem('vv_token');
+ if(!owner)return;
  if(historyMediaButton===button&&historyMediaPlayer){
   clearHistoryMediaPreview();holder.replaceChildren();return;
  }
@@ -633,7 +680,7 @@ async function previewHistoryMedia(item,holder,button){
   const reportedSize=Number(response.headers.get('content-length')||0);
   if(reportedSize>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
   const blob=await response.blob();
-  if(epoch!==historyMediaEpoch||!historyView||!button.isConnected)return;
+  if(epoch!==historyMediaEpoch||owner!==localStorage.getItem('vv_token')||(!historyView&&!holder.closest('#conversationThread'))||!button.isConnected)return;
   if(blob.size>HISTORY_PREVIEW_MAX_BYTES)throw Error('PREVIEW_TOO_LARGE');
   const expected=item.kind==='video'?'video/':'audio/';
   if(!blob.type.toLowerCase().startsWith(expected))throw Error('PREVIEW_UNSUPPORTED_FORMAT');
@@ -646,7 +693,7 @@ async function previewHistoryMedia(item,holder,button){
   holder.replaceChildren(player);button.disabled=false;
   button.textContent=say('Close preview','Закрыть просмотр');
  }catch(error){
-  if(epoch!==historyMediaEpoch||!button.isConnected)return;
+  if(epoch!==historyMediaEpoch||owner!==localStorage.getItem('vv_token')||!button.isConnected)return;
   button.disabled=false;button.textContent=say('Preview media','Просмотр');
   const message=document.createElement('p');message.className='hint';
   message.textContent=error.message==='PREVIEW_TOO_LARGE'?
@@ -791,7 +838,74 @@ async function loadHistory(){
  }catch(e){if(!isCurrent())return;list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
 }
 document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclick=()=>{historyFilter=button.dataset.historyFilter;document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));void loadHistory();});
-function setHistory(on){if(!on){++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();$('historyList').replaceChildren();}historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
+
+// Conversation is a read-only view of EXISTING server-owned Studio jobs.
+// No parallel message database, generated result spoofing, or additional AI call.
+let conversationEpoch=0;
+let visibleStudioAccount=localStorage.getItem('vv_token');
+// Account-scoped results and prompts may not remain on screen after switching
+// accounts in this tab or another tab, including while an asynchronous job loads.
+function scrubStudioAccount(){
+ const current=localStorage.getItem('vv_token');
+ if(current===visibleStudioAccount)return false;
+ visibleStudioAccount=current;
+ ++conversationEpoch;++historyLoadEpoch;++generation;
+ $('conversationThread').replaceChildren();$('historyList').replaceChildren();
+ document.querySelector('.stage').classList.remove('has-conversation');
+ clearHistoryMediaPreview();clearHistoryThumbs();clearResult();
+ $('empty').hidden=historyView;
+ acceptedProviderConsent=false;acceptedProviderToken=null;
+ $('consent').checked=false;
+ $('generate').disabled=true;
+ return true;
+}
+for(const type of ['pointerdown','keydown','focusin'])document.addEventListener(type,scrubStudioAccount,true);
+window.addEventListener('storage',event=>{if(event.key==='vv_token')scrubStudioAccount();});
+window.addEventListener('focus',scrubStudioAccount);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)scrubStudioAccount();});
+async function loadConversation(){
+ const root=$('conversationThread');if(!root)return;
+ const epoch=++conversationEpoch,account=localStorage.getItem('vv_token'),selectedKind=kind;
+ root.replaceChildren();
+ $('empty').hidden=!!blob||historyView;
+ document.querySelector('.stage').classList.remove('has-conversation');
+ if(!account||historyView)return;
+ try{
+  const response=await api('/api/studio/jobs?filter=all');
+  if(!response.ok)throw Error('HISTORY_UNAVAILABLE');
+  const data=await response.json();
+  if(epoch!==conversationEpoch||account!==localStorage.getItem('vv_token')||selectedKind!==kind||historyView)return;
+  const jobs=(Array.isArray(data.items)?data.items:[]).filter(item=>item&&item.kind===selectedKind&&typeof item.id==='string'&&typeof item.prompt==='string'&&item.prompt.trim()).slice(0,15).reverse();
+  if(!jobs.length)return;
+  const fragment=document.createDocumentFragment(),imagePreviews=[];
+  for(const item of jobs){
+   const card=document.createElement('article');card.className='conversation-item';card.setAttribute('role','listitem');
+   const request=document.createElement('div');request.className='conversation-user';request.textContent=item.prompt.slice(0,2000);
+   const response=document.createElement('div');response.className='conversation-response';
+   const state=document.createElement('span');state.textContent=historyState(item.status);response.append(state);
+   if(item.status==='ready'){
+    if(item.kind==='image'){
+     const preview=document.createElement('div');preview.className='conversation-preview';
+     response.append(preview);imagePreviews.push([item,preview]);
+    }
+    const open=document.createElement('button');open.type='button';open.textContent=say('View result','Посмотреть результат');
+    if(item.kind==='image')open.addEventListener('click',()=>{if(!busy)void openHistoryJob(item.id);});
+    else{
+     const mediaHolder=document.createElement('div');mediaHolder.className='conversation-inline-media';
+     open.addEventListener('click',()=>{if(!busy)void previewHistoryMedia(item,mediaHolder,open);});
+     response.append(open,mediaHolder);
+    }
+    if(item.kind==='image')response.append(open);
+   }
+   card.append(request,response);fragment.append(card);
+  }
+  root.append(fragment);
+  for(const [item,preview] of imagePreviews)observeHistoryThumbnail(item,preview);
+  document.querySelector('.stage').classList.add('has-conversation');
+  $('empty').hidden=true;
+ }catch(_){/* The editor remains usable when a read-only history request fails. */}
+}
+function setHistory(on){if(!on){++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();$('historyList').replaceChildren();}historyView=on;$('conversationThread').hidden=on;document.querySelector('.stage').classList.toggle('has-conversation',!on&&$('conversationThread').childElementCount>0);$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();else void loadConversation();}
 window.addEventListener('pagehide',()=>{++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();});
 $('showCreate').onclick=()=>{const u=new URL(location.href);u.searchParams.delete('view');history.replaceState(null,'',u);setHistory(false);};$('showHistory').onclick=()=>setHistory(true);
 function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
@@ -818,7 +932,7 @@ async function watch(id,epoch){
    $('saveNote').hidden=false;
    $('status').textContent=say('Ready. Preview and save your creation.','Готово. Посмотрите и сохраните результат.');
    if(sessionStorage.getItem('vu_generation_background_job')===id)sessionStorage.removeItem('vu_generation_background_job');
-   busy=false;availability();return;
+   busy=false;availability();void loadConversation();return;
   }
   if(d.status==='failed'||d.status==='unknown'){activeVideoWatchId=null;throw Error(d.error||'GENERATION_FAILED');}
   const wait=Math.max(3000,Math.min(20000,Number(d.retryAfterSeconds||5)*1000));
@@ -878,6 +992,7 @@ async function createImageBatch(){
    submitted++;
    job=reply.id;
    sessionStorage.setItem('vu_generation_job',job);
+   void loadConversation();
    updateJobProgress(reply.status||'processing',{creditsReserved:reply.creditsReserved});
    await watch(job,epoch);
    ready++;
@@ -941,7 +1056,7 @@ $('creator').onsubmit=async e=>{
    ...original,requestId:crypto.randomUUID(),expectedCredits:quote.credits
   })})).json();
   if(!d.id)throw Error('STUDIO_STORAGE_UNAVAILABLE');
-  job=d.id;sessionStorage.setItem('vu_generation_job',job);updateJobProgress(d.status||'processing',{creditsReserved:d.creditsReserved});
+  job=d.id;sessionStorage.setItem('vu_generation_job',job);void loadConversation();updateJobProgress(d.status||'processing',{creditsReserved:d.creditsReserved});
   if(kind==='video'){activeVideoWatchId=job;availability();}
   $('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');
   await watch(job,epoch);
@@ -1040,6 +1155,7 @@ const previous=sessionStorage.getItem('vu_generation_job');if(previous&&config.e
 if(new URLSearchParams(location.search).get('view')==='history')setHistory(true);
 
 await loadAiWallet();
+await checkProviderConsent();
 const aiCheckoutState=new URLSearchParams(location.search).get('ai_checkout');
 if((aiCheckoutState==='returned'||aiCheckoutState==='cancelled')&&!$('walletButton').hidden){
  if(!$('walletDialog').open)$('walletDialog').showModal();

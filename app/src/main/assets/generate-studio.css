@@ -121,3 +121,4 @@ body.image-studio .composer{position:sticky;bottom:12px;margin-top:auto;z-index:
  body.image-studio .stage{min-height:clamp(220px,34svh,420px);padding:10px 0}
  body.image-studio .composer{position:sticky;bottom:max(8px,env(safe-area-inset-bottom));padding-bottom:calc(14px + env(safe-area-inset-bottom))}
 }
+.consent-manage{display:inline-flex;align-items:center;min-height:36px;padding:4px 0;border:0;background:transparent;color:var(--muted);font-size:11px;text-decoration:underline;text-underline-offset:3px}

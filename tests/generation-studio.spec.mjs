@@ -1,29 +1,31 @@
 import {test,expect} from '@playwright/test';
 async function chooseStudio(page,kind){await page.locator('#studioTypePicker').click();await page.locator('#studioTypeMenu [data-kind="'+kind+'"]').click();}
-test('mobile studio has clear sections, no false generation and no overflow',async({page})=>{await page.setViewportSize({width:390,height:844});let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});await page.goto('/generate-studio.html');await expect(page.locator('#taskTitle')).toHaveText('Create a video');await page.locator('#prompt').fill('Ocean');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();await expect(page.locator('#availability')).toContainText('not enabled');await chooseStudio(page,'image');await expect(page.locator('#taskTitle')).toHaveText('Create an image');await expect(page.locator('#ratio option')).toHaveCount(5);await chooseStudio(page,'music');await page.locator('#settingsButton').click();await expect(page.locator('#musicOptions')).toBeVisible();await page.locator('#musicMode').selectOption('instrumental');await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#referenceBox')).toBeHidden();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(posts).toBe(0);});
+test('mobile studio has clear sections, no false generation and no overflow',async({page})=>{await page.setViewportSize({width:390,height:844});let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});await page.goto('/generate-studio.html');await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await page.locator('#prompt').fill('Ocean');await expect(page.locator('#generate')).toBeDisabled();await expect(page.locator('#availability')).toContainText('not enabled');await chooseStudio(page,'image');await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await expect(page.locator('#ratio option')).toHaveCount(5);await chooseStudio(page,'music');await page.locator('#settingsButton').click();await expect(page.locator('#musicOptions')).toBeVisible();await page.locator('#musicMode').selectOption('instrumental');await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#referenceBox')).toBeHidden();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(posts).toBe(0);});
 test('config exposes readiness without secrets and disabled endpoint fails closed',async({request})=>{const r=await request.get('/api/studio/config');expect(r.status()).toBe(200);const c=await r.json();expect(c.enabled).toBe(false);expect(c.ownerOnly).toBe(true);expect(c.translation.enabled).toBe(false);const post=await request.post('/api/studio/jobs',{data:{kind:'image',prompt:'test',consent:true}});expect(post.status()).toBe(503);});
-test('Russian device language and retained per-studio draft',async({browser})=>{const context=await browser.newContext({locale:'ru-RU'});const page=await context.newPage();await page.goto('/generate-studio.html');await expect(page.locator('h1#taskTitle')).toHaveText('Создать видео');await page.locator('#prompt').fill('Море');await chooseStudio(page,'image');await page.locator('#prompt').fill('Цветок');await chooseStudio(page,'video');await expect(page.locator('#prompt')).toHaveValue('Море');await context.close();});
+test('Russian device language and retained per-studio draft',async({browser})=>{const context=await browser.newContext({locale:'ru-RU'});const page=await context.newPage();await page.addInitScript(()=>localStorage.setItem('deepsyq_home_language','ru'));await page.goto('/generate-studio.html');await expect(page.locator('h1#taskTitle')).toHaveText('Оживите свою идею с Deepsyq');await page.locator('#prompt').fill('Море');await chooseStudio(page,'image');await page.locator('#prompt').fill('Цветок');await chooseStudio(page,'video');await expect(page.locator('#prompt')).toHaveValue('Море');await context.close();});
 test('mocked contract result confirms current credits before posting, then previews, downloads and deletes',async({page})=>{
  const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:3,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',provider:'Google',adapter:true,ratios:['1:1'],references:3,enabled:true}]};
+ await page.addInitScript(()=>localStorage.setItem('vv_token','playwright-consenting-synthetic-account'));
+ await page.route('**/api/studio/consent',r=>r.fulfill({json:{version:'2026-10-20',termsAccepted:true,privacyAcknowledged:true,providerAccepted:true}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
  let jobPosts=0,estimatePosts=0,jobBody;
  await page.route('**/api/studio/estimate',async r=>{estimatePosts++;return r.fulfill({json:{kind:'image',model:'fixture',credits:7,quantity:1,perImageCredits:7,unit:'AI credits'}});});
  await page.route('**/api/studio/jobs',async r=>{if(r.request().method()==='POST'){jobPosts++;jobBody=r.request().postDataJSON();return r.fulfill({status:202,json:{id:'fixture',status:'ready'}});}return r.fulfill({json:{items:[]}});});
  await page.route('**/api/studio/jobs/fixture',r=>r.fulfill({json:r.request().method()==='DELETE'?{ok:true}:{id:'fixture',status:'ready',mime:'image/png'}}));
  await page.route('**/api/studio/jobs/fixture/media',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
- await page.goto('/generate-studio.html');await chooseStudio(page,'image');await page.locator('#prompt').fill('Fixture');await page.locator('#consent').check();
+ await page.goto('/generate-studio.html');await chooseStudio(page,'image');await page.locator('#prompt').fill('Fixture');await expect(page.locator('#generate')).toBeEnabled();
  page.once('dialog',d=>d.dismiss());await page.locator('#generate').click();await expect(page.locator('#status')).toContainText('cancelled');expect(estimatePosts).toBe(1);expect(jobPosts).toBe(0);
  page.once('dialog',async d=>{expect(d.message()).toContain('7 AI credits');await d.accept();});
  await page.locator('#generate').click();await expect(page.locator('#media img')).toBeVisible();expect(jobPosts).toBe(1);expect(jobBody.expectedCredits).toBe(7);
  const download=page.waitForEvent('download');await page.locator('#download').click();expect((await download).suggestedFilename()).toBe('Deepsyq-fixture.png');await page.locator('#remove').click();await expect(page.locator('#media img')).toHaveCount(0);await expect(page.locator('#status')).toContainText('deleted');
 });
 
-test('Android bridge uses configured backend without loading FFmpeg',async({page})=>{await page.addInitScript(()=>window.AndroidBridge={getApiBase:()=>'https://native-api.example.test'});await page.route('**/generate-studio.html',async r=>{const response=await r.fetch();const headers={...response.headers()};delete headers['content-security-policy'];await r.fulfill({response,headers});});let called=false;await page.route('https://native-api.example.test/api/studio/config',r=>{called=true;return r.fulfill({headers:{'Access-Control-Allow-Origin':'*'},json:{enabled:false,models:[]}});});await page.goto('/generate-studio.html');await expect(page.locator('#taskTitle')).toHaveText('Create a video');expect(called).toBe(true);expect(await page.evaluate(()=>!!window.vuRuntimeReady)).toBe(false);});
+test('Android bridge uses configured backend without loading FFmpeg',async({page})=>{await page.addInitScript(()=>window.AndroidBridge={getApiBase:()=>'https://native-api.example.test'});await page.route('**/generate-studio.html',async r=>{const response=await r.fetch();const headers={...response.headers()};delete headers['content-security-policy'];await r.fulfill({response,headers});});let called=false;await page.route('https://native-api.example.test/api/studio/config',r=>{called=true;return r.fulfill({headers:{'Access-Control-Allow-Origin':'*'},json:{enabled:false,models:[]}});});await page.goto('/generate-studio.html');await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');expect(called).toBe(true);expect(await page.evaluate(()=>!!window.vuRuntimeReady)).toBe(false);});
 
 test('three direct studio links and model/settings dialogs work on small phones',async({page})=>{
  await page.setViewportSize({width:320,height:740});
- for(const [studio,title] of [['image','Create an image'],['audio','Create audio'],['video','Create a video']]){await page.goto('/generate-studio.html?studio='+studio);await expect(page.locator('#taskTitle')).toHaveText(title);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
- await page.locator('#modelButton').click();await expect(page.getByRole('dialog')).toBeVisible();await page.getByRole('button',{name:/Seedance 2.0/}).click();await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');await expect(page.locator('#availability')).toContainText('not enabled');await expect(page.locator('[data-t=consent]')).toContainText('BytePlus');await page.locator('#prompt').fill('Video');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();
+ for(const [studio,title] of [['image','Light up your creation with Deepsyq'],['audio','Light up your creation with Deepsyq'],['video','Light up your creation with Deepsyq']]){await page.goto('/generate-studio.html?studio='+studio);await expect(page.locator('#taskTitle')).toHaveText(title);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+ await page.locator('#modelButton').click();await expect(page.getByRole('dialog')).toBeVisible();await page.getByRole('button',{name:/Seedance 2.0/}).click();await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');await expect(page.locator('#availability')).toContainText('not enabled');await expect(page.locator('[data-t=consent]')).toContainText('BytePlus');await page.locator('#prompt').fill('Video');await expect(page.locator('#generate')).toBeDisabled();
  await page.locator('#settingsButton').click();await page.getByRole('button',{name:'1:1',exact:true}).click();await expect(page.locator('#ratio')).toHaveValue('1:1');await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#settingsButton')).toContainText('1:1');
  await page.locator('#modelButton').click();await page.keyboard.press('Escape');await expect(page.locator('#modelDialog')).not.toBeVisible();
 });
@@ -35,7 +37,33 @@ test('reference photo preview, draft retention and clear are local',async({page}
  await page.goto('/generate-studio.html?studio=image');await page.locator('#references').setInputFiles({name:'reference.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')});await expect(page.locator('#refPreview img')).toHaveCount(1);await chooseStudio(page,'video');await chooseStudio(page,'image');await expect(page.locator('#refPreview img')).toHaveCount(1);await page.locator('#clearRefs').click();await expect(page.locator('#refPreview img')).toHaveCount(0);
 });
 
-test('consent names the provider and resets when model or studio changes',async({page})=>{await page.goto('/generate-studio.html?studio=image');await page.locator('#consent').check();await page.locator('#modelButton').click();await page.getByRole('button',{name:/Seedream 4.5/}).click();await expect(page.locator('#consent')).not.toBeChecked();await expect(page.locator('[data-t=consent]')).toContainText('BytePlus');await page.locator('#consent').check();await chooseStudio(page,'video');await expect(page.locator('#consent')).not.toBeChecked();await expect(page.locator('[data-t=consent]')).toContainText('Google');});
+test('provider choice updates privacy wording without recurring generation checkbox',async({page})=>{await page.goto('/generate-studio.html?studio=image');await page.locator('#modelButton').click();await page.getByRole('button',{name:/Seedream 4.5/}).click();await expect(page.locator('[data-t=consent]')).toContainText('BytePlus');await chooseStudio(page,'video');await expect(page.locator('[data-t=consent]')).toContainText('Google');await expect(page.locator('#generate')).toBeDisabled();});
+
+test('AI privacy choice can be reopened, revoked, and re-enabled after initial consent',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','playwright-consenting-synthetic-account'));
+ let saved={version:'2026-10-20',termsAccepted:true,privacyAcknowledged:true,providerAccepted:true};
+ await page.route('**/api/studio/consent',async route=>{
+  if(route.request().method()==='POST'){
+   const body=route.request().postDataJSON();saved={...saved,...body};
+   return route.fulfill({json:{ok:true,version:saved.version,termsAccepted:saved.termsAccepted,privacyAcknowledged:saved.privacyAcknowledged,providerAccepted:saved.providerAccepted}});
+  }
+  return route.fulfill({json:saved});
+ });
+ const cfg={enabled:true,models:[{kind:'image',id:'fixture',label:'Fixture',provider:'Google',adapter:true,ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',provider:'Google',adapter:true,ratios:['1:1'],references:0,enabled:true}]};
+ await page.route('**/api/studio/config',route=>route.fulfill({json:cfg}));
+ await page.goto('/generate-studio.html?studio=image');
+ await page.locator('#prompt').fill('Consent lifecycle fixture');
+ await expect(page.locator('#generate')).toBeEnabled();
+ await page.locator('#manageAiConsent').click();await expect(page.locator('.ds-consent-modal')).toBeVisible();
+ await expect(page.locator('.ds-consent-modal input[type=checkbox]').nth(0)).toBeChecked();
+ await expect(page.locator('.ds-consent-modal input[type=checkbox]').nth(1)).toBeChecked();
+ const provider=page.locator('.ds-consent-modal input[type=checkbox]').nth(2);await expect(provider).toBeChecked();await provider.uncheck();
+ await page.getByRole('button',{name:'Save my choices'}).click();await expect(page.locator('.ds-consent-modal')).toHaveCount(0);expect(saved.providerAccepted).toBe(false);
+ await expect(page.locator('#generate')).toBeDisabled();
+ await page.locator('#manageAiConsent').click();await expect(page.locator('.ds-consent-modal input[type=checkbox]').nth(2)).not.toBeChecked();
+ await page.locator('.ds-consent-modal input[type=checkbox]').nth(2).check();await page.getByRole('button',{name:'Save my choices'}).click();
+ expect(saved.providerAccepted).toBe(true);await expect(page.locator('#consent')).toBeChecked();await expect(page.locator('#generate')).toBeEnabled();
+});
 
 test('saved generation history renders and reopens a durable result',async({page})=>{
  const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]};
@@ -155,7 +183,7 @@ test('Studio explains the signed-in plan generation limits',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vv_token','basic-user'));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,pricingConfigured:false,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]}}));
  await page.route('**/api/studio/access',r=>r.fulfill({json:{allowed:true,scope:'public',plan:'basic',maxConcurrent:2,maxPerHour:12,activeJobs:1,jobsThisHour:4,reason:null,walletReady:true,pricingConfigured:true}}));
- await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#accessInfo')).toBeVisible();await expect(page.locator('#accessInfo')).toContainText('2 active generation');await expect(page.locator('#accessInfo')).toContainText('12 per hour');await expect(page.locator('#accessInfo')).toContainText('1/2 active');await expect(page.locator('#accessInfo')).toContainText('4/12 in the last hour');
+ await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#accessInfo')).toBeHidden();await expect(page.locator('#accessInfo')).toContainText('2 active generation');await expect(page.locator('#accessInfo')).toContainText('12 per hour');await expect(page.locator('#accessInfo')).toContainText('1/2 active');await expect(page.locator('#accessInfo')).toContainText('4/12 in the last hour');
 });
 
 test('video selectors follow real Veo/Seedance capabilities without submitting jobs',async({page})=>{
@@ -230,12 +258,10 @@ test('video prompt and model settings restore privately after tab reload without
  await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');
  await expect(page.locator('#videoResolution')).toHaveValue('1080p');
  await expect(page.locator('#videoDuration')).toHaveValue('15');
- await expect(page.locator('#videoDraftBar')).toBeVisible();
+ // Private draft settings restore correctly, while the owner-requested UI
+ // hides everyday Clear Draft messaging and repeated provider consent.
+ await expect(page.locator('#videoDraftBar')).toBeHidden();
  await expect(page.locator('#consent')).not.toBeChecked();
- page.once('dialog',d=>d.accept());
- await page.locator('#clearVideoDraft').click();
- await page.reload();
- await expect(page.locator('#prompt')).toHaveValue('');
  expect(jobPosts).toBe(0);
 });
 test('recovered Seedance first and last frames require both photos again, never store photos',async({page})=>{
@@ -294,7 +320,7 @@ test('video History checks an existing task without resubmitting or downloading 
 
 // Owner acceptance: Home keeps its dialog; Studio panels anchor to composer controls. No provider dispatch.
 for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320,height:740},{width:844,height:390}]){
- for(const [studio,title] of [['image','Create an image'],['video','Create a video'],['audio','Create audio']]){
+ for(const [studio,title] of [['image','Light up your creation with Deepsyq'],['video','Light up your creation with Deepsyq'],['audio','Light up your creation with Deepsyq']]){
  test(`studio model/settings windows: ${studio} uses button-anchored panels at ${viewport.width}x${viewport.height}`,async({page},info)=>{
   await page.setViewportSize(viewport);
   let posts=0;page.on('request',request=>{if(request.method()==='POST')posts++;});

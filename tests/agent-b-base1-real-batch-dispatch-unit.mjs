@@ -33,6 +33,8 @@ async function scenario({confirmPrice=true,breakAfter=null}={}){
   sessionStorage:{setItem(){}},
   say:en=>en,errorText:e=>e.message,
   availability(){},setHistory(){},clearResult(){},updateJobProgress(){},
+  // Chat view is read-only and does not dispatch an additional paid job.
+  loadConversation(){},
   confirm:()=>confirmPrice,
   watch:async id=>{watches.push(id);context.busy=false;},
   api:async(path,opts={})=>{
