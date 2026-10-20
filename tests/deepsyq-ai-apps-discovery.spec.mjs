@@ -295,9 +295,8 @@ test('BASE #30: mobile and desktop Quick Create hand off to Studio without gener
  page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))posts++;});
  await page.goto('/deepsyq.html');
  await expect(page.locator('#homeQuickPrompt')).toBeVisible();
- await page.locator('[data-home-kind="video"]').click();
  await page.locator('#homeQuickPrompt').fill('Original product announcement in a cinematic studio');
- await page.locator('#homeQuickSubmit').click();
+ await page.locator('[data-home-kind="video"]').click();
  await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=home/);
  await expect(page.locator('#prompt')).toHaveValue('Original product announcement in a cinematic studio');
  await expect(page.locator('#consent')).not.toBeChecked();
