@@ -10,7 +10,7 @@ async function home(page){
 test('Owner neon layout: reference section order, real card images and mobile bounds',async({page},info)=>{
  const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
  await home(page);
- await expect(page.locator('#homeHeroModel')).toHaveText('Sample video, created in Google Flow');
+ await expect(page.locator('#homeHeroModel')).toHaveText('AI Canvas');
  await expect(page.locator('.home-launch-grid')).toHaveCount(0);
  await expect(page.locator('#homeQuickForm [data-home-kind]')).toHaveCount(4);
  await expect(page.locator('#homeCreativeTools')).toHaveCount(1);
@@ -49,13 +49,30 @@ test('Owner neon layout: feature shortcuts keep routes and show truthful Flow so
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','#quickCreateForm');
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','generate-studio.html?studio=video');
- await expect(page.locator('#homeHeroModel')).toHaveText('Sample video, created in Google Flow');
+ await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.0');
  await expect(page.locator('#homeHeroModel')).toHaveAttribute('title',/created in Google Flow/);
- await expect(page.locator('#homeHeroCreditLabel')).toHaveText('FEATURED VIDEO');
+ await expect(page.locator('#homeHeroCreditLabel')).toHaveText('EXPLORE VIDEO MODELS');
  await page.locator('#homeHeroNext').click();
- await expect(page.locator('#homeHeroModel')).toHaveText('Sample video, created in Google Flow');
+ await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.5');
  await page.locator('.home-create-card.tile-canvas').click();
  await expect(page.locator('#quickCreateForm')).toBeInViewport();
+});
+
+test('Owner lock: server-side stale carousel captions cannot replace the six owner-approved headings',async({page})=>{
+ const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
+ await home(page);
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:bundle.items.filter(x=>x.featured).map(item=>({
+  ...item,defaultSettings:{...item.defaultSettings,homeShowcase:{...item.defaultSettings.homeShowcase,title:'Sample video, created in Google Flow',label:'FEATURED VIDEO'}}
+ }))}}));
+ await page.reload();
+ const names=['AI Canvas','Seedance 2.0','Seedance 2.5','Video Studio','AI Agent','Image Studio'];
+ const labels=['CREATIVE WORKSPACE','EXPLORE VIDEO MODELS','EXPLORE VIDEO MODELS','CREATE WITH DEEPSYQ','CREATIVE CO-PILOT · COMING SOON','CREATE WITH DEEPSYQ'];
+ for(let i=0;i<6;i++){
+  await expect(page.locator('#homeHeroModel')).toHaveText(names[i]);
+  await expect(page.locator('#homeHeroCreditLabel')).toHaveText(labels[i]);
+  if(i<5)await page.locator('#homeHeroNext').click();
+ }
+ expect(posts).toEqual([]);
 });
 
 test('Home creator picker: studio model/settings windows are centered, model-aware and no-spend',async({page})=>{
