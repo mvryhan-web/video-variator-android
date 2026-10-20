@@ -221,13 +221,21 @@ function translateText(root=document.body){
   if(next!==now)node.textContent=next;
   original.set(node,{source:entry.source,output:next});
  }
- for(const input of (root.querySelectorAll?root.querySelectorAll('input[placeholder],textarea[placeholder]'):[])){
-  if(input.closest(exclusions))continue;
-  const text=input.getAttribute('placeholder')||'';
-  const originalText=input.dataset.dsSourcePlaceholder||text;
-  if(!input.dataset.dsSourcePlaceholder)input.dataset.dsSourcePlaceholder=originalText;
-  const next=locale==='en'?originalText:convert(originalText,dict);
-  if(next!==text)input.setAttribute('placeholder',next);
+ const attrs=['placeholder','aria-label','title'];
+ const nodesWithAttrs=root.querySelectorAll?
+  root.querySelectorAll('[placeholder],[aria-label],[title]'):[];
+ for(const node of nodesWithAttrs){
+  if(node.closest(exclusions))continue;
+  for(const attr of attrs){
+   if(!node.hasAttribute(attr))continue;
+   const now=node.getAttribute(attr)||'';
+   const key='ds-i18n-'+attr;
+   const saved=node.dataset[key.replace(/-([a-z])/g,(_,c)=>c.toUpperCase())]||now;
+   const dataKey=key.replace(/-([a-z])/g,(_,c)=>c.toUpperCase());
+   if(!node.dataset[dataKey])node.dataset[dataKey]=saved;
+   const next=locale==='en'?saved:convert(saved,dict);
+   if(now!==next)node.setAttribute(attr,next);
+  }
  }
 }
 let scheduled=false;
