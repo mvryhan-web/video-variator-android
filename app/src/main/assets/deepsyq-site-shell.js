@@ -84,4 +84,6 @@
  sidebar.addEventListener('click',e=>{if(e.target.closest('a'))close();});
  document.body.classList.add('deepsyq-sitewide-shell');
  document.body.prepend(scrim,toggle,sidebar);
+ // Unified locale for all pages using this existing shell; no layout changes.
+ const localeScript=document.createElement('script');localeScript.type='module';localeScript.src='deepsyq-locale.js';document.head.append(localeScript);
 })();
