@@ -3,7 +3,7 @@ import {test,expect} from '@playwright/test';
 // Owner-approved concise creative UX, all tests GET-only; never issue paid
 // API requests, Stripe checkout, media uploads or generation POST.
 const modes=[
-  ['image','Create an image'],['video','Create a video'],['audio','Create audio']
+  ['image','Light up your creation with Deepsyq'],['video','Light up your creation with Deepsyq'],['audio','Light up your creation with Deepsyq']
 ];
 
 test('Image Video Audio open directly to one concise heading and actual creator',async({page})=>{
@@ -82,4 +82,28 @@ test('approved Home and Agent-coming-soon route stay unchanged',async({page})=>{
  await expect(page.locator('#homeHeroCarousel')).toHaveCount(1);
  await page.goto('/ai-apps.html');
  await expect(page.getByRole('link',{name:/AI Agents.*soon/i})).toHaveAttribute('href','deepsyq.html#agentFeature');
+});
+
+
+test('Owner layout: creation title is centered and actual Image Video Audio composer stays below the stage',async({page})=>{
+ for(const viewport of [{width:1360,height:900},{width:390,height:844},{width:320,height:740}]){
+  await page.setViewportSize(viewport);
+  for(const kind of ['image','video','audio']){
+   await page.goto('/generate-studio.html?studio='+kind);
+   const stage=await page.locator('.stage').boundingBox();
+   const title=await page.locator('#taskTitle').boundingBox();
+   const composer=await page.locator('#creator').boundingBox();
+   expect(stage,kind+' '+viewport.width+' stage').not.toBeNull();
+   expect(title,kind+' '+viewport.width+' title').not.toBeNull();
+   expect(composer,kind+' '+viewport.width+' composer').not.toBeNull();
+   expect(stage.height,kind+' '+viewport.width+' real creation workspace').toBeGreaterThanOrEqual(viewport.width>700?329:274);
+   expect(Math.abs(title.x+title.width/2-(stage.x+stage.width/2)),kind+' center').toBeLessThanOrEqual(18);
+   // Image uses its pre-existing bottom-sticky dock, which overlaps the stage edge by 10 px.
+   // A small 16 px allowance tests the approved bottom position without demanding layout separation.
+   expect(composer.y,kind+' '+viewport.width+' bottom dock below main workspace').toBeGreaterThanOrEqual(stage.y+stage.height-16);
+   await expect(page.locator('#modelButton')).toBeVisible();
+   await expect(page.locator('#settingsButton')).toBeVisible();
+   await expect(page.locator('#generate')).toBeDisabled();
+  }
+ }
 });

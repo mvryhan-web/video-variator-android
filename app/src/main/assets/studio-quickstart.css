@@ -105,3 +105,36 @@ body.studio-quickstart .ref-meta:has(#clearRefs[hidden]) #refHint {
     padding-bottom: 6px !important;
   }
 }
+
+/* OWNER RESTORED LAYOUT (2026-10-20) — isolated CSS extracted from PR #323.
+   Existing Create/History forms, models, consent, and provider logic are unchanged.
+   Keep the idle headline centered in the work area and the creator below it,
+   instead of collapsing the stage and pulling the form into the middle. */
+body.studio-quickstart .stage:has(#empty:not([hidden])) {
+  flex: 1 1 auto !important;
+  min-height: 330px !important;
+  padding: 35px 10px !important;
+  justify-content: center !important;
+}
+body.studio-quickstart .stage #empty.intro {
+  margin: 0 auto !important;
+}
+body.studio-quickstart .stage #empty #taskTitle {
+  font-size: clamp(23px, 3vw, 40px) !important;
+  line-height: 1.25;
+  font-weight: 650;
+  letter-spacing: -.035em;
+  margin: 0 auto !important;
+  max-width: 780px;
+  text-align: center;
+  color: var(--text);
+}
+@media (max-width: 700px) {
+  body.studio-quickstart .stage:has(#empty:not([hidden])) {
+    min-height: 275px !important;
+    padding: 28px 0 24px !important;
+  }
+  body.studio-quickstart .stage #empty #taskTitle {
+    font-size: 25px !important;
+  }
+}
