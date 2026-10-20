@@ -49,8 +49,10 @@ test('AI privacy choice can be reopened, revoked, and re-enabled after initial c
   }
   return route.fulfill({json:saved});
  });
- await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,models:[],catalog:[]}}));
+ const cfg={enabled:true,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',provider:'Google',adapter:true,ratios:['1:1'],references:0,enabled:true}]};
+ await page.route('**/api/studio/config',route=>route.fulfill({json:cfg}));
  await page.goto('/generate-studio.html?studio=image');
+ await expect(page.locator('#generate')).toBeEnabled();
  await page.locator('#manageAiConsent').click();await expect(page.locator('.ds-consent-modal')).toBeVisible();
  await expect(page.locator('.ds-consent-modal input[type=checkbox]').nth(0)).toBeChecked();
  await expect(page.locator('.ds-consent-modal input[type=checkbox]').nth(1)).toBeChecked();
@@ -59,7 +61,7 @@ test('AI privacy choice can be reopened, revoked, and re-enabled after initial c
  await expect(page.locator('#generate')).toBeDisabled();
  await page.locator('#manageAiConsent').click();await expect(page.locator('.ds-consent-modal input[type=checkbox]').nth(2)).not.toBeChecked();
  await page.locator('.ds-consent-modal input[type=checkbox]').nth(2).check();await page.getByRole('button',{name:'Save my choices'}).click();
- expect(saved.providerAccepted).toBe(true);await expect(page.locator('#generate')).toBeDisabled();
+ expect(saved.providerAccepted).toBe(true);await expect(page.locator('#consent')).toBeChecked();await expect(page.locator('#generate')).toBeEnabled();
 });
 
 test('saved generation history renders and reopens a durable result',async({page})=>{
@@ -383,5 +385,3 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   expect(posts).toBe(0);
  });
- }
-}
