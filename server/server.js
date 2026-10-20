@@ -197,7 +197,13 @@ app.get('/api/inspiration',(req,res)=>{
 });
 app.get('/api/templates',(_req,res)=>res.json({items:[]}));
 app.get('/api/studio/config',(_req,res)=>res.json({enabled:false,ownerOnly:true,publicGenerationEnabled:false,models:[],catalog:[],translation:{enabled:false,reason:'AI_STUDIO_NOT_AVAILABLE_IN_VISUAL_RELEASE'}}));
-app.get(['/','/dashboard'],(_req,res)=>res.sendFile(path.join(staticDir,'deepsyq.html')));
+// Keep legacy checkout and Android auth returns on their existing app entry.
+app.get('/',(req,res,next)=>{
+ if(process.env.DEEPSYQ_HOME_ENABLED!=='true'||Object.hasOwn(req.query,'mobileAuth')||Object.hasOwn(req.query,'checkout'))return next();
+ res.setHeader('Cache-Control','no-cache');
+ res.sendFile(path.join(staticDir,'deepsyq.html'));
+});
+app.get('/dashboard',(_req,res)=>res.sendFile(path.join(staticDir,'deepsyq.html')));
 
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
