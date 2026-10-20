@@ -2,6 +2,7 @@ import {saveStudioHandoff} from './studio-handoff.js';
 import {renderHomeCarousel} from './home-experience.js';
 import {MODEL_CATALOG} from './generate-models.js';
 import {authorizedOnboardingOptions,onboardingResponseTarget} from './onboarding-options.js';
+import {presentConsent} from './studio-consent-ui.js';
 const $=id=>document.getElementById(id);
 const quickCreateForm=$('quickCreateForm');
 const quickCreateDropzone=$('quickCreateDropzone');
@@ -598,7 +599,11 @@ if(requestedIdentityToken)try{
   if(user.isAdmin&&!document.getElementById('adminAiControl')){
    const a=document.createElement('a');a.id='adminAiControl';a.href='deepsyq-admin.html';a.textContent='Owner AI Control';document.querySelector('.sidebar-bottom').prepend(a);
   }
-  await Promise.all([maybeShowOnboarding(),loadAIWallet(),loadRecentCreations()]);
+  await Promise.all([loadAIWallet(),loadRecentCreations()]);
+  // First-account sign-in: explicit Terms/Privacy/provider selection BEFORE onboarding.
+  // This changes neither Home markup nor any carousel, hero or approved visual block.
+  if(localStorage.getItem('deepsyq_onboarding_pending')==='1')await presentConsent();
+  if(requestedIdentityToken===localStorage.getItem('vv_token'))await maybeShowOnboarding();
  }
 }catch(e){
  if(requestedIdentityToken===localStorage.getItem('vv_token')&&
