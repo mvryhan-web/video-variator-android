@@ -1,9 +1,24 @@
+import {templateSupport} from './ai-template-product-name.js';
 const $=id=>document.getElementById(id);
 const VALID_KINDS=new Set(['all','image','video']);const PAGE_SIZE=24;let timer=null,lastCategories=[],lastRatios=[],nextOffset=null,loading=false,activeRequest=null,videoObserver=null;
 const initial=new URLSearchParams(location.search);let kind=VALID_KINDS.has(initial.get('kind'))?initial.get('kind'):'all';
 function ratioClass(r){return 'r'+String(r||'1:1').replace(':','x');}
 function studioKind(item){return item.kind==='video'?'video':'image';}
+function studioHandoffSupport(item){
+ if(item.actionTarget!=='studio')return null;
+ const support=templateSupport({
+  generationType:item.kind,promptTemplate:item.prompt,requiredInputTypes:item.requiredInputTypes
+ });
+ if(support.supported&&support.requiresProductName)
+  return {supported:false,reason:'This workflow needs a product name field not available in Inspiration. Open Studio and write your prompt manually.'};
+ return support;
+}
 function openTarget(item,mode,feedback){
+ const support=studioHandoffSupport(item);
+ if(support&&!support.supported){
+  if(feedback){feedback.textContent=support.reason;feedback.hidden=false;}
+  return;
+ }
  const settings=mode==='prompt'?{}:{...(item.defaultSettings||{}),ratio:item.aspectRatio};
  const payload={id:item.id,title:item.title,generationType:item.kind,promptTemplate:item.prompt||'',defaultModel:mode==='clone'?item.defaultModel||null:null,requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],defaultSettings:settings,source:'inspiration',action:mode};
  let key,destination;
@@ -17,7 +32,7 @@ function openTarget(item,mode,feedback){
 }
 function preview(item){const wrap=document.createElement('div');wrap.className='media '+ratioClass(item.aspectRatio);if(item.kind==='video'){const v=document.createElement('video');v.src=item.previewUrl;v.controls=true;v.muted=true;v.loop=true;v.playsInline=true;v.preload='none';v.setAttribute('aria-label',item.title+' preview');if(item.previewPosterUrl)v.poster=item.previewPosterUrl;wrap.append(v);}else{const img=document.createElement('img');img.src=item.previewUrl;img.alt=item.title;img.loading='lazy';img.referrerPolicy='no-referrer';wrap.append(img);}const badge=document.createElement('span');badge.className='type-badge';badge.textContent=item.kind;wrap.append(badge);return wrap;}
 function card(item){const el=document.createElement('article');el.className='card';el.dataset.ratio=item.aspectRatio;el.dataset.kind=item.kind;const copy=document.createElement('div');copy.className='copy';const title=document.createElement('h2');title.textContent=item.title;const desc=document.createElement('p');desc.textContent=item.description||'Owner-approved Deepsyq inspiration.';const meta=document.createElement('div');meta.className='meta';// A preferred model is not proof that any paid model is connected or enabled.
- for(const x of [item.category,item.aspectRatio].filter(Boolean)){const s=document.createElement('span');s.textContent=x;meta.append(s);}const prompt=document.createElement('div');prompt.className='prompt';prompt.textContent=item.prompt;const note=document.createElement('p');note.className='replace-note';note.textContent=(item.requiredInputTypes||[]).length?'Add your own source assets in Studio; inspiration assets are not copied.':'Studio opens with the prompt/settings prepared; nothing generates automatically.';const actions=document.createElement('div');actions.className='actions';const feedback=document.createElement('p');feedback.className='handoff-feedback';feedback.setAttribute('role','alert');feedback.hidden=true;const create=document.createElement('button');create.type='button';create.className='primary';create.textContent='Create yours';create.onclick=()=>openTarget(item,'create',feedback);const use=document.createElement('button');use.type='button';use.textContent='Use this prompt';use.onclick=()=>openTarget(item,'prompt',feedback);const clone=document.createElement('button');clone.type='button';clone.textContent='Clone and Try';clone.onclick=()=>openTarget(item,'clone',feedback);actions.append(create,use,clone);copy.append(title,desc,meta,prompt,note,actions,feedback);el.append(preview(item),copy);return el;}
+ for(const x of [item.category,item.aspectRatio].filter(Boolean)){const s=document.createElement('span');s.textContent=x;meta.append(s);}const prompt=document.createElement('div');prompt.className='prompt';prompt.textContent=item.prompt;const note=document.createElement('p');note.className='replace-note';const handoff=studioHandoffSupport(item);note.textContent=handoff&&!handoff.supported?handoff.reason:(item.requiredInputTypes||[]).length?'Add your own source assets in Studio; inspiration assets are not copied.':'Studio opens with the prompt/settings prepared; nothing generates automatically.';const actions=document.createElement('div');actions.className='actions';const feedback=document.createElement('p');feedback.className='handoff-feedback';feedback.setAttribute('role','alert');feedback.hidden=true;const create=document.createElement('button');create.type='button';create.className='primary';create.textContent='Create yours';create.onclick=()=>openTarget(item,'create',feedback);const use=document.createElement('button');use.type='button';use.textContent='Use this prompt';use.onclick=()=>openTarget(item,'prompt',feedback);const clone=document.createElement('button');clone.type='button';clone.textContent='Clone and Try';clone.onclick=()=>openTarget(item,'clone',feedback);if(handoff&&!handoff.supported){create.disabled=true;use.disabled=true;clone.disabled=true;}actions.append(create,use,clone);copy.append(title,desc,meta,prompt,note,actions,feedback);el.append(preview(item),copy);return el;}
 function syncSelect(id,label,values,current){const select=$(id);select.replaceChildren(new Option(label,''));for(const value of values)select.add(new Option(value,value));if(values.includes(current))select.value=current;}
 // Category shortcuts are derived exclusively from published, rights-approved API data.
 function renderCategoryChips(categories){
