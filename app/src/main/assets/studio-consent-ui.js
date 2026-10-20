@@ -39,7 +39,7 @@ export async function readConsent(){
  if(t!==token())throw Error('ACCOUNT_CHANGED');
  return {...data,authenticated:true};
 }
-function styledModal(){
+function styledModal(state){
  if(!document.querySelector('link[href="studio-consent-ui.css"]')){const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href='studio-consent-ui.css';document.head.append(sheet);}
  const dialog=document.createElement('dialog');dialog.className='ds-consent-modal';dialog.setAttribute('aria-labelledby','dsConsentTitle');
  const content=document.createElement('section');const title=document.createElement('h2');title.id='dsConsentTitle';
@@ -57,8 +57,11 @@ function styledModal(){
  const save=document.createElement('button');save.type='submit';save.className='ds-consent-primary';
  const later=document.createElement('button');later.type='button';later.className='ds-consent-later';
  controls.append(save,later);form.append(note,status,controls);content.append(title,intro,legal,form);dialog.append(content);
- const w=wording[storageLocale()]||wording.en;title.textContent=w.title;intro.textContent=w.intro;
+ const w=wording[storageLocale()]||wording.en;
+ title.textContent=state.termsAccepted?(storageLocale()==='ru'?'Настройки конфиденциальности AI':storageLocale()==='fr'?'Préférences de confidentialité IA':'AI privacy choices'):w.title;
+ intro.textContent=state.termsAccepted?(storageLocale()==='ru'?'Измените или отзовите разрешение на передачу материалов выбранному AI-провайдеру.':storageLocale()==='fr'?'Modifiez ou retirez votre autorisation de transmettre du contenu au fournisseur IA sélectionné.':'Update or revoke permission to send content to the selected AI provider.'):w.intro;
  terms.span.textContent=w.terms;privacy.span.textContent=w.privacy;provider.span.textContent=w.provider;
+ terms.field.checked=state.termsAccepted===true;privacy.field.checked=state.privacyAcknowledged===true;provider.field.checked=state.providerAccepted===true;
  note.textContent=w.note;save.textContent=w.accept;later.textContent=w.later;
  return {dialog,form,terms,privacy,provider,save,later,status,w};
 }
@@ -70,7 +73,7 @@ export async function presentConsent({force=false}={}){
  catch(_){return {authenticated:true,providerAccepted:false,storageUnavailable:true,shown:false};}
  if(!force&&(state.providerAccepted||state.termsAccepted))return {...state,shown:false};
  inFlight=new Promise(resolve=>{
-  const ui=styledModal(),close=result=>{if(ui.dialog.open)ui.dialog.close();ui.dialog.remove();inFlight=null;resolve(result);};
+  const ui=styledModal(state),close=result=>{if(ui.dialog.open)ui.dialog.close();ui.dialog.remove();inFlight=null;resolve(result);};
   document.body.append(ui.dialog);ui.dialog.showModal();
   ui.later.onclick=()=>close({...state,shown:true,dismissed:true});
   ui.dialog.addEventListener('cancel',event=>{event.preventDefault();close({...state,shown:true,dismissed:true});});

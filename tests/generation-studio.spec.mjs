@@ -39,6 +39,29 @@ test('reference photo preview, draft retention and clear are local',async({page}
 
 test('provider choice updates privacy wording without recurring generation checkbox',async({page})=>{await page.goto('/generate-studio.html?studio=image');await page.locator('#modelButton').click();await page.getByRole('button',{name:/Seedream 4.5/}).click();await expect(page.locator('[data-t=consent]')).toContainText('BytePlus');await chooseStudio(page,'video');await expect(page.locator('[data-t=consent]')).toContainText('Google');await expect(page.locator('#generate')).toBeDisabled();});
 
+test('AI privacy choice can be reopened, revoked, and re-enabled after initial consent',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','playwright-consenting-synthetic-account'));
+ let saved={version:'2026-10-20',termsAccepted:true,privacyAcknowledged:true,providerAccepted:true};
+ await page.route('**/api/studio/consent',async route=>{
+  if(route.request().method()==='POST'){
+   const body=route.request().postDataJSON();saved={...saved,...body};
+   return route.fulfill({json:{ok:true,version:saved.version,termsAccepted:saved.termsAccepted,privacyAcknowledged:saved.privacyAcknowledged,providerAccepted:saved.providerAccepted}});
+  }
+  return route.fulfill({json:saved});
+ });
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,models:[],catalog:[]}}));
+ await page.goto('/generate-studio.html?studio=image');
+ await page.locator('#manageAiConsent').click();await expect(page.locator('.ds-consent-modal')).toBeVisible();
+ await expect(page.locator('.ds-consent-modal input[type=checkbox]').nth(0)).toBeChecked();
+ await expect(page.locator('.ds-consent-modal input[type=checkbox]').nth(1)).toBeChecked();
+ const provider=page.locator('.ds-consent-modal input[type=checkbox]').nth(2);await expect(provider).toBeChecked();await provider.uncheck();
+ await page.getByRole('button',{name:'Save my choices'}).click();await expect(page.locator('.ds-consent-modal')).toHaveCount(0);expect(saved.providerAccepted).toBe(false);
+ await expect(page.locator('#generate')).toBeDisabled();
+ await page.locator('#manageAiConsent').click();await expect(page.locator('.ds-consent-modal input[type=checkbox]').nth(2)).not.toBeChecked();
+ await page.locator('.ds-consent-modal input[type=checkbox]').nth(2).check();await page.getByRole('button',{name:'Save my choices'}).click();
+ expect(saved.providerAccepted).toBe(true);await expect(page.locator('#generate')).toBeDisabled();
+});
+
 test('saved generation history renders and reopens a durable result',async({page})=>{
  const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
