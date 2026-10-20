@@ -244,3 +244,27 @@ test('owner purchase list omits Stripe identifiers and reports refund/net amount
  const app=express();installGenerationStudio(app,{pool,wallet:{async init(){}},env:{ADMIN_EMAIL:'owner@example.test'},auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});
  const server=app.listen(0);await new Promise(r=>server.once('listening',r));try{const d=await fetch(`http://127.0.0.1:${server.address().port}/api/studio/admin/purchases`).then(r=>r.json());assert.equal(d.items[0].netMinor,749);assert.equal(d.items[0].refundedMinor,250);assert.equal(JSON.stringify(d).includes('cs_secret'),false);assert.equal(JSON.stringify(d).includes('pi_secret'),false);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
+test('single paid generation requires the exact server quote before DB, reserve or provider work',async()=>{
+ let dbCalls=0,reserves=0,calls=0;
+ const env={AI_STUDIO_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',
+  AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',
+  GEMINI_API_KEY:'fixture-only',DATABASE_URL:'fixture-only',ADMIN_EMAIL:'owner@example.test',
+  AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:1,maxPerHour:5}]),
+  AI_MODEL_PRICING_JSON:JSON.stringify([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:9,providerCostMicros:1200,currency:'usd',ratio:'1:1'}])};
+ const pool={async query(){dbCalls++;throw Error('DB must not be touched before quote acceptance');},async connect(){dbCalls++;throw Error('DB must not be touched before quote acceptance');}};
+ const wallet={async reserve(){reserves++;},purchasedDispatchVerifier:()=>async()=>{}};
+ const app=express();app.use(express.json());installGenerationStudio(app,{env,pool,wallet,
+  auth:(req,_res,next)=>{req.user={id:'buyer',email:'buyer@example.test',provider:'email',plan:'basic',subscription_status:'active'};next();},
+  provider:async()=>{calls++;return {mime:'image/png',bytes:Buffer.from('fixture')};}});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));
+ try{
+  const base='http://127.0.0.1:'+server.address().port;
+  for(const expectedCredits of [undefined,8,0,'9']){
+   const body={requestId:crypto.randomUUID(),kind:'image',model:'gemini-3.1-flash-image',prompt:'A blue cup',ratio:'1:1',consent:true};
+   if(expectedCredits!==undefined)body.expectedCredits=expectedCredits;
+   const response=await fetch(base+'/api/studio/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+   assert.equal(response.status,409);assert.equal((await response.json()).error,'AI_ESTIMATE_CHANGED');
+  }
+  assert.equal(dbCalls,0);assert.equal(reserves,0);assert.equal(calls,0);
+ }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});

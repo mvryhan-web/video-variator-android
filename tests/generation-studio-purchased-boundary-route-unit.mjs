@@ -78,7 +78,7 @@ async function withHttp(sim,fn){
   const url='http://127.0.0.1:'+server.address().port+'/api/studio/jobs';
   await fn(async(body)=>fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
    body:JSON.stringify({requestId:randomUUID(),kind:'image',prompt:'owned flower',ratio:'1:1',
-    model,consent:true,...body})}));
+    model,consent:true,expectedCredits:pricing.credits,...body})}));
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r))}
 }
 const settle=()=>new Promise(resolve=>setTimeout(resolve,40));
@@ -92,6 +92,14 @@ test('HTTP purchased customer: durable consent+server quote, atomic proof, provi
   assert.equal(sim.jobs[0].settings.purchasedQuote.credits,7);
   assert.deepEqual(sim.walletEvents.map(x=>x[0]),['reserve','purchasedClaim','settle']);
   assert.equal(sim.walletEvents.at(-1)[1].outcome,'success');
+ });
+});
+test('HTTP rejects zero accepted credits against the positive server quote before side effects',async()=>{
+ const sim=simulate();
+ await withHttp(sim,async post=>{
+  const res=await post({expectedCredits:0});assert.equal(res.status,409);
+  assert.equal((await res.json()).error,'AI_ESTIMATE_CHANGED');
+  assert.equal(sim.jobs.length,0);assert.equal(sim.walletEvents.length,0);assert.equal(sim.providerCalls(),0);
  });
 });
 test('HTTP bonus/welcome/unknown funding cannot reach provider and automatically returns held credits',async()=>{

@@ -13,6 +13,7 @@ let config={enabled:false,models:[]},catalog=MODEL_CATALOG.map(m=>({...m,enabled
 let refs=[],modelId=MODELS[kind].id,url,blob,job,busy=false,generation=0,historyView=false,historyFilter='all';
 let estimateTimer=null,estimateSignature='';
 let historyThumbUrls=[],historyMediaUrl=null,historyMediaPlayer=null,historyMediaButton=null,historyMediaEpoch=0;
+let historyLoadEpoch=0; // Prevent stale filter/account responses entering another History view.
 const drafts={};
 let activeVideoWatchId=null; // Current browser polling only; the provider job is server-owned.
 let lastJobProgress=null;
@@ -722,9 +723,15 @@ async function openHistoryJob(id){
  const epoch=++generation;try{await watch(id,epoch);if(epoch===generation)setHistory(false);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
 }
 async function loadHistory(){
+ const epoch=++historyLoadEpoch,requestedFilter=historyFilter;
+ const accountToken=typeof localStorage==='undefined'?null:localStorage.getItem('vv_token');
+ const isCurrent=()=>epoch===historyLoadEpoch&&historyView&&historyFilter===requestedFilter&&
+  (typeof localStorage==='undefined'||localStorage.getItem('vv_token')===accountToken);
  const list=$('historyList');list.hidden=false;clearHistoryMediaPreview();clearHistoryThumbs();list.replaceChildren();const loading=document.createElement('p');loading.className='hint';loading.textContent=say('Loading results…','Загружаем результаты…');list.append(loading);
  try{
-  const d=await(await api('/api/studio/jobs?filter='+encodeURIComponent(historyFilter))).json();list.replaceChildren();
+  const d=await(await api('/api/studio/jobs?filter='+encodeURIComponent(requestedFilter))).json();
+  if(!isCurrent())return; // Ignore late results from a previous account, tab or filter.
+  list.replaceChildren();
   if(!d.items?.length){const p=document.createElement('p');p.className='hint';p.textContent=say('No results in this filter yet.','В этом фильтре пока нет результатов.');list.append(p);return;}
   for(const item of d.items){
    const card=document.createElement('article');card.className='history-card';
@@ -764,11 +771,11 @@ async function loadHistory(){
    }
    actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions,inlinePreview);list.append(card);observeHistoryThumbnail(item,preview);
   }
- }catch(e){list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
+ }catch(e){if(!isCurrent())return;list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
 }
 document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclick=()=>{historyFilter=button.dataset.historyFilter;document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));void loadHistory();});
-function setHistory(on){if(!on)clearHistoryMediaPreview();historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
-window.addEventListener('pagehide',()=>{clearHistoryMediaPreview();clearHistoryThumbs();});
+function setHistory(on){if(!on){++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();$('historyList').replaceChildren();}historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!sessionStorage.getItem('vu_generation_job');if(on)void loadHistory();}
+window.addEventListener('pagehide',()=>{++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();});
 $('showCreate').onclick=()=>{const u=new URL(location.href);u.searchParams.delete('view');history.replaceState(null,'',u);setHistory(false);};$('showHistory').onclick=()=>setHistory(true);
 function clearResult(){if(url)URL.revokeObjectURL(url);url=null;blob=null;$('media').replaceChildren();$('lyrics').textContent='';$('actions').hidden=true;$('continueImage').hidden=true;$('saveNote').hidden=true;$('empty').hidden=historyView;}
 async function watch(id,epoch){
@@ -868,7 +875,64 @@ async function createImageBatch(){
  }
  $('status').textContent=say('Batch complete: '+ready+' images saved as separate results in History.','Пакет завершён: '+ready+' изображения сохранены отдельно в Истории.');
 }
-$('creator').onsubmit=async e=>{e.preventDefault();if($('generate').disabled)return;busy=true;availability();if(kind==='image'&&imageBatchQuantity()>1){try{await createImageBatch();}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}return;}setHistory(false);clearResult();job=null;updateJobProgress('submitting');const epoch=++generation;$('status').textContent=say('Submitting your request…','Отправляем запрос…');try{const d=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID(),kind,model:modelId,prompt:$('prompt').value,ratio:$('ratio').value,...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),...(kind==='video'?{videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value}:{}),musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked})})).json();if(!d.id)throw Error('STUDIO_STORAGE_UNAVAILABLE');job=d.id;sessionStorage.setItem('vu_generation_job',job);updateJobProgress(d.status||'processing',{creditsReserved:d.creditsReserved});if(kind==='video'){activeVideoWatchId=job;availability();}$('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');await watch(job,epoch);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;if(!job)updateJobProgress('unconfirmed');$('status').textContent=errorText(e);busy=false;availability();}};
+$('creator').onsubmit=async e=>{
+ e.preventDefault();
+ if($('generate').disabled)return;
+ if(kind==='image'&&imageBatchQuantity()>1){
+  busy=true;availability();
+  try{await createImageBatch();}
+  catch(error){$('status').textContent=errorText(error);}
+  finally{busy=false;availability();}
+  return;
+ }
+ busy=true;availability();
+ $('status').textContent=say('Checking the current credit quote…','Проверяем текущую стоимость в кредитах…');
+ try{
+  // Freeze choices before async quote; prompt and bytes must not enter estimate.
+  const original={kind,model:modelId,prompt:$('prompt').value,ratio:$('ratio').value,
+   ...(kind==='image'?{resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value}:{}),
+   ...(kind==='video'?{videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value}:{}),
+   musicMode:$('musicMode').value,references:refs.map(({mimeType,data})=>({mimeType,data})),consent:$('consent').checked};
+  const originalRefs=refs.slice(),tokenAtClick=typeof localStorage==='undefined'?null:localStorage.getItem('vv_token');
+  const state=()=>[kind,modelId,$('prompt').value,$('ratio').value,$('imageResolution').value,$('imageOutputFormat').value,$('videoResolution').value,$('videoDuration').value,$('videoInputMode').value,$('musicMode').value,$('consent').checked];
+  const originalState=state();
+  const stillAccepted=()=>(
+   (typeof localStorage==='undefined'||localStorage.getItem('vv_token')===tokenAtClick)&&
+   original.consent&&state().every((v,i)=>v===originalState[i])&&
+   refs.length===originalRefs.length&&refs.every((v,i)=>v===originalRefs[i]&&v.mimeType===original.references[i].mimeType&&v.data===original.references[i].data)
+  );
+  const abortPrice=()=>{$('status').textContent=say('The approved model, price or request changed. No job was submitted.','Модель, цена или запрос изменились. Задание не отправлено.');busy=false;availability();};
+  const quoteInput={kind:original.kind,model:original.model,ratio:original.ratio,
+   ...(original.kind==='image'?{resolution:original.resolution,outputFormat:original.outputFormat}:{}),
+   ...(original.kind==='video'?{videoResolution:original.videoResolution,videoDuration:original.videoDuration,videoInputMode:original.videoInputMode}:{}),
+   musicMode:original.musicMode,referenceCount:original.references.length,quantity:1};
+  const quote=await(await api('/api/studio/estimate',{method:'POST',body:JSON.stringify(quoteInput)})).json();
+  if(quote.kind!==original.kind||quote.model!==original.model||quote.quantity!==1||!Number.isSafeInteger(quote.credits)||quote.credits<1||!stillAccepted()){abortPrice();return;}
+  const label=catalog.find(m=>m.id===quote.model)?.label||quote.model;
+  const accepted=confirm(say(
+   'This generation uses '+quote.credits.toLocaleString()+' AI credits with '+label+'. Continue?',
+   'Эта генерация использует '+quote.credits.toLocaleString()+' AI-кредитов с моделью '+label+'. Продолжить?'
+  ));
+  if(!accepted){
+   $('status').textContent=say('Generation cancelled. No credits were reserved.','Генерация отменена. Кредиты не резервировались.');
+   busy=false;availability();return;
+  }
+  if(!stillAccepted()){abortPrice();return;}
+  setHistory(false);clearResult();job=null;updateJobProgress('submitting');const epoch=++generation;
+  $('status').textContent=say('Submitting your request…','Отправляем запрос…');
+  const d=await(await api('/api/studio/jobs',{method:'POST',body:JSON.stringify({
+   ...original,requestId:crypto.randomUUID(),expectedCredits:quote.credits
+  })})).json();
+  if(!d.id)throw Error('STUDIO_STORAGE_UNAVAILABLE');
+  job=d.id;sessionStorage.setItem('vu_generation_job',job);updateJobProgress(d.status||'processing',{creditsReserved:d.creditsReserved});
+  if(kind==='video'){activeVideoWatchId=job;availability();}
+  $('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');
+  await watch(job,epoch);
+ }catch(e){
+  if(!job)updateJobProgress('unconfirmed');
+  $('status').textContent=errorText(e);busy=false;availability();
+ }
+};
 // Continue from an existing image in the same browser without an API call.
  // The reference is explicitly prepared for a new Image request; Generate stays manual.
  async function imageResultReference(input){

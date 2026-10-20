@@ -9,7 +9,13 @@ test('owner retains internal costs; same generation is credit-only in customer H
  const seen=[];
  const row={
   id:'job-1',user_id:'account-1',kind:'image',status:'ready',provider:'Google',
-  model:'gemini-3.1-flash-image',prompt:'portrait',settings:{ratio:'1:1'},
+  model:'gemini-3.1-flash-image',prompt:'portrait',settings:{
+   ratio:'1:1',resolution:'2K',outputFormat:'png',videoResolution:'1080p',
+   videoDuration:8,videoInputMode:'first_frame',musicMode:'song',referenceCount:1,
+   purchasedQuote:{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:7,providerCostMicros:987654321,currency:'SECRET_MARGIN_CURRENCY'},
+   routing:{internal:'SECRET_ROUTER_DIAGNOSTIC'},dispatchConsent:true,
+   resolutionPrivate:{providerCostMicros:222222222},secretMetadata:'SECRET_SYSTEM'
+  },
   error:null,result_text:'done',mime:'image/png',output_assets:[],
   created_at:new Date('2026-10-15T12:00:00.000Z'),started_at:new Date('2026-10-15T12:00:00.000Z'),
   completed_at:new Date('2026-10-15T12:00:03.000Z'),failed_at:null,
@@ -43,9 +49,28 @@ test('owner retains internal costs; same generation is credit-only in customer H
    assert.equal(Object.hasOwn(list.items[0],field),false,field+' must not be returned to customers');
   assert.ok(!JSON.stringify(list).includes('0.09'));
   assert.ok(!JSON.stringify(list).includes('usd'));
-  const historySql=seen.find(x=>x.startsWith('SELECT id,kind,status,provider,model,prompt,settings'));
-  assert.ok(historySql);
-  assert.ok(!historySql.includes('actual_cost')&&!historySql.includes('estimated_cost')&&!historySql.includes('cost_currency'));
+  const publicItem=list.items[0],publicJson=JSON.stringify(list);
+  assert.deepEqual(publicItem.settings,{
+   ratio:'1:1',resolution:'2K',outputFormat:'png',videoResolution:'1080p',
+   videoInputMode:'first_frame',musicMode:'song',videoDuration:8,referenceCount:1
+  },'History must retain only supported Image/Video/Audio UI fields');
+  for(const secret of ['987654321','222222222','providerCostMicros','purchasedQuote',
+   'SECRET_MARGIN_CURRENCY','SECRET_ROUTER_DIAGNOSTIC','SECRET_SYSTEM','dispatchConsent','routing'])
+   assert.equal(publicJson.includes(secret),false,'private job settings leaked to customer: '+secret);
+  assert.equal(row.settings.purchasedQuote.providerCostMicros,987654321,
+   'durable purchased quote remains unmodified for one-use dispatch');
+  // Locate the customer-facing History projection by its query identity,
+  // not the position of private operational fields used for safe Video polling.
+  const historySql=seen.find(sql=>{
+   const normalized=sql.replace(/\s+/g,' ').trim();
+   return /^SELECT\s+id\s*,\s*kind\s*,\s*status\s*,/i.test(normalized)&&
+    /\bFROM\s+vv_generation_jobs\b/i.test(normalized)&&
+    /\bORDER\s+BY\s+created_at\s+DESC\b/i.test(normalized);
+  });
+  assert.ok(historySql,'customer History SELECT must exist');
+  const projection=historySql.split(/\bFROM\s+vv_generation_jobs\b/i)[0];
+  for(const field of ['estimated_cost','actual_cost','cost_currency'])
+   assert.doesNotMatch(projection,new RegExp('\\b'+field+'\\b','i'),field+' must not be selected for customer History');
   const detailRes=await fetch(root+'/api/studio/jobs/job-1');
   assert.equal(detailRes.status,200);
   const detail=await detailRes.json();

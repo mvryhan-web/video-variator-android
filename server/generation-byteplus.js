@@ -1,7 +1,7 @@
 // ModelArk REST adapter. No consumer-session automation, paid retry or provider fallback.
 const ROOT='https://ark.ap-southeast.bytepluses.com/api/v3/';
 const MAX=30*1024*1024;
-const IDS={'byteplus-seedance-2':'dreamina-seedance-2-0-260128','byteplus-seedream-4-5':'seedream-4-5-251128','byteplus-seedream-5-lite':'seedream-5-0-lite-260128'};
+const IDS={'byteplus-seedance-2':'dreamina-seedance-2-0-260128','byteplus-seedream-4-5':'seedream-4-5-251128','byteplus-seedream-5-lite':'seedream-5-0-260128'};
 const SIZES={
  '2K':{'1:1':'2048x2048','2:3':'1664x2496','3:2':'2496x1664','9:16':'1600x2848','16:9':'2848x1600'},
  '3K':{'1:1':'3072x3072','2:3':'2496x3744','3:2':'3744x2496','9:16':'2304x4096','16:9':'4096x2304'},
