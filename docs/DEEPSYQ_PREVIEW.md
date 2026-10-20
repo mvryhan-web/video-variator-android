@@ -6,7 +6,7 @@ Purpose: let the owner review the current Deepsyq interface **before** switching
 
 - Entrypoint: `npm run preview:deepsyq` (`server/deepsyq-preview.js`).
 - `GET /`, `/dashboard`, `/deepsyq.html`: current Deepsyq dashboard with a visible **design preview** warning.
-- Other existing static pages including Image/Video Studio, AI Apps and Product Video are served without rewriting them.
+- Other supported static pages include Image/Video/Audio Studio and AI Apps. The owner-cancelled standalone §20 page is removed and both legacy URLs must return HTTP 404 after its verified DEV release.
 - Read-only `/api/config` gives display-only plan info with `billingConfigured:false`; `/api/studio/config` advertises the real public model catalog with every model `enabled:false`.
 - `/api/templates` returns an empty list until real owner-activated templates can be read safely. **Do not invent generated examples or ready AI workflows.**
 - All other API routes, including sign-in, Stripe, wallet writes, AI generation and webhook ingestion, return 503 `PREVIEW_ONLY`.
