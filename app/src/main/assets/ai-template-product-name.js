@@ -1,4 +1,4 @@
-const VALID_TYPES=new Set(['image','video','product_video','audio']);
+const VALID_TYPES=new Set(['image','video','audio']);
 const LOCAL_INPUTS=new Set(['image','text','product_name']);
 const NAME_TOKEN=/\{\{\s*product_name\s*\}\}/i;
 const STUDIO_PROMPT_LIMIT=2000;
