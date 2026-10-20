@@ -3,6 +3,7 @@ import {MODEL_CATALOG,MODELS} from './generate-models.js';
 import {takeStudioHandoff} from './studio-handoff.js';
 import {studioCreditWalletState} from './studio-credit-wallet.js';
 import {progressView} from './studio-job-progress.js';
+import {readConsent,presentConsent} from './studio-consent-ui.js';
 const $=id=>document.getElementById(id);
 const savedLocale=(()=>{try{return localStorage.getItem('deepsyq_home_language');}catch(_){return null;}})();
 const studioLocale=['en','fr','ru'].includes(savedLocale)?savedLocale:((navigator.language||'en').slice(0,2)==='ru'?'ru':'en');
@@ -31,6 +32,25 @@ let estimateTimer=null,estimateSignature='';
 let historyThumbUrls=[],historyMediaUrl=null,historyMediaPlayer=null,historyMediaButton=null,historyMediaEpoch=0;
 let historyLoadEpoch=0; // Prevent stale filter/account responses entering another History view.
 const drafts={};
+let acceptedProviderToken=null;
+let acceptedProviderConsent=false;
+function consentForCurrentAccount(){return acceptedProviderConsent&&acceptedProviderToken===localStorage.getItem('vv_token');}
+function setProviderConsent(state,expectedToken){
+ if(expectedToken!==localStorage.getItem('vv_token'))return;
+ acceptedProviderToken=expectedToken;acceptedProviderConsent=state?.providerAccepted===true;
+ $('consent').checked=acceptedProviderConsent;
+ document.querySelector('#creator .consent').hidden=acceptedProviderConsent;
+ availability();
+}
+async function checkProviderConsent(){
+ const t=localStorage.getItem('vv_token');if(!t)return;
+ let state;try{state=await readConsent();}catch(_){availability();return;}
+ if(t!==localStorage.getItem('vv_token'))return;
+ if(!state.termsAccepted){
+  state=await presentConsent(); 
+ }
+ setProviderConsent(state,t);
+}
 let activeVideoWatchId=null; // Current browser polling only; the provider job is server-owned.
 let lastJobProgress=null;
 function updateJobProgress(status,amounts={}){
@@ -279,7 +299,7 @@ async function loadEstimate(key){
   if(key!==estimateKey())return;estimateSignature=key;el.textContent=d.quantity>1?say(`Batch estimate: ${d.quantity} separate image jobs × ${d.perImageCredits.toLocaleString()} = ${d.credits.toLocaleString()} AI credits. No generation started.`,`Пакет: ${d.quantity} отдельных изображения × ${d.perImageCredits.toLocaleString()} = ${d.credits.toLocaleString()} AI-кредитов. Генерация не запускалась.`):say(`Estimated cost: ${d.credits.toLocaleString()} AI credits · no generation started`,`Ориентировочная стоимость: ${d.credits.toLocaleString()} AI-кредитов · генерация не запускалась`);el.hidden=false;
  }catch(e){if(key!==estimateKey())return;estimateSignature=key;if(e.message==='AI_PRICING_NOT_APPROVED'){el.textContent=errorText(e);el.hidden=false;}else{el.hidden=true;el.textContent='';}}
 }
-function availability(){const m=currentModel();$('videoBackgroundControls').hidden=!(busy&&activeVideoWatchId&&activeVideoWatchId===job);scheduleEstimate();document.querySelector('[data-t=consent]').textContent=say('I agree to send this prompt and reference photos to '+(m?.provider||'the selected provider')+' for generation.','Я согласен отправить запрос и фотографии в '+(m?.provider||'выбранный сервис')+' для генерации.');$('generate').disabled=busy||!connected(m)||!$('consent').checked||!$('prompt').value.trim()||(kind==='image'&&imageDraftNeedsPhotos&&!refs.length)||(kind==='video'&&videoDraftNeedsPhotos);$('modelButton').disabled=busy;$('settingsButton').disabled=busy;$('references').disabled=busy;$('prompt').disabled=busy||kind==='translation';$('availability').textContent=kind==='translation'?say('File translation is not connected yet. No file will be uploaded.','Перевод файлов ещё не подключён. Файл не будет загружен.'):!m?.adapter?say('This model is not connected yet. You can prepare your settings; no request will be sent.','Модель пока не подключена. Можно выбрать настройки; запрос не отправляется.'):connected(m)?say('Owner preview. Each attempt uses the approved test quota.','Тест владельца. Каждая попытка расходует согласованный лимит.'):say('Generation is not enabled. Provider access and test budget need approval.','Генерация не включена. Нужно подключение и согласованный бюджет.');if(kind==='image'){if(refs.length)imageDraftNeedsPhotos=false;showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}}
+function availability(){const m=currentModel();if(consentForCurrentAccount())$('consent').checked=true;else $('consent').checked=false;$('videoBackgroundControls').hidden=!(busy&&activeVideoWatchId&&activeVideoWatchId===job);scheduleEstimate();document.querySelector('[data-t=consent]').textContent=say('I agree to send this prompt and reference photos to '+(m?.provider||'the selected provider')+' for generation.','Я согласен отправить запрос и фотографии в '+(m?.provider||'выбранный сервис')+' для генерации.');$('generate').disabled=busy||!connected(m)||!consentForCurrentAccount()||!$('consent').checked||!$('prompt').value.trim()||(kind==='image'&&imageDraftNeedsPhotos&&!refs.length)||(kind==='video'&&videoDraftNeedsPhotos);$('modelButton').disabled=busy;$('settingsButton').disabled=busy;$('references').disabled=busy;$('prompt').disabled=busy||kind==='translation';$('availability').textContent=kind==='translation'?say('File translation is not connected yet. No file will be uploaded.','Перевод файлов ещё не подключён. Файл не будет загружен.'):!m?.adapter?say('This model is not connected yet. You can prepare your settings; no request will be sent.','Модель пока не подключена. Можно выбрать настройки; запрос не отправляется.'):connected(m)?say('Owner preview. Each attempt uses the approved test quota.','Тест владельца. Каждая попытка расходует согласованный лимит.'):say('Generation is not enabled. Provider access and test budget need approval.','Генерация не включена. Нужно подключение и согласованный бюджет.');if(kind==='image'){if(refs.length)imageDraftNeedsPhotos=false;showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}}
 function storeDraft(){drafts[kind]={prompt:$('prompt').value,modelId,ratio:$('ratio').value,resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value,quantity:imageBatchQuantity(),videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value,refs,musicMode:$('musicMode').value};if(kind==='image')saveImageDraft();}
 function renderModels(){const list=catalog.filter(m=>m.kind===modelKind());$('modelChoices').replaceChildren();for(const m of list){const b=document.createElement('button');b.type='button';b.className='model-card';b.dataset.connected=String(m.adapter);b.setAttribute('aria-pressed',String(m.id===modelId));const title=document.createElement('strong');title.textContent=m.label;const description=document.createElement('small');description.textContent=ru?m.descriptionRu||m.description||'':m.description||'';const state=document.createElement('span');state.className='connection';state.textContent=m.provider+' · '+(m.adapter?say('Adapter prepared','Адаптер подготовлен'):say('API connection pending','API не подключён'));b.append(title,description,state);b.onclick=()=>{if(busy)return;const limit=Number(m.references||0);if(refs.length>limit&&!confirm(say('This model supports '+limit+' references. Remove '+(refs.length-limit)+' photo(s) to switch models?','Эта модель поддерживает '+limit+' изображений. Убрать '+(refs.length-limit)+' фото для переключения?')))return;refs=refs.slice(0,limit);modelId=m.id;$('consent').checked=false;renderModel();$('modelDialog').close();};$('modelChoices').append(b);}}
 function renderRatios(){const m=currentModel(),previous=$('ratio').value;$('ratio').replaceChildren();for(const r of m?.ratios||[])$('ratio').add(new Option(r,r));if(m?.ratios.includes(previous))$('ratio').value=previous;$('ratioLabel').hidden=!m?.ratios.length;$('ratioChoices').replaceChildren();for(const r of m?.ratios||[]){const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',r);b.setAttribute('aria-pressed',String(r===$('ratio').value));const shape=document.createElement('span');shape.className='ratio-drawing';const [w,h]=r.split(':').map(Number);shape.style.width=Math.round(Math.min(38,27*w/h))+'px';shape.style.height=Math.round(Math.min(27,38*h/w))+'px';const text=document.createElement('span');text.textContent=r;b.append(shape,text);b.onclick=()=>{$('ratio').value=r;$('consent').checked=false;updateRatioSelection();availability();};$('ratioChoices').append(b);}updateRatioSelection();}
@@ -582,7 +602,11 @@ async function acceptFiles(files,{append=false}={}){
  return accepted;
 }
 $('references').onchange=()=>void acceptFiles(Array.from($('references').files),{append:true});$('creator').ondragover=e=>{if(currentModel()?.references)e.preventDefault();};$('creator').ondrop=e=>{e.preventDefault();if(currentModel()?.references)void acceptFiles(Array.from(e.dataTransfer.files),{append:true});};
-$('clearRefs').onclick=()=>{if(busy)return;refs=[];$('consent').checked=false;renderRefs();availability();};document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>select(b.dataset.kind));$('prompt').oninput=()=>{$('consent').checked=false;availability();};$('consent').onchange=availability;$('ratio').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageResolution').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageOutputFormat').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageQuantity').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('videoResolution').onchange=()=>{$('consent').checked=false;renderVideoSettings();updateRatioSelection();availability();};$('videoDuration').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('videoInputMode').onchange=()=>{$('consent').checked=false;availability();};
+$('clearRefs').onclick=()=>{if(busy)return;refs=[];$('consent').checked=false;renderRefs();availability();};document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>select(b.dataset.kind));$('prompt').oninput=()=>{$('consent').checked=false;availability();};$('consent').onchange=()=>{
+ $('consent').checked=false;
+ void presentConsent({force:true}).then(state=>setProviderConsent(state,localStorage.getItem('vv_token')));
+ availability();
+};$('ratio').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageResolution').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageOutputFormat').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('imageQuantity').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('videoResolution').onchange=()=>{$('consent').checked=false;renderVideoSettings();updateRatioSelection();availability();};$('videoDuration').onchange=()=>{$('consent').checked=false;updateRatioSelection();availability();};$('videoInputMode').onchange=()=>{$('consent').checked=false;availability();};
 $('musicMode').onchange=()=>{$('consent').checked=false;modelId='';renderModel();};
 $('modelButton').onclick=()=>{renderModels();$('modelDialog').showModal();};$('settingsButton').onclick=()=>$('settingsDialog').showModal();document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
 function clearHistoryThumbs(){for(const u of historyThumbUrls)URL.revokeObjectURL(u);historyThumbUrls=[];}
@@ -1076,6 +1100,7 @@ const previous=sessionStorage.getItem('vu_generation_job');if(previous&&config.e
 if(new URLSearchParams(location.search).get('view')==='history')setHistory(true);
 
 await loadAiWallet();
+await checkProviderConsent();
 const aiCheckoutState=new URLSearchParams(location.search).get('ai_checkout');
 if((aiCheckoutState==='returned'||aiCheckoutState==='cancelled')&&!$('walletButton').hidden){
  if(!$('walletDialog').open)$('walletDialog').showModal();
