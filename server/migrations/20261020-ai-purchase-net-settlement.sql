@@ -46,7 +46,7 @@ DO $$ BEGIN
        amount::bigint>processor_fee_amount+tax_amount AND
        net_revenue_micros=(amount::bigint-processor_fee_amount-tax_amount)*10000::bigint));
   END IF;
-END $$;
+END; $$;
 
 CREATE INDEX IF NOT EXISTS vv_ai_purchase_verified_margin
   ON vv_ai_purchase(user_id,currency,settlement_verified_at)

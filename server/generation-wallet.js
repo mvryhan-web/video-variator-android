@@ -53,7 +53,7 @@ export class GenerationWallet {
              amount::bigint>processor_fee_amount+tax_amount AND
              net_revenue_micros=(amount::bigint-processor_fee_amount-tax_amount)*10000::bigint));
         END IF;
-      END $$;
+      END; $$;
       CREATE TABLE IF NOT EXISTS vv_ai_reservation (
         job_id TEXT PRIMARY KEY, user_id TEXT NOT NULL, credits INTEGER NOT NULL CHECK(credits>0),
         fingerprint TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('held','captured','released')));
