@@ -111,7 +111,7 @@
 /* Image Studio keeps the output canvas open and the prompt dock at the bottom. */
 body.image-studio main{height:calc(100svh - 72px);min-height:560px;overflow:hidden}
 body.image-studio .stage{flex:1;min-height:0;justify-content:flex-start;align-items:stretch;padding:18px 0}
-body.image-studio .stage .intro{display:none}
+body.image-studio .stage .intro{display:block;width:100%;text-align:center;margin:0 auto}body.image-studio .stage .hero-art,body.image-studio .stage .intro small,body.image-studio .stage #taskDescription,body.image-studio .stage .examples{display:none}body.image-studio .stage #taskTitle{font-size:clamp(19px,2vw,24px);font-weight:550;margin:10px 0;color:#f2f1fa}
 body.image-studio .composer{position:sticky;bottom:12px;margin-top:auto;z-index:2;background:rgba(21,24,32,.96);backdrop-filter:blur(16px)}
 /* Model and format panels open beside their controls, like the reference studio. */
 :is(#modelDialog,#settingsDialog){margin:0;right:auto;bottom:auto;max-width:calc(100vw - 24px);max-height:min(85svh,calc(100dvh - 24px));overscroll-behavior:contain;scrollbar-gutter:stable}
