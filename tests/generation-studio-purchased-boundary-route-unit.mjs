@@ -14,11 +14,14 @@ const baseEnv={AI_STUDIO_ENABLED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',
  GEMINI_API_KEY:'test-only-not-an-api-key',DATABASE_URL:'test-only',ADMIN_EMAIL:'owner@example.test',
  AI_MODEL_PRICING_JSON:JSON.stringify([pricing]),
  AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:12}])};
-function simulate({receiptStatus='paid',providerThrows=false,reservationPersistFails=false,user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
+function simulate({receiptStatus='paid',providerThrows=false,reservationPersistFails=false,consentAccepted=true,user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
  const jobs=[],walletEvents=[];let providerCalls=0;
  const pool={
   async query(sql,args=[]){
    if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};
+   if(sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_user_consents'))return {rows:[]};
+   if(sql.includes('SELECT provider_data_accepted,provider_data_version FROM vv_ai_user_consents'))
+    return {rows:consentAccepted?[{provider_data_accepted:true,provider_data_version:'2026-10-20'}]:[]};
    if(sql.startsWith('SELECT user_id,kind,model,provider,status,operation,deleted,request_fingerprint,credits_reserved,settings,estimated_cost,cost_currency FROM vv_generation_jobs')){
     return {rows:jobs.filter(j=>j.id===args[0]&&j.user_id===args[1])};
    }
@@ -130,6 +133,15 @@ test('HTTP without explicit user consent fails before reservation or provider',a
  const sim=simulate();await withHttp(sim,async post=>{
   const res=await post({consent:false});assert.equal(res.status,400);
   assert.equal(sim.jobs.length,0);assert.equal(sim.providerCalls(),0);
+ });
+});
+
+test('HTTP forged per-request checkbox does not bypass missing persisted account consent',async()=>{
+ const sim=simulate({consentAccepted:false});
+ await withHttp(sim,async post=>{
+  const res=await post({consent:true});assert.equal(res.status,403);
+  assert.equal((await res.json()).error,'PROVIDER_CONSENT_REQUIRED');
+  assert.equal(sim.jobs.length,0);assert.equal(sim.walletEvents.length,0);assert.equal(sim.providerCalls(),0);
  });
 });
 
