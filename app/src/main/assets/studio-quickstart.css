@@ -50,3 +50,58 @@ body.studio-quickstart .stage:has(#empty:not([hidden])) + form.composer {
     padding: 6px 10px;
   }
 }
+
+/* Owner correction: the blank Studio is a creator, not an onboarding/QA dashboard.
+   Minimal presentation only. Generated media, history, errors, price quotes, consent,
+   model controls and recovery actions keep their existing implementation. */
+body.studio-quickstart .stage:has(#empty:not([hidden])) {
+  flex: 0 0 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0 0 12px !important;
+  overflow: visible;
+}
+body.studio-quickstart .stage #empty.intro {
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+body.studio-quickstart .stage #empty .hero-art,
+body.studio-quickstart .stage #empty .examples {
+  display: none !important;
+}
+body.studio-quickstart .stage #empty #taskTitle {
+  font-size: clamp(18px, 2vw, 23px) !important;
+  font-weight: 600;
+  margin: 0 0 8px !important;
+}
+body.studio-quickstart .topbar .badge,
+body.studio-quickstart .studio-nav .nav-caption,
+body.studio-quickstart .studio-nav [data-kind="translation"],
+body.studio-quickstart #creator [data-t="pilotNote"] {
+  display: none !important;
+}
+/* Hide ordinary preflight/debug prose. Disabled generation remains visibly disabled;
+   model connection status remains available in the model picker. */
+body.studio-quickstart #creator #availability,
+body.studio-quickstart #creator #accessInfo {
+  display: none !important;
+}
+/* Saved drafts remain stored. Show the recovery bar ONLY when photos actually need
+   user action. Do not show Clear Draft / verbose retention copy on every visit. */
+body.studio-quickstart #imageDraftBar:not(:has(#imageDraftSkipPhotos:not([hidden]))),
+body.studio-quickstart #videoDraftBar:not(:has(#videoDraftSkipPhotos:not([hidden]))) {
+  display: none !important;
+}
+body.studio-quickstart .ref-meta:has(#clearRefs[hidden]) #refHint {
+  display: none !important;
+}
+@media (max-width: 700px) {
+  body.studio-quickstart .stage:has(#empty:not([hidden])) {
+    padding-bottom: 6px !important;
+  }
+}
