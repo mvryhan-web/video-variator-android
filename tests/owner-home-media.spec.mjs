@@ -24,7 +24,7 @@ test('owner-supplied MP4: real muted autoplay, six complete films wrap, arrows, 
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
  const video=page.locator('#inspirationHeroVideo');
  await expect(page.locator('#homeHeroDots,#homeHeroSound,.hero-stage-copy,.home-hero-footer')).toHaveCount(0);
- await expect(page.locator('#homeHeroModel')).toHaveText('Sample video, created in Google Flow');
+ await expect(page.locator('#homeHeroModel')).toHaveText('AI Canvas');
  await expect(page.locator('#homeHeroPreviousVideo')).toHaveAttribute('src',clips[5].previewUrl);
  await expect(page.locator('#homeHeroNextVideo')).toHaveAttribute('src',clips[1].previewUrl);
  const center=await page.locator('#inspirationHeroFeature').evaluate(v=>{const r=v.getBoundingClientRect();return {ratio:r.width/r.height,width:r.width,stage:v.closest('.hero-stage').getBoundingClientRect().width};});

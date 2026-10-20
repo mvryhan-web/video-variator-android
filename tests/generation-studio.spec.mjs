@@ -1,7 +1,8 @@
 import {test,expect} from '@playwright/test';
-test('mobile studio has clear sections, no false generation and no overflow',async({page})=>{await page.setViewportSize({width:390,height:844});let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});await page.goto('/generate-studio.html');await expect(page.locator('#taskTitle')).toHaveText('Create a video');await page.locator('#prompt').fill('Ocean');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();await expect(page.locator('#availability')).toContainText('not enabled');await page.locator('[data-kind=image]').click();await expect(page.locator('#taskTitle')).toHaveText('Create an image');await expect(page.locator('#ratio option')).toHaveCount(5);await page.locator('[data-kind=music]').click();await page.locator('#settingsButton').click();await expect(page.locator('#musicOptions')).toBeVisible();await page.locator('#musicMode').selectOption('instrumental');await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#referenceBox')).toBeHidden();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(posts).toBe(0);});
+async function chooseStudio(page,kind){await page.locator('#studioTypePicker').click();await page.locator('#studioTypeMenu [data-kind="'+kind+'"]').click();}
+test('mobile studio has clear sections, no false generation and no overflow',async({page})=>{await page.setViewportSize({width:390,height:844});let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});await page.goto('/generate-studio.html');await expect(page.locator('#taskTitle')).toHaveText('Create a video');await page.locator('#prompt').fill('Ocean');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();await expect(page.locator('#availability')).toContainText('not enabled');await chooseStudio(page,'image');await expect(page.locator('#taskTitle')).toHaveText('Create an image');await expect(page.locator('#ratio option')).toHaveCount(5);await chooseStudio(page,'music');await page.locator('#settingsButton').click();await expect(page.locator('#musicOptions')).toBeVisible();await page.locator('#musicMode').selectOption('instrumental');await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#referenceBox')).toBeHidden();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(posts).toBe(0);});
 test('config exposes readiness without secrets and disabled endpoint fails closed',async({request})=>{const r=await request.get('/api/studio/config');expect(r.status()).toBe(200);const c=await r.json();expect(c.enabled).toBe(false);expect(c.ownerOnly).toBe(true);expect(c.translation.enabled).toBe(false);const post=await request.post('/api/studio/jobs',{data:{kind:'image',prompt:'test',consent:true}});expect(post.status()).toBe(503);});
-test('Russian device language and retained per-studio draft',async({browser})=>{const context=await browser.newContext({locale:'ru-RU'});const page=await context.newPage();await page.goto('/generate-studio.html');await expect(page.locator('h1')).toHaveText('Ваша идея. Создайте её.');await page.locator('#prompt').fill('Море');await page.locator('[data-kind=image]').click();await page.locator('#prompt').fill('Цветок');await page.locator('[data-kind=video]').click();await expect(page.locator('#prompt')).toHaveValue('Море');await context.close();});
+test('Russian device language and retained per-studio draft',async({browser})=>{const context=await browser.newContext({locale:'ru-RU'});const page=await context.newPage();await page.goto('/generate-studio.html');await expect(page.locator('h1')).toHaveText('Ваша идея. Создайте её.');await page.locator('#prompt').fill('Море');await chooseStudio(page,'image');await page.locator('#prompt').fill('Цветок');await chooseStudio(page,'video');await expect(page.locator('#prompt')).toHaveValue('Море');await context.close();});
 test('mocked contract result confirms current credits before posting, then previews, downloads and deletes',async({page})=>{
  const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:3,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',provider:'Google',adapter:true,ratios:['1:1'],references:3,enabled:true}]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
@@ -10,12 +11,13 @@ test('mocked contract result confirms current credits before posting, then previ
  await page.route('**/api/studio/jobs',async r=>{if(r.request().method()==='POST'){jobPosts++;jobBody=r.request().postDataJSON();return r.fulfill({status:202,json:{id:'fixture',status:'ready'}});}return r.fulfill({json:{items:[]}});});
  await page.route('**/api/studio/jobs/fixture',r=>r.fulfill({json:r.request().method()==='DELETE'?{ok:true}:{id:'fixture',status:'ready',mime:'image/png'}}));
  await page.route('**/api/studio/jobs/fixture/media',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
- await page.goto('/generate-studio.html');await page.locator('[data-kind=image]').click();await page.locator('#prompt').fill('Fixture');await page.locator('#consent').check();
+ await page.goto('/generate-studio.html');await chooseStudio(page,'image');await page.locator('#prompt').fill('Fixture');await page.locator('#consent').check();
  page.once('dialog',d=>d.dismiss());await page.locator('#generate').click();await expect(page.locator('#status')).toContainText('cancelled');expect(estimatePosts).toBe(1);expect(jobPosts).toBe(0);
  page.once('dialog',async d=>{expect(d.message()).toContain('7 AI credits');await d.accept();});
  await page.locator('#generate').click();await expect(page.locator('#media img')).toBeVisible();expect(jobPosts).toBe(1);expect(jobBody.expectedCredits).toBe(7);
  const download=page.waitForEvent('download');await page.locator('#download').click();expect((await download).suggestedFilename()).toBe('Deepsyq-fixture.png');await page.locator('#remove').click();await expect(page.locator('#media img')).toHaveCount(0);await expect(page.locator('#status')).toContainText('deleted');
 });
+
 test('Android bridge uses configured backend without loading FFmpeg',async({page})=>{await page.addInitScript(()=>window.AndroidBridge={getApiBase:()=>'https://native-api.example.test'});await page.route('**/generate-studio.html',async r=>{const response=await r.fetch();const headers={...response.headers()};delete headers['content-security-policy'];await r.fulfill({response,headers});});let called=false;await page.route('https://native-api.example.test/api/studio/config',r=>{called=true;return r.fulfill({headers:{'Access-Control-Allow-Origin':'*'},json:{enabled:false,models:[]}});});await page.goto('/generate-studio.html');await expect(page.locator('#taskTitle')).toHaveText('Create a video');expect(called).toBe(true);expect(await page.evaluate(()=>!!window.vuRuntimeReady)).toBe(false);});
 
 test('three direct studio links and model/settings dialogs work on small phones',async({page})=>{
@@ -26,14 +28,14 @@ test('three direct studio links and model/settings dialogs work on small phones'
  await page.locator('#modelButton').click();await page.keyboard.press('Escape');await expect(page.locator('#modelDialog')).not.toBeVisible();
 });
 test('audio speech preparation and history do not send paid or fake requests',async({page})=>{
- let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});await page.goto('/generate-studio.html?studio=audio');await page.locator('#settingsButton').click();await page.locator('#musicMode').selectOption('voice');await expect(page.locator('#voiceSettings')).toBeVisible();await page.locator('#voiceLanguage').selectOption({label:'Russian'});await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#modelButton')).toContainText('Google AI Voice');await expect(page.locator('#generate')).toBeDisabled();
+ let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});await page.goto('/generate-studio.html?studio=audio');await page.locator('#settingsButton').click();await page.locator('#musicMode').selectOption('voice');await expect(page.locator('#voiceSettings')).toBeVisible();await page.locator('#voiceLanguage').selectOption({label:'Russian'});await expect.poll(()=>page.locator('#settingsDialog').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=11&&r.bottom<=innerHeight-11;})).toBe(true);await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#modelButton')).toContainText('Google AI Voice');await expect(page.locator('#generate')).toBeDisabled();
  await page.locator('#modelButton').click();await page.getByRole('button',{name:/Seed Speech 2.0/}).click();await expect(page.locator('#availability')).toContainText('not connected');await page.locator('#showHistory').click();await expect(page.locator('#historyEmpty')).toBeVisible();await expect(page.locator('#resumeJob')).toBeHidden();await page.locator('#showCreate').click();await expect(page.locator('#empty')).toBeVisible();expect(posts).toBe(0);
 });
 test('reference photo preview, draft retention and clear are local',async({page})=>{
- await page.goto('/generate-studio.html?studio=image');await page.locator('#references').setInputFiles({name:'reference.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')});await expect(page.locator('#refPreview img')).toHaveCount(1);await page.locator('[data-kind=video]').click();await page.locator('[data-kind=image]').click();await expect(page.locator('#refPreview img')).toHaveCount(1);await page.locator('#clearRefs').click();await expect(page.locator('#refPreview img')).toHaveCount(0);
+ await page.goto('/generate-studio.html?studio=image');await page.locator('#references').setInputFiles({name:'reference.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')});await expect(page.locator('#refPreview img')).toHaveCount(1);await chooseStudio(page,'video');await chooseStudio(page,'image');await expect(page.locator('#refPreview img')).toHaveCount(1);await page.locator('#clearRefs').click();await expect(page.locator('#refPreview img')).toHaveCount(0);
 });
 
-test('consent names the provider and resets when model or studio changes',async({page})=>{await page.goto('/generate-studio.html?studio=image');await page.locator('#consent').check();await page.locator('#modelButton').click();await page.getByRole('button',{name:/Seedream 4.5/}).click();await expect(page.locator('#consent')).not.toBeChecked();await expect(page.locator('[data-t=consent]')).toContainText('BytePlus');await page.locator('#consent').check();await page.locator('[data-kind=video]').click();await expect(page.locator('#consent')).not.toBeChecked();await expect(page.locator('[data-t=consent]')).toContainText('Google');});
+test('consent names the provider and resets when model or studio changes',async({page})=>{await page.goto('/generate-studio.html?studio=image');await page.locator('#consent').check();await page.locator('#modelButton').click();await page.getByRole('button',{name:/Seedream 4.5/}).click();await expect(page.locator('#consent')).not.toBeChecked();await expect(page.locator('[data-t=consent]')).toContainText('BytePlus');await page.locator('#consent').check();await chooseStudio(page,'video');await expect(page.locator('#consent')).not.toBeChecked();await expect(page.locator('[data-t=consent]')).toContainText('Google');});
 
 test('saved generation history renders and reopens a durable result',async({page})=>{
  const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]};
@@ -176,7 +178,7 @@ test('video selectors follow real Veo/Seedance capabilities without submitting j
  await page.locator('#videoDuration').selectOption('15');
  await expect(page.locator('#videoDuration')).toHaveValue('15');
  await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
- await page.locator('[data-kind=image]').click();
+ await chooseStudio(page,'image');
  await expect(page.locator('#videoDurationLabel')).toBeHidden();
  expect(posts).toBe(0);
 });
@@ -290,10 +292,10 @@ test('video History checks an existing task without resubmitting or downloading 
  expect(mediaDownloads).toBe(0); // Only the explicit Open action may fetch video bytes.
 });
 
-// Owner acceptance: real Home destinations and native centered windows; no provider dispatch.
+// Owner acceptance: Home keeps its dialog; Studio panels anchor to composer controls. No provider dispatch.
 for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320,height:740},{width:844,height:390}]){
  for(const [studio,title] of [['image','Create an image'],['video','Create a video'],['audio','Create audio']]){
- test(`studio model/settings windows: ${studio} stays centered and usable at ${viewport.width}x${viewport.height}`,async({page})=>{
+ test(`studio model/settings windows: ${studio} uses button-anchored panels at ${viewport.width}x${viewport.height}`,async({page},info)=>{
   await page.setViewportSize(viewport);
   let posts=0;page.on('request',request=>{if(request.method()==='POST')posts++;});
   const assertCentered=async dialog=>{
@@ -306,6 +308,16 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    expect(bounds.y+bounds.height).toBeLessThanOrEqual(viewport.height-12);
    expect(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
   };
+   const assertAnchored=async(dialog,anchor)=>{
+    await expect(dialog).toBeVisible();
+    await expect.poll(()=>dialog.evaluate(el=>({left:el.style.left,top:el.style.top}))).not.toEqual({left:'',top:''});
+    const bounds=await dialog.boundingBox(),button=await anchor.boundingBox();
+    expect(bounds.x).toBeGreaterThanOrEqual(11);expect(bounds.y).toBeGreaterThanOrEqual(11);
+    expect(bounds.x+bounds.width).toBeLessThanOrEqual(viewport.width-11);expect(bounds.y+bounds.height).toBeLessThanOrEqual(viewport.height-11);
+    expect(Math.min(Math.abs(button.y-bounds.y-bounds.height),Math.abs(bounds.y-button.y-button.height))).toBeLessThanOrEqual(10);
+    expect(await dialog.evaluate(el=>getComputedStyle(el,'::backdrop').backdropFilter)).toBe('none');
+    expect(await dialog.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+   };
    await page.goto('/deepsyq.html');
    if(viewport.width<=760)await page.locator('#menu').click();
    const trigger=page.locator(`[data-open-models="${studio}"]`);
@@ -320,9 +332,15 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    await page.locator(`.home-create-card[href="generate-studio.html?studio=${studio}"]`).click();
    await expect(page).toHaveURL(new RegExp('studio='+studio));
    await expect(page.locator('#taskTitle')).toHaveText(title);
+   await expect(page.locator('.studio-shell>.studio-nav')).toHaveCount(0);
+   await expect(page.locator('#studioTypePicker')).toBeVisible();
+   await page.locator('#studioTypePicker').click();await assertAnchored(page.locator('#studioTypeMenu'),page.locator('#studioTypePicker'));
+   await expect(page.locator('#studioTypeMenu [data-kind="'+(studio==='audio'?'music':studio)+'"]')).toHaveAttribute('aria-pressed','true');
+   await page.keyboard.press('Escape');await expect(page.locator('#studioTypePicker')).toBeFocused();
    await page.locator('#prompt').fill('My local draft');
    await page.locator('#modelButton').click();
-   const models=page.getByRole('dialog',{name:'Choose a model',exact:true});await assertCentered(models);
+   const models=page.locator('#modelDialog');await assertAnchored(models,page.locator('#modelButton'));
+   if(viewport.width===1448)await page.screenshot({path:info.outputPath(studio+'-model-popover.png')});
    const choices=models.locator('.model-card');await expect(choices.first()).toBeVisible();
    const choice=choices.nth(Math.min(1,await choices.count()-1));const label=await choice.locator('strong').innerText();
    await choice.click();await expect(models).not.toBeVisible();
@@ -332,7 +350,9 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    await page.keyboard.press('Escape');await expect(models).not.toBeVisible();
    await expect(page.locator('#modelButton')).toBeFocused();
    await page.locator('#settingsButton').click();
-   const settings=page.getByRole('dialog',{name:'Settings',exact:true});await assertCentered(settings);
+   const settings=page.locator('#settingsDialog');await assertAnchored(settings,page.locator('#settingsButton'));
+   if(studio==='audio'){await expect(settings.locator('.composer-setting-title')).toBeHidden();await expect(settings.locator('#ratioChoices')).toBeHidden();}else await expect(settings.locator('.composer-setting-title')).toBeVisible();
+   if(viewport.width===1448)await page.screenshot({path:info.outputPath(studio+'-settings-popover.png')});
    await settings.getByRole('button',{name:'Done',exact:true}).click();await expect(settings).not.toBeVisible();
    await expect(page.locator('#settingsButton')).toBeFocused();
    await expect(page.locator('#prompt')).toHaveValue('My local draft');

@@ -10,7 +10,7 @@ async function home(page){
 test('Owner neon layout: reference section order, real card images and mobile bounds',async({page},info)=>{
  const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
  await home(page);
- await expect(page.locator('#homeHeroModel')).toHaveText('Sample video, created in Google Flow');
+ await expect(page.locator('#homeHeroModel')).toHaveText('AI Canvas');
  await expect(page.locator('.home-launch-grid')).toHaveCount(0);
  await expect(page.locator('#homeQuickForm [data-home-kind]')).toHaveCount(4);
  await expect(page.locator('#homeCreativeTools')).toHaveCount(1);
@@ -49,15 +49,71 @@ test('Owner neon layout: feature shortcuts keep routes and show truthful Flow so
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','#quickCreateForm');
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','generate-studio.html?studio=video');
- await expect(page.locator('#homeHeroModel')).toHaveText('Sample video, created in Google Flow');
+ await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.0');
  await expect(page.locator('#homeHeroModel')).toHaveAttribute('title',/created in Google Flow/);
- await expect(page.locator('#homeHeroCreditLabel')).toHaveText('FEATURED VIDEO');
+ await expect(page.locator('#homeHeroCreditLabel')).toHaveText('EXPLORE VIDEO MODELS');
  await page.locator('#homeHeroNext').click();
- await expect(page.locator('#homeHeroModel')).toHaveText('Sample video, created in Google Flow');
+ await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.5');
  await page.locator('.home-create-card.tile-canvas').click();
  await expect(page.locator('#quickCreateForm')).toBeInViewport();
 });
 
+test('Owner lock: server-side stale carousel captions cannot replace the six owner-approved headings',async({page})=>{
+ const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
+ await home(page);
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:bundle.items.filter(x=>x.featured).map(item=>({
+  ...item,defaultSettings:{...item.defaultSettings,homeShowcase:{...item.defaultSettings.homeShowcase,title:'Sample video, created in Google Flow',label:'FEATURED VIDEO'}}
+ }))}}));
+ await page.reload();
+ const names=['AI Canvas','Seedance 2.0','Seedance 2.5','Video Studio','AI Agent','Image Studio'];
+ const labels=['CREATIVE WORKSPACE','EXPLORE VIDEO MODELS','EXPLORE VIDEO MODELS','CREATE WITH DEEPSYQ','CREATIVE CO-PILOT · COMING SOON','CREATE WITH DEEPSYQ'];
+ for(let i=0;i<6;i++){
+  await expect(page.locator('#homeHeroModel')).toHaveText(names[i]);
+  await expect(page.locator('#homeHeroCreditLabel')).toHaveText(labels[i]);
+  if(i<5)await page.locator('#homeHeroNext').click();
+ }
+ expect(posts).toEqual([]);
+});
+
+test('Home creator picker: studio model/settings windows are centered, model-aware and no-spend',async({page})=>{
+ await home(page);let paidPosts=0;
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{ownerOnly:true,enabled:false,models:[{id:'fixture-video',kind:'video',enabled:true}],catalog:[{id:'fixture-video',label:'Fixture video model',provider:'Fixture',kind:'video',enabled:true,ratios:['16:9','9:16'],resolutions:['720p'],durations:[4,8],references:0,capabilities:{ratios:['16:9','9:16'],resolutions:['720p'],durations:[4,8]}}]}}));
+ page.on('request',request=>{if(request.method()==='POST'&&/\/api\/studio\/(jobs|estimate)/.test(new URL(request.url()).pathname))paidPosts++;});
+ await expect(page.locator('#homeQuickForm [data-home-kind]')).toHaveCount(4);
+ await expect(page.locator('[data-home-kind="image"]')).toBeVisible();
+ await expect(page.locator('[data-home-kind="video"]')).toBeVisible();
+ await expect(page.locator('[data-home-kind="music"]')).toContainText('Audio');
+ await page.locator('[data-home-kind="video"]').click();
+ await expect(page.locator('[data-home-kind="video"]')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#homeModelPicker')).toHaveAttribute('data-home-model-kind','video');
+ await page.locator('#homeModelPicker').click();
+ await expect(page.locator('#modelFlyout')).toBeVisible();
+ await expect(page.locator('#modelFlyoutTitle')).toHaveText('Video models');
+ const modelCenter=await page.locator('#modelFlyout').evaluate(el=>{const r=el.getBoundingClientRect();return {x:Math.abs(r.left+r.width/2-innerWidth/2),y:Math.abs(r.top+r.height/2-innerHeight/2),inside:r.left>=0&&r.right<=innerWidth};});
+ expect(modelCenter.x).toBeLessThan(3);expect(modelCenter.y).toBeLessThan(3);expect(modelCenter.inside).toBe(true);
+ await page.locator('#modelFlyoutClose').click();
+ for(const width of [320,390,1280]){
+  await page.setViewportSize({width,height:844});
+  await expect(page.locator('#homeModelPicker')).toBeVisible();
+  await expect(page.locator('#homeSettingsOpen')).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+ }
+ await page.setViewportSize({width:390,height:844});
+ await page.locator('#homeSettingsOpen').click();
+ await expect(page.locator('#homeSettingsDialog')).toBeVisible();
+ const settingsCenter=await page.locator('#homeSettingsDialog').evaluate(el=>{const r=el.getBoundingClientRect();return {x:Math.abs(r.left+r.width/2-innerWidth/2),y:Math.abs(r.top+r.height/2-innerHeight/2),inside:r.left>=0&&r.right<=innerWidth};});
+ expect(settingsCenter.x).toBeLessThan(3);expect(settingsCenter.y).toBeLessThan(3);expect(settingsCenter.inside).toBe(true);
+ const supportedRatios=await page.locator('#homePreferredRatio option').evaluateAll(options=>options.map(option=>option.value));
+ expect(supportedRatios).toContain('16:9');expect(supportedRatios).toContain('9:16');
+ await page.locator('#homePreferredRatio').selectOption('9:16');
+ await page.locator('#homeSettingsApply').click();
+ await expect(page.locator('#homeSettingsDialog')).toBeHidden();
+ await page.locator('#homeQuickPrompt').fill('A quiet cinematic landscape');
+ await page.locator('#homeQuickSubmit').click();
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=home/);
+ await expect(page.locator('#ratio')).toHaveValue('9:16');
+ expect(paidPosts).toBe(0);
+});
 // TEST ONLY: reproduce the native ready-but-stalled clock. Genuine film playback
 // is independently checked without mocks in owner-home-media.spec.mjs.
 test('Owner neon layout: a stuck startup clock retries the same film and respects user pause',async({page})=>{

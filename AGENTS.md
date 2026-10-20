@@ -4,6 +4,11 @@
 
 # AGENTS.md — Deepsyq: START HERE (all agents and coordinators)
 
+## OWNER OVERRIDE — 2026-10-20 — SELF-MERGE A/B/C/D, NO COORDINATOR APPROVAL
+
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-20, D16:** агенты A/B/C/D **САМИ** разрабатывают, запускают и проверяют CI на финальном SHA, согласуют обязательные независимые финансовые peer-gates напрямую B↔D и **САМИ объединяют проверенные PR в `deepsyq-platform`**. Координатор №5 НЕ проверяет и НЕ объединяет их PR, НЕ является approval gate. Безопасная preview-публикация — исполнителю при уже данном разрешении/доступе; production/main, реальные Stripe, деньги, опасные миграции и frozen Home требуют прежних специальных прав/разрешений. [Полное правило](docs/DEEPSYQ_A_D_SELF_MERGE_RULE.md) и [DECISIONS D16](DECISIONS.md). Более старые предложения ниже «only #5 merges», «READY_TO_MERGE — финал агента» являются ИСТОРИЧЕСКИМИ и не действуют для A–D.
+
+
 ## OWNER DIRECTIVE — GRAPHIFY SHARED CODE MAP (19 OCT 2026)
 
 **Every agent A/B/C/D/#5/Jules: map-first, not history-first.** Before broad source searching, open the durable `docs/DEEPSYQ_CODE_MAP.md` and its small relationship index `docs/DEEPSYQ_CODE_MAP.json` **if they exist on current `deepsyq-platform`**. Find the exact symbol/file/line and then inspect only the affected current code or changes since map `source_sha`. The index is a navigation aid, never a substitute for security/financial/acceptance tests. **Current coverage is ONLY `server/`**, not Android UI, docs or other code. If missing, outdated or incomplete, do *narrow* GitHub source search/diff, not full archive/history. Do not claim map present until the generator successfully publishes it.

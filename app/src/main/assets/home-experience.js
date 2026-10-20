@@ -1,6 +1,8 @@
 // Deepsyq Home: owner-approved genuine-video carousel and local Quick Create.
 // This is presentation-only and reuses the existing Inspiration feed and Studio handoff.
 import {saveStudioHandoff} from './studio-handoff.js';
+import {MODEL_CATALOG} from './generate-models.js';
+import {ownerHomeShowcase} from './owner-home-hero-headings.js';
 const $=id=>document.getElementById(id);
 // WebKit can round a demuxed EOF up to the next millisecond.
 const EOF_ROUNDING_SECONDS=.001;
@@ -52,7 +54,7 @@ function updateNeighbors(){
  });
 }
 function renderCredit(item){
- const showcase=item?.defaultSettings?.homeShowcase;
+ const showcase=ownerHomeShowcase(item);
  const model=String(item?.defaultSettings?.creationModel||'').trim();
  const provider=String(item?.defaultSettings?.creationProvider||'').trim();
  $('homeHeroCreditLabel').textContent=showcase?.title?String(showcase.label||'EXPLORE'):model?'CREATED WITH':provider?'CREATED IN':'';
@@ -91,7 +93,7 @@ function setSlide(next,direction=1){
  video.pause();video.src=item.previewUrl;
  if(item.previewPosterUrl)video.poster=item.previewPosterUrl;else video.removeAttribute('poster');
  video.load();
- const showcase=item.defaultSettings?.homeShowcase;
+ const showcase=ownerHomeShowcase(item);
  const destinations=['#canvasFeature','#quickCreateForm','#agentFeature','generate-studio.html?studio=video','generate-studio.html?studio=image','generate-studio.html?studio=audio'];
  $('inspirationHeroFeature').href=destinations.includes(showcase?.href)?showcase.href:link;
  $('inspirationHeroFeature').setAttribute('aria-label',showcase?.title?'Explore '+String(showcase.title):'Explore featured Inspiration video');
@@ -171,6 +173,8 @@ let chosen='image',busy=false;
 function choose(kind){
  if(!['image','video','music','agent'].includes(kind))return;
  chosen=kind;
+ const modelButton=$('homeModelPicker');
+ if(modelButton){modelButton.dataset.homeModelKind=kind==='music'?'audio':kind;modelButton.disabled=kind==='agent';modelButton.textContent=kind==='agent'?'Models in Studio':`Choose ${kind==='music'?'audio':kind} model`;}
  $('homeQuickPrompt').required=kind!=='agent';
  for(const b of document.querySelectorAll('[data-home-kind]'))b.setAttribute('aria-pressed',String(b.dataset.homeKind===kind));
  $('homeQuickSubmitLabel').textContent=kind==='agent'?'See Agent preview ↗':'Open in Studio ↗';
@@ -178,6 +182,43 @@ function choose(kind){
 }
 if($('homeQuickForm')){
  document.querySelectorAll('[data-home-kind]').forEach(b=>b.addEventListener('click',()=>{choose(b.dataset.homeKind);if(chosen==='agent'){$('homeQuickStatus').classList.add('is-visible');$('homeQuickStatus').textContent='Agent execution is coming soon. Explore the preview below.';}}));
+ const modelPicker=$('homeModelPicker'),settingsDialog=$('homeSettingsDialog'),ratioPicker=$('homePreferredRatio');
+ let preferredRatio='';
+ modelPicker?.addEventListener('click',()=>{
+  if(chosen==='agent')return;
+  const kind=chosen==='music'?'audio':chosen;
+  const existingTrigger=document.querySelector(`#sidebar [data-open-models="${kind}"]`);
+  if(existingTrigger){modelPicker.setAttribute('aria-expanded','true');existingTrigger.click();}
+ });
+ $('modelFlyout')?.addEventListener('close',()=>modelPicker?.setAttribute('aria-expanded','false'));
+ function populateHomeSettings(kind=chosen){
+  if(!ratioPicker)return;
+  const catalogKind=kind==='music'?'music':kind;
+  const ratios=[...new Set(MODEL_CATALOG.filter(model=>model.kind===catalogKind).flatMap(model=>model.capabilities?.ratios||model.ratios||[]))];
+  ratioPicker.replaceChildren(new Option('Let the model decide',''),...ratios.map(ratio=>new Option(ratio,ratio)));
+  ratioPicker.disabled=ratios.length===0;
+  ratioPicker.value=ratios.includes(preferredRatio)?preferredRatio:'';
+  $('homeSettingsModelNote').textContent=kind==='music'?'Audio format settings are selected in the Audio Studio.':ratios.length?'Resolution and duration are chosen in Studio from the selected model’s supported settings.':'No aspect-ratio preference is available for this mode.';
+ }
+ $('homeSettingsOpen')?.addEventListener('click',()=>{
+  populateHomeSettings();
+  if(settingsDialog&&!settingsDialog.open)settingsDialog.showModal();
+ });
+ function closeHomeSettings(){if(settingsDialog?.open)settingsDialog.close();}
+ $('homeSettingsClose')?.addEventListener('click',closeHomeSettings);
+ $('homeSettingsCancel')?.addEventListener('click',closeHomeSettings);
+ settingsDialog?.addEventListener('click',event=>{if(event.target===settingsDialog)closeHomeSettings();});
+ $('homeSettingsApply')?.addEventListener('click',()=>{
+  preferredRatio=ratioPicker?.value||'';
+  const canvasRatio=$('quickCreateRatio');
+  if(canvasRatio){
+   const supported=[...canvasRatio.options].some(option=>option.value===preferredRatio);
+   canvasRatio.value=preferredRatio&&supported?preferredRatio:'';
+   canvasRatio.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+  $('homeQuickStatus').textContent=preferredRatio?'Format preference saved for Studio. The selected model will confirm support.':'Studio will choose the format supported by your selected model.';
+  closeHomeSettings();
+ });
  document.querySelectorAll('[data-home-idea]').forEach(b=>b.addEventListener('click',()=>{
   const idea=ideas[b.dataset.homeIdea];if(!idea)return;
   const prompt=$('homeQuickPrompt');
@@ -193,7 +234,7 @@ if($('homeQuickForm')){
   if(!prompt||prompt.length>2000){status.textContent='Enter a description of up to 2,000 characters.';return;}
   const studio=modeToStudio[chosen];if(!studio){status.textContent='Choose Image, Video or Audio.';return;}
   busy=true;button.disabled=true;status.textContent='Preparing your existing Studio draft locally…';
-  try{await saveStudioHandoff({kind:chosen,prompt,source:'home-quick-create'});location.assign('generate-studio.html?studio='+studio+'&from=home');}
+  try{await saveStudioHandoff({kind:chosen,prompt,settings:preferredRatio?{ratio:preferredRatio}:{},source:'home-quick-create'});location.assign('generate-studio.html?studio='+studio+'&from=home');}
   catch(_){status.textContent='Could not prepare the draft in this browser. Your text remains here; please try again.';busy=false;button.disabled=false;}
  });
 }
