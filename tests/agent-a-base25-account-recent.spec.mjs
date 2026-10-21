@@ -142,3 +142,27 @@ for(const signal of ['cross-tab storage', 'same-tab focus']){
   expect(paidPosts).toBe(0);
  });
 }
+
+
+test('A19 owner Studio privacy: account B never inherits A image prompt or reference image after storage event',async({page})=>{
+ await stubSignedInHome(page);
+ let paidPosts=0;
+ page.on('request',req=>{if(req.method()==='POST'&&/\/api\/studio\/jobs(?:\?|$)/.test(new URL(req.url()).pathname))paidPosts++;});
+ await page.goto('/generate-studio.html?studio=image');
+ const prompt=page.locator('#prompt'),tiles=page.locator('#refPreview .studio-reference-tile');
+ await prompt.fill('PRIVATE_ACCOUNT_A_IMAGE_EDITOR_PROMPT');
+ const tinyPng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/ngAAAABJRU5ErkJggg==','base64');
+ await page.locator('#references').setInputFiles({name:'a-private-picture.png',mimeType:'image/png',buffer:tinyPng});
+ await expect(tiles).toHaveCount(1);
+ await expect(prompt).toHaveValue('PRIVATE_ACCOUNT_A_IMAGE_EDITOR_PROMPT');
+ await page.evaluate(()=>{
+  const oldValue=localStorage.getItem('vv_token');
+  localStorage.setItem('vv_token','fixture-account-B');
+  dispatchEvent(new StorageEvent('storage',{key:'vv_token',oldValue,newValue:'fixture-account-B'}));
+ });
+ // Actual image bytes were attached to the editor; reset must be immediate,
+ // not merely prevent old History GET or block provider generation.
+ await expect(prompt).toBeEmpty({timeout:4000});
+ await expect(tiles).toHaveCount(0);
+ expect(paidPosts).toBe(0);
+});
