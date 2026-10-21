@@ -21,7 +21,7 @@ test('BASE1-C7 Home Inspiration card remains accessible on hover and filters wit
  await page.route('**/api/inspiration**',route=>{
   inspirationCalls++;
   const offset=Number(new URL(route.request().url()).searchParams.get('offset')||'0');
-  route.fulfill({json:{
+  return route.fulfill({json:{
    items:[entry(offset===0?'first':'second')],
    categories:['Editorial'],ratios:['1:1'],
    pagination:{limit:24,offset,nextOffset:offset===0?24:null,hasMore:offset===0}

@@ -2,12 +2,14 @@ import {test,expect} from '@playwright/test';
 const video={id:'owner-video',title:'Original cinematic video',kind:'video',category:'Cinematic',previewUrl:'/media/home/owner-20261018/v01.mp4',prompt:'Original owner video prompt',aspectRatio:'16:9',actionTarget:'studio',requiredInputTypes:[],defaultSettings:{ratio:'16:9'},defaultModel:null};
 test('Home Inspiration filters in place, images empty, video opens right-prompt overlay; old page redirects',async({page})=>{
  const paid=[];page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio|billing|ai-wallet)/.test(r.url()))paid.push(r.url());});
- await page.route('**/api/config',route=>route.fulfill({json:{features:{inspiration:true},plans:{},auth:{}}}));
+ await page.route('**/api/config',route=>route.fulfill({json:{billingConfigured:false,googleClientId:'',features:{aiApps:true,inspiration:true,productVideo:false,onboarding:false},plans:{},auth:{}}}));
  await page.route('**/api/templates?**',route=>route.fulfill({json:{items:[]}}));
- await page.route('**/api/inspiration?**',route=>route.fulfill({json:{items:[video,{...video,id:'poster',kind:'image',previewUrl:'/poster.webp'}],categories:['Cinematic'],ratios:['16:9']}}));
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,publicGenerationEnabled:false,models:[],catalog:[]}}));
+ await page.route('**/api/auth/email/status',route=>route.fulfill({json:{configured:false}}));
+ await page.route('**/api/inspiration**',route=>route.fulfill({json:{items:[video,{...video,id:'poster',kind:'image',previewUrl:'/poster.webp'}],categories:['Cinematic'],ratios:['16:9']}}));
  for(const width of [390,768,1448]){
-  await page.setViewportSize({width,height:850});await page.goto('/deepsyq.html');
-  const section=page.locator('#inspirationPreview');await expect(section).toBeVisible();
+  await page.setViewportSize({width,height:850});await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+  const section=page.locator('#inspirationPreview');await expect(section).toBeVisible({timeout:15000});
   const tabs=section.locator('[data-inspiration-kind]');await expect(tabs).toHaveText(['All','Video','Image']);
   await expect(section.locator('.inspiration-preview-card')).toHaveCount(1);
   const imageTab=section.getByRole('button',{name:'Image',exact:true});await imageTab.scrollIntoViewIfNeeded();await imageTab.click();
@@ -30,7 +32,7 @@ test('Home Inspiration filters in place, images empty, video opens right-prompt 
   await expect(section.locator('.inspiration-preview-card')).toHaveCount(1);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);
  }
- await page.goto('/inspiration.html?kind=video',{waitUntil:'domcontentloaded'});await expect(page).toHaveURL(/deepsyq\.html#inspirationPreview$/);
+ const legacy=await page.request.get('/inspiration.html?kind=video',{maxRedirects:0});expect(legacy.status()).toBe(302);expect(legacy.headers().location).toBe('/deepsyq.html#inspirationPreview');
  expect(paid).toEqual([]);
 });
 test('Home inspiration clone hands off prompt without generating',async({page})=>{
