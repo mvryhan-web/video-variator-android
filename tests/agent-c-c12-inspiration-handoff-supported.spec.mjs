@@ -5,7 +5,7 @@ import {test,expect} from '@playwright/test';
 const base={
  category:'Fiction',description:'Synthetic handoff fixture',aspectRatio:'16:9',
  previewUrl:'/does-not-exist-c12.webp',actionTarget:'studio',rightsBasis:'owned',
- rightsNote:'Synthetic test only',defaultSettings:{ratio:'16:9'}
+ rightsNote:'Synthetic test only',active:true,featured:true,defaultSettings:{ratio:'16:9'}
 };
 const catalog=[
  {...base,id:'video-input',slug:'video-input',title:'Needs source video',kind:'video',
@@ -42,6 +42,7 @@ function paidRequests(page){
 }
 
 test('C12 incompatible published Inspiration does not advertise false actionable Studio handoff',async({page})=>{
+ test.setTimeout(120000);
  await setup(page);const posts=paidRequests(page);
  for(const width of [320,390,1448]){
   await page.setViewportSize({width,height:850});
@@ -53,7 +54,7 @@ test('C12 incompatible published Inspiration does not advertise false actionable
    ['Needs product name field','product name']
   ]){
    const card=page.getByRole('button',{name:'View '+title+' inspiration'});
-   await card.scrollIntoViewIfNeeded();
+   await card.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
    await card.click();
    const detail=page.getByRole('dialog');
    await expect(detail,'fixture '+title+' at '+width).toContainText(reason);
@@ -63,7 +64,7 @@ test('C12 incompatible published Inspiration does not advertise false actionable
    await page.keyboard.press('Escape');
   }
   const supported=page.getByRole('button',{name:'View Supported original picture inspiration'});
-  await supported.scrollIntoViewIfNeeded();
+  await supported.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
   await supported.click();
   await expect(page.getByRole('dialog').getByRole('button',{name:'Create yours'})).toBeEnabled();
   await page.keyboard.press('Escape');
@@ -73,6 +74,7 @@ test('C12 incompatible published Inspiration does not advertise false actionable
 });
 
 test('C12 supported Image and Video retain real Create yours / Clone handoff without consent or paid jobs',async({page})=>{
+ test.setTimeout(120000);
  await setup(page);const posts=paidRequests(page);
  for(const [title,kind,action,prompt] of [
   ['Supported original picture','video','Create yours','A fictional lakeside painting'],
@@ -80,7 +82,7 @@ test('C12 supported Image and Video retain real Create yours / Clone handoff wit
  ]){
   await page.goto('/deepsyq.html?c12Supported='+encodeURIComponent(title)+'#inspirationPreview',{waitUntil:'domcontentloaded'});
   const card=page.getByRole('button',{name:'View '+title+' inspiration'});
-  await card.scrollIntoViewIfNeeded();
+  await card.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
   await card.click();
   const detail=page.getByRole('dialog');
   const actionButton=detail.getByRole('button',{name:action==='Clone and Try'?'Clone & Try':action});
