@@ -136,7 +136,9 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     await pool.query("INSERT INTO vv_ai_inspiration(id,active,kind,rights_note,rights_basis,preview_url) VALUES('watcher-test-inspiration',TRUE,'image','licensed preview','licensed','https://example.test/image.jpg') ON CONFLICT(id) DO NOTHING");
     await pool.query("UPDATE vv_ai_template SET generation_type='bad_mode',required_input_types='{\"bad\":true}'::jsonb,default_settings='[]'::jsonb WHERE id='watcher-test-template'");
     await pool.query("UPDATE vv_ai_inspiration SET action_target='broken',required_input_types='[\"unapproved\"]'::jsonb,default_settings='[]'::jsonb WHERE id='watcher-test-inspiration'");
-    const contentRun=await runContentTasksIfDue({pool,env:{...env,PRODUCT_WATCHER_CONTENT_TASKS_ENABLED:'true'},now:()=>new Date()});
+    // Scheduled tasks must not depend on the CI runner's current Paris hour.
+    const scheduledNow=()=>new Date('2026-10-21T10:00:00Z');
+    const contentRun=await runContentTasksIfDue({pool,env:{...env,PRODUCT_WATCHER_CONTENT_TASKS_ENABLED:'true'},now:scheduledNow});
     assert.equal(contentRun.status,'generated');
     assert.deepEqual(contentRun.generated.map(x=>x.kind),['content','opportunities']);
     const contentList=await request('GET','/api/product-watcher/admin/content-tasks');
@@ -149,13 +151,13 @@ test('isolated PostgreSQL acceptance: migration, pause, findings, history, owner
     assert.ok(contentList.body.items.some(x=>x.kind==='content'&&x.content.inspiration.invalidActionTargets===1));
     assert.ok(contentList.body.items.some(x=>x.kind==='opportunities'&&x.content.recommendations.some(r=>r.code==='TEMPLATE_INPUT_SCHEMA_INVALID')));
     assert.ok(contentList.body.items.some(x=>x.kind==='opportunities'&&x.content.recommendations.some(y=>y.code==='NO_APPROVED_VIDEO_EXAMPLE')));
-    const contentAgain=await runContentTasksIfDue({pool,env:{...env,PRODUCT_WATCHER_CONTENT_TASKS_ENABLED:'true'},now:()=>new Date()});
+    const contentAgain=await runContentTasksIfDue({pool,env:{...env,PRODUCT_WATCHER_CONTENT_TASKS_ENABLED:'true'},now:scheduledNow});
     assert.equal(contentAgain.status,'not_due');
 
-    const report=await runBriefsIfDue({pool,env:{...env,PRODUCT_WATCHER_BRIEFS_ENABLED:'true'},now:()=>new Date()});
+    const report=await runBriefsIfDue({pool,env:{...env,PRODUCT_WATCHER_BRIEFS_ENABLED:'true'},now:scheduledNow});
     assert.equal(report.status,'generated');
     assert.ok(report.generated.some(x=>x.kind==='daily'));
-    const duplicateReport=await runBriefsIfDue({pool,env:{...env,PRODUCT_WATCHER_BRIEFS_ENABLED:'true'},now:()=>new Date()});
+    const duplicateReport=await runBriefsIfDue({pool,env:{...env,PRODUCT_WATCHER_BRIEFS_ENABLED:'true'},now:scheduledNow});
     assert.equal(duplicateReport.status,'not_due');
     const briefView=await request('GET','/api/product-watcher/admin/briefs');
     assert.equal(briefView.statusCode,200);

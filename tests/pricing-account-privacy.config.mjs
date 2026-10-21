@@ -1,0 +1,2 @@
+import {defineConfig,devices} from '@playwright/test';
+export default defineConfig({testDir:'.',testMatch:'pricing-account-privacy.spec.mjs',timeout:20000,retries:0,reporter:'list',use:{baseURL:'http://127.0.0.1:31994'},webServer:{cwd:process.cwd(),command:'python3 -m http.server 31994 --bind 127.0.0.1 --directory app/src/main/assets',url:'http://127.0.0.1:31994/ai-pricing.html',reuseExistingServer:false},projects:[{name:'chromium',use:{...devices['Desktop Chrome']}},{name:'webkit',use:{...devices['Desktop Safari']}}]});
