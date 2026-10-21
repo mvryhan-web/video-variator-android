@@ -322,7 +322,7 @@ test('A23 P0: stale A History Delete does not issue B-auth DELETE against old A 
  page.on('request',r=>{
   const path=new URL(r.url()).pathname;
   if(r.method()==='DELETE'&&path==='/api/studio/jobs/history-a23-delete')
-   crossAccountDeletes.push({authorization:r.headers()['authorization']||'',path});
+   crossAccountDeletes.push({authFromB:r.headers()['authorization']==='Bearer fixture-account-B',path});
   if(r.method()==='POST'&&/\/api\/(studio|ai-wallet|billing)/.test(path))paidPosts.push(path);
  });
  await page.route('**/api/studio/jobs?filter=all',r=>{
