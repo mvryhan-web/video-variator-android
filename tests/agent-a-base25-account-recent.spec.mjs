@@ -175,7 +175,13 @@ test('A19 owner Studio privacy: account B never inherits A image prompt or refer
  });
  // Actual image bytes were attached to the editor; reset must be immediate,
  // not merely prevent old History GET or block provider generation.
- await expect(prompt).toBeEmpty({timeout:4000});
- await expect(tiles).toHaveCount(0);
+ // Single synchronous snapshot proves BOTH text and attached PNG tiles were
+ // removed before B could interact; report both actual values on RED.
+ const visibleAfter=await page.evaluate(()=>({
+  prompt:document.getElementById('prompt').value,
+  imageTiles:document.querySelectorAll('#refPreview .studio-reference-tile').length,
+  token:localStorage.getItem('vv_token')
+ }));
+ expect(visibleAfter).toEqual({prompt:'',imageTiles:0,token:'fixture-account-B'});
  expect(paidPosts).toBe(0);
 });
