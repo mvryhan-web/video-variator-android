@@ -41,6 +41,7 @@ test('BASE1-C7 Home Inspiration card remains accessible on hover and filters wit
   await expect(page.getByRole('dialog').getByRole('button',{name:'Create yours'})).toBeEnabled();
   await expect(page.getByRole('dialog').getByRole('button',{name:'Clone & Try'})).toBeEnabled();
   await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);
   const imageTab=page.locator('[data-inspiration-kind="image"]');await imageTab.scrollIntoViewIfNeeded();await imageTab.click();
   await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(0);
