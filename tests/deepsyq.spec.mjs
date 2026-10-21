@@ -361,7 +361,7 @@ test('approved video appears in the real homepage hero but does not erase Canvas
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/owner-owned-film.mp4');
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('poster','/owner-owned-poster.jpg');
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
- await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href',/inspiration\.html\?kind=video/);
+ await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','deepsyq.html#inspirationPreview');
  await expect(page.locator('#quickCreateForm')).toBeVisible();
  await expect(page.locator('.home-create-grid .home-create-card')).toHaveCount(6);
  await expect(page.locator('.home-feature-triptych .home-feature-spotlight')).toHaveCount(3);

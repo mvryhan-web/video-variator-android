@@ -104,7 +104,7 @@ test('BASE 3: mocked navigation preserves real authorized slide metadata and wra
  await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 2 of 2/);
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 1 of 2/);
- await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href',/kind=video/);
+ await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','deepsyq.html#inspirationPreview');
 });
 
 test('BASE 3: one authorized video disables arrows and avoids dead carousel controls',async({page})=>{
