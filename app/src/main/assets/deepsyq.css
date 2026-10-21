@@ -734,3 +734,30 @@ body.home-neon{background:#030b18;color:#eff6ff}
 
 #appsFeature .featured-workflow-card{grid-template-rows:auto 1fr}
 #appsFeature .featured-workflows{margin:18px 0 0}
+
+/* Owner-requested Everyday Tools and project history refresh. */
+#everydayTools .tool-grid{gap:16px}
+#everydayTools .tool-grid>a{position:relative;isolation:isolate;overflow:hidden;min-height:196px;display:flex;flex-direction:column;justify-content:flex-end;padding:22px;border:1px solid #47415f;border-radius:18px;background:radial-gradient(ellipse at 78% 0%,#63449b65,transparent 70%),linear-gradient(145deg,#19213a,#121627);transition:transform .18s,border-color .18s}
+#everydayTools .tool-grid>a::before{content:"";position:absolute;z-index:-1;top:24px;right:25px;width:66px;height:66px;border:1px solid #c3a5ff88;border-radius:18px;background:linear-gradient(135deg,#b783ff35,#63ceff20);box-shadow:0 0 38px #8d6bff25;transform:rotate(-12deg)}
+#everydayTools .tool-grid>a:nth-child(2)::before{border-radius:50%;background:repeating-linear-gradient(90deg,transparent 0 7px,#c3a5ff70 8px 10px,transparent 11px 15px)}
+#everydayTools .tool-grid>a:nth-child(3)::before{border-radius:16px;transform:rotate(10deg);box-shadow:-10px 10px 0 #7f66b733}
+#everydayTools .tool-grid>a:nth-child(4)::before{border-radius:50% 50% 22% 22%;background:radial-gradient(circle at 50% 32%,#d0b1ff70 0 17%,transparent 18%),linear-gradient(145deg,#9677db40,#438ba62a)}
+#everydayTools .tool-grid>a:hover{transform:translateY(-3px);border-color:#b48ee8}
+#everydayTools .tool-grid b{font-size:15px;line-height:1.4}
+#everydayTools .tool-grid span{font-size:12px;color:#bbb9cf;max-width:230px}
+#everydayTools .unique-tool{border:1px solid #51436c;background:radial-gradient(ellipse at 0% 0%,#69459a42,transparent 65%),#151a2d;border-radius:18px;padding:25px;margin-bottom:42px}
+#everydayTools .tool-icon{color:#ceb3ff}
+#everydayTools .unique-tool p{color:#bbb9cf;line-height:1.6}
+#history .recent-creations{padding:23px;border:1px solid #3c3c58;border-radius:18px;background:linear-gradient(135deg,#1b2037,#121729)}
+#history .recent-creations .caption{display:none}
+#history #recentCreationsStatus{color:#b9b8ce;font-size:13px;line-height:1.6;margin-bottom:0}
+#history .history-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+#history .history-links>a{display:flex;align-items:center;gap:16px;min-height:124px;padding:23px;border:1px solid #46405f;border-radius:18px;background:radial-gradient(ellipse at 100% 0%,#6c48932a,transparent 70%),#171b2f;transition:border-color .18s}
+#history .history-links>a:hover{border-color:#b48ee8}
+#history .history-links h3{font-size:16px;margin:0 0 8px}
+#history .history-links p{font-size:12px;line-height:1.6;color:#bbb9cf;margin:0}
+#history .history-links>a>span:last-child{margin-left:auto;color:#ceb3ff;font-size:20px}
+.history-card-icon{display:grid;place-items:center;flex:0 0 46px;height:46px;border:1px solid #76608f;border-radius:13px;background:#aa7bea18;color:#d4b5ff;font-size:25px}
+@media(max-width:980px){#everydayTools .tool-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){#everydayTools .tool-grid{gap:10px}#everydayTools .tool-grid>a{min-height:178px;padding:17px}#everydayTools .tool-grid b{font-size:13px}#everydayTools .tool-grid>a::before{width:48px;height:48px;right:18px;top:20px}#history .history-links{grid-template-columns:1fr}#history .recent-creations,#history .history-links>a{padding:18px}}
+@media(prefers-reduced-motion:reduce){#everydayTools .tool-grid>a,#history .history-links>a{transition:none}}
