@@ -58,7 +58,7 @@ function openInspirationDetail(item,opener){
   media.src=item.previewUrl;media.alt=item.title;media.decoding='async';media.referrerPolicy='no-referrer';
  }
  imageArea.append(media);stage.append(toolbar,imageArea);
- const sidebar=detailEl('aside','inspiration-detail-sidebar');
+ const sidebar=detailEl('div','inspiration-detail-sidebar');
  const heading=detailEl('h2','inspiration-detail-title',item.title);
  const kindLine=detailEl('p','inspiration-detail-kind',(item.category||'Inspiration')+' · '+(item.kind==='video'?'Video':'Image'));
  const description=detailEl('p','inspiration-detail-description',item.description||'Owner-approved Deepsyq inspiration.');

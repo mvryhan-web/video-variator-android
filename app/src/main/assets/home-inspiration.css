@@ -1,3 +1,4 @@
+#inspirationPreview .inspiration-preview-categories{display:flex}
 #inspirationPreview .inspiration-preview-card{color:inherit;font:inherit;text-align:left;cursor:pointer;padding:0;overflow:hidden;background:var(--panel,#111827)}
 #inspirationPreview .inspiration-preview-card>strong{display:block;position:absolute;inset:auto 0 0;z-index:1;padding:32px 10px 10px;background:linear-gradient(transparent,#11101dde);pointer-events:none}
 #inspirationPreview .inspiration-preview-card:focus-visible{outline:2px solid #64e6ff;outline-offset:3px}
