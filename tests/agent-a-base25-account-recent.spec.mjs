@@ -185,3 +185,97 @@ test('A19 owner Studio privacy: account B never inherits A image prompt or refer
  expect(visibleAfter).toEqual({prompt:'',imageTiles:0,token:'fixture-account-B'});
  expect(paidPosts).toBe(0);
 });
+
+
+// A22: distinct account lifecycle acceptance, using actual Chromium/WebKit
+// browser pages and local synthetic tokens; no external account or AI charge.
+const a22History={id:'history-a22-1',kind:'image',status:'failed',model:'mock-image',provider:'Mock',
+ prompt:'PRIVATE_ACCOUNT_A22_HISTORY_AFTER_LOGOUT',creditsCharged:29,createdAt:'2026-10-21T08:00:00Z'};
+
+test('A22 P0: local logout storage event immediately removes already-rendered A Studio History',async({page})=>{
+ await stubSignedInHome(page);
+ let paidPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio\/jobs|billing|ai-wallet)/.test(new URL(r.url()).pathname))paidPosts++;});
+ await page.route('**/api/studio/jobs?filter=all',r=>r.fulfill({json:{items:[a22History]}}));
+ await page.goto('/generate-studio.html?view=history');
+ const history=page.locator('#historyList');
+ await expect(history).toContainText('PRIVATE_ACCOUNT_A22_HISTORY_AFTER_LOGOUT');
+ await expect(history).toContainText('29 AI credits');
+ const immediate=await page.evaluate(()=>{
+  const oldValue=localStorage.getItem('vv_token');
+  localStorage.removeItem('vv_token');
+  dispatchEvent(new StorageEvent('storage',{key:'vv_token',oldValue,newValue:null}));
+  return {token:localStorage.getItem('vv_token'),
+   cards:document.querySelectorAll('#historyList .history-card').length,
+   retainedPrompt:document.getElementById('historyList').textContent.includes('PRIVATE_ACCOUNT_A22_HISTORY_AFTER_LOGOUT')};
+ });
+ expect(immediate).toEqual({token:null,cards:0,retainedPrompt:false});
+ expect(paidPosts).toBe(0);
+});
+
+test('A22 P0: simulated persisted BFCache pageshow scrubs A History before B interaction',async({page})=>{
+ await stubSignedInHome(page);
+ let paidPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio\/jobs|billing|ai-wallet)/.test(new URL(r.url()).pathname))paidPosts++;});
+ await page.route('**/api/studio/jobs?filter=all',r=>r.fulfill({json:{items:[a22History]}}));
+ await page.goto('/generate-studio.html?view=history');
+ const history=page.locator('#historyList');
+ await expect(history).toContainText('PRIVATE_ACCOUNT_A22_HISTORY_AFTER_LOGOUT');
+ const after=await page.evaluate(()=>{
+  localStorage.setItem('vv_token','fixture-account-B');
+  // Synthetic persisted pageshow probes the handler even if CI browsers
+  // disable real BFCache; real browser Back is checked in the next test.
+  dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
+  return {token:localStorage.getItem('vv_token'),
+   cards:document.querySelectorAll('#historyList .history-card').length,
+   retainedPrompt:document.getElementById('historyList').textContent.includes('PRIVATE_ACCOUNT_A22_HISTORY_AFTER_LOGOUT')};
+ });
+ expect(after).toEqual({token:'fixture-account-B',cards:0,retainedPrompt:false});
+ expect(paidPosts).toBe(0);
+});
+
+test('A22 P0: real Back then refresh must not restore A History after switching to B',async({page})=>{
+ // Initialize A exactly once: normal page reload/Back must retain B's token,
+ // unlike the one-navigation stubSignedInHome fixture.
+ await page.addInitScript(()=>{
+  if(!sessionStorage.getItem('a22-browser-session-initialized')){
+   sessionStorage.setItem('a22-browser-session-initialized','1');
+   localStorage.setItem('vv_token','fixture-account-A');
+  }
+  window.__a22PageShows=[];
+  addEventListener('pageshow',event=>window.__a22PageShows.push(Boolean(event.persisted)));
+ });
+ await page.route('**/api/config',r=>r.fulfill({json:{plans:{},googleClientId:'',
+  billingConfigured:false,features:{onboarding:false,inspiration:false,aiApps:false,productVideo:false}}}));
+ await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Synthetic account',isAdmin:false}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/ai-wallet/balance',r=>r.fulfill({status:403,json:{error:'PUBLIC_AI_NOT_READY'}}));
+ let aGets=0,bGets=0,paidPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio\/jobs|billing|ai-wallet)/.test(new URL(r.url()).pathname))paidPosts++;});
+ await page.route('**/api/studio/jobs?filter=all',r=>{
+  const auth=r.request().headers()['authorization']||'';
+  const isA=auth==='Bearer fixture-account-A';
+  if(isA)aGets++;else bGets++;
+  return r.fulfill({json:{items:isA?[a22History]:[]}});
+ });
+ await page.goto('/generate-studio.html?view=history');
+ await expect(page.locator('#historyList')).toContainText('PRIVATE_ACCOUNT_A22_HISTORY_AFTER_LOGOUT');
+ await page.goto('/ai-pricing.html');
+ await page.evaluate(()=>localStorage.setItem('vv_token','fixture-account-B'));
+ await page.goBack({waitUntil:'domcontentloaded'});
+ const back=await page.evaluate(()=>({
+  token:localStorage.getItem('vv_token'),
+  retainedPrompt:document.getElementById('historyList')?.textContent.includes('PRIVATE_ACCOUNT_A22_HISTORY_AFTER_LOGOUT')||false,
+  persistedPageShow:window.__a22PageShows?.includes(true)||false
+ }));
+ // If the browser restores the old document through BFCache, A's previously
+ // rendered DOM must be scrubbed. A new document must request B-only rows.
+ expect(back.token).toBe('fixture-account-B');
+ expect.soft(back.retainedPrompt,'Back result, native BFCache persisted='+back.persistedPageShow).toBe(false);
+ await page.reload({waitUntil:'domcontentloaded'});
+ await expect(page.locator('#historyList')).not.toContainText('PRIVATE_ACCOUNT_A22_HISTORY_AFTER_LOGOUT');
+ await expect(page.locator('#historyList .history-card')).toHaveCount(0);
+ expect(aGets).toBeGreaterThan(0);
+ expect(bGets).toBeGreaterThan(0);
+ expect(paidPosts).toBe(0);
+});
