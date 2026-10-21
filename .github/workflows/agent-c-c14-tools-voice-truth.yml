@@ -1,0 +1,38 @@
+name: Agent C C14 Tools cloud voice truth and mobile routes (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/tools-hub.js'
+      - 'tests/agent-c-c14-tools-voice-truth.spec.mjs'
+      - '.github/workflows/agent-c-c14-tools-voice-truth.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  c14-real-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/tools-hub.js
+      - run: node --check tests/agent-c-c14-tools-voice-truth.spec.mjs
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Real five-browser locales/mobile Tools routes, zero paid provider and retired Product Video
+        run: npx playwright test tests/agent-c-c14-tools-voice-truth.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-c-c14-browser-evidence
+          path: test-results/
+          if-no-files-found: ignore
