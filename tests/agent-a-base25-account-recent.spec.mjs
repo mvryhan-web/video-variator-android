@@ -342,7 +342,10 @@ test('A23 P0: stale A History Delete does not issue B-auth DELETE against old A 
  const rect=await remove.boundingBox();expect(rect).not.toBeNull();
  await page.evaluate(()=>localStorage.setItem('vv_token','fixture-account-B'));
  await page.mouse.click(rect.x+rect.width/2,rect.y+rect.height/2);
+ // Report the actual B-credential mutation attempt independently of whether
+ // the stale A card also remains onscreen after the server's forced 403.
+ await page.waitForTimeout(150);
+ expect.soft(crossAccountDeletes,'Never send B token to delete an old A job').toEqual([]);
+ expect.soft(paidPosts,'A stale History action must not start a paid job').toEqual([]);
  await expect(page.locator('#historyList')).not.toContainText('PRIVATE_ACCOUNT_A23_DELETE_JOB');
- expect(crossAccountDeletes).toEqual([]);
- expect(paidPosts).toEqual([]);
 });
