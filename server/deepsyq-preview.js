@@ -51,7 +51,9 @@ app.get('/api/inspiration',(req,res)=>{
  const page=Math.max(1,Number(q.page)||1);items=items.slice((page-1)*limit,page*limit);
  res.json({items,categories:['Cinematic'],ratios:['16:9'],pagination:{page,limit,total,hasMore:page*limit<total}});
 });
-app.get('/api/templates',(_req,res)=>res.json({items:[]}));
+const creativeMedia=JSON.parse(await readFile(path.join(assets,'media/creative/creative50-20261021/manifest.json'),'utf8'));
+const creativeTemplates=creativeMedia.previewPublicationApproved===true?creativeMedia.items.filter(item=>item.placement==='apps'&&item.active).map(item=>({id:item.id,title:item.title,description:item.description,category:item.category,generationType:'image',thumbnail:item.previewUrl,promptTemplate:item.prompt,defaultModel:null,defaultSettings:item.defaultSettings,requiredInputTypes:[],featured:true,active:true})):[];
+app.get('/api/templates',(_req,res)=>res.json({items:creativeTemplates}));
 app.get('/api/auth/email/status',(_req,res)=>res.json({configured:false}));
 app.use('/api',(_req,res)=>res.status(503).json(disabled));
 const banner='<div role="status" class="deepsyq-preview-notice" style="position:relative;z-index:90;padding:12px 20px;text-align:center;background:#3d3320;color:#f6e9cb;font:600 13px system-ui">Deepsyq design preview · Work in progress · Sign-in, payments and paid AI generation are disabled.</div>';

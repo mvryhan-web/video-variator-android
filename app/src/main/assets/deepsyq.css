@@ -712,3 +712,25 @@ body.home-neon{background:#030b18;color:#eff6ff}
 #canvasFeature .canvas-example-grid{grid-template-rows:repeat(3,minmax(0,1fr))}
 #canvasFeature .canvas-example{aspect-ratio:auto;height:100%}
 @media(max-width:640px){#canvasFeature .canvas-example-grid{aspect-ratio:4/3}}
+
+/* Original creative collections for Apps and Agent; media remains free of overlay text. */
+#agentFeature .agent-feature-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#agentFeature .creative-example-card{display:block;padding:0;min-width:0;overflow:hidden;text-align:left;border:1px solid #284564;border-radius:13px;background:#101b30;color:#e5edff;cursor:pointer}
+#agentFeature .creative-example-visual{display:block;aspect-ratio:4/5;overflow:hidden;background:#132138}
+#agentFeature .creative-example-visual img{display:block;width:100%;height:100%;object-fit:cover}
+#agentFeature .creative-example-copy{display:grid;gap:8px;padding:13px}
+#agentFeature .creative-example-copy strong{font-size:14px}
+#agentFeature .creative-example-copy>span{font-size:11px;color:#a4c6e7}
+#agentFeature .creative-example-card:hover{border-color:#8ea9e6}
+#agentFeature .creative-example-card:focus-visible{outline:3px solid #9edcff;outline-offset:3px}
+#appsFeature .featured-workflow-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#appsFeature .featured-workflow-visual{aspect-ratio:4/3;height:auto;overflow:hidden}
+#appsFeature .featured-workflow-visual img{width:100%;height:100%;object-fit:cover}
+#appsFeature .featured-workflow-copy{padding:13px}
+#appsFeature .featured-workflows>.section-heading{display:none}
+#appsFeature:has(.featured-workflow-card) .apps-feature-intro{display:none}
+@media(max-width:980px){#agentFeature .agent-feature-grid,#appsFeature .featured-workflow-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){#agentFeature .creative-example-copy{padding:10px}#agentFeature .creative-example-copy strong{font-size:12px}#appsFeature .featured-workflow-grid{grid-template-columns:1fr}}
+
+#appsFeature .featured-workflow-card{grid-template-rows:auto 1fr}
+#appsFeature .featured-workflows{margin:18px 0 0}
