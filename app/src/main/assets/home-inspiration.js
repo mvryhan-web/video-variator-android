@@ -66,7 +66,7 @@ function openInspirationDetail(item,opener){
  const prompt=detailEl('p','inspiration-detail-prompt',item.prompt||'No prompt available.');
  const meta=detailEl('div','inspiration-detail-parameters');
  meta.append(detailEl('h3','inspiration-detail-heading','Parameters'));
- const entries=[['Model',item.defaultModel||'Choose in Studio'],['Aspect ratio',item.aspectRatio]];
+ const entries=[['Model',item.defaultModel||item.displayModel||'Choose in Studio'],['Aspect ratio',item.aspectRatio]];
  if(Array.isArray(item.previewDimensions)&&item.previewDimensions.length===2)entries.push(['Preview resolution',item.previewDimensions[0]+' × '+item.previewDimensions[1]+' px']);
  for(const key of ['resolution','duration','seed']){
   const v=item.defaultSettings?.[key];
