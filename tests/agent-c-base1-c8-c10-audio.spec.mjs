@@ -141,7 +141,11 @@ test('C10 AI Agents are honest pending, usable Apps/Inspiration preserve prompt 
   await expect(page.locator('#prompt')).toHaveValue(supported.promptTemplate);
   await expect(page.locator('#consent')).not.toBeChecked();
   await page.goto('/inspiration.html');
-  await page.getByRole('button',{name:'Use this prompt'}).click();
+  // Owner-approved Inspiration now opens a media/prompt detail before Studio.
+  await page.getByRole('button',{name:'View '+inspiration.title+' inspiration'}).click();
+  const detail=page.getByRole('dialog');
+  await expect(detail).toBeVisible();
+  await detail.getByRole('button',{name:'Use this prompt'}).click();
   await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=inspiration&action=prompt$/);
   await expect(page.locator('#prompt')).toHaveValue(inspiration.prompt);
   await expect(page.locator('#consent')).not.toBeChecked();
