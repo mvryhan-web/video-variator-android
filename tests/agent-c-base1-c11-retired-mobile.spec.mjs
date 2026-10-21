@@ -123,39 +123,20 @@ test('C11 everyday Audio/Tools, Avatar Back, menu Escape work at all owner width
  expect(writes).toEqual([]);
 });
 
-test('C11 Inspiration existing rights-gated API fixtures: filters, categories and Create yours handoff are truthful',async({page})=>{
+test('C11 Home Inspiration filters video and keeps images empty; reuse requires consent',async({page})=>{
  await fixtures(page);const writes=noPaid(page);
  for(const width of widths){
-  await page.setViewportSize({width,height:850});
-  await page.goto('/inspiration.html');
-  await expect(page.locator('#gallery .card')).toHaveCount(2);
-  // Model preferences are NOT evidence of a configured/available paid provider.
-  await expect(page.locator('#gallery .card').filter({hasText:'Fictional painting'}))
-   .not.toContainText('c11-unconnected-provider-model');
+  await page.setViewportSize({width,height:850});await page.goto('/inspiration.html');
+  await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
   await fit(page,width,'Inspiration');
-  await expect(page.locator('#category option')).toHaveCount(3);
-  await page.getByRole('button',{name:'Videos',exact:true}).click();
-  await expect(page.locator('#gallery .card')).toHaveCount(1);
-  await expect(page.locator('#gallery')).toContainText('Fictional animation');
-  await page.locator('#category').selectOption('Motion');
-  await expect(page.locator('#gallery .card')).toHaveCount(1);
-  await page.locator('#ratio').selectOption('1:1');
-  await expect(page.locator('#gallery .card')).toHaveCount(0);
-  await expect(page.locator('#gallery')).toContainText('No owner-approved inspiration matches');
-  await page.locator('#ratio').selectOption('16:9');
-  await expect(page.locator('#gallery .card')).toHaveCount(1);
+  await page.locator('[data-inspiration-kind="image"]').click();await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');
+  await page.locator('[data-inspiration-kind="video"]').click();
+  await page.locator('[data-inspiration-ratio="9:16"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(0);
+  await page.locator('[data-inspiration-ratio="16:9"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
   await page.getByRole('button',{name:'View Fictional animation inspiration'}).click();
   await page.getByRole('dialog').getByRole('button',{name:'Create yours'}).click();
   await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=inspiration&action=create/);
-  await expect(page.locator('#prompt')).toHaveValue('Original animation of a floating island');
-  await expect(page.locator('#consent')).not.toBeChecked();
-  await page.goto('/inspiration.html?kind=image');
-  await expect(page.locator('#gallery .card')).toHaveCount(1);
-  await page.getByRole('button',{name:'View Fictional painting inspiration'}).click();
-  await page.getByRole('dialog').getByRole('button',{name:'Use this prompt'}).click();
-  await expect(page).toHaveURL(/studio=image&from=inspiration&action=prompt/);
-  await expect(page.locator('#prompt')).toHaveValue('Original fictional painting of flowers');
-  await expect(page.locator('#consent')).not.toBeChecked();
+  await expect(page.locator('#prompt')).toHaveValue('Original animation of a floating island');await expect(page.locator('#consent')).not.toBeChecked();
  }
  expect(writes).toEqual([]);
 });

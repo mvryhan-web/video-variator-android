@@ -41,10 +41,6 @@ app.get('/api/studio/config',(_req,res)=>res.json({
 const ownerMedia=JSON.parse(await readFile(path.join(assets,'media/home/owner-20261018/manifest.json'),'utf8'));
 const approvedPreview=ownerMedia.previewPublicationApproved===true&&ownerMedia.commercialRightsConfirmed===true;
 const previewItems=approvedPreview?ownerMedia.items.map(({slug,title,kind,category,description,previewUrl,previewPosterUrl,prompt,defaultModel,aspectRatio,requiredInputTypes,defaultSettings,actionTarget,featured,sortOrder})=>({id:slug,slug,title,kind,category,description,previewUrl,previewPosterUrl,prompt,defaultModel,aspectRatio,requiredInputTypes,defaultSettings,actionTarget,featured,sortOrder})):[];
-if(approvedPreview&&ownerMedia.standaloneCard){
- const source=previewItems.find(item=>item.slug===ownerMedia.standaloneCard.sourceSlug);
- if(source)previewItems.push({...source,id:source.id+'-card',slug:source.slug+'-card',kind:'image',previewUrl:ownerMedia.standaloneCard.previewUrl,featured:true,sortOrder:0});
-}
 app.get('/api/inspiration',(req,res)=>{
  const q=req.query;
  let items=previewItems.filter(item=>(q.featured!=='true'||item.featured)&&(!q.kind||q.kind==='all'||item.kind===q.kind)&&(!q.target||item.actionTarget===q.target)&&(!q.category||item.category===q.category)&&(!q.ratio||item.aspectRatio===q.ratio)&&(!q.q||item.title.toLowerCase().includes(String(q.q).toLowerCase()))).sort((a,b)=>a.sortOrder-b.sortOrder);
@@ -65,6 +61,7 @@ async function homepage(_req,res){
 app.get(['/','/dashboard','/deepsyq.html'],homepage);
 // The deleted owner-cancelled workflow is never reachable in this preview.
 app.get(['/product-video','/product-video.html'],(_req,res)=>res.status(404).type('text/plain').send('Not found'));
+app.get(['/inspiration','/inspiration.html'],(_req,res)=>res.redirect(302,'/deepsyq.html#inspirationPreview'));
 app.use(express.static(assets,{extensions:['html'],index:false,fallthrough:true}));
 app.use((req,res)=>{
  if(req.method!=='GET'&&req.method!=='HEAD')return res.status(405).type('text/plain').send('PREVIEW_READ_ONLY');

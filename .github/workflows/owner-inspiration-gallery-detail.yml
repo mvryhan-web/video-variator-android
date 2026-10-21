@@ -3,14 +3,24 @@ on:
   pull_request:
     branches: [deepsyq-platform]
     paths:
-      - 'app/src/main/assets/inspiration.js'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq.js'
+      - 'app/src/main/assets/home-inspiration.js'
+      - 'app/src/main/assets/home-inspiration.css'
+      - 'server/deepsyq-preview.js'
+      - 'server/server.js'
       - 'app/src/main/assets/inspiration-gallery-detail.css'
       - 'tests/owner-inspiration-gallery-detail.spec.mjs'
       - '.github/workflows/owner-inspiration-gallery-detail.yml'
   push:
     branches: [deepsyq-platform]
     paths:
-      - 'app/src/main/assets/inspiration.js'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq.js'
+      - 'app/src/main/assets/home-inspiration.js'
+      - 'app/src/main/assets/home-inspiration.css'
+      - 'server/deepsyq-preview.js'
+      - 'server/server.js'
       - 'app/src/main/assets/inspiration-gallery-detail.css'
       - 'tests/owner-inspiration-gallery-detail.spec.mjs'
       - '.github/workflows/owner-inspiration-gallery-detail.yml'
@@ -33,7 +43,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - run: node --check app/src/main/assets/inspiration.js
+      - run: node --check app/src/main/assets/home-inspiration.js
       - run: node --check tests/owner-inspiration-gallery-detail.spec.mjs
       - run: npx playwright install --with-deps chromium webkit
       - name: Test gallery click through, right prompt, original media, mobile and no fee

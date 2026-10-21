@@ -59,10 +59,9 @@ test('AI Apps and Inspiration prioritize browse/search over long explanations',a
  await expect(page.locator('#type')).toBeVisible();
  await expect(page.locator('#apps')).toHaveCount(1);
  await page.goto('/inspiration.html');
- await expect(page.locator('.hero h1')).toHaveText('Inspiration');
- await expect(page.locator('.hero>p:last-child')).toHaveText('Find an idea. Create your version.');
- await expect(page.locator('#gallery')).toHaveCount(1);
- await expect(page.locator('.kind-tabs button')).toHaveCount(3);
+ await expect(page).toHaveURL(/deepsyq\.html#inspirationPreview$/);
+ await expect(page.locator('#inspirationPreview h2')).toHaveText('Inspiration');
+ await expect(page.locator('[data-inspiration-kind]')).toHaveText(['All','Video','Image']);
 });
 
 test('Everyday Audio retains functional controls and honest privacy',async({page})=>{

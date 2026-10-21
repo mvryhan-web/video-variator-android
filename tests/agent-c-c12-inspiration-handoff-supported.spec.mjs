@@ -10,11 +10,11 @@ const base={
 const catalog=[
  {...base,id:'video-input',slug:'video-input',title:'Needs source video',kind:'video',
   requiredInputTypes:['video'],prompt:'Remix the user uploaded source video'},
- {...base,id:'overlong',slug:'overlong',title:'Oversized prompt',kind:'image',
+ {...base,id:'overlong',slug:'overlong',title:'Oversized prompt',kind:'video',
   requiredInputTypes:[],prompt:'A'.repeat(2001)},
- {...base,id:'product-name',slug:'product-name',title:'Needs product name field',kind:'image',
+ {...base,id:'product-name',slug:'product-name',title:'Needs product name field',kind:'video',
   requiredInputTypes:['product_name'],prompt:'A beautiful {{product_name}}'},
- {...base,id:'supported-image',slug:'supported-image',title:'Supported original picture',kind:'image',
+ {...base,id:'supported-image',slug:'supported-image',title:'Supported original picture',kind:'video',
   requiredInputTypes:['image'],prompt:'A fictional lakeside painting'},
  {...base,id:'supported-video',slug:'supported-video',title:'Supported original movie',kind:'video',
   requiredInputTypes:[],prompt:'A fictional floating island in twilight'}
@@ -46,14 +46,13 @@ test('C12 incompatible published Inspiration does not advertise false actionable
  for(const width of [320,390,1448]){
   await page.setViewportSize({width,height:850});
   await page.goto('/inspiration.html');
-  await expect(page.locator('#gallery .card')).toHaveCount(5);
+  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(5);
   for(const [title,reason] of [
    ['Needs source video','video input support not yet available'],
    ['Oversized prompt','exceeds the 2,000-character Studio limit'],
    ['Needs product name field','product name']
   ]){
-   const item=page.locator('#gallery .card').filter({hasText:title});
-   await item.getByRole('button',{name:'View '+title+' inspiration'}).click();
+   await page.getByRole('button',{name:'View '+title+' inspiration'}).click();
    const detail=page.getByRole('dialog');
    await expect(detail,'fixture '+title+' at '+width).toContainText(reason);
    for(const action of ['Create yours','Use this prompt','Clone & Try']){
@@ -72,12 +71,11 @@ test('C12 incompatible published Inspiration does not advertise false actionable
 test('C12 supported Image and Video retain real Create yours / Clone handoff without consent or paid jobs',async({page})=>{
  await setup(page);const posts=paidRequests(page);
  for(const [title,kind,action,prompt] of [
-  ['Supported original picture','image','Create yours','A fictional lakeside painting'],
+  ['Supported original picture','video','Create yours','A fictional lakeside painting'],
   ['Supported original movie','video','Clone and Try','A fictional floating island in twilight']
  ]){
   await page.goto('/inspiration.html');
-  const card=page.locator('#gallery .card').filter({hasText:title});
-  await card.getByRole('button',{name:'View '+title+' inspiration'}).click();
+  await page.getByRole('button',{name:'View '+title+' inspiration'}).click();
   const detail=page.getByRole('dialog');
   const actionButton=detail.getByRole('button',{name:action==='Clone and Try'?'Clone & Try':action});
   await expect(actionButton).toBeEnabled();

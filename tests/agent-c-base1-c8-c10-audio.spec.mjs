@@ -12,7 +12,7 @@ const pending={
 };
 const inspiration={
  id:'c10-illustration',slug:'fictional-garden',title:'Fictional prompt',
- category:'Art',kind:'image',aspectRatio:'1:1',description:'Synthetic only',
+ category:'Art',kind:'video',aspectRatio:'1:1',description:'Synthetic only',
  previewUrl:'/test-fixture-absent.png',prompt:'A fictional garden at sunrise',
  actionTarget:'studio',defaultSettings:{ratio:'1:1'},requiredInputTypes:[]
 };
@@ -61,7 +61,7 @@ test('C8 current DEV real direct links, Tools/Avatar Back, mobile Escape and His
   await expect(page.locator('.app-card')).toHaveCount(2);
   await fit(page,width,'AI Apps');
   await page.goto('/inspiration.html');
-  await expect(page.locator('#gallery .card')).toHaveCount(1);
+  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
   await fit(page,width,'Inspiration');
   await page.goto('/free-tools.html');
   await expect(page.locator('[data-hub-tool="tts"]')).toHaveAttribute('href','audio-studio.html?tool=tts');
@@ -146,7 +146,7 @@ test('C10 AI Agents are honest pending, usable Apps/Inspiration preserve prompt 
   const detail=page.getByRole('dialog');
   await expect(detail).toBeVisible();
   await detail.getByRole('button',{name:'Use this prompt'}).click();
-  await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=inspiration&action=prompt$/);
+  await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=inspiration&action=prompt$/);
   await expect(page.locator('#prompt')).toHaveValue(inspiration.prompt);
   await expect(page.locator('#consent')).not.toBeChecked();
   await page.goto('/audio-studio.html?tool=tts');

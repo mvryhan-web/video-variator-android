@@ -11,7 +11,7 @@ const templates=[
 ];
 const inspiration=[
  {id:'owned-fixture',title:'Fixture Inspiration',slug:'fixture-inspiration',category:'Editorial',
-  kind:'image',description:'Synthetic route test only',previewUrl:'/fixture-not-a-real-image.webp',
+  kind:'video',description:'Synthetic route test only',previewUrl:'/fixture-not-a-real-image.webp',
   prompt:'A blue botanical poster',aspectRatio:'2:3',actionTarget:'studio',
   requiredInputTypes:[],defaultSettings:{ratio:'2:3'},defaultModel:null}
 ];
@@ -78,7 +78,7 @@ test('BASE1-C 12 supported screens exist and retired Product Video routes stay 4
  await page.goto('/ai-apps.html');
  const nav=page.getByRole('navigation',{name:'Main navigation'});
  for(const [label,href] of [
-  ['AI Apps','ai-apps.html'],['Inspiration','inspiration.html'],
+  ['AI Apps','ai-apps.html'],['Inspiration','deepsyq.html#inspirationPreview'],
   ['Tools','free-tools.html'],['Pricing','ai-pricing.html'],
   ['History','generate-studio.html?view=history'],
   ['My Creations','deepsyq.html#recentCreations']
@@ -116,19 +116,19 @@ test('BASE1-C Inspiration kind, query, preview and Create/Prompt/Clone lead to r
   ['Create yours','create'],['Use this prompt','prompt'],['Clone and Try','clone']
  ]){
   await page.goto('/inspiration.html');
-  await expect(page.locator('#gallery .card')).toHaveCount(1);
-  await expect(page.locator('#gallery .card')).toContainText('Fixture Inspiration');
-  await page.getByRole('button',{name:label,exact:true}).click();
-  await expect(page).toHaveURL(new RegExp('studio=image&from=inspiration&action='+action));
+  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
+  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toContainText('Fixture Inspiration');
+  await page.getByRole('button',{name:'View Fixture Inspiration inspiration'}).click();
+  await page.getByRole('dialog').getByRole('button',{name:action==='clone'?'Clone & Try':label}).click();
+  await expect(page).toHaveURL(new RegExp('studio=video&from=inspiration&action='+action));
   await expect(page.locator('#prompt')).toHaveValue('A blue botanical poster');
   await expect(page.locator('#consent')).not.toBeChecked();
   expect(paid()).toBe(0);
  }
  await page.goto('/inspiration.html');
- await page.getByRole('button',{name:'Videos',exact:true}).click();
- await expect(page.locator('[data-kind="video"]')).toHaveAttribute('aria-pressed','true');
- await expect(page.locator('#category')).toBeAttached();
- await expect(page.locator('#ratio')).toBeAttached();
+ await page.locator('[data-inspiration-kind="video"]').click();
+ await expect(page.locator('[data-inspiration-kind="video"]')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('[data-inspiration-ratio]')).toHaveCount(2);
 });
 
 test('BASE1-C owned AI Apps/Inspiration/Tools remain usable at 320, 375 and 768px',async({page})=>{
@@ -144,8 +144,10 @@ test('BASE1-C owned AI Apps/Inspiration/Tools remain usable at 320, 375 and 768p
   const apps=await checkViewport(page);
   expect(apps.scrollWidth,'AI Apps horizontal overflow '+width).toBeLessThanOrEqual(width+1);
   await page.goto('/inspiration.html');
-  await expect(page.locator('#gallery .card')).toHaveCount(1);
-  await expect(page.getByRole('button',{name:'Create yours'})).toBeVisible();
+  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
+  await page.getByRole('button',{name:'View Fixture Inspiration inspiration'}).click();
+  await expect(page.getByRole('dialog').getByRole('button',{name:'Create yours'})).toBeVisible();
+  await page.keyboard.press('Escape');
   const gallery=await checkViewport(page);
   if(gallery.scrollWidth>width+1){
    const offenders=await page.evaluate(()=>[...document.querySelectorAll('body *')]
@@ -155,23 +157,6 @@ test('BASE1-C owned AI Apps/Inspiration/Tools remain usable at 320, 375 and 768p
    console.log('Inspiration overflow diagnostic',width,JSON.stringify(offenders));
   }
   expect(gallery.scrollWidth,'Inspiration horizontal overflow '+width).toBeLessThanOrEqual(width+1);
-  if(width===320){
-   const brand=page.locator('body > header a.brand');
-   const brandTap=await brand.evaluate(link=>{
-    const r=link.getBoundingClientRect();
-    const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
-    return hit===link||link.contains(hit);
-   });
-   expect(brandTap,'Inspiration brand must not sit underneath mobile drawer toggle').toBe(true);
-  }
-  const toggle=page.locator('.ds-site-mobile-toggle');
-  if(await toggle.isVisible()){
-   await toggle.click();
-   await expect(toggle).toHaveAttribute('aria-expanded','true');
-   await expect(page.locator('#dsSiteSidebar nav a[href="free-tools.html"]')).toBeVisible();
-   await page.keyboard.press('Escape');
-   await expect(toggle).toHaveAttribute('aria-expanded','false');
-  }
   await page.goto('/free-tools.html');
   const back=page.locator('main.tools header a.tool-back');
   await expect(back).toBeVisible();
@@ -283,29 +268,12 @@ test('BASE1-C3 Inspiration real video card uses existing owner neon tokens witho
  for(const width of [320,375,768]){
   await page.setViewportSize({width,height:812});
   await page.goto('/inspiration.html');
-  const card=page.locator('#gallery .card[data-kind="video"]');
+  const card=page.locator('#inspirationPreviewGrid .inspiration-preview-card[data-kind="video"]');
   await expect(card).toHaveCount(1);
-  await expect(card.locator('.type-badge')).toHaveText('video');
-  await expect(page.locator('#categoryChips button[aria-pressed="false"]')).toHaveCount(1);
-  const s=await page.evaluate(()=>{
-   const video=document.querySelector('#gallery .card[data-kind="video"]');
-   const badge=video.querySelector('.type-badge');
-   const chip=document.querySelector('#categoryChips button[aria-pressed="false"]');
-   const sidebar=document.querySelector('#dsSiteSidebar');
-   return {
-    videoBorder:getComputedStyle(video).borderTopColor,
-    sidebarBorder:getComputedStyle(sidebar).borderRightColor,
-    badgeFill:getComputedStyle(badge).backgroundImage,
-    chipFill:getComputedStyle(chip).backgroundColor,
-    chipBorder:getComputedStyle(chip).borderTopColor,
-    videoRect:video.getBoundingClientRect().right,
-    viewport:innerWidth
-   };
-  });
-  expect(s.videoBorder,'Video card must inherit the shared Deepsyq border').toBe(s.sidebarBorder);
-  expect(s.badgeFill,'Video badge must use the neon gradient, not old lime').toContain('linear-gradient');
-  expect(s.chipBorder,'Filter chips must use the shared neon-dark border').toBe(s.sidebarBorder);
-  expect(s.videoRect,'Video card stays within viewport').toBeLessThanOrEqual(s.viewport+1);
+  await expect(card.locator('.inspiration-video-label')).toContainText('Video');
+  await expect(page.locator('[data-inspiration-ratio]')).toHaveCount(2);
+  await card.hover();
+  expect(await card.evaluate(el=>el.getBoundingClientRect().right)).toBeLessThanOrEqual(width+1);
   expect(paid()).toBe(0);
  }
 });

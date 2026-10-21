@@ -3,14 +3,14 @@ import {test,expect} from '@playwright/test';
 // BASE1-C7: synthetic, zero-spend browser evidence for the one remaining
 // Inspiration "Load more" hover color; no user accounts or AI generation.
 const entry=(id)=>({
- id,title:'Fixture '+id,slug:'fixture-'+id,category:'Editorial',kind:'image',
+ id,title:'Fixture '+id,slug:'fixture-'+id,category:'Editorial',kind:'video',
  description:'Mocked, owner-neutral browser fixture',
  previewUrl:'/nonexistent-c7-fixture.webp',prompt:'A fictional city poster',
  aspectRatio:'1:1',actionTarget:'studio',requiredInputTypes:[],
  defaultSettings:{ratio:'1:1'},defaultModel:null
 });
 
-test('BASE1-C7 Inspiration enabled Load More has owner neon hover and real pagination, never paid POST',async({page},testInfo)=>{
+test('BASE1-C7 Home Inspiration card remains accessible on hover and filters without paid POST',async({page},testInfo)=>{
  const paid=[];
  page.on('request',request=>{
   if(request.method()==='POST'&&/\/api\/(?:studio\/jobs|billing|payments|ai-wallet|speech\/generate)/.test(new URL(request.url()).pathname))paid.push(request.url());
@@ -26,26 +26,16 @@ test('BASE1-C7 Inspiration enabled Load More has owner neon hover and real pagin
  for(const width of [320,375,390,768,1448]){
   await page.setViewportSize({width,height:820});
   await page.goto('/inspiration.html');
-  const loadMore=page.getByRole('button',{name:'Load more inspiration'});
-  await expect(loadMore).toBeVisible();
-  await expect(loadMore).toBeEnabled();
-  // Existing rights-neutral image card actions remain accessible; do not navigate/pay.
-  const card=page.locator('#gallery .card').first();
-  await expect(card.getByRole('button',{name:'Create yours'})).toBeEnabled();
-  await expect(card.getByRole('button',{name:'Clone and Try'})).toBeEnabled();
-  await loadMore.hover();
-  const actual=await loadMore.evaluate(el=>{
-   const s=getComputedStyle(el);
-   return {border:s.borderTopColor,color:s.color,background:s.backgroundColor};
-  });
-  console.log('BASE1-C7 computed hover',testInfo.project.name,width,JSON.stringify(actual));
-  await page.screenshot({path:testInfo.outputPath('inspiration-load-more-'+width+'.png'),fullPage:true});
-  expect(actual.border,'dark-theme enabled Load More hover border at '+width).toBe('rgb(146, 91, 255)');
-  expect(actual.color,'dark-theme enabled Load More hover text at '+width).toBe('rgb(234, 208, 255)');
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth),'No page overflow '+width).toBeLessThanOrEqual(width+1);
-  await loadMore.click();
-  await expect(page.locator('#gallery .card')).toHaveCount(2);
-  await expect(loadMore).toBeHidden();
+  const card=page.locator('#inspirationPreviewGrid .inspiration-preview-card').first();
+  await expect(card).toBeVisible();await card.hover();
+  await card.click();
+  await expect(page.getByRole('dialog').getByRole('button',{name:'Create yours'})).toBeEnabled();
+  await expect(page.getByRole('dialog').getByRole('button',{name:'Clone & Try'})).toBeEnabled();
+  await page.keyboard.press('Escape');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);
+  await page.locator('[data-inspiration-kind="image"]').click();
+  await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(0);
+  await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');
  }
  expect(paid,'No AI/Stripe/generation POST in fixture').toEqual([]);
 });
