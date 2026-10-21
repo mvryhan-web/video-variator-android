@@ -220,7 +220,13 @@ test('BASE 3: independent rights-cleared Hero survives failed preview and option
  await expect.poll(()=>receivedOwnerQuery).toBe(true);
  await expect(page.locator('#homeHeroDots')).toHaveCount(0);
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/fixture-not-published.mp4');
- await expect(page.locator('#inspirationPreview')).toBeHidden();
+ // Old Home hid failed Inspiration. Owner's new inline Inspiration remains
+ // visible with a truthful empty state, never with stale/unauthorized cards.
+ const inspiration=page.locator('#inspirationPreview');
+ if(await inspiration.isVisible()){
+  await expect(inspiration.locator('.inspiration-preview-card')).toHaveCount(0);
+  await expect(page.locator('#inspirationEmpty')).toBeVisible();
+ }else await expect(inspiration).toBeHidden();
  await expect(page.locator('#agentExamples')).toBeHidden();
 });
 
@@ -474,7 +480,9 @@ test('BASE 3: approved Studio hero appears before the slow Inspiration mosaic re
     aspectRatio:'16:9',previewUrl:'/placeholder-transport-hero.mp4'
    }],categories:[],ratios:[]}});
   }
-  if(q.get('limit')==='12'){
+  // Old standalone mosaic requested 12 cards; approved Home-only Video
+  // Inspiration now requests 60. In either version, Hero must not await it.
+  if(q.get('limit')==='12'||q.get('limit')==='60'){
    mosaicRequested=true;
    await mosaicHeld;
    return route.fulfill({json:{items:[],categories:[],ratios:[]}});
