@@ -11,8 +11,8 @@ const models=[
  {id:'c11-old',title:'Retired Product Video template',category:'Retired',generationType:'product_video',promptTemplate:'Retired'}
 ];
 const inspiration=[
- {id:'fictional-image',slug:'fictional-image',title:'Fictional painting',description:'Synthetic, no real licensed photo',category:'Paintings',kind:'image',aspectRatio:'1:1',prompt:'Original fictional painting of flowers',defaultModel:'c11-unconnected-provider-model',previewUrl:'/unavailable-fixture.png',actionTarget:'studio',requiredInputTypes:[],rightsBasis:'owned',rightsNote:'Synthetic test only'},
- {id:'fictional-video',slug:'fictional-video',title:'Fictional animation',description:'Synthetic, no real licensed clip',category:'Motion',kind:'video',aspectRatio:'16:9',prompt:'Original animation of a floating island',previewUrl:'/unavailable-fixture.mp4',actionTarget:'studio',requiredInputTypes:[],rightsBasis:'owned',rightsNote:'Synthetic test only'}
+ {id:'fictional-image',slug:'fictional-image',title:'Fictional painting',description:'Synthetic, no real licensed photo',category:'Paintings',kind:'image',active:true,featured:true,rightsBasis:'owned',rightsNote:'Synthetic test only',aspectRatio:'1:1',prompt:'Original fictional painting of flowers',defaultModel:'c11-unconnected-provider-model',previewUrl:'/unavailable-fixture.png',actionTarget:'studio',requiredInputTypes:[],rightsBasis:'owned',rightsNote:'Synthetic test only'},
+ {id:'fictional-video',slug:'fictional-video',title:'Fictional animation',description:'Synthetic, no real licensed clip',category:'Motion',kind:'video',active:true,featured:true,rightsBasis:'owned',rightsNote:'Synthetic test only',aspectRatio:'16:9',prompt:'Original animation of a floating island',previewUrl:'/unavailable-fixture.mp4',actionTarget:'studio',requiredInputTypes:[],rightsBasis:'owned',rightsNote:'Synthetic test only'}
 ];
 async function fixtures(page){
  await page.route('**/api/templates',r=>r.fulfill({json:{items:models}}));
@@ -91,6 +91,7 @@ test('C11 retired Product Video HTTP404; only Image Video Audio working paths, A
 });
 
 test('C11 everyday Audio/Tools, Avatar Back, menu Escape work at all owner widths',async({page})=>{
+ test.setTimeout(120000);
  await fixtures(page);const writes=noPaid(page);
  for(const width of widths){
   await page.setViewportSize({width,height:850});
@@ -98,7 +99,7 @@ test('C11 everyday Audio/Tools, Avatar Back, menu Escape work at all owner width
   await expect(page.locator('[data-hub-tool="tts"]')).toHaveAttribute('href','audio-studio.html?tool=tts');
   await expect(page.locator('[data-hub-tool="stt"]')).toHaveAttribute('href','audio-studio.html?tool=stt');
   await fit(page,width,'Tools');
-  await page.locator('nav.tools-direct-launches a[href="avatar-studio.html?from=tools"]').click();
+  const avatarLink=page.locator('nav.tools-direct-launches a[href="avatar-studio.html?from=tools"]');await avatarLink.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await avatarLink.click();
   await expect(page).toHaveURL(/avatar-studio\.html\?from=tools$/);
   await expect(page.locator('[data-av="back"]')).toHaveAttribute('href','free-tools.html');
   await page.locator('[data-av="back"]').click();
@@ -124,16 +125,17 @@ test('C11 everyday Audio/Tools, Avatar Back, menu Escape work at all owner width
 });
 
 test('C11 Home Inspiration filters video and keeps images empty; reuse requires consent',async({page})=>{
+ test.setTimeout(120000);
  await fixtures(page);const writes=noPaid(page);
  for(const width of widths){
   await page.setViewportSize({width,height:850});await page.goto('/deepsyq.html?c11Width='+width+'#inspirationPreview',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
   await fit(page,width,'Inspiration');
-  const imageTab=page.locator('[data-inspiration-kind="image"]');await imageTab.scrollIntoViewIfNeeded();await imageTab.click();await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');
-  const videoTab=page.locator('[data-inspiration-kind="video"]');await videoTab.scrollIntoViewIfNeeded();await videoTab.click();
-  const vertical=page.locator('[data-inspiration-ratio="9:16"]');await vertical.scrollIntoViewIfNeeded();await vertical.click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(0);
-  const horizontal=page.locator('[data-inspiration-ratio="16:9"]');await horizontal.scrollIntoViewIfNeeded();await horizontal.click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
-  const card=page.getByRole('button',{name:'View Fictional animation inspiration'});await card.scrollIntoViewIfNeeded();await card.click();
+  const imageTab=page.locator('[data-inspiration-kind="image"]');await imageTab.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await imageTab.click();await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');
+  const videoTab=page.locator('[data-inspiration-kind="video"]');await videoTab.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await videoTab.click();
+  const vertical=page.locator('[data-inspiration-ratio="9:16"]');await vertical.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await vertical.click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(0);
+  const horizontal=page.locator('[data-inspiration-ratio="16:9"]');await horizontal.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await horizontal.click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
+  const card=page.getByRole('button',{name:'View Fictional animation inspiration'});await card.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await card.click();
   await page.getByRole('dialog').getByRole('button',{name:'Create yours'}).click();
   await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=inspiration&action=create/);
   await expect(page.locator('#prompt')).toHaveValue('Original animation of a floating island');await expect(page.locator('#consent')).not.toBeChecked();

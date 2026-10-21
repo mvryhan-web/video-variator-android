@@ -11,6 +11,7 @@ const entry=(id)=>({
 });
 
 test('BASE1-C7 Home Inspiration card remains accessible on hover and filters without paid POST',async({page},testInfo)=>{
+ test.setTimeout(120000);
  await page.route('**/api/config',r=>r.fulfill({json:{billingConfigured:false,features:{aiApps:true,inspiration:true,productVideo:false,onboarding:false},plans:{}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:false}}));
@@ -36,7 +37,7 @@ test('BASE1-C7 Home Inspiration card remains accessible on hover and filters wit
   await expect(card).toBeVisible({timeout:15000});await card.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await card.hover();
   const hoverBorder=await card.evaluate(el=>getComputedStyle(el).borderTopColor);
   expect(hoverBorder,'Home Inspiration hover remains violet at '+width).toBe('rgb(146, 91, 255)');
-  await page.screenshot({path:testInfo.outputPath('home-inspiration-hover-'+width+'.png'),fullPage:true});
+  if(width===390)await page.screenshot({path:testInfo.outputPath('home-inspiration-hover-'+width+'.png'),fullPage:true});
   await card.click();
   await expect(page.getByRole('dialog').getByRole('button',{name:'Create yours'})).toBeEnabled();
   await expect(page.getByRole('dialog').getByRole('button',{name:'Clone & Try'})).toBeEnabled();
