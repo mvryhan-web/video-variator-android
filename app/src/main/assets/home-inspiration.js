@@ -64,26 +64,21 @@ function openInspirationDetail(item,opener){
  const description=detailEl('p','inspiration-detail-description',item.description||'Owner-approved Deepsyq inspiration.');
  const headingPrompt=detailEl('h3','inspiration-detail-heading','Prompt');
  const prompt=detailEl('p','inspiration-detail-prompt',item.prompt||'No prompt available.');
- const meta=detailEl('div','inspiration-detail-parameters');
- meta.append(detailEl('h3','inspiration-detail-heading','Parameters'));
- const entries=[['Model',item.defaultModel||item.displayModel||'Choose in Studio']];
- if(item.kind==='image'){
-  entries.push(['Image ratio',item.sourceAspectRatio||item.aspectRatio],['Clone ratio',item.aspectRatio]);
-  if(Array.isArray(item.previewDimensions)&&item.previewDimensions.length===2)entries.push(['Preview resolution',item.previewDimensions[0]+' × '+item.previewDimensions[1]+' px']);
-  entries.push(['Seed',item.sourceSeed||'Not recorded']);
-  const advanced=item.advancedParameters||{};
-  for(const [label,key] of [['Minimum ratio','min_ratio'],['Maximum ratio','max_ratio'],['CoT mode','cot_mode'],['Use pre-LLM','use_pre_llm']]){
-   const value=advanced[key];entries.push([label,value===true?'Enabled':value===false?'Disabled':value??'Not recorded']);
+ sidebar.append(heading,kindLine,description,headingPrompt,prompt);
+ if(item.kind==='video'){
+  const meta=detailEl('div','inspiration-detail-parameters');
+  meta.append(detailEl('h3','inspiration-detail-heading','Parameters'));
+  const entries=[['Model',item.defaultModel||item.displayModel||'Choose in Studio'],['Aspect ratio',item.aspectRatio]];
+  for(const key of ['resolution','duration','seed']){
+   const v=item.defaultSettings?.[key];
+   if(typeof v==='string'||typeof v==='number')entries.push([key[0].toUpperCase()+key.slice(1),String(v).slice(0,80)]);
   }
- }else entries.push(['Aspect ratio',item.aspectRatio]);
- for(const key of ['resolution','duration','seed']){
-  const v=item.defaultSettings?.[key];
-  if(typeof v==='string'||typeof v==='number')entries.push([key[0].toUpperCase()+key.slice(1),String(v).slice(0,80)]);
- }
- for(const [label,value] of entries){
-  if(!value)continue;
-  const row=detailEl('div','inspiration-detail-param');
-  row.append(detailEl('span','',label),detailEl('strong','',value));meta.append(row);
+  for(const [label,value] of entries){
+   if(!value)continue;
+   const row=detailEl('div','inspiration-detail-param');
+   row.append(detailEl('span','',label),detailEl('strong','',value));meta.append(row);
+  }
+  sidebar.append(meta);
  }
  const note=detailEl('p','inspiration-detail-note','An example, not a ready-to-run AI model. Opening Studio prepares your prompt; no generation or payment starts automatically.');
  const feedback=detailEl('p','inspiration-detail-feedback');feedback.hidden=true;feedback.setAttribute('role','alert');
@@ -101,7 +96,7 @@ function openInspirationDetail(item,opener){
  use.onclick=()=>openTarget(item,'prompt',feedback);
  create.onclick=()=>openTarget(item,'create',feedback);
  actions.append(clone,use,create);
- sidebar.append(heading,kindLine,description,headingPrompt,prompt,meta,note,feedback,actions);
+ sidebar.append(note,feedback,actions);
  layout.append(stage,sidebar);dialog.append(layout);
  const previousOverflow=document.body.style.overflow;
  dialog.addEventListener('close',()=>{
