@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 15042)
+Total output lines: 625
+
 import {test,expect} from '@playwright/test';
 const plans={basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}};
 async function fixtures(page){
@@ -318,7 +321,7 @@ test('retired Inspiration URL opens Home and changes media filters locally',asyn
 });
 
 test('dashboard inspiration preview is data-driven and hides Agent examples when none are connected',async({page})=>{
- await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,onboarding:false}}}));await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));await page.route('**/api/inspiration**',r=>{const u=new URL(r.request().url());if(u.searchParams.get('target')==='agent')return r.fulfill({json:{items:[],categories:[]}});return r.fulfill({json:{items:[{id:'f1',title:'Owned Video Mood',slug:'owned-video-mood',kind:'video',category:'Cinematic',description:'Original example',previewUrl:'/owned.mp4',previewPosterUrl:null,prompt:'Cinematic scene',defaultModel:null,aspectRatio:'16:9',requiredInputTypes:[],defaultSettings:{ratio:'16:9'},actionTarget:'studio',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false,nextOffset:null}}});});await page.goto('/deepsyq.html');await expect(page.locator('#inspirationPreview')).toBeVisible();await expect(page.locator('#inspirationPreviewGrid')).toContainText('Owned Video Mood');await expect(page.locator('#inspirationPreviewCategories')).toContainText('16:9');await page.getByRole('button',{name:'View Owned Video Mood inspiration'}).click();await expect(page.getByRole('dialog')).toContainText('Cinematic scene');await page.keyboard.press('Escape');await expect(page.locator('#agentExamples')).toBeHidden();
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,onboarding:false}}}));await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));await page.route('**/api/inspiration**',r=>{const u=new URL(r.request().url());if(u.searchParams.get('target')==='agent')return r.fulfill({json:{items:[],categories:[]}})…42 tokens truncated…:'/owned.mp4',previewPosterUrl:null,prompt:'Cinematic scene',defaultModel:null,aspectRatio:'16:9',requiredInputTypes:[],defaultSettings:{ratio:'16:9'},actionTarget:'studio',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false,nextOffset:null}}});});await page.goto('/deepsyq.html');await expect(page.locator('#inspirationPreview')).toBeVisible();await expect(page.locator('#inspirationPreviewGrid')).toContainText('Owned Video Mood');await expect(page.locator('#inspirationPreviewCategories')).toContainText('16:9');await page.getByRole('button',{name:'View Owned Video Mood inspiration'}).click();await expect(page.getByRole('dialog')).toContainText('Cinematic scene');await page.keyboard.press('Escape');await expect(page.locator('#agentExamples')).toBeHidden();
 });
 
 
@@ -432,8 +435,9 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
  await expect(page.locator('#homeHeroSlideLink')).toBeHidden();
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
- await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(0);
- await expect(page.locator('#inspirationEmpty')).toHaveText('No videos in this format yet.');
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
+ await expect(page.locator('#inspirationPreviewGrid')).not.toContainText('Original owner still');
+ await expect(page.locator('#inspirationEmpty')).toBeHidden();
 });
 test('reduced-motion users get a manual Play button for genuine videos',async({page})=>{
  // This scenario tests the no-autoplay control, not the availability of fixture MP4 bytes.
