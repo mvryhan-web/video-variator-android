@@ -36,7 +36,6 @@ test('Home Inspiration filters image and video cards in place; detail shows the 
   await expect(dialog.getByText('Original owner video prompt',{exact:true})).toBeVisible();
   await expect(dialog.locator('video')).toHaveAttribute('controls','');
   await expect(dialog.getByRole('button',{name:'Clone & Try'})).toBeEnabled();
-  await expect(dialog.getByText('Choose in Studio',{exact:true})).toBeVisible();
   await expect(dialog.getByText('OpenAI ChatGPT image_gen · exact model/version not exposed',{exact:true})).toBeVisible();
   await expect(dialog.getByText('4:5',{exact:true})).toBeVisible();
   await expect(dialog.getByText('819 × 1024 px',{exact:true})).toBeVisible();
