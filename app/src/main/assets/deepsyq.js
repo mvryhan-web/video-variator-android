@@ -1,4 +1,5 @@
 import {saveStudioHandoff} from './studio-handoff.js';
+import {templateSupport} from './ai-template-product-name.js';
 import {renderHomeCarousel} from './home-experience.js';
 import {MODEL_CATALOG} from './generate-models.js';
 import {authorizedOnboardingOptions,onboardingResponseTarget} from './onboarding-options.js';
@@ -397,10 +398,15 @@ function openHomeInspiration(item,opener){
  for(const [name,value] of entries){if(value===null||value===undefined||value==='')continue;
   const row=el('div','home-inspiration-param');row.append(el('span','',name),el('strong','',value));params.append(row);
  }
- const note=el('p','home-inspiration-note','Use your own source material in Studio. No AI generation or payment starts automatically.');
+ const support=templateSupport({generationType:'video',promptTemplate:item.prompt,requiredInputTypes:item.requiredInputTypes});
+ const usable=support.supported&&!support.requiresProductName;
+ const note=el('p','home-inspiration-note',usable?
+  'Use your own source material in Studio. No AI generation or payment starts automatically.':
+  (support.requiresProductName?'This workflow requires a product name field and cannot open directly from Inspiration.':support.reason));
  const feedback=el('p','home-inspiration-feedback');feedback.hidden=true;feedback.setAttribute('role','alert');
  const actions=el('div','home-inspiration-actions');
  function handoff(mode){
+  if(!usable){feedback.hidden=false;feedback.textContent=note.textContent;return;}
   if(item.actionTarget!=='studio'){feedback.hidden=false;feedback.textContent='This workflow is not available in Studio yet.';return;}
   const payload={id:item.id,title:item.title,generationType:'video',
     promptTemplate:item.prompt||'',defaultModel:mode==='clone'?(item.defaultModel||null):null,
@@ -413,7 +419,7 @@ function openHomeInspiration(item,opener){
  }
  const clone=el('button','home-inspiration-clone','✦ Clone & Try');
  const use=el('button','home-inspiration-secondary','Use this prompt');
- for(const [button,mode] of [[clone,'clone'],[use,'prompt']]){button.type='button';button.onclick=()=>handoff(mode);}
+ for(const [button,mode] of [[clone,'clone'],[use,'prompt']]){button.type='button';button.disabled=!usable;button.onclick=()=>handoff(mode);}
  actions.append(clone,use);
  right.append(title,subtitle,promptTitle,prompt,paramsTitle,params,note,feedback,actions);
  content.append(stage,right);dialog.append(content);
