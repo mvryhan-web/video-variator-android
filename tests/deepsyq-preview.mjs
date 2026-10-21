@@ -59,7 +59,8 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
   }
   const gallery=await(await fetch(base+'/api/inspiration?featured=true&limit=60')).json();
   const images=gallery.items.filter(item=>item.kind==='image');
-  assert.equal(images.length,10,'the approved DEV gallery includes all ten generated images');
+  assert.equal(images.length,18,'the approved DEV gallery includes 18 curated images after removing Focus and toast duplicates');
+  assert.equal(images.some(image=>/focus|toast/i.test(image.title+' '+image.slug)),false,'duplicate Focus and clinking-glasses scene are excluded');
   for(const image of images){
    assert.equal(image.featured,true);
    assert.ok(image.prompt.length>80,'each image has its exact creation prompt');

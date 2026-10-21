@@ -66,8 +66,8 @@ function openInspirationDetail(item,opener){
  const prompt=detailEl('p','inspiration-detail-prompt',item.prompt||'No prompt available.');
  const meta=detailEl('div','inspiration-detail-parameters');
  meta.append(detailEl('h3','inspiration-detail-heading','Parameters'));
- const entries=[['Aspect ratio',item.aspectRatio]];
- if(item.defaultModel)entries.push(['Preferred model',item.defaultModel]);
+ const entries=[['Model',item.defaultModel||'Choose in Studio'],['Aspect ratio',item.aspectRatio]];
+ if(Array.isArray(item.previewDimensions)&&item.previewDimensions.length===2)entries.push(['Preview resolution',item.previewDimensions[0]+' × '+item.previewDimensions[1]+' px']);
  for(const key of ['resolution','duration','seed']){
   const v=item.defaultSettings?.[key];
   if(typeof v==='string'||typeof v==='number')entries.push([key[0].toUpperCase()+key.slice(1),String(v).slice(0,80)]);
@@ -80,7 +80,7 @@ function openInspirationDetail(item,opener){
  const note=detailEl('p','inspiration-detail-note','An example, not a ready-to-run AI model. Opening Studio prepares your prompt; no generation or payment starts automatically.');
  const feedback=detailEl('p','inspiration-detail-feedback');feedback.hidden=true;feedback.setAttribute('role','alert');
  const actions=detailEl('div','inspiration-detail-actions');
- const clone=detailEl('button','inspiration-detail-clone','✦ Clone & Try');
+ const clone=detailEl('button','inspiration-detail-clone','Clone');clone.setAttribute('aria-label','Clone & Try');
  const use=detailEl('button','inspiration-detail-secondary','Use this prompt');
  const create=detailEl('button','inspiration-detail-secondary','Create yours');
  for(const b of [clone,use,create])b.type='button';

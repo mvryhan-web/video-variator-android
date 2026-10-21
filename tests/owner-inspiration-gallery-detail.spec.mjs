@@ -36,6 +36,9 @@ test('Home Inspiration filters image and video cards in place; detail shows the 
   await expect(dialog.getByText('Original owner video prompt',{exact:true})).toBeVisible();
   await expect(dialog.locator('video')).toHaveAttribute('controls','');
   await expect(dialog.getByRole('button',{name:'Clone & Try'})).toBeEnabled();
+  await expect(dialog.getByText('Choose in Studio',{exact:true})).toBeVisible();
+  await expect(dialog.getByText('819 × 1024 px',{exact:true})).toBeVisible();
+  await expect(dialog.getByRole('button',{name:'Clone & Try'})).toHaveText('Clone');
   await expect(page).toHaveURL(/deepsyq\.html(?:\?|$)/);
   await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);

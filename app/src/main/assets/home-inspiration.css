@@ -76,9 +76,9 @@
  color:#e8ecfd;background:#182139;cursor:pointer;font-size:12px;
 }
 .inspiration-detail-actions button.inspiration-detail-clone{
- grid-column:1/-1;background:linear-gradient(110deg,#925bff,#5779ff);
- border-color:#be9dff;color:#fff;font-weight:700;
+ grid-column:1/-1;background:#fff;color:#11131b;border-color:#fff;font-weight:750;
 }
+.inspiration-detail-actions button.inspiration-detail-clone:hover{background:#e9e5ff;border-color:#e9e5ff;}
 .inspiration-detail-actions button:focus-visible{
  outline:2px solid #d39fff;outline-offset:2px;
 }
