@@ -30,7 +30,7 @@ function countPaidPosts(page){
  return ()=>posts;
 }
 
-test('all three Inspiration → Studio actions fail closed with accessible card-local error when storage is denied',async({page})=>{
+test('all three Inspiration → Studio actions fail closed with accessible detail-panel error when storage is denied',async({page})=>{
  const paid=countPaidPosts(page);
  await denyKey(page,'deepsyq_template_start');
  await gallery(page);
@@ -38,10 +38,11 @@ test('all three Inspiration → Studio actions fail closed with accessible card-
  await page.goto('/inspiration.html');
  await expect(page.locator('#gallery .card')).toHaveCount(1);
  const before=page.url();
- for(const name of ['Create yours','Use this prompt','Clone and Try']){
-  await page.getByRole('button',{name,exact:true}).click();
-  await expect(page.locator('.card [role="alert"]')).toBeVisible();
-  await expect(page.locator('.card [role="alert"]')).toContainText('could not prepare this inspiration');
+ await page.getByRole('button',{name:'View Synthetic editorial example inspiration'}).click();
+ for(const name of ['Create yours','Use this prompt','Clone & Try']){
+  await page.getByRole('dialog').getByRole('button',{name}).click();
+  await expect(page.getByRole('dialog').locator('[role="alert"]')).toBeVisible();
+  await expect(page.getByRole('dialog').locator('[role="alert"]')).toContainText('could not prepare this inspiration');
   expect(page.url()).toBe(before);
   await expect(page.locator('#gallery .card')).toHaveCount(1);
  }
@@ -55,8 +56,9 @@ test('agent inspiration handoff also refuses navigation when scoped tab storage 
  await gallery(page,{...item,kind:'video',aspectRatio:'16:9',actionTarget:'agent',actionPath:'/agent.html'});
  await page.goto('/inspiration.html');
  await expect(page.locator('#gallery .card')).toHaveCount(1);
- await page.getByRole('button',{name:'Create yours'}).click();
- await expect(page.locator('.card [role="alert"]')).toContainText('could not prepare this inspiration');
+ await page.getByRole('button',{name:'View Synthetic editorial example inspiration'}).click();
+ await page.getByRole('dialog').getByRole('button',{name:'Create yours'}).click();
+ await expect(page.getByRole('dialog').locator('[role="alert"]')).toContainText('could not prepare this inspiration');
  await expect(page).toHaveURL(/\/inspiration\.html$/);
  expect(paid()).toBe(0);
 });
@@ -68,7 +70,8 @@ test('available tab storage preserves prepared Clone handoff and navigates to Im
  await page.route('**/generate-studio.html?**',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><title>Test Studio</title><h1>Local Studio destination</h1>'}));
  await page.goto('/inspiration.html');
  await expect(page.locator('#gallery .card')).toHaveCount(1);
- await page.getByRole('button',{name:'Clone and Try'}).click();
+ await page.getByRole('button',{name:'View Synthetic editorial example inspiration'}).click();
+ await page.getByRole('dialog').getByRole('button',{name:'Clone & Try'}).click();
  await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=inspiration&action=clone$/);
  const payload=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('deepsyq_template_start')));
  expect(payload).toMatchObject({

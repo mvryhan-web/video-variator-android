@@ -213,14 +213,26 @@ test('BASE #28: redaction canceled during PNG encoding cannot publish sensitive 
  await page.mouse.move(box.x+box.width*.75,box.y+box.height*.8,{steps:6});
  await page.mouse.up();
  await page.evaluate(()=>{
+  // Hold the actual PNG callback until after Cancel. A timed 650ms delay
+  // races with slow WebKit pointer actions and can finish before the click.
   const toBlob=HTMLCanvasElement.prototype.toBlob;
+  const pending=[];
+  window.__redactionPngPending=()=>pending.length;
+  window.__releaseRedactionPng=()=>{
+   for(const release of pending.splice(0))release();
+  };
   HTMLCanvasElement.prototype.toBlob=function(callback,...args){
-   return toBlob.call(this,blob=>setTimeout(()=>callback(blob),650),...args);
+   return toBlob.call(this,blob=>pending.push(()=>callback(blob)),...args);
   };
  });
  await page.locator('#utilityRun').click();
+ // Prove the native encoder finished but its output is still unavailable.
+ await expect.poll(()=>page.evaluate(()=>window.__redactionPngPending())).toBe(1);
  await expect(page.locator('#utilityCancel')).toBeEnabled();
  await page.locator('#utilityCancel').click();
+ // Only now deliver the late blob; ensure the pending task fully settles.
+ await page.evaluate(()=>window.__releaseRedactionPng());
+ await expect(page.locator('#utilityCancel')).toBeDisabled();
  await expect(page.locator('#utilityRun')).toBeEnabled();
  await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
  await expect(page.locator('#utilityStatus')).toContainText('Canceled');

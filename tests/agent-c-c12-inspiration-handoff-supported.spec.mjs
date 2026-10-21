@@ -53,13 +53,17 @@ test('C12 incompatible published Inspiration does not advertise false actionable
    ['Needs product name field','product name']
   ]){
    const item=page.locator('#gallery .card').filter({hasText:title});
-   await expect(item,'fixture '+title+' at '+width).toContainText(reason);
-   for(const action of ['Create yours','Use this prompt','Clone and Try']){
-    await expect(item.getByRole('button',{name:action,exact:true})).toBeDisabled();
+   await item.getByRole('button',{name:'View '+title+' inspiration'}).click();
+   const detail=page.getByRole('dialog');
+   await expect(detail,'fixture '+title+' at '+width).toContainText(reason);
+   for(const action of ['Create yours','Use this prompt','Clone & Try']){
+    await expect(detail.getByRole('button',{name:action})).toBeDisabled();
    }
+   await page.keyboard.press('Escape');
   }
-  const capable=page.locator('#gallery .card').filter({hasText:'Supported original picture'});
-  await expect(capable.getByRole('button',{name:'Create yours'})).toBeEnabled();
+  await page.getByRole('button',{name:'View Supported original picture inspiration'}).click();
+  await expect(page.getByRole('dialog').getByRole('button',{name:'Create yours'})).toBeEnabled();
+  await page.keyboard.press('Escape');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);
  }
  expect(posts).toEqual([]);
@@ -73,8 +77,11 @@ test('C12 supported Image and Video retain real Create yours / Clone handoff wit
  ]){
   await page.goto('/inspiration.html');
   const card=page.locator('#gallery .card').filter({hasText:title});
-  await expect(card.getByRole('button',{name:action})).toBeEnabled();
-  await card.getByRole('button',{name:action}).click();
+  await card.getByRole('button',{name:'View '+title+' inspiration'}).click();
+  const detail=page.getByRole('dialog');
+  const actionButton=detail.getByRole('button',{name:action==='Clone and Try'?'Clone & Try':action});
+  await expect(actionButton).toBeEnabled();
+  await actionButton.click();
   await expect(page).toHaveURL(new RegExp('generate-studio\\.html\\?studio='+kind+'&from=inspiration&action='));
   await expect(page.locator('#prompt')).toHaveValue(prompt);
   await expect(page.locator('#consent')).not.toBeChecked();
