@@ -26,9 +26,12 @@ test('BASE1-C7 Home Inspiration card remains accessible on hover and filters wit
  });
  for(const width of [320,375,390,768,1448]){
   await page.setViewportSize({width,height:820});
-  await page.goto('/inspiration.html');
+  await page.goto('/deepsyq.html#inspirationPreview');
   const card=page.locator('#inspirationPreviewGrid .inspiration-preview-card').first();
-  await expect(card).toBeVisible();await card.hover();
+  await expect(card).toBeVisible();await card.scrollIntoViewIfNeeded();await card.hover();
+  const hoverBorder=await card.evaluate(el=>getComputedStyle(el).borderTopColor);
+  expect(hoverBorder,'Home Inspiration hover remains violet at '+width).toBe('rgb(146, 91, 255)');
+  await page.screenshot({path:testInfo.outputPath('home-inspiration-hover-'+width+'.png'),fullPage:true});
   await card.click();
   await expect(page.getByRole('dialog').getByRole('button',{name:'Create yours'})).toBeEnabled();
   await expect(page.getByRole('dialog').getByRole('button',{name:'Clone & Try'})).toBeEnabled();

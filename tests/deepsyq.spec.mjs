@@ -400,8 +400,10 @@ test('video carousel switches only among owner-approved videos and retains exist
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/one.mp4');
  await page.locator('#homeHeroPrevious').click();
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/two.mp4');
- await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(3);
- await expect(page.locator('#inspirationPreviewGrid')).toContainText('Preserved owned photo');
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
+ await expect(page.locator('#inspirationPreviewGrid')).not.toContainText('Preserved owned photo');
+ await page.locator('[data-inspiration-kind="image"]').click();
+ await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
 });
 test('failed owner media clips never trap the Home carousel or erase Canvas',async({page})=>{
@@ -430,7 +432,8 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
  await expect(page.locator('#homeHeroSlideLink')).toBeHidden();
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
- await expect(page.locator('#inspirationPreviewGrid')).toContainText('Original owner still');
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(0);
+ await expect(page.locator('#inspirationEmpty')).toHaveText('No videos in this format yet.');
 });
 test('reduced-motion users get a manual Play button for genuine videos',async({page})=>{
  // This scenario tests the no-autoplay control, not the availability of fixture MP4 bytes.
@@ -576,20 +579,21 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  await expect(page.locator('#quickCreateKind')).toBeVisible();
  await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
 });
-test('homepage inspiration All Image Video filters only owned API cards',async({page})=>{
+test('homepage inspiration All Video Image filters only owned API cards',async({page})=>{
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:true,inspiration:true,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'i',title:'Existing image',kind:'image',previewUrl:'/owned.png',category:'Editorial',aspectRatio:'1:1',actionTarget:'studio'},{id:'v',title:'Existing video',kind:'video',previewUrl:'/owned.mp4',category:'Cinematic',aspectRatio:'16:9',actionTarget:'studio'}],categories:['Editorial','Cinematic']}}));
  await page.goto('/deepsyq.html');
- await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
+ await expect(page.locator('#inspirationPreviewGrid')).toContainText('Existing video');
  await page.locator('[data-inspiration-kind="image"]').click();
- await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toHaveCount(1);
- await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toContainText('Existing image');
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(0);
+ await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');
  await page.locator('[data-inspiration-kind="video"]').click();
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toHaveCount(1);
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toContainText('Existing video');
  await page.locator('[data-inspiration-kind="all"]').click();
- await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toHaveCount(2);
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toHaveCount(1);
 });
 
 

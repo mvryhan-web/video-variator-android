@@ -1,6 +1,7 @@
 #inspirationPreview .inspiration-preview-categories{display:flex}
 #inspirationPreview .inspiration-preview-card{color:inherit;font:inherit;text-align:left;cursor:pointer;padding:0;overflow:hidden;background:var(--panel,#111827)}
 #inspirationPreview .inspiration-preview-card>strong{display:block;position:absolute;inset:auto 0 0;z-index:1;padding:32px 10px 10px;background:linear-gradient(transparent,#11101dde);pointer-events:none}
+#inspirationPreview .inspiration-preview-card:hover{border-color:#925bff;box-shadow:0 0 0 1px #925bff55}
 #inspirationPreview .inspiration-preview-card:focus-visible{outline:2px solid #64e6ff;outline-offset:3px}
 #inspirationPreview [aria-pressed="true"]{border-color:#925bff;background:#302044;color:#fff}
 #inspirationPreview .inspiration-preview-categories button{border:1px solid #41415d;border-radius:999px;padding:7px 13px;background:#151526;color:#e6e9ff;cursor:pointer}
