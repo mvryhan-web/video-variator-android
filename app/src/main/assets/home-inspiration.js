@@ -66,8 +66,16 @@ function openInspirationDetail(item,opener){
  const prompt=detailEl('p','inspiration-detail-prompt',item.prompt||'No prompt available.');
  const meta=detailEl('div','inspiration-detail-parameters');
  meta.append(detailEl('h3','inspiration-detail-heading','Parameters'));
- const entries=[['Aspect ratio',item.aspectRatio]];
- if(item.defaultModel)entries.push(['Preferred model',item.defaultModel]);
+ const entries=[['Model',item.defaultModel||item.displayModel||'Choose in Studio']];
+ if(item.kind==='image'){
+  entries.push(['Image ratio',item.sourceAspectRatio||item.aspectRatio],['Clone ratio',item.aspectRatio]);
+  if(Array.isArray(item.previewDimensions)&&item.previewDimensions.length===2)entries.push(['Preview resolution',item.previewDimensions[0]+' × '+item.previewDimensions[1]+' px']);
+  entries.push(['Seed',item.sourceSeed||'Not recorded']);
+  const advanced=item.advancedParameters||{};
+  for(const [label,key] of [['Minimum ratio','min_ratio'],['Maximum ratio','max_ratio'],['CoT mode','cot_mode'],['Use pre-LLM','use_pre_llm']]){
+   const value=advanced[key];entries.push([label,value===true?'Enabled':value===false?'Disabled':value??'Not recorded']);
+  }
+ }else entries.push(['Aspect ratio',item.aspectRatio]);
  for(const key of ['resolution','duration','seed']){
   const v=item.defaultSettings?.[key];
   if(typeof v==='string'||typeof v==='number')entries.push([key[0].toUpperCase()+key.slice(1),String(v).slice(0,80)]);
@@ -80,7 +88,7 @@ function openInspirationDetail(item,opener){
  const note=detailEl('p','inspiration-detail-note','An example, not a ready-to-run AI model. Opening Studio prepares your prompt; no generation or payment starts automatically.');
  const feedback=detailEl('p','inspiration-detail-feedback');feedback.hidden=true;feedback.setAttribute('role','alert');
  const actions=detailEl('div','inspiration-detail-actions');
- const clone=detailEl('button','inspiration-detail-clone','✦ Clone & Try');
+ const clone=detailEl('button','inspiration-detail-clone','✦ Clone & try');clone.setAttribute('aria-label','Clone & Try');
  const use=detailEl('button','inspiration-detail-secondary','Use this prompt');
  const create=detailEl('button','inspiration-detail-secondary','Create yours');
  for(const b of [clone,use,create])b.type='button';
@@ -112,7 +120,7 @@ function openInspirationDetail(item,opener){
 let items=[],activeKind='all',afterDraw=()=>{};
 export function renderHomeInspiration(feed,onRender=()=>{}){
  afterDraw=onRender;
- items=feed.filter(item=>item.kind==='video');
+ items=feed.filter(item=>item.actionTarget==='studio'&&['video','image'].includes(item.kind));
  const section=document.getElementById('inspirationPreview');
  section.hidden=false;
  section.querySelectorAll('[data-inspiration-kind]').forEach(button=>button.onclick=()=>{
@@ -124,19 +132,25 @@ export function renderHomeInspiration(feed,onRender=()=>{}){
 }
 function draw(){
  const root=document.getElementById('inspirationPreviewGrid');root.querySelectorAll('video').forEach(v=>v.pause());root.replaceChildren();
- const visible=items.filter(item=>activeKind!=='image');
+ const visible=items.filter(item=>activeKind==='all'||item.kind===activeKind);
  for(const item of visible){
-  const button=detailEl('button','inspiration-preview-card');button.type='button';button.dataset.kind='video';
+  const button=detailEl('button','inspiration-preview-card');button.type='button';button.dataset.kind=item.kind;
   button.setAttribute('aria-label','View '+item.title+' inspiration');
   const visual=detailEl('div','inspiration-preview-media');
-  const video=detailEl('video');video.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';
-  if(item.previewPosterUrl)video.poster=item.previewPosterUrl;
-  visual.append(video,detailEl('span','inspiration-video-label','Video · '+item.aspectRatio));
+  if(item.kind==='video'){
+   const video=detailEl('video');video.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';
+   if(item.previewPosterUrl)video.poster=item.previewPosterUrl;
+   visual.append(video,detailEl('span','inspiration-video-label','Video · '+item.aspectRatio));
+  }else{
+   const image=detailEl('img');image.src=item.previewUrl;image.alt=item.title;image.loading='lazy';image.decoding='async';image.referrerPolicy='no-referrer';
+   visual.append(image);
+   visual.append(detailEl('span','inspiration-image-label','Image'));
+  }
   button.append(visual,detailEl('strong','',item.title));
   button.onclick=()=>openInspirationDetail(item,button);
   root.append(button);
  }
  const empty=document.getElementById('inspirationEmpty');empty.hidden=visible.length>0;
- empty.textContent=activeKind==='image'?'No images yet.':'No videos yet.';
+ empty.textContent=activeKind==='all'?'No inspiration yet.':activeKind==='image'?'No images yet.':'No videos yet.';
  afterDraw();
 }

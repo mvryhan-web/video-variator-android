@@ -1,0 +1,398 @@
+{
+  "schemaVersion": 1,
+  "provider": "OpenAI ChatGPT built-in image_gen",
+  "model": "Not exposed by built-in tool",
+  "generatedAt": "2026-10-21",
+  "termsUrl": "https://openai.com/policies/eu-terms-of-use/",
+  "termsCheckedAt": "2026-10-21",
+  "termsNote": "OpenAI assigns rights it has in Output to the user, as between OpenAI and the user and to the extent permitted by applicable law. User remains responsible for legal compliance; output may not be unique.",
+  "inspirationReference": "User-supplied Screenshot 2026-10-21; used only to guide broad editorial gallery variety. No screenshot crops or named brands were used as output assets.",
+  "thirdPartyInputs": [],
+  "jobIds": "Not exposed by built-in image_gen tool",
+  "outputs": [
+    {
+      "slug": "orbital-muse",
+      "sourceFilename": "exec-e5cbc95f-ba79-46ac-93ec-b848d734ce82.png",
+      "sourceSha256": "71fa325b923afeca9e114da824afd255a5647423e005ff092481eecc3ab3743a",
+      "sourceSizeBytes": 2999863,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-01-orbital-muse.webp",
+      "previewSha256": "1b8b87fdb613529e145526509367a45cdd9e263221cdd356af6dea695608c707",
+      "previewSizeBytes": 159456,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Orbital Muse",
+      "category": "Cinematic",
+      "prompt": "Editorial magazine cover, portrait 4:5: an adult astronaut fashion model fully dressed in a sculptural silver flight suit with a high collar, floating among small translucent orbital rings and planets. Cool indigo galaxy, luminous champagne accents, polished premium studio photography, dramatic but elegant layout. The only lettering is one original fictional masthead, ORBITAL. No brand logos, no real magazine names, no other text, no exposed skin beyond face and hands. Broad contemporary AI inspiration-gallery art direction.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "soft-signal",
+      "sourceFilename": "exec-06c14650-2fb5-4e2d-a5fc-2d626206b49d.png",
+      "sourceSha256": "846433049fe52a05f893382dccea72cb3b7aa4a79d859e841c9cfe9084fc15e2",
+      "sourceSizeBytes": 2253049,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-04-soft-signal.webp",
+      "previewSha256": "e8f77eef3138d045b923ce49c2d1a6c92f9aebd9c04a16ffbe535e1f5688be21",
+      "previewSizeBytes": 41696,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Soft Signal",
+      "category": "Beauty",
+      "prompt": "Portrait 4:5 premium beauty editorial cover, entirely original adult woman wearing a high-neck ivory blouse, shown in two clean photographic frames on one page: close-up above and full-length below. Soft rosy studio light, warm paper texture, subtle grain, sophisticated contemporary magazine layout. One small fictional title SOFT SIGNAL. No real people, brand names, logos, or additional readable text; tasteful and fully clothed.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "solar-visor",
+      "sourceFilename": "exec-ef7cf71b-3997-4486-b93a-8a1b4bd30590.png",
+      "sourceSha256": "c9c2307ba05cc47817362794bb759f65ccf6697b3c35fac9b0a4fe6ad4dda125",
+      "sourceSizeBytes": 2177985,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-05-solar-visor.webp",
+      "previewSha256": "31e725356d373d0bb96ebb4085097e823090fe9edd5a42d5bb83d41c9b622b8f",
+      "previewSizeBytes": 64038,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Solar Visor",
+      "category": "Fashion",
+      "prompt": "Portrait 4:5 futuristic eyewear campaign. Original adult Black woman wearing oversized translucent amber visor glasses and a fully covered sand-colored high-collar jacket, close-up against sculptural desert architecture, sharp golden sunlight and lime-green graphic accent, high-end fashion photography, confident and vibrant. One fictional headline SOLAR. No recognizable brand design, no additional readable text or logos.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "wild-form",
+      "sourceFilename": "exec-c4a5d5b3-5bae-411b-bee9-1c7016cca82d.png",
+      "sourceSha256": "c1dfc21939c9c49129c446932fa85c282cb2d9169f5d62edf61ee4d46e9bc479",
+      "sourceSizeBytes": 2481311,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-06-wild-form.webp",
+      "previewSha256": "02b36fb315f62ce04fb41ed847236dbf9d535c755ca7c64e7e631ec171a1e2a2",
+      "previewSizeBytes": 120458,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Wild Form",
+      "category": "Creative Effects",
+      "prompt": "Portrait 4:5 surreal art-fashion magazine cover. A sculptural matte-white vase overflowing with impossible oversized flowers and suspended colorful botanical fragments, cut-paper collage blended with photoreal studio still life, vivid coral-red background, precise shadows, playful premium art direction. Fictional title WILD FORM in bold white type, no brands or other readable text.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "neon-archive",
+      "sourceFilename": "exec-9fb675aa-898b-4166-9c21-aa46ec96ba55.png",
+      "sourceSha256": "0f6b87a652818586dd1a3ce0c5784949f22461fa5ec950d374711347f2baabf1",
+      "sourceSizeBytes": 2708229,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-07-neon-archive.webp",
+      "previewSha256": "865ffea40a3604775fa32a1acf1dd686508ee82950db45f3b8a60f55280adaf8",
+      "previewSizeBytes": 134278,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Neon Archive",
+      "category": "Futuristic Fashion",
+      "prompt": "Portrait 4:5 original cyberpunk culture poster. Close-up, fully clothed adult East Asian woman with a calm focused gaze; face framed by luminous green interface fragments, abstract unreadable glyphs and tiny circular UI marks; inky black shadows and acid-green glow. High-contrast editorial graphic design, original person, fictional headline NEON ARCHIVE in bold red type. No actual language text, brands, logos or watermarks.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "prism-couture",
+      "sourceFilename": "exec-c2aefbf5-2f34-4e73-a0de-4784144b58c4.png",
+      "sourceSha256": "c2a7aec60dbc048192c5b20dbaca7d9f6568f337d5442835fe5f2070432c2c56",
+      "sourceSizeBytes": 2418955,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-08-prism-couture.webp",
+      "previewSha256": "c46a9dd02ef265e05ae42059fec23a0183d45ab30881a9df61a373c0ec40f521",
+      "previewSizeBytes": 87536,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Prism Couture",
+      "category": "Fashion",
+      "prompt": "Portrait 4:5 luxury couture magazine cover. Fully clothed original adult woman wearing a reflective silver and pearl high-neck sculptural gown, standing in a midnight-blue studio; dramatic side light, metallic fabric texture, poised three-quarter composition and generous negative space. Premium fashion campaign photography, fictional title PRISM, no logos or extra text.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "memory-drift",
+      "sourceFilename": "exec-1ae8cba3-dafc-40c9-b52f-ee92ef3cda65.png",
+      "sourceSha256": "4a45cbd656c9787e03cc08b9d5b7d541d921355bf44c9a008c417e3cb44fc795",
+      "sourceSizeBytes": 2423666,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-09-memory-drift.webp",
+      "previewSha256": "ab8327c0d30e02d61aee185ad2a93cfdcb3ab7dfa58891dc2991e73614316293",
+      "previewSizeBytes": 92160,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Memory Drift",
+      "category": "Cinematic",
+      "prompt": "Portrait 4:5 cinematic fantasy editorial. Fully clothed original adult woman in a flowing ivory coat stands in a vast rose-gold desert, translucent ribbons of light drift around her, a tiny moon hangs low through atmospheric haze. Photoreal surreal art direction, peach and bronze palette, premium poster composition, small fictional title MEMORY DRIFT. No logos or other text.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "outer-worlds",
+      "sourceFilename": "exec-7cca1d60-2710-423c-8455-8dc15b9a96fb.png",
+      "sourceSha256": "a21ec7df8a0e85debb3bf83dd4ab8080e798668785106dcd6fc4fe230155be40",
+      "sourceSizeBytes": 3998263,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-10-outer-worlds.webp",
+      "previewSha256": "be8ef51d7147cf1c92161ec7a334ce867b43ed8aa4c899dd967601ddf33e6161",
+      "previewSizeBytes": 286734,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Outer Worlds",
+      "category": "Sci-Fi Poster",
+      "prompt": "Portrait 4:5 retro-futurist science-fiction comic magazine cover, entirely original. A small friendly alien explorer in a bright orange space suit stands on a violet desert beneath a turquoise moon and a distant hovering saucer, hand-printed halftone texture, bold 1970s color palette, dramatic but playful adventure poster. Fictional headline OUTER WORLDS in crisp large lettering; no known characters, franchise symbols, real brands, logos, or extra readable text.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "greenroom-break",
+      "sourceFilename": "exec-9d99ff40-eed0-4a3d-b0e1-4fe105a52f2c.png",
+      "sourceSha256": "70ef1573e57978a65b54232da7da5e27c288314897c477b45d43f005832b0c63",
+      "sourceSizeBytes": 2486613,
+      "sourceDimensions": [
+        1536,
+        1024
+      ],
+      "previewFilename": "image-11-greenroom-break.webp",
+      "previewSha256": "bce7c32f94d8b7209c38e72ce981dd123a866d2a4eabcb03afcf99483b3761b9",
+      "previewSizeBytes": 103352,
+      "previewDimensions": [
+        1024,
+        683
+      ],
+      "title": "Greenroom Break",
+      "category": "Lifestyle",
+      "prompt": "Landscape 3:2 street-style editorial campaign. An original fully clothed adult woman in a black graphic-free jacket, cobalt sunglasses and a silver backpack holds a bright lime iced tea on a lively modern city sidewalk; crisp daylight, dynamic reflections, candid fashion-magazine framing. Fictional headline GREENROOM BREAK. No real beverage or clothing brands, logos, or extra readable text.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "solstice",
+      "sourceFilename": "exec-f5f9476a-5734-4572-8013-5cdfae244138.png",
+      "sourceSha256": "0c03e6bff2098412d26efbda9b0e6b4661451c1c00cbfbf42b600beecbac5c35",
+      "sourceSizeBytes": 2469521,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-12-solstice.webp",
+      "previewSha256": "f8a07d961093b80dc8e49fcf38940e40d5b69bb7e6cc8d3335860a8f27eda587",
+      "previewSizeBytes": 106400,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Solstice",
+      "category": "Fashion",
+      "prompt": "Portrait 4:5 futuristic athletic fashion cover. An original adult man wearing a fully zipped cobalt technical jacket and reflective visor stands on a wind-swept pale desert ridge; graphic red sun disc, long sharp shadows, restrained cinematic color blocking, premium editorial photography. Fictional title SOLSTICE. No real sports brands, logos or extra text.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "electric-bloom",
+      "sourceFilename": "exec-6dd777a6-99bf-4f7b-8182-fb2434121d20.png",
+      "sourceSha256": "492f24e866a8edafcc94565c5b17f16998ee16e69b0ad5a024cf6ff0622bd8b7",
+      "sourceSizeBytes": 2440090,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-13-electric-bloom.webp",
+      "previewSha256": "dc918feadbe76344307c06d47eac22e5e06c5deba5804eff6921de0786d30446",
+      "previewSizeBytes": 98328,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Electric Bloom",
+      "category": "Beauty",
+      "prompt": "Portrait 4:5 avant-garde beauty editorial. Fully clothed original adult East Asian model in a high-neck dark outfit, calm face framed by floating luminous botanical shapes and thin neon-green line graphics; deep teal background and crisp photographic detail, polished art magazine cover. Fictional title ELECTRIC BLOOM. No real logos or extra readable text.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "play-mode",
+      "sourceFilename": "exec-cff9030a-41f2-4625-aae1-4997aad93e29.png",
+      "sourceSha256": "5eb0d797b4aa172d3dca8f01463d43a0aa1ab76978d0db29f72e491a64a982c8",
+      "sourceSizeBytes": 3287585,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-14-play-mode.webp",
+      "previewSha256": "e24cfd82991f1f5246e20be6b71e67d76400eaba4e3b6e432a5679d7a5c86f3a",
+      "previewSizeBytes": 234236,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Play Mode",
+      "category": "Gaming",
+      "prompt": "Portrait 4:5 original retro arcade game poster. A luminous turquoise arcade cabinet sits in a violet neon room, its screen showing an entirely original tiny rocket racing through a star field; bright magenta and lime reflections, bold hand-drawn screen-print texture, playful graphic composition. Fictional title PLAY MODE. No real game art, characters, logos, or extra readable text.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "color-study",
+      "sourceFilename": "exec-e9f8d307-84f6-4087-be2c-fb9648324423.png",
+      "sourceSha256": "77ee82d19e7429f8e3f4efb5a051f7da939116f398b888c8a3cf311d9608433c",
+      "sourceSizeBytes": 2934192,
+      "sourceDimensions": [
+        1536,
+        1024
+      ],
+      "previewFilename": "image-15-color-study.webp",
+      "previewSha256": "0ff3a0c44b576d35eee04585b1eb46bb022fa87036dc35e7ecf4977aa7fc9206",
+      "previewSizeBytes": 74304,
+      "previewDimensions": [
+        1024,
+        683
+      ],
+      "title": "Color Study",
+      "category": "Fashion",
+      "prompt": "Landscape 3:2 high-fashion editorial collage. Two original adult models in fully covered sculptural outfits, one in cobalt and one in burnt orange, pose separately on opposite sides of a seamless cream studio; overlapping cut-paper shapes and subtle film grain, refined art direction, elegant negative space. Small fictional title COLOR STUDY. No real brands, logos, or additional text.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "tideline-fragrance",
+      "sourceFilename": "exec-0341f0b2-c321-42d9-bdff-7ee22c28fe43.png",
+      "sourceSha256": "bffff358b30c89770b8e64da8e1f5070c54d1d840fb807960fc01b929d755dfd",
+      "sourceSizeBytes": 2491663,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-16-tideline-fragrance.webp",
+      "previewSha256": "8a221bcfbd21d0c5b2cf874661f93981ad81963ff02388c85b673544f7129368",
+      "previewSizeBytes": 127806,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Tideline Fragrance",
+      "category": "Product Ads",
+      "prompt": "Portrait 4:5 premium fragrance campaign still life. One unbranded glass perfume bottle with a sculptural sea-glass cap rests on a glossy dark teal plinth, surrounded by translucent water ribbons and iridescent reflections; dramatic cyan and amber studio light, crisp commercial detail, stylish editorial composition. Fictional headline TIDELINE only; blank label, no logos or claims.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "kinetic-form",
+      "sourceFilename": "exec-87120cbd-824d-43ae-b06e-3f1162453dfa.png",
+      "sourceSha256": "c5588a23b29bbc8e04f1b75f58aedc825180db9ee65c1b49f0c31686029a77f2",
+      "sourceSizeBytes": 2070779,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-17-kinetic-form.webp",
+      "previewSha256": "c927d90a587f57baead1e5b7d7eaa39e78a954bfb33a11901b7a4e44eb620be4",
+      "previewSizeBytes": 50474,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Kinetic Form",
+      "category": "Product Ads",
+      "prompt": "Portrait 4:5 striking unbranded sneaker campaign poster. One sculptural crimson high-top sneaker floats above a glossy cobalt plinth, surrounded by translucent acrylic ribbons and a few suspended flower petals; dramatic studio lighting, bold coral and electric-blue color blocking, premium art-directed product photography. Fictional title KINETIC FORM, no visible logos, trademarks, or extra text.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "color-theory",
+      "sourceFilename": "exec-d6614726-599a-4e45-acd1-186bbc164af9.png",
+      "sourceSha256": "0b4ba5f7b9b494ee5e46503e55a92ffa83991ade772af4aabf8869d8122e965b",
+      "sourceSizeBytes": 2100508,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-18-color-theory.webp",
+      "previewSha256": "e07018f12408f2573ddfa793a698ba8712be7f1fb7a156132141364cb5f720e0",
+      "previewSizeBytes": 71786,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Color Theory",
+      "category": "Beauty",
+      "prompt": "Portrait 4:5 graphic beauty editorial cover. Original adult woman fully clothed in a high-neck emerald top, her face seen through overlapping transparent red and rose acetate panels that create an artistic split-color effect; crisp studio portrait, minimal cream background, bold red/cream layout. Fictional headline COLOR THEORY. No real person, brand, logo, or additional text.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "glass-persona",
+      "sourceFilename": "exec-3eb7790d-0e15-4f89-b10e-64b09cb990ca.png",
+      "sourceSha256": "1397b1f7847d762d08bcd7bbfd334c6ea2fa70b9ca253d668e40d7a935b69db1",
+      "sourceSizeBytes": 2628639,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-19-glass-persona.webp",
+      "previewSha256": "6f5e50c86571acc3594c0364622ee8c384cf95ab47d26553db8b485431bbcb33",
+      "previewSizeBytes": 132604,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "Glass Persona",
+      "category": "Futuristic Fashion",
+      "prompt": "Portrait 4:5 futuristic fashion editorial. Original adult model in a fully covered lilac metallic high-collar outfit, poised in a surreal gallery of translucent glass panels and soft lavender light; subtle chrome reflections, cinematic close framing, polished science-fiction magazine art direction. Fictional title GLASS PERSONA. No franchise look, logos, or extra readable text.",
+      "aspectRatio": "generated"
+    },
+    {
+      "slug": "city-pop",
+      "sourceFilename": "exec-25a344a0-3901-4edd-85fe-cfaaf7b4f104.png",
+      "sourceSha256": "f98cfeec11f90ea06c950374ef461644c9e7174e124f0f16a786993b9d787e7f",
+      "sourceSizeBytes": 2063371,
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "previewFilename": "image-20-city-pop.webp",
+      "previewSha256": "8612685047c3e3ceddb16c834fedf9b7527bee0727c2ad64ca0530d56cd1b048",
+      "previewSizeBytes": 63804,
+      "previewDimensions": [
+        819,
+        1024
+      ],
+      "title": "City Pop",
+      "category": "Lifestyle",
+      "prompt": "Portrait 4:5 playful street-fashion editorial cover, fully clothed original adult woman wearing a black oversized graphic-free jacket and bright white sunglasses, blowing a small bubble with bubble gum while holding a clear lime iced drink; modern city sidewalk in bright natural light, candid confident pose, high-end fashion-magazine photography, lively but tasteful composition. Fictional headline CITY POP in clean bold type. No real brands, logos, or extra text.",
+      "aspectRatio": "generated"
+    }
+  ],
+  "retainedOutputCount": 18,
+  "removedDuplicateOrUnwantedOutputs": [
+    "afterhours-toast",
+    "focus-player"
+  ],
+  "selectionNote": "Removed the toast/chinking-glasses scene and the Focus male portrait as requested. The unused duplicate Focus alternative and other unused exploratory drafts are not part of the gallery."
+}
