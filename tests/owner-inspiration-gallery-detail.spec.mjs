@@ -39,7 +39,7 @@ test('Home Inspiration filters image and video cards in place; detail shows the 
   await expect(dialog.getByText('OpenAI ChatGPT image_gen · exact model/version not exposed',{exact:true})).toBeVisible();
   await expect(dialog.getByText('4:5',{exact:true})).toBeVisible();
   await expect(dialog.getByText('819 × 1024 px',{exact:true})).toBeVisible();
-  await expect(dialog.getByText('Not recorded',{exact:true})).toBeVisible();
+  await expect(dialog.locator('.inspiration-detail-parameters').getByText('Not recorded',{exact:true}).first()).toBeVisible();
   await expect(dialog.locator('.inspiration-detail-parameters')).toContainText('Minimum ratio');
   await expect(dialog.locator('.inspiration-detail-parameters')).toContainText('Maximum ratio');
   await expect(dialog.locator('.inspiration-detail-parameters')).toContainText('CoT mode');
