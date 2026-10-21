@@ -22,7 +22,7 @@ const settlement=(sessionId,amount=100,currency='eur')=>({currency,processorFeeA
  stripeBalanceTransactionId:'txn_'+stripeSafe(sessionId),livemode:true});
 const stripeFor=(id,amount,currency='eur')=>({paymentIntents:{async retrieve(){
  const chargeId='ch_'+stripeSafe(id.slice(3)),txnId='txn_'+stripeSafe(id.slice(3));
- return {id,status:'succeeded',livemode:true,amount_received:amount,currency,latest_charge:{id:chargeId,
+ return {id,status:'succeeded',livemode:true,amount_received:amount,currency,latest_charge:{id:chargeId,payment_intent:id,
   paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:true,currency,amount_captured:amount,
   balance_transaction:{id:txnId,source:chargeId,type:'charge',currency,amount,fee:3,net:amount-3}}};
 }}});

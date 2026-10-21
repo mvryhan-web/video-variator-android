@@ -4,7 +4,7 @@ import {retrieveStripeNetRevenue,verifyStripeNetRevenue,stripeCheckoutTaxAmount,
 
 const paymentIntent=({live=false,amount=1200,fee=55,tax=200}={})=>({
  id:'pi_fixture',status:'succeeded',livemode:live,amount_received:amount,currency:'eur',
- latest_charge:{id:'ch_fixture',paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:live,currency:'eur',amount_captured:amount,
+ latest_charge:{id:'ch_fixture',payment_intent:'pi_fixture',paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:live,currency:'eur',amount_captured:amount,
   balance_transaction:{id:'txn_fixture',source:'ch_fixture',type:'charge',currency:'eur',amount,fee,net:amount-fee}}
 });
 const args=(overrides={})=>({paymentIntent:paymentIntent(),expectedAmount:1200,expectedCurrency:'eur',taxAmount:200,expectedLivemode:false,...overrides});
@@ -61,4 +61,14 @@ test('D18 retrieved settlement must belong to the requested PaymentIntent before
    expectedCurrency:'eur',taxAmount:200,expectedLivemode:false}),/AI_SETTLEMENT_PAYMENT_UNVERIFIED/);
   assert.equal(reads,0,'mismatched payment must fail before Charge retrieval');
  }
+});
+
+// Stripe documents charge.payment_intent as an expandable reference.
+test('D18 Charge must explicitly reference the verified PaymentIntent',()=>{
+ const p=paymentIntent();
+ for(const reference of ['pi_other',null,undefined,{}, {id:'pi_other'}])
+  assert.throws(()=>verifyStripeNetRevenue(args({paymentIntent:{...p,latest_charge:{...p.latest_charge,payment_intent:reference}}})),
+   /AI_SETTLEMENT_CHARGE_UNVERIFIED/);
+ for(const reference of ['pi_fixture',{id:'pi_fixture'}])
+  assert.equal(verifyStripeNetRevenue(args({paymentIntent:{...p,latest_charge:{...p.latest_charge,payment_intent:reference}}})).netRevenueMicros,9_450_000);
 });

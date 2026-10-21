@@ -140,7 +140,7 @@ test('BASE #16: late signed paid checkout is granted after Checkout disabled onl
   const actualSettlement={...settlement,taxAmount:tax,netRevenueMicros:(total-fee-tax)*10_000};
   const stripe={checkout:{sessions:{async retrieve(){retrieveCalls++;return session;}}},
    paymentIntents:{async retrieve(){return {id:paymentIntent,status:'succeeded',livemode:false,amount_received:total,currency:'eur',
-    latest_charge:{id:'ch_prior',paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:false,currency:'eur',amount_captured:total,
+    latest_charge:{id:'ch_prior',payment_intent:paymentIntent,paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:false,currency:'eur',amount_captured:total,
      balance_transaction:{id:'txn_prior',source:'ch_prior',type:'charge',currency:'eur',amount:total,fee,net:total-fee},...chargeOverride}};}}};
   const installed=installGenerationBilling({get(){},post(){},use(){}},
    {auth:()=>{},pool,stripe,appUrl:'https://example.invalid',env});
@@ -156,6 +156,11 @@ test('BASE #16: late signed paid checkout is granted after Checkout disabled onl
   assert.deepEqual(h.grants,[{userId,sessionId,paymentIntent,credits:120,amount:900,currency:'eur',settlement:h.settlement}]);
  }
  for(const eventType of ['checkout.session.completed','checkout.session.async_payment_succeeded']){
+  for(const reference of ['pi_other',null,undefined,{id:'pi_other'}]){
+   const h=make({eventType,chargeOverride:{payment_intent:reference}});
+   await assert.rejects(()=>h.installed.handleEvent(h.event),/AI_SETTLEMENT_CHARGE_UNVERIFIED/);
+   assert.equal(h.grants.length,0,'unlinked Charge must never grant purchased credits');
+  }
   for(const chargeOverride of [{disputed:true},{refunded:true},{amount_refunded:1},
    {disputed:undefined},{refunded:undefined},{amount_refunded:undefined}]){
    const h=make({eventType,chargeOverride});

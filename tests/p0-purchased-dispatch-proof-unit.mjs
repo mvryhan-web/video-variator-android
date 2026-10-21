@@ -7,7 +7,7 @@ import {GenerationWallet} from '../server/generation-wallet.js';
 
 const env={AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true'};
 const options=()=>({env,userId:'paid_user',jobId:'job_live_a',kind:'video',credits:100,fingerprint:'sha256abc',modelId:'model_v',provider:'Google',providerCostMicros:10_000,currency:'eur',wallet:{available:0,reserved:100,debt:0}});
-const stripeFor=(amount)=>({paymentIntents:{async retrieve(id){const chargeId='ch_'+id.slice(3),txnId='txn_'+id.slice(3);return {id,status:'succeeded',livemode:true,amount_received:amount,currency:'usd',latest_charge:{id:chargeId,paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:true,currency:'usd',amount_captured:amount,balance_transaction:{id:txnId,source:chargeId,type:'charge',currency:'usd',amount,fee:25,net:amount-25}}};}}});
+const stripeFor=(amount)=>({paymentIntents:{async retrieve(id){const chargeId='ch_'+id.slice(3),txnId='txn_'+id.slice(3);return {id,status:'succeeded',livemode:true,amount_received:amount,currency:'usd',latest_charge:{id:chargeId,payment_intent:id,paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:true,currency:'usd',amount_captured:amount,balance_transaction:{id:txnId,source:chargeId,type:'charge',currency:'usd',amount,fee:25,net:amount-25}}};}}});
 function db({paidCredits=200,otherSpent=80,sourceId='cs_live_paid1',held={},job={},inserted=true}={}){
  const statements=[];
  const query=async(sql,args)=>{
