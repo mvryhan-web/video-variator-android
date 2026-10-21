@@ -1,60 +1,58 @@
 import {test,expect} from '@playwright/test';
 
-const cards=[
- {id:'owner-image-1',slug:'portrait',title:'Original editorial portrait',kind:'image',
-  description:'Owner licensed original photo',category:'Editorial',previewUrl:'/safe/portrait.webp',
-  prompt:'An original portrait, soft cinematic light, teal background',aspectRatio:'2:3',
-  actionTarget:'studio',requiredInputTypes:[],defaultSettings:{ratio:'2:3'},defaultModel:null},
- {id:'owner-video-1',slug:'scene',title:'Original cinematic video',kind:'video',
-  description:'Owner licensed original MP4',category:'Cinematic',previewUrl:'/safe/scene.mp4',
-  previewPosterUrl:'/safe/scene.webp',
-  prompt:'An original video of a flying object in a forest, warm backlight',aspectRatio:'16:9',
-  actionTarget:'studio',requiredInputTypes:[],defaultSettings:{ratio:'16:9',duration:'8s'},defaultModel:null}
+const content=[
+ {id:'image-1',title:'Unpublished test portrait',kind:'image',category:'Editorial',
+  previewUrl:'/safe/portrait.webp',prompt:'A test portrait prompt',aspectRatio:'9:16',
+  actionTarget:'studio',requiredInputTypes:[],defaultSettings:{}},
+ {id:'video-1',title:'Original cinematic video',kind:'video',category:'Cinematic',
+  previewUrl:'/safe/scene.mp4',previewPosterUrl:'/safe/scene.webp',
+  prompt:'An original video of a flying object in a forest, warm backlight',
+  aspectRatio:'16:9',actionTarget:'studio',requiredInputTypes:[],
+  defaultSettings:{ratio:'16:9',duration:'8s'}}
 ];
-function fakeAPI(page){
- return page.route('**/api/inspiration?**',route=>{
-  const search=new URL(route.request().url()).searchParams;
-  const kind=search.get('kind')||'all';
-  route.fulfill({json:{items:cards.filter(x=>kind==='all'||x.kind===kind),
-   categories:['Editorial','Cinematic'],ratios:['2:3','16:9'],
-   pagination:{limit:24,offset:0,nextOffset:null,hasMore:false}}});
- });
-}
-test('Inspiration owner screenshot workflow: compact gallery, image detail with prompt, video detail with controls, filters and no spend',async({page})=>{
+test('Home Inspiration: inline All Video Image, right prompt, empty Images, ratio, no spend',async({page})=>{
  const paid=[];
  page.on('request',req=>{
-  if(req.method()==='POST'&&/\/api\/(?:studio|billing|payments|ai-wallet)/.test(new URL(req.url()).pathname))
+  if(req.method()==='POST'&&/\\/api\\/(?:studio|billing|payments|ai-wallet)/.test(new URL(req.url()).pathname))
    paid.push(req.url());
  });
- await fakeAPI(page);
+ await page.route('**/api/config',route=>route.fulfill({json:{features:{inspiration:true},plans:{}}}));
+ await page.route('**/api/inspiration?**',route=>route.fulfill({json:{
+  items:content,categories:['Cinematic','Editorial'],ratios:['16:9','9:16'],
+  pagination:{limit:12,offset:0,nextOffset:null,hasMore:false}
+ }}));
  for(const width of [390,768,1448]){
   await page.setViewportSize({width,height:820});
-  await page.goto('/inspiration.html');
-  await expect(page.locator('#gallery .card')).toHaveCount(2);
-  await expect(page.locator('.gallery .inspiration-tile-open')).toHaveCount(2);
-  const portrait=page.getByRole('button',{name:'View Original editorial portrait inspiration'});
-  await expect(portrait).toBeVisible();
-  await portrait.click();
+  await page.goto('/deepsyq.html#inspirationPreview');
+  const section=page.locator('#inspirationPreview');
+  await expect(section).toBeVisible({timeout:15000});
+  await expect(section.locator('[data-inspiration-kind]')).toHaveText(['All','Video','Image']);
+  const cards=section.locator('.inspiration-preview-card:visible');
+  await expect(cards).toHaveCount(1);
+  await expect(cards.first()).toHaveAttribute('data-kind','video');
+  await section.locator('[data-inspiration-kind="image"]').click();
+  await expect(cards).toHaveCount(0);
+  await expect(page.locator('#homeInspirationEmpty')).toContainText('Images');
+  await section.locator('[data-inspiration-kind="video"]').click();
+  await expect(cards).toHaveCount(1);
+  await section.locator('[data-inspiration-ratio="9:16"]').click();
+  await expect(cards).toHaveCount(0);
+  await section.locator('[data-inspiration-ratio="16:9"]').click();
+  await expect(cards).toHaveCount(1);
+  await cards.first().click();
   const dialog=page.getByRole('dialog');
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByText('An original portrait, soft cinematic light, teal background')).toBeVisible();
-  await expect(dialog.locator('.inspiration-detail-image-area img')).toHaveAttribute('src','/safe/portrait.webp');
-  await expect(dialog.getByRole('button',{name:'Clone & Try'})).toBeEnabled();
-  await expect(dialog.getByText('2:3')).toBeVisible();
-  await page.keyboard.press('Escape');
+  await expect(dialog.locator('video')).toHaveAttribute('src','/safe/scene.mp4');
+  await expect(dialog.locator('video')).toHaveAttribute('controls','');
+  await expect(dialog.getByText('An original video of a flying object in a forest, warm backlight')).toBeVisible();
+  await expect(dialog.getByText('16:9')).toBeVisible();
+  await expect(dialog.getByRole('button',{name:/Clone & Try/})).toBeVisible();
+  await dialog.getByRole('button',{name:'Close inspiration preview'}).click();
   await expect(dialog).toHaveCount(0);
-  await page.getByRole('button',{name:'View Original cinematic video inspiration'}).click();
-  const video=page.getByRole('dialog').locator('video');
-  await expect(video).toHaveAttribute('src','/safe/scene.mp4');
-  await expect(video).toHaveAttribute('controls','');
-  await expect(page.getByRole('dialog').getByText('An original video of a flying object in a forest, warm backlight')).toBeVisible();
-  await page.getByRole('button',{name:'Close inspiration preview'}).click();
-  await expect(page.getByRole('dialog')).toHaveCount(0);
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth),'no horizontal overflow at '+width).toBeLessThanOrEqual(width+1);
-  await page.getByRole('button',{name:'Images',exact:true}).click();
-  await expect(page.locator('#gallery .card')).toHaveCount(1);
-  await page.getByRole('button',{name:'Videos',exact:true}).click();
-  await expect(page.locator('#gallery .card')).toHaveCount(1);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth),
+    'no horizontal overflow at '+width).toBeLessThanOrEqual(width+1);
  }
+ await page.goto('/inspiration.html');
+ await expect(page).toHaveURL(/deepsyq\\.html#inspirationPreview$/);
  expect(paid).toEqual([]);
 });
