@@ -6,7 +6,7 @@ const entry=(id)=>({
  id,title:'Fixture '+id,slug:'fixture-'+id,category:'Editorial',kind:'video',
  description:'Mocked, owner-neutral browser fixture',
  previewUrl:'/nonexistent-c7-fixture.webp',prompt:'A fictional city poster',
- aspectRatio:'1:1',actionTarget:'studio',requiredInputTypes:[],
+ aspectRatio:'1:1',actionTarget:'studio',requiredInputTypes:[],active:true,featured:true,rightsBasis:'owned',rightsNote:'Synthetic test only',
  defaultSettings:{ratio:'1:1'},defaultModel:null
 });
 
@@ -18,7 +18,7 @@ test('BASE1-C7 Home Inspiration card remains accessible on hover and filters wit
  page.on('request',request=>{
   if(request.method()==='POST'&&/\/api\/(?:studio\/jobs|billing|payments|ai-wallet|speech\/generate)/.test(new URL(request.url()).pathname))paid.push(request.url());
  });
- await page.route(/\/api\/inspiration(?:\?.*)?$/,route=>{
+ await page.route('**/api/inspiration**',route=>{
   inspirationCalls++;
   const offset=Number(new URL(route.request().url()).searchParams.get('offset')||'0');
   route.fulfill({json:{

@@ -126,14 +126,14 @@ test('C11 everyday Audio/Tools, Avatar Back, menu Escape work at all owner width
 test('C11 Home Inspiration filters video and keeps images empty; reuse requires consent',async({page})=>{
  await fixtures(page);const writes=noPaid(page);
  for(const width of widths){
-  await page.setViewportSize({width,height:850});await page.goto('/inspiration.html');
+  await page.setViewportSize({width,height:850});await page.goto('/deepsyq.html#inspirationPreview',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
   await fit(page,width,'Inspiration');
-  await page.locator('[data-inspiration-kind="image"]').click();await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');
-  await page.locator('[data-inspiration-kind="video"]').click();
-  await page.locator('[data-inspiration-ratio="9:16"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(0);
-  await page.locator('[data-inspiration-ratio="16:9"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
-  await page.getByRole('button',{name:'View Fictional animation inspiration'}).click();
+  const imageTab=page.locator('[data-inspiration-kind="image"]');await imageTab.scrollIntoViewIfNeeded();await imageTab.click();await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');
+  const videoTab=page.locator('[data-inspiration-kind="video"]');await videoTab.scrollIntoViewIfNeeded();await videoTab.click();
+  const vertical=page.locator('[data-inspiration-ratio="9:16"]');await vertical.scrollIntoViewIfNeeded();await vertical.click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(0);
+  const horizontal=page.locator('[data-inspiration-ratio="16:9"]');await horizontal.scrollIntoViewIfNeeded();await horizontal.click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
+  const card=page.getByRole('button',{name:'View Fictional animation inspiration'});await card.scrollIntoViewIfNeeded();await card.click();
   await page.getByRole('dialog').getByRole('button',{name:'Create yours'}).click();
   await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=inspiration&action=create/);
   await expect(page.locator('#prompt')).toHaveValue('Original animation of a floating island');await expect(page.locator('#consent')).not.toBeChecked();
