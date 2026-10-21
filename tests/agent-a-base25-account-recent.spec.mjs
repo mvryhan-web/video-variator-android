@@ -279,3 +279,70 @@ test('A22 P0: real Back then refresh must not restore A History after switching 
  expect(bGets).toBeGreaterThan(0);
  expect(paidPosts).toBe(0);
 });
+
+
+// A23: actionable stale History handlers must not cross the account boundary.
+// A silent same-tab token rotation is intentional: the user's subsequent
+// pointerdown/focus/click is the LAST chance to reject A-scoped DOM actions.
+test('A23 P0: stale A History Reuse cannot copy A prompt into account B editor on click',async({page})=>{
+ await stubSignedInHome(page);
+ const item={id:'history-a23-reuse',kind:'image',status:'failed',provider:'Mock',
+  prompt:'PRIVATE_ACCOUNT_A23_REUSE_PROMPT',createdAt:'2026-10-21T09:00:00Z'};
+ let paidPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio|ai-wallet|billing)/.test(new URL(r.url()).pathname))paidPosts++;});
+ await page.route('**/api/studio/jobs?filter=all',r=>{
+  const auth=r.request().headers()['authorization']||'';
+  return r.fulfill({json:{items:auth==='Bearer fixture-account-A'?[item]:[]}});
+ });
+ await page.goto('/generate-studio.html?view=history');
+ await expect(page.locator('#historyList')).toContainText(item.prompt);
+ const reuse=page.locator('#historyList .history-card .history-actions button').filter({hasText:'Reuse prompt'});
+ await expect(reuse).toBeVisible();
+ await reuse.scrollIntoViewIfNeeded();
+ const rect=await reuse.boundingBox();expect(rect).not.toBeNull();
+ // Real mouse input raises pointerdown/focus events and finally a click.
+ await page.evaluate(()=>localStorage.setItem('vv_token','fixture-account-B'));
+ await page.mouse.click(rect.x+rect.width/2,rect.y+rect.height/2);
+ const state=await page.evaluate(()=>({
+  token:localStorage.getItem('vv_token'),
+  editorPrompt:document.getElementById('prompt').value,
+  staleHistory:document.getElementById('historyList').textContent.includes('PRIVATE_ACCOUNT_A23_REUSE_PROMPT')
+ }));
+ expect(state.token).toBe('fixture-account-B');
+ expect(state.editorPrompt).not.toContain('PRIVATE_ACCOUNT_A23_REUSE_PROMPT');
+ expect(state.staleHistory).toBe(false);
+ expect(paidPosts).toBe(0);
+});
+
+test('A23 P0: stale A History Delete does not issue B-auth DELETE against old A job',async({page})=>{
+ await stubSignedInHome(page);
+ const item={id:'history-a23-delete',kind:'image',status:'failed',provider:'Mock',
+  prompt:'PRIVATE_ACCOUNT_A23_DELETE_JOB',createdAt:'2026-10-21T09:00:00Z'};
+ const crossAccountDeletes=[],paidPosts=[];
+ page.on('request',r=>{
+  const path=new URL(r.url()).pathname;
+  if(r.method()==='DELETE'&&path==='/api/studio/jobs/history-a23-delete')
+   crossAccountDeletes.push({authorization:r.headers()['authorization']||'',path});
+  if(r.method()==='POST'&&/\/api\/(studio|ai-wallet|billing)/.test(path))paidPosts.push(path);
+ });
+ await page.route('**/api/studio/jobs?filter=all',r=>{
+  const auth=r.request().headers()['authorization']||'';
+  return r.fulfill({json:{items:auth==='Bearer fixture-account-A'?[item]:[]}});
+ });
+ // Deliberately enforce server ownership: the bug under test is the client
+ // dispatch ATTEMPT, not proof of any deletion of another account's data.
+ await page.route('**/api/studio/jobs/history-a23-delete',r=>
+  r.fulfill({status:403,json:{error:'FORBIDDEN'}}));
+ page.on('dialog',dialog=>dialog.accept());
+ await page.goto('/generate-studio.html?view=history');
+ await expect(page.locator('#historyList')).toContainText(item.prompt);
+ const remove=page.locator('#historyList .history-card .history-actions button').filter({hasText:'Delete'});
+ await expect(remove).toBeVisible();
+ await remove.scrollIntoViewIfNeeded();
+ const rect=await remove.boundingBox();expect(rect).not.toBeNull();
+ await page.evaluate(()=>localStorage.setItem('vv_token','fixture-account-B'));
+ await page.mouse.click(rect.x+rect.width/2,rect.y+rect.height/2);
+ await expect(page.locator('#historyList')).not.toContainText('PRIVATE_ACCOUNT_A23_DELETE_JOB');
+ expect(crossAccountDeletes).toEqual([]);
+ expect(paidPosts).toEqual([]);
+});
