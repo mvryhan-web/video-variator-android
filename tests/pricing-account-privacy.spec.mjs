@@ -15,6 +15,7 @@ async function setup(page){
 test('rendered wallet changes owner after same-tab token rotation',async({page})=>{
  await setup(page);await page.goto('/ai-pricing.html');
  await expect(page.locator('#walletSummary')).toContainText('111');
+ await expect(page.locator('#welcomeCredits')).toBeHidden();
  await page.evaluate(()=>localStorage.setItem('vv_token','B'));
  await expect(page.locator('#walletSummary')).toContainText('222');
  await expect(page.locator('#walletSummary')).not.toContainText('111');
