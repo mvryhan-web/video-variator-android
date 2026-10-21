@@ -13,7 +13,7 @@ const content=[
 test('Home Inspiration: inline All Video Image, right prompt, empty Images, ratio, no spend',async({page})=>{
  const paid=[];
  page.on('request',req=>{
-  if(req.method()==='POST'&&/\\/api\\/(?:studio|billing|payments|ai-wallet)/.test(new URL(req.url()).pathname))
+  if(req.method()==='POST'&&['/api/studio','/api/billing','/api/payments','/api/ai-wallet'].some(p=>new URL(req.url()).pathname.startsWith(p)))
    paid.push(req.url());
  });
  await page.route('**/api/config',route=>route.fulfill({json:{features:{inspiration:true},plans:{}}}));
@@ -53,6 +53,6 @@ test('Home Inspiration: inline All Video Image, right prompt, empty Images, rati
     'no horizontal overflow at '+width).toBeLessThanOrEqual(width+1);
  }
  await page.goto('/inspiration.html');
- await expect(page).toHaveURL(/deepsyq\\.html#inspirationPreview$/);
+ await expect(page).toHaveURL(/deepsyq[.]html#inspirationPreview$/);
  expect(paid).toEqual([]);
 });
