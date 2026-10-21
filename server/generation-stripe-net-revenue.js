@@ -45,6 +45,11 @@ export function verifyStripeNetRevenue({paymentIntent,expectedAmount,expectedCur
  if(!charge||typeof charge!=='object'||!isId(charge.id,'ch_')||charge.paid!==true||charge.captured!==true||
     charge.livemode!==!!expectedLivemode||charge.currency!==expectedCurrency||charge.amount_captured!==expectedAmount)
   throw Error('AI_SETTLEMENT_CHARGE_UNVERIFIED');
+ // A delayed paid event must not attest original proceeds after Stripe has
+ // already reversed/disputed the Charge. Require explicit zero-reversal facts;
+ // missing fields are not evidence that the payment remains eligible.
+ if(charge.disputed!==false||charge.refunded!==false||charge.amount_refunded!==0)
+  throw Error('AI_SETTLEMENT_CHARGE_REVERSED_OR_UNVERIFIED');
  const transaction=charge.balance_transaction;
  if(!transaction||typeof transaction!=='object'||!isId(transaction.id,'txn_')||
     transaction.source!==charge.id||transaction.type!=='charge'||transaction.currency!==expectedCurrency||

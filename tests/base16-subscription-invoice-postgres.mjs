@@ -76,7 +76,7 @@ test('BASE #16: a signed, paid invoice grants once per invoice on disposable Pos
   const sample=invoice();
   const stripe={paymentIntents:{async retrieve(id){const suffix=id.slice(3).replace(/[^A-Za-z0-9]/g,'');const chargeId='ch_'+suffix,txnId='txn_'+suffix;
    return {id,status:'succeeded',livemode:false,amount_received:900,currency:'eur',latest_charge:{
-    id:chargeId,paid:true,captured:true,livemode:false,currency:'eur',amount_captured:900,
+    id:chargeId,paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:false,currency:'eur',amount_captured:900,
     balance_transaction:{id:txnId,source:chargeId,type:'charge',currency:'eur',amount:900,fee:30,net:870}}};}}};
   const installed=installGenerationBilling({get(){},post(){},use(){}},{
    auth:()=>{},pool,stripe,appUrl:'https://example.invalid',env

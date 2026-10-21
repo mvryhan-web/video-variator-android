@@ -4,7 +4,7 @@ import {retrieveStripeNetRevenue,verifyStripeNetRevenue,stripeCheckoutTaxAmount,
 
 const paymentIntent=({live=false,amount=1200,fee=55,tax=200}={})=>({
  id:'pi_fixture',status:'succeeded',livemode:live,amount_received:amount,currency:'eur',
- latest_charge:{id:'ch_fixture',paid:true,captured:true,livemode:live,currency:'eur',amount_captured:amount,
+ latest_charge:{id:'ch_fixture',paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:live,currency:'eur',amount_captured:amount,
   balance_transaction:{id:'txn_fixture',source:'ch_fixture',type:'charge',currency:'eur',amount,fee,net:amount-fee}}
 });
 const args=(overrides={})=>({paymentIntent:paymentIntent(),expectedAmount:1200,expectedCurrency:'eur',taxAmount:200,expectedLivemode:false,...overrides});
@@ -41,4 +41,13 @@ test('D18 Checkout and Invoice tax evidence must be present and internally consi
  assert.throws(()=>stripeCheckoutTaxAmount({amount_subtotal:1000,amount_total:1200,total_details:{amount_tax:0,amount_discount:0,amount_shipping:0}}),/AI_SETTLEMENT_TOTAL_MISMATCH/);
  assert.throws(()=>stripeInvoiceTaxAmount({}),/AI_SETTLEMENT_TAX_UNVERIFIED/);
  assert.throws(()=>stripeInvoiceTaxAmount({total_taxes:[{amount:1}],total_tax_amounts:[{amount:2}]}),/AI_SETTLEMENT_TAX_CONFLICT/);
+});
+
+test('D18 rejects reversed or disputed Charge even if original captured settlement still matches',()=>{
+ const p=paymentIntent();
+ for(const change of [{disputed:true},{refunded:true},{amount_refunded:1},{amount_refunded:1200},
+  {disputed:undefined},{refunded:undefined},{amount_refunded:undefined},
+  {amount_refunded:-1},{amount_refunded:'0'},{amount_refunded:0.5}])
+  assert.throws(()=>verifyStripeNetRevenue(args({paymentIntent:{...p,latest_charge:{...p.latest_charge,...change}}})),
+   /AI_SETTLEMENT_CHARGE_REVERSED_OR_UNVERIFIED/);
 });

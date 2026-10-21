@@ -118,7 +118,7 @@ test('BASE #16: late signed paid checkout is granted after Checkout disabled onl
  const oldOrder={id:orderId,user_id:userId,sku:'old',session_id:sessionId,snapshot:{
   billingMode:'test',sku:'old',priceId:'price_old',amount:900,currency:'eur',credits:120
  }};
- const make=({eventType='checkout.session.completed',order=oldOrder,sessionOverride={},mode='test',enabled='false',credentials=true}={})=>{
+ const make=({eventType='checkout.session.completed',order=oldOrder,sessionOverride={},chargeOverride={},mode='test',enabled='false',credentials=true}={})=>{
   let dbCalls=0,retrieveCalls=0;const grants=[];
   const pool={async query(sql,args=[]){
    dbCalls++;
@@ -140,8 +140,8 @@ test('BASE #16: late signed paid checkout is granted after Checkout disabled onl
   const actualSettlement={...settlement,taxAmount:tax,netRevenueMicros:(total-fee-tax)*10_000};
   const stripe={checkout:{sessions:{async retrieve(){retrieveCalls++;return session;}}},
    paymentIntents:{async retrieve(){return {id:paymentIntent,status:'succeeded',livemode:false,amount_received:total,currency:'eur',
-    latest_charge:{id:'ch_prior',paid:true,captured:true,livemode:false,currency:'eur',amount_captured:total,
-     balance_transaction:{id:'txn_prior',source:'ch_prior',type:'charge',currency:'eur',amount:total,fee,net:total-fee}}};}}};
+    latest_charge:{id:'ch_prior',paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:false,currency:'eur',amount_captured:total,
+     balance_transaction:{id:'txn_prior',source:'ch_prior',type:'charge',currency:'eur',amount:total,fee,net:total-fee},...chargeOverride}};}}};
   const installed=installGenerationBilling({get(){},post(){},use(){}},
    {auth:()=>{},pool,stripe,appUrl:'https://example.invalid',env});
   installed.wallet.grant=async args=>{grants.push(args);return {available:120};};
@@ -154,6 +154,14 @@ test('BASE #16: late signed paid checkout is granted after Checkout disabled onl
   assert.equal(await h.installed.handleEvent(h.event),true);
   assert.equal(h.getStripe(),1);
   assert.deepEqual(h.grants,[{userId,sessionId,paymentIntent,credits:120,amount:900,currency:'eur',settlement:h.settlement}]);
+ }
+ for(const eventType of ['checkout.session.completed','checkout.session.async_payment_succeeded']){
+  for(const chargeOverride of [{disputed:true},{refunded:true},{amount_refunded:1},
+   {disputed:undefined},{refunded:undefined},{amount_refunded:undefined}]){
+   const h=make({eventType,chargeOverride});
+   await assert.rejects(()=>h.installed.handleEvent(h.event),/AI_SETTLEMENT_CHARGE_REVERSED_OR_UNVERIFIED/);
+   assert.equal(h.grants.length,0,'delayed paid webhook cannot grant reversed/unverified proceeds');
+  }
  }
  const taxed=make({sessionOverride:{amount_total:1000,total_details:{amount_tax:100,amount_discount:0,amount_shipping:0}}});
  assert.equal(await taxed.installed.handleEvent(taxed.event),true);
