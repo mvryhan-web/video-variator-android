@@ -58,8 +58,8 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
    assert.equal((await media.arrayBuffer()).byteLength,128);
   }
   const gallery=await(await fetch(base+'/api/inspiration?featured=true&limit=12')).json();
-  const red=gallery.items.find(item=>item.kind==='image');
-  assert.equal(red.previewUrl,'/media/home/owner-20261018/v02-red-gown.jpg');
+  assert.equal(gallery.items.filter(item=>item.kind==='image').length,0,'Image remains empty until owner supplies images');
+  const retired=await fetch(base+'/inspiration.html',{redirect:'manual'});assert.equal(retired.status,302);assert.equal(retired.headers.get('location'),'/deepsyq.html#inspirationPreview');
   assert.equal(gallery.items.some(item=>item.slug.includes('butterfly')||item.slug.includes('lake')),false);
   assert.equal((await(await fetch(base+'/api/inspiration?featured=true&target=agent')).json()).items.length,0);
   assert.equal((await fetch(base+'/api/inspiration',{method:'POST'})).status,503);
