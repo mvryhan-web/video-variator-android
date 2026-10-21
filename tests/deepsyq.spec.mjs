@@ -400,10 +400,11 @@ test('video carousel switches only among owner-approved videos and retains exist
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/one.mp4');
  await page.locator('#homeHeroPrevious').click();
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/two.mp4');
- await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
- await expect(page.locator('#inspirationPreviewGrid')).not.toContainText('Preserved owned photo');
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(3);
+ await expect(page.locator('#inspirationPreviewGrid')).toContainText('Preserved owned photo');
  await page.locator('[data-inspiration-kind="image"]').click();
- await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
+ await expect(page.getByRole('button',{name:'View Preserved owned photo inspiration'})).toBeVisible();
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
 });
 test('failed owner media clips never trap the Home carousel or erase Canvas',async({page})=>{
@@ -432,8 +433,8 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
  await expect(page.locator('#homeHeroSlideLink')).toBeHidden();
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
- await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
- await expect(page.locator('#inspirationPreviewGrid')).not.toContainText('Original owner still');
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(3);
+ await expect(page.locator('#inspirationPreviewGrid')).toContainText('Original owner still');
  await expect(page.locator('#inspirationEmpty')).toBeHidden();
 });
 test('reduced-motion users get a manual Play button for genuine videos',async({page})=>{
