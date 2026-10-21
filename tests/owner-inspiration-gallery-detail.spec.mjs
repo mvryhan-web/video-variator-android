@@ -8,7 +8,7 @@ test('Home Inspiration filters in place, images empty, video opens right-prompt 
  await page.route('**/api/auth/email/status',route=>route.fulfill({json:{configured:false}}));
  await page.route('**/api/inspiration**',route=>route.fulfill({json:{items:[video,{...video,id:'poster',kind:'image',previewUrl:'/poster.webp'}],categories:['Cinematic'],ratios:['16:9']}}));
  for(const width of [390,768,1448]){
-  await page.setViewportSize({width,height:850});await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+  await page.setViewportSize({width,height:850});await page.goto('/deepsyq.html?galleryWidth='+width,{waitUntil:'domcontentloaded'});
   const section=page.locator('#inspirationPreview');await expect(section).toBeVisible({timeout:15000});
   const tabs=section.locator('[data-inspiration-kind]');await expect(tabs).toHaveText(['All','Video','Image']);
   await expect(section.locator('.inspiration-preview-card')).toHaveCount(1);

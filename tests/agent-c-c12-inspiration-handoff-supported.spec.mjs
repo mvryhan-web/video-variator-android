@@ -45,7 +45,7 @@ test('C12 incompatible published Inspiration does not advertise false actionable
  await setup(page);const posts=paidRequests(page);
  for(const width of [320,390,1448]){
   await page.setViewportSize({width,height:850});
-  await page.goto('/deepsyq.html#inspirationPreview',{waitUntil:'domcontentloaded'});
+  await page.goto('/deepsyq.html?c12Width='+width+'#inspirationPreview',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(5);
   for(const [title,reason] of [
    ['Needs source video','video input support not yet available'],
@@ -78,7 +78,7 @@ test('C12 supported Image and Video retain real Create yours / Clone handoff wit
   ['Supported original picture','video','Create yours','A fictional lakeside painting'],
   ['Supported original movie','video','Clone and Try','A fictional floating island in twilight']
  ]){
-  await page.goto('/deepsyq.html#inspirationPreview',{waitUntil:'domcontentloaded'});
+  await page.goto('/deepsyq.html?c12Supported='+encodeURIComponent(title)+'#inspirationPreview',{waitUntil:'domcontentloaded'});
   const card=page.getByRole('button',{name:'View '+title+' inspiration'});
   await card.scrollIntoViewIfNeeded();
   await card.click();

@@ -29,8 +29,9 @@ test('BASE1-C7 Home Inspiration card remains accessible on hover and filters wit
  });
  for(const width of [320,375,390,768,1448]){
   await page.setViewportSize({width,height:820});
-  await page.goto('/deepsyq.html#inspirationPreview',{waitUntil:'domcontentloaded'});
-  await expect.poll(()=>inspirationCalls).toBeGreaterThan(0);
+  const previousCalls=inspirationCalls;
+  await page.goto('/deepsyq.html?c7Width='+width+'#inspirationPreview',{waitUntil:'domcontentloaded'});
+  await expect.poll(()=>inspirationCalls).toBeGreaterThan(previousCalls);
   const card=page.locator('#inspirationPreviewGrid .inspiration-preview-card').first();
   await expect(card).toBeVisible({timeout:15000});await card.scrollIntoViewIfNeeded();await card.hover();
   const hoverBorder=await card.evaluate(el=>getComputedStyle(el).borderTopColor);

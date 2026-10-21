@@ -126,7 +126,7 @@ test('C11 everyday Audio/Tools, Avatar Back, menu Escape work at all owner width
 test('C11 Home Inspiration filters video and keeps images empty; reuse requires consent',async({page})=>{
  await fixtures(page);const writes=noPaid(page);
  for(const width of widths){
-  await page.setViewportSize({width,height:850});await page.goto('/deepsyq.html#inspirationPreview',{waitUntil:'domcontentloaded'});
+  await page.setViewportSize({width,height:850});await page.goto('/deepsyq.html?c11Width='+width+'#inspirationPreview',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
   await fit(page,width,'Inspiration');
   const imageTab=page.locator('[data-inspiration-kind="image"]');await imageTab.scrollIntoViewIfNeeded();await imageTab.click();await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');

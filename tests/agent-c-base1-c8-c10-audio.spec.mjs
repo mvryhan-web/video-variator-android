@@ -60,7 +60,7 @@ test('C8 current DEV real direct links, Tools/Avatar Back, mobile Escape and His
   await page.goto('/ai-apps.html');
   await expect(page.locator('.app-card')).toHaveCount(2);
   await fit(page,width,'AI Apps');
-  await page.goto('/deepsyq.html#inspirationPreview',{waitUntil:'domcontentloaded'});
+  await page.goto('/deepsyq.html?c8Width='+width+'#inspirationPreview',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
   await fit(page,width,'Inspiration');
   await page.goto('/free-tools.html');
@@ -140,7 +140,7 @@ test('C10 AI Agents are honest pending, usable Apps/Inspiration preserve prompt 
   await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=template$/);
   await expect(page.locator('#prompt')).toHaveValue(supported.promptTemplate);
   await expect(page.locator('#consent')).not.toBeChecked();
-  await page.goto('/deepsyq.html#inspirationPreview',{waitUntil:'domcontentloaded'});
+  await page.goto('/deepsyq.html?c8Width='+width+'#inspirationPreview',{waitUntil:'domcontentloaded'});
   // Owner-approved Inspiration now opens a media/prompt detail before Studio.
   const inspirationCard=page.getByRole('button',{name:'View '+inspiration.title+' inspiration'});await inspirationCard.scrollIntoViewIfNeeded();await inspirationCard.click();
   const detail=page.getByRole('dialog');
