@@ -336,13 +336,93 @@ $('topLogin')?.addEventListener('click',()=>{
 });
 function markHomeLogin(){const b=$('topLogin');if(b)b.textContent=localStorage.getItem('vv_token')?'Account':'Log in';}
 markHomeLogin();
-let featuredInspirationKind='all';
-document.querySelectorAll('[data-inspiration-kind]').forEach(button=>button.addEventListener('click',()=>{
+let featuredInspirationKind='all',featuredInspirationRatio='all';
+function filterHomeInspiration(){
+ const cards=[...document.querySelectorAll('#inspirationPreviewGrid .inspiration-preview-card')];
+ for(const card of cards){
+  const matchKind=featuredInspirationKind==='all'||card.dataset.kind===featuredInspirationKind;
+  const matchRatio=featuredInspirationRatio==='all'||card.dataset.ratio===featuredInspirationRatio;
+  card.hidden=!(matchKind&&matchRatio);
+ }
+ const empty=$('homeInspirationEmpty');
+ if(empty){
+  const visible=cards.some(card=>!card.hidden);
+  empty.hidden=visible;
+  empty.textContent=featuredInspirationKind==='image'?'Images and their prompts will be added here later.':
+   featuredInspirationRatio!=='all'?'No approved videos in '+featuredInspirationRatio+' yet.':
+   'Videos will appear here when available.';
+ }
+}
+for(const button of document.querySelectorAll('[data-inspiration-kind]'))button.addEventListener('click',()=>{
  featuredInspirationKind=button.dataset.inspirationKind;
  document.querySelectorAll('[data-inspiration-kind]').forEach(x=>x.setAttribute('aria-pressed',String(x===button)));
- for(const card of document.querySelectorAll('#inspirationPreviewGrid .inspiration-preview-card'))card.hidden=featuredInspirationKind!=='all'&&card.dataset.kind!==featuredInspirationKind;
-}));
+ filterHomeInspiration();
+});
+for(const button of document.querySelectorAll('[data-inspiration-ratio]'))button.addEventListener('click',()=>{
+ featuredInspirationRatio=button.dataset.inspirationRatio;
+ document.querySelectorAll('[data-inspiration-ratio]').forEach(x=>x.setAttribute('aria-pressed',String(x===button)));
+ filterHomeInspiration();
+});
 
+let homeInspirationDialog=null;
+function openHomeInspiration(item,opener){
+ if(homeInspirationDialog?.open)homeInspirationDialog.close();
+ const el=(tag,className,value)=>{
+  const node=document.createElement(tag);if(className)node.className=className;
+  if(value!==undefined)node.textContent=String(value);return node;
+ };
+ const dialog=el('dialog','home-inspiration-dialog');
+ dialog.setAttribute('aria-label','Inspiration video: '+item.title);
+ const content=el('div','home-inspiration-dialog-content');
+ const stage=el('div','home-inspiration-stage');
+ const close=el('button','home-inspiration-close','×');close.type='button';close.setAttribute('aria-label','Close inspiration preview');
+ close.onclick=()=>dialog.close();
+ const media=el('video','home-inspiration-player');
+ media.src=item.previewUrl;media.controls=true;media.muted=true;media.playsInline=true;media.loop=true;media.autoplay=true;media.preload='metadata';
+ media.setAttribute('aria-label',item.title+' video preview');
+ if(item.previewPosterUrl)media.poster=item.previewPosterUrl;
+ stage.append(close,media);
+ const right=el('aside','home-inspiration-details');
+ const title=el('h2','',item.title);
+ const subtitle=el('p','home-inspiration-subtitle',(item.category||'Inspiration')+' · Video');
+ const promptTitle=el('h3','','Prompt');
+ const prompt=el('p','home-inspiration-prompt',item.prompt||'Prompt will be added later.');
+ const paramsTitle=el('h3','','Parameters');
+ const params=el('div','home-inspiration-params');
+ const entries=[['Aspect ratio',item.aspectRatio],['Model',item.defaultModel]];
+ for(const key of ['resolution','duration','seed']){
+  const value=item.defaultSettings?.[key];
+  if(typeof value==='string'||typeof value==='number')entries.push([key[0].toUpperCase()+key.slice(1),value]);
+ }
+ for(const [name,value] of entries){if(value===null||value===undefined||value==='')continue;
+  const row=el('div','home-inspiration-param');row.append(el('span','',name),el('strong','',value));params.append(row);
+ }
+ const note=el('p','home-inspiration-note','Use your own source material in Studio. No AI generation or payment starts automatically.');
+ const feedback=el('p','home-inspiration-feedback');feedback.hidden=true;feedback.setAttribute('role','alert');
+ const actions=el('div','home-inspiration-actions');
+ function handoff(mode){
+  if(item.actionTarget!=='studio'){feedback.hidden=false;feedback.textContent='This workflow is not available in Studio yet.';return;}
+  const payload={id:item.id,title:item.title,generationType:'video',
+    promptTemplate:item.prompt||'',defaultModel:mode==='clone'?(item.defaultModel||null):null,
+    requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],
+    defaultSettings:mode==='prompt'?{}:{...(item.defaultSettings||{}),ratio:item.aspectRatio},
+    source:'inspiration',action:mode};
+  try{sessionStorage.setItem('deepsyq_template_start',JSON.stringify(payload));}
+  catch(_){feedback.hidden=false;feedback.textContent='Could not prepare Studio in this browser.';return;}
+  location.assign('generate-studio.html?studio=video&from=inspiration&action='+encodeURIComponent(mode));
+ }
+ const clone=el('button','home-inspiration-clone','✦ Clone & Try');
+ const use=el('button','home-inspiration-secondary','Use this prompt');
+ for(const [button,mode] of [[clone,'clone'],[use,'prompt']]){button.type='button';button.onclick=()=>handoff(mode);}
+ actions.append(clone,use);
+ right.append(title,subtitle,promptTitle,prompt,paramsTitle,params,note,feedback,actions);
+ content.append(stage,right);dialog.append(content);
+ const overflow=document.body.style.overflow;
+ dialog.addEventListener('close',()=>{media.pause();document.body.style.overflow=overflow;dialog.remove();if(homeInspirationDialog===dialog)homeInspirationDialog=null;if(opener.isConnected)opener.focus({preventScroll:true});},{once:true});
+ dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
+ document.body.append(dialog);homeInspirationDialog=dialog;dialog.showModal();document.body.style.overflow='hidden';close.focus({preventScroll:true});
+ void media.play().catch(()=>{});
+}
 // Real owner-approved media only. Playback is disabled for reduced motion/data saver.
 let inspirationVideoObserver=null;
 function showInspirationVideos(root){
@@ -364,7 +444,34 @@ async function loadInspirationPreview(){
    .then(async response=>response.ok?response.json():null)
    .then(feed=>updateInspirationHero(Array.isArray(feed?.items)?feed.items:[]))
    .catch(()=>updateInspirationHero([]));
-  const d=await fetch(base+'/api/inspiration?featured=true&limit=12',{cache:'no-store'}).then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));const studio=(Array.isArray(d.items)?d.items:[]).filter(x=>x.actionTarget==='studio').sort((a,b)=>Number(b.kind==='video')-Number(a.kind==='video')).slice(0,10),cats=$('inspirationPreviewCategories');root.replaceChildren();cats?.replaceChildren();for(const category of (d.categories||[]).slice(0,8)){const link=document.createElement('a');link.href='inspiration.html?category='+encodeURIComponent(category);link.textContent=category;cats?.append(link);}for(const item of studio){const a=document.createElement('a');a.className='inspiration-preview-card';a.dataset.kind=item.kind;a.href='inspiration.html?kind='+encodeURIComponent(item.kind||'all')+'&category='+encodeURIComponent(item.category||'')+'&ratio='+encodeURIComponent(item.aspectRatio||'')+'&q='+encodeURIComponent(item.title||'');const visual=document.createElement('div');visual.className='inspiration-preview-media';if(item.kind==='video'){const video=document.createElement('video');video.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';video.setAttribute('aria-hidden','true');if(item.previewPosterUrl)video.poster=item.previewPosterUrl;visual.append(video);const label=document.createElement('span');label.className='inspiration-video-label';label.textContent='Watch video · Explore idea ↗';visual.append(label);}else{const img=document.createElement('img');img.src=item.previewUrl;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';visual.append(img);}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const meta=document.createElement('span');meta.textContent=[item.kind,item.category,item.aspectRatio].filter(Boolean).join(' · ');copy.append(title,meta);a.append(visual,copy);root.append(a);}showInspirationVideos(root);section.hidden=!studio.length;const ad=await fetch(base+'/api/inspiration?featured=true&target=agent&limit=3',{cache:'no-store'}).then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));const agents=Array.isArray(ad.items)?ad.items:[];agentRoot.replaceChildren();for(const item of agents){const card=document.createElement(item.actionPath?'a':'article');card.className='inspiration-preview-card agent-example';if(item.actionPath){card.href=item.actionPath+'?from=inspiration';card.onclick=()=>sessionStorage.setItem('deepsyq_agent_inspiration_start',JSON.stringify({id:item.id,title:item.title,generationType:item.kind,promptTemplate:item.prompt||'',defaultModel:item.defaultModel||null,requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],defaultSettings:{...(item.defaultSettings||{}),ratio:item.aspectRatio},source:'inspiration',action:'create'}));}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const desc=document.createElement('span');desc.textContent=item.description||item.prompt;copy.append(title,desc);card.append(copy);agentRoot.append(card);}agentSection.hidden=!agents.length;}catch(_){section.hidden=true;agentSection.hidden=true;}
+  const d=await fetch(base+'/api/inspiration?featured=true&limit=12',{cache:'no-store'})
+   .then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));
+  // Keep the owner-approved films only. The Image tab is intentionally empty until real
+  // owner-approved images and matching prompts are added; never treat a video poster as an image.
+  const studio=(Array.isArray(d.items)?d.items:[])
+   .filter(item=>item.actionTarget==='studio'&&item.kind==='video').slice(0,12);
+  const cats=$('inspirationPreviewCategories');
+  root.replaceChildren();cats?.replaceChildren();
+  for(const item of studio){
+   const card=document.createElement('button');card.type='button';
+   card.className='inspiration-preview-card';card.dataset.kind='video';card.dataset.ratio=item.aspectRatio||'';
+   card.setAttribute('aria-label','View '+item.title+' video inspiration');
+   const visual=document.createElement('div');visual.className='inspiration-preview-media';
+   const video=document.createElement('video');video.src=item.previewUrl;video.muted=true;video.loop=true;
+   video.playsInline=true;video.preload='none';video.setAttribute('aria-hidden','true');
+   if(item.previewPosterUrl)video.poster=item.previewPosterUrl;
+   visual.append(video);
+   const copy=document.createElement('div');
+   const title=document.createElement('strong');title.textContent=item.title;
+   const meta=document.createElement('span');meta.textContent=['Video',item.category,item.aspectRatio].filter(Boolean).join(' · ');
+   copy.append(title,meta);card.append(visual,copy);
+   card.onclick=()=>openHomeInspiration(item,card);
+   root.append(card);
+  }
+  filterHomeInspiration();showInspirationVideos(root);
+  section.hidden=false;
+  if(location.hash==='#inspirationPreview')requestAnimationFrame(()=>section.scrollIntoView({block:'start'}));
+  const ad=await fetch(base+'/api/inspiration?featured=true&target=agent&limit=3',{cache:'no-store'}).then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));const agents=Array.isArray(ad.items)?ad.items:[];agentRoot.replaceChildren();for(const item of agents){const card=document.createElement(item.actionPath?'a':'article');card.className='inspiration-preview-card agent-example';if(item.actionPath){card.href=item.actionPath+'?from=inspiration';card.onclick=()=>sessionStorage.setItem('deepsyq_agent_inspiration_start',JSON.stringify({id:item.id,title:item.title,generationType:item.kind,promptTemplate:item.prompt||'',defaultModel:item.defaultModel||null,requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],defaultSettings:{...(item.defaultSettings||{}),ratio:item.aspectRatio},source:'inspiration',action:'create'}));}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const desc=document.createElement('span');desc.textContent=item.description||item.prompt;copy.append(title,desc);card.append(copy);agentRoot.append(card);}agentSection.hidden=!agents.length;}catch(_){section.hidden=false;filterHomeInspiration();agentSection.hidden=true;}
 }
 
 async function loadFeaturedWorkflows(){
