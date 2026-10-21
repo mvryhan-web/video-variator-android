@@ -309,6 +309,7 @@ test('Pricing shows signed-in AI wallet and recent ledger activity',async({page}
 
 
 test('retired Inspiration URL opens Home and changes media filters locally',async({page})=>{
+ await fixtures(page);
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'film',title:'Owned film',kind:'video',actionTarget:'studio',previewUrl:'/film.mp4',prompt:'Original prompt',aspectRatio:'16:9',requiredInputTypes:[]}]}}));
  await page.goto('/inspiration.html');await expect(page).toHaveURL(/deepsyq\.html#inspirationPreview$/);
  await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
@@ -514,6 +515,7 @@ test('owner can manage Block 3 inspiration without exposing rights internals pub
 
 
 test('all three Block 3 actions preserve their intended prefill semantics without copying source media',async({page})=>{
+ await fixtures(page);
  const item={id:'insp-actions',title:'Owned Portrait',slug:'owned-portrait',kind:'video',category:'Editorial',description:'Original',previewUrl:'/owned-preview.png',previewPosterUrl:null,prompt:'Soft editorial portrait',defaultModel:'clone-model',aspectRatio:'2:3',requiredInputTypes:['image'],defaultSettings:{ratio:'2:3'},actionTarget:'studio',active:true,featured:true,sortOrder:1};
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[item],categories:['Editorial'],ratios:['1:1','2:3']}}));
  await page.route('**/owned-preview.png',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
@@ -542,6 +544,7 @@ test('Block 3 Agent examples stay hidden until a real configured route exists',a
 
 
 test('Home Inspiration preserves all available video cards across local format filters',async({page})=>{
+ await fixtures(page);
  const base={kind:'video',actionTarget:'studio',prompt:'Original prompt',requiredInputTypes:[],previewUrl:'/film.mp4'};
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{...base,id:'one',title:'Landscape film',aspectRatio:'16:9'},{...base,id:'two',title:'Portrait film',aspectRatio:'9:16'}]}}));
  await page.goto('/inspiration.html');await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(2);

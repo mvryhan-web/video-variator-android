@@ -11,6 +11,7 @@ const entry=(id)=>({
 });
 
 test('BASE1-C7 Home Inspiration card remains accessible on hover and filters without paid POST',async({page},testInfo)=>{
+ await page.route('**/api/config',r=>r.fulfill({json:{features:{inspiration:true},plans:{}}}));
  const paid=[];
  page.on('request',request=>{
   if(request.method()==='POST'&&/\/api\/(?:studio\/jobs|billing|payments|ai-wallet|speech\/generate)/.test(new URL(request.url()).pathname))paid.push(request.url());

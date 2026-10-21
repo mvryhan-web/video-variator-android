@@ -10,6 +10,7 @@ const item={
  defaultSettings:{ratio:'2:3'},actionTarget:'studio'
 };
 async function gallery(page,entry=item){
+ await page.route('**/api/config',r=>r.fulfill({json:{features:{inspiration:true},plans:{}}}));
  await page.route('**/api/inspiration?**',route=>route.fulfill({json:{
   items:[entry],categories:[entry.category],ratios:[entry.aspectRatio],
   pagination:{limit:24,offset:0,nextOffset:null,hasMore:false}
