@@ -10,12 +10,12 @@ test('Home Inspiration filters in place, images empty, video opens right-prompt 
   const section=page.locator('#inspirationPreview');await expect(section).toBeVisible();
   const tabs=section.locator('[data-inspiration-kind]');await expect(tabs).toHaveText(['All','Video','Image']);
   await expect(section.locator('.inspiration-preview-card')).toHaveCount(1);
-  await section.getByRole('button',{name:'Image',exact:true}).click();
+  const imageTab=section.getByRole('button',{name:'Image',exact:true});await imageTab.scrollIntoViewIfNeeded();await imageTab.click();
   await expect(section.locator('.inspiration-preview-card')).toHaveCount(0);
   await expect(section.getByText('No images yet.',{exact:true})).toBeVisible();
   await expect(section.getByRole('button',{name:'16:9',exact:true})).toBeVisible();
   await expect(section.getByRole('button',{name:'9:16',exact:true})).toBeVisible();
-  await section.getByRole('button',{name:'Video',exact:true}).click();
+  const videoTab=section.getByRole('button',{name:'Video',exact:true});await videoTab.scrollIntoViewIfNeeded();await videoTab.click();
   await expect(section.locator('.inspiration-preview-card')).toHaveCount(1);
   await section.getByRole('button',{name:'View Original cinematic video inspiration',exact:true}).click();
   const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();
@@ -24,13 +24,13 @@ test('Home Inspiration filters in place, images empty, video opens right-prompt 
   await expect(dialog.getByRole('button',{name:'Clone & Try'})).toBeEnabled();
   await expect(page).toHaveURL(/deepsyq\.html$/);
   await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);
-  await section.getByRole('button',{name:'9:16',exact:true}).click();
+  const ratioTab=section.getByRole('button',{name:'9:16',exact:true});await ratioTab.scrollIntoViewIfNeeded();await ratioTab.click();
   await expect(section.locator('.inspiration-preview-card')).toHaveCount(0);
-  await section.getByRole('button',{name:'9:16',exact:true}).click();
+  await ratioTab.click();
   await expect(section.locator('.inspiration-preview-card')).toHaveCount(1);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);
  }
- await page.goto('/inspiration.html?kind=video');await expect(page).toHaveURL(/deepsyq\.html#inspirationPreview$/);
+ await page.goto('/inspiration.html?kind=video',{waitUntil:'domcontentloaded'});await expect(page).toHaveURL(/deepsyq\.html#inspirationPreview$/);
  expect(paid).toEqual([]);
 });
 test('Home inspiration clone hands off prompt without generating',async({page})=>{
