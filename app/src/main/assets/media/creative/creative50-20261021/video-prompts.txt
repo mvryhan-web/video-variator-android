@@ -1,0 +1,13 @@
+КАК СДЕЛАТЬ ВИДЕО
+
+Загрузи соответствующий PNG как начальный кадр в своём сервисе image-to-video. Вставь английский промпт ниже. Сделай каждый ролик примерно 6 секунд и пришли готовые MP4 сюда, сохранив номера 01, 02, 03. Генерация видео здесь не запускалась.
+
+01-silk-waterfall.png
+Use the supplied image as the exact first frame. A slow cinematic push-in toward the woman and the copper silk waterfall. Animate only a subtle natural ripple down the long fabric train, soft drifting mist and a gentle breeze through the hair. Preserve the original face, body, gown, cliff geometry, sunset and composition. No new objects, cuts, text or logos. Smooth restrained motion, 6 seconds, 16:9.
+
+02-weather-in-a-bottle.png
+Use the supplied image as the exact first frame. Keep the perfume bottle and its glass shape perfectly rigid and unchanged. Animate a slow swirl of the miniature dark cloud inside the bottle, tiny falling droplets and two delicate warm lightning flashes inside only. Very slow camera push-in, realistic glass reflections, unchanged exterior sunset and product composition. No text, labels, extra objects, cuts or morphing. 6 seconds, preserve the image aspect ratio.
+
+03-music-orbit.png
+Use the supplied image as the exact first frame. Keep the dancer identity, anatomy, costume and graceful suspended pose consistent. Let the translucent glass ribbons slowly flow around the dancer with restrained cyan and magenta reflections; tiny natural cloth and hair movement. Camera makes a very slow 8-degree orbit without changing the scene. No new people or limbs, no cuts, text, logos or sudden movement. Cinematic 6-second shot, 16:9.
+

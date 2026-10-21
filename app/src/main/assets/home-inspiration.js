@@ -1,3 +1,4 @@
+import {CREATIVE_EXAMPLES} from './home-creative-examples.js';
 import {templateSupport} from './ai-template-product-name.js';
 function studioKind(item){return item.kind==='video'?'video':'image';}
 function studioHandoffSupport(item){
@@ -154,3 +155,10 @@ function draw(){
  empty.textContent=activeKind==='all'?'No inspiration yet.':activeKind==='image'?'No images yet.':'No videos yet.';
  afterDraw();
 }
+
+// Public, owner-approved creative examples use the existing prompt dialog and Studio handoff.
+document.querySelectorAll('[data-creative-example]').forEach(button=>{
+ const item=CREATIVE_EXAMPLES.find(example=>example.id===button.dataset.creativeExample);
+ button.disabled=!item;
+ if(item)button.onclick=()=>openInspirationDetail(item,button);
+});
