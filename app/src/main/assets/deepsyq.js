@@ -175,7 +175,7 @@ function syncMenu(){
  if(!mobile)document.body.classList.remove('menu-open');
  document.body.classList.toggle('sidebar-collapsed',!mobile&&collapsedSidebar);
  $('sidebar').inert=mobile&&!expanded;
- for(const button of [$('menu'),$('sidebarToggle')]){
+ for(const button of [$('menu')]){
   button.setAttribute('aria-expanded',String(expanded));
   button.setAttribute('aria-label',mobile?(expanded?'Close navigation':'Open navigation'):(expanded?'Collapse sidebar':'Expand sidebar'));
   button.title=button.getAttribute('aria-label');
@@ -199,11 +199,11 @@ function toggleSidebar(event){
  if(mobileMenu.matches){
   // The header button is always visible; the rail button exists only inside
   // the open drawer. Return keyboard focus to the visible header on close.
-  if(!closeMobileDrawer(event?.currentTarget===$('sidebarToggle')||document.activeElement===$('sidebarToggle'))){
+  if(!closeMobileDrawer(true)){
    document.body.classList.add('menu-open');
    syncMenu();
    // Place first keyboard focus inside the only exposed mobile navigation.
-   $('sidebarToggle').focus({preventScroll:true});
+   drawerTabStops()[0]?.focus({preventScroll:true});
   }
  }else{
   collapsedSidebar=!collapsedSidebar;
@@ -213,7 +213,7 @@ function toggleSidebar(event){
 }
 mobileMenu.addEventListener('change',syncMenu);
 $('menu').onclick=toggleSidebar;
-$('sidebarToggle').onclick=toggleSidebar;
+
 document.addEventListener('keydown',event=>{
  if(!mobileMenu.matches||!document.body.classList.contains('menu-open')||
   !$('authModal').hidden||document.querySelector('dialog[open]'))return;
