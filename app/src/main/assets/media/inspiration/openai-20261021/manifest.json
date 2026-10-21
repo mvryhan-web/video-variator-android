@@ -46,7 +46,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "soft-signal",
@@ -80,7 +86,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "solar-visor",
@@ -114,7 +126,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "wild-form",
@@ -148,7 +166,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "neon-archive",
@@ -182,7 +206,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "prism-couture",
@@ -216,7 +246,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "memory-drift",
@@ -250,7 +286,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "outer-worlds",
@@ -284,7 +326,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "greenroom-break",
@@ -318,7 +366,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "solstice",
@@ -352,7 +406,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "electric-bloom",
@@ -386,7 +446,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "play-mode",
@@ -420,7 +486,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "color-study",
@@ -454,7 +526,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "tideline-fragrance",
@@ -488,7 +566,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "kinetic-form",
@@ -522,7 +606,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "color-theory",
@@ -556,7 +646,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "glass-persona",
@@ -590,7 +686,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     },
     {
       "slug": "city-pop",
@@ -624,7 +726,13 @@
       "carouselOrder": null,
       "sourceAspectRatio": "generated",
       "sourceSeed": null,
-      "advancedParametersStatus": "Not provided by source generator"
+      "advancedParametersStatus": "Not provided by source generator",
+      "advancedParameters": {
+        "min_ratio": null,
+        "max_ratio": null,
+        "cot_mode": null,
+        "use_pre_llm": null
+      }
     }
   ]
 }

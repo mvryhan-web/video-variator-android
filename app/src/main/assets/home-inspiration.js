@@ -70,7 +70,11 @@ function openInspirationDetail(item,opener){
  if(item.kind==='image'){
   entries.push(['Image ratio',item.sourceAspectRatio||item.aspectRatio],['Clone ratio',item.aspectRatio]);
   if(Array.isArray(item.previewDimensions)&&item.previewDimensions.length===2)entries.push(['Preview resolution',item.previewDimensions[0]+' × '+item.previewDimensions[1]+' px']);
-  entries.push(['Seed',item.sourceSeed||'Not recorded'],['Advanced parameters',item.advancedParametersStatus||'Not provided by source generator']);
+  entries.push(['Seed',item.sourceSeed||'Not recorded']);
+  const advanced=item.advancedParameters||{};
+  for(const [label,key] of [['Minimum ratio','min_ratio'],['Maximum ratio','max_ratio'],['CoT mode','cot_mode'],['Use pre-LLM','use_pre_llm']]){
+   const value=advanced[key];entries.push([label,value===true?'Enabled':value===false?'Disabled':value??'Not recorded']);
+  }
  }else entries.push(['Aspect ratio',item.aspectRatio]);
  for(const key of ['resolution','duration','seed']){
   const v=item.defaultSettings?.[key];
