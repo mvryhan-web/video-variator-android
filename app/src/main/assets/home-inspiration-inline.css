@@ -1,0 +1,38 @@
+/* Owner-requested Home-only Inspiration: tabs and ratios filter inside Home.
+   Uses the existing dark Deepsyq palette; other Home sections untouched. */
+#inspirationPreview .inspiration-home-tabs{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:13px}
+#inspirationPreview .inspiration-home-tabs button,
+#inspirationPreview .home-inspiration-ratios button{border:1px solid #444d64;background:#171b29;color:#d6d9e8;cursor:pointer;border-radius:999px;padding:8px 13px;font:inherit;font-size:12px}
+#inspirationPreview .inspiration-home-tabs button[aria-pressed="true"],
+#inspirationPreview .home-inspiration-ratios button[aria-pressed="true"]{background:#34304b;border-color:#a78bfa;color:#fff}
+#inspirationPreview .home-inspiration-ratios{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+#inspirationPreview .home-inspiration-ratios button{font-size:11px;padding:7px 11px}
+#inspirationPreview .inspiration-preview-card{width:100%;padding:0;text-align:left;cursor:pointer;font:inherit;appearance:none}
+#inspirationPreview .inspiration-preview-card[hidden]{display:none!important}
+#inspirationPreview .inspiration-preview-card:focus-visible{outline:2px solid #bc93ff;outline-offset:3px}
+#homeInspirationEmpty{padding:22px 16px;color:#c0c3d6;background:#1b1d2a;border:1px dashed #4d4b65;border-radius:12px;font-size:13px}
+#homeInspirationEmpty[hidden]{display:none}
+.home-inspiration-dialog{position:fixed;inset:0;margin:0;padding:0;border:0;width:100%;max-width:none;height:100%;max-height:none;background:#10131d;color:#f4f4fa}
+.home-inspiration-dialog::backdrop{background:#000c}
+.home-inspiration-dialog-content{height:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,340px);gap:0}
+.home-inspiration-stage{position:relative;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#292a31,#151720);padding:48px 18px 18px}
+.home-inspiration-close{position:absolute;top:12px;left:14px;z-index:2;width:34px;height:34px;border:0;border-radius:50%;color:#fff;background:#333b4a;cursor:pointer;font-size:26px;line-height:1}
+.home-inspiration-player{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;background:#08090d;border-radius:10px}
+.home-inspiration-details{min-height:0;overflow:auto;padding:23px 20px;display:flex;flex-direction:column;gap:12px;background:#0e1018;border-left:1px solid #363747}
+.home-inspiration-details h2{font-size:17px;line-height:1.3;margin:0}
+.home-inspiration-details h3{font-size:12px;font-weight:700;margin:7px 0 0}
+.home-inspiration-subtitle{font-size:11px;color:#9da4b8;margin:0}
+.home-inspiration-prompt{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.7;margin:0;color:#e1e4f3;user-select:text}
+.home-inspiration-params{display:grid;gap:7px}
+.home-inspiration-param{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid #ffffff18;font-size:11px}
+.home-inspiration-param span{color:#9da6bc}
+.home-inspiration-param strong{text-align:right;color:#e1e5f2}
+.home-inspiration-note{font-size:11px;line-height:1.6;margin:0;color:#99a2bb}
+.home-inspiration-feedback{font-size:12px;color:#ffb8b8}
+.home-inspiration-feedback[hidden]{display:none}
+.home-inspiration-actions{margin-top:auto;display:grid;gap:8px;padding-top:8px}
+.home-inspiration-actions button{min-height:42px;border:1px solid #635b88;border-radius:9px;cursor:pointer;font:inherit;font-size:12px;color:#fff;background:#24233b}
+.home-inspiration-actions .home-inspiration-clone{background:linear-gradient(90deg,#6f55b9,#465ebc);font-weight:700;border-color:#7c72bf}
+.home-inspiration-dialog button:focus-visible{outline:2px solid #bb9eff;outline-offset:2px}
+@media(max-width:760px){.home-inspiration-dialog-content{display:flex;flex-direction:column}.home-inspiration-stage{height:min(54dvh,500px);flex:0 0 auto;padding:49px 8px 8px}.home-inspiration-details{flex:1;border-left:0;border-top:1px solid #363747;padding:15px 14px}.home-inspiration-player{max-height:100%}}
+@media(prefers-reduced-motion:reduce){#inspirationPreview .inspiration-preview-card{transition:none}}
