@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "provider": "OpenAI ChatGPT built-in image_gen",
+  "model": "Not exposed by built-in tool",
+  "generatedAt": "2026-10-21",
+  "termsUrl": "https://openai.com/policies/eu-terms-of-use/",
+  "termsCheckedAt": "2026-10-21",
+  "termsNote": "OpenAI assigns rights it has in Output to the user, as between OpenAI and the user and to the extent permitted by applicable law. User remains responsible for legal compliance; output may not be unique.",
+  "thirdPartyInputs": [],
+  "jobIds": "Not exposed by built-in image_gen tool",
+  "outputs": [
+    {
+      "slug": "ai-img-01-golden-perfume",
+      "sourceFilename": "exec-2b11547e-0896-4f24-ab78-6313346ce5d7.png",
+      "sourceSha256": "d95e14723cdac3c8f06f0edfaaa8dd5793fa547426e47ea1343f5a061b4f10f3",
+      "sourceSizeBytes": 2153514,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "previewFilename": "ai-img-01-golden-perfume.webp",
+      "previewSha256": "a64b040ee816ce35a4998ebb456f166ce4804bafa045be0de4124bc254324263",
+      "previewSizeBytes": 134402,
+      "previewDimensions": [
+        1024,
+        1024
+      ],
+      "title": "Golden perfume splash",
+      "category": "Product Ads",
+      "prompt": "Photoreal premium product still: one imaginary clear glass fragrance bottle with no label, suspended above a crown-shaped splash of amber liquid in a deep obsidian studio. Precise bottle geometry, crisp droplets, dramatic warm backlight, polished black stone, high-end commercial composition with a clean silhouette readable at thumbnail size. Entirely unbranded. No people, text, labels, logos, trademarks, watermarks, extra bottles, or claims."
+    },
+    {
+      "slug": "ai-img-02-aqua-skincare",
+      "sourceFilename": "exec-8d5bf2bd-f85b-4074-afb7-9ed3e9d35220.png",
+      "sourceSha256": "c8132816bf4198ff16a926c87bbb5b332df349f97c10b5af04cc5b9c66a77f4c",
+      "sourceSizeBytes": 2409118,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "previewFilename": "ai-img-02-aqua-skincare.webp",
+      "previewSha256": "e8b6acb71d4456fc52804474e04927637259e7c1f178a76e1a1d85eea6418cfe",
+      "previewSizeBytes": 102332,
+      "previewDimensions": [
+        1024,
+        1024
+      ],
+      "title": "Aqua skincare",
+      "category": "Product Ads",
+      "prompt": "Photoreal premium skincare still: a single unbranded frosted glass bottle with blank cap on a pale limestone plinth, surrounded by graceful translucent water ribbons and tiny realistic droplets. Soft aqua daylight, gentle shadow, elegant negative space, refined macro detail, packaging silhouette clear at thumbnail size. No people, text, labels, logos, trademarks, watermarks, or extra products."
+    },
+    {
+      "slug": "ai-img-03-floating-gold",
+      "sourceFilename": "exec-d105c7be-e312-423f-bfbf-5d224c07a1ee.png",
+      "sourceSha256": "6e427245e070e8df5ccacf15197a90f1315829cac4167875fe87897bce35bf7c",
+      "sourceSizeBytes": 1954425,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "previewFilename": "ai-img-03-floating-gold.webp",
+      "previewSha256": "bd55f6139100478f5e74827bc1854629fe2dacdc71db8e31a0dc4b1924579afd",
+      "previewSizeBytes": 74116,
+      "previewDimensions": [
+        1024,
+        1024
+      ],
+      "title": "Floating gold",
+      "category": "Product Ads",
+      "prompt": "Photoreal jewelry macro: one original sculptural gold ring with a non-symbolic abstract mineral setting, floating just above a black velvet pedestal. Intricate gold reflections and jewel facets, shallow depth of field, narrow warm rim light, elegant centered silhouette. No hands, people, familiar designer motifs, text, logos, trademarks, watermark, or extra jewelry."
+    },
+    {
+      "slug": "ai-img-04-midnight-sound",
+      "sourceFilename": "exec-59475bfb-1575-474f-8af3-98b8b04f17bf.png",
+      "sourceSha256": "d2e90af9b3056f5a7f56df5232cb77f23a0cca803d384bd9cc4b8637391d1b6f",
+      "sourceSizeBytes": 2080253,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "previewFilename": "ai-img-04-midnight-sound.webp",
+      "previewSha256": "ae83d5a63c8d9101848f1148e4df14836880bcd2b21b03bb6d775fd61ccbb09e",
+      "previewSizeBytes": 44124,
+      "previewDimensions": [
+        1024,
+        1024
+      ],
+      "title": "Midnight sound",
+      "category": "Product Ads",
+      "prompt": "Premium photoreal electronics campaign: one pair of imaginary unbranded matte-metal over-ear headphones floating inside a minimal dark charcoal geometric installation, realistic soft-touch cushions and brushed alloy, a single subtle blue light streak behind, crisp studio detail and clear centered silhouette. No people, cables, text, logos, trademarks, watermark, or extra devices."
+    },
+    {
+      "slug": "ai-img-05-valley-of-glass",
+      "sourceFilename": "exec-b2ca2fff-c6b5-40fe-808c-7f2bffca431d.png",
+      "sourceSha256": "a1829a09cac3c8e93b6bf2ebd0987d67c78aa0d451272e0fb65af2c5c58e8053",
+      "sourceSizeBytes": 3119524,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "previewFilename": "ai-img-05-valley-of-glass.webp",
+      "previewSha256": "0e60ea4ccd1f6fb8357cafc3df3772f35e5755a7814982b077bef183dffe4332",
+      "previewSizeBytes": 224168,
+      "previewDimensions": [
+        1024,
+        1024
+      ],
+      "title": "Valley of glass",
+      "category": "Cinematic",
+      "prompt": "Vast cinematic alpine landscape with a perfectly still mirrored lake, fantastical translucent glass cliffs, a distant delicate waterfall, layered dawn clouds and natural atmospheric depth. Original environment design, photoreal cinematic concept art, strong foreground-to-background scale, nuanced cool stone and sunrise-gold light, composed clearly for a gallery thumbnail. No people, architecture, text, logos, or watermark."
+    },
+    {
+      "slug": "ai-img-06-neon-avenue",
+      "sourceFilename": "exec-f4ec30bc-4aae-4da9-bc8a-8b8def4bacc6.png",
+      "sourceSha256": "c27eb67a98be3eda34ac22bbfa4959703060aebf4139514aa9289795fab423db",
+      "sourceSizeBytes": 2362642,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "previewFilename": "ai-img-06-neon-avenue.webp",
+      "previewSha256": "94623658d91b202a4a88c1212664331f24db278556c793861677929503c75102",
+      "previewSizeBytes": 127554,
+      "previewDimensions": [
+        1024,
+        1024
+      ],
+      "title": "Neon avenue",
+      "category": "Cinematic",
+      "prompt": "Cinematic night scene with one imaginary electric-blue concept sports coupe, entirely unbranded and with no recognizable automaker design, gliding along a wet futuristic avenue. Magenta reflections and subtle atmospheric haze, low camera angle, realistic road reflections, elegant highlights, dramatic but clean composition and strong thumbnail read. No people, signs, text, logos, trademarks, license plates, watermark, or other vehicles."
+    },
+    {
+      "slug": "ai-img-07-astral-observatory",
+      "sourceFilename": "exec-550ac0e8-35f7-4cbb-ad2d-f653dae9cf76.png",
+      "sourceSha256": "f9dc4fa6fc50f6b969cae83bb9a936609157aa237d088dd9b3490a67bae28d06",
+      "sourceSizeBytes": 2874875,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "previewFilename": "ai-img-07-astral-observatory.webp",
+      "previewSha256": "11f2fac3107ca44973739087a4c7c06f4d44b391750fa1b2e222852d143b14af",
+      "previewSizeBytes": 163756,
+      "previewDimensions": [
+        1024,
+        1024
+      ],
+      "title": "Astral observatory",
+      "category": "Cinematic",
+      "prompt": "A fictional mountain-top observatory at night under layered aurora and a dense field of stars, snowy foreground, warm amber light glowing from the windows, original restrained sci-fi architecture, cinematic high-detail concept art, balanced composition with deep blue sky and rich color contrast. No recognizable franchise, people, text, signs, logos, or watermark."
+    },
+    {
+      "slug": "ai-img-08-chrome-blossom",
+      "sourceFilename": "exec-36b159c3-a4c5-4eea-9cba-d533feb42141.png",
+      "sourceSha256": "ac0acbffcc2f53790d04fec8852d06ce0010dd1f907457949eebf5fb5cd0f0fa",
+      "sourceSizeBytes": 2638611,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "previewFilename": "ai-img-08-chrome-blossom.webp",
+      "previewSha256": "44a26bfae853d71e290e398408ee2763ae4ea7070366fe1198d2488bf0f9476b",
+      "previewSizeBytes": 151496,
+      "previewDimensions": [
+        1024,
+        1024
+      ],
+      "title": "Liquid chrome blossom",
+      "category": "Creative Effects",
+      "prompt": "Surreal macro still life of one impossible flower sculpture whose petals are liquid chrome and iridescent glass, growing from dark polished stone. Precise reflective highlights, elegant organic shape, visually rich yet uncluttered, premium 3D art direction with crisp material detail and a centered silhouette. No people, text, logos, trademarks, watermark, extra flowers, or gore."
+    },
+    {
+      "slug": "ai-img-09-origami-city",
+      "sourceFilename": "exec-7cf4dc84-0ae6-411d-87fd-ae2f1a9f5d87.png",
+      "sourceSha256": "8a08ab469ecc895b0f0f0ce1f6738c15f80930529d304eff6c5f65afdbc4b9b4",
+      "sourceSizeBytes": 2557765,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "previewFilename": "ai-img-09-origami-city.webp",
+      "previewSha256": "dd8c15c557874f1dfa623e00f8842fadf6856356ae2b3c35947272f6057281b2",
+      "previewSizeBytes": 137906,
+      "previewDimensions": [
+        1024,
+        1024
+      ],
+      "title": "Origami city",
+      "category": "Creative Effects",
+      "prompt": "A tiny imaginary folded-paper city rises from an open handmade sketchbook on a wooden desk, intricate origami rooftops and bridges, strong shafts of afternoon sunlight, visible paper fibers and delicate miniature shadows, whimsical photoreal stop-motion set aesthetic. No readable lettering, people, logos, branded objects, or watermark."
+    },
+    {
+      "slug": "ai-img-10-berry-layers",
+      "sourceFilename": "exec-d0dd3241-e3c1-43eb-b40e-0598b0094281.png",
+      "sourceSha256": "7e6a13ae4484c5d4bad009800f06176778e46dd02aa6fa13d25806629cb30470",
+      "sourceSizeBytes": 2023755,
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "previewFilename": "ai-img-10-berry-layers.webp",
+      "previewSha256": "ab3c01dedc72295ee2e4bf2a12e139bbd1719ca30aedb99f64d37e2cd9182d99",
+      "previewSizeBytes": 81188,
+      "previewDimensions": [
+        1024,
+        1024
+      ],
+      "title": "Berry layers",
+      "category": "Food & Lifestyle",
+      "prompt": "Editorial still life of an elegant layered berry dessert on handmade ceramic, fresh berries and fine pistachio crumbs, warm natural morning light, tactile pastry and pottery texture, close-focus lens, tasteful cafe setting with softly blurred wood behind, appetizing authentic detail. No people, menus, text, logos, brand marks, or watermark."
+    }
+  ]
+}

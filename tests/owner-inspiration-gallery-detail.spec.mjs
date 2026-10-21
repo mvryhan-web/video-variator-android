@@ -1,12 +1,13 @@
 import {test,expect} from '@playwright/test';
 const video={id:'owner-video',title:'Original cinematic video',kind:'video',category:'Cinematic',previewUrl:'/media/home/owner-20261018/v01.mp4',prompt:'Original owner video prompt',aspectRatio:'16:9',actionTarget:'studio',requiredInputTypes:[],defaultSettings:{ratio:'16:9'},defaultModel:null};
-test('Home Inspiration filters in place, images empty, video opens right-prompt overlay; old page redirects',async({page})=>{
+const image={id:'owner-image',title:'Golden perfume splash',kind:'image',category:'Product Ads',previewUrl:'/media/inspiration/openai-20261021/ai-img-01-golden-perfume.webp',prompt:'Exact golden perfume prompt',aspectRatio:'1:1',actionTarget:'studio',requiredInputTypes:[],defaultSettings:{ratio:'1:1'},defaultModel:null};
+test('Home Inspiration filters image and video cards in place; detail shows the exact prompt; old page redirects',async({page})=>{
  const paid=[];page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio|billing|ai-wallet)/.test(r.url()))paid.push(r.url());});
  await page.route('**/api/config',route=>route.fulfill({json:{billingConfigured:false,googleClientId:'',features:{aiApps:true,inspiration:true,productVideo:false,onboarding:false},plans:{},auth:{}}}));
  await page.route('**/api/templates?**',route=>route.fulfill({json:{items:[]}}));
  await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,ownerOnly:true,publicGenerationEnabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',route=>route.fulfill({json:{configured:false}}));
- await page.route('**/api/inspiration**',route=>route.fulfill({json:{items:[video,{...video,id:'poster',kind:'image',previewUrl:'/poster.webp'}],categories:['Cinematic'],ratios:['16:9']}}));
+ await page.route('**/api/inspiration**',route=>route.fulfill({json:{items:[video,image],categories:['Cinematic','Product Ads'],ratios:['16:9','1:1']}}));
  for(const width of [390,768,1448]){
   await page.setViewportSize({width,height:850});await page.goto('/deepsyq.html?galleryWidth='+width,{waitUntil:'domcontentloaded'});
   const section=page.locator('#inspirationPreview');await expect(section).toBeVisible({timeout:15000});
@@ -18,10 +19,16 @@ test('Home Inspiration filters in place, images empty, video opens right-prompt 
   await expect(section.locator('[data-inspiration-ratio]')).toHaveCount(0);
   await expect(section.getByText('16:9',{exact:true})).toHaveCount(0);
   await expect(section.getByText('9:16',{exact:true})).toHaveCount(0);
-  await expect(section.locator('.inspiration-preview-card')).toHaveCount(1);
+  await expect(section.locator('.inspiration-preview-card')).toHaveCount(2);
   const imageTab=section.getByRole('button',{name:'Image',exact:true});await imageTab.scrollIntoViewIfNeeded();await imageTab.click();
-  await expect(section.locator('.inspiration-preview-card')).toHaveCount(0);
-  await expect(section.getByText('No images yet.',{exact:true})).toBeVisible();
+  await expect(section.locator('.inspiration-preview-card')).toHaveCount(1);
+  const imageCard=section.getByRole('button',{name:'View Golden perfume splash inspiration',exact:true});
+  await expect(imageCard.locator('img')).toHaveAttribute('src',image.previewUrl);
+  await imageCard.click();
+  const imageDialog=page.getByRole('dialog');await expect(imageDialog).toBeVisible();
+  await expect(imageDialog.getByText(image.prompt,{exact:true})).toBeVisible();
+  await expect(imageDialog.locator('img')).toHaveAttribute('alt',image.title);
+  await page.keyboard.press('Escape');await expect(imageDialog).toHaveCount(0);
   const videoTab=section.getByRole('button',{name:'Video',exact:true});await videoTab.scrollIntoViewIfNeeded();await videoTab.click();
   await expect(section.locator('.inspiration-preview-card')).toHaveCount(1);
   await section.getByRole('button',{name:'View Original cinematic video inspiration',exact:true}).click();

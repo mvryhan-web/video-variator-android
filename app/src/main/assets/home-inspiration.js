@@ -112,7 +112,7 @@ function openInspirationDetail(item,opener){
 let items=[],activeKind='all',afterDraw=()=>{};
 export function renderHomeInspiration(feed,onRender=()=>{}){
  afterDraw=onRender;
- items=feed.filter(item=>item.kind==='video');
+ items=feed.filter(item=>item.actionTarget==='studio'&&['video','image'].includes(item.kind));
  const section=document.getElementById('inspirationPreview');
  section.hidden=false;
  section.querySelectorAll('[data-inspiration-kind]').forEach(button=>button.onclick=()=>{
@@ -124,19 +124,25 @@ export function renderHomeInspiration(feed,onRender=()=>{}){
 }
 function draw(){
  const root=document.getElementById('inspirationPreviewGrid');root.querySelectorAll('video').forEach(v=>v.pause());root.replaceChildren();
- const visible=items.filter(item=>activeKind!=='image');
+ const visible=items.filter(item=>activeKind==='all'||item.kind===activeKind);
  for(const item of visible){
-  const button=detailEl('button','inspiration-preview-card');button.type='button';button.dataset.kind='video';
+  const button=detailEl('button','inspiration-preview-card');button.type='button';button.dataset.kind=item.kind;
   button.setAttribute('aria-label','View '+item.title+' inspiration');
   const visual=detailEl('div','inspiration-preview-media');
-  const video=detailEl('video');video.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';
-  if(item.previewPosterUrl)video.poster=item.previewPosterUrl;
-  visual.append(video,detailEl('span','inspiration-video-label','Video · '+item.aspectRatio));
+  if(item.kind==='video'){
+   const video=detailEl('video');video.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';
+   if(item.previewPosterUrl)video.poster=item.previewPosterUrl;
+   visual.append(video,detailEl('span','inspiration-video-label','Video · '+item.aspectRatio));
+  }else{
+   const image=detailEl('img');image.src=item.previewUrl;image.alt=item.title;image.loading='lazy';image.decoding='async';image.referrerPolicy='no-referrer';
+   visual.append(image);
+   visual.append(detailEl('span','inspiration-image-label','Image'));
+  }
   button.append(visual,detailEl('strong','',item.title));
   button.onclick=()=>openInspirationDetail(item,button);
   root.append(button);
  }
  const empty=document.getElementById('inspirationEmpty');empty.hidden=visible.length>0;
- empty.textContent=activeKind==='image'?'No images yet.':'No videos yet.';
+ empty.textContent=activeKind==='all'?'No inspiration yet.':activeKind==='image'?'No images yet.':'No videos yet.';
  afterDraw();
 }

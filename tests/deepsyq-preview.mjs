@@ -57,8 +57,17 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
    assert.equal(media.status,206);assert.match(media.headers.get('content-type'),/video\/mp4/);
    assert.equal((await media.arrayBuffer()).byteLength,128);
   }
-  const gallery=await(await fetch(base+'/api/inspiration?featured=true&limit=12')).json();
-  assert.equal(gallery.items.filter(item=>item.kind==='image').length,0,'Image remains empty until owner supplies images');
+  const gallery=await(await fetch(base+'/api/inspiration?featured=true&limit=60')).json();
+  const images=gallery.items.filter(item=>item.kind==='image');
+  assert.equal(images.length,10,'the approved DEV gallery includes all ten generated images');
+  for(const image of images){
+   assert.equal(image.featured,true);
+   assert.ok(image.prompt.length>80,'each image has its exact creation prompt');
+   const asset=await fetch(base+image.previewUrl);
+   assert.equal(asset.status,200,image.previewUrl);
+   assert.match(asset.headers.get('content-type')||'',/image\/webp/,image.previewUrl);
+   assert.ok((await asset.arrayBuffer()).byteLength>10000,image.previewUrl);
+  }
   const retired=await fetch(base+'/inspiration.html',{redirect:'manual'});assert.equal(retired.status,302);assert.equal(retired.headers.get('location'),'/deepsyq.html#inspirationPreview');
   assert.equal(gallery.items.some(item=>item.slug.includes('butterfly')||item.slug.includes('lake')),false);
   assert.equal((await(await fetch(base+'/api/inspiration?featured=true&target=agent')).json()).items.length,0);
