@@ -223,7 +223,10 @@ test('BASE 3: independent rights-cleared Hero survives failed preview and option
  // Old Home hid failed Inspiration. Owner's new inline Inspiration remains
  // visible with a truthful empty state, never with stale/unauthorized cards.
  const inspiration=page.locator('#inspirationPreview');
- if(await inspiration.isVisible()){
+ // Detect the approved *markup*, not a transient visibility snapshot while
+ // the mosaic request is still in flight: new Home must reveal its empty state.
+ if(await page.locator('#inspirationEmpty').count()){
+  await expect(inspiration).toBeVisible();
   await expect(inspiration.locator('.inspiration-preview-card')).toHaveCount(0);
   await expect(page.locator('#inspirationEmpty')).toBeVisible();
  }else await expect(inspiration).toBeHidden();
