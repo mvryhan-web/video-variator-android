@@ -33,7 +33,7 @@ test('BASE1-C7 Home Inspiration card remains accessible on hover and filters wit
   await page.goto('/deepsyq.html?c7Width='+width+'#inspirationPreview',{waitUntil:'domcontentloaded'});
   await expect.poll(()=>inspirationCalls).toBeGreaterThan(previousCalls);
   const card=page.locator('#inspirationPreviewGrid .inspiration-preview-card').first();
-  await expect(card).toBeVisible({timeout:15000});await card.scrollIntoViewIfNeeded();await card.hover();
+  await expect(card).toBeVisible({timeout:15000});await card.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await card.hover();
   const hoverBorder=await card.evaluate(el=>getComputedStyle(el).borderTopColor);
   expect(hoverBorder,'Home Inspiration hover remains violet at '+width).toBe('rgb(146, 91, 255)');
   await page.screenshot({path:testInfo.outputPath('home-inspiration-hover-'+width+'.png'),fullPage:true});
@@ -43,7 +43,7 @@ test('BASE1-C7 Home Inspiration card remains accessible on hover and filters wit
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);
-  const imageTab=page.locator('[data-inspiration-kind="image"]');await imageTab.scrollIntoViewIfNeeded();await imageTab.click();
+  const imageTab=page.locator('[data-inspiration-kind="image"]');await imageTab.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await imageTab.click();
   await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(0);
   await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');
  }

@@ -67,7 +67,8 @@ test('C8 current DEV real direct links, Tools/Avatar Back, mobile Escape and His
   await expect(page.locator('[data-hub-tool="tts"]')).toHaveAttribute('href','audio-studio.html?tool=tts');
   await expect(page.locator('[data-hub-tool="stt"]')).toHaveAttribute('href','audio-studio.html?tool=stt');
   await fit(page,width,'Tools');
-  await page.locator('nav.tools-direct-launches a[href="avatar-studio.html?from=tools"]').click();
+  const avatarLink=page.locator('nav.tools-direct-launches a[href="avatar-studio.html?from=tools"]');
+  await avatarLink.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await avatarLink.click();
   await expect(page).toHaveURL(/avatar-studio\.html\?from=tools$/);
   await expect(page.locator('[data-av="back"]')).toHaveAttribute('href','free-tools.html');
   await page.locator('[data-av="back"]').click();
@@ -142,7 +143,7 @@ test('C10 AI Agents are honest pending, usable Apps/Inspiration preserve prompt 
   await expect(page.locator('#consent')).not.toBeChecked();
   await page.goto('/deepsyq.html?c8Width='+width+'#inspirationPreview',{waitUntil:'domcontentloaded'});
   // Owner-approved Inspiration now opens a media/prompt detail before Studio.
-  const inspirationCard=page.getByRole('button',{name:'View '+inspiration.title+' inspiration'});await inspirationCard.scrollIntoViewIfNeeded();await inspirationCard.click();
+  const inspirationCard=page.getByRole('button',{name:'View '+inspiration.title+' inspiration'});await inspirationCard.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await inspirationCard.click();
   const detail=page.getByRole('dialog');
   await expect(detail).toBeVisible();
   await detail.getByRole('button',{name:'Use this prompt'}).click();
