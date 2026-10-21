@@ -68,7 +68,7 @@ async function loadAiPacks(){
    root.append(card(p.credits.toLocaleString()+' AI credits',
      minor(p.amount,p.currency),'Prepaid AI-generation wallet credits.'+generationEstimateCopy(c,p.credits),
      mode==='live'?'Continue to Stripe':mode==='test'?'Open Stripe test checkout':'Not available yet',
-     ()=>void checkout(p),{disabled:mode===null}));
+     ()=>void checkout(p),{disabled:mode===null,className:'credit-pack'}));
   }
   $('aiStatus').textContent=mode==='live'
    ?'Live AI credit checkout is enabled. Stripe confirms payment before credits are granted.'
