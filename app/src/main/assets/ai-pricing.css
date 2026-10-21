@@ -30,3 +30,19 @@ nav a{color:#c9bfdc}nav a.active,nav a:hover{background:#322448;color:#fff}
 .trial-side a{align-self:center;color:#e5b8ff;font-size:11px;text-decoration:underline;text-underline-offset:4px}
 a:focus-visible,button:focus-visible{outline:3px solid #d7afff;outline-offset:3px}
 @media(max-width:760px){.trial-experience{grid-template-columns:1fr;margin-bottom:35px}.trial-side{padding:20px}.hero{padding-top:40px}}
+
+/* Lumina-style card hierarchy with Deepsyq's approved palette. */
+#toolPlans{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+#toolPlans .price-card{padding:27px 23px;border-radius:20px;min-height:310px;display:flex;flex-direction:column;gap:20px;background:linear-gradient(145deg,#25223b,#131b2c)}
+#toolPlans .price-card:nth-child(2){border-color:#b99ce7;box-shadow:0 0 30px #a271d51c}
+#toolPlans .price-card h3{font-size:23px}
+#toolPlans .price-card p{font-size:12px;line-height:1.8;padding:16px;border:1px solid #78638a55;border-radius:12px;background:linear-gradient(115deg,#72578c33,#405b7533)}
+#toolPlans .price-card button{margin-top:auto;border-radius:100px}
+#toolPlans .lifetime{grid-column:1/-1;min-height:0}
+#aiPacks{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+#aiPacks .price-card{border-radius:19px;padding:24px;gap:20px}
+#aiPacks .price-card h3{font-size:23px}
+#aiPacks .price-card p{border:1px solid #826d9655;background:linear-gradient(115deg,#72578c44,#405b7540);border-radius:12px;padding:17px;font-size:12px}
+#aiPacks .price-card button{border-radius:100px}
+@media(max-width:800px){#toolPlans,#aiPacks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){#toolPlans,#aiPacks{grid-template-columns:1fr}}
