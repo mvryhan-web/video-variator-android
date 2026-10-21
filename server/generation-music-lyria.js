@@ -52,26 +52,50 @@ export function buildLyriaClipPrompt({prompt,musicMode,references=[],model}={}){
   controls.musicLyrics?'User-provided lyrics (separate from production instructions):\n'+controls.musicLyrics:null];
  return lines.filter(Boolean).join('\n');
 }
-function hasMpegFrame(bytes,offset){
- if(offset<0||offset+4>bytes.length)return false;
- const a=bytes[offset],b=bytes[offset+1],c=bytes[offset+2];
- return a===255&&(b&0xe0)===0xe0&&(b&0x18)!==0x08&&
-  (b&0x06)===0x02&&(c&0xf0)!==0&&(c&0xf0)!==0xf0&&(c&0x0c)!==0x0c;
+// MPEG Layer III requires complete, consecutive frames. A four-byte sync
+// prefix plus arbitrary garbage is NOT valid proof of audio (old false positive).
+const MPEG1_BITRATES=[0,32,40,48,56,64,80,96,112,128,160,192,224,256,320];
+const MPEG2_BITRATES=[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160];
+const SAMPLE_RATES={0:[11025,12000,8000],2:[22050,24000,16000],3:[44100,48000,32000]};
+function mpeg3Frame(bytes,offset){
+ if(offset<0||offset+4>bytes.length||bytes[offset]!==0xff)return null;
+ const b=bytes[offset+1],c=bytes[offset+2];
+ if((b&0xe0)!==0xe0||(b&0x06)!==0x02)return null; // sync + Layer III only
+ const version=(b>>3)&3,bitrateIndex=(c>>4)&15,sampleIndex=(c>>2)&3;
+ if(version===1||bitrateIndex===0||bitrateIndex===15||sampleIndex===3)return null;
+ const sampleRate=SAMPLE_RATES[version]?.[sampleIndex];
+ const bitrate=(version===3?MPEG1_BITRATES:MPEG2_BITRATES)[bitrateIndex];
+ if(!sampleRate||!bitrate)return null;
+ const frameBytes=Math.floor((version===3?144:72)*bitrate*1000/sampleRate)+((c>>1)&1);
+ if(frameBytes<24||offset+frameBytes>bytes.length)return null;
+ return {version,sampleRate,frameBytes};
 }
 export function looksLikeMp3(bytes){
  if(!Buffer.isBuffer(bytes)||bytes.length<32)return false;
  let start=0;
  if(bytes.subarray(0,3).toString('ascii')==='ID3'){
-  if(bytes.length<10)return false;
+  if(bytes.length<10||![2,3,4].includes(bytes[3]))return false;
   const len=bytes.subarray(6,10);
   if(len.some(x=>(x&0x80)!==0))return false;
   start=10+((len[0]<<21)|(len[1]<<14)|(len[2]<<7)|len[3]);
-  if(bytes[5]&0x10)start+=10; // tag footer
+  if(bytes[5]&0x10)start+=10;
   if(start>=bytes.length)return false;
  }
+ // A real 30-second Lyria clip contains thousands of frames. Three complete,
+ // adjoining MP3 Layer III frames is only a cheap structural gate, NOT decoder
+ // validation or proof that the output is playable. Keep real media QA separate.
  for(let i=start;i<Math.min(bytes.length-3,start+512);i++){
-  if(hasMpegFrame(bytes,i))return true;
-  if(bytes[i]!==0)break; // only tolerate padding between metadata and frame
+  const first=mpeg3Frame(bytes,i);
+  if(first){
+   let offset=i,good=true;
+   for(let k=0;k<3;k++){
+    const frame=mpeg3Frame(bytes,offset);
+    if(!frame||frame.version!==first.version||frame.sampleRate!==first.sampleRate){good=false;break;}
+    offset+=frame.frameBytes;
+   }
+   if(good)return true;
+  }
+  if(bytes[i]!==0)break; // padding between ID3 metadata and first frame
  }
  return false;
 }

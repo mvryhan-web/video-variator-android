@@ -5,7 +5,10 @@ import {generateGoogle,validateGeneration} from '../server/generation-provider.j
 import {installGenerationStudio} from '../server/generation-studio.js';
 import express from 'express';
 
-const mp3=Buffer.concat([Buffer.from([0xff,0xfb,0x90,0x64]),Buffer.alloc(96)]);
+// Inert *structurally framed* MPEG1 Layer III fixture: 128kbps / 44100Hz
+// => floor(144 * 128000 / 44100) = 417 bytes per frame. This is not real music.
+const mp3Frame=Buffer.alloc(417);Buffer.from([0xff,0xfb,0x90,0x64]).copy(mp3Frame);
+const mp3=Buffer.concat([mp3Frame,mp3Frame,mp3Frame]);
 const b64=mp3.toString('base64');
 const request=()=>validateGeneration({kind:'music',model:'lyria-3-clip-preview',
  prompt:'Warm lo-fi jazz with piano',ratio:'',references:[],musicMode:'instrumental',consent:true});
@@ -72,6 +75,20 @@ test('ID3-tagged MP3 and legitimate raw MPEG frame accepted, incomplete tags rej
  assert.equal(looksLikeMp3(mp2),false);
  assert.equal(looksLikeMp3(mp1),false);
  assert.throws(()=>parseLyriaClipResult(providerResponse(mp2.toString('base64'))),/INVALID_PROVIDER_MEDIA/);
+});
+
+test('reject fake MP3 sync header without three complete adjacent Layer III frames',()=>{
+ const fakePrefix=Buffer.concat([Buffer.from([0xff,0xfb,0x90,0x64]),Buffer.alloc(96)]);
+ assert.equal(looksLikeMp3(fakePrefix),false,'single sync prefix + zeros is not playable MP3');
+ const interrupted=Buffer.from(mp3);interrupted[mp3Frame.length]=0;
+ assert.equal(looksLikeMp3(interrupted),false,'missing second frame header');
+ const truncated=Buffer.from(mp3.subarray(0,mp3Frame.length*2+3));
+ assert.equal(looksLikeMp3(truncated),false,'third frame is incomplete');
+ const unsupportedVersion=Buffer.from(mp3);unsupportedVersion[1]=0xeb;
+ assert.equal(looksLikeMp3(unsupportedVersion),false,'reserved MPEG version');
+ for(const value of [fakePrefix,interrupted,truncated,unsupportedVersion])
+  assert.throws(()=>parseLyriaClipResult(providerResponse(value.toString('base64'))),
+   /INVALID_PROVIDER_MEDIA/);
 });
 
 test('without any approved live API no paid calls occur in validation and parsing fixtures',()=>{
