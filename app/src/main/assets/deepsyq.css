@@ -799,3 +799,18 @@ body.home-neon{background:#030b18;color:#eff6ff}
 @media(max-width:600px){#pricing .plan-grid,.credit-pack-grid{grid-template-columns:1fr}.billing-cycle{font-size:11px}.billing-cycle>span{padding:9px 13px}}
 
 #homeAiCredits .credit-pack{display:flex;flex-direction:column;gap:0}#homeAiCredits .credit-pack h3{width:100%}#homeAiCredits .credit-panel{width:100%;flex:1}#homeAiCredits .credit-pack-footer{align-self:stretch;flex-shrink:0}
+
+#homeAiCredits .proposed-pack .credit-panel{position:relative;min-height:164px;background:linear-gradient(120deg,#345c6660,#65588060);border-color:#6fa3ad66}
+#homeAiCredits .credit-bonus-label{font-size:10px;color:#bdebe7}
+#homeAiCredits .credit-bonus-value{font-size:27px;line-height:1.2;color:#c6eff0}
+#homeAiCredits .proposed-pack .credit-pack-footer>strong{font-size:20px}
+#homeAiCredits .proposed-pack .credit-pack-footer button:disabled{color:#c3b8d4;background:transparent;border-color:#806995;opacity:1}
+.home-neon footer.home-footer{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:26px;padding:35px 0 28px;margin-top:48px;border-top:1px solid #3f3d56;background:transparent}
+.home-footer .footer-brand p{margin:10px 0;color:#aaa8bf;font-size:12px}
+.home-neon .home-footer nav.footer-legal{display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;gap:8px;background:none;border:0;padding:0}
+.home-neon .home-footer nav.footer-legal a{display:inline-flex;align-items:center;justify-content:center;width:auto;min-height:40px;padding:9px 13px;border:1px solid transparent;border-radius:9px;background:transparent;color:#d3cce4;font-size:12px}
+.home-neon .home-footer nav.footer-legal a:hover{background:#9b77c315;border-color:#645477}
+.home-footer .footer-bottom{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:20px;padding-top:19px;border-top:1px solid #ffffff0c}
+.home-footer .footer-bottom p{margin:0;color:#8e8da4;font-size:10px}
+.home-footer .footer-bottom>div{display:flex;flex-wrap:wrap;gap:20px;font-size:11px;color:#bfb3d1}
+@media(max-width:760px){.home-neon footer.home-footer{grid-template-columns:1fr;gap:16px}.home-footer .footer-bottom{flex-direction:column;align-items:flex-start;gap:15px}.home-neon .home-footer nav.footer-legal{justify-content:flex-start}.home-neon .home-footer nav.footer-legal a{padding-left:0;padding-right:18px}}
