@@ -109,3 +109,36 @@ test('BASE 25: returning window focus scrubs previous account recent cards befor
  await expect(page.locator('#recentCreationsGrid .recent-creation')).toHaveCount(0);
  await expect(page.locator('#recentCreationsStatus')).toContainText('Account changed');
 });
+
+
+for(const signal of ['cross-tab storage', 'same-tab focus']){
+ test('A18 BASE 24/25: Chrome Studio History already showing A prompts and credits is scrubbed on '+signal+' account B',async({page})=>{
+  // Fake local HTTP only; no real auth, provider generation, payment or storage.
+  await stubSignedInHome(page);
+  let paidPosts=0;
+  page.on('request',r=>{
+   if(r.method()==='POST'&&/\/api\/(studio\/jobs|ai-wallet|billing)/.test(new URL(r.url()).pathname))paidPosts++;
+  });
+  const a={id:'history-a-18',kind:'image',status:'failed',model:'mock-image',provider:'Mock',
+   prompt:'PRIVATE_ACCOUNT_A_STUDIO_HISTORY_PROMPT',creditsCharged:37,createdAt:'2026-10-21T07:00:00Z'};
+  await page.route('**/api/studio/jobs?filter=all',route=>route.fulfill({json:{items:[a]}}));
+  await page.goto('/generate-studio.html?studio=image',{waitUntil:'domcontentloaded'});
+  await page.locator('#showHistory').click();
+  const history=page.locator('#historyList');
+  await expect(history.locator('.history-card')).toHaveCount(1);
+  await expect(history).toContainText('PRIVATE_ACCOUNT_A_STUDIO_HISTORY_PROMPT');
+  await expect(history).toContainText('37 AI credits');
+  await page.evaluate(signal=>{
+   const oldValue=localStorage.getItem('vv_token');
+   localStorage.setItem('vv_token','fixture-account-B');
+   if(signal==='cross-tab storage')dispatchEvent(new StorageEvent('storage',{key:'vv_token',oldValue,newValue:'fixture-account-B'}));
+   else dispatchEvent(new Event('focus'));
+  },signal);
+  // Existing History late-GET guard is NOT sufficient: these are already
+  // rendered A records, not a pending response. Must disappear synchronously.
+  await expect(history.locator('.history-card')).toHaveCount(0,{timeout:4000});
+  await expect(history).not.toContainText('PRIVATE_ACCOUNT_A_STUDIO_HISTORY_PROMPT');
+  await expect(history).not.toContainText('37 AI credits');
+  expect(paidPosts).toBe(0);
+ });
+}
