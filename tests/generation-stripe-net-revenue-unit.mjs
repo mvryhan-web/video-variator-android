@@ -51,3 +51,14 @@ test('D18 rejects reversed or disputed Charge even if original captured settleme
   assert.throws(()=>verifyStripeNetRevenue(args({paymentIntent:{...p,latest_charge:{...p.latest_charge,...change}}})),
    /AI_SETTLEMENT_CHARGE_REVERSED_OR_UNVERIFIED/);
 });
+
+test('D18 retrieved settlement must belong to the requested PaymentIntent before further reads',async()=>{
+ for(const returnedId of ['pi_other',undefined,null,'']){
+  let reads=0;
+  const stripe={paymentIntents:{async retrieve(){return {...paymentIntent(),id:returnedId,latest_charge:'ch_fixture'};}},
+   charges:{async retrieve(){reads++;return paymentIntent().latest_charge;}}};
+  await assert.rejects(retrieveStripeNetRevenue({stripe,paymentIntentId:'pi_fixture',expectedAmount:1200,
+   expectedCurrency:'eur',taxAmount:200,expectedLivemode:false}),/AI_SETTLEMENT_PAYMENT_UNVERIFIED/);
+  assert.equal(reads,0,'mismatched payment must fail before Charge retrieval');
+ }
+});
