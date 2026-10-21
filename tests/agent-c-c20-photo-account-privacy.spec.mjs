@@ -48,6 +48,6 @@ test('C20 old OCR recognition cannot restore A text or dates into B; B may still
  await page.locator('#reminderScanPhoto').click();
  await expect.poll(()=>page.evaluate(()=>window.__c20OCR.length)).toBe(1);
  await page.evaluate(()=>window.__c20OCR.shift().resolve({data:{text:'ACCOUNT_B_NEW_OWN_TICKET 25/12/2026 12:00'}}));
- await expect(page.locator('#photoRecognized')).toContainText('ACCOUNT_B_NEW_OWN_TICKET');
+ await expect(page.locator('#photoRecognized')).toHaveValue(/ACCOUNT_B_NEW_OWN_TICKET/);
  expect(paid).toEqual([]);
 });
