@@ -136,20 +136,16 @@ function draw(){
   const width=Number(dimensions?.[0])||parts[0],height=Number(dimensions?.[1])||parts[1];
   const ratio=Number.isFinite(width/height)&&width>0&&height>0?width/height:1;
   button.style.setProperty('--inspiration-ratio',String(ratio));
-  const formats=[[9,16],[1,1],[16,9],[4,5],[3,4],[4,3],[3,2],[2,3]];
-  const nearest=formats.reduce((best,next)=>Math.abs(next[0]/next[1]-ratio)<Math.abs(best[0]/best[1]-ratio)?next:best);
-  const format=Math.abs(nearest[0]/nearest[1]-ratio)<0.015?nearest.join(':'):width+':'+height;
   const visual=detailEl('div','inspiration-preview-media');
   if(item.kind==='video'){
    const video=detailEl('video');video.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';
    if(item.previewPosterUrl)video.poster=item.previewPosterUrl;
-   visual.append(video,detailEl('span','inspiration-video-label','Video · '+format));
+   visual.append(video);
   }else{
    const image=detailEl('img');image.src=item.previewUrl;image.alt=item.title;image.loading='lazy';image.decoding='async';image.referrerPolicy='no-referrer';
    visual.append(image);
-   visual.append(detailEl('span','inspiration-image-label','Image · '+format));
   }
-  button.append(visual,detailEl('strong','',item.title));
+  button.append(visual);
   button.onclick=()=>openInspirationDetail(item,button);
   root.append(button);
  }
