@@ -149,6 +149,10 @@ test('A19 owner Studio privacy: account B never inherits A image prompt or refer
  let paidPosts=0;
  page.on('request',req=>{if(req.method()==='POST'&&/\/api\/studio\/jobs(?:\?|$)/.test(new URL(req.url()).pathname))paidPosts++;});
  await page.goto('/generate-studio.html?studio=image');
+ // The Studio module initializes asynchronously; do not attach a file before
+ // its actual onchange handler and configured image model are ready.
+ await page.waitForFunction(()=>typeof document.getElementById('references')?.onchange==='function');
+ await expect(page.locator('#referenceBox')).toBeVisible();
  const prompt=page.locator('#prompt'),tiles=page.locator('#refPreview .studio-reference-tile');
  await prompt.fill('PRIVATE_ACCOUNT_A_IMAGE_EDITOR_PROMPT');
  const tinyPng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/ngAAAABJRU5ErkJggg==','base64');
