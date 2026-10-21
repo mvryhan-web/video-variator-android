@@ -4,6 +4,7 @@ on:
     paths:
       - 'app/src/main/assets/deepsyq.html'
       - 'app/src/main/assets/home-triptych-video.css'
+      - 'app/src/main/assets/media/home/neon-20261018/*-card.mp4'
       - 'tests/owner-home-triptych-video-unit.mjs'
       - '.github/workflows/owner-home-triptych-videos.yml'
   push:
@@ -11,6 +12,7 @@ on:
     paths:
       - 'app/src/main/assets/deepsyq.html'
       - 'app/src/main/assets/home-triptych-video.css'
+      - 'app/src/main/assets/media/home/neon-20261018/*-card.mp4'
       - 'tests/owner-home-triptych-video-unit.mjs'
       - '.github/workflows/owner-home-triptych-videos.yml'
   workflow_dispatch:
