@@ -41,50 +41,43 @@ function paidRequests(page){
  return requests;
 }
 
-test('C12 incompatible published Inspiration does not advertise false actionable Studio handoff',async({page})=>{
+test('C12 Home Inspiration does not advertise unsupported video handoff',async({page})=>{
  await setup(page);const posts=paidRequests(page);
  for(const width of [320,390,1448]){
   await page.setViewportSize({width,height:850});
-  await page.goto('/inspiration.html');
-  await expect(page.locator('#gallery .card')).toHaveCount(5);
-  for(const [title,reason] of [
-   ['Needs source video','video input support not yet available'],
-   ['Oversized prompt','exceeds the 2,000-character Studio limit'],
-   ['Needs product name field','product name']
-  ]){
-   const item=page.locator('#gallery .card').filter({hasText:title});
-   await item.getByRole('button',{name:'View '+title+' inspiration'}).click();
-   const detail=page.getByRole('dialog');
-   await expect(detail,'fixture '+title+' at '+width).toContainText(reason);
-   for(const action of ['Create yours','Use this prompt','Clone & Try']){
-    await expect(detail.getByRole('button',{name:action})).toBeDisabled();
-   }
-   await page.keyboard.press('Escape');
-  }
-  await page.getByRole('button',{name:'View Supported original picture inspiration'}).click();
-  await expect(page.getByRole('dialog').getByRole('button',{name:'Create yours'})).toBeEnabled();
+  await page.goto('/deepsyq.html#inspirationPreview');
+  const section=page.locator('#inspirationPreview');
+  await expect(section).toBeVisible({timeout:15000});
+  const cards=section.locator('.inspiration-preview-card:visible');
+  await expect(cards).toHaveCount(2);
+  // Image records, including unsupported image prompts, are not published in the empty Image tab.
+  await section.locator('[data-inspiration-kind="image"]').click();
+  await expect(cards).toHaveCount(0);
+  await section.locator('[data-inspiration-kind="video"]').click();
+  const video=cards.filter({hasText:'Needs source video'});
+  await video.click();
+  const detail=page.getByRole('dialog');
+  await expect(detail).toContainText('video input support not yet available');
+  for(const action of ['Use this prompt','Clone & Try'])
+   await expect(detail.getByRole('button',{name:action})).toBeDisabled();
   await page.keyboard.press('Escape');
+  await expect(detail).toHaveCount(0);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);
  }
  expect(posts).toEqual([]);
 });
 
-test('C12 supported Image and Video retain real Create yours / Clone handoff without consent or paid jobs',async({page})=>{
+test('C12 supported Home video retains its Studio Clone handoff without paid jobs',async({page})=>{
  await setup(page);const posts=paidRequests(page);
- for(const [title,kind,action,prompt] of [
-  ['Supported original picture','image','Create yours','A fictional lakeside painting'],
-  ['Supported original movie','video','Clone and Try','A fictional floating island in twilight']
- ]){
-  await page.goto('/inspiration.html');
-  const card=page.locator('#gallery .card').filter({hasText:title});
-  await card.getByRole('button',{name:'View '+title+' inspiration'}).click();
-  const detail=page.getByRole('dialog');
-  const actionButton=detail.getByRole('button',{name:action==='Clone and Try'?'Clone & Try':action});
-  await expect(actionButton).toBeEnabled();
-  await actionButton.click();
-  await expect(page).toHaveURL(new RegExp('generate-studio\\.html\\?studio='+kind+'&from=inspiration&action='));
-  await expect(page.locator('#prompt')).toHaveValue(prompt);
-  await expect(page.locator('#consent')).not.toBeChecked();
- }
+ await page.goto('/deepsyq.html#inspirationPreview');
+ const video=page.locator('#inspirationPreviewGrid .inspiration-preview-card').filter({hasText:'Supported original movie'});
+ await expect(video).toBeVisible({timeout:15000});
+ await video.click();
+ const detail=page.getByRole('dialog');
+ await expect(detail.getByRole('button',{name:'Clone & Try'})).toBeEnabled();
+ await detail.getByRole('button',{name:'Clone & Try'}).click();
+ await expect(page).toHaveURL(/studio=video&from=inspiration&action=clone/);
+ await expect(page.locator('#prompt')).toHaveValue('A fictional floating island in twilight');
+ await expect(page.locator('#consent')).not.toBeChecked();
  expect(posts).toEqual([]);
 });
