@@ -20,7 +20,7 @@ const catalog=[
   requiredInputTypes:[],prompt:'A fictional floating island in twilight'}
 ];
 async function setup(page){
- await page.route('**/api/inspiration?**',route=>route.fulfill({json:{
+ await page.route('**/api/inspiration**',route=>route.fulfill({json:{
   items:catalog,categories:['Fiction'],ratios:['16:9'],
   pagination:{limit:24,offset:0,nextOffset:null,hasMore:false}
  }}));

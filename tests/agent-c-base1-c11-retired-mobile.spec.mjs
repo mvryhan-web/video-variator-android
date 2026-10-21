@@ -16,7 +16,7 @@ const inspiration=[
 ];
 async function fixtures(page){
  await page.route('**/api/templates',r=>r.fulfill({json:{items:models}}));
- await page.route('**/api/inspiration?**',r=>{
+ await page.route('**/api/inspiration**',r=>{
   const url=new URL(r.request().url()),q=url.searchParams;
   const filtered=inspiration.filter(i=>
    (!q.get('kind')||q.get('kind')==='all'||i.kind===q.get('kind'))&&
