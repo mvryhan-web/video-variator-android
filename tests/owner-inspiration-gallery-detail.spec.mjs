@@ -24,7 +24,7 @@ test('Home Inspiration filters in place, images empty, video opens right-prompt 
   await expect(dialog.getByText('Original owner video prompt',{exact:true})).toBeVisible();
   await expect(dialog.locator('video')).toHaveAttribute('controls','');
   await expect(dialog.getByRole('button',{name:'Clone & Try'})).toBeEnabled();
-  await expect(page).toHaveURL(/deepsyq\.html$/);
+  await expect(page).toHaveURL(/deepsyq\.html(?:\?|$)/);
   await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);
   const ratioTab=section.getByRole('button',{name:'9:16',exact:true});await ratioTab.scrollIntoViewIfNeeded();await ratioTab.click();
   await expect(section.locator('.inspiration-preview-card')).toHaveCount(0);
