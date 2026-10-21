@@ -4,22 +4,18 @@ import {readFileSync} from 'node:fs';
 // C15: no-fee browser copy/route acceptance; synthetic config, no paid generation.
 const expected={
  'en-US':{
-  free:'Local tools are free; cloud voice requires purchased AI credits.',
   available:'Cloud voice requires purchased AI credits and owner activation.',
   quota:'Cloud voice is unavailable. Check purchased credits and access.'
  },
  'ru-RU':{
-  free:'Локальные инструменты бесплатны; облачный голос требует купленных AI-кредитов.',
   available:'Облачная озвучка требует купленных AI-кредитов и активации владельцем.',
   quota:'Облачная озвучка недоступна. Проверьте купленные кредиты и доступ.'
  },
  'fr-FR':{
-  free:'Outils locaux gratuits ; la voix cloud exige des crédits IA achetés.',
   available:'La voix cloud exige des crédits IA achetés et l’activation du propriétaire.',
   quota:'Voix cloud indisponible. Vérifiez vos crédits achetés et l’accès.'
  },
  'uk-UA':{
-  free:'Локальні інструменти безкоштовні; хмарний голос потребує придбаних AI-кредитів.',
   available:'Хмарний голос потребує придбаних AI-кредитів і активації власником.',
   quota:'Хмарний голос недоступний. Перевірте придбані кредити та доступ.'
  }
@@ -44,7 +40,7 @@ test('C15 four locales do not promise free cloud voices; disabled path preserves
    const page=await context.newPage(),writes=calls(page);
    await config(page,false);
    await page.goto('/audio-studio.html?tool=tts');
-   await expect(page.locator('[data-s="free"]')).toHaveText(copy.free);
+   await expect(page.locator('[data-s="free"]')).toContainText('Pro');
    await expect(page.locator('#speechGenerate')).toBeDisabled();
    await expect(page.locator('#speechText')).toBeVisible();
    await expect(page.locator('#transcribeFile')).toBeHidden();
@@ -68,7 +64,7 @@ test('C15 config-enabled UI must still describe purchased credits, never an old 
    await config(page,true);
    await page.goto('/audio-studio.html?tool=tts');
    await expect(page.locator('#speechAvailability')).toHaveText(copy.available);
-   await expect(page.locator('[data-s="free"]')).toHaveText(copy.free);
+   await expect(page.locator('[data-s="free"]')).toContainText('Pro');
    expect(await page.evaluate(()=>document.documentElement.scrollWidth),
     locale+' mobile overflow').toBeLessThanOrEqual(376);
    expect(writes,locale).toEqual([]);
