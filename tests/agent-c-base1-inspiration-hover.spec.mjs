@@ -29,10 +29,16 @@ test('BASE1-C7 Inspiration enabled Load More has owner neon hover and real pagin
   const loadMore=page.getByRole('button',{name:'Load more inspiration'});
   await expect(loadMore).toBeVisible();
   await expect(loadMore).toBeEnabled();
-  // Existing rights-neutral image card actions remain accessible; do not navigate/pay.
+  // Owner-approved compact gallery now opens a detail dialog before Studio.
+  // Preserve the real CTA contract without launching paid generation.
   const card=page.locator('#gallery .card').first();
-  await expect(card.getByRole('button',{name:'Create yours'})).toBeEnabled();
-  await expect(card.getByRole('button',{name:'Clone and Try'})).toBeEnabled();
+  await card.getByRole('button',{name:'View Fixture first inspiration'}).click();
+  const detail=page.getByRole('dialog');
+  await expect(detail).toBeVisible();
+  await expect(detail.getByRole('button',{name:'Create yours'})).toBeEnabled();
+  await expect(detail.getByRole('button',{name:'Clone & Try'})).toBeEnabled();
+  await page.keyboard.press('Escape');
+  await expect(detail).toHaveCount(0);
   await loadMore.hover();
   const actual=await loadMore.evaluate(el=>{
    const s=getComputedStyle(el);
