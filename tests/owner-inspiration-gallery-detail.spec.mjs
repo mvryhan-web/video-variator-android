@@ -28,14 +28,8 @@ test('Home Inspiration filters image and video cards in place; detail shows the 
   const imageDialog=page.getByRole('dialog');await expect(imageDialog).toBeVisible();
   await expect(imageDialog.getByText(image.prompt,{exact:true})).toBeVisible();
   await expect(imageDialog.locator('img')).toHaveAttribute('alt',image.title);
-  await expect(imageDialog.getByText('OpenAI ChatGPT image_gen · exact model/version not exposed',{exact:true})).toBeVisible();
-  await expect(imageDialog.getByText('4:5',{exact:true})).toBeVisible();
-  await expect(imageDialog.getByText('819 × 1024 px',{exact:true})).toBeVisible();
-  await expect(imageDialog.locator('.inspiration-detail-parameters').getByText('Not recorded',{exact:true}).first()).toBeVisible();
-  await expect(imageDialog.locator('.inspiration-detail-parameters')).toContainText('Minimum ratio');
-  await expect(imageDialog.locator('.inspiration-detail-parameters')).toContainText('Maximum ratio');
-  await expect(imageDialog.locator('.inspiration-detail-parameters')).toContainText('CoT mode');
-  await expect(imageDialog.locator('.inspiration-detail-parameters')).toContainText('Use pre-LLM');
+  await expect(imageDialog.locator('.inspiration-detail-parameters')).toHaveCount(0);
+  await expect(imageDialog.getByRole('heading',{name:'Parameters',exact:true})).toHaveCount(0);
   await expect(imageDialog.getByRole('button',{name:'Clone & try'})).toHaveText('✦ Clone & try');
   await page.keyboard.press('Escape');await expect(imageDialog).toHaveCount(0);
   const videoTab=section.getByRole('button',{name:'Video',exact:true});await videoTab.scrollIntoViewIfNeeded();await videoTab.click();
