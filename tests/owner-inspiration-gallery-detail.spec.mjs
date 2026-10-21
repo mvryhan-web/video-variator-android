@@ -11,12 +11,17 @@ test('Home Inspiration filters in place, images empty, video opens right-prompt 
   await page.setViewportSize({width,height:850});await page.goto('/deepsyq.html?galleryWidth='+width,{waitUntil:'domcontentloaded'});
   const section=page.locator('#inspirationPreview');await expect(section).toBeVisible({timeout:15000});
   const tabs=section.locator('[data-inspiration-kind]');await expect(tabs).toHaveText(['All','Video','Image']);
+  const lead=section.locator('.inspiration-preview-lead');
+  const tabsLeft=await tabs.first().evaluate(el=>el.getBoundingClientRect().left);
+  const leadLeft=await lead.evaluate(el=>el.getBoundingClientRect().left);
+  expect(Math.abs(tabsLeft-leadLeft),'tabs align with left content edge at '+width).toBeLessThanOrEqual(2);
+  await expect(section.locator('[data-inspiration-ratio]')).toHaveCount(0);
+  await expect(section.getByText('16:9',{exact:true})).toHaveCount(0);
+  await expect(section.getByText('9:16',{exact:true})).toHaveCount(0);
   await expect(section.locator('.inspiration-preview-card')).toHaveCount(1);
   const imageTab=section.getByRole('button',{name:'Image',exact:true});await imageTab.scrollIntoViewIfNeeded();await imageTab.click();
   await expect(section.locator('.inspiration-preview-card')).toHaveCount(0);
   await expect(section.getByText('No images yet.',{exact:true})).toBeVisible();
-  await expect(section.getByRole('button',{name:'16:9',exact:true})).toBeVisible();
-  await expect(section.getByRole('button',{name:'9:16',exact:true})).toBeVisible();
   const videoTab=section.getByRole('button',{name:'Video',exact:true});await videoTab.scrollIntoViewIfNeeded();await videoTab.click();
   await expect(section.locator('.inspiration-preview-card')).toHaveCount(1);
   await section.getByRole('button',{name:'View Original cinematic video inspiration',exact:true}).click();
@@ -26,10 +31,6 @@ test('Home Inspiration filters in place, images empty, video opens right-prompt 
   await expect(dialog.getByRole('button',{name:'Clone & Try'})).toBeEnabled();
   await expect(page).toHaveURL(/deepsyq\.html(?:\?|$)/);
   await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);
-  const ratioTab=section.getByRole('button',{name:'9:16',exact:true});await ratioTab.scrollIntoViewIfNeeded();await ratioTab.click();
-  await expect(section.locator('.inspiration-preview-card')).toHaveCount(0);
-  await ratioTab.click();
-  await expect(section.locator('.inspiration-preview-card')).toHaveCount(1);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);
  }
  const legacy=await page.request.get('/inspiration.html?kind=video',{maxRedirects:0});expect(legacy.status()).toBe(302);expect(legacy.headers().location).toBe('/deepsyq.html#inspirationPreview');
