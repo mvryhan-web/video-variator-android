@@ -146,6 +146,15 @@ for(const signal of ['cross-tab storage', 'same-tab focus']){
 
 test('A19 owner Studio privacy: account B never inherits A image prompt or reference image after storage event',async({page})=>{
  await stubSignedInHome(page);
+ // The shared Home stub has catalog:[]; provide an honest local image model
+ // with reference capability so this test exercises an ATTACHED photo.
+ await page.route('**/api/studio/config',route=>route.fulfill({json:{
+  enabled:false,ownerOnly:true,imageBatchEnabled:false,
+  models:[{id:'gemini-3.1-flash-image',kind:'image',enabled:false}],
+  catalog:[{id:'gemini-3.1-flash-image',kind:'image',label:'Mock image',provider:'Mock',
+   adapter:false,enabled:false,ratios:['1:1'],references:3,quality:'1K',
+   capabilities:{resolutions:['1K'],outputFormats:['png']}}]
+ }}));
  let paidPosts=0;
  page.on('request',req=>{if(req.method()==='POST'&&/\/api\/studio\/jobs(?:\?|$)/.test(new URL(req.url()).pathname))paidPosts++;});
  await page.goto('/generate-studio.html?studio=image');
