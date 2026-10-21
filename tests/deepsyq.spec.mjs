@@ -308,33 +308,17 @@ test('Pricing shows signed-in AI wallet and recent ledger activity',async({page}
 });
 
 
-test('Inspiration filters approved media and all actions only prepare Studio',async({page})=>{
- const items=[{id:'insp-1',title:'Owned Editorial Portrait',slug:'owned-editorial-portrait',kind:'image',category:'Editorial',description:'Original Deepsyq example',previewUrl:'/fixture-inspiration.png',previewPosterUrl:null,prompt:'Editorial portrait in soft window light',defaultModel:'fixture',aspectRatio:'2:3',requiredInputTypes:['image'],defaultSettings:{ratio:'2:3'},actionTarget:'studio',active:true,featured:true,sortOrder:10}];
- let inspirationUrl='';await page.route('**/api/inspiration**',r=>{inspirationUrl=r.request().url();return r.fulfill({json:{items,categories:['Editorial'],ratios:['2:3','16:9']}});});await page.route('**/fixture-inspiration.png',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1','2:3'],references:1,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1','2:3'],references:1,enabled:true,adapter:true,provider:'Google'}]}}));let jobPosts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')jobPosts++;});await page.goto('/inspiration.html');await expect(page.getByRole('heading',{name:'Inspiration'})).toBeVisible();await expect(page.locator('#ratio')).toContainText('2:3');await page.locator('#ratio').selectOption('2:3');await expect.poll(()=>new URL(inspirationUrl).searchParams.get('ratio')).toBe('2:3');await expect(page.locator('.card')).toHaveCount(1);await expect(page.locator('.card')).toContainText('Owned Editorial Portrait');await expect(page.locator('.card')).toContainText('2:3');await page.getByRole('button',{name:'Clone and Try'}).click();await expect(page).toHaveURL(/generate-studio\.html\?studio=image/);await expect(page.locator('#prompt')).toHaveValue('Editorial portrait in soft window light');await expect(page.locator('#ratio')).toHaveValue('2:3');await expect(page.locator('#consent')).not.toBeChecked();expect(jobPosts).toBe(0);
-});
-
-test('Inspiration ignores stale filter responses and keeps the latest search result',async({page})=>{
- let releaseInitial=null;
- let initialRequested;
- const initialSeen=new Promise(resolve=>{initialRequested=resolve;});
- await page.route('**/api/inspiration**',async route=>{
-  const q=new URL(route.request().url()).searchParams.get('q')||'';
-  if(!q){initialRequested();await new Promise(resolve=>{releaseInitial=resolve;});}
-  const item={id:'race-'+(q||'old'),title:q?'Newest search result':'Outdated search result',slug:q?'newest':'outdated',kind:'image',category:'Editorial',description:'Owned example',previewUrl:'/sample.png',prompt:'Original prompt',aspectRatio:'1:1',requiredInputTypes:[],defaultSettings:{ratio:'1:1'},actionTarget:'studio'};
-  try{await route.fulfill({json:{items:[item],categories:['Editorial'],ratios:['1:1'],pagination:{limit:24,offset:0,nextOffset:null,hasMore:false}}});}catch(_){}
- });
- await page.goto('/inspiration.html');
- await initialSeen;
- await page.locator('#search').fill('newest');
- await expect(page.locator('.card')).toContainText('Newest search result');
- releaseInitial();
- await page.waitForTimeout(100);
- await expect(page.locator('.card')).toHaveCount(1);
- await expect(page.locator('.card')).toContainText('Newest search result');
+test('retired Inspiration URL opens Home and changes media filters locally',async({page})=>{
+ await fixtures(page);
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'film',title:'Owned film',kind:'video',actionTarget:'studio',previewUrl:'/film.mp4',prompt:'Original prompt',aspectRatio:'16:9',requiredInputTypes:[]}]}}));
+ await page.goto('/inspiration.html');await expect(page).toHaveURL(/deepsyq\.html#inspirationPreview$/);
+ await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
+ await page.locator('[data-inspiration-kind="image"]').click();await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');
+ await page.locator('[data-inspiration-kind="video"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
 });
 
 test('dashboard inspiration preview is data-driven and hides Agent examples when none are connected',async({page})=>{
- await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,onboarding:false}}}));await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));await page.route('**/api/inspiration**',r=>{const u=new URL(r.request().url());if(u.searchParams.get('target')==='agent')return r.fulfill({json:{items:[],categories:[]}});return r.fulfill({json:{items:[{id:'f1',title:'Owned Video Mood',slug:'owned-video-mood',kind:'video',category:'Cinematic',description:'Original example',previewUrl:'/owned.mp4',previewPosterUrl:null,prompt:'Cinematic scene',defaultModel:null,aspectRatio:'16:9',requiredInputTypes:[],defaultSettings:{ratio:'16:9'},actionTarget:'studio',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false,nextOffset:null}}});});await page.goto('/deepsyq.html');await expect(page.locator('#inspirationPreview')).toBeVisible();await expect(page.locator('#inspirationPreviewGrid')).toContainText('Owned Video Mood');await expect(page.locator('#inspirationPreviewCategories')).toContainText('Cinematic');await expect(page.locator('#inspirationPreviewCategories a')).toHaveAttribute('href','inspiration.html?category=Cinematic');await expect(page.locator('#inspirationPreviewGrid a').first()).toHaveAttribute('href',/inspiration\.html\?kind=video.*category=Cinematic.*ratio=16%3A9.*q=Owned%20Video%20Mood/);await expect(page.locator('#agentExamples')).toBeHidden();
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,onboarding:false}}}));await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));await page.route('**/api/inspiration**',r=>{const u=new URL(r.request().url());if(u.searchParams.get('target')==='agent')return r.fulfill({json:{items:[],categories:[]}});return r.fulfill({json:{items:[{id:'f1',title:'Owned Video Mood',slug:'owned-video-mood',kind:'video',category:'Cinematic',description:'Original example',previewUrl:'/owned.mp4',previewPosterUrl:null,prompt:'Cinematic scene',defaultModel:null,aspectRatio:'16:9',requiredInputTypes:[],defaultSettings:{ratio:'16:9'},actionTarget:'studio',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false,nextOffset:null}}});});await page.goto('/deepsyq.html');await expect(page.locator('#inspirationPreview')).toBeVisible();await expect(page.locator('#inspirationPreviewGrid')).toContainText('Owned Video Mood');await expect(page.locator('#inspirationPreviewCategories')).toContainText('16:9');await page.getByRole('button',{name:'View Owned Video Mood inspiration'}).click();await expect(page.getByRole('dialog')).toContainText('Cinematic scene');await page.keyboard.press('Escape');await expect(page.locator('#agentExamples')).toBeHidden();
 });
 
 
@@ -349,9 +333,9 @@ test('featured owned video is promoted but original homepage sections and images
  ],categories:['Product Ads','Cinematic'],ratios:['1:1','16:9'],pagination:{hasMore:false}}}));
  await page.goto('/deepsyq.html');
  await expect(page.locator('#inspirationPreview')).toBeVisible();
- await expect(page.locator('#inspirationPreviewGrid a')).toHaveCount(2);
- await expect(page.locator('#inspirationPreviewGrid a').first()).toContainText('Original owned film');
- await expect(page.locator('#inspirationPreviewGrid a').last()).toContainText('Original owned photo');
+ await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
+ await expect(page.locator('#inspirationPreviewGrid button').first()).toContainText('Original owned film');
+ await page.locator('[data-inspiration-kind="image"]').click();await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');await page.locator('[data-inspiration-kind="video"]').click();
  await expect(page.locator('#inspirationPreviewGrid video')).toHaveCount(1);
  await expect(page.locator('#inspirationPreviewGrid video')).toHaveJSProperty('muted',true);
  await expect(page.locator('#inspirationPreviewGrid video')).toHaveJSProperty('loop',true);
@@ -377,7 +361,7 @@ test('approved video appears in the real homepage hero but does not erase Canvas
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/owner-owned-film.mp4');
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('poster','/owner-owned-poster.jpg');
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
- await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href',/inspiration\.html\?kind=video/);
+ await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','deepsyq.html#inspirationPreview');
  await expect(page.locator('#quickCreateForm')).toBeVisible();
  await expect(page.locator('.home-create-grid .home-create-card')).toHaveCount(6);
  await expect(page.locator('.home-feature-triptych .home-feature-spotlight')).toHaveCount(3);
@@ -416,8 +400,10 @@ test('video carousel switches only among owner-approved videos and retains exist
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/one.mp4');
  await page.locator('#homeHeroPrevious').click();
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/two.mp4');
- await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(3);
- await expect(page.locator('#inspirationPreviewGrid')).toContainText('Preserved owned photo');
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
+ await expect(page.locator('#inspirationPreviewGrid')).not.toContainText('Preserved owned photo');
+ await page.locator('[data-inspiration-kind="image"]').click();
+ await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
 });
 test('failed owner media clips never trap the Home carousel or erase Canvas',async({page})=>{
@@ -446,7 +432,9 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
  await expect(page.locator('#homeHeroSlideLink')).toBeHidden();
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
- await expect(page.locator('#inspirationPreviewGrid')).toContainText('Original owner still');
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
+ await expect(page.locator('#inspirationPreviewGrid')).not.toContainText('Original owner still');
+ await expect(page.locator('#inspirationEmpty')).toBeHidden();
 });
 test('reduced-motion users get a manual Play button for genuine videos',async({page})=>{
  // This scenario tests the no-autoplay control, not the availability of fixture MP4 bytes.
@@ -514,18 +502,7 @@ test('dashboard never fabricates a featured hero when only approved images exist
  await expect(page.locator('#inspirationPreview')).toBeVisible();
  await expect(page.locator('#inspirationHeroFeature')).toBeHidden();
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
- await expect(page.locator('#inspirationPreviewGrid')).toContainText('Owned castle still');
-});
-test('public Inspiration shortcuts display only published category labels',async({page})=>{
- const item={id:'owned',title:'Owned image',slug:'owned-image',kind:'image',category:'Fashion & Beauty',previewUrl:'/owned.png',prompt:'Original prompt',aspectRatio:'1:1',actionTarget:'studio',requiredInputTypes:[],defaultSettings:{}};
- await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[item],categories:['Fashion & Beauty'],ratios:['1:1'],pagination:{hasMore:false}}}));
- await page.goto('/inspiration.html');
- await expect(page.locator('#categoryChips button')).toHaveCount(1);
- await expect(page.getByRole('button',{name:'Fashion & Beauty'})).toBeVisible();
- await expect(page.locator('#categoryChips')).not.toContainText('Cinematic Worlds');
- await page.locator('#categoryChips button').click();
- await expect(page.locator('#category')).toHaveValue('Fashion & Beauty');
- await expect.poll(()=>new URL(page.url()).searchParams.get('category')).toBe('Fashion & Beauty');
+ await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(0);
 });
 test('owner can manage Block 3 inspiration without exposing rights internals publicly',async({page})=>{
  await fixtures(page);
@@ -542,20 +519,21 @@ test('owner can manage Block 3 inspiration without exposing rights internals pub
 
 
 test('all three Block 3 actions preserve their intended prefill semantics without copying source media',async({page})=>{
- const item={id:'insp-actions',title:'Owned Portrait',slug:'owned-portrait',kind:'image',category:'Editorial',description:'Original',previewUrl:'/owned-preview.png',previewPosterUrl:null,prompt:'Soft editorial portrait',defaultModel:'clone-model',aspectRatio:'2:3',requiredInputTypes:['image'],defaultSettings:{ratio:'2:3'},actionTarget:'studio',active:true,featured:true,sortOrder:1};
+ await fixtures(page);
+ const item={id:'insp-actions',title:'Owned Portrait',slug:'owned-portrait',kind:'video',category:'Editorial',description:'Original',previewUrl:'/owned-preview.png',previewPosterUrl:null,prompt:'Soft editorial portrait',defaultModel:'clone-model',aspectRatio:'2:3',requiredInputTypes:['image'],defaultSettings:{ratio:'2:3'},actionTarget:'studio',active:true,featured:true,sortOrder:1};
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[item],categories:['Editorial'],ratios:['1:1','2:3']}}));
  await page.route('**/owned-preview.png',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
- const cfg={enabled:true,models:[{kind:'image',id:'base-model',label:'Base Model',ratios:['1:1','2:3'],references:1,enabled:true}],catalog:[{kind:'image',id:'base-model',label:'Base Model',ratios:['1:1','2:3'],references:1,enabled:true,adapter:true,provider:'Google'},{kind:'image',id:'clone-model',label:'Clone Model',ratios:['1:1','2:3'],references:1,enabled:true,adapter:true,provider:'Google'}]};
+ const cfg={enabled:true,models:[{kind:'video',id:'base-model',label:'Base Model',ratios:['1:1','2:3'],references:1,enabled:true}],catalog:[{kind:'video',id:'base-model',label:'Base Model',ratios:['1:1','2:3'],references:1,enabled:true,adapter:true,provider:'Google'},{kind:'video',id:'clone-model',label:'Clone Model',ratios:['1:1','2:3'],references:1,enabled:true,adapter:true,provider:'Google'}]};
  await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
  let posts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
 
- await page.goto('/inspiration.html');await page.getByRole('button',{name:'Use this prompt'}).click();
+ await page.goto('/inspiration.html');await page.getByRole('button',{name:'View Owned Portrait inspiration'}).click();await page.getByRole('button',{name:'Use this prompt'}).click();
  await expect(page.locator('#prompt')).toHaveValue('Soft editorial portrait');await expect(page.locator('#ratio')).toHaveValue('1:1');await expect(page.locator('#modelButton')).toContainText('Base Model');await expect(page.locator('#refPreview img')).toHaveCount(0);await expect(page.locator('#consent')).not.toBeChecked();expect(posts).toBe(0);
 
- await page.goto('/inspiration.html');await page.getByRole('button',{name:'Create yours'}).click();
+ await page.goto('/inspiration.html');await page.getByRole('button',{name:'View Owned Portrait inspiration'}).click();await page.getByRole('button',{name:'Create yours'}).click();
  await expect(page.locator('#prompt')).toHaveValue('Soft editorial portrait');await expect(page.locator('#ratio')).toHaveValue('2:3');await expect(page.locator('#modelButton')).toContainText('Base Model');await expect(page.locator('#refPreview img')).toHaveCount(0);await expect(page.locator('#consent')).not.toBeChecked();expect(posts).toBe(0);
 
- await page.goto('/inspiration.html');await page.getByRole('button',{name:'Clone and Try'}).click();
+ await page.goto('/inspiration.html');await page.getByRole('button',{name:'View Owned Portrait inspiration'}).click();await page.getByRole('button',{name:'Clone & Try'}).click();
  await expect(page.locator('#prompt')).toHaveValue('Soft editorial portrait');await expect(page.locator('#ratio')).toHaveValue('2:3');await expect(page.locator('#modelButton')).toContainText('Clone Model');await expect(page.locator('#refPreview img')).toHaveCount(0);await expect(page.locator('#consent')).not.toBeChecked();expect(posts).toBe(0);
 });
 
@@ -569,9 +547,13 @@ test('Block 3 Agent examples stay hidden until a real configured route exists',a
 });
 
 
-test('Block 3 gallery loads more without replacing existing cards',async({page})=>{
- let calls=0;await page.route('**/api/inspiration**',r=>{calls++;const u=new URL(r.request().url()),offset=Number(u.searchParams.get('offset')||0),items=offset===0?[{id:'one',title:'First owned image',slug:'first',kind:'image',category:'Editorial',description:'',previewUrl:'/one.png',previewPosterUrl:null,prompt:'First prompt',defaultModel:null,aspectRatio:'1:1',requiredInputTypes:[],defaultSettings:{ratio:'1:1'},actionTarget:'studio'}]:[{id:'two',title:'Second owned image',slug:'second',kind:'image',category:'Editorial',description:'',previewUrl:'/two.png',previewPosterUrl:null,prompt:'Second prompt',defaultModel:null,aspectRatio:'1:1',requiredInputTypes:[],defaultSettings:{ratio:'1:1'},actionTarget:'studio'}];return r.fulfill({json:{items,categories:['Editorial'],ratios:['1:1'],pagination:{limit:24,offset,nextOffset:offset===0?24:null,hasMore:offset===0}}});});const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');await page.route('**/one.png',r=>r.fulfill({contentType:'image/png',body:png}));await page.route('**/two.png',r=>r.fulfill({contentType:'image/png',body:png}));
- await page.goto('/inspiration.html');await expect(page.locator('.card')).toHaveCount(1);await expect(page.locator('#loadMore')).toBeVisible();await page.locator('#loadMore').click();await expect(page.locator('.card')).toHaveCount(2);await expect(page.locator('#gallery')).toContainText('First owned image');await expect(page.locator('#gallery')).toContainText('Second owned image');await expect(page.locator('#loadMore')).toBeHidden();expect(calls).toBeGreaterThanOrEqual(2);
+test('Home Inspiration preserves all available video cards across local format filters',async({page})=>{
+ await fixtures(page);
+ const base={kind:'video',actionTarget:'studio',prompt:'Original prompt',requiredInputTypes:[],previewUrl:'/film.mp4'};
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{...base,id:'one',title:'Landscape film',aspectRatio:'16:9'},{...base,id:'two',title:'Portrait film',aspectRatio:'9:16'}]}}));
+ await page.goto('/inspiration.html');await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(2);
+ await page.locator('[data-inspiration-ratio="9:16"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);await expect(page.locator('#inspirationPreviewGrid')).toContainText('Portrait film');
+ await page.locator('[data-inspiration-ratio="9:16"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(2);
 });
 
 test('owner-approved homepage layout keeps the real Canvas and section order',async({page})=>{
@@ -598,20 +580,21 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  await expect(page.locator('#quickCreateKind')).toBeVisible();
  await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
 });
-test('homepage inspiration All Image Video filters only owned API cards',async({page})=>{
+test('homepage inspiration All Video Image filters only owned API cards',async({page})=>{
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:true,inspiration:true,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'i',title:'Existing image',kind:'image',previewUrl:'/owned.png',category:'Editorial',aspectRatio:'1:1',actionTarget:'studio'},{id:'v',title:'Existing video',kind:'video',previewUrl:'/owned.mp4',category:'Cinematic',aspectRatio:'16:9',actionTarget:'studio'}],categories:['Editorial','Cinematic']}}));
  await page.goto('/deepsyq.html');
- await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
+ await expect(page.locator('#inspirationPreviewGrid')).toContainText('Existing video');
  await page.locator('[data-inspiration-kind="image"]').click();
- await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toHaveCount(1);
- await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toContainText('Existing image');
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(0);
+ await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');
  await page.locator('[data-inspiration-kind="video"]').click();
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toHaveCount(1);
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toContainText('Existing video');
  await page.locator('[data-inspiration-kind="all"]').click();
- await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toHaveCount(2);
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toHaveCount(1);
 });
 
 

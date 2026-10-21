@@ -12,7 +12,7 @@ const pending={
 };
 const inspiration={
  id:'c10-illustration',slug:'fictional-garden',title:'Fictional prompt',
- category:'Art',kind:'image',aspectRatio:'1:1',description:'Synthetic only',
+ category:'Art',kind:'video',aspectRatio:'1:1',description:'Synthetic only',
  previewUrl:'/test-fixture-absent.png',prompt:'A fictional garden at sunrise',
  actionTarget:'studio',defaultSettings:{ratio:'1:1'},requiredInputTypes:[]
 };
@@ -60,14 +60,15 @@ test('C8 current DEV real direct links, Tools/Avatar Back, mobile Escape and His
   await page.goto('/ai-apps.html');
   await expect(page.locator('.app-card')).toHaveCount(2);
   await fit(page,width,'AI Apps');
-  await page.goto('/inspiration.html');
-  await expect(page.locator('#gallery .card')).toHaveCount(1);
+  await page.goto('/deepsyq.html?c8Width='+width+'#inspirationPreview',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
   await fit(page,width,'Inspiration');
   await page.goto('/free-tools.html');
   await expect(page.locator('[data-hub-tool="tts"]')).toHaveAttribute('href','audio-studio.html?tool=tts');
   await expect(page.locator('[data-hub-tool="stt"]')).toHaveAttribute('href','audio-studio.html?tool=stt');
   await fit(page,width,'Tools');
-  await page.locator('nav.tools-direct-launches a[href="avatar-studio.html?from=tools"]').click();
+  const avatarLink=page.locator('nav.tools-direct-launches a[href="avatar-studio.html?from=tools"]');
+  await avatarLink.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await avatarLink.click();
   await expect(page).toHaveURL(/avatar-studio\.html\?from=tools$/);
   await expect(page.locator('[data-av="back"]')).toHaveAttribute('href','free-tools.html');
   await page.locator('[data-av="back"]').click();
@@ -140,13 +141,13 @@ test('C10 AI Agents are honest pending, usable Apps/Inspiration preserve prompt 
   await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=template$/);
   await expect(page.locator('#prompt')).toHaveValue(supported.promptTemplate);
   await expect(page.locator('#consent')).not.toBeChecked();
-  await page.goto('/inspiration.html');
+  await page.goto('/deepsyq.html?c8Width='+width+'#inspirationPreview',{waitUntil:'domcontentloaded'});
   // Owner-approved Inspiration now opens a media/prompt detail before Studio.
-  await page.getByRole('button',{name:'View '+inspiration.title+' inspiration'}).click();
+  const inspirationCard=page.getByRole('button',{name:'View '+inspiration.title+' inspiration'});await inspirationCard.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await inspirationCard.click();
   const detail=page.getByRole('dialog');
   await expect(detail).toBeVisible();
   await detail.getByRole('button',{name:'Use this prompt'}).click();
-  await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=inspiration&action=prompt$/);
+  await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=inspiration&action=prompt$/);
   await expect(page.locator('#prompt')).toHaveValue(inspiration.prompt);
   await expect(page.locator('#consent')).not.toBeChecked();
   await page.goto('/audio-studio.html?tool=tts');

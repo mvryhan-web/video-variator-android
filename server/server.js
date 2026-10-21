@@ -194,7 +194,7 @@ app.get('/',(req,res,next)=>{
 });
 app.get('/dashboard',(req,res)=>res.sendFile(path.join(staticDir,'deepsyq.html')));
 app.get(['/ai-apps','/ai-apps.html'],(req,res,next)=>platformFeatureEnabled('AI_APPS_ENABLED')?next():res.status(404).type('text/plain').send('Not found'));
-app.get(['/inspiration','/inspiration.html'],(req,res,next)=>platformFeatureEnabled('AI_INSPIRATION_ENABLED')?next():res.status(404).type('text/plain').send('Not found'));
+app.get(['/inspiration','/inspiration.html'],(_req,res)=>res.redirect(302,'/deepsyq.html#inspirationPreview'));
 // Retired owner-deleted workflow: never fall through to the generic SPA index.
 app.get(['/product-video','/product-video.html'],(_req,res)=>res.status(404).type('text/plain').send('Not found'));
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));

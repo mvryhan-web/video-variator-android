@@ -1,3 +1,7 @@
+# OWNER HOME INSPIRATION CORRECTION — 2026-10-21
+
+PR #347: owner explicitly requested modifying the named Home Inspiration block. Inline All / Video / Image plus 16:9 / 9:16 filters, existing original videos and prompt/reuse overlay. Image intentionally empty. Standalone page removed; old URL redirects to Home anchor. Other Home blocks and media preserved. Original source 58f36cc; current code 93b18df. Local 15/15 route/theme/original-media tests and isolated-preview acceptance pass. Browser CI pending after fixing hidden ratio controls and Home aside styles affecting the mobile overlay. Not LIVE until verified Render publication. No paid calls, real Stripe, main, DB changes or production activation. Finance PR333 remains separate.
+
 # COORDINATOR #5 — CYCLE 20 / VERIFIED GITHUB RECOVERY — 2026-10-21 (Europe/Paris)
 
 **This is a pinned observation, not a permanent HEAD.** DEV `deepsyq-platform` sampled after C18 [PR #345](https://github.com/mvryhan-web/video-variator-android/pull/345) at **`a1d48e3b98362f8132ea8c383ab95e9adab0799e`** (09:57:55 UTC). Re-query HEAD, changed files and exact final-SHA CI before any next action. No `main`, production, Stripe live, paid AI, destructive migration or Home/media change is authorized. Owner D16: agents A–D may self-verify and self-merge independent safe DEV PRs; #5 is not their approval/merge gate. Security/finance peer verification runs **directly B↔D**.
