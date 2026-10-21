@@ -144,13 +144,15 @@ test('C11 Inspiration existing rights-gated API fixtures: filters, categories an
   await expect(page.locator('#gallery')).toContainText('No owner-approved inspiration matches');
   await page.locator('#ratio').selectOption('16:9');
   await expect(page.locator('#gallery .card')).toHaveCount(1);
-  await page.getByRole('button',{name:'Create yours'}).click();
+  await page.getByRole('button',{name:'View Fictional animation inspiration'}).click();
+  await page.getByRole('dialog').getByRole('button',{name:'Create yours'}).click();
   await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=inspiration&action=create/);
   await expect(page.locator('#prompt')).toHaveValue('Original animation of a floating island');
   await expect(page.locator('#consent')).not.toBeChecked();
   await page.goto('/inspiration.html?kind=image');
   await expect(page.locator('#gallery .card')).toHaveCount(1);
-  await page.getByRole('button',{name:'Use this prompt'}).click();
+  await page.getByRole('button',{name:'View Fictional painting inspiration'}).click();
+  await page.getByRole('dialog').getByRole('button',{name:'Use this prompt'}).click();
   await expect(page).toHaveURL(/studio=image&from=inspiration&action=prompt/);
   await expect(page.locator('#prompt')).toHaveValue('Original fictional painting of flowers');
   await expect(page.locator('#consent')).not.toBeChecked();
