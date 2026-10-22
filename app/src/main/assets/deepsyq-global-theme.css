@@ -562,3 +562,69 @@ html:not([data-theme="light"]) body:not(.home-neon):has(#watcherStatus) main>sec
   border:1px solid #294c7d;border-radius:18px;
   background:linear-gradient(135deg,#0d1a36,#061024);padding:24px;
 }
+
+/* Screenshot review: remove remaining warm creator-edition treatments, and use
+   owned decorative art only in idle Studio (never behind an actual result). */
+html:not([data-theme="light"]) body:not(.home-neon) :is(.pageSection,.cp-hero,.cp-cta,.authCard,.avatar-hero) {
+  border-color:#2b4c7e;
+  background:radial-gradient(ellipse at 90% 0,#0c4f8c4d,transparent 70%),
+    linear-gradient(130deg,#10162f,#041024);
+  box-shadow:inset 0 1px #7b9aff12,0 0 24px #0044ca0c;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.creatorLead,.creatorKicker,.creatorToolLink,.cp-kicker,.cp-number,.stepNumber,.frameConnector) {
+  color:#7de1ff;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.stepNumber,.voice-source-card:has(input:checked)) {
+  border-color:#7070c6;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.popular,.plan-badge) {
+  color:#e1d9ff;background:#4930a4;border-color:#9660f9;
+}
+html:not([data-theme="light"]) body:not(.home-neon) input[type="range"] {accent-color:#1ec9f4}
+html:not([data-theme="light"]) body:not(.home-neon) .sourceFrame {
+  background:radial-gradient(ellipse at 70% 65%,#7449d7,transparent 60%),linear-gradient(130deg,#153c6d,#132542);
+}
+html:not([data-theme="light"]) body:not(.home-neon) .miniFrame {
+  background:radial-gradient(circle at 70% 35%,#536fe2,transparent 70%),#122e4b;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .miniFrame.f1 {
+  background:radial-gradient(circle at 70% 35%,#a45bed,transparent 70%),#1b224f;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .miniFrame.f2 {
+  background:radial-gradient(circle at 70% 35%,#26c7dd,transparent 70%),#143049;
+}
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart .stage:has(#empty:not([hidden])) {
+  background:linear-gradient(90deg,#040d22eb,#06122a94 55%,#07122980),
+    url("media/home/owner-20261018/01-close-up-woman.jpg") center 42% / cover;
+}
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart:has(.studio-nav [data-kind="video"][aria-pressed="true"]) .stage:has(#empty:not([hidden])) {
+  background:linear-gradient(90deg,#040d22e8,#06122a99 55%,#07122980),
+    url("media/home/owner-20261018/02-futuristic-portal.jpg") center / cover;
+}
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart:has(.studio-nav [data-kind="music"][aria-pressed="true"]) .stage:has(#empty:not([hidden])) {
+  background:linear-gradient(90deg,#040d22e8,#06122aa8 55%,#07122980),
+    url("media/creative/creative50-20261021/15-botanical-audio.webp") center / cover;
+}
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart .stage #taskTitle {
+  text-shadow:0 3px 24px #010614;
+}
+html:not([data-theme="light"]) body:not(.home-neon):has(#avatarGenerate) .avatar-hero {
+  background:linear-gradient(90deg,#061126,#08152be8 65%,#06112644),
+    url("media/creative/creative50-20261021/28-opal-eye.webp") right 40% / cover;
+}
+html:not([data-theme="light"]) body:not(.home-neon):has(#reminderFormTitle) .free-tools-hero {
+  background:linear-gradient(90deg,#061126,#08152be8 65%,#06112644),
+    url("media/creative/creative50-20261021/26-clockwork-peony.webp") right center / cover;
+}
+/* Match the five existing legal/privacy documents, including those without a
+   .lead paragraph. All prose, review notices and legal status stay intact. */
+html:not([data-theme="light"]):has(head>link[href="ai-privacy.css"]) body:not(.home-neon) main>section {
+  border:1px solid #233e6a;border-radius:16px;padding:24px 26px;margin:14px 0;
+  background:linear-gradient(130deg,#0b1730,#050e20);box-shadow:inset 0 1px #9cb4ff0a;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .editorial .comparison>div {
+  background:linear-gradient(135deg,#111c39,#061126);border-color:#2b4a7d;
+}
+@media(max-width:640px) {
+  html:not([data-theme="light"]):has(head>link[href="ai-privacy.css"]) body:not(.home-neon) main>section {padding:20px}
+}
