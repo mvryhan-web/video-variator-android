@@ -193,7 +193,8 @@ function scrubStudioAccount({removeDrafts=false}={}){
 function ensureStudioAccount(){
  if(studioAccountFrozen||studioPageSuspended)return false;
  if(studioToken()===studioDocumentToken)return true;
- studioAccountFrozen=true;try{scrubStudioAccount({removeDrafts:true});}finally{location.reload();}return false;
+ studioAccountFrozen=true;try{sessionStorage.setItem('deepsyq_studio_account_reset_notice','1');}catch(_){}
+ try{scrubStudioAccount({removeDrafts:true});}finally{location.reload();}return false;
 }
 function requireStudioAccount(){if(!ensureStudioAccount())throw Error('STUDIO_ACCOUNT_CHANGED');}
 for(const name of ['pointerdown','click','keydown','focusin','input','change','submit']){
@@ -1112,3 +1113,6 @@ if((aiCheckoutState==='returned'||aiCheckoutState==='cancelled')&&!$('walletButt
  $('walletStatus').textContent=aiCheckoutState==='returned'?say('Returned from Stripe. Credits appear only after Stripe confirms the payment webhook. Use Refresh balance if confirmation is still pending.','Вы вернулись из Stripe. Кредиты появятся только после подтверждения платежа webhook. Если подтверждение ещё идёт, нажмите «Обновить баланс».'):say('Checkout was cancelled. No AI credits were added by this return.','Оплата отменена. По этому возврату AI-кредиты не добавлены.');
  const u=new URL(location.href);u.searchParams.delete('ai_checkout');history.replaceState(null,'',u);
 }
+
+// Public one-shot explanation only; never persist prompts or account credentials.
+try{if(sessionStorage.getItem('deepsyq_studio_account_reset_notice')==='1'){sessionStorage.removeItem('deepsyq_studio_account_reset_notice');$('status').textContent=say('Account changed. No job was submitted from this cleared workspace. Check History for earlier requests.','Аккаунт изменён. Из очищенной рабочей области задача не отправлялась. Ранее отправленные задачи доступны в Истории.');}}catch(_){}
