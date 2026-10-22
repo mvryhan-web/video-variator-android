@@ -1,3 +1,20 @@
+# COORDINATOR #5 — CYCLE25 CURRENT QUEUES / 2026-10-22
+
+> **HEAD observation only:** DEV `4b2ecb68c07ddde481dd45c0bfc2e59aa2a7858c` at verification; always re-read current HEAD, claims, exact final PR SHA and CI before edits. Full primary evidence and agent handoffs: [Cycle25 GitHub CHECKPOINT](https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6334809418). This is NOT commercial LIVE_VERIFIED acceptance. Historical sections below remain preserved. D16 A–D DEV self-merge; B↔D privacy/finance peer checks directly; no main/prod/paid AI/real Stripe/unsafe SQL authorization.
+
+| Lane | Already DONE / active work, not repeated | Next exclusive acceptance step (no duplicate claim) |
+| --- | --- | --- |
+| A #72 | A21 #349 MERGED; A23 #343 intentional RED/UNMERGED (18 PASS, 14 FAIL) | Replay existing A→B Chrome/WebKit negative History/PNG/Reuse/Delete checks on corrected owner #368 **final** source; do not edit owner Studio; then read-only global SEO #156 |
+| B #73 | B14 finance source audit DONE; old PR368 B8 pending-quote error fixed | Diagnose two failed current-head PR368 Video Core/AI Studio runs: mobile missing `#sidebarToggle`, popup x=0, distinguish stale test from true UI bug; peer PR350/352 privacy and D18 true net 2× costs with D |
+| C #74 | C15–C18 MERGED; C19 #350 and C20 #352 each 4/4 exact-head CI, NOT MERGED | Same #350 delayed speech/notes callback token safety, independent B+D peer acceptance for #350/#352, non-force reconcile and D16 self-merge only after GREEN; new Tools/Audio/Apps/Agents C claim only afterward |
+| D #75 | Existing finance #333 43/43 code CI; not real-world margin acceptance | Independently test #368 account isolation/consent before paid dispatch and #323 migration reconciliation; B↔D peer #350/#352; #333 provider all-in costs, refunds, 2× net; hold #280 production until direct owner release approval |
+
+**Owner work:** PR368 HEAD `357b4b183a960f515ad705cf07d42692e28fa4f0` 15 successful / **2 failed** final-head Actions; owner old PR323 `f837ced0` DRAFT/conflicting/retired Product Video; finance PR333 `9665273d` 43 successes but margin BLOCKED; owner Pricing PR369 HEAD `5a2ad650` DRAFT in-progress at observation (6 success / 4 in-progress). PR280 MAIN release HOLD. Latest approved Home image catalog no longer empty; six MP4/carousel protected. Original BASE #20 CANCELLED; F1–F8 aliases, not duplicate Blocks.
+
+**Collision lease notes:** PR323∩PR368 `generate-studio.js`; PR323∩PR333 three server/paid unit paths; PR323∩PR369 `ai-pricing.html`, `tests/deepsyq.spec.mjs`. A PR343 and C PR350/352 are separate test/code-only lanes. Three original Google Jules Issues #316/#317/#278 each have bot ACK but no bot Ready: NO duplicate labels or tasks.
+
+---
+
 # OWNER HOME INSPIRATION CORRECTION — 2026-10-21
 
 PR #347: owner explicitly requested modifying the named Home Inspiration block. Inline All / Video / Image plus 16:9 / 9:16 filters, existing original videos and prompt/reuse overlay. Image intentionally empty. Standalone page removed; old URL redirects to Home anchor. Other Home blocks and media preserved. Original source 58f36cc; current code 93b18df. Local 15/15 route/theme/original-media tests and isolated-preview acceptance pass. Browser CI pending after fixing hidden ratio controls and Home aside styles affecting the mobile overlay. Not LIVE until verified Render publication. No paid calls, real Stripe, main, DB changes or production activation. Finance PR333 remains separate.
