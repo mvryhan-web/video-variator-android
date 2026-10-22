@@ -331,7 +331,7 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    await expect(trigger).toHaveAttribute('aria-expanded','false');await expect(trigger).toBeFocused();
    // Close the mobile drawer through its actual control before using the content cards.
    if(viewport.width<=760){await page.locator('#sidebarToggle').click();await expect(page.locator('body')).not.toHaveClass(/menu-open/);}
-   await page.locator(`.home-create-card[href="generate-studio.html?studio=${studio}"]`).click();
+   await page.locator(`#homeQuickBar .home-compose-mode[href^="generate-studio.html?studio=${studio}&"]`).click();
    await expect(page).toHaveURL(new RegExp('studio='+studio));
    await expect(page.locator('#taskTitle')).toHaveText(title);
    await expect(page.locator('.studio-shell>.studio-nav')).toHaveCount(0);
