@@ -30,12 +30,15 @@ test('Home plan comparison shows real allowances, model separation and working e
  await page.screenshot({path:info.outputPath('home-pricing-desktop.png'),fullPage:true});
 });
 
-test('Home plan comparison adapts to phone width without horizontal overflow',async({page},info)=>{
+test('Home plan comparison adapts to phone width with an accessible swipe rail and no page overflow',async({page},info)=>{
  await page.setViewportSize({width:390,height:844});
  await openHome(page);
  await expect(page.locator('#plans .plan')).toHaveCount(3);
  await page.locator('#pricing').scrollIntoViewIfNeeded();
  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  await expect.poll(()=>page.locator('#plans .plan').evaluateAll(cards=>cards.every(card=>card.getBoundingClientRect().width>250))).toBe(true);
+ await expect.poll(()=>page.locator('#homeMonthlyPlans').evaluate(el=>el.scrollWidth>el.clientWidth)).toBe(true);
+ await page.locator('#homeMonthlyPlans').evaluate(el=>el.scrollTo({left:el.scrollWidth,behavior:'instant'}));
+ await expect.poll(()=>page.locator('#plans .plan').last().evaluate(el=>el.getBoundingClientRect().right<=innerWidth+1)).toBe(true);
  await page.screenshot({path:info.outputPath('home-pricing-mobile.png'),fullPage:true});
 });

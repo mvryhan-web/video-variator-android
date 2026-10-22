@@ -862,3 +862,10 @@ body.home-neon{background:#030b18;color:#eff6ff}
 @media(max-width:1050px){.home-plan-showcase .subscription-layout{grid-template-columns:repeat(2,minmax(0,1fr))}.home-plan-showcase #plans{display:contents}.home-plan-showcase .plan{min-height:360px}}
 @media(max-width:620px){.home-plan-switch{width:100%;gap:2px}.home-plan-switch a{flex:1;padding:0 8px;font-size:10px}.home-plan-showcase .subscription-layout{grid-template-columns:1fr}.home-plan-showcase .plan{min-height:unset;padding:20px}.home-model-note{align-items:stretch;flex-direction:column;padding:16px}.home-model-note>.plan-action{width:100%}}
 @media(prefers-reduced-motion:reduce){.home-plan-switch a{transition:none}}
+
+
+/* A compact, touch-friendly plan rail keeps mobile Home scannable while the desktop cards stay in their comparison grid. */
+@media(max-width:620px){
+ .home-plan-showcase .subscription-layout{display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:calc(100% - 12px);gap:12px;overflow-x:auto;overflow-y:hidden;padding:0 2px 12px;scroll-snap-type:x mandatory;overscroll-behavior-inline:contain;scrollbar-width:thin;scrollbar-color:#825eb8 #171326}
+ .home-plan-showcase .plan{min-height:unset;scroll-snap-align:start}
+}
