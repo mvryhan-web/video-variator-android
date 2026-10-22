@@ -78,3 +78,5 @@
  .pricing-cinematic #toolPlans .price-card p{min-height:0}
  .pricing-cinematic .trial-experience{grid-template-columns:1fr;padding:17px;margin:18px 0 25px}
 }
+/* Keep every configured plan in the same comparison row on desktop. */
+.pricing-cinematic #toolPlans .price-card.lifetime{grid-column:auto}
