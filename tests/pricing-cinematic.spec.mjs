@@ -7,6 +7,7 @@ for(const width of [320,390,768,1440]){
   await expect(page.getByRole('navigation',{name:'Pricing sections'})).toBeVisible();
   await expect(page.locator('#toolPlans')).toBeVisible();
   await expect(page.locator('#toolPlans .price-card')).toHaveCount(4);
+  if(width===1440)await expect.poll(()=>page.locator('#lifetimePlan').evaluate(el=>getComputedStyle(el).gridColumn)).toBe('auto');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   const hero=page.locator('.pricing-intro');
   expect(await hero.evaluate(el=>getComputedStyle(el).fontFamily)).toContain('Inter');
