@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 // Google login is not exercised in this local UI suite (googleClientId is empty).
 // Keep the external SDK from delaying load/pageshow and the privacy reset.
 test.beforeEach(async({page})=>{
- await page.addInitScript(()=>{window.__ownerHomePageShown=false;window.addEventListener('pageshow',()=>{window.__ownerHomePageShown=true;});});
+ await page.addInitScript(()=>{window.__ownerHomePageShown=false;window.addEventListener('pagehide',()=>{window.__ownerHomePageShown=false;});window.addEventListener('pageshow',()=>{window.__ownerHomePageShown=true;});});
  await page.route('https://accounts.google.com/gsi/client',r=>r.fulfill({contentType:'application/javascript',body:''}));
 });
 
@@ -97,6 +97,7 @@ test('Owner neon layout: Home creation links open the existing destinations with
  await page.locator('[data-home-kind="image"]').click();
  await expect(page.locator('#prompt')).toHaveValue('A private idea kept across Back navigation');
  await page.goBack();
+ await page.waitForFunction(()=>window.__ownerHomePageShown===true);
  await page.locator('#homeQuickPrompt').fill('A second private video idea');
  await page.locator('[data-home-kind="video"]').click();
  await expect(page).toHaveURL(/studio=video&from=home/);
