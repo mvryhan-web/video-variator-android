@@ -1,9 +1,11 @@
 import {defineConfig,devices} from '@playwright/test';
+import {fileURLToPath} from 'node:url';
+const root=fileURLToPath(new URL('../',import.meta.url));
 export default defineConfig({
- testDir:'.',testMatch:'owner-all-pages-design.spec.mjs',timeout:45000,
+ outputDir:root+'test-results',testDir:'.',testMatch:'owner-all-pages-design.spec.mjs',timeout:45000,
  retries:1,workers:4,reporter:'list',
  use:{baseURL:'http://127.0.0.1:31990',reducedMotion:'reduce',trace:'retain-on-failure'},
- webServer:{command:'node server/deepsyq-preview.js',url:'http://127.0.0.1:31990/api/health',reuseExistingServer:false,env:{PORT:'31990'}},
+ webServer:{cwd:root,command:'node server/deepsyq-preview.js',url:'http://127.0.0.1:31990/api/health',reuseExistingServer:false,env:{PORT:'31990'}},
  projects:[
   {name:'desktop-chromium',use:{...devices['Desktop Chrome'],viewport:{width:1448,height:1086}}},
   {name:'mobile-chromium',use:{...devices['Pixel 7'],viewport:{width:390,height:844}}},
