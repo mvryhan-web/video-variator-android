@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
+import {readFile} from 'node:fs/promises';
 
 test('isolated Deepsyq preview serves the current Canvas UI and disables paid endpoints',async()=>{
  const port=31896,base='http://127.0.0.1:'+port;
@@ -72,7 +73,8 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
    assert.ok((await asset.arrayBuffer()).byteLength>10000,image.previewUrl);
   }
   const retired=await fetch(base+'/inspiration.html',{redirect:'manual'});assert.equal(retired.status,302);assert.equal(retired.headers.get('location'),'/deepsyq.html#inspirationPreview');
-  assert.equal(gallery.items.some(item=>item.slug.includes('butterfly')||item.slug.includes('lake')),false);
+  const approvedImages=JSON.parse(await readFile(new URL('../app/src/main/assets/media/inspiration/openai-20261021/manifest.json',import.meta.url),'utf8')).items;
+  assert.deepEqual(images.map(item=>item.slug).sort(),approvedImages.filter(item=>item.featured).map(item=>item.slug).sort(),'only exact owner-approved image identities are published');
   assert.equal((await(await fetch(base+'/api/inspiration?featured=true&target=agent')).json()).items.length,0);
   assert.equal((await fetch(base+'/api/inspiration',{method:'POST'})).status,503);
 
