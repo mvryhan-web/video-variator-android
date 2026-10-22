@@ -37,7 +37,7 @@ concurrency:
 
 jobs:
   visual-interactions:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +62,7 @@ jobs:
           retention-days: 7
 
   owner-hero-fallback:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
