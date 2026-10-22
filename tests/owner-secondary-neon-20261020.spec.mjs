@@ -83,7 +83,9 @@ test('interior destinations preserve functional fields and distinct enabled/disa
  await expect(page.locator('#search')).toBeVisible();
  await expect(page.locator('#type')).toBeVisible();
  await page.goto('/inspiration.html');
- await expect(page.locator('#gallery')).toHaveCount(1);
+ await expect(page).toHaveURL(/deepsyq\.html#inspirationPreview$/);
+ await expect(page.locator('#inspirationPreviewGrid')).toHaveCount(1);
+ await expect(page.locator('.inspiration-home-tabs [data-inspiration-kind]')).toHaveCount(3);
  await page.goto('/audio-studio.html');
  await expect(page.locator('#trimGenerate')).toBeDisabled();
  await expect(page.locator('#trimFile')).toHaveCount(1);
