@@ -27,3 +27,5 @@
 @media(max-width:900px){.pricing-cinematic .pricing-intro{gap:22px;padding:24px}.pricing-visual{min-height:320px}.pricing-visual-caption strong{font-size:23px}}
 @media(max-width:680px){.pricing-cinematic main{padding-top:18px}.pricing-cinematic .pricing-intro{grid-template-columns:1fr;padding:20px;gap:24px;margin-bottom:24px}.pricing-cinematic .pricing-intro h1{font-size:40px}.pricing-visual{min-height:240px}.pricing-cinematic .trial-experience{grid-template-columns:1fr;padding:20px}.pricing-intro-actions{gap:8px}.pricing-link{padding:12px 14px;font-size:12px}}
 @media(prefers-reduced-motion:reduce){.pricing-cinematic *{scroll-behavior:auto}}
+
+.trial-details{margin-top:18px;font-size:11px;color:var(--ds-muted);line-height:1.7}.trial-details summary{cursor:pointer;color:var(--ds-text);text-underline-offset:4px}.trial-details p{max-width:440px}
