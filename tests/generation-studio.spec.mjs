@@ -321,7 +321,7 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
     expect(await dialog.evaluate(el=>getComputedStyle(el,'::backdrop').backdropFilter)).toBe('none');
     expect(await dialog.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
    };
-   await page.goto('/deepsyq.html');
+   await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
    if(viewport.width<=760)await page.locator('#menu').click();
    const trigger=page.locator(`[data-open-models="${studio}"]`);
    await trigger.click();
