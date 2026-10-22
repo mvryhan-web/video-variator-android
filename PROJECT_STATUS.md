@@ -1,3 +1,11 @@
+# OWNER PR369 — PRICING DEV PUBLICATION IN PROGRESS / 22 OCTOBER 2026
+
+Approved cinematic Pricing source is frozen at `3f39cd6`; independent finance/privacy review PASS. Existing portal still, Home typography/colors, reachable plan/credit links, proposed disabled Trial and preserved wallet/hidden protections. One proven mobile header stacking repair preserves access to the sole menu button; carousel/media/order unchanged. Source tests on candidate `1df56fd`: broad Chromium/Firefox/WebKit/mobile 360/360 PASS, 17/19 CI SUCCESS; two other browser jobs blocked before tests by Ubuntu mirror installation. Subsequent commits only test/CI/docs; latest candidate and exact results are in [PR369](https://github.com/mvryhan-web/video-variator-android/pull/369). Ubuntu24 runners plus official signed Ubuntu archive preference address observed Azure mirror retries without skipping assertions.
+
+**Not yet LIVE:** current DEV remains `4b2ecb68`; no PR369 merge/deploy until full final candidate CI. Target only existing DEV Render `deepsyq-visual-preview-20261016`; final live SHA/deploy ID/verification will be recorded in Issue233 and PR369. Main/production, paid AI, Stripe and migrations remain off. PR368 account boundary and PR333 economics remain separate unfinished work; full commercial platform and 2× margin are not proven.
+
+---
+
 # OWNER HOME INSPIRATION CORRECTION — 2026-10-21
 
 PR #347: owner explicitly requested modifying the named Home Inspiration block. Inline All / Video / Image plus 16:9 / 9:16 filters, existing original videos and prompt/reuse overlay. Image intentionally empty. Standalone page removed; old URL redirects to Home anchor. Other Home blocks and media preserved. Original source 58f36cc; current code 93b18df. Local 15/15 route/theme/original-media tests and isolated-preview acceptance pass. Browser CI pending after fixing hidden ratio controls and Home aside styles affecting the mobile overlay. Not LIVE until verified Render publication. No paid calls, real Stripe, main, DB changes or production activation. Finance PR333 remains separate.

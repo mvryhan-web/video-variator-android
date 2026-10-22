@@ -66,6 +66,11 @@ jobs:
       GEMINI_API_KEY: ''
       BYTEPLUS_API_KEY: ''
     steps:
+      - name: Prefer official Ubuntu archive for browser dependencies
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
