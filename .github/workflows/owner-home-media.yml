@@ -59,7 +59,7 @@ permissions:
 jobs:
   owner-media:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 25
     env:
       DATABASE_URL: ''
       STRIPE_SECRET_KEY: ''
