@@ -395,14 +395,13 @@ async function renderPlans(){
   const total=document.createElement('strong');total.textContent=Number(p.limit).toLocaleString('en-US')+' credits';
   const note=document.createElement('small');note.textContent='Renews with each paid monthly billing cycle.';usage.append(unit,total,note);
   const benefits=document.createElement('ul');benefits.className='plan-benefits';
-  const items=['Monthly allowance for the existing Video Uniquifier workflow','The monthly allowance shown above; no extra model tier is promised'];
+  const items=['Access to the existing Video Uniquifier workflow'];
   const aiCredits=aiConfig.subscriptionCredits?.[key];
   if(Number.isSafeInteger(aiCredits)&&aiCredits>0)items.push(aiCredits.toLocaleString('en-US')+' AI-generation credits per paid subscription invoice');
-  else items.push('AI image/video generation uses separate prepaid AI credits');
+  else items.push('AI generation uses separate prepaid AI credits');
   for(const text of items){const li=document.createElement('li');li.textContent=text;benefits.append(li);}
-  const modelNote=document.createElement('small');modelNote.className='plan-model-note';modelNote.textContent='Current AI models and their credit quote are shown in Studio; they are not bundled with this tool plan.';
   const b=document.createElement('button');b.type='button';b.textContent='Choose '+heading.textContent;b.setAttribute('aria-label','Choose '+heading.textContent+' monthly plan');b.onclick=()=>checkout(key);
-  card.append(heading,price,desc,usage,benefits,modelNote,b);$('plans').append(card);
+  card.append(heading,price,desc,usage,benefits,b);$('plans').append(card);
  }
  const p=config.plans?.lifetime;if(p){$('lifetimePrice').textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:p.currency||'EUR',maximumFractionDigits:0}).format(p.price)+' · one payment';$('lifetimeCheckout').disabled=false;$('lifetimeCheckout').onclick=()=>checkout('lifetime');}
 }
@@ -416,7 +415,7 @@ async function loadPlanModelCatalog(){
   for(const model of models){const chip=document.createElement('span');chip.className='home-model-chip';chip.textContent=(model.label||model.id)+' · '+String(model.kind||'AI').toUpperCase();root.append(chip);}
  }catch(_){root.textContent='Current model availability could not be loaded. Check Studio before choosing a model.';}
 }
-try{config=await api('/api/config');applyPlatformFeatures();await renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview(),loadPlanModelCatalog()]);}catch(_){updateInspirationHero([]);$('paymentStatus').textContent='Plans could not load. Please try again later.';}
+try{config=await api('/api/config');applyPlatformFeatures();void renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);void loadPlanModelCatalog();}catch(_){updateInspirationHero([]);$('paymentStatus').textContent='Plans could not load. Please try again later.';}
 window.addEventListener('load',initGoogle);
 try{const c=await api('/api/studio/config');studioModelMenuConfig=c;if(openModelsKind)renderModelFlyout(openModelsKind);$('studioStatus').textContent=c.ownerOnly?'AI generation is in owner preview. Explore the studios; existing tools remain available.':c.enabled?'Open a studio to see the available models.':'AI generation is not available yet. Existing tools remain available.';}catch(_){$('studioStatus').textContent='Studio availability could not be checked. Existing tools remain available.';}
 // Read-only dashboard overview. Backend user_id scope is authoritative;
