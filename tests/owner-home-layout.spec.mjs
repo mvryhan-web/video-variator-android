@@ -1,4 +1,11 @@
 import {test,expect} from '@playwright/test';
+// Google login is not exercised in this local UI suite (googleClientId is empty).
+// Keep the external SDK from delaying load/pageshow and the privacy reset.
+test.beforeEach(async({page})=>{
+ await page.addInitScript(()=>{window.__ownerHomePageShown=false;window.addEventListener('pagehide',()=>{window.__ownerHomePageShown=false;});window.addEventListener('pageshow',()=>{window.__ownerHomePageShown=true;});});
+ await page.route('https://accounts.google.com/gsi/client',r=>r.fulfill({contentType:'application/javascript',body:''}));
+});
+
 import {readFile} from 'node:fs/promises';
 const bundle=JSON.parse(await readFile(new URL('../app/src/main/assets/media/home/owner-20261018/manifest.json',import.meta.url)));
 async function home(page){
@@ -6,6 +13,7 @@ async function home(page){
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:new URL(r.request().url()).searchParams.get('target')==='agent'?[]:bundle.items.filter(x=>x.featured),categories:['Cinematic']}}));
  await page.goto('/deepsyq.html');
+ await page.waitForFunction(()=>window.__ownerHomePageShown===true);
 }
 test('Owner neon layout: reference section order, real card images and mobile bounds',async({page},info)=>{
  const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
@@ -23,15 +31,15 @@ test('Owner neon layout: reference section order, real card images and mobile bo
  await expect(page.locator('.home-feature-spotlight')).toHaveCount(3);
  await expect(page.locator('.home-hero-recommended')).toContainText('Recommended');
  await expect(page.locator('.home-create-copy strong')).toHaveText(['Image','Video','Audio','AI Agent','AI Apps','Canvas']);
- await expect.poll(()=>page.locator('.inspiration-video-label').first().evaluate(el=>getComputedStyle(el).fontSize)).toBe('0px');
+ await expect(page.locator('.inspiration-video-label')).toHaveCount(0);
  await expect.poll(()=>page.locator('#inspirationPreview').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
  for(const width of [1448,390,320]){
   await page.setViewportSize({width,height:1086});
-  await page.locator('#homeCreativeTools').scrollIntoViewIfNeeded();
-  await expect.poll(()=>page.locator('.home-create-card img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
+  await page.locator('#createWithDeepsyq').scrollIntoViewIfNeeded();
+  await expect.poll(()=>page.locator('.home-feature-spotlight>img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
   // Check settled bounds and report exact overflowing cards if a layout regresses.
   await expect.poll(()=>page.evaluate(()=>{
-   const ids=['homeHeroCarousel','homeQuickBar','homeCreativeTools','createWithDeepsyq','inspirationPreview','canvasFeature'];
+   const ids=['homeHeroCarousel','homeQuickBar','createWithDeepsyq','inspirationPreview','canvasFeature'];
    const tops=ids.map(id=>document.getElementById(id).getBoundingClientRect().top);
    const offenders=[...document.querySelectorAll('.home-compose-modes,.home-create-grid,.home-create-card,.home-feature-triptych,.home-feature-spotlight,#homeQuickBar')].flatMap(el=>{const r=el.getBoundingClientRect();return r.left>=-1&&r.right<=innerWidth+1?[]:[{class:el.className,left:r.left,right:r.right,viewport:innerWidth}];});
    return {ordered:tops.every((v,i)=>i===0||v>tops[i-1]),offenders};
@@ -42,7 +50,7 @@ test('Owner neon layout: reference section order, real card images and mobile bo
 });
 test('Owner neon layout: feature shortcuts keep routes and show truthful Flow source credit',async({page})=>{
  await home(page);
- await expect(page.locator('#homeCreativeTools a[href="ai-apps.html"]')).toBeVisible();
+ await expect(page.locator('.home-feature-spotlight[href="ai-apps.html"]')).toBeVisible();
  await expect(page.locator('#homeQuickForm a[href="free-tools.html"]')).toBeVisible();
  await expect(page.locator('.home-create-card.tile-agent')).toHaveAttribute('href','#agentFeature');
  await expect(page.locator('.home-create-card.tile-agent')).toContainText('Coming soon');
@@ -54,7 +62,7 @@ test('Owner neon layout: feature shortcuts keep routes and show truthful Flow so
  await expect(page.locator('#homeHeroCreditLabel')).toHaveText('EXPLORE VIDEO MODELS');
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.5');
- await page.locator('.home-create-card.tile-canvas').click();
+ await page.locator('#homeQuickForm .home-reference-link').click();
  await expect(page.locator('#quickCreateForm')).toBeInViewport();
 });
 
@@ -89,6 +97,7 @@ test('Owner neon layout: Home creation links open the existing destinations with
  await page.locator('[data-home-kind="image"]').click();
  await expect(page.locator('#prompt')).toHaveValue('A private idea kept across Back navigation');
  await page.goBack();
+ await page.waitForFunction(()=>window.__ownerHomePageShown===true);
  await page.locator('#homeQuickPrompt').fill('A second private video idea');
  await page.locator('[data-home-kind="video"]').click();
  await expect(page).toHaveURL(/studio=video&from=home/);

@@ -1,4 +1,10 @@
 import {test,expect} from '@playwright/test';
+// Google login is not exercised in this local UI suite (googleClientId is empty).
+// Keep the external SDK from delaying load/pageshow and the privacy reset.
+test.beforeEach(async({page})=>{
+ await page.route('https://accounts.google.com/gsi/client',r=>r.fulfill({contentType:'application/javascript',body:''}));
+});
+
 async function chooseStudio(page,kind){await page.locator('#studioTypePicker').click();await page.locator('#studioTypeMenu [data-kind="'+kind+'"]').click();}
 test('mobile studio has clear sections, no false generation and no overflow',async({page})=>{await page.setViewportSize({width:390,height:844});let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});await page.goto('/generate-studio.html');await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await page.locator('#prompt').fill('Ocean');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();await expect(page.locator('#availability')).toContainText('not enabled');await chooseStudio(page,'image');await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await expect(page.locator('#ratio option')).toHaveCount(5);await chooseStudio(page,'music');await page.locator('#settingsButton').click();await expect(page.locator('#musicOptions')).toBeVisible();await page.locator('#musicMode').selectOption('instrumental');await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#referenceBox')).toBeHidden();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(posts).toBe(0);});
 test('config exposes readiness without secrets and disabled endpoint fails closed',async({request})=>{const r=await request.get('/api/studio/config');expect(r.status()).toBe(200);const c=await r.json();expect(c.enabled).toBe(false);expect(c.ownerOnly).toBe(true);expect(c.translation.enabled).toBe(false);const post=await request.post('/api/studio/jobs',{data:{kind:'image',prompt:'test',consent:true}});expect(post.status()).toBe(503);});
@@ -313,6 +319,7 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    const assertAnchored=async(dialog,anchor)=>{
     await expect(dialog).toBeVisible();
     await expect.poll(()=>dialog.evaluate(el=>({left:el.style.left,top:el.style.top}))).not.toEqual({left:'',top:''});
+    await expect.poll(async()=>{const b=await dialog.boundingBox();return Boolean(b&&b.x>=11&&b.y>=11);}).toBe(true);
     const bounds=await dialog.boundingBox(),button=await anchor.boundingBox();
     expect(bounds.x).toBeGreaterThanOrEqual(11);expect(bounds.y).toBeGreaterThanOrEqual(11);
     expect(bounds.x+bounds.width).toBeLessThanOrEqual(viewport.width-11);expect(bounds.y+bounds.height).toBeLessThanOrEqual(viewport.height-11);
@@ -330,8 +337,8 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    await page.keyboard.press('Escape');await expect(chooser).not.toBeVisible();
    await expect(trigger).toHaveAttribute('aria-expanded','false');await expect(trigger).toBeFocused();
    // Close the mobile drawer through its actual control before using the content cards.
-   if(viewport.width<=760){await page.locator('#sidebarToggle').click();await expect(page.locator('body')).not.toHaveClass(/menu-open/);}
-   await page.locator(`.home-create-card[href="generate-studio.html?studio=${studio}"]`).click();
+   if(viewport.width<=760){await page.locator('#menu').click();await expect(page.locator('body')).not.toHaveClass(/menu-open/);}
+   await page.locator(`#homeQuickBar .home-compose-mode[href^="generate-studio.html?studio=${studio}&"]`).click();
    await expect(page).toHaveURL(new RegExp('studio='+studio));
    await expect(page.locator('#taskTitle')).toHaveText(title);
    await expect(page.locator('.studio-shell>.studio-nav')).toHaveCount(0);

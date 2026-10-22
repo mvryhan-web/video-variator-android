@@ -1,4 +1,13 @@
 import {test,expect} from '@playwright/test';
+// Google login is not exercised in this local UI suite (googleClientId is empty).
+// Keep the external SDK from delaying load/pageshow and the privacy reset.
+test.beforeEach(async({page})=>{
+ await page.addInitScript(()=>{window.__uiPageShown=false;window.addEventListener('pagehide',()=>{window.__uiPageShown=false;});window.addEventListener('pageshow',()=>{window.__uiPageShown=true;});});
+ await page.route('https://accounts.google.com/gsi/client',r=>r.fulfill({contentType:'application/javascript',body:''}));
+});
+
+async function home(page){await page.goto('/deepsyq.html');await page.waitForFunction(()=>window.__uiPageShown===true);}
+
 const plans={basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}};
 async function fixtures(page){
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true}}));
@@ -6,15 +15,15 @@ async function fixtures(page){
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
 }
 test('dashboard keeps tools secondary, honest availability and supported navigation',async({page},info)=>{
- await fixtures(page);await page.goto('/deepsyq.html');
+ await fixtures(page);await home(page);
  await expect(page.locator('main > h1.sr-only')).toHaveText('Deepsyq AI creative platform');
  await expect(page.locator('.hero-stage h1')).toHaveCount(0);
  await expect(page.locator('.hero-stage')).not.toContainText('beyond limits');
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await expect(page.locator('#sidebar nav a[href="#quickCreateForm"]')).toContainText('Canvas');
  await expect(page.locator('#studioStatus')).toContainText('owner preview');
- await expect(page.locator('.plan')).toHaveCount(3);
- await expect(page.locator('.trial-details-link')).toHaveAttribute('href','ai-pricing.html#trialOffer');
+ await expect(page.locator('.plan')).toHaveCount(4);
+ await expect(page.locator('.trial-plan .plan-action')).toHaveAttribute('href','ai-pricing.html#trialOffer');
  await expect(page.locator('.lifetime')).toContainText('does not provide unlimited');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:info.outputPath('deepsyq.png'),fullPage:true});
@@ -29,7 +38,7 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
   models:[{id:'configured-image',kind:'image',enabled:true},{id:'configured-video',kind:'video',enabled:true}],
   catalog:[{id:'configured-image',kind:'image',label:'Connected image',provider:'Fixture',enabled:true,ratios:['1:1'],references:0},{id:'not-connected',kind:'image',label:'Pending image',provider:'Fixture',enabled:false,ratios:['1:1'],references:0},{id:'configured-video',kind:'video',label:'Connected video',provider:'Fixture',enabled:true,ratios:['16:9'],references:0}]
  }}));
- await page.goto('/deepsyq.html');
+ await home(page);
  await expect(page.locator('#sidebar nav a').first()).toHaveAttribute('aria-label','Home');
  await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
  // Desktop uses icon-only collapse; mobile keeps its drawer inert until
@@ -42,10 +51,10 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
   await expect(page.locator('#sidebar')).toHaveJSProperty('inert',false);
   await expect(page.locator('#sidebar')).toBeInViewport();
  }else{
-  await page.locator('#sidebarToggle').click();
+  await page.locator('#menu').click();
   await expect(page.locator('body')).toHaveClass(/sidebar-collapsed/);
   await expect(page.locator('#sidebar a[aria-label="Home"]')).toBeVisible();
-  await page.locator('#sidebarToggle').click();
+  await page.locator('#menu').click();
   await expect(page.locator('body')).not.toHaveClass(/sidebar-collapsed/);
  }
  // Desktop hover is a preview of the navigation item, never an open modal.
@@ -75,7 +84,7 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
 test('dashboard quick-create prepares a local image draft without any paid request',async({page})=>{
  await fixtures(page);let jobPosts=0;
  page.on('request',request=>{if(request.url().includes('/api/studio/jobs')&&request.method()==='POST')jobPosts++;});
- await page.goto('/deepsyq.html');
+ await home(page);
  await page.locator('#quickCreatePrompt').fill('A watercolor greenhouse filled with sunlight');
  await page.locator('#quickCreateKind').selectOption('image');
  await page.locator('#quickCreateSubmit').click();
@@ -89,7 +98,7 @@ test('dashboard quick-create prepares a local image draft without any paid reque
 test('Canvas starter prompts are editable, preserve existing drafts on cancel, and do not call paid AI',async({page})=>{
  await fixtures(page);
  let posts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
- await page.goto('/deepsyq.html');
+ await home(page);
  await page.locator('[data-quick-starter="social-video"]').click();
  await expect(page.locator('#quickCreateKind')).toHaveValue('video');
  await expect(page.locator('#quickCreatePrompt')).toHaveValue(/short, engaging social video/);
@@ -104,7 +113,7 @@ test('Canvas saves only text and kind within this tab; refresh drops photos and 
  await fixtures(page);
  let jobPosts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')jobPosts++;});
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
- await page.goto('/deepsyq.html');
+ await home(page);
  await page.locator('#quickCreatePrompt').fill('A very specific personal video idea');
  await page.locator('#quickCreateKind').selectOption('video');
  await page.locator('#quickCreateFiles').setInputFiles({name:'private-photo.png',mimeType:'image/png',buffer:png});
@@ -137,7 +146,7 @@ test('Canvas quick-create accepts local reference photos, allows removal and nev
  }}));
  let jobPosts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')jobPosts++;});
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
- await page.goto('/deepsyq.html');
+ await home(page);
  await page.locator('#quickCreatePrompt').fill('Natural product photograph with soft light');
  await page.locator('#quickCreateFiles').setInputFiles([
   {name:'reference-1.png',mimeType:'image/png',buffer:png},
@@ -158,7 +167,7 @@ test('featured AI Apps render from approved API data and disappear when no templ
  await fixtures(page);
  let items=[{id:'featured-1',slug:'product-photo',title:'Approved Product Photo',description:'Owner approved workflow',category:'ecommerce',generationType:'image',active:true,featured:true}];
  await page.route('**/api/templates?featured=true',route=>route.fulfill({json:{items}}));
- await page.goto('/deepsyq.html');
+ await home(page);
  await expect(page.locator('#featuredWorkflows')).toBeVisible();
  await expect(page.locator('#featuredWorkflowGrid .featured-workflow-card')).toHaveCount(1);
  await expect(page.locator('#featuredWorkflowGrid')).toContainText('Approved Product Photo');
@@ -171,7 +180,7 @@ test('existing email component logs in and logout clears session and latest resu
  await fixtures(page);let payload;
  await page.route('**/api/auth/email/login',async r=>{payload=r.request().postDataJSON();await r.fulfill({json:{token:'test-session'}});});
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Test creator'}}}));
- await page.goto('/deepsyq.html');
+ await home(page);
  if(await page.locator('#menu').isVisible())await page.locator('#menu').click();
  await page.locator('#accountButton').click();
  await page.locator('#emailAuthEmail').fill('creator@example.test');await page.locator('#emailAuthPassword').fill('fixture-only-password');await page.locator('#emailAuthSubmit').click();
@@ -186,11 +195,11 @@ test('checkout uses original plan endpoint and explains unavailable payments',as
  await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','fixture'));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Creator'}}}));let plan;
  await page.route('**/api/billing/checkout',async r=>{plan=r.request().postDataJSON().plan;await r.fulfill({status:503,json:{error:'BILLING_NOT_CONFIGURED'}});});
- await page.goto('/deepsyq.html');await page.getByRole('button',{name:'Choose Basic',exact:true}).click();
+ await home(page);await page.getByRole('button',{name:'Choose Basic',exact:true}).click();
  await expect(page.locator('#paymentStatus')).toContainText('No payment was taken');expect(plan).toBe('basic');
 });
 test('comparison is crawlable and does not pretend AI chat exists',async({page})=>{
- await page.goto('/deepsyq-vs-deepseek.html',{waitUntil:'domcontentloaded'});await expect(page).toHaveTitle(/Deepsyq vs DeepSeek/);
+ await page.goto('/deepsyq-vs-deepseek.html');await expect(page).toHaveTitle(/Deepsyq vs DeepSeek/);
  await expect(page.locator('h1')).toHaveCount(1);await expect(page.locator('body')).toContainText('not currently offer a general-purpose AI chat');
  await expect(page.locator('body')).toContainText('not affiliated');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
@@ -216,7 +225,7 @@ test('owner sees AI control entry and admin page exposes only safe model control
  await page.route('**/api/studio/admin/billing-review',r=>r.fulfill({json:{items:[{jobId:'job-review-1',userId:'user-1',credits:17,kind:'video',provider:'BytePlus',model:'byteplus-seedance-2',status:'failed',error:'GENERATION_FAILED_NO_AUTOMATIC_RETRY',createdAt:'2026-10-15T08:00:00Z'}]}}));
  await page.route('**/api/studio/admin/route-preview',r=>r.fulfill({json:{primary:'byteplus-seedance-2',candidates:[{id:'byteplus-seedance-2',provider:'BytePlus',priority:10,quality:'720p',duration:'5 seconds'}]}}));
  await page.route('**/api/studio/admin/templates',r=>r.fulfill({json:{items:[{id:'t-1',title:'Original Product Template',slug:'original-product-template',category:'ecommerce',description:'Owned workflow',thumbnail:null,generationType:'image',promptTemplate:'Create a product image',defaultModel:null,requiredInputTypes:['image'],defaultSettings:{ratio:'1:1'},active:true,featured:true,sortOrder:10}]}}));
- await page.goto('/deepsyq.html');if(await page.locator('#menu').isVisible())await page.locator('#menu').click();await expect(page.locator('#adminAiControl')).toBeVisible();await page.locator('#adminAiControl').click();
+ await home(page);if(await page.locator('#menu').isVisible())await page.locator('#menu').click();await expect(page.locator('#adminAiControl')).toBeVisible();await page.locator('#adminAiControl').click();
  await expect(page).toHaveURL(/deepsyq-admin.html/);await expect(page.locator('#businessOverview')).toContainText('Users');await expect(page.locator('#purchasesTable')).toContainText('creator@example.test');await expect(page.locator('#purchasesTable')).toContainText('€7.49');await expect(page.locator('#usersTable')).toContainText('creator@example.test');await expect(page.locator('#jobsTable')).toContainText('job-1');await expect(page.getByText('Seedance 2.0')).toBeVisible();await expect(page.locator('#metrics')).toContainText('BytePlus');await page.locator('#metricsWindow').selectOption('24h');await expect(page.locator('#billingReview')).toContainText('17 credits');await expect(page.locator('#templates input[name=title]').first()).toHaveValue('Original Product Template');
  await page.locator('#routeKind').selectOption('video');await page.locator('#routeRatio').selectOption('16:9');await page.locator('#routePreview').click();await expect(page.locator('#routeResult')).toContainText('byteplus-seedance-2');await expect(page.locator('#routeStatus')).toContainText('No provider call was made');
  await expect(page.locator('body')).not.toContainText('API key');await expect(page.locator('body')).not.toContainText('secret');
@@ -231,7 +240,7 @@ test('new account onboarding goes straight to a real first-stage workflow',async
   if(r.request().method()==='POST'){const body=r.request().postDataJSON();savedGoal=body.goal;return r.fulfill({json:{ok:true,goal:body.goal,target:'/generate-studio.html?studio='+body.goal}});}
   return r.fulfill({json:{completed:false,goal:null,options:[{id:'image',label:'Image',target:'/generate-studio.html?studio=image'},{id:'video',label:'Video',target:'/generate-studio.html?studio=video'}]}});
  });
- await page.goto('/deepsyq.html');await page.evaluate(()=>{localStorage.setItem('vv_token','new-user');localStorage.setItem('deepsyq_onboarding_pending','1');});await page.reload();await expect(page.locator('#onboardingModal')).toBeVisible();await page.locator('[data-onboarding-goal=image]').click();
+ await home(page);await page.evaluate(()=>{localStorage.setItem('vv_token','new-user');localStorage.setItem('deepsyq_onboarding_pending','1');});await page.reload();await expect(page.locator('#onboardingModal')).toBeVisible();await page.locator('[data-onboarding-goal=image]').click();
  await expect(page).toHaveURL(/generate-studio.html\?studio=image/);expect(savedGoal).toBe('image');expect(await page.evaluate(()=>localStorage.getItem('deepsyq_onboarding_pending'))).toBeNull();
 });
 
@@ -249,7 +258,7 @@ test('dashboard featured workflows are data-driven and disappear when empty',asy
  await fixtures(page);
  await page.route('**/api/config',r=>r.fulfill({json:{googleClientId:'',appleClientId:'',emailAuth:true,billingConfigured:false,features:{aiApps:true,onboarding:true},plans:{}}}));
  await page.route('**/api/templates?featured=true',r=>r.fulfill({json:{items:[{id:'f1',title:'Owner Featured Workflow',slug:'owner-featured',category:'ecommerce',description:'Approved workflow',thumbnail:null,generationType:'image',active:true,featured:true}]}}));
- await page.goto('/deepsyq.html');await expect(page.locator('#featuredWorkflows')).toBeVisible();await expect(page.locator('#featuredWorkflowGrid')).toContainText('Owner Featured Workflow');
+ await home(page);await expect(page.locator('#featuredWorkflows')).toBeVisible();await expect(page.locator('#featuredWorkflowGrid')).toContainText('Owner Featured Workflow');
 });
 
 
@@ -293,7 +302,7 @@ test('dashboard shows the authenticated AI wallet only when AI billing is enable
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Wallet User',isAdmin:false}}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'test',livePaymentsEnabled:false,unit:'AI credits',packs:[],rates:[],revision:'x'}}));
  await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:4200,reserved:150,debt:0}}));
- await page.goto('/deepsyq.html');await expect(page.locator('#aiWalletLink')).toBeVisible();await expect(page.locator('#aiWalletAvailable')).toHaveText('4,200');await expect(page.locator('#aiWalletHeld')).toHaveText('150 held');await expect(page.locator('#aiWalletLink')).toHaveAttribute('href','ai-pricing.html');
+ await home(page);await expect(page.locator('#aiWalletLink')).toBeVisible();await expect(page.locator('#aiWalletAvailable')).toHaveText('4,200');await expect(page.locator('#aiWalletHeld')).toHaveText('150 held');await expect(page.locator('#aiWalletLink')).toHaveAttribute('href','ai-pricing.html');
 });
 
 
@@ -318,7 +327,7 @@ test('retired Inspiration URL opens Home and changes media filters locally',asyn
 });
 
 test('dashboard inspiration preview is data-driven and hides Agent examples when none are connected',async({page})=>{
- await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,onboarding:false}}}));await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));await page.route('**/api/inspiration**',r=>{const u=new URL(r.request().url());if(u.searchParams.get('target')==='agent')return r.fulfill({json:{items:[],categories:[]}});return r.fulfill({json:{items:[{id:'f1',title:'Owned Video Mood',slug:'owned-video-mood',kind:'video',category:'Cinematic',description:'Original example',previewUrl:'/owned.mp4',previewPosterUrl:null,prompt:'Cinematic scene',defaultModel:null,aspectRatio:'16:9',requiredInputTypes:[],defaultSettings:{ratio:'16:9'},actionTarget:'studio',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false,nextOffset:null}}});});await page.goto('/deepsyq.html');await expect(page.locator('#inspirationPreview')).toBeVisible();await expect(page.locator('#inspirationPreviewGrid')).toContainText('Owned Video Mood');await expect(page.locator('#inspirationPreviewCategories [data-inspiration-kind]')).toHaveText(['All','Video','Image']);await page.getByRole('button',{name:'View Owned Video Mood inspiration'}).click();await expect(page.getByRole('dialog')).toContainText('Cinematic scene');await page.keyboard.press('Escape');await expect(page.locator('#agentExamples')).toBeHidden();
+ await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:false,inspiration:true,onboarding:false}}}));await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));await page.route('**/api/inspiration**',r=>{const u=new URL(r.request().url());if(u.searchParams.get('target')==='agent')return r.fulfill({json:{items:[],categories:[]}});return r.fulfill({json:{items:[{id:'f1',title:'Owned Video Mood',slug:'owned-video-mood',kind:'video',category:'Cinematic',description:'Original example',previewUrl:'/owned.mp4',previewPosterUrl:null,prompt:'Cinematic scene',defaultModel:null,aspectRatio:'16:9',requiredInputTypes:[],defaultSettings:{ratio:'16:9'},actionTarget:'studio',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false,nextOffset:null}}});});await home(page);await expect(page.locator('#inspirationPreview')).toBeVisible();await expect(page.getByRole('button',{name:'View Owned Video Mood inspiration',exact:true})).toBeVisible();await expect(page.locator('#inspirationPreview .inspiration-home-tabs [data-inspiration-kind]')).toHaveText(['All','Video','Image']);await page.getByRole('button',{name:'View Owned Video Mood inspiration'}).click();await expect(page.getByRole('dialog')).toContainText('Cinematic scene');await page.keyboard.press('Escape');await expect(page.locator('#agentExamples')).toBeHidden();
 });
 
 
@@ -331,11 +340,11 @@ test('featured owned video is promoted but original homepage sections and images
   {...common,id:'photo',title:'Original owned photo',slug:'original-owned-photo',kind:'image',category:'Product Ads',previewUrl:'/original-photo.png',prompt:'Photo prompt',aspectRatio:'1:1'},
   {...common,id:'film',title:'Original owned film',slug:'original-owned-film',kind:'video',category:'Cinematic',previewUrl:'/original-film.mp4',previewPosterUrl:'/original-poster.jpg',prompt:'Video prompt',aspectRatio:'16:9'}
  ],categories:['Product Ads','Cinematic'],ratios:['1:1','16:9'],pagination:{hasMore:false}}}));
- await page.goto('/deepsyq.html');
+ await home(page);
  await expect(page.locator('#inspirationPreview')).toBeVisible();
  await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(2);
- await expect(page.locator('#inspirationPreviewGrid')).toContainText('Original owned film');
- await page.locator('[data-inspiration-kind="image"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);await expect(page.locator('#inspirationPreviewGrid')).toContainText('Original owned photo');await page.locator('[data-inspiration-kind="video"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
+ await expect(page.getByRole('button',{name:'View Original owned film inspiration',exact:true})).toBeVisible();
+ await page.locator('[data-inspiration-kind="image"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);await expect(page.getByRole('button',{name:'View Original owned photo inspiration',exact:true})).toBeVisible();await page.locator('[data-inspiration-kind="video"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
  await expect(page.locator('#inspirationPreviewGrid video')).toHaveCount(1);
  await expect(page.locator('#inspirationPreviewGrid video')).toHaveJSProperty('muted',true);
  await expect(page.locator('#inspirationPreviewGrid video')).toHaveJSProperty('loop',true);
@@ -346,7 +355,8 @@ test('featured owned video is promoted but original homepage sections and images
  await expect(page.locator('.home-create-grid .tile-video')).toHaveAttribute('href','generate-studio.html?studio=video');
  await expect(page.locator('.home-create-grid .tile-audio')).toHaveAttribute('href','generate-studio.html?studio=audio');
  await expect(page.locator('a[aria-label="History"]')).toHaveAttribute('href','generate-studio.html?view=history');
- await expect(page.getByRole('link',{name:/Video Uniquifier history/})).toBeVisible();
+ await expect(page.locator('.history-links a[href="index.html#history"]')).toBeVisible();
+ await expect(page.locator('.history-links a[href="index.html#history"]')).toContainText('Video projects');
 });
 test('approved video appears in the real homepage hero but does not erase Canvas or original sections',async({page})=>{
  // Navigation/media-element assertions are separate from serving real MP4 bytes.
@@ -355,7 +365,7 @@ test('approved video appears in the real homepage hero but does not erase Canvas
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'approved-film',title:'Original mountain film',slug:'original-mountain-film',kind:'video',category:'Cinematic',actionTarget:'studio',previewUrl:'/owner-owned-film.mp4',previewPosterUrl:'/owner-owned-poster.jpg',aspectRatio:'16:9',prompt:'Cinematic natural camera movement',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false}}}));
- await page.goto('/deepsyq.html');
+ await home(page);
  await expect(page.locator('#inspirationHeroFeature')).toBeVisible();
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src',/\.mp4$/);
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/owner-owned-film.mp4');
@@ -386,7 +396,7 @@ test('video carousel switches only among owner-approved videos and retains exist
   {...shared,id:'p',kind:'image',title:'Preserved owned photo',previewUrl:'/owned.png'},
   {...shared,id:'v2',kind:'video',title:'Owned video two',previewUrl:'/two.mp4',previewPosterUrl:'/two.webp'}
  ],categories:['Cinematic'],ratios:['16:9']}}));
- await page.goto('/deepsyq.html');
+ await home(page);
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await expect(page.locator('#homeHeroDots')).toHaveCount(0);
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/one.mp4');
@@ -401,7 +411,7 @@ test('video carousel switches only among owner-approved videos and retains exist
  await page.locator('#homeHeroPrevious').click();
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/two.mp4');
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(3);
- await expect(page.locator('#inspirationPreviewGrid')).toContainText('Preserved owned photo');
+ await expect(page.getByRole('button',{name:'View Preserved owned photo inspiration'}).getByRole('img')).toHaveAttribute('src','/owned.png');
  await page.locator('[data-inspiration-kind="image"]').click();
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
  await expect(page.getByRole('button',{name:'View Preserved owned photo inspiration'})).toBeVisible();
@@ -418,7 +428,7 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  const common={actionTarget:'studio',category:'Cinematic',aspectRatio:'16:9',featured:true,active:true};
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{...common,id:'broken-1',kind:'video',title:'Unavailable first film',previewUrl:'/broken-one.mp4'},{...common,id:'broken-2',kind:'video',title:'Unavailable second film',previewUrl:'/broken-two.mp4'},{...common,id:'preserved-image',kind:'image',title:'Original owner still',previewUrl:'/owner-image.png'}],categories:['Cinematic'],ratios:['16:9']}}));
- await page.goto('/deepsyq.html');
+ await home(page);
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/broken-one.mp4');
  await page.locator('#inspirationHeroVideo').evaluate(v=>v.dispatchEvent(new Event('error')));
@@ -434,7 +444,7 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(3);
- await expect(page.locator('#inspirationPreviewGrid')).toContainText('Original owner still');
+ await expect(page.getByRole('button',{name:'View Original owner still inspiration'}).getByRole('img')).toHaveAttribute('src','/owner-image.png');
  await expect(page.locator('#inspirationEmpty')).toBeHidden();
 });
 test('reduced-motion users get a manual Play button for genuine videos',async({page})=>{
@@ -449,7 +459,7 @@ test('reduced-motion users get a manual Play button for genuine videos',async({p
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'clip',title:'Approved original clip',kind:'video',previewUrl:'/approved.mp4',actionTarget:'studio',category:'Cinematic',aspectRatio:'16:9'}],categories:['Cinematic'],ratios:['16:9']}}));
- await page.goto('/deepsyq.html');
+ await home(page);
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await expect(page.locator('#homeHeroPlay')).toHaveText('Play video');
  await expect(page.locator('#homeHeroNext')).toBeDisabled();
@@ -460,14 +470,14 @@ test('Home Quick Create hands off Audio and Video prompts to existing Studio wit
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  let posts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')posts++;});
- await page.goto('/deepsyq.html');
+ await home(page);
  await page.locator('#homeQuickPrompt').fill('Original cinematic percussion and ambient strings');
  await page.locator('[data-home-kind="music"]').click();
  await expect(page).toHaveURL(/generate-studio\.html\?studio=audio&from=home/);
  await expect(page.locator('#prompt')).toHaveValue('Original cinematic percussion and ambient strings');
  await expect(page.locator('#consent')).not.toBeChecked();
  expect(posts).toBe(0);
- await page.goto('/deepsyq.html');
+ await home(page);
  await page.locator('#homeQuickPrompt').fill('Original slow-motion product reveal');
  await page.locator('[data-home-kind="video"]').click();
  await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=home/);
@@ -480,7 +490,7 @@ test('Home Quick Create hands off an unpaid draft and Agent remains a preview',a
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  let posts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
- await page.goto('/deepsyq.html');
+ await home(page);
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await expect(page.locator('#homeHeroEmpty')).toBeVisible();
  await page.locator('[data-home-kind="agent"]').click();
@@ -499,12 +509,12 @@ test('dashboard never fabricates a featured hero when only approved images exist
  await page.route('**/api/studio/config',r=>r.fulfill({json:{ownerOnly:true,enabled:false,models:[],catalog:[]}}));
  await page.route('**/api/auth/email/status',r=>r.fulfill({json:{configured:true}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'still',title:'Owned castle still',kind:'image',category:'Cinematic',actionTarget:'studio',previewUrl:'/castle.png',aspectRatio:'16:9',prompt:'Original castle',active:true,featured:true}],categories:['Cinematic'],ratios:['16:9']}}));
- await page.goto('/deepsyq.html');
+ await home(page);
  await expect(page.locator('#inspirationPreview')).toBeVisible();
  await expect(page.locator('#inspirationHeroFeature')).toBeHidden();
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
  await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(1);
- await expect(page.locator('#inspirationPreviewGrid')).toContainText('Owned castle still');
+ await expect(page.getByRole('button',{name:'View Owned castle still inspiration',exact:true})).toBeVisible();
 });
 test('owner can manage Block 3 inspiration without exposing rights internals publicly',async({page})=>{
  await fixtures(page);
@@ -545,7 +555,7 @@ test('Block 3 Agent examples stay hidden until a real configured route exists',a
  const agent={id:'agent-1',title:'Campaign Builder',slug:'campaign-builder',kind:'video',category:'Campaign',description:'Prepare a campaign workflow',previewUrl:'/agent.webp',previewPosterUrl:null,prompt:'Build a social campaign',defaultModel:null,aspectRatio:'9:16',requiredInputTypes:['image'],defaultSettings:{ratio:'9:16'},actionTarget:'agent',actionPath:'/agent-test.html',active:true,featured:true};
  await page.route('**/api/inspiration**',r=>{const u=new URL(r.request().url());return r.fulfill({json:u.searchParams.get('target')==='agent'?{items:[agent],categories:['Campaign'],ratios:['9:16']}:{items:[],categories:[],ratios:[]}});});
  await page.route('**/agent-test.html**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Agent test</title><h1>Agent test</h1>'}));
- await page.goto('/deepsyq.html');await expect(page.locator('#agentExamples')).toBeVisible();await expect(page.locator('#agentExamplesGrid')).toContainText('Campaign Builder');await page.locator('#agentExamplesGrid a').click();await expect(page).toHaveURL(/agent-test\.html\?from=inspiration/);const handoff=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('deepsyq_agent_inspiration_start')));expect(handoff.promptTemplate).toBe('Build a social campaign');expect(handoff.defaultSettings.ratio).toBe('9:16');
+ await home(page);await expect(page.locator('#agentExamples')).toBeVisible();await expect(page.locator('#agentExamplesGrid')).toContainText('Campaign Builder');await page.locator('#agentExamplesGrid a').click();await expect(page).toHaveURL(/agent-test\.html\?from=inspiration/);const handoff=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('deepsyq_agent_inspiration_start')));expect(handoff.promptTemplate).toBe('Build a social campaign');expect(handoff.defaultSettings.ratio).toBe('9:16');
 });
 
 
@@ -553,15 +563,15 @@ test('Home Inspiration shows all video examples together and filters by media ty
  await fixtures(page);
  const base={kind:'video',actionTarget:'studio',prompt:'Original prompt',requiredInputTypes:[],previewUrl:'/film.mp4'};
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{...base,id:'one',title:'Landscape film',aspectRatio:'16:9'},{...base,id:'two',title:'Portrait film',aspectRatio:'9:16'}]}}));
- await page.goto('/deepsyq.html');await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(2);
- await page.locator('[data-inspiration-kind="video"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(2);await expect(page.locator('#inspirationPreviewGrid')).toContainText('Landscape film');await expect(page.locator('#inspirationPreviewGrid')).toContainText('Portrait film');
+ await home(page);await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(2);
+ await page.locator('[data-inspiration-kind="video"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(2);await expect(page.getByRole('button',{name:'View Landscape film inspiration',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'View Portrait film inspiration',exact:true})).toBeVisible();
  await page.locator('[data-inspiration-kind="image"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(0);await expect(page.locator('#inspirationEmpty')).toHaveText('No images yet.');
  await page.locator('[data-inspiration-kind="all"]').click();await expect(page.locator('#inspirationPreviewGrid button')).toHaveCount(2);
 });
 
 test('owner-approved homepage layout keeps the real Canvas and section order',async({page})=>{
  await fixtures(page);
- await page.goto('/deepsyq.html');
+ await home(page);
  await expect(page.locator('main > h1.sr-only')).toHaveText('Deepsyq AI creative platform');
  await expect(page.locator('.hero-stage h1')).toHaveCount(0);
  await expect(page.locator('.hero-stage')).not.toContainText('beyond limits');
@@ -572,7 +582,7 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  await expect(page.locator('#promoDialog')).toContainText('not available yet');
  await page.locator('#promoDialog button[type=submit][value=close]').click();
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
- await expect(page.locator('#agentFeature')).toContainText('Coming soon');
+ await expect(page.locator('#agentFeature')).toContainText(/coming soon/i);
  await expect(page.locator('#appsFeature')).toBeVisible();
  await expect(page.locator('#inspirationPreview')).toHaveCount(1);
  const inDocumentOrder=await page.evaluate(()=>{
@@ -587,22 +597,22 @@ test('homepage inspiration All Video Image filters only owned API cards',async({
  await page.route('**/api/config',r=>r.fulfill({json:{plans,googleClientId:'',billingConfigured:true,features:{aiApps:true,inspiration:true,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[{id:'i',title:'Existing image',kind:'image',previewUrl:'/owned.png',category:'Editorial',aspectRatio:'1:1',actionTarget:'studio'},{id:'v',title:'Existing video',kind:'video',previewUrl:'/owned.mp4',category:'Cinematic',aspectRatio:'16:9',actionTarget:'studio'}],categories:['Editorial','Cinematic']}}));
- await page.goto('/deepsyq.html');
+ await home(page);
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
- await expect(page.locator('#inspirationPreviewGrid')).toContainText('Existing video');
+ await expect(page.getByRole('button',{name:'View Existing video inspiration',exact:true})).toBeVisible();
  await page.locator('[data-inspiration-kind="image"]').click();
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
- await expect(page.locator('#inspirationPreviewGrid')).toContainText('Existing image');
+ await expect(page.getByRole('button',{name:'View Existing image inspiration',exact:true})).toBeVisible();
  await page.locator('[data-inspiration-kind="video"]').click();
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toHaveCount(1);
- await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toContainText('Existing video');
+ await expect(page.getByRole('button',{name:'View Existing video inspiration',exact:true})).toBeVisible();
  await page.locator('[data-inspiration-kind="all"]').click();
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card:visible')).toHaveCount(2);
 });
 
 
 test('owner-approved social share section stays in left rail without invented official accounts',async({page})=>{
- await fixtures(page);await page.goto('/deepsyq.html');
+ await fixtures(page);await home(page);
  const mobile=await page.evaluate(()=>matchMedia('(max-width:760px)').matches);
  if(mobile){
   // Check content only after opening the actual mobile drawer.
@@ -617,11 +627,11 @@ test('owner-approved social share section stays in left rail without invented of
  await expect(page.locator('.sidebar-social [data-social=instagram]')).toBeVisible();
  if(mobile){
   // The in-drawer toggle closes it and makes content non-interactive.
-  await page.locator('#sidebarToggle').click();
+  await page.locator('#menu').click();
   await expect(page.locator('body')).not.toHaveClass(/menu-open/);
   await expect(page.locator('#sidebar')).toHaveJSProperty('inert',true);
  }else{
-  await page.locator('#sidebarToggle').click();
+  await page.locator('#menu').click();
   await expect(page.locator('body')).toHaveClass(/sidebar-collapsed/);
   await expect(page.locator('.sidebar-social [data-social=x]')).toBeVisible();
  }

@@ -1,4 +1,12 @@
-# COORDINATOR #5 — CYCLE25 CURRENT QUEUES / 2026-10-22
+# OWNER PR369 — PRICING DEV PUBLICATION IN PROGRESS / 22 OCTOBER 2026
+
+Approved cinematic Pricing source is frozen at `3f39cd6`; independent finance/privacy review PASS. Existing portal still, Home typography/colors, reachable plan/credit links, proposed disabled Trial and preserved wallet/hidden protections. One proven mobile header stacking repair preserves access to the sole menu button; carousel/media/order unchanged. Source tests on candidate `1df56fd`: broad Chromium/Firefox/WebKit/mobile 360/360 PASS, 17/19 CI SUCCESS; two other browser jobs blocked before tests by Ubuntu mirror installation. Subsequent commits only test/CI/docs; latest candidate and exact results are in [PR369](https://github.com/mvryhan-web/video-variator-android/pull/369). Ubuntu24 runners plus official signed Ubuntu archive preference address observed Azure mirror retries without skipping assertions.
+
+**Not yet LIVE:** current DEV is `9ea0db4c`; no PR369 merge/deploy until full final candidate CI. Target only existing DEV Render `deepsyq-visual-preview-20261016`; final live SHA/deploy ID/verification will be recorded in Issue233 and PR369. Main/production, paid AI, Stripe and migrations remain off. PR368 account boundary and PR333 economics remain separate unfinished work; full commercial platform and 2× margin are not proven.
+
+---
+
+# # COORDINATOR #5 — CYCLE25 CURRENT QUEUES / 2026-10-22
 
 > **HEAD observation only:** DEV `4b2ecb68c07ddde481dd45c0bfc2e59aa2a7858c` at verification; always re-read current HEAD, claims, exact final PR SHA and CI before edits. Full primary evidence and agent handoffs: [Cycle25 GitHub CHECKPOINT](https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6334809418). This is NOT commercial LIVE_VERIFIED acceptance. Historical sections below remain preserved. D16 A–D DEV self-merge; B↔D privacy/finance peer checks directly; no main/prod/paid AI/real Stripe/unsafe SQL authorization.
 

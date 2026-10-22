@@ -1,0 +1,35 @@
+/* Pricing only. Uses the approved Home tokens; no shared Home or billing changes. */
+.pricing-cinematic main{padding-top:28px}
+.pricing-cinematic .pricing-intro{max-width:none;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:32px;padding:30px;margin-bottom:40px;border:1px solid var(--ds-line);border-radius:24px;background:radial-gradient(ellipse at 10% 0%,#4c9cf41c,transparent 65%),var(--ds-surface);overflow:hidden}
+.pricing-cinematic .pricing-intro h1{font-size:clamp(36px,4.5vw,62px);line-height:1.06;letter-spacing:-.045em;margin:20px 0;background:none;color:var(--ds-text)}
+.pricing-cinematic .pricing-intro-copy>p{max-width:420px}
+.pricing-intro-actions{display:flex;gap:12px;flex-wrap:wrap;margin:26px 0 16px}
+.pricing-link{display:inline-flex;align-items:center;justify-content:center;gap:24px;min-height:48px;padding:13px 20px;border:1px solid var(--ds-line);border-radius:12px;font-size:13px;font-weight:700}
+.pricing-link.secondary{background:#080d1d80;color:var(--ds-text)}
+.pricing-cinematic .pricing-caption{font-size:11px;color:var(--ds-muted)}
+.pricing-visual{position:relative;min-height:340px;height:100%;border:1px solid #4c9cf466;border-radius:18px;overflow:hidden;box-shadow:0 0 32px #4c9cf420}
+.pricing-visual img{position:absolute;width:100%;height:100%;object-fit:cover;inset:0}
+.pricing-visual:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#080d1df0,transparent 80%)}
+.pricing-visual-caption{position:absolute;z-index:1;bottom:26px;left:24px;right:24px}
+.pricing-visual-caption span{font-size:9px;letter-spacing:.14em;color:#c3dcff}
+.pricing-visual-caption strong{display:block;margin-top:12px;font-size:28px;line-height:1.15;letter-spacing:-.035em}
+.pricing-cinematic .trial-experience{grid-template-columns:1.4fr 1fr;padding:26px;gap:24px;border-color:var(--ds-line);border-radius:20px;background:linear-gradient(115deg,var(--ds-surface),#151731);box-shadow:none}
+.pricing-cinematic .trial-main h2{font-size:28px;margin:16px 0 12px}
+.pricing-cinematic .trial-main>p{font-size:12px;max-width:450px}
+.pricing-cinematic .trial-label{padding:7px 10px;font-size:9px;border-color:#925bff70;background:#925bff18}
+.pricing-cinematic .trial-side{padding:20px;background:#080d1d80;border-color:var(--ds-line)}
+.pricing-cinematic .trial-price{font-size:44px;letter-spacing:-2px}
+.pricing-cinematic .trial-caveat{font-size:11px}
+.pricing-cinematic .section-head{margin:32px 0 20px}
+.pricing-cinematic .section-head h2{font-size:28px}
+.pricing-cinematic #toolPlans .price-card,.pricing-cinematic #aiPacks .price-card{background:linear-gradient(145deg,var(--ds-surface),#0b1226);border-color:var(--ds-line)}
+.pricing-cinematic .rules{margin-top:44px}
+@media(max-width:900px){.pricing-cinematic .pricing-intro{gap:22px;padding:24px}.pricing-visual{min-height:320px}.pricing-visual-caption strong{font-size:23px}}
+@media(max-width:680px){.pricing-cinematic main{padding-top:18px}.pricing-cinematic .pricing-intro{grid-template-columns:1fr;padding:20px;gap:24px;margin-bottom:24px}.pricing-cinematic .pricing-intro h1{font-size:40px}.pricing-visual{min-height:240px}.pricing-cinematic .trial-experience{grid-template-columns:1fr;padding:20px}.pricing-intro-actions{gap:8px}.pricing-link{padding:12px 14px;font-size:12px}}
+@media(prefers-reduced-motion:reduce){.pricing-cinematic *{scroll-behavior:auto}}
+
+.trial-details{margin-top:18px;font-size:11px;color:var(--ds-muted);line-height:1.7}.trial-details summary{cursor:pointer;color:var(--ds-text);text-underline-offset:4px}.trial-details p{max-width:440px}
+
+/* Keep compact navigation and grid children within narrow phone viewports. */
+.pricing-cinematic .pricing-intro>*,.pricing-cinematic .trial-experience>*{min-width:0}
+@media(max-width:560px){.pricing-cinematic>header{gap:10px;padding:10px 16px;flex-wrap:wrap}.pricing-cinematic>header .brand{font-size:18px}.pricing-cinematic>header nav{gap:4px}.pricing-cinematic>header nav a{padding:8px}.pricing-cinematic .pricing-intro h1{font-size:clamp(32px,10vw,40px)}}

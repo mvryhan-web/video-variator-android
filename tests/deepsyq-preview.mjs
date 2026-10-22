@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
+import {readFile} from 'node:fs/promises';
 
 test('isolated Deepsyq preview serves the current Canvas UI and disables paid endpoints',async()=>{
  const port=31896,base='http://127.0.0.1:'+port;
@@ -40,7 +41,9 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
   assert.equal(models.enabled,false);
   assert.ok(models.catalog.length>0);
   assert.ok(models.catalog.every(m=>m.enabled===false));
-  assert.deepEqual((await(await fetch(base+'/api/templates')).json()).items,[]);
+  const templates=(await(await fetch(base+'/api/templates')).json()).items;
+  assert.equal(templates.length,8,'the approved Creative50 catalog publishes eight AI Apps');
+  assert.ok(templates.every(item=>item.active===true&&item.generationType==='image'&&item.defaultModel===null&&item.promptTemplate.length>80),'templates are editable prompts, not an enabled paid model');
   assert.equal((await fetch(base+'/ai-apps.html')).status,200);
   for(const path of ['/api/billing/checkout','/api/studio/jobs','/api/auth/google']){
    const response=await fetch(base+path,{method:'POST'});
@@ -59,7 +62,7 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
   }
   const gallery=await(await fetch(base+'/api/inspiration?featured=true&limit=60')).json();
   const images=gallery.items.filter(item=>item.kind==='image');
-  assert.equal(images.length,18,'the approved DEV gallery includes 18 curated images after removing Focus and toast duplicates');
+  assert.equal(images.length,38,'the approved DEV gallery includes 18 curated images plus 20 vertical images');
   assert.equal(images.some(image=>/focus|toast/i.test(image.title+' '+image.slug)),false,'duplicate Focus and clinking-glasses scene are excluded');
   for(const image of images){
    assert.equal(image.featured,true);
@@ -70,7 +73,8 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
    assert.ok((await asset.arrayBuffer()).byteLength>10000,image.previewUrl);
   }
   const retired=await fetch(base+'/inspiration.html',{redirect:'manual'});assert.equal(retired.status,302);assert.equal(retired.headers.get('location'),'/deepsyq.html#inspirationPreview');
-  assert.equal(gallery.items.some(item=>item.slug.includes('butterfly')||item.slug.includes('lake')),false);
+  const approvedImages=JSON.parse(await readFile(new URL('../app/src/main/assets/media/inspiration/openai-20261021/manifest.json',import.meta.url),'utf8')).items;
+  assert.deepEqual(images.map(item=>item.slug).sort(),approvedImages.filter(item=>item.featured).map(item=>item.slug).sort(),'only exact owner-approved image identities are published');
   assert.equal((await(await fetch(base+'/api/inspiration?featured=true&target=agent')).json()).items.length,0);
   assert.equal((await fetch(base+'/api/inspiration',{method:'POST'})).status,503);
 
