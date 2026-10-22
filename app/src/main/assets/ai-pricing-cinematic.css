@@ -29,3 +29,7 @@
 @media(prefers-reduced-motion:reduce){.pricing-cinematic *{scroll-behavior:auto}}
 
 .trial-details{margin-top:18px;font-size:11px;color:var(--ds-muted);line-height:1.7}.trial-details summary{cursor:pointer;color:var(--ds-text);text-underline-offset:4px}.trial-details p{max-width:440px}
+
+/* Keep compact navigation and grid children within narrow phone viewports. */
+.pricing-cinematic .pricing-intro>*,.pricing-cinematic .trial-experience>*{min-width:0}
+@media(max-width:560px){.pricing-cinematic>header{gap:10px;padding:10px 16px;flex-wrap:wrap}.pricing-cinematic>header .brand{font-size:18px}.pricing-cinematic>header nav{gap:4px}.pricing-cinematic>header nav a{padding:8px}.pricing-cinematic .pricing-intro h1{font-size:clamp(32px,10vw,40px)}}
