@@ -23,8 +23,8 @@ test('Home plan comparison shows real allowances, model separation and working e
  await expect(page.locator('.home-plan-switch a')).toHaveCount(3);
  await expect(page.locator('.home-plan-switch a[href="#homeAiCredits"]')).toBeVisible();
  await expect(page.locator('#homeMonthlyPlans .trial-plan')).toContainText('Checkout is not enabled');
- await expect(page.getByRole('button',{name:'Choose Basic monthly plan'})).toBeEnabled();
- await page.getByRole('button',{name:'Choose Basic monthly plan'}).click();
+ await expect(page.getByRole('button',{name:'Choose Basic',exact:true})).toBeEnabled();
+ await page.getByRole('button',{name:'Choose Basic',exact:true}).click();
  await expect(page.locator('#authModal')).toBeVisible();
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await page.screenshot({path:info.outputPath('home-pricing-desktop.png'),fullPage:true});

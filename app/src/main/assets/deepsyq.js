@@ -400,7 +400,7 @@ async function renderPlans(){
   if(Number.isSafeInteger(aiCredits)&&aiCredits>0)items.push(aiCredits.toLocaleString('en-US')+' AI-generation credits per paid subscription invoice');
   else items.push('AI generation uses separate prepaid AI credits');
   for(const text of items){const li=document.createElement('li');li.textContent=text;benefits.append(li);}
-  const b=document.createElement('button');b.type='button';b.textContent='Choose '+heading.textContent;b.setAttribute('aria-label','Choose '+heading.textContent+' monthly plan');b.onclick=()=>checkout(key);
+  const b=document.createElement('button');b.type='button';b.textContent='Choose '+heading.textContent;b.onclick=()=>checkout(key);
   card.append(heading,price,desc,usage,benefits,b);$('plans').append(card);
  }
  const p=config.plans?.lifetime;if(p){$('lifetimePrice').textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:p.currency||'EUR',maximumFractionDigits:0}).format(p.price)+' · one payment';$('lifetimeCheckout').disabled=false;$('lifetimeCheckout').onclick=()=>checkout('lifetime');}
