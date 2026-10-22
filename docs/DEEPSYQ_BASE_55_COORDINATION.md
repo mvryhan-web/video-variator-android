@@ -1,3 +1,22 @@
+# COORDINATOR #5 — CYCLE25 EXCLUSIVE CLAIMS / 2026-10-22
+
+**Verified sampled DEV HEAD `4b2ecb68c07ddde481dd45c0bfc2e59aa2a7858c`**; GitHub Issue233 [Cycle25 exact proof](https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6334809418). This is a *coordinating pointer* to already recorded agent claims in Issues #72–75, not a new claim for A/B/C/D. Do not overwrite an agent's existing branch or stale-merge giant drafts. D16 independent safe DEV self-merge permitted by each agent; B↔D independent finance/privacy peer gate direct. READ actual GitHub again before change. NO main/production/real Stripe/provider billing/unsafe migration.
+
+| Owner | Current exclusive file zone / pending PR | Work queue and release constraint |
+| --- | --- | --- |
+| Owner/Admin Studio | #368 client `app/src/main/assets/generate-studio.js` and owned boundary workflow/test; old owner #323 Draft overlaps it plus 49 stale files | Verify **both failed** exact PR368 CI (Video Core + AI Studio preview), A23 old private-history regression, actual account-switch cleanup and revoke-before-provider. Owner controls code; B diagnostic-only, D security-only. |
+| Owner/Admin Finance | #333 D18 server payment/pricing/dispatch (37 files), current draft | Proof of real Stripe net proceeds and all-in provider/compute/storage costs; 2× rule is BLOCKED_EXTERNAL, not 43/43 code-CI DONE. PR333 intersects old #323 in three files and touches PROJECT_STATUS; reconcile documentation before integration. |
+| Owner/Admin Design | New #369 Pricing `ai-pricing.html`, page-only `ai-pricing-cinematic.css`, test/AGENTS/visual clarification; owner Home protected | New pricing scope is under active owner PR; no parallel C/A edits to Pricing, no new checkout/free credits. #369 intersects old #323 in `ai-pricing.html` and `tests/deepsyq.spec.mjs`; main PR280 obsolete across later DEV visual assets. |
+| Agent A #72 | Existing intentional RED test-only PR343 (`tests/agent-a-base25-account-recent.spec.mjs`) | Chrome/WebKit old A→B prompt/History/Delete regression acceptance against corrected PR368 final SHA. No owner Studio source edits. SEO #156 source read-only next. |
+| Agent B #73 | No write lease on owner Studio; original B mobile `tests/generation-studio.spec.mjs` only *if* genuinely needed and claimed | P0 diagnose `#sidebarToggle` absence/mobile popup x=0 from PR368 exact Video Core and preview logs, handoff to source owner; peer C privacy and D paid revenue/cost. Avoid duplicating old B8 already-fixed status test. |
+| Agent C #74 | C19 PR350 `smart-reminders.js`, own browser spec/workflow; C20 PR352 `reminder-photo.js`, distinct spec/workflow | C19 deferred speech/notes callback safety in **same PR**; B+D exact-final-head review for both; maintain RED-before/GREEN-after no-spend evidence; then own D16 DEV self-merge after green and conflict-free refresh. |
+| Agent D #75 | Security reviewer/release gate, not owner C/Studio app source | Direct B↔D independent consent/account/revenue P0 review; clear PR350/352 peer and exact PR368; owner PR323 conflict/migrations; PR280 MAIN release HOLD until owner GO, rollback+auth+Stripe verification. |
+| Google Jules 1/2/3 | Previously claimed Issue316 W5.5 / Issue317 W4.3 / Issue278 V6.2 | Each latest current-task bot reply ACK `Jules is on it` only; **NO BOT READY** confirmed and no new active code accepted. Preserve all 3 reservations, do not create tasks or reapply labels without real vacancy. |
+
+**Global guards:** BASE #20 retired 404; Home six approved real videos and carousel never rewritten; owner updates already DEV-merged Inspiration Image gallery and tools remain. Keep original 55 + F1–F8; claims/docs are historical append-only beneath this latest snapshot. No READY_TO_MERGE for intentionally RED/privacy blocked PRs, no false LIVE_VERIFIED or final 2× margin claims.
+
+---
+
 # COORDINATOR #5 — CYCLE 20 / VERIFIED GITHUB RECOVERY — 2026-10-21 (Europe/Paris)
 
 **This is a pinned observation, not a permanent HEAD.** DEV `deepsyq-platform` sampled after C18 [PR #345](https://github.com/mvryhan-web/video-variator-android/pull/345) at **`a1d48e3b98362f8132ea8c383ab95e9adab0799e`** (09:57:55 UTC). Re-query HEAD, changed files and exact final-SHA CI before any next action. No `main`, production, Stripe live, paid AI, destructive migration or Home/media change is authorized. Owner D16: agents A–D may self-verify and self-merge independent safe DEV PRs; #5 is not their approval/merge gate. Security/finance peer verification runs **directly B↔D**.
