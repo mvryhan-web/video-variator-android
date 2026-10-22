@@ -313,6 +313,7 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
    const assertAnchored=async(dialog,anchor)=>{
     await expect(dialog).toBeVisible();
     await expect.poll(()=>dialog.evaluate(el=>({left:el.style.left,top:el.style.top}))).not.toEqual({left:'',top:''});
+    await expect.poll(async()=>{const b=await dialog.boundingBox();return Boolean(b&&b.x>=11&&b.y>=11);}).toBe(true);
     const bounds=await dialog.boundingBox(),button=await anchor.boundingBox();
     expect(bounds.x).toBeGreaterThanOrEqual(11);expect(bounds.y).toBeGreaterThanOrEqual(11);
     expect(bounds.x+bounds.width).toBeLessThanOrEqual(viewport.width-11);expect(bounds.y+bounds.height).toBeLessThanOrEqual(viewport.height-11);
