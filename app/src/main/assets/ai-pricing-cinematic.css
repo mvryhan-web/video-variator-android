@@ -33,3 +33,48 @@
 /* Keep compact navigation and grid children within narrow phone viewports. */
 .pricing-cinematic .pricing-intro>*,.pricing-cinematic .trial-experience>*{min-width:0}
 @media(max-width:560px){.pricing-cinematic>header{gap:10px;padding:10px 16px;flex-wrap:wrap}.pricing-cinematic>header .brand{font-size:18px}.pricing-cinematic>header nav{gap:4px}.pricing-cinematic>header nav a{padding:8px}.pricing-cinematic .pricing-intro h1{font-size:clamp(32px,10vw,40px)}}
+
+
+/* Screenshot-led plan comparison: compact section switch and visible four-card catalog. */
+.pricing-cinematic main{padding-top:20px}
+.pricing-cinematic .pricing-intro{display:block;max-width:none;margin:8px 0 14px;padding:24px 28px;border-radius:20px}
+.pricing-cinematic .pricing-intro h1{font-size:clamp(30px,4vw,46px);margin:4px 0 10px;letter-spacing:-.035em}
+.pricing-cinematic .pricing-intro-copy>p{max-width:720px;margin:7px 0;color:var(--ds-muted);line-height:1.6}
+.pricing-cinematic .pricing-intro .eyebrow{margin:0 0 8px}
+.pricing-cinematic .pricing-switch{display:flex;width:max-content;max-width:100%;gap:5px;margin:18px 0 10px;padding:5px;border:1px solid var(--ds-line);border-radius:999px;background:#090715a8}
+.pricing-cinematic .pricing-switch a{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:0 18px;border-radius:999px;color:var(--ds-muted);font-size:12px;font-weight:700;white-space:nowrap}
+.pricing-cinematic .pricing-switch a:hover,.pricing-cinematic .pricing-switch a:focus-visible,.pricing-cinematic .pricing-switch a.selected{color:#fff;background:linear-gradient(110deg,#7552d4,#b65cbd);box-shadow:0 0 18px #8b58de42}
+.pricing-cinematic .pricing-switch a:focus-visible{outline:2px solid #d8b4ff;outline-offset:2px}
+.pricing-cinematic .pricing-caption{font-size:10px;margin:8px 0 0!important}
+.pricing-cinematic .plan-catalog{scroll-margin-top:90px}
+.pricing-cinematic #toolPlans{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.pricing-cinematic #toolPlans .price-card{min-width:0;min-height:300px;padding:22px 18px;border-radius:18px;display:flex;flex-direction:column;gap:13px;overflow:hidden}
+.pricing-cinematic #toolPlans .price-card h3{font-size:17px}
+.pricing-cinematic #toolPlans .price-card .price{font-size:33px;line-height:1.1}
+.pricing-cinematic #toolPlans .price-card p{flex:1;min-height:66px;font-size:11px;line-height:1.6}
+.pricing-cinematic #toolPlans .price-card button{margin-top:auto;min-height:42px;border-radius:999px}
+.pricing-cinematic #toolPlans .price-card.lifetime{border-color:#7658a1;background:linear-gradient(145deg,#27203b,#171426)}
+.pricing-cinematic .trial-experience{grid-template-columns:minmax(0,1fr) minmax(220px,.55fr);gap:18px;margin:24px 0 34px;padding:20px 24px;border-radius:18px;box-shadow:0 12px 32px #0704113d}
+.pricing-cinematic .trial-main h2{font-size:23px;margin:10px 0}
+.pricing-cinematic .trial-main>p{font-size:11px;line-height:1.6;margin:7px 0}
+.pricing-cinematic .trial-side{padding:16px;gap:8px}
+.pricing-cinematic .trial-price{font-size:38px}
+.pricing-cinematic .trial-side button{min-height:40px}
+.pricing-cinematic #aiCreditSection{scroll-margin-top:90px}
+.pricing-cinematic #aiPacks{grid-template-columns:repeat(4,minmax(0,1fr))}
+.pricing-cinematic footer{margin-top:42px}
+@media(max-width:980px){
+ .pricing-cinematic #toolPlans{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .pricing-cinematic #aiPacks{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:680px){
+ .pricing-cinematic main{padding-top:14px}
+ .pricing-cinematic .pricing-intro{padding:18px;margin:6px 0 12px}
+ .pricing-cinematic .pricing-intro h1{font-size:31px}
+ .pricing-cinematic .pricing-switch{width:100%;gap:2px}
+ .pricing-cinematic .pricing-switch a{flex:1;padding:0 7px;font-size:10px}
+ .pricing-cinematic #toolPlans,.pricing-cinematic #aiPacks{grid-template-columns:1fr}
+ .pricing-cinematic #toolPlans .price-card{min-height:unset;padding:20px}
+ .pricing-cinematic #toolPlans .price-card p{min-height:0}
+ .pricing-cinematic .trial-experience{grid-template-columns:1fr;padding:17px;margin:18px 0 25px}
+}
