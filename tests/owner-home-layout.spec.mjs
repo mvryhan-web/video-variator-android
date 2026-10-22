@@ -2,6 +2,7 @@ import {test,expect} from '@playwright/test';
 // Google login is not exercised in this local UI suite (googleClientId is empty).
 // Keep the external SDK from delaying load/pageshow and the privacy reset.
 test.beforeEach(async({page})=>{
+ await page.addInitScript(()=>{window.__ownerHomePageShown=false;window.addEventListener('pageshow',()=>{window.__ownerHomePageShown=true;});});
  await page.route('https://accounts.google.com/gsi/client',r=>r.fulfill({contentType:'application/javascript',body:''}));
 });
 
@@ -12,6 +13,7 @@ async function home(page){
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:new URL(r.request().url()).searchParams.get('target')==='agent'?[]:bundle.items.filter(x=>x.featured),categories:['Cinematic']}}));
  await page.goto('/deepsyq.html');
+ await page.waitForFunction(()=>window.__ownerHomePageShown===true);
 }
 test('Owner neon layout: reference section order, real card images and mobile bounds',async({page},info)=>{
  const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
