@@ -1,11 +1,17 @@
 import {test,expect} from '@playwright/test';
+// Google login is not exercised in this local UI suite (googleClientId is empty).
+// Keep the external SDK from delaying load/pageshow and the privacy reset.
+test.beforeEach(async({page})=>{
+ await page.route('https://accounts.google.com/gsi/client',r=>r.fulfill({contentType:'application/javascript',body:''}));
+});
+
 import {readFile} from 'node:fs/promises';
 const bundle=JSON.parse(await readFile(new URL('../app/src/main/assets/media/home/owner-20261018/manifest.json',import.meta.url)));
 async function home(page){
  await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}},googleClientId:'',billingConfigured:false,features:{inspiration:true,aiApps:false,productVideo:false,onboarding:false}}}));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
  await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:new URL(r.request().url()).searchParams.get('target')==='agent'?[]:bundle.items.filter(x=>x.featured),categories:['Cinematic']}}));
- await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ await page.goto('/deepsyq.html');
 }
 test('Owner neon layout: reference section order, real card images and mobile bounds',async({page},info)=>{
  const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
