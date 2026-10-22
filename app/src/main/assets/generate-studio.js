@@ -1115,4 +1115,4 @@ if((aiCheckoutState==='returned'||aiCheckoutState==='cancelled')&&!$('walletButt
 }
 
 // Public one-shot explanation only; never persist prompts or account credentials.
-try{if(sessionStorage.getItem('deepsyq_studio_account_reset_notice')==='1'){sessionStorage.removeItem('deepsyq_studio_account_reset_notice');$('status').textContent=say('Account changed. No job was submitted from this cleared workspace. Check History for earlier requests.','Аккаунт изменён. Из очищенной рабочей области задача не отправлялась. Ранее отправленные задачи доступны в Истории.');}}catch(_){}
+try{if(sessionStorage.getItem('deepsyq_studio_account_reset_notice')==='1'){sessionStorage.removeItem('deepsyq_studio_account_reset_notice');$('status').textContent=say('Account changed. No job was submitted by this workspace reset. Check History for earlier requests.','Аккаунт изменён. Сброс рабочей области не отправлял новую задачу. Ранее отправленные задачи доступны в Истории.');}}catch(_){}
