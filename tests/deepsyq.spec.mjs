@@ -401,7 +401,7 @@ test('video carousel switches only among owner-approved videos and retains exist
  await page.locator('#homeHeroPrevious').click();
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/two.mp4');
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(3);
- await expect(page.locator('#inspirationPreviewGrid')).toContainText('Preserved owned photo');
+ await expect(page.getByRole('button',{name:'View Preserved owned photo inspiration'}).getByRole('img')).toHaveAttribute('src','/owned.png');
  await page.locator('[data-inspiration-kind="image"]').click();
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
  await expect(page.getByRole('button',{name:'View Preserved owned photo inspiration'})).toBeVisible();
@@ -434,7 +434,7 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(3);
- await expect(page.locator('#inspirationPreviewGrid')).toContainText('Original owner still');
+ await expect(page.getByRole('button',{name:'View Original owner still inspiration'}).getByRole('img')).toHaveAttribute('src','/owner-image.png');
  await expect(page.locator('#inspirationEmpty')).toBeHidden();
 });
 test('reduced-motion users get a manual Play button for genuine videos',async({page})=>{
@@ -572,7 +572,7 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  await expect(page.locator('#promoDialog')).toContainText('not available yet');
  await page.locator('#promoDialog button[type=submit][value=close]').click();
  await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
- await expect(page.locator('#agentFeature')).toContainText('Coming soon');
+ await expect(page.locator('#agentFeature')).toContainText(/coming soon/i);
  await expect(page.locator('#appsFeature')).toBeVisible();
  await expect(page.locator('#inspirationPreview')).toHaveCount(1);
  const inDocumentOrder=await page.evaluate(()=>{
