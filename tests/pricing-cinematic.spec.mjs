@@ -13,7 +13,7 @@ for(const width of [320,390,768,1440]){
   await expect(page.locator('#trialOffer button')).toBeDisabled();
   await expect(page.locator('#toolPlans')).toBeVisible();
   await expect(page.locator('#aiCreditSection')).toBeVisible();
-  await expect(page.locator('#aiPacks')).toBeVisible();
+  await expect(page.locator('#aiPacks')).toHaveCount(1);
   await page.getByRole('link',{name:'Explore plans',exact:false}).click();
   await expect(page).toHaveURL(/#toolPlans$/);
   await page.getByRole('link',{name:'Explore AI credits',exact:true}).click();
