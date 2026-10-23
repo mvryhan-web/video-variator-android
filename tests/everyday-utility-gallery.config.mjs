@@ -2,7 +2,7 @@ import {defineConfig,devices} from '@playwright/test';
 import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('../',import.meta.url));
 export default defineConfig({
- testDir:'tests',testMatch:'everyday-utility-gallery.spec.mjs',
+ testDir:'.',testMatch:'everyday-utility-gallery.spec.mjs',
  timeout:50000,retries:1,workers:3,reporter:'list',
  use:{baseURL:'http://127.0.0.1:31995',trace:'retain-on-failure',reducedMotion:'reduce'},
  webServer:{cwd:root,command:'node server/deepsyq-preview.js',url:'http://127.0.0.1:31995/api/health',reuseExistingServer:false,env:{PORT:'31995'}},
