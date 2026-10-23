@@ -1,3 +1,9 @@
+# OWNER — Restore pre-redesign Image / Video / Audio — 23 October 2026
+
+Owner rejected removal-only PR379 (closed, unmerged). Historical source `22859216555d962239c2f17c56da6795e335293b` found; restore its exact Studio theme and original bottom composer/centered title, excluding later artwork overlays. Current controller/privacy fixes retained. Existing DEV Render only. See `docs/DEEPSYQ_STUDIO_RESTORE_DESIGN.md`. Final-head CI and live publication pending.
+
+---
+
 ## 2026-10-23 — Approved 31 designs: DONE / LIVE_VERIFIED
 
 PR #374 merged as `cd7c78deaf7bd90615d711ee06473eebf870d79f`. All 29 exact-head CI workflows passed on `6957e368079b51e1220417aad04e36658aff5c11`; 184/184 owner design tests and desktop/mobile screenshot review completed. Render deploy `dep-dbdk9kks728c73c949tg` became LIVE at 2026-10-23 11:29:30 UTC (13:29:30 Europe/Paris). Post-deploy verification fetched and matched 56 asset SHA-256 hashes, including all 31 original PNGs, page HTML, presentation assets and unchanged Home (excluding the existing preview notice). Gallery has 31 entries and working screen/download links. Live browser confirmed the six-video carousel and caption-free Inspiration. No backend writes or paid actions.

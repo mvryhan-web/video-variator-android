@@ -12,6 +12,8 @@ test('Image Video Audio open directly to one concise heading and actual creator'
   await expect(page.locator('#taskTitle')).toHaveText(title);
   await expect(page.locator('#taskTitle')).toHaveJSProperty('tagName','H1');
   await expect(page.locator('#taskTitle')).toBeVisible();
+  await expect(page.locator('#empty img,.ds-studio-examples')).toHaveCount(0);
+  expect(await page.locator('.stage').evaluate(el=>getComputedStyle(el).backgroundImage)).not.toContain('url(');
   await expect(page.locator('[data-t="headline"]')).toBeHidden();
   await expect(page.locator('#taskDescription')).toBeHidden();
   await expect(page.locator('#creator')).toBeVisible();
