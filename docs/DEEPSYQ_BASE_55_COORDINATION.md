@@ -1,3 +1,17 @@
+# COORDINATOR #5 — CYCLE26 / 23 OCT 2026 / CURRENT CLAIM POINTER
+
+**Verified sampled DEV `de057636607705a920c626a01f703c1b080b9d00`** (refresh before any coding action). Detailed evidence, Google Jules task ACK audit, five native PR374 failures, cross-PR file matrix and A–D queues: [Cycle26 Coordinator Report](DEEPSYQ_COORDINATOR_CYCLE26_20261023.md) / [Issue233 active claim](https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6362482197).
+
+**Exclusive coordinator documentation lease only:** new `docs/DEEPSYQ_COORDINATOR_CYCLE26_20261023.md` and this top-of-board claims pointer. **DO NOT touch `PROJECT_STATUS.md`**: active owner 31-design PR374 and old finance PR333 both change that file. Preserve all earlier claims below unchanged. No agent code, protected Home/media, production/main, payment, provider call, or unsafe migration.
+
+**Existing agent queues updated, not duplicated:** [A72](https://github.com/mvryhan-web/video-variator-android/issues/72#issuecomment-6362460767) PR343 Chrome/WebKit cross-account privacy against owner #368 + Canvas clear; [B73](https://github.com/mvryhan-web/video-variator-android/issues/73#issuecomment-6362462074) current PR374 Studio/History native CI triage, D financial/privacy peer; [C74](https://github.com/mvryhan-web/video-variator-android/issues/74#issuecomment-6362463249) finish existing C19/C20 peer/reconciliation before new image-only Inspiration acceptance; [D75](https://github.com/mvryhan-web/video-variator-android/issues/75#issuecomment-6362464432) consent-revoke final paid dispatch, C peer, true D18 >=2x cost and production HOLD. A–D self-merge safe DEV work under D16 without #5 mandatory approval, but B↔D independent privacy/payment gate applies.
+
+**Owner PR374** 69 paths / **20 successful, 5 failed** exact-head workflows at `aa88fe77436686938a386a9687f13b5afb841c59`; owner [native log handoff](https://github.com/mvryhan-web/video-variator-android/pull/374#issuecomment-6362441798) includes BASE29 Coming Soon, admin h1, Studio .history-thumb/#accessInfo, image-only Inspiration text/labels and Canvas clear mobile. PR374∩old PR323 =21 paths; ∩main release #280=17, ∩finance #333=PROJECT_STATUS.md only, ∩huge PR42=27. No blind merges.
+
+**Google Jules 1/2/3:** original Issue316 W5.5, Issue317 W4.3, Issue278 V6.2 **bot ACK only**, no last-task READY/new target PR. Status `ACKNOWLEDGED_UNVERIFIED`: do not relabel, retry, or create duplicates until actual completion/failure established. Existing task URLs and capability limitations in report. Historical BASE 55 and F1–F8 aliases unchanged; Product Video retired 404; Trial/paid AI/production remain gated.
+
+---
+
 # COORDINATOR #5 — CYCLE25 EXCLUSIVE CLAIMS / 2026-10-22
 
 **Verified sampled DEV HEAD `4b2ecb68c07ddde481dd45c0bfc2e59aa2a7858c`**; GitHub Issue233 [Cycle25 exact proof](https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6334809418). This is a *coordinating pointer* to already recorded agent claims in Issues #72–75, not a new claim for A/B/C/D. Do not overwrite an agent's existing branch or stale-merge giant drafts. D16 independent safe DEV self-merge permitted by each agent; B↔D independent finance/privacy peer gate direct. READ actual GitHub again before change. NO main/production/real Stripe/provider billing/unsafe migration.
