@@ -74,7 +74,7 @@ test('BASE #29 AI Agents link leads to honest coming-soon section, never fake pa
  await expect(page).toHaveURL(/\/deepsyq\.html#agentFeature$/);
  const panel=page.locator('#agentFeature');
  await expect(panel).toContainText(/COMING SOON|In development/i);
- await expect(panel).toContainText('Agent execution is still under development.');
+ await expect(panel).toContainText(/Agent execution is (?:still under development|in development)/);
  expect(paidWrites).toBe(0);
 });
 

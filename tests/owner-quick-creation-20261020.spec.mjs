@@ -54,7 +54,7 @@ test('Image Video Audio keep existing model/settings/consent/dialog navigation',
 test('AI Apps and Inspiration prioritize browse/search over long explanations',async({page})=>{
  await page.goto('/ai-apps.html');
  await expect(page.locator('.hero h1')).toHaveText('AI Apps');
- await expect(page.locator('.hero>p:last-child')).toHaveText('Choose a template and make it yours.');
+ await expect(page.locator('.hero .ds-approved-copy p')).toHaveText('Choose a template and make it yours.');
  await expect(page.locator('#search')).toBeVisible();
  await expect(page.locator('#type')).toBeVisible();
  await expect(page.locator('#apps')).toHaveCount(1);

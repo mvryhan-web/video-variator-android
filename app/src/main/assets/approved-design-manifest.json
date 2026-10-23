@@ -1,0 +1,188 @@
+[
+  {
+    "number": 1,
+    "name": "Image Studio",
+    "image": "media/approved-design-20261023/01_Image_Studio.png",
+    "url": "generate-studio.html?studio=image"
+  },
+  {
+    "number": 2,
+    "name": "Video Studio",
+    "image": "media/approved-design-20261023/02_Video_Studio.png",
+    "url": "generate-studio.html?studio=video"
+  },
+  {
+    "number": 3,
+    "name": "Audio",
+    "image": "media/approved-design-20261023/03_Audio.png",
+    "url": "generate-studio.html?studio=audio"
+  },
+  {
+    "number": 4,
+    "name": "Canvas",
+    "image": "media/approved-design-20261023/04_Canvas.png",
+    "url": "deepsyq.html#canvasFeature"
+  },
+  {
+    "number": 5,
+    "name": "AI Apps",
+    "image": "media/approved-design-20261023/05_AI_Apps.png",
+    "url": "ai-apps.html"
+  },
+  {
+    "number": 6,
+    "name": "AI Agent",
+    "image": "media/approved-design-20261023/06_AI_Agent.png",
+    "url": "deepsyq.html#agentFeature"
+  },
+  {
+    "number": 7,
+    "name": "Inspiration",
+    "image": "media/approved-design-20261023/07_Inspiration.png",
+    "url": "deepsyq.html#inspirationPreview"
+  },
+  {
+    "number": 8,
+    "name": "My Creations",
+    "image": "media/approved-design-20261023/08_My_Creations.png",
+    "url": "generate-studio.html?view=history"
+  },
+  {
+    "number": 9,
+    "name": "Everyday Tools",
+    "image": "media/approved-design-20261023/09_Everyday_Tools.png",
+    "url": "free-tools.html"
+  },
+  {
+    "number": 10,
+    "name": "Audio Text",
+    "image": "media/approved-design-20261023/10_Audio_Text.png",
+    "url": "audio-studio.html"
+  },
+  {
+    "number": 11,
+    "name": "Avatar",
+    "image": "media/approved-design-20261023/11_Avatar.png",
+    "url": "avatar-studio.html"
+  },
+  {
+    "number": 12,
+    "name": "Photo PDF",
+    "image": "media/approved-design-20261023/12_Photo_PDF.png",
+    "url": "mobile-utility.html?tool=scan-pdf"
+  },
+  {
+    "number": 13,
+    "name": "Photo Collage",
+    "image": "media/approved-design-20261023/13_Photo_Collage.png",
+    "url": "photo-collage.html"
+  },
+  {
+    "number": 14,
+    "name": "Background Remover",
+    "image": "media/approved-design-20261023/14_Background_Remover.png",
+    "url": "simple-background-remover.html"
+  },
+  {
+    "number": 15,
+    "name": "Smart Reminders",
+    "image": "media/approved-design-20261023/15_Smart_Reminders.png",
+    "url": "smart-reminders.html"
+  },
+  {
+    "number": 16,
+    "name": "Teleprompter",
+    "image": "media/approved-design-20261023/16_Teleprompter.png",
+    "url": "teleprompter.html"
+  },
+  {
+    "number": 17,
+    "name": "Telegram Mini App",
+    "image": "media/approved-design-20261023/17_Telegram_Mini_App.png",
+    "url": "telegram-free-mini.html"
+  },
+  {
+    "number": 18,
+    "name": "Pricing AI Credits",
+    "image": "media/approved-design-20261023/18_Pricing_AI_Credits.png",
+    "url": "ai-pricing.html"
+  },
+  {
+    "number": 19,
+    "name": "Account Settings",
+    "image": "media/approved-design-20261023/19_Account_Settings.png",
+    "url": "index.html#profile"
+  },
+  {
+    "number": 20,
+    "name": "Video Uniquifier",
+    "image": "media/approved-design-20261023/20_Video_Uniquifier.png",
+    "url": "index.html"
+  },
+  {
+    "number": 21,
+    "name": "Video History",
+    "image": "media/approved-design-20261023/21_Video_History.png",
+    "url": "index.html#history"
+  },
+  {
+    "number": 22,
+    "name": "Analytics",
+    "image": "media/approved-design-20261023/22_Analytics.png",
+    "url": "index.html#analytics"
+  },
+  {
+    "number": 23,
+    "name": "Tool Plans",
+    "image": "media/approved-design-20261023/23_Tool_Plans.png",
+    "url": "index.html#plans"
+  },
+  {
+    "number": 24,
+    "name": "FAQ",
+    "image": "media/approved-design-20261023/24_FAQ.png",
+    "url": "index.html#faq"
+  },
+  {
+    "number": 25,
+    "name": "AI Privacy",
+    "image": "media/approved-design-20261023/25_AI_Privacy.png",
+    "url": "ai-privacy.html"
+  },
+  {
+    "number": 26,
+    "name": "Terms",
+    "image": "media/approved-design-20261023/26_Terms.png",
+    "url": "terms.html"
+  },
+  {
+    "number": 27,
+    "name": "Refunds",
+    "image": "media/approved-design-20261023/27_Refunds.png",
+    "url": "refund.html"
+  },
+  {
+    "number": 28,
+    "name": "Contact Support",
+    "image": "media/approved-design-20261023/28_Contact_Support.png",
+    "url": "contact.html"
+  },
+  {
+    "number": 29,
+    "name": "Cookies",
+    "image": "media/approved-design-20261023/29_Cookies.png",
+    "url": "cookie.html"
+  },
+  {
+    "number": 30,
+    "name": "Owner Admin",
+    "image": "media/approved-design-20261023/30_Owner_Admin.png",
+    "url": "deepsyq-admin.html"
+  },
+  {
+    "number": 31,
+    "name": "Product Watcher",
+    "image": "media/approved-design-20261023/31_Product_Watcher.png",
+    "url": "product-watcher-admin.html"
+  }
+]
