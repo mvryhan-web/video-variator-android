@@ -164,16 +164,20 @@ function speechInput(){
  mic.onclick=()=>{
   if(speech){speech.stop();return;}
   const recognition=new API();speech=recognition;
+  const recognizedFor=userToken();
+  const current=()=>speech===recognition&&userToken()===recognizedFor;
   recognition.lang=navigator.language||'en-US';
   recognition.interimResults=false;recognition.continuous=false;recognition.maxAlternatives=1;
   let received=false;
-  recognition.onstart=()=>{mic.textContent=stop;mic.setAttribute('aria-pressed','true');status(t('Listening… Speak clearly.','Слушаю… Говорите.'));};
+  recognition.onstart=()=>{if(!current())return;mic.textContent=stop;mic.setAttribute('aria-pressed','true');status(t('Listening… Speak clearly.','Слушаю… Говорите.'));};
   recognition.onresult=e=>{
+   if(!current())return;
    const transcript=Array.from(e.results||[]).map(r=>r[0]?.transcript||'').join(' ').trim();
    if(!transcript)return;
    received=true;$('spokenReminder').value=transcript;fillText();
   };
   recognition.onerror=e=>{
+   if(!current())return;
    const code=String(e?.error||'');
    const msg=code==='not-allowed'||code==='service-not-allowed'
     ?t('Microphone permission denied. Allow it in browser settings or type a reminder.','Нет разрешения на микрофон. Разрешите его в браузере или напишите напоминание.')
@@ -181,7 +185,8 @@ function speechInput(){
    status(msg);
   };
   recognition.onend=()=>{
-   if(speech===recognition)speech=null;
+   if(!current())return;
+   speech=null;
    mic.textContent=idle;mic.setAttribute('aria-pressed','false');
    if(!received&&!$('reminderStatus').textContent.includes('микрофон')){ /* Retain recognition error if displayed. */ }
   };
@@ -266,6 +271,8 @@ function setupNotesDictation(){
   }
   const recognizer=new API();
   notesRecognizer=recognizer;
+  const recognizedFor=userToken();
+  const current=()=>notesRecognizer===recognizer&&userToken()===recognizedFor;
   recognizer.lang=navigator.language||'en-US';
   recognizer.interimResults=true;
   recognizer.continuous=true;
@@ -273,10 +280,12 @@ function setupNotesDictation(){
   const existing=area.value.trim();
   let heard=false,parts=[];
   recognizer.onstart=()=>{
+   if(!current())return;
    mic.textContent=stopLabel;mic.setAttribute('aria-pressed','true');
    notice.textContent=t('Listening… Speak your note.','Слушаю… Продиктуйте заметку.','J’écoute… Dictez votre note.','Слухаю… Продиктуйте нотатку.');
   };
   recognizer.onresult=e=>{
+   if(!current())return;
    for(let i=e.resultIndex;i<e.results.length;i++){
     const item=e.results[i];parts[i]=item[0]?.transcript?.trim()||'';
    }
@@ -288,13 +297,15 @@ function setupNotesDictation(){
    notice.textContent=t('Text recognized. Check it, then save your note.','Текст распознан. Проверьте его и сохраните заметку.','Texte reconnu. Vérifiez-le avant d’enregistrer.','Текст розпізнано. Перевірте й збережіть нотатку.');
   };
   recognizer.onerror=e=>{
+   if(!current())return;
    const code=String(e?.error||'');
    notice.textContent=(code==='not-allowed'||code==='service-not-allowed')
     ?t('Microphone permission denied. Allow access in browser settings.','Доступ к микрофону запрещён. Разрешите его в настройках браузера.','Accès au microphone refusé.','Доступ до мікрофона заборонено.')
     :t('Voice input stopped. You can continue typing.','Не удалось продолжить распознавание. Можно дописать вручную.','Dictée interrompue. Vous pouvez écrire.','Диктування перервано. Можна дописати вручну.');
   };
   recognizer.onend=()=>{
-   if(notesRecognizer===recognizer)notesRecognizer=null;
+   if(!current())return;
+   notesRecognizer=null;
    mic.textContent=idle;mic.setAttribute('aria-pressed','false');
    if(!heard&&!notice.textContent.includes('запрещён')&&!notice.textContent.includes('denied')){
     notice.textContent=t('No voice text received. Try again or type.','Речь не распознана. Попробуйте ещё раз или напишите текст.','Aucun texte détecté. Réessayez.','Мовлення не розпізнано. Спробуйте ще раз.');
