@@ -117,7 +117,7 @@ test('BASE1-C Inspiration kind, query, preview and Create/Prompt/Clone lead to r
  ]){
   await page.goto('/inspiration.html');
   await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
-  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toContainText('Fixture Inspiration');
+  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveAccessibleName('View Fixture Inspiration inspiration');
   await page.getByRole('button',{name:'View Fixture Inspiration inspiration'}).click();
   await page.getByRole('dialog').getByRole('button',{name:action==='clone'?'Clone & Try':label}).click();
   await expect(page).toHaveURL(new RegExp('studio=video&from=inspiration&action='+action));
@@ -270,8 +270,10 @@ test('BASE1-C3 Inspiration real video card uses existing owner neon tokens witho
   await page.goto('/inspiration.html');
   const card=page.locator('#inspirationPreviewGrid .inspiration-preview-card[data-kind="video"]');
   await expect(card).toHaveCount(1);
-  await expect(card.locator('.inspiration-video-label')).toContainText('Video');
-  await expect(page.locator('[data-inspiration-ratio]')).toHaveCount(2);
+  await expect(card).toHaveAccessibleName('View Synthetic video palette fixture inspiration');
+  await expect(card.locator('.inspiration-video-label')).toHaveCount(0);
+  await expect(page.locator('[data-inspiration-ratio]')).toHaveCount(0);
+  await expect(page.locator('[data-inspiration-kind]')).toHaveText(['All','Video','Image']);
   await card.hover();
   expect(await card.evaluate(el=>el.getBoundingClientRect().right)).toBeLessThanOrEqual(width+1);
   expect(paid()).toBe(0);

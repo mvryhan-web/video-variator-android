@@ -127,9 +127,11 @@ test('Canvas saves only text and kind within this tab; refresh drops photos and 
  await expect(page.locator('#quickCreatePrompt')).toHaveValue('A very specific personal video idea');
  await expect(page.locator('#quickCreateKind')).toHaveValue('video');
  await expect(page.locator('.quick-reference')).toHaveCount(0);
- page.once('dialog',d=>d.dismiss());await page.locator('#quickCreateClear').click();
+ const dismissed=new Promise((resolve,reject)=>page.once('dialog',d=>d.dismiss().then(resolve,reject)));
+ await Promise.all([dismissed,page.locator('#quickCreateClear').click()]);
  await expect(page.locator('#quickCreatePrompt')).toHaveValue('A very specific personal video idea');
- page.once('dialog',d=>d.accept());await page.locator('#quickCreateClear').click();
+ const accepted=new Promise((resolve,reject)=>page.once('dialog',d=>d.accept().then(resolve,reject)));
+ await Promise.all([accepted,page.locator('#quickCreateClear').click()]);
  await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
  await expect(page.locator('#quickCreateKind')).toHaveValue('image');
  expect(await page.evaluate(()=>sessionStorage.getItem('deepsyq_quick_canvas_draft_v1'))).toBeNull();
