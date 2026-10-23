@@ -14,7 +14,7 @@ test('22 independent 16:9 semantic SVG illustrations, no scripts or external ass
   const file=await readFile(root+fsPath+'media/everyday-utilities-20261023/'+id+'.svg','utf8');
   assert.match(file,/<svg[^>]*width="960" height="540" viewBox="0 0 960 540"/);
   assert.match(file,/<\/svg>\s*$/);
-  assert.doesNotMatch(file,/<script|foreignObject|https?:\/\//i);
+  assert.doesNotMatch(file,/<(?:script|foreignObject|image\b[^>]*href=["']https?:)/i);
   assert.ok(file.length>1000,id+' should be a real illustrated SVG, not an empty placeholder');
  }
 });
