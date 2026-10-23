@@ -1,6 +1,8 @@
-## 2026-10-23 — Approved 31 designs: IN_PROGRESS
+## 2026-10-23 — Approved 31 designs: DONE / LIVE_VERIFIED
 
-Original 29 + Owner Admin/Product Watcher restored; shared page presentation and downloadable gallery prepared. Home preserved. Exact-head browser CI and Render DEV live verification pending. See docs/DEEPSYQ_APPROVED_31_PUBLICATION_20261023.md.
+PR #374 merged as `cd7c78deaf7bd90615d711ee06473eebf870d79f`. All 29 exact-head CI workflows passed on `6957e368079b51e1220417aad04e36658aff5c11`; 184/184 owner design tests and desktop/mobile screenshot review completed. Render deploy `dep-dbdk9kks728c73c949tg` became LIVE at 2026-10-23 11:29:30 UTC (13:29:30 Europe/Paris). Post-deploy verification fetched and matched 56 asset SHA-256 hashes, including all 31 original PNGs, page HTML, presentation assets and unchanged Home (excluding the existing preview notice). Gallery has 31 entries and working screen/download links. Live browser confirmed the six-video carousel and caption-free Inspiration. No backend writes or paid actions.
+
+Website: https://deepsyq-visual-preview-20261016.onrender.com/deepsyq.html · All 31 designs: https://deepsyq-visual-preview-20261016.onrender.com/design-gallery.html . This is the existing DEV visual preview: sign-in, checkout and paid AI remain disabled. Home/carousel/Canvas/Agent/Apps photos and business logic are preserved. This completes design publication, not commercial-AI readiness or D18 margin proof. See docs/DEEPSYQ_APPROVED_31_PUBLICATION_20261023.md.
 
 # OWNER 31 REAL SCREENS DESIGN — PR374 / 22 OCTOBER 2026
 
