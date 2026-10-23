@@ -76,3 +76,6 @@ body[data-approved-page="ai-apps"] .apps-grid{grid-template-columns:repeat(2,min
 @media(prefers-reduced-motion:reduce){.ds-studio-example img{transition:none}}
 /* Keep the composer in flow so added examples cannot sit beneath its sticky dock. */
 body[data-approved-page="studio"] form.composer{position:relative;bottom:auto;margin-top:16px;flex-shrink:0}
+
+/* All four tool plans share the same comparison row on wide screens. */
+body[data-approved-page="ai-pricing"] #toolPlans .lifetime{grid-column:auto;min-height:310px}
