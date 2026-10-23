@@ -1,4 +1,6 @@
 import {test,expect} from '@playwright/test';
+// A24 negative source baseline reminder: these same strict browser expectations
+// pass on owner #368 candidate but stay unmerged while DEV lacks that fix.
 
 async function stubSignedInHome(page){
  // Initialize A only once per tab: preserve real B/logout token through the
