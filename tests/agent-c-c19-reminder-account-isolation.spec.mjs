@@ -44,3 +44,45 @@ test('C19 delayed A GET can never insert A reminder or note after B focus',async
  await expect(page.locator('#reminderList')).not.toContainText(A+' private reminder');
  await expect(page.locator('#notesList')).not.toContainText(A+' private note');
 });
+
+async function installSyntheticSpeech(page){
+ await page.addInitScript(()=>{
+  window.__c19Speech=[];
+  class MockSpeech {
+   constructor(){this.started=false;window.__c19Speech.push(this);}
+   start(){this.started=true;this.onstart?.();}
+   stop(){this.started=false;this.onend?.();}
+   // Even a stopped browser recognizer may deliver a previously queued callback.
+   emitLate(text){this.onresult?.({resultIndex:0,results:[[{transcript:text}]]});}
+  }
+  window.SpeechRecognition=MockSpeech;
+  window.webkitSpeechRecognition=MockSpeech;
+ });
+}
+test('C19 delayed A reminder speech callback must not restore A private text after B focus',async({page})=>{
+ await installSyntheticSpeech(page);
+ await setup(page);
+ await page.locator('#reminderMic').click();
+ await expect.poll(()=>page.evaluate(()=>window.__c19Speech.length)).toBe(1);
+ await page.evaluate(token=>{localStorage.setItem('vv_token',token);window.dispatchEvent(new Event('focus'));},B);
+ await page.evaluate(()=>window.__c19Speech[0].emitLate('C19_ACCOUNT_A_REMINDER_SECRET 11/11/2026 16:45'));
+ await expect(page.locator('#spokenReminder')).not.toHaveValue(/C19_ACCOUNT_A_REMINDER_SECRET/);
+ await expect(page.locator('#reminderWhat')).not.toHaveValue(/C19_ACCOUNT_A_REMINDER_SECRET/);
+ await page.locator('#reminderMic').click();
+ await expect.poll(()=>page.evaluate(()=>window.__c19Speech.length)).toBe(2);
+ await page.evaluate(()=>window.__c19Speech[1].emitLate('C19_ACCOUNT_B_OWN_REMINDER'));
+ await expect(page.locator('#spokenReminder')).toHaveValue(/C19_ACCOUNT_B_OWN_REMINDER/);
+});
+test('C19 delayed A dictated Quick Note callback must not restore A private text after B focus',async({page})=>{
+ await installSyntheticSpeech(page);
+ await setup(page);
+ await page.locator('#notesMic').click();
+ await expect.poll(()=>page.evaluate(()=>window.__c19Speech.length)).toBe(1);
+ await page.evaluate(token=>{localStorage.setItem('vv_token',token);window.dispatchEvent(new Event('focus'));},B);
+ await page.evaluate(()=>window.__c19Speech[0].emitLate('C19_ACCOUNT_A_PRIVATE_QUICK_NOTE'));
+ await expect(page.locator('#notesBody')).not.toHaveValue(/C19_ACCOUNT_A_PRIVATE_QUICK_NOTE/);
+ await page.locator('#notesMic').click();
+ await expect.poll(()=>page.evaluate(()=>window.__c19Speech.length)).toBe(2);
+ await page.evaluate(()=>window.__c19Speech[1].emitLate('C19_ACCOUNT_B_OWN_QUICK_NOTE'));
+ await expect(page.locator('#notesBody')).toHaveValue(/C19_ACCOUNT_B_OWN_QUICK_NOTE/);
+});
