@@ -157,11 +157,11 @@ test('History lazily previews ready images without touching video media',async({
 });
 
 
-test('Studio shows accurate signed-in plan limits in the approved creator',async({page})=>{
+test('Studio keeps signed-in plan limits accurate even when quickstart hides the verbose preflight panel',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vv_token','basic-user'));
  await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,pricingConfigured:false,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]}}));
  await page.route('**/api/studio/access',r=>r.fulfill({json:{allowed:true,scope:'public',plan:'basic',maxConcurrent:2,maxPerHour:12,activeJobs:1,jobsThisHour:4,reason:null,walletReady:true,pricingConfigured:true}}));
- await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#accessInfo')).toBeVisible();await expect(page.locator('#accessInfo')).toContainText('2 active generation');await expect(page.locator('#accessInfo')).toContainText('12 per hour');await expect(page.locator('#accessInfo')).toContainText('1/2 active');await expect(page.locator('#accessInfo')).toContainText('4/12 in the last hour');
+ await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#accessInfo')).toBeHidden();await expect(page.locator('#accessInfo')).toContainText('2 active generation');await expect(page.locator('#accessInfo')).toContainText('12 per hour');await expect(page.locator('#accessInfo')).toContainText('1/2 active');await expect(page.locator('#accessInfo')).toContainText('4/12 in the last hour');
 });
 
 test('video selectors follow real Veo/Seedance capabilities without submitting jobs',async({page})=>{

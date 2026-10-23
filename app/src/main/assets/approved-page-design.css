@@ -25,7 +25,7 @@ body[data-approved-page="studio"] #empty #taskTitle{font-size:clamp(25px,3vw,38p
 .ds-example-caption{display:block;font-size:12px;letter-spacing:.03em;color:#adbedb;text-align:left}
 body[data-approved-page="studio"] .composer{border:1px solid #5963ba!important;background:linear-gradient(125deg,#132344,#0a1530)!important;box-shadow:0 0 28px #6534ff1a;border-radius:22px!important;padding:22px!important}
 body[data-approved-page="studio"] #prompt{min-height:100px;background:transparent!important}
-body[data-approved-page="studio"] #creator #availability:not(:empty),body[data-approved-page="studio"] #creator #accessInfo:not([hidden]){display:block!important;color:#cbd7ed}
+body[data-approved-page="studio"] #creator #availability:not(:empty){display:block!important;color:#cbd7ed}
 body[data-approved-page="studio"] #generate{min-width:170px;min-height:48px}
 body[data-approved-page="ai-apps"] .apps-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
 body[data-approved-page="ai-apps"] .app-card{border:1px solid #27466f;border-radius:20px;overflow:hidden;background:#091a32}

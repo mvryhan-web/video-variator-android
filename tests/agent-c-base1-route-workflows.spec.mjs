@@ -128,7 +128,11 @@ test('BASE1-C Inspiration kind, query, preview and Create/Prompt/Clone lead to r
  await page.goto('/inspiration.html');
  await page.locator('[data-inspiration-kind="video"]').click();
  await expect(page.locator('[data-inspiration-kind="video"]')).toHaveAttribute('aria-pressed','true');
- await expect(page.locator('[data-inspiration-ratio]')).toHaveCount(2);
+ await expect(page.locator('#inspirationPreview [data-inspiration-kind]')).toHaveCount(3);
+ await page.locator('[data-inspiration-kind="image"]').click();
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(0);
+ await page.locator('[data-inspiration-kind="all"]').click();
+ await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
 });
 
 test('BASE1-C owned AI Apps/Inspiration/Tools remain usable at 320, 375 and 768px',async({page})=>{
@@ -271,9 +275,13 @@ test('BASE1-C3 Inspiration real video card uses existing owner neon tokens witho
   const card=page.locator('#inspirationPreviewGrid .inspiration-preview-card[data-kind="video"]');
   await expect(card).toHaveCount(1);
   await expect(card).toHaveAccessibleName('View Synthetic video palette fixture inspiration');
-  await expect(card.locator('.inspiration-video-label')).toHaveCount(0);
-  await expect(page.locator('[data-inspiration-ratio]')).toHaveCount(0);
-  await expect(page.locator('[data-inspiration-kind]')).toHaveText(['All','Video','Image']);
+  await expect(card.locator('video')).toHaveCount(1);
+  expect(await card.evaluate(el=>Number(getComputedStyle(el).getPropertyValue('--inspiration-ratio')))).toBeCloseTo(16/9,5);
+  await expect(page.locator('#inspirationPreview [data-inspiration-kind]')).toHaveCount(3);
+  await page.locator('[data-inspiration-kind="image"]').click();
+  await expect(card).toHaveCount(0);
+  await page.locator('[data-inspiration-kind="video"]').click();
+  await expect(card).toHaveCount(1);
   await card.hover();
   expect(await card.evaluate(el=>el.getBoundingClientRect().right)).toBeLessThanOrEqual(width+1);
   expect(paid()).toBe(0);
@@ -319,4 +327,44 @@ test('BASE1-C4 owner neon cards and enabled-only local action preserve real rout
   expect((await checkViewport(page)).scrollWidth,'Eraser must not overflow at '+width).toBeLessThanOrEqual(width+1);
  }
  expect(paid(),'No paid AI, Stripe, or customer jobs').toBe(0);
+});
+
+test('BASE1-C21 Home image-only thumbnails preserve accessible names, real filters and 16:9 / 9:16 ratio handoffs',async({page})=>{
+ await mocks(page);
+ const paid=writeCounter(page);
+ const video={...inspiration[0],id:'c21-video',title:'C21 synthetic widescreen',kind:'video',
+  previewUrl:'/synthetic-c21-16by9.mp4',aspectRatio:'16:9'};
+ const image={...inspiration[0],id:'c21-image',title:'C21 synthetic portrait',kind:'image',
+  previewUrl:'/synthetic-c21-9by16.png',aspectRatio:'9:16'};
+ await page.route('**/api/inspiration?**',route=>route.fulfill({json:{
+  items:[video,image],categories:['Editorial'],ratios:['16:9','9:16'],
+  pagination:{limit:24,offset:0,nextOffset:null,hasMore:false}
+ }}));
+ for(const width of [320,390,768]){
+  await page.setViewportSize({width,height:844});
+  await page.goto('/deepsyq.html#inspirationPreview');
+  const root=page.locator('#inspirationPreviewGrid');
+  await expect(root.locator('.inspiration-preview-card')).toHaveCount(2);
+  const videoCard=root.getByRole('button',{name:'View C21 synthetic widescreen inspiration'});
+  const imageCard=root.getByRole('button',{name:'View C21 synthetic portrait inspiration'});
+  await expect(videoCard).toBeVisible();await expect(imageCard).toBeVisible();
+  await expect(videoCard.locator('video')).toHaveCount(1);
+  await expect(imageCard.locator('img[alt="C21 synthetic portrait"]')).toHaveCount(1);
+  expect(await videoCard.evaluate(el=>Number(getComputedStyle(el).getPropertyValue('--inspiration-ratio')))).toBeCloseTo(16/9,5);
+  expect(await imageCard.evaluate(el=>Number(getComputedStyle(el).getPropertyValue('--inspiration-ratio')))).toBeCloseTo(9/16,5);
+  await page.locator('[data-inspiration-kind="video"]').click();
+  await expect(root.locator('.inspiration-preview-card')).toHaveCount(1);
+  await expect(root.getByRole('button',{name:'View C21 synthetic widescreen inspiration'})).toBeVisible();
+  await page.locator('[data-inspiration-kind="image"]').click();
+  await expect(root.locator('.inspiration-preview-card')).toHaveCount(1);
+  await root.getByRole('button',{name:'View C21 synthetic portrait inspiration'}).click();
+  const dialog=page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('button',{name:'Use this prompt'})).toBeEnabled();
+  await dialog.getByRole('button',{name:'Use this prompt'}).click();
+  await expect(page).toHaveURL(/studio=image&from=inspiration&action=prompt/);
+  await expect(page.locator('#prompt')).toHaveValue('A blue botanical poster');
+  await expect(page.locator('#consent')).not.toBeChecked();
+  expect(paid()).toBe(0);
+ }
 });
