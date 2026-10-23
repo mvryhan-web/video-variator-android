@@ -1,7 +1,7 @@
 /* Everyday Tools: exact owner-approved screenshot composition, independently
    responsive, functional links and native existing file processors preserved. */
 body[data-approved-page="free-tools"] main.free-tools-page.tools-hub{max-width:calc(100vw - 204px)!important;width:100%;margin:0;padding:8px 12px 32px!important;}
-body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] > :not(.et-showcase):not(.utility-tools-preview){display:none!important;}
+body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] > :not(.et-showcase):not(.utility-tools-preview):not(header){display:none!important;}
 body[data-approved-page="free-tools"] main.free-tools-page:not([data-active-tool=""]) > .utility-tools-preview{display:none!important;}
 body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] > .utility-tools-preview{display:block!important;margin-top:34px;}
 body[data-approved-page="free-tools"] .et-showcase{background:none!important;border:0!important;padding:0!important;box-shadow:none!important;}
@@ -61,3 +61,29 @@ body[data-approved-page="free-tools"] .et-showcase :is(a,button,select,input):fo
 @media(max-width:900px){body[data-approved-page="free-tools"] main.free-tools-page.tools-hub{max-width:100%!important;padding:62px 12px 24px!important}.et-top-search{margin-left:40px}.et-top-actions{gap:8px}.et-hero{padding:20px}.et-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.et-card{height:160px}.et-hero-copy{max-width:65%}}
 @media(max-width:640px){.et-topbar{gap:6px;margin-bottom:10px;padding:0;justify-content:flex-start}.et-top-search{order:0;flex:1;min-width:calc(100% - 140px);margin:0 0 4px 46px}.et-top-actions{order:2;width:100%;justify-content:space-between}.et-topbar .et-promo,.et-topbar .et-language{order:1}.et-topbar .et-top-link{font-size:10px}.et-hero{min-height:218px;padding:14px}.et-hero-copy{max-width:85%}.et-hero-copy h1{font-size:35px}.et-hero-lead{font-size:17px}.et-hero-copy p{font-size:12px;max-width:235px}.et-hero-art{left:29%;width:71%;opacity:.7}.et-section-heading h2{font-size:21px}.et-section-heading p{font-size:11px}.et-section-heading select.et-picker{min-width:110px;padding:9px}.et-gallery{grid-template-columns:1fr}.et-card{height:151px;padding:14px}.et-card-title{font-size:17px}.et-card-desc{font-size:12px;max-width:178px}.et-card .et-card-art{width:50%}.et-uniquifier{height:172px}.et-uniquifier .et-play-art{width:26%;opacity:.76}.et-uniquifier .et-video-art{width:72%;opacity:.65}.et-uniquifier-copy{left:23%;top:20%;width:70%}.et-uniquifier-copy h2{font-size:25px}}
 @media(prefers-reduced-motion:reduce){.et-card{transition:none}.et-card:hover{transform:none}}
+/* Keep owner-approved original Back and C-owned caller routes genuinely tappable.
+   These are never replaced by decorative controls or hidden by the new landing. */
+body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] {position:relative;}
+body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] > header{
+ display:flex!important;position:absolute;top:10px;left:12px;z-index:30;
+ background:transparent!important;border:0!important;padding:0!important;
+ margin:0!important;min-height:35px!important;box-shadow:none!important;
+}
+body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] > header .tool-back{
+ display:inline-flex;align-items:center;justify-content:center;min-height:36px;
+ background:#091731;border:1px solid #3154ab;padding:7px 10px;
+ border-radius:9px;text-decoration:none;color:#f3f6ff;font-size:12px;
+}
+body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] > header > span,
+body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] > header .hub-appearance {display:none!important;}
+.et-avatar-wrap{min-width:0;position:relative;height:clamp(145px,12vw,160px);}
+.et-avatar-wrap>.et-card{height:100%;width:100%}
+.et-avatar-shortcut{position:absolute!important;inset:0;z-index:5;display:block!important;margin:0!important;padding:0!important;background:none!important;border:0!important}
+.et-avatar-shortcut a{display:block!important;position:absolute;inset:0;width:100%;height:100%;min-height:100%;font-size:0!important;color:transparent!important;text-decoration:none!important;}
+.et-speech-links{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;}
+.et-speech-links .hub-tile{flex:1 1 170px;min-height:115px;}
+@media(max-width:900px){
+ body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] > header{top:9px;left:68px;}
+ .et-avatar-wrap{height:160px}
+}
+@media(max-width:640px){.et-avatar-wrap{height:151px}.et-speech-links{display:grid;grid-template-columns:1fr 1fr;gap:10px}}
