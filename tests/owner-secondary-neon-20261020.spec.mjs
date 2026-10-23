@@ -66,7 +66,7 @@ test('Image Video Audio Studio and History use owner neon surfaces, no old moss 
      const s=getComputedStyle(node);
      return {border:s.borderTopColor,bg:s.backgroundImage,body:document.body.className};
    });
-   expect(c.border).toBe('rgb(89, 99, 186)');
+   expect(c.border).toBe('rgb(113, 99, 220)');
    expect(c.bg).toContain('linear-gradient');
    expect(c.body).not.toContain('home-neon');
  }
