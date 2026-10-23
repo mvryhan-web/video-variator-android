@@ -4,9 +4,10 @@ for(const width of [320,390,768,1440]){
   await page.setViewportSize({width,height:1000});
   await page.goto('/ai-pricing.html');
   await expect(page.getByRole('heading',{level:1})).toHaveText('Make room foryour next idea.');
-  const art=page.locator('.pricing-visual img');
+  const art=page.locator('.pricing-intro .ds-approved-art');
   await expect(art).toBeVisible();
-  await expect.poll(()=>art.evaluate(el=>el.complete&&el.naturalWidth>0)).toBe(true);
+  const source=await art.locator('image').getAttribute('href');
+  expect((await page.request.get('/'+source)).status()).toBe(200);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   const hero=page.locator('.pricing-intro');
   expect(await hero.evaluate(el=>getComputedStyle(el).fontFamily)).toContain('Inter');
