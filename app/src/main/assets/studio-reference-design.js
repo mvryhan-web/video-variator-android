@@ -38,6 +38,20 @@
  const hero=document.createElement('section');hero.id='referenceHero';hero.setAttribute('aria-label','Creative examples');
  $('empty').append(hero);
  const gallery=document.createElement('section');gallery.id='referenceGallery';gallery.setAttribute('aria-label','Inspiration');$('creator').after(gallery);
+ // Follow the real job panel, never simulate generation or progress in the artwork.
+ // Keep examples out of the way from submission through the delivered result.
+ function syncWorkspace(){
+  const progress=$('jobProgress');
+  const history=$('showHistory').getAttribute('aria-pressed')==='true';
+  const active=!progress.hidden&&['submitting','queued','processing','finalizing','unknown','unconfirmed'].includes(progress.dataset.status);
+  const result=$('media').childElementCount>0;
+  body.classList.toggle('reference-working',!history&&(active||result));
+  gallery.hidden=history||active||result;
+ }
+ const workspaceObserver=new MutationObserver(syncWorkspace);
+ workspaceObserver.observe($('jobProgress'),{attributes:true,attributeFilter:['hidden','data-status']});
+ workspaceObserver.observe($('media'),{childList:true});
+ workspaceObserver.observe($('showHistory'),{attributes:true,attributeFilter:['aria-pressed']});
  const topLinks=document.createElement('nav');topLinks.className='reference-top-links';topLinks.setAttribute('aria-label','Studio links');topLinks.innerHTML='<a href="free-tools.html">Help</a><a href="ai-pricing.html#toolPlans">Credits</a><a href="ai-pricing.html">♛ Pricing</a><a href="index.html#profile">Account</a>';
  document.querySelector('.topbar').append(topLinks);
  const search=document.createElement('input');search.type='search';search.className='reference-search';search.placeholder='Search inspiration…';search.setAttribute('aria-label','Search Studio inspiration');
@@ -57,7 +71,7 @@
  function sync(){
   const mode=document.querySelector('.studio-nav [aria-pressed="true"]')?.dataset.kind||'image';
   body.dataset.referenceMode=mode;
-  const history=$('showHistory').getAttribute('aria-pressed')==='true';gallery.hidden=history;
+  syncWorkspace();
   chips.querySelectorAll('button').forEach(b=>{const s=$(b.dataset.source);b.hidden=mode==='music'||(b.dataset.source.startsWith('image')&&mode!=='image')||(b.dataset.source.startsWith('video')&&mode!=='video');b.textContent=(s?.selectedOptions[0]?.textContent||'Settings')+' ⌄';});
   if(previous===mode)return;previous=mode;hero.replaceChildren();gallery.replaceChildren();
   if(mode==='image'){

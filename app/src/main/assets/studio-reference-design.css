@@ -1,4 +1,9 @@
 /* Exact owner compositions, isolated to the existing three Studio modes. */
+/* The introductory composition yields to the authoritative job status/result. */
+.reference-studio.reference-working #empty,
+.reference-studio.reference-working #referenceHero,
+.reference-studio #referenceGallery[hidden]{display:none!important}
+body.reference-studio.reference-working .stage.result{min-height:240px!important;padding:24px!important;border:1px solid #175087!important;border-radius:20px!important;background:#031128!important}
 body.reference-studio{background:radial-gradient(ellipse at 65% 20%,#001c42,transparent 55%),#01070f!important;padding-left:207px!important}
 .reference-studio .topbar{height:62px!important;position:relative;padding:8px 20px!important;background:#010812!important;border-bottom:1px solid #143859!important}
 .reference-studio .topbar .back{display:none}.reference-studio .brand{position:fixed;left:28px;top:15px;z-index:40;font-size:25px}.reference-studio .brand-mark{background:none}.reference-top-links{margin-left:auto;display:flex;gap:28px;font-size:13px;align-items:center}.reference-top-links a{padding:9px 0}.reference-top-links a:last-child{border:1px solid #27426b;border-radius:30px;padding:8px 16px}
