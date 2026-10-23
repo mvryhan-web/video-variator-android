@@ -1,7 +1,10 @@
 /* Everyday Tools: exact owner-approved screenshot composition, independently
    responsive, functional links and native existing file processors preserved. */
 body[data-approved-page="free-tools"] main.free-tools-page.tools-hub{max-width:calc(100vw - 204px)!important;width:100%;margin:0;padding:8px 12px 32px!important;}
-body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] > :not(.et-showcase){display:none!important;}
+body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] > :not(.et-showcase):not(.utility-tools-preview){display:none!important;}
+body[data-approved-page="free-tools"] main.free-tools-page:not([data-active-tool=""]) > .utility-tools-preview{display:none!important;}
+body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] > .utility-tools-preview{display:block!important;margin-top:34px;}
+body[data-approved-page="free-tools"] .et-showcase{background:none!important;border:0!important;padding:0!important;box-shadow:none!important;}
 body[data-approved-page="free-tools"] main.free-tools-page:not([data-active-tool=""]) > .et-showcase{display:none!important;}
 body[data-approved-page="free-tools"] .et-showcase{color:#f5f7ff;font-family:Inter,system-ui,sans-serif;}
 body[data-approved-page="free-tools"] .et-showcase [hidden]{display:none!important;}
