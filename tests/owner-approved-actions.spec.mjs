@@ -47,4 +47,8 @@ test('Owner Studio inspiration reuses prompt and video previews use real media',
  await expect(page.locator('#referenceGallery .reference-card')).toHaveCount(3);
  await expect(page.locator('.reference-audio-sample audio')).toHaveAttribute('src',/ambient-piano-demo\.mp3$/);
  await expect(page.locator('.reference-voice-link')).toHaveAttribute('href','audio-studio.html');
+ await page.getByRole('button',{name:'Play example track',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Pause example track',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Pause example track',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Play example track',exact:true})).toBeVisible();
 });

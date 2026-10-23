@@ -33,13 +33,15 @@
  };
  function card(kind,box,label,prompt,video){
   const b=document.createElement('button');b.type='button';b.className='reference-card';b.setAttribute('aria-label',label);b.append(art(kind,box,label));
-  b.onclick=()=>{selectedPrompt=prompt;preview.querySelector('p').textContent=prompt;preview.querySelector('.reference-preview-art').replaceChildren(art(kind,box,label));const v=preview.querySelector('video');v.hidden=!video;if(video){v.src=video;v.load();}else{v.pause();v.removeAttribute('src');}preview.showModal();};return b;
+  b.dataset.search=prompt.toLowerCase();b.onclick=()=>{selectedPrompt=prompt;preview.querySelector('p').textContent=prompt;preview.querySelector('.reference-preview-art').replaceChildren(art(kind,box,label));const v=preview.querySelector('video');v.hidden=!video;if(video){v.src=video;v.load();}else{v.pause();v.removeAttribute('src');}preview.showModal();};return b;
  }
  const hero=document.createElement('section');hero.id='referenceHero';hero.setAttribute('aria-label','Creative examples');
  $('empty').append(hero);
  const gallery=document.createElement('section');gallery.id='referenceGallery';gallery.setAttribute('aria-label','Inspiration');$('creator').after(gallery);
  const topLinks=document.createElement('nav');topLinks.className='reference-top-links';topLinks.setAttribute('aria-label','Studio links');topLinks.innerHTML='<a href="free-tools.html">Help</a><a href="ai-pricing.html#toolPlans">Credits</a><a href="ai-pricing.html">♛ Pricing</a><a href="index.html#profile">Account</a>';
  document.querySelector('.topbar').append(topLinks);
+ const search=document.createElement('input');search.type='search';search.className='reference-search';search.placeholder='Search inspiration…';search.setAttribute('aria-label','Search Studio inspiration');
+ search.addEventListener('input',()=>{for(const card of gallery.querySelectorAll('.reference-card'))card.hidden=!card.dataset.search.includes(search.value.toLowerCase());});document.querySelector('.topbar').prepend(search);
  body.prepend(document.querySelector('.topbar .brand'));
  document.addEventListener('DOMContentLoaded',()=>{const picker=$('studioTypePicker');if(picker)document.querySelector('.topbar').insertBefore(picker,topLinks);});
  $('settingsButton').setAttribute('aria-label','Open generation settings');
@@ -74,6 +76,18 @@
    hero.append(art('music',[212,63,1220,311],'Audio generation studio — turn your ideas into music with AI'));
    const sample=document.createElement('section');sample.className='reference-audio-sample';
    sample.innerHTML='<h2>Example track</h2><span>Original synthesized ambient demo · 30 seconds</span><audio controls preload="none" src="media/studio-reference/ambient-piano-demo.mp3" aria-label="Play ambient example track"></audio>';
+   const audio=sample.querySelector('audio');audio.controls=false;audio.preload='metadata';
+   const player=document.createElement('div');player.className='reference-audio-player';
+   const play=document.createElement('button');play.type='button';play.textContent='▶';play.setAttribute('aria-label','Play example track');
+   const wave=document.createElement('div');wave.className='reference-wave';wave.setAttribute('aria-hidden','true');
+   for(const height of [99, 49, 48, 56, 32, 76, 79, 74, 53, 35, 59, 60, 57, 93, 55, 55, 49, 43, 71, 43, 99, 50, 48, 55, 32, 76, 79, 74, 53, 35, 59, 60, 57, 92, 55, 55, 49, 43, 71, 42, 99, 50, 48, 55, 32, 76, 79, 74, 53, 35, 58, 59, 57, 92, 55, 55, 49, 44, 71, 42, 100, 50, 48, 55, 32, 76, 79, 74, 53, 35, 58, 59, 57, 92, 55, 55, 49, 43, 71, 43, 100, 50, 48, 56, 32, 77, 79, 74, 53, 35, 56, 49, 44, 59, 31, 25, 16, 12, 10, 3]){const bar=document.createElement('i');bar.style.height=Math.max(8,height)+'%';wave.append(bar);}
+   const seek=document.createElement('input');seek.type='range';seek.min='0';seek.max='30';seek.value='0';seek.step='0.1';seek.setAttribute('aria-label','Example track playback position');wave.append(seek);
+   const clock=document.createElement('span');clock.textContent='00:00 / 00:30';
+   const volume=document.createElement('input');volume.type='range';volume.min='0';volume.max='1';volume.step='0.05';volume.value='0.7';volume.setAttribute('aria-label','Example track volume');audio.volume=.7;
+   const refresh=()=>{play.textContent=audio.paused?'▶':'Ⅱ';play.setAttribute('aria-label',audio.paused?'Play example track':'Pause example track');};
+   play.onclick=async()=>{if(audio.paused){try{await audio.play();}catch{clock.textContent='Unable to play';}}else audio.pause();refresh();};
+   audio.addEventListener('timeupdate',()=>{seek.value=audio.currentTime;clock.textContent='00:'+String(Math.floor(audio.currentTime)).padStart(2,'0')+' / 00:30';});audio.addEventListener('ended',refresh);audio.addEventListener('pause',refresh);audio.addEventListener('play',refresh);
+   seek.oninput=()=>{audio.currentTime=Number(seek.value);};volume.oninput=()=>{audio.volume=Number(volume.value);};player.append(play,wave,clock,volume);sample.append(player);
    gallery.append(sample);
    const h=document.createElement('h2');h.textContent='Explore by style';gallery.append(h);
    [[214,796,390,250],[624,796,389,250],[1038,796,390,250]].forEach((box,i)=>gallery.append(card('music',box,['Cinematic','Ambient','Instrumental'][i],['An epic cinematic instrumental soundtrack with sweeping strings, deep percussion and an uplifting finale.','A relaxing ambient soundscape with soft evolving pads, delicate textures and a peaceful spacious atmosphere.','A gentle instrumental piano melody with soft strings, warm intimate sound and a reflective mood.'][i])));
