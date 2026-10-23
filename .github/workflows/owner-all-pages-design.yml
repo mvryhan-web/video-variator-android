@@ -3,8 +3,9 @@ on:
   pull_request:
     branches: [deepsyq-platform]
     paths:
-      - 'app/src/main/assets/deepsyq-global-theme.css'
+      - 'app/src/main/assets/**'
       - 'tests/owner-all-pages-design*'
+      - 'tests/owner-approved-actions.spec.mjs'
       - 'tests/fixtures/owner-design-pages.json'
       - '.github/workflows/owner-all-pages-design.yml'
   workflow_dispatch:

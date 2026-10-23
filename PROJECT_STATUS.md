@@ -1,3 +1,7 @@
+## 2026-10-23 — Approved 31 designs: IN_PROGRESS
+
+Original 29 + Owner Admin/Product Watcher restored; shared page presentation and downloadable gallery prepared. Home preserved. Exact-head browser CI and Render DEV live verification pending. See docs/DEEPSYQ_APPROVED_31_PUBLICATION_20261023.md.
+
 # OWNER 31 REAL SCREENS DESIGN — PR374 / 22 OCTOBER 2026
 
 Owner explicitly requested individual page designs matching the supplied canonical Home, implementation and publication. Current PR374 source starts at DEV de057636607705a920c626a01f703c1b080b9d00. Accurate inventory: 22 existing HTML documents plus nine real mode/view variants = 31 screens; no invented Favorites/Challenges/Agent implementation. Home carousel/media/order/content and functional HTML/JavaScript remain unchanged. Presentation-only CSS excludes body.home-neon and retains light-theme preference, disabled states and existing account/payment/provider boundaries.
