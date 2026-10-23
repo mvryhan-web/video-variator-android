@@ -83,6 +83,23 @@
   gallery.append(a);
  }
  showcase.append(gallery);
+ // Preserve Agent C's required, real Avatar 'from=tools' route and owned
+ // speech shortcuts, while moving their on-screen placement into the gallery.
+ const legacyAvatar=main.querySelector('.tools-direct-launches');
+ const avatarCard=gallery.querySelector('.et-card[href="avatar-studio.html"]');
+ if(legacyAvatar && avatarCard){
+   const wrap=make('div','et-avatar-wrap');wrap.dataset.category='creative';
+   avatarCard.before(wrap);wrap.append(avatarCard,legacyAvatar);
+   legacyAvatar.classList.add('et-avatar-shortcut');
+ }
+ const utilities=main.querySelector('.utility-tools-preview');
+ const speech=[...main.querySelectorAll('.quick-tool-list .hub-tile[data-hub-tool="tts"],.quick-tool-list .hub-tile[data-hub-tool="stt"]')];
+ if(utilities&&speech.length){
+  const links=make('div','et-speech-links');
+  links.setAttribute('aria-label','Audio and text tools');
+  speech.forEach(a=>links.append(a));
+  utilities.append(links);
+ }
  const banner=make('a','et-uniquifier');banner.href='index.html';
  const iconArt=crop([205,867,198,161],'et-play-art');const videoArt=crop([807,867,590,161],'et-video-art');
  const bannerCopy=make('div','et-uniquifier-copy');
