@@ -19,6 +19,13 @@ for(const entry of pages){
   expect(response.status()).toBe(200);
   await expect(page.locator('body')).toBeVisible();
   await expect(page.locator('link[href="deepsyq-global-theme.css"]')).toHaveCount(1);
+  if(entry.id==='08-audio-tools'){
+   await expect(page.locator('#toolAccessBanner')).toBeVisible();
+   const hero=await page.locator('.ds-approved-hero').boundingBox();
+   const tool=await page.locator('.tool-card').filter({has:page.locator('#speechText')}).boundingBox();
+   if(info.project.name.startsWith('desktop'))expect(hero.width).toBeGreaterThan(tool.width*1.7);
+  }
+  if(entry.id==='31-qr')await expect(page.locator('.ds-approved-art')).toHaveCount(0);
   if(entry.id==='06-apps')await expect(page.locator('#apps .app-card').first()).toBeVisible();
   if(entry.url.startsWith('/index.html#')){
    await expect(page.locator('#'+entry.url.split('#')[1]+'View')).toHaveClass(/active/);
@@ -28,6 +35,13 @@ for(const entry of pages){
    await expect(page.locator('#homeHeroCarousel')).toHaveCount(1);
   }else{
    expect(await page.locator('body').evaluate(n=>n.matches('.home-neon'))).toBe(false);
+  }
+  if(info.project.name.startsWith('mobile')){
+   const overlap=await page.evaluate(()=>{
+    const a=document.querySelector('main>header a'),b=document.querySelector('.ds-site-mobile-toggle');
+    if(!a||!b)return false;const x=a.getBoundingClientRect(),y=b.getBoundingClientRect();
+    return x.width>0&&y.width>0&&x.left<y.right&&x.right>y.left&&x.top<y.bottom&&x.bottom>y.top;
+   });expect(overlap,'Mobile navigation toggle must not cover the Back link').toBe(false);
   }
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
   expect(overflow,entry.url+' horizontal overflow').toBeLessThanOrEqual(1);

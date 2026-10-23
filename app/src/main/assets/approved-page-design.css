@@ -35,9 +35,9 @@ body[data-approved-page="free-tools"] .quick-tool-list{gap:18px}
 body[data-approved-page="free-tools"] .quick-tool-item{padding:25px;border-radius:20px;background:linear-gradient(140deg,#16274a,#0b1430);border:1px solid #385c92}
 body[data-approved-page="free-tools"] .quick-tool-icon{font-size:34px;color:#79dfff;background:#182d52;border-radius:14px;padding:10px}
 body[data-approved-page="audio-studio"] main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
-body[data-approved-page="audio-studio"] main>header,body[data-approved-page="audio-studio"] main>.tool-card:first-of-type{grid-column:1/-1}
+body[data-approved-page="audio-studio"] main>header,body[data-approved-page="audio-studio"] main>.tool-card:has(.ds-approved-hero){grid-column:1/-1}
 body[data-approved-page="audio-studio"] main>.tool-card{margin:0;padding:28px}
-body[data-approved-page="audio-studio"] main>.tool-card:first-of-type{padding:0;border:0;background:none}
+body[data-approved-page="audio-studio"] main>.tool-card:has(.ds-approved-hero){padding:0;border:0;background:none}
 body[data-approved-page="photo-collage"] .collage-workspace,body[data-approved-page="mobile-utility"] .utility-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.9fr);gap:12px 26px;padding:26px}
 body[data-approved-page="photo-collage"] .collage-workspace>*,body[data-approved-page="mobile-utility"] .utility-workspace>*{grid-column:1;min-width:0}
 body[data-approved-page="photo-collage"] .collage-workspace>.ds-approved-hero,body[data-approved-page="mobile-utility"] .utility-workspace>.ds-approved-hero{grid-column:1/-1}
@@ -79,3 +79,8 @@ body[data-approved-page="studio"] form.composer{position:relative;bottom:auto;ma
 
 /* All four tool plans share the same comparison row on wide screens. */
 body[data-approved-page="ai-pricing"] #toolPlans .lifetime{grid-column:auto;min-height:310px}
+
+body[data-approved-page="audio-studio"] #toolAccessBanner{grid-column:1/-1;margin:0;align-self:start}
+@media(max-width:700px){
+ body.deepsyq-sitewide-shell main>header{padding-inline-start:48px;min-height:52px;flex-wrap:wrap}
+}

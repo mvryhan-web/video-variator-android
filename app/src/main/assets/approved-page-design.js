@@ -1,18 +1,19 @@
 /* Owner-selected 31-screen presentation; no API calls or control eligibility changes. */
 (()=>{'use strict';
  if(document.body.classList.contains('home-neon'))return;
+ if(location.pathname.endsWith('/mobile-utility.html')&&new URLSearchParams(location.search).get('tool')!=='scan-pdf')return;
  const $=s=>document.querySelector(s),path=location.pathname.split('/').pop(),base='media/approved-design-20261023/';
  const make=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text)e.textContent=text;return e;};
  const pages={
  'ai-apps.html':['05_AI_Apps.png','.hero'],'free-tools.html':['09_Everyday_Tools.png','.free-tools-hero'],
- 'audio-studio.html':['10_Audio_Text.png','main>.tool-card:first-of-type'],'avatar-studio.html':['11_Avatar.png','.avatar-hero'],
+ 'audio-studio.html':['10_Audio_Text.png','main>.tool-card:has(h1)'],'avatar-studio.html':['11_Avatar.png','.avatar-hero'],
  'mobile-utility.html':['12_Photo_PDF.png','.utility-workspace'],'photo-collage.html':['13_Photo_Collage.png','.collage-workspace'],
  'simple-background-remover.html':['14_Background_Remover.png','main'],'smart-reminders.html':['15_Smart_Reminders.png','.free-tools-hero'],
  'teleprompter.html':['16_Teleprompter.png','.teleprompter-workspace'],'telegram-free-mini.html':['17_Telegram_Mini_App.png','.hero'],
  'ai-pricing.html':['18_Pricing_AI_Credits.png','.pricing-intro'],'ai-privacy.html':['25_AI_Privacy.png','main'],
  'terms.html':['26_Terms.png','main'],'refund.html':['27_Refunds.png','main'],'contact.html':['28_Contact_Support.png','main'],
  'cookie.html':['29_Cookies.png','main'],'deepsyq-admin.html':['30_Owner_Admin.png','main'],'product-watcher-admin.html':['31_Product_Watcher.png','main']};
- function art(file){const ns='http://www.w3.org/2000/svg',s=document.createElementNS(ns,'svg'),i=document.createElementNS(ns,'image');s.setAttribute('viewBox','900 72 510 130');s.setAttribute('preserveAspectRatio','xMidYMid slice');s.setAttribute('aria-hidden','true');s.classList.add('ds-approved-art');i.setAttribute('href',base+file);i.setAttribute('width','1448');i.setAttribute('height','1086');s.append(i);return s;}
+ function art(file){const ns='http://www.w3.org/2000/svg',s=document.createElementNS(ns,'svg'),i=document.createElementNS(ns,'image');s.setAttribute('viewBox','900 72 510 130');s.setAttribute('preserveAspectRatio','xMidYMid slice');s.setAttribute('aria-hidden','true');s.classList.add('ds-approved-art');i.setAttribute('href',file==='20_Video_Uniquifier.png'?'media/creative/creative50-20261021/08-marble-tide.webp':base+file);if(file==='20_Video_Uniquifier.png')s.setAttribute('viewBox','0 0 1448 1086');i.setAttribute('width','1448');i.setAttribute('height','1086');s.append(i);return s;}
  if(path==='deepsyq-admin.html'){const old=$('main h1');if(old){const heading=make('h2','',old.textContent);for(const attr of old.attributes)heading.setAttribute(attr.name,attr.value);old.replaceWith(heading);}$('main').prepend(make('h1','','Owner Admin'));}
  const def=pages[path];if(def){document.body.dataset.approvedPage=path.replace('.html','');const host=$(def[1]),h=host?.querySelector('h1');if(h){const b=make('div','ds-approved-hero'),c=make('div','ds-approved-copy');h.before(b);b.append(c,art(def[0]));c.append(h);if(b.nextElementSibling?.tagName==='P')c.append(b.nextElementSibling);}}
  if(path==='generate-studio.html'){
