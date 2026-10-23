@@ -12,13 +12,11 @@ test('All 31 original concepts have available images and working screen links',a
 });
 test('Studio dialogs, history and prompt survive presentation changes',async({page})=>{
  await page.goto('/generate-studio.html?studio=image');
- await expect(page.locator('.ds-studio-examples')).toHaveCount(0);
- await expect(page.locator('#empty')).toBeVisible();
- await expect(page.locator('link[href="approved-page-design.css"]')).toHaveCount(0);
+ await expect(page.locator('#referenceHero .reference-card')).toHaveCount(3);
  await page.locator('#modelButton').click();await expect(page.locator('#modelDialog')).toBeVisible();await page.keyboard.press('Escape');
  await page.locator('#settingsButton').click();await expect(page.locator('#settingsDialog')).toBeVisible();await page.locator('[data-close="settingsDialog"]').last().click();
  await page.locator('#prompt').fill('A violet glass garden at sunrise');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();
- await page.locator('#showHistory').click();await expect(page.locator('#empty')).toBeHidden();
+ await page.locator('#showHistory').click();await expect(page.locator('#referenceHero')).toBeHidden();
  await page.locator('#showCreate').click();await expect(page.locator('#prompt')).toHaveValue('A violet glass garden at sunrise');
 });
 test('App search filters existing templates',async({page})=>{

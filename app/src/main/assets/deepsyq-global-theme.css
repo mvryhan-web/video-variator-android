@@ -334,7 +334,7 @@ html:not([data-theme="light"]) body:not(.home-neon) .category-chips button:not([
 /* OWNER 22 OCT 2026 — individual existing-page treatments from the supplied Home.
    Presentation only. Every selector excludes Home; no content/control is hidden,
    moved between containers, added or made available by this stylesheet. */
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) {
+html:not([data-theme="light"]) body:not(.home-neon) {
   --creator-accent:#16d9fa;
   --creator-border:#263e67;
   --creator-muted:#b7c3dc;
@@ -342,19 +342,19 @@ html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) {
     radial-gradient(ellipse 820px 370px at 63% -190px,#06429270,transparent 78%),
     radial-gradient(ellipse 600px 380px at 90% 58%,#2a125b20,transparent 76%),#020a16;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(h1,h2,h3) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(h1,h2,h3) {
   letter-spacing:-.035em;
   text-wrap:balance;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.hero,.free-tools-hero,.creatorHero,.pricing-hero,.intro) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.hero,.free-tools-hero,.creatorHero,.pricing-hero,.intro) {
   border-radius:18px;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.ds-site-sidebar,.sidebar) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.ds-site-sidebar,.sidebar) {
   background:linear-gradient(180deg,#020913,#020c19 65%,#031022);
   border-color:#16304a;
   box-shadow:12px 0 40px #0010201a;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) .ds-site-sidebar .ds-site-caption {
+html:not([data-theme="light"]) body:not(.home-neon) .ds-site-sidebar .ds-site-caption {
   margin-top:8px;
   padding-top:16px;
   border-top:1px solid #102238;
@@ -364,21 +364,21 @@ html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) .ds-
   letter-spacing:0;
   text-transform:none;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) .ds-site-sidebar .ds-site-caption:first-child {
+html:not([data-theme="light"]) body:not(.home-neon) .ds-site-sidebar .ds-site-caption:first-child {
   border:0;margin-top:0;padding-top:4px;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.ds-site-sidebar nav a[aria-current="page"],.navBtn.active) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.ds-site-sidebar nav a[aria-current="page"],.navBtn.active) {
   background:linear-gradient(105deg,#2728f1,#15236e 45%,#0a1538);
   border-color:#2353d4;
   box-shadow:inset 2px 0 #11ceff,0 0 19px #0467f832;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(body>header,.topbar,.content>.top,.tools>header) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(body>header,.topbar,.content>.top,.tools>header) {
   background:linear-gradient(100deg,#020b17f7,#061126f5 55%,#020b17f7);
   border-color:#122b48;
   backdrop-filter:blur(16px);
 }
 /* Catalog — the existing template search and real cards remain the page body. */
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(#appsTitle) .hero {
+html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle) .hero {
   max-width:none;
   margin:24px 0 30px;
   padding:40px 34px;
@@ -388,142 +388,142 @@ html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(
     url("media/creative/creative50-20261021/14-prism-hair.webp") 85% 45% / cover;
   box-shadow:0 0 28px #006dff18,inset 0 1px #85b9ff19;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(#appsTitle) .hero h1 {
+html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle) .hero h1 {
   font-size:clamp(34px,4vw,58px);
   margin:14px 0 10px;letter-spacing:-.045em;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(#appsTitle) .hero p {max-width:440px}
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(#appsTitle)>header {
+html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle) .hero p {max-width:440px}
+html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle)>header {
   padding:12px 22px;gap:20px;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(#appsTitle)>header>nav {
+html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle)>header>nav {
   flex-wrap:nowrap;overflow-x:auto;min-width:0;padding:4px 0;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.app-card,.hub-tile,.tool-card,.cp-feature,.creatorToolCard) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.app-card,.hub-tile,.tool-card,.cp-feature,.creatorToolCard) {
   border:1px solid #243d69;
   border-radius:16px;
   background-color:#071426;
   box-shadow:inset 0 1px #8d9fff12,0 8px 24px #000a1d44;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.app-card,.hub-tile,.creatorToolCard):is(:hover,:focus-within) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.app-card,.hub-tile,.creatorToolCard):is(:hover,:focus-within) {
   border-color:#925bff;
   box-shadow:0 0 0 1px #925bff30,0 10px 32px #252eff24;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) .app-card .app-body {
+html:not([data-theme="light"]) body:not(.home-neon) .app-card .app-body {
   background:linear-gradient(145deg,#0b1832,#040d20);
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) .app-meta span {
+html:not([data-theme="light"]) body:not(.home-neon) .app-meta span {
   color:#b7dafb;border-color:#274578;background:#0a1e3c;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.template-preview,.template-preview-content,.template-preview-prompt) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.template-preview,.template-preview-content,.template-preview-prompt) {
   color:#cad9f4;background-color:#071325;border-color:#243d69;
 }
 /* Studios — existing canvases and model/settings popovers stay functional. */
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart).studio-quickstart .stage {
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart .stage {
   border:1px solid #193c68;border-radius:18px;
   background:radial-gradient(ellipse at 52% 20%,#143d752e,transparent 62%),#040d1d;
   box-shadow:0 0 45px #006dff0c,inset 0 1px #637cfb12;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart).studio-quickstart .hero-art {
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart .hero-art {
   filter:drop-shadow(0 0 18px #1687ff35);
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart).studio-quickstart :is(.intro h1,#historyEmpty h2) {
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart :is(.intro h1,#historyEmpty h2) {
   color:#f5f7ff;font-size:clamp(28px,3vw,44px);
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart).studio-quickstart .composer {
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart .composer {
   box-shadow:0 0 0 1px #15d3ff16,0 0 32px #6651fa22,inset 0 1px #a895ff22;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(dialog,.history-card,.history-preview,.wallet-summary,.wallet-stat,.credit-pack) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(dialog,.history-card,.history-preview,.wallet-summary,.wallet-stat,.credit-pack) {
   border-color:#334d84;border-radius:16px;background-color:#08162d;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) dialog::backdrop {
+html:not([data-theme="light"]) body:not(.home-neon) dialog::backdrop {
   background:#010614b8;backdrop-filter:blur(9px);
 }
 /* Everyday Tools keeps each real launch card, file field and local workflow. */
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) .free-tools-hero {
+html:not([data-theme="light"]) body:not(.home-neon) .free-tools-hero {
   padding:34px 28px;
   border:1px solid #234d80;
   background:linear-gradient(90deg,#061123,#071329ed 58%,#03152d66),
     url("media/creative/creative50-20261021/39-liquid-sapphire.webp") right center / cover;
   box-shadow:0 0 30px #1374ff15;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.free-tools-hero h1,.cp-hero h1) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.free-tools-hero h1,.cp-hero h1) {
   font-size:clamp(30px,4vw,48px);line-height:1.12;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.hub-tile .hub-icon,.quick-tool-icon,.creatorToolIcon,.cp-icon) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.hub-tile .hub-icon,.quick-tool-icon,.creatorToolIcon,.cp-icon) {
   color:#72e3ff;background:linear-gradient(140deg,#174cac,#172c67);
   border-color:#285c99;box-shadow:0 0 18px #008cfa1a;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.selected-tool-panel,.utility-config,.collage-fields,.tele-controls,.settings-card) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.selected-tool-panel,.utility-config,.collage-fields,.tele-controls,.settings-card) {
   border-color:#2b4779;background-color:#07172e;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.utility-workspace,.collage-workspace,.teleprompter-workspace) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.utility-workspace,.collage-workspace,.teleprompter-workspace) {
   background:radial-gradient(ellipse 560px 180px at 100% 0,#12447f4d,transparent 80%),
     linear-gradient(145deg,#0a1730,#040c1c);
   border-color:#2e538d;border-radius:20px;
   box-shadow:0 0 26px #2445e81a,inset 0 1px #9cbbff1a;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.image-well,#teleViewport,.picker) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.image-well,#teleViewport,.picker) {
   border-color:#31528b;border-radius:14px;background-color:#040e20;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) #teleViewport {
+html:not([data-theme="light"]) body:not(.home-neon) #teleViewport {
   box-shadow:inset 0 0 55px #004b9a19;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(input[type="file"],.file-picker) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(input[type="file"],.file-picker) {
   border-color:#385e99;border-radius:12px;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) input::file-selector-button {
+html:not([data-theme="light"]) body:not(.home-neon) input::file-selector-button {
   color:#e7eaff;background:linear-gradient(105deg,#37258d,#173f88);
   border:1px solid #6c68b8;border-radius:9px;padding:9px 13px;margin-right:12px;
   font:inherit;cursor:pointer;
 }
 /* Legacy dashboard and its real account/history/plans views share the same skin. */
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) .creator-edition .hero,
-html:not([data-theme="light"]).creator-edition body:not(.home-neon):not(.studio-quickstart) .hero {
+html:not([data-theme="light"]) body:not(.home-neon) .creator-edition .hero,
+html:not([data-theme="light"]).creator-edition body:not(.home-neon) .hero {
   border-color:#284f83;
   background:radial-gradient(ellipse at 90% 10%,#114b8c66,transparent 60%),
     linear-gradient(125deg,#0c1230,#061126);
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.creatorKicker,.creatorToolLink,.stepNumber,.frameConnector) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.creatorKicker,.creatorToolLink,.stepNumber,.frameConnector) {
   color:#63ddff;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.creatorEnd,.creatorToolCard,.priceCard,.profileCard,.stat.card) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.creatorEnd,.creatorToolCard,.priceCard,.profileCard,.stat.card) {
   background:linear-gradient(145deg,#101a39,#061126);border-color:#284570;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.priceCard.featured,.price-card.featured) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.priceCard.featured,.price-card.featured) {
   border-color:#a94cff;box-shadow:0 0 30px #753aff20;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) .creator-edition .picker,
-html:not([data-theme="light"]).creator-edition body:not(.home-neon):not(.studio-quickstart) .picker {
+html:not([data-theme="light"]) body:not(.home-neon) .creator-edition .picker,
+html:not([data-theme="light"]).creator-edition body:not(.home-neon) .picker {
   background:linear-gradient(125deg,#161539,#092342);border-color:#6b63b4;
 }
 /* Long-form privacy/legal pages — existing prose becomes readable Home-like cards. */
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(main>.lead)>main {
+html:not([data-theme="light"]) body:not(.home-neon):has(main>.lead)>main {
   padding-top:8px;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(main>.lead) main>h1 {
+html:not([data-theme="light"]) body:not(.home-neon):has(main>.lead) main>h1 {
   font-size:clamp(32px,4.6vw,56px);line-height:1.12;
   max-width:830px;margin-bottom:18px;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(main>.lead) main>section {
+html:not([data-theme="light"]) body:not(.home-neon):has(main>.lead) main>section {
   border:1px solid #233e6a;border-radius:16px;
   padding:24px 26px;margin:14px 0;
   background:linear-gradient(130deg,#0b1730,#050e20);
   box-shadow:inset 0 1px #9cb4ff0a;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(main>.lead) main>section h2 {
+html:not([data-theme="light"]) body:not(.home-neon):has(main>.lead) main>section h2 {
   font-size:20px;line-height:1.25;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(main>.lead) main>section p {
+html:not([data-theme="light"]) body:not(.home-neon):has(main>.lead) main>section p {
   color:#b9c8e0;line-height:1.8;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(#readinessStatus) :is(.card,.panel),
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(#watcherStatus) :is(.card,.panel) {
+html:not([data-theme="light"]) body:not(.home-neon):has(#readinessStatus) :is(.card,.panel),
+html:not([data-theme="light"]) body:not(.home-neon):has(#watcherStatus) :is(.card,.panel) {
   background:linear-gradient(135deg,#0b1a35,#061023);border-color:#2b4a7d;
 }
 /* The same Home button geometry; eligibility, destructive actions and hidden
    account controls keep their existing semantics and states. */
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(
+html:not([data-theme="light"]) body:not(.home-neon) :is(
  .primary,.primaryBtn,.cp-action,.planBtn,.app-body>button,
  .collage-actions button:first-child,.tele-actions button:first-child,
  #utilityRun,#run,#speechGenerate,#vtaGenerate,#transcribeStart
@@ -532,99 +532,99 @@ html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(
   background:linear-gradient(110deg,#6b28d8,#862cdb 67%,#1b55c9);
   box-shadow:0 0 15px #872bdf32,inset 0 1px #ffffff22;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(
+html:not([data-theme="light"]) body:not(.home-neon) :is(
  .primary,.primaryBtn,.cp-action,.planBtn,.app-body>button,
  .collage-actions button:first-child,.tele-actions button:first-child,#utilityRun,#run
 ):not(:disabled):not([aria-disabled="true"]):hover {
   border-color:#29cfff;box-shadow:0 0 20px #1aaffd29;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.primary,.primaryBtn,.planBtn,.app-body>button):disabled {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.primary,.primaryBtn,.planBtn,.app-body>button):disabled {
   background:#172139;border-color:#354362;color:#99aac4;box-shadow:none;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.tools,.panel,.tool-card,main,footer) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.tools,.panel,.tool-card,main,footer) {
   min-width:0;
 }
 @media(max-width:640px) {
-  html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(#appsTitle) .hero {
+  html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle) .hero {
     padding:28px 20px;min-height:210px;
     background-position:center,right center;
   }
-  html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(#appsTitle)>header {
+  html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle)>header {
     padding:16px 16px 16px 62px;
   }
-  html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(#appsTitle)>header>nav {width:100%}
-  html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) .free-tools-hero {padding:26px 20px}
-  html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(main>.lead) main>section {padding:20px}
+  html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle)>header>nav {width:100%}
+  html:not([data-theme="light"]) body:not(.home-neon) .free-tools-hero {padding:26px 20px}
+  html:not([data-theme="light"]) body:not(.home-neon):has(main>.lead) main>section {padding:20px}
 }
 
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(#readinessStatus) main>section,
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(#watcherStatus) main>section {
+html:not([data-theme="light"]) body:not(.home-neon):has(#readinessStatus) main>section,
+html:not([data-theme="light"]) body:not(.home-neon):has(#watcherStatus) main>section {
   border:1px solid #294c7d;border-radius:18px;
   background:linear-gradient(135deg,#0d1a36,#061024);padding:24px;
 }
 
 /* Screenshot review: remove remaining warm creator-edition treatments, and use
    owned decorative art only in idle Studio (never behind an actual result). */
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.pageSection,.cp-hero,.cp-cta,.authCard,.avatar-hero) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.pageSection,.cp-hero,.cp-cta,.authCard,.avatar-hero) {
   border-color:#2b4c7e;
   background:radial-gradient(ellipse at 90% 0,#0c4f8c4d,transparent 70%),
     linear-gradient(130deg,#10162f,#041024);
   box-shadow:inset 0 1px #7b9aff12,0 0 24px #0044ca0c;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.creatorLead,.creatorKicker,.creatorToolLink,.cp-kicker,.cp-number,.stepNumber,.frameConnector) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.creatorLead,.creatorKicker,.creatorToolLink,.cp-kicker,.cp-number,.stepNumber,.frameConnector) {
   color:#7de1ff;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.stepNumber,.voice-source-card:has(input:checked)) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.stepNumber,.voice-source-card:has(input:checked)) {
   border-color:#7070c6;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) :is(.popular,.plan-badge) {
+html:not([data-theme="light"]) body:not(.home-neon) :is(.popular,.plan-badge) {
   color:#e1d9ff;background:#4930a4;border-color:#9660f9;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) input[type="range"] {accent-color:#1ec9f4}
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) .sourceFrame {
+html:not([data-theme="light"]) body:not(.home-neon) input[type="range"] {accent-color:#1ec9f4}
+html:not([data-theme="light"]) body:not(.home-neon) .sourceFrame {
   background:radial-gradient(ellipse at 70% 65%,#7449d7,transparent 60%),linear-gradient(130deg,#153c6d,#132542);
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) .miniFrame {
+html:not([data-theme="light"]) body:not(.home-neon) .miniFrame {
   background:radial-gradient(circle at 70% 35%,#536fe2,transparent 70%),#122e4b;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) .miniFrame.f1 {
+html:not([data-theme="light"]) body:not(.home-neon) .miniFrame.f1 {
   background:radial-gradient(circle at 70% 35%,#a45bed,transparent 70%),#1b224f;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) .miniFrame.f2 {
+html:not([data-theme="light"]) body:not(.home-neon) .miniFrame.f2 {
   background:radial-gradient(circle at 70% 35%,#26c7dd,transparent 70%),#143049;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart).studio-quickstart .stage:has(#empty:not([hidden])) {
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart .stage:has(#empty:not([hidden])) {
   background:linear-gradient(90deg,#040d22eb,#06122a94 55%,#07122980),
     url("media/home/owner-20261018/01-close-up-woman.jpg") center 42% / cover;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart).studio-quickstart:has(.studio-nav [data-kind="video"][aria-pressed="true"]) .stage:has(#empty:not([hidden])) {
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart:has(.studio-nav [data-kind="video"][aria-pressed="true"]) .stage:has(#empty:not([hidden])) {
   background:linear-gradient(90deg,#040d22e8,#06122a99 55%,#07122980),
     url("media/home/owner-20261018/02-futuristic-portal.jpg") center / cover;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart).studio-quickstart:has(.studio-nav [data-kind="music"][aria-pressed="true"]) .stage:has(#empty:not([hidden])) {
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart:has(.studio-nav [data-kind="music"][aria-pressed="true"]) .stage:has(#empty:not([hidden])) {
   background:linear-gradient(90deg,#040d22e8,#06122aa8 55%,#07122980),
     url("media/creative/creative50-20261021/15-botanical-audio.webp") center / cover;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart).studio-quickstart .stage #taskTitle {
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart .stage #taskTitle {
   text-shadow:0 3px 24px #010614;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(#avatarGenerate) .avatar-hero {
+html:not([data-theme="light"]) body:not(.home-neon):has(#avatarGenerate) .avatar-hero {
   background:linear-gradient(90deg,#061126,#08152be8 65%,#06112644),
     url("media/creative/creative50-20261021/28-opal-eye.webp") right 40% / cover;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart):has(#reminderFormTitle) .free-tools-hero {
+html:not([data-theme="light"]) body:not(.home-neon):has(#reminderFormTitle) .free-tools-hero {
   background:linear-gradient(90deg,#061126,#08152be8 65%,#06112644),
     url("media/creative/creative50-20261021/26-clockwork-peony.webp") right center / cover;
 }
 /* Match the five existing legal/privacy documents, including those without a
    .lead paragraph. All prose, review notices and legal status stay intact. */
-html:not([data-theme="light"]):has(head>link[href="ai-privacy.css"]) body:not(.home-neon):not(.studio-quickstart) main>section {
+html:not([data-theme="light"]):has(head>link[href="ai-privacy.css"]) body:not(.home-neon) main>section {
   border:1px solid #233e6a;border-radius:16px;padding:24px 26px;margin:14px 0;
   background:linear-gradient(130deg,#0b1730,#050e20);box-shadow:inset 0 1px #9cb4ff0a;
 }
-html:not([data-theme="light"]) body:not(.home-neon):not(.studio-quickstart) .editorial .comparison>div {
+html:not([data-theme="light"]) body:not(.home-neon) .editorial .comparison>div {
   background:linear-gradient(135deg,#111c39,#061126);border-color:#2b4a7d;
 }
 @media(max-width:640px) {
-  html:not([data-theme="light"]):has(head>link[href="ai-privacy.css"]) body:not(.home-neon):not(.studio-quickstart) main>section {padding:20px}
+  html:not([data-theme="light"]):has(head>link[href="ai-privacy.css"]) body:not(.home-neon) main>section {padding:20px}
 }

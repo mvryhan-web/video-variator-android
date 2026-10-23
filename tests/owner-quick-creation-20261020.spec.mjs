@@ -84,7 +84,7 @@ test('approved Home and Agent-coming-soon route stay unchanged',async({page})=>{
 });
 
 
-test('Owner layout: creation title is centered and actual Image Video Audio composer stays below the stage',async({page})=>{
+test('Owner references: distinct art composition and existing composer below examples',async({page})=>{
  for(const viewport of [{width:1360,height:900},{width:390,height:844},{width:320,height:740}]){
   await page.setViewportSize(viewport);
   for(const kind of ['image','video','audio']){
@@ -95,11 +95,11 @@ test('Owner layout: creation title is centered and actual Image Video Audio comp
    expect(stage,kind+' '+viewport.width+' stage').not.toBeNull();
    expect(title,kind+' '+viewport.width+' title').not.toBeNull();
    expect(composer,kind+' '+viewport.width+' composer').not.toBeNull();
-   expect(stage.height,kind+' '+viewport.width+' real creation workspace').toBeGreaterThanOrEqual(viewport.width>700?329:274);
-   expect(Math.abs(title.x+title.width/2-(stage.x+stage.width/2)),kind+' center').toBeLessThanOrEqual(18);
-   // Image uses its pre-existing bottom-sticky dock, which overlaps the stage edge by 10 px.
-   // A small 16 px allowance tests the approved bottom position without demanding layout separation.
-   expect(composer.y,kind+' '+viewport.width+' bottom dock below main workspace').toBeGreaterThanOrEqual(stage.y+stage.height-16);
+   await expect(page.locator('#referenceHero')).toBeVisible();
+   const hero=await page.locator('#referenceHero').boundingBox();
+   expect(hero.height).toBeGreaterThanOrEqual(150);
+   expect(composer.y).toBeGreaterThanOrEqual(hero.y+hero.height-2);
+   await expect(page.locator('#referenceGallery .reference-card')).toHaveCount(kind==='image'?8:kind==='video'?4:3);
    await expect(page.locator('#modelButton')).toBeVisible();
    await expect(page.locator('#settingsButton')).toBeVisible();
    await expect(page.locator('#generate')).toBeDisabled();
