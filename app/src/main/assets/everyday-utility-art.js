@@ -21,7 +21,7 @@
   bg.className='hub-tile mobile-utility-tile';
   bg.dataset.utility='background-remover';
   const icon=document.createElement('span');icon.className='utility-tile-icon';icon.setAttribute('aria-hidden','true');icon.textContent='✿';
-  const strong=document.createElement('strong');strong.textContent='Background Remover';
+  const strong=document.createElement('strong');strong.textContent='Simple Background Remover';
   const small=document.createElement('small');small.textContent='Remove flat-color backgrounds and save a transparent PNG.';
   bg.replaceChildren(icon,strong,small);
   grid.append(bg);
