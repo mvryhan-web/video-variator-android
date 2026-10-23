@@ -1,7 +1,9 @@
 import {test,expect} from '@playwright/test';
 
 async function stubSignedInHome(page){
- await page.addInitScript(()=>localStorage.setItem('vv_token','fixture-account-A'));
+ // Initialize A only once per tab: preserve real B/logout token through the
+ // safe document reload initiated by owner #368 account-boundary handling.
+ await page.addInitScript(()=>{if(!sessionStorage.getItem('agent-a-account-fixture-init')){sessionStorage.setItem('agent-a-account-fixture-init','1');localStorage.setItem('vv_token','fixture-account-A');}});
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Account A',isAdmin:false}}}));
  await page.route('**/api/config',r=>r.fulfill({json:{plans:{},googleClientId:'',
   billingConfigured:false,features:{onboarding:false,inspiration:false,aiApps:false,productVideo:false}}}));
