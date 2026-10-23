@@ -54,11 +54,11 @@ test('all 22 existing secondary HTML routes load a shared visual theme',async({p
    const res=await page.request.get(route);
    expect(res.status(),route).toBe(200);
    const html=await res.text();
-   expect(html,route).toContain('deepsyq-global-theme.css');
+   expect(html,route).toContain(route.includes('generate-studio.html')?'studio-classic-theme.css':'deepsyq-global-theme.css');
  }
 });
 
-test('Image Video Audio Studio and History use owner neon surfaces, no old moss accents',async({page})=>{
+test('Image Video Audio Studio and History use restored October 20 neon surfaces',async({page})=>{
  for(const mode of ['image','video','audio']){
    await page.goto('/generate-studio.html?studio='+mode);
    await expect(page.locator('.composer')).toBeVisible();
@@ -66,7 +66,7 @@ test('Image Video Audio Studio and History use owner neon surfaces, no old moss 
      const s=getComputedStyle(node);
      return {border:s.borderTopColor,bg:s.backgroundImage,body:document.body.className};
    });
-   expect(c.border).toBe('rgb(89, 99, 186)');
+   expect(c.border).toBe('rgb(113, 99, 220)');
    expect(c.bg).toContain('linear-gradient');
    expect(c.body).not.toContain('home-neon');
  }
