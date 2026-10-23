@@ -40,6 +40,9 @@
  const gallery=document.createElement('section');gallery.id='referenceGallery';gallery.setAttribute('aria-label','Inspiration');$('creator').after(gallery);
  const topLinks=document.createElement('nav');topLinks.className='reference-top-links';topLinks.setAttribute('aria-label','Studio links');topLinks.innerHTML='<a href="free-tools.html">Help</a><a href="ai-pricing.html#toolPlans">Credits</a><a href="ai-pricing.html">♛ Pricing</a><a href="index.html#profile">Account</a>';
  document.querySelector('.topbar').append(topLinks);
+ body.prepend(document.querySelector('.topbar .brand'));
+ document.addEventListener('DOMContentLoaded',()=>{const picker=$('studioTypePicker');if(picker)document.querySelector('.topbar').insertBefore(picker,topLinks);});
+ $('settingsButton').setAttribute('aria-label','Open generation settings');
  const chips=document.createElement('div');chips.className='reference-setting-chips';
  for(const [id,label] of [['ratio','Format'],['imageResolution','Resolution'],['videoResolution','Resolution'],['videoDuration','Duration']]){
   const b=document.createElement('button');b.type='button';b.dataset.source=id;b.onclick=()=>{$('settingsButton').click();$(id).focus();};chips.append(b);
