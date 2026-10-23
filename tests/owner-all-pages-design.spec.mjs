@@ -18,7 +18,9 @@ for(const entry of pages){
   const response=await page.goto(entry.url,{waitUntil:'domcontentloaded'});
   expect(response.status()).toBe(200);
   await expect(page.locator('body')).toBeVisible();
-  await expect(page.locator('link[href="deepsyq-global-theme.css"]')).toHaveCount(1);
+  const studio=entry.url.startsWith('/generate-studio.html');
+  await expect(page.locator(studio?'link[href="studio-classic-theme.css"]':'link[href="deepsyq-global-theme.css"]')).toHaveCount(1);
+  if(studio){await expect(page.locator('.ds-studio-examples')).toHaveCount(0);await expect(page.locator('script[src="approved-page-design.js"]')).toHaveCount(0);}
   if(entry.id==='08-audio-tools'){
    await expect(page.locator('#toolAccessBanner')).toBeVisible();
    const hero=await page.locator('.ds-approved-hero').boundingBox();
