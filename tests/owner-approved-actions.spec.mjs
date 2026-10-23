@@ -28,3 +28,23 @@ test('Protected Home has no new presentation script',async({page})=>{
  await page.goto('/deepsyq.html');await expect(page.locator('body')).toHaveClass(/home-neon/);
  await expect(page.locator('#homeHeroCarousel')).toHaveCount(1);await expect(page.locator('script[src="approved-page-design.js"]')).toHaveCount(0);
 });
+test('Owner Studio inspiration reuses prompt and video previews use real media',async({page})=>{
+ await page.goto('/generate-studio.html?studio=image');
+ await expect(page.locator('#referenceHero .reference-card')).toHaveCount(3);
+ await page.locator('#referenceGallery .reference-card').first().click();
+ await expect(page.locator('#referencePreview')).toBeVisible();
+ const prompt=await page.locator('#referencePreview p').textContent();
+ await page.locator('#referencePreview .primary').click();
+ await expect(page.locator('#prompt')).toHaveValue(prompt);
+ await expect(page.locator('#consent')).not.toBeChecked();
+ await expect(page.locator('#generate')).toBeDisabled();
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#referenceHero .reference-card').first().click();
+ await expect(page.locator('#referencePreview video')).toBeVisible();
+ await expect(page.locator('#referencePreview video')).toHaveAttribute('src',/02-futuristic-portal\.mp4$/);
+ await page.locator('#referencePreview .dialog-head button').click();
+ await page.goto('/generate-studio.html?studio=audio');
+ await expect(page.locator('#referenceGallery .reference-card')).toHaveCount(3);
+ await expect(page.locator('.reference-audio-sample audio')).toHaveAttribute('src',/ambient-piano-demo\.mp3$/);
+ await expect(page.locator('.reference-voice-link')).toHaveAttribute('href','audio-studio.html');
+});
