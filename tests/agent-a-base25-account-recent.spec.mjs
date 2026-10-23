@@ -304,9 +304,19 @@ test('A23 P0: stale A History Reuse cannot copy A prompt into account B editor o
  await page.mouse.click(rect.x+rect.width/2,rect.y+rect.height/2);
  // Real pointerdown may trigger a safe document reload. Query the fresh
  // B document through locator retries, not a stale frame execution context.
- await expect.poll(()=>page.evaluate(()=>localStorage.getItem('vv_token'))).toBe('fixture-account-B');
- await expect(page.locator('#prompt')).not.toHaveValue('PRIVATE_ACCOUNT_A23_REUSE_PROMPT');
- await expect(page.locator('#historyList')).not.toContainText('PRIVATE_ACCOUNT_A23_REUSE_PROMPT');
+ await expect.poll(async()=>{
+  try{return await page.evaluate(()=>({
+   token:localStorage.getItem('vv_token'),
+   safePrompt:!document.getElementById('prompt')?.value.includes('PRIVATE_ACCOUNT_A23_REUSE_PROMPT'),
+   safeHistory:!document.getElementById('historyList')?.textContent.includes('PRIVATE_ACCOUNT_A23_REUSE_PROMPT')
+  }));}
+  catch(error){
+   // Expected during owner #368's account-boundary page reload: retry
+   // the NEW document, never accidentally count a destroyed A context PASS.
+   if(/Execution context was destroyed|navigation/i.test(String(error)))return null;
+   throw error;
+  }
+ },{timeout:10000}).toEqual({token:'fixture-account-B',safePrompt:true,safeHistory:true});
  expect(paidPosts).toBe(0);
 });
 
