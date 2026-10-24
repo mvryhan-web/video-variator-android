@@ -1,4 +1,6 @@
 // Server-only Google credentials. Disabled unless the owner enables a verified free-tier project.
+import {publicUser} from './db.js';
+import {includedTool} from './tool-policy.js';
 export const SPEECH_MODEL='gemini-3.8-flash-lite-tts';
 export const voices=['Kore','Puck','Charon','Fenrir','Aoede','Leda','Orus','Zephyr'];
 export const languages={'en-US':'American English','en-GB':'British English',de:'German',ru:'Russian',fr:'French',uk:'Ukrainian',es:'Spanish',it:'Italian',pt:'Portuguese',pl:'Polish',ja:'Japanese',ko:'Korean',ar:'Arabic',hi:'Hindi'};
@@ -8,6 +10,7 @@ export function installSpeech(app,{auth,reserve}){
  app.get('/api/speech/config',(req,res)=>res.json({enabled:speechEnabled(),voices,languages,maxChars:1000,dailyUserLimit:3,reason:speechEnabled()?null:'OWNER_SETUP_REQUIRED'}));
  app.post('/api/speech',auth,async(req,res)=>{
   if(!speechEnabled())return res.status(503).json({error:'SPEECH_NOT_ENABLED'});
+  if(!includedTool(publicUser(req.user),'tts'))return res.status(403).json({error:'PLAN_REQUIRED'});
   const {text,voice,language,consent}=req.body||{};
   if(typeof text!=='string'||!text.trim()||text.length>1000||!voices.includes(voice)||!Object.hasOwn(languages,language)||consent!==true)return res.status(400).json({error:'INVALID_SPEECH_REQUEST'});
   try{
