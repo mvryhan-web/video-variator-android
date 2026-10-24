@@ -23,6 +23,22 @@ test('Veo video output settings obey model capability and first-frame duration r
  assert.equal(body.parameters.durationSeconds,8);assert.equal(body.parameters.resolution,'1080p');
 });
 test('music output parsed by media type, not first part',async()=>{const r=await generateGoogle({kind:'music',prompt:'Piano',musicMode:'instrumental',references:[]},{key:'test',fetcher:async()=>({ok:true,json:async()=>({candidates:[{content:{parts:[{text:'Lyrics'},{inlineData:{mimeType:'audio/mpeg',data:Buffer.from('fixture').toString('base64')}}]}}]})})});assert.equal(r.mime,'audio/mpeg');assert.equal(r.bytes.toString(),'fixture');});
+test('Nano Banana 2.1 uses the official Interactions API contract and validates returned image bytes',async()=>{
+ const png=Buffer.from([137,80,78,71,13,10,26,10,0]);let seen;
+ const request=validateGeneration({kind:'image',model:'gemini-nano-banana-2.1',prompt:'A red kite',ratio:'3:2',resolution:'2K',consent:true,references:[{mimeType:'image/png',data:png.toString('base64')}]});
+ const result=await generateGoogle(request,{key:'fixture',fetcher:async(url,options)=>{seen={url,options};return {ok:true,json:async()=>({output_image:{data:png.toString('base64'),mime_type:'image/png'}})};}});
+ const body=JSON.parse(seen.options.body);
+ assert.ok(seen.url.endsWith('/v1beta/interactions'));
+ assert.equal(body.model,'gemini-nano-banana-2.1');
+ assert.deepEqual(body.input,[{type:'text',text:'A red kite'},{type:'image',mime_type:'image/png',data:png.toString('base64')}]);
+ assert.deepEqual(body.response_format,{type:'image',mime_type:'image/png',aspect_ratio:'3:2',image_size:'2K'});
+ assert.deepEqual(result,{mime:'image/png',bytes:png,text:''});
+});
+test('Nano Banana models still require an explicit Studio model allowlist',()=>{
+ const base={AI_STUDIO_ENABLED:'true',GEMINI_API_KEY:'fixture',DATABASE_URL:'fixture',ADMIN_EMAIL:'owner',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image'};
+ assert.equal(studioConfig(base).catalog.find(m=>m.id==='gemini-nano-banana-2.1').enabled,false);
+ assert.equal(studioConfig({...base,AI_STUDIO_ALLOWED_MODELS:'gemini-nano-banana-2.1'}).catalog.find(m=>m.id==='gemini-nano-banana-2.1').enabled,true);
+});
 test('provider API key never sent to arbitrary or redirected download URLs',async()=>{assert.throws(()=>safeGoogleUrl('https://evil.test/file'));assert.throws(()=>safeGoogleUrl('http://generativelanguage.googleapis.com/file'));let calls=0;await assert.rejects(()=>pollGoogle('operations/test',{key:'secret',fetcher:async()=>{calls++;return {ok:true,json:async()=>({done:true,response:{generateVideoResponse:{generatedSamples:[{video:{uri:'https://evil.test/file'}}]}}})};}}));assert.equal(calls,1);});
 test('Veo completed provider errors are terminal and never start a second paid job',async()=>{
  let calls=0;
