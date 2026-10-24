@@ -90,3 +90,4 @@ export function installTelegramFreeMini(app,{token}){
  }));
  return{init};
 }
+

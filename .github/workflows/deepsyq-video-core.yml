@@ -1,0 +1,60 @@
+name: Deepsyq Video core acceptance
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-provider.js'
+      - 'server/generation-byteplus.js'
+      - 'server/generation-studio.js'
+      - 'app/src/main/assets/generate-studio.js'
+      - 'app/src/main/assets/generate-studio.html'
+      - 'app/src/main/assets/generate-models.js'
+      - 'tests/generation-studio-unit.mjs'
+      - 'tests/generation-byteplus-unit.mjs'
+      - 'tests/generation-studio.spec.mjs'
+      - '.github/workflows/deepsyq-video-core.yml'
+  pull_request:
+    paths:
+      - 'server/generation-provider.js'
+      - 'server/generation-byteplus.js'
+      - 'server/generation-studio.js'
+      - 'app/src/main/assets/generate-studio.js'
+      - 'tests/generation-studio-unit.mjs'
+      - 'tests/generation-byteplus-unit.mjs'
+      - 'tests/generation-studio.spec.mjs'
+      - '.github/workflows/deepsyq-video-core.yml'
+# Unique workflow-file key: several existing workflows share the display name "BASE".
+# Cancel only superseded runs of THIS workflow on the SAME PR or ref.
+# Never cancel another agent's different PR or disable a safety assertion.
+concurrency:
+  group: agent5-deepsyq-video-core-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core-video:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    timeout-minutes: 15
+    steps:
+      - name: Prefer official Ubuntu archive for browser dependencies
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify actual video provider adapter and job control tests
+        run: |
+          node --check server/generation-provider.js
+          node --check server/generation-byteplus.js
+          node --check app/src/main/assets/generate-studio.js
+          node --test tests/generation-studio-unit.mjs tests/generation-byteplus-unit.mjs
+      - name: Install desktop and mobile Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify Video Studio real UI workflows without AI charges
+        run: npx playwright test tests/generation-studio.spec.mjs --project=chromium --project=mobile-chromium

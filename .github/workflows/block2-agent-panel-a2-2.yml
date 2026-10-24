@@ -1,0 +1,24 @@
+name: Jules2 Block2 A2.2 safe plan-panel acceptance
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/user-agent-plan-panel.js'
+      - 'tests/user-agent-plan-panel-unit.mjs'
+      - '.github/workflows/block2-agent-panel-a2-2.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-panel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify syntax and pure Node no-spend unit tests
+        run: |
+          node --check app/src/main/assets/user-agent-plan-panel.js
+          node --check tests/user-agent-plan-panel-unit.mjs
+          node --test tests/user-agent-plan-panel-unit.mjs

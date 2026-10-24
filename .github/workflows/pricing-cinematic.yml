@@ -1,0 +1,40 @@
+name: Pricing cinematic visual acceptance
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/ai-pricing*'
+      - 'tests/pricing-cinematic*'
+      - '.github/workflows/pricing-cinematic.yml'
+permissions:
+  contents: read
+jobs:
+  pricing-visual:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Prefer official Ubuntu archive for browser dependencies
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npx playwright test --config tests/pricing-cinematic.config.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pricing-cinematic-screenshots
+          path: test-results/
+          retention-days: 7
+      - name: Preserve existing Pricing billing and mobile acceptance
+        run: npx playwright test tests/deepsyq.spec.mjs --project=chromium --grep 'pricing'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pricing-cinematic-browser-evidence
+          path: test-results/
+          retention-days: 7

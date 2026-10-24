@@ -1,0 +1,40 @@
+name: P0 Legacy Generation Migration (Disposable PG)
+on:
+  pull_request:
+    paths:
+      - server/migrations/20261015-generation-jobs.sql
+      - server/migrations/20261017-provider-task-id-legacy.sql
+      - server/ai-migrations.js
+      - tests/deepsyq-provider-task-migration-*.mjs
+      - .github/workflows/p0-generation-migration.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  legacy-migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: deepsyq_migration_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d deepsyq_migration_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DEEPSYQ_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/deepsyq_migration_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Test both old and fresh schemas without any external AI or live DB
+        run: node --test tests/deepsyq-provider-task-migration-contract.mjs tests/deepsyq-provider-task-migration-postgres.mjs

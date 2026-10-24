@@ -1,0 +1,33 @@
+name: BASE 16 Stripe Checkout retry safety
+on:
+  push:
+    branches: [base16-checkout-reuse-20261016]
+    paths:
+      - 'server/generation-billing.js'
+      - 'tests/base16-checkout-reuse-unit.mjs'
+      - '.github/workflows/base16-checkout-reuse.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-billing.js'
+      - 'tests/base16-checkout-reuse-unit.mjs'
+      - '.github/workflows/base16-checkout-reuse.yml'
+permissions:
+  contents: read
+jobs:
+  billing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Syntax check
+        run: |
+          node --check server/generation-billing.js
+          node --check tests/base16-checkout-reuse-unit.mjs
+      - name: Check mock Checkout retry and existing AI billing regressions
+        run: node --test tests/base16-checkout-reuse-unit.mjs tests/generation-billing-unit.mjs

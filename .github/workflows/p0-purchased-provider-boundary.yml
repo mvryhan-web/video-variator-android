@@ -1,0 +1,63 @@
+name: P0 Purchased-Only Provider Boundary
+on:
+  pull_request:
+    paths:
+      - server/generation-studio.js
+      - server/generation-purchased-provider-boundary.js
+      - tests/generation-purchased-provider-boundary-unit.mjs
+      - tests/generation-studio-purchased-boundary-route-unit.mjs
+      - tests/generation-studio-unit.mjs
+      - tests/p0-purchased-provider-boundary-postgres.mjs
+      - .github/workflows/p0-purchased-provider-boundary.yml
+permissions:
+  contents: read
+concurrency:
+  group: p0-purchased-boundary-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  no-spend-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Fail-closed provider spy tests and syntax
+        run: |
+          node --check server/generation-studio.js
+          node --check server/generation-purchased-provider-boundary.js
+          node --check tests/generation-purchased-provider-boundary-unit.mjs
+          node --check tests/generation-studio-purchased-boundary-route-unit.mjs
+          node --test tests/generation-purchased-provider-boundary-unit.mjs tests/generation-studio-purchased-boundary-route-unit.mjs tests/generation-studio-unit.mjs
+
+  postgres-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: deepsyq_purchased_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d deepsyq_purchased_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      P0_PURCHASED_TEST_DB_URL: postgresql://postgres:postgres@127.0.0.1:5432/deepsyq_purchased_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Disposable real PostgreSQL purchased-source and refund proof
+        run: |
+          node --check tests/p0-purchased-provider-boundary-postgres.mjs
+          node --test tests/p0-purchased-provider-boundary-postgres.mjs

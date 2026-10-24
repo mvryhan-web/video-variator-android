@@ -1,0 +1,36 @@
+name: Agent C Inspiration handoff (storage-denial, five browsers)
+
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - app/src/main/assets/inspiration.js
+      - tests/agent-c-inspiration-handoff-storage.spec.mjs
+      - .github/workflows/agent-c-inspiration-handoff-storage.yml
+  workflow_dispatch:
+
+jobs:
+  inspiration-local-no-spend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check Inspiration source syntax
+        run: node --check app/src/main/assets/inspiration.js
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Real five-browser no-paid handoff tests
+        run: npx playwright test tests/agent-c-inspiration-handoff-storage.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-webkit --project=mobile-chromium
+      - name: Upload failures only
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-c-inspiration-handoff-failures
+          path: test-results/
+          if-no-files-found: ignore

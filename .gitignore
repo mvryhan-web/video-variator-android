@@ -4,3 +4,7 @@ playwright-report/
 
 # Private Windows Telegram bot token; do not commit.
 scripts/telegram-video-worker.env
+
+# Owner rule #23: environment files may contain Stripe/AI/password secrets.
+.env
+.env.*

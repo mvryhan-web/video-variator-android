@@ -1,0 +1,14 @@
+/* Owner-approved: motion only inside the existing three Home spotlight cards.
+   Existing imagery remains as a fallback; sizing, text, links and palette stay unchanged. */
+.home-neon .home-feature-spotlight > video.home-spotlight-video{
+  position:absolute;
+  z-index:-2;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  pointer-events:none;
+}
+@media (prefers-reduced-motion: reduce){
+  .home-neon .home-feature-spotlight > video.home-spotlight-video{display:none}
+}

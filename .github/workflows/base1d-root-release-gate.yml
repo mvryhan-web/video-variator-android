@@ -1,0 +1,22 @@
+name: BASE 1-D Root and Legacy Release Gate
+on:
+  pull_request:
+    paths:
+      - 'server/server.js'
+      - 'tests/base1d-root-release-gate-unit.mjs'
+      - '.github/workflows/base1d-root-release-gate.yml'
+permissions:
+  contents: read
+jobs:
+  legacy-root-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Root release contract syntax
+        run: node --check tests/base1d-root-release-gate-unit.mjs
+      - name: Verify legacy paid subscriptions, auth return and flag-off root without network calls
+        run: node --test tests/base1d-root-release-gate-unit.mjs

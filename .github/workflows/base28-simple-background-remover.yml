@@ -1,0 +1,33 @@
+name: BASE 28 local simple background eraser
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/simple-background-remover*'
+      - 'app/src/main/assets/free-tools.html'
+      - 'tests/base28-simple-background-remover*.mjs'
+      - '.github/workflows/base28-simple-background-remover.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  background-remover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax and pure alpha-channel flood fill regression
+        run: |
+          node --check app/src/main/assets/simple-background-remover-core.mjs
+          node --check app/src/main/assets/simple-background-remover.js
+          node --test tests/base28-simple-background-remover-unit.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Verify local PNG on Chrome, Safari and mobile emulation
+        run: npx playwright test tests/base28-simple-background-remover.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit

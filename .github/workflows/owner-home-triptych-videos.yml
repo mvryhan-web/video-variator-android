@@ -1,0 +1,31 @@
+name: Owner three Home spotlight videos
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/home-triptych-video.css'
+      - 'app/src/main/assets/media/home/neon-20261018/*-card.mp4'
+      - 'tests/owner-home-triptych-video-unit.mjs'
+      - '.github/workflows/owner-home-triptych-videos.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/home-triptych-video.css'
+      - 'app/src/main/assets/media/home/neon-20261018/*-card.mp4'
+      - 'tests/owner-home-triptych-video-unit.mjs'
+      - '.github/workflows/owner-home-triptych-videos.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  video-cards-no-spend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Owner three-card video regression
+        run: node --test tests/owner-home-triptych-video-unit.mjs

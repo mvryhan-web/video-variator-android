@@ -1,0 +1,27 @@
+name: Agent D D5 mandatory generation price acceptance (no spend)
+on:
+  pull_request:
+    branches: [base5-veo-output-validation-20261016, deepsyq-platform]
+    paths:
+      - 'server/generation-studio.js'
+      - 'app/src/main/assets/generate-studio.js'
+      - 'tests/agent-d-base1-price-confirmation-unit.mjs'
+      - '.github/workflows/agent-d-base1-price-confirmation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  price-acceptance-no-spend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax validation
+        run: |
+          node --check server/generation-studio.js
+          node --check tests/agent-d-base1-price-confirmation-unit.mjs
+      - name: Execute actual Studio POST handler against inert provider and wallet
+        run: node --test tests/agent-d-base1-price-confirmation-unit.mjs

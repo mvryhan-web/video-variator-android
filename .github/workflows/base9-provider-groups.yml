@@ -1,0 +1,27 @@
+name: BASE 9 Atomic Provider Group Controls
+on:
+  pull_request:
+    paths:
+      - 'server/generation-model-control.js'
+      - 'server/generation-studio.js'
+      - 'server/admin-audit.js'
+      - 'tests/generation-provider-group-control-unit.mjs'
+      - '.github/workflows/base9-provider-groups.yml'
+permissions:
+  contents: read
+jobs:
+  provider-groups:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check
+        run: |
+          node --check server/generation-model-control.js
+          node --check server/generation-studio.js
+          node --check tests/generation-provider-group-control-unit.mjs
+      - name: Atomic group controls and audit regressions
+        run: node --test tests/generation-provider-group-control-unit.mjs

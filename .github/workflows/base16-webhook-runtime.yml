@@ -1,0 +1,37 @@
+name: BASE 16 paid checkout requires signed webhook
+on:
+  push:
+    branches: [base16-block-unverified-live-checkout-20261016]
+    paths:
+      - 'server/generation-billing.js'
+      - 'server/generation-readiness.js'
+      - 'tests/base16-webhook-activation-unit.mjs'
+      - 'tests/base16-checkout-reuse-unit.mjs'
+      - '.github/workflows/base16-webhook-runtime.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-billing.js'
+      - 'server/generation-readiness.js'
+      - 'tests/base16-webhook-activation-unit.mjs'
+      - 'tests/base16-checkout-reuse-unit.mjs'
+      - '.github/workflows/base16-webhook-runtime.yml'
+permissions:
+  contents: read
+jobs:
+  webhook-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax
+        run: |
+          node --check server/generation-billing.js
+          node --check server/generation-readiness.js
+          node --check tests/base16-webhook-activation-unit.mjs
+      - name: Live checkout disabled without signed webhook, test mode preserved, current billing regressions
+        run: node --test tests/base16-webhook-activation-unit.mjs tests/base16-checkout-reuse-unit.mjs tests/generation-billing-unit.mjs tests/generation-readiness-unit.mjs

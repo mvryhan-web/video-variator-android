@@ -1,0 +1,68 @@
+name: Deepsyq official brand icon QA
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq.css'
+      - 'app/src/main/assets/deepsyq*png'
+      - 'app/src/main/assets/deepsyq.webmanifest'
+      - 'app/src/main/assets/favicon.ico'
+      - 'app/src/main/res/drawable/deepsyq_adaptive_foreground.png'
+      - 'app/src/main/res/mipmap-anydpi-v26/ic_launcher*.xml'
+      - 'tests/deepsyq-brand-identity.spec.mjs'
+      - 'tests/agent5-deepsyq-brand-browser.spec.mjs'
+      - '.github/workflows/deepsyq-brand-icons.yml'
+  workflow_dispatch:
+jobs:
+  verify-exact-master:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Confirm exact owner logo and separate install identity
+        run: node --test tests/deepsyq-brand-identity.spec.mjs
+  android-resource-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android compile SDK 36 (using preinstalled SDK manager)
+        run: |
+          SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+          SDKMGR="$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort -V | tail -1)"
+          test -n "$SDKMGR"
+          "$SDKMGR" 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Set up Gradle 9.6 (matching existing Android release workflow)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+      - name: Build Android debug APK with brand icon
+        run: gradle :app:assembleDebug --stacktrace
+
+  browser-brand:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - name: Prefer official Ubuntu archive for browser dependencies
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Check Agent 5 browser smoke
+        run: node --check tests/agent5-deepsyq-brand-browser.spec.mjs
+      - name: Install browser engines
+        run: npx playwright install --with-deps chromium webkit
+      - name: Real HTTP/DOM verified branding, desktop/mobile, Chromium/WebKit
+        run: npx playwright test tests/agent5-deepsyq-brand-browser.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit

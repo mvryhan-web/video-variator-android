@@ -1,0 +1,56 @@
+name: Owner Inspiration gallery image-video detail acceptance (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq.js'
+      - 'app/src/main/assets/home-inspiration.js'
+      - 'app/src/main/assets/home-inspiration.css'
+      - 'server/deepsyq-preview.js'
+      - 'server/server.js'
+      - 'app/src/main/assets/inspiration-gallery-detail.css'
+      - 'tests/owner-inspiration-gallery-detail.spec.mjs'
+      - '.github/workflows/owner-inspiration-gallery-detail.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq.js'
+      - 'app/src/main/assets/home-inspiration.js'
+      - 'app/src/main/assets/home-inspiration.css'
+      - 'server/deepsyq-preview.js'
+      - 'server/server.js'
+      - 'app/src/main/assets/inspiration-gallery-detail.css'
+      - 'tests/owner-inspiration-gallery-detail.spec.mjs'
+      - '.github/workflows/owner-inspiration-gallery-detail.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspiration-gallery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/home-inspiration.js
+      - run: node --check tests/owner-inspiration-gallery-detail.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Test gallery click through, right prompt, original media, mobile and no fee
+        run: npx playwright test tests/owner-inspiration-gallery-detail.spec.mjs --project=chromium --project=mobile-webkit --workers=2
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-inspiration-gallery-detail-failure
+          path: test-results/
+          if-no-files-found: ignore

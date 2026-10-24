@@ -1,0 +1,28 @@
+name: Block5 Watcher W5.2 no-spend
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/product-watcher/scheduler-state-policy.js'
+      - 'tests/product-watcher-scheduler-state-policy-unit.mjs'
+      - '.github/workflows/block5-watcher-w5-2.yml'
+  push:
+    branches: ['jules-w5-2-scheduler-state-policy-17291737020918908055']
+    paths:
+      - 'server/product-watcher/scheduler-state-policy.js'
+      - 'tests/product-watcher-scheduler-state-policy-unit.mjs'
+      - '.github/workflows/block5-watcher-w5-2.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pure-node-no-spend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check server/product-watcher/scheduler-state-policy.js
+      - run: node --test tests/product-watcher-scheduler-state-policy-unit.mjs

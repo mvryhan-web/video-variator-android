@@ -1,0 +1,630 @@
+/* Owner-approved Deepsyq site-wide cinematic identity, 2026-10-18.
+   Presentation only: processing, AI requests, account state and billing stay unchanged. */
+:root {
+ --ds-bg:#080d1d;--ds-sidebar:#080e20;--ds-surface:#111a34;--ds-raised:#192347;
+ --ds-line:#344269;--ds-text:#f3f4ff;--ds-muted:#b4bbd4;
+ --ds-violet:#925bff;--ds-pink:#ee80d2;--ds-blue:#4c9cf4;--ds-focus:#ead0ff;
+ --ds-font:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+html:not([data-theme="light"]) {
+ color-scheme:dark;--bg:var(--ds-bg);--background:var(--ds-bg);--panel:var(--ds-surface);
+ --panel2:var(--ds-raised);--panel-raised:var(--ds-raised);--line:var(--ds-line);
+ --text:var(--ds-text);--muted:var(--ds-muted);--accent:#d5b2ff;--mint:#d5b2ff;
+}
+html:not([data-theme="light"]) body {
+ font-family:var(--ds-font);color:var(--ds-text);
+ background:radial-gradient(ellipse 80% 450px at 74% -180px,#193b896b,transparent 76%),
+ radial-gradient(ellipse 620px 510px at 6% 30%,#29144a48,transparent 74%),var(--ds-bg);
+}
+html:not([data-theme="light"]) body.creator-pages {
+ --cp-bg:var(--ds-bg);--cp-card:var(--ds-surface);--cp-text:var(--ds-text);
+ --cp-muted:var(--ds-muted);--cp-line:var(--ds-line);--cp-accent:#dfb5ff;--cp-soft:#8e5dfb20;
+}
+html:not([data-theme="light"]) :is(.content>.top,.topbar,body>header,.tools>header) {
+ background:linear-gradient(110deg,#090e20f5,#101735f5);border-bottom:1px solid var(--ds-line);color:var(--ds-text);
+}
+html:not([data-theme="light"]) :is(aside#sidebar,.sidebar,.studio-nav) {
+ background:var(--ds-sidebar);border-color:var(--ds-line);
+}
+html:not([data-theme="light"]) :is(.brand,.top-brand,.brand-name) {
+ color:var(--ds-text);font-family:var(--ds-font);letter-spacing:-.035em;
+}
+html:not([data-theme="light"]) :is(.brand-mark,.mark,.top-mark) {background:transparent;box-shadow:none}
+html:not([data-theme="light"]) :is(.brand-mark,.mark,.top-mark) img {
+ display:block;object-fit:contain;max-width:100%;max-height:100%;
+}
+html:not([data-theme="light"]) :is(nav a.active,.navBtn.active,.studio-nav>button[aria-pressed="true"]) {
+ background:linear-gradient(115deg,#683de68a,#261c4eaa);border-color:#7b58de;color:#fff;
+}
+html:not([data-theme="light"]) :is(nav a:hover,.navBtn:hover,.studio-nav>button:hover) {color:#fff}
+html:not([data-theme="light"]) :is(.card,.price-card,.app-card,.hub-tile,.tool-card,.cp-feature,.panel,.review details) {
+ border-color:var(--ds-line);background-color:var(--ds-surface);color:var(--ds-text);
+}
+html:not([data-theme="light"]) :is(.controls input,.controls select,.kind-tabs button,input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),textarea,select) {
+ border-color:#455177;background-color:#131d39;color:#f7f5ff;
+}
+html:not([data-theme="light"]) :is(.eyebrow,.caption,.cp-kicker,.nav-caption,.step,.tool-kicker) {
+ color:#c49eff;font-family:var(--ds-font);letter-spacing:.095em;
+}
+html:not([data-theme="light"]) :is(.hero h1,.intro h1,.section-head h2,.section-heading h2) {
+ color:#f7f6ff;font-family:var(--ds-font);font-weight:800;letter-spacing:-.045em;
+}
+html:not([data-theme="light"]) :is(.hero p,.intro>p,.section-head p,.card p,.cp-note,.panel p,footer p) {
+ color:var(--ds-muted);
+}
+html:not([data-theme="light"]) :is(.primary,.top-login,.review button:not(:disabled),.price-card button:not(:disabled),.kind-tabs button[aria-pressed="true"],.category-chips button[aria-pressed="true"]) {
+ background:linear-gradient(110deg,var(--ds-violet),var(--ds-pink));border-color:#b17cff;color:#100b23;
+ box-shadow:0 6px 24px #793ef04a;
+}
+html:not([data-theme="light"]) :is(.primary,.top-login,.review button:not(:disabled),.price-card button:not(:disabled)) {
+ font-weight:750;border-radius:12px;
+}
+html:not([data-theme="light"]) :is(.kind-tabs button[aria-pressed="true"],.category-chips button[aria-pressed="true"]) {color:#fff}
+html:not([data-theme="light"]) :is(.app-card,.card,.price-card,.hub-tile,.cp-feature):hover {border-color:#895af8}
+html:not([data-theme="light"]) :is(a,button,input,select,textarea,summary):focus-visible {outline:3px solid var(--ds-focus);outline-offset:3px}
+html:not([data-theme="light"]) :is(.home-hero-carousel,.hero-stage,.inspiration-hero-feature) {border-radius:16px}
+body.deepsyq-sitewide-shell {padding-left:204px}
+body.deepsyq-sitewide-shell :is(main,footer) {max-width:min(1240px,100%)}
+.ds-site-sidebar {
+ position:fixed;inset:0 auto 0 0;width:204px;z-index:101;
+ display:flex;flex-direction:column;gap:12px;padding:22px 13px 14px;
+ overflow-y:auto;background:#080e20;border-right:1px solid var(--ds-line);
+ color:var(--ds-text);font-family:var(--ds-font);box-sizing:border-box;
+}
+.ds-site-sidebar a {text-decoration:none}
+.ds-site-sidebar .ds-site-brand {
+ display:flex;align-items:center;gap:8px;min-height:48px;padding:0 8px;
+ font-size:19px;font-weight:800;color:#fff;
+}
+.ds-site-sidebar .ds-site-brand img {height:30px;width:30px;object-fit:contain}
+.ds-site-sidebar .ds-site-caption {
+ padding:11px 10px 2px;color:#a99bea;font-size:10px;font-weight:750;letter-spacing:.06em;
+}
+.ds-site-sidebar nav {display:flex;flex-direction:column;gap:4px}
+.ds-site-sidebar nav a {
+ display:flex;align-items:center;gap:11px;padding:10px 11px;
+ border:1px solid transparent;border-radius:10px;min-height:42px;
+ color:#c4c9e0;font-size:12px;
+}
+.ds-site-sidebar nav a .ds-icon {width:19px;text-align:center;font-size:17px}
+.ds-site-sidebar nav a:hover,.ds-site-sidebar nav a:focus-visible {color:#fff;background:#222046}
+.ds-site-sidebar nav a[aria-current="page"] {
+ color:#fff;background:linear-gradient(110deg,#6740e8,#211940);border-color:#895cff;
+}
+.ds-site-sidebar .ds-site-footer {
+ margin-top:auto;padding:16px 12px 7px;border-top:1px solid #35416b;
+ font-size:11px;color:#a4afd1;
+}
+.ds-site-sidebar .ds-site-footer a {color:#d2b8ff}
+.ds-site-mobile-toggle,.ds-site-scrim {display:none}
+@media(max-width:900px) {
+ body.deepsyq-sitewide-shell {padding-left:0}
+ .ds-site-sidebar {transform:translateX(-105%);transition:transform .2s ease}
+ body.ds-site-nav-open .ds-site-sidebar {transform:translateX(0)}
+ .ds-site-mobile-toggle {
+  display:grid;place-items:center;position:fixed;top:12px;left:12px;z-index:103;
+  width:42px;height:42px;min-height:42px;padding:0;border-radius:12px;
+  border:1px solid #6556a0;background:#1b1a42;color:#fff;font-size:23px;box-shadow:0 4px 12px #0009;
+ }
+ body.ds-site-nav-open .ds-site-scrim {
+  display:block;position:fixed;inset:0;z-index:100;background:#050916ba;
+ }
+ body.deepsyq-sitewide-shell :is(body>header,.topbar) {padding-left:60px}
+ body.deepsyq-sitewide-shell main {max-width:100%}
+}
+@media(prefers-reduced-motion:reduce) {.ds-site-sidebar {transition:none}}
+
+
+/* Same grouped owner Home sidebar on every secondary route.
+   Pending capabilities must never masquerade as working links. */
+.ds-site-sidebar nav .ds-site-pending {
+ display:flex;align-items:center;gap:11px;padding:10px 11px;min-height:42px;
+ color:#838ba9;font-size:12px;cursor:default;user-select:none;
+}
+.ds-site-sidebar .ds-site-pending .ds-icon {width:19px;text-align:center;font-size:17px}
+.ds-site-sidebar .ds-site-pending small {font-size:10px;color:#919cbd;margin-left:auto}
+.ds-site-sidebar .ds-site-footer {display:flex;flex-wrap:wrap;gap:12px}
+.ds-site-sidebar .ds-site-caption {text-transform:uppercase}
+
+
+/* OWNER 2026-10-20: inner pages only — approved Home remains untouched.
+   Visual-only overrides: existing IDs, routes, AI requests, wallets, outputs and
+   original Home (body.home-neon) are never styled by this block.
+   Colors/treatments derived from the owner-approved 1448x1086 neon reference.
+   Apply after each page's original CSS; never blanket-hide elements. */
+
+html:not([data-theme="light"]) body:not(.home-neon) {
+  --ds-bg: #030b1c;
+  --ds-sidebar: #020b1b;
+  --ds-surface: #0b1934;
+  --ds-raised: #102349;
+  --ds-line: #294b8b;
+  --ds-text: #f4f5ff;
+  --ds-muted: #b7c3dc;
+  --ds-violet: #9552ff;
+  --ds-pink: #db45f2;
+  --ds-blue: #059aff;
+  --bg: var(--ds-bg);
+  --background: var(--ds-bg);
+  --panel: var(--ds-surface);
+  --panel2: var(--ds-raised);
+  --panel-raised: var(--ds-raised);
+  --line: var(--ds-line);
+  --text: var(--ds-text);
+  --muted: var(--ds-muted);
+  --accent: #c49cff;
+  --mint: #60dbff;
+  --cp-bg: var(--ds-bg);
+  --cp-card: var(--ds-surface);
+  --cp-text: var(--ds-text);
+  --cp-muted: var(--ds-muted);
+  --cp-line: var(--ds-line);
+  --cp-accent: #c49cff;
+  --cp-soft: #9552ff20;
+  color: var(--ds-text);
+  background:
+    radial-gradient(ellipse 760px 390px at 62% -180px, #154f9a4d, transparent 80%),
+    radial-gradient(ellipse 630px 470px at 4% 39%, #33135a45, transparent 75%),
+    linear-gradient(160deg, #020917, #030b1c 65%, #06132d);
+}
+
+/* The outer page chrome is shared by Image/Video/Audio Studio, galleries,
+   maker tools, Pricing and owner/legal subpages. No geometry is changed. */
+html:not([data-theme="light"]) body:not(.home-neon) :is(.topbar, .content>.top, body>header, .tools>header, .studio-nav, .sidebar, .ds-site-sidebar) {
+  border-color: #253d71;
+  color: var(--ds-text);
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.topbar, .content>.top, body>header, .tools>header) {
+  background: linear-gradient(112deg, #020919f5, #0b1c40f0);
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.studio-nav, .ds-site-sidebar, .sidebar) {
+  background-color: var(--ds-sidebar);
+}
+html:not([data-theme="light"]) body:not(.home-neon) .ds-site-sidebar nav a[aria-current="page"],
+html:not([data-theme="light"]) body:not(.home-neon) .studio-nav>button[aria-pressed="true"] {
+  background: linear-gradient(110deg, #264defa6, #4a21a6b8);
+  border-color: #645eff;
+  box-shadow: inset 2px 0 #20c7ff, 0 0 18px #513dff35;
+  color: #fff;
+}
+
+/* Dark media-ready surfaces and luminous edge, not a new layout. */
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  .composer, .panel, .app-card, .price-card, .card, .tool-card,
+  .history-card, .history-preview, .wallet-stat, .credit-pack,
+  .collage-workspace, .utility-workspace, .teleprompter-workspace,
+  .reminder-entry, .review-card, .model-card, .upload,
+  .hero, .intro, .cp-feature, .hub-tile, .selected-tool-panel
+) {
+  background-color: var(--ds-surface);
+  border-color: #294c8e;
+  color: var(--ds-text);
+  box-shadow: 0 10px 38px #00071648, inset 0 1px #748dff12;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  .composer, .app-card, .price-card, .card, .tool-card,
+  .panel, .cp-feature, .hub-tile, .history-card
+):hover {
+  border-color: #8065ff;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .composer {
+  background: linear-gradient(128deg, #0f1b3b 0%, #0a1733 70%, #102346);
+  border: 1px solid #7163dc;
+  border-radius: 20px;
+  box-shadow: 0 0 0 1px #09b5ff16, 0 15px 54px #0009188a, 0 0 30px #5e34dc23;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.app-thumb, .media, .previews, .image-well, .hero-art) {
+  border-color: #3b55a0;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  .history-preview, .history-filters button, .examples button, .pill,
+  .stage-tabs, .ratio-choices button, .specs span,
+  .wallet-actions button, .image-draft-bar,
+  .video-background-controls, .reference-crop-stage,
+  .studio-reference-tile>.reference-crop-action,
+  .studio-reference-tile>.reference-undo-action,
+  .studio-reference-tile .reference-order-controls button
+) {
+  background-color: #0e2040;
+  border-color: #365793;
+  color: #dce8ff;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  .credit-estimate, .job-progress, .history-status
+) {
+  background-color: #13234a;
+  border-color: #455ca2;
+  color: #dce8ff;
+}
+/* Preserve semantic success/failure and eligibility colours. */
+html:not([data-theme="light"]) body:not(.home-neon) .job-progress[data-status="failed"],
+html:not([data-theme="light"]) body:not(.home-neon) .job-progress[data-status="unknown"],
+html:not([data-theme="light"]) body:not(.home-neon) .job-progress[data-status="unconfirmed"] {
+  border-color: #a76b8e;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .history-status[data-status="ready"] {
+  color: #9ef4da;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .history-status[data-status="failed"] {
+  color: #ffb5c7;
+}
+
+/* Only existing buttons that already represent a primary action get the bright
+   gradient; disabled/cancel/remove remain governed by their original states. */
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  button.primary:not(:disabled), .actions button.primary:not(:disabled),
+  .review button:not(:disabled), .price-card button:not(:disabled),
+  .cp-action:not([aria-disabled="true"]), .cp-cta a:not([aria-disabled="true"]),
+  .tools-hub #run:not(:disabled), .tools-hub .compact-actions button:first-child:not(:disabled),
+  .collage-actions button:not(:disabled), .tele-actions button:not(:disabled),
+  .video-background-controls button:not(:disabled),
+  #speechGenerate:not(:disabled), #trimGenerate:not(:disabled),
+  #vtaGenerate:not(:disabled), #transcribeStart:not(:disabled)
+) {
+  background: linear-gradient(112deg, #7a43ff, #b845f8 67%, #0acbff);
+  border: 1px solid #b26aff;
+  color: #fff;
+  box-shadow: 0 4px 20px #5e35ff65, inset 0 1px #ffffff2c;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  .stage-tabs button[aria-pressed="true"],
+  .history-filters button[aria-pressed="true"],
+  .kind-tabs button[aria-pressed="true"],
+  .ratio-choices button[aria-pressed="true"],
+  .hub-presets button[aria-pressed="true"],
+  .modes button.selected,
+  .model-card[aria-pressed="true"],
+  .category-chips button[aria-pressed="true"]
+) {
+  background: linear-gradient(115deg, #5129b0, #163f8a);
+  border-color: #8e66ff;
+  color: #fff;
+  box-shadow: 0 0 18px #5e35ff33;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea, select
+) {
+  border-color: #405995;
+  background-color: #0b1b37;
+  color: var(--ds-text);
+}
+html:not([data-theme="light"]) body:not(.home-neon) .composer textarea {
+  background: transparent;
+  border: 0;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  .hero h1, .intro h1, h1, .section-head h2,
+  .section-heading h2, .panel h2, .tool-card h2
+) {
+  color: #f8f8ff;
+  font-family: var(--ds-font);
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  .eyebrow, .nav-caption, .caption, .step, .tool-kicker, .cp-kicker
+) {
+  color: #cbb0ff;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+  a, button, input, select, textarea, summary
+):focus-visible {
+  outline: 2px solid #7ce8ff;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-theme="light"]) body:not(.home-neon) :is(.app-card,.card,.panel,.tool-card) {
+    transition: none;
+  }
+}
+
+/* OWNER 2026-10-20 / restore pre-existing C browser visual contract after the
+   inner-page neon overlay (PR321): keep keyboard focus purple and gallery
+   borders aligned with the shared sidebar. Existing content/layout untouched.
+   Scoped to non-Home dark inner routes only. */
+html:not([data-theme="light"]) body:not(.home-neon) .app-card:focus-within {
+  border-color: #925bff;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .gallery .card {
+  border-color: #253d71;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .category-chips button:not([aria-pressed="true"]) {
+  border-color: #253d71;
+}
+
+/* OWNER 22 OCT 2026 — individual existing-page treatments from the supplied Home.
+   Presentation only. Every selector excludes Home; no content/control is hidden,
+   moved between containers, added or made available by this stylesheet. */
+html:not([data-theme="light"]) body:not(.home-neon) {
+  --creator-accent:#16d9fa;
+  --creator-border:#263e67;
+  --creator-muted:#b7c3dc;
+  background:
+    radial-gradient(ellipse 820px 370px at 63% -190px,#06429270,transparent 78%),
+    radial-gradient(ellipse 600px 380px at 90% 58%,#2a125b20,transparent 76%),#020a16;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(h1,h2,h3) {
+  letter-spacing:-.035em;
+  text-wrap:balance;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.hero,.free-tools-hero,.creatorHero,.pricing-hero,.intro) {
+  border-radius:18px;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.ds-site-sidebar,.sidebar) {
+  background:linear-gradient(180deg,#020913,#020c19 65%,#031022);
+  border-color:#16304a;
+  box-shadow:12px 0 40px #0010201a;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .ds-site-sidebar .ds-site-caption {
+  margin-top:8px;
+  padding-top:16px;
+  border-top:1px solid #102238;
+  color:#e5d3ff;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:0;
+  text-transform:none;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .ds-site-sidebar .ds-site-caption:first-child {
+  border:0;margin-top:0;padding-top:4px;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.ds-site-sidebar nav a[aria-current="page"],.navBtn.active) {
+  background:linear-gradient(105deg,#2728f1,#15236e 45%,#0a1538);
+  border-color:#2353d4;
+  box-shadow:inset 2px 0 #11ceff,0 0 19px #0467f832;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(body>header,.topbar,.content>.top,.tools>header) {
+  background:linear-gradient(100deg,#020b17f7,#061126f5 55%,#020b17f7);
+  border-color:#122b48;
+  backdrop-filter:blur(16px);
+}
+/* Catalog — the existing template search and real cards remain the page body. */
+html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle) .hero {
+  max-width:none;
+  margin:24px 0 30px;
+  padding:40px 34px;
+  min-height:240px;
+  border:1px solid #26518a;
+  background:linear-gradient(90deg,#040d20 4%,#07152ae8 44%,#06112622),
+    url("media/creative/creative50-20261021/14-prism-hair.webp") 85% 45% / cover;
+  box-shadow:0 0 28px #006dff18,inset 0 1px #85b9ff19;
+}
+html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle) .hero h1 {
+  font-size:clamp(34px,4vw,58px);
+  margin:14px 0 10px;letter-spacing:-.045em;
+}
+html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle) .hero p {max-width:440px}
+html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle)>header {
+  padding:12px 22px;gap:20px;
+}
+html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle)>header>nav {
+  flex-wrap:nowrap;overflow-x:auto;min-width:0;padding:4px 0;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.app-card,.hub-tile,.tool-card,.cp-feature,.creatorToolCard) {
+  border:1px solid #243d69;
+  border-radius:16px;
+  background-color:#071426;
+  box-shadow:inset 0 1px #8d9fff12,0 8px 24px #000a1d44;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.app-card,.hub-tile,.creatorToolCard):is(:hover,:focus-within) {
+  border-color:#925bff;
+  box-shadow:0 0 0 1px #925bff30,0 10px 32px #252eff24;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .app-card .app-body {
+  background:linear-gradient(145deg,#0b1832,#040d20);
+}
+html:not([data-theme="light"]) body:not(.home-neon) .app-meta span {
+  color:#b7dafb;border-color:#274578;background:#0a1e3c;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.template-preview,.template-preview-content,.template-preview-prompt) {
+  color:#cad9f4;background-color:#071325;border-color:#243d69;
+}
+/* Studios — existing canvases and model/settings popovers stay functional. */
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart .stage {
+  border:1px solid #193c68;border-radius:18px;
+  background:radial-gradient(ellipse at 52% 20%,#143d752e,transparent 62%),#040d1d;
+  box-shadow:0 0 45px #006dff0c,inset 0 1px #637cfb12;
+}
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart .hero-art {
+  filter:drop-shadow(0 0 18px #1687ff35);
+}
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart :is(.intro h1,#historyEmpty h2) {
+  color:#f5f7ff;font-size:clamp(28px,3vw,44px);
+}
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart .composer {
+  box-shadow:0 0 0 1px #15d3ff16,0 0 32px #6651fa22,inset 0 1px #a895ff22;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(dialog,.history-card,.history-preview,.wallet-summary,.wallet-stat,.credit-pack) {
+  border-color:#334d84;border-radius:16px;background-color:#08162d;
+}
+html:not([data-theme="light"]) body:not(.home-neon) dialog::backdrop {
+  background:#010614b8;backdrop-filter:blur(9px);
+}
+/* Everyday Tools keeps each real launch card, file field and local workflow. */
+html:not([data-theme="light"]) body:not(.home-neon) .free-tools-hero {
+  padding:34px 28px;
+  border:1px solid #234d80;
+  background:linear-gradient(90deg,#061123,#071329ed 58%,#03152d66),
+    url("media/creative/creative50-20261021/39-liquid-sapphire.webp") right center / cover;
+  box-shadow:0 0 30px #1374ff15;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.free-tools-hero h1,.cp-hero h1) {
+  font-size:clamp(30px,4vw,48px);line-height:1.12;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.hub-tile .hub-icon,.quick-tool-icon,.creatorToolIcon,.cp-icon) {
+  color:#72e3ff;background:linear-gradient(140deg,#174cac,#172c67);
+  border-color:#285c99;box-shadow:0 0 18px #008cfa1a;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.selected-tool-panel,.utility-config,.collage-fields,.tele-controls,.settings-card) {
+  border-color:#2b4779;background-color:#07172e;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.utility-workspace,.collage-workspace,.teleprompter-workspace) {
+  background:radial-gradient(ellipse 560px 180px at 100% 0,#12447f4d,transparent 80%),
+    linear-gradient(145deg,#0a1730,#040c1c);
+  border-color:#2e538d;border-radius:20px;
+  box-shadow:0 0 26px #2445e81a,inset 0 1px #9cbbff1a;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.image-well,#teleViewport,.picker) {
+  border-color:#31528b;border-radius:14px;background-color:#040e20;
+}
+html:not([data-theme="light"]) body:not(.home-neon) #teleViewport {
+  box-shadow:inset 0 0 55px #004b9a19;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(input[type="file"],.file-picker) {
+  border-color:#385e99;border-radius:12px;
+}
+html:not([data-theme="light"]) body:not(.home-neon) input::file-selector-button {
+  color:#e7eaff;background:linear-gradient(105deg,#37258d,#173f88);
+  border:1px solid #6c68b8;border-radius:9px;padding:9px 13px;margin-right:12px;
+  font:inherit;cursor:pointer;
+}
+/* Legacy dashboard and its real account/history/plans views share the same skin. */
+html:not([data-theme="light"]) body:not(.home-neon) .creator-edition .hero,
+html:not([data-theme="light"]).creator-edition body:not(.home-neon) .hero {
+  border-color:#284f83;
+  background:radial-gradient(ellipse at 90% 10%,#114b8c66,transparent 60%),
+    linear-gradient(125deg,#0c1230,#061126);
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.creatorKicker,.creatorToolLink,.stepNumber,.frameConnector) {
+  color:#63ddff;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.creatorEnd,.creatorToolCard,.priceCard,.profileCard,.stat.card) {
+  background:linear-gradient(145deg,#101a39,#061126);border-color:#284570;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.priceCard.featured,.price-card.featured) {
+  border-color:#a94cff;box-shadow:0 0 30px #753aff20;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .creator-edition .picker,
+html:not([data-theme="light"]).creator-edition body:not(.home-neon) .picker {
+  background:linear-gradient(125deg,#161539,#092342);border-color:#6b63b4;
+}
+/* Long-form privacy/legal pages — existing prose becomes readable Home-like cards. */
+html:not([data-theme="light"]) body:not(.home-neon):has(main>.lead)>main {
+  padding-top:8px;
+}
+html:not([data-theme="light"]) body:not(.home-neon):has(main>.lead) main>h1 {
+  font-size:clamp(32px,4.6vw,56px);line-height:1.12;
+  max-width:830px;margin-bottom:18px;
+}
+html:not([data-theme="light"]) body:not(.home-neon):has(main>.lead) main>section {
+  border:1px solid #233e6a;border-radius:16px;
+  padding:24px 26px;margin:14px 0;
+  background:linear-gradient(130deg,#0b1730,#050e20);
+  box-shadow:inset 0 1px #9cb4ff0a;
+}
+html:not([data-theme="light"]) body:not(.home-neon):has(main>.lead) main>section h2 {
+  font-size:20px;line-height:1.25;
+}
+html:not([data-theme="light"]) body:not(.home-neon):has(main>.lead) main>section p {
+  color:#b9c8e0;line-height:1.8;
+}
+html:not([data-theme="light"]) body:not(.home-neon):has(#readinessStatus) :is(.card,.panel),
+html:not([data-theme="light"]) body:not(.home-neon):has(#watcherStatus) :is(.card,.panel) {
+  background:linear-gradient(135deg,#0b1a35,#061023);border-color:#2b4a7d;
+}
+/* The same Home button geometry; eligibility, destructive actions and hidden
+   account controls keep their existing semantics and states. */
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+ .primary,.primaryBtn,.cp-action,.planBtn,.app-body>button,
+ .collage-actions button:first-child,.tele-actions button:first-child,
+ #utilityRun,#run,#speechGenerate,#vtaGenerate,#transcribeStart
+):not(:disabled):not([aria-disabled="true"]) {
+  border:1px solid #a24bfa;border-radius:999px;color:#fff;
+  background:linear-gradient(110deg,#6b28d8,#862cdb 67%,#1b55c9);
+  box-shadow:0 0 15px #872bdf32,inset 0 1px #ffffff22;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(
+ .primary,.primaryBtn,.cp-action,.planBtn,.app-body>button,
+ .collage-actions button:first-child,.tele-actions button:first-child,#utilityRun,#run
+):not(:disabled):not([aria-disabled="true"]):hover {
+  border-color:#29cfff;box-shadow:0 0 20px #1aaffd29;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.primary,.primaryBtn,.planBtn,.app-body>button):disabled {
+  background:#172139;border-color:#354362;color:#99aac4;box-shadow:none;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.tools,.panel,.tool-card,main,footer) {
+  min-width:0;
+}
+@media(max-width:640px) {
+  html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle) .hero {
+    padding:28px 20px;min-height:210px;
+    background-position:center,right center;
+  }
+  html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle)>header {
+    padding:16px 16px 16px 62px;
+  }
+  html:not([data-theme="light"]) body:not(.home-neon):has(#appsTitle)>header>nav {width:100%}
+  html:not([data-theme="light"]) body:not(.home-neon) .free-tools-hero {padding:26px 20px}
+  html:not([data-theme="light"]) body:not(.home-neon):has(main>.lead) main>section {padding:20px}
+}
+
+html:not([data-theme="light"]) body:not(.home-neon):has(#readinessStatus) main>section,
+html:not([data-theme="light"]) body:not(.home-neon):has(#watcherStatus) main>section {
+  border:1px solid #294c7d;border-radius:18px;
+  background:linear-gradient(135deg,#0d1a36,#061024);padding:24px;
+}
+
+/* Screenshot review: remove remaining warm creator-edition treatments, and use
+   owned decorative art only in idle Studio (never behind an actual result). */
+html:not([data-theme="light"]) body:not(.home-neon) :is(.pageSection,.cp-hero,.cp-cta,.authCard,.avatar-hero) {
+  border-color:#2b4c7e;
+  background:radial-gradient(ellipse at 90% 0,#0c4f8c4d,transparent 70%),
+    linear-gradient(130deg,#10162f,#041024);
+  box-shadow:inset 0 1px #7b9aff12,0 0 24px #0044ca0c;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.creatorLead,.creatorKicker,.creatorToolLink,.cp-kicker,.cp-number,.stepNumber,.frameConnector) {
+  color:#7de1ff;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.stepNumber,.voice-source-card:has(input:checked)) {
+  border-color:#7070c6;
+}
+html:not([data-theme="light"]) body:not(.home-neon) :is(.popular,.plan-badge) {
+  color:#e1d9ff;background:#4930a4;border-color:#9660f9;
+}
+html:not([data-theme="light"]) body:not(.home-neon) input[type="range"] {accent-color:#1ec9f4}
+html:not([data-theme="light"]) body:not(.home-neon) .sourceFrame {
+  background:radial-gradient(ellipse at 70% 65%,#7449d7,transparent 60%),linear-gradient(130deg,#153c6d,#132542);
+}
+html:not([data-theme="light"]) body:not(.home-neon) .miniFrame {
+  background:radial-gradient(circle at 70% 35%,#536fe2,transparent 70%),#122e4b;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .miniFrame.f1 {
+  background:radial-gradient(circle at 70% 35%,#a45bed,transparent 70%),#1b224f;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .miniFrame.f2 {
+  background:radial-gradient(circle at 70% 35%,#26c7dd,transparent 70%),#143049;
+}
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart .stage:has(#empty:not([hidden])) {
+  background:linear-gradient(90deg,#040d22eb,#06122a94 55%,#07122980),
+    url("media/home/owner-20261018/01-close-up-woman.jpg") center 42% / cover;
+}
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart:has(.studio-nav [data-kind="video"][aria-pressed="true"]) .stage:has(#empty:not([hidden])) {
+  background:linear-gradient(90deg,#040d22e8,#06122a99 55%,#07122980),
+    url("media/home/owner-20261018/02-futuristic-portal.jpg") center / cover;
+}
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart:has(.studio-nav [data-kind="music"][aria-pressed="true"]) .stage:has(#empty:not([hidden])) {
+  background:linear-gradient(90deg,#040d22e8,#06122aa8 55%,#07122980),
+    url("media/creative/creative50-20261021/15-botanical-audio.webp") center / cover;
+}
+html:not([data-theme="light"]) body:not(.home-neon).studio-quickstart .stage #taskTitle {
+  text-shadow:0 3px 24px #010614;
+}
+html:not([data-theme="light"]) body:not(.home-neon):has(#avatarGenerate) .avatar-hero {
+  background:linear-gradient(90deg,#061126,#08152be8 65%,#06112644),
+    url("media/creative/creative50-20261021/28-opal-eye.webp") right 40% / cover;
+}
+html:not([data-theme="light"]) body:not(.home-neon):has(#reminderFormTitle) .free-tools-hero {
+  background:linear-gradient(90deg,#061126,#08152be8 65%,#06112644),
+    url("media/creative/creative50-20261021/26-clockwork-peony.webp") right center / cover;
+}
+/* Match the five existing legal/privacy documents, including those without a
+   .lead paragraph. All prose, review notices and legal status stay intact. */
+html:not([data-theme="light"]):has(head>link[href="ai-privacy.css"]) body:not(.home-neon) main>section {
+  border:1px solid #233e6a;border-radius:16px;padding:24px 26px;margin:14px 0;
+  background:linear-gradient(130deg,#0b1730,#050e20);box-shadow:inset 0 1px #9cb4ff0a;
+}
+html:not([data-theme="light"]) body:not(.home-neon) .editorial .comparison>div {
+  background:linear-gradient(135deg,#111c39,#061126);border-color:#2b4a7d;
+}
+@media(max-width:640px) {
+  html:not([data-theme="light"]):has(head>link[href="ai-privacy.css"]) body:not(.home-neon) main>section {padding:20px}
+}

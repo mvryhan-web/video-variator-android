@@ -1,0 +1,13 @@
+# Ponytail one-task pilot — results and rollout gate
+
+Official pinned source: [DietrichGebert/ponytail @ 09c434ab73ca43761c5d8b0c5d341926c2fba710](https://github.com/DietrichGebert/ponytail/tree/09c434ab73ca43761c5d8b0c5d341926c2fba710), exactly one plaintext skill. No install of plugin, hooks, scripts or network-enabled agent extension.
+
+**One isolated task:** DEV merge-readiness predicate, two implementations with the identical required safeguards and no application import. Comparing source lines is a useful **illustration** of minimalism; it does NOT demonstrate independent model reasoning or production token reduction.
+
+**Baseline / Ponytail with skill:** `pilot/before.mjs` vs `pilot/after.mjs`. **Acceptance tests:** `node --test tools/ponytail/pilot/predicate.test.mjs` from the repo, plus `node --check` on both implementations.
+
+**Required checks preserved in both:** only DEV; open/non-draft; exact head; at least one latest-head all-success test; allowlisted nonempty files; explicit D security PASS when necessary; no write/merge/production action. Both must pass all 16 test scenarios; the 16th explicitly checks invalid non-string SHA.
+
+**Actual GitHub-native test evidence (2026-10-19):** [Ponytail pilot workflow #39222815153](https://github.com/mvryhan-web/video-variator-android/actions/runs/39222815153) COMPLETE SUCCESS at exact corrected source/test head `374aa1b14f7ea76b66d0d1bed610abd6db41ec6e`; **16/16 scenarios PASS**, **0 fail**, both baseline and Ponytail variant exercised on every scenario (32 predicate assertions); syntax checks PASS. Earlier Product Watcher #39222454883 succeeded only at its old SHA; an exact-new-head rerun is required independently. **Baseline 46 nonblank non-comment source lines**, Ponytail version **10** (78% less implementation lines for THIS isolated example). The original concise variant omitted baseline's string-type validation for SHA; an added negative regression caught this and it was corrected BEFORE readiness. All 16 test scenarios now pass. No known requirement in the corrected matrix is missing. This is an illustrative, same-author implementation contrast, **not** a controlled independent agent/token benchmark. Potential omissions not in the task scope: PR author credentials, runtime side effects, live provider charging, conflicts with newly advancing DEV. This predicate deliberately does **not** authorize a merge.
+
+**Potential rollout after pilot:** Only if no requirements were lost, choose a confirmed host that actually supports repo-local Agent Skills. Existing ChatGPT A/B/C/D and Google Jules have no proven auto-loading; do not globally activate based on this file alone.

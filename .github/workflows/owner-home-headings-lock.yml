@@ -1,0 +1,20 @@
+name: Owner Home six headings lock
+on:
+  pull_request:
+    branches: [deepsyq-platform, main]
+  push:
+    branches: [deepsyq-platform, main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  owner-hero-headings-locked:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify owner-approved six titles, subtitles and stale-API shielding
+        run: node --test tests/owner-home-hero-headings-lock.mjs

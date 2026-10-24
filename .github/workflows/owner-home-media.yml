@@ -1,0 +1,94 @@
+name: Owner supplied Home media technical checks
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/media/home/owner-20261018/**'
+      - 'app/src/main/assets/home-experience.js'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq.js'
+      - 'app/src/main/assets/media/home/neon-20261018/**'
+      - 'tests/owner-home-layout.spec.mjs'
+      - 'app/src/main/assets/deepsyq.css'
+      - 'server/deepsyq-preview.js'
+      - 'tests/deepsyq-preview.mjs'
+      - 'scripts/publish-owner-home-media.mjs'
+      - 'tests/owner-home-media*'
+      - 'tests/agent-a-base3-home-fallback.spec.mjs'
+      - 'tests/deepsyq.spec.mjs'
+      - 'app/src/main/assets/sitemap.xml'
+      - 'app/src/main/assets/robots.txt'
+      - 'app/src/main/assets/cookie.html'
+      - 'app/src/main/assets/contact.html'
+      - 'app/src/main/assets/refund.html'
+      - 'app/src/main/assets/terms.html'
+      - 'app/src/main/assets/ai-pricing.html'
+      - 'tests/generation-studio.spec.mjs'
+      - 'app/src/main/assets/generate-studio.css'
+      - 'app/src/main/assets/generate-studio.html'
+      - '.github/workflows/owner-home-media.yml'
+  push:
+    branches: [agent-b-home-v01-v13-original-frames-20261018]
+    paths:
+      - 'app/src/main/assets/media/home/owner-20261018/**'
+      - 'app/src/main/assets/home-experience.js'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq.js'
+      - 'app/src/main/assets/media/home/neon-20261018/**'
+      - 'tests/owner-home-layout.spec.mjs'
+      - 'app/src/main/assets/deepsyq.css'
+      - 'server/deepsyq-preview.js'
+      - 'tests/deepsyq-preview.mjs'
+      - 'scripts/publish-owner-home-media.mjs'
+      - 'tests/owner-home-media*'
+      - 'tests/agent-a-base3-home-fallback.spec.mjs'
+      - 'tests/deepsyq.spec.mjs'
+      - 'app/src/main/assets/sitemap.xml'
+      - 'app/src/main/assets/robots.txt'
+      - 'app/src/main/assets/cookie.html'
+      - 'app/src/main/assets/contact.html'
+      - 'app/src/main/assets/refund.html'
+      - 'app/src/main/assets/terms.html'
+      - 'app/src/main/assets/ai-pricing.html'
+      - 'tests/generation-studio.spec.mjs'
+      - 'app/src/main/assets/generate-studio.css'
+      - 'app/src/main/assets/generate-studio.html'
+      - '.github/workflows/owner-home-media.yml'
+permissions:
+  contents: read
+jobs:
+  owner-media:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - name: Prefer official Ubuntu archive for browser dependencies
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: node --test tests/owner-home-media-unit.mjs tests/deepsyq-preview.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Existing fallback, navigation and reduced-motion regression
+        run: npx playwright test tests/agent-a-base3-home-fallback.spec.mjs tests/deepsyq.spec.mjs tests/owner-home-layout.spec.mjs tests/generation-studio.spec.mjs --grep 'BASE 3:|video carousel switches|failed owner media|reduced-motion users|Home Quick Create|Owner neon layout:|pricing shows the planned|pricing mobile trial|collapsible left rail|studio model/settings windows' --project=chromium --project=mobile-webkit --workers=1
+      - name: Real iOS WebKit full-film carousel playback
+        run: npx playwright test tests/owner-home-media.spec.mjs --project=mobile-webkit --workers=1
+      - name: Real supplied MP4 desktop and Android-browser playback
+        run: npx playwright test tests/owner-home-media.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --workers=1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owner-home-media-browser-evidence
+          path: test-results/
+          retention-days: 7

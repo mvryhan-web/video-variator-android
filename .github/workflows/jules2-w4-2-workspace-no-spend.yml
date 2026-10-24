@@ -1,0 +1,22 @@
+name: Jules2 W4.2 Workspace user scope - no spend
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - server/workspace-job-view.js
+      - tests/workspace-job-view-unit.mjs
+      - .github/workflows/jules2-w4-2-workspace-no-spend.yml
+  workflow_dispatch:
+jobs:
+  user-only-workspace-projection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify source syntax (no DB or network)
+        run: node --check server/workspace-job-view.js
+      - name: Check Workspace projection including two-account isolation
+        run: node --test tests/workspace-job-view-unit.mjs

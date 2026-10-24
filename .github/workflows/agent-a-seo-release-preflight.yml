@@ -1,0 +1,63 @@
+name: Agent A international SEO release preflight (offline)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/sitemap.xml'
+      - 'app/src/main/assets/robots.txt'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/ai-apps.html'
+      - 'app/src/main/assets/free-tools.html'
+      - 'app/src/main/assets/ai-pricing.html'
+      - 'app/src/main/assets/deepsyq-vs-deepseek.html'
+      - 'server/deepsyq-preview.js'
+      - 'app/src/main/assets/product-video.html'
+      - 'app/src/main/assets/product-video.js'
+      - 'tests/agent-a-seo-release-preflight.test.mjs'
+      - '.github/workflows/agent-a-seo-release-preflight.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/sitemap.xml'
+      - 'app/src/main/assets/robots.txt'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/ai-apps.html'
+      - 'app/src/main/assets/free-tools.html'
+      - 'app/src/main/assets/ai-pricing.html'
+      - 'app/src/main/assets/deepsyq-vs-deepseek.html'
+      - 'server/deepsyq-preview.js'
+      - 'app/src/main/assets/product-video.html'
+      - 'app/src/main/assets/product-video.js'
+      - 'tests/agent-a-seo-release-preflight.test.mjs'
+      - '.github/workflows/agent-a-seo-release-preflight.yml'
+  workflow_dispatch:
+    inputs:
+      release_strict:
+        description: 'Enforce public SEO readiness (expected red until launch gates are proved)'
+        required: false
+        type: boolean
+        default: false
+      public_origin:
+        description: 'Owner-approved public canonical HTTPS origin (source-only, no requests)'
+        required: false
+        type: string
+        default: ''
+permissions:
+  contents: read
+jobs:
+  preflight:
+    name: seo-static-and-preview-safety
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      SEO_RELEASE_STRICT: ${{ github.event_name == 'workflow_dispatch' && inputs.release_strict && '1' || '0' }}
+      SEO_PUBLIC_ORIGIN: ${{ github.event_name == 'workflow_dispatch' && inputs.public_origin || '' }}
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@v4
+      - name: Install Node (no application services)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run free offline SEO source preflight
+        run: node --test tests/agent-a-seo-release-preflight.test.mjs

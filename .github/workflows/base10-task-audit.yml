@@ -1,0 +1,32 @@
+name: BASE 10 Durable Provider Task Audit
+
+concurrency:
+  group: ci-base10-task-audit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+on:
+  pull_request:
+    paths:
+      - 'server/generation-studio.js'
+      - 'server/generation-provider-task-id.js'
+      - 'tests/base10-provider-task-id-unit.mjs'
+      - '.github/workflows/base10-task-audit.yml'
+permissions:
+  contents: read
+jobs:
+  provider-task-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Source syntax
+        run: |
+          node --check server/generation-studio.js
+          node --check server/generation-provider-task-id.js
+          node --check tests/base10-provider-task-id-unit.mjs
+      - name: Scoped owner and History task ID regression
+        run: node --test tests/base10-provider-task-id-unit.mjs

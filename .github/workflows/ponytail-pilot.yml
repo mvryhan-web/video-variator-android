@@ -1,0 +1,26 @@
+name: Ponytail one-task no-spend pilot
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - '.agents/skills/ponytail/**'
+      - 'tools/ponytail/**'
+      - '.github/workflows/ponytail-pilot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  same-requirements-no-spend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check both versions parse
+        run: |
+          node --check tools/ponytail/pilot/before.mjs
+          node --check tools/ponytail/pilot/after.mjs
+      - name: Re-run identical requirements against both implementations
+        run: node --test tools/ponytail/pilot/predicate.test.mjs
