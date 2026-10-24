@@ -6,10 +6,13 @@ Separate `generate-studio.html`: video, images and audio; clearly unavailable tr
 US English; Russian device locale translation; responsive mobile layout. Images: description,
 PNG/JPEG reference files up to 3 × 1 MB, supported ratios. Video: text or one image,
 8 seconds 720p, 16:9 / 9:16. Music: 30-second song with vocals or instrumental.
-Adapters: Nano Banana 2 (`gemini-3.1-flash-image`), Veo 3.1 Lite, Lyria 3 Clip.
-Veo 3.1 Fast uses the same validated Google adapter but additionally requires an explicit
-`AI_STUDIO_ALLOWED_MODELS=veo-3.1-fast-generate-preview` entry before activation.
-No Suno/Seedance/Kling/OpenAI connectors or file dubbing implemented yet.
+Adapters: Google Gemini image/video/music; BytePlus Seedream 3.0, 4.0, 4.5, 5.0 Lite and 5.0 Pro;
+BytePlus Seedance 1.0 Pro/Pro Fast, 1.5 Pro, 2.0/2.0 Fast/2.0 Mini and 2.5; and OpenAI GPT Image.
+Provider calls still require the server key, per-model allowlist, approved price and the existing
+purchased-only dispatch boundary. BytePlus videos also require an approved download host and
+durable storage before public activation. Suno Voice, Seed Audio, Seed Speech, Seedance 1.0 Dreamer,
+Arcto, and the requested Seedream Art Edition are still disconnected because their official API
+mapping or commercial access is not verified.
 No consumer account scraping, subscription credit reuse, paid fallbacks or retries.
 
 ## Three-studio interface, inspected 2026-10-11
@@ -35,9 +38,10 @@ model slots remain disconnected; a link opens the existing voiceover tool.
 
 `generate-models.js` shares safe capabilities with the server. Model choices are included
 in requests and validated against their type: an unconnected choice cannot silently fall
-back to Google. BytePlus Seedream 4.5/5.0 Lite and Seedance 2.0 REST adapters are
-prepared and mock-tested; keys, activation and real provider calls are still pending.
-Seed Audio/Seed Speech remain disconnected.
+back to Google. The BytePlus REST adapter uses the official ModelArk model IDs and limits for
+Seedream and Seedance variants. API contract tests use mocked responses; no live provider call
+is implied. Provider keys, activated account products, approved prices and runtime allowlists
+remain prerequisites to real generation. Seed Audio/Seed Speech remain disconnected.
 Photos are never uploaded by preview/settings/model/history actions. Generate remains
 disabled without adapter + server activation + consent + prompt. Extra Google models
 cannot be enabled solely by enabling the video category.

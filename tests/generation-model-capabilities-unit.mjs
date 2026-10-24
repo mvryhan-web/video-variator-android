@@ -23,18 +23,24 @@ test('routing reads normalized ratio and reference capability limits',()=>{
 });
 
 
-test('requested extra models appear in the picker catalog but fail closed until wired',()=>{
+test('requested extra models are routed only when their official provider adapter is connected',()=>{
  const requested=[
   'ChatGPT Image 2.5','ChatGPT Image 2.5 Flare','GPT Image 2',
   'Nano Banana 2.1','Nano Banana Pro','Seedream 5.0 Pro','Seedream 4.0','Seedream 3.0','Seedream 3.0 Art Edition',
-  'Seedance 2.5','Seedance 2.0 Mini','Seedance 2.0 Fast','Seedance 1.5 Pro','Seedance 1.0 Pro','Seedance 1.0 Fast','Seedance 1.0 Dreamer','Arcto',
+  'Seedance 2.5','Seedance 2.0 Mini','Seedance 2.0 Fast','Seedance 1.5 Pro','Seedance 1.0 Pro','Seedance 1.0 Pro Fast','Seedance 1.0 Dreamer','Arcto',
   'Seed Audio 1.0 Beta','Seedance Speed 2.0','Suno Voice'
  ];
  assert.equal(new Set(MODEL_CATALOG.map(m=>m.id)).size,MODEL_CATALOG.length,'model ids stay unique');
+ const wiredLabels=new Set([
+  'ChatGPT Image 2.5','ChatGPT Image 2.5 Flare','GPT Image 2',
+  'Nano Banana 2.1','Nano Banana Pro',
+  'Seedream 5.0 Pro','Seedream 4.0','Seedream 3.0',
+  'Seedance 2.5','Seedance 2.0 Mini','Seedance 2.0 Fast','Seedance 1.5 Pro','Seedance 1.0 Pro','Seedance 1.0 Pro Fast'
+ ]);
  for(const label of requested){
   const model=MODEL_CATALOG.find(m=>m.label===label);
   assert.ok(model,'catalog includes '+label);
-  const wired=['ChatGPT Image 2.5','ChatGPT Image 2.5 Flare','GPT Image 2','Nano Banana 2.1','Nano Banana Pro'].includes(label);
+  const wired=wiredLabels.has(label);
   assert.equal(model.adapter,wired,label+(wired?' is routed through its verified API adapter':' cannot be enabled before its adapter exists'));
   if(wired)assert.doesNotThrow(()=>validateGeneration({kind:model.kind,model:model.id,prompt:'safe test',consent:true,ratio:model.ratios[0]}));
   else assert.throws(()=>validateGeneration({kind:model.kind,model:model.id,prompt:'safe test',consent:true,ratio:model.ratios[0]}),/INVALID_REQUEST/);
