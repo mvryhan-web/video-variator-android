@@ -8,8 +8,10 @@ test('owner Everyday Tools landing: exactly nine live destinations, sidebar and 
  await expect(page.locator('#etShowcase .et-hero h1')).toHaveText('Everyday Tools');
  await expect(page.locator('.ds-site-caption').filter({hasText:'Everyday Tools'})).toHaveCount(1);
  await expect(page.locator('#etGallery .et-card').first()).toContainText('Compress Photos');
- // 19 original utilities plus Background Remover and the two existing speech routes.
- await expect(page.locator('#mobileUtilityGrid a[data-utility]')).toHaveCount(22);
+ // Reference layout: 19 standard cards, one separate wide Background Remover, two wide speech tiles.
+ await expect(page.locator('#mobileUtilityGrid a.et-photo-card')).toHaveCount(19);
+ await expect(page.locator('.utility-tools-preview a.et-owner-bg-banner')).toHaveCount(1);
+ await expect(page.locator('.utility-tools-preview .et-owner-voices a.et-owner-voice-card')).toHaveCount(2);
  await expect(page.locator('#etShowcase .et-uniquifier')).toHaveAttribute('href','index.html');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);
  expect(paid).toEqual([]);
