@@ -33,6 +33,7 @@ async function initializeImageDraft(){
   // Hash the active session credential; never store or log the credential in draft metadata.
   const identity=localStorage.getItem('vv_token')||'anonymous';
   const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(identity));
+  requireStudioAccount();
   imageDraftKey='deepsyq_image_draft_v1_'+Array.from(new Uint8Array(digest).slice(0,16),b=>b.toString(16).padStart(2,'0')).join('');
   const raw=sessionStorage.getItem(imageDraftKey);
   if(!raw||raw.length>4500)return;
@@ -161,7 +162,62 @@ $('clearVideoDraft').onclick=()=>{
 
 let nativeBase='';try{const base=window.AndroidBridge?.getApiBase?.();if(typeof base==='string'&&base.startsWith('https://'))nativeBase=base;}catch(_){}
 const apiBase=()=>String(window.VV_API_BASE||nativeBase||localStorage.getItem('vv_api_base')||location.origin).replace(/\/$/,'');
-async function api(path,options={}){const token=localStorage.getItem('vv_token');const response=await fetch(apiBase()+path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{})}});if(!response.ok){const d=await response.json().catch(()=>({}));throw new Error(d.error||'REQUEST_FAILED');}return response;}
+// A Studio document belongs to the session that opened it. On rotation,
+// synchronously scrub and freeze it before reloading a clean account context.
+function studioToken(){try{return localStorage.getItem('vv_token')||'';}catch(_){return '';}}
+const studioDocumentToken=studioToken();
+let studioAccountFrozen=false,studioPageSuspended=false;
+const studioRequests=new Set();
+let clearPrivateCrop=()=>{};
+function scrubStudioAccount({removeDrafts=false}={}){
+ document.body.inert=true;document.body.style.visibility='hidden';
+ ++generation;++historyLoadEpoch;clearTimeout(estimateTimer);estimateTimer=null;estimateSignature='';
+ imageDraftReady=false;videoDraftReady=false;
+ for(const controller of studioRequests)controller.abort();studioRequests.clear();
+ clearHistoryMediaPreview();clearHistoryThumbs();clearResult();clearPrivateCrop();
+ for(const image of $('refPreview').querySelectorAll('img'))URL.revokeObjectURL(image.src);
+ refs=[];for(const key of Object.keys(drafts))delete drafts[key];
+ $('refPreview').replaceChildren();$('references').value='';$('prompt').value='';$('consent').checked=false;
+ $('historyList').replaceChildren();$('historyEmpty').textContent='';
+ for(const id of ['walletSummary','walletHistory','creditPacks'])$(id)?.replaceChildren();
+ for(const id of ['walletStatus','walletMode','status','lyrics','accessInfo','creditEstimate']){const el=$(id);if(el)el.textContent='';}
+ $('walletBalance').textContent='—';$('jobProgress').hidden=true;$('resumeJob').hidden=true;
+ $('clearRefs').hidden=true;$('imageEditPresets').hidden=true;
+ job=null;busy=false;activeVideoWatchId=null;
+ if(removeDrafts){
+  try{for(const key of [imageDraftKey,videoDraftKey,'vu_generation_job','vu_generation_background_job','deepsyq_template_start','deepsyq_studio_handoff_id'])if(key)sessionStorage.removeItem(key);}catch(_){}
+ }
+ for(const dialog of document.querySelectorAll('dialog[open]'))dialog.close();
+ document.body.inert=true;document.body.style.visibility='hidden';
+}
+function ensureStudioAccount(){
+ if(studioAccountFrozen||studioPageSuspended)return false;
+ if(studioToken()===studioDocumentToken)return true;
+ studioAccountFrozen=true;try{sessionStorage.setItem('deepsyq_studio_account_reset_notice','1');}catch(_){}
+ try{scrubStudioAccount({removeDrafts:true});}finally{location.reload();}return false;
+}
+function requireStudioAccount(){if(!ensureStudioAccount())throw Error('STUDIO_ACCOUNT_CHANGED');}
+for(const name of ['pointerdown','click','keydown','focusin','input','change','submit']){
+ document.addEventListener(name,event=>{if(!ensureStudioAccount()){event.preventDefault();event.stopImmediatePropagation();}},true);
+}
+window.addEventListener('storage',event=>{if(event.key==='vv_token'||event.key===null)ensureStudioAccount();});
+window.addEventListener('focus',ensureStudioAccount);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)ensureStudioAccount();});
+window.addEventListener('pagehide',()=>{studioPageSuspended=true;scrubStudioAccount();});
+window.addEventListener('pageshow',event=>{if(event.persisted||studioPageSuspended){studioAccountFrozen=true;scrubStudioAccount({removeDrafts:studioToken()!==studioDocumentToken});location.reload();}else ensureStudioAccount();});
+setInterval(ensureStudioAccount,250);
+async function api(path,options={}){
+ requireStudioAccount();const controller=new AbortController();studioRequests.add(controller);
+ if(options.signal){if(options.signal.aborted)controller.abort();else options.signal.addEventListener('abort',()=>controller.abort(),{once:true});}
+ try{
+  const response=await fetch(apiBase()+path,{...options,cache:'no-store',signal:controller.signal,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(studioDocumentToken?{Authorization:`Bearer ${studioDocumentToken}`}:{})}});
+  requireStudioAccount();
+  for(const method of ['json','blob']){const read=response[method].bind(response);response[method]=async()=>{try{requireStudioAccount();const value=await read();requireStudioAccount();return value;}finally{studioRequests.delete(controller);}};}
+  if(!response.ok){const d=await response.json().catch(()=>({}));requireStudioAccount();throw new Error(d.error||'REQUEST_FAILED');}
+  return response;
+ }catch(error){studioRequests.delete(controller);throw error;}
+}
+
 let aiBilling=null;
 function moneyMinor(amount,currency){try{return new Intl.NumberFormat(undefined,{style:'currency',currency:String(currency||'usd').toUpperCase()}).format(Number(amount||0)/100);}catch(_){return (Number(amount||0)/100).toFixed(2)+' '+String(currency||'usd').toUpperCase();}}
 function walletStat(label,value){const x=document.createElement('div');x.className='wallet-stat';const l=document.createElement('span');l.textContent=label;const v=document.createElement('strong');v.textContent=String(value);x.append(l,v);return x;}
@@ -362,6 +418,7 @@ document.querySelectorAll('[data-image-edit]').forEach(button=>button.addEventLi
 // Local-only reference cropping: no uploads, provider calls, or credit use.
 const cropDialog=$('cropReferenceDialog');
 let cropImage=null,cropObjectUrl='',cropIndex=-1,cropOriginalFile=null,cropApplying=false,cropDrag=null;
+clearPrivateCrop=()=>{if(cropObjectUrl)URL.revokeObjectURL(cropObjectUrl);cropObjectUrl='';cropImage=null;cropIndex=-1;cropOriginalFile=null;cropDrag=null;cropApplying=false;const canvas=$('cropReferencePreview');canvas.width=0;canvas.height=0;$('cropReferenceStatus').textContent='';};
 const cropRatio=$('cropReferenceRatio'),cropZoom=$('cropReferenceZoom'),cropX=$('cropReferenceX'),cropY=$('cropReferenceY');
 function cropBounds(){
  const w=cropImage.naturalWidth,h=cropImage.naturalHeight;
@@ -419,6 +476,7 @@ async function openCropReference(index){
  cropDialog.showModal();
  try{
   await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=cropObjectUrl;});
+  requireStudioAccount();
   if(!cropDialog.open||cropIndex!==index)return;
   if(!img.naturalWidth||!img.naturalHeight)throw Error('EMPTY_IMAGE');
   cropImage=img;resetCropView();$('cropReferenceStatus').textContent='';
@@ -435,6 +493,7 @@ async function exportReferenceCrop(){
   ctx.drawImage(cropImage,region.x,region.y,region.w,region.h,0,0,canvas.width,canvas.height);
   for(const quality of [.92,.8,.65,.5]){
    const output=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+   requireStudioAccount();
    if(output?.size>0&&output.size<=1024*1024){
     return new File([output],'deepsyq-cropped-reference.jpg',{type:'image/jpeg'});
    }
@@ -450,8 +509,9 @@ $('cropReferenceApply').onclick=async()=>{
  $('cropReferenceStatus').textContent=say('Preparing crop locally…','Подготавливаем кадрирование…');
  try{
   const index=cropIndex,old=refs[index];
-  const file=await exportReferenceCrop();
+  const file=await exportReferenceCrop();requireStudioAccount();
   const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=reject;reader.readAsDataURL(file);});
+  requireStudioAccount();
   if(!old||old.file!==cropOriginalFile||refs[index]!==old)throw Error('REFERENCE_CHANGED');
   refs[index]={...old,file,mimeType:'image/jpeg',data,originalFile:old.originalFile||old.file,originalData:old.originalData||old.data,originalMimeType:old.originalMimeType||old.mimeType};
   $('consent').checked=false;renderRefs();availability();cropDialog.close();
@@ -549,18 +609,18 @@ async function acceptFiles(files,{append=false}={}){
   const next=append?[...refs]:[];
   let optimizedCount=0;
   for(const source of selected){
-   const prepared=await prepareReferenceUpload(source);
+   const prepared=await prepareReferenceUpload(source);requireStudioAccount();
    const file=prepared.file;
    if(prepared.optimized)optimizedCount++;
    const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file);});
-   next.push({file,mimeType:file.type,data});
+   requireStudioAccount();next.push({file,mimeType:file.type,data});
   }
   refs=next;$('consent').checked=false;accepted=true;
   $('status').textContent=optimizedCount?say(optimizedCount+' large photo(s) optimized locally to fit the 1 MB reference limit. Original files were unchanged.','Больших фотографий уменьшено: '+optimizedCount+'. Подготовка выполнена на устройстве; оригиналы не изменены.'):say('Reference photos are ready. Generate will start only after your approval.','Фотографии готовы. Генерация начнётся только после вашего подтверждения.');
  }catch(e){$('status').textContent=errorText(e);}
  finally{
   busy=false;
-  if(accepted)renderRefs();else $('references').value='';
+  if(!studioAccountFrozen&&!studioPageSuspended&&accepted)renderRefs();else $('references').value='';
   availability();
  }
  return accepted;
@@ -960,6 +1020,7 @@ $('creator').onsubmit=async e=>{
  if(!['image/jpeg','image/png'].includes(input?.type)||!input.size||input.size>30*1024*1024)throw Error('IMAGE_RESULT_REQUIRED');
  const bitmap=await createImageBitmap(input);
  try{
+  requireStudioAccount();
   let width=bitmap.width,height=bitmap.height;
   const scale=Math.min(1,2048/Math.max(width,height));
   width=Math.max(1,Math.floor(width*scale));height=Math.max(1,Math.floor(height*scale));
@@ -969,6 +1030,7 @@ $('creator').onsubmit=async e=>{
    ctx.drawImage(bitmap,0,0,width,height);
    for(const quality of [.9,.75,.6,.45]){
     const result=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+    requireStudioAccount();
     if(result&&result.size>0&&result.size<=1024*1024)return new File([result],'deepsyq-image-reference.jpg',{type:'image/jpeg'});
    }
    width=Math.max(1,Math.floor(width*.7));height=Math.max(1,Math.floor(height*.7));
@@ -978,7 +1040,7 @@ $('creator').onsubmit=async e=>{
 }
 // Shared History and recent-result editing path. Conversion is local; no paid provider action.
 async function useResultAsImageReference(result,{suggestedPrompt=''}={}){
- const file=await imageResultReference(result);
+ const file=await imageResultReference(result);requireStudioAccount();
  // Release the local preparation lock before using existing Studio draft controls.
  busy=false;
  if(kind!=='image')select('image',{remember:true});
@@ -991,6 +1053,7 @@ async function useResultAsImageReference(result,{suggestedPrompt=''}={}){
  const append=refs.length>0&&refs.length<maxRefs;
  const hadPrompt=!!$('prompt').value.trim();
  if(!await acceptFiles([file],{append}))throw Error('IMAGE_REFERENCE_PREPARE_FAILED');
+ requireStudioAccount();
  if(!hadPrompt&&suggestedPrompt)$('prompt').value=String(suggestedPrompt).slice(0,2000);
  $('consent').checked=false;
  setHistory(false);$('prompt').focus();availability();
@@ -1010,7 +1073,7 @@ $('share').onclick=async()=>{if(!blob||busy)return;const file=new File([blob],fi
 $('remove').onclick=async()=>{if(!job||busy)return;busy=true;availability();try{await api(`/api/studio/jobs/${encodeURIComponent(job)}`,{method:'DELETE'});++generation;clearResult();sessionStorage.removeItem('vu_generation_job');job=null;$('status').textContent=say('Result deleted. Downloaded copies are kept.','Результат удалён. Скачанные копии остаются.');if(historyView)await loadHistory();else setHistory(false);}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
 async function applyLocalStudioHandoff(){
  try{
-  const h=await takeStudioHandoff();if(!h)return false;
+  const h=await takeStudioHandoff();requireStudioAccount();if(!h)return false;
   const target=h.kind==='music'?'music':h.kind;if(target!==kind)select(target);if(target==='video'){videoDraftNeedsPhotos=false;videoDraftExpectedRefs=0;videoDraftPendingMode='text';}
   if(h.defaultModel&&catalog.some(m=>m.id===h.defaultModel&&m.kind===target)){modelId=h.defaultModel;renderModel();}
   $('prompt').value=String(h.prompt||'').slice(0,2000);
@@ -1034,10 +1097,12 @@ function applyTemplateStart(){
 }
 $('resumeJob').onclick=()=>{if(busy)return;const previous=sessionStorage.getItem('vu_generation_job');if(!previous)return;job=previous;if(sessionStorage.getItem('vu_generation_background_job')===job)sessionStorage.removeItem('vu_generation_background_job');busy=true;availability();const epoch=++generation;watch(job,epoch).catch(e=>{if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();});};
 await initializeImageDraft();
+requireStudioAccount();
 await initializeVideoDraft();
+requireStudioAccount();
 select(kind,{remember:false});
 try{config=await(await api('/api/studio/config')).json();await loadGenerationAccess();catalog=config.catalog||[...config.models.map(m=>({...m,id:m.id||MODELS[m.kind]?.id,adapter:true,provider:'Google'})),...MODEL_CATALOG.filter(m=>!config.models.some(c=>(c.id||MODELS[c.kind]?.id)===m.id)).map(m=>({...m,enabled:false}))];const preferred=config.models?.find(m=>m.kind===kind&&m.enabled);if(preferred?.id&&!(kind==='image'&&imageDraftLoaded)&&!(kind==='video'&&videoDraftLoaded))modelId=preferred.id;renderModel();if(kind==='image'&&imageDraftLoaded){const d=drafts.image;if(currentModel()?.ratios?.includes(d?.ratio))$('ratio').value=d.ratio;if(currentModel()?.capabilities?.resolutions?.includes(d?.resolution))$('imageResolution').value=d.resolution;if(currentModel()?.capabilities?.outputFormats?.includes(d?.outputFormat))$('imageOutputFormat').value=d.outputFormat;if(config.imageBatchEnabled===true&&Number.isInteger(d?.quantity)&&d.quantity>=1&&d.quantity<=4)$('imageQuantity').value=String(d.quantity);updateRatioSelection();}if(kind==='video'&&videoDraftLoaded){const d=drafts.video;if(currentModel()?.ratios?.includes(d?.ratio))$('ratio').value=d.ratio;if(currentModel()?.capabilities?.resolutions?.includes(d?.videoResolution))$('videoResolution').value=d.videoResolution;renderVideoSettings();if([...$('videoDuration').options].some(o=>o.value===String(d?.videoDuration)))$('videoDuration').value=String(d.videoDuration);updateRatioSelection();}}catch(_){availability();}
-const restored=await applyLocalStudioHandoff();if(!restored)applyTemplateStart();
+const restored=await applyLocalStudioHandoff();requireStudioAccount();if(!restored)applyTemplateStart();
 imageDraftReady=true;videoDraftReady=true;if(kind==='image'){showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}
 const previous=sessionStorage.getItem('vu_generation_job');if(previous&&config.enabled&&sessionStorage.getItem('vu_generation_background_job')!==previous){job=previous;busy=true;availability();const epoch=++generation;watch(job,epoch).catch(e=>{if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();});}else if(previous&&sessionStorage.getItem('vu_generation_background_job')===previous){job=previous;setHistory(true);$('status').textContent=say('The video job is being tracked in History. Check its status when ready.','Видеозадача находится в Истории. Проверяйте её статус там.');}
 
@@ -1050,3 +1115,6 @@ if((aiCheckoutState==='returned'||aiCheckoutState==='cancelled')&&!$('walletButt
  $('walletStatus').textContent=aiCheckoutState==='returned'?say('Returned from Stripe. Credits appear only after Stripe confirms the payment webhook. Use Refresh balance if confirmation is still pending.','Вы вернулись из Stripe. Кредиты появятся только после подтверждения платежа webhook. Если подтверждение ещё идёт, нажмите «Обновить баланс».'):say('Checkout was cancelled. No AI credits were added by this return.','Оплата отменена. По этому возврату AI-кредиты не добавлены.');
  const u=new URL(location.href);u.searchParams.delete('ai_checkout');history.replaceState(null,'',u);
 }
+
+// Public one-shot explanation only; never persist prompts or account credentials.
+try{if(sessionStorage.getItem('deepsyq_studio_account_reset_notice')==='1'){sessionStorage.removeItem('deepsyq_studio_account_reset_notice');$('status').textContent=say('Account changed. No job was submitted by this workspace reset. Check History for earlier requests.','Аккаунт изменён. Сброс рабочей области не отправлял новую задачу. Ранее отправленные задачи доступны в Истории.');}}catch(_){}

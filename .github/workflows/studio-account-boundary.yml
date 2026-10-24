@@ -1,0 +1,24 @@
+name: Studio account boundary
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/generate-studio.js'
+      - 'tests/studio-account-boundary*'
+      - '.github/workflows/studio-account-boundary.yml'
+permissions:
+  contents: read
+jobs:
+  studio-private-session:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/generate-studio.js
+      - run: node --test tests/studio-account-boundary-unit.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npx playwright test --config tests/studio-account-boundary.config.mjs
