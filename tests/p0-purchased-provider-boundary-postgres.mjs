@@ -25,6 +25,10 @@ const quote={model:model.id,provider:model.provider,kind:model.kind,credits:7,pr
 const user=id=>({id,email:id==='owner'?'owner@example.test':id+'@example.test',isOwner:id==='owner'});
 const request={kind:'image',model:model.id,prompt:'Original design',ratio:'1:1'};
 const fingerprint='f'.repeat(64);
+const stripeSafe=value=>value.replace(/[^A-Za-z0-9]/g,'');
+const paidSettlement=sid=>({currency:'usd',processorFeeAmount:30,taxAmount:0,netRevenueMicros:9_700_000,
+ stripeChargeId:'ch_'+stripeSafe(sid),stripeBalanceTransactionId:'txn_'+stripeSafe(sid),livemode:true});
+const refundProof=(sid,eventId)=>({eventId,chargeId:'ch_'+stripeSafe(sid),livemode:true});
 
 test('P0: PostgreSQL16 real wallet + purchase + once-only dispatch + denied credits released (all mock providers)',
  {skip:!url},async()=>{
@@ -47,8 +51,8 @@ test('P0: PostgreSQL16 real wallet + purchase + once-only dispatch + denied cred
   async function paid(id){
    const sid='cs_live_'+id;
    await pool.query('INSERT INTO vv_ai_order(id,user_id,session_id,snapshot) VALUES($1,$2,$3,$4::jsonb)',
-    [sid+'_order',id,sid,JSON.stringify({billingMode:'live'})]);
-   await wallet.grant({userId:id,sessionId:sid,paymentIntent:'pi_'+sid,credits:100,amount:1000,currency:'usd'});
+    [sid+'_order',id,sid,JSON.stringify({billingMode:'live',amount:1000,credits:100,currency:'usd',priceId:'price_fixture'})]);
+   await wallet.grant({userId:id,sessionId:sid,paymentIntent:'pi_'+stripeSafe(sid),credits:100,amount:1000,currency:'usd',settlement:paidSettlement(sid)});
    return sid;
   }
   async function insertJob(id,uid,change={}){
@@ -86,7 +90,7 @@ test('P0: PostgreSQL16 real wallet + purchase + once-only dispatch + denied cred
 
   await paid('refunded');
   const refunded=await insertJob('job-refunded','refunded');
-  await wallet.refund('pi_cs_live_refunded',1000);
+  await wallet.refund('pi_csliverefunded',1000,refundProof('cs_live_refunded','evt_refunded'));
   await assert.rejects(dispatch('refunded',refunded),PurchasedDispatchDenied);
   assert.equal((await wallet.settle({userId:'refunded',jobId:'job-refunded',outcome:'confirmed_failure'})).status,'released');
   assert.deepEqual(await wallet.balance('refunded'),{available:0,reserved:0,debt:0},

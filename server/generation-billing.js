@@ -1,7 +1,9 @@
+import {quarantineSignedDispute} from './generation-dispute-quarantine.js';
 import {createHash,createHmac,timingSafeEqual,randomUUID} from 'node:crypto';
 import {GenerationWallet} from './generation-wallet.js';
 import {grantPaidSubscriptionInvoice,publicSubscriptionCreditGrants} from './generation-subscription-credits.js';
 import {MODELS,validateGeneration} from './generation-provider.js';
+import {retrieveStripeNetRevenue,stripeCheckoutTaxAmount} from './generation-stripe-net-revenue.js';
 
 const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -73,7 +75,10 @@ export function stripeRefundData(event,{livemode}={}){
   if(eventLive!==!!livemode||chargeLive!==!!livemode)throw Error('AI_PAYMENT_MODE_MISMATCH');
   const paymentIntent=typeof charge.payment_intent==='string'?charge.payment_intent:charge.payment_intent?.id;
   if(typeof paymentIntent!=='string'||!paymentIntent||paymentIntent.length>200||!Number.isSafeInteger(charge.amount_refunded)||charge.amount_refunded<=0)throw Error('INVALID_AI_REFUND_EVENT');
-  return {paymentIntent,cumulativeAmount:charge.amount_refunded};
+  if(typeof event.id!=='string'||!/^evt_[A-Za-z0-9]+$/.test(event.id)||
+     typeof charge.id!=='string'||!/^ch_[A-Za-z0-9]+$/.test(charge.id))throw Error('INVALID_AI_REFUND_EVENT');
+  return {paymentIntent,cumulativeAmount:charge.amount_refunded,eventId:event.id,
+    chargeId:charge.id,livemode:eventLive};
 }
 export function makeQuote({userId,body,env,now=Date.now()}) {
   const request=validateGeneration(body),catalog=billingCatalog(env),rate=catalog.rates.find(r=>r.kind===request.kind);
@@ -159,8 +164,9 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
   async function handleEvent(event) {
     // Invoked only after the existing Stripe webhook signature check.
     const r=runtime();
+    if(event.type?.startsWith('charge.dispute.'))return quarantineSignedDispute({event,pool,wallet});
     if(event.type==='invoice.paid'){
-      await grantPaidSubscriptionInvoice({event,env,pool,wallet});
+      await grantPaidSubscriptionInvoice({event,env,pool,wallet,stripe});
       // Preserve the established subscription-cycle usage reset in server.js.
       return false;
     }
@@ -177,7 +183,7 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
       if(!aiMarked&&(event.livemode!==r.livemode||charge.livemode!==r.livemode))
         return false; // unrelated Stripe product/mode, not an AI wallet refund
       const refund=stripeRefundData(event,{livemode:r.livemode});if(!refund)return false;
-      const result=await wallet.refund(refund.paymentIntent,refund.cumulativeAmount);
+      const result=await wallet.refund(refund.paymentIntent,refund.cumulativeAmount,refund);
       // A clearly AI-tagged refund arriving before the grant must be retried,
       // not acknowledged and lost. No credit is created without the paid webhook.
       if(result?.ignored&&aiMarked)throw Error('AI_REFUND_PURCHASE_PENDING');
@@ -199,10 +205,14 @@ export function installGenerationBilling(app,{auth,pool,stripe,appUrl,env=proces
     const s=await stripe.checkout.sessions.retrieve(object.id,{expand:['line_items']});
     if (s.payment_status!=='paid') return true;
     const lines=s.line_items?.data||[];
-    if (!!s.livemode!==r.livemode||!!event.livemode!==r.livemode||s.mode!=='payment'||s.metadata?.orderId!==order.id||s.metadata?.aiWallet!=='v1'||s.client_reference_id!==order.user_id||s.amount_total!==p.amount||s.currency!==p.currency||s.line_items?.has_more||lines.length!==1||lines[0].price?.id!==p.priceId||lines[0].quantity!==1||!s.payment_intent||(order.session_id&&order.session_id!==s.id)) throw Error('AI_PAYMENT_MISMATCH');
+    const taxAmount=stripeCheckoutTaxAmount(s);
+    if (!!s.livemode!==r.livemode||!!event.livemode!==r.livemode||s.mode!=='payment'||s.metadata?.orderId!==order.id||s.metadata?.aiWallet!=='v1'||s.client_reference_id!==order.user_id||s.amount_subtotal!==p.amount||s.amount_total!==p.amount+taxAmount||s.currency!==p.currency||s.line_items?.has_more||lines.length!==1||lines[0].price?.id!==p.priceId||lines[0].quantity!==1||!s.payment_intent||(order.session_id&&order.session_id!==s.id)) throw Error('AI_PAYMENT_MISMATCH');
+    const paymentIntent=typeof s.payment_intent==='string'?s.payment_intent:s.payment_intent.id;
+    const settlement=await retrieveStripeNetRevenue({stripe,paymentIntentId:paymentIntent,
+      expectedAmount:s.amount_total,expectedCurrency:s.currency,taxAmount,expectedLivemode:r.livemode});
     // Handles a webhook that raced the checkout response; snapshot is already durable.
     await pool.query('UPDATE vv_ai_order SET session_id=$2 WHERE id=$1 AND (session_id IS NULL OR session_id=$2)',[order.id,s.id]);
-    await wallet.grant({userId:order.user_id,sessionId:s.id,paymentIntent:typeof s.payment_intent==='string'?s.payment_intent:s.payment_intent.id,credits:p.credits,amount:p.amount,currency:p.currency});
+    await wallet.grant({userId:order.user_id,sessionId:s.id,paymentIntent,credits:p.credits,amount:s.amount_total,currency:p.currency,settlement});
     return true;
   }
   return {wallet,handleEvent};

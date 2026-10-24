@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {d18PricingJson} from './d18-pricing-fixture.mjs';
 import express from 'express';
 import {randomUUID} from 'node:crypto';
 import {installGenerationStudio} from '../server/generation-studio.js';
@@ -12,9 +13,9 @@ const baseEnv={AI_STUDIO_ENABLED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',
  AI_STUDIO_WALLET_ENABLED:'true',AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',
  AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',
  GEMINI_API_KEY:'test-only-not-an-api-key',DATABASE_URL:'test-only',ADMIN_EMAIL:'owner@example.test',
- AI_MODEL_PRICING_JSON:JSON.stringify([pricing]),
+ AI_MODEL_PRICING_JSON:d18PricingJson([pricing]),
  AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:12}])};
-function simulate({receiptStatus='paid',providerThrows=false,reservationPersistFails=false,user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
+function simulate({receiptStatus='paid',providerThrows=false,reservationPersistFails=false,marginReady=true,user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
  const jobs=[],walletEvents=[];let providerCalls=0;
  const pool={
   async query(sql,args=[]){
@@ -55,6 +56,7 @@ function simulate({receiptStatus='paid',providerThrows=false,reservationPersistF
   },release(){}}}
  };
  const wallet={
+  async preflightPurchasedMargin(){return marginReady;},
   async reserve(value){walletEvents.push(['reserve',value]);return {available:93,reserved:7,debt:0}},
   async settle(value){walletEvents.push(['settle',value]);return {status:value.outcome==='success'?'captured':value.outcome==='confirmed_failure'?'released':'held'}},
   purchasedDispatchVerifier(){return async v=>{
@@ -100,6 +102,18 @@ test('HTTP rejects zero accepted credits against the positive server quote befor
   const res=await post({expectedCredits:0});assert.equal(res.status,409);
   assert.equal((await res.json()).error,'AI_ESTIMATE_CHANGED');
   assert.equal(sim.jobs.length,0);assert.equal(sim.walletEvents.length,0);assert.equal(sim.providerCalls(),0);
+ });
+});
+test('HTTP operator revenue assertion cannot substitute for a verified per-customer receipt',async()=>{
+ const sim=simulate({marginReady:false,envOverrides:{AI_MODEL_PRICING_JSON:JSON.stringify([{
+  ...pricing,netRevenueMicros:pricing.providerCostMicros*999,netRevenueCurrency:'usd'
+ }])}});
+ await withHttp(sim,async post=>{
+  const res=await post();assert.equal(res.status,503);
+  assert.equal((await res.json()).error,'AI_PURCHASED_MARGIN_NOT_VERIFIED');
+  assert.equal(sim.jobs.length,0,'unapproved economics must not persist a generation job');
+  assert.equal(sim.walletEvents.length,0,'unapproved economics must not reserve customer credits');
+  assert.equal(sim.providerCalls(),0,'unapproved economics must not reach any provider');
  });
 });
 test('HTTP bonus/welcome/unknown funding cannot reach provider and automatically returns held credits',async()=>{

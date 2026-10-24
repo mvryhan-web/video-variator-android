@@ -54,9 +54,9 @@ test('billing runtime only enables live payments behind all explicit gates',()=>
 });
 
 
-test('Stripe refund parsing uses cumulative refunded amount and enforces billing mode',()=>{
- const event={type:'charge.refunded',livemode:true,data:{object:{livemode:true,payment_intent:'pi_fixture',amount_refunded:450}}};
- assert.deepEqual(stripeRefundData(event,{livemode:true}),{paymentIntent:'pi_fixture',cumulativeAmount:450});
+test('Stripe refund parsing binds cumulative amount to signed event and charge IDs',()=>{
+ const event={id:'evt_fixture',type:'charge.refunded',livemode:true,data:{object:{id:'ch_fixture',livemode:true,payment_intent:'pi_fixture',amount_refunded:450}}};
+ assert.deepEqual(stripeRefundData(event,{livemode:true}),{paymentIntent:'pi_fixture',cumulativeAmount:450,eventId:'evt_fixture',chargeId:'ch_fixture',livemode:true});
  assert.throws(()=>stripeRefundData(event,{livemode:false}),/AI_PAYMENT_MODE_MISMATCH/);
  assert.throws(()=>stripeRefundData({type:'charge.refunded',livemode:true,data:{object:{livemode:true,payment_intent:'pi_fixture',amount_refunded:0}}},{livemode:true}),/INVALID_AI_REFUND_EVENT/);
  assert.equal(stripeRefundData({type:'invoice.paid'},{livemode:false}),null);
@@ -118,7 +118,7 @@ test('BASE #16: late signed paid checkout is granted after Checkout disabled onl
  const oldOrder={id:orderId,user_id:userId,sku:'old',session_id:sessionId,snapshot:{
   billingMode:'test',sku:'old',priceId:'price_old',amount:900,currency:'eur',credits:120
  }};
- const make=({eventType='checkout.session.completed',order=oldOrder,sessionOverride={},mode='test',enabled='false',credentials=true}={})=>{
+ const make=({eventType='checkout.session.completed',order=oldOrder,sessionOverride={},chargeOverride={},mode='test',enabled='false',credentials=true}={})=>{
   let dbCalls=0,retrieveCalls=0;const grants=[];
   const pool={async query(sql,args=[]){
    dbCalls++;
@@ -131,24 +131,48 @@ test('BASE #16: late signed paid checkout is granted after Checkout disabled onl
    STRIPE_SECRET_KEY:credentials?'sk_test_fixture':'',APP_JWT_SECRET:'fixture',DATABASE_URL:'fixture'};
   const session={id:sessionId,payment_status:'paid',livemode:false,mode:'payment',
    metadata:{aiWallet:'v1',orderId},client_reference_id:userId,
-   amount_total:900,currency:'eur',
+   amount_subtotal:900,amount_total:900,total_details:{amount_tax:0,amount_discount:0,amount_shipping:0},currency:'eur',
    line_items:{has_more:false,data:[{price:{id:'price_old'},quantity:1}]},
    payment_intent:paymentIntent,...sessionOverride};
-  const stripe={checkout:{sessions:{async retrieve(){retrieveCalls++;return session;}}}};
+  const settlement={currency:'eur',processorFeeAmount:30,taxAmount:0,netRevenueMicros:8_700_000,
+   stripeChargeId:'ch_prior',stripeBalanceTransactionId:'txn_prior',livemode:false};
+  const total=session.amount_total,tax=session.total_details?.amount_tax??0,fee=30;
+  const actualSettlement={...settlement,taxAmount:tax,netRevenueMicros:(total-fee-tax)*10_000};
+  const stripe={checkout:{sessions:{async retrieve(){retrieveCalls++;return session;}}},
+   paymentIntents:{async retrieve(){return {id:paymentIntent,status:'succeeded',livemode:false,amount_received:total,currency:'eur',
+    latest_charge:{id:'ch_prior',payment_intent:paymentIntent,paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:false,currency:'eur',amount_captured:total,
+     balance_transaction:{id:'txn_prior',source:'ch_prior',type:'charge',currency:'eur',amount:total,fee,net:total-fee},...chargeOverride}};}}};
   const installed=installGenerationBilling({get(){},post(){},use(){}},
    {auth:()=>{},pool,stripe,appUrl:'https://example.invalid',env});
   installed.wallet.grant=async args=>{grants.push(args);return {available:120};};
   const event={type:eventType,livemode:false,
    data:{object:{id:sessionId,metadata:{aiWallet:'v1',orderId}}}};
-  return {installed,event,grants,getDb:()=>dbCalls,getStripe:()=>retrieveCalls};
+  return {installed,event,grants,settlement:actualSettlement,session,getDb:()=>dbCalls,getStripe:()=>retrieveCalls};
  };
  for(const type of ['checkout.session.completed','checkout.session.async_payment_succeeded']){
   const h=make({eventType:type});
   assert.equal(await h.installed.handleEvent(h.event),true);
   assert.equal(h.getStripe(),1);
-  assert.deepEqual(h.grants,[{userId,sessionId,paymentIntent,credits:120,amount:900,currency:'eur'}]);
+  assert.deepEqual(h.grants,[{userId,sessionId,paymentIntent,credits:120,amount:900,currency:'eur',settlement:h.settlement}]);
  }
+ for(const eventType of ['checkout.session.completed','checkout.session.async_payment_succeeded']){
+  for(const reference of ['pi_other',null,undefined,{id:'pi_other'}]){
+   const h=make({eventType,chargeOverride:{payment_intent:reference}});
+   await assert.rejects(()=>h.installed.handleEvent(h.event),/AI_SETTLEMENT_CHARGE_UNVERIFIED/);
+   assert.equal(h.grants.length,0,'unlinked Charge must never grant purchased credits');
+  }
+  for(const chargeOverride of [{disputed:true},{refunded:true},{amount_refunded:1},
+   {disputed:undefined},{refunded:undefined},{amount_refunded:undefined}]){
+   const h=make({eventType,chargeOverride});
+   await assert.rejects(()=>h.installed.handleEvent(h.event),/AI_SETTLEMENT_CHARGE_REVERSED_OR_UNVERIFIED/);
+   assert.equal(h.grants.length,0,'delayed paid webhook cannot grant reversed/unverified proceeds');
+  }
+ }
+ const taxed=make({sessionOverride:{amount_total:1000,total_details:{amount_tax:100,amount_discount:0,amount_shipping:0}}});
+ assert.equal(await taxed.installed.handleEvent(taxed.event),true);
+ assert.deepEqual(taxed.grants,[{userId,sessionId,paymentIntent,credits:120,amount:1000,currency:'eur',settlement:taxed.settlement}]);
  for(const options of [{order:null},{sessionOverride:{amount_total:1}},
+  {sessionOverride:{total_details:undefined}},
   {sessionOverride:{client_reference_id:'wrong_user'}},
   {sessionOverride:{line_items:{has_more:false,data:[{price:{id:'other'},quantity:1}]}}},
   {sessionOverride:{livemode:true}},

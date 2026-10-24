@@ -1,17 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {claimPurchasedGeneration,purchasedFundingProof} from '../server/generation-purchased-proof.js';
+import {claimPurchasedGeneration,purchasedFundingProof,purchasedMarginProof} from '../server/generation-purchased-proof.js';
 import {grantPaidSubscriptionInvoice} from '../server/generation-subscription-credits.js';
 import {GenerationWallet} from '../server/generation-wallet.js';
 
 
 const env={AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_BILLING_MODE:'live',AI_LIVE_BILLING_APPROVED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true'};
-const options=()=>({env,userId:'paid_user',jobId:'job_live_a',kind:'video',credits:100,fingerprint:'sha256abc',modelId:'model_v',provider:'Google',wallet:{available:0,reserved:100,debt:0}});
+const options=()=>({env,userId:'paid_user',jobId:'job_live_a',kind:'video',credits:100,fingerprint:'sha256abc',modelId:'model_v',provider:'Google',providerCostMicros:10_000,currency:'eur',wallet:{available:0,reserved:100,debt:0}});
+const stripeFor=(amount)=>({paymentIntents:{async retrieve(id){const chargeId='ch_'+id.slice(3),txnId='txn_'+id.slice(3);return {id,status:'succeeded',livemode:true,amount_received:amount,currency:'usd',latest_charge:{id:chargeId,payment_intent:id,paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:true,currency:'usd',amount_captured:amount,balance_transaction:{id:txnId,source:chargeId,type:'charge',currency:'usd',amount,fee:25,net:amount-25}}};}}});
 function db({paidCredits=200,otherSpent=80,sourceId='cs_live_paid1',held={},job={},inserted=true}={}){
  const statements=[];
  const query=async(sql,args)=>{
   statements.push({sql,args});
-  if(sql.includes('eligible_paid_purchases'))return {rows:[{paid_credits:String(paidCredits),source_id:sourceId}]};
+  if(sql.includes('WITH sources AS'))return {rows:[{paid_credits:String(paidCredits),source_id:sourceId,
+    worst_net_revenue_micros:String(4_000_000),worst_remaining_credits:String(paidCredits)}]};
   if(sql.includes('FROM vv_ai_reservation res'))return {rows:[{used:String(otherSpent)}]};
   if(sql.includes('FROM vv_ai_reservation')&&sql.includes('FOR UPDATE'))return {rows:held===null?[]:[{user_id:'paid_user',credits:100,fingerprint:'sha256abc',status:'held',...held}]};
   if(sql.includes('FROM vv_generation_jobs')&&sql.includes('FOR UPDATE'))return {rows:job===null?[]:[{user_id:'paid_user',kind:'video',model:'model_v',provider:'Google',status:'processing',operation:null,deleted:false,request_fingerprint:'sha256abc',credits_reserved:100,...job}]};
@@ -32,9 +34,8 @@ test('P0 only the locked, verifiable, unrefunded live Stripe order can claim ONE
  assert.match(c.statements[0].sql,/o\.snapshot->>'billingMode'='live'/);
  assert.match(c.statements[0].sql,/CEIL\(p\.credits::numeric\*p\.refunded_amount\/p\.amount\)/);
  assert.match(c.statements[0].sql,/p\.refunded_amount<p\.amount/);
- assert.match(c.statements[0].sql,/JOIN vv_ai_verified_subscription_invoice v/);
- assert.match(c.statements[0].sql,/v\.livemode=true/);
- assert.match(c.statements[0].sql,/v\.payment_intent=p\.payment_intent/);
+ assert.doesNotMatch(c.statements[0].sql,/vv_ai_verified_subscription_invoice/,
+  'subscription proceeds must not be attributed to separately purchased AI credits');
  assert.match(c.statements[1].sql,/status IN \('held','captured'\)/);
  assert.match(c.statements[1].sql,/audit.entries=1/);
  assert.match(c.statements[1].sql,/MAX\(available_delta-debt_delta\)/);
@@ -86,6 +87,15 @@ test('P0 funding invariant is exact integer conservative under paid/refunded/use
   assert.throws(()=>purchasedFundingProof({paidCredits:value,otherSpentCredits:0,requiredCredits:1}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
 });
 
+test('D18 margin requires same-currency verified net receipts to cover exact cost at 2x',()=>{
+ const proof={paidCredits:100,otherSpentCredits:20,requiredCredits:10,
+  worstNetRevenueMicros:20_000,worstRemainingCredits:100,providerCostMicros:1_000};
+ assert.equal(purchasedMarginProof(proof),true,'exact 2x boundary is accepted');
+ assert.equal(purchasedMarginProof({...proof,worstNetRevenueMicros:19_999}),false,'below 2x is denied');
+ assert.equal(purchasedMarginProof({...proof,paidCredits:9}),false,'unfunded credits are denied');
+ assert.equal(purchasedMarginProof({...proof,providerCostMicros:0}),false,'unverified zero cost is denied');
+});
+
 
 test('BASE #16 verified LIVE paid subscription invoice alone records paid provenance',async()=>{
  const events=[],inserts=[],walletCalls=[];
@@ -94,7 +104,7 @@ test('BASE #16 verified LIVE paid subscription invoice alone records paid proven
   AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true'};
  const event=(change={})=>({type:'invoice.paid',livemode:true,data:{object:{
   id:'in_Verified123',status:'paid',paid:true,livemode:true,billing_reason:'subscription_cycle',
-  amount_paid:700,currency:'usd',payment_intent:'pi_Verified123',
+  amount_paid:700,currency:'usd',payment_intent:'pi_Verified123',total_taxes:[],
   customer:'cus_Verified123',subscription:'sub_Verified123',
   lines:{has_more:false,data:[{price:{id:'price_Verified123'},quantity:1}]},...change}}});
  const pool={query:async(sql,vals)=>{events.push(sql);
@@ -104,7 +114,7 @@ test('BASE #16 verified LIVE paid subscription invoice alone records paid proven
   throw Error('UNEXPECTED_DB_SQL');
  }};
  const wallet={grant:async args=>{walletCalls.push(args);return {available:70}}};
- assert.equal(await grantPaidSubscriptionInvoice({event:event(),env,pool,wallet}),true);
+ assert.equal(await grantPaidSubscriptionInvoice({event:event(),env,pool,wallet,stripe:stripeFor(700)}),true);
  assert.equal(walletCalls.length,1);
  assert.deepEqual(inserts,[['in_Verified123','user_verified','pi_Verified123']]);
  assert.equal(events.length,3);
@@ -112,7 +122,7 @@ test('BASE #16 verified LIVE paid subscription invoice alone records paid proven
  for(const invalid of [{amount_paid:0},{livemode:false},{customer:'cus_Attacker'},
   {lines:{has_more:false,data:[{price:{id:'price_Mismatch'},quantity:1}]}}]){
   const prior=inserts.length;
-  try{await grantPaidSubscriptionInvoice({event:event(invalid),env,pool,wallet})}catch{}
+  try{await grantPaidSubscriptionInvoice({event:event(invalid),env,pool,wallet,stripe:stripeFor(700)})}catch{}
   assert.equal(inserts.length,prior);
  }
 });
@@ -123,7 +133,7 @@ test('BASE #16 paid subscription receipt conflict never authenticates a differen
   AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true'};
  const event={type:'invoice.paid',livemode:true,data:{object:{
   id:'in_Protect123',status:'paid',paid:true,livemode:true,billing_reason:'subscription_cycle',
-  amount_paid:500,currency:'usd',payment_intent:'pi_Protect123',
+   amount_paid:500,currency:'usd',payment_intent:'pi_Protect123',total_taxes:[],
   customer:'cus_Protect123',subscription:'sub_Protect123',
   lines:{has_more:false,data:[{price:{id:'price_Protect123'},quantity:1}]}}}};
  const pool={query:async sql=>{
@@ -132,7 +142,7 @@ test('BASE #16 paid subscription receipt conflict never authenticates a differen
   if(sql.includes('FROM vv_ai_verified_subscription_invoice'))return {rows:[{user_id:'other_owner',payment_intent:'pi_Protect123',livemode:true}]};
   throw Error('UNEXPECTED_DB_SQL');
  }};
- await assert.rejects(()=>grantPaidSubscriptionInvoice({event,env,pool,wallet:{grant:async()=>{}}}),
+ await assert.rejects(()=>grantPaidSubscriptionInvoice({event,env,pool,wallet:{grant:async()=>{}},stripe:stripeFor(500)}),
   /AI_SUBSCRIPTION_PURCHASE_PROVENANCE_CONFLICT/);
 });
 
@@ -145,7 +155,7 @@ test('P0 D-to-B callback projection preserves server trusted fingerprint and loc
  const verifyPurchasedReservation=wallet.purchasedDispatchVerifier({env});
  // Match the exact named callback keys in B's approved pre-provider contract.
  const expected={userId:'paid_user',jobId:'job_live_a',kind:'video',
-  modelId:'model_v',provider:'Google',requestFingerprint:'sha256abc',credits:100};
+  modelId:'model_v',provider:'Google',requestFingerprint:'sha256abc',credits:100,providerCostMicros:10_000,currency:'eur'};
  const proof=await verifyPurchasedReservation(Object.freeze(expected));
  assert.equal(proof.source,'settled_stripe_purchase');
  assert.equal(proof.requestFingerprint,expected.requestFingerprint);

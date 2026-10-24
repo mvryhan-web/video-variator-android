@@ -6,6 +6,8 @@ import express from 'express';
 import {GenerationWallet} from '../server/generation-wallet.js';
 import {installGenerationBilling} from '../server/generation-billing.js';
 const db=process.env.AI_TEST_DATABASE_URL;
+let refundSeq=0;
+const refundProof=(chargeId='ch_fixture',livemode=false)=>({eventId:'evt_test'+(++refundSeq),chargeId,livemode});
 test('real PostgreSQL AI wallet and sandbox payment contract', {skip:!db}, async t=>{
  const url=new URL(db);
  assert.equal(process.env.NODE_ENV,'test');assert.ok(['localhost','127.0.0.1'].includes(url.hostname));assert.equal(url.pathname,'/vv_ai_test');
@@ -64,14 +66,14 @@ test('real PostgreSQL AI wallet and sandbox payment contract', {skip:!db}, async
   await t.test('payment refund removes credits; spent balance creates debt, not free usage',async()=>{
    const p=purchase('e','e');await wallet.grant(p);await wallet.reserve({userId:p.userId,jobId:prefix+'e',credits:80,fingerprint:'hash'});
    await wallet.settle({userId:p.userId,jobId:prefix+'e',outcome:'success'});
-   await wallet.refund(p.paymentIntent,50);await wallet.refund(p.paymentIntent,25);await wallet.refund(p.paymentIntent,50);
+   await wallet.refund(p.paymentIntent,50,refundProof());await wallet.refund(p.paymentIntent,25,refundProof());await wallet.refund(p.paymentIntent,50,refundProof());
    assert.deepEqual(await wallet.balance(p.userId),{available:0,reserved:0,debt:30});
-   await wallet.refund(p.paymentIntent,100);assert.equal((await wallet.balance(p.userId)).debt,80);
+   await wallet.refund(p.paymentIntent,100,refundProof());assert.equal((await wallet.balance(p.userId)).debt,80);
    await wallet.grant({...purchase('e','e2'),credits:100});assert.deepEqual(await wallet.balance(p.userId),{available:20,reserved:0,debt:0});
   });
   await t.test('refund of held credits followed by generation failure does not create free credit',async()=>{
    const p=purchase('f','f');await wallet.grant(p);await wallet.reserve({userId:p.userId,jobId:prefix+'f',credits:80,fingerprint:'hash'});
-   await wallet.refund(p.paymentIntent,100);await wallet.settle({userId:p.userId,jobId:prefix+'f',outcome:'confirmed_failure'});
+   await wallet.refund(p.paymentIntent,100,refundProof());await wallet.settle({userId:p.userId,jobId:prefix+'f',outcome:'confirmed_failure'});
    assert.deepEqual(await wallet.balance(p.userId),{available:0,reserved:0,debt:0});
   });
   await t.test('database rolls back a second session with same payment intent',async()=>{
@@ -81,8 +83,8 @@ test('real PostgreSQL AI wallet and sandbox payment contract', {skip:!db}, async
   await t.test('Checkout price validation, pending payment, replay and snapshot persistence',async()=>{
    const env={AI_BILLING_ENABLED:'true',AI_BILLING_MODE:'test',DATABASE_URL:db,APP_JWT_SECRET:'fixture',STRIPE_SECRET_KEY:'sk_test_fixture',AI_CREDIT_PACKS_JSON:'[{"sku":"fixture","priceId":"price_fixture","amount":100,"credits":100,"currency":"eur"}]'};
    let creates=0,paid=false,wrongPrice=false;const sessions=new Map();
-   const stripe={prices:{retrieve:async()=>({active:true,type:'one_time',unit_amount:wrongPrice?999:100,currency:'eur',livemode:false})},checkout:{sessions:{
-    create:async(args,{idempotencyKey})=>{assert.equal(args.payment_method_types,undefined);creates++;let s=sessions.get(idempotencyKey);if(!s){s={...args,id:'cs_test_'+randomUUID(),url:'https://checkout.stripe.com/c/test',livemode:false,status:'open',expires_at:Math.floor(Date.now()/1000)+3600,payment_intent:'pi_test_'+randomUUID(),amount_total:100,currency:'eur',line_items:{data:[{price:{id:'price_fixture'},quantity:1}],has_more:false}};sessions.set(idempotencyKey,s);}return s;},
+   const stripe={paymentIntents:{retrieve:async id=>{const suffix=id.replace(/[^A-Za-z0-9]/g,'');const chargeId='ch_'+suffix;return {id,status:'succeeded',livemode:false,amount_received:100,currency:'eur',latest_charge:{id:chargeId,payment_intent:id,paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:false,currency:'eur',amount_captured:100,balance_transaction:{id:'txn_'+suffix,source:chargeId,type:'charge',currency:'eur',amount:100,fee:3,net:97}}};}},prices:{retrieve:async()=>({active:true,type:'one_time',unit_amount:wrongPrice?999:100,currency:'eur',livemode:false})},checkout:{sessions:{
+    create:async(args,{idempotencyKey})=>{assert.equal(args.payment_method_types,undefined);creates++;let s=sessions.get(idempotencyKey);if(!s){s={...args,id:'cs_test_'+randomUUID(),url:'https://checkout.stripe.com/c/test',livemode:false,status:'open',expires_at:Math.floor(Date.now()/1000)+3600,payment_intent:'pi_'+randomUUID().replaceAll('-',''),amount_subtotal:100,amount_total:100,total_details:{amount_tax:0,amount_discount:0,amount_shipping:0},currency:'eur',line_items:{data:[{price:{id:'price_fixture'},quantity:1}],has_more:false}};sessions.set(idempotencyKey,s);}return s;},
     retrieve:async id=>({...[...sessions.values()].find(s=>s.id===id),payment_status:paid?'paid':'unpaid'})}}};
    const app=express();app.use(express.json());const userId=prefix+'buyer';const installed=installGenerationBilling(app,{env,pool,stripe,appUrl:'https://example.test',auth:(req,res,next)=>{if(req.headers.authorization!=='Bearer fixture')return res.sendStatus(401);req.user={id:userId,email:'fixture@example.test'};next();}});
    const server=app.listen(0);await new Promise(r=>server.once('listening',r));const base=`http://127.0.0.1:${server.address().port}/api/ai-billing`;

@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {pricingCatalog, estimateGenerationPricing} from '../server/generation-pricing.js';
+import {d18PricingJson} from './d18-pricing-fixture.mjs';
 
 const a={model:'shared-model-v1',provider:'BytePlus',kind:'video',credits:70,providerCostMicros:400000,currency:'eur',ratio:'16:9',quality:'720p',durationSeconds:5};
 const b={...a,provider:'OtherProvider',credits:120,providerCostMicros:750000,currency:'usd'};
-const env=rows=>({AI_MODEL_PRICING_JSON:JSON.stringify(rows)});
+const env=rows=>({AI_MODEL_PRICING_JSON:d18PricingJson(rows)});
 const model=(provider,kind='video')=>({id:'shared-model-v1',provider,kind,quality:'720p',capabilities:{durationSeconds:5}});
 const req={kind:'video',model:'shared-model-v1',ratio:'16:9',videoResolution:'720p',videoDuration:5,videoInputMode:'text',referenceCount:0};
 

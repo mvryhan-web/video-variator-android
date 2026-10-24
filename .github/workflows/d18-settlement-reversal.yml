@@ -1,0 +1,24 @@
+name: D18 Stripe settlement reversal safety (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-stripe-net-revenue.js'
+      - 'server/generation-billing.js'
+      - 'tests/generation-stripe-net-revenue-unit.mjs'
+      - 'tests/generation-billing-unit.mjs'
+      - '.github/workflows/d18-settlement-reversal.yml'
+permissions:
+  contents: read
+jobs:
+  signed-payment-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/generation-stripe-net-revenue-unit.mjs tests/generation-billing-unit.mjs tests/d18-dispute-quarantine-unit.mjs tests/base16-shared-stripe-refund-unit.mjs tests/p0-purchased-dispatch-proof-unit.mjs
