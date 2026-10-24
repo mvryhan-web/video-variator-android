@@ -29,7 +29,7 @@ test('Android bridge uses configured backend without loading FFmpeg',async({page
 test('three direct studio links and model/settings dialogs work on small phones',async({page})=>{
  await page.setViewportSize({width:320,height:740});
  for(const [studio,title] of [['image','Light up your creation with Deepsyq'],['audio','Light up your creation with Deepsyq'],['video','Light up your creation with Deepsyq']]){await page.goto('/generate-studio.html?studio='+studio);await expect(page.locator('#taskTitle')).toHaveText(title);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
- await page.locator('#modelButton').click();await expect(page.getByRole('dialog')).toBeVisible();await expect(page.locator('#modelDialog')).not.toContainText(/Google|BytePlus/);await page.getByRole('button',{name:/Seedance 2.0/}).click();await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');await expect(page.locator('#availability')).toContainText('not enabled');await expect(page.locator('[data-t=consent]')).toContainText('selected model and its service');await expect(page.locator('[data-t=consent]')).not.toContainText('BytePlus');await page.locator('#prompt').fill('Video');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();
+ await page.locator('#modelButton').click();await expect(page.getByRole('dialog')).toBeVisible();await expect(page.locator('#modelDialog')).not.toContainText(/Google|BytePlus/);await page.getByRole('button',{name:/^Seedance 2\.0 Text or up to/}).click();await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');await expect(page.locator('#availability')).toContainText('not enabled');await expect(page.locator('[data-t=consent]')).toContainText('selected model and its service');await expect(page.locator('[data-t=consent]')).not.toContainText('BytePlus');await page.locator('#prompt').fill('Video');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();
  await page.locator('#settingsButton').click();await page.getByRole('button',{name:'1:1',exact:true}).click();await expect(page.locator('#ratio')).toHaveValue('1:1');await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#settingsButton')).toContainText('1:1');
  await page.locator('#modelButton').click();await page.keyboard.press('Escape');await expect(page.locator('#modelDialog')).not.toBeVisible();
 });
@@ -178,7 +178,7 @@ test('video selectors follow real Veo/Seedance capabilities without submitting j
  await expect(page.locator('#videoDuration option')).toHaveCount(1);
  await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
  await page.locator('#modelButton').click();
- await page.getByRole('button',{name:/Seedance 2.0/}).click();
+ await page.getByRole('button',{name:/^Seedance 2\.0 Text or up to/}).click();
  await page.locator('#settingsButton').click();
  await expect(page.locator('#videoDuration option')).toHaveCount(5);
  await page.locator('#videoDuration').selectOption('15');
@@ -193,7 +193,7 @@ test('Seedance image modes follow attached photo count without posting paid jobs
  let jobPosts=0;page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')jobPosts++;});
  await page.goto('/generate-studio.html?studio=video');
  await page.locator('#modelButton').click();
- await page.getByRole('button',{name:/Seedance 2.0/}).click();
+ await page.getByRole('button',{name:/^Seedance 2\.0 Text or up to/}).click();
  const image={name:'frame.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')};
  await page.locator('#settingsButton').click();
  await expect(page.locator('#videoInputMode')).toHaveValue('text');
@@ -225,7 +225,7 @@ test('video prompt and model settings restore privately after tab reload without
  page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')jobPosts++;});
  await page.goto('/generate-studio.html?studio=video');
  await page.locator('#modelButton').click();
- await page.getByRole('button',{name:/Seedance 2.0/}).click();
+ await page.getByRole('button',{name:/^Seedance 2\.0 Text or up to/}).click();
  await page.locator('#prompt').fill('A calm mountain sunrise with slowly moving clouds');
  await page.locator('#settingsButton').click();
  await page.locator('#videoResolution').selectOption('1080p');
@@ -253,7 +253,7 @@ test('recovered Seedance first and last frames require both photos again, never 
  const photo=name=>({name,mimeType:'image/png',buffer:img});
  await page.goto('/generate-studio.html?studio=video');
  await page.locator('#modelButton').click();
- await page.getByRole('button',{name:/Seedance 2.0/}).click();
+ await page.getByRole('button',{name:/^Seedance 2\.0 Text or up to/}).click();
  await page.locator('#prompt').fill('A sunset transitions into night');
  await page.locator('#references').setInputFiles([photo('first.png'),photo('last.png')]);
  await expect(page.locator('#refPreview img')).toHaveCount(2);
