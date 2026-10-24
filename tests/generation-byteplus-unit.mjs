@@ -25,10 +25,47 @@ test('Seedream 4.5 does not request unsupported PNG output',async()=>{
  let body;const jpeg=Buffer.from([255,216,255,0]);const r=await generateBytePlus(req('image','byteplus-seedream-4-5'),{key:'fixture',fetcher:async(_,opts)=>{body=JSON.parse(opts.body);return json({data:[{b64_json:jpeg.toString('base64')}]});}});assert.equal(body.output_format,undefined);assert.equal(r.mime,'image/jpeg');
  await assert.rejects(()=>generateBytePlus(req(),{key:'fixture',fetcher:async()=>json({data:[{b64_json:Buffer.from('not media').toString('base64')}]})}),/INVALID_PROVIDER_MEDIA/);
 });
+test('verified Seedream 3, 4, and 5 Pro route to official ModelArk model IDs',async()=>{
+ for(const [id,providerId,format] of [
+  ['byteplus-seedream-3','seedream-3-0-t2i-250415',undefined],
+  ['byteplus-seedream-4','seedream-4-0-250828',undefined],
+  ['byteplus-seedream-5-pro','dola-seedream-5-0-pro-260628','png']
+ ]){
+  let body;
+  const req=validateGeneration({kind:'image',model:id,prompt:'Ocean',ratio:'16:9',resolution:'2K',outputFormat:format||'auto',consent:true,references:[]});
+  await generateBytePlus(req,{key:'fixture',fetcher:async(_url,opts)=>{body=JSON.parse(opts.body);return json({data:[{b64_json:png.toString('base64')}]});}});
+  assert.equal(body.model,providerId);
+  assert.equal(body.size,'2848x1600');
+  if(format)assert.equal(body.output_format,format);else assert.equal(body.output_format,undefined);
+  if(id==='byteplus-seedream-3')assert.throws(()=>validateGeneration({kind:'image',model:id,prompt:'Ocean',ratio:'16:9',consent:true,references:[{mimeType:'image/png',data:png.toString('base64')}]}),/INVALID_REFERENCES/);
+ }
+});
 test('Seedance task persists provider prefix, fixed approved limits and first frame',async()=>{
  let body;const r=await generateBytePlus({...req('video','byteplus-seedance-2'),videoInputMode:'first_frame',references:[{mimeType:'image/png',data:png.toString('base64')}]},{key:'fixture',fetcher:async(_,opts)=>{body=JSON.parse(opts.body);return json({id:'cgt-fixture'});}});
  assert.equal(r.operation,'byteplus:cgt-fixture');assert.equal(body.model,'dreamina-seedance-2-0-260128');assert.equal(body.duration,5);assert.equal(body.resolution,'720p');assert.equal(body.content[1].role,'first_frame');assert.equal(body.generate_audio,true);
  assert.deepEqual(await dispatchPoll(r.operation,{env:{BYTEPLUS_API_KEY:'fixture'},fetcher:async()=>json({status:'running'})}),{pending:true});
+});
+test('verified Seedance variants route through the same task contract with documented model IDs',async()=>{
+ const cases=[
+  ['byteplus-seedance-2.5','dreamina-seedance-2-5-260628'],
+  ['byteplus-seedance-2-mini','dreamina-seedance-2-0-mini-260615'],
+  ['byteplus-seedance-2-fast','dreamina-seedance-2-0-fast-260128'],
+  ['byteplus-seedance-1.5-pro','seedance-1-5-pro-251215'],
+  ['byteplus-seedance-1-pro','seedance-1-0-pro-250528'],
+  ['byteplus-seedance-1-fast','seedance-1-0-pro-fast-251015']
+ ];
+ for(const [id,providerId] of cases){
+  const request=validateGeneration({kind:'video',model:id,ratio:'16:9',prompt:'A slow sunrise over water',consent:true,references:[]});
+  let payload;
+  const result=await generateBytePlus(request,{key:'fixture',fetcher:async(_url,options)=>{payload=JSON.parse(options.body);return json({id:'task-'+id.replaceAll('.','-')});}});
+  assert.equal(payload.model,providerId,id);
+  assert.equal(payload.duration,5,id);
+  assert.equal(payload.resolution,'720p',id);
+  assert.equal(payload.content.length,1,id);
+  if(id==='byteplus-seedance-1-pro'||id==='byteplus-seedance-1-fast')assert.equal('generate_audio'in payload,false,id);
+  else assert.equal(payload.generate_audio,true,id);
+  assert.match(result.operation,/^byteplus:task-/);
+ }
 });
 test('Seedance accepts supported 1080p and 15-second settings and blocks unsupported combinations',async()=>{
  const advanced=validateGeneration({kind:'video',model:'byteplus-seedance-2',ratio:'16:9',prompt:'Studio reveal',consent:true,references:[],videoResolution:'1080p',videoDuration:15});

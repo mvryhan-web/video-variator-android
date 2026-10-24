@@ -1,7 +1,22 @@
 // ModelArk REST adapter. No consumer-session automation, paid retry or provider fallback.
 const ROOT='https://ark.ap-southeast.bytepluses.com/api/v3/';
 const MAX=30*1024*1024;
-const IDS={'byteplus-seedance-2':'dreamina-seedance-2-0-260128','byteplus-seedream-4-5':'seedream-4-5-251128','byteplus-seedream-5-lite':'seedream-5-0-260128'};
+const IDS={
+ 'byteplus-seedance-2':'dreamina-seedance-2-0-260128',
+ 'byteplus-seedance-2.5':'dreamina-seedance-2-5-260628',
+ 'byteplus-seedance-2-fast':'dreamina-seedance-2-0-fast-260128',
+ 'byteplus-seedance-2-mini':'dreamina-seedance-2-0-mini-260615',
+ 'byteplus-seedance-1.5-pro':'seedance-1-5-pro-251215',
+ 'byteplus-seedance-1-pro':'seedance-1-0-pro-250528',
+ 'byteplus-seedance-1-fast':'seedance-1-0-pro-fast-251015',
+ 'byteplus-seedream-5-pro':'dola-seedream-5-0-pro-260628',
+ 'byteplus-seedream-4':'seedream-4-0-250828',
+ 'byteplus-seedream-3':'seedream-3-0-t2i-250415',
+ 'byteplus-seedream-4-5':'seedream-4-5-251128',
+ 'byteplus-seedream-5-lite':'seedream-5-0-260128'
+};
+const VIDEO_MODELS=new Set(['byteplus-seedance-2','byteplus-seedance-2.5','byteplus-seedance-2-fast','byteplus-seedance-2-mini','byteplus-seedance-1.5-pro','byteplus-seedance-1-pro','byteplus-seedance-1-fast']);
+const FORMAT_MODELS=new Set(['byteplus-seedream-5-pro','byteplus-seedream-5-lite']);
 const SIZES={
  '2K':{'1:1':'2048x2048','2:3':'1664x2496','3:2':'2496x1664','9:16':'1600x2848','16:9':'2848x1600'},
  '3K':{'1:1':'3072x3072','2:3':'2496x3744','3:2':'3744x2496','9:16':'2304x4096','16:9':'4096x2304'},
@@ -22,12 +37,15 @@ async function json(path,{key,body,fetcher}){
 }
 export async function generateBytePlus(request,{key,fetcher=fetch}){
  const model=IDS[request.model];
- if(!model||!['image','video'].includes(request.kind)||(request.kind==='video')!==(request.model==='byteplus-seedance-2'))throw Error('MODEL_NOT_CONNECTED');
+ if(!model||!['image','video'].includes(request.kind)||(request.kind==='video')!==VIDEO_MODELS.has(request.model))throw Error('MODEL_NOT_CONNECTED');
  const images=(request.references||[]).map(r=>`data:${r.mimeType};base64,${r.data}`);
  if(request.kind==='video'){
-  if(!['16:9','9:16','1:1'].includes(request.ratio)||images.length>3)throw Error('INVALID_REQUEST');
+  if(!['16:9','9:16','1:1'].includes(request.ratio)||images.length>(request.model==='byteplus-seedance-2.5'||request.model==='byteplus-seedance-2-fast'||request.model==='byteplus-seedance-2-mini'||request.model==='byteplus-seedance-2'?3:2))throw Error('INVALID_REQUEST');
   const mode=request.videoInputMode||(images.length?'first_frame':'text');
-  if(!['text','first_frame','first_last','reference_image'].includes(mode)||
+  const allowedModes=request.model==='byteplus-seedance-1-fast'?['text','first_frame']:
+   ['byteplus-seedance-1.5-pro','byteplus-seedance-1-pro'].includes(request.model)?['text','first_frame','first_last']:
+   ['text','first_frame','first_last','reference_image'];
+  if(!allowedModes.includes(mode)||
    mode==='text'&&images.length!==0||
    mode==='first_frame'&&images.length!==1||
    mode==='first_last'&&images.length!==2||
@@ -36,7 +54,8 @@ export async function generateBytePlus(request,{key,fetcher=fetch}){
   const roles=mode==='first_last'?['first_frame','last_frame']:images.map(()=>mode==='reference_image'?'reference_image':'first_frame');
 
   if(!['720p','1080p'].includes(request.videoResolution||'720p')||![4,5,8,10,15].includes(request.videoDuration??5))throw Error('UNSUPPORTED_VIDEO_SETTINGS');
-  const d=await json('contents/generations/tasks',{key,fetcher,body:{model,content:[{type:'text',text:request.prompt},...images.map((url,index)=>({type:'image_url',image_url:{url},role:roles[index]}))],ratio:request.ratio,resolution:request.videoResolution||'720p',duration:request.videoDuration??5,generate_audio:true,watermark:true}});
+  const audioCapable=request.model==='byteplus-seedance-2'||request.model==='byteplus-seedance-2.5'||request.model==='byteplus-seedance-2-fast'||request.model==='byteplus-seedance-2-mini'||request.model==='byteplus-seedance-1.5-pro';
+  const d=await json('contents/generations/tasks',{key,fetcher,body:{model,content:[{type:'text',text:request.prompt},...images.map((url,index)=>({type:'image_url',image_url:{url},role:roles[index]}))],ratio:request.ratio,resolution:request.videoResolution||'720p',duration:request.videoDuration??5,...(audioCapable?{generate_audio:true}:{}),watermark:true}});
   if(typeof d.id!=='string'||!/^[-A-Za-z0-9_]{1,160}$/.test(d.id))throw Error('EMPTY_OPERATION');
   return {operation:`byteplus:${d.id}`};
  }
@@ -44,9 +63,9 @@ export async function generateBytePlus(request,{key,fetcher=fetch}){
  if(!SIZES[resolution]?.[request.ratio]||images.length>3)throw Error('INVALID_REQUEST');
  if(resolution==='3K'&&request.model!=='byteplus-seedream-5-lite')throw Error('UNSUPPORTED_RESOLUTION');
  if(!['2K','3K','4K'].includes(resolution))throw Error('UNSUPPORTED_RESOLUTION');
- if(request.model==='byteplus-seedream-5-lite'&&!['png','jpeg'].includes(request.outputFormat||'png'))throw Error('UNSUPPORTED_IMAGE_FORMAT');
+ if(FORMAT_MODELS.has(request.model)&&!['png','jpeg'].includes(request.outputFormat||'png'))throw Error('UNSUPPORTED_IMAGE_FORMAT');
  if(request.model==='byteplus-seedream-4-5'&&request.outputFormat&&request.outputFormat!=='auto')throw Error('UNSUPPORTED_IMAGE_FORMAT');
- const d=await json('images/generations',{key,fetcher,body:{model,prompt:request.prompt,size:SIZES[resolution][request.ratio],response_format:'b64_json',stream:false,sequential_image_generation:'disabled',watermark:true,...(request.model==='byteplus-seedream-5-lite'?{output_format:request.outputFormat||'png'}:{}),...(images.length?{image:images}:{})}});
+ const d=await json('images/generations',{key,fetcher,body:{model,prompt:request.prompt,size:SIZES[resolution][request.ratio],response_format:'b64_json',stream:false,sequential_image_generation:'disabled',watermark:true,...(FORMAT_MODELS.has(request.model)?{output_format:request.outputFormat||'png'}:{}),...(images.length?{image:images}:{})}});
  const data=d.data?.[0]?.b64_json;
  if(typeof data!=='string'||data.length>Math.ceil(MAX/3)*4||data.length%4!==0||!/^[A-Za-z0-9+/]*={0,2}$/.test(data))throw Error('INVALID_PROVIDER_MEDIA');
  const bytes=Buffer.from(data,'base64');
