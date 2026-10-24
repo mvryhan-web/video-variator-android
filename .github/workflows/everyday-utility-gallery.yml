@@ -6,6 +6,7 @@ on:
       - 'app/src/main/assets/free-tools.html'
       - 'app/src/main/assets/everyday-utility-art.*'
       - 'app/src/main/assets/media/everyday-utilities-20261023/**'
+      - 'app/src/main/assets/media/everyday-utilities-owner-20261024/**'
       - 'tests/everyday-utility-gallery*'
       - '.github/workflows/everyday-utility-gallery.yml'
   workflow_dispatch:
