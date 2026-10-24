@@ -79,7 +79,7 @@ export function safeGoogleUrl(value){
 }
 export async function googleJson(relative,{key,body,fetcher=fetch}){
  if(typeof key!=='string'||!key.trim())throw new Error('PROVIDER_KEY_REQUIRED');
- if(!/^(models\/[a-z0-9.-]+:(generateContent|predictLongRunning)|models\/[a-z0-9.-]+\/operations\/[A-Za-z0-9_-]+|operations\/[A-Za-z0-9_-]+)$/.test(relative))throw new Error('INVALID_OPERATION');
+ if(!/^(interactions|models\/[a-z0-9.-]+:(generateContent|predictLongRunning)|models\/[a-z0-9.-]+\/operations\/[A-Za-z0-9_-]+|operations\/[A-Za-z0-9_-]+)$/.test(relative))throw new Error('INVALID_OPERATION');
  const r=await fetcher(ROOT+relative,{method:body?'POST':'GET',redirect:'error',signal:AbortSignal.timeout(120000),headers:{'x-goog-api-key':key,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
  if(!r.ok)throw new Error(r.status===429?'PROVIDER_BUSY':'PROVIDER_ERROR');
  // Native fetch responses are streamed and hard-capped. The provider may omit
@@ -114,6 +114,17 @@ export async function generateGoogle(request,{key,fetcher=fetch}){
      !/^(?:operations\/[A-Za-z0-9_-]+|models\/[a-z0-9.-]+\/operations\/[A-Za-z0-9_-]+)$/.test(data.name))
     throw new Error('EMPTY_OPERATION');
   return {operation:data.name};
+ }
+ if(request.kind==='image'&&['gemini-nano-banana-2.1','gemini-3-pro-image'].includes(model.id)){
+  const input=[{type:'text',text:request.prompt},...request.references.map(ref=>({type:'image',mime_type:ref.mimeType,data:ref.data}))];
+  const data=await googleJson('interactions',{key,fetcher,body:{model:model.id,input,response_format:{type:'image',mime_type:'image/png',aspect_ratio:request.ratio,image_size:request.resolution||'1K'}}});
+  const image=data.output_image;
+  if(!image||typeof image.data!=='string'||image.data.length>40*1024*1024||image.data.length%4!==0||!/^[A-Za-z0-9+/]*={0,2}$/.test(image.data))throw new Error('INVALID_PROVIDER_MEDIA');
+  const bytes=Buffer.from(image.data,'base64'),mime=image.mime_type||image.mimeType||'image/png';
+  const png=bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]));
+  const jpeg=bytes.length>=3&&bytes[0]===255&&bytes[1]===216&&bytes[2]===255;
+  if(bytes.length>30*1024*1024||!((mime==='image/png'&&png)||(mime==='image/jpeg'&&jpeg)))throw new Error('INVALID_PROVIDER_MEDIA');
+  return {mime,bytes,text:''};
  }
  const prompt=request.kind==='music'?`${request.musicMode==='instrumental'?'Instrumental only, no vocals.':'Create a song with vocals.'}\n${request.prompt}`:request.prompt;
  const data=await googleJson(`models/${model.id}:generateContent`,{key,fetcher,body:{contents:[{parts:[{text:prompt},...request.references.map(inlineData=>({inlineData}))]}],...(request.kind==='image'?{generationConfig:{responseModalities:['TEXT','IMAGE'],imageConfig:{aspectRatio:request.ratio,imageSize:request.resolution||'1K'}}}:{})}});
