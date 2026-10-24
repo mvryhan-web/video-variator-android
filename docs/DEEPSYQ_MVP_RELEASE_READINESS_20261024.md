@@ -38,3 +38,8 @@ The preview itself labels the work as in progress. The live home page reports th
 5. Only after the gates and explicit production approval, prepare and verify the production release/rollback.
 
 Do not infer a single completion percentage from code volume or green unit tests. The release remains blocked by the listed acceptance and external-economics gates. Update this dated snapshot from fresh branch/CI/Render evidence after each material milestone.
+
+
+## CI follow-up — 2026-10-24
+
+The two failed PR #368 workflow runs were rerun without code changes on exact head `357b4b183a960f515ad705cf07d42692e28fa4f0`: `AI Studio preview checks` (run 39733067396) and `Deepsyq Video core acceptance` (run 39733067395). GitHub accepted both reruns; latest observation: both queued, no new pass/fail result yet. Keep the P0 gate BLOCKED until both complete and any real failures are resolved. Earlier failure IDs are not represented as fresh results.
