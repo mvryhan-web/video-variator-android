@@ -39,6 +39,14 @@ The preview labels the work as in progress. The live home page reports that no a
 
 Do not infer completion percentage from code volume or green unit tests. DEV has a live design preview, but the commercial release remains blocked by the gates above. Update this dated snapshot from fresh branch, CI and Render evidence after each material milestone.
 
+## P0 privacy sub-queue — 2026-10-24
+
+- **Studio account boundary / PR #368:** head `d66b6fef464de74c8764360d214044f5dbf0d341`; 18/18 fresh PR workflows passed, and existing A23 browser acceptance passed 32/32 on the unchanged source candidate. Fresh synthetic merge tested DEV code at `7f04176`; the two DEV commits after that changed only this readiness document. GitHub currently reports the PR mergeable. The PR remains open; required B/D review and safe DEV integration remain pending. This client-side slice does not by itself prove server-side tenant isolation or provider consent revocation.
+- **Smart Reminders / PR #350:** exact branch head `d48f560816e69f899e5032c11fde35f5b8b46d91`; five current-head workflow runs passed. Independent B/D scoped privacy reviews passed on the immutable source/test blobs. Remains open; refresh against current DEV, verify the same three C-owned paths, rerun current-head CI, then C performs the D16 DEV self-merge.
+- **Photo OCR / PR #352:** exact branch head `c8111042fff40cd019f1899fd0d1daf4238a3b6d`; five current-head workflow runs passed. Independent B/D scoped privacy reviews passed on the immutable source/test blobs. Remains open; sequence after #350, refresh against the then-current DEV, verify the same three C-owned paths, rerun current-head CI, then C performs the D16 DEV self-merge.
+
+These are separate client privacy slices; they do not clear the overall #24/#35/#36 release gate, the server-side consent-before-provider gap, or production privacy acceptance.
+
 ## CI follow-up — 2026-10-24
 
 The earlier failed reruns were attempts 2 of workflows created on 2026-10-22. Their synthetic merge used PR head `357b4b1` with stale base `4b2ecb6`; those failures are not a current verdict. A no-file sync commit refreshed PR #368 at `d66b6fef464de74c8764360d214044f5dbf0d341`. Fresh Actions checkout log for verify run [40094962628](https://github.com/mvryhan-web/video-variator-android/actions/runs/40094962628) says `Merge d66b6fe into 7f04176`. All 18 PR-triggered workflow runs for this head are terminal **SUCCESS** (including [Video Core](https://github.com/mvryhan-web/video-variator-android/actions/runs/40094962637) and [Studio account boundary](https://github.com/mvryhan-web/video-variator-android/actions/runs/40094962647)). No assertion was weakened. PR #368 remains open; required B/D review and DEV merge are still pending.
