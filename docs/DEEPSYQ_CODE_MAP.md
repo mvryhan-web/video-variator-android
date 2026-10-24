@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `e83ab14df9b21c8f63472e2a049d90e8cc31ce5b`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` | Indexed files: 52 | Named symbols: 138 | Checked relations: 48
+Source commit: `5a7f04dace07ba24ef0d8e54767e8b1ef7574034`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` | Indexed files: 52 | Named symbols: 140 | Checked relations: 48
 
 ## Topic finder (matching filenames)
 
@@ -47,7 +47,7 @@ scrypt (L5) · attempts (L6)
 
 ### `server/generation-byteplus.js`
 
-IDS (L4) · SIZES (L5)
+IDS (L4) · VIDEO_MODELS (L18) · FORMAT_MODELS (L19) · SIZES (L20)
 
 ### `server/generation-errors.js`
 
