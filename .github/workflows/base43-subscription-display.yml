@@ -1,0 +1,41 @@
+name: BASE 43 paid subscription credit Pricing accuracy
+on:
+  push:
+    branches: [base43-subscription-credits-display-20261016]
+    paths:
+      - 'server/generation-subscription-credits.js'
+      - 'server/generation-billing.js'
+      - 'app/src/main/assets/ai-pricing.js'
+      - 'app/src/main/assets/ai-pricing-display.js'
+      - 'tests/base43-subscription-plan-display-unit.mjs'
+      - '.github/workflows/base43-subscription-display.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-subscription-credits.js'
+      - 'server/generation-billing.js'
+      - 'app/src/main/assets/ai-pricing.js'
+      - 'app/src/main/assets/ai-pricing-display.js'
+      - 'tests/base43-subscription-plan-display-unit.mjs'
+      - '.github/workflows/base43-subscription-display.yml'
+permissions:
+  contents: read
+jobs:
+  pricing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: JavaScript syntax
+        run: |
+          node --check server/generation-subscription-credits.js
+          node --check server/generation-billing.js
+          node --check app/src/main/assets/ai-pricing.js
+          node --check app/src/main/assets/ai-pricing-display.js
+          node --check tests/base43-subscription-plan-display-unit.mjs
+      - name: Confirm real approved subscription credit presentation and old Pricing behavior
+        run: node --test tests/base43-subscription-plan-display-unit.mjs tests/ai-pricing-display-unit.mjs tests/generation-billing-unit.mjs

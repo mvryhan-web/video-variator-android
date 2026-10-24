@@ -1,0 +1,31 @@
+name: Jules2 Block4 W4.1 workspace ownership no-spend acceptance
+on:
+  push:
+    branches:
+      - coord5-jules2-workspace-policy-isolated-20261018
+    paths:
+      - server/workspace-project-policy.js
+      - tests/workspace-project-policy-unit.mjs
+      - .github/workflows/block4-workspace-policy-w4-1.yml
+  pull_request:
+    paths:
+      - server/workspace-project-policy.js
+      - tests/workspace-project-policy-unit.mjs
+      - .github/workflows/block4-workspace-policy-w4-1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-ownership:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and no-network ownership-policy unit tests
+        run: |
+          node --check server/workspace-project-policy.js
+          node --check tests/workspace-project-policy-unit.mjs
+          node --test tests/workspace-project-policy-unit.mjs

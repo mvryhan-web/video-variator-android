@@ -1,0 +1,36 @@
+name: Deepsyq BASE 20 Product Video references
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/product-video.js'
+      - 'app/src/main/assets/product-video.html'
+      - 'app/src/main/assets/product-video.css'
+      - 'tests/deepsyq-product-video-order.spec.mjs'
+      - '.github/workflows/deepsyq-product-video-order.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reference-order:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax
+        run: |
+          node --check app/src/main/assets/product-video.js
+          node --check tests/deepsyq-product-video-order.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Verify product references on desktop and mobile browsers
+        run: npx playwright test tests/deepsyq-product-video-order.spec.mjs --project=chromium --project=mobile-chromium --project=webkit --project=mobile-webkit
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: base20-product-video-failures
+          path: test-results/
+          retention-days: 7

@@ -16,7 +16,7 @@ async function api(url,options={}){
  if(!response.ok)throw Error(result.error||'Request failed');return result;
 }
 function setCopy(){
- $('reminderBack').textContent=t('← Free tools','← Бесплатные инструменты','← Outils gratuits','← Безкоштовні інструменти');
+ $('reminderBack').textContent=t('← Everyday Tools','← Повседневные инструменты','← Outils du quotidien','← Безкоштовні інструменти');
  $('reminderTitle').textContent=t('Smart reminders','Умные напоминания','Rappels intelligents','Розумні нагадування');
  $('reminderLead').textContent=t('Create one-time or repeated alerts. Free, no video credits.','Разовые и повторяющиеся напоминания. Бесплатно, без видеокредитов.','Rappels uniques ou récurrents, sans crédits.','Разові або повторні нагадування, без відеокредитів.');
  $('reminderFormTitle').textContent=t('Create a reminder','Создать напоминание','Créer un rappel','Створити нагадування');

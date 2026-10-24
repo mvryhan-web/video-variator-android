@@ -1,0 +1,35 @@
+name: BASE 48 migrate CLI error redaction
+on:
+  push:
+    branches: [base48-migrate-cli-redaction-20261016]
+    paths:
+      - 'server/ai-preflight-errors.js'
+      - 'server/migrate-ai.js'
+      - 'tests/base48-migration-cli-redaction-unit.mjs'
+      - '.github/workflows/base48-migrate-cli-redaction.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/ai-preflight-errors.js'
+      - 'server/migrate-ai.js'
+      - 'tests/base48-migration-cli-redaction-unit.mjs'
+      - '.github/workflows/base48-migrate-cli-redaction.yml'
+permissions:
+  contents: read
+jobs:
+  redacted:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax
+        run: |
+          node --check server/migrate-ai.js
+          node --check server/ai-preflight-errors.js
+          node --check tests/base48-migration-cli-redaction-unit.mjs
+      - name: Simulated local PostgreSQL connection failure without password leak
+        run: node --test tests/base48-migration-cli-redaction-unit.mjs tests/ai-preflight-redaction-unit.mjs tests/ai-migrations-unit.mjs

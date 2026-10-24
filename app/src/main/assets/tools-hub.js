@@ -2,10 +2,10 @@
 (()=>{'use strict';
  const $=s=>document.querySelector(s),lang=(navigator.language||'en').slice(0,2);
  const texts={
- en:{title:'Free tools',lead:'Photo, video and audio. Pick one task.',back:'All tools',choose:'1 · Choose a file',settings:'2 · Adjust',result:'3 · Save & share',quality:['Best quality','Balanced','Small file'],settingsName:'Appearance',wait:'Finish or cancel the current task before leaving.',names:['Compress photos','Compress video','Extract audio','Cut video','Photo → video','Text → voice','Recording → text','Teleprompter'],notes:['Up to 50 photos','Smaller MP4','Video → M4A','Consecutive clips','Gentle camera zoom','Google voices · daily limits','Local transcription','Camera + scrolling script']},
- ru:{title:'Бесплатные инструменты',lead:'Фото, видео и аудио. Выберите одну задачу.',back:'Все инструменты',choose:'1 · Выберите файл',settings:'2 · Настройте',result:'3 · Сохраните и поделитесь',quality:['Лучшее качество','Баланс','Маленький файл'],settingsName:'Оформление',wait:'Завершите или отмените текущую задачу перед выходом.',names:['Сжать фото','Сжать видео','Извлечь звук','Нарезать видео','Фото → видео','Текст → голос','Запись → текст','Телесуфлёр'],notes:['До 50 фото сразу','Компактный MP4','Видео → M4A','По длительности','Плавное приближение','Голоса Google · дневной лимит','На устройстве','Камера и ваш сценарий']},
- fr:{title:'Outils gratuits',lead:'Photo, vidéo et audio. Choisissez une tâche.',back:'Tous les outils',choose:'1 · Choisir un fichier',settings:'2 · Régler',result:'3 · Enregistrer et partager',quality:['Haute qualité','Équilibré','Petit fichier'],settingsName:'Apparence',wait:'Terminez ou annulez la tâche avant de quitter.',names:['Compresser les photos','Compresser une vidéo','Extraire le son','Découper une vidéo','Photo → vidéo','Texte → voix','Enregistrement → texte','Téléprompteur'],notes:['Jusqu’à 50 photos','MP4 plus léger','Vidéo → M4A','Clips consécutifs','Zoom progressif','Voix Google · limite quotidienne','Transcription locale','Caméra et scénario']},
- uk:{title:'Безкоштовні інструменти',lead:'Фото, відео й аудіо. Оберіть одну задачу.',back:'Усі інструменти',choose:'1 · Оберіть файл',settings:'2 · Налаштуйте',result:'3 · Збережіть і поділіться',quality:['Найкраща якість','Баланс','Малий файл'],settingsName:'Оформлення',wait:'Завершіть або скасуйте поточну задачу перед виходом.',names:['Стиснути фото','Стиснути відео','Витягти звук','Нарізати відео','Фото → відео','Текст → голос','Запис → текст','Телесуфлер'],notes:['До 50 фото одразу','Компактний MP4','Відео → M4A','За тривалістю','Плавне наближення','Голоси Google · денний ліміт','На пристрої','Камера та сценарій']}
+ en:{title:'Everyday Tools',lead:'Photo, video and audio. Pick one task.',back:'All tools',choose:'1 · Choose a file',settings:'2 · Adjust',result:'3 · Save & share',quality:['Best quality','Balanced','Small file'],settingsName:'Appearance',wait:'Finish or cancel the current task before leaving.',names:['Compress photos','Compress video','Extract audio','Cut video','Photo → video','Text → voice','Recording → text','Teleprompter'],notes:['Up to 50 photos','Smaller MP4','Video → M4A','Consecutive clips','Gentle camera zoom','Google voices · daily limits','Local transcription','Camera + scrolling script']},
+ ru:{title:'Повседневные инструменты',lead:'Фото, видео и аудио. Выберите одну задачу.',back:'Все инструменты',choose:'1 · Выберите файл',settings:'2 · Настройте',result:'3 · Сохраните и поделитесь',quality:['Лучшее качество','Баланс','Маленький файл'],settingsName:'Оформление',wait:'Завершите или отмените текущую задачу перед выходом.',names:['Сжать фото','Сжать видео','Извлечь звук','Нарезать видео','Фото → видео','Текст → голос','Запись → текст','Телесуфлёр'],notes:['До 50 фото сразу','Компактный MP4','Видео → M4A','По длительности','Плавное приближение','Голоса Google · дневной лимит','На устройстве','Камера и ваш сценарий']},
+ fr:{title:'Outils du quotidien',lead:'Photo, vidéo et audio. Choisissez une tâche.',back:'Tous les outils',choose:'1 · Choisir un fichier',settings:'2 · Régler',result:'3 · Enregistrer et partager',quality:['Haute qualité','Équilibré','Petit fichier'],settingsName:'Apparence',wait:'Terminez ou annulez la tâche avant de quitter.',names:['Compresser les photos','Compresser une vidéo','Extraire le son','Découper une vidéo','Photo → vidéo','Texte → voix','Enregistrement → texte','Téléprompteur'],notes:['Jusqu’à 50 photos','MP4 plus léger','Vidéo → M4A','Clips consécutifs','Zoom progressif','Voix Google · limite quotidienne','Transcription locale','Caméra et scénario']},
+ uk:{title:'Щоденні інструменти',lead:'Фото, відео й аудіо. Оберіть одну задачу.',back:'Усі інструменти',choose:'1 · Оберіть файл',settings:'2 · Налаштуйте',result:'3 · Збережіть і поділіться',quality:['Найкраща якість','Баланс','Малий файл'],settingsName:'Оформлення',wait:'Завершіть або скасуйте поточну задачу перед виходом.',names:['Стиснути фото','Стиснути відео','Витягти звук','Нарізати відео','Фото → відео','Текст → голос','Запис → текст','Телесуфлер'],notes:['До 50 фото одразу','Компактний MP4','Відео → M4A','За тривалістю','Плавне наближення','Голоси Google · денний ліміт','На пристрої','Камера та сценарій']}
  },c=texts[lang]||texts.en;
  const modes=['photo','video','audio','clips','motion','tts','stt','prompter'];
  if(!$('.free-tools-page')){
@@ -29,6 +29,22 @@
   a.innerHTML=`<span class="hub-icon">${icon(i)}</span><strong></strong><small></small>`;a.querySelector('strong').textContent=c.names[i];a.querySelector('small').textContent=c.notes[i];grid.append(a);
   if(!['tts','stt'].includes(mode))a.onclick=e=>{e.preventDefault();navigate(mode);};
  });
+ // The original Video Uniquifier is an existing independent app, not a renamed
+ // local utility. Enter it through Tools without replacing its auth, modes or history.
+ const legacyText={
+  en:['Video Uniquifier','Your original video editor · Gentle, Balance & Dynamic'],
+  ru:['Уникализация видео','Исходный видеоредактор · Gentle, Balance и Dynamic'],
+  fr:['Video Uniquifier','Votre éditeur vidéo d’origine · Gentle, Balance et Dynamic'],
+  uk:['Унікалізація відео','Початковий відеоредактор · Gentle, Balance і Dynamic']
+ }[lang]||['Video Uniquifier','Your original video editor · Gentle, Balance & Dynamic'];
+ const legacyLink=document.createElement('a');
+ legacyLink.className='hub-tile';legacyLink.dataset.legacyTool='video-uniquifier';
+ legacyLink.href='index.html';
+ const legacyIcon=document.createElement('span');legacyIcon.className='hub-icon';
+ legacyIcon.setAttribute('aria-hidden','true');legacyIcon.textContent='▤';
+ const legacyTitle=document.createElement('strong');legacyTitle.textContent=legacyText[0];
+ const legacyNote=document.createElement('small');legacyNote.textContent=legacyText[1];
+ legacyLink.append(legacyIcon,legacyTitle,legacyNote);grid.append(legacyLink);
  // Extra everyday utilities: direct access, same styling as existing tool tiles.
  const extra=lang==='ru'?
   [['smart-reminders.html','Умные напоминания','Даты, повторы и уведомления'],['smart-reminders.html#quick-notes','Быстрые заметки','Синхронизация с аккаунтом']]:
@@ -63,6 +79,7 @@
   if(active==='prompter'&&mode!==active)$('#cameraClose').click();
   if(mode&&mode!=='prompter'&&$('#operation').value!==mode){$('#operation').value=mode;$('#operation').dispatchEvent(new Event('change'));$('#outputs').replaceChildren();$('#status').textContent='';}
   active=mode;main.dataset.activeTool=mode;hero.hidden=!!mode;grid.hidden=!!mode;screen.hidden=!mode;panel.hidden=!mode||mode==='prompter';camera.hidden=mode!=='prompter';$('.media-tools-card').hidden=mode==='prompter';
+  window.dispatchEvent(new CustomEvent('vu:toolchange'));
   $('#hubTitle').textContent=c.names[modes.indexOf(mode)]||c.title;$('#hubNotice').textContent='';selection();if(focus){window.scrollTo(0,0);(mode?$('#hubTitle'):hero.querySelector('h1')).focus();}
  }
  function navigate(mode){if(!allowed())return;const u=new URL(location.href);mode?u.searchParams.set('tool',mode):u.searchParams.delete('tool');history.pushState({},'',u);render(mode,true);}

@@ -1,0 +1,51 @@
+name: BASE 16 paid subscription AI credit ledger
+on:
+  push:
+    branches: [base16-subscription-invoice-grants-20261016]
+    paths:
+      - 'server/generation-subscription-credits.js'
+      - 'server/generation-billing.js'
+      - 'server/generation-wallet.js'
+      - 'tests/base16-subscription-invoice-postgres.mjs'
+      - '.github/workflows/base16-subscription-invoice.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-subscription-credits.js'
+      - 'server/generation-billing.js'
+      - 'server/generation-wallet.js'
+      - 'tests/base16-subscription-invoice-postgres.mjs'
+      - '.github/workflows/base16-subscription-invoice.yml'
+permissions:
+  contents: read
+jobs:
+  subscription:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fixture
+          POSTGRES_PASSWORD: fixture
+          POSTGRES_DB: vv_ai_subscription_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Check JavaScript syntax
+        run: |
+          node --check server/generation-subscription-credits.js
+          node --check server/generation-wallet.js
+          node --check server/generation-billing.js
+          node --check tests/base16-subscription-invoice-postgres.mjs
+      - name: Signed invoice grant idempotency and existing Stripe/wallet contracts
+        run: node --test tests/base16-subscription-invoice-postgres.mjs tests/generation-billing-unit.mjs tests/base16-shared-stripe-refund-unit.mjs tests/base16-checkout-create-contract-unit.mjs
+        env:
+          NODE_ENV: test
+          AI_TEST_DATABASE_URL: postgres://fixture:fixture@127.0.0.1:5432/vv_ai_subscription_ci

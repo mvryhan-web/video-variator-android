@@ -1,3 +1,4 @@
+import {gotoAppReady} from './helpers/app-ready.mjs';
 import {test,expect} from '@playwright/test';
 import {execFileSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
@@ -9,7 +10,7 @@ async function openView(page,name){
 
 test.beforeEach(async({page})=>{
   await page.route(/accounts\.google\.com|appleid\.cdn-apple\.com|unpkg\.com/,route=>route.abort());
-  await page.goto('/',{waitUntil:'domcontentloaded'});
+  await gotoAppReady(page);
   await expect(page).toHaveTitle(/Video Uniquifier/);
 });
 

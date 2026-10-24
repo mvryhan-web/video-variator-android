@@ -1,0 +1,24 @@
+name: Jules1 Block5 W5.3 owner-view no-spend checks
+on:
+  pull_request:
+    paths:
+      - 'server/product-watcher/owner-status-view.js'
+      - 'tests/product-watcher-owner-status-view-unit.mjs'
+      - '.github/workflows/block5-watcher-w5-3.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safe-owner-view:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Offline owner-only status policy tests
+        run: |
+          node --check server/product-watcher/owner-status-view.js
+          node --check tests/product-watcher-owner-status-view-unit.mjs
+          node --test tests/product-watcher-owner-status-view-unit.mjs

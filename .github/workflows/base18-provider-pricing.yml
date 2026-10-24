@@ -1,0 +1,31 @@
+name: BASE 18 provider-specific pricing
+on:
+  push:
+    branches: [base18-clean-merge-20261016]
+    paths:
+      - 'server/generation-pricing.js'
+      - 'tests/base18-provider-pricing-unit.mjs'
+      - '.github/workflows/base18-provider-pricing.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-pricing.js'
+      - 'tests/base18-provider-pricing-unit.mjs'
+      - '.github/workflows/base18-provider-pricing.yml'
+permissions:
+  contents: read
+jobs:
+  pricing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify pricing and test syntax
+        run: |
+          node --check server/generation-pricing.js
+          node --check tests/base18-provider-pricing-unit.mjs
+      - name: Price-aware adapter and existing regression tests
+        run: node --test tests/base18-provider-pricing-unit.mjs tests/generation-pricing-unit.mjs

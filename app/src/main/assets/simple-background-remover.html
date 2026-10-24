@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en-US">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Simple Background Remover — Deepsyq Everyday Tools</title>
+<meta name="description" content="Remove a simple, solid-color photo background locally and save a transparent PNG. No upload or AI credits.">
+<meta name="robots" content="noindex,follow"><meta name="theme-color" content="#15131e">
+<link rel="stylesheet" href="simple-background-remover.css"><script type="module" src="simple-background-remover.js"></script></head>
+<body>
+<header><a href="free-tools.html" class="back">← Everyday Tools</a><span class="brand"><img src="deepsyq-logo.png" width="28" height="28" alt="" decoding="async">Deepsyq</span></header>
+<main>
+ <p class="eyebrow">FREE · ON-DEVICE</p>
+ <h1>Simple Background Remover</h1>
+ <p>Remove an evenly colored background and export a transparent PNG. This is a local color-selection tool, <strong>not AI subject detection</strong>; complex scenery, shadows and hair may need a dedicated editor.</p>
+ <section class="panel">
+  <label class="file-picker" for="photo">1. Choose a photo (JPG, PNG or WebP, up to 10 MB)</label>
+  <input id="photo" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="privacy">
+  <button type="button" id="clearPhoto" disabled>Clear photo and preview</button>
+  <p id="privacy">Your photo stays in this browser. No server upload, account or AI credits.</p>
+  <div class="work-area">
+   <div><h2>Original · pick the background</h2>
+    <div class="image-well"><canvas id="original" width="1" height="1" tabindex="0" role="button" aria-describedby="keyboardHelp sampleStatus" aria-label="Choose a background pixel in the loaded photo"></canvas></div>
+    <p id="keyboardHelp">Tap the photo, or use the arrow keys to choose a pixel (Shift moves 10). Home picks top-left; End picks bottom-right. Press Enter to confirm.</p>
+    <button type="button" id="topLeft" disabled>Use top-left background color</button>
+    <p id="sampleStatus" role="status" aria-live="polite">Choose a photo to begin.</p>
+   </div>
+   <div><h2>Transparent PNG preview</h2>
+    <div class="image-well checker"><canvas id="result" width="1" height="1" aria-label="Transparent PNG result"></canvas></div>
+    <p>Only the connected pixels matching your selected background color are erased.</p>
+   </div>
+  </div>
+  <div class="controls">
+   <label for="tolerance">2. Color tolerance: <output id="toleranceValue" for="tolerance">45</output></label>
+   <input id="tolerance" type="range" min="0" max="150" value="45" step="1">
+   <p>Start low to protect your product. Increase only if parts of the background remain.</p>
+   <div class="actions"><button type="button" id="erase" disabled>3. Remove selected background</button><button type="button" id="download" disabled>Download transparent PNG</button></div>
+  </div>
+  <p id="status" role="status" aria-live="polite"></p>
+ </section>
+ <p class="footer-note">For detailed backgrounds or transparent strands of hair, use an advanced image editor. This tool does not invent subject edges or charge for AI.</p>
+</main>
+<footer><a href="free-tools.html">← Back to Tools</a><span>Offline photo processing · no upload</span></footer>
+</body></html>

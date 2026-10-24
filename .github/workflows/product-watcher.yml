@@ -1,0 +1,68 @@
+name: Product Watcher unit checks
+on:
+  push:
+    branches: [deepsyq-block5-product-watcher, deepsyq-block5-readiness-gate, deepsyq-block5-billing-observer, deepsyq-block5-webhook-diagnostics, deepsyq-block5-integration, deepsyq-block5-link-reachability-20261016]
+  pull_request:
+    branches: [deepsyq-platform, deepsyq-block5-product-watcher, deepsyq-block5-readiness-gate, deepsyq-block5-billing-observer, deepsyq-block5-integration]
+permissions:
+  contents: read
+jobs:
+  watcher:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax checks
+        run: |
+          node --check server/product-watcher/monitor.js
+          node --check server/product-watcher/operational-signals.js
+          node --check server/product-watcher/alerts.js
+          node --check server/product-watcher/official-sources.js
+          node --check server/product-watcher/briefs.js
+          node --check server/product-watcher/content-tasks.js
+          node --check server/product-watcher/link-reachability.js
+          node --check server/product-watcher/telegram-alerts.js
+          node --check server/product-watcher/readiness.js
+          node --check server/product-watcher/billing-signals.js
+          node --check server/product-watcher/webhook-config.js
+          node --check server/product-watcher/admin-api.js
+          node --check server/product-watcher/run-once.js
+          node --check server/product-watcher/scheduler.js
+          node --check server/product-watcher/worker.js
+          node --check app/src/main/assets/product-watcher-admin.js
+          node --check server/server.js
+      - name: Watcher security and behavior unit tests
+        run: node --test tests/product-watcher-unit.mjs tests/product-watcher-admin-unit.mjs tests/product-watcher-scheduler-unit.mjs tests/product-watcher-operational-unit.mjs tests/product-watcher-alerts-unit.mjs tests/product-watcher-official-unit.mjs tests/product-watcher-briefs-unit.mjs tests/product-watcher-content-unit.mjs tests/product-watcher-links-unit.mjs tests/product-watcher-telegram-unit.mjs tests/product-watcher-readiness-unit.mjs tests/product-watcher-billing-unit.mjs tests/product-watcher-webhook-config-unit.mjs tests/product-watcher-isolation-unit.mjs
+
+  postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: watcher
+          POSTGRES_PASSWORD: watcher-test-only
+          POSTGRES_DB: watcher_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U watcher -d watcher_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PRODUCT_WATCHER_TEST_DB_URL: postgres://watcher:watcher-test-only@127.0.0.1:5432/watcher_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+      - name: Isolated PostgreSQL acceptance
+        run: node --test tests/product-watcher-postgres.mjs

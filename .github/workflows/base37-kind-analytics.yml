@@ -1,0 +1,32 @@
+name: BASE 37 AI Kind Business Analytics
+on:
+  push:
+    branches: [base37-generation-kind-breakdown-20261016]
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-studio.js'
+      - 'tests/generation-studio-unit.mjs'
+      - 'tests/base37-completed-failure-rate-unit.mjs'
+      - 'server/generation-business-rates.js'
+      - 'app/src/main/assets/deepsyq-admin.js'
+      - '.github/workflows/base37-kind-analytics.yml'
+permissions:
+  contents: read
+jobs:
+  business-analytics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax and owner-only aggregate Business API
+        run: |
+          node --check server/generation-studio.js
+          node --check app/src/main/assets/deepsyq-admin.js
+          node --check tests/generation-studio-unit.mjs
+          node --check server/generation-business-rates.js
+          node --test tests/generation-studio-unit.mjs tests/generation-pricing-unit.mjs tests/base37-completed-failure-rate-unit.mjs

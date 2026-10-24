@@ -1,0 +1,109 @@
+name: Graphify safe persistent code map
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/**'
+      - '.graphifyignore'
+      - 'tools/graphify/**'
+      - '.github/workflows/graphify-offline-pilot.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - '.graphifyignore'
+      - '.agents/skills/graphify/**'
+      - 'tools/graphify/**'
+      - '.github/workflows/graphify-offline-pilot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  graphify-code-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      GEMINI_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      DEEPSEEK_API_KEY: ''
+      MOONSHOT_API_KEY: ''
+      GRAPHIFY_BACKEND: ''
+      AWS_ACCESS_KEY_ID: ''
+      AWS_SECRET_ACCESS_KEY: ''
+      AWS_SESSION_TOKEN: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install original Graphify pinned immutable GitHub commit (not latest)
+        run: python -m pip install --disable-pip-version-check --no-cache-dir "git+https://github.com/Graphify-Labs/graphify.git@86c57be8204673c2a1b9849a3292a7dd3ab373d8"
+      - name: Add synthetic excluded file to prove denylist is actually honored
+        run: |
+          mkdir -p server/customer-data
+          printf 'export const GRAPHIFY_SECRET_SENTINEL = "SYNTHETIC_DO_NOT_INDEX";\n' > server/customer-data/graphify-exclude-probe.js
+      - name: Build code-only AST; no docs, model, API, cloud, user files, hooks, or graph artifact
+        run: |
+          graphify extract server --code-only --no-viz --no-cluster
+          test -f graphify-out/graph.json || test -f server/graphify-out/graph.json
+      - name: Reject secret paths and answer one real question without full-repo re-read
+        run: |
+          GRAPH=graphify-out/graph.json
+          test -f "$GRAPH" || GRAPH=server/graphify-out/graph.json
+          node tools/graphify/verify-graph.mjs "$GRAPH"
+          (cd server && graphify query "submitPurchasedProviderRequest")
+      - name: Test safe map exporter
+        run: node --test tools/graphify/export-safe-index.test.mjs
+      - name: Export SAFE code map from verified Graphify AST (no raw source)
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          GRAPH=graphify-out/graph.json
+          test -f "$GRAPH" || GRAPH=server/graphify-out/graph.json
+          node tools/graphify/export-safe-index.mjs "$GRAPH" "$SOURCE_SHA" docs/DEEPSYQ_CODE_MAP.md
+          test -s docs/DEEPSYQ_CODE_MAP.md
+          test -s docs/DEEPSYQ_CODE_MAP.json
+      - name: Share only sanitized code map (never raw graph)
+        uses: actions/upload-artifact@v4
+        with:
+          name: deepsyq-code-map-safe
+          path: |
+            docs/DEEPSYQ_CODE_MAP.md
+            docs/DEEPSYQ_CODE_MAP.json
+          retention-days: 7
+          if-no-files-found: error
+      - name: Delete private graph regardless of outcome
+        if: always()
+        run: |
+          rm -rf graphify-out server/graphify-out
+          rm -f server/customer-data/graphify-exclude-probe.js
+
+  publish-safe-map:
+    name: Commit only sanitized map back to DEV
+    needs: graphify-code-only
+    if: github.event_name == 'push' && github.ref == 'refs/heads/deepsyq-platform'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: deepsyq-platform
+          persist-credentials: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: deepsyq-code-map-safe
+          path: docs/
+      - name: Revalidate artifact SHA and publish ONLY two safe files
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          node -e 'const fs=require("fs"); const j=JSON.parse(fs.readFileSync("docs/DEEPSYQ_CODE_MAP.json","utf8")); if(j.source_sha!==process.env.SOURCE_SHA || j.scope!=="server/" || !Array.isArray(j.nodes) || j.nodes.length<10) process.exit(1);'
+          grep -Fq "$SOURCE_SHA" docs/DEEPSYQ_CODE_MAP.md
+          git add -- docs/DEEPSYQ_CODE_MAP.md docs/DEEPSYQ_CODE_MAP.json
+          if ! git diff --cached --quiet; then
+            git -c user.name='deepsyq-code-map[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "docs(graphify): refresh safe code map from $SOURCE_SHA [skip ci]"
+            git push origin HEAD:deepsyq-platform
+          fi

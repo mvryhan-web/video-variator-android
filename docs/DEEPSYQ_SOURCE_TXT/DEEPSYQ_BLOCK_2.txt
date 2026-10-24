@@ -1,0 +1,77 @@
+BLOCK 2 — USER AGENT / “DO IT FOR ME”
+============================================================
+
+NAV
+Add:
+Agent
+
+Main page:
+Do it for me
+
+Core copy:
+“Tell Deepsyq what you want to achieve. Your AI Agent will plan the steps, choose the right AI models and tools, and prepare the result for you.”
+
+Example tasks:
+- Create an Etsy listing
+- Make a TikTok ad from my photos
+- Create a 30-second promo
+- Prepare social media content
+- Build an ad campaign
+- Turn product photos into marketing content
+
+AGENT ORCHESTRATOR
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. ЭТАП 1 = готовые BASE §21 workflow с явным одобрением и без автономного оркестратора; оркестратор ниже — сохранённое будущее ЭТАПА 2 только ПОСЛЕ LIVE_VERIFIED BASE §51. Разделение по BASE §53. Существующие auth/provider/router/jobs, без дубликатов.
+This must not be just a chat.
+
+Flow:
+goal
+→ understand task
+→ create plan
+→ choose real tools/models/providers
+→ show plan
+→ estimate credits/cost
+→ request approval before expensive actions
+→ execute asynchronously
+→ show progress
+→ save deliverables
+→ return the final result
+
+Agent may use:
+- text models
+- image models
+- video models
+- audio tools
+- existing Deepsyq tools
+- Studio
+- templates
+- Multi-AI Compare
+- future connected tools
+
+Requirements:
+- real execution
+- async jobs
+- resumable progress
+- history
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. History/Workspace — только канон Block 4 на существующих таблицах jobs, НЕ новая проектная таблица.
+- strict user ownership
+- credits
+- limits
+- provider cost
+- approval before expensive actions
+- no destructive actions without confirmation
+- no fake integrations
+
+Trial:
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Исторические строки ниже НЕ утверждают allowance: бесплатных AI/agent credits нет, оплаченный Trial $0.99 пока НЕ включён и условия неизвестны. Цены/кредиты только Block 7, Issue #182.
+- $0.99 trial gets limited Agent allowance
+- no unlimited AI
+
+Important:
+User Agent and Internal Product Watcher are separate systems.
+User Agent works for the user.
+Product Watcher works on the Deepsyq product itself.
+
+============================================================

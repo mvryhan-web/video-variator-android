@@ -1,0 +1,46 @@
+name: Deepsyq isolated design preview safety
+on:
+  push:
+    branches: [deepsyq-platform, agent5-preview-boundary-smoke-20261016]
+    paths:
+      - 'server/deepsyq-preview.js'
+      - 'tests/deepsyq-preview.mjs'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq-logo.png'
+      - 'app/src/main/assets/deepsyq.webmanifest'
+      - '.github/workflows/deepsyq-preview-isolation.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/deepsyq-preview.js'
+      - 'tests/deepsyq-preview.mjs'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq-logo.png'
+      - 'app/src/main/assets/deepsyq.webmanifest'
+      - '.github/workflows/deepsyq-preview-isolation.yml'
+permissions:
+  contents: read
+jobs:
+  readonly-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --omit=dev --no-audit --no-fund
+      - name: Check isolated preview syntax
+        run: |
+          node --check server/deepsyq-preview.js
+          node --check tests/deepsyq-preview.mjs
+      - name: Verify static brand assets and fail-closed HTTP endpoints
+        env:
+          NODE_ENV: test
+          DATABASE_URL: ''
+          STRIPE_SECRET_KEY: ''
+          GEMINI_API_KEY: ''
+          BYTEPLUS_API_KEY: ''
+          APP_JWT_SECRET: ''
+        run: node --test tests/deepsyq-preview.mjs
