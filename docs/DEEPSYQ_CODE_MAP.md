@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `5a7f04dace07ba24ef0d8e54767e8b1ef7574034`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` | Indexed files: 52 | Named symbols: 140 | Checked relations: 48
+Source commit: `66ac863a8752d43adfd26352fe857b651294d278`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` | Indexed files: 52 | Named symbols: 141 | Checked relations: 49
 
 ## Topic finder (matching filenames)
 
@@ -187,7 +187,7 @@ server.js (L1) · app (L26) · port (L26) · __dirname (L28) · rootDir (L29) ·
 
 ### `server/speech.js`
 
-speech.js (L1) · voices (L2) · languages (L3)
+speech.js (L1) · SPEECH_MODEL (L2) · voices (L3) · languages (L4)
 
 ### `server/telegram-free-mini.js`
 
