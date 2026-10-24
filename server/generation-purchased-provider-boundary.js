@@ -37,5 +37,5 @@ export async function submitPurchasedProviderRequest({
     proof.modelId!==model.id||proof.provider!==model.provider)deny();
  // Do not auto-submit a second time when acceptance by a provider is unknown.
  // D's database claim is committed exactly once before this single call.
- return provider(request,{env});
+ return provider(request,{env,authorization:proof});
 }
