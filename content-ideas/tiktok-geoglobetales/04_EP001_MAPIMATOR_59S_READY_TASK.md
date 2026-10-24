@@ -1,143 +1,143 @@
-# EP001 / Mapimator AI Director — READY TO PASTE TASK (59 seconds)
-Updated 2026-10-24. Reference: https://www.tiktok.com/@geoglobetales/video/7655347785687977246
-**This file is a production task, not an instruction to publish.** Run once on the Mapimator free trial if possible. Save existing work first; do not pay without owner approval.
+# EP001 · SOURCE-FAITHFUL 59s DIRECTOR PACKAGE · 2026-10-24
 
-## Official compatibility
-Mapimator AI Director supports `00:12 Do X` lines and timed slides. The AI Director creates map slides, camera travel, highlighted areas and labels, but **does not speak narration**, does not add arbitrary external PNG characters automatically, and does not guarantee that every complex timing/visual instruction lands exactly. Check Script timing report for Late, Skipped and On time with cut. **One AI Director generation costs 1 credit**, with 3 free one-time credits according to official guide. Image overlays can be imported using Image toolbar afterward. Historical borders are NOT provided as a built-in historical picker: use schematic region highlights or user-provided accurate boundary GeoJSON on Pro.
-Official docs: https://mapimator.com/help-center/ai-director-map-animation ; https://mapimator.com/help-center/add-text-images-gifs-to-map ; https://mapimator.com/history-map-animation
+## Сначала прочитать — исправление предыдущего промпта
+**Оригинальный MP4 действительно пересмотрен в рабочей среде:** `How a French Invasion Changed Meat Names  Why Cow Became Beef (1).mp4` — 63.266667 s видеодорожки, **1898 кадров**, 720×1280, 30fps. Наш оригинальный выпуск: **59.000s = 1770 кадров при 30fps**, 1080×1920. Ни одно визуальное событие финала не просто «отрезается»; все 13 визуальных блоков переставлены на соответствующие времена с ускоренными переходами.
+**Главная исправленная ошибка:** исходное видео НЕ держит географическую карту постоянно. После ~24-й секунды появляются самостоятельные вырезки дворян и пиршество на нейтрально-песочном 2D-фоне, крупная курица, затем интерьер замка с бегущей курицей. Прежний указатель `Map all 59s / do not show indoor scenes` НЕПРАВИЛЬНЫЙ. Сохранить стилевой принцип исходника: предметные PNG/GIF-вырезки и лёгкий parallax, оригинальная авторская графика вместо копирования чужого видео.
 
-## 1. COPY THIS ENTIRE PROMPT INTO AI DIRECTOR
+## 1. Точное количество композиционных блоков / кадров
+| ID | Время | Кадры выходного MP4 (30fps) | Исходная визуальная композиция | Объекты / их количество | Особенности |
+|:--:|---|---:|---|---|---|
+| A | 00:00–00:09 | 0–269 | Карта Северной Америки, вид сверху, спутниковая | 5 белых вырезок животных слева, 5 жёлтых animal labels, 5 красных мясных labels справа, 5 тонких стрелок; 4 круглых meal icons, пятая — chicken | Без отдельных баннеров и карточек, без кинематографических сцен |
+| B | 00:09–00:11 | 270–329 | Быстрый географический перелёт Атлантика → Европа | Скрываются 5 пар слов; появляется 1066 | Одна и та же камера, map projection; смена спутниковой подложки на бумажную в конце перелёта |
+| C | 00:11–00:15 | 330–449 | Старинная карта Британских островов и северной Франции | Англия красная 1 регион; Франция синяя 1 область; 2 значка «речь» Old English/French | Красные и синие зоны не выдавать за точные политические границы 1066 г. |
+| D | 00:15–00:19 | 450–569 | Приближение к Ла-Маншу / Нормандии | Контур Нормандии и штриховка, 1 вырезка Вильгельма, 1 подпись | Вильгельм — авторская средневековая 2D-вырезка, не talking avatar |
+| E | 00:19–00:22 | 570–659 | Нормандия → пролив → южная Англия | 3 мини-корабля, 1 условное средневековое знамя, 1 маршрутная стрелка | Корабли движутся севернее, камера следует |
+| F | 00:22–00:24 | 660–719 | Переход с карты на бумажный фон с королём крупным планом | 1 крупный Вильгельм, 1 корона, 2 героя второго плана | На этом месте оригинал уже переключается с карты |
+| G | 00:24–00:29 | 720–869 | Пустой атмосферный песочно-голубой 2D-фон как сцена для cutouts | 7 отдельных дворян (мужчины и женщины), 1 слово BONJOUR | Композиция собрана из PNG, никакого live action |
+| H | 00:29–00:34 | 870–1019 | Тот же фон, камера отъезжает назад | 1 длинный деревянный стол, 5 маленьких иконок жареного мяса в верхнем ряду, 1 указующая рука, 5 блюд по очереди на столе | У персонажей сохраняются позиции; еда анимируется сверху вниз |
+| I | 00:34–00:38 | 1020–1139 | Панорама к фермеру по той же бумажно-земляной плоскости | 1 крестьянин с посохом, 4 животные: cow/pig/sheep/deer | Крестьянин слева; животные внизу; дворяне ждут справа вне кадра |
+| J | 00:38–00:47 | 1140–1409 | Отъезд — фермер слева, пиршество справа, на едином фоне | 4 животных слева; 7 дворян + стол/блюда справа; 4×3 слова: animal Old English → Old French → modern English | Порядок строк: COW/BOEUF/BEEF, PIG/PORC/PORK, SHEEP/MOUTON/MUTTON, DEER/VENAISON/VENISON |
+| K | 00:47–00:50 | 1410–1499 | Резкое приближение к крупной рисованной курице | 1 курица до 65% высоты, затем 4 удивлённых лица вокруг | Комедийный pop; фон размывается, название CHICKEN видно |
+| L | 00:50–00:52 | 1500–1559 | Треугольный/шторный wipe на иллюстрированный средневековый зал | 1 занавес-переход; замена фона на авторский рисунок зала | Не возвращаться к карте вопреки оригиналу |
+| M | 00:52–00:59 | 1560–1769 | Длинный стол перед стеной замка, средневековый пир | 5 гостей, 1 длинный стол, 3 блюда, 1 курица и 1 свинья, затем курица бежит вправо | Финал с настоящим визуальным действием, не титр и не чёрный экран |
+
+## 2. Общие строгие визуальные параметры
+- Собрать 59 секунд без удаления последнего сюжетного этапа: исходник 63.2667 с, 1898 кадров; наш выпуск 59.000 с, 1770 кадров при 30fps. 13 композиционных блоков, НЕ 1770 отдельных картинок. Таймкод каждого визуального изменения в таблице ниже.
+- Детали композиции: экран 1080×1920, без водяных знаков при коммерческом экспорте; активная зона x=8–92%, y=8–81%; титры голоса в y=80–87% двумя строками, кроме ситуаций с последней курицей — y=75–81%; шрифт белый жирный со слабо-чёрным обводом. Важные слова жёлтые, мясные — красные.
+- Объекты в первых 9 сек: 5 авторских белых PNG/GIF животных; 5 жёлтых animal labels; 5 красных meat labels; 5 тонких белых стрелок; 4–5 маленьких значков/картинок мяса справа. Никаких отдельных плашек за словами. Элементы удерживаются до глобального перелёта.
+- Остальные элементы: старинная географическая карта, 2 цветных выделения (красная Англия, синяя Франция) и отдельно Нормандия синей штриховкой, 2 речи-маркера, Вильгельм ×1 крупно и ×1 на карте, 3 мини-корабля + маршрут, 2–3 сопровождающих, 7 дворян, 1 стол + 5 мясных блюд + 1 рука-указатель, 1 фермер +4 животных, 12 больших слов таблицы, 1 большая курица, 4 выглядывающих лица, 1 банкетный зал + 5 гостей + 3 блюда + 2 знамена + 1 движущаяся курица.
+- Композиции G–M НЕ являются обычными слайдами Mapimator; это отдельные слои с исходными оригинальными иллюстрациями, которые надо собрать в монтажном редакторе, если Mapimator не позволяет экранные scene overlays. Запрос AI Director на карту не заставит его изготовить PNG дворян, комедийную курицу или зал самостоятельно.
+- Движение камер: Satellite North America x/y ключи и масштаб; Atlantic fly 09–11; parchment Europe from 11; England/France region 11–15; Normandy zoom 15–19; crossing route 19–22; king match cut 22–24; theatrical 2D parallax group 24–50; castle 50–59. У каждого ключа easeInOut, кроме быстрых pop и wipe.
+- Звуковое сопровождение: голос отдельно TTS; на первой карте пять тихих pops, пролёт Atlantic whoosh, страны 2 outline ticks, корабли 1 swish, корона удар, продукты 5 pops, курица смешной щипок/клик, wipe swoosh, финал лёгкий бег. Музыка тихая, без чужого copyrighted soundtrack.
+- Правда о истории: разделение English animal words vs French-derived meat names закреплялось веками, а не одномоментно в 1066. Французские слова BOEUF/PORC/MOUTON/VENAISON и эволюцию в beef/pork/mutton/venison показывать как наглядный этимологический пример, не буквальный синхронный перевод на дату 1066. Картографические контуры только с подписанным смыслом: Англия/Нормандия 1066 схематично, не современные границы как точная XI в. карта.
+
+## 3. НАШ авторский текст диктора (English) — целиком; не заменять автоматически
+**Текст для Google AI Studio / другого TTS.** Текст 59 с по монтажному темпу. Разметка каждого произнесённого фрагмента ниже является **монтажным прогнозом**; после получения реального WAV точные аудиограницы проверяются и визуалы при необходимости корректируются.
 
 ```text
-Create exactly 59 seconds of VERTICAL 9:16 animated geographic map explainer for TikTok, as one continuous geographic map world, not separate AI movie scenes, slideshow or talking-head. Geographic motion and labels only; I will add my own transparent PNG cutout images of William of Normandy, cow, pig, sheep, noble, farmer, and chicken after you generate the map. Do not invent historical 1066 political borders based on present-day country boundaries; England and Normandy are geographic/story regions, schematic historical context only. Use realistic terrain/satellite-like base map, readable white/yellow/red map labels, ENGLAND red, NORMANDY blue, smooth 2D zoom and fast continent-to-continent camera flights. Do not produce voice or subtitles. All quoted text prefixed On-screen is a map label. Make each timed instruction its own storyboard beat; fit exact timings where possible. Create from scratch, not appended to an existing storyboard.
-00:00 Start at a wide top-down satellite-style map of North America, smooth camera zoom toward the eastern United States; no separate film scene. On-screen text "COW".
-00:03 Hold on the same map, add on-screen text "COW → BEEF"; preserve space for a cow PNG graphic that will be added manually.
-00:05 Ease camera slightly outward without a cut. On-screen text "PIG → PORK" and "SHEEP → MUTTON" appear in sequence; leave space for two animal PNGs to be added later.
-00:09 Start one continuous FAST EASTWARD MAP FLIGHT from the United States over the Atlantic toward Europe. Hide animal labels; do not show a new cinematic scene.
-00:12 Zoom rapidly into the British Isles and English Channel. Show on-screen year "1066".
-00:14 Outline ENGLAND and fill it bright dark RED, show "ENGLAND". Mark NORMANDY in northwest modern France with BLUE fill and a brighter BLUE OUTLINE, show "NORMANDY". Geography of historical 1066 boundaries is schematic, not a modern-France political claim.
-00:17 Zoom in to Normandy on the map and then pan toward the Channel; show "WILLIAM OF NORMANDY" above a map marker. Leave a transparent center-right area for an externally added Duke William portrait PNG.
-00:19 Draw a thick YELLOW invasion arrow from the Normandy coast over the English Channel to the Hastings area in England. Map camera follows the arrow, with a quick smooth pan across the Channel.
-00:22 Hold on southern England. Pulse the red ENGLAND region once; on-screen label "1066 — NORMAN CONQUEST".
-00:25 Keep map of England; show two map labels "NORMAN COURT" near southeast England and "ENGLISH VILLAGES" over a countryside area, connected by a thin line. Keep space to add nobles and farmer transparent PNG stickers manually.
-00:29 Zoom into England, slightly left; show "COW", "PIG", "SHEEP" as yellow words by three geographic dots, one after another. Animal PNG art to be added by editor after the map generation.
-00:34 Pan right across the same England map to a court location; show the corresponding meat words one at a time "BEEF", "PORK", "MUTTON" in warm RED with arrows coming from the corresponding animal words.
-00:40 Smooth zoom-out to include Normandy and England. Retain ENGLAND red and NORMANDY blue. On-screen: "NOT OVERNIGHT". Show a simple time progression 1066 → 1200 → 1400, visually explaining centuries of change.
-00:44 Move the camera very gently over England while the on-screen caption changes to "OVER CENTURIES"; do not jump to live-action historical scenes.
-00:48 Return to southeast England map. On-screen short caption "ONE EXCEPTION...". Leave open area in center for a comedy chicken PNG sticker to be placed later.
-00:51 Small camera zoom; show "CHICKEN → CHICKEN" as a readable yellow-to-red word comparison on top of map. Keep visible place for chicken PNG added manually.
-00:55 Zoom OUT from England to Europe, then FAST FLY WEST across Atlantic toward North America with smooth geographic continuity. Remove past labels.
-00:57 Reframe North America like the opening shot; on-screen words "COW → BEEF" and small closing line "HISTORY ON YOUR PLATE".
-00:59 End video immediately; total length precisely 59 seconds. No fade to black, no additional credits.
+Why is a cow called cow, but the meat beef? Pig and pork. Sheep and mutton. Deer and venison. But chicken stays chicken! It all goes back to 1066. England spoke Old English. Across the sea: French. William, Duke of Normandy, gathered his soldiers and sailed. They crossed the English Channel together. William became England's new king. With him came a ruling class that spoke Norman French. And they loved rich banquets, with plenty of carefully prepared meat. Meanwhile, ordinary English-speaking farmers looked after the living animals. They called them cow, pig, sheep, and deer. But the dishes used French-derived words: boeuf, porc, mouton, venaison— beef, pork, mutton, venison. Over centuries, those words stuck. But what about chicken? Chicken stayed chicken—even at a feast. This pattern was never a universal rule.
 ```
 
-## 2. OUR ORIGINAL ENGLISH NARRATION (not to be rendered as on-screen map subtitles)
-At present these beat time ranges are **estimated**, pending the duration of actual generated voice audio. They are NOT guaranteed phoneme-aligned cues.
+## 4. Монтажная таблица каждой секунды — конкретные движения, точные объекты, слова
 
-- **00:00–00:05** Why is a cow called cow, but its meat called beef?
-- **00:05–00:09** And why do pigs become pork, and sheep become mutton?
-- **00:09–00:14** To find out, fly across the Atlantic to England in 1066.
-- **00:14–00:20** William, Duke of Normandy, invaded from France and conquered the country.
-- **00:20–00:25** His nobles spoke French, while many farmers still spoke English.
-- **00:25–00:29** Over time, this left a curious pattern.
-- **00:29–00:34** Farmers used older English names for animals: cow, pig, sheep.
-- **00:34–00:40** At the table, French-derived meat names became common: beef, pork, mutton.
-- **00:40–00:44** But nobody renamed everything in one day.
-- **00:44–00:48** English changed gradually, over centuries.
-- **00:48–00:51** And the rule has exceptions.
-- **00:51–00:55** Chicken? It's still chicken when you eat it.
-- **00:55–00:59** So beef is more than dinner. It's history on your plate.
+Система координат: экран 1080×1920, X слева направо в процентах ширины, Y сверху вниз в процентах высоты. `POP`=появление с 90→105→100% за 0.24s, `HOLD`=удержание, `FLY`=easeInOut камеры. При 30 fps каждая строка описывает **30 последовательных кадров** 0–29 с плавными изменениями, а не 30 статичных картинок.
 
-### Full standalone narration
-Why is a cow called cow, but its meat called beef? And why do pigs become pork, and sheep become mutton? To find out, fly across the Atlantic to England in 1066. William, Duke of Normandy, invaded from France and conquered the country. His nobles spoke French, while many farmers still spoke English. Over time, this left a curious pattern. Farmers used older English names for animals: cow, pig, sheep. At the table, French-derived meat names became common: beef, pork, mutton. But nobody renamed everything in one day. English changed gradually, over centuries. And the rule has exceptions. Chicken? It's still chicken when you eat it. So beef is more than dinner. It's history on your plate.
+| Время | Номера кадров | Озвучка именно здесь (ориентир до TTS) | Что двигается / сколько видно / в какой точке |
+|---:|---:|---|---|
+| 00:00–00:59 | 0000–0029 | Why is a cow | Спутниковая карта Северной Америки. За 0.00–0.55 с камера приближается к центральным США с масштаба материка. Ни животных, ни заголовка ещё нет; 1 фон. |
+| 01:00–01:59 | 0030–0059 | called cow, but | Появляется белая вырезка коровы ×1 в x=38%,y=27%, лёгкий pop (0.22 с); под ней жёлтое COW ×1. Камера медленно zoom +4%; всего 1 животное. |
+| 02:00–02:59 | 0060–0089 | the meat beef? | Под коровой появляется свинья ×1 x=38%,y=38% и PIG ×1; вправо от коровы проведена стрелка x=49→70% и возникает первая красная пара BEEF с маленькой иконкой мяса. Итого 2 животные и 1 мясная пара. |
+| 03:00–03:59 | 0090–0119 | Pig and pork. | Овца ×1 x=38%,y=49% + SHEEP; второй тонкой стрелкой от PIG появляется красное PORK + круглая иконка еды. Итого 3 животных, 2 мясные пары. |
+| 04:00–04:59 | 0120–0149 | Sheep and mutton. | Олень ×1 x=38%,y=60% + DEER; третья стрелка SHEEP→MUTTON, третья красная подпись и иконка. Общее: 4 животных, 3 мясные пары. |
+| 05:00–05:59 | 0150–0179 | Deer and venison. | Четвёртая стрелка DEER→VENISON; справа четвёртая красная подпись и круглая иконка. Лёгкий подъём камеры на карте до y≈47%. Общее: 4 животных, 4 пары. |
+| 06:00–06:59 | 0180–0209 | But chicken | Курица ×1 x=38%,y=71%, жёлтая CHICKEN под ней. Пятый ряд появляется снизу; камера слегка отъезжает, чтобы весь столбик поместился. Общее: 5 животных, 4 пары. |
+| 07:00–07:59 | 0210–0239 | stays chicken! | Пятая стрелка в направлении x=72%, там красное CHICKEN (без иностранного аналога); лёгкий bounce у курицы. Теперь пять законченных строк. Подписи сверху вниз COW, PIG, SHEEP, DEER, CHICKEN. |
+| 08:00–08:59 | 0240–0269 | [Пауза 0,3–0,6 с] | Показать ВСЕ 5 пар одновременно не менее 0.7 с: 5 белых силуэтов слева, 5 animal names жёлтым, 5 красных meat names справа и 5 тонких белых стрелок; карта плавно уменьшается. Внешний текст не нужен. |
+| 09:00–09:59 | 0270–0299 | It all goes | Все элементы остаются сгруппированными в центре США, камера резко отъезжает до вида материка, затем начинает перелёт через Атлантику вправо-восток. Начало sound whoosh. |
+| 10:00–10:59 | 0300–0329 | back to 1066. | В конце перелёта North America уходит влево, появляется Европа. За 0.6 с плавное превращение подложки в бежевую старинную карту; крупная белая дата 1066 на y≈37% (0.3 с), пара слов полностью исчезает. |
+| 11:00–11:59 | 0330–0359 | England spoke | Рамка карты центрируется на Англии и северной Франции. Красная заливка фигуры ENGLAND с чёрным контуром на карте, scale 1.2→1.35; без отдельных людей. |
+| 12:00–12:59 | 0360–0389 | Old English. | Внутри Англии появляется светлый значок речи ×1 и жёлтая метка OLD ENGLISH x=62%,y=35%; карта чуть приближается, красный контур подчёркнут. |
+| 13:00–13:59 | 0390–0419 | Across the sea: | Камера отъезжает так, чтобы Англия осталась сверху, а Франция снизу. Французская географическая область окрашивается насыщенно-синим; внизу второй значок речи ×1. |
+| 14:00–14:59 | 0420–0449 | French. | Возле синей территории появляется надпись FRENCH жёлтым. Две территориальные цветные области (красная и синяя), 2 речевые метки. Поле Ла-Манша видно между ними. |
+| 15:00–15:59 | 0450–0479 | William, Duke of | Карта переходит в крупный план Нормандии на северном побережье Франции, старинный стиль. Отдельный район NORMANDY выделен синими диагональными линиями внутри обводки. |
+| 16:00–16:59 | 0480–0509 | Normandy, gathered his | На заштрихованной Нормандии pop вырезки Вильгельма ×1 в x=57%,y=44%, держащего меч/жезл, за ним карта. Под ним маленькая табличка WILLIAM OF NORMANDY. |
+| 17:00–17:59 | 0510–0539 | soldiers and | Камера чуть приближается к портрету; 1 вырезка героя увеличивается 1.0→1.12, снизу появляются 2 мелкие солдатские вырезки по бокам x=37/76%. Нормандия остаётся синей. |
+| 18:00–18:59 | 0540–0569 | sailed. | Камера начинает панораму к Ла-Маншу, портрет уходит вверх за край, 3 мини-корабля PNG появляются у нормандского побережья. Первая четверть жёлтой маршрутной линии рисуется. |
+| 19:00–19:59 | 0570–0599 | They crossed | 3 корабля сдвигаются на север на 20–25% пути; белая пенная/волновая линия за ними; карта следует за кораблями, синяя Нормандия уходит вниз. |
+| 20:00–20:59 | 0600–0629 | the English Channel | Корабли продолжают путь по диагонали вверх, пересекают центральную часть пролива; 1 средневековое знамя на центральном корабле, маршрут прорисован на 80%. |
+| 21:00–21:59 | 0630–0659 | together. | Все три корабля достигают южного берега Англии; жёлтая стрелка фиксируется у точки HASTINGS (приблизительно), Англия подсвечивается красной вспышкой на 0.25 с. |
+| 22:00–22:59 | 0660–0689 | William became | Быстрая (0.3 с) смена композиции: карта отходит, вперёд появляется огромная вырезка Вильгельма на песочно-бежевой бумажной плоскости (бёдра не обязательно видны), x=52%,y=55%; корона над головой. |
+| 23:00–23:59 | 0690–0719 | England's new king. | Корона мягко садится на голову героя; за его спиной ещё 2 военных сопровождающих в слоях, камера zoom +12% к лицу. Никаких 3D киноэпизодов. |
+| 24:00–24:59 | 0720–0749 | With him came | Match-cut: король уменьшается и уходит влево, выходят 3 дворянина из группы ×7 на ровной песочной карте-подложке; расположить ряд в нижней половине. |
+| 25:00–25:59 | 0750–0779 | a ruling class | Слева+справа добавляются ещё 4 дворянина (всего 7), средневековые авторские cutouts, женщины и мужчины. Масштаб группы 75% → 95%, фон не меняется. |
+| 26:00–26:59 | 0780–0809 | that spoke | Сверху над центральным героем всплывает речевой пузырь BONJOUR; не использовать случайные слова. Тени PNG мягкие, текст исходно маленький и белый/жёлтый. |
+| 27:00–27:59 | 0810–0839 | Norman French. | Надпись BONJOUR фиксируется на 0.6 с и мягко исчезает; камера отъезжает, опуская группу дворян ближе к нижней трети (x~52%,y~66%), готовит место для стола. |
+| 28:00–28:59 | 0840–0869 | [Пауза 0,3 с] | Вывести всех 7 героев без дополнительных надписей, нет пустого слайда: шевеление наклеек 2–3 px параллакс, лёгкий zoom out. |
+| 29:00–29:59 | 0870–0899 | And they loved | Перед дворянами появляется 1 длинный прямоугольный стол со светлой скатертью на y~68%, ширина 64% кадра, края в перспективе. Дворяне остаются за столом, не исчезают. |
+| 30:00–30:59 | 0900–0929 | rich banquets, | Над героями ряд из 5 иконок приготовленного мяса (слева направо), каждая появляется попеременно через 0.15 с, размер 4–6% ширины. Пиршество пока почти пустое. |
+| 31:00–31:59 | 0930–0959 | with plenty of | Большая рисованная рука-указатель ×1 у верхнего ряда иконок проходит слева направо, первые 2 блюда падают на стол, масштаб 1.1→1.0. |
+| 32:00–32:59 | 0960–0989 | carefully prepared | Ещё 2 блюда падают на стол точно под текстовыми подсказками. Теперь на столе четыре тарелки и 7 дворян; рука исчезает. |
+| 33:00–33:59 | 0990–1019 | meat. | Пятое блюдо завершает сервировку, стол выглядит полным. Камера держит всю сцену в нижней половине, оставляя над столом воздух. |
+| 34:00–34:59 | 1020–1049 | Meanwhile, | Камера быстро панорамирует влево по тому же бежевому пространству, стол уходит вправо вне кадра; появляется крестьянин ×1 с посохом, x=42%,y=62%. |
+| 35:00–35:59 | 1050–1079 | ordinary English-speaking | Рядом с крестьянином справа появляется корова ×1 в x=68%,y=65%; медленное увеличение масштаба всей группы на 6%. |
+| 36:00–36:59 | 1080–1109 | farmers looked after | По очереди ещё две вырезки животных: свинья ×1 ближе к низу кадра и овца ×1 справа; всего уже 3 животных и 1 крестьянин. |
+| 37:00–37:59 | 1110–1139 | the living animals. | Олень ×1 выше овцы или дальше по глубине; всего 4 животных + 1 крестьянин. Параллакс по бежевой карте: передние объекты 1.03, задние 1.00. |
+| 38:00–38:59 | 1140–1169 | They called them | Камера отъезжает: крестьянин+4 животных слева x=17–42%, дворяне+накрытый стол справа x=60–90%. Над левыми появляется белая первая строка COW в x≈25%,y=29%. |
+| 39:00–39:59 | 1170–1199 | cow, pig, | Под COW белой строкой появляется PIG; сцена на общем фоне, важно не превращать слова в отдельные слайды. Группа дворян продолжает стоять справа. |
+| 40:00–40:59 | 1200–1229 | sheep, and deer. | Ниже появляются две белые строки SHEEP и DEER (четыре строки слева, межстрочный шаг 8% высоты, диапазон y=25–49%). |
+| 41:00–41:59 | 1230–1259 | But the dishes | Четыре английских слова остаются слева, камера слегка приближается к тексту, сверху над второй колонкой x≈53% тонкая вертикальная направляющая, готовит появление старофранцузских корней. |
+| 42:00–42:59 | 1260–1289 | used French-derived words: | Над правой частью рядом со строкой COW появляется жёлтое BOEUF в x≈51%,y≈25%, по слову фоном короткая вспышка на 0.15 с. |
+| 43:00–43:59 | 1290–1319 | boeuf, porc, | Второй жёлтой строкой появляется PORC рядом с PIG; одновременно рядом с BOEUF справа первая современная красная надпись BEEF в x≈80%. Выстроить три колонки. |
+| 44:00–44:59 | 1320–1349 | mouton, venaison— | Ниже жёлтые MOUTON и VENAISON напротив SHEEP и DEER; все 4 исторические французские формы закреплены в среднем столбце. 7 дворян+стол остаются внизу. |
+| 45:00–45:59 | 1350–1379 | beef, pork, | Красные PORK и MUTTON появляются в правом столбце напротив второй и третьей строки. Медленный zoom out на 3% ради читаемости. |
+| 46:00–46:59 | 1380–1409 | mutton, venison. | Красное VENISON завершает четвёртую строку. Полная таблица 4×3: белые COW/PIG/SHEEP/DEER, жёлтые BOEUF/PORC/MOUTON/VENAISON, красные BEEF/PORK/MUTTON/VENISON. Внизу фермер с 4 животными слева, дворяне и стол справа. |
+| 47:00–47:59 | 1410–1439 | Over centuries, | Полная таблица держится ~0.6 с для понимания; снизу всплывает короткая маленькая OVER CENTURIES. Затем слова растворяются в фоне (0.35 с). |
+| 48:00–48:59 | 1440–1469 | those words | Резкая смена крупности (не новая тема): из таблицы вырастает авторская нарисованная курица, светло-рыжая, крупно x≈48%,y≈60% и 58–65% высоты экрана, фон песочный размытый. |
+| 49:00–49:59 | 1470–1499 | stuck. | Курица крупно на экране, глаз и клюв заметны; короткая пульсация CHICKEN на её уровне и едва заметный смешной наклон головы. |
+| 50:00–50:59 | 1500–1529 | But what | Из-за верхней границы кадра высовываются 2 дворянских лица слева, ещё 2 справа, все именно отдельные вырезки ×4; они как бы разглядывают курицу. |
+| 51:00–51:59 | 1530–1559 | about chicken? | Композиция: крупная курица снизу + четыре лица вокруг, один дворянин в короне; короткая подпись CHICKEN? без длинного текста, акцент на комедийную реакцию. |
+| 52:00–52:59 | 1560–1589 | Chicken stayed chicken— | Бумажный диагональный wipe справа налево (0.4 с) открывает авторский рисунок средневекового обеденного зала с тремя готическими окнами. Люди размещаются вокруг стола. |
+| 53:00–53:59 | 1590–1619 | even at a feast. | Зал полностью виден: 1 длинный стол по низу (y≈60–80%), 5 дворян за столом, 3 приготовленных блюда, 2 знамени. Курица маленькая у переднего края стола — ПОКА НЕ БЕЖИТ. |
+| 54:00–54:59 | 1620–1649 | This pattern | За столом персонаж делает лёгкое движение рукой или головой; курица спрыгивает к нижней части x≈52%,y≈75%. Сцена не превращается в статичную открытку. |
+| 55:00–55:59 | 1650–1679 | was never | Маленькая свинья может промелькнуть у стола справа, а курица начинает побег; camera low pan ≈6% вправо; добавлять субтитр только слов диктора. |
+| 56:00–56:59 | 1680–1709 | a universal | Курица бежит быстро справа налево, затем разворачивается на 180° к правому краю; использовать GIF/PNG frame sequence или небольшие 2D повороты/скольжение. |
+| 57:00–57:59 | 1710–1739 | rule. | Курица окончательно убегает вправо, камера слегка следует, длинный стол остаётся слева в глубине; завершаем прямо действием на 59.00, без затемнения, CTA и титульной заставки. |
+| 58:00–58:59 | 1740–1769 | [Финальная пауза] | Последние 0.2–0.4 с курица ещё в движении, никаких новых подписей и логотипов. Последний кадр на t=58.966; файл обрезается строго на 59.000 с. |
 
-## 3. 59-SECOND DETAILED EXECUTION CHECKLIST
-This is manually checked after AI Director creates its initial slides. The Director may combine slides or mark some beats skipped; correct them in storyboard and check the total duration before export.
+## 5. Чётко разделяем производство: Mapimator не делает весь референс
+Официальная инструкция подтверждает: AI Director из текстового задания создаёт карту, камеры, контуры, маршруты, слова, модели; **самостоятельно не создаёт PNG людей и животных**. Инструмент Image загружает PNG/GIF, прикрепляет к координатам карты; по этой причине нельзя ждать, что AI Director сам построит полноценную постановочную сцену с 7 дворянами за столом и интерьером замка. Все эти кадры **в нашей раскадровке обязательны** и создаются авторскими отдельно. Источник: https://mapimator.com/help-center/ai-director-map-animation и https://mapimator.com/help-center/add-text-images-gifs-to-map
 
-| Second | Map/graphic action |
-|---:|---|
-| 00–01 | 0→1 Start wide on North America; rapid continuous zoom toward eastern USA. |
-| 01–02 | 1→2 Maintain satellite-style map, subtle motion; prepare label area. |
-| 02–03 | 2→3 Animate yellow COW text on map. |
-| 03–04 | 3→4 Draw COW → BEEF line and red BEEF word. |
-| 04–05 | 4→5 Slight zoom out; leave animal picture space. |
-| 05–06 | 5→6 Add PIG → PORK comparison on map. |
-| 06–07 | 6→7 Move labels slightly up; add SHEEP. |
-| 07–08 | 7→8 Animate SHEEP → MUTTON line. |
-| 08–09 | 8→9 Consolidate three word pairs; zoom out to Atlantic framing. |
-| 09–10 | 9→10 Begin fast eastward pan across Atlantic. |
-| 10–11 | 10→11 Continue intercontinental eastward geographic flight. |
-| 11–12 | 11→12 British Isles enter map frame; coastlines stay recognisable. |
-| 12–13 | 12→13 Zoom toward English Channel; reveal date 1066. |
-| 13–14 | 13→14 Center England + Normandy with England on upper map. |
-| 14–15 | 14→15 Outline England and animate dark red fill inside contour. |
-| 15–16 | 15→16 Outline Normandy and animate blue regional fill. |
-| 16–17 | 16→17 Softly pulse outlines England red and Normandy blue. |
-| 17–18 | 17→18 Zoom toward Normandy; label WILLIAM OF NORMANDY. |
-| 18–19 | 18→19 Hold blue Normandy; leave space for ruler sticker. |
-| 19–20 | 19→20 Draw golden arrow northwest across the English Channel. |
-| 20–21 | 20→21 Camera follows Channel arrow toward southern England. |
-| 21–22 | 21→22 Arrive near Hastings on map, arrow lands. |
-| 22–23 | 22→23 Pulse red southern England fill. |
-| 23–24 | 23→24 Show NORMAN CONQUEST — 1066. |
-| 24–25 | 24→25 Smooth zoom out just enough for two England locations. |
-| 25–26 | 25→26 Add court marker near south-east England. |
-| 26–27 | 26→27 Add English villages / farmers marker elsewhere on England. |
-| 27–28 | 27→28 Connect two locations with subtle line; no static slide. |
-| 28–29 | 28→29 Smooth pan inward across England. |
-| 29–30 | 29→30 Show COW by first marker; animal PNG placeholder. |
-| 30–31 | 30→31 Add PIG by next marker; animal PNG placeholder. |
-| 31–32 | 31→32 Add SHEEP by third marker; animal PNG placeholder. |
-| 32–33 | 32→33 Zoom out slightly to show three older English words together. |
-| 33–34 | 33→34 Begin pan toward court marker. |
-| 34–35 | 34→35 Red BEEF appears with arrow from COW. |
-| 35–36 | 35→36 Red PORK appears with arrow from PIG. |
-| 36–37 | 36→37 Red MUTTON appears with arrow from SHEEP. |
-| 37–38 | 37→38 Three term pairs visible simultaneously; labels never overlap. |
-| 38–39 | 38→39 Subtle zoom out; keep map legible. |
-| 39–40 | 39→40 Bring English Channel + Normandy into view. |
-| 40–41 | 40→41 Flash short NOT OVERNIGHT caption. |
-| 41–42 | 41→42 Map timeline fades up, mark 1066. |
-| 42–43 | 42→43 Animate timeline forward to 1200. |
-| 43–44 | 43→44 Animate timeline forward to 1400. |
-| 44–45 | 44→45 Reveal OVER CENTURIES title as red/blue fills stay on map. |
-| 45–46 | 45→46 Slow east-west micro-pan on map of England. |
-| 46–47 | 46→47 Shrink the timeline; keep map visible. |
-| 47–48 | 47→48 Smooth center on England countryside without cinematic cut. |
-| 48–49 | 48→49 Pop ONE EXCEPTION... on map. |
-| 49–50 | 49→50 Leave screen center clear for chicken PNG sticker. |
-| 50–51 | 50→51 Slight camera zoom-in; title starts transitioning. |
-| 51–52 | 51→52 On-screen CHICKEN → CHICKEN, two contrasting words. |
-| 52–53 | 52→53 Hold words; subtle playful pulse. |
-| 53–54 | 53→54 Soft micro-zoom and emphasize identical words. |
-| 54–55 | 54→55 Prepare return flight by beginning zoom-out. |
-| 55–56 | 55→56 Fast camera zoom out from England to Europe and Atlantic. |
-| 56–57 | 56→57 Fly west across the Atlantic toward North America. |
-| 57–58 | 57→58 North America centered, show COW → BEEF. |
-| 58–59 | 58→59 On-screen HISTORY ON YOUR PLATE, hold with subtle map motion. |
+### 5A. ВСТАВЛЯТЬ В MAPIMATOR AI DIRECTOR ТОЛЬКО ЭТО (картографический проход, 1 credit)
+```text
+00:00 Start a 9:16 continuous satellite map shot centred on North America. Smooth fast zoom to western-central USA over 2 seconds; hold stable camera for a five-row information overlay (cow/pig/sheep/deer/chicken left and meat words right will be added as separate image/text elements after map construction). Maintain visible geography behind them until 00:09.
+00:09–00:11 One single fast geographic camera fly east over the Atlantic from North America to British Isles, no full-screen fade or independent AI B-roll. End by switching from satellite to a light BEIGE parchment map style. Hold 1066 for half a second.
+00:11–00:15 Britain + northern France framed simultaneously on parchment map. Outline England bold black and fill saturated RED. Outline French geographic region dark BLUE; when near Normandy, blue hatch will be added manually. Show short label OLD ENGLISH next to England and FRENCH next to northern France.
+00:15–00:19 Zoom toward NORMANDY at the southern shore of English Channel, dark BLUE region and pale BLUE outline, space above it for a King William illustrated PNG added later; keep France label readable in the distance.
+00:19–00:22 Draw bright yellow invasion arrow starting from the Normandy coast, heading north-west over the English Channel and landing near Hastings, southern England. Smooth camera follows arrow; pause on landing at 00:22. England RED remains readable.
+00:22–00:24 Keep red England map on hold as background for a large portrait cutout (to be added later). Do not create fake film scenes.
+00:24–00:59 Do not hallucinate medieval people or cinematic scenes. Keep the parchment/map background; assets for noble group, feast, farmer, comparison and chicken are overlaid as independent illustrations in editing after export. Do not generate random country labels, AI characters or drone flying imagery. Total map animation EXACTLY 59 seconds. No automatically generated speech, soundtrack or unrelated intro/outro.
+```
 
-## 4. ADD MANUALLY AS IMAGE OVERLAYS (NOT an AI Director promise)
-- Cow image, pig image, sheep image: original transparent PNGs, separate.
-- King William portrait or historical illustration: licensed/public-domain where verified, otherwise original artwork; place in Normandy as floating sticker.
-- Noble and farmer cutout PNGs, mini medieval ships for arrow crossing English Channel.
-- Chicken image or cartoon sticker for final joke. Keep same consistent illustration style and drop shadow.
-- In Mapimator: Image → upload PNG/GIF, anchor the overlay to a coordinate and edit timing/size. If these overlays prove awkward, export the animated map separately and add them in an editor; preserve exact map style.
-- Do not use screenshots or music from GeoGlobeTales; look-and-motion reference only.
+### 5B. Команда монтажному / AI-видео редактору после картографического экспорта (оригинальные ассеты по слоям)
+```text
+Use map background from Mapimator exactly 00:00-00:24 plus a neutral parchment beige scene background 00:24-00:50 and an original illustrated medieval banquet hall 00:50-00:59. DO NOT create separate cinematic generative B-roll. Draw and animate exactly the sticker assets specified in the 13-shot and 59-second tables. First shot: five rows of animal cutouts/word pairs with arrows, not just three. England red, France blue, Normandy hatched. Three boats cross Channel, William cutout. Then seven Norman nobles, one white table, five dishes falling on table, a farmer with cow/pig/sheep/deer. Then 4x3 column etymology and huge chicken cutout with four peeking faces. Wipe to banquet room, chicken runs out at the end. Use original artwork and keep source editing cadence, but do not reuse source footage or assets. Animations and images follow each exact second, total 59.000s 30fps.
+```
 
-## 5. ACCEPTANCE / EXPORT
-- [ ] Total **exactly 59 seconds**, 9:16. Mapimator automatically timed slides must be manually inspected.
-- [ ] 00:00-00:09 word comparisons over North America; 00:09-00:17 Atlantic geographic flight; 00:14-00:25 England red / Normandy blue and William invasion arrow; rest remains map-led.
-- [ ] Labels placed on/over maps and colour matched. Country fills recognizable, not misleading borders.
-- [ ] All texts legible in portrait format; no unrelated cinematic scenes.
-- [ ] Narration is NOT added by AI Director. Voice added later; map transitions will be adjusted to real audio.
-- [ ] Check Script timing status; fix Late, Skipped, On time with cut in editor.
-- [ ] Free trial export may have watermark and limited resolution. Do NOT publish paid Creator Rewards content from free-only trial without checking commercial-use rules.
-- [ ] User reviews result before any publishing.
+## 6. Проверка после сборки (строгая)
+- [ ] 59.000s; 1770 output frames at 30fps; 1080×1920; English VO is full and not silently chopped
+- [ ] В 0–9 **пять** животных и пять мясных соответствий, не три, все вместе видны перед перелётом
+- [ ] С 11–24 цветные территории + Вильгельм + ровно 3 корабля + 1 стрелка, карта естественно непрерывна
+- [ ] С 24–50 НЕ просто карта: вырезки группы, пир, фермер, сравнение 4×3 слов
+- [ ] С 47–59 крупная комичная курица, люди смотрят на неё, занавес / зал с пиром и побег курицы
+- [ ] Исторические границы и надписи не представлены как точные геополитические карты XI века без источника
+- [ ] Оригинальные PNG/illustrations; нет неразрешённого копирования кадров и звука GeoGlobeTales
+- [ ] Google TTS добавлен отдельно; не заявлять посекундную синхронизацию до фактического WAV и QA
+- [ ] Продюсер утвердил MP4 до публикации
 
-## 6. HOW TO RUN
-1. Open https://mapimator.com/studio
-2. New project → **Mobile 9:16** → AI Director purple prompt bar. If in existing project, sparkles menu → AI Director.
-3. Paste only the `COPY THIS ENTIRE PROMPT` text and press Enter/arrow. One AI Director credit may be used.
-4. Review **Storyboard** and **Script timing**; fix anything Late/Skipped.
-5. Add PNG stickers separately with Image tool. Export MP4 only after preview (free plan typically includes only 1 export/month and watermark).
-6. Download and share exported MP4 with ChatGPT for visual comparison and a final voice/captions timing pass.
+## 7. Оригинальные справочные визуалы для ручной проверки
+`tiktok_analysis/contact_0_16.jpg`, `contact_16_32.jpg`, `contact_32_48.jpg`, `contact_48_64.jpg` — листы собственного анализа пользовательского MP4. Не публиковать исходные кадры как свои.
+
+## 8. Быстрый последовательный контроль перед затратой кредитов
+Сначала проверить вручную 13-блочную раскадровку и подготовленные иллюстрации → только потом запускать AI Director карты → собрать вырезки → подогнать WAV → утвердить → экспорт. Не тратить новые кредиты на повторение заведомо неполного сценария.
+
+> **Разница с прежним 04-файлом:** предыдущая команда ошибочно требовала карты и далее после появления дворян, пропускала венисон в первых 10 сек и не содержала сцену средневекового пиршества. Настоящий файл полностью заменяет её.
