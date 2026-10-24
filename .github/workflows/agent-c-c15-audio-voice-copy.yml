@@ -4,6 +4,8 @@ on:
     branches: [deepsyq-platform]
     paths:
       - 'app/src/main/assets/audio-studio.js'
+      - 'server/speech.js'
+      - 'tests/speech-unit.mjs'
       - 'tests/agent-c-c15-audio-voice-copy.spec.mjs'
       - '.github/workflows/agent-c-c15-audio-voice-copy.yml'
   workflow_dispatch:
@@ -27,6 +29,8 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: node --check app/src/main/assets/audio-studio.js
       - run: node --check tests/agent-c-c15-audio-voice-copy.spec.mjs
+      - name: Server TTS consent, paid-tier and provider adapter tests
+        run: node --test tests/speech-unit.mjs
       - run: npx playwright install --with-deps chromium firefox webkit
       - name: Four locales, real browsers, disabled and enabled synthetic config, no paid calls
         run: npx playwright test tests/agent-c-c15-audio-voice-copy.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2
