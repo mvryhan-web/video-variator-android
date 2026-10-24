@@ -22,11 +22,12 @@ export function generationReadiness(env={}){
    (model.id===MODELS[kind]?.id||explicitlyAllowedModels.includes(model.id))&&
    generationFeatureEnabled(kind,model.provider,env)&&
    !!(model.provider==='BytePlus'?env.BYTEPLUS_API_KEY:
-      model.provider==='Google'?env.GEMINI_API_KEY:null)));
+      model.provider==='Google'?env.GEMINI_API_KEY:
+      model.provider==='OpenAI'?env.OPENAI_API_KEY:null)));
  const gates=[
   {id:'database',label:'PostgreSQL',ready:!!env.DATABASE_URL,required:true},
   {id:'jwt',label:'Server JWT signing key',ready:!!env.APP_JWT_SECRET,required:true},
-  {id:'provider',label:'At least one AI provider key',ready:!!(env.GEMINI_API_KEY||env.BYTEPLUS_API_KEY),required:true},
+  {id:'provider',label:'At least one AI provider key',ready:!!(env.GEMINI_API_KEY||env.BYTEPLUS_API_KEY||env.OPENAI_API_KEY),required:true},
   {id:'byteplusMedia',label:'BytePlus approved media hosts',ready:!env.BYTEPLUS_API_KEY||bytePlusDownloadsConfigured(env.BYTEPLUS_MEDIA_HOSTS),required:!!env.BYTEPLUS_API_KEY},
   {id:'pricing',label:'Approved model pricing + currency',ready:pricingCurrenciesExplicit,required:true},
   {id:'studioEnabled',label:'Generation Studio enabled',ready:env.AI_STUDIO_ENABLED==='true',required:true},
@@ -63,7 +64,7 @@ export function generationReadiness(env={}){
   launchReady:blockers.length===0,
   blockers,
   gates,
-  providers:{googleConfigured:!!env.GEMINI_API_KEY,bytePlusConfigured:!!env.BYTEPLUS_API_KEY},
+  providers:{googleConfigured:!!env.GEMINI_API_KEY,bytePlusConfigured:!!env.BYTEPLUS_API_KEY,openAIConfigured:!!env.OPENAI_API_KEY},
   billing:{mode:billingRuntime.mode,liveAiPaymentsImplemented:true,liveAiPaymentsEnabled:billingRuntime.livePaymentsEnabled&&stripeWebhookConfigured(env),creditPackCount:billing.packs.length,rateCount:billing.rates.length},
   pricing:{configured:pricing.configured,currenciesExplicit:pricingCurrenciesExplicit},
   storage:{configured:storage.configured},

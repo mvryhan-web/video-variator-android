@@ -22,9 +22,12 @@ function scenario(changes={},receipt=proof){
  return {args:{...core,wallet,provider,...changes},counts:()=>({calls,claims})};
 }
 test('confirmed LIVE purchased source authorizes ONE provider call with persisted user consent and quote',async()=>{
- const s=scenario(),result=await submitPurchasedProviderRequest(s.args);
+ let options;const s=scenario(),originalProvider=s.args.provider;s.args.provider=async(request,received)=>{options=received;return originalProvider(request,received);};const result=await submitPurchasedProviderRequest(s.args);
  assert.equal(result.operation,'one-accepted-provider-task');
  assert.deepEqual(s.counts(),{calls:1,claims:1});
+ assert.equal(options.authorization.authorized,true);
+ assert.equal(options.authorization.scope,'purchased_customer_only');
+ assert.equal(options.authorization.modelId,model.id);
 });
 test('fail closed BEFORE purchased claim or provider on untrusted price, job, identity and consent',async()=>{
  const invalid=[

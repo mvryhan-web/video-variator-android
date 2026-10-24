@@ -34,7 +34,7 @@ test('requested extra models appear in the picker catalog but fail closed until 
  for(const label of requested){
   const model=MODEL_CATALOG.find(m=>m.label===label);
   assert.ok(model,'catalog includes '+label);
-  const wired=['Nano Banana 2.1','Nano Banana Pro'].includes(label);
+  const wired=['ChatGPT Image 2.5','ChatGPT Image 2.5 Flare','GPT Image 2','Nano Banana 2.1','Nano Banana Pro'].includes(label);
   assert.equal(model.adapter,wired,label+(wired?' is routed through its verified API adapter':' cannot be enabled before its adapter exists'));
   if(wired)assert.doesNotThrow(()=>validateGeneration({kind:model.kind,model:model.id,prompt:'safe test',consent:true,ratio:model.ratios[0]}));
   else assert.throws(()=>validateGeneration({kind:model.kind,model:model.id,prompt:'safe test',consent:true,ratio:model.ratios[0]}),/INVALID_REQUEST/);

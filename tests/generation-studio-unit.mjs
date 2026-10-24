@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {studioConfig} from '../server/generation-studio.js';
+import {dispatchGeneration,studioConfig} from '../server/generation-studio.js';
 import {validateGeneration,generateGoogle,pollGoogle,safeGoogleUrl} from '../server/generation-provider.js';
 const request={kind:'video',prompt:'Ocean at sunset',ratio:'16:9',consent:true,references:[]};
 test('no paid request without explicit setup and durable call quota',()=>{assert.equal(studioConfig({}).enabled,false);for(const n of ['0','21','NaN'])assert.equal(studioConfig({AI_STUDIO_ENABLED:'true',GEMINI_API_KEY:'test',DATABASE_URL:'test',ADMIN_EMAIL:'test',AI_STUDIO_MAX_CALLS:n}).enabled,false);const c=studioConfig({AI_STUDIO_ENABLED:'true',GEMINI_API_KEY:'secret',DATABASE_URL:'secret',ADMIN_EMAIL:'owner',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image'});assert.equal(c.models.find(m=>m.kind==='image').enabled,true);assert.equal(c.models.find(m=>m.kind==='video').enabled,false);assert.ok(!JSON.stringify(c).includes('secret'));});
@@ -38,6 +38,26 @@ test('Nano Banana models still require an explicit Studio model allowlist',()=>{
  const base={AI_STUDIO_ENABLED:'true',GEMINI_API_KEY:'fixture',DATABASE_URL:'fixture',ADMIN_EMAIL:'owner',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image'};
  assert.equal(studioConfig(base).catalog.find(m=>m.id==='gemini-nano-banana-2.1').enabled,false);
  assert.equal(studioConfig({...base,AI_STUDIO_ALLOWED_MODELS:'gemini-nano-banana-2.1'}).catalog.find(m=>m.id==='gemini-nano-banana-2.1').enabled,true);
+});
+test('OpenAI model catalog uses its own server key and explicit allowlist without exposing the key',()=>{
+ const env={AI_STUDIO_ENABLED:'true',OPENAI_API_KEY:'openai-secret-fixture',DATABASE_URL:'fixture',ADMIN_EMAIL:'owner',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',AI_STUDIO_ALLOWED_MODELS:'gpt-image-2.5-flare'};
+ const config=studioConfig(env);
+ assert.equal(config.enabled,true);
+ assert.equal(config.catalog.find(m=>m.id==='gpt-image-2.5-flare').enabled,true);
+ assert.equal(config.catalog.find(m=>m.id==='gpt-image-2.5-sunburst').enabled,false);
+ assert.equal(JSON.stringify(config).includes('openai-secret-fixture'),false);
+});
+test('GPT Image dispatch uses its server-only adapter and requires purchased authorization plus durable storage',async()=>{
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMQCegBAAFsAPH6cDjBAAAAAElFTkSuQmCC','base64');
+ const request=validateGeneration({kind:'image',model:'gpt-image-2.5-flare',prompt:'A blue flower',ratio:'1:1',resolution:'1K',outputFormat:'png',consent:true});
+ const storage={AI_OBJECT_STORAGE_ENABLED:'true',AI_OBJECT_STORAGE_ENDPOINT:'https://storage.example.com',AI_OBJECT_STORAGE_BUCKET:'assets',AI_OBJECT_STORAGE_REGION:'auto',AI_OBJECT_STORAGE_ACCESS_KEY_ID:'testaccesskey',AI_OBJECT_STORAGE_SECRET_ACCESS_KEY:'test-secret-access-key'};
+ let calls=0;
+ const fetcher=async(url,options)=>{calls++;assert.equal(url,'https://api.openai.com/v1/images/generations');assert.equal(options.redirect,'error');return {ok:true,status:200,json:async()=>({data:[{b64_json:png.toString('base64')}],size:'1024x1024',quality:'high'})};};
+ await assert.rejects(()=>dispatchGeneration(request,{env:{OPENAI_API_KEY:'fixture'},fetcher}),/CUSTOMER_PAID_GENERATION_REQUIRED/);
+ assert.equal(calls,0);
+ const authorization={scope:'purchased_customer_only',authorized:true,modelId:request.model};
+ const result=await dispatchGeneration(request,{env:{OPENAI_API_KEY:'fixture',...storage},authorization,fetcher});
+ assert.equal(result.mime,'image/png');assert.deepEqual(result.bytes,png);assert.equal(calls,1);
 });
 test('provider API key never sent to arbitrary or redirected download URLs',async()=>{assert.throws(()=>safeGoogleUrl('https://evil.test/file'));assert.throws(()=>safeGoogleUrl('http://generativelanguage.googleapis.com/file'));let calls=0;await assert.rejects(()=>pollGoogle('operations/test',{key:'secret',fetcher:async()=>{calls++;return {ok:true,json:async()=>({done:true,response:{generateVideoResponse:{generatedSamples:[{video:{uri:'https://evil.test/file'}}]}}})};}}));assert.equal(calls,1);});
 test('Veo completed provider errors are terminal and never start a second paid job',async()=>{
