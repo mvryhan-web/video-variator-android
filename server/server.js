@@ -8,6 +8,7 @@ import Stripe from 'stripe';
 import {createRemoteJWKSet,jwtVerify,SignJWT} from 'jose';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
+import {readFileSync} from 'node:fs';
 import {installEmailAuth} from './email-auth.js';
 import {
   initDb,upsertUser,getUser,publicUser,setStripeCustomer,applySubscription,applyLifetime,updateSubscriptionByStripeId,
@@ -165,6 +166,46 @@ app.post('/api/billing/checkout',auth,async(req,res)=>{try{
 }catch(e){console.error('[checkout]',e);res.status(500).json({error:'CHECKOUT_FAILED'});}});
 app.post('/api/billing/portal',auth,async(req,res)=>{try{if(publicUser(req.user)?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});if(!stripe||!req.user.stripe_customer_id)return res.status(400).json({error:'BILLING_PORTAL_UNAVAILABLE'});const session=await stripe.billingPortal.sessions.create({customer:req.user.stripe_customer_id,return_url:`${appUrl}/`});res.json({url:session.url});}catch(e){console.error('[portal]',e);res.status(500).json({error:'BILLING_PORTAL_FAILED'});}});
 app.post('/api/billing/cancel',auth,async(req,res)=>{try{const current=publicUser(req.user);if(current?.isAdmin)return res.status(409).json({error:'ADMIN_ACCESS_ALREADY_UNLIMITED'});if(current?.usage?.plan==='lifetime')return res.status(409).json({error:'LIFETIME_HAS_NO_SUBSCRIPTION'});if(!stripe||!req.user.stripe_subscription_id)return res.status(400).json({error:'NO_ACTIVE_SUBSCRIPTION'});const sub=await stripe.subscriptions.update(req.user.stripe_subscription_id,{cancel_at_period_end:true});await updateSubscriptionByStripeId({subscriptionId:sub.id,status:sub.status,currentPeriodEnd:fromUnix(sub.current_period_end)});res.json({ok:true,cancelAtPeriodEnd:!!sub.cancel_at_period_end,currentPeriodEnd:fromUnix(sub.current_period_end)});}catch(e){console.error('[cancel]',e);res.status(500).json({error:'SUBSCRIPTION_CANCEL_FAILED'});}});
+
+
+/* Visual-only Deepsyq launch: expose the rights-approved owner film manifest.
+   Existing payment/auth/subscription and local Video Uniquifier handlers are unchanged. */
+const approvedDeepsyqFilms=(()=>{
+ try{
+  const m=JSON.parse(readFileSync(path.join(staticDir,'media/home/owner-20261018/manifest.json'),'utf8'));
+  if(m.commercialRightsConfirmed!==true||m.productionPublicationApproved!==true||m.carouselOrder?.length!==6)return [];
+  return m.carouselOrder.map((slug,i)=>{
+   const found=m.items?.find(x=>x.slug===slug&&x.kind==='video'&&x.actionTarget==='studio');
+   if(!found||!found.previewUrl?.startsWith('/media/home/owner-20261018/')||!found.previewPosterUrl?.startsWith('/media/home/owner-20261018/'))return null;
+   const {title,kind,category,description,previewUrl,previewPosterUrl,prompt,defaultModel,aspectRatio,requiredInputTypes,defaultSettings,actionTarget}=found;
+   return {id:slug,slug,title,kind,category,description,previewUrl,previewPosterUrl,prompt,defaultModel,aspectRatio,requiredInputTypes,defaultSettings,actionTarget,featured:true,sortOrder:10*(i+1)};
+  }).filter(Boolean);
+ }catch(e){console.warn('[deepsyq-showcase]',e?.message);return [];}
+})();
+app.get('/api/inspiration',(req,res)=>{
+ const q=req.query||{};
+ let items=approvedDeepsyqFilms.filter(x=>
+  (!q.featured||q.featured!=='true'||x.featured)&&
+  (!q.kind||q.kind==='all'||q.kind===x.kind)&&
+  (!q.target||q.target===x.actionTarget)&&
+  (!q.category||q.category===x.category)&&
+  (!q.ratio||q.ratio===x.aspectRatio)&&
+  (!q.q||x.title.toLowerCase().includes(String(q.q).slice(0,120).toLowerCase())));
+ const total=items.length,limit=Math.min(60,Math.max(1,Number(q.limit)||12)),page=Math.max(1,Number(q.page)||1);
+ items=items.slice((page-1)*limit,page*limit);
+ res.json({items,categories:['Cinematic'],ratios:['16:9'],pagination:{page,limit,total,hasMore:page*limit<total}});
+});
+app.get('/api/templates',(_req,res)=>res.json({items:[]}));
+app.get('/api/studio/config',(_req,res)=>res.json({enabled:false,ownerOnly:true,publicGenerationEnabled:false,models:[],catalog:[],translation:{enabled:false,reason:'AI_STUDIO_NOT_AVAILABLE_IN_VISUAL_RELEASE'}}));
+// Keep legacy checkout and Android auth returns on their existing app entry.
+app.get('/',(req,res,next)=>{
+ if(process.env.DEEPSYQ_HOME_ENABLED!=='true'||Object.hasOwn(req.query,'mobileAuth')||Object.hasOwn(req.query,'checkout'))return next();
+ res.setHeader('Cache-Control','no-cache');
+ res.sendFile(path.join(staticDir,'deepsyq.html'));
+});
+app.get('/dashboard',(_req,res)=>res.sendFile(path.join(staticDir,'deepsyq.html')));
+// Retired by the owner. Explicitly deny both legacy URLs before SPA/legacy fallback.
+app.get(['/product-video','/product-video.html'],(_req,res)=>res.status(404).type('text/plain').send('Not found'));
 
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});

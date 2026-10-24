@@ -1,0 +1,29 @@
+name: Deepsyq owner visual-only production release
+on:
+  push:
+    branches:
+      - release/owner-neon-visual-only-main-20261018
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/src/main/assets/**'
+      - 'server/server.js'
+      - 'server/deepsyq-preview.js'
+      - 'tests/owner-visual-release-unit.mjs'
+      - 'tests/owner-home-layout.spec.mjs'
+      - 'playwright.visual-release.config.mjs'
+      - '.github/workflows/owner-visual-prod-release.yml'
+jobs:
+  visual-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - run: node --check server/server.js && node --check server/deepsyq-preview.js
+      - run: node --test tests/owner-visual-release-unit.mjs
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --config=playwright.visual-release.config.mjs

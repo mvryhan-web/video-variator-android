@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Photo Collage — Deepsyq Tools</title>
+<link rel="stylesheet" href="free-tools.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="studio.css">
+<link rel="stylesheet" href="photo-collage.css">
+<script src="theme.js"></script>
+
+<link rel="stylesheet" href="deepsyq-global-theme.css">
+<script defer src="deepsyq-site-shell.js"></script>
+</head>
+<body>
+<main class="tools collage-page">
+<header><a class="tool-back" href="free-tools.html" id="collageBack">← Everyday Tools</a><span>Deepsyq</span></header>
+<section class="tool-card collage-workspace" aria-labelledby="collageHeading">
+<p class="tool-kicker">FREE • ON DEVICE</p>
+<h1 id="collageHeading">Photo Collage</h1>
+<p id="collageIntro">Create a photo grid in your browser. Images never upload to our servers.</p>
+<div class="collage-fields">
+<label for="collageFiles"><span id="collageChooseLabel">Choose 2–9 photos</span>
+<input type="file" id="collageFiles" accept="image/jpeg,image/png,image/webp" multiple></label>
+<div class="collage-controls">
+<label for="collageColumns"><span id="collageColsLabel">Columns</span><select id="collageColumns"><option value="2">2</option><option value="3">3</option></select></label>
+<label for="collageGap"><span id="collageGapLabel">Spacing</span><select id="collageGap"><option value="0">None</option><option value="12" selected>Small</option><option value="24">Wide</option></select></label>
+<label for="collageBg"><span id="collageBgLabel">Background</span><select id="collageBg"><option value="#ffffff">White</option><option value="#101018">Dark</option></select></label>
+</div>
+</div>
+<p id="collageFileInfo" class="collage-note"></p>
+<div class="collage-actions">
+<button id="collageCreate" type="button" class="primaryBtn">Create collage</button>
+<button id="collageClear" type="button">Clear</button>
+<a id="collageDownload" href="#" download="deepsyq-collage.png" hidden>Download PNG</a>
+</div>
+<p id="collageStatus" role="status" aria-live="polite"></p>
+<div id="collageResult" hidden><img id="collagePreview" alt="Preview of your photo collage"><p id="collageResultInfo"></p></div>
+<p class="collage-note" id="collageSafety">Local PNG output, 1200 pixels wide. Supports JPG, PNG and WebP; up to 9 photos (15 MB each).</p>
+</section>
+</main>
+<script type="module" src="photo-collage.js"></script>
+</body>
+</html>

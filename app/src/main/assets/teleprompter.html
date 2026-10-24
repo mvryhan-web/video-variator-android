@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Teleprompter · Deepsyq Tools</title>
+<link rel="stylesheet" href="free-tools.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="studio.css">
+<link rel="stylesheet" href="teleprompter.css">
+<script src="theme.js"></script>
+
+<link rel="stylesheet" href="deepsyq-global-theme.css">
+<script defer src="deepsyq-site-shell.js"></script>
+</head>
+<body>
+<main class="tools teleprompter-page">
+<header><a class="tool-back" href="free-tools.html">← Everyday Tools</a><span>Deepsyq</span></header>
+<section class="tool-card teleprompter-workspace" aria-labelledby="teleTitle">
+<p class="tool-kicker">FREE • ON DEVICE</p><h1 id="teleTitle">Teleprompter</h1>
+<p id="teleHint">Write or paste your own script. It stays on this page and is not uploaded.</p>
+<label for="teleScript" id="teleScriptLabel">Your script</label>
+<textarea id="teleScript" rows="6" maxlength="25000" placeholder="Write your lines here..."></textarea>
+<div class="tele-controls">
+<label><span id="teleSpeedLabel">Scroll speed</span><input id="teleSpeed" type="range" min="0" max="120" step="5" value="35"><output id="teleSpeedValue" for="teleSpeed">35 px/s</output></label>
+<label><span id="teleSizeLabel">Text size</span><input id="teleSize" type="range" min="20" max="64" step="2" value="36"><output id="teleSizeValue" for="teleSize">36 px</output></label>
+</div>
+<div class="tele-actions"><button id="telePlay" type="button" class="primaryBtn">Start</button><button id="teleReset" type="button">Reset scroll</button></div>
+<p id="teleStatus" role="status" aria-live="polite"></p>
+<div id="teleViewport" role="region" aria-label="Scrolling script" tabindex="0">
+<div id="telePreview" aria-live="off">Your script will appear here.</div>
+</div>
+<p class="tele-note" id="telePrivacy">This tool only displays your own text locally. No camera, microphone, AI generation or credits.</p>
+</section></main>
+<script src="teleprompter.js"></script>
+</body></html>

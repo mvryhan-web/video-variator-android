@@ -1,0 +1,127 @@
+/* Owner-approved Deepsyq site-wide cinematic identity, 2026-10-18.
+   Presentation only: processing, AI requests, account state and billing stay unchanged. */
+:root {
+ --ds-bg:#080d1d;--ds-sidebar:#080e20;--ds-surface:#111a34;--ds-raised:#192347;
+ --ds-line:#344269;--ds-text:#f3f4ff;--ds-muted:#b4bbd4;
+ --ds-violet:#925bff;--ds-pink:#ee80d2;--ds-blue:#4c9cf4;--ds-focus:#ead0ff;
+ --ds-font:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+html:not([data-theme="light"]) {
+ color-scheme:dark;--bg:var(--ds-bg);--background:var(--ds-bg);--panel:var(--ds-surface);
+ --panel2:var(--ds-raised);--panel-raised:var(--ds-raised);--line:var(--ds-line);
+ --text:var(--ds-text);--muted:var(--ds-muted);--accent:#d5b2ff;--mint:#d5b2ff;
+}
+html:not([data-theme="light"]) body {
+ font-family:var(--ds-font);color:var(--ds-text);
+ background:radial-gradient(ellipse 80% 450px at 74% -180px,#193b896b,transparent 76%),
+ radial-gradient(ellipse 620px 510px at 6% 30%,#29144a48,transparent 74%),var(--ds-bg);
+}
+html:not([data-theme="light"]) body.creator-pages {
+ --cp-bg:var(--ds-bg);--cp-card:var(--ds-surface);--cp-text:var(--ds-text);
+ --cp-muted:var(--ds-muted);--cp-line:var(--ds-line);--cp-accent:#dfb5ff;--cp-soft:#8e5dfb20;
+}
+html:not([data-theme="light"]) :is(.content>.top,.topbar,body>header,.tools>header) {
+ background:linear-gradient(110deg,#090e20f5,#101735f5);border-bottom:1px solid var(--ds-line);color:var(--ds-text);
+}
+html:not([data-theme="light"]) :is(aside#sidebar,.sidebar,.studio-nav) {
+ background:var(--ds-sidebar);border-color:var(--ds-line);
+}
+html:not([data-theme="light"]) :is(.brand,.top-brand,.brand-name) {
+ color:var(--ds-text);font-family:var(--ds-font);letter-spacing:-.035em;
+}
+html:not([data-theme="light"]) :is(.brand-mark,.mark,.top-mark) {background:transparent;box-shadow:none}
+html:not([data-theme="light"]) :is(.brand-mark,.mark,.top-mark) img {
+ display:block;object-fit:contain;max-width:100%;max-height:100%;
+}
+html:not([data-theme="light"]) :is(nav a.active,.navBtn.active,.studio-nav>button[aria-pressed="true"]) {
+ background:linear-gradient(115deg,#683de68a,#261c4eaa);border-color:#7b58de;color:#fff;
+}
+html:not([data-theme="light"]) :is(nav a:hover,.navBtn:hover,.studio-nav>button:hover) {color:#fff}
+html:not([data-theme="light"]) :is(.card,.price-card,.app-card,.hub-tile,.tool-card,.cp-feature,.panel,.review details) {
+ border-color:var(--ds-line);background-color:var(--ds-surface);color:var(--ds-text);
+}
+html:not([data-theme="light"]) :is(.controls input,.controls select,.kind-tabs button,input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),textarea,select) {
+ border-color:#455177;background-color:#131d39;color:#f7f5ff;
+}
+html:not([data-theme="light"]) :is(.eyebrow,.caption,.cp-kicker,.nav-caption,.step,.tool-kicker) {
+ color:#c49eff;font-family:var(--ds-font);letter-spacing:.095em;
+}
+html:not([data-theme="light"]) :is(.hero h1,.intro h1,.section-head h2,.section-heading h2) {
+ color:#f7f6ff;font-family:var(--ds-font);font-weight:800;letter-spacing:-.045em;
+}
+html:not([data-theme="light"]) :is(.hero p,.intro>p,.section-head p,.card p,.cp-note,.panel p,footer p) {
+ color:var(--ds-muted);
+}
+html:not([data-theme="light"]) :is(.primary,.top-login,.review button:not(:disabled),.price-card button:not(:disabled),.kind-tabs button[aria-pressed="true"],.category-chips button[aria-pressed="true"]) {
+ background:linear-gradient(110deg,var(--ds-violet),var(--ds-pink));border-color:#b17cff;color:#100b23;
+ box-shadow:0 6px 24px #793ef04a;
+}
+html:not([data-theme="light"]) :is(.primary,.top-login,.review button:not(:disabled),.price-card button:not(:disabled)) {
+ font-weight:750;border-radius:12px;
+}
+html:not([data-theme="light"]) :is(.kind-tabs button[aria-pressed="true"],.category-chips button[aria-pressed="true"]) {color:#fff}
+html:not([data-theme="light"]) :is(.app-card,.card,.price-card,.hub-tile,.cp-feature):hover {border-color:#895af8}
+html:not([data-theme="light"]) :is(a,button,input,select,textarea,summary):focus-visible {outline:3px solid var(--ds-focus);outline-offset:3px}
+html:not([data-theme="light"]) :is(.home-hero-carousel,.hero-stage,.inspiration-hero-feature) {border-radius:16px}
+body.deepsyq-sitewide-shell {padding-left:204px}
+body.deepsyq-sitewide-shell :is(main,footer) {max-width:min(1240px,100%)}
+.ds-site-sidebar {
+ position:fixed;inset:0 auto 0 0;width:204px;z-index:101;
+ display:flex;flex-direction:column;gap:12px;padding:22px 13px 14px;
+ overflow-y:auto;background:#080e20;border-right:1px solid var(--ds-line);
+ color:var(--ds-text);font-family:var(--ds-font);box-sizing:border-box;
+}
+.ds-site-sidebar a {text-decoration:none}
+.ds-site-sidebar .ds-site-brand {
+ display:flex;align-items:center;gap:8px;min-height:48px;padding:0 8px;
+ font-size:19px;font-weight:800;color:#fff;
+}
+.ds-site-sidebar .ds-site-brand img {height:30px;width:30px;object-fit:contain}
+.ds-site-sidebar .ds-site-caption {
+ padding:11px 10px 2px;color:#a99bea;font-size:10px;font-weight:750;letter-spacing:.06em;
+}
+.ds-site-sidebar nav {display:flex;flex-direction:column;gap:4px}
+.ds-site-sidebar nav a {
+ display:flex;align-items:center;gap:11px;padding:10px 11px;
+ border:1px solid transparent;border-radius:10px;min-height:42px;
+ color:#c4c9e0;font-size:12px;
+}
+.ds-site-sidebar nav a .ds-icon {width:19px;text-align:center;font-size:17px}
+.ds-site-sidebar nav a:hover,.ds-site-sidebar nav a:focus-visible {color:#fff;background:#222046}
+.ds-site-sidebar nav a[aria-current="page"] {
+ color:#fff;background:linear-gradient(110deg,#6740e8,#211940);border-color:#895cff;
+}
+.ds-site-sidebar .ds-site-footer {
+ margin-top:auto;padding:16px 12px 7px;border-top:1px solid #35416b;
+ font-size:11px;color:#a4afd1;
+}
+.ds-site-sidebar .ds-site-footer a {color:#d2b8ff}
+.ds-site-mobile-toggle,.ds-site-scrim {display:none}
+@media(max-width:900px) {
+ body.deepsyq-sitewide-shell {padding-left:0}
+ .ds-site-sidebar {transform:translateX(-105%);transition:transform .2s ease}
+ body.ds-site-nav-open .ds-site-sidebar {transform:translateX(0)}
+ .ds-site-mobile-toggle {
+  display:grid;place-items:center;position:fixed;top:12px;left:12px;z-index:103;
+  width:42px;height:42px;min-height:42px;padding:0;border-radius:12px;
+  border:1px solid #6556a0;background:#1b1a42;color:#fff;font-size:23px;box-shadow:0 4px 12px #0009;
+ }
+ body.ds-site-nav-open .ds-site-scrim {
+  display:block;position:fixed;inset:0;z-index:100;background:#050916ba;
+ }
+ body.deepsyq-sitewide-shell :is(body>header,.topbar) {padding-left:60px}
+ body.deepsyq-sitewide-shell main {max-width:100%}
+}
+@media(prefers-reduced-motion:reduce) {.ds-site-sidebar {transition:none}}
+
+
+/* Same grouped owner Home sidebar on every secondary route.
+   Pending capabilities must never masquerade as working links. */
+.ds-site-sidebar nav .ds-site-pending {
+ display:flex;align-items:center;gap:11px;padding:10px 11px;min-height:42px;
+ color:#838ba9;font-size:12px;cursor:default;user-select:none;
+}
+.ds-site-sidebar .ds-site-pending .ds-icon {width:19px;text-align:center;font-size:17px}
+.ds-site-sidebar .ds-site-pending small {font-size:10px;color:#919cbd;margin-left:auto}
+.ds-site-sidebar .ds-site-footer {display:flex;flex-wrap:wrap;gap:12px}
+.ds-site-sidebar .ds-site-caption {text-transform:uppercase}

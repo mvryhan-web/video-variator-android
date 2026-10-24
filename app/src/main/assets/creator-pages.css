@@ -155,3 +155,6 @@ html[data-theme=light].creator-pages .tools:is(.free-tools-page,.avatar-studio) 
 /* Hide the redundant Access / Free access / resolution summary in Avatar only.
    Leave its DOM node available for existing account-status logic. */
 .creator-pages .tools.avatar-studio .avatar-plan-row{display:none!important}
+
+/* Keep existing Back styling while restoring a reliable mobile touch target. */
+.creator-pages .tools:is(.free-tools-page,.avatar-studio) header .tool-back{min-height:48px;min-width:48px;}
