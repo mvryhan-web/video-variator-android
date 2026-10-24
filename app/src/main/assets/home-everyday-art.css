@@ -1,0 +1,54 @@
+/* 2026-10-24: Owner-approved illustration-only update of the existing Home Everyday Tools section.
+   Retains all Home text, destination URLs, layout, carousel and application behavior. */
+body.home-neon #everydayTools .tool-grid > a {
+  background-color: #13182b;
+  background-size: cover;
+  background-position: center 43%;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 -42px 58px #05091b52;
+}
+body.home-neon #everydayTools .tool-grid > a::before {
+  content: none;
+  display: none;
+}
+body.home-neon #everydayTools .tool-grid > a:nth-child(1) {
+  background-image: linear-gradient(0deg, #080c21f2 0%, #080c21b5 37%, #080c2120 100%), url("media/home-everyday-tools-owner-20261024/compress-photos.webp");
+}
+body.home-neon #everydayTools .tool-grid > a:nth-child(2) {
+  background-image: linear-gradient(0deg, #080c21f2 0%, #080c21b5 37%, #080c2120 100%), url("media/home-everyday-tools-owner-20261024/audio-text.webp");
+}
+body.home-neon #everydayTools .tool-grid > a:nth-child(3) {
+  background-image: linear-gradient(0deg, #080c21f2 0%, #080c21b5 37%, #080c2120 100%), url("media/home-everyday-tools-owner-20261024/compress-video.webp");
+}
+body.home-neon #everydayTools .tool-grid > a:nth-child(4) {
+  background-image: linear-gradient(0deg, #080c21f2 0%, #080c21b5 37%, #080c2120 100%), url("media/home-everyday-tools-owner-20261024/avatar-studio.webp");
+}
+body.home-neon #everydayTools .tool-grid > a b,
+body.home-neon #everydayTools .tool-grid > a span {
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 2px 7px #040714, 0 1px 16px #040714;
+}
+body.home-neon #everydayTools .tool-grid > a span {
+  color: #eeecff;
+}
+body.home-neon #everydayTools .unique-tool {
+  background-color: #14182b;
+  background-image: linear-gradient(90deg, #101428fa 0%, #101428e6 34%, #1014288a 69%, #10142899 100%), url("media/home-everyday-tools-owner-20261024/video-uniquifier.webp");
+  background-size: cover;
+  background-position: center 50%;
+  background-repeat: no-repeat;
+}
+body.home-neon #everydayTools .unique-tool h3,
+body.home-neon #everydayTools .unique-tool p,
+body.home-neon #everydayTools .unique-tool > span:last-child {
+  text-shadow: 0 2px 7px #050817, 0 1px 15px #050817;
+}
+@media (max-width: 600px) {
+  body.home-neon #everydayTools .tool-grid > a {
+    background-position: center 42%;
+  }
+  body.home-neon #everydayTools .unique-tool {
+    background-position: 60% center;
+  }
+}
