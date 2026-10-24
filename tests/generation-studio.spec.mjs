@@ -1,2 +1,373 @@
-YªçŠx-®éÜj×¢ëiºÚ+Š§j[h‘éÜ¢éí×oxñ:-jZ.¶›­–)Þ³V–×÷'B·FW7BÆW‡V7GÒg&öÒtÆ—w&–v‡B÷FW7Bs°¢òòvöövÆRÆöv–â—2æ÷BW†W&6—6VB–âF†—2Æö6ÂT’7V—FR†vöövÆT6Æ–VçD–B—2V×G’’à¢òò¶VWF†RW‡FW&æÂ4D²g&öÒFVÆ––ærÆöB÷vW6†÷ræBF†R&—f7’&W6WBà§FW7Bæ&Vf÷&TV6‚†7–æ2‡·vWÒ“Óç°¢v—BvRç&÷WFR‚v‡GG3¢òö66÷VçG2ævöövÆRæ6öÒöw6’ö6Æ–VçBrÇ#Óç"ægVÆf–ÆÂ‡¶6öçFVçEG—S¢vÆ–6F–öâö¦f67&—BrÆ&öG“¢rwÒ’“°§Ò“° ¦7–æ2gVæ7F–öâ6†ö÷6U7GVF–ò‡vRÆ¶–æB—¶v—BvRæÆö6F÷"‚r77GVF–õG—U–6¶W"r’æ6Æ–6²‚“¶v—BvRæÆö6F÷"‚r77GVF–õG—TÖVçR¶FFÖ¶–æCÒ"r¶¶–æB²r%Òr’æ6Æ–6²‚“·Ð§FW7B‚vÖö&–ÆR7GVF–ò†26ÆV"6V7F–öç2ÂæòfÇ6RvVæW&F–öâæBæò÷fW&fÆ÷rrÆ7–æ2‡·vWÒ“Óç¶v—BvRç6WEf–Ww÷'E6—¦R‡·v–GFƒ£3“Æ†V–v‡C£ƒCGÒ“¶ÆWB÷7G3Ó·vRæöâ‚w&WVW7BrÇ#Óç¶–b‡"æÖWF†öB‚“ÓÓÒuõ5Br—÷7G2²³·Ò“¶v—BvRæv÷Fò‚rövVæW&FR×7GVF–òæ‡FÖÂr“¶v—BW‡V7B‡vRæÆö6F÷"‚r7F6µF—FÆRr’’çFô†fUFW‡B‚tÆ–v‡BW–÷W"7&VF–öâv—F‚FVW7—r“¶v—BvRæÆö6F÷"‚r7&ö×Br’æf–ÆÂ‚tö6Vâr“¶v—BvRæÆö6F÷"‚r66öç6VçBr’æ6†V6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r6vVæW&FRr’’çFô&TF—6&ÆVB‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r6f–Æ&–Æ—G’r’’çFô6öçF–åFW‡B‚væ÷BVæ&ÆVBr“¶v—B6†ö÷6U7GVF–ò‡vRÂv–ÖvRr“¶v—BW‡V7B‡vRæÆö6F÷"‚r7F6µF—FÆRr’’çFô†fUFW‡B‚tÆ–v‡BW–÷W"7&VF–öâv—F‚FVW7—r“¶v—BW‡V7B‡vRæÆö6F÷"‚r7&F–ò÷F–öâr’’çFô†fT6÷VçBƒR“¶v—B6†ö÷6U7GVF–ò‡vRÂv×W6–2r“¶v—BvRæÆö6F÷"‚r76WGF–æw4'WGFöâr’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r6×W6–4÷F–öç2r’’çFô&Uf—6–&ÆR‚“¶v—BvRæÆö6F÷"‚r6×W6–4ÖöFRr’ç6VÆV7D÷F–öâ‚v–ç7G'VÖVçFÂr“¶v—BvRævWD'•&öÆR‚v'WGFöârÇ¶æÖS¢tFöæRrÆW†7C§G'VWÒ’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r7&VfW&Væ6T&÷‚r’’çFô&T†–FFVâ‚“¶W‡V7B†v—BvRæWfÇVFR‚‚“ÓæFö7VÖVçBæFö7VÖVçDVÆVÖVçBç67&öÆÅv–GFƒÃÖ–ææW%v–GF‚’’çFô&R‡G'VR“¶W‡V7B‡÷7G2’çFô&Rƒ“·Ò“°§FW7B‚v6öæf–rW‡÷6W2&VF–æW72v—F†÷WB6V7&WG2æBF—6&ÆVBVæGö–çBf–Ç26Æ÷6VBrÆ7–æ2‡·&WVW7GÒ“Óç¶6öç7B#Öv—B&WVW7BævWB‚rö’÷7GVF–òö6öæf–rr“¶W‡V7B‡"ç7FGW2‚’’çFô&Rƒ#“¶6öç7B3Öv—B"æ§6öâ‚“¶W‡V7B†2æVæ&ÆVB’çFô&R†fÇ6R“¶W‡V7B†2æ÷væW$öæÇ’’çFô&R‡G'VR“¶W‡V7B†2çG&ç6ÆF–öâæVæ&ÆVB’çFô&R†fÇ6R“¶6öç7B÷7CÖv—B&WVW7Bç÷7B‚rö’÷7GVF–òö¦ö'2rÇ¶FF§¶¶–æC¢v–ÖvRrÇ&ö×C¢wFW7BrÆ6öç6VçC§G'VW×Ò“¶W‡V7B‡÷7Bç7FGW2‚’’çFô&RƒS2“·Ò“°§FW7B‚u'W76–âFWf–6RÆæwVvRæB&WF–æVBW"×7GVF–òG&gBrÆ7–æ2‡¶'&÷w6W'Ò“Óç¶6öç7B6öçFW‡CÖv—B'&÷w6W"ææWt6öçFW‡B‡¶Æö6ÆS¢w'RÕ%RwÒ“¶6öç7BvSÖv—B6öçFW‡BææWuvR‚“¶v—BvRæv÷Fò‚rövVæW&FR×7GVF–òæ‡FÖÂr“¶v—BW‡V7B‡vRæÆö6F÷"‚vƒ7F6µF—FÆRr’’çFô†fUFW‡B‚}	ím--R-íâM]âFVW7—r“¶v—BW‡V7B‡vRæÆö6F÷"‚u¶FF×CÖ6öç6VçEÒr’’çFô6öçF–åFW‡B‚}-½ÝÝí’ÍíM]½‚r“¶v—BW‡V7B‡vRæÆö6F÷"‚u¶FF×CÖ6öç6VçEÒr’’ææ÷BçFô6öçF–åFW‡B‚ôvöövÆWÄ'—FUÇW2ò“¶v—BvRæÆö6F÷"‚r7&ö×Br’æf–ÆÂ‚}	ÍíRr“¶v—B6†ö÷6U7GVF–ò‡vRÂv–ÖvRr“¶v—BvRæÆö6F÷"‚r7&ö×Br’æf–ÆÂ‚}
-m-]-í¢r“¶v—B6†ö÷6U7GVF–ò‡vRÂwf–FVòr“¶v—BW‡V7B‡vRæÆö6F÷"‚r7&ö×Br’’çFô†fUfÇVR‚}	ÍíRr“¶v—B6öçFW‡Bæ6Æ÷6R‚“·Ò“°§FW7B‚vÖö6¶VB6öçG&7B&W7VÇB6öæf—&×26VÆV7FVB6W'f–6RæB7W'&VçB7&VF—G2&Vf÷&R÷7F–ærÂF†Vâ&Wf–Ww2ÂF÷væÆöG2æBFVÆWFW2rÆ7–æ2‡·vWÒ“Óç°¢6öç7B6fs×¶Væ&ÆVC§G'VRÆÖöFVÇ3¥·¶¶–æC¢v–ÖvRrÆÆ&VÃ¢tf—‡GW&RrÆ–C¢vf—‡GW&RrÇ&F–÷3¥²s£uÒÇ&VfW&Væ6W3£2ÆVæ&ÆVC§G'VWÕÒÆ6FÆös¥·¶¶–æC¢v–ÖvRrÆÆ&VÃ¢tf—‡GW&RrÆ–C¢vf—‡GW&RrÇ&÷f–FW#¢tvöövÆRrÆFFW#§G'VRÇ&F–÷3¥²s£uÒÇ&VfW&Væ6W3£2ÆVæ&ÆVC§G'VWÕ×Ó°¢v—BvRç&÷WFR‚r¢¢ö’÷7GVF–òö6öæf–rrÇ#Óç"ægVÆf–ÆÂ‡¶§6öã¦6fwÒ’“°¢ÆWB¦ö%÷7G3ÓÆW7F–ÖFU÷7G3ÓÆ¦ö$&öG“°¢v—BvRç&÷WFR‚r¢¢ö’÷7GVF–òöW7F–ÖFRrÆ7–æ2#Óç¶W7F–ÖFU÷7G2²³·&WGW&â"ægVÆf–ÆÂ‡¶§6öã§¶¶–æC¢v–ÖvRrÆÖöFVÃ¢vf—‡GW&RrÆ7&VF—G3£rÇVçF—G“£ÇW$–ÖvT7&VF—G3£rÇVæ—C¢t’7&VF—G2w×Ò“·Ò“°¢v—BvRç&÷WFR‚r¢¢ö’÷7GVF–òö¦ö'2rÆ7–æ2#Óç¶–b‡"ç&WVW7B‚’æÖWF†öB‚“ÓÓÒuõ5Br—¶¦ö%÷7G2²³¶¦ö$&öG“×"ç&WVW7B‚’ç÷7DFF¥4ôâ‚“·&WGW&â"ægVÆf–ÆÂ‡·7FGW3£#"Æ§6öã§¶–C¢vf—‡GW&RrÇ7FGW3¢w&VG’w×Ò“·×&WGW&â"ægVÆf–ÆÂ‡¶§6öã§¶—FV×3¥µ××Ò“·Ò“°¢v—BvRç&÷WFR‚r¢¢ö’÷7GVF–òö¦ö'2öf—‡GW&RrÇ#Óç"ægVÆf–ÆÂ‡¶§6öã§"ç&WVW7B‚’æÖWF†öB‚“ÓÓÒtDTÄUDRs÷¶ö³§G'VWÓ§¶–C¢vf—‡GW&RrÇ7FGW3¢w&VG’rÆÖ–ÖS¢v–ÖvR÷ærw×Ò’“°¢v—BvRç&÷WFR‚r¢¢ö’÷7GVF–òö¦ö'2öf—‡GW&RöÖVF–rÇ#Óç"ægVÆf–ÆÂ‡¶6öçFVçEG—S¢v–ÖvR÷ærrÆ&öG“¤'VffW"æg&öÒ‚v•d$õ's´vvôå5V„UVtT$4”df54¤EVÄUe”…uG£„Gt‡tft’õ64Æ'D$¥%STW&´¦vvsÓÒrÂv&6ScBr—Ò’“°¢v—BvRæv÷Fò‚rövVæW&FR×7GVF–òæ‡FÖÂr“¶v—B6†ö÷6U7GVF–ò‡vRÂv–ÖvRr“¶v—BvRæÆö6F÷"‚r7&ö×Br’æf–ÆÂ‚tf—‡GW&Rr“¶v—BvRæÆö6F÷"‚r66öç6VçBr’æ6†V6²‚“°¢vRæöæ6R‚vF–ÆörrÆCÓæBæF—6Ö—72‚’“¶v—BvRæÆö6F÷"‚r6vVæW&FRr’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r77FGW2r’’çFô6öçF–åFW‡B‚v6æ6VÆÆVBr“¶W‡V7B†W7F–ÖFU÷7G2’çFô&Rƒ“¶W‡V7B†¦ö%÷7G2’çFô&Rƒ“°¢vRæöæ6R‚vF–ÆörrÆ7–æ2CÓç¶W‡V7B†BæÖW76vR‚’’çFô6öçF–â‚w6VÆV7FVB’6W'f–6Rr“¶W‡V7B†BæÖW76vR‚’’çFô6öçF–â‚tf—‡GW&Rr“¶W‡V7B†BæÖW76vR‚’’çFô6öçF–â‚sr’7&VF—G2r“¶v—BBæ66WB‚“·Ò“°¢v—BvRæÆö6F÷"‚r6vVæW&FRr’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r6ÖVF––Örr’’çFô&Uf—6–&ÆR‚“¶W‡V7B†¦ö%÷7G2’çFô&Rƒ“¶W‡V7B†¦ö$&öG’æW‡V7FVD7&VF—G2’çFô&Rƒr“°¢W‡V7B†¦ö$&öG’æ6öç6VçB’çFô&R‡G'VR“¶6öç7BF÷væÆöC×vRçv—Df÷$WfVçB‚vF÷væÆöBr“¶v—BvRæÆö6F÷"‚r6F÷væÆöBr’æ6Æ–6²‚“¶W‡V7B‚†v—BF÷væÆöB’ç7VvvW7FVDf–ÆVæÖR‚’’çFô&R‚tFVW7—Öf—‡GW&Rçærr“¶v—BvRæÆö6F÷"‚r7&VÖ÷fRr’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r6ÖVF––Örr’’çFô†fT6÷VçBƒ“¶v—BW‡V7B‡vRæÆö6F÷"‚r77FGW2r’’çFô6öçF–åFW‡B‚vFVÆWFVBr“°§Ò“° §FW7B‚tæG&ö–B'&–FvRW6W26öæf–wW&VB&6¶VæBv—F†÷WBÆöF–ærdf×VrrÆ7–æ2‡·vWÒ“Óç¶v—BvRæFD–æ—E67&—B‚‚“Óçv–æF÷räæG&ö–D'&–FvS×¶vWD”&6S¢‚“Óâv‡GG3¢òöæF—fRÖ’æW†×ÆRçFW7BwÒ“¶v—BvRç&÷WFR‚r¢¢övVæW&FR×7GVF–òæ‡FÖÂrÆ7–æ2#Óç¶6öç7B&W7öç6SÖv—B"æfWF6‚‚“¶6öç7B†VFW'3×²ââç&W7öç6Ræ†VFW'2‚—Ó¶FVÆWFR†VFW'5²v6öçFVçB×6V7W&—G’×öÆ–7’uÓ¶v—B"ægVÆf–ÆÂ‡·&W7öç6RÆ†VFW'7Ò“·Ò“¶ÆWB6ÆÆVCÖfÇ6S¶v—BvRç&÷WFR‚v‡GG3¢òöæF—fRÖ’æW†×ÆRçFW7Bö’÷7GVF–òö6öæf–rrÇ#Óç¶6ÆÆVC×G'VS·&WGW&â"ægVÆf–ÆÂ‡¶†VFW'3§²t66W72Ô6öçG&öÂÔÆÆ÷rÔ÷&–v–âs¢r¢wÒÆ§6öã§¶Væ&ÆVC¦fÇ6RÆÖöFVÇ3¥µ××Ò“·Ò“¶v—BvRæv÷Fò‚rövVæW&FR×7GVF–òæ‡FÖÂr“¶v—BW‡V7B‡vRæÆö6F÷"‚r7F6µF—FÆRr’’çFô†fUFW‡B‚tÆ–v‡BW–÷W"7&VF–öâv—F‚FVW7—r“¶W‡V7B†6ÆÆVB’çFô&R‡G'VR“¶W‡V7B†v—BvRæWfÇVFR‚‚“Óâv–æF÷rçgU'VçF–ÖU&VG’’’çFô&R†fÇ6R“·Ò“° §FW7B‚wF‡&VRF—&V7B7GVF–òÆ–æ·2æBÖöFVÂ÷6WGF–æw2F–Æöw2v÷&²öâ6ÖÆÂ†öæW2rÆ7–æ2‡·vWÒ“Óç°¢v—BvRç6WEf–Ww÷'E6—¦R‡·v–GFƒ£3#Æ†V–v‡C£sCÒ“°¢f÷"†6öç7B·7GVF–òÇF—FÆUÒöbµ²v–ÖvRrÂtÆ–v‡BW–÷W"7&VF–öâv—F‚FVW7—uÒÅ²vVF–òrÂtÆ–v‡BW–÷W"7&VF–öâv—F‚FVW7—uÒÅ²wf–FVòrÂtÆ–v‡BW–÷W"7&VF–öâv—F‚FVW7—uÕÒ—¶v—BvRæv÷Fò‚rövVæW&FR×7GVF–òæ‡FÖÃ÷7GVF–óÒr·7GVF–ò“¶v—BW‡V7B‡vRæÆö6F÷"‚r7F6µF—FÆRr’’çFô†fUFW‡B‡F—FÆR“¶W‡V7B†v—BvRæWfÇVFR‚‚“ÓæFö7VÖVçBæFö7VÖVçDVÆVÖVçBç67&öÆÅv–GFƒÃÖ–ææW%v–GF‚’’çFô&R‡G'VR“·Ð¢v—BvRæÆö6F÷"‚r6ÖöFVÄ'WGFöâr’æ6Æ–6²‚“¶v—BW‡V7B‡vRævWD'•&öÆR‚vF–Æörr’’çFô&Uf—6–&ÆR‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r6ÖöFVÄF–Æörr’’ææ÷BçFô6öçF–åFW‡B‚ôvöövÆWÄ'—FUÇW2ò“¶v—BvRævWD'•&öÆR‚v'WGFöârÇ¶æÖS¢õ6VVFæ6R"ã÷Ò’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r6ÖöFVÄ'WGFöâr’’çFô6öçF–åFW‡B‚u6VVFæ6R"ãr“¶v—BW‡V7B‡vRæÆö6F÷"‚r6f–Æ&–Æ—G’r’’çFô6öçF–åFW‡B‚væ÷BVæ&ÆVBr“¶v—BW‡V7B‡vRæÆö6F÷"‚u¶FF×CÖ6öç6VçEÒr’’çFô6öçF–åFW‡B‚w6VÆV7FVBÖöFVÂæB—G26W'f–6Rr“¶v—BW‡V7B‡vRæÆö6F÷"‚u¶FF×CÖ6öç6VçEÒr’’ææ÷BçFô6öçF–åFW‡B‚t'—FUÇW2r“¶v—BvRæÆö6F÷"‚r7&ö×Br’æf–ÆÂ‚uf–FVòr“¶v—BvRæÆö6F÷"‚r66öç6VçBr’æ6†V6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r6vVæW&FRr’’çFô&TF—6&ÆVB‚“°¢v—BvRæÆö6F÷"‚r76WGF–æw4'WGFöâr’æ6Æ–6²‚“¶v—BvRævWD'•&öÆR‚v'WGFöârÇ¶æÖS¢s£rÆW†7C§G'VWÒ’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r7&F–òr’’çFô†fUfÇVR‚s£r“¶v—BvRævWD'•&öÆR‚v'WGFöârÇ¶æÖS¢tFöæRrÆW†7C§G'VWÒ’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r76WGF–æw4'WGFöâr’’çFô6öçF–åFW‡B‚s£r“°¢v—BvRæÆö6F÷"‚r6ÖöFVÄ'WGFöâr’æ6Æ–6²‚“¶v—BvRæ¶W–&ö&Bç&W72‚tW66Rr“¶v—BW‡V7B‡vRæÆö6F÷"‚r6ÖöFVÄF–Æörr’’ææ÷BçFô&Uf—6–&ÆR‚“°§Ò“°§FW7B‚vVF–ò7VV6‚&W&F–öâæB†—7F÷'’Fòæ÷B6VæB–B÷"f¶R&WVW7G2rÆ7–æ2‡·vWÒ“Óç°¢ÆWB÷7G3Ó·vRæöâ‚w&WVW7BrÇ#Óç¶–b‡"æÖWF†öB‚“ÓÓÒuõ5Br—÷7G2²³·Ò“¶v—BvRæv÷Fò‚rövVæW&FR×7GVF–òæ‡FÖÃ÷7GVF–óÖVF–òr“¶v—BvRæÆö6F÷"‚r76WGF–æw4'WGFöâr’æ6Æ–6²‚“¶v—BvRæÆö6F÷"‚r6×W6–4ÖöFRr’ç6VÆV7D÷F–öâ‚wfö–6Rr“¶v—BW‡V7B‡vRæÆö6F÷"‚r7fö–6U6WGF–æw2r’’çFô&Uf—6–&ÆR‚“¶v—BvRæÆö6F÷"‚r7fö–6TÆæwVvRr’ç6VÆV7D÷F–öâ‡¶Æ&VÃ¢u'W76–âwÒ“¶v—BW‡V7BçöÆÂ‚‚“ÓçvRæÆö6F÷"‚r76WGF–æw4F–Æörr’æWfÇVFR†VÃÓç¶6öç7B#ÖVÂævWD&÷VæF–æt6Æ–VçE&V7B‚“·&WGW&â"çF÷ãÓbg"æ&÷GFöÓÃÖ–ææW$†V–v‡BÓ·Ò’’çFô&R‡G'VR“¶v—BvRævWD'•&öÆR‚v'WGFöârÇ¶æÖS¢tFöæRrÆW†7C§G'VWÒ’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r6ÖöFVÄ'WGFöâr’’çFô6öçF–åFW‡B‚t’fö–6R&Wf–Wrr“¶v—BW‡V7B‡vRæÆö6F÷"‚r6vVæW&FRr’’çFô&TF—6&ÆVB‚“°¢v—BvRæÆö6F÷"‚r6ÖöFVÄ'WGFöâr’æ6Æ–6²‚“¶v—BvRævWD'•&öÆR‚v'WGFöârÇ¶æÖS¢õ6VVB7VV6‚"ã÷Ò’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r6f–Æ&–Æ—G’r’’çFô6öçF–åFW‡B‚væ÷B6öææV7FVBr“¶v—BvRæÆö6F÷"‚r76†÷t†—7F÷'’r’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r6†—7F÷'”V×G’r’’çFô&Uf—6–&ÆR‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r7&W7VÖT¦ö"r’’çFô&T†–FFVâ‚“¶v—BvRæÆö6F÷"‚r76†÷t7&VFRr’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r6V×G’r’’çFô&Uf—6–&ÆR‚“¶W‡V7B‡÷7G2’çFô&Rƒ“°§Ò“°§FW7B‚w&VfW&Væ6R†÷Fò&Wf–WrÂG&gB&WFVçF–öâæB6ÆV"&RÆö6ÂrÆ7–æ2‡·vWÒ“Óç°¢v—BvRæv÷Fò‚rövVæW&FR×7GVF–òæ‡FÖÃ÷7GVF–óÖ–ÖvRr“¶v—BvRæÆö6F÷"‚r7&VfW&Væ6W2r’ç6WD–çWDf–ÆW2‡¶æÖS¢w&VfW&Væ6RçærrÆÖ–ÖUG—S¢v–ÖvR÷ærrÆ'VffW#¤'VffW"æg&öÒ‚v•d$õ's´vvôå5V„UVtT$4”df54¤EVÄUe”…uG£„Gt‡tft’õ64Æ'D$¥%STW&´¦vvsÓÒrÂv&6ScBr—Ò“¶v—BW‡V7B‡vRæÆö6F÷"‚r7&Ve&Wf–Wr–Örr’’çFô†fT6÷VçBƒ“¶v—B6†ö÷6U7GVF–ò‡vRÂwf–FVòr“¶v—B6†ö÷6U7GVF–ò‡vRÂv–ÖvRr“¶v—BW‡V7B‡vRæÆö6F÷"‚r7&Ve&Wf–Wr–Örr’’çFô†fT6÷VçBƒ“¶v—BvRæÆö6F÷"‚r66ÆV%&Vg2r’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r7&Ve&Wf–Wr–Örr’’çFô†fT6÷VçBƒ“°§Ò“° §FW7B‚v6öç6VçB—2&÷f–FW"ÖæWWG&ÂæB&W6WG2v†VâÖöFVÂ÷"7GVF–ò6†ævW2rÆ7–æ2‡·vWÒ“Óç¶v—BvRæv÷Fò‚rövVæW&FR×7GVF–òæ‡FÖÃ÷7GVF–óÖ–ÖvRr“¶6öç7B6öç6VçC×vRæÆö6F÷"‚u¶FF×CÖ6öç6VçEÒr“¶v—BW‡V7B†6öç6VçB’çFô6öçF–åFW‡B‚w6VÆV7FVBÖöFVÂæB—G26W'f–6Rr“¶v—BW‡V7B†6öç6VçB’ææ÷BçFô6öçF–åFW‡B‚ôvöövÆWÄ'—FUÇW2ò“¶v—BvRæÆö6F÷"‚r66öç6VçBr’æ6†V6²‚“¶v—BvRæÆö6F÷"‚r6ÖöFVÄ'WGFöâr’æ6Æ–6²‚“¶v—BvRævWD'•&öÆR‚v'WGFöârÇ¶æÖS¢õ6VVG&VÒBãR÷Ò’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r66öç6VçBr’’ææ÷BçFô&T6†V6¶VB‚“¶v—BW‡V7B†6öç6VçB’çFô6öçF–åFW‡B‚w6VÆV7FVBÖöFVÂæB—G26W'f–6Rr“¶v—BW‡V7B†6öç6VçB’ææ÷BçFô6öçF–åFW‡B‚ôvöövÆWÄ'—FUÇW2ò“¶v—BvRæÆö6F÷"‚r66öç6VçBr’æ6†V6²‚“¶v—B6†ö÷6U7GVF–ò‡vRÂwf–FVòr“¶v—BW‡V7B‡vRæÆö6F÷"‚r66öç6VçBr’’ææ÷BçFô&T6†V6¶VB‚“¶v—BW‡V7B†6öç6VçB’çFô6öçF–åFW‡B‚w6VÆV7FVBÖöFVÂæB—G26W'f–6Rr“¶v—BW‡V7B†6öç6VçB’ææ÷BçFô6öçF–åFW‡B‚ôvöövÆWÄ'—FUÇW2ò“·Ò“° §FW7B‚w6fVBvVæW&F–öâ†—7F÷'’&VæFW'2æB&V÷Vç2GW&&ÆR&W7VÇBrÆ7–æ2‡·vWÒ“Óç°¢6öç7B6fs×¶Væ&ÆVC§G'VRÆÖöFVÇ3¥·¶¶–æC¢v–ÖvRrÆÆ&VÃ¢tf—‡GW&RrÆ–C¢vf—‡GW&RrÇ&F–÷3¥²s£uÒÇ&VfW&Væ6W3£ÆVæ&ÆVC§G'VWÕÒÆ6FÆös¥·¶¶–æC¢v–ÖvRrÆÆ&VÃ¢tf—‡GW&RrÆ–C¢vf—‡GW&RrÇ&F–÷3¥²s£uÒÇ&VfW&Væ6W3£ÆVæ&ÆVC§G'VRÆFFW#§G'VRÇ&÷f–FW#¢tvöövÆRwÕ×Ó°¢v—BvRç&÷WFR‚r¢¢ö’÷7GVF–òö6öæf–rrÇ#Óç"ægVÆf–ÆÂ‡¶§6öã¦6fwÒ’“°¢v—BvRç&÷WFR‚r¢¢ö’÷7GVF–òö¦ö'2¢¢rÇ#Óç°¢–b‡"ç&WVW7B‚’æÖWF†öB‚“ÓÓÒttUBr—&WGW&â"ægVÆf–ÆÂ‡¶§6öã§¶—FV×3¥·¶–C¢w6fVBÓrÆ¶–æC¢v–ÖvRrÇ7FGW3¢w&VG’rÇ&÷f–FW#¢tvöövÆRrÆÖöFVÃ¢vf—‡GW&RrÇ&ö×C¢u6fVB&öGV7B&ö×BrÆ7&VFVDC¢s##bÓÓUCƒ££ã¢wÕ××Ò“°¢&WGW&â"æ6öçF–çVR‚“°¢Ò“°¢v—BvRç&÷WFR‚r¢¢ö’÷7GVF–òö¦ö'2÷6fVBÓrÇ#Óç"ægVÆf–ÆÂ‡¶§6öã§¶–C¢w6fVBÓrÆ¶–æC¢v–ÖvRrÇ7FGW3¢w&VG’rÇ&÷f–FW#¢tvöövÆRrÆÖöFVÃ¢vf—‡GW&RrÆÖ–ÖS¢v–ÖvR÷ærw×Ò’“°¢v—BvRç&÷WFR‚r¢¢ö’÷7GVF–òö¦ö'2÷6fVBÓöÖVF–rÇ#Óç"ægVÆf–ÆÂ‡¶6öçFVçEG—S¢v–ÖvR÷ærrÆ&öG“¤'VffW"æg&öÒ‚v•d$õ's´vvôå5V„UVtT$4”df54¤EVÄUe”…uG£„Gt‡tft’õ64Æ'D$¥%STW&´¦vvsÓÒrÂv&6ScBr—Ò’“°¢v—BvRæv÷Fò‚rövVæW&FR×7GVF–òæ‡FÖÃ÷7GVF–óÖ–ÖvRr“¶v—BvRæÆö6F÷"‚r76†÷t†—7F÷'’r’æ6Æ–6²‚“°¢v—BW‡V7B‡vRæÆö6F÷"‚ræ†—7F÷'’Ö6&Br’’çFô†fT6÷VçBƒ“¶v—BW‡V7B‡vRæÆö6F÷"‚ræ†—7F÷'’Ö6&Br’’çFô6öçF–åFW‡B‚tf—‡GW&Rr“¶v—BW‡V7B‡vRæÆö6F÷"‚ræ†—7F÷'’Ö6&Br’’ææ÷BçFô6öçF–åFW‡B‚tvöövÆRr“¶v—BW‡V7B‡vRæÆö6F÷"‚ræ†—7F÷'’Ö6&Br’’çFô6öçF–åFW‡B‚u6fVB&öGV7B&ö×Br“°¢v—BvRævWD'•&öÆR‚v'WGFöârÇ¶æÖS¢u&WW6R&ö×BwÒ’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r7&ö×Br’’çFô†fUfÇVR‚u6fVB&öGV7B&ö×Br“¶v—BvRæÆö6F÷"‚r76†÷t†—7F÷'’r’æ6Æ–6²‚“°¢v—BvRæÆö6F÷"‚ræ†—7F÷'’Ö6&Br’ævWD'•&öÆR‚v'WGFöârÇ¶æÖS¢t÷VârÆW†7C§G'VWÒ’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r6ÖVF––Örr’’çFô&Uf—6–&ÆR‚“¶v—BW‡V7B‡vRæÆö6F÷"‚r76†÷t7&VFRr’’çFô†fTGG&–'WFR‚v&–×&W76VBrÂwG'VRr“°§Ò“° §FW7B‚u7GVF–ò†öæ÷'26W'fW"×6VÆV7FVB&VfW'&VBVæ&ÆVBÖöFVÂrÆ7–æ2‡·vWÒ“Óç°¢6öç7B6fs×¶Væ&ÆVC§G'VRÆÖöFVÇ3¥·¶¶–æC¢wf–FVòrÆ–C¢v'—FWÇW2×6VVFæ6RÓ"rÆÆ&VÃ¢u6VVFæ6R"ãrÇ&F–÷3¥²sc£’rÂs“£brÂs£uÒÇ&VfW&Væ6W3£ÆVæ&ÆVC§G'VWÕÒÆ6FÆös¥°¢¶–C¢wfVòÓ2ãÖÆ—FRÖvVæW&FR×&Wf–WrrÆÆ&VÃ¢ufVò2ãÆ—FRrÆ¶–æC¢wf–FVòrÇ&÷f–FW#¢tvöövÆRrÆFFW#§G'VRÇ&F–÷3¥²sc£’rÂs“£buÒÇ&VfW&Væ6W3£ÆVæ&ÆVC§G'VRÇVÆ—G“¢ss#rÆGW&F–öã¢s‚6V6öæG2wÒÀ¢¶–C¢v'—FWÇW2×6VVFæ6RÓ"rÆÆ&VÃ¢u6VVFæ6R"ãrÆ¶–æC¢wf–FVòrÇ&÷f–FW#¢t'—FUÇW2rÆFFW#§G'VRÇ&F–÷3¥²sc£’rÂs“£brÂs£uÒÇ&VfW&Væ6W3£ÆVæ&ÆVC§G'VRÇVÆ—G“¢ss#rÆGW&F–öã¢sR6V6öæG2wÐ¢×Ó°¢v—BvRç&÷WFR‚r¢¢ö’÷7GVF–òö6öæf–rrÇ#Óç"ægVÆf–ÆÂ‡¶§6öã¦6fwÒ’“°¢v—BvRæv÷Fò‚rövVæW&FR×7GVF–òæ‡FÖÃ÷7GVF–ó×f–FVòr“°¢v—BW‡V7B‡vRæÆö6F÷"‚r6ÖöFVÄ'WGFöâr’’çFô6öçF–åFW‡B‚u6VVFæ6R"ãr“°¢v—BW‡V7B‡vRæÆö6F÷"‚u¶FF×CÖ6öç6VçEÒr’’çFô6öçF–åFW‡B‚w6VÆV7FVBÖöFVÂæB—G26W'f–6Rr“°§Ò“°  §FW7B‚v†—7F÷'’f–ÇFW'2æB7F–öç2æWfW"WFò×&VvVæW&FR–B¦ö"rÆ7–æ2‡·vWÒ“Óç°¢6öç7B6fs×¶Væ&ÆVC§G'VRÆÖöFVÇ3¥·¶¶–æC¢v–ÖvRrÆÆ&VÃ¢tf—‡GW&RrÆ–C¢vf—‡GW&RrÇ&F–÷3¥²s£rÂsc£’uÒÇ&VfW&Væ6W3£ÆVæ&ÆVC§G'VWÕÒÆ6FÆös¥·¶¶–æC¢v–ÖvRrÆÆ&VÃ¢tf—‡GW&RrÆ–C¢vf—‡GW&RrÇ&F–÷3¥²s£rÂsc£’uÒÇ&VfW&Væ6W3£ÆVæ&ÆVC§G'VRÆFFW#§G'VRÇ&÷f–FW#¢tvöövÆRwÕ×Ó°¢v—BvRç&÷WFR‚r¢¢ö’÷7GVF–òö6öæf–rrÇ#Óç"ægVÆf–ÆÂ‡¶§6öã¦6fwÒ’“°¢ÆWB÷7G3ÓÆÆ7Df–ÇFW#Òrs°¢v—BvRç&÷WFR‚r¢¢ö’÷7GVF–òö¦ö'2¢¢rÆ7–æ2#Óç°¢6öç7BSÖæWrU$Â‡"ç&WVW7B‚’çW&Â‚’“°¢–b‡"ç&WVW7B‚’æÖWF†öB‚“ÓÓÒuõ5Br—·÷7G2²³·&WGW&â"ægVÆf–ÆÂ‡·7FGW3£SÆ§6öã§¶W'&÷#¢uTäU…T5DTEõõ5Bw×Ò“·Ð¢–b‡"ç&WVW7B‚’æÖWF†öB‚“ÓÓÒtDTÄUDRr—&WGW&â"ægVÆf–ÆÂ‡¶§6öã§¶ö³§G'VW×Ò“°¢Æ7Df–ÇFW#×Rç6V&6…&×2ævWB‚vf–ÇFW"r—ÇÂvÆÂs°¢6öç7B—FVÓ×¶–C¢v†—7F÷'’ÓrÆ¶–æC¢v–ÖvRrÇ7FGW3¢w&VG’rÇ&÷f–FW#¢tvöövÆRrÆÖöFVÃ¢vf—‡GW&RrÇ&ö×C¢u&WW6&ÆR&ö×BrÇ6WGF–æw3§·&F–ó¢sc£’wÒÆÖ–ÖS¢v–ÖvR÷ærrÆ7&VF—G5&W6W'fVC£’Æ7&VF—G46†&vVC£’Æ7&VFVDC¢s##bÓÓUCƒ££ã¢wÓ°¢&WGW&â"ægVÆf–ÆÂ‡¶§6öã§¶f–ÇFW#¦Æ7Df–ÇFW"Æ—FV×3¥¶—FVÕ××Ò“°¢Ò“°¢v—BvRç&÷WFR‚r¢¢ö’÷7GVF–òö¦ö'2ö†—7F÷'’ÓöÖVF–rÇ#Óç"ægVÆf–ÆÂ‡¶6öçFVçEG—S¢v–ÖvR÷ærrÆ&öG“¤'VffW"æg&öÒ‚v•d$õ's´vvôå5V„UVtT$4”df54¤EVÄUe”…uG£„Gt‡tft’õ64Æ'D$¥%STW&´¦vvsÓÒrÂv&6ScBr—Ò’“°¢v—BvRæv÷Fò‚rövVæW&FR×7GVF–òæ‡FÖÃ÷7GVF–óÖ–ÖvRr“¶v—BvRæÆö6F÷"‚r76†÷t†—7F÷'’r’æ6Æ–6²‚“¶v—BW‡V7B‡vRæÆö6F÷"‚ræ†—7F÷'’Ö6&Br’’çFô6öçF–åFW‡B‚s’’7&VF—G2r“°¢v—BvRæÆö6F÷"‚u¶FFÖ†—7F÷'’Öf–ÇFW#Ö–ÖvUÒr’æ6Æ–6²‚“¶v—BW‡V7BçöÆÂ‚‚“ÓæÆ7Df–ÇFW"’çFô&R‚v–ÖvRr“°¢v—BvRævWD'•&öÆR‚v'WGFöârÇ¶æÖS¢u&VvVæW&FRwÒ’æ6Æ–=½ãËh‘éì¶»§q«^u•ÍÍ%¹™¼œ¤¤¹Ñ½½¹Ñ…¥¹Q•áÐ œÄ¼È…Ñ¥Ù”œ¤í…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œ…•ÍÍ%¹™¼œ¤¤¹Ñ½½¹Ñ…¥¹Q•áÐ œÐ¼ÄÈ¥¸Ñ¡”±…ÍÐ¡½ÕÈœ¤ì)ô¤ì()Ñ•ÍÐ Ù¥‘•¼Í•±•Ñ½ÉÌ™½±±½ÜÉ•…°Y•¼½M••‘…¹”…Á…‰¥±¥Ñ¥•ÌÝ¥Ñ¡½ÕÐÍÕ‰µ¥ÑÑ¥¹œ©½‰Ìœ±…Íå¹Œ¡íÁ…•ô¤ôùì(±•ÐÁ½ÍÑÌôÀíÁ…”¹½¸ É•ÅÕ•ÍÐœ±É•ÅÕ•ÍÐôùí¥˜¡É•ÅÕ•ÍÐ¹µ•Ñ¡½ ¤ôôôA=MPœ˜™É•ÅÕ•ÍÐ¹ÕÉ° ¤¹¥¹±Õ‘•Ì œ½…Á¤½ÍÑÕ‘¥¼½©½‰Ìœ¤¥Á½ÍÑÌ¬¬íô¤ì(…Ý…¥ÐÁ…”¹½Ñ¼ œ½•¹•É…Ñ”µÍÑÕ‘¥¼¹¡Ñµ°ýÍÑÕ‘¥¼õÙ¥‘•¼œ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½I•Í½±ÕÑ¥½¹1…‰•°œ¤¤¹Ñ½	•Y¥Í¥‰±” ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½ÕÉ…Ñ¥½¹1…‰•°œ¤¤¹Ñ½	•Y¥Í¥‰±” ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½ÕÉ…Ñ¥½¸½ÁÑ¥½¸œ¤¤¹Ñ½!…Ù•½Õ¹Ð Ì¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÙ¥‘•½ÕÉ…Ñ¥½¸œ¤¹Í•±•Ñ=ÁÑ¥½¸ œÐœ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í	ÕÑÑ½¸œ¤¤¹Ñ½½¹Ñ…¥¹Q•áÐ œÑÌœ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÙ¥‘•½I•Í½±ÕÑ¥½¸œ¤¹Í•±•Ñ=ÁÑ¥½¸ œÄÀàÁÀœ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½ÕÉ…Ñ¥½¸œ¤¤¹Ñ½!…Ù•Y…±Õ” œàœ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½ÕÉ…Ñ¥½¸½ÁÑ¥½¸œ¤¤¹Ñ½!…Ù•½Õ¹Ð Ä¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í¥…±½œm‘…Ñ„µ±½Í”õÍ•ÑÑ¥¹Í¥…±½tœ¤¹±…ÍÐ ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œµ½‘•±	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹•Ñ	åI½±” ‰ÕÑÑ½¸œ±í¹…µ”è½M••‘…¹”€È¸À½ô¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½ÕÉ…Ñ¥½¸½ÁÑ¥½¸œ¤¤¹Ñ½!…Ù•½Õ¹Ð Ô¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÙ¥‘•½ÕÉ…Ñ¥½¸œ¤¹Í•±•Ñ=ÁÑ¥½¸ œÄÔœ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½ÕÉ…Ñ¥½¸œ¤¤¹Ñ½!…Ù•Y…±Õ” œÄÔœ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í¥…±½œm‘…Ñ„µ±½Í”õÍ•ÑÑ¥¹Í¥…±½tœ¤¹±…ÍÐ ¤¹±¥¬ ¤ì(…Ý…¥Ð¡½½Í•MÑÕ‘¥¼¡Á…”°¥µ…”œ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½ÕÉ…Ñ¥½¹1…‰•°œ¤¤¹Ñ½	•!¥‘‘•¸ ¤ì(•áÁ•Ð¡Á½ÍÑÌ¤¹Ñ½	” À¤ì)ô¤ì()Ñ•ÍÐ M••‘…¹”¥µ…”µ½‘•Ì™½±±½Ü…ÑÑ…¡•Á¡½Ñ¼½Õ¹ÐÝ¥Ñ¡½ÕÐÁ½ÍÑ¥¹œÁ…¥©½‰Ìœ±…Íå¹Œ¡íÁ…•ô¤ôùì(±•Ð©½‰A½ÍÑÌôÀíÁ…”¹½¸ É•ÅÕ•ÍÐœ±Èôùí¥˜¡È¹µ•Ñ¡½ ¤ôôôA=MPœ˜™¹•ÜUI0¡È¹ÕÉ° ¤¤¹Á…Ñ¡¹…µ”ôôôœ½…Á¤½ÍÑÕ‘¥¼½©½‰Ìœ¥©½‰A½ÍÑÌ¬¬íô¤ì(…Ý…¥ÐÁ…”¹½Ñ¼ œ½•¹•É…Ñ”µÍÑÕ‘¥¼¹¡Ñµ°ýÍÑÕ‘¥¼õÙ¥‘•¼œ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œµ½‘•±	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹•Ñ	åI½±” ‰ÕÑÑ½¸œ±í¹…µ”è½M••‘…¹”€È¸À½ô¤¹±¥¬ ¤ì(½¹ÍÐ¥µ…”õí¹…µ”è™É…µ”¹Á¹œœ±µ¥µ•QåÁ”è¥µ…”½Á¹œœ±‰Õ™™•Èé	Õ™™•È¹™É½´ ¥Y	=IÜÁ-½9MU¡U	e™M)U±EYE%!]@ÑèáÝ!Ý$½M1‰Ñ	)ITÕÉ­)œôôœ°‰…Í”ØÐœ¥ôì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½%¹ÁÕÑ5½‘”œ¤¤¹Ñ½!…Ù•Y…±Õ” Ñ•áÐœ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í¥…±½œm‘…Ñ„µ±½Í”õÍ•ÑÑ¥¹Í¥…±½tœ¤¹±…ÍÐ ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÉ•™•É•¹•Ìœ¤¹Í•Ñ%¹ÁÕÑ¥±•Ì¡¥µ…”¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½%¹ÁÕÑ5½‘”œ¤¤¹Ñ½!…Ù•Y…±Õ” ™¥ÉÍÑ}™É…µ”œ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÙ¥‘•½%¹ÁÕÑ5½‘”œ¤¹Í•±•Ñ=ÁÑ¥½¸ É•™•É•¹•}¥µ…”œ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í¥…±½œm‘…Ñ„µ±½Í”õÍ•ÑÑ¥¹Í¥…±½tœ¤¹±…ÍÐ ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÉ•™•É•¹•Ìœ¤¹Í•Ñ%¹ÁÕÑ¥±•Ì¡ì¸¸¹¥µ…”±¹…µ”è±…ÍÐ¹Á¹œô¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½%¹ÁÕÑ5½‘”œ¤¤¹Ñ½!…Ù•Y…±Õ” É•™•É•¹•}¥µ…”œ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½%¹ÁÕÑ5½‘”½ÁÑ¥½¸œ¤¤¹Ñ½!…Ù•½Õ¹Ð È¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÙ¥‘•½%¹ÁÕÑ5½‘”œ¤¹Í•±•Ñ=ÁÑ¥½¸ ™¥ÉÍÑ}±…ÍÐœ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í¥…±½œm‘…Ñ„µ±½Í”õÍ•ÑÑ¥¹Í¥…±½tœ¤¹±…ÍÐ ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÉ•™•É•¹•Ìœ¤¹Í•Ñ%¹ÁÕÑ¥±•Ì¡ì¸¸¹¥µ…”±¹…µ”èÑ¡¥É¹Á¹œô¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½%¹ÁÕÑ5½‘”œ¤¤¹Ñ½!…Ù•Y…±Õ” É•™•É•¹•}¥µ…”œ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½%¹ÁÕÑ5½‘”½ÁÑ¥½¸œ¤¤¹Ñ½!…Ù•½Õ¹Ð Ä¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í¥…±½œm‘…Ñ„µ±½Í”õÍ•ÑÑ¥¹Í¥…±½tœ¤¹±…ÍÐ ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œ±•…ÉI•™Ìœ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½%¹ÁÕÑ5½‘”œ¤¤¹Ñ½!…Ù•Y…±Õ” Ñ•áÐœ¤ì(•áÁ•Ð¡©½‰A½ÍÑÌ¤¹Ñ½	” À¤ì)ô¤ì()Ñ•ÍÐ Ù¥‘•¼ÁÉ½µÁÐ…¹µ½‘•°Í•ÑÑ¥¹ÌÉ•ÍÑ½É”ÁÉ¥Ù…Ñ•±ä…™Ñ•ÈÑ…ˆÉ•±½…Ý¥Ñ¡½ÕÐ…¹äÁÉ½Ù¥‘•ÈÉ•ÅÕ•ÍÐœ±…Íå¹Œ¡íÁ…•ô¤ôùì(±•Ð©½‰A½ÍÑÌôÀì(Á…”¹½¸ É•ÅÕ•ÍÐœ±Èôùí¥˜¡È¹µ•Ñ¡½ ¤ôôôA=MPœ˜™¹•ÜUI0¡È¹ÕÉ° ¤¤¹Á…Ñ¡¹…µ”ôôôœ½…Á¤½ÍÑÕ‘¥¼½©½‰Ìœ¥©½‰A½ÍÑÌ¬¬íô¤ì(…Ý…¥ÐÁ…”¹½Ñ¼ œ½•¹•É…Ñ”µÍÑÕ‘¥¼¹¡Ñµ°ýÍÑÕ‘¥¼õÙ¥‘•¼œ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œµ½‘•±	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹•Ñ	åI½±” ‰ÕÑÑ½¸œ±í¹…µ”è½M••‘…¹”€È¸À½ô¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÁÉ½µÁÐœ¤¹™¥±° …±´µ½Õ¹Ñ…¥¸ÍÕ¹É¥Í”Ý¥Ñ Í±½Ý±äµ½Ù¥¹œ±½Õ‘Ìœ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÙ¥‘•½I•Í½±ÕÑ¥½¸œ¤¹Í•±•Ñ=ÁÑ¥½¸ œÄÀàÁÀœ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÙ¥‘•½ÕÉ…Ñ¥½¸œ¤¹Í•±•Ñ=ÁÑ¥½¸ œÄÔœ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í¥…±½œm‘…Ñ„µ±½Í”õÍ•ÑÑ¥¹Í¥…±½tœ¤¹±…ÍÐ ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹É•±½… ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÁÉ½µÁÐœ¤¤¹Ñ½!…Ù•Y…±Õ” …±´µ½Õ¹Ñ…¥¸ÍÕ¹É¥Í”Ý¥Ñ Í±½Ý±äµ½Ù¥¹œ±½Õ‘Ìœ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œµ½‘•±	ÕÑÑ½¸œ¤¤¹Ñ½½¹Ñ…¥¹Q•áÐ M••‘…¹”€È¸Àœ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½I•Í½±ÕÑ¥½¸œ¤¤¹Ñ½!…Ù•Y…±Õ” œÄÀàÁÀœ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½ÕÉ…Ñ¥½¸œ¤¤¹Ñ½!…Ù•Y…±Õ” œÄÔœ¤ì(€¼¼½µÁ…ÐÅÕ¥­ÍÑ…ÉÐ¥¹Ñ•¹Ñ¥½¹…±±ä¡¥‘•ÌÑ¡”Ù•É‰½Í”‰…¹¹•ÈÝ¡•¸¹¼Á¡½Ñ¼É•½Ù•Éä¥ÌÉ•ÅÕ¥É•¸(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½É…™Ñ	…Èœ¤¤¹Ñ½	•!¥‘‘•¸ ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œ½¹Í•¹Ðœ¤¤¹¹½Ð¹Ñ½	•¡•­• ¤ì(Á…”¹½¹” ‘¥…±½œœ±ôù¹…•ÁÐ ¤¤ì(€¼¼Q¡”•á¥ÍÑ¥¹œ±•…È¡…¹‘±•ÈµÕÍÐÍÑ¥±°Ý½É¬•Ù•¸Ý¡¥±”ÅÕ¥­ÍÑ…ÉÐ¡¥‘•Ì¥ÑÌÙ•É‰½Í”‰…¹¹•È¸(…Ý…¥ÐÁ…”¹±½…Ñ½È œ±•…ÉY¥‘•½É…™Ðœ¤¹•Ù…±Õ…Ñ”¡‰ÕÑÑ½¸ôù‰ÕÑÑ½¸¹±¥¬ ¤¤ì(…Ý…¥ÐÁ…”¹É•±½… ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÁÉ½µÁÐœ¤¤¹Ñ½!…Ù•Y…±Õ” œœ¤ì(•áÁ•Ð¡©½‰A½ÍÑÌ¤¹Ñ½	” À¤ì)ô¤ì)Ñ•ÍÐ É•½Ù•É•M••‘…¹”™¥ÉÍÐ…¹±…ÍÐ™É…µ•ÌÉ•ÅÕ¥É”‰½Ñ Á¡½Ñ½Ì……¥¸°¹•Ù•ÈÍÑ½É”Á¡½Ñ½Ìœ±…Íå¹Œ¡íÁ…•ô¤ôùì(±•Ð©½‰A½ÍÑÌôÀì(Á…”¹½¸ É•ÅÕ•ÍÐœ±Èôùí¥˜¡È¹µ•Ñ¡½ ¤ôôôA=MPœ˜™¹•ÜUI0¡È¹ÕÉ° ¤¤¹Á…Ñ¡¹…µ”ôôôœ½…Á¤½ÍÑÕ‘¥¼½©½‰Ìœ¥©½‰A½ÍÑÌ¬¬íô¤ì(½¹ÍÐ¥µœõ	Õ™™•È¹™É½´ ¥Y	=IÜÁ-½9MU¡U	e™M)U±EYE%!]@ÑèáÝ!Ý$½M1‰Ñ	)ITÕÉ­)œôôœ°‰…Í”ØÐœ¤ì(½¹ÍÐÁ¡½Ñ¼õ¹…µ”ôø¡í¹…µ”±µ¥µ•QåÁ”è¥µ…”½Á¹œœ±‰Õ™™•Èé¥µô¤ì(…Ý…¥ÐÁ…”¹½Ñ¼ œ½•¹•É…Ñ”µÍÑÕ‘¥¼¹¡Ñµ°ýÍÑÕ‘¥¼õÙ¥‘•¼œ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œµ½‘•±	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹•Ñ	åI½±” ‰ÕÑÑ½¸œ±í¹…µ”è½M••‘…¹”€È¸À½ô¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÁÉ½µÁÐœ¤¹™¥±° ÍÕ¹Í•ÐÑÉ…¹Í¥Ñ¥½¹Ì¥¹Ñ¼¹¥¡Ðœ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÉ•™•É•¹•Ìœ¤¹Í•Ñ%¹ÁÕÑ¥±•Ì¡mÁ¡½Ñ¼ ™¥ÉÍÐ¹Á¹œœ¤±Á¡½Ñ¼ ±…ÍÐ¹Á¹œœ¥t¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÉ•™AÉ•Ù¥•Ü¥µœœ¤¤¹Ñ½!…Ù•½Õ¹Ð È¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÙ¥‘•½%¹ÁÕÑ5½‘”œ¤¹Í•±•Ñ=ÁÑ¥½¸ ™¥ÉÍÑ}±…ÍÐœ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í¥…±½œm‘…Ñ„µ±½Í”õÍ•ÑÑ¥¹Í¥…±½tœ¤¹±…ÍÐ ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹É•±½… ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÉ•™AÉ•Ù¥•Ü¥µœœ¤¤¹Ñ½!…Ù•½Õ¹Ð À¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½É…™Ñ5•ÍÍ…”œ¤¤¹Ñ½½¹Ñ…¥¹Q•áÐ ÑÑ… €ÈÉ•™•É•¹”Á¡½Ñ¼œ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½%¹ÁÕÑ5½‘”œ¤¤¹Ñ½!…Ù•Y…±Õ” Ñ•áÐœ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œ•¹•É…Ñ”œ¤¤¹Ñ½	•¥Í…‰±• ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÉ•™•É•¹•Ìœ¤¹Í•Ñ%¹ÁÕÑ¥±•Ì¡Á¡½Ñ¼ ™¥ÉÍÐµ¹•Ü¹Á¹œœ¤¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½É…™Ñ5•ÍÍ…”œ¤¤¹Ñ½½¹Ñ…¥¹Q•áÐ œÄ…‘‘•Í¼™…Èœ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÉ•™•É•¹•Ìœ¤¹Í•Ñ%¹ÁÕÑ¥±•Ì¡Á¡½Ñ¼ ±…ÍÐµ¹•Ü¹Á¹œœ¤¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÉ•™AÉ•Ù¥•Ü¥µœœ¤¤¹Ñ½!…Ù•½Õ¹Ð È¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½%¹ÁÕÑ5½‘”œ¤¤¹Ñ½!…Ù•Y…±Õ” ™¥ÉÍÑ}±…ÍÐœ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÙ¥‘•½É…™ÑM­¥ÁA¡½Ñ½Ìœ¤¤¹Ñ½	•!¥‘‘•¸ ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œ½¹Í•¹Ðœ¤¤¹¹½Ð¹Ñ½	•¡•­• ¤ì(•áÁ•Ð¡©½‰A½ÍÑÌ¤¹Ñ½	” À¤ì)ô¤ì)Ñ•ÍÐ Ù¥‘•¼!¥ÍÑ½Éä¡•­Ì…¸•á¥ÍÑ¥¹œÑ…Í¬Ý¥Ñ¡½ÕÐÉ•ÍÕ‰µ¥ÑÑ¥¹œ½È‘½Ý¹±½…‘¥¹œµ•‘¥„œ±…Íå¹Œ¡íÁ…•ô¤ôùì(½¹ÍÐ™œõí•¹…‰±•éÑÉÕ”±µ½‘•±Ìémí­¥¹èÙ¥‘•¼œ±±…‰•°èY¥‘•¼™¥áÑÕÉ”œ±¥è™¥áÑÕÉ”µÙ¥‘•¼œ±É…Ñ¥½ÌélœÄØèät±É•™•É•¹•ÌèÀ±•¹…‰±•éÑÉÕ•õt±…Ñ…±½œémí­¥¹èÙ¥‘•¼œ±±…‰•°èY¥‘•¼™¥áÑÕÉ”œ±¥è™¥áÑÕÉ”µÙ¥‘•¼œ±É…Ñ¥½ÌélœÄØèät±É•™•É•¹•ÌèÀ±•¹…‰±•éÑÉÕ”±…‘…ÁÑ•ÈéÑÉÕ”±ÁÉ½Ù¥‘•Èè½½±”õuôì(…Ý…¥ÐÁ…”¹É½ÕÑ” œ¨¨½…Á¤½ÍÑÕ‘¥¼½½¹™¥œœ±ÈôùÈ¹™Õ±™¥±°¡í©Í½¸é™ô¤¤ì(±•ÐÍÑ…ÑÕÍ¡•­ÌôÀ±µ•‘¥…½Ý¹±½…‘ÌôÀ±©½‰A½ÍÑÌôÀ±©½‰MÑ…ÑÕÌôÁÉ½•ÍÍ¥¹œœì(Á…”¹½¸ É•ÅÕ•ÍÐœ±Èôùí¥˜¡È¹µ•Ñ¡½ ¤ôôôA=MPœ˜™¹•ÜUI0¡È¹ÕÉ° ¤¤¹Á…Ñ¡¹…µ”ôôôœ½…Á¤½ÍÑÕ‘¥¼½©½‰Ìœ¥©½‰A½ÍÑÌ¬¬íô¤ì(…Ý…¥ÐÁ…”¹É½ÕÑ” œ¨¨½…Á¤½ÍÑÕ‘¥¼½©½‰Ìý™¥±Ñ•ÈõÙ¥‘•¼œ±ÈôùÈ¹™Õ±™¥±°¡í©Í½¸éí¥Ñ•µÌémí¥èÉÕ¹¹¥¹œµÙ¥‘•¼œ±­¥¹èÙ¥‘•¼œ±ÍÑ…ÑÕÌé©½‰MÑ…ÑÕÌ±µ½‘•°è™¥áÑÕÉ”µÙ¥‘•¼œ±ÁÉ½µÁÐèM…µÁ±”Ù¥‘•¼œ±ÁÉ½Ù¥‘•Èè½½±”œ±É•…Ñ•‘ÐèœÈÀÈØ´ÄÀ´ÄÕPÄÈèÀÀèÀÁhõuõô¤¤ì(…Ý…¥ÐÁ…”¹É½ÕÑ” œ¨¨½…Á¤½ÍÑÕ‘¥¼½©½‰Ì½ÉÕ¹¹¥¹œµÙ¥‘•¼œ±Èôùì(€ÍÑ…ÑÕÍ¡•­Ì¬¬í¥˜¡ÍÑ…ÑÕÍ¡•­ÌôôôÈ¥©½‰MÑ…ÑÕÌôÉ•…‘äœì(€É•ÑÕÉ¸È¹™Õ±™¥±°¡í©Í½¸éí¥èÉÕ¹¹¥¹œµÙ¥‘•¼œ±­¥¹èÙ¥‘•¼œ±ÍÑ…ÑÕÌé©½‰MÑ…ÑÕÌ±µ¥µ”é©½‰MÑ…ÑÕÌôôôÉ•…‘äœüÙ¥‘•¼½µÀÐœé¹Õ±°±É•ÑÉå™Ñ•ÉM•½¹‘ÌèÕõô¤ì(ô¤ì(…Ý…¥ÐÁ…”¹É½ÕÑ” œ¨¨½…Á¤½ÍÑÕ‘¥¼½©½‰Ì½ÉÕ¹¹¥¹œµÙ¥‘•¼½µ•‘¥„œ±Èôùíµ•‘¥…½Ý¹±½…‘Ì¬¬íÉ•ÑÕÉ¸È¹™Õ±™¥±°¡í½¹Ñ•¹ÑQåÁ”èÙ¥‘•¼½µÀÐœ±‰½‘äèœô¤íô¤ì(…Ý…¥ÐÁ…”¹½Ñ¼ œ½•¹•É…Ñ”µÍÑÕ‘¥¼¹¡Ñµ°ýÍÑÕ‘¥¼õÙ¥‘•¼œ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ¡½Ý!¥ÍÑ½Éäœ¤¹±¥¬ ¤ì(…Ý…¥ÐÁ…”¹±½…Ñ½È m‘…Ñ„µ¡¥ÍÑ½Éäµ™¥±Ñ•ÈõÙ¥‘•½tœ¤¹±¥¬ ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹•Ñ	åI½±” ‰ÕÑÑ½¸œ±í¹…µ”è¡•¬ÍÑ…ÑÕÌô¤¤¹Ñ½	•Y¥Í¥‰±” ¤ì(…Ý…¥ÐÁ…”¹•Ñ	åI½±” ‰ÕÑÑ½¸œ±í¹…µ”è¡•¬ÍÑ…ÑÕÌô¤¹±¥¬ ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÍÑ…ÑÕÌœ¤¤¹Ñ½½¹Ñ…¥¹Q•áÐ ÍÑ¥±°ÁÉ½•ÍÍ¥¹œœ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œ¹¡¥ÍÑ½ÉäµÍÑ…ÑÕÌœ¤¤¹Ñ½!…Ù•Q•áÐ AÉ½•ÍÍ¥¹œœ¤ì(…Ý…¥ÐÁ…”¹•Ñ	åI½±” ‰ÕÑÑ½¸œ±í¹…µ”è¡•¬ÍÑ…ÑÕÌô¤¹±¥¬ ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÍÑ…ÑÕÌœ¤¤¹Ñ½½¹Ñ…¥¹Q•áÐ Y¥‘•¼¥ÌÉ•…‘äœ¤ì(…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œ¹¡¥ÍÑ½ÉäµÍÑ…ÑÕÌœ¤¤¹Ñ½!…Ù•Q•áÐ I•…‘äœ¤ì(•áÁ•Ð¡ÍÑ…ÑÕÍ¡•­Ì¤¹Ñ½	” È¤ì(•áÁ•Ð¡©½‰A½ÍÑÌ¤¹Ñ½	” À¤ì(•áÁ•Ð¡µ•‘¥…½Ý¹±½…‘Ì¤¹Ñ½	” À¤ì€¼¼=¹±äÑ¡”•áÁ±¥¥Ð=Á•¸…Ñ¥½¸µ…ä™•Ñ Ù¥‘•¼‰åÑ•Ì¸)ô¤ì((¼¼=Ý¹•È…•ÁÑ…¹”è!½µ”­••ÁÌ¥ÑÌ‘¥…±½œìMÑÕ‘¥¼Á…¹•±Ì…¹¡½ÈÑ¼½µÁ½Í•È½¹ÑÉ½±Ì¸9¼ÁÉ½Ù¥‘•È‘¥ÍÁ…Ñ ¸)™½È¡½¹ÍÐÙ¥•ÝÁ½ÉÐ½˜míÝ¥‘Ñ èÄÐÐà±¡•¥¡ÐèäÀÁô±íÝ¥‘Ñ èÌäÀ±¡•¥¡ÐèàÐÑô±íÝ¥‘Ñ èÌÈÀ±¡•¥¡ÐèÜÐÁô±íÝ¥‘Ñ èàÐÐ±¡•¥¡ÐèÌäÁõt¥ì(™½È¡½¹ÍÐmÍÑÕ‘¥¼±Ñ¥Ñ±•t½˜ml¥µ…”œ°1¥¡ÐÕÀå½ÕÈÉ•…Ñ¥½¸Ý¥Ñ ••ÁÍåÄt±lÙ¥‘•¼œ°1¥¡ÐÕÀå½ÕÈÉ•…Ñ¥½¸Ý¥Ñ ••ÁÍåÄt±l…Õ‘¥¼œ°1¥¡ÐÕÀå½ÕÈÉ•…Ñ¥½¸Ý¥Ñ ••ÁÍåÄut¥ì(Ñ•ÍÐ¡ÍÑÕ‘¥¼µ½‘•°½Í•ÑÑ¥¹ÌÝ¥¹‘½ÝÌè€‘íÍÑÕ‘¥½ôÕÍ•Ì‰ÕÑÑ½¸µ…¹¡½É•Á…¹•±Ì…Ð€‘íÙ¥•ÝÁ½ÉÐ¹Ý¥‘Ñ¡õà‘íÙ¥•ÝÁ½ÉÐ¹¡•¥¡Ñõ€±…Íå¹Œ¡íÁ…•ô±¥¹™¼¤ôùì(€…Ý…¥ÐÁ…”¹Í•ÑY¥•ÝÁ½ÉÑM¥é”¡Ù¥•ÝÁ½ÉÐ¤ì(€±•ÐÁ½ÍÑÌôÀíÁ…”¹½¸ É•ÅÕ•ÍÐœ±É•ÅÕ•ÍÐôùí¥˜¡É•ÅÕ•ÍÐ¹µ•Ñ¡½ ¤ôôôA=MPœ¥Á½ÍÑÌ¬¬íô¤ì(€½¹ÍÐ…ÍÍ•ÉÑ•¹Ñ•É•õ…Íå¹Œ‘¥…±½œôùì(€€…Ý…¥Ð•áÁ•Ð¡‘¥…±½œ¤¹Ñ½	•Y¥Í¥‰±” ¤ì(€€½¹ÍÐ‰½Õ¹‘Ìõ…Ý…¥Ð‘¥…±½œ¹‰½Õ¹‘¥¹	½à ¤í•áÁ•Ð¡‰½Õ¹‘Ì¤¹¹½Ð¹Ñ½	•9Õ±° ¤ì(€€•áÁ•Ð¡5…Ñ ¹…‰Ì¡‰½Õ¹‘Ì¹à­‰½Õ¹‘Ì¹Ý¥‘Ñ ¼ÈµÙ¥•ÝÁ½ÉÐ¹Ý¥‘Ñ ¼È¤¤¹Ñ½	•1•ÍÍQ¡…¸ Ì¤ì(€€•áÁ•Ð¡5…Ñ ¹…‰Ì¡‰½Õ¹‘Ì¹ä­‰½Õ¹‘Ì¹¡•¥¡Ð¼ÈµÙ¥•ÝÁ½ÉÐ¹¡•¥¡Ð¼È¤¤¹Ñ½	•1•ÍÍQ¡…¸ Ì¤ì(€€•áÁ•Ð¡‰½Õ¹‘Ì¹à¤¹Ñ½	•É•…Ñ•ÉQ¡…¹=ÉÅÕ…° ÄÈ¤í•áÁ•Ð¡‰½Õ¹‘Ì¹ä¤¹Ñ½	•É•…Ñ•ÉQ¡…¹=ÉÅÕ…° ÄÈ¤ì(€€•áÁ•Ð¡‰½Õ¹‘Ì¹à­‰½Õ¹‘Ì¹Ý¥‘Ñ ¤¹Ñ½	•1•ÍÍQ¡…¹=ÉÅÕ…°¡Ù¥•ÝÁ½ÉÐ¹Ý¥‘Ñ ´ÄÈ¤ì(€€•áÁ•Ð¡‰½Õ¹‘Ì¹ä­‰½Õ¹‘Ì¹¡•¥¡Ð¤¹Ñ½	•1•ÍÍQ¡…¹=ÉÅÕ…°¡Ù¥•ÝÁ½ÉÐ¹¡•¥¡Ð´ÄÈ¤ì(€€•áÁ•Ð¡…Ý…¥Ð‘¥…±½œ¹•Ù…±Õ…Ñ”¡”ôù”¹ÍÉ½±±]¥‘Ñ ðõ”¹±¥•¹Ñ]¥‘Ñ ¤¤¹Ñ½	”¡ÑÉÕ”¤ì(€ôì(€€½¹ÍÐ…ÍÍ•ÉÑ¹¡½É•õ…Íå¹Œ¡‘¥…±½œ±…¹¡½È¤ôùì(€€€…Ý…¥Ð•áÁ•Ð¡‘¥…±½œ¤¹Ñ½	•Y¥Í¥‰±” ¤ì(€€€…Ý…¥Ð•áÁ•Ð¹Á½±°  ¤ôù‘¥…±½œ¹•Ù…±Õ…Ñ”¡•°ôø¡í±•™Ðé•°¹ÍÑå±”¹±•™Ð±Ñ½Àé•°¹ÍÑå±”¹Ñ½Áô¤¤¤¹¹½Ð¹Ñ½ÅÕ…°¡í±•™Ðèœœ±Ñ½Àèœô¤ì(€€€…Ý…¥Ð•áÁ•Ð¹Á½±°¡…Íå¹Œ ¤ôùí½¹ÍÐˆõ…Ý…¥Ð‘¥…±½œ¹‰½Õ¹‘¥¹	½à ¤íÉ•ÑÕÉ¸	½½±•…¸¡ˆ˜™ˆ¹àøôÄÄ˜™ˆ¹äøôÄÄ¤íô¤¹Ñ½	”¡ÑÉÕ”¤ì(€€€½¹ÍÐ‰½Õ¹‘Ìõ…Ý…¥Ð‘¥…±½œ¹‰½Õ¹‘¥¹	½à ¤±‰ÕÑÑ½¸õ…Ý…¥Ð…¹¡½È¹‰½Õ¹‘¥¹	½à ¤ì(€€€•áÁ•Ð¡‰½Õ¹‘Ì¹à¤¹Ñ½	•É•…Ñ•ÉQ¡…¹=ÉÅÕ…° ÄÄ¤í•áÁ•Ð¡‰½Õ¹‘Ì¹ä¤¹Ñ½	•É•…Ñ•ÉQ¡…¹=ÉÅÕ…° ÄÄ¤ì(€€€•áÁ•Ð¡‰½Õ¹‘Ì¹à­‰½Õ¹‘Ì¹Ý¥‘Ñ ¤¹Ñ½	•1•ÍÍQ¡…¹=ÉÅÕ…°¡Ù¥•ÝÁ½ÉÐ¹Ý¥‘Ñ ´ÄÄ¤í•áÁ•Ð¡‰½Õ¹‘Ì¹ä­‰½Õ¹‘Ì¹¡•¥¡Ð¤¹Ñ½	•1•ÍÍQ¡…¹=ÉÅÕ…°¡Ù¥•ÝÁ½ÉÐ¹¡•¥¡Ð´ÄÄ¤ì(€€€•áÁ•Ð¡5…Ñ ¹µ¥¸¡5…Ñ ¹…‰Ì¡‰ÕÑÑ½¸¹äµ‰½Õ¹‘Ì¹äµ‰½Õ¹‘Ì¹¡•¥¡Ð¤±5…Ñ ¹…‰Ì¡‰½Õ¹‘Ì¹äµ‰ÕÑÑ½¸¹äµ‰ÕÑÑ½¸¹¡•¥¡Ð¤¤¤¹Ñ½	•1•ÍÍQ¡…¹=ÉÅÕ…° ÄÀ¤ì(€€€•áÁ•Ð¡…Ý…¥Ð‘¥…±½œ¹•Ù…±Õ…Ñ”¡•°ôù•Ñ½µÁÕÑ•‘MÑå±”¡•°°œèé‰…­‘É½Àœ¤¹‰…­‘É½Á¥±Ñ•È¤¤¹Ñ½	” ¹½¹”œ¤ì(€€€•áÁ•Ð¡…Ý…¥Ð‘¥…±½œ¹•Ù…±Õ…Ñ”¡•°ôù•°¹ÍÉ½±±]¥‘Ñ ðõ•°¹±¥•¹Ñ]¥‘Ñ ¤¤¹Ñ½	”¡ÑÉÕ”¤ì(€€ôì(€€…Ý…¥ÐÁ…”¹½Ñ¼ œ½‘••ÁÍåÄ¹¡Ñµ°œ¤ì(€€¥˜¡Ù¥•ÝÁ½ÉÐ¹Ý¥‘Ñ ðôÜØÀ¥…Ý…¥ÐÁ…”¹±½…Ñ½È œµ•¹Ôœ¤¹±¥¬ ¤ì(€€½¹ÍÐÑÉ¥•ÈõÁ…”¹±½…Ñ½È¡m‘…Ñ„µ½Á•¸µµ½‘•±Ìôˆ‘íÍÑÕ‘¥½ô‰u€¤ì(€€…Ý…¥ÐÑÉ¥•È¹±¥¬ ¤ì(€€½¹ÍÐ¡½½Í•ÈõÁ…”¹•Ñ	åI½±” ‘¥…±½œœ±í¹…µ”éÍÑÕ‘¥½lÁt¹Ñ½UÁÁ•É…Í” ¤­ÍÑÕ‘¥¼¹Í±¥” Ä¤¬œµ½‘•±Ìœ±•á…ÐéÑÉÕ•ô¤ì(€€…Ý…¥Ð…ÍÍ•ÉÑ•¹Ñ•É•¡¡½½Í•È¤ì(€€…Ý…¥Ð•áÁ•Ð¡ÑÉ¥•È¤¹Ñ½!…Ù•ÑÑÉ¥‰ÕÑ” …É¥„µ•áÁ…¹‘•œ°ÑÉÕ”œ¤ì(€€…Ý…¥ÐÁ…”¹­•å‰½…É¹ÁÉ•ÍÌ Í…Á”œ¤í…Ý…¥Ð•áÁ•Ð¡¡½½Í•È¤¹¹½Ð¹Ñ½	•Y¥Í¥‰±” ¤ì(€€…Ý…¥Ð•áÁ•Ð¡ÑÉ¥•È¤¹Ñ½!…Ù•ÑÑÉ¥‰ÕÑ” …É¥„µ•áÁ…¹‘•œ°™…±Í”œ¤í…Ý…¥Ð•áÁ•Ð¡ÑÉ¥•È¤¹Ñ½	•½ÕÍ• ¤ì(€€€¼¼±½Í”Ñ¡”µ½‰¥±”‘É…Ý•ÈÑ¡É½Õ ¥ÑÌ…ÑÕ…°½¹ÑÉ½°‰•™½É”ÕÍ¥¹œÑ¡”½¹Ñ•¹Ð…É‘Ì¸(€€¥˜¡Ù¥•ÝÁ½ÉÐ¹Ý¥‘Ñ ðôÜØÀ¥í…Ý…¥ÐÁ…”¹±½…Ñ½È œµ•¹Ôœ¤¹±¥¬ ¤í…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È ‰½‘äœ¤¤¹¹½Ð¹Ñ½!…Ù•±…ÍÌ ½µ•¹Ôµ½Á•¸¼¤íô(€€…Ý…¥ÐÁ…”¹±½…Ñ½È¡€¡½µ•EÕ¥­	…È€¹¡½µ”µ½µÁ½Í”µµ½‘•m¡É•™xô‰•¹•É…Ñ”µÍÑÕ‘¥¼¹¡Ñµ°ýÍÑÕ‘¥¼ô‘íÍÑÕ‘¥½ô˜‰u€¤¹±¥¬ ¤ì(€€…Ý…¥Ð•áÁ•Ð¡Á…”¤¹Ñ½!…Ù•UI0¡¹•ÜI•áÀ ÍÑÕ‘¥¼ôœ­ÍÑÕ‘¥¼¤¤ì(€€…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÑ…Í­Q¥Ñ±”œ¤¤¹Ñ½!…Ù•Q•áÐ¡Ñ¥Ñ±”¤ì(€€…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œ¹ÍÑÕ‘¥¼µÍ¡•±°ø¹ÍÑÕ‘¥¼µ¹…Øœ¤¤¹Ñ½!…Ù•½Õ¹Ð À¤ì(€€…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÍÑÕ‘¥½QåÁ•A¥­•Èœ¤¤¹Ñ½	•Y¥Í¥‰±” ¤ì(€€…Ý…¥ÐÁ…”¹±½…Ñ½È œÍÑÕ‘¥½QåÁ•A¥­•Èœ¤¹±¥¬ ¤í…Ý…¥Ð…ÍÍ•ÉÑ¹¡½É•¡Á…”¹±½…Ñ½È œÍÑÕ‘¥½QåÁ•5•¹Ôœ¤±Á…”¹±½…Ñ½È œÍÑÕ‘¥½QåÁ•A¥­•Èœ¤¤ì(€€…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÍÑÕ‘¥½QåÁ•5•¹Ôm‘…Ñ„µ­¥¹ôˆœ¬¡ÍÑÕ‘¥¼ôôô…Õ‘¥¼œüµÕÍ¥ŒœéÍÑÕ‘¥¼¤¬œ‰tœ¤¤¹Ñ½!…Ù•ÑÑÉ¥‰ÕÑ” …É¥„µÁÉ•ÍÍ•œ°ÑÉÕ”œ¤ì(€€…Ý…¥ÐÁ…”¹­•å‰½…É¹ÁÉ•ÍÌ Í…Á”œ¤í…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÍÑÕ‘¥½QåÁ•A¥­•Èœ¤¤¹Ñ½	•½ÕÍ• ¤ì(€€…Ý…¥ÐÁ…”¹±½…Ñ½È œÁÉ½µÁÐœ¤¹™¥±° 5ä±½…°‘É…™Ðœ¤ì(€€…Ý…¥ÐÁ…”¹±½…Ñ½È œµ½‘•±	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(€€½¹ÍÐµ½‘•±ÌõÁ…”¹±½…Ñ½È œµ½‘•±¥…±½œœ¤í…Ý…¥Ð…ÍÍ•ÉÑ¹¡½É•¡µ½‘•±Ì±Á…”¹±½…Ñ½È œµ½‘•±	ÕÑÑ½¸œ¤¤ì(€€¥˜¡Ù¥•ÝÁ½ÉÐ¹Ý¥‘Ñ ôôôÄÐÐà¥…Ý…¥ÐÁ…”¹ÍÉ••¹Í¡½Ð¡íÁ…Ñ é¥¹™¼¹½ÕÑÁÕÑA…Ñ ¡ÍÑÕ‘¥¼¬œµµ½‘•°µÁ½Á½Ù•È¹Á¹œœ¥ô¤ì(€€½¹ÍÐ¡½¥•Ìõµ½‘•±Ì¹±½…Ñ½È œ¹µ½‘•°µ…Éœ¤í…Ý…¥Ð•áÁ•Ð¡¡½¥•Ì¹™¥ÉÍÐ ¤¤¹Ñ½	•Y¥Í¥‰±” ¤ì(€€½¹ÍÐ¡½¥”õ¡½¥•Ì¹¹Ñ ¡5…Ñ ¹µ¥¸ Ä±…Ý…¥Ð¡½¥•Ì¹½Õ¹Ð ¤´Ä¤¤í½¹ÍÐ±…‰•°õ…Ý…¥Ð¡½¥”¹±½…Ñ½È ÍÑÉ½¹œœ¤¹¥¹¹•ÉQ•áÐ ¤ì(€€…Ý…¥Ð¡½¥”¹±¥¬ ¤í…Ý…¥Ð•áÁ•Ð¡µ½‘•±Ì¤¹¹½Ð¹Ñ½	•Y¥Í¥‰±” ¤ì(€€…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œµ½‘•±	ÕÑÑ½¸œ¤¤¹Ñ½½¹Ñ…¥¹Q•áÐ¡±…‰•°¤í…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œµ½‘•±	ÕÑÑ½¸œ¤¤¹Ñ½	•½ÕÍ• ¤ì(€€…Ý…¥ÐÁ…”¹±½…Ñ½È œµ½‘•±	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(€€…Ý…¥Ð•áÁ•Ð¡µ½‘•±Ì¹±½…Ñ½È œ¹µ½‘•°µ…É‘m…É¥„µÁÉ•ÍÍ•ô‰ÑÉÕ”‰tÍÑÉ½¹œœ¤¤¹Ñ½!…Ù•Q•áÐ¡±…‰•°¤ì(€€…Ý…¥ÐÁ…”¹­•å‰½…É¹ÁÉ•ÍÌ Í…Á”œ¤í…Ý…¥Ð•áÁ•Ð¡µ½‘•±Ì¤¹¹½Ð¹Ñ½	•Y¥Í¥‰±” ¤ì(€€…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œµ½‘•±	ÕÑÑ½¸œ¤¤¹Ñ½	•½ÕÍ• ¤ì(€€…Ý…¥ÐÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í	ÕÑÑ½¸œ¤¹±¥¬ ¤ì(€€½¹ÍÐÍ•ÑÑ¥¹ÌõÁ…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í¥…±½œœ¤í…Ý…¥Ð…ÍÍ•ÉÑ¹¡½É•¡Í•ÑÑ¥¹Ì±Á…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í	ÕÑÑ½¸œ¤¤ì(€€¥˜¡ÍÑÕ‘¥¼ôôô…Õ‘¥¼œ¥í…Ý…¥Ð•áÁ•Ð¡Í•ÑÑ¥¹Ì¹±½…Ñ½È œ¹½µÁ½Í•ÈµÍ•ÑÑ¥¹œµÑ¥Ñ±”œ¤¤¹Ñ½	•!¥‘‘•¸ ¤í…Ý…¥Ð•áÁ•Ð¡Í•ÑÑ¥¹Ì¹±½…Ñ½È œÉ…Ñ¥½¡½¥•Ìœ¤¤¹Ñ½	•!¥‘‘•¸ ¤íõ•±Í”…Ý…¥Ð•áÁ•Ð¡Í•ÑÑ¥¹Ì¹±½…Ñ½È œ¹½µÁ½Í•ÈµÍ•ÑÑ¥¹œµÑ¥Ñ±”œ¤¤¹Ñ½	•Y¥Í¥‰±” ¤ì(€€¥˜¡Ù¥•ÝÁ½ÉÐ¹Ý¥‘Ñ ôôôÄÐÐà¥…Ý…¥ÐÁ…”¹ÍÉ••¹Í¡½Ð¡íÁ…Ñ é¥¹™¼¹½ÕÑÁÕÑA…Ñ ¡ÍÑÕ‘¥¼¬œµÍ•ÑÑ¥¹ÌµÁ½Á½Ù•È¹Á¹œœ¥ô¤ì(€€…Ý…¥ÐÍ•ÑÑ¥¹Ì¹•Ñ	åI½±” ‰ÕÑÑ½¸œ±í¹…µ”è½¹”œ±•á…ÐéÑÉÕ•ô¤¹±¥¬ ¤í…Ý…¥Ð•áÁ•Ð¡Í•ÑÑ¥¹Ì¤¹¹½Ð¹Ñ½	•Y¥Í¥‰±” ¤ì(€€…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÍ•ÑÑ¥¹Í	ÕÑÑ½¸œ¤¤¹Ñ½	•½ÕÍ• ¤ì(€€…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œÁÉ½µÁÐœ¤¤¹Ñ½!…Ù•Y…±Õ” 5ä±½…°‘É…™Ðœ¤ì(€€…Ý…¥Ð•áÁ•Ð¡Á…”¹±½…Ñ½È œ•¹•É…Ñ”œ¤¤¹Ñ½	•¥Í…‰±• ¤ì(€€•áÁ•Ð¡…Ý…¥ÐÁ…”¹•Ù…±Õ…Ñ”  ¤ôù‘½Õµ•¹Ð¹‘½Õµ•¹Ñ±•µ•¹Ð¹ÍÉ½±±]¥‘Ñ ðõ¥¹¹•É]¥‘Ñ ¤¤¹Ñ½	”¡ÑÉÕ”¤ì(€•áÁ•Ð¡Á½ÍÑÌ¤¹Ñ½	” À¤ì(ô¤ì(ô)ô
+import {test,expect} from '@playwright/test';
+// Google login is not exercised in this local UI suite (googleClientId is empty).
+// Keep the external SDK from delaying load/pageshow and the privacy reset.
+test.beforeEach(async({page})=>{
+ await page.route('https://accounts.google.com/gsi/client',r=>r.fulfill({contentType:'application/javascript',body:''}));
+});
+
+async function chooseStudio(page,kind){await page.locator('#studioTypePicker').click();await page.locator('#studioTypeMenu [data-kind="'+kind+'"]').click();}
+test('mobile studio has clear sections, no false generation and no overflow',async({page})=>{await page.setViewportSize({width:390,height:844});let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});await page.goto('/generate-studio.html');await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await page.locator('#prompt').fill('Ocean');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();await expect(page.locator('#availability')).toContainText('not enabled');await chooseStudio(page,'image');await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await expect(page.locator('#ratio option')).toHaveCount(5);await chooseStudio(page,'music');await page.locator('#settingsButton').click();await expect(page.locator('#musicOptions')).toBeVisible();await page.locator('#musicMode').selectOption('instrumental');await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#referenceBox')).toBeHidden();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(posts).toBe(0);});
+test('config exposes readiness without secrets and disabled endpoint fails closed',async({request})=>{const r=await request.get('/api/studio/config');expect(r.status()).toBe(200);const c=await r.json();expect(c.enabled).toBe(false);expect(c.ownerOnly).toBe(true);expect(c.translation.enabled).toBe(false);const post=await request.post('/api/studio/jobs',{data:{kind:'image',prompt:'test',consent:true}});expect(post.status()).toBe(503);});
+test('Russian device language and retained per-studio draft',async({browser})=>{const context=await browser.newContext({locale:'ru-RU'});const page=await context.newPage();await page.goto('/generate-studio.html');await expect(page.locator('h1#taskTitle')).toHaveText('ÐžÐ¶Ð¸Ð²Ð¸Ñ‚Ðµ ÑÐ²Ð¾ÑŽ Ð¸Ð´ÐµÑŽ Ñ Deepsyq');await expect(page.locator('[data-t=consent]')).toContainText('Ð²Ñ‹Ð±Ñ€Ð°Ð½Ð½Ð¾Ð¹ Ð¼Ð¾Ð´ÐµÐ»Ð¸');await expect(page.locator('[data-t=consent]')).not.toContainText(/Google|BytePlus/);await page.locator('#prompt').fill('ÐœÐ¾Ñ€Ðµ');await chooseStudio(page,'image');await page.locator('#prompt').fill('Ð¦Ð²ÐµÑ‚Ð¾Ðº');await chooseStudio(page,'video');await expect(page.locator('#prompt')).toHaveValue('ÐœÐ¾Ñ€Ðµ');await context.close();});
+test('mocked contract result confirms selected service and current credits before posting, then previews, downloads and deletes',async({page})=>{
+ const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:3,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',provider:'Google',adapter:true,ratios:['1:1'],references:3,enabled:true}]};
+ await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
+ let jobPosts=0,estimatePosts=0,jobBody;
+ await page.route('**/api/studio/estimate',async r=>{estimatePosts++;return r.fulfill({json:{kind:'image',model:'fixture',credits:7,quantity:1,perImageCredits:7,unit:'AI credits'}});});
+ await page.route('**/api/studio/jobs',async r=>{if(r.request().method()==='POST'){jobPosts++;jobBody=r.request().postDataJSON();return r.fulfill({status:202,json:{id:'fixture',status:'ready'}});}return r.fulfill({json:{items:[]}});});
+ await page.route('**/api/studio/jobs/fixture',r=>r.fulfill({json:r.request().method()==='DELETE'?{ok:true}:{id:'fixture',status:'ready',mime:'image/png'}}));
+ await page.route('**/api/studio/jobs/fixture/media',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
+ await page.goto('/generate-studio.html');await chooseStudio(page,'image');await page.locator('#prompt').fill('Fixture');await page.locator('#consent').check();
+ page.once('dialog',d=>d.dismiss());await page.locator('#generate').click();await expect(page.locator('#status')).toContainText('cancelled');expect(estimatePosts).toBe(1);expect(jobPosts).toBe(0);
+ page.once('dialog',async d=>{expect(d.message()).toContain('selected AI service');expect(d.message()).toContain('Fixture');expect(d.message()).toContain('7 AI credits');await d.accept();});
+ await page.locator('#generate').click();await expect(page.locator('#media img')).toBeVisible();expect(jobPosts).toBe(1);expect(jobBody.expectedCredits).toBe(7);
+ expect(jobBody.consent).toBe(true);const download=page.waitForEvent('download');await page.locator('#download').click();expect((await download).suggestedFilename()).toBe('Deepsyq-fixture.png');await page.locator('#remove').click();await expect(page.locator('#media img')).toHaveCount(0);await expect(page.locator('#status')).toContainText('deleted');
+});
+
+test('Android bridge uses configured backend without loading FFmpeg',async({page})=>{await page.addInitScript(()=>window.AndroidBridge={getApiBase:()=>'https://native-api.example.test'});await page.route('**/generate-studio.html',async r=>{const response=await r.fetch();const headers={...response.headers()};delete headers['content-security-policy'];await r.fulfill({response,headers});});let called=false;await page.route('https://native-api.example.test/api/studio/config',r=>{called=true;return r.fulfill({headers:{'Access-Control-Allow-Origin':'*'},json:{enabled:false,models:[]}});});await page.goto('/generate-studio.html');await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');expect(called).toBe(true);expect(await page.evaluate(()=>!!window.vuRuntimeReady)).toBe(false);});
+
+test('three direct studio links and model/settings dialogs work on small phones',async({page})=>{
+ await page.setViewportSize({width:320,height:740});
+ for(const [studio,title] of [['image','Light up your creation with Deepsyq'],['audio','Light up your creation with Deepsyq'],['video','Light up your creation with Deepsyq']]){await page.goto('/generate-studio.html?studio='+studio);await expect(page.locator('#taskTitle')).toHaveText(title);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+ await page.locator('#modelButton').click();await expect(page.getByRole('dialog')).toBeVisible();await expect(page.locator('#modelDialog')).not.toContainText(/Google|BytePlus/);await page.getByRole('button',{name:/Seedance 2.0/}).click();await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');await expect(page.locator('#availability')).toContainText('not enabled');await expect(page.locator('[data-t=consent]')).toContainText('selected model and its service');await expect(page.locator('[data-t=consent]')).not.toContainText('BytePlus');await page.locator('#prompt').fill('Video');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();
+ await page.locator('#settingsButton').click();await page.getByRole('button',{name:'1:1',exact:true}).click();await expect(page.locator('#ratio')).toHaveValue('1:1');await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#settingsButton')).toContainText('1:1');
+ await page.locator('#modelButton').click();await page.keyboard.press('Escape');await expect(page.locator('#modelDialog')).not.toBeVisible();
+});
+test('audio speech preparation and history do not send paid or fake requests',async({page})=>{
+ let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});await page.goto('/generate-studio.html?studio=audio');await page.locator('#settingsButton').click();await page.locator('#musicMode').selectOption('voice');await expect(page.locator('#voiceSettings')).toBeVisible();await page.locator('#voiceLanguage').selectOption({label:'Russian'});await expect.poll(()=>page.locator('#settingsDialog').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=11&&r.bottom<=innerHeight-11;})).toBe(true);await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#modelButton')).toContainText('AI Voice Preview');await expect(page.locator('#generate')).toBeDisabled();
+ await page.locator('#modelButton').click();await page.getByRole('button',{name:/Seed Speech 2.0/}).click();await expect(page.locator('#availability')).toContainText('not connected');await page.locator('#showHistory').click();await expect(page.locator('#historyEmpty')).toBeVisible();await expect(page.locator('#resumeJob')).toBeHidden();await page.locator('#showCreate').click();await expect(page.locator('#empty')).toBeVisible();expect(posts).toBe(0);
+});
+test('reference photo preview, draft retention and clear are local',async({page})=>{
+ await page.goto('/generate-studio.html?studio=image');await page.locator('#references').setInputFiles({name:'reference.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')});await expect(page.locator('#refPreview img')).toHaveCount(1);await chooseStudio(page,'video');await chooseStudio(page,'image');await expect(page.locator('#refPreview img')).toHaveCount(1);await page.locator('#clearRefs').click();await expect(page.locator('#refPreview img')).toHaveCount(0);
+});
+
+test('consent is provider-neutral and resets when model or studio changes',async({page})=>{await page.goto('/generate-studio.html?studio=image');const consent=page.locator('[data-t=consent]');await expect(consent).toContainText('selected model and its service');await expect(consent).not.toContainText(/Google|BytePlus/);await page.locator('#consent').check();await page.locator('#modelButton').click();await page.getByRole('button',{name:/Seedream 4.5/}).click();await expect(page.locator('#consent')).not.toBeChecked();await expect(consent).toContainText('selected model and its service');await expect(consent).not.toContainText(/Google|BytePlus/);await page.locator('#consent').check();await chooseStudio(page,'video');await expect(page.locator('#consent')).not.toBeChecked();await expect(consent).toContainText('selected model and its service');await expect(consent).not.toContainText(/Google|BytePlus/);});
+
+test('saved generation history renders and reopens a durable result',async({page})=>{
+ const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]};
+ await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
+ await page.route('**/api/studio/jobs**',r=>{
+  if(r.request().method()==='GET')return r.fulfill({json:{items:[{id:'saved-1',kind:'image',status:'ready',provider:'Google',model:'fixture',prompt:'Saved product prompt',createdAt:'2026-10-15T08:00:00.000Z'}]}});
+  return r.continue();
+ });
+ await page.route('**/api/studio/jobs/saved-1',r=>r.fulfill({json:{id:'saved-1',kind:'image',status:'ready',provider:'Google',model:'fixture',mime:'image/png'}}));
+ await page.route('**/api/studio/jobs/saved-1/media',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
+ await page.goto('/generate-studio.html?studio=image');await page.locator('#showHistory').click();
+ await expect(page.locator('.history-card')).toHaveCount(1);await expect(page.locator('.history-card')).toContainText('Fixture');await expect(page.locator('.history-card')).not.toContainText('Google');await expect(page.locator('.history-card')).toContainText('Saved product prompt');
+ await page.getByRole('button',{name:'Reuse prompt'}).click();await expect(page.locator('#prompt')).toHaveValue('Saved product prompt');await page.locator('#showHistory').click();
+ await page.locator('.history-card').getByRole('button',{name:'Open',exact:true}).click();await expect(page.locator('#media img')).toBeVisible();await expect(page.locator('#showCreate')).toHaveAttribute('aria-pressed','true');
+});
+
+test('Studio honors server-selected preferred enabled model',async({page})=>{
+ const cfg={enabled:true,models:[{kind:'video',id:'byteplus-seedance-2',label:'Seedance 2.0',ratios:['16:9','9:16','1:1'],references:1,enabled:true}],catalog:[
+  {id:'veo-3.1-lite-generate-preview',label:'Veo 3.1 Lite',kind:'video',provider:'Google',adapter:true,ratios:['16:9','9:16'],references:1,enabled:true,quality:'720p',duration:'8 seconds'},
+  {id:'byteplus-seedance-2',label:'Seedance 2.0',kind:'video',provider:'BytePlus',adapter:true,ratios:['16:9','9:16','1:1'],references:1,enabled:true,quality:'720p',duration:'5 seconds'}
+ ]};
+ await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
+ await page.goto('/generate-studio.html?studio=video');
+ await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');
+ await expect(page.locator('[data-t=consent]')).toContainText('selected model and its service');
+});
+
+
+test('history filters and actions never auto-regenerate a paid job',async({page})=>{
+ const cfg={enabled:true,models:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1','16:9'],references:0,enabled:true}],catalog:[{kind:'image',label:'Fixture',id:'fixture',ratios:['1:1','16:9'],references:0,enabled:true,adapter:true,provider:'Google'}]};
+ await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
+ let posts=0,lastFilter='';
+ await page.route('**/api/studio/jobs**',async r=>{
+  const u=new URL(r.request().url());
+  if(r.request().method()==='POST'){posts++;return r.fulfill({status:500,json:{error:'UNEXPECTED_POST'}});}
+  if(r.request().method()==='DELETE')return r.fulfill({json:{ok:true}});
+  lastFilter=u.searchParams.get('filter')||'all';
+  const item={id:'history-1',kind:'image',status:'ready',provider:'Google',model:'fixture',prompt:'Reusable prompt',settings:{ratio:'16:9'},mime:'image/png',creditsReserved:9,creditsCharged:9,createdAt:'2026-10-15T08:00:00.000Z'};
+  return r.fulfill({json:{filter:lastFilter,items:[item]}});
+ });
+ await page.route('**/api/studio/jobs/history-1/media',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')}));
+ await page.goto('/generate-studio.html?studio=image');await page.locator('#showHistory').click();await expect(page.locator('.history-card')).toContainText('9 AI credits');
+ await page.locator('[data-history-filter=image]').click();await expect.poll(()=>lastFilter).toBe('image');
+ await page.getByRole('button',{name:'Regenerate'}).click();await expect(page.locator('#prompt')).toHaveValue('Reusable prompt');await expect(page.locator('#ratio')).toHaveValue('16:9');expect(posts).toBe(0);
+ await page.locator('#showHistory').click();const download=page.waitForEvent('download');await page.getByRole('button',{name:'Download'}).click();expect((await download).suggestedFilename()).toBe('Deepsyq-history-1.png');expect(posts).toBe(0);
+});
+
+
+test('AI wallet shows configured packs and opens Stripe only after click',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'live',livePaymentsEnabled:true,unit:'AI credits',packs:[{sku:'starter',credits:1000,amount:499,currency:'eur'}],rates:[],revision:'r1'}}));
+ await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:120,reserved:10,debt:0}}));
+ let checkoutCalls=0;await page.route('**/api/ai-billing/checkout',async r=>{checkoutCalls++;return r.fulfill({json:{url:'https://checkout.stripe.com/c/pay/cs_test_fixture',id:'cs_fixture',mode:'live'}});});
+ await page.route('https://checkout.stripe.com/**',r=>r.fulfill({contentType:'text/html',body:'<title>Stripe fixture</title><h1>Stripe Checkout</h1>'}));
+ await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#walletButton')).toBeVisible();await expect(page.locator('#walletBalance')).toHaveText('120');expect(checkoutCalls).toBe(0);
+ await page.locator('#walletButton').click();await expect(page.locator('#walletDialog')).toBeVisible();await expect(page.locator('#creditPacks')).toContainText('1,000 AI credits');await page.getByRole('button',{name:'Continue to Stripe'}).click();await expect(page).toHaveURL(/checkout\.stripe\.com/);expect(checkoutCalls).toBe(1);
+});
+
+
+test('wallet activity and Stripe return never claim payment before webhook confirmation',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'live',livePaymentsEnabled:true,packs:[],rates:[],revision:'r1'}}));
+ await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:850,reserved:50,debt:0}}));
+ await page.route('**/api/ai-wallet/history',r=>r.fulfill({json:{items:[{kind:'purchase',available_delta:1000,reserved_delta:0,debt_delta:0,created_at:'2026-10-15T10:00:00Z'},{kind:'reserve',available_delta:-50,reserved_delta:50,debt_delta:0,created_at:'2026-10-15T10:05:00Z'},{kind:'captured',available_delta:0,reserved_delta:-50,debt_delta:0,created_at:'2026-10-15T10:06:00Z'}]}}));
+ await page.goto('/generate-studio.html?studio=image&ai_checkout=returned');
+ await expect(page.locator('#walletDialog')).toBeVisible();await expect(page.locator('#walletStatus')).toContainText('Credits appear only after Stripe confirms');await expect(page.locator('#walletHistory')).toContainText('Credit purchase');await expect(page.locator('#walletHistory')).toContainText('Generation reserve');await expect(page.locator('#walletBalance')).toHaveText('850');
+});
+
+
+
+test('wallet balance and activity remain viewable when AI credit pack checkout is OFF',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',livePaymentsEnabled:false,
+  unit:'AI credits',packs:[],rates:[],revision:null,reason:'PAYMENTS_NOT_ACTIVATED'}}));
+ let walletReads=0,historyReads=0,checkoutPosts=0;
+ await page.route('**/api/ai-wallet/balance',r=>{walletReads++;return r.fulfill({json:{available:42,reserved:8,debt:0}})});
+ await page.route('**/api/ai-wallet/history',r=>{historyReads++;return r.fulfill({json:{items:[{kind:'reserve',
+  available_delta:-8,reserved_delta:8,debt_delta:0,created_at:'2026-10-15T10:00:00Z'}]}})});
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/ai-billing/checkout'))checkoutPosts++});
+ await page.goto('/generate-studio.html?studio=image');
+ await expect(page.locator('#walletButton')).toBeVisible();
+ await expect(page.locator('#walletBalance')).toHaveText('42');
+ await page.locator('#walletButton').click();
+ await expect(page.locator('#walletSummary')).toContainText('42');
+ await expect(page.locator('#walletSummary')).toContainText('8');
+ await expect(page.locator('#walletHistory')).toContainText('Generation reserve');
+ await expect(page.locator('#walletMode')).toContainText('Credit purchases are not active');
+ await expect(page.locator('#creditPacks article')).toHaveCount(0);
+ expect(walletReads).toBeGreaterThan(0);
+ expect(historyReads).toBeGreaterThan(0);
+ expect(checkoutPosts).toBe(0);
+});
+
+test('Studio shows a server-priced credit estimate without sending prompt or media',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','owner'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,ownerOnly:true,pricingConfigured:true,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:1,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:1,enabled:true,adapter:true,provider:'Google'}]}}));
+ let estimateBody=null;await page.route('**/api/studio/estimate',r=>{estimateBody=r.request().postDataJSON();return r.fulfill({json:{credits:12,unit:'AI credits',model:'fixture',kind:'image',routing:{smart:false,candidates:['fixture']}}});});
+ await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#creditEstimate')).toContainText('12 AI credits');expect(estimateBody.prompt).toBeUndefined();expect(estimateBody.references).toBeUndefined();expect(estimateBody.consent).toBeUndefined();expect(estimateBody.referenceCount).toBe(0);
+});
+
+
+test('History lazily previews ready images without touching video media',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','history-user'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,pricingConfigured:false,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]}}));
+ let imageMedia=0,videoMedia=0;
+ await page.route('**/api/studio/jobs?filter=all',r=>r.fulfill({json:{items:[{id:'img-1',kind:'image',status:'ready',provider:'Google',model:'fixture',prompt:'Image prompt',settings:{ratio:'1:1'},mime:'image/png',createdAt:'2026-10-15T08:00:00Z'},{id:'vid-1',kind:'video',status:'ready',provider:'Google',model:'fixture-video',prompt:'Video prompt',settings:{ratio:'16:9'},mime:'video/mp4',createdAt:'2026-10-15T08:01:00Z'}]}}));
+ await page.route('**/api/studio/jobs/img-1/media',r=>{imageMedia++;return r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')});});
+ await page.route('**/api/studio/jobs/vid-1/media',r=>{videoMedia++;return r.fulfill({contentType:'video/mp4',body:'video'});});
+ await page.goto('/generate-studio.html?studio=image');await page.locator('#showHistory').click();await expect(page.locator('.history-card')).toHaveCount(2);await page.locator('.history-preview[data-kind="image"]').scrollIntoViewIfNeeded();await expect(page.locator('.history-thumb')).toHaveCount(1);expect(imageMedia).toBe(1);expect(videoMedia).toBe(0);
+});
+
+
+test('Studio keeps signed-in plan limits accurate even when quickstart hides the verbose preflight panel',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','basic-user'));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:true,pricingConfigured:false,models:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:0,enabled:true}],catalog:[{kind:'image',id:'fixture',label:'Fixture',ratios:['1:1'],references:0,enabled:true,adapter:true,provider:'Google'}]}}));
+ await page.route('**/api/studio/access',r=>r.fulfill({json:{allowed:true,scope:'public',plan:'basic',maxConcurrent:2,maxPerHour:12,activeJobs:1,jobsThisHour:4,reason:null,walletReady:true,pricingConfigured:true}}));
+ await page.goto('/generate-studio.html?studio=image');await expect(page.locator('#accessInfo')).toBeHidden();await expect(page.locator('#accessInfo')).toContainText('2 active generation');await expect(page.locator('#accessInfo')).toContainText('12 per hour');await expect(page.locator('#accessInfo')).toContainText('1/2 active');await expect(page.locator('#accessInfo')).toContainText('4/12 in the last hour');
+});
+
+test('video selectors follow real Veo/Seedance capabilities without submitting jobs',async({page})=>{
+ let posts=0;page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))posts++;});
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#videoResolutionLabel')).toBeVisible();
+ await expect(page.locator('#videoDurationLabel')).toBeVisible();
+ await expect(page.locator('#videoDuration option')).toHaveCount(3);
+ await page.locator('#videoDuration').selectOption('4');
+ await expect(page.locator('#settingsButton')).toContainText('4s');
+ await page.locator('#videoResolution').selectOption('1080p');
+ await expect(page.locator('#videoDuration')).toHaveValue('8');
+ await expect(page.locator('#videoDuration option')).toHaveCount(1);
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
+ await page.locator('#modelButton').click();
+ await page.getByRole('button',{name:/Seedance 2.0/}).click();
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#videoDuration option')).toHaveCount(5);
+ await page.locator('#videoDuration').selectOption('15');
+ await expect(page.locator('#videoDuration')).toHaveValue('15');
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
+ await chooseStudio(page,'image');
+ await expect(page.locator('#videoDurationLabel')).toBeHidden();
+ expect(posts).toBe(0);
+});
+
+test('Seedance image modes follow attached photo count without posting paid jobs',async({page})=>{
+ let jobPosts=0;page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')jobPosts++;});
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#modelButton').click();
+ await page.getByRole('button',{name:/Seedance 2.0/}).click();
+ const image={name:'frame.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64')};
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#videoInputMode')).toHaveValue('text');
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
+ await page.locator('#references').setInputFiles(image);
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#videoInputMode')).toHaveValue('first_frame');
+ await page.locator('#videoInputMode').selectOption('reference_image');
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
+ await page.locator('#references').setInputFiles({...image,name:'last.png'});
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#videoInputMode')).toHaveValue('reference_image');
+ await expect(page.locator('#videoInputMode option')).toHaveCount(2);
+ await page.locator('#videoInputMode').selectOption('first_last');
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
+ await page.locator('#references').setInputFiles({...image,name:'third.png'});
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#videoInputMode')).toHaveValue('reference_image');
+ await expect(page.locator('#videoInputMode option')).toHaveCount(1);
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
+ await page.locator('#clearRefs').click();
+ await page.locator('#settingsButton').click();
+ await expect(page.locator('#videoInputMode')).toHaveValue('text');
+ expect(jobPosts).toBe(0);
+});
+
+test('video prompt and model settings restore privately after tab reload without any provider request',async({page})=>{
+ let jobPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')jobPosts++;});
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#modelButton').click();
+ await page.getByRole('button',{name:/Seedance 2.0/}).click();
+ await page.locator('#prompt').fill('A calm mountain sunrise with slowly moving clouds');
+ await page.locator('#settingsButton').click();
+ await page.locator('#videoResolution').selectOption('1080p');
+ await page.locator('#videoDuration').selectOption('15');
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
+ await page.reload();
+ await expect(page.locator('#prompt')).toHaveValue('A calm mountain sunrise with slowly moving clouds');
+ await expect(page.locator('#modelButton')).toContainText('Seedance 2.0');
+ await expect(page.locator('#videoResolution')).toHaveValue('1080p');
+ await expect(page.locator('#videoDuration')).toHaveValue('15');
+ // Compact quickstart intentionally hides the verbose banner when no photo recovery is required.
+ await expect(page.locator('#videoDraftBar')).toBeHidden();
+ await expect(page.locator('#consent')).not.toBeChecked();
+ page.once('dialog',d=>d.accept());
+ // The existing clear handler must still work even while quickstart hides its verbose banner.
+ await page.locator('#clearVideoDraft').evaluate(button=>button.click());
+ await page.reload();
+ await expect(page.locator('#prompt')).toHaveValue('');
+ expect(jobPosts).toBe(0);
+});
+test('recovered Seedance first and last frames require both photos again, never store photos',async({page})=>{
+ let jobPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')jobPosts++;});
+ const img=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
+ const photo=name=>({name,mimeType:'image/png',buffer:img});
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#modelButton').click();
+ await page.getByRole('button',{name:/Seedance 2.0/}).click();
+ await page.locator('#prompt').fill('A sunset transitions into night');
+ await page.locator('#references').setInputFiles([photo('first.png'),photo('last.png')]);
+ await expect(page.locator('#refPreview img')).toHaveCount(2);
+ await page.locator('#settingsButton').click();
+ await page.locator('#videoInputMode').selectOption('first_last');
+ await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
+ await page.reload();
+ await expect(page.locator('#refPreview img')).toHaveCount(0);
+ await expect(page.locator('#videoDraftMessage')).toContainText('Attach 2 reference photo');
+ await expect(page.locator('#videoInputMode')).toHaveValue('text');
+ await expect(page.locator('#generate')).toBeDisabled();
+ await page.locator('#references').setInputFiles(photo('first-new.png'));
+ await expect(page.locator('#videoDraftMessage')).toContainText('1 added so far');
+ await page.locator('#references').setInputFiles(photo('last-new.png'));
+ await expect(page.locator('#refPreview img')).toHaveCount(2);
+ await expect(page.locator('#videoInputMode')).toHaveValue('first_last');
+ await expect(page.locator('#videoDraftSkipPhotos')).toBeHidden();
+ await expect(page.locator('#consent')).not.toBeChecked();
+ expect(jobPosts).toBe(0);
+});
+test('video History checks an existing task without resubmitting or downloading media',async({page})=>{
+ const cfg={enabled:true,models:[{kind:'video',label:'Video fixture',id:'fixture-video',ratios:['16:9'],references:0,enabled:true}],catalog:[{kind:'video',label:'Video fixture',id:'fixture-video',ratios:['16:9'],references:0,enabled:true,adapter:true,provider:'Google'}]};
+ await page.route('**/api/studio/config',r=>r.fulfill({json:cfg}));
+ let statusChecks=0,mediaDownloads=0,jobPosts=0,jobStatus='processing';
+ page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/studio/jobs')jobPosts++;});
+ await page.route('**/api/studio/jobs?filter=video',r=>r.fulfill({json:{items:[{id:'running-video',kind:'video',status:jobStatus,model:'fixture-video',prompt:'Sample video',provider:'Google',createdAt:'2026-10-15T12:00:00Z'}]}}));
+ await page.route('**/api/studio/jobs/running-video',r=>{
+  statusChecks++;if(statusChecks===2)jobStatus='ready';
+  return r.fulfill({json:{id:'running-video',kind:'video',status:jobStatus,mime:jobStatus==='ready'?'video/mp4':null,retryAfterSeconds:5}});
+ });
+ await page.route('**/api/studio/jobs/running-video/media',r=>{mediaDownloads++;return r.fulfill({contentType:'video/mp4',body:''});});
+ await page.goto('/generate-studio.html?studio=video');
+ await page.locator('#showHistory').click();
+ await page.locator('[data-history-filter=video]').click();
+ await expect(page.getByRole('button',{name:'Check status'})).toBeVisible();
+ await page.getByRole('button',{name:'Check status'}).click();
+ await expect(page.locator('#status')).toContainText('still processing');
+ await expect(page.locator('.history-status')).toHaveText('Processing');
+ await page.getByRole('button',{name:'Check status'}).click();
+ await expect(page.locator('#status')).toContainText('Video is ready');
+ await expect(page.locator('.history-status')).toHaveText('Ready');
+ expect(statusChecks).toBe(2);
+ expect(jobPosts).toBe(0);
+ expect(mediaDownloads).toBe(0); // Only the explicit Open action may fetch video bytes.
+});
+
+// Owner acceptance: Home keeps its dialog; Studio panels anchor to composer controls. No provider dispatch.
+for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320,height:740},{width:844,height:390}]){
+ for(const [studio,title] of [['image','Light up your creation with Deepsyq'],['video','Light up your creation with Deepsyq'],['audio','Light up your creation with Deepsyq']]){
+ test(`studio model/settings windows: ${studio} uses button-anchored panels at ${viewport.width}x${viewport.height}`,async({page},info)=>{
+  await page.setViewportSize(viewport);
+  let posts=0;page.on('request',request=>{if(request.method()==='POST')posts++;});
+  const assertCentered=async dialog=>{
+   await expect(dialog).toBeVisible();
+   const bounds=await dialog.boundingBox();expect(bounds).not.toBeNull();
+   expect(Math.abs(bounds.x+bounds.width/2-viewport.width/2)).toBeLessThan(3);
+   expect(Math.abs(bounds.y+bounds.height/2-viewport.height/2)).toBeLessThan(3);
+   expect(bounds.x).toBeGreaterThanOrEqual(12);expect(bounds.y).toBeGreaterThanOrEqual(12);
+   expect(bounds.x+bounds.width).toBeLessThanOrEqual(viewport.width-12);
+   expect(bounds.y+bounds.height).toBeLessThanOrEqual(viewport.height-12);
+   expect(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);
+  };
+   const assertAnchored=async(dialog,anchor)=>{
+    await expect(dialog).toBeVisible();
+    await expect.poll(()=>dialog.evaluate(el=>({left:el.style.left,top:el.style.top}))).not.toEqual({left:'',top:''});
+    await expect.poll(async()=>{const b=await dialog.boundingBox();return Boolean(b&&b.x>=11&&b.y>=11);}).toBe(true);
+    const bounds=await dialog.boundingBox(),button=await anchor.boundingBox();
+    expect(bounds.x).toBeGreaterThanOrEqual(11);expect(bounds.y).toBeGreaterThanOrEqual(11);
+    expect(bounds.x+bounds.width).toBeLessThanOrEqual(viewport.width-11);expect(bounds.y+bounds.height).toBeLessThanOrEqual(viewport.height-11);
+    expect(Math.min(Math.abs(button.y-bounds.y-bounds.height),Math.abs(bounds.y-button.y-button.height))).toBeLessThanOrEqual(10);
+    expect(await dialog.evaluate(el=>getComputedStyle(el,'::backdrop').backdropFilter)).toBe('none');
+    expect(await dialog.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+   };
+   await page.goto('/deepsyq.html');
+   if(viewport.width<=760)await page.locator('#menu').click();
+   const trigger=page.locator(`[data-open-models="${studio}"]`);
+   await trigger.click();
+   const chooser=page.getByRole('dialog',{name:studio[0].toUpperCase()+studio.slice(1)+' models',exact:true});
+   await assertCentered(chooser);
+   await expect(trigger).toHaveAttribute('aria-expanded','true');
+   await page.keyboard.press('Escape');await expect(chooser).not.toBeVisible();
+   await expect(trigger).toHaveAttribute('aria-expanded','false');await expect(trigger).toBeFocused();
+   // Close the mobile drawer through its actual control before using the content cards.
+   if(viewport.width<=760){await page.locator('#menu').click();await expect(page.locator('body')).not.toHaveClass(/menu-open/);}
+   await page.locator(`#homeQuickBar .home-compose-mode[href^="generate-studio.html?studio=${studio}&"]`).click();
+   await expect(page).toHaveURL(new RegExp('studio='+studio));
+   await expect(page.locator('#taskTitle')).toHaveText(title);
+   await expect(page.locator('.studio-shell>.studio-nav')).toHaveCount(0);
+   await expect(page.locator('#studioTypePicker')).toBeVisible();
+   await page.locator('#studioTypePicker').click();await assertAnchored(page.locator('#studioTypeMenu'),page.locator('#studioTypePicker'));
+   await expect(page.locator('#studioTypeMenu [data-kind="'+(studio==='audio'?'music':studio)+'"]')).toHaveAttribute('aria-pressed','true');
+   await page.keyboard.press('Escape');await expect(page.locator('#studioTypePicker')).toBeFocused();
+   await page.locator('#prompt').fill('My local draft');
+   await page.locator('#modelButton').click();
+   const models=page.locator('#modelDialog');await assertAnchored(models,page.locator('#modelButton'));
+   if(viewport.width===1448)await page.screenshot({path:info.outputPath(studio+'-model-popover.png')});
+   const choices=models.locator('.model-card');await expect(choices.first()).toBeVisible();
+   const choice=choices.nth(Math.min(1,await choices.count()-1));const label=await choice.locator('strong').innerText();
+   await choice.click();await expect(models).not.toBeVisible();
+   await expect(page.locator('#modelButton')).toContainText(label);await expect(page.locator('#modelButton')).toBeFocused();
+   await page.locator('#modelButton').click();
+   await expect(models.locator('.model-card[aria-pressed="true"] strong')).toHaveText(label);
+   await page.keyboard.press('Escape');await expect(models).not.toBeVisible();
+   await expect(page.locator('#modelButton')).toBeFocused();
+   await page.locator('#settingsButton').click();
+   const settings=page.locator('#settingsDialog');await assertAnchored(settings,page.locator('#settingsButton'));
+   if(studio==='audio'){await expect(settings.locator('.composer-setting-title')).toBeHidden();await expect(settings.locator('#ratioChoices')).toBeHidden();}else await expect(settings.locator('.composer-setting-title')).toBeVisible();
+   if(viewport.width===1448)await page.screenshot({path:info.outputPath(studio+'-settings-popover.png')});
+   await settings.getByRole('button',{name:'Done',exact:true}).click();await expect(settings).not.toBeVisible();
+   await expect(page.locator('#settingsButton')).toBeFocused();
+   await expect(page.locator('#prompt')).toHaveValue('My local draft');
+   await expect(page.locator('#generate')).toBeDisabled();
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  expect(posts).toBe(0);
+ });
+ }
+}
