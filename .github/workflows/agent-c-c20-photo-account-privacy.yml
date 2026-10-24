@@ -1,0 +1,36 @@
+name: Agent C C20 OCR account isolation five browser (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/reminder-photo.js'
+      - 'tests/agent-c-c20-photo-account-privacy.spec.mjs'
+      - '.github/workflows/agent-c-c20-photo-account-privacy.yml'
+permissions:
+  contents: read
+jobs:
+  c20-ocr-account-privacy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/reminder-photo.js && node --check tests/agent-c-c20-photo-account-privacy.spec.mjs
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Photo preview and delayed OCR A-to-B in five actual browsers, zero paid calls
+        run: npx playwright test tests/agent-c-c20-photo-account-privacy.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-c-c20-private-photo-ocr
+          path: test-results/
+          if-no-files-found: ignore
