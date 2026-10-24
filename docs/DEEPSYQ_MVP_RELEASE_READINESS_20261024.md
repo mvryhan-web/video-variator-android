@@ -47,6 +47,14 @@ Do not infer completion percentage from code volume or green unit tests. DEV has
 
 These are separate client privacy slices; they do not clear the overall #24/#35/#36 release gate, the server-side consent-before-provider gap, or production privacy acceptance.
 
+## Current-source consent re-audit — 2026-10-24
+
+Latest DEV readback before this documentation update: `fbb04a6f06dfa4ddc30d652c5d3feb00129412e4`.
+
+- Current `server/generation-purchased-provider-boundary.js` blob `c5af1f66d03078384ad83605d5175f4dcad7fcd8` requires `job.settings.dispatchConsent === true`, then verifies purchased-dispatch authorization and invokes the provider. It does not itself re-read a revocable user-consent record immediately before the external call.
+- Current `server/ai-migrations.js` blob `4bf2462fd9aaeae326074d62947c09e1d96b44e2` lists provider-task-id and purchased-dispatch-claim migrations; `server/generation-consent.js` is absent from DEV.
+- Therefore the existing client account boundary PR #368 and C Reminders/OCR slices do **not** complete BASE #35. Durable consent storage, revoke-before-dispatch enforcement, and no-provider-call/credit-reservation regression cases remain an owner/D security-release handoff through the existing consent PR #323. Its 49-file draft remains stale and conflicted; do not merge it wholesale. No DB or provider actions were performed.
+
 ## CI follow-up — 2026-10-24
 
 The earlier failed reruns were attempts 2 of workflows created on 2026-10-22. Their synthetic merge used PR head `357b4b1` with stale base `4b2ecb6`; those failures are not a current verdict. A no-file sync commit refreshed PR #368 at `d66b6fef464de74c8764360d214044f5dbf0d341`. Fresh Actions checkout log for verify run [40094962628](https://github.com/mvryhan-web/video-variator-android/actions/runs/40094962628) says `Merge d66b6fe into 7f04176`. All 18 PR-triggered workflow runs for this head are terminal **SUCCESS** (including [Video Core](https://github.com/mvryhan-web/video-variator-android/actions/runs/40094962637) and [Studio account boundary](https://github.com/mvryhan-web/video-variator-android/actions/runs/40094962647)). No assertion was weakened. PR #368 remains open; required B/D review and DEV merge are still pending.
