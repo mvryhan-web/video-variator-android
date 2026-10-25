@@ -58,8 +58,6 @@ body.deepsyq-pricing-page.deepsyq-sitewide-shell footer{max-width:1440px}
 .price-credit-heading{padding:16px 28px}
 .price-credit-heading h2{margin:0 0 9px;font-size:clamp(32px,3.5vw,53px);letter-spacing:-.04em;font-weight:900;color:#fff;background:linear-gradient(90deg,#fff 12%,#64b8ff,#ea60ea);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .price-credit-heading h2 span{-webkit-text-fill-color:#ab6dff}
-.price-credit-heading p{margin:3px 0;color:#d8e9ff;font-size:13px;max-width:650px}
-.price-credit-heading .price-credits-tagline{color:#92d4f9}
 .price-credit-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
 .price-credit-card{position:relative;overflow:hidden;min-height:293px;grid-column:span 2;background:#07132e;border:1px solid #00aeef;border-radius:13px;box-shadow:0 0 13px #0aa8ff60}
 .price-credit-card:nth-child(2),.price-credit-card:nth-child(4){border-color:#d749fb;box-shadow:0 0 13px #af30f46a}
@@ -69,24 +67,14 @@ body.deepsyq-pricing-page.deepsyq-sitewide-shell footer{max-width:1440px}
 .price-credit-card:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#010a229c 8%,#0413346e 45%,#051027a8 100%);pointer-events:none}
 .price-credit-content{position:relative;z-index:1;padding:14px;display:flex;flex-direction:column;min-height:inherit}
 .price-credit-number{font-size:19px;color:#fff;margin:0 0 14px;font-weight:800;text-shadow:0 2px 6px #000}
-.price-credit-bonus{display:flex;flex-direction:column;gap:6px;padding:13px 12px;background:linear-gradient(145deg,#081329dc,#122044c9);border:1px solid #3974c0aa;border-radius:12px;min-height:128px;box-shadow:inset 0 2px 12px #1048ff3a}
+.price-credit-bonus{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:13px 12px;background:linear-gradient(145deg,#081329dc,#122044c9);border:1px solid #3974c0aa;border-radius:12px;min-height:86px;box-shadow:inset 0 2px 12px #1048ff3a}
 .price-credit-card:nth-child(2) .price-credit-bonus,.price-credit-card:nth-child(4) .price-credit-bonus{border-color:#a251c9ad}
 .price-credit-card:nth-child(3) .price-credit-bonus{border-color:#c89b62ba}
-.price-bonus-status{font-size:10px;font-weight:750;color:#86ecff;line-height:1.2}
-.price-credit-card:nth-child(2) .price-bonus-status,.price-credit-card:nth-child(4) .price-bonus-status{color:#ff9bfe}
-.price-credit-card:nth-child(3) .price-bonus-status{color:#ffe6b0}
 .price-bonus-title{font-size:16px}
-.price-bonus-count{font-size:30px;line-height:1.1;font-weight:900;color:#98f3ff}
-.price-credit-card:nth-child(2) .price-bonus-count,.price-credit-card:nth-child(4) .price-bonus-count{color:#efaeff}
-.price-credit-card:nth-child(3) .price-bonus-count{color:#ffdc9c}
-.price-bonus-desc{font-size:10px;color:#d6dbf4;line-height:1.3}
 .price-credit-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:13px}
 .price-credit-price{font-size:24px;color:#fff;font-weight:900;letter-spacing:-.02em}
 .price-credit-purchase{min-width:115px;border:1px solid #84e8ff;border-radius:24px;min-height:33px;background:linear-gradient(100deg,#04bdfa,#3944db,#c822e9);color:#fff;font-weight:800;font-size:11px;box-shadow:0 0 11px #138bff}
 .price-credit-card:nth-child(3) .price-credit-purchase{background:linear-gradient(105deg,#eb9b37,#8a4018,#ffa839);border-color:#ffdfa0;box-shadow:0 0 11px #d88736}
-.price-credit-note{font-size:9px;color:#dce5ff;margin:9px 0 0;line-height:1.35}
-.price-wallet-link{display:inline-flex;margin:16px 4px 0;align-items:center;gap:5px;font-size:12px;color:#8adbff;text-decoration:underline;text-underline-offset:4px}
-.price-wallet-link:hover{color:#fff}
 .price-footer{display:flex;gap:20px;flex-wrap:wrap;padding:16px 25px 35px;border-top:1px solid #153467;color:#a5bce3;font-size:12px}
 .price-footer a{color:#abcafe;text-decoration:none}
 .price-footer span{margin-left:auto}
@@ -265,6 +253,9 @@ body.deepsyq-pricing-page .price-credit-hero{
 body.deepsyq-pricing-page .price-credit-hero-art{
   background-size:cover,cover;
   background-position:center center,center bottom;
+  /* Focus the lower city skyline and crop more of the clouds above it. */
+  transform:scale(1.10);
+  transform-origin:50% 100%;
 }
 body.deepsyq-pricing-page .price-credit-heading{
   max-width:720px;
@@ -276,4 +267,13 @@ body.deepsyq-pricing-page .price-credit-heading{
     max-width:100%;
     padding:25px 20px;
   }
+}
+
+/* Owner rule: no decorative fine print below/inside AI Credits cards.
+   User-triggered payment status remains readable and only appears when needed. */
+body.deepsyq-pricing-page #creditStatus:empty{display:none}
+body.deepsyq-pricing-page #creditStatus:not(:empty){
+  margin:10px 0 14px;padding:14px 16px;
+  font-size:13px;line-height:1.45;color:#e1efff;
+  background:#102447;border:1px solid #3c659d;border-radius:11px;
 }
