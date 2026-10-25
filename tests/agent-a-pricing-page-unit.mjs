@@ -24,7 +24,11 @@ test('server config, original checkout endpoints and no false wallet credit clai
  assert.match(js,/Trial is not available yet/);
  assert.match(js,/if\(!scope\.token\)\{openAuth\(\);return;\}/);
  assert.match(js,/if\(!toolBillingConfigured\)/);
- assert.match(js,/button\.type='button';button\.disabled=!valid/);
+ assert.match(js,/price-credit-purchase/);
+ assert.match(js,/if\(!token\(\)\)\{openAuth\(\);return;\}/);
+ assert.match(js,/if\(!valid\)\{/);
+ assert.match(js,/No payment was taken/);
+ assert.doesNotMatch(js,/button\.disabled=!valid/);
  assert.match(js,/bonus is not included/i);
 });
 test('no fake credit allocation for Trial and Lifetime; lifecycle guards retain account isolation',()=>{
