@@ -22,19 +22,21 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
  await expect(page.locator('#sidebar nav a[href="canvas.html"]')).toContainText('Canvas');
  await expect(page.locator('#studioStatus')).toContainText('owner preview');
- await expect(page.locator('.plan')).toHaveCount(4);
- await expect(page.locator('.trial-plan .plan-action')).toHaveAttribute('href','ai-pricing.html#trialOffer');
- await expect(page.locator('.lifetime-disclaimer')).toContainText('does not provide unlimited AI generation');
- await expect(page.locator('.lifetime-disclaimer')).toContainText('separate prepaid AI credits');
+ await expect(page.locator('#pricing')).toBeHidden();
+ await expect(page.locator('#sidebar nav a[aria-label="Pricing"]')).toHaveAttribute('href','pricing.html');
+ await expect(page.locator('.top-actions a[href="pricing.html"]')).toHaveAttribute('href','pricing.html');
+ await expect(page.locator('#aiWalletLink')).toBeHidden();
  // This fixture offers a configured tool plan. A logged-out click opens auth,
  // never a Stripe session or a payment request.
  let checkoutPosts=0;
  page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/billing/checkout')checkoutPosts++;});
- await page.locator('#lifetimeCheckout').click();
- await expect(page.locator('#authModal')).toBeVisible();
+ await page.goto('/pricing.html');
+ await expect(page.locator('#planCards .price-plan')).toHaveCount(5);
+ await page.locator('.price-lifetime .price-plan-action').click();
+ await expect(page.locator('#pricingStatus')).toContainText('Sign in');
  expect(checkoutPosts).toBe(0);
- await page.keyboard.press('Escape');
- await expect(page.locator('#authModal')).toBeHidden();
+ await home(page);
+ await expect(page.locator('#pricing')).toBeHidden();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:info.outputPath('deepsyq.png'),fullPage:true});
  await page.locator('#homeQuickPrompt').fill('Test creative image');await page.locator('[data-home-kind="image"]').click();await expect(page).toHaveURL(/studio=image/);
@@ -207,8 +209,8 @@ test('checkout uses original plan endpoint and explains unavailable payments',as
  await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','fixture'));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Creator'}}}));let plan;
  await page.route('**/api/billing/checkout',async r=>{plan=r.request().postDataJSON().plan;await r.fulfill({status:503,json:{error:'BILLING_NOT_CONFIGURED'}});});
- await home(page);await page.getByRole('button',{name:'Choose Basic',exact:true}).click();
- await expect(page.locator('#paymentStatus')).toContainText('No payment was taken');expect(plan).toBe('basic');
+ await page.goto('/pricing.html');await page.getByRole('button',{name:'Choose Basic',exact:true}).click();
+ await expect(page.locator('#pricingStatus')).toContainText('Checkout could not be confirmed');expect(plan).toBe('basic');
 });
 test('comparison is crawlable and does not pretend AI chat exists',async({page})=>{
  await page.goto('/deepsyq-vs-deepseek.html');await expect(page).toHaveTitle(/Deepsyq vs DeepSeek/);
@@ -309,12 +311,16 @@ test('pricing keeps existing Lifetime separate from AI credit packs and uses ser
 });
 
 
-test('dashboard shows the authenticated AI wallet only when AI billing is enabled',async({page})=>{
+test('Home hides the wallet while private Pricing shows the authenticated balance',async({page})=>{
  await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Wallet User',isAdmin:false}}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'test',livePaymentsEnabled:false,unit:'AI credits',packs:[],rates:[],revision:'x'}}));
  await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:4200,reserved:150,debt:0}}));
- await home(page);await expect(page.locator('#aiWalletLink')).toBeVisible();await expect(page.locator('#aiWalletAvailable')).toHaveText('4,200');await expect(page.locator('#aiWalletHeld')).toHaveText('150 held');await expect(page.locator('#aiWalletLink')).toHaveAttribute('href','ai-pricing.html');
+ await home(page);await expect(page.locator('#aiWalletLink')).toBeHidden();
+ await page.goto('/ai-pricing.html#walletSection');
+ await expect(page.locator('#walletSection')).toBeVisible();
+ await expect(page.locator('#walletSummary')).toContainText('4,200');
+ await expect(page.locator('#walletSummary')).toContainText('150');
 });
 
 
