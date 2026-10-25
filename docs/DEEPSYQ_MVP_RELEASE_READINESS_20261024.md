@@ -82,3 +82,9 @@ No provider requests, Stripe actions, DB backup/migration, secrets, Render envir
 - **BASE #2 — production cutover remains BLOCKED by #48. BASE #50 — code verified, switches remain unchanged/off.** No production deploy, Render setting change, Stripe action, provider call, database backup/migration, or flag change was made.
 - The GitHub connector can read Actions results but cannot dispatch this workflow. The visible workflow menu did not expose a run control, so no exact-current-DEV 31-screen run was started.
 
+## Render recovery audit — 2026-10-25 (Europe/Paris)
+
+- Confirmed the Render workspace is **My Workspace**. The only Managed Postgres instance listed is `video-uniquifier-db`, status **available**, on the production Video Uniquifier service. No separate staging database is configured in this workspace.
+- The database Recovery page shows point-in-time recovery for the **past 3 days**, but **Restore database** is disabled. The Export list has **0 rows**, and **Create export** is disabled. This is evidence of a recovery window, not a verified backup export or a completed restore test; BASE #48 remains open.
+- Production Render service remains attached to branch `main` with auto-deploy enabled. Browser verification of `https://video-variator-android.onrender.com/` still shows the Video Uniquifier home page, so BASE #2 is not published.
+- Read-only audit only: no export, restore, migration, setting change, or deploy was started.
