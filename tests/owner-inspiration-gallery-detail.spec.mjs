@@ -72,8 +72,10 @@ test('Home Inspiration filters image and video cards in place; detail shows the 
   await expectPlainClose(dialog);
   await expect(page).toHaveURL(/deepsyq\.html(?:\?|$)/);
   await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);
-  // Canvas and AI Agent examples reuse the same owner-approved dialog.
-  if(width===390)for(const selector of ['#canvasFeature [data-creative-example]','#agentFeature [data-creative-example]']){
+  // After owner-approved Canvas relocation, Home's nine Canvas examples link to canvas.html.
+  await expect(page.locator('#canvasFeature a.canvas-example').first()).toHaveAttribute('href',/^canvas\.html\?example=/);
+  // AI Agent preview still uses the original detail dialog.
+  if(width===390)for(const selector of ['#agentFeature [data-creative-example]']){
    const example=page.locator(selector).first();
    await expect(example).toBeVisible();
    await example.click();
