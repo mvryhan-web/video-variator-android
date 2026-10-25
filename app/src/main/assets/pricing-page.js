@@ -216,8 +216,17 @@ document.addEventListener('keydown',event=>{
  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
 });
 function initGoogle(){
- if(googleInitialized||!googleAuthClientId)return;
- if(!window.google?.accounts?.id)return;
+ if(googleInitialized)return;
+ if(!googleAuthClientId){
+  const fallback=byId('googleFallback');
+  if(fallback)fallback.textContent='Google sign-in is unavailable here. Use email below.';
+  return;
+ }
+ if(!window.google?.accounts?.id){
+  const fallback=byId('googleFallback');
+  if(fallback)fallback.textContent='Google is still loading. You can use email below.';
+  return;
+ }
  googleInitialized=true;
  window.google.accounts.id.initialize({client_id:googleAuthClientId,callback:async({credential})=>{
   try{
