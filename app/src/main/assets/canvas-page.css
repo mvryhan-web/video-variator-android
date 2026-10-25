@@ -1,0 +1,12 @@
+/* Dedicated Canvas page inherits the existing Deepsyq dark visual language. */
+body.canvas-detail-page{background:#080e20;color:#eef3ff;min-height:100vh}
+body.canvas-detail-page main{max-width:1180px;margin:0 auto;padding:26px 30px 52px}
+body.canvas-detail-page #canvasFeature{margin:20px 0;padding:24px}
+body.canvas-detail-page #canvasFeature .canvas-feature-layout{grid-template-columns:minmax(230px,.8fr) minmax(0,1.2fr)}
+body.canvas-detail-page #canvasFeature .canvas-example-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:none;aspect-ratio:auto;gap:9px}
+body.canvas-detail-page #canvasFeature .canvas-example{height:auto;aspect-ratio:16/9}
+body.canvas-detail-page #canvasFeature .canvas-feature-editor{grid-column:1/-1}
+body.canvas-detail-page .canvas-page-footer{max-width:1180px;margin:0 auto;padding:0 30px 28px}
+body.canvas-detail-page .canvas-page-footer a{color:#cbdcff}
+@media(max-width:900px){body.canvas-detail-page main{padding:67px 18px 32px}body.canvas-detail-page #canvasFeature .canvas-feature-layout{grid-template-columns:1fr}body.canvas-detail-page #canvasFeature{padding:15px}}
+@media(max-width:640px){body.canvas-detail-page #canvasFeature .canvas-example-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;aspect-ratio:auto}body.canvas-detail-page #canvasFeature .canvas-example{height:auto;aspect-ratio:16/9}}

@@ -54,7 +54,7 @@ test('Owner neon layout: feature shortcuts keep routes and show truthful Flow so
  await expect(page.locator('#homeQuickForm a[href="free-tools.html"]')).toBeVisible();
  await expect(page.locator('.home-create-card.tile-agent')).toHaveAttribute('href','#agentFeature');
  await expect(page.locator('.home-create-card.tile-agent')).toContainText('Coming soon');
- await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','#quickCreateForm');
+ await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','canvas.html');
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','generate-studio.html?studio=video');
  await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.0');
@@ -63,7 +63,8 @@ test('Owner neon layout: feature shortcuts keep routes and show truthful Flow so
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#homeHeroModel')).toHaveText('Seedance 2.5');
  await page.locator('#homeQuickForm .home-reference-link').click();
- await expect(page.locator('#quickCreateForm')).toBeInViewport();
+ await expect(page).toHaveURL(/canvas\.html#quickCreateForm/);
+ await expect(page.locator('#quickCreateForm')).toBeVisible();
 });
 
 test('Owner lock: server-side stale carousel captions cannot replace the six owner-approved headings',async({page})=>{

@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 const page=readFileSync(new URL('../app/src/main/assets/deepsyq.html',import.meta.url),'utf8');
 const css=readFileSync(new URL('../app/src/main/assets/home-triptych-video.css',import.meta.url),'utf8');
 const links=[
-  ['canvas','#canvasFeature','media/home/neon-20261018/canvas.webp','media/home/neon-20261018/canvas-card.mp4','Open Canvas →'],
+  ['canvas','canvas.html','media/home/neon-20261018/canvas.webp','media/home/neon-20261018/canvas-card.mp4','Open Canvas →'],
   ['agent','#agentFeature','media/home/neon-20261018/agent.webp','media/home/neon-20261018/agent-card.mp4','Explore Agent →'],
   ['apps','ai-apps.html','media/home/neon-20261018/apps.webp','media/home/neon-20261018/apps-card.mp4','Explore AI Apps →'],
 ];

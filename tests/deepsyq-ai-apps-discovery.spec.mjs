@@ -191,7 +191,7 @@ test('BASE #29 AI Apps navigation reaches separate My Creations, History, Credit
  const historyLink=nav.getByRole('link',{name:'History',exact:true});
  const credits=nav.getByRole('link',{name:'Credits',exact:true});
  const pricing=nav.getByRole('link',{name:'Pricing',exact:true});
- await expect(creations).toHaveAttribute('href','deepsyq.html#recentCreations');
+ await expect(creations).toHaveAttribute('href','generate-studio.html?view=history');
  await expect(historyLink).toHaveAttribute('href','generate-studio.html?view=history');
  await expect(credits).toHaveAttribute('href','ai-pricing.html#aiCreditSection');
  await expect(pricing).toHaveAttribute('href','ai-pricing.html');
@@ -199,8 +199,8 @@ test('BASE #29 AI Apps navigation reaches separate My Creations, History, Credit
  await expect(page).toHaveURL(/ai-pricing\.html#aiCreditSection$/);
  await page.goto('/ai-apps.html');
  await page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'My Creations',exact:true}).click();
- await expect(page).toHaveURL(/deepsyq\.html#recentCreations$/);
- await expect(page.locator('#recentCreations')).toBeAttached();
+ await expect(page).toHaveURL(/generate-studio\.html\?view=history(?:&studio=[a-z]+)?$/);
+ await expect(page.locator('#showHistory')).toHaveAttribute('aria-pressed','true');
  await page.goto('/ai-apps.html');
  await page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'History',exact:true}).click();
  await expect(page).toHaveURL(/generate-studio\.html\?/);
