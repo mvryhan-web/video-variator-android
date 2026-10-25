@@ -1,3 +1,20 @@
+# COORDINATOR #5 — CYCLE29 / 25 OCT 2026 / ACTIVE NON-OVERLAP CLAIMS
+
+**Verified pre-documentation DEV** `0c62e773ca43d73924fd03c26a6c39b87c7c19a1` and exact PR CI/compare in [Cycle29 report](DEEPSYQ_COORDINATOR_CYCLE29_20261025.md). Historic claims/BASE 55/F1–F8 beneath preserved unchanged. Recheck current branch before merges. No new code/feature lease to #5, only coordinator documentation.
+
+| Agent | Exclusive next work / handoff, without duplicate implementation |
+| --- | --- |
+| **A #72** | Pricing PR412 already MERGED into DEV & preview. Existing **PR414** owns only `tests/deepsyq.spec.mjs` (3 of 5 current Actions green, 2 running); finish exact CI then A self-merges if safe. Owner follow-up dedicated `pricing.html` / `pricing-page.css` / `pricing-page.js` plus own Pricing test for **full-width 5 plans with truthful entitlement lists and built-in Deepsyq Google/email account modal on plan buttons**, no second auth/wallet, no paid checkout, no Home rewrite; coordinate old `ai-pricing.html` with B/D. Verify 12 art files and mobile. SEO read-only after exclusive UI work. |
+| **B #73** | Direct P0 B↔D peer on **existing PR368** current `dadbc5e` A→B (17/18 successful, 1 CANCELLED, behind DEV 15) and **existing PR323** `88113f7` (26/26 success but D independent PostgreSQL revoke-fence verdict missing, behind15). B owner source update only in same PR/claimed files, no new Studio PR. Financial `#333` net >=2x source audit/no spend, pricing/credits single wallet guidance. |
+| **C #74** | **PR352** C20 Photo OCR same branch `4a5ae19` 5/5 success on OLD SHA, behind DEV70, 3 C-only paths. Non-force reconcile same PR, full new-head browser CI and B+D independent peer, D16 self-merge if safe. Then C-owned `ai-apps.html` My Creations broken `#recentCreations` anchor -> canonical Studio History + real Chrome/WebKit acceptance. PR350, PR402 DONE, do not duplicate. Inspiration All/Video/Image, Everyday Tools, local Audio and three AI Apps bounded checks only once prior claims clear. |
+| **D #75** | Independently sign/fail exact-final-head PR323 consent revoke-before-provider with per-account Terms/Privacy/provider versions, same-session PG advisory fence, migration/checksum and wallet once-only/held-credit race/deadlock; PR368 A→B chrome/WebKit latest SHA. **5 shared net paths PR323 vs PR333:** `server/ai-migrations.js`, `server/generation-studio.js`, `tests/agent-d-base1-price-confirmation-unit.mjs`, `tests/generation-studio-purchased-boundary-route-unit.mjs`, `tests/p0-purchased-provider-boundary-postgres.mjs`. Direct B↔D ownership coordination, no blind merge. PR333 43 synthetic checks not real Stripe/net 2× cost proof. Owner/Admin PR413 is distinct four-file owner draft with 4/6 terminal successes; release PR280 stays HOLD. |
+| **Coordinator #5 #233** | Maintain claims/status pointers, NET files conflict, monitor exact-SHA CI and owner scope; **not** an A–D approval or merger. A–D safely self-merge DEV per D16 after own accepted guards. |
+| **Jules #316/#317/#278** | W5.5/W4.3/V6.2 existing bot ACK only, no task-specific READY or accepted PR, no new label, duplicate task or assumption of active Google work. |
+
+Global release guards: BASE #20 Product Video cancelled 404; Home six original films and accepted Inspiration visuals protected; F1–F8 only aliases; `main`/production/real Stripe/paid AI/unsafe migrations/trial activation disallowed. BASE #24/#35/#36 privacy first; #1/#50 free accepted platform/flags OFF, #48 staging/rollback, #2 root public production LAST. Full purchased provider E2E #51/#54 still NOT LIVE_VERIFIED.
+
+---
+
 # COORDINATOR #5 — CYCLE27 / 25 OCT 2026 / CURRENT EXCLUSIVE CLAIM POINTER
 
 **Sampled DEV `6d9a4dafcb747739953f58fc0e1b909e6ef3ca77`** at 2026-10-25 ~15:20 UTC (17:20 Europe/Paris); exact HEAD may advance. [Full Cycle27 verified coordination report](DEEPSYQ_COORDINATOR_CYCLE27_20261025.md) · [current Issue #233](https://github.com/mvryhan-web/video-variator-android/issues/233). Coordinator exclusive claims: this docs report and *top-only additive pointers* to `PROJECT_STATUS.md` and claims. Existing historic claims and BASE/F1–F8 untouched.
