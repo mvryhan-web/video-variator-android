@@ -1,0 +1,34 @@
+name: P0 durable generation consent revoke / purchased admission no spend
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-consent.js'
+      - 'server/generation-studio.js'
+      - 'server/generation-purchased-provider-boundary.js'
+      - 'server/ai-migrations.js'
+      - 'server/migrations/20261020-ai-user-consent.sql'
+      - 'tests/agent-b-p0-consent-revoke-unit.mjs'
+      - 'tests/generation-purchased-provider-boundary-unit.mjs'
+      - 'tests/generation-studio-purchased-boundary-route-unit.mjs'
+      - '.github/workflows/agent-b-p0-consent-revoke.yml'
+permissions:
+  contents: read
+jobs:
+  no-spend-consent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check server/generation-consent.js && node --check server/generation-studio.js && node --check server/generation-purchased-provider-boundary.js
+      - run: node --test tests/agent-b-p0-consent-revoke-unit.mjs tests/generation-purchased-provider-boundary-unit.mjs tests/generation-studio-purchased-boundary-route-unit.mjs

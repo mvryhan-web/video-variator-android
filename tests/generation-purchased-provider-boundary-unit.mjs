@@ -14,7 +14,12 @@ const request={kind:'image',model:model.id,prompt:'Original flower',ratio:'1:1'}
 const proof={source:'settled_stripe_purchase',purchaseConfirmed:true,refunded:false,dispatchClaimedExactlyOnce:true,
  purchaseId:'cs_live_real',reservationId:job.id,userId:user.id,jobId:job.id,modelId:model.id,
  provider:model.provider,requestFingerprint:fingerprint,creditsReserved:7,purchasedCreditsAvailableBeforeReserve:7};
-const core={env,user,job,request,model,quote,originalQuote:quote,fingerprint};
+const pool={async connect(){return {async query(sql){
+ if(sql.startsWith('SELECT pg_advisory_unlock'))return {rows:[{pg_advisory_unlock:true}]};
+ if(sql.startsWith('SELECT terms_version'))return {rows:[{terms_version:'2026-10-20',privacy_version:'2026-10-20',provider_data_version:'2026-10-20',provider_data_accepted:true}]};
+ return {rows:[]};
+},release(){}}}};
+const core={env,pool,user,job,request,model,quote,originalQuote:quote,fingerprint};
 function scenario(changes={},receipt=proof){
  let calls=0,claims=0;
  const provider=async()=>{calls++;return {operation:'one-accepted-provider-task'};};
