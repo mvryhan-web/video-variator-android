@@ -178,11 +178,26 @@ function choose(kind){
  $('homeQuickSubmit').setAttribute('aria-label',kind==='agent'?'See Agent preview':'Open in Studio');
 }
 if($('homeQuickForm')){
- window.addEventListener('pageshow',()=>{busy=false;$('homeQuickSubmit').disabled=false;});
+ // Home and Canvas now have separate editors. Each open Home page must scrub
+ // its own unsent prompt when the signed-in account changes.
+ const draftOwner=localStorage.getItem('vv_token')||'guest';
+ function guardHomeDraft(){
+  if((localStorage.getItem('vv_token')||'guest')===draftOwner)return true;
+  $('homeQuickPrompt').value='';busy=false;$('homeQuickSubmit').disabled=false;
+  $('homeQuickStatus').classList.add('is-visible');
+  $('homeQuickStatus').textContent='Account changed. Reload to start a private draft for this account.';
+  return false;
+ }
+ window.addEventListener('storage',event=>{if(event.key==='vv_token'||event.key===null)guardHomeDraft();});
+ for(const type of ['pointerdown','keydown','focusin'])document.addEventListener(type,guardHomeDraft,true);
+ window.addEventListener('focus',guardHomeDraft);
+ document.addEventListener('visibilitychange',guardHomeDraft);
+ window.addEventListener('pageshow',()=>{guardHomeDraft();busy=false;$('homeQuickSubmit').disabled=false;});
  const preferredRatio='';
  document.querySelectorAll('[data-home-kind]').forEach(link=>link.addEventListener('click',async event=>{
   // Real links still work without JavaScript and with modifier/new-tab clicks.
   if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+  if(!guardHomeDraft()){event.preventDefault();return;}
   const kind=link.dataset.homeKind;
   choose(kind);
   if(kind==='agent'){
@@ -197,14 +212,17 @@ if($('homeQuickForm')){
   busy=true;
   try{
    await saveStudioHandoff({kind,prompt,settings:{},source:'home-quick-create'});
+   if(!guardHomeDraft())return;
    location.assign(link.href);
   }catch(_){
+   if(!guardHomeDraft())return;
    busy=false;
    $('homeQuickStatus').classList.add('is-visible');
    $('homeQuickStatus').textContent='Could not prepare the draft in this browser. Your text remains here; please try again.';
   }
  }));
  document.querySelectorAll('[data-home-idea]').forEach(b=>b.addEventListener('click',()=>{
+  if(!guardHomeDraft())return;
   const idea=ideas[b.dataset.homeIdea];if(!idea)return;
   const prompt=$('homeQuickPrompt');
   if(prompt.value.trim()&&prompt.value.trim()!==idea.prompt&&!confirm('Replace the current description?'))return;
@@ -212,14 +230,14 @@ if($('homeQuickForm')){
   $('homeQuickStatus').textContent='Editable idea prepared. Nothing generated or charged.';
  }));
  $('homeQuickForm').addEventListener('submit',async e=>{
-  e.preventDefault();if(busy)return;
+  e.preventDefault();if(!guardHomeDraft()||busy)return;
   const prompt=$('homeQuickPrompt').value.trim(),status=$('homeQuickStatus'),button=$('homeQuickSubmit');
   status.classList.add('is-visible');
   if(chosen==='agent'){status.textContent='AI Agent execution is not available yet. Explore the preview below.';$('agentFeature').scrollIntoView({behavior:'smooth',block:'start'});return;}
   if(!prompt||prompt.length>2000){status.textContent='Enter a description of up to 2,000 characters.';return;}
   const studio=modeToStudio[chosen];if(!studio){status.textContent='Choose Image, Video or Audio.';return;}
   busy=true;button.disabled=true;status.textContent='Preparing your existing Studio draft locally…';
-  try{await saveStudioHandoff({kind:chosen,prompt,settings:preferredRatio?{ratio:preferredRatio}:{},source:'home-quick-create'});location.assign('generate-studio.html?studio='+studio+'&from=home');}
-  catch(_){status.textContent='Could not prepare the draft in this browser. Your text remains here; please try again.';busy=false;button.disabled=false;}
+  try{await saveStudioHandoff({kind:chosen,prompt,settings:preferredRatio?{ratio:preferredRatio}:{},source:'home-quick-create'});if(!guardHomeDraft())return;location.assign('generate-studio.html?studio='+studio+'&from=home');}
+  catch(_){if(!guardHomeDraft())return;status.textContent='Could not prepare the draft in this browser. Your text remains here; please try again.';busy=false;button.disabled=false;}
  });
 }

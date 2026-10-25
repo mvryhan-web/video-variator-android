@@ -1,5 +1,15 @@
 # OWNER — Restore pre-redesign Image / Video / Audio — 23 October 2026
 
+
+## Latest verified DEV publication — 2026-10-25 (Europe/Paris)
+
+- **PR #407 MERGED + DEV LIVE VERIFIED:** merge `372ce82698e38f6a7ed26c9541c6e00f45f81b36`; final tested head `ad5dbc116b1b6b687b4a9967cbc000ca9d3f892d` has 17/17 successful workflows. Platform 365/365, Home fallback/privacy 64/64, private Canvas 15/15; Home visual/pricing, 31-screen design and actual MP4 playback passed. Home/Canvas separate-page acceptance and unsent Home draft cleanup are fixed. Account scenarios use synthetic CI fixtures, not production identity qualification.
+- **PR #411 MERGED + DEV LIVE VERIFIED:** merge `97e515126a1f3f369724b24e20e120b3867cac30`; exact candidate `bc6c9678e0bd062e6634f5a1e081d1b58d34a241` has 6/6 successful workflows, including 31-screen design. Corrected only the malformed Canvas heading close tag.
+- **Current live preview:** https://deepsyq-visual-preview-20261016.onrender.com/ — Render deployment `dep-dbf0qkgae00c73ecs4f0` is LIVE at `97e515126a1f3f369724b24e20e120b3867cac30`. Browser verified the new Lifetime disclaimer, Home→Canvas navigation, exact Canvas heading, separate description, nine loaded examples and existing editor controls.
+- These bounded fixes are published; **whole BASE #1 remains PARTIAL** and production/main, commercial generation, payments, data safety and release gates remain separate. No paid AI, Stripe action, DB operation or feature-flag change was performed.
+- Full dated evidence: [release readiness map](docs/DEEPSYQ_MVP_RELEASE_READINESS_20261024.md).
+
+
 Owner rejected removal-only PR379 (closed, unmerged). Historical source `22859216555d962239c2f17c56da6795e335293b` found; restore its exact Studio theme and original bottom composer/centered title, excluding later artwork overlays. Current controller/privacy fixes retained. Existing DEV Render only. See `docs/DEEPSYQ_STUDIO_RESTORE_DESIGN.md`. Final-head CI and live publication pending.
 
 ---

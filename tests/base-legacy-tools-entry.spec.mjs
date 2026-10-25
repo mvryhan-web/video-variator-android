@@ -4,7 +4,7 @@ test('BASE #27 Tools has a real link to the existing Video Uniquifier without re
  let paidPosts=0;
  page.on('request',r=>{if(r.method()==='POST'&&(/\/api\/studio\/jobs|\/api\/ai-billing|\/api\/stripe/.test(r.url())))paidPosts++;});
  await page.goto('/free-tools.html');
- const link=page.locator('[data-legacy-tool=video-uniquifier]');
+ const link=page.locator('.et-showcase .et-uniquifier');
  await expect(link).toHaveCount(1);
  await expect(link).toBeVisible();
  await expect(link).toHaveAttribute('href','index.html');
@@ -19,13 +19,13 @@ test('BASE #27 Tools has a real link to the existing Video Uniquifier without re
  expect(modes).toEqual(['gentle','balanced','dynamic']);
  expect(paidPosts).toBe(0);
  await page.goBack();
- await expect(page.locator('[data-legacy-tool=video-uniquifier]')).toBeVisible();
+ await expect(page.locator('.et-showcase .et-uniquifier')).toBeVisible();
 });
 
 test('BASE #27 Video Uniquifier entry stays visible and reachable on mobile',async({page})=>{
  await page.setViewportSize({width:390,height:844});
  await page.goto('/free-tools.html');
- const link=page.locator('[data-legacy-tool=video-uniquifier]');
+ const link=page.locator('.et-showcase .et-uniquifier');
  await expect(link).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await link.click();
@@ -38,7 +38,7 @@ test('BASE #27 Tools label is localized without altering legacy editor',async({b
  try{
   const page=await context.newPage();
   await page.goto('/free-tools.html');
-  const link=page.locator('[data-legacy-tool=video-uniquifier]');
+  const link=page.locator('.et-showcase .et-uniquifier');
   await expect(link).toContainText('Уникализация видео');
   await link.click();
   await expect(page).toHaveURL(/\/index\.html$/);
@@ -77,26 +77,26 @@ test('BASE #27 keeps existing local history and media across Video Uniquifier �
   return {item,bytes:[...bytes]};
  });
  await page.reload();
+ // The legacy page deliberately keeps its shell behind a short startup veil.
+ await expect(page.locator('html')).not.toHaveClass(/vu-starting/);
  await expect(page.locator('#mode option')).toHaveCount(3);
 
  // Use the existing editor's actual Tools navigation, then the actual hub
  // entry. Both pages share one origin but must not reset storage.
- const toolsLink=page.locator('#freeToolsLink');
- // Playwright's isVisible() includes offscreen mobile sidebars. Check the
- // actual mobile Menu control, not the offscreen link's CSS visibility.
- const menu=page.locator('#menuBtn');
- // On phones, wait for the real Menu button: isVisible() can return false
- // during the initial startup screen while the nav is still offscreen.
+ const toolsLink=page.locator('.vu-side-link[href="free-tools.html"]');
+ // The screenshot-approved mobile shell replaces the original sidebar and
+ // hides its legacy #freeToolsLink and #menuBtn. Exercise its real navigation.
  if(await page.evaluate(()=>innerWidth<=900)){
+  const menu=page.locator('.vu-nav-toggle');
   await expect(menu).toBeVisible();
   await menu.click();
-  await expect(page.locator('.sidebar')).toHaveClass(/\bopen\b/);
+  await expect(page.locator('body')).toHaveClass(/\bvu-nav-open\b/);
  }
  await expect(toolsLink).toBeVisible();
  await expect(toolsLink).toBeInViewport();
  await toolsLink.click();
  await expect(page).toHaveURL(/\/free-tools\.html$/);
- const legacy=page.locator('[data-legacy-tool=video-uniquifier]');
+ const legacy=page.locator('.et-showcase .et-uniquifier');
  await expect(legacy).toBeVisible();
  await legacy.click();
  await expect(page).toHaveURL(/\/index\.html$/);

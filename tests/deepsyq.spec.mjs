@@ -24,7 +24,17 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('#studioStatus')).toContainText('owner preview');
  await expect(page.locator('.plan')).toHaveCount(4);
  await expect(page.locator('.trial-plan .plan-action')).toHaveAttribute('href','ai-pricing.html#trialOffer');
- await expect(page.locator('.lifetime')).toContainText('does not provide unlimited');
+ await expect(page.locator('.lifetime-disclaimer')).toContainText('does not provide unlimited AI generation');
+ await expect(page.locator('.lifetime-disclaimer')).toContainText('separate prepaid AI credits');
+ // This fixture offers a configured tool plan. A logged-out click opens auth,
+ // never a Stripe session or a payment request.
+ let checkoutPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/billing/checkout')checkoutPosts++;});
+ await page.locator('#lifetimeCheckout').click();
+ await expect(page.locator('#authModal')).toBeVisible();
+ expect(checkoutPosts).toBe(0);
+ await page.keyboard.press('Escape');
+ await expect(page.locator('#authModal')).toBeHidden();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:info.outputPath('deepsyq.png'),fullPage:true});
  await page.locator('#homeQuickPrompt').fill('Test creative image');await page.locator('[data-home-kind="image"]').click();await expect(page).toHaveURL(/studio=image/);
@@ -445,7 +455,7 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
  await expect(page.locator('#homeHeroNext')).toBeHidden();
  await expect(page.locator('#homeHeroSlideLink')).toBeHidden();
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
- await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
+ await expect(page.locator('#canvasFeature #canvasExampleGrid .canvas-example')).toHaveCount(9);
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(3);
  await expect(page.getByRole('button',{name:'View Original owner still inspiration'}).getByRole('img')).toHaveAttribute('src','/owner-image.png');
  await expect(page.locator('#inspirationEmpty')).toBeHidden();
@@ -584,8 +594,9 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  await expect(page.locator('#promoDialog')).toBeVisible();
  await expect(page.locator('#promoDialog')).toContainText('not available yet');
  await page.locator('#promoDialog button[type=submit][value=close]').click();
- await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
- await expect(page.locator('#agentFeature')).toContainText(/coming soon/i);
+ await expect(page.locator('#canvasFeature #canvasExampleGrid .canvas-example')).toHaveCount(9);
+ await expect(page.locator('#agentFeatureTitle')).toHaveText('AI Agent');
+ await expect(page.locator('#agentFeature .creative-example-card')).toHaveCount(8);
  await expect(page.locator('#appsFeature')).toBeVisible();
  await expect(page.locator('#inspirationPreview')).toHaveCount(1);
  const inDocumentOrder=await page.evaluate(()=>{
@@ -593,7 +604,8 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
   return nodes.every((node,i)=>node&&(i===nodes.length-1||Boolean(node.compareDocumentPosition(nodes[i+1])&Node.DOCUMENT_POSITION_FOLLOWING)));
  });
  expect(inDocumentOrder).toBe(true);
- await expect(page.locator('#quickCreateKind')).toBeVisible();
+ await expect(page.locator('#homeQuickForm .home-compose-modes')).toBeVisible();
+ await expect(page.locator('#homeQuickForm [data-home-kind]')).toHaveCount(4);
  await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
 });
 test('homepage inspiration All Video Image filters only owned API cards',async({page})=>{

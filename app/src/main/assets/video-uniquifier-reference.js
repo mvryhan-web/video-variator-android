@@ -18,7 +18,7 @@ function image(key,extra=''){
  const [x,y,w,h]=R[key],esc=key.replace(/[^a-z0-9]/gi,'');
  const el=document.createElement('span');el.className='vu-art vu-art-'+esc+(extra?' '+extra:'');
  el.setAttribute('aria-hidden','true');
- const img=document.createElement('img');const dedicated=key==='hero'?'media/vu-clean-hero-20261025.svg':key==='uploader'?'media/vu-clean-upload-20261025.svg':null;img.src=dedicated||file;img.alt='';img.loading=(key==='hero'?'eager':'lazy');img.decoding='async';
+ const img=document.createElement('img');const dedicated=key==='hero'?'https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/fc96c618-bedb-4137-b872-1aa746f79157.png':key==='uploader'?'media/vu-clean-upload-20261025.svg':null;img.src=dedicated||file;if(key==='hero')img.addEventListener('error',()=>{if(img.src.includes('vu-clean-hero-20261025.svg'))return;img.src='media/vu-clean-hero-20261025.svg';},{once:true});img.alt='';img.loading=(key==='hero'?'eager':'lazy');img.decoding='async';
  Object.assign(img.style,dedicated?{position:'absolute',width:'100%',height:'100%',left:'0',top:'0',objectFit:key==='hero'?'cover':'contain',pointerEvents:'none'}:{position:'absolute',maxWidth:'none',width:(1447/w*100)+'%',height:(1087/h*100)+'%',left:(-x/w*100)+'%',top:(-y/h*100)+'%',pointerEvents:'none'});
  el.append(img);return el;
 }
@@ -26,7 +26,7 @@ function node(tag,cls,text){const el=document.createElement(tag);if(cls)el.class
 function makeNav(shell){
  const bar=node('header','vu-appbar');
  const logo=node('a','vu-logo');logo.href='deepsyq.html';logo.setAttribute('aria-label','Deepsyq Home');
- logo.innerHTML='<span class="vu-brandmark">✦</span><strong>Deepsyq</strong>';
+ logo.innerHTML='<img class="vu-logo-image" src="deepsyq-logo.png" alt="" width="34" height="34" decoding="async"><strong>Deepsyq</strong>';
  const menu=node('button','vu-nav-toggle','☷');menu.type='button';menu.setAttribute('aria-label','Toggle navigation');
  const search=node('form','vu-search');
  search.innerHTML='<span aria-hidden="true">⌕</span><input type="search" aria-label="Search Deepsyq pages" placeholder="Search anything..." autocomplete="off"><kbd>⌘ K</kbd>';
@@ -54,9 +54,10 @@ function makeNav(shell){
   });nav.append(group);
  });
  const upgrade=node('button','vu-upgrade');
- upgrade.type='button';upgrade.innerHTML='<span class="vu-upgrade-art"></span><span class="vu-upgrade-content"><b>♛ &nbsp;Upgrade to<br>Deepsyq Pro</b><small>Unlock more power and create without limits.</small><strong>Upgrade Now →</strong></span>';
- upgrade.querySelector('.vu-upgrade-art').append(image('promo'));
- upgrade.addEventListener('click',()=>{side.querySelector('[data-view="plans"]')?.click();});
+ upgrade.type='button';upgrade.innerHTML='<span class="vu-upgrade-content"><b>♛ &nbsp;Upgrade to<br>Deepsyq Pro</b><strong>Upgrade Now →</strong></span>';
+ // Keep the approved purple/blue styling but never reuse a screenshot crop
+ // containing extra baked-in miniature text. The existing Upgrade remains functional.
+ upgrade.addEventListener('click',()=>{const previous=side.querySelector('[data-view="plans"]');if(previous)previous.click();else window.VideoVariatorUI?.showView?.('plans');});
  side.append(nav,upgrade);
  menu.addEventListener('click',()=>document.body.classList.toggle('vu-nav-open'));
  nav.addEventListener('click',event=>{if(event.target.closest('a'))document.body.classList.remove('vu-nav-open')});
@@ -71,8 +72,13 @@ function build(){
  document.body.classList.add('vu-reference');
  makeNav(shell);
  const title=$('heroTitle'),p=hero.querySelector('[data-i18n="heroText"]');
- if(title){title.removeAttribute('data-i18n');title.textContent='Video Uniquifier';}
  if(p)p.remove();
+ if(title){
+  title.removeAttribute('data-i18n');title.textContent='Video Uniquifier';
+  // Creator Showcase has already removed the original data-i18n attribute and
+  // inserted a second paragraph. Delete both paragraphs, not just the old selector.
+  title.parentElement?.querySelectorAll(':scope > p').forEach(copy=>copy.remove());
+ }
  hero.prepend(image('hero','vu-hero-image'));
  const frames=node('div','vu-hero-films');
  frames.innerHTML='<div class="vu-workflow-tag">Example workflow ↘</div>';
@@ -83,6 +89,8 @@ function build(){
  hero.after(grid);grid.append(left,right);left.append(workspace);
  const sh=workspace.querySelector('.sectionHead h3'),sub=workspace.querySelector('.sectionHead p');
  if(sh){sh.removeAttribute('data-i18n');sh.textContent='Upload your video';}
+ // Decorative Creator studio eyebrow isn't part of the approved compact form.
+ workspace.querySelectorAll('.sectionHead .workspaceEyebrow').forEach(label=>label.remove());
  if(sub){sub.removeAttribute('data-i18n');sub.textContent='';sub.hidden=true;}
  const picker=workspace.querySelector('.picker');
  if(picker){const t=picker.querySelector('[data-i18n="chooseVideos"]'),s=picker.querySelector('[data-i18n="chooseVideosSub"]');
@@ -106,7 +114,7 @@ function build(){
  modes.forEach(([v,label,description,icon])=>{
   const btn=node('button','vu-mode-card');btn.type='button';btn.dataset.mode=v;btn.setAttribute('aria-pressed','false');
   btn.append(image(v==='balanced'?'balance':v));
-  const txt=node('span','vu-mode-copy');txt.innerHTML='<strong><span aria-hidden="true">'+icon+'</span> '+label+'</strong><small>'+description+'</small>';btn.append(txt);
+  const txt=node('span','vu-mode-copy');txt.innerHTML='<strong><span aria-hidden="true">'+icon+'</span> '+label+'</strong>';btn.append(txt);
   btn.append(node('span','vu-radio','◯'));cards.append(btn);
  });
  types.append(cards);
@@ -167,14 +175,53 @@ function build(){
  });}
  qual.addEventListener('change',refreshQuality);new MutationObserver(refreshQuality).observe(qual,{attributes:true,childList:true,subtree:true,attributeFilter:['disabled']});refreshQuality();
  params.append(count,qualityBox);types.after(params);
+ // Keep the original #aspectRatio select as the sole processing source of truth.
+ // app-v4.js.getResolution() reads it directly before calling the real core.process().
+ const ratio=$('aspectRatio');
+ const formatGroup=node('section','vu-video-format');
+ formatGroup.innerHTML='<h4 id="vuVideoFormatHeading">Video format</h4>';
+ const ratioChoices=node('div','vu-format-options');
+ ratioChoices.setAttribute('role','group');
+ ratioChoices.setAttribute('aria-labelledby','vuVideoFormatHeading');
+ const ratioButtons=[
+  ['9:16','9:16','Vertical'],
+  ['16:9','16:9','Landscape']
+ ].map(([value,label,description])=>{
+  const button=node('button','vu-format-button');
+  button.type='button';button.dataset.ratio=value;button.setAttribute('aria-pressed','false');
+  button.innerHTML='<span class="vu-ratio-glyph '+(value==='9:16'?'vu-ratio-portrait':'vu-ratio-landscape')+'" aria-hidden="true"></span><span class="vu-format-label"><strong>'+label+'</strong><small>'+description+'</small></span>';
+  ratioChoices.append(button);
+  return button;
+ });
+ formatGroup.append(ratioChoices);
+ function refreshFormat(){
+  for(const button of ratioButtons){
+   const option=[...ratio.options].find(o=>o.value===button.dataset.ratio);
+   const disabled=ratio.disabled||!option||option.disabled;
+   button.disabled=!!disabled;
+   const selected=ratio.value===button.dataset.ratio;
+   button.setAttribute('aria-pressed',String(selected));
+   button.classList.toggle('selected',selected);
+  }
+ }
+ for(const button of ratioButtons)button.addEventListener('click',()=>{
+  if(button.disabled)return;
+  ratio.value=button.dataset.ratio;
+  ratio.dispatchEvent(new Event('change',{bubbles:true}));
+  refreshFormat();
+ });
+ ratio.addEventListener('change',refreshFormat);
+ new MutationObserver(refreshFormat).observe(ratio,{attributes:true,attributeFilter:['disabled'],childList:true,subtree:true});
+ refreshFormat();
+ params.after(formatGroup);
  const preserved=node('div','vu-preserved-controls');preserved.hidden=true;
  [workspace.querySelector('.settingsGrid'),workspace.querySelector('.formatGrid'),$('planAccessHint'),workspace.querySelector('.creditEstimate')].forEach(item=>{if(item)preserved.append(item)});
- params.after(preserved);
+ formatGroup.after(preserved);
  const speed=$('fastExport');if(speed){speed.checked=false;speed.disabled=true;}
  new MutationObserver(()=>{const s=$('fastExport');if(s&&!s.disabled){s.checked=false;s.disabled=true;}}).observe(workspace,{childList:true,subtree:true});
  const btn=$('startBtn');if(btn){btn.removeAttribute('data-i18n');btn.innerHTML='✦ &nbsp;Create variants &nbsp; →';}
  const preview=node('section','vu-panel vu-preview');
- preview.innerHTML='<div class="vu-panel-head"><h3>Example preview</h3><p>See an example of how video variants can look with different styles.</p></div>';
+ preview.innerHTML='<div class="vu-panel-head"><h3>Example preview</h3></div>';
  const scene=node('div','vu-preview-scene');scene.append(image('preview'));scene.insertAdjacentHTML('beforeend','<span class="vu-preview-controls" aria-label="Illustrative preview controls">▶ &nbsp; Preview image <span class="vu-timeline"></span> ◖ ◱</span>');preview.append(scene);right.append(preview);
  const queue=node('section','vu-panel vu-output');queue.innerHTML='<div class="vu-panel-head vu-output-head"><div><h3>Output queue</h3><p>Your generated variants will appear here.</p></div><button type="button" class="vu-queue-clear">Clear all</button></div>';
  const lines=node('div','vu-output-lines');queue.append(lines);
