@@ -111,3 +111,11 @@ No source changes, flags, Stripe actions, DB exports/restores, Render configurat
 - **BASE #2 — last.** The exact DEV root/legacy gate passes, but production remains on `main` and still serves Video Uniquifier. Do not cut over until #48 and P0 BASE #24/#35/#36 privacy/consent gates are complete.
 
 Coordinator work this checkpoint was read-only source/CI/Render verification plus status handoff. No production deployment, provider spend, Stripe transaction, database mutation/export/restore, Render configuration change or feature-flag change.
+
+
+## BASE #30 correction PR status — 2026-10-25
+
+- Coordinator reproduced the exact-current-DEV mobile drawer failure and diagnosed the stacking overlap: mobile `#sidebar` is z-index 32 while the open Home header was z-index 33.
+- Created draft [PR #402](https://github.com/mvryhan-web/video-variator-android/pull/402) from `deepsyq-platform`, exact head `3ddbef343ebeadf640798bb92f56d4be5aac1718`, with only two paths: `app/src/main/assets/deepsyq.css` and `.github/workflows/base30-mobile-drawer.yml`. It lowers the header layer while keeping the menu/close control above the drawer, and includes the CSS path in the focused workflow filter.
+- Focused BASE #30, 31-screen visual, Home and broad platform checks are **QUEUED** at latest check. The PR remains DRAFT and unmerged; #1 remains PARTIAL until the exact-head focused browser test and required regression checks finish green, followed by review.
+- Handoff is recorded on Issue #74 comment #6397324713. No production/Render, payment, database, provider or feature-flag action was taken.
