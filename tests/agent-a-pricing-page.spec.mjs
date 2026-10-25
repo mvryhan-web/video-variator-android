@@ -198,3 +198,35 @@ test('Yearly quote still uses original Deepsyq auth for guest and does not charg
  await expect(page.locator('#emailAuthForm')).toBeVisible();
  expect(posts).toBe(0);
 });
+
+test('hero photograph gives all four frame labels full breathing room on desktop and mobile',async({page})=>{
+ for(const viewport of [{width:1448,height:1086},{width:390,height:844}]){
+  await page.setViewportSize(viewport);
+  await page.goto('/pricing.html');
+  const geometry=await page.evaluate(()=>{
+   const hero=document.querySelector('.price-hero');
+   const image=document.querySelector('.price-hero-art');
+   const title=document.querySelector('#pricingTitle').getBoundingClientRect();
+   const heroRect=hero.getBoundingClientRect();
+   const boxes=[...hero.querySelectorAll('.price-chips span')].map(el=>el.getBoundingClientRect());
+   const artwork=getComputedStyle(image).backgroundImage;
+   return {hero:{left:heroRect.left,right:heroRect.right,top:heroRect.top,bottom:heroRect.bottom,height:heroRect.height},
+    titleBottom:title.bottom,
+    boxes:boxes.map(x=>({left:x.left,right:x.right,top:x.top,bottom:x.bottom,width:x.width})),
+    artworkLoaded:artwork.includes('fa2c9a57-3fe7-4a2c-8123-7da568cabe10.png'),
+    overflow:document.documentElement.scrollWidth>window.innerWidth+1};
+  });
+  expect(geometry.hero.height).toBeGreaterThanOrEqual(viewport.width<700?379:364);
+  expect(geometry.boxes).toHaveLength(4);
+  expect(geometry.artworkLoaded).toBeTruthy();
+  expect(geometry.overflow).toBeFalsy();
+  for(const box of geometry.boxes){
+   expect(box.width).toBeGreaterThan(35);
+   expect(box.top).toBeGreaterThan(geometry.titleBottom+15);
+   expect(box.top).toBeGreaterThan(geometry.hero.top+5);
+   expect(box.bottom).toBeLessThanOrEqual(geometry.hero.bottom-8);
+   expect(box.left).toBeGreaterThanOrEqual(geometry.hero.left+8);
+   expect(box.right).toBeLessThanOrEqual(geometry.hero.right-8);
+  }
+ }
+});
