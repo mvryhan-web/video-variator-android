@@ -77,6 +77,8 @@ test('BASE #27 keeps existing local history and media across Video Uniquifier â†
   return {item,bytes:[...bytes]};
  });
  await page.reload();
+ // The legacy page deliberately keeps its shell behind a short startup veil.
+ await expect(page.locator('html')).not.toHaveClass(/vu-starting/);
  await expect(page.locator('#mode option')).toHaveCount(3);
 
  // Use the existing editor's actual Tools navigation, then the actual hub
