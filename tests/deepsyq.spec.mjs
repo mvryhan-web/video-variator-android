@@ -596,7 +596,8 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
   return nodes.every((node,i)=>node&&(i===nodes.length-1||Boolean(node.compareDocumentPosition(nodes[i+1])&Node.DOCUMENT_POSITION_FOLLOWING)));
  });
  expect(inDocumentOrder).toBe(true);
- await expect(page.locator('#quickCreateKind')).toBeVisible();
+ await expect(page.locator('#homeQuickForm .home-compose-modes')).toBeVisible();
+ await expect(page.locator('#homeQuickForm [data-home-kind]')).toHaveCount(4);
  await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
 });
 test('homepage inspiration All Video Image filters only owned API cards',async({page})=>{
