@@ -7,6 +7,16 @@ test.beforeEach(async({page})=>{
 });
 
 async function home(page){await page.goto('/deepsyq.html');await page.waitForFunction(()=>window.__uiPageShown===true);}
+async function openPricing(page){
+ const top=page.locator('.top-actions a[href="pricing.html"]');
+ if(await top.isVisible())await top.click();
+ else{
+  await page.locator('#menu').click();
+  await expect(page.locator('body')).toHaveClass(/menu-open/);
+  await page.locator('#sidebar a[href="pricing.html"]').click();
+ }
+ await expect(page).toHaveURL(/pricing\.html$/);
+}
 
 const plans={basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}};
 async function fixtures(page){
@@ -23,7 +33,7 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('#sidebar nav a[href="canvas.html"]')).toContainText('Canvas');
  await expect(page.locator('#studioStatus')).toContainText('owner preview');
  await expect(page.locator('#pricing')).toBeHidden();
- await page.locator('.top-actions a[href="pricing.html"]').click();
+ await openPricing(page);
  await expect(page).toHaveURL(/pricing\.html$/);
  await expect(page.locator('#planCards .price-plan')).toHaveCount(5);
  await expect(page.locator('.price-trial .price-plan-action')).toBeDisabled();
@@ -209,7 +219,7 @@ test('checkout uses original plan endpoint and explains unavailable payments',as
  await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','fixture'));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Creator'}}}));let plan;
  await page.route('**/api/billing/checkout',async r=>{plan=r.request().postDataJSON().plan;await r.fulfill({status:503,json:{error:'BILLING_NOT_CONFIGURED'}});});
- await home(page);await page.locator('.top-actions a[href="pricing.html"]').click();
+ await home(page);await openPricing(page);
  await page.getByRole('button',{name:'Choose Basic',exact:true}).click();
  await expect(page.locator('#pricingStatus')).toContainText('Checkout could not be confirmed');
  await expect(page.locator('#pricingStatus')).toContainText('No payment is confirmed');expect(plan).toBe('basic');
@@ -321,7 +331,7 @@ test('Home Pricing leads to the authenticated AI wallet without a duplicate Home
  await page.route('**/api/ai-wallet/config',r=>r.fulfill({json:{welcomeEnabled:false,welcomeCredits:0}}));
  await page.route('**/api/ai-wallet/history',r=>r.fulfill({json:{items:[]}}));
  await home(page);await expect(page.locator('#aiWalletLink')).toBeHidden();
- await page.locator('.top-actions a[href="pricing.html"]').click();
+ await openPricing(page);
  await expect(page.locator('.price-wallet-link')).toHaveAttribute('href','ai-pricing.html#walletSection');
  await page.locator('.price-wallet-link').click();
  await expect(page.locator('#walletSection')).toBeVisible();
