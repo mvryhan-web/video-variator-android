@@ -76,6 +76,8 @@ test('owner correction preserves big bonus numbers, forbids only tiny tool-plan 
  assert.match(html,/Purchase AI credits to unlock the full power of Deepsyq AI/);
  assert.match(html,/More creativity\. More possibilities\. Fuel your ideas\./);
  assert.match(html,/View your AI wallet and purchase availability/);
+ assert.match(html,/href="pricing.html#wallet"/);
+ assert.match(html,/id="walletHistory"/);
  assert.match(js,/bonus:200/);
  assert.match(js,/bonus:3333/);
  assert.match(js,/price-bonus-count/);

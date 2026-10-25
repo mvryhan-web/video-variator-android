@@ -25,8 +25,8 @@ test('Home keeps creation sections but Pricing and Credits now live on standalon
  await expect(page.locator('#planCards')).toContainText('750 tool credits / month');
  await expect(page.locator('#planCards')).toContainText('2,250 tool credits / month');
  await expect(page.locator('#planCards')).toContainText('15,000 tool credits / month');
- await expect(page.locator('#planCards .price-trial')).toContainText('Not available yet');
- await expect(page.locator('#planCards .price-plan-action:enabled')).toHaveCount(0);
+ await expect(page.locator('#planCards .price-trial')).toContainText('not yet active');
+ await expect(page.locator('#planCards .price-plan-action:enabled')).toHaveCount(5); // Configured plans can open auth safely; no checkout without user sign-in.
  await page.screenshot({path:info.outputPath('new-pricing-desktop.png'),fullPage:true});
 });
 test('Standalone Pricing scrolls naturally on phone, has correct columns, and keeps Home intact',async({page},info)=>{
@@ -40,6 +40,8 @@ test('Standalone Pricing scrolls naturally on phone, has correct columns, and ke
  await expect(page.locator('#creditsHeading')).toHaveText('✦ AI Credits');
  await page.locator('#creditsHeading').scrollIntoViewIfNeeded();
  await expect(page.locator('#creditCards .price-credit-number').first()).toBeVisible();
- await expect(page.locator('.price-credit-purchase:enabled')).toHaveCount(0);
+ await expect(page.locator('#creditCards .price-credit-note')).toHaveCount(0);
+ await expect(page.locator('#creditCards .price-bonus-count')).toHaveCount(5);
+ await expect(page.locator('.price-credit-purchase:enabled')).toHaveCount(5); // Login or safe no-payment availability action.
  await page.screenshot({path:info.outputPath('new-pricing-mobile.png'),fullPage:true});
 });

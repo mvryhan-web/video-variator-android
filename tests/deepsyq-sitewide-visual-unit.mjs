@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 const root=new URL('../app/src/main/assets/',import.meta.url);
-const pages=["deepsyq.html","generate-studio.html","ai-apps.html","ai-pricing.html","audio-studio.html","avatar-studio.html","free-tools.html","deepsyq-admin.html","ai-privacy.html","mobile-utility.html","index.html","deepsyq-vs-deepseek.html","photo-collage.html","simple-background-remover.html","smart-reminders.html","teleprompter.html","telegram-free-mini.html","product-watcher-admin.html"];
+const pages=["deepsyq.html","generate-studio.html","ai-apps.html","pricing.html","audio-studio.html","avatar-studio.html","free-tools.html","deepsyq-admin.html","ai-privacy.html","mobile-utility.html","index.html","deepsyq-vs-deepseek.html","photo-collage.html","simple-background-remover.html","smart-reminders.html","teleprompter.html","telegram-free-mini.html","product-watcher-admin.html"];
 test('all site pages load the approved shared visual language',()=>{
  const style=readFileSync(new URL('deepsyq-global-theme.css',root),'utf8');
  for(const token of ['#080d1d','#925bff','#ee80d2','#4c9cf4']) assert.ok(style.includes(token));
@@ -22,7 +22,7 @@ test('secondary pages have shared sidebar without altering Home, legacy or admin
  }
 });
 test('replace d. placeholders with exact official image',()=>{
- for(const page of ['ai-pricing.html','ai-privacy.html','generate-studio.html']){
+ for(const page of ['pricing.html','ai-privacy.html','generate-studio.html']){
   const html=readFileSync(new URL(page,root),'utf8');
   assert.ok(html.includes('src="deepsyq-logo.png"'),page);
   assert.ok(!html.includes('>d.</span>'),page);
@@ -61,4 +61,11 @@ test('Studio restoration uses the exact owner-approved October 20 theme',()=>{
  const html=readFileSync(new URL('generate-studio.html',root),'utf8');
  assert.ok(!html.includes('approved-page-design.js'));
  assert.ok(!html.includes('approved-page-design.css'));
+});
+
+test('retired Pricing has only a safe canonical redirect, not a second styled storefront',()=>{
+ const retired=readFileSync(new URL('ai-pricing.html',root),'utf8');
+ assert.match(retired,/location\.replace\(destination\.href\)/);
+ assert.match(retired,/meta name="robots" content="noindex,follow"/);
+ assert.doesNotMatch(retired,/src="ai-pricing\.js"|id="walletSummary"|id="toolPlans"/);
 });
