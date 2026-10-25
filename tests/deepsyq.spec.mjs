@@ -30,7 +30,9 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  // never a Stripe session or a payment request.
  let checkoutPosts=0;
  page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/billing/checkout')checkoutPosts++;});
- await page.locator('#lifetimeCheckout').click();
+ await page.goto('/pricing.html');
+ await expect(page.locator('.price-lifetime .price-plan-action')).toBeVisible();
+ await page.locator('.price-lifetime .price-plan-action').click();
  await expect(page.locator('#authModal')).toBeVisible();
  expect(checkoutPosts).toBe(0);
  await page.keyboard.press('Escape');
@@ -207,8 +209,8 @@ test('checkout uses original plan endpoint and explains unavailable payments',as
  await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','fixture'));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Creator'}}}));let plan;
  await page.route('**/api/billing/checkout',async r=>{plan=r.request().postDataJSON().plan;await r.fulfill({status:503,json:{error:'BILLING_NOT_CONFIGURED'}});});
- await home(page);await page.getByRole('button',{name:'Choose Basic',exact:true}).click();
- await expect(page.locator('#paymentStatus')).toContainText('No payment was taken');expect(plan).toBe('basic');
+ await page.goto('/pricing.html');await page.locator('.price-basic .price-plan-action').click();
+ await expect(page.locator('#pricingStatus')).toContainText('No payment is confirmed by this page');expect(plan).toBe('basic');
 });
 test('comparison is crawlable and does not pretend AI chat exists',async({page})=>{
  await page.goto('/deepsyq-vs-deepseek.html');await expect(page).toHaveTitle(/Deepsyq vs DeepSeek/);
@@ -281,7 +283,7 @@ test('legacy Trial bookmark opens the proposed $0.99 plan with zero payment',asy
  await page.goto('/ai-pricing.html#trialOffer');
  await expect(page).toHaveURL(/\/pricing\.html#plans$/);
  await expect(page.locator('#planCards .price-trial')).toContainText('$0.99');
- await expect(page.locator('#planCards .price-trial')).toContainText('Trial checkout is not available');
+ await expect(page.locator('#planCards .price-trial')).toContainText('NOT active yet');
  await expect(page.locator('#planCards')).toContainText('Basic');
  await page.locator('.price-trial .price-plan-action').click();
  await expect(page.locator('#authModal')).toBeVisible();
