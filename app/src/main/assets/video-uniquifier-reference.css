@@ -243,3 +243,109 @@ body.vu-reference #dashboardView .hero>.vu-hero-films {
 body.vu-reference #dashboardView .hero:before {
   display:none !important;
 }
+
+/* Agent A: true Video Uniquifier output-ratio controls + approved site logo.
+   These rules do not alter the sidebar, sitewide navigation, or media engine. */
+body.vu-reference .vu-appbar .vu-logo .vu-logo-image{
+ display:block;width:34px;height:34px;flex:none;object-fit:contain;
+ border:0;background:transparent;filter:none;
+}
+body.vu-reference .vu-video-format{
+ display:grid;gap:9px;min-width:0;width:100%;
+ margin:14px 0 0;padding:0;border:0;
+}
+body.vu-reference .vu-video-format h4{
+ margin:0;font-size:12px;font-weight:700;line-height:1.3;color:#f1f7ff;
+}
+body.vu-reference .vu-format-options{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:10px;width:100%;min-width:0;
+}
+body.vu-reference .vu-format-button{
+ display:flex;align-items:center;justify-content:center;gap:11px;
+ min-height:51px;padding:8px 12px;
+ border:1px solid #2c5b96;border-radius:10px;
+ color:#dceeff;background:linear-gradient(150deg,#0c2141,#07192e);
+ cursor:pointer;transition:border-color .14s,box-shadow .14s,background .14s;
+}
+body.vu-reference .vu-format-button strong{
+ font-size:15px;font-weight:750;line-height:1.1;letter-spacing:.012em;
+}
+body.vu-reference .vu-format-button small{
+ font-size:11px;font-weight:500;color:#b4c7e4;
+}
+body.vu-reference .vu-format-button:hover:not(:disabled){
+ border-color:#65d4ff;box-shadow:0 0 12px #0987dd48;
+}
+body.vu-reference .vu-format-button.selected,
+body.vu-reference .vu-format-button[aria-pressed="true"]{
+ border:1.5px solid #37d9ff;background:linear-gradient(125deg,#173d90,#0a2862);
+ color:#fff;box-shadow:0 0 0 1px #158fff81,0 0 16px #068ee46b;
+}
+body.vu-reference .vu-format-button[aria-pressed="true"] small{
+ color:#e4edff;
+}
+body.vu-reference .vu-format-button:focus-visible{
+ outline:2px solid #fff;outline-offset:3px;
+}
+body.vu-reference .vu-format-button:disabled{
+ opacity:.52;cursor:not-allowed;
+}
+@media(max-width:900px){
+ body.vu-reference .vu-video-format{margin-top:12px;}
+ body.vu-reference .vu-format-button{min-height:48px;}
+}
+@media(max-width:450px){
+ body.vu-reference .vu-format-options{gap:7px;}
+ body.vu-reference .vu-format-button{min-height:48px;padding:6px;gap:6px;}
+ body.vu-reference .vu-format-button strong{font-size:13px;}
+ body.vu-reference .vu-format-button small{font-size:9px;}
+}
+
+/* Owner-approved 2026-10-25 small-copy cleanup (Video Uniquifier only).
+   All site navigation and functional processing controls are unchanged. */
+body.vu-reference #dashboardView .hero #heroTitle ~ p,
+body.vu-reference #dashboardView .hero .creatorLead,
+body.vu-reference #dashboardView .hero .creatorKicker,
+body.vu-reference .workspace .sectionHead .workspaceEyebrow,
+body.vu-reference .vu-preview .vu-panel-head p,
+body.vu-reference .vu-mode-copy small,
+body.vu-reference .vu-upgrade-content small { display:none!important; }
+/* Promo remains in the sidebar, with the original purple/blue palette, title
+   and Upgrade Now button; remove the screenshot containing baked-in copy. */
+body.vu-reference .vu-upgrade {
+ background:
+  radial-gradient(ellipse at 85% 94%,rgba(16,163,255,.48),transparent 47%),
+  radial-gradient(ellipse at 13% 14%,rgba(165,32,255,.27),transparent 61%),
+  linear-gradient(165deg,#071b46 0%,#081c42 46%,#08133a 100%)!important;
+}
+body.vu-reference .vu-upgrade-content{gap:14px;justify-content:space-between;}
+body.vu-reference .vu-upgrade-content strong{margin-top:auto;}
+/* Move decorative mode radio below the image into the same line as its name
+   to avoid a gap where the removed descriptions used to appear. */
+body.vu-reference .vu-mode-copy {min-height:36px;display:flex;align-items:center;padding:8px 30px 8px 9px;}
+body.vu-reference .vu-mode-copy strong {font-size:12px;line-height:1.2;}
+body.vu-reference .vu-mode-card .vu-radio {top:auto!important;bottom:10px!important;}
+body.vu-reference .vu-preview .vu-panel-head {padding-bottom:5px;}
+/* Small native CSS pictograms: portrait 9:16 and landscape 16:9.
+   Decorative only; the existing aria-pressed and #aspectRatio processor wiring remains. */
+body.vu-reference .vu-ratio-glyph{
+ display:inline-block;flex:0 0 auto;position:relative;
+ border:2px solid currentColor;border-radius:3px;color:#d9e9ff;
+ box-shadow:0 0 7px rgba(85,184,255,.22);
+}
+body.vu-reference .vu-ratio-portrait{width:15px;height:25px;}
+body.vu-reference .vu-ratio-landscape{width:25px;height:15px;}
+body.vu-reference .vu-ratio-glyph::after{
+ content:'';position:absolute;inset:3px;background:currentColor;
+ opacity:.25;border-radius:1px;
+}
+body.vu-reference .vu-format-label{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;}
+body.vu-reference .vu-format-button[aria-pressed="true"] .vu-ratio-glyph{
+ color:#fff;box-shadow:0 0 8px #4bdfff9c;
+}
+@media(max-width:450px){
+ body.vu-reference .vu-format-button{gap:7px;}
+ body.vu-reference .vu-ratio-portrait{width:12px;height:21px;}
+ body.vu-reference .vu-ratio-landscape{width:21px;height:12px;}
+}

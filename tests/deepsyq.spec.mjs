@@ -26,7 +26,15 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('.trial-plan .plan-action')).toHaveAttribute('href','ai-pricing.html#trialOffer');
  await expect(page.locator('.lifetime-disclaimer')).toContainText('does not provide unlimited AI generation');
  await expect(page.locator('.lifetime-disclaimer')).toContainText('separate prepaid AI credits');
- await expect(page.locator('#lifetimeCheckout')).toBeDisabled();
+ // This fixture offers a configured tool plan. A logged-out click opens auth,
+ // never a Stripe session or a payment request.
+ let checkoutPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/billing/checkout')checkoutPosts++;});
+ await page.locator('#lifetimeCheckout').click();
+ await expect(page.locator('#authModal')).toBeVisible();
+ expect(checkoutPosts).toBe(0);
+ await page.keyboard.press('Escape');
+ await expect(page.locator('#authModal')).toBeHidden();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:info.outputPath('deepsyq.png'),fullPage:true});
  await page.locator('#homeQuickPrompt').fill('Test creative image');await page.locator('[data-home-kind="image"]').click();await expect(page).toHaveURL(/studio=image/);

@@ -3,6 +3,8 @@ import {test,expect} from '@playwright/test';
 // Agent A BASE #3. Real browser inspection of the approved permanent Home
 // gallery region. No copyrighted stills, fabricated MP4s or paid generation.
 async function mockSafeHome(page,items=[]){
+ // No Google authentication is exercised by these local UI fixtures.
+ await page.route('https://accounts.google.com/gsi/client',r=>r.fulfill({contentType:'application/javascript',body:''}));
  await page.route('**/api/config',route=>route.fulfill({json:{
   plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},
          business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}},
@@ -286,38 +288,43 @@ test('BASE 3: Canvas draft cannot be restored by a different account sharing thi
  expect(paidPosts).toBe(0);
 });
 
-test('BASE 3: cross-tab account switch clears unsent prompts and reference previews on Home',async({page})=>{
+test('BASE 3: cross-tab account switch clears unsent Home and Canvas drafts',async({page,context})=>{
  await mockSafeHome(page,[]);
  await page.addInitScript(()=>localStorage.setItem('vv_token','fixture-account-A'));
- await page.route('**/api/me',route=>route.fulfill({json:{user:{id:'owner',name:'Account A',isAdmin:false}}}));
  await page.goto('/canvas.html');
  await page.locator('#quickCreatePrompt').fill('PRIVATE OLD CANVAS PROMPT');
- await page.locator('#homeQuickPrompt').fill('PRIVATE OLD HOME IDEA');
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
  await page.locator('#quickCreateFiles').setInputFiles({name:'private-reference.png',mimeType:'image/png',buffer:png});
  await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(1);
- await page.evaluate(()=>{
-  localStorage.setItem('vv_token','fixture-account-B');
-  dispatchEvent(new StorageEvent('storage',{key:'vv_token',newValue:'fixture-account-B'}));
- });
- await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
- await expect(page.locator('#homeQuickPrompt')).toHaveValue('');
- await expect(page.locator('#quickCreateFiles')).toHaveValue('');
- await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(0);
- await expect(page.locator('#quickCreateStatus')).toContainText('Account changed');
+ const homePage=await context.newPage(),switcher=await context.newPage();
+ let paidPosts=0;
+ context.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio\/jobs|billing|ai-wallet)/.test(r.url()))paidPosts++;});
+ try{
+  await mockSafeHome(homePage,[]);
+  await homePage.route('**/api/me',r=>r.fulfill({json:{user:{id:'owner-a',name:'Account A',isAdmin:false}}}));
+  await homePage.goto('/deepsyq.html');
+  await homePage.locator('#homeQuickPrompt').fill('PRIVATE OLD HOME IDEA');
+  await mockSafeHome(switcher,[]);
+  await switcher.goto('/canvas.html');
+  // A real third-tab mutation sends native storage events to BOTH editors.
+  await switcher.evaluate(()=>localStorage.setItem('vv_token','fixture-account-B'));
+  await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+  await expect(homePage.locator('#homeQuickPrompt')).toHaveValue('');
+  await expect(page.locator('#quickCreateFiles')).toHaveValue('');
+  await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(0);
+  await expect(page.locator('#quickCreateStatus')).toContainText('Account changed');
+  await expect(homePage.locator('#homeQuickStatus')).toContainText('Account changed');
+  expect(paidPosts).toBe(0);
+ }finally{await homePage.close();await switcher.close();}
 });
 
-test("BASE 3: logout and browser Back never show another account's Canvas draft",async({page})=>{
+test("BASE 3: Home logout and browser Back never expose another account's Canvas draft",async({page,context})=>{
  await mockSafeHome(page,[]);
- await page.route('**/api/me',route=>route.fulfill({json:{user:{id:'owner-a',name:'Creator A',isAdmin:false}}}));
  let paidJobs=0;
- page.on('request',request=>{
-  if(request.method()==='POST'&&/\/api\/studio\/jobs/.test(request.url()))paidJobs++;
- });
+ context.on('request',r=>{if(r.method()==='POST'&&/\/api\/studio\/jobs/.test(r.url()))paidJobs++;});
  await page.goto('/canvas.html');
  await page.evaluate(()=>localStorage.setItem('vv_token','fixture-owner-A'));
  await page.reload();
- await expect(page.locator('#logout')).toBeVisible();
  const secret='PRIVATE A Canvas draft must not appear for logged-out visitors';
  await page.locator('#quickCreatePrompt').fill(secret);
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
@@ -326,27 +333,32 @@ test("BASE 3: logout and browser Back never show another account's Canvas draft"
  await expect.poll(()=>page.evaluate(text=>Object.keys(sessionStorage)
   .filter(key=>key.startsWith('deepsyq_quick_canvas_draft_v2_'))
   .some(key=>JSON.parse(sessionStorage.getItem(key)||'null')?.prompt===text),secret)).toBe(true);
- // Exercise the actual Home Logout control, not a simulated storage event.
- // On phones, the sidebar is inert until the visible menu button opens it.
- if(await page.evaluate(()=>matchMedia('(max-width:760px)').matches))
-  await page.locator('#menu').click();
- await page.locator('#logout').click();
- await expect(page.locator('#logout')).toBeHidden();
- expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBeNull();
- await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
- await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(0);
- await page.goto('/ai-apps.html');
- await page.goBack();
- await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
- // A different signed-in identity must not see A's saved text either.
- await page.evaluate(()=>localStorage.setItem('vv_token','fixture-owner-B'));
- await page.reload();
- await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
- // A can still recover their OWN account-scoped draft after signing back in.
- await page.evaluate(()=>localStorage.setItem('vv_token','fixture-owner-A'));
- await page.reload();
- await expect(page.locator('#quickCreatePrompt')).toHaveValue(secret);
- expect(paidJobs).toBe(0);
+ const authPage=await context.newPage();
+ try{
+  await mockSafeHome(authPage,[]);
+  await authPage.route('**/api/me',r=>r.fulfill({json:{user:{id:'owner-a',name:'Creator A',isAdmin:false}}}));
+  await authPage.goto('/deepsyq.html');
+  // Canvas uses the read-only shell; the actual authenticated Logout is on Home.
+  if(await authPage.evaluate(()=>matchMedia('(max-width:760px)').matches))
+   await authPage.locator('#menu').click();
+  await expect(authPage.locator('#logout')).toBeVisible();
+  await authPage.locator('#logout').click();
+  await expect(authPage.locator('#logout')).toBeHidden();
+  expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBeNull();
+  await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+  await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(0);
+  await page.goto('/ai-apps.html');
+  await page.goBack();
+  await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+  await page.evaluate(()=>localStorage.setItem('vv_token','fixture-owner-B'));
+  await page.reload();
+  await expect(page.locator('#quickCreatePrompt')).toHaveValue('');
+  // Retain account A's own private draft; do not "fix" privacy by deleting it.
+  await page.evaluate(()=>localStorage.setItem('vv_token','fixture-owner-A'));
+  await page.reload();
+  await expect(page.locator('#quickCreatePrompt')).toHaveValue(secret);
+  expect(paidJobs).toBe(0);
+ }finally{await authPage.close();}
 });
 
 test('BASE 3: mobile Canvas references and video prompt hand off to Studio without paid generation',async({page})=>{
@@ -378,7 +390,7 @@ test('BASE 3: mobile Canvas references and video prompt hand off to Studio witho
  await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(1);
  await expect(page.locator('#quickCreateSubmit')).toBeVisible();
  await page.locator('#quickCreateSubmit').click();
- await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=dashboard/);
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=canvas/);
  await expect(page.locator('#prompt')).toHaveValue(prompt);
  await expect(page.locator('#consent')).not.toBeChecked();
  // Files are passed to the local studio handoff, never uploaded to an AI provider here.
@@ -401,7 +413,7 @@ test('BASE 3: unsupported Video model rejects Canvas reference with honest warni
  await page.locator('#quickCreateFiles').setInputFiles({name:'unsupported-reference.png',mimeType:'image/png',buffer:png});
  await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(1);
  await page.locator('#quickCreateSubmit').click();
- await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=dashboard/);
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=canvas/);
  await expect(page.locator('#prompt')).toHaveValue(prompt);
  await expect(page.locator('#refPreview img')).toHaveCount(0);
  await expect(page.locator('#status')).toContainText('This model accepts 0 reference file(s)');
@@ -507,27 +519,20 @@ test('BASE 3: approved Studio hero appears before the slow Inspiration mosaic re
 test('BASE 3: owner violet-pink Home and Canvas CTAs stay consistent on desktop and phone',async({page})=>{
  await mockSafeHome(page,[]);
  let jobs=0;
- page.on('request',request=>{
-  if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))jobs++;
- });
- await page.setViewportSize({width:1448,height:900});
- await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))jobs++;});
  for(const width of [1448,390]){
   await page.setViewportSize({width,height:900});
-  const css=await page.evaluate(()=>{
-   const hero=getComputedStyle(document.querySelector('#homeQuickSubmit'));
-   const canvas=getComputedStyle(document.querySelector('#quickCreateSubmit'));
-   return {heroBackground:hero.backgroundImage,heroColor:hero.color,
-    canvasBackground:canvas.backgroundImage,canvasColor:canvas.color};
-  });
-  for(const image of [css.heroBackground,css.canvasBackground]){
-   expect(image).toContain('linear-gradient');
-   expect(image).not.toContain('rgb(210, 247, 174)'); // obsolete mint CTA
-  }
-  expect(css.heroColor).toBe('rgb(255, 255, 255)');
-  expect(css.canvasColor).toBe('rgb(255, 255, 255)');
+  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
   await expect(page.locator('.hero-stage h1')).toHaveCount(0);
   await expect(page.locator('#homeHeroCarousel')).toBeVisible();
+  const hero=await page.locator('#homeQuickSubmit').evaluate(el=>({background:getComputedStyle(el).backgroundImage,color:getComputedStyle(el).color}));
+  await page.goto('/canvas.html',{waitUntil:'domcontentloaded'});
+  const canvas=await page.locator('#quickCreateSubmit').evaluate(el=>({background:getComputedStyle(el).backgroundImage,color:getComputedStyle(el).color}));
+  for(const css of [hero,canvas]){
+   expect(css.background).toContain('linear-gradient');
+   expect(css.background).not.toContain('rgb(210, 247, 174)');
+   expect(css.color).toBe('rgb(255, 255, 255)');
+  }
  }
  expect(jobs).toBe(0);
 });
