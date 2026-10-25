@@ -50,7 +50,7 @@ function renderWallet(balance,history){
  $('walletSection').hidden=false;$('walletEntry').hidden=true;
  $('walletSummary').replaceChildren();$('walletHistory').replaceChildren();
  if(totals.some(n=>n===null)){$('walletStatus').textContent='Current wallet amounts could not be verified. Refresh and try again.';return;}
- for(const [label,value,cls] of [['Available',totals[0],''],['Held',totals[1],''],['Debt',totals[2],totals[2]>0?'debt':'']){
+ for(const [label,value,cls] of [['Available',totals[0],''],['Held',totals[1],''],['Debt',totals[2],totals[2]>0?'debt':'']]){
   const card=document.createElement('article');card.className='price-wallet-stat '+cls;
   const name=document.createElement('span');name.textContent=label;
   const amount=document.createElement('strong');amount.textContent=value.toLocaleString('en-US');
