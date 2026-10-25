@@ -223,3 +223,34 @@ body.deepsyq-pricing-page .price-annual-note{
  body.deepsyq-pricing-page .price-billing-switch button{min-width:101px;font-size:13px;padding-inline:15px}
  body.deepsyq-pricing-page .price-billing-promo{flex:1;min-width:175px}
 }
+
+/* Owner 2026-10-25: give the existing four hero chips room to breathe.
+   Expand the photograph's visible vertical area, keep all four chips INSIDE
+   the image without moving any subscriptions, prices, buttons or checkout. */
+body.deepsyq-pricing-page .price-hero{
+  min-height:clamp(365px,28vw,445px);
+}
+body.deepsyq-pricing-page .price-hero-copy{
+  display:flex;
+  flex-direction:column;
+  min-height:clamp(365px,28vw,445px);
+  padding:clamp(30px,3vw,47px) clamp(18px,2.1vw,34px) 28px;
+}
+body.deepsyq-pricing-page .price-hero h1{margin-bottom:0}
+body.deepsyq-pricing-page .price-hero .price-chips{
+  margin-top:auto;
+  padding-top:32px;
+}
+@media(max-width:700px){
+  body.deepsyq-pricing-page .price-hero,
+  body.deepsyq-pricing-page .price-hero-copy{
+    min-height:380px;
+  }
+  body.deepsyq-pricing-page .price-hero-copy{
+    padding:25px 16px 23px;
+  }
+  body.deepsyq-pricing-page .price-hero .price-chips{
+    padding-top:28px;
+    gap:7px;
+  }
+}
