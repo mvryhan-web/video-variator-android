@@ -185,3 +185,19 @@ body.vu-reference .vu-how-head p{display:none!important}
  body.vu-reference .vu-variant-choice{font-size:11px}
  body.vu-reference .workspace .picker{min-height:140px!important}
 }
+
+/* Owner patch: no changes to left sidebar/header; align working panels. */
+body.vu-reference .vu-content-grid{align-items:stretch}
+body.vu-reference .vu-left,body.vu-reference .vu-right{height:100%}
+body.vu-reference .vu-left>.workspace{flex:1;min-height:0}
+body.vu-reference .vu-parameters{grid-template-columns:minmax(0,.76fr) minmax(0,1.55fr);gap:14px}
+body.vu-reference .vu-quality-options{gap:8px}
+body.vu-reference .vu-quality-button{min-height:53px;padding:7px 6px;border-radius:10px}
+body.vu-reference .vu-quality-button strong{font-size:13px}
+body.vu-reference .vu-quality-button small{font-size:10px}
+body.vu-reference .vu-mode-card .vu-radio{font-size:0;width:17px;height:17px;border-radius:50%;border:1.8px solid #f8fcff;background:#06142b;box-shadow:0 0 0 1px #00102c}
+body.vu-reference .vu-mode-card.selected .vu-radio,
+body.vu-reference .vu-mode-card[aria-pressed="true"] .vu-radio{background:#fff;border-color:#fff;box-shadow:0 0 0 3px #ffffff36,0 0 12px 3px #fff}
+body.vu-reference .vu-mode-card:focus-visible .vu-radio{outline:2px solid #5be6ff;outline-offset:3px}
+@media(max-width:900px){body.vu-reference .vu-left,body.vu-reference .vu-right{height:auto}body.vu-reference .vu-left>.workspace{min-height:0}}
+@media(max-width:420px){body.vu-reference .vu-parameters{grid-template-columns:minmax(0,.7fr) minmax(0,1.4fr);gap:8px}body.vu-reference .vu-quality-button{min-height:48px;padding:4px}}
