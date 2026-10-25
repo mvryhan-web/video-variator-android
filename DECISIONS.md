@@ -1,5 +1,12 @@
 # DECISIONS.md — прямые решения владельца Deepsyq
 
+## 2026-10-25 — OWNER MENU OVERRIDE / PERMANENT
+
+The owner explicitly forbids unapproved placeholder navigation entries. Only owner-approved menu destinations may appear in Home or shared sidebars. Never restore removed placeholder navigation through old PRs, preview designs, templates, automated agents, or release branches. Any new visible menu item requires an explicit owner instruction. Preserve existing Credits, Pricing and billing widgets unchanged.
+
+---
+
+
 Дата решений: **2026-10-18** (Europe/Paris). Вступает в силу сразу для документации; **никакие новые продукты, Trial, платежи, AI-вызовы, таблицы или deployments этим документом не активируются**. При конфликте действующее решение владельца ниже главнее сохранённой исторической формулировки; пометка у места изменения: **«ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md»**. Исторические оригиналы сохранены рядом или в исходном тексте. Не менять четыре главных приоритета 1–4.
 
 ## Решения владельца — одна строка на решение
