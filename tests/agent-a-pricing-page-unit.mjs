@@ -29,7 +29,7 @@ test('server config, original checkout endpoints and no false wallet credit clai
  assert.match(js,/if\(!valid\)\{/);
  assert.match(js,/No payment was taken/);
  assert.doesNotMatch(js,/button\.disabled=!valid/);
- assert.match(js,/bonus is not included/i);
+ assert.doesNotMatch(js,/bonus is not included/i);
 });
 test('no fake credit allocation for Trial and Lifetime; lifecycle guards retain account isolation',()=>{
  assert.match(js,/Credits and included access: to be confirmed/);
@@ -69,4 +69,16 @@ test('annual quote toggle remains presentation-only, protects original billing a
  assert.match(js,/body:JSON\.stringify\(\{sku:pack\.sku,requestId:/);
  assert.doesNotMatch(js,/Design preview: tool checkout is not activated/);
  assert.match(css,/price-billing-switch/);
+});
+
+test('permanent owner ban on passive AI Credits fine print and unsupported bonus claims',()=>{
+ const credits=html.slice(html.indexOf('<section class="price-credits-area"'),html.indexOf('</section>',html.indexOf('<section class="price-credits-area"')));
+ for(const denied of ['price-credits-tagline','price-wallet-link','price-disclosure','Checking available AI credit packages','No AI credits are awarded'])assert.ok(!credits.includes(denied),'Forbidden credit-area copy: '+denied);
+ for(const denied of ['price-credit-note','price-bonus-status','price-bonus-desc','price-bonus-count','p.bonus','bonus:200','bonus:3333','bonus:20000','bonus:200000','bonus:2000000'])assert.ok(!js.includes(denied),'Forbidden permanent credit-card microcopy/claim: '+denied);
+ assert.match(js,/message\('creditStatus',''\)/);
+ assert.match(js,/message\('creditStatus',checkoutErrorMessage\(e\.message\)\)/);
+ assert.match(js,/\/api\/ai-billing\/checkout/);
+ assert.match(css,/#creditStatus:empty\{display:none\}/);
+ assert.match(css,/transform:scale\(1\.10\)/);
+ assert.match(css,/transform-origin:50% 100%/);
 });
