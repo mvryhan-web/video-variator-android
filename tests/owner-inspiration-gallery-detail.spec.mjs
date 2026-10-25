@@ -8,9 +8,15 @@ async function expectPlainClose(dialog){
  async function checkStyle(){
   const style=await close.evaluate(el=>{
    const s=getComputedStyle(el);
-   return {radius:s.borderTopLeftRadius,border:s.borderTopWidth,background:s.backgroundColor,shadow:s.boxShadow,outlineWidth:s.outlineWidth};
+   return {radius:s.borderTopLeftRadius,border:s.borderTopWidth,background:s.backgroundColor,shadow:s.boxShadow,outlineStyle:s.outlineStyle,outlineWidth:s.outlineWidth};
   });
-  expect(style).toEqual({radius:'0px',border:'0px',background:'rgba(0, 0, 0, 0)',shadow:'none',outlineWidth:'0px'});
+  expect(style.radius).toBe('0px');
+  expect(style.border).toBe('0px');
+  expect(style.background).toBe('rgba(0, 0, 0, 0)');
+  expect(style.shadow).toBe('none');
+  // Some engines retain a nominal outline-width even if the outline is disabled.
+  // No outline is painted when the style is "none" or its width is zero.
+  expect(style.outlineStyle==='none'||Number.parseFloat(style.outlineWidth)===0,JSON.stringify(style)).toBe(true);
  }
  await checkStyle();
  await close.hover();await checkStyle();
