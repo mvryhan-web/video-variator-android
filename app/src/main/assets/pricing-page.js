@@ -87,10 +87,10 @@ function renderPlans(config){
   price.append(node('strong','',p.proposed?'$0.99':verified?money(amount,currency):'Price unavailable'));
   price.append(node('small','',p.proposed?'proposed · one time':p.suffix));
   const summary=node('p','price-plan-summary',p.summary);
-  const button=node('button','price-plan-action',p.proposed?'Not available yet':p.label);
+  const button=node('button','price-plan-action',p.proposed?'Check Trial availability':p.label);
   // The user can choose a configured plan to sign in even on a no-billing preview.
   // Trial remains disabled until owner-approved terms are actually configured.
-  button.type='button';button.disabled=p.proposed||!verified;
+  button.type='button';button.disabled=!p.proposed&&!verified;
   if(!p.proposed&&!verified)button.textContent='Price unavailable';
   button.addEventListener('click',()=>void checkoutPlan(p.key));
   const facts=node('div','price-plan-facts');
@@ -118,7 +118,12 @@ function renderPlans(config){
  message('pricingStatus',config?.billingConfigured?'Tool prices verified from current configuration.':'Design preview: tool checkout is not activated. Prices shown are server-configured; Trial is only proposed.');
 }
 async function checkoutPlan(plan){
- if(!['basic','pro','business','lifetime'].includes(plan)||planCheckoutPending)return;
+ if(!['trial','basic','pro','business','lifetime'].includes(plan)||planCheckoutPending)return;
+ if(plan==='trial'){
+  if(!token())openAuth();
+  else message('pricingStatus','Trial is not available yet. Credits, duration and renewal conditions still need approval. No payment was taken.');
+  return;
+ }
  const scope=paymentScope();
  if(!scope.token){openAuth();return;}
  if(!toolBillingConfigured){message('pricingStatus','Checkout is not yet available. No payment was taken.');return;}
