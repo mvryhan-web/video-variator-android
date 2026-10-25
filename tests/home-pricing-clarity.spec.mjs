@@ -12,13 +12,24 @@ async function openHome(page){
 test('Home plan comparison shows real allowances, model separation and working existing purchase actions',async({page},info)=>{
  await page.setViewportSize({width:1440,height:1000});
  await openHome(page);
- await expect(page.getByRole('heading',{name:'A plan that fits your workflow'})).toBeVisible();
+ await expect(page.locator('#pricing .home-plan-switch a')).toHaveText(['Monthly plans','Lifetime tools','AI credits']);
+ await expect(page.getByRole('heading',{name:'A plan that fits your workflow'})).toHaveCount(0);
+ await expect(page.locator('#canvasFeatureTitle')).toHaveText('Canvas');
+ await expect(page.locator('#agentFeatureTitle')).toHaveText('AI Agent');
+ await expect(page.locator('#appsFeatureTitle')).toHaveText('AI Apps');
+ await expect(page.locator('.home-feature-spotlight small,.home-feature-spotlight em,.inspiration-preview-lead,#everydayTools .tool-grid a span,#everydayTools .unique-tool p')).toHaveCount(0);
+ await expect(page.locator('#homeMonthlyPlans .trial-plan .plan-benefits')).toContainText('Proposed $0.99 introductory AI offer');
+ await expect(page.locator('#homeLifetimePlan .lifetime-benefits')).toContainText('Video Uniquifier');
+ await expect(page.locator('#homeLifetimePlan .lifetime-benefits')).toContainText('Teleprompter');
+ await expect(page.locator('#homeLifetimePlan .lifetime-disclaimer')).toContainText('separate prepaid AI credits');
  await expect(page.locator('#plans .plan')).toHaveCount(3);
  await expect(page.locator('#plans')).toContainText('750 credits');
  await expect(page.locator('#plans')).toContainText('2,250 credits');
  await expect(page.locator('#plans')).toContainText('15,000 credits');
- await expect(page.locator('#plans')).toContainText('500 AI-generation credits per paid subscription invoice');
- await expect(page.locator('#homeModelCatalog')).toContainText('Nano Banana 2 · IMAGE');
+ await expect(page.locator('#plans')).toContainText('500 AI credits per paid invoice');
+ await expect(page.locator('#plans')).toContainText('Batch photo compression');
+ await expect(page.locator('#plans')).toContainText('Short clips and photo-to-video motion');
+ await expect(page.locator('#homeModelCatalog')).toHaveCount(0);
  await expect(page.locator('#homeAiCredits')).toContainText('AI credits');
  await expect(page.locator('.home-plan-switch a')).toHaveCount(3);
  await expect(page.locator('.home-plan-switch a[href="#homeAiCredits"]')).toBeVisible();
@@ -38,6 +49,7 @@ test('Home plan comparison adapts to phone width with an accessible swipe rail a
  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  await expect.poll(()=>page.locator('#plans .plan').evaluateAll(cards=>cards.every(card=>card.getBoundingClientRect().width>250))).toBe(true);
  await expect.poll(()=>page.locator('#homeMonthlyPlans').evaluate(el=>el.scrollWidth>el.clientWidth)).toBe(true);
+ await expect.poll(()=>page.locator('#homeLifetimePlan').evaluate(el=>el.getBoundingClientRect().right<=innerWidth+1)).toBe(true);
  await page.locator('#homeMonthlyPlans').evaluate(el=>el.scrollTo({left:el.scrollWidth,behavior:'instant'}));
  await expect.poll(()=>page.locator('#plans .plan').last().evaluate(el=>el.getBoundingClientRect().right<=innerWidth+1)).toBe(true);
  await page.screenshot({path:info.outputPath('home-pricing-mobile.png'),fullPage:true});
