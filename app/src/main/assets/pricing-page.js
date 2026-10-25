@@ -179,11 +179,11 @@ async function checkoutPlan(plan){
  finally{planCheckoutPending=false;}
 }
 const creditOptions=[
- {credits:1000,bonus:200,price:10,image:'credit1000'},
- {credits:10000,bonus:3333,price:100,image:'credit10000'},
- {credits:100000,bonus:20000,price:1000,image:'credit100000'},
- {credits:1000000,bonus:200000,price:10000,image:'credit1000000'},
- {credits:10000000,bonus:2000000,price:100000,image:'credit10000000'}
+ {credits:1000,price:10,image:'credit1000'},
+ {credits:10000,price:100,image:'credit10000'},
+ {credits:100000,price:1000,image:'credit100000'},
+ {credits:1000000,price:10000,image:'credit1000000'},
+ {credits:10000000,price:100000,image:'credit10000000'}
 ];
 function renderCredits(config){
  const host=byId('creditCards');host.replaceChildren();
@@ -197,11 +197,10 @@ function renderCredits(config){
   card.append(img(p.image));
   const content=node('div','price-credit-content');
   const title=node('h3','price-credit-number','✦ '+numeral.format(p.credits));
+  // Owner-approved: no permanent microcopy or speculative bonus promises in AI Credits.
+  // Show only the verified base-credit category; checkout authorization is unchanged.
   const info=node('div','price-credit-bonus');
-  info.append(node('small','price-bonus-status','✦ Bonus credits · proposed, not included'));
   info.append(node('strong','price-bonus-title','General AI credits'));
-  info.append(node('b','price-bonus-count','+ '+numeral.format(p.bonus)));
-  info.append(node('small','price-bonus-desc','One-time top-up · added only after Stripe confirms payment'));
   const foot=node('div','price-credit-bottom');
   const cost=node('strong','price-credit-price',amount);
   // Every visible AI-credit card opens the *existing* Deepsyq sign-in when logged out.
@@ -217,11 +216,12 @@ function renderCredits(config){
    void checkoutCredit(serverPack);
   });
   foot.append(cost,button);
-  const disclosure=node('p','price-credit-note',serverPack?'Base package verified; bonus is not included.':'Package and price shown for design approval, not a live offer.');
-  content.append(title,info,foot,disclosure);
+  content.append(title,info,foot);
   card.append(content);host.append(card);
  }
- message('creditStatus',checkoutMode?'Verified server packages are purchasable below. Proposed bonuses are not included.':'AI pack checkout is not available in this preview. All pictured pack prices and bonuses are proposals.');
+ // Owner policy: never show passive fine print below the AI Credits heading/cards.
+ // Keep status available only for user-triggered purchase errors/progress.
+ message('creditStatus','');
 }
 async function checkoutCredit(pack){
  if(!validAiPack(pack)||creditCheckoutPending)return;
