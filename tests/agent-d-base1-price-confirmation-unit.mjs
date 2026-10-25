@@ -42,6 +42,7 @@ function studio({kind='image',expectedCredits,quantity,serverCredits=7}={}){
    settle:async()=>{throw Error('SETTLEMENT_NOT_EXPECTED')}
   },
   env:{AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true'},
+  hasStoredGenerationConsent:async()=>true, // no-spend, currently-versioned server row mock
   isOwner:()=>false,requestFingerprint:()=> 'fixture-fingerprint',
   randomUUID:()=> 'fixture-job-id',
   init:async()=>{counters.dbInit++},
@@ -66,7 +67,7 @@ function studio({kind='image',expectedCredits,quantity,serverCredits=7}={}){
  };
  vm.runInNewContext(actualHandler,ctx,{timeout:1500,filename:'real-generation-jobs-handler.js'});
  assert.equal(typeof handler,'function');
- const body={kind,...(expectedCredits!==undefined?{expectedCredits}:{}),
+ const body={kind,consent:true,...(expectedCredits!==undefined?{expectedCredits}:{}),
   ...(quantity!==undefined?{quantity}:{})};
  const req={user:{id:'fixture-purchaser',email:'buyer@example.invalid',provider:'email'},
   generationAccess:{scope:'public'},body};

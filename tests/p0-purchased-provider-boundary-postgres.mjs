@@ -17,6 +17,7 @@ if(url){
   throw Error('P0_TEST_DB_MUST_BE_DISPOSABLE_LOCALHOST');
 }
 const migration=readFileSync(new URL('../server/migrations/20261017-purchased-dispatch-claim.sql',import.meta.url),'utf8');
+const consentMigration=readFileSync(new URL('../server/migrations/20261020-ai-user-consent.sql',import.meta.url),'utf8');
 const env={AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_BILLING_MODE:'live',
  AI_LIVE_BILLING_APPROVED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',
  ADMIN_EMAIL:'owner@example.test'};
@@ -44,7 +45,14 @@ test('P0: PostgreSQL16 real wallet + purchase + once-only dispatch + denied cred
    estimated_cost NUMERIC,cost_currency TEXT,settings JSONB DEFAULT '{}'::jsonb)`);
   await pool.query(migration);
   await pool.query(migration);
+  await pool.query('CREATE TABLE vv_users(id TEXT PRIMARY KEY)');
+  await pool.query(consentMigration);
+  async function accept(id){
+   await pool.query('INSERT INTO vv_users(id) VALUES($1)',[id]);
+   await pool.query('INSERT INTO vv_ai_user_consents(user_id,terms_version,privacy_version,provider_data_version,provider_data_accepted) VALUES($1,$2,$2,$2,true)',[id,'2026-10-20']);
+  }
   async function paid(id){
+   await accept(id);
    const sid='cs_live_'+id;
    await pool.query('INSERT INTO vv_ai_order(id,user_id,session_id,snapshot) VALUES($1,$2,$3,$4::jsonb)',
     [sid+'_order',id,sid,JSON.stringify({billingMode:'live'})]);
@@ -61,7 +69,7 @@ test('P0: PostgreSQL16 real wallet + purchase + once-only dispatch + denied cred
    return {...rows[0],userId:uid,requestFingerprint:fingerprint,creditsReserved:7};
   }
   async function dispatch(id,job,changes={}){
-   return submitPurchasedProviderRequest({env,user:user(id),job,request,model,quote,originalQuote:quote,
+   return submitPurchasedProviderRequest({env,pool,user:user(id),job,request,model,quote,originalQuote:quote,
     fingerprint,wallet,...changes,
     provider:changes.provider??(async()=>({operation:'mock-only-task'}))});
   }
@@ -78,6 +86,7 @@ test('P0: PostgreSQL16 real wallet + purchase + once-only dispatch + denied cred
   const count=await pool.query('SELECT COUNT(*)::int AS n FROM vv_ai_purchased_dispatch_claim WHERE job_id=$1',['job-paid']);
   assert.equal(count.rows[0].n,1);
 
+  await accept('bonus');
   await wallet.grantOnce({userId:'bonus',kind:'welcome',credits:20});
   const bonus=await insertJob('job-bonus','bonus');
   await assert.rejects(dispatch('bonus',bonus),PurchasedDispatchDenied);
@@ -91,6 +100,12 @@ test('P0: PostgreSQL16 real wallet + purchase + once-only dispatch + denied cred
   assert.equal((await wallet.settle({userId:'refunded',jobId:'job-refunded',outcome:'confirmed_failure'})).status,'released');
   assert.deepEqual(await wallet.balance('refunded'),{available:0,reserved:0,debt:0},
     'no lost held credits and no resurrected spendable refunded money');
+
+  await paid('revoked');
+  const revoked=await insertJob('job-revoked','revoked');
+  await pool.query('UPDATE vv_ai_user_consents SET provider_data_accepted=false,provider_data_version=NULL WHERE user_id=$1',['revoked']);
+  await assert.rejects(dispatch('revoked',revoked),PurchasedDispatchDenied);
+  assert.equal((await wallet.settle({userId:'revoked',jobId:'job-revoked',outcome:'confirmed_failure'})).status,'released');
 
   await paid('owner');
   const ownerJob=await insertJob('job-owner','owner');
