@@ -40,7 +40,7 @@ test('BASE #30: real mobile opener, scrollable owned drawer, Escape, outside tap
   expect(rect.overflow).toBe('auto');
   // Existing owner Home focuses the brand as the first real drawer control;
   // test pointer access and close with the already functional Escape key.
-  const brandLink=sidebar.locator('a.brand');
+  const brandLink=sidebar.locator('a[aria-label="Home"]');
   const hitTarget=await brandLink.evaluate(button=>{
    const r=button.getBoundingClientRect();
    const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
