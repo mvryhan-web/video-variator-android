@@ -18,7 +18,7 @@ function image(key,extra=''){
  const [x,y,w,h]=R[key],esc=key.replace(/[^a-z0-9]/gi,'');
  const el=document.createElement('span');el.className='vu-art vu-art-'+esc+(extra?' '+extra:'');
  el.setAttribute('aria-hidden','true');
- const img=document.createElement('img');const dedicated=key==='hero'?'media/vu-clean-hero-20261025.svg':key==='uploader'?'media/vu-clean-upload-20261025.svg':null;img.src=dedicated||file;img.alt='';img.loading=(key==='hero'?'eager':'lazy');img.decoding='async';
+ const img=document.createElement('img');const dedicated=key==='hero'?'https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/fc96c618-bedb-4137-b872-1aa746f79157.png':key==='uploader'?'media/vu-clean-upload-20261025.svg':null;img.src=dedicated||file;if(key==='hero')img.addEventListener('error',()=>{if(img.src.includes('vu-clean-hero-20261025.svg'))return;img.src='media/vu-clean-hero-20261025.svg';},{once:true});img.alt='';img.loading=(key==='hero'?'eager':'lazy');img.decoding='async';
  Object.assign(img.style,dedicated?{position:'absolute',width:'100%',height:'100%',left:'0',top:'0',objectFit:key==='hero'?'cover':'contain',pointerEvents:'none'}:{position:'absolute',maxWidth:'none',width:(1447/w*100)+'%',height:(1087/h*100)+'%',left:(-x/w*100)+'%',top:(-y/h*100)+'%',pointerEvents:'none'});
  el.append(img);return el;
 }
