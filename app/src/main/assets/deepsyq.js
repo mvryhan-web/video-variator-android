@@ -2,6 +2,7 @@ import {renderHomeInspiration} from './home-inspiration.js';
 import {renderHomeCarousel} from './home-experience.js';
 import {MODEL_CATALOG} from './generate-models.js';
 import {authorizedOnboardingOptions,onboardingResponseTarget} from './onboarding-options.js';
+const $=id=>document.getElementById(id);
 let base='';try{base=window.AndroidBridge?.getApiBase?.()||'';}catch(_){}base=String(base||window.VV_API_BASE||location.origin).replace(/\/$/,'');
 async function api(path,options={}){const token=localStorage.getItem('vv_token');const r=await fetch(base+path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{})}});const d=await r.json();if(!r.ok)throw Error(d.error||'REQUEST_FAILED');return d;}
 // Deepsyq creator navigation: icon-only collapse on desktop, drawer on mobile.
