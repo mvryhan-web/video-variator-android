@@ -25,7 +25,7 @@ test('Home keeps creation sections but Pricing and Credits now live on standalon
  await expect(page.locator('#planCards')).toContainText('750 tool credits / month');
  await expect(page.locator('#planCards')).toContainText('2,250 tool credits / month');
  await expect(page.locator('#planCards')).toContainText('15,000 tool credits / month');
- await expect(page.locator('#planCards .price-trial')).toContainText('not yet available');
+ await expect(page.locator('#planCards .price-trial')).toContainText('Not available yet');
  await expect(page.locator('#planCards .price-plan-action:enabled')).toHaveCount(0);
  await page.screenshot({path:info.outputPath('new-pricing-desktop.png'),fullPage:true});
 });
