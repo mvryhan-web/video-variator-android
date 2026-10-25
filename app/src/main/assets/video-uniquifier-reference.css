@@ -144,3 +144,44 @@ body.vu-reference .workspace.trialComplete .vu-mode-group,
 body.vu-reference .workspace.trialComplete .vu-parameters{display:none!important}
 body.vu-reference .workspace .picker.vu-dragover{outline:2px solid #00ddff;background:#112c65!important}
 body.vu-reference .vu-output-lines .vu-output-row>button:disabled{pointer-events:none}
+
+
+/* Owner 2026-10-25: changes restricted to Video Uniquifier content;
+   navigation sidebar and site-wide topbar rules deliberately unchanged. */
+body.vu-reference #dashboardView .hero.card{min-height:260px}
+body.vu-reference .hero .vu-hero-image{z-index:-2}
+body.vu-reference .hero #heroTitle+p,
+body.vu-reference .hero .vu-trust,
+body.vu-reference .hero .creatorKicker,
+body.vu-reference .hero .creatorLead,
+body.vu-reference .hero .creatorActions,
+body.vu-reference .hero .creatorArt,
+body.vu-reference .hero .heroTrust,
+body.vu-reference .hero .pill,
+body.vu-reference .hero .usageBox{display:none!important}
+body.vu-reference .vu-film-play,
+body.vu-reference .vu-preview-play{display:none!important}
+body.vu-reference .workspace .sectionHead p,
+body.vu-reference .workspace .picker small{display:none!important}
+body.vu-reference .workspace .picker{position:relative;isolation:isolate;overflow:hidden;min-height:165px!important}
+body.vu-reference .workspace .picker .vu-upload-icon{
+ position:absolute!important;inset:0;width:100%;height:100%;opacity:.65;z-index:-1}
+body.vu-reference .workspace .picker .vu-upload-icon img{object-fit:contain}
+body.vu-reference .workspace .picker b{position:relative;z-index:2;text-shadow:0 2px 9px #02132d}
+body.vu-reference .vu-parameters{grid-template-columns:minmax(120px,.64fr) minmax(0,1.76fr);gap:12px}
+body.vu-reference .vu-variant-choice{
+ display:block;width:100%;min-height:42px;border:1px solid #216cca;border-radius:9px;
+ color:#f6f8ff;background:#081938;font:600 13px Inter,system-ui,sans-serif;
+ padding:7px 11px;cursor:pointer}
+body.vu-reference .vu-variant-choice option{background:#0b1a38;color:#fff}
+body.vu-reference .vu-variant-choice:focus-visible{outline:2px solid #2fe3ff}
+body.vu-reference .vu-quality-options{gap:8px}
+body.vu-reference .vu-quality-button{min-height:42px}
+body.vu-reference .vu-preserved-controls,
+body.vu-reference label.exportSpeed{display:none!important}
+body.vu-reference .vu-how-head p{display:none!important}
+@media(max-width:540px){
+ body.vu-reference .vu-parameters{grid-template-columns:minmax(110px,.75fr) minmax(0,1.55fr);gap:8px}
+ body.vu-reference .vu-variant-choice{font-size:11px}
+ body.vu-reference .workspace .picker{min-height:140px!important}
+}
