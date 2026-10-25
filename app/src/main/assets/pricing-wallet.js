@@ -71,29 +71,15 @@ function renderWallet(balance,history){
  if(!items.length){const empty=document.createElement('p');empty.textContent='No AI wallet activity yet.';$('walletHistory').append(empty);}
  $('walletStatus').textContent='';
 }
-async function loadWelcome(s){
- try{
-  const data=await privateJson('/api/ai-wallet/config',{},s);
-  if(!active(s))return;
-  if(!data?.welcomeEnabled||!Number.isSafeInteger(data.welcomeCredits)||data.welcomeCredits<=0){$('welcomeCredits').hidden=true;return;}
-  $('welcomeCredits').hidden=false;
-  $('welcomeTitle').textContent=data.welcomeCredits.toLocaleString('en-US')+' welcome AI credits';
-  $('welcomeCopy').textContent='One claim per account. No Stripe payment is required.';
-  const button=$('claimWelcome');button.disabled=false;button.textContent='Claim welcome credits';
-  button.onclick=async()=>{
-   if(!active(s)||button.disabled)return;
-   button.disabled=true;$('welcomeStatus').textContent='Checking availability…';
-   try{
-    const response=await privateJson('/api/ai-wallet/welcome',{method:'POST',body:'{}'},s);
-    if(!active(s))return;
-    $('welcomeStatus').textContent=response.balance?.duplicate?'Welcome credits were already claimed on this account.':Number(response.credits||0).toLocaleString('en-US')+' welcome AI credits added.';
-    button.disabled=true;
-    const [balance,history]=await Promise.all([privateJson('/api/ai-wallet/balance',{},s),privateJson('/api/ai-wallet/history',{},s)]);
-    if(active(s))renderWallet(balance,history);
-   }catch(e){if(active(s)){$('welcomeStatus').textContent='Could not claim welcome credits.';button.disabled=false;}}
-  };
- }catch(e){if(active(s))$('welcomeCredits').hidden=true;}
+// Owner decision D01/D04: there is no public free AI-credit welcome grant.
+// Do not present a claim CTA or dispatch a welcome POST on any server config.
+// Restore only after a new explicit owner entitlement decision and B/D approval.
+function loadWelcome(){
+ $('welcomeCredits').hidden=true;
+ $('claimWelcome').disabled=true;
+ $('claimWelcome').onclick=null;
 }
+
 async function refresh(){
  sync();
  if(suspended||document.hidden)return;
