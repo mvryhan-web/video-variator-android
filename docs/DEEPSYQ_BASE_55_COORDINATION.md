@@ -1,3 +1,13 @@
+# COORDINATOR #5 — CYCLE27 / 25 OCT 2026 / CURRENT EXCLUSIVE CLAIM POINTER
+
+**Sampled DEV `6d9a4dafcb747739953f58fc0e1b909e6ef3ca77`** at 2026-10-25 ~15:20 UTC (17:20 Europe/Paris); exact HEAD may advance. [Full Cycle27 verified coordination report](DEEPSYQ_COORDINATOR_CYCLE27_20261025.md) · [current Issue #233](https://github.com/mvryhan-web/video-variator-android/issues/233). Coordinator exclusive claims: this docs report and *top-only additive pointers* to `PROJECT_STATUS.md` and claims. Existing historic claims and BASE/F1–F8 untouched.
+
+**A #72:** owner PR412 Pricing/12-art proof, new `pricing.html` vs existing `ai-pricing.html` **single canonical route required**, no duplicate wallet/Stripe; owner visual + mobile/asset validation. A SEO separately read-only. **B #73:** PR368 current 17/18 + PR323 25/26, owner Studio/server zone, source and no-spend B↔D independent acceptance not complete. **C #74:** same C20 Photo OCR PR352 5/5 old SHA but behind current DEV57; non-force refresh/new exact CI/peer; no PR402 duplicate. **D #75:** independent latest-SHA PR368/323 tenant, consent revoke/fence/postgres, PR333 2× net economic gate, PR280 production HOLD. **#5 #233:** docs, collision mapping, issue checkpoint only. **Jules:** #316/#317/#278 bot ACK-only; no new labels or dispatch.
+
+**Global guards:** PR402 merged DONE/DEV-preview, old Product Video BASE20 cancelled 404, original Home media protected, F1–F8 aliases, other DONE preserved; no `main`/production, paid provider, live Stripe, unsafe migration, trial activation or flags-on. Exact sampled DEV GitHub 80 workflows still queued/pending/in progress at inspection, NOT full green. D16 A–D safe independent DEV self-merge continues and B↔D peer directly coordinates.
+
+---
+
 # COORDINATOR #5 — CYCLE26 / 23 OCT 2026 / CURRENT CLAIM POINTER
 
 **Verified sampled DEV `de057636607705a920c626a01f703c1b080b9d00`** (refresh before any coding action). Detailed evidence, Google Jules task ACK audit, five native PR374 failures, cross-PR file matrix and A–D queues: [Cycle26 Coordinator Report](DEEPSYQ_COORDINATOR_CYCLE26_20261023.md) / [Issue233 active claim](https://github.com/mvryhan-web/video-variator-android/issues/233#issuecomment-6362482197).

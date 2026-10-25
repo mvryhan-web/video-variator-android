@@ -1,3 +1,9 @@
+## Coordinator #5 — Cycle27 verified GitHub queues — 2026-10-25 ~15:20 UTC (17:20 Europe/Paris)
+
+DEV sampled at `6d9a4dafcb747739953f58fc0e1b909e6ef3ca77` (refresh before edits). Current risk/next exact-SHA queues in [Cycle27 coordinator report](docs/DEEPSYQ_COORDINATOR_CYCLE27_20261025.md) and [Issue #233](https://github.com/mvryhan-web/video-variator-android/issues/233). PR402 BASE30 mobile drawer MERGED (9/9 exact PR-head PASS, DEV preview; whole BASE30 PARTIAL). A: owner active PR412 Pricing 12-art candidate, 17 CI NOT terminal, reconcile single canonical Pricing route. B: PR368 17/18 PASS and PR323 25/26 PASS but D final peer NOT signed, both behind current DEV. C: PR352 5/5 old head PASS, ahead8/behind57 current DEV; refresh SAME PR, B+D peer, no duplicate. D: final PR323 revoke/postgres-pool/concurrency + PR368 account boundary and PR333 real net 2× independent gate. Jules #316/#317/#278: bot ACK only, no Ready/code confirmed; no duplicate task. PR280/PR42 main HOLD, real Stripe, paid AI, DB mutation, production off. Historic DONE/BASE20 cancelled/F1–F8 aliases unchanged. Newer merge/CI may supersede this sampled snapshot.
+
+---
+
 
 
 ## BASE #30 — PR #402 DEV publication verified — 2026-10-25 (Europe/Paris)
