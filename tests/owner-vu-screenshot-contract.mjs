@@ -22,9 +22,12 @@ test('Fifteen real visual crop positions are defined for reference screenshot',(
 });
 test('Each visible processing mode resolves to a configured image key',()=>{
  const modeNames=['gentle','balanced','dynamic'];
- const cropNames=[...art.matchAll(/\\b([a-z][a-z0-9]*)\\s*:\\s*\\[/g)].map(m=>m[1]);
- for(const name of modeNames){const key=name==='balanced'?'balance':name;assert.ok(cropNames.includes(key),key+' must have valid art');}
- assert.match(art,/v==='balanced'\\?'balance':v/);
+ const cropMap=art.split('const R={')[1]?.split('};')[0]||'';
+ for(const name of modeNames){
+  const key=name==='balanced'?'balance':name;
+  assert.ok(cropMap.includes(key+':['),key+' must have valid artwork');
+ }
+ assert.ok(art.includes("v==='balanced'?'balance':v"));
 });
 test('Existing processing controls keep exact unique IDs and same values',()=>{
  for(const id of ['fileInput','variantCount','mode','quality','aspectRatio','startBtn','cancelBtn','progressCard','resultsCard','historyList','clearHistoryBtn','authModal']){
