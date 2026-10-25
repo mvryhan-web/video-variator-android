@@ -1,3 +1,15 @@
+## Coordinator #5 — Cycle29 / 25 Oct 2026 — ACTIVE EXACT-SHA QUEUE (supersedes Cycle27/Cycle28 pointers)
+
+**Sampled DEV before docs edits:** `0c62e773ca43d73924fd03c26a6c39b87c7c19a1`; *never treat old sampled SHA as branch head*. [Cycle29 GitHub evidence and five-path B/D conflict matrix](docs/DEEPSYQ_COORDINATOR_CYCLE29_20261025.md) and [Issue #233](https://github.com/mvryhan-web/video-variator-android/issues/233). **A #72:** Pricing PR412 MERGED/DEV preview; existing A PR414 test-only 3/5 PASS+2 running and follow-up full-width/web-plan entitlements + existing login modal owner directive; 12 CDN independent visuals/one canonical ai-pricing wallet unverified. **B #73:** PR368 exact `dadbc5e` 17 SUCCESS+1 CANCELLED, 15 DEV commits behind; PR323 `88113f7` 26/26 SUCCESS but D independent consent/PG/revoke/purchased gate not passed. **C #74:** existing C20 PR352 `4a5ae19` 5/5 old-head green, 70 DEV commits behind; same-PR non-force update and B+D peer; then C-owned AI Apps My Creations real History route. **D #75:** independent current-head PR323/368 B↔D peer; 5 net PR323∩PR333 server/tests shared paths, #333 true realized Stripe/provider/storage >=2× unresolved, #413 owner/Admin mobile draft 4/6 checks finished. **Jules #316/#317/#278:** bot ACK only, no new task/label. **PR280 and PR42 main HOLD**, production/main/paid AI/real Stripe/dangerous migration OFF. **DONE retained:** PR402, PR350, PR374, PR412, owner Home/media; BASE20 retired 404, F1–F8 aliases, Trial proposed/OFF. A–D self-merge safe DEV work per D16, no coordinator approval requirement. This is coordinator-only documentation, not release permission.
+
+---
+
+## Coordinator #5 — Cycle27 verified GitHub queues — 2026-10-25 ~15:20 UTC (17:20 Europe/Paris)
+
+DEV sampled at `6d9a4dafcb747739953f58fc0e1b909e6ef3ca77` (refresh before edits). Current risk/next exact-SHA queues in [Cycle27 coordinator report](docs/DEEPSYQ_COORDINATOR_CYCLE27_20261025.md) and [Issue #233](https://github.com/mvryhan-web/video-variator-android/issues/233). PR402 BASE30 mobile drawer MERGED (9/9 exact PR-head PASS, DEV preview; whole BASE30 PARTIAL). A: owner active PR412 Pricing 12-art candidate, 17 CI NOT terminal, reconcile single canonical Pricing route. B: PR368 17/18 PASS and PR323 25/26 PASS but D final peer NOT signed, both behind current DEV. C: PR352 5/5 old head PASS, ahead8/behind57 current DEV; refresh SAME PR, B+D peer, no duplicate. D: final PR323 revoke/postgres-pool/concurrency + PR368 account boundary and PR333 real net 2× independent gate. Jules #316/#317/#278: bot ACK only, no Ready/code confirmed; no duplicate task. PR280/PR42 main HOLD, real Stripe, paid AI, DB mutation, production off. Historic DONE/BASE20 cancelled/F1–F8 aliases unchanged. Newer merge/CI may supersede this sampled snapshot.
+
+---
+
 
 
 ## BASE #30 — PR #402 DEV publication verified — 2026-10-25 (Europe/Paris)
