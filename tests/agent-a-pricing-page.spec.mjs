@@ -39,3 +39,28 @@ test('server verification fails closed, but enabled real pack sends original Str
  expect(sent.sku).toBe('test_1k');expect(sent.requestId).toMatch(/^[0-9a-f-]{36}$/);
  await expect(page.locator('#creditStatus')).toContainText('unavailable');
 });
+
+test('twelve distinct approved artwork URLs decode on desktop without missing media',async({page})=>{
+ await page.goto('/pricing.html');
+ await expect(page.locator('#planCards img.price-art')).toHaveCount(5);
+ await expect(page.locator('#creditCards img.price-art')).toHaveCount(5);
+ const result=await page.evaluate(async()=>{
+  const sources=Array.from(document.querySelectorAll('#planCards img.price-art,#creditCards img.price-art'),image=>image.currentSrc||image.src);
+  const styles=getComputedStyle(document.documentElement);
+  for(const property of ['--price-hero-art','--price-credit-hero-art']){
+   const match=styles.getPropertyValue(property).match(/url\\(["']?([^"')]+)["']?\\)/);
+   if(match)sources.push(match[1]);
+  }
+  const checks=await Promise.all(sources.map(async src=>{
+   const image=new Image();image.loading='eager';image.src=src;
+   try{
+    await Promise.race([image.decode(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('timed out')),15000))]);
+    return {src,loaded:image.naturalWidth>0&&image.naturalHeight>0};
+   }catch{return {src,loaded:false};}
+  }));
+  return {checks,unique:new Set(sources).size};
+ });
+ expect(result.checks,'All 12 assigned images must have their own source URL').toHaveLength(12);
+ expect(result.unique,'No duplicate CDN artwork files').toBe(12);
+ expect(result.checks.filter(check=>!check.loaded),'Broken remote asset URLs').toEqual([]);
+});
