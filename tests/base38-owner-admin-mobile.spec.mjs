@@ -58,7 +58,7 @@ test('BASE #38 owner Admin is usable at 320/390px without page overflow or enabl
   await expect(page.locator('#models article button',{hasText:'Save'})).toBeVisible();
   await expect(page.locator('#templateCreate')).toBeVisible();
   await expect(page.locator('#creditAdjustForm')).toBeVisible();
-  if(width===390)await page.screenshot({path:info.outputPath('owner-admin-390.png'),fullPage:true});
+  await page.screenshot({path:info.outputPath('owner-admin-'+width+'.png'),fullPage:true});
  }
  expect(writes).toBe(0);
 });
