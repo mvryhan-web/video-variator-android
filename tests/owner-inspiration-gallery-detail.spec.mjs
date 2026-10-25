@@ -40,10 +40,11 @@ test('Home Inspiration filters image and video cards in place; detail shows the 
   await page.setViewportSize({width,height:850});await page.goto('/deepsyq.html?galleryWidth='+width,{waitUntil:'domcontentloaded'});
   const section=page.locator('#inspirationPreview');await expect(section).toBeVisible({timeout:15000});
   const tabs=section.locator('[data-inspiration-kind]');await expect(tabs).toHaveText(['All','Video','Image']);
-  const lead=section.locator('.inspiration-preview-lead');
+  // Owner removed the lead: the filter tabs should align with the gallery's left edge.
+  await expect(section.locator('.inspiration-preview-lead')).toHaveCount(0);
   const tabsLeft=await tabs.first().evaluate(el=>el.getBoundingClientRect().left);
-  const leadLeft=await lead.evaluate(el=>el.getBoundingClientRect().left);
-  expect(Math.abs(tabsLeft-leadLeft),'tabs align with left content edge at '+width).toBeLessThanOrEqual(2);
+  const gridLeft=await section.locator('#inspirationPreviewGrid').evaluate(el=>el.getBoundingClientRect().left);
+  expect(Math.abs(tabsLeft-gridLeft),'tabs align with gallery at '+width).toBeLessThanOrEqual(2);
   await expect(section.locator('[data-inspiration-ratio]')).toHaveCount(0);
   await expect(section.getByText('16:9',{exact:true})).toHaveCount(0);
   await expect(section.getByText('9:16',{exact:true})).toHaveCount(0);
@@ -71,8 +72,10 @@ test('Home Inspiration filters image and video cards in place; detail shows the 
   await expectPlainClose(dialog);
   await expect(page).toHaveURL(/deepsyq\.html(?:\?|$)/);
   await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);
-  // Canvas and AI Agent examples reuse the same owner-approved dialog.
-  if(width===390)for(const selector of ['#canvasFeature [data-creative-example]','#agentFeature [data-creative-example]']){
+  // After owner-approved Canvas relocation, Home's nine Canvas examples link to canvas.html.
+  await expect(page.locator('#canvasFeature a.canvas-example').first()).toHaveAttribute('href',/^canvas\.html\?example=/);
+  // AI Agent preview still uses the original detail dialog.
+  if(width===390)for(const selector of ['#agentFeature [data-creative-example]']){
    const example=page.locator(selector).first();
    await expect(example).toBeVisible();
    await example.click();
