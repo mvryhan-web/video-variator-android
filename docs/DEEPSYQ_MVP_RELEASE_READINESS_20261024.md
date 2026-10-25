@@ -119,3 +119,8 @@ Coordinator work this checkpoint was read-only source/CI/Render verification plu
 - Created draft [PR #402](https://github.com/mvryhan-web/video-variator-android/pull/402) from `deepsyq-platform`, exact head `3ddbef343ebeadf640798bb92f56d4be5aac1718`, with only two paths: `app/src/main/assets/deepsyq.css` and `.github/workflows/base30-mobile-drawer.yml`. It lowers the header layer while keeping the menu/close control above the drawer, and includes the CSS path in the focused workflow filter.
 - Focused BASE #30, 31-screen visual, Home and broad platform checks are **QUEUED** at latest check. The PR remains DRAFT and unmerged; #1 remains PARTIAL until the exact-head focused browser test and required regression checks finish green, followed by review.
 - Handoff is recorded on Issue #74 comment #6397324713. No production/Render, payment, database, provider or feature-flag action was taken.
+
+
+## PR #402 focused browser evidence — 2026-10-25
+
+Focused drawer workflow [#40190942461](https://github.com/mvryhan-web/video-variator-android/actions/runs/40190942461) passed on PR head `3ddbef343ebeadf640798bb92f56d4be5aac1718`: actual Playwright output **12 passed, 12 skipped, 0 failed**. The mobile Chromium and WebKit runs passed 320/390px pointer hit-test, Escape, outside tap, focus recovery, account navigation and no-paid-call assertions. Desktop navigation checks passed. The 31-screen design, Home UI and broad platform regression workflows were still running at the last check. PR #402 remains DRAFT/unmerged until those exact-head checks finish and the PR base comparison is refreshed. Issue #74 result posted as comment #6397346794.
