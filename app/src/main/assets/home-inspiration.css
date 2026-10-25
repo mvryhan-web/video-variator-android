@@ -36,7 +36,7 @@
 .inspiration-detail-close:hover{
  border:0;outline:none;background:transparent;box-shadow:none;color:#dff9ff;
 }
-.inspiration-detail-close:focus-visible{
+html .inspiration-detail-dialog .inspiration-detail-close:focus-visible{
  border:0;outline:none;background:transparent;box-shadow:none;color:#73e4ff;
 }
 .inspiration-detail-image-area{
