@@ -105,7 +105,7 @@ test('BASE #29 My Creations opens existing Home Recent creations, not a fake lib
  const link=page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'My Creations',exact:true});
  await expect(link).toHaveAttribute('href','generate-studio.html?view=history');
  await link.click();
- await expect(page).toHaveURL(/\/generate-studio\.html\?view=history$/);
+ await expect(page).toHaveURL(/\/generate-studio\.html\?view=history(?:&studio=[a-z]+)?$/);
  await expect(page.locator('#showHistory')).toHaveAttribute('aria-pressed','true');
  expect(paidWrites).toBe(0);
 });

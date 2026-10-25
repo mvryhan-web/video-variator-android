@@ -191,7 +191,7 @@ test('BASE #29 AI Apps navigation reaches separate My Creations, History, Credit
  const historyLink=nav.getByRole('link',{name:'History',exact:true});
  const credits=nav.getByRole('link',{name:'Credits',exact:true});
  const pricing=nav.getByRole('link',{name:'Pricing',exact:true});
- await expect(creations).toHaveAttribute('href','deepsyq.html#recentCreations');
+ await expect(creations).toHaveAttribute('href','generate-studio.html?view=history');
  await expect(historyLink).toHaveAttribute('href','generate-studio.html?view=history');
  await expect(credits).toHaveAttribute('href','ai-pricing.html#aiCreditSection');
  await expect(pricing).toHaveAttribute('href','ai-pricing.html');

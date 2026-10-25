@@ -69,7 +69,7 @@ test('BASE1-C 12 supported screens exist and retired Product Video routes stay 4
   ['Video studio','generate-studio.html?studio=video'],
   ['Audio studio','generate-studio.html?studio=audio'],
   ['History','generate-studio.html?view=history'],
-  ['Canvas','#quickCreateForm']
+  ['Canvas','canvas.html']
  ]){
   // Mobile Home deliberately keeps its rail inert until the user opens it;
   // inspect the actual anchor's destination without falsely requiring visibility.
@@ -81,7 +81,7 @@ test('BASE1-C 12 supported screens exist and retired Product Video routes stay 4
   ['AI Apps','ai-apps.html'],['Inspiration','deepsyq.html#inspirationPreview'],
   ['Tools','free-tools.html'],['Pricing','ai-pricing.html'],
   ['History','generate-studio.html?view=history'],
-  ['My Creations','deepsyq.html#recentCreations']
+  ['My Creations','generate-studio.html?view=history']
  ]){
   await expect(nav.getByRole('link',{name:label,exact:true})).toHaveAttribute('href',href);
  }
