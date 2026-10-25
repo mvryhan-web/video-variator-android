@@ -19,7 +19,9 @@ test('server config, original checkout endpoints and no false wallet credit clai
  assert.match(js,/\/api\/billing\/checkout/);assert.match(js,/\/api\/ai-billing\/checkout/);
  assert.match(js,/body:JSON\.stringify\(\{sku:pack\.sku,requestId:/);
  assert.match(js,/if\(!isValidCheckoutURL\(d\.url\)\)/);
- assert.match(js,/button\.disabled=p\.proposed\|\|!verified/);
+ assert.match(js,/button\.disabled=!p\.proposed&&\!verified/);
+ assert.match(js,/Check Trial availability/);
+ assert.match(js,/Trial is not available yet/);
  assert.match(js,/if\(!scope\.token\)\{openAuth\(\);return;\}/);
  assert.match(js,/if\(!toolBillingConfigured\)/);
  assert.match(js,/button\.type='button';button\.disabled=!valid/);
