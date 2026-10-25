@@ -22,3 +22,5 @@
 .price-wallet-welcome button{margin-top:8px}
 .price-wallet-status{min-height:0;font-size:13px}
 @media(max-width:500px){.price-wallet-area{padding:16px 12px}.price-wallet-summary{grid-template-columns:1fr}.price-wallet-row{align-items:flex-start}.price-wallet-row>span{max-width:42%}}
+
+.price-plans-area .price-tools-heading{margin:0;padding:16px 5px 12px;color:#e7f4ff;font-size:clamp(16px,1.65vw,23px);font-weight:750;letter-spacing:.01em}
