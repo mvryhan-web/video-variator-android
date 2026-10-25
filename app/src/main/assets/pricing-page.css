@@ -96,3 +96,90 @@ body.deepsyq-pricing-page.deepsyq-sitewide-shell footer{max-width:1440px}
 @media(max-width:980px){.price-five-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.price-plan{min-height:490px}.price-hero{min-height:230px}.price-plan-picture{height:166px}.price-credit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.price-credit-card,.price-credit-card:nth-child(4),.price-credit-card:nth-child(5){grid-column:auto}}
 @media(max-width:700px){.price-topbar{padding-left:58px;height:auto;min-height:56px}.price-topbar nav a:not(.price-top-active){display:none}body.deepsyq-pricing-page.deepsyq-sitewide-shell main{padding-inline:10px}.price-hero-copy{padding:28px 16px}.price-hero{min-height:240px}.price-hero h1{font-size:34px}.price-chips{gap:6px}.price-chips span{font-size:10px;padding:7px 9px}.price-five-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.price-plan{min-height:475px}.price-plan-picture{height:135px}.price-credit-grid{grid-template-columns:1fr}.price-credit-card,.price-credit-card:nth-child(4),.price-credit-card:nth-child(5){grid-column:auto;min-height:282px}.price-credit-heading{padding:18px 20px}.price-credit-hero{height:190px}}
 @media(max-width:415px){.price-five-grid{grid-template-columns:minmax(0,1fr)}.price-plan{min-height:0}.price-plan-picture{height:165px}.price-plan-body{padding-inline:15px}.price-features li{font-size:12px}.price-plan-name{font-size:22px}.price-plan-price strong{font-size:30px}.price-credit-heading h2{font-size:36px}.price-plan-note{margin-bottom:10px}}
+
+/* Owner 2026-10-25: desktop Pricing fills the canvas between the left rail and right edge.
+   Avoid the shared 1240px inner-page cap; don't change the global sidebar or Home. */
+body.deepsyq-pricing-page.deepsyq-sitewide-shell main,
+body.deepsyq-pricing-page.deepsyq-sitewide-shell footer{
+  width:100%;max-width:none;margin-inline:0;
+}
+body.deepsyq-pricing-page.deepsyq-sitewide-shell main{
+  padding:0 clamp(12px,1.4vw,28px) 32px;
+}
+body.deepsyq-pricing-page .price-five-grid{gap:clamp(10px,1vw,18px)}
+body.deepsyq-pricing-page .price-plans-area{padding:0 clamp(9px,1vw,16px) 21px}
+body.deepsyq-pricing-page .price-plan{min-height:640px}
+body.deepsyq-pricing-page .price-plan-body{padding:0 clamp(11px,1vw,19px) 18px}
+body.deepsyq-pricing-page .price-features{margin-top:16px}
+body.deepsyq-pricing-page .price-features li{
+  grid-template-columns:23px minmax(0,1fr);gap:8px;
+  align-items:start;font-size:clamp(11px,.86vw,13px);
+  line-height:1.4;padding:9px 0;min-height:0;
+  overflow-wrap:break-word;
+}
+body.deepsyq-pricing-page .price-feature-icon{font-size:16px}
+body.deepsyq-pricing-page .price-plan-action{
+  min-height:45px;font-size:clamp(11px,.78vw,13px)
+}
+.price-plan-summary{font-size:12px;line-height:1.42;color:#c5d7ef;margin:0 0 12px;min-height:34px}
+.price-plan-facts{
+  display:grid;gap:5px;margin:13px 0 0;padding:11px 12px;
+  background:#122747b0;border:1px solid #4971aa70;border-radius:11px;
+}
+.price-plan-facts strong{font-size:clamp(12px,.98vw,15px);line-height:1.25;color:#fff}
+.price-plan-facts span{font-size:11px;color:#bfd4eb;line-height:1.45}
+.price-feature-caption{
+  font-size:11px;color:#9bd7ff;margin:17px 0 0;
+  letter-spacing:.05em;font-weight:800;text-transform:uppercase;
+}
+.price-feature-flag{font-size:10px;color:#ffc8dd;font-weight:750}
+.price-feature-flag.is-supported{color:#a6f9d0}
+.price-plan-note{font-size:11px;line-height:1.45}
+.price-plan-action:disabled{filter:grayscale(.45)}
+/* Pricing uses the original Home auth card structure and auth-email.js. */
+body.deepsyq-pricing-page #authModal{
+  position:fixed;inset:0;z-index:140;display:grid;
+  place-items:center;padding:18px;
+}
+body.deepsyq-pricing-page #authModal[hidden]{display:none}
+body.deepsyq-pricing-page #authModal .modalBackdrop{position:absolute;inset:0;background:#000c}
+body.deepsyq-pricing-page #authModal .authCard{
+  position:relative;z-index:1;width:min(100%,470px);max-height:92dvh;
+  overflow-y:auto;border:1px solid #5587d0;border-radius:19px;
+  background:linear-gradient(155deg,#11264b,#101329 60%,#161534);
+  padding:30px;color:#fff;box-shadow:0 30px 90px #000c,0 0 34px #5365e958;
+}
+body.deepsyq-pricing-page #authModal .authCard h2{font-size:25px;line-height:1.16;margin:14px 0 8px}
+body.deepsyq-pricing-page #authModal .authCard p{font-size:13px;line-height:1.5;color:#c0cbe4;margin:0 0 16px}
+body.deepsyq-pricing-page #authModal .authCard .eyebrow{font-size:11px;letter-spacing:.14em;color:#7be8ff}
+body.deepsyq-pricing-page #authModal .modalClose{
+  position:absolute;right:14px;top:12px;width:36px;height:36px;
+  border:1px solid #5478b2;background:#18264d;color:#fff;border-radius:9px;font-size:23px;
+}
+body.deepsyq-pricing-page #authModal #googleButton{display:flex;justify-content:center;min-height:42px;margin:8px 0}
+body.deepsyq-pricing-page #authModal .authSetupStatus{display:block;font-size:11px;color:#aec2dd;line-height:1.45}
+body.deepsyq-pricing-page #authModal .emailAuthForm .primaryBtn{
+  min-height:44px;border:1px solid #9d95ff;border-radius:12px;
+  background:linear-gradient(100deg,#3778ed,#913fea);color:#fff;font-weight:800;
+}
+body.deepsyq-pricing-page #authModal .emailAuthForm input{
+  width:100%;min-height:42px;border:1px solid #5670a3;
+  border-radius:11px;background:#0c1c3c;color:#fff;padding:10px 12px;
+}
+body.deepsyq-pricing-page #authModal .authTextButton{color:#a9dbff}
+@media(max-width:1180px){
+  body.deepsyq-pricing-page .price-five-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  body.deepsyq-pricing-page .price-features li{font-size:12px}
+}
+@media(max-width:700px){
+  body.deepsyq-pricing-page .price-five-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body.deepsyq-pricing-page.deepsyq-sitewide-shell main{padding-inline:10px}
+  body.deepsyq-pricing-page .price-plan{min-height:0}
+  body.deepsyq-pricing-page .price-plan-body{padding-inline:12px}
+  body.deepsyq-pricing-page #authModal .authCard{padding:24px 18px}
+}
+@media(max-width:415px){
+  body.deepsyq-pricing-page .price-five-grid{grid-template-columns:1fr}
+  body.deepsyq-pricing-page .price-plan-summary{min-height:0}
+  body.deepsyq-pricing-page .price-features li{font-size:13px}
+}
