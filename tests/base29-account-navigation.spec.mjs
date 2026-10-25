@@ -53,9 +53,9 @@ test('BASE #29 Canvas link opens actual Home draft, not mistaken Image Studio',a
  await page.goto('/ai-apps.html');
  const nav=page.getByRole('navigation',{name:'Main navigation'});
  const canvas=nav.getByRole('link',{name:'Canvas',exact:true});
- await expect(canvas).toHaveAttribute('href','deepsyq.html#quickCreateForm');
+ await expect(canvas).toHaveAttribute('href','canvas.html');
  await canvas.click();
- await expect(page).toHaveURL(/\/deepsyq\.html#quickCreateForm$/);
+ await expect(page).toHaveURL(/\/canvas\.html$/);
  await expect(page.locator('#quickCreateForm')).toBeAttached();
  await expect(page.locator('#quickCreatePrompt')).toBeAttached();
  expect(paidWrites).toBe(0);
@@ -103,13 +103,10 @@ test('BASE #29 My Creations opens existing Home Recent creations, not a fake lib
  });
  await page.goto('/ai-apps.html');
  const link=page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'My Creations',exact:true});
- await expect(link).toHaveAttribute('href','deepsyq.html#recentCreations');
+ await expect(link).toHaveAttribute('href','generate-studio.html?view=history');
  await link.click();
- await expect(page).toHaveURL(/\/deepsyq\.html#recentCreations$/);
- const panel=page.locator('#recentCreations');
- await expect(panel).toBeAttached();
- await expect(panel.locator('#recentCreationsGrid')).toBeAttached();
- await expect(panel.locator('#recentCreationsStatus')).toBeAttached();
+ await expect(page).toHaveURL(/\/generate-studio\.html\?view=history$/);
+ await expect(page.locator('#showHistory')).toHaveAttribute('aria-pressed','true');
  expect(paidWrites).toBe(0);
 });
 
