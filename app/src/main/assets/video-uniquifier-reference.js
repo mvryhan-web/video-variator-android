@@ -71,7 +71,8 @@ function build(){
  if(!dash||!shell||!workspace||!hero||document.body.classList.contains('vu-reference'))return;
  document.body.classList.add('vu-reference');
  makeNav(shell);
- const title=$('heroTitle');
+ const title=$('heroTitle'),p=hero.querySelector('[data-i18n="heroText"]');
+ if(p)p.remove();
  if(title){
   title.removeAttribute('data-i18n');title.textContent='Video Uniquifier';
   // Creator Showcase has already removed the original data-i18n attribute and
