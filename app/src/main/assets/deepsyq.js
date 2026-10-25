@@ -163,9 +163,9 @@ function updateInspirationHero(items){renderHomeCarousel(items);}
 
 // Owner-approved Home enhancements: no extra provider/credit/auth APIs are created.
 const homeLang=$('homeLanguage');const homeI18n={
- en:{hero:'Create<br><em>beyond limits.</em>',canvas:'Canvas',agent:'AI Agent — bring bigger ideas to life',apps:'AI Apps — discover ways to create',inspiration:'Inspiration'},
- fr:{hero:'Créez<br><em>sans limites.</em>',canvas:'Canvas',agent:'Agent IA — imaginez plus grand',apps:'AI Apps — explorez la création',inspiration:'Inspiration'},
- ru:{hero:'Создавайте<br><em>без границ.</em>',canvas:'Canvas',agent:'AI Agent — больше возможностей',apps:'AI Apps — инструменты творчества',inspiration:'Вдохновение'}
+ en:{hero:'Create<br><em>beyond limits.</em>',canvas:'Canvas',agent:'AI Agent',apps:'AI Apps',inspiration:'Inspiration'},
+ fr:{hero:'Créez<br><em>sans limites.</em>',canvas:'Canvas',agent:'AI Agent',apps:'AI Apps',inspiration:'Inspiration'},
+ ru:{hero:'Создавайте<br><em>без границ.</em>',canvas:'Canvas',agent:'AI Agent',apps:'AI Apps',inspiration:'Вдохновение'}
 };
 function applyHomeLanguage(code){const v=homeI18n[code]||homeI18n.en;const hero=document.querySelector('.hero-stage-copy h1');if(hero)hero.innerHTML=v.hero;for(const [id,key] of [['canvasFeatureTitle','canvas'],['agentFeatureTitle','agent'],['appsFeatureTitle','apps'],['inspirationPreviewTitle','inspiration']]){const el=$(id);if(el)el.textContent=v[key];}if(homeLang)homeLang.value=homeI18n[code]?code:'en';}
 if(homeLang){const saved=localStorage.getItem('deepsyq_home_language');applyHomeLanguage(saved||'en');homeLang.onchange=()=>{localStorage.setItem('deepsyq_home_language',homeLang.value);applyHomeLanguage(homeLang.value);};}
@@ -214,7 +214,7 @@ async function loadFeaturedWorkflows(){
  // so similarly named Image and Video featured cards do not get mixed up.
  a.href='ai-apps.html?q='+encodeURIComponent(String(t.title||'').slice(0,100))+
    (supportedType?'&type='+encodeURIComponent(supportedType):'')+
-   (typeof t.category==='string'&&t.category.trim()?'&category='+encodeURIComponent(t.category.slice(0,80)):'');const visual=document.createElement('div');visual.className='featured-workflow-visual';if(t.thumbnail){const img=document.createElement('img');img.src=t.thumbnail;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';visual.append(img);}else visual.textContent=t.generationType==='image'?'✧':t.generationType==='audio'?'♫':'▷';const copy=document.createElement('div');copy.className='featured-workflow-copy';const title=document.createElement('strong');title.textContent=t.title;const desc=document.createElement('p');desc.textContent=t.description||'Open this active workflow in Deepsyq.';const meta=document.createElement('div');meta.className='featured-workflow-meta';for(const value of [t.category,String(t.generationType||'').replace('_',' ')].filter(Boolean)){const span=document.createElement('span');span.textContent=value;meta.append(span);}copy.append(title,desc,meta);a.append(visual,copy);root.append(a);}section.hidden=false;
+   (typeof t.category==='string'&&t.category.trim()?'&category='+encodeURIComponent(t.category.slice(0,80)):'');const visual=document.createElement('div');visual.className='featured-workflow-visual';if(t.thumbnail){const img=document.createElement('img');img.src=t.thumbnail;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';visual.append(img);}else visual.textContent=t.generationType==='image'?'✧':t.generationType==='audio'?'♫':'▷';const copy=document.createElement('div');copy.className='featured-workflow-copy';const title=document.createElement('strong');title.textContent=t.title;copy.append(title);a.append(visual,copy);root.append(a);}section.hidden=false;
  }catch(_){section.hidden=true;}
 }
 
