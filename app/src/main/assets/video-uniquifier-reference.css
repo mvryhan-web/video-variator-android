@@ -201,3 +201,22 @@ body.vu-reference .vu-mode-card[aria-pressed="true"] .vu-radio{background:#fff;b
 body.vu-reference .vu-mode-card:focus-visible .vu-radio{outline:2px solid #5be6ff;outline-offset:3px}
 @media(max-width:900px){body.vu-reference .vu-left,body.vu-reference .vu-right{height:auto}body.vu-reference .vu-left>.workspace{min-height:0}}
 @media(max-width:420px){body.vu-reference .vu-parameters{grid-template-columns:minmax(0,.7fr) minmax(0,1.4fr);gap:8px}body.vu-reference .vu-quality-button{min-height:48px;padding:4px}}
+
+/* Owner follow-up: align panels and uncramp creation button; do not touch sidebar or navigation. */
+body.vu-reference .vu-content-grid{align-items:stretch}
+body.vu-reference .vu-left{align-self:stretch;min-height:0}
+body.vu-reference .vu-left>.workspace{flex:1;min-height:0;display:flex!important;flex-direction:column}
+body.vu-reference .workspace>.actionRow{margin-top:auto!important;padding-top:32px;margin-bottom:3px;min-height:88px;align-items:end}
+body.vu-reference .vu-parameters{grid-template-columns:minmax(0,.62fr) minmax(0,1.58fr);column-gap:15px;margin:15px 0 12px}
+body.vu-reference .vu-count-params{min-width:0}
+body.vu-reference .vu-variant-choice{width:100%;max-width:100%;min-width:0;min-height:46px;border-radius:10px;font-size:13px;font-weight:650}
+body.vu-reference .vu-quality-params{min-width:0}
+body.vu-reference .vu-quality-options{gap:8px}
+body.vu-reference .vu-quality-button{min-height:58px;border-radius:11px;border:1px solid #2367aa;padding:8px 5px;background:linear-gradient(155deg,#0d2851,#07182d);box-shadow:inset 0 1px 0 #b1d4ff13;transition:border-color .12s,box-shadow .12s,background .12s}
+body.vu-reference .vu-quality-button strong{font-size:14px;line-height:1.15;font-weight:760;letter-spacing:-.02em}
+body.vu-reference .vu-quality-button small{font-size:10px;margin-top:4px;color:#c4d4f0}
+body.vu-reference .vu-quality-button[aria-pressed="true"]{border:1.5px solid #4adfff;background:linear-gradient(165deg,#193c98,#0b2568);box-shadow:0 0 0 1px #009cfc8f,0 0 16px #008de85c,inset 0 1px 0 #ffffff21}
+body.vu-reference .vu-quality-button:not(:disabled):hover{border-color:#75d8ff}
+body.vu-reference .vu-quality-button:focus-visible{outline:2px solid #f2ffff;outline-offset:3px}
+@media(max-width:900px){body.vu-reference .vu-left{align-self:auto}body.vu-reference .workspace>.actionRow{margin-top:15px!important;padding-top:14px;min-height:0}}
+@media(max-width:450px){body.vu-reference .vu-parameters{grid-template-columns:minmax(0,.63fr) minmax(0,1.45fr);gap:8px}body.vu-reference .vu-quality-options{gap:4px}body.vu-reference .vu-quality-button{min-height:50px;padding:5px 2px}body.vu-reference .vu-quality-button strong{font-size:11px}body.vu-reference .vu-quality-button small{font-size:8px}}
