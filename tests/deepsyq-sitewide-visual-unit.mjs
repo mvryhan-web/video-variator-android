@@ -51,7 +51,7 @@ test('every secondary navigation destination exists; pending features are not li
   assert.doesNotThrow(()=>readFileSync(new URL(file,root),'utf8'),url);
  }
  for(const required of ['generate-studio.html?studio=image','generate-studio.html?studio=video',
-   'generate-studio.html?studio=audio','deepsyq.html#quickCreateForm',
+   'generate-studio.html?studio=audio','canvas.html',
    'generate-studio.html?view=history','free-tools.html','ai-apps.html']) assert.ok(urls.includes(required),required);
 });
 

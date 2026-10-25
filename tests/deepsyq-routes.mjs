@@ -12,7 +12,12 @@ for(const enabled of [false,true])test(`platform flag ${enabled}: preserves lega
   for(const route of ['/index.html','/?mobileAuth=google','/?checkout=success'])assert.match(await get(route),/<title>.*Video Uniquifier/);
   const retired=await fetch(base+'/inspiration.html?kind=video',{redirect:'manual'});assert.equal(retired.status,302);assert.equal(retired.headers.get('location'),'/deepsyq.html#inspirationPreview');
   const dashboard=await get('/dashboard');assert.match(dashboard,/<title>Deepsyq/);
-  assert.match(dashboard,/<form id="quickCreateForm"/);assert.match(dashboard,/id="quickCreatePrompt"/);assert.match(dashboard,/id="quickCreateKind"/);
+  assert.doesNotMatch(dashboard,/<form id="quickCreateForm"/);
+  assert.match(dashboard,/id="canvasExampleGrid"/);
+  const canvas=await get('/canvas.html');
+  assert.match(canvas,/<form id="quickCreateForm"/);
+  assert.match(canvas,/id="quickCreatePrompt"/);
+  assert.match(canvas,/id="quickCreateKind"/);
   assert.equal((await fetch(base+'/api/studio/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).status,503);
  }finally{child.kill();await once(child,'exit');}
 });
