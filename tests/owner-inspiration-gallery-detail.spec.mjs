@@ -40,10 +40,11 @@ test('Home Inspiration filters image and video cards in place; detail shows the 
   await page.setViewportSize({width,height:850});await page.goto('/deepsyq.html?galleryWidth='+width,{waitUntil:'domcontentloaded'});
   const section=page.locator('#inspirationPreview');await expect(section).toBeVisible({timeout:15000});
   const tabs=section.locator('[data-inspiration-kind]');await expect(tabs).toHaveText(['All','Video','Image']);
-  const lead=section.locator('.inspiration-preview-lead');
+  // Owner removed the lead text; the tabs should align with the visible title.
+  await expect(section.locator('.inspiration-preview-lead')).toHaveCount(0);
   const tabsLeft=await tabs.first().evaluate(el=>el.getBoundingClientRect().left);
-  const leadLeft=await lead.evaluate(el=>el.getBoundingClientRect().left);
-  expect(Math.abs(tabsLeft-leadLeft),'tabs align with left content edge at '+width).toBeLessThanOrEqual(2);
+  const titleLeft=await section.locator('#inspirationPreviewTitle').evaluate(el=>el.getBoundingClientRect().left);
+  expect(Math.abs(tabsLeft-titleLeft),'tabs align with title at '+width).toBeLessThanOrEqual(2);
   await expect(section.locator('[data-inspiration-ratio]')).toHaveCount(0);
   await expect(section.getByText('16:9',{exact:true})).toHaveCount(0);
   await expect(section.getByText('9:16',{exact:true})).toHaveCount(0);
