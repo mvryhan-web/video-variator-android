@@ -19,7 +19,7 @@ test('ratio of card columns and sidebar responsive layout',async({page},testInfo
  await page.goto('/pricing.html');
  await expect(page.locator('#planCards .price-plan')).toHaveCount(5);
  const cols=await page.locator('#planCards').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
- if((page.viewportSize()?.width||1000)>=980)expect(cols).toBe(5);
+ if((page.viewportSize()?.width||1000)>1180)expect(cols).toBe(5);
  if((page.viewportSize()?.width||1000)<420)expect(cols).toBe(1);
  await expect(page.locator('#dsSiteSidebar')).toHaveCount(1);
  await expect(page.locator('.price-topbar .price-top-active')).toHaveAttribute('href','pricing.html');
@@ -38,4 +38,68 @@ test('server verification fails closed, but enabled real pack sends original Str
  const sent=(await req).postDataJSON();
  expect(sent.sku).toBe('test_1k');expect(sent.requestId).toMatch(/^[0-9a-f-]{36}$/);
  await expect(page.locator('#creditStatus')).toContainText('unavailable');
+});
+
+test('owner desktop Pricing expands between the left navigation and right viewport edge',async({page})=>{
+ await page.setViewportSize({width:1645,height:1000});
+ await page.goto('/pricing.html');
+ await expect(page.locator('#planCards .price-plan')).toHaveCount(5);
+ const measure=await page.evaluate(()=>{
+  const sidebar=document.querySelector('#dsSiteSidebar').getBoundingClientRect();
+  const main=document.querySelector('#pricingMain').getBoundingClientRect();
+  const cards=document.querySelector('#planCards').getBoundingClientRect();
+  return {sidebarRight:sidebar.right,mainLeft:main.left,mainRight:main.right,
+    cardsWidth:cards.width,viewport:innerWidth,columns:getComputedStyle(document.querySelector('#planCards')).gridTemplateColumns.split(' ').length,
+    overflow:document.documentElement.scrollWidth>innerWidth+1};
+ });
+ expect(measure.columns).toBe(5);
+ expect(measure.mainLeft).toBeGreaterThanOrEqual(measure.sidebarRight-2);
+ expect(measure.mainRight).toBeGreaterThanOrEqual(measure.viewport-2);
+ expect(measure.cardsWidth).toBeGreaterThan(measure.viewport-measure.sidebarRight-100);
+ expect(measure.overflow).toBe(false);
+ for(const key of ['trial','basic','pro','business','lifetime']){
+  const card=page.locator('.price-'+key);
+  await expect(card.locator('.price-features li')).not.toHaveCount(0);
+  await expect(card).toContainText(/Canvas/);
+  await expect(card).toContainText(/Watermark/i);
+ }
+ await expect(page.locator('.price-trial')).toContainText('not yet active');
+});
+
+test('plan click opens original Google or email auth modal without checkout or navigation',async({page})=>{
+ await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
+ await page.route('**/api/auth/email/status',route=>route.fulfill({json:{configured:true}}));
+ await page.route('**/api/config',route=>route.fulfill({json:{billingConfigured:false,googleClientId:'',
+  plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}}}}));
+ let checkoutPosts=0;
+ page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/billing/checkout'))checkoutPosts++;});
+ await page.goto('/pricing.html');
+ await page.getByRole('button',{name:'Choose Basic'}).click();
+ await expect(page.locator('#authModal')).toBeVisible();
+ await expect(page.locator('#authTitle')).toHaveText('Sign in to your account');
+ await expect(page.locator('#emailAuthForm')).toBeVisible();
+ await expect(page.locator('#emailAuthEmail')).toBeVisible();
+ await expect(page.locator('#googleButton')).toBeVisible();
+ expect(checkoutPosts).toBe(0);
+ await page.keyboard.press('Escape');
+ await expect(page.locator('#authModal')).toBeHidden();
+ await page.getByRole('button',{name:'Check Trial availability'}).click();
+ await expect(page.locator('#authModal')).toBeVisible();
+ expect(checkoutPosts).toBe(0);
+ await expect(page).toHaveURL(/\/pricing\.html$/);
+});
+
+test('signed-in plan shows fail-closed no-billing status rather than launching Stripe',async({page})=>{
+ await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
+ await page.addInitScript(()=>localStorage.setItem('vv_token','fixture'));
+ await page.route('**/api/config',route=>route.fulfill({json:{billingConfigured:false,googleClientId:'',
+  plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}}}}));
+ let posts=0;page.on('request',r=>{if(r.url().includes('/api/billing/checkout')&&r.method()==='POST')posts++;});
+ await page.goto('/pricing.html');
+ await page.getByRole('button',{name:'Choose Pro'}).click();
+ await expect(page.locator('#pricingStatus')).toContainText('No payment was taken');
+ expect(posts).toBe(0);
+ await page.getByRole('button',{name:'Check Trial availability'}).click();
+ await expect(page.locator('#pricingStatus')).toContainText('Trial is not available yet');
+ expect(posts).toBe(0);
 });

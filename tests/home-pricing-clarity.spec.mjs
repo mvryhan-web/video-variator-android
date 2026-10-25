@@ -25,8 +25,15 @@ test('Home keeps creation sections but Pricing and Credits now live on standalon
  await expect(page.locator('#planCards')).toContainText('750 tool credits / month');
  await expect(page.locator('#planCards')).toContainText('2,250 tool credits / month');
  await expect(page.locator('#planCards')).toContainText('15,000 tool credits / month');
- await expect(page.locator('#planCards .price-trial')).toContainText('Not available yet');
- await expect(page.locator('#planCards .price-plan-action:enabled')).toHaveCount(0);
+ await expect(page.locator('#planCards .price-trial')).toContainText('Trial checkout is not available');
+ let checkoutPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:billing|ai-billing)\/checkout/.test(new URL(r.url()).pathname))checkoutPosts++;});
+ // Verified prices permit sign-in entry even while real billing is off.
+ for(const button of await page.locator('#planCards .price-plan-action').all()){
+  await button.click();await expect(page.locator('#authModal')).toBeVisible();
+  await page.keyboard.press('Escape');await expect(page.locator('#authModal')).toBeHidden();
+ }
+ expect(checkoutPosts).toBe(0);
  await page.screenshot({path:info.outputPath('new-pricing-desktop.png'),fullPage:true});
 });
 test('Standalone Pricing scrolls naturally on phone, has correct columns, and keeps Home intact',async({page},info)=>{
@@ -40,6 +47,15 @@ test('Standalone Pricing scrolls naturally on phone, has correct columns, and ke
  await expect(page.locator('#creditsHeading')).toHaveText('✦ AI Credits');
  await page.locator('#creditsHeading').scrollIntoViewIfNeeded();
  await expect(page.locator('#creditCards .price-credit-number').first()).toBeVisible();
- await expect(page.locator('.price-credit-purchase:enabled')).toHaveCount(0);
+ let checkoutPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:billing|ai-billing)\/checkout/.test(new URL(r.url()).pathname))checkoutPosts++;});
+ // An unconfigured pack can be disabled or offer login; neither may charge.
+ for(const button of await page.locator('.price-credit-purchase').all()){
+  if(await button.isEnabled()){
+   await button.click();await expect(page.locator('#authModal')).toBeVisible();
+   await page.keyboard.press('Escape');await expect(page.locator('#authModal')).toBeHidden();
+  }else await expect(button).toBeDisabled();
+ }
+ expect(checkoutPosts).toBe(0);
  await page.screenshot({path:info.outputPath('new-pricing-mobile.png'),fullPage:true});
 });

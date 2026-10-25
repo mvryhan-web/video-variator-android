@@ -7,6 +7,16 @@ test.beforeEach(async({page})=>{
 });
 
 async function home(page){await page.goto('/deepsyq.html');await page.waitForFunction(()=>window.__uiPageShown===true);}
+async function openPricing(page){
+ const top=page.locator('.top-actions a[href="pricing.html"]');
+ if(await top.isVisible())await top.click();
+ else{
+  await page.locator('#menu').click();
+  await expect(page.locator('body')).toHaveClass(/menu-open/);
+  await page.locator('#sidebar a[href="pricing.html"]').click();
+ }
+ await expect(page).toHaveURL(/pricing\.html$/);
+}
 
 const plans={basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}};
 async function fixtures(page){
@@ -23,20 +33,27 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('#sidebar nav a[href="canvas.html"]')).toContainText('Canvas');
  await expect(page.locator('#studioStatus')).toContainText('owner preview');
  await expect(page.locator('#pricing')).toBeHidden();
- await expect(page.locator('#sidebar nav a[aria-label="Pricing"]')).toHaveAttribute('href','pricing.html');
- await expect(page.locator('.top-actions a[href="pricing.html"]')).toHaveAttribute('href','pricing.html');
  await expect(page.locator('#aiWalletLink')).toBeHidden();
- // This fixture offers a configured tool plan. A logged-out click opens auth,
- // never a Stripe session or a payment request.
+ await expect(page.locator('#sidebar nav a[aria-label="Pricing"]')).toHaveAttribute('href','pricing.html');
+ await openPricing(page);
+ await expect(page).toHaveURL(/pricing\.html$/);
+ await expect(page.locator('#planCards .price-plan')).toHaveCount(5);
+ await expect(page.locator('.price-trial')).toContainText('Trial checkout is not available');
+ await expect(page.locator('.price-disclosure').first()).toContainText('AI generation uses separately prepaid credits');
+ await expect(page.locator('.price-lifetime')).toContainText('does not include unlimited paid AI generation');
+ // A logged-out purchase entry must never create a Stripe session.
  let checkoutPosts=0;
  page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/billing/checkout')checkoutPosts++;});
- await page.goto('/pricing.html');
- await expect(page.locator('#planCards .price-plan')).toHaveCount(5);
  await page.locator('.price-lifetime .price-plan-action').click();
- await expect(page.locator('#pricingStatus')).toContainText('Sign in');
+ await expect(page.locator('#authModal')).toBeVisible();
  expect(checkoutPosts).toBe(0);
- await home(page);
- await expect(page.locator('#pricing')).toBeHidden();
+ await page.keyboard.press('Escape');await expect(page.locator('#authModal')).toBeHidden();
+ await page.locator('.price-trial .price-plan-action').click();
+ await expect(page.locator('#authModal')).toBeVisible();
+ expect(checkoutPosts).toBe(0);
+ await page.keyboard.press('Escape');await expect(page.locator('#authModal')).toBeHidden();
+ await page.locator('.price-brand').click();
+ await expect(page).toHaveURL(/deepsyq\.html$/);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:info.outputPath('deepsyq.png'),fullPage:true});
  await page.locator('#homeQuickPrompt').fill('Test creative image');await page.locator('[data-home-kind="image"]').click();await expect(page).toHaveURL(/studio=image/);
@@ -209,8 +226,10 @@ test('checkout uses original plan endpoint and explains unavailable payments',as
  await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','fixture'));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Creator'}}}));let plan;
  await page.route('**/api/billing/checkout',async r=>{plan=r.request().postDataJSON().plan;await r.fulfill({status:503,json:{error:'BILLING_NOT_CONFIGURED'}});});
- await page.goto('/pricing.html');await page.getByRole('button',{name:'Choose Basic',exact:true}).click();
- await expect(page.locator('#pricingStatus')).toContainText('Checkout could not be confirmed');expect(plan).toBe('basic');
+ await home(page);await openPricing(page);
+ await page.getByRole('button',{name:'Choose Basic',exact:true}).click();
+ await expect(page.locator('#pricingStatus')).toContainText('Checkout could not be confirmed');
+ await expect(page.locator('#pricingStatus')).toContainText('No payment is confirmed');expect(plan).toBe('basic');
 });
 test('comparison is crawlable and does not pretend AI chat exists',async({page})=>{
  await page.goto('/deepsyq-vs-deepseek.html');await expect(page).toHaveTitle(/Deepsyq vs DeepSeek/);
@@ -311,14 +330,17 @@ test('pricing keeps existing Lifetime separate from AI credit packs and uses ser
 });
 
 
-test('Home hides the wallet while private Pricing shows the authenticated balance',async({page})=>{
+test('Home Pricing leads to the authenticated AI wallet without a duplicate Home balance',async({page})=>{
  await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Wallet User',isAdmin:false}}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'test',livePaymentsEnabled:false,unit:'AI credits',packs:[],rates:[],revision:'x'}}));
  await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:4200,reserved:150,debt:0}}));
+ await page.route('**/api/ai-wallet/config',r=>r.fulfill({json:{welcomeEnabled:false,welcomeCredits:0}}));
  await page.route('**/api/ai-wallet/history',r=>r.fulfill({json:{items:[]}}));
  await home(page);await expect(page.locator('#aiWalletLink')).toBeHidden();
- await page.goto('/ai-pricing.html#walletSection');
+ await openPricing(page);
+ await expect(page.locator('.price-wallet-link')).toHaveAttribute('href','ai-pricing.html#walletSection');
+ await page.locator('.price-wallet-link').click();
  await expect(page.locator('#walletSection')).toBeVisible();
  await expect(page.locator('#walletSummary')).toContainText('4,200');
  await expect(page.locator('#walletSummary')).toContainText('150');
