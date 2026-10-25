@@ -254,6 +254,7 @@ function openAuth(){
  requestAnimationFrame(()=>byId('emailAuthEmail')?.focus());
  initGoogle();
 }
+document.addEventListener('deepsyq:open-pricing-auth',openAuth);
 document.querySelectorAll('[data-close-auth]').forEach(el=>el.addEventListener('click',closeAuth));
 document.addEventListener('keydown',event=>{
  if(authModal.hidden)return;
