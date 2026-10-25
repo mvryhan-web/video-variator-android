@@ -1,7 +1,35 @@
 import {test,expect} from '@playwright/test';
+
+// Detail-preview close must display only ×, without a circular background/ring,
+// across mouse, focus, image, video, Canvas and Agent previews.
+async function expectPlainClose(dialog){
+ const close=dialog.getByRole('button',{name:'Close inspiration preview'});
+ await expect(close).toHaveText('×');
+ async function checkStyle(){
+  const style=await close.evaluate(el=>{
+   const s=getComputedStyle(el);
+   return {radius:s.borderTopLeftRadius,border:s.borderTopWidth,background:s.backgroundColor,shadow:s.boxShadow,outlineStyle:s.outlineStyle,outlineWidth:s.outlineWidth};
+  });
+  expect(style.radius).toBe('0px');
+  expect(style.border).toBe('0px');
+  expect(style.background).toBe('rgba(0, 0, 0, 0)');
+  expect(style.shadow).toBe('none');
+  // Some engines retain a nominal outline-width even if the outline is disabled.
+  // No outline is painted when the style is "none" or its width is zero.
+  expect(style.outlineStyle==='none'||Number.parseFloat(style.outlineWidth)===0,JSON.stringify(style)).toBe(true);
+ }
+ await checkStyle();
+ // Touch-only WebKit has no hover device; desktop browsers must still pass hover.
+ if(await close.evaluate(()=>matchMedia('(hover: hover)').matches)){
+  await close.hover();await checkStyle();
+ }
+ await close.focus();await checkStyle();
+ return close;
+}
 const video={id:'owner-video',title:'Original cinematic video',kind:'video',category:'Cinematic',previewUrl:'/media/home/owner-20261018/v01.mp4',prompt:'Original owner video prompt',aspectRatio:'16:9',actionTarget:'studio',requiredInputTypes:[],defaultSettings:{ratio:'16:9'},defaultModel:null};
 const image={id:'owner-image',title:'Golden perfume splash',kind:'image',category:'Product Ads',previewUrl:'/media/inspiration/openai-20261021/image-01-orbital-muse.webp',prompt:'Exact golden perfume prompt',previewDimensions:[819,1024],sourceAspectRatio:'4:5',displayModel:'OpenAI ChatGPT image_gen · exact model/version not exposed',advancedParameters:{min_ratio:null,max_ratio:null,cot_mode:null,use_pre_llm:null},aspectRatio:'1:1',actionTarget:'studio',requiredInputTypes:[],defaultSettings:{ratio:'1:1'},defaultModel:null};
 test('Home Inspiration filters image and video cards in place; detail shows the exact prompt; old page redirects',async({page})=>{
+ test.setTimeout(90000);
  const paid=[];page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio|billing|ai-wallet)/.test(r.url()))paid.push(r.url());});
  await page.route('**/api/config',route=>route.fulfill({json:{billingConfigured:false,googleClientId:'',features:{aiApps:true,inspiration:true,productVideo:false,onboarding:false},plans:{},auth:{}}}));
  await page.route('**/api/templates?**',route=>route.fulfill({json:{items:[]}}));
@@ -31,7 +59,8 @@ test('Home Inspiration filters image and video cards in place; detail shows the 
   await expect(imageDialog.locator('.inspiration-detail-parameters')).toHaveCount(0);
   await expect(imageDialog.getByRole('heading',{name:'Parameters',exact:true})).toHaveCount(0);
   await expect(imageDialog.getByRole('button',{name:'Clone & try'})).toHaveText('✦ Clone & try');
-  await page.keyboard.press('Escape');await expect(imageDialog).toHaveCount(0);
+  const imageClose=await expectPlainClose(imageDialog);
+  await imageClose.click();await expect(imageDialog).toHaveCount(0);
   const videoTab=section.getByRole('button',{name:'Video',exact:true});await videoTab.scrollIntoViewIfNeeded();await videoTab.click();
   await expect(section.locator('.inspiration-preview-card')).toHaveCount(1);
   await section.getByRole('button',{name:'View Original cinematic video inspiration',exact:true}).click();
@@ -39,8 +68,20 @@ test('Home Inspiration filters image and video cards in place; detail shows the 
   await expect(dialog.getByText('Original owner video prompt',{exact:true})).toBeVisible();
   await expect(dialog.locator('video')).toHaveAttribute('controls','');
   await expect(dialog.getByRole('button',{name:'Clone & Try'})).toBeEnabled();
+  await expectPlainClose(dialog);
   await expect(page).toHaveURL(/deepsyq\.html(?:\?|$)/);
   await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);
+  // Canvas and AI Agent examples reuse the same owner-approved dialog.
+  if(width===390)for(const selector of ['#canvasFeature [data-creative-example]','#agentFeature [data-creative-example]']){
+   const example=page.locator(selector).first();
+   await expect(example).toBeVisible();
+   await example.click();
+   const preview=page.locator('dialog.inspiration-detail-dialog');
+   await expect(preview).toBeVisible();
+   const close=await expectPlainClose(preview);
+   await close.click();
+   await expect(preview).toHaveCount(0);
+  }
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1);
  }
  const legacy=await page.request.get('/inspiration.html?kind=video',{maxRedirects:0});expect(legacy.status()).toBe(302);expect(legacy.headers().location).toBe('/deepsyq.html#inspirationPreview');
