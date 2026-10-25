@@ -90,6 +90,8 @@ test('BASE #27 keeps existing local history and media across Video Uniquifier â†
  // On phones, wait for the real Menu button: isVisible() can return false
  // during the initial startup screen while the nav is still offscreen.
  if(await page.evaluate(()=>innerWidth<=900)){
+  const menuDebug=await menu.evaluate(e=>{const s=getComputedStyle(e),r=e.getBoundingClientRect();return {viewport:{width:innerWidth,height:innerHeight},startup:document.documentElement.className,body:document.body.className,display:s.display,visibility:s.visibility,opacity:s.opacity,hidden:e.hidden,rect:{x:r.x,y:r.y,width:r.width,height:r.height},matched:[...document.styleSheets].map(sheet=>{try{return [...sheet.cssRules].filter(rule=>rule.cssText.includes('#menuBtn')||rule.cssText.includes('mobileOnly')).map(rule=>rule.cssText)}catch{return ['cross-origin']}}).flat()};});
+  console.log('BASE27 mobile menu visibility',JSON.stringify(menuDebug));
   await expect(menu).toBeVisible();
   await menu.click();
   await expect(page.locator('.sidebar')).toHaveClass(/\bopen\b/);
