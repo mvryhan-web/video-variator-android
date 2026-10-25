@@ -9,7 +9,8 @@ test('one public Pricing route, including credits and private wallet anchors',()
  for(const name of [...publicPages,...publicScripts])assert.doesNotMatch(read(name),/ai-pricing\.html(?:#\w+)?/,name+' has obsolete public pricing target');
  const canonical=read('pricing.html');
  for(const id of ['plans','credits','wallet','walletEntry','walletSection','walletSummary','walletHistory','welcomeCredits','authModal'])assert.match(canonical,new RegExp('id="'+id+'"'));
- assert.match(canonical,/href="#wallet"/);
+ assert.match(canonical,/id="wallet"/);
+ assert.doesNotMatch(canonical,/class="price-wallet-link"/);
  assert.match(canonical,/Video &amp; Everyday Tools/);
  assert.match(read('ai-apps.html'),/href="pricing\.html#credits"/);
  assert.match(read('home-credit-store.js'),/pricing\.html#credits/);
