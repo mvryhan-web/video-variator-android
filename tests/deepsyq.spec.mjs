@@ -20,7 +20,7 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('.hero-stage h1')).toHaveCount(0);
  await expect(page.locator('.hero-stage')).not.toContainText('beyond limits');
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
- await expect(page.locator('#sidebar nav a[href="#quickCreateForm"]')).toContainText('Canvas');
+ await expect(page.locator('#sidebar nav a[href="canvas.html"]')).toContainText('Canvas');
  await expect(page.locator('#studioStatus')).toContainText('owner preview');
  await expect(page.locator('.plan')).toHaveCount(4);
  await expect(page.locator('.trial-plan .plan-action')).toHaveAttribute('href','ai-pricing.html#trialOffer');
@@ -84,11 +84,11 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
 test('dashboard quick-create prepares a local image draft without any paid request',async({page})=>{
  await fixtures(page);let jobPosts=0;
  page.on('request',request=>{if(request.url().includes('/api/studio/jobs')&&request.method()==='POST')jobPosts++;});
- await home(page);
+ await home(page); await page.goto('/canvas.html');
  await page.locator('#quickCreatePrompt').fill('A watercolor greenhouse filled with sunlight');
  await page.locator('#quickCreateKind').selectOption('image');
  await page.locator('#quickCreateSubmit').click();
- await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=dashboard/);
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=canvas/);
  await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await expect(page.locator('[data-kind="image"]')).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('#prompt')).toHaveValue('A watercolor greenhouse filled with sunlight');
  await expect(page.locator('#consent')).not.toBeChecked();
@@ -98,7 +98,7 @@ test('dashboard quick-create prepares a local image draft without any paid reque
 test('Canvas starter prompts are editable, preserve existing drafts on cancel, and do not call paid AI',async({page})=>{
  await fixtures(page);
  let posts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
- await home(page);
+ await home(page); await page.goto('/canvas.html');
  await page.locator('[data-quick-starter="social-video"]').click();
  await expect(page.locator('#quickCreateKind')).toHaveValue('video');
  await expect(page.locator('#quickCreatePrompt')).toHaveValue(/short, engaging social video/);
@@ -113,7 +113,7 @@ test('Canvas saves only text and kind within this tab; refresh drops photos and 
  await fixtures(page);
  let jobPosts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')jobPosts++;});
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
- await home(page);
+ await home(page); await page.goto('/canvas.html');
  await page.locator('#quickCreatePrompt').fill('A very specific personal video idea');
  await page.locator('#quickCreateKind').selectOption('video');
  await page.locator('#quickCreateFiles').setInputFiles({name:'private-photo.png',mimeType:'image/png',buffer:png});
@@ -148,7 +148,7 @@ test('Canvas quick-create accepts local reference photos, allows removal and nev
  }}));
  let jobPosts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')jobPosts++;});
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
- await home(page);
+ await home(page); await page.goto('/canvas.html');
  await page.locator('#quickCreatePrompt').fill('Natural product photograph with soft light');
  await page.locator('#quickCreateFiles').setInputFiles([
   {name:'reference-1.png',mimeType:'image/png',buffer:png},
@@ -158,7 +158,7 @@ test('Canvas quick-create accepts local reference photos, allows removal and nev
  await page.getByRole('button',{name:'Remove reference 2'}).click();
  await expect(page.locator('.quick-reference')).toHaveCount(1);
  await page.locator('#quickCreateSubmit').click();
- await expect(page).toHaveURL(/studio=image&from=dashboard/);
+ await expect(page).toHaveURL(/studio=image&from=canvas/);
  await expect(page.locator('#prompt')).toHaveValue('Natural product photograph with soft light');
  await expect(page.locator('#refPreview img')).toHaveCount(1);
  await expect(page.locator('#consent')).not.toBeChecked();
@@ -375,7 +375,7 @@ test('approved video appears in the real homepage hero but does not erase Canvas
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('poster','/owner-owned-poster.jpg');
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','deepsyq.html#inspirationPreview');
- await expect(page.locator('#quickCreateForm')).toBeVisible();
+ await expect(page.locator('#canvasFeature #canvasExampleGrid .canvas-example')).toHaveCount(9);
  await expect(page.locator('.home-create-grid .home-create-card')).toHaveCount(6);
  await expect(page.locator('.home-feature-triptych .home-feature-spotlight')).toHaveCount(3);
  await expect(page.locator('.home-create-grid .tile-image')).toHaveAttribute('href','generate-studio.html?studio=image');
@@ -418,7 +418,7 @@ test('video carousel switches only among owner-approved videos and retains exist
  await page.locator('[data-inspiration-kind="image"]').click();
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
  await expect(page.getByRole('button',{name:'View Preserved owned photo inspiration'})).toBeVisible();
- await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
+ await expect(page.locator('#canvasFeature #canvasExampleGrid .canvas-example')).toHaveCount(9);
 });
 test('failed owner media clips never trap the Home carousel or erase Canvas',async({page})=>{
  await page.addInitScript(()=>{

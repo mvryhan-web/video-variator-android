@@ -93,8 +93,9 @@ function setSlide(next,direction=1){
  if(item.previewPosterUrl)video.poster=item.previewPosterUrl;else video.removeAttribute('poster');
  video.load();
  const showcase=ownerHomeShowcase(item);
- const destinations=['#canvasFeature','#quickCreateForm','#agentFeature','generate-studio.html?studio=video','generate-studio.html?studio=image','generate-studio.html?studio=audio'];
- $('inspirationHeroFeature').href=destinations.includes(showcase?.href)?showcase.href:link;
+ const destinations=['canvas.html','#agentFeature','generate-studio.html?studio=video','generate-studio.html?studio=image','generate-studio.html?studio=audio'];
+ const destination=showcase?.href==='#quickCreateForm'||showcase?.href==='#canvasFeature'?'canvas.html':showcase?.href;
+ $('inspirationHeroFeature').href=destinations.includes(destination)?destination:link;
  $('inspirationHeroFeature').setAttribute('aria-label',showcase?.title?'Explore '+String(showcase.title):'Explore featured Inspiration video');
  renderCredit(item);updateNeighbors();
  carousel.setAttribute('aria-label','Featured Deepsyq creative gallery, video '+(index+1)+' of '+slides.length);

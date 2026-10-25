@@ -77,7 +77,7 @@ test('BASE 3: all unavailable clips leave static gallery, not broken Play or a f
  await expect(page.locator('#homeHeroSlideLink')).toBeHidden();
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
  await expect(page.locator('#homeHeroEmpty')).toContainText('not a playable video');
- await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
+ await expect(page.locator('#canvasFeature #canvasExampleGrid .canvas-example')).toHaveCount(9);
 });
 
 test('BASE 3: mocked navigation preserves real authorized slide metadata and wrapping only',async({page})=>{
@@ -241,7 +241,7 @@ test('BASE 3: Canvas draft cannot be restored by a different account sharing thi
  await page.route('**/api/me',route=>route.fulfill({json:{user:{id:'test-user',name:'Account A',isAdmin:false}}}));
  let paidPosts=0;
  page.on('request',r=>{if(r.method()==='POST'&&/\/api\/studio\/jobs/.test(r.url()))paidPosts++;});
- await page.goto('/deepsyq.html');
+ await page.goto('/canvas.html');
  const aPrompt='PRIVATE ACCOUNT A: winter fashion concept';
  const bPrompt='PRIVATE ACCOUNT B: independent product design';
  await page.locator('#quickCreatePrompt').fill(aPrompt);
@@ -290,7 +290,7 @@ test('BASE 3: cross-tab account switch clears unsent prompts and reference previ
  await mockSafeHome(page,[]);
  await page.addInitScript(()=>localStorage.setItem('vv_token','fixture-account-A'));
  await page.route('**/api/me',route=>route.fulfill({json:{user:{id:'owner',name:'Account A',isAdmin:false}}}));
- await page.goto('/deepsyq.html');
+ await page.goto('/canvas.html');
  await page.locator('#quickCreatePrompt').fill('PRIVATE OLD CANVAS PROMPT');
  await page.locator('#homeQuickPrompt').fill('PRIVATE OLD HOME IDEA');
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
@@ -314,7 +314,7 @@ test("BASE 3: logout and browser Back never show another account's Canvas draft"
  page.on('request',request=>{
   if(request.method()==='POST'&&/\/api\/studio\/jobs/.test(request.url()))paidJobs++;
  });
- await page.goto('/deepsyq.html');
+ await page.goto('/canvas.html');
  await page.evaluate(()=>localStorage.setItem('vv_token','fixture-owner-A'));
  await page.reload();
  await expect(page.locator('#logout')).toBeVisible();
@@ -369,7 +369,7 @@ test('BASE 3: mobile Canvas references and video prompt hand off to Studio witho
  page.on('request',request=>{
   if(request.method()==='POST'&&/\/api\/studio\/jobs/.test(request.url()))paidJobs++;
  });
- await page.goto('/deepsyq.html');
+ await page.goto('/canvas.html');
  const prompt='Portrait video of the approved owner product in natural light';
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
  await page.locator('#quickCreatePrompt').fill(prompt);
@@ -393,7 +393,7 @@ test('BASE 3: unsupported Video model rejects Canvas reference with honest warni
  page.on('request',request=>{
   if(request.method()==='POST'&&/\/api\/studio\/jobs/.test(request.url()))paidJobs++;
  });
- await page.goto('/deepsyq.html');
+ await page.goto('/canvas.html');
  const prompt='Video idea with optional source image and no available photo-capable model';
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
  await page.locator('#quickCreatePrompt').fill(prompt);
