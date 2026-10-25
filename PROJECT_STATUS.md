@@ -1,3 +1,9 @@
+## Coordinator #5 — Cycle31 / 25 Oct 2026 — CURRENT QUEUES
+
+DEV sampled `61b73fff` (refresh SHA). [Exact PR/CI + role queues](docs/DEEPSYQ_COORDINATOR_CYCLE31_20261025.md): A #421 DONE, #414 open; B #368/#323 security peer; C #352 old 6/6 but 85 behind; D independent consent/PG/wallet, #333 real 2× blocked; owner #419 31 PASS/5 FAIL/1 CANCELLED, PR413 8 PASS/2 FAIL; Jules #316/#317/#278 ACK only, no duplicates. No main/paid AI/live Stripe; A–D self-merge D16, B↔D peer.
+
+---
+
 ## Coordinator #5 — Cycle30 / owner Home width regression / 25 Oct 2026 — CURRENT ACTIVE HANDOFF
 
 **Sampled current feature DEV:** `d5a3c6d30bda5d67b01a96070eebb50a59b0ae79` before coordinator docs write, after **Agent A PR415 MERGED and Render DEV-preview LIVE** on exact SHA `d5a3c6d3` (deploy `dep-dbf2ndlg1s2s73e8v0jg`; 6/6 exact PR source native checks PASS). See [Cycle30 verified report](docs/DEEPSYQ_COORDINATOR_CYCLE30_20261025.md) and Issue [#233](https://github.com/mvryhan-web/video-variator-android/issues/233). This is a point-in-time SHA, never a permanent HEAD. PR412/415 Pricing DONE at DEV/preview only; no real commercial payment acceptance.
