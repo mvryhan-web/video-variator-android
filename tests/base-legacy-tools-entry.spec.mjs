@@ -83,24 +83,15 @@ test('BASE #27 keeps existing local history and media across Video Uniquifier â†
 
  // Use the existing editor's actual Tools navigation, then the actual hub
  // entry. Both pages share one origin but must not reset storage.
- const toolsLink=page.locator('#freeToolsLink');
- // Playwright's isVisible() includes offscreen mobile sidebars. Check the
- // actual mobile Menu control, not the offscreen link's CSS visibility.
- const menu=page.locator('#menuBtn');
- // On phones, wait for the real Menu button: isVisible() can return false
- // during the initial startup screen while the nav is still offscreen.
+ const toolsLink=page.locator('.vu-side-link[href="free-tools.html"]');
+ // The screenshot-approved mobile shell replaces the original sidebar and
+ // hides its legacy #freeToolsLink and #menuBtn. Exercise its real navigation.
  if(await page.evaluate(()=>innerWidth<=900)){
-  const menuDebug=await menu.evaluate(e=>{const s=getComputedStyle(e),r=e.getBoundingClientRect();return {viewport:{width:innerWidth,height:innerHeight},startup:document.documentElement.className,body:document.body.className,display:s.display,visibility:s.visibility,opacity:s.opacity,hidden:e.hidden,rect:{x:r.x,y:r.y,width:r.width,height:r.height},matched:[...document.styleSheets].map(sheet=>{try{return [...sheet.cssRules].filter(rule=>rule.cssText.includes('#menuBtn')||rule.cssText.includes('mobileOnly')).map(rule=>rule.cssText)}catch{return ['cross-origin']}}).flat()};});
-  console.log('BASE27 mobile menu visibility',JSON.stringify(menuDebug));
+  const menu=page.locator('.vu-nav-toggle');
   await expect(menu).toBeVisible();
   await menu.click();
-  await expect(page.locator('.sidebar')).toHaveClass(/\bopen\b/);
+  await expect(page.locator('body')).toHaveClass(/\bvu-nav-open\b/);
  }
- const navDebug=await toolsLink.evaluate(e=>{
-  const chain=[];for(let n=e;n&&chain.length<6;n=n.parentElement){const s=getComputedStyle(n),r=n.getBoundingClientRect();chain.push({tag:n.tagName,id:n.id,className:n.className,hidden:n.hidden,display:s.display,visibility:s.visibility,opacity:s.opacity,rect:{x:r.x,y:r.y,width:r.width,height:r.height}});}
-  return {startup:document.documentElement.className,body:document.body.className,chain};
- });
- console.log('BASE27 Everyday Tools navigation visibility',JSON.stringify(navDebug));
  await expect(toolsLink).toBeVisible();
  await expect(toolsLink).toBeInViewport();
  await toolsLink.click();
