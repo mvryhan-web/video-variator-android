@@ -39,6 +39,7 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('#authModal')).toBeHidden();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:info.outputPath('deepsyq.png'),fullPage:true});
+ await home(page);
  await page.locator('#homeQuickPrompt').fill('Test creative image');await page.locator('[data-home-kind="image"]').click();await expect(page).toHaveURL(/studio=image/);
  await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await expect(page.locator('[data-kind="image"]')).toHaveAttribute('aria-pressed','true');await expect(page.locator('#prompt')).toHaveValue('Test creative image');
  await page.locator('.topbar .back').click();await expect(page).toHaveURL(/deepsyq.html/);
