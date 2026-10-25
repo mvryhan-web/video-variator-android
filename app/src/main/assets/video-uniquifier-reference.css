@@ -301,3 +301,51 @@ body.vu-reference .vu-format-button:disabled{
  body.vu-reference .vu-format-button strong{font-size:13px;}
  body.vu-reference .vu-format-button small{font-size:9px;}
 }
+
+/* Owner-approved 2026-10-25 small-copy cleanup (Video Uniquifier only).
+   All site navigation and functional processing controls are unchanged. */
+body.vu-reference #dashboardView .hero #heroTitle ~ p,
+body.vu-reference #dashboardView .hero .creatorLead,
+body.vu-reference #dashboardView .hero .creatorKicker,
+body.vu-reference .workspace .sectionHead .workspaceEyebrow,
+body.vu-reference .vu-preview .vu-panel-head p,
+body.vu-reference .vu-mode-copy small,
+body.vu-reference .vu-upgrade-content small { display:none!important; }
+/* Promo remains in the sidebar, with the original purple/blue palette, title
+   and Upgrade Now button; remove the screenshot containing baked-in copy. */
+body.vu-reference .vu-upgrade {
+ background:
+  radial-gradient(ellipse at 85% 94%,rgba(16,163,255,.48),transparent 47%),
+  radial-gradient(ellipse at 13% 14%,rgba(165,32,255,.27),transparent 61%),
+  linear-gradient(165deg,#071b46 0%,#081c42 46%,#08133a 100%)!important;
+}
+body.vu-reference .vu-upgrade-content{gap:14px;justify-content:space-between;}
+body.vu-reference .vu-upgrade-content strong{margin-top:auto;}
+/* Move decorative mode radio below the image into the same line as its name
+   to avoid a gap where the removed descriptions used to appear. */
+body.vu-reference .vu-mode-copy {min-height:36px;display:flex;align-items:center;padding:8px 30px 8px 9px;}
+body.vu-reference .vu-mode-copy strong {font-size:12px;line-height:1.2;}
+body.vu-reference .vu-mode-card .vu-radio {top:auto!important;bottom:10px!important;}
+body.vu-reference .vu-preview .vu-panel-head {padding-bottom:5px;}
+/* Small native CSS pictograms: portrait 9:16 and landscape 16:9.
+   Decorative only; the existing aria-pressed and #aspectRatio processor wiring remains. */
+body.vu-reference .vu-ratio-glyph{
+ display:inline-block;flex:0 0 auto;position:relative;
+ border:2px solid currentColor;border-radius:3px;color:#d9e9ff;
+ box-shadow:0 0 7px rgba(85,184,255,.22);
+}
+body.vu-reference .vu-ratio-portrait{width:15px;height:25px;}
+body.vu-reference .vu-ratio-landscape{width:25px;height:15px;}
+body.vu-reference .vu-ratio-glyph::after{
+ content:'';position:absolute;inset:3px;background:currentColor;
+ opacity:.25;border-radius:1px;
+}
+body.vu-reference .vu-format-label{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;}
+body.vu-reference .vu-format-button[aria-pressed="true"] .vu-ratio-glyph{
+ color:#fff;box-shadow:0 0 8px #4bdfff9c;
+}
+@media(max-width:450px){
+ body.vu-reference .vu-format-button{gap:7px;}
+ body.vu-reference .vu-ratio-portrait{width:12px;height:21px;}
+ body.vu-reference .vu-ratio-landscape{width:21px;height:12px;}
+}
