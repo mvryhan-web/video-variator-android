@@ -1,3 +1,13 @@
+# COORDINATOR #5 — CYCLE31 / 25 OCT 2026 / CURRENT EXCLUSIVE CLAIMS
+
+**Read-only PR sampling DEV feature HEAD:** `61b73fff779ec30fbac411ecb269ac984738a3bd` before coordinator docs. [Cycle31 exact-head PR/CI collision report](DEEPSYQ_COORDINATOR_CYCLE31_20261025.md) supersedes older queue snapshots; re-read HEAD before new work.
+
+**A #72:** PR421 Pricing final owner correction **MERGED**; PR414 7/7 CI old branch pass but open and overlaps owner/Admin PR413 + #419 in `tests/deepsyq.spec.mjs`. Coordinate and preserve latest bonus/upper-city design; SEO only after available. **B #73:** #368 19 PASS/1 CANCELLED + #323 signed consent 29/29 native checks; behind current DEV, B↔D exact new head privacy/paid transport peer missing. Finance #333 47/47 synthetic PASS, real 2× net not proven. **C #74:** #352 6/6 old head, compare ahead8/behind85, only three C files; same PR non-force refresh, real final browser CI/B+D scoped peer; #350/#402 DONE. **D #75:** #323 revoke-before-provider PG/lock/pool/credit/disposable migration safety, #368 old A→B and #419 private Wallet/redirect independent signoffs outstanding. Five #323∩#333 files reserved joint B/D, no blind merge. **Owner/Admin #413:** 8 PASS/2 FAIL (Trial/visual expectations), shared A test. **Owner Pricing #419:** 31 PASS/5 FAIL/1 CANCELLED, DRAFT, behind DEV 2, 29 net files; preserve PR421 large visual content and only delete tiny footnotes, validate wallet A→B/auth/history and no second store before merge. **Jules #316/#317/#278:** ACK-only, not new tasks. **Coordinator #5:** exclusively docs + status pointer + Issue #233 checkpoint; NOT A-D merger.
+
+Global gates: BASE20 Product Video retired 404, F1–F8 aliases, owner Home six MP4 protected, Trial/paid AI/live Stripe/unsafe SQL/main/production NOT authorized; #280 release HOLD; D16 self-merge A-D only after their real CI and B↔D privacy/finance peer. Current UI specific PR421 owner instruction overrides mistaken PR420 broad removal.
+
+---
+
 # COORDINATOR #5 — CYCLE30 / 25 OCT 2026 / ACTIVE EXCLUSIVE CLAIM POINTER
 
 **Sampled DEV feature HEAD before coordinator-only doc additions:** `d5a3c6d30bda5d67b01a96070eebb50a59b0ae79`. Latest [Cycle30 actual PR/CI/Render evidence and file collision matrix](DEEPSYQ_COORDINATOR_CYCLE30_20261025.md). Keep historical claims below, original BASE55 and F1–F8 aliases intact. Coordinator writes documentation only. **PR415 Pricing is now MERGED DEV and DEV-preview Render LIVE** at exact SHA `d5a3c6d3` — no duplicate Pricing page/PR.
