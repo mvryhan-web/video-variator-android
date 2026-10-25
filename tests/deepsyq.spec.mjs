@@ -357,8 +357,9 @@ test('featured owned video is promoted but original homepage sections and images
  await expect(page.locator('.home-create-grid .tile-video')).toHaveAttribute('href','generate-studio.html?studio=video');
  await expect(page.locator('.home-create-grid .tile-audio')).toHaveAttribute('href','generate-studio.html?studio=audio');
  await expect(page.locator('a[aria-label="History"]')).toHaveAttribute('href','generate-studio.html?view=history');
- await expect(page.locator('.history-links a[href="index.html#history"]')).toBeVisible();
- await expect(page.locator('.history-links a[href="index.html#history"]')).toContainText('Video projects');
+ // Owner removed the three-card Home history marketing section; Studio History navigation remains.
+ await expect(page.locator('#history')).toHaveCount(0);
+ await expect(page.locator('#recentCreationsGrid')).toHaveCount(0);
 });
 test('approved video appears in the real homepage hero but does not erase Canvas or original sections',async({page})=>{
  // Navigation/media-element assertions are separate from serving real MP4 bytes.
