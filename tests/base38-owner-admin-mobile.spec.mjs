@@ -52,8 +52,16 @@ test('BASE #38 owner Admin is usable at 320/390px without page overflow or enabl
    const href=await link.getAttribute('href');
    expect(await page.locator(href).count()).toBe(1);
   }
+  // Native select scrollWidth includes WebKit's internal option renderer.
+  // Assert the actual field border boxes fit each label, not popup internals.
   const controlOverflow=await page.locator('.controls label,.template-form label.check').evaluateAll(labels=>
-   labels.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>({text:el.textContent,scroll:el.scrollWidth,width:el.clientWidth})));
+   labels.flatMap(label=>{
+    const parent=label.getBoundingClientRect();
+    return [...label.querySelectorAll('input,select')].map(control=>{
+     const field=control.getBoundingClientRect();
+     return {text:label.textContent,left:field.left,right:field.right,parentLeft:parent.left,parentRight:parent.right};
+    });
+   }).filter(item=>item.left<item.parentLeft-1||item.right>item.parentRight+1));
   expect(controlOverflow).toEqual([]);
   const availability=page.locator('#models .controls select');
   await availability.selectOption('off');await expect(availability).toHaveValue('off');
