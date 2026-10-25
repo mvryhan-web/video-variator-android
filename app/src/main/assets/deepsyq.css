@@ -869,3 +869,42 @@ body.home-neon{background:#030b18;color:#eff6ff}
  .home-plan-showcase .subscription-layout{display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:calc(100% - 12px);gap:12px;overflow-x:auto;overflow-y:hidden;padding:0 2px 12px;scroll-snap-type:x mandatory;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#825eb8 #171326}
  .home-plan-showcase .plan{min-height:unset;scroll-snap-align:start}
 }
+
+/* Owner 2026-10-25: clean Home labels; benefit copy belongs inside plan cards only.
+   Use established Home palette; preserve navigation, photos, videos and CTA actions. */
+.home-neon .home-feature-spotlight>span{justify-content:center;gap:0}
+.home-neon #agentFeature .creative-example-copy{justify-content:center}
+.home-neon .home-plan-showcase .plan-benefits{gap:10px}
+.home-neon .home-plan-showcase .plan-benefits li{font-size:12px;line-height:1.5}
+.home-neon .home-plan-showcase .plan{min-height:395px}
+.home-neon .home-plan-showcase .home-plan-switch{margin:4px 0 22px}
+.home-neon #pricing #homeLifetimePlan{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(175px,225px);
+ align-items:center;gap:26px;width:100%;margin-top:26px;padding:31px 34px;
+ border-color:#a78bf1;background:linear-gradient(155deg,#272039 0%,#161727 66%,#101525 100%);
+}
+.home-neon #homeLifetimePlan .lifetime-main{min-width:0}
+.home-neon #homeLifetimePlan h3{font-size:clamp(24px,2.9vw,34px);margin:0 0 5px}
+.home-neon #homeLifetimePlan .lifetime-summary{margin:0 0 19px;color:#cfc6df;font-size:13px}
+.home-neon #homeLifetimePlan .lifetime-benefits{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:20px;row-gap:13px;
+ list-style:none;margin:0;padding:0;
+}
+.home-neon #homeLifetimePlan .lifetime-benefits li{position:relative;padding-left:21px;line-height:1.5;color:#e4dfea;font-size:13px}
+.home-neon #homeLifetimePlan .lifetime-benefits li:before{content:"✓";position:absolute;left:0;color:#76e8ee;font-weight:800}
+.home-neon #homeLifetimePlan .lifetime-disclaimer{max-width:780px;margin:19px 0 0;color:#b9b1c8;font-size:12px}
+.home-neon #homeLifetimePlan .lifetime-purchase{display:flex;flex-direction:column;align-items:stretch;gap:19px;min-width:0}
+.home-neon #homeLifetimePlan #lifetimePrice{display:block;font-size:clamp(22px,2.3vw,32px);text-align:center;line-height:1.25}
+.home-neon #homeLifetimePlan #lifetimeCheckout{min-height:46px;border:1px solid #b88df7;border-radius:999px;background:linear-gradient(105deg,#8154dc,#c85fbb);color:#fff;font-size:13px;font-weight:750;cursor:pointer}
+.home-neon #homeLifetimePlan #lifetimeCheckout:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:800px){
+ .home-neon #pricing #homeLifetimePlan{grid-template-columns:1fr;padding:25px 22px;gap:23px}
+ .home-neon #homeLifetimePlan .lifetime-purchase{align-items:flex-start;max-width:260px}
+ .home-neon #homeLifetimePlan #lifetimePrice{text-align:left}
+ .home-neon #homeLifetimePlan #lifetimeCheckout{width:100%;padding:11px 24px}
+}
+@media(max-width:520px){
+ .home-neon #homeLifetimePlan .lifetime-benefits{grid-template-columns:1fr;gap:11px}
+ .home-neon #homeLifetimePlan .lifetime-benefits li{font-size:12px}
+ .home-neon .home-plan-showcase .plan-benefits li{font-size:12px}
+}
