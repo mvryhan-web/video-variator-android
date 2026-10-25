@@ -243,3 +243,61 @@ body.vu-reference #dashboardView .hero>.vu-hero-films {
 body.vu-reference #dashboardView .hero:before {
   display:none !important;
 }
+
+/* Agent A: true Video Uniquifier output-ratio controls + approved site logo.
+   These rules do not alter the sidebar, sitewide navigation, or media engine. */
+body.vu-reference .vu-appbar .vu-logo .vu-logo-image{
+ display:block;width:34px;height:34px;flex:none;object-fit:contain;
+ border:0;background:transparent;filter:none;
+}
+body.vu-reference .vu-video-format{
+ display:grid;gap:9px;min-width:0;width:100%;
+ margin:14px 0 0;padding:0;border:0;
+}
+body.vu-reference .vu-video-format h4{
+ margin:0;font-size:12px;font-weight:700;line-height:1.3;color:#f1f7ff;
+}
+body.vu-reference .vu-format-options{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:10px;width:100%;min-width:0;
+}
+body.vu-reference .vu-format-button{
+ display:flex;align-items:center;justify-content:center;gap:11px;
+ min-height:51px;padding:8px 12px;
+ border:1px solid #2c5b96;border-radius:10px;
+ color:#dceeff;background:linear-gradient(150deg,#0c2141,#07192e);
+ cursor:pointer;transition:border-color .14s,box-shadow .14s,background .14s;
+}
+body.vu-reference .vu-format-button strong{
+ font-size:15px;font-weight:750;line-height:1.1;letter-spacing:.012em;
+}
+body.vu-reference .vu-format-button small{
+ font-size:11px;font-weight:500;color:#b4c7e4;
+}
+body.vu-reference .vu-format-button:hover:not(:disabled){
+ border-color:#65d4ff;box-shadow:0 0 12px #0987dd48;
+}
+body.vu-reference .vu-format-button.selected,
+body.vu-reference .vu-format-button[aria-pressed="true"]{
+ border:1.5px solid #37d9ff;background:linear-gradient(125deg,#173d90,#0a2862);
+ color:#fff;box-shadow:0 0 0 1px #158fff81,0 0 16px #068ee46b;
+}
+body.vu-reference .vu-format-button[aria-pressed="true"] small{
+ color:#e4edff;
+}
+body.vu-reference .vu-format-button:focus-visible{
+ outline:2px solid #fff;outline-offset:3px;
+}
+body.vu-reference .vu-format-button:disabled{
+ opacity:.52;cursor:not-allowed;
+}
+@media(max-width:900px){
+ body.vu-reference .vu-video-format{margin-top:12px;}
+ body.vu-reference .vu-format-button{min-height:48px;}
+}
+@media(max-width:450px){
+ body.vu-reference .vu-format-options{gap:7px;}
+ body.vu-reference .vu-format-button{min-height:48px;padding:6px;gap:6px;}
+ body.vu-reference .vu-format-button strong{font-size:13px;}
+ body.vu-reference .vu-format-button small{font-size:9px;}
+}
