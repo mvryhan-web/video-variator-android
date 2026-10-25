@@ -94,6 +94,11 @@ test('BASE #27 keeps existing local history and media across Video Uniquifier â†
   await menu.click();
   await expect(page.locator('.sidebar')).toHaveClass(/\bopen\b/);
  }
+ const navDebug=await toolsLink.evaluate(e=>{
+  const chain=[];for(let n=e;n&&chain.length<6;n=n.parentElement){const s=getComputedStyle(n),r=n.getBoundingClientRect();chain.push({tag:n.tagName,id:n.id,className:n.className,hidden:n.hidden,display:s.display,visibility:s.visibility,opacity:s.opacity,rect:{x:r.x,y:r.y,width:r.width,height:r.height}});}
+  return {startup:document.documentElement.className,body:document.body.className,chain};
+ });
+ console.log('BASE27 Everyday Tools navigation visibility',JSON.stringify(navDebug));
  await expect(toolsLink).toBeVisible();
  await expect(toolsLink).toBeInViewport();
  await toolsLink.click();
