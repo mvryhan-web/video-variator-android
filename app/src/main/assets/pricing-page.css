@@ -254,3 +254,26 @@ body.deepsyq-pricing-page .price-hero .price-chips{
     gap:7px;
   }
 }
+
+/* Owner 2026-10-25: AI Credits photograph matches the spacious top Pricing hero.
+   Keep the original artwork and its lower scenery visible behind the heading;
+   only alter this banner, not the five credit packs or purchase UI. */
+body.deepsyq-pricing-page .price-credit-hero{
+  height:clamp(365px,28vw,445px);
+  align-items:flex-start;
+}
+body.deepsyq-pricing-page .price-credit-hero-art{
+  background-size:cover,cover;
+  background-position:center center,center bottom;
+}
+body.deepsyq-pricing-page .price-credit-heading{
+  max-width:720px;
+  padding:clamp(30px,3vw,47px) clamp(18px,2.1vw,34px);
+}
+@media(max-width:700px){
+  body.deepsyq-pricing-page .price-credit-hero{height:380px}
+  body.deepsyq-pricing-page .price-credit-heading{
+    max-width:100%;
+    padding:25px 20px;
+  }
+}
