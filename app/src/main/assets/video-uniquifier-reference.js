@@ -26,7 +26,7 @@ function node(tag,cls,text){const el=document.createElement(tag);if(cls)el.class
 function makeNav(shell){
  const bar=node('header','vu-appbar');
  const logo=node('a','vu-logo');logo.href='deepsyq.html';logo.setAttribute('aria-label','Deepsyq Home');
- logo.innerHTML='<span class="vu-brandmark">✦</span><strong>Deepsyq</strong>';
+ logo.innerHTML='<img class="vu-logo-image" src="deepsyq-logo.png" alt="" width="34" height="34" decoding="async"><strong>Deepsyq</strong>';
  const menu=node('button','vu-nav-toggle','☷');menu.type='button';menu.setAttribute('aria-label','Toggle navigation');
  const search=node('form','vu-search');
  search.innerHTML='<span aria-hidden="true">⌕</span><input type="search" aria-label="Search Deepsyq pages" placeholder="Search anything..." autocomplete="off"><kbd>⌘ K</kbd>';
@@ -167,9 +167,48 @@ function build(){
  });}
  qual.addEventListener('change',refreshQuality);new MutationObserver(refreshQuality).observe(qual,{attributes:true,childList:true,subtree:true,attributeFilter:['disabled']});refreshQuality();
  params.append(count,qualityBox);types.after(params);
+ // Keep the original #aspectRatio select as the sole processing source of truth.
+ // app-v4.js.getResolution() reads it directly before calling the real core.process().
+ const ratio=$('aspectRatio');
+ const formatGroup=node('section','vu-video-format');
+ formatGroup.innerHTML='<h4 id="vuVideoFormatHeading">Video format</h4>';
+ const ratioChoices=node('div','vu-format-options');
+ ratioChoices.setAttribute('role','group');
+ ratioChoices.setAttribute('aria-labelledby','vuVideoFormatHeading');
+ const ratioButtons=[
+  ['9:16','9:16','Vertical'],
+  ['16:9','16:9','Landscape']
+ ].map(([value,label,description])=>{
+  const button=node('button','vu-format-button');
+  button.type='button';button.dataset.ratio=value;button.setAttribute('aria-pressed','false');
+  button.innerHTML='<strong>'+label+'</strong><small>'+description+'</small>';
+  ratioChoices.append(button);
+  return button;
+ });
+ formatGroup.append(ratioChoices);
+ function refreshFormat(){
+  for(const button of ratioButtons){
+   const option=[...ratio.options].find(o=>o.value===button.dataset.ratio);
+   const disabled=ratio.disabled||!option||option.disabled;
+   button.disabled=!!disabled;
+   const selected=ratio.value===button.dataset.ratio;
+   button.setAttribute('aria-pressed',String(selected));
+   button.classList.toggle('selected',selected);
+  }
+ }
+ for(const button of ratioButtons)button.addEventListener('click',()=>{
+  if(button.disabled)return;
+  ratio.value=button.dataset.ratio;
+  ratio.dispatchEvent(new Event('change',{bubbles:true}));
+  refreshFormat();
+ });
+ ratio.addEventListener('change',refreshFormat);
+ new MutationObserver(refreshFormat).observe(ratio,{attributes:true,attributeFilter:['disabled'],childList:true,subtree:true});
+ refreshFormat();
+ params.after(formatGroup);
  const preserved=node('div','vu-preserved-controls');preserved.hidden=true;
  [workspace.querySelector('.settingsGrid'),workspace.querySelector('.formatGrid'),$('planAccessHint'),workspace.querySelector('.creditEstimate')].forEach(item=>{if(item)preserved.append(item)});
- params.after(preserved);
+ formatGroup.after(preserved);
  const speed=$('fastExport');if(speed){speed.checked=false;speed.disabled=true;}
  new MutationObserver(()=>{const s=$('fastExport');if(s&&!s.disabled){s.checked=false;s.disabled=true;}}).observe(workspace,{childList:true,subtree:true});
  const btn=$('startBtn');if(btn){btn.removeAttribute('data-i18n');btn.innerHTML='✦ &nbsp;Create variants &nbsp; →';}
