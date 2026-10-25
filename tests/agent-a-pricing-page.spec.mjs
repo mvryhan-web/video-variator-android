@@ -230,3 +230,29 @@ test('hero photograph gives all four frame labels full breathing room on desktop
   }
  }
 });
+
+test('AI Credits artwork matches upper hero width and height, anchors below text without overlapping packs',async({page})=>{
+ for(const viewport of [{width:1448,height:1086},{width:390,height:844}]){
+  await page.setViewportSize(viewport);
+  await page.goto('/pricing.html');
+  await expect(page.locator('#creditCards .price-credit-card')).toHaveCount(5);
+  const layout=await page.evaluate(()=>{
+   const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
+   const art=getComputedStyle(document.querySelector('.price-credit-hero-art'));
+   return {topHero:rect('.price-hero'),creditHero:rect('.price-credit-hero'),
+    heading:rect('.price-credit-heading'),title:rect('#creditsHeading'),
+    pack:rect('.price-credit-card'),image:art.backgroundImage,
+    backgroundPosition:art.backgroundPosition,
+    overflow:document.documentElement.scrollWidth>innerWidth+1};
+  });
+  expect(layout.creditHero.height).toBeGreaterThanOrEqual(viewport.width<700?379:364);
+  expect(Math.abs(layout.creditHero.height-layout.topHero.height)).toBeLessThan(3);
+  expect(Math.abs(layout.creditHero.width-layout.topHero.width)).toBeLessThan(7);
+  expect(layout.image).toContain('e5506ef4-b0a2-412d-a8b7-6e3108f80761.png');
+  expect(layout.backgroundPosition.split(',').at(-1)).toMatch(/bottom|100%/);
+  expect(layout.title.bottom).toBeLessThan(layout.creditHero.bottom-45);
+  expect(layout.heading.bottom).toBeLessThan(layout.creditHero.bottom-20);
+  expect(layout.pack.top).toBeGreaterThanOrEqual(layout.creditHero.bottom-1);
+  expect(layout.overflow).toBeFalsy();
+ }
+});
