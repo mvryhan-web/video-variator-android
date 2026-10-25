@@ -88,3 +88,14 @@ No provider requests, Stripe actions, DB backup/migration, secrets, Render envir
 - The database Recovery page shows point-in-time recovery for the **past 3 days**, but **Restore database** is disabled. The Export list has **0 rows**, and **Create export** is disabled. This is evidence of a recovery window, not a verified backup export or a completed restore test; BASE #48 remains open.
 - Production Render service remains attached to branch `main` with auto-deploy enabled. Browser verification of `https://video-variator-android.onrender.com/` still shows the Video Uniquifier home page, so BASE #2 is not published.
 - Read-only audit only: no export, restore, migration, setting change, or deploy was started.
+
+## Selected BASE queue reprioritization — 2026-10-25
+
+Execution order is **#1 → #50 → #48 → #2**, with the separate P0 BASE #24/#35/#36 privacy and provider-consent gates also required before any commercial production launch.
+
+- **#1 — first, still PARTIAL.** Exact DEV documentation head `3f0f82a4045515ea50e051b2827baa265aa7dbd7`: coordinator no-spend #40188563046, batch-entry #40188563158, root/legacy #40188564175, site-wide design #40188563210 all passed. But current-DEV BASE #30 mobile drawer #40188563065 failed 2 mobile projects at test line 49: the center point of the open Home brand link was not a pointer hit target (10 passed, 2 failed, 12 skipped). Browser install succeeded; this is an assertion-level blocker. Failure handed to Agent C in Issue #74 comment #6397057001 for a minimal owner-lane diagnosis/fix with pointer, Escape, overflow, and zero-paid-call checks preserved.
+- **#50 — second, code/tests PASS, rollout OFF.** Keep generation/public-discovery switches off while validating no-spend behavior; never count code presence as rollout approval.
+- **#48 — third, release-safety gate remains BLOCKED.** Render has no separate staging DB. Production DB shows 3-day PITR, restore disabled, no exports and export creation disabled. Still required: a non-production restore test/path, staging regression, signed Stripe test purchase/refund, legacy login/subscription checks, current mobile QA, and tested rollback. Do not use or copy production customer data for staging.
+- **#2 — last.** Production root still serves Video Uniquifier. Cutover remains held until #48 and the P0 privacy/consent gates pass.
+
+No source changes, flags, Stripe actions, DB exports/restores, Render configuration changes or production deploys were made in this coordinator review.
