@@ -1,0 +1,138 @@
+/* Owner-approved Video Uniquifier screenshot layout — DEV only, no changes to processing/billing. */
+body.vu-reference{background:#020b1a!important;color:#fff;font-family:Inter,system-ui,sans-serif}
+body.vu-reference .shell{display:grid!important;grid-template-columns:190px minmax(0,1fr)!important;grid-template-rows:56px auto;max-width:1700px;margin:auto;min-height:100vh;background:#020c1b}
+body.vu-reference .vu-appbar{grid-column:1/-1;grid-row:1;display:flex;gap:16px;align-items:center;position:sticky;top:0;z-index:50;height:56px;padding:0 20px;background:#020c1df9;border-bottom:1px solid #092c56}
+body.vu-reference .vu-logo{display:flex;align-items:center;gap:9px;color:#fff;font-size:23px;text-decoration:none;min-width:185px}
+body.vu-reference .vu-brandmark{display:grid;place-items:center;background:conic-gradient(#06ddff,#1442f8,#dc08f0,#08c5fc);border-radius:12px;color:#fff;height:34px;width:34px;font-size:23px;box-shadow:0 0 12px #1078ffc9}
+body.vu-reference .vu-nav-toggle{border:0;background:transparent;color:#e8f3ff;font-size:23px}
+body.vu-reference .vu-search{flex:1;display:flex;align-items:center;gap:7px;min-width:95px;max-width:250px;height:32px;margin:auto;padding:0 12px;border:1px solid #18396c;border-radius:30px;background:#07152e;color:#bed7ff}
+body.vu-reference .vu-search input{background:none;border:0;outline:0;color:#fff;font-size:10px;min-width:0;flex:1}
+body.vu-reference .vu-search kbd{border-radius:6px;background:#22375b;color:#8fb1e2;font-size:9px;padding:3px}
+body.vu-reference .vu-top-tools{display:flex;gap:14px;align-items:center;font-size:11px;white-space:nowrap;margin-left:auto}
+body.vu-reference .vu-top-tools a,body.vu-reference .vu-top-tools span{color:#e9ecff;text-decoration:none}
+body.vu-reference .vu-promo-pill{padding:7px 10px!important;border:1px solid #cc26fa;border-radius:10px;background:#191650}
+body.vu-reference .vu-top-user #signInBtn{white-space:nowrap;border-radius:50px;font-size:10px;padding:8px}
+body.vu-reference .sidebar{grid-column:1;grid-row:2;min-width:0;top:56px;height:calc(100vh - 56px);overflow-y:auto;position:sticky;display:flex;flex-direction:column;padding:7px 15px!important;background:linear-gradient(180deg,#031125,#020b1a)!important;border-right:1px solid #072d59}
+body.vu-reference .sidebar>.brand,body.vu-reference .sidebar>nav,body.vu-reference .sidebar>.sidebarBottom{display:none!important}
+body.vu-reference .vu-side-nav{display:grid}
+body.vu-reference .vu-nav-group{padding:8px 0 12px;border-bottom:1px solid #153353;display:grid;gap:2px}
+body.vu-reference .vu-nav-heading{font-size:12px;margin:4px 10px 7px;color:#e4bdff;font-weight:750}
+body.vu-reference .vu-side-link{display:flex;align-items:center;gap:10px;min-height:38px;border-radius:9px;padding:8px 10px;color:#e3ebfa!important;text-decoration:none!important;font-size:12px}
+body.vu-reference .vu-side-link:hover{background:#0d2651}
+body.vu-reference .vu-side-link.active{background:linear-gradient(90deg,#075df5,#112452);border:1px solid #0a7dff;box-shadow:0 0 12px #075bff5d}
+body.vu-reference .vu-side-link.disabled{opacity:.56}
+body.vu-reference .vu-nav-icon{font-size:21px;width:22px;text-align:center}
+body.vu-reference .vu-upgrade{display:block;width:100%;min-height:190px;margin-top:auto;position:relative;padding:0;overflow:hidden;color:#fff;text-align:left;border:1px solid #af19ff;border-radius:13px;background:#08143c}
+body.vu-reference .vu-upgrade-art,body.vu-reference .vu-upgrade-art>.vu-art{position:absolute!important;inset:0;width:100%;height:100%}
+body.vu-reference .vu-upgrade::before{content:'';position:absolute;inset:0;background:linear-gradient(#031435ee,#09205444,#060c21e6);z-index:1}
+body.vu-reference .vu-upgrade-content{display:flex;flex-direction:column;gap:10px;min-height:190px;position:relative;z-index:2;padding:13px}
+body.vu-reference .vu-upgrade-content b{font-size:15px;line-height:1.16}
+body.vu-reference .vu-upgrade-content small{font-size:10px;line-height:1.45;color:#e1e9ff;flex:1}
+body.vu-reference .vu-upgrade-content strong{display:block;border-radius:24px;background:linear-gradient(90deg,#e123f1,#01c8eb);font-size:11px;text-align:center;padding:10px;color:white}
+body.vu-reference .main{grid-column:2;grid-row:2;margin:0!important;width:100%;max-width:none!important;min-width:0;padding:0 12px 30px!important}
+body.vu-reference .main>.topbar{display:none!important}
+body.vu-reference #dashboardView{width:100%;max-width:none}
+body.vu-reference .hero.card{isolation:isolate;position:relative;display:flex!important;align-items:center;min-height:240px;margin:0 0 10px!important;padding:20px!important;overflow:hidden;border:1px solid #0f4a9c;border-radius:13px!important;background:#081934!important}
+body.vu-reference .vu-art{display:block;position:relative;overflow:hidden;background:#031632}
+body.vu-reference .vu-art img{max-width:none}
+body.vu-reference .vu-hero-image{position:absolute!important;inset:0;z-index:-2;width:100%;height:100%}
+body.vu-reference .hero:before{content:'';position:absolute;inset:0;pointer-events:none;z-index:-1;background:linear-gradient(90deg,#050a19f2 0%,#07122ad8 26%,#04152b6d 52%,#0000 100%);opacity:1!important}
+body.vu-reference .hero>div:first-of-type{position:relative;z-index:2;max-width:58%}
+body.vu-reference .hero #heroTitle{font-size:clamp(29px,3.7vw,51px)!important;line-height:1.04;letter-spacing:-.045em;margin:0 0 10px!important;background:linear-gradient(90deg,#a4edff,#ed64e9)!important;background-clip:text!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important}
+body.vu-reference .hero #heroTitle+p{font-size:15px!important;color:#fff!important;max-width:410px;margin:0!important;line-height:1.4!important}
+body.vu-reference .hero .creatorKicker,body.vu-reference .hero .creatorLead,body.vu-reference .hero .creatorActions,body.vu-reference .hero .creatorArt,body.vu-reference .hero .pill,body.vu-reference .hero .usageBox,body.vu-reference .hero .heroTrust{display:none!important}
+body.vu-reference .vu-trust{display:flex;gap:13px;flex-wrap:wrap;margin-top:23px}
+body.vu-reference .vu-trust>span{font-size:11px;color:#effbff}
+body.vu-reference .vu-trust small{display:block;font-size:9px;color:#c8d9ef;margin:3px 0 0 17px}
+body.vu-reference .vu-hero-films{position:absolute;right:14px;top:33px;width:42%;height:171px;display:flex;align-items:center;gap:6px}
+body.vu-reference .vu-workflow-tag{position:absolute;top:-26px;right:20%;font-family:cursive;font-style:italic;color:#f5c9ff;font-size:15px}
+body.vu-reference .vu-film{position:relative;flex:1;min-width:0;max-width:155px;height:135px;border:3px solid #3b8bff;border-radius:10px;overflow:hidden;box-shadow:0 0 15px #0b8fffba;transform:rotate(4deg)}
+body.vu-reference .vu-film:nth-of-type(2){transform:rotate(-3deg);border-color:#e75fff}
+body.vu-reference .vu-film>.vu-art{width:100%;height:100%}
+body.vu-reference .vu-film-play{position:absolute;left:50%;top:64%;transform:translate(-50%,-50%);width:28px;height:28px;border:1px solid #d7ecff;border-radius:50%;display:grid;place-items:center;background:#101c48ac;font-size:13px}
+body.vu-reference .vu-film-arrow{font-size:29px;color:#fff;text-shadow:0 0 12px #09afff}
+body.vu-reference .statsGrid{display:none!important}
+body.vu-reference .vu-content-grid{display:grid;grid-template-columns: minmax(0,.94fr) minmax(0,1.06fr);gap:10px}
+body.vu-reference .vu-left,body.vu-reference .vu-right{display:flex;flex-direction:column;gap:10px;min-width:0}
+body.vu-reference .workspace{margin:0!important;padding:15px!important;min-height:566px;background:linear-gradient(#051732,#020e22)!important;border:1px solid #137cdb!important;border-radius:13px!important}
+body.vu-reference .workspace .sectionHead{margin:0 0 10px!important}
+body.vu-reference .workspace .sectionHead h3{font-size:19px!important;margin:0 0 3px;color:#fff}
+body.vu-reference .workspace .sectionHead p{font-size:11px!important;color:#c6d2e9!important;margin:0}
+body.vu-reference .workspace .statusDot{display:none!important}
+body.vu-reference .pickerGrid{margin:0!important}
+body.vu-reference .workspace .picker{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;min-height:127px!important;max-height:138px;padding:7px!important;background:#081a39!important;border:1px dashed #4373b2!important;border-radius:11px!important}
+body.vu-reference .picker .pickerIcon{display:none}
+body.vu-reference .vu-upload-icon{height:40px;width:48px;background:transparent}
+body.vu-reference .workspace .picker b{font-size:12px!important;color:#fff}
+body.vu-reference .workspace .picker small{color:#62daff!important;font-size:10px}
+body.vu-reference .fileSummary{font-size:10px;color:#b6cbe5;margin:5px 0!important;min-height:0}
+body.vu-reference .vu-mode-group h4{font-size:12px;margin:9px 0;color:white}
+body.vu-reference .vu-mode-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+body.vu-reference .vu-mode-card{min-width:0;overflow:hidden;display:flex;flex-direction:column;position:relative;text-align:left;padding:0 0 7px;border:1px solid #1b71ed;border-radius:9px;background:#071631;color:white}
+body.vu-reference .vu-mode-card:last-child{border-color:#b32afe}
+body.vu-reference .vu-mode-card.selected{box-shadow:0 0 10px #0364e077;border-color:#20cbff}
+body.vu-reference .vu-mode-card:disabled{opacity:.5;cursor:not-allowed}
+body.vu-reference .vu-mode-card>.vu-art{width:100%;height:70px;flex-shrink:0}
+body.vu-reference .vu-mode-copy{padding:7px 9px 3px}
+body.vu-reference .vu-mode-copy strong{font-size:11px}
+body.vu-reference .vu-mode-copy small{display:block;font-size:9px;line-height:1.35;color:#c7d5ea;margin-top:4px}
+body.vu-reference .vu-radio{position:absolute;top:76px;right:7px;color:#c3e4ff}
+body.vu-reference .vu-parameters{display:grid;grid-template-columns:1fr 1.33fr;gap:12px;margin:12px 0 8px}
+body.vu-reference .vu-parameters b{display:block;font-size:11px;margin-bottom:7px}
+body.vu-reference .vu-counter{display:flex;justify-content:space-between;align-items:center;border:1px solid #1b477c;background:#071935;border-radius:9px;padding:4px}
+body.vu-reference .vu-counter button{border:0;background:#0e2958;color:#fff;width:29px;height:29px;border-radius:7px;font-size:17px}
+body.vu-reference .vu-counter output{font-size:14px;font-weight:700}
+body.vu-reference .vu-quality-options{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+body.vu-reference .vu-quality-button{border:1px solid #183e74;border-radius:7px;background:#071b37;color:#e8f0ff;min-height:39px;display:grid;place-content:center;padding:3px}
+body.vu-reference .vu-quality-button strong{font-size:10px}
+body.vu-reference .vu-quality-button small{font-size:8px;color:#b7c9e1}
+body.vu-reference .vu-quality-button[aria-pressed=true]{border-color:#0fe6ff;background:#132b79;box-shadow:0 0 12px #064ef3a0}
+body.vu-reference .vu-quality-button:disabled{opacity:.42;cursor:not-allowed}
+body.vu-reference .vu-advanced{font-size:11px;color:#b0cfff}
+body.vu-reference .vu-advanced summary{cursor:pointer}
+body.vu-reference .vu-advanced[open]{padding:9px;border:1px solid #164a85;border-radius:9px;background:#071d3c}
+body.vu-reference .vu-advanced :is(.settingsGrid,.formatGrid){display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0}
+body.vu-reference .workspace .actionRow{display:flex;gap:10px;margin-top:12px}
+body.vu-reference #startBtn{flex:1;min-height:45px!important;border:1px solid #49c1ff!important;border-radius:15px!important;background:linear-gradient(95deg,#e320ee,#154fff,#00cdef)!important;color:#fff!important;box-shadow:0 0 13px #9130e65c!important}
+body.vu-reference #startBtn:disabled{opacity:.47}
+body.vu-reference .vu-panel{min-width:0;padding:10px;border-radius:14px;border:1px solid #1168c3;background:linear-gradient(155deg,#03162f,#021022);box-shadow:inset 0 0 14px #0954b02d}
+body.vu-reference .vu-panel-head h3{font-size:19px;color:#fff;margin:0 6px 4px}
+body.vu-reference .vu-panel-head p{font-size:11px;color:#b4c5df;margin:0 6px 9px}
+body.vu-reference .vu-preview-scene{position:relative;overflow:hidden;aspect-ratio:1.93;border:1px solid #265eac;border-radius:10px}
+body.vu-reference .vu-preview-scene>.vu-art{position:absolute;inset:0;width:100%;height:100%}
+body.vu-reference .vu-preview-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid #6ac5ff;border-radius:50%;background:#021436bf;display:grid;place-items:center;width:65px;height:65px;color:white;font-size:29px;pointer-events:none}
+body.vu-reference .vu-preview-controls{position:absolute;bottom:8px;left:9px;right:9px;background:#04132fcc;border-radius:5px;padding:9px;font-size:10px;display:flex;align-items:center;gap:9px;pointer-events:none}
+body.vu-reference .vu-timeline{flex:1;background:#476084;height:4px;border-radius:6px}
+body.vu-reference .vu-output{flex:1}
+body.vu-reference .vu-output-head{display:flex;justify-content:space-between}
+body.vu-reference .vu-queue-clear{border:1px solid #163f74;border-radius:30px;padding:6px 10px;background:#061b39;color:#b6cae8;font-size:10px;height:32px}
+body.vu-reference .vu-output-lines{display:grid;gap:5px}
+body.vu-reference .vu-output-lines[hidden]{display:none!important}
+body.vu-reference .vu-output-row{display:grid;grid-template-columns:38px 1fr 10px minmax(30px,.8fr) 10px auto;align-items:center;gap:7px;background:#07182e;border:1px solid #0e335a;border-radius:6px;padding:4px 7px;min-height:38px}
+body.vu-reference .vu-output-thumb{width:38px;height:28px;border-radius:5px;overflow:hidden}
+body.vu-reference .vu-output-thumb>.vu-art{width:100%;height:100%}
+body.vu-reference .vu-output-row b{font-size:10px}
+body.vu-reference .vu-progress-line{height:4px;background:#133d73;border-radius:5px}
+body.vu-reference .vu-output-row button{border:1px solid #284571;border-radius:8px;background:#071831;color:#a7c1e6;padding:7px;font-size:9px}
+body.vu-reference .vu-output-row button:disabled{opacity:.5}
+body.vu-reference :is(#progressCard,#resultsCard,#errorCard){width:100%;margin:8px 0 0}
+body.vu-reference :is(#progressCard,#resultsCard,#errorCard)[hidden]{display:none!important}
+body.vu-reference .vu-how{padding:11px 13px;margin-top:9px;border:1px solid #1460b4;border-radius:12px;background:linear-gradient(110deg,#061a36,#020d1e)}
+body.vu-reference .vu-how-head{display:flex;align-items:center;gap:12px}
+body.vu-reference .vu-how-head h3{font-size:19px;margin:0}
+body.vu-reference .vu-how-head p{font-size:10px;color:#b6c5dd;flex:1}
+body.vu-reference .vu-history-button{border:1px solid #ce29ff;border-radius:30px;padding:9px 12px;background:linear-gradient(100deg,#9423cf,#007dce);color:white;font-size:10px}
+body.vu-reference .vu-how-steps{display:flex;align-items:center;gap:10px;margin-top:12px}
+body.vu-reference .vu-how-step{display:flex;flex:1;gap:9px;align-items:center;min-width:0}
+body.vu-reference .vu-how-step>.vu-art{flex:0 0 110px;width:110px;height:85px;border:1px solid #4338aa;border-radius:8px}
+body.vu-reference .vu-step-text{display:flex;gap:7px;min-width:0}
+body.vu-reference .vu-step-text em{font-style:normal;font-weight:800;font-size:13px;flex:0 0 24px;width:24px;height:24px;display:grid;place-items:center;border:1px solid #5dbeff;border-radius:50%;background:#1a38c2;box-shadow:0 0 10px #254ef9}
+body.vu-reference .vu-step-text b{display:block;font-size:11px}
+body.vu-reference .vu-step-text small{display:block;color:#b4c7df;font-size:9px;line-height:1.45;margin-top:7px}
+body.vu-reference .vu-how-arrow{font-size:22px;color:#08bcff}
+body.vu-reference #dashboardView .creatorSections{display:none!important}
+body.vu-reference .vu-side-link:focus-visible,body.vu-reference .vu-mode-card:focus-visible,body.vu-reference .vu-parameters button:focus-visible{outline:2px solid #44ecff;outline-offset:2px}
+@media(max-width:1240px){body.vu-reference .vu-top-tools{gap:8px;font-size:9px}body.vu-reference .vu-search{max-width:160px}body.vu-reference .vu-how-step{flex-wrap:wrap}body.vu-reference .vu-how-step>.vu-art{flex-basis:100%;width:100%;height:65px}}
+@media(max-width:900px){body.vu-reference .shell{display:block!important}body.vu-reference .vu-appbar{position:sticky}body.vu-reference .sidebar{position:fixed;top:56px;left:0;bottom:0;height:auto;width:200px;transform:translateX(-110%);transition:transform .2s;z-index:70;box-shadow:16px 0 25px #0008}body.vu-reference.vu-nav-open .sidebar{transform:translateX(0)}body.vu-reference .main{padding:0 11px 25px!important}body.vu-reference .vu-top-tools{display:none}body.vu-reference .vu-content-grid{grid-template-columns:1fr}body.vu-reference .workspace{min-height:auto}body.vu-reference .vu-how-step{flex-wrap:nowrap}body.vu-reference .vu-how-step>.vu-art{flex-basis:90px;width:90px}}
+@media(max-width:590px){body.vu-reference .vu-logo{font-size:17px;min-width:0}body.vu-reference .vu-search kbd{display:none}body.vu-reference .vu-hero-films{right:8px;top:9px;width:52%;height:85px;opacity:.8}body.vu-reference .vu-film{height:73px;border-width:1px}body.vu-reference .vu-workflow-tag{display:none}body.vu-reference .hero.card{min-height:223px;padding:15px!important;align-items:end}body.vu-reference .hero>div:first-of-type{max-width:100%}body.vu-reference .hero #heroTitle{font-size:29px!important}body.vu-reference .hero #heroTitle+p{max-width:260px;font-size:12px!important}body.vu-reference .vu-trust{gap:9px;margin-top:10px}body.vu-reference .vu-trust small{font-size:8px}body.vu-reference .vu-mode-card>.vu-art{height:57px}body.vu-reference .vu-mode-copy{padding:5px}body.vu-reference .vu-mode-copy strong{font-size:9px}body.vu-reference .vu-mode-copy small{font-size:8px}body.vu-reference .vu-output-row{gap:4px;grid-template-columns:28px 1fr 8px 35px 8px auto}body.vu-reference .vu-how-head{flex-wrap:wrap}body.vu-reference .vu-how-steps{display:grid;gap:12px}body.vu-reference .vu-how-arrow{display:none}body.vu-reference .vu-how-step>.vu-art{width:88px;flex-basis:88px;height:68px}}
+@media(prefers-reduced-motion:reduce){body.vu-reference .sidebar{transition:none}}
