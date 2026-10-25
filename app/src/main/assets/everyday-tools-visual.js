@@ -35,7 +35,7 @@
  const bar=make('div','et-topbar');
  const search=make('input','et-search');search.type='search';search.placeholder='Search anything...';search.setAttribute('aria-label','Search tools');
  const barLinks=make('nav','et-top-actions');barLinks.setAttribute('aria-label','Quick links');
- for(const [label,url] of [['Help','index.html#faq'],['Credits','ai-pricing.html'],['Pricing','ai-pricing.html']]){
+ for(const [label,url] of [['Help','index.html#faq'],['Credits','pricing.html'],['Pricing','pricing.html']]){
   const a=make('a','et-top-link',label);a.href=url;barLinks.append(a);
  }
  const invite=make('button','et-top-link','Invite Friend');invite.type='button';
