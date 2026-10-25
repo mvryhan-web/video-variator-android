@@ -7,6 +7,7 @@ import {readFileSync} from 'node:fs';
 import pg from 'pg';
 import {GenerationWallet} from '../server/generation-wallet.js';
 import {submitPurchasedProviderRequest,PurchasedDispatchDenied} from '../server/generation-purchased-provider-boundary.js';
+import {withUserConsentFence} from '../server/generation-consent.js';
 
 const url=process.env.P0_PURCHASED_TEST_DB_URL;
 if(url){
@@ -86,6 +87,35 @@ test('P0: PostgreSQL16 real wallet + purchase + once-only dispatch + denied cred
   const count=await pool.query('SELECT COUNT(*)::int AS n FROM vv_ai_purchased_dispatch_claim WHERE job_id=$1',['job-paid']);
   assert.equal(count.rows[0].n,1);
 
+  // REAL disposable PostgreSQL race: a revocation ACK cannot get ahead of
+  // an admitted mock provider whose invocation has not settled yet.
+  const raceJob=await insertJob('job-race','paid');
+  let transportEntered,releaseTransport;
+  const entered=new Promise(resolve=>{transportEntered=resolve;});
+  const transportHeld=new Promise(resolve=>{releaseTransport=resolve;});
+  let raceCalls=0,revokeAck=false;
+  const inFlight=dispatch('paid',raceJob,{provider:async()=>{
+   raceCalls++;transportEntered();await transportHeld;
+   return {operation:'mock-inflight'};
+  }});
+  await entered;
+  const revoke=withUserConsentFence(pool,'paid',async client=>{
+   await client.query('BEGIN');
+   try{
+    await client.query('UPDATE vv_ai_user_consents SET provider_data_accepted=false,provider_data_version=NULL WHERE user_id=$1',['paid']);
+    await client.query('COMMIT');
+   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e;}
+  }).then(()=>{revokeAck=true;});
+  await new Promise(resolve=>setTimeout(resolve,20));
+  assert.equal(revokeAck,false,'revoke must wait for the already-entered provider boundary');
+  releaseTransport();await inFlight;await revoke;
+  assert.equal(revokeAck,true);assert.equal(raceCalls,1);
+  const lateJob=await insertJob('job-after-revoke','paid');
+  let afterRevokeCalls=0;
+  await assert.rejects(dispatch('paid',lateJob,{provider:async()=>{afterRevokeCalls++;}}),PurchasedDispatchDenied);
+  assert.equal(afterRevokeCalls,0,'no provider call after acknowledged revoke');
+  assert.equal((await wallet.settle({userId:'paid',jobId:'job-after-revoke',outcome:'confirmed_failure'})).status,'released');
+
   await accept('bonus');
   await wallet.grantOnce({userId:'bonus',kind:'welcome',credits:20});
   const bonus=await insertJob('job-bonus','bonus');
@@ -116,7 +146,7 @@ test('P0: PostgreSQL16 real wallet + purchase + once-only dispatch + denied cred
   const priceJob=await insertJob('job-price','price',{purchasedQuote:{...quote,credits:6}});
   await assert.rejects(dispatch('price',priceJob),PurchasedDispatchDenied);
   const c=await pool.query('SELECT COUNT(*)::int AS n FROM vv_ai_purchased_dispatch_claim');
-  assert.equal(c.rows[0].n,1,'denied price/bonus/owner/refunded claims never persist purchase dispatch');
+  assert.equal(c.rows[0].n,2,'only the two admitted paid attempts persist purchased dispatch claims');
  }finally{
   await pool.end();
   await admin.query('DROP SCHEMA IF EXISTS '+schema+' CASCADE').catch(()=>{});

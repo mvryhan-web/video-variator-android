@@ -62,8 +62,16 @@ export function installGenerationConsent(app,{auth,pool}){
  app.get('/api/studio/consent',auth,async(req,res)=>{
   res.set('Cache-Control','private, no-store');
   try{
-   const accepted=await hasStoredGenerationConsent(pool,req.user?.id);
-   res.json({version:GENERATION_CONSENT_VERSION,accepted,providerAccepted:accepted});
+   if(!safeUserId(req.user?.id)||!pool)throw Error('CONSENT_STORAGE_UNAVAILABLE');
+   const {rows}=await pool.query(
+    'SELECT terms_version,privacy_version,provider_data_version,provider_data_accepted FROM vv_ai_user_consents WHERE user_id=$1 LIMIT 1',
+    [req.user.id]);
+   const row=rows?.[0];
+   const termsAccepted=row?.terms_version===GENERATION_CONSENT_VERSION;
+   const privacyAcknowledged=row?.privacy_version===GENERATION_CONSENT_VERSION;
+   const providerAccepted=row?.provider_data_accepted===true&&row?.provider_data_version===GENERATION_CONSENT_VERSION;
+   res.json({version:GENERATION_CONSENT_VERSION,termsAccepted,privacyAcknowledged,
+    providerAccepted,accepted:termsAccepted&&privacyAcknowledged&&providerAccepted});
   }catch(_){res.status(503).json({error:'CONSENT_STORAGE_UNAVAILABLE'});}
  });
  app.post('/api/studio/consent',auth,async(req,res)=>{
