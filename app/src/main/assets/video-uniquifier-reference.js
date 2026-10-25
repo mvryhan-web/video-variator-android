@@ -112,7 +112,7 @@ function build(){
  const select=$('mode');
  modes.forEach(([v,label,description,icon])=>{
   const btn=node('button','vu-mode-card');btn.type='button';btn.dataset.mode=v;btn.setAttribute('aria-pressed','false');
-  btn.append(image(v));
+  btn.append(image(v==='balanced'?'balance':v));
   const txt=node('span','vu-mode-copy');txt.innerHTML='<strong><span aria-hidden="true">'+icon+'</span> '+label+'</strong><small>'+description+'</small>';btn.append(txt);
   btn.append(node('span','vu-radio','◯'));cards.append(btn);
  });
