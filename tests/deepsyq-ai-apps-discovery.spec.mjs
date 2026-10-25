@@ -193,10 +193,10 @@ test('BASE #29 AI Apps navigation reaches separate My Creations, History, Credit
  const pricing=nav.getByRole('link',{name:'Pricing',exact:true});
  await expect(creations).toHaveAttribute('href','generate-studio.html?view=history');
  await expect(historyLink).toHaveAttribute('href','generate-studio.html?view=history');
- await expect(credits).toHaveAttribute('href','ai-pricing.html#aiCreditSection');
- await expect(pricing).toHaveAttribute('href','ai-pricing.html');
+ await expect(credits).toHaveAttribute('href','pricing.html#credits');
+ await expect(pricing).toHaveAttribute('href','pricing.html');
  await credits.click();
- await expect(page).toHaveURL(/ai-pricing\.html#aiCreditSection$/);
+ await expect(page).toHaveURL(/pricing\.html#credits$/);
  await page.goto('/ai-apps.html');
  await page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'My Creations',exact:true}).click();
  await expect(page).toHaveURL(/generate-studio\.html\?view=history(?:&studio=[a-z]+)?$/);
