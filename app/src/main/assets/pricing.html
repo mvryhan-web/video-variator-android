@@ -35,7 +35,17 @@
 </section>
 <section class="price-plans-area" aria-labelledby="plansHeading">
   <h2 id="plansHeading" class="sr-only">Deepsyq tool subscription plans</h2>
-  <div id="pricingStatus" class="price-status" role="status" aria-live="polite">Checking current plan prices…</div>
+  <div class="price-billing-bar" aria-label="Billing period selection">
+    <div class="price-billing-switch" role="group" aria-label="Choose billing period">
+      <button type="button" id="priceBillingMonthly" class="is-active" aria-pressed="true">Monthly</button>
+      <button type="button" id="priceBillingYearly" aria-pressed="false">Yearly</button>
+    </div>
+    <div id="priceBillingPromo" class="price-billing-promo" aria-live="polite">
+      <strong>80% Credit Bonus</strong>
+      <small>Promotional label only · credited amounts are unchanged</small>
+    </div>
+  </div>
+  <div id="pricingStatus" class="price-status" role="status" aria-live="polite"></div>
   <div id="planCards" class="price-five-grid" aria-live="polite"></div>
   <p class="price-disclosure">Tool plans cover the included tools and their stated allowances. AI generation uses separately prepaid credits. The $0.99 Trial shown here is a proposed offer, not an active purchase.</p>
 </section>

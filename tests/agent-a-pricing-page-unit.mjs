@@ -24,7 +24,11 @@ test('server config, original checkout endpoints and no false wallet credit clai
  assert.match(js,/Trial is not available yet/);
  assert.match(js,/if\(!scope\.token\)\{openAuth\(\);return;\}/);
  assert.match(js,/if\(!toolBillingConfigured\)/);
- assert.match(js,/button\.type='button';button\.disabled=!valid/);
+ assert.match(js,/price-credit-purchase/);
+ assert.match(js,/if\(!token\(\)\)\{openAuth\(\);return;\}/);
+ assert.match(js,/if\(!valid\)\{/);
+ assert.match(js,/No payment was taken/);
+ assert.doesNotMatch(js,/button\.disabled=!valid/);
  assert.match(js,/bonus is not included/i);
 });
 test('no fake credit allocation for Trial and Lifetime; lifecycle guards retain account isolation',()=>{
@@ -51,4 +55,18 @@ test('original account modal and wider Pricing feature matrix are present withou
  assert.doesNotMatch(js,/Access to all models/);
  assert.match(css,/max-width:none;margin-inline:0/);
  assert.match(css,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
+});
+
+test('annual quote toggle remains presentation-only, protects original billing and credit accounting',()=>{
+ assert.match(html,/id="priceBillingMonthly"/);
+ assert.match(html,/id="priceBillingYearly"/);
+ assert.match(html,/80% Credit Bonus/);
+ assert.match(js,/const annualPlanKeys=new Set\(\['basic','pro','business'\]\)/);
+ assert.match(js,/Math\.round\(monthlyCents\*0\.8\)/);
+ assert.match(js,/if\(billingPeriod==='yearly'&&annualPlanKeys\.has\(plan\)\)/);
+ assert.match(js,/annual checkout is not available/);
+ assert.match(js,/body:JSON\.stringify\(\{plan\}\)/);
+ assert.match(js,/body:JSON\.stringify\(\{sku:pack\.sku,requestId:/);
+ assert.doesNotMatch(js,/Design preview: tool checkout is not activated/);
+ assert.match(css,/price-billing-switch/);
 });
