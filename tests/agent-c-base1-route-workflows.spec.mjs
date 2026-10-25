@@ -223,10 +223,13 @@ test('BASE1-C3 Avatar Back returns to the actual caller, retaining legacy and di
  await page.goto('/index.html');
  const legacy=page.locator('#avatarStudioLink[href="avatar-studio.html"]');
  await expect(legacy).toHaveCount(1);
- // Existing legacy navigation is intentionally hidden on mobile until opened.
- await page.locator('#menuBtn').click();
- await expect(page.locator('.sidebar')).toHaveClass(/open/);
- await legacy.click();
+ // The owner-approved Video Uniquifier redesign intentionally hides legacy
+ // sidebar links and #menuBtn. The visible appbar now uses .vu-nav-toggle.
+ // Keep validating the hidden legacy href, then exercise direct and visible
+ // Everyday Tools navigation below without clicking an invisible old control.
+ await expect(legacy).toBeHidden();
+ await expect(page.locator('.vu-nav-toggle')).toBeVisible();
+ await page.goto('/avatar-studio.html');
  await expect(page).toHaveURL(/\/avatar-studio\.html$/);
  const back=page.locator('a.tool-back[data-av="back"]');
  await expect(back).toHaveAttribute('href','index.html');
