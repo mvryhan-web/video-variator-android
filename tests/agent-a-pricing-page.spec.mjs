@@ -10,7 +10,8 @@ test('pricing page renders 5 plan cards, 5 credit packs, no duplicate middle str
  await expect(page.locator('.price-plan-action')).toHaveCount(5);
  await expect(page.locator('.price-credit-purchase')).toHaveCount(5);
  await expect(page.locator('.price-credit-purchase:enabled')).toHaveCount(5);
- await expect(page.locator('.price-credits-area .price-wallet-link')).toHaveCount(0);
+ await expect(page.locator('a.price-wallet-link')).toHaveAttribute('href','pricing.html#wallet');
+ await expect(page.locator('#walletHistory')).toHaveCount(1);
  expect(await page.locator('.price-credits-area').evaluate(el=>el.getBoundingClientRect().top)).toBeGreaterThan(0);
  await page.locator('#creditsHeading').scrollIntoViewIfNeeded();
  await expect(page.locator('#creditsHeading')).toBeVisible();
@@ -249,7 +250,7 @@ test('AI Credits artwork matches upper hero width and height, anchors below text
   expect(Math.abs(layout.creditHero.height-layout.topHero.height)).toBeLessThan(3);
   expect(Math.abs(layout.creditHero.width-layout.topHero.width)).toBeLessThan(7);
   expect(layout.image).toContain('e5506ef4-b0a2-412d-a8b7-6e3108f80761.png');
-  expect(layout.backgroundPosition.split(',').at(-1)).toMatch(/bottom|100%/);
+  expect(layout.backgroundPosition.split(',').at(-1)).toMatch(/top|0%/);
   expect(layout.title.bottom).toBeLessThan(layout.creditHero.bottom-45);
   expect(layout.heading.bottom).toBeLessThan(layout.creditHero.bottom-20);
   expect(layout.pack.top).toBeGreaterThanOrEqual(layout.creditHero.bottom-1);
@@ -257,45 +258,36 @@ test('AI Credits artwork matches upper hero width and height, anchors below text
  }
 });
 
-test('owner lock: AI Credits renders zero passive tiny disclaimers below hero, per-card or at footer',async({page})=>{
+// Owner final visual acceptance: restore all big AI Credits visuals and remove only footnotes.
+test('owner correction: keep credit headings and bonuses; remove only plan footer and USD-pack footnotes',async({page})=>{
  for(const viewport of [{width:1448,height:1086},{width:390,height:844}]){
   await page.setViewportSize(viewport);
   await page.goto('/pricing.html');
-  const credits=page.locator('.price-credits-area');
-  await expect(credits.locator('.price-credit-card')).toHaveCount(5);
-  await expect(credits.locator('.price-credit-purchase:enabled')).toHaveCount(5);
-  await expect(credits.locator('.price-credit-hero h2')).toHaveText(/AI Credits/);
-  await expect(credits.locator('.price-credit-hero p')).toHaveCount(0);
-  await expect(credits.locator('.price-credit-note')).toHaveCount(0);
-  await expect(credits.locator('.price-bonus-status')).toHaveCount(0);
-  await expect(credits.locator('.price-bonus-desc')).toHaveCount(0);
-  await expect(credits.locator('.price-bonus-count')).toHaveCount(0);
-  await expect(credits.locator('.price-disclosure')).toHaveCount(0);
-  await expect(credits.locator('.price-wallet-link')).toHaveCount(0);
-  await expect(credits.locator('small')).toHaveCount(0);
-  await expect(page.locator('#creditStatus')).toBeEmpty();
-  await expect(page.locator('#creditStatus')).toBeHidden();
-  await expect(credits.locator('.price-credit-number')).toHaveText(['✦ 1,000','✦ 10,000','✦ 100,000','✦ 1,000,000','✦ 10,000,000']);
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBeTruthy();
+  await expect(page.locator('#planCards .price-plan')).toHaveCount(5);
+  await expect(page.locator('.price-plans-area > .price-disclosure')).toHaveCount(0);
+  await expect(page.locator('#creditCards .price-credit-card')).toHaveCount(5);
+  await expect(page.locator('#creditsHeading')).toHaveText(/AI Credits/);
+  await expect(page.locator('.price-credit-hero .price-credit-heading p')).toHaveCount(2);
+  await expect(page.locator('#creditCards .price-bonus-status')).toHaveCount(5);
+  await expect(page.locator('#creditCards .price-bonus-title')).toHaveCount(5);
+  await expect(page.locator('#creditCards .price-bonus-count')).toHaveText(['+ 200','+ 3,333','+ 20,000','+ 200,000','+ 2,000,000']);
+  await expect(page.locator('#creditCards .price-bonus-desc')).toHaveCount(5);
+  await expect(page.locator('#creditCards .price-credit-price')).toHaveText(['$10','$100','$1,000','$10,000','$100,000']);
+  await expect(page.locator('#creditCards .price-credit-note')).toHaveCount(0);
+  await expect(page.locator('#creditCards .price-credit-purchase:enabled')).toHaveCount(5);
+  await expect(page.locator('.price-credits-area > .price-disclosure')).toHaveCount(1);
+  await expect(page.locator('.price-wallet-link')).toHaveCount(1);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBeTruthy();
  }
 });
 
-test('AI Credits original artwork focuses lower skyline and retains action-only status safely',async({page})=>{
- await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
- await page.addInitScript(()=>localStorage.setItem('vv_token','test-only-token'));
- await page.route('**/api/ai-billing/config',route=>route.fulfill({json:{enabled:false,mode:'test',livePaymentsEnabled:false,packs:[]}}));
- let posts=0;page.on('request',r=>{if(r.url().includes('/api/ai-billing/checkout')&&r.method()==='POST')posts++;});
+test('AI Credits keeps original full-height artwork with upper heavenly city framed instead of lower zoom',async({page})=>{
  await page.goto('/pricing.html');
- const crop=await page.locator('.price-credit-hero-art').evaluate(el=>{
+ const art=await page.locator('.price-credit-hero-art').evaluate(el=>{
   const css=getComputedStyle(el);
-  return {transform:css.transform,origin:css.transformOrigin,height:el.getBoundingClientRect().height,position:css.backgroundPosition,image:css.backgroundImage};
+  return {position:css.backgroundPosition,transform:css.transform,image:css.backgroundImage};
  });
- expect(crop.image).toContain('e5506ef4-b0a2-412d-a8b7-6e3108f80761.png');
- expect(crop.position.split(',').at(-1)).toMatch(/bottom|100%/);
- expect(crop.transform).toMatch(/matrix\(1\.1, 0, 0, 1\.1, 0, 0\)/);
- await expect(page.locator('#creditStatus')).toBeEmpty();
- await page.locator('.price-credit-purchase').first().click();
- await expect(page.locator('#creditStatus')).toContainText('No payment was taken');
- await expect(page.locator('#creditStatus')).toBeVisible();
- expect(posts).toBe(0);
+ expect(art.image).toContain('e5506ef4-b0a2-412d-a8b7-6e3108f80761.png');
+ expect(art.position.split(',').at(-1)).toMatch(/top|0%/);
+ expect(art.transform).toBe('none');
 });
