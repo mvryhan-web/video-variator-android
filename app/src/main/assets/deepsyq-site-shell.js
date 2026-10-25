@@ -18,10 +18,8 @@
   {section:'Library'},
   {label:'Assets',icon:'▦',url:'deepsyq.html#recentCreations',key:'assets'},
   {label:'My Creations',icon:'▣',url:'generate-studio.html?view=history',key:'history'},
-  {label:'Favorites',icon:'♡',pending:true},
   {section:'Community'},
   {label:'Inspiration',icon:'◌',url:'deepsyq.html#inspirationPreview',key:'inspiration'},
-  {label:'Challenges',icon:'✥',pending:true},
   {label:'Affiliate',icon:'↗',pending:true},
   {section:'More'},
   {label:'Pricing',icon:'＄',url:'ai-pricing.html',key:'pricing'}
