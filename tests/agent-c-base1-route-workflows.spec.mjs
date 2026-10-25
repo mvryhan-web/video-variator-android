@@ -79,7 +79,7 @@ test('BASE1-C 12 supported screens exist and retired Product Video routes stay 4
  const nav=page.getByRole('navigation',{name:'Main navigation'});
  for(const [label,href] of [
   ['AI Apps','ai-apps.html'],['Inspiration','deepsyq.html#inspirationPreview'],
-  ['Tools','free-tools.html'],['Pricing','ai-pricing.html'],
+  ['Tools','free-tools.html'],['Pricing','pricing.html'],
   ['History','generate-studio.html?view=history'],
   ['My Creations','generate-studio.html?view=history']
  ]){
