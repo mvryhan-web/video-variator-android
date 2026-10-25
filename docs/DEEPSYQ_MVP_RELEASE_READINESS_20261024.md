@@ -124,3 +124,8 @@ Coordinator work this checkpoint was read-only source/CI/Render verification plu
 ## PR #402 focused browser evidence — 2026-10-25
 
 Focused drawer workflow [#40190942461](https://github.com/mvryhan-web/video-variator-android/actions/runs/40190942461) passed on PR head `3ddbef343ebeadf640798bb92f56d4be5aac1718`: actual Playwright output **12 passed, 12 skipped, 0 failed**. The mobile Chromium and WebKit runs passed 320/390px pointer hit-test, Escape, outside tap, focus recovery, account navigation and no-paid-call assertions. Desktop navigation checks passed. The 31-screen design, Home UI and broad platform regression workflows were still running at the last check. PR #402 remains DRAFT/unmerged until those exact-head checks finish and the PR base comparison is refreshed. Issue #74 result posted as comment #6397346794.
+
+
+## BASE #48 database discovery — read-only — 2026-10-25
+
+A connected Neon account has a project named `Deepsyq Google TTS DEV 2026-10-24` on the free subscription, with one default `dev` branch and database `deepsyq`. Read-only metadata reports the branch's `init_source: parent-data`; table names include user/history/reminder tables. **No table rows or customer data were read.** This is a development/TTS database, not a qualified release-staging environment: its data origin/sanitization, app isolation, backup/restore behavior and staging test procedure have not been verified. Do not run release migrations, Stripe tests, restore tests or production-derived data against it. It does not clear BASE #48. Exact Render workspace inventory still contains only the production Postgres service; its recovery/export limitation remains unchanged.
