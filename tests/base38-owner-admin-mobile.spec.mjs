@@ -55,6 +55,9 @@ test('BASE #38 owner Admin is usable at 320/390px without page overflow or enabl
   const controlOverflow=await page.locator('.controls label,.template-form label.check').evaluateAll(labels=>
    labels.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>({text:el.textContent,scroll:el.scrollWidth,width:el.clientWidth})));
   expect(controlOverflow).toEqual([]);
+  const availability=page.locator('#models .controls select');
+  await availability.selectOption('off');await expect(availability).toHaveValue('off');
+  await availability.selectOption('inherit');await expect(availability).toHaveValue('inherit');
   await expect(page.locator('#models article button',{hasText:'Save'})).toBeVisible();
   await expect(page.locator('#templateCreate')).toBeVisible();
   await expect(page.locator('#creditAdjustForm')).toBeVisible();
