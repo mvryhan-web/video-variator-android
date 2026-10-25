@@ -1,5 +1,8 @@
 # DEEPSYQ — Coordinator #5 / Cycle 29 / verified current GitHub (25 October 2026)
 
+> **Post-check CI delta, same 25 Oct cycle (supersedes only in-progress counts below):** PR414 immutable head `8c326a53...` now **5/5 SUCCESS**. It is nevertheless **ahead2/behind3** relative to docs-updated DEV; agent A should re-check D16 same-PR safe current-base merge after latest docs, not create a new PR. Owner Admin PR413 `b79cfa55...` now **4 SUCCESS / 1 FAILURE / 1 IN_PROGRESS** (6 total). The failed broad `Deepsyq platform regression` run [#40207884466](https://github.com/mvryhan-web/video-variator-android/actions/runs/40207884466), job `121212781271`, shows **15 failures** on obsolete Pricing/Home selectors in `tests/deepsyq.spec.mjs:17,206,312`, plus one separate Firefox navigation timeout. These 15 have an existing **fix candidate #414** with 5/5 green; avoid a duplicate PR413 Admin patch for A-owned test selectors. PR413's own BASE38 mobile acceptance was still IN_PROGRESS, so actual Admin geometry verdict is not yet terminal. DEV coordinator docs commit sampled `336d1cbe84072cd1a1c14bd2464d907566b777cd`; native Actions on this new docs head **79 QUEUED, 1 PENDING**; do not substitute older green PR workflow checks for whole-DEV CI.
+
+
 **Snapshot:** 2026-10-25 (Europe/Paris). **DEV branch:** `deepsyq-platform`, sampled exact SHA **`0c62e773ca43d73924fd03c26a6c39b87c7c19a1`** before this coordination-only documentation write. This is a snapshot; re-read branch and PR HEAD before any merge or edit. **`main` and production are not authorized.** Authoritative: Issues #233 / #72 / #73 / #74 / #75, `AGENTS.md`, `DECISIONS.md`, `PROJECT_STATUS.md`, claim board, original BASE55 and approved F1–F8 overlay.
 
 ## Completed, preserve
