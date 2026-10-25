@@ -162,9 +162,18 @@ function renderCredits(config){
   info.append(node('small','price-bonus-desc','One-time top-up · added only after Stripe confirms payment'));
   const foot=node('div','price-credit-bottom');
   const cost=node('strong','price-credit-price',amount);
-  const button=node('button','price-credit-purchase',valid?(checkoutMode==='test'?'Stripe TEST checkout':'Purchase'):'Purchase · soon');
-  button.type='button';button.disabled=!valid;
-  button.addEventListener('click',()=>{if(valid)void checkoutCredit(serverPack);});
+  // Every visible AI-credit card opens the *existing* Deepsyq sign-in when logged out.
+  // Availability and real checkout remain strictly server-authoritative.
+  const button=node('button','price-credit-purchase',valid?(checkoutMode==='test'?'Stripe TEST checkout':'Purchase'):'Check availability');
+  button.type='button';
+  button.addEventListener('click',()=>{
+   if(!token()){openAuth();return;}
+   if(!valid){
+    message('creditStatus',numeral.format(p.credits)+' AI credits are not available for checkout yet. No payment was taken.');
+    return;
+   }
+   void checkoutCredit(serverPack);
+  });
   foot.append(cost,button);
   const disclosure=node('p','price-credit-note',serverPack?'Base package verified; bonus is not included.':'Package and price shown for design approval, not a live offer.');
   content.append(title,info,foot,disclosure);
