@@ -316,6 +316,7 @@ test('Home hides the wallet while private Pricing shows the authenticated balanc
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Wallet User',isAdmin:false}}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'test',livePaymentsEnabled:false,unit:'AI credits',packs:[],rates:[],revision:'x'}}));
  await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:4200,reserved:150,debt:0}}));
+ await page.route('**/api/ai-wallet/history',r=>r.fulfill({json:{items:[]}}));
  await home(page);await expect(page.locator('#aiWalletLink')).toBeHidden();
  await page.goto('/ai-pricing.html#walletSection');
  await expect(page.locator('#walletSection')).toBeVisible();
