@@ -88,7 +88,8 @@ async function loadWelcome(s){
     if(!active(s))return;
     $('welcomeStatus').textContent=response.balance?.duplicate?'Welcome credits were already claimed on this account.':Number(response.credits||0).toLocaleString('en-US')+' welcome AI credits added.';
     button.disabled=true;
-    await refresh();
+    const [balance,history]=await Promise.all([privateJson('/api/ai-wallet/balance',{},s),privateJson('/api/ai-wallet/history',{},s)]);
+    if(active(s))renderWallet(balance,history);
    }catch(e){if(active(s)){$('welcomeStatus').textContent='Could not claim welcome credits.';button.disabled=false;}}
   };
  }catch(e){if(active(s))$('welcomeCredits').hidden=true;}
