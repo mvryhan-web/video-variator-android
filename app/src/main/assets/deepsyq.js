@@ -220,31 +220,48 @@ async function loadFeaturedWorkflows(){
 
 function applyPlatformFeatures(){for(const el of document.querySelectorAll('[data-feature]')){const key=el.dataset.feature;if(config?.features&&config.features[key]===false)el.hidden=true;}}
 async function renderPlans(){
- const descriptions={basic:'A steady monthly allowance for everyday video work.',pro:'More room for frequent video and editing projects.',business:'The largest monthly allowance in the current tool-plan catalog.'};
- const aiConfig=await api('/api/ai-billing/config').catch(()=>({}));
- $('plans').replaceChildren();
- for(const key of ['basic','pro','business']){
-  const p=config.plans?.[key];if(!p)continue;
-  const card=document.createElement('article');card.className='plan'+(key==='pro'?' featured-plan':'');
-  const ribbon=document.createElement('span');ribbon.className='plan-ribbon';ribbon.textContent=key==='pro'?'PRO PLAN':'MONTHLY PLAN';card.append(ribbon);
-  const heading=document.createElement('h3');heading.textContent=key[0].toUpperCase()+key.slice(1);
-  const price=document.createElement('div');price.className='price';price.textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(p.price);
-  const period=document.createElement('small');period.textContent=' / month';price.append(period);
-  const desc=document.createElement('p');desc.textContent=descriptions[key];
-  const usage=document.createElement('div');usage.className='credit-panel';
-  const unit=document.createElement('span');unit.textContent='Video Uniquifier credits each month';
-  const total=document.createElement('strong');total.textContent=Number(p.limit).toLocaleString('en-US')+' credits';
-  const note=document.createElement('small');note.textContent='Renews with each paid monthly billing cycle.';usage.append(unit,total,note);
-  const benefits=document.createElement('ul');benefits.className='plan-benefits';
-  const items=['Access to the existing Video Uniquifier workflow'];
-  const aiCredits=aiConfig.subscriptionCredits?.[key];
-  if(Number.isSafeInteger(aiCredits)&&aiCredits>0)items.push(aiCredits.toLocaleString('en-US')+' AI-generation credits per paid subscription invoice');
-  else items.push('AI generation uses separate prepaid AI credits');
-  for(const text of items){const li=document.createElement('li');li.textContent=text;benefits.append(li);}
-  const b=document.createElement('button');b.type='button';b.textContent='Choose '+heading.textContent;b.onclick=()=>checkout(key);
-  card.append(heading,price,desc,usage,benefits,b);$('plans').append(card);
- }
- const p=config.plans?.lifetime;if(p){$('lifetimePrice').textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:p.currency||'EUR',maximumFractionDigits:0}).format(p.price)+' · one payment';$('lifetimeCheckout').disabled=false;$('lifetimeCheckout').onclick=()=>checkout('lifetime');}
+  const aiConfig=await api('/api/ai-billing/config').catch(()=>({}));
+  $('plans').replaceChildren();
+  const toolBenefits={
+    basic:[
+      'Video Uniquifier — Gentle, Balanced and Dynamic',
+      'Batch photo compression and video compression',
+      'Free tools: one-photo compression, video-to-audio and teleprompter'
+    ],
+    pro:[
+      'Video Uniquifier — Gentle, Balanced and Dynamic',
+      'All Basic Everyday Tools',
+      'Short clips and photo-to-video motion',
+      'Text-to-voice and recording-to-text (cloud limits apply)'
+    ],
+    business:[
+      'Video Uniquifier — Gentle, Balanced and Dynamic',
+      'All Pro Everyday Tools',
+      'Highest monthly Video Uniquifier allowance',
+      'Cloud voice limits still apply'
+    ]
+  };
+  for(const key of ['basic','pro','business']){
+    const p=config.plans?.[key];if(!p)continue;
+    const card=document.createElement('article');card.className='plan'+(key==='pro'?' featured-plan':'');
+    const heading=document.createElement('h3');heading.textContent=key[0].toUpperCase()+key.slice(1);
+    const price=document.createElement('div');price.className='price';price.textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(p.price);
+    const period=document.createElement('small');period.textContent=' / month';price.append(period);
+    const usage=document.createElement('div');usage.className='credit-panel';
+    const unit=document.createElement('span');unit.textContent='Video Uniquifier · monthly credits';
+    const limit=Number(p.limit);
+    const total=document.createElement('strong');total.textContent=Number.isSafeInteger(limit)&&limit>=0?limit.toLocaleString('en-US')+' credits':'See plan details';
+    usage.append(unit,total);
+    const benefits=document.createElement('ul');benefits.className='plan-benefits';
+    const items=[...toolBenefits[key]];
+    const aiCredits=aiConfig.subscriptionCredits?.[key];
+    if(Number.isSafeInteger(aiCredits)&&aiCredits>0)items.push(aiCredits.toLocaleString('en-US')+' AI credits per paid invoice');
+    else items.push('AI generation uses separate prepaid credits');
+    for(const copy of items){const li=document.createElement('li');li.textContent=copy;benefits.append(li);}
+    const b=document.createElement('button');b.type='button';b.textContent='Choose '+heading.textContent;b.onclick=()=>checkout(key);
+    card.append(heading,price,usage,benefits,b);$('plans').append(card);
+  }
+  const p=config.plans?.lifetime;if(p){$('lifetimePrice').textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:p.currency||'EUR',maximumFractionDigits:0}).format(p.price)+' · one payment';$('lifetimeCheckout').disabled=false;$('lifetimeCheckout').onclick=()=>checkout('lifetime');}
 }
 async function loadPlanModelCatalog(){
  const root=$('homeModelCatalog');if(!root)return;
@@ -256,7 +273,7 @@ async function loadPlanModelCatalog(){
   for(const model of models){const chip=document.createElement('span');chip.className='home-model-chip';chip.textContent=(model.label||model.id)+' · '+String(model.kind||'AI').toUpperCase();root.append(chip);}
  }catch(_){root.textContent='Current model availability could not be loaded. Check Studio before choosing a model.';}
 }
-try{config=await api('/api/config');applyPlatformFeatures();void renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);void loadPlanModelCatalog();}catch(_){updateInspirationHero([]);$('paymentStatus').textContent='Plans could not load. Please try again later.';}
+try{config=await api('/api/config');applyPlatformFeatures();void renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);}catch(_){updateInspirationHero([]);$('paymentStatus').textContent='Plans could not load. Please try again later.';}
 window.addEventListener('load',initGoogle);
 try{const c=await api('/api/studio/config');studioModelMenuConfig=c;if(openModelsKind)renderModelFlyout(openModelsKind);$('studioStatus').textContent=c.ownerOnly?'AI generation is in owner preview. Explore the studios; existing tools remain available.':c.enabled?'Open a studio to see the available models.':'AI generation is not available yet. Existing tools remain available.';}catch(_){$('studioStatus').textContent='Studio availability could not be checked. Existing tools remain available.';}
 // Read-only dashboard overview. Backend user_id scope is authoritative;
