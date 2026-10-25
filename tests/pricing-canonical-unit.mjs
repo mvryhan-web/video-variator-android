@@ -23,7 +23,7 @@ test('legacy deep links remain compatible but cannot load old second checkout',(
 });
 test('new wallet is account-scoped and does not persist private totals',()=>{
  const src=read('pricing-wallet.js');
- for(const pattern of [/AbortController/,/scope\.token===currentToken/,/scope\.epoch===epoch/,/pagehide/,/pageshow/,/visibilitychange/,/replaceChildren/,/privateJson\('\/api\/ai-wallet\/balance'/,/privateJson\('\/api\/ai-wallet\/history'/])assert.match(src,pattern);
+ for(const pattern of [/AbortController/,/s\.token===currentToken/,/s\.epoch===epoch/,/pagehide/,/pageshow/,/visibilitychange/,/replaceChildren/,/privateJson\('\/api\/ai-wallet\/balance'/,/privateJson\('\/api\/ai-wallet\/history'/])assert.match(src,pattern);
  assert.doesNotMatch(src,/sessionStorage\.setItem|localStorage\.setItem|innerHTML/);
  const js=read('pricing-page.js');
  assert.match(js,/deepsyq:open-pricing-auth/);
