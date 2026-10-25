@@ -129,3 +129,10 @@ Focused drawer workflow [#40190942461](https://github.com/mvryhan-web/video-vari
 ## BASE #48 database discovery — read-only — 2026-10-25
 
 A connected Neon account has a project named `Deepsyq Google TTS DEV 2026-10-24` on the free subscription, with one default `dev` branch and database `deepsyq`. Read-only metadata reports the branch's `init_source: parent-data`; table names include user/history/reminder tables. **No table rows or customer data were read.** This is a development/TTS database, not a qualified release-staging environment: its data origin/sanitization, app isolation, backup/restore behavior and staging test procedure have not been verified. Do not run release migrations, Stripe tests, restore tests or production-derived data against it. It does not clear BASE #48. Exact Render workspace inventory still contains only the production Postgres service; its recovery/export limitation remains unchanged.
+
+
+## PR #402 exact-head visual/regression update — 2026-10-25
+
+At PR head `3ddbef343ebeadf640798bb92f56d4be5aac1718`, the **Owner 31 real screens design acceptance** [#40190942498](https://github.com/mvryhan-web/video-variator-android/actions/runs/40190942498) completed SUCCESS. BASE #30 focused drawer [#40190942461](https://github.com/mvryhan-web/video-variator-android/actions/runs/40190942461) remains SUCCESS (12 passed, 12 skipped, zero failed).
+
+The Home UI run [#40190942529](https://github.com/mvryhan-web/video-variator-android/actions/runs/40190942529) has an owner/Home selector failure at `tests/deepsyq.spec.mjs:448` and `:587`: expected `#canvasFeature #quickCreateForm` is absent. This is outside PR #402’s CSS/workflow diff and was handed to Home owner A in Issue #72 comment #6397371827. The broad platform regression [#40190942436](https://github.com/mvryhan-web/video-variator-android/actions/runs/40190942436) and owner media checks [#40190942516](https://github.com/mvryhan-web/video-variator-android/actions/runs/40190942516) are still running; PR #402 remains DRAFT/unmerged pending terminal checks and refreshed base comparison.
