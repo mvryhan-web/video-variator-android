@@ -141,3 +141,60 @@ test('signed-in unavailable AI package is a safe, clickable no-charge status, no
  }
  expect(posts).toBe(0);
 });
+
+
+test('Monthly and Yearly switch uses an honest display-only 20 percent annual quote',async({page})=>{
+ await page.goto('/pricing.html');
+ await expect(page.locator('#priceBillingMonthly')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#priceBillingYearly')).toHaveAttribute('aria-pressed','false');
+ await expect(page.locator('#priceBillingPromo')).toContainText('80% Credit Bonus');
+ await expect(page.locator('#priceBillingPromo')).toContainText('credited amounts are unchanged');
+ await expect(page.locator('#pricingStatus')).toBeEmpty();
+ await expect(page.locator('#planCards .price-plan-price strong')).toHaveText(['$0.99','$9','$24','$99','€2,999']);
+ await page.locator('#priceBillingYearly').click();
+ await expect(page.locator('#priceBillingYearly')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#priceBillingPromo')).toContainText('Save 20%');
+ await expect(page.locator('#planCards .price-plan-price strong')).toHaveText(['$0.99','$7.20','$19.20','$79.20','€2,999']);
+ await expect(page.locator('#planCards .price-annual-note')).toHaveText([
+  '$86.40 / year · estimate only; yearly checkout not available',
+  '$230.40 / year · estimate only; yearly checkout not available',
+  '$950.40 / year · estimate only; yearly checkout not available'
+ ]);
+ await expect(page.locator('#planCards .price-trial')).toContainText('not yet active');
+ await page.locator('#priceBillingMonthly').click();
+ await expect(page.locator('#planCards .price-plan-price strong')).toHaveText(['$0.99','$9','$24','$99','€2,999']);
+ await expect(page.locator('#planCards .price-annual-note')).toHaveCount(0);
+});
+
+test('Yearly buttons never submit a monthly plan checkout for signed-in user',async({page})=>{
+ await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
+ await page.addInitScript(()=>localStorage.setItem('vv_token','yearly-demo-user'));
+ await page.route('**/api/config',route=>route.fulfill({json:{billingConfigured:true,googleClientId:'',
+  plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}}}}));
+ let posts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/billing/checkout')posts++;});
+ await page.goto('/pricing.html');
+ await page.locator('#priceBillingYearly').click();
+ for(const name of ['Basic','Pro','Business']){
+  await page.getByRole('button',{name:'Choose '+name}).click();
+  await expect(page.locator('#pricingStatus')).toContainText('annual checkout is not available');
+  expect(posts).toBe(0);
+ }
+ await expect(page.locator('#authModal')).toBeHidden();
+ await expect(page).toHaveURL(/\/pricing\.html$/);
+});
+
+test('Yearly quote still uses original Deepsyq auth for guest and does not charge',async({page})=>{
+ await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
+ await page.route('**/api/auth/email/status',route=>route.fulfill({json:{configured:true}}));
+ await page.route('**/api/config',route=>route.fulfill({json:{billingConfigured:true,googleClientId:'',
+  plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}}}}));
+ let posts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/billing/checkout'))posts++;});
+ await page.goto('/pricing.html');
+ await page.locator('#priceBillingYearly').click();
+ await page.getByRole('button',{name:'Choose Basic'}).click();
+ await expect(page.locator('#authModal')).toBeVisible();
+ await expect(page.locator('#emailAuthForm')).toBeVisible();
+ expect(posts).toBe(0);
+});
