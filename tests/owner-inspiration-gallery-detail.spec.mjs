@@ -8,9 +8,9 @@ async function expectPlainClose(dialog){
  async function checkStyle(){
   const style=await close.evaluate(el=>{
    const s=getComputedStyle(el);
-   return {radius:s.borderTopLeftRadius,border:s.borderTopWidth,background:s.backgroundColor,shadow:s.boxShadow,outline:s.outlineStyle};
+   return {radius:s.borderTopLeftRadius,border:s.borderTopWidth,background:s.backgroundColor,shadow:s.boxShadow,outlineWidth:s.outlineWidth};
   });
-  expect(style).toEqual({radius:'0px',border:'0px',background:'rgba(0, 0, 0, 0)',shadow:'none',outline:'none'});
+  expect(style).toEqual({radius:'0px',border:'0px',background:'rgba(0, 0, 0, 0)',shadow:'none',outlineWidth:'0px'});
  }
  await checkStyle();
  await close.hover();await checkStyle();
