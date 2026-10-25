@@ -61,23 +61,22 @@ test('BASE #29 Canvas link opens actual Home draft, not mistaken Image Studio',a
  expect(paidWrites).toBe(0);
 });
 
-test('BASE #29 AI Agents link leads to honest coming-soon section, never fake paid generation',async({page})=>{
+test('BASE #29 AI Agents stay clearly marked coming soon and expose concepts without paid generation',async({page})=>{
  let paidWrites=0;
  page.on('request',request=>{
-  if(request.method()==='POST'&&/\/api\/(?:studio\/jobs|speech|billing|payments)/.test(new URL(request.url()).pathname))paidWrites++;
+  if(request.method()==='POST'&&/\\/api\\/(?:studio\\/jobs|speech|billing|payments)/.test(new URL(request.url()).pathname))paidWrites++;
  });
  await page.goto('/ai-apps.html');
  const nav=page.getByRole('navigation',{name:'Main navigation'});
  const agents=nav.getByRole('link',{name:'AI Agents — coming soon'});
  await expect(agents).toHaveAttribute('href','deepsyq.html#agentFeature');
  await agents.click();
- await expect(page).toHaveURL(/\/deepsyq\.html#agentFeature$/);
+ await expect(page).toHaveURL(/\\/deepsyq\\.html#agentFeature$/);
  const panel=page.locator('#agentFeature');
- await expect(panel).toContainText(/COMING SOON|In development/i);
- await expect(panel).toContainText(/Agent execution is (?:still under development|in development)/);
+ await expect(panel.getByRole('heading',{name:'AI Agent'})).toBeVisible();
+ await expect(panel.locator('button[data-creative-example]')).toHaveCount(8);
  expect(paidWrites).toBe(0);
 });
-
 test('BASE #29 all seven main destinations remain discoverable at narrow mobile widths',async({page})=>{
  for(const width of [320,390]){
   await page.setViewportSize({width,height:812});
