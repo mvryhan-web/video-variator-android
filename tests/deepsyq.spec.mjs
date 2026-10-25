@@ -23,7 +23,7 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('#sidebar nav a[href="canvas.html"]')).toContainText('Canvas');
  await expect(page.locator('#studioStatus')).toContainText('owner preview');
  await expect(page.locator('.plan')).toHaveCount(4);
- await expect(page.locator('.trial-plan .plan-action')).toHaveAttribute('href','ai-pricing.html#trialOffer');
+ await expect(page.locator('.trial-plan .plan-action')).toHaveAttribute('href','pricing.html#plans');
  await expect(page.locator('.lifetime-disclaimer')).toContainText('does not provide unlimited AI generation');
  await expect(page.locator('.lifetime-disclaimer')).toContainText('separate prepaid AI credits');
  // This fixture offers a configured tool plan. A logged-out click opens auth,
@@ -274,50 +274,53 @@ test('dashboard featured workflows are data-driven and disappear when empty',asy
 });
 
 
-test('pricing shows the planned $0.99 trial without creating misleading live checkout',async({page})=>{
- await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000}}}}));
+test('legacy Trial bookmark opens the proposed $0.99 plan with zero payment',async({page})=>{
+ await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000}},billingConfigured:false}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',packs:[]}}));
+ let paid=0;page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:billing|ai-billing)\/checkout/.test(new URL(r.url()).pathname))paid++;});
  await page.goto('/ai-pricing.html#trialOffer');
- await expect(page.locator('#trialOffer')).toBeVisible();
- await expect(page.locator('#trialOffer')).toContainText('$0.99');
- await expect(page.locator('#trialOffer')).toContainText('Credits shown before checkout');
- await expect(page.locator('#trialOffer')).toContainText('No charges in this preview');
- await expect(page.locator('#trialOffer')).toContainText('Not available to purchase yet.');
- await expect(page.locator('#trialOffer button')).toBeDisabled();
- await expect(page.locator('#trialOffer a')).toHaveAttribute('href','deepsyq.html#homeQuickBar');
- await expect(page.locator('#toolPlans')).toContainText('Basic');
- await expect(page.locator('#aiStatus')).toContainText('No AI credit packs');
+ await expect(page).toHaveURL(/\/pricing\.html#plans$/);
+ await expect(page.locator('#planCards .price-trial')).toContainText('$0.99');
+ await expect(page.locator('#planCards .price-trial')).toContainText('Trial checkout is not available');
+ await expect(page.locator('#planCards')).toContainText('Basic');
+ await page.locator('.price-trial .price-plan-action').click();
+ await expect(page.locator('#authModal')).toBeVisible();
+ expect(paid).toBe(0);
 });
-test('pricing mobile trial discloses disconnected checkout and keeps accessible layout',async({page})=>{
+test('legacy Trial bookmark on mobile preserves the truthful new layout',async({page})=>{
  await page.setViewportSize({width:390,height:844});
- await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000}}}}));
+ await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000}},billingConfigured:false}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',packs:[]}}));
  await page.goto('/ai-pricing.html#trialOffer');
- await expect(page.locator('#trialOffer')).toBeVisible();
- await expect(page.locator('#trialOffer')).toContainText('Credit accounting is implemented');
- await expect(page.locator('#trialOffer')).toContainText('not connected to the AI wallet');
- await expect(page.locator('#trialOffer button')).toBeDisabled();
- await expect(page.locator('#toolPlans')).toContainText('Basic');
+ await expect(page).toHaveURL(/\/pricing\.html#plans$/);
+ await expect(page.locator('#planCards .price-trial')).toContainText('not yet active');
+ await expect(page.locator('#planCards')).toContainText('Basic');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
- const visual=await page.locator('#trialOffer').evaluate(el=>{const a=el.getBoundingClientRect();return{width:a.width,viewport:innerWidth}});
+ const visual=await page.locator('#planCards .price-trial').evaluate(el=>{const a=el.getBoundingClientRect();return{width:a.width,viewport:innerWidth}});
  expect(visual.width).toBeLessThanOrEqual(visual.viewport);
 });
-test('pricing keeps existing Lifetime separate from AI credit packs and uses server prices only',async({page})=>{
+test('single Pricing uses server Lifetime prices, AI packs remain separate and disabled',async({page})=>{
  await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur',unlimited:true}}}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',livePaymentsEnabled:false,packs:[{sku:'configured',credits:4200,amount:1900,currency:'usd'}],rates:[]}}));
- await page.goto('/ai-pricing.html');await expect(page.locator('#toolPlans')).toContainText('Lifetime');await expect(page.locator('#toolPlans')).toContainText('does not include unlimited AI-generation credits');await expect(page.locator('#aiPacks')).toContainText('4,200 AI credits');await expect(page.locator('#aiPacks')).toContainText('$19');await expect(page.locator('#aiPacks button')).toBeDisabled();
+ await page.goto('/pricing.html');
+ await expect(page.locator('#planCards .price-lifetime')).toContainText('Lifetime');
+ await expect(page.locator('#planCards .price-lifetime')).toContainText('Lifetime does not include unlimited paid AI generation');
+ await expect(page.locator('#planCards .price-lifetime')).toContainText('€2,999');
+ await expect(page.locator('#creditCards .price-credit-card')).toHaveCount(5);
+ await expect(page.locator('#creditStatus')).toContainText('not available');
 });
-
-
-test('dashboard shows the authenticated AI wallet only when AI billing is enabled',async({page})=>{
+test('Home no longer exposes duplicate private AI wallet; it belongs to Pricing only',async({page})=>{
  await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Wallet User',isAdmin:false}}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'test',livePaymentsEnabled:false,unit:'AI credits',packs:[],rates:[],revision:'x'}}));
  await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:4200,reserved:150,debt:0}}));
- await home(page);await expect(page.locator('#aiWalletLink')).toBeVisible();await expect(page.locator('#aiWalletAvailable')).toHaveText('4,200');await expect(page.locator('#aiWalletHeld')).toHaveText('150 held');await expect(page.locator('#aiWalletLink')).toHaveAttribute('href','ai-pricing.html');
+ await page.route('**/api/ai-wallet/history',r=>r.fulfill({json:{items:[]}}));
+ await page.route('**/api/ai-wallet/config',r=>r.fulfill({json:{welcomeEnabled:false,welcomeCredits:0}}));
+ await home(page);await expect(page.locator('#aiWalletLink')).toBeHidden();
+ await page.goto('/pricing.html#wallet');
+ await expect(page.locator('#walletSummary')).toContainText('4,200');
+ await expect(page.locator('#walletSummary')).toContainText('150');
 });
-
-
 test('Pricing shows signed-in AI wallet and recent ledger activity',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vv_token','pricing-user'));
  await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'EUR'}}}}));
@@ -325,9 +328,8 @@ test('Pricing shows signed-in AI wallet and recent ledger activity',async({page}
  await page.route('**/api/ai-wallet/config',r=>r.fulfill({json:{welcomeEnabled:false,welcomeCredits:0}}));
  await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:4050,reserved:150,debt:0}}));
  await page.route('**/api/ai-wallet/history',r=>r.fulfill({json:{items:[{kind:'reserve',reference:'job-1',available_delta:-150,reserved_delta:150,debt_delta:0,created_at:'2026-10-15T10:00:00Z'},{kind:'welcome_grant',reference:'welcome',available_delta:4200,reserved_delta:0,debt_delta:0,created_at:'2026-10-15T09:00:00Z'}]}}));
- await page.goto('/ai-pricing.html');await expect(page.locator('#walletSection')).toBeVisible();await expect(page.locator('#walletSummary')).toContainText('4,050');await expect(page.locator('#walletSummary')).toContainText('150');await expect(page.locator('#walletHistory')).toContainText('Reserved for generation');await expect(page.locator('#walletHistory')).toContainText('Welcome credits');
+ await page.goto('/pricing.html#wallet');await expect(page.locator('#walletSection')).toBeVisible();await expect(page.locator('#walletSummary')).toContainText('4,050');await expect(page.locator('#walletSummary')).toContainText('150');await expect(page.locator('#walletHistory')).toContainText('Reserved for generation');await expect(page.locator('#walletHistory')).toContainText('Welcome credits');
 });
-
 
 test('retired Inspiration URL opens Home and changes media filters locally',async({page})=>{
  await fixtures(page);
