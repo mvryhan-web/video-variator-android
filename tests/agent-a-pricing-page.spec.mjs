@@ -10,7 +10,7 @@ test('pricing page renders 5 plan cards, 5 credit packs, no duplicate middle str
  await expect(page.locator('.price-plan-action')).toHaveCount(5);
  await expect(page.locator('.price-credit-purchase')).toHaveCount(5);
  await expect(page.locator('.price-credit-purchase:enabled')).toHaveCount(5);
- await expect(page.locator('a.price-wallet-link')).toHaveAttribute('href','ai-pricing.html#walletSection');
+ await expect(page.locator('a.price-wallet-link')).toHaveAttribute('href','#wallet');
  expect(await page.locator('.price-credits-area').evaluate(el=>el.getBoundingClientRect().top)).toBeGreaterThan(0);
  await page.locator('#creditsHeading').scrollIntoViewIfNeeded();
  await expect(page.locator('#creditsHeading')).toBeVisible();
