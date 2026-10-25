@@ -1,0 +1,2 @@
+import {defineConfig,devices} from '@playwright/test';
+export default defineConfig({testDir:'.',testMatch:'studio-account-boundary.spec.mjs',timeout:30000,retries:0,reporter:'list',use:{baseURL:'http://127.0.0.1:31995'},webServer:{cwd:process.cwd(),command:'python3 -m http.server 31995 --bind 127.0.0.1 --directory app/src/main/assets',url:'http://127.0.0.1:31995/generate-studio.html',reuseExistingServer:false},projects:[{name:'chromium',use:{...devices['Desktop Chrome']}},{name:'webkit',use:{...devices['Desktop Safari']}}]});
