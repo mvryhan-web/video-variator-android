@@ -6,7 +6,7 @@ Source DEV: de057636607705a920c626a01f703c1b080b9d00. New attachment `(9).png` w
 
 ## Actual scope
 
-There are 22 HTML documents, not 31 independent HTML documents. The QA manifest enumerates 31 actual addresses/views: those documents, three additional Studio modes/History, five existing Video Uniquifier views and a second local utility mode. It does not invent working Favorites, Challenges or Agent pages. Canvas, Assets, Inspiration and Agent teasers remain their current Home sections, with their existing status.
+There are 22 HTML documents, not 31 independent HTML documents. The QA manifest enumerates 31 actual addresses/views: those documents, three additional Studio modes/History, five existing Video Uniquifier views and a second local utility mode. It does not invent unapproved navigation features or working Agent pages. Canvas, Assets, Inspiration and Agent teasers remain their current Home sections, with their existing status.
 
 The Home reference is the visual authority. Its working carousel/media/order and blocks remain unchanged. A shared CSS extension only targets `body:not(.home-neon)` under the existing dark theme. Real route structure, buttons, forms, control eligibility and event handlers remain the source of truth. No JavaScript or HTML functional source is changed.
 
