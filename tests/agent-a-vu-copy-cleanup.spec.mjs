@@ -31,6 +31,7 @@ test('portrait/landscape glyphs respond to actual format changes',async({page})=
 });
 test('upgrade card is still a functional link to real plan selection',async({page})=>{
  await page.goto('/index.html');
+ if((page.viewportSize()?.width||1448)<900)await page.locator('.vu-nav-toggle').click();
  await expect(page.locator('.vu-upgrade')).toBeVisible();
  await page.locator('.vu-upgrade').click();
  await expect(page.locator('#plansView')).toBeVisible();
