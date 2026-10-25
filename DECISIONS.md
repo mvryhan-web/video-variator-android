@@ -1,5 +1,11 @@
 # DECISIONS.md — прямые решения владельца Deepsyq
 
+## 2026-10-25 — Owner-approved menu only
+
+Remove **Favorites** and **Challenges** from the Home sidebar and all shared sidebars. Never restore these placeholder menu items via older PRs, templates or future agent changes without a new explicit owner decision. Preserve **Pricing** and the existing **Credits / AI credits** access unchanged; credits and the purchasing options belong within the Pricing experience. This is navigation-only and does not change billing, balances or prices.
+
+---
+
 Дата решений: **2026-10-18** (Europe/Paris). Вступает в силу сразу для документации; **никакие новые продукты, Trial, платежи, AI-вызовы, таблицы или deployments этим документом не активируются**. При конфликте действующее решение владельца ниже главнее сохранённой исторической формулировки; пометка у места изменения: **«ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md»**. Исторические оригиналы сохранены рядом или в исходном тексте. Не менять четыре главных приоритета 1–4.
 
 ## Решения владельца — одна строка на решение
