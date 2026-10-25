@@ -1,0 +1,41 @@
+import {test,expect} from '@playwright/test';
+test('pricing page renders 5 plan cards, 5 credit packs, no duplicate middle strip in preview',async({page})=>{
+ await page.goto('/pricing.html');
+ await expect(page.locator('#pricingTitle')).toHaveText('Power Your Creativity');
+ await expect(page.locator('#planCards .price-plan')).toHaveCount(5);
+ await expect(page.locator('#creditCards .price-credit-card')).toHaveCount(5);
+ await expect(page.locator('.price-plan-name')).toHaveText(['Trial','Basic','Pro','Business','Lifetime']);
+ await expect(page.locator('#planCards .price-plan-price strong')).toHaveText(['$0.99','$9','$24','$99','€2,999']);
+ await expect(page.locator('#creditCards .price-credit-number')).toHaveText(['✦ 1,000','✦ 10,000','✦ 100,000','✦ 1,000,000','✦ 10,000,000']);
+ await expect(page.locator('.price-plan-action')).toHaveCount(5);
+ await expect(page.locator('.price-credit-purchase')).toHaveCount(5);
+ await expect(page.locator('.price-credit-purchase:enabled')).toHaveCount(0);
+ await expect(page.locator('a.price-wallet-link')).toHaveAttribute('href','ai-pricing.html#walletSection');
+ expect(await page.locator('.price-credits-area').evaluate(el=>el.getBoundingClientRect().top)).toBeGreaterThan(0);
+ await page.locator('#creditsHeading').scrollIntoViewIfNeeded();
+ await expect(page.locator('#creditsHeading')).toBeVisible();
+});
+test('ratio of card columns and sidebar responsive layout',async({page},testInfo)=>{
+ await page.goto('/pricing.html');
+ await expect(page.locator('#planCards .price-plan')).toHaveCount(5);
+ const cols=await page.locator('#planCards').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
+ if((page.viewportSize()?.width||1000)>=980)expect(cols).toBe(5);
+ if((page.viewportSize()?.width||1000)<420)expect(cols).toBe(1);
+ await expect(page.locator('#dsSiteSidebar')).toHaveCount(1);
+ await expect(page.locator('.price-topbar .price-top-active')).toHaveAttribute('href','pricing.html');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBeTruthy();
+});
+test('server verification fails closed, but enabled real pack sends original Stripe SKU and requestId',async({page})=>{
+ await page.route('**/api/config',async route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({billingConfigured:false,plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}}})}));
+ await page.route('**/api/ai-billing/config',async route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({enabled:true,mode:'test',packs:[{sku:'test_1k',credits:1000,amount:1000,currency:'usd'}]})}));
+ await page.addInitScript(()=>localStorage.setItem('vv_token','test-session'));
+ await page.route('**/api/ai-billing/checkout',async route=>{const payload=route.request().postDataJSON();await route.fulfill({status:409,contentType:'application/json',body:JSON.stringify({error:'PAYMENTS_NOT_ACTIVATED'})});return payload;});
+ await page.goto('/pricing.html');
+ await expect(page.locator('.price-credit-purchase').first()).toBeEnabled();
+ await expect(page.locator('.price-credit-purchase').nth(1)).toBeDisabled();
+ const req=page.waitForRequest(r=>r.url().includes('/api/ai-billing/checkout')&&r.method()==='POST');
+ await page.locator('.price-credit-purchase').first().click();
+ const sent=(await req).postDataJSON();
+ expect(sent.sku).toBe('test_1k');expect(sent.requestId).toMatch(/^[0-9a-f-]{36}$/);
+ await expect(page.locator('#creditStatus')).toContainText('unavailable');
+});
