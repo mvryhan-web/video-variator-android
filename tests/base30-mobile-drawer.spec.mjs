@@ -52,6 +52,12 @@ test('BASE #30: real mobile opener, scrollable owned drawer, Escape, outside tap
   await expect(menu).toBeFocused();
   await expect(sidebar).toHaveJSProperty('inert',true);
   await menu.click();
+  await expect(menu).toHaveAttribute('aria-expanded','true');
+  // The real close control must remain pointer-accessible above the drawer.
+  await menu.click();
+  await expect(menu).toHaveAttribute('aria-expanded','false');
+  await expect(menu).toBeFocused();
+  await menu.click();
   await page.keyboard.press('Escape');
   await expect(menu).toHaveAttribute('aria-expanded','false');
   await expect(menu).toBeFocused();

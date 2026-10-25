@@ -203,3 +203,13 @@ The same live check exposed a pre-existing malformed Canvas heading close tag, `
 
 
 PR #411 checks: [31-screen design #40200479518](https://github.com/mvryhan-web/video-variator-android/actions/runs/40200479518), [Canvas #40200479613](https://github.com/mvryhan-web/video-variator-android/actions/runs/40200479613), [site-wide design #40200479714](https://github.com/mvryhan-web/video-variator-android/actions/runs/40200479714), [Home headings #40200479654](https://github.com/mvryhan-web/video-variator-android/actions/runs/40200479654), [Product Watcher #40200479533](https://github.com/mvryhan-web/video-variator-android/actions/runs/40200479533), [no-paid Product Video #40200479679](https://github.com/mvryhan-web/video-variator-android/actions/runs/40200479679) all SUCCESS. The prior red/pending PR #407 checkpoints above are superseded by the final green/live evidence. This final checkpoint changes documentation only; deployed app source remains the verified `97e5151` release.
+
+
+## BASE #30 continuation — 2026-10-25 (Europe/Paris)
+
+Owner requested continued completion of unfinished BASE items. Resume existing PR #402 on current DEV `a7b3164203988ec93027140990c29e3786c03dae`; preserve all PR #407/#411 source and verified privacy/media behavior. Scope: mobile open-drawer stacking only, workflow stylesheet trigger, this checkpoint. The header no longer forms an overlapping stacking layer; the existing close/menu control retains z-index 33 above the drawer. Existing pointer, keyboard trapping, Escape, outside tap, overflow and zero-paid-call assertions remain unchanged. GRAPHIFY_UNAVAILABLE_IN_HOST; frontend CSS is outside the shared server graph. Fresh final-head CI and desktop/mobile live review are required before publication. Whole BASE #30 remains PARTIAL pending full physical-device acceptance.
+
+
+### BASE #30 acceptance finding and correction
+
+Candidate `9c3d1be60ff29507f1f36c453bae41d5021d61e6` passed focused drawer 12/12, Home UI and 184/184 real-screen tests, but wider Home/media checks caught the actual close button under the sidebar. `backdrop-filter` still formed a header stacking context despite `z-index:auto`. Disable that filter only while the mobile drawer is open, so the existing menu z-index can reach above the drawer. Add a real close-button click to the focused test while retaining pointer access to the brand, Escape, focus, outside tap, overflow and no-spend coverage. Failed media run40203525396: 74 passed /12 failed, all close-button pointer interception; paid/provider code unchanged. Fresh final-head acceptance required.
