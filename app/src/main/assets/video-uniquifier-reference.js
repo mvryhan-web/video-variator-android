@@ -96,6 +96,16 @@ function build(){
   if(t){t.removeAttribute('data-i18n');t.textContent='Drag and drop a video file here';}
   if(s){s.removeAttribute('data-i18n');s.textContent='or click to browse · MP4, MOV, AVI, MKV, WEBM';}
   picker.prepend(image('uploader','vu-upload-icon'));
+  picker.addEventListener('dragover',event=>{if(event.dataTransfer?.types?.includes('Files')){event.preventDefault();picker.classList.add('vu-dragover')}});
+  picker.addEventListener('dragleave',()=>picker.classList.remove('vu-dragover'));
+  picker.addEventListener('drop',event=>{
+   picker.classList.remove('vu-dragover');
+   const original=$('fileInput');if(!original||!event.dataTransfer?.files?.length)return;
+   event.preventDefault();const incoming=[...event.dataTransfer.files].filter(f=>f.type.startsWith('video/')||/\.(mp4|mov|avi|mkv|webm)$/i.test(f.name));
+   if(!incoming.length){$('fileSummary').textContent='Please choose a video file.';return;}
+   const transferred=new DataTransfer();incoming.forEach(f=>transferred.items.add(f));original.files=transferred.files;
+   original.dispatchEvent(new Event('change',{bubbles:true}));
+  });
  }
  const types=node('section','vu-mode-group');types.innerHTML='<h4>Choose transformation mode</h4>';
  const cards=node('div','vu-mode-cards'),modes=[['gentle','Gentle','Subtle changes that preserve the original style and composition.','♧'],['balanced','Balance','A balanced blend of changes for a fresh, unique result.','⚖'],['dynamic','Dynamic','Stronger creative transformations for a distinctive look.','ϟ']];
