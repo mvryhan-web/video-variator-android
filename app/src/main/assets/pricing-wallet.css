@@ -1,0 +1,24 @@
+/* Canonical Pricing: signed-in wallet only. Does not alter plan or credit art. */
+.price-wallet-area{margin:18px 0 8px;padding:20px clamp(14px,2.1vw,30px);border:1px solid #234780;border-radius:15px;background:linear-gradient(140deg,#061329,#030c1e);color:#e5f3ff}
+.price-wallet-area h2{margin:0 0 8px;font-size:clamp(21px,2.2vw,31px);color:#fff}
+.price-wallet-area p{line-height:1.55;color:#bed2eb}
+.price-wallet-area [hidden]{display:none!important}
+.price-wallet-area button{border:1px solid #7fe8ff;border-radius:24px;padding:10px 22px;background:#0e59a2;color:#fff;cursor:pointer;font:inherit}
+.price-wallet-area button:disabled{opacity:.5;cursor:default}
+.price-wallet-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.price-wallet-stat{display:flex;flex-direction:column;gap:4px;border:1px solid #355886;background:#0c213e;border-radius:12px;padding:14px;min-width:0}
+.price-wallet-stat span{font-size:13px;color:#bed9ed}
+.price-wallet-stat strong{font-size:clamp(18px,2vw,29px);color:#fff;overflow-wrap:anywhere}
+.price-wallet-stat small{color:#a7c1e4}
+.price-wallet-stat.debt strong{color:#ffc2a6}
+.price-wallet-history{display:flex;flex-direction:column;gap:0;border-top:1px solid #25416b;margin-top:10px}
+.price-wallet-row{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #203658;padding:12px 3px}
+.price-wallet-row div{display:flex;flex-direction:column;min-width:0;gap:5px}
+.price-wallet-row strong{color:#eaf1ff;font-size:13px}
+.price-wallet-row small{color:#a5c1df;font-size:12px}
+.price-wallet-row>span{font-size:12px;color:#b4e7ff;text-align:right;overflow-wrap:anywhere}
+.price-wallet-welcome{margin:15px 0;padding:12px;border:1px solid #356291;border-radius:10px;background:#0b2040}
+.price-wallet-welcome h3{font-size:18px;margin:0}
+.price-wallet-welcome button{margin-top:8px}
+.price-wallet-status{min-height:0;font-size:13px}
+@media(max-width:500px){.price-wallet-area{padding:16px 12px}.price-wallet-summary{grid-template-columns:1fr}.price-wallet-row{align-items:flex-start}.price-wallet-row>span{max-width:42%}}
