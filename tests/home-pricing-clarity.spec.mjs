@@ -26,7 +26,7 @@ test('Home keeps creation sections but Pricing and Credits now live on standalon
  await expect(page.locator('#planCards')).toContainText('2,250 tool credits / month');
  await expect(page.locator('#planCards')).toContainText('15,000 tool credits / month');
  await expect(page.locator('#planCards .price-trial')).toContainText('not yet active');
- await expect(page.locator('#planCards .price-plan-action:enabled')).toHaveCount(1); // The only interactive proposed Trial checks availability, never charges.
+ await expect(page.locator('#planCards .price-plan-action:enabled')).toHaveCount(5); // Configured plans can open auth safely; no checkout without user sign-in.
  await page.screenshot({path:info.outputPath('new-pricing-desktop.png'),fullPage:true});
 });
 test('Standalone Pricing scrolls naturally on phone, has correct columns, and keeps Home intact',async({page},info)=>{
