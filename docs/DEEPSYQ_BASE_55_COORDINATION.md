@@ -1,3 +1,31 @@
+# COORDINATOR #5 — CYCLE31 / 25 OCT 2026 / CURRENT EXCLUSIVE CLAIMS
+
+**Read-only PR sampling DEV feature HEAD:** `61b73fff779ec30fbac411ecb269ac984738a3bd` before coordinator docs. [Cycle31 exact-head PR/CI collision report](DEEPSYQ_COORDINATOR_CYCLE31_20261025.md) supersedes older queue snapshots; re-read HEAD before new work.
+
+**A #72:** PR421 Pricing final owner correction **MERGED**; PR414 7/7 CI old branch pass but open and overlaps owner/Admin PR413 + #419 in `tests/deepsyq.spec.mjs`. Coordinate and preserve latest bonus/upper-city design; SEO only after available. **B #73:** #368 19 PASS/1 CANCELLED + #323 signed consent 29/29 native checks; behind current DEV, B↔D exact new head privacy/paid transport peer missing. Finance #333 47/47 synthetic PASS, real 2× net not proven. **C #74:** #352 6/6 old head, compare ahead8/behind85, only three C files; same PR non-force refresh, real final browser CI/B+D scoped peer; #350/#402 DONE. **D #75:** #323 revoke-before-provider PG/lock/pool/credit/disposable migration safety, #368 old A→B and #419 private Wallet/redirect independent signoffs outstanding. Five #323∩#333 files reserved joint B/D, no blind merge. **Owner/Admin #413:** 8 PASS/2 FAIL (Trial/visual expectations), shared A test. **Owner Pricing #419:** 31 PASS/5 FAIL/1 CANCELLED, DRAFT, behind DEV 2, 29 net files; preserve PR421 large visual content and only delete tiny footnotes, validate wallet A→B/auth/history and no second store before merge. **Jules #316/#317/#278:** ACK-only, not new tasks. **Coordinator #5:** exclusively docs + status pointer + Issue #233 checkpoint; NOT A-D merger.
+
+Global gates: BASE20 Product Video retired 404, F1–F8 aliases, owner Home six MP4 protected, Trial/paid AI/live Stripe/unsafe SQL/main/production NOT authorized; #280 release HOLD; D16 self-merge A-D only after their real CI and B↔D privacy/finance peer. Current UI specific PR421 owner instruction overrides mistaken PR420 broad removal.
+
+---
+
+# COORDINATOR #5 — CYCLE30 / 25 OCT 2026 / ACTIVE EXCLUSIVE CLAIM POINTER
+
+**Sampled DEV feature HEAD before coordinator-only doc additions:** `d5a3c6d30bda5d67b01a96070eebb50a59b0ae79`. Latest [Cycle30 actual PR/CI/Render evidence and file collision matrix](DEEPSYQ_COORDINATOR_CYCLE30_20261025.md). Keep historical claims below, original BASE55 and F1–F8 aliases intact. Coordinator writes documentation only. **PR415 Pricing is now MERGED DEV and DEV-preview Render LIVE** at exact SHA `d5a3c6d3` — no duplicate Pricing page/PR.
+
+| Exclusive owner | One bounded next action / prohibited collision |
+| --- | --- |
+| **A / #72** | Existing focused PR414 only `tests/deepsyq.spec.mjs` currently 5/5 own old-head tests PASS but branch needs current DEV check. **Owner/Admin PR413 changed the SAME file** on new SHA `682c027a` — coordinate and retain all valid Home Pricing/no-payment/wallet tests. After A finishes #414, read-only pixel/dimension acceptance for owner-reported too-narrow `#createWithDeepsyq` triptych Canvas/AI Agent/AI Apps at 1448/1645 desktop & mobile. Protected Home source cannot change absent owner-approved narrow fix; work on existing A lane, no speculative CSS/new duplicate PR. SEO separately when free. |
+| **B / #73** | Existing #368 studio user A→B and #323 current signed tenant consent only, direct D independent final-head peer. Also Pricing `pricing.html` vs old `ai-pricing.html` wallet/auth checkout audit without making second wallet. No A Home/Pricing visuals or C tool route file lease. |
+| **C / #74** | Existing same PR352 client Photo OCR only (old 5/5 CI, behind DEV75+), non-force reconcile/full final CI/B+D peer, own D16 merge. Then C AI Apps My Creations wrong Home history anchor, three real AI Apps, Inspiration All/Video/Image, local Audio/Everyday Tools. PR350/#402 DONE. |
+| **D / #75** | PR323 consent revoked before paid-provider + PG fence/lock order/pool/held credit & migration independent final head verdict; PR368 A→B current SHA, direct B↔D. Five net #323∩#333 paths tracked Cycle29, true Stripe all-in real 2× margins blocked. PR280 MAIN HOLD, staging backup/restore release gate. Historic Issue75 closed is not an approved PR. |
+| **Owner / Admin** | PR413 DRAFT new `682c027a`, four scoped Admin source/test/docs paths **plus shared `tests/deepsyq.spec.mjs` that A PR414 owns**; 2 success, 2 running, 4 queued at snapshot. Coordinate file lease with A, reconcile both assertions and current DEV/merged Pricing #415, rerun REAL Admin Chromium/WebKit responsive geometry; never silence failing acceptance or selfmerge before terminal correct checks. |
+| **Coordinator #5** | This docs-only coordination pointer, `PROJECT_STATUS.md` additive latest top and Issue #233 CHECKPOINT, not agent approver or code owner. Safe A–D self-merge D16, independent B↔D financial/privacy peer. |
+| **Jules #316/#317/#278** | W5.5/W4.3/V6.2 latest Google bot ACK only, not completed/verified active. Reserve existing three slots, no re-label/duplicate task until actual bot READY/FAIL plus accepted PR/source verified. |
+
+**Global immutable gates:** BASE20 retired Product Video route 404, owner Home six MP4 retained, no main/production/live Stripe/paid AI/unsafe SQL/Trial activation, purchased-only AI gate and real financial NET >=2× margin not yet LIVE_VERIFIED. No duplication of completed PR412, PR415, PR402, PR350, PR374. Owner reported narrow triptych remains OPEN visual acceptance; no premature DONE.
+
+---
+
 # COORDINATOR #5 — CYCLE29 / 25 OCT 2026 / ACTIVE NON-OVERLAP CLAIMS
 
 **Verified pre-documentation DEV** `0c62e773ca43d73924fd03c26a6c39b87c7c19a1` and exact PR CI/compare in [Cycle29 report](DEEPSYQ_COORDINATOR_CYCLE29_20261025.md). Historic claims/BASE 55/F1–F8 beneath preserved unchanged. Recheck current branch before merges. No new code/feature lease to #5, only coordinator documentation.

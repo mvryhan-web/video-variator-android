@@ -31,7 +31,7 @@ function makeNav(shell){
  const search=node('form','vu-search');
  search.innerHTML='<span aria-hidden="true">⌕</span><input type="search" aria-label="Search Deepsyq pages" placeholder="Search anything..." autocomplete="off"><kbd>⌘ K</kbd>';
  const tools=node('div','vu-top-tools');
- tools.innerHTML='<a href="index.html?view=faq">ⓘ &nbsp;Help</a><span>◎ &nbsp;English</span><span class="vu-promo-pill">♔ &nbsp;Promo Code</span><span>♧ &nbsp;Invite Friend</span><span>◉ &nbsp;Credits</span><a href="index.html?view=plans">♛ &nbsp;Pricing</a>';
+ tools.innerHTML='<a href="index.html?view=faq">ⓘ &nbsp;Help</a><span>◎ &nbsp;English</span><span class="vu-promo-pill">♔ &nbsp;Promo Code</span><span>♧ &nbsp;Invite Friend</span><span>◉ &nbsp;Credits</span><a href="pricing.html">♛ &nbsp;Pricing</a>';
  const user=node('div','vu-top-user');
  const sign=$('signInBtn');if(sign)user.append(sign);
  bar.append(logo,menu,search,tools,user);shell.prepend(bar);
@@ -57,12 +57,12 @@ function makeNav(shell){
  upgrade.type='button';upgrade.innerHTML='<span class="vu-upgrade-content"><b>♛ &nbsp;Upgrade to<br>Deepsyq Pro</b><strong>Upgrade Now →</strong></span>';
  // Keep the approved purple/blue styling but never reuse a screenshot crop
  // containing extra baked-in miniature text. The existing Upgrade remains functional.
- upgrade.addEventListener('click',()=>{const previous=side.querySelector('[data-view="plans"]');if(previous)previous.click();else window.VideoVariatorUI?.showView?.('plans');});
+ upgrade.addEventListener('click',()=>{window.location.assign('pricing.html');});
  side.append(nav,upgrade);
  menu.addEventListener('click',()=>document.body.classList.toggle('vu-nav-open'));
  nav.addEventListener('click',event=>{if(event.target.closest('a'))document.body.classList.remove('vu-nav-open')});
  document.addEventListener('keydown',event=>{if(event.key==='Escape')document.body.classList.remove('vu-nav-open')});
- const known=[['image','generate-studio.html?studio=image'],['video','index.html'],['audio','audio-studio.html'],['canvas','canvas.html'],['tools','free-tools.html'],['history','index.html?view=history'],['pricing','index.html?view=plans']];
+ const known=[['image','generate-studio.html?studio=image'],['video','index.html'],['audio','audio-studio.html'],['canvas','canvas.html'],['tools','free-tools.html'],['history','index.html?view=history'],['pricing','pricing.html']];
  search.addEventListener('submit',event=>{event.preventDefault();const value=search.querySelector('input').value.trim().toLowerCase();const hit=known.find(([key])=>value.includes(key));if(hit)location.href=hit[1];else search.querySelector('input').setCustomValidity('Search Image, Video, Audio, Canvas, Tools, History or Pricing.');search.reportValidity();});
  search.querySelector('input').addEventListener('input',e=>e.target.setCustomValidity(''));
 }

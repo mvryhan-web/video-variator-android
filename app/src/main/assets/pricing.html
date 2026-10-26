@@ -5,9 +5,14 @@
 <title>Pricing | Deepsyq</title>
 <link rel="icon" href="deepsyq-logo.png">
 <link rel="stylesheet" href="deepsyq-global-theme.css">
+<link rel="stylesheet" href="auth-email.css">
 <link rel="stylesheet" href="pricing-page.css">
+<link rel="stylesheet" href="pricing-wallet.css">
 <script defer src="deepsyq-site-shell.js"></script>
+<script defer src="auth-email.js"></script>
+<script async defer src="https://accounts.google.com/gsi/client"></script>
 <script type="module" src="pricing-page.js"></script>
+<script type="module" src="pricing-wallet.js"></script>
 </head>
 <body class="deepsyq-pricing-page">
 <header class="price-topbar">
@@ -30,11 +35,20 @@
     </div>
   </div>
 </section>
-<section class="price-plans-area" aria-labelledby="plansHeading">
-  <h2 id="plansHeading" class="sr-only">Deepsyq tool subscription plans</h2>
-  <div id="pricingStatus" class="price-status" role="status" aria-live="polite">Checking current plan prices…</div>
+<section class="price-plans-area" id="plans" aria-labelledby="plansHeading">
+  <h2 id="plansHeading" class="price-tools-heading">Video &amp; Everyday Tools Plans</h2>
+  <div class="price-billing-bar" aria-label="Billing period selection">
+    <div class="price-billing-switch" role="group" aria-label="Choose billing period">
+      <button type="button" id="priceBillingMonthly" class="is-active" aria-pressed="true">Monthly</button>
+      <button type="button" id="priceBillingYearly" aria-pressed="false">Yearly</button>
+    </div>
+    <div id="priceBillingPromo" class="price-billing-promo" aria-live="polite">
+      <strong>80% Credit Bonus</strong>
+      <small>Promotional label only · credited amounts are unchanged</small>
+    </div>
+  </div>
+  <div id="pricingStatus" class="price-status" role="status" aria-live="polite"></div>
   <div id="planCards" class="price-five-grid" aria-live="polite"></div>
-  <p class="price-disclosure">Tool plans cover the included tools and their stated allowances. AI generation uses separately prepaid credits. The $0.99 Trial shown here is a proposed offer, not an active purchase.</p>
 </section>
 <section class="price-credits-area" id="credits" aria-labelledby="creditsHeading">
   <div class="price-credit-hero">
@@ -48,8 +62,26 @@
   <div id="creditStatus" class="price-status" role="status" aria-live="polite">Checking available AI credit packages…</div>
   <div id="creditCards" class="price-credit-grid" aria-live="polite"></div>
   <p class="price-disclosure">The five packages and bonus amounts from the approved design are proposals until enabled by the server. No AI credits are awarded and no payment is taken from this preview.</p>
-  <a class="price-wallet-link" href="ai-pricing.html#walletSection">View your AI wallet and purchase availability <span aria-hidden="true">↗</span></a>
+  <a class="price-wallet-link" href="pricing.html#wallet">View your AI wallet and purchase availability <span aria-hidden="true">↗</span></a>
+</section>
+<section id="wallet" class="price-wallet-area" aria-labelledby="walletHeading">
+  <h2 id="walletHeading">Your AI credits</h2>
+  <div id="walletEntry"><p>Your balance and recent activity are private. Sign in to see your AI credits.</p><button type="button" id="walletSignIn">Sign in to view balance</button></div>
+  <div id="walletSection" hidden>
+    <p>These are AI generation credits, separate from the Video &amp; Everyday Tools plan allowance.</p>
+    <div id="walletSummary" class="price-wallet-summary" aria-live="polite"></div>
+    <h3>Recent activity</h3>
+    <div id="walletHistory" class="price-wallet-history" aria-live="polite"></div>
+    <p id="walletStatus" class="price-wallet-status" role="status" aria-live="polite"></p>
+  </div>
+  <div id="welcomeCredits" class="price-wallet-welcome" hidden>
+    <h3 id="welcomeTitle">Welcome AI credits</h3><p id="welcomeCopy"></p>
+    <button id="claimWelcome" type="button" disabled>Claim welcome credits</button>
+    <p id="welcomeStatus" class="price-wallet-status" role="status" aria-live="polite"></p>
+  </div>
 </section>
 </main>
+<!-- Existing Deepsyq Home login component reused; no second account backend. -->
+<div id="authModal" class="modal" hidden><div class="modalBackdrop" data-close-auth></div><section class="authCard" role="dialog" aria-modal="true" aria-labelledby="authTitle"><button class="modalClose" data-close-auth type="button" aria-label="Close">×</button><span class="eyebrow">DEEPSYQ</span><h2 id="authTitle">Sign in to your account</h2><p>One account for your tools, plan and history.</p><div id="googleButton"><button id="googleFallback" type="button" disabled>Google sign-in is loading…</button></div><small class="authSetupStatus"></small></section></div>
 <footer class="price-footer"><a href="deepsyq.html">Home</a><a href="terms.html">Terms</a><a href="refund.html">Refunds</a><a href="contact.html">Contact</a><span>© Deepsyq</span></footer>
 </body></html>
