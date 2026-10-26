@@ -65,3 +65,34 @@ Christmas Digital Paper Pack: https://www.etsy.com/your/shops/me/listing-editor/
 
 ## Уточнение владельца — отметка ИИ в черновике
 26.10.2026 владелец попросил оставить проверку и выставление отметки использования ИИ ему лично перед публикацией. В следующих черновиках не выставлять эту отметку автоматически, если форма позволяет оставить вопрос незаполненным. Не выбирать заведомо неверное «полностью мной» для контента, созданного с помощью ИИ, и не скрывать фактический способ создания. Если обязательное поле блокирует сохранение, сообщить об этом владельцу. Уже сохраненная отметка в товаре №2 сейчас включена; это уточнение само по себе не означает ее удаления. Режим Etsy остается: только черновик, публикует владелец.
+
+
+## Товар №3 — CHECKPOINT, 26.10.2026: НЕ ГОТОВ
+Christmas Gift Tags — 24 printable tags. Созданы встроенным imagegen и поочередно показаны все 24 иллюстрации, портрет 1024x1536 (нужно программно подтвердить при восстановлении среды). План: готовая прямоугольная бирка 2x3 дюйма, 600x900px при300DPI с To/From и линиями для рукописного имени; печатные PDF A4 и US Letter с линиями обрезки, без редактируемых шаблонов, personal use. Уменьшение исходников без апскейла. Текст/линии еще НЕ добавлены, PDF/ZIP/10 рекламных изображений/Drive/черновик Etsy еще НЕ созданы. Среда исполнения и браузер отключены системным обновлением во время попытки записи manifest.json (apply_patch failed); это технический блокер, не ошибка авторизации Etsy. Не генерировать заново готовые24 иллюстрации. Исходники автоматически сохранены imagegen; ниже пути текущего workspace (доступность нужно проверить после восстановления).
+
+01. holly berries with evergreen sprigs — /workspace/scratch/64629abb14fb/generated_images/exec-5a6f74e0-4788-48b2-838e-ef780e5cf2c6.png
+02. gingerbread house with snowy icing — /workspace/scratch/64629abb14fb/generated_images/exec-2e4fa110-0401-412c-b42f-edf7fa12a293.png
+03. two candy canes tied with burgundy ribbon — /workspace/scratch/64629abb14fb/generated_images/exec-de8aaa3a-e93a-4e71-85c3-adedd13e4e02.png
+04. classic Christmas tree with tiny red ornaments — /workspace/scratch/64629abb14fb/generated_images/exec-35477170-9d28-4531-96af-504013d3784b.png
+05. vintage gold Christmas bell with velvet bow — /workspace/scratch/64629abb14fb/generated_images/exec-261ce73d-4bb8-4524-a69b-27699458ed52.png
+06. red robin perched on winter pine — /workspace/scratch/64629abb14fb/generated_images/exec-463ef652-a032-4dcd-a432-14ce615071aa.png
+07. red mitten pair with ivory knitted cuffs — /workspace/scratch/64629abb14fb/generated_images/exec-8418fe3e-6df4-4280-a639-49f7e286b3b7.png
+08. festive red gift box with gold ribbon — /workspace/scratch/64629abb14fb/generated_images/exec-2a804cb4-b186-43ae-af3e-27eb9275e906.png
+09. poinsettia flower and dark green foliage — /workspace/scratch/64629abb14fb/generated_images/exec-5c0e0ed6-5623-4dd5-a427-ec99308d6ee9.png
+10. woodland deer with small evergreen wreath — /workspace/scratch/64629abb14fb/generated_images/exec-30c46e55-efba-4571-9d53-43d2f3635204.png
+11. snowman wearing a burgundy scarf — /workspace/scratch/64629abb14fb/generated_images/exec-433ae5a0-26d8-4126-8161-0b94027844da.png
+12. glass red bauble hanging from a pine sprig — /workspace/scratch/64629abb14fb/generated_images/exec-641ab995-eda4-4ae4-aeb5-7bf061e22c51.png
+13. winter cottage with warm glowing windows — /workspace/scratch/64629abb14fb/generated_images/exec-383fd2db-20cb-44b4-990a-ba908ce50637.png
+14. vintage sleigh carrying wrapped gifts — /workspace/scratch/64629abb14fb/generated_images/exec-bafee129-0a21-4eb3-aa79-7af0eccabaf1.png
+15. red and ivory striped Christmas stocking — /workspace/scratch/64629abb14fb/generated_images/exec-c6bc9e83-1a27-443c-90da-78925e6bb73e.png
+16. pinecone cluster with winter berries — /workspace/scratch/64629abb14fb/generated_images/exec-f346b319-613b-4288-b0b9-4f48ac062c8e.png
+17. gold star above a small evergreen branch — /workspace/scratch/64629abb14fb/generated_images/exec-9b9cfe0e-3658-4cd1-a294-e92fada82225.png
+18. warm cocoa mug with marshmallows — /workspace/scratch/64629abb14fb/generated_images/exec-609d9d28-0cc3-4d3b-8086-a334ecc80ceb.png
+19. nutcracker soldier in burgundy and evergreen — /workspace/scratch/64629abb14fb/generated_images/exec-a588e3a3-c425-4500-bd81-6fa3846e3e9a.png
+20. festive candle with holly and pine — /workspace/scratch/64629abb14fb/generated_images/exec-b4fc1152-93bb-4713-a79e-6be9b6248c7f.png
+21. snow globe containing a miniature Christmas tree — /workspace/scratch/64629abb14fb/generated_images/exec-8182bcc7-459a-43ef-89ee-f3e5cd043bcd.png
+22. dove holding a small holly sprig — /workspace/scratch/64629abb14fb/generated_images/exec-0eafaf0b-ecf6-4ef9-b5f3-267d3d69e93b.png
+23. Christmas wreath with burgundy bow — /workspace/scratch/64629abb14fb/generated_images/exec-15776826-04aa-4f20-ac9e-d8af59b524d1.png
+24. vintage Santa hat with soft ivory trim — /workspace/scratch/64629abb14fb/generated_images/exec-26613718-4e29-4fc3-ae5f-da6f0ed5ee49.png
+
+Следующие шаги: восстановить доступ к файлам; записать manifest; добавить точную типографику To/From; собрать/отрендерить/проверить обаPDF и24отдельныхJPG600x900; ZIP+инструкция; 10отдельныхрекламныхизображенийпоследовательно в чат; Drive толькоbuyerZIP, anyone/reader; PDFнаосновешаблонасвернойссылкой; Etsyтолькочерновик,13тегов≤20. ОтметкуИИоставитьвладельцуеслиможнооставитьнезаполненной; неверное«полностьюмной»невыбирать.
