@@ -597,7 +597,8 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  await expect(page.locator('#topPromo')).toBeVisible();
  await page.locator('#topPromo').click();
  await expect(page.locator('#promoDialog')).toBeVisible();
- await expect(page.locator('#promoDialog')).toContainText('not available yet');
+ await expect(page.locator('#promoDialog')).toContainText('secure Stripe checkout');
+ await expect(page.locator('#promoGoPricing')).toHaveAttribute('href','pricing.html#plans');
  await page.locator('#promoDialog button[type=submit][value=close]').click();
  await expect(page.locator('#canvasFeature #canvasExampleGrid .canvas-example')).toHaveCount(9);
  await expect(page.locator('#agentFeatureTitle')).toHaveText('AI Agent');

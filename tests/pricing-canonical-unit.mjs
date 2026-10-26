@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {runInNewContext} from 'node:vm';
 import {readFileSync} from 'node:fs';
 const root=new URL('../app/src/main/assets/',import.meta.url);
 const read=path=>readFileSync(new URL(path,root),'utf8');
@@ -14,12 +15,15 @@ test('one public Pricing route, including credits and private wallet anchors',()
  assert.match(canonical,/Video &amp; Everyday Tools/);
  assert.match(read('ai-apps.html'),/href="pricing\.html#credits"/);
  assert.match(read('home-credit-store.js'),/pricing\.html#credits/);
- assert.match(read('ai-pricing.html'),/location\.replace\(destination\.href\)/);
+ assert.ok(read('ai-pricing.html').includes('<script src="pricing-legacy-redirect.js"></script>'));
+ assert.ok(!read('ai-pricing.html').includes('<script>'),'Production CSP disallows inline JavaScript');
+ assert.ok(read('pricing-legacy-redirect.js').includes('location.replace(destination.href)'));
  assert.doesNotMatch(read('ai-pricing.html'),/src="ai-pricing\.js"/);
 });
 test('legacy deep links remain compatible but cannot load old second checkout',()=>{
  const redirect=read('ai-pricing.html');
- for(const pair of ["'#toolPlans':'#plans'","'#trialOffer':'#plans'","'#aiCreditSection':'#credits'","'#walletSection':'#wallet'"])assert.ok(redirect.includes(pair),pair);
+ const redirectSource=read('pricing-legacy-redirect.js');
+ for(const pair of ["'#toolPlans':'#plans'","'#trialOffer':'#plans'","'#aiCreditSection':'#credits'","'#walletSection':'#wallet'"])assert.ok(redirectSource.includes(pair),pair);
  assert.doesNotMatch(redirect,/<form|\/api\/billing\/checkout|\/api\/ai-billing\/checkout/);
 });
 test('new wallet is account-scoped and does not persist private totals',()=>{
@@ -33,4 +37,28 @@ test('new wallet is account-scoped and does not persist private totals',()=>{
  assert.match(js,/\/api\/billing\/checkout/);
  assert.match(js,/\/api\/ai-billing\/checkout/);
  assert.match(js,/annual checkout is not available/);
+});
+
+test('legacy Pricing redirect executes under strict same-origin script CSP and preserves bookmarks',()=>{
+ const source=read('pricing-legacy-redirect.js');
+ const cases=[
+  ['#trialOffer','https://deepsyq.example/pricing.html?utm_source=old-link#plans'],
+  ['#toolPlans','https://deepsyq.example/pricing.html?utm_source=old-link#plans'],
+  ['#aiCreditSection','https://deepsyq.example/pricing.html?utm_source=old-link#credits'],
+  ['#aiPacks','https://deepsyq.example/pricing.html?utm_source=old-link#credits'],
+  ['#walletSection','https://deepsyq.example/pricing.html?utm_source=old-link#wallet'],
+  ['#welcomeCredits','https://deepsyq.example/pricing.html?utm_source=old-link#wallet'],
+  ['#pricing','https://deepsyq.example/pricing.html?utm_source=old-link#plans'],
+  ['#unrecognized','https://deepsyq.example/pricing.html?utm_source=old-link']
+ ];
+ for(const [hash,expected] of cases){
+  let actual='';
+  const location={
+   href:'https://deepsyq.example/ai-pricing.html?utm_source=old-link'+hash,
+   search:'?utm_source=old-link',hash,
+   replace:url=>{actual=url;}
+  };
+  runInNewContext(source,{URL,location});
+  assert.equal(actual,expected,'legacy hash '+hash);
+ }
 });
