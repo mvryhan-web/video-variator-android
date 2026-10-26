@@ -70,12 +70,12 @@ test('BASE #28: all eleven original utility types remain reachable in secondary 
   photoToPdf:'#mobileUtilityGrid [data-utility="scan-pdf"]',
   collage:'#mobileUtilityGrid [data-utility="photo-collage"]',
   hideDetails:'#mobileUtilityGrid [data-utility="photo-redact"]',
-  videoToAudio:'[data-hub-tool="audio"]',
+  videoToAudio:'#etGallery .et-card[href="?tool=audio"]',
   audioTrimmer:'#mobileUtilityGrid [data-utility="audio-trim"]',
-  photoCompression:'[data-hub-tool="photo"]',
-  videoCompression:'[data-hub-tool="video"]',
+  photoCompression:'#etGallery .et-card[href="?tool=photo"]',
+  videoCompression:'#etGallery .et-card[href="?tool=video"]',
   backgroundRemover:'a[href="simple-background-remover.html"]',
-  teleprompter:'[data-hub-tool="prompter"]',
+  teleprompter:'#etGallery .et-card[href="?tool=prompter"]',
   ocr:'#mobileUtilityGrid [data-utility="photo-ocr"]',
   textToAudio:'[data-hub-tool="tts"]'
  };
@@ -85,6 +85,13 @@ test('BASE #28: all eleven original utility types remain reachable in secondary 
  }
  await expect(page.locator(selectors.textToAudio)).toHaveAttribute('href','audio-studio.html?tool=tts');
  await expect(page.locator(selectors.backgroundRemover)).toContainText('Simple Background Remover');
+ // Follow the real approved visible card, not the intentionally hidden legacy hub tile.
+ await page.locator(selectors.videoToAudio).click();
+ await expect(page).toHaveURL(/free-tools\.html\?tool=audio$/);
+ await expect(page.locator('#files')).toBeVisible();
+ await expect(page.locator('#operation')).toHaveValue('audio');
+ await page.locator('#hubBack').click();
+ await expect(page.locator('#etShowcase')).toBeVisible();
  expect(providerWrites).toBe(0);
 });
 
@@ -327,8 +334,14 @@ test('BASE #28: Cancel while OCR library script loads never creates a language w
  let uploads=0;
  page.on('request',r=>{if(r.method()==='POST')uploads++;});
  await page.addInitScript(()=>{window.__ocrScriptSpy={workerCreations:0};});
+ // Keep the library response pending until AFTER a real Cancel click.
+ // Unlike a 650ms timer this is deterministic on slow WebKit runners.
+ let scriptRequested,releaseScript;
+ const requested=new Promise(resolve=>{scriptRequested=resolve;});
+ const blocked=new Promise(resolve=>{releaseScript=resolve;});
  await page.route('**/vendor/ocr/tesseract.min.js',async route=>{
-  await new Promise(resolve=>setTimeout(resolve,650));
+  scriptRequested();
+  await blocked;
   await route.fulfill({
    status:200,contentType:'application/javascript',
    body:'window.Tesseract={createWorker:async()=>{window.__ocrScriptSpy.workerCreations++;return {recognize:async()=>({data:{text:"wrong"}}),terminate:async()=>{}}}};'
@@ -339,9 +352,11 @@ test('BASE #28: Cancel while OCR library script loads never creates a language w
   name:'private.jpg',mimeType:'image/jpeg',buffer:Buffer.from([255,216,255,217])
  });
  await page.locator('#utilityRun').click();
+ await requested; // Confirm the external script load genuinely started.
  await expect(page.locator('#utilityCancel')).toBeEnabled();
  await page.locator('#utilityCancel').click();
  await expect(page.locator('#utilityStatus')).toContainText('Canceled');
+ releaseScript();
  await expect(page.locator('#utilityRun')).toBeEnabled();
  expect(await page.evaluate(()=>window.__ocrScriptSpy.workerCreations)).toBe(0);
  await expect(page.locator('#utilityResults .utility-result')).toHaveCount(0);
@@ -420,7 +435,10 @@ test('BASE #28: Cancel during PDF merge save never publishes a late result, norm
      addPage(){},
      async save(){
       window.__base28PdfLate.saveEntered++;
-      await new Promise(resolve=>setTimeout(resolve,500));
+      // A deferred first save ensures Cancel is pressed during serialization.
+      if(window.__base28PdfLate.saveEntered===1){
+       await new Promise(resolve=>{window.__releaseBase28PdfSave=resolve;});
+      }
       window.__base28PdfLate.saveCompleted++;
       return new Uint8Array([37,80,68,70,45,49,46,55]); // mock %PDF-1.7
      }
@@ -439,6 +457,7 @@ test('BASE #28: Cancel during PDF merge save never publishes a late result, norm
  await expect(page.locator('#utilityCancel')).toBeEnabled();
  await page.locator('#utilityCancel').click();
  await expect(page.locator('#utilityStatus')).toContainText('Canceled');
+ await page.evaluate(()=>window.__releaseBase28PdfSave());
  await expect.poll(()=>page.evaluate(()=>window.__base28PdfLate.saveCompleted)).toBe(1);
  // Wait until the original async operation fully settles before asserting no late output.
  await expect(page.locator('#utilityRun')).toBeEnabled();
