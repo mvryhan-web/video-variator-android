@@ -153,9 +153,11 @@ test('A22 P0: real Back then refresh must not restore A History after switching 
  });
  await page.goto('/generate-studio.html?view=history');
  await expect(page.locator('#historyList')).toContainText('PRIVATE_ACCOUNT_A22_HISTORY_AFTER_LOGOUT');
- await page.goto('/ai-pricing.html');
+ // Use the canonical Pricing route: legacy redirect can add a browser history entry.
+ await page.goto('/pricing.html');
  await page.evaluate(()=>localStorage.setItem('vv_token','fixture-account-B'));
  await page.goBack({waitUntil:'domcontentloaded'});
+ await expect(page).toHaveURL(/\/generate-studio\.html(?:\?|$)/);
  const back=await page.evaluate(()=>({
   token:localStorage.getItem('vv_token'),
   retainedPrompt:document.getElementById('historyList')?.textContent.includes('PRIVATE_ACCOUNT_A22_HISTORY_AFTER_LOGOUT')||false,
@@ -169,7 +171,8 @@ test('A22 P0: real Back then refresh must not restore A History after switching 
  await expect(page.locator('#historyList')).not.toContainText('PRIVATE_ACCOUNT_A22_HISTORY_AFTER_LOGOUT');
  await expect(page.locator('#historyList .history-card')).toHaveCount(0);
  expect(aGets).toBeGreaterThan(0);
- expect(bGets).toBeGreaterThan(0);
+ // Wait for the actual B-scoped history request after WebKit reload; never accept no B fetch.
+ await expect.poll(()=>bGets,{timeout:10000}).toBeGreaterThan(0);
  expect(paidPosts).toBe(0);
 });
 
