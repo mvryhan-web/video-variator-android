@@ -74,7 +74,7 @@ test('BASE #28: all eleven original utility types remain reachable in secondary 
   audioTrimmer:'#mobileUtilityGrid [data-utility="audio-trim"]',
   photoCompression:'#etGallery .et-card[href="?tool=photo"]',
   videoCompression:'#etGallery .et-card[href="?tool=video"]',
-  backgroundRemover:'a[href="simple-background-remover.html"]',
+  backgroundRemover:'.utility-tools-preview a.et-owner-bg-banner[href="simple-background-remover.html"]',
   teleprompter:'#etGallery .et-card[href="?tool=prompter"]',
   ocr:'#mobileUtilityGrid [data-utility="photo-ocr"]',
   textToAudio:'[data-hub-tool="tts"]'
