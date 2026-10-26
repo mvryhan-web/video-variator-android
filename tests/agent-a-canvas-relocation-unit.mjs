@@ -35,3 +35,22 @@ test('Home, site sidebar and AI Apps links open the real Canvas page',()=>{
  assert.match(read('ai-apps.html'),/href="canvas\.html"/);
  assert.match(read('home-experience.js'),/href=destinations\.includes\(destination\)/);
 });
+
+// Owner width acceptance: a dedicated Canvas fills the available content area,
+// while the global Home/sidebar and the existing private editor stay untouched.
+test('Canvas stretches alongside sidebar to both viewport edges with safe mobile gutters',()=>{
+ const stylesheet=read('canvas-page.css');
+ assert.match(stylesheet,/body\.canvas-detail-page main\{width:100%;max-width:none;margin:0;/);
+ assert.match(stylesheet,/body\.canvas-detail-page \.canvas-page-footer\{width:100%;max-width:none;margin:0;/);
+ assert.match(stylesheet,/body\.canvas-detail-page\.deepsyq-sitewide-shell #canvasPageMain/);
+ assert.match(stylesheet,/body\.canvas-detail-page\.deepsyq-sitewide-shell \.canvas-page-footer/);
+ assert.match(stylesheet,/grid-template-columns:1fr/);
+ assert.match(stylesheet,/max-width:900px/);
+ assert.match(stylesheet,/max-width:640px/);
+ assert.match(stylesheet,/padding-inline:10px/);
+ assert.doesNotMatch(stylesheet,/max-width:1180px/);
+ assert.match(canvas,/<main id="canvasPageMain">/);
+ assert.equal((canvas.match(/class="canvas-example"/g)||[]).length,9);
+ assert.match(canvas,/id="quickCreateSubmit"/);
+ assert.match(canvas,/id="quickCreateFiles"/);
+});

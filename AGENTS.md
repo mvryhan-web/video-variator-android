@@ -1,3 +1,7 @@
+## OWNER RULE — 25 OCT 2026 — NO SMALL TECHNICAL LABELS IN DEEPSYQ UI
+
+All A/B/C/D/Jules/coordinator agents must follow the owner's permanent public-website copy rule: **no tiny technical captions**, faint developer text, debug/test/CI/PR/SHA/API labels, or unnecessary technical microcopy on banners, imagery, cards, pages, Pricing/AI Credits, Studio, Tools, menus or mobile layouts. Customer-visible text must be clearly readable, simple and meaningful. Keep engineering details in GitHub/docs, not in artwork or the customer interface. **Never obscure** essential truthful prices, credits, limits, availability, consent/privacy/provider disclosures, accessibility, or important errors; show those legibly. This is a design rule for future approved UI work, not permission to rewrite owner-protected Home or deploy/bill. See DECISIONS.md 2026-10-25 rule.
+
 ## OWNER DIRECTIVE — 22 OCTOBER 2026 — BEFORE EVERY REQUEST
 
 Before acting on each new owner request, consult current GitHub instructions, the canonical rules, visual reference and relevant checkpoint; check changes since the last read rather than re-reading unchanged archives. All inner pages must use the existing approved Home/carousel visual language. Preserve working Home and its media. A functioning page is not visually complete without deliberate composition and desktop/mobile visual review. The owner explicitly rejected the current Pricing introduction and authorized its rework. [Full clarification](docs/DEEPSYQ_OWNER_DESIGN_CLARIFICATION_20261022.md). No payment/security/release gate is waived.

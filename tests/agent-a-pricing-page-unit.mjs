@@ -24,8 +24,12 @@ test('server config, original checkout endpoints and no false wallet credit clai
  assert.match(js,/Trial is not available yet/);
  assert.match(js,/if\(!scope\.token\)\{openAuth\(\);return;\}/);
  assert.match(js,/if\(!toolBillingConfigured\)/);
- assert.match(js,/button\.type='button';button\.disabled=!valid/);
- assert.match(js,/bonus is not included/i);
+ assert.match(js,/price-credit-purchase/);
+ assert.match(js,/if\(!token\(\)\)\{openAuth\(\);return;\}/);
+ assert.match(js,/if\(!valid\)\{/);
+ assert.match(js,/No payment was taken/);
+ assert.doesNotMatch(js,/button\.disabled=!valid/);
+ assert.match(js,/Bonus credits · proposed, not included/);
 });
 test('no fake credit allocation for Trial and Lifetime; lifecycle guards retain account isolation',()=>{
  assert.match(js,/Credits and included access: to be confirmed/);
@@ -51,4 +55,36 @@ test('original account modal and wider Pricing feature matrix are present withou
  assert.doesNotMatch(js,/Access to all models/);
  assert.match(css,/max-width:none;margin-inline:0/);
  assert.match(css,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
+});
+
+test('annual quote toggle remains presentation-only, protects original billing and credit accounting',()=>{
+ assert.match(html,/id="priceBillingMonthly"/);
+ assert.match(html,/id="priceBillingYearly"/);
+ assert.match(html,/80% Credit Bonus/);
+ assert.match(js,/const annualPlanKeys=new Set\(\['basic','pro','business'\]\)/);
+ assert.match(js,/Math\.round\(monthlyCents\*0\.8\)/);
+ assert.match(js,/if\(billingPeriod==='yearly'&&annualPlanKeys\.has\(plan\)\)/);
+ assert.match(js,/annual checkout is not available/);
+ assert.match(js,/body:JSON\.stringify\(\{plan\}\)/);
+ assert.match(js,/body:JSON\.stringify\(\{sku:pack\.sku,requestId:/);
+ assert.doesNotMatch(js,/Design preview: tool checkout is not activated/);
+ assert.match(css,/price-billing-switch/);
+});
+
+test('owner correction preserves big bonus numbers, forbids only tiny tool-plan and USD card footer notes',()=>{
+ assert.doesNotMatch(html,/Tool plans cover the included tools and their stated allowances/);
+ assert.match(html,/Purchase AI credits to unlock the full power of Deepsyq AI/);
+ assert.match(html,/More creativity\. More possibilities\. Fuel your ideas\./);
+ assert.match(html,/View your AI wallet and purchase availability/);
+ assert.match(html,/href="pricing.html#wallet"/);
+ assert.match(html,/id="walletHistory"/);
+ assert.match(js,/bonus:200/);
+ assert.match(js,/bonus:3333/);
+ assert.match(js,/price-bonus-count/);
+ assert.match(js,/price-bonus-status/);
+ assert.match(js,/price-bonus-desc/);
+ assert.doesNotMatch(js,/price-credit-note/);
+ assert.doesNotMatch(css,/\.price-credit-note\{/);
+ assert.match(css,/background-position:center center,center top/);
+ assert.doesNotMatch(css,/transform:scale\(1\.10\)/);
 });

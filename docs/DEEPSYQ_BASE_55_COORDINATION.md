@@ -1,3 +1,23 @@
+## Coordinator #5 — Cycle32 / CURRENT ACTIVE CLAIMS / 26 Oct 2026 — VERIFIED LIVE QUEUES
+
+DEV `c15f36d39770782b16ae4043fc4d42fb3256bc1b` at sample (PR352 MERGED); Render preview LIVE **same SHA** at deploy `dep-dbfmslei0phs73b8q300`; MAIN `c14f950c6e8700b41d0777c050060fee883d0092` unchanged. Full source/CI/failure/collision report: [Cycle32](DEEPSYQ_COORDINATOR_CYCLE32_20261026.md); operative CHECKPOINT Issue #233. This is a sampled SHA, re-read before changes.
+
+**A #72:** PR414 DRAFT ahead3/behind62, shared `tests/deepsyq.spec.mjs` with already MERGED Admin PR413. Reconcile same PR preserving assertions; then owner-authorized exact Home-triptych acceptance and international SEO. **B #73:** PR368 `99d3719` exact 20/20 check runs green/behind0 but still needs D true two-JWT cross-app peer; PR323 `669b643` BLOCKED by D-sourced consent nested-pool deadlock despite CI green; server welcome grant conditional-policy FAIL; PR333 provider net>=2× unverified. **C #74:** Photo OCR PR352 ALREADY MERGED/LIVE — DO NOT REPEAT. Existing AI Apps My Creations → authenticated History already fixed. Next unclaimed C-only real Tools/Video-to-Audio/Audio/Inspiration mobile acceptance: fresh DEV BASE28 workflow failed with hidden secondary Video→Audio tile + WebKit async cancel tests. **D #75:** direct B↔D source/PG/privacy verdict on PR323 and PR368, conditional AI welcome gate, real Stripe/provider cost; production release HOLD. **Jules #316/#317/#278:** ACK-only; no new bot tasks. **Coordinator #5:** docs/status/claims + Issue233 only; not mandatory merger. Latest DEV runs #40347271152 privacy/annual CTA and #40347271034 Tools/WebKit FAIL; do not claim full-green release.
+
+No `main`/production, real payment/provider, trial/live credit grants, secrets or destructive migrations. Base20 retired, original 6 Home MP4 and approved Pricing protected; F1–F8 aliases of Blocks. A–D D16 self-merge after valid checks and B↔D direct privacy/finance peer.
+
+---
+
+# COORDINATOR #5 — CYCLE31 / 25 OCT 2026 / CURRENT EXCLUSIVE CLAIMS
+
+**Read-only PR sampling DEV feature HEAD:** `61b73fff779ec30fbac411ecb269ac984738a3bd` before coordinator docs. [Cycle31 exact-head PR/CI collision report](DEEPSYQ_COORDINATOR_CYCLE31_20261025.md) supersedes older queue snapshots; re-read HEAD before new work.
+
+**A #72:** PR421 Pricing final owner correction **MERGED**; PR414 7/7 CI old branch pass but open and overlaps owner/Admin PR413 + #419 in `tests/deepsyq.spec.mjs`. Coordinate and preserve latest bonus/upper-city design; SEO only after available. **B #73:** #368 19 PASS/1 CANCELLED + #323 signed consent 29/29 native checks; behind current DEV, B↔D exact new head privacy/paid transport peer missing. Finance #333 47/47 synthetic PASS, real 2× net not proven. **C #74:** #352 6/6 old head, compare ahead8/behind85, only three C files; same PR non-force refresh, real final browser CI/B+D scoped peer; #350/#402 DONE. **D #75:** #323 revoke-before-provider PG/lock/pool/credit/disposable migration safety, #368 old A→B and #419 private Wallet/redirect independent signoffs outstanding. Five #323∩#333 files reserved joint B/D, no blind merge. **Owner/Admin #413:** 8 PASS/2 FAIL (Trial/visual expectations), shared A test. **Owner Pricing #419:** 31 PASS/5 FAIL/1 CANCELLED, DRAFT, behind DEV 2, 29 net files; preserve PR421 large visual content and only delete tiny footnotes, validate wallet A→B/auth/history and no second store before merge. **Jules #316/#317/#278:** ACK-only, not new tasks. **Coordinator #5:** exclusively docs + status pointer + Issue #233 checkpoint; NOT A-D merger.
+
+Global gates: BASE20 Product Video retired 404, F1–F8 aliases, owner Home six MP4 protected, Trial/paid AI/live Stripe/unsafe SQL/main/production NOT authorized; #280 release HOLD; D16 self-merge A-D only after their real CI and B↔D privacy/finance peer. Current UI specific PR421 owner instruction overrides mistaken PR420 broad removal.
+
+---
+
 # COORDINATOR #5 — CYCLE30 / 25 OCT 2026 / ACTIVE EXCLUSIVE CLAIM POINTER
 
 **Sampled DEV feature HEAD before coordinator-only doc additions:** `d5a3c6d30bda5d67b01a96070eebb50a59b0ae79`. Latest [Cycle30 actual PR/CI/Render evidence and file collision matrix](DEEPSYQ_COORDINATOR_CYCLE30_20261025.md). Keep historical claims below, original BASE55 and F1–F8 aliases intact. Coordinator writes documentation only. **PR415 Pricing is now MERGED DEV and DEV-preview Render LIVE** at exact SHA `d5a3c6d3` — no duplicate Pricing page/PR.

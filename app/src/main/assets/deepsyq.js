@@ -162,21 +162,70 @@ async function checkout(plan){if(pending)return;if(!localStorage.getItem('vv_tok
 function updateInspirationHero(items){renderHomeCarousel(items);}
 
 // Owner-approved Home enhancements: no extra provider/credit/auth APIs are created.
-const homeLang=$('homeLanguage');const homeI18n={
- en:{hero:'Create<br><em>beyond limits.</em>',canvas:'Canvas',agent:'AI Agent',apps:'AI Apps',inspiration:'Inspiration'},
- fr:{hero:'Créez<br><em>sans limites.</em>',canvas:'Canvas',agent:'AI Agent',apps:'AI Apps',inspiration:'Inspiration'},
- ru:{hero:'Создавайте<br><em>без границ.</em>',canvas:'Canvas',agent:'AI Agent',apps:'AI Apps',inspiration:'Вдохновение'}
+const homeLang=$('homeLanguage');
+const homeI18n={
+ en:{hero:'Create<br><em>beyond limits.</em>',canvas:'Canvas',agent:'AI Agent',apps:'AI Apps',inspiration:'Inspiration',tools:'Everyday Tools',featured:'Featured AI Apps',agentExamples:'See what an Agent can build',quickBar:'What would you like to create?',prompt:'Describe what you want to create…',search:'Search anything…',createPrefix:'Create with ',promo:'✧ Promo Code',invite:'Invite Friend',pricing:'Pricing',login:'Log in',account:'Account',promoTitle:'Promo Code',promoDescription:'Have a valid promo code? Choose an eligible subscription, then enter your code during secure Stripe checkout.',promoNotice:'Promotions are applied only if accepted by Stripe. An automatic first-subscription discount may already be included.',viewPricing:'View Pricing',inviteTitle:'Invite a friend',inviteDescription:'Share the Deepsyq link with a friend.',inviteLink:'Invite link',copy:'Copy link',share:'Share',close:'Close',copied:'Link copied. Send it to your friend.',manual:'Select and copy the link above to share.',shareError:'Sharing is unavailable. You can copy the link.'},
+ fr:{hero:'Créez<br><em>sans limites.</em>',canvas:'Canvas',agent:'Agent IA',apps:'Applications IA',inspiration:'Inspiration',tools:'Outils du quotidien',featured:'Applications IA en vedette',agentExamples:'Découvrez ce qu’un agent peut créer',quickBar:'Que souhaitez-vous créer ?',prompt:'Décrivez ce que vous voulez créer…',search:'Rechercher…',createPrefix:'Créer avec ',promo:'✧ Code promo',invite:'Inviter un ami',pricing:'Tarifs',login:'Se connecter',account:'Mon compte',promoTitle:'Code promo',promoDescription:'Vous avez un code promo valide ? Choisissez un abonnement éligible et saisissez votre code lors du paiement sécurisé Stripe.',promoNotice:'Seules les promotions acceptées par Stripe s’appliquent. Une réduction de première souscription peut déjà être incluse.',viewPricing:'Voir les tarifs',inviteTitle:'Inviter un ami',inviteDescription:'Partagez le lien Deepsyq avec un ami.',inviteLink:'Lien d’invitation',copy:'Copier le lien',share:'Partager',close:'Fermer',copied:'Lien copié. Envoyez-le à votre ami.',manual:'Sélectionnez et copiez le lien ci-dessus.',shareError:'Partage indisponible. Copiez le lien.'},
+ ru:{hero:'Создавайте<br><em>без границ.</em>',canvas:'Canvas',agent:'ИИ-агент',apps:'ИИ-приложения',inspiration:'Вдохновение',tools:'Повседневные инструменты',featured:'Популярные ИИ-приложения',agentExamples:'Что может создать ИИ-агент',quickBar:'Что вы хотите создать?',prompt:'Опишите, что хотите создать…',search:'Поиск…',createPrefix:'Создавайте с ',promo:'✧ Промокод',invite:'Пригласить друга',pricing:'Тарифы',login:'Войти',account:'Аккаунт',promoTitle:'Промокод',promoDescription:'Есть действующий промокод? Выберите доступный тариф и введите код при безопасной оплате через Stripe.',promoNotice:'Скидка применяется только после подтверждения Stripe. Скидка на первую подписку уже может быть включена.',viewPricing:'Посмотреть тарифы',inviteTitle:'Пригласить друга',inviteDescription:'Отправьте другу ссылку на Deepsyq.',inviteLink:'Ссылка-приглашение',copy:'Копировать',share:'Поделиться',close:'Закрыть',copied:'Ссылка скопирована. Отправьте её другу.',manual:'Выделите и скопируйте ссылку выше.',shareError:'Поделиться не удалось. Скопируйте ссылку.'}
 };
-function applyHomeLanguage(code){const v=homeI18n[code]||homeI18n.en;const hero=document.querySelector('.hero-stage-copy h1');if(hero)hero.innerHTML=v.hero;for(const [id,key] of [['canvasFeatureTitle','canvas'],['agentFeatureTitle','agent'],['appsFeatureTitle','apps'],['inspirationPreviewTitle','inspiration']]){const el=$(id);if(el)el.textContent=v[key];}if(homeLang)homeLang.value=homeI18n[code]?code:'en';}
-if(homeLang){const saved=localStorage.getItem('deepsyq_home_language');applyHomeLanguage(saved||'en');homeLang.onchange=()=>{localStorage.setItem('deepsyq_home_language',homeLang.value);applyHomeLanguage(homeLang.value);};}
-const promo=$('promoDialog');$('topPromo')?.addEventListener('click',()=>promo?.showModal());$('promoShare')?.addEventListener('click',()=>{$('navShare')?.click();promo?.close();});$('topInvite')?.addEventListener('click',()=>$('navShare')?.click());
+const homeLangText=()=>homeI18n[homeLang?.value]||homeI18n.en;
+function applyHomeLanguage(code){
+ const lang=homeI18n[code]?code:'en',v=homeI18n[lang];
+ document.documentElement.lang=lang==='en'?'en-US':lang;
+ const hero=document.querySelector('.hero-stage-copy h1');if(hero)hero.innerHTML=v.hero;
+ for(const [id,key] of [
+  ['canvasFeatureTitle','canvas'],['agentFeatureTitle','agent'],['appsFeatureTitle','apps'],
+  ['inspirationPreviewTitle','inspiration'],['toolsTitle','tools'],['featuredWorkflowsTitle','featured'],
+  ['agentExamplesTitle','agentExamples'],['homeQuickBarTitle','quickBar'],
+  ['topPromo','promo'],['topInvite','invite'],['topPricing','pricing'],
+  ['promoTitle','promoTitle'],['promoDescription','promoDescription'],['promoNotice','promoNotice'],
+  ['promoGoPricing','viewPricing'],['inviteTitle','inviteTitle'],['inviteDescription','inviteDescription'],
+  ['inviteLinkLabel','inviteLink'],['inviteCopy','copy'],['inviteShare','share'],
+  ['inviteClose','close'],['promoClose','close']
+ ]){const el=$(id);if(el)el.textContent=v[key];}
+ const create=$('createTitle');if(create&&create.firstChild?.nodeType===Node.TEXT_NODE)create.firstChild.textContent=v.createPrefix;
+ const quick=$('homeQuickPrompt');if(quick)quick.placeholder=v.prompt;
+ const search=$('homeGlobalSearch');if(search)search.placeholder=v.search;
+ const invite=$('inviteLink');if(invite)invite.setAttribute('aria-label',v.inviteLink);
+ if(homeLang)homeLang.value=lang;
+ markHomeLogin();
+}
+if(homeLang){
+ let saved='en';try{saved=localStorage.getItem('deepsyq_home_language')||'en';}catch(_){}
+ applyHomeLanguage(saved);
+ homeLang.addEventListener('change',()=>{try{localStorage.setItem('deepsyq_home_language',homeLang.value);}catch(_){}applyHomeLanguage(homeLang.value);});
+}
+const promo=$('promoDialog');
+$('topPromo')?.addEventListener('click',()=>{if(promo&&!promo.open)promo.showModal();});
+const inviteDialog=$('inviteDialog');
+const inviteUrl=new URL('deepsyq.html',location.href).href;
+$('topInvite')?.addEventListener('click',()=>{
+ if(!inviteDialog)return;
+ $('inviteLink').value=inviteUrl;
+ $('inviteStatus').textContent='';
+ if(!inviteDialog.open)inviteDialog.showModal();
+});
+async function copyInvite(){
+ const input=$('inviteLink'),status=$('inviteStatus');
+ try{
+  if(!navigator.clipboard?.writeText)throw Error('CLIPBOARD_UNAVAILABLE');
+  await navigator.clipboard.writeText(inviteUrl);
+  status.textContent=homeLangText().copied;
+ }catch(_){input.focus();input.select();status.textContent=homeLangText().manual;}
+}
+$('inviteCopy')?.addEventListener('click',copyInvite);
+$('inviteShare')?.addEventListener('click',async()=>{
+ if(!navigator.share){await copyInvite();return;}
+ try{await navigator.share({title:'Deepsyq',url:inviteUrl});}
+ catch(e){if(e.name!=='AbortError')$('inviteStatus').textContent=homeLangText().shareError;}
+});
 // Header sign-in must not depend on dispatching a click to the inert,
 // off-canvas mobile sidebar account button.
 $('topLogin')?.addEventListener('click',()=>{
  if(localStorage.getItem('vv_token'))location.assign('index.html#profile');
  else openAuth();
 });
-function markHomeLogin(){const b=$('topLogin');if(b)b.textContent=localStorage.getItem('vv_token')?'Account':'Log in';}
+function markHomeLogin(){const b=$('topLogin');if(b)b.textContent=localStorage.getItem('vv_token')?homeLangText().account:homeLangText().login;}
 markHomeLogin();
 // Real owner-approved media only. Playback is disabled for reduced motion/data saver.
 let inspirationVideoObserver=null;

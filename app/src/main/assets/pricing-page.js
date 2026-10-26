@@ -62,6 +62,35 @@ const planned=[
 ];
 let planCheckoutPending=false,creditCheckoutPending=false;
 let toolBillingConfigured=false,googleAuthClientId='',googleInitialized=false,authReturnFocus=null;
+let billingPeriod='monthly',latestPlanConfig=null;
+const annualPlanKeys=new Set(['basic','pro','business']);
+const annualQuote=amount=>{
+ // Display estimate only; there is NO server-authorized annual checkout route.
+ const monthlyCents=Math.round(amount*100);
+ const equivalentCents=Math.round(monthlyCents*0.8);
+ return {monthly:equivalentCents/100,yearly:equivalentCents*12/100};
+};
+const annualMoney=amount=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(amount);
+function syncBillingPeriod(){
+ const monthly=byId('priceBillingMonthly'),yearly=byId('priceBillingYearly'),promo=byId('priceBillingPromo');
+ const isMonthly=billingPeriod==='monthly';
+ monthly.classList.toggle('is-active',isMonthly);
+ yearly.classList.toggle('is-active',!isMonthly);
+ monthly.setAttribute('aria-pressed',String(isMonthly));
+ yearly.setAttribute('aria-pressed',String(!isMonthly));
+ promo.replaceChildren();
+ promo.append(node('strong','',isMonthly?'80% Credit Bonus':'Save 20%'));
+ promo.append(node('small','',isMonthly?'Promotional label only · credited amounts are unchanged':'Yearly prices are estimates; annual checkout is not enabled'));
+}
+for(const [id,period] of [['priceBillingMonthly','monthly'],['priceBillingYearly','yearly']]){
+ byId(id).addEventListener('click',()=>{
+  if(billingPeriod===period)return;
+  billingPeriod=period;
+  syncBillingPeriod();
+  renderPlans(latestPlanConfig);
+ });
+}
+
 const creditRequestIds=new Map();
 let accountEpoch=0;
 window.addEventListener('storage',event=>{if(event.key==='vv_token'||event.key===null){accountEpoch++;creditRequestIds.clear();}});
@@ -70,6 +99,7 @@ window.addEventListener('pagehide',()=>{accountEpoch++;});
 const paymentScope=()=>({token:token(),epoch:accountEpoch});
 const current=scope=>scope.token===token()&&scope.epoch===accountEpoch&&!document.hidden;
 function renderPlans(config){
+ latestPlanConfig=config;
  toolBillingConfigured=config?.billingConfigured===true;
  googleAuthClientId=typeof config?.googleClientId==='string'?config.googleClientId:'';
  const host=byId('planCards');host.replaceChildren();
@@ -84,8 +114,11 @@ function renderPlans(config){
   const amount=validPlanPrice(currentPlan);
   const currency=p.key==='lifetime'?validLifetimeCurrency(currentPlan):'USD';
   const verified=!p.proposed&&amount!==null&&!!currency;
-  price.append(node('strong','',p.proposed?'$0.99':verified?money(amount,currency):'Price unavailable'));
-  price.append(node('small','',p.proposed?'proposed · one time':p.suffix));
+  const annualPreview=billingPeriod==='yearly'&&annualPlanKeys.has(p.key)&&verified;
+  const yearly=annualPreview?annualQuote(amount):null;
+  price.append(node('strong','',p.proposed?'$0.99':verified?(annualPreview?annualMoney(yearly.monthly):money(amount,currency)):'Price unavailable'));
+  price.append(node('small','',p.proposed?'proposed · one time':annualPreview?'/ month · billed yearly':p.suffix));
+  const annualNote=annualPreview?node('p','price-annual-note',annualMoney(yearly.yearly)+' / year · estimate only; yearly checkout not available'):null;
   const summary=node('p','price-plan-summary',p.summary);
   const button=node('button','price-plan-action',p.proposed?'Check Trial availability':p.label);
   // The user can choose a configured plan to sign in even on a no-billing preview.
@@ -111,14 +144,23 @@ function renderPlans(config){
    li.append(sym,node('span','',copy));list.append(li);
   }
   const note=node('p','price-plan-note',p.proposed?'$0.99 Trial: price and included credits are NOT active yet.':!verified?'The server has not supplied a verified price.':'');
-  body.append(heading,price,summary,button,facts,caption,list,note);
+  body.append(heading,price);
+  if(annualNote)body.append(annualNote);
+  body.append(summary,button,facts,caption,list,note);
   item.setAttribute('aria-labelledby',heading.id);
   item.append(picture,body);host.append(item);
  }
- message('pricingStatus',config?.billingConfigured?'Tool prices verified from current configuration.':'Design preview: tool checkout is not activated. Prices shown are server-configured; Trial is only proposed.');
+ // No technical/preview banner above the cards; status appears only after a user action.
+ message('pricingStatus','');
 }
 async function checkoutPlan(plan){
  if(!['trial','basic','pro','business','lifetime'].includes(plan)||planCheckoutPending)return;
+ if(billingPeriod==='yearly'&&annualPlanKeys.has(plan)){
+  // A displayed annual discount must never silently buy a monthly subscription.
+  if(!token())openAuth();
+  else message('pricingStatus','Yearly plans are a pricing preview only; annual checkout is not available. No payment was taken.');
+  return;
+ }
  if(plan==='trial'){
   if(!token())openAuth();
   else message('pricingStatus','Trial is not available yet. Credits, duration and renewal conditions still need approval. No payment was taken.');
@@ -162,12 +204,21 @@ function renderCredits(config){
   info.append(node('small','price-bonus-desc','One-time top-up · added only after Stripe confirms payment'));
   const foot=node('div','price-credit-bottom');
   const cost=node('strong','price-credit-price',amount);
-  const button=node('button','price-credit-purchase',valid?(checkoutMode==='test'?'Stripe TEST checkout':'Purchase'):'Purchase · soon');
-  button.type='button';button.disabled=!valid;
-  button.addEventListener('click',()=>{if(valid)void checkoutCredit(serverPack);});
+  // Every visible AI-credit card opens the *existing* Deepsyq sign-in when logged out.
+  // Availability and real checkout remain strictly server-authoritative.
+  const button=node('button','price-credit-purchase',valid?(checkoutMode==='test'?'Stripe TEST checkout':'Purchase'):'Check availability');
+  button.type='button';
+  button.addEventListener('click',()=>{
+   if(!token()){openAuth();return;}
+   if(!valid){
+    message('creditStatus',numeral.format(p.credits)+' AI credits are not available for checkout yet. No payment was taken.');
+    return;
+   }
+   void checkoutCredit(serverPack);
+  });
   foot.append(cost,button);
-  const disclosure=node('p','price-credit-note',serverPack?'Base package verified; bonus is not included.':'Package and price shown for design approval, not a live offer.');
-  content.append(title,info,foot,disclosure);
+  // The owner asked to remove only the tiny footnote below the displayed dollar price.
+  content.append(title,info,foot);
   card.append(content);host.append(card);
  }
  message('creditStatus',checkoutMode?'Verified server packages are purchasable below. Proposed bonuses are not included.':'AI pack checkout is not available in this preview. All pictured pack prices and bonuses are proposals.');
@@ -203,6 +254,7 @@ function openAuth(){
  requestAnimationFrame(()=>byId('emailAuthEmail')?.focus());
  initGoogle();
 }
+document.addEventListener('deepsyq:open-pricing-auth',openAuth);
 document.querySelectorAll('[data-close-auth]').forEach(el=>el.addEventListener('click',closeAuth));
 document.addEventListener('keydown',event=>{
  if(authModal.hidden)return;

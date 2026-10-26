@@ -41,7 +41,7 @@ test('all public internal links and brand assets exist inside the same static we
  const urls=[...source.matchAll(/\bhref="([^"]+)"/g)].map(m=>m[1]);
  assert.ok(urls.includes('deepsyq.html'));
  assert.ok(urls.includes('free-tools.html'));
- assert.ok(urls.includes('ai-pricing.html'));
+ assert.ok(urls.includes('pricing.html'));
  assert.ok(urls.includes('index.html'));
  assert.ok(urls.includes('ai-privacy.html'));
  assert.ok(urls.includes('generate-studio.html?studio=image'));
