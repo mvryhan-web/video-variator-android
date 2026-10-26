@@ -115,3 +115,34 @@ test('Stripe promotion entry is server-owned and never stacks with an existing f
  expect(source).toMatch(/STRIPE_FIRST_SUBSCRIPTION_COUPON_ID/);
  expect(source).not.toMatch(/app\.post\('\/api\/promo\/redeem'/);
 });
+
+test('A PR414: real desktop and phone Home to Pricing and five signed-out plan entries never charge',async({page})=>{
+ await mockPublicCatalog(page);
+ const paid=[];
+ page.on('request',request=>{
+  if(request.method()==='POST'&&/\/api\/(?:ai-billing|billing)\/checkout/.test(new URL(request.url()).pathname))paid.push(request.url());
+ });
+ for(const width of [1448,390]){
+  await page.setViewportSize({width,height:width===390?844:1086});
+  await page.goto('/deepsyq.html');
+  const pricing=page.locator('#topPricing');
+  if(await pricing.isVisible())await pricing.click();
+  else{
+   await page.locator('#menu').click();
+   await expect(page.locator('body')).toHaveClass(/menu-open/);
+   await page.locator('#sidebar a[href="pricing.html"]').click();
+  }
+  await expect(page).toHaveURL(/\/pricing\.html$/);
+  await expect(page.locator('#planCards .price-plan')).toHaveCount(5);
+  await expect(page.locator('#creditCards .price-credit-card')).toHaveCount(5);
+  for(const button of await page.locator('#planCards .price-plan-action').all()){
+   await expect(button).toBeEnabled();
+   await button.click();
+   await expect(page.locator('#authModal')).toBeVisible();
+   await page.keyboard.press('Escape');
+   await expect(page.locator('#authModal')).toBeHidden();
+  }
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+ }
+ expect(paid).toEqual([]);
+});
