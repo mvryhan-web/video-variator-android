@@ -44,7 +44,7 @@ function simulate({receiptStatus='paid',providerThrows=false,reservationPersistF
   async connect(){return {async query(sql,args=[]){
    if(sql.startsWith('SELECT pg_advisory_unlock'))return {rows:[{pg_advisory_unlock:true}]};
    if(sql.startsWith('SELECT terms_version,privacy_version,provider_data_version,provider_data_accepted'))return {rows:[{terms_version:'2026-10-20',privacy_version:'2026-10-20',provider_data_version:'2026-10-20',provider_data_accepted:true}]};
-   if(sql.startsWith('SELECT pg_advisory_lock'))return {rows:[]};
+   if(sql.startsWith('SELECT pg_try_advisory_lock'))return {rows:[{acquired:true}]};
    if(['BEGIN','COMMIT','ROLLBACK'].includes(sql)||sql.startsWith('SELECT pg_advisory_xact_lock'))return {rows:[]};
    if(sql.startsWith('SELECT id,status,request_fingerprint'))return {rows:[]};
    if(sql.startsWith('SELECT count(*)::int AS n'))return {rows:[{n:0}]};

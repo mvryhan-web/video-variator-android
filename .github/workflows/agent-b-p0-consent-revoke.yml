@@ -4,6 +4,7 @@ on:
     branches: [deepsyq-platform]
     paths:
       - 'server/generation-consent.js'
+      - 'server/generation-wallet.js'
       - 'server/generation-studio.js'
       - 'server/generation-purchased-provider-boundary.js'
       - 'server/ai-migrations.js'
@@ -30,5 +31,5 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - run: node --check server/generation-consent.js && node --check server/generation-studio.js && node --check server/generation-purchased-provider-boundary.js
+      - run: node --check server/generation-consent.js && node --check server/generation-wallet.js && node --check server/generation-studio.js && node --check server/generation-purchased-provider-boundary.js
       - run: node --test tests/agent-b-p0-consent-revoke-unit.mjs tests/generation-purchased-provider-boundary-unit.mjs tests/generation-studio-purchased-boundary-route-unit.mjs

@@ -17,7 +17,7 @@ function mockConsentPool(){
  });
  const pool={async connect(){return {
   async query(sql){
-   if(sql.startsWith('SELECT pg_advisory_lock')){await begin();return {rows:[]};}
+   if(sql.startsWith('SELECT pg_try_advisory_lock')){await begin();return {rows:[{acquired:true}]};}
    if(sql.startsWith('SELECT pg_advisory_unlock')){
     unlocks++;active=false;queue.shift()?.();return {rows:[{pg_advisory_unlock:true}]};
    }

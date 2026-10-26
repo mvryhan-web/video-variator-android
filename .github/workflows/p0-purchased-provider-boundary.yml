@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - server/generation-studio.js
+      - server/generation-consent.js
+      - server/generation-wallet.js
       - server/generation-purchased-provider-boundary.js
       - tests/generation-purchased-provider-boundary-unit.mjs
       - tests/generation-studio-purchased-boundary-route-unit.mjs

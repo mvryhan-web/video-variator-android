@@ -15,6 +15,7 @@ const proof={source:'settled_stripe_purchase',purchaseConfirmed:true,refunded:fa
  purchaseId:'cs_live_real',reservationId:job.id,userId:user.id,jobId:job.id,modelId:model.id,
  provider:model.provider,requestFingerprint:fingerprint,creditsReserved:7,purchasedCreditsAvailableBeforeReserve:7};
 const pool={async connect(){return {async query(sql){
+ if(sql.startsWith('SELECT pg_try_advisory_lock'))return {rows:[{acquired:true}]};
  if(sql.startsWith('SELECT pg_advisory_unlock'))return {rows:[{pg_advisory_unlock:true}]};
  if(sql.startsWith('SELECT terms_version'))return {rows:[{terms_version:'2026-10-20',privacy_version:'2026-10-20',provider_data_version:'2026-10-20',provider_data_accepted:true}]};
  return {rows:[]};
