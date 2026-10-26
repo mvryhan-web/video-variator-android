@@ -1,0 +1,25 @@
+name: Agent A Canvas relocation (offline)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/canvas*'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq.js'
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'app/src/main/assets/home-experience.js'
+      - 'tests/agent-a-canvas-relocation-unit.mjs'
+      - '.github/workflows/agent-a-canvas-relocation.yml'
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/agent-a-canvas-relocation-unit.mjs
+      - run: node --check app/src/main/assets/canvas-editor.js
+      - run: node --check app/src/main/assets/deepsyq.js

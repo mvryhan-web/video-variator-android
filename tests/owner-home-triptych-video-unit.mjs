@@ -5,9 +5,9 @@ import { createHash } from 'node:crypto';
 const page=readFileSync(new URL('../app/src/main/assets/deepsyq.html',import.meta.url),'utf8');
 const css=readFileSync(new URL('../app/src/main/assets/home-triptych-video.css',import.meta.url),'utf8');
 const links=[
-  ['canvas','#canvasFeature','media/home/neon-20261018/canvas.webp','media/home/neon-20261018/canvas-card.mp4','Open Canvas →'],
-  ['agent','#agentFeature','media/home/neon-20261018/agent.webp','media/home/neon-20261018/agent-card.mp4','Explore Agent →'],
-  ['apps','ai-apps.html','media/home/neon-20261018/apps.webp','media/home/neon-20261018/apps-card.mp4','Explore AI Apps →'],
+  ['canvas','canvas.html','media/home/neon-20261018/canvas.webp','media/home/neon-20261018/canvas-card.mp4','Canvas'],
+  ['agent','#agentFeature','media/home/neon-20261018/agent.webp','media/home/neon-20261018/agent-card.mp4','AI Agent'],
+  ['apps','ai-apps.html','media/home/neon-20261018/apps.webp','media/home/neon-20261018/apps-card.mp4','AI Apps'],
 ];
 test('only the three approved Home spotlight cards receive real videos with native fallback',()=>{
   const html=page.slice(page.indexOf('<section class="home-feature-triptych"'),page.indexOf('</section>',page.indexOf('<section class="home-feature-triptych"'))+10);
@@ -21,7 +21,8 @@ test('only the three approved Home spotlight cards receive real videos with nati
     assert.ok(a[0].includes('<img src="'+poster+'"'));
     assert.ok(a[0].includes('poster="'+poster+'"'));
     assert.ok(a[0].includes(file));
-    assert.ok(a[0].includes(label));
+    assert.ok(a[0].includes('<strong>'+label+'</strong>'));
+    assert.doesNotMatch(a[0],/<small>|<em>/,'Owner removed marketing microcopy from this spotlight');
     assert.match(a[0],/<video[^>]*autoplay[^>]*muted[^>]*loop[^>]*playsinline/);
     assert.match(a[0],/aria-hidden="true"/);
   }

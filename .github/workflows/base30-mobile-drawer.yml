@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'app/src/main/assets/deepsyq.js'
+      - 'app/src/main/assets/deepsyq.css'
       - 'tests/base30-mobile-drawer.spec.mjs'
       - '.github/workflows/base30-mobile-drawer.yml'
   workflow_dispatch:

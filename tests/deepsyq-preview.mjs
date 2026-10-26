@@ -24,8 +24,13 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
   assert.equal(home.status,200);assert.match(home.headers.get('x-robots-tag')||'',/noindex/);
   const html=await home.text();
   assert.match(html,/<title>Deepsyq/);
-  assert.match(html,/id="quickCreatePrompt"/);
-  assert.match(html,/id="quickCreateFiles"/);
+  assert.doesNotMatch(html,/id="quickCreatePrompt"/);
+  assert.match(html,/id="canvasExampleGrid"/);
+  const canvas=await fetch(base+'/canvas.html');
+  assert.equal(canvas.status,200);
+  const canvasHtml=await canvas.text();
+  assert.match(canvasHtml,/id="quickCreatePrompt"/);
+  assert.match(canvasHtml,/id="quickCreateFiles"/);
   assert.match(html,/design preview/);
   assert.match(html,/<body class="home-neon"><div role="status"/);
   assert.match(html,/id="createWithDeepsyq"/);

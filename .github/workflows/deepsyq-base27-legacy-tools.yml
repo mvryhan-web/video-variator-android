@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'app/src/main/assets/tools-hub.js'
+      - 'app/src/main/assets/everyday-tools-visual.js'
+      - 'app/src/main/assets/everyday-tools-visual.css'
       - 'tests/base-legacy-tools-entry.spec.mjs'
       - '.github/workflows/deepsyq-base27-legacy-tools.yml'
   workflow_dispatch:
@@ -25,6 +27,7 @@ jobs:
       - name: Verify JS and dedicated BASE #27 test
         run: |
           node --check app/src/main/assets/tools-hub.js
+          node --check app/src/main/assets/everyday-tools-visual.js
           node --check tests/base-legacy-tools-entry.spec.mjs
       - run: npx playwright install --with-deps chromium webkit
       - name: Verify legacy link desktop and mobile, without paid requests

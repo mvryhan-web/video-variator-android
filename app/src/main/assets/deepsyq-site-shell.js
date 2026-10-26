@@ -12,19 +12,17 @@
   {label:'Audio',icon:'♫',url:'generate-studio.html?studio=audio',key:'audio'},
   {section:'Tools'},
   {label:'AI Apps',icon:'◇',url:'ai-apps.html',key:'apps'},
-  {label:'Canvas',icon:'✎',url:'deepsyq.html#quickCreateForm',key:'canvas'},
+  {label:'Canvas',icon:'✎',url:'canvas.html',key:'canvas'},
   {label:'All Tools',icon:'⊞',url:'free-tools.html',key:'tools'},
   {label:'Video Uniquifier',icon:'▤',url:'index.html',key:'legacy'},
   {section:'Library'},
-  {label:'Assets',icon:'▦',url:'deepsyq.html#recentCreations',key:'assets'},
+  {label:'Assets',icon:'▦',url:'generate-studio.html?view=history',key:'assets'},
   {label:'My Creations',icon:'▣',url:'generate-studio.html?view=history',key:'history'},
-  {label:'Favorites',icon:'♡',pending:true},
   {section:'Community'},
   {label:'Inspiration',icon:'◌',url:'deepsyq.html#inspirationPreview',key:'inspiration'},
-  {label:'Challenges',icon:'✥',pending:true},
   {label:'Affiliate',icon:'↗',pending:true},
   {section:'More'},
-  {label:'Pricing',icon:'＄',url:'ai-pricing.html',key:'pricing'}
+  {label:'Pricing',icon:'＄',url:'pricing.html',key:'pricing'}
  ];
  const path=location.pathname.split('/').pop() || 'deepsyq.html';
  const query=new URLSearchParams(location.search);
@@ -32,8 +30,8 @@
   (query.get('view')==='history'?'history':
    query.get('studio')==='video'?'video':
    ['audio','music'].includes(query.get('studio'))?'audio':'image'):
-  path==='ai-apps.html'?'apps':path==='inspiration.html'?'inspiration':
-  path==='ai-pricing.html'?'pricing':
+  path==='canvas.html'?'canvas':path==='ai-apps.html'?'apps':path==='inspiration.html'?'inspiration':
+  ['pricing.html','ai-pricing.html'].includes(path)?'pricing':
   path==='index.html'?'legacy':
   ['free-tools.html','audio-studio.html','avatar-studio.html','mobile-utility.html',
    'photo-collage.html','simple-background-remover.html','smart-reminders.html','teleprompter.html'].includes(path)?'tools':'';

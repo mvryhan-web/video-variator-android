@@ -20,13 +20,26 @@ test('dashboard keeps tools secondary, honest availability and supported navigat
  await expect(page.locator('.hero-stage h1')).toHaveCount(0);
  await expect(page.locator('.hero-stage')).not.toContainText('beyond limits');
  await expect(page.locator('#homeHeroCarousel')).toBeVisible();
- await expect(page.locator('#sidebar nav a[href="#quickCreateForm"]')).toContainText('Canvas');
+ await expect(page.locator('#sidebar nav a[href="canvas.html"]')).toContainText('Canvas');
  await expect(page.locator('#studioStatus')).toContainText('owner preview');
  await expect(page.locator('.plan')).toHaveCount(4);
- await expect(page.locator('.trial-plan .plan-action')).toHaveAttribute('href','ai-pricing.html#trialOffer');
- await expect(page.locator('.lifetime')).toContainText('does not provide unlimited');
+ await expect(page.locator('.trial-plan .plan-action')).toHaveAttribute('href','pricing.html#plans');
+ await expect(page.locator('.lifetime-disclaimer')).toContainText('does not provide unlimited AI generation');
+ await expect(page.locator('.lifetime-disclaimer')).toContainText('separate prepaid AI credits');
+ // This fixture offers a configured tool plan. A logged-out click opens auth,
+ // never a Stripe session or a payment request.
+ let checkoutPosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname==='/api/billing/checkout')checkoutPosts++;});
+ await page.goto('/pricing.html');
+ await expect(page.locator('.price-lifetime .price-plan-action')).toBeVisible();
+ await page.locator('.price-lifetime .price-plan-action').click();
+ await expect(page.locator('#authModal')).toBeVisible();
+ expect(checkoutPosts).toBe(0);
+ await page.keyboard.press('Escape');
+ await expect(page.locator('#authModal')).toBeHidden();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  await page.screenshot({path:info.outputPath('deepsyq.png'),fullPage:true});
+ await home(page);
  await page.locator('#homeQuickPrompt').fill('Test creative image');await page.locator('[data-home-kind="image"]').click();await expect(page).toHaveURL(/studio=image/);
  await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await expect(page.locator('[data-kind="image"]')).toHaveAttribute('aria-pressed','true');await expect(page.locator('#prompt')).toHaveValue('Test creative image');
  await page.locator('.topbar .back').click();await expect(page).toHaveURL(/deepsyq.html/);
@@ -84,11 +97,11 @@ test('Deepsyq keeps a collapsible left rail and shows only selectable configured
 test('dashboard quick-create prepares a local image draft without any paid request',async({page})=>{
  await fixtures(page);let jobPosts=0;
  page.on('request',request=>{if(request.url().includes('/api/studio/jobs')&&request.method()==='POST')jobPosts++;});
- await home(page);
+ await home(page); await page.goto('/canvas.html');
  await page.locator('#quickCreatePrompt').fill('A watercolor greenhouse filled with sunlight');
  await page.locator('#quickCreateKind').selectOption('image');
  await page.locator('#quickCreateSubmit').click();
- await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=dashboard/);
+ await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=canvas/);
  await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await expect(page.locator('[data-kind="image"]')).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('#prompt')).toHaveValue('A watercolor greenhouse filled with sunlight');
  await expect(page.locator('#consent')).not.toBeChecked();
@@ -98,7 +111,7 @@ test('dashboard quick-create prepares a local image draft without any paid reque
 test('Canvas starter prompts are editable, preserve existing drafts on cancel, and do not call paid AI',async({page})=>{
  await fixtures(page);
  let posts=0;page.on('request',r=>{if(r.url().includes('/api/studio/jobs')&&r.method()==='POST')posts++;});
- await home(page);
+ await home(page); await page.goto('/canvas.html');
  await page.locator('[data-quick-starter="social-video"]').click();
  await expect(page.locator('#quickCreateKind')).toHaveValue('video');
  await expect(page.locator('#quickCreatePrompt')).toHaveValue(/short, engaging social video/);
@@ -113,7 +126,7 @@ test('Canvas saves only text and kind within this tab; refresh drops photos and 
  await fixtures(page);
  let jobPosts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')jobPosts++;});
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
- await home(page);
+ await home(page); await page.goto('/canvas.html');
  await page.locator('#quickCreatePrompt').fill('A very specific personal video idea');
  await page.locator('#quickCreateKind').selectOption('video');
  await page.locator('#quickCreateFiles').setInputFiles({name:'private-photo.png',mimeType:'image/png',buffer:png});
@@ -148,7 +161,7 @@ test('Canvas quick-create accepts local reference photos, allows removal and nev
  }}));
  let jobPosts=0;page.on('request',req=>{if(req.url().includes('/api/studio/jobs')&&req.method()==='POST')jobPosts++;});
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==','base64');
- await home(page);
+ await home(page); await page.goto('/canvas.html');
  await page.locator('#quickCreatePrompt').fill('Natural product photograph with soft light');
  await page.locator('#quickCreateFiles').setInputFiles([
   {name:'reference-1.png',mimeType:'image/png',buffer:png},
@@ -158,7 +171,7 @@ test('Canvas quick-create accepts local reference photos, allows removal and nev
  await page.getByRole('button',{name:'Remove reference 2'}).click();
  await expect(page.locator('.quick-reference')).toHaveCount(1);
  await page.locator('#quickCreateSubmit').click();
- await expect(page).toHaveURL(/studio=image&from=dashboard/);
+ await expect(page).toHaveURL(/studio=image&from=canvas/);
  await expect(page.locator('#prompt')).toHaveValue('Natural product photograph with soft light');
  await expect(page.locator('#refPreview img')).toHaveCount(1);
  await expect(page.locator('#consent')).not.toBeChecked();
@@ -197,8 +210,8 @@ test('checkout uses original plan endpoint and explains unavailable payments',as
  await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','fixture'));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Creator'}}}));let plan;
  await page.route('**/api/billing/checkout',async r=>{plan=r.request().postDataJSON().plan;await r.fulfill({status:503,json:{error:'BILLING_NOT_CONFIGURED'}});});
- await home(page);await page.getByRole('button',{name:'Choose Basic',exact:true}).click();
- await expect(page.locator('#paymentStatus')).toContainText('No payment was taken');expect(plan).toBe('basic');
+ await page.goto('/pricing.html');await page.locator('.price-basic .price-plan-action').click();
+ await expect(page.locator('#pricingStatus')).toContainText('No payment is confirmed by this page');expect(plan).toBe('basic');
 });
 test('comparison is crawlable and does not pretend AI chat exists',async({page})=>{
  await page.goto('/deepsyq-vs-deepseek.html');await expect(page).toHaveTitle(/Deepsyq vs DeepSeek/);
@@ -264,50 +277,53 @@ test('dashboard featured workflows are data-driven and disappear when empty',asy
 });
 
 
-test('pricing shows the planned $0.99 trial without creating misleading live checkout',async({page})=>{
- await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000}}}}));
+test('legacy Trial bookmark opens the proposed $0.99 plan with zero payment',async({page})=>{
+ await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000}},billingConfigured:false}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',packs:[]}}));
+ let paid=0;page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:billing|ai-billing)\/checkout/.test(new URL(r.url()).pathname))paid++;});
  await page.goto('/ai-pricing.html#trialOffer');
- await expect(page.locator('#trialOffer')).toBeVisible();
- await expect(page.locator('#trialOffer')).toContainText('$0.99');
- await expect(page.locator('#trialOffer')).toContainText('Credits shown before checkout');
- await expect(page.locator('#trialOffer')).toContainText('No charges in this preview');
- await expect(page.locator('#trialOffer')).toContainText('Not available to purchase yet.');
- await expect(page.locator('#trialOffer button')).toBeDisabled();
- await expect(page.locator('#trialOffer a')).toHaveAttribute('href','deepsyq.html#homeQuickBar');
- await expect(page.locator('#toolPlans')).toContainText('Basic');
- await expect(page.locator('#aiStatus')).toContainText('No AI credit packs');
+ await expect(page).toHaveURL(/\/pricing\.html#plans$/);
+ await expect(page.locator('#planCards .price-trial')).toContainText('$0.99');
+ await expect(page.locator('#planCards .price-trial')).toContainText('NOT active yet');
+ await expect(page.locator('#planCards')).toContainText('Basic');
+ await page.locator('.price-trial .price-plan-action').click();
+ await expect(page.locator('#authModal')).toBeVisible();
+ expect(paid).toBe(0);
 });
-test('pricing mobile trial discloses disconnected checkout and keeps accessible layout',async({page})=>{
+test('legacy Trial bookmark on mobile preserves the truthful new layout',async({page})=>{
  await page.setViewportSize({width:390,height:844});
- await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000}}}}));
+ await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000}},billingConfigured:false}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',packs:[]}}));
  await page.goto('/ai-pricing.html#trialOffer');
- await expect(page.locator('#trialOffer')).toBeVisible();
- await expect(page.locator('#trialOffer')).toContainText('Credit accounting is implemented');
- await expect(page.locator('#trialOffer')).toContainText('not connected to the AI wallet');
- await expect(page.locator('#trialOffer button')).toBeDisabled();
- await expect(page.locator('#toolPlans')).toContainText('Basic');
+ await expect(page).toHaveURL(/\/pricing\.html#plans$/);
+ await expect(page.locator('#planCards .price-trial')).toContainText('not yet active');
+ await expect(page.locator('#planCards')).toContainText('Basic');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
- const visual=await page.locator('#trialOffer').evaluate(el=>{const a=el.getBoundingClientRect();return{width:a.width,viewport:innerWidth}});
+ const visual=await page.locator('#planCards .price-trial').evaluate(el=>{const a=el.getBoundingClientRect();return{width:a.width,viewport:innerWidth}});
  expect(visual.width).toBeLessThanOrEqual(visual.viewport);
 });
-test('pricing keeps existing Lifetime separate from AI credit packs and uses server prices only',async({page})=>{
+test('single Pricing uses server Lifetime prices, AI packs remain separate and disabled',async({page})=>{
  await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur',unlimited:true}}}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:false,mode:'test',livePaymentsEnabled:false,packs:[{sku:'configured',credits:4200,amount:1900,currency:'usd'}],rates:[]}}));
- await page.goto('/ai-pricing.html');await expect(page.locator('#toolPlans')).toContainText('Lifetime');await expect(page.locator('#toolPlans')).toContainText('does not include unlimited AI-generation credits');await expect(page.locator('#aiPacks')).toContainText('4,200 AI credits');await expect(page.locator('#aiPacks')).toContainText('$19');await expect(page.locator('#aiPacks button')).toBeDisabled();
+ await page.goto('/pricing.html');
+ await expect(page.locator('#planCards .price-lifetime')).toContainText('Lifetime');
+ await expect(page.locator('#planCards .price-lifetime')).toContainText('Lifetime does not include unlimited paid AI generation');
+ await expect(page.locator('#planCards .price-lifetime')).toContainText('€2,999');
+ await expect(page.locator('#creditCards .price-credit-card')).toHaveCount(5);
+ await expect(page.locator('#creditStatus')).toContainText('not available');
 });
-
-
-test('dashboard shows the authenticated AI wallet only when AI billing is enabled',async({page})=>{
+test('Home no longer exposes duplicate private AI wallet; it belongs to Pricing only',async({page})=>{
  await fixtures(page);await page.addInitScript(()=>localStorage.setItem('vv_token','wallet-user'));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{name:'Wallet User',isAdmin:false}}}));
  await page.route('**/api/ai-billing/config',r=>r.fulfill({json:{enabled:true,mode:'test',livePaymentsEnabled:false,unit:'AI credits',packs:[],rates:[],revision:'x'}}));
  await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:4200,reserved:150,debt:0}}));
- await home(page);await expect(page.locator('#aiWalletLink')).toBeVisible();await expect(page.locator('#aiWalletAvailable')).toHaveText('4,200');await expect(page.locator('#aiWalletHeld')).toHaveText('150 held');await expect(page.locator('#aiWalletLink')).toHaveAttribute('href','ai-pricing.html');
+ await page.route('**/api/ai-wallet/history',r=>r.fulfill({json:{items:[]}}));
+ await page.route('**/api/ai-wallet/config',r=>r.fulfill({json:{welcomeEnabled:false,welcomeCredits:0}}));
+ await home(page);await expect(page.locator('#aiWalletLink')).toBeHidden();
+ await page.goto('/pricing.html#wallet');
+ await expect(page.locator('#walletSummary')).toContainText('4,200');
+ await expect(page.locator('#walletSummary')).toContainText('150');
 });
-
-
 test('Pricing shows signed-in AI wallet and recent ledger activity',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vv_token','pricing-user'));
  await page.route('**/api/config',r=>r.fulfill({json:{plans:{basic:{price:9,limit:750},pro:{price:24,limit:2250},business:{price:99,limit:15000},lifetime:{price:2999,currency:'EUR'}}}}));
@@ -315,9 +331,8 @@ test('Pricing shows signed-in AI wallet and recent ledger activity',async({page}
  await page.route('**/api/ai-wallet/config',r=>r.fulfill({json:{welcomeEnabled:false,welcomeCredits:0}}));
  await page.route('**/api/ai-wallet/balance',r=>r.fulfill({json:{available:4050,reserved:150,debt:0}}));
  await page.route('**/api/ai-wallet/history',r=>r.fulfill({json:{items:[{kind:'reserve',reference:'job-1',available_delta:-150,reserved_delta:150,debt_delta:0,created_at:'2026-10-15T10:00:00Z'},{kind:'welcome_grant',reference:'welcome',available_delta:4200,reserved_delta:0,debt_delta:0,created_at:'2026-10-15T09:00:00Z'}]}}));
- await page.goto('/ai-pricing.html');await expect(page.locator('#walletSection')).toBeVisible();await expect(page.locator('#walletSummary')).toContainText('4,050');await expect(page.locator('#walletSummary')).toContainText('150');await expect(page.locator('#walletHistory')).toContainText('Reserved for generation');await expect(page.locator('#walletHistory')).toContainText('Welcome credits');
+ await page.goto('/pricing.html#wallet');await expect(page.locator('#walletSection')).toBeVisible();await expect(page.locator('#walletSummary')).toContainText('4,050');await expect(page.locator('#walletSummary')).toContainText('150');await expect(page.locator('#walletHistory')).toContainText('Reserved for generation');await expect(page.locator('#walletHistory')).toContainText('Welcome credits');
 });
-
 
 test('retired Inspiration URL opens Home and changes media filters locally',async({page})=>{
  await fixtures(page);
@@ -357,8 +372,9 @@ test('featured owned video is promoted but original homepage sections and images
  await expect(page.locator('.home-create-grid .tile-video')).toHaveAttribute('href','generate-studio.html?studio=video');
  await expect(page.locator('.home-create-grid .tile-audio')).toHaveAttribute('href','generate-studio.html?studio=audio');
  await expect(page.locator('a[aria-label="History"]')).toHaveAttribute('href','generate-studio.html?view=history');
- await expect(page.locator('.history-links a[href="index.html#history"]')).toBeVisible();
- await expect(page.locator('.history-links a[href="index.html#history"]')).toContainText('Video projects');
+ // Owner removed the three-card Home history marketing section; Studio History navigation remains.
+ await expect(page.locator('#history')).toHaveCount(0);
+ await expect(page.locator('#recentCreationsGrid')).toHaveCount(0);
 });
 test('approved video appears in the real homepage hero but does not erase Canvas or original sections',async({page})=>{
  // Navigation/media-element assertions are separate from serving real MP4 bytes.
@@ -374,7 +390,7 @@ test('approved video appears in the real homepage hero but does not erase Canvas
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('poster','/owner-owned-poster.jpg');
  await expect(page.locator('#inspirationHeroVideo')).toHaveJSProperty('muted',true);
  await expect(page.locator('#inspirationHeroFeature')).toHaveAttribute('href','deepsyq.html#inspirationPreview');
- await expect(page.locator('#quickCreateForm')).toBeVisible();
+ await expect(page.locator('#canvasFeature #canvasExampleGrid .canvas-example')).toHaveCount(9);
  await expect(page.locator('.home-create-grid .home-create-card')).toHaveCount(6);
  await expect(page.locator('.home-feature-triptych .home-feature-spotlight')).toHaveCount(3);
  await expect(page.locator('.home-create-grid .tile-image')).toHaveAttribute('href','generate-studio.html?studio=image');
@@ -417,7 +433,7 @@ test('video carousel switches only among owner-approved videos and retains exist
  await page.locator('[data-inspiration-kind="image"]').click();
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(1);
  await expect(page.getByRole('button',{name:'View Preserved owned photo inspiration'})).toBeVisible();
- await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
+ await expect(page.locator('#canvasFeature #canvasExampleGrid .canvas-example')).toHaveCount(9);
 });
 test('failed owner media clips never trap the Home carousel or erase Canvas',async({page})=>{
  await page.addInitScript(()=>{
@@ -444,7 +460,7 @@ test('failed owner media clips never trap the Home carousel or erase Canvas',asy
  await expect(page.locator('#homeHeroNext')).toBeHidden();
  await expect(page.locator('#homeHeroSlideLink')).toBeHidden();
  await expect(page.locator('#inspirationHeroVideo')).not.toHaveAttribute('src',/.+/);
- await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
+ await expect(page.locator('#canvasFeature #canvasExampleGrid .canvas-example')).toHaveCount(9);
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(3);
  await expect(page.getByRole('button',{name:'View Original owner still inspiration'}).getByRole('img')).toHaveAttribute('src','/owner-image.png');
  await expect(page.locator('#inspirationEmpty')).toBeHidden();
@@ -583,8 +599,9 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
  await expect(page.locator('#promoDialog')).toBeVisible();
  await expect(page.locator('#promoDialog')).toContainText('not available yet');
  await page.locator('#promoDialog button[type=submit][value=close]').click();
- await expect(page.locator('#canvasFeature #quickCreateForm')).toBeVisible();
- await expect(page.locator('#agentFeature')).toContainText(/coming soon/i);
+ await expect(page.locator('#canvasFeature #canvasExampleGrid .canvas-example')).toHaveCount(9);
+ await expect(page.locator('#agentFeatureTitle')).toHaveText('AI Agent');
+ await expect(page.locator('#agentFeature .creative-example-card')).toHaveCount(8);
  await expect(page.locator('#appsFeature')).toBeVisible();
  await expect(page.locator('#inspirationPreview')).toHaveCount(1);
  const inDocumentOrder=await page.evaluate(()=>{
@@ -592,7 +609,8 @@ test('owner-approved homepage layout keeps the real Canvas and section order',as
   return nodes.every((node,i)=>node&&(i===nodes.length-1||Boolean(node.compareDocumentPosition(nodes[i+1])&Node.DOCUMENT_POSITION_FOLLOWING)));
  });
  expect(inDocumentOrder).toBe(true);
- await expect(page.locator('#quickCreateKind')).toBeVisible();
+ await expect(page.locator('#homeQuickForm .home-compose-modes')).toBeVisible();
+ await expect(page.locator('#homeQuickForm [data-home-kind]')).toHaveCount(4);
  await expect(page.locator('#sidebar a[href="index.html"]')).toBeVisible();
 });
 test('homepage inspiration All Video Image filters only owned API cards',async({page})=>{

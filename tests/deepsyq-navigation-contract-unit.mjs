@@ -30,11 +30,11 @@ test('History navigation opens saved results, not a Home teaser anchor',()=>{
 });
 
 test('Canvas and local Assets anchors exist, disabled features remain non-links',()=>{
- assert.equal(homeNavigationTarget('Canvas'),'#quickCreateForm');
- assert.equal(homeNavigationTarget('Assets and saved creations'),'#recentCreations');
- for(const id of ['quickCreateForm','recentCreations']){
-  assert.ok(home.includes('id="'+id+'"'),'Missing anchor target '+id);
- }
+ assert.equal(homeNavigationTarget('Canvas'),'canvas.html');
+ assert.equal(homeNavigationTarget('Assets and saved creations'),'generate-studio.html?view=history');
+ assert.ok(!home.includes('id="quickCreateForm"'),'Home must not retain Canvas editor');
+ assert.ok(source('canvas.html').includes('id="quickCreateForm"'),'Canvas editor must exist on dedicated page');
+ assert.ok(!home.includes('id="recentCreations"'),'Removed Home history cards must not be restored');
  assert.match(home,/<span class="nav-pending" aria-label="AI Agent coming soon"/);
 });
 

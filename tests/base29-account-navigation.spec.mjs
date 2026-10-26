@@ -53,31 +53,30 @@ test('BASE #29 Canvas link opens actual Home draft, not mistaken Image Studio',a
  await page.goto('/ai-apps.html');
  const nav=page.getByRole('navigation',{name:'Main navigation'});
  const canvas=nav.getByRole('link',{name:'Canvas',exact:true});
- await expect(canvas).toHaveAttribute('href','deepsyq.html#quickCreateForm');
+ await expect(canvas).toHaveAttribute('href','canvas.html');
  await canvas.click();
- await expect(page).toHaveURL(/\/deepsyq\.html#quickCreateForm$/);
+ await expect(page).toHaveURL(/\/canvas\.html$/);
  await expect(page.locator('#quickCreateForm')).toBeAttached();
  await expect(page.locator('#quickCreatePrompt')).toBeAttached();
  expect(paidWrites).toBe(0);
 });
 
-test('BASE #29 AI Agents link leads to honest coming-soon section, never fake paid generation',async({page})=>{
+test('BASE #29 AI Agents stay clearly marked coming soon and expose concepts without paid generation',async({page})=>{
  let paidWrites=0;
  page.on('request',request=>{
-  if(request.method()==='POST'&&/\/api\/(?:studio\/jobs|speech|billing|payments)/.test(new URL(request.url()).pathname))paidWrites++;
+  if(request.method()==='POST'&&new URL(request.url()).pathname.startsWith('/api/'))paidWrites++;
  });
  await page.goto('/ai-apps.html');
  const nav=page.getByRole('navigation',{name:'Main navigation'});
  const agents=nav.getByRole('link',{name:'AI Agents — coming soon'});
  await expect(agents).toHaveAttribute('href','deepsyq.html#agentFeature');
  await agents.click();
- await expect(page).toHaveURL(/\/deepsyq\.html#agentFeature$/);
+ await expect(page).toHaveURL(url=>url.pathname.endsWith('/deepsyq.html')&&url.hash==='#agentFeature');
  const panel=page.locator('#agentFeature');
- await expect(panel).toContainText(/COMING SOON|In development/i);
- await expect(panel).toContainText(/Agent execution is (?:still under development|in development)/);
+ await expect(panel.getByRole('heading',{name:'AI Agent'})).toBeVisible();
+ await expect(panel.locator('button[data-creative-example]')).toHaveCount(8);
  expect(paidWrites).toBe(0);
 });
-
 test('BASE #29 all seven main destinations remain discoverable at narrow mobile widths',async({page})=>{
  for(const width of [320,390]){
   await page.setViewportSize({width,height:812});
@@ -103,13 +102,10 @@ test('BASE #29 My Creations opens existing Home Recent creations, not a fake lib
  });
  await page.goto('/ai-apps.html');
  const link=page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'My Creations',exact:true});
- await expect(link).toHaveAttribute('href','deepsyq.html#recentCreations');
+ await expect(link).toHaveAttribute('href','generate-studio.html?view=history');
  await link.click();
- await expect(page).toHaveURL(/\/deepsyq\.html#recentCreations$/);
- const panel=page.locator('#recentCreations');
- await expect(panel).toBeAttached();
- await expect(panel.locator('#recentCreationsGrid')).toBeAttached();
- await expect(panel.locator('#recentCreationsStatus')).toBeAttached();
+ await expect(page).toHaveURL(/\/generate-studio\.html\?view=history(?:&studio=[a-z]+)?$/);
+ await expect(page.locator('#showHistory')).toHaveAttribute('aria-pressed','true');
  expect(paidWrites).toBe(0);
 });
 

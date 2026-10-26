@@ -5,6 +5,7 @@
  'use strict';
  const main=document.querySelector('main.free-tools-page.tools-hub');
  if(!main || main.querySelector('#etShowcase'))return;
+ const lang=(navigator.language||'en').slice(0,2);
  const asset='media/approved-design-20261023/09_Everyday_Tools.png';
  const make=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
  const svgNS='http://www.w3.org/2000/svg';
@@ -34,7 +35,7 @@
  const bar=make('div','et-topbar');
  const search=make('input','et-search');search.type='search';search.placeholder='Search anything...';search.setAttribute('aria-label','Search tools');
  const barLinks=make('nav','et-top-actions');barLinks.setAttribute('aria-label','Quick links');
- for(const [label,url] of [['Help','index.html#faq'],['Credits','ai-pricing.html'],['Pricing','ai-pricing.html']]){
+ for(const [label,url] of [['Help','index.html#faq'],['Credits','pricing.html'],['Pricing','pricing.html']]){
   const a=make('a','et-top-link',label);a.href=url;barLinks.append(a);
  }
  const invite=make('button','et-top-link','Invite Friend');invite.type='button';
@@ -103,7 +104,13 @@
  const banner=make('a','et-uniquifier');banner.href='index.html';
  const iconArt=crop([205,867,198,161],'et-play-art');const videoArt=crop([807,867,590,161],'et-video-art');
  const bannerCopy=make('div','et-uniquifier-copy');
- bannerCopy.append(make('h2','','Video Uniquifier'),make('p','','Transform your videos into something new and original.'),make('small','','Make your content stand out with a fresh, unique look.'),make('span','et-card-button','Open Video Uniquifier  →'));
+ const legacyText={
+  ru:['Уникализация видео','Создайте новый уникальный вариант своего видео.','Исходные режимы Gentle, Balance и Dynamic.','Открыть уникализацию видео →'],
+  fr:['Video Uniquifier','Donnez un nouveau style à vos vidéos.','Modes Gentle, Balance et Dynamic.','Ouvrir Video Uniquifier →'],
+  uk:['Унікалізація відео','Створіть новий унікальний варіант свого відео.','Початкові режими Gentle, Balance і Dynamic.','Відкрити унікалізацію відео →'],
+  en:['Video Uniquifier','Transform your videos into something new and original.','Make your content stand out with a fresh, unique look.','Open Video Uniquifier →']
+ }[lang]||['Video Uniquifier','Transform your videos into something new and original.','Make your content stand out with a fresh, unique look.','Open Video Uniquifier →'];
+ bannerCopy.append(make('h2','',legacyText[0]),make('p','',legacyText[1]),make('small','',legacyText[2]),make('span','et-card-button',legacyText[3]));
  banner.append(iconArt,videoArt,bannerCopy);showcase.append(banner);
  main.prepend(showcase);
  // Modify only this page's local sidebar caption; Home and other pages remain untouched.

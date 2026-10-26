@@ -26,12 +26,19 @@
  height:48px;min-height:48px;display:flex;align-items:center;gap:12px;
  padding:6px 13px;border-bottom:1px solid #ffffff1a;color:#b4bad1;font-size:11px;
 }
+/* Owner-approved: unframed × on Inspiration, Canvas and Agent detail previews.
+   The 34px hit target and working dialog close remain unchanged. */
 .inspiration-detail-close{
- flex:0 0 auto;width:34px;height:34px;border-radius:50%;
- border:1px solid #6b728a6a;background:#ffffff14;color:white;
- font-size:25px;line-height:1;cursor:pointer;
+ flex:0 0 auto;width:34px;height:34px;padding:0;appearance:none;
+ border:0;border-radius:0;background:transparent;box-shadow:none;
+ outline:none!important;color:#fff;font-size:25px;line-height:1;cursor:pointer;
 }
-.inspiration-detail-close:hover,.inspiration-detail-close:focus-visible{border-color:#bb90ff;outline:2px solid #9354f4}
+.inspiration-detail-close:hover{
+ border:0;outline:none!important;background:transparent;box-shadow:none;color:#dff9ff;
+}
+html .inspiration-detail-dialog .inspiration-detail-close:focus-visible{
+ border:0;outline:none!important;background:transparent;box-shadow:none;color:#73e4ff;
+}
 .inspiration-detail-image-area{
  flex:1;min-height:0;min-width:0;display:flex;align-items:center;
  justify-content:center;padding:14px;overflow:hidden;

@@ -1,4 +1,52 @@
+## Coordinator #5 — Cycle31 / 25 Oct 2026 — CURRENT QUEUES
+
+DEV sampled `61b73fff` (refresh SHA). [Exact PR/CI + role queues](docs/DEEPSYQ_COORDINATOR_CYCLE31_20261025.md): A #421 DONE, #414 open; B #368/#323 security peer; C #352 old 6/6 but 85 behind; D independent consent/PG/wallet, #333 real 2× blocked; owner #419 31 PASS/5 FAIL/1 CANCELLED, PR413 8 PASS/2 FAIL; Jules #316/#317/#278 ACK only, no duplicates. No main/paid AI/live Stripe; A–D self-merge D16, B↔D peer.
+
+---
+
+## Coordinator #5 — Cycle30 / owner Home width regression / 25 Oct 2026 — CURRENT ACTIVE HANDOFF
+
+**Sampled current feature DEV:** `d5a3c6d30bda5d67b01a96070eebb50a59b0ae79` before coordinator docs write, after **Agent A PR415 MERGED and Render DEV-preview LIVE** on exact SHA `d5a3c6d3` (deploy `dep-dbf2ndlg1s2s73e8v0jg`; 6/6 exact PR source native checks PASS). See [Cycle30 verified report](docs/DEEPSYQ_COORDINATOR_CYCLE30_20261025.md) and Issue [#233](https://github.com/mvryhan-web/video-variator-android/issues/233). This is a point-in-time SHA, never a permanent HEAD. PR412/415 Pricing DONE at DEV/preview only; no real commercial payment acceptance.
+
+**A #72:** PR414 `8c326a53` 5/5 existing exact SHA CI success, NOT merged, needs current DEV + owner/Admin **PR413** conflict handoff: both edit `tests/deepsyq.spec.mjs`; retain actual tested assertions, avoid duplicate/cherry-pick. After A's own safe D16 merge and no remaining Pricing work, diagnose OWNER-REPORTED **small/narrow Canvas/AI Agent/AI Apps cards inside `#createWithDeepsyq`** by comparing desktop widths against approved reference; DO NOT alter Home/six films without owner-approved scoped fix. A international SEO after safe acceptance.
+
+**Owner/Admin PR413:** new HEAD `682c027a...` DRAFT, actual five net diff files including **shared A PR414 `tests/deepsyq.spec.mjs`**; own CI in progress (2 PASS, 2 running, 4 queued at poll). Must coordinate exact test source and no-go mobile geometry before selfmerge. **B #73 + D #75:** #368 `dadbc5e` 17 success+1 cancelled; #323 `88113f7` 26/26 success but D final tenant-consent/revoke-before-provider PG safety PASS missing. Their existing PRs are behind DEV; B↔D peer direct. #333 true per-model account 2× real NET margin blocked; five #323∩#333 net file overlaps. **C #74:** PR352 5/5 old-head success but 75+ DEV commits behind; same-PR non-force refresh / new exact CI / B+D peer; PR350 and PR402 DONE. **Jules #316/#317/#278:** last bot ACK only; no new tasks/relabel until genuine READY/FAIL verified. BASE20 Product Video retired 404; F1–F8 aliases; no main/prod, Stripe live, paid AI, dangerous migration, active Trial, or owner Home redesign. **Coordinator #5** docs/claims/issue only, not A–D reviewer/merger (D16).
+
+---
+
+## Coordinator #5 — Cycle29 / 25 Oct 2026 — ACTIVE EXACT-SHA QUEUE (supersedes Cycle27/Cycle28 pointers)
+
+**Sampled DEV before docs edits:** `0c62e773ca43d73924fd03c26a6c39b87c7c19a1`; *never treat old sampled SHA as branch head*. [Cycle29 GitHub evidence and five-path B/D conflict matrix](docs/DEEPSYQ_COORDINATOR_CYCLE29_20261025.md) and [Issue #233](https://github.com/mvryhan-web/video-variator-android/issues/233). **A #72:** Pricing PR412 MERGED/DEV preview; existing A PR414 test-only 3/5 PASS+2 running and follow-up full-width/web-plan entitlements + existing login modal owner directive; 12 CDN independent visuals/one canonical ai-pricing wallet unverified. **B #73:** PR368 exact `dadbc5e` 17 SUCCESS+1 CANCELLED, 15 DEV commits behind; PR323 `88113f7` 26/26 SUCCESS but D independent consent/PG/revoke/purchased gate not passed. **C #74:** existing C20 PR352 `4a5ae19` 5/5 old-head green, 70 DEV commits behind; same-PR non-force update and B+D peer; then C-owned AI Apps My Creations real History route. **D #75:** independent current-head PR323/368 B↔D peer; 5 net PR323∩PR333 server/tests shared paths, #333 true realized Stripe/provider/storage >=2× unresolved, #413 owner/Admin mobile draft 4/6 checks finished. **Jules #316/#317/#278:** bot ACK only, no new task/label. **PR280 and PR42 main HOLD**, production/main/paid AI/real Stripe/dangerous migration OFF. **DONE retained:** PR402, PR350, PR374, PR412, owner Home/media; BASE20 retired 404, F1–F8 aliases, Trial proposed/OFF. A–D self-merge safe DEV work per D16, no coordinator approval requirement. This is coordinator-only documentation, not release permission.
+
+---
+
+## Coordinator #5 — Cycle27 verified GitHub queues — 2026-10-25 ~15:20 UTC (17:20 Europe/Paris)
+
+DEV sampled at `6d9a4dafcb747739953f58fc0e1b909e6ef3ca77` (refresh before edits). Current risk/next exact-SHA queues in [Cycle27 coordinator report](docs/DEEPSYQ_COORDINATOR_CYCLE27_20261025.md) and [Issue #233](https://github.com/mvryhan-web/video-variator-android/issues/233). PR402 BASE30 mobile drawer MERGED (9/9 exact PR-head PASS, DEV preview; whole BASE30 PARTIAL). A: owner active PR412 Pricing 12-art candidate, 17 CI NOT terminal, reconcile single canonical Pricing route. B: PR368 17/18 PASS and PR323 25/26 PASS but D final peer NOT signed, both behind current DEV. C: PR352 5/5 old head PASS, ahead8/behind57 current DEV; refresh SAME PR, B+D peer, no duplicate. D: final PR323 revoke/postgres-pool/concurrency + PR368 account boundary and PR333 real net 2× independent gate. Jules #316/#317/#278: bot ACK only, no Ready/code confirmed; no duplicate task. PR280/PR42 main HOLD, real Stripe, paid AI, DB mutation, production off. Historic DONE/BASE20 cancelled/F1–F8 aliases unchanged. Newer merge/CI may supersede this sampled snapshot.
+
+---
+
+
+
+## BASE #30 — PR #402 DEV publication verified — 2026-10-25 (Europe/Paris)
+
+Final tested head `22e74b3ac0dda8abad6e4a73198df182022f9666`: all **9/9 workflows SUCCESS**. Focused drawer [40205113997](https://github.com/mvryhan-web/video-variator-android/actions/runs/40205113997) checks real brand pointer access and actual close-button clicks at320/390px, inert/focus trapping, Escape/outside tap, account/admin/share, desktop rail and no paid calls. Platform [40205113871](https://github.com/mvryhan-web/video-variator-android/actions/runs/40205113871): **365/365**. Home [40205113846](https://github.com/mvryhan-web/video-variator-android/actions/runs/40205113846): **64/64** privacy/fallback plus visual/pricing checks.31-screen [40205113867](https://github.com/mvryhan-web/video-variator-android/actions/runs/40205113867) SUCCESS. Media [40205113938](https://github.com/mvryhan-web/video-variator-android/actions/runs/40205113938): **86/86**, real iOS full-film1/1 and desktop/Android MP4 playback3/3.
+
+Merged DEV commit `d047a6fc7b0295477d55fb5a2fe87cfdbb054d2f`; Render deploy `dep-dbf1rj1srm7s73bfjfb0` **LIVE** on that exact commit. Public preview https://deepsyq-visual-preview-20261016.onrender.com/ reloaded and visually checked; actual desktop collapse/expand worked, approved carousel loaded and advanced, preview restrictions remain visible. Mobile behavior is verified in Chromium/WebKit CI, not a physical-phone live qualification. Bounded drawer fix is DEV LIVE VERIFIED; whole BASE #30 stays PARTIAL until full physical-device release acceptance. Earlier failed9c3d candidate is superseded by this green head.
+
+Next priorities: BASE #24/#35/#36 existing PR368 conflicts with current DEV and requires scoped reconciliation plus privacy peer gates; #48 non-production restore/staging/rollback evidence; #51/#54 purchased-credit generation E2E. No production/main, paid provider, Stripe transaction, DB operation or feature flag changed. GRAPHIFY_UNAVAILABLE_IN_HOST; scoped frontend inspection used.
+
 # OWNER — Restore pre-redesign Image / Video / Audio — 23 October 2026
+
+
+## Latest verified DEV publication — 2026-10-25 (Europe/Paris)
+
+- **PR #407 MERGED + DEV LIVE VERIFIED:** merge `372ce82698e38f6a7ed26c9541c6e00f45f81b36`; final tested head `ad5dbc116b1b6b687b4a9967cbc000ca9d3f892d` has 17/17 successful workflows. Platform 365/365, Home fallback/privacy 64/64, private Canvas 15/15; Home visual/pricing, 31-screen design and actual MP4 playback passed. Home/Canvas separate-page acceptance and unsent Home draft cleanup are fixed. Account scenarios use synthetic CI fixtures, not production identity qualification.
+- **PR #411 MERGED + DEV LIVE VERIFIED:** merge `97e515126a1f3f369724b24e20e120b3867cac30`; exact candidate `bc6c9678e0bd062e6634f5a1e081d1b58d34a241` has 6/6 successful workflows, including 31-screen design. Corrected only the malformed Canvas heading close tag.
+- **Current live preview:** https://deepsyq-visual-preview-20261016.onrender.com/ — Render deployment `dep-dbf0qkgae00c73ecs4f0` is LIVE at `97e515126a1f3f369724b24e20e120b3867cac30`. Browser verified the new Lifetime disclaimer, Home→Canvas navigation, exact Canvas heading, separate description, nine loaded examples and existing editor controls.
+- These bounded fixes are published; **whole BASE #1 remains PARTIAL** and production/main, commercial generation, payments, data safety and release gates remain separate. No paid AI, Stripe action, DB operation or feature-flag change was performed.
+- Full dated evidence: [release readiness map](docs/DEEPSYQ_MVP_RELEASE_READINESS_20261024.md).
+
 
 Owner rejected removal-only PR379 (closed, unmerged). Historical source `22859216555d962239c2f17c56da6795e335293b` found; restore its exact Studio theme and original bottom composer/centered title, excluding later artwork overlays. Current controller/privacy fixes retained. Existing DEV Render only. See `docs/DEEPSYQ_STUDIO_RESTORE_DESIGN.md`. Final-head CI and live publication pending.
 

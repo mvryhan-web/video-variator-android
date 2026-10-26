@@ -11,7 +11,7 @@ const primary=[
  '/inspiration.html',
  '/audio-studio.html',
  '/free-tools.html',
- '/ai-pricing.html'
+ '/pricing.html'
 ];
 const legal=['/contact.html','/cookie.html','/terms.html','/refund.html'];
 const allSecondary=[

@@ -1,167 +1,8 @@
 import {renderHomeInspiration} from './home-inspiration.js';
-import {saveStudioHandoff} from './studio-handoff.js';
 import {renderHomeCarousel} from './home-experience.js';
 import {MODEL_CATALOG} from './generate-models.js';
 import {authorizedOnboardingOptions,onboardingResponseTarget} from './onboarding-options.js';
 const $=id=>document.getElementById(id);
-const quickCreateForm=$('quickCreateForm');
-const quickCreateDropzone=$('quickCreateDropzone');
-// Offer only ratios advertised by at least one model of this type.
-// The chosen model in Studio remains authoritative and validates the preference.
-function allowedQuickRatios(kind){
- return [...new Set(MODEL_CATALOG.filter(model=>model.kind===kind).flatMap(model=>model.capabilities?.ratios||model.ratios||[]))];
-}
-function populateQuickRatios(preferred=''){
- const kind=$('quickCreateKind').value,ratios=allowedQuickRatios(kind),select=$('quickCreateRatio');
- select.replaceChildren(new Option('Let Studio decide',''),...ratios.map(ratio=>new Option(ratio,ratio)));
- select.value=ratios.includes(preferred)?preferred:'';
-}
-// Draft-only examples. These do not represent connected AI workflows or spend credits.
-const quickPromptStarters={
- 'product-image':{kind:'image',prompt:'Create a polished editorial product photograph with soft studio light and a clean background. Keep any supplied reference product accurate, including its shape, color and branding. Do not invent product features or text.'},
- 'social-video':{kind:'video',prompt:'Create a short, engaging social video with clear visual storytelling, natural motion and a strong opening frame. Keep any reference subject recognizable; avoid fabricated product claims or logos.'},
- portrait:{kind:'image',prompt:'Create an elegant editorial portrait with natural skin texture, soft directional lighting and a carefully composed background. Respect any supplied reference photo and avoid unwanted text or logos.'}
-};
-document.querySelectorAll('[data-quick-starter]').forEach(button=>button.addEventListener('click',()=>{
- const starter=quickPromptStarters[button.dataset.quickStarter];if(!starter)return;
- const prompt=$('quickCreatePrompt'),existing=prompt.value.trim();
- if(existing&&existing!==starter.prompt&&!confirm('Replace your current description with this starter?'))return;
- $('quickCreateKind').value=starter.kind;populateQuickRatios();prompt.value=starter.prompt;
- saveQuickDraft();
- $('quickCreateStatus').textContent='Editable starter loaded. Nothing has been uploaded or generated.';
- prompt.focus();
-}));
-
-let quickReferences=[],quickPreviewUrls=[];
-// Canvas drafts are local-only and private to the account that wrote them.
-// Never store a bearer token (or uploaded files) in the draft key or payload.
-const QUICK_DRAFT_LEGACY_KEY='deepsyq_quick_canvas_draft_v1';
-const quickDraftOwner=localStorage.getItem('vv_token')||'guest';
-let quickDraftEpoch=0;
-const quickDraftKeyPromise=(async()=>{
- try{
-  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(quickDraftOwner));
-  return 'deepsyq_quick_canvas_draft_v2_'+Array.from(new Uint8Array(digest).slice(0,16),b=>b.toString(16).padStart(2,'0')).join('');
- }catch(_){return null;} // No Web Crypto: editing stays available, no unsafe fallback storage.
-})();
-function sameQuickDraftAccount(){return (localStorage.getItem('vv_token')||'guest')===quickDraftOwner;}
-function saveQuickDraft(){
- const draft={prompt:$('quickCreatePrompt').value.slice(0,2000),kind:$('quickCreateKind').value,ratio:$('quickCreateRatio').value};
- const epoch=++quickDraftEpoch;
- void quickDraftKeyPromise.then(key=>{
-  if(!key||epoch!==quickDraftEpoch||!sameQuickDraftAccount())return;
-  try{sessionStorage.setItem(key,JSON.stringify(draft));}catch(_){/* Keep in-memory editor usable. */}
- });
-}
-// Browser session/history restoration can prefill a textarea from a DIFFERENT
-// signed-in user. The hashed current-account session draft is the only trusted
-// source on load or pageshow. Reset synchronously before awaiting Web Crypto.
-function clearVisibleQuickDraft(){
- $('quickCreatePrompt').value='';
- $('quickCreateKind').value='image';
- populateQuickRatios();
- $('quickCreateFiles').value='';
- const quickBarPrompt=$('homeQuickPrompt');if(quickBarPrompt)quickBarPrompt.value='';
- quickReferences=[];renderQuickReferences();
-}
-async function restoreQuickDraft(){
- const epoch=++quickDraftEpoch;
- clearVisibleQuickDraft();
- try{sessionStorage.removeItem(QUICK_DRAFT_LEGACY_KEY);}catch(_){}
- const key=await quickDraftKeyPromise;
- if(!key||epoch!==quickDraftEpoch||!sameQuickDraftAccount()||$('quickCreatePrompt').value)return;
- try{
-  const draft=JSON.parse(sessionStorage.getItem(key)||'null');
-  if(!draft||typeof draft.prompt!=='string'||!['image','video'].includes(draft.kind))return;
-  $('quickCreatePrompt').value=draft.prompt.slice(0,2000);
-  $('quickCreateKind').value=draft.kind;
-  populateQuickRatios(typeof draft.ratio==='string'?draft.ratio:'');
- }catch(_){/* Ignore corrupt or inaccessible account-scoped draft. */}
-}
-void restoreQuickDraft();
-// pageshow also runs when Firefox restores form values or a tab from BFCache.
-window.addEventListener('pageshow',()=>{void restoreQuickDraft();});
-$('quickCreatePrompt').addEventListener('input',saveQuickDraft);
-$('quickCreateKind').addEventListener('change',()=>{populateQuickRatios();saveQuickDraft();});
-$('quickCreateRatio').addEventListener('change',saveQuickDraft);
-$('quickCreateClear').addEventListener('click',()=>{
- const hasDraft=!!$('quickCreatePrompt').value.trim()||quickReferences.length>0;
- if(hasDraft&&!confirm('Clear this Canvas draft and remove its selected reference photos?'))return;
- $('quickCreatePrompt').value='';$('quickCreateKind').value='image';populateQuickRatios();
- quickReferences=[];$('quickCreateFiles').value='';renderQuickReferences();
- ++quickDraftEpoch;
-  void quickDraftKeyPromise.then(key=>{if(key&&sameQuickDraftAccount())try{sessionStorage.removeItem(key);}catch(_){}});
-  try{sessionStorage.removeItem(QUICK_DRAFT_LEGACY_KEY);}catch(_){}
- $('quickCreateStatus').textContent='Canvas draft cleared. No files were uploaded.';
- $('quickCreatePrompt').focus();
-});
-
-const QUICK_MAX_FILES=4,QUICK_MAX_BYTES=1024*1024;
-function renderQuickReferences(){
- for(const url of quickPreviewUrls)URL.revokeObjectURL(url);
- quickPreviewUrls=[];const previews=$('quickCreatePreviews');previews.replaceChildren();
- quickReferences.forEach((file,index)=>{
-  const item=document.createElement('div');item.className='quick-reference';
-  const img=document.createElement('img'),url=URL.createObjectURL(file);
-  quickPreviewUrls.push(url);img.src=url;img.alt='Reference '+(index+1);
-  const name=document.createElement('span');name.textContent=file.name;name.title=file.name;
-  const remove=document.createElement('button');remove.type='button';remove.textContent='Remove';remove.setAttribute('aria-label','Remove reference '+(index+1));
-  remove.onclick=()=>{quickReferences.splice(index,1);renderQuickReferences();};
-  item.append(img,name,remove);previews.append(item);
- });
-}
-// Other-tab logout/account replacement must remove old private prompt and unsent
-// reference photos from this open page, not merely from the next reload.
-function guardQuickDraftAccount(){
- if(sameQuickDraftAccount())return;
- ++quickDraftEpoch;
- clearVisibleQuickDraft();
- $('quickCreateStatus').textContent='Account changed. Reload to start a private draft for this account.';
-}
-// Same-tab localStorage changes do NOT trigger a native storage event.
-// Scrub before the next user interaction, focus return, or visibility change.
-for(const type of ['pointerdown','keydown','focusin']){
- document.addEventListener(type,guardQuickDraftAccount,true);
-}
-window.addEventListener('focus',guardQuickDraftAccount);
-document.addEventListener('visibilitychange',guardQuickDraftAccount);
-window.addEventListener('storage',event=>{
- if(event.key==='vv_token')guardQuickDraftAccount();
-});
-function setQuickReferences(files,{append=false}={}){
- const candidates=[...(append?quickReferences:[]),...Array.from(files||[])];
- if(candidates.length>QUICK_MAX_FILES||candidates.some(file=>!['image/png','image/jpeg'].includes(file.type)||file.size>QUICK_MAX_BYTES||file.size===0)){
-  $('quickCreateStatus').textContent='Use up to 4 nonempty PNG/JPG photos, each no larger than 1 MB.';
-  return;
- }
- quickReferences=candidates;renderQuickReferences();
- $('quickCreateStatus').textContent=quickReferences.length?quickReferences.length+' photo(s) prepared locally. Nothing has been uploaded.':'';
-}
-$('quickCreateFiles').addEventListener('change',event=>{
- setQuickReferences(event.target.files);event.target.value='';
-});
-quickCreateDropzone.addEventListener('dragover',event=>{event.preventDefault();quickCreateDropzone.classList.add('drag-over');});
-quickCreateDropzone.addEventListener('dragleave',()=>quickCreateDropzone.classList.remove('drag-over'));
-quickCreateDropzone.addEventListener('drop',event=>{
- event.preventDefault();quickCreateDropzone.classList.remove('drag-over');
- setQuickReferences(event.dataTransfer?.files,{append:true});
-});
-window.addEventListener('pagehide',()=>{for(const url of quickPreviewUrls)URL.revokeObjectURL(url);quickPreviewUrls=[];});
-quickCreateForm?.addEventListener('submit',async event=>{
- event.preventDefault();
- const prompt=$('quickCreatePrompt').value.trim(),kind=$('quickCreateKind').value;
- const status=$('quickCreateStatus'),button=$('quickCreateSubmit');
- if(!prompt||prompt.length>2000||!['image','video'].includes(kind)){status.textContent='Enter a description (up to 2,000 characters).';return;}
- button.disabled=true;status.textContent='Preparing your Studio draft locally…';
- try{
-  const ratio=$('quickCreateRatio').value;
-  await saveStudioHandoff({kind,prompt,settings:ratio?{ratio}:{},files:quickReferences,source:'dashboard-quick-create'});
-  location.assign('generate-studio.html?studio='+kind+'&from=dashboard');
- }catch(_){
-  status.textContent='This browser could not save the draft. Your text and references are still here; try again or open Studio directly.';
-  button.disabled=false;
- }
-});
 let base='';try{base=window.AndroidBridge?.getApiBase?.()||'';}catch(_){}base=String(base||window.VV_API_BASE||location.origin).replace(/\/$/,'');
 async function api(path,options={}){const token=localStorage.getItem('vv_token');const r=await fetch(base+path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{})}});const d=await r.json();if(!r.ok)throw Error(d.error||'REQUEST_FAILED');return d;}
 // Deepsyq creator navigation: icon-only collapse on desktop, drawer on mobile.
@@ -322,9 +163,9 @@ function updateInspirationHero(items){renderHomeCarousel(items);}
 
 // Owner-approved Home enhancements: no extra provider/credit/auth APIs are created.
 const homeLang=$('homeLanguage');const homeI18n={
- en:{hero:'Create<br><em>beyond limits.</em>',canvas:'Canvas — your creative workspace',agent:'AI Agent — bring bigger ideas to life',apps:'AI Apps — discover ways to create',inspiration:'Inspiration'},
- fr:{hero:'Créez<br><em>sans limites.</em>',canvas:'Canvas — votre espace créatif',agent:'Agent IA — imaginez plus grand',apps:'AI Apps — explorez la création',inspiration:'Inspiration'},
- ru:{hero:'Создавайте<br><em>без границ.</em>',canvas:'Canvas — ваше творческое пространство',agent:'AI Agent — больше возможностей',apps:'AI Apps — инструменты творчества',inspiration:'Вдохновение'}
+ en:{hero:'Create<br><em>beyond limits.</em>',canvas:'Canvas',agent:'AI Agent',apps:'AI Apps',inspiration:'Inspiration'},
+ fr:{hero:'Créez<br><em>sans limites.</em>',canvas:'Canvas',agent:'AI Agent',apps:'AI Apps',inspiration:'Inspiration'},
+ ru:{hero:'Создавайте<br><em>без границ.</em>',canvas:'Canvas',agent:'AI Agent',apps:'AI Apps',inspiration:'Вдохновение'}
 };
 function applyHomeLanguage(code){const v=homeI18n[code]||homeI18n.en;const hero=document.querySelector('.hero-stage-copy h1');if(hero)hero.innerHTML=v.hero;for(const [id,key] of [['canvasFeatureTitle','canvas'],['agentFeatureTitle','agent'],['appsFeatureTitle','apps'],['inspirationPreviewTitle','inspiration']]){const el=$(id);if(el)el.textContent=v[key];}if(homeLang)homeLang.value=homeI18n[code]?code:'en';}
 if(homeLang){const saved=localStorage.getItem('deepsyq_home_language');applyHomeLanguage(saved||'en');homeLang.onchange=()=>{localStorage.setItem('deepsyq_home_language',homeLang.value);applyHomeLanguage(homeLang.value);};}
@@ -373,37 +214,54 @@ async function loadFeaturedWorkflows(){
  // so similarly named Image and Video featured cards do not get mixed up.
  a.href='ai-apps.html?q='+encodeURIComponent(String(t.title||'').slice(0,100))+
    (supportedType?'&type='+encodeURIComponent(supportedType):'')+
-   (typeof t.category==='string'&&t.category.trim()?'&category='+encodeURIComponent(t.category.slice(0,80)):'');const visual=document.createElement('div');visual.className='featured-workflow-visual';if(t.thumbnail){const img=document.createElement('img');img.src=t.thumbnail;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';visual.append(img);}else visual.textContent=t.generationType==='image'?'✧':t.generationType==='audio'?'♫':'▷';const copy=document.createElement('div');copy.className='featured-workflow-copy';const title=document.createElement('strong');title.textContent=t.title;const desc=document.createElement('p');desc.textContent=t.description||'Open this active workflow in Deepsyq.';const meta=document.createElement('div');meta.className='featured-workflow-meta';for(const value of [t.category,String(t.generationType||'').replace('_',' ')].filter(Boolean)){const span=document.createElement('span');span.textContent=value;meta.append(span);}copy.append(title,desc,meta);a.append(visual,copy);root.append(a);}section.hidden=false;
+   (typeof t.category==='string'&&t.category.trim()?'&category='+encodeURIComponent(t.category.slice(0,80)):'');const visual=document.createElement('div');visual.className='featured-workflow-visual';if(t.thumbnail){const img=document.createElement('img');img.src=t.thumbnail;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';visual.append(img);}else visual.textContent=t.generationType==='image'?'✧':t.generationType==='audio'?'♫':'▷';const copy=document.createElement('div');copy.className='featured-workflow-copy';const title=document.createElement('strong');title.textContent=t.title;copy.append(title);a.append(visual,copy);root.append(a);}section.hidden=false;
  }catch(_){section.hidden=true;}
 }
 
 function applyPlatformFeatures(){for(const el of document.querySelectorAll('[data-feature]')){const key=el.dataset.feature;if(config?.features&&config.features[key]===false)el.hidden=true;}}
 async function renderPlans(){
- const descriptions={basic:'A steady monthly allowance for everyday video work.',pro:'More room for frequent video and editing projects.',business:'The largest monthly allowance in the current tool-plan catalog.'};
- const aiConfig=await api('/api/ai-billing/config').catch(()=>({}));
- $('plans').replaceChildren();
- for(const key of ['basic','pro','business']){
-  const p=config.plans?.[key];if(!p)continue;
-  const card=document.createElement('article');card.className='plan'+(key==='pro'?' featured-plan':'');
-  const ribbon=document.createElement('span');ribbon.className='plan-ribbon';ribbon.textContent=key==='pro'?'PRO PLAN':'MONTHLY PLAN';card.append(ribbon);
-  const heading=document.createElement('h3');heading.textContent=key[0].toUpperCase()+key.slice(1);
-  const price=document.createElement('div');price.className='price';price.textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(p.price);
-  const period=document.createElement('small');period.textContent=' / month';price.append(period);
-  const desc=document.createElement('p');desc.textContent=descriptions[key];
-  const usage=document.createElement('div');usage.className='credit-panel';
-  const unit=document.createElement('span');unit.textContent='Video Uniquifier credits each month';
-  const total=document.createElement('strong');total.textContent=Number(p.limit).toLocaleString('en-US')+' credits';
-  const note=document.createElement('small');note.textContent='Renews with each paid monthly billing cycle.';usage.append(unit,total,note);
-  const benefits=document.createElement('ul');benefits.className='plan-benefits';
-  const items=['Access to the existing Video Uniquifier workflow'];
-  const aiCredits=aiConfig.subscriptionCredits?.[key];
-  if(Number.isSafeInteger(aiCredits)&&aiCredits>0)items.push(aiCredits.toLocaleString('en-US')+' AI-generation credits per paid subscription invoice');
-  else items.push('AI generation uses separate prepaid AI credits');
-  for(const text of items){const li=document.createElement('li');li.textContent=text;benefits.append(li);}
-  const b=document.createElement('button');b.type='button';b.textContent='Choose '+heading.textContent;b.onclick=()=>checkout(key);
-  card.append(heading,price,desc,usage,benefits,b);$('plans').append(card);
- }
- const p=config.plans?.lifetime;if(p){$('lifetimePrice').textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:p.currency||'EUR',maximumFractionDigits:0}).format(p.price)+' · one payment';$('lifetimeCheckout').disabled=false;$('lifetimeCheckout').onclick=()=>checkout('lifetime');}
+  const aiConfig=await api('/api/ai-billing/config').catch(()=>({}));
+  $('plans').replaceChildren();
+  const toolBenefits={
+    basic:[
+      'Video Uniquifier — Gentle, Balanced and Dynamic',
+      'Batch photo compression and video compression',
+      'Free tools: one-photo compression, video-to-audio and teleprompter'
+    ],
+    pro:[
+      'Video Uniquifier — Gentle, Balanced and Dynamic',
+      'All Basic Everyday Tools',
+      'Short clips and photo-to-video motion',
+      'Text-to-voice and recording-to-text (cloud limits apply)'
+    ],
+    business:[
+      'Video Uniquifier — Gentle, Balanced and Dynamic',
+      'All Pro Everyday Tools',
+      'Highest monthly Video Uniquifier allowance',
+      'Cloud voice limits still apply'
+    ]
+  };
+  for(const key of ['basic','pro','business']){
+    const p=config.plans?.[key];if(!p)continue;
+    const card=document.createElement('article');card.className='plan'+(key==='pro'?' featured-plan':'');
+    const heading=document.createElement('h3');heading.textContent=key[0].toUpperCase()+key.slice(1);
+    const price=document.createElement('div');price.className='price';price.textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(p.price);
+    const period=document.createElement('small');period.textContent=' / month';price.append(period);
+    const usage=document.createElement('div');usage.className='credit-panel';
+    const unit=document.createElement('span');unit.textContent='Video Uniquifier · monthly credits';
+    const limit=Number(p.limit);
+    const total=document.createElement('strong');total.textContent=Number.isSafeInteger(limit)&&limit>=0?limit.toLocaleString('en-US')+' credits':'See plan details';
+    usage.append(unit,total);
+    const benefits=document.createElement('ul');benefits.className='plan-benefits';
+    const items=[...toolBenefits[key]];
+    const aiCredits=aiConfig.subscriptionCredits?.[key];
+    if(Number.isSafeInteger(aiCredits)&&aiCredits>0)items.push(aiCredits.toLocaleString('en-US')+' AI credits per paid invoice');
+    else items.push('AI generation uses separate prepaid credits');
+    for(const copy of items){const li=document.createElement('li');li.textContent=copy;benefits.append(li);}
+    const b=document.createElement('button');b.type='button';b.textContent='Choose '+heading.textContent;b.onclick=()=>checkout(key);
+    card.append(heading,price,usage,benefits,b);$('plans').append(card);
+  }
+  const p=config.plans?.lifetime;if(p){$('lifetimePrice').textContent=new Intl.NumberFormat('en-US',{style:'currency',currency:p.currency||'EUR',maximumFractionDigits:0}).format(p.price)+' · one payment';$('lifetimeCheckout').disabled=false;$('lifetimeCheckout').onclick=()=>checkout('lifetime');}
 }
 async function loadPlanModelCatalog(){
  const root=$('homeModelCatalog');if(!root)return;
@@ -415,7 +273,7 @@ async function loadPlanModelCatalog(){
   for(const model of models){const chip=document.createElement('span');chip.className='home-model-chip';chip.textContent=(model.label||model.id)+' · '+String(model.kind||'AI').toUpperCase();root.append(chip);}
  }catch(_){root.textContent='Current model availability could not be loaded. Check Studio before choosing a model.';}
 }
-try{config=await api('/api/config');applyPlatformFeatures();void renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);void loadPlanModelCatalog();}catch(_){updateInspirationHero([]);$('paymentStatus').textContent='Plans could not load. Please try again later.';}
+try{config=await api('/api/config');applyPlatformFeatures();void renderPlans();initGoogle();await Promise.all([loadFeaturedWorkflows(),loadInspirationPreview()]);}catch(_){updateInspirationHero([]);$('paymentStatus').textContent='Plans could not load. Please try again later.';}
 window.addEventListener('load',initGoogle);
 try{const c=await api('/api/studio/config');studioModelMenuConfig=c;if(openModelsKind)renderModelFlyout(openModelsKind);$('studioStatus').textContent=c.ownerOnly?'AI generation is in owner preview. Explore the studios; existing tools remain available.':c.enabled?'Open a studio to see the available models.':'AI generation is not available yet. Existing tools remain available.';}catch(_){$('studioStatus').textContent='Studio availability could not be checked. Existing tools remain available.';}
 // Read-only dashboard overview. Backend user_id scope is authoritative;

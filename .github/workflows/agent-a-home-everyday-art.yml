@@ -1,0 +1,21 @@
+name: Agent A Home Everyday Tools artwork (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/home-everyday-art.css'
+      - 'app/src/main/assets/media/home-everyday-tools-owner-20261024/**'
+      - 'tests/agent-a-home-everyday-art-unit.mjs'
+      - '.github/workflows/agent-a-home-everyday-art.yml'
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --test tests/agent-a-home-everyday-art-unit.mjs

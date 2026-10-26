@@ -1,0 +1,27 @@
+name: Agent A Pricing Page
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/pricing.html'
+      - 'app/src/main/assets/pricing-page.css'
+      - 'app/src/main/assets/pricing-page.js'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'tests/agent-a-pricing-page*.mjs'
+      - '.github/workflows/agent-a-pricing-page.yml'
+permissions: {contents: read}
+jobs:
+  pricing-page:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: node --check app/src/main/assets/pricing-page.js
+      - run: node --test tests/agent-a-pricing-page-unit.mjs
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --config tests/agent-a-pricing-page.config.mjs
