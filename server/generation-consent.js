@@ -5,21 +5,34 @@ import {createHash} from 'node:crypto';
 // paid provider request. No DDL is run by a customer endpoint.
 export const GENERATION_CONSENT_VERSION='2026-10-20';
 const FENCE_NAMESPACE=20261020;
+const BORROW_TIMEOUT_MS=3000;
+const LOCK_TIMEOUT_MS=3000;
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function borrow(pool){
+ let expired=false,timer;
+ const candidate=pool.connect().then(client=>{if(expired){client.release(true);throw Error('CONSENT_CONNECTION_TIMEOUT');}return client;});
+ try{return await Promise.race([candidate,new Promise((_,reject)=>{timer=setTimeout(()=>{expired=true;reject(Error('CONSENT_CONNECTION_TIMEOUT'));},BORROW_TIMEOUT_MS);})]);}
+ finally{clearTimeout(timer);}
+}
 const safeUserId=id=>typeof id==='string'&&id.length>0&&id.length<=256;
 const fenceKey=id=>[FENCE_NAMESPACE,createHash('sha256').update(id).digest().readInt32BE(0)];
 
 export async function withUserConsentFence(pool,userId,operation){
  if(!safeUserId(userId)||!pool||typeof pool.connect!=='function'||typeof operation!=='function')
   throw Error('CONSENT_STORAGE_UNAVAILABLE');
- const client=await pool.connect();
- let attempted=false,locked=false,destroy=false;
+ const client=await borrow(pool);
+ let locked=false,destroy=false;
  try{
-  attempted=true;
-  await client.query('SELECT pg_advisory_lock($1,$2)',fenceKey(userId));
-  locked=true;
+  const deadline=Date.now()+LOCK_TIMEOUT_MS;
+  do{
+   const result=await client.query('SELECT pg_try_advisory_lock($1,$2) AS acquired',fenceKey(userId));
+   if(result.rows?.[0]?.acquired===true){locked=true;break;}
+   if(Date.now()>=deadline)throw Error('CONSENT_LOCK_TIMEOUT');
+   await sleep(25);
+  }while(true);
   return await operation(client);
  }finally{
-  destroy=attempted&&!locked;
+  destroy=!locked;
   if(locked){
    try{
     const result=await client.query('SELECT pg_advisory_unlock($1,$2)',fenceKey(userId));
@@ -45,7 +58,7 @@ export async function withCurrentGenerationConsent(pool,userId,send){
   // Keep the SAME fence across purchased-only claim and actual external
   // provider invocation. A concurrent revoke waits until dispatch completes,
   // rather than getting an ACK while an unstarted paid transport can proceed.
-  return await send();
+  return await send(client);
  });
 }
 async function withConsentWrite(pool,userId,write){

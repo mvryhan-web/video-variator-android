@@ -26,7 +26,10 @@ export async function submitPurchasedProviderRequest({
    !Number.isFinite(Number(job.estimated_cost))||
    Math.round(Number(job.estimated_cost)*1_000_000)!==quote.providerCostMicros)deny();
  let providerStarted=false;
- try{return await withCurrentGenerationConsent(pool,user.id,async()=>{
+ try{
+ // Resolve any wallet schema init before entering the single-client fence.
+ if(typeof wallet.init==='function')await wallet.init();
+ return await withCurrentGenerationConsent(pool,user.id,async client=>{
  let proof;
  proof=await requirePurchasedDispatchAuthorization({
   env,user,
@@ -34,13 +37,21 @@ export async function submitPurchasedProviderRequest({
        deleted:job.deleted,providerStarted:job.providerStarted===true},
   request:{kind:request.kind,model:request.model,consent:job.settings.dispatchConsent,fingerprint},
   model,quote,
-  verifyPurchasedReservation:wallet.purchasedDispatchVerifier({env})
+  verifyPurchasedReservation:wallet.purchasedDispatchVerifier({env,client})
  });
  if(proof.authorized!==true||proof.userId!==user.id||proof.jobId!==job.id||
     proof.modelId!==model.id||proof.provider!==model.provider)deny();
  // Do not auto-submit a second time when acceptance by a provider is unknown.
  // D's database claim is committed exactly once before this single call.
  providerStarted=true;
- return await provider(request,{env,authorization:proof});
+ const controller=new AbortController();
+ const configured=Number(env.AI_PROVIDER_DISPATCH_TIMEOUT_MS);
+ const maxMs=Number.isFinite(configured)&&configured>=100&&configured<=30000?configured:30000;
+ let timer;
+ try{
+  const deadline=new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(Error('AI_PROVIDER_TIMEOUT_UNCERTAIN'));},maxMs);});
+  // One paid dispatch claim stays consumed if transport outcome is unknown.
+  return await Promise.race([Promise.resolve().then(()=>provider(request,{env,authorization:proof,signal:controller.signal})),deadline]);
+ }finally{clearTimeout(timer);}
  });}catch(e){if(providerStarted)throw e;deny();}
 }
