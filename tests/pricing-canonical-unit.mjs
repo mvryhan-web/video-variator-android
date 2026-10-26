@@ -15,9 +15,9 @@ test('one public Pricing route, including credits and private wallet anchors',()
  assert.match(canonical,/Video &amp; Everyday Tools/);
  assert.match(read('ai-apps.html'),/href="pricing\.html#credits"/);
  assert.match(read('home-credit-store.js'),/pricing\.html#credits/);
- assert.match(read('ai-pricing.html'),/<script src="pricing-legacy-redirect\\.js"><\\/script>/);
- assert.doesNotMatch(read('ai-pricing.html'),/<script\\s*>/,'Production CSP disallows inline JavaScript');
- assert.match(read('pricing-legacy-redirect.js'),/location\\.replace\\(destination\\.href\\)/);
+ assert.ok(read('ai-pricing.html').includes('<script src="pricing-legacy-redirect.js"></script>'));
+ assert.ok(!read('ai-pricing.html').includes('<script>'),'Production CSP disallows inline JavaScript');
+ assert.ok(read('pricing-legacy-redirect.js').includes('location.replace(destination.href)'));
  assert.doesNotMatch(read('ai-pricing.html'),/src="ai-pricing\.js"/);
 });
 test('legacy deep links remain compatible but cannot load old second checkout',()=>{
