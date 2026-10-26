@@ -68,7 +68,7 @@ test('retired Pricing has only a safe canonical redirect, not a second styled st
  assert.ok(retired.includes('<script src="pricing-legacy-redirect.js"></script>'));
  assert.ok(!retired.includes('<script>'),'legacy inline JS violates the strict production CSP');
  const js=readFileSync(new URL('pricing-legacy-redirect.js',root),'utf8');
- assert.match(js,/location\\.replace\\(destination\\.href\\)/);
+ assert.ok(js.includes('location.replace(destination.href)'));
  assert.match(retired,/meta name="robots" content="noindex,follow"/);
  assert.doesNotMatch(retired,/src="ai-pricing\.js"|id="walletSummary"|id="toolPlans"/);
 });
