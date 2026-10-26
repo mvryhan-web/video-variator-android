@@ -65,7 +65,7 @@ test('Stripe refund parsing binds cumulative amount to signed event and charge I
 
 test('welcome AI credits are opt-in, bounded and disabled by default',()=>{
  assert.deepEqual(welcomeCreditConfig({}),{enabled:false,credits:0});
- assert.deepEqual(welcomeCreditConfig({AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'4200'}),{enabled:true,credits:4200});
+ assert.deepEqual(welcomeCreditConfig({AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'4200'}),{enabled:false,credits:0});
  assert.deepEqual(welcomeCreditConfig({AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'99999999'}),{enabled:false,credits:0});
 });
 
@@ -188,4 +188,23 @@ test('BASE #16: late signed paid checkout is granted after Checkout disabled onl
   assert.equal(h.getStripe(),0);
   assert.equal(h.grants.length,0);
  }
+});
+
+test('D01/D04 direct malicious welcome POST cannot write wallet or ledger under stale ENV',async()=>{
+ let dbTouches=0;
+ const pool={query(){dbTouches++;throw Error('UNEXPECTED_DB');},connect(){dbTouches++;throw Error('UNEXPECTED_DB');}};
+ const app=express();app.use(express.json());
+ installGenerationBilling(app,{auth:(req,_res,next)=>{req.user={id:'customer'};next();},pool,
+  stripe:null,appUrl:'https://example.test',env:{AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'4200'}});
+ const server=app.listen(0);await new Promise(resolve=>server.once('listening',resolve));
+ try{
+  const base='http://127.0.0.1:'+server.address().port+'/api/ai-wallet';
+  assert.deepEqual(await fetch(base+'/config').then(r=>r.json()),{welcomeEnabled:false,welcomeCredits:0});
+  for(let attempt=0;attempt<2;attempt++){
+   const r=await fetch(base+'/welcome',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+   assert.equal(r.status,503);
+   assert.deepEqual(await r.json(),{error:'AI_WELCOME_CREDITS_NOT_ENABLED'});
+  }
+  assert.equal(dbTouches,0,'grantOnce, wallet and ledger never called');
+ }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
 });

@@ -72,3 +72,16 @@ test('D18 Charge must explicitly reference the verified PaymentIntent',()=>{
  for(const reference of ['pi_fixture',{id:'pi_fixture'}])
   assert.equal(verifyStripeNetRevenue(args({paymentIntent:{...p,latest_charge:{...p.latest_charge,payment_intent:reference}}})).netRevenueMicros,9_450_000);
 });
+
+test('D18 Stripe retrieval must reject returned Charge/BalanceTx ID mismatch',async()=>{
+ const p=paymentIntent();
+ function api(chargeId,transactionId){return {
+  paymentIntents:{async retrieve(){return {...p,latest_charge:'ch_fixture'};}},
+  charges:{async retrieve(id){assert.equal(id,'ch_fixture');return {...p.latest_charge,id:chargeId,balance_transaction:'txn_fixture'};}},
+  balanceTransactions:{async retrieve(id){assert.equal(id,'txn_fixture');return {...p.latest_charge.balance_transaction,id:transactionId};}}
+ };}
+ const params={paymentIntentId:'pi_fixture',expectedAmount:1200,expectedCurrency:'eur',taxAmount:200,expectedLivemode:false};
+ await assert.rejects(retrieveStripeNetRevenue({...params,stripe:api('ch_other','txn_fixture')}),/AI_SETTLEMENT_CHARGE_UNVERIFIED/);
+ await assert.rejects(retrieveStripeNetRevenue({...params,stripe:api('ch_fixture','txn_other')}),/AI_SETTLEMENT_BALANCE_TRANSACTION_UNVERIFIED/);
+ assert.equal((await retrieveStripeNetRevenue({...params,stripe:api('ch_fixture','txn_fixture')})).stripeBalanceTransactionId,'txn_fixture');
+});

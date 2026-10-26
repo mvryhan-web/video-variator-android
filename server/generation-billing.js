@@ -19,10 +19,9 @@ export function billingCatalog(env={}) {
     return {packs,rates,revision:hash({packs,rates})};
   } catch (_) { return {packs:[],rates:[],revision:null}; }
 }
-export function welcomeCreditConfig(env={}){
-  const credits=Number(env.AI_WELCOME_CREDITS||0),valid=Number.isSafeInteger(credits)&&credits>0&&credits<=10_000_000;
-  return {enabled:env.AI_WELCOME_CREDITS_ENABLED==='true'&&valid,credits:valid?credits:0};
-}
+// D01/D04: legacy environment flags alone NEVER authorize welcome AI grants.
+// Paid purchases and confirmed subscription entitlements remain separate.
+export function welcomeCreditConfig(_env={}){return {enabled:false,credits:0};}
 // This checks configuration presence only. Real signed Stripe delivery still
 // needs a controlled staging webhook/payment test before public activation.
 export function stripeWebhookConfigured(env={}){

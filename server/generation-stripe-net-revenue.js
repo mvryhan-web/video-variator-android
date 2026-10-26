@@ -78,11 +78,16 @@ export async function retrieveStripeNetRevenue({stripe,paymentIntentId,expectedA
  let charge=paymentIntent?.latest_charge;
  if(typeof charge==='string'){
   if(!stripe?.charges?.retrieve)throw Error('AI_SETTLEMENT_STRIPE_UNAVAILABLE');
-  charge=await stripe.charges.retrieve(charge,{expand:['balance_transaction']});
+  const expectedChargeId=charge;
+  charge=await stripe.charges.retrieve(expectedChargeId,{expand:['balance_transaction']});
+  if(charge?.id!==expectedChargeId)throw Error('AI_SETTLEMENT_CHARGE_UNVERIFIED');
  }
  if(charge&&typeof charge.balance_transaction==='string'){
   if(!stripe?.balanceTransactions?.retrieve)throw Error('AI_SETTLEMENT_STRIPE_UNAVAILABLE');
-  charge={...charge,balance_transaction:await stripe.balanceTransactions.retrieve(charge.balance_transaction)};
+  const expectedTransactionId=charge.balance_transaction;
+  const transaction=await stripe.balanceTransactions.retrieve(expectedTransactionId);
+  if(transaction?.id!==expectedTransactionId)throw Error('AI_SETTLEMENT_BALANCE_TRANSACTION_UNVERIFIED');
+  charge={...charge,balance_transaction:transaction};
  }
  const expanded={...paymentIntent,latest_charge:charge};
  return verifyStripeNetRevenue({paymentIntent:expanded,expectedAmount,expectedCurrency,taxAmount,expectedLivemode});
