@@ -3,11 +3,14 @@ on:
   pull_request:
     paths:
       - server/generation-studio.js
+      - server/generation-consent.js
+      - server/generation-wallet.js
       - server/generation-purchased-provider-boundary.js
       - tests/generation-purchased-provider-boundary-unit.mjs
       - tests/generation-studio-purchased-boundary-route-unit.mjs
       - tests/generation-studio-unit.mjs
       - tests/p0-purchased-provider-boundary-postgres.mjs
+      - tests/p0-purchased-consent-pool-saturation-postgres.mjs
       - .github/workflows/p0-purchased-provider-boundary.yml
 permissions:
   contents: read
@@ -60,4 +63,4 @@ jobs:
       - name: Disposable real PostgreSQL purchased-source and refund proof
         run: |
           node --check tests/p0-purchased-provider-boundary-postgres.mjs
-          node --test tests/p0-purchased-provider-boundary-postgres.mjs
+          node --test tests/p0-purchased-provider-boundary-postgres.mjs tests/p0-purchased-consent-pool-saturation-postgres.mjs

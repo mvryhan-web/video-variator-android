@@ -23,6 +23,7 @@ import {generationFeatureEnabled,generationFeatureSwitches} from './generation-f
 import {aiMigrationStatus} from './ai-migrations.js';
 import {completedGenerationSummary,trackedToolUsageSummary} from './generation-business-rates.js';
 import {submitPurchasedProviderRequest,PurchasedDispatchDenied} from './generation-purchased-provider-boundary.js';
+import {installGenerationConsent,hasStoredGenerationConsent} from './generation-consent.js';
 import {generateOpenAIImage} from './generation-openai-image.js';
 import {objectStorageConfig} from './generation-storage.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch,authorization=null}={}){
@@ -58,6 +59,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  const init=()=>ready??=readFile(new URL('./migrations/20261015-generation-jobs.sql',import.meta.url),'utf8').then(sql=>pool.query(sql));
  const isOwner=user=>!!(user&&user.provider==='google'&&String(user.email||'').toLowerCase()===String(env.ADMIN_EMAIL||'').trim().toLowerCase());
  const owner=(req,res,next)=>{if(!isOwner(req.user))return res.status(403).json({error:'OWNER_PILOT_ONLY'});next();};
+ installGenerationConsent(app,{auth,pool});
  // Reference intake is owner-only and independently disabled. It never submits an AI job.
  installGenerationReferenceUpload(app,{auth,owner,pool,storage:objectStorage,env});
  const walletEnabled=()=>env.AI_STUDIO_WALLET_ENABLED==='true'&&!!wallet&&pricingCatalog(env).configured;
@@ -297,7 +299,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   const {rows}=await pool.query('SELECT user_id,kind,model,provider,status,operation,deleted,request_fingerprint,credits_reserved,settings,estimated_cost,cost_currency FROM vv_generation_jobs WHERE id=$1 AND user_id=$2',[id,user.id]);
   const job=rows[0]?{...rows[0],id,userId:rows[0].user_id,requestFingerprint:rows[0].request_fingerprint,creditsReserved:Number(rows[0].credits_reserved)}:null;
   const quote=estimateGenerationPricing(request,selected,env);
-  const result=await submitPurchasedProviderRequest({env,wallet,user:{id:user.id,email:user.email,isOwner:isOwner(user)},job,request,model:selected,quote,originalQuote,fingerprint,provider});
+  const result=await submitPurchasedProviderRequest({env,wallet,pool,user:{id:user.id,email:user.email,isOwner:isOwner(user)},job,request,model:selected,quote,originalQuote,fingerprint,provider});
   await finish(id,result,user.id);
  }catch(e){
   // A verified pre-provider refusal cannot have incurred an AI provider cost.
@@ -348,6 +350,9 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   // Missing, malformed or stale quotes fail before insertion, reservation or provider dispatch.
   if(!Number.isSafeInteger(req.body?.expectedCredits)||req.body.expectedCredits<=0||req.body.expectedCredits!==quote?.credits)
    return res.status(409).json({error:'AI_ESTIMATE_CHANGED'});
+  if(req.body?.consent!==true)return res.status(400).json({error:'EXPLICIT_CONSENT_REQUIRED'});
+  try{if(!(await hasStoredGenerationConsent(pool,req.user.id)))return res.status(403).json({error:'PROVIDER_CONSENT_REQUIRED'});}
+  catch(_){return res.status(503).json({error:'CONSENT_STORAGE_UNAVAILABLE'});}
   const fingerprint=requestFingerprint(request);let c,id=randomUUID(),reused=null;try{
    await init();c=await pool.connect();await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(hashtext($1))',['ai-create:'+req.user.id]);
    reused=await findGenerationRequest(c,{userId:req.user.id,requestId:clientRequestId,fingerprint});
