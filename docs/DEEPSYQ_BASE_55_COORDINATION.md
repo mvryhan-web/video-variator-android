@@ -1,3 +1,13 @@
+## Coordinator #5 — Cycle32 / CURRENT ACTIVE CLAIMS / 26 Oct 2026 — VERIFIED LIVE QUEUES
+
+DEV `c15f36d39770782b16ae4043fc4d42fb3256bc1b` at sample (PR352 MERGED); Render preview LIVE **same SHA** at deploy `dep-dbfmslei0phs73b8q300`; MAIN `c14f950c6e8700b41d0777c050060fee883d0092` unchanged. Full source/CI/failure/collision report: [Cycle32](DEEPSYQ_COORDINATOR_CYCLE32_20261026.md); operative CHECKPOINT Issue #233. This is a sampled SHA, re-read before changes.
+
+**A #72:** PR414 DRAFT ahead3/behind62, shared `tests/deepsyq.spec.mjs` with already MERGED Admin PR413. Reconcile same PR preserving assertions; then owner-authorized exact Home-triptych acceptance and international SEO. **B #73:** PR368 `99d3719` exact 20/20 check runs green/behind0 but still needs D true two-JWT cross-app peer; PR323 `669b643` BLOCKED by D-sourced consent nested-pool deadlock despite CI green; server welcome grant conditional-policy FAIL; PR333 provider net>=2× unverified. **C #74:** Photo OCR PR352 ALREADY MERGED/LIVE — DO NOT REPEAT. Existing AI Apps My Creations → authenticated History already fixed. Next unclaimed C-only real Tools/Video-to-Audio/Audio/Inspiration mobile acceptance: fresh DEV BASE28 workflow failed with hidden secondary Video→Audio tile + WebKit async cancel tests. **D #75:** direct B↔D source/PG/privacy verdict on PR323 and PR368, conditional AI welcome gate, real Stripe/provider cost; production release HOLD. **Jules #316/#317/#278:** ACK-only; no new bot tasks. **Coordinator #5:** docs/status/claims + Issue233 only; not mandatory merger. Latest DEV runs #40347271152 privacy/annual CTA and #40347271034 Tools/WebKit FAIL; do not claim full-green release.
+
+No `main`/production, real payment/provider, trial/live credit grants, secrets or destructive migrations. Base20 retired, original 6 Home MP4 and approved Pricing protected; F1–F8 aliases of Blocks. A–D D16 self-merge after valid checks and B↔D direct privacy/finance peer.
+
+---
+
 # COORDINATOR #5 — CYCLE31 / 25 OCT 2026 / CURRENT EXCLUSIVE CLAIMS
 
 **Read-only PR sampling DEV feature HEAD:** `61b73fff779ec30fbac411ecb269ac984738a3bd` before coordinator docs. [Cycle31 exact-head PR/CI collision report](DEEPSYQ_COORDINATOR_CYCLE31_20261025.md) supersedes older queue snapshots; re-read HEAD before new work.
