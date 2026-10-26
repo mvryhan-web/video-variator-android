@@ -65,7 +65,10 @@ test('Studio restoration uses the exact owner-approved October 20 theme',()=>{
 
 test('retired Pricing has only a safe canonical redirect, not a second styled storefront',()=>{
  const retired=readFileSync(new URL('ai-pricing.html',root),'utf8');
- assert.match(retired,/location\.replace\(destination\.href\)/);
+ assert.ok(retired.includes('<script src="pricing-legacy-redirect.js"></script>'));
+ assert.ok(!retired.includes('<script>'),'legacy inline JS violates the strict production CSP');
+ const js=readFileSync(new URL('pricing-legacy-redirect.js',root),'utf8');
+ assert.ok(js.includes('location.replace(destination.href)'));
  assert.match(retired,/meta name="robots" content="noindex,follow"/);
  assert.doesNotMatch(retired,/src="ai-pricing\.js"|id="walletSummary"|id="toolPlans"/);
 });
