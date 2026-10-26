@@ -1,0 +1,33 @@
+name: Agent B+D P0 finance no-spend verification
+on:
+  push:
+    branches:
+      - admin-d18-generation-margin-gate-20261020
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-billing.js'
+      - 'server/generation-stripe-net-revenue.js'
+      - 'tests/generation-billing-unit.mjs'
+      - 'tests/generation-stripe-net-revenue-unit.mjs'
+      - '.github/workflows/agent-b-d18-finance-p0.yml'
+permissions:
+  contents: read
+jobs:
+  no-paid-finance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    env:
+      STRIPE_SECRET_KEY: ''
+      DATABASE_URL: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --check server/generation-billing.js && node --check server/generation-stripe-net-revenue.js
+      - run: node --test tests/generation-billing-unit.mjs tests/generation-stripe-net-revenue-unit.mjs tests/generation-pricing-unit.mjs

@@ -63,7 +63,7 @@ test('Stripe refund parsing binds cumulative amount to signed event and charge I
 });
 
 
-test('welcome AI credits are opt-in, bounded and disabled by default',()=>{
+test('welcome AI credit public entitlements remain disabled even if legacy flag enabled',()=>{
  assert.deepEqual(welcomeCreditConfig({}),{enabled:false,credits:0});
  assert.deepEqual(welcomeCreditConfig({AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'4200'}),{enabled:false,credits:0});
  assert.deepEqual(welcomeCreditConfig({AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'99999999'}),{enabled:false,credits:0});
