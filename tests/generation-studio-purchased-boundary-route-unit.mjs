@@ -18,6 +18,7 @@ function simulate({receiptStatus='paid',providerThrows=false,reservationPersistF
  const jobs=[],walletEvents=[];let providerCalls=0;
  const pool={
   async query(sql,args=[]){
+   if(sql.startsWith('SELECT terms_version,privacy_version,provider_data_version,provider_data_accepted'))return {rows:[{terms_version:'2026-10-20',privacy_version:'2026-10-20',provider_data_version:'2026-10-20',provider_data_accepted:true}]};
    if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};
    if(sql.startsWith('SELECT user_id,kind,model,provider,status,operation,deleted,request_fingerprint,credits_reserved,settings,estimated_cost,cost_currency FROM vv_generation_jobs')){
     return {rows:jobs.filter(j=>j.id===args[0]&&j.user_id===args[1])};
@@ -41,6 +42,9 @@ function simulate({receiptStatus='paid',providerThrows=false,reservationPersistF
    throw Error('Unexpected fake DB SQL: '+sql.slice(0,85));
   },
   async connect(){return {async query(sql,args=[]){
+   if(sql.startsWith('SELECT pg_advisory_unlock'))return {rows:[{pg_advisory_unlock:true}]};
+   if(sql.startsWith('SELECT terms_version,privacy_version,provider_data_version,provider_data_accepted'))return {rows:[{terms_version:'2026-10-20',privacy_version:'2026-10-20',provider_data_version:'2026-10-20',provider_data_accepted:true}]};
+   if(sql.startsWith('SELECT pg_advisory_lock'))return {rows:[]};
    if(['BEGIN','COMMIT','ROLLBACK'].includes(sql)||sql.startsWith('SELECT pg_advisory_xact_lock'))return {rows:[]};
    if(sql.startsWith('SELECT id,status,request_fingerprint'))return {rows:[]};
    if(sql.startsWith('SELECT count(*)::int AS n'))return {rows:[{n:0}]};
