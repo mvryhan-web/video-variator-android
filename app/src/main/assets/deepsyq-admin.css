@@ -50,3 +50,11 @@ main>section{min-width:0}
 #inspirationCreate>*{min-width:0;max-width:100%}
 .route-preview-controls{position:relative;z-index:1}
 @media(max-width:620px){#inspirationCreate{grid-template-columns:minmax(0,1fr)}}
+
+/* Keep native controls inside their grid tracks, including WebKit selects. */
+.controls label,.controls input,.controls select{min-width:0;max-width:100%}
+.template-form label.check{display:flex;align-items:center;gap:8px;min-width:0}
+.template-form label.check input[type="checkbox"]{flex:0 0 18px;width:18px;min-height:18px;margin:0;padding:0}
+/* WebKit's native appearance can retain an option-based intrinsic width.
+   Keep the real select/picker, but draw the closed-field chevron ourselves. */
+body[data-approved-page] .controls select{appearance:none;min-width:0;width:100%;max-width:100%;padding-right:28px;text-overflow:ellipsis;background-image:linear-gradient(45deg,transparent 50%,#cfd7e8 50%),linear-gradient(135deg,#cfd7e8 50%,transparent 50%);background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px;background-repeat:no-repeat}

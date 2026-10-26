@@ -29,7 +29,7 @@ test('BASE #38 owner Admin is usable at 320/390px without page overflow or enabl
   expect(result.stateRight).toBeLessThanOrEqual(result.card.right+1);
   const overflow=await page.evaluate(()=>{
     const viewport=innerWidth;
-    const offenders=[...document.querySelectorAll('body *')].filter(el=>!el.closest('.table-wrap')).map(el=>{
+    const offenders=[...document.querySelectorAll('body *')].filter(el=>!el.closest('.table-wrap,.ds-section-nav')&&!el.ownerSVGElement).map(el=>{
       const r=el.getBoundingClientRect();
       return {element:el.tagName.toLowerCase()+(el.id?'#'+el.id:el.className&&typeof el.className==='string'?'.'+el.className.split(' ').slice(0,2).join('.'):''),
         right:Math.round(r.right),left:Math.round(r.left),width:Math.round(r.width)};
@@ -38,10 +38,38 @@ test('BASE #38 owner Admin is usable at 320/390px without page overflow or enabl
     return {width:viewport,document:document.documentElement.scrollWidth,offenders,scrollers};
   });
   expect(overflow,'Overflow diagnostics for admin '+width+'px: '+JSON.stringify(overflow)).toMatchObject({width,document:width,offenders:[]});
+  // The approved section strip intentionally scrolls. Verify its viewport and
+  // every destination rather than treating clipped offscreen links as page overflow.
+  const sectionNav=page.locator('.ds-section-nav');
+  const navBox=await sectionNav.boundingBox();
+  expect(navBox.x).toBeGreaterThanOrEqual(0);
+  expect(navBox.x+navBox.width).toBeLessThanOrEqual(width+1);
+  for(const link of await sectionNav.locator('a').all()){
+   await link.scrollIntoViewIfNeeded();
+   const box=await link.boundingBox();
+   expect(box.x).toBeGreaterThanOrEqual(navBox.x-1);
+   expect(box.x+box.width).toBeLessThanOrEqual(navBox.x+navBox.width+1);
+   const href=await link.getAttribute('href');
+   expect(await page.locator(href).count()).toBe(1);
+  }
+  // Native select scrollWidth includes WebKit's internal option renderer.
+  // Assert the actual field border boxes fit each label, not popup internals.
+  const controlOverflow=await page.locator('.controls label,.template-form label.check').evaluateAll(labels=>
+   labels.flatMap(label=>{
+    const parent=label.getBoundingClientRect();
+    return [...label.querySelectorAll('input,select')].map(control=>{
+     const field=control.getBoundingClientRect();
+     return {text:label.textContent,left:field.left,right:field.right,parentLeft:parent.left,parentRight:parent.right};
+    });
+   }).filter(item=>item.left<item.parentLeft-1||item.right>item.parentRight+1));
+  expect(controlOverflow).toEqual([]);
+  const availability=page.locator('#models .controls select');
+  await availability.selectOption('off');await expect(availability).toHaveValue('off');
+  await availability.selectOption('inherit');await expect(availability).toHaveValue('inherit');
   await expect(page.locator('#models article button',{hasText:'Save'})).toBeVisible();
   await expect(page.locator('#templateCreate')).toBeVisible();
   await expect(page.locator('#creditAdjustForm')).toBeVisible();
-  if(width===390)await page.screenshot({path:info.outputPath('owner-admin-390.png'),fullPage:true});
+  await page.screenshot({path:info.outputPath('owner-admin-'+width+'.png'),fullPage:true});
  }
  expect(writes).toBe(0);
 });
