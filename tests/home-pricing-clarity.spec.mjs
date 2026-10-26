@@ -95,6 +95,7 @@ test('Invite Friend always reveals the actual link and the copy action gives vis
  await mockPublicCatalog(page);
  await page.goto('/deepsyq.html');
  await expect(page.locator('#topInvite')).toBeVisible();
+ await expect(page.locator('#topPricing')).toBeVisible();
  await page.locator('#topInvite').click();
  await expect(page.locator('#inviteDialog')).toBeVisible();
  const invite=page.locator('#inviteLink');
