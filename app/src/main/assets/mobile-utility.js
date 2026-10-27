@@ -409,7 +409,10 @@ async function processPDF(){
  if(tool==='pdf-merge'){
   const doc=await PDFDocument.create();
   for(const f of fs){if(abort)throw Error('Canceled');const from=await PDFDocument.load(await f.arrayBuffer());const pages=await doc.copyPages(from,from.getPageIndices());pages.forEach(p=>doc.addPage(p));}
-  return result(new File([await doc.save({useObjectStreams:true})],'merged.pdf',{type:'application/pdf'}));
+  const bytes=await doc.save({useObjectStreams:true});
+  // PDF serialization can finish after Cancel; never publish the old result.
+  if(abort)return;
+  return result(new File([bytes],'merged.pdf',{type:'application/pdf'}));
  }
  const src=await PDFDocument.load(await fs[0].arrayBuffer());
  if(tool==='pdf-compress'){
