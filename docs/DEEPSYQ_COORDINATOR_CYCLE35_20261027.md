@@ -1,3 +1,11 @@
+## Cycle35 live correction / 27 Oct 2026 — supersedes first Cycle35 PR/CI rows
+
+**Most recent verified DEV** `0ba8abe6623af2108422fd99244945d062060191` (Agent A scoped PR **#428 MERGED**, 4/4 exact-head CI SUCCESS, 4/4 unit and 6/6 real desktop/mobile Chromium in final PR run; #426 previously MERGED). Do **not** assign #428 again. Agent A now READ-ONLY on public SEO/locale until C file lease and D policy; no authorization to edit Home/media. **PR #323 current head remains `6ac9b676193f6a4f040ddb2dea9e2c22bd675c29`, now exact 34/34 checks SUCCESS, but D's independent signoff for this SHA is still MISSING and branch base precedes new DEV merge #428.** B must reconcile current DEV NON-FORCE on SAME PR323, run final integrated exact-head CI and have D inspect same new SHA before any merge. **No commercial GO** from 34/34 no-spend checks. PR333 remains old DRAFT/unmergeable, with six shared #323 paths and no measured real net >=2x.
+
+**Fresh DEV `0ba8abe` checks at new sample:** total 93: **82 SUCCESS, 10 IN_PROGRESS, 1 FAILED** (`validate`); failures cannot be marked fixed by the separate A PR without reviewing this exact DEV job. OAuth/google/apple configuration and signed two-tenant backend remain separate release gates. Existing C sitemap/canonical task and Jules three ACK-only claims unchanged. Preview latest separately evidenced LIVE source `69dfeef`, not this DEV. Main `c14f950c` unchanged. Snapshot below preserves the earlier 7c02/partial CI evidence only as history; this correction is the active next action. Issue #233 is the live checkpoint. **This documentation branch/PR #429 is DRAFT and not DEV-merged.**
+
+---
+
 # DEEPSYQ — Coordinator #5 / CYCLE35 / 27 October 2026
 
 ## Verified sources and boundaries
