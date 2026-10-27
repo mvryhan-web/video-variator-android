@@ -128,3 +128,32 @@ test('P0 revocation fence waits for an actually canceled HTTP adapter, without a
   'fence release/revoke ACK must follow actual transport abort when it acknowledges cancellation');
  assert.equal(claims,1);
 });
+
+
+test('P0 aborted consent after awaited provider JSON/stream cannot return billable success',async()=>{
+ for(const kind of ['OpenAI','Google','BytePlus']){
+  const controller=new AbortController(),reading=deferred(),finish=deferred();
+  const sentinel=Error('P0_REVOKED_AFTER_RESPONSE');
+  const response={
+   ok:true,status:200,
+   headers:{get:()=>null},
+   body:kind==='BytePlus'?{getReader:()=>{
+    let readCount=0;
+    return {
+     async read(){if(readCount++)return {done:true};reading.release();await finish.promise;return {done:false,value:Buffer.from('{}')};},
+     async cancel(){}
+    };
+   }}:null,
+   async json(){reading.release();await finish.promise;return {};}
+  };
+  const fetcher=async()=>response;
+  let running;
+  if(kind==='OpenAI')running=generateOpenAIImage(openai,{key:'fake-only',modelConfig:aiConfig,purchasedJobGate:gate,signal:controller.signal,fetcher});
+  if(kind==='Google')running=generateGoogle(image,{key:'fake-only',signal:controller.signal,fetcher});
+  if(kind==='BytePlus')running=generateBytePlus(plus,{key:'fake-only',signal:controller.signal,fetcher});
+  await reading.promise;
+  controller.abort(sentinel);
+  finish.release();
+  await assert.rejects(running,error=>error===sentinel,kind+' must surface actual abort rather than return a paid result or media parse error');
+ }
+});
