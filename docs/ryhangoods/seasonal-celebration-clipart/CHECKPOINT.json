@@ -1,7 +1,7 @@
 {
   "product": 3,
   "name": "Seasonal & Celebration Clipart Mega Bundle",
-  "status": "IN PROGRESS —50 distinct source assets generated and individually shown",
+  "status": "PAUSED — execution environment unavailable and browser tool removed by system",
   "date": "2026-10-27",
   "rules_sha": "a283298258f7617e769ea763a094b1f54fdf2274",
   "planned_count": 100,
@@ -827,9 +827,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-e3cd9bad-ce3f-46af-8323-825d2bde25ca.png"
     },
     {
       "id": "052",
@@ -839,9 +840,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-4cfdaf95-8aad-4fc3-b685-07541207d8b1.png"
     },
     {
       "id": "053",
@@ -851,9 +853,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-32472a12-feef-477c-bdee-49047a6aea0a.png"
     },
     {
       "id": "054",
@@ -863,9 +866,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-53a43bb6-7e50-4191-b90a-ff65b77aca1f.png"
     },
     {
       "id": "055",
@@ -875,9 +879,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-1f5dec58-f460-43f7-a037-32c3fbd360e8.png"
     },
     {
       "id": "056",
@@ -887,9 +892,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-67d6b8fd-2bf5-479a-ac9a-b0591fe4daec.png"
     },
     {
       "id": "057",
@@ -899,9 +905,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-5dda03b4-4ec2-4887-bad5-323195beab95.png"
     },
     {
       "id": "058",
@@ -911,9 +918,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-0eedadf3-9575-45fe-9761-4c5f9a305a03.png"
     },
     {
       "id": "059",
@@ -923,9 +931,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-986d9ee5-83c4-4f87-9322-8af52e2d0a16.png"
     },
     {
       "id": "060",
@@ -935,9 +944,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-5be4a798-8c99-4029-aa0c-96111cd43735.png"
     },
     {
       "id": "061",
@@ -947,9 +957,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-06c1a9b2-0944-4167-ad7f-7ee5fe8c523b.png"
     },
     {
       "id": "062",
@@ -959,9 +970,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-29cdcde8-87d8-4a70-a7c3-ec56ed00e8d5.png"
     },
     {
       "id": "063",
@@ -971,9 +983,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-d8fbcf57-2256-4d5b-a445-853748e0c8d9.png"
     },
     {
       "id": "064",
@@ -983,9 +996,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-9771e10b-25dd-4783-adfb-74fedae42a52.png"
     },
     {
       "id": "065",
@@ -995,9 +1009,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-c827d9d7-0156-4ff0-85ae-da167fb14178.png"
     },
     {
       "id": "066",
@@ -1007,9 +1022,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-997b4f8f-68dc-4e2b-87de-a04ddcf48ee6.png"
     },
     {
       "id": "067",
@@ -1019,9 +1035,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-6b77f0a8-c159-493b-9b4a-73cfc7a6f277.png"
     },
     {
       "id": "068",
@@ -1031,9 +1048,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-08fb4626-1828-4d8b-b0bb-cebdc016cb86.png"
     },
     {
       "id": "069",
@@ -1043,9 +1061,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-4543db01-e8d0-47e4-b4c0-f06f6470e3a1.png"
     },
     {
       "id": "070",
@@ -1055,9 +1074,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-ddb57c16-4fec-4097-8157-bf924b736cb6.png"
     },
     {
       "id": "071",
@@ -1067,9 +1087,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-dc52a025-15d4-4665-9408-a0b42874386b.png"
     },
     {
       "id": "072",
@@ -1079,9 +1100,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-fe06a980-5112-4478-85c4-156b8d179d2f.png"
     },
     {
       "id": "073",
@@ -1091,9 +1113,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-da308499-aad0-445d-97d5-63c3ccf126c6.png"
     },
     {
       "id": "074",
@@ -1103,9 +1126,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-70ecd61a-7fad-4a36-8757-6eb71752d7b1.png"
     },
     {
       "id": "075",
@@ -1115,9 +1139,10 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": null,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-5e727f3d-e3a2-42b7-9d4e-0d18cd8d4dc8.png"
     },
     {
       "id": "076",
@@ -1487,11 +1512,37 @@
       "note": "Fresh generation with explicit resolution and no-haze constraints; still undersized with halo."
     }
   ],
-  "blocker": null,
+  "blocker": "System environment status unavailable during076generation; browser tool removed. Pending image request terminated after stall. No076result confirmed; check saved generated images before retrying.",
   "next_steps": [
-    "Generate051–100 individually",
-    "Finish alpha/visual QA and documented3000x4500upscale exports",
-    "Create10ads then buyerZIP/Drive/PDF/EtsyDRAFT"
+    "Restore environment; read full rules/catalog/checkpoint before resuming; never regenerate confirmed001–075 except QA rework.",
+    "Check whether076completed during environment shutdown; do not assume success.",
+    "Generate076–100 individually; correct060/063/070 and inspect072.",
+    "Verify alpha on light/dark for all100, all native/final pixel sizes, edge crop and distinct count; complete documented processed exports.",
+    "Make10 separate watermarked ads, show each here, then buyerZIP/Driveanyone-reader/downloadPDF/Etsy DRAFT; never publicly publish."
   ],
-  "generated_count": 50
+  "generated_count": 75,
+  "qa_rework": [
+    {
+      "id": "060",
+      "reason": "Bunting left/right edges tight or clipped; regenerate wider full silhouette"
+    },
+    {
+      "id": "063",
+      "reason": "Top balloon clipped; regenerate entire composition with margins"
+    },
+    {
+      "id": "070",
+      "reason": "Wrong subject: dog scene instead of standalone candle; replace"
+    },
+    {
+      "id": "072",
+      "reason": "Check carousel pole top crop; regenerate if clipped"
+    }
+  ],
+  "processing_checkpoint": {
+    "christmas": "25 upscaled3000x4500RGBA300DPI files created under Buyer_Files/Christmas; original1024x1536 retained; documented Lanczos upscale, no native4K claim.",
+    "processing_manifest": "output/seasonal-celebration-clipart/christmas_processing.json",
+    "qa": "Christmas25 alpha-composite overview viewed on alternating light/dark backgrounds; no visible haze in actual alpha composite.",
+    "library": "Generated originals displayed and auto-saved by imagegen. Processed buyer files and owner backup not yet persisted; do not claim saved final delivery."
+  }
 }
