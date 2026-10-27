@@ -39,6 +39,10 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: node --check app/src/main/assets/deepsyq.js && node --check tests/agent-a-base1-identity-race.spec.mjs
       - name: A/B/A delayed identity and wallet tests (no paid POST)
+        # Firefox refuses root with GitHub's /github/home owned by pwuser.
+        # Match the official Playwright container root user without skipping Firefox.
+        env:
+          HOME: /root
         run: npx playwright test tests/agent-a-base1-identity-race.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2
       - uses: actions/upload-artifact@v4
         if: failure()
