@@ -1,6 +1,6 @@
 # The Reading Room — Notion Book Tracker & Reading Hub
 
-Status: production preparation, 27 October 2026. Native workspace access is not connected. This document is a build specification, NOT a completed Notion template. No template URL or Etsy draft exists yet. Do not sell a CSV/specification as the finished product.
+Status: completed native Notion template and verified Etsy DRAFT, 27 October 2026. The final implementation record below overrides the earlier design proposals where explicitly noted.
 
 ## Product promise
 A beautiful personal reading library that is easy to start and easy to return to. For readers and book bloggers who want reading progress, a TBR shortlist, notes, quotes and year goals in one calm workspace. Automatic delivery of a duplicable template; no customisation service or seller work after purchase. No guarantee of sales.
@@ -87,8 +87,23 @@ Working price: EUR 9.90, subject to actual finished scope. No fake discount, urg
 13 proposed tags: notion book tracker; reading journal; notion template; book journal; tbr tracker; reading tracker; book lover gift; digital book log; reading goals; quote collection; library organizer; book review journal; reading dashboard.
 Do not publish or create a delivery-complete draft before a tested working duplicable Notion template exists.
 
-## Access dependency
-Notion plugin discovered but not installed/connected at preparation time. It has been suggested. Continue independent design and build specification; native creation and duplication verification require confirmed access. A specification, HTML prototype, CSV import pack or generated screenshot is not a substitute for the promised native product.
+## Access and final implementation — 27 October 2026
+Notion access is connected. The native template is complete and publicly duplicable; indexing is disabled. A separate private duplicate was created and its five databases, relations and inline views were checked against copied IDs.
+
+Public template: https://chartreuse-bolt-dc6.notion.site/The-Reading-Room-406051b0d561811b9526ff93d1357ce1
+
+Etsy DRAFT (not published): https://www.etsy.com/your/shops/me/listing-editor/edit/4604358549
+
+Actual implementation differs from the initial plan above:
+- Goals.Completed is a SUM rollup of Books.Completed count. Books uses Goal year (MAX) and Goal count (COUNT) rollups; Completed count returns 1 only for Finished, non-sample books with a finish date matching the sole linked goal year. The nested relation-filter formula proposed above was rejected and is NOT used.
+- Entry check flags negative/over-total pages, missing finish date, multiple goals, goal-year mismatch and ratings outside 1–5. Started-after-Finished validation is not implemented.
+- Native New book template is the default across Books views. Its quote capture instructions are present; a newly created record's quote-view rebinding was not independently verified.
+- Home has Currently reading, TBR and Goals inline views. Library includes Finished and Paused/DNF views; do not promise an extra dynamic Finished-this-year home view.
+- Root artwork is an inline image, not a native page cover. Notion supports its own native interface styles.
+- Browser QA verified 40% / 144 pages left, safe zero totals, input flags,100% clamping, year mismatch exclusion, sample exclusion,1/12 goal count with11 remaining, and safe zero target. Native iOS/Android and narrow mobile layout were not tested.
+- Final delivery: one clickable access PDF using the owner's adapted PNG design and embedded fonts. No buyer ZIP or Drive link is needed for this Notion product.
+- Ten separate 4000×3000 ads use real screenshots scaled into the layouts. These are not native4K app captures. Ads were individually displayed and reviewed; ads are Etsy-only and excluded from buyer files.
+- Saved draft was reopened:10 images,1PDF,EUR9.90,999 quantity,13tags≤20 characters,instant download,manual renewal,no partner. Both AI/original creation radios remain blank for owner review; decorative AI artwork is disclosed truthfully in the description.
 
 ## Official references
 https://www.notion.com/help/duplicate-public-pages
