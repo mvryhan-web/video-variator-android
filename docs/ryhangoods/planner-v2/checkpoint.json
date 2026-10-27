@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-27",
+  "product": "New catalogue #1 Gentle Focus V2",
+  "etsy_url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4604145055#media",
+  "status": "DRAFT - reopened and verified no unsaved changes",
+  "price_eur": 7.9,
+  "quantity": 999,
+  "photos": 10,
+  "photo_size": [
+    4000,
+    3000
+  ],
+  "delivery": "Four direct Etsy files: planner PDF, guide PDF, readme, optional ZIP containing same three files. No dependency on Drive link.",
+  "native_app_tests": "Not performed",
+  "pdf_pages": 443,
+  "links": 9430,
+  "link_checks": "All internal targets and annotation bounds PASS",
+  "visual_review": "All 16 distinct page layouts and 4 guide pages inspected; 10 ad previews shown individually",
+  "drive": {
+    "folder": "1Ql8JPkms4qzZngJAB9-ScESuh7QkVI8I",
+    "zip": "1ZppJ1ubfTzUs3ve2AjiZY0znoKrzmrt-",
+    "size": 670090,
+    "access": "Owner-only; browser requires Google sign-in. Backup only, not buyer delivery."
+  },
+  "ai_radios": "Both original and ai_gen left unselected, readback verified",
+  "source": "Native vector layout created with Python, no generated raster illustrations",
+  "zip_sha256": "a32608c25759d52f92a1be59965ed9b8c313464b97ddb6471ebbd4a8ba8d8f6d",
+  "owner_backup_library": "libfile_89e4e704d74c8191a3cd7c6cfca7604e",
+  "next": "Owner review and actual publication only by owner. Never create duplicate draft."
+}
