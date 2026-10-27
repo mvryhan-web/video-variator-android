@@ -1,7 +1,7 @@
 {
   "product": 3,
   "name": "Seasonal & Celebration Clipart Mega Bundle",
-  "status": "BLOCKED AT IMAGE QUALITY GATE — not ready for Etsy",
+  "status": "IN PROGRESS —50 distinct source assets generated and individually shown",
   "date": "2026-10-27",
   "rules_sha": "a283298258f7617e769ea763a094b1f54fdf2274",
   "planned_count": 100,
@@ -15,7 +15,8 @@
   "notes": [
     "New catalog item; historical Christmas Gift Tags draft is a different product; do not overwrite.",
     "Each asset separate built-in image generation, actual dimensions and alpha must be verified. No silent upscale.",
-    "Etsy DRAFT only. Ten ads separate and never Drive."
+    "Etsy DRAFT only. Ten ads separate and never Drive.",
+    "Previous halo diagnosis was incorrect: actual alpha compositing showed transparent exterior; displayed RGB under transparent pixels is not a visible background. Catalog explicitly permits documented processing; do not ask repeated upscale approval."
   ],
   "manifest": [
     {
@@ -26,9 +27,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-a8297a29-19aa-44bd-a13f-b8392b526d9d.png"
     },
     {
       "id": "002",
@@ -38,9 +43,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-740cdef2-64fd-47ce-bb04-eb9e059857a3.png"
     },
     {
       "id": "003",
@@ -50,9 +59,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-715e6c8a-01af-4b38-aaa0-e268c6f24b26.png"
     },
     {
       "id": "004",
@@ -62,9 +75,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-f4a948bb-d110-4d91-b8ca-d24bba3dd71d.png"
     },
     {
       "id": "005",
@@ -74,9 +91,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-e08a5416-8f69-4c1f-902c-2246668b662a.png"
     },
     {
       "id": "006",
@@ -86,9 +107,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-9a284b8c-ddf9-4c1a-b4cc-e308669ded7a.png"
     },
     {
       "id": "007",
@@ -98,9 +123,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-26b86af7-5af8-49f9-ae10-46cf8f458799.png"
     },
     {
       "id": "008",
@@ -110,9 +139,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-8709dfaf-798f-446c-855c-335f1d75d639.png"
     },
     {
       "id": "009",
@@ -122,9 +155,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-c4ef04aa-06ce-4b41-a262-ea92604d45a2.png"
     },
     {
       "id": "010",
@@ -134,9 +171,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-de900187-a2da-4b94-a0f5-3f598af31c1b.png"
     },
     {
       "id": "011",
@@ -146,9 +187,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-b1e896fc-3fc3-46c4-8ebe-7cb5ff20fa22.png"
     },
     {
       "id": "012",
@@ -158,9 +203,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-f94d6fa0-4817-4627-8acd-672ff2f81eac.png"
     },
     {
       "id": "013",
@@ -170,9 +219,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-6da236f3-ede2-4f1d-835b-6916b60acb55.png"
     },
     {
       "id": "014",
@@ -182,9 +235,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-89bdde7a-de4b-41cb-8179-2209618333a7.png"
     },
     {
       "id": "015",
@@ -194,9 +251,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-9e066741-ffbc-49f0-a3d0-1632e52fa582.png"
     },
     {
       "id": "016",
@@ -206,9 +267,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-25b421dd-2471-4106-87cf-3115fd72931c.png"
     },
     {
       "id": "017",
@@ -218,9 +283,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-e9bd6c3c-c45c-48fc-b4ff-a75395c84d45.png"
     },
     {
       "id": "018",
@@ -230,9 +299,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-0c95ecf8-ce87-4544-a1d0-c62fe142fcfd.png"
     },
     {
       "id": "019",
@@ -242,9 +315,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-21827277-e9ea-4179-bef2-3b3da611760e.png"
     },
     {
       "id": "020",
@@ -254,9 +331,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-892e5095-6065-4e80-974c-9d411c403f1e.png"
     },
     {
       "id": "021",
@@ -266,9 +347,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-912cb3a4-682b-461f-a3b8-012b636a5cbf.png"
     },
     {
       "id": "022",
@@ -278,9 +363,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-ae8242a7-8631-4d45-8dd6-9c6f04e3712c.png"
     },
     {
       "id": "023",
@@ -290,9 +379,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-032d6f8a-b4e6-4fab-8519-e42549002e59.png"
     },
     {
       "id": "024",
@@ -302,9 +395,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-1f3dfda3-ba07-49b3-bf52-5f6cc4021cbe.png"
     },
     {
       "id": "025",
@@ -314,9 +411,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-69d163a2-cf26-4af7-9623-f2ed7749e65d.png"
     },
     {
       "id": "026",
@@ -326,9 +427,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-e69a2458-c3bb-4b7e-a114-6079a4a082f2.png"
     },
     {
       "id": "027",
@@ -338,9 +443,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-34dc90ac-a74a-4495-83e9-af1e3214839d.png"
     },
     {
       "id": "028",
@@ -350,9 +459,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-5a24971f-a1f7-4e92-b877-577c871bbd08.png"
     },
     {
       "id": "029",
@@ -362,9 +475,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-b7f7906d-bcd5-4406-b31b-aa6c422ea93e.png"
     },
     {
       "id": "030",
@@ -374,9 +491,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-41fb1c26-68b0-418d-ab74-c27a8d162a5c.png"
     },
     {
       "id": "031",
@@ -386,9 +507,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-214774e4-ef3b-4c6c-adcc-8ceba6d982f7.png"
     },
     {
       "id": "032",
@@ -398,9 +523,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-dedbb317-55ce-48d5-865f-f60f3fd78f52.png"
     },
     {
       "id": "033",
@@ -410,9 +539,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-e65a1140-c62c-4b1d-8e61-9affac03680c.png"
     },
     {
       "id": "034",
@@ -422,9 +555,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-5f1933ba-833a-40c4-9538-0f84aec7894c.png"
     },
     {
       "id": "035",
@@ -434,9 +571,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-ce62a33e-6702-412b-a8f7-8a23dabb78a7.png"
     },
     {
       "id": "036",
@@ -446,9 +587,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-9468146f-ee64-487d-b198-d5917d67980c.png"
     },
     {
       "id": "037",
@@ -458,9 +603,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-a1bada09-0bc5-44d7-999c-46ff1e16e6bf.png"
     },
     {
       "id": "038",
@@ -470,9 +619,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-398fdf26-db03-469f-889e-88a45d9cfb73.png"
     },
     {
       "id": "039",
@@ -482,9 +635,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-25c0fcb2-a074-49d9-aef1-4b53309c970b.png"
     },
     {
       "id": "040",
@@ -494,9 +651,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-f62fa495-0709-48b6-b104-cf84d59d44cd.png"
     },
     {
       "id": "041",
@@ -506,9 +667,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-2ee88111-b9e2-45bf-b308-9c1c0000e37a.png"
     },
     {
       "id": "042",
@@ -518,9 +683,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-44eb62b9-09fc-41c2-bbad-1918693df1d0.png"
     },
     {
       "id": "043",
@@ -530,9 +699,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-086675a5-df48-4ffe-ab46-e5ffd62b3673.png"
     },
     {
       "id": "044",
@@ -542,9 +715,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-cb25d379-2d00-4d32-b175-1c88817e23dd.png"
     },
     {
       "id": "045",
@@ -554,9 +731,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-6b60b072-ba9b-4aa2-a366-c38a6d508c52.png"
     },
     {
       "id": "046",
@@ -566,9 +747,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-53962e8d-49ee-4d57-addd-905156f9ede6.png"
     },
     {
       "id": "047",
@@ -578,9 +763,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-84dd816b-5e45-43ae-801e-b5df642625ca.png"
     },
     {
       "id": "048",
@@ -590,9 +779,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-b6abbaf2-b66b-4749-b10f-8bd65a7c4e66.png"
     },
     {
       "id": "049",
@@ -602,9 +795,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-50beaa28-b27d-49a6-a6a1-6450043710e3.png"
     },
     {
       "id": "050",
@@ -614,9 +811,13 @@
         3000,
         4500
       ],
-      "status": "planned",
+      "status": "source_generated_final_QA_pending",
       "orientation": "portrait",
-      "actual_px": null
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-6e1ab0e2-b982-4687-b91c-1afc564c0aca.png"
     },
     {
       "id": "051",
@@ -1286,11 +1487,11 @@
       "note": "Fresh generation with explicit resolution and no-haze constraints; still undersized with halo."
     }
   ],
-  "blocker": "Built-in generation and targeted edit both returned1024x1536 instead of requested3000x4500; visible colored halo persists. Current approved print size not achieved; no silent upscale or Etsy draft pretending finished100assets.",
+  "blocker": null,
   "next_steps": [
-    "Owner decision needed to change native-resolution requirement or explicitly authorize separate upscale and background processing; do not repeat unchanged generation loop.",
-    "Resolve native-resolution and clean-alpha quality gate before repeating100generations",
-    "Continue001 then002–100 individually shown and inspected",
-    "Then10ads,validated buyerZIP,Driveanyone/reader,PDFand reopened EtsyDRAFT"
-  ]
+    "Generate051–100 individually",
+    "Finish alpha/visual QA and documented3000x4500upscale exports",
+    "Create10ads then buyerZIP/Drive/PDF/EtsyDRAFT"
+  ],
+  "generated_count": 50
 }
