@@ -47,11 +47,31 @@ export async function submitPurchasedProviderRequest({
  const controller=new AbortController();
  const configured=Number(env.AI_PROVIDER_DISPATCH_TIMEOUT_MS);
  const maxMs=Number.isFinite(configured)&&configured>=100&&configured<=30000?configured:30000;
- let timer;
+ let timer,drainTimer;
+ // Ensure the provider cannot start a late fetch from a queued continuation.
+ const transport=Promise.resolve().then(()=>{
+  controller.signal.throwIfAborted();
+  return provider(request,{env,authorization:proof,signal:controller.signal});
+ });
  try{
-  const deadline=new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(Error('AI_PROVIDER_TIMEOUT_UNCERTAIN'));},maxMs);});
+  const deadline=new Promise((_,reject)=>{
+   timer=setTimeout(()=>{
+    controller.abort(Error('AI_PROVIDER_TIMEOUT_UNCERTAIN'));
+    reject(Error('AI_PROVIDER_TIMEOUT_UNCERTAIN'));
+   },maxMs);
+  });
   // One paid dispatch claim stays consumed if transport outcome is unknown.
-  return await Promise.race([Promise.resolve().then(()=>provider(request,{env,authorization:proof,signal:controller.signal})),deadline]);
- }finally{clearTimeout(timer);}
+  return await Promise.race([transport,deadline]);
+ }catch(error){
+  if(controller.signal.aborted){
+   // Let a real aborted HTTP fetch settle BEFORE dropping the consent fence.
+   // Bounded drain: a noncooperative transport cannot starve PG pool.max=1/2.
+   await Promise.race([transport.then(()=>{},()=>{}),new Promise(resolve=>{
+    drainTimer=setTimeout(resolve,250);
+   })]);
+   throw Error('AI_PROVIDER_TIMEOUT_UNCERTAIN');
+  }
+  throw error;
+ }finally{clearTimeout(timer);clearTimeout(drainTimer);}
  });}catch(e){if(providerStarted)throw e;deny();}
 }
