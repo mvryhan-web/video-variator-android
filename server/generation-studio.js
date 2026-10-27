@@ -26,7 +26,11 @@ import {submitPurchasedProviderRequest,PurchasedDispatchDenied} from './generati
 import {installGenerationConsent,hasStoredGenerationConsent} from './generation-consent.js';
 import {generateOpenAIImage} from './generation-openai-image.js';
 import {objectStorageConfig} from './generation-storage.js';
-export async function dispatchGeneration(request,{env=process.env,fetcher=fetch,authorization=null}={}){
+export async function dispatchGeneration(request,{env=process.env,fetcher=fetch,authorization=null,signal=null}={}){
+ // A purchased consent fence owns signal. A late model/body preparation MUST
+ // not start provider transport after the fence times out or revoke is ACKed.
+ signal?.throwIfAborted();
+ const guardedFetch=(url,options)=>{signal?.throwIfAborted();return fetcher(url,options);};
  const model=MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter);
  if(!model)throw Error('MODEL_NOT_CONNECTED');
  if(model.provider==='OpenAI'){
@@ -35,9 +39,10 @@ export async function dispatchGeneration(request,{env=process.env,fetcher=fetch,
    formats:['png','jpeg'],sizes:{'1:1':{'1K':'1024x1024'},'3:2':{'1K':'1536x1024'},'2:3':{'1K':'1024x1536'}}};
   return generateOpenAIImage(request,{key:env.OPENAI_API_KEY,modelConfig,
    purchasedJobGate:{customerPaymentConfirmed:proof,purchasedCreditsReserved:proof,
-    serverPriceApproved:proof,userConsented:proof,durableStorageReady:proof&&objectStorageConfig(env).configured},fetcher});
+    serverPriceApproved:proof,userConsented:proof,durableStorageReady:proof&&objectStorageConfig(env).configured},fetcher:guardedFetch,signal});
  }
- return model.provider==='BytePlus'?generateBytePlus(request,{key:env.BYTEPLUS_API_KEY,fetcher}):generateGoogle(request,{key:env.GEMINI_API_KEY,fetcher});
+ signal?.throwIfAborted();
+ return model.provider==='BytePlus'?generateBytePlus(request,{key:env.BYTEPLUS_API_KEY,fetcher:guardedFetch,signal}):generateGoogle(request,{key:env.GEMINI_API_KEY,fetcher:guardedFetch,signal});
 }
 export async function dispatchPoll(operation,{env=process.env,fetcher=fetch}={}){
  return operation.startsWith('byteplus:')?pollBytePlus(operation,{key:env.BYTEPLUS_API_KEY,downloadHosts:env.BYTEPLUS_MEDIA_HOSTS,fetcher}):pollGoogle(operation,{key:env.GEMINI_API_KEY,fetcher});
