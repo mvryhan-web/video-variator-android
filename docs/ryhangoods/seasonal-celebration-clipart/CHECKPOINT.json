@@ -1274,10 +1274,21 @@
         254
       ],
       "accepted": false
+    },
+    {
+      "asset": "001",
+      "path": "generated_images/exec-abfb32f5-2d6b-46b3-8cdb-24cbcf8da06a.png",
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "accepted": false,
+      "note": "Fresh generation with explicit resolution and no-haze constraints; still undersized with halo."
     }
   ],
   "blocker": "Built-in generation and targeted edit both returned1024x1536 instead of requested3000x4500; visible colored halo persists. Current approved print size not achieved; no silent upscale or Etsy draft pretending finished100assets.",
   "next_steps": [
+    "Owner decision needed to change native-resolution requirement or explicitly authorize separate upscale and background processing; do not repeat unchanged generation loop.",
     "Resolve native-resolution and clean-alpha quality gate before repeating100generations",
     "Continue001 then002–100 individually shown and inspected",
     "Then10ads,validated buyerZIP,Driveanyone/reader,PDFand reopened EtsyDRAFT"
