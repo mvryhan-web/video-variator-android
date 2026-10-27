@@ -1,7 +1,7 @@
 {
   "product": 2,
   "name": "The Reading Room",
-  "status": "Browser authenticated; public duplicate enabled; test duplication requested, runtime QA in progress; no Etsy draft",
+  "status": "Etsy draft created 4604358549; reopened verification in progress",
   "root_id": "406051b0-d561-811b-9526-ff93d1357ce1",
   "root_url": "https://app.notion.com/p/406051b0d561811b9526ff93d1357ce1?pvs=204",
   "databases": {
@@ -29,22 +29,24 @@
   "rules_commit": "dc5d5242e8b232c6f3641cd060fd7ef9e1eb369e",
   "completed": [
     "Five native related databases",
-    "Book progress and goal formulas accepted; runtime QA pending",
     "Eleven personal and tutorial views",
     "Three explicitly fictional sample books and original sample quotes",
     "Start here and Examples pages",
     "Original artwork uploaded as root image",
     "Google browser sign-in verified in Notion",
     "Public product page published; duplication enabled; search indexing disabled",
-    "Default Books view renamed Library with Sample=false and clean visible fields"
+    "Default Books view renamed Library with Sample=false and clean visible fields",
+    "Browser QA:96/240=40%,144 left;0 total safe;negative page flag;over-total clamps100%;goal mismatch excludes;non-sample finished counts1;year goal1/12 and remaining11;zero target safe Set a target",
+    "Native New book template and default for all Books views confirmed",
+    "Default personal views hide Sample; tutorial quotes visible separately",
+    "Ten 4000x3000 watermarked ads individually shown and inspected; selected weak crops corrected",
+    "Access PDF based on owner's PNG; new Notion instructions, embedded font, clickable public template URL, rendered QA",
+    "Etsy title/description,EUR9.90,999,13 tags all<=20,instant digital,no partner,manual renewal;10ads and1PDF uploaded",
+    "Saved draft and found fresh listing4604358549 in draft list"
   ],
   "pending": [
-    "Visual QA and formulas runtime QA",
-    "Default book template",
-    "Public Duplicate link and isolated copy test",
-    "Ten separate watermarked Etsy ads shown in chat",
-    "Delivery PDF with tested link",
-    "Verified Etsy draft"
+    "Finish reopened Etsy verification and screenshot",
+    "Persist owner backup and source checkpoint"
   ],
   "constraints": [
     "Never public-publish Etsy",
@@ -53,5 +55,26 @@
     "Read full GitHub rules before every numbered product"
   ],
   "public_template_url": "https://chartreuse-bolt-dc6.notion.site/The-Reading-Room-406051b0d561811b9526ff93d1357ce1",
-  "last_update": "2026-10-27"
+  "last_update": "2026-10-27",
+  "etsy_draft_url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4604358549",
+  "test_copy": {
+    "root": "165051b0-d561-82be-829e-81131cbc8def",
+    "title": "QA COPY — The Reading Room",
+    "books_data_source": "collection://ffd051b0-d561-83b8-b30e-87e9dbf18176",
+    "notes": "All five databases and linked inline views rebound to new collections; relation rows use copied pages. QA data altered only in private copy."
+  },
+  "native_new_book_template_id": "406051b0-d561-80a6-88f9-d91c0ca06e7e",
+  "files": {
+    "folder": "/workspace/scratch/64629abb14fb/output/reading-room-notion",
+    "delivery_pdf": "Buyer_Files/RyhanGoods_Reading_Room_Access.pdf",
+    "ads": "Etsy_Ads/01_Reading_Room.jpg through 10_Reading_Room.jpg",
+    "source": "build_ads.py, build_delivery.py, listing.json, ads_manifest.json, Screenshots/"
+  },
+  "limitations": [
+    "Native iOS/Android and narrow mobile viewport not tested; no claim made",
+    "No automatic Goodreads/Kindle import,ISBN lookup,sync,reminders or reread history",
+    "Decorative AI cover disclosed in description; both creation-method radios intentionally blank for owner review if reopening confirms",
+    "Screenshot ads scale actual app captures; not native4K app screenshots",
+    "No buyer ZIP or Drive needed: native Notion copy delivered through Etsy access PDF"
+  ]
 }
