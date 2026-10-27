@@ -182,7 +182,8 @@ export async function generateOpenAIImage(request,{
  if(!response||typeof response.status!=='number')reject('PROVIDER_UNAVAILABLE');
  if(!response.ok)reject(responseCode(response.status));
  let json;
- try{json=await response.json();}catch(_){reject('INVALID_PROVIDER_MEDIA');}
+ try{json=await response.json();}catch(e){signal?.throwIfAborted();reject('INVALID_PROVIDER_MEDIA');}
+ signal?.throwIfAborted();
  // Never accept a billed output at a different reported size or quality by surprise.
  if(json?.size&&json.size!==prepared.size)reject('INVALID_PROVIDER_MEDIA');
  if(json?.quality&&prepared.quality!=='auto'&&json.quality!==prepared.quality)

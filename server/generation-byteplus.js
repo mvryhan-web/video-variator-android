@@ -40,7 +40,9 @@ async function json(path,{key,body,fetcher,signal=null}){
  ...(body?{body:jsonBody}:{})});
  signal?.throwIfAborted();
  if(!r.ok)throw Error(r.status===429?'PROVIDER_BUSY':'PROVIDER_ERROR');
- return JSON.parse((await readLimited(r,42*1024*1024)).toString('utf8'));
+ const bytes=await readLimited(r,42*1024*1024);
+ signal?.throwIfAborted();
+ return JSON.parse(bytes.toString('utf8'));
 }
 export async function generateBytePlus(request,{key,fetcher=fetch,signal=null}){
  signal?.throwIfAborted();

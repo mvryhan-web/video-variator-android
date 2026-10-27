@@ -97,16 +97,19 @@ export async function googleJson(relative,{key,body,fetcher=fetch,signal=null}){
  if(r.body?.getReader){
   const reader=r.body.getReader(),chunks=[];let size=0;
   try{
-   for(;;){const {value,done}=await reader.read();if(done)break;
+   for(;;){const {value,done}=await reader.read();signal?.throwIfAborted();if(done)break;
     size+=value.length;if(size>maxJson)throw new Error('RESULT_TOO_LARGE');
     chunks.push(Buffer.from(value));
    }
   }finally{await reader.cancel().catch(()=>{});}
+  signal?.throwIfAborted();
   if(!size)throw new Error('EMPTY_GENERATION');
   try{return JSON.parse(Buffer.concat(chunks).toString('utf8'));}
   catch{throw new Error('INVALID_PROVIDER_MEDIA');}
  }
- return r.json();
+ const data=await r.json();
+ signal?.throwIfAborted();
+ return data;
 }
 export async function generateGoogle(request,{key,fetcher=fetch,signal=null}){
  signal?.throwIfAborted();
