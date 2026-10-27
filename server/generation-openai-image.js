@@ -149,8 +149,9 @@ function responseCode(status){
 }
 // NO retries, NO URLs, NO direct browser callers, NO prod registration.
 export async function generateOpenAIImage(request,{
- key,modelConfig,purchasedJobGate,fetcher=fetch
+ key,modelConfig,purchasedJobGate,fetcher=fetch,signal=null
 }={}){
+ signal?.throwIfAborted();
  requirePaidGate(purchasedJobGate);
  if(typeof key!=='string'||!key.trim())reject('PROVIDER_NOT_CONFIGURED');
  const prepared=buildOpenAIImageRequest(request,modelConfig);
@@ -168,10 +169,16 @@ export async function generateOpenAIImage(request,{
    headers={...headers,'Content-Type':'application/json'};
    body=JSON.stringify(payload);
  }
+ // Abort the actual HTTP transport, not merely the outer paid-dispatch wait.
+ // The preflight fence also rejects after any synchronous multipart preparation.
+ signal?.throwIfAborted();
  let response;
  try{response=await fetcher(ROOT+route,{
-   method:'POST',redirect:'error',signal:AbortSignal.timeout(120000),headers,body
- });}catch(_){reject('PROVIDER_UNAVAILABLE');}
+   method:'POST',redirect:'error',
+   signal:signal?AbortSignal.any([signal,AbortSignal.timeout(120000)]):AbortSignal.timeout(120000),
+   headers,body
+ });}catch(e){signal?.throwIfAborted();reject('PROVIDER_UNAVAILABLE');}
+ signal?.throwIfAborted();
  if(!response||typeof response.status!=='number')reject('PROVIDER_UNAVAILABLE');
  if(!response.ok)reject(responseCode(response.status));
  let json;
