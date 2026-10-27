@@ -35,5 +35,5 @@ test('promo card retains its dark purple blue style and functional click',()=>{
  assert.match(css,/body\.vu-reference \.vu-upgrade \{/);
  assert.match(css,/radial-gradient\(ellipse at 85% 94%/);
  assert.match(js,/upgrade\.addEventListener\('click'/);
- assert.match(js,/window\.VideoVariatorUI\?\.showView\?\.\('plans'\)/);
+ assert.ok(js.includes("window.location.assign('pricing.html')"));
 });
