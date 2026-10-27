@@ -77,10 +77,17 @@ export function safeGoogleUrl(value){
     u.username||u.password||u.port||u.hash)throw new Error('UNSAFE_PROVIDER_URL');
  return u.toString();
 }
-export async function googleJson(relative,{key,body,fetcher=fetch}){
+export async function googleJson(relative,{key,body,fetcher=fetch,signal=null}){
+ signal?.throwIfAborted();
  if(typeof key!=='string'||!key.trim())throw new Error('PROVIDER_KEY_REQUIRED');
  if(!/^(interactions|models\/[a-z0-9.-]+:(generateContent|predictLongRunning)|models\/[a-z0-9.-]+\/operations\/[A-Za-z0-9_-]+|operations\/[A-Za-z0-9_-]+)$/.test(relative))throw new Error('INVALID_OPERATION');
- const r=await fetcher(ROOT+relative,{method:body?'POST':'GET',redirect:'error',signal:AbortSignal.timeout(120000),headers:{'x-goog-api-key':key,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
+ const jsonBody=body?JSON.stringify(body):undefined;
+ signal?.throwIfAborted();
+ const r=await fetcher(ROOT+relative,{method:body?'POST':'GET',redirect:'error',
+ signal:signal?AbortSignal.any([signal,AbortSignal.timeout(120000)]):AbortSignal.timeout(120000),
+ headers:{'x-goog-api-key':key,...(body?{'Content-Type':'application/json'}:{})},
+ ...(body?{body:jsonBody}:{})});
+ signal?.throwIfAborted();
  if(!r.ok)throw new Error(r.status===429?'PROVIDER_BUSY':'PROVIDER_ERROR');
  // Native fetch responses are streamed and hard-capped. The provider may omit
  // or forge Content-Length, so enforce the decoded byte limit while reading.
@@ -101,13 +108,14 @@ export async function googleJson(relative,{key,body,fetcher=fetch}){
  }
  return r.json();
 }
-export async function generateGoogle(request,{key,fetcher=fetch}){
+export async function generateGoogle(request,{key,fetcher=fetch,signal=null}){
+ signal?.throwIfAborted();
  const selectedId=request.model||MODELS[request.kind]?.id;
  const model=MODEL_CATALOG.find(m=>m.id===selectedId&&m.kind===request.kind&&m.adapter);
  if(!model||(model.provider&&model.provider!=='Google'))throw new Error('MODEL_NOT_CONNECTED');
  if(request.kind==='video'){
   const ref=request.references[0];
-  const data=await googleJson(`models/${model.id}:predictLongRunning`,{key,fetcher,body:{instances:[{prompt:request.prompt,...(ref?{image:{bytesBase64Encoded:ref.data,mimeType:ref.mimeType}}:{})}],parameters:{aspectRatio:request.ratio,resolution:request.videoResolution||model.quality,durationSeconds:request.videoDuration??model.capabilities.durationSeconds,sampleCount:1}}});
+  const data=await googleJson(`models/${model.id}:predictLongRunning`,{key,fetcher,signal,body:{instances:[{prompt:request.prompt,...(ref?{image:{bytesBase64Encoded:ref.data,mimeType:ref.mimeType}}:{})}],parameters:{aspectRatio:request.ratio,resolution:request.videoResolution||model.quality,durationSeconds:request.videoDuration??model.capabilities.durationSeconds,sampleCount:1}}});
   // Persist only IDs that the polling endpoint can actually address.
   // Arbitrary provider strings would strand a paid asynchronous job.
   if(typeof data.name!=='string'||data.name.length>512||
@@ -117,7 +125,7 @@ export async function generateGoogle(request,{key,fetcher=fetch}){
  }
  if(request.kind==='image'&&['gemini-nano-banana-2.1','gemini-3-pro-image'].includes(model.id)){
   const input=[{type:'text',text:request.prompt},...request.references.map(ref=>({type:'image',mime_type:ref.mimeType,data:ref.data}))];
-  const data=await googleJson('interactions',{key,fetcher,body:{model:model.id,input,response_format:{type:'image',mime_type:'image/png',aspect_ratio:request.ratio,image_size:request.resolution||'1K'}}});
+  const data=await googleJson('interactions',{key,fetcher,signal,body:{model:model.id,input,response_format:{type:'image',mime_type:'image/png',aspect_ratio:request.ratio,image_size:request.resolution||'1K'}}});
   const image=data.output_image;
   if(!image||typeof image.data!=='string'||image.data.length>40*1024*1024||image.data.length%4!==0||!/^[A-Za-z0-9+/]*={0,2}$/.test(image.data))throw new Error('INVALID_PROVIDER_MEDIA');
   const bytes=Buffer.from(image.data,'base64'),mime=image.mime_type||image.mimeType||'image/png';
@@ -127,7 +135,7 @@ export async function generateGoogle(request,{key,fetcher=fetch}){
   return {mime,bytes,text:''};
  }
  const prompt=request.kind==='music'?`${request.musicMode==='instrumental'?'Instrumental only, no vocals.':'Create a song with vocals.'}\n${request.prompt}`:request.prompt;
- const data=await googleJson(`models/${model.id}:generateContent`,{key,fetcher,body:{contents:[{parts:[{text:prompt},...request.references.map(inlineData=>({inlineData}))]}],...(request.kind==='image'?{generationConfig:{responseModalities:['TEXT','IMAGE'],imageConfig:{aspectRatio:request.ratio,imageSize:request.resolution||'1K'}}}:{})}});
+ const data=await googleJson(`models/${model.id}:generateContent`,{key,fetcher,signal,body:{contents:[{parts:[{text:prompt},...request.references.map(inlineData=>({inlineData}))]}],...(request.kind==='image'?{generationConfig:{responseModalities:['TEXT','IMAGE'],imageConfig:{aspectRatio:request.ratio,imageSize:request.resolution||'1K'}}}:{})}});
  const parts=data.candidates?.[0]?.content?.parts||[];
  const media=parts.map(p=>p.inlineData||p.inline_data).find(p=>p?.data&&String(p.mimeType||p.mime_type).startsWith(request.kind==='image'?'image/':'audio/'));
  if(!media)throw new Error('EMPTY_GENERATION');
