@@ -100,3 +100,31 @@ test('P0 already-sent local HTTP provider streams abort in flight; never send a 
   }
  }
 });
+
+test('P0 revocation fence waits for an actually canceled HTTP adapter, without an unbounded lock',async()=>{
+ const order=[];let claims=0;
+ const client={async query(sql){
+  if(sql.includes('pg_try_advisory_lock'))return {rows:[{acquired:true}]};
+  if(sql.includes('pg_advisory_unlock')){order.push('unlock');return {rows:[{pg_advisory_unlock:true}]};}
+  if(sql.startsWith('SELECT terms_version'))return {rows:[{terms_version:'2026-10-20',privacy_version:'2026-10-20',provider_data_version:'2026-10-20',provider_data_accepted:true}]};
+  return {rows:[]};
+ },release(){}};
+ const receipt={source:'settled_stripe_purchase',purchaseConfirmed:true,refunded:false,
+  dispatchClaimedExactlyOnce:true,purchaseId:'synthetic',reservationId:job.id,
+  userId:user.id,jobId:job.id,modelId:model.id,provider:model.provider,
+  requestFingerprint:fingerprint,creditsReserved:7,purchasedCreditsAvailableBeforeReserve:7};
+ const wallet={purchasedDispatchVerifier:()=>async()=>{claims++;return receipt;}};
+ const provider=(_req,{signal})=>new Promise((_,reject)=>{
+  signal.addEventListener('abort',()=>{
+   order.push('abort');
+   setTimeout(()=>{order.push('transport-closed');reject(signal.reason);},25);
+  },{once:true});
+ });
+ await assert.rejects(submitPurchasedProviderRequest({
+  env:dEnv,pool:{connect:async()=>client},wallet,user,job,request:image,
+  model,quote,originalQuote:quote,fingerprint,provider
+ }),/AI_PROVIDER_TIMEOUT_UNCERTAIN/);
+ assert.deepEqual(order,['abort','transport-closed','unlock'],
+  'fence release/revoke ACK must follow actual transport abort when it acknowledges cancellation');
+ assert.equal(claims,1);
+});
