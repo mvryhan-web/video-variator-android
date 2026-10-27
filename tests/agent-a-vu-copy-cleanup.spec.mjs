@@ -29,10 +29,20 @@ test('portrait/landscape glyphs respond to actual format changes',async({page})=
  await expect(page.locator('#aspectRatio')).toHaveValue('9:16');
  await expect(portrait).toHaveAttribute('aria-pressed','true');
 });
-test('upgrade card is still a functional link to real plan selection',async({page})=>{
+test('upgrade card opens canonical Pricing with real plan selection, no checkout side effect',async({page})=>{
+ const checkoutPosts=[];
+ page.on('request',request=>{
+  if(request.method()==='POST'&&/\\/api\\/(?:ai-billing|billing)\\/checkout/.test(new URL(request.url()).pathname)){
+   checkoutPosts.push(request.url());
+  }
+ });
  await page.goto('/index.html');
  if((page.viewportSize()?.width||1448)<900)await page.locator('.vu-nav-toggle').click();
  await expect(page.locator('.vu-upgrade')).toBeVisible();
  await page.locator('.vu-upgrade').click();
- await expect(page.locator('#plansView')).toBeVisible();
+ await expect(page).toHaveURL(/\\/pricing\\.html(?:[?#]|$)/);
+ await expect(page.locator('#pricingTitle')).toHaveText('Power Your Creativity');
+ await expect(page.locator('#planCards')).toContainText('Basic');
+ await expect(page.locator('#creditCards .price-credit-card')).toHaveCount(5);
+ expect(checkoutPosts).toEqual([]);
 });
