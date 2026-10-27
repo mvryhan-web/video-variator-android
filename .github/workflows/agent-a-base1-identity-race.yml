@@ -18,8 +18,12 @@ concurrency:
 
 jobs:
   identity-private-browser:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    runs-on: ubuntu-24.04
+    # GitHub's Ubuntu 26.04 apt mirror stalled for 20 minutes before any test ran.
+    # Use the browser+OS-dependency image pinned to package-lock Playwright 1.63.0.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    timeout-minutes: 30
     env:
       DATABASE_URL: ''
       STRIPE_SECRET_KEY: ''
@@ -34,8 +38,11 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: node --check app/src/main/assets/deepsyq.js && node --check tests/agent-a-base1-identity-race.spec.mjs
-      - run: npx playwright install --with-deps chromium firefox webkit
       - name: A/B/A delayed identity and wallet tests (no paid POST)
+        # Firefox refuses root with GitHub's /github/home owned by pwuser.
+        # Match the official Playwright container root user without skipping Firefox.
+        env:
+          HOME: /root
         run: npx playwright test tests/agent-a-base1-identity-race.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2
       - uses: actions/upload-artifact@v4
         if: failure()
