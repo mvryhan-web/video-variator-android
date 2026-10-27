@@ -1,0 +1,1249 @@
+{
+  "product": 3,
+  "name": "Seasonal & Celebration Clipart Mega Bundle",
+  "status": "IN PROGRESS",
+  "date": "2026-10-27",
+  "rules_sha": "a283298258f7617e769ea763a094b1f54fdf2274",
+  "planned_count": 100,
+  "completed_count": 0,
+  "collections": {
+    "Christmas": 25,
+    "Halloween": 25,
+    "Birthday": 25,
+    "Wedding": 25
+  },
+  "notes": [
+    "New catalog item; historical Christmas Gift Tags draft is a different product; do not overwrite.",
+    "Each asset separate built-in image generation, actual dimensions and alpha must be verified. No silent upscale.",
+    "Etsy DRAFT only. Ten ads separate and never Drive."
+  ],
+  "manifest": [
+    {
+      "id": "001",
+      "theme": "Christmas",
+      "subject": "ornate ribbon Christmas tree",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "002",
+      "theme": "Christmas",
+      "subject": "velvet bow glass ornament",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "003",
+      "theme": "Christmas",
+      "subject": "gingerbread townhouse",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "004",
+      "theme": "Christmas",
+      "subject": "festive fox in scarf",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "005",
+      "theme": "Christmas",
+      "subject": "holly botanical crescent",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "006",
+      "theme": "Christmas",
+      "subject": "vintage sleigh with gifts",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "007",
+      "theme": "Christmas",
+      "subject": "snow globe winter village",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "008",
+      "theme": "Christmas",
+      "subject": "nutcracker drummer",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "009",
+      "theme": "Christmas",
+      "subject": "striped knit stocking",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "010",
+      "theme": "Christmas",
+      "subject": "Christmas cocoa mug",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "011",
+      "theme": "Christmas",
+      "subject": "festive candle lantern",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "012",
+      "theme": "Christmas",
+      "subject": "poinsettia bloom",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "013",
+      "theme": "Christmas",
+      "subject": "robin on pine branch",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "014",
+      "theme": "Christmas",
+      "subject": "golden bell",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "015",
+      "theme": "Christmas",
+      "subject": "candy cane bow",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "016",
+      "theme": "Christmas",
+      "subject": "winter cottage",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "017",
+      "theme": "Christmas",
+      "subject": "wrapped book gift",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "018",
+      "theme": "Christmas",
+      "subject": "ice skate with greenery",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "019",
+      "theme": "Christmas",
+      "subject": "Christmas pudding",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "020",
+      "theme": "Christmas",
+      "subject": "snowman with earmuffs",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "021",
+      "theme": "Christmas",
+      "subject": "embroidered mitten",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "022",
+      "theme": "Christmas",
+      "subject": "Christmas star ornament",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "023",
+      "theme": "Christmas",
+      "subject": "festive dachshund",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "024",
+      "theme": "Christmas",
+      "subject": "evergreen wreath",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "025",
+      "theme": "Christmas",
+      "subject": "wooden rocking horse",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "026",
+      "theme": "Halloween",
+      "subject": "pumpkin carriage",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "027",
+      "theme": "Halloween",
+      "subject": "friendly ghost with lantern",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "028",
+      "theme": "Halloween",
+      "subject": "black cat on spellbook",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "029",
+      "theme": "Halloween",
+      "subject": "witch hat with crescent",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "030",
+      "theme": "Halloween",
+      "subject": "bubbling cauldron",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "031",
+      "theme": "Halloween",
+      "subject": "candy corn cottage",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "032",
+      "theme": "Halloween",
+      "subject": "bat with ribbon",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "033",
+      "theme": "Halloween",
+      "subject": "owl on crescent",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "034",
+      "theme": "Halloween",
+      "subject": "haunted birdhouse",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "035",
+      "theme": "Halloween",
+      "subject": "witch boots",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "036",
+      "theme": "Halloween",
+      "subject": "potion bottle",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "037",
+      "theme": "Halloween",
+      "subject": "mushroom lantern",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "038",
+      "theme": "Halloween",
+      "subject": "moth with moon motif",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "039",
+      "theme": "Halloween",
+      "subject": "broom with velvet bow",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "040",
+      "theme": "Halloween",
+      "subject": "skeleton key",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "041",
+      "theme": "Halloween",
+      "subject": "raven with pumpkin",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "042",
+      "theme": "Halloween",
+      "subject": "spiderweb fan",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "043",
+      "theme": "Halloween",
+      "subject": "jack-o-lantern teapot",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "044",
+      "theme": "Halloween",
+      "subject": "Halloween cupcake",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "045",
+      "theme": "Halloween",
+      "subject": "ghost balloon",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "046",
+      "theme": "Halloween",
+      "subject": "witch mouse",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "047",
+      "theme": "Halloween",
+      "subject": "crystal ball",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "048",
+      "theme": "Halloween",
+      "subject": "Halloween candy bag",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "049",
+      "theme": "Halloween",
+      "subject": "enchanted candle",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "050",
+      "theme": "Halloween",
+      "subject": "autumn door wreath",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "051",
+      "theme": "Birthday",
+      "subject": "ribbon birthday cake",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "052",
+      "theme": "Birthday",
+      "subject": "party bear",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "053",
+      "theme": "Birthday",
+      "subject": "balloon bouquet",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "054",
+      "theme": "Birthday",
+      "subject": "cupcake with candle",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "055",
+      "theme": "Birthday",
+      "subject": "gift tower",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "056",
+      "theme": "Birthday",
+      "subject": "party crown",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "057",
+      "theme": "Birthday",
+      "subject": "confetti popper",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "058",
+      "theme": "Birthday",
+      "subject": "birthday ice cream",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "059",
+      "theme": "Birthday",
+      "subject": "party dinosaur",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "060",
+      "theme": "Birthday",
+      "subject": "bunting garland",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "061",
+      "theme": "Birthday",
+      "subject": "party trumpet",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "062",
+      "theme": "Birthday",
+      "subject": "birthday doughnut",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "063",
+      "theme": "Birthday",
+      "subject": "party rabbit",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "064",
+      "theme": "Birthday",
+      "subject": "star pinwheel",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "065",
+      "theme": "Birthday",
+      "subject": "birthday bouquet",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "066",
+      "theme": "Birthday",
+      "subject": "striped party hat",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "067",
+      "theme": "Birthday",
+      "subject": "birthday lemonade",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "068",
+      "theme": "Birthday",
+      "subject": "gift wagon",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "069",
+      "theme": "Birthday",
+      "subject": "party puppy",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "070",
+      "theme": "Birthday",
+      "subject": "candle numberless",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "071",
+      "theme": "Birthday",
+      "subject": "bow cookie",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "072",
+      "theme": "Birthday",
+      "subject": "birthday carousel horse",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "073",
+      "theme": "Birthday",
+      "subject": "party piñata",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "074",
+      "theme": "Birthday",
+      "subject": "party favor box",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "075",
+      "theme": "Birthday",
+      "subject": "birthday candy jar",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "076",
+      "theme": "Wedding",
+      "subject": "garden rose bouquet",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "077",
+      "theme": "Wedding",
+      "subject": "gold wedding rings",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "078",
+      "theme": "Wedding",
+      "subject": "floral ceremony arch",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "079",
+      "theme": "Wedding",
+      "subject": "champagne glasses",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "080",
+      "theme": "Wedding",
+      "subject": "wedding cake",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "081",
+      "theme": "Wedding",
+      "subject": "silk bridal bow",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "082",
+      "theme": "Wedding",
+      "subject": "eucalyptus branch",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "083",
+      "theme": "Wedding",
+      "subject": "bridal shoes",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "084",
+      "theme": "Wedding",
+      "subject": "wedding envelope",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "085",
+      "theme": "Wedding",
+      "subject": "flower basket",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "086",
+      "theme": "Wedding",
+      "subject": "taper candle centerpiece",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "087",
+      "theme": "Wedding",
+      "subject": "wedding bells",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "088",
+      "theme": "Wedding",
+      "subject": "pearl hair comb",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "089",
+      "theme": "Wedding",
+      "subject": "boutonniere",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "090",
+      "theme": "Wedding",
+      "subject": "romantic lantern",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "091",
+      "theme": "Wedding",
+      "subject": "rose petal basket",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "092",
+      "theme": "Wedding",
+      "subject": "floral heart wreath",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "093",
+      "theme": "Wedding",
+      "subject": "wedding carriage",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "094",
+      "theme": "Wedding",
+      "subject": "lace parasol",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "095",
+      "theme": "Wedding",
+      "subject": "vow books",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "096",
+      "theme": "Wedding",
+      "subject": "wedding chair floral",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "097",
+      "theme": "Wedding",
+      "subject": "peony bloom",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "098",
+      "theme": "Wedding",
+      "subject": "olive branch",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "099",
+      "theme": "Wedding",
+      "subject": "wedding dove",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    },
+    {
+      "id": "100",
+      "theme": "Wedding",
+      "subject": "flower crown",
+      "target_px": [
+        3000,
+        4500
+      ],
+      "status": "planned",
+      "orientation": "portrait",
+      "actual_px": null
+    }
+  ],
+  "competitors": [
+    {
+      "url": "https://www.etsy.com/listing/4357043045/watercolor-christmas-clipart-bundle",
+      "price_usd": 3.16,
+      "item_reviews": 38,
+      "latest_observed_review": "2026-09-25",
+      "observed": "2026-10-27",
+      "scope": "80 PNG 3000 square,commercial use; reviews praise quality and variety"
+    },
+    {
+      "url": "https://www.etsy.com/listing/4529241760/halloween-clipart-bundle-watercolor",
+      "item_reviews": 3,
+      "latest_observed_review": "2026-09-12",
+      "scope": "35 files; reviews praise images/easy downloads; exact sales unknown"
+    },
+    {
+      "url": "https://www.etsy.com/listing/1659642005/watercolor-holiday-clipart-bundle",
+      "price_usd": 12.92,
+      "scope": "320 files across8sets; exact item sales unknown"
+    }
+  ],
+  "improvements": [
+    "One consistent illustration language across4 celebrations",
+    "Organized filenames and clear100-item inventory",
+    "Clean alpha inspected against light/dark backgrounds",
+    "Actual tested print resolution disclosed; no duplicate-count inflation"
+  ]
+}
