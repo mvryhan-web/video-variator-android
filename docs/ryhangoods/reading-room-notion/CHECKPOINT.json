@@ -1,0 +1,53 @@
+{
+  "product": 2,
+  "name": "The Reading Room",
+  "status": "Native Notion product built; browser sign-in required for visual QA and public duplication; NOT Etsy draft",
+  "root_id": "406051b0-d561-811b-9526-ff93d1357ce1",
+  "root_url": "https://app.notion.com/p/406051b0d561811b9526ff93d1357ce1?pvs=204",
+  "databases": {
+    "authors": {
+      "database_id": "0dba4158e5d74204bdc80da315ed09e9",
+      "data_source": "collection://10fdad51-ebfa-4a14-a036-9efb541bba18"
+    },
+    "genres": {
+      "database_id": "682d8cf2e39d4ccd8e871e8554cd2496",
+      "data_source": "collection://57e5bc12-33cf-4d51-8b40-33c5bc5cf60b"
+    },
+    "goals": {
+      "database_id": "32531f081b544d5fa3b07880bce51d27",
+      "data_source": "collection://d8c90dd0-76ec-4023-ab42-718ddccd1845"
+    },
+    "books": {
+      "database_id": "8ac1a35f34104fa4b1b2a0dca25b8e56",
+      "data_source": "collection://845ecee8-21d5-4d8f-b58a-84d832130083"
+    },
+    "quotes": {
+      "database_id": "eeef4bfdeac3474cb5695f5d947029b9",
+      "data_source": "collection://953cf763-9705-4a92-8a7e-9b3a9b7a11d2"
+    }
+  },
+  "rules_commit": "dc5d5242e8b232c6f3641cd060fd7ef9e1eb369e",
+  "completed": [
+    "Five native related databases",
+    "Book progress and goal formulas accepted; runtime QA pending",
+    "Eleven personal and tutorial views",
+    "Three explicitly fictional sample books and original sample quotes",
+    "Start here and Examples pages",
+    "Original artwork uploaded as root image"
+  ],
+  "pending": [
+    "Browser sign-in",
+    "Visual QA and formulas runtime QA",
+    "Default book template",
+    "Public Duplicate link and isolated copy test",
+    "Ten separate watermarked Etsy ads shown in chat",
+    "Delivery PDF with tested link",
+    "Verified Etsy draft"
+  ],
+  "constraints": [
+    "Never public-publish Etsy",
+    "Ads never Drive",
+    "All visual deliverables individually shown and checked",
+    "Read full GitHub rules before every numbered product"
+  ]
+}
