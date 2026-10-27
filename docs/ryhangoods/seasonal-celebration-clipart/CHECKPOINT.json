@@ -1,7 +1,7 @@
 {
   "product": 3,
   "name": "Seasonal & Celebration Clipart Mega Bundle",
-  "status": "IN PROGRESS",
+  "status": "BLOCKED AT IMAGE QUALITY GATE — not ready for Etsy",
   "date": "2026-10-27",
   "rules_sha": "a283298258f7617e769ea763a094b1f54fdf2274",
   "planned_count": 100,
@@ -1245,5 +1245,41 @@
     "Organized filenames and clear100-item inventory",
     "Clean alpha inspected against light/dark backgrounds",
     "Actual tested print resolution disclosed; no duplicate-count inflation"
+  ],
+  "attempts": [
+    {
+      "asset": "001",
+      "path": "generated_images/exec-a8297a29-19aa-44bd-a13f-b8392b526d9d.png",
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "accepted": false
+    },
+    {
+      "asset": "001",
+      "path": "generated_images/exec-f07908ae-15c4-4a06-b822-a2ba66710662.png",
+      "actual_px": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "accepted": false
+    }
+  ],
+  "blocker": "Built-in generation and targeted edit both returned1024x1536 instead of requested3000x4500; visible colored halo persists. Current approved print size not achieved; no silent upscale or Etsy draft pretending finished100assets.",
+  "next_steps": [
+    "Resolve native-resolution and clean-alpha quality gate before repeating100generations",
+    "Continue001 then002–100 individually shown and inspected",
+    "Then10ads,validated buyerZIP,Driveanyone/reader,PDFand reopened EtsyDRAFT"
   ]
 }
