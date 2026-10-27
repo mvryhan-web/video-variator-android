@@ -1,7 +1,7 @@
 {
   "product": 2,
   "name": "The Reading Room",
-  "status": "Native Notion product built; browser sign-in required for visual QA and public duplication; NOT Etsy draft",
+  "status": "Browser authenticated; public duplicate enabled; test duplication requested, runtime QA in progress; no Etsy draft",
   "root_id": "406051b0-d561-811b-9526-ff93d1357ce1",
   "root_url": "https://app.notion.com/p/406051b0d561811b9526ff93d1357ce1?pvs=204",
   "databases": {
@@ -33,10 +33,12 @@
     "Eleven personal and tutorial views",
     "Three explicitly fictional sample books and original sample quotes",
     "Start here and Examples pages",
-    "Original artwork uploaded as root image"
+    "Original artwork uploaded as root image",
+    "Google browser sign-in verified in Notion",
+    "Public product page published; duplication enabled; search indexing disabled",
+    "Default Books view renamed Library with Sample=false and clean visible fields"
   ],
   "pending": [
-    "Browser sign-in",
     "Visual QA and formulas runtime QA",
     "Default book template",
     "Public Duplicate link and isolated copy test",
@@ -49,5 +51,7 @@
     "Ads never Drive",
     "All visual deliverables individually shown and checked",
     "Read full GitHub rules before every numbered product"
-  ]
+  ],
+  "public_template_url": "https://chartreuse-bolt-dc6.notion.site/The-Reading-Room-406051b0d561811b9526ff93d1357ce1",
+  "last_update": "2026-10-27"
 }
