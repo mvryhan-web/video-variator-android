@@ -47,7 +47,13 @@ test('P0 late adapter dispatch after consent timeout and revoke ACK has ZERO new
    return {rows:[]};
   },release(){}
  };
- const wallet={purchasedDispatchVerifier:()=>async()=>{claims++;return {authorized:true,scope:'purchased_customer_only',userId:user.id,jobId:job.id,modelId:model.id,provider:model.provider};}};
+ const wallet={purchasedDispatchVerifier:()=>async()=>{claims++;return {
+  source:'settled_stripe_purchase',purchaseConfirmed:true,refunded:false,
+  dispatchClaimedExactlyOnce:true,purchaseId:'synthetic-purchase-id',
+  reservationId:job.id,userId:user.id,jobId:job.id,modelId:model.id,
+  provider:model.provider,requestFingerprint:fingerprint,creditsReserved:7,
+  purchasedCreditsAvailableBeforeReserve:7
+ };}};
  const provider=async(req,{signal,authorization})=>{
   abortedSignal=signal;prepared.release();await proceed.promise;
   return dispatchGeneration(req,{env:{GEMINI_API_KEY:'fixture'},authorization,signal,
