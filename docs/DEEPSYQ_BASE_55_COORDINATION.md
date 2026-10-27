@@ -1,3 +1,22 @@
+## Coordinator #5 — CYCLE35 / 27 Oct 2026 — CLAIMS / COLLISION BOARD
+
+DEV sampled `0ba8abe6623af2108422fd99244945d062060191`; MAIN `c14f950c6e8700b41d0777c050060fee883d0092`. See [full Cycle35](DEEPSYQ_COORDINATOR_CYCLE35_20261027.md), [live Issue #233](https://github.com/mvryhan-web/video-variator-android/issues/233), and top `PROJECT_STATUS.md` cycle entry. This docs PR is NOT integrated DEV until safely merged.
+
+| Role | Exclusive active claim | Current evidence and next action |
+| --- | --- | --- |
+| A #72 | PR **#428**, `tests/agent-a-vu-copy-cleanup.spec.mjs`, `tests/agent-a-vu-copy-cleanup-unit.mjs`, `.github/workflows/agent-a-vu-copy-cleanup.yml` | HEAD `a66f7dc`, **3/4 SUCCESS, 1 pending**; final desktop/mobile Pricing destination test and CI, then own D16 merge. PR #426 ALREADY MERGED. |
+| B #73 | Existing owner PR **#323**, consent transport/adapters + PG no-spend tests | HEAD `6ac9b676`, **33/34 SUCCESS, 1 running**; no D final-SHA PASS. Do not merge before independent D audit. |
+| C #74 | Public SEO sitemap/canonical route hygiene after merged PR #427 | First check fresh file claims/robots/noindex, then small C-only PR for real public URLs. D peer on indexing; no DEV-preview indexation. |
+| D #75 | Independent current-#323 privacy/paid transport audit; PR #333 financial hold | Explicit PASS/FAIL latest SHA incl after-await abort and PG 1/2. PR #333 DRAFT unmergeable; real Stripe/provider net >=2× absent. Historical Issue75 closed ≠ gate PASS. |
+| Jules 1/2/3 | Existing bot W5.5 / W4.3 / V6.2 | ACK only, not delivered/READY. No duplicate Jules tasks or claims. |
+| Coordinator #5 | Documentation/claims/Issue #233 only | Track exact SHA, six #323–#333 shared files and CI. Do not act as A–D compulsory approver; main/prod/real money forbidden. |
+
+**Six P0 shared paths (#323 ∩ #333):** `server/ai-migrations.js`, `server/generation-studio.js`, `server/generation-wallet.js`, `tests/agent-d-base1-price-confirmation-unit.mjs`, `tests/generation-studio-purchased-boundary-route-unit.mjs`, `tests/p0-purchased-provider-boundary-postgres.mjs`. PR #333 also carries stale `PROJECT_STATUS.md`; no blind conflict resolution. PR #228 old DRAFT touches both coordination files. No PR duplicate or deletion of old completed features.
+
+DEV exact snapshot checks: **88 pass, 1 failure, 4 cancelled**; A #428 **3 pass/1 running**; B #323 **33 pass/1 running**. `main` and production untouched. Next recheck current heads and terminal checks before any integration.
+
+---
+
 ## Coordinator #5 — Cycle32 / CURRENT ACTIVE CLAIMS / 26 Oct 2026 — VERIFIED LIVE QUEUES
 
 DEV `c15f36d39770782b16ae4043fc4d42fb3256bc1b` at sample (PR352 MERGED); Render preview LIVE **same SHA** at deploy `dep-dbfmslei0phs73b8q300`; MAIN `c14f950c6e8700b41d0777c050060fee883d0092` unchanged. Full source/CI/failure/collision report: [Cycle32](DEEPSYQ_COORDINATOR_CYCLE32_20261026.md); operative CHECKPOINT Issue #233. This is a sampled SHA, re-read before changes.
