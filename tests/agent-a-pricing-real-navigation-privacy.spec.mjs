@@ -144,3 +144,50 @@ test('A28 real Home Logout clears Pricing wallet across Back/Forward and hard re
  expect(state.privateMediaRequests).toEqual([]);
  expect(state.jobRequests).toEqual([]);
 });
+
+test('A29 native second-tab storage switches live Pricing A→B and logout removes all wallet data',async({page,context})=>{
+ const state=await installSafeFixtures(page);
+ await startAsA(page);
+ await page.locator('#topPricing').click();
+ await expect(page.locator('#walletSummary')).toContainText(A_BALANCE);
+ await expect(page.locator('#walletHistory')).toContainText(A_ACTIVITY);
+ // Attach an observer BEFORE the external tab changes the token.
+ // We never dispatch synthetic StorageEvent or page lifecycle events.
+ await page.evaluate(()=>{
+  window.__a29NativeStorage=[];
+  window.addEventListener('storage',event=>{
+   if(event.key==='vv_token')window.__a29NativeStorage.push(event.newValue);
+  });
+ });
+ const secondTab=await context.newPage();
+ try{
+  await secondTab.goto('/contact.html');
+  expect(await secondTab.evaluate(()=>localStorage.getItem('vv_token'))).toBe(A);
+  // Real browser cross-document localStorage mutation; Pricing receives native storage.
+  await secondTab.evaluate(value=>localStorage.setItem('vv_token',value),B);
+  await expect.poll(()=>page.evaluate(()=>window.__a29NativeStorage)).toEqual([B]);
+  await page.bringToFront();
+  await assertBWallet(page);
+  await assertAAbsent(page);
+  // A sign-out from the other tab must scrub visible B wallet and A leftovers.
+  await secondTab.bringToFront();
+  await secondTab.evaluate(()=>localStorage.removeItem('vv_token'));
+  await expect.poll(()=>page.evaluate(()=>window.__a29NativeStorage)).toEqual([B,null]);
+  await page.bringToFront();
+  await assertSignedOutWallet(page);
+  await page.goBack(); // Actual Pricing -> Home history (not a simulated event).
+  await expect(page).toHaveURL(/\\/deepsyq\\.html(?:[?#]|$)/);
+  await assertAAbsent(page);
+  await page.goForward();
+  await assertSignedOutWallet(page);
+  expect(await page.evaluate(()=>localStorage.getItem('vv_token'))).toBeNull();
+  expect(state.forbiddenPosts).toEqual([]);
+  expect(state.privateMediaRequests).toEqual([]);
+  expect(state.jobRequests).toEqual([]);
+  expect(state.walletRequests.every(item=>
+   item.auth==='Bearer '+A||item.auth==='Bearer '+B
+  )).toBe(true);
+ }finally{
+  await secondTab.close();
+ }
+});
