@@ -6,12 +6,12 @@
 | Очередь | Товар | Старый Etsy ID | Pinogri / действие |
 |---|---|---|---|
 |1|Gentle Focus V2 — 443-page digital planner|4604145055|ГОТОВ DRAFT4604965991;10новыхads;4directEtsyfiles;€7.90;повторнопроверен|
-|2|The Reading Room — Notion|4604358549|Проверка/реклама, затем новый DRAFT|
+|2|The Reading Room — Notion|4604358549|ГОТОВ DRAFT4605082640;10новыхads;PDF3.66MB;€9.90;повторнопроверен|
 |3A|Christmas Clipart —25PNG|4604759097|Проверить отсутствие дубля|
 |3B|Halloween Clipart —25PNG|4604782520|Проверить отсутствие дубля|
 |3C|Birthday Clipart —25PNG|4604760719|Проверить отсутствие дубля|
 |3D|Wedding Clipart —25PNG|4604761477|Проверить отсутствие дубля|
-|4|The Hidden Garden —30nature coloring|—|Уже Pinogri DRAFT4604965278; Drive ZIP ещё не загружен/не открыт|
+|4|The Hidden Garden —30nature coloring|—|Владелец сделал ACTIVE4604965278; Drive ZIP НЕ загружен/папка private. Не публиковал агент. Блокер: выбран stefadoch, folder owner mvryhan; auth и upload отклонены auto-review. Не обходить, требуется подтверждение правильного аккаунта.|
 |legacy1|Cozy Christmas Clipart|4603460908|Проверка качества и доставки|
 |legacy2|Christmas Digital Paper Pack|4603500584|Проверка качества и доставки|
 |legacy3|Christmas Gift Tags|4603531669|Проверка качества и доставки|
