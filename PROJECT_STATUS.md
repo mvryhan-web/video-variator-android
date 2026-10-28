@@ -1,3 +1,24 @@
+## Coordinator #5 — Cycle37 / 28 Oct 2026 — verified A–D/Jules lanes
+
+**Dated evidence snapshot, not a perpetual SHA.** Live DEV at readback: 6baae3d680e9465ef397b84f268656422b40b1e2. Always refresh branch and checks before actions. D16: A–D test and self-merge safe DEV PRs; #5 is not mandatory approver. No main/production, Trial, live Stripe, paid AI, unsafe migrations or protected Home changes. BASE #20 Product Video retired/404. F1–F8 = existing Blocks 1–8, not new products. Six original Home MP4 protected.
+
+| Lane | Current verified claim and status | One independent next action |
+| --- | --- | --- |
+| **A #72** | A28 PR #431 MERGED DEV, 25/25 actual 5-browser cases. A29 PR #433 DRAFT, SHA 38d1aa692b40ed1181d2dafdfb48330b109c0a56, only native cross-tab Pricing test file, 4/4 checks SUCCESS at sample. | A verify final mergeability/browser evidence, then own D16 DEV merge. Do not redo #431. Real signed two-JWT backend isolation separate. |
+| **B #73** | Existing PR #323 DRAFT latest observed e0f51f99bdea3e3ea326393fa2e711a9d8840509, 20 net diff paths, 25 success/2 failure/2 cancelled/5 in progress. Real business-analytics and verify-business-metrics CI FAIL at tests/generation-studio-unit.mjs:128 (recovery existing-operation poll expected 1, actual 0). | B distinguish intended no-post-revoke GET fail-close from a genuine polling regression, fix only correctly evidenced source/test in SAME PR; rerun exact final SHA and coordinate independent D. Old 31/31 green only applied to previous SHA. |
+| **C #74** | PR #430 one C11 Inspiration test path, SHA 3a8c2c14b9749ef434db7111b14551935bc7c94e, 3 SUCCESS and 1 five-browser IN_PROGRESS. Old approved All / Video / Image mock card contract is All=2, Video=1, Image=1. | C finish five browser engines including mobile WebKit and prompt/consent. No test weakening/retired ratio UI; same PR, own D16 merge on genuine green. Public sitemap/canonical SEO claim PARKED until then and scoped with D indexing reviewer. |
+| **D #75** | Independent PR #323 P0 security peer, finance PR #333 DRAFT/UNMERGEABLE; actual all-in Stripe/provider/storage net>=2x unverified. | B↔D enforce strict zero new provider HTTP even polling after revoke ACK; handle HELD/UNKNOWN without charging or unintended retry, preserve same-PG-client pool1/2; independently test signed 2-JWT cross-tenant. Release remains blocked. |
+| **Coordinator #5 / #233** | Independent read-only Jules/CI evidence PR #432 DRAFT SHA cbc1d6cddea9e0e8bd0a40601e551fe99f000299, 4 SUCCESS/1 IN_PROGRESS, three new isolated files. Separate two-doc Cycle37 PR records queues only. | Inspect final exact CI and diff before any own safe merge; write CHECKPOINT and avoid duplicate queue task or false READY. |
+| **Jules 1 / 2 / 3** | Original #316 W5.5, #317 W4.3, #278 V6.2 have genuine google-labs-jules[bot] ACK only; no bot delivered READY or accepted scoped PR. | Do NOT create second tasks/relabel; human comments cannot advance bot state. Preserve reserved slots and inspect actual bot outcome. |
+
+DEV checks at sample: 93 total, 90 success, 1 failure, 2 in progress. The real failed Validate Web log 40673965563 is stale C11 test expectation at tests/agent-c-base1-c11-retired-mobile.spec.mjs:132, expected 1 Inspiration card vs 2 actual (1 image+1 video). C PR #430 is a proposed fix but is not yet DEV-merged. OAuth Google/Apple production 503 configuration remains a separate external launch blocker.
+
+**Shared B/D paths (PR323 intersect PR333):** server/ai-migrations.js; server/generation-studio.js; server/generation-wallet.js; tests/agent-d-base1-price-confirmation-unit.mjs; tests/generation-studio-purchased-boundary-route-unit.mjs; tests/p0-purchased-provider-boundary-postgres.mjs. Finance PR333 additionally carries stale PROJECT_STATUS.md; it must not erase this latest queue. Old Jules PRs and old docs PR #228 are not authoritative. A #433, C #430, coordinator #432 have disjoint scopes; no new overlapping implementation task assigned.
+
+**COMMERCIAL NO-GO:** actual signed multi-tenant, Stripe purchase-confirmed generation, owned storage/history/download, true >=2x net pricing, provider consent and server release all require independent evidence. No production/main/paid execution permitted. Live checkpoint: https://github.com/mvryhan-web/video-variator-android/issues/233.
+
+---
+
 ## Coordinator #5 — Cycle36 / 27 Oct 2026 — verified terminal CI and independent work queues
 
 This is a **timestamped evidence snapshot**, not a perpetual SHA. GitHub DEV at verification: `0ba8abe6623af2108422fd99244945d062060191`; main `c14f950c6e8700b41d0777c050060fee883d0092` unchanged. PR #426 and PR #428 (Agent A), #427 (Agent C) are **already MERGED**: do not reassign. F1–F8 are old Blocks, #20 Product Video remains retired. Preserve six owner Home MP4 assets and canonical Pricing.
