@@ -22,11 +22,13 @@ const SIZES={
  '3K':{'1:1':'3072x3072','2:3':'2496x3744','3:2':'3744x2496','9:16':'2304x4096','16:9':'4096x2304'},
  '4K':{'1:1':'4096x4096','2:3':'3328x4992','3:2':'4992x3328','9:16':'3040x5504','16:9':'5504x3040'}
 };
-async function readLimited(r,limit){
+async function readLimited(r,limit,signal=null){
+ signal?.throwIfAborted();
  if(Number(r.headers.get('content-length'))>limit)throw Error('RESULT_TOO_LARGE');
  const reader=r.body?.getReader();if(!reader)throw Error('EMPTY_GENERATION');
  const chunks=[];let size=0;
- try{for(;;){const {value,done}=await reader.read();if(done)break;size+=value.length;if(size>limit)throw Error('RESULT_TOO_LARGE');chunks.push(Buffer.from(value));}}finally{await reader.cancel();}
+ try{for(;;){const {value,done}=await reader.read();signal?.throwIfAborted();if(done)break;size+=value.length;if(size>limit)throw Error('RESULT_TOO_LARGE');chunks.push(Buffer.from(value));}}finally{await reader.cancel().catch(()=>{});}
+ signal?.throwIfAborted();
  if(!size)throw Error('EMPTY_GENERATION');return Buffer.concat(chunks);
 }
 async function json(path,{key,body,fetcher,signal=null}){
@@ -40,7 +42,7 @@ async function json(path,{key,body,fetcher,signal=null}){
  ...(body?{body:jsonBody}:{})});
  signal?.throwIfAborted();
  if(!r.ok)throw Error(r.status===429?'PROVIDER_BUSY':'PROVIDER_ERROR');
- const bytes=await readLimited(r,42*1024*1024);
+ const bytes=await readLimited(r,42*1024*1024,signal);
  signal?.throwIfAborted();
  return JSON.parse(bytes.toString('utf8'));
 }
@@ -90,15 +92,19 @@ export function safeBytePlusMediaUrl(value,downloadHosts=''){
  if(u.protocol!=='https:'||u.username||u.password||u.port||!hosts.includes(u.hostname)||!/(^|\.)(bytepluses\.com|volces\.com)$/.test(u.hostname))throw Error('UNSAFE_PROVIDER_URL');
  return u.toString();
 }
-export async function pollBytePlus(operation,{key,downloadHosts='',fetcher=fetch}){
+export async function pollBytePlus(operation,{key,downloadHosts='',fetcher=fetch,signal=null}){
+ signal?.throwIfAborted();
  if(!/^byteplus:[-A-Za-z0-9_]{1,160}$/.test(operation))throw Error('INVALID_OPERATION');
- const d=await json('contents/generations/tasks/'+operation.slice(9),{key,fetcher});
+ const d=await json('contents/generations/tasks/'+operation.slice(9),{key,fetcher,signal});
+ signal?.throwIfAborted();
  if(['queued','running'].includes(d.status))return {pending:true};
  if(['failed','expired','cancelled'].includes(d.status)){const e=Error('PROVIDER_TASK_FAILED');e.terminal=true;throw e;}
  if(d.status!=='succeeded'||!d.content?.video_url)throw Error('INVALID_PROVIDER_STATUS');
- const r=await fetcher(safeBytePlusMediaUrl(d.content.video_url,downloadHosts),{redirect:'error',signal:AbortSignal.timeout(120000)});
+ signal?.throwIfAborted();
+ const r=await fetcher(safeBytePlusMediaUrl(d.content.video_url,downloadHosts),{redirect:'error',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(120000)]):AbortSignal.timeout(120000)});
+ signal?.throwIfAborted();
  if(!r.ok)throw Error('VIDEO_DOWNLOAD_FAILED');
- const bytes=await readLimited(r,MAX);
+ const bytes=await readLimited(r,MAX,signal);
  const firstBoxSize=bytes.length>=8?bytes.readUInt32BE(0):0;
  // Check the container, not just a coincidental ftyp substring in junk.
  // Basic MP4 file-type validation is not a full codec/malware scan.

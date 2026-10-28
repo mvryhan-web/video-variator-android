@@ -189,18 +189,22 @@ function completeMp4Media(bytes){
  return pos===bytes.length&&top<=4096&&hasMovie&&hasMedia;
 }
 
-export async function pollGoogle(operation,{key,fetcher=fetch}){
- const d=await googleJson(operation,{key,fetcher});if(!d.done)return {pending:true};
+export async function pollGoogle(operation,{key,fetcher=fetch,signal=null}){
+ signal?.throwIfAborted();
+ const d=await googleJson(operation,{key,fetcher,signal});signal?.throwIfAborted();if(!d.done)return {pending:true};
  if(d.error){const failure=new Error('PROVIDER_TASK_FAILED');failure.terminal=true;throw failure;}
  const uri=d.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri;
  if(!uri)throw new Error('EMPTY_GENERATION');
- const r=await fetcher(safeGoogleUrl(uri),{redirect:'error',signal:AbortSignal.timeout(120000),headers:{'x-goog-api-key':key}});
+ signal?.throwIfAborted();
+ const r=await fetcher(safeGoogleUrl(uri),{redirect:'error',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(120000)]):AbortSignal.timeout(120000),headers:{'x-goog-api-key':key}});
+ signal?.throwIfAborted();
  if(!r.ok)throw new Error('VIDEO_DOWNLOAD_FAILED');
  const limit=30*1024*1024;
  if(Number(r.headers?.get?.('content-length'))>limit)throw new Error('RESULT_TOO_LARGE');
  if(!r.body?.getReader)throw new Error('INVALID_PROVIDER_MEDIA');
  const reader=r.body.getReader(),chunks=[];let size=0;
- try{for(;;){const {value,done}=await reader.read();if(done)break;size+=value.length;if(size>limit)throw new Error('RESULT_TOO_LARGE');chunks.push(Buffer.from(value));}}finally{await reader.cancel();}
+ try{for(;;){const {value,done}=await reader.read();signal?.throwIfAborted();if(done)break;size+=value.length;if(size>limit)throw new Error('RESULT_TOO_LARGE');chunks.push(Buffer.from(value));}}finally{await reader.cancel().catch(()=>{});}
+ signal?.throwIfAborted();
  if(!size)throw new Error('EMPTY_GENERATION');
  const bytes=Buffer.concat(chunks),headerSize=bytes.length>=8?bytes.readUInt32BE(0):0;
  // Never report HTML/JSON/error pages as completed MP4 output. Use a minimal
