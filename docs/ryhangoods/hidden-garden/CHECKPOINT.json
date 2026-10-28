@@ -1,14 +1,22 @@
 {
   "product": 4,
+  "name": "The Hidden Garden",
   "shop": "Pinogri",
-  "account": "stefadoch@gmail.com",
-  "date": "2026-10-28",
-  "status": "IN_PROGRESS",
-  "planned": 30,
-  "generated": 0,
-  "ads": 10,
+  "status": "30_ARTWORKS_COMPLETE_ADS_FINAL_QA",
+  "generated_unique": 30,
+  "buyer_png_exports": 60,
+  "buyer_pdf_count": 2,
+  "pdf_pages_each": 30,
+  "ad_count": 10,
   "publish": "DRAFT_ONLY",
-  "rules_read_sha": "b8d2f6e31d0ec551ada1ffba3d079516a82aa87a",
-  "next": "Generate and show 30 original nature coloring pages individually; verify linework; build A4/Letter; 10 ads; delivery and Etsy draft",
-  "source_rules": "docs/ryhangoods/DIGITAL_PRODUCT_RULES_RU.md"
+  "local_project": "output/hidden-garden",
+  "source_manifest": "output/hidden-garden/sources.json",
+  "qa": "All 30 individually shown; sunflower and hummingbird reworked to fix cropping; source and print export pixel sizes recorded; enlarged exports not native4K",
+  "remaining": [
+    "Finish ad QA and show corrections",
+    "ZIP then Drive anyone-reader",
+    "Delivery PDF on owner's template copy branded Pinogri",
+    "Save and reopen Etsy draft",
+    "Persistent backups"
+  ]
 }
