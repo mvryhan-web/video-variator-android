@@ -1,7 +1,7 @@
 {
   "product": 3,
   "name": "Seasonal & Celebration Clipart Mega Bundle",
-  "status": "ETSY DRAFT SAVED AND REOPENED — owner review before publication",
+  "status": "ETSY DRAFT SAVED — advertising design REJECTED by owner; replace10ads in same draft",
   "date": "2026-10-28",
   "rules_sha": "a283298258f7617e769ea763a094b1f54fdf2274",
   "planned_count": 100,
@@ -3474,7 +3474,9 @@
   ],
   "blocker": null,
   "next_steps": [
-    "Owner review: correct Etsy creation method from automatic Fully by me to accurate AI-assisted selection; review and publish personally if satisfied."
+    "Read full updated rules and catalog before production.",
+    "Redesign all10advertising images and show individually; replace rejectedads in existing Etsy draft4604722079.",
+    "Owner review creation-method field before publication; agent mustnotpublish."
   ],
   "generated_count": 100,
   "qa_rework": [],
@@ -3679,5 +3681,12 @@
     "Owner template PDF rendered, visually inspected and URI annotation verified; DejaVu added text embedded",
     "Six backup artifacts saved; every Library result succeeded and metadata applied",
     "Etsy reopened: draft status,10images,PDF,title,description,13tags,9.90EUR,999qty,manual renewal verified"
-  ]
+  ],
+  "advertising_review": {
+    "date": "2026-10-28",
+    "status": "REJECTED / DO NOT REUSE",
+    "retired": "Beige/brown strip template in build_promos.py; DejaVu Sans / Bold advertising font pair",
+    "target": "9–10/10 design target assessed by concrete QA, not a promise",
+    "next": "Create distinct art direction, show each revised image here, check at mobile/thumbnail scale, replace10ads in existing draft4604722079; preservebuyerfiles/delivery; neverpublish"
+  }
 }
