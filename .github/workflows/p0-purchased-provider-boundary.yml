@@ -9,6 +9,7 @@ on:
       - server/generation-consent.js
       - server/generation-consent-poll.js
       - tests/p0-provider-poll-consent-unit.mjs
+      - tests/p0-provider-poll-studio-postgres.mjs
       - server/generation-wallet.js
       - server/generation-purchased-provider-boundary.js
       - tests/generation-purchased-provider-boundary-unit.mjs
@@ -75,4 +76,5 @@ jobs:
       - name: Disposable real PostgreSQL purchased-source and refund proof
         run: |
           node --check tests/p0-purchased-provider-boundary-postgres.mjs
-          node --test tests/p0-purchased-provider-boundary-postgres.mjs tests/p0-purchased-consent-pool-saturation-postgres.mjs
+          node --check tests/p0-provider-poll-studio-postgres.mjs
+          node --test tests/p0-purchased-provider-boundary-postgres.mjs tests/p0-purchased-consent-pool-saturation-postgres.mjs tests/p0-provider-poll-studio-postgres.mjs
