@@ -8,7 +8,7 @@
 |1|Gentle Focus V2 — 443-page digital planner|4604145055|ГОТОВ DRAFT4604965991;10новыхads;4directEtsyfiles;€7.90;повторнопроверен|
 |2|The Reading Room — Notion|4604358549|ГОТОВ DRAFT4605082640;10новыхads;PDF3.66MB;€9.90;повторнопроверен|
 |3A|Christmas Clipart —25PNG|4604759097|ГОТОВ DRAFT4605125997;10ads;PDF3.66MB;€3.90;deliverypublicпроверена;повторнооткрыт|
-|3B|Halloween Clipart —25PNG|4604782520|Проверить отсутствие дубля|
+|3B|Halloween Clipart —25PNG|4604782520|ГОТОВ DRAFT4605173864;10ads;PDF3.66MB;€3.90;deliverypublicпроверена;повторнооткрыт|
 |3C|Birthday Clipart —25PNG|4604760719|Проверить отсутствие дубля|
 |3D|Wedding Clipart —25PNG|4604761477|Проверить отсутствие дубля|
 |4|The Hidden Garden —30nature coloring|—|ACTIVE4604965278 (опубликовал владелец); ДОСТАВКА ИСПРАВЛЕНА:ZIP205006047bytes1sFCi_FB7djyzWvt6ocW7pWJH8zxk96VK;folder+ZIPanyone-readerпроверены;ссылкаPDFпрежняя|
