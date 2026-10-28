@@ -1,7 +1,7 @@
 {
   "product": 3,
   "name": "Seasonal & Celebration Clipart Mega Bundle",
-  "status": "ETSY DRAFT SAVED — advertising design REJECTED by owner; replace10ads in same draft",
+  "status": "ARCHIVED COMBINED DRAFT — superseded by four separate clipart drafts",
   "date": "2026-10-28",
   "rules_sha": "a283298258f7617e769ea763a094b1f54fdf2274",
   "planned_count": 100,
@@ -3474,9 +3474,9 @@
   ],
   "blocker": null,
   "next_steps": [
-    "Read full updated rules and catalog before production.",
-    "Redesign all10advertising images and show individually; replace rejectedads in existing Etsy draft4604722079.",
-    "Owner review creation-method field before publication; agent mustnotpublish."
+    "Four separate drafts saved and reopened. See docs/ryhangoods/clipart-four-collections/CHECKPOINT.json.",
+    "Do not publish combined listing4604722079. Owner reviews and publishes four split drafts.",
+    "Owner must correct Etsy auto-selected creation method to With AI generator before publication."
   ],
   "generated_count": 100,
   "qa_rework": [],
@@ -3688,5 +3688,24 @@
     "retired": "Beige/brown strip template in build_promos.py; DejaVu Sans / Bold advertising font pair",
     "target": "9–10/10 design target assessed by concrete QA, not a promise",
     "next": "Create distinct art direction, show each revised image here, check at mobile/thumbnail scale, replace10ads in existing draft4604722079; preservebuyerfiles/delivery; neverpublish"
-  }
+  },
+  "split_checkpoint": "docs/ryhangoods/clipart-four-collections/CHECKPOINT.json",
+  "split_drafts": [
+    {
+      "theme": "Christmas",
+      "url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4604759097#media"
+    },
+    {
+      "theme": "Halloween",
+      "url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4604782520#media"
+    },
+    {
+      "theme": "Birthday",
+      "url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4604760719#media"
+    },
+    {
+      "theme": "Wedding",
+      "url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4604761477"
+    }
+  ]
 }
