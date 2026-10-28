@@ -11,7 +11,7 @@
 |3B|Halloween Clipart —25PNG|4604782520|Проверить отсутствие дубля|
 |3C|Birthday Clipart —25PNG|4604760719|Проверить отсутствие дубля|
 |3D|Wedding Clipart —25PNG|4604761477|Проверить отсутствие дубля|
-|4|The Hidden Garden —30nature coloring|—|Владелец сделал ACTIVE4604965278; Drive ZIP НЕ загружен/папка private. Не публиковал агент. Блокер: выбран stefadoch, folder owner mvryhan; auth и upload отклонены auto-review. Не обходить, требуется подтверждение правильного аккаунта.|
+|4|The Hidden Garden —30nature coloring|—|ACTIVE4604965278 (опубликовал владелец); ДОСТАВКА ИСПРАВЛЕНА:ZIP205006047bytes1sFCi_FB7djyzWvt6ocW7pWJH8zxk96VK;folder+ZIPanyone-readerпроверены;ссылкаPDFпрежняя|
 |legacy1|Cozy Christmas Clipart|4603460908|Проверка качества и доставки|
 |legacy2|Christmas Digital Paper Pack|4603500584|Проверка качества и доставки|
 |legacy3|Christmas Gift Tags|4603531669|Проверка качества и доставки|
