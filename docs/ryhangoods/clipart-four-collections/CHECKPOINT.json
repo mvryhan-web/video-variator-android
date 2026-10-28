@@ -112,5 +112,137 @@
   "quality_limits": "Buyer PNGs enlarged from smaller generated originals; 300 DPI metadata, not native 4K. Ads export 4000x3000; imagegen native 1448x1086. No claim guaranteed sales.",
   "old_combined_listing": "4604722079 retained untouched; do not publish combined draft",
   "rules_repository": "mvryhan-web/video-variator-android",
-  "rules_branch": "ryhangoods-digital-product-rules"
+  "rules_branch": "ryhangoods-digital-product-rules",
+  "library": [
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/clipart-four-collections/Christmas/Delivery/RyhanGoods_Christmas_25_Clipart_PNG.zip",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_00000000906081f6a1aea2922693e964",
+      "library_file_id": "libfile_6e0f289ead9c81919529f112cefedf31",
+      "file_name": "RyhanGoods_Christmas_25_Clipart_PNG.zip",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Christmas_25_Clipart_PNG.zip",
+      "current_version_number": 0
+    },
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/clipart-four-collections/Christmas/Delivery/RyhanGoods_Christmas_Clipart_Download.pdf",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_000000008d4081f6aaa3e9037cecb61e",
+      "library_file_id": "libfile_d0a0ef76795c8191989fc1c2eb8d2610",
+      "file_name": "RyhanGoods_Christmas_Clipart_Download.pdf",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Christmas_Clipart_Download.pdf",
+      "current_version_number": 0
+    },
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/clipart-four-collections/Halloween/Delivery/RyhanGoods_Halloween_25_Clipart_PNG.zip",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_00000000e63881f6b72bfa72b228cbc6",
+      "library_file_id": "libfile_743c3db28b1c819187d09b5b4f6c5433",
+      "file_name": "RyhanGoods_Halloween_25_Clipart_PNG.zip",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Halloween_25_Clipart_PNG.zip",
+      "current_version_number": 0
+    },
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/clipart-four-collections/Halloween/Delivery/RyhanGoods_Halloween_Clipart_Download.pdf",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_00000000a60c81f698bcf2f9b898e335",
+      "library_file_id": "libfile_ed9675c8409081919888c716402dc373",
+      "file_name": "RyhanGoods_Halloween_Clipart_Download.pdf",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Halloween_Clipart_Download.pdf",
+      "current_version_number": 0
+    },
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/clipart-four-collections/Birthday/Delivery/RyhanGoods_Birthday_25_Clipart_PNG.zip",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_00000000789881f68b7d3f5a18891491",
+      "library_file_id": "libfile_6a350c5db0b48191b62cf835fc3e93a7",
+      "file_name": "RyhanGoods_Birthday_25_Clipart_PNG.zip",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Birthday_25_Clipart_PNG.zip",
+      "current_version_number": 0
+    },
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/clipart-four-collections/Birthday/Delivery/RyhanGoods_Birthday_Clipart_Download.pdf",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_00000000afd081f687744d93aee834b2",
+      "library_file_id": "libfile_f6a95b234fc08191b45335265ac9722a",
+      "file_name": "RyhanGoods_Birthday_Clipart_Download.pdf",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Birthday_Clipart_Download.pdf",
+      "current_version_number": 0
+    },
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/clipart-four-collections/Wedding/Delivery/RyhanGoods_Wedding_25_Clipart_PNG.zip",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_00000000122c81f690e1b4742afd2310",
+      "library_file_id": "libfile_66d4e0d671548191a99f4ecd97ae5a8b",
+      "file_name": "RyhanGoods_Wedding_25_Clipart_PNG.zip",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Wedding_25_Clipart_PNG.zip",
+      "current_version_number": 0
+    },
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/clipart-four-collections/Wedding/Delivery/RyhanGoods_Wedding_Clipart_Download.pdf",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_00000000035881f6babcf72d949f1385",
+      "library_file_id": "libfile_c7fb096487b88191b5f63822365dfde6",
+      "file_name": "RyhanGoods_Wedding_Clipart_Download.pdf",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Wedding_Clipart_Download.pdf",
+      "current_version_number": 0
+    },
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/clipart-four-collections/RyhanGoods_Christmas_Halloween_Owner_Resources.zip",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_00000000b9e081f6ad736ea1447deb90",
+      "library_file_id": "libfile_df74b0f7f37081918dda3a6f08285edc",
+      "file_name": "RyhanGoods_Christmas_Halloween_Owner_Resources.zip",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Christmas_Halloween_Owner_Resources.zip",
+      "current_version_number": 0
+    },
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/clipart-four-collections/RyhanGoods_Birthday_Wedding_Owner_Resources.zip",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_000000000c0081f6be26c1f98b428604",
+      "library_file_id": "libfile_1c02f59dfc1481918569b83474b738e4",
+      "file_name": "RyhanGoods_Birthday_Wedding_Owner_Resources.zip",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Birthday_Wedding_Owner_Resources.zip",
+      "current_version_number": 0
+    }
+  ],
+  "backup_note": "Four buyer ZIPs, four delivery PDFs and two owner-resource archives all saved. First preparation failed before transfers due oversized combined owner backup; split owner backup succeeded.",
+  "drive_uploaded_files": {
+    "Christmas": {
+      "id": "1t8ieDfkNGFvm4C2MN_q0DcofojCCLK49",
+      "bytes": 273285634
+    },
+    "Halloween": {
+      "id": "129klUGnaEKyBuMjMmjoiZUzEiHEoc6Km",
+      "bytes": 240768967
+    },
+    "Birthday": {
+      "id": "1n8Gj1tusn-9OK3UpzOvkAyT7TEeF99JY",
+      "bytes": 235158042
+    },
+    "Wedding": {
+      "id": "1604_3OiOMyEKdAw05_9lbhBtg3U6LBj9",
+      "bytes": 221434677
+    }
+  },
+  "drive_sharing": "All four folder dialogs: anyone with link / reader saved; all ZIP remote byte sizes match local archives. No ads on Drive."
 }
