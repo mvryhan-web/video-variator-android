@@ -157,3 +157,38 @@ test('P0 aborted consent after awaited provider JSON/stream cannot return billab
   await assert.rejects(running,error=>error===sentinel,kind+' must surface actual abort rather than return a paid result or media parse error');
  }
 });
+
+test('P0 Google streamed response body read after revoke cannot return success',async()=>{
+ // Exercise the native Google reader branch, not its mocked response.json() fallback.
+ // The remote response may have been accepted before revoke; a delayed body must
+ // never be counted as a successful paid result after the consent AbortSignal.
+ const controller=new AbortController(),reading=deferred(),finish=deferred();
+ const revoked=Error('P0_GOOGLE_STREAM_REVOKED');
+ let fetchCalls=0,readCalls=0,cancelCalls=0,jsonCalls=0;
+ const fetcher=async(_url,options)=>{
+  fetchCalls++;
+  assert.ok(options.signal,'real provider HTTP receives an AbortSignal');
+  return {ok:true,status:200,headers:{get:()=>null},
+   body:{getReader:()=>({
+    async read(){
+     readCalls++;
+     if(readCalls>1)return {done:true};
+     reading.release();
+     await finish.promise;
+     return {done:false,value:Buffer.from('{"candidates":[]}')};
+    },
+    async cancel(){cancelCalls++;}
+   })},
+   async json(){jsonCalls++;throw Error('UNSAFE_JSON_FALLBACK');}
+  };
+ };
+ const pending=generateGoogle(image,{key:'fake-only',signal:controller.signal,fetcher});
+ await reading.promise;
+ controller.abort(revoked);finish.release();
+ await assert.rejects(pending,error=>error===revoked,
+  'a completed Google stream read after revoke must throw the original consent abort');
+ assert.equal(fetchCalls,1,'no new HTTP send after revoke');
+ assert.equal(readCalls,1,'abort checked before following stream reads');
+ assert.equal(cancelCalls,1,'stream cleanup still happens');
+ assert.equal(jsonCalls,0,'the real body-reader path was exercised');
+});
