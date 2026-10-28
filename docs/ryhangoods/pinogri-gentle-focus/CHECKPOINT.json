@@ -1,0 +1,30 @@
+{
+  "product": "Gentle Focus V2",
+  "shop": "Pinogri",
+  "status": "DRAFT_SAVED_REOPENED_VERIFIED",
+  "etsy_url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4604965991#media",
+  "previous_shop_listing": "4604145055 untouched",
+  "price_eur": 7.9,
+  "quantity": 999,
+  "photos": 10,
+  "photo_size": [
+    4000,
+    3000
+  ],
+  "files": 4,
+  "delivery": "Direct Etsy: planner PDF443pages,guidePDF4pages,README,optionalZIPsame3files. No Drive dependency.",
+  "tags": 13,
+  "renewal": "manual",
+  "production_partner": null,
+  "ai_radios": "Both unset for owner review",
+  "page_links": 9430,
+  "tests": "All links target/bounds pass; all16layout types and4guidepages visually inspected after Pinogri branding; no native annotation-app tests",
+  "ads": "All10remade and individually shown. Hero built-in imagegen actualpage reference,1448x1086native enlargedexport;9codedlayouts exactPDFpage excerpts,Nimbus/P052fonts. Squarecrop checked. No native4Kclaim.",
+  "library": {
+    "zip": "libfile_8411f479a52081919b5f609d00884b40",
+    "planner": "libfile_d370d04e7b008191a0de36c6360f079d",
+    "guide": "libfile_513b4022182881918ddf62287dc3f03a",
+    "owner_backup": "libfile_3bf9eb96489c8191960e02d1e6fa3534"
+  },
+  "published": false
+}
