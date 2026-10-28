@@ -1,3 +1,38 @@
+## Coordinator #5 — Cycle41 / 28 Oct 2026 — refreshed exclusive claims after independent D peer
+
+**Current sampled DEV** `11a0489c2bbb28a6d32732a81fe5a77196bc0f9b` (refresh before action), main unchanged. DEV exact **91/93 green, 2 red**: C14 hidden retired Photo selector and BASE28 Photo→PDF timeouts. This is a new peer-result/claims update only; full details and immutable SHA logs at [Issue233](https://github.com/mvryhan-web/video-variator-android/issues/233). Keep D16 A–D safe DEV self-merges independent of coordinator; not production permission.
+
+| Owner | Exclusive reserved CURRENT work | Evidence / single NEXT, with no duplicate PR |
+| --- | --- | --- |
+| **A #72** | **A30 assigned**, genuine keyboard/mobile Home→Pricing→Wallet/History audit; no new PR verified. A28 PR431 and A29 PR433 DONE/MERGED. | First check distinct coverage then one A-only spec/workflow if needed, 5 real browsers and widths 320/390/768/1448; no C Pricing SEO or B/D paid code edits. |
+| **B #73** | **SAME existing DRAFT PR323** `dedc9e8206b9e6b12a4221918ad5e9e3018a7d85`, 22 source/test paths, 34/34 CI green; **NEW independent D SCOPED SECURITY PASS** [PR comment](https://github.com/mvryhan-web/video-variator-android/pull/323#issuecomment-6475122828). | Branch behind DEV 3 commits: non-force reconcile latest, preserve strict revoke zero new provider HTTP + PG pool1/2 and six shared D333 files, final-SHA CI and delta peer if changed; B D16 DEV self-merge only when safe. Signed two-real-JWT remains next independent B↔D task. |
+| **C #74** | **SAME existing SEO PR435 HOLD** `d0910996320f98593e2696eee6d185d52ba4a47f`, 12/12 green yet **D independent sitemap FAIL** [PR peer](https://github.com/mvryhan-web/video-variator-android/pull/435#issuecomment-6475135631). | Root `/` still sitemap-listed despite protected `deepsyq.html` `noindex,follow`; remove only XML root and align C own new unit, preserve preview noindex/robots, exact-head CI + D delta then C D16 safe merge. NEXT C14 stale-selector test, THEN BASE28 timeout separately. |
+| **D #75** | **Already delivered** scoped B323 source/PG PASS and C435 sitemap FAIL (Issue closed only administratively). **Own DRAFT PR333 finance HOLD**. | Repeat peer only on genuinely new B/C SHA changes; otherwise PR333 reconcile its **six B323 shared paths** and obsolete `PROJECT_STATUS.md`, verify real all-in ≥2× net and real signed multi-account gate; no blind merge. |
+| **Jules** | #316 W5.5 / #317 W4.3 / #278 V6.2 — last genuine bot posts **ACK_ONLY**, no finished PR/READY. | Keep existing tasks; no repeat labels, bot sessions or interpretation of human comments as bot ACK. |
+
+**Collision guard:** PR323↔PR333: `server/ai-migrations.js`; `server/generation-studio.js`; `server/generation-wallet.js`; `tests/agent-d-base1-price-confirmation-unit.mjs`; `tests/generation-studio-purchased-boundary-route-unit.mjs`; `tests/p0-purchased-provider-boundary-postgres.mjs`. C435 changes only 5 C-owned SEO files, A30 only A-owned tests. Protected Home/6 MP4, retired Product Video #20, original BASE55/F1–F8, no-Stripe/no-paid/no-main/no-production preserved. **Release = NO_GO.**
+
+---
+
+## Coordinator #5 — Cycle37 / 28 Oct 2026 — exclusive claims, collisions, next action
+
+**Latest Cycle37 DEV readback:** 63aa715bb0f17bf2c7c87d144bbf3e0328d111fa after A29 and coordinator read-only audit PR432 (sample only; refresh). Initial Cycle37 SHA 6baae3d680e9465ef397b84f268656422b40b1e2 is historical. **D16** A–D own safe exact-SHA CI review/DEV self-merge; coordinator is not approver. No main/production, live billing, paid AI, Trial, destructive migrations, protected Home/6 MP4 changes. Retired original BASE #20 Product Video remains 404; F1–F8 aliases only.
+
+| Owner | Exclusive current path / existing PR | Current evidence / next action |
+| --- | --- | --- |
+| **A #72** | A28 PR431 + A29 [PR433](https://github.com/mvryhan-web/video-variator-android/pull/433) both MERGED DEV | A29 exact 4/4 CI and actual 30/30 five-browser PASS; do not repeat. Next A can claim independent read-only SEO/privacy inventory after checking C lease. Real signed 2-JWT server isolation B↔D BLOCKED. |
+| **B #73** | Existing consent [PR323](https://github.com/mvryhan-web/video-variator-android/pull/323), 22 B paths | Sampled dedc9e8206b9e6b12a4221918ad5e9e3018a7d85 now 34/34 check-runs SUCCESS; old e0f51f99 recovery poll failure is not current. D still must independently approve final unchanged SHA, consent/revoke and PG/HELD before D16 merge. Final new-head CI and direct D scoped fail-close/PG peer before D16 merge. |
+| **C #74** | [PR430](https://github.com/mvryhan-web/video-variator-android/pull/430) C11 test MERGED DEV | Final candidate ba414136 exact 4/4 checks SUCCESS; approved All=2 Image=1 Video=1 preserved across real five-engine suite. Next existing C sitemap/canonical SEO claim with D independent indexation peer; preview remains noindex. |
+| **D #75** | Independent B PR323 review + [PR333](https://github.com/mvryhan-web/video-variator-android/pull/333) financial HOLD | Strict no new polling GET after revoke ACK, purchased-only claim / HELD, pool max1/2 and signed two-account; actual Stripe/provider/storage >=2x net not proven; PR333 DRAFT unmergeable; no commercial GO. |
+| **Coordinator #5** | [PR432](https://github.com/mvryhan-web/video-variator-android/pull/432) MERGED DEV with 3 new read-only audit paths; separate docs-only [PR434](https://github.com/mvryhan-web/video-variator-android/pull/434) | #432 5/5 final CI SUCCESS, 8/8 Node fixtures and live no-write report; NO redo. #434 needs final exact-SHA CI, recheck current DEV and docs-only self-merge. |
+| **Jules 1/2/3** | Original #316 W5.5; #317 W4.3; #278 V6.2 | Genuine Jules bot ACK on all three, no later delivered READY/PR. Preserve original tasks/slots and do not reissue, relabel or treat human reminders as completion. |
+
+**Collision register:** B #323 and D #333 overlap exactly six known paths: server/ai-migrations.js; server/generation-studio.js; server/generation-wallet.js; tests/agent-d-base1-price-confirmation-unit.mjs; tests/generation-studio-purchased-boundary-route-unit.mjs; tests/p0-purchased-provider-boundary-postgres.mjs. Finance #333 also touches PROJECT_STATUS.md and must reconcile this newer additive doc before any merge. Historical draft #228 touches coordination docs; not active truth. A29 and coordinator audit PR432 already merged; C test only, B/D six shared paths persist. PR434 docs-only requires no clobber of finance PR333's historical status.
+
+**Historical initial Cycle37 baseline:** DEV 90 successful / 1 failed / 2 in progress of 93 exact-SHA checks at earlier sample; real failed Validate Web log is stale C11 Inspiration 1-versus-2 assertion, not proof UI is wrong. B latest SHA failures are NOT those earlier DEV failures. Commercial release NO-GO. Latest coordinator CHECKPOINT and new facts in [Issue233](https://github.com/mvryhan-web/video-variator-android/issues/233). Do not downgrade any original BASE acceptance, owner locks, or original Block TXT.
+
+---
+
 ## Coordinator #5 — Cycle36 / 27 Oct 2026 — verified terminal CI and independent work queues
 
 This is a **timestamped evidence snapshot**, not a perpetual SHA. GitHub DEV at verification: `0ba8abe6623af2108422fd99244945d062060191`; main `c14f950c6e8700b41d0777c050060fee883d0092` unchanged. PR #426 and PR #428 (Agent A), #427 (Agent C) are **already MERGED**: do not reassign. F1–F8 are old Blocks, #20 Product Video remains retired. Preserve six owner Home MP4 assets and canonical Pricing.
