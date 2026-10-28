@@ -85,3 +85,24 @@ test('D18 Stripe retrieval must reject returned Charge/BalanceTx ID mismatch',as
  await assert.rejects(retrieveStripeNetRevenue({...params,stripe:api('ch_fixture','txn_other')}),/AI_SETTLEMENT_BALANCE_TRANSACTION_UNVERIFIED/);
  assert.equal((await retrieveStripeNetRevenue({...params,stripe:api('ch_fixture','txn_fixture')})).stripeBalanceTransactionId,'txn_fixture');
 });
+
+
+test('D18 fail-closed mode contract: absent or nonboolean livemode never attests Stripe test receipts',()=>{
+ for(const value of [undefined,null,0,1,'false','true',{},[]]){
+  assert.throws(()=>verifyStripeNetRevenue(args({expectedLivemode:value})),/AI_SETTLEMENT_MODE_UNVERIFIED/);
+ }
+ // Only an explicit TEST value verifies synthetic test-mode receipts.
+ assert.equal(verifyStripeNetRevenue(args({expectedLivemode:false})).livemode,false);
+});
+
+test('D18 missing livemode refuses before any Stripe network read',async()=>{
+ let reads=0;
+ const stripe={paymentIntents:{async retrieve(){reads++;return paymentIntent();}}};
+ for(const value of [undefined,null,'false',0]){
+  await assert.rejects(retrieveStripeNetRevenue({
+   stripe,paymentIntentId:'pi_fixture',expectedAmount:1200,expectedCurrency:'eur',
+   taxAmount:200,expectedLivemode:value
+  }),/AI_SETTLEMENT_MODE_UNVERIFIED/);
+ }
+ assert.equal(reads,0,'no Stripe request is needed to reject an omitted mode');
+});
