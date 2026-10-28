@@ -5,7 +5,7 @@
 ## Найденные товары (два исторических каталога, номера не смешивать)
 | Очередь | Товар | Старый Etsy ID | Pinogri / действие |
 |---|---|---|---|
-|1|Gentle Focus V2 — 443-page digital planner|4604145055|Проверка/новая реклама, затем новый DRAFT|
+|1|Gentle Focus V2 — 443-page digital planner|4604145055|ГОТОВ DRAFT4604965991;10новыхads;4directEtsyfiles;€7.90;повторнопроверен|
 |2|The Reading Room — Notion|4604358549|Проверка/реклама, затем новый DRAFT|
 |3A|Christmas Clipart —25PNG|4604759097|Проверить отсутствие дубля|
 |3B|Halloween Clipart —25PNG|4604782520|Проверить отсутствие дубля|
