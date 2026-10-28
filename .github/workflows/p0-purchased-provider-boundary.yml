@@ -7,6 +7,8 @@ on:
       - server/generation-provider.js
       - server/generation-byteplus.js
       - server/generation-consent.js
+      - server/generation-consent-poll.js
+      - tests/p0-provider-poll-consent-unit.mjs
       - server/generation-wallet.js
       - server/generation-purchased-provider-boundary.js
       - tests/generation-purchased-provider-boundary-unit.mjs
@@ -40,9 +42,11 @@ jobs:
           node --check server/generation-byteplus.js
           node --check tests/p0-provider-abort-transport-unit.mjs
           node --check server/generation-purchased-provider-boundary.js
+          node --check server/generation-consent-poll.js
+          node --check tests/p0-provider-poll-consent-unit.mjs
           node --check tests/generation-purchased-provider-boundary-unit.mjs
           node --check tests/generation-studio-purchased-boundary-route-unit.mjs
-          node --test tests/p0-provider-abort-transport-unit.mjs tests/generation-purchased-provider-boundary-unit.mjs tests/generation-studio-purchased-boundary-route-unit.mjs tests/generation-studio-unit.mjs
+          node --test tests/p0-provider-poll-consent-unit.mjs tests/p0-provider-abort-transport-unit.mjs tests/generation-purchased-provider-boundary-unit.mjs tests/generation-studio-purchased-boundary-route-unit.mjs tests/generation-studio-unit.mjs
 
   postgres-integration:
     runs-on: ubuntu-latest

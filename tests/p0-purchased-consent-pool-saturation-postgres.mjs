@@ -7,6 +7,7 @@ import pg from 'pg';
 import {GenerationWallet} from '../server/generation-wallet.js';
 import {submitPurchasedProviderRequest,PurchasedDispatchDenied} from '../server/generation-purchased-provider-boundary.js';
 import {withUserConsentFence} from '../server/generation-consent.js';
+import {pollWithCurrentGenerationConsent} from '../server/generation-consent-poll.js';
 const url=process.env.P0_PURCHASED_TEST_DB_URL;
 if(url){
  const u=new URL(url);
@@ -75,5 +76,50 @@ for(const max of [1,2])test('P0 REAL disposable PG pool.max='+max+' concurrency,
   await wallet.settle({userId:'b',jobId:timeout.id,outcome:'unknown'});
   assert.equal((await pool.query("SELECT status FROM vv_ai_reservation WHERE job_id='j-timeout'")).rows[0].status,'held');
   assert.equal((await pool.query("SELECT COUNT(*)::int AS n FROM vv_ai_purchased_dispatch_claim WHERE job_id='j-timeout'")).rows[0].n,1);
+
+  // Read-only provider STATUS/RESULT polling must share the SAME consent fence.
+  // Test with actual disposable PG16 at max=1 and max=2: a revoke ACK must
+  // never overtake an admitted poll, and revoked users send ZERO new HTTP.
+  let pollEntered,pollReleased,pollCalls=0,revokeAcknowledged=false;
+  const startedPoll=new Promise(resolve=>pollEntered=resolve);
+  const releasedPoll=new Promise(resolve=>pollReleased=resolve);
+  const admitted=pollWithCurrentGenerationConsent({
+   pool,userId:'b',poll:async({client,signal})=>{
+    signal.throwIfAborted();assert.ok(client);
+    pollCalls++;pollEntered();await releasedPoll;signal.throwIfAborted();
+    return {pending:true};
+   }
+  });
+  await bound(startedPoll);
+  const pollRevoke=withUserConsentFence(pool,'b',async client=>{
+   await client.query('BEGIN');
+   try{
+    await client.query("UPDATE vv_ai_user_consents SET provider_data_accepted=false,provider_data_version=NULL WHERE user_id='b'");
+    await client.query('COMMIT');
+   }catch(e){await client.query('ROLLBACK');throw e;}
+  }).then(()=>{revokeAcknowledged=true;});
+  await sleep(45);
+  assert.equal(revokeAcknowledged,false,'poll must keep revoke ACK behind admitted HTTP');
+  pollReleased();await bound(admitted);await bound(pollRevoke);
+  await assert.rejects(bound(pollWithCurrentGenerationConsent({
+   pool,userId:'b',poll:async()=>{pollCalls++;return {pending:true};}
+  })),/PROVIDER_CONSENT_REQUIRED/);
+  assert.equal(pollCalls,1,'aborted consent cannot start another status or media HTTP');
+  assert.equal((await pool.query("SELECT status FROM vv_ai_reservation WHERE job_id='j-timeout'")).rows[0].status,'held',
+   'revoke does not refund a purchased unresolved task');
+  assert.equal((await pool.query("SELECT COUNT(*)::int AS n FROM vv_ai_purchased_dispatch_claim WHERE job_id='j-timeout'")).rows[0].n,1,
+   'revoke/poll never re-claims or re-dispatches paid job');
+  await bound(withUserConsentFence(pool,'b',async client=>{
+   await client.query('BEGIN');
+   try{
+    await client.query("UPDATE vv_ai_user_consents SET provider_data_accepted=true,provider_data_version='2026-10-20' WHERE user_id='b'");
+    await client.query('COMMIT');
+   }catch(e){await client.query('ROLLBACK');throw e;}
+  }));
+  const resumed=await bound(pollWithCurrentGenerationConsent({
+   pool,userId:'b',poll:async({signal})=>{signal.throwIfAborted();pollCalls++;return {pending:true};}
+  }));
+  assert.equal(resumed.pending,true,'same original operation may be read once consent is restored');
+  assert.equal(pollCalls,2);
  }finally{await pool.end();await admin.query('DROP SCHEMA IF EXISTS '+schema+' CASCADE').catch(()=>{});await admin.end();}
 });
