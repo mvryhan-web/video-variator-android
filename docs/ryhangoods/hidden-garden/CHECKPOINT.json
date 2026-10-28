@@ -2,20 +2,20 @@
   "product": 4,
   "name": "The Hidden Garden",
   "shop": "Pinogri",
-  "status": "ETSY_DRAFT_SAVED_DRIVE_LOGIN_REQUIRED",
+  "status": "OWNER_PUBLISHED_ACTIVE_DELIVERY_FIXED",
   "etsy_draft": "https://www.etsy.com/your/shops/me/listing-editor/edit/4604965278#media",
   "generated_unique": 30,
   "buyer_png_exports": 60,
   "buyer_pdf_count": 2,
   "pdf_pages_each": 30,
   "ad_count": 10,
-  "price_eur": 4.9,
+  "price_eur": 2.9,
   "tags": 13,
   "quantity": 999,
-  "publish": "DRAFT_ONLY",
+  "publish": "Owner published; agent did not publish or change active listing",
   "verification": "Reopened: Draft, no unsaved changes, 10 images, delivery PDF, all13tags, manual renewal, no partner, both AI radios unset for owner review. Description discloses AI assistance.",
   "drive_folder": "1mlvpatH_gGtL4c21MxM7gcHM-CBPrpST",
-  "drive_status": "EMPTY_PRIVATE_REQUIRES_GOOGLE_LOGIN_mvryhan@gmail.com",
+  "drive_status": "ZIP_UPLOADED_ANYONE_READER_VERIFIED",
   "zip_bytes": 205006047,
   "zip_sha256": "edd4df3de7878f23569a21d7e86811a0e168f59acf419af150f21fc71ccebb08",
   "zip_entries": 63,
@@ -27,11 +27,9 @@
     "owner_backup": "libfile_e48aa3ab12e88191bc85eb84b3479922"
   },
   "recovery": "All30art and3imagegenads restored from Library. Rebuilt buyer files and7exactads; 10ads shown individually again. All60PDFpages rendered and inspected. Original native size ~1103x1426, PNG print exports enlarged; no native4K or physical print test claim.",
-  "remaining": [
-    "Google Drive secure login",
-    "Upload buyerZIP to existing folder",
-    "Anyone with link / reader",
-    "Verify download; do not publish"
-  ],
-  "local_project": "output/hidden-garden"
+  "remaining": [],
+  "local_project": "output/hidden-garden",
+  "drive_zip_id": "1sFCi_FB7djyzWvt6ocW7pWJH8zxk96VK",
+  "delivery_verification": "2026-10-28: secure Google login MV Anton mvryhan@gmail.com visibly confirmed. Browser uploaded205006047byteZIP; UI uploadcomplete195.5MiB. Copied folder link. Folder AND ZIP metadata anyone/reader/allowFileDiscovery:false; ZIP size/parent match. Local SHA and63entryCRC rechecked. Existing Etsy PDF URL unchanged; no Etsy rewrite necessary. Anonymous download not separately tested.",
+  "session": "Google browser current MV account index1; do not logout. Canonical owner context https://drive.google.com/drive/u/1/folders/1mlvpatH_gGtL4c21MxM7gcHM-CBPrpST"
 }
