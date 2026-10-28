@@ -1,0 +1,116 @@
+{
+  "updated": "2026-10-28",
+  "status": "four_drafts_saved_and_reopened",
+  "catalog_number": 3,
+  "counts": {
+    "buyer_png": 100,
+    "final_advertising_images": 40,
+    "rejected_versions_and_previews_excluded": true
+  },
+  "etsy": [
+    {
+      "theme": "Christmas",
+      "url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4604759097#media",
+      "draft": true,
+      "photos": true,
+      "pdf": true,
+      "tags": true,
+      "saveDisabled": true,
+      "details": "    - generic: Черновик\n    - textbox \"Цена\": 3,90\n    - textbox \"Количество\": \"999\"\n      - radio \"Полностью мной Контент создан мной по моему дизайну.\" [checked]\n      - paragraph: Полностью мной\n      - radio \"С помощью генератора ИИ Товар создан с помощью искусственного интеллекта.\"\n      - paragraph: С помощью генератора ИИ\n      - radio \"Вручную Истекает фев. 28, 2027\" [checked]\n    - paragraph: Нет несохраненных изменений."
+    },
+    {
+      "theme": "Halloween",
+      "url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4604782520#media",
+      "draft": true,
+      "photos": true,
+      "pdf": true,
+      "tags": true,
+      "saveDisabled": true,
+      "details": "    - generic: Черновик\n    - textbox \"Цена\": 3,90\n    - textbox \"Количество\": \"999\"\n      - radio \"Полностью мной Контент создан мной по моему дизайну.\" [checked]\n      - paragraph: Полностью мной\n      - radio \"С помощью генератора ИИ Товар создан с помощью искусственного интеллекта.\"\n      - paragraph: С помощью генератора ИИ\n      - radio \"Вручную Истекает фев. 28, 2027\" [checked]\n    - paragraph: Нет несохраненных изменений."
+    },
+    {
+      "theme": "Birthday",
+      "url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4604760719#media",
+      "draft": true,
+      "photos": true,
+      "pdf": true,
+      "tags": true,
+      "saveDisabled": true,
+      "details": "    - generic: Черновик\n    - textbox \"Цена\": 3,90\n    - textbox \"Количество\": \"999\"\n      - radio \"Полностью мной Контент создан мной по моему дизайну.\" [checked]\n      - paragraph: Полностью мной\n      - radio \"С помощью генератора ИИ Товар создан с помощью искусственного интеллекта.\"\n      - paragraph: С помощью генератора ИИ\n      - radio \"Вручную Истекает фев. 28, 2027\" [checked]\n    - paragraph: Нет несохраненных изменений."
+    },
+    {
+      "theme": "Wedding",
+      "url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4604761477",
+      "draft": true,
+      "photos": true,
+      "pdf": true,
+      "tags": true,
+      "saveDisabled": true,
+      "details": "    - generic: Черновик\n    - textbox \"Цена\": 3,90\n    - textbox \"Количество\": \"999\"\n      - radio \"Полностью мной Контент создан мной по моему дизайну.\" [checked]\n      - paragraph: Полностью мной\n      - radio \"С помощью генератора ИИ Товар создан с помощью искусственного интеллекта.\"\n      - paragraph: С помощью генератора ИИ\n      - radio \"Вручную Истекает фев. 28, 2027\" [checked]\n    - paragraph: Нет несохраненных изменений."
+    }
+  ],
+  "delivery": {
+    "Christmas": {
+      "path": "/workspace/scratch/64629abb14fb/output/clipart-four-collections/Christmas/Delivery/RyhanGoods_Christmas_25_Clipart_PNG.zip",
+      "bytes": 273285634,
+      "sha256": "bd3bb00db7728ce382c9a9320bcb4f1805888124ec4313116b5a4e63752bc04a",
+      "png_count": 25
+    },
+    "Halloween": {
+      "path": "/workspace/scratch/64629abb14fb/output/clipart-four-collections/Halloween/Delivery/RyhanGoods_Halloween_25_Clipart_PNG.zip",
+      "bytes": 240768967,
+      "sha256": "ae1c0ce33361c662cadc9d31e5b39d7931707a4b90f84dead3bfc5ba72be5a11",
+      "png_count": 25
+    },
+    "Birthday": {
+      "path": "/workspace/scratch/64629abb14fb/output/clipart-four-collections/Birthday/Delivery/RyhanGoods_Birthday_25_Clipart_PNG.zip",
+      "bytes": 235158042,
+      "sha256": "6a35b5bf091297f007a3b0ac1cf10332cb0b75e04cd0f20b8742074eebb43427",
+      "png_count": 25
+    },
+    "Wedding": {
+      "path": "/workspace/scratch/64629abb14fb/output/clipart-four-collections/Wedding/Delivery/RyhanGoods_Wedding_25_Clipart_PNG.zip",
+      "bytes": 221434677,
+      "sha256": "fa3cb62f25a7414aaa390ac1ec03bc98afcf157009aee68846926be90230cb13",
+      "png_count": 25
+    }
+  },
+  "drive_folders": {
+    "Christmas": {
+      "success": true,
+      "id": "1ZakASkTSKKL7SRpvZ4P3R1AHdT549CMe",
+      "url": "https://drive.google.com/drive/folders/1ZakASkTSKKL7SRpvZ4P3R1AHdT549CMe",
+      "title": "RyhanGoods — Christmas Clipart — 25 PNG",
+      "parent_id": "root"
+    },
+    "Halloween": {
+      "success": true,
+      "id": "14KkwXcWIwI4yEyaqUcpwK_m4eYhF46nI",
+      "url": "https://drive.google.com/drive/folders/14KkwXcWIwI4yEyaqUcpwK_m4eYhF46nI",
+      "title": "RyhanGoods — Halloween Clipart — 25 PNG",
+      "parent_id": "root"
+    },
+    "Birthday": {
+      "success": true,
+      "id": "1WxpG6ML_nXzH0nlCoCGEO9e4PhmnoQk8",
+      "url": "https://drive.google.com/drive/folders/1WxpG6ML_nXzH0nlCoCGEO9e4PhmnoQk8",
+      "title": "RyhanGoods — Birthday Clipart — 25 PNG",
+      "parent_id": "root"
+    },
+    "Wedding": {
+      "success": true,
+      "id": "1dvxMzzHBgVBrqekPqs-QiMwUjAyNqS65",
+      "url": "https://drive.google.com/drive/folders/1dvxMzzHBgVBrqekPqs-QiMwUjAyNqS65",
+      "title": "RyhanGoods — Wedding Clipart — 25 PNG",
+      "parent_id": "root"
+    }
+  },
+  "price_eur": 3.9,
+  "quantity": 999,
+  "published": false,
+  "review_required": "Etsy auto-selects Fully by me upon category selection. Owner requested to handle AI field himself; before publication change to With AI generator. Descriptions truthfully disclose AI assistance. No agent-published listings.",
+  "quality_limits": "Buyer PNGs enlarged from smaller generated originals; 300 DPI metadata, not native 4K. Ads export 4000x3000; imagegen native 1448x1086. No claim guaranteed sales.",
+  "old_combined_listing": "4604722079 retained untouched; do not publish combined draft",
+  "rules_repository": "mvryhan-web/video-variator-android",
+  "rules_branch": "ryhangoods-digital-product-rules"
+}
