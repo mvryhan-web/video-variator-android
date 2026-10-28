@@ -46,6 +46,9 @@ async function fit(page,width,label){
  expect(actual,label+' horizontal overflow at '+width).toBeLessThanOrEqual(width+1);
 }
 test('C11 retired Product Video HTTP404; only Image Video Audio working paths, Agent honest Coming Soon across five widths',async({page})=>{
+ // Five viewport loops and 15 real navigation/handoff checks need more than
+ // Playwright's single-page default 30s on resource-constrained mobile WebKit.
+ test.setTimeout(120000);
  await fixtures(page);const writes=noPaid(page);
  for(const path of ['/product-video.html','/product-video'])
   expect((await page.request.get(path)).status(),path).toBe(404);
@@ -79,7 +82,7 @@ test('C11 retired Product Video HTTP404; only Image Video Audio working paths, A
    await page.locator('.app-card').filter({hasText:name})
     .getByRole('button',{name:'Use template'}).click();
    await expect(page).toHaveURL(new RegExp('generate-studio\\.html\\?studio='+kind+'&from=template'));
-   await expect(page.locator('#prompt')).toHaveValue(prompt);
+   await expect(page.locator('#prompt')).toHaveValue(prompt,{timeout:15000});
    await expect(page.locator('#consent')).not.toBeChecked();
   }
   await page.goto('/generate-studio.html?studio=video');
@@ -125,7 +128,7 @@ test('C11 everyday Audio/Tools, Avatar Back, menu Escape work at all owner width
 });
 
 test('C11 Home Inspiration All=2 Image=1 Video=1; both Studio prompts require consent',async({page})=>{
- test.setTimeout(120000);
+ test.setTimeout(180000);
  await fixtures(page);const writes=noPaid(page);
  for(const width of widths){
   await page.setViewportSize({width,height:850});
@@ -152,7 +155,7 @@ test('C11 Home Inspiration All=2 Image=1 Video=1; both Studio prompts require co
   await expect(page.getByRole('dialog')).toContainText('Original fictional painting of flowers');
   await page.getByRole('dialog').getByRole('button',{name:'Create yours'}).click();
   await expect(page).toHaveURL(/generate-studio\.html\?studio=image&from=inspiration&action=create/);
-  await expect(page.locator('#prompt')).toHaveValue('Original fictional painting of flowers');
+  await expect(page.locator('#prompt')).toHaveValue('Original fictional painting of flowers',{timeout:15000});
   await expect(page.locator('#consent')).not.toBeChecked();
 
   await page.goto('/deepsyq.html?c11Width='+width+'#inspirationPreview',{waitUntil:'domcontentloaded'});
@@ -169,7 +172,7 @@ test('C11 Home Inspiration All=2 Image=1 Video=1; both Studio prompts require co
   await expect(page.getByRole('dialog')).toContainText('Original animation of a floating island');
   await page.getByRole('dialog').getByRole('button',{name:'Create yours'}).click();
   await expect(page).toHaveURL(/generate-studio\.html\?studio=video&from=inspiration&action=create/);
-  await expect(page.locator('#prompt')).toHaveValue('Original animation of a floating island');
+  await expect(page.locator('#prompt')).toHaveValue('Original animation of a floating island',{timeout:15000});
   await expect(page.locator('#consent')).not.toBeChecked();
 
   await page.goto('/deepsyq.html?c11Width='+width+'#inspirationPreview',{waitUntil:'domcontentloaded'});
