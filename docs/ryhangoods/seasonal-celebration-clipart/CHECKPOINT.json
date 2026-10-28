@@ -1,7 +1,7 @@
 {
   "product": 3,
   "name": "Seasonal & Celebration Clipart Mega Bundle",
-  "status": "IN PROGRESS: 100 final PNGs verified; 10 promos created; packaging and Etsy draft pending",
+  "status": "ETSY DRAFT SAVED AND REOPENED — owner review before publication",
   "date": "2026-10-28",
   "rules_sha": "a283298258f7617e769ea763a094b1f54fdf2274",
   "planned_count": 100,
@@ -27,7 +27,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -46,7 +46,7 @@
         1518
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "5ee0755dcd8acf1db97dc50d0a143298645ad316ae06eb6175dd565f5664c8cc"
+      "sha256": "5122ec9a284e4b2fccab075eba3ff94bde2a7058e45f45e1eea127bd6dee0831"
     },
     {
       "id": "002",
@@ -56,7 +56,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -75,7 +75,7 @@
         1518
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "fd8c4b64af9b3ef2314f155ff2c8b93acd3d7194f4a385689e1be654de9bc29d"
+      "sha256": "b03e3c6036ac3cd00da07ea401096924360ebe86f6c8f9158ac4927f3e52e02d"
     },
     {
       "id": "003",
@@ -85,7 +85,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -104,7 +104,7 @@
         1493
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "dbc423d679cd0944b4c91e1899302ae3fc7ff42077f16216a6f5c59632f23147"
+      "sha256": "fa77bbfdd82b6a82304f3a53b278a68d107216ad5d5a5ef493e26f7b553d717a"
     },
     {
       "id": "004",
@@ -114,7 +114,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -133,7 +133,7 @@
         1530
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "ec0819bbacbabe9e6a926289eecffc00fab62575eaf473f1d1ddf70c14b3593b"
+      "sha256": "d7d00fe380e70b72c7d21f47f8c38e92164974f9fa4add554df72f7af6229e7c"
     },
     {
       "id": "005",
@@ -143,7 +143,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -162,7 +162,7 @@
         1360
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "6011bd217dfcd53ad0d38c3adee77c1c53f7cefb3fb41d9d39812aea1470a1d0"
+      "sha256": "f5cc94e3279004eba0d4b066bffad857fbe49000087cb5f0781a6e18f5eb47fd"
     },
     {
       "id": "006",
@@ -172,7 +172,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -191,7 +191,7 @@
         1312
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "5ddff86d1a70225abcc1a70e14a131fad801b822ad5f378c2178a5366abd0f95"
+      "sha256": "b116b32a19807949425afbcf8990fc9c43269fd1b594ee88c51c6846b52c3d42"
     },
     {
       "id": "007",
@@ -201,7 +201,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -220,7 +220,7 @@
         1457
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "abf4d7ea480587ab2f319c2c6cfade32d20c8047ace8d9b9b9ee0736679506ab"
+      "sha256": "82c86349357dfcb09f8b127872376faf458263af42328dd1b31bb877d0542c99"
     },
     {
       "id": "008",
@@ -230,7 +230,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -249,7 +249,7 @@
         1530
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "a877154a60f9e44b07dd198e0b520468ba7eca25a08a8c4ace43f2e2e80b71b0"
+      "sha256": "9a5980f5092838ad008311499e54dfa177fa4e9a91672dacbd4b73382caf9edf"
     },
     {
       "id": "009",
@@ -259,7 +259,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -278,7 +278,7 @@
         1517
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "bcb72543fde93f89b659b829cbdf1945aaf34c8796ba9f65167f1e1b23a2d3e3"
+      "sha256": "629dc438c1850b7ece0adc2ae772e4f2ccfe74749092e9096736c8785cead510"
     },
     {
       "id": "010",
@@ -288,7 +288,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -307,7 +307,7 @@
         1371
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "3b454e7e15eeb9572a16279043bf36751072adac73d14c0f0dcf9b9bdea3bf0c"
+      "sha256": "35a38e650d01b7cd9d44fbd24fcbab782ef2e91cd7e6a0327fb8929efc28763f"
     },
     {
       "id": "011",
@@ -317,7 +317,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -336,7 +336,7 @@
         1518
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "cf7759405e9662172b185179eb48f3f23090093d7ac9d940ee7f6d26b44472b2"
+      "sha256": "8762aaf6ac52caf8a4e624f735083648535544d69bc968da42462d668f4f1129"
     },
     {
       "id": "012",
@@ -346,7 +346,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -365,7 +365,7 @@
         1392
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "e8845c5608169b80454ec945ce608c555458bac23764d079d1ec8685ed69b2bb"
+      "sha256": "78ae0c4413dcd2e62be49c45bb557919148a8ec27eb538900ed8876413490aaf"
     },
     {
       "id": "013",
@@ -375,7 +375,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -394,7 +394,7 @@
         1427
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "fa74a9c402d7a0932c25741cc1cad32d4e54cd73a96ad70a7519832e93dcbee9"
+      "sha256": "7ff593c042744d5479d0471049d5b6e4fec0202107d3a914571cb3285d03e16b"
     },
     {
       "id": "014",
@@ -404,7 +404,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -423,7 +423,7 @@
         1490
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "cf62c804b62f0feba72e5fc863e884e7d0999e2874605137a94ab74565ad3133"
+      "sha256": "7cc6c64d925e0f69b1404d1621d1b2d3822ad1274222443b9ef693dd15c6a524"
     },
     {
       "id": "015",
@@ -433,7 +433,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -452,7 +452,7 @@
         1506
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "b451155af0351158e60b622cecc554cb934dbfd870b73d6451b80cc6db06c4aa"
+      "sha256": "cd9285bbedb86f4434eefcdca1d2028550e9f959356f59f17092733d542d9bf1"
     },
     {
       "id": "016",
@@ -462,7 +462,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -481,7 +481,7 @@
         1445
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "aeef58b0abac532438d92c0f12246b5201d2460b079ea3be92a8ede4b139f948"
+      "sha256": "1e693fda9786a0ac19577f1e7a22d675f511bbb12ff70853bd35580bd3af8b88"
     },
     {
       "id": "017",
@@ -491,7 +491,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -510,7 +510,7 @@
         1449
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "e6dd534d6b9d72c67c90cb1d7585d5da5132635d97e630b921356879509ea938"
+      "sha256": "2ffc680818c4597386d2d8278d125a4a3d0e7ac0ed313d5fbb7483c4133dc133"
     },
     {
       "id": "018",
@@ -520,7 +520,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -539,7 +539,7 @@
         1526
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "9569baf04ba29aeea5a9d106850a93f18f3a0f443e4dbf0cb19ad108e7037657"
+      "sha256": "8bc5747054f853d1322c770629985725e2da687d1b03e0dcba3612b8b2958c77"
     },
     {
       "id": "019",
@@ -549,7 +549,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -568,7 +568,7 @@
         1453
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "691a0817a1dd1b59a67dba12728717376e67151b3de4a5ed92939fd17faeb0be"
+      "sha256": "ea533fbcdcab5e2ad5c952286a44a273e8663da3bd4911b08e1d1caddb4eba6d"
     },
     {
       "id": "020",
@@ -578,7 +578,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -597,7 +597,7 @@
         1528
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "c32c6ec555f7cd3b37fb7b1ea482fa68a70ecec82951cb91f7cd540ae24f5d89"
+      "sha256": "16ad4128385952ba5b32844a1bad6b7bc80d1788cd53ae709f9fa6ddd6c9424b"
     },
     {
       "id": "021",
@@ -607,7 +607,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -626,7 +626,7 @@
         1505
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "6a142d913b952cb7ec285056e7e0131ce73b027ee7fa36e46a1cddc8d4c6e73f"
+      "sha256": "d9a30412bb7a0ba8a3283e0f37295ab1b26411883ced08204e14a1e5fb2c0ff5"
     },
     {
       "id": "022",
@@ -636,7 +636,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -655,7 +655,7 @@
         1394
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "3fd27c6835f7fc3b9cb3e98ddda41984fbfc70b344a394b77d158da8c89e360e"
+      "sha256": "da749cc9718a24ed073171a13234bdd0690051fda1620e537fd2b5b9968ab589"
     },
     {
       "id": "023",
@@ -665,7 +665,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -684,7 +684,7 @@
         1494
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "93911a29cacc6c0449f0ef035c235c774aaf16c0f445c38f627015b55fb3a3c5"
+      "sha256": "0f3d83cab4d04da3ec305f3ec69171d62b1fd1d247b578d4cecbd2f93c58f42e"
     },
     {
       "id": "024",
@@ -694,7 +694,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -713,7 +713,7 @@
         1388
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "c9ee0c4f243df6552013889f3ccac36b31dd94f1b1df7b5c6862b227160f4cef"
+      "sha256": "8bc23c45d5c18092cff0a4307db6912f6c00901c4e9784248316904e764b774c"
     },
     {
       "id": "025",
@@ -723,7 +723,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -742,7 +742,7 @@
         1448
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "a939beae491705cb9a8c9ff29e85625b47b5855a1458fd9c032c0e99c098c9bd"
+      "sha256": "c7fab7a98eb32d97d66316581542c1dd7b7b05f008bca4a66567d35f44bb0d42"
     },
     {
       "id": "026",
@@ -752,7 +752,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -777,7 +777,7 @@
         1401
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "3aa1d4119716ee663bfe5bb404e72d971bb00ae0ee038ac54e7f36fe759ac331"
+      "sha256": "43adc02d546fef2377884690b718e0efe2bc49c8ca141099a6f3a6f309e051e0"
     },
     {
       "id": "027",
@@ -787,7 +787,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -812,7 +812,7 @@
         1517
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "bf008a788f6237fbe2a4ff158d64412a782c08a2d34157efef07e6e79ccc47dc"
+      "sha256": "238c60642ed18255ab4ff99efd7df2b41b2a6571c2f96373ad9e220c561bb32e"
     },
     {
       "id": "028",
@@ -822,13 +822,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-5b0ce49b-0034-4b35-84c4-2dfd02290e63.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Чёрный котёнок на ведьминой книге.png",
       "alpha_bbox": [
         1,
         0,
@@ -848,7 +848,8 @@
         1298
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "a7dd6ab9a88e1d1057d1822be2ce02557a9745b48db28440b176b8dc27a1c98a"
+      "sha256": "6213f5c8f289004c50b02268c0b87f5346cdeb5d0ce6fdd66c6bf7a863fc78cc",
+      "source_library_id": "libfile_825a795b13b08191b7df649bafedf069"
     },
     {
       "id": "029",
@@ -858,7 +859,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -883,7 +884,7 @@
         1463
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "d71c36b41df36428db9e9310cc257c5269438142e61c4a4b9cd9f5094e3f5024"
+      "sha256": "6bb4e0a02a5e5d68f97b0b6fb9805943d2e05c65a38e6c04a282af36097b821c"
     },
     {
       "id": "030",
@@ -893,7 +894,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -918,7 +919,7 @@
         1454
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "46c231aa40d2995eeb9431fbbe791a34c311542a57a9c5471aaf264d29f84e57"
+      "sha256": "732d55bc76a0646902f3b3afd506b7e06b78af9f38e201c0a80fdd711fa16cd0"
     },
     {
       "id": "031",
@@ -928,7 +929,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -953,7 +954,7 @@
         1509
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "f51119fef75b707895e1f08f656a998cfcc5b135d0a299a90fc8bdab104468bd"
+      "sha256": "1fd8c374352a253aab8efa5ad9c9dcc7fd9d47f51119269a74cc4cecac5e2a26"
     },
     {
       "id": "032",
@@ -963,7 +964,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -988,7 +989,7 @@
         1505
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "c2718b8d36b32d5f452ab2137eda6a31c71750219ec42823eccc1f5dd77de8ef"
+      "sha256": "d142ccdd4bf9d26b918841bf3c1d0c5314ea66a38ba13ce9cea4890aaf18b72f"
     },
     {
       "id": "033",
@@ -998,7 +999,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1023,7 +1024,7 @@
         1473
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "e92337ec03910b172782e81a10eae99c7b5e79f8f15a42d8dea5a54655aff0e5"
+      "sha256": "1a329d61064903e3fe761b4886faea0c27e3a3ddfc7ae66a5883c54ddd94d48e"
     },
     {
       "id": "034",
@@ -1033,7 +1034,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1058,7 +1059,7 @@
         1526
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "147b207b224ddd01772eb92863a05d9c93c438eb8a6c4fe79c247d74cda633d5"
+      "sha256": "4b56b2fdc96b501af2496514b12c9bc8e25ae5e497a0a89e33cdf0ab3d4c17da"
     },
     {
       "id": "035",
@@ -1068,7 +1069,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1093,7 +1094,7 @@
         1489
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "fdc9ff31a6266e57ae1ad2ccb82921d076b2f9fe4efb06c25e64c3a0d0e6eb5e"
+      "sha256": "b44b80c82bf6ab708e8c79d095b59380f412ff5e0ef3a12fd5438cb988eb125b"
     },
     {
       "id": "036",
@@ -1103,7 +1104,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1128,7 +1129,7 @@
         1501
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "6193a7ac5f44d0e146b17002ba0a3116f863bb2892b7cb3c61931f623c86ae95"
+      "sha256": "5f6df4227575ad119e9194898418eaebc508a1ab6e37b353dd69a3b09fa04b89"
     },
     {
       "id": "037",
@@ -1138,7 +1139,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1163,7 +1164,7 @@
         1499
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "1bbd240dd825b1f964ec44ac4313eef557cf13e305936b457e41859d23bb236e"
+      "sha256": "5cd866b7ecd2e463d50be4c1250eda3e582dffbc8ac701e7a3e52979d07c9054"
     },
     {
       "id": "038",
@@ -1173,7 +1174,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1198,7 +1199,7 @@
         1365
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "1943ac4f9e8ce9595ab6545cb7ced58456d2de12e76581f084d15da111475bd3"
+      "sha256": "afebb8c1ac2618441288cafe137a1482017aae2961d41b1f0bc987561007c077"
     },
     {
       "id": "039",
@@ -1208,7 +1209,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1233,7 +1234,7 @@
         1536
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "082c76c282f28d3b63abd1b39eb29ccf7c0e133ff68630722335c39bec489249"
+      "sha256": "65f12461f5bf447997b1e82a4f6f63ef4e5fc69608417200a7b85e3b035915e0"
     },
     {
       "id": "040",
@@ -1243,7 +1244,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1268,7 +1269,7 @@
         1533
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "561781d2d47c3625962b28df2d126622696428822ce198ab6ef49ec3f599507c"
+      "sha256": "d9d7e7907527dc98430cfd2422cd2fc8bef66a8200ee5911765ff82233318952"
     },
     {
       "id": "041",
@@ -1278,7 +1279,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1303,7 +1304,7 @@
         1531
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "db9ff1faa461ad0c6624377c0534bf61d2932274272f215b589cf93c001a9164"
+      "sha256": "7c07787fc4dcd5bf526a52a4fff94e91880687d160110d2d763a0c98d854960c"
     },
     {
       "id": "042",
@@ -1313,7 +1314,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1338,7 +1339,7 @@
         1475
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "9e699ffd03868536e52f341aa75796433b8d3c11560a2d69340ded468bc01bfd"
+      "sha256": "f24132150bf0b60f18c9cc32afd2f7e2a9e50f034740ed97a4149b10c826a57c"
     },
     {
       "id": "043",
@@ -1348,7 +1349,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1373,7 +1374,7 @@
         1300
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "93a33afc57b6a425bc894bc69aeb2ba83746f7fa1b1b70fcdfcf1895d99e51b3"
+      "sha256": "7eb38ad7d973f1c02df39f31514c52157a34495e481272cd27a42456e60f937e"
     },
     {
       "id": "044",
@@ -1383,7 +1384,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1408,7 +1409,7 @@
         1482
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "60bd1917a8c77bb1f2a6a0b033be5361f7331e905189e540f079d5b1bc5d0adc"
+      "sha256": "24f811a54a23ae8e0cc1b41a4c37c2cdf373c21dc80ee03ae46136207ad64ead"
     },
     {
       "id": "045",
@@ -1418,7 +1419,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1443,7 +1444,7 @@
         1521
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "b1fe905ca0c83b1ee268fbe2fc8ed6187a16ba5bd475c1dd5f0545762470e909"
+      "sha256": "44a5abef64d6f8a8eb78b47c5717887404831f20b7a51813147e325de85b57e5"
     },
     {
       "id": "046",
@@ -1453,7 +1454,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1478,7 +1479,7 @@
         1518
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "8be4d42c1e8424a0b9ada966830ea7ad24e839ae78e57e28a2b9e17d631265f1"
+      "sha256": "36ae5ebfc6f6560adc505283e10ed6f2ceee0cc001f3a5775c542b1c540fa780"
     },
     {
       "id": "047",
@@ -1488,7 +1489,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1513,7 +1514,7 @@
         1424
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "407f5e17f93678525d58d5ab3c73ff71305c536ae9784c39ef60272f60e34481"
+      "sha256": "50f6717e2b69b7d32335cb87c5abf32f74ec2b86544b9f8e4985acd958d925a4"
     },
     {
       "id": "048",
@@ -1523,7 +1524,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1548,7 +1549,7 @@
         1524
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "1d3061f709f1186034363c25f40a0f63935f7899c70a888639e47a4a2d46a935"
+      "sha256": "e1aaa5f3cf4764b42d113aefe29c9d97e8fc3f5ee155926e825128b547679b8a"
     },
     {
       "id": "049",
@@ -1558,7 +1559,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1583,7 +1584,7 @@
         1487
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "06f585cca210da7ab29589e70d17a1f1e6a7dd3d8dbc55a58cad787a35178b5f"
+      "sha256": "97075117b7e7be39a57668dc27586a189b7a09e4ba9127d7f39ecef10f382c75"
     },
     {
       "id": "050",
@@ -1593,7 +1594,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1618,7 +1619,7 @@
         1428
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "6c083c1373f45a6c59cd7324e96ac418e79576540eda0a3b55d8789a7cab70a0"
+      "sha256": "1f53ef8ac424c2c20c16d1fa22fadbd58864a472305315a79f87c7b56c534c97"
     },
     {
       "id": "051",
@@ -1628,7 +1629,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1653,7 +1654,7 @@
         1510
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "64e26659d4639fae8025aefd48da24e6ebd79aa1a6eadeef34eddbc10516efbe"
+      "sha256": "761928035a1a44905ed2373afadc0be4908c8337a5cf032fdc446842336ca266"
     },
     {
       "id": "052",
@@ -1663,7 +1664,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1688,7 +1689,7 @@
         1491
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "fe2062f6e8893c091befcd76372e1026b9b2648a0252179435682b61a7082d87"
+      "sha256": "f311b96f0ae9c712ff7cf55a727389aa73abf05cbc78e08497796ede9fb1d344"
     },
     {
       "id": "053",
@@ -1698,7 +1699,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1723,7 +1724,7 @@
         1520
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "24c19db251d16f201f93df5c68f2761d19ccf73487bfd06925b2e8a490db9ddc"
+      "sha256": "276c5acc4340d372ba2c02f0670d352edb84d0707858abd84ec7a0e0510b561d"
     },
     {
       "id": "054",
@@ -1733,7 +1734,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1758,7 +1759,7 @@
         1503
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "9ead2863c60b8e8ecb9b58df7bfc2cc3010d1cabaf3d1fb2d0fcd4970c5353dd"
+      "sha256": "4f1cd1203f4c13bbadeca7c395deaadf2d0a965ce9240338bd81ecfc6ed951d5"
     },
     {
       "id": "055",
@@ -1768,7 +1769,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1793,7 +1794,7 @@
         1503
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "b7d47a992657dffacba72e57f12b053beb5fadefa2fe20e885a8ea33ecf6edd3"
+      "sha256": "2403be1bbdc8a5327c5340fe35c977daaa1936c996fa690e64772693c54f2070"
     },
     {
       "id": "056",
@@ -1803,7 +1804,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1828,7 +1829,7 @@
         1326
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "0500a1e49e97a3cf7da7a6ee76239638a276420d86b3ae988015679458ea2793"
+      "sha256": "ea82a78c770bb383cc479633557e8378c964d8cd1ae0ac955e52102ddcedc4fd"
     },
     {
       "id": "057",
@@ -1838,7 +1839,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1863,7 +1864,7 @@
         1491
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "27eb6deaf5fbec6487d64b820ba710923fe1ff6a5418fe71ac4b74686461a112"
+      "sha256": "8f9c1c465eb2f8c1278dcad898d560fdd59e7e3b9ae94bcb1c8e2d6e897a5f55"
     },
     {
       "id": "058",
@@ -1873,7 +1874,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1898,7 +1899,7 @@
         1516
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "fbe43a0e6c5f98fa15ac4e4b0450d5227d9fed3cf0a8cd3054178dcf6f5c65b6"
+      "sha256": "423fa742af6faa6a77cf2f9dad9c2f8fcc9031dad737a8e61090f9c3e37cda4f"
     },
     {
       "id": "059",
@@ -1908,7 +1909,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -1933,7 +1934,7 @@
         1521
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "301869727bb3a5364ab7fb18f40b4851443abe323cb8f6e7e0d4a245cb2c789f"
+      "sha256": "476e2a77c2c24e3ea205013d6668b1bb315f784cbd39643f7d60083d38f1ba2e"
     },
     {
       "id": "060",
@@ -1943,13 +1944,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-1f65e7a3-d56d-4e6c-9db9-39c9fd8779e8.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Яркая праздничная гирлянда с бантиками.png",
       "alpha_bbox": [
         11,
         224,
@@ -1969,7 +1970,8 @@
         1018
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "97d29a7295a6e1d596644a9e62cbfd633362042848993f227b8803f5b31aea84"
+      "sha256": "51c3bfdabbe0e7999d44b79ffef14cd8eea036bace308d7ecf994e5c2583702c",
+      "source_library_id": "libfile_ed3538e6d53081918c7045837c963e58"
     },
     {
       "id": "061",
@@ -1979,7 +1981,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -2004,7 +2006,7 @@
         1493
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "a855762050c92c870a455bdea4406f302d3f4dd0f589fb86d5e5769c6ff0c22a"
+      "sha256": "97754a4be030b64efdc94826bebd99a34106e0f3a0131f4ef8f22b1507bd3b55"
     },
     {
       "id": "062",
@@ -2014,7 +2016,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -2039,7 +2041,7 @@
         1450
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "67dd71f921307b0ec5d8361ab4dd83e4c4984649152ca91fb2d099558fc35969"
+      "sha256": "482e98fa54e522372e5dfc41806df72e415ad10f82d19dca8aab5568135d5df6"
     },
     {
       "id": "063",
@@ -2049,13 +2051,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-9c58036d-0d52-4ddc-b013-59a448b94f1e.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Счастливый кролик с шариком и подарком.png",
       "alpha_bbox": [
         2,
         0,
@@ -2075,7 +2077,8 @@
         1392
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "c8163a2d846df45e49b2591a6b93178faf99219bd2fb52647113b6a95ec967b1"
+      "sha256": "8dc90be5da01e4441337e832719ffc22aa8cdd96f2970224502e883b325bb4c4",
+      "source_library_id": "libfile_a0dd939ba23481918bdf9bc1a39d6e68"
     },
     {
       "id": "064",
@@ -2085,7 +2088,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -2110,7 +2113,7 @@
         1528
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "d385b0f7221348c790614497546da8a98647da1d7793758163f11e28377d42af"
+      "sha256": "c42ee5c8b6147554b50aa0e78eb1d71692a346bd7278578588ee32a4e992149c"
     },
     {
       "id": "065",
@@ -2120,7 +2123,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -2145,7 +2148,7 @@
         1510
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "d4134156477e4cab5ab7a76cf0dcefc8e54f18c34fcc75a0033ecc41c1f10d29"
+      "sha256": "6c9573fee5b3789960af0fe174664a2aecd327aed500ec435791beed5f241680"
     },
     {
       "id": "066",
@@ -2155,7 +2158,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -2180,7 +2183,7 @@
         1472
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "8d2608c775d80a00507754de0bbf2c32a37f155fbd8308e255cbd7cf39588111"
+      "sha256": "81b945e5b9ac4b6ee121e16ec02e5e4c09d69b3000ee2bf012f3e7c4508f1b88"
     },
     {
       "id": "067",
@@ -2190,7 +2193,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -2215,7 +2218,7 @@
         1521
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "b9502d684a5aa8fe5ca949421e8625807122e96bde9006b4b3e5ecbbb7886389"
+      "sha256": "5765dc0a1fed32dfcc5271226e3f1d0890ae64bffd3ba42ed50f94099e2d82f8"
     },
     {
       "id": "068",
@@ -2225,7 +2228,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -2250,7 +2253,7 @@
         1445
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "14ee9dc7cc634996044a09e6b6791510095581dc727a05e4b5c8f8da3a6dacb6"
+      "sha256": "b658acf346374210ef62f2043e3689a1d47705618d0625016a3a6c69b3c1a675"
     },
     {
       "id": "069",
@@ -2260,7 +2263,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -2285,7 +2288,7 @@
         1497
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "4018230597674b006c71c93d3238a59d6e099abb234cd24f6850f6feedabfd96"
+      "sha256": "3036ef0ab971d0890ef9b3557e3d428d80806b2a746e87232c10552453ce0d3c"
     },
     {
       "id": "070",
@@ -2295,13 +2298,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-42b857d2-33a9-4c95-824f-0265d6b33a1b.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Бирюзовая свеча с малиновой спиралью.png",
       "alpha_bbox": [
         36,
         53,
@@ -2321,7 +2324,8 @@
         1466
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "1b9129b81888ff1a2fc75ac1d244ca3a6017c0e076e19bbd21e41e9d00947be6"
+      "sha256": "3d38176d6f4e06bbb622c4f27ef49bee438efcd88378b42ccc8a3cd87466baad",
+      "source_library_id": "libfile_fd644d5d47c88191963eb86ebf82adf2"
     },
     {
       "id": "071",
@@ -2331,7 +2335,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -2356,7 +2360,7 @@
         1392
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "4486e664350374799cd979e4ece876af7f7f2b92eeeaf243162c67b2e62a0afe"
+      "sha256": "d2e6d6c626918d64f7e93c9ce68e38d0a2cd636d75a29f9616b2079d1d3bc707"
     },
     {
       "id": "072",
@@ -2366,13 +2370,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-32fb5a85-bb11-4c83-8a3f-a9307a9410b0.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Праздничная лошадка-карусель с розовым седлом.png",
       "alpha_bbox": [
         22,
         2,
@@ -2392,7 +2396,8 @@
         1324
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "851f06ba378ec745d11e4c442dd01a1c9b3f5d261d9aee47c2f78bf902866b91"
+      "sha256": "0158244abe18e12b954c9385d83aaa0b76ca6725b5a5c053f416004aafc7ac0b",
+      "source_library_id": "libfile_e32149764d5c8191b1034e40e77c0153"
     },
     {
       "id": "073",
@@ -2402,7 +2407,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -2427,7 +2432,7 @@
         1496
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "82e6705218857633bc008f19f894bdc6a487231bd3ed5460b310d3198c5f96e6"
+      "sha256": "2d2348a679defb21e2d3411cbafc45b12f2d70ee0f32047d6f7dcf3cffc03e00"
     },
     {
       "id": "074",
@@ -2437,7 +2442,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -2462,7 +2467,7 @@
         1486
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "8058df8a2e07caeb7e0db7c275dfa4d114db6ea76d615b3d7fc236c9d35d790c"
+      "sha256": "325d80099a599ebdc787b8b4540fabdda9d07212aa1739c475cf34b529e662b4"
     },
     {
       "id": "075",
@@ -2472,7 +2477,7 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
@@ -2497,7 +2502,7 @@
         1506
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "a0bda3850ff893d9b0a730f841827642d71a71e83939e961139c31f7b285327e"
+      "sha256": "229957ec4be894bee1fc32e4215883e54e786619baf20a76522698c390a5f79c"
     },
     {
       "id": "076",
@@ -2507,13 +2512,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-06d88123-dc7b-43c4-ab5b-311e695a6757.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Садовый букет роз для свадьбы.png",
       "alpha_bbox": [
         16,
         33,
@@ -2532,7 +2537,8 @@
         1512
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "70fe0872e3ce8a586b1458a253a1fc78f10ace55b0b262b2659d4dd896515eb1"
+      "sha256": "b81312130f305257db46713dc397f108e2ada1e25f3cfb355be816566ec25703",
+      "source_library_id": "libfile_b566bb935df8819188d1a7b89eec5869"
     },
     {
       "id": "077",
@@ -2542,13 +2548,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-a9e9d539-07d1-4e40-9e89-99eb0017a224.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Золотые свадебные кольца с ботаническим декором.png",
       "alpha_bbox": [
         24,
         308,
@@ -2567,7 +2573,8 @@
         1229
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "49b08491dad72d305a05f568cf672d967ccb1883916ee52345334101f02f1c49"
+      "sha256": "364bd87755da118ce4d9db7d5fbb8311d645abbf92a1d4716b8b2b73951f19a6",
+      "source_library_id": "libfile_fc7ce94872308191abf2fa3a0c29615c"
     },
     {
       "id": "078",
@@ -2577,13 +2584,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-dc823692-5b4d-4485-a787-9d095093e1ea.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Романтическая ботаническая свадебная арка.png",
       "alpha_bbox": [
         10,
         43,
@@ -2602,7 +2609,8 @@
         1472
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "ffcde4b4ab26fbfde42d974d2fa48412528ce9dea330b93b611fd335661465f3"
+      "sha256": "ff2e9736e9a14b081f9abaa724f223ec4f72c35801abee8efd54e55b4ca21f90",
+      "source_library_id": "libfile_cd9b91050608819198f2498543350a8f"
     },
     {
       "id": "079",
@@ -2612,13 +2620,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-b8b44c61-c3f6-4475-8758-d2d0acf365f2.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Ботанические бокалы для свадебного шампанского.png",
       "alpha_bbox": [
         23,
         142,
@@ -2637,7 +2645,8 @@
         1361
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "aec2a6a6b3626df29b9b91c29bcd27b25b3a5d03d7f201944c86685445e4e347"
+      "sha256": "a4c5d4d9b6076b28037825f5b83d9631fe4646abe9d236926b89b8016ffcb14b",
+      "source_library_id": "libfile_0c9a27d9f6408191a15c5b36d9717d81"
     },
     {
       "id": "080",
@@ -2647,13 +2656,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-624857e7-acdf-4a39-acd2-c7099b257c9a.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Свадебный торт с цветочным декором.png",
       "alpha_bbox": [
         46,
         13,
@@ -2672,7 +2681,8 @@
         1529
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "f8923e1791b494db3a92aa85f4873528244726ba16d62d34d8af2484954035c7"
+      "sha256": "33034d9344a49825624ce572c557862dae5659ce113c0a799c0166680af77616",
+      "source_library_id": "libfile_db05ce8edfc081918d5bdca89ca7c2c7"
     },
     {
       "id": "081",
@@ -2682,13 +2692,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-ddd3082f-05a0-434e-aa46-67cbccf03574.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Шёлковый свадебный бант.png",
       "alpha_bbox": [
         30,
         128,
@@ -2707,7 +2717,8 @@
         1429
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "e7c33959a279898bcb894bb15dced78ff2c9cab9ea4502f845f300def498b66c"
+      "sha256": "929a22de88555a269b286d8c112dcab3f4fde67ed637fa95cbfe4bcb5bf3a84d",
+      "source_library_id": "libfile_0baec143aae48191bab859155657b663"
     },
     {
       "id": "082",
@@ -2717,13 +2728,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-782147c7-d39f-414f-942d-27cfe1f413a2.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Нежная ветвь эвкалипта для свадьбы.png",
       "alpha_bbox": [
         88,
         35,
@@ -2742,7 +2753,8 @@
         1506
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "19f709ab426fbd99a93f20778fa9f24a49c4bd7f36c8d42fdf71dd6eef8326f0"
+      "sha256": "ad8d13e89f78e1a469ac3d1cf92408728170b786b6a7a6a003cd72694c3ba761",
+      "source_library_id": "libfile_19d8b502849c8191aa721576e6cfb9a7"
     },
     {
       "id": "083",
@@ -2752,13 +2764,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-04c2e36f-f01f-4e1b-97f5-e27864207160.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Свадебные туфли с ботаническим орнаментом.png",
       "alpha_bbox": [
         32,
         205,
@@ -2777,7 +2789,8 @@
         1358
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "8630488412bc05a3b999f0a0ff110a2c6e50b05b0899a99cc7007fac024dfc73"
+      "sha256": "7f99dd87492a98e3d552027b955f3554eaf0c57cdc8972d8f43c198dd7d9a9b9",
+      "source_library_id": "libfile_fab443158a408191bf78756266e37276"
     },
     {
       "id": "084",
@@ -2787,13 +2800,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-629ff8ca-09e2-40a8-8e67-25636750cb02.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Романтичный ботанический свадебный конверт.png",
       "alpha_bbox": [
         5,
         226,
@@ -2812,7 +2825,8 @@
         1299
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "b549522525e4c987d5b277fed46d4100a157f01db68ae7ffc307c05c1471501a"
+      "sha256": "36334609df60d01a2eb1c0c9dca5b95cbfd97c6463b92f3447b76b4bcbe7cd4d",
+      "source_library_id": "libfile_6b5b7a7553308191966ec4d5539412d2"
     },
     {
       "id": "085",
@@ -2822,13 +2836,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-4142f8b3-4b05-4892-9ca5-93093c4c4210.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Изысканная свадебная корзина с цветами.png",
       "alpha_bbox": [
         9,
         163,
@@ -2847,7 +2861,8 @@
         1378
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "5dd81198f25d5d5114048b42028cded2cafeb746c6780f67b364e306c60ddef3"
+      "sha256": "6787255b20c7a341df22c4f2134f7056ada7fc82a2e62287b1e5aa9cf2fa4a31",
+      "source_library_id": "libfile_9b5fe3943918819186f281a078a70a1d"
     },
     {
       "id": "086",
@@ -2857,13 +2872,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-d6136bfe-164d-4e70-9555-4e5797ed99c4.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Свадебная композиция с конической свечой.png",
       "alpha_bbox": [
         23,
         35,
@@ -2882,7 +2897,8 @@
         1487
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "c7f750f8b9d1ffd54cdb8cb1d45ea2f31fa612aec3f6dd00c4636d3ce1355b20"
+      "sha256": "e72ee16a47f49b39ee8a809d2db61b08498f10df860f9ccdc8e848c3c6a84106",
+      "source_library_id": "libfile_462fb6d0c57c81918ffcf307cad72615"
     },
     {
       "id": "087",
@@ -2892,13 +2908,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-33f3ac21-4254-47ad-bbe2-e8b0c660cafe.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Свадебные колокольчики с нежными цветами.png",
       "alpha_bbox": [
         65,
         155,
@@ -2917,7 +2933,8 @@
         1409
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "31739e4eaa112c6b350404c06880c1461964d5e4cbde0bcc2ca12295095f0ec6"
+      "sha256": "a75cebd24d59702a8ef2b00ac18c79ca6d97d4075812e6867c52bb3f1ab9e969",
+      "source_library_id": "libfile_1a1400535fb08191927e3a8839fca3a9"
     },
     {
       "id": "088",
@@ -2927,13 +2944,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-11dcc47e-a111-4985-99a4-313558326d23.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Жемчужный свадебный гребень.png",
       "alpha_bbox": [
         20,
         373,
@@ -2952,7 +2969,8 @@
         1142
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "d7791666fc1820d4f94fa68a5a51bef8e40c31d033013f8184e7c184fc5e619f"
+      "sha256": "8244f46f77c39a8a5897d82bec7e4b0a4587b76372bea9f71e2c5636bcf96b34",
+      "source_library_id": "libfile_27174be8c5f081918532cdd416548f8b"
     },
     {
       "id": "089",
@@ -2962,13 +2980,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-c328045f-23cb-4a30-ba21-d7672b6a21b1.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Элегантная свадебная бутоньерка в пастельных тонах.png",
       "alpha_bbox": [
         42,
         81,
@@ -2987,7 +3005,8 @@
         1444
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "cd7f487b79940a7a3990ede63bcada9e8c3b7d38264e7ac662aaff7b8f8b890e"
+      "sha256": "5c71e046cc924b6b700b5fb62f357503adb23da843e21df49ef6848490484688",
+      "source_library_id": "libfile_5ff6b42e71fc8191883057d93ba9b2d8"
     },
     {
       "id": "090",
@@ -2997,13 +3016,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-6b56a047-9b33-46bf-80e2-5e1bc5815fb9.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Романтический свадебный фонарь с цветами.png",
       "alpha_bbox": [
         41,
         34,
@@ -3022,7 +3041,8 @@
         1506
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "62d13a5e7d74b08859e9e8841b07d91fbb04da54b9927032a31031c4e8b62181"
+      "sha256": "229070e7ae7d4627e29eea17b5aa15af6e1968b4f139b279c47261af5bfb047f",
+      "source_library_id": "libfile_e7264e062b70819188a36f4936b49886"
     },
     {
       "id": "091",
@@ -3032,13 +3052,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-92de900a-ab1f-4b89-b405-1bed4a5ce3cc.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Свадебная корзинка с лепестками роз.png",
       "alpha_bbox": [
         23,
         80,
@@ -3057,7 +3077,8 @@
         1493
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "4a658da9fb53884a15ddd8d2438c979e6343d025e8388d1c60b1e3341f4ceb52"
+      "sha256": "d2fea6ca0f7213f3b5ca295a515d5a98e54c4a23e109b040ba2c7d672c92a41a",
+      "source_library_id": "libfile_550c715fd1948191ac8e23da8f1dcfe8"
     },
     {
       "id": "092",
@@ -3067,13 +3088,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-14b04974-94c9-4a3e-a4c5-c354ae85fa87.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Цветочный свадебный венок-сердце.png",
       "alpha_bbox": [
         17,
         267,
@@ -3092,7 +3113,8 @@
         1300
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "5f0281bd7cefb3a17e2616fa23218522886b2c93c92ad12c7300d44ccc9a2f49"
+      "sha256": "d7dd4cdddf5277c4056a3612d4da1de974b7814b2fec6c950454243c354b6495",
+      "source_library_id": "libfile_7d57effa14b48191bbf00b3130cf0332"
     },
     {
       "id": "093",
@@ -3102,13 +3124,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-b84c1952-26c0-4cb4-937a-8adbada1147c.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Романтическая свадебная карета с цветами.png",
       "alpha_bbox": [
         10,
         215,
@@ -3127,7 +3149,8 @@
         1308
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "f2012a748aab42722f3f8cfe99be2d1cadce381352f1aed3a3dec41808b0ac53"
+      "sha256": "c6a0fe37aaeeba10e49861421ba2b4218cfdd98adee2047c2ce78bf5e1901376",
+      "source_library_id": "libfile_b49c1d2cdbb08191b5aad52915640f3d"
     },
     {
       "id": "094",
@@ -3137,13 +3160,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-985158db-84df-4f28-bad0-a4793e40515f.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Кружевной свадебный зонтик.png",
       "alpha_bbox": [
         21,
         155,
@@ -3162,7 +3185,8 @@
         1438
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "5610ec647641e8aaebddfc6d17616c9da40d4fcd76c13f17fcacd7aa9d4d2d90"
+      "sha256": "f63257f50473615ae32e04769f65ad2bef65a4dbed9649811e3b9601a483b235",
+      "source_library_id": "libfile_31140417136c8191b1685c1fdf382647"
     },
     {
       "id": "095",
@@ -3172,13 +3196,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-e5b4b171-8a55-4dd1-bc0d-85ea24634c9d.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Цветочные книги свадебных клятв.png",
       "alpha_bbox": [
         15,
         183,
@@ -3197,7 +3221,8 @@
         1410
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "5f17070653a98ae0c11136e493143e21317972e436fd083ca217453753224e3d"
+      "sha256": "fbc344f9a39da13273634e00294ce699bf3f5dc94ab1ace6638a5e0bab2d1690",
+      "source_library_id": "libfile_b95e576c6c80819186611514084778cc"
     },
     {
       "id": "096",
@@ -3207,13 +3232,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-1d824acb-bd5c-4376-8398-a2909e64cd60.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Цветочное свадебное кресло.png",
       "alpha_bbox": [
         75,
         87,
@@ -3232,7 +3257,8 @@
         1461
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "702618a33e7864dc3d6eea1f2847cf638ff7d72a389df3497404ceafe413cac2"
+      "sha256": "c4e6c0a4ff4903379f2d82ee098dc6c93d53f8f2552268112b939b842731d16b",
+      "source_library_id": "libfile_20e25bc00b688191a8a511c385b12d2f"
     },
     {
       "id": "097",
@@ -3242,13 +3268,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-743ea4ee-a1ec-45b0-bda5-0b00ebcbe7d6.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Романтичный пион в стиле гуашь.png",
       "alpha_bbox": [
         39,
         113,
@@ -3267,7 +3293,8 @@
         1455
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "cc7d24bd335377a7b715da54acb46e79efd1f29112fb23c293fba580ef50a3e1"
+      "sha256": "4f62be5a5cb10339e89d5c1dfd5b0ba70622fb534dae3574198da63d43ff44bf",
+      "source_library_id": "libfile_ec09be735424819186df680667418ba8"
     },
     {
       "id": "098",
@@ -3277,13 +3304,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-def46681-3686-42d0-a73f-9ed9f7f05394.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Нежная оливковая ветвь для свадьбы.png",
       "alpha_bbox": [
         63,
         84,
@@ -3302,7 +3329,8 @@
         1458
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "85b0442936d3873bb5d2f04a429295e55631b75e3e9348b26dcfe84629114a61"
+      "sha256": "4bff0311224d7a1610ff0d6e69187ca04bec68fb66876bdac152c8772c958bb6",
+      "source_library_id": "libfile_d644c37763688191a6d0052f204ddfbe"
     },
     {
       "id": "099",
@@ -3312,13 +3340,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1024,
         1536
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-8591b362-8a4e-4faa-b142-c880b4f6ed92.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Нежный свадебный голубь в цветах.png",
       "alpha_bbox": [
         46,
         56,
@@ -3337,7 +3365,8 @@
         1474
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "6fa4122d8e5055964eeedbfb19523592a78fc19821383f8bfed6a0171d307a7e"
+      "sha256": "4dfa93b4fc991de8a289624533322f19d26d527a99194df708090828e117791d",
+      "source_library_id": "libfile_fcc0e7876dc481918e36675e94ad8718"
     },
     {
       "id": "100",
@@ -3347,13 +3376,13 @@
         3000,
         4500
       ],
-      "status": "processed_QA_pending",
+      "status": "final_file_QA_passed",
       "orientation": "portrait",
       "actual_px": [
         1197,
         1315
       ],
-      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-7f512ea3-5255-49d7-bcbc-3b6deccf6af9.png",
+      "source": "/workspace/scratch/64629abb14fb/recovered-clipart/Элегантный свадебный цветочный венок.png",
       "alpha_bbox": [
         11,
         163,
@@ -3372,7 +3401,8 @@
         1167
       ],
       "processing": "Cropped empty alpha margins; proportional Lanczos upscale into transparent canvas; no new native detail",
-      "sha256": "ca56ba1694a3dd7369469767a03966a0ba62b27012c37cbab9ca4a4cd59be359"
+      "sha256": "19a75888f317be13392bdef2e054edb7483633f53bdef3f252050c29f83f083b",
+      "source_library_id": "libfile_78cbec821b2c8191b39a948f07d168a4"
     }
   ],
   "competitors": [
@@ -3444,19 +3474,210 @@
   ],
   "blocker": null,
   "next_steps": [
-    "Verify 10 promos; upload 4 buyer ZIPs to Drive; enable anyone/reader; create linked delivery PDF; save and reopen Etsy draft; persist deliverables."
+    "Owner review: correct Etsy creation method from automatic Fully by me to accurate AI-assisted selection; review and publish personally if satisfied."
   ],
   "generated_count": 100,
   "qa_rework": [],
   "processing_checkpoint": {
-    "christmas": "25 upscaled3000x4500RGBA300DPI files created under Buyer_Files/Christmas; original1024x1536 retained; documented Lanczos upscale, no native4K claim.",
-    "processing_manifest": "output/seasonal-celebration-clipart/christmas_processing.json",
-    "qa": "Christmas25 alpha-composite overview viewed on alternating light/dark backgrounds; no visible haze in actual alpha composite.",
-    "library": "Generated originals displayed and auto-saved by imagegen. Processed buyer files and owner backup not yet persisted; do not claim saved final delivery."
+    "status": "Complete",
+    "note": "Native sources retained in private owner-resources ZIP. Processed buyer PNGs in four ZIPs; truthful enlargement disclosure in description, ad8 and license. No native4K claim.",
+    "ads": "10 created, shown individually and uploaded only to Etsy.",
+    "delivery": "BuyerPDF clickable canonical Drive folder URL; all4ZIP shared reader.",
+    "library": "All6deliverables saved successfully."
   },
   "drive_folder": {
     "id": "1Y8WWBnGHqzQ_F3yscMa_rD1V-I70-IPe",
     "url": "https://drive.google.com/drive/folders/1Y8WWBnGHqzQ_F3yscMa_rD1V-I70-IPe",
-    "sharing": "private_pending_anyone_reader"
-  }
+    "sharing": "anyone with link / reader; saved and reopened sharing dialog verified",
+    "files": [
+      {
+        "id": "1Jm8PhhyOQOnYkV0pJqiDSSo5XLPcUMDW",
+        "title": "RyhanGoods_Wedding_25_PNG.zip",
+        "mime_type": "application/zip",
+        "size": "221434448",
+        "url": "https://drive.google.com/file/d/1Jm8PhhyOQOnYkV0pJqiDSSo5XLPcUMDW/view?usp=drivesdk",
+        "display_url": "https://drive.google.com/file/d/1Jm8PhhyOQOnYkV0pJqiDSSo5XLPcUMDW/view?usp=drivesdk",
+        "file_or_folder": "file",
+        "created_time": "2026-10-28T07:55:33.155Z",
+        "modified_time": "2026-10-28T07:49:05.901Z",
+        "parent_ids": null,
+        "drive_id": null,
+        "current_user_can_share": null,
+        "has_augmented_permissions": null,
+        "shared": true,
+        "permissions": null,
+        "source_visibility_status": "access_not_verified"
+      },
+      {
+        "id": "1EI49j4THXCcvlRrgPEpOzduh87o_qoLe",
+        "title": "RyhanGoods_Birthday_25_PNG.zip",
+        "mime_type": "application/zip",
+        "size": "235157811",
+        "url": "https://drive.google.com/file/d/1EI49j4THXCcvlRrgPEpOzduh87o_qoLe/view?usp=drivesdk",
+        "display_url": "https://drive.google.com/file/d/1EI49j4THXCcvlRrgPEpOzduh87o_qoLe/view?usp=drivesdk",
+        "file_or_folder": "file",
+        "created_time": "2026-10-28T07:55:38.518Z",
+        "modified_time": "2026-10-28T07:49:05.405Z",
+        "parent_ids": null,
+        "drive_id": null,
+        "current_user_can_share": null,
+        "has_augmented_permissions": null,
+        "shared": true,
+        "permissions": null,
+        "source_visibility_status": "access_not_verified"
+      },
+      {
+        "id": "1aFy51qBsT0nT6PIZ3Ccci8Bf9_ukvlPP",
+        "title": "RyhanGoods_Halloween_25_PNG.zip",
+        "mime_type": "application/zip",
+        "size": "240768734",
+        "url": "https://drive.google.com/file/d/1aFy51qBsT0nT6PIZ3Ccci8Bf9_ukvlPP/view?usp=drivesdk",
+        "display_url": "https://drive.google.com/file/d/1aFy51qBsT0nT6PIZ3Ccci8Bf9_ukvlPP/view?usp=drivesdk",
+        "file_or_folder": "file",
+        "created_time": "2026-10-28T07:55:44.308Z",
+        "modified_time": "2026-10-28T07:49:04.781Z",
+        "parent_ids": null,
+        "drive_id": null,
+        "current_user_can_share": null,
+        "has_augmented_permissions": null,
+        "shared": true,
+        "permissions": null,
+        "source_visibility_status": "access_not_verified"
+      },
+      {
+        "id": "1det5ggMSgj6Z-xnQyhPRbBmxlqurVcqV",
+        "title": "RyhanGoods_Christmas_25_PNG.zip",
+        "mime_type": "application/zip",
+        "size": "273285401",
+        "url": "https://drive.google.com/file/d/1det5ggMSgj6Z-xnQyhPRbBmxlqurVcqV/view?usp=drivesdk",
+        "display_url": "https://drive.google.com/file/d/1det5ggMSgj6Z-xnQyhPRbBmxlqurVcqV/view?usp=drivesdk",
+        "file_or_folder": "file",
+        "created_time": "2026-10-28T07:55:50.765Z",
+        "modified_time": "2026-10-28T07:49:04.217Z",
+        "parent_ids": null,
+        "drive_id": null,
+        "current_user_can_share": null,
+        "has_augmented_permissions": null,
+        "shared": true,
+        "permissions": null,
+        "source_visibility_status": "access_not_verified"
+      }
+    ],
+    "ads_uploaded": false
+  },
+  "etsy": {
+    "listing_id": "4604722079",
+    "url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4604722079",
+    "status": "draft",
+    "reopened_verified": true,
+    "images": 10,
+    "tags": 13,
+    "price_eur": 9.9,
+    "quantity": 999,
+    "instant_download": true,
+    "pdf": "RyhanGoods_Seasonal_Clipart_Download.pdf",
+    "renewal": "manual",
+    "production_partners": [],
+    "owner_review": "Etsy auto-selected Fully by me. Agent did not choose this or AI; owner must correct creation-method selection before publication. AI-assisted tools disclosed truthfully in description.",
+    "published": false
+  },
+  "library": [
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/seasonal-celebration-clipart/Delivery/RyhanGoods_Christmas_25_PNG.zip",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_0000000064bc81f99d017c478d8ca631",
+      "library_file_id": "libfile_a2df70e3e36081918e4eeea3ed525011",
+      "file_name": "RyhanGoods_Christmas_25_PNG.zip",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Christmas_25_PNG.zip",
+      "current_version_number": 0
+    },
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/seasonal-celebration-clipart/Delivery/RyhanGoods_Halloween_25_PNG.zip",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_00000000bc10820d8118bed9aaf47c32",
+      "library_file_id": "libfile_9e03765ad8b4819194ab780d51547f7c",
+      "file_name": "RyhanGoods_Halloween_25_PNG.zip",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Halloween_25_PNG.zip",
+      "current_version_number": 0
+    },
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/seasonal-celebration-clipart/Delivery/RyhanGoods_Birthday_25_PNG.zip",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_00000000a2f4822f8a5a85b4d9466dbc",
+      "library_file_id": "libfile_bd3140c54db48191b52863ac36ec5b7f",
+      "file_name": "RyhanGoods_Birthday_25_PNG.zip",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Birthday_25_PNG.zip",
+      "current_version_number": 0
+    },
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/seasonal-celebration-clipart/Delivery/RyhanGoods_Wedding_25_PNG.zip",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_00000000d79c820c9bbee06b14091abb",
+      "library_file_id": "libfile_f1e87e93ddf88191bc5cfc2e98a0e616",
+      "file_name": "RyhanGoods_Wedding_25_PNG.zip",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Wedding_25_PNG.zip",
+      "current_version_number": 0
+    },
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/seasonal-celebration-clipart/RyhanGoods_Seasonal_Clipart_Owner_Resources.zip",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_00000000fdf081f6b1c65b29e0131aca",
+      "library_file_id": "libfile_c49c0dd881ac8191a94e5bcb9f2c00ae",
+      "file_name": "RyhanGoods_Seasonal_Clipart_Owner_Resources.zip",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Seasonal_Clipart_Owner_Resources.zip",
+      "current_version_number": 0
+    },
+    {
+      "local_path": "/workspace/scratch/64629abb14fb/output/seasonal-celebration-clipart/Delivery/RyhanGoods_Seasonal_Clipart_Download.pdf",
+      "purpose": "create_library_file",
+      "status": "succeeded",
+      "file_id": "file_00000000a09881f9859dd2c9733015d8",
+      "library_file_id": "libfile_eeea7270faa08191847a3ac2d3b8c571",
+      "file_name": "RyhanGoods_Seasonal_Clipart_Download.pdf",
+      "local_metadata_applied": true,
+      "path": "/RyhanGoods_Seasonal_Clipart_Download.pdf",
+      "current_version_number": 0
+    }
+  ],
+  "delivery": [
+    {
+      "path": "/workspace/scratch/64629abb14fb/output/seasonal-celebration-clipart/Delivery/RyhanGoods_Christmas_25_PNG.zip",
+      "bytes": 273285401,
+      "sha256": "c7d3303930f5d1efeb1f5b0f1cbcf60e67fff82f07421619c496ce078632d0e4"
+    },
+    {
+      "path": "/workspace/scratch/64629abb14fb/output/seasonal-celebration-clipart/Delivery/RyhanGoods_Halloween_25_PNG.zip",
+      "bytes": 240768734,
+      "sha256": "4e9866937b98c4bea97891cf671f3b708be1367f2fe653f5fa540347874c2bab"
+    },
+    {
+      "path": "/workspace/scratch/64629abb14fb/output/seasonal-celebration-clipart/Delivery/RyhanGoods_Birthday_25_PNG.zip",
+      "bytes": 235157811,
+      "sha256": "18e516b41ca78c4bb99c1d00106412657d429d49448f62f955243bdfb48b2976"
+    },
+    {
+      "path": "/workspace/scratch/64629abb14fb/output/seasonal-celebration-clipart/Delivery/RyhanGoods_Wedding_25_PNG.zip",
+      "bytes": 221434448,
+      "sha256": "8dbd8043815a7e8ab5263a32ac8395e611d363d0d2a5f2f767912a0b28e10710"
+    }
+  ],
+  "final_checks": [
+    "100 distinct RGBA PNGs fully decoded after atomic save; alpha present; 25 per theme; 300 DPI metadata; proportional Lanczos enlargement disclosed",
+    "100 illustrations inspected on light/dark backgrounds; five replaced for composition defects",
+    "Ten watermarked 4000x3000 JPEG ads created and individually displayed; Etsy only",
+    "Four ZIP archives CRC checked and each contains25PNG plus license; Drive remote sizes exactly match local sizes",
+    "Owner template PDF rendered, visually inspected and URI annotation verified; DejaVu added text embedded",
+    "Six backup artifacts saved; every Library result succeeded and metadata applied",
+    "Etsy reopened: draft status,10images,PDF,title,description,13tags,9.90EUR,999qty,manual renewal verified"
+  ]
 }
