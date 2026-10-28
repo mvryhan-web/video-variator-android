@@ -10,7 +10,8 @@ export const AI_MIGRATION_FILES=Object.freeze([
  '20261015-generation-reference-assets.sql',
  '20261016-ai-template-rights.sql',
  '20261017-provider-task-id-legacy.sql',
- '20261017-purchased-dispatch-claim.sql'
+ '20261017-purchased-dispatch-claim.sql',
+ '20261020-ai-user-consent.sql'
 ]);
 export const migrationChecksum=sql=>createHash('sha256').update(String(sql)).digest('hex');
 
