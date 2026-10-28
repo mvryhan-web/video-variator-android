@@ -37,14 +37,16 @@ export function stripeCheckoutTaxAmount(session){return checkoutTax(session);}
 export function stripeInvoiceTaxAmount(invoice){return invoiceTax(invoice);}
 
 export function verifyStripeNetRevenue({paymentIntent,expectedAmount,expectedCurrency,taxAmount,expectedLivemode}={}){
- if(!paymentIntent||!isId(paymentIntent.id,'pi_')||paymentIntent.status!=='succeeded'||paymentIntent.livemode!==!!expectedLivemode||
+ // Missing mode must never silently turn a receipt into test-mode evidence.
+ if(typeof expectedLivemode!=='boolean')throw Error('AI_SETTLEMENT_MODE_UNVERIFIED');
+ if(!paymentIntent||!isId(paymentIntent.id,'pi_')||paymentIntent.status!=='succeeded'||paymentIntent.livemode!==expectedLivemode||
     !safeAmount(expectedAmount)||expectedAmount<1||paymentIntent.amount_received!==expectedAmount||
     paymentIntent.currency!==expectedCurrency||!['eur','usd'].includes(expectedCurrency))
   throw Error('AI_SETTLEMENT_PAYMENT_UNVERIFIED');
  const charge=paymentIntent.latest_charge;
  if(!charge||typeof charge!=='object'||!isId(charge.id,'ch_')||charge.paid!==true||charge.captured!==true||
     (typeof charge.payment_intent==='string'?charge.payment_intent:charge.payment_intent?.id)!==paymentIntent.id||
-    charge.livemode!==!!expectedLivemode||charge.currency!==expectedCurrency||charge.amount_captured!==expectedAmount)
+    charge.livemode!==expectedLivemode||charge.currency!==expectedCurrency||charge.amount_captured!==expectedAmount)
   throw Error('AI_SETTLEMENT_CHARGE_UNVERIFIED');
  // A delayed paid event must not attest original proceeds after Stripe has
  // already reversed/disputed the Charge. Require explicit zero-reversal facts;
@@ -67,11 +69,13 @@ export function verifyStripeNetRevenue({paymentIntent,expectedAmount,expectedCur
   netRevenueMicros:netMinor*MINOR_TO_MICROS,
   stripeChargeId:charge.id,
   stripeBalanceTransactionId:transaction.id,
-  livemode:!!expectedLivemode
+  livemode:expectedLivemode
  });
 }
 
 export async function retrieveStripeNetRevenue({stripe,paymentIntentId,expectedAmount,expectedCurrency,taxAmount,expectedLivemode}={}){
+ // A missing mode is a caller contract failure; do not call Stripe to infer one.
+ if(typeof expectedLivemode!=='boolean')throw Error('AI_SETTLEMENT_MODE_UNVERIFIED');
  if(!stripe?.paymentIntents?.retrieve||!isId(paymentIntentId,'pi_'))throw Error('AI_SETTLEMENT_STRIPE_UNAVAILABLE');
  const paymentIntent=await stripe.paymentIntents.retrieve(paymentIntentId,{expand:['latest_charge.balance_transaction']});
  if(paymentIntent?.id!==paymentIntentId)throw Error('AI_SETTLEMENT_PAYMENT_UNVERIFIED');
