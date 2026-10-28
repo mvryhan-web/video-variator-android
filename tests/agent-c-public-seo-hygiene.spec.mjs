@@ -15,7 +15,7 @@ test('canonical Pricing, legacy redirects, robots privacy and noindex AI Apps at
   await page.setViewportSize({width,height:820});
   await page.goto('/pricing.html',{waitUntil:'domcontentloaded'});
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href',host+'/pricing.html');
-  await expect(page.locator('title')).toHaveText('Pricing | Deepsyq');
+  await expect(page).toHaveTitle('Pricing | Deepsyq');
   await page.goto('/ai-pricing.html?utm_source=seo-test#aiCreditSection',{waitUntil:'domcontentloaded'});
   await expect(page).toHaveURL(/\/pricing\.html\?utm_source=seo-test#credits$/);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href',host+'/pricing.html');
