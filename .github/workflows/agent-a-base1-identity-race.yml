@@ -7,6 +7,7 @@ on:
       - 'app/src/main/assets/deepsyq.js'
       - 'tests/agent-a-base1-identity-race.spec.mjs'
       - 'tests/agent-a-pricing-real-navigation-privacy.spec.mjs'
+      - 'tests/agent-a-pricing-mobile-keyboard-journey.spec.mjs'
       - '.github/workflows/agent-a-base1-identity-race.yml'
   workflow_dispatch:
 
@@ -38,13 +39,13 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - run: node --check app/src/main/assets/deepsyq.js && node --check tests/agent-a-base1-identity-race.spec.mjs && node --check tests/agent-a-pricing-real-navigation-privacy.spec.mjs
-      - name: A9 identity and A28 real navigation privacy in five browsers (no paid POST)
+      - run: node --check app/src/main/assets/deepsyq.js && node --check tests/agent-a-base1-identity-race.spec.mjs && node --check tests/agent-a-pricing-real-navigation-privacy.spec.mjs && node --check tests/agent-a-pricing-mobile-keyboard-journey.spec.mjs
+      - name: A9/A28/A29 privacy plus A30 keyboard and mobile journey in five browsers (no paid POST)
         # Firefox refuses root with GitHub's /github/home owned by pwuser.
         # Match the official Playwright container root user without skipping Firefox.
         env:
           HOME: /root
-        run: npx playwright test tests/agent-a-base1-identity-race.spec.mjs tests/agent-a-pricing-real-navigation-privacy.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2
+        run: npx playwright test tests/agent-a-base1-identity-race.spec.mjs tests/agent-a-pricing-real-navigation-privacy.spec.mjs tests/agent-a-pricing-mobile-keyboard-journey.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
