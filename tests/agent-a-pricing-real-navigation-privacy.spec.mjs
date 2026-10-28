@@ -176,7 +176,7 @@ test('A29 native second-tab storage switches live Pricing A→B and logout remov
   await page.bringToFront();
   await assertSignedOutWallet(page);
   await page.goBack(); // Actual Pricing -> Home history (not a simulated event).
-  await expect(page).toHaveURL(/\\/deepsyq\\.html(?:[?#]|$)/);
+  await expect.poll(()=>pathOf(page)).toBe('/deepsyq.html');
   await assertAAbsent(page);
   await page.goForward();
   await assertSignedOutWallet(page);
