@@ -25,8 +25,7 @@ jobs:
         run: |
           node --check scripts/deepsyq-coordinator-signal-audit.mjs
           node --test tests/deepsyq-coordinator-signal-audit.test.mjs
-      - name: Manual read-only GitHub snapshot
-        if: github.event_name == 'workflow_dispatch'
+      - name: Read-only GitHub snapshot for this PR
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/deepsyq-coordinator-signal-audit.mjs --live
