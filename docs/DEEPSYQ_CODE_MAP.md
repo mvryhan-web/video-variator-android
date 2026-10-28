@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `f1bf90d5b3c9df82847325913fd78ed5b47131b6`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` | Indexed files: 52 | Named symbols: 141 | Checked relations: 50
+Source commit: `1321dd52885177c457e9cc31d9715937cc64c5c6`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` | Indexed files: 53 | Named symbols: 142 | Checked relations: 50
 
 ## Topic finder (matching filenames)
 
@@ -49,6 +49,10 @@ scrypt (L5) · attempts (L6)
 
 IDS (L4) · VIDEO_MODELS (L18) · FORMAT_MODELS (L19) · SIZES (L20)
 
+### `server/generation-consent.js`
+
+GENERATION_CONSENT_VERSION (L6)
+
 ### `server/generation-errors.js`
 
 KNOWN (L3)
@@ -71,7 +75,7 @@ UNWIRED_VIDEO_CONTROLS (L8)
 
 ### `server/generation-purchased-provider-boundary.js`
 
-PurchasedDispatchDenied (L7)
+PurchasedDispatchDenied (L8)
 
 ### `server/generation-reference-cloud-acceptance.js`
 

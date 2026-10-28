@@ -136,7 +136,8 @@ test('recovery polls only an existing provider operation and never starts a repl
    throw new Error(sql);
   },
   async connect(){return {async query(sql,args=[]){
-   if(sql.startsWith('SELECT pg_try_advisory_lock'))return {rows:[{locked:true}]};
+   if(sql.startsWith('SELECT pg_try_advisory_lock'))return {rows:[{acquired:true}]};
+   if(sql.startsWith('SELECT terms_version,privacy_version,provider_data_version,provider_data_accepted'))return {rows:[{terms_version:'2026-10-20',privacy_version:'2026-10-20',provider_data_version:'2026-10-20',provider_data_accepted:true}]};
    if(sql.startsWith('SELECT status,operation,deleted'))return {rows:[row]};
    if(sql.startsWith('UPDATE vv_generation_jobs SET last_polled_at=NOW()'))return {rows:[{last_polled_at:new Date()}]};
    if(sql.startsWith('SELECT pg_advisory_unlock'))return {rows:[{pg_advisory_unlock:true}]};

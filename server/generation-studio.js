@@ -23,9 +23,15 @@ import {generationFeatureEnabled,generationFeatureSwitches} from './generation-f
 import {aiMigrationStatus} from './ai-migrations.js';
 import {completedGenerationSummary,trackedToolUsageSummary} from './generation-business-rates.js';
 import {submitPurchasedProviderRequest,PurchasedDispatchDenied} from './generation-purchased-provider-boundary.js';
+import {installGenerationConsent,hasStoredGenerationConsent} from './generation-consent.js';
+import {pollWithCurrentGenerationConsent} from './generation-consent-poll.js';
 import {generateOpenAIImage} from './generation-openai-image.js';
 import {objectStorageConfig} from './generation-storage.js';
-export async function dispatchGeneration(request,{env=process.env,fetcher=fetch,authorization=null}={}){
+export async function dispatchGeneration(request,{env=process.env,fetcher=fetch,authorization=null,signal=null}={}){
+ // A purchased consent fence owns signal. A late model/body preparation MUST
+ // not start provider transport after the fence times out or revoke is ACKed.
+ signal?.throwIfAborted();
+ const guardedFetch=(url,options)=>{signal?.throwIfAborted();return fetcher(url,options);};
  const model=MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter);
  if(!model)throw Error('MODEL_NOT_CONNECTED');
  if(model.provider==='OpenAI'){
@@ -34,12 +40,15 @@ export async function dispatchGeneration(request,{env=process.env,fetcher=fetch,
    formats:['png','jpeg'],sizes:{'1:1':{'1K':'1024x1024'},'3:2':{'1K':'1536x1024'},'2:3':{'1K':'1024x1536'}}};
   return generateOpenAIImage(request,{key:env.OPENAI_API_KEY,modelConfig,
    purchasedJobGate:{customerPaymentConfirmed:proof,purchasedCreditsReserved:proof,
-    serverPriceApproved:proof,userConsented:proof,durableStorageReady:proof&&objectStorageConfig(env).configured},fetcher});
+    serverPriceApproved:proof,userConsented:proof,durableStorageReady:proof&&objectStorageConfig(env).configured},fetcher:guardedFetch,signal});
  }
- return model.provider==='BytePlus'?generateBytePlus(request,{key:env.BYTEPLUS_API_KEY,fetcher}):generateGoogle(request,{key:env.GEMINI_API_KEY,fetcher});
+ signal?.throwIfAborted();
+ return model.provider==='BytePlus'?generateBytePlus(request,{key:env.BYTEPLUS_API_KEY,fetcher:guardedFetch,signal}):generateGoogle(request,{key:env.GEMINI_API_KEY,fetcher:guardedFetch,signal});
 }
-export async function dispatchPoll(operation,{env=process.env,fetcher=fetch}={}){
- return operation.startsWith('byteplus:')?pollBytePlus(operation,{key:env.BYTEPLUS_API_KEY,downloadHosts:env.BYTEPLUS_MEDIA_HOSTS,fetcher}):pollGoogle(operation,{key:env.GEMINI_API_KEY,fetcher});
+export async function dispatchPoll(operation,{env=process.env,fetcher=fetch,signal=null}={}){
+ signal?.throwIfAborted();
+ const guardedFetch=(url,options)=>{signal?.throwIfAborted();return fetcher(url,options);};
+ return operation.startsWith('byteplus:')?pollBytePlus(operation,{key:env.BYTEPLUS_API_KEY,downloadHosts:env.BYTEPLUS_MEDIA_HOSTS,fetcher:guardedFetch,signal}):pollGoogle(operation,{key:env.GEMINI_API_KEY,fetcher:guardedFetch,signal});
 }
 export function studioConfig(env=process.env){
  const calls=Number(env.AI_STUDIO_MAX_CALLS||0);
@@ -58,6 +67,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  const init=()=>ready??=readFile(new URL('./migrations/20261015-generation-jobs.sql',import.meta.url),'utf8').then(sql=>pool.query(sql));
  const isOwner=user=>!!(user&&user.provider==='google'&&String(user.email||'').toLowerCase()===String(env.ADMIN_EMAIL||'').trim().toLowerCase());
  const owner=(req,res,next)=>{if(!isOwner(req.user))return res.status(403).json({error:'OWNER_PILOT_ONLY'});next();};
+ installGenerationConsent(app,{auth,pool});
  // Reference intake is owner-only and independently disabled. It never submits an AI job.
  installGenerationReferenceUpload(app,{auth,owner,pool,storage:objectStorage,env});
  const walletEnabled=()=>env.AI_STUDIO_WALLET_ENABLED==='true'&&!!wallet&&pricingCatalog(env).configured;
@@ -297,7 +307,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   const {rows}=await pool.query('SELECT user_id,kind,model,provider,status,operation,deleted,request_fingerprint,credits_reserved,settings,estimated_cost,cost_currency FROM vv_generation_jobs WHERE id=$1 AND user_id=$2',[id,user.id]);
   const job=rows[0]?{...rows[0],id,userId:rows[0].user_id,requestFingerprint:rows[0].request_fingerprint,creditsReserved:Number(rows[0].credits_reserved)}:null;
   const quote=estimateGenerationPricing(request,selected,env);
-  const result=await submitPurchasedProviderRequest({env,wallet,user:{id:user.id,email:user.email,isOwner:isOwner(user)},job,request,model:selected,quote,originalQuote,fingerprint,provider});
+  const result=await submitPurchasedProviderRequest({env,wallet,pool,user:{id:user.id,email:user.email,isOwner:isOwner(user)},job,request,model:selected,quote,originalQuote,fingerprint,provider});
   await finish(id,result,user.id);
  }catch(e){
   // A verified pre-provider refusal cannot have incurred an AI provider cost.
@@ -348,6 +358,9 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   // Missing, malformed or stale quotes fail before insertion, reservation or provider dispatch.
   if(!Number.isSafeInteger(req.body?.expectedCredits)||req.body.expectedCredits<=0||req.body.expectedCredits!==quote?.credits)
    return res.status(409).json({error:'AI_ESTIMATE_CHANGED'});
+  if(req.body?.consent!==true)return res.status(400).json({error:'EXPLICIT_CONSENT_REQUIRED'});
+  try{if(!(await hasStoredGenerationConsent(pool,req.user.id)))return res.status(403).json({error:'PROVIDER_CONSENT_REQUIRED'});}
+  catch(_){return res.status(503).json({error:'CONSENT_STORAGE_UNAVAILABLE'});}
   const fingerprint=requestFingerprint(request);let c,id=randomUUID(),reused=null;try{
    await init();c=await pool.connect();await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(hashtext($1))',['ai-create:'+req.user.id]);
    reused=await findGenerationRequest(c,{userId:req.user.id,requestId:clientRequestId,fingerprint});
@@ -432,7 +445,24 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  app.get('/api/studio/jobs/:id',auth,generationUser,async(req,res)=>{res.set('Cache-Control','private, no-store');try{
   let j=await getJob(req);if(!j)return res.status(404).json({error:'NOT_FOUND'});
   if(j.status==='finalizing'&&walletEnabled()){try{await wallet.settle({userId:req.user.id,jobId:j.id,outcome:'success'});await pool.query("UPDATE vv_generation_jobs SET status='ready',credits_charged=credits_reserved,error_message=null,completed_at=NOW() WHERE id=$1 AND status='finalizing'",[j.id]);j=await getJob(req);}catch(_){/* Keep durable finalizing state; background/user polling may retry capture. */}}
-  if(j.status==='processing'&&j.operation){try{const claimed=await claimProviderPoll(pool,j.id,{minSeconds:5});if(claimed){const result=await poller(j.operation,{env});if(!result.pending){await finish(j.id,result,req.user.id);j=await getJob(req);}}}catch(e){if(e.terminal){await failTerminalProviderJob(j.id,req.user.id,e,'provider_poll');j=await getJob(req);}else return res.status(502).json(publicGenerationError(e,{stage:'provider_poll'}));}}
+  if(j.status==='processing'&&j.operation){try{
+   // The same cross-process consent fence also protects STATUS and RESULT HTTP.
+   // One leased PG client serves the atomic claim; finish() happens AFTER unlock.
+   const operation=j.operation;
+   const result=await pollWithCurrentGenerationConsent({pool,userId:req.user.id,poll:async({client,signal})=>{
+    const claimed=await claimProviderPoll(client,j.id,{minSeconds:5});
+    if(!claimed)return {pending:true};
+    const current=await client.query('SELECT status,operation,deleted FROM vv_generation_jobs WHERE id=$1 AND user_id=$2',[j.id,req.user.id]);
+    if(current.rows[0]?.status!=='processing'||current.rows[0]?.deleted||current.rows[0]?.operation!==operation)return {pending:true};
+    return poller(operation,{env,signal});
+   }});
+   if(!result.pending){await finish(j.id,result,req.user.id);j=await getJob(req);}
+  }catch(e){
+   if(e.message==='PROVIDER_CONSENT_REQUIRED')return res.json({id:j.id,kind:j.kind,status:'unknown',error:'PROVIDER_CONSENT_REQUIRED',creditsReserved:Number(j.credits_reserved||0),retryAfterSeconds:0});
+   if(e.message==='PROVIDER_POLL_TIMEOUT_UNCERTAIN')return res.json({id:j.id,kind:j.kind,status:'unknown',error:'STATUS_UNKNOWN_NO_AUTOMATIC_RETRY',creditsReserved:Number(j.credits_reserved||0),retryAfterSeconds:0});
+   if(e.terminal){await failTerminalProviderJob(j.id,req.user.id,e,'provider_poll');j=await getJob(req);}
+   else return res.status(502).json(publicGenerationError(e,{stage:'provider_poll'}));
+  }}
   // A queued Video without an operation may have reached the provider even if
    // the acknowledgement was lost. Do not offer a fresh paid dispatch.
    if(j.kind==='video'&&!j.operation&&videoHistoryPublicStatus(j).error===VIDEO_SUBMISSION_UNCERTAIN)return res.json({id:j.id,kind:'video',status:'unknown',error:VIDEO_SUBMISSION_UNCERTAIN,retryAfterSeconds:0});
@@ -454,15 +484,21 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
    }
    const {rows}=await pool.query("SELECT id,user_id,operation FROM vv_generation_jobs WHERE status='processing' AND operation IS NOT NULL AND deleted=false ORDER BY created_at ASC LIMIT 5");
    for(const job of rows){
-    const client=await pool.connect();let locked=false;
     try{
-     const lock=await client.query('SELECT pg_try_advisory_lock(hashtext($1)) AS locked',[job.id]);locked=!!lock.rows[0]?.locked;if(!locked)continue;
-     const latest=await client.query("SELECT status,operation,deleted FROM vv_generation_jobs WHERE id=$1",[job.id]);const current=latest.rows[0];
-     if(!current||current.deleted||current.status!=='processing'||!current.operation)continue;
-     if(!await claimProviderPoll(client,job.id,{minSeconds:5}))continue;
-     try{const result=await poller(current.operation,{env});if(!result.pending)await finish(job.id,result,job.user_id);}
-     catch(e){if(e.terminal)await failTerminalProviderJob(job.id,job.user_id,e,'recovery_poll');}
-    }finally{if(locked)await client.query('SELECT pg_advisory_unlock(hashtext($1))',[job.id]).catch(()=>{});client.release();}
+     const result=await pollWithCurrentGenerationConsent({pool,userId:job.user_id,poll:async({client,signal})=>{
+      const latest=await client.query("SELECT status,operation,deleted FROM vv_generation_jobs WHERE id=$1 AND user_id=$2",[job.id,job.user_id]);
+      const current=latest.rows[0];
+      if(!current||current.deleted||current.status!=='processing'||!current.operation)return {pending:true};
+      if(!await claimProviderPoll(client,job.id,{minSeconds:5}))return {pending:true};
+      // Never nest a second pool.connect under a PG lease (pool.max=1).
+      return poller(current.operation,{env,signal});
+     }});
+     if(!result.pending)await finish(job.id,result,job.user_id);
+    }catch(e){
+     // No new provider traffic or refund while consent is withdrawn.
+     if(e.message==='PROVIDER_CONSENT_REQUIRED'||e.message==='PROVIDER_POLL_TIMEOUT_UNCERTAIN')continue;
+     if(e.terminal)await failTerminalProviderJob(job.id,job.user_id,e,'recovery_poll');
+    }
    }
   }catch(e){console.error('[studio recovery]',e?.message||e);}
   finally{recoveryBusy=false;}
