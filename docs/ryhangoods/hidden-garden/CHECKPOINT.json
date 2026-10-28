@@ -2,21 +2,36 @@
   "product": 4,
   "name": "The Hidden Garden",
   "shop": "Pinogri",
-  "status": "30_ARTWORKS_COMPLETE_ADS_FINAL_QA",
+  "status": "ETSY_DRAFT_SAVED_DRIVE_LOGIN_REQUIRED",
+  "etsy_draft": "https://www.etsy.com/your/shops/me/listing-editor/edit/4604965278#media",
   "generated_unique": 30,
   "buyer_png_exports": 60,
   "buyer_pdf_count": 2,
   "pdf_pages_each": 30,
   "ad_count": 10,
+  "price_eur": 4.9,
+  "tags": 13,
+  "quantity": 999,
   "publish": "DRAFT_ONLY",
-  "local_project": "output/hidden-garden",
-  "source_manifest": "output/hidden-garden/sources.json",
-  "qa": "All 30 individually shown; sunflower and hummingbird reworked to fix cropping; source and print export pixel sizes recorded; enlarged exports not native4K",
+  "verification": "Reopened: Draft, no unsaved changes, 10 images, delivery PDF, all13tags, manual renewal, no partner, both AI radios unset for owner review. Description discloses AI assistance.",
+  "drive_folder": "1mlvpatH_gGtL4c21MxM7gcHM-CBPrpST",
+  "drive_status": "EMPTY_PRIVATE_REQUIRES_GOOGLE_LOGIN_mvryhan@gmail.com",
+  "zip_bytes": 205006047,
+  "zip_sha256": "edd4df3de7878f23569a21d7e86811a0e168f59acf419af150f21fc71ccebb08",
+  "zip_entries": 63,
+  "library": {
+    "buyer_zip": "libfile_b7ee8c941324819186388183c599ea2b",
+    "a4": "libfile_b9969ce46a348191b50601b9001b41a7",
+    "letter": "libfile_7113514af9248191b1fb9d66e6290967",
+    "delivery_pdf": "libfile_94093876b1b88191a77022e323197f61",
+    "owner_backup": "libfile_e48aa3ab12e88191bc85eb84b3479922"
+  },
+  "recovery": "All30art and3imagegenads restored from Library. Rebuilt buyer files and7exactads; 10ads shown individually again. All60PDFpages rendered and inspected. Original native size ~1103x1426, PNG print exports enlarged; no native4K or physical print test claim.",
   "remaining": [
-    "Finish ad QA and show corrections",
-    "ZIP then Drive anyone-reader",
-    "Delivery PDF on owner's template copy branded Pinogri",
-    "Save and reopen Etsy draft",
-    "Persistent backups"
-  ]
+    "Google Drive secure login",
+    "Upload buyerZIP to existing folder",
+    "Anyone with link / reader",
+    "Verify download; do not publish"
+  ],
+  "local_project": "output/hidden-garden"
 }
