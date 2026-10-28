@@ -22,20 +22,32 @@ const SIZES={
  '3K':{'1:1':'3072x3072','2:3':'2496x3744','3:2':'3744x2496','9:16':'2304x4096','16:9':'4096x2304'},
  '4K':{'1:1':'4096x4096','2:3':'3328x4992','3:2':'4992x3328','9:16':'3040x5504','16:9':'5504x3040'}
 };
-async function readLimited(r,limit){
+async function readLimited(r,limit,signal=null){
+ signal?.throwIfAborted();
  if(Number(r.headers.get('content-length'))>limit)throw Error('RESULT_TOO_LARGE');
  const reader=r.body?.getReader();if(!reader)throw Error('EMPTY_GENERATION');
  const chunks=[];let size=0;
- try{for(;;){const {value,done}=await reader.read();if(done)break;size+=value.length;if(size>limit)throw Error('RESULT_TOO_LARGE');chunks.push(Buffer.from(value));}}finally{await reader.cancel();}
+ try{for(;;){const {value,done}=await reader.read();signal?.throwIfAborted();if(done)break;size+=value.length;if(size>limit)throw Error('RESULT_TOO_LARGE');chunks.push(Buffer.from(value));}}finally{await reader.cancel().catch(()=>{});}
+ signal?.throwIfAborted();
  if(!size)throw Error('EMPTY_GENERATION');return Buffer.concat(chunks);
 }
-async function json(path,{key,body,fetcher}){
+async function json(path,{key,body,fetcher,signal=null}){
+ signal?.throwIfAborted();
  if(!key)throw Error('PROVIDER_KEY_REQUIRED');
- const r=await fetcher(ROOT+path,{method:body?'POST':'GET',redirect:'error',signal:AbortSignal.timeout(120000),headers:{Authorization:`Bearer ${key}`,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
+ const jsonBody=body?JSON.stringify(body):undefined;
+ signal?.throwIfAborted();
+ const r=await fetcher(ROOT+path,{method:body?'POST':'GET',redirect:'error',
+ signal:signal?AbortSignal.any([signal,AbortSignal.timeout(120000)]):AbortSignal.timeout(120000),
+ headers:{Authorization:`Bearer ${key}`,...(body?{'Content-Type':'application/json'}:{})},
+ ...(body?{body:jsonBody}:{})});
+ signal?.throwIfAborted();
  if(!r.ok)throw Error(r.status===429?'PROVIDER_BUSY':'PROVIDER_ERROR');
- return JSON.parse((await readLimited(r,42*1024*1024)).toString('utf8'));
+ const bytes=await readLimited(r,42*1024*1024,signal);
+ signal?.throwIfAborted();
+ return JSON.parse(bytes.toString('utf8'));
 }
-export async function generateBytePlus(request,{key,fetcher=fetch}){
+export async function generateBytePlus(request,{key,fetcher=fetch,signal=null}){
+ signal?.throwIfAborted();
  const model=IDS[request.model];
  if(!model||!['image','video'].includes(request.kind)||(request.kind==='video')!==VIDEO_MODELS.has(request.model))throw Error('MODEL_NOT_CONNECTED');
  const images=(request.references||[]).map(r=>`data:${r.mimeType};base64,${r.data}`);
@@ -55,7 +67,7 @@ export async function generateBytePlus(request,{key,fetcher=fetch}){
 
   if(!['720p','1080p'].includes(request.videoResolution||'720p')||![4,5,8,10,15].includes(request.videoDuration??5))throw Error('UNSUPPORTED_VIDEO_SETTINGS');
   const audioCapable=request.model==='byteplus-seedance-2'||request.model==='byteplus-seedance-2.5'||request.model==='byteplus-seedance-2-fast'||request.model==='byteplus-seedance-2-mini'||request.model==='byteplus-seedance-1.5-pro';
-  const d=await json('contents/generations/tasks',{key,fetcher,body:{model,content:[{type:'text',text:request.prompt},...images.map((url,index)=>({type:'image_url',image_url:{url},role:roles[index]}))],ratio:request.ratio,resolution:request.videoResolution||'720p',duration:request.videoDuration??5,...(audioCapable?{generate_audio:true}:{}),watermark:true}});
+  const d=await json('contents/generations/tasks',{key,fetcher,signal,body:{model,content:[{type:'text',text:request.prompt},...images.map((url,index)=>({type:'image_url',image_url:{url},role:roles[index]}))],ratio:request.ratio,resolution:request.videoResolution||'720p',duration:request.videoDuration??5,...(audioCapable?{generate_audio:true}:{}),watermark:true}});
   if(typeof d.id!=='string'||!/^[-A-Za-z0-9_]{1,160}$/.test(d.id))throw Error('EMPTY_OPERATION');
   return {operation:`byteplus:${d.id}`};
  }
@@ -65,7 +77,7 @@ export async function generateBytePlus(request,{key,fetcher=fetch}){
  if(!['2K','3K','4K'].includes(resolution))throw Error('UNSUPPORTED_RESOLUTION');
  if(FORMAT_MODELS.has(request.model)&&!['png','jpeg'].includes(request.outputFormat||'png'))throw Error('UNSUPPORTED_IMAGE_FORMAT');
  if(request.model==='byteplus-seedream-4-5'&&request.outputFormat&&request.outputFormat!=='auto')throw Error('UNSUPPORTED_IMAGE_FORMAT');
- const d=await json('images/generations',{key,fetcher,body:{model,prompt:request.prompt,size:SIZES[resolution][request.ratio],response_format:'b64_json',stream:false,sequential_image_generation:'disabled',watermark:true,...(FORMAT_MODELS.has(request.model)?{output_format:request.outputFormat||'png'}:{}),...(images.length?{image:images}:{})}});
+ const d=await json('images/generations',{key,fetcher,signal,body:{model,prompt:request.prompt,size:SIZES[resolution][request.ratio],response_format:'b64_json',stream:false,sequential_image_generation:'disabled',watermark:true,...(FORMAT_MODELS.has(request.model)?{output_format:request.outputFormat||'png'}:{}),...(images.length?{image:images}:{})}});
  const data=d.data?.[0]?.b64_json;
  if(typeof data!=='string'||data.length>Math.ceil(MAX/3)*4||data.length%4!==0||!/^[A-Za-z0-9+/]*={0,2}$/.test(data))throw Error('INVALID_PROVIDER_MEDIA');
  const bytes=Buffer.from(data,'base64');
@@ -80,15 +92,19 @@ export function safeBytePlusMediaUrl(value,downloadHosts=''){
  if(u.protocol!=='https:'||u.username||u.password||u.port||!hosts.includes(u.hostname)||!/(^|\.)(bytepluses\.com|volces\.com)$/.test(u.hostname))throw Error('UNSAFE_PROVIDER_URL');
  return u.toString();
 }
-export async function pollBytePlus(operation,{key,downloadHosts='',fetcher=fetch}){
+export async function pollBytePlus(operation,{key,downloadHosts='',fetcher=fetch,signal=null}){
+ signal?.throwIfAborted();
  if(!/^byteplus:[-A-Za-z0-9_]{1,160}$/.test(operation))throw Error('INVALID_OPERATION');
- const d=await json('contents/generations/tasks/'+operation.slice(9),{key,fetcher});
+ const d=await json('contents/generations/tasks/'+operation.slice(9),{key,fetcher,signal});
+ signal?.throwIfAborted();
  if(['queued','running'].includes(d.status))return {pending:true};
  if(['failed','expired','cancelled'].includes(d.status)){const e=Error('PROVIDER_TASK_FAILED');e.terminal=true;throw e;}
  if(d.status!=='succeeded'||!d.content?.video_url)throw Error('INVALID_PROVIDER_STATUS');
- const r=await fetcher(safeBytePlusMediaUrl(d.content.video_url,downloadHosts),{redirect:'error',signal:AbortSignal.timeout(120000)});
+ signal?.throwIfAborted();
+ const r=await fetcher(safeBytePlusMediaUrl(d.content.video_url,downloadHosts),{redirect:'error',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(120000)]):AbortSignal.timeout(120000)});
+ signal?.throwIfAborted();
  if(!r.ok)throw Error('VIDEO_DOWNLOAD_FAILED');
- const bytes=await readLimited(r,MAX);
+ const bytes=await readLimited(r,MAX,signal);
  const firstBoxSize=bytes.length>=8?bytes.readUInt32BE(0):0;
  // Check the container, not just a coincidental ftyp substring in junk.
  // Basic MP4 file-type validation is not a full codec/malware scan.

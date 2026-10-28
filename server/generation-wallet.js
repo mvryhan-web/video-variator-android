@@ -39,15 +39,18 @@ export class GenerationWallet {
     `).catch(e => { this.initializing = null; throw e; });
     await this.initializing;
   }
-  async transaction(userId, fn) {
-    identifier(userId); await this.init(); const c = await this.pool.connect();
+  async transaction(userId, fn, externalClient=null) {
+    identifier(userId);
+    // Consent holds one client; purchase proof must reuse it, never borrow a second.
+    if(!externalClient)await this.init();
+    const c=externalClient||await this.pool.connect();
     try {
       await c.query('BEGIN');
       await c.query('INSERT INTO vv_ai_wallet(user_id) VALUES($1) ON CONFLICT DO NOTHING', [userId]);
       const {rows} = await c.query('SELECT * FROM vv_ai_wallet WHERE user_id=$1 FOR UPDATE', [userId]);
       const w = {available:Number(rows[0].available), reserved:Number(rows[0].reserved), debt:Number(rows[0].debt)};
       const value = await fn(c, w); await c.query('COMMIT'); return value;
-    } catch (e) { await c.query('ROLLBACK').catch(() => {}); throw e; } finally { c.release(); }
+    } catch (e) { await c.query('ROLLBACK').catch(() => {}); throw e; } finally { if(!externalClient)c.release(); }
   }
   async change(c, userId, w, reference, kind, a, r, d = 0) {
     const next = {available:w.available+a, reserved:w.reserved+r, debt:w.debt+d};
@@ -175,24 +178,24 @@ export class GenerationWallet {
   // Only the privileged provider-dispatch path may request a single-use proof.
   // It MUST be used together with the B-owned consent/model/quote authorization.
   // No call to this method starts or pays a provider. Existing reserve() is NOT proof.
-  async claimPurchasedDispatch({userId,jobId,kind,credits,fingerprint,modelId,provider},{env=process.env}={}) {
+  async claimPurchasedDispatch({userId,jobId,kind,credits,fingerprint,modelId,provider},{env=process.env,client=null}={}) {
     try {
       return await this.transaction(userId,async(c,w)=>claimPurchasedGeneration(c,{
         env,userId,jobId,kind,credits,fingerprint,modelId,provider,wallet:w
-      }));
+      }),client);
     } catch (_) { throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED'); }
   }
   // Agent B's trusted server-only P0 gate supplies requestFingerprint, while
   // the existing D wallet proof expects fingerprint. Keep one explicit,
   // privileged projection: never infer authorization from the user's JSON.
   // The B gate must validate user, consent, model and server quote first.
-  purchasedDispatchVerifier({env=process.env}={}) {
+  purchasedDispatchVerifier({env=process.env,client=null}={}) {
     return async ({userId,jobId,kind,modelId,provider,requestFingerprint,credits}={}) => {
       if (typeof requestFingerprint!=='string' || !requestFingerprint)
         throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED');
       return this.claimPurchasedDispatch({
         userId,jobId,kind,modelId,provider,credits,fingerprint:requestFingerprint
-      },{env});
+      },{env,client});
     };
   }
   async balance(userId) {
