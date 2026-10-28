@@ -17,14 +17,16 @@ const links=xml=>[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
 const canonicalTags=html=>[...html.matchAll(/<link\b[^>]*\brel=["']canonical["'][^>]*>/gi)].map(m=>m[0]);
 
 test('only canonical public routes are in sitemap: no redirect, no noindex or private URLs',async()=>{
- const [sitemap,pricing,apps,legacy,robots]=await Promise.all([
-  file('sitemap.xml'),file('pricing.html'),file('ai-apps.html'),file('ai-pricing.html'),file('robots.txt')
+ const [sitemap,pricing,apps,legacy,robots,protectedHome]=await Promise.all([
+  file('sitemap.xml'),file('pricing.html'),file('ai-apps.html'),file('ai-pricing.html'),file('robots.txt'),file('deepsyq.html')
  ]);
  const urls=links(sitemap);
  assert.deepEqual(urls,[
-  origin+'/',origin+'/deepsyq-vs-deepseek.html',
+  origin+'/deepsyq-vs-deepseek.html',
   origin+'/free-tools.html',origin+'/pricing.html'
  ]);
+ assert.match(protectedHome,/<meta name="robots" content="noindex,follow">/,'protected Home must remain noindex');
+ assert.ok(!urls.includes(origin+'/'),'the noindex owner Home must not appear as an indexable sitemap root');
  assert.equal(new Set(urls).size,urls.length);
  for(const url of urls)assert.equal(new URL(url).origin,origin);
  assert.doesNotMatch(sitemap,/ai-apps\.html|ai-pricing\.html|product-video|deepsyq-admin|\/api\//i);
