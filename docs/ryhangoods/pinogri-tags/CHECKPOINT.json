@@ -69,5 +69,12 @@
     "authenticated": true,
     "anonymous_download_tested": false
   },
-  "next": "legacy4 Monthly Budget Planner old4603634235; read full current rules and queue first"
+  "next": "legacy4 Monthly Budget Planner old4603634235; read full current rules and queue first",
+  "owner_backup": {
+    "bytes": 39620529,
+    "local_path": "output/pinogri-tags/Pinogri_Christmas_Gift_Tags_Owner_Resources.zip",
+    "crc": "PASS",
+    "library_saved": false,
+    "error": "library_storage_limit_exceeded; no deletion performed; Etsy and buyer Drive delivery complete"
+  }
 }
