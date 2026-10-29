@@ -1,0 +1,42 @@
+{
+  "status": "FILES_READY_BROWSER_BLOCKED",
+  "new_etsy_id": null,
+  "old_etsy_id": "4603994001",
+  "ads": 10,
+  "buyer_entries": 3,
+  "pages": {
+    "Wedding_Newspaper_Sample_A4.pdf": 4
+  },
+  "bytes": 36980,
+  "sha256": "11fd1f2dca812b975b5b49603bf73e4e73e14e1d9d71ff8d50c28fc959e41061",
+  "CRC": "PASS",
+  "nonbrand_buyer_text_comparison": "PASS every page",
+  "original_jpg_and_pptx_bytes_preserved": true,
+  "folder": "1D01X41Ahy01dGIhhhYLtVllJRJMILCgo",
+  "zip": "11MGRqc0-HL90vtGC0YEBpd86dGFQvLNe",
+  "public_permissions": "owner-only; delivery blocked until browser access and sharing enabled",
+  "delivery_link": "https://drive.google.com/drive/folders/1D01X41Ahy01dGIhhhYLtVllJRJMILCgo",
+  "etsy_provenance": "not interacted; owner selects; leave unset if UI permits",
+  "date": "2026-10-29",
+  "owner_authorization": "Prepare all three products in order bakery,newspaper,midnight;30 ads;DRAFT_ONLY. Savings deferred.",
+  "browser_blocker": "cua_repl js_reset timed out300s; browser control unavailable; plugin search Etsy returned none. New Pinogri drafts NOT created.",
+  "advertising_display": "All10 final designs shown separately in chat; some generated mockups shown before technical panels; final file order01..10.",
+  "thumbnail_review": "Review final main-image crop in Etsy before saving; browser UI crop unavailable.",
+  "backup": "Combined Pinogri_Three_Listing_Assets.zip 50031708bytes locally CRC PASS. Library save failed library_storage_limit_exceeded. No Library ID.",
+  "drive_upload_verified": true,
+  "delivery_opened_and_visual_checked": true,
+  "roundtrip": {
+    "sha256": "11fd1f2dca812b975b5b49603bf73e4e73e14e1d9d71ff8d50c28fc959e41061",
+    "bytes": 36980,
+    "CRC": "PASS",
+    "byte_identical": true,
+    "authenticated_download": true,
+    "anonymous_download_tested": false
+  },
+  "next_action": "Restore browser UI, read rules, check Pinogri for duplicates, upload10Ads+DeliveryPDF+listing fields, leave provenance unset if supported, save DRAFT_ONLY, reopen and verify. Do not use old RyhanGoods listing IDs as new Pinogri IDs.",
+  "research_sources": [
+    "https://www.etsy.com/listing/1612672865/custom-wedding-newspaper-template",
+    "https://www.etsy.com/listing/1817796591/wedding-gazette-4-pages-french-wedding"
+  ],
+  "research_notes": "Reviews support category use, not product sales prediction. Clarify edit format, actual print size, adult assistance and download access; no claim of superiority or guaranteed sales."
+}
