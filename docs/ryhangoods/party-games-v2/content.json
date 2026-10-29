@@ -1,0 +1,50 @@
+[
+  {
+    "points": 1,
+    "label": "EVERYDAY ESSENTIALS",
+    "items": [
+      "A selfie from this month",
+      "A photo of a pet",
+      "A weather app installed",
+      "An enabled alarm set for tomorrow",
+      "A note containing a shopping list",
+      "A photo of coffee or tea",
+      "A contact saved with an emoji",
+      "A screenshot of a recipe",
+      "A reminder due this week",
+      "A music playlist you created"
+    ]
+  },
+  {
+    "points": 5,
+    "label": "LITTLE SURPRISES",
+    "items": [
+      "Battery at 20% or below",
+      "10 or more open browser tabs",
+      "A screenshot of a delivery update",
+      "A photo of 2 people in matching outfits",
+      "A saved place you have not visited",
+      "A voice memo under 10 seconds",
+      "A calendar event for a wedding",
+      "A downloaded podcast episode",
+      "A photo of a handmade gift",
+      "A screenshot of an abandoned cart"
+    ]
+  },
+  {
+    "points": 10,
+    "label": "PLOT TWISTS",
+    "items": [
+      "A photo of yourself in costume",
+      "An alarm with 'coffee' in its name",
+      "A note title with letters all in CAPITALS",
+      "A panorama you photographed",
+      "A photo dated before 1 Jan 2020",
+      "A screenshot showing 11:11",
+      "A playlist longer than 24 hours",
+      "A photo of heart-shaped food",
+      "An offline map of another country",
+      "A screenshot of a spelling mistake"
+    ]
+  }
+]
