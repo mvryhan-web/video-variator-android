@@ -1,12 +1,12 @@
 {
   "catalog_number": 5,
-  "product": "Digital Invitations — 5 Wedding Styles",
+  "version": 2,
   "shop": "Pinogri",
   "status": "DRAFT_SAVED_REOPENED_VERIFIED",
-  "rules_blob": "b7c332ad6e9893022b8960cf17e07b24805d110d",
-  "catalog_blob": "8d5be9a0b79ad4fcab4f84f5c7bc78795eaf392d",
-  "distinct_layouts": 15,
-  "mobile_adaptations": 15,
+  "updated": "2026-10-29",
+  "etsy_draft_id": "4605623141",
+  "etsy_url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4605623141#media",
+  "title": "Wedding Invitation Templates: 5 Styles, 15 Editable PPTX Designs, Details & RSVP, Print and Mobile",
   "styles": [
     "Minimal",
     "Woodland",
@@ -14,229 +14,279 @@
     "Vintage",
     "Urban"
   ],
+  "distinct_layouts": 15,
+  "mobile_adaptations": 15,
   "formats": [
     "10 editable PPTX",
-    "10 sample PDFs / 30 pages",
-    "15 mobile sample JPG 1080x1920",
-    "README/license"
+    "10 sample PDFs /30 pages",
+    "30 sample JPG:15 print1500x2100 at300ppi +15 mobile1080x1920",
+    "11 original URW font files/license +editing guide"
   ],
-  "created": "2026-10-29",
-  "etsy_draft_id": "4605623141",
-  "next": [
-    "Owner reviews provenance field before publishing",
-    "Optional: restore Google browser login and open exact product folder before attaching delivery PDF"
-  ],
-  "research": [
+  "buyer_archives": [
     {
-      "url": "https://www.etsy.com/listing/1852729448/minimalist-wedding-invitation-bundle",
-      "item_reviews": 7,
-      "observed_review_dates": [
-        "2026-06-25",
-        "2026-06-16"
-      ],
-      "takeaway": "Clear editing and attractive layout"
+      "name": "Pinogri_Wedding_V2_01_Minimal.zip",
+      "bytes": 1582552,
+      "entries": 23,
+      "sha256": "07d018a99b4c3ce4dd8fee3c2ea654f66564013aa50b4e34d49bb28863d0d218",
+      "crc": "PASS"
     },
     {
-      "url": "https://www.etsy.com/listing/1738901665/woodland-wedding-invitation-suite?lang_mismatch=1",
-      "item_reviews": 79,
-      "takeaway": "Editable coordinated stationery and appearance valued; not evidence of future sales"
+      "name": "Pinogri_Wedding_V2_02_Woodland.zip",
+      "bytes": 15011123,
+      "entries": 23,
+      "sha256": "aa0da4e8cad8a174171bc5a612c5e0426be29f92da00242b8722c10f0e88adab",
+      "crc": "PASS"
+    },
+    {
+      "name": "Pinogri_Wedding_V2_03_Glamour.zip",
+      "bytes": 4864363,
+      "entries": 23,
+      "sha256": "5ff55744b934e33f511dd791a452455cef887b3f8772b592d54b491edd503fb8",
+      "crc": "PASS"
+    },
+    {
+      "name": "Pinogri_Wedding_V2_04_Vintage.zip",
+      "bytes": 11527687,
+      "entries": 23,
+      "sha256": "e35c60747a8bea56f2ef155bd34f565d449ce14f2933188d4ce9f34bf0600a4a",
+      "crc": "PASS"
+    },
+    {
+      "name": "Pinogri_Wedding_V2_05_Urban.zip",
+      "bytes": 1929892,
+      "entries": 23,
+      "sha256": "334759bb21eaba081744d9c5de6e1f19df547e02a889f3f945deb60b5561962b",
+      "crc": "PASS"
     }
   ],
-  "prior_transfer_queue": "Three prepared legacy products still pending Etsy upload; this is a separately authorized catalog 5 product.",
-  "etsy_url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4605623141#media",
-  "price_eur": 9.9,
-  "quantity": 999,
-  "category": "Invitation Templates",
-  "category_id": 1294,
-  "buyer_archive": {
-    "files": [
-      "Glamour_Mobile.pptx",
-      "Glamour_Mobile_Sample.pdf",
-      "Glamour_Print.pptx",
-      "Glamour_Print_Sample.pdf",
-      "Minimal_Mobile.pptx",
-      "Minimal_Mobile_Sample.pdf",
-      "Minimal_Print.pptx",
-      "Minimal_Print_Sample.pdf",
-      "Mobile_Sample_JPGs/Glamour_Mobile_Sample_01.jpg",
-      "Mobile_Sample_JPGs/Glamour_Mobile_Sample_02.jpg",
-      "Mobile_Sample_JPGs/Glamour_Mobile_Sample_03.jpg",
-      "Mobile_Sample_JPGs/Minimal_Mobile_Sample_01.jpg",
-      "Mobile_Sample_JPGs/Minimal_Mobile_Sample_02.jpg",
-      "Mobile_Sample_JPGs/Minimal_Mobile_Sample_03.jpg",
-      "Mobile_Sample_JPGs/Urban_Mobile_Sample_01.jpg",
-      "Mobile_Sample_JPGs/Urban_Mobile_Sample_02.jpg",
-      "Mobile_Sample_JPGs/Urban_Mobile_Sample_03.jpg",
-      "Mobile_Sample_JPGs/Vintage_Mobile_Sample_01.jpg",
-      "Mobile_Sample_JPGs/Vintage_Mobile_Sample_02.jpg",
-      "Mobile_Sample_JPGs/Vintage_Mobile_Sample_03.jpg",
-      "Mobile_Sample_JPGs/Woodland_Mobile_Sample_01.jpg",
-      "Mobile_Sample_JPGs/Woodland_Mobile_Sample_02.jpg",
-      "Mobile_Sample_JPGs/Woodland_Mobile_Sample_03.jpg",
-      "START_HERE_AND_LICENSE.txt",
-      "Urban_Mobile.pptx",
-      "Urban_Mobile_Sample.pdf",
-      "Urban_Print.pptx",
-      "Urban_Print_Sample.pdf",
-      "Vintage_Mobile.pptx",
-      "Vintage_Mobile_Sample.pdf",
-      "Vintage_Print.pptx",
-      "Vintage_Print_Sample.pdf",
-      "Woodland_Mobile.pptx",
-      "Woodland_Mobile_Sample.pdf",
-      "Woodland_Print.pptx",
-      "Woodland_Print_Sample.pdf"
-    ],
-    "zip_entries": 36,
-    "bytes": 9983382,
-    "sha256": "2778da3f5deea763da91f0f01b3da9e8cc3f680214e69612aa87ebd79bfb50e1",
-    "crc": "PASS"
-  },
   "ads": {
     "count": 10,
     "pixels": [
       4000,
       3000
     ],
-    "main_image_id": "8811031497",
-    "final_hero_source": "generated_images/exec-da9b655a-d6ed-469a-9084-31e5c0a216ba.png",
-    "headline": "Wedding / Invitations",
+    "new_image_ids": [
+      "8811681973",
+      "8811681925",
+      "8811681923",
+      "8811681931",
+      "8811681941",
+      "8811681937",
+      "8763864638",
+      "8811681939",
+      "8811681949",
+      "8811681947"
+    ],
     "thumbnail_review": [
       "square",
       "portrait",
       "landscape"
     ],
-    "all_shown_individually": true,
-    "watermark": "Pinogri; preview only",
+    "watermark": "Pinogri; previews only",
     "native_4k_claim": false
   },
-  "provenance": {
-    "original_autofilled": true,
-    "ai_radio": false,
-    "agent_selected_neither": true,
-    "owner_must_review_before_publication": true,
-    "disclosure_in_description": true
-  },
-  "delivery": {
-    "mode": "DIRECT_ETSY_ZIP",
-    "etsy_file": "Pinogri_Wedding_Invitation_Collection.zip",
-    "display_size": "9.98 MB",
-    "drive_folder": "1lM2ws-C1ScN6Xwn_qz1WnvjuKHYRjaDW",
-    "drive_zip": "1tx8KAziWCJcdlIUiUTfSMuCrXpFcNv5Y",
-    "drive_permissions": "OWNER_ONLY; Google browser signed out; not a ready customer link",
-    "drive_authenticated_roundtrip": "SHA256/CRC PASS",
-    "delivery_pdf": "Prepared branded copy; NOT attached to Etsy because Drive link remains closed",
-    "etsy_download_roundtrip": "Not verified: download event timed out"
-  },
-  "qa_summary": [
-    "All 15 print designs and 15 mobile adaptations shown individually",
-    "Woodland art replaced and footer moved to remove overlaps",
-    "Minimal/Vintage decoration corrected",
-    "30 native LibreOffice-export pages match reference word inventories",
-    "Long names tested in two copies with manual 22pt reduction",
-    "ZIP36 entries CRC PASS, Drive byte-identical roundtrip PASS",
-    "10 photos,13 tags,9.90 EUR,999 qty read back from reopened DRAFT",
-    "Instant download,manual renewal,no production partner",
-    "No unsaved changes observed after final reopen"
+  "price_eur": 9.9,
+  "quantity": 999,
+  "tags": [
+    "editable invite",
+    "rsvp template",
+    "woodland wedding",
+    "minimalist wedding",
+    "wedding invitation",
+    "wedding suite",
+    "details card",
+    "emerald wedding",
+    "vintage invitation",
+    "urban wedding",
+    "pptx template",
+    "digital invitation",
+    "printable wedding"
   ],
-  "proof_screenshot": "pinogri-invitations-draft-4605623141.jpg",
-  "updated": "2026-10-29",
-  "native_validation": {
-    "pdf_native_text_comparison": [
+  "delivery": {
+    "mode": "DIRECT_ETSY_FIVE_ZIPS",
+    "etsy_upload_reopened_verified": true,
+    "etsy_download_roundtrip": "NOT VERIFIED: download event timed out after15s; no assertion of buyer roundtrip",
+    "drive_backups": [
       {
-        "file": "Minimal_Mobile_Sample.pdf",
-        "pages": 3,
-        "native_render": "LibreOffice",
-        "word_comparison": "PASS"
+        "file": "Pinogri_Wedding_V2_01_Minimal.zip",
+        "accepted_input": "file_uri",
+        "success": true,
+        "id": "1HYbcZIc53OUTc7uhEvrsmsyTDWAmddez",
+        "title": "Pinogri_Wedding_V2_01_Minimal.zip",
+        "file_name": "Pinogri_Wedding_V2_01_Minimal.zip",
+        "mime_type": "application/zip",
+        "url": "https://drive.google.com/file/d/1HYbcZIc53OUTc7uhEvrsmsyTDWAmddez/view?usp=drivesdk",
+        "parent_id": "1lM2ws-C1ScN6Xwn_qz1WnvjuKHYRjaDW",
+        "structuredContent": {
+          "accepted_input": "file_uri",
+          "success": true,
+          "id": "1HYbcZIc53OUTc7uhEvrsmsyTDWAmddez",
+          "title": "Pinogri_Wedding_V2_01_Minimal.zip",
+          "file_name": "Pinogri_Wedding_V2_01_Minimal.zip",
+          "mime_type": "application/zip",
+          "url": "https://drive.google.com/file/d/1HYbcZIc53OUTc7uhEvrsmsyTDWAmddez/view?usp=drivesdk",
+          "parent_id": "1lM2ws-C1ScN6Xwn_qz1WnvjuKHYRjaDW"
+        }
       },
       {
-        "file": "Urban_Print_Sample.pdf",
-        "pages": 3,
-        "native_render": "LibreOffice",
-        "word_comparison": "PASS"
+        "file": "Pinogri_Wedding_V2_02_Woodland.zip",
+        "accepted_input": "file_uri",
+        "success": true,
+        "id": "1f65RNJ5hj0iGpdAPkaAlHIMjWFmhz5VD",
+        "title": "Pinogri_Wedding_V2_02_Woodland.zip",
+        "file_name": "Pinogri_Wedding_V2_02_Woodland.zip",
+        "mime_type": "application/zip",
+        "url": "https://drive.google.com/file/d/1f65RNJ5hj0iGpdAPkaAlHIMjWFmhz5VD/view?usp=drivesdk",
+        "parent_id": "1lM2ws-C1ScN6Xwn_qz1WnvjuKHYRjaDW",
+        "structuredContent": {
+          "accepted_input": "file_uri",
+          "success": true,
+          "id": "1f65RNJ5hj0iGpdAPkaAlHIMjWFmhz5VD",
+          "title": "Pinogri_Wedding_V2_02_Woodland.zip",
+          "file_name": "Pinogri_Wedding_V2_02_Woodland.zip",
+          "mime_type": "application/zip",
+          "url": "https://drive.google.com/file/d/1f65RNJ5hj0iGpdAPkaAlHIMjWFmhz5VD/view?usp=drivesdk",
+          "parent_id": "1lM2ws-C1ScN6Xwn_qz1WnvjuKHYRjaDW"
+        }
       },
       {
-        "file": "Glamour_Print_Sample.pdf",
-        "pages": 3,
-        "native_render": "LibreOffice",
-        "word_comparison": "PASS"
+        "file": "Pinogri_Wedding_V2_03_Glamour.zip",
+        "accepted_input": "file_uri",
+        "success": true,
+        "id": "1k7xjkI8gXYqLmRbgo5Eu9YS9GTPC8muR",
+        "title": "Pinogri_Wedding_V2_03_Glamour.zip",
+        "file_name": "Pinogri_Wedding_V2_03_Glamour.zip",
+        "mime_type": "application/zip",
+        "url": "https://drive.google.com/file/d/1k7xjkI8gXYqLmRbgo5Eu9YS9GTPC8muR/view?usp=drivesdk",
+        "parent_id": "1lM2ws-C1ScN6Xwn_qz1WnvjuKHYRjaDW",
+        "structuredContent": {
+          "accepted_input": "file_uri",
+          "success": true,
+          "id": "1k7xjkI8gXYqLmRbgo5Eu9YS9GTPC8muR",
+          "title": "Pinogri_Wedding_V2_03_Glamour.zip",
+          "file_name": "Pinogri_Wedding_V2_03_Glamour.zip",
+          "mime_type": "application/zip",
+          "url": "https://drive.google.com/file/d/1k7xjkI8gXYqLmRbgo5Eu9YS9GTPC8muR/view?usp=drivesdk",
+          "parent_id": "1lM2ws-C1ScN6Xwn_qz1WnvjuKHYRjaDW"
+        }
       },
       {
-        "file": "Vintage_Print_Sample.pdf",
-        "pages": 3,
-        "native_render": "LibreOffice",
-        "word_comparison": "PASS"
+        "file": "Pinogri_Wedding_V2_04_Vintage.zip",
+        "accepted_input": "file_uri",
+        "success": true,
+        "id": "1bHyoPxf7QJWNUTgPE8F1B7uazWd4Fxj_",
+        "title": "Pinogri_Wedding_V2_04_Vintage.zip",
+        "file_name": "Pinogri_Wedding_V2_04_Vintage.zip",
+        "mime_type": "application/zip",
+        "url": "https://drive.google.com/file/d/1bHyoPxf7QJWNUTgPE8F1B7uazWd4Fxj_/view?usp=drivesdk",
+        "parent_id": "1lM2ws-C1ScN6Xwn_qz1WnvjuKHYRjaDW",
+        "structuredContent": {
+          "accepted_input": "file_uri",
+          "success": true,
+          "id": "1bHyoPxf7QJWNUTgPE8F1B7uazWd4Fxj_",
+          "title": "Pinogri_Wedding_V2_04_Vintage.zip",
+          "file_name": "Pinogri_Wedding_V2_04_Vintage.zip",
+          "mime_type": "application/zip",
+          "url": "https://drive.google.com/file/d/1bHyoPxf7QJWNUTgPE8F1B7uazWd4Fxj_/view?usp=drivesdk",
+          "parent_id": "1lM2ws-C1ScN6Xwn_qz1WnvjuKHYRjaDW"
+        }
       },
       {
-        "file": "Urban_Mobile_Sample.pdf",
-        "pages": 3,
-        "native_render": "LibreOffice",
-        "word_comparison": "PASS"
-      },
-      {
-        "file": "Glamour_Mobile_Sample.pdf",
-        "pages": 3,
-        "native_render": "LibreOffice",
-        "word_comparison": "PASS"
-      },
-      {
-        "file": "Woodland_Print_Sample.pdf",
-        "pages": 3,
-        "native_render": "LibreOffice",
-        "word_comparison": "PASS"
-      },
-      {
-        "file": "Woodland_Mobile_Sample.pdf",
-        "pages": 3,
-        "native_render": "LibreOffice",
-        "word_comparison": "PASS"
-      },
-      {
-        "file": "Vintage_Mobile_Sample.pdf",
-        "pages": 3,
-        "native_render": "LibreOffice",
-        "word_comparison": "PASS"
-      },
-      {
-        "file": "Minimal_Print_Sample.pdf",
-        "pages": 3,
-        "native_render": "LibreOffice",
-        "word_comparison": "PASS"
+        "file": "Pinogri_Wedding_V2_05_Urban.zip",
+        "accepted_input": "file_uri",
+        "success": true,
+        "id": "1GyNnC-47MRMTqBTRvr24cBsU8DUk9pVb",
+        "title": "Pinogri_Wedding_V2_05_Urban.zip",
+        "file_name": "Pinogri_Wedding_V2_05_Urban.zip",
+        "mime_type": "application/zip",
+        "url": "https://drive.google.com/file/d/1GyNnC-47MRMTqBTRvr24cBsU8DUk9pVb/view?usp=drivesdk",
+        "parent_id": "1lM2ws-C1ScN6Xwn_qz1WnvjuKHYRjaDW",
+        "structuredContent": {
+          "accepted_input": "file_uri",
+          "success": true,
+          "id": "1GyNnC-47MRMTqBTRvr24cBsU8DUk9pVb",
+          "title": "Pinogri_Wedding_V2_05_Urban.zip",
+          "file_name": "Pinogri_Wedding_V2_05_Urban.zip",
+          "mime_type": "application/zip",
+          "url": "https://drive.google.com/file/d/1GyNnC-47MRMTqBTRvr24cBsU8DUk9pVb/view?usp=drivesdk",
+          "parent_id": "1lM2ws-C1ScN6Xwn_qz1WnvjuKHYRjaDW"
+        }
       }
     ],
-    "mobile_jpgs": 15,
-    "dimensions": [
-      1080,
-      1920
-    ],
-    "original_botanical_pixels": [
-      1060,
-      1484
-    ],
-    "botanical_effective_ppi_at_print_size": 212,
-    "native_Microsoft_PowerPoint_tested": false,
-    "long_name_test": {
+    "drive_metadata_sizes_match": true,
+    "drive_public_access": "NOT REQUIRED: private backup; delivery is direct Etsy"
+  },
+  "qa": {
+    "ledger": "../invitations-v2/QA_LEDGER.csv",
+    "ledger_rows": 73,
+    "native_pdf_pages": 30,
+    "long_name_export_tests": 10,
+    "zip_crc": "PASS all5",
+    "ten_ads_unique_sha256": true,
+    "native_microsoft_powerpoint": "NOT TESTED",
+    "physical_print": "NOT TESTED",
+    "provenance": {
+      "original_autofilled": true,
+      "ai_radio": false,
+      "agent_selected_neither": true,
+      "owner_review_required": true,
+      "truthful_description_disclosure": true
+    },
+    "no_unsaved_changes": true
+  },
+  "proof": "pinogri-wedding-v2-4605623141.jpg",
+  "previous_version": {
+    "status": "REJECTED_DO_NOT_REUSE",
+    "buyer_archive": {
       "files": [
-        "Woodland_Print",
-        "Urban_Mobile"
+        "Glamour_Mobile.pptx",
+        "Glamour_Mobile_Sample.pdf",
+        "Glamour_Print.pptx",
+        "Glamour_Print_Sample.pdf",
+        "Minimal_Mobile.pptx",
+        "Minimal_Mobile_Sample.pdf",
+        "Minimal_Print.pptx",
+        "Minimal_Print_Sample.pdf",
+        "Mobile_Sample_JPGs/Glamour_Mobile_Sample_01.jpg",
+        "Mobile_Sample_JPGs/Glamour_Mobile_Sample_02.jpg",
+        "Mobile_Sample_JPGs/Glamour_Mobile_Sample_03.jpg",
+        "Mobile_Sample_JPGs/Minimal_Mobile_Sample_01.jpg",
+        "Mobile_Sample_JPGs/Minimal_Mobile_Sample_02.jpg",
+        "Mobile_Sample_JPGs/Minimal_Mobile_Sample_03.jpg",
+        "Mobile_Sample_JPGs/Urban_Mobile_Sample_01.jpg",
+        "Mobile_Sample_JPGs/Urban_Mobile_Sample_02.jpg",
+        "Mobile_Sample_JPGs/Urban_Mobile_Sample_03.jpg",
+        "Mobile_Sample_JPGs/Vintage_Mobile_Sample_01.jpg",
+        "Mobile_Sample_JPGs/Vintage_Mobile_Sample_02.jpg",
+        "Mobile_Sample_JPGs/Vintage_Mobile_Sample_03.jpg",
+        "Mobile_Sample_JPGs/Woodland_Mobile_Sample_01.jpg",
+        "Mobile_Sample_JPGs/Woodland_Mobile_Sample_02.jpg",
+        "Mobile_Sample_JPGs/Woodland_Mobile_Sample_03.jpg",
+        "START_HERE_AND_LICENSE.txt",
+        "Urban_Mobile.pptx",
+        "Urban_Mobile_Sample.pdf",
+        "Urban_Print.pptx",
+        "Urban_Print_Sample.pdf",
+        "Vintage_Mobile.pptx",
+        "Vintage_Mobile_Sample.pdf",
+        "Vintage_Print.pptx",
+        "Vintage_Print_Sample.pdf",
+        "Woodland_Mobile.pptx",
+        "Woodland_Mobile_Sample.pdf",
+        "Woodland_Print.pptx",
+        "Woodland_Print_Sample.pdf"
       ],
-      "font_size_manually_reduced_to_pt": 22,
-      "names": [
-        "Alexandria-Catherine",
-        "Benjamin-Christopher"
-      ],
-      "text_and_bounds": "PASS",
-      "automatic_fit": false
-    }
+      "zip_entries": 36,
+      "bytes": 9983382,
+      "sha256": "2778da3f5deea763da91f0f01b3da9e8cc3f680214e69612aa87ebd79bfb50e1",
+      "crc": "PASS"
+    },
+    "old_drive_zip": "1tx8KAziWCJcdlIUiUTfSMuCrXpFcNv5Y",
+    "old_main_image_id": "8811031497",
+    "old_files_removed_from_current_draft": true
   },
-  "owner_backup": {
-    "path": "output/Pinogri_Wedding_Invitations_Project.zip",
-    "bytes": 40529348,
-    "files": 130,
-    "library_saved": false,
-    "library_error": "library_storage_limit_exceeded",
-    "contains_ads": true,
-    "not_uploaded_to_drive": true
-  },
-  "browser_upload_note": "In existing Etsy editor, click the visible label[for=observed thumbnail file-input id] using Playwright; AX input click timed out. No need for extra application."
+  "next": [
+    "Owner reviews saved draft and correct provenance answer before publishing; agent did not publish",
+    "Catalog6 requires re-audit against new specialized brief; not undertaken in this replacement"
+  ]
 }
