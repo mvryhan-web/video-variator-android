@@ -1,0 +1,54 @@
+{
+  "catalog_number": 5,
+  "product": "Digital Invitations — 5 Wedding Styles",
+  "shop": "Pinogri",
+  "status": "IN_PROGRESS_DESIGN_QA",
+  "rules_blob": "b7c332ad6e9893022b8960cf17e07b24805d110d",
+  "catalog_blob": "8d5be9a0b79ad4fcab4f84f5c7bc78795eaf392d",
+  "distinct_layouts": 15,
+  "mobile_adaptations": 15,
+  "styles": [
+    "Minimal",
+    "Woodland",
+    "Glamour",
+    "Vintage",
+    "Urban"
+  ],
+  "formats": [
+    "editable PPTX",
+    "static sample PDF"
+  ],
+  "created": "2026-10-29",
+  "etsy_draft_id": null,
+  "qa": [
+    "Initial 30 pages rendered",
+    "Initial five print invitations shown individually",
+    "Woodland artwork intrudes text area: revision pending",
+    "Minimal and Vintage lower decorative overlap corrected in source; rerender pending"
+  ],
+  "next": [
+    "Finish actual designs and individualized style layouts",
+    "Render native PPTX to verify editable export",
+    "Show all actual pages individually",
+    "Create and show ten advertising images",
+    "Package only buyer files",
+    "Verified delivery then Etsy DRAFT only"
+  ],
+  "research": [
+    {
+      "url": "https://www.etsy.com/listing/1852729448/minimalist-wedding-invitation-bundle",
+      "item_reviews": 7,
+      "observed_review_dates": [
+        "2026-06-25",
+        "2026-06-16"
+      ],
+      "takeaway": "Clear editing and attractive layout"
+    },
+    {
+      "url": "https://www.etsy.com/listing/1738901665/woodland-wedding-invitation-suite?lang_mismatch=1",
+      "item_reviews": 79,
+      "takeaway": "Editable coordinated stationery and appearance valued; not evidence of future sales"
+    }
+  ],
+  "prior_transfer_queue": "Three prepared legacy products still pending Etsy upload; this is a separately authorized catalog 5 product."
+}
