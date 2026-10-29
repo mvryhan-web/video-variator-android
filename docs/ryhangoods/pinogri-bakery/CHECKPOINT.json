@@ -1,0 +1,37 @@
+{
+  "buyer_entries": 31,
+  "bytes": 72028663,
+  "sha256": "f76e18342315472cf8f9dcfcdd29ff0830b5a0d44d378f1a77d66bceb3db2d4a",
+  "CRC": "PASS",
+  "PPTX_unchanged": true,
+  "ads": 10,
+  "old_etsy_id": "4604040102",
+  "new_etsy_id": null,
+  "status": "FILES_READY_BROWSER_BLOCKED",
+  "folder": "1LUYid9-idi-QMZQBjHbOlIh3H7_S_iTf",
+  "zip": "1gJmpjmwB9GKMFQ7HeEADg_Z_R8ocBPId",
+  "limitations": "Native PowerPoint render not tested; mockups illustrative; exact25layouts ad02; AI cover/photo ads exported enlarged from1448x1086; other ads4000x3000 exact page composition.",
+  "date": "2026-10-29",
+  "owner_authorization": "Prepare all three products in order bakery,newspaper,midnight;30 ads;DRAFT_ONLY. Savings deferred.",
+  "browser_blocker": "cua_repl js_reset timed out300s; browser control unavailable; plugin search Etsy returned none. New Pinogri drafts NOT created.",
+  "advertising_display": "All10 final designs shown separately in chat; some generated mockups shown before technical panels; final file order01..10.",
+  "thumbnail_review": "Review final main-image crop in Etsy before saving; browser UI crop unavailable.",
+  "backup": "Combined Pinogri_Three_Listing_Assets.zip 50031708bytes locally CRC PASS. Library save failed library_storage_limit_exceeded. No Library ID.",
+  "drive_upload_verified": true,
+  "delivery_opened_and_visual_checked": true,
+  "roundtrip": {
+    "sha256": "f76e18342315472cf8f9dcfcdd29ff0830b5a0d44d378f1a77d66bceb3db2d4a",
+    "bytes": 72028663,
+    "CRC": "PASS",
+    "byte_identical": true,
+    "authenticated_download": true,
+    "anonymous_download_tested": false
+  },
+  "public_permissions": "anyone/reader allowFileDiscovery=false verified",
+  "next_action": "Restore browser UI, read rules, check Pinogri for duplicates, upload10Ads+DeliveryPDF+listing fields, leave provenance unset if supported, save DRAFT_ONLY, reopen and verify. Do not use old RyhanGoods listing IDs as new Pinogri IDs.",
+  "research_sources": [
+    "https://www.etsy.com/listing/4313991239/editable-bakery-business-templates",
+    "https://www.etsy.com/listing/4374166607/editable-bakery-business-startup-package"
+  ],
+  "research_notes": "Reviews support category use, not product sales prediction. Clarify edit format, actual print size, adult assistance and download access; no claim of superiority or guaranteed sales."
+}
