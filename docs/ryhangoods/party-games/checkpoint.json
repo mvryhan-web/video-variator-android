@@ -1,0 +1,62 @@
+{
+  "catalog_number": 6,
+  "product": "What's on Your Phone? — The Girls' Night Edit",
+  "shop": "Pinogri",
+  "status": "PDFS_CREATED_AND_SHOWN_ADS_IN_PROGRESS",
+  "etsy_id": null,
+  "distinct_game_count": 1,
+  "questions": 30,
+  "points": [
+    1,
+    5,
+    10
+  ],
+  "max_score": 160,
+  "versions": [
+    "Cherry",
+    "Sage",
+    "Cobalt",
+    "Ink Saver"
+  ],
+  "paper_sizes": [
+    "A4",
+    "US Letter"
+  ],
+  "pages_per_pdf": 6,
+  "qa": [
+    "12 real PDF pages shown separately",
+    "30 unique questions present in all8 game sheets",
+    "Text match across paper sizes PASS",
+    "Bounds PASS",
+    "1331 score combinations checked",
+    "No live party playtest; no playtime claim"
+  ],
+  "rules_blob": "b7c332ad6e9893022b8960cf17e07b24805d110d",
+  "research": [
+    {
+      "url": "https://www.etsy.com/listing/4490950424/whats-on-your-phone-game-mothers-day",
+      "item_reviews": 2,
+      "dates": [
+        "2026-05-23",
+        "2026-05-13"
+      ],
+      "observed_price_usd": 2.09
+    },
+    {
+      "url": "https://www.etsy.com/listing/1690517832/family-reunion-whats-on-your-phone",
+      "item_reviews": 1,
+      "date": "2026-07-29",
+      "takeaway": "Easy print and play"
+    }
+  ],
+  "demand_limit": "Reviews establish category purchases, not high SKU sales volume or guaranteed future sales",
+  "proposed_price_eur": 3.9,
+  "art_source": "generated_images/exec-608eb78e-27e0-43ea-806f-c243b6eae6b8.png",
+  "next": [
+    "Finish10 ads and show individually",
+    "Package buyerZIP",
+    "Drive backup plus working delivery",
+    "Etsy DRAFT only, reopen verify"
+  ],
+  "created": "2026-10-29"
+}
