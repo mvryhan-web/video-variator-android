@@ -79,6 +79,8 @@
   if(active==='prompter'&&mode!==active)$('#cameraClose').click();
   if(mode&&mode!=='prompter'&&$('#operation').value!==mode){$('#operation').value=mode;$('#operation').dispatchEvent(new Event('change'));$('#outputs').replaceChildren();$('#status').textContent='';}
   active=mode;main.dataset.activeTool=mode;hero.hidden=!!mode;grid.hidden=!!mode;screen.hidden=!mode;panel.hidden=!mode||mode==='prompter';camera.hidden=mode!=='prompter';$('.media-tools-card').hidden=mode==='prompter';
+  // Initial deep links can already match the select value; still show the correct creator settings.
+  window.VUCreatorTools?.sync(mode);
   window.dispatchEvent(new CustomEvent('vu:toolchange'));
   $('#hubTitle').textContent=c.names[modes.indexOf(mode)]||c.title;$('#hubNotice').textContent='';selection();if(focus){window.scrollTo(0,0);(mode?$('#hubTitle'):hero.querySelector('h1')).focus();}
  }
