@@ -1,0 +1,50 @@
+{
+  "buyer_original_library": "libfile_ee3143fe518c8191a943ca26658e7584",
+  "original_pdf_library": "libfile_540fba4ec2488191b78f0fe8a25067a4",
+  "buyer_drive_folder": "1BWhnmL2-fLwA1_V9jvY6yafF6mCKz8Qr",
+  "buyer_drive_zip": "1btilt-RS0vjlOERvZOHmAtS63Y8CQGuF",
+  "buyer_zip_bytes": 58729498,
+  "buyer_zip_sha256": "af7c75e7811edaedfa94acc84ea507c0f219d69414d4c5bd1baed3fa0d83e468",
+  "buyer_change": "Only README brand changed RyhanGoods -> Pinogri, original 12 JPG bytes retained",
+  "source_art": "original1254 exported3600, no seamless guarantee",
+  "native_ad_sources": {
+    "01": "exec-6a1e57d2-25b0-48b9-b021-8a8ba420f383.png",
+    "04": "exec-74f544d0-814c-4450-993c-64d07ad03d0e.png",
+    "05": "exec-aa263e64-2063-4082-9256-7d6d6599f620.png",
+    "06": "exec-4626a313-b158-4c03-8215-a8c516e5f1d4.png"
+  },
+  "ad_export": "4000x3000; four generated scenes enlarged from1448x1086, six exact technical panels",
+  "all_art_and_ads_shown": true,
+  "cover_fix": "v2 central text fully survives square crop; replaces first cover",
+  "status": "DRAFT_SAVED_REOPENED_VERIFIED_OWNER_PROVENANCE_REVIEW_REQUIRED",
+  "date": "2026-10-29",
+  "shop": "Pinogri",
+  "etsy_id": "4605467155",
+  "price_eur": 3.9,
+  "quantity": 999,
+  "tags": 13,
+  "pdf_bytes": 2502578,
+  "ai_radio": "Etsy autofilled Fully by me. Agent did not select either provenance radio or change it to AI. Owner must correct this before actual publication.",
+  "qa": {
+    "buyer_zip_crc": "PASS",
+    "all12_jpg_open": "PASS RGB3600x3600 300DPI metadata",
+    "original_art_bytes": "unchanged, SHA256 compared with original ZIP",
+    "native_source": "1254x1254 enlarged, no native4K claim",
+    "ads": "10 separate images shown individually; cover v2 square crop checked",
+    "pdf": "visible Pinogri logo/subtitle/footer, correct clickable folder link, metadata clean",
+    "drive": "folder and ZIP anyone/reader allowFileDiscovery=false; connector fetch58729498bytes; anonymous full download not tested"
+  },
+  "research": [
+    {
+      "url": "https://www.etsy.com/listing/4366234794/christmas-digital-paper-holiday-festive",
+      "observed": "Search index29Oct2026 showed12 JPG and4 item reviews, latest9Feb2026 mentioning Christmas crackers; indexedsale1.90USD not verified liveprice; shop count not product sales"
+    },
+    {
+      "url": "https://www.etsy.com/listing/4535291476/christmas-scrapbook-paper-crimson",
+      "observed": "Search index29Oct2026:14 JPG; item review12Jul2026 praises colors; no high-volume sales proven"
+    }
+  ],
+  "next": "legacy3 Christmas Gift Tags old4603531669; read fullrules and queue beforecontinuing",
+  "etsy_url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4605467155",
+  "final_cover_v2": true
+}
