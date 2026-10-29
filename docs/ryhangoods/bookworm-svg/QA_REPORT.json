@@ -1,0 +1,588 @@
+{
+  "sku": "PINO-BW20-01",
+  "date": "2026-10-29",
+  "designs": [
+    {
+      "design": "01_Quiet_Hours",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        407,
+        407,
+        4093,
+        4093
+      ],
+      "png_sha256": "8976a6e52f1da69e29bbf0f198d7e4a5ee644821be624866acb6cbdc72152fab",
+      "svg_sha256": "b6e4b74cace7e1ba40181597d2039e307689623d154f6de1c2d4d0753ba03599"
+    },
+    {
+      "design": "02_Weekend_Chapters",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        938,
+        763,
+        3556,
+        3510
+      ],
+      "png_sha256": "358b069eb1a6d7a80c789ec5422040b96bacea9a7560469ce7e3b16f5d086c0f",
+      "svg_sha256": "d301d4aa85b3b7ff27eca07e3a02de1bd2fea0e8b389a997ad2e672c57bef084"
+    },
+    {
+      "design": "03_Tiny_Commitments",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        675,
+        810,
+        3868,
+        3600
+      ],
+      "png_sha256": "aae442ab6cd4e670d2b4656dcd1ef207e7f497b633984cf27b3c8c6ac5540b36",
+      "svg_sha256": "8dfc250a513048cfa1ce8781a02b92d79d701b00e657120e78e83b8049424500"
+    },
+    {
+      "design": "04_Tea_And_Plots",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        954,
+        814,
+        3502,
+        3713
+      ],
+      "png_sha256": "ec500bcad1579d94769bb63acd112780137e8b1148444f0076bd16e010fc3c6b",
+      "svg_sha256": "5fdce140f1d9bde80e9b5e6cecdd4bfa1403808bdbf27732cd0a20048d560e2f"
+    },
+    {
+      "design": "05_Shelf_Space",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        765,
+        757,
+        3735,
+        3623
+      ],
+      "png_sha256": "18fd9b2b48020b4539b2c5a47fdc5d02ed2389ba04d039209a9c6e9e5008b120",
+      "svg_sha256": "c981fe8ca7ac1a99a945584d5b81f43beaf89e0faddff8ef8c4662adf9a90f16"
+    },
+    {
+      "design": "06_One_Lamp",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        585,
+        880,
+        3818,
+        3420
+      ],
+      "png_sha256": "4f997b049c4b1e9dd3cabc3927beab856495123f46399a817e9571a6e6384f12",
+      "svg_sha256": "dfff014f7d344813d2002a68e3fc6ab380eb130930803479458c23c1ff63dc2b"
+    },
+    {
+      "design": "07_Between_Chapters",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        792,
+        870,
+        3708,
+        3533
+      ],
+      "png_sha256": "6b302a68bd4d1cb372d51385c53778761843705ef186a2b43e37239a24e10a45",
+      "svg_sha256": "a70b6ea1d515c63912156415c13bf89ae9e01f5a9da079ed381b1d6018258d83"
+    },
+    {
+      "design": "08_Book_Battery",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        596,
+        868,
+        3901,
+        3281
+      ],
+      "png_sha256": "14d55e0cdd95d8d9d452d04929522bf0393d642449f1417242684318a34016f0",
+      "svg_sha256": "dd435558b1d838fbac161f36943fcf9d84b75c817132b472f1e565d6a08d7123"
+    },
+    {
+      "design": "09_After_Dark",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        979,
+        731,
+        3521,
+        3780
+      ],
+      "png_sha256": "797b91d3c4c6909c040bea91f9e686f161c6bcc7275e109e005b05aeab56e02d",
+      "svg_sha256": "6acf83dec33faa47c4661b1ebb82ff4c46612a09c9c2bb55fad7093e829cde12"
+    },
+    {
+      "design": "10_Library_Visit",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        648,
+        738,
+        3852,
+        3762
+      ],
+      "png_sha256": "83c8a592028499bb05d078ece954fb50498a19979497bf6e172071c78897ee4b",
+      "svg_sha256": "867e192b9f42e75960bb8d1e757361a16996f0b3168c27ee3ea74943d8d166c3"
+    },
+    {
+      "design": "11_Well_Read_Chaos",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        855,
+        834,
+        3569,
+        3724
+      ],
+      "png_sha256": "a29b3013f527f6c9ce92db662669b25caa401f34f88c82eebf02899568284dec",
+      "svg_sha256": "bc022a01bc227c47399e447558cb8a775899155154d41a49c4e01d69e1ff4333"
+    },
+    {
+      "design": "12_Read_Rest_Repeat",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        526,
+        526,
+        3974,
+        3974
+      ],
+      "png_sha256": "ae1c73cd7f5f8d08eac83f55eb5b805d982477fb744cc7d6385a7653c7877511",
+      "svg_sha256": "c18fd7a736ad0cbe59e49fc26b8a53026175d6ef4a3df99fb6d935123e7dbf89"
+    },
+    {
+      "design": "13_Bookmark_Home",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        775,
+        814,
+        3724,
+        3695
+      ],
+      "png_sha256": "bf889a95e12f01908661e2b41d2c018cab64f585951d0c4177373b80a3d17134",
+      "svg_sha256": "da9b4037df580f976abae845067de576a972b157f35199bf589285ce341f3fdf"
+    },
+    {
+      "design": "14_More_Margin",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        810,
+        783,
+        3690,
+        3533
+      ],
+      "png_sha256": "b30585e3104f77b6743d7e2479ac626f504f8f6b3ff92334d6d6dab13cd671d3",
+      "svg_sha256": "64e0b2fbc2482bb34aa018c779a173a30781187e810d1a525ab123f7136bc73d"
+    },
+    {
+      "design": "15_Reading_Progress",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        810,
+        855,
+        3735,
+        3641
+      ],
+      "png_sha256": "edfa2f43cd1abf9eafbc9e307a97daac52f88ac7ef01ffc6a334fd113e8381f3",
+      "svg_sha256": "cd816948d2522ee628f8eddb1a106601db3a2677a3c02aee161a36526fbec69e"
+    },
+    {
+      "design": "16_Next_Page",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        1066,
+        693,
+        3437,
+        3758
+      ],
+      "png_sha256": "124d765967ede4c23b5130ff790381779a3382fd8e98d3c25f0760d4a34db8aa",
+      "svg_sha256": "193c56b396086b8bc10e78181dbd3153fadc2f5eabeb5a0235bbb3fccca6d864"
+    },
+    {
+      "design": "17_Tote_Plots",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        664,
+        900,
+        3823,
+        3742
+      ],
+      "png_sha256": "49cd7806bb074a0e989337dc253e03475f08faadd62e7d46431a587315fa1f56",
+      "svg_sha256": "82f391e9bff5463c8c704359bac6d6df2840bfd8b4c279e11eb96e487fd099da"
+    },
+    {
+      "design": "18_Tiny_Library",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        821,
+        764,
+        3682,
+        3713
+      ],
+      "png_sha256": "26fb0537d3482c4d52075360e29372ed82d8412074c107f1cf36b612db7cef62",
+      "svg_sha256": "ee769efd325cd80ab933a1090a7876bef6df8bec60c5adb4579e56a7d2d10179"
+    },
+    {
+      "design": "19_Plans_Have_Spines",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        855,
+        711,
+        3645,
+        3668
+      ],
+      "png_sha256": "ed328e9fdd23f7ee95f7f0e91750d89e56c74d732e6c2a224732247b2622b840",
+      "svg_sha256": "4995fcbe17d51dc0b0fba49837d89474c187ef8518abfaf757c1d5269e54f4ef"
+    },
+    {
+      "design": "20_Soft_Covers",
+      "svg_xml": "PASS",
+      "no_raster_or_live_text": "PASS",
+      "Inkscape_import_render": "PASS",
+      "png_size": [
+        4500,
+        4500
+      ],
+      "mode": "RGBA",
+      "dpi": [
+        299.9994,
+        299.9994
+      ],
+      "alpha_bbox": [
+        873,
+        692,
+        3627,
+        3812
+      ],
+      "png_sha256": "8707fae12fcc7210bb2d19c308d57e897a9ef3a6bc44306bba21779977a6a203",
+      "svg_sha256": "fa9c63d077949e3bee7a9034bcb3a5fb663b83b33a4f779749da4c6f07156ddb"
+    }
+  ],
+  "ads": [
+    {
+      "name": "01_Book_Lover_Hero.jpg",
+      "dimensions": [
+        3600,
+        3600
+      ],
+      "full_decode": "PASS",
+      "bytes": 1550333
+    },
+    {
+      "name": "02_All_20_Designs.jpg",
+      "dimensions": [
+        3600,
+        3600
+      ],
+      "full_decode": "PASS",
+      "bytes": 2134729
+    },
+    {
+      "name": "03_Tote_Bag.jpg",
+      "dimensions": [
+        3600,
+        3600
+      ],
+      "full_decode": "PASS",
+      "bytes": 1735391
+    },
+    {
+      "name": "04_Bookish_Apparel.jpg",
+      "dimensions": [
+        3600,
+        3600
+      ],
+      "full_decode": "PASS",
+      "bytes": 1837040
+    },
+    {
+      "name": "05_Reading_Mug.jpg",
+      "dimensions": [
+        3600,
+        3600
+      ],
+      "full_decode": "PASS",
+      "bytes": 1531296
+    },
+    {
+      "name": "06_Typography_Detail.jpg",
+      "dimensions": [
+        3600,
+        3600
+      ],
+      "full_decode": "PASS",
+      "bytes": 1017028
+    },
+    {
+      "name": "07_Vector_Scaling.jpg",
+      "dimensions": [
+        3600,
+        3600
+      ],
+      "full_decode": "PASS",
+      "bytes": 1332176
+    },
+    {
+      "name": "08_Transparent_PNG.jpg",
+      "dimensions": [
+        3600,
+        3600
+      ],
+      "full_decode": "PASS",
+      "bytes": 1325271
+    },
+    {
+      "name": "09_File_Formats.jpg",
+      "dimensions": [
+        3600,
+        3600
+      ],
+      "full_decode": "PASS",
+      "bytes": 1031027
+    },
+    {
+      "name": "10_License_Download.jpg",
+      "dimensions": [
+        3600,
+        3600
+      ],
+      "full_decode": "PASS",
+      "bytes": 1130251
+    }
+  ],
+  "zip": {
+    "name": "Pinogri_Book_Lover_20_SVG_PNG.zip",
+    "bytes": 5177574,
+    "entries": 44,
+    "crc": "PASS",
+    "sha256": "98537903273b91dd6c78bdefb7b01bcd65f0254ca0e0bb2096c44bb812004306"
+  },
+  "not_tested": [
+    "Physical print",
+    "Physical vinyl cut",
+    "Cricut import",
+    "Silhouette import"
+  ],
+  "visual_fixes": [
+    "01 bottom label resized and raised to clear circle",
+    "13 removed superfluous bookmark",
+    "All books: page line positions proportional to book height; removed floating page lines",
+    "All books: bookmark length proportional to book height",
+    "06 aligned lamp base with book",
+    "10 constrained ticket text within inner border"
+  ],
+  "photo_assets": {
+    "resolution": [
+      1254,
+      1254
+    ],
+    "role": "Illustrative generated product application photos, not buyer files. Native-size photos within 3600px final marketing layouts.",
+    "exact_art": "Delivered artwork additionally displayed in native vector-derived panel beside each mockup."
+  },
+  "quality_claim": "No objective 10/10 or sales guarantee. Owner reviews final draft."
+}
