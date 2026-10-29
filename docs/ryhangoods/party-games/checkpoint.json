@@ -2,7 +2,7 @@
   "catalog_number": 6,
   "product": "What's on Your Phone? — The Girls' Night Edit",
   "shop": "Pinogri",
-  "status": "ETSY_DRAFT_SAVED_AND_REOPENED_VERIFIED",
+  "status": "DRAFT_SAVED_VISUAL_REWORK_REQUIRED",
   "etsy_id": "4605691816",
   "distinct_game_count": 1,
   "questions": 30,
@@ -285,8 +285,8 @@
   "proposed_price_eur": 3.9,
   "art_source": "generated_images/exec-608eb78e-27e0-43ea-806f-c243b6eae6b8.png",
   "next": [
-    "Owner reviews and publishes existing draft",
-    "No live party playtest or physical printing performed;print simulation only"
+    "Rework ads to owner's visual standard; show each directly in final chat response",
+    "Owner reviews provenance before actual publication"
   ],
   "created": "2026-10-29",
   "etsy_url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4605691816#media",
@@ -376,5 +376,16 @@
       "review_date": "2026-06-15",
       "takeaway": "Wrong print size complaint; verify our exact A4/Letter geometry, don't claim5x7"
     }
-  ]
+  ],
+  "review_after_owner_request": {
+    "date": "2026-10-29",
+    "file_integrity": "All10 JPEG full decode PASS;2PDF6pages sizes correct;ZIP CRC PASS",
+    "visual_assessment": "Internal subjective7-8/10, below owner's9-10target",
+    "findings": [
+      "Several promotional compositions repeat a similar page-plus-copy template",
+      "Generated scenes01/08 reinterpret small printed text; exact buyer PDF text differs in fine details",
+      "Photos01/08 native1448x1086 enlarged to4000x3000, not native4K"
+    ],
+    "next": "Improve promotional design and exact product reproduction before calling premium visual QA passed; keep Etsy draft unpublished"
+  }
 }
