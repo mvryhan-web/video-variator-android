@@ -1,0 +1,43 @@
+{
+  "bytes": 136481,
+  "sha256": "250f9e95e80674c798502012b149b925161e3721a86bd93e3dafaa54308ff041",
+  "entries": 3,
+  "CRC": "PASS",
+  "link": "https://drive.google.com/drive/folders/1AKRM9QVB1vg1RllhfkuuQ64TIuuo-By2",
+  "buyer_pages": {
+    "A4": 12,
+    "US Letter": 12
+  },
+  "unique_layouts_including_cover": 12,
+  "ads": 10,
+  "date": "2026-10-29",
+  "status": "DRAFT_SAVED_LIST_VERIFIED_REOPEN_BROWSER_TIMEOUT",
+  "shop": "Pinogri",
+  "etsy_id": "4605506719",
+  "etsy_url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4605506719",
+  "old_etsy_id": "4603634235",
+  "price_eur": 3.9,
+  "quantity": 999,
+  "category": 12487,
+  "tags": 13,
+  "renewal": "manual",
+  "production_partner": null,
+  "instant_download": true,
+  "provenance_before_save": {
+    "fully_by_me": false,
+    "AI": false,
+    "agent_selected_either": false
+  },
+  "delivery_pdf_bytes": 2469942,
+  "folder_id": "1AKRM9QVB1vg1RllhfkuuQ64TIuuo-By2",
+  "zip_id": "1mLE6OLi9ENoDwGNvzfV76BfGFq3d44AT",
+  "folder_and_zip_permissions": "anyone/reader allowFileDiscovery=false confirmed",
+  "drive_roundtrip": "byte identical CRC PASS; authenticated, not anonymous",
+  "buyer_visual_review": "all 12 A4 and 12 US Letter renders separately shown and checked",
+  "ads_visual_review": "10 separately shown; exact PDF renders with preview-only watermark;4000x3000 deterministic layouts; AI cover photo background native1448x1086 enlarged",
+  "source_background": "generated_images/exec-bbcf181e-b889-40d5-ba13-6feae47fdccf.png",
+  "backup": "ownerZIP16917634bytes locally; Library create failed library_storage_limit_exceeded; not saved",
+  "verification": "Etsy success toast, list reloaded, card4605506719 visible with price and quantity; opened observed link; subsequent AX timed out twice. Final reopened content and proof screenshot unavailable. DO NOT DUPLICATE. Continue by opening this exact draft and checking 10 photos, PDF,13tags and radio unset state.",
+  "old_master": "unchanged; branded separate copy",
+  "browser": "Drive login succeeded via secure browserAuth; Drive marked deliverable. Etsy getAX stalled after reopen; could not re-mark Etsy or save proof screenshot."
+}
