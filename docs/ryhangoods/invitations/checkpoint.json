@@ -2,7 +2,7 @@
   "catalog_number": 5,
   "product": "Digital Invitations — 5 Wedding Styles",
   "shop": "Pinogri",
-  "status": "IN_PROGRESS_DESIGN_QA",
+  "status": "DRAFT_SAVED_REOPENED_VERIFIED",
   "rules_blob": "b7c332ad6e9893022b8960cf17e07b24805d110d",
   "catalog_blob": "8d5be9a0b79ad4fcab4f84f5c7bc78795eaf392d",
   "distinct_layouts": 15,
@@ -15,24 +15,16 @@
     "Urban"
   ],
   "formats": [
-    "editable PPTX",
-    "static sample PDF"
+    "10 editable PPTX",
+    "10 sample PDFs / 30 pages",
+    "15 mobile sample JPG 1080x1920",
+    "README/license"
   ],
   "created": "2026-10-29",
-  "etsy_draft_id": null,
-  "qa": [
-    "Initial 30 pages rendered",
-    "Initial five print invitations shown individually",
-    "Woodland artwork intrudes text area: revision pending",
-    "Minimal and Vintage lower decorative overlap corrected in source; rerender pending"
-  ],
+  "etsy_draft_id": "4605623141",
   "next": [
-    "Finish actual designs and individualized style layouts",
-    "Render native PPTX to verify editable export",
-    "Show all actual pages individually",
-    "Create and show ten advertising images",
-    "Package only buyer files",
-    "Verified delivery then Etsy DRAFT only"
+    "Owner reviews provenance field before publishing",
+    "Optional: restore Google browser login and open exact product folder before attaching delivery PDF"
   ],
   "research": [
     {
@@ -50,5 +42,191 @@
       "takeaway": "Editable coordinated stationery and appearance valued; not evidence of future sales"
     }
   ],
-  "prior_transfer_queue": "Three prepared legacy products still pending Etsy upload; this is a separately authorized catalog 5 product."
+  "prior_transfer_queue": "Three prepared legacy products still pending Etsy upload; this is a separately authorized catalog 5 product.",
+  "etsy_url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4605623141#media",
+  "price_eur": 9.9,
+  "quantity": 999,
+  "category": "Invitation Templates",
+  "category_id": 1294,
+  "buyer_archive": {
+    "files": [
+      "Glamour_Mobile.pptx",
+      "Glamour_Mobile_Sample.pdf",
+      "Glamour_Print.pptx",
+      "Glamour_Print_Sample.pdf",
+      "Minimal_Mobile.pptx",
+      "Minimal_Mobile_Sample.pdf",
+      "Minimal_Print.pptx",
+      "Minimal_Print_Sample.pdf",
+      "Mobile_Sample_JPGs/Glamour_Mobile_Sample_01.jpg",
+      "Mobile_Sample_JPGs/Glamour_Mobile_Sample_02.jpg",
+      "Mobile_Sample_JPGs/Glamour_Mobile_Sample_03.jpg",
+      "Mobile_Sample_JPGs/Minimal_Mobile_Sample_01.jpg",
+      "Mobile_Sample_JPGs/Minimal_Mobile_Sample_02.jpg",
+      "Mobile_Sample_JPGs/Minimal_Mobile_Sample_03.jpg",
+      "Mobile_Sample_JPGs/Urban_Mobile_Sample_01.jpg",
+      "Mobile_Sample_JPGs/Urban_Mobile_Sample_02.jpg",
+      "Mobile_Sample_JPGs/Urban_Mobile_Sample_03.jpg",
+      "Mobile_Sample_JPGs/Vintage_Mobile_Sample_01.jpg",
+      "Mobile_Sample_JPGs/Vintage_Mobile_Sample_02.jpg",
+      "Mobile_Sample_JPGs/Vintage_Mobile_Sample_03.jpg",
+      "Mobile_Sample_JPGs/Woodland_Mobile_Sample_01.jpg",
+      "Mobile_Sample_JPGs/Woodland_Mobile_Sample_02.jpg",
+      "Mobile_Sample_JPGs/Woodland_Mobile_Sample_03.jpg",
+      "START_HERE_AND_LICENSE.txt",
+      "Urban_Mobile.pptx",
+      "Urban_Mobile_Sample.pdf",
+      "Urban_Print.pptx",
+      "Urban_Print_Sample.pdf",
+      "Vintage_Mobile.pptx",
+      "Vintage_Mobile_Sample.pdf",
+      "Vintage_Print.pptx",
+      "Vintage_Print_Sample.pdf",
+      "Woodland_Mobile.pptx",
+      "Woodland_Mobile_Sample.pdf",
+      "Woodland_Print.pptx",
+      "Woodland_Print_Sample.pdf"
+    ],
+    "zip_entries": 36,
+    "bytes": 9983382,
+    "sha256": "2778da3f5deea763da91f0f01b3da9e8cc3f680214e69612aa87ebd79bfb50e1",
+    "crc": "PASS"
+  },
+  "ads": {
+    "count": 10,
+    "pixels": [
+      4000,
+      3000
+    ],
+    "main_image_id": "8811031497",
+    "final_hero_source": "generated_images/exec-da9b655a-d6ed-469a-9084-31e5c0a216ba.png",
+    "headline": "Wedding / Invitations",
+    "thumbnail_review": [
+      "square",
+      "portrait",
+      "landscape"
+    ],
+    "all_shown_individually": true,
+    "watermark": "Pinogri; preview only",
+    "native_4k_claim": false
+  },
+  "provenance": {
+    "original_autofilled": true,
+    "ai_radio": false,
+    "agent_selected_neither": true,
+    "owner_must_review_before_publication": true,
+    "disclosure_in_description": true
+  },
+  "delivery": {
+    "mode": "DIRECT_ETSY_ZIP",
+    "etsy_file": "Pinogri_Wedding_Invitation_Collection.zip",
+    "display_size": "9.98 MB",
+    "drive_folder": "1lM2ws-C1ScN6Xwn_qz1WnvjuKHYRjaDW",
+    "drive_zip": "1tx8KAziWCJcdlIUiUTfSMuCrXpFcNv5Y",
+    "drive_permissions": "OWNER_ONLY; Google browser signed out; not a ready customer link",
+    "drive_authenticated_roundtrip": "SHA256/CRC PASS",
+    "delivery_pdf": "Prepared branded copy; NOT attached to Etsy because Drive link remains closed",
+    "etsy_download_roundtrip": "Not verified: download event timed out"
+  },
+  "qa_summary": [
+    "All 15 print designs and 15 mobile adaptations shown individually",
+    "Woodland art replaced and footer moved to remove overlaps",
+    "Minimal/Vintage decoration corrected",
+    "30 native LibreOffice-export pages match reference word inventories",
+    "Long names tested in two copies with manual 22pt reduction",
+    "ZIP36 entries CRC PASS, Drive byte-identical roundtrip PASS",
+    "10 photos,13 tags,9.90 EUR,999 qty read back from reopened DRAFT",
+    "Instant download,manual renewal,no production partner",
+    "No unsaved changes observed after final reopen"
+  ],
+  "proof_screenshot": "pinogri-invitations-draft-4605623141.jpg",
+  "updated": "2026-10-29",
+  "native_validation": {
+    "pdf_native_text_comparison": [
+      {
+        "file": "Minimal_Mobile_Sample.pdf",
+        "pages": 3,
+        "native_render": "LibreOffice",
+        "word_comparison": "PASS"
+      },
+      {
+        "file": "Urban_Print_Sample.pdf",
+        "pages": 3,
+        "native_render": "LibreOffice",
+        "word_comparison": "PASS"
+      },
+      {
+        "file": "Glamour_Print_Sample.pdf",
+        "pages": 3,
+        "native_render": "LibreOffice",
+        "word_comparison": "PASS"
+      },
+      {
+        "file": "Vintage_Print_Sample.pdf",
+        "pages": 3,
+        "native_render": "LibreOffice",
+        "word_comparison": "PASS"
+      },
+      {
+        "file": "Urban_Mobile_Sample.pdf",
+        "pages": 3,
+        "native_render": "LibreOffice",
+        "word_comparison": "PASS"
+      },
+      {
+        "file": "Glamour_Mobile_Sample.pdf",
+        "pages": 3,
+        "native_render": "LibreOffice",
+        "word_comparison": "PASS"
+      },
+      {
+        "file": "Woodland_Print_Sample.pdf",
+        "pages": 3,
+        "native_render": "LibreOffice",
+        "word_comparison": "PASS"
+      },
+      {
+        "file": "Woodland_Mobile_Sample.pdf",
+        "pages": 3,
+        "native_render": "LibreOffice",
+        "word_comparison": "PASS"
+      },
+      {
+        "file": "Vintage_Mobile_Sample.pdf",
+        "pages": 3,
+        "native_render": "LibreOffice",
+        "word_comparison": "PASS"
+      },
+      {
+        "file": "Minimal_Print_Sample.pdf",
+        "pages": 3,
+        "native_render": "LibreOffice",
+        "word_comparison": "PASS"
+      }
+    ],
+    "mobile_jpgs": 15,
+    "dimensions": [
+      1080,
+      1920
+    ],
+    "original_botanical_pixels": [
+      1060,
+      1484
+    ],
+    "botanical_effective_ppi_at_print_size": 212,
+    "native_Microsoft_PowerPoint_tested": false,
+    "long_name_test": {
+      "files": [
+        "Woodland_Print",
+        "Urban_Mobile"
+      ],
+      "font_size_manually_reduced_to_pt": 22,
+      "names": [
+        "Alexandria-Catherine",
+        "Benjamin-Christopher"
+      ],
+      "text_and_bounds": "PASS",
+      "automatic_fit": false
+    }
+  }
 }
