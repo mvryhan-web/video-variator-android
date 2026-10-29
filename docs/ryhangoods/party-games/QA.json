@@ -1,0 +1,33 @@
+{
+  "page_count_per_size": 6,
+  "paper_sizes": [
+    "A4",
+    "US Letter"
+  ],
+  "distinct_questions": 30,
+  "question_groups": [
+    10,
+    10,
+    10
+  ],
+  "max_score": 160,
+  "score_combinations_tested": 1331,
+  "page_text_bounds": "PASS",
+  "question_presence_each_game_page": "PASS",
+  "cross_size_text_match": "PASS",
+  "party_playtest_performed": false,
+  "timing_claim": null,
+  "color_versions_are_not_different_games": true,
+  "source_artwork": {
+    "pixels": [
+      1254,
+      1254
+    ],
+    "placement_points": [
+      90,
+      90
+    ],
+    "effective_ppi": 1003.2,
+    "alpha": true
+  }
+}
