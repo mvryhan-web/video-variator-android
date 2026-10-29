@@ -1,7 +1,7 @@
 {
   "product_number": 7,
   "sku": "PINO-BW20-01",
-  "status": "FILES_VERIFIED_ETSY_FORM_IN_PROGRESS",
+  "status": "DRAFT_SAVED_OWNER_REVIEW",
   "shop": "Pinogri",
   "date": "2026-10-29",
   "design_count": 20,
@@ -27,5 +27,41 @@
     "Cricut import",
     "Silhouette import"
   ],
-  "etsy_creation_method": "Etsy automatically prefilled Fully by me; not selected by agent. Owner must review before actual publication. AI radio not selected."
+  "etsy_creation_method": "Etsy automatically prefilled Fully by me; not selected by agent. Owner must review before actual publication. AI radio not selected.",
+  "qa_passes": [
+    "Technical: SVG XML, Inkscape, PNG decode, alpha/DPI, ZIP CRC",
+    "Editorial: 20 individual previews and 10 ads reviewed; corrected versions re-exported"
+  ],
+  "independent_cairo_renderer": "NOT TESTED: CairoSVG unavailable",
+  "etsy_listing_id": "4605898045",
+  "etsy_url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4605898045#media",
+  "etsy_verified": {
+    "reopened": true,
+    "draft_label": true,
+    "no_unsaved_changes": true,
+    "photos": 10,
+    "photo_order": "01 hero then 02 through 10 verified in gallery screenshot",
+    "digital_files": [
+      "Pinogri_Book_Lover_20_SVG_PNG.zip"
+    ],
+    "instant_download": true,
+    "tags": 13,
+    "price_eur": "7.90",
+    "quantity": 999,
+    "renewal": "manual",
+    "production_partner": "none",
+    "personalization": "none",
+    "category": "Digital Clip Art & Image Files",
+    "work_type": "Scrapbooking"
+  },
+  "etsy_download_roundtrip": "NOT VERIFIED: browser download event timed out; saved attachment and filename/size confirmed in editor. Local ZIP CRC PASS.",
+  "drive_metadata": {
+    "file_id": "1rVLGRXNEu9qyl3Wp_-BtWnIygeajSy3T",
+    "bytes": 5177574,
+    "parent_id": "1K8Lryh--ZgTmhwirWZIYfRooIbCQdfrb",
+    "verified": true,
+    "public_delivery": false
+  },
+  "proof": "/workspace/scratch/pinogri-07-gallery-4605898045.jpg",
+  "next": "Owner checks the draft and creation-method field, then publishes personally. No actual publication by agent."
 }
