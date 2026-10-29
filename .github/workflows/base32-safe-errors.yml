@@ -6,11 +6,13 @@ on:
     paths:
       - 'app/src/main/assets/generate-studio.js'
       - 'tests/agent-a-base32-safe-errors.spec.mjs'
+      - 'tests/agent-b-base32-truthful-errors.spec.mjs'
       - '.github/workflows/base32-safe-errors.yml'
   pull_request:
     paths:
       - 'app/src/main/assets/generate-studio.js'
       - 'tests/agent-a-base32-safe-errors.spec.mjs'
+      - 'tests/agent-b-base32-truthful-errors.spec.mjs'
       - '.github/workflows/base32-safe-errors.yml'
   workflow_dispatch:
 
@@ -35,8 +37,10 @@ jobs:
       - run: |
           node --check app/src/main/assets/generate-studio.js
           node --check tests/agent-a-base32-safe-errors.spec.mjs
+          node --check tests/agent-b-base32-truthful-errors.spec.mjs
+          node --test tests/generation-errors-unit.mjs
       - run: npx playwright install --with-deps chromium webkit
-      - run: npx playwright test tests/agent-a-base32-safe-errors.spec.mjs --project=chromium --project=webkit
+      - run: npx playwright test tests/agent-a-base32-safe-errors.spec.mjs tests/agent-b-base32-truthful-errors.spec.mjs --project=chromium --project=webkit
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
