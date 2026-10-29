@@ -1,0 +1,55 @@
+{
+  "status": "SOURCE_RESTORED_AND_CHECKED_NOT_TRANSFERRED",
+  "source_zip_library_id": "libfile_340b99214354819195c514466b5f82e2",
+  "source_delivery_library_id": "libfile_8f02694bd3748191982b664285403d53",
+  "source_zip_bytes": 69802,
+  "pdfs": {
+    "A4": {
+      "pages": 9,
+      "paper_size_points": [
+        0.0,
+        0.0,
+        595.2755737304688,
+        841.8897705078125
+      ],
+      "fixed_challenge_counts_and_sums": "PASS",
+      "fillable": false,
+      "old_brand_present": true
+    },
+    "US_Letter": {
+      "pages": 9,
+      "paper_size_points": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ],
+      "fixed_challenge_counts_and_sums": "PASS",
+      "fillable": false,
+      "old_brand_present": true
+    }
+  },
+  "same_designs_in_both_sizes": true,
+  "unique_worksheets": 8,
+  "guide_pages": 1,
+  "sums": {
+    "100x1": 100,
+    "50x10": 500,
+    "100x10": 1000,
+    "1_to_100": 5050,
+    "1_to_52": 1378
+  },
+  "next_steps": [
+    "Read current rules again before visual authoring",
+    "Rebrand separate copies of both PDF files and delivery template; preserve originals",
+    "Show and inspect every page in both sizes",
+    "Create and individually show 10 truthful product-specific ads",
+    "Pack buyer files only, update existing Drive ZIP and public permissions",
+    "Verify no duplicate Pinogri draft then save and reopen DRAFT_ONLY"
+  ],
+  "etsy_new_id": null,
+  "old_etsy_id": "4603672565",
+  "drive_folder": "16hvNFi0B-do9yRl8LEBKgkY_v7GK6r78",
+  "drive_zip": "1_xDe4pihTfON7JWEFhDlNyMFE2VFbevb",
+  "blocker": "cua_repl getState timed out300s this continuation; no UI access. Existing budget draft4605506719 still requires reopen verification; do not duplicate."
+}
