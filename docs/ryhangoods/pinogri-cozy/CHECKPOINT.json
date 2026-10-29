@@ -2,8 +2,8 @@
   "date": "2026-10-29",
   "etsy_id": "4605447255",
   "shop": "Pinogri",
-  "status": "DRAFT_SAVED_SOURCE_QUALITY_HOLD",
-  "publication": "owner only; NOT SALE READY",
+  "status": "DRAFT_SAVED_ALPHA_COMPOSITE_REVIEW_PASS_OWNER_CHECK_REQUIRED",
+  "publication": "DRAFT ONLY; owner checks creation-method field and publishes",
   "photos": 10,
   "price": "3.90 EUR",
   "quantity": 999,
@@ -21,7 +21,7 @@
   "pdf_brand_checks": "visible Pinogri logo, support footer, subtitle, title/author metadata; rendered and actual URI checked",
   "drive_folder": "1P3w1Lq_j6P28K_dMutxPh6qb4rrC1-1m",
   "drive_access": "Folder + all6 ZIP anyone reader allowFileDiscovery=false verified29Oct; complete anonymous download not checked",
-  "source_quality_issue": "Colored yellow/red edge fringes on some existing buyer PNGs visible against dark backgrounds. Do not publish or claim9-10/10/product ready. MUST repair or regenerate affected files, verify all30 on white/dark/colored backgrounds, update all6 delivery ZIPs and relevant exact-art ads before publication. Existing buyer files not modified.",
+  "source_quality_issue": "Previous severe red/yellow fringe warning was based on transparent preview appearance and is NOT confirmed in proper alpha-composited views. Reviewed all30 original PNGs over white, black and green backgrounds (6 QA sheets, 5 designs each). No conspicuous red/yellow fringe visible at reviewed small-project display scale. Low-alpha saturated RGB exists; e.g. cottage sample red pixels mostly alpha1/255. This is not a claim of every pixel being neutral or physical print testing. Original buyer files unchanged; no need to replace them solely on prior warning.",
   "native_ad_sources": {
     "01": "generated_images/exec-21d3adfd-cd7b-44e0-a71b-958849d06f18.png",
     "04": "generated_images/exec-0185c09d-3d3c-4615-85ac-0eafa2e139b7.png",
@@ -30,5 +30,20 @@
   },
   "technical_ads": "02,03,07,08,09,10 from actual buyerPNG via build.py; generated scenes illustrative, 4000x3000 exports from1448x1086 notnative4K",
   "backup": "Local ownerZIP34844917bytes CRCpass; Library helper failed at prepare_uploads before transfer/finalization. No successful new Library IDs; original sources remain Library and4imagegen images automatically retained.",
-  "next": "Repair source edge issue before moving to legacy2; never duplicate Etsy4605447255."
+  "next": "Owner review existing draft4605447255; next transfer legacy2ChristmasDigitalPaper. No duplicates.",
+  "alpha_review": {
+    "date": "2026-10-29",
+    "count": 30,
+    "backgrounds": [
+      "white",
+      "black",
+      "dark green"
+    ],
+    "render": "Pillow RGBA alpha composite; visual inspection all6 sheets",
+    "physical_print_test": false,
+    "test_generation": "generated_images/exec-e9fe38ec-2496-44af-b3f0-81a284e4af37.png",
+    "test_generation_status": "NOT USED: changed house details; keep original consistent with listing",
+    "previous_hold": "Cleared for observed colored-fringe issue at reviewed display scale; owner review still required."
+  },
+  "ai_field_owner_rule": "29Oct: agent does not choose AI button. Existing selected AI field from earlier work has NOT been removed by this turn. No false FullyByMe selection."
 }
