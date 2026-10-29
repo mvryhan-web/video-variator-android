@@ -11,7 +11,7 @@ for theme,cfg in configs.items():
  (r/'build_campaigns.py').write_text(s);subprocess.run(['python3',str(r/'build_campaigns.py')],check=True)
  (r/'Source_Generated').mkdir(exist_ok=True);(r/'Delivery').mkdir(exist_ok=True)
  for n,name in cfg['images'].items():
-  p=WORK/'generated_images'/name;shutil.copy2(p,r/'Source_Generated'/f'{n}.png');im=Image.open(p).convert('RGB').resize((4000,3000),Image.Resampling.LANCZOS);im.save('/tmp/final-ad.jpg',quality=96);os.replace('/tmp/final-ad.jpg',r/theme/'Ads'/f'{n}_{theme}.jpg');im.resize((1400,1050)).save(r/theme/'Ads'/f'{n}_preview.jpg',quality=94)
+  p=Path('/tmp/pinogri-native-final')/(theme+n+'.png');(r/'Source_Generated'/f'{n}.png').write_bytes(p.read_bytes());im=Image.open(p).convert('RGB').resize((4000,3000),Image.Resampling.LANCZOS);im.save('/tmp/final-ad.jpg',quality=96);os.replace('/tmp/final-ad.jpg',r/theme/'Ads'/f'{n}_{theme}.jpg');im.resize((1400,1050)).save(r/theme/'Ads'/f'{n}_preview.jpg',quality=94)
  d=fitz.open(SRC/theme/'Delivery'/f'RyhanGoods_{theme}_Clipart_Download.pdf');p=d[0]
  for box,txt,size in [((187,240,365,287),'Pinogri',31),((268,313,475,331),'Your Pinogri digital download',8),((117,657,436,674),'Questions? Message Pinogri on Etsy.',10)]:
   p.draw_rect(fitz.Rect(box),color=None,fill=(1,.98,.95));p.insert_font(fontname='Brand',fontfile='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf');p.insert_textbox(fitz.Rect(box),txt,fontname='Brand',fontsize=size,align=1,color=(.125,.24,.21))
@@ -27,3 +27,4 @@ for theme,cfg in configs.items():
  with zipfile.ZipFile('/tmp/final-owner.zip') as z:assert z.testzip() is None
  backup=r/f'Pinogri_{theme}_Owner_Resources.zip';os.replace('/tmp/final-owner.zip',backup)
  print(theme,pdf.stat().st_size,backup.stat().st_size,flush=True)
+
