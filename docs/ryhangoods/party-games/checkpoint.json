@@ -2,8 +2,8 @@
   "catalog_number": 6,
   "product": "What's on Your Phone? — The Girls' Night Edit",
   "shop": "Pinogri",
-  "status": "PDFS_CREATED_AND_SHOWN_ADS_IN_PROGRESS",
-  "etsy_id": null,
+  "status": "ETSY_DRAFT_SAVED_AND_REOPENED_VERIFIED",
+  "etsy_id": "4605691816",
   "distinct_game_count": 1,
   "questions": 30,
   "points": [
@@ -53,10 +53,46 @@
   "proposed_price_eur": 3.9,
   "art_source": "generated_images/exec-608eb78e-27e0-43ea-806f-c243b6eae6b8.png",
   "next": [
-    "Finish10 ads and show individually",
-    "Package buyerZIP",
-    "Drive backup plus working delivery",
-    "Etsy DRAFT only, reopen verify"
+    "Owner review and publish"
   ],
-  "created": "2026-10-29"
+  "created": "2026-10-29",
+  "etsy_url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4605691816#media",
+  "price_eur": 3.9,
+  "quantity": 999,
+  "ad_count": 10,
+  "ad_pixels": [
+    4000,
+    3000
+  ],
+  "tags_count": 13,
+  "delivery": "Direct Etsy ZIP; 2 PDFs plus TXT; no external link needed",
+  "zip": {
+    "bytes": 2681560,
+    "entries": 3,
+    "sha256": "664865bf486f36b0fc039ed3f44313feed04bc9f94921cb1e5fcdc500fb376c8",
+    "crc": "PASS"
+  },
+  "drive": {
+    "folder_id": "1t1lCONUgerVT5Z-9Ne8FO0tBSoIAOM4M",
+    "zip_id": "1s3K3m3mRv7wrx0EhRh_9GM4rsa6SV2MZ",
+    "scope": "Private buyer ZIP backup; no ads",
+    "metadata_size_verified": 2681560,
+    "download_roundtrip": "Not verified: signed download URL returned403"
+  },
+  "provenance": {
+    "fully_by_me": 0,
+    "ai_generator": 0,
+    "owner_to_review": true,
+    "truthful_description_disclosure": true
+  },
+  "verification": [
+    "10 ads shown individually then uploaded in order",
+    "Square/portrait/landscape cover inspected",
+    "ZIP filename and2.68MB visible after reopening",
+    "13 tags visible after reopening",
+    "Draft and No unsaved changes visible",
+    "Instant download, no production partner, manual renewal",
+    "No Publish action"
+  ],
+  "completed": "2026-10-29"
 }
