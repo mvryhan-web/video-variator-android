@@ -1,0 +1,240 @@
+{
+  "questions": 30,
+  "point_groups": [
+    10,
+    10,
+    10
+  ],
+  "max_score": 160,
+  "combinations_checked": 1331,
+  "identical_numbered_game_text_all8": "PASS",
+  "pages": [
+    {
+      "size": "A4",
+      "page": 1,
+      "bounds": "PASS",
+      "rasterized_at_ppi": 300,
+      "raster_dimensions": [
+        2481,
+        3508
+      ],
+      "content": "PASS"
+    },
+    {
+      "size": "A4",
+      "page": 2,
+      "bounds": "PASS",
+      "rasterized_at_ppi": 300,
+      "raster_dimensions": [
+        2481,
+        3508
+      ],
+      "content": "PASS"
+    },
+    {
+      "size": "A4",
+      "page": 3,
+      "bounds": "PASS",
+      "rasterized_at_ppi": 300,
+      "raster_dimensions": [
+        2481,
+        3508
+      ],
+      "content": "PASS"
+    },
+    {
+      "size": "A4",
+      "page": 4,
+      "bounds": "PASS",
+      "rasterized_at_ppi": 300,
+      "raster_dimensions": [
+        2481,
+        3508
+      ],
+      "content": "PASS"
+    },
+    {
+      "size": "A4",
+      "page": 5,
+      "bounds": "PASS",
+      "rasterized_at_ppi": 300,
+      "raster_dimensions": [
+        2481,
+        3508
+      ],
+      "content": "PASS"
+    },
+    {
+      "size": "A4",
+      "page": 6,
+      "bounds": "PASS",
+      "rasterized_at_ppi": 300,
+      "raster_dimensions": [
+        2481,
+        3508
+      ],
+      "content": "PASS"
+    },
+    {
+      "size": "US_Letter",
+      "page": 1,
+      "bounds": "PASS",
+      "rasterized_at_ppi": 300,
+      "raster_dimensions": [
+        2550,
+        3300
+      ],
+      "content": "PASS"
+    },
+    {
+      "size": "US_Letter",
+      "page": 2,
+      "bounds": "PASS",
+      "rasterized_at_ppi": 300,
+      "raster_dimensions": [
+        2550,
+        3300
+      ],
+      "content": "PASS"
+    },
+    {
+      "size": "US_Letter",
+      "page": 3,
+      "bounds": "PASS",
+      "rasterized_at_ppi": 300,
+      "raster_dimensions": [
+        2550,
+        3300
+      ],
+      "content": "PASS"
+    },
+    {
+      "size": "US_Letter",
+      "page": 4,
+      "bounds": "PASS",
+      "rasterized_at_ppi": 300,
+      "raster_dimensions": [
+        2550,
+        3300
+      ],
+      "content": "PASS"
+    },
+    {
+      "size": "US_Letter",
+      "page": 5,
+      "bounds": "PASS",
+      "rasterized_at_ppi": 300,
+      "raster_dimensions": [
+        2550,
+        3300
+      ],
+      "content": "PASS"
+    },
+    {
+      "size": "US_Letter",
+      "page": 6,
+      "bounds": "PASS",
+      "rasterized_at_ppi": 300,
+      "raster_dimensions": [
+        2550,
+        3300
+      ],
+      "content": "PASS"
+    }
+  ],
+  "ads": [
+    {
+      "file": "01_Phone_Party_V2.jpg",
+      "sha256": "ba615d1df1837056a4c3ecfaf97b45483c2a2bef15ec96f7b017e098fc508b75",
+      "dimensions": [
+        4000,
+        3000
+      ]
+    },
+    {
+      "file": "02_Phone_Party_V2.jpg",
+      "sha256": "9717f90d9ccb5ecd12da0a928cea6fde5362d4b388d0b63ff8d1364c7455e140",
+      "dimensions": [
+        4000,
+        3000
+      ]
+    },
+    {
+      "file": "03_Phone_Party_V2.jpg",
+      "sha256": "92716b5220c962b79cc4719fe07bef4fdc97ce8486b0cb2a736143cfc48e2353",
+      "dimensions": [
+        4000,
+        3000
+      ]
+    },
+    {
+      "file": "04_Phone_Party_V2.jpg",
+      "sha256": "cba5439c6e73ebffa650eb50577ee7e93e611ad8b7411a523b7bb3b9fdfd6ac8",
+      "dimensions": [
+        4000,
+        3000
+      ]
+    },
+    {
+      "file": "05_Phone_Party_V2.jpg",
+      "sha256": "01832b51d9dc8bfeddd90bcc58dd6b72318b72ce383960feff4c082dce3d03c8",
+      "dimensions": [
+        4000,
+        3000
+      ]
+    },
+    {
+      "file": "06_Phone_Party_V2.jpg",
+      "sha256": "6678bab3dc740756c099281461b28430da28e9582a667852654758841a318e70",
+      "dimensions": [
+        4000,
+        3000
+      ]
+    },
+    {
+      "file": "07_Phone_Party_V2.jpg",
+      "sha256": "63dae628081e17e8499a92aef09f19bcd6e0e08a80c0a949bd5eebbfc4bb5257",
+      "dimensions": [
+        4000,
+        3000
+      ]
+    },
+    {
+      "file": "08_Phone_Party_V2.jpg",
+      "sha256": "5deaf2dff714d798aa2673740ccc842fb5d57d6f52424ef1dcde1c51c975f34a",
+      "dimensions": [
+        4000,
+        3000
+      ]
+    },
+    {
+      "file": "09_Phone_Party_V2.jpg",
+      "sha256": "024a4df3af51f08a47d5643fe427eae59f45b7b1c49da2bc6772ecdacdc30554",
+      "dimensions": [
+        4000,
+        3000
+      ]
+    },
+    {
+      "file": "10_Phone_Party_V2.jpg",
+      "sha256": "5da6bc100611f00ea8e25264c433e2ecc41e29b63510fddc262fbc91d987cc7e",
+      "dimensions": [
+        4000,
+        3000
+      ]
+    }
+  ],
+  "print_simulation": "PDF physical dimensions and 300ppi rasterization PASS; no physical print performed",
+  "live_party_playtest": "NOT TESTED",
+  "generated_photos_native_pixels": [
+    1448,
+    1086
+  ],
+  "advertising_export_pixels": [
+    4000,
+    3000
+  ],
+  "native_4k_claim": false,
+  "editorial_review": "30 unique prompts, self-report/skip rules, no forced disclosure; numbering and ambiguous wording corrected",
+  "visual_review": "12 pages and10 individual ads inspected; Cherry/Cobalt crop cut-lines corrected; scoring strip background corrected;06/10 incomplete JPEGs re-exported atomically and all10 fully decoded"
+}
