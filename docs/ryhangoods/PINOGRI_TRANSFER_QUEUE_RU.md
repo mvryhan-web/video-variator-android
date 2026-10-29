@@ -16,12 +16,15 @@
 |legacy2|Christmas Digital Paper Pack|4603500584|DRAFT4605467155;10новыхads/coverv2;PinogriPDF2.5MB;13tags;€3.90;повторнооткрыт29.10;Drivepublic;EtsyсамаотметилаFullyByMe,агентневыбиралрадио—владельцуисправитьпередпубликацией|
 |legacy3|Christmas Gift Tags|4603531669|DRAFT4605489773;10новыхads;PinogriPDF2.47MB;24JPG+2printPDF;13tags;€3.90;повторнооткрыт29.10;Drivepublic+CRC/SHAroundtripPASS;EtsyавтоFullyByMe—владельцуисправитьпередпубликацией|
 |legacy4|Monthly Budget Planner|4603634235|DRAFT4605506719 СОХРАНЕН: toast+список25drafts;10новыхads/PinogriPDF2.46MB;13tags;€3.90;Drivepublic+CRC/SHA PASS;обаAI/originalпустыепередsave;повторноеоткрытиеблокировано2browsertimeouts—проверитьэтотID,НЕсоздаватьдубль|
-|legacy5|Savings Challenge Bundle|4603672565|Проверка качества и доставки|
-|legacy6|The Midnight Star|4603725963|Проверка качества и доставки|
-|legacy7|Wedding Newspaper|4603994001|Проверка качества и доставки|
-|legacy8|Bakery Business Kit|4604040102|Проверка качества и доставки|
+|legacy5|Savings Challenge Bundle|4603672565|ОТЛОЖЕН владельцем29.10: выбраны три других товара; исходники/расчёты проверены, нового Pinogri DRAFT нет|
+|legacy6|The Midnight Star|4603725963|3-й приоритет;10новыхads+PinogriPDF+buyerZIP62384039bytes,CRC/SHAroundtripPASS;Driveowner-only;DRAFTНЕсоздан—browserblocked|
+|legacy7|Wedding Newspaper|4603994001|2-й приоритет;10новыхads+PinogriPDF+buyerZIP36980bytes,CRC/SHAroundtripPASS;Driveowner-only;DRAFTНЕсоздан—browserblocked|
+|legacy8|Bakery Business Kit|4604040102|1-й приоритет;10новыхads+PinogriPDF+buyerZIP72028663bytes,CRC/SHAroundtripPASS;Drivepublic;DRAFTНЕсоздан—browserblocked|
 
 Не переносить как отдельный SKU: старый объединённый100PNG4604722079; отвергнутыйGentleFocusV1; отменённыеcustompetportraits. Остальные14направленийпланнепроизводство. №14A–Dнеизменять.
 
 ## Проверки
 GitHubправилачитатьполностьюпередномером. БрендновойкарточкиPinogri. Сначалапоказкаждогорекламногокадраздесь,проверкакомпозиции/фактическоготовара/типографики/миниатюры,исправления. Ровно10фото,ENtitle/description,13tags<=20,instantdownload,безproductionpartner,manualrenewal,правдивыеформатыиразрешение. НеверноеFullyByMeневыбирать. AIradioвладельцуприформеunset,обязательноераскрытиеописаниясохранять. Новуюдоставкупроверить;доступDriveanyone-readerтолькодляbuyerфайлов;adsтолькоEtsy. SaveDRAFT→повторноеоткрытие→реальныйID/checkpoint. Необещать10/10какобъективнуюгарантию.
+
+## Выбранные три товара —29.10.2026
+Владелец поручил bakery→newspaper→midnight,по10рекламныхизображений,всего30,затемDRAFT_ONLYPinogri. Материалысозданыипоказаны,скрипты/описания/checkpointsсохраненывdocs/ryhangoods/pinogri-bakery,pinogri-newspaper,pinogri-midnight. Browsercua_repljs_reset300stimeout,подключениеEtsyне найдено;новые3черновикаНЕсозданы,невыдаватьподготовкузаEtsyготовность. ОткрытьдоступDriveдвумпоследнимпапкам,проверитьнедублирование,загрузитьматериалы,проверитьминиатюры,сохранитьиповторнооткрыть. Librarybackupfailedstoragefull;локальныйобщийZIP30ads+3deliveryPDF+listing/sourcecode. РекламавDriveнезагружалась.
