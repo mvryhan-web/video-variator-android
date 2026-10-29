@@ -40,7 +40,7 @@ test('BASE38: real signed owner+foreign JWT cannot bypass admin/credit feature g
  const schema='d38_'+randomUUID().replaceAll('-','');
  const db=new pg.Client({connectionString});
  await db.connect();
- let pool,server,providerCalls=0,walletWrites=0;
+ let pool,server,providerCalls=0,walletWrites=0,walletInits=0;
  try{
   await db.query('CREATE SCHEMA '+schema);
   pool=new pg.Pool({connectionString,options:'-c search_path='+schema,max:2,connectionTimeoutMillis:3000});
@@ -62,7 +62,7 @@ test('BASE38: real signed owner+foreign JWT cannot bypass admin/credit feature g
    AI_SMART_ROUTING_ENABLED:'false',AI_STUDIO_WALLET_ENABLED:'false',
    AI_PUBLIC_GENERATION_ENABLED:'false',AI_PURCHASED_ONLY_DISPATCH_ENABLED:'false'
   };
-  const wallet={async init(){walletWrites++},async adjust(){walletWrites++;throw Error('NEVER_ADJUST')},
+  const wallet={async init(){walletInits++},async adjust(){walletWrites++;throw Error('NEVER_ADJUST')},
    async settle(){walletWrites++;throw Error('NEVER_SETTLE')}};
   const app=express();app.use(express.json());
   installGenerationStudio(app,{auth,pool,env,wallet,
