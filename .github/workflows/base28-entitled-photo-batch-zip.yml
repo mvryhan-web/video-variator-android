@@ -26,6 +26,6 @@ jobs:
       - run: node --check app/src/main/assets/free-tools.js && node --check app/src/main/assets/mobile-utility.js && node --check app/src/main/assets/audio-studio.js && node --check app/src/main/assets/photo-collage.js && node --check tests/base28-entitled-photo-batch-zip.spec.mjs && node --check tests/base28-utilities-original-requirement.spec.mjs
       - run: npx playwright install --with-deps chromium webkit
       - name: Authorized photo batch local ZIP, denied access and free single photo
-        run: npx playwright test tests/base28-entitled-photo-batch-zip.spec.mjs tests/base28-utilities-original-requirement.spec.mjs tests/photo-collage.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit
+        run: npx playwright test tests/base28-entitled-photo-batch-zip.spec.mjs tests/base28-utilities-original-requirement.spec.mjs tests/photo-collage.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=1
       - name: Existing entitled batch processing contract
         run: npx playwright test tests/free-tools.spec.mjs --grep 'batch photos are local' --project=chromium --project=webkit
