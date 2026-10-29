@@ -228,5 +228,15 @@
       "text_and_bounds": "PASS",
       "automatic_fit": false
     }
-  }
+  },
+  "owner_backup": {
+    "path": "output/Pinogri_Wedding_Invitations_Project.zip",
+    "bytes": 40529348,
+    "files": 130,
+    "library_saved": false,
+    "library_error": "library_storage_limit_exceeded",
+    "contains_ads": true,
+    "not_uploaded_to_drive": true
+  },
+  "browser_upload_note": "In existing Etsy editor, click the visible label[for=observed thumbnail file-input id] using Playwright; AX input click timed out. No need for extra application."
 }
