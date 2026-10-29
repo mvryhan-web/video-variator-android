@@ -1,0 +1,23 @@
+{
+  "mode": "Built-in image_gen; references are supplied as exact print artwork",
+  "outputs": [
+    {
+      "file": "generated_images/exec-f8dce1c1-6c7a-4be0-9fec-cce64074fb25.png",
+      "reference": "Previews/17_Tote_Plots.jpg",
+      "prompt": "Use case: product-mockup. Create a premium square editorial product photo for an Etsy digital design listing. Input image is exact artwork to be printed on the canvas tote, not inspiration. Photograph a natural cotton tote front-facing on a dark walnut library chair, warm side light, books gently blurred in background, sophisticated small stationery brand feel, tactile linen and richly detailed real materials. Print exactly the artwork from reference on the tote in forest green, terracotta, cream and navy. Exact words: THIS TOTE CARRIES / PLOT TWISTS. Keep all letters, tote illustration and book illustration, proportions and colors exact. Do not print the reference's page background, filename or Pinogri preview label. Tote occupies 75% of frame, print is crisp and legible. No other text, no extra logos or watermark. High detail, square 3000 x 3000 or larger if supported."
+    },
+    {
+      "file": "generated_images/exec-40855f15-d0ec-4948-b95d-06a40bcf674b.png",
+      "reference": "Previews/20_Soft_Covers.jpg",
+      "prompt": "Use case: product-mockup. A premium square editorial photograph for a digital bookish design product. Supporting input is exact print artwork. Warm ecru heavyweight sweatshirt neatly folded on an oak reading desk with an antique book and spectacles on far edge, cocoa background, soft side daylight and realistic fabric grain. Garment front large and unobstructed, occupying 85% of frame. Print the exact artwork of the input: terracotta italic SOFT / COVERS, forest-green open book with red bookmark and two navy stars, then STRONG / OPINIONS in green serif. Preserve all letters and illustration shapes. No filename, ivory reference background or Pinogri preview. No additional text or brands. Square image at 3000 x 3000 or larger if supported, crisp print and premium realistic photography."
+    },
+    {
+      "file": "generated_images/exec-bd9edabc-cffc-47c7-87fd-a30c17609d35.png",
+      "reference": "Previews/04_Tea_And_Plots.jpg",
+      "prompt": "Use case: product-mockup. Create a single premium square realistic editorial photo showing the exact reference artwork printed on a large cream ceramic mug, front view, handle to right. Mug rests on a forest-green leather book, dim walnut library background, warm natural light on ceramic, exceptional tactile detail, cozy elegant bookshop identity. Artwork exact: TEA COOLING in forest-green bold serif, plot thickening in green italic, a terracotta tea cup with three gold steam lines above a cream open book with green outlines and red bookmark. Preserve all wording, shapes and colors from the supporting reference. Do not print the reference's background, filename or preview label. Full design entirely visible. No other text, no extra logos. Mug large within photograph, 3000 x 3000 or higher if supported."
+    }
+  ],
+  "actual_generated_dimensions": [1254,1254],
+  "final_marketing_dimensions": [3600,3600],
+  "note": "The tool returned 1254px photos despite the requested size. Native-size photos are placed within the marketing compositions; exact delivered art and typography render at full final size. Do not claim the source photos are native 4K."
+}
