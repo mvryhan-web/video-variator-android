@@ -1,0 +1,72 @@
+[
+  {
+    "file": "Glamour_Mobile.pdf",
+    "long_names": true,
+    "page_bounds": true,
+    "manual_font_reduction": true,
+    "application": "LibreOffice"
+  },
+  {
+    "file": "Glamour_Print.pdf",
+    "long_names": true,
+    "page_bounds": true,
+    "manual_font_reduction": true,
+    "application": "LibreOffice"
+  },
+  {
+    "file": "Minimal_Mobile.pdf",
+    "long_names": true,
+    "page_bounds": true,
+    "manual_font_reduction": true,
+    "application": "LibreOffice"
+  },
+  {
+    "file": "Minimal_Print.pdf",
+    "long_names": true,
+    "page_bounds": true,
+    "manual_font_reduction": true,
+    "application": "LibreOffice"
+  },
+  {
+    "file": "Urban_Mobile.pdf",
+    "long_names": true,
+    "page_bounds": true,
+    "manual_font_reduction": true,
+    "application": "LibreOffice"
+  },
+  {
+    "file": "Urban_Print.pdf",
+    "long_names": true,
+    "page_bounds": true,
+    "manual_font_reduction": true,
+    "application": "LibreOffice"
+  },
+  {
+    "file": "Vintage_Mobile.pdf",
+    "long_names": true,
+    "page_bounds": true,
+    "manual_font_reduction": true,
+    "application": "LibreOffice"
+  },
+  {
+    "file": "Vintage_Print.pdf",
+    "long_names": true,
+    "page_bounds": true,
+    "manual_font_reduction": true,
+    "application": "LibreOffice"
+  },
+  {
+    "file": "Woodland_Mobile.pdf",
+    "long_names": true,
+    "page_bounds": true,
+    "manual_font_reduction": true,
+    "application": "LibreOffice"
+  },
+  {
+    "file": "Woodland_Print.pdf",
+    "long_names": true,
+    "page_bounds": true,
+    "manual_font_reduction": true,
+    "application": "LibreOffice"
+  }
+]
