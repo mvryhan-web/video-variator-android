@@ -1,0 +1,51 @@
+name: Agent A BASE27 real legacy continuity
+
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'tests/agent-a-base27-continuity.spec.mjs'
+      - 'tests/agent-a-base27-real-export.spec.mjs'
+      - '.github/workflows/agent-a-base27-continuity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-a-base27-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  legacy-real-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    env:
+      HOME: /root
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check tests/agent-a-base27-continuity.spec.mjs && node --check tests/agent-a-base27-real-export.spec.mjs
+      - name: Tools to Video Uniquifier controls, 4 widths and 5 actual browser engines
+        run: npx playwright test tests/agent-a-base27-continuity.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2 --retries=0
+      - name: Real local source fixture encoder dependency (no network provider)
+        run: command -v ffmpeg && command -v ffprobe || (apt-get update -qq && apt-get install -y -qq ffmpeg)
+      - name: Real on-device FFmpeg.wasm MP4 export, download and independent ffprobe
+        run: npx playwright test tests/agent-a-base27-real-export.spec.mjs --project=chromium --workers=1 --retries=0
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: agent-a-base27-browser-failure
+          path: test-results/
+          retention-days: 7
