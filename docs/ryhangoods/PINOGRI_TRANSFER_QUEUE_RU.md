@@ -9,8 +9,8 @@
 |2|The Reading Room — Notion|4604358549|ГОТОВ DRAFT4605082640;10новыхads;PDF3.66MB;€9.90;повторнопроверен|
 |3A|Christmas Clipart —25PNG|4604759097|ГОТОВ DRAFT4605125997;10ads;PDF3.66MB;€3.90;deliverypublicпроверена;повторнооткрыт|
 |3B|Halloween Clipart —25PNG|4604782520|ГОТОВ DRAFT4605173864;10ads;PDF3.66MB;€3.90;deliverypublicпроверена;повторнооткрыт|
-|3C|Birthday Clipart —25PNG|4604760719|Проверить отсутствие дубля|
-|3D|Wedding Clipart —25PNG|4604761477|Проверить отсутствие дубля|
+|3C|Birthday Clipart —25PNG|4604760719|ГОТОВ DRAFT4605395768;10ads;PinogriPDF3.66MB;13tags;€3.90;повторнооткрыт29.10|
+|3D|Wedding Clipart —25PNG|4604761477|ГОТОВ DRAFT4605398106;10ads;PinogriPDF3.66MB;13tags;€3.90;повторнооткрыт29.10|
 |4|The Hidden Garden —30nature coloring|—|ACTIVE4604965278 (опубликовал владелец); ДОСТАВКА ИСПРАВЛЕНА:ZIP205006047bytes1sFCi_FB7djyzWvt6ocW7pWJH8zxk96VK;folder+ZIPanyone-readerпроверены;ссылкаPDFпрежняя|
 |legacy1|Cozy Christmas Clipart|4603460908|Проверка качества и доставки|
 |legacy2|Christmas Digital Paper Pack|4603500584|Проверка качества и доставки|
