@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `1321dd52885177c457e9cc31d9715937cc64c5c6`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` | Indexed files: 53 | Named symbols: 142 | Checked relations: 50
+Source commit: `f114c72a8fa251116584682122185ba1fbdb1dcd`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` | Indexed files: 54 | Named symbols: 143 | Checked relations: 50
 
 ## Topic finder (matching filenames)
 
@@ -13,7 +13,7 @@ Scope: `server/` | Indexed files: 53 | Named symbols: 142 | Checked relations: 5
 - **Image, Canvas and Home:** `server/deepsyq-preview.js`, `server/generation-openai-image.js`
 - **Audio and voice:** `server/speech.js`
 - **AI Apps, Inspiration, History:** `server/generation-inspiration.js`, `server/tool-policy.js`, `server/workspace-job-view.js`, `server/workspace-project-policy.js`
-- **Accounts and security:** `server/email-auth.js`, `server/generation-trial-policy.js`, `server/product-watcher/scheduler-state-policy.js`, `server/tool-policy.js`, `server/user-agent-plan.js`, `server/workspace-project-policy.js`
+- **Accounts and security:** `server/email-auth.js`, `server/generation-trial-policy.js`, `server/product-watcher/scheduler-state-policy.js`, `server/tool-policy.js`, `server/user-agent-plan.js`, `server/user-agent-stage1-local-draft.js`, `server/workspace-project-policy.js`
 
 ## Source symbol map
 
@@ -220,6 +220,10 @@ TOOL_TRIAL_LIMIT (L1) · TOOL_MINIMUM_PLAN (L2) · ranks (L3)
 ### `server/user-agent-plan.js`
 
 AUTHORIZED_CAPABILITIES (L16) · GOAL_TEMPLATES (L103)
+
+### `server/user-agent-stage1-local-draft.js`
+
+WORKFLOWS (L15)
 
 ### `server/workspace-job-view.js`
 
