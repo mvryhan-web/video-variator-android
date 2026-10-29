@@ -1,0 +1,73 @@
+{
+  "buyer_zip_bytes": 7599760,
+  "buyer_zip_sha256": "ed8019d8fb2cf013165c9e908fed181f5d7e988682e8a48f05f95fa297270618",
+  "entries": 27,
+  "jpg_count": 24,
+  "jpgs_unchanged": true,
+  "ads_count": 10,
+  "source_zip_library": "libfile_31771be2df248191ba4e12c954e27f9c",
+  "source_pdf_library": "libfile_c87153ed3f808191bdd025e8f4d9fb46",
+  "drive_folder": "1RBm0fL9Nsgn-NdJOgqXmO_Lozmk6tq2N",
+  "drive_zip": "1Cu_jvbCFHoFKBjxZSh_S5aZOKg-IpZ_E",
+  "ad_sources": {
+    "01": "exec-cb7a2b4d-0f78-4c3b-a0a7-5fb2e14d5262.png",
+    "04": "exec-358686ce-d64c-4fe4-8281-56e1020f5c81.png",
+    "05": "exec-e12f8f4c-c276-4c74-bd0b-1044d3293139.png",
+    "06": "exec-a14bf5db-5ec6-4054-88db-5ff6094342d6.png"
+  },
+  "native_ad_size": [
+    1448,
+    1086
+  ],
+  "ad_export_size": [
+    4000,
+    3000
+  ],
+  "pdf_delivery_bytes": 2471359,
+  "all_visuals_shown": true,
+  "status": "DRAFT_SAVED_REOPENED_VERIFIED_OWNER_PROVENANCE_REVIEW_REQUIRED",
+  "changes": "All24JPGbyteidentical. Both print PDFs rebranded and crop marks strengthened; deliveryPDFrebranded and linkcorrect.",
+  "provenance_radio": "Etsy autofilled Fully by me, agent did not select either radio, owner must correct before publishing.",
+  "checks": {
+    "all24JPGopened": true,
+    "bothPDF3pagesRendered": true,
+    "tagImageBoxes144x216points": true,
+    "displayWatermarksOnly": true,
+    "coverSquareCropChecked": true,
+    "physicalPrintTested": false,
+    "anonymousDownloadTested": false
+  },
+  "research": [
+    {
+      "url": "https://www.etsy.com/listing/4397849939/watercolor-christmas-gift-tags-printable",
+      "notes": "29Oct2026 indexed4USD,18 designsPNG/PDF,1itemreview17Dec2025; nothighvolumeevidence"
+    },
+    {
+      "url": "https://www.etsy.com/listing/4389053493/christmas-gift-tag-printable-elegant",
+      "notes": "29Oct2026 indexed9itemreviews,Jan/Feb2026mentionniceonpresentsandeasyinstructions"
+    },
+    {
+      "url": "https://www.etsy.com/listing/1132130001/downloadable-watercolor-christmas-gift",
+      "notes": "29Oct2026 index9itemreviews; older10Mar2023complaint hardtocut informedclearrectanglesandstrengthenedcropmarks"
+    }
+  ],
+  "date": "2026-10-29",
+  "shop": "Pinogri",
+  "etsy_id": "4605489773",
+  "etsy_url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4605489773",
+  "price_eur": 3.9,
+  "quantity": 999,
+  "tag_count": 13,
+  "category": "Gift Tag Templates12482 digital",
+  "instant_download": true,
+  "production_partner": null,
+  "renewal": "manual",
+  "drive_roundtrip": {
+    "bytes": 7599760,
+    "sha256": "ed8019d8fb2cf013165c9e908fed181f5d7e988682e8a48f05f95fa297270618",
+    "crc": "PASS",
+    "authenticated": true,
+    "anonymous_download_tested": false
+  },
+  "next": "legacy4 Monthly Budget Planner old4603634235; read full current rules and queue first"
+}
