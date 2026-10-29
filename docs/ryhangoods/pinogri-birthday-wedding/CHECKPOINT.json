@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-29",
+  "status": "DRAFT_SAVED_REOPENED",
+  "shop": "Pinogri",
+  "drive_account": "mvryhan@gmail.com",
+  "items": {
+    "Birthday": {
+      "etsy_id": "4605395768",
+      "pdf": "Pinogri_Birthday_Clipart_Download.pdf",
+      "pdf_bytes": 3664984,
+      "owner_zip_bytes": 40630079,
+      "folder": "1WxpG6ML_nXzH0nlCoCGEO9e4PhmnoQk8",
+      "buyer_zip": "1n8Gj1tusn-9OK3UpzOvkAyT7TEeF99JY",
+      "buyer_library": "libfile_6a350c5db0b48191b62cf835fc3e93a7",
+      "image_library": {
+        "01": "libfile_c159682299c4819192591b03c0d1a2cc",
+        "04": "libfile_c09404fd770c81919e1ae649d45d64d7",
+        "05": "libfile_4a7609c8a2488191a4c94e403bd37f9d",
+        "06": "libfile_83ec3b4990308191b41924748f27c879"
+      }
+    },
+    "Wedding": {
+      "etsy_id": "4605398106",
+      "pdf": "Pinogri_Wedding_Clipart_Download.pdf",
+      "pdf_bytes": 3664979,
+      "owner_zip_bytes": 37409889,
+      "folder": "1dvxMzzHBgVBrqekPqs-QiMwUjAyNqS65",
+      "buyer_zip": "1604_3OiOMyEKdAw05_9lbhBtg3U6LBj9",
+      "buyer_library": "libfile_66d4e0d671548191a99f4ecd97ae5a8b",
+      "image_library": {
+        "01": "libfile_fbdd2a9cd5b481919d9ddcd896afd0d7",
+        "04": "libfile_625dd2198aec8191a016e5c88f5a2ccc",
+        "05": "libfile_d0f6a2fcee448191a4828d47d6120bee",
+        "06": "libfile_133da8a1bc0081919a25c2669b018a16"
+      }
+    }
+  },
+  "checks": {
+    "each_photos": 10,
+    "each_designs": 25,
+    "each_tags": 13,
+    "price_eur": "3.90",
+    "quantity": 999,
+    "manual_renewal": true,
+    "production_partner": false,
+    "instant_download": true,
+    "ai": "with_ai_generator_corrected_from_autofill",
+    "pdf_visible_brand": "Pinogri rendered and checked",
+    "pdf_metadata": "Pinogri",
+    "pdf_URI": "correct theme Drive folder",
+    "drive_permissions": "folder and ZIP anyone reader, allowFileDiscovery false confirmed 2026-10-29",
+    "etsy_reopen": "Draft; No unsaved changes; photos/PDF/tags/price/quantity checked",
+    "roundtrip_pdf_download": "Attempted Birthday Etsy button but browser download event timed out; no roundtrip-byte claim",
+    "anonymous_download": "not checked"
+  },
+  "recovery": {
+    "original_owner_library": "libfile_1c02f59dfc1481918569b83474b738e4",
+    "instructions": "Restore original owner Sources/Metadata/PDF and both buyer ZIPs. Extract buyer PNGs into output/birthday-wedding-restored/{theme}. Restore image_library mapped per theme/number into /tmp/pinogri-native-final/{theme}{number}.png without copying Library xattrs into generated_images. Run prepare.py. Use fresh Gallery_Final filenames for upload to avoid stale cache. Reopen existing drafts, NEVER duplicate.",
+    "new_library_backup": "UNSAVED: prepared upload helper failed at prepare_uploads twice before byte transfer or finalization. No successful IDs returned. PDFs are saved in Etsy; sources and original artwork Library IDs above; owner backups local only."
+  }
+}
