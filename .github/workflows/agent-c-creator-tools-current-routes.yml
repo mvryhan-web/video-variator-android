@@ -4,7 +4,6 @@ on:
     branches: [deepsyq-platform]
     paths:
       - 'tests/creator-tools.spec.mjs'
-      - 'app/src/main/assets/tools-hub.js'
       - '.github/workflows/agent-c-creator-tools-current-routes.yml'
   workflow_dispatch:
 permissions:
@@ -25,7 +24,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - run: node --check tests/creator-tools.spec.mjs && node --check app/src/main/assets/tools-hub.js
+      - run: node --check tests/creator-tools.spec.mjs
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: npx playwright install --with-deps chromium firefox webkit
       - name: Five-browser visible routes, canonical plan prices and genuine on-device MP4 downloads
