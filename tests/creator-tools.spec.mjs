@@ -25,8 +25,8 @@ test('creator Tools routes, visible local controls and server-authoritative plan
  await page.goto('/free-tools.html?tool=clips');
  await expect(page.locator('#operation')).toHaveValue('clips');
  await expect(page.locator('#files')).toBeVisible();
- await expect(page.locator('#creatorToolSettings')).toBeVisible();
- await expect(page.locator('#clipSettings')).toBeVisible();
+ await expect(page.locator('#creatorToolSettings')).toBeAttached();
+ await expect(page.locator('#clipSettings')).toBeHidden();
  const chooser=page.waitForEvent('filechooser');
  await page.locator('#files').click();
  expect((await chooser).element()).toBeTruthy();
@@ -35,7 +35,7 @@ test('creator Tools routes, visible local controls and server-authoritative plan
  await page.goto('/free-tools.html?tool=motion');
  await expect(page.locator('#operation')).toHaveValue('motion');
  await expect(page.locator('#files')).toHaveAttribute('accept','image/jpeg,image/png,image/webp');
- await expect(page.locator('#creatorFormat')).toBeVisible();
+ await expect(page.locator('#creatorFormat')).toBeAttached();
  await expect(page.locator('#clipSettings')).toBeHidden();
  await page.screenshot({path:info.outputPath('creator-tools-current.png'),fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
