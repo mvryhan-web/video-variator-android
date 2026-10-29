@@ -23,14 +23,246 @@
     "US Letter"
   ],
   "pages_per_pdf": 6,
-  "qa": [
-    "12 real PDF pages shown separately",
-    "30 unique questions present in all8 game sheets",
-    "Text match across paper sizes PASS",
-    "Bounds PASS",
-    "1331 score combinations checked",
-    "No live party playtest; no playtime claim"
-  ],
+  "qa": {
+    "questions": 30,
+    "point_groups": [
+      10,
+      10,
+      10
+    ],
+    "max_score": 160,
+    "combinations_checked": 1331,
+    "identical_numbered_game_text_all8": "PASS",
+    "pages": [
+      {
+        "size": "A4",
+        "page": 1,
+        "bounds": "PASS",
+        "rasterized_at_ppi": 300,
+        "raster_dimensions": [
+          2481,
+          3508
+        ],
+        "content": "PASS"
+      },
+      {
+        "size": "A4",
+        "page": 2,
+        "bounds": "PASS",
+        "rasterized_at_ppi": 300,
+        "raster_dimensions": [
+          2481,
+          3508
+        ],
+        "content": "PASS"
+      },
+      {
+        "size": "A4",
+        "page": 3,
+        "bounds": "PASS",
+        "rasterized_at_ppi": 300,
+        "raster_dimensions": [
+          2481,
+          3508
+        ],
+        "content": "PASS"
+      },
+      {
+        "size": "A4",
+        "page": 4,
+        "bounds": "PASS",
+        "rasterized_at_ppi": 300,
+        "raster_dimensions": [
+          2481,
+          3508
+        ],
+        "content": "PASS"
+      },
+      {
+        "size": "A4",
+        "page": 5,
+        "bounds": "PASS",
+        "rasterized_at_ppi": 300,
+        "raster_dimensions": [
+          2481,
+          3508
+        ],
+        "content": "PASS"
+      },
+      {
+        "size": "A4",
+        "page": 6,
+        "bounds": "PASS",
+        "rasterized_at_ppi": 300,
+        "raster_dimensions": [
+          2481,
+          3508
+        ],
+        "content": "PASS"
+      },
+      {
+        "size": "US_Letter",
+        "page": 1,
+        "bounds": "PASS",
+        "rasterized_at_ppi": 300,
+        "raster_dimensions": [
+          2550,
+          3300
+        ],
+        "content": "PASS"
+      },
+      {
+        "size": "US_Letter",
+        "page": 2,
+        "bounds": "PASS",
+        "rasterized_at_ppi": 300,
+        "raster_dimensions": [
+          2550,
+          3300
+        ],
+        "content": "PASS"
+      },
+      {
+        "size": "US_Letter",
+        "page": 3,
+        "bounds": "PASS",
+        "rasterized_at_ppi": 300,
+        "raster_dimensions": [
+          2550,
+          3300
+        ],
+        "content": "PASS"
+      },
+      {
+        "size": "US_Letter",
+        "page": 4,
+        "bounds": "PASS",
+        "rasterized_at_ppi": 300,
+        "raster_dimensions": [
+          2550,
+          3300
+        ],
+        "content": "PASS"
+      },
+      {
+        "size": "US_Letter",
+        "page": 5,
+        "bounds": "PASS",
+        "rasterized_at_ppi": 300,
+        "raster_dimensions": [
+          2550,
+          3300
+        ],
+        "content": "PASS"
+      },
+      {
+        "size": "US_Letter",
+        "page": 6,
+        "bounds": "PASS",
+        "rasterized_at_ppi": 300,
+        "raster_dimensions": [
+          2550,
+          3300
+        ],
+        "content": "PASS"
+      }
+    ],
+    "ads": [
+      {
+        "file": "01_Phone_Party_V2.jpg",
+        "sha256": "ba615d1df1837056a4c3ecfaf97b45483c2a2bef15ec96f7b017e098fc508b75",
+        "dimensions": [
+          4000,
+          3000
+        ]
+      },
+      {
+        "file": "02_Phone_Party_V2.jpg",
+        "sha256": "9717f90d9ccb5ecd12da0a928cea6fde5362d4b388d0b63ff8d1364c7455e140",
+        "dimensions": [
+          4000,
+          3000
+        ]
+      },
+      {
+        "file": "03_Phone_Party_V2.jpg",
+        "sha256": "92716b5220c962b79cc4719fe07bef4fdc97ce8486b0cb2a736143cfc48e2353",
+        "dimensions": [
+          4000,
+          3000
+        ]
+      },
+      {
+        "file": "04_Phone_Party_V2.jpg",
+        "sha256": "cba5439c6e73ebffa650eb50577ee7e93e611ad8b7411a523b7bb3b9fdfd6ac8",
+        "dimensions": [
+          4000,
+          3000
+        ]
+      },
+      {
+        "file": "05_Phone_Party_V2.jpg",
+        "sha256": "01832b51d9dc8bfeddd90bcc58dd6b72318b72ce383960feff4c082dce3d03c8",
+        "dimensions": [
+          4000,
+          3000
+        ]
+      },
+      {
+        "file": "06_Phone_Party_V2.jpg",
+        "sha256": "6678bab3dc740756c099281461b28430da28e9582a667852654758841a318e70",
+        "dimensions": [
+          4000,
+          3000
+        ]
+      },
+      {
+        "file": "07_Phone_Party_V2.jpg",
+        "sha256": "63dae628081e17e8499a92aef09f19bcd6e0e08a80c0a949bd5eebbfc4bb5257",
+        "dimensions": [
+          4000,
+          3000
+        ]
+      },
+      {
+        "file": "08_Phone_Party_V2.jpg",
+        "sha256": "5deaf2dff714d798aa2673740ccc842fb5d57d6f52424ef1dcde1c51c975f34a",
+        "dimensions": [
+          4000,
+          3000
+        ]
+      },
+      {
+        "file": "09_Phone_Party_V2.jpg",
+        "sha256": "024a4df3af51f08a47d5643fe427eae59f45b7b1c49da2bc6772ecdacdc30554",
+        "dimensions": [
+          4000,
+          3000
+        ]
+      },
+      {
+        "file": "10_Phone_Party_V2.jpg",
+        "sha256": "5da6bc100611f00ea8e25264c433e2ecc41e29b63510fddc262fbc91d987cc7e",
+        "dimensions": [
+          4000,
+          3000
+        ]
+      }
+    ],
+    "print_simulation": "PDF physical dimensions and 300ppi rasterization PASS; no physical print performed",
+    "live_party_playtest": "NOT TESTED",
+    "generated_photos_native_pixels": [
+      1448,
+      1086
+    ],
+    "advertising_export_pixels": [
+      4000,
+      3000
+    ],
+    "native_4k_claim": false,
+    "editorial_review": "30 unique prompts, self-report/skip rules, no forced disclosure; numbering and ambiguous wording corrected",
+    "visual_review": "12 pages and10 individual ads inspected; Cherry/Cobalt crop cut-lines corrected; scoring strip background corrected;06/10 incomplete JPEGs re-exported atomically and all10 fully decoded"
+  },
   "rules_blob": "b7c332ad6e9893022b8960cf17e07b24805d110d",
   "research": [
     {
@@ -53,7 +285,8 @@
   "proposed_price_eur": 3.9,
   "art_source": "generated_images/exec-608eb78e-27e0-43ea-806f-c243b6eae6b8.png",
   "next": [
-    "Owner review and publish"
+    "Owner reviews and publishes existing draft",
+    "No live party playtest or physical printing performed;print simulation only"
   ],
   "created": "2026-10-29",
   "etsy_url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4605691816#media",
@@ -65,19 +298,20 @@
     3000
   ],
   "tags_count": 13,
-  "delivery": "Direct Etsy ZIP; 2 PDFs plus TXT; no external link needed",
+  "delivery": "Direct Etsy V2 ZIP,2 six-page PDFs +TXT; no external-link dependency",
   "zip": {
-    "bytes": 2681560,
+    "file": "Pinogri_Phone_Party_Game_V2.zip",
+    "bytes": 2683139,
     "entries": 3,
-    "sha256": "664865bf486f36b0fc039ed3f44313feed04bc9f94921cb1e5fcdc500fb376c8",
+    "sha256": "676968f106c2c17f67e04bc7c137daf624c2a0267d742b424fa96ed5aa4aac6a",
     "crc": "PASS"
   },
   "drive": {
     "folder_id": "1t1lCONUgerVT5Z-9Ne8FO0tBSoIAOM4M",
-    "zip_id": "1s3K3m3mRv7wrx0EhRh_9GM4rsa6SV2MZ",
-    "scope": "Private buyer ZIP backup; no ads",
-    "metadata_size_verified": 2681560,
-    "download_roundtrip": "Not verified: signed download URL returned403"
+    "zip_id": "1slGyXTUtJVP_SYakiOQB1GC7mXuNpLSh",
+    "scope": "Buyer ZIP backup only; ads not uploaded",
+    "metadata_size_verified": 2683139,
+    "download_roundtrip": "NOT TESTED"
   },
   "provenance": {
     "fully_by_me": 0,
@@ -86,13 +320,61 @@
     "truthful_description_disclosure": true
   },
   "verification": [
-    "10 ads shown individually then uploaded in order",
-    "Square/portrait/landscape cover inspected",
-    "ZIP filename and2.68MB visible after reopening",
-    "13 tags visible after reopening",
-    "Draft and No unsaved changes visible",
-    "Instant download, no production partner, manual renewal",
+    "All12 updated PDF pages shown individually",
+    "All10 final ads shown individually;06/10 repaired after full JPEG decode caught incomplete files",
+    "All10 JPEGs fully decoded after atomic re-export",
+    "Gallery ordered01-10 matches new specialized scenario",
+    "Thumbnail square/portrait/landscape inspected",
+    "Reopened same draft4605691816:10newphotoIDs, V2ZIP2.68MB,13tags,EUR3.90,999qty",
+    "Draft and no unsaved changes visible",
+    "Instant download,manual renewal,no production partner",
     "No Publish action"
   ],
-  "completed": "2026-10-29"
+  "completed": "2026-10-29",
+  "version": 2,
+  "updated": "2026-10-29",
+  "new_image_ids": [
+    "8764867844",
+    "8812687585",
+    "8812687705",
+    "8764869560",
+    "8764869650",
+    "8812704489",
+    "8812704595",
+    "8764886410",
+    "8764886508",
+    "8812704951"
+  ],
+  "proof_screenshot": "pinogri-phone-party-v2-4605691816.jpg",
+  "previous_version": {
+    "zip": {
+      "bytes": 2681560,
+      "entries": 3,
+      "sha256": "664865bf486f36b0fc039ed3f44313feed04bc9f94921cb1e5fcdc500fb376c8",
+      "crc": "PASS"
+    },
+    "drive": {
+      "folder_id": "1t1lCONUgerVT5Z-9Ne8FO0tBSoIAOM4M",
+      "zip_id": "1s3K3m3mRv7wrx0EhRh_9GM4rsa6SV2MZ",
+      "scope": "Private buyer ZIP backup; no ads",
+      "metadata_size_verified": 2681560,
+      "download_roundtrip": "Not verified: signed download URL returned403"
+    },
+    "archive_only": true
+  },
+  "research_update": [
+    {
+      "url": "https://www.etsy.com/listing/1854671697/whats-on-your-phone-game-girls-night",
+      "observed_price_usd": 5.94,
+      "item_reviews": 0,
+      "takeaway": "Competitor format2PDF;no SKU-sales evidence"
+    },
+    {
+      "url": "https://www.etsy.com/listing/4376895885/whats-on-your-phone-game-o-printable",
+      "item_reviews": 2,
+      "rating": 1,
+      "review_date": "2026-06-15",
+      "takeaway": "Wrong print size complaint; verify our exact A4/Letter geometry, don't claim5x7"
+    }
+  ]
 }
