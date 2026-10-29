@@ -13,7 +13,7 @@
 |3D|Wedding Clipart —25PNG|4604761477|ГОТОВ DRAFT4605398106;10ads;PinogriPDF3.66MB;13tags;€3.90;повторнооткрыт29.10|
 |4|The Hidden Garden —30nature coloring|—|ACTIVE4604965278 (опубликовал владелец); ДОСТАВКА ИСПРАВЛЕНА:ZIP205006047bytes1sFCi_FB7djyzWvt6ocW7pWJH8zxk96VK;folder+ZIPanyone-readerпроверены;ссылкаPDFпрежняя|
 |legacy1|Cozy Christmas Clipart|4603460908|DRAFT4605447255;10новыхads;PinogriPDF;€3.90;ALPHA REVIEW: все30 проверены на3фонах, прежняя яркая кайма в обычном наложении не подтвердилась; owner review, отметкуИИвыбираетвладелец|
-|legacy2|Christmas Digital Paper Pack|4603500584|Проверка качества и доставки|
+|legacy2|Christmas Digital Paper Pack|4603500584|DRAFT4605467155;10новыхads/coverv2;PinogriPDF2.5MB;13tags;€3.90;повторнооткрыт29.10;Drivepublic;EtsyсамаотметилаFullyByMe,агентневыбиралрадио—владельцуисправитьпередпубликацией|
 |legacy3|Christmas Gift Tags|4603531669|Проверка качества и доставки|
 |legacy4|Monthly Budget Planner|4603634235|Проверка качества и доставки|
 |legacy5|Savings Challenge Bundle|4603672565|Проверка качества и доставки|
