@@ -1,0 +1,40 @@
+name: Agent B signed two-JWT tenant privacy (disposable PG)
+on:
+  pull_request:
+    paths:
+      - 'tests/agent-b-signed-jwt-tenant-postgres.mjs'
+      - '.github/workflows/agent-b-signed-jwt-tenant.yml'
+      - 'server/server.js'
+      - 'server/generation-studio.js'
+      - 'server/generation-billing.js'
+      - 'server/generation-wallet.js'
+permissions:
+  contents: read
+jobs:
+  signed-jwt-tenant:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: deepsyq_purchased_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d deepsyq_purchased_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      P0_PURCHASED_TEST_DB_URL: postgresql://postgres:postgres@127.0.0.1:5432/deepsyq_purchased_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --check tests/agent-b-signed-jwt-tenant-postgres.mjs
+      - name: Real JWT, actual Express/Studio/Wallet, disposable PG16 (no skips)
+        run: node --test tests/agent-b-signed-jwt-tenant-postgres.mjs
