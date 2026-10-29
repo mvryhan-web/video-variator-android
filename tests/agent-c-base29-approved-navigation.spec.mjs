@@ -23,8 +23,12 @@ test('BASE29 sidebar order, existing routes, and honest non-links for unavailabl
  const nav=page.locator('#dsSiteSidebar nav');
  await expect(nav).toBeVisible();
  const labels=await nav.locator(':scope > a,:scope > span.ds-site-pending,:scope > button.ds-site-share')
-  .allTextContents();
- expect(labels.map(x=>x.replace(/\s+soon\s*/g,'').trim())).toEqual(ordered);
+  .evaluateAll(nodes=>nodes.map(node=>{
+   const copy=node.cloneNode(true);
+   copy.querySelectorAll('.ds-icon,small').forEach(icon=>icon.remove());
+   return copy.textContent.trim();
+  }));
+ expect(labels).toEqual(ordered);
  for(const [label,href] of [
   ['Home','deepsyq.html'],['Tools','free-tools.html'],['AI Apps','ai-apps.html'],
   ['Canvas','canvas.html'],['Video Uniquifier','index.html'],
