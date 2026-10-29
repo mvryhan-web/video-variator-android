@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Pinogri_Wedding_V2_01_Minimal.zip",
+    "bytes": 1582552,
+    "entries": 23,
+    "sha256": "07d018a99b4c3ce4dd8fee3c2ea654f66564013aa50b4e34d49bb28863d0d218",
+    "crc": "PASS"
+  },
+  {
+    "name": "Pinogri_Wedding_V2_02_Woodland.zip",
+    "bytes": 15011123,
+    "entries": 23,
+    "sha256": "aa0da4e8cad8a174171bc5a612c5e0426be29f92da00242b8722c10f0e88adab",
+    "crc": "PASS"
+  },
+  {
+    "name": "Pinogri_Wedding_V2_03_Glamour.zip",
+    "bytes": 4864363,
+    "entries": 23,
+    "sha256": "5ff55744b934e33f511dd791a452455cef887b3f8772b592d54b491edd503fb8",
+    "crc": "PASS"
+  },
+  {
+    "name": "Pinogri_Wedding_V2_04_Vintage.zip",
+    "bytes": 11527687,
+    "entries": 23,
+    "sha256": "e35c60747a8bea56f2ef155bd34f565d449ce14f2933188d4ce9f34bf0600a4a",
+    "crc": "PASS"
+  },
+  {
+    "name": "Pinogri_Wedding_V2_05_Urban.zip",
+    "bytes": 1929892,
+    "entries": 23,
+    "sha256": "334759bb21eaba081744d9c5de6e1f19df547e02a889f3f945deb60b5561962b",
+    "crc": "PASS"
+  }
+]
