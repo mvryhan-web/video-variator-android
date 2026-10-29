@@ -5,19 +5,52 @@ import {mkdtempSync,writeFileSync,readFileSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 
-test('creator page connects real tools and keeps plan prices',async({page},info)=>{
- await page.goto('/');await expect(page.locator('.creatorToolCard')).toHaveCount(6);
- await expect(page.locator('#creatorStart')).toBeVisible();
- const choose=page.waitForEvent('filechooser');await page.locator('#creatorStart').click();expect((await choose).isMultiple()).toBe(true);
- await expect(page.locator('#fileSummary')).toHaveText('No videos selected yet.');
- await page.locator('#creatorPlans').click();await expect(page.locator('#plansView')).toHaveClass(/active/);
- for(const [plan,price] of [['basic','$9'],['pro','$24'],['business','$99'],['lifetime','€2,999']])await expect(page.locator('.priceCard').filter({has:page.locator(`[data-plan="${plan}"]`)}).locator('.price b')).toHaveText(price);
- await page.locator('.navBtn[data-view="dashboard"]').evaluate(e=>e.click());
- await expect(page.locator('a[href="free-tools.html?tool=clips"]')).toBeVisible();
- await page.screenshot({path:`test-results/creator-${info.project.name}.png`,fullPage:true});
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.goto('/free-tools.html?tool=clips');await expect(page.locator('#operation')).toHaveValue('clips');await expect(page.locator('#clipSettings')).toBeHidden();
- await page.locator('#hubBack').click();await page.locator('[data-hub-tool=motion]').click();await expect(page.locator('#files')).toHaveAttribute('accept','image/jpeg,image/png,image/webp');await expect(page.locator('#files')).not.toHaveAttribute('multiple');await expect(page.locator('#clipSettings')).toBeHidden();
+test('creator Tools routes, visible local controls and server-authoritative plan prices',async({page},info)=>{
+ let paidPosts=0;
+ page.on('request',request=>{
+  if(request.method()==='POST'&&/\/api\/(?:billing|ai-billing|studio\/jobs|stripe)/.test(new URL(request.url()).pathname))paidPosts++;
+ });
+ // The approved Deepsyq Home is protected and no longer hosts the legacy creator dashboard.
+ await page.goto('/free-tools.html');
+ const videoCard=page.locator('#etGallery .et-card[href="?tool=video"]');
+ await expect(videoCard).toBeVisible();
+ await expect(page.locator('.et-showcase .et-uniquifier[href="index.html"]')).toBeVisible();
+ await videoCard.click();
+ await expect(page).toHaveURL(/\/free-tools\.html\?tool=video$/);
+ await expect(page.locator('#files')).toHaveAttribute('accept','video/*');
+ await page.locator('#hubBack').click();
+ await expect(page.locator('#etShowcase')).toBeVisible();
+
+ // Both local creator modes are supported deep links, not hidden legacy dashboard controls.
+ await page.goto('/free-tools.html?tool=clips');
+ await expect(page.locator('#operation')).toHaveValue('clips');
+ await expect(page.locator('#files')).toBeVisible();
+ await expect(page.locator('#creatorToolSettings')).toBeVisible();
+ await expect(page.locator('#clipSettings')).toBeVisible();
+ const chooser=page.waitForEvent('filechooser');
+ await page.locator('#files').click();
+ expect((await chooser).element()).toBeTruthy();
+ await expect(page.locator('#status')).toBeEmpty();
+
+ await page.goto('/free-tools.html?tool=motion');
+ await expect(page.locator('#operation')).toHaveValue('motion');
+ await expect(page.locator('#files')).toHaveAttribute('accept','image/jpeg,image/png,image/webp');
+ await expect(page.locator('#creatorFormat')).toBeVisible();
+ await expect(page.locator('#clipSettings')).toBeHidden();
+ await page.screenshot({path:info.outputPath('creator-tools-current.png'),fullPage:true});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+
+ // Prices are rendered on the canonical Pricing page from a deterministic server fixture.
+ await page.route('**/api/config',r=>r.fulfill({json:{billingConfigured:false,plans:{
+  basic:{price:9,limit:750},pro:{price:24,limit:2250},
+  business:{price:99,limit:15000},lifetime:{price:2999,currency:'EUR'}
+ }}}));
+ await page.goto('/pricing.html');
+ await expect(page.locator('#planCards .price-plan')).toHaveCount(5);
+ for(const [plan,price] of [['basic','$9'],['pro','$24'],['business','$99'],['lifetime','€2,999']])
+  await expect(page.locator('.price-'+plan+' .price-plan-price strong')).toHaveText(price);
+ await expect(page.locator('.price-trial .price-plan-note')).toContainText('NOT active yet');
+ expect(paidPosts).toBe(0);
 });
 
 test('actual local clipping and photo motion export playable MP4 files without uploads',async({page},info)=>{
@@ -31,7 +64,7 @@ test('actual local clipping and photo motion export playable MP4 files without u
  const download=page.waitForEvent('download');await page.locator('#outputs button').first().click();const file=await download;await file.saveAs(join(dir,'clip.mp4'));
  const probe=p=>JSON.parse(execFileSync('ffprobe',['-v','error','-show_entries','stream=codec_type,width,height:format=duration','-of','json',p],{encoding:'utf8'}));
  let meta=probe(join(dir,'clip.mp4'));expect(meta.streams.find(s=>s.codec_type==='video')).toMatchObject({width:720,height:1280});expect(meta.streams.some(s=>s.codec_type==='audio')).toBe(true);expect(Number(meta.format.duration)).toBeGreaterThan(1);
- await page.locator('#hubBack').click();await page.locator('[data-hub-tool=motion]').click();await page.locator('#files').setInputFiles(join(dir,'source.png'));await page.locator('#creatorFormat').selectOption('landscape');await page.locator('#run').click();await expect(page.locator('#status')).toHaveText('Done',{timeout:120000});
+ await page.goto('/free-tools.html?tool=motion');await page.locator('#files').setInputFiles(join(dir,'source.png'));await page.locator('#creatorFormat').selectOption('landscape');await page.locator('#run').click();await expect(page.locator('#status')).toHaveText('Done',{timeout:120000});
  const motionDownload=page.waitForEvent('download');await page.locator('#outputs button').first().click();await(await motionDownload).saveAs(join(dir,'motion.mp4'));
  meta=probe(join(dir,'motion.mp4'));expect(meta.streams.find(s=>s.codec_type==='video')).toMatchObject({width:1280,height:720});expect(Number(meta.format.duration)).toBeCloseTo(5,0);
  const frames=execFileSync('ffmpeg',['-v','error','-i',join(dir,'motion.mp4'),'-vf','select=eq(n\\,0)+eq(n\\,124)','-vsync','0','-f','framemd5','-'],{encoding:'utf8'}).split('\n').filter(l=>l&&!l.startsWith('#')).map(l=>l.split(',').at(-1).trim());expect(frames).toHaveLength(2);expect(frames[0]).not.toBe(frames[1]);
