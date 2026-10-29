@@ -1,0 +1,42 @@
+name: Agent A32 legacy browser route acceptance
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'tests/browser.spec.mjs'
+      - '.github/workflows/agent-a-browser-route.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency:
+  group: agent-a32-browser-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  legacy-page-native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 24
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    env:
+      HOME: /root
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check tests/browser.spec.mjs
+      - name: Real standalone Video Uniquifier smoke across 5 native engines
+        run: npx playwright test tests/browser.spec.mjs --grep 'loads current standalone Video Uniquifier and functional controls|loads FFmpeg wrapper from same-origin|serves the FFmpeg core from same-origin' --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2 --retries=0
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: agent-a32-browser-evidence
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
