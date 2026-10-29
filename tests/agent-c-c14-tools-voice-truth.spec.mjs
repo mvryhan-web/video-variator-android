@@ -78,12 +78,18 @@ test('C14 five widths: Tools real modes/Back/legacy, exactly three AI Apps kinds
   await expect(page.locator('[data-hub-tool]')).toHaveCount(8);
   await expect(page.locator('[data-legacy-tool="video-uniquifier"]')).toHaveAttribute('href','index.html');
   await fit(page,width,'Tools');
-  await page.locator('[data-hub-tool="photo"]').click();
+  // The approved visible gallery card replaces the intentionally hidden old hub tile.
+  const photoCard=page.locator('#etGallery .et-card[href="?tool=photo"]');
+  await expect(photoCard).toBeVisible();
+  await photoCard.click();
   await expect(page).toHaveURL(/\/free-tools\.html\?tool=photo$/);
   await expect(page.locator('#hubBack')).toBeVisible();
   await page.locator('#hubBack').click();
   await expect(page).toHaveURL(/\/free-tools\.html$/);
-  await page.locator('[data-legacy-tool="video-uniquifier"]').click();
+  // The visible owner-approved banner navigates to the original Video Uniquifier.
+  const uniquifier=page.locator('.et-showcase .et-uniquifier[href="index.html"]');
+  await expect(uniquifier).toBeVisible();
+  await uniquifier.click();
   await expect(page).toHaveURL(/\/index\.html$/);
   await expect(page.locator('#mode option')).toHaveCount(3);
   await page.goto('/ai-apps.html');
