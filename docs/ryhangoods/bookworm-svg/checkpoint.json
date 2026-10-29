@@ -1,0 +1,31 @@
+{
+  "product_number": 7,
+  "sku": "PINO-BW20-01",
+  "status": "FILES_VERIFIED_ETSY_FORM_IN_PROGRESS",
+  "shop": "Pinogri",
+  "date": "2026-10-29",
+  "design_count": 20,
+  "formats": [
+    "SVG outlined vector paths",
+    "PNG RGBA 4500x4500 300 DPI"
+  ],
+  "promo_count": 10,
+  "zip": {
+    "name": "Pinogri_Book_Lover_20_SVG_PNG.zip",
+    "bytes": 5177574,
+    "entries": 44,
+    "crc": "PASS",
+    "sha256": "98537903273b91dd6c78bdefb7b01bcd65f0254ca0e0bb2096c44bb812004306"
+  },
+  "price_eur": "7.90",
+  "drive_folder": "https://drive.google.com/drive/folders/1K8Lryh--ZgTmhwirWZIYfRooIbCQdfrb",
+  "drive_file_id": "1rVLGRXNEu9qyl3Wp_-BtWnIygeajSy3T",
+  "delivery": "Direct ZIP Etsy; Drive private backup; no external-link PDF needed",
+  "not_tested": [
+    "Physical print",
+    "Physical vinyl cut",
+    "Cricut import",
+    "Silhouette import"
+  ],
+  "etsy_creation_method": "Etsy automatically prefilled Fully by me; not selected by agent. Owner must review before actual publication. AI radio not selected."
+}
