@@ -1,0 +1,102 @@
+[
+  {
+    "number": 1,
+    "name": "Quiet_Hours",
+    "phrase": "Quiet Hours, Loud Plots"
+  },
+  {
+    "number": 2,
+    "name": "Weekend_Chapters",
+    "phrase": "My Weekend Has Chapters"
+  },
+  {
+    "number": 3,
+    "name": "Tiny_Commitments",
+    "phrase": "Bookmarks Are Tiny Commitments"
+  },
+  {
+    "number": 4,
+    "name": "Tea_And_Plots",
+    "phrase": "Tea Cooling, Plot Thickening"
+  },
+  {
+    "number": 5,
+    "name": "Shelf_Space",
+    "phrase": "Shelf Space Is a Suggestion"
+  },
+  {
+    "number": 6,
+    "name": "One_Lamp",
+    "phrase": "One Lamp, Many Worlds"
+  },
+  {
+    "number": 7,
+    "name": "Between_Chapters",
+    "phrase": "Currently Between Chapters"
+  },
+  {
+    "number": 8,
+    "name": "Book_Battery",
+    "phrase": "My Social Battery Runs on Books"
+  },
+  {
+    "number": 9,
+    "name": "After_Dark",
+    "phrase": "Plot Twists After Dark"
+  },
+  {
+    "number": 10,
+    "name": "Library_Visit",
+    "phrase": "I Came, I Browsed, I Borrowed"
+  },
+  {
+    "number": 11,
+    "name": "Well_Read_Chaos",
+    "phrase": "A Little Well-Read Chaos"
+  },
+  {
+    "number": 12,
+    "name": "Read_Rest_Repeat",
+    "phrase": "Read, Rest, Repeat"
+  },
+  {
+    "number": 13,
+    "name": "Bookmark_Home",
+    "phrase": "Home Is Where the Bookmark Is"
+  },
+  {
+    "number": 14,
+    "name": "More_Margin",
+    "phrase": "More Margin, Less Noise"
+  },
+  {
+    "number": 15,
+    "name": "Reading_Progress",
+    "phrase": "Reading in Progress"
+  },
+  {
+    "number": 16,
+    "name": "Next_Page",
+    "phrase": "Saved by the Next Page"
+  },
+  {
+    "number": 17,
+    "name": "Tote_Plots",
+    "phrase": "This Tote Carries Plot Twists"
+  },
+  {
+    "number": 18,
+    "name": "Tiny_Library",
+    "phrase": "Tiny Library, Big Escapes"
+  },
+  {
+    "number": 19,
+    "name": "Plans_Have_Spines",
+    "phrase": "My Plans Have Spines"
+  },
+  {
+    "number": 20,
+    "name": "Soft_Covers",
+    "phrase": "Soft Covers, Strong Opinions"
+  }
+]
