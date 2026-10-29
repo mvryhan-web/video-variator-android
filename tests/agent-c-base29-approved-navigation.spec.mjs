@@ -3,6 +3,10 @@ import {test,expect} from '@playwright/test';
 // Agent C BASE29: approved inner-page navigation. No live accounts or paid providers.
 const ordered=['Home','Image','Video','Agent','Audio','Tools','AI Apps','Canvas',
  'Video Uniquifier','Assets','My Creations','History','Affiliate','Share','Inspiration','Pricing'];
+async function openMobileSidebar(page){
+ const toggle=page.locator('.ds-site-mobile-toggle');
+ if(await toggle.isVisible())await toggle.click();
+}
 function noPaidRequests(page){
  const sent=[];
  page.on('request',request=>{
@@ -41,6 +45,7 @@ test('BASE29 working Share uses the existing Home URL, never a private account U
   Object.defineProperty(navigator,'share',{configurable:true,value:async info=>{window.__shareCaptured=info;}});
  });
  await page.goto('/free-tools.html');
+ await openMobileSidebar(page);
  await page.locator('#dsSiteSidebar').getByRole('button',{name:'Share Deepsyq'}).click();
  const captured=await page.evaluate(()=>window.__shareCaptured);
  expect(captured).toEqual({title:'Deepsyq',url:'http://127.0.0.1:3000/deepsyq.html'});
@@ -83,10 +88,12 @@ test('BASE29 protected Home still holds Inspiration All/Video/Image, no fake AI 
 test('BASE29 canonical Pricing and History links navigate, with no generation request',async({page})=>{
  const paid=noPaidRequests(page);
  await page.goto('/ai-apps.html');
+ await openMobileSidebar(page);
  await page.locator('#dsSiteSidebar').getByRole('link',{name:'Pricing',exact:true}).click();
  await expect(page).toHaveURL(/\/pricing\.html$/);
  await expect(page.locator('#pricingTitle')).toBeVisible();
  await page.goto('/ai-apps.html');
+ await openMobileSidebar(page);
  await page.locator('#dsSiteSidebar').getByRole('link',{name:'History',exact:true}).click();
  await expect(page).toHaveURL(/\/generate-studio\.html\?view=history/);
  await expect(page.locator('#showHistory')).toHaveAttribute('aria-pressed','true');
