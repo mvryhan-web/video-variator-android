@@ -46,5 +46,13 @@
   ],
   "next": "legacy3 Christmas Gift Tags old4603531669; read fullrules and queue beforecontinuing",
   "etsy_url": "https://www.etsy.com/your/shops/me/listing-editor/edit/4605467155",
-  "final_cover_v2": true
+  "final_cover_v2": true,
+  "backup": {
+    "owner_zip_local": "output/pinogri-paper/Pinogri_Christmas_Papers_Owner_Resources.zip",
+    "bytes": 39275867,
+    "entries": 19,
+    "crc": "PASS",
+    "library_saved": false,
+    "error": "library_storage_limit_exceeded. No files deleted. Etsy draft and public Drive buyer archive remain saved."
+  }
 }
