@@ -1,0 +1,472 @@
+{
+  "native_pages": [
+    {
+      "file": "Minimal_Print_Sample.pdf",
+      "page": 1,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Minimal_Print_Sample.pdf",
+      "page": 2,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Minimal_Print_Sample.pdf",
+      "page": 3,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Minimal_Mobile_Sample.pdf",
+      "page": 1,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "Minimal_Mobile_Sample.pdf",
+      "page": 2,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "Minimal_Mobile_Sample.pdf",
+      "page": 3,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "Woodland_Print_Sample.pdf",
+      "page": 1,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Woodland_Print_Sample.pdf",
+      "page": 2,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Woodland_Print_Sample.pdf",
+      "page": 3,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Woodland_Mobile_Sample.pdf",
+      "page": 1,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "Woodland_Mobile_Sample.pdf",
+      "page": 2,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "Woodland_Mobile_Sample.pdf",
+      "page": 3,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "Glamour_Print_Sample.pdf",
+      "page": 1,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Glamour_Print_Sample.pdf",
+      "page": 2,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Glamour_Print_Sample.pdf",
+      "page": 3,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Glamour_Mobile_Sample.pdf",
+      "page": 1,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "Glamour_Mobile_Sample.pdf",
+      "page": 2,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "Glamour_Mobile_Sample.pdf",
+      "page": 3,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "Vintage_Print_Sample.pdf",
+      "page": 1,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Vintage_Print_Sample.pdf",
+      "page": 2,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Vintage_Print_Sample.pdf",
+      "page": 3,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Vintage_Mobile_Sample.pdf",
+      "page": 1,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "Vintage_Mobile_Sample.pdf",
+      "page": 2,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "Vintage_Mobile_Sample.pdf",
+      "page": 3,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "Urban_Print_Sample.pdf",
+      "page": 1,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Urban_Print_Sample.pdf",
+      "page": 2,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Urban_Print_Sample.pdf",
+      "page": 3,
+      "size_pt": [
+        360.0,
+        504.0
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1500,
+        2100
+      ]
+    },
+    {
+      "file": "Urban_Mobile_Sample.pdf",
+      "page": 1,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "Urban_Mobile_Sample.pdf",
+      "page": 2,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "Urban_Mobile_Sample.pdf",
+      "page": 3,
+      "size_pt": [
+        360.0,
+        640.0062866210938
+      ],
+      "word_match": true,
+      "bounds": true,
+      "native_render": "LibreOffice",
+      "sample_jpg": [
+        1080,
+        1920
+      ]
+    }
+  ],
+  "unique_layouts": 15,
+  "mobile_adaptations": 15,
+  "native_PowerPoint_tested": false,
+  "physical_print_tested": false,
+  "raster_sources": {
+    "glamour.png": [
+      1060,
+      1484
+    ],
+    "vintage.png": [
+      1753,
+      897
+    ],
+    "woodland.png": [
+      1254,
+      1254
+    ]
+  }
+}
