@@ -1,0 +1,37 @@
+name: Agent C BASE29 approved navigation
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'app/src/main/assets/deepsyq-global-theme.css'
+      - 'tests/agent-c-base29-approved-navigation.spec.mjs'
+      - '.github/workflows/agent-c-base29-approved-navigation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  base29-navigation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/deepsyq-site-shell.js && node --check tests/agent-c-base29-approved-navigation.spec.mjs
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Five real browser engines, responsive keyboard, truthful AI Apps, routing and Share
+        run: npx playwright test tests/agent-c-base29-approved-navigation.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: agent-c-base29-browser-evidence
+          path: test-results/

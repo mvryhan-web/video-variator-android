@@ -81,13 +81,19 @@ body.deepsyq-sitewide-shell :is(main,footer) {max-width:min(1240px,100%)}
  padding:11px 10px 2px;color:#a99bea;font-size:10px;font-weight:750;letter-spacing:.06em;
 }
 .ds-site-sidebar nav {display:flex;flex-direction:column;gap:4px}
-.ds-site-sidebar nav a {
+.ds-site-sidebar nav a,.ds-site-sidebar nav button.ds-site-share {
  display:flex;align-items:center;gap:11px;padding:10px 11px;
  border:1px solid transparent;border-radius:10px;min-height:42px;
  color:#c4c9e0;font-size:12px;
 }
-.ds-site-sidebar nav a .ds-icon {width:19px;text-align:center;font-size:17px}
-.ds-site-sidebar nav a:hover,.ds-site-sidebar nav a:focus-visible {color:#fff;background:#222046}
+.ds-site-sidebar nav :is(a,button.ds-site-share) .ds-icon {width:19px;text-align:center;font-size:17px}
+.ds-site-sidebar nav :is(a,button.ds-site-share):hover,.ds-site-sidebar nav :is(a,button.ds-site-share):focus-visible {color:#fff;background:#222046}
+.ds-site-sidebar nav button.ds-site-share {
+ cursor:pointer;width:100%;background:transparent;font-family:inherit;text-align:left;
+}
+.ds-site-sidebar .ds-site-share-status {
+ font-size:12px;color:#c5e6ff;overflow-wrap:anywhere;padding:0 11px;
+}
 .ds-site-sidebar nav a[aria-current="page"] {
  color:#fff;background:linear-gradient(110deg,#6740e8,#211940);border-color:#895cff;
 }
