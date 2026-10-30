@@ -17,9 +17,10 @@ export function billingCatalog(env={}) {
     return {packs,rates,revision:hash({packs,rates})};
   } catch (_) { return {packs:[],rates:[],revision:null}; }
 }
-export function welcomeCreditConfig(env={}){
-  const credits=Number(env.AI_WELCOME_CREDITS||0),valid=Number.isSafeInteger(credits)&&credits>0&&credits<=10_000_000;
-  return {enabled:env.AI_WELCOME_CREDITS_ENABLED==='true'&&valid,credits:valid?credits:0};
+// Owner D01/D04: no free AI welcome grants, even if obsolete flags remain set.
+// Keep the existing public response contract, but never authorize a grant.
+export function welcomeCreditConfig(_env={}){
+  return {enabled:false,credits:0};
 }
 // This checks configuration presence only. Real signed Stripe delivery still
 // needs a controlled staging webhook/payment test before public activation.
