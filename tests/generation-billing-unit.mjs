@@ -63,10 +63,35 @@ test('Stripe refund parsing uses cumulative refunded amount and enforces billing
 });
 
 
-test('welcome AI credits are opt-in, bounded and disabled by default',()=>{
- assert.deepEqual(welcomeCreditConfig({}),{enabled:false,credits:0});
- assert.deepEqual(welcomeCreditConfig({AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'4200'}),{enabled:true,credits:4200});
- assert.deepEqual(welcomeCreditConfig({AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'99999999'}),{enabled:false,credits:0});
+test('owner D01/D04: legacy welcome flags cannot enable unpurchased AI credits',()=>{
+ for(const extra of [{},{AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'4200'},
+   {AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'99999999'},
+   {AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'1'}]){
+  assert.deepEqual(welcomeCreditConfig(extra),{enabled:false,credits:0});
+ }
+});
+
+test('owner D01/D04: legacy welcome endpoint stays disabled with zero wallet or DB writes',async()=>{
+ const app=express();app.use(express.json());
+ let queries=0,connections=0;
+ const pool={query:async()=>{queries++;throw Error('NO_WALLET_DB_QUERY_ALLOWED');},
+  connect:async()=>{connections++;throw Error('NO_WALLET_DB_CONNECTION_ALLOWED');}};
+ installGenerationBilling(app,{auth:(req,_res,next)=>{req.user={id:'synthetic-user'};next();},
+  pool,stripe:null,appUrl:'http://127.0.0.1',env:{
+   AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'4200',
+   AI_BILLING_ENABLED:'false',DATABASE_URL:'synthetic-only'}});
+ const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
+ try{
+  const base='http://127.0.0.1:'+server.address().port;
+  const configuration=await fetch(base+'/api/ai-wallet/config');
+  assert.equal(configuration.status,200);
+  assert.deepEqual(await configuration.json(),{welcomeEnabled:false,welcomeCredits:0});
+  const response=await fetch(base+'/api/ai-wallet/welcome',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  assert.equal(response.status,503);
+  assert.equal((await response.json()).error,'AI_WELCOME_CREDITS_NOT_ENABLED');
+  assert.equal(queries,0,'disabled welcome grant must never query ledger or wallet');
+  assert.equal(connections,0,'disabled welcome grant must never open a wallet transaction');
+ }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
 });
 
 test('one-time welcome grant is idempotent and pays wallet debt first',async()=>{
