@@ -63,10 +63,15 @@ test('Stripe refund parsing uses cumulative refunded amount and enforces billing
 });
 
 
-test('welcome AI credits are opt-in, bounded and disabled by default',()=>{
+test('D01/D04: legacy welcome AI credit flags cannot authorize free customer grants',()=>{
  assert.deepEqual(welcomeCreditConfig({}),{enabled:false,credits:0});
- assert.deepEqual(welcomeCreditConfig({AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'4200'}),{enabled:true,credits:4200});
- assert.deepEqual(welcomeCreditConfig({AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'99999999'}),{enabled:false,credits:0});
+ for(const legacy of [
+  {AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'4200'},
+  {AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'99999999'},
+  {AI_WELCOME_CREDITS_ENABLED:'TRUE',AI_WELCOME_CREDITS:'4200'},
+  {AI_WELCOME_CREDITS_ENABLED:'false',AI_WELCOME_CREDITS:'4200'},
+  {AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'1'}
+ ])assert.deepEqual(welcomeCreditConfig(legacy),{enabled:false,credits:0});
 });
 
 test('one-time welcome grant is idempotent and pays wallet debt first',async()=>{
@@ -164,4 +169,29 @@ test('BASE #16: late signed paid checkout is granted after Checkout disabled onl
   assert.equal(h.getStripe(),0);
   assert.equal(h.grants.length,0);
  }
+});
+
+
+test('D01/D04: actual welcome HTTP refuses stale ENV without DB, grant, provider or Stripe',async()=>{
+ let touches=0;
+ const pool={query(){touches++;throw Error('DB_FORBIDDEN')},connect(){touches++;throw Error('PG_FORBIDDEN')}};
+ const app=express();app.use(express.json());
+ installGenerationBilling(app,{auth:(req,_res,next)=>{req.user={id:'customer'};next()},
+   pool,stripe:null,appUrl:'https://invalid.example',env:{
+    AI_WELCOME_CREDITS_ENABLED:'true',AI_WELCOME_CREDITS:'4200',
+    AI_BILLING_ENABLED:'false',AI_PUBLIC_GENERATION_ENABLED:'false'
+   }});
+ const server=await new Promise(ok=>{const svc=app.listen(0,'127.0.0.1',()=>ok(svc))});
+ try{
+  const url='http://127.0.0.1:'+server.address().port+'/api/ai-wallet';
+  const cfg=await fetch(url+'/config');
+  assert.equal(cfg.status,200);
+  assert.deepEqual(await cfg.json(),{welcomeEnabled:false,welcomeCredits:0});
+  for(let i=0;i<3;i++){
+   const r=await fetch(url+'/welcome',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+   assert.equal(r.status,503);
+   assert.deepEqual(await r.json(),{error:'AI_WELCOME_CREDITS_NOT_ENABLED'});
+  }
+  assert.equal(touches,0,'disabled welcome must not access account wallet, Stripe or any PG connection');
+ }finally{server.closeAllConnections();await new Promise(ok=>server.close(ok))}
 });
