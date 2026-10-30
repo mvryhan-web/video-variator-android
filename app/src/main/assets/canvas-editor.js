@@ -145,6 +145,8 @@ window.addEventListener('storage',event=>{
  if(event.key==='vv_token')guardQuickDraftAccount();
 });
 function setQuickReferences(files,{append=false}={}){
+ // File-change/drop need their own owner check; no pointer event is guaranteed.
+ if(!sameQuickDraftAccount()){guardQuickDraftAccount();return;}
  const candidates=[...(append?quickReferences:[]),...Array.from(files||[])];
  if(candidates.length>QUICK_MAX_FILES||candidates.some(file=>!['image/png','image/jpeg'].includes(file.type)||file.size>QUICK_MAX_BYTES||file.size===0)){
   $('quickCreateStatus').textContent='Use up to 4 nonempty PNG/JPG photos, each no larger than 1 MB.';
@@ -165,6 +167,8 @@ quickCreateDropzone.addEventListener('drop',event=>{
 window.addEventListener('pagehide',()=>{for(const url of quickPreviewUrls)URL.revokeObjectURL(url);quickPreviewUrls=[];});
 quickCreateForm?.addEventListener('submit',async event=>{
  event.preventDefault();
+ // requestSubmit() bypasses the document pointer/focus/keyboard guards.
+ if(!sameQuickDraftAccount()){guardQuickDraftAccount();return;}
  const prompt=$('quickCreatePrompt').value.trim(),kind=$('quickCreateKind').value;
  const status=$('quickCreateStatus'),button=$('quickCreateSubmit');
  if(!prompt||prompt.length>2000||!['image','video'].includes(kind)){status.textContent='Enter a description (up to 2,000 characters).';return;}
