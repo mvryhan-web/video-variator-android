@@ -11,16 +11,18 @@
   {label:'Agent',icon:'✦',pending:true},
   {label:'Audio',icon:'♫',url:'generate-studio.html?studio=audio',key:'audio'},
   {section:'Tools'},
+  {label:'Tools',icon:'⊞',url:'free-tools.html',key:'tools'},
   {label:'AI Apps',icon:'◇',url:'ai-apps.html',key:'apps'},
   {label:'Canvas',icon:'✎',url:'canvas.html',key:'canvas'},
-  {label:'All Tools',icon:'⊞',url:'free-tools.html',key:'tools'},
   {label:'Video Uniquifier',icon:'▤',url:'index.html',key:'legacy'},
   {section:'Library'},
   {label:'Assets',icon:'▦',url:'generate-studio.html?view=history',key:'assets'},
   {label:'My Creations',icon:'▣',url:'generate-studio.html?view=history',key:'history'},
+  {label:'History',icon:'◷',url:'generate-studio.html?view=history',key:'history'},
   {section:'Community'},
-  {label:'Inspiration',icon:'◌',url:'deepsyq.html#inspirationPreview',key:'inspiration'},
   {label:'Affiliate',icon:'↗',pending:true},
+  {label:'Share',icon:'⇪',action:'share'},
+  {label:'Inspiration',icon:'◌',url:'deepsyq.html#inspirationPreview',key:'inspiration'},
   {section:'More'},
   {label:'Pricing',icon:'＄',url:'pricing.html',key:'pricing'}
  ];
@@ -42,15 +44,27 @@
  const logo=document.createElement('img');logo.src='deepsyq-logo.png';logo.alt='';logo.width=30;logo.height=30;
  brand.append(logo,document.createTextNode('Deepsyq'));sidebar.append(brand);
  const nav=document.createElement('nav');nav.setAttribute('aria-label','Site pages');
+ const shareStatus=document.createElement('div');shareStatus.className='ds-site-share-status';shareStatus.setAttribute('role','status');shareStatus.setAttribute('aria-live','polite');
  for(const entry of entries){
   if(entry.section){
    const cap=document.createElement('div');cap.className='ds-site-caption';cap.textContent=entry.section;
    nav.append(cap);continue;
   }
-  const el=document.createElement(entry.pending?'span':'a');
+  const el=document.createElement(entry.pending?'span':entry.action?'button':'a');
   if(entry.pending){
    el.className='ds-site-pending';el.setAttribute('aria-label',entry.label+' coming soon');
    el.title=entry.label+' — coming soon';
+  }else if(entry.action==='share'){
+   el.type='button';el.className='ds-site-share';el.setAttribute('aria-label','Share Deepsyq');
+   el.addEventListener('click',async()=>{
+    const homeLink=new URL('deepsyq.html',location.href).href;
+    shareStatus.textContent='';
+    try{
+     if(typeof navigator.share==='function'){await navigator.share({title:'Deepsyq',url:homeLink});return;}
+     if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(homeLink);shareStatus.textContent='Link copied';return;}
+    }catch(e){if(e?.name==='AbortError')return;}
+    shareStatus.textContent=homeLink; // Selectable link when native sharing/copying is unavailable.
+   });
   }else{
    el.href=entry.url;
    if(active===entry.key)el.setAttribute('aria-current','page');
@@ -61,6 +75,7 @@
   if(entry.pending){const soon=document.createElement('small');soon.textContent='soon';el.append(soon);}
   nav.append(el);
  }
+ nav.append(shareStatus);
  sidebar.append(nav);
  const foot=document.createElement('div');foot.className='ds-site-footer';
  const home=document.createElement('a');home.href='deepsyq.html';home.textContent='← Back to Deepsyq Home';
