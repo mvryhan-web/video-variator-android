@@ -1,0 +1,39 @@
+name: D01 D04 no free welcome AI credits (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-billing.js'
+      - 'tests/generation-billing-unit.mjs'
+      - '.github/workflows/agent-d-d01-no-free-welcome.yml'
+  push:
+    branches: [agent-d-d01-no-free-ai-welcome-20261030]
+permissions:
+  contents: read
+jobs:
+  welcome-credit-fail-closed:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      STRIPE_WEBHOOK_SECRET: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+      OPENAI_API_KEY: ''
+      AI_BILLING_ENABLED: 'false'
+      AI_PUBLIC_GENERATION_ENABLED: 'false'
+      AI_WELCOME_CREDITS_ENABLED: 'true'
+      AI_WELCOME_CREDITS: '4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: No-spend welcome HTTP and existing billing regressions
+        run: |
+          node --check server/generation-billing.js
+          node --check tests/generation-billing-unit.mjs
+          node --test tests/generation-billing-unit.mjs tests/base50-feature-flags-unit.mjs
