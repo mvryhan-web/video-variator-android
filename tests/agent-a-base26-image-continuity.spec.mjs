@@ -31,6 +31,8 @@ for(const width of [320,390,768,1448]){
   const prompt='Create a realistic editorial interior with the supplied room materials';
   await page.locator('#quickCreatePrompt').fill(prompt);
   await page.locator('#quickCreateKind').selectOption('image');
+  await page.locator('details.quick-create-advanced > summary').click();
+  await expect(page.locator('#quickCreateRatio')).toBeVisible();
   await page.locator('#quickCreateRatio').selectOption('3:2');
   await page.locator('#quickCreateFiles').setInputFiles([reference('local-room.png'),reference('local-material.png')]);
   await expect(page.locator('#quickCreatePreviews .quick-reference')).toHaveCount(2);
