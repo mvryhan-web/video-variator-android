@@ -1,0 +1,38 @@
+name: Agent A35 BASE26 real browser history privacy
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'tests/agent-a-base26-navigation-privacy.spec.mjs'
+      - '.github/workflows/agent-a-base26-navigation-privacy.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  canvas-real-navigation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    env:
+      HOME: /root
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check tests/agent-a-base26-navigation-privacy.spec.mjs
+      - name: Actual Canvas Studio native history and one-shot media
+        run: npx playwright test tests/agent-a-base26-navigation-privacy.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2 --retries=0
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: agent-a35-navigation-failure
+          path: test-results/
+          retention-days: 7
