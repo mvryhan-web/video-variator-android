@@ -69,3 +69,38 @@ The owner's second message visually contains additional images, but the conversa
 **When binary upload is available:** (1) verify actual file checksum/dimensions and accessible DEV preview URL, (2) owner rights/permissions for public display, (3) use existing Owner AI Control records with `rights_basis='owned'` or `licensed'` and accurate rights note, (4) create only the 5 missing image records with truthful category, prompt, ratio, target Studio, (5) verify click opens the detail modal and correct full image + readable prompt, (6) verify Use this prompt populates Studio without payment/provider call, (7) full responsive visual checks and no duplicate/old media mutation, (8) log SHA and free CI/preview verification. Do not enable production, real Stripe, paid AI calls, or bypass the current release gate. Current C SEO PR435 has separate exact-SHA checks; keep this media integration independent and coordinate the C lane.
 
 **Current status:** `AUDITED_20 / 15_EXISTING_CONCEPTS / 5_NEW_MEDIA_PREPARED_OFF_REPO / PUBLISH_BLOCKED_BY_BINARY_TRANSFER_AND_RELEASE_GATE`.
+
+---
+
+## Second owner batch — 16 new scenes (31 October 2026)
+
+**New owner instruction:** process the 16 additional user-uploaded full-size PNGs; deduplicate against both existing published Inspiration and Creative Examples; add genuinely missing work with a clickable image, readable English Prompt, `Use this prompt`, `Create yours`, `Clone & Try` and existing Studio handoff. No extra gallery, model/provider, payment or production mutation.
+
+**Audit done:** actually checked **16/16** mounted original PNG images, integrity/dimensions/SHA-256, compared to **63 pre-existing catalog records** (38 original Inspiration + 25 Creative Examples). **0 exact SHA-256 file matches**. All sixteen are **new scene concepts**; nearby themes do not equal duplicate: e.g. existing Espresso Gravity is a floating coffee cup, while submitted Diamond Espresso has a large diamond containing a coffee vortex; existing Music Orbit's dancer differs from the black feather tutu and silver metal ribbon of Silver Spiral Ballet.
+
+**Locally prepared media:** 16 unchanged original PNG files (~51.19 MiB), 16 verified WebP preview images (~3.87 MiB total), one structured JSON manifest and CSV with **16 individually reconstructed English prompts** and image ratio/preview dimensions + source/preview checksums, plus a clickable offline gallery with image detail modal and prompt copy. Local conversation artifacts: `deepsyq_inspiration_batch2_16_prepared.zip` (complete) and `deepsyq_inspiration_batch2_web_ready.zip` (optimized previews + metadata). **These are ChatGPT artifacts, NOT GitHub blobs or remotely accessible media.** Original generation prompt/model not exposed in the user's PNG, so descriptions are image-based reconstructions, never fabricated original prompts.
+
+| # | Owner image (literal title abbreviated) | Suggested title (English) | Ratio | Category | Visual prompt seed (full prompt in local manifest) |
+|---|---|---|---|---|---|
+| 01 | Кобальтовая стеклянная сумка | Cobalt Glass Handbag | 1:1 | Product Ads | Thick transparent cobalt-glass handbag suspended in front of a looping ribbon of water; black marble and midnight studio |
+| 02 | Облачные шахматы | Cloud Chess Above the Mountains | 4:5 | Creative Effects | Immense travertine chessboard floating over mountain clouds, pieces sculpted from soft white fog at sunrise |
+| 03 | Балетный арабеск | Silver Spiral Ballet | 4:5 | Fashion & Beauty | Adult black-feather tutu ballerina in arabesque, continuous silver-metal ribbon swirling around her on a dark stage |
+| 04 | Галактика в павлиньем пере | Galaxy in a Peacock Feather | 16:9 | Creative Effects | Iridescent feather-eye macro where turquoise filaments transform into detailed miniature spiral galaxy |
+| 05 | Жасминовая молния | Jasmine Lightning | 1:1 | Cinematic | Long living white jasmine branch shaped like lightning traversing a thunderstorm over a lavender field |
+| 06 | Ледяная бабочка | Crystal Butterfly and Red Rose | 4:5 | Nature & Fantasy | Delicate butterfly with transparent frosted wings hovering over dew-covered red rose, cinematic macro bokeh |
+| 07 | Город внутри стеклянной кувшинки | Glass Lotus City | 1:1 | Creative Effects | Illuminated miniature stone city enclosed by giant translucent water-lily petals floating on a mountain lake |
+| 08 | Рояль, превращающийся в реку | Piano Becoming a Black River | 16:9 | Cinematic | Glossy unbranded black grand piano on ochre dunes melting into a reflective black river |
+| 09 | Янтарная медовая планета | Honey Planet | 16:9 | Food & Lifestyle | Luminous honeycomb amber planet with viscous syrup rings floating above dark stone spoon |
+| 10 | Золотой оазис в вулканической чаше | Oasis in Volcanic Stone | 16:9 | Cinematic | Golden miniature oasis and palm tree inside natural volcanic rock hollow, enclosed by sea surf |
+| 11 | Изумрудный дождь | Emerald Rain Forest | 4:5 | Fashion & Beauty | Original adult woman in ivory blazer surrounded by falling translucent droplets, each containing a tiny fern |
+| 12 | Опаловый взгляд | Opal Galaxy Iris | 4:5 | Beauty | Extreme photographic eye macro, anatomically realistic iris with electric-blue opalescent and gold cosmic flecks |
+| 13 | Розово-кварцевый пион | Rose Quartz Clockwork Peony | 16:9 | Creative Effects | Rose-quartz translucent petals around intricate golden mechanical gears on rocky alpine ledge |
+| 14 | Сад на спиральной лестнице | Garden Stairway Above Clouds | 1:1 | Fantasy | Pale limestone helical staircase with flowerbeds winding into peach dawn clouds; adult teal-coated visitor |
+| 15 | Кобальтовый гриб | Cobalt Mushroom Island | 16:9 | Nature & Fantasy | Huge luminous cobalt mushroom on mossy micro-island reflected in still alpine lake at sunset |
+| 16 | Алмазная буря над эспрессо | Diamond Espresso Vortex | 1:1 | Food & Lifestyle | Faceted clear diamond levitating above white espresso cup, realistic amber coffee vortex held within gemstone |
+
+**Non-negotiable next integration actions:** (1) use only **existing** Inspiration API and Owner AI Control; (2) obtain permission/rights note from owner for the user's actual media, check transparent PNG pixels and WebP image output; (3) transfer the **actual 16 previews** into an approved DEV media destination before creating records; no invalid `previewUrl` placeholders; (4) add only these sixteen new records, each with meaningful prompt, truthful dimensions, `kind=image`, supported Studio handoff, no auto-generation/credit charge; (5) verify actual images are returned from `/api/inspiration`, modal opens full image and prompt, prompt handoff preserves text/ratio and works responsive; (6) re-run free tests on exact new SHA and do not duplicate already-present 15 concept examples from first batch; (7) keep PR in DRAFT and media not public/production while binaries are not transferred or the release gates prohibit activation.
+
+**Status second batch:** `CHECKED_16/16; EXACT_HASH_DUPLICATES=0; NEW_CONCEPTS=16; PNG_AND_WEBP_PREPARED_OFF_REPO; GITHUB_BINARY_UPLOAD_NOT_COMPLETED; LIVE_INSPIRATION_PUBLICATION_NOT_COMPLETED`.
+
+**Collisions:** do not hijack C's existing Inspiration/SEO PRs or A's Canvas; owner bulk-media request may be staged independently after explicit file claims. Do not call this docs-only DRAFT PR a deployed gallery.
