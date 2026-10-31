@@ -250,7 +250,7 @@ async function loadInspirationPreview(){
    .catch(()=>updateInspirationHero([]));
   const inspirationFeed=[];
    for(let page=0,offset=0;page<4;page++){
-    const d=await fetch(base+'/api/inspiration?featured=true&limit=48&offset='+offset,{cache:'no-store'}).then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));
+    const d=await fetch(base+'/api/inspiration?featured=true&limit=60&offset='+offset,{cache:'no-store'}).then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));
     const pageItems=Array.isArray(d.items)?d.items:[];
     inspirationFeed.push(...pageItems);
     if(!pageItems.length||!d.pagination?.hasMore)break;

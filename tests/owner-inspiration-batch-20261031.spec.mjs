@@ -33,6 +33,6 @@ test('DEV preview serves the new owner manifest and Home paginates without affec
  assert.match(preview,/ownerPreviewReady/);
  assert.match(preview,/q\.offset/);
  assert.match(home,/inspirationFeed\.push/);
- assert.match(home,/limit=48&offset=/);
+ assert.match(home,/limit=60&offset=/);
  assert.match(home,/featured=true&kind=video&target=studio&limit=13/);
 });
