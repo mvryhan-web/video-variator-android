@@ -87,7 +87,8 @@ function openInspirationDetail(item,opener){
  const clone=detailEl('button','inspiration-detail-clone','✦ Clone & try');clone.setAttribute('aria-label','Clone & Try');
  const use=detailEl('button','inspiration-detail-secondary','Use this prompt');
  const create=detailEl('button','inspiration-detail-secondary','Create yours');
- for(const b of [clone,use,create])b.type='button';
+ const copy=detailEl('button','inspiration-detail-secondary','Copy prompt');
+ for(const b of [clone,use,create,copy])b.type='button';
  const support=studioHandoffSupport(item);
  if(support&&!support.supported){
   clone.disabled=true;use.disabled=true;create.disabled=true;
@@ -96,7 +97,25 @@ function openInspirationDetail(item,opener){
  clone.onclick=()=>openTarget(item,'clone',feedback);
  use.onclick=()=>openTarget(item,'prompt',feedback);
  create.onclick=()=>openTarget(item,'create',feedback);
- actions.append(clone,use,create);
+ // Copy must work independently of whether a Studio provider is enabled.
+ copy.onclick=async()=>{
+  const value=String(item.prompt||'');
+  if(!value){feedback.textContent='No prompt available to copy.';feedback.hidden=false;return;}
+  let copied=false;
+  try{
+   if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(value);copied=true;}
+  }catch(_){/* Secure-clipboard permission may be unavailable. */}
+  if(!copied){
+   const area=detailEl('textarea','inspiration-copy-fallback');
+   area.value=value;area.readOnly=true;area.style.position='fixed';area.style.opacity='0';area.style.top='0';
+   document.body.append(area);area.select();
+   try{copied=document.execCommand('copy');}catch(_){copied=false;}
+   area.remove();
+  }
+  feedback.textContent=copied?'Prompt copied to clipboard.':'Clipboard is unavailable. Select the prompt text above to copy it.';
+  feedback.hidden=false;
+ };
+ actions.append(clone,use,copy,create);
  sidebar.append(note,feedback,actions);
  layout.append(stage,sidebar);dialog.append(layout);
  const previousOverflow=document.body.style.overflow;
