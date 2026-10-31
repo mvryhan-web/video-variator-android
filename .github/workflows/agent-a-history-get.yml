@@ -1,0 +1,21 @@
+name: Agent A BASE 24 private History GET (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-studio.js'
+      - 'tests/agent-a-history-get-contract.mjs'
+      - '.github/workflows/agent-a-history-get.yml'
+permissions:
+  contents: read
+jobs:
+  private-history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Execute actual History GET handlers with fake owner DB/S3
+        run: node --test tests/agent-a-history-get-contract.mjs

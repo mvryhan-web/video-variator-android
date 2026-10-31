@@ -1,0 +1,49 @@
+name: Agent A BASE 3 private Canvas cross-account browsers
+
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/deepsyq.js'
+      - 'tests/agent-a-base3-home-fallback.spec.mjs'
+      - '.github/workflows/agent-a-base3-canvas-privacy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-a-base3-canvas-privacy-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cross-account-private-draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/deepsyq.js && node --check tests/agent-a-base3-home-fallback.spec.mjs
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Private Canvas, logout Back and mobile Studio handoff with zero paid POST
+        run: |
+          npx playwright test tests/agent-a-base3-home-fallback.spec.mjs \
+            --project=chromium --project=firefox --project=webkit \
+            --project=mobile-chromium --project=mobile-webkit \
+            --grep 'BASE 3: (Canvas draft cannot be restored|logout and browser Back|mobile Canvas references|unsupported Video model)' \
+            --workers=1
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: agent-a-canvas-privacy-browser-evidence
+          path: test-results/
+          retention-days: 7

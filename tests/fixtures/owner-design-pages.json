@@ -1,0 +1,157 @@
+[
+  {
+    "id": "01-home",
+    "name": "Home",
+    "url": "/deepsyq.html"
+  },
+  {
+    "id": "02-image",
+    "name": "Image Studio",
+    "url": "/generate-studio.html?studio=image"
+  },
+  {
+    "id": "03-video",
+    "name": "Video Studio",
+    "url": "/generate-studio.html?studio=video"
+  },
+  {
+    "id": "04-audio-generation",
+    "name": "Audio Generation",
+    "url": "/generate-studio.html?studio=audio"
+  },
+  {
+    "id": "05-studio-history",
+    "name": "My Creations",
+    "url": "/generate-studio.html?view=history"
+  },
+  {
+    "id": "06-apps",
+    "name": "AI Apps",
+    "url": "/ai-apps.html"
+  },
+  {
+    "id": "07-tools",
+    "name": "Everyday Tools",
+    "url": "/free-tools.html"
+  },
+  {
+    "id": "08-audio-tools",
+    "name": "Audio & Text",
+    "url": "/audio-studio.html"
+  },
+  {
+    "id": "09-avatar",
+    "name": "Avatar Studio",
+    "url": "/avatar-studio.html"
+  },
+  {
+    "id": "10-photo-pdf",
+    "name": "Photo to PDF",
+    "url": "/mobile-utility.html?tool=scan-pdf"
+  },
+  {
+    "id": "11-collage",
+    "name": "Photo Collage",
+    "url": "/photo-collage.html"
+  },
+  {
+    "id": "12-background",
+    "name": "Background Remover",
+    "url": "/simple-background-remover.html"
+  },
+  {
+    "id": "13-reminders",
+    "name": "Smart Reminders",
+    "url": "/smart-reminders.html"
+  },
+  {
+    "id": "14-teleprompter",
+    "name": "Teleprompter",
+    "url": "/teleprompter.html"
+  },
+  {
+    "id": "15-telegram",
+    "name": "Telegram Mini App",
+    "url": "/telegram-free-mini.html"
+  },
+  {
+    "id": "16-pricing",
+    "name": "Pricing & Credits",
+    "url": "/ai-pricing.html"
+  },
+  {
+    "id": "17-privacy",
+    "name": "AI Privacy",
+    "url": "/ai-privacy.html"
+  },
+  {
+    "id": "18-comparison",
+    "name": "Deepsyq Comparison",
+    "url": "/deepsyq-vs-deepseek.html"
+  },
+  {
+    "id": "19-terms",
+    "name": "Terms",
+    "url": "/terms.html"
+  },
+  {
+    "id": "20-refunds",
+    "name": "Refund Policy",
+    "url": "/refund.html"
+  },
+  {
+    "id": "21-contact",
+    "name": "Contact",
+    "url": "/contact.html"
+  },
+  {
+    "id": "22-cookies",
+    "name": "Cookies",
+    "url": "/cookie.html"
+  },
+  {
+    "id": "23-admin",
+    "name": "Owner AI Control",
+    "url": "/deepsyq-admin.html"
+  },
+  {
+    "id": "24-watcher",
+    "name": "Product Watcher",
+    "url": "/product-watcher-admin.html"
+  },
+  {
+    "id": "25-uniquifier",
+    "name": "Video Uniquifier",
+    "url": "/index.html"
+  },
+  {
+    "id": "26-video-history",
+    "name": "Video History",
+    "url": "/index.html#history"
+  },
+  {
+    "id": "27-analytics",
+    "name": "Analytics",
+    "url": "/index.html#analytics"
+  },
+  {
+    "id": "28-tool-plans",
+    "name": "Tool Plans",
+    "url": "/index.html#plans"
+  },
+  {
+    "id": "29-account",
+    "name": "Account & Settings",
+    "url": "/index.html#profile"
+  },
+  {
+    "id": "30-faq",
+    "name": "Help & FAQ",
+    "url": "/index.html#faq"
+  },
+  {
+    "id": "31-qr",
+    "name": "QR Generator",
+    "url": "/mobile-utility.html?tool=qr"
+  }
+]

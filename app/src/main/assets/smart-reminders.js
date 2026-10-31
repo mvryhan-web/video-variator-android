@@ -7,16 +7,19 @@ const t=(en,r,f,u)=>ru?(r||en):fr?(f||en):uk?(u||r||en):en;
 const zone=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';
 let draft=null,speech=null;
 const userToken=()=>localStorage.getItem('vv_token')||'';
+let remindersReadEpoch=0,notesReadEpoch=0;
 const errorText=e=>String(e?.message||e||'Unknown error');
 const status=s=>{$('reminderStatus').textContent=s;};
 async function api(url,options={}){
- if(!userToken())throw Error(t('Sign in on the home page to synchronize reminders.','Войдите в аккаунт на главной странице, чтобы сохранять напоминания.'));
- const response=await fetch('/api/reminders'+url,{...options,headers:{'Authorization':'Bearer '+userToken(),...options.headers}});
+ const requestToken=userToken();
+ if(!requestToken)throw Error(t('Sign in on the home page to synchronize reminders.','Войдите в аккаунт на главной странице, чтобы сохранять напоминания.'));
+ const response=await fetch('/api/reminders'+url,{...options,headers:{'Authorization':'Bearer '+requestToken,...options.headers}});
  const result=await response.json().catch(()=>({}));
+ if(requestToken!==userToken())throw Error('ACCOUNT_CHANGED');
  if(!response.ok)throw Error(result.error||'Request failed');return result;
 }
 function setCopy(){
- $('reminderBack').textContent=t('← Free tools','← Бесплатные инструменты','← Outils gratuits','← Безкоштовні інструменти');
+ $('reminderBack').textContent=t('← Everyday Tools','← Повседневные инструменты','← Outils du quotidien','← Безкоштовні інструменти');
  $('reminderTitle').textContent=t('Smart reminders','Умные напоминания','Rappels intelligents','Розумні нагадування');
  $('reminderLead').textContent=t('Create one-time or repeated alerts. Free, no video credits.','Разовые и повторяющиеся напоминания. Бесплатно, без видеокредитов.','Rappels uniques ou récurrents, sans crédits.','Разові або повторні нагадування, без відеокредитів.');
  $('reminderFormTitle').textContent=t('Create a reminder','Создать напоминание','Créer un rappel','Створити нагадування');
@@ -96,8 +99,11 @@ function summary(x){
  return x.title+' — '+shown+' ('+x.timezone+'). '+desc+'. '+t('Alert ','Предупредить за ')+x.advanceMinutes+t(' minutes before.',' минут до начала.')+' '+x.channel+'.';
 }
 async function list(){
+ const requestToken=userToken(),epoch=++remindersReadEpoch;
  try{
-  const data=await api('');const list=$('reminderList');list.replaceChildren();
+  const data=await api('');
+  if(requestToken!==userToken()||epoch!==remindersReadEpoch)return;
+  const list=$('reminderList');list.replaceChildren();
   if(!data.items.length){list.textContent=t('No reminders yet.','Пока нет напоминаний.');return;}
   for(const item of data.items){
    const row=document.createElement('article');row.className='reminder-entry';
@@ -121,7 +127,7 @@ async function list(){
     try{await api('/'+encodeURIComponent(item.id),{method:'DELETE'});await list();}catch(e){status(errorText(e));}
    };actions.append(edit,calendar,del);row.append(title,desc,actions);list.append(row);
   }
- }catch(e){$('reminderList').textContent=errorText(e);}
+ }catch(e){if(requestToken===userToken()&&epoch===remindersReadEpoch)$('reminderList').textContent=errorText(e);}
 }
 async function enablePush(){
  try{
@@ -158,16 +164,20 @@ function speechInput(){
  mic.onclick=()=>{
   if(speech){speech.stop();return;}
   const recognition=new API();speech=recognition;
+  const recognizedFor=userToken();
+  const current=()=>speech===recognition&&userToken()===recognizedFor;
   recognition.lang=navigator.language||'en-US';
   recognition.interimResults=false;recognition.continuous=false;recognition.maxAlternatives=1;
   let received=false;
-  recognition.onstart=()=>{mic.textContent=stop;mic.setAttribute('aria-pressed','true');status(t('Listening… Speak clearly.','Слушаю… Говорите.'));};
+  recognition.onstart=()=>{if(!current())return;mic.textContent=stop;mic.setAttribute('aria-pressed','true');status(t('Listening… Speak clearly.','Слушаю… Говорите.'));};
   recognition.onresult=e=>{
+   if(!current())return;
    const transcript=Array.from(e.results||[]).map(r=>r[0]?.transcript||'').join(' ').trim();
    if(!transcript)return;
    received=true;$('spokenReminder').value=transcript;fillText();
   };
   recognition.onerror=e=>{
+   if(!current())return;
    const code=String(e?.error||'');
    const msg=code==='not-allowed'||code==='service-not-allowed'
     ?t('Microphone permission denied. Allow it in browser settings or type a reminder.','Нет разрешения на микрофон. Разрешите его в браузере или напишите напоминание.')
@@ -175,7 +185,8 @@ function speechInput(){
    status(msg);
   };
   recognition.onend=()=>{
-   if(speech===recognition)speech=null;
+   if(!current())return;
+   speech=null;
    mic.textContent=idle;mic.setAttribute('aria-pressed','false');
    if(!received&&!$('reminderStatus').textContent.includes('микрофон')){ /* Retain recognition error if displayed. */ }
   };
@@ -260,6 +271,8 @@ function setupNotesDictation(){
   }
   const recognizer=new API();
   notesRecognizer=recognizer;
+  const recognizedFor=userToken();
+  const current=()=>notesRecognizer===recognizer&&userToken()===recognizedFor;
   recognizer.lang=navigator.language||'en-US';
   recognizer.interimResults=true;
   recognizer.continuous=true;
@@ -267,10 +280,12 @@ function setupNotesDictation(){
   const existing=area.value.trim();
   let heard=false,parts=[];
   recognizer.onstart=()=>{
+   if(!current())return;
    mic.textContent=stopLabel;mic.setAttribute('aria-pressed','true');
    notice.textContent=t('Listening… Speak your note.','Слушаю… Продиктуйте заметку.','J’écoute… Dictez votre note.','Слухаю… Продиктуйте нотатку.');
   };
   recognizer.onresult=e=>{
+   if(!current())return;
    for(let i=e.resultIndex;i<e.results.length;i++){
     const item=e.results[i];parts[i]=item[0]?.transcript?.trim()||'';
    }
@@ -282,13 +297,15 @@ function setupNotesDictation(){
    notice.textContent=t('Text recognized. Check it, then save your note.','Текст распознан. Проверьте его и сохраните заметку.','Texte reconnu. Vérifiez-le avant d’enregistrer.','Текст розпізнано. Перевірте й збережіть нотатку.');
   };
   recognizer.onerror=e=>{
+   if(!current())return;
    const code=String(e?.error||'');
    notice.textContent=(code==='not-allowed'||code==='service-not-allowed')
     ?t('Microphone permission denied. Allow access in browser settings.','Доступ к микрофону запрещён. Разрешите его в настройках браузера.','Accès au microphone refusé.','Доступ до мікрофона заборонено.')
     :t('Voice input stopped. You can continue typing.','Не удалось продолжить распознавание. Можно дописать вручную.','Dictée interrompue. Vous pouvez écrire.','Диктування перервано. Можна дописати вручну.');
   };
   recognizer.onend=()=>{
-   if(notesRecognizer===recognizer)notesRecognizer=null;
+   if(!current())return;
+   notesRecognizer=null;
    mic.textContent=idle;mic.setAttribute('aria-pressed','false');
    if(!heard&&!notice.textContent.includes('запрещён')&&!notice.textContent.includes('denied')){
     notice.textContent=t('No voice text received. Try again or type.','Речь не распознана. Попробуйте ещё раз или напишите текст.','Aucun texte détecté. Réessayez.','Мовлення не розпізнано. Спробуйте ще раз.');
@@ -300,8 +317,10 @@ function setupNotesDictation(){
 }
 let editingNoteId=null;
 async function loadNotes(){
+ const requestToken=userToken(),epoch=++notesReadEpoch;
  try{
   const data=await api('/notes');
+  if(requestToken!==userToken()||epoch!==notesReadEpoch)return;
   const box=$('notesList');box.replaceChildren();
   if(!data.items.length){box.textContent=t('No notes yet.','Пока нет заметок.');return;}
   for(const note of data.items){
@@ -317,7 +336,7 @@ async function loadNotes(){
    };
    actions.append(edit,del);row.append(text,actions);box.append(row);
   }
- }catch(e){$('notesList').textContent=errorText(e);}
+ }catch(e){if(requestToken===userToken()&&epoch===notesReadEpoch)$('notesList').textContent=errorText(e);}
 }
 setNotesCopy();
 setupNotesDictation();
@@ -333,3 +352,38 @@ $('notesSave').onclick=async()=>{
  }catch(e){$('notesStatus').textContent=errorText(e);}
  finally{$('notesSave').disabled=false;}
 };
+
+// Cross-tab token changes and same-tab account switches on focus/BFCache/interactions.
+let renderedAccountToken=userToken();
+function scrubAccountOnChange(){
+ const next=userToken();
+ if(next===renderedAccountToken)return;
+ renderedAccountToken=next;
+ ++remindersReadEpoch;++notesReadEpoch;
+ draft=null;editingNoteId=null;
+ if(speech){try{speech.stop();}catch(_){}speech=null;}
+ if(notesRecognizer){try{notesRecognizer.stop();}catch(_){}notesRecognizer=null;}
+ for(const id of ['spokenReminder','reminderWhat','reminderDate','reminderTime','notesBody','photoRecognized']){
+  const el=$(id);if(el)el.value='';
+ }
+ delete $('reminderWhat').dataset.editId;
+ for(const id of ['reminderStatus','notesStatus','notesVoiceStatus','photoStatus','confirmSummary']){
+  const el=$(id);if(el)el.textContent='';
+ }
+ $('repeatRule').value='none';$('repeatDays').hidden=true;$('reminderConfirmation').hidden=true;
+ $('reminderList').replaceChildren();$('notesList').replaceChildren();
+ $('reminderPhotoFile').value='';
+ $('photoPreview').removeAttribute('src');$('photoPreview').hidden=true;
+ $('photoRecognizedLine').hidden=true;$('photoCandidates').replaceChildren();$('photoCandidates').hidden=true;
+ if(next){void list();void loadNotes();}
+ else{
+  $('reminderList').textContent=t('Sign in first to synchronize reminders across devices.','Сначала войдите в аккаунт, чтобы напоминания сохранялись между устройствами.');
+  $('notesList').textContent=t('Sign in to see your notes.','Войдите в аккаунт, чтобы видеть свои заметки.');
+ }
+}
+window.addEventListener('storage',e=>{if(e.key==='vv_token'||e.key===null)scrubAccountOnChange();});
+window.addEventListener('focus',scrubAccountOnChange);
+window.addEventListener('pageshow',scrubAccountOnChange);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)scrubAccountOnChange();});
+document.addEventListener('pointerdown',scrubAccountOnChange,true);
+document.addEventListener('keydown',scrubAccountOnChange,true);

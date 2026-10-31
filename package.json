@@ -9,7 +9,12 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "node --watch server/server.js",
-    "test:browsers": "playwright test"
+    "test:browsers": "playwright test",
+    "worker:generation": "node server/generation-worker.js",
+    "migrate:ai": "node server/migrate-ai.js",
+    "migrate:ai:check": "node server/migrate-ai.js --check",
+    "ai:preflight": "node server/ai-preflight.js",
+    "preview:deepsyq": "node server/deepsyq-preview.js"
   },
   "dependencies": {
     "@ffmpeg/core": "0.12.10",

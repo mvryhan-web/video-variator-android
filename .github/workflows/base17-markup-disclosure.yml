@@ -1,0 +1,26 @@
+name: BASE 17 Markup Disclosure
+on:
+  push:
+    branches: [base17-markup-disclosure-20261016]
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/deepsyq-admin.js'
+      - 'tests/base17-markup-disclosure.spec.mjs'
+      - '.github/workflows/base17-markup-disclosure.yml'
+permissions:
+  contents: read
+jobs:
+  owner-markup-disclosure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/deepsyq-admin.js
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Owner-only save, truthful credit pricing and mobile no-payment proof
+        run: npx playwright test tests/base17-markup-disclosure.spec.mjs --project=chromium --project=mobile-webkit

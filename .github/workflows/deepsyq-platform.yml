@@ -1,0 +1,48 @@
+name: Deepsyq platform regression
+on:
+  push:
+    branches: [deepsyq-platform]
+    # Docs-only updates cannot change browser runtime; keep full regression for all other pushes.
+    # GitHub skips a run only when ALL modified files match these ignore patterns.
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+  pull_request:
+    paths:
+      - 'app/src/main/assets/deepsyq*'
+      - 'tests/deepsyq*'
+      # BASE 55 coordination has its own narrow Node CI; never run the full
+      # multi-browser platform suite for this standalone read-only unit test.
+      - '!tests/deepsyq-base55-coordination-unit.mjs'
+      - '.github/workflows/deepsyq-platform.yml'
+# Keep evidence for the newest commit in each branch/PR. A rapid series of
+# agent commits must not leave hundreds of superseded full Playwright runs.
+# Different PR numbers stay independent, so A/B/C/D checks never cancel one another.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Prefer official Ubuntu archive for browser dependencies
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/deepsyq.js && node --check app/src/main/assets/generate-studio.js && node --check app/src/main/assets/studio-handoff.js && node --check app/src/main/assets/inspiration.js && node --check server/deepsyq-preview.js && node --check server/server.js
+      - run: node --test tests/deepsyq-routes.mjs tests/generation-studio-unit.mjs tests/generation-byteplus-unit.mjs tests/generation-billing-unit.mjs tests/generation-routing-unit.mjs tests/generation-policy-unit.mjs tests/generation-storage-unit.mjs tests/generation-errors-unit.mjs tests/admin-audit-unit.mjs tests/ai-migrations-unit.mjs tests/ai-migration-status-unit.mjs tests/generation-model-capabilities-unit.mjs tests/generation-entitlements-unit.mjs tests/generation-worker-runtime-unit.mjs tests/generation-readiness-unit.mjs tests/generation-idempotency-unit.mjs tests/generation-billing-review-unit.mjs tests/generation-templates-unit.mjs tests/generation-inspiration-unit.mjs tests/generation-onboarding-unit.mjs server/tests/telegram-free-mini.test.mjs
+      - run: node --test tests/deepsyq-preview.mjs
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npx playwright test tests/deepsyq.spec.mjs tests/generation-studio.spec.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deepsyq-browser-evidence
+          path: test-results/

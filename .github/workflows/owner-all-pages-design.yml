@@ -1,0 +1,45 @@
+name: Owner 31 real screens design acceptance
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/**'
+      - 'tests/owner-all-pages-design*'
+      - 'tests/owner-approved-actions.spec.mjs'
+      - 'tests/fixtures/owner-design-pages.json'
+      - '.github/workflows/owner-all-pages-design.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-screens:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Prefer official Ubuntu archive for browser dependencies
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npx playwright test --config tests/owner-all-pages-design.config.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deepsyq-31-real-page-designs
+          path: test-results/design-pages/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: deepsyq-31-browser-failures
+          path: |
+            test-results/**/trace.zip
+            test-results/**/error-context.md
+          retention-days: 7

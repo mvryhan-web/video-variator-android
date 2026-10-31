@@ -1,0 +1,45 @@
+/* Owner composer reference: one site rail and compact, button-anchored panels. */
+.studio-shell{grid-template-columns:minmax(0,1fr)}
+.studio-shell>.studio-nav{display:none}
+.studio-single-rail .studio-shell{display:block}
+.studio-single-rail .studio-shell>main{max-width:1440px;padding-inline:clamp(16px,4vw,64px)}
+.studio-type-picker .nav-icon{width:18px;height:18px;font-size:18px;display:inline-flex}
+.studio-type-picker .nav-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6}
+.composer-chevron{margin-left:auto;color:#aaa}
+.composer-popover{position:fixed!important;inset:auto!important;margin:0!important;transform:none!important;width:min(360px,calc(100vw - 24px));max-width:calc(100vw - 24px);box-sizing:border-box;max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;color:#e9e9e9;background:#1b1b1b!important;border:1px solid #393939!important;border-radius:12px!important;padding:16px!important;box-shadow:0 18px 48px #0008}
+.composer-popover::backdrop{background:transparent!important;backdrop-filter:none!important}
+.composer-popover .dialog-head{background:#1b1b1b!important;border-bottom:1px solid #353535;padding:0 0 12px!important;margin-bottom:14px;gap:8px}
+.composer-popover .dialog-head h2{font-size:16px;line-height:1.4;font-weight:550;margin-right:auto}
+.composer-popover .dialog-head>[data-close]{width:44px;min-width:44px;min-height:44px;height:44px;font-size:20px}
+.composer-popover .hint{color:#9d9d9d}
+.studio-type-menu{width:170px;padding:7px!important;scrollbar-gutter:auto}
+#studioTypeMenu .studio-nav{display:flex;flex-direction:column;padding:0;border:0;gap:3px;background:transparent}
+.studio-type-menu .nav-caption,.studio-type-menu .nav-footer{display:none}
+.studio-type-menu .studio-nav>button{flex:none;min-height:44px;border:0;border-radius:7px;padding:8px 10px;background:transparent;font-size:14px;gap:10px}
+#studioTypeMenu .studio-nav>button[aria-pressed=true]{color:#fff;background:#2c2c2c}
+.studio-type-menu .studio-nav>button[aria-pressed=true]::after{content:'✓';margin-left:auto}
+.studio-type-menu .nav-icon{width:18px;height:18px;display:flex}
+.studio-type-menu .nav-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6}
+#modelDialog.composer-popover .model-choices{gap:4px;margin-top:12px}
+#modelDialog.composer-popover .model-card{position:relative;display:grid;grid-template-columns:38px minmax(0,1fr) 16px;column-gap:12px;row-gap:3px;min-height:70px;padding:10px 8px;background:transparent;border:0;border-radius:8px}
+#modelDialog.composer-popover .model-card[aria-pressed=true],#modelDialog.composer-popover .model-card:hover{background:#303030}
+#modelDialog.composer-popover .model-card strong,#modelDialog.composer-popover .model-card small,#modelDialog.composer-popover .model-card .connection{grid-column:2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#modelDialog.composer-popover .model-card strong{font-size:14px;font-weight:500;grid-row:1}
+#modelDialog.composer-popover .model-card small{font-size:11px;grid-row:2;color:#aaa}
+#modelDialog.composer-popover .model-card .connection{font-size:10px;grid-row:3;color:#b3a9c9}
+.model-provider-mark{grid-column:1;grid-row:1/4;align-self:center;display:grid;place-items:center;width:38px;height:38px;background:#303030;border:1px solid #454545;border-radius:9px;font-size:21px;font-weight:650;color:#eee}
+#modelDialog.composer-popover .model-card[aria-pressed=true]::after{content:'✓';grid-column:3;grid-row:1/4;align-self:center;color:#ddd}
+#settingsDialog.composer-popover label{color:#ddd;margin:16px 0 10px;gap:10px}
+#settingsDialog.composer-popover .ratio-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 18px}
+#settingsDialog.composer-popover .ratio-choices button{min-width:0;min-height:48px;background:#2a2a2a;border:1px solid transparent;border-radius:8px;padding:8px;font-size:13px;color:#ddd}
+#settingsDialog.composer-popover .ratio-choices button[aria-pressed=true],.composer-setting-choices button[aria-pressed=true]{border-color:#cbd3dd!important;background:#303236!important;color:#fff}
+#settingsDialog.composer-popover .ratio-drawing{display:none}
+#settingsDialog.composer-popover #ratioLabel{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.composer-setting-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.composer-setting-choices button{min-width:0;min-height:44px;border:1px solid transparent;background:#2a2a2a;border-radius:8px;padding:8px;color:#ddd;font-size:13px}
+.composer-native-select{position:absolute!important;width:1px!important;height:1px!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;clip-path:inset(50%);border:0!important}
+.composer-duration{display:flex;gap:20px;align-items:center;min-height:42px}
+.composer-duration input{width:100%;min-width:0;accent-color:#cbd3dd}
+.composer-duration output{flex:0 0 60px;min-height:36px;display:grid;place-items:center;border-radius:8px;background:#2a2a2a;font-size:14px;color:#eee}
+.composer-settings-reset{font-size:11px!important;min-height:32px!important;border:0!important;background:transparent!important;color:#aaa!important;padding:4px!important}
+@media(max-width:700px){.studio-single-rail .studio-shell>main{min-height:calc(100svh - 62px)}.composer-controls{gap:7px}.studio-type-picker{flex:0 0 auto}.composer-popover{padding:14px!important}.composer-controls .pill{font-size:11px}.studio-type-menu{padding:7px!important}}

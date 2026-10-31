@@ -1,0 +1,276 @@
+BLOCK 7 — PRICING, CREDITS, STRIPE & UNIT ECONOMICS
+============================================================
+
+GOAL
+Build the commercial Deepsyq system where users pay through the existing Stripe, receive AI credits/entitlements, use AI, and Deepsyq controls real cost and gross margin.
+
+Important:
+- reuse existing Stripe
+- reuse existing Checkout
+- reuse existing Products/Prices where already present
+- reuse existing webhooks
+- reuse PostgreSQL
+- reuse users
+- reuse current AI wallet/ledger foundations
+- do NOT create a second billing stack
+- do NOT duplicate existing plans/Price IDs/backend logic
+- do NOT invent provider prices
+
+EXISTING DEEPSYQ PLAN BASE
+- Basic — $9
+- Pro — $24
+- Business — $99
+- Lifetime — €2,999
+
+Lifetime:
+- separate product
+- for Everyday Tools / legacy Free Tools + Video Uniquifier according to approved policy
+- NOT unlimited paid AI
+- NOT lifetime access to every future provider call
+
+TRIAL
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Единственный коммерческий канон — Block 7: бесплатного AI-плана и стартовых бесплатных кредитов НЕТ. Trial $0.99 — ПЛАТНЫЙ вход, но строго OFF пока не утверждены срок, кредиты, продление, возвраты, anti-multiple-signup. Trial считается покупкой только после verified Stripe webhook; Issue #182 купленные кредиты перед каждым provider call.
+Add a prominent:
+Trial — $0.99
+
+Do not finalize/enable it until approved:
+- duration
+- included AI credits
+- included features
+- renewal/non-renewal
+- expiry
+- refund behavior
+- abuse protection
+
+No unlimited AI.
+
+LUMINA BENCHMARK
+Use Lumina only as a pricing/credits UX benchmark, not as automatic Deepsyq production pricing.
+
+Previously captured benchmark values:
+- Trial: $0.99 / 3 days / 299 credits
+- $9 tier: 1,260 first-month credits
+- $29 tier: 4,200 first-month credits
+- $49 tier: 7,800 first-month credits
+- $239 tier: 39,000 first-month credits
+
+Credit pack size ladder:
+- 1,000
+- 10,000
+- 100,000
+- 1,000,000
+- 10,000,000
+
+These are benchmark/reference values only.
+Do not adopt them without unit economics.
+
+PRICING PAGE
+Show clearly:
+- plan name
+- price
+- first-month total credits
+- normal monthly credits
+- features
+- limits
+- best-for
+- differences between plans
+- CTA
+- Buy Credits
+- Trial $0.99
+- Lifetime separately
+- FAQ
+
+FAQ should explain:
+- what AI credits are
+- why models have different credit costs
+- failed generation behavior
+- when credits are released/refunded
+- monthly renewal
+- one-time credit packs
+- Lifetime vs AI usage
+- plan limits
+- rollover only after policy approval
+- refunds only after policy approval
+
+AI CREDIT SYSTEM
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Вся логика credit/ledger/reservation/refund определяется ТОЛЬКО ЗДЕСЬ; BASE §§13–18,43–44 и Blocks 1/2/6 ссылаются сюда и не создают параллельные сервисы.
+Need:
+- AI wallet
+- auditable ledger
+- purchase
+- reserve
+- capture
+- release
+- refund
+- debt/reconciliation primitives
+- idempotency
+
+Before expensive generation:
+quote
+→ verify balance
+→ reserve atomically
+→ start provider job
+→ finish provider job
+→ capture approved/actual credits
+→ release unused reservation or confirmed failure
+
+Never:
+- start expensive work before checking/reserving credits
+- automatically refund an ambiguous provider call when provider acceptance is unknown
+- automatically retry ambiguous paid generation
+
+STRIPE
+All user payments go through the existing Stripe.
+
+Use Stripe for:
+- subscriptions
+- approved Trial
+- one-time AI credit packs
+- existing plan checkout
+- customer mapping
+
+User pays Deepsyq through Stripe.
+Deepsyq separately pays AI providers from business/provider accounts.
+A customer’s Stripe payment does not directly “pay the provider per user”.
+
+Credit grants:
+- only after verified Stripe webhook
+- idempotent
+- record webhook event
+- duplicate webhook must not duplicate credits
+
+Monthly credits:
+- grant after confirmed billing event
+- server-side renewal logic
+
+ONE-TIME CREDIT PACKS
+Support Buy Credits.
+
+Benchmark sizes:
+- 1,000
+- 10,000
+- 100,000
+- 1,000,000
+- 10,000,000
+
+Real prices must be derived from unit economics.
+Discounts are allowed only while maintaining safe margin.
+
+UNIT ECONOMICS
+For each AI call record:
+- provider
+- model
+- task type
+- tokens / seconds / images / video duration / audio duration as relevant
+- provider list price
+- actual provider cost
+- internal Deepsyq credit cost
+- charged credits
+- reserved credits
+- markup
+- allocated Stripe fees where applicable
+- infrastructure allocation where applicable
+- retry/failure cost
+- final margin
+
+Formula:
+provider cost
++ infrastructure
++ Stripe fees
++ expected failure/retry risk
++ safety margin
+= minimum sustainable price
+
+Then:
+minimum sustainable price
+→ Deepsyq credits
+→ plan allowance / credit-pack pricing
+
+Do not finalize Deepsyq pricing until real provider prices are verified.
+
+MODEL-SPECIFIC CREDIT COST
+Different models may cost different credits.
+
+Pricing must be:
+- model-specific
+- capability-aware
+- duration/size-aware where relevant
+- server-side
+- config-driven
+
+Do not hardcode stale provider prices in the frontend.
+
+PRICING ENGINE
+Server-side pricing engine:
+- input provider/model/task
+- read verified provider economics
+- apply approved markup
+- return AI credit quote
+- save estimate
+- save actual cost after job
+- compare estimated vs actual
+
+Frontend receives only safe quote data.
+No provider billing secrets exposed.
+
+ADMIN ECONOMICS
+Owner/admin should see:
+- AI revenue
+- confirmed credit purchases
+- subscriptions
+- provider cost
+- infrastructure cost where available
+- credits sold
+- credits used
+- credits held
+- refunds/releases
+- average cost per user
+- average cost per generation
+- most expensive models
+- highest-failure models
+- margin by provider
+- margin by model
+- margin by plan
+- gross margin
+- abnormal spend
+
+If currencies differ:
+- do not sum them into one fake revenue total without an FX/accounting policy
+
+PRICING SAFETY
+Never:
+- include unlimited paid AI in Lifetime
+- grant credits before confirmed webhook
+- create duplicate Stripe Products/Prices
+- invent provider pricing
+- present a plan as live when Price ID/webhook is not configured
+- auto-change public pricing without owner approval
+- silently switch an expensive job to a much more expensive fallback model without approved routing policy
+
+EVERYDAY TOOLS
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Жёсткий дневной per-user limit НЕ даёт права бесплатного обращения к платному AI-provider: Issue #182 требует сначала ПРИОБРЕТЁННЫЕ AI-кредиты. Для бесплатного Everyday Tools нужны локальная обработка/доказанная нулевая себестоимость, либо не-AI облачный hard-limit без списаний.
+
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. РЕШЕНИЕ: ежедневный БЕСПЛАТНЫЙ доступ без обязательного AI-плана, только локально или без платного cloud AI. Если инструмент вызывает платный облачный сервис, применять ЛОКАЛЬНУЮ замену ИЛИ жёсткий дневной per-user лимит с гарантированным отказом вместо денежного перерасхода; иначе BLOCKED. Исторические строки «free/limited first use, then upgrade» ниже отменены, не удалены.
+- may have free/limited first use
+- then upgrade/plan/limits
+- do not confuse cheap/local tools with expensive paid AI provider operations
+
+BLOCK 7 IS REALLY DONE ONLY WHEN
+user
+→ Stripe payment/subscription
+→ verified webhook
+→ AI credits granted
+→ user starts AI task
+→ credits reserved
+→ real provider job
+→ durable result
+→ actual provider cost recorded
+→ credits captured/released correctly
+→ owner sees revenue/cost/margin
+→ no duplicate billing
+→ no duplicate paid generation
+→ no unlimited-loss pricing

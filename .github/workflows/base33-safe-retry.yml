@@ -1,0 +1,29 @@
+name: BASE 33 Safe Paid Retry Guard
+on:
+  pull_request:
+    paths:
+      - 'server/generation-errors.js'
+      - 'server/generation-retry-policy.js'
+      - 'tests/generation-errors-unit.mjs'
+      - 'tests/generation-retry-policy-unit.mjs'
+      - '.github/workflows/base33-safe-retry.yml'
+  push:
+    branches:
+      - base33-safe-retry-guard-20261016
+permissions:
+  contents: read
+jobs:
+  retry-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse retry guard files
+        run: |
+          node --check server/generation-errors.js
+          node --check server/generation-retry-policy.js
+      - name: Test safe retry policy and public errors
+        run: node --test tests/generation-errors-unit.mjs tests/generation-retry-policy-unit.mjs

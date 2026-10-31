@@ -1,0 +1,351 @@
+/* Owner-approved Video Uniquifier screenshot layout — DEV only, no changes to processing/billing. */
+body.vu-reference{background:#020b1a!important;color:#fff;font-family:Inter,system-ui,sans-serif}
+body.vu-reference .shell{display:grid!important;grid-template-columns:190px minmax(0,1fr)!important;grid-template-rows:56px auto;max-width:1700px;margin:auto;min-height:100vh;background:#020c1b}
+body.vu-reference .vu-appbar{grid-column:1/-1;grid-row:1;display:flex;gap:16px;align-items:center;position:sticky;top:0;z-index:50;height:56px;padding:0 20px;background:#020c1df9;border-bottom:1px solid #092c56}
+body.vu-reference .vu-logo{display:flex;align-items:center;gap:9px;color:#fff;font-size:23px;text-decoration:none;min-width:185px}
+body.vu-reference .vu-brandmark{display:grid;place-items:center;background:conic-gradient(#06ddff,#1442f8,#dc08f0,#08c5fc);border-radius:12px;color:#fff;height:34px;width:34px;font-size:23px;box-shadow:0 0 12px #1078ffc9}
+body.vu-reference .vu-nav-toggle{border:0;background:transparent;color:#e8f3ff;font-size:23px}
+body.vu-reference .vu-search{flex:1;display:flex;align-items:center;gap:7px;min-width:95px;max-width:250px;height:32px;margin:auto;padding:0 12px;border:1px solid #18396c;border-radius:30px;background:#07152e;color:#bed7ff}
+body.vu-reference .vu-search input{background:none;border:0;outline:0;color:#fff;font-size:10px;min-width:0;flex:1}
+body.vu-reference .vu-search kbd{border-radius:6px;background:#22375b;color:#8fb1e2;font-size:9px;padding:3px}
+body.vu-reference .vu-top-tools{display:flex;gap:14px;align-items:center;font-size:11px;white-space:nowrap;margin-left:auto}
+body.vu-reference .vu-top-tools a,body.vu-reference .vu-top-tools span{color:#e9ecff;text-decoration:none}
+body.vu-reference .vu-promo-pill{padding:7px 10px!important;border:1px solid #cc26fa;border-radius:10px;background:#191650}
+body.vu-reference .vu-top-user #signInBtn{white-space:nowrap;border-radius:50px;font-size:10px;padding:8px}
+body.vu-reference .sidebar{grid-column:1;grid-row:2;min-width:0;top:56px;height:calc(100vh - 56px);overflow-y:auto;position:sticky;display:flex;flex-direction:column;padding:7px 15px!important;background:linear-gradient(180deg,#031125,#020b1a)!important;border-right:1px solid #072d59}
+body.vu-reference .sidebar>.brand,body.vu-reference .sidebar>nav,body.vu-reference .sidebar>.sidebarBottom{display:none!important}
+body.vu-reference .vu-side-nav{display:grid}
+body.vu-reference .vu-nav-group{padding:8px 0 12px;border-bottom:1px solid #153353;display:grid;gap:2px}
+body.vu-reference .vu-nav-heading{font-size:12px;margin:4px 10px 7px;color:#e4bdff;font-weight:750}
+body.vu-reference .vu-side-link{display:flex;align-items:center;gap:10px;min-height:38px;border-radius:9px;padding:8px 10px;color:#e3ebfa!important;text-decoration:none!important;font-size:12px}
+body.vu-reference .vu-side-link:hover{background:#0d2651}
+body.vu-reference .vu-side-link.active{background:linear-gradient(90deg,#075df5,#112452);border:1px solid #0a7dff;box-shadow:0 0 12px #075bff5d}
+body.vu-reference .vu-side-link.disabled{opacity:.56}
+body.vu-reference .vu-nav-icon{font-size:21px;width:22px;text-align:center}
+body.vu-reference .vu-upgrade{display:block;width:100%;min-height:190px;margin-top:auto;position:relative;padding:0;overflow:hidden;color:#fff;text-align:left;border:1px solid #af19ff;border-radius:13px;background:#08143c}
+body.vu-reference .vu-upgrade-art,body.vu-reference .vu-upgrade-art>.vu-art{position:absolute!important;inset:0;width:100%;height:100%}
+body.vu-reference .vu-upgrade::before{content:'';position:absolute;inset:0;background:linear-gradient(#031435ee,#09205444,#060c21e6);z-index:1}
+body.vu-reference .vu-upgrade-content{display:flex;flex-direction:column;gap:10px;min-height:190px;position:relative;z-index:2;padding:13px}
+body.vu-reference .vu-upgrade-content b{font-size:15px;line-height:1.16}
+body.vu-reference .vu-upgrade-content small{font-size:10px;line-height:1.45;color:#e1e9ff;flex:1}
+body.vu-reference .vu-upgrade-content strong{display:block;border-radius:24px;background:linear-gradient(90deg,#e123f1,#01c8eb);font-size:11px;text-align:center;padding:10px;color:white}
+body.vu-reference .main{grid-column:2;grid-row:2;margin:0!important;width:100%;max-width:none!important;min-width:0;padding:0 12px 30px!important}
+body.vu-reference .main>.topbar{display:none!important}
+body.vu-reference #dashboardView{width:100%;max-width:none}
+body.vu-reference .hero.card{isolation:isolate;position:relative;display:flex!important;align-items:center;min-height:240px;margin:0 0 10px!important;padding:20px!important;overflow:hidden;border:1px solid #0f4a9c;border-radius:13px!important;background:#081934!important}
+body.vu-reference .vu-art{display:block;position:relative;overflow:hidden;background:#031632}
+body.vu-reference .vu-art img{max-width:none}
+body.vu-reference .vu-hero-image{position:absolute!important;inset:0;z-index:-2;width:100%;height:100%}
+body.vu-reference .hero:before{content:'';position:absolute;inset:0;pointer-events:none;z-index:-1;background:linear-gradient(90deg,#050a19f2 0%,#07122ad8 26%,#04152b6d 52%,#0000 100%);opacity:1!important}
+body.vu-reference .hero>div:first-of-type{position:relative;z-index:2;max-width:58%}
+body.vu-reference .hero #heroTitle{font-size:clamp(29px,3.7vw,51px)!important;line-height:1.04;letter-spacing:-.045em;margin:0 0 10px!important;background:linear-gradient(90deg,#a4edff,#ed64e9)!important;background-clip:text!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important}
+body.vu-reference .hero #heroTitle+p{font-size:15px!important;color:#fff!important;max-width:410px;margin:0!important;line-height:1.4!important}
+body.vu-reference .hero .creatorKicker,body.vu-reference .hero .creatorLead,body.vu-reference .hero .creatorActions,body.vu-reference .hero .creatorArt,body.vu-reference .hero .pill,body.vu-reference .hero .usageBox,body.vu-reference .hero .heroTrust{display:none!important}
+body.vu-reference .vu-trust{display:flex;gap:13px;flex-wrap:wrap;margin-top:23px}
+body.vu-reference .vu-trust>span{font-size:11px;color:#effbff}
+body.vu-reference .vu-trust small{display:block;font-size:9px;color:#c8d9ef;margin:3px 0 0 17px}
+body.vu-reference .vu-hero-films{position:absolute;right:14px;top:33px;width:42%;height:171px;display:flex;align-items:center;gap:6px}
+body.vu-reference .vu-workflow-tag{position:absolute;top:-26px;right:20%;font-family:cursive;font-style:italic;color:#f5c9ff;font-size:15px}
+body.vu-reference .vu-film{position:relative;flex:1;min-width:0;max-width:155px;height:135px;border:3px solid #3b8bff;border-radius:10px;overflow:hidden;box-shadow:0 0 15px #0b8fffba;transform:rotate(4deg)}
+body.vu-reference .vu-film:nth-of-type(2){transform:rotate(-3deg);border-color:#e75fff}
+body.vu-reference .vu-film>.vu-art{width:100%;height:100%}
+body.vu-reference .vu-film-play{position:absolute;left:50%;top:64%;transform:translate(-50%,-50%);width:28px;height:28px;border:1px solid #d7ecff;border-radius:50%;display:grid;place-items:center;background:#101c48ac;font-size:13px}
+body.vu-reference .vu-film-arrow{font-size:29px;color:#fff;text-shadow:0 0 12px #09afff}
+body.vu-reference .statsGrid{display:none!important}
+body.vu-reference .vu-content-grid{display:grid;grid-template-columns: minmax(0,.94fr) minmax(0,1.06fr);gap:10px}
+body.vu-reference .vu-left,body.vu-reference .vu-right{display:flex;flex-direction:column;gap:10px;min-width:0}
+body.vu-reference .workspace{margin:0!important;padding:15px!important;min-height:566px;background:linear-gradient(#051732,#020e22)!important;border:1px solid #137cdb!important;border-radius:13px!important}
+body.vu-reference .workspace .sectionHead{margin:0 0 10px!important}
+body.vu-reference .workspace .sectionHead h3{font-size:19px!important;margin:0 0 3px;color:#fff}
+body.vu-reference .workspace .sectionHead p{font-size:11px!important;color:#c6d2e9!important;margin:0}
+body.vu-reference .workspace .statusDot{display:none!important}
+body.vu-reference .pickerGrid{margin:0!important}
+body.vu-reference .workspace .picker{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;min-height:127px!important;max-height:138px;padding:7px!important;background:#081a39!important;border:1px dashed #4373b2!important;border-radius:11px!important}
+body.vu-reference .picker .pickerIcon{display:none}
+body.vu-reference .vu-upload-icon{height:40px;width:48px;background:transparent}
+body.vu-reference .workspace .picker b{font-size:12px!important;color:#fff}
+body.vu-reference .workspace .picker small{color:#62daff!important;font-size:10px}
+body.vu-reference .fileSummary{font-size:10px;color:#b6cbe5;margin:5px 0!important;min-height:0}
+body.vu-reference .vu-mode-group h4{font-size:12px;margin:9px 0;color:white}
+body.vu-reference .vu-mode-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+body.vu-reference .vu-mode-card{min-width:0;overflow:hidden;display:flex;flex-direction:column;position:relative;text-align:left;padding:0 0 7px;border:1px solid #1b71ed;border-radius:9px;background:#071631;color:white}
+body.vu-reference .vu-mode-card:last-child{border-color:#b32afe}
+body.vu-reference .vu-mode-card.selected{box-shadow:0 0 10px #0364e077;border-color:#20cbff}
+body.vu-reference .vu-mode-card:disabled{opacity:.5;cursor:not-allowed}
+body.vu-reference .vu-mode-card>.vu-art{width:100%;height:70px;flex-shrink:0}
+body.vu-reference .vu-mode-copy{padding:7px 9px 3px}
+body.vu-reference .vu-mode-copy strong{font-size:11px}
+body.vu-reference .vu-mode-copy small{display:block;font-size:9px;line-height:1.35;color:#c7d5ea;margin-top:4px}
+body.vu-reference .vu-radio{position:absolute;top:76px;right:7px;color:#c3e4ff}
+body.vu-reference .vu-parameters{display:grid;grid-template-columns:1fr 1.33fr;gap:12px;margin:12px 0 8px}
+body.vu-reference .vu-parameters b{display:block;font-size:11px;margin-bottom:7px}
+body.vu-reference .vu-counter{display:flex;justify-content:space-between;align-items:center;border:1px solid #1b477c;background:#071935;border-radius:9px;padding:4px}
+body.vu-reference .vu-counter button{border:0;background:#0e2958;color:#fff;width:29px;height:29px;border-radius:7px;font-size:17px}
+body.vu-reference .vu-counter output{font-size:14px;font-weight:700}
+body.vu-reference .vu-quality-options{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+body.vu-reference .vu-quality-button{border:1px solid #183e74;border-radius:7px;background:#071b37;color:#e8f0ff;min-height:39px;display:grid;place-content:center;padding:3px}
+body.vu-reference .vu-quality-button strong{font-size:10px}
+body.vu-reference .vu-quality-button small{font-size:8px;color:#b7c9e1}
+body.vu-reference .vu-quality-button[aria-pressed=true]{border-color:#0fe6ff;background:#132b79;box-shadow:0 0 12px #064ef3a0}
+body.vu-reference .vu-quality-button:disabled{opacity:.42;cursor:not-allowed}
+body.vu-reference .vu-advanced{font-size:11px;color:#b0cfff}
+body.vu-reference .vu-advanced summary{cursor:pointer}
+body.vu-reference .vu-advanced[open]{padding:9px;border:1px solid #164a85;border-radius:9px;background:#071d3c}
+body.vu-reference .vu-advanced :is(.settingsGrid,.formatGrid){display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0}
+body.vu-reference .workspace .actionRow{display:flex;gap:10px;margin-top:12px}
+body.vu-reference #startBtn{flex:1;min-height:45px!important;border:1px solid #49c1ff!important;border-radius:15px!important;background:linear-gradient(95deg,#e320ee,#154fff,#00cdef)!important;color:#fff!important;box-shadow:0 0 13px #9130e65c!important}
+body.vu-reference #startBtn:disabled{opacity:.47}
+body.vu-reference .vu-panel{min-width:0;padding:10px;border-radius:14px;border:1px solid #1168c3;background:linear-gradient(155deg,#03162f,#021022);box-shadow:inset 0 0 14px #0954b02d}
+body.vu-reference .vu-panel-head h3{font-size:19px;color:#fff;margin:0 6px 4px}
+body.vu-reference .vu-panel-head p{font-size:11px;color:#b4c5df;margin:0 6px 9px}
+body.vu-reference .vu-preview-scene{position:relative;overflow:hidden;aspect-ratio:1.93;border:1px solid #265eac;border-radius:10px}
+body.vu-reference .vu-preview-scene>.vu-art{position:absolute;inset:0;width:100%;height:100%}
+body.vu-reference .vu-preview-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid #6ac5ff;border-radius:50%;background:#021436bf;display:grid;place-items:center;width:65px;height:65px;color:white;font-size:29px;pointer-events:none}
+body.vu-reference .vu-preview-controls{position:absolute;bottom:8px;left:9px;right:9px;background:#04132fcc;border-radius:5px;padding:9px;font-size:10px;display:flex;align-items:center;gap:9px;pointer-events:none}
+body.vu-reference .vu-timeline{flex:1;background:#476084;height:4px;border-radius:6px}
+body.vu-reference .vu-output{flex:1}
+body.vu-reference .vu-output-head{display:flex;justify-content:space-between}
+body.vu-reference .vu-queue-clear{border:1px solid #163f74;border-radius:30px;padding:6px 10px;background:#061b39;color:#b6cae8;font-size:10px;height:32px}
+body.vu-reference .vu-output-lines{display:grid;gap:5px}
+body.vu-reference .vu-output-lines[hidden]{display:none!important}
+body.vu-reference .vu-output-row{display:grid;grid-template-columns:38px 1fr 10px minmax(30px,.8fr) 10px auto;align-items:center;gap:7px;background:#07182e;border:1px solid #0e335a;border-radius:6px;padding:4px 7px;min-height:38px}
+body.vu-reference .vu-output-thumb{width:38px;height:28px;border-radius:5px;overflow:hidden}
+body.vu-reference .vu-output-thumb>.vu-art{width:100%;height:100%}
+body.vu-reference .vu-output-row b{font-size:10px}
+body.vu-reference .vu-progress-line{height:4px;background:#133d73;border-radius:5px}
+body.vu-reference .vu-output-row button{border:1px solid #284571;border-radius:8px;background:#071831;color:#a7c1e6;padding:7px;font-size:9px}
+body.vu-reference .vu-output-row button:disabled{opacity:.5}
+body.vu-reference :is(#progressCard,#resultsCard,#errorCard){width:100%;margin:8px 0 0}
+body.vu-reference :is(#progressCard,#resultsCard,#errorCard)[hidden]{display:none!important}
+body.vu-reference .vu-how{padding:11px 13px;margin-top:9px;border:1px solid #1460b4;border-radius:12px;background:linear-gradient(110deg,#061a36,#020d1e)}
+body.vu-reference .vu-how-head{display:flex;align-items:center;gap:12px}
+body.vu-reference .vu-how-head h3{font-size:19px;margin:0}
+body.vu-reference .vu-how-head p{font-size:10px;color:#b6c5dd;flex:1}
+body.vu-reference .vu-history-button{border:1px solid #ce29ff;border-radius:30px;padding:9px 12px;background:linear-gradient(100deg,#9423cf,#007dce);color:white;font-size:10px}
+body.vu-reference .vu-how-steps{display:flex;align-items:center;gap:10px;margin-top:12px}
+body.vu-reference .vu-how-step{display:flex;flex:1;gap:9px;align-items:center;min-width:0}
+body.vu-reference .vu-how-step>.vu-art{flex:0 0 110px;width:110px;height:85px;border:1px solid #4338aa;border-radius:8px}
+body.vu-reference .vu-step-text{display:flex;gap:7px;min-width:0}
+body.vu-reference .vu-step-text em{font-style:normal;font-weight:800;font-size:13px;flex:0 0 24px;width:24px;height:24px;display:grid;place-items:center;border:1px solid #5dbeff;border-radius:50%;background:#1a38c2;box-shadow:0 0 10px #254ef9}
+body.vu-reference .vu-step-text b{display:block;font-size:11px}
+body.vu-reference .vu-step-text small{display:block;color:#b4c7df;font-size:9px;line-height:1.45;margin-top:7px}
+body.vu-reference .vu-how-arrow{font-size:22px;color:#08bcff}
+body.vu-reference #dashboardView .creatorSections{display:none!important}
+body.vu-reference .vu-side-link:focus-visible,body.vu-reference .vu-mode-card:focus-visible,body.vu-reference .vu-parameters button:focus-visible{outline:2px solid #44ecff;outline-offset:2px}
+@media(max-width:1240px){body.vu-reference .vu-top-tools{gap:8px;font-size:9px}body.vu-reference .vu-search{max-width:160px}body.vu-reference .vu-how-step{flex-wrap:wrap}body.vu-reference .vu-how-step>.vu-art{flex-basis:100%;width:100%;height:65px}}
+@media(max-width:900px){body.vu-reference .shell{display:block!important}body.vu-reference .vu-appbar{position:sticky}body.vu-reference .sidebar{position:fixed;top:56px;left:0;bottom:0;height:auto;width:200px;transform:translateX(-110%);transition:transform .2s;z-index:70;box-shadow:16px 0 25px #0008}body.vu-reference.vu-nav-open .sidebar{transform:translateX(0)}body.vu-reference .main{padding:0 11px 25px!important}body.vu-reference .vu-top-tools{display:none}body.vu-reference .vu-content-grid{grid-template-columns:1fr}body.vu-reference .workspace{min-height:auto}body.vu-reference .vu-how-step{flex-wrap:nowrap}body.vu-reference .vu-how-step>.vu-art{flex-basis:90px;width:90px}}
+@media(max-width:590px){body.vu-reference .vu-logo{font-size:17px;min-width:0}body.vu-reference .vu-search kbd{display:none}body.vu-reference .vu-hero-films{right:8px;top:9px;width:52%;height:85px;opacity:.8}body.vu-reference .vu-film{height:73px;border-width:1px}body.vu-reference .vu-workflow-tag{display:none}body.vu-reference .hero.card{min-height:223px;padding:15px!important;align-items:end}body.vu-reference .hero>div:first-of-type{max-width:100%}body.vu-reference .hero #heroTitle{font-size:29px!important}body.vu-reference .hero #heroTitle+p{max-width:260px;font-size:12px!important}body.vu-reference .vu-trust{gap:9px;margin-top:10px}body.vu-reference .vu-trust small{font-size:8px}body.vu-reference .vu-mode-card>.vu-art{height:57px}body.vu-reference .vu-mode-copy{padding:5px}body.vu-reference .vu-mode-copy strong{font-size:9px}body.vu-reference .vu-mode-copy small{font-size:8px}body.vu-reference .vu-output-row{gap:4px;grid-template-columns:28px 1fr 8px 35px 8px auto}body.vu-reference .vu-how-head{flex-wrap:wrap}body.vu-reference .vu-how-steps{display:grid;gap:12px}body.vu-reference .vu-how-arrow{display:none}body.vu-reference .vu-how-step>.vu-art{width:88px;flex-basis:88px;height:68px}}
+@media(prefers-reduced-motion:reduce){body.vu-reference .sidebar{transition:none}}
+
+/* Respect the existing consent/limits, never cover a separate approved-art layer. */
+body.vu-reference>a:first-child{display:none!important}
+body.vu-reference #dashboardView .hero>.ds-approved-art{display:none!important}
+body.vu-reference .workspace.trialComplete .vu-mode-group,
+body.vu-reference .workspace.trialComplete .vu-parameters{display:none!important}
+body.vu-reference .workspace .picker.vu-dragover{outline:2px solid #00ddff;background:#112c65!important}
+body.vu-reference .vu-output-lines .vu-output-row>button:disabled{pointer-events:none}
+
+
+/* Owner 2026-10-25: changes restricted to Video Uniquifier content;
+   navigation sidebar and site-wide topbar rules deliberately unchanged. */
+body.vu-reference #dashboardView .hero.card{min-height:260px}
+body.vu-reference .hero .vu-hero-image{z-index:-2}
+body.vu-reference .hero #heroTitle+p,
+body.vu-reference .hero .vu-trust,
+body.vu-reference .hero .creatorKicker,
+body.vu-reference .hero .creatorLead,
+body.vu-reference .hero .creatorActions,
+body.vu-reference .hero .creatorArt,
+body.vu-reference .hero .heroTrust,
+body.vu-reference .hero .pill,
+body.vu-reference .hero .usageBox{display:none!important}
+body.vu-reference .vu-film-play,
+body.vu-reference .vu-preview-play{display:none!important}
+body.vu-reference .workspace .sectionHead p,
+body.vu-reference .workspace .picker small{display:none!important}
+body.vu-reference .workspace .picker{position:relative;isolation:isolate;overflow:hidden;min-height:165px!important}
+body.vu-reference .workspace .picker .vu-upload-icon{
+ position:absolute!important;inset:0;width:100%;height:100%;opacity:.65;z-index:-1}
+body.vu-reference .workspace .picker .vu-upload-icon img{object-fit:contain}
+body.vu-reference .workspace .picker b{position:relative;z-index:2;text-shadow:0 2px 9px #02132d}
+body.vu-reference .vu-parameters{grid-template-columns:minmax(120px,.64fr) minmax(0,1.76fr);gap:12px}
+body.vu-reference .vu-variant-choice{
+ display:block;width:100%;min-height:42px;border:1px solid #216cca;border-radius:9px;
+ color:#f6f8ff;background:#081938;font:600 13px Inter,system-ui,sans-serif;
+ padding:7px 11px;cursor:pointer}
+body.vu-reference .vu-variant-choice option{background:#0b1a38;color:#fff}
+body.vu-reference .vu-variant-choice:focus-visible{outline:2px solid #2fe3ff}
+body.vu-reference .vu-quality-options{gap:8px}
+body.vu-reference .vu-quality-button{min-height:42px}
+body.vu-reference .vu-preserved-controls,
+body.vu-reference label.exportSpeed{display:none!important}
+body.vu-reference .vu-how-head p{display:none!important}
+@media(max-width:540px){
+ body.vu-reference .vu-parameters{grid-template-columns:minmax(110px,.75fr) minmax(0,1.55fr);gap:8px}
+ body.vu-reference .vu-variant-choice{font-size:11px}
+ body.vu-reference .workspace .picker{min-height:140px!important}
+}
+
+/* Owner patch: no changes to left sidebar/header; align working panels. */
+body.vu-reference .vu-content-grid{align-items:stretch}
+body.vu-reference .vu-left,body.vu-reference .vu-right{height:100%}
+body.vu-reference .vu-left>.workspace{flex:1;min-height:0}
+body.vu-reference .vu-parameters{grid-template-columns:minmax(0,.76fr) minmax(0,1.55fr);gap:14px}
+body.vu-reference .vu-quality-options{gap:8px}
+body.vu-reference .vu-quality-button{min-height:53px;padding:7px 6px;border-radius:10px}
+body.vu-reference .vu-quality-button strong{font-size:13px}
+body.vu-reference .vu-quality-button small{font-size:10px}
+body.vu-reference .vu-mode-card .vu-radio{font-size:0;width:17px;height:17px;border-radius:50%;border:1.8px solid #f8fcff;background:#06142b;box-shadow:0 0 0 1px #00102c}
+body.vu-reference .vu-mode-card.selected .vu-radio,
+body.vu-reference .vu-mode-card[aria-pressed="true"] .vu-radio{background:#fff;border-color:#fff;box-shadow:0 0 0 3px #ffffff36,0 0 12px 3px #fff}
+body.vu-reference .vu-mode-card:focus-visible .vu-radio{outline:2px solid #5be6ff;outline-offset:3px}
+@media(max-width:900px){body.vu-reference .vu-left,body.vu-reference .vu-right{height:auto}body.vu-reference .vu-left>.workspace{min-height:0}}
+@media(max-width:420px){body.vu-reference .vu-parameters{grid-template-columns:minmax(0,.7fr) minmax(0,1.4fr);gap:8px}body.vu-reference .vu-quality-button{min-height:48px;padding:4px}}
+
+/* Owner follow-up: align panels and uncramp creation button; do not touch sidebar or navigation. */
+body.vu-reference .vu-content-grid{align-items:stretch}
+body.vu-reference .vu-left{align-self:stretch;min-height:0}
+body.vu-reference .vu-left>.workspace{flex:1;min-height:0;display:flex!important;flex-direction:column}
+body.vu-reference .workspace>.actionRow{margin-top:auto!important;padding-top:32px;margin-bottom:3px;min-height:88px;align-items:end}
+body.vu-reference .vu-parameters{grid-template-columns:minmax(0,.62fr) minmax(0,1.58fr);column-gap:15px;margin:15px 0 12px}
+body.vu-reference .vu-count-params{min-width:0}
+body.vu-reference .vu-variant-choice{width:100%;max-width:100%;min-width:0;min-height:46px;border-radius:10px;font-size:13px;font-weight:650}
+body.vu-reference .vu-quality-params{min-width:0}
+body.vu-reference .vu-quality-options{gap:8px}
+body.vu-reference .vu-quality-button{min-height:58px;border-radius:11px;border:1px solid #2367aa;padding:8px 5px;background:linear-gradient(155deg,#0d2851,#07182d);box-shadow:inset 0 1px 0 #b1d4ff13;transition:border-color .12s,box-shadow .12s,background .12s}
+body.vu-reference .vu-quality-button strong{font-size:14px;line-height:1.15;font-weight:760;letter-spacing:-.02em}
+body.vu-reference .vu-quality-button small{font-size:10px;margin-top:4px;color:#c4d4f0}
+body.vu-reference .vu-quality-button[aria-pressed="true"]{border:1.5px solid #4adfff;background:linear-gradient(165deg,#193c98,#0b2568);box-shadow:0 0 0 1px #009cfc8f,0 0 16px #008de85c,inset 0 1px 0 #ffffff21}
+body.vu-reference .vu-quality-button:not(:disabled):hover{border-color:#75d8ff}
+body.vu-reference .vu-quality-button:focus-visible{outline:2px solid #f2ffff;outline-offset:3px}
+@media(max-width:900px){body.vu-reference .vu-left{align-self:auto}body.vu-reference .workspace>.actionRow{margin-top:15px!important;padding-top:14px;min-height:0}}
+@media(max-width:450px){body.vu-reference .vu-parameters{grid-template-columns:minmax(0,.63fr) minmax(0,1.45fr);gap:8px}body.vu-reference .vu-quality-options{gap:4px}body.vu-reference .vu-quality-button{min-height:50px;padding:5px 2px}body.vu-reference .vu-quality-button strong{font-size:11px}body.vu-reference .vu-quality-button small{font-size:8px}}
+
+/* Owner fix 2026-10-25: fill the FULL hero width with the owner's exact
+   2048x682 wide banner. Its three film frames are ALREADY painted into
+   the picture; suppress previous separate decorative copies. This rule
+   is scoped only to Video Uniquifier and does not touch the side menu. */
+body.vu-reference #dashboardView .hero.card {
+  background-image:
+    linear-gradient(90deg,rgba(1,7,23,.78) 0%,rgba(1,7,23,.18) 28%,rgba(1,7,23,0) 50%),
+    url("https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/1998c564-8f28-4fd2-aaad-b19240a66d14.png"),
+    url("media/vu-clean-hero-20261025.svg") !important;
+  background-size:100% 100%,cover,cover !important;
+  background-position:center center,center center,center center !important;
+  background-repeat:no-repeat !important;
+  background-color:#06142c !important;
+}
+body.vu-reference #dashboardView .hero>.vu-hero-image,
+body.vu-reference #dashboardView .hero>.vu-hero-films {
+  display:none !important;
+}
+/* Ensure the original title stays legible, not another overlay image. */
+body.vu-reference #dashboardView .hero:before {
+  display:none !important;
+}
+
+/* Agent A: true Video Uniquifier output-ratio controls + approved site logo.
+   These rules do not alter the sidebar, sitewide navigation, or media engine. */
+body.vu-reference .vu-appbar .vu-logo .vu-logo-image{
+ display:block;width:34px;height:34px;flex:none;object-fit:contain;
+ border:0;background:transparent;filter:none;
+}
+body.vu-reference .vu-video-format{
+ display:grid;gap:9px;min-width:0;width:100%;
+ margin:14px 0 0;padding:0;border:0;
+}
+body.vu-reference .vu-video-format h4{
+ margin:0;font-size:12px;font-weight:700;line-height:1.3;color:#f1f7ff;
+}
+body.vu-reference .vu-format-options{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:10px;width:100%;min-width:0;
+}
+body.vu-reference .vu-format-button{
+ display:flex;align-items:center;justify-content:center;gap:11px;
+ min-height:51px;padding:8px 12px;
+ border:1px solid #2c5b96;border-radius:10px;
+ color:#dceeff;background:linear-gradient(150deg,#0c2141,#07192e);
+ cursor:pointer;transition:border-color .14s,box-shadow .14s,background .14s;
+}
+body.vu-reference .vu-format-button strong{
+ font-size:15px;font-weight:750;line-height:1.1;letter-spacing:.012em;
+}
+body.vu-reference .vu-format-button small{
+ font-size:11px;font-weight:500;color:#b4c7e4;
+}
+body.vu-reference .vu-format-button:hover:not(:disabled){
+ border-color:#65d4ff;box-shadow:0 0 12px #0987dd48;
+}
+body.vu-reference .vu-format-button.selected,
+body.vu-reference .vu-format-button[aria-pressed="true"]{
+ border:1.5px solid #37d9ff;background:linear-gradient(125deg,#173d90,#0a2862);
+ color:#fff;box-shadow:0 0 0 1px #158fff81,0 0 16px #068ee46b;
+}
+body.vu-reference .vu-format-button[aria-pressed="true"] small{
+ color:#e4edff;
+}
+body.vu-reference .vu-format-button:focus-visible{
+ outline:2px solid #fff;outline-offset:3px;
+}
+body.vu-reference .vu-format-button:disabled{
+ opacity:.52;cursor:not-allowed;
+}
+@media(max-width:900px){
+ body.vu-reference .vu-video-format{margin-top:12px;}
+ body.vu-reference .vu-format-button{min-height:48px;}
+}
+@media(max-width:450px){
+ body.vu-reference .vu-format-options{gap:7px;}
+ body.vu-reference .vu-format-button{min-height:48px;padding:6px;gap:6px;}
+ body.vu-reference .vu-format-button strong{font-size:13px;}
+ body.vu-reference .vu-format-button small{font-size:9px;}
+}
+
+/* Owner-approved 2026-10-25 small-copy cleanup (Video Uniquifier only).
+   All site navigation and functional processing controls are unchanged. */
+body.vu-reference #dashboardView .hero #heroTitle ~ p,
+body.vu-reference #dashboardView .hero .creatorLead,
+body.vu-reference #dashboardView .hero .creatorKicker,
+body.vu-reference .workspace .sectionHead .workspaceEyebrow,
+body.vu-reference .vu-preview .vu-panel-head p,
+body.vu-reference .vu-mode-copy small,
+body.vu-reference .vu-upgrade-content small { display:none!important; }
+/* Promo remains in the sidebar, with the original purple/blue palette, title
+   and Upgrade Now button; remove the screenshot containing baked-in copy. */
+body.vu-reference .vu-upgrade {
+ background:
+  radial-gradient(ellipse at 85% 94%,rgba(16,163,255,.48),transparent 47%),
+  radial-gradient(ellipse at 13% 14%,rgba(165,32,255,.27),transparent 61%),
+  linear-gradient(165deg,#071b46 0%,#081c42 46%,#08133a 100%)!important;
+}
+body.vu-reference .vu-upgrade-content{gap:14px;justify-content:space-between;}
+body.vu-reference .vu-upgrade-content strong{margin-top:auto;}
+/* Move decorative mode radio below the image into the same line as its name
+   to avoid a gap where the removed descriptions used to appear. */
+body.vu-reference .vu-mode-copy {min-height:36px;display:flex;align-items:center;padding:8px 30px 8px 9px;}
+body.vu-reference .vu-mode-copy strong {font-size:12px;line-height:1.2;}
+body.vu-reference .vu-mode-card .vu-radio {top:auto!important;bottom:10px!important;}
+body.vu-reference .vu-preview .vu-panel-head {padding-bottom:5px;}
+/* Small native CSS pictograms: portrait 9:16 and landscape 16:9.
+   Decorative only; the existing aria-pressed and #aspectRatio processor wiring remains. */
+body.vu-reference .vu-ratio-glyph{
+ display:inline-block;flex:0 0 auto;position:relative;
+ border:2px solid currentColor;border-radius:3px;color:#d9e9ff;
+ box-shadow:0 0 7px rgba(85,184,255,.22);
+}
+body.vu-reference .vu-ratio-portrait{width:15px;height:25px;}
+body.vu-reference .vu-ratio-landscape{width:25px;height:15px;}
+body.vu-reference .vu-ratio-glyph::after{
+ content:'';position:absolute;inset:3px;background:currentColor;
+ opacity:.25;border-radius:1px;
+}
+body.vu-reference .vu-format-label{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;}
+body.vu-reference .vu-format-button[aria-pressed="true"] .vu-ratio-glyph{
+ color:#fff;box-shadow:0 0 8px #4bdfff9c;
+}
+@media(max-width:450px){
+ body.vu-reference .vu-format-button{gap:7px;}
+ body.vu-reference .vu-ratio-portrait{width:12px;height:21px;}
+ body.vu-reference .vu-ratio-landscape{width:21px;height:12px;}
+}

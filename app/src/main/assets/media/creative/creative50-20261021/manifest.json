@@ -1,0 +1,1820 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-21",
+  "provider": "OpenAI ChatGPT built-in image_gen",
+  "model": "Not exposed by tool",
+  "thirdPartyInputs": [],
+  "scope": "Owner-approved DEV preview and creative reserve",
+  "productionPublicationApproved": false,
+  "previewPublicationApproved": true,
+  "exportProcessing": "Lanczos delivery exports at 1120x1400, 1600x900 or 1200x1200; WebP quality93; source PNG files preserved unchanged.",
+  "counts": {
+    "total": 50,
+    "canvas": 9,
+    "apps": 8,
+    "agent": 8,
+    "reserve": 25
+  },
+  "items": [
+    {
+      "id": "creative50-crystal-orchard",
+      "slug": "creative50-crystal-orchard",
+      "title": "Crystal Orchard",
+      "kind": "image",
+      "category": "Canvas inspiration",
+      "placement": "canvas",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/01-crystal-orchard.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. An impossible orchard of transparent quartz trees grows inside a monumental white stone atrium. Each tree bears a single suspended luminous peach with real velvety skin. A tiny original adult visitor in an ivory coat gives scale. Editorial architecture photography, mint caustics, early sunlight, exquisite glass and fruit texture. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-8b5ef3c9-2d36-4b06-8f9f-d800f6b3f535.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "ac7e5fd91589b84245ab32b29714be661a0faf8ad778ea118b192f7db7cc168f",
+      "sha256": "8ab51e52aec07954ea8bb20186d6d3897c4c243db7efcc9d2defd4a9a5f395e5",
+      "gitBlobSha": "7e64922acf55cf03012f8dfef3bdaf8e9c90f718",
+      "sizeBytes": 480646,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-silk-waterfall",
+      "slug": "creative50-silk-waterfall",
+      "title": "Silk Waterfall",
+      "kind": "image",
+      "category": "Canvas inspiration",
+      "placement": "canvas",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/02-silk-waterfall.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. An elegant original adult woman wearing a fully opaque sculptural copper silk gown stands on a black volcanic cliff. The gown's long train becomes a gigantic flowing waterfall of copper silk plunging into mist. Cinematic luxury fashion photography, wind-swept fabric, amber dawn, convincing scale and textile texture. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-86857a0a-8074-4c71-bedf-5810a2403e05.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "c813b9489a5e8cc487056781b754e81c8dbac27d4ce29eea239cd48d1ce448bb",
+      "sha256": "37ec22bf988fb9f7e171ec6682112b60bdfc94e1f302523fb8744f97653a5969",
+      "gitBlobSha": "d20ae3f3b893af089730fc0fd827f9d77628db79",
+      "sizeBytes": 344922,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-cloud-ceramics",
+      "slug": "creative50-cloud-ceramics",
+      "title": "Cloud Ceramics",
+      "kind": "image",
+      "category": "Canvas inspiration",
+      "placement": "canvas",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/03-cloud-ceramics.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. A delicate hand-thrown porcelain teapot floats above a cobalt pedestal. Its poured stream is an intricate miniature white cloud with tiny silver raindrops falling into a matching cup. Luxury product photograph, pale sky-blue seamless background, soft hard-edged sunlight, tactile glaze, poetic surreal realism. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-972dce47-07c1-484c-918d-ac645ba0a96c.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "70f796967c2415a0fe55322ea94df69a3fdad8a39bbbc3f5816fc1dd0d3ce62d",
+      "sha256": "34d278a05d7d901a3081dfccc92e1be740349b41ce21381a2e393702f6d7274d",
+      "gitBlobSha": "30f2cbc6071e1d68d80fc0686f74afac88b9e71b",
+      "sizeBytes": 148760,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-coral-library",
+      "slug": "creative50-coral-library",
+      "title": "Coral Library",
+      "kind": "image",
+      "category": "Canvas inspiration",
+      "placement": "canvas",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/04-coral-library.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. A majestic library of towering pale limestone bookshelves is submerged in perfectly clear ocean water. Coral grows from the edges of beautifully bound anonymous books; a single elegant manta ray glides between shelves. Underwater architectural photograph, strong sun rays, turquoise depth, natural marine anatomy and extraordinarily tactile detail. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-e0f58e38-4bcb-4708-b442-cf93b899bfcf.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "96da51aa9f6d92ce4a6b44423ebbac56c9435098c504bddfd34ff482ed2a9ae0",
+      "sha256": "ae39680368afecde7773a23c12bc2625d69138795f2011a3c07f05bb4a2fc6a4",
+      "gitBlobSha": "da8d99f625e03ae3987c97b48686afcfaa06d37e",
+      "sizeBytes": 639546,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-magnetic-petals",
+      "slug": "creative50-magnetic-petals",
+      "title": "Magnetic Petals",
+      "kind": "image",
+      "category": "Canvas inspiration",
+      "placement": "canvas",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/05-magnetic-petals.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. A studio portrait of an original adult Black woman with a sculptural sleek hairstyle, fully opaque ivory high-neck blouse and natural skin texture. Hundreds of tiny crimson flower petals orbit her in the exact shape of a magnetic field, leaving her face unobstructed. Premium beauty photography, warm taupe background, dramatic precise lighting. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-961b1cb9-5688-4088-af97-6e76dca01051.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "19a84fa50faf966f7c8f4ef6ebca223b63a299a9a83a06c24806d8febabc8601",
+      "sha256": "d136d3c5bb3761122efdc6db03fe187d591c4b9fba6c25cf2348bda7825905c4",
+      "gitBlobSha": "7e6a80efdb56723a221ebc37ef369e53d2959c93",
+      "sizeBytes": 334590,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-folded-horizon",
+      "slug": "creative50-folded-horizon",
+      "title": "Folded Horizon",
+      "kind": "image",
+      "category": "Canvas inspiration",
+      "placement": "canvas",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/06-folded-horizon.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. A quiet emerald alpine lake and its surrounding forest fold gently upward at the horizon like a page of thick paper, revealing a star-filled midnight sky underneath. One tiny wooden sailboat remains on the flat water. Photorealistic aerial landscape, golden-hour light, convincing trees and reflections, precise impossible geometry. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-56decf9a-aba6-49cc-972b-1ffdc3ee2478.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "ee4b8284dac36bb595424a5c0f35744aa12dc1213dd59c199e28043912e940f5",
+      "sha256": "794f7cf2870a578dee5b2400d8a6e5f705d7bf04b0862a8d1fefe0c6ac894f24",
+      "gitBlobSha": "8da160a934f9420517f3fe4e77ff7a61e50cee6c",
+      "sizeBytes": 449322,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-obsidian-hummingbird",
+      "slug": "creative50-obsidian-hummingbird",
+      "title": "Obsidian Hummingbird",
+      "kind": "image",
+      "category": "Canvas inspiration",
+      "placement": "canvas",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/07-obsidian-hummingbird.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. A tiny jewel-toned hummingbird formed from translucent obsidian and living iridescent feathers hovers near a white orchid. A luminous droplet suspended between its beak and the flower contains a miniature sunrise. High-end wildlife macro photograph, accurate bird anatomy, emerald bokeh, flash-sharp wing detail, black glass reflections. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-584cd71f-4e14-4b10-90f1-f439c3ad8a39.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "d2f56af86516de1b567d029aa435834cb67ef3cade0fc8b91259883a16abe52c",
+      "sha256": "ce960b2dda50c469a443ddcdd7d63d4f3f08219bd000bc306fcea6da6d407f7d",
+      "gitBlobSha": "c004538dd42d757b247ce4b34b1d93751bf51525",
+      "sizeBytes": 236030,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-marble-tide",
+      "slug": "creative50-marble-tide",
+      "title": "Marble Tide",
+      "kind": "image",
+      "category": "Canvas inspiration",
+      "placement": "canvas",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/08-marble-tide.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. A tall wave of white Carrara marble with delicate gold veins curls above a polished black ocean, suspended just before breaking. A small cobalt surfboard rests peacefully beneath the stone curl, with no person. Surreal luxury sculpture photographed as a real seascape, dawn fog, tactile carved stone and realistic water. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-6cf146a3-cb77-423f-9389-df079acae29c.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "345d41f59d00a3831f9519f238780b50b3a1ff5154ec42a62962fbe066c2b023",
+      "sha256": "f4aec8a83a91a4e1034846ebbea68cf3da9789836c15d0f15a2a9f8158b4cbc3",
+      "gitBlobSha": "60356a9c7f07bd0a344f88ee7d8de663b3de575a",
+      "sizeBytes": 363614,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-nebula-couture",
+      "slug": "creative50-nebula-couture",
+      "title": "Nebula Couture",
+      "kind": "image",
+      "category": "Canvas inspiration",
+      "placement": "canvas",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/09-nebula-couture.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. An original adult South Asian fashion model in a fully opaque sculptural indigo suit stands on a midnight rooftop. A massive soft fabric bow behind the shoulders turns into a luminous nebula woven from silk threads and fine embroidered constellations. Cinematic couture photograph, natural anatomy, warm city bokeh, rich violet rim light. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-1d4f5331-7cd2-4456-938f-9318e610a572.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "199494df1e0f2aa864ae54a9a795eddcbe7641b87e730f85bb0c849519afbc2e",
+      "sha256": "38750babdff33010ae747a525cbc146eb81d48de3d2149c1656d8636a1a90c35",
+      "gitBlobSha": "dd81145235a92a2e21e902804c2677845d895afc",
+      "sizeBytes": 426180,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-bottle-of-weather",
+      "slug": "creative50-bottle-of-weather",
+      "title": "Weather in a Bottle",
+      "kind": "image",
+      "category": "Creative Effects",
+      "placement": "apps",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/10-bottle-of-weather.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. An unbranded frosted perfume bottle contains a miniature thunderstorm: a dramatic dark cloud, tiny golden lightning and delicate suspended rain, sealed behind thick clear glass. Set on warm sand with one calm beam of sunlight. Premium product campaign photography, physically convincing glass, moody gold and slate palette. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-5ea592e8-9773-477c-bbe9-c686d5ab3a7c.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "84935034e40ac4a7d350e3ec3721cf91a4586639522cec0938bae1dd55e9b16f",
+      "sha256": "b83adc3ba277cad6fa695e91a742cfb43303b8dd620b5071524de8e16452cdf8",
+      "gitBlobSha": "9a4532044e14ca09c08f321380e45cff7680bfa3",
+      "sizeBytes": 330650,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-embroidered-dawn",
+      "slug": "creative50-embroidered-dawn",
+      "title": "Embroidered Dawn",
+      "kind": "image",
+      "category": "Creative Effects",
+      "placement": "apps",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/11-embroidered-dawn.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. A close editorial portrait of an original adult woman with freckles and a fully opaque white blouse. Fine golden embroidery crosses the air around her like a three-dimensional sunrise, tiny threads casting real soft shadows on her cheek. Ivory background, subtle natural skin, warm macro beauty light, tactile thread detail. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-9145f4f1-0da5-4aa8-bad3-9f7741b7f160.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "4fb1c70830fbb85c65219e417e21e319273758627d015791215583bc102b9c8f",
+      "sha256": "2f3309978cfc3cceecd9750a5406e1079295c00dbdd239580fab86a2994c8dd0",
+      "gitBlobSha": "f884224c6d2b91380b0d8c35fb6fa69cc988ad58",
+      "sizeBytes": 414878,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-urban-bonsai",
+      "slug": "creative50-urban-bonsai",
+      "title": "Urban Bonsai",
+      "kind": "image",
+      "category": "Creative Effects",
+      "placement": "apps",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/12-urban-bonsai.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. A perfectly realistic miniature coastal city grows from the crown of a twisted ancient bonsai tree in a handcrafted charcoal ceramic pot. Tiny terraced houses, suspended bridges and warm lit windows integrate naturally with the branches. Premium miniature architectural photograph, midnight teal backdrop, cinematic scale and crisp bark texture. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-908f032b-f3e2-4bb6-a670-05703d8bdc9a.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "a66a53cdb4b0b55541b0aba8c34881794affb4a39ba9fee22862bb5040e5aff1",
+      "sha256": "00f0b3512c6276bf53a85c639d73ec90bb66001b2ebafef7535a9c1049d46698",
+      "gitBlobSha": "8086a0b5b42f7f019f06cb25a0b8015379f42b5a",
+      "sizeBytes": 367182,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-liquid-porcelain",
+      "slug": "creative50-liquid-porcelain",
+      "title": "Liquid Porcelain",
+      "kind": "image",
+      "category": "Creative Effects",
+      "placement": "apps",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/13-liquid-porcelain.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. A white porcelain sneaker with translucent sky-blue laces melts into a perfectly smooth ribbon of liquid ceramic, frozen mid-splash around the original intact shoe. High-speed unbranded fashion product photograph, warm apricot background, highly tactile glazed finish, crisp droplets and sculptural composition. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-8278f43c-2282-4b1a-a406-08af0df93511.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "5509d1373f620093e4a6144c067381427165c1aa07a9a4128f536d07d3b0bc95",
+      "sha256": "9d8e8a554a8f4ff155ea567063610cf89b2b31c25c9c1b9da37d893a032f23d6",
+      "gitBlobSha": "269173b7883dd66361ca23cd5943c262bca8af0b",
+      "sizeBytes": 182678,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-prism-hair",
+      "slug": "creative50-prism-hair",
+      "title": "Prism Hair",
+      "kind": "image",
+      "category": "Creative Effects",
+      "placement": "apps",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/14-prism-hair.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. An original adult East Asian woman in a fully opaque black turtleneck, photographed in profile. Her sleek dark hair transforms at its tips into hundreds of tiny floating optical prisms, splitting one shaft of sunlight into a delicate rainbow across the charcoal backdrop. Realistic skin, fine hair, fashion editorial precision. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-6d425069-4820-4d56-b0ff-22fdfbb3764e.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "d85fbd2a5e470d36f7c90d0f33526dfb444c67f3dde917962e74ce7500bab820",
+      "sha256": "e9023bf02a1ecf00a7ec1442ad4ff005d2a438951d8ac7f2713321af295d0e55",
+      "gitBlobSha": "68a04bdd6def1810717f97ac4453d1471f92dfd3",
+      "sizeBytes": 254332,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-botanical-audio",
+      "slug": "creative50-botanical-audio",
+      "title": "Botanical Audio",
+      "kind": "image",
+      "category": "Creative Effects",
+      "placement": "apps",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/15-botanical-audio.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. A pair of unbranded matte-ivory over-ear headphones rests on a smoked-glass pedestal. From the earcups grows a delicate sculptural sound wave made from real orange orchids and thin green vines, frozen in the air. Luxury lifestyle product photograph, moss-green background, clean sunlight and extraordinarily fine material detail. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-897a0231-b2c7-4119-a6cb-c923b8576555.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "e95ef4089706687c9875ec9fc23a4c440273bf84c1d0d10bfc7d2d2f0be4e319",
+      "sha256": "93d7cf6195ee855bc25299c34967ab1204fc8d8de6f212b96c8186fbed790c0e",
+      "gitBlobSha": "3336ed26c21fa5106f57fc60d41bd0088b1596dd",
+      "sizeBytes": 315958,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-citrus-architecture",
+      "slug": "creative50-citrus-architecture",
+      "title": "Citrus Architecture",
+      "kind": "image",
+      "category": "Creative Effects",
+      "placement": "apps",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/16-citrus-architecture.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. An original impossible modernist summer house is built inside the cross-section of a gigantic fresh blood orange resting on pale travertine. Warm miniature rooms follow the citrus segments, a small pool occupies the center. Architectural food macro photograph, believable pulp, cream and ruby palette, Mediterranean sunlight. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-bf0e6c92-9f08-4f51-8ed1-e836c515573a.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "90f012f34b9eb047a736f731320f2a76b063dfec6353a605decae3d652df2be0",
+      "sha256": "d556e20f763bc8257e1a72d8947c32b8bba3b2ddfe4fed90c8ae8a732bd24e97",
+      "gitBlobSha": "c556dad03de8ee9e870bc8d2edc74e2fea03aec0",
+      "sizeBytes": 551466,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-snow-globe-dress",
+      "slug": "creative50-snow-globe-dress",
+      "title": "Snow Globe Dress",
+      "kind": "image",
+      "category": "Creative Effects",
+      "placement": "apps",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/17-snow-globe-dress.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. An original adult fashion model wears a fully opaque silver couture coat whose wide structured skirt contains delicate transparent panels with a miniature snow-covered pine forest inside. Natural hands and face, pale grey studio, luxurious winter editorial photograph, precise glass, fabric and snow textures. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-94bbeb0f-10a6-481f-b347-d8605e729ed1.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "2f0200c4c62810139fa43bca5239023389f37797e369e6b25575211ec6363ba8",
+      "sha256": "d59bbb891319c3fa92fdb46aebbd11435478d358c119336a416a7aaecabe6dfb",
+      "gitBlobSha": "34ec1ea25bcb003cd7bdbbfcc17fd8416ec440c2",
+      "sizeBytes": 294694,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-story-forge",
+      "slug": "creative50-story-forge",
+      "title": "Story Forge",
+      "kind": "image",
+      "category": "Agent concept",
+      "placement": "agent",
+      "description": "Explore this visual direction. Agent execution is in development; you can adapt the image prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/18-story-forge.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. An original adult woman director in a fully opaque midnight suit stands before three enormous floating photographic film frames in a dark studio. Within the frames: an alien flower landscape, an ocean wave at dawn, and an elegant dancer. No lettering or interface. Cinematic photographic concept for visual storytelling, warm practical lights, real tangible glass frames. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-e6986df7-f4dd-4abe-9f55-c3bcab209500.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "10cc3bde56d3377ec6b20d41cabae4f12d68b9d37f64563cf8e8879dea9c3200",
+      "sha256": "cac87be0759c6af0c9185170735f9ce9f4136256892f802a61d3675a2aba7186",
+      "gitBlobSha": "738328dbde47c4bfa4dddc9c3b1fbe882200c115",
+      "sizeBytes": 347088,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-campaign-atelier",
+      "slug": "creative50-campaign-atelier",
+      "title": "Campaign Atelier",
+      "kind": "image",
+      "category": "Agent concept",
+      "placement": "agent",
+      "description": "Explore this visual direction. Agent execution is in development; you can adapt the image prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/19-campaign-atelier.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. A sculptural unbranded amber perfume bottle stands on a large circular studio table, surrounded by a spiral of miniature handcrafted photographic sets: desert, ocean, tropical garden and moon landscape. No labels or text. Photorealistic creative campaign workshop, warm directional lighting, tactile materials, extraordinary coherent craftsmanship. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-2974cc5d-2c74-4d76-858c-9d300bd1bcf4.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "a2e7b30e895a76c767cbdc45b70f7558f8240e6ace26eabd2f4ac8a4e010cd47",
+      "sha256": "73322e2b6bac58a7cc3eafbd59f506e2a8836fcd82c0cae5c60ce04858aca66b",
+      "gitBlobSha": "d7f7f7906287a011d732dfc629cdef593cdf3699",
+      "sizeBytes": 440428,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-music-orbit",
+      "slug": "creative50-music-orbit",
+      "title": "Music Orbit",
+      "kind": "image",
+      "category": "Agent concept",
+      "placement": "agent",
+      "description": "Explore this visual direction. Agent execution is in development; you can adapt the image prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/20-music-orbit.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. An original adult dancer in a fully opaque flowing silver jumpsuit is suspended mid-leap inside a gigantic spiral made of translucent glass ribbons that look like a musical waveform. Midnight-blue soundstage, magenta and cyan edge lighting, anatomically natural graceful body, luxury cinematic photography, no musical notes or lettering. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-46a7b37d-ed2f-4767-a278-afcacf17c738.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "90477a3e34aafcb704f4fb492262b04da5aa96e2b46c4f17845dfdf484699573",
+      "sha256": "9b4c05aa24571ea621fe76aef7ff66be52241cbe284b3b99e15518311a6447bd",
+      "gitBlobSha": "d4396b4e8a7bd5774bcf72c618560c685c49df6e",
+      "sizeBytes": 276674,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-world-builder",
+      "slug": "creative50-world-builder",
+      "title": "World Builder",
+      "kind": "image",
+      "category": "Agent concept",
+      "placement": "agent",
+      "description": "Explore this visual direction. Agent execution is in development; you can adapt the image prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/21-world-builder.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. A giant open blank cream architectural sketchbook floats in a sunlit loft; an incredibly detailed miniature green island with waterfalls, terraced buildings and a tiny train rises physically from its pages. No writing anywhere. Photorealistic imaginative world-building concept, tactile paper and stone, warm side light, meticulous shadows. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-0cd9b069-bfc7-4263-929d-86bce776cf76.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "d6a62bf0dbb841987f7e9e6ac21ae59ad26588142f3c684c6e260a472199249f",
+      "sha256": "2cda2fea88394f222b64d53ca2812b9e75db4339d1b6b0a42f5533d37d6414f3",
+      "gitBlobSha": "29de87c6dca9889b9550e0d496bc404710d04db8",
+      "sizeBytes": 445858,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-fashion-director",
+      "slug": "creative50-fashion-director",
+      "title": "Fashion Director",
+      "kind": "image",
+      "category": "Agent concept",
+      "placement": "agent",
+      "description": "Explore this visual direction. Agent execution is in development; you can adapt the image prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/22-fashion-director.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. Three original adult fashion models in fully opaque sculptural outfits of matte terracotta, cobalt silk and ivory wool stand in separate monumental illuminated arches, surrounded by suspended fabric ribbons connecting the three sets. High-end campaign planning concept, cohesive editorial photograph, rich material texture, natural anatomy, no text. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-eccc9182-cdbe-4346-af75-522cb9e89e05.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "4f9411c48bad860ed6219c8c3353b2769998c681e841d4a921fd15e40d34bffc",
+      "sha256": "0b2500c74fb6807337fae230cd4e692d8f1e117f45c26df94b4be15121f383b5",
+      "gitBlobSha": "5a16c45970a6047bbab4bb1baf72a52e0dbcf3f9",
+      "sizeBytes": 347034,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-product-universe",
+      "slug": "creative50-product-universe",
+      "title": "Product Universe",
+      "kind": "image",
+      "category": "Agent concept",
+      "placement": "agent",
+      "description": "Explore this visual direction. Agent execution is in development; you can adapt the image prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/23-product-universe.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. An unbranded elegant emerald cosmetic jar opens to reveal a luminous miniature lush world inside: tiny misty mountains, a winding river, delicate flowers. Its lid floats above like a moon with soft golden reflections. Premium campaign concept photograph, dark forest-green studio, realistic glass and cream, sophisticated lighting. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-74a03413-4359-4fcd-9595-1d976483887b.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "67ffa1f82448406daa8821479f7854b4eff66cb708435f4990255815e2880fe9",
+      "sha256": "d0cda93bfc0b6ae55af839684fe0c775366b7653c79e48da6deced65562c70fa",
+      "gitBlobSha": "445dc1d53ce63e7843d3a1ecff2195c684a9e10c",
+      "sizeBytes": 298244,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-travel-dream",
+      "slug": "creative50-travel-dream",
+      "title": "Travel Dream",
+      "kind": "image",
+      "category": "Agent concept",
+      "placement": "agent",
+      "description": "Explore this visual direction. Agent execution is in development; you can adapt the image prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/24-travel-dream.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. An original adult traveler in a fully opaque cream coat stands at a grand arched doorway. The architecture seamlessly transitions through four photographic worlds from bottom to top: quiet beach, red desert, alpine forest and snowy peaks, with coherent perspective. Cinematic travel storytelling concept, dawn light, exquisite stone and atmosphere, no text. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-4427b4c4-35f8-465b-ac71-d3827acd344b.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "11c72ce4fd45ef6ebf7aec391151f2566c2ee5482c78e92b9823d49091d64d70",
+      "sha256": "2b8f5d92da41194600792b1c72f543ad6da52aa6feb6a266a09049df45391adc",
+      "gitBlobSha": "0dc7ae58c8b8c231edcb6c55668bb8255cf6fdff",
+      "sizeBytes": 561860,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-creative-constellation",
+      "slug": "creative50-creative-constellation",
+      "title": "Creative Constellation",
+      "kind": "image",
+      "category": "Agent concept",
+      "placement": "agent",
+      "description": "Explore this visual direction. Agent execution is in development; you can adapt the image prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/25-creative-constellation.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. A monumental spiral mobile of translucent photographic panels hangs above a polished black studio floor. The panels contain original fragments of coral, silk, dunes, clouds and flowers, connected by fine golden threads like a constellation. Photorealistic art installation representing a coordinated creative project, delicate spotlights, tactile glass, no text or UI. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": true,
+      "featured": true,
+      "sourceFilename": "exec-9f03d658-27e6-475a-a1e8-7ccc219fe5d0.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "153148cb4ca3aa9e9103b55aa6063df18a5b2c3f9792e85cab6e3614cf85a6d5",
+      "sha256": "0fce7ff517007c5e47de0ba352f438c84ded7b46685f4177a2e9b3febdd09461",
+      "gitBlobSha": "e25e7b362978e6a88bb3a641f58f8fdf9ed690ae",
+      "sizeBytes": 341278,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-clockwork-peony",
+      "slug": "creative50-clockwork-peony",
+      "title": "Clockwork Peony",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/26-clockwork-peony.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. An immense peony made from thin translucent rose-quartz petals and tiny moving gold watch gears sits on a black volcanic rock. A drop of dew magnifies a single gear inside. Luxury botanical macro photograph, soft violet background, exquisite minerals and believable light, no dial or numbers. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-ef20b370-7954-42dc-a967-ae2466c3beb2.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "361450a94005e26b1cb3303aee295c1f70355b0cb59c5ba60aa5ebe92bb78095",
+      "sha256": "18b2878ad6aa80cfcdf5ae364f7c38d30785781556d9160bbb4699c0b09ff0f3",
+      "gitBlobSha": "6c4ee6a7acd6cace68ce3a84c7dba35cee81a703",
+      "sizeBytes": 359724,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-floating-staircase",
+      "slug": "creative50-floating-staircase",
+      "title": "Floating Staircase",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/27-floating-staircase.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. An endless sculptural ivory spiral staircase rises through a calm peach-colored sea of clouds, each step supporting a tiny real wildflower garden. One original adult in a teal coat stands near the base. Architectural photograph, luminous dawn, refined surreal scale and tactile stone. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-a3d971df-e33c-4730-8fc9-7bc5be8cead3.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "876d3b4758d41f1ce63bc2ed69f61744f1cbdaa4e17d7d654e20857ba61b8af7",
+      "sha256": "cd2cfc0580e8a57120ef2b2fde7d010920989751dda6f4f5822552fbc2a66032",
+      "gitBlobSha": "61fbe2bcae34bc18698f1bfc948a140f3e403e06",
+      "sizeBytes": 296080,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-opal-eye",
+      "slug": "creative50-opal-eye",
+      "title": "Opal Eye",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/28-opal-eye.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. Extreme macro beauty photograph of the eye of an original adult woman. The iris appears like translucent natural blue opal containing tiny warm flashes of lightning, while the pupil, eyelids and eyelashes remain anatomically realistic. Fine skin detail, soft cool light, editorial refinement, no text. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-88854b54-862b-4e75-9b91-0039316e345c.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "5a982f349021011c24e1ad67837c103f3baf2e899c024c21de3e52f8b02a0375",
+      "sha256": "e382d9d738dad1031c5514b868e832ff705c9083573c558351b3d46ed82d58e0",
+      "gitBlobSha": "7c5d0be61b7e91a28cde722c877355ae5d5224c9",
+      "sizeBytes": 399974,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-velvet-volcano",
+      "slug": "creative50-velvet-volcano",
+      "title": "Velvet Volcano",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/29-velvet-volcano.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. A monumental dormant volcano is draped in extraordinarily realistic deep-red velvet, its folds flowing down into a pale desert. A thin plume of soft pearl-white cloud rises from the crater. Aerial landscape photograph, warm low sunlight, rich tactile fabric, cinematic and elegant. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-ebc67d91-f237-476d-9dcd-f3b4cbdcba7a.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "541badbf7c0a198e483c6ac7994a142064e4fd46ec328141935bd6254cddeec0",
+      "sha256": "edf226a53b86bd9c6212a7e235f55e0821816d5275a3b6e9f4a462fffe0e8405",
+      "gitBlobSha": "408b55b6dd1262d00112fa3527d9ef734f93f927",
+      "sizeBytes": 299398,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-pearlescent-elephant",
+      "slug": "creative50-pearlescent-elephant",
+      "title": "Pearlescent Elephant",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/30-pearlescent-elephant.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. An anatomically accurate elegant elephant stands in a shallow turquoise lagoon, its wet grey skin showing subtle pearlescent mineral patterns rather than paint. Floating white lotus flowers circle it. Luxury wildlife photograph, golden mist, fine skin wrinkles, quiet majestic mood. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-3cea197f-3b17-4b66-9cef-b2f13f2b4768.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "9cef3af50bece59d3363ffdb17bbe7979832216eff0ccedca5c89f3540fcbd4b",
+      "sha256": "10a202e7170a9a2eebb06d1f61f7f79f63825c442159f9e15c41956f4461bb16",
+      "gitBlobSha": "71cd3eebb333f62ac74dbfbe97f6b2420936b44c",
+      "sizeBytes": 442010,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-rainbow-shadow",
+      "slug": "creative50-rainbow-shadow",
+      "title": "Rainbow Shadow",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/31-rainbow-shadow.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. A minimalist clear glass chair stands alone in a cream studio and casts a perfectly crisp oversized rainbow-colored shadow that forms the silhouette of a blooming tree. Sophisticated design photograph, single hard sunlight source, real refraction, tactile plaster and delicate spectral color. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-2a1eeea4-d60e-4dbb-b6d7-faec26942cf6.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "773319b6f46768702f44f39495034130c0ae44da8def6d1297444f6d5532bb9c",
+      "sha256": "2afc514e31efebb9211a3b4165a4ca96c0a580c70fd03cbc1ee728c5afb2f153",
+      "gitBlobSha": "07a176fc934d3cc80d27d09dcd86610ae049bd7d",
+      "sizeBytes": 365180,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-ocean-lipstick",
+      "slug": "creative50-ocean-lipstick",
+      "title": "Ocean Lipstick",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/32-ocean-lipstick.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. An unbranded open lipstick tube of brushed champagne metal contains a perfectly sculpted tiny curling turquoise ocean wave instead of lipstick, with fine translucent spray. Premium macro product photograph, warm sandy background, real metal and water, restrained luxurious composition. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-a90f61b8-abff-4577-87d9-b1078a7d1619.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "ece292d941c20b58e396cdcfdda718b748ebee44c44a19585909e0296e9b802c",
+      "sha256": "be6455413419e337a0d85bc3cca3547f08410c7ecc83b10088960b73ed1d6359",
+      "gitBlobSha": "8c7f3d9f3caaa7c8d21f7e73e5ab429f4c1016fc",
+      "sizeBytes": 281484,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-paper-whale",
+      "slug": "creative50-paper-whale",
+      "title": "Paper Whale",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/33-paper-whale.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. A gigantic whale made from thousands of thin overlapping cream paper leaves glides above a quiet grey ocean. Its silhouette and anatomy are realistic; edges reveal delicate paper fibers. Cinematic nature-fashion photograph, soft overcast sky, tiny boat for scale, poetic realism. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-c8fd5ade-608b-4938-86b3-a1e51c1d8331.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "7489e28a4ab4c2e4129737472212c1f34447a3998b3b368b69691d13fcc2a8b8",
+      "sha256": "71015a27b717887c210abd34bcf598349f0d60c7d76f9c2812858049015b07e3",
+      "gitBlobSha": "d3262e88821e6c22942fab143342a68b5ec19d79",
+      "sizeBytes": 271010,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-emerald-rain",
+      "slug": "creative50-emerald-rain",
+      "title": "Emerald Rain",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/34-emerald-rain.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. An original adult woman with short dark hair in a fully opaque ivory blazer stands in a dark emerald forest. Perfectly clear raindrops hang motionless around her, each containing a tiny green fern, her face remaining unobstructed. Premium editorial portrait, natural skin, warm filtered sun. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-f5d827df-a4af-4b56-9b26-c5ded22498c2.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "7814ed0fad412cb9da8befbdc2e9f7866f4eb989b6f818f2165d8d1c1f1696bf",
+      "sha256": "caab1ed997fc58e456a496d325d54229374cccb1456b56e67f2632eb7f6cbaa9",
+      "gitBlobSha": "486d52587690d20a3a8b240fedd28b7822b96860",
+      "sizeBytes": 300166,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-ceramic-mushroom",
+      "slug": "creative50-ceramic-mushroom",
+      "title": "Ceramic Mushroom",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/35-ceramic-mushroom.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. A monumental cobalt-blue glazed ceramic mushroom rises from a tiny island of bright green moss in a mirror lake. Beneath its cap are small glowing warm-white porcelain gills. Photorealistic surreal landscape, misty sunrise, believable glaze reflections and botanical detail. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-88698125-0047-4a75-8b79-ae24e245cf40.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "928a20b6bbb35f97e0383ba9e8bd9e341dcf22deefd0d4af5efbef7533b8d3dc",
+      "sha256": "e77b8ed31432c59a3bc45030e7e768abab361228597d62c3db30d995c5c8f2e5",
+      "gitBlobSha": "8e66efb0c23455b43081d2f3c8474dbff244e7c9",
+      "sizeBytes": 372150,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-diamond-coffee",
+      "slug": "creative50-diamond-coffee",
+      "title": "Diamond Coffee",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/36-diamond-coffee.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. A single clear faceted diamond contains a miniature swirling cup-shaped storm of black espresso and golden crema. It floats above a matte ivory espresso cup in a warm sunlit studio. High-end product macro photograph, crisp refraction, tactile ceramic and delicious detail. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-7253c796-3562-4f50-ab44-411df37fc19b.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "1e2350b4515729a3a2a5df2cfd55cc4b7a047ea2c81268c59294cc8225c718c1",
+      "sha256": "f0c5e350cdeb8308ee4d5f2da5aa3dd15d65ba197032b45337f4e2b62b6b5f74",
+      "gitBlobSha": "a65ebcc6f9602c98fc014edaf67cac9fb63877a6",
+      "sizeBytes": 246086,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-woven-city",
+      "slug": "creative50-woven-city",
+      "title": "Woven City",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/37-woven-city.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. A colossal spool of deep-blue thread unravels into a realistic miniature city skyline, with individual threads becoming towers, streets and bridges. Soft ivory studio backdrop, warm architectural lighting, extremely tactile cotton fibers, elegant surreal commercial photograph. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-61b51d46-1e49-4157-b096-74e3327c56e2.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "46c35a8826e03c1ac9af3382a4e9631a7a3b00ebad7d7e1f394572293dac0fcc",
+      "sha256": "460b178b6b271f391e2e805668a743eb4da1f69644e3b1cbe8cc9569aed48028",
+      "gitBlobSha": "7fef34df41140059bc56150aebf8592c6bbf18e9",
+      "sizeBytes": 441004,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-sunflower-moon",
+      "slug": "creative50-sunflower-moon",
+      "title": "Sunflower Moon",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/38-sunflower-moon.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. An enormous luminous sunflower hangs just above a still midnight lake like a full moon. Tiny dewdrops sparkle on its yellow petals, and its detailed seed head glows softly. A small silhouetted original adult in a coat on the shore conveys scale. Cinematic landscape photograph, deep navy, realistic botany. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-00736d4d-8820-4ce0-abc5-1c468f17c89f.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "026119d7264b1347c538248a46e4d7cee87e23b842e0d9d261cb7ba84cbfea8a",
+      "sha256": "e73afbb2c78e0206dfb09bfde95d8cc660e1f0d5a0164dd8b5407dc06338ae59",
+      "gitBlobSha": "e10d4c20dd565396c90dd1c0823eb507ff31fef6",
+      "sizeBytes": 302630,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-liquid-sapphire",
+      "slug": "creative50-liquid-sapphire",
+      "title": "Liquid Sapphire",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/39-liquid-sapphire.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. An unbranded sculptural transparent cobalt-blue glass handbag floats above black marble. A smooth loop of clear water passes through its handle, scattering tiny sapphire-colored caustics. High-speed luxury fashion product photograph, crisp leather-free glass details, midnight studio lighting. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-52d2eb8e-02a8-4544-95a9-1a4f420649b6.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "cde57c669d7badba356610ac19767dd8d5eb120fd563a4373d0ee611708380c5",
+      "sha256": "a91c5759bbb4466ed307350c28b3d7900cb321252e5e2f185ff4b4abaa2e54d4",
+      "gitBlobSha": "405f74b3d16b2a8237b027db9f91df9268f93bcf",
+      "sizeBytes": 394760,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-fog-chess",
+      "slug": "creative50-fog-chess",
+      "title": "Fog Chess",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/40-fog-chess.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. An elegant chessboard carved from pale travertine floats in soft morning mist, with each chess piece sculpted from dense luminous cloud that casts convincing shadows. No people or writing. Minimal conceptual product photograph, warm dawn light, exquisite stone texture. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-d101a6ff-b485-4325-afbb-4a05d709cfe3.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "a22b6c2f4992be16f225d5c7154641f87dbb0b0845011dd12df1c65306bc861a",
+      "sha256": "4ceecce50768d8608a891e37549ad732b57947e600a830982202cef9514426ed",
+      "gitBlobSha": "0f71012a0b2e7a02b21ef244a4d03c703d4b8136",
+      "sizeBytes": 224882,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-feather-galaxy",
+      "slug": "creative50-feather-galaxy",
+      "title": "Feather Galaxy",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/41-feather-galaxy.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. A single iridescent peacock feather photographed in extreme macro, its central eye becoming a realistic tiny spiral galaxy while individual feather strands remain crisp and tactile. Deep emerald and electric-blue palette, controlled macro lighting, no text. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-c16a8a51-08bf-4a88-9e04-ed5fa2fcd819.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "8ccbb0cdfcaac7bf7ce60c92188c5cf82d820b1ae0297393d574778171251900",
+      "sha256": "3294785420907f7bb4fcbc7c1dde35b41f4ca51a5578ec3cf54c6d215441c546",
+      "gitBlobSha": "d6388c3597067fc33496673b58a8c9ce3717bd9e",
+      "sizeBytes": 588142,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-jelly-castle",
+      "slug": "creative50-jelly-castle",
+      "title": "Jelly Castle",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/42-jelly-castle.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. A tiny detailed gothic castle made entirely from translucent raspberry gelatin sits on a cool white porcelain plate. A fine beam of sunlight shines through its turrets and windows. Luxury playful food photograph, pale lilac studio, convincing gelatin surface and fine droplets. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-9fc77476-751a-4c93-99cf-4694f3318145.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "036504b7dd36d5096383cf3387fa13844e3da688cca78aea46c191d4dbbfd609",
+      "sha256": "de3bbe05e3552e3121c20e6f381d80413ae27872bcc3208d8d481bab8ae26e26",
+      "gitBlobSha": "dbb7f37b0b9019453fb1e4a4776aa486bbca2d86",
+      "sizeBytes": 284634,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-silver-ballet",
+      "slug": "creative50-silver-ballet",
+      "title": "Silver Ballet",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/43-silver-ballet.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. An original adult ballet dancer in a fully opaque sculptural black costume performs an anatomically natural arabesque on a mirror floor, with a single enormous flowing silver ribbon making a soft spiral around the body without obscuring it. Editorial dance photograph, charcoal stage, precise spotlight and graceful composition. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-7ac01c95-0ae0-4b0e-8e31-d9bf9d0c91e6.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "449bd46ce8bcdbfec5fcbba25d01624ab92d75c2f7599872d3e799f5f8859088",
+      "sha256": "f8f4b8d81748280de3b2605cc729518b4c712a594128f6839f9029c62fd003fe",
+      "gitBlobSha": "09356fa04855c67756e2bd279487e4c169897ac6",
+      "sizeBytes": 186850,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-honey-planet",
+      "slug": "creative50-honey-planet",
+      "title": "Honey Planet",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/44-honey-planet.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. A miniature amber planet made from golden honey and intricate hexagonal honeycomb floats above a black stone spoon. One thin honey ring orbits it like Saturn, with tiny suspended droplets. Premium food macro photograph, dark warm background, realistic viscosity and delicious light. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-89b16359-77b4-4e64-8897-56f9075d7290.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "0cecb3674b90c5cc5b727b9dbeb2dbf3d3f6d2d084cd929ec548d6d6cd08c333",
+      "sha256": "dcd142511a20ffedf23964e9726a02490fbe71445a93b40044fe8355dd764619",
+      "gitBlobSha": "f00b4cbc5fd97488f17d4b2413bfffe946727a68",
+      "sizeBytes": 240992,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-floral-lightning",
+      "slug": "creative50-floral-lightning",
+      "title": "Floral Lightning",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/45-floral-lightning.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. A dramatic fork of lightning in a dark stormy sky is made entirely from tiny luminous white jasmine flowers, with a calm violet field beneath it. Photorealistic poetic landscape, extraordinary botanical detail in foreground branches, cinematic storm light, no destruction. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-f9e814f7-41f5-4c17-bfca-dcb21679f56f.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "77cf846cf75c4809458c75f0710b7f8ce18239136d3ee92a120b6434e3ac5a86",
+      "sha256": "542dc8e0417aa43a9989c241ba137563565eb3e877bdb7118a3f5645a3d37ec3",
+      "gitBlobSha": "21056f851e2192eb0c460365b4d784a071da1fd4",
+      "sizeBytes": 296706,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-ice-butterfly",
+      "slug": "creative50-ice-butterfly",
+      "title": "Ice Butterfly",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/46-ice-butterfly.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. A delicate butterfly with perfectly symmetrical wings formed from thin transparent ice hovers above a single deep-red rose. Realistic butterfly anatomy, minute trapped air bubbles and delicate frost along the wing edges. Premium macro photograph, dark teal bokeh, soft dawn light. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-69129f66-a665-4bf3-82f7-3d1696dba590.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "b157ed04d322e4605839672682a011a657fc8b71503e6e7b922fabb2c1091cf8",
+      "sha256": "2845ecaec1897350f144e2236839fd8c611b67dfc0f2c51dd1a90c2f9b3273a3",
+      "gitBlobSha": "47e856bf56da379b50cb897694c256f557f98be6",
+      "sizeBytes": 369840,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-dune-piano",
+      "slug": "creative50-dune-piano",
+      "title": "Dune Piano",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/47-dune-piano.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. An elegant unbranded black grand piano sits on a sweeping orange desert dune, its open lid becoming a thin flowing layer of black water that stretches into a calm reflective ribbon across the sand. Cinematic landscape photograph, long shadows, tactile sand and polished wood. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-eaecb96a-bcd6-4c6b-8177-d4f79fd59b56.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "6ef59d4a0be740ed173489f3e20237c9cd49dfca32c8eec6ceb3a60695227306",
+      "sha256": "38822b0427665ac2aa74bbb6460980e30d47d49381a0bd849ef148b62524faf9",
+      "gitBlobSha": "12a387ff3214d7bb90ac4a047307cba36c46f905",
+      "sizeBytes": 249674,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-glass-lily-city",
+      "slug": "creative50-glass-lily-city",
+      "title": "Glass Lily City",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/48-glass-lily-city.webp",
+      "prompt": "Create one entirely original premium photographic artwork, square 1:1 composition for an AI creative platform. A giant translucent white glass water lily floats on a calm emerald lake; inside its petals sits a tiny warm illuminated modern city with delicate gardens and walkways. Photorealistic miniature architectural fantasy, blue-hour atmosphere, immaculate glass refraction and realistic water. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "1:1",
+      "previewDimensions": [
+        1200,
+        1200
+      ],
+      "defaultSettings": {
+        "ratio": "1:1"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-05dcb197-5c3b-4da5-968c-f203258be479.png",
+      "sourceDimensions": [
+        1254,
+        1254
+      ],
+      "sourceSha256": "f462d1603a473ac5418cf6646a7952fba855a978216ea45b6ed8b4c37931a8b3",
+      "sha256": "d0c551f584f0ac633fd8a75ae61d30b50ac96d44f32780914700735dd574da18",
+      "gitBlobSha": "7b61b1770c8b8e77be61366441db1a5527edd8d7",
+      "sizeBytes": 387220,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-aurora-umbrella",
+      "slug": "creative50-aurora-umbrella",
+      "title": "Aurora Umbrella",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/49-aurora-umbrella.webp",
+      "prompt": "Create one entirely original premium photographic artwork, vertical 4:5 composition for an AI creative platform. An original adult person in a fully opaque charcoal coat holds a transparent umbrella on a rain-soaked street at night. A miniature green and violet aurora swirls beneath the umbrella canopy, casting soft light onto their face and wet pavement. Cinematic editorial photograph, real raindrops and restrained color. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "4:5",
+      "previewDimensions": [
+        1120,
+        1400
+      ],
+      "defaultSettings": {
+        "ratio": "4:5"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-48311b83-07c7-4ee6-b5d0-968ce7af795a.png",
+      "sourceDimensions": [
+        1122,
+        1402
+      ],
+      "sourceSha256": "131c8d590661f7d960c0558c99e9b381873f0e6494fc99a93d1cf6da38c31ded",
+      "sha256": "138d736c49ae0c6ef564fa1357f48dcc6637cf0d1962e5767b1f5fa649ebd328",
+      "gitBlobSha": "97212454d4f266c858154294ae4a8ef3ba12f1af",
+      "sizeBytes": 389466,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    },
+    {
+      "id": "creative50-golden-tide-pool",
+      "slug": "creative50-golden-tide-pool",
+      "title": "Golden Tide Pool",
+      "kind": "image",
+      "category": "Creative reserve",
+      "placement": "reserve",
+      "description": "Explore the effect and adapt its original prompt in Studio.",
+      "previewUrl": "/media/creative/creative50-20261021/50-golden-tide-pool.webp",
+      "prompt": "Create one entirely original premium photographic artwork, landscape 16:9 composition for an AI creative platform. A tiny natural tide pool in black volcanic rock contains a miniature golden desert with dunes, a single green palm tree and a delicate oasis, while real ocean foam surrounds the rock. Photorealistic macro landscape, warm early sunlight, exquisite scale contrast and natural mineral detail. Strong immediate visual impact with one coherent unusual effect that viewers will want to recreate. Highest photographic realism and fine material detail, sophisticated editorial art direction, physically coherent light inside the surreal concept. No text, letters, numbers, logos, watermarks, UI, collage, grids or borders. No real identifiable people or brands; adults fully clothed when present. Natural anatomy, no duplicated faces or extra limbs. One finished image.",
+      "aspectRatio": "16:9",
+      "previewDimensions": [
+        1600,
+        900
+      ],
+      "defaultSettings": {
+        "ratio": "16:9"
+      },
+      "defaultModel": null,
+      "displayModel": "OpenAI ChatGPT image_gen · exact model/version not exposed",
+      "requiredInputTypes": [],
+      "actionTarget": "studio",
+      "active": false,
+      "featured": false,
+      "sourceFilename": "exec-df1bfcdf-65de-4e56-b120-92aaeb70897b.png",
+      "sourceDimensions": [
+        1672,
+        941
+      ],
+      "sourceSha256": "ef8a7568ffc82cc0cc3f25cffb145a51b0ebe04de3a29643c7bae2ecc7fad6d5",
+      "sha256": "0dca6fb12dbc5775f669bb8dc8ff6a9a754293ba256fb02ef303eab5ef5119e6",
+      "gitBlobSha": "c1657a2b78e729fe9c16130d9cb2c3db74c92ca7",
+      "sizeBytes": 475272,
+      "rightsBasis": "openai_generated_output",
+      "productionPublicationApproved": false
+    }
+  ]
+}

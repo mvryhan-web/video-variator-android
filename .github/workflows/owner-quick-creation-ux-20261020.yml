@@ -1,0 +1,45 @@
+name: Owner concise creative UX and Home lock (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/generate-studio.html'
+      - 'app/src/main/assets/studio-quickstart.css'
+      - 'app/src/main/assets/ai-apps.html'
+      - 'app/src/main/assets/inspiration.html'
+
+      - 'app/src/main/assets/audio-studio.html'
+      - 'app/src/main/assets/free-tools.html'
+      - 'tests/owner-quick-creation-20261020.spec.mjs'
+      - '.github/workflows/owner-quick-creation-ux-20261020.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  quick-creation-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 23
+    steps:
+      - name: Prefer official Ubuntu archive for browser dependencies
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+      - name: Confirm minimal creative flow, credits/consent and Home lock
+        run: npx playwright test tests/owner-quick-creation-20261020.spec.mjs --project=chromium --project=mobile-webkit
+      - name: Save traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-quick-creation-errors
+          path: test-results/
+          if-no-files-found: ignore

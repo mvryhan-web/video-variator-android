@@ -1,0 +1,30 @@
+name: BASE 49 PostgreSQL advisory unlock safety
+on:
+  push:
+    branches: [base49-release-lock-failure-20261016]
+    paths:
+      - 'server/ai-migrations.js'
+      - 'tests/base49-migration-unlock-unit.mjs'
+      - '.github/workflows/base49-migration-unlock.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/ai-migrations.js'
+      - 'tests/base49-migration-unlock-unit.mjs'
+      - '.github/workflows/base49-migration-unlock.yml'
+permissions:
+  contents: read
+jobs:
+  unlock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Migration syntax and release regression
+        run: |
+          node --check server/ai-migrations.js
+          node --test tests/base49-migration-unlock-unit.mjs tests/base49-migration-readonly-unit.mjs tests/ai-migrations-unit.mjs

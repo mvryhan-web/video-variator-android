@@ -1,0 +1,28 @@
+name: BASE 33 Owner P0 Purchased Only Dispatch Contract
+
+concurrency:
+  group: ci-base33-p0-dispatch-contract-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+on:
+  pull_request:
+    paths:
+      - 'server/generation-paid-dispatch-authorization.js'
+      - 'tests/base33-p0-purchased-dispatch-authorization-unit.mjs'
+      - '.github/workflows/base33-p0-dispatch-contract.yml'
+permissions:
+  contents: read
+jobs:
+  p0-no-spend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: |
+          node --check server/generation-paid-dispatch-authorization.js
+          node --check tests/base33-p0-purchased-dispatch-authorization-unit.mjs
+          node --test tests/base33-p0-purchased-dispatch-authorization-unit.mjs

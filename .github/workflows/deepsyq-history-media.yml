@@ -1,0 +1,45 @@
+name: Deepsyq BASE history media previews
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/generate-studio.js'
+      - 'app/src/main/assets/generate-studio.css'
+      - 'tests/generation-history-media.spec.mjs'
+      - '.github/workflows/deepsyq-history-media.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Unique workflow-file key: several existing workflows share the display name "BASE".
+# Cancel only superseded runs of THIS workflow on the SAME PR or ref.
+# Never cancel another agent's different PR or disable a safety assertion.
+concurrency:
+  group: agent5-deepsyq-history-media-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  history-media-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Validate changed frontend and focused History test
+        run: |
+          node --check app/src/main/assets/generate-studio.js
+          node --check tests/generation-history-media.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Verify History video/audio preview on desktop and mobile
+        run: npx playwright test tests/generation-history-media.spec.mjs --project=chromium --project=mobile-chromium --project=webkit --project=mobile-webkit
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: history-media-preview-evidence
+          path: test-results/
+          retention-days: 7

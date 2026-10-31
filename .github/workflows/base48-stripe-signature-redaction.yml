@@ -1,0 +1,30 @@
+name: BASE 48 Stripe webhook signature response redaction
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/server.js'
+      - 'tests/base48-stripe-signature-response-unit.mjs'
+      - '.github/workflows/base48-stripe-signature-redaction.yml'
+  push:
+    branches: [base48-stripe-signature-error-redaction-20261016]
+    paths:
+      - 'server/server.js'
+      - 'tests/base48-stripe-signature-response-unit.mjs'
+      - '.github/workflows/base48-stripe-signature-redaction.yml'
+permissions:
+  contents: read
+jobs:
+  verification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax and negative/positive Stripe webhook contract
+        run: |
+          node --check server/server.js
+          node --test tests/base48-stripe-signature-response-unit.mjs tests/base16-webhook-activation-unit.mjs

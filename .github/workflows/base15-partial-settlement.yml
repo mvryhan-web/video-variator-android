@@ -1,0 +1,39 @@
+name: BASE 15 Partial Settlement
+on:
+  push:
+    branches: [base15-partial-settlement-20261016]
+  pull_request:
+    paths:
+      - 'server/generation-wallet.js'
+      - 'tests/base15-partial-settlement-postgres.mjs'
+      - '.github/workflows/base15-partial-settlement.yml'
+permissions:
+  contents: read
+jobs:
+  postgres-partial-capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fixture
+          POSTGRES_PASSWORD: fixture
+          POSTGRES_DB: vv_ai_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax and isolated PostgreSQL partial charge acceptance
+        run: |
+          node --check server/generation-wallet.js
+          node --check tests/base15-partial-settlement-postgres.mjs
+          node --test tests/base15-partial-settlement-postgres.mjs tests/generation-billing-unit.mjs
+        env:
+          NODE_ENV: test
+          AI_TEST_DATABASE_URL: postgres://fixture:fixture@127.0.0.1:5432/vv_ai_test

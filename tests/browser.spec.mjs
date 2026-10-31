@@ -1,3 +1,4 @@
+
 import {test,expect} from '@playwright/test';
 import {execFileSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
@@ -9,17 +10,29 @@ async function openView(page,name){
 
 test.beforeEach(async({page})=>{
   await page.route(/accounts\.google\.com|appleid\.cdn-apple\.com|unpkg\.com/,route=>route.abort());
-  await page.goto('/',{waitUntil:'domcontentloaded'});
+  await page.goto('/index.html',{waitUntil:'commit'});
+  await expect.poll(()=>page.evaluate(()=>
+    document.readyState!=='loading'&&
+    typeof window.VideoVariatorCore?.process==='function'&&
+    typeof window.VideoVariatorUI?.setFiles==='function'
+  )).toBe(true);
   await expect(page).toHaveTitle(/Video Uniquifier/);
 });
 
-test('loads rebranded dashboard with zero of 100 free trial videos',async({page})=>{
-  await expect(page.getByRole('heading',{name:'Dashboard'})).toBeVisible();
-  await expect(page.locator('#creditText')).toHaveText('0 / 100');
-  await expect(page.getByText('Turn your old video into fresh new versions')).toBeVisible();
-  await expect(page.getByText('One video. Many versions.')).toBeVisible();
+test('loads current standalone Video Uniquifier and functional controls',async({page})=>{
+  // Video Uniquifier remains a separate working tool at /index.html.
+  // Deepsyq Home owns /; neither historic Dashboard copy nor 100 free AI videos is its contract.
+  await expect(page).toHaveURL(/\/index\.html$/);
+  await expect(page.locator('body.vu-reference')).toBeVisible();
+  await expect(page.locator('#heroTitle')).toHaveText('Video Uniquifier');
+  await expect(page.locator('#fileInput')).toHaveAttribute('accept','video/*');
+  await expect(page.locator('.vu-mode-card')).toHaveCount(3);
+  expect(await page.locator('.vu-mode-card').evaluateAll(cards=>cards.map(card=>card.dataset.mode)))
+    .toEqual(['gentle','balanced','dynamic']);
+  await expect(page.locator('.vu-format-button[data-ratio="9:16"]')).toBeVisible();
+  await expect(page.locator('.vu-format-button[data-ratio="16:9"]')).toBeVisible();
+  await expect(page.locator('.vu-quality-button')).toHaveCount(3);
   await expect(page.locator('#resultsCard')).toBeHidden();
-  await expect(page.getByText('Video Uniquifier',{exact:true}).first()).toBeVisible();
 });
 
 test('loads FFmpeg wrapper from same-origin when external CDN is blocked',async({page})=>{

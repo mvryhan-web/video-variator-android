@@ -1,0 +1,35 @@
+name: BASE 13 Studio wallet without paid Checkout
+on:
+  push:
+    branches: [base13-studio-wallet-20261016]
+    paths:
+      - 'app/src/main/assets/studio-credit-wallet.js'
+      - 'app/src/main/assets/generate-studio.js'
+      - 'tests/studio-credit-wallet-unit.mjs'
+      - '.github/workflows/base13-studio-wallet.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/studio-credit-wallet.js'
+      - 'app/src/main/assets/generate-studio.js'
+      - 'tests/studio-credit-wallet-unit.mjs'
+      - '.github/workflows/base13-studio-wallet.yml'
+permissions:
+  contents: read
+jobs:
+  wallet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Studio module syntax
+        run: |
+          node --check app/src/main/assets/studio-credit-wallet.js
+          node --check app/src/main/assets/generate-studio.js
+          node --check tests/studio-credit-wallet-unit.mjs
+      - name: Wallet/Checkout UI and existing pricing display regressions
+        run: node --test tests/studio-credit-wallet-unit.mjs tests/ai-pricing-display-unit.mjs

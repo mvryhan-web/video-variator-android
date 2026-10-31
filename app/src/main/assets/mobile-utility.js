@@ -1,12 +1,11 @@
 /* Free mobile utilities: processing on-device, no raw file uploads. */
 import {createEngine,saveLocal,subtitleFiles} from './ai-media.js';
+import {videoCompressionArgs,videoCompressionSummary,videoCompressionInputSupported} from './video-compression-args.mjs';
 const $=id=>document.getElementById(id);
 const catalog=window.VUMobileToolsCatalog,tool=new URLSearchParams(location.search).get('tool');
 const mode=catalog?.tools.find(x=>x.id===tool);
 const lang=catalog?.lang||'en',ru=lang==='ru';
 const label=(en,russian)=>ru?russian:en;
-if(!mode)location.replace('free-tools.html');
-else init();
 
 function field(name,visible){const el=$(name+'Line');if(el)el.hidden=!visible;}
 function status(msg){$('utilityStatus').textContent=msg;}
@@ -22,16 +21,57 @@ const fileTypes={
  'scan-pdf':['image/*',true],'pdf-merge':['application/pdf,.pdf',true],
  'pdf-split':['application/pdf,.pdf',false],'pdf-sign':['application/pdf,.pdf',false],
  'pdf-compress':['application/pdf,.pdf',false],
- 'photo-convert':['image/*',false],'photo-resize':['image/*',false],
+ 'photo-convert':['image/*',false],'photo-resize':['image/*',false],'photo-compress':['image/jpeg,image/png,image/webp',false],
  'photo-redact':['image/*',false],'photo-ocr':['image/*',false],
- 'video-trim':['video/*',false],'video-mute':['video/*',false],
+ 'video-trim':['video/*',false],'video-mute':['video/*',false],'video-compress':['video/*',false],
  'audio-trim':['audio/*',false],'qr':['',false],
  'zip':['*/*',true],'captions':['video/*,audio/*',false]};
 const timeModes=['video-trim','audio-trim'];
 let active=false,abort=false,engine=null,redactRects=[],redactImage=null,redactBase=null,redactDragging=null;
+let redactSelectionEpoch=0,redactSource=null,redactLoading=false;
+const redactPreviewUrls=new Set();
+function clearRedactPreviewUrls(){
+ for(const url of redactPreviewUrls)URL.revokeObjectURL(url);
+ redactPreviewUrls.clear();
+}
+// Do not restore a previous owner's sensitive pixels from browser BFCache.
+function purgeRedactionOnPagehide(){
+ if(tool!=='photo-redact')return;
+ ++redactSelectionEpoch;
+ abort=true;
+ redactRects=[];redactDragging=null;redactBase=null;redactSource=null;redactLoading=false;
+ if(redactImage){redactImage.width=redactImage.height=1;redactImage=null;}
+ clearRedactPreviewUrls();
+ const canvas=$('redactCanvas');canvas.width=canvas.height=1;
+ $('utilityFiles').value='';
+ $('utilityResults').replaceChildren();
+ $('utilityRun').disabled=true;
+}
+window.addEventListener('pagehide',purgeRedactionOnPagehide);
+window.addEventListener('pagehide',()=>{
+ // On BFCache restore, neither private file pickers nor OCR/PDF contents
+ // should survive; invalidate pending encoding/recognition before publication.
+ abort=true;
+ try{engine?.terminate();}catch(_){}
+ clearRedactPreviewUrls();
+ $('utilityFiles').value='';
+ $('utilityResults').replaceChildren();
+ $('utilityQr').value='';
+ $('utilityText').value='';
+ const signature=$('utilitySignature');
+ if(signature)signature.getContext('2d')?.clearRect(0,0,signature.width,signature.height);
+});
+// FileList getters are allowed to return distinct File wrappers on some engines.
+// The change event immediately clears redactSource; this identity comparison
+// uses stable metadata only within that selected epoch.
+function isCurrentRedactSource(file){
+ return !!(file&&redactSource&&!redactLoading&&
+  file.name===redactSource.name&&file.type===redactSource.type&&
+  file.size===redactSource.size&&file.lastModified===redactSource.lastModified);
+}
 function init(){
  $('utilityTitle').textContent=mode.title;document.title=mode.title+' · Video Uniquifier';
- $('utilityDescription').textContent=mode.note;document.getElementById('utilityBack').textContent=label('← Free tools','← Бесплатные инструменты');
+ $('utilityDescription').textContent=mode.note;document.getElementById('utilityBack').textContent=label('← Everyday Tools','← Повседневные инструменты');
  $('utilityKicker').textContent=label('FREE • ON DEVICE','БЕСПЛАТНО • НА УСТРОЙСТВЕ');
  $('utilityFileLabel').textContent=label('Choose files','Выберите файлы');
  $('utilityRun').textContent=label('Create result','Создать результат');
@@ -57,6 +97,27 @@ function init(){
  $('textLine').hidden=tool!=='pdf-sign';
  $('utilityTextLabel').textContent=label('Text to add (optional)','Текст для добавления (необязательно)');
  $('formatLine').hidden=!['photo-convert','photo-resize'].includes(tool);
+ if(tool==='video-compress'){
+   const row=document.createElement('label');row.id='videoCompressQualityLine';
+   const title=document.createElement('span');title.textContent=label('Output quality / file size','Качество / размер файла');
+   const select=document.createElement('select');select.id='videoCompressQuality';
+   for(const [id,en,russian] of [
+    ['small','Smaller file (more loss)','Меньше размер (ниже качество)'],
+    ['balanced','Balanced (recommended)','Баланс (рекомендуется)'],
+    ['quality','Higher quality (larger file)','Выше качество (больше размер)']]){
+    const option=document.createElement('option');option.value=id;option.textContent=label(en,russian);select.add(option);
+   }
+   select.value='balanced';row.append(title,select);$('settingsRow').append(row);
+  }
+  if(tool==='photo-compress'){
+  const row=document.createElement('label');row.id='compressQualityLine';
+  const title=document.createElement('span');title.textContent=label('JPEG quality','Качество JPEG');
+  const value=document.createElement('output');value.id='compressQualityValue';value.textContent='70%';
+  const slider=document.createElement('input');slider.type='range';slider.id='compressQuality';slider.min='20';slider.max='95';slider.step='5';slider.value='70';
+  slider.addEventListener('input',()=>value.textContent=slider.value+'%');
+  row.append(title,slider,value);$('settingsRow').append(row);
+  help('Local JPEG compression. Smaller files are not guaranteed; original is unchanged.','Локальное сжатие JPEG. Уменьшение файла не гарантировано; оригинал остаётся без изменений.');
+ }
  for(const f of ['start','end'])field(f,timeModes.includes(tool));
  for(const f of ['width','height'])field(f,tool==='photo-resize');
  field('pages',tool==='pdf-split'||tool==='pdf-sign');
@@ -65,7 +126,8 @@ function init(){
  if(tool==='pdf-sign'){$('utilityPages').value='1';setupSignature();help('Add visible text or a drawn signature to a chosen page. This is not a cryptographic digital signature.','Добавьте текст или нарисованную подпись на выбранную страницу. Это не криптографическая цифровая подпись.');}
  else if(tool==='pdf-compress')help('Rewrites the PDF with object streams. Scanned image PDFs may not become smaller.','Оптимизирует структуру PDF. Сканированные файлы могут не уменьшиться.');
  else if(tool==='photo-ocr')help('First use downloads a free language model. Recognized text may contain mistakes.','При первом запуске загрузится бесплатная языковая модель. Проверьте распознанный текст.');
- else if(tool==='captions')help('Uses local transcription to create an SRT file. SRT can be imported into a video editor.','Распознаёт речь на устройстве и создаёт SRT. Файл можно добавить в видеоредактор.');
+ else if(tool==='video-compress')help('Local H.264 MP4 conversion. Smaller output is not guaranteed; large videos may exceed device memory. Original unchanged.','Локальная конвертация в H.264 MP4. Файл не всегда меньше; большие видео могут не поместиться в памяти. Оригинал не изменяется.');
+  else if(tool==='captions')help('Uses local transcription to create an SRT file. SRT can be imported into a video editor.','Распознаёт речь на устройстве и создаёт SRT. Файл можно добавить в видеоредактор.');
  else help('Processing stays in this browser or on your device. Keep the page open.','Обработка выполняется здесь, на устройстве. Не закрывайте страницу.');
  if(tool==='photo-resize')addResizeOption();
  if(tool==='photo-redact')setupRedaction();
@@ -87,11 +149,14 @@ function files(){
 function safeName(s){return (s||'result').replace(/[^a-zA-Z0-9._-]/g,'_').replace(/^\.+/,'').slice(0,100)||'result';}
 function base(f){return safeName(f.name.replace(/\.[^.]+$/,''));}
 async function result(file){
+ // Cancel may happen while an upstream PDF/ZIP/media serializer is still awaited.
+ // No stale result or download is published after an explicit Cancel.
+ if(abort)return;
  const row=document.createElement('div');row.className='utility-result';
  const p=document.createElement('p');p.textContent=file.name+' · '+(file.size/1048576).toFixed(2)+' MB';
  const b=document.createElement('button');b.type='button';b.textContent=label('Download','Скачать');b.onclick=()=>saveLocal(file);
  row.append(p);
- if(file.type.startsWith('image/')){const img=new Image();const url=URL.createObjectURL(file);img.src=url;img.alt=file.name;img.onload=()=>setTimeout(()=>URL.revokeObjectURL(url),60000);row.append(img);}
+ if(file.type.startsWith('image/')){const img=new Image();const url=URL.createObjectURL(file);redactPreviewUrls.add(url);/* All local previews must be revoked on BFCache pagehide. */img.src=url;img.alt=file.name;img.onload=()=>setTimeout(()=>{URL.revokeObjectURL(url);redactPreviewUrls.delete(url);},60000);row.append(img);}
  row.append(b);$('utilityResults').append(row);
  return file;
 }
@@ -123,21 +188,26 @@ function addResizeOption(){
 }
 async function run(){
  if(active)return;
+ if(tool==='photo-redact'&&(redactLoading||!redactImage||!isCurrentRedactSource($('utilityFiles').files[0]))){
+  status(label('Finish loading the current photo before redacting.','Дождитесь загрузки текущего фото перед скрытием данных.'));return;
+ }
  if(tool==='captions'){location.href='audio-studio.html?tool=stt';return;}
  active=true;abort=false;$('utilityRun').disabled=true;$('utilityCancel').disabled=false;$('utilityResults').replaceChildren();
+ if(tool==='photo-redact')$('utilityFiles').disabled=true;
  status(label('Processing locally…','Обработка на устройстве…'));
  try{await perform();if(!abort)status(label('Ready — download the result.','Готово — скачайте результат.'));}
  catch(e){if(!abort)status(label('Could not complete: ','Не удалось выполнить: ')+String(e?.message||e));}
- finally{try{engine?.terminate();}catch(_){}engine=null;active=false;$('utilityRun').disabled=false;$('utilityCancel').disabled=true;}
+ finally{try{engine?.terminate();}catch(_){}engine=null;active=false;$('utilityRun').disabled=tool==='photo-redact'&&(!redactImage||redactLoading);$('utilityCancel').disabled=true;if(tool==='photo-redact')$('utilityFiles').disabled=false;}
 }
 async function perform(){
  switch(tool){
   case 'photo-convert':return convertPhoto();
   case 'photo-resize':return resizePhoto();
+  case 'photo-compress':return compressPhoto();
   case 'photo-redact':return exportRedaction();
   case 'qr':return makeQR();
   case 'zip':return manageZip();
-  case 'video-trim':case 'video-mute':case 'audio-trim':return processMedia();
+  case 'video-trim':case 'video-mute':case 'video-compress':case 'audio-trim':return processMedia();
   case 'scan-pdf':case 'pdf-merge':case 'pdf-split':case 'pdf-sign':case 'pdf-compress':return processPDF();
   case 'photo-ocr':return runOCR();
   default:throw Error('Unsupported operation');
@@ -146,22 +216,55 @@ async function perform(){
 
 async function convertPhoto(){
  const f=files()[0],c=await openImage(f),type=$('utilityFormat').value;
- const b=await blobFrom(c,type,.92),ext=type==='image/png'?'png':type==='image/webp'?'webp':'jpg';
- await result(new File([b],base(f)+'-converted.'+ext,{type}));
- c.width=c.height=1;
+ try{
+  const b=await blobFrom(c,type,.92),ext=type==='image/png'?'png':type==='image/webp'?'webp':'jpg';
+  await result(new File([b],base(f)+'-converted.'+ext,{type}));
+ }finally{
+  // The selected image may contain private pixels; free even when encoding fails.
+  c.width=c.height=1;
+ }
+}
+async function compressPhoto(){
+ const f=files()[0];
+ if(!['image/jpeg','image/png','image/webp'].includes(f.type))throw Error(label('Choose JPG, PNG or WebP.','Выберите JPG, PNG или WebP.'));
+ const quality=Number($('compressQuality').value)/100;
+ if(!Number.isFinite(quality)||quality<.2||quality>.95)throw Error('Invalid quality');
+ const canvas=await openImage(f);
+ let opaque=null;
+ try{
+  // JPEG has no alpha; paint onto white to avoid accidental black transparent regions.
+  opaque=document.createElement('canvas');opaque.width=canvas.width;opaque.height=canvas.height;
+  const ctx=opaque.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,opaque.width,opaque.height);ctx.drawImage(canvas,0,0);
+  const blob=await blobFrom(opaque,'image/jpeg',quality);
+  const labelSize=n=>(n/1048576).toFixed(2)+' MB';
+  await result(new File([blob],base(f)+'-compressed.jpg',{type:'image/jpeg'}));
+  const report=document.createElement('p');
+  report.textContent=label('Original: ','Исходный размер: ')+labelSize(f.size)+label(' · Result: ',' · Результат: ')+labelSize(blob.size)+
+   (blob.size>=f.size?label(' · Result is not smaller.',' · Файл не стал меньше.'):'');
+  $('utilityResults').lastElementChild?.append(report);
+ }finally{
+  if(opaque)opaque.width=opaque.height=1;
+  canvas.width=canvas.height=1;
+ }
 }
 async function resizePhoto(){
  const f=files()[0],im=await openImage(f);
- const width=Math.round(settingsNum('utilityWidth')),height=Math.round(settingsNum('utilityHeight'));
- if(width<1||height<1||width*height>40000000)throw Error(label('Dimensions must be within 40 megapixels.','Максимальный размер 40 мегапикселей.'));
- const c=document.createElement('canvas');c.width=width;c.height=height;const x=c.getContext('2d');
- const crop=$('resizeMode').value==='cover',scale=crop?Math.max(width/im.width,height/im.height):Math.min(width/im.width,height/im.height);
- const dw=im.width*scale,dh=im.height*scale;
- x.fillStyle='#fff';x.fillRect(0,0,width,height);x.drawImage(im,(width-dw)/2,(height-dh)/2,dw,dh);
- const type=$('utilityFormat').value,blob=await blobFrom(c,type,.92);
- const ext=type==='image/png'?'png':type==='image/webp'?'webp':'jpg';
- await result(new File([blob],base(f)+'-'+width+'x'+height+'.'+ext,{type}));
- im.width=im.height=c.width=c.height=1;
+ let c=null;
+ try{
+  const width=Math.round(settingsNum('utilityWidth')),height=Math.round(settingsNum('utilityHeight'));
+  if(width<1||height<1||width*height>40000000)throw Error(label('Dimensions must be within 40 megapixels.','Максимальный размер 40 мегапикселей.'));
+  c=document.createElement('canvas');c.width=width;c.height=height;const x=c.getContext('2d');
+  const crop=$('resizeMode').value==='cover',scale=crop?Math.max(width/im.width,height/im.height):Math.min(width/im.width,height/im.height);
+  const dw=im.width*scale,dh=im.height*scale;
+  x.fillStyle='#fff';x.fillRect(0,0,width,height);x.drawImage(im,(width-dw)/2,(height-dh)/2,dw,dh);
+  const type=$('utilityFormat').value,blob=await blobFrom(c,type,.92);
+  const ext=type==='image/png'?'png':type==='image/webp'?'webp':'jpg';
+  await result(new File([blob],base(f)+'-'+width+'x'+height+'.'+ext,{type}));
+ }finally{
+  // Both source and output canvases can contain user photos: purge on all exits.
+  im.width=im.height=1;
+  if(c)c.width=c.height=1;
+ }
 }
 async function makeQR(){
  const text=$('utilityQr').value.trim();if(!text)throw Error(label('Enter text or a URL first.','Введите ссылку или текст.'));
@@ -215,13 +318,38 @@ function setupRedaction(){
  $('redactReset').onclick=()=>{redactRects=[];renderRedactions();};
 }
 async function loadRedaction(){
- const c=$('redactCanvas'),f=$('utilityFiles').files[0];
- redactRects=[];redactBase=null;if(!f)return;
- try{redactImage=await openImage(f);const scale=Math.min(1,920/Math.max(redactImage.width,redactImage.height));c.width=Math.max(1,Math.round(redactImage.width*scale));c.height=Math.max(1,Math.round(redactImage.height*scale));redactBase=c.getContext('2d');renderRedactions();}catch(e){status(String(e.message||e));}
+ const c=$('redactCanvas'),f=$('utilityFiles').files[0],epoch=++redactSelectionEpoch;
+ // Discard the previous private preview before loading another file.
+ redactLoading=!!f;redactRects=[];redactDragging=null;redactBase=null;redactSource=null;
+ if(redactImage){redactImage.width=redactImage.height=1;redactImage=null;}
+ c.getContext('2d').clearRect(0,0,c.width,c.height);
+ clearRedactPreviewUrls();
+ $('utilityResults').replaceChildren();
+ $('utilityRun').disabled=true;
+ if(!f){redactLoading=false;return;}
+ try{
+  const decoded=await openImage(f);
+  if(epoch!==redactSelectionEpoch){decoded.width=decoded.height=1;return;}
+  redactImage=decoded;redactSource=f;
+  const scale=Math.min(1,920/Math.max(decoded.width,decoded.height));
+  c.width=Math.max(1,Math.round(decoded.width*scale));
+  c.height=Math.max(1,Math.round(decoded.height*scale));
+  redactBase=c.getContext('2d');renderRedactions();
+ }catch(e){if(epoch===redactSelectionEpoch)status(String(e.message||e));}
+ finally{
+  if(epoch===redactSelectionEpoch){
+   redactLoading=false;$('utilityRun').disabled=!redactImage;
+  }
+ }
 }
-function drawCovers(context,r,scale=1){
- const x=Math.min(r.start.x,r.end.x)*scale,y=Math.min(r.start.y,r.end.y)*scale,w=Math.abs(r.start.x-r.end.x)*scale,h=Math.abs(r.start.y-r.end.y)*scale;
- context.fillStyle='#000';context.fillRect(x,y,w,h);
+function drawCovers(context,r,scaleX=1,scaleY=scaleX){
+ // Opaque redaction must cover outward-rounded export pixels even when the
+ // preview width and height use slightly different integer scaling.
+ const left=Math.floor(Math.min(r.start.x,r.end.x)*scaleX);
+ const top=Math.floor(Math.min(r.start.y,r.end.y)*scaleY);
+ const right=Math.ceil(Math.max(r.start.x,r.end.x)*scaleX);
+ const bottom=Math.ceil(Math.max(r.start.y,r.end.y)*scaleY);
+ context.fillStyle='#000';context.fillRect(left,top,right-left,bottom-top);
 }
 function renderRedactions(){
  if(!redactBase||!redactImage)return;const c=$('redactCanvas');
@@ -230,36 +358,61 @@ function renderRedactions(){
  if(redactDragging)drawCovers(redactBase,redactDragging);
 }
 async function exportRedaction(){
- const f=files()[0];if(!redactImage||!redactRects.length)throw Error(label('Select an image and cover at least one area.','Выберите фото и закройте хотя бы одну область.'));
+ const f=files()[0];if(redactLoading||!isCurrentRedactSource(f)||!redactImage||!redactRects.length)throw Error(label('Select the current image and cover at least one area.','Выберите текущее фото и закройте хотя бы одну область.'));
  const full=document.createElement('canvas');full.width=redactImage.width;full.height=redactImage.height;
- const x=full.getContext('2d');x.drawImage(redactImage,0,0);
- const scale=full.width/$('redactCanvas').width;
- for(const r of redactRects)drawCovers(x,r,scale);
- // Opaque blocks replace pixels; exporting does not retain image layers.
- const blob=await blobFrom(full,'image/png');
- await result(new File([blob],base(f)+'-redacted.png',{type:'image/png'}));
- full.width=full.height=1;
+ try{
+  const x=full.getContext('2d');x.drawImage(redactImage,0,0);
+  const scaleX=full.width/$('redactCanvas').width,scaleY=full.height/$('redactCanvas').height;
+  for(const r of redactRects)drawCovers(x,r,scaleX,scaleY);
+  // Opaque blocks replace pixels; exporting does not retain image layers.
+  const blob=await blobFrom(full,'image/png');
+  if(abort)return; // Cancel during encoding must not publish a download.
+  await result(new File([blob],base(f)+'-redacted.png',{type:'image/png'}));
+ }finally{full.width=full.height=1;}
 }
 
 async function processPDF(){
  const lib=await pdf(),{PDFDocument,StandardFonts,rgb}=lib,fs=files();
  if(tool==='scan-pdf'){
   const doc=await PDFDocument.create();
-  for(const f of fs){if(abort)throw Error('Canceled');const canvas=await openImage(f);
-   const max=2400,scale=Math.min(1,max/Math.max(canvas.width,canvas.height));
-   const imgCanvas=document.createElement('canvas');imgCanvas.width=Math.max(1,Math.floor(canvas.width*scale));imgCanvas.height=Math.max(1,Math.floor(canvas.height*scale));
-   const cx=imgCanvas.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,imgCanvas.width,imgCanvas.height);cx.drawImage(canvas,0,0,imgCanvas.width,imgCanvas.height);
-   const blob=await blobFrom(imgCanvas,'image/jpeg',.84),img=await doc.embedJpg(await blob.arrayBuffer());
-   const width=595,height=Math.max(120,Math.min(842,width*img.height/img.width));const page=doc.addPage([width,height]);
-   const ratio=Math.min(width/img.width,height/img.height);page.drawImage(img,{x:(width-img.width*ratio)/2,y:(height-img.height*ratio)/2,width:img.width*ratio,height:img.height*ratio});
-   canvas.width=canvas.height=imgCanvas.width=imgCanvas.height=1;
+  for(const f of fs){
+   if(abort)throw Error('Canceled');
+   const canvas=await openImage(f);
+   let imgCanvas=null;
+   try{
+    if(abort)throw Error('Canceled');
+    const max=2400,scale=Math.min(1,max/Math.max(canvas.width,canvas.height));
+    imgCanvas=document.createElement('canvas');
+    imgCanvas.width=Math.max(1,Math.floor(canvas.width*scale));
+    imgCanvas.height=Math.max(1,Math.floor(canvas.height*scale));
+    const cx=imgCanvas.getContext('2d');cx.fillStyle='#fff';
+    cx.fillRect(0,0,imgCanvas.width,imgCanvas.height);
+    cx.drawImage(canvas,0,0,imgCanvas.width,imgCanvas.height);
+    const blob=await blobFrom(imgCanvas,'image/jpeg',.84);
+    if(abort)throw Error('Canceled');
+    const img=await doc.embedJpg(await blob.arrayBuffer());
+    if(abort)throw Error('Canceled');
+    const width=595,height=Math.max(120,Math.min(842,width*img.height/img.width));
+    const page=doc.addPage([width,height]);
+    const ratio=Math.min(width/img.width,height/img.height);
+    page.drawImage(img,{x:(width-img.width*ratio)/2,y:(height-img.height*ratio)/2,width:img.width*ratio,height:img.height*ratio});
+   }finally{
+    canvas.width=canvas.height=1;
+    if(imgCanvas)imgCanvas.width=imgCanvas.height=1;
+   }
   }
-  return result(new File([await doc.save({useObjectStreams:true})],'scanned-documents.pdf',{type:'application/pdf'}));
+  if(abort)throw Error('Canceled');
+  const bytes=await doc.save({useObjectStreams:true});
+  if(abort)return; // Do not publish a PDF after Cancel during serialization.
+  return result(new File([bytes],'scanned-documents.pdf',{type:'application/pdf'}));
  }
  if(tool==='pdf-merge'){
   const doc=await PDFDocument.create();
   for(const f of fs){if(abort)throw Error('Canceled');const from=await PDFDocument.load(await f.arrayBuffer());const pages=await doc.copyPages(from,from.getPageIndices());pages.forEach(p=>doc.addPage(p));}
-  return result(new File([await doc.save({useObjectStreams:true})],'merged.pdf',{type:'application/pdf'}));
+  const bytes=await doc.save({useObjectStreams:true});
+  // PDF serialization can finish after Cancel; never publish the old result.
+  if(abort)return;
+  return result(new File([bytes],'merged.pdf',{type:'application/pdf'}));
  }
  const src=await PDFDocument.load(await fs[0].arrayBuffer());
  if(tool==='pdf-compress'){
@@ -301,14 +454,18 @@ async function processPDF(){
 }
 async function processMedia(){
  const f=files()[0],video=tool!=='audio-trim';
+ if(tool==='video-compress'&&!videoCompressionInputSupported(f))throw Error(label('Choose a video file (MP4, MOV, WebM and other video formats).','Выберите видеофайл (MP4, MOV, WebM или другой видеоформат).'));
+ if(tool==='video-compress'&&f.size===0)throw Error(label('Choose a non-empty video file.','Выберите видеофайл с данными.'));
  let start=0,end=0;
- if(tool!=='video-mute'){start=settingsNum('utilityStart');end=settingsNum('utilityEnd');if(end<=start||end-start>3600)throw Error(label('End must be after start; maximum 60 minutes.','Конец должен быть позже начала. Максимум 60 минут.'));}
+ if(tool!=='video-mute'&&tool!=='video-compress'){start=settingsNum('utilityStart');end=settingsNum('utilityEnd');if(end<=start||end-start>3600)throw Error(label('End must be after start; maximum 60 minutes.','Конец должен быть позже начала. Максимум 60 минут.'));}
  engine=await createEngine();if(abort)return;
  await engine.writeFile('input',new Uint8Array(await f.arrayBuffer()));
  if(abort)return;
  let out,args;
  if(tool==='video-mute'){
   out='silent.mp4';args=['-i','input','-map','0:v:0','-an','-c:v','libx264','-preset','ultrafast','-crf','25','-pix_fmt','yuv420p','-movflags','+faststart',out];
+ }else if(tool==='video-compress'){
+  out='compressed.mp4';args=videoCompressionArgs($('videoCompressQuality').value,out);
  }else if(tool==='video-trim'){
   out='trimmed.mp4';args=['-ss',String(start),'-i','input','-t',String(end-start),'-map','0:v:0','-map','0:a:0?','-c:v','libx264','-preset','ultrafast','-crf','25','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-movflags','+faststart',out];
  }else{
@@ -316,11 +473,25 @@ async function processMedia(){
  }
  const code=await engine.exec(args);if(abort)return;if(code!==0)throw Error(label('The file codec is not supported.','Кодек файла не поддерживается.'));
  const bytes=await engine.readFile(out),mime=video?'video/mp4':'audio/mp4';
- return result(new File([bytes],base(f)+'-'+out,{type:mime}));
+ const converted=new File([bytes],base(f)+'-'+out,{type:mime});
+ if(tool==='video-compress'&&converted.size===0)throw Error(label('The video codec produced no output. Try another file or quality.','Видеокодек не создал файл. Попробуйте другое видео или качество.'));
+ // Validate a real, non-empty conversion before adding any Download action.
+ const compressionStats=tool==='video-compress'?videoCompressionSummary(f.size,converted.size):null;
+ await result(converted);
+ if(tool==='video-compress'){
+  const stats=compressionStats;
+  const note=document.createElement('p');note.className='utility-size-note';
+  const before=(f.size/1048576).toFixed(2),after=(converted.size/1048576).toFixed(2);
+  note.textContent=label('Original','Оригинал')+' '+before+' MB → '+after+' MB · '+
+   (stats.smaller?label('Saved ','Экономия ')+stats.savedPercent+'%':label('Output is not smaller; keep your original if preferred.','Итоговый файл не меньше исходного; при желании оставьте оригинал.'));
+  $('utilityResults').lastElementChild?.append(note);
+ }
+ return converted;
 }
 async function runOCR(){
  const f=files()[0];
  const T=await loadScript('/vendor/ocr/tesseract.min.js','Tesseract');
+ if(abort)return; // Cancel while the library itself loads must prevent worker download.
  const lang=$('utilityLang').value;
  const worker=await T.createWorker(lang,1,{
   workerPath:'/vendor/ocr/worker.min.js',corePath:'/vendor/ocr-core/tesseract-core-simd.wasm.js',
@@ -328,8 +499,14 @@ async function runOCR(){
   logger:info=>{if(info.status)status(String(info.status)+' '+Math.round((info.progress||0)*100)+'%');}
  });
  try{
+  // An OCR model may finish loading after Cancel. Do not recognize afterward.
+  if(abort)return;
   const resultData=await worker.recognize(f);
   if(abort)return;
   await textResult(resultData.data.text||'',base(f)+'-text.txt');
  }finally{await worker.terminate();}
 }
+
+// Initialize after all module-level const configuration and handlers exist.
+if(!mode)location.replace('free-tools.html');
+else init();

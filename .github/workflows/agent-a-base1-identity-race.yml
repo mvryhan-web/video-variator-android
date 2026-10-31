@@ -1,0 +1,55 @@
+name: Agent A BASE1 identity and wallet account-race privacy
+
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/deepsyq.js'
+      - 'tests/agent-a-base1-identity-race.spec.mjs'
+      - 'tests/agent-a-pricing-real-navigation-privacy.spec.mjs'
+      - 'tests/agent-a-pricing-mobile-keyboard-journey.spec.mjs'
+      - '.github/workflows/agent-a-base1-identity-race.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-a-identity-private-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  identity-private-browser:
+    runs-on: ubuntu-24.04
+    # GitHub's Ubuntu 26.04 apt mirror stalled for 20 minutes before any test ran.
+    # Use the browser+OS-dependency image pinned to package-lock Playwright 1.63.0.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/deepsyq.js && node --check tests/agent-a-base1-identity-race.spec.mjs && node --check tests/agent-a-pricing-real-navigation-privacy.spec.mjs && node --check tests/agent-a-pricing-mobile-keyboard-journey.spec.mjs
+      - name: A9/A28/A29 privacy plus A30 keyboard and mobile journey in five browsers (no paid POST)
+        # Firefox refuses root with GitHub's /github/home owned by pwuser.
+        # Match the official Playwright container root user without skipping Firefox.
+        env:
+          HOME: /root
+        run: npx playwright test tests/agent-a-base1-identity-race.spec.mjs tests/agent-a-pricing-real-navigation-privacy.spec.mjs tests/agent-a-pricing-mobile-keyboard-journey.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: agent-a-identity-private-failure
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
