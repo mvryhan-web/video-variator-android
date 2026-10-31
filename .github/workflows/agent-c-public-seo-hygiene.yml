@@ -1,0 +1,57 @@
+name: Agent C Public SEO Canonical and Preview Noindex (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/sitemap.xml'
+      - 'app/src/main/assets/pricing.html'
+      - 'tests/agent-c-public-seo-hygiene-unit.mjs'
+      - 'tests/agent-c-public-seo-hygiene.spec.mjs'
+      - '.github/workflows/agent-c-public-seo-hygiene.yml'
+permissions:
+  contents: read
+jobs:
+  sitemap-preview-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+      OPENAI_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check tests/agent-c-public-seo-hygiene-unit.mjs
+      - name: Actual isolated preview HTTP noindex plus canonical/static and existing Pricing
+        run: node --test tests/agent-c-public-seo-hygiene-unit.mjs tests/pricing-canonical-unit.mjs tests/agent-a-seo-release-preflight.test.mjs
+  browser-routes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+      OPENAI_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Real Chromium/WebKit 320px and 1448px canonical, redirect and no paid POST
+        run: npx playwright test tests/agent-c-public-seo-hygiene.spec.mjs --project=chromium --project=webkit --workers=2
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-c-seo-browser-errors
+          path: test-results/
+          if-no-files-found: ignore
