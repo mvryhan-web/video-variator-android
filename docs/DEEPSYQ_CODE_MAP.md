@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `f059fb8a4c105844ca594925afb9f6045b0ee14a`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` | Indexed files: 54 | Named symbols: 144 | Checked relations: 50
+Source commit: `3e48bf01b5961c101e3c35f0e35b9145c63563d1`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` | Indexed files: 54 | Named symbols: 145 | Checked relations: 50
 
 ## Topic finder (matching filenames)
 
@@ -39,7 +39,7 @@ db.js (L1) · adminEmail (L6) · pool (L8)
 
 ### `server/deepsyq-preview.js`
 
-app (L12) · port (L13) · root (L14) · assets (L15) · disabled (L16) · ownerMedia (L41) · imageMedia (L42) · ownerInspiration (L47) · approvedItems (L49) · previewItems (L50) · creativeMedia (L60)
+app (L12) · port (L13) · root (L14) · assets (L15) · disabled (L16) · ownerMedia (L41) · imageMedia (L42) · ownerInspiration (L47) · ownerNext (L51) · approvedItems (L53) · previewItems (L54) · creativeMedia (L64)
 
 ### `server/email-auth.js`
 
