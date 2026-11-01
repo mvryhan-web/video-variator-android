@@ -41,8 +41,8 @@ function makeNav(shell){
   ['','Home',[['⌂','Home','deepsyq.html']]],
   ['Creation','', [['▧','Image','generate-studio.html?studio=image'],['▶','Video','index.html'],['✧','Agent','ai-agents.html'],['≋','Audio','audio-studio.html']]],
   ['Tools','', [['⊞','AI Apps','ai-apps.html'],['◩','Canvas','canvas.html'],['⌗','All Tools','free-tools.html']]],
-  ['Library','', [['▢','Assets','generate-studio.html?view=history'],['▤','My Creations','generate-studio.html?view=history'],['♡','Favorites',null]]],
-  ['Community','', [['♧','Inspiration','deepsyq.html#inspiration'],['◇','Challenges',null],['♧','Affiliate',null]]]];
+  ['Library','', [['▢','Assets','generate-studio.html?view=history'],['▤','My Creations','generate-studio.html?view=history']]],
+  ['Community','', [['♧','Inspiration','deepsyq.html#inspiration'],['♧','Affiliate',null]]]];
  sections.forEach(([heading,_unused,links])=>{
   const group=node('div','vu-nav-group');
   if(heading)group.append(node('p','vu-nav-heading',heading));
@@ -223,10 +223,64 @@ function build(){
  const preview=node('section','vu-panel vu-preview');
  preview.innerHTML='<div class="vu-panel-head"><h3>Example preview</h3></div>';
  const scene=node('div','vu-preview-scene');scene.append(image('preview'));scene.insertAdjacentHTML('beforeend','<span class="vu-preview-controls" aria-label="Illustrative preview controls">▶ &nbsp; Preview image <span class="vu-timeline"></span> ◖ ◱</span>');preview.append(scene);right.append(preview);
+ // This is a real local preview of the selected source, not a sample output.
+ // Keep the design example only when no video has been chosen.
+ const previewTitle=preview.querySelector('.vu-panel-head h3');
+ const sourceVideo=node('video','vu-source-video');
+ sourceVideo.controls=true;sourceVideo.playsInline=true;sourceVideo.preload='metadata';
+ sourceVideo.setAttribute('aria-label','Your selected video');
+ sourceVideo.hidden=true;
+ scene.append(sourceVideo);
+ const sourceCaption=node('p','vu-preview-file');
+ sourceCaption.hidden=true;preview.append(sourceCaption);
+ let sourceURL=null;
+ function releaseSourcePreview(){
+  sourceVideo.pause();sourceVideo.removeAttribute('src');sourceVideo.load();
+  if(sourceURL){URL.revokeObjectURL(sourceURL);sourceURL=null;}
+  sourceVideo.hidden=true;scene.classList.remove('vu-has-input');
+  sourceCaption.hidden=true;sourceCaption.textContent='';
+  previewTitle.textContent='Example preview';
+ }
+ function refreshSourcePreview(){
+  releaseSourcePreview();
+  const files=[...($('fileInput')?.files||[])];
+  // Preview the actual locally selected source; do not upload or generate it.
+  if(!files.length)return;
+  sourceURL=URL.createObjectURL(files[0]);
+  sourceVideo.src=sourceURL;sourceVideo.hidden=false;
+  scene.classList.add('vu-has-input');
+  previewTitle.textContent='Your video preview';
+  sourceCaption.textContent=files.length===1?files[0].name:files[0].name+' · first of '+files.length+' videos';
+  sourceCaption.hidden=false;
+ }
+ sourceVideo.addEventListener('error',()=>{
+  if(!sourceURL)return;
+  sourceCaption.textContent='Preview unavailable for this file format. You can still try processing it.';
+  sourceCaption.hidden=false;
+ });
+ $('fileInput')?.addEventListener('change',refreshSourcePreview);
+ window.addEventListener('pagehide',releaseSourcePreview);
+ window.addEventListener('pageshow',()=>{if(!sourceURL&&$('fileInput')?.files?.length)refreshSourcePreview();});
+ refreshSourcePreview();
  const queue=node('section','vu-panel vu-output');queue.innerHTML='<div class="vu-panel-head vu-output-head"><div><h3>Output queue</h3><p>Your generated variants will appear here.</p></div><button type="button" class="vu-queue-clear">Clear all</button></div>';
  const lines=node('div','vu-output-lines');queue.append(lines);
  for(let i=0;i<3;i++){const row=node('div','vu-output-row');row.innerHTML='<span class="vu-output-thumb"></span><b>Variant '+(i+1)+'</b><span class="vu-output-dash">–</span><span class="vu-progress-line"></span><span class="vu-output-dash">–</span><button type="button" disabled>⇩ &nbsp;Download</button>';row.querySelector('.vu-output-thumb').append(image(i%2?'queue2':'queue1'));lines.append(row);}
- const clear=queue.querySelector('.vu-queue-clear');clear.addEventListener('click',()=>{if(confirm('Clear your existing locally saved video history?'))$('clearHistoryBtn')?.click();});
+ const clear=queue.querySelector('.vu-queue-clear');
+ clear.textContent='Reset workspace';
+ clear.addEventListener('click',()=>{
+  // Clearing the current workspace must NEVER delete saved videos/history.
+  // An active encode can only be stopped through the existing Cancel control.
+  if(window.VideoVariatorCore?.state.running)return;
+  const input=$('fileInput');
+  if(input)input.value='';
+  window.VideoVariatorUI?.setFiles([]);
+  releaseSourcePreview();
+  window.__vuLastResults=[];
+  $('resultsCard')?.querySelector('.readyDownloads')?.remove();
+  if($('resultsCard'))$('resultsCard').hidden=true;
+  if($('errorCard'))$('errorCard').hidden=true;
+  if($('progressCard'))$('progressCard').hidden=true;
+ });
  [$('progressCard'),$('resultsCard'),$('errorCard')].forEach(el=>{if(el)queue.append(el)});
  right.append(queue);
  // Keep real history and download links in their original controls, not simulated results.
@@ -244,6 +298,7 @@ function build(){
  const origProgress=$('progressCard'),origResults=$('resultsCard');
  function refreshQueue(){
   const busy=!!(origProgress&&!origProgress.hidden),done=!!(origResults&&!origResults.hidden);
+  clear.disabled=busy;
   lines.hidden=done;queue.classList.toggle('has-outputs',done||busy);
  }
  if(origProgress)new MutationObserver(refreshQueue).observe(origProgress,{attributes:true,attributeFilter:['hidden']});

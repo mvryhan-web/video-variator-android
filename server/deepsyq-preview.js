@@ -13,6 +13,8 @@ const app=express();
 const port=Number(process.env.PORT||31990);
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const assets=path.join(root,'app','src','main','assets');
+const ffmpegUmd=path.join(root,'node_modules','@ffmpeg','ffmpeg','dist','umd');
+const ffmpegCore=path.join(root,'node_modules','@ffmpeg','core','dist','esm');
 const disabled={error:'PREVIEW_ONLY',message:'This is a design preview. Accounts, payments and paid AI generation are disabled.'};
 
 app.disable('x-powered-by');
@@ -23,6 +25,12 @@ app.use((_req,res,next)=>{
  next();
 });
 app.get('/robots.txt',(_req,res)=>res.type('text/plain').send('User-agent: *\nDisallow: /\n'));
+// The standalone Video Uniquifier must load its real browser-local FFmpeg
+// from the SAME origin in the isolated preview, as in server/server.js.
+// Only these three public package assets are served; /api stays disabled.
+app.get('/vendor/ffmpeg/ffmpeg.js',(_req,res)=>res.type('application/javascript').sendFile(path.join(ffmpegUmd,'ffmpeg.js')));
+app.get('/vendor/ffmpeg/ffmpeg-core.js',(_req,res)=>res.type('application/javascript').sendFile(path.join(ffmpegCore,'ffmpeg-core.js')));
+app.get('/vendor/ffmpeg/ffmpeg-core.wasm',(_req,res)=>res.type('application/wasm').sendFile(path.join(ffmpegCore,'ffmpeg-core.wasm')));
 app.get('/api/health',(_req,res)=>res.json({ok:true,service:'deepsyq-design-preview',paymentsEnabled:false,aiGenerationEnabled:false}));
 app.get('/api/config',(_req,res)=>res.json({
  googleClientId:'',appleClientId:'',emailAuth:false,billingConfigured:false,trialLimit:0,
