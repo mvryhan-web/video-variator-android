@@ -1,0 +1,53 @@
+name: Agent A37 BASE27 real local preview and reset
+
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/video-uniquifier-reference.js'
+      - 'app/src/main/assets/video-uniquifier-reference.css'
+      - 'tests/agent-a-base27-preview-reset.spec.mjs'
+      - '.github/workflows/agent-a-base27-preview-reset.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-a37-base27-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-preview-reset-and-export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    env:
+      HOME: /root
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Check actual application and browser test syntax
+        run: node --check app/src/main/assets/video-uniquifier-reference.js && node --check tests/agent-a-base27-preview-reset.spec.mjs
+      - name: Native offline media fixture + independent MP4 probe tools
+        run: command -v ffmpeg && command -v ffprobe || (apt-get update -qq && apt-get install -y -qq ffmpeg)
+      - name: Real source preview and safe clear on desktop and mobile native engines
+        run: npx playwright test tests/agent-a-base27-preview-reset.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2 --retries=0
+      - name: Repeat existing REAL local FFmpeg.wasm MP4 export, save and independent ffprobe
+        run: npx playwright test tests/agent-a-base27-real-export.spec.mjs --project=chromium --workers=1 --retries=0
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: agent-a37-native-preview-failure
+          path: test-results/
+          retention-days: 7
