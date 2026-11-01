@@ -65,3 +65,21 @@ test('BASE9 priority only accepts whole bounded value; owner UI fits narrow view
  const width=await page.evaluate(()=>document.documentElement.scrollWidth);
  expect(width).toBeLessThanOrEqual(321);
 });
+
+test('BASE9 owner GET 403 is not disguised as disabled model controls',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','owner-test-only'));
+ let writes=0;
+ page.on('request',r=>{if(['PATCH','POST','DELETE'].includes(r.method())&&r.url().includes('/api/studio/admin/'))writes++;});
+ await page.route('**/api/me',route=>route.fulfill({json:{user:{id:'synthetic-owner',isAdmin:true}}}));
+ await page.route('**/api/studio/admin/**',route=>{
+  const req=route.request(),url=new URL(req.url());
+  if(req.method()==='GET'&&url.pathname==='/api/studio/admin/models')
+   return route.fulfill({status:403,json:{error:'OWNER_ONLY'}});
+  return route.fulfill({status:503,json:{error:'OFFLINE_TEST_ONLY'}});
+ });
+ await page.goto('/deepsyq-admin.html');
+ await expect(page.locator('#modelStatus')).toHaveText('OWNER_ONLY');
+ await expect(page.locator('#modelStatus')).not.toContainText('feature flag is OFF');
+ await expect(page.locator('#providerGroups')).toBeEmpty();
+ expect(writes).toBe(0);
+});

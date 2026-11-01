@@ -138,7 +138,7 @@ function renderModels(items){$('models').replaceChildren();for(const m of items)
  const advisory=document.createElement('p');advisory.className='message';
  advisory.textContent='Markup and internal cost are reference settings only. They do not change customer AI-credit prices; only separately approved server pricing can do that.';
  card.append(head,form,advisory,save,msg);$('models').append(card);}}
-async function loadModels(){try{$('modelStatus').textContent='Loading…';const d=await api('/api/studio/admin/models');renderModels(d.items||[]);renderProviderGroups(d.items||[]);$('modelStatus').textContent=d.items?.length?'':'No model records.';}catch(e){$('models').replaceChildren();$('providerGroups').replaceChildren();$('providerGroupStatus').textContent='';$('modelStatus').textContent=e.message='MODEL_ADMIN_NOT_ENABLED'?'Model controls are prepared but the feature flag is OFF. No settings were changed.':e.message;}}
+async function loadModels(){try{$('modelStatus').textContent='Loading…';const d=await api('/api/studio/admin/models');renderModels(d.items||[]);renderProviderGroups(d.items||[]);$('modelStatus').textContent=d.items?.length?'':'No model records.';}catch(e){$('models').replaceChildren();$('providerGroups').replaceChildren();$('providerGroupStatus').textContent='';$('modelStatus').textContent=e.message==='MODEL_ADMIN_NOT_ENABLED'?'Model controls are prepared but the feature flag is OFF. No settings were changed.':e.message;}}
 async function loadMetrics(){
  const request=++metricsListRequest,token=localStorage.getItem('vv_token');
  const window=$('metricsWindow')?.value||'7d';
