@@ -84,3 +84,7 @@ main{grid-template-columns:minmax(0,1fr)}
  .provider-group-actions{display:grid;grid-template-columns:minmax(0,1fr)}
  .provider-group-actions>*{width:100%;min-width:0}
 }
+
+/* Genuine 320px failure: long unbroken backend status codes could stretch
+   owner dashboard sections to 411px. Wrap the text, not the whole page. */
+main>section p[role="status"],main>section .message{overflow-wrap:anywhere}
