@@ -11,7 +11,7 @@ export async function quarantineUncertainVideoSubmit({pool,jobId,failure}){
  SET status='processing',error=$2,error_message='AI_PROVIDER_SUBMISSION_UNCERTAIN',
      failed_at=NULL,metadata=COALESCE(metadata,'{}'::jsonb)||
        jsonb_build_object('providerSubmitUncertain',true,'failure',
-         jsonb_build_object('category',$3,'stage',$4,'sourceCode',$5,'retryable',false))
+         jsonb_build_object('category',$3::text,'stage',$4::text,'sourceCode',$5::text,'retryable',false))
  WHERE id=$1 AND kind='video' AND status IN ('queued','processing') AND operation IS NULL AND deleted=false
  RETURNING id`,[jobId,VIDEO_SUBMISSION_UNCERTAIN,
   String(failure?.category||'unknown').slice(0,64),
