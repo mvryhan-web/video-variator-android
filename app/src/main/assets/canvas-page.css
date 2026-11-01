@@ -33,7 +33,7 @@ body.canvas-detail-page .quick-reference .quick-reference-name{
 }
 body.canvas-detail-page .quick-reference-actions{display:flex;align-items:center;gap:5px}
 body.canvas-detail-page .quick-create .quick-reference-actions button{
-  min-width:38px;min-height:38px;padding:6px 8px;font-size:13px;
+  flex:0 0 auto;margin-left:0;min-width:38px;min-height:38px;padding:6px 8px;font-size:13px;
   color:#eef3ff;border:1px solid #697c8a;border-radius:7px;background:#24364a;
 }
 body.canvas-detail-page .quick-reference-actions button:disabled{opacity:.42;cursor:not-allowed}
