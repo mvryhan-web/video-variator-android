@@ -67,3 +67,28 @@ test('BASE32 uncertain paid Video History offers visible EN/FR/RU recovery witho
   await context.close();
  }
 });
+
+
+test('BASE8 user explicitly selects priced alternative; never submits, no consent bypass',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('vv_token','offline-fixture'));
+ const base={enabled:true,pricingConfigured:true,fallbackChoicesEnabled:true,imageBatchEnabled:false,
+  models:[],catalog:[
+   {id:'gemini-3.1-flash-image',kind:'image',label:'Nano Banana 2',adapter:true,enabled:true,provider:'Google',quality:'1K',ratios:['1:1'],references:0,capabilities:{resolutions:['1K'],outputFormats:['auto']}},
+   {id:'gpt-image-2.5-flare',kind:'image',label:'ChatGPT Image Flare',adapter:true,enabled:true,provider:'OpenAI',quality:'1K',ratios:['1:1'],references:0,capabilities:{resolutions:['1K'],outputFormats:['auto']}}
+  ]};
+ await page.route('**/api/studio/config',r=>r.fulfill({json:base}));
+ await page.route('**/api/studio/alternatives',r=>r.fulfill({json:{
+  model:'gemini-3.1-flash-image',reason:'AVAILABLE',alternatives:[{model:'gpt-image-2.5-flare',credits:7,currency:'usd'}]}}));
+ let jobPosts=0,alternativePosts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))jobPosts++;
+  if(r.method()==='POST'&&r.url().includes('/api/studio/alternatives'))alternativePosts++;});
+ await page.goto('/generate-studio.html?studio=image');
+ await page.locator('#modelButton').click();
+ await page.locator('#fallbackButton').click();
+ const choice=page.locator('.fallback-option');await expect(choice).toContainText('7 AI credits');
+ await choice.click();
+ await expect(page.locator('#modelButton')).toContainText('ChatGPT Image Flare');
+ await expect(page.locator('#consent')).not.toBeChecked();
+ await expect(page.locator('#status')).toContainText('Nothing was submitted');
+ expect(alternativePosts).toBe(1);expect(jobPosts).toBe(0);
+});

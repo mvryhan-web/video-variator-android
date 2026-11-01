@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {dispatchGeneration,studioConfig} from '../server/generation-studio.js';
+import {dispatchGeneration,studioConfig,installGenerationStudio} from '../server/generation-studio.js';
 import {validateGeneration,generateGoogle,pollGoogle,safeGoogleUrl} from '../server/generation-provider.js';
 const request={kind:'video',prompt:'Ocean at sunset',ratio:'16:9',consent:true,references:[]};
 test('no paid request without explicit setup and durable call quota',()=>{assert.equal(studioConfig({}).enabled,false);for(const n of ['0','21','NaN'])assert.equal(studioConfig({AI_STUDIO_ENABLED:'true',GEMINI_API_KEY:'test',DATABASE_URL:'test',ADMIN_EMAIL:'test',AI_STUDIO_MAX_CALLS:n}).enabled,false);const c=studioConfig({AI_STUDIO_ENABLED:'true',GEMINI_API_KEY:'secret',DATABASE_URL:'secret',ADMIN_EMAIL:'owner',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image'});assert.equal(c.models.find(m=>m.kind==='image').enabled,true);assert.equal(c.models.find(m=>m.kind==='video').enabled,false);assert.ok(!JSON.stringify(c).includes('secret'));});
@@ -304,4 +304,46 @@ test('single paid generation requires the exact server quote before DB, reserve 
   }
   assert.equal(dbCalls,0);assert.equal(reserves,0);assert.equal(calls,0);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});
+
+
+test('BASE8 signed-in read-only alternative selection respects approved equivalent price and never calls providers',async()=>{
+ const {default:express}=await import('express');
+ const baseEnv={AI_STUDIO_ENABLED:'true',DATABASE_URL:'offline-fixture',ADMIN_EMAIL:'owner@example.test',
+  AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',AI_SMART_ROUTING_ENABLED:'true',
+  AI_STUDIO_ALLOWED_MODELS:'gpt-image-2.5-flare',GEMINI_API_KEY:'offline-google-key',OPENAI_API_KEY:'offline-openai-key'};
+ const prices=(alternativeCredits=7)=>JSON.stringify([
+  {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:7,providerCostMicros:4000,currency:'usd'},
+  {model:'gpt-image-2.5-flare',provider:'OpenAI',kind:'image',credits:alternativeCredits,providerCostMicros:3000,currency:'usd'}]);
+ let providerCalls=0,dbCalls=0;
+ const start=async env=>{
+  const app=express();app.use(express.json());
+  const auth=(req,res,next)=>{if(req.headers.authorization!=='Bearer offline-owner')return res.sendStatus(401);
+   req.user={id:'owner',email:'owner@example.test',provider:'google'};next();};
+  installGenerationStudio(app,{env,pool:{query:async()=>{dbCalls++;throw Error('NO_DB_REQUIRED');}},auth,
+   provider:async()=>{providerCalls++;throw Error('NO_PROVIDER_REQUIRED');}});
+  const server=app.listen(0,'127.0.0.1');await new Promise(ok=>server.once('listening',ok));
+  return {url:'http://127.0.0.1:'+server.address().port,close:()=>new Promise(ok=>server.close(ok))};
+ };
+ const input={kind:'image',model:'gemini-3.1-flash-image',ratio:'1:1',resolution:'1K',outputFormat:'auto',referenceCount:0};
+ for(const [credits,expected] of [[7,1],[8,0]]){
+  const s=await start({...baseEnv,AI_MODEL_PRICING_JSON:prices(credits)});
+  try{
+   const denied=await fetch(s.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
+   assert.equal(denied.status,401);
+   const res=await fetch(s.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer offline-owner'},body:JSON.stringify(input)});
+   assert.equal(res.status,200);const data=await res.json();
+   assert.equal(data.model,input.model);assert.equal(data.alternatives.length,expected);
+   if(expected)assert.deepEqual(data.alternatives[0],{model:'gpt-image-2.5-flare',credits:7,currency:'usd'});
+   assert.ok(!JSON.stringify(data).includes('providerCostMicros'));
+   const bad=await fetch(s.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer offline-owner'},body:JSON.stringify({...input,resolution:'4K'})});
+   assert.equal(bad.status,400);
+  }finally{await s.close();}
+ }
+ const disabled=await start({...baseEnv,AI_SMART_ROUTING_ENABLED:'false',AI_MODEL_PRICING_JSON:prices()});
+ try{
+  const res=await fetch(disabled.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer offline-owner'},body:JSON.stringify(input)});
+  assert.equal(res.status,503);
+ }finally{await disabled.close();}
+ assert.equal(dbCalls,0);assert.equal(providerCalls,0);
 });
