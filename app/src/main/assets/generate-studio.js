@@ -5,6 +5,7 @@ import {studioCreditWalletState} from './studio-credit-wallet.js';
 import {progressView} from './studio-job-progress.js';
 const $=id=>document.getElementById(id),ru=navigator.language.startsWith('ru');
 const say=(en,r)=>ru?r:en;
+const say3=(en,fr,r)=>ru?r:navigator.language.toLowerCase().startsWith('fr')?fr:en;
 const strings={back:'← Назад',pilot:'Предпросмотр студии',workspace:'ВАША СТУДИЯ',video:'Видео',image:'Изображения',audio:'Аудио',dashboard:'Главная ↗',translation:'Перевод · позже',create:'Создать',history:'Мои результаты',label:'ТВОРЧЕСКАЯ СТУДИЯ',headline:'Ваша идея. Создайте её.',prompt:'Опишите, что хотите создать',addPhoto:'Фото',clear:'Убрать фото',generate:'Создать ✦',consent:'Я согласен, что запрос и прикреплённые фотографии будут переданы выбранной модели и её сервису для генерации. Стоимость покажется отдельно до запуска.',pilotNote:'Предпросмотр студии. Оплата не включена.',chooseModel:'Выберите модель',modelHint:'Выберите инструмент для своей задачи. У каждой модели указан статус подключения.',settings:'Настройки',format:'Формат',capabilityNote:'Настройки соответствуют выбранной модели. Неподдерживаемые параметры не отправляются.',trackType:'Тип аудио',song:'Песня с вокалом',instrumental:'Без слов',voiceoverMode:'Озвучка · подключение готовится',voiceover:'Открыть существующий инструмент озвучки →',language:'Язык',voice:'Голос',done:'Готово',download:'Скачать',share:'Поделиться',delete:'Удалить',saveNote:'Сохраните копию. Удаление результата не удаляет скачанные файлы.',historyHint:'Здесь доступны сохранённые результаты студии. Генерация не запускается автоматически.',checkResult:'Проверить последний результат',historyLoading:'Загружаем результаты…',historyNone:'Сохранённых результатов пока нет.',historyOpen:'Открыть',historyReady:'Готово',historyProcessing:'В работе',historyFailed:'Ошибка',filterAll:'Все',filterImages:'Изображения',filterVideos:'Видео',filterFailed:'Ошибки',filterProcessing:'В работе',pricingLink:'Цены и AI-кредиты →',privacyLink:'Как обрабатываются AI-материалы →'};
 if(ru){document.documentElement.lang='ru';document.querySelectorAll('[data-t]').forEach(e=>e.textContent=strings[e.dataset.t]||e.textContent);$('backgroundVideo').textContent='Продолжить в фоне →';document.querySelector('#videoBackgroundControls .hint').textContent='Остановить ожидание в этой вкладке без отмены серверной видеозадачи. Вернитесь в Историю позже, чтобы проверить результат. Закрытие вкладки само по себе не отменяет задачу.';for(const option of $('voiceLanguage').options){option.textContent=({'American English':'Английский (США)',German:'Немецкий',Russian:'Русский',French:'Французский',Spanish:'Испанский'})[option.textContent]||option.textContent;}}
 const requested=new URLSearchParams(location.search).get('studio');
@@ -717,6 +718,8 @@ async function previewHistoryMedia(item,holder,button){
   holder.replaceChildren(message);
  }
 }
+const UNCERTAIN_VIDEO_ERRORS=new Set(['STATUS_UNKNOWN_NO_AUTOMATIC_RETRY','AI_PROVIDER_SUBMISSION_UNCERTAIN','AI_PROVIDER_TIMEOUT_UNCERTAIN','PROVIDER_POLL_TIMEOUT_UNCERTAIN']);
+function isUncertainVideo(item){return item?.kind==='video'&&['queued','processing'].includes(item.status)&&UNCERTAIN_VIDEO_ERRORS.has(item.error);}
 function historyState(status){return status==='ready'?say('Ready','Готово'):status==='queued'?say('Queued','В очереди'):status==='processing'?say('Processing','В работе'):status==='finalizing'?say('Finalizing','Завершаем'):status==='failed'?say('Failed','Ошибка'):status==='unknown'?say('Status uncertain','Статус неизвестен'):say('Status unavailable','Статус недоступен');}
 function historyDate(value){try{return new Intl.DateTimeFormat(navigator.language||'en',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));}catch(_){return String(value||'');}}
 function historyCredits(item){
@@ -796,7 +799,7 @@ async function checkHistoryVideo(item){
   if(d.id!==item.id||(d.kind&&d.kind!=='video'))throw Error('STUDIO_STORAGE_UNAVAILABLE');
   if(d.status==='ready')$('status').textContent=say('Video is ready. Select Open in History to view or download it.','Видео готово. Нажмите «Открыть» в Истории, чтобы посмотреть или скачать его.');
   else if(d.status==='failed')$('status').textContent=say('Video generation failed. No automatic retry was started. Credits may still be held pending wallet review.','Генерация видео завершилась ошибкой. Автоматического повтора не было. Кредиты могут оставаться в резерве до проверки кошелька.');
-  else if(d.status==='unknown')$('status').textContent=d.error==='PROVIDER_CONSENT_REQUIRED'?errorText({message:d.error}):say('Video status is uncertain. This check did not submit a new generation. Credits may still be held; review the original job and wallet before another paid request.','Статус видео неизвестен. Эта проверка не отправляла новую генерацию. Кредиты могут оставаться в резерве; проверьте исходную задачу и кошелёк перед новым платным запросом.');
+  else if(d.status==='unknown')$('status').textContent=d.error==='PROVIDER_CONSENT_REQUIRED'?errorText({message:d.error}):say3('Video status is uncertain. This check did not submit a new generation. Credits may still be held; review the original job and wallet before another paid request.','Le statut de cette vidéo est incertain. Cette vérification n’a lancé aucune nouvelle génération. Des crédits peuvent rester réservés : vérifiez la tâche initiale et votre solde avant une nouvelle demande payante.','Статус видео неизвестен. Эта проверка не отправляла новую генерацию. Кредиты могут оставаться в резерве; проверьте исходную задачу и кошелёк перед новым платным запросом.');
   else $('status').textContent=say('Video is still '+(d.status==='queued'?'queued':d.status==='finalizing'?'finalizing':'processing')+'. The server task continues without this page open.','Видео ещё '+(d.status==='queued'?'в очереди':d.status==='finalizing'?'завершается':'обрабатывается')+'. Серверная задача продолжается без открытой страницы.');
   await loadHistory();
  }catch(e){$('status').textContent=errorText(e);}
@@ -823,14 +826,24 @@ async function loadHistory(){
    const head=document.createElement('div');head.className='history-card-head';
    const modelInfo=catalog.find(m=>m.id===item.model),modelLabel=ru&&modelInfo?.labelRu?modelInfo.labelRu:modelInfo?.label||item.model;
    const title=document.createElement('strong');title.textContent=(item.kind==='music'?say('Audio','Аудио'):item.kind==='image'?say('Image','Изображение'):say('Video','Видео'))+(modelLabel?' · '+modelLabel:'');
-   const state=document.createElement('span');state.className='history-status';state.dataset.status=item.status;state.textContent=historyState(item.status);head.append(title,state);
+   const uncertainVideo=isUncertainVideo(item);
+   const state=document.createElement('span');state.className='history-status';state.dataset.status=uncertainVideo?'unknown':item.status;state.textContent=uncertainVideo?say3('Status uncertain','Statut incertain','Статус неизвестен'):historyState(item.status);head.append(title,state);
    const meta=document.createElement('small');meta.textContent=[historyDate(item.createdAt),historyCredits(item)].filter(Boolean).join(' · ');
    const prompt=document.createElement('p');prompt.className='history-prompt';prompt.textContent=item.prompt||'';
+   const recovery=uncertainVideo?document.createElement('p'):null;
+   if(recovery){
+    recovery.className='history-recovery';
+    recovery.textContent=say3(
+     'This video request may have reached the AI provider. The result and charge are not confirmed; credits may still be held. Use Check status for this saved job before starting another request.',
+     'Cette demande vidéo a peut-être été reçue par le service IA. Le résultat et le débit ne sont pas confirmés ; des crédits peuvent rester réservés. Utilisez « Vérifier le statut » sur cette tâche avant une nouvelle demande.',
+     'Эта видеозадача могла дойти до AI-провайдера. Результат и списание не подтверждены; кредиты могут оставаться в резерве. Проверьте статус этой задачи перед новым запросом.'
+    );
+   }
    const actions=document.createElement('div');actions.className='history-actions';
    const open=document.createElement('button');open.type='button';open.textContent=say('Open','Открыть');open.onclick=()=>openHistoryJob(item.id);open.disabled=item.status==='failed';
    const download=document.createElement('button');download.type='button';download.textContent=say('Download','Скачать');download.disabled=item.status!=='ready';download.onclick=()=>void downloadHistoryItem(item);
    const reuse=document.createElement('button');reuse.type='button';reuse.textContent=say('Reuse prompt','Повторить запрос');reuse.disabled=!item.prompt;reuse.onclick=()=>prepareHistoryItem(item);
-   const regenerate=document.createElement('button');regenerate.type='button';regenerate.textContent=say('Regenerate','Создать снова');regenerate.disabled=!item.prompt;regenerate.title=say('Prepares the previous prompt and settings. It does not start a paid generation.','Подготавливает прошлый запрос и настройки. Платная генерация сама не запускается.');regenerate.onclick=()=>prepareHistoryItem(item,{settings:true});
+   const regenerate=document.createElement('button');regenerate.type='button';regenerate.textContent=say('Regenerate','Создать снова');regenerate.disabled=uncertainVideo||!item.prompt;regenerate.title=say('Prepares the previous prompt and settings. It does not start a paid generation.','Подготавливает прошлый запрос и настройки. Платная генерация сама не запускается.');regenerate.onclick=()=>prepareHistoryItem(item,{settings:true});
    const remove=document.createElement('button');remove.type='button';remove.textContent=say('Delete','Удалить');remove.disabled=['queued','processing','finalizing'].includes(item.status);remove.onclick=()=>void deleteHistoryItem(item);
    if(item.kind==='image'&&item.status==='ready'){
     const edit=document.createElement('button');edit.type='button';
@@ -841,7 +854,7 @@ async function loadHistory(){
    }
    if(item.kind==='video'&&['queued','processing','finalizing'].includes(item.status)){
     const check=document.createElement('button');check.type='button';
-    check.textContent=say('Check status','Проверить статус');
+    check.textContent=say3('Check status','Vérifier le statut','Проверить статус');
     check.title=say('Check this existing video task once. No new generation or charge.','Однократно проверить существующую видеозадачу без новой генерации и списания.');
     check.onclick=()=>void checkHistoryVideo(item);
     actions.append(check);
@@ -854,7 +867,7 @@ async function loadHistory(){
     previewButton.onclick=()=>void previewHistoryMedia(item,inlinePreview,previewButton);
     actions.append(previewButton);
    }
-   actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,actions,inlinePreview);list.append(card);observeHistoryThumbnail(item,preview);
+   actions.append(open,download,reuse,regenerate,remove);card.append(preview,head,meta,prompt,...(recovery?[recovery]:[]),actions,inlinePreview);list.append(card);observeHistoryThumbnail(item,preview);
   }
  }catch(e){if(!isCurrent())return;list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
 }
