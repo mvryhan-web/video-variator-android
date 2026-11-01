@@ -13,6 +13,8 @@ const app=express();
 const port=Number(process.env.PORT||31990);
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const assets=path.join(root,'app','src','main','assets');
+const ffmpegUmd=path.join(root,'node_modules','@ffmpeg','ffmpeg','dist','umd');
+const ffmpegCore=path.join(root,'node_modules','@ffmpeg','core','dist','esm');
 const disabled={error:'PREVIEW_ONLY',message:'This is a design preview. Accounts, payments and paid AI generation are disabled.'};
 
 app.disable('x-powered-by');
@@ -23,6 +25,12 @@ app.use((_req,res,next)=>{
  next();
 });
 app.get('/robots.txt',(_req,res)=>res.type('text/plain').send('User-agent: *\nDisallow: /\n'));
+// The standalone Video Uniquifier must load its real browser-local FFmpeg
+// from the SAME origin in the isolated preview, as in server/server.js.
+// Only these three public package assets are served; /api stays disabled.
+app.get('/vendor/ffmpeg/ffmpeg.js',(_req,res)=>res.type('application/javascript').sendFile(path.join(ffmpegUmd,'ffmpeg.js')));
+app.get('/vendor/ffmpeg/ffmpeg-core.js',(_req,res)=>res.type('application/javascript').sendFile(path.join(ffmpegCore,'ffmpeg-core.js')));
+app.get('/vendor/ffmpeg/ffmpeg-core.wasm',(_req,res)=>res.type('application/wasm').sendFile(path.join(ffmpegCore,'ffmpeg-core.wasm')));
 app.get('/api/health',(_req,res)=>res.json({ok:true,service:'deepsyq-design-preview',paymentsEnabled:false,aiGenerationEnabled:false}));
 app.get('/api/config',(_req,res)=>res.json({
  googleClientId:'',appleClientId:'',emailAuth:false,billingConfigured:false,trialLimit:0,
@@ -42,14 +50,24 @@ const ownerMedia=JSON.parse(await readFile(path.join(assets,'media/home/owner-20
 const imageMedia=JSON.parse(await readFile(path.join(assets,'media/inspiration/openai-20261021/manifest.json'),'utf8'));
 const approvedPreview=ownerMedia.previewPublicationApproved===true&&ownerMedia.commercialRightsConfirmed===true;
 const approvedImagePreview=imageMedia.previewPublicationApproved===true&&imageMedia.commercialRightsConfirmed===true;
-const approvedItems=[...(approvedPreview?ownerMedia.items:[]),...(approvedImagePreview?imageMedia.items:[])];
+// Owner-provided image-only media, explicitly requested for DEV preview. Keep
+// these separate from rights-cleared production/commercial collections.
+const ownerInspiration=JSON.parse(await readFile(path.join(assets,'media/inspiration/owner-20261031/manifest.json'),'utf8'));
+const ownerPreviewReady=ownerInspiration.previewPublicationApproved===true&&ownerInspiration.ownerRequestedPublication===true&&ownerInspiration.publishedScope==='isolated_dev_preview_only'&&ownerInspiration.productionPublicationApproved===false;
+// The owner's additional visually distinct examples live only in this inert
+// read-only DEV preview. They do not enter the rights-gated production DB.
+const ownerNext=JSON.parse(await readFile(path.join(assets,'media/inspiration/owner-next-20261031/manifest.json'),'utf8'));
+const ownerNextPreviewReady=ownerNext.previewPublicationApproved===true&&ownerNext.ownerRequestedPublication===true&&ownerNext.publishedScope==='isolated_dev_preview_only'&&ownerNext.productionPublicationApproved===false;
+const approvedItems=[...(approvedPreview?ownerMedia.items:[]),...(approvedImagePreview?imageMedia.items:[]),...(ownerPreviewReady?ownerInspiration.items:[]),...(ownerNextPreviewReady?ownerNext.items:[])];
 const previewItems=approvedItems.map(({slug,title,kind,category,description,previewUrl,previewPosterUrl,prompt,defaultModel,displayModel,previewDimensions,sourceAspectRatio,sourceSeed,advancedParameters,advancedParametersStatus,aspectRatio,requiredInputTypes,defaultSettings,actionTarget,featured,sortOrder})=>({id:slug,slug,title,kind,category,description,previewUrl,previewPosterUrl,prompt,defaultModel,displayModel,previewDimensions,aspectRatio,requiredInputTypes,defaultSettings,actionTarget,featured,sortOrder}));
 app.get('/api/inspiration',(req,res)=>{
  const q=req.query;
  let items=previewItems.filter(item=>(q.featured!=='true'||item.featured)&&(!q.kind||q.kind==='all'||item.kind===q.kind)&&(!q.target||item.actionTarget===q.target)&&(!q.category||item.category===q.category)&&(!q.ratio||item.aspectRatio===q.ratio)&&(!q.q||item.title.toLowerCase().includes(String(q.q).toLowerCase()))).sort((a,b)=>a.sortOrder-b.sortOrder);
  const total=items.length,limit=Math.min(60,Math.max(1,Number(q.limit)||12));
- const page=Math.max(1,Number(q.page)||1);items=items.slice((page-1)*limit,page*limit);
- res.json({items,categories:['Cinematic'],ratios:['16:9'],pagination:{page,limit,total,hasMore:page*limit<total}});
+ const page=Math.max(1,Number(q.page)||1);
+ const offset=Math.max(0,Math.min(5000,Number(q.offset)||((page-1)*limit)));
+ items=items.slice(offset,offset+limit);
+ res.json({items,categories:[...new Set(previewItems.map(item=>item.category).filter(Boolean))].sort(),ratios:[...new Set(previewItems.map(item=>item.aspectRatio).filter(Boolean))].sort(),pagination:{page,limit,total,offset,nextOffset:offset+limit<total?offset+limit:null,hasMore:offset+limit<total}});
 });
 const creativeMedia=JSON.parse(await readFile(path.join(assets,'media/creative/creative50-20261021/manifest.json'),'utf8'));
 const creativeTemplates=creativeMedia.previewPublicationApproved===true?creativeMedia.items.filter(item=>item.placement==='apps'&&item.active).map(item=>({id:item.id,title:item.title,description:item.description,category:item.category,generationType:'image',thumbnail:item.previewUrl,promptTemplate:item.prompt,defaultModel:null,defaultSettings:item.defaultSettings,requiredInputTypes:[],featured:true,active:true})):[];

@@ -1,0 +1,38 @@
+name: Agent A36 BASE26 Canvas drop atomicity
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'tests/agent-a-base26-drop-atomicity.spec.mjs'
+      - '.github/workflows/agent-a-base26-drop-atomicity.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  canvas-native-drop:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    env:
+      HOME: /root
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check tests/agent-a-base26-drop-atomicity.spec.mjs
+      - name: Real Canvas drag-and-drop in five native engines
+        run: npx playwright test tests/agent-a-base26-drop-atomicity.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2 --retries=0
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: agent-a36-drop-evidence
+          path: test-results/
+          retention-days: 7

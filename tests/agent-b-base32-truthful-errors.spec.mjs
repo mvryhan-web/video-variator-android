@@ -34,3 +34,36 @@ test('BASE32 revoked consent keeps existing Video and explains credit hold in En
   await context.close();
  }
 });
+
+test('BASE32 uncertain paid Video History offers visible EN/FR/RU recovery without redispatch',async({browser})=>{
+ for(const [locale,statusLabel,warning,checkLabel,notice] of [
+  ['en-US','Status uncertain','This video request may have reached','Check status','This check did not submit a new generation'],
+  ['fr-FR','Statut incertain','Cette demande vidéo a peut-être','Vérifier le statut','Cette vérification n’a lancé aucune nouvelle génération'],
+  ['ru-RU','Статус неизвестен','Эта видеозадача могла дойти','Проверить статус','Эта проверка не отправляла новую генерацию']
+ ]){
+  const context=await browser.newContext({locale});const page=await context.newPage();
+  await page.addInitScript(()=>localStorage.setItem('vv_token','offline-fixture'));
+  await page.route('**/api/studio/config',route=>route.fulfill({json:{enabled:false,models:[],catalog:[]}}));
+  const item={id:'uncertain-video',kind:'video',status:'processing',error:'STATUS_UNKNOWN_NO_AUTOMATIC_RETRY',
+   model:'video-fixture',prompt:'Saved paid video',creditsReserved:7,creditsCharged:0,createdAt:time};
+  await page.route('**/api/studio/jobs?filter=all',route=>route.fulfill({json:{items:[item]}}));
+  let checks=0,posts=0;page.on('request',request=>{
+   if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))posts++;
+  });
+  await page.route('**/api/studio/jobs/uncertain-video',route=>{
+   checks++;return route.fulfill({json:{id:item.id,kind:'video',status:'unknown',error:item.error,
+    creditsReserved:7,creditsCharged:0,retryAfterSeconds:0}});
+  });
+  await page.goto('/generate-studio.html?studio=video');
+  await page.locator('#showHistory').click();
+  const card=page.locator('.history-card');
+  await expect(card.locator('.history-status')).toHaveText(statusLabel);
+  await expect(card.locator('.history-recovery')).toContainText(warning);
+  await expect(card).toContainText(locale.startsWith('ru')?'В резерве 7 AI-кредитов':'7 AI credits held (not a confirmed charge)');
+  await expect(card.getByRole('button',{name:locale.startsWith('ru')?'Создать снова':'Regenerate'})).toBeDisabled();
+  await card.getByRole('button',{name:checkLabel}).click();
+  await expect(page.locator('#status')).toContainText(notice);
+  expect(checks).toBe(1);expect(posts).toBe(0);
+  await context.close();
+ }
+});
