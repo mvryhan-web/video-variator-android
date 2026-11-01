@@ -62,6 +62,14 @@ test('BASE9 priority only accepts whole bounded value; owner UI fits narrow view
  await card.getByRole('button',{name:'Save priority'}).click();
  await expect.poll(()=>writes.length).toBe(1);
  expect(writes[0].body).toEqual({kind:'image',priority:75});
- const width=await page.evaluate(()=>document.documentElement.scrollWidth);
- expect(width).toBeLessThanOrEqual(321);
+ const diagnostics=await page.evaluate(()=>{
+  const width=document.documentElement.scrollWidth,viewport=innerWidth;
+  const offenders=[...document.querySelectorAll('body *')].filter(el=>el.getClientRects().length)
+   .map(el=>({name:el.tagName.toLowerCase()+(el.id?'#'+el.id:el.className&&typeof el.className==='string'?'.'+el.className.split(' ').slice(0,2).join('.'):''),box:el.getBoundingClientRect(),scroll:el.scrollWidth,client:el.clientWidth}))
+   .filter(el=>el.box.right>viewport+1||el.box.left< -1||el.scroll>el.client+2)
+   .map(el=>({name:el.name,left:Math.round(el.box.left),right:Math.round(el.box.right),scroll:el.scroll,client:el.client}))
+   .sort((a,b)=>b.right-a.right).slice(0,22);
+  return {width,viewport,offenders};
+ });
+ expect(diagnostics.width,'Overflow diagnostic: '+JSON.stringify(diagnostics)).toBeLessThanOrEqual(321);
 });
