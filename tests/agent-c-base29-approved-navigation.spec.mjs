@@ -103,3 +103,46 @@ test('BASE29 canonical Pricing and History links navigate, with no generation re
  await expect(page.locator('#showHistory')).toHaveAttribute('aria-pressed','true');
  expect(paid).toEqual([]);
 });
+
+test('BASE29 inner-page mobile drawer retains keyboard focus, blocks hidden links, and recovers on close and resize',async({page})=>{
+ const paid=noPaidRequests(page);
+ await page.setViewportSize({width:390,height:812});
+ await page.goto('/ai-apps.html');
+ const toggle=page.locator('.ds-site-mobile-toggle');
+ const menu=page.locator('#dsSiteSidebar');
+ await expect(menu).toHaveJSProperty('inert',true);
+ // The closed sidebar must not be reachable from the keyboard.
+ await toggle.focus();await page.keyboard.press('Tab');
+ await expect(menu).not.toContainText('Favorites');
+ expect(await menu.evaluate(el=>el.contains(document.activeElement))).toBe(false);
+ const initialOverflow=await page.evaluate(()=>document.body.style.overflow);
+ await toggle.click();
+ await expect(toggle).toHaveAttribute('aria-expanded','true');
+ await expect(menu).toHaveAttribute('aria-modal','true');
+ await expect(menu).toHaveJSProperty('inert',false);
+ await expect(menu.locator('.ds-site-brand')).toBeFocused();
+ expect(await page.evaluate(()=>document.body.style.overflow)).toBe('hidden');
+ // Shift+Tab on the first link and Tab on the last link must wrap inside the drawer.
+ await page.keyboard.press('Shift+Tab');
+ await expect(menu.locator('.ds-site-footer a').last()).toBeFocused();
+ await page.keyboard.press('Tab');
+ await expect(menu.locator('.ds-site-brand')).toBeFocused();
+ await page.keyboard.press('Escape');
+ await expect(toggle).toHaveAttribute('aria-expanded','false');
+ await expect(toggle).toBeFocused();
+ await expect(menu).toHaveJSProperty('inert',true);
+ expect(await page.evaluate(()=>document.body.style.overflow)).toBe(initialOverflow);
+ await toggle.click();
+ await expect(menu.locator('.ds-site-brand')).toBeFocused();
+ await page.locator('.ds-site-scrim').click({position:{x:385,y:300}});
+ await expect(toggle).toBeFocused();
+ await expect(menu).toHaveJSProperty('inert',true);
+ await toggle.click();
+ await page.setViewportSize({width:1024,height:812});
+ await expect(toggle).toBeHidden();
+ await expect(menu).toHaveJSProperty('inert',false);
+ await expect(menu).not.toHaveAttribute('aria-modal','true');
+ expect(await page.evaluate(()=>document.body.style.overflow)).toBe(initialOverflow);
+ await expect(menu.getByRole('link',{name:'Pricing',exact:true})).toBeVisible();
+ expect(paid).toEqual([]);
+});
