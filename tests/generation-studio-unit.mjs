@@ -336,8 +336,11 @@ test('BASE8 signed-in read-only alternative selection respects approved equivale
    assert.equal(data.model,input.model);assert.equal(data.alternatives.length,expected);
    if(expected)assert.deepEqual(data.alternatives[0],{model:'gpt-image-2.5-flare',credits:7,currency:'usd'});
    assert.ok(!JSON.stringify(data).includes('providerCostMicros'));
-   const bad=await fetch(s.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer offline-owner'},body:JSON.stringify({...input,resolution:'4K'})});
-   assert.equal(bad.status,400);
+   const validPrimaryOnly=await fetch(s.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer offline-owner'},body:JSON.stringify({...input,resolution:'4K'})});
+   assert.equal(validPrimaryOnly.status,200);
+   assert.deepEqual((await validPrimaryOnly.json()).alternatives,[],'4K is valid on primary but incompatible with the 1K backup');
+   const invalid=await fetch(s.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer offline-owner'},body:JSON.stringify({...input,resolution:'8K'})});
+   assert.equal(invalid.status,400);
   }finally{await s.close();}
  }
  const disabled=await start({...baseEnv,AI_SMART_ROUTING_ENABLED:'false',AI_MODEL_PRICING_JSON:prices()});
