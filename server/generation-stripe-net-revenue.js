@@ -36,10 +36,12 @@ function invoiceTax(invoice){
 export function stripeCheckoutTaxAmount(session){return checkoutTax(session);}
 export function stripeInvoiceTaxAmount(invoice){return invoiceTax(invoice);}
 
-export function verifyStripeNetRevenue({paymentIntent,expectedAmount,expectedCurrency,taxAmount,expectedLivemode}={}){
+export function verifyStripeNetRevenue({paymentIntent,expectedPaymentIntentId,expectedAmount,expectedCurrency,taxAmount,expectedLivemode}={}){
  // Missing mode must never silently turn a receipt into test-mode evidence.
  if(typeof expectedLivemode!=='boolean')throw Error('AI_SETTLEMENT_MODE_UNVERIFIED');
- if(!paymentIntent||!isId(paymentIntent.id,'pi_')||paymentIntent.status!=='succeeded'||paymentIntent.livemode!==expectedLivemode||
+ // A matching amount is not payment ownership. The caller must supply a trusted order-bound PI id.
+ if(!isId(expectedPaymentIntentId,'pi_'))throw Error('AI_SETTLEMENT_PAYMENT_REFERENCE_UNVERIFIED');
+ if(!paymentIntent||paymentIntent.id!==expectedPaymentIntentId||!isId(paymentIntent.id,'pi_')||paymentIntent.status!=='succeeded'||paymentIntent.livemode!==expectedLivemode||
     !safeAmount(expectedAmount)||expectedAmount<1||paymentIntent.amount_received!==expectedAmount||
     paymentIntent.currency!==expectedCurrency||!['eur','usd'].includes(expectedCurrency))
   throw Error('AI_SETTLEMENT_PAYMENT_UNVERIFIED');
@@ -94,5 +96,5 @@ export async function retrieveStripeNetRevenue({stripe,paymentIntentId,expectedA
   charge={...charge,balance_transaction:transaction};
  }
  const expanded={...paymentIntent,latest_charge:charge};
- return verifyStripeNetRevenue({paymentIntent:expanded,expectedAmount,expectedCurrency,taxAmount,expectedLivemode});
+ return verifyStripeNetRevenue({paymentIntent:expanded,expectedPaymentIntentId:paymentIntentId,expectedAmount,expectedCurrency,taxAmount,expectedLivemode});
 }
