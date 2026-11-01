@@ -350,3 +350,40 @@ test('BASE8 signed-in read-only alternative selection respects approved equivale
  }finally{await disabled.close();}
  assert.equal(dbCalls,0);assert.equal(providerCalls,0);
 });
+
+// Guard BASE §8 against advertising a text-only Image adapter for existing photos.
+// Actual authenticated HTTP, approved price parity, zero real AI/DB/wallet calls.
+test('BASE8 image referenceCount is kept for strict fallback compatibility (2 photos)',async()=>{
+ const env={AI_STUDIO_ENABLED:'true',DATABASE_URL:'offline-fixture',ADMIN_EMAIL:'owner@example.test',
+  AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',AI_SMART_ROUTING_ENABLED:'true',
+  AI_STUDIO_ALLOWED_MODELS:'byteplus-seedream-3',
+  GEMINI_API_KEY:'offline-google-key',BYTEPLUS_API_KEY:'offline-byteplus-key',
+  AI_MODEL_PRICING_JSON:JSON.stringify([
+   {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:7,providerCostMicros:4000,currency:'usd'},
+   {model:'byteplus-seedream-3',provider:'BytePlus',kind:'image',credits:7,providerCostMicros:3000,currency:'usd'}
+  ])};
+ let dbCalls=0,providerCalls=0;
+ const app=express();app.use(express.json());
+ installGenerationStudio(app,{env,pool:{query:async()=>{dbCalls++;throw Error('UNEXPECTED_DB');}},
+  auth:(req,res,next)=>{if(req.headers.authorization!=='Bearer offline-owner')return res.sendStatus(401);
+   req.user={id:'owner',email:'owner@example.test',provider:'google'};next();},
+  provider:async()=>{providerCalls++;throw Error('UNEXPECTED_PAID_PROVIDER');}});
+ const server=app.listen(0,'127.0.0.1');await new Promise(ok=>server.once('listening',ok));
+ try{
+  const url='http://127.0.0.1:'+server.address().port+'/api/studio/alternatives';
+  const input={kind:'image',model:'gemini-3.1-flash-image',ratio:'1:1',resolution:'2K',outputFormat:'auto'};
+  const headers={'Content-Type':'application/json',Authorization:'Bearer offline-owner'};
+  const lookup=async count=>{
+   const response=await fetch(url,{method:'POST',headers,body:JSON.stringify({...input,referenceCount:count})});
+   assert.equal(response.status,200);return response.json();
+  };
+  const zero=await lookup(0);
+  assert.deepEqual(zero.alternatives,[{model:'byteplus-seedream-3',credits:7,currency:'usd'}],
+   'approved cross-provider equal-price text-only model remains eligible for text input');
+  const two=await lookup(2);
+  assert.deepEqual(two.alternatives,[],
+   'text-only BytePlus fallback MUST NOT be advertised for two image references');
+  assert.equal(two.reason,'NO_APPROVED_EQUIVALENT');
+  assert.equal(dbCalls,0);assert.equal(providerCalls,0);
+ }finally{server.closeAllConnections();await new Promise(ok=>server.close(ok));}
+});

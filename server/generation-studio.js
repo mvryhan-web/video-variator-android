@@ -118,7 +118,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(kind!=='video'&&(body?.videoResolution!=null||body?.videoDuration!=null))throw Error('UNSUPPORTED_VIDEO_SETTINGS');
   if(count>Number(selected.references||0))throw Error('INVALID_REFERENCES');
   if(kind==='music'&&!['song','instrumental'].includes(musicMode))throw Error('INVALID_MUSIC_MODE');
-  return {request:{kind,model:selected.id,ratio,musicMode,...(kind==='image'?{resolution,outputFormat}:{}),...(kind==='video'?{videoResolution,videoDuration,videoInputMode,referenceCount:count}:{})},selected,routing};
+  return {request:{kind,model:selected.id,ratio,musicMode,referenceCount:count,...(kind==='image'?{resolution,outputFormat}:{}),...(kind==='video'?{videoResolution,videoDuration,videoInputMode}:{})},selected,routing};
  }
  async function resolveRequest(body){
   const catalog=await effectiveCatalog();
