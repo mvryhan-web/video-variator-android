@@ -359,7 +359,7 @@ test('BASE8 image referenceCount is kept for strict fallback compatibility (2 ph
   AI_STUDIO_ALLOWED_MODELS:'byteplus-seedream-3',
   GEMINI_API_KEY:'offline-google-key',BYTEPLUS_API_KEY:'offline-byteplus-key',
   AI_MODEL_PRICING_JSON:JSON.stringify([
-   {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:7,providerCostMicros:4000,currency:'usd'},
+   {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',quality:'2K',credits:7,providerCostMicros:4000,currency:'usd'},
    {model:'byteplus-seedream-3',provider:'BytePlus',kind:'image',credits:7,providerCostMicros:3000,currency:'usd'}
   ])};
  let dbCalls=0,providerCalls=0;
