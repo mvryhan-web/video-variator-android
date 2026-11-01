@@ -7,7 +7,7 @@ const paymentIntent=({live=false,amount=1200,fee=55,tax=200}={})=>({
  latest_charge:{id:'ch_fixture',payment_intent:'pi_fixture',paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:live,currency:'eur',amount_captured:amount,
   balance_transaction:{id:'txn_fixture',source:'ch_fixture',type:'charge',currency:'eur',amount,fee,net:amount-fee}}
 });
-const args=(overrides={})=>({paymentIntent:paymentIntent(),expectedAmount:1200,expectedCurrency:'eur',taxAmount:200,expectedLivemode:false,...overrides});
+const args=(overrides={})=>({paymentIntent:paymentIntent(),expectedPaymentIntentId:'pi_fixture',expectedAmount:1200,expectedCurrency:'eur',taxAmount:200,expectedLivemode:false,...overrides});
 
 test('D18 verified Stripe settlement excludes processor fee and tax from received revenue',()=>{
  assert.deepEqual(verifyStripeNetRevenue(args()),{
@@ -105,4 +105,17 @@ test('D18 missing livemode refuses before any Stripe network read',async()=>{
   }),/AI_SETTLEMENT_MODE_UNVERIFIED/);
  }
  assert.equal(reads,0,'no Stripe request is needed to reject an omitted mode');
+});
+
+test('D18 direct verifier rejects absent order-bound PI reference and valid foreign same-price receipts',()=>{
+ const p=paymentIntent();
+ const other={...p,id:'pi_other',latest_charge:{...p.latest_charge,id:'ch_other',payment_intent:'pi_other',
+  balance_transaction:{...p.latest_charge.balance_transaction,source:'ch_other'}}};
+ for(const bad of [undefined,null,'',123,'pi-foreign','ch_other'])
+  assert.throws(()=>verifyStripeNetRevenue(args({expectedPaymentIntentId:bad})),
+   /AI_SETTLEMENT_PAYMENT_REFERENCE_UNVERIFIED/);
+ assert.throws(()=>verifyStripeNetRevenue(args({paymentIntent:other})),/AI_SETTLEMENT_PAYMENT_UNVERIFIED/);
+ // Correctly binding the reference allows the receipt itself; ownership of this id
+ // must still be established independently by the account/order layer before use.
+ assert.equal(verifyStripeNetRevenue(args({paymentIntent:other,expectedPaymentIntentId:'pi_other'})).netRevenueMicros,9_450_000);
 });
