@@ -154,7 +154,7 @@ async function result(file){
  if(abort)return;
  const row=document.createElement('div');row.className='utility-result';
  const p=document.createElement('p');p.textContent=file.name+' · '+(file.size/1048576).toFixed(2)+' MB';
- const b=document.createElement('button');b.type='button';b.textContent=label('Download','Скачать');b.onclick=()=>saveLocal(file);
+ const b=document.createElement('button');b.type='button';b.textContent=label('Download','Скачать');b.onclick=async()=>{b.disabled=true;status(label('Saving…','Сохранение…'));try{await saveLocal(file);status(label('Saved successfully.','Успешно сохранено.'));}catch(_){status(label('Save failed. Try again.','Не удалось сохранить. Попробуйте снова.'));}finally{b.disabled=false;}};
  row.append(p);
  if(file.type.startsWith('image/')){const img=new Image();const url=URL.createObjectURL(file);redactPreviewUrls.add(url);/* All local previews must be revoked on BFCache pagehide. */img.src=url;img.alt=file.name;img.onload=()=>setTimeout(()=>{URL.revokeObjectURL(url);redactPreviewUrls.delete(url);},60000);row.append(img);}
  row.append(b);$('utilityResults').append(row);
@@ -163,8 +163,8 @@ async function result(file){
 async function textResult(text,filename){
  const row=document.createElement('div');row.className='utility-result';
  const area=document.createElement('textarea');area.value=text;area.setAttribute('aria-label',label('Recognized text','Распознанный текст'));row.append(area);
- const copy=document.createElement('button');copy.textContent=label('Copy text','Копировать текст');copy.onclick=async()=>{await navigator.clipboard.writeText(area.value);status(label('Copied','Скопировано'));};
- const b=document.createElement('button');b.textContent=label('Download TXT','Скачать TXT');b.onclick=()=>saveLocal(new File([area.value],filename,{type:'text/plain;charset=utf-8'}));row.append(copy,b);$('utilityResults').append(row);
+ const copy=document.createElement('button');copy.textContent=label('Copy text','Копировать текст');copy.onclick=async()=>{try{await navigator.clipboard.writeText(area.value);status(label('Copied','Скопировано'));}catch(_){status(label('Copy failed','Не удалось скопировать'));}};
+ const b=document.createElement('button');b.textContent=label('Download TXT','Скачать TXT');b.onclick=async()=>{b.disabled=true;status(label('Saving…','Сохранение…'));try{await saveLocal(new File([area.value],filename,{type:'text/plain;charset=utf-8'}));status(label('Saved successfully.','Успешно сохранено.'));}catch(_){status(label('Save failed. Try again.','Не удалось сохранить. Попробуйте снова.'));}finally{b.disabled=false;}};row.append(copy,b);$('utilityResults').append(row);
 }
 async function openImage(f){
  const url=URL.createObjectURL(f),im=new Image();
