@@ -19,3 +19,29 @@ body.canvas-detail-page.deepsyq-sitewide-shell .canvas-page-footer{
   body.canvas-detail-page #canvasPageMain{padding-inline:10px}
   body.canvas-detail-page .canvas-page-footer{padding-inline:10px}
 }
+
+/* Canvas-only reference ordering: readable touch/keyboard controls, no Home changes. */
+body.canvas-detail-page .quick-create-previews{align-items:flex-start}
+body.canvas-detail-page .quick-reference{
+  display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:8px;
+  align-items:center;width:min(100%,340px);max-width:100%;min-height:58px;padding:7px;
+}
+body.canvas-detail-page .quick-reference img{width:48px;height:48px}
+body.canvas-detail-page .quick-reference .quick-reference-name{
+  display:block;min-width:0;max-width:none;font-size:13px;line-height:1.35;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+body.canvas-detail-page .quick-reference-actions{display:flex;align-items:center;gap:5px}
+body.canvas-detail-page .quick-create .quick-reference-actions button{
+  min-width:38px;min-height:38px;padding:6px 8px;font-size:13px;
+  color:#eef3ff;border:1px solid #697c8a;border-radius:7px;background:#24364a;
+}
+body.canvas-detail-page .quick-reference-actions button:disabled{opacity:.42;cursor:not-allowed}
+body.canvas-detail-page .quick-reference-actions button:focus-visible{
+  outline:2px solid #a6cfff;outline-offset:2px;
+}
+@media(max-width:420px){
+  body.canvas-detail-page .quick-reference{grid-template-columns:40px minmax(0,1fr) auto;gap:6px}
+  body.canvas-detail-page .quick-reference img{width:40px;height:40px}
+  body.canvas-detail-page .quick-create .quick-reference-actions button{min-width:36px;min-height:38px;padding:5px}
+}
