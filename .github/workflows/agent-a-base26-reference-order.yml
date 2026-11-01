@@ -39,8 +39,12 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: Validate actual Canvas source and no-spend browser test syntax
         run: node --check app/src/main/assets/canvas-editor.js && node --check tests/agent-a-base26-reference-order.spec.mjs
-      - name: Real accessible image reorder and exact media handoff in five native engines
-        run: npx playwright test tests/agent-a-base26-reference-order.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2 --retries=0
+      - name: First reproduce and verify only failed mobile Chromium 320/390px
+        run: npx playwright test tests/agent-a-base26-reference-order.spec.mjs --project=mobile-chromium --grep='(320|390)px' --workers=1 --retries=0
+      - name: Verify other four native engines at all four widths (16 cases)
+        run: npx playwright test tests/agent-a-base26-reference-order.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-webkit --workers=2 --retries=0
+      - name: Verify remaining mobile Chromium widths 768/1448px (2 cases)
+        run: npx playwright test tests/agent-a-base26-reference-order.spec.mjs --project=mobile-chromium --grep='(768|1448)px' --workers=1 --retries=0
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
