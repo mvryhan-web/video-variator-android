@@ -1,0 +1,55 @@
+name: Agent A38 BASE27 actual isolated preview FFmpeg runtime
+
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/deepsyq-preview.js'
+      - 'app/src/main/assets/video-uniquifier-reference.js'
+      - 'tests/agent-a-base27-preview-runtime.test.mjs'
+      - '.github/workflows/agent-a-base27-preview-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-a38-base27-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  real-isolated-preview-engine-and-native-export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    env:
+      HOME: /root
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax for changed code and native preview acceptance
+        run: node --check server/deepsyq-preview.js && node --check app/src/main/assets/video-uniquifier-reference.js && node --check tests/agent-a-base27-preview-runtime.test.mjs
+      - name: REAL preview server FFmpeg asset routes, noindex, no paid API and legacy nav
+        run: node --test tests/agent-a-base27-preview-runtime.test.mjs
+      - name: Native offline video fixture plus MP4 probe
+        run: command -v ffmpeg && command -v ffprobe || (apt-get update -qq && apt-get install -y -qq ffmpeg)
+      - name: Existing original real FFmpeg.wasm MP4 encode/download and ffprobe
+        run: npx playwright test tests/agent-a-base27-real-export.spec.mjs --project=chromium --workers=1 --retries=0
+      - name: Existing actual file/video preview and Reset workspace mobile and desktop
+        run: npx playwright test tests/agent-a-base27-preview-reset.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2 --retries=0
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: a38-real-preview-failure
+          path: test-results/
+          retention-days: 7
