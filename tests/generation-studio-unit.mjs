@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {dispatchGeneration,studioConfig,installGenerationStudio} from '../server/generation-studio.js';
+import {dispatchGeneration,studioConfig} from '../server/generation-studio.js';
 import {validateGeneration,generateGoogle,pollGoogle,safeGoogleUrl} from '../server/generation-provider.js';
 const request={kind:'video',prompt:'Ocean at sunset',ratio:'16:9',consent:true,references:[]};
 test('no paid request without explicit setup and durable call quota',()=>{assert.equal(studioConfig({}).enabled,false);for(const n of ['0','21','NaN'])assert.equal(studioConfig({AI_STUDIO_ENABLED:'true',GEMINI_API_KEY:'test',DATABASE_URL:'test',ADMIN_EMAIL:'test',AI_STUDIO_MAX_CALLS:n}).enabled,false);const c=studioConfig({AI_STUDIO_ENABLED:'true',GEMINI_API_KEY:'secret',DATABASE_URL:'secret',ADMIN_EMAIL:'owner',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image'});assert.equal(c.models.find(m=>m.kind==='image').enabled,true);assert.equal(c.models.find(m=>m.kind==='video').enabled,false);assert.ok(!JSON.stringify(c).includes('secret'));});
