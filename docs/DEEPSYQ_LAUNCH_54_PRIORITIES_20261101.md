@@ -35,3 +35,15 @@ Count check: 33 + 14 + 2 + 5 = **54 active**; + cancelled #20 = 55 original.
 - For all three, **GitHub issue ACK does not prove the Jules task is running or complete**. Check the original Jules task UI, final READY report, actual scoped PR/branch/SHA, real free CI, collisions and deployment scope. Do not relabel/restart blindly. A GitHub comment cannot resume a paused Jules task.
 
 Links: [master roadmap #237](https://github.com/mvryhan-web/video-variator-android/issues/237), [coordinator #233](https://github.com/mvryhan-web/video-variator-android/issues/233), [approved BASE55 plan](DEEPSYQ_BASE55_F1_F8_EXECUTION_PLAN_20261020.md), [Decisions](../DECISIONS.md), [original BASE](DEEPSYQ_BASE_CHECKLIST.md).
+
+
+## Owner Jules sunset / operational correction — 2026-11-01
+
+The **owner explicitly declined Google Antigravity and any Jules migration**. Permit completion of existing Jules slots only up to **2026-11-11** (owner-observed Jules cutoff), then stop further Jules assignments. Preserve committed/pushed code, scoped source/test files, final PR+SHA+native results and honest incomplete handoffs **in GitHub before access is restricted**. No guarantee that a bot ACK corresponds to a running task.
+
+- **Jules1 #316 W5.5:** current task `3016109186533092867` ended with **Google bot unexpected error**, not READY. Inspect existing committed GitHub work and use `NO_CODE_PUSHED / BLOCKED` if nothing was actually pushed; do not repeatedly relabel.
+- **Jules2 #317 W4.3:** current task `7709543839242461379` posted **READY** and code+tests on [PR471](https://github.com/mvryhan-web/video-variator-android/pull/471) HEAD `3c990e0cdd474560ed3f7cc9dc28ef788d6cbfa7`. GitHub branch is **wrongly based on `main`**, not `deepsyq-platform`; coordinator converted **same PR471 to DRAFT**, requested clean non-force DEV reconciliation of precisely two source/test files. Not merged, not DONE_TO_DEV. Owner removed Favorites/Challenges from visible navigation; pure internal section data is not permission to restore UI.
+- **Jules3 #278 V6.2:** latest new-task creation FAILED; prior original task `10433459474091459526` UI status unknown; preserve any existing pushed source or mark unavailable. No blind retry.
+- No new Jules roadmap assignments, no duplicate issues or PRs, no production/main merge. When current work is correctly integrated, future ordinary A–D assignments follow the same owner-approved BASE 54 / F1–F8 queues and release gates.
+
+This operational note updates only task/evidence status, **not** the original BASE requirements, bucket counts, or owner production permissions.
