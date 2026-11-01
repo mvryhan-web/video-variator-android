@@ -66,12 +66,14 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
    assert.equal((await media.arrayBuffer()).byteLength,128);
   }
   const gallery=await(await fetch(base+'/api/inspiration?featured=true&limit=60')).json();
-  const images=gallery.items.filter(item=>item.kind==='image');
-  assert.equal(images.length,38,'the approved DEV gallery includes 18 curated images plus 20 vertical images');
+  const nextGallery=await(await fetch(base+'/api/inspiration?featured=true&limit=60&offset=60')).json();
+  assert.equal(gallery.pagination.hasMore,true,'the extended owner gallery must paginate without hiding original cards');
+  const images=[...gallery.items,...nextGallery.items].filter(item=>item.kind==='image');
+  assert.equal(images.length,87,'retain 38 original image cards plus the earlier 21 and current 28 owner-requested DEV-preview cards');
   assert.equal(images.some(image=>/focus|toast/i.test(image.title+' '+image.slug)),false,'duplicate Focus and clinking-glasses scene are excluded');
   for(const image of images){
    assert.equal(image.featured,true);
-   assert.ok(image.prompt.length>80,'each image has its exact creation prompt');
+   assert.ok(image.prompt.length>80,'each image has a usable prompt');
    const asset=await fetch(base+image.previewUrl);
    assert.equal(asset.status,200,image.previewUrl);
    assert.match(asset.headers.get('content-type')||'',/image\/webp/,image.previewUrl);
@@ -79,7 +81,9 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
   }
   const retired=await fetch(base+'/inspiration.html',{redirect:'manual'});assert.equal(retired.status,302);assert.equal(retired.headers.get('location'),'/deepsyq.html#inspirationPreview');
   const approvedImages=JSON.parse(await readFile(new URL('../app/src/main/assets/media/inspiration/openai-20261021/manifest.json',import.meta.url),'utf8')).items;
-  assert.deepEqual(images.map(item=>item.slug).sort(),approvedImages.filter(item=>item.featured).map(item=>item.slug).sort(),'only exact owner-approved image identities are published');
+  const newOwner=JSON.parse(await readFile(new URL('../app/src/main/assets/media/inspiration/owner-20261031/manifest.json',import.meta.url),'utf8')).items;
+  const latestOwner=JSON.parse(await readFile(new URL('../app/src/main/assets/media/inspiration/owner-next-20261031/manifest.json',import.meta.url),'utf8')).items;
+  assert.deepEqual(images.map(item=>item.slug).sort(),[...approvedImages.filter(item=>item.featured),...newOwner.filter(item=>item.featured),...latestOwner.filter(item=>item.featured)].map(item=>item.slug).sort(),'preserve approved originals and add both separately approved DEV-only owner collections');
   assert.equal((await(await fetch(base+'/api/inspiration?featured=true&target=agent')).json()).items.length,0);
   assert.equal((await fetch(base+'/api/inspiration',{method:'POST'})).status,503);
 
