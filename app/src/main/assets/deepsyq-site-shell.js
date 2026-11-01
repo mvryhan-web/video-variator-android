@@ -85,15 +85,56 @@
  toggle.textContent='☰';toggle.setAttribute('aria-label','Open Deepsyq navigation');
  toggle.setAttribute('aria-controls','dsSiteSidebar');toggle.setAttribute('aria-expanded','false');
  const scrim=document.createElement('div');scrim.className='ds-site-scrim';scrim.setAttribute('aria-hidden','true');
- const close=()=>{document.body.classList.remove('ds-site-nav-open');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open Deepsyq navigation');};
- toggle.addEventListener('click',()=>{
-  const open=!document.body.classList.contains('ds-site-nav-open');
-  document.body.classList.toggle('ds-site-nav-open',open);toggle.setAttribute('aria-expanded',String(open));
-  toggle.setAttribute('aria-label',open?'Close Deepsyq navigation':'Open Deepsyq navigation');
+ // Inner-page mobile navigation is a real keyboard drawer, not a visual-only slide.
+ // Never allow focus into offscreen links. Leave the desktop rail unaffected.
+ const mobile=window.matchMedia('(max-width:900px)');
+ let previousOverflow=null;
+ const focusable=()=>[...sidebar.querySelectorAll('a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+  .filter(el=>!el.hidden&&el.getClientRects().length>0&&getComputedStyle(el).visibility!=='hidden');
+ const isOpen=()=>mobile.matches&&document.body.classList.contains('ds-site-nav-open');
+ const close=(restoreFocus=false)=>{
+  const wasOpen=isOpen();
+  document.body.classList.remove('ds-site-nav-open');
+  toggle.setAttribute('aria-expanded','false');
+  toggle.setAttribute('aria-label','Open Deepsyq navigation');
+  sidebar.removeAttribute('role');sidebar.removeAttribute('aria-modal');
+  if(previousOverflow!==null){document.body.style.overflow=previousOverflow;previousOverflow=null;}
+  sidebar.inert=mobile.matches;
+  if(wasOpen&&restoreFocus&&mobile.matches)toggle.focus({preventScroll:true});
+ };
+ const open=()=>{
+  if(!mobile.matches)return;
+  previousOverflow=document.body.style.overflow;
+  sidebar.inert=false;
+  sidebar.setAttribute('role','dialog');sidebar.setAttribute('aria-modal','true');
+  document.body.classList.add('ds-site-nav-open');
+  document.body.style.overflow='hidden';
+  toggle.setAttribute('aria-expanded','true');
+  toggle.setAttribute('aria-label','Close Deepsyq navigation');
+  focusable()[0]?.focus({preventScroll:true});
+ };
+ const syncViewport=()=>{
+  if(!mobile.matches)close(false);
+  else if(!isOpen())sidebar.inert=true;
+ };
+ toggle.addEventListener('click',()=>isOpen()?close(true):open());
+ scrim.addEventListener('click',()=>close(true));
+ document.addEventListener('keydown',e=>{
+  if(!isOpen())return;
+  if(e.key==='Escape'){e.preventDefault();close(true);return;}
+  if(e.key!=='Tab')return;
+  const items=focusable(),first=items[0],last=items.at(-1);
+  if(!first)return;
+  if(e.shiftKey&&(document.activeElement===first||!sidebar.contains(document.activeElement))){
+   e.preventDefault();last.focus({preventScroll:true});
+  }else if(!e.shiftKey&&(document.activeElement===last||!sidebar.contains(document.activeElement))){
+   e.preventDefault();first.focus({preventScroll:true});
+  }
  });
- scrim.addEventListener('click',close);
- document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
- sidebar.addEventListener('click',e=>{if(e.target.closest('a'))close();});
+ sidebar.addEventListener('click',e=>{if(e.target.closest('a'))close(false);});
+ if(typeof mobile.addEventListener==='function')mobile.addEventListener('change',syncViewport);
+ else mobile.addListener(syncViewport);
+ syncViewport();
  document.body.classList.add('deepsyq-sitewide-shell');
  document.body.prepend(scrim,toggle,sidebar);
 })();

@@ -15,6 +15,8 @@
 .history-status{font-size:9px;padding:4px 7px;border-radius:999px;background:#252936;color:#cfd5e3;white-space:nowrap}
 .history-status[data-status=ready]{color:var(--mint)}
 .history-status[data-status=failed]{color:#e2a9b8}
+.history-status[data-status=unknown]{font-size:13px;color:#f3cd91}
+.history-recovery{grid-column:2;margin:0;max-width:70ch;padding:10px 12px;border-left:3px solid #e0b774;border-radius:6px;background:rgba(224,183,116,.09);color:#f0e8db;font-size:14px;line-height:1.5}
 @media(max-width:700px){.history-card{grid-template-columns:minmax(0,1fr)}.history-card>button{grid-column:1;grid-row:auto;width:100%}.history-card small{grid-column:1}}
 
 .history-prompt{grid-column:1/2;margin:0;color:#c7cddd;font-size:11px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
