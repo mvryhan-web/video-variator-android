@@ -72,3 +72,15 @@ body[data-approved-page] .controls select{appearance:none;min-width:0;width:100%
 .provider-group-actions label{display:grid;gap:5px;font-size:15px;flex:1 1 96px;min-width:0}
 .provider-group-actions input{width:100%;min-height:44px;font-size:16px;padding:9px;border-radius:9px}
 .provider-group-message{min-height:22px;margin:10px 0 0}
+
+/* A nested provider grid must not set the min-content width of the entire
+   owner dashboard on narrow phone screens. Keep controls full-size, not clipped. */
+main{grid-template-columns:minmax(0,1fr)}
+.provider-groups,.provider-group-grid,.provider-group-card,.provider-group-actions{min-width:0;max-width:100%}
+.provider-group-actions button{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere}
+.provider-group-card h3,.provider-group-card p{overflow-wrap:anywhere}
+@media(max-width:460px){
+ .provider-group-grid{grid-template-columns:minmax(0,1fr)}
+ .provider-group-actions{display:grid;grid-template-columns:minmax(0,1fr)}
+ .provider-group-actions>*{width:100%;min-width:0}
+}
