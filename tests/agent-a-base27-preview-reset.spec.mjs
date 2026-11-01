@@ -17,12 +17,12 @@ for(const width of [320,390,768,1448]){
   const paid=[];
   page.on('request',request=>{
    const pathname=new URL(request.url()).pathname;
-   if(request.method()==='POST'&&/^\\/api\\/(?:studio\\/jobs|ai-billing|billing\\/checkout|stripe|generation)/.test(pathname))
+   if(request.method()==='POST'&&/^\/api\/(?:studio\/jobs|ai-billing|billing\/checkout|stripe|generation)/.test(pathname))
     paid.push(pathname);
   });
   await page.goto('/free-tools.html');
   await page.locator('.et-showcase .et-uniquifier').click();
-  await expect(page).toHaveURL(/\\/index\\.html$/);
+  await expect(page).toHaveURL(/\/index\.html$/);
   await expect(page.locator('body.vu-reference')).toBeVisible();
   await expect(page.locator('.vu-preview .vu-panel-head h3')).toHaveText('Example preview');
 
