@@ -37,6 +37,7 @@ function studio({kind='image',expectedCredits,quantity,serverCredits=7}={}){
   estimateGenerationPricing:()=>quote,
   walletEnabled:()=>true,
   wallet:{
+   preflightPurchasedMargin:async()=>({allowed:true}),
    purchasedDispatchVerifier:()=>async()=>({source:'mock-only-never-dispatched'}),
    reserve:async()=>{counters.walletReserve++},
    settle:async()=>{throw Error('SETTLEMENT_NOT_EXPECTED')}

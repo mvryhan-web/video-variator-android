@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {generationReadiness} from '../server/generation-readiness.js';
+import {d18PricingJson} from './d18-pricing-fixture.mjs';
 
 test('launch readiness is fail-closed and never contains secret values',()=>{
  const off=generationReadiness({});assert.equal(off.launchReady,false);assert.ok(off.blockers.includes('database'));assert.equal(JSON.stringify(off).includes('secret'),false);
  const env={
   DATABASE_URL:'postgres://hidden',APP_JWT_SECRET:'jwt-hidden',GEMINI_API_KEY:'gemini-hidden',
-  AI_MODEL_PRICING_JSON:JSON.stringify([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:10,providerCostMicros:1000,currency:'usd'},{model:'veo-3.1-fast-generate-preview',provider:'Google',kind:'video',credits:20,providerCostMicros:9000,currency:'usd'}]),
+  AI_MODEL_PRICING_JSON:d18PricingJson([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:10,providerCostMicros:1000,currency:'usd'},{model:'veo-3.1-fast-generate-preview',provider:'Google',kind:'video',credits:20,providerCostMicros:9000,currency:'usd'}]),
   AI_STUDIO_ENABLED:'true',ADMIN_EMAIL:'owner@example.invalid',AI_STUDIO_MAX_CALLS:'4',AI_STUDIO_ALLOWED_KINDS:'image,video',
   AI_STUDIO_WALLET_ENABLED:'true',
   AI_CREDIT_PACKS_JSON:JSON.stringify([{sku:'starter',priceId:'price_Test123',credits:100,amount:99,currency:'usd'}]),
@@ -50,9 +51,9 @@ test('BASE #51: commercial readiness cannot report ready when Studio routes are 
  assert.equal(report.launchReady,false,'other required production gates remain mandatory');
 });
 
-test('pricing without currency remains a launch blocker even when model economics exist',()=>{
+test('pricing without explicit same-currency D18 margin fails closed',()=>{
  const r=generationReadiness({AI_MODEL_PRICING_JSON:JSON.stringify([{model:'m',provider:'P',kind:'image',credits:1,providerCostMicros:100}])});
- assert.equal(r.pricing.configured,true);assert.equal(r.pricing.currenciesExplicit,false);assert.ok(r.blockers.includes('pricing'));
+ assert.equal(r.pricing.configured,false);assert.equal(r.pricing.currenciesExplicit,false);assert.ok(r.blockers.includes('pricing'));
 });
 
 test('BASE #51: release readiness flags an enabled public rate guard with missing limits',()=>{
@@ -105,11 +106,11 @@ test('BASE #16: live AI checkout cannot claim launch readiness without webhook s
 test('BASE #51 commercial readiness requires BOTH Image and Video price entries and credit rates',()=>{
  const modelPrice=(kind)=>({model:kind==='image'?'gemini-3.1-flash-image':'veo-3.1-fast-generate-preview',provider:'Google',kind,credits:kind==='image'?10:20,providerCostMicros:kind==='image'?1000:9000,currency:'usd'});
  const kindRate=(kind)=>({kind,credits:kind==='image'?10:20});
- const baseline={AI_MODEL_PRICING_JSON:JSON.stringify(['image','video'].map(modelPrice)),AI_CREDIT_RATES_JSON:JSON.stringify(['image','video'].map(kindRate))};
+ const baseline={AI_MODEL_PRICING_JSON:d18PricingJson(['image','video'].map(modelPrice)),AI_CREDIT_RATES_JSON:JSON.stringify(['image','video'].map(kindRate))};
  const gate=env=>generationReadiness(env).gates.find(g=>g.id==='imageVideoPricing');
  assert.equal(gate(baseline).ready,true);
  for(const kinds of [['image'],['video'],[]]){
-  const withoutModels={...baseline,AI_MODEL_PRICING_JSON:JSON.stringify(kinds.map(modelPrice))};
+  const withoutModels={...baseline,AI_MODEL_PRICING_JSON:d18PricingJson(kinds.map(modelPrice))};
   const report=generationReadiness(withoutModels);
   assert.equal(gate(withoutModels).ready,false,'missing approved model price for '+kinds.join(','));
   assert.ok(report.blockers.includes('imageVideoPricing'));
@@ -173,7 +174,7 @@ test('BASE #51: phantom model or wrong provider price must not count as launch p
   credits:20,providerCostMicros:9000,currency:'usd'};
  const rates=[{kind:'image',credits:10},{kind:'video',credits:20}];
  const coverage=rows=>generationReadiness({
-  AI_MODEL_PRICING_JSON:JSON.stringify(rows),
+  AI_MODEL_PRICING_JSON:d18PricingJson(rows),
   AI_CREDIT_RATES_JSON:JSON.stringify(rates)
  }).gates.find(g=>g.id==='imageVideoPricing').ready;
  assert.equal(coverage([image,video]),true,'real adapter-backed Image and Video models remain covered');
@@ -191,7 +192,7 @@ test('BASE #51: phantom model or wrong provider price must not count as launch p
  // supported and explicitly priced route; the live payment P0 still blocks launch.
  assert.equal(coverage([image,video,{...video,model:'unrecognized-optional-video'}]),true);
  const unsafe=generationReadiness({
-  AI_MODEL_PRICING_JSON:JSON.stringify([image,{...video,provider:'BytePlus'}]),
+  AI_MODEL_PRICING_JSON:d18PricingJson([image,{...video,provider:'BytePlus'}]),
   AI_CREDIT_RATES_JSON:JSON.stringify(rates),
   AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true'
  });
@@ -213,7 +214,7 @@ test('BASE #51: both Image and Video need a priced model actually allowed by Stu
   credits:85,providerCostMicros:60000,currency:'usd'};
  const kinds=[{kind:'image',credits:12},{kind:'video',credits:80}];
  const base={
-  AI_MODEL_PRICING_JSON:JSON.stringify([img,googleVideo]),
+  AI_MODEL_PRICING_JSON:d18PricingJson([img,googleVideo]),
   AI_CREDIT_RATES_JSON:JSON.stringify(kinds)
  };
  const check=(overrides={})=>generationReadiness({...base,...overrides}).gates.find(
@@ -234,18 +235,18 @@ test('BASE #51: both Image and Video need a priced model actually allowed by Stu
   AI_STUDIO_ALLOWED_MODELS:googleVideo.model,AI_IMAGE_ENABLED:'false'}),false);
  assert.equal(check({GEMINI_API_KEY:'synthetic-no-network',
   AI_STUDIO_ALLOWED_MODELS:googleVideo.model,
-  AI_MODEL_PRICING_JSON:JSON.stringify([img,{...googleVideo,model:'ghost-video'}])}),false);
+  AI_MODEL_PRICING_JSON:d18PricingJson([img,{...googleVideo,model:'ghost-video'}])}),false);
  const defaultVideo={...googleVideo,model:'veo-3.1-lite-generate-preview'};
  assert.equal(check({GEMINI_API_KEY:'synthetic-no-network',
-  AI_MODEL_PRICING_JSON:JSON.stringify([img,defaultVideo])}),true,
+  AI_MODEL_PRICING_JSON:d18PricingJson([img,defaultVideo])}),true,
   'the actually configured Studio default video is allowed without extra opt-in');
  assert.equal(check({BYTEPLUS_API_KEY:'synthetic-no-network',
   AI_STUDIO_ALLOWED_MODELS:[seedImage.model,seedVideo.model].join(','),
-  AI_MODEL_PRICING_JSON:JSON.stringify([seedImage,seedVideo])}),true,
+  AI_MODEL_PRICING_JSON:d18PricingJson([seedImage,seedVideo])}),true,
   'BytePlus-only allows explicitly enabled image and video models with its key');
  assert.equal(check({BYTEPLUS_API_KEY:'synthetic-no-network',
   AI_STUDIO_ALLOWED_MODELS:[seedImage.model,seedVideo.model].join(','),
-  AI_MODEL_PRICING_JSON:JSON.stringify([seedImage,seedVideo]),
+  AI_MODEL_PRICING_JSON:d18PricingJson([seedImage,seedVideo]),
   BYTEPLUS_ENABLED:'false'}),false,
   'BytePlus kill switch must block apparently priced routes');
  const configured=generationReadiness({...base,

@@ -1,8 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {pricingCatalog,estimateGenerationPricing} from '../server/generation-pricing.js';
+import {d18PricingJson as pricingJson} from './d18-pricing-fixture.mjs';
 
 const model={id:'byteplus-seedance-2',provider:'BytePlus',kind:'video',quality:'720p',duration:'5 seconds'};
+// No-network approved fixture: exactly the D18 2:1 floor unless overridden.
+const pricingEnv=rows=>({AI_MODEL_PRICING_JSON:pricingJson(rows)});
 
 test('pricing catalog has no invented defaults and rejects malformed rows',()=>{
  assert.equal(pricingCatalog({}).configured,false);
@@ -10,14 +13,14 @@ test('pricing catalog has no invented defaults and rejects malformed rows',()=>{
 });
 
 test('pricing engine returns only explicitly approved matching model economics',()=>{
- const env={AI_MODEL_PRICING_JSON:JSON.stringify([
+ const env=pricingEnv([
   {model:'byteplus-seedance-2',provider:'BytePlus',kind:'video',credits:80,providerCostMicros:250000,currency:'eur',ratio:'16:9',quality:'720p',durationSeconds:5},
   {model:'byteplus-seedance-2',provider:'BytePlus',kind:'video',credits:75,providerCostMicros:220000}
- ])};
+ ]);
  const exact=estimateGenerationPricing({model:model.id,kind:'video',ratio:'16:9'},model,env);
  assert.deepEqual(exact,{credits:80,providerCostMicros:250000,currency:'eur',model:model.id,provider:'BytePlus',kind:'video'});
  const fallback=estimateGenerationPricing({model:model.id,kind:'video',ratio:'9:16'},model,env);
- assert.equal(fallback.credits,75);assert.equal(fallback.currency,null);
+ assert.equal(fallback.credits,75);assert.equal(fallback.currency,'usd');
  assert.equal(estimateGenerationPricing({model:'other',kind:'video',ratio:'16:9'},model,env),null);
 });
 
@@ -28,7 +31,7 @@ test('nondefault video duration and resolution never inherit cheaper default cre
   {model:model.id,provider:model.provider,kind:'video',quality:'1080p',durationSeconds:5,credits:75,providerCostMicros:200000},
   {model:model.id,provider:model.provider,kind:'video',quality:'720p',durationSeconds:10,credits:65,providerCostMicros:150000}
  ];
- const env={AI_MODEL_PRICING_JSON:JSON.stringify(rows)};
+ const env=pricingEnv(rows);
  const quote=(videoResolution,videoDuration)=>estimateGenerationPricing({kind:'video',model:model.id,ratio:'16:9',videoResolution,videoDuration},model,env);
  assert.equal(quote('720p',5).credits,40);
  assert.equal(quote('720p',10).credits,65);
@@ -41,7 +44,7 @@ test('multiframe Seedance pricing requires explicit mode and exact reference cou
  const base={model:model.id,provider:model.provider,kind:'video',credits:40,providerCostMicros:100000};
  const two={...base,credits:100,providerCostMicros:230000,videoInputMode:'first_last',referenceCount:2};
  const three={...base,credits:135,providerCostMicros:290000,videoInputMode:'reference_image',referenceCount:3};
- const env={AI_MODEL_PRICING_JSON:JSON.stringify([base,two,three])};
+ const env=pricingEnv([base,two,three]);
  const quote=(mode,count)=>estimateGenerationPricing({kind:'video',model:model.id,ratio:'16:9',videoInputMode:mode,referenceCount:count},model,env);
  assert.equal(quote('text',0).credits,40);
  assert.equal(quote('first_frame',1).credits,40);
@@ -50,14 +53,19 @@ test('multiframe Seedance pricing requires explicit mode and exact reference cou
  assert.equal(quote('reference_image',1),null);
  assert.equal(quote('reference_image',2),null);
  assert.equal(quote('first_last',3),null);
- const noSpecific={AI_MODEL_PRICING_JSON:JSON.stringify([base])};
+ const noSpecific=pricingEnv([base]);
  assert.equal(estimateGenerationPricing({kind:'video',model:model.id,ratio:'16:9',videoInputMode:'first_last',referenceCount:2},model,noSpecific),null);
  const malformed={AI_MODEL_PRICING_JSON:JSON.stringify([{...base,videoInputMode:'first_last',referenceCount:5}])};
  assert.equal(pricingCatalog(malformed).configured,false);
 });
-test('pricing never invents a currency when operator economics omit it',()=>{
- const e=pricingCatalog({AI_MODEL_PRICING_JSON:JSON.stringify([{model:'m',provider:'P',kind:'image',credits:1,providerCostMicros:100}])});assert.equal(e.configured,true);assert.equal(e.entries[0].currency,null);
- assert.equal(pricingCatalog({AI_MODEL_PRICING_JSON:JSON.stringify([{model:'m',provider:'P',kind:'image',credits:1,providerCostMicros:100,currency:'EURO'}])}).configured,false);
+test('D18 never accepts operator revenue assertions as customer margin evidence',()=>{
+ const base={model:'m',provider:'P',kind:'image',credits:1,providerCostMicros:100,currency:'usd'};
+ const row={...base,netRevenueMicros:999999999,netRevenueCurrency:'eur'};
+ const catalog=pricingCatalog({AI_MODEL_PRICING_JSON:JSON.stringify([row])});
+ assert.equal(catalog.configured,true);
+ assert.equal(Object.hasOwn(catalog.entries[0],'netRevenueMicros'),false);
+ assert.equal(Object.hasOwn(catalog.entries[0],'netRevenueCurrency'),false);
+ assert.equal(pricingCatalog({AI_MODEL_PRICING_JSON:JSON.stringify([{...base,currency:'EURO'}])}).configured,false);
 });
 
 test('equally-specific overlapping approved rates fail closed, irrespective of JSON row order',()=>{
@@ -66,12 +74,12 @@ test('equally-specific overlapping approved rates fail closed, irrespective of J
  const quality={model:m.id,provider:'Google',kind:'image',quality:'1024',credits:80,providerCostMicros:200000,currency:'usd'};
  const req={kind:'image',model:m.id,ratio:'1:1',resolution:'1024'};
  for(const entries of [[ratio,quality],[quality,ratio]]){
-  const env={AI_MODEL_PRICING_JSON:JSON.stringify(entries)};
+  const env=pricingEnv(entries);
   assert.equal(pricingCatalog(env).configured,true);
   assert.equal(estimateGenerationPricing(req,m,env),null,'cannot choose first rate based on operator JSON order');
  }
  const exact={...ratio,quality:'1024',credits:95,providerCostMicros:250000};
- const env={AI_MODEL_PRICING_JSON:JSON.stringify([ratio,quality,exact])};
+ const env=pricingEnv([ratio,quality,exact]);
  assert.equal(estimateGenerationPricing(req,m,env).credits,95,'a unique more-specific approved rate wins');
  assert.equal(estimateGenerationPricing({...req,ratio:'16:9'},m,env).credits,80,'non-overlapping selection still works');
  assert.equal(estimateGenerationPricing({...req,resolution:'512'},m,env),null,'new image quality needs an exact approved price');
@@ -81,7 +89,7 @@ test('equal-score overlaps are provider-isolated, and no price is ever invented'
  const m={id:'shared-model',provider:'BytePlus',kind:'image',quality:'1024',capabilities:{outputFormats:['auto']}};
  const approved={model:m.id,provider:'BytePlus',kind:'image',credits:19,providerCostMicros:50000,currency:'eur'};
  const other={...approved,provider:'Google',credits:4};
- const e={AI_MODEL_PRICING_JSON:JSON.stringify([approved,other])};
+ const e=pricingEnv([approved,other]);
  assert.equal(estimateGenerationPricing({kind:'image',model:m.id,ratio:'1:1',resolution:'1024'},m,e).credits,19);
  assert.equal(estimateGenerationPricing({kind:'image',model:m.id,ratio:'1:1',resolution:'1024'},m,{}),null);
 });
@@ -94,7 +102,7 @@ test('explicitly blank ratio or quality must never become an approved wildcard p
  // a wildcard row, allowing an arbitrary aspect ratio to inherit cheap credits.
  for(const key of ['ratio','quality']){
   for(const invalid of ['', ' ', '\t', '\n']){
-   const env={AI_MODEL_PRICING_JSON:JSON.stringify([{...base,[key]:invalid}])};
+   const env=pricingEnv([{...base,[key]:invalid}]);
    assert.equal(pricingCatalog(env).configured,false,key+' '+JSON.stringify(invalid));
    assert.equal(estimateGenerationPricing(request,model,env),null,'never price from malformed configured selector');
   }
@@ -102,7 +110,7 @@ test('explicitly blank ratio or quality must never become an approved wildcard p
  // A genuinely absent/null qualifier is still the intentional default-price
  // wildcard; exact approved selectors continue matching normally.
  for(const row of [base,{...base,ratio:null,quality:null},{...base,ratio:'9:16',quality:'720p'}]){
-  const env={AI_MODEL_PRICING_JSON:JSON.stringify([row])};
+  const env=pricingEnv([row]);
   assert.equal(pricingCatalog(env).configured,true);
   assert.equal(estimateGenerationPricing(request,model,env).credits,1);
  }
@@ -115,7 +123,7 @@ test('BASE #18: unrecognized Video roles and impossible reference counts never i
   videoInputMode:'first_last',referenceCount:2};
  const approvedScene={...base,credits:130,providerCostMicros:300000,
   videoInputMode:'reference_image',referenceCount:3};
- const env={AI_MODEL_PRICING_JSON:JSON.stringify([base,approvedLast,approvedScene])};
+ const env=pricingEnv([base,approvedLast,approvedScene]);
  const price=(mode,count)=>estimateGenerationPricing({
   kind:'video',model:model.id,ratio:'16:9',videoInputMode:mode,referenceCount:count,
  },model,env);

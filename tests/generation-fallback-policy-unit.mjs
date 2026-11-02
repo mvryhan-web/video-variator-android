@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {d18PricingJson} from './d18-pricing-fixture.mjs';
 import {planPreDispatchFallback} from '../server/generation-fallback-policy.js';
 import {estimateGenerationPricing} from '../server/generation-pricing.js';
 import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
@@ -73,7 +74,7 @@ test('BASE #8: real approved pricing registry permits lowercase usd fallback par
  const seedance={...MODEL_CATALOG.find(m=>m.id==='byteplus-seedance-2'),enabled:true};
  const veo={...MODEL_CATALOG.find(m=>m.id==='veo-3.1-lite-generate-preview'),enabled:true};
  assert.ok(seedance&&veo);
- const env={AI_MODEL_PRICING_JSON:JSON.stringify([
+ const env={AI_MODEL_PRICING_JSON:d18PricingJson([
   {model:seedance.id,provider:'BytePlus',kind:'video',credits:80,providerCostMicros:200000,currency:'usd',quality:'720p',durationSeconds:8},
   {model:veo.id,provider:'Google',kind:'video',credits:80,providerCostMicros:180000,currency:'usd',quality:'720p',durationSeconds:8}
  ])};
@@ -88,7 +89,7 @@ test('BASE #8: approved 2K image fallback respects real model formats and primar
  const byteplus={...MODEL_CATALOG.find(m=>m.id==='byteplus-seedream-4-5'),enabled:true};
  assert.ok(google&&byteplus);
  const requestImage={kind:'image',ratio:'1:1',references:[],resolution:'2K',outputFormat:'auto'};
- const env={AI_MODEL_PRICING_JSON:JSON.stringify([
+ const env={AI_MODEL_PRICING_JSON:d18PricingJson([
   {model:google.id,provider:'Google',kind:'image',credits:20,providerCostMicros:100000,currency:'usd',quality:'2K'},
   {model:byteplus.id,provider:'BytePlus',kind:'image',credits:20,providerCostMicros:95000,currency:'usd',quality:'2K'}
  ])};
