@@ -60,12 +60,27 @@ describe('JARVIX AI Voice Commander & Autonomous Butler System', () => {
     assert.ok(jarvisJs.includes('export function toggleJarvisVoice'), 'toggleJarvisVoice must be exported');
     assert.ok(jarvisJs.includes('export function handleJarvisVoiceCommand'), 'handleJarvisVoiceCommand must be exported');
     assert.ok(jarvisJs.includes('getJarvixVoice'), 'male voice selector must be defined');
+    assert.ok(jarvisJs.includes('pitch = 0.40'), 'deep masculine octave transposition must be set for default voices');
     assert.ok(jarvisJs.includes('jarvix_greeted'), 'smart memory session key must be used');
     assert.ok(jarvisJs.includes('SILENCE_TIMEOUT_MS'), 'silence timeout constant must be configured');
     assert.ok(jarvisJs.includes('applySiteTheme'), 'theme/lighting switcher must be exported');
     assert.ok(jarvisJs.includes('setSiteLanguage'), 'multilingual switcher must be exported');
     assert.ok(jarvisJs.includes('clearCurrentInputs'), 'deletion/clear action must be implemented');
     assert.ok(jarvisJs.includes('saveStudioHandoff'), 'generative handoff must be implemented');
+  });
+
+  it('verifies JARVIX resident brain: weather inquiries, instant opening and prompt expansion', () => {
+    const jarvisJs = fs.readFileSync(path.join(assetsDir, 'jarvis-core.js'), 'utf8');
+    assert.ok(jarvisJs.includes('WORLD_CITIES'), 'world cities weather knowledge base must exist');
+    assert.ok(jarvisJs.includes('handleWeatherInquiry'), 'weather inquiry handler must be defined');
+    assert.ok(jarvisJs.includes('instantOpen'), 'instantOpen must be exported');
+    assert.ok(jarvisJs.includes('expandCreativePrompt'), 'prompt expander must be defined');
+    assert.ok(jarvisJs.includes('halloween'), 'halloween prompt template must exist');
+  });
+
+  it('verifies generate-studio.js handles auto=1 for instant automatic generation start', () => {
+    const studioJs = fs.readFileSync(path.join(assetsDir, 'generate-studio.js'), 'utf8');
+    assert.ok(studioJs.includes("get('auto')==='1'"), 'studio must check auto=1 parameter');
   });
 
   it('verifies JARVIX naming convention with X ending across all headers', () => {
