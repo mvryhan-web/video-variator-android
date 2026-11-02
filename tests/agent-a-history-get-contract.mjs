@@ -15,8 +15,8 @@ const handlers=server.slice(start,end);
 // no-database sandbox. No application server, paid providers or payment APIs run.
 function fakeHistory({job=null,rows=[],dbThrows=false}={}){
  const routes=new Map(),sql=[],objects=[];
- const app={get:(path,...functions)=>routes.set(path,functions.at(-1)),
-  patch:(path,...functions)=>routes.set(path,functions.at(-1))};
+ const register=(path,...functions)=>routes.set(path,functions.at(-1));
+ const app={get:register,post:register,put:register,patch:register,delete:register};
  const pool={query:async(statement,params)=>{
   sql.push({statement,params});
   if(dbThrows)throw Error('DISPOSABLE_DB_FAILURE');
