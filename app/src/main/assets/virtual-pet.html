@@ -483,16 +483,19 @@
 
       const petData = {
         luna: {
+          accessibilityName: 'Luna the corgi',
           title: '🐕 Луна (Собака-корги)',
           desc: 'Маленький корги: медно-рыжая шерсть #D89150, кремово-белые участки #F6E8CE, медовые глаза #8B5737 и аккуратный мятный акцент #40DFAE. Защитник и верный спутник.',
           badge: '#40DFAE'
         },
         mira: {
+          accessibilityName: 'Mira the cat',
           title: '🐱 Мира (Дымчатая кошка)',
           desc: 'Тёмная дымчато-графитовая шерсть #28394E, кремовые акценты #F1ECE6, мятные глаза #66C4AD. Гибкое кошачье тело, длинный хвост. Спокойная и наблюдательная.',
           badge: '#66C4AD'
         },
         nova: {
+          accessibilityName: 'Nova the fox',
           title: '🦊 Нова (Рыжий лисёнок)',
           desc: 'Тёплая рыжая шерсть #EA853A, светлые участки #FFF4DF, пушистый длинный хвост, острые ушки, узкая лисья морда и мятно-изумрудные детали #4ADDB7. Любопытный исследователь.',
           badge: '#4ADDB7'
@@ -526,6 +529,7 @@
       function selectPet(key) {
         currentPetKey = key;
         const d = petData[key];
+        previewImg.alt = `Animated ${d.accessibilityName} preview`;
         cardTitle.textContent = d.title;
         cardDesc.textContent = d.desc;
         cardBadge.style.color = d.badge;
@@ -586,6 +590,10 @@
 
       function playSpriteLoop(animName) {
         stopAnimation();
+        if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
+          updatePreviewImage();
+          return;
+        }
         let frame = 0;
         animInterval = setInterval(() => {
           previewImg.src = `virtual-pet/${currentPetKey}/sprites/${animName}_0${frame}.png?v=${assetVersion}`;

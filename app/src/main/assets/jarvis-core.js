@@ -91,8 +91,8 @@ export function getJarvixVoice(langParam = 'ru') {
     );
     if (maleRu) return { voice: maleRu, isExplicitMale: true };
 
-    const nonFemaleRu = cachedVoices.find(v => v.lang.startsWith('ru') && !FEMALE_VOICE_REGEX.test(v.name));
-    if (nonFemaleRu) return { voice: nonFemaleRu, isExplicitMale: true };
+    const nonFemaleRu = cachedVoices.find(v => v.lang.startsWith('ru') && !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || '')));
+    if (nonFemaleRu) return { voice: nonFemaleRu, isExplicitMale: false };
 
     const anyRu = cachedVoices.find(v => v.lang.startsWith('ru'));
     if (anyRu) return { voice: anyRu, isExplicitMale: false };
@@ -104,8 +104,8 @@ export function getJarvixVoice(langParam = 'ru') {
     );
     if (maleFr) return { voice: maleFr, isExplicitMale: true };
 
-    const nonFemaleFr = cachedVoices.find(v => v.lang.startsWith('fr') && !FEMALE_VOICE_REGEX.test(v.name));
-    if (nonFemaleFr) return { voice: nonFemaleFr, isExplicitMale: true };
+    const nonFemaleFr = cachedVoices.find(v => v.lang.startsWith('fr') && !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || '')));
+    if (nonFemaleFr) return { voice: nonFemaleFr, isExplicitMale: false };
 
     const anyFr = cachedVoices.find(v => v.lang.startsWith('fr'));
     if (anyFr) return { voice: anyFr, isExplicitMale: false };
@@ -117,8 +117,8 @@ export function getJarvixVoice(langParam = 'ru') {
     );
     if (maleEs) return { voice: maleEs, isExplicitMale: true };
 
-    const nonFemaleEs = cachedVoices.find(v => v.lang.startsWith('es') && !FEMALE_VOICE_REGEX.test(v.name));
-    if (nonFemaleEs) return { voice: nonFemaleEs, isExplicitMale: true };
+    const nonFemaleEs = cachedVoices.find(v => v.lang.startsWith('es') && !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || '')));
+    if (nonFemaleEs) return { voice: nonFemaleEs, isExplicitMale: false };
 
     const anyEs = cachedVoices.find(v => v.lang.startsWith('es'));
     if (anyEs) return { voice: anyEs, isExplicitMale: false };
@@ -131,8 +131,8 @@ export function getJarvixVoice(langParam = 'ru') {
     );
     if (ukMale) return { voice: ukMale, isExplicitMale: true };
 
-    const nonFemaleEn = cachedVoices.find(v => v.lang.startsWith('en') && !FEMALE_VOICE_REGEX.test(v.name));
-    if (nonFemaleEn) return { voice: nonFemaleEn, isExplicitMale: true };
+    const nonFemaleEn = cachedVoices.find(v => v.lang.startsWith('en') && !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || '')));
+    if (nonFemaleEn) return { voice: nonFemaleEn, isExplicitMale: false };
 
     const anyEn = cachedVoices.find(v => v.lang.startsWith('en'));
     if (anyEn) return { voice: anyEn, isExplicitMale: false };
@@ -183,8 +183,9 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
     if (voiceMeta && voiceMeta.voice) {
       utterance.voice = voiceMeta.voice;
     }
-    // Authentic natural male pitch: 1.0 (never altered or robotic)
-    utterance.pitch = 1.0;
+    // Lower an unclassified system fallback slightly; only a named male voice
+    // is treated as a confirmed male selection. Web Speech still varies by OS.
+    utterance.pitch = voiceMeta && !voiceMeta.isExplicitMale ? 0.88 : 1.0;
     utterance.rate = 1.0;
 
     utterance.onstart = () => {
@@ -248,7 +249,7 @@ export function speakJarvis(text, onComplete = null) {
   const isEs = (lang === 'es' || lang.startsWith('es'));
   const langCode = isRu ? 'ru' : isFr ? 'fr' : isEs ? 'es' : 'en';
 
-  // Real human voice speech synthesis with proper language accent, crystal clear words, pitch: 1.0
+  // Browser speech synthesis uses the language selected on the site.
   // Microphone is strictly paused during speech and resumed safely on completion
   speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
 }

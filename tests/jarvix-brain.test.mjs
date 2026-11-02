@@ -2,7 +2,6 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import {
   DEEPSYQ_CAPABILITIES,
@@ -14,17 +13,15 @@ import {
   clearSession
 } from '../server/jarvix-brain.js';
 import {
-  JARVIX_TIMBRES,
   SUPPORTED_LANGUAGES,
   INFRASTRUCTURE_SPEC,
   createWavBuffer,
-  synthesizeSpeechWave
+  synthesizeSpeechWave,
+  installJarvixVoiceRoutes
 } from '../server/jarvix-voice.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
-const samplesDir = path.join(rootDir, 'app', 'src', 'main', 'assets', 'media', 'jarvix', 'samples');
-const manifestPath = path.join(rootDir, 'app', 'src', 'main', 'assets', 'media', 'jarvix', 'jarvix-voice.manifest.json');
 const studioHtmlPath = path.join(rootDir, 'app', 'src', 'main', 'assets', 'jarvix-studio.html');
 
 describe('JARVIX AI Brain & Multilingual Voice (Issue #498)', () => {
@@ -132,24 +129,8 @@ describe('JARVIX AI Brain & Multilingual Voice (Issue #498)', () => {
     });
   });
 
-  // 4. Multilingual Voice Profiles & Acoustic Harmonics
-  describe('4. Recognizable Male Multilingual Voice Architecture', () => {
-    it('defines 3 distinct male timbre variants with authentic base pitch (F0)', () => {
-      assert.ok(JARVIX_TIMBRES.baritone, 'Baritone timbre must exist');
-      assert.ok(JARVIX_TIMBRES.executive, 'Executive timbre must exist');
-      assert.ok(JARVIX_TIMBRES.warm, 'Warm timbre must exist');
-
-      assert.equal(JARVIX_TIMBRES.baritone.fundamentalHz, 105);
-      assert.equal(JARVIX_TIMBRES.executive.fundamentalHz, 122);
-      assert.equal(JARVIX_TIMBRES.warm.fundamentalHz, 115);
-
-      // Verify pitch is in natural masculine range (never dropped to demonic robotics)
-      for (const [key, profile] of Object.entries(JARVIX_TIMBRES)) {
-        assert.ok(profile.fundamentalHz >= 95 && profile.fundamentalHz <= 135, `${key} pitch ${profile.fundamentalHz}Hz must be in natural baritone/tenor range`);
-        assert.ok(profile.name && profile.description);
-      }
-    });
-
+  // 4. Multilingual browser speech status
+  describe('4. Multilingual Browser Speech Status', () => {
     it('supports all 4 core languages (RU, EN, ES, FR)', () => {
       const langs = Object.keys(SUPPORTED_LANGUAGES);
       assert.ok(langs.includes('ru'), 'Must support Russian');
@@ -169,71 +150,49 @@ describe('JARVIX AI Brain & Multilingual Voice (Issue #498)', () => {
     });
   });
 
-  // 5. 12 Generated WAV Audio Samples & Manifest Integrity
-  describe('5. Voice Samples & Manifest Verification', () => {
-    it('verifies jarvix-voice.manifest.json exists and catalogues all 12 samples', () => {
-      assert.ok(fs.existsSync(manifestPath), 'Manifest file must exist');
-      const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-
-      const sampleKeys = Object.keys(manifest.samples);
-      assert.equal(sampleKeys.length, 12);
-      assert.deepEqual(Object.keys(manifest.timbres), ['baritone', 'executive', 'warm']);
-
-      for (const sample of Object.values(manifest.samples)) {
-        assert.ok((sample.relPath || sample.fileName || '').endsWith('.wav'));
-        assert.ok(sample.sha256 && sample.sha256.length === 64, 'Must have valid SHA256');
-        assert.ok(sample.fileSize > 100000, 'Audio sample size must be non-empty valid audio');
-      }
-    });
-
-    it('verifies every single one of the 12 WAV sample files exists on disk with valid RIFF header', () => {
-      const timbres = ['baritone', 'executive', 'warm'];
-      const langs = ['ru', 'en', 'es', 'fr'];
-
-      for (const timbre of timbres) {
-        for (const lang of langs) {
-          const fileName = `sample_${timbre}_${lang}.wav`;
-          const filePath = path.join(samplesDir, fileName);
-
-          assert.ok(fs.existsSync(filePath), `Sample ${fileName} must exist on disk`);
-          const buf = fs.readFileSync(filePath);
-
-          // RIFF WAV Header check
-          assert.equal(buf.toString('ascii', 0, 4), 'RIFF', `${fileName} must start with RIFF`);
-          assert.equal(buf.toString('ascii', 8, 12), 'WAVE', `${fileName} format must be WAVE`);
-          assert.equal(buf.toString('ascii', 12, 16), 'fmt ', `${fileName} subchunk1 must be fmt `);
-          assert.equal(buf.toString('ascii', 36, 40), 'data', `${fileName} subchunk2 must be data`);
-          assert.ok(buf.length > 150000, `${fileName} must be of realistic length`);
-        }
-      }
-    });
+  // 5. Honest voice readiness
+  it('does not claim an uninstalled backend or measured infrastructure', () => {
+    assert.equal(INFRASTRUCTURE_SPEC.status, 'not_installed');
+    assert.equal(INFRASTRUCTURE_SPEC.ttsEngine, null);
+    assert.equal(INFRASTRUCTURE_SPEC.sttEngine, null);
+    assert.equal(INFRASTRUCTURE_SPEC.latency, 'not_measured');
   });
 
-  // 6. Self-Hosted On-Premise Infrastructure Specs
-  describe('6. Self-Hosted On-Premise Infrastructure & Latency Specs', () => {
-    it('provides concrete hardware, engine, latency and zero-spend metrics', () => {
-      assert.ok(INFRASTRUCTURE_SPEC.ttsEngine.includes('Chatterbox'));
-      assert.ok(INFRASTRUCTURE_SPEC.sttEngine.includes('faster-whisper'));
-      assert.ok(INFRASTRUCTURE_SPEC.latencyTarget.p95 <= 220, 'p95 target must be <= 220ms');
-      assert.equal(INFRASTRUCTURE_SPEC.costModel.testingAndDevSpend, '$0.00');
-      assert.ok(INFRASTRUCTURE_SPEC.productionHardware.gpu.includes('L4'));
-    });
+  it('returns unavailable instead of serving generated tones as speech', async () => {
+    const handlers = new Map();
+    const app = {get:(route,fn)=>handlers.set(`GET ${route}`,fn),all:(route,fn)=>handlers.set(`ALL ${route}`,fn)};
+    installJarvixVoiceRoutes(app);
+    const config = await new Promise(resolve=>handlers.get('GET /api/jarvix/voice-config')({}, {json:resolve}));
+    assert.equal(config.speechModelInstalled,false);
+    assert.deepEqual(config.samples,{});
+    for (const route of ['/api/jarvix/tts','/api/jarvix/stt']) {
+      let status=200,body;
+      const res={status(code){status=code;return this;},json(value){body=value;return this;}};
+      handlers.get(`ALL ${route}`)({},res);
+      assert.equal(status,503);
+      assert.equal(body.error,'VOICE_MODEL_NOT_INSTALLED');
+    }
   });
 
   // 7. Review Studio Interface
   describe('7. Interactive JARVIX Review Studio (jarvix-studio.html)', () => {
-    it('contains audio players for 12 samples, dialogue sandbox, and state inspector', () => {
+    it('shows the four browser-language previews without claiming a bundled voice engine', () => {
       assert.ok(fs.existsSync(studioHtmlPath), 'jarvix-studio.html must exist');
       const html = fs.readFileSync(studioHtmlPath, 'utf8');
 
       assert.ok(html.includes('JARVIX Intelligence & Multilingual Voice Studio'));
-      assert.ok(html.includes('id="timbreTabs"'));
       assert.ok(html.includes('id="samplesList"'));
+      assert.ok(html.includes("sessionStorage.getItem('jarvix_studio_session')"));
       assert.ok(html.includes('id="terminalLogs"'));
       assert.ok(html.includes('id="stateInspector"'));
       assert.ok(html.includes('/api/jarvix/chat'));
-      assert.ok(html.includes('sample_baritone_ru.wav'));
-      assert.ok(html.includes('Self-Hosted On-Premise Architecture'));
+      assert.ok(html.includes('locale:\'ru-RU\''));
+      assert.ok(html.includes('locale:\'en-GB\''));
+      assert.ok(html.includes('locale:\'es-ES\''));
+      assert.ok(html.includes('locale:\'fr-FR\''));
+      assert.ok(html.includes('dedicated JARVIX voice engine is not installed yet'));
+      assert.ok(html.includes('Voice engine deployment plan'));
+      assert.ok(!html.includes('sample_baritone_ru.wav'));
       assert.ok(html.includes('Тест защиты'));
     });
   });

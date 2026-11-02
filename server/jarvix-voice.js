@@ -1,27 +1,12 @@
 /**
- * DEEPSYQ JARVIX Multilingual Voice System — Issue #498 (Coordinator #233)
+ * DEEPSYQ JARVIX voice integration status
  *
  * Implements:
- * 1. Single original signature voice recognizable across 4 languages: RU, EN, ES, FR.
- * 2. Three distinct original timbre profiles for owner evaluation:
- *    - Baritone ("Resonant Baritone", ~105 Hz)
- *    - Executive ("Tech Executive / Crisp Butler", ~122 Hz)
- *    - Warm ("Warm Companion", ~115 Hz)
- * 3. Self-hosted on-premise TTS/STT architecture (Chatterbox Multilingual / Piper & faster-whisper).
- * 4. Transparent hardware/GPU requirements and infrastructure cost metrics.
- * 5. Deterministic, zero-spend audio synthesis and streaming endpoint.
+ * No production speech model is installed yet. The waveform helper below is a
+ * test fixture only; it does not synthesize speech and is never exposed by TTS.
  */
 
-import path from 'node:path';
-import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ASSETS_DIR = path.resolve(__dirname, '..', 'app', 'src', 'main', 'assets');
-const SAMPLES_DIR = path.join(ASSETS_DIR, 'media', 'jarvix', 'samples');
-const MANIFEST_PATH = path.join(ASSETS_DIR, 'media', 'jarvix', 'jarvix-voice.manifest.json');
-
-// 1. VOICE PROFILES (Original Timbres)
+// Acoustic targets only. These are not implemented or currently selectable.
 export const JARVIX_TIMBRES = Object.freeze({
   baritone: {
     id: 'baritone',
@@ -59,35 +44,14 @@ export const SUPPORTED_LANGUAGES = Object.freeze({
   fr: { code: 'fr', name: 'French', native: 'Français', locale: 'fr-FR' }
 });
 
-// 2. SELF-HOSTED INFRASTRUCTURE SPECIFICATIONS
+// Explicit status: no private inference service or GPU has been provisioned.
 export const INFRASTRUCTURE_SPEC = Object.freeze({
-  ttsEngine: 'Chatterbox-Multilingual-v2 / Piper-Multilingual-ONNX',
-  sttEngine: 'faster-whisper-large-v3-turbo / whisper.cpp',
-  latencyTarget: {
-    p95: 220,
-    targetMs: 75,
-    description: 'Zero external network latency on local or edge inference'
-  },
-  minimumHardware: {
-    gpu: 'NVIDIA RTX 3060 / T4 (12GB VRAM)',
-    cpu: '4 vCPU (x86_64)',
-    ram: '16 GB',
-    disk: '50 GB NVMe',
-    expectedLatencyMs: 140,
-    estimatedCloudCostHourly: '$0.29 - $0.52 / hr'
-  },
-  productionHardware: {
-    gpu: 'NVIDIA L4 / A10G (24GB VRAM)',
-    cpu: '8 vCPU',
-    ram: '32 GB',
-    expectedLatencyMs: 75,
-    estimatedCloudCostHourly: '$0.65 - $0.90 / hr'
-  },
-  costModel: {
-    testingAndDevSpend: '$0.00',
-    onPremise: '$0 recurring (runs on owner workstation / dedicated GPU)'
-  },
-  onPremiseCost: '$0 recurring (runs on owner workstation / dedicated GPU)'
+  ttsEngine: null,
+  sttEngine: null,
+  status: 'not_installed',
+  latency: 'not_measured',
+  hardware: 'not_provisioned',
+  devSpend: '$0.00; local mock only'
 });
 
 // 3. PCM WAV GENERATOR UTILITY
@@ -114,7 +78,7 @@ export function createWavBuffer(pcmData, sampleRate = 24000, numChannels = 1) {
   return buffer;
 }
 
-// 4. SYNTHESIZE HARMONIC WAVEFORM (Deterministic zero-spend speech sample synthesis)
+// Test fixture: creates an audible tone with an audio header, not human speech.
 export function synthesizeSpeechWave(text, arg2 = 'baritone', arg3 = null, sampleRate = 24000) {
   let timbreId = 'baritone';
   if (JARVIX_TIMBRES[arg2]) {
@@ -166,66 +130,18 @@ export function installJarvixVoiceRoutes(app) {
 
     res.json({
       ok: true,
-      service: 'JARVIX Multilingual Voice System',
-      defaultTimbre: 'baritone',
-      timbres: JARVIX_TIMBRES,
+      service: 'JARVIX voice status',
+      defaultTimbre: null,
+      timbres: {},
       languages: SUPPORTED_LANGUAGES,
       infrastructure: INFRASTRUCTURE_SPEC,
-      samples: manifestData?.samples || {}
+      speechModelInstalled: false,
+      speechSource: 'browser',
+      samples: {}
     });
   });
 
-  // Multilingual Text-to-Speech Endpoint (Support BOTH GET and POST for HTML5 Audio)
-  const handleTtsRequest = async (req, res) => {
-    try {
-      const text = (req.method === 'GET' ? req.query.text : req.body?.text) || '';
-      const language = (req.method === 'GET' ? (req.query.lang || req.query.language) : (req.body?.language || req.body?.lang)) || 'ru';
-      const timbre = (req.method === 'GET' ? req.query.timbre : req.body?.timbre) || 'baritone';
-
-      if (!text || typeof text !== 'string') {
-        return res.status(400).json({ error: 'MISSING_TEXT' });
-      }
-
-      const langCode = SUPPORTED_LANGUAGES[language] ? language : 'ru';
-      const cleanTimbre = JARVIX_TIMBRES[timbre] ? timbre : 'baritone';
-
-      // Check if a pre-rendered high quality sample exists for greeting/general phrase
-      const sampleFileName = `sample_${cleanTimbre}_${langCode}.wav`;
-      const sampleFilePath = path.join(SAMPLES_DIR, sampleFileName);
-
-      if (fs.existsSync(sampleFilePath) && (text.includes('JARVIX') || text.includes('Здравствуйте') || text.includes('Greetings') || text.length < 180)) {
-        res.setHeader('Content-Type', 'audio/wav');
-        res.setHeader('X-Jarvix-Timbre', cleanTimbre);
-        res.setHeader('X-Jarvix-Language', langCode);
-        return res.sendFile(sampleFilePath);
-      }
-
-      // Synthesize harmonic audio stream
-      const wavBuffer = synthesizeSpeechWave(text, cleanTimbre);
-      res.setHeader('Content-Type', 'audio/wav');
-      res.setHeader('X-Jarvix-Timbre', cleanTimbre);
-      res.setHeader('X-Jarvix-Language', langCode);
-      res.send(wavBuffer);
-    } catch (err) {
-      console.error('[JARVIX-VOICE] TTS error:', err);
-      res.status(500).json({ error: 'JARVIX_TTS_ERROR' });
-    }
-  };
-
-  app.get('/api/jarvix/tts', handleTtsRequest);
-  app.post('/api/jarvix/tts', handleTtsRequest);
-
-  // Speech-to-Text Transcription Endpoint (faster-whisper architecture)
-  app.post('/api/jarvix/stt', async (req, res) => {
-    try {
-      // Stub endpoint for self-hosted whisper model integration
-      res.json({
-        ok: true,
-        text: '',
-        note: 'Self-hosted faster-whisper pipeline ready for local inference'
-      });
-    } catch (err) {
-      res.status(500).json({ error: 'JARVIX_STT_ERROR' });
-    }
-  });
+  const unavailable = (_req, res) => res.status(503).json({error:'VOICE_MODEL_NOT_INSTALLED',speechModelInstalled:false});
+  app.all('/api/jarvix/tts', unavailable);
+  app.all('/api/jarvix/stt', unavailable);
 }

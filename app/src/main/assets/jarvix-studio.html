@@ -337,7 +337,7 @@
       <div class="studio-badge">Autonomous Butler Engine</div>
       <h1 class="studio-title">JARVIX Intelligence & Multilingual Voice Studio</h1>
       <p class="studio-subtitle">
-        Review the recognizable male film voice across 4 languages, multi-turn conversational memory, truthful platform capabilities, safe tool execution, and self-hosted on-premise infrastructure.
+        Preview the four language routes, test temporary conversation memory, and explore the verified DEEPSYQ site map.
       </p>
     </header>
 
@@ -346,35 +346,20 @@
       <section class="studio-card">
         <h2 class="card-title">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
-          Original Voice Timbre & Languages
+          Browser voice preview
         </h2>
         <p style="font-size: 0.85rem; color: #94a3b8; margin-top: -8px; margin-bottom: 16px;">
-          Select a timbre profile to inspect acoustic harmonics across Russian, English, Spanish, and French.
+          Audio uses speech voices installed in your browser. Voice choice and quality can vary by device; a dedicated JARVIX voice engine is not installed yet.
         </p>
-
-        <div class="timbre-tabs" id="timbreTabs">
-          <button class="timbre-tab active" data-timbre="baritone">
-            Baritone (105 Hz)
-            <span>Resonant & Deep</span>
-          </button>
-          <button class="timbre-tab" data-timbre="executive">
-            Executive (122 Hz)
-            <span>Crisp Tech Butler</span>
-          </button>
-          <button class="timbre-tab" data-timbre="warm">
-            Warm (115 Hz)
-            <span>Natural Companion</span>
-          </button>
-        </div>
 
         <div class="samples-list" id="samplesList">
           <!-- Dynamically populated or rendered -->
         </div>
 
         <div style="margin-top: 20px; padding: 12px; background: rgba(6, 182, 212, 0.08); border-radius: 8px; border: 1px solid rgba(6, 182, 212, 0.2);">
-          <div style="font-weight: 600; font-size: 0.85rem; color: #38bdf8; margin-bottom: 4px;">Acoustic Consistency Guarantee</div>
+          <div style="font-weight: 600; font-size: 0.85rem; color: #38bdf8; margin-bottom: 4px;">Voice status</div>
           <div style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.4;">
-            Identical fundamental frequency (F0) and formants are preserved across all 4 languages. Switching language does not change voice personality.
+            The preview follows the selected language, but browser voices differ by language and operating system. A single original male voice across all four languages requires a dedicated licensed voice model.
           </div>
         </div>
       </section>
@@ -442,7 +427,7 @@
       <section class="studio-card">
         <h2 class="card-title">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>
-          Self-Hosted On-Premise Architecture
+          Voice engine deployment plan
         </h2>
         <table class="specs-table">
           <thead>
@@ -455,23 +440,23 @@
           <tbody>
             <tr>
               <td>STT (Распознавание речи)</td>
-              <td>faster-whisper / whisper.cpp (large-v3-turbo, int8)</td>
-              <td><span class="badge-ok">READY</span></td>
+              <td>Not configured in this preview</td>
+              <td>Not installed</td>
             </tr>
             <tr>
               <td>TTS (Голосовой синтез)</td>
-              <td>Chatterbox Multilingual / Piper Multilingual (VITS)</td>
-              <td><span class="badge-ok">READY</span></td>
+              <td>Candidate: licensed multilingual male voice model</td>
+              <td>Not installed</td>
             </tr>
             <tr>
               <td>Целевая задержка (p95)</td>
-              <td>&lt; 220 ms (Zero network latency, on-edge inference)</td>
-              <td><span class="badge-ok">&lt; 220 ms</span></td>
+              <td>To be measured after a voice model is selected</td>
+              <td>Not measured</td>
             </tr>
             <tr>
               <td>Аппаратные требования</td>
-              <td>1x NVIDIA L4 (24GB VRAM) или RTX 4090 (24GB)</td>
-              <td><span class="badge-ok">VERIFIED</span></td>
+              <td>Depends on the selected model and hosting plan</td>
+              <td>Not provisioned</td>
             </tr>
             <tr>
               <td>Безопасность действий</td>
@@ -494,38 +479,29 @@
     </div>
   </div>
 
-  <audio id="audioPlayer" style="display:none;"></audio>
-
   <script type="module">
-    let currentTimbre = 'baritone';
-    let currentSessionId = 'studio-session-' + Date.now();
-    let audioPlayer = document.getElementById('audioPlayer');
+    function getStudioSessionId() {
+      try {
+        const existing = sessionStorage.getItem('jarvix_studio_session');
+        if (existing && /^[\w-]{1,80}$/.test(existing)) return existing;
+        const created = 'studio-session-' + (crypto.randomUUID?.() || Date.now());
+        sessionStorage.setItem('jarvix_studio_session', created);
+        return created;
+      } catch (_) { return 'studio-session-' + Date.now(); }
+    }
+    let currentSessionId = getStudioSessionId();
     let currentlyPlayingBtn = null;
 
-    const SAMPLES_DATA = {
-      baritone: [
-        { lang: 'ru', flag: '🇷🇺', name: 'Русский', text: 'Здравствуйте! Я JARVIX — ваш бортовой голосовой помощник Deepsyq. Чем могу помочь?', file: '/media/jarvix/samples/sample_baritone_ru.wav' },
-        { lang: 'en', flag: '🇬🇧', name: 'English', text: 'Greetings. I am JARVIX — your Deepsyq creative voice butler. At your command.', file: '/media/jarvix/samples/sample_baritone_en.wav' },
-        { lang: 'es', flag: '🇪🇸', name: 'Español', text: '¡Saludos! Soy JARVIX, su asistente de voz Deepsyq. A su servicio.', file: '/media/jarvix/samples/sample_baritone_es.wav' },
-        { lang: 'fr', flag: '🇫🇷', name: 'Français', text: 'Bonjour. Je suis JARVIX, votre majordome vocal Deepsyq. À vos ordres.', file: '/media/jarvix/samples/sample_baritone_fr.wav' }
-      ],
-      executive: [
-        { lang: 'ru', flag: '🇷🇺', name: 'Русский', text: 'Здравствуйте! Я JARVIX — ваш бортовой голосовой помощник Deepsyq. Чем могу помочь?', file: '/media/jarvix/samples/sample_executive_ru.wav' },
-        { lang: 'en', flag: '🇬🇧', name: 'English', text: 'Greetings. I am JARVIX — your Deepsyq creative voice butler. At your command.', file: '/media/jarvix/samples/sample_executive_en.wav' },
-        { lang: 'es', flag: '🇪🇸', name: 'Español', text: '¡Saludos! Soy JARVIX, su asistente de voz Deepsyq. A su servicio.', file: '/media/jarvix/samples/sample_executive_es.wav' },
-        { lang: 'fr', flag: '🇫🇷', name: 'Français', text: 'Bonjour. Je suis JARVIX, votre majordome vocal Deepsyq. À vos ordres.', file: '/media/jarvix/samples/sample_executive_fr.wav' }
-      ],
-      warm: [
-        { lang: 'ru', flag: '🇷🇺', name: 'Русский', text: 'Здравствуйте! Я JARVIX — ваш бортовой голосовой помощник Deepsyq. Чем могу помочь?', file: '/media/jarvix/samples/sample_warm_ru.wav' },
-        { lang: 'en', flag: '🇬🇧', name: 'English', text: 'Greetings. I am JARVIX — your Deepsyq creative voice butler. At your command.', file: '/media/jarvix/samples/sample_warm_en.wav' },
-        { lang: 'es', flag: '🇪🇸', name: 'Español', text: '¡Saludos! Soy JARVIX, su asistente de voz Deepsyq. A su servicio.', file: '/media/jarvix/samples/sample_warm_es.wav' },
-        { lang: 'fr', flag: '🇫🇷', name: 'Français', text: 'Bonjour. Je suis JARVIX, votre majordome vocal Deepsyq. À vos ordres.', file: '/media/jarvix/samples/sample_warm_fr.wav' }
-      ]
-    };
+    const SAMPLES_DATA = [
+        { lang: 'ru', locale:'ru-RU', flag: '🇷🇺', name: 'Русский', text: 'Здравствуйте! Я JARVIX — ваш голосовой помощник Deepsyq. Чем могу помочь?' },
+        { lang: 'en', locale:'en-GB', flag: '🇬🇧', name: 'English', text: 'Greetings. I am JARVIX, your Deepsyq assistant. How may I help?' },
+        { lang: 'es', locale:'es-ES', flag: '🇪🇸', name: 'Español', text: 'Saludos. Soy JARVIX, su asistente de Deepsyq. ¿Cómo puedo ayudarle?' },
+        { lang: 'fr', locale:'fr-FR', flag: '🇫🇷', name: 'Français', text: 'Bonjour. Je suis JARVIX, votre assistant Deepsyq. Comment puis-je vous aider?' }
+      ];
 
     function renderSamples() {
       const container = document.getElementById('samplesList');
-      const list = SAMPLES_DATA[currentTimbre] || [];
+      const list = SAMPLES_DATA;
       container.innerHTML = list.map(s => `
         <div class="sample-row">
           <div class="sample-meta">
@@ -536,7 +512,7 @@
             </div>
           </div>
           <div class="sample-controls">
-            <button class="play-btn" data-url="${s.file}">
+            <button class="play-btn" data-lang="${s.lang}" data-locale="${s.locale}" data-text="${escapeHtml(s.text)}">
               <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
               Слушать
             </button>
@@ -546,10 +522,10 @@
 
       container.querySelectorAll('.play-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          const url = btn.getAttribute('data-url');
+          const text = btn.getAttribute('data-text');
+          const lang = btn.getAttribute('data-locale');
           if (currentlyPlayingBtn === btn) {
-            audioPlayer.pause();
-            audioPlayer.currentTime = 0;
+            window.speechSynthesis?.cancel();
             btn.classList.remove('playing');
             btn.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Слушать`;
             currentlyPlayingBtn = null;
@@ -561,13 +537,25 @@
             currentlyPlayingBtn.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Слушать`;
           }
 
-          audioPlayer.src = url;
-          audioPlayer.play().catch(e => console.warn(e));
+          if (!('speechSynthesis' in window)) {
+            appendLog('SYSTEM', 'В этом браузере нет Web Speech голосов.', 'system');
+            return;
+          }
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = lang;
+          const langPrefix = lang.slice(0,2);
+          const voices = window.speechSynthesis.getVoices();
+          const voice = voices.find(v => v.lang.toLowerCase().startsWith(langPrefix) && /(?:male|man|david|daniel|george|thomas|henri|jorge|pavel|dmitry|александр|дмитрий|павел|homme|hombre)/i.test(v.name+' '+v.voiceURI))
+            || voices.find(v => v.lang.toLowerCase().startsWith(langPrefix));
+          if (voice) utterance.voice = voice;
+          utterance.pitch = voice && /(?:female|woman|zira|samantha|karen|anna|ирина|елена|victoria)/i.test(voice.name+' '+voice.voiceURI) ? 0.88 : 1;
+          window.speechSynthesis.speak(utterance);
           btn.classList.add('playing');
           btn.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> Стоп`;
           currentlyPlayingBtn = btn;
 
-          audioPlayer.onended = () => {
+          utterance.onend = utterance.onerror = () => {
             btn.classList.remove('playing');
             btn.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Слушать`;
             currentlyPlayingBtn = null;
@@ -575,17 +563,6 @@
         });
       });
     }
-
-    // Timbre Tabs
-    document.querySelectorAll('.timbre-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.timbre-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        currentTimbre = tab.getAttribute('data-timbre');
-        try { localStorage.setItem('jarvix_timbre', currentTimbre); } catch (_) {}
-        renderSamples();
-      });
-    });
 
     renderSamples();
 
@@ -607,6 +584,28 @@
       return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
     }
 
+    function currentLanguage() {
+      try {
+        const lang = localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang') || document.documentElement.lang || 'ru';
+        return ['ru','en','es','fr'].includes(lang.slice(0,2)) ? lang.slice(0,2) : 'ru';
+      } catch (_) { return 'ru'; }
+    }
+
+    function speakReply(text, language) {
+      if (!('speechSynthesis' in window) || !text) return;
+      window.speechSynthesis.cancel();
+      const locales = {ru:'ru-RU',en:'en-GB',es:'es-ES',fr:'fr-FR'};
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = locales[language] || locales.ru;
+      const voices = window.speechSynthesis.getVoices();
+      const prefix = language || 'ru';
+      const voice = voices.find(v => v.lang.toLowerCase().startsWith(prefix) && /(?:male|man|david|daniel|george|thomas|henri|jorge|pavel|dmitry|александр|дмитрий|павел|homme|hombre)/i.test(v.name+' '+v.voiceURI))
+        || voices.find(v => v.lang.toLowerCase().startsWith(prefix));
+      if (voice) utterance.voice = voice;
+      utterance.pitch = voice && /(?:female|woman|zira|samantha|karen|anna|ирина|елена|victoria)/i.test(voice.name+' '+voice.voiceURI) ? 0.88 : 1;
+      window.speechSynthesis.speak(utterance);
+    }
+
     async function sendMessage(text) {
       if (!text || !text.trim()) return;
       const clean = text.trim();
@@ -620,8 +619,7 @@
           body: JSON.stringify({
             sessionId: currentSessionId,
             message: clean,
-            timbre: currentTimbre,
-            language: 'ru'
+            language: currentLanguage()
           })
         });
 
@@ -651,7 +649,7 @@
         if (data.audioUrl) {
           const snd = new Audio(data.audioUrl);
           snd.play().catch(() => {});
-        }
+        } else speakReply(data.reply, data.language || currentLanguage());
       } catch (err) {
         appendLog('SYSTEM', 'Ошибка связи: ' + err.message, 'system');
       }
@@ -676,7 +674,8 @@
           body: JSON.stringify({ sessionId: currentSessionId })
         });
       } catch (_) {}
-      currentSessionId = 'studio-session-' + Date.now();
+      try { sessionStorage.removeItem('jarvix_studio_session'); } catch (_) {}
+      currentSessionId = getStudioSessionId();
       terminalLogs.innerHTML = '';
       appendLog('JARVIX', 'Память диалога сброшена. Начните новый разговор.', 'jarvix');
       stateInspector.textContent = JSON.stringify({
