@@ -182,6 +182,7 @@ describe('JARVIX AI Brain & Multilingual Voice (Issue #498)', () => {
 
       assert.ok(html.includes('JARVIX Intelligence & Multilingual Voice Studio'));
       assert.ok(html.includes('id="samplesList"'));
+      assert.ok(html.includes("sessionStorage.getItem('jarvix_studio_session')"));
       assert.ok(html.includes('id="terminalLogs"'));
       assert.ok(html.includes('id="stateInspector"'));
       assert.ok(html.includes('/api/jarvix/chat'));

@@ -480,7 +480,16 @@
   </div>
 
   <script type="module">
-    let currentSessionId = 'studio-session-' + Date.now();
+    function getStudioSessionId() {
+      try {
+        const existing = sessionStorage.getItem('jarvix_studio_session');
+        if (existing && /^[\w-]{1,80}$/.test(existing)) return existing;
+        const created = 'studio-session-' + (crypto.randomUUID?.() || Date.now());
+        sessionStorage.setItem('jarvix_studio_session', created);
+        return created;
+      } catch (_) { return 'studio-session-' + Date.now(); }
+    }
+    let currentSessionId = getStudioSessionId();
     let currentlyPlayingBtn = null;
 
     const SAMPLES_DATA = [
@@ -665,7 +674,8 @@
           body: JSON.stringify({ sessionId: currentSessionId })
         });
       } catch (_) {}
-      currentSessionId = 'studio-session-' + Date.now();
+      try { sessionStorage.removeItem('jarvix_studio_session'); } catch (_) {}
+      currentSessionId = getStudioSessionId();
       terminalLogs.innerHTML = '';
       appendLog('JARVIX', 'Память диалога сброшена. Начните новый разговор.', 'jarvix');
       stateInspector.textContent = JSON.stringify({
