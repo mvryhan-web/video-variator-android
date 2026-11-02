@@ -1,3 +1,5 @@
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {recordAdminAudit} from './admin-audit.js';
@@ -21,6 +23,49 @@ function array(v){if(v==null)return [];if(!Array.isArray(v)||v.length>10||v.some
 function object(v){if(v==null)return {};if(typeof v!=='object'||Array.isArray(v)||JSON.stringify(v).length>5000)throw Error('INVALID_INSPIRATION');return v;}
 function bool(v,def=false){if(v==null)return def;if(typeof v!=='boolean')throw Error('INVALID_INSPIRATION');return v;}
 function order(v,def=100){if(v==null)return def;if(!Number.isInteger(v)||v<0||v>100000)throw Error('INVALID_INSPIRATION');return v;}
+
+
+let fallbackInspirationItems = null;
+async function getManifestInspirationItems() {
+  if (fallbackInspirationItems) return fallbackInspirationItems;
+  try {
+    const assetsPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../app/src/main/assets');
+    const ownerMedia = JSON.parse(await readFile(path.join(assetsPath, 'media/home/owner-20261018/manifest.json'), 'utf8'));
+    const imageMedia = JSON.parse(await readFile(path.join(assetsPath, 'media/inspiration/openai-20261021/manifest.json'), 'utf8'));
+    const ownerInspiration = JSON.parse(await readFile(path.join(assetsPath, 'media/inspiration/owner-20261031/manifest.json'), 'utf8'));
+    const ownerNext = JSON.parse(await readFile(path.join(assetsPath, 'media/inspiration/owner-next-20261031/manifest.json'), 'utf8'));
+
+    const all = [
+      ...(ownerMedia.items || []),
+      ...(imageMedia.items || []),
+      ...(ownerInspiration.items || []),
+      ...(ownerNext.items || [])
+    ];
+    fallbackInspirationItems = all.map(item => ({
+      id: item.slug,
+      slug: item.slug,
+      title: item.title,
+      kind: item.kind,
+      category: item.category,
+      description: item.description || '',
+      previewUrl: item.previewUrl,
+      previewPosterUrl: item.previewPosterUrl || null,
+      prompt: item.prompt,
+      defaultModel: item.defaultModel || null,
+      displayModel: item.displayModel || null,
+      previewDimensions: item.previewDimensions || null,
+      aspectRatio: item.aspectRatio || '16:9',
+      requiredInputTypes: item.requiredInputTypes || [],
+      defaultSettings: item.defaultSettings || {},
+      actionTarget: item.actionTarget || 'studio',
+      featured: !!item.featured,
+      sortOrder: item.sortOrder || 100
+    }));
+  } catch (err) {
+    fallbackInspirationItems = [];
+  }
+  return fallbackInspirationItems;
+}
 
 export async function initInspiration(pool,env=process.env){
  if(!pool)throw Error('DATABASE_NOT_CONFIGURED');

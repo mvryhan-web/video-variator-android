@@ -1,3 +1,5 @@
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {recordAdminAudit} from './admin-audit.js';
@@ -20,6 +22,37 @@ function inputTypes(v){if(v==null)return [];if(!Array.isArray(v)||v.length>10||v
 function rights(v){if(v==null||v==='')return null;if(!RIGHTS.has(v))throw Error('INVALID_TEMPLATE');return v;}
 function bool(v,def=false){if(v==null)return def;if(typeof v!=='boolean')throw Error('INVALID_TEMPLATE');return v;}
 function order(v,def=100){if(v==null)return def;if(!Number.isInteger(v)||v<0||v>100000)throw Error('INVALID_TEMPLATE');return v;}
+
+
+let fallbackTemplates = null;
+async function getManifestTemplates() {
+  if (fallbackTemplates) return fallbackTemplates;
+  try {
+    const assetsPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../app/src/main/assets');
+    const creativeMedia = JSON.parse(await readFile(path.join(assetsPath, 'media/creative/creative50-20261021/manifest.json'), 'utf8'));
+    fallbackTemplates = creativeMedia.items
+      .filter(item => item.placement === 'apps' && item.active)
+      .map(item => ({
+        id: item.id,
+        title: item.title,
+        slug: item.id,
+        description: item.description,
+        category: item.category,
+        generationType: 'image',
+        thumbnail: item.previewUrl,
+        promptTemplate: item.prompt,
+        defaultModel: null,
+        defaultSettings: item.defaultSettings || {},
+        requiredInputTypes: [],
+        featured: true,
+        active: true,
+        sortOrder: item.sortOrder || 10
+      }));
+  } catch (err) {
+    fallbackTemplates = [];
+  }
+  return fallbackTemplates;
+}
 
 export async function initTemplates(pool,env=process.env){
  if(!pool)throw Error('DATABASE_NOT_CONFIGURED');
@@ -85,6 +118,22 @@ export function installGenerationTemplates(app,{auth,pool,env=process.env}){
   if(req.query.type){args.push(String(req.query.type).slice(0,40));where.push(`generation_type=$${args.length}`);}
   if(req.query.featured==='true')where.push('featured=true');
   const {rows}=await pool.query(`SELECT * FROM vv_ai_template WHERE ${where.join(' AND ')} ORDER BY featured DESC,sort_order ASC,title ASC LIMIT 100`,args);
+  if (!rows || rows.length < 5 || rows.every(r => r.thumbnail === '/deepsyq-logo.png')) {
+    const manifestTpls = await getManifestTemplates();
+    if (manifestTpls && manifestTpls.length > 0) {
+      let filtered = manifestTpls;
+      if (req.query.category) {
+        filtered = filtered.filter(t => t.category === req.query.category);
+      }
+      if (req.query.type) {
+        filtered = filtered.filter(t => t.generationType === req.query.type);
+      }
+      if (req.query.featured === 'true') {
+        filtered = filtered.filter(t => t.featured);
+      }
+      return res.json({ items: filtered });
+    }
+  }
   res.json({items:rows.map(row)});
  }catch(_){res.status(503).json({error:'TEMPLATES_UNAVAILABLE'});}});
  app.get('/api/templates/:slug',async(req,res)=>{if(!featureEnabled(env))return res.status(503).json({error:'AI_APPS_NOT_ENABLED'});try{await initTemplates(pool,env);const {rows}=await pool.query("SELECT * FROM vv_ai_template WHERE slug=$1 AND active=true AND generation_type!='product_video' AND rights_basis IN ('owned','licensed') AND length(trim(rights_note))>=3",[req.params.slug]);if(!rows.length)return res.status(404).json({error:'TEMPLATE_NOT_FOUND'});res.json({template:row(rows[0])});}catch(_){res.status(503).json({error:'TEMPLATES_UNAVAILABLE'});}});
