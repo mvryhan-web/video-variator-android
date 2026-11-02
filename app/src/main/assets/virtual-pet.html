@@ -232,6 +232,12 @@
       </div>
     </div>
 
+    <section class="sandbox-panel" aria-label="Статус 3D-персонажей">
+      <h2>Луна · Мира · Нова — изолированный F8</h2>
+      <p class="sandbox-panel-desc">Здесь работают только безопасные 2D SVG-прототипы: настоящие 3D-модели, скелеты, GLB, прозрачные спрайты и анимации пока не готовы. Три выбранных владельцем оригинальных концепта хранятся отдельно до загрузки в GitHub. Публичная главная страница не изменена.</p>
+      <p class="sandbox-panel-desc">Техническая задача для 3D-производства: GitHub Issue #495. Платные генерации не выполняются.</p>
+    </section>
+
     <!-- Interactive Testing Sandbox -->
     <div class="sandbox-panel">
       <h2><span>🧪</span> Интерактивная песочница компаньона</h2>
@@ -262,12 +268,13 @@
         <div class="sim-box">
           <h4>Управление компаньоном</h4>
           <p style="font-size: 13px; color: #8b949e; line-height: 1.5; margin-bottom: 14px;">
-            Ты можешь переключать компаньона (Собака / Кошка), менять его имя и режим (Спокойный, Игривый, Выключен).
+            Ты можешь переключать компаньона (Луна / Мира / Нова), менять его имя и режим (Спокойный, Игривый, Выключен).
           </p>
           <div class="sim-actions">
             <button class="ds-pet-btn ds-pet-btn-primary" id="btnOpenSettings">⚙ Открыть настройки компаньона</button>
-            <button class="ds-pet-btn ds-pet-btn-secondary" id="btnSwitchDog">🐕 Выбрать Рекса (Собака)</button>
-            <button class="ds-pet-btn ds-pet-btn-secondary" id="btnSwitchCat">🐱 Выбрать Луну (Кошка)</button>
+            <button class="ds-pet-btn ds-pet-btn-secondary" id="btnSwitchDog">🐕 Луна · Собака</button>
+            <button class="ds-pet-btn ds-pet-btn-secondary" id="btnSwitchCat">🐱 Мира · Кошка</button>
+            <button class="ds-pet-btn ds-pet-btn-secondary" id="btnSwitchFox">🦊 Нова · Лисёнок</button>
           </div>
         </div>
       </div>
@@ -338,13 +345,17 @@
       });
 
       document.getElementById('btnSwitchDog').addEventListener('click', () => {
-        pet.saveSettings({ pet: 'dog', name: 'Рекс' });
-        pet.speak('Гав! Я Рекс, твой верный помощник!', [], 'friendly');
+        pet.saveSettings({ pet: 'dog', name: 'Луна' });
+        pet.speak('Привет! Я Луна, твой верный помощник.', [], 'friendly');
       });
 
       document.getElementById('btnSwitchCat').addEventListener('click', () => {
-        pet.saveSettings({ pet: 'cat', name: 'Луна' });
-        pet.speak('Мяу! Я Луна, буду аккуратно приглядывать за твоими генерациями.', [], 'friendly');
+        pet.saveSettings({ pet: 'cat', name: 'Мира' });
+        pet.speak('Мяу! Я Мира, буду аккуратно приглядывать за твоими генерациями.', [], 'friendly');
+      });
+      document.getElementById('btnSwitchFox').addEventListener('click', () => {
+        pet.saveSettings({ pet: 'fox', name: 'Нова' });
+        pet.speak('Я Нова — лисёнок. Помогу сохранить идею!', [], 'friendly');
       });
     });
   </script>

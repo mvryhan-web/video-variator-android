@@ -1,0 +1,29 @@
+name: F8 three pet contract / no spend
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/virtual-pet/**'
+      - 'app/src/main/assets/virtual-pet.js'
+      - 'app/src/main/assets/virtual-pet.html'
+      - 'tests/virtual-pet*'
+      - '.github/workflows/f8-three-pets.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/virtual-pet/**'
+      - 'app/src/main/assets/virtual-pet.js'
+      - 'app/src/main/assets/virtual-pet.html'
+      - 'tests/virtual-pet*'
+      - '.github/workflows/f8-three-pets.yml'
+jobs:
+  no-spend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate static JS, manifests and safe pet prototype
+        run: |
+          node --check app/src/main/assets/virtual-pet.js
+          node --test tests/virtual-pet.test.mjs tests/virtual-pet-assets-unit.mjs
