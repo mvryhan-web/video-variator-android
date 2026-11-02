@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `6aab2e8b16973466fe5529c69836d37bf89bc6e2`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `ce5e962212a75ddacba5610dc4ab1145cfe520c9`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` | Indexed files: 58 | Named symbols: 160 | Checked relations: 50
 
 ## Topic finder (matching filenames)
@@ -63,7 +63,7 @@ KNOWN (L3)
 
 ### `server/generation-inspiration.js`
 
-KINDS (L5) · RATIOS (L6) · INPUTS (L7) · TARGETS (L8) · RIGHTS (L9) · initByPool (L10)
+KINDS (L7) · RATIOS (L8) · INPUTS (L9) · TARGETS (L10) · RIGHTS (L11) · initByPool (L12)
 
 ### `server/generation-onboarding.js`
 
@@ -115,7 +115,7 @@ PLANS (L5) · PRICE_KEYS (L6)
 
 ### `server/generation-templates.js`
 
-TYPES (L5) · INPUTS (L8) · initByPool (L9) · RIGHTS (L10)
+TYPES (L7) · INPUTS (L10) · initByPool (L11) · RIGHTS (L12)
 
 ### `server/generation-trial-policy.js`
 
