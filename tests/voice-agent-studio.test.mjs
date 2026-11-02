@@ -88,7 +88,7 @@ test('F6 Voice Agent — Studio Handoff URL Builder', () => {
   assert.equal(params.get('prompt'), prompt);
 });
 
-test('F6 Voice Agent & Studio Consent Modal UI Contracts', async () => {
+test('F6 Voice Agent & BytePlus Lumina Terms UI Contracts', async () => {
   const { readFileSync } = await import('node:fs');
   const html = readFileSync(new URL('../app/src/main/assets/generate-studio.html', import.meta.url), 'utf8');
 
@@ -96,10 +96,12 @@ test('F6 Voice Agent & Studio Consent Modal UI Contracts', async () => {
   assert.ok(html.includes('id="studioVoiceBtn"'), 'Must have studioVoiceBtn');
   assert.ok(!html.includes('id="studioVoiceBtnText"'), 'Must NOT have voice-btn-text label');
 
-  // Verify entry consent modal
-  assert.ok(html.includes('id="studioConsentDialog"'), 'Must have studioConsentDialog');
-  assert.ok(html.includes('id="acceptAllConsentsBtn"'), 'Must have acceptAllConsentsBtn');
-  assert.ok(html.includes('id="dlgConsentModel"'), 'Must have dlgConsentModel');
+  // Verify consent button is completely removed from bottom of composer
+  assert.ok(!html.includes('class="consent"'), 'Must NOT have visible consent label/button at bottom');
+
+  // Verify BytePlus Lumina terms integration
+  assert.ok(html.includes('lumina-terms.js'), 'Must load lumina-terms.js');
+  assert.ok(html.includes('lumina-terms.css'), 'Must load lumina-terms.css');
 
   // Verify mic permission dialog
   assert.ok(html.includes('id="micPermissionDialog"'), 'Must have micPermissionDialog');

@@ -73,7 +73,11 @@
         const data=await response.json().catch(()=>({}));
         if(!response.ok||!data.token)throw new Error(data.error||'EMAIL_AUTH_FAILED');
         localStorage.setItem('vv_token',data.token);if(data.newAccount===true)localStorage.setItem('deepsyq_onboarding_pending','1');msg.textContent=c.done;
-        setTimeout(()=>location.reload(),250);
+        if(window.openLuminaTermsModal && !window.isLuminaTermsAccepted?.()){
+          window.openLuminaTermsModal(()=>{ setTimeout(()=>location.reload(), 200); });
+        } else {
+          setTimeout(()=>location.reload(), 250);
+        }
       }catch(err){msg.textContent=messageFor(err.message);submit.disabled=false;toggle.disabled=false;}
     });
     refreshAvailability();
