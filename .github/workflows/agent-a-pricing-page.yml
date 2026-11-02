@@ -9,6 +9,9 @@ on:
       - 'app/src/main/assets/deepsyq.html'
       - 'app/src/main/assets/deepsyq-site-shell.js'
       - 'tests/agent-a-pricing-page*.mjs'
+      - 'tests/pricing-owner-art-lock.mjs'
+      - 'docs/PRICING_OWNER_ART_LOCK.json'
+      - 'app/src/main/assets/media/pricing/**'
       - '.github/workflows/agent-a-pricing-page.yml'
 permissions: {contents: read}
 jobs:
@@ -22,6 +25,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: node --check app/src/main/assets/pricing-page.js
-      - run: node --test tests/agent-a-pricing-page-unit.mjs
+      - run: node --test tests/agent-a-pricing-page-unit.mjs tests/pricing-owner-art-lock.mjs
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test --config tests/agent-a-pricing-page.config.mjs
