@@ -1,7 +1,7 @@
 /* New Pricing page — owner-approved visual placement, server-authoritative prices and purchases.
  * Never use proposed marketing credits or bonus amounts in any checkout payload. */
 import {validPlanPrice,validToolLimit,validLifetimeCurrency,validAiPack,aiCheckoutMode,checkoutErrorMessage} from './ai-pricing-display.js';
-const cdn='https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/';
+const cdn='media/pricing/';
 const art={
  trial:'d72f2da8-9e73-4110-abc5-c743032631fd.png',
  basic:'56338ba4-aba2-4b0d-bbb7-a2f537294937.png',
@@ -23,7 +23,7 @@ const byId=id=>document.getElementById(id);
 const numeral=new Intl.NumberFormat('en-US');
 const money=(value,currency='USD')=>new Intl.NumberFormat('en-US',{style:'currency',currency,maximumFractionDigits:Number.isInteger(value)?0:2}).format(value);
 const node=(tag,cls,copy)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(copy!==undefined)el.textContent=copy;return el;};
-const img=key=>{const i=node('img','price-art');i.src=cdn+art[key];i.alt='';i.loading='lazy';i.decoding='async';i.onerror=()=>i.classList.add('price-art-unavailable');return i;};
+const img=key=>{const i=node('img','price-art');i.src=cdn+art[key];i.alt='';i.loading='lazy';i.decoding='async';i.onerror=()=>{ i.src='media/pricing/'+art[key]; };return i;};
 const message=(id,copy)=>{byId(id).textContent=copy;};
 const token=()=>{try{return localStorage.getItem('vv_token')||'';}catch{return '';}};
 const isValidCheckoutURL=u=>{try{const x=new URL(u);return x.protocol==='https:'&&!x.port&&!x.username&&!x.password&&['checkout.stripe.com','buy.stripe.com'].includes(x.hostname);}catch{return false;}};
