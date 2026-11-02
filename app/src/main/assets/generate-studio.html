@@ -16,7 +16,7 @@
 <button data-kind="music" aria-pressed="false"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4m4-7v10m4-14v18m4-14v10m4-7v4"/></svg></span><span data-t="audio">Audio</span></button>
 <div class="nav-footer"><a href="my-creations.html" title="My Workspace">Workspace ↗</a><a href="compare-ai.html" title="Compare AI">Compare ↗</a><a href="ai-agents.html" title="AI Agents">Agents ↗</a><a href="deepsyq.html" data-t="dashboard">Dashboard ↗</a><button data-kind="translation" aria-pressed="false" class="future" data-t="translation">Translation · pending</button></div>
 </nav>
-<main>
+<main>\n<div id="agentWorkflowBanner" class="agent-workflow-banner" hidden><div class="agent-banner-left"><span class="agent-banner-badge">🤖 AI Agent</span><span id="agentBannerText"></span></div><div class="agent-banner-actions"><button id="agentBannerNext" type="button" class="agent-banner-btn"></button><button id="agentBannerDismiss" type="button" class="agent-banner-close" aria-label="Закрыть">×</button></div></div>
 <div class="stage-tabs"><button id="showCreate" aria-pressed="true" data-t="create">Create</button><button id="showHistory" aria-pressed="false" data-t="history">My results</button></div>
 <section class="stage result" aria-label="Generated result">
 <div id="empty" class="intro"><div class="hero-art" aria-hidden="true"><span></span><span></span><span></span></div><small data-t="label" hidden>CREATIVE STUDIO</small><h2 data-t="headline" hidden>Your idea. Make it real.</h2><h1 id="taskTitle">Create a video</h1><p id="taskDescription" hidden></p><div class="examples" id="examples"></div></div>
