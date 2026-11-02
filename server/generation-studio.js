@@ -276,7 +276,16 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(result.operation){await pool.query("UPDATE vv_generation_jobs SET status='processing',operation=$2 WHERE id=$1",[id,result.operation]);return;}
   let asset=null,media=result.bytes||null;
   if(objectStorage.configured&&result.bytes){
-   try{asset=await objectStorage.putGeneration({userId,jobId:id,mime:result.mime,bytes:result.bytes});media=null;}
+   try{
+    asset=await objectStorage.putGeneration({userId,jobId:id,mime:result.mime,bytes:result.bytes});
+    // A successful PUT promise alone is not a usable, private, downloadable
+    // asset. Never capture paid credits for a missing or inconsistent receipt.
+    if(!asset||asset.storage!=='s3'||typeof asset.key!=='string'||!asset.key.trim()||
+       asset.mime!==result.mime||asset.size!==result.bytes.length||
+       asset.sha256!==createHash('sha256').update(result.bytes).digest('hex'))
+      throw Error('OBJECT_STORAGE_INVALID_RECEIPT');
+    media=null;
+   }
    catch(_){
     // A produced Video is already a potentially billable provider result.
     // S3 outage is not proof that the AI call failed: never refund a held
