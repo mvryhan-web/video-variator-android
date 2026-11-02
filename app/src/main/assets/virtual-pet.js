@@ -1,7 +1,7 @@
 /**
  * Deepsyq Virtual Pet Companion — Block 8 ("Волшебный нюх" / Magic Nose)
  *
- * Provides a voluntary, warm, non-intrusive companion (Dog 'Рекс' or Cat 'Луна')
+ * Provides a voluntary, warm, non-intrusive companion (Dog 'Луна', Cat 'Мира' or Fox 'Нова')
  * with 3 core superpowers:
  *  1. Draft Saver / Rescue (Спасение потерянных идей)
  *  2. Format Sniffer (Нюх на параметры Reels/Shorts 9:16 vs 16:9)
@@ -35,8 +35,8 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
 
   const DEFAULT_SETTINGS = {
     enabled: true,
-    pet: 'dog', // 'dog' | 'cat'
-    name: 'Рекс',
+    pet: 'dog', // 'dog' | 'cat' | 'fox'
+    name: 'Луна',
     mode: 'calm', // 'calm' | 'playful' | 'off'
     sound: false,
     noseDraft: true,
@@ -46,16 +46,22 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
 
   const PET_PROFILES = {
     dog: {
-      defaultName: 'Рекс',
+      defaultName: 'Луна',
       badge: '🐕',
       label: 'Собака',
       greeting: 'Привет! Я рядом, если понадобится помощь с идеями или генерациями.'
     },
     cat: {
-      defaultName: 'Луна',
+      defaultName: 'Мира',
       badge: '🐱',
       label: 'Кошка',
       greeting: 'Мяу. Я тут в уголке, слежу за твоими черновиками и готовыми работами.'
+    },
+    fox: {
+      defaultName: 'Нова',
+      badge: '🦊',
+      label: 'Лисёнок',
+      greeting: 'Привет! Я любопытная Нова, могу бережно принести твою идею.'
     }
   };
 
@@ -63,31 +69,31 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
   const SVG_DOG = `
     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
       <!-- Tail -->
-      <path class="ds-pet-tail" d="M72 65 C85 60 88 45 78 40" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/>
+      <path class="ds-pet-tail" d="M72 65 C85 60 88 45 78 40" stroke="#D89150" stroke-width="6" stroke-linecap="round"/>
       <!-- Body -->
-      <ellipse cx="50" cy="62" rx="26" ry="20" fill="#f59e0b"/>
-      <ellipse cx="50" cy="64" rx="20" ry="15" fill="#fbbf24"/>
+      <ellipse cx="50" cy="62" rx="26" ry="20" fill="#D89150"/>
+      <ellipse cx="50" cy="64" rx="20" ry="15" fill="#EECDA5"/>
       <!-- Paws -->
-      <ellipse cx="36" cy="78" rx="8" ry="6" fill="#f59e0b"/>
-      <ellipse cx="64" cy="78" rx="8" ry="6" fill="#f59e0b"/>
+      <ellipse cx="36" cy="78" rx="8" ry="6" fill="#D89150"/>
+      <ellipse cx="64" cy="78" rx="8" ry="6" fill="#D89150"/>
       <!-- Ears -->
       <g class="ds-pet-ears">
-        <path d="M26 34 C20 40 18 55 24 60 C26 55 28 42 34 36 Z" fill="#d97706"/>
-        <path d="M74 34 C80 40 82 55 76 60 C74 55 72 42 66 36 Z" fill="#d97706"/>
+        <path d="M26 34 C20 40 18 55 24 60 C26 55 28 42 34 36 Z" fill="#B86B3C"/>
+        <path d="M74 34 C80 40 82 55 76 60 C74 55 72 42 66 36 Z" fill="#B86B3C"/>
       </g>
       <!-- Head -->
-      <circle cx="50" cy="40" r="22" fill="#fbbf24"/>
+      <circle cx="50" cy="40" r="22" fill="#EECDA5"/>
       <!-- Eyes -->
       <circle cx="41" cy="38" r="3.5" fill="#1e293b"/>
-      <circle cx="42" cy="37" r="1.2" fill="#ffffff"/>
+      <circle cx="42" cy="37" r="1.2" fill="#F6E8CE"/>
       <circle cx="59" cy="38" r="3.5" fill="#1e293b"/>
-      <circle cx="60" cy="37" r="1.2" fill="#ffffff"/>
+      <circle cx="60" cy="37" r="1.2" fill="#F6E8CE"/>
       <!-- Snout -->
-      <ellipse cx="50" cy="47" rx="9" ry="7" fill="#ffffff"/>
+      <ellipse cx="50" cy="47" rx="9" ry="7" fill="#F6E8CE"/>
       <polygon points="46,44 54,44 50,49" fill="#1e293b"/>
       <path d="M50 49 L50 52 M47 52 C48 54 52 54 53 52" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round"/>
       <!-- Collar -->
-      <path d="M36 56 Q50 62 64 56" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+      <path d="M36 56 Q50 62 64 56" stroke="#40DFAE" stroke-width="4" stroke-linecap="round"/>
       <circle cx="50" cy="60" r="3" fill="#e0f2fe"/>
     </svg>
   `;
@@ -95,40 +101,72 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
   const SVG_CAT = `
     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
       <!-- Tail -->
-      <path class="ds-pet-tail" d="M70 65 C85 65 92 48 84 35" stroke="#94a3b8" stroke-width="5" stroke-linecap="round"/>
+      <path class="ds-pet-tail" d="M70 65 C85 65 92 48 84 35" stroke="#28394E" stroke-width="5" stroke-linecap="round"/>
       <!-- Body -->
-      <ellipse cx="50" cy="64" rx="25" ry="18" fill="#94a3b8"/>
-      <ellipse cx="50" cy="65" rx="19" ry="13" fill="#cbd5e1"/>
+      <ellipse cx="50" cy="64" rx="25" ry="18" fill="#28394E"/>
+      <ellipse cx="50" cy="65" rx="19" ry="13" fill="#F1ECE6"/>
       <!-- Paws -->
-      <ellipse cx="36" cy="78" rx="7" ry="5" fill="#64748b"/>
-      <ellipse cx="64" cy="78" rx="7" ry="5" fill="#64748b"/>
+      <ellipse cx="36" cy="78" rx="7" ry="5" fill="#171C2C"/>
+      <ellipse cx="64" cy="78" rx="7" ry="5" fill="#171C2C"/>
       <!-- Ears -->
       <g class="ds-pet-ears">
-        <polygon points="30,42 22,22 42,32" fill="#64748b"/>
-        <polygon points="29,39 25,26 38,33" fill="#f472b6"/>
-        <polygon points="70,42 78,22 58,32" fill="#64748b"/>
-        <polygon points="71,39 75,26 62,33" fill="#f472b6"/>
+        <polygon points="30,42 22,22 42,32" fill="#171C2C"/>
+        <polygon points="29,39 25,26 38,33" fill="#C99BAD"/>
+        <polygon points="70,42 78,22 58,32" fill="#171C2C"/>
+        <polygon points="71,39 75,26 62,33" fill="#C99BAD"/>
       </g>
       <!-- Head -->
-      <circle cx="50" cy="42" r="21" fill="#94a3b8"/>
+      <circle cx="50" cy="42" r="21" fill="#28394E"/>
       <!-- Eyes -->
-      <ellipse cx="41" cy="40" rx="3.5" ry="4" fill="#22c55e"/>
+      <ellipse cx="41" cy="40" rx="3.5" ry="4" fill="#66C4AD"/>
       <circle cx="41.5" cy="40" r="1.8" fill="#0f172a"/>
-      <ellipse cx="59" cy="40" rx="3.5" ry="4" fill="#22c55e"/>
+      <ellipse cx="59" cy="40" rx="3.5" ry="4" fill="#66C4AD"/>
       <circle cx="59.5" cy="40" r="1.8" fill="#0f172a"/>
       <!-- Nose & Mouth -->
-      <polygon points="48,46 52,46 50,48" fill="#f472b6"/>
+      <polygon points="48,46 52,46 50,48" fill="#C99BAD"/>
       <path d="M47 50 Q50 52 53 50" stroke="#475569" stroke-width="1.2" stroke-linecap="round"/>
       <!-- Whiskers -->
-      <line x1="36" y1="46" x2="24" y2="44" stroke="#e2e8f0" stroke-width="1.2" stroke-linecap="round"/>
-      <line x1="36" y1="49" x2="25" y2="50" stroke="#e2e8f0" stroke-width="1.2" stroke-linecap="round"/>
-      <line x1="64" y1="46" x2="76" y2="44" stroke="#e2e8f0" stroke-width="1.2" stroke-linecap="round"/>
-      <line x1="64" y1="49" x2="75" y2="50" stroke="#e2e8f0" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="36" y1="46" x2="24" y2="44" stroke="#F1ECE6" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="36" y1="49" x2="25" y2="50" stroke="#F1ECE6" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="64" y1="46" x2="76" y2="44" stroke="#F1ECE6" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="64" y1="49" x2="75" y2="50" stroke="#F1ECE6" stroke-width="1.2" stroke-linecap="round"/>
       <!-- Ribbon -->
-      <path d="M38 58 Q50 62 62 58" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
+      <path d="M38 58 Q50 62 62 58" stroke="#509BAA" stroke-width="3" stroke-linecap="round"/>
       <circle cx="50" cy="60" r="2.5" fill="#fdf4ff"/>
     </svg>
   `;
+
+  // HONEST 2D placeholder while genuine Blender/GLB/alpha sprites are absent.
+  // Nov 2 owner-approved FOX scope. This must never be marked as final 3D.
+  const SVG_FOX = `
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- Distinct fox silhouette: pointed ears, narrow muzzle, very long bushy tail, four paws -->
+      <path class="ds-pet-tail" d="M64 72 C86 79 93 62 86 43 C91 47 97 60 94 71 C91 86 74 89 61 81 Z" fill="#EA853A" stroke="#AB562B" stroke-width="1.2"/>
+      <path d="M93 59 Q102 78 81 82 Q87 72 93 59" fill="#FFF4DF"/>
+      <ellipse cx="52" cy="69" rx="24" ry="17" fill="#EA853A"/>
+      <path d="M34 70 Q50 82 70 71 L63 81 L42 82 Z" fill="#FFF4DF"/>
+      <ellipse cx="35" cy="82" rx="7" ry="5" fill="#AB562B"/>
+      <ellipse cx="49" cy="84" rx="7" ry="5" fill="#AB562B"/>
+      <ellipse cx="62" cy="83" rx="7" ry="5" fill="#AB562B"/>
+      <ellipse cx="71" cy="80" rx="6" ry="5" fill="#AB562B"/>
+      <g class="ds-pet-ears">
+        <path d="M24 42 L29 9 Q31 7 35 10 L47 33 Z" fill="#EA853A"/>
+        <path d="M76 42 L70 9 Q68 7 65 10 L53 33 Z" fill="#EA853A"/>
+        <path d="M30 32 L31 16 L40 33" fill="#F0BAAB"/>
+        <path d="M70 32 L69 16 L60 33" fill="#F0BAAB"/>
+      </g>
+      <path d="M27 42 Q50 16 73 42 Q76 58 63 65 L37 65 Q24 56 27 42" fill="#EA853A"/>
+      <path d="M27 50 Q38 45 50 54 Q62 45 73 50 Q64 66 50 65 Q35 65 27 50" fill="#FFF4DF"/>
+      <ellipse cx="42" cy="43" rx="4" ry="5" fill="#66C4AD"/>
+      <ellipse cx="58" cy="43" rx="4" ry="5" fill="#66C4AD"/>
+      <ellipse cx="42" cy="43" rx="1.8" ry="3.1" fill="#183935"/>
+      <ellipse cx="58" cy="43" rx="1.8" ry="3.1" fill="#183935"/>
+      <path d="M46 54 Q50 57 54 54 L50 60 Z" fill="#211B1B"/>
+      <path d="M34 62 Q50 70 66 62" stroke="#4ADDB7" stroke-width="3" stroke-linecap="round"/>
+      <path d="M47 66 L50 70 L53 66 L50 62 Z" fill="#4ADDB7"/>
+    </svg>
+  `;
+
 
   class VirtualPetEngine {
     constructor() {
@@ -155,7 +193,9 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       try {
         const raw = this.getStorage()?.getItem(STORAGE_KEY);
         if (raw) {
-          return Object.assign({}, DEFAULT_SETTINGS, JSON.parse(raw));
+          const saved=JSON.parse(raw);
+          const selected=PET_PROFILES[saved?.pet] ? saved.pet : DEFAULT_SETTINGS.pet;
+          return Object.assign({}, DEFAULT_SETTINGS, saved, { pet: selected });
         }
       } catch (err) {
         console.warn('[VirtualPet] Failed to read settings from localStorage:', err);
@@ -164,7 +204,8 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
     }
 
     saveSettings(newSettings) {
-      this.settings = Object.assign({}, this.settings, newSettings);
+      const nextPet=PET_PROFILES[newSettings?.pet] ? newSettings.pet : (this.settings.pet || 'dog');
+      this.settings = Object.assign({}, this.settings, newSettings, { pet: nextPet });
       try {
         this.getStorage()?.setItem(STORAGE_KEY, JSON.stringify(this.settings));
       } catch (err) {
@@ -255,7 +296,8 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
 
       const svgContainer = document.getElementById('dsPetSvgContainer');
       if (svgContainer) {
-        svgContainer.innerHTML = this.settings.pet === 'cat' ? SVG_CAT : SVG_DOG;
+        svgContainer.innerHTML = this.settings.pet === 'cat' ? SVG_CAT :
+          this.settings.pet === 'fox' ? SVG_FOX : SVG_DOG;
       }
 
       const avatar = document.getElementById('dsPetAvatar');
@@ -685,13 +727,18 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
             <div class="ds-pet-select-cards">
               <div class="ds-pet-choice-card ${s.pet === 'dog' ? 'selected' : ''}" data-pet="dog">
                 <div class="ds-pet-choice-icon">🐕</div>
-                <div class="ds-pet-choice-name">Собака</div>
+                <div class="ds-pet-choice-name">Луна · Собака</div>
                 <div class="ds-pet-toggle-desc">Дружелюбный, приносит идеи в зубах</div>
               </div>
               <div class="ds-pet-choice-card ${s.pet === 'cat' ? 'selected' : ''}" data-pet="cat">
                 <div class="ds-pet-choice-icon">🐱</div>
-                <div class="ds-pet-choice-name">Кошка</div>
+                <div class="ds-pet-choice-name">Мира · Кошка</div>
                 <div class="ds-pet-toggle-desc">Спокойная, аккуратно двигает карточки лапкой</div>
+              </div>
+              <div class="ds-pet-choice-card ${s.pet === 'fox' ? 'selected' : ''}" data-pet="fox">
+                <div class="ds-pet-choice-icon">🦊</div>
+                <div class="ds-pet-choice-name">Нова · Лисёнок</div>
+                <div class="ds-pet-toggle-desc">Любопытная, умеет находить сохранённые идеи</div>
               </div>
             </div>
           </div>
@@ -756,7 +803,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
           card.classList.add('selected');
           selectedPet = card.getAttribute('data-pet');
           const nameInput = document.getElementById('dsPetNameInput');
-          if (nameInput && (nameInput.value === 'Рекс' || nameInput.value === 'Луна')) {
+          if (nameInput && (nameInput.value === 'Рекс' || nameInput.value === 'Луна' || nameInput.value === 'Мира' || nameInput.value === 'Нова')) {
             nameInput.value = PET_PROFILES[selectedPet].defaultName;
           }
         });

@@ -15,6 +15,16 @@ test('Studio dialogs, history and prompt survive presentation changes',async({pa
  await expect(page.locator('.ds-studio-examples')).toHaveCount(0);
  await expect(page.locator('#taskTitle')).toBeVisible();
  await expect(page.locator('#creator')).toBeVisible();
+ // Studio intentionally opens a blocking terms/privacy consent dialog for a
+ // new browser. Test the genuine opt-in UI; do NOT bypass the gate via
+ // localStorage or force-click a model behind the overlay.
+ const terms=page.locator('#luminaTermsModal');
+ await expect(terms).toBeVisible();
+ await page.locator('#luminaAcceptCheckbox').uncheck();
+ await expect(page.locator('#luminaAcceptButton')).toBeDisabled();
+ await page.locator('#luminaAcceptCheckbox').check();
+ await page.locator('#luminaAcceptButton').click();
+ await expect(terms).toBeHidden();
  await page.locator('#modelButton').click();await expect(page.locator('#modelDialog')).toBeVisible();await page.keyboard.press('Escape');
  await page.locator('#settingsButton').click();await expect(page.locator('#settingsDialog')).toBeVisible();await page.locator('[data-close="settingsDialog"]').last().click();
  await page.locator('#prompt').fill('A violet glass garden at sunrise');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();
