@@ -13,7 +13,7 @@ describe('JARVIS AI Voice Commander & F1 Compare Matrix', () => {
     assert.ok(html.includes('id="topJarvisBtn"'), 'topJarvisBtn must exist in deepsyq.html');
     assert.ok(html.includes('jarvis-core.css'), 'jarvis-core.css must be included in deepsyq.html');
     assert.ok(html.includes('jarvis-core.js'), 'jarvis-core.js must be included in deepsyq.html');
-    assert.ok(html.includes('class="jarvis-name">JARVIS</span>'), 'JARVIS branding should be displayed');
+    assert.ok(html.includes('class="jarvis-name">JARVIX</span>'), 'JARVIX branding should be displayed');
   });
 
   it('verifies ai-apps.html has the redundant menu removed and has JARVIS integrated', () => {
@@ -57,5 +57,18 @@ describe('JARVIS AI Voice Commander & F1 Compare Matrix', () => {
     assert.ok(jarvisJs.includes('export function handleJarvisVoiceCommand'), 'handleJarvisVoiceCommand must be exported');
     assert.ok(jarvisJs.includes('speakJarvis'), 'speakJarvis TTS must be present');
     assert.ok(jarvisJs.includes('runF1Compare'), 'runF1Compare must be present');
+    assert.ok(jarvisJs.includes('JARVIX активен'), 'JARVIX name with ending X must be shown');
+  });
+
+  it('verifies JARVIX naming convention with X ending across all headers', () => {
+    const deepsyqHtml = fs.readFileSync(path.join(assetsDir, 'deepsyq.html'), 'utf8');
+    const aiAppsHtml = fs.readFileSync(path.join(assetsDir, 'ai-apps.html'), 'utf8');
+    const canvasHtml = fs.readFileSync(path.join(assetsDir, 'canvas.html'), 'utf8');
+    const shellJs = fs.readFileSync(path.join(assetsDir, 'deepsyq-site-shell.js'), 'utf8');
+
+    for (const content of [deepsyqHtml, aiAppsHtml, canvasHtml, shellJs]) {
+      assert.ok(content.includes('JARVIX'), 'Must use JARVIX with X ending');
+      assert.ok(!content.includes('>JARVIS<'), 'Must not display JARVIS');
+    }
   });
 });
