@@ -15,6 +15,27 @@ test('audio trimmer validates a bounded local range and produces a safe MP3 name
  assert.throws(()=>audioTrimSettings(new File([Buffer.from('bad')],'evil.exe'),0,2),/AUDIO_TRIM_FILE_UNSUPPORTED/);
  assert.throws(()=>audioTrimSettings({name:'long.mp3',size:51*1024*1024},0,2),/AUDIO_TRIM_FILE_UNSUPPORTED/);
 });
+test('rejects whitespace-only, non-numeric types, booleans, arrays, and objects for start and end',()=>{
+ const rejectedValues=['   ','\t','\n',null,undefined,false,true,[],[0],{},{start:0}];
+ for(const val of rejectedValues){
+  assert.throws(()=>audioTrimSettings(input(),val,5),/AUDIO_TRIM_RANGE_INVALID/);
+  assert.throws(()=>audioTrimSettings(input(),0,val),/AUDIO_TRIM_RANGE_INVALID/);
+ }
+});
+test('accepts valid numbers and numeric strings including 0 and "0"',()=>{
+ const validCases=[
+  [0,2,0,2],
+  ['0','2',0,2],
+  ['0','4.6',0,4.6],
+  ['1.2','4.6',1.2,3.4],
+  [1.5,4.5,1.5,3.0]
+ ];
+ for(const [start,end,expectedBegin,expectedSeconds] of validCases){
+  const res=audioTrimSettings(input(),start,end);
+  assert.equal(res.begin,expectedBegin);
+  assert.ok(Math.abs(res.seconds-expectedSeconds)<0.00001);
+ }
+});
 test('local audio trim writes source, encodes exactly selected interval and terminates worker',async()=>{
  const calls=[],encoded=new Uint8Array([73,68,51,3,0,0]);
  let terminated=false;

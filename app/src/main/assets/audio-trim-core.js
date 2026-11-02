@@ -4,12 +4,13 @@ const ALLOWED=/\.(?:mp3|m4a|aac|wav|ogg|opus|flac|webm)$/i;
 const MAX_BYTES=50*1024*1024;
 const MAX_SECONDS=600;
 const reject=code=>{throw Error(code);};
+const parseTime=v=>(typeof v==='number'||(typeof v==='string'&&v.trim()!==''))?Number(v):NaN;
 export function audioTrimSettings(file,start,end){
  if(!file||typeof file.name!=='string'||!ALLOWED.test(file.name)||
    typeof file.size!=='number'||file.size<=0||file.size>MAX_BYTES)
   reject('AUDIO_TRIM_FILE_UNSUPPORTED');
- const begin=Number(start),finish=Number(end);
- if(start===''||end===''||!Number.isFinite(begin)||!Number.isFinite(finish)||
+ const begin=parseTime(start),finish=parseTime(end);
+ if(!Number.isFinite(begin)||!Number.isFinite(finish)||
    begin<0||finish<=begin||finish>MAX_SECONDS||finish-begin<0.1)
   reject('AUDIO_TRIM_RANGE_INVALID');
  const extension=file.name.split('.').pop().toLowerCase();
