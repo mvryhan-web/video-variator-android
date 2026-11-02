@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `3cce4595310387d4e72e836b96c08ccd8fd34a0a`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` | Indexed files: 56 | Named symbols: 156 | Checked relations: 50
+Source commit: `8a1671578c7c8004a76c63dde25a45c7ba03b351`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` | Indexed files: 57 | Named symbols: 159 | Checked relations: 50
 
 ## Topic finder (matching filenames)
 
@@ -13,7 +13,7 @@ Scope: `server/` | Indexed files: 56 | Named symbols: 156 | Checked relations: 5
 - **Image, Canvas and Home:** `server/deepsyq-preview.js`, `server/generation-openai-image.js`
 - **Audio and voice:** `server/speech.js`
 - **AI Apps, Inspiration, History:** `server/generation-inspiration.js`, `server/tool-policy.js`, `server/workspace-card-sections.js`, `server/workspace-job-view.js`, `server/workspace-project-policy.js`
-- **Accounts and security:** `server/email-auth.js`, `server/generation-trial-policy.js`, `server/product-watcher/scheduler-state-policy.js`, `server/tool-policy.js`, `server/user-agent-plan.js`, `server/user-agent-stage1-local-draft.js`, `server/workspace-project-policy.js`
+- **Accounts and security:** `server/email-auth.js`, `server/generation-trial-policy.js`, `server/product-watcher/lite-delivery-policy.js`, `server/product-watcher/scheduler-state-policy.js`, `server/tool-policy.js`, `server/user-agent-plan.js`, `server/user-agent-stage1-local-draft.js`, `server/workspace-project-policy.js`
 
 ## Source symbol map
 
@@ -148,6 +148,10 @@ briefs.js (L1) · LOCK (L2)
 ### `server/product-watcher/content-tasks.js`
 
 LOCK (L5)
+
+### `server/product-watcher/lite-delivery-policy.js`
+
+LITE_DELIVERY_STATUSES (L4) · LITE_DELIVERY_READINESS (L8) · LITE_DELIVERY_REASON_CODES (L13)
 
 ### `server/product-watcher/lite-email-draft.js`
 
