@@ -72,6 +72,8 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   window.speechSynthesis.onvoiceschanged = refreshVoices;
 }
 
+const FEMALE_VOICE_REGEX = /(?:irina|ирина|tatiana|татьяна|elena|елена|victoria|виктория|milena|милена|svetl|светл|anna|анна|daria|дарья|female|женск|zira|samantha|karen|moira|fiona|hazel|susan|linda|helena|monica|laura|marta|lucia|carmen|hortense|julie|celine|amelie|virginie)/i;
+
 export function getJarvixVoice(langParam = 'ru') {
   refreshVoices();
   if (!cachedVoices.length) return null;
@@ -84,27 +86,39 @@ export function getJarvixVoice(langParam = 'ru') {
     // Check for explicit Russian male voices (Dmitry, Pavel, Aleksandr, Maxim, Yuri, etc.)
     const maleRu = cachedVoices.find(v =>
       v.lang.startsWith('ru') &&
-      /(?:dmitry|дмитрий|pavel|павел|aleksandr|alexander|александр|maxim|максим|yuri|юрий|mikhail|михаил|boris|борис|igor|игорь|male|муж)/i.test(v.name + ' ' + (v.voiceURI || ''))
+      /(?:dmitry|дмитрий|pavel|павел|aleksandr|alexander|александр|maxim|максим|yuri|юрий|mikhail|михаил|boris|борис|igor|игорь|male|муж)/i.test(v.name + ' ' + (v.voiceURI || '')) &&
+      !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || ''))
     );
     if (maleRu) return { voice: maleRu, isExplicitMale: true };
+
+    const nonFemaleRu = cachedVoices.find(v => v.lang.startsWith('ru') && !FEMALE_VOICE_REGEX.test(v.name));
+    if (nonFemaleRu) return { voice: nonFemaleRu, isExplicitMale: true };
 
     const anyRu = cachedVoices.find(v => v.lang.startsWith('ru'));
     if (anyRu) return { voice: anyRu, isExplicitMale: false };
   } else if (isFr) {
     const maleFr = cachedVoices.find(v =>
       v.lang.startsWith('fr') &&
-      /(?:henri|thomas|nicolas|paul|alain|male|homme)/i.test(v.name + ' ' + (v.voiceURI || ''))
+      /(?:henri|thomas|nicolas|paul|alain|claude|male|homme)/i.test(v.name + ' ' + (v.voiceURI || '')) &&
+      !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || ''))
     );
     if (maleFr) return { voice: maleFr, isExplicitMale: true };
+
+    const nonFemaleFr = cachedVoices.find(v => v.lang.startsWith('fr') && !FEMALE_VOICE_REGEX.test(v.name));
+    if (nonFemaleFr) return { voice: nonFemaleFr, isExplicitMale: true };
 
     const anyFr = cachedVoices.find(v => v.lang.startsWith('fr'));
     if (anyFr) return { voice: anyFr, isExplicitMale: false };
   } else if (isEs) {
     const maleEs = cachedVoices.find(v =>
       v.lang.startsWith('es') &&
-      /(?:jorge|diego|pablo|carlos|alvaro|miguel|manuel|enrique|male|hombre)/i.test(v.name + ' ' + (v.voiceURI || ''))
+      /(?:jorge|diego|pablo|carlos|alvaro|miguel|manuel|enrique|male|hombre)/i.test(v.name + ' ' + (v.voiceURI || '')) &&
+      !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || ''))
     );
     if (maleEs) return { voice: maleEs, isExplicitMale: true };
+
+    const nonFemaleEs = cachedVoices.find(v => v.lang.startsWith('es') && !FEMALE_VOICE_REGEX.test(v.name));
+    if (nonFemaleEs) return { voice: nonFemaleEs, isExplicitMale: true };
 
     const anyEs = cachedVoices.find(v => v.lang.startsWith('es'));
     if (anyEs) return { voice: anyEs, isExplicitMale: false };
@@ -112,9 +126,13 @@ export function getJarvixVoice(langParam = 'ru') {
     // British / UK Male voice (Paul Bettany film JARVIS style)
     const ukMale = cachedVoices.find(v =>
       (v.lang === 'en-GB' || v.lang.startsWith('en')) &&
-      /(?:george|ryan|oliver|arthur|daniel|male|guy|david|brian|mark|paul)/i.test(v.name + ' ' + (v.voiceURI || ''))
+      /(?:george|ryan|oliver|arthur|daniel|male|guy|david|brian|mark|paul)/i.test(v.name + ' ' + (v.voiceURI || '')) &&
+      !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || ''))
     );
     if (ukMale) return { voice: ukMale, isExplicitMale: true };
+
+    const nonFemaleEn = cachedVoices.find(v => v.lang.startsWith('en') && !FEMALE_VOICE_REGEX.test(v.name));
+    if (nonFemaleEn) return { voice: nonFemaleEn, isExplicitMale: true };
 
     const anyEn = cachedVoices.find(v => v.lang.startsWith('en'));
     if (anyEn) return { voice: anyEn, isExplicitMale: false };
@@ -138,13 +156,16 @@ export function updateJarvisState(mode = 'idle') {
   }
 }
 
-// 2. Text-to-Speech Engine with Authentic High-Quality Web Speech & Instant Barge-in
+// 2. Text-to-Speech Engine with Guaranteed Complete Output & Mutual Acoustic Exclusion
 export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'ru', isRu = true) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     if (typeof onComplete === 'function') onComplete();
     return;
   }
   try {
+    // Immediately pause recognition while speaking to prevent microphone loop / hearing self
+    pauseJarvisRecognition();
+
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     const resolvedLang = (typeof langCode === 'string') ? langCode : (isRu ? 'ru' : 'en');
@@ -167,15 +188,18 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
     };
 
     const finish = () => {
-      isJarvisSpeaking = false;
-      if (typeof onComplete === 'function') {
-        onComplete();
-      } else if (isJarvisActive && keepListening) {
-        resumeJarvisRecognition();
-        startSilenceTimer();
-      } else {
-        updateJarvisState('idle');
-      }
+      // 300ms acoustic guard delay to prevent room reverberation / speaker tail from triggering mic
+      setTimeout(() => {
+        isJarvisSpeaking = false;
+        if (typeof onComplete === 'function') {
+          onComplete();
+        } else if (isJarvisActive && keepListening) {
+          resumeJarvisRecognition();
+          startSilenceTimer();
+        } else {
+          updateJarvisState('idle');
+        }
+      }, 300);
     };
 
     utterance.onend = finish;
@@ -183,6 +207,7 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
     window.speechSynthesis.speak(utterance);
   } catch (err) {
     console.warn('[JARVIX] Local speech error:', err);
+    isJarvisSpeaking = false;
     if (typeof onComplete === 'function') onComplete();
   }
 }
@@ -196,21 +221,15 @@ export function speakJarvis(text, onComplete = null) {
   stopAllSpeech();
   resetSilenceTimer();
 
-  const lang = document.documentElement.lang || localStorage.getItem('deepsyq_home_language') || 'ru';
+  const lang = document.documentElement.lang || localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang') || 'ru';
   const isRu = (lang === 'ru' || lang.startsWith('ru') || navigator.language?.startsWith('ru'));
   const isFr = (lang === 'fr' || lang.startsWith('fr'));
   const isEs = (lang === 'es' || lang.startsWith('es'));
   const langCode = isRu ? 'ru' : isFr ? 'fr' : isEs ? 'es' : 'en';
 
   // Real human voice speech synthesis with proper language accent, crystal clear words, pitch: 1.0
+  // Microphone is strictly paused during speech and resumed safely on completion
   speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
-
-  // Keep recognition alive for instant ChatGPT-style interruption (barge-in)
-  if (isJarvisActive && keepListening && !isJarvisListening) {
-    try {
-      resumeJarvisRecognition();
-    } catch (_) {}
-  }
 }
 
 // 3. Instant Navigation Utility ("Сделано.")
@@ -729,8 +748,10 @@ function resumeJarvisRecognition() {
     jarvisRecognition = new SpeechRec();
     jarvisRecognition.continuous = true;
     jarvisRecognition.interimResults = true;
-    const lang = document.documentElement.lang || 'ru';
-    jarvisRecognition.lang = (lang === 'ru' || lang.startsWith('ru') || navigator.language?.startsWith('ru')) ? 'ru-RU' : (lang === 'fr' || lang.startsWith('fr')) ? 'fr-FR' : 'en-US';
+    const lang = (localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang') || document.documentElement.lang || 'ru').toLowerCase();
+    jarvisRecognition.lang = (lang === 'ru' || lang.startsWith('ru')) ? 'ru-RU' :
+      (lang === 'fr' || lang.startsWith('fr')) ? 'fr-FR' :
+      (lang === 'es' || lang.startsWith('es')) ? 'es-ES' : 'en-US';
 
     jarvisRecognition.onstart = () => {
       isJarvisListening = true;
@@ -740,16 +761,20 @@ function resumeJarvisRecognition() {
 
     let speechTimeout = null;
     let accumulatedText = '';
+    let lastHandledText = '';
+    let lastHandledTime = 0;
 
     jarvisRecognition.onresult = e => {
-      resetSilenceTimer();
-      let interim = '';
+      // If JARVIX is currently speaking, strictly drop microphone events to prevent hearing self / cutting off
+      // Immediate ChatGPT-style interruption cutoff (0ms delay) is handled via manual orb tap or pauseJarvisRecognition
       if (isJarvisSpeaking) {
-        // Immediate ChatGPT-style interruption cutoff (0ms delay)
-        stopAllSpeech();
-        isJarvisSpeaking = false;
-        updateJarvisState('listening');
+        accumulatedText = '';
+        return;
       }
+
+      resetSilenceTimer();
+      updateJarvisState('listening');
+      let interim = '';
       for (let i = e.resultIndex; i < e.results.length; ++i) {
         const item = e.results[i];
         if (item.isFinal) {
@@ -763,12 +788,20 @@ function resumeJarvisRecognition() {
       if (current) {
         clearTimeout(speechTimeout);
         speechTimeout = setTimeout(() => {
-          if (current.length > 2) {
+          if (current.length > 2 && !isJarvisSpeaking) {
+            const now = Date.now();
+            // Prevent duplicate recognition loops of the exact same command within 2.5 seconds
+            if (current.toLowerCase() === lastHandledText.toLowerCase() && (now - lastHandledTime) < 2500) {
+              accumulatedText = '';
+              return;
+            }
+            lastHandledText = current;
+            lastHandledTime = now;
             accumulatedText = '';
             pauseJarvisRecognition();
             handleJarvisVoiceCommand(current);
           }
-        }, 1050);
+        }, 950);
       }
     };
 

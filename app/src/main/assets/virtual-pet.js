@@ -25,7 +25,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
   }
   if (root) {
     root.DeepsyqVirtualPet = mod;
-    if (typeof document !== 'undefined') {
+    if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
       document.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-select-pet]');
         if (btn) {
@@ -253,6 +253,14 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       this.bindAutoSniffers();
       this.startAmbientMotion();
 
+      // Wire Home stage mode buttons
+      const btnCalm = document.getElementById('petModeCalm');
+      if (btnCalm) btnCalm.onclick = () => { this.saveSettings({ mode: 'calm', enabled: true }); this.render(); };
+      const btnPlayful = document.getElementById('petModePlayful');
+      if (btnPlayful) btnPlayful.onclick = () => { this.saveSettings({ mode: 'playful', enabled: true }); this.render(); };
+      const btnOff = document.getElementById('petModeOff');
+      if (btnOff) btnOff.onclick = () => { this.saveSettings({ mode: 'off', enabled: false }); this.render(); };
+
       if (options.promptInputSelector) {
         this.attachToPrompt(options.promptInputSelector, options.ratioSelectSelector);
       } else {
@@ -365,6 +373,80 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       const avatar = document.getElementById('dsPetAvatar');
       if (avatar) {
         avatar.setAttribute('title', `${this.settings.name} (${PET_PROFILES[this.settings.pet].label}) — нажми для настроек`);
+      }
+      this.syncHomeStage();
+    }
+
+    syncHomeStage() {
+      if (typeof document === 'undefined') return;
+      const pet = this.settings.pet || 'dog';
+      const mode = this.settings.mode || 'calm';
+
+      const tabDog = document.getElementById('homePetTabDog');
+      const tabCat = document.getElementById('homePetTabCat');
+      const tabFox = document.getElementById('homePetTabFox');
+      if (tabDog && tabCat && tabFox) {
+        tabDog.style.background = pet === 'dog' ? '#40dfae' : 'transparent';
+        tabDog.style.color = pet === 'dog' ? '#0b0f19' : '#94a3b8';
+        tabCat.style.background = pet === 'cat' ? '#a855f7' : 'transparent';
+        tabCat.style.color = pet === 'cat' ? '#ffffff' : '#94a3b8';
+        tabFox.style.background = pet === 'fox' ? '#f97316' : 'transparent';
+        tabFox.style.color = pet === 'fox' ? '#0b0f19' : '#94a3b8';
+      }
+
+      const stageDog = document.getElementById('petStageDog');
+      const stageCat = document.getElementById('petStageCat');
+      const stageFox = document.getElementById('petStageFox');
+      if (stageDog) stageDog.style.display = (pet === 'dog' && mode !== 'off') ? 'flex' : 'none';
+      if (stageCat) stageCat.style.display = (pet === 'cat' && mode !== 'off') ? 'flex' : 'none';
+      if (stageFox) stageFox.style.display = (pet === 'fox' && mode !== 'off') ? 'flex' : 'none';
+
+      const titleEl = document.getElementById('homePetTitle');
+      const spEl = document.getElementById('homePetSuperpower');
+      const descEl = document.getElementById('homePetDescription');
+      const badgeEl = document.getElementById('homePetRiggedBadge');
+      const glowEl = document.getElementById('homePetGlow');
+
+      if (titleEl) {
+        if (mode === 'off') {
+          titleEl.textContent = '💤 Питомец спит (Выкл)';
+          if (spEl) spEl.textContent = 'Режим отдыха. Нажмите Calm или Playful, чтобы разбудить.';
+        } else if (pet === 'dog') {
+          titleEl.textContent = '🐕 Луна (Корги)';
+          if (spEl) { spEl.textContent = 'Суперсила: Хранитель идей и черновиков'; spEl.style.color = '#40dfae'; }
+          if (descEl) descEl.textContent = 'Маленький корги с медно-рыжей шерстью и мятным акцентом. Находится рядом на сайте, оберегает ваши черновики и вовремя подсказывает Magic Shield при случайном закрытии вкладки.';
+          if (badgeEl) { badgeEl.style.borderColor = '#40dfae'; badgeEl.style.color = '#40dfae'; badgeEl.textContent = '3D LIVING'; }
+          if (glowEl) glowEl.style.background = 'radial-gradient(circle, rgba(64,223,174,0.2) 0%, transparent 70%)';
+        } else if (pet === 'cat') {
+          titleEl.textContent = '🐱 Мира (Кошка)';
+          if (spEl) { spEl.textContent = 'Суперсила: Нюх на формат 9:16'; spEl.style.color = '#c084fc'; }
+          if (descEl) descEl.textContent = 'Изящная дымчато-серая кошка с сапфировыми глазами. Вовремя порекомендует вертикальный формат для Reels, TikTok и YouTube Shorts.';
+          if (badgeEl) { badgeEl.style.borderColor = '#a855f7'; badgeEl.style.color = '#c084fc'; badgeEl.textContent = '3D LIVING'; }
+          if (glowEl) glowEl.style.background = 'radial-gradient(circle, rgba(168,85,247,0.2) 0%, transparent 70%)';
+        } else if (pet === 'fox') {
+          titleEl.textContent = '🦊 Нова (Лисёнок)';
+          if (spEl) { spEl.textContent = 'Суперсила: Экспресс-доставка готового'; spEl.style.color = '#fb923c'; }
+          if (descEl) descEl.textContent = 'Любопытный лисёнок с янтарными глазами. Как только фоновая генерация завершена, приносит результат в зубах прямо к вам.';
+          if (badgeEl) { badgeEl.style.borderColor = '#f97316'; badgeEl.style.color = '#fb923c'; badgeEl.textContent = '3D LIVING'; }
+          if (glowEl) glowEl.style.background = 'radial-gradient(circle, rgba(249,115,22,0.2) 0%, transparent 70%)';
+        }
+      }
+
+      const btnCalm = document.getElementById('petModeCalm');
+      const btnPlayful = document.getElementById('petModePlayful');
+      const btnOff = document.getElementById('petModeOff');
+      if (btnCalm && btnPlayful && btnOff) {
+        btnCalm.style.background = mode === 'calm' ? 'rgba(64,223,174,0.18)' : 'transparent';
+        btnCalm.style.borderColor = mode === 'calm' ? '#40dfae' : '#334155';
+        btnCalm.style.color = mode === 'calm' ? '#40dfae' : '#94a3b8';
+
+        btnPlayful.style.background = mode === 'playful' ? 'rgba(56,189,248,0.18)' : 'transparent';
+        btnPlayful.style.borderColor = mode === 'playful' ? '#38bdf8' : '#334155';
+        btnPlayful.style.color = mode === 'playful' ? '#38bdf8' : '#94a3b8';
+
+        btnOff.style.background = mode === 'off' ? 'rgba(239,68,68,0.18)' : 'transparent';
+        btnOff.style.borderColor = mode === 'off' ? '#ef4444' : '#334155';
+        btnOff.style.color = mode === 'off' ? '#f87171' : '#94a3b8';
       }
     }
 
