@@ -116,30 +116,23 @@ export function updateJarvisState(mode = 'idle') {
   }
 }
 
-// 2. Text-to-Speech Engine with Natural, Crystal-Clear Timbre
-export function speakJarvis(text, onComplete = null) {
+// 2. Text-to-Speech Engine with Authentic Server Audio & Local Web Speech Fallback
+export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'ru', isRu = true) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     if (typeof onComplete === 'function') onComplete();
     return;
   }
   try {
-    pauseJarvisRecognition();
-    resetSilenceTimer();
-
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    const lang = document.documentElement.lang || 'ru';
-    const isRu = (lang === 'ru' || lang.startsWith('ru') || navigator.language?.startsWith('ru'));
-    const isFr = (lang === 'fr' || lang.startsWith('fr'));
-
-    utterance.lang = isRu ? 'ru-RU' : isFr ? 'fr-FR' : 'en-US';
+    const isFr = langCode === 'fr';
+    const isEs = langCode === 'es';
+    utterance.lang = isRu ? 'ru-RU' : isFr ? 'fr-FR' : isEs ? 'es-ES' : 'en-US';
 
     const voiceMeta = getJarvixVoice(isRu);
     if (voiceMeta && voiceMeta.voice) {
       utterance.voice = voiceMeta.voice;
     }
-
-    // Natural, pleasant, dignified pitch — never artificially pitched down to robotic low frequencies
     utterance.pitch = 1.0;
     utterance.rate = 1.0;
 
@@ -162,12 +155,80 @@ export function speakJarvis(text, onComplete = null) {
 
     utterance.onend = finish;
     utterance.onerror = finish;
-
     window.speechSynthesis.speak(utterance);
   } catch (err) {
-    console.warn('[JARVIX] Speech error:', err);
+    console.warn('[JARVIX] Local speech error:', err);
     if (typeof onComplete === 'function') onComplete();
   }
+}
+
+export function speakJarvis(text, onComplete = null) {
+  if (!text) {
+    if (typeof onComplete === 'function') onComplete();
+    return;
+  }
+
+  stopAllSpeech();
+  pauseJarvisRecognition();
+  resetSilenceTimer();
+
+  const lang = document.documentElement.lang || 'ru';
+  const isRu = (lang === 'ru' || lang.startsWith('ru') || navigator.language?.startsWith('ru'));
+  const isFr = (lang === 'fr' || lang.startsWith('fr'));
+  const isEs = (lang === 'es' || lang.startsWith('es'));
+  const langCode = isRu ? 'ru' : isFr ? 'fr' : isEs ? 'es' : 'en';
+  const timbre = getStoredTimbre();
+
+  // Try real server-synthesized film male audio (guaranteed voice timbre across all devices)
+  try {
+    const ttsUrl = `/api/jarvix/tts?text=${encodeURIComponent(text.slice(0, 300))}&lang=${langCode}&timbre=${timbre}`;
+    const audio = new Audio(ttsUrl);
+    currentTtsAudio = audio;
+
+    let fallbackTriggered = false;
+    const triggerLocalFallback = () => {
+      if (fallbackTriggered) return;
+      fallbackTriggered = true;
+      currentTtsAudio = null;
+      speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
+    };
+
+    audio.onplay = () => {
+      isJarvisSpeaking = true;
+      updateJarvisState('speaking');
+    };
+
+    audio.onended = () => {
+      currentTtsAudio = null;
+      isJarvisSpeaking = false;
+      if (typeof onComplete === 'function') {
+        onComplete();
+      } else if (isJarvisActive && keepListening) {
+        resumeJarvisRecognition();
+        startSilenceTimer();
+      } else {
+        updateJarvisState('idle');
+      }
+    };
+
+    audio.onerror = (e) => {
+      console.warn('[JARVIX Audio TTS load error, falling back to Web Speech]', e);
+      triggerLocalFallback();
+    };
+
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(err => {
+        console.warn('[JARVIX Audio play blocked, falling back to Web Speech]', err);
+        triggerLocalFallback();
+      });
+    }
+    return;
+  } catch (err) {
+    console.warn('[JARVIX Audio creation error]', err);
+  }
+
+  speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
 }
 
 // 3. Instant Navigation Utility ("Сделано.")
