@@ -1,21 +1,28 @@
 /* Owner-approved Everyday Tools visual landing. Existing processing and navigation own all operations.
-   Screenshot sprite extracts display the genuine approved 09_Everyday_Tools art
-   until independently generated artwork files can be uploaded as reviewed binaries. */
+   Reuse only the owner's pinned 09_Everyday_Tools art. The hero is a native-scale
+   crop of the actual image, not a generated substitute or stretched screenshot. */
 (() => {
  'use strict';
  const main=document.querySelector('main.free-tools-page.tools-hub');
  if(!main || main.querySelector('#etShowcase'))return;
  const lang=(navigator.language||'en').slice(0,2);
  const asset='media/approved-design-20261023/09_Everyday_Tools.png';
+ // Resolve against the document rather than the SVG base: some browsers otherwise
+ // intermittently fail to fetch the external raster in inline SVG crops.
+ const artUrl=new URL(asset,document.baseURI).href;
+ if(!new URLSearchParams(location.search).has('tool')){
+  const preload=document.createElement('link');preload.rel='preload';preload.as='image';preload.href=artUrl;
+  document.head.append(preload);
+ }
  const make=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
  const svgNS='http://www.w3.org/2000/svg';
  function crop(rect,extra=''){
   const svg=document.createElementNS(svgNS,'svg');
-  svg.setAttribute('viewBox',rect.join(' '));svg.setAttribute('preserveAspectRatio','xMidYMid slice');
+  svg.setAttribute('viewBox',rect.join(' '));svg.setAttribute('preserveAspectRatio','xMidYMid meet');
   svg.setAttribute('aria-hidden','true');svg.classList.add('et-art');
   if(extra)svg.classList.add(extra);
   const img=document.createElementNS(svgNS,'image');
-  img.setAttribute('href',asset);img.setAttribute('width','1448');img.setAttribute('height','1086');
+  img.setAttribute('href',artUrl);img.setAttribute('width','1448');img.setAttribute('height','1086');
   svg.append(img);return svg;
  }
  const cards=[
@@ -61,8 +68,9 @@
  const hero=make('div','et-hero');const heroCopy=make('div','et-hero-copy');
  const heading=make('h1','', 'Everyday Tools');
  const lead=make('strong','et-hero-lead','Less routine. More creating.');
- const tagline=make('p','','Simple, powerful tools to handle your everyday creative tasks. All in one place.');
- heroCopy.append(heading,lead,tagline);hero.append(crop([695,61,703,242],'et-hero-art'),heroCopy);showcase.append(hero);
+ // The owner deliberately removed the small descriptive line from this banner.
+ // Keep the main title and exact "Less routine. More creating." subtitle.
+ heroCopy.append(heading,lead);hero.append(crop([695,61,703,242],'et-hero-art'),heroCopy);showcase.append(hero);
  const leadRow=make('div','et-section-heading');
  const inner=make('div');inner.append(make('h2','','Choose a tool'),make('p','','Everyday essentials for your creative workflow.'));
  const picker=make('select','et-picker');picker.setAttribute('aria-label','Filter tools');
