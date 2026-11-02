@@ -102,4 +102,28 @@ describe('DEEPSYQ P0 Verification: Voice, Pets, Navigation & Languages', () => {
     assert.ok(shellJs.includes('shellI18n'), 'shell i18n present');
     assert.ok(shellJs.includes('agents: \'JARVIX\''), 'agents translated as JARVIX in shell');
   });
+
+  it('7. verifies JARVIX does not parrot back user query and maintains barge-in interruption cutoff without self-interruption', () => {
+    const jarvisJs = fs.readFileSync(path.join(assetsDir, 'jarvis-core.js'), 'utf8');
+    const brainJs = fs.readFileSync(path.join(repoDir, 'server', 'jarvix-brain.js'), 'utf8');
+
+    // No parroting of user queries
+    assert.ok(!jarvisJs.includes('Я услышал: «${t}»'), 'jarvis-core must not parrot back user query');
+    assert.ok(!brainJs.includes('Я вас услышал: «${t}»'), 'jarvix-brain must not parrot back user query');
+
+    // Barge-in interruption
+    assert.ok(jarvisJs.includes('isExplicitInterrupt'), 'detects explicit interrupt words (стоп, стой, подожди, stop)');
+    assert.ok(jarvisJs.includes('isActionCommand'), 'detects action commands interrupting speech');
+    assert.ok(jarvisJs.includes('spokenWords'), 'isolates spoken words to filter acoustic self-echo');
+    assert.ok(jarvisJs.includes('stopAllSpeech()'), 'stops speech on user barge-in');
+  });
+
+  it('8. verifies JARVIX active state persists across pages so JARVIX stays active and listening upon navigation', () => {
+    const jarvisJs = fs.readFileSync(path.join(assetsDir, 'jarvis-core.js'), 'utf8');
+
+    // Persists across page transitions
+    assert.ok(jarvisJs.includes("sessionStorage.setItem('jarvix_active', '1')"), 'saves active state across pages');
+    assert.ok(jarvisJs.includes("sessionStorage.getItem('jarvix_active') === '1'"), 'restores active state on page mount');
+    assert.ok(jarvisJs.includes('resumeJarvisRecognition()'), 'resumes listening automatically on page mount');
+  });
 });

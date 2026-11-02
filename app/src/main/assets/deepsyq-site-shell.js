@@ -102,7 +102,7 @@
     { section:'Creation' },
     { label: 'Image', icon: '▧', url:'generate-studio.html?studio=image', key: 'image' },
     { label: 'Video', icon: '▷', url:'generate-studio.html?studio=video', key: 'video' },
-    { label:'Agent',icon:'✦', pending:true, isJarvix: true, key: 'agents' },
+    { label:'Agent',icon:'✦', pending:false, isJarvix: true, key: 'agents' },
     { label: 'Audio', icon: '♫', url:'generate-studio.html?studio=audio', key: 'audio' },
     { section:'Tools' },
     { label: 'AI Apps', icon: '◇', url:'ai-apps.html', key: 'apps' },
@@ -191,6 +191,15 @@
       if (active === entry.key) el.setAttribute('aria-current', 'page');
     }
     if (entry.isJarvix || entry.key === 'agents') {
+      el.className = 'ds-site-jarvix-btn';
+      el.href = '#';
+      el.setAttribute('aria-label', 'JARVIX AI');
+      el.title = 'JARVIX — AI Voice Butler';
+      el.onclick = (e) => {
+        e.preventDefault();
+        const topBtn = document.getElementById('topJarvisBtn');
+        if (topBtn) topBtn.click();
+      };
       const orb = document.createElement('span');
       orb.className = 'jarvis-mini-orb';
       orb.style.width = '20px';
