@@ -189,7 +189,7 @@ export function initHomeVoiceInput(chooseFn) {
   const grantMicBtn = $('grantMicBtn');
   if (!voiceBtn || !promptEl) return;
 
-  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const SpeechRec = typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
   let recognition = null;
   let isListening = false;
 
@@ -199,6 +199,12 @@ export function initHomeVoiceInput(chooseFn) {
       if (d && typeof d.close === 'function') d.close();
     });
   });
+
+  if (micDialog) {
+    micDialog.addEventListener('click', e => {
+      if (e.target === micDialog) micDialog.close();
+    });
+  }
 
   function stopListening() {
     if (recognition) {
@@ -213,14 +219,19 @@ export function initHomeVoiceInput(chooseFn) {
 
   function startRecognition() {
     if (!SpeechRec) {
-      alert('Распознавание речи не поддерживается в этом браузере. Рекомендуем Chrome, Edge или Safari.');
+      const msg = 'Распознавание речи не поддерживается в этом браузере. Рекомендуем Google Chrome, Edge или Safari.';
+      if ($('homeQuickStatus')) {
+        $('homeQuickStatus').classList.add('is-visible');
+        $('homeQuickStatus').textContent = msg;
+      }
+      alert(msg);
       return;
     }
     try {
       recognition = new SpeechRec();
       recognition.continuous = false;
       recognition.interimResults = true;
-      recognition.lang = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru')) ? 'ru-RU' : 'en-US';
+      recognition.lang = (typeof document !== 'undefined' && (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru'))) ? 'ru-RU' : 'en-US';
 
       let baseText = promptEl.value.trim();
       if (baseText.length > 0) baseText += ' ';
@@ -230,6 +241,10 @@ export function initHomeVoiceInput(chooseFn) {
         voiceBtn.classList.add('is-listening');
         if (waves) waves.hidden = false;
         voiceBtn.title = 'Слушаю… Нажмите для завершения';
+        if ($('homeQuickStatus')) {
+          $('homeQuickStatus').classList.add('is-visible');
+          $('homeQuickStatus').textContent = '🎙 Слушаю вас… Говорите!';
+        }
       };
 
       recognition.onresult = (e) => {
@@ -254,13 +269,19 @@ export function initHomeVoiceInput(chooseFn) {
           if (micDialog && typeof micDialog.showModal === 'function') {
             micDialog.showModal();
           } else {
-            alert('Доступ к микрофону заблокирован. Разрешите микрофон в настройках браузера.');
+            alert('Доступ к микрофону заблокирован. Разрешите микрофон в настройках браузера (значок замка в адресной строке).');
           }
         }
         stopListening();
       };
 
-      recognition.onend = () => stopListening();
+      recognition.onend = () => {
+        stopListening();
+        if ($('homeQuickStatus')) {
+          $('homeQuickStatus').textContent = 'Голосовой ввод завершён. Нажмите «Отослать» или отредактируйте текст.';
+        }
+      };
+
       recognition.start();
     } catch (err) {
       console.warn('[HomeVoice] Failed to start:', err);
@@ -285,7 +306,7 @@ export function initHomeVoiceInput(chooseFn) {
         if (micDialog && !micDialog.open) {
           micDialog.showModal();
         } else {
-          alert('Для голосового ввода нужен доступ к микрофону. Пожалуйста, разрешите доступ.');
+          alert('Для голосового ввода нужен доступ к микрофону. Пожалуйста, разрешите доступ в настройках браузера.');
         }
         stopListening();
       });
@@ -302,21 +323,20 @@ export function initHomeVoiceInput(chooseFn) {
     if (isListening) {
       stopListening();
     } else {
-      const alreadyPermitted = localStorage.getItem('deepsyq_mic_permitted') === 'true';
-      if (alreadyPermitted) {
-        startRecognition();
-      } else if (micDialog && typeof micDialog.showModal === 'function') {
-        micDialog.showModal();
-      } else {
+      if (navigator.mediaDevices?.getUserMedia && localStorage.getItem('deepsyq_mic_permitted') !== 'true') {
         requestMicPermissionAndStart();
+      } else {
+        startRecognition();
       }
     }
   });
 
-  window.addEventListener('pagehide', stopListening);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') stopListening();
-  });
+  if (typeof window !== 'undefined') {
+    window.addEventListener('pagehide', stopListening);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') stopListening();
+    });
+  }
 }
 
 const ideas={
@@ -324,19 +344,24 @@ const ideas={
  image:{kind:'image',prompt:'Create an original high-quality editorial photograph with expressive styling and realistic lighting.'},
  music:{kind:'music',prompt:'Create an original cinematic music track with a clear rhythm, uplifting atmosphere and carefully layered instruments.'}
 };
-const modeToStudio={image:'image',video:'video',music:'audio'};
+const modeToStudio={image:'image',video:'video',music:'audio',agent:'agent'};
 let chosen='image',busy=false;
-function choose(kind){
+
+export function choose(kind){
  if(!['image','video','music','agent'].includes(kind))return;
  chosen=kind;
- $('homeQuickPrompt').required=kind!=='agent';
- for(const b of document.querySelectorAll('[data-home-kind]'))b.setAttribute('aria-current',b.dataset.homeKind===kind?'true':'false');
- $('homeQuickSubmitLabel').textContent=kind==='agent'?'See Agent preview ↗':'Open in Studio ↗';
- $('homeQuickSubmit').setAttribute('aria-label',kind==='agent'?'See Agent preview':'Open in Studio');
+ if($('homeQuickPrompt')) $('homeQuickPrompt').required=kind!=='agent';
+ for(const b of document.querySelectorAll('[data-home-kind]')){
+   const isMatch = b.dataset.homeKind===kind;
+   b.setAttribute('aria-current', isMatch ? 'true' : 'false');
+   b.setAttribute('aria-pressed', isMatch ? 'true' : 'false');
+ }
+ const isAgent = kind === 'agent';
+ if($('homeQuickSubmitLabel')) $('homeQuickSubmitLabel').textContent = isAgent ? 'Open AI Agents ↗' : 'Open in Studio ↗';
+ if($('homeQuickSubmit')) $('homeQuickSubmit').setAttribute('aria-label', isAgent ? 'Open AI Agents' : 'Open in Studio');
 }
+
 if($('homeQuickForm')){
- // Home and Canvas now have separate editors. Each open Home page must scrub
- // its own unsent prompt when the signed-in account changes.
  const draftOwner=localStorage.getItem('vv_token')||'guest';
  function guardHomeDraft(){
   if((localStorage.getItem('vv_token')||'guest')===draftOwner)return true;
@@ -351,18 +376,37 @@ if($('homeQuickForm')){
  document.addEventListener('visibilitychange',guardHomeDraft);
  window.addEventListener('pageshow',()=>{guardHomeDraft();busy=false;$('homeQuickSubmit').disabled=false;});
  const preferredRatio='';
+
+ // Initialize voice input and bind to button immediately
+ initHomeVoiceInput(choose);
+
+ // Auto-detect intent on typing
+ $('homeQuickPrompt')?.addEventListener('input', () => {
+   const val = $('homeQuickPrompt').value;
+   const detected = detectIntent(val);
+   if (detected) choose(detected);
+ });
+
+ // Enter key submits
+ $('homeQuickPrompt')?.addEventListener('keydown', e => {
+   if (e.key === 'Enter' && !e.shiftKey) {
+     e.preventDefault();
+     if ($('homeQuickForm').requestSubmit) $('homeQuickForm').requestSubmit();
+     else $('homeQuickSubmit').click();
+   }
+ });
+
  document.querySelectorAll('[data-home-kind]').forEach(link=>link.addEventListener('click',async event=>{
-  // Real links still work without JavaScript and with modifier/new-tab clicks.
   if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
   if(!guardHomeDraft()){event.preventDefault();return;}
   const kind=link.dataset.homeKind;
   choose(kind);
+  const prompt=$('homeQuickPrompt').value.trim();
   if(kind==='agent'){
-   $('homeQuickStatus').classList.add('is-visible');
-   $('homeQuickStatus').textContent='AI Agent execution is not available yet. Explore the preview below.';
+   event.preventDefault();
+   location.assign(prompt ? 'ai-agents.html?topic=' + encodeURIComponent(prompt) : 'ai-agents.html');
    return;
   }
-  const prompt=$('homeQuickPrompt').value.trim();
   if(!prompt)return;
   event.preventDefault();
   if(busy)return;
@@ -378,6 +422,7 @@ if($('homeQuickForm')){
    $('homeQuickStatus').textContent='Could not prepare the draft in this browser. Your text remains here; please try again.';
   }
  }));
+
  document.querySelectorAll('[data-home-idea]').forEach(b=>b.addEventListener('click',()=>{
   if(!guardHomeDraft())return;
   const idea=ideas[b.dataset.homeIdea];if(!idea)return;
@@ -386,15 +431,35 @@ if($('homeQuickForm')){
   choose(idea.kind);prompt.value=idea.prompt;prompt.focus();
   $('homeQuickStatus').textContent='Editable idea prepared. Nothing generated or charged.';
  }));
+
  $('homeQuickForm').addEventListener('submit',async e=>{
   e.preventDefault();if(!guardHomeDraft()||busy)return;
   const prompt=$('homeQuickPrompt').value.trim(),status=$('homeQuickStatus'),button=$('homeQuickSubmit');
   status.classList.add('is-visible');
-  if(chosen==='agent'){status.textContent='AI Agent execution is not available yet. Explore the preview below.';$('agentFeature').scrollIntoView({behavior:'smooth',block:'start'});return;}
+
+  // Detect intent from spoken or typed text
+  const detected = detectIntent(prompt);
+  const targetKind = detected || chosen;
+
+  if(targetKind==='agent'){
+    busy=true;button.disabled=true;status.textContent='Opening AI Agents workspace…';
+    const targetUrl = prompt ? 'ai-agents.html?topic=' + encodeURIComponent(prompt) : 'ai-agents.html';
+    location.assign(targetUrl);
+    return;
+  }
+
   if(!prompt||prompt.length>2000){status.textContent='Enter a description of up to 2,000 characters.';return;}
-  const studio=modeToStudio[chosen];if(!studio){status.textContent='Choose Image, Video or Audio.';return;}
-  busy=true;button.disabled=true;status.textContent='Preparing your existing Studio draft locally…';
-  try{await saveStudioHandoff({kind:chosen,prompt,settings:preferredRatio?{ratio:preferredRatio}:{},source:'home-quick-create'});if(!guardHomeDraft())return;location.assign('generate-studio.html?studio='+studio+'&from=home');}
-  catch(_){if(!guardHomeDraft())return;status.textContent='Could not prepare the draft in this browser. Your text remains here; please try again.';busy=false;button.disabled=false;}
+  const studio=modeToStudio[targetKind]||'image';
+  busy=true;button.disabled=true;status.textContent='Preparing your Studio draft locally…';
+  try{
+    await saveStudioHandoff({kind:targetKind,prompt,settings:preferredRatio?{ratio:preferredRatio}:{},source:'home-quick-create'});
+    if(!guardHomeDraft())return;
+    location.assign('generate-studio.html?studio='+studio+'&from=home');
+  }catch(_){
+    if(!guardHomeDraft())return;
+    status.textContent='Could not prepare the draft in this browser. Your text remains here; please try again.';
+    busy=false;
+    button.disabled=false;
+  }
  });
 }
