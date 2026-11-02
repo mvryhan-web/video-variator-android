@@ -200,6 +200,16 @@
       .secondary-controls { grid-template-columns: 1fr; }
       .mock-row { flex-direction: column; }
     }
+  
+    .voice-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .voice-chip { font-size: 11px; padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--muted); cursor: pointer; }
+    .voice-chip:hover { border-color: var(--accent); color: var(--text); }
+    .open-studio-btn { width: 100%; margin-top: 12px; background: #2563eb; color: #fff; border-color: transparent; font-size: 14px; padding: 12px; border-radius: 10px; }
+    .open-studio-btn:hover { background: #1d4ed8; }
+    .voice-nav-links { display: flex; gap: 12px; justify-content: center; margin-top: 22px; font-size: 13px; }
+    .voice-nav-links a { color: var(--accent); text-decoration: none; }
+    .voice-nav-links a:hover { text-decoration: underline; }
+
   </style>
 </head>
 <body>
@@ -238,11 +248,26 @@
         <button id="mockTranscriptBtn" type="button">Preview text</button>
       </div>
       <p id="mockTranscriptOutput" aria-live="polite"></p>
+      <div class="voice-chips">
+        <button type="button" class="voice-chip" data-phrase="Cinematic cyberpunk anime scene with neon rain in 9:16 vertical">🎬 Cyberpunk 9:16</button>
+        <button type="button" class="voice-chip" data-phrase="Energetic upbeat electronic commercial soundtrack">🎵 Synthwave Audio</button>
+        <button type="button" class="voice-chip" data-phrase="Minimalist luxury cosmetics product presentation">✨ Luxury Product</button>
+      </div>
+      <button id="openInStudioBtn" type="button" class="open-studio-btn">Open in AI Studio →</button>
+
     </section>
 
     <p class="privacy-note">
       Microphone tracks stop automatically when you click Stop / End, hide this tab, or leave the page.
     </p>
+  
+    <div class="voice-nav-links">
+      <a href="generate-studio.html">AI Studio ↗</a>
+      <a href="my-creations.html">My Creations ↗</a>
+      <a href="compare-ai.html">Compare AI ↗</a>
+      <a href="virtual-pet.html">Virtual Pet ↗</a>
+    </div>
+
   </main>
 
   <script type="module">

@@ -1142,6 +1142,83 @@ async function applyLocalStudioHandoff(){
  }catch(_){$('status').textContent=say('The local workflow handoff could not be restored. Add your references here instead.','Не удалось восстановить локальный шаблон. Добавьте фотографии здесь.');return false;}
 }
 
+
+function applyVoicePromptFromUrl() {
+  const urlPrompt = new URLSearchParams(location.search).get('prompt');
+  if (urlPrompt && $('prompt') && !$('prompt').value) {
+    $('prompt').value = urlPrompt;
+    $('prompt').dispatchEvent(new Event('input', { bubbles: true }));
+  }
+}
+
+function initStudioVoiceInput() {
+  const voiceBtn = $('studioVoiceBtn');
+  if (!voiceBtn) return;
+  let recognition = null;
+  let isListening = false;
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  function stopListening() {
+    if (recognition) {
+      try { recognition.stop(); } catch (_) {}
+    }
+    isListening = false;
+    voiceBtn.classList.remove('is-listening');
+    voiceBtn.title = say('Voice prompt input', 'Голосовой ввод промпта');
+  }
+
+  function startListening() {
+    if (!SpeechRec) {
+      const cur = $('prompt') ? $('prompt').value.trim() : '';
+      const dest = 'voice-agent-preview.html' + (cur ? '?prompt=' + encodeURIComponent(cur) : '');
+      window.location.href = dest;
+      return;
+    }
+    try {
+      recognition = new SpeechRec();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = document.documentElement.lang === 'ru' ? 'ru-RU' : 'en-US';
+
+      let baseText = $('prompt') ? $('prompt').value.trim() : '';
+      if (baseText.length > 0) baseText += ' ';
+
+      recognition.onstart = () => {
+        isListening = true;
+        voiceBtn.classList.add('is-listening');
+        voiceBtn.title = say('Listening… Click to stop', 'Слушаю… Нажмите для завершения');
+      };
+
+      recognition.onresult = (e) => {
+        let transcript = '';
+        for (let i = e.resultIndex; i < e.results.length; ++i) {
+          transcript += e.results[i][0].transcript;
+        }
+        if ($('prompt')) {
+          $('prompt').value = baseText + transcript;
+          $('prompt').dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      };
+
+      recognition.onerror = () => stopListening();
+      recognition.onend = () => stopListening();
+      recognition.start();
+    } catch (_) {
+      stopListening();
+    }
+  }
+
+  voiceBtn.addEventListener('click', () => {
+    if (isListening) stopListening();
+    else startListening();
+  });
+
+  window.addEventListener('pagehide', stopListening);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') stopListening();
+  });
+}
+
 function applyAgentWorkflow(){
  const raw=sessionStorage.getItem('deepsyq_agent_workflow');
  const banner=$('agentWorkflowBanner');
@@ -1175,7 +1252,7 @@ function applyAgentWorkflow(){
      defaultSettings:{ratio:nextStep.ratio}
     }));
     applyTemplateStart();
-    applyAgentWorkflow();
+    applyAgentWorkflow();applyVoicePromptFromUrl();initStudioVoiceInput();
    };
   }else{
    $('agentBannerNext').textContent=say('Finish scenario','Завершить сценарий');

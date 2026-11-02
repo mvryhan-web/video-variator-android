@@ -562,10 +562,12 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
     // AUTO-DETECTION & BINDING IN STUDIO
     // ==========================================
     detectStudioElements() {
-      const promptInput = document.getElementById('promptInput') ||
+      const promptInput = document.getElementById('prompt') ||
+                          document.getElementById('promptInput') ||
                           document.querySelector('textarea[name="prompt"]') ||
                           document.getElementById('studioPromptInput');
-      const ratioSelect = document.getElementById('aspectRatioSelect') ||
+      const ratioSelect = document.getElementById('ratio') ||
+                          document.getElementById('aspectRatioSelect') ||
                           document.getElementById('studioAspectRatio') ||
                           document.querySelector('select[name="aspectRatio"]');
 
