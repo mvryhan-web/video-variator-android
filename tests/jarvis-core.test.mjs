@@ -60,7 +60,9 @@ describe('JARVIX AI Voice Commander & Autonomous Butler System', () => {
     assert.ok(jarvisJs.includes('export function toggleJarvisVoice'), 'toggleJarvisVoice must be exported');
     assert.ok(jarvisJs.includes('export function handleJarvisVoiceCommand'), 'handleJarvisVoiceCommand must be exported');
     assert.ok(jarvisJs.includes('getJarvixVoice'), 'male voice selector must be defined');
-    assert.ok(jarvisJs.includes('pitch = 0.40'), 'deep masculine octave transposition must be set for default voices');
+    assert.ok(jarvisJs.includes('utterance.pitch = 1.0'), 'natural clear human pitch without demonic drop must be set');
+    assert.ok(jarvisJs.includes('умеешь|можешь'), 'must match capabilities questions like что ты умеешь делать');
+    assert.ok(jarvisJs.includes('smartFallback'), 'must have intelligent proactive fallback');
     assert.ok(jarvisJs.includes('jarvix_greeted'), 'smart memory session key must be used');
     assert.ok(jarvisJs.includes('SILENCE_TIMEOUT_MS'), 'silence timeout constant must be configured');
     assert.ok(jarvisJs.includes('applySiteTheme'), 'theme/lighting switcher must be exported');

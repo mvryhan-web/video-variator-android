@@ -64,12 +64,12 @@
   if (!document.getElementById('topJarvisBtn')) {
     const jarvisCss = document.createElement('link');
     jarvisCss.rel = 'stylesheet';
-    jarvisCss.href = 'jarvis-core.css';
+    jarvisCss.href = 'jarvis-core.css?v=5.0';
     document.head.append(jarvisCss);
 
     const jarvisScript = document.createElement('script');
     jarvisScript.type = 'module';
-    jarvisScript.src = 'jarvis-core.js';
+    jarvisScript.src = 'jarvis-core.js?v=5.0';
     document.body.append(jarvisScript);
 
     // If a top header exists, insert JARVIX Orb dead-center

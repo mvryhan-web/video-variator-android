@@ -20,7 +20,7 @@ const jarvixContext = {
   lastPrompt: ''
 };
 
-// 1. Male Voice Guarantee: Detect male voice or transpose down by >1 octave
+// 1. Male Voice Guarantee: Detect male voice or natural clear human voice
 let cachedVoices = [];
 function refreshVoices() {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -37,7 +37,7 @@ export function getJarvixVoice(isRu) {
   if (!cachedVoices.length) return null;
 
   if (isRu) {
-    // Check for explicit Russian male voices
+    // Check for explicit Russian male voices (Dmitry, Pavel, Aleksandr, Maxim, Yuri, etc.)
     const maleRu = cachedVoices.find(v =>
       v.lang.startsWith('ru') &&
       /(?:dmitry|дмитрий|pavel|павел|aleksandr|alexander|александр|maxim|максим|yuri|юрий|mikhail|михаил|boris|борис|igor|игорь|male|муж)/i.test(v.name + ' ' + (v.voiceURI || ''))
@@ -76,7 +76,7 @@ export function updateJarvisState(mode = 'idle') {
   }
 }
 
-// 2. Text-to-Speech Engine with Guaranteed Male Timbre
+// 2. Text-to-Speech Engine with Natural, Crystal-Clear Timbre
 export function speakJarvis(text, onComplete = null) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     if (typeof onComplete === 'function') onComplete();
@@ -99,15 +99,9 @@ export function speakJarvis(text, onComplete = null) {
       utterance.voice = voiceMeta.voice;
     }
 
-    // If an explicit male voice is found, apply deep resonant pitch (0.80).
-    // If the browser only has a female/default voice (like Google русский or Irina),
-    // drop the pitch to 0.40 (transposing down over an octave) into a deep baritone/bass male timbre.
-    if (voiceMeta && voiceMeta.isExplicitMale) {
-      utterance.pitch = 0.80;
-    } else {
-      utterance.pitch = 0.40;
-    }
-    utterance.rate = 1.02;
+    // Natural, pleasant, dignified pitch — never artificially pitched down to robotic low frequencies
+    utterance.pitch = 1.0;
+    utterance.rate = 1.0;
 
     utterance.onstart = () => {
       isJarvisSpeaking = true;
@@ -260,6 +254,51 @@ export function handleJarvisVoiceCommand(commandText) {
   resetSilenceTimer();
   const isRu = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru'));
 
+  // 1. CAPABILITIES & BUTLER IDENTITY ("Что ты умеешь делать?", "Что ты умеешь?", "Кто ты", "Помощь")
+  if (/(?:что\s+(?:ты\s+)?(?:умеешь|можешь)(?:\s+делать)?|твои\s+возможности|какие\s+(?:у\s+тебя\s+)?функции|что\s+ты\s+такое|кто\s+ты|расскажи\s+о\s+себе|справка|помощь|help|what can you do)/i.test(lower)) {
+    const helpMsg = isRu
+      ? 'Я JARVIX — ваш бортовой голосовой помощник Deepsyq. Я умею: моментально открывать студии видео, фото, аудио и инструменты сайта; создавать кинематографичные промпты для нейросетей на любую тему; регулировать тему и освещение сайта; очищать поля ввода; а также сообщать точное время и погоду в любых мировых столицах. Что для вас сделать?'
+      : 'I am JARVIX — your resident voice intelligence on Deepsyq. I can instantly open video, photo, audio studios and site tools, generate cinematic AI prompts, adjust website lighting and themes, clear inputs, and report live time and weather worldwide. How can I help you?';
+    speakJarvis(helpMsg);
+    return;
+  }
+
+  // 2. SOCIAL DIALOG & STATUS ("Привет", "Как дела", "Кто тут")
+  if (/^(?:привет|здравствуй(?:те)?|добрый\s+(?:день|вечер|утро)|салют|хай|hello|hi)$/i.test(lower) || /(?:как\s+(?:твои\s+)?дела|как\s+ты|как\s+настроение|как\s+поживаешь|how are you)/i.test(lower)) {
+    if (/(?:как\s+(?:твои\s+)?дела|как\s+ты|как\s+настроение|how are you)/i.test(lower)) {
+      const statusMsg = isRu
+        ? 'Все системы функционируют безупречно. Готов открывать студии, генерировать промпты и помогать в работе. Что для вас сделать?'
+        : 'All systems are fully operational and ready. What can I do for you today?';
+      speakJarvis(statusMsg);
+      return;
+    }
+    const greetMsg = isRu
+      ? 'Здравствуйте! Рад слышать вас. Назовите команду, и я выполню её моментально.'
+      : 'Greetings! Ready and at your service. What shall we do?';
+    speakJarvis(greetMsg);
+    return;
+  }
+
+  // 3. GRATITUDE & COMPLIMENTS ("Спасибо", "Молодец")
+  if (/(?:спасибо|благодарю|отлично|молодец|круто|супер|thank you|thanks)/i.test(lower)) {
+    const thankMsg = isRu
+      ? 'Всегда к вашим услугам! Если понадобится что-то еще — только скажите.'
+      : 'Always at your service!';
+    speakJarvis(thankMsg);
+    return;
+  }
+
+  // 4. SHUTDOWN / STANDBY ("Выключись", "Пока", "Стоп")
+  if (/(?:выключись|отключись|пока|до\s+свидания|замолчи|хватит|стоп|goodbye|bye|turn off|shut down)/i.test(lower)) {
+    const byeMsg = isRu
+      ? 'Выключаюсь. Если я вам понадоблюсь — просто нажмите на сферу вверху страницы.'
+      : 'Deactivating. Whenever you need me, simply click the orb.';
+    speakJarvis(byeMsg, () => {
+      deactivateJarvisVoice();
+    });
+    return;
+  }
+
   // A. MULTI-TURN DIALOG CONTEXT HANDLERS
   if (jarvixContext.waitingFor === 'weather_city') {
     const cityKey = detectCityKey(lower);
@@ -292,8 +331,8 @@ export function handleJarvisVoiceCommand(commandText) {
     }
     jarvixContext.waitingFor = 'weather_city';
     const askCity = isRu
-      ? 'В каком городе вы хотите узнать погоду?'
-      : 'In which city would you like to check the weather?';
+      ? 'В каком городе вы хотите узнать погоду? Например, в Париже, Москве, Лондоне, Нью-Йорке или Токио?'
+      : 'In which city would you like to check the weather? Paris, Moscow, London, New York, or Tokyo?';
     speakJarvis(askCity);
     return;
   }
@@ -507,8 +546,11 @@ export function handleJarvisVoiceCommand(commandText) {
     return;
   }
 
-  // Default fallback
-  speakJarvis(`Слушаю вас. Обрабатываю запрос: «${t}».`);
+  // Intelligent Proactive Fallback (never robotic or repetitive)
+  const smartFallback = isRu
+    ? `Я услышал: «${t}». Могу создать кинематографичный промпт на эту тему для генерации, открыть студию или переключить тему. Что для вас сделать?`
+    : `I heard: "${t}". Shall I generate a creative prompt for this, open a studio, or adjust the theme?`;
+  speakJarvis(smartFallback);
 }
 
 // 9. Speech Recognition Control (Pure Voice Loop)
