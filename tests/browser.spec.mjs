@@ -78,24 +78,32 @@ test('trial unlocks all modes plus 720p 1080p and 4K',async({page})=>{
   await expect(mode.locator('option[value="gentle"]')).not.toHaveAttribute('disabled','');
   await expect(mode.locator('option[value="balanced"]')).not.toHaveAttribute('disabled','');
   await expect(mode.locator('option[value="dynamic"]')).not.toHaveAttribute('disabled','');
-  await mode.selectOption('balanced');
-  await expect(mode).toHaveValue('balanced');
-  await mode.selectOption('dynamic');
-  await expect(mode).toHaveValue('dynamic');
-  await mode.selectOption('gentle');
-  await expect(mode).toHaveValue('gentle');
+  // The owner-approved Video Uniquifier uses visible mode cards; #mode is
+  // its deliberately hidden source-of-truth select, not a clickable control.
+  for(const value of ['balanced','dynamic','gentle']){
+    const button=page.locator(`.vu-mode-card[data-mode="${value}"]`);
+    await expect(button).toBeVisible();
+    await expect(button).toBeEnabled();
+    await button.click();
+    await expect(button).toHaveAttribute('aria-pressed','true');
+    await expect(mode).toHaveValue(value);
+  }
 
   const quality=page.locator('#quality');
   await expect(quality).toBeEnabled();
   await expect(quality.locator('option[value="720"]')).not.toHaveAttribute('disabled','');
   await expect(quality.locator('option[value="1080"]')).not.toHaveAttribute('disabled','');
   await expect(quality.locator('option[value="2160"]')).not.toHaveAttribute('disabled','');
-  await quality.selectOption('1080');
-  await expect(quality).toHaveValue('1080');
-  await quality.selectOption('2160');
-  await expect(quality).toHaveValue('2160');
-  await quality.selectOption('720');
-  await expect(quality).toHaveValue('720');
+  // Likewise, exercise real visible resolution controls instead of the
+  // hidden legacy select; assert the actual processing value after each click.
+  for(const value of ['1080','2160','720']){
+    const button=page.locator(`.vu-quality-button[data-quality="${value}"]`);
+    await expect(button).toBeVisible();
+    await expect(button).toBeEnabled();
+    await button.click();
+    await expect(button).toHaveAttribute('aria-pressed','true');
+    await expect(quality).toHaveValue(value);
+  }
 
   await expect(page.locator('#variantCount option[value="10"]')).toHaveAttribute('disabled','');
   await expect(page.locator('#variantCount option[value="15"]')).toHaveAttribute('disabled','');
