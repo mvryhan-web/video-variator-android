@@ -462,6 +462,11 @@
     });
   });
 
+    const urlParams = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
+  const initTopic = urlParams.get('topic') || urlParams.get('prompt');
+  if (initTopic && document.getElementById('productTopic')) {
+    document.getElementById('productTopic').value = initTopic;
+  }
   renderScenarios();
 </script>
 <script defer src="virtual-pet.js"></script>

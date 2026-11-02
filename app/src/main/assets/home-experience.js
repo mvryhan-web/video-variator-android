@@ -2,15 +2,15 @@
 // This is presentation-only and reuses the existing Inspiration feed and Studio handoff.
 import {saveStudioHandoff} from './studio-handoff.js';
 import {ownerHomeShowcase} from './owner-home-hero-headings.js';
-const $=id=>document.getElementById(id);
+const $=id=>typeof document !== 'undefined' ? document.getElementById(id) : null;
 // WebKit can round a demuxed EOF up to the next millisecond.
 const EOF_ROUNDING_SECONDS=.001;
-const video=$('inspirationHeroVideo');
-const carousel=$('homeHeroCarousel');
-const neighborVideos=[$('homeHeroPreviousVideo'),$('homeHeroNextVideo')].filter(Boolean);
+const video=typeof document !== 'undefined' ? $('inspirationHeroVideo') : null;
+const carousel=typeof document !== 'undefined' ? $('homeHeroCarousel') : null;
+const neighborVideos=(typeof document !== 'undefined' ? [$('homeHeroPreviousVideo'),$('homeHeroNextVideo')] : []).filter(Boolean);
 // Thin phone-side previews use their real poster frames. Keep the single
 // main decoder available for smooth iOS playback, especially higher bitrate clips.
-const compactPreview=window.matchMedia?.('(max-width: 760px)');
+const compactPreview=typeof window !== 'undefined' ? window.matchMedia?.('(max-width: 760px)') : null;
 let slides=[],index=0,visible=false,userPaused=false,observer=null,failedSlides=new Set();
 let completionTimer=null,startupTimer=null,startupRecoveries=0,playbackSerial=0;
 function resetCompletion(){clearTimeout(completionTimer);clearTimeout(startupTimer);completionTimer=null;startupTimer=null;startupRecoveries=0;playbackSerial++;}
@@ -162,6 +162,163 @@ if(video&&carousel){
  document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseFilms();else ambientPlay();});
 }
 // Quick Create is not a new generator. It opens the existing Studio with a local, unpaid draft.
+
+export function detectIntent(text) {
+  if (!text) return null;
+  const t = text.toLowerCase();
+  if (/(?:ai[\s-]?агент|агент|эйай[\s-]?агент|ассистент|сценари|кампани|ai[\s-]?agent|agent|workflow|assistant)/i.test(t)) {
+    return 'agent';
+  }
+  if (/(?:видео|ролик|анимац|клип|фильм|сними|оживи|кинематограф|video|movie|animation|clip|motion|animate|cinematic)/i.test(t)) {
+    return 'video';
+  }
+  if (/(?:аудио|музык|песн|трек|звук|мелоди|озвуч|бит|голос|саунд|audio|music|song|track|sound|melody|beat|voiceover)/i.test(t)) {
+    return 'music';
+  }
+  if (/(?:изображен|картинк|фот|нарисуй|портрет|арт|рисунок|иллюстрац|пейзаж|image|picture|photo|photograph|draw|paint|illustration|portrait|wallpaper)/i.test(t)) {
+    return 'image';
+  }
+  return null;
+}
+
+export function initHomeVoiceInput(chooseFn) {
+  const voiceBtn = $('homeQuickVoiceBtn');
+  const waves = $('homeVoiceWaves');
+  const promptEl = $('homeQuickPrompt');
+  const micDialog = $('micPermissionDialog');
+  const grantMicBtn = $('grantMicBtn');
+  if (!voiceBtn || !promptEl) return;
+
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let isListening = false;
+
+  document.querySelectorAll('[data-close]').forEach(b => {
+    b.addEventListener('click', () => {
+      const d = $(b.dataset.close);
+      if (d && typeof d.close === 'function') d.close();
+    });
+  });
+
+  function stopListening() {
+    if (recognition) {
+      try { recognition.stop(); } catch (_) {}
+      recognition = null;
+    }
+    isListening = false;
+    voiceBtn.classList.remove('is-listening');
+    if (waves) waves.hidden = true;
+    voiceBtn.title = 'Голосовой ввод (нажмите, чтобы говорить)';
+  }
+
+  function startRecognition() {
+    if (!SpeechRec) {
+      alert('Распознавание речи не поддерживается в этом браузере. Рекомендуем Chrome, Edge или Safari.');
+      return;
+    }
+    try {
+      recognition = new SpeechRec();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru')) ? 'ru-RU' : 'en-US';
+
+      let baseText = promptEl.value.trim();
+      if (baseText.length > 0) baseText += ' ';
+
+      recognition.onstart = () => {
+        isListening = true;
+        voiceBtn.classList.add('is-listening');
+        if (waves) waves.hidden = false;
+        voiceBtn.title = 'Слушаю… Нажмите для завершения';
+      };
+
+      recognition.onresult = (e) => {
+        let transcript = '';
+        for (let i = e.resultIndex; i < e.results.length; ++i) {
+          transcript += e.results[i][0].transcript;
+        }
+        const fullText = baseText + transcript;
+        promptEl.value = fullText;
+        promptEl.dispatchEvent(new Event('input', { bubbles: true }));
+
+        const detected = detectIntent(fullText);
+        if (detected && typeof chooseFn === 'function') {
+          chooseFn(detected);
+        }
+      };
+
+      recognition.onerror = (e) => {
+        console.warn('[HomeVoice] Speech error:', e?.error);
+        if (e?.error === 'not-allowed') {
+          localStorage.removeItem('deepsyq_mic_permitted');
+          if (micDialog && typeof micDialog.showModal === 'function') {
+            micDialog.showModal();
+          } else {
+            alert('Доступ к микрофону заблокирован. Разрешите микрофон в настройках браузера.');
+          }
+        }
+        stopListening();
+      };
+
+      recognition.onend = () => stopListening();
+      recognition.start();
+    } catch (err) {
+      console.warn('[HomeVoice] Failed to start:', err);
+      stopListening();
+    }
+  }
+
+  function requestMicPermissionAndStart() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      startRecognition();
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        stream.getTracks().forEach(t => t.stop());
+        localStorage.setItem('deepsyq_mic_permitted', 'true');
+        if (micDialog && micDialog.open) micDialog.close();
+        startRecognition();
+      })
+      .catch(err => {
+        console.warn('[HomeVoice] getUserMedia error:', err);
+        if (micDialog && !micDialog.open) {
+          micDialog.showModal();
+        } else {
+          alert('Для голосового ввода нужен доступ к микрофону. Пожалуйста, разрешите доступ.');
+        }
+        stopListening();
+      });
+  }
+
+  if (grantMicBtn) {
+    grantMicBtn.onclick = () => {
+      requestMicPermissionAndStart();
+    };
+  }
+
+  voiceBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (isListening) {
+      stopListening();
+    } else {
+      const alreadyPermitted = localStorage.getItem('deepsyq_mic_permitted') === 'true';
+      if (alreadyPermitted) {
+        startRecognition();
+      } else if (micDialog && typeof micDialog.showModal === 'function') {
+        micDialog.showModal();
+      } else {
+        requestMicPermissionAndStart();
+      }
+    }
+  });
+
+  window.addEventListener('pagehide', stopListening);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') stopListening();
+  });
+}
+
 const ideas={
  short:{kind:'video',prompt:'Create an original short cinematic scene with clear visual storytelling, gentle camera motion and atmospheric lighting.'},
  image:{kind:'image',prompt:'Create an original high-quality editorial photograph with expressive styling and realistic lighting.'},
