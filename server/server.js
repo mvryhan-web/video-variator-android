@@ -31,6 +31,7 @@ const staticDir=path.join(rootDir,'app','src','main','assets');
 const ffmpegDist=path.join(rootDir,'node_modules','@ffmpeg','ffmpeg','dist','umd');
 const ffmpegCoreDist=path.join(rootDir,'node_modules','@ffmpeg','core','dist','esm');
 const renderUrl=process.env.RENDER_EXTERNAL_HOSTNAME?`https://${process.env.RENDER_EXTERNAL_HOSTNAME}`:'';
+if(process.env.RENDER_EXTERNAL_HOSTNAME&&process.env.DEEPSYQ_HOME_ENABLED===undefined)process.env.DEEPSYQ_HOME_ENABLED='true';
 const appUrl=(process.env.APP_URL||process.env.RENDER_EXTERNAL_URL||renderUrl||`http://localhost:${port}`).replace(/\/$/,'');
 const jwtSecret=process.env.APP_JWT_SECRET||'';
 const stripeSecretKey=process.env.STRIPE_SECRET_KEY||'';
