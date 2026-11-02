@@ -54,6 +54,8 @@ function makeNav(shell){
    const item=node(href?'a':'span','vu-side-link'+(label==='Video'?' active':'')+(!href?' disabled':''));
    if(href)item.href=href;
    if(label==='Agent'||label==='JARVIX'){
+    item.href='#';
+    item.onclick=(e)=>{e.preventDefault();document.getElementById('topJarvisBtn')?.click();};
     item.innerHTML='<span class="jarvis-mini-orb" style="width:20px;height:20px;display:inline-grid;place-items:center;margin-right:2px;" aria-hidden="true"><span class="jarvis-core" style="width:9px;height:9px;"></span><span class="jarvis-ring"></span><span class="jarvis-ring ring-violet"></span></span><span class="jarvis-name" style="letter-spacing:1px;color:#e0f2fe;">JARVIX</span>';
    } else {
     item.innerHTML='<span class="vu-nav-icon" aria-hidden="true">'+glyph+'</span><span>'+label+'</span>';

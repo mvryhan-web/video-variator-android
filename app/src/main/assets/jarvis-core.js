@@ -156,6 +156,8 @@ export function updateJarvisState(mode = 'idle') {
   }
 }
 
+let currentSpokenUtterance = '';
+
 // 2. Text-to-Speech Engine with Guaranteed Complete Output & Mutual Acoustic Exclusion
 export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'ru', isRu = true) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
@@ -163,8 +165,11 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
     return;
   }
   try {
-    // Immediately pause recognition while speaking to prevent microphone loop / hearing self
-    pauseJarvisRecognition();
+    // Keep recognition active for instant ChatGPT-style user interruption (barge-in)
+    // pauseJarvisRecognition() is preserved for shutdown/standby
+    if (isJarvisActive && keepListening && !isJarvisListening) {
+      resumeJarvisRecognition();
+    }
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -184,6 +189,7 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
 
     utterance.onstart = () => {
       isJarvisSpeaking = true;
+      currentSpokenUtterance = text;
       updateJarvisState('speaking');
     };
 
@@ -191,11 +197,13 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
       // 300ms acoustic guard delay to prevent room reverberation / speaker tail from triggering mic
       setTimeout(() => {
         isJarvisSpeaking = false;
+        currentSpokenUtterance = '';
         if (typeof onComplete === 'function') {
           onComplete();
         } else if (isJarvisActive && keepListening) {
           resumeJarvisRecognition();
           startSilenceTimer();
+          updateJarvisState('listening');
         } else {
           updateJarvisState('idle');
         }
@@ -208,6 +216,7 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
   } catch (err) {
     console.warn('[JARVIX] Local speech error:', err);
     isJarvisSpeaking = false;
+    currentSpokenUtterance = '';
     if (typeof onComplete === 'function') onComplete();
   }
 }
@@ -266,6 +275,7 @@ export function instantOpen(url) {
   // Cross-page navigation: speak cleanly ONCE upon target page mount, never doubled
   try {
     sessionStorage.setItem('jarvix_say_on_load', 'Сделано.');
+    sessionStorage.setItem('jarvix_active', '1');
   } catch (_) {}
   location.assign(url);
 }
@@ -746,10 +756,10 @@ export function handleJarvisVoiceCommand(commandText) {
       console.warn('[JARVIX AI Brain API dispatch]', err);
     }
 
-    // Intelligent Proactive Fallback (never robotic or repetitive)
+    // Intelligent Proactive Fallback (never repeat user's query)
     const smartFallback = isRu
-      ? `Я услышал: «${t}». Могу создать кинематографичный промпт на эту тему для генерации, открыть студию или переключить тему. Что для вас сделать?`
-      : `I heard: "${t}". Shall I generate a creative prompt for this, open a studio, or adjust the theme?`;
+      ? 'Слушаю вас. Могу открыть любую студию, сгенерировать кинематографичный промпт или настроить интерфейс. Что для вас сделать?'
+      : 'Listening. I can open any studio, create a creative prompt, or adjust settings. What shall we do?';
     speakJarvis(smartFallback);
   })();
 }
@@ -794,15 +804,6 @@ function resumeJarvisRecognition() {
     let lastHandledTime = 0;
 
     jarvisRecognition.onresult = e => {
-      // If JARVIX is currently speaking, strictly drop microphone events to prevent hearing self / cutting off
-      // Immediate ChatGPT-style interruption cutoff (0ms delay) is handled via manual orb tap or pauseJarvisRecognition
-      if (isJarvisSpeaking) {
-        accumulatedText = '';
-        return;
-      }
-
-      resetSilenceTimer();
-      updateJarvisState('listening');
       let interim = '';
       for (let i = e.resultIndex; i < e.results.length; ++i) {
         const item = e.results[i];
@@ -814,33 +815,83 @@ function resumeJarvisRecognition() {
       }
 
       const current = (accumulatedText + ' ' + interim).trim();
-      if (current) {
-        clearTimeout(speechTimeout);
-        speechTimeout = setTimeout(() => {
-          if (current.length > 2 && !isJarvisSpeaking) {
-            const now = Date.now();
-            // Prevent duplicate recognition loops of the exact same command within 2.5 seconds
-            if (current.toLowerCase() === lastHandledText.toLowerCase() && (now - lastHandledTime) < 2500) {
-              accumulatedText = '';
-              return;
-            }
-            lastHandledText = current;
-            lastHandledTime = now;
-            accumulatedText = '';
-            pauseJarvisRecognition();
-            handleJarvisVoiceCommand(current);
+      if (!current) return;
+
+      // Immediate ChatGPT-style interruption cutoff (0ms delay)
+      if (isJarvisSpeaking) {
+        const heardLower = current.toLowerCase();
+
+        // 1. Explicit interruption keywords (Stop, Wait, Quiet, Silence, Cancel, etc.)
+        const isExplicitInterrupt = /(?:стоп|стой|подожди|погоди|хватит|замолчи|тихо|отмена|прерви|хватит болтать|stop|quiet|silence|wait|cancel|pause)/i.test(heardLower);
+
+        // 2. Action command keywords (open video, pricing, theme, etc.)
+        const isActionCommand = /(?:открой|перейди|запусти|видео|картинк|фото|тариф|инструмент|холст|посветлее|потемнее|неон|свет|очисти|сотри|open|theme|clear|pricing|video|studio)/i.test(heardLower);
+
+        // 3. Acoustic echo check: Compare heard text with words JARVIX is speaking right now
+        const spokenWords = (currentSpokenUtterance || '').toLowerCase()
+          .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+          .split(/\s+/)
+          .filter(w => w.length > 2);
+
+        const heardWords = heardLower
+          .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+          .split(/\s+/)
+          .filter(w => w.length > 2);
+
+        const hasUserWords = heardWords.some(w => !spokenWords.includes(w));
+
+        if (isExplicitInterrupt || isActionCommand || (hasUserWords && heardWords.length >= 1)) {
+          // USER BARGE-IN DETECTED: Immediately cut off speech with 0ms latency
+          stopAllSpeech();
+          isJarvisSpeaking = false;
+          currentSpokenUtterance = '';
+          updateJarvisState('listening');
+          accumulatedText = '';
+
+          if (isExplicitInterrupt && !isActionCommand) {
+            speakJarvis('Слушаю вас.');
+            return;
           }
-        }, 950);
+
+          if (isActionCommand || heardLower.length > 3) {
+            handleJarvisVoiceCommand(current);
+            return;
+          }
+          return;
+        }
+
+        // Drop acoustic feedback of JARVIX's own voice
+        accumulatedText = '';
+        return;
       }
+
+      // Normal speech recognition handling
+      resetSilenceTimer();
+      updateJarvisState('listening');
+      clearTimeout(speechTimeout);
+      speechTimeout = setTimeout(() => {
+        if (current.length > 2 && !isJarvisSpeaking) {
+          const now = Date.now();
+          // Prevent duplicate recognition loops of the exact same command within 2.5 seconds
+          if (current.toLowerCase() === lastHandledText.toLowerCase() && (now - lastHandledTime) < 2500) {
+            accumulatedText = '';
+            return;
+          }
+          lastHandledText = current;
+          lastHandledTime = now;
+          accumulatedText = '';
+          handleJarvisVoiceCommand(current);
+        }
+      }, 900);
     };
 
     jarvisRecognition.onend = () => {
-      if (isJarvisActive && keepListening && !isJarvisSpeaking) {
+      if (isJarvisActive && keepListening) {
         setTimeout(() => {
-          if (isJarvisActive && keepListening && !isJarvisSpeaking) {
+          if (isJarvisActive && keepListening) {
             resumeJarvisRecognition();
           }
-        }, 200);
+        }, 150);
       } else {
         isJarvisListening = false;
       }
@@ -885,6 +936,20 @@ function resetSilenceTimer() {
 export function activateJarvisVoice() {
   isJarvisActive = true;
   keepListening = true;
+  try {
+    sessionStorage.setItem('jarvix_active', '1');
+  } catch (_) {}
+
+  // Request audio hardware echo cancellation if available in browser
+  if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
+    try {
+      navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
+        .then(stream => {
+          setTimeout(() => stream.getTracks().forEach(t => t.stop()), 5000);
+        })
+        .catch(() => {});
+    } catch (_) {}
+  }
 
   const topBtn = getTopBtn();
   if (topBtn) topBtn.classList.add('is-active');
@@ -927,6 +992,9 @@ export function deactivateJarvisVoice() {
   keepListening = false;
   isJarvisSpeaking = false;
   isJarvisListening = false;
+  try {
+    sessionStorage.removeItem('jarvix_active');
+  } catch (_) {}
   clearTimeout(silenceTimer);
   stopAllSpeech();
   pauseJarvisRecognition();
@@ -940,7 +1008,9 @@ export function deactivateJarvisVoice() {
 export function toggleJarvisVoice() {
   if (isJarvisSpeaking) {
     stopAllSpeech();
+    isJarvisSpeaking = false;
     resumeJarvisRecognition();
+    updateJarvisState('listening');
     return;
   }
   if (isJarvisActive) {
@@ -950,7 +1020,7 @@ export function toggleJarvisVoice() {
   }
 }
 
-// 12. Mount JARVIX UI Component & restore flash confirmations
+// 12. Mount JARVIX UI Component & restore state across pages
 export function initJarvis() {
   if (typeof document === 'undefined') return;
 
@@ -962,18 +1032,63 @@ export function initJarvis() {
     }
   } catch (_) {}
 
-  // Instant navigation speech carry-over: "Сделано."
-  try {
-    const sayOnLoad = sessionStorage.getItem('jarvix_say_on_load');
-    if (sayOnLoad) {
-      sessionStorage.removeItem('jarvix_say_on_load');
-      setTimeout(() => speakJarvis(sayOnLoad), 300);
+  const setupBtn = () => {
+    const topBtn = getTopBtn();
+    if (topBtn && !topBtn.__jarvisBound) {
+      topBtn.__jarvisBound = true;
+      topBtn.onclick = () => toggleJarvisVoice();
+      if (isJarvisActive) {
+        topBtn.classList.add('is-active');
+        if (isJarvisListening) topBtn.classList.add('is-listening');
+      }
     }
+  };
+  setupBtn();
+  setTimeout(setupBtn, 200);
+  setTimeout(setupBtn, 600);
+
+  // Cross-page persistence: restore JARVIX if active prior to navigation
+  let wasActive = false;
+  try {
+    wasActive = sessionStorage.getItem('jarvix_active') === '1';
   } catch (_) {}
 
-  const topBtn = getTopBtn();
-  if (topBtn) {
-    topBtn.onclick = () => toggleJarvisVoice();
+  let sayOnLoad = null;
+  try {
+    sayOnLoad = sessionStorage.getItem('jarvix_say_on_load');
+    if (sayOnLoad) sessionStorage.removeItem('jarvix_say_on_load');
+  } catch (_) {}
+
+  if (wasActive || sayOnLoad) {
+    isJarvisActive = true;
+    keepListening = true;
+    try {
+      sessionStorage.setItem('jarvix_active', '1');
+    } catch (_) {}
+
+    updateJarvisState('listening');
+    const topBtn = getTopBtn();
+    if (topBtn) topBtn.classList.add('is-active');
+
+    if (sayOnLoad) {
+      setTimeout(() => {
+        speakJarvis(sayOnLoad, () => {
+          if (isJarvisActive && keepListening) {
+            resumeJarvisRecognition();
+            startSilenceTimer();
+            updateJarvisState('listening');
+          }
+        });
+      }, 350);
+    } else {
+      setTimeout(() => {
+        if (isJarvisActive && keepListening) {
+          resumeJarvisRecognition();
+          startSilenceTimer();
+          updateJarvisState('listening');
+        }
+      }, 350);
+    }
   }
 }
 

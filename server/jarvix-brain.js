@@ -290,8 +290,8 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
     session.accumulatedPrompt.concept = rawSubj;
     const compiled = compileAccumulatedPrompt(session.accumulatedPrompt);
     replyText = isRu
-      ? `Принял концепт: «${rawSubj}». Хотите настроить цвет, окружение или освещение? Например: «Пусть он будет чёрным» или «Добавь дождь».`
-      : `Concept noted: "${rawSubj}". Would you like to refine the color, environment, or lighting?`;
+      ? 'Концепт принят. Хотите настроить цвет, окружение или освещение? Например: «Пусть он будет чёрным» или «Добавь дождь».'
+      : 'Concept noted. Would you like to refine the color, environment, or lighting?';
     return {
       reply: replyText,
       action: null,
@@ -365,8 +365,8 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
     };
 
     replyText = isRu
-      ? `Открываю ${targetKind === 'video' ? 'Video Studio' : 'студию'} с вашим запросом: «${compiledPrompt}». Сделано.`
-      : `Opening ${targetKind} Studio with your prompt: "${compiledPrompt}". Done.`;
+      ? `Открываю ${targetKind === 'video' ? 'Video Studio' : 'студию'}. Сделано.`
+      : `Opening ${targetKind} Studio. Done.`;
 
     return {
       reply: replyText,
@@ -482,8 +482,8 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
 
   // 9. PROACTIVE NATURAL FALLBACK
   replyText = isRu
-    ? `Я вас услышал: «${t}». Могу сформировать детальный промпт для нейросети на эту тему или открыть подходящий инструмент. Что выберем?`
-    : `I heard: "${t}". Shall I formulate a prompt for this or open a relevant tool?`;
+    ? 'Готов сформировать детальный промпт для нейросети, открыть студию или инструмент сайта. Что для вас сделать?'
+    : 'Ready to formulate a prompt or open any creative studio. What would you like to do?';
 
   return {
     reply: replyText,
@@ -517,6 +517,7 @@ Strict Safety Rules:
 3. If the user refines a creative concept across turns (e.g. Porsche -> black -> rain), accumulate all details into a cohesive production prompt.
 4. When instructed to open a studio or tool, output an action JSON block:
 {"action":{"type":"open_studio","studio":"video","url":"generate-studio.html?studio=video&from=jarvix&auto=1"}}
+5. NEVER repeat or parrot the user's prompt or words back to them (e.g. do not say "I heard...", "You asked for...", "Я услышал..."). Answer directly and concisely.
 Keep speech responses concise and natural for audio text-to-speech.`;
 
   try {
