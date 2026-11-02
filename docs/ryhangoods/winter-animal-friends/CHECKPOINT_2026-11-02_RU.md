@@ -1,3 +1,12 @@
+# ПРОВЕРЕНО ПОСЛЕ ВОССТАНОВЛЕНИЯ СЕССИИ — 02.11.2026
+STATUS: ETSY_DRAFT_VERIFIED. Предыдущий DRAFT_SAVE_UNVERIFIED ниже устарел.
+
+Найден по SKU PINO-WINTER40-01 в Pinogri: https://www.etsy.com/your/shops/me/listing-editor/edit/4608237020#media . Повторно открыт редактор: Черновик; Нет несохраненных изменений; Save disabled. Все10 фото с прежними mediaIDs, все4 buyerфайла с правильными названиями/размерами,13тегов,40страниц,€3.90,999шт,manualrenewal подтверждены. Instantdownload: made-to-order0. ОбеAI/originalradio0,оставлены владельцу. Не публиковали. Не создавать дубликат.
+
+Screenshot /workspace/scratch/pinogri-winter40-verified.jpg. Предыдущая outputпапка отсутствует в текущем scratch. Начато восстановление файлов скачиванием из Etsy: A4PDF появился /workspace/scratch/Pinogri_Christmas_Winter_40_A4.pdf; остальные скачивания и backup не подтверждены после timeout CUA. Не утверждать сохранение Library/Drive. Исходные карты и rebuild.py остаются GitHub. Итоговая поставка хранится в самом Etsydraft, все4вложения подтвержденыUI.
+
+---
+
 # №9 — контрольная точка 02.11.2026
 
 STATUS: DRAFT_SAVE_UNVERIFIED / ENVIRONMENT_UNAVAILABLE. Не создавать дубликат.
