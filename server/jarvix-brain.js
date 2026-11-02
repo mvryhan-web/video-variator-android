@@ -315,7 +315,7 @@ const SITE_TOOL_ALIASES = Object.freeze([
   { pattern: /(?:background\s*(?:remov|eras)|remove\s+(?:the\s+)?background|убрат\w*\s+фон|удал\w*\s+фон|фон\s+удал)/i, terms: /(?:background|фон|удал)/i },
   { pattern: /(?:photo\s*collage|collage|коллаж)/i, terms: /(?:collage|коллаж)/i },
   { pattern: /(?:avatar\s*studio|avatar|аватар)/i, terms: /(?:avatar|аватар)/i },
-  { pattern: /(?:teleprompter|prompter|телесуфл|суфлёр|суфлер)/i, terms: /(?:teleprompter|prompter|суфл)/i },
+  { pattern: /(?:teleprompter|téléprompteur|prompter|телесуфл|суфлёр|суфлер)/i, terms: /(?:teleprompter|téléprompteur|prompter|суфл)/i, standalone: true, friendlyLabel: { ru: 'Телесуфлёр', en: 'Teleprompter', es: 'Teleprompter', fr: 'Téléprompteur' } },
   { pattern: /(?:smart\s*reminders?|reminders?|напоминан\w*)/i, terms: /(?:reminder|напоминан)/i },
   { pattern: /(?:my\s+creations?|library|мои\s+работ|библиотек)/i, terms: /(?:creation|library|работ|библиотек)/i },
   { pattern: /(?:compare\s+(?:ai|models?)|сравн\w*\s+модел)/i, terms: /(?:compare|сравн)/i },
@@ -329,9 +329,9 @@ function findSiteDestination(text) {
     if (!alias.pattern.test(text)) continue;
     const candidates = pages.flatMap(page => page.links.map(link => ({ page, link })));
     const byLabel = candidates.find(({ link }) => alias.terms.test(link.label));
-    if (byLabel) return byLabel;
+    if (byLabel) return { ...byLabel, alias };
     const byRoute = candidates.find(({ link }) => alias.terms.test(link.href));
-    if (byRoute) return byRoute;
+    if (byRoute) return { ...byRoute, alias };
   }
   return null;
 }
@@ -388,14 +388,23 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
   if (/(?:where|find|how\s+(?:do\s+i\s+)?(?:open|access|find)|navigate|где|как\s+(?:найти|открыть|перейти)|куда|dónde|cómo\s+(?:encontrar|abrir)|où|comment\s+(?:trouver|ouvrir))/i.test(lower)) {
     const destination = findSiteDestination(t);
     if (destination) {
-      const { page, link } = destination;
-      replyText = isRu
-        ? `«${link.label}» находится в разделе «${page.label}». Откройте: ${link.href}`
-        : isEs
-          ? `«${link.label}» está en la sección «${page.label}». Abra: ${link.href}`
-          : isFr
-            ? `«${link.label}» se trouve dans la section «${page.label}». Ouvrez : ${link.href}`
-            : `“${link.label}” is in “${page.label}”. Open: ${link.href}`;
+      const { page, link, alias } = destination;
+      const label = alias.friendlyLabel?.[lang] || link.label;
+      replyText = alias.standalone
+        ? isRu
+          ? `${label}: откройте ${link.href}`
+          : isEs
+            ? `${label}: abra ${link.href}`
+            : isFr
+              ? `${label} : ouvrez ${link.href}`
+              : `${label}: open ${link.href}`
+        : isRu
+          ? `«${label}» находится в разделе «${page.label}». Откройте: ${link.href}`
+          : isEs
+            ? `«${label}» está en la sección «${page.label}». Abra: ${link.href}`
+            : isFr
+              ? `«${label}» se trouve dans la section «${page.label}». Ouvrez : ${link.href}`
+              : `“${label}” is in “${page.label}”. Open: ${link.href}`;
       return {
         reply: replyText,
         action: null,

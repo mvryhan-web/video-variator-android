@@ -36,6 +36,23 @@ test('offline Jarvix answers tool-finding questions from real local site routes 
  }
 });
 
+test('offline Jarvix gives a human label for generic-link tool routes in four languages',()=>{
+ for (const [language,question,expected] of [
+  ['ru','Где найти телесуфлёр?','Телесуфлёр'],
+  ['en','Where can I find the teleprompter?','Teleprompter'],
+  ['es','¿Dónde puedo encontrar el teleprompter?','Teleprompter'],
+  ['fr','Où trouver le téléprompteur ?','Téléprompteur']
+ ]) {
+  const session=getOrCreateSession(`friendly-route-${language}`);
+  const result=processTurnWithMockBrain(question,session,language);
+  assert.equal(result.provider,'jarvix-site-index');
+  assert.match(result.reply,new RegExp(expected,'i'));
+  assert.match(result.reply,/teleprompter\.html/i);
+  assert.doesNotMatch(result.reply,/Open screen|Design gallery/i);
+  clearSession(session.id);
+ }
+});
+
 test('Jarvix safe navigation constructs a local route and ignores a model supplied URL',()=>{
  const result=executeSafeAction({type:'open_studio',studio:'image',url:'https://evil.example/'});
  assert.equal(result.success,true);
