@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
-const living=require('../app/src/main/assets/virtual-pet-living.js');
+require('../app/src/main/assets/virtual-pet-living.js');
+const living = globalThis.DeepsyqLivingPet; // this project treats browser .js as ESM without explicit exports
 const event=(overrides={})=>({source:'mock-preview',verified:true,userRequested:true,
  quantity:2,quoteVerified:true,signature:'quantity=2',...overrides});
 const settings=(overrides={})=>({enabled:true,mode:'calm',tipsEnabled:true,...overrides});
