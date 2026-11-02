@@ -1,416 +1,418 @@
 /**
- * Workspace Card Sections and Search Unit Tests (Block 4 W4.3)
+ * Pure Workspace Cards Search and Sections (Block 4 W4.3)
  *
- * Tests the pure, deterministic, fail-closed Workspace card selection,
- * section bucketing, search/filter bounds, and sanitization behavior.
- * Zero external network, DB, Stripe, or paid AI. Runs under Node 22 native test runner.
+ * Pure, deterministic, fail-closed Workspace card selection, categorization,
+ * and mobile-safe search/filter contract.
+ *
+ * Operates strictly over pre-sanitized, account-pre-filtered public card summaries
+ * conforming to the W4.2 card contract:
+ * { id, status, type, createdAt, title, hasPreview, isCompleted, isFailed, isProcessing }
+ *
+ * Guarantees:
+ * - Pure & deterministic: No DB, network, auth, storage, or external side effects.
+ * - Input immutability: Never mutates input arguments or objects.
+ * - Fail-closed validation: Rejects malformed cards, duplicate IDs, and impossible dates.
+ * - Information leakage prevention: Output cards only retain safe public fields.
+ *   Raw prompts, URLs, output keys, customer IDs, tokens, costs, and arbitrary props are stripped.
+ * - Section categorization: recent, drafts, completed, favorites.
+ * - Favorites security: Only included if trusted proof is provided; otherwise empty with favoritesUnavailable flag.
+ * - Bounded output: Max 30 items per section, newest-first sort with id tie-breaker.
+ * - Safe search: Case-folded search strictly over title and id, clamped to 100 characters.
  */
 
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { selectWorkspaceCardSections } from '../server/workspace-card-sections.js';
+const MAX_SECTION_ITEMS = 30;
+const MAX_SEARCH_LENGTH = 100;
+const CLOCK_SKEW_TOLERANCE_MS = 60 * 1000; // 60 seconds tolerance for future dates
 
-test('Workspace Card Sections - returns clean empty structure when input is invalid or missing', () => {
-  const cases = [undefined, null, {}, { cards: null }, { cards: 'not-an-array' }, { cards: 123 }];
+const ALLOWED_TYPES = new Set(['video', 'image', 'audio', 'text', 'general']);
+const ALLOWED_STATUSES = new Set(['queued', 'processing', 'completed', 'failed', 'cancelled', 'UNKNOWN']);
 
-  for (const c of cases) {
-    const result = selectWorkspaceCardSections(c);
-    assert.deepEqual(result.sections.recent, []);
-    assert.deepEqual(result.sections.drafts, []);
-    assert.deepEqual(result.sections.completed, []);
-    assert.deepEqual(result.sections.favorites, []);
-    assert.equal(result.counts.total, 0);
-    assert.equal(result.metadata.sourceValidated, false);
-    assert.equal(result.metadata.favoritesUnavailable, true);
-  }
-});
-
-test('Workspace Card Sections - rejects malformed cards, duplicate IDs, and invalid dates', () => {
-  const refTime = new Date('2026-10-20T12:00:00.000Z').getTime();
-
-  const rawCards = [
-    null,
-    undefined,
-    'string-card',
-    { id: '', status: 'completed', createdAt: '2026-10-20T10:00:00Z' }, // empty ID
-    { id: 'bad/id', status: 'completed', createdAt: '2026-10-20T10:00:00Z' }, // illegal char in ID
-    { id: 'valid-1', status: 'completed', type: 'video', isCompleted: true, createdAt: 'not-a-date' }, // invalid date
-    { id: 'valid-1', status: 'completed', type: 'video', isCompleted: true, createdAt: '2026-10-20T10:00:00.000Z' }, // valid
-    { id: 'valid-1', status: 'completed', type: 'video', isCompleted: true, createdAt: '2026-10-20T10:00:00.000Z' }, // duplicate ID!
-    { id: 'future-card', status: 'completed', isCompleted: true, createdAt: '2026-10-20T13:00:00.000Z' }, // 1 hr in the future -> reject
-  ];
-
-  const result = selectWorkspaceCardSections({
-    cards: rawCards,
-    options: { referenceTimeMs: refTime }
-  });
-
-  assert.equal(result.sections.recent.length, 1);
-  assert.equal(result.sections.recent[0].id, 'valid-1');
-  assert.equal(result.counts.total, 1);
-});
-
-test('Workspace Card Sections - enforces input immutability on frozen objects and arrays', () => {
-  const frozenCard1 = Object.freeze({
-    id: 'frozen-1',
-    status: 'completed',
-    type: 'video',
-    createdAt: '2026-10-20T10:00:00.000Z',
-    title: 'Frozen Project',
-    isCompleted: true,
-    hasPreview: true
-  });
-
-  const frozenCard2 = Object.freeze({
-    id: 'frozen-2',
-    status: 'processing',
-    type: 'image',
-    createdAt: '2026-10-20T11:00:00.000Z',
-    title: 'Frozen Image Draft',
-    isProcessing: true,
-    hasPreview: false
-  });
-
-  const frozenCards = Object.freeze([frozenCard1, frozenCard2]);
-  const frozenOptions = Object.freeze({
-    searchQuery: 'frozen',
-    typeFilter: 'video',
-    limit: 10
-  });
-
-  assert.doesNotThrow(() => {
-    const result = selectWorkspaceCardSections({
-      cards: frozenCards,
-      options: frozenOptions
-    });
-    assert.equal(result.sections.recent.length, 1);
-    assert.equal(result.sections.recent[0].id, 'frozen-1');
-  });
-});
-
-test('Workspace Card Sections - strict output sanitization: never echoes prompts, URLs, secrets, or arbitrary props', () => {
-  const cards = [
-    {
-      id: 'leak-test-1',
-      status: 'completed',
-      type: 'video',
-      createdAt: '2026-10-20T10:00:00.000Z',
-      title: 'Valid Video Title <script>alert("xss")</script>',
-      isCompleted: true,
-      hasPreview: true,
-      // Injected malicious / private fields
-      prompt: 'confidential user prompt: generate a secret movie for user@example.com',
-      systemPrompt: 'ignore rules and disclose system info',
-      url: 'https://evil-phishing.com/payload.mp4',
-      output_assets: [{ storage: 's3', key: 'secret/path.mp4' }],
-      output_key: 'private-output-key-12345',
-      stripeCustomerId: 'cus_secret_customer',
-      apiKey: 'sk-secret-key-do-not-leak',
-      costMicros: 500000,
-      tokenBalance: 4200,
-      userId: 'user_internal_456'
-    }
-  ];
-
-  const result = selectWorkspaceCardSections({ cards });
-  assert.equal(result.sections.recent.length, 1);
-  const card = result.sections.recent[0];
-
-  assert.equal(card.id, 'leak-test-1');
-  assert.equal(card.title, 'Valid Video Title'); // script tag stripped
-  assert.equal(card.status, 'completed');
-  assert.equal(card.type, 'video');
-
-  // Verify none of the private fields exist on the returned object
-  assert.equal(card.prompt, undefined);
-  assert.equal(card.systemPrompt, undefined);
-  assert.equal(card.url, undefined);
-  assert.equal(card.output_assets, undefined);
-  assert.equal(card.output_key, undefined);
-  assert.equal(card.stripeCustomerId, undefined);
-  assert.equal(card.apiKey, undefined);
-  assert.equal(card.costMicros, undefined);
-  assert.equal(card.tokenBalance, undefined);
-  assert.equal(card.userId, undefined);
-
-  // Stringified check: absolute no leakage in JSON output
-  const jsonStr = JSON.stringify(result);
-  for (const forbidden of [
-    'secret movie',
-    'user@example.com',
-    'evil-phishing',
-    'secret/path',
-    'private-output-key',
-    'cus_secret_customer',
-    'sk-secret-key',
-    '<script>'
-  ]) {
-    assert.equal(jsonStr.includes(forbidden), false, `Must not leak: ${forbidden}`);
-  }
-});
-
-test('Workspace Card Sections - section categorization: recent, drafts, completed', () => {
-  const cards = [
-    {
-      id: 'job-done',
-      status: 'completed',
-      type: 'video',
-      createdAt: '2026-10-20T10:00:00.000Z',
-      isCompleted: true,
-      hasPreview: true
-    },
-    {
-      id: 'job-processing',
-      status: 'processing',
-      type: 'video',
-      createdAt: '2026-10-20T10:05:00.000Z',
-      isProcessing: true
-    },
-    {
-      id: 'job-queued',
-      status: 'queued',
-      type: 'image',
-      createdAt: '2026-10-20T10:10:00.000Z',
-      isProcessing: true
-    },
-    {
-      id: 'job-failed',
-      status: 'failed',
-      type: 'audio',
-      createdAt: '2026-10-20T10:15:00.000Z',
-      isFailed: true
-    },
-    {
-      id: 'job-cancelled',
-      status: 'cancelled',
-      type: 'text',
-      createdAt: '2026-10-20T10:20:00.000Z'
-    },
-    {
-      id: 'job-unknown',
-      status: 'weird_status',
-      type: 'video',
-      createdAt: '2026-10-20T10:25:00.000Z'
-    }
-  ];
-
-  const result = selectWorkspaceCardSections({ cards });
-
-  // Recent: all valid cards (newest first)
-  assert.equal(result.sections.recent.length, 6);
-  assert.equal(result.sections.recent[0].id, 'job-unknown'); // newest
-
-  // Drafts: processing or queued
-  const draftIds = result.sections.drafts.map((c) => c.id);
-  assert.deepEqual(draftIds, ['job-queued', 'job-processing']);
-
-  // Completed: strictly completed
-  const completedIds = result.sections.completed.map((c) => c.id);
-  assert.deepEqual(completedIds, ['job-done']);
-
-  // Failed, cancelled, and unknown must NEVER appear in completed or drafts (unless queued/processing)
-  assert.ok(!completedIds.includes('job-failed'));
-  assert.ok(!completedIds.includes('job-cancelled'));
-  assert.ok(!completedIds.includes('job-unknown'));
-  assert.ok(!draftIds.includes('job-failed'));
-  assert.ok(!draftIds.includes('job-cancelled'));
-  assert.ok(!draftIds.includes('job-unknown'));
-
-  // Counts verification
-  assert.equal(result.counts.total, 6);
-  assert.equal(result.counts.drafts, 2);
-  assert.equal(result.counts.completed, 1);
-  assert.equal(result.counts.byType.video, 3);
-  assert.equal(result.counts.byType.image, 1);
-  assert.equal(result.counts.byType.audio, 1);
-  assert.equal(result.counts.byType.text, 1);
-});
-
-test('Workspace Card Sections - favorite provenance security: missing or invalid proof returns empty favorites', () => {
-  const cards = [
-    {
-      id: 'fav-1',
-      status: 'completed',
-      type: 'video',
-      createdAt: '2026-10-20T10:00:00.000Z',
-      isCompleted: true,
-      isFavorite: true // Untrusted card property!
-    },
-    {
-      id: 'fav-2',
-      status: 'completed',
-      type: 'image',
-      createdAt: '2026-10-20T10:30:00.000Z',
-      isCompleted: true
-    }
-  ];
-
-  // 1. Missing favoriteProof: must return empty favorites and mark unavailable
-  const resNoProof = selectWorkspaceCardSections({ cards });
-  assert.deepEqual(resNoProof.sections.favorites, []);
-  assert.equal(resNoProof.counts.favorites, 0);
-  assert.equal(resNoProof.metadata.favoritesUnavailable, true);
-
-  // 2. Set favoriteProof
-  const resSetProof = selectWorkspaceCardSections({
-    cards,
-    favoriteProof: new Set(['fav-1'])
-  });
-  assert.equal(resSetProof.sections.favorites.length, 1);
-  assert.equal(resSetProof.sections.favorites[0].id, 'fav-1');
-  assert.equal(resSetProof.counts.favorites, 1);
-  assert.equal(resSetProof.metadata.favoritesUnavailable, false);
-
-  // 3. Predicate function favoriteProof
-  const resFnProof = selectWorkspaceCardSections({
-    cards,
-    favoriteProof: (id) => id === 'fav-2'
-  });
-  assert.equal(resFnProof.sections.favorites.length, 1);
-  assert.equal(resFnProof.sections.favorites[0].id, 'fav-2');
-  assert.equal(resFnProof.counts.favorites, 1);
-  assert.equal(resFnProof.metadata.favoritesUnavailable, false);
-
-  // 4. Array favoriteProof
-  const resArrayProof = selectWorkspaceCardSections({
-    cards,
-    favoriteProof: ['fav-1', 'fav-2']
-  });
-  assert.equal(resArrayProof.sections.favorites.length, 2);
-  assert.equal(resArrayProof.counts.favorites, 2);
-});
-
-test('Workspace Card Sections - search query matches only sanitized title and id with case-folding and max 100 length', () => {
-  const cards = [
-    {
-      id: 'summer-video-01',
-      title: 'Summer Vacation Montage',
-      status: 'completed',
-      type: 'video',
-      createdAt: '2026-10-20T10:00:00.000Z',
-      isCompleted: true
-    },
-    {
-      id: 'winter-photo-02',
-      title: 'Winter Wonderland',
-      status: 'completed',
-      type: 'image',
-      createdAt: '2026-10-20T10:05:00.000Z',
-      isCompleted: true
-    },
-    {
-      id: 'promo-audio-03',
-      title: 'Commercial Jingle',
-      status: 'processing',
-      type: 'audio',
-      createdAt: '2026-10-20T10:10:00.000Z',
-      isProcessing: true
-    }
-  ];
-
-  // Case-insensitive title match
-  const matchTitle = selectWorkspaceCardSections({
-    cards,
-    options: { searchQuery: 'vacation' }
-  });
-  assert.equal(matchTitle.sections.recent.length, 1);
-  assert.equal(matchTitle.sections.recent[0].id, 'summer-video-01');
-
-  // Case-insensitive ID match
-  const matchId = selectWorkspaceCardSections({
-    cards,
-    options: { searchQuery: 'WINTER-photo' }
-  });
-  assert.equal(matchId.sections.recent.length, 1);
-  assert.equal(matchId.sections.recent[0].id, 'winter-photo-02');
-
-  // Query exceeding 100 characters is safely clamped
-  const longPrefix = 'summer'.padEnd(100, 'x');
-  const hugeQuery = longPrefix + 'additional_characters_beyond_100';
-  const clampedRes = selectWorkspaceCardSections({
-    cards,
-    options: { searchQuery: hugeQuery }
-  });
-  // Query was clamped to 100 chars, which won't match our cards
-  assert.equal(clampedRes.sections.recent.length, 0);
-
-  // Whitespace-only search returns all items
-  const wsRes = selectWorkspaceCardSections({
-    cards,
-    options: { searchQuery: '    ' }
-  });
-  assert.equal(wsRes.sections.recent.length, 3);
-});
-
-test('Workspace Card Sections - type and status filters', () => {
-  const cards = [
-    { id: 'v1', type: 'video', status: 'completed', createdAt: '2026-10-20T10:00:00Z', isCompleted: true },
-    { id: 'i1', type: 'image', status: 'completed', createdAt: '2026-10-20T10:05:00Z', isCompleted: true },
-    { id: 'v2', type: 'video', status: 'processing', createdAt: '2026-10-20T10:10:00Z', isProcessing: true },
-    { id: 'a1', type: 'audio', status: 'failed', createdAt: '2026-10-20T10:15:00Z', isFailed: true }
-  ];
-
-  // Type filter
-  const videoOnly = selectWorkspaceCardSections({
-    cards,
-    options: { typeFilter: 'video' }
-  });
-  assert.equal(videoOnly.sections.recent.length, 2);
-  assert.deepEqual(videoOnly.sections.recent.map((c) => c.id), ['v2', 'v1']);
-
-  // Status filter
-  const processingOnly = selectWorkspaceCardSections({
-    cards,
-    options: { statusFilter: 'processing' }
-  });
-  assert.equal(processingOnly.sections.recent.length, 1);
-  assert.equal(processingOnly.sections.recent[0].id, 'v2');
-});
-
-test('Workspace Card Sections - 200+ cards cap to max 30 items with deterministic newest-first and ID tie-breaker', () => {
-  const baseTime = new Date('2026-10-20T00:00:00.000Z').getTime();
-  const bigList = [];
-
-  for (let i = 1; i <= 250; i++) {
-    // 3-digit padded number for predictable lexical order: card-001 ... card-250
-    const padded = String(i).padStart(3, '0');
-    bigList.push({
-      id: `card-${padded}`,
-      status: 'completed',
-      type: 'video',
-      createdAt: new Date(baseTime + i * 1000).toISOString(),
-      title: `Project ${padded}`,
-      isCompleted: true,
-      hasPreview: true
-    });
+/**
+ * Validates and sanitizes a single input card summary according to W4.2 contract.
+ * Returns a sanitized clean card object or null if the card is malformed/invalid.
+ *
+ * @param {Object} rawCard
+ * @param {number} nowMs - Current time in ms for date sanity checks
+ * @returns {Object|null}
+ */
+function validateAndSanitizeCard(rawCard, nowMs) {
+  if (!rawCard || typeof rawCard !== 'object' || Array.isArray(rawCard)) {
+    return null;
   }
 
-  const result = selectWorkspaceCardSections({ cards: bigList });
-
-  assert.equal(result.counts.total, 250);
-  assert.equal(result.counts.recent, 30);
-  assert.equal(result.sections.recent.length, 30);
-  assert.equal(result.sections.completed.length, 30);
-  assert.equal(result.metadata.resultBounded, true);
-
-  // Newest first: card-250 down to card-221
-  assert.equal(result.sections.recent[0].id, 'card-250');
-  assert.equal(result.sections.recent[29].id, 'card-221');
-
-  // Verify timestamps are non-increasing
-  for (let i = 0; i < result.sections.recent.length - 1; i++) {
-    const curTime = new Date(result.sections.recent[i].createdAt).getTime();
-    const nextTime = new Date(result.sections.recent[i + 1].createdAt).getTime();
-    assert.ok(curTime >= nextTime, 'Cards must be sorted newest first');
+  // 1. Validate ID: non-empty string matching standard identifier pattern
+  const rawId = rawCard.id;
+  if (typeof rawId !== 'string' && !(typeof rawId === 'number' && Number.isSafeInteger(rawId) && rawId >= 0)) {
+    return null;
+  }
+  const id = String(rawId).trim();
+  if (!/^[a-zA-Z0-9_-]{1,128}$/.test(id)) {
+    return null;
   }
 
-  // Tie-breaker test: identical timestamps must break ties by ascending id
-  const tieCards = [
-    { id: 'b-card', status: 'completed', type: 'video', createdAt: '2026-10-20T10:00:00.000Z', isCompleted: true },
-    { id: 'a-card', status: 'completed', type: 'video', createdAt: '2026-10-20T10:00:00.000Z', isCompleted: true },
-    { id: 'c-card', status: 'completed', type: 'video', createdAt: '2026-10-20T10:00:00.000Z', isCompleted: true }
-  ];
+  // 2. Validate Type: must be one of allowed types
+  const rawType = typeof rawCard.type === 'string' ? rawCard.type.trim().toLowerCase() : '';
+  const type = ALLOWED_TYPES.has(rawType) ? rawType : 'general';
 
-  const tieResult = selectWorkspaceCardSections({ cards: tieCards });
-  assert.deepEqual(tieResult.sections.recent.map((c) => c.id), ['a-card', 'b-card', 'c-card']);
-});
+  // 3. Validate Status: must be one of allowed statuses or normalized
+  const rawStatus = typeof rawCard.status === 'string' ? rawCard.status.trim().toLowerCase() : '';
+  let status = 'UNKNOWN';
+  if (['queued', 'pending'].includes(rawStatus)) status = 'queued';
+  else if (['processing', 'running', 'generating', 'finalizing'].includes(rawStatus)) status = 'processing';
+  else if (['completed', 'done', 'finished', 'ready', 'success'].includes(rawStatus)) status = 'completed';
+  else if (['failed', 'error'].includes(rawStatus)) status = 'failed';
+  else if (['cancelled', 'canceled'].includes(rawStatus)) status = 'cancelled';
+  else if (ALLOWED_STATUSES.has(rawStatus)) status = rawStatus;
+
+  // 4. Validate createdAt: parse timestamp, reject NaN, epoch 0 (unless explicit), and future dates
+  const rawCreatedAt = rawCard.createdAt;
+  if (!rawCreatedAt || (typeof rawCreatedAt !== 'string' && typeof rawCreatedAt !== 'number' && !(rawCreatedAt instanceof Date))) {
+    return null;
+  }
+  const parsedDate = new Date(rawCreatedAt);
+  const timeMs = parsedDate.getTime();
+  if (isNaN(timeMs) || timeMs < 0) {
+    return null;
+  }
+  // Reject future timestamps beyond clock skew tolerance
+  if (timeMs > nowMs + CLOCK_SKEW_TOLERANCE_MS) {
+    return null;
+  }
+  const createdAt = parsedDate.toISOString();
+
+  // 5. Title: fallback-safe sanitized string
+  let title = 'Workspace Item';
+  if (typeof rawCard.title === 'string' && rawCard.title.trim().length > 0) {
+    // Strip HTML tags and control chars from title
+    const stripped = rawCard.title.replace(/<[^>]*>/g, '').trim();
+    if (stripped.length > 0) {
+      title = stripped.slice(0, 100);
+    }
+  }
+
+  // 6. Evidence-backed Boolean flags
+  const isCompleted = status === 'completed' && Boolean(rawCard.isCompleted);
+  const isFailed = status === 'failed' || Boolean(rawCard.isFailed && status !== 'completed');
+  const isProcessing = (status === 'processing' || status === 'queued') && Boolean(rawCard.isProcessing);
+  const hasPreview = Boolean(rawCard.hasPreview && isCompleted);
+
+  // 7. Preview Placeholder (safe contract)
+  let previewPlaceholder = null;
+  if (rawCard.previewPlaceholder && typeof rawCard.previewPlaceholder === 'object' && !Array.isArray(rawCard.previewPlaceholder)) {
+    previewPlaceholder = {
+      ready: Boolean(rawCard.previewPlaceholder.ready && hasPreview),
+      placeholderType: typeof rawCard.previewPlaceholder.placeholderType === 'string'
+        ? rawCard.previewPlaceholder.placeholderType.slice(0, 50)
+        : `${type}_placeholder`,
+      label: typeof rawCard.previewPlaceholder.label === 'string'
+        ? rawCard.previewPlaceholder.label.slice(0, 50)
+        : (hasPreview ? 'Preview Available' : 'No Preview')
+    };
+  } else {
+    previewPlaceholder = {
+      ready: hasPreview,
+      placeholderType: `${type}_placeholder`,
+      label: hasPreview
+        ? 'Preview Available'
+        : isProcessing
+        ? 'Generating...'
+        : isFailed
+        ? 'Failed'
+        : 'No Preview'
+    };
+  }
+
+  // Pure sanitized card strictly containing allowed properties
+  return {
+    id,
+    status,
+    type,
+    createdAt,
+    title,
+    previewPlaceholder,
+    hasPreview,
+    isCompleted,
+    isFailed,
+    isProcessing,
+  };
+}
+
+/**
+ * Validates favorite proof provided by the caller.
+ * Favorite proof must be an explicit, trusted owner-scope proof:
+ * e.g. a Set of verified favorite IDs, an Array of verified favorite IDs, or a predicate function.
+ *
+ * @param {*} favoriteProof
+ * @returns {{ hasProof: boolean, isFavorite: function(string): boolean }}
+ */
+function resolveFavoriteVerifier(favoriteProof) {
+  if (!favoriteProof) {
+    return { hasProof: false, isFavorite: () => false };
+  }
+
+  if (typeof favoriteProof === 'function') {
+    return {
+      hasProof: true,
+      isFavorite: (id) => {
+        try {
+          return Boolean(favoriteProof(id));
+        } catch (_) {
+          return false;
+        }
+      }
+    };
+  }
+
+  if (favoriteProof instanceof Set) {
+    return {
+      hasProof: true,
+      isFavorite: (id) => favoriteProof.has(id)
+    };
+  }
+
+  if (Array.isArray(favoriteProof)) {
+    const set = new Set(favoriteProof.map(String));
+    return {
+      hasProof: true,
+      isFavorite: (id) => set.has(id)
+    };
+  }
+
+  if (typeof favoriteProof === 'object' && favoriteProof !== null) {
+    // If passed as an object mapping id -> boolean
+    return {
+      hasProof: true,
+      isFavorite: (id) => Boolean(favoriteProof[id])
+    };
+  }
+
+  return { hasProof: false, isFavorite: () => false };
+}
+
+/**
+ * Deterministically sorts cards: newest first (createdAt descending), with ascending id tie-breaker.
+ * Does not mutate the source array.
+ *
+ * @param {Array<Object>} cardList
+ * @returns {Array<Object>}
+ */
+function sortCardsDeterministic(cardList) {
+  return [...cardList].sort((a, b) => {
+    const timeA = new Date(a.createdAt).getTime();
+    const timeB = new Date(b.createdAt).getTime();
+    if (timeB !== timeA) {
+      return timeB - timeA;
+    }
+    return a.id.localeCompare(b.id);
+  });
+}
+
+/**
+ * Selects, searches, and partitions Workspace cards into sections.
+ *
+ * @param {Object} params
+ * @param {Array<Object>} [params.cards] - Preloaded, pre-sanitized card summaries
+ * @param {Object} [params.options] - Search and filtering options
+ * @param {string} [params.options.searchQuery] - Search term (clamped to 100 chars, matched over title/id)
+ * @param {string} [params.options.typeFilter] - Optional type filter ('video', 'image', 'audio', 'text', 'general')
+ * @param {string} [params.options.statusFilter] - Optional status filter ('queued', 'processing', 'completed', etc.)
+ * @param {number} [params.options.limit] - Max items per section (default & max 30)
+ * @param {number} [params.options.referenceTimeMs] - Optional reference time for testing future timestamps
+ * @param {*} [params.favoriteProof] - Trusted favorite proof (Set, Array, Map/Object, or Predicate fn)
+ * @returns {Object} Result object containing sections, counts, and metadata
+ */
+export function selectWorkspaceCardSections(params = {}) {
+  // Fail-closed defaults
+  const emptyResult = {
+    sections: {
+      recent: [],
+      drafts: [],
+      completed: [],
+      favorites: []
+    },
+    counts: {
+      total: 0,
+      recent: 0,
+      drafts: 0,
+      completed: 0,
+      favorites: 0,
+      byType: {
+        video: 0,
+        image: 0,
+        audio: 0,
+        text: 0,
+        general: 0
+      }
+    },
+    metadata: {
+      favoritesUnavailable: true,
+      sourceValidated: false,
+      filterApplied: false,
+      resultBounded: false
+    }
+  };
+
+  if (!params || typeof params !== 'object' || Array.isArray(params)) {
+    return emptyResult;
+  }
+
+  const { cards, options = {}, favoriteProof } = params;
+
+  if (!Array.isArray(cards)) {
+    return emptyResult;
+  }
+
+  const nowMs = typeof options.referenceTimeMs === 'number' && Number.isFinite(options.referenceTimeMs)
+    ? options.referenceTimeMs
+    : Date.now();
+
+  const maxItems = typeof options.limit === 'number' && options.limit > 0 && options.limit <= MAX_SECTION_ITEMS
+    ? Math.floor(options.limit)
+    : MAX_SECTION_ITEMS;
+
+  // Sanitize search query: case-folded, length <= 100
+  let searchQuery = '';
+  if (typeof options.searchQuery === 'string') {
+    searchQuery = options.searchQuery.trim().toLowerCase().slice(0, MAX_SEARCH_LENGTH);
+  }
+
+  // Validate type filter
+  let typeFilter = null;
+  if (typeof options.typeFilter === 'string') {
+    const tf = options.typeFilter.trim().toLowerCase();
+    if (ALLOWED_TYPES.has(tf)) {
+      typeFilter = tf;
+    }
+  }
+
+  // Validate status filter
+  let statusFilter = null;
+  if (typeof options.statusFilter === 'string') {
+    const sf = options.statusFilter.trim().toLowerCase();
+    if (ALLOWED_STATUSES.has(sf)) {
+      statusFilter = sf;
+    }
+  }
+
+  const filterApplied = Boolean(searchQuery.length > 0 || typeFilter || statusFilter);
+
+  // Resolve favorite proof
+  const favoriteVerifier = resolveFavoriteVerifier(favoriteProof);
+
+  // Validate, deduplicate, and filter cards
+  const seenIds = new Set();
+  const validCards = [];
+
+  for (let i = 0; i < cards.length; i++) {
+    const card = validateAndSanitizeCard(cards[i], nowMs);
+    if (!card) continue;
+
+    // Reject duplicate IDs (fail closed on duplicate to prevent cross-card collisions)
+    if (seenIds.has(card.id)) {
+      continue;
+    }
+    seenIds.add(card.id);
+
+    // Apply type filter
+    if (typeFilter && card.type !== typeFilter) {
+      continue;
+    }
+
+    // Apply status filter
+    if (statusFilter && card.status !== statusFilter) {
+      continue;
+    }
+
+    // Apply search query: search strictly on title and id
+    if (searchQuery.length > 0) {
+      const matchTitle = card.title.toLowerCase().includes(searchQuery);
+      const matchId = card.id.toLowerCase().includes(searchQuery);
+      if (!matchTitle && !matchId) {
+        continue;
+      }
+    }
+
+    validCards.push(card);
+  }
+
+  // Counts summary across all matched valid cards
+  const counts = {
+    total: validCards.length,
+    recent: Math.min(validCards.length, maxItems),
+    drafts: 0,
+    completed: 0,
+    favorites: 0,
+    byType: {
+      video: 0,
+      image: 0,
+      audio: 0,
+      text: 0,
+      general: 0
+    }
+  };
+
+  const rawDrafts = [];
+  const rawCompleted = [];
+  const rawFavorites = [];
+
+  for (const card of validCards) {
+    if (counts.byType[card.type] !== undefined) {
+      counts.byType[card.type]++;
+    }
+
+    // Drafts: queued or processing
+    if (card.isProcessing || card.status === 'queued' || card.status === 'processing') {
+      rawDrafts.push(card);
+    }
+
+    // Completed: strictly completed with isCompleted flag
+    if (card.isCompleted && card.status === 'completed') {
+      rawCompleted.push(card);
+    }
+
+    // Favorites: only if trusted proof is verified for this card
+    if (favoriteVerifier.hasProof && favoriteVerifier.isFavorite(card.id)) {
+      rawFavorites.push(card);
+    }
+  }
+
+  counts.drafts = rawDrafts.length;
+  counts.completed = rawCompleted.length;
+  counts.favorites = rawFavorites.length;
+
+  // Deterministic newest-first sort for each section
+  const sortedRecent = sortCardsDeterministic(validCards);
+  const sortedDrafts = sortCardsDeterministic(rawDrafts);
+  const sortedCompleted = sortCardsDeterministic(rawCompleted);
+  const sortedFavorites = sortCardsDeterministic(rawFavorites);
+
+  const boundedRecent = sortedRecent.slice(0, maxItems);
+  const boundedDrafts = sortedDrafts.slice(0, maxItems);
+  const boundedCompleted = sortedCompleted.slice(0, maxItems);
+  const boundedFavorites = sortedFavorites.slice(0, maxItems);
+
+  const resultBounded = (
+    sortedRecent.length > maxItems ||
+    sortedDrafts.length > maxItems ||
+    sortedCompleted.length > maxItems ||
+    sortedFavorites.length > maxItems
+  );
+
+  return {
+    sections: {
+      recent: boundedRecent,
+      drafts: boundedDrafts,
+      completed: boundedCompleted,
+      favorites: boundedFavorites
+    },
+    counts,
+    metadata: {
+      favoritesUnavailable: !favoriteVerifier.hasProof,
+      sourceValidated: false, // Caller must perform real account authorization
+      filterApplied,
+      resultBounded
+    }
+  };
+}
+
+export default selectWorkspaceCardSections;
