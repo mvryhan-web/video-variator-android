@@ -12,6 +12,7 @@ import {
   getOrCreateSession,
   clearSession
 } from '../server/jarvix-brain.js';
+import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 import {
   SUPPORTED_LANGUAGES,
   INFRASTRUCTURE_SPEC,
@@ -32,22 +33,20 @@ describe('JARVIX AI Brain & Multilingual Voice (Issue #498)', () => {
       assert.ok(DEEPSYQ_CAPABILITIES.studios.video, 'Video studio must be defined');
       assert.ok(DEEPSYQ_CAPABILITIES.studios.audio, 'Audio studio must be defined');
 
-      assert.ok(DEEPSYQ_CAPABILITIES.studios.image.models.includes('gemini-3.1-flash-image'));
-      assert.ok(DEEPSYQ_CAPABILITIES.studios.video.models.includes('veo-3.1-lite-generate-preview'));
-      assert.ok(DEEPSYQ_CAPABILITIES.studios.audio.models.includes('lyria-3-clip-preview'));
-
-      assert.equal(DEEPSYQ_CAPABILITIES.everydayTools.cost, '100% Free');
-      assert.equal(DEEPSYQ_CAPABILITIES.everydayTools.privacy, '100% Local / In-Browser');
+      assert.ok(DEEPSYQ_CAPABILITIES.studios.image.models.some(model=>model.id==='gpt-image-2.5-sunburst'));
+      assert.ok(DEEPSYQ_CAPABILITIES.studios.image.models.some(model=>model.label==='Nano Banana Pro'));
+      assert.ok(DEEPSYQ_CAPABILITIES.studios.video.models.some(model=>model.label==='Seedance 2.5'));
+      assert.ok(DEEPSYQ_CAPABILITIES.studios.audio.models.some(model=>model.label==='Suno Voice'));
+      assert.ok(DEEPSYQ_CAPABILITIES.studios.audio.models.some(model=>model.adapter===false));
       assert.ok(DEEPSYQ_CAPABILITIES.everydayTools.items.includes('Background Remover'));
       assert.ok(DEEPSYQ_CAPABILITIES.everydayTools.items.includes('Video Compressor'));
       assert.ok(DEEPSYQ_CAPABILITIES.everydayTools.items.includes('Avatar Studio'));
     });
 
-    it('contains verified pricing plans and zero credit costs for everyday tools', () => {
-      assert.equal(DEEPSYQ_CAPABILITIES.pricing.basic.credits, 500);
-      assert.equal(DEEPSYQ_CAPABILITIES.pricing.pro.credits, 1500);
-      assert.equal(DEEPSYQ_CAPABILITIES.pricing.business.credits, 6000);
-      assert.equal(DEEPSYQ_CAPABILITIES.pricing.lifetime.oneTime, true);
+    it('uses the model catalog as the only model-name source and avoids cached prices', () => {
+      assert.equal(DEEPSYQ_CAPABILITIES.studios.image.models.length,MODEL_CATALOG.filter(model=>model.kind==='image').length);
+      assert.equal(DEEPSYQ_CAPABILITIES.studios.video.models.length,MODEL_CATALOG.filter(model=>model.kind==='video').length);
+      assert.equal('pricing' in DEEPSYQ_CAPABILITIES,false);
     });
   });
 
@@ -193,6 +192,9 @@ describe('JARVIX AI Brain & Multilingual Voice (Issue #498)', () => {
       assert.ok(html.includes('dedicated JARVIX voice engine is not installed yet'));
       assert.ok(html.includes('Voice engine deployment plan'));
       assert.ok(!html.includes('sample_baritone_ru.wav'));
+      assert.ok(html.includes("fetch('/api/studio/config')"));
+      assert.ok(html.includes("fetch('/api/jarvix/site-map')"));
+      assert.ok(!html.includes('Gemini 3.1 Flash'));
       assert.ok(html.includes('Тест защиты'));
     });
   });
