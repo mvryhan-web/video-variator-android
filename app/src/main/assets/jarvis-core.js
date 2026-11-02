@@ -72,9 +72,13 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   window.speechSynthesis.onvoiceschanged = refreshVoices;
 }
 
-export function getJarvixVoice(isRu) {
+export function getJarvixVoice(langParam = 'ru') {
   refreshVoices();
   if (!cachedVoices.length) return null;
+
+  const isRu = (typeof langParam === 'boolean') ? langParam : (langParam === 'ru' || langParam?.startsWith?.('ru'));
+  const isFr = langParam === 'fr' || langParam?.startsWith?.('fr');
+  const isEs = langParam === 'es' || langParam?.startsWith?.('es');
 
   if (isRu) {
     // Check for explicit Russian male voices (Dmitry, Pavel, Aleksandr, Maxim, Yuri, etc.)
@@ -86,6 +90,24 @@ export function getJarvixVoice(isRu) {
 
     const anyRu = cachedVoices.find(v => v.lang.startsWith('ru'));
     if (anyRu) return { voice: anyRu, isExplicitMale: false };
+  } else if (isFr) {
+    const maleFr = cachedVoices.find(v =>
+      v.lang.startsWith('fr') &&
+      /(?:henri|thomas|nicolas|paul|alain|male|homme)/i.test(v.name + ' ' + (v.voiceURI || ''))
+    );
+    if (maleFr) return { voice: maleFr, isExplicitMale: true };
+
+    const anyFr = cachedVoices.find(v => v.lang.startsWith('fr'));
+    if (anyFr) return { voice: anyFr, isExplicitMale: false };
+  } else if (isEs) {
+    const maleEs = cachedVoices.find(v =>
+      v.lang.startsWith('es') &&
+      /(?:jorge|diego|pablo|carlos|alvaro|miguel|manuel|enrique|male|hombre)/i.test(v.name + ' ' + (v.voiceURI || ''))
+    );
+    if (maleEs) return { voice: maleEs, isExplicitMale: true };
+
+    const anyEs = cachedVoices.find(v => v.lang.startsWith('es'));
+    if (anyEs) return { voice: anyEs, isExplicitMale: false };
   } else {
     // British / UK Male voice (Paul Bettany film JARVIS style)
     const ukMale = cachedVoices.find(v =>
@@ -116,7 +138,7 @@ export function updateJarvisState(mode = 'idle') {
   }
 }
 
-// 2. Text-to-Speech Engine with Authentic Server Audio & Local Web Speech Fallback
+// 2. Text-to-Speech Engine with Authentic High-Quality Web Speech & Instant Barge-in
 export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'ru', isRu = true) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     if (typeof onComplete === 'function') onComplete();
@@ -125,14 +147,17 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
   try {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    const isFr = langCode === 'fr';
-    const isEs = langCode === 'es';
-    utterance.lang = isRu ? 'ru-RU' : isFr ? 'fr-FR' : isEs ? 'es-ES' : 'en-US';
+    const resolvedLang = (typeof langCode === 'string') ? langCode : (isRu ? 'ru' : 'en');
+    const isFr = resolvedLang === 'fr';
+    const isEs = resolvedLang === 'es';
+    const isRuTarget = resolvedLang === 'ru';
+    utterance.lang = isRuTarget ? 'ru-RU' : isFr ? 'fr-FR' : isEs ? 'es-ES' : 'en-US';
 
-    const voiceMeta = getJarvixVoice(isRu);
+    const voiceMeta = getJarvixVoice(resolvedLang);
     if (voiceMeta && voiceMeta.voice) {
       utterance.voice = voiceMeta.voice;
     }
+    // Authentic natural male pitch: 1.0 (never altered or robotic)
     utterance.pitch = 1.0;
     utterance.rate = 1.0;
 
@@ -169,66 +194,23 @@ export function speakJarvis(text, onComplete = null) {
   }
 
   stopAllSpeech();
-  pauseJarvisRecognition();
   resetSilenceTimer();
 
-  const lang = document.documentElement.lang || 'ru';
+  const lang = document.documentElement.lang || localStorage.getItem('deepsyq_home_language') || 'ru';
   const isRu = (lang === 'ru' || lang.startsWith('ru') || navigator.language?.startsWith('ru'));
   const isFr = (lang === 'fr' || lang.startsWith('fr'));
   const isEs = (lang === 'es' || lang.startsWith('es'));
   const langCode = isRu ? 'ru' : isFr ? 'fr' : isEs ? 'es' : 'en';
-  const timbre = getStoredTimbre();
 
-  // Try real server-synthesized film male audio (guaranteed voice timbre across all devices)
-  try {
-    const ttsUrl = `/api/jarvix/tts?text=${encodeURIComponent(text.slice(0, 300))}&lang=${langCode}&timbre=${timbre}`;
-    const audio = new Audio(ttsUrl);
-    currentTtsAudio = audio;
-
-    let fallbackTriggered = false;
-    const triggerLocalFallback = () => {
-      if (fallbackTriggered) return;
-      fallbackTriggered = true;
-      currentTtsAudio = null;
-      speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
-    };
-
-    audio.onplay = () => {
-      isJarvisSpeaking = true;
-      updateJarvisState('speaking');
-    };
-
-    audio.onended = () => {
-      currentTtsAudio = null;
-      isJarvisSpeaking = false;
-      if (typeof onComplete === 'function') {
-        onComplete();
-      } else if (isJarvisActive && keepListening) {
-        resumeJarvisRecognition();
-        startSilenceTimer();
-      } else {
-        updateJarvisState('idle');
-      }
-    };
-
-    audio.onerror = (e) => {
-      console.warn('[JARVIX Audio TTS load error, falling back to Web Speech]', e);
-      triggerLocalFallback();
-    };
-
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(err => {
-        console.warn('[JARVIX Audio play blocked, falling back to Web Speech]', err);
-        triggerLocalFallback();
-      });
-    }
-    return;
-  } catch (err) {
-    console.warn('[JARVIX Audio creation error]', err);
-  }
-
+  // Real human voice speech synthesis with proper language accent, crystal clear words, pitch: 1.0
   speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
+
+  // Keep recognition alive for instant ChatGPT-style interruption (barge-in)
+  if (isJarvisActive && keepListening && !isJarvisListening) {
+    try {
+      resumeJarvisRecognition();
+    } catch (_) {}
+  }
 }
 
 // 3. Instant Navigation Utility ("Сделано.")
@@ -306,19 +288,20 @@ function expandCreativePrompt(concept, kind = 'image') {
 // 6. Theme & Lighting Controller
 export function applySiteTheme(themeName) {
   try {
-    if (!themeName) {
+    if (!themeName || themeName === 'default' || themeName === 'none' || themeName === 'standard') {
       document.documentElement.removeAttribute('data-site-theme');
       localStorage.removeItem('deepsyq_site_theme');
-    } else {
-      document.documentElement.setAttribute('data-site-theme', themeName);
-      localStorage.setItem('deepsyq_site_theme', themeName);
+      window.dispatchEvent(new CustomEvent('deepsyq:theme', { detail: { theme: null } }));
+      return;
     }
+    document.documentElement.setAttribute('data-site-theme', themeName);
+    localStorage.setItem('deepsyq_site_theme', themeName);
     window.dispatchEvent(new CustomEvent('deepsyq:theme', { detail: { theme: themeName } }));
   } catch (_) {}
 }
 
 export function setSiteLanguage(langCode) {
-  const code = (langCode === 'ru' || langCode === 'fr') ? langCode : 'en';
+  const code = (langCode === 'ru' || langCode === 'fr' || langCode === 'es') ? langCode : 'en';
   try {
     localStorage.setItem('deepsyq_home_language', code);
     localStorage.setItem('deepsyq_lang', code);
@@ -564,26 +547,37 @@ export function handleJarvisVoiceCommand(commandText) {
     return;
   }
 
-  // G. THEME & LIGHTING COMMANDS
+  // G0. EXPLICIT THEME RESET / TURN OFF ("выключи его", "выключи тему", "выключи неоновый", "верни как было")
+  if (/(?:выключи|отключи|убери|сбрось|верни)\s+(?:его|неон|киберпанк|тему|подсветку|стиль|режим|как было)|(?:выключи|отключи)\s+его|(?:стандартная|обычная|исходная|дефолтная)\s+тема|выключи тему|верни тему|верни как было|сбрось тему|default theme|reset theme|turn off neon/i.test(lower)) {
+    applySiteTheme(null);
+    const resp = isRu ? 'Сделано. Выключил тему и вернул стандартное оформление.'
+      : isFr ? 'Terminé. Le thème a été réinitialisé.'
+      : isEs ? 'Hecho. Se ha restablecido el tema predeterminado.'
+      : 'Done. Reverted to default theme.';
+    speakJarvis(resp);
+    return;
+  }
+
+  // G1. THEME & LIGHTING COMMANDS
   if (/(?:посветлее|светлая тема|светлее|включи свет|light theme)/i.test(lower)) {
     applySiteTheme('light');
     speakJarvis('Сделано. Сделал освещение сайта ярким и светлым.');
     return;
   }
 
-  if (/(?:потемнее|темная тема|темнее|ночной режим|выключи свет|dark theme)/i.test(lower)) {
+  if (/(?:потемнее|темная тема|темнее|ночной режим|dark theme)/i.test(lower)) {
     applySiteTheme('midnight');
     speakJarvis('Сделано. Переключил на глубокую темную тему.');
     return;
   }
 
-  if (/(?:неонов|киберпанк|neon|cyberpunk)/i.test(lower)) {
+  if (!/(?:выключи|отключи|не\s+надо)/i.test(lower) && /(?:неонов|киберпанк|neon|cyberpunk)/i.test(lower)) {
     applySiteTheme('neon');
     speakJarvis('Сделано. Включил неоновый киберпанк.');
     return;
   }
 
-  if (/(?:золот|люкс|gold|luxury)/i.test(lower)) {
+  if (!/(?:выключи|отключи|не\s+надо)/i.test(lower) && /(?:золот|люкс|gold|luxury)/i.test(lower)) {
     applySiteTheme('gold');
     speakJarvis('Сделано. Включил премиальный золотой стиль.');
     return;
@@ -605,6 +599,12 @@ export function handleJarvisVoiceCommand(commandText) {
   if (/(?:француз|french|français|passe en français)/i.test(lower)) {
     setSiteLanguage('fr');
     speakJarvis('Langue changée en français.');
+    return;
+  }
+
+  if (/(?:испанск|spanish|español|cambiar a español|switch to spanish)/i.test(lower)) {
+    setSiteLanguage('es');
+    speakJarvis('Idioma cambiado a español.');
     return;
   }
 
@@ -745,7 +745,10 @@ function resumeJarvisRecognition() {
       resetSilenceTimer();
       let interim = '';
       if (isJarvisSpeaking) {
+        // Immediate ChatGPT-style interruption cutoff (0ms delay)
         stopAllSpeech();
+        isJarvisSpeaking = false;
+        updateJarvisState('listening');
       }
       for (let i = e.resultIndex; i < e.results.length; ++i) {
         const item = e.results[i];

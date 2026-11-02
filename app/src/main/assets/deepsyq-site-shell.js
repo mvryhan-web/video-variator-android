@@ -37,6 +37,13 @@
       tools: 'Outils', apps: 'Apps IA', canvas: 'Canvas', legacy: 'Unificateur vidéo',
       assets: 'Médias', history: 'Mes créations', affiliate: 'Affiliation', share: 'Partager', inspiration: 'Inspiration', pricing: 'Tarifs',
       back: '← Retour à Deepsyq', privacy: 'Confidentialité', soon: 'bientôt', copied: 'Lien copié', backBtn: 'Retour'
+    },
+    es: {
+      Home: 'Inicio', Creation: 'Creación', Tools: 'Herramientas', Library: 'Biblioteca', Community: 'Comunidad', More: 'Más',
+      home: 'Inicio', image: 'Imagen', video: 'Vídeo', agents: 'Agente IA', pet: 'Mascota 3D', voice: 'Agente de voz', audio: 'Audio',
+      tools: 'Herramientas', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Unificador de vídeo',
+      assets: 'Archivos', history: 'Mis creaciones', affiliate: 'Afiliados', share: 'Compartir enlace', inspiration: 'Inspiración', pricing: 'Precios',
+      back: '← Volver a Deepsyq', privacy: 'Privacidad', soon: 'pronto', copied: 'Enlace copiado', backBtn: 'Atrás'
     }
   };
 
@@ -64,12 +71,12 @@
   if (!document.getElementById('topJarvisBtn')) {
     const jarvisCss = document.createElement('link');
     jarvisCss.rel = 'stylesheet';
-    jarvisCss.href = 'jarvis-core.css?v=5.0';
+    jarvisCss.href = 'jarvis-core.css?v=7.0';
     document.head.append(jarvisCss);
 
     const jarvisScript = document.createElement('script');
     jarvisScript.type = 'module';
-    jarvisScript.src = 'jarvis-core.js?v=5.0';
+    jarvisScript.src = 'jarvis-core.js?v=7.0';
     document.body.append(jarvisScript);
 
     // If a top header exists, insert JARVIX Orb dead-center

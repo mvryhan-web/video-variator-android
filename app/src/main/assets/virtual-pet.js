@@ -25,6 +25,27 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
   }
   if (root) {
     root.DeepsyqVirtualPet = mod;
+    if (typeof document !== 'undefined') {
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-select-pet]');
+        if (btn) {
+          const petKey = btn.getAttribute('data-select-pet');
+          if (root.__deepsyqVirtualPetInstance && typeof root.__deepsyqVirtualPetInstance.setPet === 'function') {
+            root.__deepsyqVirtualPetInstance.setPet(petKey);
+          } else {
+            try {
+              const cur = JSON.parse(localStorage.getItem('deepsyq_virtual_pet_v1') || '{}');
+              cur.enabled = true;
+              cur.pet = petKey;
+              cur.name = petKey === 'cat' ? 'Мира' : petKey === 'fox' ? 'Нова' : 'Луна';
+              if (cur.mode === 'off') cur.mode = 'calm';
+              localStorage.setItem('deepsyq_virtual_pet_v1', JSON.stringify(cur));
+              window.location.reload();
+            } catch (_) {}
+          }
+        }
+      });
+    }
   }
 })(globalScope, function() {
   'use strict';
@@ -240,6 +261,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       }
 
       this.isInitialized = true;
+      if (root) root.__deepsyqVirtualPetInstance = this;
       return this;
     }
 
@@ -295,6 +317,18 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
           this.toggleModeQuick();
         });
       }
+    }
+
+    setPet(petKey) {
+      if (!PET_PROFILES[petKey]) return;
+      this.settings.pet = petKey;
+      this.settings.name = PET_PROFILES[petKey].defaultName;
+      this.settings.enabled = true;
+      if (this.settings.mode === 'off') this.settings.mode = 'calm';
+      this.saveSettings();
+      this.render();
+      const profile = PET_PROFILES[petKey];
+      this.showBubble(profile.greeting, [{ label: 'Отлично', action: () => this.hideBubble() }]);
     }
 
     render() {
