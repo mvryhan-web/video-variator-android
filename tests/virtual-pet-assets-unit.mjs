@@ -105,7 +105,7 @@ test('F8 movement uses fresh generated sprite assets on its supported pages',()=
  const assets=path.join(root,'app/src/main/assets');
  for(const page of ['deepsyq.html','index.html','generate-studio.html','virtual-pet.html','my-creations.html','compare-ai.html','ai-agents.html']){
   const html=readFileSync(path.join(assets,page),'utf8');
-  assert.match(html,/src="virtual-pet\.js\?v=f8-camera-fix-20261102-1"/,`${page} must load the refreshed companion code`);
+  assert.match(html,/src="virtual-pet\.js\?v=f8-sprite-preload-20261103-1"/,`${page} must load the refreshed companion code`);
  }
  const petPage=readFileSync(path.join(assets,'virtual-pet.html'),'utf8');
  assert.match(petPage,/playSpriteLoop\('idle_breathe'\)/,'the preview should move as soon as a pet is selected');
@@ -114,5 +114,9 @@ test('F8 movement uses fresh generated sprite assets on its supported pages',()=
  assert.match(petPage,/sprites\/\$\{animName\}_0\$\{frame\}\.png\?v=\$\{assetVersion\}/,'preview controls should use regenerated animation frames');
  const runtime=readFileSync(path.join(assets,'virtual-pet.js'),'utf8');
  assert.match(runtime,/startPetSpriteAnimation\(petKey\)/,'the page companion should display the generated animation');
+ assert.match(runtime,/Array\.from\(\{length: 8\}/,'the companion should preload all eight frames before playback');
+ assert.match(runtime,/Promise\.all\(frameUrls\.map/,'the visible image must wait for frame loading instead of cycling through pending network requests');
+ assert.match(runtime,/loadToken !== this\.spriteLoadToken/,'a stale pet preload must not replace the newly selected animal');
+ assert.match(runtime,/\}, 210\)/,'frame timing should leave enough time for browser painting');
  assert.match(runtime,/prefers-reduced-motion: reduce/,'the companion must respect the user motion preference');
 });
