@@ -41,7 +41,8 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
     sound: false,
     noseDraft: true,
     noseRatio: true,
-    noseJobs: true
+    noseJobs: true,
+    living: {movement:'gentle',side:'auto',size:'medium',face:'expressive',tipsEnabled:true,voiceEnabled:false,enabledByScenario:{}}
   };
 
   const PET_PROFILES = {
@@ -179,6 +180,8 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       this.draftDebounceTimer = null;
       this.lastSniffedRatioValue = null;
       this.isInitialized = false;
+      this.livingController = root?.DeepsyqLivingPet?.createController?.() || null;
+      this.ambientTimer = null;
     }
 
     getStorage() {
@@ -195,7 +198,8 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
         if (raw) {
           const saved=JSON.parse(raw);
           const selected=PET_PROFILES[saved?.pet] ? saved.pet : DEFAULT_SETTINGS.pet;
-          return Object.assign({}, DEFAULT_SETTINGS, saved, { pet: selected });
+          const living = root?.DeepsyqLivingPet?.normalizeSettings?.(saved?.living) || DEFAULT_SETTINGS.living;
+          return Object.assign({}, DEFAULT_SETTINGS, saved, { pet: selected, living });
         }
       } catch (err) {
         console.warn('[VirtualPet] Failed to read settings from localStorage:', err);
@@ -205,7 +209,8 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
 
     saveSettings(newSettings) {
       const nextPet=PET_PROFILES[newSettings?.pet] ? newSettings.pet : (this.settings.pet || 'dog');
-      this.settings = Object.assign({}, this.settings, newSettings, { pet: nextPet });
+      const living = root?.DeepsyqLivingPet?.normalizeSettings?.(newSettings?.living || this.settings.living) || DEFAULT_SETTINGS.living;
+      this.settings = Object.assign({}, this.settings, newSettings, { pet: nextPet, living, sound:false });
       try {
         this.getStorage()?.setItem(STORAGE_KEY, JSON.stringify(this.settings));
       } catch (err) {
@@ -224,6 +229,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       this.createDOM();
       this.render();
       this.bindAutoSniffers();
+      this.startAmbientMotion();
 
       if (options.promptInputSelector) {
         this.attachToPrompt(options.promptInputSelector, options.ratioSelectSelector);
@@ -293,6 +299,12 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
         return;
       }
       this.widgetEl.classList.remove('ds-pet-hidden');
+      const motion = root?.DeepsyqLivingPet?.normalizeSettings?.(this.settings.living);
+      if (motion) {
+        this.widgetEl.setAttribute('data-pet-side',motion.side);
+        this.widgetEl.setAttribute('data-pet-size',motion.size);
+        this.widgetEl.setAttribute('data-pet-face',motion.face);
+      }
 
       const svgContainer = document.getElementById('dsPetSvgContainer');
       if (svgContainer) {
@@ -304,6 +316,44 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       if (avatar) {
         avatar.setAttribute('title', `${this.settings.name} (${PET_PROFILES[this.settings.pet].label}) — нажми для настроек`);
       }
+    }
+
+    startAmbientMotion() {
+      if (this.ambientTimer || typeof window === 'undefined' || !this.widgetEl ||
+        !root?.DeepsyqLivingPet?.canAmbientWalk) return;
+      // One short 1.8s movement every 90s, never continuous wandering.
+      this.ambientTimer = window.setInterval(() => {
+        const active = document.activeElement;
+        const inputFocused = !!active?.matches?.('input,textarea,select,[contenteditable="true"]');
+        const dialogOpen = !!document.querySelector?.('[aria-modal="true"]:not([hidden]),[role="dialog"]:not([hidden])');
+        const reducedMotion = !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+        const bubbleVisible = !!this.bubbleEl && this.bubbleEl.style.display !== 'none';
+        const ok = root.DeepsyqLivingPet.canAmbientWalk({
+          settings:{...this.settings.living,mode:this.settings.mode,enabled:this.settings.enabled},
+          width:window.innerWidth,hidden:document.hidden,inputFocused,dialogOpen,
+          reducedMotion,busy:bubbleVisible
+        });
+        if (!ok || !this.widgetEl?.classList) return;
+        this.widgetEl.classList.add('ds-pet-ambient-walk');
+        window.setTimeout(() => this.widgetEl?.classList?.remove('ds-pet-ambient-walk'),1900);
+      },90000);
+    }
+
+    offerLivingHint(id,event,text,actions=[],mood='normal') {
+      if (!this.livingController || !root?.DeepsyqLivingPet) return {show:false,reason:'NO_POLICY'};
+      const active = typeof document !== 'undefined' && document.activeElement;
+      const result = this.livingController.offer({
+        id,event,settings:{...this.settings.living,mode:this.settings.mode,enabled:this.settings.enabled},
+        userInitiated:event?.source==='mock-preview',
+        state:{
+          inputFocused:!!active?.matches?.('input,textarea,select,[contenteditable="true"]')&&!event?.userRequested,
+          dialogOpen:!!document.querySelector?.('[aria-modal="true"]:not([hidden])'),
+          bubbleVisible:!!this.bubbleEl&&this.bubbleEl.style.display!=='none'&&!event?.userRequested,
+          hidden:!!document.hidden
+        }
+      });
+      if(result.show)this.speak(text,actions,mood);
+      return result;
     }
 
     onAvatarClick() {
@@ -338,7 +388,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
         actionsHtml = '<div class="ds-pet-bubble-actions">' +
           actions.map((act, idx) => {
             const cls = act.danger ? 'ds-pet-btn-danger' : (act.primary ? 'ds-pet-btn-primary' : 'ds-pet-btn-secondary');
-            return `<button class="ds-pet-btn ${cls}" data-action-idx="${idx}">${act.label}</button>`;
+            return `<button class="ds-pet-btn ${cls}" data-action-idx="${idx}">${this.escapeHtml(act.label)}</button>`;
           }).join('') +
         '</div>';
       }
@@ -347,7 +397,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
         <div class="ds-pet-bubble-header">
           <div class="ds-pet-bubble-title">
             <span>${icon}</span>
-            <span>${name}</span>
+            <span>${this.escapeHtml(name)}</span>
           </div>
           <button class="ds-pet-bubble-close" id="dsPetBubbleCloseBtn" title="Скрыть">✕</button>
         </div>
@@ -712,6 +762,15 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       modal.className = 'ds-pet-modal-overlay';
 
       const s = this.settings;
+      const livingApi = root?.DeepsyqLivingPet;
+      const prefs = livingApi?.normalizeSettings?.(s.living) || DEFAULT_SETTINGS.living;
+      const rows = livingApi?.SCENARIOS?.map(rule => `
+        <label class="ds-pet-toggle-row">
+          <span class="ds-pet-toggle-info"><strong>${rule.id} · ${rule.title}</strong>
+            <span class="ds-pet-toggle-desc">${rule.stage === 'demo' ? 'Проверяемое демо · без платных вызовов' : 'Ожидает подтверждённого подключения'}</span></span>
+          <input class="ds-pet-scenario-switch" type="checkbox" data-scenario="${rule.id}"
+            ${prefs.enabledByScenario?.[rule.id] !== false ? 'checked' : ''}>
+        </label>`).join('') || '';
       modal.innerHTML = `
         <div class="ds-pet-modal" role="dialog" aria-modal="true" aria-labelledby="dsPetModalTitle">
           <div class="ds-pet-modal-header">
@@ -758,6 +817,36 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
           </div>
 
           <div class="ds-pet-form-group">
+            <label class="ds-pet-label" for="dsPetMovement">Как питомец живёт на странице</label>
+            <select id="dsPetMovement" class="ds-pet-select">
+              <option value="gentle" ${prefs.movement === 'gentle' ? 'selected' : ''}>Спокойные короткие прогулки</option>
+              <option value="playful" ${prefs.movement === 'playful' ? 'selected' : ''}>Игривый характер</option>
+              <option value="still" ${prefs.movement === 'still' ? 'selected' : ''}>Без прогулок</option>
+            </select>
+            <label class="ds-pet-label" for="dsPetSide">Предпочитаемая сторона</label>
+            <select id="dsPetSide" class="ds-pet-select">
+              <option value="auto" ${prefs.side === 'auto' ? 'selected' : ''}>Автоматически</option>
+              <option value="left" ${prefs.side === 'left' ? 'selected' : ''}>Слева</option>
+              <option value="right" ${prefs.side === 'right' ? 'selected' : ''}>Справа</option>
+            </select>
+            <label class="ds-pet-label" for="dsPetSize">Размер</label>
+            <select id="dsPetSize" class="ds-pet-select">
+              <option value="small" ${prefs.size === 'small' ? 'selected' : ''}>Маленький</option>
+              <option value="medium" ${prefs.size === 'medium' ? 'selected' : ''}>Средний</option>
+              <option value="large" ${prefs.size === 'large' ? 'selected' : ''}>Крупный</option>
+            </select>
+            <label class="ds-pet-label" for="dsPetFace">Мимика (Face)</label>
+            <select id="dsPetFace" class="ds-pet-select">
+              <option value="expressive" ${prefs.face === 'expressive' ? 'selected' : ''}>Выразительная</option>
+              <option value="subtle" ${prefs.face === 'subtle' ? 'selected' : ''}>Сдержанная</option>
+            </select>
+            <label class="ds-pet-toggle-row">Показывать проверенные советы
+              <input id="dsPetTipsEnabled" type="checkbox" ${prefs.tipsEnabled ? 'checked' : ''}>
+            </label>
+            <p class="ds-pet-toggle-desc">Voice: звук и микрофон выключены. Голосовой режим будет доступен только после отдельной реализации и согласия.</p>
+          </div>
+
+          <div class="ds-pet-form-group">
             <label class="ds-pet-label">Суперспособности («Волшебный нюх»)</label>
             <div class="ds-pet-toggles">
               <label class="ds-pet-toggle-row">
@@ -786,6 +875,11 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
             </div>
           </div>
 
+          <details class="ds-pet-form-group ds-pet-scenario-list">
+            <summary>Все 16 сценариев Magic Shield · настроить</summary>
+            <p class="ds-pet-toggle-desc">Галочка означает ваше предпочтение, но не включает неподтверждённые AI-функции. Пока пять событий работают в безопасном демо.</p>
+            <div class="ds-pet-toggles">${rows}</div>
+          </details>
           <div class="ds-pet-modal-footer">
             <button class="ds-pet-btn ds-pet-btn-secondary" id="dsPetModalCancelBtn">Отмена</button>
             <button class="ds-pet-btn ds-pet-btn-primary" id="dsPetModalSaveBtn">Сохранить</button>
@@ -819,6 +913,19 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
         const noseDraftVal = document.getElementById('dsPetNoseDraft').checked;
         const noseRatioVal = document.getElementById('dsPetNoseRatio').checked;
         const noseJobsVal = document.getElementById('dsPetNoseJobs').checked;
+        const enabledByScenario = {};
+        modal.querySelectorAll('.ds-pet-scenario-switch').forEach(el => {
+          if (/^S(0[1-9]|1[0-6])$/.test(el.getAttribute('data-scenario')))
+            enabledByScenario[el.getAttribute('data-scenario')] = el.checked;
+        });
+        const nextLiving = {
+          movement:document.getElementById('dsPetMovement').value,
+          side:document.getElementById('dsPetSide').value,
+          size:document.getElementById('dsPetSize').value,
+          face:document.getElementById('dsPetFace').value,
+          tipsEnabled:document.getElementById('dsPetTipsEnabled').checked,
+          enabledByScenario
+        };
 
         this.saveSettings({
           pet: selectedPet,
@@ -827,6 +934,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
           noseDraft: noseDraftVal,
           noseRatio: noseRatioVal,
           noseJobs: noseJobsVal,
+          living:nextLiving,
           enabled: modeVal !== 'off'
         });
 
