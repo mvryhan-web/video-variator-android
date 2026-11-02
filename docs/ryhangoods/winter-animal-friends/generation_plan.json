@@ -1,0 +1,144 @@
+{
+  "basePrompt": "Use case: illustration-story. Produce ONE original polished ready-to-print children's coloring page for Pinogri Christmas & Winter Animal Friends, ages 3–8. Portrait A4 composition, target2480x3508px highest available resolution. ONLY black smooth bold outlines on pure white, generous CLOSED empty coloring regions, no gray shading, no hatching, no textures, no gradients, no solid dark areas except tiny eyes/noses. Distinct charming storybook animals with large heads and short rounded bodies, friendly clear expressions, mittenlike paws, simple feet, anatomically consistent, exactly two arms and two legs for anthropomorphic mammals and two flippers two feet for penguin. Leave all fur, body and clothing regions WHITE for coloring.  Never include characters not explicitly requested. Large uncluttered forms for crayons, composition for preschool/primary children; no tiny decorative clutter. Pure white safety margin at least8% all edges; composition fills middle80%, no border, no text, no captions, no watermark, no logo, no photograph of paper, no collage. Props must read clearly, no fused paws/objects, no extra limbs. Scene:  Composition must be a SELF-CONTAINED VIGNETTE: every building, branch, furniture piece and prop fully visible with closed outer contours and white margin; nothing cut off by the page edges. Keep scene comfortably inside middle80% of canvas. ",
+  "characterSpecs": {
+    "fox": "FOX: large triangular ears, soft outlined white muzzle, small oval black eyes and nose, short body, plain scarf, big bushy white-tipped tail.",
+    "rabbit": "RABBIT: long upright ears, round small tail, small oval black eyes and nose, simple open vest, soft round muzzle.",
+    "bear": "BEAR: round ears, short oval muzzle, small oval black eyes and nose, plain sweater unless apron specified, short round tail.",
+    "deer": "DEER: oval longer muzzle, rounded leaf-shaped ears, two small simple antlers, short tiny deer tail NOT a bushy fox tail, neckerchief, cloven hooves; upright anthropomorphic posture except when walking naturally.",
+    "penguin": "PENGUIN: round head, pear body, outlined white face and belly patch, oval small beak, two flippers and two feet, bobble hat, ALL body regions WHITE, absolutely NO gray/black body fill."
+  },
+  "scenes": [
+    "Fox cub decorates a Christmas tree with one large bauble; one gift beside the tree",
+    "Rabbit ties a broad ribbon around one large gift on a low table; one ribbon spool on floor",
+    "Bear cub wearing a simple apron presents a tray of three star-shaped cookies in a cozy bakery; one large bread loaf on shelf",
+    "Young deer hangs a broad garland above the doorway of a small snow-capped cottage, standing safely on the ground",
+    "Penguin wearing a bobble hat chooses between three large Christmas baubles displayed in an open ornament box",
+    "Fox and rabbit pull a short sled carrying one small Christmas tree, with clearly connected tow rope and no entangled limbs",
+    "Bear and rabbit roll cookie dough at a low broad table, three large cookie cutters, one rolling pin",
+    "Penguin decorates a small gingerbread house with broad icing lines, two round windows and gumdrop roof decorations",
+    "Deer posts a large envelope into a clearly outlined Christmas mailbox with one holly sprig and one wrapped parcel beside it",
+    "Fox and bear share a festive tea at a small round table with two large cups and one plate of cookies",
+    "Rabbit hangs a large simple wreath on the front of a tiny toy shop; one broad window displays a teddy bear",
+    "Bear and penguin sit on a rug beside a cozy stone fireplace, enclosed fire safely within hearth, two broad stockings above",
+    "Fox carefully hangs one large Christmas stocking on a low mantel rail, two other different stockings already hanging",
+    "Rabbit and deer discover three large presents beneath a decorated Christmas tree, delighted faces, spacious room",
+    "Bear stands at a simple outdoor Christmas market stall displaying three big ornaments and two wrapped gifts, snow roof",
+    "Penguin kneels beside a large toy train on a broad oval track encircling a small Christmas tree; simple clear track",
+    "Fox plays a small drum while rabbit shakes two large jingle bells, one big star garland above",
+    "Deer and bear decorate a snow-covered outdoor evergreen with three large stars at reachable height",
+    "Rabbit in plain pajamas opens a present on Christmas morning near a small tree; one big toy boat revealed",
+    "All five friends fox rabbit bear deer penguin stand together in a friendly festive portrait with one simple tree behind and a large wrapped gift in front; five distinct bodies without overlaps",
+    "Fox rides a short wooden sled downhill, scarf flowing, clear seated pose and bushy tail, no Christmas objects",
+    "Rabbit builds a round two-ball snowman, adding one carrot nose, large bucket on snow beside",
+    "Bear fills a simple hanging bird feeder with a scoop, two round birds perch beside, broad snowy branch",
+    "Deer walks along a curving snowy woodland path between two simple fir trees, one scarf, no Christmas ornaments",
+    "Penguin glides on two ice skates over a small frozen pond, flippers spread, one snowbank with reeds",
+    "Fox and rabbit lie on backs on snow making two snow angels with broad outlined wing-shaped impressions; correct four limbs per mammal",
+    "Bear and deer walk beside an unfrozen woodland lake viewed from the safe snowy bank, big pine tree, rounded mountains",
+    "Rabbit waits at bottom of a gentle sledding hill while penguin rides a sled toward them, distinct from single fox sled page",
+    "Fox stands outside a little snowy forest cabin carrying one log, one round window and chimney, two rounded pines",
+    "Deer and rabbit investigate a trail of large simple paw prints in snow using one magnifying glass",
+    "Bear holds one large mug of hot cocoa at a small table by a snowy window, scarf on chair, plate with two cookies",
+    "Fox and penguin enjoy a winter picnic on a broad blanket, thermos and two cups with one bread roll each, no Christmas props",
+    "Bear and rabbit build a small snow-block fort with three large lower blocks and two upper blocks, one toy shovel",
+    "Deer decorates a long winter scarf laid across a low table using three simple sewn patches: circle star heart, no sharp sewing tools",
+    "Penguin and fox finish a small igloo made of big simple outlined snow blocks, open arched doorway and one shovel",
+    "Rabbit and bear ride a short cheerful winter train in two open carriages; engine with round wheels, snowy hill behind",
+    "Fox and deer play gently tossing one large soft snowball between them, two little snowball piles on ground",
+    "Rabbit walks under large simple falling snowflakes carrying a wide open umbrella with clearly visible handle",
+    "Bear and penguin watch three broad outlined ribbons of northern lights from a snowy hill, crescent moon and few big stars, no dark sky fill",
+    "Fox curls on a broad window seat with one blanket and a mug on a separate side table, snowy pine outside, quiet winter evening"
+  ],
+  "advertising": [
+    {
+      "n": 3,
+      "title": "20 Christmas Scenes",
+      "sub": "A little festive magic to print & color",
+      "footer": "PART OF THE 40-PAGE DIGITAL COLLECTION",
+      "scene": "Warm editorial overhead flat lay on cranberry-red felt, two large actual supplied coloring pages positioned asymmetrically, a little wooden tray with three colored pencils, tiny fir sprig; several small actual-page peeks at bottom, soft natural daylight, no hands. The cottage/deer and bunny/boat page must dominate. Rich composition with large page artwork, minimal empty space.",
+      "refs": [
+        4,
+        19
+      ]
+    },
+    {
+      "n": 4,
+      "title": "20 Winter Adventures",
+      "sub": "Coloring fun beyond Christmas",
+      "footer": "A4 + US LETTER · DIGITAL DOWNLOAD",
+      "scene": "Airy Nordic desk flat lay with ice-blue cloth, three actual supplied winter coloring pages: fox sledding, penguin skating and bear/penguin aurora. Natural pale wooden pencils at one side and a blue knitted scarf corner, no Christmas decorations. Large pages fill composition. Soft realistic winter daylight. Avoid sparse slide-like presentation.",
+      "refs": [
+        21,
+        25,
+        39
+      ]
+    },
+    {
+      "n": 5,
+      "title": "Meet Your Winter Friends",
+      "sub": "Fox · Bunny · Bear · Deer · Penguin",
+      "footer": "FIVE FRIENDS · 40 UNIQUE COLORING SCENES",
+      "scene": "Delightful editorial character introduction. Large close-up crops of the five actual characters from supplied group page on five casually arranged white paper cards against forest-green felt, not brand-new character designs. Show a smaller full actual group page at bottom to establish the source scene. Honey yellow and cranberry paper accents with only two pencils, restrained natural shadows. Every character distinct; no sixth character.",
+      "refs": [
+        20
+      ]
+    },
+    {
+      "n": 6,
+      "title": "Big Shapes. Little Hands.",
+      "sub": "Bold outlines and room for color",
+      "footer": "CHOOSE SIMPLER SCENES FOR YOUNGER CHILDREN",
+      "scene": "Close-up craft-table photography of the two supplied actual fox and rabbit coloring pages. Their faces and large closed coloring regions appear very large and crisp. White paper on warm light wood, a small row of chunky wax crayons at bottom, gentle forest-green textile edge. No hands, no blank paper, no invented page designs. Warm inviting early-learning publishing presentation, no therapeutic claims.",
+      "refs": [
+        1,
+        2
+      ]
+    },
+    {
+      "n": 7,
+      "title": "More to Discover",
+      "sub": "Cozy scenes with a little more detail",
+      "footer": "ACTUAL EXAMPLES FROM THE 40-PAGE COLLECTION",
+      "scene": "Three actual provided coloring pages of bear with cocoa, deer walking, penguin skating, each partly zoomed and elegantly arranged on forest-green work surface. Large character faces and readable fine details without hiding most of the pages. A cranberry-colored pencil case and three pencils near edge, authentic matte paper and soft shadows. Sophisticated children's workbook campaign, not a simple slideshow.",
+      "refs": [
+        31,
+        24,
+        25
+      ]
+    },
+    {
+      "n": 8,
+      "title": "Their Colors. Their Story.",
+      "sub": "One page. So many possibilities.",
+      "footer": "COLORED EXAMPLE ONLY · SUPPLIED FILES ARE UNCOLORED",
+      "scene": "A beautiful true before-and-after comparison: the actual uncolored fox/tree page on left and its supplied exact colored-pencil version on right, both very large, nearly upright on a pale wooden desk with green linen corner. Precise labels above: 'YOUR UNCOLORED PAGE' and 'COLORED EXAMPLE'. Four used colored pencils at bottom. Preserve artwork outlines and don't invent a different fox, tree or gift. Typography large and clean.",
+      "refs": [
+        1
+      ],
+      "colored": true
+    },
+    {
+      "n": 9,
+      "title": "Ready for Your Printer",
+      "sub": "A4 + US Letter PDFs · 40 PNG Files",
+      "footer": "DOWNLOAD · OPEN · PRINT · COLOR",
+      "scene": "Clear polished print-format explainer as natural stationery flat lay on ice-blue surface: two large real prints of the supplied rabbit/snowman page, one physically proportioned A4 and the other US Letter. Exact short labels 'A4' and 'US LETTER'. A small stack of identical uncolored coloring pages beneath. Two colored pencils and a simple paper clip, no fake screen or invented software interface. Clearly communicate digital files, no physical delivery; small readable note 'Digital files only'. No QR codes or external URLs.",
+      "refs": [
+        22
+      ]
+    },
+    {
+      "n": 10,
+      "title": "40 Stories to Color",
+      "sub": "20 Christmas + 20 Winter Scenes",
+      "footer": "DIGITAL DOWNLOAD · NO PHYSICAL ITEM",
+      "scene": "Strong final product-completeness composition on deep green linen: three large actual supplied pages fanned at left, short highly readable checklist at right with EXACT text lines: '2 printable PDFs', 'A4 + US Letter', '40 individual PNGs', 'Print guide included', 'Household or one classroom'. At lower right small clear text 'No resale or file sharing'. Warm wooden colored pencils and a small cranberry ribbon edge. Premium original children's publishing campaign with real artwork, no fictional book spine or editable claims. Keep all text safely within frame.",
+      "refs": [
+        1,
+        22,
+        40
+      ]
+    }
+  ],
+  "method": "Built-in imagegen, individual calls, all40+10displayed. Final corrections and mapping in final_sources.json. Colored example source exec-3df3fdba-5de5-4833-997e-5eda69ff6763.png"
+}
