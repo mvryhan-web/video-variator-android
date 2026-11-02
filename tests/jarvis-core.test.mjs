@@ -31,10 +31,13 @@ describe('JARVIX AI Voice Commander & Autonomous Butler System', () => {
     assert.ok(html.includes('jarvis-core.js'), 'jarvis-core.js must be loaded in canvas.html');
   });
 
-  it('verifies jarvis-core.css has soundwave aura, pulsing orb and clean zero-text rules', () => {
+  it('verifies jarvis-core.css rigidly centers the orb dead-center across all pages without moving', () => {
     const css = fs.readFileSync(path.join(assetsDir, 'jarvis-core.css'), 'utf8');
 
-    assert.ok(css.includes('.top-jarvis-btn'), 'top-jarvis-btn style must exist');
+    assert.ok(css.includes('position: absolute;'), 'must be absolutely positioned');
+    assert.ok(css.includes('left: 50%;'), 'must be pinned horizontally at 50%');
+    assert.ok(css.includes('top: 50%;'), 'must be pinned vertically at 50%');
+    assert.ok(css.includes('transform: translate(-50%, -50%)'), 'must be centered using transform');
     assert.ok(css.includes('.top-jarvis-btn.is-active'), 'is-active state must exist');
     assert.ok(css.includes('.top-jarvis-btn.is-speaking'), 'is-speaking state must exist');
     assert.ok(css.includes('.top-jarvis-btn.is-listening'), 'is-listening state must exist');
@@ -42,13 +45,15 @@ describe('JARVIX AI Voice Commander & Autonomous Butler System', () => {
     assert.ok(css.includes('display: none !important;'), 'text popups must be hidden for clean UI');
   });
 
-  it('verifies deepsyq-site-shell.js injects JARVIX sitewide on subpages', () => {
+  it('verifies deepsyq-site-shell.js injects JARVIX and multilingual translations sitewide', () => {
     const shellJs = fs.readFileSync(path.join(assetsDir, 'deepsyq-site-shell.js'), 'utf8');
     assert.ok(shellJs.includes('jarvis-core.js'), 'deepsyq-site-shell.js must inject JARVIS script');
     assert.ok(shellJs.includes('topJarvisBtn'), 'deepsyq-site-shell.js must create topJarvisBtn if missing');
+    assert.ok(shellJs.includes('shellI18n'), 'must contain multilingual translations');
+    assert.ok(shellJs.includes('deepsyq_home_language'), 'must react to saved language');
   });
 
-  it('verifies jarvis-core.js supports male film voice, smart memory greetings and hands/ears actions', async () => {
+  it('verifies jarvis-core.js supports male film voice, silence auto-standby and theme lighting controls', async () => {
     const jarvisJs = fs.readFileSync(path.join(assetsDir, 'jarvis-core.js'), 'utf8');
     assert.ok(jarvisJs.includes('export function activateJarvisVoice'), 'activateJarvisVoice must be exported');
     assert.ok(jarvisJs.includes('export function deactivateJarvisVoice'), 'deactivateJarvisVoice must be exported');
@@ -56,6 +61,9 @@ describe('JARVIX AI Voice Commander & Autonomous Butler System', () => {
     assert.ok(jarvisJs.includes('export function handleJarvisVoiceCommand'), 'handleJarvisVoiceCommand must be exported');
     assert.ok(jarvisJs.includes('getJarvixVoice'), 'male voice selector must be defined');
     assert.ok(jarvisJs.includes('jarvix_greeted'), 'smart memory session key must be used');
+    assert.ok(jarvisJs.includes('SILENCE_TIMEOUT_MS'), 'silence timeout constant must be configured');
+    assert.ok(jarvisJs.includes('applySiteTheme'), 'theme/lighting switcher must be exported');
+    assert.ok(jarvisJs.includes('setSiteLanguage'), 'multilingual switcher must be exported');
     assert.ok(jarvisJs.includes('clearCurrentInputs'), 'deletion/clear action must be implemented');
     assert.ok(jarvisJs.includes('saveStudioHandoff'), 'generative handoff must be implemented');
   });
@@ -85,5 +93,13 @@ describe('JARVIX AI Voice Commander & Autonomous Butler System', () => {
     assert.ok(jarvisJs.includes('pricing.html'), 'routes to pricing');
     assert.ok(jarvisJs.includes('avatar-studio.html'), 'routes to avatar studio');
     assert.ok(jarvisJs.includes('teleprompter.html'), 'routes to teleprompter');
+  });
+
+  it('verifies deepsyq-global-theme.css contains light, midnight, neon and gold themes', () => {
+    const themeCss = fs.readFileSync(path.join(assetsDir, 'deepsyq-global-theme.css'), 'utf8');
+    assert.ok(themeCss.includes('html[data-site-theme="light"]'), 'light theme must exist');
+    assert.ok(themeCss.includes('html[data-site-theme="midnight"]'), 'midnight theme must exist');
+    assert.ok(themeCss.includes('html[data-site-theme="neon"]'), 'neon theme must exist');
+    assert.ok(themeCss.includes('html[data-site-theme="gold"]'), 'gold theme must exist');
   });
 });

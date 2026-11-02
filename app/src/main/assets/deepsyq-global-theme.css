@@ -634,3 +634,93 @@ html:not([data-theme="light"]) body:not(.home-neon) .editorial .comparison>div {
 @media(max-width:640px) {
   html:not([data-theme="light"]):has(head>link[href="ai-privacy.css"]) body:not(.home-neon) main>section {padding:20px}
 }
+
+
+/* JARVIX Voice-Controlled Ambient Lighting & Themes */
+html[data-site-theme="light"] {
+  --ds-bg: #f8fafc;
+  --ds-sidebar: #f1f5f9;
+  --ds-surface: #ffffff;
+  --ds-raised: #f1f5f9;
+  --ds-line: #cbd5e1;
+  --ds-text: #0f172a;
+  --ds-muted: #64748b;
+  --ds-violet: #6366f1;
+  --ds-pink: #ec4899;
+  --ds-blue: #0284c7;
+  color-scheme: light;
+}
+html[data-site-theme="light"] body {
+  background: radial-gradient(ellipse 80% 450px at 74% -180px, #e2e8f0, transparent 76%), #f8fafc !important;
+  color: #0f172a !important;
+}
+html[data-site-theme="light"] :is(.content>.top, .topbar, body>header, .tools>header, aside#sidebar, .sidebar, .ds-site-sidebar) {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+html[data-site-theme="light"] :is(.brand, .top-brand, .brand-name, h1, h2, h3, strong) {
+  color: #0f172a !important;
+}
+html[data-site-theme="light"] :is(p, span, .muted, small, label) {
+  color: #475569 !important;
+}
+html[data-site-theme="light"] :is(.card, .price-card, .app-card, .hub-tile, .tool-card, .panel, .studio-card) {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-site-theme="midnight"] {
+  --ds-bg: #000308;
+  --ds-sidebar: #010610;
+  --ds-surface: #040a17;
+  --ds-raised: #081226;
+  --ds-line: #12213d;
+  --ds-text: #e2e8f0;
+  --ds-muted: #8292ab;
+  --ds-violet: #7c3aed;
+  --ds-pink: #db2777;
+  color-scheme: dark;
+}
+html[data-site-theme="midnight"] body {
+  background: radial-gradient(ellipse 80% 500px at 50% -100px, #071228, transparent 70%), #000308 !important;
+}
+
+html[data-site-theme="neon"] {
+  --ds-bg: #04020a;
+  --ds-sidebar: #080314;
+  --ds-surface: #100624;
+  --ds-raised: #1c0a3d;
+  --ds-line: #00e5ff;
+  --ds-text: #ffffff;
+  --ds-muted: #d8b4fe;
+  --ds-violet: #d946ef;
+  --ds-pink: #00e5ff;
+  --ds-blue: #38bdf8;
+  color-scheme: dark;
+}
+html[data-site-theme="neon"] body {
+  background: radial-gradient(ellipse 80% 450px at 74% -150px, #d946ef30, transparent 70%),
+              radial-gradient(ellipse 600px 450px at 20% 40%, #00e5ff25, transparent 70%), #04020a !important;
+}
+html[data-site-theme="neon"] :is(.content>.top, .topbar, body>header) {
+  border-bottom: 1.5px solid #00e5ff80 !important;
+  box-shadow: 0 4px 30px #00e5ff20 !important;
+}
+
+html[data-site-theme="gold"] {
+  --ds-bg: #0c0a07;
+  --ds-sidebar: #14100b;
+  --ds-surface: #1e1810;
+  --ds-raised: #2d2417;
+  --ds-line: #f59e0b80;
+  --ds-text: #fef3c7;
+  --ds-muted: #d97706;
+  --ds-violet: #f59e0b;
+  --ds-pink: #fbbf24;
+  color-scheme: dark;
+}
+html[data-site-theme="gold"] body {
+  background: radial-gradient(ellipse 80% 450px at 70% -150px, #f59e0b25, transparent 70%), #0c0a07 !important;
+}
