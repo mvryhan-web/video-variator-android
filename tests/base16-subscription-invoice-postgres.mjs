@@ -17,6 +17,7 @@ const invoice=(change={})=>({
  type:'invoice.paid',livemode:false,data:{object:{
   id:'in_fixture1',status:'paid',paid:true,livemode:false,billing_reason:'subscription_cycle',
   amount_paid:900,currency:'eur',payment_intent:'pi_invoicefixture1',subscription:'sub_fixture1',customer:'cus_fixture1',
+  total_taxes:[],
   lines:{has_more:false,data:[{price:{id:'price_subfixture'},quantity:1}]},
   ...change
  }}
@@ -73,8 +74,12 @@ test('BASE #16: a signed, paid invoice grants once per invoice on disposable Pos
   await pool.query('INSERT INTO vv_users(id,plan,stripe_customer_id,stripe_subscription_id,subscription_status) VALUES($1,$2,$3,$4,$5)',
    [user.id,user.plan,user.stripe_customer_id,user.stripe_subscription_id,user.subscription_status]);
   const sample=invoice();
+  const stripe={paymentIntents:{async retrieve(id){const suffix=id.slice(3).replace(/[^A-Za-z0-9]/g,'');const chargeId='ch_'+suffix,txnId='txn_'+suffix;
+   return {id,status:'succeeded',livemode:false,amount_received:900,currency:'eur',latest_charge:{
+    id:chargeId,payment_intent:id,paid:true,captured:true,disputed:false,refunded:false,amount_refunded:0,livemode:false,currency:'eur',amount_captured:900,
+    balance_transaction:{id:txnId,source:chargeId,type:'charge',currency:'eur',amount:900,fee:30,net:870}}};}}};
   const installed=installGenerationBilling({get(){},post(){},use(){}},{
-   auth:()=>{},pool,stripe:{},appUrl:'https://example.invalid',env
+   auth:()=>{},pool,stripe,appUrl:'https://example.invalid',env
   });
   // Signed webhook verification lives in server.js before this handler.
   const off=await grantPaidSubscriptionInvoice({event:sample,env:{},pool:{query(){dbChecks++;throw Error('NOT_NEEDED');}},wallet});
@@ -113,9 +118,10 @@ test('BASE #16: a signed, paid invoice grants once per invoice on disposable Pos
   assert.equal((await wallet.balance(user.id)).available,240);
   assert.equal((await wallet.history(user.id)).length,2);
 
+  let refundSeq=0;
   const refund=(paymentIntent,cumulative)=>({
-   type:'charge.refunded',livemode:false,data:{object:{
-    livemode:false,payment_intent:paymentIntent,amount_refunded:cumulative
+   id:'evt_refund'+(++refundSeq),type:'charge.refunded',livemode:false,data:{object:{
+    id:'ch_'+paymentIntent.slice(3),livemode:false,payment_intent:paymentIntent,amount_refunded:cumulative
    }}
   });
   // Pack checkout remains disabled; signed subscription invoice refunds are

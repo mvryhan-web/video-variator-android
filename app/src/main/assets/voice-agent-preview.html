@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#0b0f1c">
+  <title>Voice Agent Preview · Deepsyq</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0f1c;
+      --surface: #131a2e;
+      --border: rgba(255, 255, 255, 0.12);
+      --text: #f3f6ff;
+      --muted: #9aa6c7;
+      --accent: #6c8cff;
+      --live: #2fd686;
+      --warn: #f5b942;
+      --danger: #ff647c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at top, #17213d 0%, var(--bg) 65%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    main {
+      width: 100%;
+      max-width: 560px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+    }
+    .preview-badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(245, 185, 66, 0.16);
+      color: var(--warn);
+      border: 1px solid rgba(245, 185, 66, 0.38);
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      line-height: 1.25;
+    }
+    .subtitle {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .state-card {
+      padding: 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .state-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .state-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .state-pill[data-state="LIVE"] {
+      background: rgba(47, 214, 134, 0.18);
+      color: var(--live);
+    }
+    .state-pill[data-state="MUTED"] {
+      background: rgba(245, 185, 66, 0.18);
+      color: var(--warn);
+    }
+    .state-pill[data-state="PERMISSION_DENIED"],
+    .state-pill[data-state="DEVICE_MISSING"],
+    .state-pill[data-state="ERROR"] {
+      background: rgba(255, 100, 124, 0.18);
+      color: var(--danger);
+    }
+    #voiceStatusText {
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    #voiceErrorText {
+      margin: 8px 0 0;
+      font-size: 13px;
+      color: var(--danger);
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .secondary-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    button {
+      appearance: none;
+      font: inherit;
+      font-weight: 600;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s ease, opacity 0.15s ease;
+    }
+    button:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.12);
+    }
+    button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    #enableMicBtn {
+      background: var(--accent);
+      border-color: transparent;
+      color: #fff;
+      font-size: 16px;
+      padding: 14px 18px;
+    }
+    #enableMicBtn:hover:not(:disabled) {
+      background: #5879f5;
+    }
+    #stopMicBtn:not(:disabled) {
+      border-color: rgba(255, 100, 124, 0.45);
+      color: var(--danger);
+    }
+    .mock-transcript-box {
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+    .mock-transcript-box label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .mock-row {
+      display: flex;
+      gap: 8px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.25);
+      color: var(--text);
+      font: inherit;
+    }
+    #mockTranscriptOutput {
+      margin: 10px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 20px;
+    }
+    .privacy-note {
+      margin: 16px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    @media (max-width: 480px) {
+      main { padding: 18px; }
+      .secondary-controls { grid-template-columns: 1fr; }
+      .mock-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main id="voicePreviewRoot" aria-labelledby="voicePreviewTitle">
+    <span class="preview-badge" id="previewOnlyBadge">Preview Only · Not connected to AI</span>
+    <h1 id="voicePreviewTitle">Voice Agent Microphone Check</h1>
+    <p class="subtitle">
+      Explicit opt-in local microphone state preview. No audio is recorded, uploaded, or sent to any AI provider.
+    </p>
+
+    <section class="state-card" aria-label="Microphone status">
+      <div class="state-row">
+        <span>Status</span>
+        <span id="voiceStateBadge" class="state-pill" data-state="IDLE">IDLE</span>
+      </div>
+      <p id="voiceStatusText" role="status" aria-live="polite">
+        Microphone is off. Click "Enable microphone" to request local access.
+      </p>
+      <p id="voiceErrorText" role="alert" hidden></p>
+    </section>
+
+    <div class="controls">
+      <button id="enableMicBtn" type="button">Enable microphone</button>
+      <div class="secondary-controls">
+        <button id="muteMicBtn" type="button" disabled>Mute</button>
+        <button id="stopMicBtn" type="button" disabled>Stop / End</button>
+      </div>
+    </div>
+
+    <section class="mock-transcript-box" aria-labelledby="mockTranscriptLabel">
+      <label id="mockTranscriptLabel" for="mockTranscriptInput">
+        Local note (mock preview only — never transmitted)
+      </label>
+      <div class="mock-row">
+        <input id="mockTranscriptInput" type="text" maxlength="200" autocomplete="off" placeholder="Type a local preview phrase…">
+        <button id="mockTranscriptBtn" type="button">Preview text</button>
+      </div>
+      <p id="mockTranscriptOutput" aria-live="polite"></p>
+    </section>
+
+    <p class="privacy-note">
+      Microphone tracks stop automatically when you click Stop / End, hide this tab, or leave the page.
+    </p>
+  </main>
+
+  <script type="module">
+    import { VoiceAgentController, VOICE_AGENT_STATES } from './voice-agent-controller.js';
+
+    export function initVoiceAgentPreview(options = {}) {
+      const doc = options.document || document;
+      const win = options.window || window;
+      const enableBtn = doc.getElementById('enableMicBtn');
+      const muteBtn = doc.getElementById('muteMicBtn');
+      const stopBtn = doc.getElementById('stopMicBtn');
+      const stateBadge = doc.getElementById('voiceStateBadge');
+      const statusText = doc.getElementById('voiceStatusText');
+      const errorText = doc.getElementById('voiceErrorText');
+      const mockInput = doc.getElementById('mockTranscriptInput');
+      const mockBtn = doc.getElementById('mockTranscriptBtn');
+      const mockOutput = doc.getElementById('mockTranscriptOutput');
+
+      const adapter = options.mediaAdapter || win.__VOICE_PREVIEW_MEDIA_ADAPTER__ || null;
+      const accountId = options.accountId ?? (typeof localStorage !== 'undefined' ? localStorage.getItem('vv_token') : null);
+      const controller = new VoiceAgentController({ mediaAdapter: adapter, accountId });
+
+      const STATUS_DESCRIPTIONS = {
+        [VOICE_AGENT_STATES.IDLE]: 'Microphone is off. Click "Enable microphone" to request local access.',
+        [VOICE_AGENT_STATES.REQUESTING]: 'Requesting microphone permission…',
+        [VOICE_AGENT_STATES.LIVE]: 'Microphone is live locally (preview only, no audio leaves your device).',
+        [VOICE_AGENT_STATES.MUTED]: 'Microphone is muted locally.',
+        [VOICE_AGENT_STATES.PERMISSION_DENIED]: 'Microphone permission was denied. Allow access in your browser settings to try again.',
+        [VOICE_AGENT_STATES.DEVICE_MISSING]: 'No working microphone device or media adapter was found on this device.',
+        [VOICE_AGENT_STATES.ERROR]: 'Could not start microphone preview. Please try again.'
+      };
+
+      function render(status) {
+        const st = status.state;
+        stateBadge.textContent = st;
+        stateBadge.setAttribute('data-state', st);
+        statusText.textContent = STATUS_DESCRIPTIONS[st] || STATUS_DESCRIPTIONS[VOICE_AGENT_STATES.IDLE];
+
+        if (status.error) {
+          errorText.hidden = false;
+          errorText.textContent = status.error;
+        } else {
+          errorText.hidden = true;
+          errorText.textContent = '';
+        }
+
+        const busyOrActive =
+          st === VOICE_AGENT_STATES.REQUESTING ||
+          st === VOICE_AGENT_STATES.LIVE ||
+          st === VOICE_AGENT_STATES.MUTED;
+
+        enableBtn.disabled = busyOrActive;
+        muteBtn.disabled = !(st === VOICE_AGENT_STATES.LIVE || st === VOICE_AGENT_STATES.MUTED);
+        muteBtn.textContent = st === VOICE_AGENT_STATES.MUTED ? 'Unmute' : 'Mute';
+        stopBtn.disabled = !busyOrActive;
+      }
+
+      controller.subscribe(render);
+
+      enableBtn.addEventListener('click', () => {
+        void controller.requestMicrophone();
+      });
+
+      muteBtn.addEventListener('click', () => {
+        controller.toggleMute();
+      });
+
+      stopBtn.addEventListener('click', () => {
+        controller.stopMicrophone();
+      });
+
+      mockBtn.addEventListener('click', () => {
+        const formatted = controller.formatPreviewTranscript(mockInput.value);
+        mockOutput.textContent = formatted.text
+          ? `[${formatted.label}] ${formatted.text}`
+          : '';
+      });
+
+      return controller;
+    }
+
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      window.__voicePreviewController = initVoiceAgentPreview();
+    }
+  </script>
+</body>
+</html>

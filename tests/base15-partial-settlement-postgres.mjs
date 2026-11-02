@@ -5,6 +5,8 @@ import pg from 'pg';
 import {GenerationWallet} from '../server/generation-wallet.js';
 
 const db=process.env.AI_TEST_DATABASE_URL;
+let refundSeq=0;
+const refundProof=()=>({eventId:'evt_test'+(++refundSeq),chargeId:'ch_fixture',livemode:false});
 
 test('BASE #15: partial capture is atomic, debt-first and retry-safe in real isolated PostgreSQL',{skip:!db},async t=>{
  const dbUrl=new URL(db);
@@ -59,7 +61,7 @@ test('BASE #15: partial capture is atomic, debt-first and retry-safe in real iso
   await t.test('a refunded checkout cannot turn unused reserved credits into spending power',async()=>{
    const u=await grant('debt'),job=reserve(u,'debt',80);
    await wallet.reserve(job); // available 20, reserved 80
-   await wallet.refund(prefix+'-pi-debt',90); // debt 70, available 0
+   await wallet.refund(prefix+'-pi-debt',90,refundProof()); // debt 70, available 0
    assert.deepEqual(await wallet.balance(u),{available:0,reserved:80,debt:70});
    const charged=await wallet.settle({userId:u,jobId:job.jobId,outcome:'success',actualCredits:20});
    assert.equal(charged.capturedCredits,20);

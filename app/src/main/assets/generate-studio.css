@@ -123,3 +123,14 @@ body.image-studio .composer{position:sticky;bottom:12px;margin-top:auto;z-index:
  body.image-studio .stage{min-height:clamp(220px,34svh,420px);padding:10px 0}
  body.image-studio .composer{position:sticky;bottom:max(8px,env(safe-area-inset-bottom));padding-bottom:calc(14px + env(safe-area-inset-bottom))}
 }
+
+
+/* BASE §8: large, legible explicit equivalent-model choices before paid submit. */
+.fallback-section{display:grid;gap:10px;margin:14px 0 4px}
+#fallbackButton{min-height:44px;padding:10px 14px;font-size:15px;border-radius:10px}
+.fallback-choices{display:grid;gap:10px;font-size:15px;line-height:1.5;color:#f1edf9}
+.fallback-choices[hidden]{display:none!important}
+.fallback-option{display:flex;align-items:center;justify-content:space-between;text-align:left;gap:12px;min-height:52px;padding:12px 14px;border:1px solid #576889;border-radius:12px;background:#202637;color:#f4f5fb;font-size:15px}
+.fallback-option strong{font-size:15px}
+.fallback-option span{font-size:14px;color:#cee2f3}
+@media(max-width:460px){.fallback-option{flex-direction:column;align-items:flex-start}}

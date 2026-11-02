@@ -50,7 +50,7 @@ test('P0 #182 confirmed, sufficient, atomically claimed purchased reservation qu
  let calls=0;
  const receipt=await authorize(params({verifyPurchasedReservation:async expected=>{
   calls++;assert.deepEqual(expected,{userId:user.id,jobId:job.id,kind:'video',
-   modelId:model.id,provider:'Google',requestFingerprint:request.fingerprint,credits:60});
+   modelId:model.id,provider:'Google',requestFingerprint:request.fingerprint,credits:60,providerCostMicros:quote.providerCostMicros,currency:quote.currency});
   return proof;
  }}));
  assert.equal(calls,1);assert.equal(receipt.authorized,true);

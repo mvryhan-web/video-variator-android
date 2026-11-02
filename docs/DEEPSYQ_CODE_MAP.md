@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `6ce1c33e30645d947f76aa24a957d29852d557b6`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` | Indexed files: 55 | Named symbols: 154 | Checked relations: 50
+Source commit: `c23cfa47783021a047da015b8349361d2f4d9315`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` | Indexed files: 58 | Named symbols: 160 | Checked relations: 50
 
 ## Topic finder (matching filenames)
 
@@ -12,8 +12,8 @@ Scope: `server/` | Indexed files: 55 | Named symbols: 154 | Checked relations: 5
 - **Video, providers and jobs:** `server/compare-ai-mock-worker.js`, `server/generation-provider.js`, `server/generation-purchased-provider-boundary.js`, `server/generation-storage.js`, `server/generation-video-submit-uncertainty.js`, `server/generation-worker.js`, `server/product-watcher/worker.js`, `server/telegram-video-core.js`, `server/telegram-video.js`
 - **Image, Canvas and Home:** `server/deepsyq-preview.js`, `server/generation-openai-image.js`
 - **Audio and voice:** `server/speech.js`
-- **AI Apps, Inspiration, History:** `server/generation-inspiration.js`, `server/tool-policy.js`, `server/workspace-job-view.js`, `server/workspace-project-policy.js`
-- **Accounts and security:** `server/email-auth.js`, `server/generation-trial-policy.js`, `server/product-watcher/scheduler-state-policy.js`, `server/tool-policy.js`, `server/user-agent-plan.js`, `server/user-agent-stage1-local-draft.js`, `server/workspace-project-policy.js`
+- **AI Apps, Inspiration, History:** `server/generation-inspiration.js`, `server/tool-policy.js`, `server/workspace-card-sections.js`, `server/workspace-job-view.js`, `server/workspace-project-policy.js`
+- **Accounts and security:** `server/email-auth.js`, `server/generation-trial-policy.js`, `server/product-watcher/lite-delivery-policy.js`, `server/product-watcher/scheduler-state-policy.js`, `server/tool-policy.js`, `server/user-agent-plan.js`, `server/user-agent-stage1-local-draft.js`, `server/workspace-project-policy.js`
 
 ## Source symbol map
 
@@ -52,6 +52,10 @@ IDS (L4) · VIDEO_MODELS (L18) · FORMAT_MODELS (L19) · SIZES (L20)
 ### `server/generation-consent.js`
 
 GENERATION_CONSENT_VERSION (L6)
+
+### `server/generation-dispute-quarantine.js`
+
+disputeQuarantineSchema (L17)
 
 ### `server/generation-errors.js`
 
@@ -107,7 +111,7 @@ MIME_EXT (L5)
 
 ### `server/generation-subscription-credits.js`
 
-PLANS (L4) · PRICE_KEYS (L5)
+PLANS (L5) · PRICE_KEYS (L6)
 
 ### `server/generation-templates.js`
 
@@ -123,7 +127,7 @@ VIDEO_SUBMISSION_UNCERTAIN (L6)
 
 ### `server/generation-wallet.js`
 
-MAX_CREDITS (L3) · GenerationWallet (L12)
+MAX_CREDITS (L4) · GenerationWallet (L13)
 
 ### `server/generation-worker.js`
 
@@ -148,6 +152,10 @@ briefs.js (L1) · LOCK (L2)
 ### `server/product-watcher/content-tasks.js`
 
 LOCK (L5)
+
+### `server/product-watcher/lite-delivery-policy.js`
+
+LITE_DELIVERY_STATUSES (L4) · LITE_DELIVERY_READINESS (L8) · LITE_DELIVERY_REASON_CODES (L13)
 
 ### `server/product-watcher/lite-email-draft.js`
 
@@ -191,7 +199,7 @@ reminders.js (L1) · validFrequency (L12) · validChannel (L13) · leads (L14)
 
 ### `server/server.js`
 
-server.js (L1) · app (L26) · port (L26) · __dirname (L28) · rootDir (L29) · staticDir (L30) · ffmpegDist (L31) · ffmpegCoreDist (L32) · appUrl (L34) · googleJwks (L39) · appleJwks (L39) · plans (L40) · registerTelegramWebhook (L136) · generationBilling (L183) · generationStudio (L187)
+server.js (L1) · app (L26) · port (L26) · __dirname (L28) · rootDir (L29) · staticDir (L30) · ffmpegDist (L31) · ffmpegCoreDist (L32) · appUrl (L35) · googleJwks (L40) · appleJwks (L40) · plans (L41) · registerTelegramWebhook (L137) · generationBilling (L184) · generationStudio (L188)
 
 ### `server/speech.js`
 
@@ -228,6 +236,10 @@ AUTHORIZED_CAPABILITIES (L16) · GOAL_TEMPLATES (L103)
 ### `server/user-agent-stage1-local-draft.js`
 
 WORKFLOWS (L15)
+
+### `server/workspace-card-sections.js`
+
+ALLOWED_TYPES (L27) · ALLOWED_STATUSES (L28)
 
 ### `server/workspace-job-view.js`
 

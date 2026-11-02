@@ -1,3 +1,19 @@
+## OWNER OVERRIDE — 2026-11-02 — SINGLE-CHAT TEAM, NO ACTIVE LEGACY CHAT AGENTS
+
+**Новый действующий состав DEEPSYQ (распоряжение владельца 02.11.2026):**
+
+- **P — главный координатор ChatGPT (ранее координатор №5, Issue #233).** Единая точка управления BASE 54, claims, GitHub, разработкой/проверкой, распределением и приёмкой; владелец проекта утверждает решения.
+- **Администратор — действующий технический исполнитель**, сохраняет свою работу и полномочия в разрешённых границах.
+- **Antigravity — отдельный исполнитель для сложного программирования**, только назначенные непересекающиеся изменения.
+- **Google Jules 1/2/3 — отдельные временные исполнители уже согласованных задач**; последний owner-approved срок продолжения Jules до 11.11.2026, без дублей и несанкционированных новых задач.
+- **Четыре прежние ChatGPT-роли A, B, C, D упразднены.** Их больше не считать активными исполнителями, владельцами claims, обязательными ревьюерами, согласующими или адресатами новых заданий. Старые распределения по буквам и правила D16 о самостоятельном слиянии этих ролей **заменены настоящим решением**; старые материалы ниже — только исторические свидетельства.
+- **Не удалять, не откатывать и не переписывать код, тесты, ветки, PR, merge SHA, комментарии, handoff и историю этих ролей.** Сохранить незавершённые PR как задачи проекта, а не как активных агентов. P через Issue #233 фиксирует новые claims и распределяет свободные задачи между P, администратором и Antigravity с учётом существующей работы Jules.
+- **Не отменять независимые security/financial peer gates**: автору рискованной финансовой реализации нужен действительно независимый от него проверяющий, но это больше не назначение прежней чат-роли D. Никакого самоподтверждения критичных изменений.
+- **Остаются действующими** ограничения на изменения `main`/production, живой Stripe, платный AI, миграции, утверждённый Home, модельные права, credits и отсутствие дублирования PR. Новый порядок ролей не разрешает production release.
+- **История в этом и других документах не удаляется**: при противоречии более ранних описаний ролей применять это распоряжение и соответствующее решение в `DECISIONS.md`.
+
+---
+
 ## OWNER RULE — 30 OCT 2026 — JULES FINISH CURRENT TASK TO VERIFIED READY
 
 **For Google Jules #1/#2/#3 on the already-dispatched issues [#316](https://github.com/mvryhan-web/video-variator-android/issues/316), [#317](https://github.com/mvryhan-web/video-variator-android/issues/317), and [#278](https://github.com/mvryhan-web/video-variator-android/issues/278):** Finish the **same** bounded task to a genuine Jules **READY** / final completion report, reviewable branch/DRAFT PR targeting `deepsyq-platform`, exact SHA, file list, and zero-spend tests. **An ACK, a plan, generated code without verification, or partial files are NOT READY.** Reuse all already completed work; finish the originally approved two files only per issue; fix reproducible defects and retry permitted free tests as needed. Never stop silently while an actionable step remains.

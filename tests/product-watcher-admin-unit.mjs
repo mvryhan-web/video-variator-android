@@ -67,7 +67,9 @@ test('strict owner policy refuses email sign-in and empty ADMIN_EMAIL',()=>{
 
 test('ALL owner endpoints fail closed for anonymous, impersonating and missing-id callers',async()=>{
  const {call,pool,routes}=fixture();
- assert.equal(routes.size,11);
+ // Lite delivery readiness adds one owner-only route; keep the entire route set covered.
+ assert.equal(routes.size,12);
+ assert.ok(routes.has('POST /api/product-watcher/admin/lite-delivery-readiness'));
  for(const key of routes.keys()){
   const space=key.indexOf(' '),method=key.slice(0,space),path=key.slice(space+1);
   for(const user of [

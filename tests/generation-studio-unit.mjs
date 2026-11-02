@@ -1,4 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
+import {d18PricingJson} from './d18-pricing-fixture.mjs';
 import {dispatchGeneration,studioConfig} from '../server/generation-studio.js';
 import {validateGeneration,generateGoogle,pollGoogle,safeGoogleUrl} from '../server/generation-provider.js';
 const request={kind:'video',prompt:'Ocean at sunset',ratio:'16:9',consent:true,references:[]};
@@ -156,7 +157,7 @@ test('owner mixed wallet balance cannot reserve or call a paid model without ver
  const env={AI_STUDIO_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',
   AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_STUDIO_MAX_CALLS:'3',
   AI_STUDIO_ALLOWED_KINDS:'image',GEMINI_API_KEY:'fixture-only',DATABASE_URL:'fixture',
-  ADMIN_EMAIL:'owner@example.test',AI_MODEL_PRICING_JSON:JSON.stringify([
+  ADMIN_EMAIL:'owner@example.test',AI_MODEL_PRICING_JSON:d18PricingJson([
    {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:7,providerCostMicros:1200,currency:'usd'}])};
  const wallet={async reserve(){reserves++},purchasedDispatchVerifier:()=>async()=>{claims++}};
  const pool={async query(sql){if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};throw Error(sql)}};
@@ -243,7 +244,7 @@ test('owner read-only analytics omit auth and Stripe secrets',async()=>{
 
 test('pricing estimate does not upload prompt or reference bytes',async()=>{
  const pool={async query(sql){if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};throw new Error(sql);}};
- const env={AI_STUDIO_ENABLED:'true',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',GEMINI_API_KEY:'fixture',DATABASE_URL:'fixture',ADMIN_EMAIL:'owner@example.test',AI_MODEL_PRICING_JSON:JSON.stringify([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:9,providerCostMicros:1200,currency:'usd',ratio:'1:1'}])};
+ const env={AI_STUDIO_ENABLED:'true',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',GEMINI_API_KEY:'fixture',DATABASE_URL:'fixture',ADMIN_EMAIL:'owner@example.test',AI_MODEL_PRICING_JSON:d18PricingJson([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:9,providerCostMicros:1200,currency:'usd',ratio:'1:1'}])};
  const app=express();app.use(express.json());installGenerationStudio(app,{env,pool,auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});
  const server=app.listen(0);await new Promise(r=>server.once('listening',r));const base=`http://127.0.0.1:${server.address().port}`;
  try{const r=await fetch(base+'/api/studio/estimate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'image',model:'gemini-3.1-flash-image',ratio:'1:1',referenceCount:0})});assert.equal(r.status,200);const d=await r.json();assert.equal(d.credits,9);assert.equal(d.model,'gemini-3.1-flash-image');}
@@ -253,7 +254,7 @@ test('pricing estimate does not upload prompt or reference bytes',async()=>{
 
 test('Studio access endpoint reports configured plan limits without inventing defaults',async()=>{
  const pool={async query(sql){if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};throw new Error(sql);}};
- const env={AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',AI_MODEL_PRICING_JSON:JSON.stringify([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:5,providerCostMicros:1000,currency:'usd'}]),AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:12}])};
+ const env={AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',AI_MODEL_PRICING_JSON:d18PricingJson([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:5,providerCostMicros:1000,currency:'usd'}]),AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:12}])};
  const wallet={};
  const app=express();installGenerationStudio(app,{env,pool,wallet,auth:(req,_res,next)=>{req.user={id:'u1',provider:'email',plan:'basic',subscription_status:'active'};next();}});
  const server=app.listen(0);await new Promise(r=>server.once('listening',r));try{const base=`http://127.0.0.1:${server.address().port}`;const r=await fetch(base+'/api/studio/access');assert.equal(r.status,200);const d=await r.json();assert.equal(d.allowed,true);assert.equal(d.maxConcurrent,2);assert.equal(d.maxPerHour,12);assert.equal(d.plan,'basic');}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
@@ -266,7 +267,7 @@ test('Studio access endpoint reports live usage counters when database is availa
   if(sql.startsWith("SELECT COUNT(*) FILTER")){assert.equal(args[0],'u1');return {rows:[{active:1,hourly:4}]};}
   throw new Error(sql);
  }};
- const env={AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',AI_MODEL_PRICING_JSON:JSON.stringify([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:5,providerCostMicros:1000,currency:'usd'}]),AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:12}])};
+ const env={AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',AI_MODEL_PRICING_JSON:d18PricingJson([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:5,providerCostMicros:1000,currency:'usd'}]),AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:12}])};
  const app=express();installGenerationStudio(app,{env,pool,wallet:{},auth:(req,_res,next)=>{req.user={id:'u1',provider:'email',plan:'basic',subscription_status:'active'};next();}});
  const server=app.listen(0);await new Promise(r=>server.once('listening',r));try{const base=`http://127.0.0.1:${server.address().port}`;const d=await fetch(base+'/api/studio/access').then(r=>r.json());assert.equal(d.activeJobs,1);assert.equal(d.jobsThisHour,4);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
@@ -287,7 +288,7 @@ test('single paid generation requires the exact server quote before DB, reserve 
   AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true',AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',
   GEMINI_API_KEY:'fixture-only',DATABASE_URL:'fixture-only',ADMIN_EMAIL:'owner@example.test',
   AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:1,maxPerHour:5}]),
-  AI_MODEL_PRICING_JSON:JSON.stringify([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:9,providerCostMicros:1200,currency:'usd',ratio:'1:1'}])};
+  AI_MODEL_PRICING_JSON:d18PricingJson([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:9,providerCostMicros:1200,currency:'usd',ratio:'1:1'}])};
  const pool={async query(){dbCalls++;throw Error('DB must not be touched before quote acceptance');},async connect(){dbCalls++;throw Error('DB must not be touched before quote acceptance');}};
  const wallet={async reserve(){reserves++;},purchasedDispatchVerifier:()=>async()=>{}};
  const app=express();app.use(express.json());installGenerationStudio(app,{env,pool,wallet,
@@ -304,4 +305,248 @@ test('single paid generation requires the exact server quote before DB, reserve 
   }
   assert.equal(dbCalls,0);assert.equal(reserves,0);assert.equal(calls,0);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});
+
+
+test('BASE8 signed-in read-only alternative selection respects approved equivalent price and never calls providers',async()=>{
+ const {default:express}=await import('express');
+ const baseEnv={AI_STUDIO_ENABLED:'true',DATABASE_URL:'offline-fixture',ADMIN_EMAIL:'owner@example.test',
+  AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',AI_SMART_ROUTING_ENABLED:'true',
+  AI_STUDIO_ALLOWED_MODELS:'gpt-image-2.5-flare',GEMINI_API_KEY:'offline-google-key',OPENAI_API_KEY:'offline-openai-key'};
+ const prices=(alternativeCredits=7)=>JSON.stringify([
+  {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:7,providerCostMicros:4000,currency:'usd'},
+  {model:'gpt-image-2.5-flare',provider:'OpenAI',kind:'image',credits:alternativeCredits,providerCostMicros:3000,currency:'usd'}]);
+ let providerCalls=0,dbCalls=0;
+ const start=async env=>{
+  const app=express();app.use(express.json());
+  const auth=(req,res,next)=>{if(req.headers.authorization!=='Bearer offline-owner')return res.sendStatus(401);
+   req.user={id:'owner',email:'owner@example.test',provider:'google'};next();};
+  installGenerationStudio(app,{env,pool:{query:async()=>{dbCalls++;throw Error('NO_DB_REQUIRED');}},auth,
+   provider:async()=>{providerCalls++;throw Error('NO_PROVIDER_REQUIRED');}});
+  const server=app.listen(0,'127.0.0.1');await new Promise(ok=>server.once('listening',ok));
+  return {url:'http://127.0.0.1:'+server.address().port,close:()=>new Promise(ok=>server.close(ok))};
+ };
+ const input={kind:'image',model:'gemini-3.1-flash-image',ratio:'1:1',resolution:'1K',outputFormat:'auto',referenceCount:0};
+ for(const [credits,expected] of [[7,1],[8,0]]){
+  const s=await start({...baseEnv,AI_MODEL_PRICING_JSON:prices(credits)});
+  try{
+   const denied=await fetch(s.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
+   assert.equal(denied.status,401);
+   const res=await fetch(s.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer offline-owner'},body:JSON.stringify(input)});
+   assert.equal(res.status,200);const data=await res.json();
+   assert.equal(data.model,input.model);assert.equal(data.alternatives.length,expected);
+   if(expected)assert.deepEqual(data.alternatives[0],{model:'gpt-image-2.5-flare',credits:7,currency:'usd'});
+   assert.ok(!JSON.stringify(data).includes('providerCostMicros'));
+   const validPrimaryOnly=await fetch(s.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer offline-owner'},body:JSON.stringify({...input,resolution:'4K'})});
+   assert.equal(validPrimaryOnly.status,200);
+   assert.deepEqual((await validPrimaryOnly.json()).alternatives,[],'4K is valid on primary but incompatible with the 1K backup');
+   const invalid=await fetch(s.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer offline-owner'},body:JSON.stringify({...input,resolution:'8K'})});
+   assert.equal(invalid.status,400);
+  }finally{await s.close();}
+ }
+ const disabled=await start({...baseEnv,AI_SMART_ROUTING_ENABLED:'false',AI_MODEL_PRICING_JSON:prices()});
+ try{
+  const res=await fetch(disabled.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer offline-owner'},body:JSON.stringify(input)});
+  assert.equal(res.status,503);
+ }finally{await disabled.close();}
+ assert.equal(dbCalls,0);assert.equal(providerCalls,0);
+});
+
+// Guard BASE §8 against advertising a text-only Image adapter for existing photos.
+// Actual authenticated HTTP, approved price parity, zero real AI/DB/wallet calls.
+test('BASE8 image referenceCount is kept for strict fallback compatibility (2 photos)',async()=>{
+ const env={AI_STUDIO_ENABLED:'true',DATABASE_URL:'offline-fixture',ADMIN_EMAIL:'owner@example.test',
+  AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',AI_SMART_ROUTING_ENABLED:'true',
+  AI_STUDIO_ALLOWED_MODELS:'byteplus-seedream-3',
+  GEMINI_API_KEY:'offline-google-key',BYTEPLUS_API_KEY:'offline-byteplus-key',
+  AI_MODEL_PRICING_JSON:JSON.stringify([
+   {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',quality:'2K',credits:7,providerCostMicros:4000,currency:'usd'},
+   {model:'byteplus-seedream-3',provider:'BytePlus',kind:'image',credits:7,providerCostMicros:3000,currency:'usd'}
+  ])};
+ let dbCalls=0,providerCalls=0;
+ const app=express();app.use(express.json());
+ installGenerationStudio(app,{env,pool:{query:async()=>{dbCalls++;throw Error('UNEXPECTED_DB');}},
+  auth:(req,res,next)=>{if(req.headers.authorization!=='Bearer offline-owner')return res.sendStatus(401);
+   req.user={id:'owner',email:'owner@example.test',provider:'google'};next();},
+  provider:async()=>{providerCalls++;throw Error('UNEXPECTED_PAID_PROVIDER');}});
+ const server=app.listen(0,'127.0.0.1');await new Promise(ok=>server.once('listening',ok));
+ try{
+  const url='http://127.0.0.1:'+server.address().port+'/api/studio/alternatives';
+  const input={kind:'image',model:'gemini-3.1-flash-image',ratio:'1:1',resolution:'2K',outputFormat:'auto'};
+  const headers={'Content-Type':'application/json',Authorization:'Bearer offline-owner'};
+  const lookup=async count=>{
+   const response=await fetch(url,{method:'POST',headers,body:JSON.stringify({...input,referenceCount:count})});
+   assert.equal(response.status,200);return response.json();
+  };
+  const zero=await lookup(0);
+  assert.deepEqual(zero.alternatives,[{model:'byteplus-seedream-3',credits:7,currency:'usd'}],
+   'approved cross-provider equal-price text-only model remains eligible for text input');
+  const two=await lookup(2);
+  assert.deepEqual(two.alternatives,[],
+   'text-only BytePlus fallback MUST NOT be advertised for two image references');
+  assert.equal(two.reason,'NO_APPROVED_EQUIVALENT');
+  assert.equal(dbCalls,0);assert.equal(providerCalls,0);
+ }finally{server.closeAllConnections();await new Promise(ok=>server.close(ok));}
+});
+
+test('BASE51 dispatchGeneration enforces purchased-only gate for Google and BytePlus when enabled',async()=>{
+ const googleReq=validateGeneration({kind:'image',model:'gemini-3.1-flash-image',prompt:'Test',ratio:'1:1',consent:true});
+ const byteplusReq=validateGeneration({kind:'image',model:'byteplus-seedream-3',prompt:'Test',ratio:'1:1',consent:true});
+ let calls=0;
+ const fetcher=async()=>{calls++;throw Error('PROVIDER_MUST_NOT_RUN');};
+ await assert.rejects(()=>dispatchGeneration(googleReq,{env:{GEMINI_API_KEY:'fixture',AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true'},fetcher}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+ await assert.rejects(()=>dispatchGeneration(byteplusReq,{env:{BYTEPLUS_API_KEY:'fixture',AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true'},fetcher}),/AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
+ assert.equal(calls,0);
+});
+
+test('BASE7 F1 smart decision engine attaches publicDecisionView when AI_SMART_DECISION_ENABLED=true',async()=>{
+ const env={AI_STUDIO_ENABLED:'true',DATABASE_URL:'fixture',ADMIN_EMAIL:'owner@example.test',
+  AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',AI_SMART_ROUTING_ENABLED:'true',
+  AI_SMART_DECISION_ENABLED:'true',AI_STUDIO_ALLOWED_MODELS:'byteplus-seedream-3',
+  GEMINI_API_KEY:'fixture',BYTEPLUS_API_KEY:'fixture',
+  AI_MODEL_PRICING_JSON:d18PricingJson([
+   {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:9,providerCostMicros:2000,currency:'usd'},
+   {model:'byteplus-seedream-3',provider:'BytePlus',kind:'image',credits:6,providerCostMicros:1200,currency:'usd'}
+  ])};
+ const app=express();app.use(express.json());
+ installGenerationStudio(app,{env,pool:{query:async()=>({rows:[]})},
+  auth:(req,_res,next)=>{req.user={id:'owner',email:'owner@example.test',provider:'google'};next();}});
+ const server=app.listen(0,'127.0.0.1');await new Promise(ok=>server.once('listening',ok));
+ try{
+  const base='http://127.0.0.1:'+server.address().port;
+  const est=await fetch(base+'/api/studio/estimate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'image',model:'smart',ratio:'1:1',referenceCount:0})});
+  assert.equal(est.status,200);
+  const data=await est.json();
+  assert.equal(data.routing.smart,true);
+  assert.equal(data.routing.decision?.state,'SELECTED');
+  assert.ok(data.routing.decision?.decisionId);
+ }finally{server.closeAllConnections();await new Promise(ok=>server.close(ok));}
+});
+
+test('BASE25 GET /api/studio/workspace/cards returns account-isolated W4.2/W4.3 card sections',async()=>{
+ const nowIso=new Date(Date.now()-5000).toISOString();
+ const pool={async query(sql,args=[]){
+  if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};
+  if(sql.startsWith('SELECT id,user_id,kind,status,output_assets,metadata,created_at FROM vv_generation_jobs')){
+   assert.equal(args[0],'u-cards');
+   return {rows:[
+    {id:'job_done_1',user_id:'u-cards',kind:'image',status:'ready',output_assets:[{storage:'s3',key:'priv/k1'}],metadata:{workspace:{title:'My Hero Banner',isFavorite:true}},created_at:nowIso},
+    {id:'job_arch_1',user_id:'u-cards',kind:'image',status:'ready',output_assets:[],metadata:{workspace:{archived:true}},created_at:nowIso},
+    {id:'job_foreign_1',user_id:'other-user',kind:'video',status:'ready',output_assets:[{storage:'s3',key:'priv/k2'}],metadata:{workspace:{isFavorite:true}},created_at:nowIso}
+   ]};
+  }
+  throw Error(sql);
+ }};
+ const env={AI_STUDIO_ENABLED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',
+  AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',GEMINI_API_KEY:'fixture',DATABASE_URL:'fixture',
+  ADMIN_EMAIL:'owner@example.test',
+  AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:10}]),
+  AI_MODEL_PRICING_JSON:d18PricingJson([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:5,providerCostMicros:1000,currency:'usd'}])};
+ const app=express();
+ installGenerationStudio(app,{env,pool,wallet:{},auth:(req,_res,next)=>{req.user={id:'u-cards',provider:'email',plan:'basic',subscription_status:'active'};next();}});
+ const server=app.listen(0,'127.0.0.1');await new Promise(ok=>server.once('listening',ok));
+ try{
+  const res=await fetch('http://127.0.0.1:'+server.address().port+'/api/studio/workspace/cards');
+  assert.equal(res.status,200);
+  const body=await res.json();
+  assert.equal(body.counts.total,1);
+  assert.equal(body.sections.completed.length,1);
+  assert.equal(body.sections.completed[0].id,'job_done_1');
+  assert.equal(body.sections.completed[0].title,'My Hero Banner');
+  assert.equal(body.sections.favorites.length,1);
+  assert.equal(body.sections.favorites[0].id,'job_done_1');
+  assert.equal(body.metadata.favoritesUnavailable,false);
+  assert.equal(body.metadata.sourceValidated,true);
+  assert.equal(JSON.stringify(body).includes('priv/k1'),false);
+ }finally{server.closeAllConnections();await new Promise(ok=>server.close(ok));}
+});
+
+test('F4 PATCH /api/studio/workspace/cards/:id enforces owner policy for rename, favorite, archive',async()=>{
+ const nowIso=new Date(Date.now()-5000).toISOString();
+ const stored=new Map([
+  ['job_1',{id:'job_1',user_id:'u-1',kind:'image',status:'ready',credits_reserved:5,credits_charged:5,metadata:{},created_at:nowIso}],
+  ['job_other',{id:'job_other',user_id:'u-2',kind:'image',status:'ready',credits_reserved:5,credits_charged:5,metadata:{},created_at:nowIso}]
+ ]);
+ const pool={async query(sql,args=[]){
+  if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};
+  if(sql.startsWith('SELECT id,user_id,kind,status,credits_reserved,credits_charged,metadata,created_at FROM vv_generation_jobs')){
+   const r=stored.get(args[0]);
+   return {rows:r?[r]:[]};
+  }
+  if(sql.startsWith('UPDATE vv_generation_jobs SET metadata=')){
+   const r=stored.get(args[0]);
+   if(r&&r.user_id===args[2])r.metadata={...r.metadata,workspace:JSON.parse(args[1])};
+   return {rowCount:1};
+  }
+  throw Error(sql);
+ }};
+ const env={AI_STUDIO_ENABLED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',
+  AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',GEMINI_API_KEY:'fixture',DATABASE_URL:'fixture',
+  ADMIN_EMAIL:'owner@example.test',
+  AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:10}]),
+  AI_MODEL_PRICING_JSON:d18PricingJson([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:5,providerCostMicros:1000,currency:'usd'}])};
+ const app=express();app.use(express.json());
+ installGenerationStudio(app,{env,pool,wallet:{},auth:(req,_res,next)=>{req.user={id:'u-1',provider:'email',plan:'basic',subscription_status:'active'};next();}});
+ const server=app.listen(0,'127.0.0.1');await new Promise(ok=>server.once('listening',ok));
+ try{
+  const base='http://127.0.0.1:'+server.address().port;
+  const ren=await fetch(base+'/api/studio/workspace/cards/job_1',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'rename',title:'  Clean Brand Pack  '})});
+  assert.equal(ren.status,200);
+  const renBody=await ren.json();
+  assert.equal(renBody.card.title,'Clean Brand Pack');
+  assert.equal(stored.get('job_1').metadata.workspace.title,'Clean Brand Pack');
+
+  const fav=await fetch(base+'/api/studio/workspace/cards/job_1',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'favorite',isFavorite:true})});
+  assert.equal(fav.status,200);
+  assert.equal(stored.get('job_1').metadata.workspace.isFavorite,true);
+
+  const foreign=await fetch(base+'/api/studio/workspace/cards/job_other',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'rename',title:'Hijack'})});
+  assert.equal(foreign.status,403);
+  const foreignBody=await foreign.json();
+  assert.equal(foreignBody.error,'UNAUTHORIZED_OWNER');
+ }finally{server.closeAllConnections();await new Promise(ok=>server.close(ok));}
+});
+
+test('F1 POST /api/studio/compare/validate and /mock-run execute 2-4 model comparison with $0 provider spend',async()=>{
+ let providerCalls=0;
+ const env={AI_STUDIO_ENABLED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',
+  AI_STUDIO_MAX_CALLS:'5',AI_STUDIO_ALLOWED_KINDS:'image',
+  AI_STUDIO_ALLOWED_MODELS:'byteplus-seedream-3',
+  GEMINI_API_KEY:'fixture',BYTEPLUS_API_KEY:'fixture',DATABASE_URL:'fixture',
+  ADMIN_EMAIL:'owner@example.test',
+  AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:10}]),
+  AI_MODEL_PRICING_JSON:d18PricingJson([
+   {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:5,providerCostMicros:1000,currency:'usd'},
+   {model:'byteplus-seedream-3',provider:'BytePlus',kind:'image',credits:4,providerCostMicros:1000,currency:'usd'}
+  ])};
+ const app=express();app.use(express.json());
+ installGenerationStudio(app,{env,pool:{query:async()=>({rows:[]})},
+  wallet:{balance:async()=>({available:50,reserved:0,debt:0})},
+  provider:async()=>{providerCalls++;throw Error('NEVER_CALL_LIVE_PROVIDER');},
+  auth:(req,_res,next)=>{req.user={id:'u-cmp',provider:'email',plan:'basic',subscription_status:'active'};next();}});
+ const server=app.listen(0,'127.0.0.1');await new Promise(ok=>server.once('listening',ok));
+ try{
+  const base='http://127.0.0.1:'+server.address().port;
+  const payload={mode:'mock',kind:'image',ratio:'1:1',prompt:'Futuristic neon watch',userConsent:true,models:['gemini-3.1-flash-image','byteplus-seedream-3']};
+  const valRes=await fetch(base+'/api/studio/compare/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  assert.equal(valRes.status,200);
+  const valBody=await valRes.json();
+  assert.equal(valBody.valid,true);
+  assert.equal(valBody.quotes.totalCreditsRequired,9);
+
+  const paidRes=await fetch(base+'/api/studio/compare/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,mode:'paid'})});
+  assert.equal(paidRes.status,400);
+  const paidBody=await paidRes.json();
+  assert.equal(paidBody.error,'PAID_COMPARE_DISABLED');
+
+  const runRes=await fetch(base+'/api/studio/compare/mock-run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  assert.equal(runRes.status,200);
+  const runBody=await runRes.json();
+  assert.equal(runBody.success,true);
+  assert.equal(runBody.status,'completed');
+  assert.equal(runBody.billing.creditsCharged,0);
+  assert.equal(runBody.billing.paidProviderCalls,0);
+  assert.equal(runBody.candidates.length,2);
+  assert.equal(providerCalls,0);
+ }finally{server.closeAllConnections();await new Promise(ok=>server.close(ok));}
 });

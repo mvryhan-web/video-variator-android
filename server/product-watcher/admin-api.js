@@ -7,6 +7,7 @@ import { listWatcherBriefs, briefEnabled } from './briefs.js';
 import { listContentTasks, contentTasksEnabled } from './content-tasks.js';
 import {listWatcherNotificationStatus,watcherTelegramConfig} from './telegram-alerts.js';
 import {watcherDeploymentReadiness} from './readiness.js';
+import {evaluateLiteDeliveryReadiness} from './lite-delivery-policy.js';
 
 // Match the existing Deepsyq owner identity policy: only the designated Google account.
 // An empty ADMIN_EMAIL must never authorize a user with an empty email.
@@ -165,6 +166,24 @@ export function installProductWatcher(app, { auth, pool, env = process.env, fetc
     try{
       return res.json(await watcherDeploymentReadiness(pool,{env}));
     }catch{return error(res,503,'WATCHER_PREFLIGHT_UNAVAILABLE');}
+  });
+
+  app.post('/api/product-watcher/admin/lite-delivery-readiness',auth,owner,(req,res)=>{
+    try{
+      const body=req.body&&typeof req.body==='object'&&!Array.isArray(req.body)?req.body:{};
+      return res.json(evaluateLiteDeliveryReadiness({
+        ...body,
+        env,
+        ownerIdentity:{
+          userId:String(req.user?.id||''),
+          email:String(req.user?.email||''),
+          provider:String(req.user?.provider||''),
+          role:'owner',
+          serverVerified:true,
+          callerSupplied:false
+        }
+      }));
+    }catch{return error(res,503,'WATCHER_LITE_DELIVERY_UNAVAILABLE');}
   });
 
   // Pause/resume blocks future runs, not work already in flight. Only one guarded,
