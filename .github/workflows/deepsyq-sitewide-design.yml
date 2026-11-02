@@ -1,0 +1,23 @@
+name: Deepsyq site-wide owner design
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/*.html'
+      - 'app/src/main/assets/deepsyq-global-theme.css'
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'tests/deepsyq-sitewide-visual-unit.mjs'
+      - 'tests/deepsyq-navigation-contract-unit.mjs'
+      - '.github/workflows/deepsyq-sitewide-design.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  design-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check app/src/main/assets/deepsyq-site-shell.js
+      - run: node --test tests/deepsyq-sitewide-visual-unit.mjs tests/deepsyq-navigation-contract-unit.mjs

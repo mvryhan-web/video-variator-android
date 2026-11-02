@@ -1,0 +1,67 @@
+BLOCK 1 — MULTI-AI COMPARE + SMART MODEL ROUTING
+============================================================
+
+GOAL
+On the main Deepsyq AI screen, next to Smart, add Compare AI.
+
+MULTI-AI COMPARE
+One user prompt should run parallel real API requests to multiple connected/enabled AI models/providers.
+
+Baseline providers:
+- OpenAI
+- Google Gemini
+- Anthropic Claude
+- Mistral AI
+- optional hidden future provider slot
+- BytePlus ModelArk may be added as another provider when appropriate and verified
+
+UX
+- User enters one prompt.
+- Selects Compare AI.
+- Deepsyq sends the prompt to 2–4 enabled models.
+- Show separate answers for each model/provider.
+- User can Copy, Save, Continue, reuse an answer, and press “Combine into one best answer”.
+- “Combine into one best answer” must be a real synthesis step and its extra AI cost must be accounted for.
+
+SMART MODEL ROUTING
+Smart chooses the model based on:
+- task type and capability
+- measured historical quality
+- reliability
+- latency
+- provider availability
+- cost
+- user plan
+- available AI credits
+- model requirements/limits
+- context/modalities
+
+Do NOT:
+- assume one provider is always best
+- hardcode stale model versions
+- silently route to a much more expensive model without policy
+- retry an ambiguous paid provider call automatically
+
+Technical requirements:
+- config-driven providers/model IDs
+- server-side secrets
+- async parallel execution
+- timeout/fallback/partial-failure handling
+- tokens/usage tracking
+- actual provider cost
+- credits/plan limits
+- latency/success/failure metrics
+- routing-decision reason
+- no fake results
+
+Trial:
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. ПРЕЖНИЙ Trial allowance (строки ниже) — история, НЕ право на бесплатные AI-запросы. Block 7 является единственным источником цены/Trial; $0.99 — покупка ТОЛЬКО после Stripe confirmation и будущего решения владельца о credits/сроке/возвратах. Issue #182 запрещает provider call без купленных кредитов.
+- $0.99 trial gets limited Compare/Smart usage
+- no unlimited AI
+
+BytePlus:
+- may be one provider in the shared router
+- must not replace the whole Deepsyq architecture
+
+============================================================

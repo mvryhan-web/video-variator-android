@@ -1,0 +1,43 @@
+name: Deepsyq BASE 28 local Photo Collage
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/mobile-utility-links.js'
+      - 'app/src/main/assets/photo-collage.html'
+      - 'app/src/main/assets/photo-collage.js'
+      - 'app/src/main/assets/photo-collage.css'
+      - 'app/src/main/assets/photo-collage-core.js'
+      - 'tests/photo-collage-core.mjs'
+      - 'tests/photo-collage.spec.mjs'
+      - '.github/workflows/deepsyq-base28-photo-collage.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  local-collage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Check layout and code
+        run: |
+          node --check app/src/main/assets/mobile-utility-links.js
+          node --check app/src/main/assets/photo-collage.js
+          node --test tests/photo-collage-core.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Exercise Photo Collage desktop and mobile
+        run: npx playwright test tests/photo-collage.spec.mjs --project=chromium --project=mobile-chromium --project=webkit --project=mobile-webkit
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: photo-collage-failure-evidence
+          path: test-results/
+          retention-days: 7

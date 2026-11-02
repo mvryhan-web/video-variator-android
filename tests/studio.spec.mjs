@@ -1,3 +1,4 @@
+import {gotoAppReady} from './helpers/app-ready.mjs';
 import {test,expect} from '@playwright/test';
 
 test('Portrait Cutout is removed and Avatar Narrator remains exposed',async({page})=>{
@@ -10,7 +11,7 @@ test('Portrait Cutout is removed and Avatar Narrator remains exposed',async({pag
 });
 
 test('dashboard metrics stay compact and plans include Lifetime plus 5 10 15 variants',async({page},info)=>{
- await page.goto('/',{waitUntil:'domcontentloaded'});
+ await gotoAppReady(page);
  await expect(page.locator('.statsGrid .stat b').first()).toBeVisible();
  expect(await page.locator('.statsGrid .stat b').first().evaluate(e=>parseFloat(getComputedStyle(e).fontSize))).toBeLessThanOrEqual(16);
  await page.screenshot({path:info.outputPath('dashboard-5.3.png'),fullPage:true});
@@ -33,7 +34,7 @@ test('Lifetime account is permanent unlimited and unlocks every current processi
  test.skip(info.project.name!=='chromium');
  await page.route('**/api/me',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({user:{email:'lifetime@example.com',usage:{plan:'lifetime',active:true,limit:2147483647,used:0,remaining:2147483647,unlimited:true,allFeatures:true,unit:'credits',status:'lifetime',currentPeriodEnd:null}}})}));
  await page.addInitScript(()=>localStorage.setItem('vv_token','lifetime-test-token'));
- await page.goto('/',{waitUntil:'domcontentloaded'});
+ await gotoAppReady(page);
  await expect(page.locator('#currentPlan')).toHaveText('Lifetime');
  await expect(page.locator('#creditText')).toHaveText('Unlimited');
  await expect(page.locator('#remainingCount')).toHaveText('∞');

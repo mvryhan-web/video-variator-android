@@ -1,0 +1,127 @@
+BLOCK 5 — INTERNAL PRODUCT WATCHER AGENT
+============================================================
+
+GOAL
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. ЭТАП 1 PRODUCT WATCHER LITE: сайт жив / uptime, ошибки Stripe, аномальные траты, EMAIL владельцу при проблеме. Только безопасное наблюдение, owner-only, без автономного изменения критичного production и платных AI. Все остальные сохранённые ниже функции и расписания — план ЭТАПА 2 только ПОСЛЕ LIVE_VERIFIED BASE §51 и отдельного разрешения (BASE §53).
+Owner/admin-only autonomous internal agent for monitoring and maintaining Deepsyq.
+
+Important:
+This is NOT the User Agent.
+
+Separate:
+- permissions
+- queues
+- budgets
+- retries
+- audit
+- admin access
+
+Monitor:
+
+AI providers:
+- official updates
+- models
+- new models
+- deprecations
+- pricing
+- limits
+- availability
+- API changes
+
+Deepsyq production:
+- uptime
+- errors
+- failed jobs
+- database health
+- Stripe errors
+- broken links
+- templates
+- skills
+- workflows
+- usage anomalies
+- cost anomalies
+- provider latency
+- provider failure rate
+
+Admin page:
+- ON / OFF
+- Pause / Resume
+- Run now
+- current status
+- Last run
+- Next run
+- recommendations
+- approvals
+- applied changes
+- alerts
+- history
+- costs
+
+Auto-apply:
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. На ЭТАПЕ 1 никаких auto-apply: только обнаружение и email, никакого автономного edit/upgrade/Stripe/price change. Исходная функция ниже — будущее ЭТАПА 2.
+Only safe, reversible metadata/content updates, and only if owner policy explicitly allows them.
+
+Require approval:
+- new provider
+- new model
+- new workflow
+- UI changes
+- pricing
+- routing policy
+- major content changes
+
+Never auto-change:
+- critical Stripe configuration
+- secrets
+- auth
+- destructive DB operations
+- domains
+- user data
+- destructive production code
+- irreversible actions
+
+Lifecycle:
+- active
+- disabled
+- archived
+- no hard delete of critical configuration records
+
+Schedule — Europe/Paris:
+- every 15 min: critical production health
+- hourly: provider errors / usage / cost
+- every 6 h: official provider/model/pricing/news checks
+- daily 06:00: content/template audit
+- daily 07:00: discovery scan
+- daily 08:00: Deepsyq Daily Brief
+- Monday 09:00: Weekly Product Audit
+
+Daily Brief:
+- New
+- Changed
+- Problems
+- Costs
+- Recommendations
+- Pending approvals
+
+Weekly Audit:
+- High
+- Medium
+- Low findings
+
+Infrastructure:
+- Render cron / scheduled worker / equivalent
+- restart-resilient
+- independent of owner computer/session
+
+Important:
+Code existing does not prove it is live.
+Must verify:
+- deployed service
+- scheduler
+- API credentials
+- alerts/SMTP
+- live execution
+
+============================================================

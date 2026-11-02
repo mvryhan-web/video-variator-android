@@ -29,6 +29,22 @@ const local={
 const lang=(navigator.language||'en').slice(0,2),t=local[lang]||local.en;
 const tools=ids.map((id,i)=>({id,title:t.titles[i],note:t.notes[i]}));
 window.VUMobileToolsCatalog={tools,labels:t,lang};
+const compressText={
+ en:['Compress photo','Adjust JPEG quality · compare file sizes'],
+ ru:['Сжать фотографию','Выбрать качество JPEG · сравнить размеры'],
+ fr:['Compresser une photo','Régler la qualité JPEG · comparer les tailles'],
+ uk:['Стиснути фото','Якість JPEG · порівняти розмір']
+}[lang]||['Compress photo','Adjust JPEG quality · compare file sizes'];
+
+tools.push({id:'photo-compress',title:compressText[0],note:compressText[1]});
+// BASE #28: reuse the existing on-device FFmpeg engine for video compression.
+const videoText={
+ en:['Compress video','Local H.264 MP4 · choose size/quality balance'],
+ ru:['Сжать видео','Локальный MP4 (H.264) · выбрать качество'],
+ fr:['Compresser une vidéo','MP4 H.264 local · choisir la qualité'],
+ uk:['Стиснути відео','Локальний MP4 H.264 · обрати якість']
+}[lang]||['Compress video','Local H.264 MP4 · choose quality'];
+tools.push({id:'video-compress',title:videoText[0],note:videoText[1]});
 const grid=document.getElementById('mobileUtilityGrid');
 if(grid){
  document.getElementById('extraToolsTitle').textContent=t.heading;
@@ -36,10 +52,39 @@ if(grid){
  for(const tool of tools){
   const a=document.createElement('a');a.className='hub-tile mobile-utility-tile';
   a.href='mobile-utility.html?tool='+encodeURIComponent(tool.id);
-  const badge=document.createElement('span');badge.className='utility-tile-icon';badge.textContent=tool.title.slice(0,1);
+  a.dataset.utility=tool.id;
+  const badge=document.createElement('span');badge.className='utility-tile-icon';
+  badge.setAttribute('aria-hidden','true');badge.textContent=tool.id==='photo-compress'?'◫':tool.title.slice(0,1);
   const strong=document.createElement('strong');strong.textContent=tool.title;
   const small=document.createElement('small');small.textContent=tool.note;
   a.append(badge,strong,small);grid.append(a);
  }
+ // BASE #28: local, owner-entered Teleprompter; no recording, uploads or provider calls.
+ const prompterText={
+  en:['Teleprompter','Read and scroll your own script'],
+  ru:['Телесуфлёр','Читать текст с плавной прокруткой'],
+  fr:['Téléprompteur','Lire son texte avec défilement'],
+  uk:['Телесуфлер','Читати текст з прокруткою']
+ }[lang]||['Teleprompter','Read and scroll your own script'];
+ const prompter=document.createElement('a');prompter.className='hub-tile mobile-utility-tile';
+ prompter.href='teleprompter.html';prompter.dataset.utility='teleprompter';
+ const prompterBadge=document.createElement('span');prompterBadge.className='utility-tile-icon';
+ prompterBadge.setAttribute('aria-hidden','true');prompterBadge.textContent='▤';
+ const prompterTitle=document.createElement('strong');prompterTitle.textContent=prompterText[0];
+ const prompterNote=document.createElement('small');prompterNote.textContent=prompterText[1];
+ prompter.append(prompterBadge,prompterTitle,prompterNote);grid.append(prompter);
+ // BASE #28: a separate, implemented in-browser photo collage (not an unimplemented mobile-utility mode).
+ const collageText={
+  en:['Photo Collage','Arrange 2–9 photos into one PNG'],
+  ru:['Фотоколлаж','Объединить 2–9 фото в PNG'],
+  fr:['Collage photo','Assembler 2 à 9 photos en PNG'],
+  uk:['Фотоколаж','Об’єднати 2–9 фото у PNG']
+ }[lang]||['Photo Collage','Arrange 2–9 photos into one PNG'];
+ const a=document.createElement('a');a.className='hub-tile mobile-utility-tile';
+ a.href='photo-collage.html';a.dataset.utility='photo-collage';
+ const badge=document.createElement('span');badge.className='utility-tile-icon';badge.setAttribute('aria-hidden','true');badge.textContent='▦';
+ const title=document.createElement('strong');title.textContent=collageText[0];
+ const note=document.createElement('small');note.textContent=collageText[1];
+ a.append(badge,title,note);grid.append(a);
 }
 })();

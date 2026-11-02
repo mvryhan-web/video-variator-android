@@ -1,0 +1,106 @@
+BLOCK 4 — STUDIO + MY WORKSPACE
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Единственный канон Workspace + History + My Creations — ЭТОТ Block 4 поверх существующих generation-jobs; никаких вторых проектных/history таблиц/PR. BASE §24–25 и Block 8 ссылаются сюда.
+============================================================
+
+CONCEPT
+Studio = creation environment / templates / Agent Skills.
+My Workspace = user’s own projects.
+
+Important:
+Do not rebuild Studio from scratch.
+Reuse the existing Generation Studio / ai-generation-studio work / current Deepsyq components.
+
+STUDIO
+Sections:
+- Create New Project
+- Recent Projects
+- Templates
+- Agent Skills
+- Image
+- Video
+- Tools
+- search
+- categories
+- filters
+
+TEMPLATES
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Источник шаблонов — только Block 3 и его единая таблица; этот раздел Studio только ВЫВОДИТ/ИСПОЛЬЗУЕТ их, НЕ хранит вторую таблицу или master-template.
+Base categories:
+- Product Ad
+- UGC Ad
+- Fashion
+- Beauty
+- Food
+- Jewelry
+- Automotive
+- Explainer
+- Social Media
+- Cinematic
+- Music Video
+
+Template flow:
+Preview
+→ Use template
+→ auth if needed
+→ clone to user Workspace
+→ user edits the copy
+
+Never edit the master template directly.
+
+AGENT SKILLS
+Skills:
+- Create Product Ad
+- UGC Video
+- Etsy Listing
+- TikTok Ad
+- Turn Image into Video
+- Social Campaign
+- Explainer Video
+
+Skill flow:
+Preview
+→ Use skill
+→ open Agent
+→ prefill goal/settings
+→ user approves
+→ Agent executes the real workflow
+
+MY WORKSPACE
+Sections:
+- Recent Projects
+- Drafts
+- Completed
+- Favorites
+
+Project card:
+- preview
+- title
+- created/updated date
+- status
+- type
+- Open
+- Rename
+- Duplicate
+- Archive
+- Delete with confirmation
+
+Workspace links with:
+- Agent
+- Inspiration
+- AI Apps
+- Tools
+- History
+- Studio
+
+Data:
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Исходные записи ниже сохранены; они означают reuse existing job tables and user ownership, не создание дублей.
+- reuse existing auth
+- reuse PostgreSQL
+- strict user ownership
+- no cross-user access
+- do not create a duplicate project DB if existing job/project tables can be extended
+
+============================================================

@@ -1,0 +1,117 @@
+name: Deepsyq isolated S3 link security checks
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-storage.js'
+      - 'tests/generation-reference-sigv4-http.mjs'
+      - 'tests/generation-reference-minio-protocol.mjs'
+      - '.github/workflows/deepsyq-reference-s3-protocol.yml'
+  pull_request:
+    paths:
+      - 'server/generation-storage.js'
+      - 'tests/generation-reference-sigv4-http.mjs'
+      - 'tests/generation-reference-minio-protocol.mjs'
+      - '.github/workflows/deepsyq-reference-s3-protocol.yml'
+  workflow_dispatch:
+jobs:
+  s3-link-guards:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify S3 URL guard syntax
+        run: |
+          node --check server/generation-storage.js
+          node --check tests/generation-reference-sigv4-http.mjs
+      - name: Validate HTTP SigV4, tamper, expiry, revocation on loopback only
+        run: node --test tests/generation-reference-sigv4-http.mjs
+
+  s3-real-source:
+    # Builds a pinned verified upstream MinIO release from source. Docker images
+    # were withdrawn; never use third-party images or production S3 credentials.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fixture
+          POSTGRES_PASSWORD: fixture
+          POSTGRES_DB: vv_ai_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install project dependencies for isolated PostgreSQL ledger fixture
+        run: npm ci --no-audit --no-fund
+      - name: Check upstream S3 fixture syntax before building server
+        run: node --check tests/generation-reference-minio-protocol.mjs
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.8'
+          cache: false
+      - name: Cache pinned MinIO Go compilation across CI reruns
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-deepsyq-minio-source-2025-10-15-go1248-v1
+      - name: Install official pinned MinIO server from upstream Go source
+        env:
+          GOMAXPROCS: '2'
+          GOFLAGS: '-p=2'
+        run: |
+          mkdir -p "$RUNNER_TEMP/minio-source-bin"
+          GOBIN="$RUNNER_TEMP/minio-source-bin" go install github.com/minio/minio@RELEASE.2025-10-15T17-29-55Z
+          "$RUNNER_TEMP/minio-source-bin/minio" --version
+      - name: Install local FFmpeg for real H264 test fixture
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          ffmpeg -version | head -n 1
+      - name: Start disposable S3 service bound to loopback
+        run: |
+          mkdir -p "$RUNNER_TEMP/deepsyq-minio-data"
+          export MINIO_ROOT_USER=DEEPSYQ_CI_KEY_12345
+          export MINIO_ROOT_PASSWORD=deepsyq-CI-isolated-minio-secret-long-only
+          export MINIO_BROWSER=off
+          "$RUNNER_TEMP/minio-source-bin/minio" server --address 127.0.0.1:9000 "$RUNNER_TEMP/deepsyq-minio-data" > "$RUNNER_TEMP/deepsyq-minio.log" 2>&1 &
+          echo "$!" > "$RUNNER_TEMP/deepsyq-minio.pid"
+          for i in $(seq 1 50); do
+            if curl --silent --fail http://127.0.0.1:9000/minio/health/live >/dev/null; then
+              echo 'Ephemeral MinIO S3 server ready on loopback'
+              exit 0
+            fi
+            sleep 2
+          done
+          echo 'Isolated MinIO did not become healthy'
+          tail -n 30 "$RUNNER_TEMP/deepsyq-minio.log"
+          exit 1
+      - name: Verify real S3 header and presigned GET against upstream MinIO
+        env:
+          AI_TEST_MINIO_URL: http://127.0.0.1:9000
+          AI_TEST_DATABASE_URL: postgres://fixture:fixture@127.0.0.1:5432/vv_ai_test
+          NODE_ENV: test
+        run: |
+          node --check tests/generation-reference-minio-protocol.mjs
+          node --test tests/generation-reference-minio-protocol.mjs
+      - name: Destroy disposable S3 service
+        if: always()
+        run: |
+          if test -f "$RUNNER_TEMP/deepsyq-minio.pid"; then
+            kill "$(cat "$RUNNER_TEMP/deepsyq-minio.pid")" 2>/dev/null || true
+          fi
+          rm -rf "$RUNNER_TEMP/deepsyq-minio-data"

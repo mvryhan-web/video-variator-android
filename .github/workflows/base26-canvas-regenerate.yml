@@ -1,0 +1,52 @@
+name: BASE 26 clean Canvas Regenerate
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/generate-studio.js'
+      - 'app/src/main/assets/studio-handoff.js'
+      - 'tests/agent-a-base26-regenerate-reference.spec.mjs'
+      - 'tests/agent-a-base26-handoff-privacy.spec.mjs'
+      - '.github/workflows/base26-canvas-regenerate.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/generate-studio.js'
+      - 'app/src/main/assets/studio-handoff.js'
+      - 'tests/agent-a-base26-regenerate-reference.spec.mjs'
+      - 'tests/agent-a-base26-handoff-privacy.spec.mjs'
+      - '.github/workflows/base26-canvas-regenerate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: base26-regenerate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  canvas-real-browsers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: |
+          node --check app/src/main/assets/generate-studio.js
+          node --check app/src/main/assets/studio-handoff.js
+          node --check tests/agent-a-base26-handoff-privacy.spec.mjs
+          node --check tests/agent-a-base26-regenerate-reference.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npx playwright test tests/agent-a-base26-regenerate-reference.spec.mjs tests/agent-a-base26-handoff-privacy.spec.mjs --project=chromium --project=webkit
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: base26-canvas-regenerate-evidence
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

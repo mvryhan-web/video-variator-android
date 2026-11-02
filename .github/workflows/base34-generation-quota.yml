@@ -1,0 +1,25 @@
+name: BASE 34 Generation Quota Guard
+on:
+  pull_request:
+    paths:
+      - 'server/generation-policy.js'
+      - 'tests/generation-policy-limits-unit.mjs'
+      - '.github/workflows/base34-generation-quota.yml'
+  push:
+    branches:
+      - base34-generation-policy-tests-20261016
+permissions:
+  contents: read
+jobs:
+  quotas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify policy syntax
+        run: node --check server/generation-policy.js && node --check tests/generation-policy-limits-unit.mjs
+      - name: Enforce quotas with database-free unit fixtures
+        run: node --test tests/generation-policy-limits-unit.mjs

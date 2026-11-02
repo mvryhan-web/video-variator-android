@@ -1,0 +1,28 @@
+name: BASE 35 AI Apps logout prompt privacy
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/ai-apps.js'
+      - 'tests/base35-ai-apps-logout-privacy.spec.mjs'
+      - '.github/workflows/base35-ai-apps-logout-privacy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  logout-privacy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/ai-apps.js && node --check tests/base35-ai-apps-logout-privacy.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Verify pending prompt logout scrub and existing browsing on desktop and mobile
+        run: npx playwright test tests/base35-ai-apps-logout-privacy.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit

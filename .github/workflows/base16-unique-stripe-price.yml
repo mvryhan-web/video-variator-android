@@ -1,0 +1,31 @@
+name: BASE 16 unique AI credit pack Stripe Price IDs
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-billing.js'
+      - 'tests/base16-unique-stripe-price-unit.mjs'
+      - 'tests/generation-billing-unit.mjs'
+      - '.github/workflows/base16-unique-stripe-price.yml'
+  push:
+    branches: [base16-price-id-uniqueness-20261016]
+    paths:
+      - 'server/generation-billing.js'
+      - 'tests/base16-unique-stripe-price-unit.mjs'
+      - '.github/workflows/base16-unique-stripe-price.yml'
+permissions:
+  contents: read
+jobs:
+  unique-price:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Test duplicate Stripe price rejection and billing regressions
+        run: |
+          node --check server/generation-billing.js
+          node --test tests/base16-unique-stripe-price-unit.mjs tests/generation-billing-unit.mjs

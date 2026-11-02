@@ -1,0 +1,41 @@
+name: Owner cancels Product Video (no paid calls)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/**'
+      - 'server/server.js'
+      - 'server/generation-templates.js'
+      - 'server/deepsyq-preview.js'
+      - 'tests/owner-product-video-removal-*.mjs'
+      - '.github/workflows/owner-product-video-removal.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  retired-product-video:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Prefer official Ubuntu archive for browser dependencies
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Check syntax and removed route policy
+        run: |
+          node --check server/server.js
+          node --check server/generation-templates.js
+          node --check app/src/main/assets/deepsyq.js
+          node --check app/src/main/assets/ai-apps.js
+          node --test tests/owner-product-video-removal-unit.mjs tests/agent-a-base45-options-unit.mjs tests/ai-template-product-name.mjs
+      - name: Install free browser runners
+        run: npx playwright install --with-deps chromium webkit
+      - name: Test removed URLs and unaffected Image Video Audio navigation
+        run: npx playwright test tests/owner-product-video-removal.spec.mjs --project=chromium --project=mobile-webkit

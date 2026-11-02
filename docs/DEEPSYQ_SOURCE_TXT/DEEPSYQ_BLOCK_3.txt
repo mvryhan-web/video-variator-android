@@ -1,0 +1,75 @@
+BLOCK 3 — INSPIRATION / CREATE YOURS
+============================================================
+
+GOAL
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. КАНОН Block 3: единая таблица/каталог Inspiration И шаблонов как данные; без второго PR/бэкенда/таблицы. Примеры — только свои или доказанно бесплатно созданные (без риска списания), либо ЗАГЛУШКИ С ПОНЯТНОЙ ПОМЕТКОЙ. Платная AI-генерация примеров без отдельного разрешения владельца ЗАПРЕЩЕНА.
+Create a polished Inspiration experience similar in sophistication to modern AI creative platforms.
+
+UX reference:
+https://ai.byteplus.com/lumina/en
+
+But:
+- do not copy BytePlus/Lumina branding
+- do not copy protected text
+- do not copy their assets
+- do not reproduce the layout pixel-for-pixel
+- use original Deepsyq design/content
+- use owned/licensed/generated examples only
+
+Homepage:
+- Inspiration preview
+- image/video examples
+- View More / Explore all
+- direct links to real creation flows
+
+Inspiration page filters:
+- All
+- Images
+- Videos
+
+Cards may show:
+- preview
+- prompt
+- model/workflow metadata
+- aspect ratio
+- category
+- template/workflow reference
+
+Actions:
+- Use Prompt
+- Create yours
+- Clone and Try
+
+Behavior:
+- Use Prompt opens real Studio
+- Create yours creates a user project/workflow
+- Clone and Try clones settings into the user workspace
+- user may replace assets
+- never auto-generate paid AI just by opening an Inspiration item
+
+AI Apps:
+- Inspiration connects to real AI Apps/workflows
+
+Data-driven:
+
+ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. DECISIONS.md. Единственная уже существующая data-driven таблица шаблонов; Studio в Block 4 только показывает и использует их.
+- templates/examples stored as data
+- not one hardcoded architecture per card
+- owner/admin can activate/deactivate/feature/reorder
+- inactive content is hidden
+
+Aspect ratios:
+- 1:1
+- 9:16
+- 16:9
+- 2:3
+- 3:2
+- others only when actually supported by the selected model
+
+Do NOT:
+- invent working integrations
+- present an unavailable workflow as working
+- auto-start paid generation
+
+============================================================

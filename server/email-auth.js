@@ -50,7 +50,7 @@ export function installEmailAuth(app,{signAppToken}){
       let user=await upsertUser({provider:'email',providerSub:email,email,name});
       user=await setPasswordHash(user.id,await hashPassword(password));
       clearAttempts(req);
-      res.status(201).json({token:await signAppToken(user),user:publicUser(user)});
+      res.status(201).json({token:await signAppToken(user),user:publicUser(user),newAccount:true});
     }catch(e){console.error('[email register]',e);res.status(500).json({error:'EMAIL_REGISTRATION_FAILED'});}
   });
 
@@ -63,7 +63,7 @@ export function installEmailAuth(app,{signAppToken}){
       const user=await getUserByProvider('email',email);
       if(!user||!await verifyPassword(password,user.password_hash))return res.status(401).json({error:'INVALID_EMAIL_OR_PASSWORD'});
       clearAttempts(req);
-      res.json({token:await signAppToken(user),user:publicUser(user)});
+      res.json({token:await signAppToken(user),user:publicUser(user),newAccount:false});
     }catch(e){console.error('[email login]',e);res.status(500).json({error:'EMAIL_LOGIN_FAILED'});}
   });
 }

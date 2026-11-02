@@ -1,0 +1,25 @@
+name: BASE 42 BytePlus Durable Public Storage Gate
+on:
+  pull_request:
+    paths:
+      - 'server/generation-byteplus-storage-gate.js'
+      - 'server/generation-studio.js'
+      - 'tests/base42-byteplus-durable-storage-unit.mjs'
+      - '.github/workflows/base42-byteplus-durable-storage.yml'
+permissions:
+  contents: read
+jobs:
+  base42:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: |
+          node --check server/generation-byteplus-storage-gate.js
+          node --check server/generation-studio.js
+          node --test tests/base42-byteplus-durable-storage-unit.mjs

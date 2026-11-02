@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'.',testMatch:'pricing-cinematic.spec.mjs',timeout:30000,retries:0,reporter:'list',use:{baseURL:'http://127.0.0.1:31996'},projects:[{name:'chromium',use:{browserName:'chromium'}},{name:'webkit',use:{browserName:'webkit'}}],webServer:{cwd:process.cwd(),command:'node server/deepsyq-preview.js',url:'http://127.0.0.1:31996/api/health',env:{...process.env,PORT:'31996',DATABASE_URL:'',STRIPE_SECRET_KEY:'',BYTEPLUS_API_KEY:'',GEMINI_API_KEY:''}}});

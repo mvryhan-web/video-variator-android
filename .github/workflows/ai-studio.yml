@@ -1,0 +1,43 @@
+name: AI Studio preview checks
+on:
+  push:
+    branches: [ai-generation-studio]
+  pull_request:
+    paths: ['server/generation-*.js', 'app/src/main/assets/generate-studio.*', 'app/src/main/assets/generate-models.js', 'tests/generation-*', '.github/workflows/ai-studio.yml']
+# Unique workflow-file key: several existing workflows share the display name "BASE".
+# Cancel only superseded runs of THIS workflow on the SAME PR or ref.
+# Never cancel another agent's different PR or disable a safety assertion.
+concurrency:
+  group: agent5-ai-studio-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fixture
+          POSTGRES_PASSWORD: fixture
+          POSTGRES_DB: vv_ai_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - name: Prefer official Ubuntu archive for browser dependencies
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - run: node --test tests/generation-studio-unit.mjs tests/generation-byteplus-unit.mjs tests/generation-billing-unit.mjs tests/generation-wallet-postgres.mjs tests/generation-jobs-postgres.mjs tests/generation-polling-postgres.mjs tests/generation-routing-unit.mjs tests/generation-policy-unit.mjs tests/generation-storage-unit.mjs tests/generation-errors-unit.mjs tests/admin-audit-unit.mjs tests/ai-migrations-unit.mjs tests/ai-migration-status-unit.mjs tests/generation-model-capabilities-unit.mjs tests/generation-entitlements-unit.mjs tests/generation-worker-runtime-unit.mjs tests/generation-readiness-unit.mjs tests/generation-idempotency-unit.mjs tests/generation-billing-review-unit.mjs tests/generation-templates-unit.mjs tests/generation-inspiration-unit.mjs tests/generation-onboarding-unit.mjs
+        env:
+          NODE_ENV: test
+          AI_TEST_DATABASE_URL: postgres://fixture:fixture@127.0.0.1:5432/vv_ai_test
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npx playwright test tests/generation-studio.spec.mjs

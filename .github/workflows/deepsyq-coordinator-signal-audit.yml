@@ -1,0 +1,31 @@
+name: Deepsyq Coordinator Read-Only Signal Audit
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'scripts/deepsyq-coordinator-signal-audit.mjs'
+      - 'tests/deepsyq-coordinator-signal-audit.test.mjs'
+      - '.github/workflows/deepsyq-coordinator-signal-audit.yml'
+permissions:
+  contents: read
+  checks: read
+  issues: read
+  pull-requests: read
+jobs:
+  signal-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and no-spend fixtures
+        run: |
+          node --check scripts/deepsyq-coordinator-signal-audit.mjs
+          node --test tests/deepsyq-coordinator-signal-audit.test.mjs
+      - name: Read-only GitHub snapshot for this PR
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/deepsyq-coordinator-signal-audit.mjs --live

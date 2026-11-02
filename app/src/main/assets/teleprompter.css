@@ -1,0 +1,15 @@
+.teleprompter-page{max-width:950px;padding:18px 16px calc(36px + env(safe-area-inset-bottom))}
+.teleprompter-workspace{display:grid;gap:12px;min-width:0}
+.teleprompter-workspace h1,.teleprompter-workspace p{margin:0}
+.teleprompter-workspace textarea{min-width:0;width:100%;box-sizing:border-box;resize:vertical;line-height:1.55}
+.tele-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.tele-controls label{display:grid;gap:7px;min-width:0}
+.tele-controls input{width:100%;max-width:100%}
+.tele-controls output{font-size:12px;color:var(--muted)}
+.tele-actions{display:flex;gap:10px;flex-wrap:wrap}
+.tele-actions button{min-height:44px}
+#teleStatus{min-height:22px}
+#teleViewport{width:100%;min-width:0;max-width:100%;height:min(55vh,510px);overflow-y:auto;border:1px solid var(--line);border-radius:14px;background:#10121b;color:#fff;overscroll-behavior:contain;scroll-behavior:auto}
+#telePreview{font-size:36px;line-height:1.48;overflow-wrap:anywhere;white-space:pre-wrap;padding:32px 25px;min-height:calc(100% + 25vh);text-align:center}
+.tele-note{color:var(--muted);font-size:12px}
+@media(max-width:540px){.tele-controls{grid-template-columns:1fr}#teleViewport{height:min(50vh,420px)}#telePreview{padding:24px 14px}}

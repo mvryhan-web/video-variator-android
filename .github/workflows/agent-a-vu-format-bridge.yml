@@ -1,0 +1,24 @@
+name: Agent A Video Format Real Processor
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/video-uniquifier-reference.js'
+      - 'app/src/main/assets/video-uniquifier-reference.css'
+      - 'tests/agent-a-vu-format-bridge*.mjs'
+      - '.github/workflows/agent-a-vu-format-bridge.yml'
+permissions: {contents: read}
+jobs:
+  engine-and-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: node --test tests/agent-a-vu-format-bridge-unit.mjs
+      - run: node --check app/src/main/assets/video-uniquifier-reference.js
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --config tests/agent-a-vu-format-bridge.config.mjs

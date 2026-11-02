@@ -1,0 +1,140 @@
+/* DEEPSYQ concise creator screen — owner approval 2026-10-20.
+   Applied only on inner Studio, never Home. No AI/provider/billing change.
+   Preserve full dialog settings, job state, consent, credits and all controls. */
+body.studio-quickstart .stage:has(#empty:not([hidden])) {
+  flex: 0 0 auto;
+  min-height: 174px;
+  padding: 8px 8px 18px;
+}
+body.studio-quickstart .stage #empty .hero-art {
+  width: 52px;
+  height: 50px;
+  margin: 0 auto 6px;
+  transform: scale(.58);
+  transform-origin: center;
+}
+body.studio-quickstart .stage #empty #taskTitle {
+  font-size: clamp(22px,2.6vw,32px);
+  font-weight: 680;
+  line-height: 1.2;
+  letter-spacing: -.7px;
+  margin: 0 0 13px;
+}
+body.studio-quickstart .stage #empty .examples {
+  gap: 8px;
+  margin: 0 auto;
+}
+body.studio-quickstart .stage #empty .examples button {
+  min-height: 36px;
+  border-radius: 999px;
+}
+/* Hide decorative intro only when the empty welcome panel is truly active.
+   Result previews and the real History state keep their existing layout. */
+body.studio-quickstart .stage:has(#empty:not([hidden])) + form.composer {
+  margin-top: 0;
+}
+@media (max-width: 700px) {
+  body.studio-quickstart .stage:has(#empty:not([hidden])) {
+    min-height: 119px;
+    padding: 3px 0 12px;
+  }
+  body.studio-quickstart .stage #empty .hero-art {
+    display: none;
+  }
+  body.studio-quickstart .stage #empty #taskTitle {
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+  body.studio-quickstart .stage #empty .examples button {
+    min-height: 32px;
+    padding: 6px 10px;
+  }
+}
+
+/* Owner correction: the blank Studio is a creator, not an onboarding/QA dashboard.
+   Minimal presentation only. Generated media, history, errors, price quotes, consent,
+   model controls and recovery actions keep their existing implementation. */
+body.studio-quickstart .stage:has(#empty:not([hidden])) {
+  flex: 0 0 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0 0 12px !important;
+  overflow: visible;
+}
+body.studio-quickstart .stage #empty.intro {
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+body.studio-quickstart .stage #empty .hero-art,
+body.studio-quickstart .stage #empty .examples {
+  display: none !important;
+}
+body.studio-quickstart .stage #empty #taskTitle {
+  font-size: clamp(18px, 2vw, 23px) !important;
+  font-weight: 600;
+  margin: 0 0 8px !important;
+}
+body.studio-quickstart .topbar .badge,
+body.studio-quickstart .studio-nav .nav-caption,
+body.studio-quickstart .studio-nav [data-kind="translation"],
+body.studio-quickstart #creator [data-t="pilotNote"] {
+  display: none !important;
+}
+/* Hide ordinary preflight/debug prose. Disabled generation remains visibly disabled;
+   model connection status remains available in the model picker. */
+body.studio-quickstart #creator #availability,
+body.studio-quickstart #creator #accessInfo {
+  display: none !important;
+}
+/* Saved drafts remain stored. Show the recovery bar ONLY when photos actually need
+   user action. Do not show Clear Draft / verbose retention copy on every visit. */
+body.studio-quickstart #imageDraftBar:not(:has(#imageDraftSkipPhotos:not([hidden]))),
+body.studio-quickstart #videoDraftBar:not(:has(#videoDraftSkipPhotos:not([hidden]))) {
+  display: none !important;
+}
+body.studio-quickstart .ref-meta:has(#clearRefs[hidden]) #refHint {
+  display: none !important;
+}
+@media (max-width: 700px) {
+  body.studio-quickstart .stage:has(#empty:not([hidden])) {
+    padding-bottom: 6px !important;
+  }
+}
+
+/* OWNER RESTORED LAYOUT (2026-10-20) — isolated CSS extracted from PR #323.
+   Existing Create/History forms, models, consent, and provider logic are unchanged.
+   Keep the idle headline centered in the work area and the creator below it,
+   instead of collapsing the stage and pulling the form into the middle. */
+body.studio-quickstart .stage:has(#empty:not([hidden])) {
+  flex: 1 1 auto !important;
+  min-height: 330px !important;
+  padding: 35px 10px !important;
+  justify-content: center !important;
+}
+body.studio-quickstart .stage #empty.intro {
+  margin: 0 auto !important;
+}
+body.studio-quickstart .stage #empty #taskTitle {
+  font-size: clamp(23px, 3vw, 40px) !important;
+  line-height: 1.25;
+  font-weight: 650;
+  letter-spacing: -.035em;
+  margin: 0 auto !important;
+  max-width: 780px;
+  text-align: center;
+  color: var(--text);
+}
+@media (max-width: 700px) {
+  body.studio-quickstart .stage:has(#empty:not([hidden])) {
+    min-height: 275px !important;
+    padding: 28px 0 24px !important;
+  }
+  body.studio-quickstart .stage #empty #taskTitle {
+    font-size: 25px !important;
+  }
+}

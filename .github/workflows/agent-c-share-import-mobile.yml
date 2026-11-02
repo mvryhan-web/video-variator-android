@@ -1,0 +1,33 @@
+name: Agent C share-import five-browser phone regression
+
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - tests/share-import.spec.mjs
+      - .github/workflows/agent-c-share-import-mobile.yml
+  workflow_dispatch:
+
+jobs:
+  share-import-no-spend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Test share importer, stopped job and 320px Back buttons in five projects
+        run: npx playwright test tests/share-import.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-webkit --project=mobile-chromium
+      - name: Upload failures only
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-c-share-import-browser-failures
+          path: test-results/
+          if-no-files-found: ignore

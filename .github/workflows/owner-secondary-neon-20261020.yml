@@ -1,0 +1,43 @@
+name: Owner secondary-page neon and Home exclusion (free browser QA)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/deepsyq-global-theme.css'
+      - 'app/src/main/assets/contact.html'
+      - 'app/src/main/assets/cookie.html'
+      - 'app/src/main/assets/terms.html'
+      - 'app/src/main/assets/refund.html'
+      - 'tests/owner-secondary-neon-20261020.spec.mjs'
+      - '.github/workflows/owner-secondary-neon-20261020.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  visual-no-spend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - name: Prefer official Ubuntu archive for browser dependencies
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install existing locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify interior theme, Home untouched, routes and responsive behavior
+        run: npx playwright test tests/owner-secondary-neon-20261020.spec.mjs --project=chromium
+      - name: Save QA traces only on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-secondary-neon-test-results
+          path: test-results/
+          if-no-files-found: ignore

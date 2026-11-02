@@ -1,0 +1,93 @@
+name: Deepsyq Trial Economics (offline)
+
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-pricing.js'
+      - 'scripts/trial-economics-preview.mjs'
+      - 'tests/trial-economics-preview.mjs'
+      - 'server/generation-trial-policy.js'
+      - 'tests/generation-trial-policy.mjs'
+      - 'tests/generation-trial-postgres.mjs'
+      - 'docs/DEEPSYQ_TRIAL_099_STAGING_ONLY.sql'
+      - '.github/workflows/deepsyq-trial-economics.yml'
+  pull_request:
+    paths:
+      - 'server/generation-pricing.js'
+      - 'scripts/trial-economics-preview.mjs'
+      - 'tests/trial-economics-preview.mjs'
+      - 'server/generation-trial-policy.js'
+      - 'tests/generation-trial-policy.mjs'
+      - 'tests/generation-trial-postgres.mjs'
+      - 'docs/DEEPSYQ_TRIAL_099_STAGING_ONLY.sql'
+      - '.github/workflows/deepsyq-trial-economics.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Unique workflow-file key: several existing workflows share the display name "BASE".
+# Cancel only superseded runs of THIS workflow on the SAME PR or ref.
+# Never cancel another agent's different PR or disable a safety assertion.
+concurrency:
+  group: agent5-deepsyq-trial-economics-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-scenarios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check existing pricing importer and preview syntax
+        run: |
+          node --check server/generation-pricing.js
+          node --check scripts/trial-economics-preview.mjs
+          node --check tests/trial-economics-preview.mjs
+          node --check server/generation-trial-policy.js
+          node --check tests/generation-trial-policy.mjs
+      - name: Verify conservative trial limits with hypothetical fixture costs
+        run: node --test tests/trial-economics-preview.mjs tests/generation-trial-policy.mjs
+      - name: No live Stripe or credentials required
+        run: |
+          set +e
+          node scripts/trial-economics-preview.mjs > /tmp/deepsyq-trial-no-config.json
+          exit_code=$?
+          set -e
+          test "$exit_code" -eq 2
+          grep -q 'EXPLICIT_JSON_INPUT_REQUIRED' /tmp/deepsyq-trial-no-config.json
+
+  postgres-staging-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: trial_test
+          POSTGRES_PASSWORD: fixture_only
+          POSTGRES_DB: vv_ai_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U trial_test -d vv_ai_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      NODE_ENV: test
+      AI_TEST_DATABASE_URL: postgresql://trial_test:fixture_only@127.0.0.1:5432/vv_ai_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check tests/generation-trial-postgres.mjs
+      - name: Isolated PostgreSQL 72h trial and duplicate-webhook tests
+        run: node --test tests/generation-trial-postgres.mjs

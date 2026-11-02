@@ -1,0 +1,27 @@
+name: BASE 8 Pre-Dispatch Fallback
+on:
+  pull_request:
+    paths:
+      - 'server/generation-fallback-policy.js'
+      - 'server/generation-routing.js'
+      - 'server/generation-studio.js'
+      - 'tests/generation-fallback-policy-unit.mjs'
+      - '.github/workflows/base8-fallback.yml'
+permissions:
+  contents: read
+jobs:
+  fallback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check
+        run: |
+          node --check server/generation-fallback-policy.js
+          node --check server/generation-studio.js
+          node --check tests/generation-fallback-policy-unit.mjs
+      - name: No-spend fallback regression tests
+        run: node --test tests/generation-fallback-policy-unit.mjs

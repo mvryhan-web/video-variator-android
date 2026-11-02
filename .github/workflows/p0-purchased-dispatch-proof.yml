@@ -1,0 +1,53 @@
+name: P0 Purchased-Only Dispatch Proof (Disposable PostgreSQL)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-purchased-proof.js'
+      - 'server/generation-wallet.js'
+      - 'server/generation-subscription-credits.js'
+      - 'server/generation-readiness.js'
+      - 'tests/generation-readiness-unit.mjs'
+      - 'server/ai-migrations.js'
+      - 'server/migrations/20261017-purchased-dispatch-claim.sql'
+      - 'tests/p0-purchased-dispatch-proof-*.mjs'
+      - '.github/workflows/p0-purchased-dispatch-proof.yml'
+permissions:
+  contents: read
+jobs:
+  purchased-dispatch-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: deepsyq_purchased_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d deepsyq_purchased_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      P0_PURCHASED_TEST_DB_URL: postgresql://postgres:postgres@127.0.0.1:5432/deepsyq_purchased_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Syntax checks without paid provider access
+        run: |
+          node --check server/generation-purchased-proof.js
+          node --check server/generation-wallet.js
+          node --check server/generation-subscription-credits.js
+          node --check server/generation-readiness.js
+          node --check tests/generation-readiness-unit.mjs
+          node --check server/ai-migrations.js
+          node --check tests/p0-purchased-dispatch-proof-unit.mjs
+          node --check tests/p0-purchased-dispatch-proof-postgres.mjs
+      - name: Run pure wallet proof and disposable PostgreSQL single-use tests
+        run: node --test tests/p0-purchased-dispatch-proof-unit.mjs tests/p0-purchased-dispatch-proof-postgres.mjs tests/ai-migrations-unit.mjs tests/generation-readiness-unit.mjs

@@ -1,0 +1,24 @@
+name: Coordinator Jules1 W5.4 LITE email draft acceptance
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/product-watcher/lite-email-draft.js'
+      - 'tests/product-watcher-lite-email-draft-unit.mjs'
+      - '.github/workflows/coord-jules1-w5-4-lite-email.yml'
+permissions:
+  contents: read
+jobs:
+  no-spend-email-draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and seven focused isolated no-network test cases
+        run: |
+          node --check server/product-watcher/lite-email-draft.js
+          node --check tests/product-watcher-lite-email-draft-unit.mjs
+          node --test tests/product-watcher-lite-email-draft-unit.mjs

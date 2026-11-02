@@ -1,0 +1,32 @@
+name: BASE 16 shared Stripe refund isolation
+on:
+  push:
+    branches: [base16-nonai-refund-webhooks-20261016]
+    paths:
+      - 'server/generation-billing.js'
+      - 'tests/base16-shared-stripe-refund-unit.mjs'
+      - '.github/workflows/base16-legacy-refunds.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-billing.js'
+      - 'tests/base16-shared-stripe-refund-unit.mjs'
+      - '.github/workflows/base16-legacy-refunds.yml'
+permissions:
+  contents: read
+jobs:
+  refund:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax
+        run: |
+          node --check server/generation-billing.js
+          node --check tests/base16-shared-stripe-refund-unit.mjs
+      - name: Shared legacy/AI Stripe webhook and existing checkout billing regressions
+        run: node --test tests/base16-shared-stripe-refund-unit.mjs tests/generation-billing-unit.mjs tests/base16-checkout-reuse-unit.mjs

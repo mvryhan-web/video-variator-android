@@ -1,3 +1,4 @@
+
 import {test,expect} from '@playwright/test';
 import {execFileSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
@@ -9,17 +10,29 @@ async function openView(page,name){
 
 test.beforeEach(async({page})=>{
   await page.route(/accounts\.google\.com|appleid\.cdn-apple\.com|unpkg\.com/,route=>route.abort());
-  await page.goto('/',{waitUntil:'domcontentloaded'});
+  await page.goto('/index.html',{waitUntil:'commit'});
+  await expect.poll(()=>page.evaluate(()=>
+    document.readyState!=='loading'&&
+    typeof window.VideoVariatorCore?.process==='function'&&
+    typeof window.VideoVariatorUI?.setFiles==='function'
+  )).toBe(true);
   await expect(page).toHaveTitle(/Video Uniquifier/);
 });
 
-test('loads rebranded dashboard with zero of 100 free trial videos',async({page})=>{
-  await expect(page.getByRole('heading',{name:'Dashboard'})).toBeVisible();
-  await expect(page.locator('#creditText')).toHaveText('0 / 100');
-  await expect(page.getByText('Turn your old video into fresh new versions')).toBeVisible();
-  await expect(page.getByText('One video. Many versions.')).toBeVisible();
+test('loads current standalone Video Uniquifier and functional controls',async({page})=>{
+  // Video Uniquifier remains a separate working tool at /index.html.
+  // Deepsyq Home owns /; neither historic Dashboard copy nor 100 free AI videos is its contract.
+  await expect(page).toHaveURL(/\/index\.html$/);
+  await expect(page.locator('body.vu-reference')).toBeVisible();
+  await expect(page.locator('#heroTitle')).toHaveText('Video Uniquifier');
+  await expect(page.locator('#fileInput')).toHaveAttribute('accept','video/*');
+  await expect(page.locator('.vu-mode-card')).toHaveCount(3);
+  expect(await page.locator('.vu-mode-card').evaluateAll(cards=>cards.map(card=>card.dataset.mode)))
+    .toEqual(['gentle','balanced','dynamic']);
+  await expect(page.locator('.vu-format-button[data-ratio="9:16"]')).toBeVisible();
+  await expect(page.locator('.vu-format-button[data-ratio="16:9"]')).toBeVisible();
+  await expect(page.locator('.vu-quality-button')).toHaveCount(3);
   await expect(page.locator('#resultsCard')).toBeHidden();
-  await expect(page.getByText('Video Uniquifier',{exact:true}).first()).toBeVisible();
 });
 
 test('loads FFmpeg wrapper from same-origin when external CDN is blocked',async({page})=>{
@@ -65,24 +78,32 @@ test('trial unlocks all modes plus 720p 1080p and 4K',async({page})=>{
   await expect(mode.locator('option[value="gentle"]')).not.toHaveAttribute('disabled','');
   await expect(mode.locator('option[value="balanced"]')).not.toHaveAttribute('disabled','');
   await expect(mode.locator('option[value="dynamic"]')).not.toHaveAttribute('disabled','');
-  await mode.selectOption('balanced');
-  await expect(mode).toHaveValue('balanced');
-  await mode.selectOption('dynamic');
-  await expect(mode).toHaveValue('dynamic');
-  await mode.selectOption('gentle');
-  await expect(mode).toHaveValue('gentle');
+  // The owner-approved Video Uniquifier uses visible mode cards; #mode is
+  // its deliberately hidden source-of-truth select, not a clickable control.
+  for(const value of ['balanced','dynamic','gentle']){
+    const button=page.locator(`.vu-mode-card[data-mode="${value}"]`);
+    await expect(button).toBeVisible();
+    await expect(button).toBeEnabled();
+    await button.click();
+    await expect(button).toHaveAttribute('aria-pressed','true');
+    await expect(mode).toHaveValue(value);
+  }
 
   const quality=page.locator('#quality');
   await expect(quality).toBeEnabled();
   await expect(quality.locator('option[value="720"]')).not.toHaveAttribute('disabled','');
   await expect(quality.locator('option[value="1080"]')).not.toHaveAttribute('disabled','');
   await expect(quality.locator('option[value="2160"]')).not.toHaveAttribute('disabled','');
-  await quality.selectOption('1080');
-  await expect(quality).toHaveValue('1080');
-  await quality.selectOption('2160');
-  await expect(quality).toHaveValue('2160');
-  await quality.selectOption('720');
-  await expect(quality).toHaveValue('720');
+  // Likewise, exercise real visible resolution controls instead of the
+  // hidden legacy select; assert the actual processing value after each click.
+  for(const value of ['1080','2160','720']){
+    const button=page.locator(`.vu-quality-button[data-quality="${value}"]`);
+    await expect(button).toBeVisible();
+    await expect(button).toBeEnabled();
+    await button.click();
+    await expect(button).toHaveAttribute('aria-pressed','true');
+    await expect(quality).toHaveValue(value);
+  }
 
   await expect(page.locator('#variantCount option[value="10"]')).toHaveAttribute('disabled','');
   await expect(page.locator('#variantCount option[value="15"]')).toHaveAttribute('disabled','');

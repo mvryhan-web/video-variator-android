@@ -1,0 +1,35 @@
+name: Coordinator BASE50 historical work survives kill switches
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'tests/coordinator-base50-historical-jobs-switches-unit.mjs'
+      - '.github/workflows/coordinator-base50-history-switch-acceptance.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  existing-history-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      STRIPE_WEBHOOK_SECRET: ''
+      OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+      AI_BILLING_ENABLED: 'false'
+      AI_PUBLIC_GENERATION_ENABLED: 'false'
+      AI_PURCHASED_ONLY_DISPATCH_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Syntax and offline BASE50 regression
+        run: |
+          node --check tests/coordinator-base50-historical-jobs-switches-unit.mjs
+          node --test tests/coordinator-base50-historical-jobs-switches-unit.mjs tests/base50-feature-flags-unit.mjs tests/base50-platform-feature-flags-unit.mjs tests/agent-d-base50-rollout-security-unit.mjs
