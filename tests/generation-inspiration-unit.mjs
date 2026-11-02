@@ -107,12 +107,12 @@ test('inspiration search treats typed percent, underscore, and backslash literal
  const app=express();installInspiration(app,{pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true'},auth:(_req,_res,next)=>next()});
  const server=app.listen(0);await new Promise(r=>server.once('listening',r));
  try{
-  const typed=String.raw`100%_\\sale`;
+  const typed='100%_'+String.fromCharCode(92)+'sale';
   const response=await fetch('http://127.0.0.1:'+server.address().port+'/api/inspiration?q='+encodeURIComponent(typed));
   assert.equal(response.status,200);
   const sql=calls.find(x=>x.sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true'));
   assert.ok(sql);
-  assert.deepEqual(sql.args,[String.raw`%100\\%\\_\\\\sale%`]);
+  assert.deepEqual(sql.args,['%100'+String.fromCharCode(92)+'%'+String.fromCharCode(92)+'_'+String.fromCharCode(92,92)+'sale%']);
   assert.match(sql.sql,/title ILIKE \$1/);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
