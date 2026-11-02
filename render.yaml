@@ -45,10 +45,12 @@ services:
         sync: false
       - key: INTRO_OFFER_TEXT
         value: Intro discount available on your first subscription
+      - key: DEEPSYQ_HOME_ENABLED
+        value: "true"
       - key: WEB_VERSION
-        value: 5.0.0
+        value: 5.3.0
       - key: ANDROID_VERSION
-        value: 5.0.0
+        value: 5.3.0
       - key: ANDROID_VERSION_CODE
         value: "5"
       - key: LATEST_APK_URL
