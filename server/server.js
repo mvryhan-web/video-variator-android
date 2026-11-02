@@ -275,6 +275,8 @@ async function seedStarterInspirationAndTemplates(){
   if(!generationPool)return;
   try{
     await runAiMigrations(generationPool);
+    await generationPool.query(`DELETE FROM vv_ai_inspiration WHERE preview_url LIKE '%logo%' OR preview_poster_url LIKE '%logo%' OR slug LIKE 'insp_seed_%';`);
+    await generationPool.query(`DELETE FROM vv_ai_template WHERE thumbnail LIKE '%logo%' OR slug LIKE 'tpl_seed_%';`);
     await generationPool.query(`
       INSERT INTO vv_ai_inspiration(id,title,slug,kind,category,description,preview_url,preview_poster_url,prompt,default_model,aspect_ratio,required_input_types,default_settings,action_target,rights_basis,rights_note,active,featured,sort_order)
       VALUES

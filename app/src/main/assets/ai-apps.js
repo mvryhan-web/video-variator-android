@@ -180,7 +180,7 @@ async function load(){
   const response=await fetch('/api/templates',{cache:'no-store'});
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw Error('TEMPLATES_UNAVAILABLE');
-  all=Array.isArray(data.items)?data.items.filter(item=>item.generationType!=='product_video'):[];
+  all=Array.isArray(data.items)?data.items.filter(item=>item.generationType!=='product_video'&&!item.thumbnail?.includes('logo')):[]
   renderCategories();restoreFiltersFromUrl();
  }catch(_){
   $('clearFilters').disabled=true;

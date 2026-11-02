@@ -136,7 +136,7 @@ let items=[],activeKind='all',afterDraw=()=>{};
 export function renderHomeInspiration(feed,onRender=()=>{}){
  afterDraw=onRender;
  document.querySelectorAll('[data-canvas-example]').forEach(button=>{const item=feed.find(item=>item.slug===button.dataset.canvasExample||item.id===button.dataset.canvasExample);button.disabled=!item;button.onclick=item?()=>openInspirationDetail(item,button):null;});
- items=feed.filter(item=>item.actionTarget==='studio'&&['video','image'].includes(item.kind));
+ items=feed.filter(item=>item.actionTarget==='studio'&&['video','image'].includes(item.kind)&&!item.previewUrl?.includes('logo')&&!item.previewPosterUrl?.includes('logo'));
  const section=document.getElementById('inspirationPreview');
  section.hidden=false;
  section.querySelectorAll('[data-inspiration-kind]').forEach(button=>button.onclick=()=>{
