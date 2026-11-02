@@ -1,0 +1,107 @@
+{
+  "status": "QA_CORRECTIONS",
+  "createdDisplayed": 40,
+  "targetPromo": 10,
+  "promoCreated": 0,
+  "etsy": "NOT_CREATED",
+  "files": [
+    {
+      "id": 26,
+      "scene": "Fox and rabbit lie on backs on snow making two snow angels with broad outlined wing-shaped impressions; correct four limbs per mammal",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-bcb9252a-cfd3-4a5c-af39-f53c992bc53f.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 27,
+      "scene": "Bear and deer walk beside an unfrozen woodland lake viewed from the safe snowy bank, big pine tree, rounded mountains",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-810402fe-cc04-4867-b202-3cf20b9cc466.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 28,
+      "scene": "Rabbit waits at bottom of a gentle sledding hill while penguin rides a sled toward them, distinct from single fox sled page",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-d46cfdb9-c397-4ee8-9654-0355541bf9af.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 29,
+      "scene": "Fox stands outside a little snowy forest cabin carrying one log, one round window and chimney, two rounded pines",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-5ed55f9a-3983-42eb-b615-cb662c614e09.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 30,
+      "scene": "Deer and rabbit investigate a trail of large simple paw prints in snow using one magnifying glass",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-e713b7dd-7678-4d9b-a638-c5f9dbcf1e71.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 31,
+      "scene": "Bear holds one large mug of hot cocoa at a small table by a snowy window, scarf on chair, plate with two cookies",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-6b8bddd0-e544-497c-acac-2f105a0c7575.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 32,
+      "scene": "Fox and penguin enjoy a winter picnic on a broad blanket, thermos and two cups with one bread roll each, no Christmas props",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-b1b8a1d5-bc05-43ef-b34d-6d7a4e1afb54.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 33,
+      "scene": "Bear and rabbit build a small snow-block fort with three large lower blocks and two upper blocks, one toy shovel",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-d16ab256-d191-48bb-a4be-8e8540321886.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 34,
+      "scene": "Deer decorates a long winter scarf laid across a low table using three simple sewn patches: circle star heart, no sharp sewing tools",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-7eed64ff-ecd9-4102-b07c-6fb53be05f9d.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 35,
+      "scene": "Penguin and fox finish a small igloo made of big simple outlined snow blocks, open arched doorway and one shovel",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-9adf874a-98cc-4420-8d01-460f52a4a7d7.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 36,
+      "scene": "Rabbit and bear ride a short cheerful winter train in two open carriages; engine with round wheels, snowy hill behind",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-f0911476-4722-47b6-a709-8f7016301c5f.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 37,
+      "scene": "Fox and deer play gently tossing one large soft snowball between them, two little snowball piles on ground",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-930c469b-f3a6-4e0f-aba4-70a36de856bf.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 38,
+      "scene": "Rabbit walks under large simple falling snowflakes carrying a wide open umbrella with clearly visible handle",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-acad4b4c-c9fb-4677-9f7b-a3099d4f9166.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 39,
+      "scene": "Bear and penguin watch three broad outlined ribbons of northern lights from a snowy hill, crescent moon and few big stars, no dark sky fill",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-17659bff-f832-4c51-9a22-52d5cbc2e7a4.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 40,
+      "scene": "Fox curls on a broad window seat with one blanket and a mug on a separate side table, snowy pine outside, quiet winter evening",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-0cb3fdc5-2c3c-40f1-bd05-6ee85de02a98.png",
+      "visual": "REVISE_BROKEN_TREE_CONTOURS"
+    }
+  ],
+  "correctionIDs": [
+    4,
+    9,
+    12,
+    15,
+    20,
+    40
+  ]
+}
