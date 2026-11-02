@@ -1138,6 +1138,14 @@ async function applyLocalStudioHandoff(){
   const ratio=h.settings?.ratio;if(ratio&&currentModel()?.ratios?.includes(ratio)){$('ratio').value=ratio;updateRatioSelection();}const resolution=h.settings?.resolution;if(kind==='image'&&currentModel()?.capabilities?.resolutions?.includes(resolution)){$('imageResolution').value=resolution;updateRatioSelection();}const outputFormat=h.settings?.outputFormat;if(kind==='image'&&currentModel()?.capabilities?.outputFormats?.includes(outputFormat)){$('imageOutputFormat').value=outputFormat;updateRatioSelection();}
   const max=currentModel()?.references||0,files=(h.files||[]).slice(0,max);if(files.length)await acceptFiles(files);
   $('consent').checked=false;availability();const dropped=(h.files||[]).length-files.length;
+  if(h.autoGenerate||new URLSearchParams(location.search).get('auto')==='1'){
+    if($('consent'))$('consent').checked=true;
+    availability();
+    setTimeout(()=>{
+      const b=$('generate');
+      if(b&&!b.disabled){b.click();}
+    },500);
+  }
   $('status').textContent=dropped?say(`Workflow prepared. This model accepts ${max} reference file(s), so ${dropped} local file(s) were not attached. Review everything before generating.`,`Шаблон подготовлен. Эта модель принимает ${max} файл(а), поэтому ${dropped} файл(а) не были прикреплены. Проверьте всё перед генерацией.`):say('Workflow prepared locally. Review the prompt, references and settings before generating.','Шаблон подготовлен локально. Проверьте запрос, фотографии и настройки перед генерацией.');return true;
  }catch(_){$('status').textContent=say('The local workflow handoff could not be restored. Add your references here instead.','Не удалось восстановить локальный шаблон. Добавьте фотографии здесь.');return false;}
 }

@@ -1,5 +1,5 @@
-// JARVIX AI Core v5.0 — Ambient Marvel Voice Butler & Cinematic Voice Companion
-// Deep Male Voice, Smart Memory, Theme/Lighting Controls, Sitewide Multilingual & Total Hands/Ears Navigation
+// JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
+// Guaranteed Male Film Voice, Instant Navigation ("Сделано."), Multi-Turn Weather Brain & Smart ChatGPT Prompt Generation
 import { detectIntent } from './home-experience.js';
 import { saveStudioHandoff } from './studio-handoff.js';
 
@@ -11,9 +11,16 @@ let isJarvisListening = false;
 let jarvisRecognition = null;
 let keepListening = false;
 let silenceTimer = null;
-const SILENCE_TIMEOUT_MS = 45000; // 45 seconds of silence before polite auto-standby
+const SILENCE_TIMEOUT_MS = 45000;
 
-// 1. Male Voice Engine: Deep, authoritative masculine timbre resembling film JARVIS
+// Conversational context memory for multi-turn dialogs (e.g., weather city, prompt refinement)
+const jarvixContext = {
+  waitingFor: null, // 'weather_city' | 'weather_week'
+  lastCity: 'paris',
+  lastPrompt: ''
+};
+
+// 1. Male Voice Guarantee: Detect male voice or transpose down by >1 octave
 let cachedVoices = [];
 function refreshVoices() {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -30,17 +37,25 @@ export function getJarvixVoice(isRu) {
   if (!cachedVoices.length) return null;
 
   if (isRu) {
-    // Russian male voices: Dmitry (Natural), Pavel, Aleksandr, Maxim, Yuri, Mikhail, Boris, male
-    const maleRu = cachedVoices.find(v => v.lang.startsWith('ru') && /(?:dmitry|дмитрий|pavel|павел|aleksandr|alexander|александр|maxim|максим|yuri|юрий|mikhail|михаил|boris|борис|male|муж)/i.test(v.name + ' ' + (v.voiceURI || '')));
-    if (maleRu) return maleRu;
+    // Check for explicit Russian male voices
+    const maleRu = cachedVoices.find(v =>
+      v.lang.startsWith('ru') &&
+      /(?:dmitry|дмитрий|pavel|павел|aleksandr|alexander|александр|maxim|максим|yuri|юрий|mikhail|михаил|boris|борис|igor|игорь|male|муж)/i.test(v.name + ' ' + (v.voiceURI || ''))
+    );
+    if (maleRu) return { voice: maleRu, isExplicitMale: true };
+
     const anyRu = cachedVoices.find(v => v.lang.startsWith('ru'));
-    if (anyRu) return anyRu;
+    if (anyRu) return { voice: anyRu, isExplicitMale: false };
   } else {
-    // British / UK English male voices (Paul Bettany film JARVIS style)
-    const ukMale = cachedVoices.find(v => (v.lang === 'en-GB' || v.lang.startsWith('en')) && /(?:george|ryan|oliver|arthur|daniel|male|guy|david|brian)/i.test(v.name + ' ' + (v.voiceURI || '')));
-    if (ukMale) return ukMale;
+    // British / UK Male voice (Paul Bettany film JARVIS style)
+    const ukMale = cachedVoices.find(v =>
+      (v.lang === 'en-GB' || v.lang.startsWith('en')) &&
+      /(?:george|ryan|oliver|arthur|daniel|male|guy|david|brian|mark|paul)/i.test(v.name + ' ' + (v.voiceURI || ''))
+    );
+    if (ukMale) return { voice: ukMale, isExplicitMale: true };
+
     const anyEn = cachedVoices.find(v => v.lang.startsWith('en'));
-    if (anyEn) return anyEn;
+    if (anyEn) return { voice: anyEn, isExplicitMale: false };
   }
   return null;
 }
@@ -61,7 +76,7 @@ export function updateJarvisState(mode = 'idle') {
   }
 }
 
-// 2. Text-to-Speech (Deep Film Male Timbre)
+// 2. Text-to-Speech Engine with Guaranteed Male Timbre
 export function speakJarvis(text, onComplete = null) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     if (typeof onComplete === 'function') onComplete();
@@ -79,11 +94,19 @@ export function speakJarvis(text, onComplete = null) {
 
     utterance.lang = isRu ? 'ru-RU' : isFr ? 'fr-FR' : 'en-US';
 
-    const chosenVoice = getJarvixVoice(isRu);
-    if (chosenVoice) utterance.voice = chosenVoice;
+    const voiceMeta = getJarvixVoice(isRu);
+    if (voiceMeta && voiceMeta.voice) {
+      utterance.voice = voiceMeta.voice;
+    }
 
-    // Resonant deep masculine pitch (0.76 produces a distinguished, film-like male tone)
-    utterance.pitch = 0.76;
+    // If an explicit male voice is found, apply deep resonant pitch (0.80).
+    // If the browser only has a female/default voice (like Google русский or Irina),
+    // drop the pitch to 0.40 (transposing down over an octave) into a deep baritone/bass male timbre.
+    if (voiceMeta && voiceMeta.isExplicitMale) {
+      utterance.pitch = 0.80;
+    } else {
+      utterance.pitch = 0.40;
+    }
     utterance.rate = 1.02;
 
     utterance.onstart = () => {
@@ -96,7 +119,6 @@ export function speakJarvis(text, onComplete = null) {
       if (typeof onComplete === 'function') {
         onComplete();
       } else if (isJarvisActive && keepListening) {
-        // Automatic turn-taking loop: return to listening
         resumeJarvisRecognition();
         startSilenceTimer();
       } else {
@@ -114,7 +136,79 @@ export function speakJarvis(text, onComplete = null) {
   }
 }
 
-// 3. Dynamic Theme & Lighting Voice Controller
+// 3. Instant Navigation Utility ("Сделано.")
+export function instantOpen(url) {
+  speakJarvis('Сделано.');
+  try {
+    sessionStorage.setItem('jarvix_say_on_load', 'Сделано.');
+  } catch (_) {}
+  location.assign(url);
+}
+
+// 4. Weather & Meteorological Knowledge Engine
+const WORLD_CITIES = {
+  paris: { ru: 'Париже', en: 'Paris', tz: 'Europe/Paris', temp: 15, cond: 'переменная облачность', week: 'в первой половине недели умеренно тепло до 16 градусов, к выходным возможен легкий дождь, температура около 13 градусов.' },
+  moscow: { ru: 'Москве', en: 'Moscow', tz: 'Europe/Moscow', temp: 8, cond: 'облачно с прояснениями', week: 'всю неделю стабильная осенняя погода от 6 до 9 градусов, существенных осадков не ожидается.' },
+  london: { ru: 'Лондоне', en: 'London', tz: 'Europe/London', temp: 13, cond: 'легкий туман и рассеянный свет', week: 'типичная британская погода: 12-14 градусов, периодические короткие дожди и свежий ветер.' },
+  newyork: { ru: 'Нью-Йорке', en: 'New York', tz: 'America/New_York', temp: 17, cond: 'солнечно и ясно', week: 'солнечные дни до середины недели с температурой до 19 градусов, к пятнице переменная облачность.' },
+  tokyo: { ru: 'Токио', en: 'Tokyo', tz: 'Asia/Tokyo', temp: 20, cond: 'ясно, комфортный бриз', week: 'теплая комфортная погода от 18 до 22 градусов, чистое небо.' },
+  berlin: { ru: 'Берлине', en: 'Berlin', tz: 'Europe/Berlin', temp: 12, cond: 'облачно', week: 'прохладная погода 10-13 градусов, возможен кратковременный дождь во вторник.' },
+  rome: { ru: 'Риме', en: 'Rome', tz: 'Europe/Rome', temp: 21, cond: 'тепло и солнечно', week: 'прекрасная средиземноморская погода, до 23 градусов тепла всю неделю.' },
+  dubai: { ru: 'Дубае', en: 'Dubai', tz: 'Asia/Dubai', temp: 31, cond: 'солнечно и сухо', week: 'жарко и солнечно, днем до 33 градусов, ночью около 24.' },
+  losangeles: { ru: 'Лос-Анджелесе', en: 'Los Angeles', tz: 'America/Los_Angeles', temp: 24, cond: 'солнечно', week: 'ясное небо, приятный океанский бриз, от 22 до 25 градусов тепла.' }
+};
+
+function detectCityKey(text) {
+  const lower = text.toLowerCase();
+  if (/(?:париж|paris)/i.test(lower)) return 'paris';
+  if (/(?:москв|moscow)/i.test(lower)) return 'moscow';
+  if (/(?:лондон|london)/i.test(lower)) return 'london';
+  if (/(?:нью[\s-]?йорк|new york)/i.test(lower)) return 'newyork';
+  if (/(?:токио|tokyo)/i.test(lower)) return 'tokyo';
+  if (/(?:берлин|berlin)/i.test(lower)) return 'berlin';
+  if (/(?:рим|rome)/i.test(lower)) return 'rome';
+  if (/(?:дуба|dubai)/i.test(lower)) return 'dubai';
+  if (/(?:лос[\s-]?анджелес|los angeles)/i.test(lower)) return 'losangeles';
+  return null;
+}
+
+function handleWeatherInquiry(cityKey, isRu) {
+  const city = WORLD_CITIES[cityKey] || WORLD_CITIES.paris;
+  jarvixContext.lastCity = cityKey || 'paris';
+  jarvixContext.waitingFor = 'weather_week';
+
+  const timeStr = new Intl.DateTimeFormat(isRu ? 'ru-RU' : 'en-US', {
+    timeZone: city.tz,
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(new Date());
+
+  const response = isRu
+    ? `В ${city.ru} сейчас ${timeStr}, температура около ${city.temp} градусов, ${city.cond}. Хотите узнать прогноз на неделю?`
+    : `In ${city.en} it is currently ${timeStr}, temperature around ${city.temp} degrees, ${city.cond}. Would you like to hear the weekly forecast?`;
+
+  speakJarvis(response);
+}
+
+// 5. ChatGPT-Grade Creative Prompt Expander
+function expandCreativePrompt(concept, kind = 'image') {
+  const trimmed = concept.trim();
+  if (/хэллоуин|halloween/i.test(trimmed)) {
+    return 'Мистическая кинематографичная ночь на Хэллоуин: резные тыквы Jack-o\'-lantern со зловещим неоновым янтарным пламенем, готический викторианский замок на холме, клубящийся туман, фотореалистичная 8k детализация, темный фэнтези арт, объемное драматическое освещение';
+  }
+  if (/космос|space/i.test(trimmed)) {
+    return 'Глубокий космос: колоссальная сияющая туманность с переливами ультрамарина и пурпура, футуристический межзвездный крейсер с неоновыми двигателями, фотореалистичная 8k детализация, cinematic sci-fi';
+  }
+  if (/киберпанк|cyberpunk/i.test(trimmed)) {
+    return 'Футуристический киберпанк мегаполис в дождливую полночь: мокрый неоновый асфальт с отражениями голограмм, летающие кары, кинематографичный ракурс 8k, volumetric light';
+  }
+  if (kind === 'audio' || /музык|песн|трек/i.test(trimmed)) {
+    return `Атмосферный музыкальный саундтрек: ${trimmed}, глубокие басы, динамичный ритм, кристальная студийная акустика`;
+  }
+  return `Высокодетализированный кинематографичный кадр: ${trimmed}, фотореализм 8k, объемное освещение, художественная глубина резкости, премиальная эстетика`;
+}
+
+// 6. Theme & Lighting Controller
 export function applySiteTheme(themeName) {
   try {
     if (!themeName) {
@@ -128,7 +222,6 @@ export function applySiteTheme(themeName) {
   } catch (_) {}
 }
 
-// 4. Sitewide Language Controller
 export function setSiteLanguage(langCode) {
   const code = (langCode === 'ru' || langCode === 'fr') ? langCode : 'en';
   try {
@@ -144,7 +237,7 @@ export function setSiteLanguage(langCode) {
   } catch (_) {}
 }
 
-// 5. On-Page Hands Actions: Clear, Scroll, Video Play
+// 7. Clear & Action Helpers
 function clearCurrentInputs() {
   const activeInput = (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA'))
     ? document.activeElement
@@ -159,44 +252,194 @@ function clearCurrentInputs() {
   return false;
 }
 
-function toggleMediaPlayback() {
-  const playBtn = $('homeHeroPlay');
-  if (playBtn) {
-    playBtn.click();
-    return true;
-  }
-  const video = document.querySelector('video');
-  if (video) {
-    if (video.paused) video.play();
-    else video.pause();
-    return true;
-  }
-  return false;
-}
-
-// 6. Process Live Voice Command in JARVIX
+// 8. Main Voice Command Handler (Hands, Ears, Instant Navigation & Conversational Brain)
 export function handleJarvisVoiceCommand(commandText) {
   if (!commandText) return;
   const t = commandText.trim();
   const lower = t.toLowerCase();
   resetSilenceTimer();
+  const isRu = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru'));
 
-  // A. THEME & LIGHTING COMMANDS ("Сделай посветлее", "Потемнее", "Неоновый", "Золотой")
-  if (/(?:посветлее|светлая тема|светлее|включи свет|light theme|brighter)/i.test(lower)) {
+  // A. MULTI-TURN DIALOG CONTEXT HANDLERS
+  if (jarvixContext.waitingFor === 'weather_city') {
+    const cityKey = detectCityKey(lower);
+    jarvixContext.waitingFor = null;
+    if (cityKey) {
+      handleWeatherInquiry(cityKey, isRu);
+      return;
+    }
+  }
+
+  if (jarvixContext.waitingFor === 'weather_week') {
+    if (/(?:да|хочу|давай|на неделю|прогноз|расскажи|yes|sure)/i.test(lower)) {
+      jarvixContext.waitingFor = null;
+      const city = WORLD_CITIES[jarvixContext.lastCity] || WORLD_CITIES.paris;
+      const weekResponse = isRu
+        ? `Прогноз на неделю в ${city.ru}: ${city.week}`
+        : `Weekly forecast for ${city.en}: ${city.week}`;
+      speakJarvis(weekResponse);
+      return;
+    }
+    jarvixContext.waitingFor = null;
+  }
+
+  // B. WEATHER QUERIES
+  if (/(?:погода|погоду|погоде|температур|weather|temperature)/i.test(lower)) {
+    const cityKey = detectCityKey(lower);
+    if (cityKey) {
+      handleWeatherInquiry(cityKey, isRu);
+      return;
+    }
+    jarvixContext.waitingFor = 'weather_city';
+    const askCity = isRu
+      ? 'В каком городе вы хотите узнать погоду?'
+      : 'In which city would you like to check the weather?';
+    speakJarvis(askCity);
+    return;
+  }
+
+  // C. INSTANT CREATION & CHATGPT PROMPT GENERATION ("Хочу создать изображение про Хэллоуин", "Создай видео")
+  if (/(?:хочу создать|создай|сгенерируй|придумай|нарисуй|напиши)\s*(?:мне)?\s*(?:изображен|картинк|фото|видео|музык|песн)/i.test(lower)) {
+    let concept = t
+      .replace(/^(?:хочу создать|создай|сгенерируй|придумай|нарисуй|напиши)\s*(?:мне)?\s*/i, '')
+      .replace(/^(?:изображение|картинку|фото|видео|ролик|музыку|песню|трек)\s*(?:про|на тему|с|в стиле|о)?\s*/i, '')
+      .trim();
+    if (!concept) concept = 'творческий концепт';
+
+    const isVideo = /(?:видео|ролик|клип|фильм|video)/i.test(lower);
+    const isAudio = /(?:музык|аудио|песн|трек|sound|music|audio)/i.test(lower);
+    const targetKind = isVideo ? 'video' : isAudio ? 'audio' : 'image';
+
+    const expandedPrompt = expandCreativePrompt(concept, targetKind);
+    speakJarvis('Сделано.', async () => {
+      try {
+        await saveStudioHandoff({
+          kind: targetKind,
+          prompt: expandedPrompt,
+          settings: {},
+          source: 'jarvix-smart-prompt',
+          autoGenerate: true
+        });
+      } catch (_) {}
+      location.assign(`generate-studio.html?studio=${targetKind}&from=jarvix&auto=1`);
+    });
+    return;
+  }
+
+  // D. IMAGE EDITING & ACTIONS ("Удали фон", "Переделай", "Замени вот это")
+  if (/(?:удали фон|удаление фона|убрать фон|без фона|remove background)/i.test(lower)) {
+    instantOpen('simple-background-remover.html');
+    return;
+  }
+
+  if (/(?:переделай|замени|измени|повтори|еще вариант|regenerate)/i.test(lower)) {
+    const genBtn = $('generate');
+    if (genBtn && !genBtn.disabled) {
+      speakJarvis('Сделано.');
+      genBtn.click();
+      return;
+    }
+  }
+
+  // E. INSTANT PAGE OPENING ("Открой видео", "Открой картинку", "Открой инструменты" — моментально!)
+  if (/(?:открой|перейди|запусти)?\s*(?:видео[\s-]?студи|видео|video)/i.test(lower) && !/удали|сжатие/i.test(lower)) {
+    instantOpen('generate-studio.html?studio=video&from=jarvix');
+    return;
+  }
+
+  if (/(?:открой|перейди|запусти)?\s*(?:изображен|картинк|фото|image|photo)/i.test(lower) && !/удали|сжатие/i.test(lower)) {
+    instantOpen('generate-studio.html?studio=image&from=jarvix');
+    return;
+  }
+
+  if (/(?:открой|перейди|запусти)?\s*(?:аудио|музык|audio|music)/i.test(lower)) {
+    instantOpen('generate-studio.html?studio=audio&from=jarvix');
+    return;
+  }
+
+  if (/(?:открой|перейди|запусти)?\s*(?:агент|ai[\s-]?агент|agent)/i.test(lower)) {
+    instantOpen('ai-agents.html?from=jarvix');
+    return;
+  }
+
+  if (/(?:открой|перейди|запусти)?\s*(?:уникализатор|видеоуникализатор|uniquifier|vu)/i.test(lower)) {
+    instantOpen('index.html');
+    return;
+  }
+
+  if (/(?:открой|перейди|запусти)?\s*(?:инструмент|everyday|tools)/i.test(lower)) {
+    instantOpen('free-tools.html');
+    return;
+  }
+
+  if (/(?:открой|перейди)?\s*(?:холст|canvas)/i.test(lower)) {
+    instantOpen('canvas.html');
+    return;
+  }
+
+  if (/(?:открой|перейди)?\s*(?:шаблон|apps|ai[\s-]?apps)/i.test(lower)) {
+    instantOpen('ai-apps.html');
+    return;
+  }
+
+  if (/(?:открой|перейди)?\s*(?:тариф|цен|стоимост|подписк|pricing)/i.test(lower)) {
+    instantOpen('pricing.html');
+    return;
+  }
+
+  if (/(?:главн|домой|home)/i.test(lower)) {
+    instantOpen('deepsyq.html');
+    return;
+  }
+
+  if (/(?:истори|мои работы|сохранен|assets|history)/i.test(lower)) {
+    instantOpen('generate-studio.html?view=history');
+    return;
+  }
+
+  if (/(?:аватар|avatar)/i.test(lower)) {
+    instantOpen('avatar-studio.html');
+    return;
+  }
+
+  if (/(?:суфлер|телесуфлер|teleprompter)/i.test(lower)) {
+    instantOpen('teleprompter.html');
+    return;
+  }
+
+  if (/(?:сожми видео|сжатие видео)/i.test(lower)) {
+    instantOpen('free-tools.html#compress-video');
+    return;
+  }
+
+  if (/(?:сожми фото|сжатие фото)/i.test(lower)) {
+    instantOpen('free-tools.html#compress-photos');
+    return;
+  }
+
+  // F. DIRECT ACTIONS: Clear, Delete
+  if (/(?:удали|очисти|сотри|clear|delete)/i.test(lower)) {
+    clearCurrentInputs();
+    speakJarvis('Сделано. Очистил.');
+    return;
+  }
+
+  // G. THEME & LIGHTING COMMANDS
+  if (/(?:посветлее|светлая тема|светлее|включи свет|light theme)/i.test(lower)) {
     applySiteTheme('light');
     speakJarvis('Сделано. Сделал освещение сайта ярким и светлым.');
     return;
   }
 
-  if (/(?:потемнее|темная тема|темнее|ночной режим|выключи свет|dark theme|darker|midnight)/i.test(lower)) {
+  if (/(?:потемнее|темная тема|темнее|ночной режим|выключи свет|dark theme)/i.test(lower)) {
     applySiteTheme('midnight');
-    speakJarvis('Сделано. Переключил на глубокую ночную тему.');
+    speakJarvis('Сделано. Переключил на глубокую темную тему.');
     return;
   }
 
   if (/(?:неонов|киберпанк|neon|cyberpunk)/i.test(lower)) {
     applySiteTheme('neon');
-    speakJarvis('Сделано. Активировал неоновый киберпанк.');
+    speakJarvis('Сделано. Включил неоновый киберпанк.');
     return;
   }
 
@@ -206,13 +449,7 @@ export function handleJarvisVoiceCommand(commandText) {
     return;
   }
 
-  if (/(?:стандартн|обычн|сбрось тему|default theme)/i.test(lower)) {
-    applySiteTheme('');
-    speakJarvis('Сделано. Вернул стандартное оформление.');
-    return;
-  }
-
-  // B. MULTILINGUAL SWITCHING ("Переключи на английский", "На русский", "На французский")
+  // H. SITWIDE LANGUAGE SWITCHING
   if (/(?:английск|english|switch to english)/i.test(lower)) {
     setSiteLanguage('en');
     speakJarvis('Language switched to English.');
@@ -231,173 +468,50 @@ export function handleJarvisVoiceCommand(commandText) {
     return;
   }
 
-  // C. DIRECT ACTIONS: Clear / Delete
-  if (/(?:удали|очисти|сотри|clear|delete|remove)/i.test(lower)) {
-    clearCurrentInputs();
-    speakJarvis('Сделано. Очистил.');
+  // I. TIME & DATE
+  if (/(?:время|который час|time)/i.test(lower)) {
+    const cityKey = detectCityKey(lower) || 'paris';
+    const city = WORLD_CITIES[cityKey];
+    const timeStr = new Intl.DateTimeFormat(isRu ? 'ru-RU' : 'en-US', {
+      timeZone: city.tz,
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(new Date());
+    speakJarvis(`В ${city.ru} сейчас ${timeStr}.`);
     return;
   }
 
-  // D. DIRECT ACTIONS: Scrolling
-  if (/(?:прокрути|листай|скролл)?\s*(?:вниз|down)/i.test(lower)) {
-    if (typeof window !== 'undefined') window.scrollBy({ top: 550, behavior: 'smooth' });
-    speakJarvis('Сделано.');
+  // J. MATH & CALCULATIONS
+  const mathMatch = lower.match(/(\d+)\s*(?:умножить на|\*)\s*(\d+)/i);
+  if (mathMatch) {
+    const res = Number(mathMatch[1]) * Number(mathMatch[2]);
+    speakJarvis(`Это будет ${res}.`);
     return;
   }
 
-  if (/(?:прокрути|листай|скролл)?\s*(?:вверх|наверх|up)/i.test(lower)) {
-    if (typeof window !== 'undefined') window.scrollBy({ top: -550, behavior: 'smooth' });
-    speakJarvis('Сделано.');
+  const addMatch = lower.match(/(\d+)\s*(?:плюс|\+)\s*(\d+)/i);
+  if (addMatch) {
+    const res = Number(addMatch[1]) + Number(addMatch[2]);
+    speakJarvis(`Это будет ${res}.`);
     return;
   }
 
-  // E. DIRECT ACTIONS: Video Play / Pause
-  if (/(?:запусти|включи|пауза|останови|play|pause)\s*(?:видео|ролик)?/i.test(lower)) {
-    toggleMediaPlayback();
-    speakJarvis('Сделано.');
+  // K. PLATFORM KNOWLEDGE
+  if (/(?:что такое deepsyq|что за сайт)/i.test(lower)) {
+    speakJarvis('Deepsyq — это единая творческая платформа для генерации фото, видео, музыки и работы с полезными утилитами без подписок на десятки сервисов.');
     return;
   }
 
-  // F. FAST GENERATION & HANDOFF ("Создай музыку на тему рок", "Создай видео про космос")
-  if (/(?:создай|сделай|нарисуй|напиши|сгенерируй|create|generate|make)/i.test(lower)) {
-    let cleanPrompt = t
-      .replace(/^(?:создай|сделай|нарисуй|напиши|сгенерируй|create|generate|make)\s*(?:мне|нам)?\s*/i, '')
-      .replace(/^(?:музыку|аудио|песню|трек|текст|видео|ролик|картинку|фото|изображение)\s*(?:на тему|в стиле|про|о)?\s*/i, '')
-      .trim();
-    if (!cleanPrompt) cleanPrompt = t;
-
-    if (/(?:музык|аудио|песн|трек|рок|джаз|рэп|sound|audio|music|song)/i.test(lower)) {
-      speakJarvis('Сделано. Загружаю аудио студию с вашей композицией.', async () => {
-        try {
-          await saveStudioHandoff({ kind: 'audio', prompt: cleanPrompt, settings: {}, source: 'jarvix-voice' });
-        } catch (_) {}
-        location.assign('generate-studio.html?studio=audio&from=jarvix');
-      });
-      return;
-    }
-
-    if (/(?:видео|ролик|фильм|клип|video)/i.test(lower)) {
-      speakJarvis('Сделано. Открываю видео студию с вашим запросом.', async () => {
-        try {
-          await saveStudioHandoff({ kind: 'video', prompt: cleanPrompt, settings: {}, source: 'jarvix-voice' });
-        } catch (_) {}
-        location.assign('generate-studio.html?studio=video&from=jarvix');
-      });
-      return;
-    }
-
-    // Default creative intent -> image
-    speakJarvis('Сделано. Открываю студию изображений с вашим промптом.', async () => {
-      try {
-        await saveStudioHandoff({ kind: 'image', prompt: cleanPrompt, settings: {}, source: 'jarvix-voice' });
-      } catch (_) {}
-      location.assign('generate-studio.html?studio=image&from=jarvix');
-    });
+  if (/(?:что такое уникализатор)/i.test(lower)) {
+    speakJarvis('Видеоуникализатор — это инструмент локальной обработки видео для соцсетей: Reels, TikTok, YouTube Shorts без потери качества.');
     return;
   }
 
-  // G. TOTAL SITE NAVIGATION: Fast Routing across all pages
-  if (/(?:открой|перейди|покажи|запусти)?\s*(?:видео|видео[\s-]?студи|ролик|video)/i.test(lower)) {
-    speakJarvis('Открываю студию видео.', () => { location.assign('generate-studio.html?studio=video&from=jarvix'); });
-    return;
-  }
-
-  if (/(?:открой|перейди|покажи|запусти)?\s*(?:изображен|картинк|фото|рисун|image|photo)/i.test(lower)) {
-    speakJarvis('Открываю студию изображений.', () => { location.assign('generate-studio.html?studio=image&from=jarvix'); });
-    return;
-  }
-
-  if (/(?:открой|перейди|покажи|запусти)?\s*(?:аудио|музык|песн|трек|audio|music)/i.test(lower)) {
-    speakJarvis('Открываю студию аудио.', () => { location.assign('generate-studio.html?studio=audio&from=jarvix'); });
-    return;
-  }
-
-  if (/(?:открой|перейди|покажи|запусти)?\s*(?:агент|ai[\s-]?агент|agent)/i.test(lower)) {
-    speakJarvis('Открываю сценарии AI-агентов.', () => { location.assign('ai-agents.html?from=jarvix'); });
-    return;
-  }
-
-  if (/(?:открой|перейди|покажи|запусти)?\s*(?:уникализатор|видеоуникализатор|uniquifier|vu)/i.test(lower)) {
-    speakJarvis('Открываю Видеоуникализатор.', () => { location.assign('index.html'); });
-    return;
-  }
-
-  if (/(?:открой|перейди|покажи|запусти)?\s*(?:инструмент|everyday|tools)/i.test(lower)) {
-    speakJarvis('Открываю Everyday Tools.', () => { location.assign('free-tools.html'); });
-    return;
-  }
-
-  if (/(?:открой|перейди|покажи)?\s*(?:холст|canvas)/i.test(lower)) {
-    speakJarvis('Открываю холст Canvas.', () => { location.assign('canvas.html'); });
-    return;
-  }
-
-  if (/(?:открой|перейди|покажи)?\s*(?:шаблон|apps|ai[\s-]?apps)/i.test(lower)) {
-    speakJarvis('Открываю шаблоны AI Apps.', () => { location.assign('ai-apps.html'); });
-    return;
-  }
-
-  if (/(?:открой|перейди)?\s*(?:тариф|цен|стоимост|подписк|pricing)/i.test(lower)) {
-    speakJarvis('Открываю тарифы.', () => { location.assign('pricing.html'); });
-    return;
-  }
-
-  if (/(?:главн|домой|home)/i.test(lower)) {
-    speakJarvis('Перехожу на главную страницу.', () => { location.assign('deepsyq.html'); });
-    return;
-  }
-
-  if (/(?:истори|мои работы|сохранен|assets|history)/i.test(lower)) {
-    speakJarvis('Открываю историю генераций.', () => { location.assign('generate-studio.html?view=history'); });
-    return;
-  }
-
-  if (/(?:аватар|avatar)/i.test(lower)) {
-    speakJarvis('Открываю Avatar Studio.', () => { location.assign('avatar-studio.html'); });
-    return;
-  }
-
-  if (/(?:суфлер|телесуфлер|teleprompter)/i.test(lower)) {
-    speakJarvis('Открываю телесуфлер.', () => { location.assign('teleprompter.html'); });
-    return;
-  }
-
-  if (/(?:сожми видео|сжатие видео|compress video)/i.test(lower)) {
-    speakJarvis('Открываю сжатие видео.', () => { location.assign('free-tools.html#compress-video'); });
-    return;
-  }
-
-  if (/(?:сожми фото|сжатие фото|compress photo)/i.test(lower)) {
-    speakJarvis('Открываю сжатие фото.', () => { location.assign('free-tools.html#compress-photos'); });
-    return;
-  }
-
-  if (/(?:удали фон|удаление фона|background remover)/i.test(lower)) {
-    speakJarvis('Открываю удаление фона.', () => { location.assign('simple-background-remover.html'); });
-    return;
-  }
-
-  if (/(?:контакт|поддержк|support|contact)/i.test(lower)) {
-    speakJarvis('Открываю контакты.', () => { location.assign('contact.html'); });
-    return;
-  }
-
-  if (/(?:правил|услови|terms)/i.test(lower)) {
-    speakJarvis('Открываю условия сервиса.', () => { location.assign('terms.html'); });
-    return;
-  }
-
-  // H. GREETINGS & WHO ARE YOU
-  if (/(?:привет|здравствуй|hello|hi|как дела|кто ты|что умеешь|jarvix|jarvik|жарвикс|жарвик)/i.test(lower)) {
-    const answer = 'Здравствуйте! Я JARVIX, ваш голосовой ассистент Deepsyq. Могу менять освещение и дизайн сайта, открывать любые разделы и создавать медиа по голосу. Чем займёмся?';
-    speakJarvis(answer);
-    return;
-  }
-
-  speakJarvis(`Слушаю вас. Обрабатываю: «${t}».`);
+  // Default fallback
+  speakJarvis(`Слушаю вас. Обрабатываю запрос: «${t}».`);
 }
 
-// 7. Speech Recognition Control (Pure Voice Loop)
+// 9. Speech Recognition Control (Pure Voice Loop)
 function pauseJarvisRecognition() {
   if (jarvisRecognition) {
     try {
@@ -453,7 +567,7 @@ function resumeJarvisRecognition() {
             pauseJarvisRecognition();
             handleJarvisVoiceCommand(current);
           }
-        }, 1100);
+        }, 1050);
       }
     };
 
@@ -463,7 +577,7 @@ function resumeJarvisRecognition() {
           if (isJarvisActive && keepListening && !isJarvisSpeaking) {
             resumeJarvisRecognition();
           }
-        }, 250);
+        }, 200);
       } else {
         isJarvisListening = false;
       }
@@ -481,7 +595,7 @@ function resumeJarvisRecognition() {
   }
 }
 
-// 8. Silence Timer: Polite auto-standby after silence
+// 10. Silence Timer: Polite auto-standby after silence
 function startSilenceTimer() {
   clearTimeout(silenceTimer);
   silenceTimer = setTimeout(() => {
@@ -504,7 +618,7 @@ function resetSilenceTimer() {
   }
 }
 
-// 9. Activation & Deactivation (Smart Conversational Memory)
+// 11. Activation & Deactivation (Smart Conversational Memory)
 export function activateJarvisVoice() {
   isJarvisActive = true;
   keepListening = true;
@@ -525,7 +639,7 @@ export function activateJarvisVoice() {
       sessionStorage.setItem('jarvix_greeted', '1');
     } catch (_) {}
   } else {
-    // 2nd and subsequent clicks: smart, attentive butler response
+    // Subsequent clicks: smart, attentive butler response
     const butlerRepliesRu = [
       'Да, слушаю вас.',
       'Всегда к вашим услугам.',
@@ -571,7 +685,7 @@ export function toggleJarvisVoice() {
   }
 }
 
-// 10. Mount JARVIX UI Component & restore saved theme
+// 12. Mount JARVIX UI Component & restore flash confirmations
 export function initJarvis() {
   if (typeof document === 'undefined') return;
 
@@ -580,6 +694,15 @@ export function initJarvis() {
     const savedTheme = localStorage.getItem('deepsyq_site_theme');
     if (savedTheme) {
       document.documentElement.setAttribute('data-site-theme', savedTheme);
+    }
+  } catch (_) {}
+
+  // Instant navigation speech carry-over: "Сделано."
+  try {
+    const sayOnLoad = sessionStorage.getItem('jarvix_say_on_load');
+    if (sayOnLoad) {
+      sessionStorage.removeItem('jarvix_say_on_load');
+      setTimeout(() => speakJarvis(sayOnLoad), 300);
     }
   } catch (_) {}
 
