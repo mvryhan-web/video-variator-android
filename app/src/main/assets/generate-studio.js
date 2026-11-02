@@ -1165,6 +1165,7 @@ imageDraftReady=true;videoDraftReady=true;if(kind==='image'){showImageDraftState
 const previous=sessionStorage.getItem('vu_generation_job');if(previous&&config.enabled&&sessionStorage.getItem('vu_generation_background_job')!==previous){job=previous;busy=true;availability();const epoch=++generation;watch(job,epoch).catch(e=>{if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();});}else if(previous&&sessionStorage.getItem('vu_generation_background_job')===previous){job=previous;setHistory(true);$('status').textContent=say('The video job is being tracked in History. Check its status when ready.','Видеозадача находится в Истории. Проверяйте её статус там.');}
 
 if(new URLSearchParams(location.search).get('view')==='history')setHistory(true);
+const targetJobId=new URLSearchParams(location.search).get('jobId');if(targetJobId&&config.enabled){job=targetJobId;busy=true;availability();const epoch=++generation;watch(job,epoch).catch(e=>{if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();});}
 
 await loadAiWallet();
 const aiCheckoutState=new URLSearchParams(location.search).get('ai_checkout');
