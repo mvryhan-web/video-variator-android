@@ -47,7 +47,7 @@ function harness(){
 }
 const balance=available=>({available,reserved:2,debt:0});
 const history=available=>({items:[{kind:'purchase',available_delta:available,created_at:'2026-11-02T09:00:00Z'}]});
-const flush=async()=>{await Promise.resolve();await Promise.resolve();};
+const flush=async()=>{await new Promise(resolve=>setImmediate(resolve));};
 
 test('newer same-user wallet refresh wins over a slower older balance and ledger response',async()=>{
  const h=harness(),older=h.ui.refresh(),newer=h.ui.refresh();
@@ -84,12 +84,10 @@ test('same-tab A-to-B account switch scrubs A before pointer interaction, not af
 test('late A response cannot overwrite B after same-tab keydown identity switch',async()=>{
  const h=harness(),a=h.ui.refresh();
  h.auth('B');h.event('document','keydown');
- const b=h.calls.length===4?h.ui.refresh():null;
  const calls=h.calls.filter(c=>c.options.headers.Authorization==='Bearer B');
  assert.ok(calls.length>=2);
  const all=h.calls.filter(c=>c.options.headers.Authorization==='Bearer B');
  for(const c of all)c.resolve({ok:true,json:async()=>c.path.endsWith('/balance')?balance(222):history(222)});
- if(b)await b;
  h.ok(0,balance(111));h.ok(1,history(111));await a;
  await flush();
  assert.doesNotMatch(h.el('walletSummary').textContent,/111/);
