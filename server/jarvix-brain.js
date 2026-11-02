@@ -498,8 +498,9 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
 
 // 6. LIVE OPENAI RESPONSES API DISPATCHER
 export async function processTurnWithOpenAI(userText, session, lang = 'ru') {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey || process.env.JARVIX_AI_LIVE !== 'true') {
+  const apiKey = (process.env.OPENAI_API_KEY || '').trim();
+  // Safe zero-spend boundary: if no valid real OpenAI key is set, use verified local brain
+  if (!apiKey || apiKey.startsWith('mock-') || apiKey === 'dummy' || process.env.JARVIX_AI_DISABLE === 'true') {
     return processTurnWithMockBrain(userText, session, lang);
   }
 

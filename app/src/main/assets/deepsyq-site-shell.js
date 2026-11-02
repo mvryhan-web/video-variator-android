@@ -19,28 +19,28 @@
   const shellI18n = {
     en: {
       Home: 'Home', Creation: 'Creation', Tools: 'Tools', Library: 'Library', Community: 'Community', More: 'More',
-      home: 'Home', image: 'Image', video: 'Video', agents: 'Agent', pet: 'Virtual Pet', voice: 'Voice Agent', audio: 'Audio',
+      home: 'Home', image: 'Image', video: 'Video', agents: 'JARVIX', pet: 'Virtual Pet', voice: 'Voice Agent', audio: 'Audio',
       tools: 'Tools', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Video Uniquifier',
       assets: 'Assets', history: 'My Creations', affiliate: 'Affiliate', share: 'Share link', inspiration: 'Inspiration', pricing: 'Pricing',
       back: '← Back to Deepsyq Home', privacy: 'Privacy', soon: 'soon', copied: 'Link copied', backBtn: 'Back'
     },
     ru: {
       Home: 'Главная', Creation: 'Создание', Tools: 'Инструменты', Library: 'Коллекция', Community: 'Сообщество', More: 'Еще',
-      home: 'Главная', image: 'Фото', video: 'Видео', agents: 'ИИ-Агент', pet: 'Питомец', voice: 'Голосовой агент', audio: 'Аудио',
+      home: 'Главная', image: 'Фото', video: 'Видео', agents: 'JARVIX', pet: 'Питомец', voice: 'Голосовой агент', audio: 'Аудио',
       tools: 'Инструменты', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Видеоуникализатор',
       assets: 'Ассеты', history: 'Мои работы', affiliate: 'Партнерка', share: 'Поделиться', inspiration: 'Вдохновение', pricing: 'Тарифы',
       back: '← Назад в Deepsyq', privacy: 'Конфиденциальность', soon: 'скоро', copied: 'Ссылка скопирована', backBtn: 'Назад'
     },
     fr: {
       Home: 'Accueil', Creation: 'Création', Tools: 'Outils', Library: 'Bibliothèque', Community: 'Communauté', More: 'Plus',
-      home: 'Accueil', image: 'Image', video: 'Vidéo', agents: 'Agent IA', pet: 'Animal virtuel', voice: 'Agent vocal', audio: 'Audio',
+      home: 'Accueil', image: 'Image', video: 'Vidéo', agents: 'JARVIX', pet: 'Animal virtuel', voice: 'Agent vocal', audio: 'Audio',
       tools: 'Outils', apps: 'Apps IA', canvas: 'Canvas', legacy: 'Unificateur vidéo',
       assets: 'Médias', history: 'Mes créations', affiliate: 'Affiliation', share: 'Partager', inspiration: 'Inspiration', pricing: 'Tarifs',
       back: '← Retour à Deepsyq', privacy: 'Confidentialité', soon: 'bientôt', copied: 'Lien copié', backBtn: 'Retour'
     },
     es: {
       Home: 'Inicio', Creation: 'Creación', Tools: 'Herramientas', Library: 'Biblioteca', Community: 'Comunidad', More: 'Más',
-      home: 'Inicio', image: 'Imagen', video: 'Vídeo', agents: 'Agente IA', pet: 'Mascota 3D', voice: 'Agente de voz', audio: 'Audio',
+      home: 'Inicio', image: 'Imagen', video: 'Vídeo', agents: 'JARVIX', pet: 'Mascota 3D', voice: 'Agente de voz', audio: 'Audio',
       tools: 'Herramientas', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Unificador de vídeo',
       assets: 'Archivos', history: 'Mis creaciones', affiliate: 'Afiliados', share: 'Compartir enlace', inspiration: 'Inspiración', pricing: 'Precios',
       back: '← Volver a Deepsyq', privacy: 'Privacidad', soon: 'pronto', copied: 'Enlace copiado', backBtn: 'Atrás'
@@ -97,30 +97,28 @@
   if (!document.body || document.getElementById('sidebar') || document.getElementById('dsSiteSidebar')) return;
 
   const entries = [
-    { section: 'Home' },
-    { label: 'Home', icon: '⌂', url: 'deepsyq.html', key: 'home' },
-    { section: 'Creation' },
-    { label: 'Image', icon: '▧', url: 'generate-studio.html?studio=image', key: 'image' },
-    { label: 'Video', icon: '▷', url: 'generate-studio.html?studio=video', key: 'video' },
-    { label: 'Agent', icon: '✦', url: 'ai-agents.html', key: 'agents' },
-    { label: 'Virtual Pet', icon: '🐾', url: 'virtual-pet.html', key: 'pet' },
-    { label: 'Voice Agent', icon: '🎙', url: 'voice-agent-preview.html', key: 'voice' },
-    { label: 'Audio', icon: '♫', url: 'generate-studio.html?studio=audio', key: 'audio' },
-    { section: 'Tools' },
-    { label: 'Tools', icon: '⊞', url: 'free-tools.html', key: 'tools' },
-    { label: 'AI Apps', icon: '◇', url: 'ai-apps.html', key: 'apps' },
-    { label: 'Canvas', icon: '✎', url: 'canvas.html', key: 'canvas' },
-    { label: 'Video Uniquifier', icon: '▤', url: 'index.html', key: 'legacy' },
-    { section: 'Library' },
-    { label: 'Assets', icon: '▦', url: 'generate-studio.html?view=history', key: 'assets' },
-    { label: 'My Creations', icon: '▣', url: 'generate-studio.html?view=history', key: 'history' },
-    { label: 'History', icon: '◷', url: 'generate-studio.html?view=history', key: 'history' },
-    { section: 'Community' },
-    { label: 'Affiliate', icon: '↗', pending: true, key: 'affiliate' },
+    { section:'Home' },
+    { label: 'Home', icon: '⌂', url:'deepsyq.html', key: 'home' },
+    { section:'Creation' },
+    { label: 'Image', icon: '▧', url:'generate-studio.html?studio=image', key: 'image' },
+    { label: 'Video', icon: '▷', url:'generate-studio.html?studio=video', key: 'video' },
+    { label:'Agent',icon:'✦', url:'ai-agents.html', isJarvix: true, key: 'agents' },
+    { label: 'Audio', icon: '♫', url:'generate-studio.html?studio=audio', key: 'audio' },
+    { section:'Tools' },
+    { label: 'Tools', icon: '⊞', url:'free-tools.html', key: 'tools' },
+    { label: 'AI Apps', icon: '◇', url:'ai-apps.html', key: 'apps' },
+    { label: 'Canvas', icon: '✎', url:'canvas.html', key: 'canvas' },
+    { label: 'Video Uniquifier', icon: '▤', url:'index.html', key: 'legacy' },
+    { section:'Library' },
+    { label: 'Assets', icon: '▦', url:'generate-studio.html?view=history', key: 'assets' },
+    { label: 'My Creations', icon: '▣', url:'generate-studio.html?view=history', key: 'history' },
+    { label: 'History', icon: '◷', url:'generate-studio.html?view=history', key: 'history' },
+    { section:'Community' },
+    { label:'Affiliate',icon:'↗', pending:true, key: 'affiliate' },
     { label: 'Share', icon: '⇪', action: 'share', key: 'share' },
-    { label: 'Inspiration', icon: '◌', url: 'deepsyq.html#inspirationPreview', key: 'inspiration' },
-    { section: 'More' },
-    { label: 'Pricing', icon: '＄', url: 'pricing.html', key: 'pricing' }
+    { label: 'Inspiration', icon: '◌', url:'deepsyq.html#inspirationPreview', key: 'inspiration' },
+    { section:'More' },
+    { label: 'Pricing', icon: '＄', url:'pricing.html', key: 'pricing' }
   ];
 
   const path = location.pathname.split('/').pop() || 'deepsyq.html';
@@ -193,6 +191,29 @@
       el.href = entry.url;
       if (active === entry.key) el.setAttribute('aria-current', 'page');
     }
+    if (entry.isJarvix || entry.key === 'agents') {
+      const orb = document.createElement('span');
+      orb.className = 'jarvis-mini-orb';
+      orb.style.width = '20px';
+      orb.style.height = '20px';
+      orb.style.display = 'inline-grid';
+      orb.style.placeItems = 'center';
+      orb.style.marginRight = '8px';
+      orb.style.verticalAlign = 'middle';
+      orb.innerHTML = '<span class="jarvis-core" style="width:9px;height:9px"></span><span class="jarvis-ring"></span><span class="jarvis-ring ring-violet"></span>';
+      
+      const textSpan = document.createElement('span');
+      textSpan.className = 'jarvis-name';
+      textSpan.style.letterSpacing = '1px';
+      textSpan.style.color = '#e0f2fe';
+      textSpan.textContent = 'JARVIX';
+      
+      el.append(orb, textSpan);
+      domItems.push({ el, textNode: textSpan, entry });
+      nav.append(el);
+      continue;
+    }
+
     const icon = document.createElement('span');
     icon.className = 'ds-icon';
     icon.setAttribute('aria-hidden', 'true');
