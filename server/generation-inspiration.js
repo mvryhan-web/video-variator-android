@@ -60,7 +60,7 @@ async function getManifestInspirationItems() {
       actionTarget: item.actionTarget || 'studio',
       featured: !!item.featured,
       sortOrder: item.sortOrder || 100
-    }));
+    })).filter(x => !x.previewUrl?.includes('logo') && !x.previewPosterUrl?.includes('logo'));
   } catch (err) {
     fallbackInspirationItems = [];
   }
@@ -99,25 +99,61 @@ function row(r,{ownerView=false,agentActionPath=null}={}){
 function publicTargetSql(env){return agentTargetsEnabled(env)?'':" AND action_target='studio'";}
 
 export function installInspiration(app,{auth,pool,env=process.env}){
- app.get('/api/inspiration',async(req,res)=>{if(!featureEnabled(env))return res.status(503).json({error:'INSPIRATION_NOT_ENABLED'});try{
-  await initInspiration(pool,env);const where=["active=true","rights_basis IN ('owned','licensed')","length(trim(rights_note))>=3"],args=[];const kind=String(req.query.kind||'all');
-  if(!['all','image','video'].includes(kind))return res.status(400).json({error:'INVALID_INSPIRATION_FILTER'});if(kind!=='all'){args.push(kind);where.push(`kind=$${args.length}`);}
-  if(req.query.category){args.push(String(req.query.category).slice(0,80));where.push(`category=$${args.length}`);}if(req.query.ratio){const ratio=String(req.query.ratio);if(!RATIOS.has(ratio))return res.status(400).json({error:'INVALID_INSPIRATION_FILTER'});args.push(ratio);where.push(`aspect_ratio=$${args.length}`);}if(req.query.featured==='true')where.push('featured=true');
-  if(req.query.target){const target=String(req.query.target);if(!TARGETS.has(target))return res.status(400).json({error:'INVALID_INSPIRATION_FILTER'});if(target==='agent'&&!agentTargetsEnabled(env))return res.json({items:[],categories:[],ratios:[]});args.push(target);where.push(`action_target=$${args.length}`);}
-  const q=String(req.query.q||'').trim().slice(0,80);if(q){args.push('%'+q.replace(/[\\%_]/g,c=>'\\'+c)+'%');where.push(`(title ILIKE $${args.length} OR category ILIKE $${args.length} OR description ILIKE $${args.length} OR prompt ILIKE $${args.length})`);}
-  const limit=Math.max(1,Math.min(48,Number.parseInt(req.query.limit||'24',10)||24)),offset=Math.max(0,Math.min(5000,Number.parseInt(req.query.offset||'0',10)||0)),targetGate=publicTargetSql(env);
-  const {rows}=await pool.query(`SELECT * FROM vv_ai_inspiration WHERE ${where.join(' AND ')}${targetGate} ORDER BY featured DESC,sort_order ASC,created_at DESC,id ASC LIMIT ${limit+1} OFFSET ${offset}`,args);
-  // Facets must reflect the *same* rights-cleared, selected items as the
-  // gallery. Otherwise an Image/search/category filter advertises options
-  // belonging only to unrelated (or agent-gated) media.
-  const filterSql=`WHERE ${where.join(' AND ')}${targetGate}`;
-  const [cats,ratios]=await Promise.all([
-   pool.query(`SELECT DISTINCT category FROM vv_ai_inspiration ${filterSql} ORDER BY category`,args),
-   pool.query(`SELECT DISTINCT aspect_ratio FROM vv_ai_inspiration ${filterSql} ORDER BY aspect_ratio`,args)
-  ]);
-  const agentActionPath=agentPath(env),hasMore=rows.length>limit,visible=hasMore?rows.slice(0,limit):rows;res.json({items:visible.map(r=>row(r,{agentActionPath})),categories:cats.rows.map(x=>x.category),ratios:ratios.rows.map(x=>x.aspect_ratio),pagination:{limit,offset,nextOffset:hasMore?offset+limit:null,hasMore}});
- }catch(_){res.status(503).json({error:'INSPIRATION_UNAVAILABLE'});}});
- app.get('/api/inspiration/:slug',async(req,res)=>{if(!featureEnabled(env))return res.status(503).json({error:'INSPIRATION_NOT_ENABLED'});try{await initInspiration(pool,env);const {rows}=await pool.query(`SELECT * FROM vv_ai_inspiration WHERE slug=$1 AND active=true AND rights_basis IN ('owned','licensed') AND length(trim(rights_note))>=3${publicTargetSql(env)}`,[req.params.slug]);if(!rows.length)return res.status(404).json({error:'INSPIRATION_NOT_FOUND'});res.json({item:row(rows[0],{agentActionPath:agentPath(env)})});}catch(_){res.status(503).json({error:'INSPIRATION_UNAVAILABLE'});}});
+  app.get('/api/inspiration',async(req,res)=>{
+    if(!featureEnabled(env))return res.status(503).json({error:'INSPIRATION_NOT_ENABLED'});
+    try{
+      await initInspiration(pool,env);
+      const manifestItems = await getManifestInspirationItems();
+      
+      const q = req.query;
+      let items = manifestItems.filter(item => 
+        !item.previewUrl?.includes('logo') && 
+        !item.previewPosterUrl?.includes('logo') &&
+        (q.featured !== 'true' || item.featured) &&
+        (!q.kind || q.kind === 'all' || item.kind === q.kind) &&
+        (!q.target || item.actionTarget === q.target) &&
+        (!q.category || item.category === q.category) &&
+        (!q.ratio || item.aspectRatio === q.ratio) &&
+        (!q.q || item.title.toLowerCase().includes(String(q.q).toLowerCase()) || (item.prompt && item.prompt.toLowerCase().includes(String(q.q).toLowerCase())))
+      ).sort((a,b) => (a.sortOrder || 100) - (b.sortOrder || 100));
+
+      const total = items.length;
+      const limit = Math.max(1, Math.min(60, Number.parseInt(q.limit || '24', 10) || 24));
+      const page = Math.max(1, Number.parseInt(q.page || '1', 10) || 1);
+      const offset = Math.max(0, Math.min(5000, Number.parseInt(q.offset || '0', 10) || ((page - 1) * limit)));
+      const visible = items.slice(offset, offset + limit);
+      const hasMore = offset + limit < total;
+
+      const categories = [...new Set(manifestItems.map(item => item.category).filter(Boolean))].sort();
+      const ratios = [...new Set(manifestItems.map(item => item.aspectRatio).filter(Boolean))].sort();
+
+      res.json({
+        items: visible,
+        categories,
+        ratios,
+        pagination: {
+          page,
+          limit,
+          total,
+          offset,
+          nextOffset: hasMore ? offset + limit : null,
+          hasMore
+        }
+      });
+    }catch(_){res.status(503).json({error:'INSPIRATION_UNAVAILABLE'});}
+  });
+  app.get('/api/inspiration/:slug',async(req,res)=>{
+    if(!featureEnabled(env))return res.status(503).json({error:'INSPIRATION_NOT_ENABLED'});
+    try{
+      await initInspiration(pool,env);
+      const manifestItems = await getManifestInspirationItems();
+      const match = manifestItems.find(x => x.slug === req.params.slug);
+      if (match) return res.json({item: match});
+      const {rows}=await pool.query(`SELECT * FROM vv_ai_inspiration WHERE slug=$1 AND active=true AND rights_basis IN ('owned','licensed') AND length(trim(rights_note))>=3${publicTargetSql(env)}`,[req.params.slug]);
+      if(!rows.length)return res.status(404).json({error:'INSPIRATION_NOT_FOUND'});
+      res.json({item:row(rows[0],{agentActionPath:agentPath(env)})});
+    }catch(_){res.status(503).json({error:'INSPIRATION_UNAVAILABLE'});}
+  });
  const onlyOwner=(req,res,next)=>owner(req.user,env)?next():res.status(403).json({error:'OWNER_ONLY'});
  app.get('/api/studio/admin/inspiration-readiness',auth,onlyOwner,async(_req,res)=>{try{
   await initInspiration(pool,env);const {rows}=await pool.query('SELECT kind,category,aspect_ratio,action_target,rights_basis,rights_note,active,featured FROM vv_ai_inspiration');
