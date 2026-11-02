@@ -88,12 +88,30 @@ export function buildJarvixSiteKnowledge() {
         const labelText = visibleText(match[1]);
         if (labelText) controls.push(labelText);
       }
+      const links = [];
+      for (const match of html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
+        const href = attribute(`<a ${match[1]}>`, 'href');
+        const linkLabel = visibleText(match[2]) || attribute(`<a ${match[1]}>`, 'aria-label') || attribute(`<a ${match[1]}>`, 'title');
+        // Keep only navigable local routes. Never feed script or external URLs
+        // into the assistant's knowledge or let them become navigation targets.
+        if (!href || !linkLabel || /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(href)) continue;
+        links.push({ label: linkLabel.slice(0, 120), href: href.slice(0, 240) });
+      }
+      if (file === 'free-tools.html') {
+        // The owner-approved tool cards are created from this small data table
+        // at runtime, so index their actual labels and destinations as well.
+        const cardsSource = fs.readFileSync(path.join(SITE_ASSETS_DIR, 'everyday-tools-visual.js'), 'utf8');
+        for (const match of cardsSource.matchAll(/\{title:'([^']+)'[^}]*?href:'([^']+)'/g)) {
+          links.push({ label: visibleText(match[1]).slice(0, 120), href: match[2].slice(0, 240) });
+        }
+      }
       pages.push({
         path: `/${file}`,
         label,
         title,
         headings: [...new Set(headings)].slice(0, 8),
-        controls: [...new Set(controls)].slice(0, 36)
+        controls: [...new Set(controls)].slice(0, 36),
+        links: links.filter((link, index) => links.findIndex(candidate => candidate.href === link.href && candidate.label === link.label) === index).slice(0, 60)
       });
     } catch (_) {
       // A missing optional page is omitted rather than invented.
@@ -276,6 +294,31 @@ export function executeSafeAction(action) {
   return { success: false, reason: 'UNKNOWN_ACTION' };
 }
 
+const SITE_TOOL_ALIASES = Object.freeze([
+  { pattern: /(?:photo\s*(?:to|→)\s*pdf|scan\s*pdf|pdf|фото\s*(?:в|to)\s*(?:pdf|пдф)|пдф|скан(?:ер)?)/i, terms: /(?:pdf|scan|скан|пдф)/i },
+  { pattern: /(?:background\s*(?:remov|eras)|remove\s+(?:the\s+)?background|убрат\w*\s+фон|удал\w*\s+фон|фон\s+удал)/i, terms: /(?:background|фон|удал)/i },
+  { pattern: /(?:photo\s*collage|collage|коллаж)/i, terms: /(?:collage|коллаж)/i },
+  { pattern: /(?:avatar\s*studio|avatar|аватар)/i, terms: /(?:avatar|аватар)/i },
+  { pattern: /(?:teleprompter|prompter|телесуфл|суфлёр|суфлер)/i, terms: /(?:teleprompter|prompter|суфл)/i },
+  { pattern: /(?:smart\s*reminders?|reminders?|напоминан\w*)/i, terms: /(?:reminder|напоминан)/i },
+  { pattern: /(?:my\s+creations?|library|мои\s+работ|библиотек)/i, terms: /(?:creation|library|работ|библиотек)/i },
+  { pattern: /(?:compare\s+(?:ai|models?)|сравн\w*\s+модел)/i, terms: /(?:compare|сравн)/i },
+  { pattern: /(?:privacy|конфиденц|приватност)/i, terms: /(?:privacy|конфиденц|приватност)/i },
+  { pattern: /(?:pricing|plans?|цены|тариф\w*)/i, terms: /(?:pricing|plan|цен|тариф)/i }
+]);
+
+function findSiteDestination(text) {
+  const pages = buildJarvixSiteKnowledge();
+  for (const alias of SITE_TOOL_ALIASES) {
+    if (!alias.pattern.test(text)) continue;
+    for (const page of pages) {
+      const link = page.links.find(item => alias.terms.test(`${item.label} ${item.href}`));
+      if (link) return { page, link };
+    }
+  }
+  return null;
+}
+
 // 5. MULTI-TURN REASONING ENGINE (Zero-spend deterministic brain when live API is offline)
 export function processTurnWithMockBrain(userText, session, lang = 'ru') {
   const t = (userText || '').trim();
@@ -321,6 +364,31 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
       language: lang,
       provider: 'jarvix-mock-brain'
     };
+  }
+
+  // Answer find/open questions from actual visible links in the site index.
+  // This keeps basic navigation useful in the $0 preview without a model API.
+  if (/(?:where|find|how\s+(?:do\s+i\s+)?(?:open|access|find)|navigate|где|как\s+(?:найти|открыть|перейти)|куда|dónde|cómo\s+(?:encontrar|abrir)|où|comment\s+(?:trouver|ouvrir))/i.test(lower)) {
+    const destination = findSiteDestination(t);
+    if (destination) {
+      const { page, link } = destination;
+      replyText = isRu
+        ? `«${link.label}» находится в разделе «${page.label}». Откройте: ${link.href}`
+        : isEs
+          ? `«${link.label}» está en la sección «${page.label}». Abra: ${link.href}`
+          : isFr
+            ? `«${link.label}» se trouve dans la section «${page.label}». Ouvrez : ${link.href}`
+            : `“${link.label}” is in “${page.label}”. Open: ${link.href}`;
+      return {
+        reply: replyText,
+        action: null,
+        entities: { ...session.accumulatedPrompt },
+        compiledPrompt: compileAccumulatedPrompt(session.accumulatedPrompt),
+        studioHandoff: null,
+        language: lang,
+        provider: 'jarvix-site-index'
+      };
+    }
   }
 
   // 1. CAPABILITIES & REGISTRY INQUIRY ("Что ты умеешь?", "What can you do?")
@@ -591,7 +659,7 @@ Strict Safety Rules:
 5. NEVER repeat or parrot the user's prompt or words back to them (e.g. do not say "I heard...", "You asked for...", "Я услышал..."). Answer directly and concisely.
 Keep speech responses concise and natural for audio text-to-speech.
 
-Verified public DEEPSYQ pages and visible form controls:
+Verified public DEEPSYQ pages, visible form controls, and local navigation links:
 ${JSON.stringify(buildJarvixSiteKnowledge())}
 Only describe a control if it appears in this site map.`;
 

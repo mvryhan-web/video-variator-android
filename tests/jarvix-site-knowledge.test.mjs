@@ -10,6 +10,24 @@ test('Jarvix page index comes from shipped public screens and excludes executabl
  assert.ok(studio.controls.some(control=>control.includes('prompt')));
  assert.ok(studio.controls.some(control=>control.includes('Select options')),'form controls include visible select choices');
  assert.ok(pages.every(page=>page.controls.every(control=>!/<script|javascript:/i.test(control))));
+ const tools=pages.find(page=>page.path==='/free-tools.html');
+ assert.ok(tools.links.some(link=>link.label==='Photo to PDF'&&link.href==='mobile-utility.html?tool=scan-pdf'));
+ assert.ok(pages.every(page=>page.links.every(link=>! /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(link.href))));
+});
+
+test('offline Jarvix answers tool-finding questions from real local site routes in four languages',()=>{
+ for (const [language,question,expected] of [
+  ['en','Where can I find the photo to PDF tool?','mobile-utility.html?tool=scan-pdf'],
+  ['ru','Где найти фото в PDF?','mobile-utility.html?tool=scan-pdf'],
+  ['es','¿Dónde puedo encontrar la herramienta PDF?','mobile-utility.html?tool=scan-pdf'],
+  ['fr','Où trouver l’outil PDF ?','mobile-utility.html?tool=scan-pdf']
+ ]) {
+  const session=getOrCreateSession(`site-route-${language}`);
+  const result=processTurnWithMockBrain(question,session,language);
+  assert.equal(result.provider,'jarvix-site-index');
+  assert.match(result.reply,new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
+  clearSession(session.id);
+ }
 });
 
 test('Jarvix safe navigation constructs a local route and ignores a model supplied URL',()=>{
