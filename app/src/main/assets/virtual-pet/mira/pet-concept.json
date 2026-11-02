@@ -1,0 +1,23 @@
+{
+  "id": "mira",
+  "species": "cat",
+  "displayName": "Мира",
+  "visualStatus": "concept-only",
+  "approvalStatus": "awaiting-3d-approval",
+  "sourcePath": "mira/reference/owner-selected-fullres.png",
+  "resolutionPx": [
+    1086,
+    1448
+  ],
+  "sourceSha256": "da4bfb30f50c8d60dbc3d3853913830da950970c2f472c4919127002835fe0f8",
+  "palette": {
+    "fur": "#28394E",
+    "white": "#F1ECE6",
+    "brandGreen": "#66C4AD"
+  },
+  "glb": null,
+  "rig": null,
+  "animations": null,
+  "alphaSpriteAtlas": null,
+  "externalLicenseNote": "Original assistant-generated concepts selected by Deepsyq owner, Nov 2 2026; do not imply external 3D ownership."
+}

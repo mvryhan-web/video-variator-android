@@ -315,8 +315,17 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
 
       const svgContainer = document.getElementById('dsPetSvgContainer');
       if (svgContainer) {
-        svgContainer.innerHTML = this.settings.pet === 'cat' ? SVG_CAT :
+        const petKey = this.settings.pet === 'cat' ? 'mira' : this.settings.pet === 'fox' ? 'nova' : 'luna';
+        const fallbackSvg = this.settings.pet === 'cat' ? SVG_CAT :
           this.settings.pet === 'fox' ? SVG_FOX : SVG_DOG;
+        svgContainer.innerHTML = `
+          <div class="ds-pet-visual-wrap">
+            <img class="ds-pet-3d-img" src="virtual-pet/${petKey}/renders/three_quarter.png" alt="${this.settings.name}" width="100%" height="100%" loading="eager" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';" />
+            <div class="ds-pet-svg-fallback" style="display:none; width:100%; height:100%;">
+              ${fallbackSvg}
+            </div>
+          </div>
+        `;
       }
 
       const avatar = document.getElementById('dsPetAvatar');
