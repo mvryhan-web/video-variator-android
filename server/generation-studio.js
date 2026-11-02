@@ -30,6 +30,9 @@ import {objectStorageConfig} from './generation-storage.js';
 import {isSmartDecisionEnabled,decideSmartModel,publicDecisionView} from './generation-smart-decision.js';
 import {projectWorkspaceJobView} from './workspace-job-view.js';
 import {selectWorkspaceCardSections} from './workspace-card-sections.js';
+import {renameProjectRecord,archiveProjectRecord,restoreProjectRecord,toggleFavoriteProjectRecord,deletePreflightProjectRecord,WorkspacePolicyError} from './workspace-project-policy.js';
+import {validateCompareAiPolicy} from './compare-ai-policy.js';
+import {executeCompareAiMock} from './compare-ai-mock-worker.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch,authorization=null,signal=null}={}){
  // A purchased consent fence owns signal. A late model/body preparation MUST
  // not start provider transport after the fence times out or revoke is ACKed.
@@ -517,15 +520,109 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  }catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
  app.get('/api/studio/workspace/cards',auth,generationUser,async(req,res)=>{res.set('Cache-Control','private, no-store');try{
   await init();
-  const {rows}=await pool.query('SELECT id,user_id,kind,status,output_assets,created_at FROM vv_generation_jobs WHERE user_id=$1 AND deleted=false ORDER BY created_at DESC LIMIT 50',[req.user.id]);
-  const cards=projectWorkspaceJobView({userId:String(req.user.id),jobs:rows});
-  const sections=selectWorkspaceCardSections({cards,options:{
+  const {rows}=await pool.query('SELECT id,user_id,kind,status,output_assets,metadata,created_at FROM vv_generation_jobs WHERE user_id=$1 AND deleted=false ORDER BY created_at DESC LIMIT 50',[req.user.id]);
+  const includeArchived=req.query.includeArchived==='true';
+  const favoriteProof=new Set();
+  const customTitles=new Map();
+  const activeRows=[];
+  for(const row of rows){
+   if(String(row.user_id)!==String(req.user.id))continue;
+   const ws=row.metadata?.workspace&&typeof row.metadata.workspace==='object'?row.metadata.workspace:null;
+   if(ws?.archived===true&&!includeArchived)continue;
+   if(ws?.isFavorite===true)favoriteProof.add(String(row.id));
+   if(typeof ws?.title==='string'&&ws.title.trim())customTitles.set(String(row.id),ws.title.trim());
+   activeRows.push(row);
+  }
+  const cards=projectWorkspaceJobView({userId:String(req.user.id),jobs:activeRows}).map(card=>
+   customTitles.has(card.id)?{...card,title:customTitles.get(card.id)}:card
+  );
+  const sections=selectWorkspaceCardSections({cards,favoriteProof,options:{
    searchQuery:typeof req.query.q==='string'?req.query.q:'',
    typeFilter:typeof req.query.type==='string'?req.query.type:undefined,
    statusFilter:typeof req.query.status==='string'?req.query.status:undefined
   }});
   res.json({...sections,metadata:{...sections.metadata,sourceValidated:true}});
  }catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
+ app.patch('/api/studio/workspace/cards/:id',auth,generationUser,async(req,res)=>{res.set('Cache-Control','private, no-store');try{
+  await init();
+  const {rows}=await pool.query('SELECT id,user_id,kind,status,credits_reserved,credits_charged,metadata,created_at FROM vv_generation_jobs WHERE id=$1 AND deleted=false',[req.params.id]);
+  const row=rows[0];
+  if(!row)return res.status(404).json({error:'NOT_FOUND'});
+  const ws=row.metadata?.workspace&&typeof row.metadata.workspace==='object'?row.metadata.workspace:{};
+  const createdIso=new Date(row.created_at||Date.now()).toISOString();
+  const record={
+   id:String(row.id),
+   ownerUserId:String(row.user_id),
+   title:typeof ws.title==='string'&&ws.title.trim()?ws.title.trim():`${String(row.kind||'Job')} #${String(row.id).slice(0,8)}`,
+   status:ws.archived===true?'archived':row.status==='ready'?'ready':'draft',
+   isFavorite:Boolean(ws.isFavorite),
+   createdAt:createdIso,
+   updatedAt:typeof ws.updatedAt==='string'&&ws.updatedAt?ws.updatedAt:createdIso
+  };
+  const action=String(req.body?.action||'').trim();
+  const callerId=String(req.user.id);
+  let next;
+  if(action==='rename')next=renameProjectRecord(record,{userId:callerId,title:req.body?.title});
+  else if(action==='favorite')next=toggleFavoriteProjectRecord(record,{userId:callerId,isFavorite:req.body?.isFavorite});
+  else if(action==='archive')next=archiveProjectRecord(record,{userId:callerId});
+  else if(action==='restore')next=restoreProjectRecord(record,{userId:callerId,targetStatus:row.status==='ready'?'ready':'draft'});
+  else if(action==='delete_preflight'){
+   const preflight=deletePreflightProjectRecord(record,{userId:callerId,confirmProjectId:req.body?.confirmProjectId,confirmed:req.body?.confirmed});
+   return res.json({ok:true,preflight});
+  }else return res.status(400).json({error:'INVALID_WORKSPACE_ACTION'});
+  const nextWs={
+   title:next.title,
+   isFavorite:Boolean(next.isFavorite),
+   archived:next.status==='archived',
+   updatedAt:next.updatedAt
+  };
+  await pool.query("UPDATE vv_generation_jobs SET metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object('workspace',$2::jsonb) WHERE id=$1 AND user_id=$3",[row.id,JSON.stringify(nextWs),req.user.id]);
+  res.json({ok:true,card:next});
+ }catch(e){
+  if(e instanceof WorkspacePolicyError){
+   const status=['UNAUTHORIZED_OWNER','UNAUTHORIZED_SOURCE','JOB_OWNER_MISMATCH'].includes(e.code)?403:400;
+   return res.status(status).json({error:e.code});
+  }
+  res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});
+ }});
+ async function buildCompareContext(req){
+  const catalog=await effectiveCatalog();
+  let bal={available:0,reserved:0,debt:0};
+  if(typeof wallet?.balance==='function')try{bal=await wallet.balance(String(req.user.id));}catch(_){}
+  else if(Number.isSafeInteger(req.user?.aiCredits))bal.available=req.user.aiCredits;
+  return {
+   env,
+   catalog,
+   user:{id:String(req.user.id),credits:Number(bal.available||0),hasUnpaidReserve:Number(bal.debt||0)>0}
+  };
+ }
+ app.post('/api/studio/compare/validate',auth,generationUser,async(req,res)=>{res.set('Cache-Control','private, no-store');try{
+  if(req.body?.mode==='paid'&&env.COMPARE_AI_PAID_ENABLED!=='true')return res.status(400).json({valid:false,error:'PAID_COMPARE_DISABLED'});
+  const context=await buildCompareContext(req);
+  const verdict=validateCompareAiPolicy({...req.body,userConsent:req.body?.userConsent??req.body?.consent},context);
+  res.json(verdict);
+ }catch(e){
+  const status=Number.isInteger(e?.status)?e.status:503;
+  res.status(status).json({valid:false,error:status===503&&!e?.status?'COMPARE_AI_UNAVAILABLE':e.message});
+ }});
+ app.post('/api/studio/compare/mock-run',auth,generationUser,async(req,res)=>{res.set('Cache-Control','private, no-store');try{
+  const context=await buildCompareContext(req);
+  const verdict=validateCompareAiPolicy({...req.body,userConsent:req.body?.userConsent??req.body?.consent??true},context);
+  const planId=typeof req.body?.compareId==='string'&&/^[a-zA-Z0-9_-]{4,64}$/.test(req.body.compareId)?req.body.compareId:`cmp_${randomUUID().replace(/-/g,'').slice(0,16)}`;
+  const plan={...verdict,id:planId};
+  const result=await executeCompareAiMock(plan,{
+   adapters:async(_cand,{modelId,provider})=>({
+    previewUrl:`mock://compare/${planId}/${modelId}`,
+    outputType:verdict.kind,
+    provider,
+    simulated:true
+   })
+  });
+  res.json({...result,compareId:planId,billing:{creditsCharged:0,paidProviderCalls:0}});
+ }catch(e){
+  const status=Number.isInteger(e?.status)?e.status:e?.code?400:503;
+  res.status(status).json({success:false,error:e?.code||e?.message||'COMPARE_AI_UNAVAILABLE'});
+ }});
  app.get('/api/studio/jobs/:id',auth,generationUser,async(req,res)=>{res.set('Cache-Control','private, no-store');try{
   let j=await getJob(req);if(!j)return res.status(404).json({error:'NOT_FOUND'});
   if(j.status==='finalizing'&&walletEnabled()){try{await wallet.settle({userId:req.user.id,jobId:j.id,outcome:'success'});await pool.query("UPDATE vv_generation_jobs SET status='ready',credits_charged=credits_reserved,error_message=null,completed_at=NOW() WHERE id=$1 AND status='finalizing'",[j.id]);j=await getJob(req);}catch(_){/* Keep durable finalizing state; background/user polling may retry capture. */}}
