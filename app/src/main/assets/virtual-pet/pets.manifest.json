@@ -28,7 +28,7 @@
     {
       "id": "dog",
       "key": "luna",
-      "displayName": "\u041b\u0443\u043d\u0430",
+      "displayName": "Луна",
       "species": "dog",
       "approvedConceptSha256": "64d9488afe3e876596538e5e410141c885f0aecb279369e6aee801892c8bc652",
       "palette": {
@@ -107,8 +107,8 @@
           "bring_folder_dog"
         ],
         "publicEnabled": false,
-        "blendSha256": "f84b82ae65ef68e0f5a1e79eb064f8207b3a791c42043429ea6e03cb7d812379",
-        "glbSha256": "3337fa859afa0ede25e8f7281536c39c15028e3aff13b14eafd0d9923a645d83"
+        "blendSha256": "108ab72063ce3241e231299c16e74eb811bff90874c45f838242be35872115ac",
+        "glbSha256": "f707c1517af795aebe7a8ab69fe227aeb92bda3a2ace2ab8b19bb5006f8f310e"
       },
       "presentation": {
         "desktopCssPx": 144,
@@ -121,7 +121,7 @@
     {
       "id": "cat",
       "key": "mira",
-      "displayName": "\u041c\u0438\u0440\u0430",
+      "displayName": "Мира",
       "species": "cat",
       "approvedConceptSha256": "da4bfb30f50c8d60dbc3d3853913830da950970c2f472c4919127002835fe0f8",
       "palette": {
@@ -200,8 +200,8 @@
           "nudge_folder_cat"
         ],
         "publicEnabled": false,
-        "blendSha256": "178586821c30e7877c65bf0efb7639344a6896e0ff0f25175328e0df3562353a",
-        "glbSha256": "b830aa6d6ecb043f6efc40eb27c4e9513feed9b720031f98a3c6dd3b93faf70e"
+        "blendSha256": "a0d48e2074a19b4431b97d518f498325b0524d68b588d6a317a40824a4e04257",
+        "glbSha256": "1137a896c1eb3dc4b6f2e3c6bb90593389454a4e2648e40a4bd7bdf2a912dee3"
       },
       "presentation": {
         "desktopCssPx": 144,
@@ -214,7 +214,7 @@
     {
       "id": "fox",
       "key": "nova",
-      "displayName": "\u041d\u043e\u0432\u0430",
+      "displayName": "Нова",
       "species": "fox",
       "approvedConceptSha256": "b5a76753ead085a998c1163cf0469051bb6e46e7d1a48d1014ee57bae7ac9a3a",
       "palette": {
@@ -293,8 +293,8 @@
           "fox_reveal_folder"
         ],
         "publicEnabled": false,
-        "blendSha256": "516962f7c56d1bd5ff959c242598ef47f1036182fc37cde01b7b3a7448070f35",
-        "glbSha256": "3871b2643c4c617d1c6e2811d240ec466bc6bb810c788ef38d0c992068070035"
+        "blendSha256": "62b47351b2460cb5e93018a3c88fcd69de64c9d9898d88903e76a85f8f0057c5",
+        "glbSha256": "81a2688ad815885bba98a4794fe2868ab72e78afb103f572323e44a6fe5cd95d"
       },
       "presentation": {
         "desktopCssPx": 144,
