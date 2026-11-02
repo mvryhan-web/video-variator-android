@@ -1,0 +1,58 @@
+import {test,expect} from '@playwright/test';
+
+test('F8 owner preview offers Luna, Mira and Nova, 16 explicit preferences and accessible controls',async({page})=>{
+ const writes=[];
+ page.on('request',req=>{if(req.url().includes('/api/')&&!['GET','HEAD','OPTIONS'].includes(req.method()))writes.push(req.url());});
+ await page.goto('/virtual-pet.html');
+ await expect(page.locator('#dsPetAvatar')).toBeVisible();
+ await page.locator('#btnOpenSettings').click();
+ const modal=page.locator('#dsPetSettingsModal');
+ await expect(modal).toBeVisible();
+ await expect(modal.locator('.ds-pet-scenario-switch')).toHaveCount(16);
+ await expect(modal.getByRole('radio',{name:/Луна/})).toBeVisible();
+ await expect(modal.getByRole('radio',{name:/Мира/})).toBeVisible();
+ await expect(modal.getByRole('radio',{name:/Нова/})).toBeVisible();
+ await modal.getByRole('radio',{name:/Нова/}).focus();
+ await page.keyboard.press('Enter');
+ await modal.locator('#dsPetMovement').selectOption('still');
+ await modal.locator('#dsPetSide').selectOption('left');
+ await modal.locator('#dsPetSize').selectOption('small');
+ await modal.locator('#dsPetFace').selectOption('subtle');
+ await modal.locator('summary').click();
+ await modal.locator('[data-scenario="S04"]').uncheck();
+ await modal.locator('#dsPetModalSaveBtn').click();
+ await expect(page.locator('#dsPetAvatar')).toHaveAttribute('title',/Нова/);
+ await expect(page.locator('#dsVirtualPetWidget')).toHaveAttribute('data-pet-side','left');
+ await expect(page.locator('#dsVirtualPetWidget')).toHaveAttribute('data-pet-size','small');
+ await expect(page.locator('#dsVirtualPetWidget')).toHaveAttribute('data-pet-face','subtle');
+ await page.locator('#btnOpenSettings').click();
+ await expect(page.locator('[data-scenario="S04"]')).not.toBeChecked();
+ await expect(page.locator('#dsPetMovement')).toHaveValue('still');
+ await page.locator('#dsPetModalCancelBtn').click();
+ await page.locator('#dsPetAvatar').focus();
+ await page.keyboard.press('Enter');
+ await expect(page.locator('#dsPetBubble')).toBeVisible();
+ await page.locator('#dsPetBubbleCloseBtn').click();
+ await expect(page.locator('#dsPetBubble')).toBeHidden();
+ await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+ expect(writes).toEqual([]);
+});
+
+test('F8 manual Magic Shield demo never submits or charges',async({page})=>{
+ const writes=[];
+ page.on('request',req=>{if(req.url().includes('/api/')&&!['GET','HEAD','OPTIONS'].includes(req.method()))writes.push(req.url());});
+ await page.goto('/virtual-pet.html');
+ await page.locator('#btnTestQuantity').click();
+ await expect(page.locator('#livingDemoResult')).toContainText('S01: проверенное демо');
+ await expect(page.locator('#dsPetBubble')).toContainText('Настоящая стоимость неизвестна');
+ await page.locator('#dsPetBubbleCloseBtn').click();
+ await page.locator('#btnTestDuplicate').click();
+ await expect(page.locator('#livingDemoResult')).toContainText('S02: одно демо');
+ await expect(page.locator('#dsPetBubble')).toContainText('Второй запрос не создан');
+ await page.locator('#dsPetBubbleCloseBtn').click();
+ await page.locator('#btnOpenSettings').click();
+ await page.locator('#dsPetModeSelect').selectOption('off');
+ await page.locator('#dsPetModalSaveBtn').click();
+ await expect(page.locator('#dsVirtualPetWidget')).toHaveClass(/ds-pet-hidden/);
+ expect(writes).toEqual([]);
+});
