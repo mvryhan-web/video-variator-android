@@ -13,6 +13,7 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble
     env:
+      HOME: /root # Firefox requires a home directory owned by the container user
       DATABASE_URL: ''
       STRIPE_SECRET_KEY: ''
       GOOGLE_API_KEY: ''
