@@ -11,7 +11,7 @@ test('inspiration validation requires owned/licensed media and safe preview URLs
 
  // Browsers treat backslashes after a leading slash like a protocol-relative URL.
  // Do not let an apparent local media path resolve to another origin.
- for(const unsafe of [String.raw\`/\\evil.example/asset.webp\`,String.raw\`/gallery\\asset.webp\`,String.raw\`https:\\evil.example/asset.webp\`]){
+ for(const unsafe of [String.raw`/\\evil.example/asset.webp`,String.raw`/gallery\\asset.webp`,String.raw`https:\\evil.example/asset.webp`]){
   assert.throws(()=>validateInspiration({...item,previewUrl:unsafe}),/INVALID_INSPIRATION/);
   assert.throws(()=>validateInspiration({...item,previewPosterUrl:unsafe}),/INVALID_INSPIRATION/);
  }
@@ -107,12 +107,12 @@ test('inspiration search treats typed percent, underscore, and backslash literal
  const app=express();installInspiration(app,{pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true'},auth:(_req,_res,next)=>next()});
  const server=app.listen(0);await new Promise(r=>server.once('listening',r));
  try{
-  const typed=String.raw\`100%_\\sale\`;
+  const typed=String.raw`100%_\\sale`;
   const response=await fetch('http://127.0.0.1:'+server.address().port+'/api/inspiration?q='+encodeURIComponent(typed));
   assert.equal(response.status,200);
   const sql=calls.find(x=>x.sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true'));
   assert.ok(sql);
-  assert.deepEqual(sql.args,[String.raw\`%100\\%\\_\\\\sale%\`]);
+  assert.deepEqual(sql.args,[String.raw`%100\\%\\_\\\\sale%`]);
   assert.match(sql.sql,/title ILIKE \$1/);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
