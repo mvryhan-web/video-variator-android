@@ -259,7 +259,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
             <button class="ds-pet-icon-btn" id="dsPetSettingsBtn" title="Настройки компаньона" aria-label="Настройки компаньона">⚙</button>
             <button class="ds-pet-icon-btn" id="dsPetToggleBtn" title="Свернуть / Режим" aria-label="Свернуть">✕</button>
           </div>
-          <div id="dsPetAvatar" class="ds-pet-avatar" title="Нажми, чтобы погладить!">
+          <div id="dsPetAvatar" class="ds-pet-avatar" role="button" tabindex="0" aria-label="Открыть компаньона" title="Нажми, чтобы погладить!">
             <div id="dsPetSvgContainer"></div>
             <span id="dsPetBadge" class="ds-pet-badge" style="display: none;"></span>
           </div>
@@ -274,6 +274,11 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       // Setup click handlers safely
       if (this.avatarEl) {
         this.avatarEl.addEventListener('click', () => this.onAvatarClick());
+        this.avatarEl.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();this.onAvatarClick();
+          }
+        });
       }
       const settingsBtn = document.getElementById('dsPetSettingsBtn');
       if (settingsBtn) {
@@ -304,6 +309,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
         this.widgetEl.setAttribute('data-pet-side',motion.side);
         this.widgetEl.setAttribute('data-pet-size',motion.size);
         this.widgetEl.setAttribute('data-pet-face',motion.face);
+        this.widgetEl.setAttribute('data-pet-movement',motion.movement);
       }
 
       const svgContainer = document.getElementById('dsPetSvgContainer');
@@ -783,18 +789,18 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
 
           <div class="ds-pet-form-group">
             <label class="ds-pet-label">Выбери питомца</label>
-            <div class="ds-pet-select-cards">
-              <div class="ds-pet-choice-card ${s.pet === 'dog' ? 'selected' : ''}" data-pet="dog">
+            <div class="ds-pet-select-cards" role="radiogroup" aria-label="Выбор питомца">
+              <div class="ds-pet-choice-card ${s.pet === 'dog' ? 'selected' : ''}" data-pet="dog" role="radio" tabindex="0" aria-checked="${s.pet === 'dog' ? 'true' : 'false'}">
                 <div class="ds-pet-choice-icon">🐕</div>
                 <div class="ds-pet-choice-name">Луна · Собака</div>
                 <div class="ds-pet-toggle-desc">Дружелюбный, приносит идеи в зубах</div>
               </div>
-              <div class="ds-pet-choice-card ${s.pet === 'cat' ? 'selected' : ''}" data-pet="cat">
+              <div class="ds-pet-choice-card ${s.pet === 'cat' ? 'selected' : ''}" data-pet="cat" role="radio" tabindex="0" aria-checked="${s.pet === 'cat' ? 'true' : 'false'}">
                 <div class="ds-pet-choice-icon">🐱</div>
                 <div class="ds-pet-choice-name">Мира · Кошка</div>
                 <div class="ds-pet-toggle-desc">Спокойная, аккуратно двигает карточки лапкой</div>
               </div>
-              <div class="ds-pet-choice-card ${s.pet === 'fox' ? 'selected' : ''}" data-pet="fox">
+              <div class="ds-pet-choice-card ${s.pet === 'fox' ? 'selected' : ''}" data-pet="fox" role="radio" tabindex="0" aria-checked="${s.pet === 'fox' ? 'true' : 'false'}">
                 <div class="ds-pet-choice-icon">🦊</div>
                 <div class="ds-pet-choice-name">Нова · Лисёнок</div>
                 <div class="ds-pet-toggle-desc">Любопытная, умеет находить сохранённые идеи</div>
@@ -891,14 +897,23 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
 
       let selectedPet = s.pet;
       const petCards = modal.querySelectorAll('.ds-pet-choice-card');
+      const selectPet = card => {
+        petCards.forEach(c => {
+          c.classList.remove('selected');
+          c.setAttribute('aria-checked','false');
+        });
+        card.classList.add('selected');
+        card.setAttribute('aria-checked','true');
+        selectedPet = card.getAttribute('data-pet');
+        const nameInput = document.getElementById('dsPetNameInput');
+        if(nameInput && ['Рекс','Луна','Мира','Нова'].includes(nameInput.value))
+          nameInput.value = PET_PROFILES[selectedPet].defaultName;
+      };
       petCards.forEach(card => {
-        card.addEventListener('click', () => {
-          petCards.forEach(c => c.classList.remove('selected'));
-          card.classList.add('selected');
-          selectedPet = card.getAttribute('data-pet');
-          const nameInput = document.getElementById('dsPetNameInput');
-          if (nameInput && (nameInput.value === 'Рекс' || nameInput.value === 'Луна' || nameInput.value === 'Мира' || nameInput.value === 'Нова')) {
-            nameInput.value = PET_PROFILES[selectedPet].defaultName;
+        card.addEventListener('click', () => selectPet(card));
+        card.addEventListener('keydown', event => {
+          if(event.key === 'Enter' || event.key === ' '){
+            event.preventDefault();selectPet(card);
           }
         });
       });
