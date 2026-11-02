@@ -87,3 +87,21 @@ test('F6 Voice Agent — Studio Handoff URL Builder', () => {
   const params = new URLSearchParams(studioUrl.split('?')[1]);
   assert.equal(params.get('prompt'), prompt);
 });
+
+test('F6 Voice Agent & Studio Consent Modal UI Contracts', async () => {
+  const { readFileSync } = await import('node:fs');
+  const html = readFileSync(new URL('../app/src/main/assets/generate-studio.html', import.meta.url), 'utf8');
+
+  // Verify pure microphone icon button without text
+  assert.ok(html.includes('id="studioVoiceBtn"'), 'Must have studioVoiceBtn');
+  assert.ok(!html.includes('id="studioVoiceBtnText"'), 'Must NOT have voice-btn-text label');
+
+  // Verify entry consent modal
+  assert.ok(html.includes('id="studioConsentDialog"'), 'Must have studioConsentDialog');
+  assert.ok(html.includes('id="acceptAllConsentsBtn"'), 'Must have acceptAllConsentsBtn');
+  assert.ok(html.includes('id="dlgConsentModel"'), 'Must have dlgConsentModel');
+
+  // Verify mic permission dialog
+  assert.ok(html.includes('id="micPermissionDialog"'), 'Must have micPermissionDialog');
+  assert.ok(html.includes('id="grantMicBtn"'), 'Must have grantMicBtn');
+});
