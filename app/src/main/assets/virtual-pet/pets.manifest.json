@@ -1,0 +1,203 @@
+{
+  "schemaVersion": "f8-pet-assets/v1",
+  "f8Scope": "owner-approved-3-pet-isolated-preview",
+  "notPublicHome": true,
+  "referencePackage": "DEEPSYQ_F8_Luna_Mira_Nova_concept_sources.zip",
+  "sourceSizePx": [
+    1086,
+    1448
+  ],
+  "sourceAvailability": "user-chat-archive-not-yet-in-repo",
+  "referenceLicense": "Original owner-selected AI-generated concepts; author approval required before public use",
+  "sharedAnimations": [
+    "idle_breathe",
+    "idle_blink",
+    "sit_down",
+    "sleep_curl",
+    "wake_stretch",
+    "walk_loop",
+    "approach_card",
+    "sniff",
+    "point_paw",
+    "alert_shield",
+    "success_happy",
+    "return_idle",
+    "hide_exit"
+  ],
+  "pets": [
+    {
+      "id": "dog",
+      "key": "luna",
+      "displayName": "Луна",
+      "species": "dog",
+      "approvedConceptSha256": "64d9488afe3e876596538e5e410141c885f0aecb279369e6aee801892c8bc652",
+      "palette": {
+        "base": "#D89150",
+        "secondary": "#F6E8CE",
+        "shadow": "#B86B3C",
+        "eye": "#8B5737",
+        "brand": "#40DFAE"
+      },
+      "signature": "bring_folder_dog",
+      "concept": {
+        "sha256": "64d9488afe3e876596538e5e410141c885f0aecb279369e6aee801892c8bc652",
+        "width": 1086,
+        "height": 1448,
+        "repoPath": null,
+        "uploadedToGithub": false,
+        "format": "png",
+        "alpha": false
+      },
+      "production": {
+        "status": "NOT_CREATED",
+        "blend": null,
+        "glb": null,
+        "rig": null,
+        "atlasJson": null,
+        "atlasFrames": [],
+        "textures": [],
+        "animationsVerified": [],
+        "requiredAnimations": [
+          "idle_breathe",
+          "idle_blink",
+          "sit_down",
+          "sleep_curl",
+          "wake_stretch",
+          "walk_loop",
+          "approach_card",
+          "sniff",
+          "point_paw",
+          "alert_shield",
+          "success_happy",
+          "return_idle",
+          "hide_exit",
+          "bring_folder_dog"
+        ],
+        "publicEnabled": false
+      },
+      "presentation": {
+        "desktopCssPx": 144,
+        "tabletCssPx": 112,
+        "mobileCssPx": 72,
+        "animationDefault": "idle_breathe",
+        "soundDefault": false
+      }
+    },
+    {
+      "id": "cat",
+      "key": "mira",
+      "displayName": "Мира",
+      "species": "cat",
+      "approvedConceptSha256": "da4bfb30f50c8d60dbc3d3853913830da950970c2f472c4919127002835fe0f8",
+      "palette": {
+        "base": "#28394E",
+        "secondary": "#F1ECE6",
+        "shadow": "#171C2C",
+        "eye": "#66C4AD",
+        "brand": "#66C4AD"
+      },
+      "signature": "nudge_folder_cat",
+      "concept": {
+        "sha256": "da4bfb30f50c8d60dbc3d3853913830da950970c2f472c4919127002835fe0f8",
+        "width": 1086,
+        "height": 1448,
+        "repoPath": null,
+        "uploadedToGithub": false,
+        "format": "png",
+        "alpha": false
+      },
+      "production": {
+        "status": "NOT_CREATED",
+        "blend": null,
+        "glb": null,
+        "rig": null,
+        "atlasJson": null,
+        "atlasFrames": [],
+        "textures": [],
+        "animationsVerified": [],
+        "requiredAnimations": [
+          "idle_breathe",
+          "idle_blink",
+          "sit_down",
+          "sleep_curl",
+          "wake_stretch",
+          "walk_loop",
+          "approach_card",
+          "sniff",
+          "point_paw",
+          "alert_shield",
+          "success_happy",
+          "return_idle",
+          "hide_exit",
+          "nudge_folder_cat"
+        ],
+        "publicEnabled": false
+      },
+      "presentation": {
+        "desktopCssPx": 144,
+        "tabletCssPx": 112,
+        "mobileCssPx": 72,
+        "animationDefault": "idle_breathe",
+        "soundDefault": false
+      }
+    },
+    {
+      "id": "fox",
+      "key": "nova",
+      "displayName": "Нова",
+      "species": "fox",
+      "approvedConceptSha256": "b5a76753ead085a998c1163cf0469051bb6e46e7d1a48d1014ee57bae7ac9a3a",
+      "palette": {
+        "base": "#EA853A",
+        "secondary": "#FFF4DF",
+        "shadow": "#AB562B",
+        "eye": "#66C4AD",
+        "brand": "#4ADDB7"
+      },
+      "signature": "fox_reveal_folder",
+      "concept": {
+        "sha256": "b5a76753ead085a998c1163cf0469051bb6e46e7d1a48d1014ee57bae7ac9a3a",
+        "width": 1086,
+        "height": 1448,
+        "repoPath": null,
+        "uploadedToGithub": false,
+        "format": "png",
+        "alpha": false
+      },
+      "production": {
+        "status": "NOT_CREATED",
+        "blend": null,
+        "glb": null,
+        "rig": null,
+        "atlasJson": null,
+        "atlasFrames": [],
+        "textures": [],
+        "animationsVerified": [],
+        "requiredAnimations": [
+          "idle_breathe",
+          "idle_blink",
+          "sit_down",
+          "sleep_curl",
+          "wake_stretch",
+          "walk_loop",
+          "approach_card",
+          "sniff",
+          "point_paw",
+          "alert_shield",
+          "success_happy",
+          "return_idle",
+          "hide_exit",
+          "fox_reveal_folder"
+        ],
+        "publicEnabled": false
+      },
+      "presentation": {
+        "desktopCssPx": 144,
+        "tabletCssPx": 112,
+        "mobileCssPx": 72,
+        "animationDefault": "idle_breathe",
+        "soundDefault": false
+      }
+    }
+  ]
+}
