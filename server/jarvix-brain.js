@@ -22,7 +22,9 @@ const SITE_ASSETS_DIR = path.join(REPO_ROOT, 'app', 'src', 'main', 'assets');
 // It is read from the shipped HTML so JARVIX answers about current forms rather
 // than relying on an outdated hand-written list of field names.
 const SITE_PAGE_FILES = Object.freeze([
+  ['ai-pricing.html', 'AI credits and pricing'],
   ['deepsyq.html', 'Home'],
+  ['deepsyq-vs-deepseek.html', 'Deepsyq and DeepSeek comparison'],
   ['generate-studio.html', 'Image, video and audio generation studio'],
   ['jarvix-studio.html', 'JARVIX chat and voice studio'],
   ['virtual-pet.html', 'Virtual pets and companion settings'],
@@ -31,10 +33,24 @@ const SITE_PAGE_FILES = Object.freeze([
   ['canvas.html', 'Creative canvas'],
   ['my-creations.html', 'My Creations library'],
   ['compare-ai.html', 'Compare AI models'],
+  ['contact.html', 'Contact and support'],
+  ['cookie.html', 'Cookie information'],
+  ['design-gallery.html', 'Design gallery'],
   ['free-tools.html', 'Free media tools'],
+  ['avatar-studio.html', 'Avatar Studio'],
+  ['mobile-utility.html', 'Photo, PDF and mobile utilities'],
+  ['photo-collage.html', 'Photo collage'],
+  ['simple-background-remover.html', 'Background remover'],
+  ['smart-reminders.html', 'Smart reminders'],
+  ['teleprompter.html', 'Teleprompter'],
+  ['telegram-free-mini.html', 'Telegram mini app'],
   ['audio-studio.html', 'Audio tools'],
+  ['voice-agent-preview.html', 'Voice agent preview'],
+  ['index.html', 'Creative workspace and account pages'],
   ['pricing.html', 'Pricing'],
-  ['ai-privacy.html', 'AI privacy information']
+  ['ai-privacy.html', 'AI privacy information'],
+  ['refund.html', 'Refund policy'],
+  ['terms.html', 'Terms of service']
 ]);
 
 let siteKnowledgeCache = null;
