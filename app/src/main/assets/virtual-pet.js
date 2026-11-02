@@ -351,7 +351,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       const active = typeof document !== 'undefined' && document.activeElement;
       const result = this.livingController.offer({
         id,event,settings:{...this.settings.living,mode:this.settings.mode,enabled:this.settings.enabled},
-        userInitiated:event?.source==='mock-preview',
+        userInitiated:event?.userRequested===true,
         state:{
           inputFocused:!!active?.matches?.('input,textarea,select,[contenteditable="true"]')&&!event?.userRequested,
           dialogOpen:!!document.querySelector?.('[aria-modal="true"]:not([hidden])'),
