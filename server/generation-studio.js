@@ -290,7 +290,10 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
      }});
      return;
     }
-    await failTerminalProviderJob(id,userId,Error('OBJECT_STORAGE_FAILED'),'storage');
+    // The provider already returned an output and may have charged us.
+    // A failed S3 write is not confirmed generation failure: keep held AI
+    // credits for owner reconciliation, never dispatch the paid job again.
+    await pool.query("UPDATE vv_generation_jobs SET status='failed',error='OBJECT_STORAGE_FAILED',error_message=CASE WHEN $2 THEN 'AI_WALLET_REVIEW_REQUIRED' ELSE NULL END,metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object('failure',jsonb_build_object('category','storage','stage','storage','sourceCode','OBJECT_STORAGE_FAILED','retryable',false,'providerOutputProduced',true)),failed_at=NOW() WHERE id=$1",[id,walletEnabled()]);
     return;
    }
   }
