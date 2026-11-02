@@ -3,8 +3,8 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `5702aebb31fcc275f83b93b6bdf2109d356d2535`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` | Indexed files: 57 | Named symbols: 159 | Checked relations: 50
+Source commit: `83d04ca72f3065c6b031e8f1f1b5e8746a8f43c4`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` | Indexed files: 58 | Named symbols: 160 | Checked relations: 50
 
 ## Topic finder (matching filenames)
 
@@ -52,6 +52,10 @@ IDS (L4) · VIDEO_MODELS (L18) · FORMAT_MODELS (L19) · SIZES (L20)
 ### `server/generation-consent.js`
 
 GENERATION_CONSENT_VERSION (L6)
+
+### `server/generation-dispute-quarantine.js`
+
+disputeQuarantineSchema (L17)
 
 ### `server/generation-errors.js`
 
@@ -107,7 +111,7 @@ MIME_EXT (L5)
 
 ### `server/generation-subscription-credits.js`
 
-PLANS (L4) · PRICE_KEYS (L5)
+PLANS (L5) · PRICE_KEYS (L6)
 
 ### `server/generation-templates.js`
 
@@ -123,7 +127,7 @@ VIDEO_SUBMISSION_UNCERTAIN (L6)
 
 ### `server/generation-wallet.js`
 
-MAX_CREDITS (L3) · GenerationWallet (L12)
+MAX_CREDITS (L4) · GenerationWallet (L13)
 
 ### `server/generation-worker.js`
 

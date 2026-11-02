@@ -8,6 +8,15 @@ test('inspiration validation requires owned/licensed media and safe preview URLs
  assert.equal(item.kind,'image');assert.equal(item.rightsBasis,'owned');assert.equal(item.aspectRatio,'2:3');
  assert.throws(()=>validateInspiration({...item,rightsBasis:'unknown'}),/INVALID_INSPIRATION/);
  assert.throws(()=>validateInspiration({...item,previewUrl:'javascript:alert(1)'}),/INVALID_INSPIRATION/);
+
+ // Browsers treat backslashes after a leading slash like a protocol-relative URL.
+ // Do not let an apparent local media path resolve to another origin.
+ for(const unsafe of [String.raw`/\\evil.example/asset.webp`,String.raw`/gallery\\asset.webp`,String.raw`https:\\evil.example/asset.webp`]){
+  assert.throws(()=>validateInspiration({...item,previewUrl:unsafe}),/INVALID_INSPIRATION/);
+  assert.throws(()=>validateInspiration({...item,previewPosterUrl:unsafe}),/INVALID_INSPIRATION/);
+ }
+ assert.equal(validateInspiration({...item,previewUrl:'/gallery/valid.webp'}).previewUrl,'/gallery/valid.webp');
+ assert.equal(validateInspiration({...item,previewUrl:'https://media.example.test/valid.webp'}).previewUrl,'https://media.example.test/valid.webp');
  assert.throws(()=>validateInspiration({...item,aspectRatio:'10:1'}),/INVALID_INSPIRATION/);
 });
 
@@ -83,4 +92,27 @@ test('production Inspiration never auto-creates its database table',async()=>{
   assert.ok(statements.some(sql=>sql.includes("to_regclass('public.vv_ai_inspiration')")));
   assert.ok(statements.every(sql=>!sql.includes('CREATE TABLE')&&!sql.includes('ALTER TABLE')));
  }finally{listener.closeAllConnections();await new Promise(r=>listener.close(r));}
+});
+
+
+test('inspiration search treats typed percent, underscore, and backslash literally',async()=>{
+ const calls=[];
+ const pool={async query(sql,args=[]){
+  calls.push({sql,args});
+  if(sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_inspiration'))return {rows:[]};
+  if(sql.startsWith('SELECT DISTINCT category')||sql.startsWith('SELECT DISTINCT aspect_ratio'))return {rows:[]};
+  if(sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true'))return {rows:[]};
+  throw Error('UNEXPECTED_SQL');
+ }};
+ const app=express();installInspiration(app,{pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true'},auth:(_req,_res,next)=>next()});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));
+ try{
+  const typed='100%_'+String.fromCharCode(92)+'sale';
+  const response=await fetch('http://127.0.0.1:'+server.address().port+'/api/inspiration?q='+encodeURIComponent(typed));
+  assert.equal(response.status,200);
+  const sql=calls.find(x=>x.sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true'));
+  assert.ok(sql);
+  assert.deepEqual(sql.args,['%100'+String.fromCharCode(92)+'%'+String.fromCharCode(92)+'_'+String.fromCharCode(92,92)+'sale%']);
+  assert.match(sql.sql,/title ILIKE \$1/);
+ }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
