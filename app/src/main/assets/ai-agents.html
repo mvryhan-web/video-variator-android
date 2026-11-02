@@ -14,6 +14,8 @@
     --text: #f8fafc;
     --muted: #94a3b8;
     --accent: #6366f1;
+    --accent-hover: #818cf8;
+    --mint: #34d399;
   }
   * { box-sizing: border-box; }
   body {
@@ -30,6 +32,10 @@
     padding: 16px 24px;
     border-bottom: 1px solid var(--border);
     background: rgba(8, 13, 29, 0.85);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
   header.topbar a { color: var(--text); text-decoration: none; font-weight: 600; }
   .topbar-nav { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -40,42 +46,97 @@
     border: 1px solid rgba(99, 102, 241, 0.4);
     font-size: 14px;
   }
-  main { max-width: 1120px; margin: 0 auto; padding: 28px 20px 64px; }
-  .brand-input {
+  main { max-width: 1160px; margin: 0 auto; padding: 28px 20px 64px; }
+  .hero-head { margin-bottom: 24px; }
+  .hero-head h1 { margin: 0 0 8px; font-size: 28px; }
+  .hero-head p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  .brand-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .brand-input-row {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
-    padding: 18px;
-    border-radius: 16px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    margin-bottom: 24px;
   }
-  .brand-input input {
-    flex: 1 1 260px;
-    padding: 12px 14px;
+  .brand-input-row input {
+    flex: 1 1 320px;
+    padding: 12px 16px;
     border-radius: 10px;
     border: 1px solid var(--border);
     background: rgba(8, 13, 29, 0.9);
     color: var(--text);
     font-size: 15px;
   }
+  .chip-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .chip-label { font-size: 12px; color: var(--muted); }
+  .chip-btn {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .chip-btn:hover { border-color: var(--accent); background: rgba(99,102,241,0.12); }
+
   .scenarios-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 20px;
   }
   .scenario-card {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px;
+    border-radius: 18px;
+    padding: 22px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .scenario-card:hover {
+    border-color: rgba(99, 102, 241, 0.45);
+  }
+  .scenario-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .scenario-title { margin: 0 0 6px; font-size: 19px; }
+  .scenario-desc { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+  .cost-badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(52, 211, 153, 0.15);
+    border: 1px solid rgba(52, 211, 153, 0.35);
+    color: var(--mint);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
   .step-item {
-    padding: 12px;
+    padding: 12px 14px;
     border-radius: 12px;
     background: rgba(255,255,255,0.03);
     border: 1px solid var(--border);
@@ -83,16 +144,76 @@
     flex-direction: column;
     gap: 8px;
   }
-  .step-btn {
-    align-self: flex-start;
-    padding: 8px 12px;
+  .step-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .step-name { font-weight: 700; font-size: 14px; }
+  .step-badges {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .step-pill {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.08);
+    color: var(--muted);
+  }
+  .step-pill.ratio { background: rgba(99,102,241,0.18); color: #c7d2fe; }
+  .step-pill.cost { background: rgba(52,211,153,0.15); color: #a7f3d0; font-weight: 600; }
+  .step-prompt {
+    font-size: 12px;
+    color: #cbd5e1;
+    background: rgba(0,0,0,0.28);
+    padding: 8px 10px;
     border-radius: 8px;
-    border: 1px solid var(--accent);
-    background: var(--accent);
-    color: #fff;
-    font-weight: 600;
-    font-size: 13px;
+    line-height: 1.45;
+    word-break: break-word;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .step-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+  .step-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+    font-size: 12px;
     cursor: pointer;
+  }
+  .step-btn:hover {
+    border-color: var(--accent-hover);
+    color: #fff;
+  }
+
+  .launch-all-btn {
+    margin-top: auto;
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: 0;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 18px rgba(99,102,241,0.3);
+  }
+  .launch-all-btn:hover {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
   }
 </style>
 </head>
@@ -108,11 +229,23 @@
   </nav>
 </header>
 <main>
-  <h1>Пошаговые сценарии AI-агента (F2)</h1>
-  <p style="color:var(--muted)">Укажите ваш продукт или тему — агент подготовит промпты и настройки для каждого шага и передаст их в Studio без скрытых платных вызовов.</p>
+  <div class="hero-head">
+    <h1>Пошаговые сценарии AI-агента (F2)</h1>
+    <p>Выберите готовый сценарий кампании, укажите продукт, и агент подготовит оптимальные модели, форматы и промпты для пошагового выполнения в Studio.</p>
+  </div>
 
-  <div class="brand-input">
-    <input id="productTopic" type="text" maxlength="120" value="Премиальные смарт-часы AeroChrono" placeholder="Введите ваш продукт, бренд или тему кампании…">
+  <div class="brand-panel">
+    <div class="brand-input-row">
+      <input id="productTopic" type="text" maxlength="120" value="Смарт-часы AeroChrono" placeholder="Введите название товара, продукта или тему кампании…">
+    </div>
+    <div class="chip-row">
+      <span class="chip-label">Быстрые примеры:</span>
+      <button type="button" class="chip-btn" data-chip="Смарт-часы AeroChrono">⌚ Смарт-часы AeroChrono</button>
+      <button type="button" class="chip-btn" data-chip="Кофемашина BaristaPro">☕ Кофемашина BaristaPro</button>
+      <button type="button" class="chip-btn" data-chip="Сыворотка GlowSkin Organic">🧴 Сыворотка GlowSkin</button>
+      <button type="button" class="chip-btn" data-chip="Электросамокат CyberGlide">🛴 Электросамокат CyberGlide</button>
+      <button type="button" class="chip-btn" data-chip="Наушники SoundNova Pro">🎧 Наушники SoundNova</button>
+    </div>
   </div>
 
   <div id="scenariosGrid" class="scenarios-grid"></div>
@@ -122,71 +255,108 @@
     {
       id: 'ecom-launch',
       title: '1. E-Commerce Product Launch Pack',
-      desc: 'Полный набор визуалов для карточки товара и рекламного запуска.',
+      desc: 'Полный коммерческий комплект для карточки товара на маркетплейсе: фото для обложки и вертикальный видео-тизер.',
+      totalCredits: 25,
       steps: [
         {
-          label: 'Шаг 1 · студийное Hero-фото (1:1)',
+          label: 'Шаг 1 · Студийное Hero-фото',
           type: 'image',
           model: 'gemini-3.1-flash-image',
           ratio: '1:1',
-          prompt: 'Commercial hero product photography of {{topic}} on a sleek podium with soft rim lighting, ultra-clean studio background, 8k detail'
+          credits: 5,
+          prompt: 'Commercial hero product photography of {{topic}} on wet volcanic rock with soft studio rim lighting, ultra-clean background, 8k commercial detail'
         },
         {
-          label: 'Шаг 2 · вертикальный видео-тизер (9:16)',
+          label: 'Шаг 2 · Вертикальный видео-тизер',
           type: 'video',
           model: 'veo-3.1-lite-generate-preview',
           ratio: '9:16',
-          prompt: 'Cinematic slow-motion reveal of {{topic}} with dynamic light reflections and luxury studio atmosphere'
+          credits: 20,
+          prompt: 'Cinematic slow-motion camera orbit around {{topic}} with soft volumetric lighting and luxury commercial atmosphere, 9:16 vertical'
         }
       ]
     },
     {
       id: 'social-reels',
-      title: '2. Social Media Reels & Shorts Campaign',
-      desc: 'Быстрый сценарий для вертикального контента TikTok / Reels / Shorts.',
+      title: '2. Social Media Reels & Shorts Viral Pack',
+      desc: 'Яркий вертикальный медиа-пак для вирусных кампаний в TikTok, Instagram Reels и YouTube Shorts.',
+      totalCredits: 25,
       steps: [
         {
-          label: 'Шаг 1 · обложка / ключевой кадр (9:16)',
+          label: 'Шаг 1 · Неоновая обложка',
           type: 'image',
           model: 'byteplus-seedream-4-5',
           ratio: '9:16',
-          prompt: 'Eye-catching vertical poster featuring {{topic}}, vibrant neon accents, modern editorial composition'
+          credits: 5,
+          prompt: 'Striking vertical editorial poster featuring {{topic}}, vibrant neon reflections, bold modern composition, 9:16'
         },
         {
-          label: 'Шаг 2 · динамичный 5-секундный клип (9:16)',
+          label: 'Шаг 2 · Динамичный видео-клип',
           type: 'video',
           model: 'byteplus-seedance-2',
           ratio: '9:16',
-          prompt: 'Dynamic camera orbit around {{topic}} in a modern cyber-minimalist environment, smooth motion'
+          credits: 20,
+          prompt: 'Dynamic camera motion revealing {{topic}} in a futuristic cyber-minimalist studio, smooth fluid motion, cinematic color grading'
         }
       ]
     },
     {
       id: 'brand-audio-visual',
-      title: '3. Brand Story + Фирменный саундтрек',
-      desc: 'Широкоформатный видеоролик и оригинальная фоновая музыка.',
+      title: '3. Brand Commercial + Original Soundtrack',
+      desc: 'Широкоформатный промо-ролик для веб-сайта с оригинальной инструментальной аудио-дорожкой.',
+      totalCredits: 30,
       steps: [
         {
-          label: 'Шаг 1 · широкоформатная сцена (16:9)',
+          label: 'Шаг 1 · Широкоформатное видео',
           type: 'video',
           model: 'veo-3.1-fast-generate-preview',
           ratio: '16:9',
-          prompt: 'Widescreen commercial showcase of {{topic}} in natural golden hour light, gentle camera dolly in'
+          credits: 20,
+          prompt: 'Widescreen commercial showcase of {{topic}} in natural golden hour light, gentle dolly-in camera motion, premium cinema lens'
         },
         {
-          label: 'Шаг 2 · инструментальный джингла-трек (30 сек)',
+          label: 'Шаг 2 · Фирменный саундтрек (30 сек)',
           type: 'audio',
           model: 'lyria-3-clip-preview',
           ratio: '1:1',
-          prompt: 'Modern uplifting electronic instrumental soundtrack for {{topic}} brand commercial, warm synth pads and crisp beat'
+          credits: 10,
+          prompt: 'Modern uplifting electronic instrumental soundtrack for {{topic}} brand commercial, warm synth pads and crisp rhythm'
+        }
+      ]
+    },
+    {
+      id: 'editorial-lookbook',
+      title: '4. Cyberpunk Editorial Lookbook',
+      desc: 'Концептуальный арт-постер и атмосферный неоновый саундскейп для креативного портфолио.',
+      totalCredits: 18,
+      steps: [
+        {
+          label: 'Шаг 1 · Концептуальный постер',
+          type: 'image',
+          model: 'gpt-image-2.5-sunburst',
+          ratio: '1:1',
+          credits: 8,
+          prompt: 'Futuristic cyberpunk editorial product art of {{topic}}, dark holographic aesthetic, volumetric neon light, highly detailed'
+        },
+        {
+          label: 'Шаг 2 · Эмбиент-саундскейп',
+          type: 'audio',
+          model: 'lyria-3-clip-preview',
+          ratio: '1:1',
+          credits: 10,
+          prompt: 'Deep atmospheric cyberpunk synth ambient background music for {{topic}}, slow hypnotic pulse, dark cinematic mood'
         }
       ]
     }
   ];
 
-  function launchStep(step) {
-    const topic = document.getElementById('productTopic').value.trim() || 'flagship product';
-    const promptText = step.prompt.replace('{{topic}}', topic);
+  function getTopic() {
+    return document.getElementById('productTopic').value.trim() || 'флагманский продукт';
+  }
+
+  function launchSingleStep(step) {
+    const topic = getTopic();
+    const promptText = step.prompt.replace(/\{\{topic\}\}/g, topic);
     sessionStorage.setItem('deepsyq_template_start', JSON.stringify({
       generationType: step.type,
       defaultModel: step.model,
@@ -197,25 +367,101 @@
     location.href = 'generate-studio.html?studio=' + encodeURIComponent(studioParam);
   }
 
-  const grid = document.getElementById('scenariosGrid');
-  for (const sc of SCENARIOS) {
-    const card = document.createElement('article');
-    card.className = 'scenario-card';
-    card.innerHTML = `<h2 style="margin:0;font-size:19px;">${sc.title}</h2><p style="margin:0;color:var(--muted);font-size:14px;">${sc.desc}</p>`;
-    for (const step of sc.steps) {
-      const box = document.createElement('div');
-      box.className = 'step-item';
-      box.innerHTML = `<strong>${step.label}</strong><small style="color:var(--muted)">Модель: ${step.model}</small>`;
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'step-btn';
-      btn.textContent = 'Подготовить этот шаг в Studio ↗';
-      btn.onclick = () => launchStep(step);
-      box.append(btn);
-      card.append(box);
-    }
-    grid.append(card);
+  function launchEntireScenario(sc) {
+    const topic = getTopic();
+    const preparedSteps = sc.steps.map(s => ({
+      ...s,
+      prompt: s.prompt.replace(/\{\{topic\}\}/g, topic)
+    }));
+    sessionStorage.setItem('deepsyq_agent_workflow', JSON.stringify({
+      scenarioId: sc.id,
+      scenarioTitle: sc.title,
+      currentStep: 0,
+      steps: preparedSteps
+    }));
+    // Prime Step 1
+    sessionStorage.setItem('deepsyq_template_start', JSON.stringify({
+      generationType: preparedSteps[0].type,
+      defaultModel: preparedSteps[0].model,
+      promptTemplate: preparedSteps[0].prompt,
+      defaultSettings: { ratio: preparedSteps[0].ratio }
+    }));
+    const studioParam = preparedSteps[0].type === 'audio' ? 'audio' : preparedSteps[0].type;
+    location.href = 'generate-studio.html?studio=' + encodeURIComponent(studioParam);
   }
+
+  function renderScenarios() {
+    const topic = getTopic();
+    const grid = document.getElementById('scenariosGrid');
+    grid.replaceChildren();
+
+    for (const sc of SCENARIOS) {
+      const card = document.createElement('article');
+      card.className = 'scenario-card';
+
+      const head = document.createElement('div');
+      head.className = 'scenario-head';
+      head.innerHTML = `
+        <div>
+          <h2 class="scenario-title">${sc.title}</h2>
+          <p class="scenario-desc">${sc.desc}</p>
+        </div>
+        <span class="cost-badge">~${sc.totalCredits} кредитов</span>
+      `;
+
+      const stepsList = document.createElement('div');
+      stepsList.className = 'steps-list';
+
+      for (let i = 0; i < sc.steps.length; i++) {
+        const step = sc.steps[i];
+        const stepBox = document.createElement('div');
+        stepBox.className = 'step-item';
+        const formattedPrompt = step.prompt.replace(/\{\{topic\}\}/g, topic);
+
+        stepBox.innerHTML = `
+          <div class="step-top">
+            <span class="step-name">${step.label}</span>
+            <div class="step-badges">
+              <span class="step-pill ratio">${step.ratio}</span>
+              <span class="step-pill">${step.model}</span>
+              <span class="step-pill cost">${step.credits} cr</span>
+            </div>
+          </div>
+          <div class="step-prompt">${formattedPrompt}</div>
+        `;
+
+        const actRow = document.createElement('div');
+        actRow.className = 'step-actions';
+        const sBtn = document.createElement('button');
+        sBtn.type = 'button';
+        sBtn.className = 'step-btn';
+        sBtn.textContent = 'Запустить шаг ' + (i + 1) + ' в Studio ↗';
+        sBtn.onclick = () => launchSingleStep(step);
+        actRow.append(sBtn);
+        stepBox.append(actRow);
+        stepsList.append(stepBox);
+      }
+
+      const launchAll = document.createElement('button');
+      launchAll.type = 'button';
+      launchAll.className = 'launch-all-btn';
+      launchAll.innerHTML = 'Начать сценарий пошагово (Шаг 1 из ' + sc.steps.length + ') 🚀';
+      launchAll.onclick = () => launchEntireScenario(sc);
+
+      card.append(head, stepsList, launchAll);
+      grid.append(card);
+    }
+  }
+
+  document.getElementById('productTopic').addEventListener('input', () => renderScenarios());
+  document.querySelectorAll('[data-chip]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.getElementById('productTopic').value = chip.dataset.chip;
+      renderScenarios();
+    });
+  });
+
+  renderScenarios();
 </script>
 </body>
 </html>

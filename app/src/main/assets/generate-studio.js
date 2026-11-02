@@ -1141,6 +1141,54 @@ async function applyLocalStudioHandoff(){
   $('status').textContent=dropped?say(`Workflow prepared. This model accepts ${max} reference file(s), so ${dropped} local file(s) were not attached. Review everything before generating.`,`Шаблон подготовлен. Эта модель принимает ${max} файл(а), поэтому ${dropped} файл(а) не были прикреплены. Проверьте всё перед генерацией.`):say('Workflow prepared locally. Review the prompt, references and settings before generating.','Шаблон подготовлен локально. Проверьте запрос, фотографии и настройки перед генерацией.');return true;
  }catch(_){$('status').textContent=say('The local workflow handoff could not be restored. Add your references here instead.','Не удалось восстановить локальный шаблон. Добавьте фотографии здесь.');return false;}
 }
+
+function applyAgentWorkflow(){
+ const raw=sessionStorage.getItem('deepsyq_agent_workflow');
+ const banner=$('agentWorkflowBanner');
+ if(!banner)return;
+ if(!raw){banner.hidden=true;return;}
+ try{
+  const wf=JSON.parse(raw);
+  const steps=Array.isArray(wf.steps)?wf.steps:[];
+  const stepIdx=Number(wf.currentStep||0);
+  if(!steps.length||stepIdx>=steps.length){
+   banner.hidden=false;
+   $('agentBannerText').textContent=say(`Workflow "${wf.scenarioTitle||'Campaign'}" completed!`,`Сценарий «${wf.scenarioTitle||'Кампания'}» выполнен!`);
+   $('agentBannerNext').textContent=say('View in Workspace ↗','Открыть в Workspace ↗');
+   $('agentBannerNext').onclick=()=>{sessionStorage.removeItem('deepsyq_agent_workflow');location.href='my-creations.html';};
+   $('agentBannerDismiss').onclick=()=>{sessionStorage.removeItem('deepsyq_agent_workflow');banner.hidden=true;};
+   return;
+  }
+  const curr=steps[stepIdx];
+  banner.hidden=false;
+  $('agentBannerText').textContent=say(`Step ${stepIdx+1}/${steps.length}: ${curr.label||curr.type}`,`Шаг ${stepIdx+1}/${steps.length}: ${curr.label||curr.type}`);
+  if(stepIdx+1<steps.length){
+   $('agentBannerNext').textContent=say(`Next: Step ${stepIdx+2} →`,`Далее: Шаг ${stepIdx+2} →`);
+   $('agentBannerNext').onclick=()=>{
+    wf.currentStep=stepIdx+1;
+    sessionStorage.setItem('deepsyq_agent_workflow',JSON.stringify(wf));
+    const nextStep=steps[stepIdx+1];
+    sessionStorage.setItem('deepsyq_template_start',JSON.stringify({
+     generationType:nextStep.type,
+     defaultModel:nextStep.model,
+     promptTemplate:nextStep.prompt,
+     defaultSettings:{ratio:nextStep.ratio}
+    }));
+    applyTemplateStart();
+    applyAgentWorkflow();
+   };
+  }else{
+   $('agentBannerNext').textContent=say('Finish scenario','Завершить сценарий');
+   $('agentBannerNext').onclick=()=>{
+    wf.currentStep=steps.length;
+    sessionStorage.setItem('deepsyq_agent_workflow',JSON.stringify(wf));
+    applyAgentWorkflow();
+   };
+  }
+  $('agentBannerDismiss').onclick=()=>{sessionStorage.removeItem('deepsyq_agent_workflow');banner.hidden=true;};
+ }catch(_){banner.hidden=true;}
+}
+
 function applyTemplateStart(){
  const raw=sessionStorage.getItem('deepsyq_template_start');if(!raw)return false;sessionStorage.removeItem('deepsyq_template_start');
  try{
@@ -1160,7 +1208,7 @@ await initializeVideoDraft();
 requireStudioAccount();
 select(kind,{remember:false});
 try{config=await(await api('/api/studio/config')).json();await loadGenerationAccess();catalog=config.catalog||[...config.models.map(m=>({...m,id:m.id||MODELS[m.kind]?.id,adapter:true,provider:'Google'})),...MODEL_CATALOG.filter(m=>!config.models.some(c=>(c.id||MODELS[c.kind]?.id)===m.id)).map(m=>({...m,enabled:false}))];const preferred=config.models?.find(m=>m.kind===kind&&m.enabled);if(preferred?.id&&!(kind==='image'&&imageDraftLoaded)&&!(kind==='video'&&videoDraftLoaded))modelId=preferred.id;renderModel();if(kind==='image'&&imageDraftLoaded){const d=drafts.image;if(currentModel()?.ratios?.includes(d?.ratio))$('ratio').value=d.ratio;if(currentModel()?.capabilities?.resolutions?.includes(d?.resolution))$('imageResolution').value=d.resolution;if(currentModel()?.capabilities?.outputFormats?.includes(d?.outputFormat))$('imageOutputFormat').value=d.outputFormat;if(config.imageBatchEnabled===true&&Number.isInteger(d?.quantity)&&d.quantity>=1&&d.quantity<=4)$('imageQuantity').value=String(d.quantity);updateRatioSelection();}if(kind==='video'&&videoDraftLoaded){const d=drafts.video;if(currentModel()?.ratios?.includes(d?.ratio))$('ratio').value=d.ratio;if(currentModel()?.capabilities?.resolutions?.includes(d?.videoResolution))$('videoResolution').value=d.videoResolution;renderVideoSettings();if([...$('videoDuration').options].some(o=>o.value===String(d?.videoDuration)))$('videoDuration').value=String(d.videoDuration);updateRatioSelection();}}catch(_){availability();}
-const restored=await applyLocalStudioHandoff();requireStudioAccount();if(!restored)applyTemplateStart();
+const restored=await applyLocalStudioHandoff();requireStudioAccount();if(!restored)applyTemplateStart();applyAgentWorkflow();
 imageDraftReady=true;videoDraftReady=true;if(kind==='image'){showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}
 const previous=sessionStorage.getItem('vu_generation_job');if(previous&&config.enabled&&sessionStorage.getItem('vu_generation_background_job')!==previous){job=previous;busy=true;availability();const epoch=++generation;watch(job,epoch).catch(e=>{if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();});}else if(previous&&sessionStorage.getItem('vu_generation_background_job')===previous){job=previous;setHistory(true);$('status').textContent=say('The video job is being tracked in History. Check its status when ready.','Видеозадача находится в Истории. Проверяйте её статус там.');}
 
