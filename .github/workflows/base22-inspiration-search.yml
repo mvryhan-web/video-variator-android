@@ -1,0 +1,34 @@
+name: BASE22 Inspiration literal search and preview URL safety
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-inspiration.js'
+      - 'tests/generation-inspiration-unit.mjs'
+      - '.github/workflows/base22-inspiration-search.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-inspiration.js'
+      - 'tests/generation-inspiration-unit.mjs'
+      - '.github/workflows/base22-inspiration-search.yml'
+permissions:
+  contents: read
+jobs:
+  inspiration-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check server/generation-inspiration.js && node --check tests/generation-inspiration-unit.mjs
+      - run: node --test tests/generation-inspiration-unit.mjs
