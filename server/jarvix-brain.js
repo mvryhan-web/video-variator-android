@@ -179,7 +179,7 @@ export function executeSafeAction(action) {
     return {
       success: true,
       type: 'adjust_theme',
-      theme: action.theme || 'cyberpunk'
+      theme: (action.theme === null || action.theme === 'default' || action.theme === 'standard') ? 'default' : (action.theme || 'cyberpunk')
     };
   }
 
@@ -380,6 +380,37 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
   }
 
   // 6. SAFE SITE ACTIONS (Lighting, Clear, Tools)
+  if (/(?:выключи|отключи|убери|сбрось|верни)\s+(?:его|неон|киберпанк|тему|подсветку|стиль|режим|как было)|(?:выключи|отключи)\s+его|(?:стандартная|обычная|исходная|дефолтная)\s+тема|выключи тему|верни тему|верни как было|сбрось тему|default theme|reset theme|turn off neon/i.test(lower)) {
+    action = executeSafeAction({ type: 'adjust_theme', theme: 'default' });
+    return {
+      reply: isRu ? 'Сделано. Выключил тему и вернул стандартное оформление.'
+        : isFr ? 'Terminé. Le thème par défaut est restauré.'
+        : isEs ? 'Hecho. Se ha restablecido el tema predeterminado.'
+        : 'Done. Reverted to default theme.',
+      action,
+      entities: { ...session.accumulatedPrompt },
+      compiledPrompt: compileAccumulatedPrompt(session.accumulatedPrompt),
+      studioHandoff: null,
+      language: lang,
+      provider: 'jarvix-mock-brain'
+    };
+  }
+
+  if (!/(?:выключи|отключи|не\s+надо)/i.test(lower) && /(?:неонов|киберпанк|neon|cyberpunk)/i.test(lower)) {
+    action = executeSafeAction({ type: 'adjust_theme', theme: 'neon' });
+    return {
+      reply: isRu ? 'Сделано. Включил неоновый киберпанк.'
+        : isFr ? 'Thème cyberpunk néon activé.'
+        : isEs ? 'Tema cyberpunk neón activado.'
+        : 'Switched to neon cyberpunk theme.',
+      action,
+      entities: { ...session.accumulatedPrompt },
+      compiledPrompt: compileAccumulatedPrompt(session.accumulatedPrompt),
+      studioHandoff: null,
+      language: lang,
+      provider: 'jarvix-mock-brain'
+    };
+  }
   if (/(?:посветлее|светлая тема|light theme)/i.test(lower)) {
     action = executeSafeAction({ type: 'adjust_theme', theme: 'light' });
     return {
