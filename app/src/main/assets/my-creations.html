@@ -326,7 +326,7 @@
       actions.className = 'ws-actions';
 
       const openLink = document.createElement('a');
-      openLink.href = 'generate-studio.html?view=history';
+      openLink.href = 'generate-studio.html?jobId=' + encodeURIComponent(card.id);
       openLink.textContent = 'В Studio ↗';
 
       const favBtn = document.createElement('button');
@@ -347,7 +347,15 @@
       archBtn.textContent = 'В архив';
       archBtn.onclick = () => patchCard(card.id, { action: 'archive' });
 
-      actions.append(openLink, favBtn, renBtn, archBtn);
+      if (card.status === 'archived') {
+        const resBtn = document.createElement('button');
+        resBtn.type = 'button';
+        resBtn.textContent = 'Из архива';
+        resBtn.onclick = () => patchCard(card.id, { action: 'restore' });
+        actions.append(openLink, favBtn, renBtn, resBtn);
+      } else {
+        actions.append(openLink, favBtn, renBtn, archBtn);
+      }
       el.append(prev, head, meta, actions);
       grid.append(el);
     }
