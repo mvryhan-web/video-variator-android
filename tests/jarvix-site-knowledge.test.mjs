@@ -1,9 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readdir} from 'node:fs/promises';
 import {buildJarvixSiteKnowledge,executeSafeAction,getOrCreateSession,processTurnWithMockBrain,processTurnWithOpenAI,clearSession} from '../server/jarvix-brain.js';
 
-test('Jarvix page index comes from shipped public screens and excludes executable markup',()=>{
+test('Jarvix page index covers every user-facing HTML screen and excludes executable markup',async()=>{
  const pages=buildJarvixSiteKnowledge();
+ const htmlFiles=(await readdir(new URL('../app/src/main/assets/',import.meta.url)))
+  .filter(file=>file.endsWith('.html')&&!['deepsyq-admin.html','product-watcher-admin.html'].includes(file)).sort();
+ assert.deepEqual(pages.map(page=>page.path.slice(1)).sort(),htmlFiles);
+ assert.equal(pages.length,29);
  assert.ok(pages.some(page=>page.path==='/generate-studio.html'));
  assert.ok(pages.some(page=>page.path==='/jarvix-studio.html'));
  const studio=pages.find(page=>page.path==='/generate-studio.html');
