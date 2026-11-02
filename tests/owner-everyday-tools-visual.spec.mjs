@@ -13,7 +13,15 @@ test('owner Everyday Tools landing: exactly nine live destinations, sidebar and 
  await expect(page.locator('.utility-tools-preview a.et-owner-bg-banner')).toHaveCount(1);
  await expect(page.locator('.utility-tools-preview .et-owner-voices a.et-owner-voice-card')).toHaveCount(2);
  await expect(page.locator('#etShowcase .et-uniquifier')).toHaveAttribute('href','index.html');
- expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);
+ const overflow=await page.evaluate(()=>({
+  scrollWidth:document.documentElement.scrollWidth,
+  innerWidth,
+  elements:[...document.body.querySelectorAll('*')].map(el=>{
+   const rect=el.getBoundingClientRect(),style=getComputedStyle(el);
+   return {tag:el.tagName,id:el.id,classes:String(el.className||'').slice(0,100),left:Math.round(rect.left),right:Math.round(rect.right),width:Math.round(rect.width),position:style.position,overflowX:style.overflowX};
+  }).filter(el=>el.width>0&&el.right>innerWidth+1).sort((a,b)=>b.right-a.right).slice(0,12)
+ }));
+ expect(overflow.scrollWidth-overflow.innerWidth,JSON.stringify(overflow.elements)).toBeLessThanOrEqual(1);
  expect(paid).toEqual([]);
 });
 test('owner Everyday Tools filter and native file workflow preserve working processors',async({page})=>{
