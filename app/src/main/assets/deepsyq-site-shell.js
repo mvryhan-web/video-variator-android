@@ -1,146 +1,66 @@
-/* Site-wide read-only Deepsyq navigation. Home maintains its original sidebar.
-   Mirrors the owner-approved neon Home groups; never invokes a provider or billing. */
+/* Site-wide read-only Deepsyq navigation & Multilingual Shell.
+   Mirrors the owner-approved neon Home groups, applies themes and auto-translates subpages. */
 (() => {
- if (!document.body || document.getElementById('sidebar') || document.getElementById('dsSiteSidebar')) return;
- const entries=[
-  {section:'Home'},
-  {label:'Home',icon:'⌂',url:'deepsyq.html',key:'home'},
-  {section:'Creation'},
-  {label:'Image',icon:'▧',url:'generate-studio.html?studio=image',key:'image'},
-  {label:'Video',icon:'▷',url:'generate-studio.html?studio=video',key:'video'},
-  {label:'Agent',icon:'✦',url:'ai-agents.html',key:'agents'},
-  {label:'Virtual Pet',icon:'🐾',url:'virtual-pet.html',key:'pet'},
-  {label:'Voice Agent',icon:'🎙',url:'voice-agent-preview.html',key:'voice'},
-  {label:'Audio',icon:'♫',url:'generate-studio.html?studio=audio',key:'audio'},
-  {section:'Tools'},
-  {label:'Tools',icon:'⊞',url:'free-tools.html',key:'tools'},
-  {label:'AI Apps',icon:'◇',url:'ai-apps.html',key:'apps'},
-  {label:'Canvas',icon:'✎',url:'canvas.html',key:'canvas'},
-  {label:'Video Uniquifier',icon:'▤',url:'index.html',key:'legacy'},
-  {section:'Library'},
-  {label:'Assets',icon:'▦',url:'generate-studio.html?view=history',key:'assets'},
-  {label:'My Creations',icon:'▣',url:'generate-studio.html?view=history',key:'history'},
-  {label:'History',icon:'◷',url:'generate-studio.html?view=history',key:'history'},
-  {section:'Community'},
-  {label:'Affiliate',icon:'↗',pending:true},
-  {label:'Share',icon:'⇪',action:'share'},
-  {label:'Inspiration',icon:'◌',url:'deepsyq.html#inspirationPreview',key:'inspiration'},
-  {section:'More'},
-  {label:'Pricing',icon:'＄',url:'pricing.html',key:'pricing'}
- ];
- const path=location.pathname.split('/').pop() || 'deepsyq.html';
- const query=new URLSearchParams(location.search);
- const active=path==='generate-studio.html'?
-  (query.get('view')==='history'?'history':
-   query.get('studio')==='video'?'video':
-   ['audio','music'].includes(query.get('studio'))?'audio':'image'):
-  path==='voice-agent-preview.html'?'voice':path==='virtual-pet.html'?'pet':path==='ai-agents.html'?'agents':path==='canvas.html'?'canvas':path==='ai-apps.html'?'apps':path==='inspiration.html'?'inspiration':
-  ['pricing.html','ai-pricing.html'].includes(path)?'pricing':
-  path==='index.html'?'legacy':
-  ['free-tools.html','audio-studio.html','avatar-studio.html','mobile-utility.html',
-   'photo-collage.html','simple-background-remover.html','smart-reminders.html','teleprompter.html'].includes(path)?'tools':'';
- const sidebar=document.createElement('aside');
- sidebar.id='dsSiteSidebar';sidebar.className='ds-site-sidebar';
- sidebar.setAttribute('aria-label','Deepsyq site navigation');
- const brand=document.createElement('a');brand.href='deepsyq.html';brand.className='ds-site-brand';
- const logo=document.createElement('img');logo.src='deepsyq-logo.png';logo.alt='';logo.width=30;logo.height=30;
- brand.append(logo,document.createTextNode('Deepsyq'));sidebar.append(brand);
- const nav=document.createElement('nav');nav.setAttribute('aria-label','Site pages');
- const shareStatus=document.createElement('div');shareStatus.className='ds-site-share-status';shareStatus.setAttribute('role','status');shareStatus.setAttribute('aria-live','polite');
- for(const entry of entries){
-  if(entry.section){
-   const cap=document.createElement('div');cap.className='ds-site-caption';cap.textContent=entry.section;
-   nav.append(cap);continue;
-  }
-  const el=document.createElement(entry.pending?'span':entry.action?'button':'a');
-  if(entry.pending){
-   el.className='ds-site-pending';el.setAttribute('aria-label',entry.label+' coming soon');
-   el.title=entry.label+' — coming soon';
-  }else if(entry.action==='share'){
-   el.type='button';el.className='ds-site-share';el.setAttribute('aria-label','Share Deepsyq');
-   el.addEventListener('click',async()=>{
-    const homeLink=new URL('deepsyq.html',location.href).href;
-    shareStatus.textContent='';
-    try{
-     if(typeof navigator.share==='function'){await navigator.share({title:'Deepsyq',url:homeLink});return;}
-     if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(homeLink);shareStatus.textContent='Link copied';return;}
-    }catch(e){if(e?.name==='AbortError')return;}
-    shareStatus.textContent=homeLink; // Selectable link when native sharing/copying is unavailable.
-   });
-  }else{
-   el.href=entry.url;
-   if(active===entry.key)el.setAttribute('aria-current','page');
-  }
-  const icon=document.createElement('span');icon.className='ds-icon';icon.setAttribute('aria-hidden','true');
-  icon.textContent=entry.icon;
-  el.append(icon,document.createTextNode(entry.label));
-  if(entry.pending){const soon=document.createElement('small');soon.textContent='soon';el.append(soon);}
-  nav.append(el);
- }
- nav.append(shareStatus);
- sidebar.append(nav);
- const foot=document.createElement('div');foot.className='ds-site-footer';
- const home=document.createElement('a');home.href='deepsyq.html';home.textContent='← Back to Deepsyq Home';
- const privacy=document.createElement('a');privacy.href='ai-privacy.html';privacy.textContent='Privacy';
- foot.append(home,privacy);sidebar.append(foot);
- const toggle=document.createElement('button');toggle.className='ds-site-mobile-toggle';toggle.type='button';
- toggle.textContent='☰';toggle.setAttribute('aria-label','Open Deepsyq navigation');
- toggle.setAttribute('aria-controls','dsSiteSidebar');toggle.setAttribute('aria-expanded','false');
- const scrim=document.createElement('div');scrim.className='ds-site-scrim';scrim.setAttribute('aria-hidden','true');
- // Inner-page mobile navigation is a real keyboard drawer, not a visual-only slide.
- // Never allow focus into offscreen links. Leave the desktop rail unaffected.
- const mobile=window.matchMedia('(max-width:900px)');
- let previousOverflow=null;
- const focusable=()=>[...sidebar.querySelectorAll('a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])')]
-  .filter(el=>!el.hidden&&el.getClientRects().length>0&&getComputedStyle(el).visibility!=='hidden');
- const isOpen=()=>mobile.matches&&document.body.classList.contains('ds-site-nav-open');
- const close=(restoreFocus=false)=>{
-  const wasOpen=isOpen();
-  document.body.classList.remove('ds-site-nav-open');
-  toggle.setAttribute('aria-expanded','false');
-  toggle.setAttribute('aria-label','Open Deepsyq navigation');
-  sidebar.removeAttribute('role');sidebar.removeAttribute('aria-modal');
-  if(previousOverflow!==null){document.body.style.overflow=previousOverflow;previousOverflow=null;}
-  sidebar.inert=mobile.matches;
-  if(wasOpen&&restoreFocus&&mobile.matches)toggle.focus({preventScroll:true});
- };
- const open=()=>{
-  if(!mobile.matches)return;
-  previousOverflow=document.body.style.overflow;
-  sidebar.inert=false;
-  sidebar.setAttribute('role','dialog');sidebar.setAttribute('aria-modal','true');
-  document.body.classList.add('ds-site-nav-open');
-  document.body.style.overflow='hidden';
-  toggle.setAttribute('aria-expanded','true');
-  toggle.setAttribute('aria-label','Close Deepsyq navigation');
-  focusable()[0]?.focus({preventScroll:true});
- };
- const syncViewport=()=>{
-  if(!mobile.matches)close(false);
-  else if(!isOpen())sidebar.inert=true;
- };
- toggle.addEventListener('click',()=>isOpen()?close(true):open());
- scrim.addEventListener('click',()=>close(true));
- document.addEventListener('keydown',e=>{
-  if(!isOpen())return;
-  if(e.key==='Escape'){e.preventDefault();close(true);return;}
-  if(e.key!=='Tab')return;
-  const items=focusable(),first=items[0],last=items.at(-1);
-  if(!first)return;
-  if(e.shiftKey&&(document.activeElement===first||!sidebar.contains(document.activeElement))){
-   e.preventDefault();last.focus({preventScroll:true});
-  }else if(!e.shiftKey&&(document.activeElement===last||!sidebar.contains(document.activeElement))){
-   e.preventDefault();first.focus({preventScroll:true});
-  }
- });
- sidebar.addEventListener('click',e=>{if(e.target.closest('a'))close(false);});
- if(typeof mobile.addEventListener==='function')mobile.addEventListener('change',syncViewport);
- else mobile.addListener(syncViewport);
- syncViewport();
- document.body.classList.add('deepsyq-sitewide-shell');
- document.body.prepend(scrim,toggle,sidebar);
+  // Apply saved theme immediately across all pages
+  try {
+    const savedTheme = localStorage.getItem('deepsyq_site_theme');
+    if (savedTheme) document.documentElement.setAttribute('data-site-theme', savedTheme);
+  } catch (_) {}
 
-  // Sitewide JARVIS AI integration
+  // Current language resolver
+  const getLang = () => {
+    try {
+      return localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang') || 'en';
+    } catch (_) {
+      return 'en';
+    }
+  };
+
+  const shellI18n = {
+    en: {
+      Home: 'Home', Creation: 'Creation', Tools: 'Tools', Library: 'Library', Community: 'Community', More: 'More',
+      home: 'Home', image: 'Image', video: 'Video', agents: 'Agent', pet: 'Virtual Pet', voice: 'Voice Agent', audio: 'Audio',
+      tools: 'Tools', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Video Uniquifier',
+      assets: 'Assets', history: 'My Creations', affiliate: 'Affiliate', share: 'Share link', inspiration: 'Inspiration', pricing: 'Pricing',
+      back: '← Back to Deepsyq Home', privacy: 'Privacy', soon: 'soon', copied: 'Link copied', backBtn: 'Back'
+    },
+    ru: {
+      Home: 'Главная', Creation: 'Создание', Tools: 'Инструменты', Library: 'Коллекция', Community: 'Сообщество', More: 'Еще',
+      home: 'Главная', image: 'Фото', video: 'Видео', agents: 'ИИ-Агент', pet: 'Питомец', voice: 'Голосовой агент', audio: 'Аудио',
+      tools: 'Инструменты', apps: 'AI Apps', canvas: 'Canvas', legacy: 'Видеоуникализатор',
+      assets: 'Ассеты', history: 'Мои работы', affiliate: 'Партнерка', share: 'Поделиться', inspiration: 'Вдохновение', pricing: 'Тарифы',
+      back: '← Назад в Deepsyq', privacy: 'Конфиденциальность', soon: 'скоро', copied: 'Ссылка скопирована', backBtn: 'Назад'
+    },
+    fr: {
+      Home: 'Accueil', Creation: 'Création', Tools: 'Outils', Library: 'Bibliothèque', Community: 'Communauté', More: 'Plus',
+      home: 'Accueil', image: 'Image', video: 'Vidéo', agents: 'Agent IA', pet: 'Animal virtuel', voice: 'Agent vocal', audio: 'Audio',
+      tools: 'Outils', apps: 'Apps IA', canvas: 'Canvas', legacy: 'Unificateur vidéo',
+      assets: 'Médias', history: 'Mes créations', affiliate: 'Affiliation', share: 'Partager', inspiration: 'Inspiration', pricing: 'Tarifs',
+      back: '← Retour à Deepsyq', privacy: 'Confidentialité', soon: 'bientôt', copied: 'Lien copié', backBtn: 'Retour'
+    }
+  };
+
+  const currentLang = () => {
+    const l = getLang();
+    return shellI18n[l] ? l : 'en';
+  };
+  const t = () => shellI18n[currentLang()];
+
+  // Sync document language tag
+  document.documentElement.lang = currentLang() === 'en' ? 'en-US' : currentLang();
+
+  // Apply translations to common page elements
+  const translateCommon = () => {
+    const dict = t();
+    document.querySelectorAll('.back, [data-t="back"], .tool-back').forEach(btn => {
+      if (btn.childNodes.length === 1 && btn.childNodes[0].nodeType === Node.TEXT_NODE) {
+        btn.textContent = dict.backBtn;
+      }
+    });
+  };
+  translateCommon();
+
+  // Sitewide JARVIX AI integration
   if (!document.getElementById('topJarvisBtn')) {
     const jarvisCss = document.createElement('link');
     jarvisCss.rel = 'stylesheet';
@@ -152,7 +72,7 @@
     jarvisScript.src = 'jarvis-core.js';
     document.body.append(jarvisScript);
 
-    // If a top header exists, insert JARVIX Orb
+    // If a top header exists, insert JARVIX Orb dead-center
     const topH = document.querySelector('header');
     if (topH && !topH.querySelector('#topJarvisBtn')) {
       const jBtn = document.createElement('button');
@@ -166,4 +86,212 @@
     }
   }
 
+  // Sidebar building on subpages
+  if (!document.body || document.getElementById('sidebar') || document.getElementById('dsSiteSidebar')) return;
+
+  const entries = [
+    { section: 'Home' },
+    { label: 'Home', icon: '⌂', url: 'deepsyq.html', key: 'home' },
+    { section: 'Creation' },
+    { label: 'Image', icon: '▧', url: 'generate-studio.html?studio=image', key: 'image' },
+    { label: 'Video', icon: '▷', url: 'generate-studio.html?studio=video', key: 'video' },
+    { label: 'Agent', icon: '✦', url: 'ai-agents.html', key: 'agents' },
+    { label: 'Virtual Pet', icon: '🐾', url: 'virtual-pet.html', key: 'pet' },
+    { label: 'Voice Agent', icon: '🎙', url: 'voice-agent-preview.html', key: 'voice' },
+    { label: 'Audio', icon: '♫', url: 'generate-studio.html?studio=audio', key: 'audio' },
+    { section: 'Tools' },
+    { label: 'Tools', icon: '⊞', url: 'free-tools.html', key: 'tools' },
+    { label: 'AI Apps', icon: '◇', url: 'ai-apps.html', key: 'apps' },
+    { label: 'Canvas', icon: '✎', url: 'canvas.html', key: 'canvas' },
+    { label: 'Video Uniquifier', icon: '▤', url: 'index.html', key: 'legacy' },
+    { section: 'Library' },
+    { label: 'Assets', icon: '▦', url: 'generate-studio.html?view=history', key: 'assets' },
+    { label: 'My Creations', icon: '▣', url: 'generate-studio.html?view=history', key: 'history' },
+    { label: 'History', icon: '◷', url: 'generate-studio.html?view=history', key: 'history' },
+    { section: 'Community' },
+    { label: 'Affiliate', icon: '↗', pending: true, key: 'affiliate' },
+    { label: 'Share', icon: '⇪', action: 'share', key: 'share' },
+    { label: 'Inspiration', icon: '◌', url: 'deepsyq.html#inspirationPreview', key: 'inspiration' },
+    { section: 'More' },
+    { label: 'Pricing', icon: '＄', url: 'pricing.html', key: 'pricing' }
+  ];
+
+  const path = location.pathname.split('/').pop() || 'deepsyq.html';
+  const query = new URLSearchParams(location.search);
+  const active = path === 'generate-studio.html' ?
+    (query.get('view') === 'history' ? 'history' :
+      query.get('studio') === 'video' ? 'video' :
+        ['audio', 'music'].includes(query.get('studio')) ? 'audio' : 'image') :
+    path === 'voice-agent-preview.html' ? 'voice' : path === 'virtual-pet.html' ? 'pet' : path === 'ai-agents.html' ? 'agents' : path === 'canvas.html' ? 'canvas' : path === 'ai-apps.html' ? 'apps' : path === 'inspiration.html' ? 'inspiration' :
+      ['pricing.html', 'ai-pricing.html'].includes(path) ? 'pricing' :
+        path === 'index.html' ? 'legacy' :
+          ['free-tools.html', 'audio-studio.html', 'avatar-studio.html', 'mobile-utility.html',
+            'photo-collage.html', 'simple-background-remover.html', 'smart-reminders.html', 'teleprompter.html'].includes(path) ? 'tools' : '';
+
+  const sidebar = document.createElement('aside');
+  sidebar.id = 'dsSiteSidebar';
+  sidebar.className = 'ds-site-sidebar';
+  sidebar.setAttribute('aria-label', 'Deepsyq site navigation');
+
+  const brand = document.createElement('a');
+  brand.href = 'deepsyq.html';
+  brand.className = 'ds-site-brand';
+  const logo = document.createElement('img');
+  logo.src = 'deepsyq-logo.png';
+  logo.alt = '';
+  logo.width = 30;
+  logo.height = 30;
+  brand.append(logo, document.createTextNode('Deepsyq'));
+  sidebar.append(brand);
+
+  const nav = document.createElement('nav');
+  nav.setAttribute('aria-label', 'Site pages');
+  const shareStatus = document.createElement('div');
+  shareStatus.className = 'ds-site-share-status';
+  shareStatus.setAttribute('role', 'status');
+  shareStatus.setAttribute('aria-live', 'polite');
+
+  const domItems = [];
+
+  for (const entry of entries) {
+    if (entry.section) {
+      const cap = document.createElement('div');
+      cap.className = 'ds-site-caption';
+      cap.textContent = t()[entry.section] || entry.section;
+      domItems.push({ cap, section: entry.section });
+      nav.append(cap);
+      continue;
+    }
+    const el = document.createElement(entry.pending ? 'span' : entry.action ? 'button' : 'a');
+    const localizedLabel = t()[entry.key] || entry.label;
+
+    if (entry.pending) {
+      el.className = 'ds-site-pending';
+      el.setAttribute('aria-label', localizedLabel + ' coming soon');
+      el.title = localizedLabel + ' — coming soon';
+    } else if (entry.action === 'share') {
+      el.type = 'button';
+      el.className = 'ds-site-share';
+      el.setAttribute('aria-label', 'Share Deepsyq');
+      el.addEventListener('click', async () => {
+        const homeLink = new URL('deepsyq.html', location.href).href;
+        shareStatus.textContent = '';
+        try {
+          if (typeof navigator.share === 'function') { await navigator.share({ title: 'Deepsyq', url: homeLink }); return; }
+          if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(homeLink); shareStatus.textContent = t().copied; return; }
+        } catch (e) { if (e?.name === 'AbortError') return; }
+        shareStatus.textContent = homeLink;
+      });
+    } else {
+      el.href = entry.url;
+      if (active === entry.key) el.setAttribute('aria-current', 'page');
+    }
+    const icon = document.createElement('span');
+    icon.className = 'ds-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = entry.icon;
+    const textNode = document.createTextNode(localizedLabel);
+    el.append(icon, textNode);
+
+    if (entry.pending) {
+      const soon = document.createElement('small');
+      soon.textContent = t().soon;
+      el.append(soon);
+    }
+    domItems.push({ el, textNode, entry });
+    nav.append(el);
+  }
+
+  nav.append(shareStatus);
+  sidebar.append(nav);
+
+  const foot = document.createElement('div');
+  foot.className = 'ds-site-footer';
+  const home = document.createElement('a');
+  home.href = 'deepsyq.html';
+  home.textContent = t().back;
+  const privacy = document.createElement('a');
+  privacy.href = 'ai-privacy.html';
+  privacy.textContent = t().privacy;
+  foot.append(home, privacy);
+  sidebar.append(foot);
+
+  const toggle = document.createElement('button');
+  toggle.className = 'ds-site-mobile-toggle';
+  toggle.type = 'button';
+  toggle.textContent = '☰';
+  toggle.setAttribute('aria-label', 'Open Deepsyq navigation');
+  toggle.setAttribute('aria-controls', 'dsSiteSidebar');
+  toggle.setAttribute('aria-expanded', 'false');
+
+  const scrim = document.createElement('div');
+  scrim.className = 'ds-site-scrim';
+  scrim.setAttribute('aria-hidden', 'true');
+
+  const mobile = window.matchMedia('(max-width:900px)');
+  let previousOverflow = null;
+  const focusable = () => [...sidebar.querySelectorAll('a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+    .filter(el => !el.hidden && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden');
+  const isOpen = () => mobile.matches && document.body.classList.contains('ds-site-nav-open');
+  const close = (restoreFocus = false) => {
+    const wasOpen = isOpen();
+    document.body.classList.remove('ds-site-nav-open');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Open Deepsyq navigation');
+    sidebar.removeAttribute('role');
+    sidebar.removeAttribute('aria-modal');
+    if (previousOverflow !== null) { document.body.style.overflow = previousOverflow; previousOverflow = null; }
+    sidebar.inert = mobile.matches;
+    if (wasOpen && restoreFocus && mobile.matches) toggle.focus({ preventScroll: true });
+  };
+  const open = () => {
+    if (!mobile.matches) return;
+    previousOverflow = document.body.style.overflow;
+    sidebar.inert = false;
+    sidebar.setAttribute('role', 'dialog');
+    sidebar.setAttribute('aria-modal', 'true');
+    document.body.classList.add('ds-site-nav-open');
+    document.body.style.overflow = 'hidden';
+    toggle.setAttribute('aria-expanded', 'true');
+    toggle.setAttribute('aria-label', 'Close Deepsyq navigation');
+    focusable()[0]?.focus({ preventScroll: true });
+  };
+  const syncViewport = () => {
+    if (!mobile.matches) close(false);
+    else if (!isOpen()) sidebar.inert = true;
+  };
+  toggle.addEventListener('click', () => isOpen() ? close(true) : open());
+  scrim.addEventListener('click', () => close(true));
+  sidebar.addEventListener('click', e => { if (e.target.closest('a')) close(false); });
+  if (typeof mobile.addEventListener === 'function') mobile.addEventListener('change', syncViewport);
+  else mobile.addListener(syncViewport);
+  syncViewport();
+
+  document.body.classList.add('deepsyq-sitewide-shell');
+  document.body.prepend(scrim, toggle, sidebar);
+
+  // Dynamic live re-translation listener
+  const refreshLanguage = () => {
+    const dict = t();
+    document.documentElement.lang = currentLang() === 'en' ? 'en-US' : currentLang();
+    for (const item of domItems) {
+      if (item.cap) {
+        item.cap.textContent = dict[item.section] || item.section;
+      } else if (item.textNode) {
+        item.textNode.textContent = dict[item.entry.key] || item.entry.label;
+      }
+    }
+    home.textContent = dict.back;
+    privacy.textContent = dict.privacy;
+    translateCommon();
+  };
+
+  window.addEventListener('deepsyq:lang', refreshLanguage);
+  window.addEventListener('storage', e => {
+    if (e.key === 'deepsyq_home_language' || e.key === 'deepsyq_lang') refreshLanguage();
+    if (e.key === 'deepsyq_site_theme') {
+      if (e.newValue) document.documentElement.setAttribute('data-site-theme', e.newValue);
+      else document.documentElement.removeAttribute('data-site-theme');
+    }
+  });
 })();
