@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080d1d">
+<title>My Workspace · Мои проекты · Deepsyq</title>
+<link rel="stylesheet" href="approved-page-design.css">
+<style>
+  :root {
+    --bg: #080d1d;
+    --panel: rgba(17, 25, 48, 0.86);
+    --border: rgba(148, 163, 184, 0.18);
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #6366f1;
+    --accent-hover: #818cf8;
+    --ok: #22c55e;
+    --warn: #f59e0b;
+    --err: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at 20% 0%, #16214a 0%, #080d1d 65%);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8, 13, 29, 0.85);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar a {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .topbar-nav {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .pill-link {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(99, 102, 241, 0.16);
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    font-size: 14px;
+  }
+  main {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 28px 20px 64px;
+  }
+  .hero-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .hero-head h1 { margin: 0 0 6px; font-size: 28px; }
+  .hero-head p { margin: 0; color: var(--muted); }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .toolbar input, .toolbar select, .toolbar button {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(8, 13, 29, 0.9);
+    color: var(--text);
+    font-size: 14px;
+  }
+  .toolbar input { flex: 1 1 220px; }
+  .section-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .section-tabs button {
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--muted);
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .section-tabs button[aria-pressed="true"] {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 16px;
+  }
+  .ws-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .ws-preview {
+    height: 120px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(99,102,241,0.22), rgba(14,165,233,0.14));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--muted);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .ws-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .ws-title {
+    font-weight: 700;
+    font-size: 16px;
+    word-break: break-word;
+  }
+  .ws-badge {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(148,163,184,0.16);
+  }
+  .ws-badge[data-status="completed"] { background: rgba(34,197,94,0.18); color: #86efac; }
+  .ws-badge[data-status="processing"], .ws-badge[data-status="queued"] { background: rgba(245,158,11,0.18); color: #fcd34d; }
+  .ws-badge[data-status="failed"] { background: rgba(239,68,68,0.18); color: #fca5a5; }
+  .ws-meta { font-size: 12px; color: var(--muted); }
+  .ws-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: auto;
+  }
+  .ws-actions button, .ws-actions a {
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .ws-actions button:hover, .ws-actions a:hover {
+    border-color: var(--accent-hover);
+  }
+  #wsStatus {
+    color: var(--muted);
+    margin: 12px 0;
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a href="deepsyq.html">← Deepsyq</a>
+  <strong>My Workspace (F4)</strong>
+  <nav class="topbar-nav">
+    <a class="pill-link" href="generate-studio.html">Открыть Studio ✦</a>
+    <a class="pill-link" href="compare-ai.html">Compare AI</a>
+    <a class="pill-link" href="ai-agents.html">AI Agents</a>
+  </nav>
+</header>
+<main>
+  <div class="hero-head">
+    <div>
+      <h1>Мои проекты и генерации</h1>
+      <p>Управляйте сохранёнными карточками: поиск, избранное, переименование и архивация.</p>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input id="searchInput" type="search" maxlength="100" placeholder="Поиск по названию или ID…">
+    <select id="typeSelect" aria-label="Фильтр по типу">
+      <option value="">Все типы</option>
+      <option value="image">Изображения (Image)</option>
+      <option value="video">Видео (Video)</option>
+      <option value="audio">Аудио (Audio)</option>
+    </select>
+    <select id="statusSelect" aria-label="Фильтр по статусу">
+      <option value="">Все статусы</option>
+      <option value="completed">Готово (Completed)</option>
+      <option value="processing">В работе (Processing)</option>
+      <option value="failed">Ошибка (Failed)</option>
+    </select>
+    <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);">
+      <input id="includeArchived" type="checkbox"> Показать архив
+    </label>
+    <button id="refreshBtn" type="button">Обновить</button>
+  </div>
+
+  <div class="section-tabs" role="tablist">
+    <button type="button" data-sec="recent" aria-pressed="true">Недавние (<span id="cnt-recent">0</span>)</button>
+    <button type="button" data-sec="favorites" aria-pressed="false">★ Избранное (<span id="cnt-favorites">0</span>)</button>
+    <button type="button" data-sec="completed" aria-pressed="false">Готовые (<span id="cnt-completed">0</span>)</button>
+    <button type="button" data-sec="drafts" aria-pressed="false">В работе (<span id="cnt-drafts">0</span>)</button>
+  </div>
+
+  <p id="wsStatus" role="status" aria-live="polite">Загрузка рабочей области…</p>
+  <div id="cardsGrid" class="cards-grid"></div>
+</main>
+<script type="module">
+  const $ = id => document.getElementById(id);
+  let activeSection = 'recent';
+  let lastData = null;
+  let favSet = new Set();
+
+  function authHeaders() {
+    const token = localStorage.getItem('vv_token');
+    return token ? { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+  }
+
+  async function loadCards() {
+    if (!localStorage.getItem('vv_token')) {
+      $('wsStatus').textContent = 'Войдите в аккаунт на главной странице, чтобы открыть свои проекты.';
+      $('cardsGrid').replaceChildren();
+      return;
+    }
+    $('wsStatus').textContent = 'Загружаем карточки…';
+    const params = new URLSearchParams();
+    const q = $('searchInput').value.trim();
+    const type = $('typeSelect').value;
+    const status = $('statusSelect').value;
+    if (q) params.set('q', q);
+    if (type) params.set('type', type);
+    if (status) params.set('status', status);
+    if ($('includeArchived').checked) params.set('includeArchived', 'true');
+
+    try {
+      const res = await fetch('/api/studio/workspace/cards?' + params.toString(), { headers: authHeaders() });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'WORKSPACE_UNAVAILABLE');
+      lastData = data;
+      favSet = new Set((data.sections?.favorites || []).map(c => c.id));
+      for (const k of ['recent', 'favorites', 'completed', 'drafts']) {
+        const el = $('cnt-' + k);
+        if (el) el.textContent = String(data.counts?.[k] ?? 0);
+      }
+      renderSection();
+    } catch (e) {
+      $('wsStatus').textContent = 'Не удалось загрузить карточки (' + (e.message || 'ошибка') + ').';
+    }
+  }
+
+  async function patchCard(id, payload) {
+    try {
+      const res = await fetch('/api/studio/workspace/cards/' + encodeURIComponent(id), {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'PATCH_FAILED');
+      await loadCards();
+    } catch (e) {
+      $('wsStatus').textContent = 'Действие отклонено: ' + (e.message || 'ошибка');
+    }
+  }
+
+  function renderSection() {
+    const grid = $('cardsGrid');
+    grid.replaceChildren();
+    const list = lastData?.sections?.[activeSection] || [];
+    if (!list.length) {
+      $('wsStatus').textContent = 'В этой секции пока нет карточек.';
+      return;
+    }
+    $('wsStatus').textContent = '';
+    for (const card of list) {
+      const el = document.createElement('article');
+      el.className = 'ws-card';
+      const isFav = favSet.has(card.id);
+
+      const prev = document.createElement('div');
+      prev.className = 'ws-preview';
+      prev.textContent = (isFav ? '★ ' : '') + (card.previewPlaceholder?.label || card.type);
+
+      const head = document.createElement('div');
+      head.className = 'ws-head';
+      const title = document.createElement('span');
+      title.className = 'ws-title';
+      title.textContent = card.title;
+      const badge = document.createElement('span');
+      badge.className = 'ws-badge';
+      badge.dataset.status = card.status;
+      badge.textContent = card.status;
+      head.append(title, badge);
+
+      const meta = document.createElement('div');
+      meta.className = 'ws-meta';
+      meta.textContent = `${card.type.toUpperCase()} · ${new Date(card.createdAt).toLocaleString()}`;
+
+      const actions = document.createElement('div');
+      actions.className = 'ws-actions';
+
+      const openLink = document.createElement('a');
+      openLink.href = 'generate-studio.html?view=history';
+      openLink.textContent = 'В Studio ↗';
+
+      const favBtn = document.createElement('button');
+      favBtn.type = 'button';
+      favBtn.textContent = isFav ? '★ Убрать' : '☆ В избранное';
+      favBtn.onclick = () => patchCard(card.id, { action: 'favorite', isFavorite: !isFav });
+
+      const renBtn = document.createElement('button');
+      renBtn.type = 'button';
+      renBtn.textContent = 'Переименовать';
+      renBtn.onclick = () => {
+        const nextTitle = prompt('Новое название проекта:', card.title);
+        if (nextTitle && nextTitle.trim()) patchCard(card.id, { action: 'rename', title: nextTitle.trim() });
+      };
+
+      const archBtn = document.createElement('button');
+      archBtn.type = 'button';
+      archBtn.textContent = 'В архив';
+      archBtn.onclick = () => patchCard(card.id, { action: 'archive' });
+
+      actions.append(openLink, favBtn, renBtn, archBtn);
+      el.append(prev, head, meta, actions);
+      grid.append(el);
+    }
+  }
+
+  document.querySelectorAll('[data-sec]').forEach(btn => {
+    btn.onclick = () => {
+      activeSection = btn.dataset.sec;
+      document.querySelectorAll('[data-sec]').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+      renderSection();
+    };
+  });
+  $('refreshBtn').onclick = () => loadCards();
+  $('searchInput').oninput = () => loadCards();
+  $('typeSelect').onchange = () => loadCards();
+  $('statusSelect').onchange = () => loadCards();
+  $('includeArchived').onchange = () => loadCards();
+
+  loadCards();
+</script>
+</body>
+</html>
