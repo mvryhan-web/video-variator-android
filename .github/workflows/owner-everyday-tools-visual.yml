@@ -7,6 +7,11 @@ on:
       - 'app/src/main/assets/everyday-tools-visual.js'
       - 'app/src/main/assets/everyday-tools-visual.css'
       - 'tests/owner-everyday-tools-visual.spec.mjs'
+      - 'tests/owner-everyday-tools-art-lock.mjs'
+      - 'app/src/main/assets/media/approved-design-20261023/09_Everyday_Tools.png'
+      - 'docs/EVERYDAY_TOOLS_OWNER_DESIGN_LOCK.md'
+      - '.github/CODEOWNERS'
+      - 'AGENTS.md'
       - '.github/workflows/owner-everyday-tools-visual.yml'
   workflow_dispatch:
 permissions:
@@ -23,6 +28,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: node --check app/src/main/assets/everyday-tools-visual.js
+      - run: node --test tests/owner-everyday-tools-art-lock.mjs
       - run: npx playwright install --with-deps chromium webkit
       - name: Verify owner layout, functional routes, mobile, no paid calls
         run: npx playwright test tests/owner-everyday-tools-visual.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit
