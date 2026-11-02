@@ -39,7 +39,11 @@ async function purchasedEconomics(c,{userId,jobId=null,currency}={}){
           AND o.snapshot->>'credits'=p.credits::text
           AND o.snapshot->>'priceId' ~ '^price_[A-Za-z0-9]+$'
           AND CASE WHEN o.snapshot->>'amount' ~ '^[0-9]+$'
-                   THEN p.amount=(o.snapshot->>'amount')::bigint+p.tax_amount ELSE FALSE END))
+                   THEN p.amount=(o.snapshot->>'amount')::bigint+p.tax_amount ELSE FALSE END)
+         OR (p.session_id ~ '^in_[A-Za-z0-9]+$' AND p.payment_intent ~ '^pi_[A-Za-z0-9]+$'
+             AND EXISTS (SELECT 1 FROM vv_ai_verified_subscription_invoice vsi
+                         WHERE vsi.invoice_id=p.session_id AND vsi.user_id=p.user_id
+                           AND vsi.payment_intent=p.payment_intent AND vsi.livemode=true)))
  ), live_sources AS (
   SELECT * FROM sources WHERE remaining_credits>0 AND remaining_net_revenue_micros>0
  ), worst AS (

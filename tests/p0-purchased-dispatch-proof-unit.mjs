@@ -34,8 +34,8 @@ test('P0 only the locked, verifiable, unrefunded live Stripe order can claim ONE
  assert.match(c.statements[0].sql,/o\.snapshot->>'billingMode'='live'/);
  assert.match(c.statements[0].sql,/CEIL\(p\.credits::numeric\*p\.refunded_amount\/p\.amount\)/);
  assert.match(c.statements[0].sql,/p\.refunded_amount<p\.amount/);
- assert.doesNotMatch(c.statements[0].sql,/vv_ai_verified_subscription_invoice/,
-  'subscription proceeds must not be attributed to separately purchased AI credits');
+ assert.match(c.statements[0].sql,/vv_ai_verified_subscription_invoice/,
+  'subscription proceeds with verified invoice provenance can fund purchased dispatch');
  assert.match(c.statements[1].sql,/status IN \('held','captured'\)/);
  assert.match(c.statements[1].sql,/audit.entries=1/);
  assert.match(c.statements[1].sql,/MAX\(available_delta-debt_delta\)/);
@@ -176,4 +176,11 @@ test('P0 D-to-B callback projection preserves server trusted fingerprint and loc
   ...env,AI_LIVE_BILLING_APPROVED:'false'}})(expected),
   /AI_PURCHASED_DISPATCH_NOT_AUTHORIZED/);
  assert.equal(cOther.statements.length,0,'unapproved live mode must fail before DB proof');
+});
+
+test('P0 verified LIVE subscription invoice can claim purchased dispatch with 2x margin proof',async()=>{
+ const c=db({sourceId:'in_sub_live1'}),receipt=await claimPurchasedGeneration(c,options());
+ assert.equal(receipt.source,'settled_stripe_purchase');
+ assert.equal(receipt.dispatchClaimedExactlyOnce,true);
+ assert.equal(receipt.purchaseId,'in_sub_live1');
 });

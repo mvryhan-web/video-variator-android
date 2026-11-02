@@ -242,8 +242,9 @@ test('BASE #51: both Image and Video need a priced model actually allowed by Stu
   'the actually configured Studio default video is allowed without extra opt-in');
  assert.equal(check({BYTEPLUS_API_KEY:'synthetic-no-network',
   AI_STUDIO_ALLOWED_MODELS:[seedImage.model,seedVideo.model].join(','),
-  AI_MODEL_PRICING_JSON:d18PricingJson([seedImage,seedVideo])}),true,
-  'BytePlus-only allows explicitly enabled image and video models with its key');
+  AI_MODEL_PRICING_JSON:d18PricingJson([seedImage,seedVideo]),
+  BYTEPLUS_MEDIA_HOSTS:'media.volces.com'}),true,
+  'BytePlus-only owner pilot requires an approved Video download host even with priced models');
  assert.equal(check({BYTEPLUS_API_KEY:'synthetic-no-network',
   AI_STUDIO_ALLOWED_MODELS:[seedImage.model,seedVideo.model].join(','),
   AI_MODEL_PRICING_JSON:d18PricingJson([seedImage,seedVideo]),
@@ -256,4 +257,60 @@ test('BASE #51: both Image and Video need a priced model actually allowed by Stu
  assert.equal(configured.gates.find(g=>g.id==='imageVideoProviderModels').ready,true);
  assert.equal(configured.gates.find(g=>g.id==='purchasedOnlyDispatch').ready,false);
  assert.equal(configured.launchReady,false,'P0 paid-only cannot be overridden by provider setup');
+});
+
+
+test('BASE #51: BytePlus Video owner readiness must match Studio CDN and public S3 model guards',()=>{
+ const rows=[
+  {model:'byteplus-seedream-4-5',provider:'BytePlus',kind:'image',
+   credits:15,providerCostMicros:2000,currency:'usd'},
+  {model:'byteplus-seedance-2',provider:'BytePlus',kind:'video',
+   credits:85,providerCostMicros:60000,currency:'usd'}
+ ];
+ const base={
+  BYTEPLUS_API_KEY:'synthetic-no-network',
+  AI_MODEL_PRICING_JSON:d18PricingJson(rows),
+  AI_CREDIT_RATES_JSON:JSON.stringify([{kind:'image',credits:15},{kind:'video',credits:85}]),
+  AI_STUDIO_ALLOWED_MODELS:rows.map(row=>row.model).join(','),
+  AI_STUDIO_ALLOWED_KINDS:'image,video',
+  AI_STUDIO_ENABLED:'true',
+  AI_STUDIO_MAX_CALLS:'3',
+  ADMIN_EMAIL:'owner@example.invalid',
+  DATABASE_URL:'not-a-real-db-url'
+ };
+ const inspect=overrides=>generationReadiness({...base,...overrides});
+ const providerReady=overrides=>inspect(overrides).gates.find(
+  gate=>gate.id==='imageVideoProviderModels').ready;
+ assert.equal(providerReady({}),false,
+  'a provider key and approved model price do not create an allowed Video download host');
+ assert.equal(providerReady({BYTEPLUS_MEDIA_HOSTS:'evil.example.net'}),false,
+  'a non-BytePlus host must not count as a Studio-selectable Video model');
+ assert.equal(providerReady({BYTEPLUS_MEDIA_HOSTS:'media.volces.com'}),true,
+  'owner-only preview route remains compatible with real allowed CDN host');
+ assert.equal(providerReady({BYTEPLUS_MEDIA_HOSTS:'media.volces.com',
+  AI_PUBLIC_GENERATION_ENABLED:'true'}),false,
+  'public BytePlus Video cannot be selected without durable customer media storage');
+ const storage={
+  AI_OBJECT_STORAGE_ENABLED:'true',
+  AI_OBJECT_STORAGE_ENDPOINT:'https://objects.example.org',
+  AI_OBJECT_STORAGE_BUCKET:'customer-media',
+  AI_OBJECT_STORAGE_REGION:'auto',
+  AI_OBJECT_STORAGE_ACCESS_KEY_ID:'synthetic-access-id',
+  AI_OBJECT_STORAGE_SECRET_ACCESS_KEY:'synthetic-secret-key-of-sufficient-length'
+ };
+ assert.equal(providerReady({...storage,BYTEPLUS_MEDIA_HOSTS:'media.volces.com',
+  AI_PUBLIC_GENERATION_ENABLED:'true'}),true,
+  'a configured private store plus allowed CDN makes the model itself preflight-selectable');
+ assert.equal(providerReady({...storage,BYTEPLUS_MEDIA_HOSTS:'evil.example.net',
+  AI_PUBLIC_GENERATION_ENABLED:'true'}),false,
+  'an approved object store cannot replace the provider CDN allowlist');
+ const report=inspect({...storage,BYTEPLUS_MEDIA_HOSTS:'media.volces.com',
+  AI_PUBLIC_GENERATION_ENABLED:'true',
+  AI_PURCHASED_ONLY_DISPATCH_ENABLED:'true'});
+ assert.equal(report.gates.find(gate=>gate.id==='purchasedOnlyDispatch').ready,false);
+ assert.ok(report.blockers.includes('purchasedOnlyDispatch'));
+ assert.equal(report.launchReady,false,
+  'corrected diagnostics must never enable the paid generation launch');
+ for(const marker of ['synthetic-no-network','synthetic-secret-key','synthetic-access-id'])
+  assert.equal(JSON.stringify(report).includes(marker),false);
 });

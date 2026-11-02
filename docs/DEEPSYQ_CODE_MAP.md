@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `c23cfa47783021a047da015b8349361d2f4d9315`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `65bf43b484f47542e0a5f789da95654d000fbc4d`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` | Indexed files: 58 | Named symbols: 160 | Checked relations: 50
 
 ## Topic finder (matching filenames)
@@ -199,7 +199,7 @@ reminders.js (L1) · validFrequency (L12) · validChannel (L13) · leads (L14)
 
 ### `server/server.js`
 
-server.js (L1) · app (L26) · port (L26) · __dirname (L28) · rootDir (L29) · staticDir (L30) · ffmpegDist (L31) · ffmpegCoreDist (L32) · appUrl (L35) · googleJwks (L40) · appleJwks (L40) · plans (L41) · registerTelegramWebhook (L137) · generationBilling (L184) · generationStudio (L188)
+server.js (L1) · app (L27) · port (L27) · __dirname (L29) · rootDir (L30) · staticDir (L31) · ffmpegDist (L32) · ffmpegCoreDist (L33) · appUrl (L105) · googleJwks (L110) · appleJwks (L110) · plans (L111) · registerTelegramWebhook (L207) · generationBilling (L254) · generationStudio (L258)
 
 ### `server/speech.js`
 

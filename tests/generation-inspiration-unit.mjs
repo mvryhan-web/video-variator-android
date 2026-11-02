@@ -80,6 +80,60 @@ test('public inspiration pagination is bounded and exposes a next offset',async(
  try{const r=await fetch('http://127.0.0.1:'+server.address().port+'/api/inspiration?limit=24&offset=0');assert.equal(r.status,200);const d=await r.json();assert.equal(d.items.length,24);assert.equal(d.pagination.hasMore,true);assert.equal(d.pagination.nextOffset,24);assert.equal(d.pagination.limit,24);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
 
+test('public Inspiration pages remain stable when bulk-imported images tie on featured, order and creation time',async()=>{
+ const stamp='2026-11-02T12:00:00.000Z';
+ const item=(id,featured)=>({
+  id,title:'Artwork '+id,slug:'artwork-'+id,kind:'image',category:'Editorial',
+  description:'',preview_url:'/media/'+id+'.webp',preview_poster_url:null,
+  prompt:'Original artwork '+id,default_model:null,aspect_ratio:'1:1',
+  required_input_types:[],default_settings:{},action_target:'studio',
+  rights_basis:'owned',rights_note:'Created in house',active:true,
+  featured,sort_order:10,created_at:stamp,updated_at:stamp
+ });
+ // Database insertion order is deliberately neither sorted nor grouped.
+ const fixtures=[item('g',false),item('c',true),item('e',false),item('a',true),
+  item('f',false),item('d',true),item('b',true)];
+ const pageQueries=[];
+ const pool={async query(sql){
+  if(sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_inspiration'))return {rows:[]};
+  if(sql.startsWith('SELECT DISTINCT category'))return {rows:[{category:'Editorial'}]};
+  if(sql.startsWith('SELECT DISTINCT aspect_ratio'))return {rows:[{aspect_ratio:'1:1'}]};
+  if(sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true')){
+   assert.match(sql,/ORDER BY featured DESC,sort_order ASC,created_at DESC,id ASC LIMIT \d+ OFFSET \d+/,
+    'a unique final id order must break ties across OFFSET pages');
+   pageQueries.push(sql);
+   const match=sql.match(/LIMIT (\d+) OFFSET (\d+)$/);
+   assert.ok(match,'SQL must retain bounded offset/limit');
+   const ordered=[...fixtures].sort((a,b)=>Number(b.featured)-Number(a.featured)||
+    a.sort_order-b.sort_order||String(b.created_at).localeCompare(String(a.created_at))||
+    a.id.localeCompare(b.id));
+   return {rows:ordered.slice(Number(match[2]),Number(match[2])+Number(match[1]))};
+  }
+  throw Error('Unexpected SQL: '+sql);
+ }};
+ const app=express();installInspiration(app,{pool,
+  env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true'},
+  auth:(_req,_res,next)=>next()});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));
+ try{
+  const page=async offset=>{
+   const response=await fetch('http://127.0.0.1:'+server.address().port+
+    '/api/inspiration?limit=2&offset='+offset);
+   assert.equal(response.status,200);
+   return response.json();
+  };
+  const results=await Promise.all([page(0),page(2),page(4),page(6)]);
+  const ids=results.flatMap(v=>v.items.map(item=>item.id));
+  assert.deepEqual(ids,['a','b','c','d','e','f','g']);
+  assert.equal(new Set(ids).size,fixtures.length,'no duplicates or lost media across pages');
+  assert.deepEqual(results.map(v=>v.pagination.hasMore),[true,true,true,false]);
+  assert.deepEqual(results.map(v=>v.pagination.nextOffset),[2,4,6,null]);
+  assert.equal(pageQueries.length,4);
+  assert.deepEqual((await page(2)).items.map(item=>item.id),['c','d'],
+   'reloading the same page must not reshuffle cards with equal sort priority');
+ }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
+});
+
 test('production Inspiration never auto-creates its database table',async()=>{
  const statements=[];
  const pool={async query(sql){statements.push(sql);if(sql.includes("to_regclass('public.vv_ai_inspiration')"))return {rows:[{table_name:null}]};throw Error('UNEXPECTED_SQL');}};
