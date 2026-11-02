@@ -327,10 +327,11 @@ function findSiteDestination(text) {
   const pages = buildJarvixSiteKnowledge();
   for (const alias of SITE_TOOL_ALIASES) {
     if (!alias.pattern.test(text)) continue;
-    for (const page of pages) {
-      const link = page.links.find(item => alias.terms.test(`${item.label} ${item.href}`));
-      if (link) return { page, link };
-    }
+    const candidates = pages.flatMap(page => page.links.map(link => ({ page, link })));
+    const byLabel = candidates.find(({ link }) => alias.terms.test(link.label));
+    if (byLabel) return byLabel;
+    const byRoute = candidates.find(({ link }) => alias.terms.test(link.href));
+    if (byRoute) return byRoute;
   }
   return null;
 }

@@ -30,6 +30,7 @@ test('offline Jarvix answers tool-finding questions from real local site routes 
   const session=getOrCreateSession(`site-route-${language}`);
   const result=processTurnWithMockBrain(question,session,language);
   assert.equal(result.provider,'jarvix-site-index');
+  assert.match(result.reply,/Photo to PDF/);
   assert.match(result.reply,new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
   clearSession(session.id);
  }
