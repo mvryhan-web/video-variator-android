@@ -139,4 +139,31 @@
  syncViewport();
  document.body.classList.add('deepsyq-sitewide-shell');
  document.body.prepend(scrim,toggle,sidebar);
+
+  // Sitewide JARVIS AI integration
+  if (!document.getElementById('topJarvisBtn')) {
+    const jarvisCss = document.createElement('link');
+    jarvisCss.rel = 'stylesheet';
+    jarvisCss.href = 'jarvis-core.css';
+    document.head.append(jarvisCss);
+
+    const jarvisScript = document.createElement('script');
+    jarvisScript.type = 'module';
+    jarvisScript.src = 'jarvis-core.js';
+    document.body.append(jarvisScript);
+
+    // If a top header exists, insert JARVIS Orb
+    const topH = document.querySelector('header');
+    if (topH && !topH.querySelector('#topJarvisBtn')) {
+      const jBtn = document.createElement('button');
+      jBtn.id = 'topJarvisBtn';
+      jBtn.type = 'button';
+      jBtn.className = 'top-jarvis-btn';
+      jBtn.setAttribute('aria-label', 'Activate JARVIS AI');
+      jBtn.title = 'JARVIS — AI Voice Commander & Compare';
+      jBtn.innerHTML = '<div class="jarvis-mini-orb"><span class="jarvis-core"></span><span class="jarvis-ring"></span><span class="jarvis-ring ring-violet"></span></div><span class="jarvis-name">JARVIS</span>';
+      topH.append(jBtn);
+    }
+  }
+
 })();
