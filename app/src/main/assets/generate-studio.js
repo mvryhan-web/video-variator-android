@@ -1271,13 +1271,10 @@ function initStudioVoiceInput() {
     if (isListening) {
       stopListening();
     } else {
-      const alreadyPermitted = localStorage.getItem('deepsyq_mic_permitted') === 'true';
-      if (alreadyPermitted) {
-        startRecognition();
-      } else if (micDialog && typeof micDialog.showModal === 'function') {
-        micDialog.showModal();
-      } else {
+      if (navigator.mediaDevices?.getUserMedia && localStorage.getItem('deepsyq_mic_permitted') !== 'true') {
         requestMicPermissionAndStart();
+      } else {
+        startRecognition();
       }
     }
   });
