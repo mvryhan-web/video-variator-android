@@ -13,16 +13,7 @@ test('owner Everyday Tools landing: exactly nine live destinations, sidebar and 
  await expect(page.locator('.utility-tools-preview a.et-owner-bg-banner')).toHaveCount(1);
  await expect(page.locator('.utility-tools-preview .et-owner-voices a.et-owner-voice-card')).toHaveCount(2);
  await expect(page.locator('#etShowcase .et-uniquifier')).toHaveAttribute('href','index.html');
- const overflow=await page.evaluate(()=>{
-  const extra=document.documentElement.scrollWidth-innerWidth;
-  const offenders=[...document.querySelectorAll('body *')].filter(e=>{
-   const b=e.getBoundingClientRect(),s=getComputedStyle(e);
-   return e instanceof HTMLElement&&b.width>0&&b.right>innerWidth+2&&s.position!=='fixed'&&s.display!=='none';
-  }).slice(0,24).map(e=>({tag:e.tagName,id:e.id,cls:typeof e.className==='string'?e.className.slice(0,80):'',right:Math.round(e.getBoundingClientRect().right),left:Math.round(e.getBoundingClientRect().left),width:Math.round(e.getBoundingClientRect().width),overflow:getComputedStyle(e).overflow}));
-  return {extra,offenders};
- });
- if(overflow.extra>1)console.log('EVERYDAY_TOOLS_MOBILE_OVERFLOW',JSON.stringify(overflow));
- expect(overflow.extra).toBeLessThanOrEqual(1);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);
  expect(paid).toEqual([]);
 });
 test('owner Everyday Tools filter and native file workflow preserve working processors',async({page})=>{
@@ -73,14 +64,5 @@ test('owner banner lock: original media decodes, displays without stretching, wi
  await page.setViewportSize({width:390,height:844});
  await expect(hero).toBeVisible();
  await expect(hero.locator('.et-hero-art')).toHaveCSS('opacity','1');
- const overflow=await page.evaluate(()=>{
-  const extra=document.documentElement.scrollWidth-innerWidth;
-  const offenders=[...document.querySelectorAll('body *')].filter(e=>{
-   const b=e.getBoundingClientRect(),s=getComputedStyle(e);
-   return e instanceof HTMLElement&&b.width>0&&b.right>innerWidth+2&&s.position!=='fixed'&&s.display!=='none';
-  }).slice(0,24).map(e=>({tag:e.tagName,id:e.id,cls:typeof e.className==='string'?e.className.slice(0,80):'',right:Math.round(e.getBoundingClientRect().right),left:Math.round(e.getBoundingClientRect().left),width:Math.round(e.getBoundingClientRect().width),overflow:getComputedStyle(e).overflow}));
-  return {extra,offenders};
- });
- if(overflow.extra>1)console.log('EVERYDAY_TOOLS_MOBILE_OVERFLOW',JSON.stringify(overflow));
- expect(overflow.extra).toBeLessThanOrEqual(1);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);
 });
