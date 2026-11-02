@@ -1,3 +1,7 @@
+## OWNER PERMANENT EVERYDAY TOOLS DESIGN FREEZE — 2026-11-02
+
+See `docs/EVERYDAY_TOOLS_OWNER_DESIGN_LOCK.md`. The approved Everyday Tools page keeps the original illustrated banner (09_Everyday_Tools.png), title and `Less routine. More creating.` subtitle; the small descriptive sentence under the subtitle is intentionally REMOVED. The hero image must remain visible, at its native crop scale, uncropped by unrelated updates, not stretched/faded, and must never be replaced or redesigned without a NEW explicit owner request. Preserve all nine tools, Video Uniquifier and working navigation. `owner-everyday-tools-visual` CI and CODEOWNERS enforce the source/layout contract; no override by Antigravity, Jules, administrator or P acting autonomously.
+
 ## OWNER PERMANENT PRICE DESIGN FREEZE — 2026-11-02
 
 See `docs/PRICING_OWNER_ART_LOCK.json` and `docs/PRICING_OWNER_ART_LOCK.md`. Pricing's original 12 owner-selected images, hero, five plans/five credit cards and CSS/HTML may NEVER be changed/replaced/redesigned by autonomous agents without a NEW explicit owner request. Pricing art lock CI + CODEOWNERS apply even to unrelated shared-header/translation work. Keep checkout and wallet protections unchanged.
