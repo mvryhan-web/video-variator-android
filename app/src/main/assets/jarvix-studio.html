@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ru" data-site-theme="cyberpunk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JARVIX Review Studio — Autonomous AI Brain & Multilingual Voice</title>
+  <link rel="stylesheet" href="css/home-unified.css">
+  <link rel="icon" href="favicon.ico">
+  <style>
+    :root {
+      --jarvix-cyan: #06b6d4;
+      --jarvix-purple: #8b5cf6;
+      --jarvix-dark: #0a0e17;
+      --jarvix-card: rgba(18, 24, 38, 0.75);
+      --jarvix-border: rgba(255, 255, 255, 0.1);
+      --jarvix-green: #10b981;
+      --jarvix-red: #ef4444;
+    }
+    body {
+      background: radial-gradient(circle at 50% 0%, #151c2e 0%, #080b12 100%);
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    .studio-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+    .studio-header {
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+    }
+    .studio-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      color: var(--jarvix-cyan);
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .studio-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 30%, #38bdf8 70%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0 0 12px;
+    }
+    .studio-subtitle {
+      font-size: 1.1rem;
+      color: #94a3b8;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    @media (min-width: 900px) {
+      .studio-grid-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .studio-card {
+      background: var(--jarvix-card);
+      border: 1px solid var(--jarvix-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 16px;
+    }
+    .card-title svg {
+      width: 24px;
+      height: 24px;
+      color: var(--jarvix-cyan);
+    }
+    /* Voice Timbre Selector */
+    .timbre-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .timbre-tab {
+      flex: 1;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--jarvix-border);
+      border-radius: 10px;
+      color: #94a3b8;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .timbre-tab.active {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: var(--jarvix-cyan);
+      color: #fff;
+      box-shadow: 0 0 16px rgba(6, 182, 212, 0.25);
+    }
+    .timbre-tab span {
+      display: block;
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 4px;
+      font-weight: normal;
+    }
+    .timbre-tab.active span {
+      color: #38bdf8;
+    }
+    /* Voice Samples List */
+    .samples-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sample-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+    }
+    .sample-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .lang-flag {
+      font-size: 1.4rem;
+    }
+    .sample-text {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+    .sample-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .play-btn {
+      background: #0ea5e9;
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .play-btn:hover {
+      background: #0284c7;
+    }
+    .play-btn.playing {
+      background: var(--jarvix-red);
+    }
+    /* Terminal Chat */
+    .terminal-box {
+      display: flex;
+      flex-direction: column;
+      height: 400px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .terminal-logs {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.85rem;
+    }
+    .log-msg {
+      display: flex;
+      gap: 10px;
+      line-height: 1.5;
+    }
+    .log-msg.user .log-sender {
+      color: #38bdf8;
+    }
+    .log-msg.jarvix .log-sender {
+      color: #a855f7;
+    }
+    .log-msg.system .log-sender {
+      color: #eab308;
+    }
+    .log-sender {
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    .terminal-input-bar {
+      display: flex;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      gap: 8px;
+    }
+    .terminal-input {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #fff;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+    }
+    .terminal-input:focus {
+      outline: none;
+      border-color: var(--jarvix-cyan);
+    }
+    .terminal-btn {
+      background: #8b5cf6;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    /* Action Quick Buttons */
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .quick-pill {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 6px 12px;
+      color: #cbd5e1;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .quick-pill:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border-color: var(--jarvix-cyan);
+    }
+    .quick-pill.danger {
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+    .quick-pill.danger:hover {
+      background: rgba(239, 68, 68, 0.15);
+    }
+    /* State Inspector */
+    .state-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #38bdf8;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+    /* Tech Specs Table */
+    .specs-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 12px;
+    }
+    .specs-table th, .specs-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      text-align: left;
+    }
+    .specs-table th {
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    .specs-table td {
+      color: #e2e8f0;
+    }
+    .badge-ok {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+    .badge-guard {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="studio-container">
+    <header class="studio-header">
+      <div class="studio-badge">Autonomous Butler Engine</div>
+      <h1 class="studio-title">JARVIX Intelligence & Multilingual Voice Studio</h1>
+      <p class="studio-subtitle">
+        Review the recognizable male film voice across 4 languages, multi-turn conversational memory, truthful platform capabilities, safe tool execution, and self-hosted on-premise infrastructure.
+      </p>
+    </header>
+
+    <div class="studio-grid studio-grid-2">
+      <!-- 1. MULTILINGUAL SIGNATURE VOICE REVIEW -->
+      <section class="studio-card">
+        <h2 class="card-title">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+          Original Voice Timbre & Languages
+        </h2>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-top: -8px; margin-bottom: 16px;">
+          Select a timbre profile to inspect acoustic harmonics across Russian, English, Spanish, and French.
+        </p>
+
+        <div class="timbre-tabs" id="timbreTabs">
+          <button class="timbre-tab active" data-timbre="baritone">
+            Baritone (105 Hz)
+            <span>Resonant & Deep</span>
+          </button>
+          <button class="timbre-tab" data-timbre="executive">
+            Executive (122 Hz)
+            <span>Crisp Tech Butler</span>
+          </button>
+          <button class="timbre-tab" data-timbre="warm">
+            Warm (115 Hz)
+            <span>Natural Companion</span>
+          </button>
+        </div>
+
+        <div class="samples-list" id="samplesList">
+          <!-- Dynamically populated or rendered -->
+        </div>
+
+        <div style="margin-top: 20px; padding: 12px; background: rgba(6, 182, 212, 0.08); border-radius: 8px; border: 1px solid rgba(6, 182, 212, 0.2);">
+          <div style="font-weight: 600; font-size: 0.85rem; color: #38bdf8; margin-bottom: 4px;">Acoustic Consistency Guarantee</div>
+          <div style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.4;">
+            Identical fundamental frequency (F0) and formants are preserved across all 4 languages. Switching language does not change voice personality.
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. MULTI-TURN AI BRAIN & MEMORY TEST -->
+      <section class="studio-card">
+        <h2 class="card-title">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Multi-Turn Conversational Memory
+        </h2>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin-top: -8px; margin-bottom: 16px;">
+          Preserves dialog context (e.g. concept -> color -> weather -> studio dispatch).
+        </p>
+
+        <div class="terminal-box">
+          <div class="terminal-logs" id="terminalLogs">
+            <div class="log-msg jarvix">
+              <span class="log-sender">JARVIX:</span>
+              <span class="log-text">Здравствуйте. Бортовой интеллект на связи. Чем могу помочь?</span>
+            </div>
+          </div>
+          <div class="terminal-input-bar">
+            <input type="text" class="terminal-input" id="chatInput" placeholder="Введите команду или выберите сценарий ниже...">
+            <button class="terminal-btn" id="sendBtn">Отправить</button>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <button class="quick-pill" data-msg="Хочу создать изображение Порше">1. Концепт: Порше</button>
+          <button class="quick-pill" data-msg="Сделай его черным">2. Цвет: Черный</button>
+          <button class="quick-pill" data-msg="Добавь дождь и отражения">3. Погода: Дождь</button>
+          <button class="quick-pill" data-msg="Открой студию">4. Открой студию</button>
+          <button class="quick-pill danger" data-msg="Спиши $100 с моего аккаунта">Тест защиты (Списание)</button>
+          <button class="quick-pill" id="resetMemoryBtn" style="border-color: #64748b;">Сбросить память</button>
+        </div>
+      </section>
+
+      <!-- 3. SESSION STATE & STUDIO HANDOFF INSPECTOR -->
+      <section class="studio-card">
+        <h2 class="card-title">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+          Active Dialogue State & Safety Inspector
+        </h2>
+        <div class="state-box" id="stateInspector">
+{
+  "sessionId": "demo-session-review",
+  "accumulatedEntities": {},
+  "compiledPrompt": "",
+  "safetyGuardrail": "ACTIVE",
+  "handoffTarget": null
+}
+        </div>
+        <div style="margin-top: 16px;">
+          <h4 style="font-size: 0.9rem; color: #fff; margin: 0 0 8px;">Deepsyq Verified Platform Knowledge</h4>
+          <div style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5;">
+            • Image Studio: Gemini 3.1 Flash, Seedream 4.5, Nano Banana 2.1<br>
+            • Video Studio: Veo 3.1 Lite/Fast, Seedance 2.0/1.0 Pro<br>
+            • Audio Studio: Lyria 3 Clip Preview<br>
+            • Everyday Tools: Background Remover, Video Compressor, Teleprompter, Audio Extractor, Avatar Studio (100% Free & Local)
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. ON-PREMISE ARCHITECTURE & INFRASTRUCTURE -->
+      <section class="studio-card">
+        <h2 class="card-title">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>
+          Self-Hosted On-Premise Architecture
+        </h2>
+        <table class="specs-table">
+          <thead>
+            <tr>
+              <th>Компонент</th>
+              <th>Реализация / Спецификация</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>STT (Распознавание речи)</td>
+              <td>faster-whisper / whisper.cpp (large-v3-turbo, int8)</td>
+              <td><span class="badge-ok">READY</span></td>
+            </tr>
+            <tr>
+              <td>TTS (Голосовой синтез)</td>
+              <td>Chatterbox Multilingual / Piper Multilingual (VITS)</td>
+              <td><span class="badge-ok">READY</span></td>
+            </tr>
+            <tr>
+              <td>Целевая задержка (p95)</td>
+              <td>&lt; 220 ms (Zero network latency, on-edge inference)</td>
+              <td><span class="badge-ok">&lt; 220 ms</span></td>
+            </tr>
+            <tr>
+              <td>Аппаратные требования</td>
+              <td>1x NVIDIA L4 (24GB VRAM) или RTX 4090 (24GB)</td>
+              <td><span class="badge-ok">VERIFIED</span></td>
+            </tr>
+            <tr>
+              <td>Безопасность действий</td>
+              <td>Строгая блокировка неавторизованных списаний/удалений</td>
+              <td><span class="badge-guard">STRICT GUARD</span></td>
+            </tr>
+            <tr>
+              <td>Стоимость в тестовом режиме</td>
+              <td>$0.00 (Детерминированный офлайн-мозг без платных API)</td>
+              <td><span class="badge-ok">$0 SPEND</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top: 16px; text-align: right;">
+          <a href="deepsyq.html" style="color: var(--jarvix-cyan); font-size: 0.85rem; text-decoration: none; font-weight: 600;">
+            ← Вернуться на платформу Deepsyq
+          </a>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <audio id="audioPlayer" style="display:none;"></audio>
+
+  <script type="module">
+    let currentTimbre = 'baritone';
+    let currentSessionId = 'studio-session-' + Date.now();
+    let audioPlayer = document.getElementById('audioPlayer');
+    let currentlyPlayingBtn = null;
+
+    const SAMPLES_DATA = {
+      baritone: [
+        { lang: 'ru', flag: '🇷🇺', name: 'Русский', text: 'Здравствуйте! Я JARVIX — ваш бортовой голосовой помощник Deepsyq. Чем могу помочь?', file: '/media/jarvix/samples/sample_baritone_ru.wav' },
+        { lang: 'en', flag: '🇬🇧', name: 'English', text: 'Greetings. I am JARVIX — your Deepsyq creative voice butler. At your command.', file: '/media/jarvix/samples/sample_baritone_en.wav' },
+        { lang: 'es', flag: '🇪🇸', name: 'Español', text: '¡Saludos! Soy JARVIX, su asistente de voz Deepsyq. A su servicio.', file: '/media/jarvix/samples/sample_baritone_es.wav' },
+        { lang: 'fr', flag: '🇫🇷', name: 'Français', text: 'Bonjour. Je suis JARVIX, votre majordome vocal Deepsyq. À vos ordres.', file: '/media/jarvix/samples/sample_baritone_fr.wav' }
+      ],
+      executive: [
+        { lang: 'ru', flag: '🇷🇺', name: 'Русский', text: 'Здравствуйте! Я JARVIX — ваш бортовой голосовой помощник Deepsyq. Чем могу помочь?', file: '/media/jarvix/samples/sample_executive_ru.wav' },
+        { lang: 'en', flag: '🇬🇧', name: 'English', text: 'Greetings. I am JARVIX — your Deepsyq creative voice butler. At your command.', file: '/media/jarvix/samples/sample_executive_en.wav' },
+        { lang: 'es', flag: '🇪🇸', name: 'Español', text: '¡Saludos! Soy JARVIX, su asistente de voz Deepsyq. A su servicio.', file: '/media/jarvix/samples/sample_executive_es.wav' },
+        { lang: 'fr', flag: '🇫🇷', name: 'Français', text: 'Bonjour. Je suis JARVIX, votre majordome vocal Deepsyq. À vos ordres.', file: '/media/jarvix/samples/sample_executive_fr.wav' }
+      ],
+      warm: [
+        { lang: 'ru', flag: '🇷🇺', name: 'Русский', text: 'Здравствуйте! Я JARVIX — ваш бортовой голосовой помощник Deepsyq. Чем могу помочь?', file: '/media/jarvix/samples/sample_warm_ru.wav' },
+        { lang: 'en', flag: '🇬🇧', name: 'English', text: 'Greetings. I am JARVIX — your Deepsyq creative voice butler. At your command.', file: '/media/jarvix/samples/sample_warm_en.wav' },
+        { lang: 'es', flag: '🇪🇸', name: 'Español', text: '¡Saludos! Soy JARVIX, su asistente de voz Deepsyq. A su servicio.', file: '/media/jarvix/samples/sample_warm_es.wav' },
+        { lang: 'fr', flag: '🇫🇷', name: 'Français', text: 'Bonjour. Je suis JARVIX, votre majordome vocal Deepsyq. À vos ordres.', file: '/media/jarvix/samples/sample_warm_fr.wav' }
+      ]
+    };
+
+    function renderSamples() {
+      const container = document.getElementById('samplesList');
+      const list = SAMPLES_DATA[currentTimbre] || [];
+      container.innerHTML = list.map(s => `
+        <div class="sample-row">
+          <div class="sample-meta">
+            <span class="lang-flag">${s.flag}</span>
+            <div>
+              <div style="font-weight: 600; font-size: 0.85rem; color: #fff;">${s.name}</div>
+              <div class="sample-text">${s.text}</div>
+            </div>
+          </div>
+          <div class="sample-controls">
+            <button class="play-btn" data-url="${s.file}">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Слушать
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('.play-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const url = btn.getAttribute('data-url');
+          if (currentlyPlayingBtn === btn) {
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+            btn.classList.remove('playing');
+            btn.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Слушать`;
+            currentlyPlayingBtn = null;
+            return;
+          }
+
+          if (currentlyPlayingBtn) {
+            currentlyPlayingBtn.classList.remove('playing');
+            currentlyPlayingBtn.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Слушать`;
+          }
+
+          audioPlayer.src = url;
+          audioPlayer.play().catch(e => console.warn(e));
+          btn.classList.add('playing');
+          btn.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> Стоп`;
+          currentlyPlayingBtn = btn;
+
+          audioPlayer.onended = () => {
+            btn.classList.remove('playing');
+            btn.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Слушать`;
+            currentlyPlayingBtn = null;
+          };
+        });
+      });
+    }
+
+    // Timbre Tabs
+    document.querySelectorAll('.timbre-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.timbre-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentTimbre = tab.getAttribute('data-timbre');
+        try { localStorage.setItem('jarvix_timbre', currentTimbre); } catch (_) {}
+        renderSamples();
+      });
+    });
+
+    renderSamples();
+
+    // Terminal & Brain logic
+    const terminalLogs = document.getElementById('terminalLogs');
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const stateInspector = document.getElementById('stateInspector');
+
+    function appendLog(sender, text, type = 'user') {
+      const msg = document.createElement('div');
+      msg.className = `log-msg ${type}`;
+      msg.innerHTML = `<span class="log-sender">${sender}:</span> <span class="log-text">${escapeHtml(text)}</span>`;
+      terminalLogs.appendChild(msg);
+      terminalLogs.scrollTop = terminalLogs.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
+
+    async function sendMessage(text) {
+      if (!text || !text.trim()) return;
+      const clean = text.trim();
+      appendLog('Вы', clean, 'user');
+      chatInput.value = '';
+
+      try {
+        const res = await fetch('/api/jarvix/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: currentSessionId,
+            message: clean,
+            timbre: currentTimbre,
+            language: 'ru'
+          })
+        });
+
+        if (!res.ok) {
+          throw new Error('Server returned ' + res.status);
+        }
+
+        const data = await res.json();
+        appendLog('JARVIX', data.reply, 'jarvix');
+
+        if (data.action && data.action.type === 'block_unauthorized') {
+          appendLog('SAFETY GUARD', 'Заблокировано: попытка неавторизованного действия.', 'system');
+        }
+
+        // Update state inspector
+        stateInspector.textContent = JSON.stringify({
+          sessionId: currentSessionId,
+          intent: data.intent,
+          accumulatedEntities: data.entities || {},
+          compiledPrompt: data.compiledPrompt || '',
+          action: data.action || null,
+          studioHandoff: data.studioHandoff || null,
+          safetyGuardrail: data.action?.type === 'block_unauthorized' ? 'BLOCKED_BY_GUARDRAIL' : 'CLEARED'
+        }, null, 2);
+
+        // Optional voice play
+        if (data.audioUrl) {
+          const snd = new Audio(data.audioUrl);
+          snd.play().catch(() => {});
+        }
+      } catch (err) {
+        appendLog('SYSTEM', 'Ошибка связи: ' + err.message, 'system');
+      }
+    }
+
+    sendBtn.addEventListener('click', () => sendMessage(chatInput.value));
+    chatInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') sendMessage(chatInput.value);
+    });
+
+    document.querySelectorAll('.quick-pill[data-msg]').forEach(pill => {
+      pill.addEventListener('click', () => {
+        sendMessage(pill.getAttribute('data-msg'));
+      });
+    });
+
+    document.getElementById('resetMemoryBtn').addEventListener('click', async () => {
+      try {
+        await fetch('/api/jarvix/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: currentSessionId })
+        });
+      } catch (_) {}
+      currentSessionId = 'studio-session-' + Date.now();
+      terminalLogs.innerHTML = '';
+      appendLog('JARVIX', 'Память диалога сброшена. Начните новый разговор.', 'jarvix');
+      stateInspector.textContent = JSON.stringify({
+        sessionId: currentSessionId,
+        accumulatedEntities: {},
+        compiledPrompt: "",
+        safetyGuardrail: "ACTIVE",
+        handoffTarget: null
+      }, null, 2);
+    });
+  </script>
+</body>
+</html>

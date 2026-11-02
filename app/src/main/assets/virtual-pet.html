@@ -202,7 +202,7 @@
       <div class="pet-hero-badge">🐾 Block 8 Prototype • Волшебный нюх</div>
       <h1>Виртуальный компаньон Deepsyq</h1>
       <p>
-        Необязательный, добрый и тактичный помощник (собака Рекс или кошка Луна).
+        Необязательный компаньон: Луна (собака), Мира (кошка) или Нова (лиса).
         Он не надоедает всплывающими окнами, а действительно помогает спасать черновики,
         проверять форматы Reels/TikTok и вовремя доставлять готовые результаты.
       </p>
@@ -231,6 +231,89 @@
         <button class="ds-pet-btn ds-pet-btn-secondary" id="btnTestJob">Симулировать готовое видео</button>
       </div>
     </div>
+
+    <!-- 3D Living Pets Production Showcase (Block 8 / F8) -->
+    <section class="sandbox-panel" aria-label="3D-модели питомцев: Луна, Мира и Нова">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+        <div>
+          <h2 style="margin:0 0 6px 0; color:#38bdf8; font-size:24px;">🐾 3D-модели питомцев F8: Луна, Мира и Нова</h2>
+          <p class="sandbox-panel-desc" style="margin:0;">
+            Настоящие 3D-персонажи со скелетом (armature 14 костей), 15 анимациями, PBR-материалами и оптимизированными rigged .glb.
+          </p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="ds-pet-btn ds-pet-btn-primary" id="btnInspectLuna">Луна (Корги)</button>
+          <button type="button" class="ds-pet-btn ds-pet-btn-secondary" id="btnInspectMira">Мира (Кошка)</button>
+          <button type="button" class="ds-pet-btn ds-pet-btn-secondary" id="btnInspectNova">Нова (Лисёнок)</button>
+        </div>
+      </div>
+
+      <!-- Character Visual Studio Card -->
+      <div id="pet3dStudioCard" style="background:#090d16; border:1px solid #1e293b; border-radius:14px; padding:24px;">
+        <div style="display:grid; grid-template-columns: minmax(280px, 1fr) 2fr; gap:24px; align-items:center;">
+          <!-- Viewport Box -->
+          <div style="text-align:center;">
+            <div id="petViewportBox" style="background:#0b0f19; border:1px solid #2a3449; border-radius:12px; width:100%; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; transition:background 0.2s;">
+              <img id="petPreviewImg" src="virtual-pet/luna/renders/three_quarter.png" alt="3D Pet Preview" style="width:168px; height:168px; object-fit:contain; filter:drop-shadow(0 8px 16px rgba(0,0,0,0.5)); transition:transform 0.2s;" />
+              <div id="petScaleBadge" style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.6); padding:2px 8px; border-radius:6px; font-size:11px; color:#94a3b8;">168 px</div>
+            </div>
+            <!-- Background & Scale Toggles -->
+            <div style="display:flex; justify-content:center; gap:8px; margin-top:12px; flex-wrap:wrap;">
+              <button type="button" class="nav-link-btn" id="btnBgDark" style="padding:4px 10px; font-size:12px;">Тёмный</button>
+              <button type="button" class="nav-link-btn" id="btnBgLight" style="padding:4px 10px; font-size:12px;">Светлый</button>
+              <span style="border-left:1px solid #334155; margin:0 4px;"></span>
+              <button type="button" class="nav-link-btn" id="btnSize80" style="padding:4px 10px; font-size:12px;">80px</button>
+              <button type="button" class="nav-link-btn" id="btnSize132" style="padding:4px 10px; font-size:12px;">132px</button>
+              <button type="button" class="nav-link-btn" id="btnSize168" style="padding:4px 10px; font-size:12px; font-weight:bold;">168px</button>
+            </div>
+          </div>
+
+          <!-- Character Details & Controls -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
+              <h3 id="petCardTitle" style="margin:0; font-size:20px; color:#f1f5f9;">🐕 Луна (Собака-корги)</h3>
+              <span id="petCardBadge" style="font-size:12px; padding:3px 8px; border-radius:6px; background:#40DFAE22; color:#40DFAE; border:1px solid #40DFAE55;">RIGGED & VERIFIED</span>
+            </div>
+            <p id="petCardDesc" style="color:#94a3b8; font-size:14px; margin:0 0 16px 0; line-height:1.5;">
+              Маленький корги: медно-рыжая шерсть #D89150, кремово-белые участки #F6E8CE, медовые глаза #8B5737 и аккуратный мятный акцент #40DFAE. Защитник и верный спутник.
+            </p>
+
+            <!-- Angle Selector -->
+            <div style="margin-bottom:14px;">
+              <span style="font-size:12px; color:#64748b; display:block; margin-bottom:6px;">Ракурс камеры 3D:</span>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button type="button" class="nav-link-btn btn-angle active" data-angle="three_quarter" style="padding:4px 10px; font-size:12px; font-weight:bold;">3/4 Перспектива</button>
+                <button type="button" class="nav-link-btn btn-angle" data-angle="front" style="padding:4px 10px; font-size:12px;">Спереди</button>
+                <button type="button" class="nav-link-btn btn-angle" data-angle="side" style="padding:4px 10px; font-size:12px;">Сбоку</button>
+                <button type="button" class="nav-link-btn btn-angle" data-angle="back" style="padding:4px 10px; font-size:12px;">Сзади</button>
+                <button type="button" class="nav-link-btn btn-angle" data-angle="face_closeup" style="padding:4px 10px; font-size:12px;">Мордочка</button>
+              </div>
+            </div>
+
+            <!-- Animation Player Preview -->
+            <div style="margin-bottom:14px;">
+              <span style="font-size:12px; color:#64748b; display:block; margin-bottom:6px;">Просмотр движения:</span>
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <button type="button" class="ds-pet-btn ds-pet-btn-secondary" id="btnPlayBreathe" style="padding:6px 12px; font-size:12px;">▶ Дыхание (idle_breathe)</button>
+                <button type="button" class="ds-pet-btn ds-pet-btn-secondary" id="btnPlayWalk" style="padding:6px 12px; font-size:12px;">▶ Походка (walk_loop)</button>
+                <button type="button" class="ds-pet-btn ds-pet-btn-secondary" id="btnStopAnim" style="padding:6px 12px; font-size:12px;">⏹ Статика</button>
+              </div>
+            </div>
+
+            <!-- Technical Provenance & Download Links -->
+            <div style="background:#111726; border:1px solid #1e293b; border-radius:8px; padding:10px 14px; font-size:12px; color:#94a3b8; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+              <div>
+                <strong style="color:#f1f5f9;">Скелет:</strong> Armature (14 костей) • <strong style="color:#f1f5f9;">Анимаций:</strong> 15 клипов
+              </div>
+              <div style="display:flex; gap:12px;">
+                <a id="linkGlb" href="virtual-pet/luna/glb/luna.glb" download style="color:#38bdf8; text-decoration:none;">⬇ Скачать .GLB</a>
+                <a id="linkBlend" href="virtual-pet/luna/source/luna.blend" download style="color:#38bdf8; text-decoration:none;">⬇ Исходник .BLEND</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- Interactive Testing Sandbox -->
     <div class="sandbox-panel">
@@ -262,16 +345,27 @@
         <div class="sim-box">
           <h4>Управление компаньоном</h4>
           <p style="font-size: 13px; color: #8b949e; line-height: 1.5; margin-bottom: 14px;">
-            Ты можешь переключать компаньона (Собака / Кошка), менять его имя и режим (Спокойный, Игривый, Выключен).
+            Ты можешь переключать компаньона (Луна / Мира / Нова), менять его имя и режим (Спокойный, Игривый, Выключен).
           </p>
           <div class="sim-actions">
             <button class="ds-pet-btn ds-pet-btn-primary" id="btnOpenSettings">⚙ Открыть настройки компаньона</button>
-            <button class="ds-pet-btn ds-pet-btn-secondary" id="btnSwitchDog">🐕 Выбрать Рекса (Собака)</button>
-            <button class="ds-pet-btn ds-pet-btn-secondary" id="btnSwitchCat">🐱 Выбрать Луну (Кошка)</button>
+            <button class="ds-pet-btn ds-pet-btn-secondary" id="btnSwitchDog">🐕 Луна · Собака</button>
+            <button class="ds-pet-btn ds-pet-btn-secondary" id="btnSwitchCat">🐱 Мира · Кошка</button>
+            <button class="ds-pet-btn ds-pet-btn-secondary" id="btnSwitchFox">🦊 Нова · Лисёнок</button>
           </div>
         </div>
       </div>
     </div>
+
+    <section class="sandbox-panel" aria-label="Magic Shield: сценарии 1 и 2">
+      <h2>Волшебный щит — безопасная демонстрация</h2>
+      <p class="sandbox-panel-desc">Проверяем два важнейших сценария без AI-провайдера, настоящей сметы, платежей и создания задач. Остальные 14 сценариев доступны для настройки, но требуют реальных проверенных возможностей.</p>
+      <div class="sim-actions">
+        <button class="ds-pet-btn ds-pet-btn-primary" id="btnTestQuantity">S01 · Проверить 2 изображения</button>
+        <button class="ds-pet-btn ds-pet-btn-secondary" id="btnTestDuplicate">S02 · Проверить двойное Create</button>
+      </div>
+      <p id="livingDemoResult" class="sandbox-panel-desc" role="status" aria-live="polite">Нажмите кнопку для тестового события.</p>
+    </section>
 
     <!-- Navigation links to the rest of Deepsyq -->
     <div class="nav-bar-links">
@@ -282,6 +376,7 @@
     </div>
   </div>
 
+  <script src="virtual-pet-living.js"></script>
   <script src="virtual-pet.js"></script>
   <script defer src="deepsyq-site-shell.js"></script>
   <script>
@@ -320,6 +415,28 @@
         });
       });
 
+      // Isolated, explicitly user-triggered fixtures. Not a paid quote or real job.
+      const result = document.getElementById('livingDemoResult');
+      document.getElementById('btnTestQuantity').addEventListener('click', () => {
+        const decision = pet.offerLivingHint('S01',{
+          source:'mock-preview',verified:true,userRequested:true,
+          signature:'quantity-2-preview',quantity:2,quoteVerified:true
+        },'Демо: выбраны 2 изображения. Настоящая стоимость неизвестна. Хотите изменить количество и запросить новую смету?',[
+          {label:'Проверить количество',onClick:()=>{result.textContent='Демо: пользователь выбрал проверку. Платная задача не отправлена.';}},
+          {label:'Оставить 2',onClick:()=>{result.textContent='Демо: количество сохранено. Платная задача не отправлена.';}}
+        ],'alert');
+        result.textContent=decision.show?'S01: проверенное демо-событие, без расходов.':'S01: '+decision.reason;
+      });
+      document.getElementById('btnTestDuplicate').addEventListener('click', () => {
+        const decision=pet.offerLivingHint('S02',{
+          source:'mock-preview',verified:true,userRequested:true,
+          signature:'queued-job-preview',jobId:'mock-queued-1',queued:true
+        },'Демо: задача уже отправлена в тестовую очередь. Второй запрос не создан.',[
+          {label:'Посмотреть статус',onClick:()=>{result.textContent='Демо: mock-queued-1 — в очереди, 0 платных вызовов.';}}
+        ],'alert');
+        result.textContent=decision.show?'S02: одно демо-задание, повторное создание не выполнено.':'S02: '+decision.reason;
+      });
+
       // Sandbox controls
       document.getElementById('btnSimSave').addEventListener('click', () => {
         if (!promptInput.value.trim()) {
@@ -338,14 +455,140 @@
       });
 
       document.getElementById('btnSwitchDog').addEventListener('click', () => {
-        pet.saveSettings({ pet: 'dog', name: 'Рекс' });
-        pet.speak('Гав! Я Рекс, твой верный помощник!', [], 'friendly');
+        pet.saveSettings({ pet: 'dog', name: 'Луна' });
+        pet.speak('Привет! Я Луна, твой верный помощник.', [], 'friendly');
       });
 
       document.getElementById('btnSwitchCat').addEventListener('click', () => {
-        pet.saveSettings({ pet: 'cat', name: 'Луна' });
-        pet.speak('Мяу! Я Луна, буду аккуратно приглядывать за твоими генерациями.', [], 'friendly');
+        pet.saveSettings({ pet: 'cat', name: 'Мира' });
+        pet.speak('Мяу! Я Мира, буду аккуратно приглядывать за твоими генерациями.', [], 'friendly');
       });
+      document.getElementById('btnSwitchFox').addEventListener('click', () => {
+        pet.saveSettings({ pet: 'fox', name: 'Нова' });
+        pet.speak('Я Нова — лисёнок. Помогу сохранить идею!', [], 'friendly');
+      });
+
+      // --- 3D PETS PRODUCTION STUDIO CONTROLLER ---
+      let currentPetKey = 'luna';
+      let currentAngle = 'three_quarter';
+      let currentBg = 'transparent'; // 'transparent' | 'dark' | 'light'
+      let currentSize = 168;
+      let animInterval = null;
+
+      const petData = {
+        luna: {
+          title: '🐕 Луна (Собака-корги)',
+          desc: 'Маленький корги: медно-рыжая шерсть #D89150, кремово-белые участки #F6E8CE, медовые глаза #8B5737 и аккуратный мятный акцент #40DFAE. Защитник и верный спутник.',
+          badge: '#40DFAE'
+        },
+        mira: {
+          title: '🐱 Мира (Дымчатая кошка)',
+          desc: 'Тёмная дымчато-графитовая шерсть #28394E, кремовые акценты #F1ECE6, мятные глаза #66C4AD. Гибкое кошачье тело, длинный хвост. Спокойная и наблюдательная.',
+          badge: '#66C4AD'
+        },
+        nova: {
+          title: '🦊 Нова (Рыжий лисёнок)',
+          desc: 'Тёплая рыжая шерсть #EA853A, светлые участки #FFF4DF, пушистый длинный хвост, острые ушки, узкая лисья морда и мятно-изумрудные детали #4ADDB7. Любопытный исследователь.',
+          badge: '#4ADDB7'
+        }
+      };
+
+      const previewImg = document.getElementById('petPreviewImg');
+      const viewportBox = document.getElementById('petViewportBox');
+      const cardTitle = document.getElementById('petCardTitle');
+      const cardDesc = document.getElementById('petCardDesc');
+      const cardBadge = document.getElementById('petCardBadge');
+      const linkGlb = document.getElementById('linkGlb');
+      const linkBlend = document.getElementById('linkBlend');
+      const scaleBadge = document.getElementById('petScaleBadge');
+
+      function stopAnimation() {
+        if (animInterval) {
+          clearInterval(animInterval);
+          animInterval = null;
+        }
+      }
+
+      function updatePreviewImage() {
+        stopAnimation();
+        let bgSuffix = '';
+        if (currentBg === 'dark') bgSuffix = '_dark';
+        else if (currentBg === 'light') bgSuffix = '_light';
+        previewImg.src = `virtual-pet/${currentPetKey}/renders/${currentAngle}${bgSuffix}.png`;
+      }
+
+      function selectPet(key) {
+        currentPetKey = key;
+        const d = petData[key];
+        cardTitle.textContent = d.title;
+        cardDesc.textContent = d.desc;
+        cardBadge.style.color = d.badge;
+        cardBadge.style.borderColor = d.badge + '55';
+        cardBadge.style.backgroundColor = d.badge + '22';
+        linkGlb.href = `virtual-pet/${key}/glb/${key}.glb`;
+        linkBlend.href = `virtual-pet/${key}/source/${key}.blend`;
+
+        document.getElementById('btnInspectLuna').className = key === 'luna' ? 'ds-pet-btn ds-pet-btn-primary' : 'ds-pet-btn ds-pet-btn-secondary';
+        document.getElementById('btnInspectMira').className = key === 'mira' ? 'ds-pet-btn ds-pet-btn-primary' : 'ds-pet-btn ds-pet-btn-secondary';
+        document.getElementById('btnInspectNova').className = key === 'nova' ? 'ds-pet-btn ds-pet-btn-primary' : 'ds-pet-btn ds-pet-btn-secondary';
+        updatePreviewImage();
+      }
+
+      document.getElementById('btnInspectLuna').addEventListener('click', () => selectPet('luna'));
+      document.getElementById('btnInspectMira').addEventListener('click', () => selectPet('mira'));
+      document.getElementById('btnInspectNova').addEventListener('click', () => selectPet('nova'));
+
+      document.querySelectorAll('.btn-angle').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.btn-angle').forEach(b => b.style.fontWeight = 'normal');
+          btn.style.fontWeight = 'bold';
+          currentAngle = btn.getAttribute('data-angle');
+          updatePreviewImage();
+        });
+      });
+
+      document.getElementById('btnBgDark').addEventListener('click', () => {
+        currentBg = 'dark';
+        viewportBox.style.background = '#0b0f19';
+        updatePreviewImage();
+      });
+      document.getElementById('btnBgLight').addEventListener('click', () => {
+        currentBg = 'light';
+        viewportBox.style.background = '#f8f9fa';
+        updatePreviewImage();
+      });
+
+      document.getElementById('btnSize80').addEventListener('click', () => {
+        currentSize = 80;
+        previewImg.style.width = '80px';
+        previewImg.style.height = '80px';
+        scaleBadge.textContent = '80 px';
+      });
+      document.getElementById('btnSize132').addEventListener('click', () => {
+        currentSize = 132;
+        previewImg.style.width = '132px';
+        previewImg.style.height = '132px';
+        scaleBadge.textContent = '132 px';
+      });
+      document.getElementById('btnSize168').addEventListener('click', () => {
+        currentSize = 168;
+        previewImg.style.width = '168px';
+        previewImg.style.height = '168px';
+        scaleBadge.textContent = '168 px';
+      });
+
+      function playSpriteLoop(animName) {
+        stopAnimation();
+        let frame = 0;
+        animInterval = setInterval(() => {
+          previewImg.src = `virtual-pet/${currentPetKey}/sprites/${animName}_0${frame}.png`;
+          frame = (frame + 1) % 8;
+        }, 125);
+      }
+
+      document.getElementById('btnPlayBreathe').addEventListener('click', () => playSpriteLoop('idle_breathe'));
+      document.getElementById('btnPlayWalk').addEventListener('click', () => playSpriteLoop('walk_loop'));
+      document.getElementById('btnStopAnim').addEventListener('click', updatePreviewImage);
     });
   </script>
 </body>

@@ -1,0 +1,23 @@
+{
+  "id": "nova",
+  "species": "fox",
+  "displayName": "Нова",
+  "visualStatus": "concept-only",
+  "approvalStatus": "awaiting-3d-approval",
+  "sourcePath": "nova/reference/owner-selected-fullres.png",
+  "resolutionPx": [
+    1086,
+    1448
+  ],
+  "sourceSha256": "b5a76753ead085a998c1163cf0469051bb6e46e7d1a48d1014ee57bae7ac9a3a",
+  "palette": {
+    "fur": "#EA853A",
+    "white": "#FFF4DF",
+    "brandGreen": "#4ADDB7"
+  },
+  "glb": null,
+  "rig": null,
+  "animations": null,
+  "alphaSpriteAtlas": null,
+  "externalLicenseNote": "Original assistant-generated concepts selected by Deepsyq owner, Nov 2 2026; do not imply external 3D ownership."
+}

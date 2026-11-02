@@ -1,7 +1,7 @@
 /**
  * Deepsyq Virtual Pet Companion — Block 8 ("Волшебный нюх" / Magic Nose)
  *
- * Provides a voluntary, warm, non-intrusive companion (Dog 'Рекс' or Cat 'Луна')
+ * Provides a voluntary, warm, non-intrusive companion (Dog 'Луна', Cat 'Мира' or Fox 'Нова')
  * with 3 core superpowers:
  *  1. Draft Saver / Rescue (Спасение потерянных идей)
  *  2. Format Sniffer (Нюх на параметры Reels/Shorts 9:16 vs 16:9)
@@ -28,6 +28,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
   }
 })(globalScope, function() {
   'use strict';
+  const root = globalScope;
 
   const STORAGE_KEY = 'deepsyq_virtual_pet_v1';
   const DRAFT_KEY = 'deepsyq_studio_draft';
@@ -35,27 +36,34 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
 
   const DEFAULT_SETTINGS = {
     enabled: true,
-    pet: 'dog', // 'dog' | 'cat'
-    name: 'Рекс',
+    pet: 'dog', // 'dog' | 'cat' | 'fox'
+    name: 'Луна',
     mode: 'calm', // 'calm' | 'playful' | 'off'
     sound: false,
     noseDraft: true,
     noseRatio: true,
-    noseJobs: true
+    noseJobs: true,
+    living: {movement:'gentle',side:'auto',size:'medium',face:'expressive',tipsEnabled:true,voiceEnabled:false,enabledByScenario:{}}
   };
 
   const PET_PROFILES = {
     dog: {
-      defaultName: 'Рекс',
+      defaultName: 'Луна',
       badge: '🐕',
       label: 'Собака',
       greeting: 'Привет! Я рядом, если понадобится помощь с идеями или генерациями.'
     },
     cat: {
-      defaultName: 'Луна',
+      defaultName: 'Мира',
       badge: '🐱',
       label: 'Кошка',
       greeting: 'Мяу. Я тут в уголке, слежу за твоими черновиками и готовыми работами.'
+    },
+    fox: {
+      defaultName: 'Нова',
+      badge: '🦊',
+      label: 'Лисёнок',
+      greeting: 'Привет! Я любопытная Нова, могу бережно принести твою идею.'
     }
   };
 
@@ -63,31 +71,31 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
   const SVG_DOG = `
     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
       <!-- Tail -->
-      <path class="ds-pet-tail" d="M72 65 C85 60 88 45 78 40" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/>
+      <path class="ds-pet-tail" d="M72 65 C85 60 88 45 78 40" stroke="#D89150" stroke-width="6" stroke-linecap="round"/>
       <!-- Body -->
-      <ellipse cx="50" cy="62" rx="26" ry="20" fill="#f59e0b"/>
-      <ellipse cx="50" cy="64" rx="20" ry="15" fill="#fbbf24"/>
+      <ellipse cx="50" cy="62" rx="26" ry="20" fill="#D89150"/>
+      <ellipse cx="50" cy="64" rx="20" ry="15" fill="#EECDA5"/>
       <!-- Paws -->
-      <ellipse cx="36" cy="78" rx="8" ry="6" fill="#f59e0b"/>
-      <ellipse cx="64" cy="78" rx="8" ry="6" fill="#f59e0b"/>
+      <ellipse cx="36" cy="78" rx="8" ry="6" fill="#D89150"/>
+      <ellipse cx="64" cy="78" rx="8" ry="6" fill="#D89150"/>
       <!-- Ears -->
       <g class="ds-pet-ears">
-        <path d="M26 34 C20 40 18 55 24 60 C26 55 28 42 34 36 Z" fill="#d97706"/>
-        <path d="M74 34 C80 40 82 55 76 60 C74 55 72 42 66 36 Z" fill="#d97706"/>
+        <path d="M26 34 C20 40 18 55 24 60 C26 55 28 42 34 36 Z" fill="#B86B3C"/>
+        <path d="M74 34 C80 40 82 55 76 60 C74 55 72 42 66 36 Z" fill="#B86B3C"/>
       </g>
       <!-- Head -->
-      <circle cx="50" cy="40" r="22" fill="#fbbf24"/>
+      <circle cx="50" cy="40" r="22" fill="#EECDA5"/>
       <!-- Eyes -->
       <circle cx="41" cy="38" r="3.5" fill="#1e293b"/>
-      <circle cx="42" cy="37" r="1.2" fill="#ffffff"/>
+      <circle cx="42" cy="37" r="1.2" fill="#F6E8CE"/>
       <circle cx="59" cy="38" r="3.5" fill="#1e293b"/>
-      <circle cx="60" cy="37" r="1.2" fill="#ffffff"/>
+      <circle cx="60" cy="37" r="1.2" fill="#F6E8CE"/>
       <!-- Snout -->
-      <ellipse cx="50" cy="47" rx="9" ry="7" fill="#ffffff"/>
+      <ellipse cx="50" cy="47" rx="9" ry="7" fill="#F6E8CE"/>
       <polygon points="46,44 54,44 50,49" fill="#1e293b"/>
       <path d="M50 49 L50 52 M47 52 C48 54 52 54 53 52" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round"/>
       <!-- Collar -->
-      <path d="M36 56 Q50 62 64 56" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+      <path d="M36 56 Q50 62 64 56" stroke="#40DFAE" stroke-width="4" stroke-linecap="round"/>
       <circle cx="50" cy="60" r="3" fill="#e0f2fe"/>
     </svg>
   `;
@@ -95,40 +103,72 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
   const SVG_CAT = `
     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
       <!-- Tail -->
-      <path class="ds-pet-tail" d="M70 65 C85 65 92 48 84 35" stroke="#94a3b8" stroke-width="5" stroke-linecap="round"/>
+      <path class="ds-pet-tail" d="M70 65 C85 65 92 48 84 35" stroke="#28394E" stroke-width="5" stroke-linecap="round"/>
       <!-- Body -->
-      <ellipse cx="50" cy="64" rx="25" ry="18" fill="#94a3b8"/>
-      <ellipse cx="50" cy="65" rx="19" ry="13" fill="#cbd5e1"/>
+      <ellipse cx="50" cy="64" rx="25" ry="18" fill="#28394E"/>
+      <ellipse cx="50" cy="65" rx="19" ry="13" fill="#F1ECE6"/>
       <!-- Paws -->
-      <ellipse cx="36" cy="78" rx="7" ry="5" fill="#64748b"/>
-      <ellipse cx="64" cy="78" rx="7" ry="5" fill="#64748b"/>
+      <ellipse cx="36" cy="78" rx="7" ry="5" fill="#171C2C"/>
+      <ellipse cx="64" cy="78" rx="7" ry="5" fill="#171C2C"/>
       <!-- Ears -->
       <g class="ds-pet-ears">
-        <polygon points="30,42 22,22 42,32" fill="#64748b"/>
-        <polygon points="29,39 25,26 38,33" fill="#f472b6"/>
-        <polygon points="70,42 78,22 58,32" fill="#64748b"/>
-        <polygon points="71,39 75,26 62,33" fill="#f472b6"/>
+        <polygon points="30,42 22,22 42,32" fill="#171C2C"/>
+        <polygon points="29,39 25,26 38,33" fill="#C99BAD"/>
+        <polygon points="70,42 78,22 58,32" fill="#171C2C"/>
+        <polygon points="71,39 75,26 62,33" fill="#C99BAD"/>
       </g>
       <!-- Head -->
-      <circle cx="50" cy="42" r="21" fill="#94a3b8"/>
+      <circle cx="50" cy="42" r="21" fill="#28394E"/>
       <!-- Eyes -->
-      <ellipse cx="41" cy="40" rx="3.5" ry="4" fill="#22c55e"/>
+      <ellipse cx="41" cy="40" rx="3.5" ry="4" fill="#66C4AD"/>
       <circle cx="41.5" cy="40" r="1.8" fill="#0f172a"/>
-      <ellipse cx="59" cy="40" rx="3.5" ry="4" fill="#22c55e"/>
+      <ellipse cx="59" cy="40" rx="3.5" ry="4" fill="#66C4AD"/>
       <circle cx="59.5" cy="40" r="1.8" fill="#0f172a"/>
       <!-- Nose & Mouth -->
-      <polygon points="48,46 52,46 50,48" fill="#f472b6"/>
+      <polygon points="48,46 52,46 50,48" fill="#C99BAD"/>
       <path d="M47 50 Q50 52 53 50" stroke="#475569" stroke-width="1.2" stroke-linecap="round"/>
       <!-- Whiskers -->
-      <line x1="36" y1="46" x2="24" y2="44" stroke="#e2e8f0" stroke-width="1.2" stroke-linecap="round"/>
-      <line x1="36" y1="49" x2="25" y2="50" stroke="#e2e8f0" stroke-width="1.2" stroke-linecap="round"/>
-      <line x1="64" y1="46" x2="76" y2="44" stroke="#e2e8f0" stroke-width="1.2" stroke-linecap="round"/>
-      <line x1="64" y1="49" x2="75" y2="50" stroke="#e2e8f0" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="36" y1="46" x2="24" y2="44" stroke="#F1ECE6" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="36" y1="49" x2="25" y2="50" stroke="#F1ECE6" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="64" y1="46" x2="76" y2="44" stroke="#F1ECE6" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="64" y1="49" x2="75" y2="50" stroke="#F1ECE6" stroke-width="1.2" stroke-linecap="round"/>
       <!-- Ribbon -->
-      <path d="M38 58 Q50 62 62 58" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
+      <path d="M38 58 Q50 62 62 58" stroke="#509BAA" stroke-width="3" stroke-linecap="round"/>
       <circle cx="50" cy="60" r="2.5" fill="#fdf4ff"/>
     </svg>
   `;
+
+  // HONEST 2D placeholder while genuine Blender/GLB/alpha sprites are absent.
+  // Nov 2 owner-approved FOX scope. This must never be marked as final 3D.
+  const SVG_FOX = `
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- Distinct fox silhouette: pointed ears, narrow muzzle, very long bushy tail, four paws -->
+      <path class="ds-pet-tail" d="M64 72 C86 79 93 62 86 43 C91 47 97 60 94 71 C91 86 74 89 61 81 Z" fill="#EA853A" stroke="#AB562B" stroke-width="1.2"/>
+      <path d="M93 59 Q102 78 81 82 Q87 72 93 59" fill="#FFF4DF"/>
+      <ellipse cx="52" cy="69" rx="24" ry="17" fill="#EA853A"/>
+      <path d="M34 70 Q50 82 70 71 L63 81 L42 82 Z" fill="#FFF4DF"/>
+      <ellipse cx="35" cy="82" rx="7" ry="5" fill="#AB562B"/>
+      <ellipse cx="49" cy="84" rx="7" ry="5" fill="#AB562B"/>
+      <ellipse cx="62" cy="83" rx="7" ry="5" fill="#AB562B"/>
+      <ellipse cx="71" cy="80" rx="6" ry="5" fill="#AB562B"/>
+      <g class="ds-pet-ears">
+        <path d="M24 42 L29 9 Q31 7 35 10 L47 33 Z" fill="#EA853A"/>
+        <path d="M76 42 L70 9 Q68 7 65 10 L53 33 Z" fill="#EA853A"/>
+        <path d="M30 32 L31 16 L40 33" fill="#F0BAAB"/>
+        <path d="M70 32 L69 16 L60 33" fill="#F0BAAB"/>
+      </g>
+      <path d="M27 42 Q50 16 73 42 Q76 58 63 65 L37 65 Q24 56 27 42" fill="#EA853A"/>
+      <path d="M27 50 Q38 45 50 54 Q62 45 73 50 Q64 66 50 65 Q35 65 27 50" fill="#FFF4DF"/>
+      <ellipse cx="42" cy="43" rx="4" ry="5" fill="#66C4AD"/>
+      <ellipse cx="58" cy="43" rx="4" ry="5" fill="#66C4AD"/>
+      <ellipse cx="42" cy="43" rx="1.8" ry="3.1" fill="#183935"/>
+      <ellipse cx="58" cy="43" rx="1.8" ry="3.1" fill="#183935"/>
+      <path d="M46 54 Q50 57 54 54 L50 60 Z" fill="#211B1B"/>
+      <path d="M34 62 Q50 70 66 62" stroke="#4ADDB7" stroke-width="3" stroke-linecap="round"/>
+      <path d="M47 66 L50 70 L53 66 L50 62 Z" fill="#4ADDB7"/>
+    </svg>
+  `;
+
 
   class VirtualPetEngine {
     constructor() {
@@ -141,6 +181,8 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       this.draftDebounceTimer = null;
       this.lastSniffedRatioValue = null;
       this.isInitialized = false;
+      this.livingController = root?.DeepsyqLivingPet?.createController?.() || null;
+      this.ambientTimer = null;
     }
 
     getStorage() {
@@ -155,7 +197,10 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       try {
         const raw = this.getStorage()?.getItem(STORAGE_KEY);
         if (raw) {
-          return Object.assign({}, DEFAULT_SETTINGS, JSON.parse(raw));
+          const saved=JSON.parse(raw);
+          const selected=PET_PROFILES[saved?.pet] ? saved.pet : DEFAULT_SETTINGS.pet;
+          const living = root?.DeepsyqLivingPet?.normalizeSettings?.(saved?.living) || DEFAULT_SETTINGS.living;
+          return Object.assign({}, DEFAULT_SETTINGS, saved, { pet: selected, living });
         }
       } catch (err) {
         console.warn('[VirtualPet] Failed to read settings from localStorage:', err);
@@ -164,7 +209,9 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
     }
 
     saveSettings(newSettings) {
-      this.settings = Object.assign({}, this.settings, newSettings);
+      const nextPet=PET_PROFILES[newSettings?.pet] ? newSettings.pet : (this.settings.pet || 'dog');
+      const living = root?.DeepsyqLivingPet?.normalizeSettings?.(newSettings?.living || this.settings.living) || DEFAULT_SETTINGS.living;
+      this.settings = Object.assign({}, this.settings, newSettings, { pet: nextPet, living, sound:false });
       try {
         this.getStorage()?.setItem(STORAGE_KEY, JSON.stringify(this.settings));
       } catch (err) {
@@ -183,6 +230,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       this.createDOM();
       this.render();
       this.bindAutoSniffers();
+      this.startAmbientMotion();
 
       if (options.promptInputSelector) {
         this.attachToPrompt(options.promptInputSelector, options.ratioSelectSelector);
@@ -212,7 +260,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
             <button class="ds-pet-icon-btn" id="dsPetSettingsBtn" title="Настройки компаньона" aria-label="Настройки компаньона">⚙</button>
             <button class="ds-pet-icon-btn" id="dsPetToggleBtn" title="Свернуть / Режим" aria-label="Свернуть">✕</button>
           </div>
-          <div id="dsPetAvatar" class="ds-pet-avatar" title="Нажми, чтобы погладить!">
+          <div id="dsPetAvatar" class="ds-pet-avatar" role="button" tabindex="0" aria-label="Открыть компаньона" title="Нажми, чтобы погладить!">
             <div id="dsPetSvgContainer"></div>
             <span id="dsPetBadge" class="ds-pet-badge" style="display: none;"></span>
           </div>
@@ -227,6 +275,11 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       // Setup click handlers safely
       if (this.avatarEl) {
         this.avatarEl.addEventListener('click', () => this.onAvatarClick());
+        this.avatarEl.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();this.onAvatarClick();
+          }
+        });
       }
       const settingsBtn = document.getElementById('dsPetSettingsBtn');
       if (settingsBtn) {
@@ -252,16 +305,71 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
         return;
       }
       this.widgetEl.classList.remove('ds-pet-hidden');
+      const motion = root?.DeepsyqLivingPet?.normalizeSettings?.(this.settings.living);
+      if (motion) {
+        this.widgetEl.setAttribute('data-pet-side',motion.side);
+        this.widgetEl.setAttribute('data-pet-size',motion.size);
+        this.widgetEl.setAttribute('data-pet-face',motion.face);
+        this.widgetEl.setAttribute('data-pet-movement',motion.movement);
+      }
 
       const svgContainer = document.getElementById('dsPetSvgContainer');
       if (svgContainer) {
-        svgContainer.innerHTML = this.settings.pet === 'cat' ? SVG_CAT : SVG_DOG;
+        const petKey = this.settings.pet === 'cat' ? 'mira' : this.settings.pet === 'fox' ? 'nova' : 'luna';
+        const fallbackSvg = this.settings.pet === 'cat' ? SVG_CAT :
+          this.settings.pet === 'fox' ? SVG_FOX : SVG_DOG;
+        svgContainer.innerHTML = `
+          <div class="ds-pet-visual-wrap">
+            <img class="ds-pet-3d-img" src="virtual-pet/${petKey}/renders/three_quarter.png" alt="${this.settings.name}" width="100%" height="100%" loading="eager" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';" />
+            <div class="ds-pet-svg-fallback" style="display:none; width:100%; height:100%;">
+              ${fallbackSvg}
+            </div>
+          </div>
+        `;
       }
 
       const avatar = document.getElementById('dsPetAvatar');
       if (avatar) {
         avatar.setAttribute('title', `${this.settings.name} (${PET_PROFILES[this.settings.pet].label}) — нажми для настроек`);
       }
+    }
+
+    startAmbientMotion() {
+      if (this.ambientTimer || typeof window === 'undefined' || !this.widgetEl ||
+        !root?.DeepsyqLivingPet?.canAmbientWalk) return;
+      // One short 1.8s movement every 90s, never continuous wandering.
+      this.ambientTimer = window.setInterval(() => {
+        const active = document.activeElement;
+        const inputFocused = !!active?.matches?.('input,textarea,select,[contenteditable="true"]');
+        const dialogOpen = !!document.querySelector?.('[aria-modal="true"]:not([hidden]),[role="dialog"]:not([hidden])');
+        const reducedMotion = !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+        const bubbleVisible = !!this.bubbleEl && this.bubbleEl.style.display !== 'none';
+        const ok = root.DeepsyqLivingPet.canAmbientWalk({
+          settings:{...this.settings.living,mode:this.settings.mode,enabled:this.settings.enabled},
+          width:window.innerWidth,hidden:document.hidden,inputFocused,dialogOpen,
+          reducedMotion,busy:bubbleVisible
+        });
+        if (!ok || !this.widgetEl?.classList) return;
+        this.widgetEl.classList.add('ds-pet-ambient-walk');
+        window.setTimeout(() => this.widgetEl?.classList?.remove('ds-pet-ambient-walk'),1900);
+      },90000);
+    }
+
+    offerLivingHint(id,event,text,actions=[],mood='normal') {
+      if (!this.livingController || !root?.DeepsyqLivingPet) return {show:false,reason:'NO_POLICY'};
+      const active = typeof document !== 'undefined' && document.activeElement;
+      const result = this.livingController.offer({
+        id,event,settings:{...this.settings.living,mode:this.settings.mode,enabled:this.settings.enabled},
+        userInitiated:event?.userRequested===true,
+        state:{
+          inputFocused:!!active?.matches?.('input,textarea,select,[contenteditable="true"]')&&!event?.userRequested,
+          dialogOpen:!!document.querySelector?.('[aria-modal="true"]:not([hidden])'),
+          bubbleVisible:!!this.bubbleEl&&this.bubbleEl.style.display!=='none'&&!event?.userRequested,
+          hidden:!!document.hidden
+        }
+      });
+      if(result.show)this.speak(text,actions,mood);
+      return result;
     }
 
     onAvatarClick() {
@@ -296,7 +404,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
         actionsHtml = '<div class="ds-pet-bubble-actions">' +
           actions.map((act, idx) => {
             const cls = act.danger ? 'ds-pet-btn-danger' : (act.primary ? 'ds-pet-btn-primary' : 'ds-pet-btn-secondary');
-            return `<button class="ds-pet-btn ${cls}" data-action-idx="${idx}">${act.label}</button>`;
+            return `<button class="ds-pet-btn ${cls}" data-action-idx="${idx}">${this.escapeHtml(act.label)}</button>`;
           }).join('') +
         '</div>';
       }
@@ -305,7 +413,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
         <div class="ds-pet-bubble-header">
           <div class="ds-pet-bubble-title">
             <span>${icon}</span>
-            <span>${name}</span>
+            <span>${this.escapeHtml(name)}</span>
           </div>
           <button class="ds-pet-bubble-close" id="dsPetBubbleCloseBtn" title="Скрыть">✕</button>
         </div>
@@ -670,6 +778,15 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       modal.className = 'ds-pet-modal-overlay';
 
       const s = this.settings;
+      const livingApi = root?.DeepsyqLivingPet;
+      const prefs = livingApi?.normalizeSettings?.(s.living) || DEFAULT_SETTINGS.living;
+      const rows = livingApi?.SCENARIOS?.map(rule => `
+        <label class="ds-pet-toggle-row">
+          <span class="ds-pet-toggle-info"><strong>${rule.id} · ${rule.title}</strong>
+            <span class="ds-pet-toggle-desc">${rule.stage === 'demo' ? 'Проверяемое демо · без платных вызовов' : 'Ожидает подтверждённого подключения'}</span></span>
+          <input class="ds-pet-scenario-switch" type="checkbox" data-scenario="${rule.id}"
+            ${prefs.enabledByScenario?.[rule.id] !== false ? 'checked' : ''}>
+        </label>`).join('') || '';
       modal.innerHTML = `
         <div class="ds-pet-modal" role="dialog" aria-modal="true" aria-labelledby="dsPetModalTitle">
           <div class="ds-pet-modal-header">
@@ -682,16 +799,21 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
 
           <div class="ds-pet-form-group">
             <label class="ds-pet-label">Выбери питомца</label>
-            <div class="ds-pet-select-cards">
-              <div class="ds-pet-choice-card ${s.pet === 'dog' ? 'selected' : ''}" data-pet="dog">
+            <div class="ds-pet-select-cards" role="radiogroup" aria-label="Выбор питомца">
+              <div class="ds-pet-choice-card ${s.pet === 'dog' ? 'selected' : ''}" data-pet="dog" role="radio" tabindex="0" aria-checked="${s.pet === 'dog' ? 'true' : 'false'}">
                 <div class="ds-pet-choice-icon">🐕</div>
-                <div class="ds-pet-choice-name">Собака</div>
+                <div class="ds-pet-choice-name">Луна · Собака</div>
                 <div class="ds-pet-toggle-desc">Дружелюбный, приносит идеи в зубах</div>
               </div>
-              <div class="ds-pet-choice-card ${s.pet === 'cat' ? 'selected' : ''}" data-pet="cat">
+              <div class="ds-pet-choice-card ${s.pet === 'cat' ? 'selected' : ''}" data-pet="cat" role="radio" tabindex="0" aria-checked="${s.pet === 'cat' ? 'true' : 'false'}">
                 <div class="ds-pet-choice-icon">🐱</div>
-                <div class="ds-pet-choice-name">Кошка</div>
+                <div class="ds-pet-choice-name">Мира · Кошка</div>
                 <div class="ds-pet-toggle-desc">Спокойная, аккуратно двигает карточки лапкой</div>
+              </div>
+              <div class="ds-pet-choice-card ${s.pet === 'fox' ? 'selected' : ''}" data-pet="fox" role="radio" tabindex="0" aria-checked="${s.pet === 'fox' ? 'true' : 'false'}">
+                <div class="ds-pet-choice-icon">🦊</div>
+                <div class="ds-pet-choice-name">Нова · Лисёнок</div>
+                <div class="ds-pet-toggle-desc">Любопытная, умеет находить сохранённые идеи</div>
               </div>
             </div>
           </div>
@@ -708,6 +830,36 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
               <option value="playful" ${s.mode === 'playful' ? 'selected' : ''}>Игривый (приветствия и советы по творчеству)</option>
               <option value="off" ${s.mode === 'off' ? 'selected' : ''}>Выключен (скрыть компаньона)</option>
             </select>
+          </div>
+
+          <div class="ds-pet-form-group">
+            <label class="ds-pet-label" for="dsPetMovement">Как питомец живёт на странице</label>
+            <select id="dsPetMovement" class="ds-pet-select">
+              <option value="gentle" ${prefs.movement === 'gentle' ? 'selected' : ''}>Спокойные короткие прогулки</option>
+              <option value="playful" ${prefs.movement === 'playful' ? 'selected' : ''}>Игривый характер</option>
+              <option value="still" ${prefs.movement === 'still' ? 'selected' : ''}>Без прогулок</option>
+            </select>
+            <label class="ds-pet-label" for="dsPetSide">Предпочитаемая сторона</label>
+            <select id="dsPetSide" class="ds-pet-select">
+              <option value="auto" ${prefs.side === 'auto' ? 'selected' : ''}>Автоматически</option>
+              <option value="left" ${prefs.side === 'left' ? 'selected' : ''}>Слева</option>
+              <option value="right" ${prefs.side === 'right' ? 'selected' : ''}>Справа</option>
+            </select>
+            <label class="ds-pet-label" for="dsPetSize">Размер</label>
+            <select id="dsPetSize" class="ds-pet-select">
+              <option value="small" ${prefs.size === 'small' ? 'selected' : ''}>Маленький</option>
+              <option value="medium" ${prefs.size === 'medium' ? 'selected' : ''}>Средний</option>
+              <option value="large" ${prefs.size === 'large' ? 'selected' : ''}>Крупный</option>
+            </select>
+            <label class="ds-pet-label" for="dsPetFace">Мимика (Face)</label>
+            <select id="dsPetFace" class="ds-pet-select">
+              <option value="expressive" ${prefs.face === 'expressive' ? 'selected' : ''}>Выразительная</option>
+              <option value="subtle" ${prefs.face === 'subtle' ? 'selected' : ''}>Сдержанная</option>
+            </select>
+            <label class="ds-pet-toggle-row">Показывать проверенные советы
+              <input id="dsPetTipsEnabled" type="checkbox" ${prefs.tipsEnabled ? 'checked' : ''}>
+            </label>
+            <p class="ds-pet-toggle-desc">Voice: звук и микрофон выключены. Голосовой режим будет доступен только после отдельной реализации и согласия.</p>
           </div>
 
           <div class="ds-pet-form-group">
@@ -739,6 +891,11 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
             </div>
           </div>
 
+          <details class="ds-pet-form-group ds-pet-scenario-list">
+            <summary>Все 16 сценариев Magic Shield · настроить</summary>
+            <p class="ds-pet-toggle-desc">Галочка означает ваше предпочтение, но не включает неподтверждённые AI-функции. Пока пять событий работают в безопасном демо.</p>
+            <div class="ds-pet-toggles">${rows}</div>
+          </details>
           <div class="ds-pet-modal-footer">
             <button class="ds-pet-btn ds-pet-btn-secondary" id="dsPetModalCancelBtn">Отмена</button>
             <button class="ds-pet-btn ds-pet-btn-primary" id="dsPetModalSaveBtn">Сохранить</button>
@@ -750,14 +907,23 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
 
       let selectedPet = s.pet;
       const petCards = modal.querySelectorAll('.ds-pet-choice-card');
+      const selectPet = card => {
+        petCards.forEach(c => {
+          c.classList.remove('selected');
+          c.setAttribute('aria-checked','false');
+        });
+        card.classList.add('selected');
+        card.setAttribute('aria-checked','true');
+        selectedPet = card.getAttribute('data-pet');
+        const nameInput = document.getElementById('dsPetNameInput');
+        if(nameInput && ['Рекс','Луна','Мира','Нова'].includes(nameInput.value))
+          nameInput.value = PET_PROFILES[selectedPet].defaultName;
+      };
       petCards.forEach(card => {
-        card.addEventListener('click', () => {
-          petCards.forEach(c => c.classList.remove('selected'));
-          card.classList.add('selected');
-          selectedPet = card.getAttribute('data-pet');
-          const nameInput = document.getElementById('dsPetNameInput');
-          if (nameInput && (nameInput.value === 'Рекс' || nameInput.value === 'Луна')) {
-            nameInput.value = PET_PROFILES[selectedPet].defaultName;
+        card.addEventListener('click', () => selectPet(card));
+        card.addEventListener('keydown', event => {
+          if(event.key === 'Enter' || event.key === ' '){
+            event.preventDefault();selectPet(card);
           }
         });
       });
@@ -772,6 +938,19 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
         const noseDraftVal = document.getElementById('dsPetNoseDraft').checked;
         const noseRatioVal = document.getElementById('dsPetNoseRatio').checked;
         const noseJobsVal = document.getElementById('dsPetNoseJobs').checked;
+        const enabledByScenario = {};
+        modal.querySelectorAll('.ds-pet-scenario-switch').forEach(el => {
+          if (/^S(0[1-9]|1[0-6])$/.test(el.getAttribute('data-scenario')))
+            enabledByScenario[el.getAttribute('data-scenario')] = el.checked;
+        });
+        const nextLiving = {
+          movement:document.getElementById('dsPetMovement').value,
+          side:document.getElementById('dsPetSide').value,
+          size:document.getElementById('dsPetSize').value,
+          face:document.getElementById('dsPetFace').value,
+          tipsEnabled:document.getElementById('dsPetTipsEnabled').checked,
+          enabledByScenario
+        };
 
         this.saveSettings({
           pet: selectedPet,
@@ -780,6 +959,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
           noseDraft: noseDraftVal,
           noseRatio: noseRatioVal,
           noseJobs: noseJobsVal,
+          living:nextLiving,
           enabled: modeVal !== 'off'
         });
 

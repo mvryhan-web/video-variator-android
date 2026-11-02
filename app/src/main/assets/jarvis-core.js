@@ -6,6 +6,46 @@ import { saveStudioHandoff } from './studio-handoff.js';
 const $ = id => document.getElementById(id);
 
 let isJarvisActive = false;
+let currentTtsAudio = null;
+let jarvixSessionId = null;
+
+export function getJarvixSessionId() {
+  if (!jarvixSessionId) {
+    try {
+      jarvixSessionId = sessionStorage.getItem('jarvix_session_id');
+      if (!jarvixSessionId) {
+        jarvixSessionId = 'jarvix-' + Math.random().toString(36).slice(2, 10);
+        sessionStorage.setItem('jarvix_session_id', jarvixSessionId);
+      }
+    } catch (_) {
+      jarvixSessionId = 'jarvix-' + Date.now();
+    }
+  }
+  return jarvixSessionId;
+}
+
+export function getStoredTimbre() {
+  try {
+    return localStorage.getItem('jarvix_timbre') || 'baritone';
+  } catch (_) {
+    return 'baritone';
+  }
+}
+
+export function stopAllSpeech() {
+  if (currentTtsAudio) {
+    try {
+      currentTtsAudio.pause();
+      currentTtsAudio.currentTime = 0;
+    } catch (_) {}
+    currentTtsAudio = null;
+  }
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+  isJarvisSpeaking = false;
+}
+
 let isJarvisSpeaking = false;
 let isJarvisListening = false;
 let jarvisRecognition = null;
@@ -546,11 +586,63 @@ export function handleJarvisVoiceCommand(commandText) {
     return;
   }
 
-  // Intelligent Proactive Fallback (never robotic or repetitive)
-  const smartFallback = isRu
-    ? `Я услышал: «${t}». Могу создать кинематографичный промпт на эту тему для генерации, открыть студию или переключить тему. Что для вас сделать?`
-    : `I heard: "${t}". Shall I generate a creative prompt for this, open a studio, or adjust the theme?`;
-  speakJarvis(smartFallback);
+  // L. ASYNC JARVIX AI BRAIN & MEMORY DISPATCH
+  (async () => {
+    try {
+      const lang = document.documentElement.lang || 'ru';
+      const langCode = (lang === 'ru' || lang.startsWith('ru') || navigator.language?.startsWith('ru'))
+        ? 'ru'
+        : (lang === 'fr' || lang.startsWith('fr')) ? 'fr' : (lang === 'es' || lang.startsWith('es')) ? 'es' : 'en';
+
+      const res = await fetch('/api/jarvix/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: getJarvixSessionId(),
+          message: t,
+          language: langCode,
+          timbre: getStoredTimbre()
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.studioHandoff) {
+          try {
+            await saveStudioHandoff(data.studioHandoff);
+          } catch (_) {}
+        }
+
+        if (data.action) {
+          if (data.action.type === 'open_studio') {
+            speakJarvis(data.reply || 'Сделано.', () => {
+              location.assign(data.action.url);
+            });
+            return;
+          } else if (data.action.type === 'adjust_theme') {
+            applySiteTheme(data.action.theme);
+          } else if (data.action.type === 'clear_inputs') {
+            clearCurrentInputs();
+          } else if (data.action.type === 'block_unauthorized') {
+            console.warn('[JARVIX SECURITY GUARD] Action blocked:', data.action.reason);
+          }
+        }
+
+        if (data.reply) {
+          speakJarvis(data.reply);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('[JARVIX AI Brain API dispatch]', err);
+    }
+
+    // Intelligent Proactive Fallback (never robotic or repetitive)
+    const smartFallback = isRu
+      ? `Я услышал: «${t}». Могу создать кинематографичный промпт на эту тему для генерации, открыть студию или переключить тему. Что для вас сделать?`
+      : `I heard: "${t}". Shall I generate a creative prompt for this, open a studio, or adjust the theme?`;
+    speakJarvis(smartFallback);
+  })();
 }
 
 // 9. Speech Recognition Control (Pure Voice Loop)
@@ -591,6 +683,9 @@ function resumeJarvisRecognition() {
     jarvisRecognition.onresult = e => {
       resetSilenceTimer();
       let interim = '';
+      if (isJarvisSpeaking) {
+        stopAllSpeech();
+      }
       for (let i = e.resultIndex; i < e.results.length; ++i) {
         const item = e.results[i];
         if (item.isFinal) {
@@ -707,10 +802,7 @@ export function deactivateJarvisVoice() {
   isJarvisSpeaking = false;
   isJarvisListening = false;
   clearTimeout(silenceTimer);
-
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-  }
+  stopAllSpeech();
   pauseJarvisRecognition();
 
   const topBtn = getTopBtn();
@@ -720,6 +812,11 @@ export function deactivateJarvisVoice() {
 }
 
 export function toggleJarvisVoice() {
+  if (isJarvisSpeaking) {
+    stopAllSpeech();
+    resumeJarvisRecognition();
+    return;
+  }
   if (isJarvisActive) {
     deactivateJarvisVoice();
   } else {

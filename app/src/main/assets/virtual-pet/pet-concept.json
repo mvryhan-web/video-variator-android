@@ -1,0 +1,23 @@
+{
+  "id": "luna",
+  "species": "dog",
+  "displayName": "Луна",
+  "visualStatus": "concept-only",
+  "approvalStatus": "awaiting-3d-approval",
+  "sourcePath": "luna/reference/owner-selected-fullres.png",
+  "resolutionPx": [
+    1086,
+    1448
+  ],
+  "sourceSha256": "64d9488afe3e876596538e5e410141c885f0aecb279369e6aee801892c8bc652",
+  "palette": {
+    "fur": "#D89150",
+    "cream": "#F6E8CE",
+    "brandGreen": "#40DFAE"
+  },
+  "glb": null,
+  "rig": null,
+  "animations": null,
+  "alphaSpriteAtlas": null,
+  "externalLicenseNote": "Original assistant-generated concepts selected by Deepsyq owner, Nov 2 2026; do not imply external 3D ownership."
+}
