@@ -1,0 +1,119 @@
+{
+  "status": "PRODUCTION_NOT_READY_TO_LIST",
+  "date": "2026-11-02",
+  "age": "3–8",
+  "createdDisplayed": 15,
+  "targetDesigns": 40,
+  "targetPromo": 10,
+  "promoCreated": 0,
+  "files": [
+    {
+      "id": 1,
+      "scene": "Fox cub decorates a Christmas tree with one large bauble; one gift beside the tree",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-d054b670-6646-4fa1-9a6c-9e7aabb1533a.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 2,
+      "scene": "Rabbit ties a broad ribbon around one large gift on a low table; one ribbon spool on floor",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-0b7748b4-d8e8-4d0f-8f65-70b2829598ab.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 3,
+      "scene": "Bear cub wearing a simple apron presents a tray of three star-shaped cookies in a cozy bakery; one large bread loaf on shelf",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-69de1646-ae77-4781-8b6e-c18d25e62fa6.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 4,
+      "scene": "Young deer hangs a broad garland above the doorway of a small snow-capped cottage, standing safely on the ground",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-c056ef2c-fa0b-4914-ade7-949566c43626.png",
+      "visual": "REVISE_EDGES"
+    },
+    {
+      "id": 5,
+      "scene": "Penguin wearing a bobble hat chooses between three large Christmas baubles displayed in an open ornament box",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-9d0a1800-c827-4aa7-a105-9e86fd95e122.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 6,
+      "scene": "Fox and rabbit pull a short sled carrying one small Christmas tree, with clearly connected tow rope and no entangled limbs",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-1df7b460-27ea-4f5a-a590-33d23aac5ec8.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 7,
+      "scene": "Bear and rabbit roll cookie dough at a low broad table, three large cookie cutters, one rolling pin",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-5bcd5360-b55a-4888-8f60-a6b4d47a4396.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 8,
+      "scene": "Penguin decorates a small gingerbread house with broad icing lines, two round windows and gumdrop roof decorations",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-55e579a1-f6ab-49b0-887a-a640ade43f7b.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 9,
+      "scene": "Deer posts a large envelope into a clearly outlined Christmas mailbox with one holly sprig and one wrapped parcel beside it",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-1afefd3f-53ff-4d97-884e-984126b6956a.png",
+      "visual": "REVISE_DEER_TAIL"
+    },
+    {
+      "id": 10,
+      "scene": "Fox and bear share a festive tea at a small round table with two large cups and one plate of cookies",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-1f5fcb88-c846-40fa-959d-b6a3ae5e6dd3.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 11,
+      "scene": "Rabbit hangs a large simple wreath on the front of a tiny toy shop; one broad window displays a teddy bear",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-5a1f7d0a-0c6e-48b1-9e51-d31816d83063.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 12,
+      "scene": "Bear and penguin sit on a rug beside a cozy stone fireplace, enclosed fire safely within hearth, two broad stockings above",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-aa709268-68de-43ee-8d50-6fb418d1e69b.png",
+      "visual": "REVISE_GRAY_FILL"
+    },
+    {
+      "id": 13,
+      "scene": "Fox carefully hangs one large Christmas stocking on a low mantel rail, two other different stockings already hanging",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-7286b643-4679-4c62-ac06-94aac8dd290f.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 14,
+      "scene": "Rabbit and deer discover three large presents beneath a decorated Christmas tree, delighted faces, spacious room",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-18a23015-6643-4133-bca7-d9443057892f.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 15,
+      "scene": "Bear stands at a simple outdoor Christmas market stall displaying three big ornaments and two wrapped gifts, snow roof",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-4bf0e220-e4f6-43ab-82e5-f138dcc4181c.png",
+      "visual": "REVISE_GRAY_FILL"
+    }
+  ],
+  "corrections": [
+    {
+      "id": 4,
+      "issue": "Cottage/trees at edge; restore full vignette"
+    },
+    {
+      "id": 9,
+      "issue": "Replace foxlike tail with short deer tail"
+    },
+    {
+      "id": 12,
+      "issue": "Remove gray penguin body fill, preserve outlines"
+    },
+    {
+      "id": 15,
+      "issue": "Remove gray penguin/hoof fills, preserve outlines"
+    }
+  ]
+}
