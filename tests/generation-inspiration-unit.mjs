@@ -134,6 +134,91 @@ test('public Inspiration pages remain stable when bulk-imported images tie on fe
  }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
 });
 
+test('public Inspiration facet options honor every active gallery filter and reuse bound search values',async()=>{
+ const sqlCalls=[];
+ const pool={async query(sql,args=[]){
+  if(sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_inspiration'))return {rows:[]};
+  sqlCalls.push({sql,args});
+  if(sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true'))return {rows:[]};
+  if(sql.startsWith('SELECT DISTINCT category'))return {rows:[{category:'Editorial'}]};
+  if(sql.startsWith('SELECT DISTINCT aspect_ratio'))return {rows:[{aspect_ratio:'2:3'}]};
+  throw Error('Unexpected SQL: '+sql);
+ }};
+ const app=express();
+ installInspiration(app,{pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true'},
+  auth:(_req,_res,next)=>next()});
+ const server=app.listen(0);await new Promise(resolve=>server.once('listening',resolve));
+ try{
+  const typed='100%_'+String.fromCharCode(92)+'sale';
+  const params=new URLSearchParams({kind:'image',category:'Editorial',ratio:'2:3',
+   target:'studio',featured:'true',q:typed});
+  const response=await fetch('http://127.0.0.1:'+server.address().port+
+   '/api/inspiration?'+params.toString());
+  assert.equal(response.status,200);
+  const body=await response.json();
+  assert.deepEqual(body.items,[]);
+  assert.deepEqual(body.categories,['Editorial']);
+  assert.deepEqual(body.ratios,['2:3']);
+  assert.equal(sqlCalls.length,3);
+  const gallery=sqlCalls.find(call=>call.sql.startsWith('SELECT * FROM'));
+  assert.ok(gallery);
+  const selectedWhere=gallery.sql.slice(gallery.sql.indexOf(' WHERE '),
+   gallery.sql.indexOf(' ORDER BY '));
+  assert.match(selectedWhere,/active=true/);
+  assert.match(selectedWhere,/rights_basis IN \('owned','licensed'\)/);
+  assert.match(selectedWhere,/length\(trim\(rights_note\)\)>=3/);
+  assert.match(selectedWhere,/kind=\$1/);
+  assert.match(selectedWhere,/category=\$2/);
+  assert.match(selectedWhere,/aspect_ratio=\$3/);
+  assert.match(selectedWhere,/featured=true/);
+  assert.match(selectedWhere,/action_target=\$4/);
+  assert.match(selectedWhere,/prompt ILIKE \$5/);
+  const expectedArgs=['image','Editorial','2:3','studio',
+   '%100'+String.fromCharCode(92)+'%'+String.fromCharCode(92)+'_'+String.fromCharCode(92,92)+'sale%'];
+  assert.deepEqual(gallery.args,expectedArgs,'search stays escaped and parameterized');
+  for(const name of ['SELECT DISTINCT category','SELECT DISTINCT aspect_ratio']){
+   const facet=sqlCalls.find(call=>call.sql.startsWith(name));
+   assert.ok(facet);
+   assert.ok(facet.sql.includes(selectedWhere),'facet must use complete selected WHERE: '+name);
+   assert.deepEqual(facet.args,gallery.args,'facet cannot drop bound filters: '+name);
+  }
+ }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
+});
+
+test('public Inspiration facets cannot bypass hidden agent target when agent is off',async()=>{
+ const calls=[];
+ const pool={async query(sql,args=[]){
+  if(sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_inspiration'))return {rows:[]};
+  calls.push({sql,args});
+  if(sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true'))return {rows:[]};
+  if(sql.startsWith('SELECT DISTINCT category'))return {rows:[{category:'Studio Only'}]};
+  if(sql.startsWith('SELECT DISTINCT aspect_ratio'))return {rows:[{aspect_ratio:'1:1'}]};
+  throw Error('Unexpected SQL');
+ }};
+ const app=express();installInspiration(app,{pool,env:{
+  NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true',
+  AI_INSPIRATION_AGENT_TARGETS_ENABLED:'false'
+ },auth:(_req,_res,next)=>next()});
+ const server=app.listen(0);await new Promise(resolve=>server.once('listening',resolve));
+ try{
+  let response=await fetch('http://127.0.0.1:'+server.address().port+'/api/inspiration?kind=image');
+  assert.equal(response.status,200);
+  assert.equal(calls.length,3);
+  for(const call of calls){
+   assert.match(call.sql,/action_target='studio'/,
+    'public gallery and both facets must hide agent-only media');
+   assert.deepEqual(call.args,['image']);
+  }
+  response=await fetch('http://127.0.0.1:'+server.address().port+'/api/inspiration?target=agent');
+  assert.equal(response.status,200);
+  const hidden=await response.json();
+  assert.deepEqual(hidden.items,[]);
+  assert.deepEqual(hidden.categories,[]);
+  assert.deepEqual(hidden.ratios,[]);
+  assert.equal(calls.length,3,'disabled agent filter must not even query protected data');
+ }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
+});
+
 test('production Inspiration never auto-creates its database table',async()=>{
  const statements=[];
  const pool={async query(sql){statements.push(sql);if(sql.includes("to_regclass('public.vv_ai_inspiration')"))return {rows:[{table_name:null}]};throw Error('UNEXPECTED_SQL');}};
