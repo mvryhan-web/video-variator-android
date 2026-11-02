@@ -17,8 +17,8 @@ test('owner Everyday Tools landing: exactly nine live destinations, sidebar and 
   const extra=document.documentElement.scrollWidth-innerWidth;
   const offenders=[...document.querySelectorAll('body *')].filter(e=>{
    const b=e.getBoundingClientRect(),s=getComputedStyle(e);
-   return b.width>0&&b.right>innerWidth+2&&s.position!=='fixed'&&s.display!=='none';
-  }).slice(0,12).map(e=>({tag:e.tagName,id:e.id,cls:typeof e.className==='string'?e.className.slice(0,80):'',right:Math.round(e.getBoundingClientRect().right),width:Math.round(e.getBoundingClientRect().width)}));
+   return e instanceof HTMLElement&&b.width>0&&b.right>innerWidth+2&&s.position!=='fixed'&&s.display!=='none';
+  }).slice(0,24).map(e=>({tag:e.tagName,id:e.id,cls:typeof e.className==='string'?e.className.slice(0,80):'',right:Math.round(e.getBoundingClientRect().right),left:Math.round(e.getBoundingClientRect().left),width:Math.round(e.getBoundingClientRect().width),overflow:getComputedStyle(e).overflow}));
   return {extra,offenders};
  });
  if(overflow.extra>1)console.log('EVERYDAY_TOOLS_MOBILE_OVERFLOW',JSON.stringify(overflow));
@@ -77,8 +77,8 @@ test('owner banner lock: original media decodes, displays without stretching, wi
   const extra=document.documentElement.scrollWidth-innerWidth;
   const offenders=[...document.querySelectorAll('body *')].filter(e=>{
    const b=e.getBoundingClientRect(),s=getComputedStyle(e);
-   return b.width>0&&b.right>innerWidth+2&&s.position!=='fixed'&&s.display!=='none';
-  }).slice(0,12).map(e=>({tag:e.tagName,id:e.id,cls:typeof e.className==='string'?e.className.slice(0,80):'',right:Math.round(e.getBoundingClientRect().right),width:Math.round(e.getBoundingClientRect().width)}));
+   return e instanceof HTMLElement&&b.width>0&&b.right>innerWidth+2&&s.position!=='fixed'&&s.display!=='none';
+  }).slice(0,24).map(e=>({tag:e.tagName,id:e.id,cls:typeof e.className==='string'?e.className.slice(0,80):'',right:Math.round(e.getBoundingClientRect().right),left:Math.round(e.getBoundingClientRect().left),width:Math.round(e.getBoundingClientRect().width),overflow:getComputedStyle(e).overflow}));
   return {extra,offenders};
  });
  if(overflow.extra>1)console.log('EVERYDAY_TOOLS_MOBILE_OVERFLOW',JSON.stringify(overflow));
