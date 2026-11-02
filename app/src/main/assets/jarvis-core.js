@@ -28,7 +28,7 @@ function getLivePill() {
         <span class="pill-dot"></span>
         <span class="pill-wave"></span>
       </span>
-      <span class="jarvis-pill-text" id="jarvisPillText">JARVIS активен</span>
+      <span class="jarvis-pill-text" id="jarvisPillText">JARVIX активен</span>
       <button type="button" class="jarvis-pill-dismiss" id="jarvisPillDismiss" aria-label="Закрыть голосовой режим" title="Отключить голосовой чат">✕</button>
     `;
     document.body.append(pill);
@@ -94,7 +94,7 @@ export function speakJarvis(text, onComplete = null) {
         // Automatically resume listening (ChatGPT Voice loop)
         resumeJarvisRecognition();
       } else {
-        updateJarvisStatus('JARVIS ожидает команду...', 'waiting');
+        updateJarvisStatus('JARVIX ожидает команду...', 'waiting');
       }
     };
 
@@ -289,8 +289,8 @@ export function handleJarvisVoiceCommand(commandText) {
   }
 
   // Greeting & General Conversation
-  if (/(?:привет|здравствуй|hello|hi|как дела|кто ты|что умеешь)/i.test(lower)) {
-    const answer = 'Здравствуйте! Я JARVIS, ваш голосовой ассистент Deepsyq. Я могу открыть студии видео, фото, аудио, запустить генерацию по вашему промпту или сравнить модели в режиме F1. Что вы хотите создать?';
+  if (/(?:привет|здравствуй|hello|hi|как дела|кто ты|что умеешь|jarvix|jarvik|жарвикс|жарвик)/i.test(lower)) {
+    const answer = 'Здравствуйте! Я JARVIX, ваш голосовой ассистент Deepsyq. Я могу открыть студии видео, фото, аудио, запустить генерацию по вашему промпту или сравнить модели в режиме F1. Что вы хотите создать?';
     speakJarvis(answer);
     return;
   }
@@ -387,7 +387,7 @@ function resumeJarvisRecognition() {
     jarvisRecognition.start();
   } catch (err) {
     console.warn('[JARVIS] Launch failed:', err);
-    updateJarvisStatus('JARVIS ожидает...', 'waiting');
+    updateJarvisStatus('JARVIX ожидает...', 'waiting');
   }
 }
 
@@ -405,8 +405,8 @@ export function activateJarvisVoice() {
   // Friendly conversational greeting
   const isRu = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru'));
   const greeting = isRu
-    ? 'Здравствуйте! Я JARVIS. Что вы хотите создать: фото, видео, музыку или открыть раздел?'
-    : 'Greetings! I am JARVIS. What would you like to create: image, video, music or navigate?';
+    ? 'Здравствуйте! Я JARVIX. Что вы хотите создать: фото, видео, музыку или открыть раздел?'
+    : 'Greetings! I am JARVIX. What would you like to create: image, video, music or navigate?';
 
   speakJarvis(greeting);
 }
