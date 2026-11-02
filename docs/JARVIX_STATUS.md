@@ -5,7 +5,7 @@ Updated 2026-11-02. These changes target the isolated DEV preview only.
 ## Working in this change
 
 - Jarvix chat and reset endpoints are available in the DEV preview. They use the deterministic local mock, keep short-lived per-process session context for the current browser tab, cap request size and rate, and make no provider or generation calls.
-- The knowledge endpoint indexes visible page titles, headings, form fields, labels, select choices, and buttons from the shipped public DEEPSYQ HTML pages. If the OpenAI adapter is explicitly enabled later, it receives this index with the prompt.
+- The knowledge endpoint indexes visible page titles, headings, form fields, labels, select choices, and buttons from the shipped public DEEPSYQ HTML pages. Jarvix's model registry and studio panel use the current shared model catalog and show whether each entry is enabled, adapter-backed, or catalog-only. If the OpenAI adapter is explicitly enabled later, it receives this index with the prompt.
 - Site language selection routes speech to RU, EN, ES, or FR browser voices. The browser chooses a voice per language and operating system, so the timbre can vary.
 - Billing, AI generation, login, and payments remain disabled in the preview.
 - Fake tone WAVs and the misleading sample generator were removed. The TTS and STT server routes now report `VOICE_MODEL_NOT_INSTALLED` instead of returning tones or empty transcripts.

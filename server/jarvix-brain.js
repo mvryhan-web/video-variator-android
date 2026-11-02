@@ -13,6 +13,7 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { MODELS, MODEL_CATALOG } from '../app/src/main/assets/generate-models.js';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_ASSETS_DIR = path.join(REPO_ROOT, 'app', 'src', 'main', 'assets');
@@ -109,36 +110,20 @@ export const DEEPSYQ_CAPABILITIES = Object.freeze({
   studios: {
     image: {
       name: 'Image Studio',
-      models: [
-        'gemini-3.1-flash-image',
-        'gemini-nano-banana-2.1',
-        'gemini-3-pro-image',
-        'byteplus-seedream-4-5',
-        'byteplus-seedream-3',
-        'gpt-image-2.5-sunburst',
-        'gpt-image-2'
-      ],
-      defaultModel: 'gemini-3.1-flash-image',
-      ratios: ['1:1', '16:9', '9:16', '4:5', '3:2'],
-      rateCredits: 5
+      models: MODEL_CATALOG.filter(model => model.kind === 'image').map(({ id, label, provider, adapter }) => ({ id, label, provider, adapter })),
+      defaultModel: MODELS.image.id,
+      ratios: [...MODELS.image.ratios]
     },
     video: {
       name: 'Video Studio',
-      models: [
-        'veo-3.1-lite-generate-preview',
-        'veo-3.1-fast-generate-preview',
-        'byteplus-seedance-2',
-        'byteplus-seedance-1-pro'
-      ],
-      defaultModel: 'veo-3.1-lite-generate-preview',
-      ratios: ['16:9', '9:16', '1:1'],
-      rateCredits: 20
+      models: MODEL_CATALOG.filter(model => model.kind === 'video').map(({ id, label, provider, adapter }) => ({ id, label, provider, adapter })),
+      defaultModel: MODELS.video.id,
+      ratios: [...MODELS.video.ratios]
     },
     audio: {
       name: 'Audio Studio',
-      models: ['lyria-3-clip-preview'],
-      defaultModel: 'lyria-3-clip-preview',
-      rateCredits: 10
+      models: MODEL_CATALOG.filter(model => ['music', 'voice'].includes(model.kind)).map(({ id, label, provider, adapter }) => ({ id, label, provider, adapter })),
+      defaultModel: MODELS.music.id
     }
   },
   workspaces: {
@@ -147,8 +132,6 @@ export const DEEPSYQ_CAPABILITIES = Object.freeze({
     uniquifier: 'Client-side ffmpeg video processor for Instagram Reels, TikTok, YouTube Shorts.'
   },
   everydayTools: {
-    cost: '100% Free',
-    privacy: '100% Local / In-Browser',
     items: [
       'Background Remover',
       'Video Compressor',
@@ -159,12 +142,7 @@ export const DEEPSYQ_CAPABILITIES = Object.freeze({
       'Avatar Studio'
     ]
   },
-  pricing: {
-    basic: { priceEur: 9, credits: 500 },
-    pro: { priceEur: 24, credits: 1500 },
-    business: { priceEur: 99, credits: 6000 },
-    lifetime: { priceEur: 2999, unlimited: true, oneTime: true }
-  }
+  modelStatusNote: 'Catalog entries do not guarantee that a model is enabled in the current environment.'
 });
 
 // 2. CONVERSATIONAL SESSION MANAGER WITH MULTI-TURN MEMORY
@@ -347,33 +325,16 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
 
   // 1. CAPABILITIES & REGISTRY INQUIRY ("Что ты умеешь?", "What can you do?")
   if (/(?:что\s+(?:ты\s+)?(?:умеешь|можешь)|возможности|функции|help|capabilities|what can you do|que puedes hacer|que sais-tu faire)/i.test(lower)) {
-    if (isRu) {
-      replyText = 'Я JARVIX — ваш бортовой голосовой интеллект Deepsyq. Я знаю все возможности платформы:\n' +
-        '1. Студии генерации: Video Studio (Veo, Seedance), Image Studio (Flash, Seedream), Audio Studio.\n' +
-        '2. Творческие инструменты: Canvas для набросков, AI Apps с шаблонами, Видеоуникализатор.\n' +
-        '3. Бесплатные утилиты: удаление фона, сжатие видео и фото без водяных знаков.\n' +
-        '4. Управление сайтом: навигация, освещение, оформление промптов и подсказки по тарифам.\n' +
-        'Что вас интересует подробнее?';
-    } else if (isEs) {
-      replyText = 'Soy JARVIX, su inteligencia de voz en Deepsyq. Conozco todas las herramientas:\n' +
-        '1. Estudios creativos: Video Studio, Image Studio y Audio Studio.\n' +
-        '2. Espacios de trabajo: Canvas, plantillas AI Apps y el Optimizador de vídeo.\n' +
-        '3. Herramientas gratuitas: eliminación de fondos, compresión de medios.\n' +
-        '¿En qué proyecto empezamos hoy?';
-    } else if (isFr) {
-      replyText = 'Je suis JARVIX, votre intelligence vocale sur Deepsyq. Voici les fonctionnalités vérifiées:\n' +
-        '1. Studios créatifs: Video Studio, Image Studio et Audio Studio.\n' +
-        '2. Espaces de création: Canvas, modèles AI Apps et Uniquificateur vidéo.\n' +
-        '3. Utilitaires gratuits: détourage d\'image, compression vidéo et photo.\n' +
-        'Comment puis-je vous assister?';
-    } else {
-      replyText = 'I am JARVIX — your resident voice intelligence on Deepsyq. Here is what I can do:\n' +
-        '1. Generation Studios: Video Studio, Image Studio, and Audio Studio.\n' +
-        '2. Creative Workspaces: Canvas, AI Apps templates, and Video Uniquifier.\n' +
-        '3. Everyday Utilities: Background remover, video and photo compression.\n' +
-        '4. Navigation & Smart Prompts: Instantly opening studios with tailored prompts.\n' +
-        'What would you like to explore?';
-    }
+    const imageModels = DEEPSYQ_CAPABILITIES.studios.image.models.map(model => model.label).join(', ');
+    const videoModels = DEEPSYQ_CAPABILITIES.studios.video.models.map(model => model.label).join(', ');
+    const audioModels = DEEPSYQ_CAPABILITIES.studios.audio.models.map(model => model.label).join(', ');
+    replyText = isRu
+      ? `Я JARVIX — голосовой помощник Deepsyq. Помогу с Image, Video и Audio Studio, Canvas, AI Apps и навигацией. В каталоге указаны модели изображений: ${imageModels}; видео: ${videoModels}; аудио и голос: ${audioModels}. Запись в каталоге не означает, что модель включена. Платная генерация в этом preview выключена.`
+      : isEs
+        ? `Soy JARVIX, su asistente de Deepsyq. Puedo ayudar con Image, Video y Audio Studio, Canvas, AI Apps y navegación. El catálogo incluye imagen: ${imageModels}; vídeo: ${videoModels}; audio y voz: ${audioModels}. Una entrada en el catálogo no significa que esté habilitada. La generación de pago está desactivada en esta vista previa.`
+        : isFr
+          ? `Je suis JARVIX, votre assistant Deepsyq. Je peux aider avec Image, Video et Audio Studio, Canvas, AI Apps et la navigation. Le catalogue comprend image: ${imageModels}; vidéo: ${videoModels}; audio et voix: ${audioModels}. Une entrée au catalogue ne garantit pas son activation. La génération payante est désactivée dans cet aperçu.`
+          : `I am JARVIX, your Deepsyq assistant. I can help with Image, Video and Audio Studio, Canvas, AI Apps and site navigation. The catalog lists image models: ${imageModels}; video: ${videoModels}; audio and voice: ${audioModels}. A catalog entry does not mean a model is enabled. Paid generation is disabled in this preview.`;
     return {
       reply: replyText,
       action: null,
@@ -557,8 +518,10 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
   // 7. PRICING & TARIFFS
   if (/(?:тариф|цен|стоимост|подписк|pricing|plans|lifetime)/i.test(lower)) {
     replyText = isRu
-      ? 'На Deepsyq доступны подписки Basic (9€), Pro (24€), Business (99€), а также пожизненная лицензия Lifetime за 2999€ со всеми возможностями навсегда. Открыть страницу тарифов?'
-      : 'Deepsyq offers Basic (9€), Pro (24€), Business (99€) and permanent Lifetime for 2999€. Would you like to view Pricing?';
+      ? 'Актуальные тарифы и условия указаны на странице Pricing. Проверьте её, чтобы увидеть действующие цены и ограничения.'
+      : isFr ? 'Les tarifs et conditions à jour figurent sur la page Pricing. Consultez-la pour les informations actuelles.'
+      : isEs ? 'Los precios y condiciones vigentes están en la página Pricing. Consúltela para ver la información actual.'
+      : 'Current prices and terms are listed on the Pricing page. Please check that page for the latest details.';
     return {
       reply: replyText,
       action: { type: 'open_studio', url: 'pricing.html' },
@@ -728,6 +691,11 @@ export function installJarvixBrainRoutes(app, options = {}) {
       console.error('[JARVIX-AI] Route error:', err);
       res.status(500).json({ error: 'JARVIX_BRAIN_ERROR' });
     }
+  });
+
+  // Public site map used to ground assistant answers in live page labels.
+  app.get('/api/jarvix/site-map', (_req, res) => {
+    res.json({ ok: true, pages: buildJarvixSiteKnowledge() });
   });
 
   // Capabilities Registry Query

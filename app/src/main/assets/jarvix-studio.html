@@ -414,12 +414,7 @@
         </div>
         <div style="margin-top: 16px;">
           <h4 style="font-size: 0.9rem; color: #fff; margin: 0 0 8px;">Deepsyq Verified Platform Knowledge</h4>
-          <div style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5;">
-            • Image Studio: Gemini 3.1 Flash, Seedream 4.5, Nano Banana 2.1<br>
-            • Video Studio: Veo 3.1 Lite/Fast, Seedance 2.0/1.0 Pro<br>
-            • Audio Studio: Lyria 3 Clip Preview<br>
-            • Everyday Tools: Background Remover, Video Compressor, Teleprompter, Audio Extractor, Avatar Studio (100% Free & Local)
-          </div>
+          <div id="platformKnowledge" role="status" aria-live="polite" style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5;">Loading the current model catalog and public page index…</div>
         </div>
       </section>
 
@@ -564,7 +559,55 @@
       });
     }
 
+    async function refreshPlatformKnowledge() {
+      const panel = document.getElementById('platformKnowledge');
+      try {
+        const [configResponse, mapResponse] = await Promise.all([
+          fetch('/api/studio/config'),
+          fetch('/api/jarvix/site-map')
+        ]);
+        if (!configResponse.ok || !mapResponse.ok) throw new Error('Knowledge APIs are unavailable');
+        const config = await configResponse.json();
+        const siteMap = await mapResponse.json();
+        const catalog = Array.isArray(config.catalog) ? config.catalog : [];
+        const groups = [
+          ['Image', catalog.filter(model => model.kind === 'image')],
+          ['Video', catalog.filter(model => model.kind === 'video')],
+          ['Audio & voice', catalog.filter(model => ['music','voice'].includes(model.kind))]
+        ];
+        panel.replaceChildren();
+        const note = document.createElement('p');
+        const enabledCount = catalog.filter(model => model.enabled === true).length;
+        note.textContent = enabledCount ? `Current catalog · ${enabledCount} enabled model(s).` : 'DEV preview · generation is disabled. Catalog entries are listed for reference only.';
+        panel.appendChild(note);
+        for (const [label, models] of groups) {
+          const section = document.createElement('section');
+          const heading = document.createElement('strong');
+          heading.textContent = `${label} (${models.length})`;
+          section.appendChild(heading);
+          const list = document.createElement('ul');
+          list.style.margin = '4px 0 10px';
+          for (const model of models) {
+            const item = document.createElement('li');
+            const availability = model.enabled ? 'enabled' : model.adapter ? 'adapter listed; disabled here' : 'catalog only; API unverified';
+            item.textContent = `${model.label} — ${availability}`;
+            list.appendChild(item);
+          }
+          section.appendChild(list);
+          panel.appendChild(section);
+        }
+        const pageCount = Array.isArray(siteMap.pages) ? siteMap.pages.length : 0;
+        const controlCount = (siteMap.pages || []).reduce((sum, page) => sum + (page.controls?.length || 0), 0);
+        const siteIndex = document.createElement('p');
+        siteIndex.textContent = `Site knowledge index: ${pageCount} public pages and ${controlCount} visible form controls.`;
+        panel.appendChild(siteIndex);
+      } catch (_) {
+        panel.textContent = 'The live catalog is unavailable. Check Image, Video and Audio Studio for current model and availability details.';
+      }
+    }
+
     renderSamples();
+    refreshPlatformKnowledge();
 
     // Terminal & Brain logic
     const terminalLogs = document.getElementById('terminalLogs');
