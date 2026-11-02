@@ -202,7 +202,7 @@
       <div class="pet-hero-badge">🐾 Block 8 Prototype • Волшебный нюх</div>
       <h1>Виртуальный компаньон Deepsyq</h1>
       <p>
-        Необязательный, добрый и тактичный помощник (собака Рекс или кошка Луна).
+        Необязательный компаньон: Луна (собака), Мира (кошка) или Нова (лиса).
         Он не надоедает всплывающими окнами, а действительно помогает спасать черновики,
         проверять форматы Reels/TikTok и вовремя доставлять готовые результаты.
       </p>
@@ -280,6 +280,16 @@
       </div>
     </div>
 
+    <section class="sandbox-panel" aria-label="Magic Shield: сценарии 1 и 2">
+      <h2>Волшебный щит — безопасная демонстрация</h2>
+      <p class="sandbox-panel-desc">Проверяем два важнейших сценария без AI-провайдера, настоящей сметы, платежей и создания задач. Остальные 14 сценариев доступны для настройки, но требуют реальных проверенных возможностей.</p>
+      <div class="sim-actions">
+        <button class="ds-pet-btn ds-pet-btn-primary" id="btnTestQuantity">S01 · Проверить 2 изображения</button>
+        <button class="ds-pet-btn ds-pet-btn-secondary" id="btnTestDuplicate">S02 · Проверить двойное Create</button>
+      </div>
+      <p id="livingDemoResult" class="sandbox-panel-desc" role="status" aria-live="polite">Нажмите кнопку для тестового события.</p>
+    </section>
+
     <!-- Navigation links to the rest of Deepsyq -->
     <div class="nav-bar-links">
       <a href="generate-studio.html" class="nav-link-btn">← Перейти в AI Studio</a>
@@ -289,6 +299,7 @@
     </div>
   </div>
 
+  <script src="virtual-pet-living.js"></script>
   <script src="virtual-pet.js"></script>
   <script defer src="deepsyq-site-shell.js"></script>
   <script>
@@ -325,6 +336,28 @@
           status: 'ready',
           prompt: 'Неоновый киберпанк спорткар в движении'
         });
+      });
+
+      // Isolated, explicitly user-triggered fixtures. Not a paid quote or real job.
+      const result = document.getElementById('livingDemoResult');
+      document.getElementById('btnTestQuantity').addEventListener('click', () => {
+        const decision = pet.offerLivingHint('S01',{
+          source:'mock-preview',verified:true,userRequested:true,
+          signature:'quantity-2-preview',quantity:2,quoteVerified:true
+        },'Демо: выбраны 2 изображения. Настоящая стоимость неизвестна. Хотите изменить количество и запросить новую смету?',[
+          {label:'Проверить количество',onClick:()=>{result.textContent='Демо: пользователь выбрал проверку. Платная задача не отправлена.';}},
+          {label:'Оставить 2',onClick:()=>{result.textContent='Демо: количество сохранено. Платная задача не отправлена.';}}
+        ],'alert');
+        result.textContent=decision.show?'S01: проверенное демо-событие, без расходов.':'S01: '+decision.reason;
+      });
+      document.getElementById('btnTestDuplicate').addEventListener('click', () => {
+        const decision=pet.offerLivingHint('S02',{
+          source:'mock-preview',verified:true,userRequested:true,
+          signature:'queued-job-preview',jobId:'mock-queued-1',queued:true
+        },'Демо: задача уже отправлена в тестовую очередь. Второй запрос не создан.',[
+          {label:'Посмотреть статус',onClick:()=>{result.textContent='Демо: mock-queued-1 — в очереди, 0 платных вызовов.';}}
+        ],'alert');
+        result.textContent=decision.show?'S02: одно демо-задание, повторное создание не выполнено.':'S02: '+decision.reason;
       });
 
       // Sandbox controls
