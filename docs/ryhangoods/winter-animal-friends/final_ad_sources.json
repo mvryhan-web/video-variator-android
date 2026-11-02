@@ -1,0 +1,67 @@
+{
+  "generated": [
+    {
+      "id": 1,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-62afdcc6-753d-4d97-9e5c-0c68e73497b5.png"
+    },
+    {
+      "id": 3,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-a8c0bfc6-01cd-41bc-bfd7-2960171cb694.png"
+    },
+    {
+      "id": 4,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-37481c09-4dcb-4f31-8abe-beb92c5bf787.png"
+    },
+    {
+      "id": 5,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-3b426438-b828-42e6-b9f7-154b829d4412.png"
+    },
+    {
+      "id": 6,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-dfd95a75-c090-41d0-85b2-70e6757c4436.png"
+    },
+    {
+      "id": 7,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-954b6d74-6c3b-46d1-b333-b5becea391f9.png"
+    },
+    {
+      "id": 8,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-2d3e406c-8509-427c-a59f-665c63e541f0.png"
+    },
+    {
+      "id": 9,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-b394a681-f61b-4f21-842c-624a54fa3421.png"
+    },
+    {
+      "id": 10,
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-d11ef281-cbce-45a0-b962-c0319bd246b1.png"
+    }
+  ],
+  "catalogue": {
+    "id": 2,
+    "type": "native exact-page montage",
+    "canvas": [
+      3600,
+      3600
+    ],
+    "background": "#183F36",
+    "fonts": [
+      "URWBookman-Demi",
+      "NimbusSans-Regular"
+    ],
+    "groups": [
+      {
+        "start": 1,
+        "end": 20,
+        "label": "01-20 CHRISTMAS"
+      },
+      {
+        "start": 21,
+        "end": 40,
+        "label": "21-40 WINTER"
+      }
+    ],
+    "layout": "Virtual 1200-square scaled3x. Brand y75; headline Every page. Both seasons. y170,size48; subtitle40unique scenes-shown from actualfiles y240,size24. Two groups x0=67+group*560; titley318; fivecolumns108spacing,fourrows163spacing,y378; cardwidth94,sourceactualA4BuyerPNG; pageindexbelowy137,size13. Footer y1100:20festive scenes+20winter sceneswithoutChristmasmotifs. Gallery source generated JPEG localdecoded3600square. Need reproduce if workspace lost."
+  },
+  "mockupExport": "Generated originals1254square enlarged to2880square, centered at360,360 on3600squareforest-green canvas for crop safety. RGBJPEG95,subsampling0,300DPI metadata. No native4K claim. Pinogri watermark on preview only; no ads in buyerZIP."
+}
