@@ -22,7 +22,7 @@ test('owner banner: original local art is byte-for-byte unchanged and correctly 
 test('owner banner: exact title and subtitle only, original illustration cropped at native scale',()=>{
  assert.match(js,/const asset='media\/approved-design-20261023\/09_Everyday_Tools\.png'/);
  assert.match(js,/heroCopy\.append\(heading,lead\)/);
- assert.match(js,/make\('h1','','Everyday Tools'\)/);
+ assert.match(js,/make\('h1','',\s*'Everyday Tools'\)/);
  assert.match(js,/make\('strong','et-hero-lead','Less routine\. More creating\.'\)/);
  assert.doesNotMatch(js,/Simple, powerful tools to handle your everyday creative tasks\. All in one place\./);
  assert.match(js,/crop\(\[695,61,703,242\],'et-hero-art'\)/);
