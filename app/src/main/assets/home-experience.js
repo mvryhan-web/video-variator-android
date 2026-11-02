@@ -191,7 +191,9 @@ export function initHomeVoiceInput(chooseFn) {
 
   const SpeechRec = typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
   let recognition = null;
+  let shouldBeListening = false;
   let isListening = false;
+  let baseText = '';
 
   document.querySelectorAll('[data-close]').forEach(b => {
     b.addEventListener('click', () => {
@@ -207,52 +209,53 @@ export function initHomeVoiceInput(chooseFn) {
   }
 
   function stopListening() {
+    shouldBeListening = false;
+    isListening = false;
     if (recognition) {
-      try { recognition.stop(); } catch (_) {}
+      try {
+        recognition.onend = null;
+        recognition.onerror = null;
+        recognition.stop();
+      } catch (_) {}
       recognition = null;
     }
-    isListening = false;
     voiceBtn.classList.remove('is-listening');
     if (waves) waves.hidden = true;
     voiceBtn.title = 'Голосовой ввод (нажмите, чтобы говорить)';
   }
 
-  function startRecognition() {
-    if (!SpeechRec) {
-      const msg = 'Распознавание речи не поддерживается в этом браузере. Рекомендуем Google Chrome, Edge или Safari.';
-      if ($('homeQuickStatus')) {
-        $('homeQuickStatus').classList.add('is-visible');
-        $('homeQuickStatus').textContent = msg;
-      }
-      alert(msg);
-      return;
-    }
+  function launchInstance() {
+    if (!shouldBeListening) return;
     try {
+      if (recognition) {
+        try {
+          recognition.onend = null;
+          recognition.onerror = null;
+          recognition.stop();
+        } catch (_) {}
+      }
       recognition = new SpeechRec();
-      recognition.continuous = false;
+      recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = (typeof document !== 'undefined' && (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru'))) ? 'ru-RU' : 'en-US';
-
-      let baseText = promptEl.value.trim();
-      if (baseText.length > 0) baseText += ' ';
 
       recognition.onstart = () => {
         isListening = true;
         voiceBtn.classList.add('is-listening');
         if (waves) waves.hidden = false;
-        voiceBtn.title = 'Слушаю… Нажмите для завершения';
+        voiceBtn.title = 'Слушаю… Нажмите Enter для отправки или кликните для остановки';
         if ($('homeQuickStatus')) {
           $('homeQuickStatus').classList.add('is-visible');
-          $('homeQuickStatus').textContent = '🎙 Слушаю вас… Говорите!';
+          $('homeQuickStatus').textContent = '🎙 Микрофон включён и слушает постоянно. Говорите свободно, для завершения нажмите Enter или «Отослать».';
         }
       };
 
       recognition.onresult = (e) => {
-        let transcript = '';
-        for (let i = e.resultIndex; i < e.results.length; ++i) {
-          transcript += e.results[i][0].transcript;
+        let currentTranscript = '';
+        for (let i = 0; i < e.results.length; ++i) {
+          currentTranscript += e.results[i][0].transcript;
         }
-        const fullText = baseText + transcript;
+        const fullText = (baseText + currentTranscript).trim();
         promptEl.value = fullText;
         promptEl.dispatchEvent(new Event('input', { bubbles: true }));
 
@@ -266,27 +269,57 @@ export function initHomeVoiceInput(chooseFn) {
         console.warn('[HomeVoice] Speech error:', e?.error);
         if (e?.error === 'not-allowed') {
           localStorage.removeItem('deepsyq_mic_permitted');
+          stopListening();
           if (micDialog && typeof micDialog.showModal === 'function') {
             micDialog.showModal();
           } else {
             alert('Доступ к микрофону заблокирован. Разрешите микрофон в настройках браузера (значок замка в адресной строке).');
           }
+          return;
         }
-        stopListening();
+        // Silence timeouts or network hiccups: keep listening if shouldBeListening
       };
 
       recognition.onend = () => {
-        stopListening();
-        if ($('homeQuickStatus')) {
-          $('homeQuickStatus').textContent = 'Голосовой ввод завершён. Нажмите «Отослать» или отредактируйте текст.';
+        // If silence stopped the session but user has not pressed Enter / toggled off, keep listening!
+        if (shouldBeListening) {
+          baseText = promptEl.value.trim();
+          if (baseText.length > 0) baseText += ' ';
+          setTimeout(() => {
+            if (shouldBeListening) launchInstance();
+          }, 150);
+        } else {
+          stopListening();
         }
       };
 
       recognition.start();
     } catch (err) {
       console.warn('[HomeVoice] Failed to start:', err);
-      stopListening();
+      if (shouldBeListening) {
+        setTimeout(() => {
+          if (shouldBeListening) launchInstance();
+        }, 400);
+      } else {
+        stopListening();
+      }
     }
+  }
+
+  function startRecognition() {
+    if (!SpeechRec) {
+      const msg = 'Распознавание речи не поддерживается в этом браузере. Рекомендуем Google Chrome, Edge или Safari.';
+      if ($('homeQuickStatus')) {
+        $('homeQuickStatus').classList.add('is-visible');
+        $('homeQuickStatus').textContent = msg;
+      }
+      alert(msg);
+      return;
+    }
+    shouldBeListening = true;
+    baseText = promptEl.value.trim();
+    if (baseText.length > 0) baseText += ' ';
+    launchInstance();
   }
 
   function requestMicPermissionAndStart() {
@@ -320,14 +353,24 @@ export function initHomeVoiceInput(chooseFn) {
 
   voiceBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    if (isListening) {
+    if (shouldBeListening || isListening) {
       stopListening();
+      if ($('homeQuickStatus')) {
+        $('homeQuickStatus').textContent = 'Голосовой ввод остановлен.';
+      }
     } else {
       if (navigator.mediaDevices?.getUserMedia && localStorage.getItem('deepsyq_mic_permitted') !== 'true') {
         requestMicPermissionAndStart();
       } else {
         startRecognition();
       }
+    }
+  });
+
+  // Stop listening when user presses Enter in prompt
+  promptEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      stopListening();
     }
   });
 

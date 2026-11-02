@@ -1156,22 +1156,108 @@ function initStudioConsents(){ if($("consent")) $("consent").checked=true; }
 
 function initStudioVoiceInput() {
   const voiceBtn = $('studioVoiceBtn');
+  const waves = $('studioVoiceWaves');
+  const promptEl = $('prompt');
   const micDialog = $('micPermissionDialog');
   const grantMicBtn = $('grantMicBtn');
-  if (!voiceBtn) return;
-  let recognition = null;
-  let isListening = false;
+  if (!voiceBtn || !promptEl) return;
+
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let shouldBeListening = false;
+  let isListening = false;
+  let baseText = '';
 
   function stopListening() {
-    if (recognition) {
-      try { recognition.stop(); } catch (_) {}
-    }
+    shouldBeListening = false;
     isListening = false;
+    if (recognition) {
+      try {
+        recognition.onend = null;
+        recognition.onerror = null;
+        recognition.stop();
+      } catch (_) {}
+      recognition = null;
+    }
     voiceBtn.classList.remove('is-listening');
-    const waves = $('studioVoiceWaves');
     if (waves) waves.hidden = true;
     voiceBtn.title = say('Voice input (click to speak)', 'Голосовой ввод (нажмите, чтобы говорить)');
+  }
+
+  function launchStudioInstance() {
+    if (!shouldBeListening) return;
+    try {
+      if (recognition) {
+        try {
+          recognition.onend = null;
+          recognition.onerror = null;
+          recognition.stop();
+        } catch (_) {}
+      }
+      recognition = new SpeechRec();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru')) ? 'ru-RU' : 'en-US';
+
+      recognition.onstart = () => {
+        isListening = true;
+        voiceBtn.classList.add('is-listening');
+        if (waves) waves.hidden = false;
+        voiceBtn.title = say('Listening… Press Enter or click to stop', 'Слушаю… Нажмите Enter или кнопку для завершения');
+      };
+
+      recognition.onresult = (e) => {
+        let currentTranscript = '';
+        for (let i = 0; i < e.results.length; ++i) {
+          currentTranscript += e.results[i][0].transcript;
+        }
+        if (promptEl) {
+          promptEl.value = (baseText + currentTranscript).trim();
+          promptEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      };
+
+      recognition.onerror = (e) => {
+        console.warn('[VoiceAgent] Speech error:', e?.error);
+        if (e?.error === 'not-allowed') {
+          localStorage.removeItem('deepsyq_mic_permitted');
+          stopListening();
+          if (micDialog && typeof micDialog.showModal === 'function') {
+            micDialog.showModal();
+          } else {
+            alert(say(
+              'Microphone access denied. Please allow microphone in browser settings.',
+              'Доступ к микрофону заблокирован. Разрешите микрофон в настройках браузера.'
+            ));
+          }
+          return;
+        }
+      };
+
+      recognition.onend = () => {
+        // Keep listening even if browser pauses after silence!
+        if (shouldBeListening) {
+          baseText = promptEl.value.trim();
+          if (baseText.length > 0) baseText += ' ';
+          setTimeout(() => {
+            if (shouldBeListening) launchStudioInstance();
+          }, 150);
+        } else {
+          stopListening();
+        }
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.warn('[VoiceAgent] Failed to start:', err);
+      if (shouldBeListening) {
+        setTimeout(() => {
+          if (shouldBeListening) launchStudioInstance();
+        }, 400);
+      } else {
+        stopListening();
+      }
+    }
   }
 
   function startRecognition() {
@@ -1182,56 +1268,10 @@ function initStudioVoiceInput() {
       ));
       return;
     }
-    try {
-      recognition = new SpeechRec();
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.lang = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru')) ? 'ru-RU' : 'en-US';
-
-      let baseText = $('prompt') ? $('prompt').value.trim() : '';
-      if (baseText.length > 0) baseText += ' ';
-
-      recognition.onstart = () => {
-        isListening = true;
-        voiceBtn.classList.add('is-listening');
-        const waves = $('studioVoiceWaves');
-        if (waves) waves.hidden = false;
-        voiceBtn.title = say('Listening… Click to stop', 'Слушаю… Нажмите для завершения');
-      };
-
-      recognition.onresult = (e) => {
-        let transcript = '';
-        for (let i = e.resultIndex; i < e.results.length; ++i) {
-          transcript += e.results[i][0].transcript;
-        }
-        if ($('prompt')) {
-          $('prompt').value = baseText + transcript;
-          $('prompt').dispatchEvent(new Event('input', { bubbles: true }));
-        }
-      };
-
-      recognition.onerror = (e) => {
-        console.warn('[VoiceAgent] Speech error:', e?.error);
-        if (e?.error === 'not-allowed') {
-          localStorage.removeItem('deepsyq_mic_permitted');
-          if (micDialog && typeof micDialog.showModal === 'function') {
-            micDialog.showModal();
-          } else {
-            alert(say(
-              'Microphone access denied. Please allow microphone in browser settings.',
-              'Доступ к микрофону заблокирован. Разрешите микрофон в настройках браузера.'
-            ));
-          }
-        }
-        stopListening();
-      };
-
-      recognition.onend = () => stopListening();
-      recognition.start();
-    } catch (err) {
-      console.warn('[VoiceAgent] Failed to start:', err);
-      stopListening();
-    }
+    shouldBeListening = true;
+    baseText = promptEl.value.trim();
+    if (baseText.length > 0) baseText += ' ';
+    launchStudioInstance();
   }
 
   function requestMicPermissionAndStart() {
@@ -1268,7 +1308,7 @@ function initStudioVoiceInput() {
 
   voiceBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    if (isListening) {
+    if (shouldBeListening || isListening) {
       stopListening();
     } else {
       if (navigator.mediaDevices?.getUserMedia && localStorage.getItem('deepsyq_mic_permitted') !== 'true') {
@@ -1279,13 +1319,22 @@ function initStudioVoiceInput() {
     }
   });
 
+  // Stop listening when user presses Enter or clicks Generate
+  promptEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      stopListening();
+    }
+  });
+
+  $('generate')?.addEventListener('click', () => {
+    stopListening();
+  });
+
   window.addEventListener('pagehide', stopListening);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') stopListening();
   });
 }
-
-
 function applyAgentWorkflow(){
  const raw=sessionStorage.getItem('deepsyq_agent_workflow');
  const banner=$('agentWorkflowBanner');
