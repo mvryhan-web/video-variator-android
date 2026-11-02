@@ -2,6 +2,11 @@
  * Never use proposed marketing credits or bonus amounts in any checkout payload. */
 import {validPlanPrice,validToolLimit,validLifetimeCurrency,validAiPack,aiCheckoutMode,checkoutErrorMessage} from './ai-pricing-display.js';
 const cdn='media/pricing/';
+// Exact previously approved 2026-10-25 images; see docs/PRICING_OWNER_ART_LOCK.json.
+// Never use placeholder, AI-generated substitute or alternate asset filenames.
+const originalOwnerCdn='https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/';
+const approvedArtVersion='owner-20261025-12';
+const approvedPath=key=>cdn+art[key]+'?v='+approvedArtVersion;
 const art={
  trial:'d72f2da8-9e73-4110-abc5-c743032631fd.png',
  basic:'56338ba4-aba2-4b0d-bbb7-a2f537294937.png',
@@ -16,14 +21,32 @@ const art={
  hero:'fa2c9a57-3fe7-4a2c-8123-7da568cabe10.png',
  creditHero:'e5506ef4-b0a2-412d-a8b7-6e3108f80761.png'
 };
+Object.freeze(art);
 const root=document.documentElement;
-root.style.setProperty('--price-hero-art','url("'+cdn+art.hero+'")');
-root.style.setProperty('--price-credit-hero-art','url("'+cdn+art.creditHero+'")');
+// Local copies avoid the old remote-CDN image loss. If a specific local file
+// fails, only the ORIGINAL owner-approved CDN file with the SAME identifier
+// may be tried. No replacement images and no silent art swaps.
+for (const [key, cssVar] of [['hero','--price-hero-art'],['creditHero','--price-credit-hero-art']]) {
+ const local=approvedPath(key);
+ root.style.setProperty(cssVar,'url("'+local+'")');
+ const probe=new Image();
+ probe.onerror=()=>root.style.setProperty(cssVar,'url("'+originalOwnerCdn+art[key]+'")');
+ probe.src=local;
+}
 const byId=id=>document.getElementById(id);
 const numeral=new Intl.NumberFormat('en-US');
 const money=(value,currency='USD')=>new Intl.NumberFormat('en-US',{style:'currency',currency,maximumFractionDigits:Number.isInteger(value)?0:2}).format(value);
 const node=(tag,cls,copy)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(copy!==undefined)el.textContent=copy;return el;};
-const img=key=>{const i=node('img','price-art');i.src=cdn+art[key];i.alt='';i.loading='lazy';i.decoding='async';i.onerror=()=>{ i.src='media/pricing/'+art[key]; };return i;};
+const img=key=>{const i=node('img','price-art');
+ i.src=approvedPath(key);i.alt='';i.loading='lazy';i.decoding='async';
+ let fallbackTried=false;
+ i.onerror=()=>{
+  if(fallbackTried){i.onerror=null;return;}
+  fallbackTried=true;
+  i.src=originalOwnerCdn+art[key]; // same ORIGINAL image, never a substitute
+ };
+ return i;
+};
 const message=(id,copy)=>{byId(id).textContent=copy;};
 const token=()=>{try{return localStorage.getItem('vv_token')||'';}catch{return '';}};
 const isValidCheckoutURL=u=>{try{const x=new URL(u);return x.protocol==='https:'&&!x.port&&!x.username&&!x.password&&['checkout.stripe.com','buy.stripe.com'].includes(x.hostname);}catch{return false;}};
