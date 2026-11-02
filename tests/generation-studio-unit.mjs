@@ -305,3 +305,85 @@ test('single paid generation requires the exact server quote before DB, reserve 
   assert.equal(dbCalls,0);assert.equal(reserves,0);assert.equal(calls,0);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
+
+
+test('BASE8 signed-in read-only alternative selection respects approved equivalent price and never calls providers',async()=>{
+ const {default:express}=await import('express');
+ const baseEnv={AI_STUDIO_ENABLED:'true',DATABASE_URL:'offline-fixture',ADMIN_EMAIL:'owner@example.test',
+  AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',AI_SMART_ROUTING_ENABLED:'true',
+  AI_STUDIO_ALLOWED_MODELS:'gpt-image-2.5-flare',GEMINI_API_KEY:'offline-google-key',OPENAI_API_KEY:'offline-openai-key'};
+ const prices=(alternativeCredits=7)=>JSON.stringify([
+  {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:7,providerCostMicros:4000,currency:'usd'},
+  {model:'gpt-image-2.5-flare',provider:'OpenAI',kind:'image',credits:alternativeCredits,providerCostMicros:3000,currency:'usd'}]);
+ let providerCalls=0,dbCalls=0;
+ const start=async env=>{
+  const app=express();app.use(express.json());
+  const auth=(req,res,next)=>{if(req.headers.authorization!=='Bearer offline-owner')return res.sendStatus(401);
+   req.user={id:'owner',email:'owner@example.test',provider:'google'};next();};
+  installGenerationStudio(app,{env,pool:{query:async()=>{dbCalls++;throw Error('NO_DB_REQUIRED');}},auth,
+   provider:async()=>{providerCalls++;throw Error('NO_PROVIDER_REQUIRED');}});
+  const server=app.listen(0,'127.0.0.1');await new Promise(ok=>server.once('listening',ok));
+  return {url:'http://127.0.0.1:'+server.address().port,close:()=>new Promise(ok=>server.close(ok))};
+ };
+ const input={kind:'image',model:'gemini-3.1-flash-image',ratio:'1:1',resolution:'1K',outputFormat:'auto',referenceCount:0};
+ for(const [credits,expected] of [[7,1],[8,0]]){
+  const s=await start({...baseEnv,AI_MODEL_PRICING_JSON:prices(credits)});
+  try{
+   const denied=await fetch(s.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
+   assert.equal(denied.status,401);
+   const res=await fetch(s.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer offline-owner'},body:JSON.stringify(input)});
+   assert.equal(res.status,200);const data=await res.json();
+   assert.equal(data.model,input.model);assert.equal(data.alternatives.length,expected);
+   if(expected)assert.deepEqual(data.alternatives[0],{model:'gpt-image-2.5-flare',credits:7,currency:'usd'});
+   assert.ok(!JSON.stringify(data).includes('providerCostMicros'));
+   const validPrimaryOnly=await fetch(s.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer offline-owner'},body:JSON.stringify({...input,resolution:'4K'})});
+   assert.equal(validPrimaryOnly.status,200);
+   assert.deepEqual((await validPrimaryOnly.json()).alternatives,[],'4K is valid on primary but incompatible with the 1K backup');
+   const invalid=await fetch(s.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer offline-owner'},body:JSON.stringify({...input,resolution:'8K'})});
+   assert.equal(invalid.status,400);
+  }finally{await s.close();}
+ }
+ const disabled=await start({...baseEnv,AI_SMART_ROUTING_ENABLED:'false',AI_MODEL_PRICING_JSON:prices()});
+ try{
+  const res=await fetch(disabled.url+'/api/studio/alternatives',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer offline-owner'},body:JSON.stringify(input)});
+  assert.equal(res.status,503);
+ }finally{await disabled.close();}
+ assert.equal(dbCalls,0);assert.equal(providerCalls,0);
+});
+
+// Guard BASE §8 against advertising a text-only Image adapter for existing photos.
+// Actual authenticated HTTP, approved price parity, zero real AI/DB/wallet calls.
+test('BASE8 image referenceCount is kept for strict fallback compatibility (2 photos)',async()=>{
+ const env={AI_STUDIO_ENABLED:'true',DATABASE_URL:'offline-fixture',ADMIN_EMAIL:'owner@example.test',
+  AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',AI_SMART_ROUTING_ENABLED:'true',
+  AI_STUDIO_ALLOWED_MODELS:'byteplus-seedream-3',
+  GEMINI_API_KEY:'offline-google-key',BYTEPLUS_API_KEY:'offline-byteplus-key',
+  AI_MODEL_PRICING_JSON:JSON.stringify([
+   {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',quality:'2K',credits:7,providerCostMicros:4000,currency:'usd'},
+   {model:'byteplus-seedream-3',provider:'BytePlus',kind:'image',credits:7,providerCostMicros:3000,currency:'usd'}
+  ])};
+ let dbCalls=0,providerCalls=0;
+ const app=express();app.use(express.json());
+ installGenerationStudio(app,{env,pool:{query:async()=>{dbCalls++;throw Error('UNEXPECTED_DB');}},
+  auth:(req,res,next)=>{if(req.headers.authorization!=='Bearer offline-owner')return res.sendStatus(401);
+   req.user={id:'owner',email:'owner@example.test',provider:'google'};next();},
+  provider:async()=>{providerCalls++;throw Error('UNEXPECTED_PAID_PROVIDER');}});
+ const server=app.listen(0,'127.0.0.1');await new Promise(ok=>server.once('listening',ok));
+ try{
+  const url='http://127.0.0.1:'+server.address().port+'/api/studio/alternatives';
+  const input={kind:'image',model:'gemini-3.1-flash-image',ratio:'1:1',resolution:'2K',outputFormat:'auto'};
+  const headers={'Content-Type':'application/json',Authorization:'Bearer offline-owner'};
+  const lookup=async count=>{
+   const response=await fetch(url,{method:'POST',headers,body:JSON.stringify({...input,referenceCount:count})});
+   assert.equal(response.status,200);return response.json();
+  };
+  const zero=await lookup(0);
+  assert.deepEqual(zero.alternatives,[{model:'byteplus-seedream-3',credits:7,currency:'usd'}],
+   'approved cross-provider equal-price text-only model remains eligible for text input');
+  const two=await lookup(2);
+  assert.deepEqual(two.alternatives,[],
+   'text-only BytePlus fallback MUST NOT be advertised for two image references');
+  assert.equal(two.reason,'NO_APPROVED_EQUIVALENT');
+  assert.equal(dbCalls,0);assert.equal(providerCalls,0);
+ }finally{server.closeAllConnections();await new Promise(ok=>server.close(ok));}
+});

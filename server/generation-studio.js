@@ -59,7 +59,7 @@ export function studioConfig(env=process.env){
  const catalog=MODEL_CATALOG.map(m=>({...m,priority:m.id===MODELS[m.kind]?.id?50:100,enabled:enabled&&m.adapter&&generationFeatureEnabled(m.kind,m.provider,env)&&(m.provider!=='BytePlus'||m.kind!=='video'||bytePlusDownloadsConfigured(env.BYTEPLUS_MEDIA_HOSTS))&&!!providerKey(m)&&bytePlusPublicDurableStorageReady(m,env)&&allowed.includes(m.kind)&&(m.id===MODELS[m.kind]?.id||explicit.includes(m.id))}));
  const pricingConfigured=pricingCatalog(env).configured,entitlements=generationEntitlements(env),publicReady=env.AI_PUBLIC_GENERATION_ENABLED==='true'&&env.AI_STUDIO_WALLET_ENABLED==='true'&&pricingConfigured&&entitlements.configured;
  const imageBatchEnabled=env.AI_STUDIO_IMAGE_BATCH_ENABLED==='true'&&env.AI_STUDIO_WALLET_ENABLED==='true'&&pricingConfigured;
- return {pilot:!publicReady,ownerOnly:!publicReady,publicGenerationEnabled:publicReady,entitlementsConfigured:entitlements.configured,enabled,pricingConfigured,imageBatchEnabled,featureSwitches:generationFeatureSwitches(env),publicPolicy:generationPolicy(env),reason:enabled?null:'OWNER_SETUP_REQUIRED',models:Object.entries(MODELS).map(([kind,m])=>({kind,...m,enabled:catalog.find(c=>c.id===m.id)?.enabled||false})),catalog,translation:{enabled:false,reason:'PROVIDER_NOT_CONNECTED'}};
+ return {pilot:!publicReady,ownerOnly:!publicReady,publicGenerationEnabled:publicReady,entitlementsConfigured:entitlements.configured,enabled,pricingConfigured,imageBatchEnabled,fallbackChoicesEnabled:enabled&&pricingConfigured&&env.AI_SMART_ROUTING_ENABLED==='true',featureSwitches:generationFeatureSwitches(env),publicPolicy:generationPolicy(env),reason:enabled?null:'OWNER_SETUP_REQUIRED',models:Object.entries(MODELS).map(([kind,m])=>({kind,...m,enabled:catalog.find(c=>c.id===m.id)?.enabled||false})),catalog,translation:{enabled:false,reason:'PROVIDER_NOT_CONNECTED'}};
 }
 export function installGenerationStudio(app,{auth,pool,env=process.env,provider=dispatchGeneration,poller=dispatchPoll,wallet=null,storage=null}){
  let ready;
@@ -118,7 +118,7 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(kind!=='video'&&(body?.videoResolution!=null||body?.videoDuration!=null))throw Error('UNSUPPORTED_VIDEO_SETTINGS');
   if(count>Number(selected.references||0))throw Error('INVALID_REFERENCES');
   if(kind==='music'&&!['song','instrumental'].includes(musicMode))throw Error('INVALID_MUSIC_MODE');
-  return {request:{kind,model:selected.id,ratio,musicMode,...(kind==='image'?{resolution,outputFormat}:{}),...(kind==='video'?{videoResolution,videoDuration,videoInputMode,referenceCount:count}:{})},selected,routing};
+  return {request:{kind,model:selected.id,ratio,musicMode,referenceCount:count,...(kind==='image'?{resolution,outputFormat}:{}),...(kind==='video'?{videoResolution,videoDuration,videoInputMode}:{})},selected,routing};
  }
  async function resolveRequest(body){
   const catalog=await effectiveCatalog();
@@ -156,6 +156,35 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
    res.status(status).json({error:status===503?'MODEL_ADMIN_UNAVAILABLE':e.message});
   }
  });
+
+ // BASE §8: explicit, read-only, pre-dispatch equivalent provider choice.
+ // Never look at an existing job, reserve funds or call a provider here.
+ app.post('/api/studio/alternatives',auth,generationUser,async(req,res)=>{
+  res.set('Cache-Control','private, no-store');
+  if(env.AI_SMART_ROUTING_ENABLED!=='true'||!studioConfig(env).pricingConfigured)return res.status(503).json({error:'FALLBACK_NOT_AVAILABLE'});
+  try{
+   const {request,selected}=await resolveEstimateRequest(req.body);
+   if(!['image','video'].includes(request.kind))return res.status(400).json({error:'INVALID_REQUEST'});
+   const catalog=await effectiveCatalog();
+   const options=orderedGenerationCandidates(request,catalog);
+   const plan=planPreDispatchFallback({
+    request,primary:selected,candidates:[selected,...options],
+    smart:true,providerStarted:false,
+    quoteFor:(model,actual)=>estimateGenerationPricing({...actual,model:model.id},model,env)
+   });
+   const alternatives=plan.eligible.map(choice=>{
+    const model=options.find(item=>item.id===choice.id);
+    if(!model)return null;
+    const quote=estimateGenerationPricing({...request,model:model.id},model,env);
+    return quote&&{model:model.id,credits:quote.credits,currency:quote.currency};
+   }).filter(Boolean);
+   res.json({model:selected.id,alternatives,reason:alternatives.length?'AVAILABLE':'NO_APPROVED_EQUIVALENT'});
+  }catch(error){
+   const bad=['INVALID_REQUEST','MODEL_NOT_FOUND','MODEL_NOT_ENABLED','MODEL_MAINTENANCE','UNSUPPORTED_FORMAT','UNSUPPORTED_RESOLUTION','UNSUPPORTED_IMAGE_FORMAT','UNSUPPORTED_VIDEO_RESOLUTION','UNSUPPORTED_VIDEO_DURATION','UNSUPPORTED_VIDEO_INPUT_MODE','INVALID_VIDEO_REFERENCES','INVALID_REFERENCES','INVALID_MUSIC_MODE','UNSUPPORTED_VIDEO_SETTINGS','UNSUPPORTED_IMAGE_CONTROL'];
+   res.status(bad.includes(error.message)?400:503).json({error:bad.includes(error.message)?error.message:'FALLBACK_NOT_AVAILABLE'});
+  }
+ });
+
  app.post('/api/studio/admin/route-preview',auth,owner,async(req,res)=>{if(env.AI_SMART_ROUTING_ENABLED!=='true')return res.status(503).json({error:'SMART_ROUTING_NOT_ENABLED'});try{const catalog=await effectiveCatalog();const candidates=orderedGenerationCandidates(req.body,catalog);if(!candidates.length)return res.status(503).json({error:'NO_COMPATIBLE_MODEL'});
   const first=candidates[0],refs=Array.isArray(req.body?.references)?req.body.references.length:req.body?.referenceCount??0;
   const fallback=planPreDispatchFallback({
