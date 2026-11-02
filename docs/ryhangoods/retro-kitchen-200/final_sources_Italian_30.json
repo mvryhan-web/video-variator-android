@@ -1,0 +1,156 @@
+[
+  {
+    "id": "IT001",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-cc737f83-3843-4ca5-ab58-fdbf0bce27dd.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT002",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-861e7335-cec2-4ae7-8fa1-e1f1fbcd3cd0.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT003",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-e8a30170-333c-440c-8bdf-318464271877.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT004",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-d9b5b4cf-ac3c-42ed-acb6-bfb4ad386361.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT005",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-3974424d-3eeb-4fec-bc29-a966fed8e785.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT006",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-d93001f9-39a7-4418-b31f-d3d09b29aff7.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT007",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-df690e23-d242-4d5a-a404-162cf0830040.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING",
+    "rejectedSource": "/workspace/scratch/64629abb14fb/generated_images/exec-e2c2e87b-5d1f-40e6-bd4e-7fc52a4dc1e2.png",
+    "correction": "Topheading safe margins increased"
+  },
+  {
+    "id": "IT008",
+    "source": "/workspace/scratch/64629abb14fb/output/retro-kitchen-200/Sources/IT-008.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT009",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-9b5119c3-b61c-49bd-aa89-3ab2205ce1bc.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT010",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-3311dfd4-6c68-44cd-82c9-bd42ad9fb3cb.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT011",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-8dbb64da-5110-43d7-96dc-1588f8e6fd83.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT012",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-512dcea7-0e8c-4795-b979-cd925afa0faa.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT013",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-53189623-527c-473f-9f6d-d2c2770b4112.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT014",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-dc7a6592-d496-4d2b-8d18-5443dd35613a.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT015",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-6956809c-bca7-4a09-bf5e-d94cd9db7005.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT016",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-73809550-8f32-482e-b0c1-35a9dba3d049.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT017",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-a472efa3-9c3e-4ab0-bc03-30b4b5e5a1ff.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT018",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-b9008013-2e3b-4623-9d20-342c26b1e309.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT019",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-adfe95fd-1e64-44d8-a49b-fd5184d03d63.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT020",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-7c724d92-6bc4-49d6-9d61-1ee887389f85.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT021",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-4fdfb8a1-1628-4245-8a02-e074b3789fc0.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT022",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-4dfaeba2-309f-4c24-a99c-73a39763c8c3.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT023",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-e327da21-83db-44e5-b089-15e1d89aa3fb.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT024",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-86284af9-cffe-446d-b8ae-f5ea2d885a05.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT025",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-3107b2fb-d1b0-402d-8121-5fc474c46718.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT026",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-4ee41e41-ec3d-4452-9ee9-4276090f33d7.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT027",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-578e00f1-1cc1-466c-96f5-6514f874ea1f.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING",
+    "rejectedSource": "/workspace/scratch/64629abb14fb/generated_images/exec-6368c945-9058-4a69-a35a-e161e30fe271.png",
+    "correction": "Missing Italian apostrophe corrected"
+  },
+  {
+    "id": "IT028",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-65208fc6-0cad-4432-a11e-106bcc789903.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT029",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-bd444a75-bd40-425b-9212-57d8d92745ce.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT030",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-bbfe61c9-0c33-450c-93e1-343b6d62af92.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  }
+]
