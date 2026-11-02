@@ -154,3 +154,21 @@ body.image-studio .composer{position:sticky;bottom:12px;margin-top:auto;z-index:
 .voice-wave-bar:nth-child(3){animation-delay:0.4s;height:8px}
 @keyframes dsWaveBar{0%{transform:scaleY(0.4)}100%{transform:scaleY(1.3)}}
 @keyframes dsVoicePulse{0%,100%{box-shadow:0 0 8px rgba(239,68,68,0.4)}50%{box-shadow:0 0 20px rgba(239,68,68,0.7)}}
+
+/* Modern ChatGPT / Gemini style pure circular voice button */
+.prompt-voice-dock{position:absolute;bottom:8px;right:8px;z-index:5}
+.studio-voice-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;min-width:34px;height:34px;min-height:34px;padding:0;border-radius:50%;background:rgba(30,41,59,0.92);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.22);color:#f1f5f9;cursor:pointer;transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 2px 8px rgba(0,0,0,0.35)}
+.studio-voice-btn:hover{background:rgba(56,189,248,0.25);border-color:#38bdf8;color:#38bdf8;transform:scale(1.08)}
+.voice-mic-icon{width:16px;height:16px;display:block;flex-shrink:0}
+.studio-voice-btn.is-listening{width:auto;min-width:54px;padding:0 10px;border-radius:999px;background:rgba(239,68,68,0.3);border-color:#ef4444;color:#fca5a5;box-shadow:0 0 16px rgba(239,68,68,0.5);animation:dsVoicePulse 1.4s infinite}
+.voice-active-indicator{display:inline-flex;align-items:center;gap:3px;height:14px;margin-left:4px}
+.voice-wave-bar{width:3px;height:10px;background:#fca5a5;border-radius:2px;animation:dsWaveBar 0.8s ease-in-out infinite alternate}
+.voice-wave-bar:nth-child(2){animation-delay:0.2s;height:14px}
+.voice-wave-bar:nth-child(3){animation-delay:0.4s;height:8px}
+
+/* Consent dialog and checklist */
+.consent-dialog-checklist{display:grid;gap:12px;margin:16px 0;text-align:left}
+.consent-check-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid #32384a;border-radius:12px;background:#1e2332;font-size:12px;line-height:1.5;cursor:pointer}
+.consent-check-item input{margin-top:2px;accent-color:#a990ff;flex:0 0 16px;width:16px;height:16px}
+.consent-check-item strong{display:block;color:#f3f4f6;font-size:12px;margin-bottom:2px}
+.consent-check-item span{color:#9ca3af;font-size:11px}

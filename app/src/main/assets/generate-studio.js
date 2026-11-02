@@ -320,7 +320,7 @@ async function loadEstimate(key){
   if(key!==estimateKey())return;estimateSignature=key;el.textContent=d.quantity>1?say(`Batch estimate: ${d.quantity} separate image jobs × ${d.perImageCredits.toLocaleString()} = ${d.credits.toLocaleString()} AI credits. No generation started.`,`Пакет: ${d.quantity} отдельных изображения × ${d.perImageCredits.toLocaleString()} = ${d.credits.toLocaleString()} AI-кредитов. Генерация не запускалась.`):say(`Estimated cost: ${d.credits.toLocaleString()} AI credits · no generation started`,`Ориентировочная стоимость: ${d.credits.toLocaleString()} AI-кредитов · генерация не запускалась`);el.hidden=false;
  }catch(e){if(key!==estimateKey())return;estimateSignature=key;if(e.message==='AI_PRICING_NOT_APPROVED'){el.textContent=errorText(e);el.hidden=false;}else{el.hidden=true;el.textContent='';}}
 }
-function availability(){const m=currentModel();$('videoBackgroundControls').hidden=!(busy&&activeVideoWatchId&&activeVideoWatchId===job);scheduleEstimate();document.querySelector('[data-t=consent]').textContent=say('I agree that this prompt and any attached reference photos may be sent to the selected model and its service to generate content. The cost will be shown separately before generation.','Я согласен, что запрос и прикреплённые фотографии будут переданы выбранной модели и её сервису для генерации. Стоимость покажется отдельно до запуска.');$('generate').disabled=busy||!connected(m)||!$('consent').checked||!$('prompt').value.trim()||(kind==='image'&&imageDraftNeedsPhotos&&!refs.length)||(kind==='video'&&videoDraftNeedsPhotos);$('modelButton').disabled=busy;$('settingsButton').disabled=busy;$('references').disabled=busy;$('prompt').disabled=busy||kind==='translation';$('availability').textContent=kind==='translation'?say('File translation is not connected yet. No file will be uploaded.','Перевод файлов ещё не подключён. Файл не будет загружен.'):!m?.adapter?say('This model is not connected yet. You can prepare your settings; no request will be sent.','Модель пока не подключена. Можно выбрать настройки; запрос не отправляется.'):connected(m)?say('Owner preview. Each attempt uses the approved test quota.','Тест владельца. Каждая попытка расходует согласованный лимит.'):say('Generation is not enabled. Provider access and test budget need approval.','Генерация не включена. Нужно подключение и согласованный бюджет.');if(kind==='image'){if(refs.length)imageDraftNeedsPhotos=false;showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}}
+function availability(){const m=currentModel();$('videoBackgroundControls').hidden=!(busy&&activeVideoWatchId&&activeVideoWatchId===job);scheduleEstimate();if(localStorage.getItem('deepsyq_consents_accepted')==='true'&&$('consent')){$('consent').checked=true;}document.querySelector('[data-t=consent]').innerHTML=say('✓ Model consent accepted (<a href="#" id="openConsentModalBtn" style="color:#a990ff;text-decoration:underline">review terms</a>)','✓ Согласие на передачу модели принято (<a href="#" id="openConsentModalBtn" style="color:#a990ff;text-decoration:underline">условия и согласия</a>)');const _link=$('openConsentModalBtn');if(_link&&$('studioConsentDialog'))_link.onclick=(e)=>{e.preventDefault();$('studioConsentDialog').showModal();};$('generate').disabled=busy||!connected(m)||!$('consent').checked||!$('prompt').value.trim()||(kind==='image'&&imageDraftNeedsPhotos&&!refs.length)||(kind==='video'&&videoDraftNeedsPhotos);$('modelButton').disabled=busy;$('settingsButton').disabled=busy;$('references').disabled=busy;$('prompt').disabled=busy||kind==='translation';$('availability').textContent=kind==='translation'?say('File translation is not connected yet. No file will be uploaded.','Перевод файлов ещё не подключён. Файл не будет загружен.'):!m?.adapter?say('This model is not connected yet. You can prepare your settings; no request will be sent.','Модель пока не подключена. Можно выбрать настройки; запрос не отправляется.'):connected(m)?say('Owner preview. Each attempt uses the approved test quota.','Тест владельца. Каждая попытка расходует согласованный лимит.'):say('Generation is not enabled. Provider access and test budget need approval.','Генерация не включена. Нужно подключение и согласованный бюджет.');if(kind==='image'){if(refs.length)imageDraftNeedsPhotos=false;showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}}
 function storeDraft(){drafts[kind]={prompt:$('prompt').value,modelId,ratio:$('ratio').value,resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value,quantity:imageBatchQuantity(),videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value,refs,musicMode:$('musicMode').value};if(kind==='image')saveImageDraft();}
 function fallbackQuoteSignature(){return JSON.stringify({kind,modelId,ratio:$('ratio').value,referenceCount:refs.length,resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value,videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value});}
 $('fallbackButton').onclick=async()=>{
@@ -1151,8 +1151,50 @@ function applyVoicePromptFromUrl() {
   }
 }
 
+
+function initStudioConsents() {
+  const consentModal = $('studioConsentDialog');
+  const consentCheck = $('consent');
+  const acceptBtn = $('acceptAllConsentsBtn');
+  const openLink = $('openConsentModalBtn');
+
+  function markConsentsAccepted() {
+    localStorage.setItem('deepsyq_consents_accepted', 'true');
+    localStorage.setItem('deepsyq_model_consent', 'true');
+    if (consentCheck) consentCheck.checked = true;
+    if (typeof availability === 'function') availability();
+  }
+
+  if (acceptBtn) {
+    acceptBtn.onclick = () => {
+      markConsentsAccepted();
+      if (consentModal && consentModal.open) consentModal.close();
+    };
+  }
+
+  if (openLink && consentModal) {
+    openLink.onclick = (e) => {
+      e.preventDefault();
+      consentModal.showModal();
+    };
+  }
+
+  // Handle entry modal display
+  const accepted = localStorage.getItem('deepsyq_consents_accepted') === 'true';
+  if (accepted) {
+    markConsentsAccepted();
+  } else if (consentModal && typeof consentModal.showModal === 'function') {
+    // Show agreement modal upon entry as requested by user
+    setTimeout(() => {
+      try { consentModal.showModal(); } catch (_) {}
+    }, 180);
+  }
+}
+
 function initStudioVoiceInput() {
   const voiceBtn = $('studioVoiceBtn');
+  const micDialog = $('micPermissionDialog');
+  const grantMicBtn = $('grantMicBtn');
   if (!voiceBtn) return;
   let recognition = null;
   let isListening = false;
@@ -1164,21 +1206,24 @@ function initStudioVoiceInput() {
     }
     isListening = false;
     voiceBtn.classList.remove('is-listening');
-    voiceBtn.title = say('Voice prompt input', 'Голосовой ввод промпта');
+    const waves = $('studioVoiceWaves');
+    if (waves) waves.hidden = true;
+    voiceBtn.title = say('Voice input (click to speak)', 'Голосовой ввод (нажмите, чтобы говорить)');
   }
 
-  function startListening() {
+  function startRecognition() {
     if (!SpeechRec) {
-      const cur = $('prompt') ? $('prompt').value.trim() : '';
-      const dest = 'voice-agent-preview.html' + (cur ? '?prompt=' + encodeURIComponent(cur) : '');
-      window.location.href = dest;
+      alert(say(
+        'Speech recognition is not supported in this browser. Please use Google Chrome, Edge, or Safari.',
+        'Распознавание речи не поддерживается в этом браузере. Рекомендуем использовать Chrome, Edge или Safari.'
+      ));
       return;
     }
     try {
       recognition = new SpeechRec();
       recognition.continuous = false;
       recognition.interimResults = true;
-      recognition.lang = document.documentElement.lang === 'ru' ? 'ru-RU' : 'en-US';
+      recognition.lang = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru')) ? 'ru-RU' : 'en-US';
 
       let baseText = $('prompt') ? $('prompt').value.trim() : '';
       if (baseText.length > 0) baseText += ' ';
@@ -1186,6 +1231,8 @@ function initStudioVoiceInput() {
       recognition.onstart = () => {
         isListening = true;
         voiceBtn.classList.add('is-listening');
+        const waves = $('studioVoiceWaves');
+        if (waves) waves.hidden = false;
         voiceBtn.title = say('Listening… Click to stop', 'Слушаю… Нажмите для завершения');
       };
 
@@ -1200,17 +1247,76 @@ function initStudioVoiceInput() {
         }
       };
 
-      recognition.onerror = () => stopListening();
+      recognition.onerror = (e) => {
+        console.warn('[VoiceAgent] Speech error:', e?.error);
+        if (e?.error === 'not-allowed') {
+          localStorage.removeItem('deepsyq_mic_permitted');
+          if (micDialog && typeof micDialog.showModal === 'function') {
+            micDialog.showModal();
+          } else {
+            alert(say(
+              'Microphone access denied. Please allow microphone in browser settings.',
+              'Доступ к микрофону заблокирован. Разрешите микрофон в настройках браузера.'
+            ));
+          }
+        }
+        stopListening();
+      };
+
       recognition.onend = () => stopListening();
       recognition.start();
-    } catch (_) {
+    } catch (err) {
+      console.warn('[VoiceAgent] Failed to start:', err);
       stopListening();
     }
   }
 
-  voiceBtn.addEventListener('click', () => {
-    if (isListening) stopListening();
-    else startListening();
+  function requestMicPermissionAndStart() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      startRecognition();
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        stream.getTracks().forEach(t => t.stop());
+        localStorage.setItem('deepsyq_mic_permitted', 'true');
+        if (micDialog && micDialog.open) micDialog.close();
+        startRecognition();
+      })
+      .catch(err => {
+        console.warn('[VoiceAgent] getUserMedia error:', err);
+        if (micDialog && !micDialog.open) {
+          micDialog.showModal();
+        } else {
+          alert(say(
+            'Microphone access is needed for voice input. Please allow it in browser settings.',
+            'Для голосового ввода нужен доступ к микрофону. Пожалуйста, разрешите доступ.'
+          ));
+        }
+        stopListening();
+      });
+  }
+
+  if (grantMicBtn) {
+    grantMicBtn.onclick = () => {
+      requestMicPermissionAndStart();
+    };
+  }
+
+  voiceBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (isListening) {
+      stopListening();
+    } else {
+      const alreadyPermitted = localStorage.getItem('deepsyq_mic_permitted') === 'true';
+      if (alreadyPermitted) {
+        startRecognition();
+      } else if (micDialog && typeof micDialog.showModal === 'function') {
+        micDialog.showModal();
+      } else {
+        requestMicPermissionAndStart();
+      }
+    }
   });
 
   window.addEventListener('pagehide', stopListening);
@@ -1218,6 +1324,7 @@ function initStudioVoiceInput() {
     if (document.visibilityState === 'hidden') stopListening();
   });
 }
+
 
 function applyAgentWorkflow(){
  const raw=sessionStorage.getItem('deepsyq_agent_workflow');
@@ -1302,3 +1409,7 @@ if((aiCheckoutState==='returned'||aiCheckoutState==='cancelled')&&!$('walletButt
 
 // Public one-shot explanation only; never persist prompts or account credentials.
 try{if(sessionStorage.getItem('deepsyq_studio_account_reset_notice')==='1'){sessionStorage.removeItem('deepsyq_studio_account_reset_notice');$('status').textContent=say('Account changed. No job was submitted by this workspace reset. Check History for earlier requests.','Аккаунт изменён. Сброс рабочей области не отправлял новую задачу. Ранее отправленные задачи доступны в Истории.');}}catch(_){}
+
+applyVoicePromptFromUrl();
+initStudioVoiceInput();
+initStudioConsents();

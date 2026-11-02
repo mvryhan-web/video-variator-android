@@ -37,14 +37,13 @@
 <div class="prompt-field-wrap">
 <label class="prompt-label"><span class="sr-only" data-t="prompt">Describe what you want to create</span><textarea id="prompt" maxlength="2000" rows="3" required placeholder="Describe what you want to create…"></textarea></label>
 <div class="prompt-voice-dock">
-<button id="studioVoiceBtn" type="button" class="studio-voice-btn" title="Голосовой ввод (как в ChatGPT / Gemini)" aria-label="Голосовой ввод">
+<button id="studioVoiceBtn" type="button" class="studio-voice-btn" title="Голосовой ввод (нажмите, чтобы говорить)" aria-label="Голосовой ввод">
 <svg class="voice-mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
 <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
 <line x1="12" y1="19" x2="12" y2="22"></line>
 <line x1="8" y1="22" x2="16" y2="22"></line>
 </svg>
-<span id="studioVoiceBtnText" class="voice-btn-text">Голос</span>
 <span id="studioVoiceWaves" class="voice-active-indicator" hidden>
 <span class="voice-wave-bar"></span>
 <span class="voice-wave-bar"></span>
@@ -92,4 +91,21 @@
 </dialog>
 <dialog id="walletDialog"><div class="dialog-head"><h2>AI credits</h2><button type="button" data-close="walletDialog" aria-label="Close">×</button></div><p id="walletMode" class="hint"></p><div id="walletSummary" class="wallet-summary"></div><div class="wallet-actions"><button id="walletRefresh" type="button">Refresh balance</button></div><div id="creditPacks" class="credit-packs"></div><section class="wallet-history"><h3>Recent activity</h3><div id="walletHistory"></div></section><p id="walletStatus" role="status"></p><p class="hint">Credits are added only after Stripe confirms a successful payment.</p></dialog>
 <script defer src="virtual-pet.js?v=2.2"></script>
+
+<dialog id="studioConsentDialog" class="studio-modal-dialog consent-entry-dialog" aria-labelledby="consentModalTitle">
+<div class="dialog-head"><h2 id="consentModalTitle">Согласие на использование AI-студии</h2><button type="button" data-close="studioConsentDialog" aria-label="Close">×</button></div>
+<p class="hint">Подтвердите согласия на обработку запросов и взаимодействие с AI-моделями:</p>
+<div class="consent-dialog-checklist">
+<label class="consent-check-item"><input type="checkbox" id="dlgConsentModel" checked><span><strong>Передача запросов и материалов модели:</strong> Я согласен, что запросы и прикрепленные фотографии будут переданы выбранной модели и её сервису для генерации контента.</span></label>
+<label class="consent-check-item"><input type="checkbox" id="dlgConsentRights" checked><span><strong>Авторские права:</strong> Я подтверждаю, что обладаю правами на используемые материалы и соблюдаю правила сервиса.</span></label>
+<label class="consent-check-item"><input type="checkbox" id="dlgConsentPricing" checked><span><strong>Тарификация:</strong> Я понимаю, что расчет стоимости в AI-кредитах показывается перед запуском задачи.</span></label>
+</div>
+<button type="button" id="acceptAllConsentsBtn" class="primary" style="width:100%;margin-top:14px">Я согласен — продолжить</button>
+</dialog>
+
+<dialog id="micPermissionDialog" class="mic-dialog" aria-labelledby="micModalTitle">
+<div class="dialog-head"><h2 id="micModalTitle">Доступ к микрофону</h2><button type="button" data-close="micPermissionDialog" aria-label="Close">×</button></div>
+<div style="text-align:center;padding:14px 0"><div style="font-size:38px;margin-bottom:12px">🎙</div><p style="font-size:15px;margin:0 0 8px"><strong>Разрешить этому устройству использовать микрофон?</strong></p><p class="hint" style="max-width:380px;margin:0 auto;line-height:1.5">Микрофон используется исключительно для преобразования вашей речи в текст промпта на выбранном языке. Аудиозаписи не сохраняются на сервере.</p></div>
+<div style="display:flex;gap:10px;margin-top:16px"><button type="button" id="grantMicBtn" class="primary" style="flex:1">Разрешить микрофон</button><button type="button" data-close="micPermissionDialog" class="pill" style="flex:1">Отмена</button></div>
+</dialog>
 </body></html>
