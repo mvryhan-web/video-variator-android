@@ -1,9 +1,10 @@
 /* Free mobile utilities: processing on-device, no raw file uploads. */
 import {createEngine,saveLocal,subtitleFiles} from './ai-media.js';
 import {videoCompressionArgs,videoCompressionSummary,videoCompressionInputSupported} from './video-compression-args.mjs';
-const $=id=>document.getElementById(id);
-const catalog=window.VUMobileToolsCatalog,tool=new URLSearchParams(location.search).get('tool');
-const mode=catalog?.tools.find(x=>x.id===tool);
+const $=id=>typeof document!=='undefined'?document.getElementById(id):null;
+const catalog=typeof window!=='undefined'?window.VUMobileToolsCatalog:null;
+const tool=typeof location!=='undefined'?new URLSearchParams(location.search).get('tool'):null;
+const mode=catalog?.tools?.find(x=>x.id===tool);
 const lang=catalog?.lang||'en',ru=lang==='ru';
 const label=(en,russian)=>ru?russian:en;
 
@@ -47,20 +48,20 @@ function purgeRedactionOnPagehide(){
  $('utilityResults').replaceChildren();
  $('utilityRun').disabled=true;
 }
-window.addEventListener('pagehide',purgeRedactionOnPagehide);
-window.addEventListener('pagehide',()=>{
- // On BFCache restore, neither private file pickers nor OCR/PDF contents
- // should survive; invalidate pending encoding/recognition before publication.
- abort=true;
- try{engine?.terminate();}catch(_){}
- clearRedactPreviewUrls();
- $('utilityFiles').value='';
- $('utilityResults').replaceChildren();
- $('utilityQr').value='';
- $('utilityText').value='';
- const signature=$('utilitySignature');
- if(signature)signature.getContext('2d')?.clearRect(0,0,signature.width,signature.height);
-});
+if(typeof window!=='undefined'){
+ window.addEventListener('pagehide',purgeRedactionOnPagehide);
+ window.addEventListener('pagehide',()=>{
+  abort=true;
+  try{engine?.terminate();}catch(_){}
+  clearRedactPreviewUrls();
+  $('utilityFiles').value='';
+  $('utilityResults').replaceChildren();
+  $('utilityQr').value='';
+  $('utilityText').value='';
+  const signature=$('utilitySignature');
+  if(signature)signature.getContext('2d')?.clearRect(0,0,signature.width,signature.height);
+ });
+}
 // FileList getters are allowed to return distinct File wrappers on some engines.
 // The change event immediately clears redactSource; this identity comparison
 // uses stable metadata only within that selected epoch.
@@ -148,13 +149,55 @@ function files(){
 }
 function safeName(s){return (s||'result').replace(/[^a-zA-Z0-9._-]/g,'_').replace(/^\.+/,'').slice(0,100)||'result';}
 function base(f){return safeName(f.name.replace(/\.[^.]+$/,''));}
+export function bindDownloadHandler(button,fileOrFactory,options={}){
+ const save=options.saveLocal||saveLocal;
+ const setStatus=options.status||status;
+ const getLabel=options.label||label;
+ const hasAndroidBridge=options.isAndroidBridge||(()=>typeof window!=='undefined'&&!!window.AndroidBridge);
+ let saving=false;
+ button.onclick=async()=>{
+  if(saving)return;
+  saving=true;
+  button.disabled=true;
+  setStatus(getLabel('Downloading…','Скачивание…'));
+  try{
+   const file=typeof fileOrFactory==='function'?fileOrFactory():fileOrFactory;
+   await save(file);
+   setStatus(hasAndroidBridge()?getLabel('Saved to device.','Сохранено на устройстве.'):getLabel('Download started.','Скачивание начато.'));
+  }catch(_){
+   setStatus(getLabel('Download failed. Try again.','Не удалось скачать. Попробуйте снова.'));
+  }finally{
+   saving=false;
+   button.disabled=false;
+  }
+ };
+ return button;
+}
+export function bindCopyHandler(button,getText,options={}){
+ const setStatus=options.status||status;
+ const getLabel=options.label||label;
+ const getClipboard=options.clipboard||(()=>typeof navigator!=='undefined'?navigator.clipboard:null);
+ button.onclick=async()=>{
+  try{
+   const cb=getClipboard();
+   if(!cb?.writeText)throw Error('Clipboard unavailable');
+   const text=typeof getText==='function'?getText():getText;
+   await cb.writeText(text);
+   setStatus(getLabel('Copied','Скопировано'));
+  }catch(_){
+   setStatus(getLabel('Copy failed','Не удалось скопировать'));
+  }
+ };
+ return button;
+}
 async function result(file){
  // Cancel may happen while an upstream PDF/ZIP/media serializer is still awaited.
  // No stale result or download is published after an explicit Cancel.
  if(abort)return;
  const row=document.createElement('div');row.className='utility-result';
  const p=document.createElement('p');p.textContent=file.name+' · '+(file.size/1048576).toFixed(2)+' MB';
- const b=document.createElement('button');b.type='button';b.textContent=label('Download','Скачать');b.onclick=()=>saveLocal(file);
+ const b=document.createElement('button');b.type='button';b.textContent=label('Download','Скачать');
+ bindDownloadHandler(b,file);
  row.append(p);
  if(file.type.startsWith('image/')){const img=new Image();const url=URL.createObjectURL(file);redactPreviewUrls.add(url);/* All local previews must be revoked on BFCache pagehide. */img.src=url;img.alt=file.name;img.onload=()=>setTimeout(()=>{URL.revokeObjectURL(url);redactPreviewUrls.delete(url);},60000);row.append(img);}
  row.append(b);$('utilityResults').append(row);
@@ -163,8 +206,11 @@ async function result(file){
 async function textResult(text,filename){
  const row=document.createElement('div');row.className='utility-result';
  const area=document.createElement('textarea');area.value=text;area.setAttribute('aria-label',label('Recognized text','Распознанный текст'));row.append(area);
- const copy=document.createElement('button');copy.textContent=label('Copy text','Копировать текст');copy.onclick=async()=>{await navigator.clipboard.writeText(area.value);status(label('Copied','Скопировано'));};
- const b=document.createElement('button');b.textContent=label('Download TXT','Скачать TXT');b.onclick=()=>saveLocal(new File([area.value],filename,{type:'text/plain;charset=utf-8'}));row.append(copy,b);$('utilityResults').append(row);
+ const copy=document.createElement('button');copy.textContent=label('Copy text','Копировать текст');
+ bindCopyHandler(copy,()=>area.value);
+ const b=document.createElement('button');b.textContent=label('Download TXT','Скачать TXT');
+ bindDownloadHandler(b,()=>new File([area.value],filename,{type:'text/plain;charset=utf-8'}));
+ row.append(copy,b);$('utilityResults').append(row);
 }
 async function openImage(f){
  const url=URL.createObjectURL(f),im=new Image();
@@ -508,5 +554,7 @@ async function runOCR(){
 }
 
 // Initialize after all module-level const configuration and handlers exist.
-if(!mode)location.replace('free-tools.html');
-else init();
+if(typeof window!=='undefined'&&typeof location!=='undefined'){
+ if(!mode)location.replace('free-tools.html');
+ else init();
+}

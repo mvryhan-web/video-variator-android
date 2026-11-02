@@ -2,6 +2,10 @@ name: BASE 9 Atomic Provider Group Controls
 on:
   pull_request:
     paths:
+      - 'app/src/main/assets/deepsyq-admin.js'
+      - 'app/src/main/assets/deepsyq-admin.html'
+      - 'app/src/main/assets/deepsyq-admin.css'
+      - 'tests/agent-b-base9-provider-group-ui.spec.mjs'
       - 'server/generation-model-control.js'
       - 'server/generation-studio.js'
       - 'server/admin-audit.js'
@@ -12,7 +16,7 @@ permissions:
 jobs:
   provider-groups:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,8 +24,16 @@ jobs:
           node-version: '22'
       - name: Syntax check
         run: |
+          node --check app/src/main/assets/deepsyq-admin.js
           node --check server/generation-model-control.js
           node --check server/generation-studio.js
           node --check tests/generation-provider-group-control-unit.mjs
       - name: Atomic group controls and audit regressions
         run: node --test tests/generation-provider-group-control-unit.mjs
+
+      - name: Install only needed browser test dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install Chromium and WebKit browsers
+        run: npx playwright install --with-deps chromium webkit
+      - name: Actual owner group UI, confirmation, no-spend and mobile browser acceptance
+        run: npx playwright test tests/agent-b-base9-provider-group-ui.spec.mjs --project=chromium --project=webkit

@@ -69,6 +69,64 @@ async function loadJobs(){
 
 function field(label,input){const wrap=document.createElement('label'),span=document.createElement('span');span.textContent=label;wrap.append(span,input);return wrap;}
 function input(type,value,min,max){const e=document.createElement('input');e.type=type;if(value!=null)e.value=value;if(min!=null)e.min=min;if(max!=null)e.max=max;return e;}
+
+function renderProviderGroups(items){
+ const host=$('providerGroups');host.replaceChildren();
+ const groups=new Map();
+ for(const model of items){
+  if(!['image','video'].includes(model.kind)||model.adapter!==true||!model.provider)continue;
+  const key=model.kind+':'+model.provider;
+  if(!groups.has(key))groups.set(key,{kind:model.kind,provider:model.provider,models:[]});
+  groups.get(key).models.push(model);
+ }
+ if(!groups.size){
+  $('providerGroupStatus').textContent='No configured Image or Video providers are available for group controls.';
+  return;
+ }
+ for(const group of [...groups.values()].sort((a,b)=>a.kind.localeCompare(b.kind)||a.provider.localeCompare(b.provider))){
+  const card=document.createElement('article');card.className='provider-group-card';
+  const name=document.createElement('h3');name.textContent=group.provider+' · '+(group.kind==='video'?'Video':'Image');
+  const summary=document.createElement('p');summary.textContent=group.models.length+' prepared model(s) · '+group.models.filter(m=>m.enabled).length+' currently available';
+  const actions=document.createElement('div');actions.className='provider-group-actions';
+  const pause=document.createElement('button');pause.type='button';pause.textContent='Pause all';
+  const restore=document.createElement('button');restore.type='button';restore.textContent='Restore defaults';
+  const label=document.createElement('label');label.textContent='Priority';
+  const priority=document.createElement('input');priority.type='number';priority.min='0';priority.max='10000';priority.step='1';
+  const priorities=group.models.map(m=>m.control?.priority??m.priority??100);
+  priority.value=String(priorities[0]);priority.setAttribute('aria-label',group.provider+' '+group.kind+' priority');
+  const savePriority=document.createElement('button');savePriority.type='button';savePriority.textContent='Save priority';
+  const status=document.createElement('p');status.className='provider-group-message';status.setAttribute('role','status');
+  const controls=[pause,restore,priority,savePriority];
+  async function applyGroup(patch,description){
+   if(controls.some(x=>x.disabled))return;
+   const yes=confirm(description+' for '+group.models.length+' '+group.kind+' model(s) from '+group.provider+'? Changes take effect only where generation is separately enabled.');
+   if(!yes)return;
+   controls.forEach(x=>x.disabled=true);
+   status.textContent='Saving provider settings…';
+   try{
+    await api('/api/studio/admin/providers/'+encodeURIComponent(group.provider),{
+     method:'PATCH',body:JSON.stringify({kind:group.kind,...patch})
+    });
+    await loadModels();
+    $('providerGroupStatus').textContent='Saved '+group.provider+' '+group.kind+' settings. Existing jobs and approved customer prices were not modified.';
+   }catch(error){
+    status.textContent='No change confirmed: '+(error.message==='MODEL_ADMIN_NOT_ENABLED'?'Provider controls are disabled.':error.message);
+   }finally{controls.forEach(x=>x.disabled=false);}
+  }
+  pause.onclick=()=>applyGroup({enabled:false,maintenance:true},'Pause all');
+  restore.onclick=()=>applyGroup({enabled:null,maintenance:false},'Restore base availability');
+  savePriority.onclick=()=>{
+   const value=Number(priority.value);
+   if(priority.value.trim()===''||!Number.isSafeInteger(value)||value<0||value>10000){
+    status.textContent='Choose a whole-number priority from 0 to 10000.';return;
+   }
+   void applyGroup({priority:value},'Set priority '+value);
+  };
+  label.append(priority);actions.append(pause,restore,label,savePriority);
+  card.append(name,summary,actions,status);host.append(card);
+ }
+}
+
 function renderModels(items){$('models').replaceChildren();for(const m of items){const card=document.createElement('article');const head=document.createElement('div');head.className='card-head';const title=document.createElement('div');title.innerHTML=`<strong></strong><small></small>`;title.querySelector('strong').textContent=m.label||m.id;title.querySelector('small').textContent=`${m.provider} · ${m.kind} · ${m.id}`;const live=document.createElement('span');live.className='state';live.textContent=m.enabled?'Available':'Unavailable';head.append(title,live);
  const mode=document.createElement('select');for(const [v,t] of [['inherit','Inherit base availability'],['on','Force enabled'],['off','Force disabled']])mode.add(new Option(t,v));mode.value=m.control?.enabledOverride===true?'on':m.control?.enabledOverride===false?'off':'inherit';
  const maintenance=input('checkbox');maintenance.checked=!!m.control?.maintenance;
@@ -80,7 +138,7 @@ function renderModels(items){$('models').replaceChildren();for(const m of items)
  const advisory=document.createElement('p');advisory.className='message';
  advisory.textContent='Markup and internal cost are reference settings only. They do not change customer AI-credit prices; only separately approved server pricing can do that.';
  card.append(head,form,advisory,save,msg);$('models').append(card);}}
-async function loadModels(){try{$('modelStatus').textContent='Loading…';const d=await api('/api/studio/admin/models');renderModels(d.items||[]);$('modelStatus').textContent=d.items?.length?'':'No model records.';}catch(e){$('models').replaceChildren();$('modelStatus').textContent=e.message==='MODEL_ADMIN_NOT_ENABLED'?'Model controls are prepared but the feature flag is OFF. No settings were changed.':e.message;}}
+async function loadModels(){try{$('modelStatus').textContent='Loading…';const d=await api('/api/studio/admin/models');renderModels(d.items||[]);renderProviderGroups(d.items||[]);$('modelStatus').textContent=d.items?.length?'':'No model records.';}catch(e){$('models').replaceChildren();$('providerGroups').replaceChildren();$('providerGroupStatus').textContent='';$('modelStatus').textContent=e.message==='MODEL_ADMIN_NOT_ENABLED'?'Model controls are prepared but the feature flag is OFF. No settings were changed.':e.message;}}
 async function loadMetrics(){
  const request=++metricsListRequest,token=localStorage.getItem('vv_token');
  const window=$('metricsWindow')?.value||'7d';
