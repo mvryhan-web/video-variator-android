@@ -16,6 +16,7 @@ class El{
  get textContent(){return this.ownText+this.children.map(x=>x.textContent||'').join(' ');}
  replaceChildren(...xs){this.children=xs;this.ownText='';}
  append(...xs){this.children.push(...xs);}
+ addEventListener(){}
 }
 function harness(){
  const elements=new Map(),docListeners=new Map(),winListeners=new Map(),calls=[];
