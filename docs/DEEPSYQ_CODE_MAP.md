@@ -3,15 +3,15 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `2a7f161f6087e3dc513a97afdc06d84122d90954`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` | Indexed files: 58 | Named symbols: 160 | Checked relations: 50
+Source commit: `0d77ddb67a2329ed665d8b45f6b51cc6f27cd438`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` | Indexed files: 60 | Named symbols: 170 | Checked relations: 50
 
 ## Topic finder (matching filenames)
 
 - **Credits, payments and pricing:** `server/generation-purchased-provider-boundary.js`, `server/generation-subscription-credits.js`, `server/generation-wallet.js`
 - **Video, providers and jobs:** `server/compare-ai-mock-worker.js`, `server/generation-provider.js`, `server/generation-purchased-provider-boundary.js`, `server/generation-storage.js`, `server/generation-video-submit-uncertainty.js`, `server/generation-worker.js`, `server/product-watcher/worker.js`, `server/telegram-video-core.js`, `server/telegram-video.js`
 - **Image, Canvas and Home:** `server/deepsyq-preview.js`, `server/generation-openai-image.js`
-- **Audio and voice:** `server/speech.js`
+- **Audio and voice:** `server/jarvix-voice.js`, `server/speech.js`
 - **AI Apps, Inspiration, History:** `server/generation-inspiration.js`, `server/tool-policy.js`, `server/workspace-card-sections.js`, `server/workspace-job-view.js`, `server/workspace-project-policy.js`
 - **Accounts and security:** `server/email-auth.js`, `server/generation-trial-policy.js`, `server/product-watcher/lite-delivery-policy.js`, `server/product-watcher/scheduler-state-policy.js`, `server/tool-policy.js`, `server/user-agent-plan.js`, `server/user-agent-stage1-local-draft.js`, `server/workspace-project-policy.js`
 
@@ -133,6 +133,14 @@ MAX_CREDITS (L4) · GenerationWallet (L13)
 
 storage (L11) · state (L12) · cleanupTask (L38) · heartbeat (L51)
 
+### `server/jarvix-brain.js`
+
+DEEPSYQ_CAPABILITIES (L17) · activeSessions (L82) · jarvixSessionStore (L83)
+
+### `server/jarvix-voice.js`
+
+__dirname (L19) · ASSETS_DIR (L20) · SAMPLES_DIR (L21) · MANIFEST_PATH (L22) · JARVIX_TIMBRES (L25) · SUPPORTED_LANGUAGES (L55) · INFRASTRUCTURE_SPEC (L63)
+
 ### `server/lifetime.js`
 
 lifetime.js (L1)
@@ -199,7 +207,7 @@ reminders.js (L1) · validFrequency (L12) · validChannel (L13) · leads (L14)
 
 ### `server/server.js`
 
-server.js (L1) · app (L27) · port (L27) · __dirname (L29) · rootDir (L30) · staticDir (L31) · ffmpegDist (L32) · ffmpegCoreDist (L33) · appUrl (L105) · googleJwks (L110) · appleJwks (L110) · plans (L111) · registerTelegramWebhook (L207) · generationBilling (L254) · generationStudio (L258)
+server.js (L1) · app (L29) · port (L29) · __dirname (L31) · rootDir (L32) · staticDir (L33) · ffmpegDist (L34) · ffmpegCoreDist (L35) · appUrl (L107) · googleJwks (L112) · appleJwks (L112) · plans (L113) · registerTelegramWebhook (L209) · generationBilling (L258) · generationStudio (L262)
 
 ### `server/speech.js`
 
