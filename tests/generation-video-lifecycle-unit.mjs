@@ -15,6 +15,12 @@ async function exercise({cause='terminal',settlement='held'}){
  let polls=0,settles=0,creates=0,mediaWrites=0;
  const pool={async query(sql,args=[]){
   if(sql.includes('CREATE TABLE IF NOT EXISTS'))return {rows:[]};
+  if(sql.includes('pg_try_advisory_lock'))return {rows:[{acquired:true}]};
+  if(sql.includes('pg_advisory_unlock'))return {rows:[{pg_advisory_unlock:true}]};
+  if(sql.startsWith('SELECT terms_version'))return {rows:[{terms_version:'2026-10-20',privacy_version:'2026-10-20',provider_data_version:'2026-10-20',provider_data_accepted:true}]};
+  if(sql.startsWith('SELECT status,operation,deleted FROM vv_generation_jobs'))return {rows:job.deleted?[]:[{status:job.status,operation:job.operation,deleted:job.deleted}]};
+  if(sql.startsWith('SELECT kind FROM vv_generation_jobs WHERE id='))return {rows:job.deleted?[]:[{kind:job.kind}]};
+  if(sql.includes("error_message='AI_PROVIDER_SUBMISSION_UNCERTAIN'"))return {rows:[],rowCount:0};
   if(sql.startsWith('SELECT * FROM vv_generation_jobs WHERE id='))return {rows:job.deleted?[]:[{...job}]};
   if(sql.includes('SET last_polled_at=NOW()'))return {rows:[{last_polled_at:new Date()}]};
   if(sql.includes("SET status='failed',credits_reserved=CASE WHEN")){
@@ -23,7 +29,7 @@ async function exercise({cause='terminal',settlement='held'}){
    return {rows:[]};
   }
   throw Error('Unexpected SQL in video lifecycle fixture: '+sql.slice(0,100));
- }};
+ },async connect(){return {query:(sql,args)=>pool.query(sql,args),release(){}};}};
  const wallet={async settle({outcome}){
   settles++;assert.equal(outcome,'confirmed_failure');
   if(settlement==='held')throw Error('fixture wallet unavailable');
@@ -43,7 +49,12 @@ async function exercise({cause='terminal',settlement='held'}){
   const response=await fetch(base+'/api/studio/jobs/video-1');
   assert.equal(response.status,200);
   const value=await response.json();
-  assert.equal(value.status,'failed');assert.equal(value.error,cause==='terminal'?'AI_GENERATION_REJECTED':'AI_STORAGE_FAILED');
+  if(cause==='storage'){
+   assert.equal(value.status,'processing');assert.equal(job.credits_reserved,9);
+   assert.equal(polls,1);assert.equal(settles,0);assert.equal(creates,0);assert.equal(mediaWrites,1);
+   return;
+  }
+  assert.equal(value.status,'failed');assert.equal(value.error,'AI_GENERATION_REJECTED');
   assert.equal(job.credits_reserved,settlement==='released'?0:9);
   assert.equal(job.error_message,settlement==='held'?'AI_WALLET_REVIEW_REQUIRED':null);
   assert.equal(polls,1);assert.equal(settles,1);assert.equal(creates,0);
