@@ -916,3 +916,127 @@ body.home-neon{background:#030b18;color:#eff6ff}
 .home-neon #inviteStatus{min-height:1em;margin:9px 0 0;color:#aedfff;font-size:12px}
 .home-neon #inviteDialog .promo-actions,.home-neon #promoDialog .promo-actions{flex-wrap:wrap}
 @media(max-width:480px){.home-neon .top-actions #topInvite{display:inline-flex}}
+
+
+/* Home quick bar voice button & microphone dialog */
+.home-quick-voice-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(136, 147, 255, 0.35);
+  color: #d6e2ff;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+.home-quick-voice-btn:hover {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: #818cf8;
+  color: #fff;
+  transform: scale(1.08);
+}
+.home-quick-voice-btn svg {
+  width: 20px;
+  height: 20px;
+}
+.home-quick-voice-btn.is-listening {
+  width: auto;
+  min-width: 64px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.35);
+  border-color: #ef4444;
+  color: #fca5a5;
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.6);
+  animation: dsVoicePulse 1.4s infinite;
+}
+@media (max-width: 760px) {
+  .home-quick-voice-btn {
+    width: 36px;
+    height: 36px;
+  }
+  .home-quick-voice-btn svg {
+    width: 17px;
+    height: 17px;
+  }
+}
+.home-quick-voice-btn .voice-active-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 14px;
+  margin-left: 6px;
+}
+.home-quick-voice-btn .voice-wave-bar {
+  width: 3px;
+  height: 10px;
+  background: #fca5a5;
+  border-radius: 2px;
+  animation: dsWaveBar 0.8s ease-in-out infinite alternate;
+}
+.home-quick-voice-btn .voice-wave-bar:nth-child(2) {
+  animation-delay: 0.2s;
+  height: 14px;
+}
+.home-quick-voice-btn .voice-wave-bar:nth-child(3) {
+  animation-delay: 0.4s;
+  height: 8px;
+}
+
+dialog.mic-dialog {
+  border: 1px solid #3c4566;
+  border-radius: 18px;
+  background: #111728;
+  color: #f1edf9;
+  padding: 24px;
+  max-width: 440px;
+  width: calc(100vw - 32px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  margin: auto;
+}
+dialog.mic-dialog::backdrop {
+  background: rgba(4, 7, 18, 0.75);
+  backdrop-filter: blur(8px);
+}
+dialog.mic-dialog .dialog-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+dialog.mic-dialog .dialog-head h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #fff;
+}
+dialog.mic-dialog .dialog-head button {
+  background: transparent;
+  border: 0;
+  color: #94a3b8;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+dialog.mic-dialog button.primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+dialog.mic-dialog button.pill {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+  color: #cbd5e1;
+  padding: 10px 16px;
+  cursor: pointer;
+}
