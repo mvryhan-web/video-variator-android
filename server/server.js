@@ -9,6 +9,8 @@ import {installOnboarding} from './generation-onboarding.js';
 import {runAiMigrations} from './ai-migrations.js';
 import {pool as generationPool} from './db.js';
 import {installSpeech} from './speech.js';
+import {installJarvixBrainRoutes} from './jarvix-brain.js';
+import {installJarvixVoiceRoutes} from './jarvix-voice.js';
 import {installTelegramBot} from './telegram.js';
 import {installReminders,initRemindersDb,startReminderScheduler} from './reminders.js';
 import {isPaidLifetimeSession} from './lifetime.js';
@@ -211,6 +213,8 @@ installEmailAuth(app,{signAppToken});
 installToolAccess(app,{auth});
 installSpeech(app,{auth,reserve:reserveSpeech});
 installReminders(app,{auth});
+installJarvixBrainRoutes(app);
+installJarvixVoiceRoutes(app);
 
 app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',https:req.secure||!isProduction,videoProcessing:'local-only',ffmpegRuntime:'same-origin-esm',appUrl,time:new Date().toISOString()}));
 app.get('/api/version',(req,res)=>res.json({webVersion:process.env.WEB_VERSION||'5.3.0',androidVersion:process.env.ANDROID_VERSION||'5.3.0',androidVersionCode:Number(process.env.ANDROID_VERSION_CODE||5),latestApkUrl:process.env.LATEST_APK_URL||'https://github.com/mvryhan-web/video-variator-android/releases/latest/download/VideoUniquifier.apk'}));

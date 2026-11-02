@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "jarvix-multilingual-voice/v1",
+  "targetBrand": "JARVIX AI",
+  "signatureVoiceModel": "Chatterbox-Multilingual-DEEPSYQ-v2",
+  "timbres": {
+    "baritone": {
+      "name": "Resonant Baritone",
+      "ruName": "Глубокий спокойный баритон",
+      "fundamentalHz": 105.0,
+      "description": "Глубокий бархатный тембр с мягкими обертонами. Кинематографичный, невозмутимый голос дворецкого JARVIS."
+    },
+    "executive": {
+      "name": "Tech Executive / Crisp Butler",
+      "ruName": "Интеллектуальный советник",
+      "fundamentalHz": 122.0,
+      "description": "Чёткая академическая артикуляция, динамичный и аналитический тон. Идеален для быстрых ответов и точных инструкций."
+    },
+    "warm": {
+      "name": "Warm Companion",
+      "ruName": "Тёплый дружелюбный голос",
+      "fundamentalHz": 115.0,
+      "description": "Естественный, располагающий и мягкий тембр. Создаёт ощущение надёжного живого напарника."
+    }
+  },
+  "samples": {
+    "sample_baritone_ru": {
+      "timbre": "baritone",
+      "language": "ru",
+      "languageName": "Русский",
+      "text": "Здравствуйте! Я JARVIX — ваш бортовой голосовой помощник Deepsyq. Все творческие системы готовы к работе.",
+      "durationSec": 4.5,
+      "fileSize": 216044,
+      "sha256": "856cca038f9f52350575622a9755648e4c324ddd0806bc8188969bf3e7216190",
+      "relPath": "media/jarvix/samples/sample_baritone_ru.wav"
+    },
+    "sample_baritone_en": {
+      "timbre": "baritone",
+      "language": "en",
+      "languageName": "English",
+      "text": "Greetings! I am JARVIX — your resident Deepsyq intelligence. All creative systems are ready.",
+      "durationSec": 4.2,
+      "fileSize": 201644,
+      "sha256": "6e8499651ec3e664da52deb4f01c70956c2fc7c57df1f00826b3834bbc2f6f52",
+      "relPath": "media/jarvix/samples/sample_baritone_en.wav"
+    },
+    "sample_baritone_es": {
+      "timbre": "baritone",
+      "language": "es",
+      "languageName": "Español",
+      "text": "¡Saludos! Soy JARVIX, su asistente de voz Deepsyq. Todos los sistemas creativos están listos para trabajar.",
+      "durationSec": 4.6,
+      "fileSize": 220842,
+      "sha256": "b3e35a7d9c3ea9902519c18348ea0341974aab4890a96d774c38eefec6227291",
+      "relPath": "media/jarvix/samples/sample_baritone_es.wav"
+    },
+    "sample_baritone_fr": {
+      "timbre": "baritone",
+      "language": "fr",
+      "languageName": "Français",
+      "text": "Bonjour! Je suis JARVIX, votre assistant vocal Deepsyq. Tous les systèmes créatifs sont prêts.",
+      "durationSec": 4.3,
+      "fileSize": 206444,
+      "sha256": "d5df5d090627adb32bd76aa8175b683ba2d2388a3dc3bc33aaf857b7d48009a2",
+      "relPath": "media/jarvix/samples/sample_baritone_fr.wav"
+    },
+    "sample_executive_ru": {
+      "timbre": "executive",
+      "language": "ru",
+      "languageName": "Русский",
+      "text": "Здравствуйте! Я JARVIX — ваш бортовой голосовой помощник Deepsyq. Все творческие системы готовы к работе.",
+      "durationSec": 4.29,
+      "fileSize": 205758,
+      "sha256": "67326841e138706f8719a5cb373ae71530918903d40a731f1006e32223a56896",
+      "relPath": "media/jarvix/samples/sample_executive_ru.wav"
+    },
+    "sample_executive_en": {
+      "timbre": "executive",
+      "language": "en",
+      "languageName": "English",
+      "text": "Greetings! I am JARVIX — your resident Deepsyq intelligence. All creative systems are ready.",
+      "durationSec": 4.0,
+      "fileSize": 192044,
+      "sha256": "56aed38e7c6a3699949251110ec80645a6cf2c44852867412ec4d835e72301c4",
+      "relPath": "media/jarvix/samples/sample_executive_en.wav"
+    },
+    "sample_executive_es": {
+      "timbre": "executive",
+      "language": "es",
+      "languageName": "Español",
+      "text": "¡Saludos! Soy JARVIX, su asistente de voz Deepsyq. Todos los sistemas creativos están listos para trabajar.",
+      "durationSec": 4.38,
+      "fileSize": 210328,
+      "sha256": "bc4e8c76bef610e927f08599aa5b850489ec1c9417e025808dde3bc745b7cbe7",
+      "relPath": "media/jarvix/samples/sample_executive_es.wav"
+    },
+    "sample_executive_fr": {
+      "timbre": "executive",
+      "language": "fr",
+      "languageName": "Français",
+      "text": "Bonjour! Je suis JARVIX, votre assistant vocal Deepsyq. Tous les systèmes créatifs sont prêts.",
+      "durationSec": 4.1,
+      "fileSize": 196614,
+      "sha256": "23e9d2f57ae14870465b4135f9da1c3a1764f458901a56f5584049f13e883533",
+      "relPath": "media/jarvix/samples/sample_executive_fr.wav"
+    },
+    "sample_warm_ru": {
+      "timbre": "warm",
+      "language": "ru",
+      "languageName": "Русский",
+      "text": "Здравствуйте! Я JARVIX — ваш бортовой голосовой помощник Deepsyq. Все творческие системы готовы к работе.",
+      "durationSec": 4.59,
+      "fileSize": 220452,
+      "sha256": "0c3b9b031611d53d31ea4e96342f40c199b476b06a5901af68a083609a78f270",
+      "relPath": "media/jarvix/samples/sample_warm_ru.wav"
+    },
+    "sample_warm_en": {
+      "timbre": "warm",
+      "language": "en",
+      "languageName": "English",
+      "text": "Greetings! I am JARVIX — your resident Deepsyq intelligence. All creative systems are ready.",
+      "durationSec": 4.29,
+      "fileSize": 205758,
+      "sha256": "77146a1e4d9e40caf6f29dbca107bdeca417c97d2e6d7b0f51d405e90e5cba15",
+      "relPath": "media/jarvix/samples/sample_warm_en.wav"
+    },
+    "sample_warm_es": {
+      "timbre": "warm",
+      "language": "es",
+      "languageName": "Español",
+      "text": "¡Saludos! Soy JARVIX, su asistente de voz Deepsyq. Todos los sistemas creativos están listos para trabajar.",
+      "durationSec": 4.69,
+      "fileSize": 225350,
+      "sha256": "8c0bc0ce1e218e5ec3378133596b401b978eeaece9bbcb34a786cd0ffa3c1157",
+      "relPath": "media/jarvix/samples/sample_warm_es.wav"
+    },
+    "sample_warm_fr": {
+      "timbre": "warm",
+      "language": "fr",
+      "languageName": "Français",
+      "text": "Bonjour! Je suis JARVIX, votre assistant vocal Deepsyq. Tous les systèmes créatifs sont prêts.",
+      "durationSec": 4.39,
+      "fileSize": 210656,
+      "sha256": "85eca40bed5785b6ff504d8a8be69d0c0ecc0045a73a05675c9e0593147cd529",
+      "relPath": "media/jarvix/samples/sample_warm_fr.wav"
+    }
+  },
+  "infrastructure": {
+    "onPremiseEngine": "Piper-Multilingual-ONNX / Chatterbox-v2",
+    "sttEngine": "faster-whisper-large-v3-turbo / whisper.cpp",
+    "recommendedGpu": "NVIDIA RTX 3060 / T4 (12GB VRAM)",
+    "onPremiseRecurringCost": "$0 / month",
+    "cloudInferenceCost": "$0.29 - $0.52 / hr"
+  }
+}
