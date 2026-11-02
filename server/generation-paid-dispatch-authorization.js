@@ -33,7 +33,8 @@ export async function requirePurchasedDispatchAuthorization({
  let receipt;
  try{receipt=await verifyPurchasedReservation(Object.freeze({
   userId:user.id,jobId:job.id,kind:model.kind,modelId:model.id,
-  provider:model.provider,requestFingerprint:request.fingerprint,credits:quote.credits
+  provider:model.provider,requestFingerprint:request.fingerprint,credits:quote.credits,
+  providerCostMicros:quote.providerCostMicros,currency:quote.currency
  }));}catch{denied();}
  if(!receipt||receipt.source!=='settled_stripe_purchase'||receipt.purchaseConfirmed!==true||
     receipt.refunded!==false||receipt.dispatchClaimedExactlyOnce!==true||

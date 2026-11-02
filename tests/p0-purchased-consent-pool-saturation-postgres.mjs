@@ -35,8 +35,8 @@ for(const max of [1,2])test('P0 REAL disposable PG pool.max='+max+' concurrency,
    const sid='cs_live_'+id;
    await pool.query('INSERT INTO vv_users(id) VALUES($1)',[id]);
    await pool.query('INSERT INTO vv_ai_user_consents(user_id,terms_version,privacy_version,provider_data_version,provider_data_accepted) VALUES($1,$2,$2,$2,true)',[id,'2026-10-20']);
-   await pool.query('INSERT INTO vv_ai_order(id,user_id,session_id,snapshot) VALUES($1,$2,$3,$4::jsonb)',[sid+'_order',id,sid,JSON.stringify({billingMode:'live'})]);
-   await wallet.grant({userId:id,sessionId:sid,paymentIntent:'pi_'+sid,credits:70,amount:1000,currency:'usd'});
+   await pool.query('INSERT INTO vv_ai_order(id,user_id,session_id,snapshot) VALUES($1,$2,$3,$4::jsonb)',[sid+'_order',id,sid,JSON.stringify({billingMode:'live',amount:1000,credits:70,currency:'usd',priceId:'price_fixture123'})]);
+   await wallet.grant({userId:id,sessionId:sid,paymentIntent:'pi_cslive'+id,credits:70,amount:1000,currency:'usd',settlement:{currency:'usd',processorFeeAmount:60,taxAmount:0,netRevenueMicros:9_400_000,stripeChargeId:'ch_'+id,stripeBalanceTransactionId:'txn_'+id,livemode:true}});
   };
   const create=async(id,userId)=>{
    await pool.query("INSERT INTO vv_generation_jobs(id,user_id,kind,model,provider,status,request_fingerprint,credits_reserved,estimated_cost,cost_currency,settings) VALUES($1,$2,'image',$3,'Google','processing',$4,7,0.0012,'usd',$5::jsonb)",[id,userId,model.id,fingerprint,JSON.stringify({dispatchConsent:true,purchasedQuote:quote})]);

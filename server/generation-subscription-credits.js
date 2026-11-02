@@ -1,6 +1,7 @@
 // Optional BASE #16 AI grants for *existing* paid Tool subscriptions.
 // This is not the existing Tool allowance: every AI credit count is explicitly
 // approved in env, disabled by default, and recorded once per signed paid invoice.
+import {retrieveStripeNetRevenue,stripeInvoiceTaxAmount} from './generation-stripe-net-revenue.js';
 const PLANS=['basic','pro','business'];
 const PRICE_KEYS={basic:'STRIPE_PRICE_BASIC',pro:'STRIPE_PRICE_PRO',business:'STRIPE_PRICE_BUSINESS'};
 const validCredits=n=>Number.isSafeInteger(n)&&n>0&&n<=10_000_000;
@@ -63,7 +64,7 @@ export function invoicePaymentIntent(invoice){
  return all[0];
 }
 
-export async function grantPaidSubscriptionInvoice({event,env={},pool,wallet}){
+export async function grantPaidSubscriptionInvoice({event,env={},pool,wallet,stripe}){
  if(event?.type!=='invoice.paid')return false;
  const config=subscriptionCreditConfig(env);
  if(!config.enabled)return false;
@@ -95,6 +96,10 @@ export async function grantPaidSubscriptionInvoice({event,env={},pool,wallet}){
     !/^[a-z]{3}$/.test(invoice.currency||''))
   throw Error('AI_SUBSCRIPTION_INVOICE_INVALID');
  const paymentIntent=invoicePaymentIntent(invoice);
+ const taxAmount=stripeInvoiceTaxAmount(invoice);
+ const settlement=await retrieveStripeNetRevenue({stripe,paymentIntentId:paymentIntent,
+  expectedAmount:invoice.amount_paid,expectedCurrency:invoice.currency,taxAmount,
+  expectedLivemode:mode});
  // Existing legacy subscription/account is the canonical owner. No lookup by
  // untrusted invoice metadata/email, and no synthetic user gets credit.
  const {rows}=await pool.query(
@@ -109,7 +114,7 @@ export async function grantPaidSubscriptionInvoice({event,env={},pool,wallet}){
  // packs. The existing cumulative charge.refunded handler can now revoke
  // credits proportionally and apply debt instead of leaving refunded credits.
  await wallet.grant({userId:rows[0].id,sessionId:invoice.id,
-  paymentIntent,credits:grant.credits,amount:invoice.amount_paid,currency:invoice.currency,
+  paymentIntent,credits:grant.credits,amount:invoice.amount_paid,currency:invoice.currency,settlement,
   allowHistoricalSubscriptionReplay:true});
  // A subscription has no Checkout session_id, so its purchased credit origin
  // needs a SECOND verified trail: only the live, signed invoice.paid path

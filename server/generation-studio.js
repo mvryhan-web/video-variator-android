@@ -27,6 +27,9 @@ import {installGenerationConsent,hasStoredGenerationConsent} from './generation-
 import {pollWithCurrentGenerationConsent} from './generation-consent-poll.js';
 import {generateOpenAIImage} from './generation-openai-image.js';
 import {objectStorageConfig} from './generation-storage.js';
+import {isSmartDecisionEnabled,decideSmartModel,publicDecisionView} from './generation-smart-decision.js';
+import {projectWorkspaceJobView} from './workspace-job-view.js';
+import {selectWorkspaceCardSections} from './workspace-card-sections.js';
 export async function dispatchGeneration(request,{env=process.env,fetcher=fetch,authorization=null,signal=null}={}){
  // A purchased consent fence owns signal. A late model/body preparation MUST
  // not start provider transport after the fence times out or revoke is ACKed.
@@ -34,14 +37,15 @@ export async function dispatchGeneration(request,{env=process.env,fetcher=fetch,
  const guardedFetch=(url,options)=>{signal?.throwIfAborted();return fetcher(url,options);};
  const model=MODEL_CATALOG.find(m=>m.id===request.model&&m.kind===request.kind&&m.adapter);
  if(!model)throw Error('MODEL_NOT_CONNECTED');
+ const proof=authorization?.scope==='purchased_customer_only'&&authorization?.authorized===true&&authorization?.modelId===model.id;
  if(model.provider==='OpenAI'){
-  const proof=authorization?.scope==='purchased_customer_only'&&authorization?.authorized===true&&authorization?.modelId===model.id;
   const modelConfig={id:model.id,enabled:true,quality:'high',maxReferences:model.references,
    formats:['png','jpeg'],sizes:{'1:1':{'1K':'1024x1024'},'3:2':{'1K':'1536x1024'},'2:3':{'1K':'1024x1536'}}};
   return generateOpenAIImage(request,{key:env.OPENAI_API_KEY,modelConfig,
    purchasedJobGate:{customerPaymentConfirmed:proof,purchasedCreditsReserved:proof,
     serverPriceApproved:proof,userConsented:proof,durableStorageReady:proof&&objectStorageConfig(env).configured},fetcher:guardedFetch,signal});
  }
+ if(env.AI_PURCHASED_ONLY_DISPATCH_ENABLED==='true'&&!proof)throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED');
  signal?.throwIfAborted();
  return model.provider==='BytePlus'?generateBytePlus(request,{key:env.BYTEPLUS_API_KEY,fetcher:guardedFetch,signal}):generateGoogle(request,{key:env.GEMINI_API_KEY,fetcher:guardedFetch,signal});
 }
@@ -83,6 +87,30 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(env.AI_PROVIDER_ADMIN_ENABLED!=='true'||!pool)return base;
   return listModelControls(pool,base);
  }
+ function trySmartDecision(body,catalog,candidates){
+  if(!isSmartDecisionEnabled(env)||!['image','video'].includes(body?.kind)||!candidates?.length)return null;
+  const now=Date.now(),refs=Array.isArray(body?.references)?body.references.length:Number(body?.referenceCount||0);
+  const first=candidates[0];
+  const req={kind:body.kind,ratio:body.ratio||null,referenceCount:refs,
+   ...(body.kind==='video'?{
+    videoInputMode:body.videoInputMode||(refs?'first_frame':'text'),
+    videoDuration:body.videoDuration==null?first.capabilities?.durationSeconds:body.videoDuration,
+    videoResolution:body.videoResolution||first.quality
+   }:{resolution:body.resolution||null,outputFormat:body.outputFormat||null})};
+  let defaultCurrency=null;
+  const quoteFor=(model,r)=>{
+   const q=estimateGenerationPricing({...r,model:model.id},model,env);
+   if(!q)return null;
+   if(!defaultCurrency)defaultCurrency=q.currency;
+   return {modelId:model.id,quoteId:`quote_${model.id}_${q.credits}`,source:'server',
+    credits:q.credits,providerCostMicros:q.providerCostMicros,currency:q.currency,
+    issuedAt:now,expiresAt:now+300_000};
+  };
+  for(const c of candidates){const q=estimateGenerationPricing({...req,model:c.id},c,env);if(q?.currency){defaultCurrency=q.currency;break;}}
+  if(!defaultCurrency)return null;
+  const decision=decideSmartModel({request:req,catalog,quoteFor,currency:defaultCurrency,now,policy:{requireVerifiedAvailability:false}});
+  return decision?.state==='SELECTED'?decision:null;
+ }
  async function resolveEstimateRequest(body){
   const catalog=await effectiveCatalog(),kind=String(body?.kind||''),ratio=String(body?.ratio||''),musicMode=body?.musicMode==null?null:String(body.musicMode),count=Number(body?.referenceCount||0);
   if(!['image','video','music'].includes(kind)||!Number.isInteger(count)||count<0||count>10)throw Error('INVALID_REQUEST');
@@ -90,7 +118,10 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(body&&('seed'in body||'negativePrompt'in body||'negative_prompt'in body))throw Error('UNSUPPORTED_IMAGE_CONTROL');
   let selected,routing;
   if(env.AI_SMART_ROUTING_ENABLED==='true'&&(body?.model==='smart'||!body?.model)){
-   const candidates=orderedGenerationCandidates({kind,ratio,references:Array.from({length:count}),...(kind==='video'?{videoInputMode:body?.videoInputMode,videoResolution:body?.videoResolution,videoDuration:body?.videoDuration}:{})},catalog);if(!candidates.length)throw Error('NO_COMPATIBLE_MODEL');selected=candidates[0];routing={smart:true,candidates:candidates.map(m=>m.id)};
+   const candidates=orderedGenerationCandidates({kind,ratio,references:Array.from({length:count}),...(kind==='video'?{videoInputMode:body?.videoInputMode,videoResolution:body?.videoResolution,videoDuration:body?.videoDuration}:{})},catalog);if(!candidates.length)throw Error('NO_COMPATIBLE_MODEL');
+   const decision=trySmartDecision(body,catalog,candidates);
+   selected=decision?candidates.find(m=>m.id===decision.selected.modelId)||candidates[0]:candidates[0];
+   routing={smart:true,candidates:decision?decision.ranked.map(r=>r.modelId):candidates.map(m=>m.id),...(decision?{decision:publicDecisionView(decision)}:{})};
   }else{
    selected=catalog.find(m=>m.id===body?.model&&m.kind===kind);if(!selected)throw Error('MODEL_NOT_FOUND');if(!selected.enabled)throw Error(selected.maintenance?'MODEL_MAINTENANCE':'MODEL_NOT_ENABLED');routing={smart:false,candidates:[selected.id]};
   }
@@ -124,8 +155,10 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   const catalog=await effectiveCatalog();
   let selected;
   if(env.AI_SMART_ROUTING_ENABLED==='true'&&(body?.model==='smart'||!body?.model)){
-   const choice=resolveGenerationModel(body,catalog,env);selected=choice.model;
-   return {request:validateGeneration({...body,model:selected.id}),selected,routing:{smart:true,candidates:choice.candidates.map(m=>m.id)}};
+   const choice=resolveGenerationModel(body,catalog,env);
+   const decision=trySmartDecision(body,catalog,choice.candidates);
+   selected=decision?choice.candidates.find(m=>m.id===decision.selected.modelId)||choice.model:choice.model;
+   return {request:validateGeneration({...body,model:selected.id}),selected,routing:{smart:true,candidates:decision?decision.ranked.map(r=>r.modelId):choice.candidates.map(m=>m.id),...(decision?{decision:publicDecisionView(decision)}:{})}};
   }
   const request=validateGeneration(body);selected=catalog.find(m=>m.id===request.model&&m.kind===request.kind);
   if(!selected)throw Error('MODEL_NOT_FOUND');
@@ -186,13 +219,14 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
  });
 
  app.post('/api/studio/admin/route-preview',auth,owner,async(req,res)=>{if(env.AI_SMART_ROUTING_ENABLED!=='true')return res.status(503).json({error:'SMART_ROUTING_NOT_ENABLED'});try{const catalog=await effectiveCatalog();const candidates=orderedGenerationCandidates(req.body,catalog);if(!candidates.length)return res.status(503).json({error:'NO_COMPATIBLE_MODEL'});
-  const first=candidates[0],refs=Array.isArray(req.body?.references)?req.body.references.length:req.body?.referenceCount??0;
+  const decision=trySmartDecision(req.body,catalog,candidates);
+  const first=decision?candidates.find(m=>m.id===decision.selected.modelId)||candidates[0]:candidates[0],refs=Array.isArray(req.body?.references)?req.body.references.length:req.body?.referenceCount??0;
   const fallback=planPreDispatchFallback({
    smart:true,providerStarted:false,primary:first,candidates,
    request:{...req.body,referenceCount:refs},
    quoteFor:(m,request)=>estimateGenerationPricing({...request,model:m.id},m,env)
   });
-  res.json({fallback:{reason:fallback.reason,eligible:fallback.eligible,blocked:fallback.blocked},primary:candidates[0].id,candidates:candidates.map(m=>({id:m.id,provider:m.provider,priority:Number(m.control?.priority??m.priority??100),quality:m.capabilities?.quality??m.quality??null,durationSeconds:m.capabilities?.durationSeconds??null,maxReferences:m.capabilities?.maxReferences??m.references??0,ratios:m.capabilities?.ratios??m.ratios??[]}))});}catch(_){res.status(503).json({error:'SMART_ROUTING_UNAVAILABLE'});}});
+  res.json({fallback:{reason:fallback.reason,eligible:fallback.eligible,blocked:fallback.blocked},primary:first.id,candidates:candidates.map(m=>({id:m.id,provider:m.provider,priority:Number(m.control?.priority??m.priority??100),quality:m.capabilities?.quality??m.quality??null,durationSeconds:m.capabilities?.durationSeconds??null,maxReferences:m.capabilities?.maxReferences??m.references??0,ratios:m.capabilities?.ratios??m.ratios??[]})),...(decision?{decision:publicDecisionView(decision)}:{})});}catch(_){res.status(503).json({error:'SMART_ROUTING_UNAVAILABLE'});}});
  app.patch('/api/studio/admin/models/:id',auth,owner,async(req,res)=>{if(!modelAdminEnabled())return res.status(503).json({error:'MODEL_ADMIN_NOT_ENABLED'});try{const control=await updateModelControlAudited(pool,{modelId:req.params.id,userId:req.user.id,patch:req.body,catalog:studioConfig(env).catalog});res.json({modelId:req.params.id,control});}catch(e){const status=e.message==='MODEL_NOT_FOUND'?404:e.message==='INVALID_MODEL_CONTROL'?400:503;res.status(status).json({error:status===503?'MODEL_ADMIN_UNAVAILABLE':e.message});}});
 
  app.get('/api/studio/admin/billing-review',auth,owner,async(_req,res)=>{if(!wallet)return res.status(503).json({error:'AI_WALLET_UNAVAILABLE'});try{
@@ -390,6 +424,16 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
   if(req.body?.consent!==true)return res.status(400).json({error:'EXPLICIT_CONSENT_REQUIRED'});
   try{if(!(await hasStoredGenerationConsent(pool,req.user.id)))return res.status(403).json({error:'PROVIDER_CONSENT_REQUIRED'});}
   catch(_){return res.status(503).json({error:'CONSENT_STORAGE_UNAVAILABLE'});}
+  // Customer revenue comes from verified Stripe settlements, not operator
+  // assertions in AI_MODEL_PRICING_JSON. Preflight before job persistence or
+  // credit reservation; the dispatch claim repeats this atomically.
+  if(typeof wallet.preflightPurchasedMargin!=='function')
+   return res.status(503).json({error:'AI_PURCHASED_MARGIN_NOT_VERIFIED'});
+  try{
+   const marginReady=await wallet.preflightPurchasedMargin({userId:req.user.id,credits:quote.credits,
+    providerCostMicros:quote.providerCostMicros,currency:quote.currency});
+   if(!marginReady)return res.status(503).json({error:'AI_PURCHASED_MARGIN_NOT_VERIFIED'});
+  }catch(_){return res.status(503).json({error:'AI_PURCHASED_MARGIN_NOT_VERIFIED'});}
   const fingerprint=requestFingerprint(request);let c,id=randomUUID(),reused=null;try{
    await init();c=await pool.connect();await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(hashtext($1))',['ai-create:'+req.user.id]);
    reused=await findGenerationRequest(c,{userId:req.user.id,requestId:clientRequestId,fingerprint});
@@ -470,6 +514,17 @@ export function installGenerationStudio(app,{auth,pool,env=process.env,provider=
    return safe;
   };
   res.json({filter,items:rows.map(j=>({id:j.id,kind:j.kind,status:j.status,provider:j.provider||null,model:j.model||null,prompt:j.prompt||'',settings:publicSettings(j.settings),error:j.error||null,...videoHistoryPublicStatus(j),text:j.result_text||'',mime:j.mime||null,storedExternally:Array.isArray(j.output_assets)&&j.output_assets.length>0,createdAt:j.created_at,startedAt:j.started_at||null,completedAt:j.completed_at||null,failedAt:j.failed_at||null,creditsReserved:Number(j.credits_reserved||0),creditsCharged:Number(j.credits_charged||0)}))});
+ }catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
+ app.get('/api/studio/workspace/cards',auth,generationUser,async(req,res)=>{res.set('Cache-Control','private, no-store');try{
+  await init();
+  const {rows}=await pool.query('SELECT id,user_id,kind,status,output_assets,created_at FROM vv_generation_jobs WHERE user_id=$1 AND deleted=false ORDER BY created_at DESC LIMIT 50',[req.user.id]);
+  const cards=projectWorkspaceJobView({userId:String(req.user.id),jobs:rows});
+  const sections=selectWorkspaceCardSections({cards,options:{
+   searchQuery:typeof req.query.q==='string'?req.query.q:'',
+   typeFilter:typeof req.query.type==='string'?req.query.type:undefined,
+   statusFilter:typeof req.query.status==='string'?req.query.status:undefined
+  }});
+  res.json({...sections,metadata:{...sections.metadata,sourceValidated:true}});
  }catch(_){res.status(503).json({error:'STUDIO_STORAGE_UNAVAILABLE'});}});
  app.get('/api/studio/jobs/:id',auth,generationUser,async(req,res)=>{res.set('Cache-Control','private, no-store');try{
   let j=await getJob(req);if(!j)return res.status(404).json({error:'NOT_FOUND'});

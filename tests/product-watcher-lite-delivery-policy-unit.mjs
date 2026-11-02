@@ -288,3 +288,41 @@ test('W5.5: enforces 10-alert and 2048-byte draft bounds, redacts secrets, and n
     res.candidateId
   );
 });
+
+test('W5.5 route: POST /api/product-watcher/admin/lite-delivery-readiness enforces owner-only access and server-verified ownerIdentity', async () => {
+  const { default: express } = await import('express');
+  const { installProductWatcher } = await import('../server/product-watcher/admin-api.js');
+  const app = express();
+  app.use(express.json());
+  const env = { ADMIN_EMAIL: 'owner@deepsyq.com', PRODUCT_WATCHER_LITE_DELIVERY_ENABLED: 'true' };
+  installProductWatcher(app, {
+    env,
+    auth: (req, _res, next) => {
+      req.user = req.headers['x-role'] === 'owner'
+        ? { id: 'owner-uid-1', email: 'owner@deepsyq.com', provider: 'google' }
+        : { id: 'user-2', email: 'other@deepsyq.com', provider: 'google' };
+      next();
+    }
+  });
+  const server = app.listen(0, '127.0.0.1');
+  await new Promise(r => server.once('listening', r));
+  try {
+    const url = 'http://127.0.0.1:' + server.address().port + '/api/product-watcher/admin/lite-delivery-readiness';
+    const forbidden = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    assert.equal(forbidden.status, 403);
+    const input = buildValidFixture();
+    const ok = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-role': 'owner' },
+      body: JSON.stringify(input)
+    });
+    assert.equal(ok.status, 200);
+    const data = await ok.json();
+    assert.equal(data.ready, true);
+    assert.equal(data.status, 'NOT_SENT');
+    assert.equal(data.sent, false);
+  } finally {
+    server.closeAllConnections();
+    await new Promise(r => server.close(r));
+  }
+});
