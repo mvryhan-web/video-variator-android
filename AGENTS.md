@@ -1,3 +1,7 @@
+## OWNER PERMANENT PRICE DESIGN FREEZE — 2026-11-02
+
+See `docs/PRICING_OWNER_ART_LOCK.json` and `docs/PRICING_OWNER_ART_LOCK.md`. Pricing's original 12 owner-selected images, hero, five plans/five credit cards and CSS/HTML may NEVER be changed/replaced/redesigned by autonomous agents without a NEW explicit owner request. Pricing art lock CI + CODEOWNERS apply even to unrelated shared-header/translation work. Keep checkout and wallet protections unchanged.
+
 ## OWNER OVERRIDE — 2026-11-02 — SINGLE-CHAT TEAM, NO ACTIVE LEGACY CHAT AGENTS
 
 **Новый действующий состав DEEPSYQ (распоряжение владельца 02.11.2026):**
