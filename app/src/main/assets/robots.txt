@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: /api/
-Disallow: /deepsyq-admin.html
-Sitemap: https://video-variator-android.onrender.com/sitemap.xml
