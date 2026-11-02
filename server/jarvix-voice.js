@@ -175,10 +175,13 @@ export function installJarvixVoiceRoutes(app) {
     });
   });
 
-  // Multilingual Text-to-Speech Endpoint
-  app.post('/api/jarvix/tts', async (req, res) => {
+  // Multilingual Text-to-Speech Endpoint (Support BOTH GET and POST for HTML5 Audio)
+  const handleTtsRequest = async (req, res) => {
     try {
-      const { text, language = 'ru', timbre = 'baritone' } = req.body || {};
+      const text = (req.method === 'GET' ? req.query.text : req.body?.text) || '';
+      const language = (req.method === 'GET' ? (req.query.lang || req.query.language) : (req.body?.language || req.body?.lang)) || 'ru';
+      const timbre = (req.method === 'GET' ? req.query.timbre : req.body?.timbre) || 'baritone';
+
       if (!text || typeof text !== 'string') {
         return res.status(400).json({ error: 'MISSING_TEXT' });
       }
@@ -186,11 +189,11 @@ export function installJarvixVoiceRoutes(app) {
       const langCode = SUPPORTED_LANGUAGES[language] ? language : 'ru';
       const cleanTimbre = JARVIX_TIMBRES[timbre] ? timbre : 'baritone';
 
-      // Check if a pre-rendered high quality sample exists for exact phrase
+      // Check if a pre-rendered high quality sample exists for greeting/general phrase
       const sampleFileName = `sample_${cleanTimbre}_${langCode}.wav`;
       const sampleFilePath = path.join(SAMPLES_DIR, sampleFileName);
 
-      if (fs.existsSync(sampleFilePath) && text.length < 180) {
+      if (fs.existsSync(sampleFilePath) && (text.includes('JARVIX') || text.includes('Здравствуйте') || text.includes('Greetings') || text.length < 180)) {
         res.setHeader('Content-Type', 'audio/wav');
         res.setHeader('X-Jarvix-Timbre', cleanTimbre);
         res.setHeader('X-Jarvix-Language', langCode);
@@ -207,7 +210,10 @@ export function installJarvixVoiceRoutes(app) {
       console.error('[JARVIX-VOICE] TTS error:', err);
       res.status(500).json({ error: 'JARVIX_TTS_ERROR' });
     }
-  });
+  };
+
+  app.get('/api/jarvix/tts', handleTtsRequest);
+  app.post('/api/jarvix/tts', handleTtsRequest);
 
   // Speech-to-Text Transcription Endpoint (faster-whisper architecture)
   app.post('/api/jarvix/stt', async (req, res) => {
