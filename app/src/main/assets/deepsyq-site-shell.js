@@ -8,7 +8,8 @@
   {section:'Creation'},
   {label:'Image',icon:'▧',url:'generate-studio.html?studio=image',key:'image'},
   {label:'Video',icon:'▷',url:'generate-studio.html?studio=video',key:'video'},
-  {label:'Agent',icon:'✦',pending:true},
+  {label:'Agent',icon:'✦',url:'ai-agents.html',key:'agents'},
+  {label:'Virtual Pet',icon:'🐾',url:'virtual-pet.html',key:'pet'},
   {label:'Audio',icon:'♫',url:'generate-studio.html?studio=audio',key:'audio'},
   {section:'Tools'},
   {label:'Tools',icon:'⊞',url:'free-tools.html',key:'tools'},
@@ -32,7 +33,7 @@
   (query.get('view')==='history'?'history':
    query.get('studio')==='video'?'video':
    ['audio','music'].includes(query.get('studio'))?'audio':'image'):
-  path==='canvas.html'?'canvas':path==='ai-apps.html'?'apps':path==='inspiration.html'?'inspiration':
+  path==='virtual-pet.html'?'pet':path==='ai-agents.html'?'agents':path==='canvas.html'?'canvas':path==='ai-apps.html'?'apps':path==='inspiration.html'?'inspiration':
   ['pricing.html','ai-pricing.html'].includes(path)?'pricing':
   path==='index.html'?'legacy':
   ['free-tools.html','audio-studio.html','avatar-studio.html','mobile-utility.html',

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deepsyq Virtual Pet Companion — Волшебный нюх (Block 8)</title>
+  <link rel="stylesheet" href="generate-studio.css">
+  <link rel="stylesheet" href="virtual-pet.css">
+  <style>
+    body {
+      background: #090d16;
+      color: #f0f6fc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pet-page-container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 40px 24px 100px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .pet-hero {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .pet-hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 6px 14px;
+      border-radius: 999px;
+      color: #38bdf8;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+
+    .pet-hero h1 {
+      font-size: 36px;
+      font-weight: 700;
+      margin: 0 0 14px 0;
+      background: linear-gradient(135deg, #ffffff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .pet-hero p {
+      color: #94a3b8;
+      font-size: 16px;
+      max-width: 680px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Grid of 3 Superpowers */
+    .superpowers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .power-card {
+      background: #111726;
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      padding: 24px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .power-card:hover {
+      border-color: #38bdf8;
+      transform: translateY(-2px);
+    }
+
+    .power-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    .power-card h3 {
+      font-size: 18px;
+      margin: 0 0 10px 0;
+      color: #f1f5f9;
+    }
+
+    .power-card p {
+      font-size: 14px;
+      color: #8b949e;
+      line-height: 1.5;
+      margin: 0 0 16px 0;
+    }
+
+    /* Interactive Testing Sandbox */
+    .sandbox-panel {
+      background: #111726;
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+
+    .sandbox-panel h2 {
+      font-size: 22px;
+      margin: 0 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sandbox-panel-desc {
+      color: #8b949e;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .sim-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .sim-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sim-box {
+      background: #090d16;
+      border: 1px solid #21262d;
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .sim-box h4 {
+      font-size: 15px;
+      margin: 0 0 12px 0;
+      color: #38bdf8;
+    }
+
+    .sim-input {
+      width: 100%;
+      box-sizing: border-box;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #f0f6fc;
+      font-size: 14px;
+      margin-bottom: 12px;
+      resize: vertical;
+    }
+
+    .sim-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .nav-bar-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .nav-link-btn {
+      color: #38bdf8;
+      text-decoration: none;
+      font-size: 13px;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 8px 14px;
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+
+    .nav-link-btn:hover {
+      background: rgba(56, 189, 248, 0.18);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="pet-page-container">
+    <div class="pet-hero">
+      <div class="pet-hero-badge">🐾 Block 8 Prototype • Волшебный нюх</div>
+      <h1>Виртуальный компаньон Deepsyq</h1>
+      <p>
+        Необязательный, добрый и тактичный помощник (собака Рекс или кошка Луна).
+        Он не надоедает всплывающими окнами, а действительно помогает спасать черновики,
+        проверять форматы Reels/TikTok и вовремя доставлять готовые результаты.
+      </p>
+    </div>
+
+    <!-- 3 Superpowers -->
+    <div class="superpowers-grid">
+      <div class="power-card">
+        <span class="power-icon">🦴</span>
+        <h3>1. Спасение идей</h3>
+        <p>Если ты закрыл вкладку или случайно обновил страницу со сложным промптом, компаньон аккуратно сохранит его и предложит восстановить в один клик.</p>
+        <button class="ds-pet-btn ds-pet-btn-secondary" id="btnTestDraft">Проверить спасение черновика</button>
+      </div>
+
+      <div class="power-card">
+        <span class="power-icon">📱</span>
+        <h3>2. Нюх на формат 9:16</h3>
+        <p>Заметит упоминание TikTok, Shorts или Reels в горизонтальном режиме 16:9 и мягко порекомендует вертикальный формат для мобильных сетей.</p>
+        <button class="ds-pet-btn ds-pet-btn-secondary" id="btnTestRatio">Проверить формат Shorts</button>
+      </div>
+
+      <div class="power-card">
+        <span class="power-icon">📦</span>
+        <h3>3. Доставка результата</h3>
+        <p>Когда генерация в фоновом режиме переходит в READY, компаньон приносит карточку в зубах или двигает лапкой прямо к My Creations.</p>
+        <button class="ds-pet-btn ds-pet-btn-secondary" id="btnTestJob">Симулировать готовое видео</button>
+      </div>
+    </div>
+
+    <!-- Interactive Testing Sandbox -->
+    <div class="sandbox-panel">
+      <h2><span>🧪</span> Интерактивная песочница компаньона</h2>
+      <div class="sandbox-panel-desc">
+        Протестируй «Волшебный нюх» в реальном времени. В правом нижнем углу экрана находится твой питомец!
+      </div>
+
+      <div class="sim-row">
+        <!-- Input Sandbox -->
+        <div class="sim-box">
+          <h4>Тестовое поле ввода Studio</h4>
+          <textarea id="simPromptInput" class="sim-input" rows="3" placeholder="Напиши что-нибудь, например: 'Вертикальный ролик для Reels со взрывом неоновых красок'"></textarea>
+          <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <label style="font-size: 13px; color: #8b949e;">Формат:</label>
+            <select id="simRatioSelect" class="sim-input" style="width: auto; margin-bottom: 0;">
+              <option value="16:9">16:9 (Горизонтальный)</option>
+              <option value="9:16">9:16 (Вертикальный)</option>
+              <option value="1:1">1:1 (Квадрат)</option>
+            </select>
+          </div>
+          <div class="sim-actions">
+            <button class="ds-pet-btn ds-pet-btn-primary" id="btnSimSave">Имитировать сохранение</button>
+            <button class="ds-pet-btn ds-pet-btn-secondary" id="btnSimClear">Очистить поле</button>
+          </div>
+        </div>
+
+        <!-- Controls Sandbox -->
+        <div class="sim-box">
+          <h4>Управление компаньоном</h4>
+          <p style="font-size: 13px; color: #8b949e; line-height: 1.5; margin-bottom: 14px;">
+            Ты можешь переключать компаньона (Собака / Кошка), менять его имя и режим (Спокойный, Игривый, Выключен).
+          </p>
+          <div class="sim-actions">
+            <button class="ds-pet-btn ds-pet-btn-primary" id="btnOpenSettings">⚙ Открыть настройки компаньона</button>
+            <button class="ds-pet-btn ds-pet-btn-secondary" id="btnSwitchDog">🐕 Выбрать Рекса (Собака)</button>
+            <button class="ds-pet-btn ds-pet-btn-secondary" id="btnSwitchCat">🐱 Выбрать Луну (Кошка)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation links to the rest of Deepsyq -->
+    <div class="nav-bar-links">
+      <a href="generate-studio.html" class="nav-link-btn">← Перейти в AI Studio</a>
+      <a href="my-creations.html" class="nav-link-btn">My Workspace (F4) ↗</a>
+      <a href="compare-ai.html" class="nav-link-btn">Compare AI (F1) ↗</a>
+      <a href="ai-agents.html" class="nav-link-btn">AI Agents (F2) ↗</a>
+    </div>
+  </div>
+
+  <script src="virtual-pet.js"></script>
+  <script defer src="deepsyq-site-shell.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const pet = window.DeepsyqVirtualPet;
+      const promptInput = document.getElementById('simPromptInput');
+      const ratioSelect = document.getElementById('simRatioSelect');
+
+      // Attach pet sniffer to the sandbox inputs
+      pet.attachToPrompt(promptInput, ratioSelect);
+
+      // Simulation 1: Test Draft Saver
+      document.getElementById('btnTestDraft').addEventListener('click', () => {
+        pet.saveDraft('Кинематографичный пейзаж неонового Токио 2099 года в лучах заката с дрона', {
+          aspectRatio: '16:9'
+        });
+        promptInput.value = '';
+        pet.sniffDraftRescue(promptInput);
+      });
+
+      // Simulation 2: Test Ratio Sniffer
+      document.getElementById('btnTestRatio').addEventListener('click', () => {
+        promptInput.value = 'Динамичный ролик для TikTok и Reels с переходом камеры';
+        ratioSelect.value = '16:9';
+        pet.sniffFormatRatio(promptInput.value, ratioSelect.value, (newRatio) => {
+          ratioSelect.value = newRatio;
+        });
+      });
+
+      // Simulation 3: Test Job Delivery
+      document.getElementById('btnTestJob').addEventListener('click', () => {
+        pet.sniffJobReady({
+          id: 'job-sim-' + Math.floor(Math.random() * 10000),
+          status: 'ready',
+          prompt: 'Неоновый киберпанк спорткар в движении'
+        });
+      });
+
+      // Sandbox controls
+      document.getElementById('btnSimSave').addEventListener('click', () => {
+        if (!promptInput.value.trim()) {
+          promptInput.value = 'Креативная концепция нового продукта для рекламной кампании';
+        }
+        pet.saveDraft(promptInput.value, { aspectRatio: ratioSelect.value });
+        pet.speak('Черновик успешно сохранён! Если ты закроешь страницу, я напомню о нём.', [], 'friendly');
+      });
+
+      document.getElementById('btnSimClear').addEventListener('click', () => {
+        promptInput.value = '';
+      });
+
+      document.getElementById('btnOpenSettings').addEventListener('click', () => {
+        pet.openSettingsModal();
+      });
+
+      document.getElementById('btnSwitchDog').addEventListener('click', () => {
+        pet.saveSettings({ pet: 'dog', name: 'Рекс' });
+        pet.speak('Гав! Я Рекс, твой верный помощник!', [], 'friendly');
+      });
+
+      document.getElementById('btnSwitchCat').addEventListener('click', () => {
+        pet.saveSettings({ pet: 'cat', name: 'Луна' });
+        pet.speak('Мяу! Я Луна, буду аккуратно приглядывать за твоими генерациями.', [], 'friendly');
+      });
+    });
+  </script>
+</body>
+</html>
