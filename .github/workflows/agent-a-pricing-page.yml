@@ -1,7 +1,7 @@
 name: Agent A Pricing Page
 on:
   pull_request:
-    branches: [deepsyq-platform]
+    branches: [deepsyq-platform, main]
     paths:
       - 'app/src/main/assets/pricing.html'
       - 'app/src/main/assets/pricing-page.css'
