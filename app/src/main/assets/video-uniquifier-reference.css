@@ -2,6 +2,7 @@
 body.vu-reference{background:#020b1a!important;color:#fff;font-family:Inter,system-ui,sans-serif}
 body.vu-reference .shell{display:grid!important;grid-template-columns:190px minmax(0,1fr)!important;grid-template-rows:56px auto;max-width:1700px;margin:auto;min-height:100vh;background:#020c1b}
 body.vu-reference .vu-appbar{grid-column:1/-1;grid-row:1;display:flex;gap:16px;align-items:center;position:sticky;top:0;z-index:50;height:56px;padding:0 20px;background:#020c1df9;border-bottom:1px solid #092c56}
+body.vu-reference .vu-appbar .top-jarvis-btn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:100}
 body.vu-reference .vu-logo{display:flex;align-items:center;gap:9px;color:#fff;font-size:23px;text-decoration:none;min-width:185px}
 body.vu-reference .vu-brandmark{display:grid;place-items:center;background:conic-gradient(#06ddff,#1442f8,#dc08f0,#08c5fc);border-radius:12px;color:#fff;height:34px;width:34px;font-size:23px;box-shadow:0 0 12px #1078ffc9}
 body.vu-reference .vu-nav-toggle{border:0;background:transparent;color:#e8f3ff;font-size:23px}

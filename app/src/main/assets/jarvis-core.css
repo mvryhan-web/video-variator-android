@@ -1,7 +1,7 @@
 /* JARVIX AI System — Ambient Marvel Arc-Reactor Voice Companion & Pure Soundwave Aura */
 
 /* Ensure the parent header is positioned relative so the Orb can be dead-centered */
-:is(header, .top, .topbar, .price-topbar, body>header, .tools>header) {
+:is(header, .top, .topbar, .price-topbar, .vu-appbar, body>header, .tools>header) {
   position: relative !important;
 }
 

@@ -18,7 +18,7 @@ function image(key,extra=''){
  const [x,y,w,h]=R[key],esc=key.replace(/[^a-z0-9]/gi,'');
  const el=document.createElement('span');el.className='vu-art vu-art-'+esc+(extra?' '+extra:'');
  el.setAttribute('aria-hidden','true');
- const img=document.createElement('img');const dedicated=key==='hero'?'https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/fc96c618-bedb-4137-b872-1aa746f79157.png':key==='uploader'?'media/vu-clean-upload-20261025.svg':null;img.src=dedicated||file;if(key==='hero')img.addEventListener('error',()=>{if(img.src.includes('vu-clean-hero-20261025.svg'))return;img.src='media/vu-clean-hero-20261025.svg';},{once:true});img.alt='';img.loading=(key==='hero'?'eager':'lazy');img.decoding='async';
+ const img=document.createElement('img');const dedicated=key==='hero'?'media/fc96c618-bedb-4137-b872-1aa746f79157.png':key==='uploader'?'media/vu-clean-upload-20261025.svg':null;img.src=dedicated||file;if(key==='hero')img.addEventListener('error',()=>{if(!img.src.includes('fc96c618'))return;img.src='https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/fc96c618-bedb-4137-b872-1aa746f79157.png';img.addEventListener('error',()=>{img.src='media/vu-clean-hero-20261025.svg';},{once:true});},{once:true});img.alt='';img.loading=(key==='hero'?'eager':'lazy');img.decoding='async';
  Object.assign(img.style,dedicated?{position:'absolute',width:'100%',height:'100%',left:'0',top:'0',objectFit:key==='hero'?'cover':'contain',pointerEvents:'none'}:{position:'absolute',maxWidth:'none',width:(1447/w*100)+'%',height:(1087/h*100)+'%',left:(-x/w*100)+'%',top:(-y/h*100)+'%',pointerEvents:'none'});
  el.append(img);return el;
 }
@@ -34,7 +34,11 @@ function makeNav(shell){
  tools.innerHTML='<a href="index.html?view=faq">ⓘ &nbsp;Help</a><span>◎ &nbsp;English</span><span class="vu-promo-pill">♔ &nbsp;Promo Code</span><span>♧ &nbsp;Invite Friend</span><span>◉ &nbsp;Credits</span><a href="pricing.html">♛ &nbsp;Pricing</a>';
  const user=node('div','vu-top-user');
  const sign=$('signInBtn');if(sign)user.append(sign);
- bar.append(logo,menu,search,tools,user);shell.prepend(bar);
+ const jBtn=node('button','top-jarvis-btn');
+ jBtn.id='topJarvisBtn';jBtn.type='button';jBtn.setAttribute('aria-label','Activate JARVIX AI');
+ jBtn.title='JARVIX — AI Voice Commander & Compare';
+ jBtn.innerHTML='<div class="jarvis-mini-orb"><span class="jarvis-core"></span><span class="jarvis-ring"></span><span class="jarvis-ring ring-violet"></span></div><span class="jarvis-name">JARVIX</span>';
+ bar.append(logo,menu,search,jBtn,tools,user);shell.prepend(bar);
  const side=shell.querySelector('.sidebar');if(!side)return;
  const nav=node('div','vu-side-nav');
  const sections=[
@@ -48,7 +52,12 @@ function makeNav(shell){
   if(heading)group.append(node('p','vu-nav-heading',heading));
   links.forEach(([glyph,label,href])=>{
    const item=node(href?'a':'span','vu-side-link'+(label==='Video'?' active':'')+(!href?' disabled':''));
-   if(href)item.href=href;item.innerHTML='<span class="vu-nav-icon" aria-hidden="true">'+glyph+'</span><span>'+label+'</span>';
+   if(href)item.href=href;
+   if(label==='Agent'||label==='JARVIX'){
+    item.innerHTML='<span class="jarvis-mini-orb" style="width:20px;height:20px;display:inline-grid;place-items:center;margin-right:2px;" aria-hidden="true"><span class="jarvis-core" style="width:9px;height:9px;"></span><span class="jarvis-ring"></span><span class="jarvis-ring ring-violet"></span></span><span class="jarvis-name" style="letter-spacing:1px;color:#e0f2fe;">JARVIX</span>';
+   } else {
+    item.innerHTML='<span class="vu-nav-icon" aria-hidden="true">'+glyph+'</span><span>'+label+'</span>';
+   }
    if(!href)item.setAttribute('aria-disabled','true');
    group.append(item);
   });nav.append(group);

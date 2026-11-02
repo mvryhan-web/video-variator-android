@@ -18,8 +18,19 @@ describe('DEEPSYQ P0 Verification: Voice, Pets, Navigation & Languages', () => {
     assert.ok(jarvisJs.includes('if (isJarvisSpeaking)'), 'must drop recognition events while isJarvisSpeaking');
     // Has 300ms acoustic guard delay
     assert.ok(jarvisJs.includes('300'), 'must have guard delay before resuming mic');
-    // Prevents duplicate phrase loops
+    // Prevents duplicate phrase loops and double-speech repetition
     assert.ok(jarvisJs.includes('lastHandledText'), 'must debounce duplicate voice phrases');
+    assert.ok(jarvisJs.includes('lastSpokenText'), 'must debounce duplicate speech output (no double "Сделано.")');
+    assert.ok(jarvisJs.includes('isSamePage'), 'instantOpen must differentiate same page vs cross-page to prevent doubled speech');
+  });
+
+  it('1b. verifies Video Uniquifier top-center JARVIX orb and locked local hero artwork', () => {
+    const vuJs = fs.readFileSync(path.join(assetsDir, 'video-uniquifier-reference.js'), 'utf8');
+    const vuCss = fs.readFileSync(path.join(assetsDir, 'video-uniquifier-reference.css'), 'utf8');
+
+    assert.ok(vuJs.includes('topJarvisBtn'), 'VU appbar must contain topJarvisBtn');
+    assert.ok(vuJs.includes('media/fc96c618-bedb-4137-b872-1aa746f79157.png'), 'VU hero must use locked local original asset');
+    assert.ok(vuCss.includes('body.vu-reference .vu-appbar .top-jarvis-btn'), 'VU appbar centers JARVIX orb');
   });
 
   it('2. verifies guaranteed male TTS voice selector without random female fallback', () => {
