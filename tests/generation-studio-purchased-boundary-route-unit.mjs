@@ -14,7 +14,7 @@ const baseEnv={AI_STUDIO_ENABLED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',
  GEMINI_API_KEY:'test-only-not-an-api-key',DATABASE_URL:'test-only',ADMIN_EMAIL:'owner@example.test',
  AI_MODEL_PRICING_JSON:JSON.stringify([pricing]),
  AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:12}])};
-function simulate({receiptStatus='paid',providerThrows=false,reservationPersistFails=false,storageFails=false,user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
+function simulate({receiptStatus='paid',providerThrows=false,reservationPersistFails=false,storageFails=false,storageReturnsInvalid=false,user={id:'customer-1',email:'buyer@example.test',plan:'basic',subscription_status:'active',provider:'email'},envOverrides={}}={}){
  const jobs=[],walletEvents=[];let providerCalls=0,storageWrites=0;
  const pool={
   async query(sql,args=[]){
@@ -74,7 +74,7 @@ function simulate({receiptStatus='paid',providerThrows=false,reservationPersistF
   }}
  };
  const app=express();app.use(express.json());
- installGenerationStudio(app,{pool,wallet,env:{...baseEnv,...envOverrides},storage:storageFails?{configured:true,async putGeneration(){storageWrites++;throw Error('fixture S3 rejected write');}}:null,auth:(req,_res,next)=>{req.user=user;next()},
+ installGenerationStudio(app,{pool,wallet,env:{...baseEnv,...envOverrides},storage:storageFails||storageReturnsInvalid?{configured:true,async putGeneration(){storageWrites++;if(storageFails)throw Error('fixture S3 rejected write');return {storage:'s3',key:'',mime:'image/png',size:15,sha256:'0'.repeat(64)};}}:null,auth:(req,_res,next)=>{req.user=user;next()},
   provider:async()=>{providerCalls++;if(providerThrows)throw Error('AI_PURCHASED_DISPATCH_NOT_AUTHORIZED');return {mime:'image/png',bytes:Buffer.from('mock-only-image')}}});
  return {app,jobs,walletEvents,providerCalls:()=>providerCalls,storageWrites:()=>storageWrites};
 }
@@ -181,5 +181,24 @@ test('HTTP paid Image result rejected by S3 keeps HELD credits for owner review 
   assert.equal(job.metadata.failure.providerOutputProduced,true);
   assert.deepEqual(sim.walletEvents.map(x=>x[0]),['reserve','purchasedClaim'],
    'after paid provider success there must be no confirmed_failure settlement');
+ });
+});
+
+
+test('HTTP paid Image invalid S3 success receipt cannot capture credits or create unusable READY media',async()=>{
+ const sim=simulate({storageReturnsInvalid:true});
+ await withHttp(sim,async post=>{
+  const res=await post();assert.equal(res.status,202);await settle();
+  assert.equal(sim.providerCalls(),1,'provider invoked only once');
+  assert.equal(sim.storageWrites(),1,'storage invoked only once');
+  const job=sim.jobs[0];
+  assert.equal(job.status,'failed','malformed S3 receipt must not mark READY');
+  assert.equal(job.error,'OBJECT_STORAGE_FAILED');
+  assert.equal(job.error_message,'AI_WALLET_REVIEW_REQUIRED');
+  assert.equal(job.credits_reserved,7,'held credits need owner reconciliation');
+  assert.equal(job.credits_charged||0,0,'no capture for unusable asset');
+  assert.equal(job.metadata.failure.providerOutputProduced,true);
+  assert.deepEqual(sim.walletEvents.map(x=>x[0]),['reserve','purchasedClaim'],
+   'no automatic refund or capture after potentially billable provider output');
  });
 });
