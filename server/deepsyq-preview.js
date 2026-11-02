@@ -7,7 +7,9 @@ import express from 'express';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
+import {randomUUID} from 'node:crypto';
 import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
+import {buildJarvixSiteKnowledge,clearSession,getOrCreateSession,processTurnWithMockBrain} from './jarvix-brain.js';
 
 const app=express();
 const port=Number(process.env.PORT||31990);
@@ -18,6 +20,7 @@ const ffmpegCore=path.join(root,'node_modules','@ffmpeg','core','dist','esm');
 const disabled={error:'PREVIEW_ONLY',message:'This is a design preview. Accounts, payments and paid AI generation are disabled.'};
 
 app.disable('x-powered-by');
+app.use(express.json({limit:'8kb'}));
 app.use((_req,res,next)=>{
  res.setHeader('X-Robots-Tag','noindex, nofollow, noarchive');
  res.setHeader('Cache-Control','no-store');
@@ -27,7 +30,7 @@ app.use((_req,res,next)=>{
 app.get('/robots.txt',(_req,res)=>res.type('text/plain').send('User-agent: *\nDisallow: /\n'));
 // The standalone Video Uniquifier must load its real browser-local FFmpeg
 // from the SAME origin in the isolated preview, as in server/server.js.
-// Only these three public package assets are served; /api stays disabled.
+// Only these three public package assets are served; other APIs stay disabled.
 app.get('/vendor/ffmpeg/ffmpeg.js',(_req,res)=>res.type('application/javascript').sendFile(path.join(ffmpegUmd,'ffmpeg.js')));
 app.get('/vendor/ffmpeg/ffmpeg-core.js',(_req,res)=>res.type('application/javascript').sendFile(path.join(ffmpegCore,'ffmpeg-core.js')));
 app.get('/vendor/ffmpeg/ffmpeg-core.wasm',(_req,res)=>res.type('application/wasm').sendFile(path.join(ffmpegCore,'ffmpeg-core.wasm')));
@@ -44,6 +47,34 @@ app.get('/api/studio/config',(_req,res)=>res.json({
  enabled:false,ownerOnly:true,publicGenerationEnabled:false,pricingConfigured:false,
  models:[],catalog:MODEL_CATALOG.map(m=>({...m,enabled:false})),translation:{enabled:false,reason:'PREVIEW_ONLY'}
 }));
+// Jarvix's DEV-preview brain is deterministic and local-only. It has no provider
+// credentials, external AI calls, paid generation, or persistent user profile.
+const jarvixRequests=new Map();
+function allowJarvixRequest(req){
+ const now=Date.now(),key=String(req.ip||req.socket?.remoteAddress||'unknown').slice(0,80);
+ for(const [ip,state] of jarvixRequests)if(now-state.startedAt>60_000)jarvixRequests.delete(ip);
+ let state=jarvixRequests.get(key);
+ if(!state||now-state.startedAt>60_000){state={startedAt:now,count:0};jarvixRequests.set(key,state);}
+ state.count+=1;
+ return state.count<=20;
+}
+function validSessionId(value){return typeof value==='string'&&/^[\w-]{1,80}$/.test(value);}
+app.post('/api/jarvix/chat',(req,res)=>{
+ if(!allowJarvixRequest(req))return res.status(429).json({error:'JARVIX_RATE_LIMIT'});
+ const body=req.body||{},message=typeof body.message==='string'?body.message.trim():'';
+ if(!message||message.length>2000)return res.status(400).json({error:'INVALID_MESSAGE'});
+ const sessionId=validSessionId(body.sessionId)?body.sessionId:validSessionId(body.conversationId)?body.conversationId:`preview-${randomUUID()}`;
+ const language=['ru','en','es','fr'].includes(body.language)?body.language:'ru';
+ const session=getOrCreateSession(sessionId);
+ const result=processTurnWithMockBrain(message,session,language);
+ res.json({ok:true,reply:result.reply,action:result.action,entities:result.entities,compiledPrompt:result.compiledPrompt,studioHandoff:result.studioHandoff,sessionId:session.id,conversationId:session.id,language,provider:result.provider,audioUrl:null});
+});
+app.post('/api/jarvix/reset',(req,res)=>{
+ const sid=req.body?.sessionId||req.body?.conversationId;
+ if(!validSessionId(sid))return res.status(400).json({error:'INVALID_SESSION'});
+ clearSession(sid);res.json({ok:true});
+});
+app.get('/api/jarvix/site-map',(_req,res)=>res.json({ok:true,pages:buildJarvixSiteKnowledge()}));
 // Read-only preview of the owner's approved bundled media. This is the same
 // Inspiration response consumed by Home, without production DB/admin writes.
 const ownerMedia=JSON.parse(await readFile(path.join(assets,'media/home/owner-20261018/manifest.json'),'utf8'));

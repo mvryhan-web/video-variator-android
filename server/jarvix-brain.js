@@ -12,6 +12,95 @@
 
 import path from 'node:path';
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SITE_ASSETS_DIR = path.join(REPO_ROOT, 'app', 'src', 'main', 'assets');
+
+// A small, public-only index of actual site screens and their visible controls.
+// It is read from the shipped HTML so JARVIX answers about current forms rather
+// than relying on an outdated hand-written list of field names.
+const SITE_PAGE_FILES = Object.freeze([
+  ['deepsyq.html', 'Home'],
+  ['generate-studio.html', 'Image, video and audio generation studio'],
+  ['jarvix-studio.html', 'JARVIX chat and voice studio'],
+  ['virtual-pet.html', 'Virtual pets and companion settings'],
+  ['ai-agents.html', 'AI agents'],
+  ['ai-apps.html', 'AI Apps templates'],
+  ['canvas.html', 'Creative canvas'],
+  ['my-creations.html', 'My Creations library'],
+  ['compare-ai.html', 'Compare AI models'],
+  ['free-tools.html', 'Free media tools'],
+  ['audio-studio.html', 'Audio tools'],
+  ['pricing.html', 'Pricing'],
+  ['ai-privacy.html', 'AI privacy information']
+]);
+
+let siteKnowledgeCache = null;
+
+function visibleText(html) {
+  return String(html || '')
+    .replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<!--[^]*?-->/g, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;|&#160;/gi, ' ')
+    .replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+    .replace(/&quot;|&#34;/gi, '"').replace(/&#39;|&apos;/gi, "'")
+    .replace(/\s+/g, ' ').trim();
+}
+
+function attribute(tag, name) {
+  const match = String(tag).match(new RegExp(`\\b${name}\\s*=\\s*(["'])(.*?)\\1`, 'i'));
+  return match ? visibleText(match[2]) : '';
+}
+
+export function buildJarvixSiteKnowledge() {
+  if (siteKnowledgeCache) return siteKnowledgeCache;
+  const pages = [];
+  for (const [file, label] of SITE_PAGE_FILES) {
+    try {
+      const html = fs.readFileSync(path.join(SITE_ASSETS_DIR, file), 'utf8');
+      const title = visibleText(html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1]) || label;
+      const headings = [...html.matchAll(/<h[1-3]\b[^>]*>([\s\S]*?)<\/h[1-3]>/gi)]
+        .map(match => visibleText(match[1])).filter(Boolean).slice(0, 10);
+      const controls = [];
+      for (const match of html.matchAll(/<(input|textarea|select)\b[^>]*>/gi)) {
+        const tag = match[0];
+        const description = [
+          attribute(tag, 'aria-label'),
+          attribute(tag, 'placeholder'),
+          attribute(tag, 'data-label'),
+          attribute(tag, 'id')
+        ].filter(Boolean).join(' — ');
+        if (description) controls.push(description);
+      }
+      for (const match of html.matchAll(/<label\b[^>]*>([\s\S]*?)<\/label>/gi)) {
+        const labelText = visibleText(match[1]);
+        if (labelText) controls.push(`Field label: ${labelText}`);
+      }
+      for (const match of html.matchAll(/<select\b[^>]*>([\s\S]*?)<\/select>/gi)) {
+        const options = [...match[1].matchAll(/<option\b[^>]*>([\s\S]*?)<\/option>/gi)]
+          .map(option => visibleText(option[1])).filter(Boolean).slice(0, 12);
+        if (options.length) controls.push(`Select options: ${options.join(', ')}`);
+      }
+      for (const match of html.matchAll(/<button\b[^>]*>([\s\S]*?)<\/button>/gi)) {
+        const labelText = visibleText(match[1]);
+        if (labelText) controls.push(labelText);
+      }
+      pages.push({
+        path: `/${file}`,
+        label,
+        title,
+        headings: [...new Set(headings)].slice(0, 8),
+        controls: [...new Set(controls)].slice(0, 36)
+      });
+    } catch (_) {
+      // A missing optional page is omitted rather than invented.
+    }
+  }
+  siteKnowledgeCache = Object.freeze(pages.map(page => Object.freeze(page)));
+  return siteKnowledgeCache;
+}
 
 // 1. DEEPSYQ CAPABILITIES REGISTRY (Truthful knowledge base, zero hallucinated models)
 export const DEEPSYQ_CAPABILITIES = Object.freeze({
@@ -83,13 +172,29 @@ export const activeSessions = new Map();
 export const jarvixSessionStore = activeSessions; // Alias for convenience
 
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
+const MAX_ACTIVE_SESSIONS = 2000;
 
 export function getOrCreateSession(sessionId) {
-  const sid = sessionId || 'default-jarvix-session';
+  const sid = typeof sessionId === 'string' && /^[\w-]{1,80}$/.test(sessionId)
+    ? sessionId
+    : 'default-jarvix-session';
   const now = Date.now();
 
   let session = activeSessions.get(sid);
-  if (!session || (now - session.lastActivityAt > SESSION_TTL_MS)) {
+  if (session && now - session.lastActivityAt > SESSION_TTL_MS) {
+    activeSessions.delete(sid);
+    session = null;
+  }
+  if (!session) {
+    if (activeSessions.size >= MAX_ACTIVE_SESSIONS) {
+      for (const [key, value] of activeSessions) {
+        if (now - value.lastActivityAt > SESSION_TTL_MS) activeSessions.delete(key);
+      }
+      if (activeSessions.size >= MAX_ACTIVE_SESSIONS) {
+        const oldest = [...activeSessions.entries()].sort((a, b) => a[1].lastActivityAt - b[1].lastActivityAt)[0];
+        if (oldest) activeSessions.delete(oldest[0]);
+      }
+    }
     session = {
       id: sid,
       createdAt: now,
@@ -166,12 +271,12 @@ export function executeSafeAction(action) {
 
   // Permitted Safe Actions
   if (action.type === 'open_studio' || action.type === 'navigate') {
-    const studio = action.studio || 'video';
+    const studio = ['image', 'video', 'audio'].includes(action.studio) ? action.studio : 'video';
     return {
       success: true,
       type: 'open_studio',
       studio,
-      url: action.url || `generate-studio.html?studio=${studio}&from=jarvix&auto=1`
+      url: `generate-studio.html?studio=${studio}&from=jarvix&auto=1`
     };
   }
 
@@ -203,6 +308,7 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
   const isFr = lang === 'fr';
 
   session.history.push({ role: 'user', content: t, timestamp: Date.now() });
+  if (session.history.length > 24) session.history.splice(0, session.history.length - 24);
 
   let replyText = '';
   let action = null;
@@ -497,14 +603,16 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
 }
 
 // 6. LIVE OPENAI RESPONSES API DISPATCHER
-export async function processTurnWithOpenAI(userText, session, lang = 'ru') {
-  const apiKey = (process.env.OPENAI_API_KEY || '').trim();
-  // Safe zero-spend boundary: if no valid real OpenAI key is set, use verified local brain
-  if (!apiKey || apiKey.startsWith('mock-') || apiKey === 'dummy' || process.env.JARVIX_AI_DISABLE === 'true') {
+export async function processTurnWithOpenAI(userText, session, lang = 'ru', options = {}) {
+  const env = options.env || process.env;
+  const fetcher = options.fetcher || globalThis.fetch;
+  const apiKey = (env.OPENAI_API_KEY || '').trim();
+  // A key alone never enables billable calls. The owner must set the explicit flag.
+  if (env.JARVIX_AI_ENABLED !== 'true' || !apiKey || apiKey.startsWith('mock-') || apiKey === 'dummy' || env.JARVIX_AI_DISABLE === 'true') {
     return processTurnWithMockBrain(userText, session, lang);
   }
 
-  const model = process.env.JARVIX_AI_MODEL || 'gpt-4o-mini';
+  const model = env.JARVIX_AI_MODEL || 'gpt-6-luna';
   const systemPrompt = `You are JARVIX, the resident intelligent voice butler of DEEPSYQ creative AI platform.
 Language: ${lang}.
 Tone: Calm, confident, polite, sophisticated, concise butler persona (Marvel JARVIS inspired).
@@ -518,26 +626,32 @@ Strict Safety Rules:
 4. When instructed to open a studio or tool, output an action JSON block:
 {"action":{"type":"open_studio","studio":"video","url":"generate-studio.html?studio=video&from=jarvix&auto=1"}}
 5. NEVER repeat or parrot the user's prompt or words back to them (e.g. do not say "I heard...", "You asked for...", "Я услышал..."). Answer directly and concisely.
-Keep speech responses concise and natural for audio text-to-speech.`;
+Keep speech responses concise and natural for audio text-to-speech.
+
+Verified public DEEPSYQ pages and visible form controls:
+${JSON.stringify(buildJarvixSiteKnowledge())}
+Only describe a control if it appears in this site map.`;
 
   try {
-    const messages = [
-      { role: 'system', content: systemPrompt },
+    const input = [
       ...session.history.slice(-8).map(h => ({ role: h.role, content: h.content })),
-      { role: 'user', content: userText }
+      { role: 'user', content: String(userText).slice(0, 2000) }
     ];
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetcher('https://api.openai.com/v1/responses', {
       method: 'POST',
+      redirect: 'error',
+      signal: AbortSignal.timeout(15000),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
         model,
-        messages,
-        temperature: 0.7,
-        max_tokens: 300
+        instructions: systemPrompt,
+        input,
+        max_output_tokens: 300,
+        store: false
       })
     });
 
@@ -547,7 +661,10 @@ Keep speech responses concise and natural for audio text-to-speech.`;
     }
 
     const data = await response.json();
-    const rawReply = data.choices?.[0]?.message?.content || '';
+    const rawReply = data.output_text || (data.output || [])
+      .flatMap(item => item.content || [])
+      .filter(item => item.type === 'output_text' && typeof item.text === 'string')
+      .map(item => item.text).join('');
 
     let action = null;
     let cleanReply = rawReply;
@@ -562,6 +679,7 @@ Keep speech responses concise and natural for audio text-to-speech.`;
 
     session.history.push({ role: 'user', content: userText, timestamp: Date.now() });
     session.history.push({ role: 'assistant', content: cleanReply, timestamp: Date.now() });
+    if (session.history.length > 24) session.history.splice(0, session.history.length - 24);
 
     return {
       reply: cleanReply,
@@ -583,7 +701,7 @@ export function installJarvixBrainRoutes(app, options = {}) {
   // Chat Turn Endpoint
   app.post('/api/jarvix/chat', async (req, res) => {
     try {
-      const { message, sessionId, conversationId, language, timbre } = req.body || {};
+      const { message, sessionId, conversationId, language } = req.body || {};
       const sid = sessionId || conversationId;
       if (!message || typeof message !== 'string') {
         return res.status(400).json({ error: 'MISSING_MESSAGE' });
@@ -593,13 +711,10 @@ export function installJarvixBrainRoutes(app, options = {}) {
       const session = getOrCreateSession(sid);
 
       const result = await processTurnWithOpenAI(message, session, lang);
-      const chosenTimbre = timbre || 'baritone';
-      const audioUrl = `/api/jarvix/tts?text=${encodeURIComponent(result.reply.slice(0, 120))}&lang=${lang}&timbre=${chosenTimbre}`;
-
       res.json({
         ok: true,
         reply: result.reply,
-        audioUrl,
+        audioUrl: null,
         action: result.action,
         entities: result.entities,
         compiledPrompt: result.compiledPrompt,
