@@ -39,3 +39,30 @@ test('owner Everyday Tools routes all target existing unmodified tools',async({p
  await page.locator('#etGallery .et-card').nth(3).click();
  await expect(page).toHaveURL(/mobile-utility\.html\?tool=scan-pdf$/);
 });
+
+test('owner banner lock: original media decodes, displays without stretching, with only approved copy',async({page})=>{
+ await page.setViewportSize({width:1448,height:1086});
+ const response=await page.goto('/free-tools.html');expect(response.status()).toBe(200);
+ const hero=page.locator('#etShowcase .et-hero');
+ await expect(hero.locator('h1')).toHaveText('Everyday Tools');
+ await expect(hero.locator('.et-hero-lead')).toHaveText('Less routine. More creating.');
+ await expect(hero.locator('.et-hero-copy p')).toHaveCount(0);
+ const img=hero.locator('.et-hero-art image');
+ await expect(img).toHaveAttribute('width','1448');
+ await expect(img).toHaveAttribute('height','1086');
+ const media=await img.evaluate(async node=>{
+  const url=node.href.baseVal;
+  const raster=new Image();raster.src=url;await raster.decode();
+  const box=node.ownerSVGElement.getBoundingClientRect();
+  return {src:new URL(url).pathname,width:raster.naturalWidth,height:raster.naturalHeight,displayWidth:box.width,opacity:getComputedStyle(node.ownerSVGElement).opacity};
+ });
+ expect(media.src).toContain('/media/approved-design-20261023/09_Everyday_Tools.png');
+ expect(media.width).toBe(1448);expect(media.height).toBe(1086);
+ expect(media.displayWidth).toBeGreaterThan(400);
+ expect(media.displayWidth).toBeLessThanOrEqual(704); // Never upscale past the native 703px crop.
+ expect(media.opacity).toBe('1');
+ await page.setViewportSize({width:390,height:844});
+ await expect(hero).toBeVisible();
+ await expect(hero.locator('.et-hero-art')).toHaveCSS('opacity','1');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);
+});
