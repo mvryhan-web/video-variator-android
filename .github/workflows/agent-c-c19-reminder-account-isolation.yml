@@ -1,0 +1,36 @@
+name: Agent C C19 Smart Reminders account isolation (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/smart-reminders.js'
+      - 'tests/agent-c-c19-reminder-account-isolation.spec.mjs'
+      - '.github/workflows/agent-c-c19-reminder-account-isolation.yml'
+permissions:
+  contents: read
+jobs:
+  c19-native-account-isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/smart-reminders.js && node --check tests/agent-c-c19-reminder-account-isolation.spec.mjs
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Native account A-to-B pending and displayed privacy, five browsers, zero paid calls
+        run: npx playwright test tests/agent-c-c19-reminder-account-isolation.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-c-c19-account-isolation-evidence
+          path: test-results/
+          if-no-files-found: ignore

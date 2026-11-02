@@ -1,0 +1,87 @@
+name: Deepsyq private reference intake checks
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-reference-*.js'
+      - 'server/generation-storage.js'
+      - 'server/generation-worker.js'
+      - 'server/generation-worker-runtime.js'
+      - 'tests/generation-worker-runtime-unit.mjs'
+      - 'tests/generation-reference-*.mjs'
+      - 'scripts/verify-reference-s3-cloud.mjs'
+      - '.github/workflows/deepsyq-reference-intake.yml'
+  pull_request:
+    paths:
+      - 'server/generation-reference-*.js'
+      - 'server/generation-storage.js'
+      - 'server/generation-worker.js'
+      - 'server/generation-worker-runtime.js'
+      - 'tests/generation-worker-runtime-unit.mjs'
+      - 'tests/generation-reference-*.mjs'
+      - '.github/workflows/deepsyq-reference-intake.yml'
+# Unique workflow-file key: several existing workflows share the display name "BASE".
+# Cancel only superseded runs of THIS workflow on the SAME PR or ref.
+# Never cancel another agent's different PR or disable a safety assertion.
+concurrency:
+  group: agent5-deepsyq-reference-intake-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  reference-intake:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fixture
+          POSTGRES_PASSWORD: fixture
+          POSTGRES_DB: vv_ai_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Install local media inspection tools for real fixture acceptance
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          ffprobe -version | head -n 1
+      - name: Verify JS syntax
+        run: |
+          node --check server/generation-worker.js
+          node --check server/generation-worker-runtime.js
+          node --check server/generation-reference-compatibility.js
+          node --check server/generation-reference-audio-payload.js
+          node --check server/generation-reference-video-transfer.js
+          node --check server/generation-reference-cloud-acceptance.js
+          node --check scripts/verify-reference-s3-cloud.mjs
+          node --check server/generation-reference-inspector.js
+          node --check server/generation-reference-probe.js
+          node --check server/generation-reference-upload.js
+          node --check server/generation-reference-ledger.js
+          node --check tests/generation-reference-compatibility-unit.mjs
+          node --check tests/generation-reference-audio-payload-unit.mjs
+          node --check tests/generation-reference-video-transfer-unit.mjs
+          node --check tests/generation-reference-cloud-acceptance-unit.mjs
+          node --check tests/generation-reference-inspector-unit.mjs
+          node --check tests/generation-reference-probe-unit.mjs
+          node --check tests/generation-worker-runtime-unit.mjs
+          node --check tests/generation-reference-upload-unit.mjs
+          node --check tests/generation-reference-lifecycle-postgres.mjs
+      - name: Reference parser, codec probe, API, S3 and ledger mock regression
+        run: |
+          node --test tests/generation-reference-media-unit.mjs tests/generation-reference-ledger-unit.mjs tests/generation-reference-upload-unit.mjs tests/generation-reference-probe-unit.mjs tests/generation-reference-compatibility-unit.mjs tests/generation-reference-inspector-unit.mjs tests/generation-reference-audio-payload-unit.mjs tests/generation-reference-video-transfer-unit.mjs tests/generation-reference-cloud-acceptance-unit.mjs tests/generation-worker-runtime-unit.mjs
+      - name: Real PostgreSQL reference intake and fake S3 lifetime acceptance
+        env:
+          AI_TEST_DATABASE_URL: postgres://fixture:fixture@127.0.0.1:5432/vv_ai_test
+          NODE_ENV: test
+        run: node --test tests/generation-reference-lifecycle-postgres.mjs

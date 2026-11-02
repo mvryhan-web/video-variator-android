@@ -1,0 +1,35 @@
+name: BASE 7 Video Smart Routing
+on:
+  push:
+    branches: [base7-video-capability-routing-20261016]
+    paths:
+      - 'server/generation-routing.js'
+      - 'server/generation-studio.js'
+      - 'tests/generation-routing-unit.mjs'
+      - 'tests/generation-model-capabilities-unit.mjs'
+      - '.github/workflows/base7-video-routing.yml'
+  pull_request:
+    paths:
+      - 'server/generation-routing.js'
+      - 'server/generation-studio.js'
+      - 'tests/generation-routing-unit.mjs'
+      - 'tests/generation-model-capabilities-unit.mjs'
+      - '.github/workflows/base7-video-routing.yml'
+permissions:
+  contents: read
+jobs:
+  routing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse changed routing, estimate and tests
+        run: |
+          node --check server/generation-routing.js
+          node --check server/generation-studio.js
+          node --check tests/generation-routing-unit.mjs
+      - name: Verify native video capabilities and quote/create candidate agreement
+        run: node --test tests/generation-routing-unit.mjs tests/generation-model-capabilities-unit.mjs

@@ -1,0 +1,32 @@
+name: BASE 30 mobile drawer navigation acceptance
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/deepsyq.js'
+      - 'app/src/main/assets/deepsyq.css'
+      - 'tests/base30-mobile-drawer.spec.mjs'
+      - '.github/workflows/base30-mobile-drawer.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-drawer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Check navigation and Playwright test syntax
+        run: |
+          node --check app/src/main/assets/deepsyq.js
+          node --check tests/base30-mobile-drawer.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Verify desktop, mobile Chromium and mobile Safari browser navigation
+        run: npx playwright test tests/base30-mobile-drawer.spec.mjs --project=chromium --project=mobile-chromium --project=webkit --project=mobile-webkit

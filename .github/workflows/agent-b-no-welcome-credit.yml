@@ -1,0 +1,27 @@
+name: Agent B D01/D04 no welcome AI credits (zero spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/generation-billing.js'
+      - 'tests/generation-billing-unit.mjs'
+      - '.github/workflows/agent-b-no-welcome-credit.yml'
+permissions:
+  contents: read
+jobs:
+  no-free-grant:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Parse existing production billing and unit tests
+        run: |
+          node --check server/generation-billing.js
+          node --check tests/generation-billing-unit.mjs
+      - name: Existing billing regressions plus real HTTP negative free-grant check
+        run: node --test tests/generation-billing-unit.mjs tests/generation-entitlements-unit.mjs

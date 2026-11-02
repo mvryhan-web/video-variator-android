@@ -1,0 +1,32 @@
+name: Agent A Video Uniquifier Copy Cleanup
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/video-uniquifier-reference.js'
+      - 'app/src/main/assets/video-uniquifier-reference.css'
+      - 'tests/agent-a-vu-copy-cleanup*.mjs'
+      - '.github/workflows/agent-a-vu-copy-cleanup.yml'
+permissions: {contents: read}
+jobs:
+  page-cleanup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: node --test tests/agent-a-vu-copy-cleanup-unit.mjs
+      - run: node --check app/src/main/assets/video-uniquifier-reference.js
+      - run: npx playwright test --config tests/agent-a-vu-copy-cleanup.config.mjs

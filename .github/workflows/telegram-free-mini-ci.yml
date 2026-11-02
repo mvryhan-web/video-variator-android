@@ -42,3 +42,4 @@ jobs:
         run: npx playwright test tests/telegram-free-browser.spec.mjs --project=mobile-chromium --project=mobile-webkit
       - name: Real on-device FFmpeg MP4 export
         run: npx playwright test tests/telegram-free-real-video.spec.mjs --project=mobile-chromium
+

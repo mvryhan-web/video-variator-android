@@ -1,0 +1,43 @@
+name: Everyday Tools 22 illustrated routes
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/free-tools.html'
+      - 'app/src/main/assets/everyday-utility-art.*'
+      - 'app/src/main/assets/media/everyday-utilities-20261023/**'
+      - 'app/src/main/assets/media/everyday-utilities-owner-20261024/**'
+      - 'tests/everyday-utility-gallery*'
+      - '.github/workflows/everyday-utility-gallery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  illustrated-routes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: No-spend source/image validation
+        run: |
+          node --check app/src/main/assets/everyday-utility-art.js
+          node --test tests/everyday-utility-gallery-unit.mjs
+      - run: npm ci --no-audit --no-fund
+      - name: Prefer official Ubuntu archive for browser dependencies
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Real browser image/action/navigation tests
+        run: npx playwright test --config tests/everyday-utility-gallery.config.mjs
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: everyday-utilities-browser-errors
+          path: test-results/
+          retention-days: 7

@@ -1,0 +1,31 @@
+name: Agent C Google TTS server access gate (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/speech.js'
+      - 'tests/speech-unit.mjs'
+      - '.github/workflows/agent-c-google-tts-plan-gate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tts-server-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GEMINI_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+      GOOGLE_TTS_ENABLED: 'false'
+      GOOGLE_TTS_FREE_TIER_CONFIRMED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --test tests/speech-unit.mjs

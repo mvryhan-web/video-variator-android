@@ -1,0 +1,37 @@
+name: Deepsyq original source TXT integrity
+
+on:
+  pull_request:
+    paths:
+      - 'docs/DEEPSYQ_PLATFORM_SPEC.md'
+      - 'docs/DEEPSYQ_SOURCE_TXT/**'
+      - 'scripts/verify-deepsyq-source-txt.mjs'
+      - 'scripts/verify-deepsyq-base-coordination.mjs'
+      - 'tests/deepsyq-source-txt-integrity-unit.mjs'
+      - '.github/workflows/deepsyq-source-txt-integrity.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'docs/DEEPSYQ_PLATFORM_SPEC.md'
+      - 'docs/DEEPSYQ_SOURCE_TXT/**'
+      - 'scripts/verify-deepsyq-source-txt.mjs'
+      - 'scripts/verify-deepsyq-base-coordination.mjs'
+      - 'tests/deepsyq-source-txt-integrity-unit.mjs'
+      - '.github/workflows/deepsyq-source-txt-integrity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  original-txt-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify immutable original BASE and Blocks 1–7 TXT
+        run: |
+          node scripts/verify-deepsyq-source-txt.mjs
+          node --test tests/deepsyq-source-txt-integrity-unit.mjs

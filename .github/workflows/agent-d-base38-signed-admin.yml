@@ -1,0 +1,46 @@
+name: Agent D BASE38 signed owner admin privacy (disposable PG)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'tests/agent-d-base38-signed-owner-admin-postgres.mjs'
+      - '.github/workflows/agent-d-base38-signed-admin.yml'
+  push:
+    branches: [agent-d-base38-signed-admin-gate-20261029]
+permissions:
+  contents: read
+jobs:
+  real-jwt-admin:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: deepsyq_purchased_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d deepsyq_purchased_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      P0_PURCHASED_TEST_DB_URL: postgresql://postgres:postgres@127.0.0.1:5432/deepsyq_purchased_test
+      STRIPE_SECRET_KEY: ''
+      STRIPE_WEBHOOK_SECRET: ''
+      OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+      AI_BILLING_ENABLED: 'false'
+      AI_PUBLIC_GENERATION_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --check tests/agent-d-base38-signed-owner-admin-postgres.mjs
+      - name: Real production JWT auth, owner privacy, actual Express routes and PG16
+        run: node --test tests/agent-d-base38-signed-owner-admin-postgres.mjs

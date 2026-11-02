@@ -1,0 +1,54 @@
+name: Deepsyq local audio trimmer acceptance
+on:
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/audio-studio.js'
+      - 'app/src/main/assets/audio-studio.html'
+      - 'app/src/main/assets/audio-trim-core.js'
+      - 'app/src/main/assets/video-to-audio-core.js'
+      - 'tests/audio-trim-core.mjs'
+      - 'tests/video-to-audio-core.mjs'
+      - 'tests/audio-trim.spec.mjs'
+      - 'tests/video-to-audio.spec.mjs'
+      - '.github/workflows/deepsyq-audio-trim.yml'
+  pull_request:
+    paths:
+      - 'app/src/main/assets/audio-studio.js'
+      - 'app/src/main/assets/audio-studio.html'
+      - 'app/src/main/assets/audio-trim-core.js'
+      - 'app/src/main/assets/video-to-audio-core.js'
+      - 'tests/audio-trim-core.mjs'
+      - 'tests/video-to-audio-core.mjs'
+      - 'tests/audio-trim.spec.mjs'
+      - 'tests/video-to-audio.spec.mjs'
+      - '.github/workflows/deepsyq-audio-trim.yml'
+jobs:
+  local-audio:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Check audio runtime and unit tests
+        run: |
+          node --check app/src/main/assets/audio-trim-core.js
+          node --check app/src/main/assets/video-to-audio-core.js
+          node --check app/src/main/assets/audio-studio.js
+          node --check tests/audio-trim-core.mjs
+          node --check tests/video-to-audio-core.mjs
+          node --test tests/audio-trim-core.mjs tests/video-to-audio-core.mjs
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Install tiny synthetic MP4 fixture encoder
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Verify local audio and video-to-MP3 workflow desktop and mobile
+        run: npx playwright test tests/audio-trim.spec.mjs tests/video-to-audio.spec.mjs --project=chromium --project=mobile-chromium

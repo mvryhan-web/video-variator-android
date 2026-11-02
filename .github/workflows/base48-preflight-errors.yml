@@ -1,0 +1,35 @@
+name: BASE 48 no preflight secret leakage
+on:
+  push:
+    branches: [base48-preflight-redacted-errors-20261016]
+    paths:
+      - 'server/ai-preflight.js'
+      - 'server/ai-preflight-errors.js'
+      - 'tests/ai-preflight-redaction-unit.mjs'
+      - '.github/workflows/base48-preflight-errors.yml'
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/ai-preflight.js'
+      - 'server/ai-preflight-errors.js'
+      - 'tests/ai-preflight-redaction-unit.mjs'
+      - '.github/workflows/base48-preflight-errors.yml'
+permissions:
+  contents: read
+jobs:
+  preflight-redaction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax
+        run: |
+          node --check server/ai-preflight.js
+          node --check server/ai-preflight-errors.js
+          node --check tests/ai-preflight-redaction-unit.mjs
+      - name: Safe preflight logging and existing release readiness tests
+        run: node --test tests/ai-preflight-redaction-unit.mjs tests/generation-readiness-unit.mjs

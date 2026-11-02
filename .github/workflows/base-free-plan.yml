@@ -1,0 +1,26 @@
+name: BASE 44 Free AI access
+on:
+  push:
+    branches: [base55-d-free-plan-access-20261016]
+  pull_request:
+    paths:
+      - 'server/generation-entitlements.js'
+      - 'tests/generation-entitlements-unit.mjs'
+      - '.github/workflows/base-free-plan.yml'
+permissions:
+  contents: read
+jobs:
+  free-plan-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Syntax and bounded public Free plan access
+        run: |
+          node --check server/generation-entitlements.js
+          node --test tests/generation-entitlements-unit.mjs tests/generation-policy-unit.mjs

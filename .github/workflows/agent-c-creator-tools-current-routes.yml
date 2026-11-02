@@ -1,0 +1,36 @@
+name: Agent C creator Tools current routes and real local MP4
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'tests/creator-tools.spec.mjs'
+      - '.github/workflows/agent-c-creator-tools-current-routes.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-creator-tools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check tests/creator-tools.spec.mjs
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: Five-browser visible routes, canonical plan prices and genuine on-device MP4 downloads
+        run: npx playwright test tests/creator-tools.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: agent-c-creator-regression-evidence
+          path: test-results/

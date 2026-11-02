@@ -1,0 +1,44 @@
+import {test,expect} from '@playwright/test';
+test('Video format buttons drive the existing engine select and official Deepsyq logo',async({page})=>{
+ await page.goto('/index.html');
+ const group=page.locator('.vu-video-format');
+ await expect(group).toBeVisible();
+ await expect(group.locator('h4')).toHaveText('Video format');
+ const vertical=page.locator('.vu-format-button[data-ratio="9:16"]');
+ const horizontal=page.locator('.vu-format-button[data-ratio="16:9"]');
+ await expect(vertical).toBeVisible();
+ await expect(horizontal).toBeVisible();
+ await expect(page.locator('.vu-format-button')).toHaveCount(2);
+ await expect(page.locator('#aspectRatio')).toHaveValue('9:16');
+ await expect(vertical).toHaveAttribute('aria-pressed','true');
+ await horizontal.click();
+ await expect(page.locator('#aspectRatio')).toHaveValue('16:9');
+ await expect(horizontal).toHaveAttribute('aria-pressed','true');
+ await expect(vertical).toHaveAttribute('aria-pressed','false');
+ await page.locator('#aspectRatio').evaluate(el=>{el.value='9:16';el.dispatchEvent(new Event('change',{bubbles:true}));});
+ await expect(vertical).toHaveAttribute('aria-pressed','true');
+ await expect(horizontal).toHaveAttribute('aria-pressed','false');
+ const logo=page.locator('.vu-appbar .vu-logo-image');
+ await expect(logo).toBeVisible();
+ await expect(logo).toHaveAttribute('src','deepsyq-logo.png');
+ await expect(logo).toHaveJSProperty('complete',true);
+ expect(await logo.evaluate(el=>el.naturalWidth)).toBeGreaterThan(0);
+ await expect(page.locator('.vu-video-format')).toHaveCount(1);
+ await expect(page.locator('#startBtn')).toHaveCount(1);
+});
+test('16:9 selection reaches real Create Variations processing call with landscape resolution',async({page})=>{
+ await page.goto('/index.html');
+ await expect(page.locator('.vu-format-button[data-ratio="16:9"]')).toBeVisible();
+ await page.locator('.vu-format-button[data-ratio="16:9"]').click();
+ await page.evaluate(()=>{
+  const core=window.VideoVariatorCore;
+  if(!core||typeof core.process!=='function')throw new Error('Actual VideoVariatorCore processor is missing');
+  core.estimateCredits=async()=>({creditSeconds:0,sourceCount:0});
+  core.process=async options=>{window.__ownerFormatCaptured={ratio:document.querySelector('#aspectRatio').value,resolution:options.resolution,variants:options.variants,mode:options.mode};throw Error('Test stopped before encode')};
+ });
+ await page.locator('#fileInput').setInputFiles({name:'contract.mp4',mimeType:'video/mp4',buffer:Buffer.from([0,0,0,24,102,116,121,112,105,115,111,109,0,0,0,0,105,115,111,109,97,118,99,49])});
+ await page.locator('#startBtn').evaluate(el=>el.disabled=false);
+ await page.locator('#startBtn').click();
+ await expect.poll(()=>page.evaluate(()=>window.__ownerFormatCaptured?.resolution)).toBe('1280x720');
+ await expect.poll(()=>page.evaluate(()=>window.__ownerFormatCaptured?.ratio)).toBe('16:9');
+});

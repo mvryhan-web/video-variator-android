@@ -1,0 +1,30 @@
+name: BASE 6 BytePlus MP4 Result Verification
+
+concurrency:
+  group: ci-base6-byteplus-media-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+on:
+  pull_request:
+    paths:
+      - 'server/generation-byteplus.js'
+      - 'tests/generation-byteplus-unit.mjs'
+      - '.github/workflows/base6-byteplus-media.yml'
+permissions:
+  contents: read
+jobs:
+  byteplus-result-media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Syntax check
+        run: |
+          node --check server/generation-byteplus.js
+          node --check tests/generation-byteplus-unit.mjs
+      - name: BytePlus no-paid-call regressions
+        run: node --test tests/generation-byteplus-unit.mjs

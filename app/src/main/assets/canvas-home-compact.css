@@ -1,0 +1,11 @@
+/* Home Canvas: only the approved heading and nine existing image tiles. */
+body.home-neon #canvasFeature.canvas-home-compact{padding:20px 22px 24px}
+body.home-neon #canvasFeature.canvas-home-compact .landing-feature-heading{margin-bottom:14px}
+body.home-neon #canvasFeature.canvas-home-compact h2{margin:0}
+body.home-neon #canvasFeature.canvas-home-compact #canvasExampleGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:none;gap:11px;width:100%;aspect-ratio:auto}
+body.home-neon #canvasFeature.canvas-home-compact .canvas-example{width:100%;height:auto;aspect-ratio:16/9;min-height:0;border-radius:13px;overflow:hidden}
+@media(max-width:640px){
+ body.home-neon #canvasFeature.canvas-home-compact{padding:14px}
+ body.home-neon #canvasFeature.canvas-home-compact #canvasExampleGrid{display:flex;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x mandatory;scrollbar-width:thin;gap:10px;padding-bottom:10px}
+ body.home-neon #canvasFeature.canvas-home-compact .canvas-example{flex:0 0 min(72vw,310px);aspect-ratio:16/9;scroll-snap-align:start}
+}

@@ -72,7 +72,7 @@
         const response=await fetch(apiBase()+endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass,name})});
         const data=await response.json().catch(()=>({}));
         if(!response.ok||!data.token)throw new Error(data.error||'EMAIL_AUTH_FAILED');
-        localStorage.setItem('vv_token',data.token);msg.textContent=c.done;
+        localStorage.setItem('vv_token',data.token);if(data.newAccount===true)localStorage.setItem('deepsyq_onboarding_pending','1');msg.textContent=c.done;
         setTimeout(()=>location.reload(),250);
       }catch(err){msg.textContent=messageFor(err.message);submit.disabled=false;toggle.disabled=false;}
     });

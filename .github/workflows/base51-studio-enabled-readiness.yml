@@ -1,0 +1,24 @@
+name: BASE 51 Studio Enabled Launch Gate
+on:
+  push:
+    branches: [base51-studio-enabled-readiness-20261016]
+  pull_request:
+    paths:
+      - 'server/generation-readiness.js'
+      - 'tests/generation-readiness-unit.mjs'
+      - '.github/workflows/base51-studio-enabled-readiness.yml'
+permissions:
+  contents: read
+jobs:
+  studio-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - run: node --check server/generation-readiness.js
+      - name: Commercial launch guards including disabled Studio
+        run: node --test tests/generation-readiness-unit.mjs tests/generation-policy-unit.mjs

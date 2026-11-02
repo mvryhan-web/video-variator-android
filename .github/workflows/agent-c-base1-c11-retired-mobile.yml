@@ -1,0 +1,38 @@
+name: Agent C C11 retired Product Video and navigation (zero spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'tests/agent-c-base1-c11-retired-mobile.spec.mjs'
+      - '.github/workflows/agent-c-base1-c11-retired-mobile.yml'
+      - 'app/src/main/assets/ai-apps.js'
+      - 'app/src/main/assets/inspiration.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  c11-five-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GOOGLE_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check tests/agent-c-base1-c11-retired-mobile.spec.mjs
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: C11 320/375/390/768/1448 no paid calls, 404 and Studio routes
+        run: npx playwright test tests/agent-c-base1-c11-retired-mobile.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=2
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-c-c11-regression-errors
+          path: test-results/
+          if-no-files-found: ignore

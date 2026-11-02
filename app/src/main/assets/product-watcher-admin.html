@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Product Watcher · Deepsyq Owner</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#080d20;color:#eaeafd}
+*{box-sizing:border-box}body{margin:0}main{width:min(1100px,calc(100% - 32px));margin:40px auto 70px}
+a{color:#b8adff}header{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+h1{font-size:clamp(1.6rem,4vw,2.5rem);margin:12px 0}.sub{color:#bac0d3;line-height:1.5}
+section{background:#121a34;border:1px solid #343658;border-radius:18px;padding:22px;margin-top:20px}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+button{border:1px solid #514f85;border-radius:10px;padding:11px 16px;background:#272450;color:#fff;cursor:pointer;font:inherit;min-height:44px}
+button.primary{background:linear-gradient(100deg,#6954ec,#bb50a8);border:0}
+button:disabled{opacity:.45;cursor:not-allowed}button:focus-visible,a:focus-visible{outline:3px solid #c9b0ff;outline-offset:3px}
+.status{font-weight:700;font-size:1.3rem}small{color:#bfc1d3}.error{color:#ffb2bf}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;text-align:left}
+th,td{padding:12px 10px;border-bottom:1px solid #303955;font-size:.91rem;vertical-align:top}
+th{color:#cac8e0}td{word-break:break-word}
+.note{font-size:.9rem;color:#c7c9dc;background:#1f2540;border-radius:10px;padding:12px;line-height:1.5}
+</style>
+<script src="/product-watcher-admin.js" defer></script>
+
+<link rel="stylesheet" href="deepsyq-global-theme.css">
+<link rel="stylesheet" href="approved-page-design.css">
+<script defer src="approved-page-design.js"></script>
+</head>
+<body>
+<main>
+<header><a href="/deepsyq-admin.html">← Owner AI Control</a><small>Deepsyq · Block 5</small></header>
+<h1>Product Watcher</h1>
+<p class="sub">Private diagnostic monitoring. Checks site health, database access and generation jobs. It does not repair, reprice or change your production systems automatically.</p>
+<section aria-live="polite">
+<div id="watcherStatus" class="status">Checking owner access…</div>
+<p id="watcherDetails" class="sub"></p>
+<p id="watcherBilling" class="sub">Billing diagnostics are disabled until explicitly approved.</p>
+<p id="watcherWebhookConfig" class="sub">Stripe webhook configuration diagnostics disabled.</p>
+<div class="actions">
+<button id="watcherRefresh" type="button">Refresh status</button>
+<button id="watcherToggle" type="button" disabled>Resume checks</button>
+<button id="watcherRun" class="primary" type="button" disabled>Run check now</button>
+</div>
+<p id="watcherFeedback" role="status" class="sub"></p>
+<p class="note">Automatic scheduled checks are not active until an owner-approved private worker and Render schedule are deployed. Pause prevents new runs but cannot cancel an already-running check. A green health check alone does not prove billing or AI providers are working.</p>
+</section>
+<section>
+<h2>Recent checks</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Time</th><th>Result</th><th>Findings</th></tr></thead>
+<tbody id="watcherRuns"><tr><td colspan="3">No checks loaded.</td></tr></tbody>
+</table></div>
+</section>
+<section>
+<h2>Detected alerts</h2>
+<p class="sub">These are observations from recorded data, not confirmed provider price changes. Acknowledging an alert does not repair the issue or change a setting.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Last seen</th><th>Issue</th><th>Evidence</th><th>Review</th></tr></thead>
+<tbody id="watcherAlerts"><tr><td colspan="4">No alerts loaded.</td></tr></tbody>
+</table></div>
+</section>
+<section>
+<h2>Official provider updates</h2>
+<p class="sub">Changes detected on the official changelog pages require human verification. No provider price, model or routing changes are applied by this panel.</p>
+<p id="officialSourceStatus" class="sub">Source monitoring status not loaded.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Official source</th><th>Last checked</th><th>Result</th></tr></thead>
+<tbody id="officialSourceRows"><tr><td colspan="3">No sources loaded.</td></tr></tbody>
+</table></div>
+<h3>Changes awaiting review</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Detected</th><th>Source</th><th>Decision</th></tr></thead>
+<tbody id="officialProposalRows"><tr><td colspan="3">No changes detected.</td></tr></tbody>
+</table></div>
+</section>
+<section>
+<h2>Daily Brief and Weekly Audit</h2>
+<p id="watcherBriefsStatus" class="sub">Briefs not loaded.</p>
+<p class="note">Built from recorded operational evidence only. Missing real provider prices, revenue and margin are never estimated. Background delivery is not deployed.</p>
+<div id="watcherBriefs"></div>
+</section>
+<section>
+<h2>06:00 content checks · 07:00 opportunities</h2>
+<p id="watcherContentStatus" class="sub">Content checks not loaded.</p>
+<p class="note">Read-only checks of existing AI Apps/Inspiration metadata. Not a verification of image/video licenses or functional external links. No content is published or changed automatically.</p>
+<div id="watcherContentTasks"></div>
+</section>
+<section>
+<h2>Owner notification delivery</h2>
+<p id="watcherNotificationStatus" class="sub">Delivery status not loaded.</p>
+<p class="note">This is an opt-in owner-only Telegram channel using the existing bot. Unknown delivery status is never automatically retried to avoid duplicate alerts.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Time</th><th>Alert</th><th>Delivery</th></tr></thead>
+<tbody id="watcherNotificationRows"><tr><td colspan="3">No delivery records loaded.</td></tr></tbody>
+</table></div>
+</section>
+<section>
+<h2>Deployment readiness</h2>
+<p class="sub">Read-only preflight. This is not proof that production is safe to launch. Database backup, controlled migration and deployment remain separate owner-approved steps.</p>
+<p id="watcherPreflightStatus" class="sub">Preflight not loaded.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Readiness item</th><th>Observed state</th></tr></thead>
+<tbody id="watcherPreflightRows"><tr><td colspan="2">No preflight data loaded.</td></tr></tbody>
+</table></div>
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,20 @@
+name: Owner Video Uniquifier Screenshot Contract
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/index.html'
+      - 'app/src/main/assets/video-uniquifier-reference.*'
+      - 'tests/owner-vu-screenshot-contract.mjs'
+      - '.github/workflows/owner-vu-screenshot-contract.yml'
+permissions: { contents: read }
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/owner-vu-screenshot-contract.mjs
+      - run: node --check app/src/main/assets/video-uniquifier-reference.js

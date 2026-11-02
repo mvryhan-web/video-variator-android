@@ -35,7 +35,7 @@ test('tool back buttons have a visible touch target and return to dashboard',asy
     expect(box.height).toBeGreaterThanOrEqual(48);
     expect(box.y).toBeGreaterThanOrEqual(20);
     await back.click();
-    await expect(page).toHaveURL(/index.html$/);
+    await expect(page).toHaveURL(path==='/free-tools.html'?/deepsyq.html$/:/index.html$/);
   }
 });
 
@@ -49,4 +49,21 @@ test('a job started during share import keeps its source selection',async({page}
   });
   await expect.poll(()=>page.evaluate(()=>shareFinished)).toBe(true);
   expect(await page.evaluate(()=>VideoVariatorCore.getFiles()[0].name)).toBe('current-job.mp4');
+});
+
+test('320px Tools and Avatar back links keep a 48px touch target without clipping',async({page})=>{
+  await page.setViewportSize({width:320,height:740});
+  for(const [path,expected] of [['/free-tools.html',/deepsyq\.html$/],['/avatar-studio.html',/index\.html$/]]){
+    await page.goto(path);
+    const back=page.locator('header .tool-back');
+    await expect(back).toBeVisible();
+    const box=await back.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box.width).toBeGreaterThanOrEqual(48);
+    expect(box.height).toBeGreaterThanOrEqual(48);
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x+box.width).toBeLessThanOrEqual(321);
+    await back.click();
+    await expect(page).toHaveURL(expected);
+  }
 });

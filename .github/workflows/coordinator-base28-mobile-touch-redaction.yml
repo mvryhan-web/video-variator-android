@@ -1,0 +1,26 @@
+name: BASE28 genuine mobile touch privacy
+on:
+  pull_request:
+    paths:
+      - 'tests/coordinator-base28-mobile-touch-redaction.spec.mjs'
+      - '.github/workflows/coordinator-base28-mobile-touch-redaction.yml'
+      - 'app/src/main/assets/mobile-utility.js'
+      - 'app/src/main/assets/mobile-utility.css'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  touch-redaction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check tests/coordinator-base28-mobile-touch-redaction.spec.mjs
+      - run: npx playwright install --with-deps chromium
+      - name: Genuine native mobile touch, permanent pixel mask, cancel and private URL cleanup
+        run: npx playwright test tests/coordinator-base28-mobile-touch-redaction.spec.mjs --project=mobile-chromium --workers=1 --retries=0

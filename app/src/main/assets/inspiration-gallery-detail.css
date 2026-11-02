@@ -1,0 +1,159 @@
+/* Deepsyq Inspiration: compact browse + accessible detail view.
+   Based on owner interaction reference; original Deepsyq media and tokens only.
+   No change to Home, Studio, auth, payment, or gallery API. */
+
+.gallery{
+ display:block;
+ columns:5 175px;
+ column-gap:10px;
+}
+.gallery .card,.gallery .card[data-ratio],.gallery .card[data-kind="video"]{
+ display:inline-block;
+ width:100%;
+ margin:0 0 10px;
+ break-inside:avoid;
+ -webkit-column-break-inside:avoid;
+ vertical-align:top;
+ background:#10172a;
+ border:1px solid #303e62;
+ border-radius:11px;
+ box-shadow:none;
+ overflow:hidden;
+}
+.gallery .card .copy{display:none}
+.gallery .card .media{
+ width:100%;
+ min-height:145px;
+ border-radius:10px;
+ background:#0c1428;
+}
+.gallery .card[data-kind="video"] .media{min-height:165px}
+.gallery .card .media img,.gallery .card .media video{width:100%;height:100%;object-fit:cover}
+.gallery .card .media .type-badge{z-index:5;pointer-events:none;top:8px;left:8px}
+.gallery .inspiration-tile-open{
+ position:absolute;inset:0;z-index:4;display:flex;align-items:flex-end;
+ width:100%;height:100%;border:0;border-radius:0;padding:0;
+ cursor:pointer;background:linear-gradient(180deg,transparent 50%,#081224cf 100%);
+ text-align:left;color:#fff;
+}
+.gallery .inspiration-tile-open:hover,
+.gallery .inspiration-tile-open:focus-visible{
+ outline:2px solid #925bff;outline-offset:-3px;
+ background:linear-gradient(180deg,#10152812 15%,#090b21ed 100%);
+}
+.gallery .inspiration-tile-title{display:block;font-size:12px;font-weight:650;line-height:1.3;padding:20px 11px 11px;max-width:100%;overflow-wrap:anywhere;text-shadow:0 2px 9px #080916}
+.gallery .card:hover .media img,.gallery .card:focus-within .media img{transform:scale(1.025)}
+/* Keep the existing All/Images/Videos filter and searching/pagination. */
+.hero{padding:30px 0 20px}
+.hero h1{font-size:clamp(27px,3.5vw,42px);letter-spacing:-1px;margin:6px 0}
+.hero>p:last-child{font-size:12px}
+.controls{padding:10px 0 14px}
+.category-chips{margin-bottom:12px}
+
+.inspiration-detail-dialog{
+ position:fixed;inset:0;margin:0;padding:0;border:0;border-radius:0;
+ width:100vw;max-width:none;height:100vh;height:100dvh;max-height:none;
+ background:#0c1020;color:#edf3ff;
+ box-shadow:0 0 50px #0009;
+}
+.inspiration-detail-dialog::backdrop{background:#070914de}
+.inspiration-detail-layout{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,340px);
+ width:100%;height:100%;
+}
+.inspiration-detail-stage{
+ background:linear-gradient(145deg,#1b2030,#121519);
+ min-width:0;min-height:0;display:flex;flex-direction:column;
+}
+.inspiration-detail-toolbar{
+ height:48px;min-height:48px;display:flex;align-items:center;gap:12px;
+ padding:6px 13px;border-bottom:1px solid #ffffff1a;color:#b4bad1;font-size:11px;
+}
+/* Owner-approved: unframed × on Inspiration, Canvas and Agent detail previews.
+   The 34px hit target and working dialog close remain unchanged. */
+.inspiration-detail-close{
+ flex:0 0 auto;width:34px;height:34px;padding:0;appearance:none;
+ border:0;border-radius:0;background:transparent;box-shadow:none;
+ outline:none!important;color:#fff;font-size:25px;line-height:1;cursor:pointer;
+}
+.inspiration-detail-close:hover{
+ border:0;outline:none!important;background:transparent;box-shadow:none;color:#dff9ff;
+}
+html .inspiration-detail-dialog .inspiration-detail-close:focus-visible{
+ border:0;outline:none!important;background:transparent;box-shadow:none;color:#73e4ff;
+}
+.inspiration-detail-image-area{
+ flex:1;min-height:0;min-width:0;display:flex;align-items:center;
+ justify-content:center;padding:14px;overflow:hidden;
+}
+.inspiration-detail-media{
+ display:block;max-width:100%;max-height:100%;width:auto;height:auto;
+ object-fit:contain;border-radius:6px;
+ box-shadow:0 10px 35px #0003;background:#0b0d15;
+}
+.inspiration-detail-sidebar{
+ display:flex;flex-direction:column;gap:13px;
+ padding:22px 20px 16px;
+ min-width:0;min-height:0;overflow:auto;overflow-wrap:anywhere;
+ background:#080b13;border-left:1px solid #24293a;color:#e1e8ff;
+}
+.inspiration-detail-title{font-size:19px;line-height:1.35;margin:0}
+.inspiration-detail-kind,.inspiration-detail-description{
+ color:#a9b2cc;font-size:12px;line-height:1.55;margin:0;
+}
+.inspiration-detail-heading{
+ font-size:12px;font-weight:700;color:#d7dffa;margin:4px 0 0;
+}
+.inspiration-detail-prompt{
+ white-space:pre-wrap;user-select:text;line-height:1.65;
+ padding:13px 12px;border:1px solid #313951;background:#131928;
+ border-radius:10px;color:#e0e5f5;font-size:12px;margin:0;
+}
+.inspiration-detail-parameters{display:grid;gap:7px}
+.inspiration-detail-param{
+ display:flex;justify-content:space-between;gap:12px;
+ font-size:11px;color:#a0a9c0;border-bottom:1px solid #ffffff12;padding:5px 0;
+}
+.inspiration-detail-param strong{font-weight:600;color:#d5dfff;text-align:right}
+.inspiration-detail-note{color:#8b98b6;font-size:11px;line-height:1.5;margin:0}
+.inspiration-detail-feedback{color:#ffb8b8;font-size:12px;margin:0}
+.inspiration-detail-feedback[hidden]{display:none}
+.inspiration-detail-actions{
+ display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto;padding-top:10px;
+}
+.inspiration-detail-actions button{
+ min-height:43px;padding:10px 12px;border-radius:10px;border:1px solid #52617d;
+ color:#e8ecfd;background:#182139;cursor:pointer;font-size:12px;
+}
+.inspiration-detail-actions button.inspiration-detail-clone{
+ grid-column:1/-1;background:linear-gradient(110deg,#925bff,#5779ff);
+ border-color:#be9dff;color:#fff;font-weight:700;
+}
+.inspiration-detail-actions button:focus-visible{
+ outline:2px solid #d39fff;outline-offset:2px;
+}
+.inspiration-detail-actions button:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:1020px){
+ .gallery{columns:4 155px}
+ .inspiration-detail-layout{grid-template-columns:minmax(0,1fr) 300px}
+}
+@media(max-width:760px){
+ .gallery{columns:3 140px;column-gap:9px}
+ .inspiration-detail-layout{display:flex;flex-direction:column}
+ .inspiration-detail-stage{height:min(54dvh,540px);flex:0 0 auto}
+ .inspiration-detail-sidebar{flex:1;min-height:0;border-left:0;border-top:1px solid #24293a;padding:14px 16px}
+ .inspiration-detail-image-area{padding:8px}
+ .inspiration-detail-actions{margin-top:5px}
+}
+@media(max-width:460px){
+ .gallery{columns:2 120px}
+ .gallery .card .media{min-height:135px}
+ .gallery .card[data-kind="video"] .media{min-height:135px}
+ .gallery .inspiration-tile-title{font-size:11px}
+ .inspiration-detail-stage{height:min(47dvh,410px)}
+ .inspiration-detail-toolbar{height:43px;min-height:43px}
+ .inspiration-detail-prompt{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ .gallery .card:hover .media img,.gallery .card:focus-within .media img{transform:none}
+}

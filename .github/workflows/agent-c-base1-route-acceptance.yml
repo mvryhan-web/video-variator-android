@@ -1,0 +1,42 @@
+name: Agent C BASE1-C creation routes and phone acceptance
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - tests/agent-c-base1-route-workflows.spec.mjs
+      - app/src/main/assets/ai-apps.html
+      - app/src/main/assets/ai-apps.js
+      - app/src/main/assets/ai-apps.css
+      - app/src/main/assets/simple-background-remover.css
+      - app/src/main/assets/inspiration.html
+      - app/src/main/assets/inspiration.css
+      - app/src/main/assets/free-tools.html
+      - app/src/main/assets/free-tools.css
+      - app/src/main/assets/avatar-studio.html
+      - app/src/main/assets/avatar-back-origin.js
+      - .github/workflows/agent-c-base1-route-acceptance.yml
+  workflow_dispatch:
+
+jobs:
+  base1-c-navigation-no-spend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Restore locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install desktop and mobile browser engines
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: BASE1-C five-browser routes, UX and no-paid-dispatch
+        run: npx playwright test tests/agent-c-base1-route-workflows.spec.mjs --project=chromium --project=firefox --project=webkit --project=mobile-webkit --project=mobile-chromium
+      - name: Keep failed test evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-c-base1-route-failures
+          path: test-results/
+          if-no-files-found: ignore

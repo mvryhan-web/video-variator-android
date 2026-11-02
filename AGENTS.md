@@ -1,147 +1,107 @@
-# AGENTS.md — Deepsyq shared rules for all coding agents
+## OWNER RULE — 30 OCT 2026 — JULES FINISH CURRENT TASK TO VERIFIED READY
 
-This repository is the single production codebase for Deepsyq (formerly Video Variator / Video Uniquifier). These rules apply to every coding agent, cloud agent, AI assistant, and human contributor working in this repository.
+**For Google Jules #1/#2/#3 on the already-dispatched issues [#316](https://github.com/mvryhan-web/video-variator-android/issues/316), [#317](https://github.com/mvryhan-web/video-variator-android/issues/317), and [#278](https://github.com/mvryhan-web/video-variator-android/issues/278):** Finish the **same** bounded task to a genuine Jules **READY** / final completion report, reviewable branch/DRAFT PR targeting `deepsyq-platform`, exact SHA, file list, and zero-spend tests. **An ACK, a plan, generated code without verification, or partial files are NOT READY.** Reuse all already completed work; finish the originally approved two files only per issue; fix reproducible defects and retry permitted free tests as needed. Never stop silently while an actionable step remains.
 
-## Mandatory read order before any work
+**Safe stop rule:** If genuinely blocked by missing access, owner approval, quota, infrastructure, CI, an external dependency, or any test that could cost money, mark `BLOCKED` with concrete evidence, last exact SHA, which check could/could not run, owner of the unblock and a single next action. No unlimited paid retries, made-up PASS/READY, automatic live deployment, dangerous migrations, new AI provider charges, Stripe live, alterations to protected Home/six MP4, or cross-agent changes. A truly blocked task does **not** count as READY or permit automatic duplication. Once READY is verified, coordinator inspects changed paths, DEV targeting and security/CI before approving further queued work. The bot's `Jules is on it` ACK occupies its slot; do not recreate the same issue, reset its label or start another session until its real current Jules status has been verified. GitHub comments/edited issue text are **instructions for the record**, not proof that an existing Jules VM restarted. To resume an actual paused/awaiting-approval Jules session, use its original task chat/UI. Maximum three concurrent Jules sessions and zero owner spend.
 
-Before changing code, always read and reconcile:
+**CURRENT three exact links:** Jules1 W5.5 https://jules.google.com/task/15035598484631377809 ; Jules2 W4.3 https://jules.google.com/task/15999298883849600168 ; Jules3 V6.2 https://jules.google.com/task/10433459474091459526 . D16 A–D independent self-merge and B↔D finance/privacy review remain unchanged. Owner-approved original BASE55/F1–F8, no duplicate Product Video and existing lane claims remain controlling.
 
-1. `AGENTS.md` — collaboration and safety rules.
-2. `PROJECT_STATUS.md` — live progress, current owner, blockers, and next work.
-3. `docs/DEEPSYQ_ROADMAP.md` and `docs/execution/README.md` — approved roadmap and ordered checklists. For an assigned roadmap block, read `docs/execution/BLOCK_<N>_CHECKLIST.md` and the preserved full source `docs/execution/DEEPSYQ_BLOCKS_1-7_CANONICAL.txt`. BASE has its own separate 55-point checklist on `deepsyq-platform` and is not Block 1.
-4. Any relevant existing specification files, especially `docs/PRODUCTION_SPEC.md` and `PRODUCTION_DEPLOYMENT_SPEC.md`.
-5. The latest Git history, current branch, recent commits, open PRs, and the actual implementation.
+---
 
-Do not assume a feature exists or works because a file, route, button, or function has a promising name. Verify the code and tests.
+## OWNER RULE — 25 OCT 2026 — NO SMALL TECHNICAL LABELS IN DEEPSYQ UI
 
-## Canonical main branch — BASE + all seven roadmap blocks (owner rule, 2026-10-15)
+All A/B/C/D/Jules/coordinator agents must follow the owner's permanent public-website copy rule: **no tiny technical captions**, faint developer text, debug/test/CI/PR/SHA/API labels, or unnecessary technical microcopy on banners, imagery, cards, pages, Pricing/AI Credits, Studio, Tools, menus or mobile layouts. Customer-visible text must be clearly readable, simple and meaningful. Keep engineering details in GitHub/docs, not in artwork or the customer interface. **Never obscure** essential truthful prices, credits, limits, availability, consent/privacy/provider disclosures, accessibility, or important errors; show those legibly. This is a design rule for future approved UI work, not permission to rewrite owner-protected Home or deploy/bill. See DECISIONS.md 2026-10-25 rule.
 
-**Final integration target: `main`.** Deepsyq BASE and **every one of Blocks 1–7** belong in this **existing repository** and must eventually be merged into the canonical `main` branch as a single integrated application. A feature branch, draft PR, or independent Render service is **not** the final home of any completed block.
+## OWNER DIRECTIVE — 22 OCTOBER 2026 — BEFORE EVERY REQUEST
 
-- During parallel development, use isolated feature branches and PRs to protect other agents' work. That is temporary, not a different product or release branch. Do not commit unfinished, unreviewed or conflicting work directly to `main`.
-- Before integration, inspect the latest `main`, the active BASE branch/PR, other open PRs, actual code and `PROJECT_STATUS.md`. Integrate dependencies first; preserve the owner-approved Home, existing functions and the newest verified work of other agents. Never overwrite or force-push `main` to resolve a conflict.
-- Integration order: verify the shared BASE, merge it to `main`, then merge each ready block through reviewed, tested, conflict-resolved PRs. Block 5 Product Watcher is consolidated in draft PR #50 (based on #46–#49); reconcile it with the current BASE before the final `main` merge. Other blocks follow their actual dependencies; no block is presumed complete merely because its PR exists.
-- Record a block as **IN PROGRESS / READY TO MERGE / MERGED TO MAIN / DEPLOYED AND VERIFIED** separately. A green CI run or merge is not proof of a working production deployment. Mark DONE only after all applicable tests, `main` integration and required end-to-end verification.
-- **Production is a separate safety gate.** Render currently auto-deploys `main`; before any functional merge that could deploy, check migration/backup/restore readiness, database continuity, production compatibility, disabled-by-default paid features, secrets and relevant owner approvals. Never deploy risky changes just to satisfy the canonical-branch rule. Documentation-only commits to `main` should use `[skip render]` in the commit message to avoid unnecessary redeployment.
-- Maintain one GitHub repository, one `main` production integration branch, the existing application/Render service, and shared PostgreSQL/auth/Stripe/provider foundations. Do not create a permanent second Deepsyq stack or abandon a finished block in a private branch.
+Before acting on each new owner request, consult current GitHub instructions, the canonical rules, visual reference and relevant checkpoint; check changes since the last read rather than re-reading unchanged archives. All inner pages must use the existing approved Home/carousel visual language. Preserve working Home and its media. A functioning page is not visually complete without deliberate composition and desktop/mobile visual review. The owner explicitly rejected the current Pricing introduction and authorized its rework. [Full clarification](docs/DEEPSYQ_OWNER_DESIGN_CLARIFICATION_20261022.md). No payment/security/release gate is waived.
 
-## One project, no duplicate architecture
+## OWNER D17 — BASE55 F1-F8 EXECUTION PLAN (20 OCT 2026)
 
-- Continue the existing production project. Never create a second Deepsyq project, parallel database, duplicate authentication system, duplicate Stripe setup, duplicate router, or replacement architecture unless the owner explicitly asks for it.
-- Reuse working components, database tables, auth, billing, video processing, UI primitives, deployment, and provider abstractions wherever practical.
-- Do not rebuild working features from scratch merely because a new agent joined the project.
-- Never silently migrate production infrastructure to another platform.
+**New active prioritization and acceptance overlay:** [docs/DEEPSYQ_BASE55_F1_F8_EXECUTION_PLAN_20261020.md](docs/DEEPSYQ_BASE55_F1_F8_EXECUTION_PLAN_20261020.md); verbatim owner draft [here](docs/DEEPSYQ_BASE55_F1_F8_OWNER_DRAFT_20261020.txt). Original BASE 55, Blocks 1–8, four immutable owner priorities and the approved Home remain authoritative; F1–F8 are aliases, not new duplicate workstreams. Prioritize commercial E2E and F7, in parallel preserve free independent SEO/mobile/security/F5 Lite work. **D16 self-verify/self-merge A–D still applies, B↔D finance/privacy peer checks still apply.** The draft preview dated 19 Oct is not a real backend/production verification. Trial $0.99 3-day/no-renewal/credit amounts are **not owner-approved**; keep checkout OFF. Docs only: no permission for main/production, paid AI/Stripe or dangerous migrations. See [DECISIONS.md](DECISIONS.md) D17.
 
-## Synchronize before starting
+## OWNER CANONICAL VISUAL MOCKUP — 2026-10-19 — READ BEFORE UI WORK
 
-Every agent must, before work:
+**[docs/DEEPSYQ_OWNER_VISUAL_REFERENCE.md](docs/DEEPSYQ_OWNER_VISUAL_REFERENCE.md) is the owner's approved screenshot-based visual standard for ALL Deepsyq pages.** Use the dark navy + cyan/blue/violet/magenta neon colors, matching buttons, rounded luminous cards (“big squares”), compact header/sidebar and existing shared style across all real pages. **The currently working Home carousel and Home content blocks are protected: DO NOT touch, re-render, reorder, recreate or change their source/design.** Do NOT rewrite existing functional code; first verify a genuine difference against the owner's screenshot, then correct only the smallest safe, owner-approved visual mismatch on the owning agent's file/PR. Keep routes and all features working, only no-spend tests. The screenshot itself is attached to the owner's 2026-10-19 chat, not yet stored as a PNG binary in this repository; do not claim literal pixel-level screenshot verification solely from these GitHub docs. This is a DEV documentation constraint, NOT publication authority.
 
-- fetch/pull the latest repository state;
-- inspect recent commits and open PRs;
-- read `PROJECT_STATUS.md`;
-- inspect the relevant existing code;
-- confirm that the task has not already been implemented by another agent.
+# AGENTS.md — Deepsyq: START HERE (all agents and coordinators)
 
-If the status file and the code disagree, the code plus verified tests are the technical truth. Update `PROJECT_STATUS.md` to remove the mismatch.
+## OWNER OVERRIDE — 2026-10-20 — SELF-MERGE A/B/C/D, NO COORDINATOR APPROVAL
 
-## Bounded ownership — do not overload one agent
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-20, D16:** агенты A/B/C/D **САМИ** разрабатывают, запускают и проверяют CI на финальном SHA, согласуют обязательные независимые финансовые peer-gates напрямую B↔D и **САМИ объединяют проверенные PR в `deepsyq-platform`**. Координатор №5 НЕ проверяет и НЕ объединяет их PR, НЕ является approval gate. Безопасная preview-публикация — исполнителю при уже данном разрешении/доступе; production/main, реальные Stripe, деньги, опасные миграции и frozen Home требуют прежних специальных прав/разрешений. [Полное правило](docs/DEEPSYQ_A_D_SELF_MERGE_RULE.md) и [DECISIONS D16](DECISIONS.md). Более старые предложения ниже «only #5 merges», «READY_TO_MERGE — финал агента» являются ИСТОРИЧЕСКИМИ и не действуют для A–D.
 
-Do not assume the current agent owns the entire roadmap.
 
-Each agent should normally receive one bounded workstream or a small coherent set of tightly related tasks.
+## OWNER DIRECTIVE — GRAPHIFY SHARED CODE MAP (19 OCT 2026)
 
-Before substantial work:
-- claim the workstream in `PROJECT_STATUS.md`;
-- record the agent/workstream and branch/PR when practical;
-- check that no other agent is already modifying the same area.
+**Every agent A/B/C/D/#5/Jules: map-first, not history-first.** Before broad source searching, open the durable `docs/DEEPSYQ_CODE_MAP.md` and its small relationship index `docs/DEEPSYQ_CODE_MAP.json` **if they exist on current `deepsyq-platform`**. Find the exact symbol/file/line and then inspect only the affected current code or changes since map `source_sha`. The index is a navigation aid, never a substitute for security/financial/acceptance tests. **Current coverage is ONLY `server/`**, not Android UI, docs or other code. If missing, outdated or incomplete, do *narrow* GitHub source search/diff, not full archive/history. Do not claim map present until the generator successfully publishes it.
 
-When multiple agents are available, parallelize **non-overlapping** work instead of making one agent hold all roadmap blocks in active context.
+Graphify source pin unchanged. A GitHub Actions updater builds the real offline AST, removes the raw graph, and persists **only a sanitised source-path/function/edge index** on DEV after passing secret-exclusion tests. It triggers on relevant DEV source changes; a separate manual action can regenerate it. Never publish raw `graphify-out/`. **Ponytail** still applies on every coding task: smallest *complete and tested* change without weakening any BASE requirement. Agents with no Graphify runtime can still READ the shared map through GitHub. `main`/production, users, payments and paid AI remain untouched.
 
-## Claim work and avoid collisions
 
-When multiple agents are active:
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](DECISIONS.md).** Последнее обязательное решение: **нет Free AI plan/welcome credits; Trial $0.99 пока НЕ включён; деньги пользователя подтверждает Stripe, provider call только за КУПЛЕННЫЕ credits (Issue #182)**. Бесплатные ИМЕННО тесты (mock/CI/Stripe test-mode и доказанно бесплатные реальные AI-вызовы с жёстким отказом вместо платных перерасходов) разрешены после pre-call CHECKPOINT. Предыдущие строки ниже о free-tier AI относятся **только к тестовому тарифу**, а не к публичному бесплатному продукту. 4 главных приоритета 1–4 не изменены. Состояния CI_BLOCKED, READY_TO_MERGE и DONE=LIVE_VERIFIED действуют; зоны и единый Jules ≤3 задач см. правила #9/#21.
 
-- prefer a separate branch per substantial task;
-- do not have two agents edit the same feature/module at the same time unless explicitly coordinated;
-- mark a substantial task as `IN PROGRESS` in `PROJECT_STATUS.md` with the agent/workstream and branch when practical;
-- re-sync before merging;
-- resolve conflicts by preserving the newest verified working behavior, not by blindly overwriting.
 
-## Definition of DONE
+## OWNER DIRECTIVE 2026-10-19 — GRAPHIFY + PONYTAIL, ALL A/B/C/D/#5/JULES
 
-Never mark a feature `DONE` only because code was written.
+**MERGED into deepsyq-platform:** [Graphify original PR290](https://github.com/mvryhan-web/video-variator-android/pull/290) and [Ponytail original PR291](https://github.com/mvryhan-web/video-variator-android/pull/291). This rule applies to **A, B, C, D, coordinator #5 and Jules when its task loads repository instructions**. Pins, exact host limitations, tested workflows and per-role examples: [docs/DEEPSYQ_AGENT_TOOLS.md](docs/DEEPSYQ_AGENT_TOOLS.md). Preserve owner rules/BASE/claims; only these two tools are authorized.
 
-A feature may be marked `DONE` only when:
+**Every task:** (1) resume latest role CHECKPOINT + current PR/SHA + claims; read only changed source after SHA, not the whole archive; (2) **Graphify-first if genuinely available**: query the **current safe local code graph**, verify returned paths against HEAD, or use narrow GitHub search/compare if no graph; (3) **Ponytail**: prefer reuse and the *smallest complete* diff, never drop owner requirements, tests, auth, privacy, credits, accessibility or error handling. On compatible skill hosts read `.agents/skills/graphify/SKILL.md` and `.agents/skills/ponytail/SKILL.md`; otherwise these short repo rules provide the non-executable fallback. The pilot caught and fixed a SHA-validation omission: **shorter != safe until acceptance tests pass**.
 
-- implementation is present;
-- relevant tests/checks pass;
-- the user-facing flow was verified where applicable;
-- no known critical blocker remains;
-- the changes are committed/pushed;
-- `PROJECT_STATUS.md` is updated with a short verification note and commit/PR reference when available.
+**Runtime truth:** Graphify ran in GitHub Actions, but **A/B/C/D/#5 ChatGPT cloud GitHub sessions and Google Jules are not verified to run its Python CLI or auto-load repo skills**. Do not falsely claim a graph query, auto-install a package, or block work: write `GRAPHIFY_UNAVAILABLE_IN_HOST` and continue with scoped GitHub source search. Jules does not start a new task just because docs changed.
 
-Use `PARTIAL`, `IN PROGRESS`, `BLOCKED`, or `NOT STARTED` when that is more accurate.
+**Safety:** `.graphifyignore` excludes secrets, env, dumps and user data; Graphify only no-spend local `--code-only`, no Cloud/LLM/document indexing, unsafe hooks or secrets. Do not commit graph outputs. Ponytail never weakens BASE/25 rules. **Only coordinator #5 merges into DEV; main auto-deploys production and only D releases it with owner approval**. No paid AI or real Stripe.
 
-## Update the shared status after every meaningful task
+## OWNER ORDER 2026-10-18 (LATEST): VERIFIED FREE REAL AI TESTS / ZERO CHARGES
 
-Before ending a work session, update `PROJECT_STATUS.md` with:
+**Superseding owner test policy (verbatim details: [25 canonical rules, #7](docs/DEEPSYQ_CANONICAL_OPERATING_RULES.md)): ALL genuinely FREE tests may run without asking permission, INCLUDING real AI API/model requests on an authenticated FREE tier, free credits, or truly free model; Stripe TEST mode, unit/mock, free CI/lint/build. ALL tests that charge OR COULD charge the owner's money are forbidden. PAID budget remains 0 for EVERY A–D, Jules1–3 and coordinator #5.** It is NOT correct to prohibit verified genuine free provider calls categorically.
 
-- what changed;
-- status of the feature;
-- tests/verification performed;
-- important files/modules changed;
-- blockers or missing credentials;
-- what the next agent should do;
-- branch/commit/PR reference when available.
+**Mandatory BEFORE every actual AI call:** write a GitHub CHECKPOINT identifying exact service/model, verified no-charge tier or credits, concrete quota and remaining allowance when knowable, proof that any exhausted quota HARD-FAILS WITHOUT automatic overage charging (request refuses), dated source of this proof; NO secrets. If the hard no-charge guarantee, free capacity, or cost of CI is uncertain, do NOT run; mark `BLOCKED`, preserve claim and ask owner only if no free verification is possible. Avoid a paid trial that merely starts free but later auto-charges. Never activate live Stripe, owner spend, production/main or dangerous migrations without owner's explicit permission.
 
-Keep `PROJECT_STATUS.md` concise. Detailed historical changes belong in Git commits/PRs, not in an ever-growing diary.
+`CI_BLOCKED` remains available; coding agents finish `READY_TO_MERGE` only with open PR + necessary green permitted tests; coordinator #5 reviews/integrates DEV; only D releases production with owner permission; `DONE` only after genuine `LIVE_VERIFIED`. The 7 future BASE queues + five new topic assignments are [in PROJECT_STATUS.md](PROJECT_STATUS.md); queue candidates do NOT count as active claims. Old Jules S2/U2/G2 and deferred Blocks remain preserved; examine existing owners before any claim.
 
-## Approved roadmap and new owner instructions
+## LATEST OWNER DIRECTIVE — 2026-10-18: EXACT 25 RULES (4 + 16 + 5)
 
-The approved future product roadmap is in `docs/DEEPSYQ_ROADMAP.md`.
+**The controlling, verbatim owner rules are [docs/DEEPSYQ_CANONICAL_OPERATING_RULES.md](docs/DEEPSYQ_CANONICAL_OPERATING_RULES.md), rules 1–25.** This new edition supersedes older conflicting operating instructions here and in ONE_ITEM_TO_DONE, but does NOT alter original 55 BASE or eight Blocks, approved Home/media, prior checkpoints, existing claims, or completed work. Four original priorities remain owner-locked, word for word.
 
-The current Work agent should finish and hand off its current bounded TXT/production scope. It should **not automatically be responsible for all queued roadmap blocks 1–6**.
+- **Owner rules #7/#23 (latest 18 Oct):** all VERIFIED-COST-FREE unit/mock/Stripe test mode/CI AND genuine free-tier/free-credit/free-model AI calls are allowed without owner permission **after a PRE-CALL GitHub CHECKPOINT** proving service, model, free tier/remaining quota, hard rejection without any billing on overage, dated evidence. Paid/possibly billed tests are FORBIDDEN (paid budget=0), as are owner expenses, live Stripe, production, unsafe migrations and secret leakage. Never log/commit secrets; .env must be ignored.
+- **Owner rules #11/#12:** keep the original BASE row while safe work remains. After a *confirmed genuine external blocker*, finish safe work, record BLOCKED/PARTIAL + precise owner/trigger + CHECKPOINT, then independently claim a collision-free available row in the SAME lane, record the new claim and notify coordinator #5. **Do not require a second owner or coordinator advance approval**; coordinator reviews claims/conflicts and may intervene.
+- **Owner rules #9/#21/#22:** A Home/Image/Canvas; B Video/providers/jobs/storage; C AI Apps/Tools/navigation; D Stripe/credits/pricing/DB/**production release**; #5 audits, reconciles and safely integrates on dev. Audio, AI Agents, Inspiration, History and SEO have no dedicated lane owner until #5 records an assignment/claim; existing scoped claims must be checked, not erased. Agents prepare READY_TO_MERGE; only D performs production release after gates, owner approval for risky changes.
+- **Owner rules #16/#19/#24/#25:** do not re-read unchanged SHA or rerun identical checks without reason; a chat is not automatically background-running. Failed generation must return reserved credits at no customer cost (prove with tests; do not claim implemented without evidence). Follow repository formatter/naming, no cross-lane mass reformat.
 
-Roadmap blocks may be assigned to additional agents as separate workstreams once shared dependencies are ready, or earlier when the owner explicitly assigns an independent, non-conflicting block.
+## OWNER OVERRIDE — 2026-10-17: confirmed external block permits safe independent BASE claim
 
-When the owner gives a new lasting product requirement:
+The owner explicitly amended the prior “one BASE item until full DONE” rule: complete and test all safely possible work on the current row; when external CI runners, authorized staging, owner permission, or another agent-owned component genuinely block full acceptance, record exact blocker/evidence, owner and fastest safe unblock in PROJECT_STATUS + claim board + lane Issue, **preserve the current PR/SHA and unfinished status**, then claim the next independent AVAILABLE BASE row in the SAME lane after checking all PR/file collisions. Notify coordinator #5 in the shared Issue; a second owner authorization for that documented safe switch is NOT required. Do not turn a fixable bug or merely inconvenient test into a blocker, do not fake DONE or auto-merge, and return to blocked row through the board after its dependency clears. Scope/security/paid-provider/Stripe/production/locked-Home restrictions remain binding. This paragraph supersedes contrary older reassign/only-one-active language in this document; all original BASE requirements remain unchanged.
 
-1. do not lose or overwrite previous approved requirements;
-2. add or reconcile the requirement in the appropriate roadmap/spec file;
-3. add/update its concise state in `PROJECT_STATUS.md`;
-4. leave it unassigned until an agent is chosen, unless the owner explicitly assigns it;
-5. then implement according to the current priority and dependency rules.
 
-A chat message is not a reason to duplicate existing work. First inspect the repository and status.
+**Effective: 2026-10-17. Applies to A, B, C, D, coordinator #5, ALL future coordinators/curators/replacement AI chats.**
 
-## Production safety
+## 1. Binding rules, in reading order
 
-- Never commit API keys, passwords, OAuth secrets, private keys, database credentials, Stripe secrets, or user data.
-- Do not perform destructive database/schema/data operations without an explicit migration plan and verification.
-- Do not change billing, authentication, production domains, provider credentials, or production data destructively without explicit owner approval.
-- Prefer reversible changes.
-- Preserve the working Video Uniquifier and existing production functions while expanding Deepsyq.
-- A code change is not proof that an external deployment, credential, webhook, provider console, or scheduled service is configured. Verify external setup separately.
+1. **[FOUR IMMUTABLE OWNER PRIORITIES](docs/DEEPSYQ_OWNER_FOUR_IMMUTABLE_PRIORITIES.md)** — locked Home with real cinematic videos; safe functioning paid AI journey; global SEO/AI search and conversions; broad independent AI creative platform. **Only the owner can directly approve changes.**
+2. **[EXACT 25 OWNER RULES — current canonical regulation](docs/DEEPSYQ_CANONICAL_OPERATING_RULES.md)** — four locked priorities, sixteen work rules, five additional rules; source priority, role boundaries, DONE, blocker handling, security, release owner and GitHub handoff. Use this as the first operational checklist, not the old duplicated prose.
+3. **Current verified state:** `PROJECT_STATUS.md`, [BASE 55 claim board](docs/DEEPSYQ_BASE_55_COORDINATION.md), Issues [A #72](https://github.com/mvryhan-web/video-variator-android/issues/72), [B #73](https://github.com/mvryhan-web/video-variator-android/issues/73), [C #74](https://github.com/mvryhan-web/video-variator-android/issues/74), [D #75](https://github.com/mvryhan-web/video-variator-android/issues/75), existing branches/PRs/CI, current affected code.
+4. **Complete original owner TXT for the exact assignment:**
 
-## AI/provider rules
+**ИЗМЕНЕНО РЕШЕНИЕМ ВЛАДЕЛЬЦА, 2026-10-18, см. [DECISIONS.md](DECISIONS.md).** Ранее «Original source TXT is not editable status material» ниже — историческое правило для АГЕНТОВ; владелец лично разрешил документационному координатору добавить рядом с исходными фразами явные override-заметки, сохраняя старую формулировку. Это не разрешение изменять исходный смысл или код без владельца.
+ [BASE original](docs/DEEPSYQ_PLATFORM_SPEC.md) and [55-item evidence checklist](docs/DEEPSYQ_BASE_CHECKLIST.md), OR specific `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_N.txt` for expressly authorized Blocks 1–8 (including the separately approved Block 8). **BASE is NOT Block 1.** Original source TXT is not editable status material.
 
-- Do not hard-code one provider as permanently best.
-- Use the shared provider/router abstraction.
-- Model/provider names, IDs, limits, costs, and availability should be configuration-driven where possible.
-- Never fake a provider response or present an unavailable integration as working.
-- Track usage/cost/credits for paid AI features.
+## 2. Execution in one paragraph
 
-## Handoff rule
+**One coding agent = one currently claimed original BASE number until real DONE** (A Home/Image/Canvas; B Video/Provider/Jobs; C AI Apps/Tools/navigation; D Credits/Stripe/DB/release). Coordinator 5 audits actual ownership, conflicts, exact acceptance and blockers, and is NOT a duplicate fifth coding lane. Do not start over, claim others' work, create duplicate database/auth/wallet/router/Studio, or hop after a small test/commit/PR. Continue next authorized step of SAME numbered requirement during the active session. On a true external blocker finish safe work, preserve the blocked row, document precise dependency and checkpoint; then claim another safe independent available BASE row in the same lane, record it and notify #5 without waiting for prior coordinator permission (new owner rule #12). New chats restore last claim/branch/PR/checkpoint; no autonomous background or power over other tabs.
 
-Every agent should leave the repository in a state where another agent can continue without asking the owner to repeat the project history.
+## 3. Technical rules still binding (not replaced by short summary)
 
-The next agent should be able to answer, from the repository alone:
+- [One item until DONE](docs/DEEPSYQ_ONE_ITEM_TO_DONE_PROTOCOL.md), [new-chat handoff](docs/DEEPSYQ_CHAT_CONTINUITY.md), [ready-to-paste resume commands](docs/DEEPSYQ_AGENT_SESSION_RESUME_COMMANDS.md).
+- [Approved Home design](docs/DEEPSYQ_OWNER_APPROVED_HOME_DESIGN.md), [exact original 13-video shot list](docs/DEEPSYQ_HOME_13_VIDEO_MASTER_SHOTLIST.md), [sole official site + app logo](docs/DEEPSYQ_OFFICIAL_BRAND.md). No changes to owner-locked visuals without permission; never fake media/demo/social features.
+- [Global SEO/AI-search release checklist](docs/DEEPSYQ_SEO_RELEASE_CHECKLIST.md), Issue [#156](https://github.com/mvryhan-web/video-variator-android/issues/156).
+- [Production AI deployment gates](docs/AI_PRODUCTION_ROLLOUT.md) and `PRODUCTION_DEPLOYMENT_SPEC.md`; purchased-only gate Issue [#182](https://github.com/mvryhan-web/video-variator-android/issues/182).
+- [Roadmap](docs/DEEPSYQ_ROADMAP.md) and all **eight** approved roadmap blocks registered: original Blocks 1–7 plus separately owner-approved [Block 8 — «Волшебный нюх»](docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_8.txt) ([Issue #187](https://github.com/mvryhan-web/video-variator-android/issues/187); source merged via PR #188). BASE-first remains effective for four agents; Block 8 is post-MVP and not assigned or implemented. Do not auto-reassign.
+- **Repository:** `mvryhan-web/video-variator-android`; development/integration `deepsyq-platform`; `main` auto-deploys Render production. No direct risky merge, destructive DB migration, provider expenses, live billing or production/root activation without required owner authorizations, backups and testing. Protect existing Video Uniquifier and user's data.
 
-- What is already done?
-- What is in progress?
-- Who owns each active workstream?
-- What is next?
-- What is blocked?
-- What must not be duplicated?
-- What was tested?
-- Which approved roadmap requirement does the work belong to?
+## 4. Required update for every meaningful work block
+
+Push scoped code/tests, update current branch/PR and `PROJECT_STATUS.md`, mark true BASE status (not invented DONE), post `[DEEPSYQ CHECKPOINT]` on the lane issue and leave `[DEEPSYQ HANDOFF]` near a session limit with **role, BASE #, issue, PR, SHA, CI, proven acceptance, exact blocker and single next step**. Replacement chat records a verified `[DEEPSYQ TAKEOVER]`. If GitHub cannot be written, say so explicitly instead of claiming persistence.
+
+## Previous verbose rules
+
+[Full pre-consolidation AGENTS.md snapshot](docs/history/DEEPSYQ_AGENTS_RULES_BEFORE_CONSOLIDATION_20261017.md) is kept for historical audit, **not a second set of live competing instructions**. The current canonical regulation explicitly resolves older small-task hopping and the inaccurate three-priority shorthand; no original BASE/Block TXT, media, application code, work claims or actual completion statuses were changed by this docs-only consolidation.

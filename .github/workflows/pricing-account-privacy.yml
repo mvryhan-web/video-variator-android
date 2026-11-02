@@ -1,0 +1,36 @@
+name: Pricing account privacy
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/ai-pricing.js'
+      - 'app/src/main/assets/ai-pricing.css'
+      - 'tests/pricing-account-privacy.spec.mjs'
+      - 'tests/pricing-account-privacy.config.mjs'
+      - 'app/src/main/assets/ai-pricing-display.js'
+      - 'tests/pricing-account-privacy-unit.mjs'
+      - '.github/workflows/pricing-account-privacy.yml'
+permissions:
+  contents: read
+jobs:
+  account-isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check app/src/main/assets/ai-pricing.js
+      - run: node --test tests/pricing-account-privacy-unit.mjs
+  browser-isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npx playwright test --config tests/pricing-account-privacy.config.mjs

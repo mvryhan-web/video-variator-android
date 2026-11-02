@@ -1,0 +1,28 @@
+name: Block6 Voice V6.1 no-spend
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/voice-agent-controller.js'
+      - 'tests/voice-agent-controller-unit.mjs'
+      - '.github/workflows/block6-voice-v6-1.yml'
+  push:
+    branches: ['deepsyq-platform-11731414793177016691']
+    paths:
+      - 'app/src/main/assets/voice-agent-controller.js'
+      - 'tests/voice-agent-controller-unit.mjs'
+      - '.github/workflows/block6-voice-v6-1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pure-node-no-spend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check app/src/main/assets/voice-agent-controller.js
+      - run: node --test tests/voice-agent-controller-unit.mjs
