@@ -1,0 +1,9 @@
+# Pricing owner-approved design/12 photos are frozen as of 2026-10-25.
+# A code-owner review is enforced ONLY when GitHub branch protection/rulesets require it.
+# Content changes require new explicit approval from the repository owner.
+/app/src/main/assets/pricing.html @mvryhan-web
+/app/src/main/assets/pricing-page.css @mvryhan-web
+/app/src/main/assets/pricing-page.js @mvryhan-web
+/app/src/main/assets/media/pricing/ @mvryhan-web
+/docs/PRICING_OWNER_ART_LOCK.json @mvryhan-web
+/tests/pricing-owner-art-lock.mjs @mvryhan-web
