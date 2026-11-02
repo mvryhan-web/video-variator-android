@@ -1,0 +1,27 @@
+name: Agent A40 account-private Wallet ordering
+
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/pricing-wallet.js'
+      - 'tests/agent-a40-pricing-wallet-privacy.test.mjs'
+      - '.github/workflows/agent-a40-pricing-wallet-privacy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  a40-wallet-private-ui:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check of production Wallet and privacy test
+        run: node --check app/src/main/assets/pricing-wallet.js && node --check tests/agent-a40-pricing-wallet-privacy.test.mjs
+      - name: Actual Wallet frontend privacy and stale-response regression
+        run: node --test tests/agent-a40-pricing-wallet-privacy.test.mjs

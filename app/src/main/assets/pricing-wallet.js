@@ -4,7 +4,7 @@
 import {validWalletAmount} from './ai-pricing-display.js';
 const $=id=>document.getElementById(id);
 const token=()=>{try{return localStorage.getItem('vv_token')||'';}catch{return '';}};
-let currentToken=token(),epoch=0,suspended=false,refreshNeeded=false,loading=false;
+let currentToken=token(),epoch=0,refreshSerial=0,suspended=false,refreshNeeded=false,loading=false;
 const pending=new Set();
 function clearPrivate(){
  $('walletSection').hidden=true;
@@ -17,7 +17,7 @@ function clearPrivate(){
  $('claimWelcome').onclick=null;
 }
 function invalidate(){
- epoch++;
+ epoch++;refreshSerial++;
  for(const controller of pending)controller.abort();
  pending.clear();
  clearPrivate();
@@ -85,26 +85,30 @@ async function refresh(){
  if(suspended||document.hidden)return;
  refreshNeeded=false;
  const s=scope();
+ const requestSerial=++refreshSerial;
  if(!s.token){clearPrivate();return;}
  loading=true;
  try{
   const [balance,history]=await Promise.all([
    privateJson('/api/ai-wallet/balance',{},s),privateJson('/api/ai-wallet/history',{},s)
   ]);
-  if(!active(s))return;
+  if(!active(s)||requestSerial!==refreshSerial)return;
   renderWallet(balance,history);
   void loadWelcome(s);
  }catch(e){
-  if(!active(s))return;
+  if(!active(s)||requestSerial!==refreshSerial)return;
   $('walletSection').hidden=false;$('walletEntry').hidden=true;
   $('walletSummary').replaceChildren();$('walletHistory').replaceChildren();
   $('walletStatus').textContent='Wallet information is temporarily unavailable.';
- }finally{if(active(s))loading=false;}
+ }finally{if(active(s)&&requestSerial===refreshSerial)loading=false;}
 }
 function check(){if(sync()||refreshNeeded)void refresh();}
 $('walletSignIn').addEventListener('click',()=>document.dispatchEvent(new Event('deepsyq:open-pricing-auth')));
 window.addEventListener('storage',e=>{if(e.key==='vv_token'||e.key===null)check();});
 window.addEventListener('focus',check);
+// Same-tab account changes do not generate a storage event. Scrub old credit
+// amounts before the next user interaction, not only after the 250ms poll.
+for(const type of ['pointerdown','keydown','focusin'])document.addEventListener(type,check,true);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){invalidate();refreshNeeded=true;}else{sync();void refresh();}});
 window.addEventListener('pagehide',()=>{suspended=true;invalidate();refreshNeeded=true;});
 window.addEventListener('pageshow',()=>{suspended=false;sync();void refresh();});
