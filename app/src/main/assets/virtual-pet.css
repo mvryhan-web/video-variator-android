@@ -460,3 +460,49 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+
+/* F8 Living Companion: calm, bounded motion and explicit layout preferences.
+   3D animations will use these same state flags when genuine GLB assets land. */
+#dsVirtualPetWidget[data-pet-side="left"] { left: 24px; right: auto; align-items: flex-start; }
+#dsVirtualPetWidget[data-pet-side="left"] .ds-pet-avatar-wrapper { flex-direction: row-reverse; }
+#dsVirtualPetWidget[data-pet-size="small"] .ds-pet-avatar { width: 54px; height: 54px; }
+#dsVirtualPetWidget[data-pet-size="small"] .ds-pet-avatar svg { width: 44px; height: 44px; }
+#dsVirtualPetWidget[data-pet-size="large"] .ds-pet-avatar { width: 84px; height: 84px; }
+#dsVirtualPetWidget[data-pet-size="large"] .ds-pet-avatar svg { width: 72px; height: 72px; }
+#dsVirtualPetWidget[data-pet-face="subtle"] .ds-pet-tail { animation: none; }
+#dsVirtualPetWidget.ds-pet-ambient-walk .ds-pet-avatar-wrapper {
+  animation: dsPetLivingWander 1.8s ease-in-out 1;
+}
+#dsVirtualPetWidget[data-pet-side="left"].ds-pet-ambient-walk .ds-pet-avatar-wrapper {
+  animation-name: dsPetLivingWanderLeft;
+}
+@keyframes dsPetLivingWander {
+  0%,100% {transform:translateX(0);}
+  45% {transform:translateX(-28px);}
+}
+@keyframes dsPetLivingWanderLeft {
+  0%,100% {transform:translateX(0);}
+  45% {transform:translateX(28px);}
+}
+.ds-pet-avatar-wrapper:focus-within .ds-pet-quick-controls {
+  opacity:1;transform:translateX(0);
+}
+.ds-pet-modal { max-height:min(92vh,760px); overflow-y:auto; }
+.ds-pet-scenario-list summary { cursor:pointer; font-size:13px; font-weight:600; padding:10px 0; }
+.ds-pet-scenario-list .ds-pet-toggles { padding-top:8px; }
+.ds-pet-scenario-list .ds-pet-toggle-row strong {font-size:12px;}
+.ds-pet-scenario-list .ds-pet-toggle-row input { flex-shrink:0; }
+@media (max-width:768px) {
+  #dsVirtualPetWidget { bottom:12px;right:12px; }
+  #dsVirtualPetWidget[data-pet-side="left"] {left:12px;}
+  #dsVirtualPetWidget .ds-pet-avatar {width:60px;height:60px;}
+  #dsVirtualPetWidget .ds-pet-avatar svg {width:48px;height:48px;}
+  #dsVirtualPetWidget.ds-pet-ambient-walk .ds-pet-avatar-wrapper {animation:none !important;}
+  .ds-pet-modal {padding:16px;}
+}
+@media (prefers-reduced-motion:reduce) {
+  #dsVirtualPetWidget *, #dsVirtualPetWidget *::before, #dsVirtualPetWidget *::after {
+    animation:none !important;transition:none !important;
+  }
+}
