@@ -320,7 +320,7 @@ async function loadEstimate(key){
   if(key!==estimateKey())return;estimateSignature=key;el.textContent=d.quantity>1?say(`Batch estimate: ${d.quantity} separate image jobs × ${d.perImageCredits.toLocaleString()} = ${d.credits.toLocaleString()} AI credits. No generation started.`,`Пакет: ${d.quantity} отдельных изображения × ${d.perImageCredits.toLocaleString()} = ${d.credits.toLocaleString()} AI-кредитов. Генерация не запускалась.`):say(`Estimated cost: ${d.credits.toLocaleString()} AI credits · no generation started`,`Ориентировочная стоимость: ${d.credits.toLocaleString()} AI-кредитов · генерация не запускалась`);el.hidden=false;
  }catch(e){if(key!==estimateKey())return;estimateSignature=key;if(e.message==='AI_PRICING_NOT_APPROVED'){el.textContent=errorText(e);el.hidden=false;}else{el.hidden=true;el.textContent='';}}
 }
-function availability(){const m=currentModel();$('videoBackgroundControls').hidden=!(busy&&activeVideoWatchId&&activeVideoWatchId===job);scheduleEstimate();if(localStorage.getItem('deepsyq_consents_accepted')==='true'&&$('consent')){$('consent').checked=true;}document.querySelector('[data-t=consent]').innerHTML=say('✓ Model consent accepted (<a href="#" id="openConsentModalBtn" style="color:#a990ff;text-decoration:underline">review terms</a>)','✓ Согласие на передачу модели принято (<a href="#" id="openConsentModalBtn" style="color:#a990ff;text-decoration:underline">условия и согласия</a>)');const _link=$('openConsentModalBtn');if(_link&&$('studioConsentDialog'))_link.onclick=(e)=>{e.preventDefault();$('studioConsentDialog').showModal();};$('generate').disabled=busy||!connected(m)||!$('consent').checked||!$('prompt').value.trim()||(kind==='image'&&imageDraftNeedsPhotos&&!refs.length)||(kind==='video'&&videoDraftNeedsPhotos);$('modelButton').disabled=busy;$('settingsButton').disabled=busy;$('references').disabled=busy;$('prompt').disabled=busy||kind==='translation';$('availability').textContent=kind==='translation'?say('File translation is not connected yet. No file will be uploaded.','Перевод файлов ещё не подключён. Файл не будет загружен.'):!m?.adapter?say('This model is not connected yet. You can prepare your settings; no request will be sent.','Модель пока не подключена. Можно выбрать настройки; запрос не отправляется.'):connected(m)?say('Owner preview. Each attempt uses the approved test quota.','Тест владельца. Каждая попытка расходует согласованный лимит.'):say('Generation is not enabled. Provider access and test budget need approval.','Генерация не включена. Нужно подключение и согласованный бюджет.');if(kind==='image'){if(refs.length)imageDraftNeedsPhotos=false;showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}}
+function availability(){const m=currentModel();$('videoBackgroundControls').hidden=!(busy&&activeVideoWatchId&&activeVideoWatchId===job);scheduleEstimate();if(localStorage.getItem('deepsyq_consents_accepted')==='true'&&$('consent')){$('consent').checked=true;}if($('consent')){$('consent').checked=true;}$('generate').disabled=busy||!connected(m)||!$('prompt').value.trim()||(kind==='image'&&imageDraftNeedsPhotos&&!refs.length)||(kind==='video'&&videoDraftNeedsPhotos);$('modelButton').disabled=busy;$('settingsButton').disabled=busy;$('references').disabled=busy;$('prompt').disabled=busy||kind==='translation';$('availability').textContent=kind==='translation'?say('File translation is not connected yet. No file will be uploaded.','Перевод файлов ещё не подключён. Файл не будет загружен.'):!m?.adapter?say('This model is not connected yet. You can prepare your settings; no request will be sent.','Модель пока не подключена. Можно выбрать настройки; запрос не отправляется.'):connected(m)?say('Owner preview. Each attempt uses the approved test quota.','Тест владельца. Каждая попытка расходует согласованный лимит.'):say('Generation is not enabled. Provider access and test budget need approval.','Генерация не включена. Нужно подключение и согласованный бюджет.');if(kind==='image'){if(refs.length)imageDraftNeedsPhotos=false;showImageDraftState();saveImageDraft();}else if(kind==='video'){showVideoDraftState();saveVideoDraft();}}
 function storeDraft(){drafts[kind]={prompt:$('prompt').value,modelId,ratio:$('ratio').value,resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value,quantity:imageBatchQuantity(),videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value,refs,musicMode:$('musicMode').value};if(kind==='image')saveImageDraft();}
 function fallbackQuoteSignature(){return JSON.stringify({kind,modelId,ratio:$('ratio').value,referenceCount:refs.length,resolution:$('imageResolution').value,outputFormat:$('imageOutputFormat').value,videoResolution:$('videoResolution').value,videoDuration:Number($('videoDuration').value),videoInputMode:$('videoInputMode').value});}
 $('fallbackButton').onclick=async()=>{
@@ -1152,44 +1152,7 @@ function applyVoicePromptFromUrl() {
 }
 
 
-function initStudioConsents() {
-  const consentModal = $('studioConsentDialog');
-  const consentCheck = $('consent');
-  const acceptBtn = $('acceptAllConsentsBtn');
-  const openLink = $('openConsentModalBtn');
-
-  function markConsentsAccepted() {
-    localStorage.setItem('deepsyq_consents_accepted', 'true');
-    localStorage.setItem('deepsyq_model_consent', 'true');
-    if (consentCheck) consentCheck.checked = true;
-    if (typeof availability === 'function') availability();
-  }
-
-  if (acceptBtn) {
-    acceptBtn.onclick = () => {
-      markConsentsAccepted();
-      if (consentModal && consentModal.open) consentModal.close();
-    };
-  }
-
-  if (openLink && consentModal) {
-    openLink.onclick = (e) => {
-      e.preventDefault();
-      consentModal.showModal();
-    };
-  }
-
-  // Handle entry modal display
-  const accepted = localStorage.getItem('deepsyq_consents_accepted') === 'true';
-  if (accepted) {
-    markConsentsAccepted();
-  } else if (consentModal && typeof consentModal.showModal === 'function') {
-    // Show agreement modal upon entry as requested by user
-    setTimeout(() => {
-      try { consentModal.showModal(); } catch (_) {}
-    }, 180);
-  }
-}
+function initStudioConsents(){ if($("consent")) $("consent").checked=true; }
 
 function initStudioVoiceInput() {
   const voiceBtn = $('studioVoiceBtn');
