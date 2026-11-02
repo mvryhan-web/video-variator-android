@@ -6,6 +6,7 @@ import {installGenerationBilling} from './generation-billing.js';
 import {installGenerationTemplates} from './generation-templates.js';
 import {installInspiration} from './generation-inspiration.js';
 import {installOnboarding} from './generation-onboarding.js';
+import {runAiMigrations} from './ai-migrations.js';
 import {pool as generationPool} from './db.js';
 import {installSpeech} from './speech.js';
 import {installTelegramBot} from './telegram.js';
@@ -35,6 +36,8 @@ if(process.env.RENDER_EXTERNAL_HOSTNAME){
   const renderDefaults={
     DEEPSYQ_HOME_ENABLED:'true',
     AI_STUDIO_ENABLED:'true',
+    AI_INSPIRATION_ENABLED:'true',
+    AI_APPS_ENABLED:'true',
     AI_STUDIO_MAX_CALLS:'20',
     AI_STUDIO_ALLOWED_KINDS:'image,video,music',
     AI_STUDIO_ALLOWED_MODELS:'gemini-3.1-flash-image,gemini-nano-banana-2.1,gemini-3-pro-image,byteplus-seedream-4-5,byteplus-seedream-3,gpt-image-2.5-sunburst,gpt-image-2,veo-3.1-lite-generate-preview,veo-3.1-fast-generate-preview,byteplus-seedance-2,byteplus-seedance-1-pro,lyria-3-clip-preview',
@@ -268,4 +271,27 @@ app.get(['/product-video','/product-video.html'],(_req,res)=>res.status(404).typ
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
 
-await initDb();await initToolAccess();await initRemindersDb();app.listen(port,()=>{console.log(`Video Uniquifier running on ${appUrl}`);void registerTelegramWebhook?.();startReminderScheduler();generationStudio?.startRecovery?.();});
+async function seedStarterInspirationAndTemplates(){
+  if(!generationPool)return;
+  try{
+    await runAiMigrations(generationPool);
+    await generationPool.query(`
+      INSERT INTO vv_ai_inspiration(id,title,slug,kind,category,description,preview_url,preview_poster_url,prompt,default_model,aspect_ratio,required_input_types,default_settings,action_target,rights_basis,rights_note,active,featured,sort_order)
+      VALUES
+        ('insp_seed_1','Luxury Watch Studio Hero','luxury-watch-studio-hero','image','Product','Clean studio product showcase with rim lighting','/deepsyq-logo.png',NULL,'Commercial hero product photography of a luxury chronograph watch on volcanic stone with soft studio rim light','gemini-3.1-flash-image','1:1','[]'::jsonb,'{"ratio":"1:1"}'::jsonb,'studio','owned','Deepsyq first-party starter showcase asset',TRUE,TRUE,10),
+        ('insp_seed_2','Neon Cyber Poster 9:16','neon-cyber-poster-vertical','image','Social','Vertical editorial poster for social campaigns','/deepsyq-logo.png',NULL,'Editorial vertical poster with glowing neon glass typography and futuristic studio lighting','byteplus-seedream-4-5','9:16','[]'::jsonb,'{"ratio":"9:16"}'::jsonb,'studio','owned','Deepsyq first-party starter showcase asset',TRUE,TRUE,20),
+        ('insp_seed_3','Cinematic Product Reveal 16:9','cinematic-product-reveal-video','video','Commercial','Smooth camera orbit reveal for video ads','/deepsyq-logo.png','/deepsyq-logo.png','Cinematic slow-motion camera orbit around a sleek flagship gadget on a dark reflective surface with soft volumetric light','veo-3.1-lite-generate-preview','16:9','[]'::jsonb,'{"ratio":"16:9"}'::jsonb,'studio','owned','Deepsyq first-party starter video showcase asset',TRUE,TRUE,30)
+      ON CONFLICT (slug) DO NOTHING
+    `);
+    await generationPool.query(`
+      INSERT INTO vv_ai_template(id,title,slug,category,description,thumbnail,generation_type,prompt_template,default_model,required_input_types,default_settings,active,featured,sort_order,rights_basis,rights_note)
+      VALUES
+        ('tpl_seed_1','E-Commerce Hero Pack','ecommerce-hero-pack','Product','Studio product hero shot with clean background','/deepsyq-logo.png','image','Commercial studio hero photo of {{product_name}} on a minimal podium with soft rim lighting','gemini-3.1-flash-image','["product_name"]'::jsonb,'{"ratio":"1:1"}'::jsonb,TRUE,TRUE,10,'owned','Deepsyq first-party starter template'),
+        ('tpl_seed_2','Vertical Social Reel Teaser','vertical-social-reel-teaser','Social','9:16 motion teaser for Reels and Shorts','/deepsyq-logo.png','video','Dynamic vertical slow-motion reveal of {{product_name}} with studio lighting and clean reflections','veo-3.1-lite-generate-preview','["product_name"]'::jsonb,'{"ratio":"9:16"}'::jsonb,TRUE,TRUE,20,'owned','Deepsyq first-party starter template'),
+        ('tpl_seed_3','Brand Instrumental Jingle','brand-instrumental-jingle','Audio','30-second uplifting instrumental background track','/deepsyq-logo.png','audio','Modern uplifting electronic instrumental soundtrack for a commercial brand showcase, warm synth pads','lyria-3-clip-preview','[]'::jsonb,'{}'::jsonb,TRUE,TRUE,30,'owned','Deepsyq first-party starter template')
+      ON CONFLICT (slug) DO NOTHING
+    `);
+  }catch(e){console.error('[ai-seed]',e?.message||e);}
+}
+
+await initDb();await initToolAccess();await initRemindersDb();await seedStarterInspirationAndTemplates();app.listen(port,()=>{console.log(`Video Uniquifier running on ${appUrl}`);void registerTelegramWebhook?.();startReminderScheduler();generationStudio?.startRecovery?.();});

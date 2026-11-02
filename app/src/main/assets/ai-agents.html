@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080d1d">
+<title>AI Agents · Сценарии креативного агента · Deepsyq</title>
+<link rel="stylesheet" href="approved-page-design.css">
+<style>
+  :root {
+    --bg: #080d1d;
+    --panel: rgba(17, 25, 48, 0.88);
+    --border: rgba(148, 163, 184, 0.18);
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #6366f1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #080d1d 65%);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8, 13, 29, 0.85);
+  }
+  header.topbar a { color: var(--text); text-decoration: none; font-weight: 600; }
+  .topbar-nav { display: flex; gap: 10px; flex-wrap: wrap; }
+  .pill-link {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(99, 102, 241, 0.16);
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    font-size: 14px;
+  }
+  main { max-width: 1120px; margin: 0 auto; padding: 28px 20px 64px; }
+  .brand-input {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 18px;
+    border-radius: 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .brand-input input {
+    flex: 1 1 260px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(8, 13, 29, 0.9);
+    color: var(--text);
+    font-size: 15px;
+  }
+  .scenarios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 18px;
+  }
+  .scenario-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .step-item {
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .step-btn {
+    align-self: flex-start;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a href="deepsyq.html">← Deepsyq</a>
+  <strong>AI Agents (F2 · Guided Workflows)</strong>
+  <nav class="topbar-nav">
+    <a class="pill-link" href="generate-studio.html">Studio ✦</a>
+    <a class="pill-link" href="my-creations.html">My Workspace</a>
+    <a class="pill-link" href="compare-ai.html">Compare AI</a>
+    <a class="pill-link" href="voice-agent-preview.html">Voice Agent (F6)</a>
+  </nav>
+</header>
+<main>
+  <h1>Пошаговые сценарии AI-агента (F2)</h1>
+  <p style="color:var(--muted)">Укажите ваш продукт или тему — агент подготовит промпты и настройки для каждого шага и передаст их в Studio без скрытых платных вызовов.</p>
+
+  <div class="brand-input">
+    <input id="productTopic" type="text" maxlength="120" value="Премиальные смарт-часы AeroChrono" placeholder="Введите ваш продукт, бренд или тему кампании…">
+  </div>
+
+  <div id="scenariosGrid" class="scenarios-grid"></div>
+</main>
+<script type="module">
+  const SCENARIOS = [
+    {
+      id: 'ecom-launch',
+      title: '1. E-Commerce Product Launch Pack',
+      desc: 'Полный набор визуалов для карточки товара и рекламного запуска.',
+      steps: [
+        {
+          label: 'Шаг 1 · студийное Hero-фото (1:1)',
+          type: 'image',
+          model: 'gemini-3.1-flash-image',
+          ratio: '1:1',
+          prompt: 'Commercial hero product photography of {{topic}} on a sleek podium with soft rim lighting, ultra-clean studio background, 8k detail'
+        },
+        {
+          label: 'Шаг 2 · вертикальный видео-тизер (9:16)',
+          type: 'video',
+          model: 'veo-3.1-lite-generate-preview',
+          ratio: '9:16',
+          prompt: 'Cinematic slow-motion reveal of {{topic}} with dynamic light reflections and luxury studio atmosphere'
+        }
+      ]
+    },
+    {
+      id: 'social-reels',
+      title: '2. Social Media Reels & Shorts Campaign',
+      desc: 'Быстрый сценарий для вертикального контента TikTok / Reels / Shorts.',
+      steps: [
+        {
+          label: 'Шаг 1 · обложка / ключевой кадр (9:16)',
+          type: 'image',
+          model: 'byteplus-seedream-4-5',
+          ratio: '9:16',
+          prompt: 'Eye-catching vertical poster featuring {{topic}}, vibrant neon accents, modern editorial composition'
+        },
+        {
+          label: 'Шаг 2 · динамичный 5-секундный клип (9:16)',
+          type: 'video',
+          model: 'byteplus-seedance-2',
+          ratio: '9:16',
+          prompt: 'Dynamic camera orbit around {{topic}} in a modern cyber-minimalist environment, smooth motion'
+        }
+      ]
+    },
+    {
+      id: 'brand-audio-visual',
+      title: '3. Brand Story + Фирменный саундтрек',
+      desc: 'Широкоформатный видеоролик и оригинальная фоновая музыка.',
+      steps: [
+        {
+          label: 'Шаг 1 · широкоформатная сцена (16:9)',
+          type: 'video',
+          model: 'veo-3.1-fast-generate-preview',
+          ratio: '16:9',
+          prompt: 'Widescreen commercial showcase of {{topic}} in natural golden hour light, gentle camera dolly in'
+        },
+        {
+          label: 'Шаг 2 · инструментальный джингла-трек (30 сек)',
+          type: 'audio',
+          model: 'lyria-3-clip-preview',
+          ratio: '1:1',
+          prompt: 'Modern uplifting electronic instrumental soundtrack for {{topic}} brand commercial, warm synth pads and crisp beat'
+        }
+      ]
+    }
+  ];
+
+  function launchStep(step) {
+    const topic = document.getElementById('productTopic').value.trim() || 'flagship product';
+    const promptText = step.prompt.replace('{{topic}}', topic);
+    sessionStorage.setItem('deepsyq_template_start', JSON.stringify({
+      generationType: step.type,
+      defaultModel: step.model,
+      promptTemplate: promptText,
+      defaultSettings: { ratio: step.ratio }
+    }));
+    const studioParam = step.type === 'audio' ? 'audio' : step.type;
+    location.href = 'generate-studio.html?studio=' + encodeURIComponent(studioParam);
+  }
+
+  const grid = document.getElementById('scenariosGrid');
+  for (const sc of SCENARIOS) {
+    const card = document.createElement('article');
+    card.className = 'scenario-card';
+    card.innerHTML = `<h2 style="margin:0;font-size:19px;">${sc.title}</h2><p style="margin:0;color:var(--muted);font-size:14px;">${sc.desc}</p>`;
+    for (const step of sc.steps) {
+      const box = document.createElement('div');
+      box.className = 'step-item';
+      box.innerHTML = `<strong>${step.label}</strong><small style="color:var(--muted)">Модель: ${step.model}</small>`;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'step-btn';
+      btn.textContent = 'Подготовить этот шаг в Studio ↗';
+      btn.onclick = () => launchStep(step);
+      box.append(btn);
+      card.append(box);
+    }
+    grid.append(card);
+  }
+</script>
+</body>
+</html>

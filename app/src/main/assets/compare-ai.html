@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080d1d">
+<title>Compare AI · Сравнение моделей · Deepsyq</title>
+<link rel="stylesheet" href="approved-page-design.css">
+<style>
+  :root {
+    --bg: #080d1d;
+    --panel: rgba(17, 25, 48, 0.88);
+    --border: rgba(148, 163, 184, 0.18);
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #6366f1;
+    --ok: #22c55e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at 80% 0%, #172554 0%, #080d1d 65%);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8, 13, 29, 0.85);
+  }
+  header.topbar a { color: var(--text); text-decoration: none; font-weight: 600; }
+  .topbar-nav { display: flex; gap: 10px; flex-wrap: wrap; }
+  .pill-link {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(99, 102, 241, 0.16);
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    font-size: 14px;
+  }
+  main { max-width: 1120px; margin: 0 auto; padding: 28px 20px 64px; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .controls-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  select, textarea, button {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(8, 13, 29, 0.9);
+    color: var(--text);
+    font-size: 14px;
+  }
+  textarea { width: 100%; min-height: 84px; margin-bottom: 14px; resize: vertical; }
+  .models-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .model-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+  }
+  .slot-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a href="deepsyq.html">← Deepsyq</a>
+  <strong>Compare AI (F1 · 2–4 модели)</strong>
+  <nav class="topbar-nav">
+    <a class="pill-link" href="generate-studio.html">Studio ✦</a>
+    <a class="pill-link" href="my-creations.html">My Workspace</a>
+    <a class="pill-link" href="ai-agents.html">AI Agents</a>
+  </nav>
+</header>
+<main>
+  <h1>Сравнение AI-моделей (2–4 кандидата)</h1>
+  <p style="color:var(--muted)">Выберите от 2 до 4 совместимых моделей, проверьте серверный расчёт кредитов и запустите безопасное сравнение или отправьте выбранную модель в Studio.</p>
+
+  <section class="panel">
+    <div class="controls-row">
+      <label>Тип:
+        <select id="cmpKind">
+          <option value="image">Image (Изображение)</option>
+          <option value="video">Video (Видео)</option>
+        </select>
+      </label>
+      <label>Формат:
+        <select id="cmpRatio">
+          <option value="1:1">1:1</option>
+          <option value="16:9">16:9</option>
+          <option value="9:16">9:16</option>
+        </select>
+      </label>
+    </div>
+
+    <textarea id="cmpPrompt" placeholder="Опишите сцену для сравнения моделей (например: Futuristic neon watch on volcanic rock)…">Futuristic luxury watch on wet volcanic stone, studio rim lighting</textarea>
+
+    <h3 style="margin:0 0 10px;font-size:15px;">Выберите от 2 до 4 моделей:</h3>
+    <div id="modelsList" class="models-grid"></div>
+
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:14px;color:var(--muted);">
+      <input id="cmpConsent" type="checkbox" checked>
+      Подтверждаю проверку совместимости и серверный расчёт стоимости для выбранных моделей
+    </label>
+
+    <div class="controls-row">
+      <button id="validateBtn" type="button">1. Проверить совместимость и стоимость</button>
+      <button id="mockRunBtn" type="button" class="btn-primary">2. Запустить безопасное сравнение ($0 Preview)</button>
+    </div>
+    <p id="cmpStatus" role="status" aria-live="polite" style="color:var(--muted);margin:8px 0 0;"></p>
+  </section>
+
+  <div id="slotsGrid" class="slots-grid"></div>
+</main>
+<script type="module">
+  const $ = id => document.getElementById(id);
+  let catalog = [];
+
+  function authHeaders() {
+    const token = localStorage.getItem('vv_token');
+    return token ? { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+  }
+
+  async function initCatalog() {
+    try {
+      const res = await fetch('/api/studio/config');
+      const cfg = await res.json();
+      catalog = (cfg.catalog || []).filter(m => m.adapter && m.enabled);
+      renderModels();
+    } catch (_) {
+      $('cmpStatus').textContent = 'Не удалось загрузить каталог моделей.';
+    }
+  }
+
+  function renderModels() {
+    const kind = $('cmpKind').value;
+    const list = catalog.filter(m => m.kind === kind);
+    const box = $('modelsList');
+    box.replaceChildren();
+    list.forEach((m, idx) => {
+      const label = document.createElement('label');
+      label.className = 'model-check';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.value = m.id;
+      cb.checked = idx < 2;
+      const info = document.createElement('div');
+      info.innerHTML = `<strong>${m.label}</strong><br><small style="color:var(--muted)">${m.provider} · ${m.id}</small>`;
+      label.append(cb, info);
+      box.append(label);
+    });
+  }
+
+  function selectedModels() {
+    return [...$('modelsList').querySelectorAll('input[type="checkbox"]:checked')].map(i => i.value);
+  }
+
+  function openInStudio(modelId) {
+    sessionStorage.setItem('deepsyq_template_start', JSON.stringify({
+      generationType: $('cmpKind').value,
+      defaultModel: modelId,
+      promptTemplate: $('cmpPrompt').value.trim(),
+      defaultSettings: { ratio: $('cmpRatio').value }
+    }));
+    location.href = 'generate-studio.html?studio=' + encodeURIComponent($('cmpKind').value);
+  }
+
+  $('cmpKind').onchange = () => {
+    $('cmpRatio').value = $('cmpKind').value === 'video' ? '16:9' : '1:1';
+    renderModels();
+  };
+
+  $('validateBtn').onclick = async () => {
+    const models = selectedModels();
+    $('cmpStatus').textContent = 'Проверяем политику Compare AI и расчёт кредитов…';
+    try {
+      const res = await fetch('/api/studio/compare/validate', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          mode: 'mock',
+          kind: $('cmpKind').value,
+          ratio: $('cmpRatio').value,
+          prompt: $('cmpPrompt').value.trim(),
+          userConsent: $('cmpConsent').checked,
+          models
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.valid) throw new Error(data.error || 'VALIDATION_FAILED');
+      $('cmpStatus').textContent = `✔ Совместимо (${data.candidateCount} модели). Суммарная оценка для полного запуска: ${data.quotes.totalCreditsRequired} AI credits.`;
+    } catch (e) {
+      $('cmpStatus').textContent = 'Проверка не пройдена: ' + (e.message || 'войдите в аккаунт');
+    }
+  };
+
+  $('mockRunBtn').onclick = async () => {
+    const models = selectedModels();
+    $('cmpStatus').textContent = 'Выполняем параллельное сравнение слотов ($0)…';
+    try {
+      const res = await fetch('/api/studio/compare/mock-run', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          kind: $('cmpKind').value,
+          ratio: $('cmpRatio').value,
+          prompt: $('cmpPrompt').value.trim(),
+          userConsent: $('cmpConsent').checked,
+          models
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'COMPARE_FAILED');
+      $('cmpStatus').textContent = `✔ Сравнение завершено (${data.summary.fulfilled}/${data.summary.total} слотов, списано ${data.billing.creditsCharged} кредитов).`;
+      const grid = $('slotsGrid');
+      grid.replaceChildren();
+      for (const c of data.candidates) {
+        const card = document.createElement('article');
+        card.className = 'slot-card';
+        card.innerHTML = `
+          <strong>${c.modelId}</strong>
+          <small style="color:var(--muted)">Провайдер: ${c.provider} · Статус: ${c.status} (${c.durationMs} мс)</small>
+          <div style="padding:18px;border-radius:10px;background:rgba(99,102,241,0.12);font-size:13px;">
+            Слот готов · Формат ${$('cmpRatio').value}
+          </div>
+        `;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-primary';
+        btn.textContent = 'Выбрать эту модель и открыть в Studio ↗';
+        btn.onclick = () => openInStudio(c.modelId);
+        card.append(btn);
+        grid.append(card);
+      }
+    } catch (e) {
+      $('cmpStatus').textContent = 'Ошибка запуска: ' + (e.message || 'войдите в аккаунт');
+    }
+  };
+
+  initCatalog();
+</script>
+</body>
+</html>
