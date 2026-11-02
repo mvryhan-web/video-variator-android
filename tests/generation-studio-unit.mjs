@@ -427,11 +427,12 @@ test('BASE25 GET /api/studio/workspace/cards returns account-isolated W4.2/W4.3 
  const nowIso=new Date(Date.now()-5000).toISOString();
  const pool={async query(sql,args=[]){
   if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};
-  if(sql.startsWith('SELECT id,user_id,kind,status,output_assets,created_at FROM vv_generation_jobs')){
+  if(sql.startsWith('SELECT id,user_id,kind,status,output_assets,metadata,created_at FROM vv_generation_jobs')){
    assert.equal(args[0],'u-cards');
    return {rows:[
-    {id:'job_done_1',user_id:'u-cards',kind:'image',status:'ready',output_assets:[{storage:'s3',key:'priv/k1'}],created_at:nowIso},
-    {id:'job_foreign_1',user_id:'other-user',kind:'video',status:'ready',output_assets:[{storage:'s3',key:'priv/k2'}],created_at:nowIso}
+    {id:'job_done_1',user_id:'u-cards',kind:'image',status:'ready',output_assets:[{storage:'s3',key:'priv/k1'}],metadata:{workspace:{title:'My Hero Banner',isFavorite:true}},created_at:nowIso},
+    {id:'job_arch_1',user_id:'u-cards',kind:'image',status:'ready',output_assets:[],metadata:{workspace:{archived:true}},created_at:nowIso},
+    {id:'job_foreign_1',user_id:'other-user',kind:'video',status:'ready',output_assets:[{storage:'s3',key:'priv/k2'}],metadata:{workspace:{isFavorite:true}},created_at:nowIso}
    ]};
   }
   throw Error(sql);
@@ -451,7 +452,101 @@ test('BASE25 GET /api/studio/workspace/cards returns account-isolated W4.2/W4.3 
   assert.equal(body.counts.total,1);
   assert.equal(body.sections.completed.length,1);
   assert.equal(body.sections.completed[0].id,'job_done_1');
+  assert.equal(body.sections.completed[0].title,'My Hero Banner');
+  assert.equal(body.sections.favorites.length,1);
+  assert.equal(body.sections.favorites[0].id,'job_done_1');
+  assert.equal(body.metadata.favoritesUnavailable,false);
   assert.equal(body.metadata.sourceValidated,true);
   assert.equal(JSON.stringify(body).includes('priv/k1'),false);
+ }finally{server.closeAllConnections();await new Promise(ok=>server.close(ok));}
+});
+
+test('F4 PATCH /api/studio/workspace/cards/:id enforces owner policy for rename, favorite, archive',async()=>{
+ const nowIso=new Date(Date.now()-5000).toISOString();
+ const stored=new Map([
+  ['job_1',{id:'job_1',user_id:'u-1',kind:'image',status:'ready',credits_reserved:5,credits_charged:5,metadata:{},created_at:nowIso}],
+  ['job_other',{id:'job_other',user_id:'u-2',kind:'image',status:'ready',credits_reserved:5,credits_charged:5,metadata:{},created_at:nowIso}]
+ ]);
+ const pool={async query(sql,args=[]){
+  if(sql.includes('CREATE TABLE IF NOT EXISTS vv_generation_jobs'))return {rows:[]};
+  if(sql.startsWith('SELECT id,user_id,kind,status,credits_reserved,credits_charged,metadata,created_at FROM vv_generation_jobs')){
+   const r=stored.get(args[0]);
+   return {rows:r?[r]:[]};
+  }
+  if(sql.startsWith('UPDATE vv_generation_jobs SET metadata=')){
+   const r=stored.get(args[0]);
+   if(r&&r.user_id===args[2])r.metadata={...r.metadata,workspace:JSON.parse(args[1])};
+   return {rowCount:1};
+  }
+  throw Error(sql);
+ }};
+ const env={AI_STUDIO_ENABLED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',
+  AI_STUDIO_MAX_CALLS:'3',AI_STUDIO_ALLOWED_KINDS:'image',GEMINI_API_KEY:'fixture',DATABASE_URL:'fixture',
+  ADMIN_EMAIL:'owner@example.test',
+  AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:10}]),
+  AI_MODEL_PRICING_JSON:d18PricingJson([{model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:5,providerCostMicros:1000,currency:'usd'}])};
+ const app=express();app.use(express.json());
+ installGenerationStudio(app,{env,pool,wallet:{},auth:(req,_res,next)=>{req.user={id:'u-1',provider:'email',plan:'basic',subscription_status:'active'};next();}});
+ const server=app.listen(0,'127.0.0.1');await new Promise(ok=>server.once('listening',ok));
+ try{
+  const base='http://127.0.0.1:'+server.address().port;
+  const ren=await fetch(base+'/api/studio/workspace/cards/job_1',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'rename',title:'  Clean Brand Pack  '})});
+  assert.equal(ren.status,200);
+  const renBody=await ren.json();
+  assert.equal(renBody.card.title,'Clean Brand Pack');
+  assert.equal(stored.get('job_1').metadata.workspace.title,'Clean Brand Pack');
+
+  const fav=await fetch(base+'/api/studio/workspace/cards/job_1',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'favorite',isFavorite:true})});
+  assert.equal(fav.status,200);
+  assert.equal(stored.get('job_1').metadata.workspace.isFavorite,true);
+
+  const foreign=await fetch(base+'/api/studio/workspace/cards/job_other',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'rename',title:'Hijack'})});
+  assert.equal(foreign.status,403);
+  const foreignBody=await foreign.json();
+  assert.equal(foreignBody.error,'UNAUTHORIZED_OWNER');
+ }finally{server.closeAllConnections();await new Promise(ok=>server.close(ok));}
+});
+
+test('F1 POST /api/studio/compare/validate and /mock-run execute 2-4 model comparison with $0 provider spend',async()=>{
+ let providerCalls=0;
+ const env={AI_STUDIO_ENABLED:'true',AI_PUBLIC_GENERATION_ENABLED:'true',AI_STUDIO_WALLET_ENABLED:'true',
+  AI_STUDIO_MAX_CALLS:'5',AI_STUDIO_ALLOWED_KINDS:'image',
+  AI_STUDIO_ALLOWED_MODELS:'byteplus-seedream-3',
+  GEMINI_API_KEY:'fixture',BYTEPLUS_API_KEY:'fixture',DATABASE_URL:'fixture',
+  ADMIN_EMAIL:'owner@example.test',
+  AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([{plan:'basic',maxConcurrent:2,maxPerHour:10}]),
+  AI_MODEL_PRICING_JSON:d18PricingJson([
+   {model:'gemini-3.1-flash-image',provider:'Google',kind:'image',credits:5,providerCostMicros:1000,currency:'usd'},
+   {model:'byteplus-seedream-3',provider:'BytePlus',kind:'image',credits:4,providerCostMicros:1000,currency:'usd'}
+  ])};
+ const app=express();app.use(express.json());
+ installGenerationStudio(app,{env,pool:{query:async()=>({rows:[]})},
+  wallet:{balance:async()=>({available:50,reserved:0,debt:0})},
+  provider:async()=>{providerCalls++;throw Error('NEVER_CALL_LIVE_PROVIDER');},
+  auth:(req,_res,next)=>{req.user={id:'u-cmp',provider:'email',plan:'basic',subscription_status:'active'};next();}});
+ const server=app.listen(0,'127.0.0.1');await new Promise(ok=>server.once('listening',ok));
+ try{
+  const base='http://127.0.0.1:'+server.address().port;
+  const payload={mode:'mock',kind:'image',ratio:'1:1',prompt:'Futuristic neon watch',userConsent:true,models:['gemini-3.1-flash-image','byteplus-seedream-3']};
+  const valRes=await fetch(base+'/api/studio/compare/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  assert.equal(valRes.status,200);
+  const valBody=await valRes.json();
+  assert.equal(valBody.valid,true);
+  assert.equal(valBody.quotes.totalCreditsRequired,9);
+
+  const paidRes=await fetch(base+'/api/studio/compare/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,mode:'paid'})});
+  assert.equal(paidRes.status,400);
+  const paidBody=await paidRes.json();
+  assert.equal(paidBody.error,'PAID_COMPARE_DISABLED');
+
+  const runRes=await fetch(base+'/api/studio/compare/mock-run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  assert.equal(runRes.status,200);
+  const runBody=await runRes.json();
+  assert.equal(runBody.success,true);
+  assert.equal(runBody.status,'completed');
+  assert.equal(runBody.billing.creditsCharged,0);
+  assert.equal(runBody.billing.paidProviderCalls,0);
+  assert.equal(runBody.candidates.length,2);
+  assert.equal(providerCalls,0);
  }finally{server.closeAllConnections();await new Promise(ok=>server.close(ok));}
 });
