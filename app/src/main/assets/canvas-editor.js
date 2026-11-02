@@ -120,10 +120,35 @@ function renderQuickReferences(){
   const item=document.createElement('div');item.className='quick-reference';
   const img=document.createElement('img'),url=URL.createObjectURL(file);
   quickPreviewUrls.push(url);img.src=url;img.alt='Reference '+(index+1);
-  const name=document.createElement('span');name.textContent=file.name;name.title=file.name;
-  const remove=document.createElement('button');remove.type='button';remove.textContent='Remove';remove.setAttribute('aria-label','Remove reference '+(index+1));
-  remove.onclick=()=>{quickReferences.splice(index,1);renderQuickReferences();};
-  item.append(img,name,remove);previews.append(item);
+  const name=document.createElement('span');name.className='quick-reference-name';name.textContent=file.name;name.title=file.name;
+  const actions=document.createElement('div');actions.className='quick-reference-actions';
+  for(const [direction,label,symbol] of [[-1,'earlier','↑'],[1,'later','↓']]){
+   const move=document.createElement('button');move.type='button';move.textContent=symbol;
+   move.dataset.move=String(direction);
+   move.setAttribute('aria-label','Move reference '+(index+1)+' '+label);
+   move.title='Move '+file.name+' '+label;move.disabled=index+direction<0||index+direction>=quickReferences.length;
+   move.onclick=()=>{
+    if(!sameQuickDraftAccount()){guardQuickDraftAccount();return;}
+    const next=index+direction;
+    if(next<0||next>=quickReferences.length)return;
+    [quickReferences[index],quickReferences[next]]=[quickReferences[next],quickReferences[index]];
+    renderQuickReferences();
+    $('quickCreateStatus').textContent=file.name+' moved to position '+(next+1)+'. This order will be used in Studio.';
+    const moved=previews.querySelectorAll('.quick-reference')[next];
+    const forward=moved?.querySelector('button[data-move="'+direction+'"]');
+    (forward&&!forward.disabled?forward:moved?.querySelector('button[data-move="'+(-direction)+'"]'))?.focus();
+   };
+   actions.append(move);
+  }
+  const remove=document.createElement('button');remove.type='button';remove.textContent='Remove';
+  remove.setAttribute('aria-label','Remove reference '+(index+1));remove.title='Remove '+file.name;
+  remove.onclick=()=>{
+   if(!sameQuickDraftAccount()){guardQuickDraftAccount();return;}
+   quickReferences.splice(index,1);renderQuickReferences();
+   $('quickCreateStatus').textContent=file.name+' removed. '+quickReferences.length+' reference photo(s) remain.';
+  };
+  actions.append(remove);
+  item.append(img,name,actions);previews.append(item);
  });
 }
 // Other-tab logout/account replacement must remove old private prompt and unsent
