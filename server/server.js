@@ -69,7 +69,7 @@ if(process.env.RENDER_EXTERNAL_HOSTNAME){
     STRIPE_PRICE_BUSINESS:'price_1UGmiULR9hQMNEjMHurOX9bk',
     STRIPE_PRICE_LIFETIME:'price_1UHgZOLR9hQMNEjMIOXXrpVs',
     AI_SUBSCRIPTION_CREDITS_ENABLED:'true',
-    AI_SUBSCRIPTION_CREDITS_JSON:JSON.stringify({basic:100,pro:300,business:1500}),
+    AI_SUBSCRIPTION_CREDITS_JSON:JSON.stringify({basic:500,pro:1500,business:6000}),
     AI_PLAN_ENTITLEMENTS_JSON:JSON.stringify([
       {plan:'basic',maxConcurrent:2,maxPerHour:20},
       {plan:'pro',maxConcurrent:3,maxPerHour:60},
