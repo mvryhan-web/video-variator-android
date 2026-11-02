@@ -1,0 +1,68 @@
+{
+  "status": "PRODUCTION",
+  "createdDisplayedAtLeast": 25,
+  "printQA": "PENDING",
+  "etsy": "NOT_CREATED",
+  "files": [
+    {
+      "id": 16,
+      "scene": "Penguin kneels beside a large toy train on a broad oval track encircling a small Christmas tree; simple clear track",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-de6a6b74-7428-4674-8ff4-e487699e1434.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 17,
+      "scene": "Fox plays a small drum while rabbit shakes two large jingle bells, one big star garland above",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-d4dca0ef-62ae-41fb-a11b-d271d66fc2eb.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 18,
+      "scene": "Deer and bear decorate a snow-covered outdoor evergreen with three large stars at reachable height",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-d4f0d881-0a5a-4ba3-8b46-b915a5deb72c.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 19,
+      "scene": "Rabbit in plain pajamas opens a present on Christmas morning near a small tree; one big toy boat revealed",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-0a6cdb55-996b-448b-8b9a-c90a20486c49.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 20,
+      "scene": "All five friends fox rabbit bear deer penguin stand together in a friendly festive portrait with one simple tree behind and a large wrapped gift in front; five distinct bodies without overlaps",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-24f6109c-0607-4776-bcdb-7726297c6c74.png",
+      "visual": "REVISE_GRAY_HOOF_FILL"
+    },
+    {
+      "id": 21,
+      "scene": "Fox rides a short wooden sled downhill, scarf flowing, clear seated pose and bushy tail, no Christmas objects",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-c079bde2-a8e8-4fe1-90df-7a8616be2448.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 22,
+      "scene": "Rabbit builds a round two-ball snowman, adding one carrot nose, large bucket on snow beside",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-e64db637-355c-45dd-ad31-212d5a87831a.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 23,
+      "scene": "Bear fills a simple hanging bird feeder with a scoop, two round birds perch beside, broad snowy branch",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-3ffdf769-6191-4f64-9b39-76ae1cb7e9c4.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 24,
+      "scene": "Deer walks along a curving snowy woodland path between two simple fir trees, one scarf, no Christmas ornaments",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-a4f568af-8a9d-4bbd-abcd-cd5077ba29cc.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    },
+    {
+      "id": 25,
+      "scene": "Penguin glides on two ice skates over a small frozen pond, flippers spread, one snowbank with reeds",
+      "source": "/workspace/scratch/64629abb14fb/generated_images/exec-6e8980e9-425b-47b1-80e4-2f95d7d59727.png",
+      "visual": "CONTENT_REVIEWED_PRINT_QA_PENDING"
+    }
+  ]
+}
