@@ -28,6 +28,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
   }
 })(globalScope, function() {
   'use strict';
+  const root = globalScope;
 
   const STORAGE_KEY = 'deepsyq_virtual_pet_v1';
   const DRAFT_KEY = 'deepsyq_studio_draft';
