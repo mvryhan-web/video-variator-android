@@ -65,6 +65,9 @@ body[data-approved-page="free-tools"] .et-showcase :is(a,button,select,input):fo
 body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] {position:relative;}
 body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] > header{
  display:flex!important;position:absolute;top:10px;left:12px;z-index:30;
+ /* The sitewide header has a 100% width; override on this compact Back-only
+    landing header to avoid left offset + full width horizontal overflow. */
+ width:max-content!important;max-width:calc(100% - 80px)!important;
  background:transparent!important;border:0!important;padding:0!important;
  margin:0!important;min-height:35px!important;box-shadow:none!important;
 }
