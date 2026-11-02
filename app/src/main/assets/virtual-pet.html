@@ -259,7 +259,7 @@
           <!-- Viewport Box -->
           <div style="text-align:center;">
             <div id="petViewportBox" style="background:#0b0f19; border:1px solid #2a3449; border-radius:12px; width:100%; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; transition:background 0.2s;">
-              <img id="petPreviewImg" src="virtual-pet/luna/renders/three_quarter.png?v=f8-camera-fix-20261102-1" alt="Animated Luna pet preview" style="width:168px; height:168px; object-fit:contain; filter:drop-shadow(0 8px 16px rgba(0,0,0,0.5)); transition:transform 0.2s;" />
+              <img id="petPreviewImg" src="virtual-pet/luna/renders/three_quarter.png?v=f8-sprite-preload-20261103-1" alt="Animated Luna pet preview" style="width:168px; height:168px; object-fit:contain; filter:drop-shadow(0 8px 16px rgba(0,0,0,0.5)); transition:transform 0.2s;" />
               <div id="petScaleBadge" style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.6); padding:2px 8px; border-radius:6px; font-size:11px; color:#94a3b8;">168 px</div>
             </div>
             <!-- Background & Scale Toggles -->
@@ -382,7 +382,7 @@
   </div>
 
   <script src="virtual-pet-living.js"></script>
-  <script src="virtual-pet.js?v=f8-camera-fix-20261102-1"></script>
+  <script src="virtual-pet.js?v=f8-sprite-preload-20261103-1"></script>
   <script defer src="deepsyq-site-shell.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -479,7 +479,7 @@
       let currentBg = 'transparent'; // 'transparent' | 'dark' | 'light'
       let currentSize = 168;
       let animInterval = null;
-      const assetVersion = 'f8-camera-fix-20261102-1';
+      const assetVersion = 'f8-sprite-preload-20261103-1';
 
       const petData = {
         luna: {

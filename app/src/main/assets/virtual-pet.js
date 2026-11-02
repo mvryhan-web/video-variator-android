@@ -205,6 +205,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       this.livingController = root?.DeepsyqLivingPet?.createController?.() || null;
       this.ambientTimer = null;
       this.spriteTimer = null;
+      this.spriteLoadToken = 0;
       this.spriteFrame = 0;
     }
 
@@ -365,7 +366,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
           this.settings.pet === 'fox' ? SVG_FOX : SVG_DOG;
         svgContainer.innerHTML = `
           <div class="ds-pet-visual-wrap">
-            <img class="ds-pet-3d-img" src="virtual-pet/${petKey}/renders/three_quarter.png?v=f8-camera-fix-20261102-1" alt="${this.escapeHtml(this.settings.name)}" width="100%" height="100%" loading="eager" onerror="this.onerror=null; window.__deepsyqVirtualPetInstance?.stopPetSpriteAnimation?.(); this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';" />
+            <img class="ds-pet-3d-img" src="virtual-pet/${petKey}/renders/three_quarter.png?v=f8-sprite-preload-20261103-1" alt="${this.escapeHtml(this.settings.name)}" width="100%" height="100%" loading="eager" onerror="this.onerror=null; window.__deepsyqVirtualPetInstance?.stopPetSpriteAnimation?.(); this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';" />
             <div class="ds-pet-svg-fallback" style="display:none; width:100%; height:100%;">
               ${fallbackSvg}
             </div>
@@ -480,6 +481,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
         window.clearInterval(this.spriteTimer);
       }
       this.spriteTimer = null;
+      this.spriteLoadToken = (this.spriteLoadToken || 0) + 1;
     }
 
     startPetSpriteAnimation(petKey) {
@@ -490,17 +492,35 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
           window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return;
       const image = document.querySelector('#dsPetSvgContainer .ds-pet-3d-img');
       if (!image) return;
-      const version = 'f8-camera-fix-20261102-1';
-      this.spriteTimer = window.setInterval(() => {
-        if (!image.isConnected || document.hidden || this.widgetEl?.classList.contains('ds-pet-hidden')) return;
-        if (this.settings.living?.movement === 'still' ||
-            window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
-          this.stopPetSpriteAnimation();
-          return;
-        }
-        image.src = `virtual-pet/${petKey}/sprites/idle_breathe_${String(this.spriteFrame).padStart(2, '0')}.png?v=${version}`;
-        this.spriteFrame = (this.spriteFrame + 1) % 8;
-      }, 125);
+      const version = 'f8-sprite-preload-20261103-1';
+      const loadToken = this.spriteLoadToken;
+      const frameUrls = Array.from({length: 8}, (_, frame) =>
+        `virtual-pet/${petKey}/sprites/idle_breathe_${String(frame).padStart(2, '0')}.png?v=${version}`
+      );
+      // Preload a complete loop before changing the visible img. Updating src
+      // every 125 ms while a remote PNG is still loading starves the browser:
+      // the visible frame never finishes decoding on a cold cache.
+      Promise.all(frameUrls.map(url => new Promise(resolve => {
+        const preload = new Image();
+        preload.onload = () => resolve(url);
+        preload.onerror = () => resolve(null);
+        preload.src = url;
+      }))).then(results => {
+        const readyFrames = results.filter(Boolean);
+        if (!readyFrames.length || loadToken !== this.spriteLoadToken || !image.isConnected || !this.widgetEl) return;
+        let frame = 0;
+        image.src = readyFrames[0];
+        this.spriteTimer = window.setInterval(() => {
+          if (!image.isConnected || document.hidden || this.widgetEl?.classList.contains('ds-pet-hidden')) return;
+          if (this.settings.living?.movement === 'still' ||
+              window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
+            this.stopPetSpriteAnimation();
+            return;
+          }
+          frame = (frame + 1) % readyFrames.length;
+          image.src = readyFrames[frame];
+        }, 210);
+      }).catch(() => {});
     }
 
     offerLivingHint(id,event,text,actions=[],mood='normal') {
