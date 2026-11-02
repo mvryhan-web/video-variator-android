@@ -1,0 +1,52 @@
+[
+  {
+    "id": "IT001",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-cc737f83-3843-4ca5-ab58-fdbf0bce27dd.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT002",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-861e7335-cec2-4ae7-8fa1-e1f1fbcd3cd0.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT003",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-e8a30170-333c-440c-8bdf-318464271877.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT004",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-d9b5b4cf-ac3c-42ed-acb6-bfb4ad386361.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT005",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-3974424d-3eeb-4fec-bc29-a966fed8e785.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT006",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-d93001f9-39a7-4418-b31f-d3d09b29aff7.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT007",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-e2c2e87b-5d1f-40e6-bd4e-7fc52a4dc1e2.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT008",
+    "source": "/workspace/scratch/64629abb14fb/output/retro-kitchen-200/Sources/IT-008.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT009",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-9b5119c3-b61c-49bd-aa89-3ab2205ce1bc.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  },
+  {
+    "id": "IT010",
+    "source": "/workspace/scratch/64629abb14fb/generated_images/exec-3311dfd4-6c68-44cd-82c9-bd42ad9fb3cb.png",
+    "status": "SOURCE_CREATED_PRINT_QA_PENDING"
+  }
+]
