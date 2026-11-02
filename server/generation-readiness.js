@@ -6,6 +6,7 @@ import {generationPolicy} from './generation-policy.js';
 import {generationFeatureSwitches,generationFeatureEnabled} from './generation-feature-flags.js';
 import {objectStorageConfig} from './generation-storage.js';
 import {bytePlusDownloadsConfigured} from './generation-byteplus.js';
+import {bytePlusPublicDurableStorageReady} from './generation-byteplus-storage-gate.js';
 
 export function generationReadiness(env={}){
  const pricing=pricingCatalog(env),pricingCurrenciesExplicit=pricing.configured&&pricing.entries.every(e=>!!e.currency),billing=billingCatalog(env),billingRuntime=generationBillingRuntime(env),entitlements=generationEntitlements(env),storage=objectStorageConfig(env),policy=generationPolicy(env);
@@ -21,6 +22,13 @@ export function generationReadiness(env={}){
    model.id===price.model&&model.provider===price.provider&&
    (model.id===MODELS[kind]?.id||explicitlyAllowedModels.includes(model.id))&&
    generationFeatureEnabled(kind,model.provider,env)&&
+   // Mirror Studio's actual catalog guards: a priced BytePlus Video route
+   // is not selectable without an approved download CDN and, for customers,
+   // configured durable media storage. Otherwise diagnostics claim a provider
+   // is ready while Studio itself has the model disabled.
+   (model.provider!=='BytePlus'||model.kind!=='video'||
+    bytePlusDownloadsConfigured(env.BYTEPLUS_MEDIA_HOSTS))&&
+   bytePlusPublicDurableStorageReady(model,env)&&
    !!(model.provider==='BytePlus'?env.BYTEPLUS_API_KEY:
       model.provider==='Google'?env.GEMINI_API_KEY:
       model.provider==='OpenAI'?env.OPENAI_API_KEY:null)));
