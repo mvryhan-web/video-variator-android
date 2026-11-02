@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080d1d"><title>Creative Studio · Deepsyq</title>
-<link rel="stylesheet" href="generate-studio.css"><script defer src="file-share.js"></script><script type="module" src="generate-studio.js"></script>
+<link rel="stylesheet" href="generate-studio.css?v=2.2"><script defer src="file-share.js"></script><script type="module" src="generate-studio.js?v=2.2"></script>
 <link rel="stylesheet" href="studio-classic-theme.css"><script defer src="deepsyq-site-shell.js"></script><link rel="stylesheet" href="studio-composer-popovers.css"><script defer src="studio-composer-popovers.js"></script><link rel="stylesheet" href="studio-quickstart.css">
-<link rel="stylesheet" href="virtual-pet.css">
+<link rel="stylesheet" href="virtual-pet.css?v=2.2">
 </head>
 <body class="studio-quickstart">
 <header class="topbar"><a href="deepsyq.html" class="back" data-t="back">← Back</a><a href="deepsyq.html" class="brand"><span class="brand-mark" aria-hidden="true"><img src="deepsyq-logo.png" alt="" width="31" height="31" decoding="async"></span>Deepsyq</a><button id="walletButton" class="wallet-button" type="button" hidden>AI credits <strong id="walletBalance">—</strong></button><span class="badge" data-t="pilot">Studio preview</span></header>
@@ -32,7 +32,28 @@
 <p id="saveNote" class="hint" hidden data-t="saveNote">Save a copy to keep it. Deleting a result does not delete downloaded copies.</p>
 </section>
 <form id="creator" class="composer">
-<div class="prompt-row"><label class="upload" id="referenceBox"><span aria-hidden="true">+</span><span data-t="addPhoto">Add photo</span><input id="references" type="file" accept="image/jpeg,image/png" multiple aria-label="Reference photos"></label><label class="prompt-label"><span class="sr-only" data-t="prompt">Describe what you want to create</span><textarea id="prompt" maxlength="2000" rows="3" required placeholder="Describe the video you want to create…"></textarea></label><button id="studioVoiceBtn" type="button" class="studio-voice-btn" title="Voice prompt input" aria-label="Voice prompt input">🎙</button></div>
+<div class="prompt-row">
+<label class="upload" id="referenceBox"><span aria-hidden="true">+</span><span data-t="addPhoto">Add photo</span><input id="references" type="file" accept="image/jpeg,image/png" multiple aria-label="Reference photos"></label>
+<div class="prompt-field-wrap">
+<label class="prompt-label"><span class="sr-only" data-t="prompt">Describe what you want to create</span><textarea id="prompt" maxlength="2000" rows="3" required placeholder="Describe what you want to create…"></textarea></label>
+<div class="prompt-voice-dock">
+<button id="studioVoiceBtn" type="button" class="studio-voice-btn" title="Голосовой ввод (как в ChatGPT / Gemini)" aria-label="Голосовой ввод">
+<svg class="voice-mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+<path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+<line x1="12" y1="19" x2="12" y2="22"></line>
+<line x1="8" y1="22" x2="16" y2="22"></line>
+</svg>
+<span id="studioVoiceBtnText" class="voice-btn-text">Голос</span>
+<span id="studioVoiceWaves" class="voice-active-indicator" hidden>
+<span class="voice-wave-bar"></span>
+<span class="voice-wave-bar"></span>
+<span class="voice-wave-bar"></span>
+</span>
+</button>
+</div>
+</div>
+</div>
 <div id="refPreview"></div><div id="imageEditPresets" class="image-edit-presets" hidden><span>Quick image edits</span><button type="button" data-image-edit="background">Change background</button><button type="button" data-image-edit="lighting">Improve lighting</button><button type="button" data-image-edit="detail">Enhance details</button><button type="button" data-image-edit="style">Change style</button></div><div class="ref-meta"><p class="hint" id="refHint"></p><button type="button" id="clearRefs" hidden data-t="clear">Clear photos</button></div>
 <div id="imageDraftBar" class="image-draft-bar" hidden><span id="imageDraftMessage" role="status">Image prompt and settings are saved in this tab; reference photos are not stored.</span><button type="button" id="imageDraftSkipPhotos" hidden>Continue without photos</button><button type="button" id="clearImageDraft">Clear draft</button></div>
 <div id="videoDraftBar" class="image-draft-bar" hidden><span id="videoDraftMessage" role="status">Video prompt and settings are saved in this tab for up to 24 hours; reference photos are not stored.</span><button type="button" id="videoDraftSkipPhotos" hidden>Continue without old photos</button><button type="button" id="clearVideoDraft">Clear video draft</button></div>
@@ -70,5 +91,5 @@
  <div class="reference-crop-actions"><button id="cropReferenceReset" type="button">Reset view</button><button id="cropReferenceCancel" type="button">Cancel</button><button id="cropReferenceApply" type="button" class="primary">Apply crop</button></div>
 </dialog>
 <dialog id="walletDialog"><div class="dialog-head"><h2>AI credits</h2><button type="button" data-close="walletDialog" aria-label="Close">×</button></div><p id="walletMode" class="hint"></p><div id="walletSummary" class="wallet-summary"></div><div class="wallet-actions"><button id="walletRefresh" type="button">Refresh balance</button></div><div id="creditPacks" class="credit-packs"></div><section class="wallet-history"><h3>Recent activity</h3><div id="walletHistory"></div></section><p id="walletStatus" role="status"></p><p class="hint">Credits are added only after Stripe confirms a successful payment.</p></dialog>
-<script defer src="virtual-pet.js"></script>
+<script defer src="virtual-pet.js?v=2.2"></script>
 </body></html>
