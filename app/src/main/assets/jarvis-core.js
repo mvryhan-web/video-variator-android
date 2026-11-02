@@ -212,11 +212,23 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
   }
 }
 
+let lastSpokenText = '';
+let lastSpokenTime = 0;
+
 export function speakJarvis(text, onComplete = null) {
   if (!text) {
     if (typeof onComplete === 'function') onComplete();
     return;
   }
+
+  const now = Date.now();
+  if (text.trim() === lastSpokenText.trim() && (now - lastSpokenTime) < 2200) {
+    // Drop immediate duplicate speech so JARVIX never repeats phrases like "Сделано. Сделано."
+    if (typeof onComplete === 'function') onComplete();
+    return;
+  }
+  lastSpokenText = text.trim();
+  lastSpokenTime = now;
 
   stopAllSpeech();
   resetSilenceTimer();
@@ -232,9 +244,26 @@ export function speakJarvis(text, onComplete = null) {
   speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
 }
 
-// 3. Instant Navigation Utility ("Сделано.")
+// 3. Instant Navigation Utility ("Сделано." — spoken strictly ONCE)
 export function instantOpen(url) {
-  speakJarvis('Сделано.');
+  let isSamePage = false;
+  try {
+    const targetUrl = new URL(url, location.href);
+    if (targetUrl.pathname === location.pathname && targetUrl.search === location.search) {
+      isSamePage = true;
+    }
+  } catch (_) {}
+
+  if (isSamePage) {
+    speakJarvis('Сделано.');
+    try {
+      const targetUrl = new URL(url, location.href);
+      if (targetUrl.hash) location.hash = targetUrl.hash;
+    } catch (_) {}
+    return;
+  }
+
+  // Cross-page navigation: speak cleanly ONCE upon target page mount, never doubled
   try {
     sessionStorage.setItem('jarvix_say_on_load', 'Сделано.');
   } catch (_) {}
