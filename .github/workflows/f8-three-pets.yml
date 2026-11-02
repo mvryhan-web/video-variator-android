@@ -4,6 +4,8 @@ on:
     paths:
       - 'app/src/main/assets/virtual-pet/**'
       - 'app/src/main/assets/virtual-pet.js'
+      - 'app/src/main/assets/virtual-pet-living.js'
+      - 'app/src/main/assets/virtual-pet.css'
       - 'app/src/main/assets/virtual-pet.html'
       - 'tests/virtual-pet*'
       - '.github/workflows/f8-three-pets.yml'
@@ -12,6 +14,8 @@ on:
     paths:
       - 'app/src/main/assets/virtual-pet/**'
       - 'app/src/main/assets/virtual-pet.js'
+      - 'app/src/main/assets/virtual-pet-living.js'
+      - 'app/src/main/assets/virtual-pet.css'
       - 'app/src/main/assets/virtual-pet.html'
       - 'tests/virtual-pet*'
       - '.github/workflows/f8-three-pets.yml'
@@ -26,4 +30,5 @@ jobs:
       - name: Validate static JS, manifests and safe pet prototype
         run: |
           node --check app/src/main/assets/virtual-pet.js
-          node --test tests/virtual-pet.test.mjs tests/virtual-pet-assets-unit.mjs
+          node --check app/src/main/assets/virtual-pet-living.js
+          node --test tests/virtual-pet.test.mjs tests/virtual-pet-assets-unit.mjs tests/virtual-pet-living-unit.mjs
