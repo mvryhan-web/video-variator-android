@@ -16,20 +16,30 @@ describe('JARVIS AI Voice Commander & F1 Compare Matrix', () => {
     assert.ok(html.includes('class="jarvis-name">JARVIS</span>'), 'JARVIS branding should be displayed');
   });
 
-  it('verifies ai-apps.html has the redundant menu hidden and has JARVIS integrated', () => {
+  it('verifies ai-apps.html has the redundant menu removed and has JARVIS integrated', () => {
     const html = fs.readFileSync(path.join(assetsDir, 'ai-apps.html'), 'utf8');
     const css = fs.readFileSync(path.join(assetsDir, 'ai-apps.css'), 'utf8');
 
     assert.ok(html.includes('id="topJarvisBtn"'), 'topJarvisBtn must be present in ai-apps.html header');
+    assert.ok(!html.includes('aria-label="Main navigation"'), 'duplicate main nav must not be present in ai-apps.html');
     assert.ok(css.includes('header nav'), 'header nav hiding rule must be defined in ai-apps.css');
   });
 
-  it('verifies jarvis-core.css has full futuristic Arc-Reactor animations and HUD styling', () => {
+  it('verifies canvas.html has the top header with JARVIS integrated', () => {
+    const html = fs.readFileSync(path.join(assetsDir, 'canvas.html'), 'utf8');
+    assert.ok(html.includes('id="topJarvisBtn"'), 'topJarvisBtn must be present in canvas.html header');
+    assert.ok(html.includes('jarvis-core.js'), 'jarvis-core.js must be loaded in canvas.html');
+  });
+
+  it('verifies jarvis-core.css has ChatGPT Voice Mode styling and non-blocking elements', () => {
     const css = fs.readFileSync(path.join(assetsDir, 'jarvis-core.css'), 'utf8');
 
     assert.ok(css.includes('.top-jarvis-btn'), 'top-jarvis-btn style must exist');
-    assert.ok(css.includes('.jarvis-ring'), 'jarvis-ring style must exist');
-    assert.ok(css.includes('dialog.jarvis-hud-dialog'), 'HUD dialog must be styled');
+    assert.ok(css.includes('.top-jarvis-btn.is-active'), 'is-active state must exist');
+    assert.ok(css.includes('.top-jarvis-btn.is-speaking'), 'is-speaking state must exist');
+    assert.ok(css.includes('.top-jarvis-btn.is-listening'), 'is-listening state must exist');
+    assert.ok(css.includes('.jarvis-live-pill'), 'floating subtitle pill style must exist');
+    assert.ok(css.includes('.jarvis-f1-drawer'), 'non-blocking F1 drawer style must exist');
     assert.ok(css.includes('.jarvis-f1-grid'), 'F1 Compare 4-model grid must be styled');
   });
 
@@ -37,5 +47,15 @@ describe('JARVIS AI Voice Commander & F1 Compare Matrix', () => {
     const shellJs = fs.readFileSync(path.join(assetsDir, 'deepsyq-site-shell.js'), 'utf8');
     assert.ok(shellJs.includes('jarvis-core.js'), 'deepsyq-site-shell.js must inject JARVIS script');
     assert.ok(shellJs.includes('topJarvisBtn'), 'deepsyq-site-shell.js must create topJarvisBtn if missing');
+  });
+
+  it('verifies jarvis-core.js exports voice activation, conversational turn-taking and command handling', async () => {
+    const jarvisJs = fs.readFileSync(path.join(assetsDir, 'jarvis-core.js'), 'utf8');
+    assert.ok(jarvisJs.includes('export function activateJarvisVoice'), 'activateJarvisVoice must be exported');
+    assert.ok(jarvisJs.includes('export function deactivateJarvisVoice'), 'deactivateJarvisVoice must be exported');
+    assert.ok(jarvisJs.includes('export function toggleJarvisVoice'), 'toggleJarvisVoice must be exported');
+    assert.ok(jarvisJs.includes('export function handleJarvisVoiceCommand'), 'handleJarvisVoiceCommand must be exported');
+    assert.ok(jarvisJs.includes('speakJarvis'), 'speakJarvis TTS must be present');
+    assert.ok(jarvisJs.includes('runF1Compare'), 'runF1Compare must be present');
   });
 });

@@ -1,72 +1,117 @@
-/* JARVIS AI System — Futuristic Marvel / Arc Reactor Style UI */
+/* JARVIS AI System — Ambient ChatGPT Voice Mode & Marvel Arc-Reactor Styling */
 
-/* Mini Orb in Header */
+/* 1. Top-Center Orb Button */
 .top-jarvis-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(10, 16, 32, 0.85);
-  border: 1px solid rgba(0, 229, 255, 0.45);
+  background: rgba(8, 14, 28, 0.88);
+  border: 1.5px solid rgba(0, 229, 255, 0.4);
   border-radius: 999px;
-  padding: 4px 12px 4px 5px;
+  padding: 4px 14px 4px 6px;
   color: #e0f2fe;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 0 14px rgba(0, 229, 255, 0.25), inset 0 0 8px rgba(0, 229, 255, 0.15);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.2), inset 0 0 10px rgba(0, 229, 255, 0.12);
   flex: none;
-  z-index: 5;
-}
-.top-jarvis-btn:hover {
-  background: rgba(14, 25, 52, 0.95);
-  border-color: #38bdf8;
-  box-shadow: 0 0 22px rgba(56, 189, 248, 0.55), inset 0 0 12px rgba(56, 189, 248, 0.3);
-  transform: scale(1.05);
-}
-.top-jarvis-btn.is-active {
-  border-color: #ef4444;
-  box-shadow: 0 0 25px rgba(239, 68, 68, 0.6), inset 0 0 10px rgba(239, 68, 68, 0.3);
-  animation: jarvisPulseActive 1.4s infinite;
+  z-index: 10;
+  margin: 0 auto;
 }
 
+.top-jarvis-btn:hover {
+  background: rgba(12, 22, 46, 0.96);
+  border-color: #38bdf8;
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.55), inset 0 0 14px rgba(56, 189, 248, 0.3);
+  transform: translateY(-1px) scale(1.04);
+}
+
+/* Active Voice State (ChatGPT Voice Mode) */
+.top-jarvis-btn.is-active {
+  border-color: #00e5ff;
+  background: radial-gradient(circle, rgba(14, 28, 64, 0.95) 0%, rgba(6, 12, 26, 0.98) 100%);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.6), inset 0 0 16px rgba(0, 229, 255, 0.35);
+  animation: jarvisActiveBreathing 2.4s ease-in-out infinite;
+}
+
+/* Speaking State: Assistant is talking */
+.top-jarvis-btn.is-speaking {
+  border-color: #38bdf8;
+  box-shadow: 0 0 36px rgba(56, 189, 248, 0.8), inset 0 0 20px rgba(56, 189, 248, 0.5);
+  animation: jarvisSpeakingPulse 1.2s ease-in-out infinite alternate;
+}
+
+/* Listening State: User is talking / Mic is active */
+.top-jarvis-btn.is-listening {
+  border-color: #34d399;
+  box-shadow: 0 0 32px rgba(52, 211, 153, 0.7), inset 0 0 16px rgba(52, 211, 153, 0.4);
+  animation: jarvisListeningRipple 1.6s ease-in-out infinite;
+}
+
+/* Mini Orb Components inside button */
 .jarvis-mini-orb {
   position: relative;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: grid;
   place-items: center;
 }
+
 .jarvis-core {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: radial-gradient(circle, #ffffff 10%, #00e5ff 60%, #3b82f6 100%);
-  box-shadow: 0 0 10px #00e5ff, 0 0 16px #3b82f6;
-  animation: jarvisCoreGlow 2s ease-in-out infinite alternate;
+  background: radial-gradient(circle, #ffffff 15%, #00e5ff 60%, #3b82f6 100%);
+  box-shadow: 0 0 12px #00e5ff, 0 0 18px #3b82f6;
+  animation: jarvisCoreGlow 2.2s ease-in-out infinite alternate;
 }
+
+.top-jarvis-btn.is-active .jarvis-core {
+  background: radial-gradient(circle, #ffffff 20%, #38bdf8 65%, #a855f7 100%);
+  box-shadow: 0 0 16px #00e5ff, 0 0 24px #a855f7;
+}
+
+.top-jarvis-btn.is-listening .jarvis-core {
+  background: radial-gradient(circle, #ffffff 20%, #34d399 65%, #059669 100%);
+  box-shadow: 0 0 16px #34d399, 0 0 22px #059669;
+}
+
 .jarvis-ring {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 1.5px dashed rgba(0, 229, 255, 0.7);
+  border: 1.5px dashed rgba(0, 229, 255, 0.75);
   animation: jarvisSpin 4s linear infinite;
 }
+
 .jarvis-ring.ring-violet {
-  inset: -2px;
-  border-color: rgba(168, 85, 247, 0.55);
+  inset: -3px;
+  border-color: rgba(168, 85, 247, 0.6);
   animation: jarvisSpinRev 6s linear infinite;
+}
+
+.top-jarvis-btn.is-active .jarvis-ring {
+  border-color: rgba(0, 229, 255, 0.95);
+  animation-duration: 2.5s;
+}
+
+.top-jarvis-btn.is-speaking .jarvis-ring {
+  animation-duration: 1.5s;
+  border-color: #38bdf8;
 }
 
 .jarvis-name {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.12em;
-  background: linear-gradient(135deg, #e0f2fe, #38bdf8 60%, #c084fc);
+  letter-spacing: 0.14em;
+  background: linear-gradient(135deg, #f0f9ff, #38bdf8 60%, #c084fc);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
+/* Animations */
 @keyframes jarvisSpin {
   100% { transform: rotate(360deg); }
 }
@@ -74,301 +119,294 @@
   100% { transform: rotate(-360deg); }
 }
 @keyframes jarvisCoreGlow {
-  0% { transform: scale(0.85); opacity: 0.8; }
-  100% { transform: scale(1.15); opacity: 1; filter: drop-shadow(0 0 8px #00e5ff); }
+  0% { transform: scale(0.85); opacity: 0.85; }
+  100% { transform: scale(1.2); opacity: 1; filter: drop-shadow(0 0 10px #00e5ff); }
 }
-@keyframes jarvisPulseActive {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.06); }
+@keyframes jarvisActiveBreathing {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(0, 229, 255, 0.45); }
+  50% { transform: scale(1.05); box-shadow: 0 0 38px rgba(0, 229, 255, 0.75); }
+}
+@keyframes jarvisSpeakingPulse {
+  0% { transform: scale(1); filter: brightness(1); }
+  100% { transform: scale(1.08); filter: brightness(1.2); }
+}
+@keyframes jarvisListeningRipple {
+  0% { box-shadow: 0 0 20px rgba(52, 211, 153, 0.4); }
+  50% { box-shadow: 0 0 35px rgba(52, 211, 153, 0.8); }
+  100% { box-shadow: 0 0 20px rgba(52, 211, 153, 0.4); }
 }
 
-/* JARVIS Full HUD Dialog */
-dialog.jarvis-hud-dialog {
+/* 2. Floating Non-Blocking Subtitle Pill (#jarvisLivePill) */
+.jarvis-live-pill {
   position: fixed;
-  inset: 0;
-  margin: auto;
-  width: min(840px, calc(100vw - 32px));
-  max-height: min(88svh, 820px);
-  padding: 0;
+  top: 86px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(680px, calc(100vw - 32px));
+  padding: 8px 18px;
+  background: rgba(8, 14, 28, 0.88);
   border: 1px solid rgba(0, 229, 255, 0.4);
-  border-radius: 24px;
-  background: radial-gradient(circle at 50% 15%, rgba(14, 27, 58, 0.96) 0%, rgba(6, 11, 25, 0.98) 70%);
+  border-radius: 999px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 229, 255, 0.25);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: #e0f2fe;
+  font-size: 13px;
+  line-height: 1.45;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.jarvis-live-pill.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.jarvis-pill-indicator {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.jarvis-pill-indicator .pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00e5ff;
+  box-shadow: 0 0 8px #00e5ff;
+  transition: background 0.2s ease;
+}
+
+.jarvis-live-pill.is-speaking .pill-dot {
+  background: #38bdf8;
+  box-shadow: 0 0 12px #38bdf8;
+  animation: jarvisCoreGlow 1s infinite alternate;
+}
+
+.jarvis-live-pill.is-listening .pill-dot {
+  background: #34d399;
+  box-shadow: 0 0 12px #34d399;
+  animation: jarvisListeningRipple 1.2s infinite;
+}
+
+.jarvis-pill-text {
+  flex: 1;
+  font-weight: 500;
   color: #f1f5f9;
-  box-shadow: 0 0 50px rgba(0, 229, 255, 0.25), 0 30px 80px rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(20px);
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jarvis-pill-dismiss {
+  background: transparent;
+  border: 0;
+  color: #94a3b8;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 50%;
+  transition: color 0.15s, background 0.15s;
+}
+
+.jarvis-pill-dismiss:hover {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* 3. Non-Blocking Floating Comparison Drawer (#jarvisF1Drawer) */
+.jarvis-f1-drawer {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 990;
+  width: min(720px, calc(100vw - 32px));
+  max-height: min(75vh, 620px);
+  background: rgba(8, 14, 28, 0.94);
+  border: 1px solid rgba(0, 229, 255, 0.45);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(0, 229, 255, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: #f1f5f9;
   display: flex;
   flex-direction: column;
-}
-dialog.jarvis-hud-dialog::backdrop {
-  background: rgba(3, 7, 18, 0.85);
-  backdrop-filter: blur(12px);
+  overflow: hidden;
+  transform: translateY(120%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
 
-.jarvis-hud-inner {
+.jarvis-f1-drawer.is-open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.jarvis-drawer-inner {
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow-y: auto;
-  padding: 24px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 229, 255, 0.3) transparent;
+  overscroll-behavior: contain;
 }
 
-.jarvis-hud-header {
+.jarvis-drawer-head {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 14px;
-  margin-bottom: 20px;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 229, 255, 0.04);
 }
-.jarvis-hud-title {
+
+.jarvis-drawer-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
   color: #38bdf8;
-  text-transform: uppercase;
 }
-.jarvis-hud-title .status-dot {
+
+.jarvis-drawer-title .status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 8px #22c55e;
-  animation: jarvisCoreGlow 1.5s infinite alternate;
+  background: #00e5ff;
+  box-shadow: 0 0 8px #00e5ff;
 }
-.jarvis-hud-close {
+
+.jarvis-drawer-title small {
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.jarvis-drawer-close {
   background: transparent;
   border: 0;
   color: #94a3b8;
-  font-size: 24px;
+  font-size: 20px;
   cursor: pointer;
-  padding: 4px 10px;
+  padding: 2px 8px;
   border-radius: 8px;
-  line-height: 1;
+  transition: all 0.15s ease;
 }
-.jarvis-hud-close:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* Big Holographic Hero Core in HUD */
-.jarvis-hero-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 10px 0 20px;
-}
-.jarvis-big-orb {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  margin-bottom: 16px;
-  cursor: pointer;
-}
-.jarvis-big-core {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #ffffff 15%, #00e5ff 60%, #3b82f6 100%);
-  box-shadow: 0 0 25px #00e5ff, 0 0 50px rgba(59, 130, 246, 0.8);
-  animation: jarvisCoreGlow 1.8s ease-in-out infinite alternate;
-}
-.jarvis-big-ring-1 {
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  border: 2px dashed rgba(0, 229, 255, 0.7);
-  animation: jarvisSpin 7s linear infinite;
-}
-.jarvis-big-ring-2 {
-  position: absolute;
-  inset: -16px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(168, 85, 247, 0.4);
-  border-top-color: #c084fc;
-  border-bottom-color: #38bdf8;
-  animation: jarvisSpinRev 11s linear infinite;
-}
-.jarvis-big-orb.is-speaking .jarvis-big-core {
-  box-shadow: 0 0 35px #38bdf8, 0 0 70px #a855f7;
-  animation: jarvisPulseActive 0.6s infinite alternate;
+.jarvis-drawer-close:hover {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.15);
 }
 
-.jarvis-speech-bubble {
-  max-width: 580px;
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(0, 229, 255, 0.35);
-  border-radius: 16px;
-  padding: 14px 20px;
-  font-size: 15px;
-  line-height: 1.55;
-  color: #e2e8f0;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
-  margin-bottom: 14px;
-}
-.jarvis-speech-bubble strong {
-  color: #38bdf8;
-}
-
-/* Voice command transcript preview */
-.jarvis-live-input-box {
-  width: 100%;
-  max-width: 680px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(3, 7, 18, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 14px;
-  padding: 8px 14px;
-  margin-bottom: 20px;
-}
-.jarvis-live-input-box input {
-  flex: 1;
-  background: transparent;
-  border: 0;
-  outline: 0;
-  font: inherit;
-  font-size: 14px;
-  color: #f8fafc;
-}
-.jarvis-live-input-box input::placeholder {
-  color: #64748b;
-}
-.jarvis-speak-mic-btn {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(0, 229, 255, 0.15);
-  border: 1px solid rgba(0, 229, 255, 0.4);
-  color: #38bdf8;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.jarvis-speak-mic-btn.is-recording {
-  background: rgba(239, 68, 68, 0.25);
-  border-color: #ef4444;
-  color: #fca5a5;
-  animation: jarvisPulseActive 1.2s infinite;
-}
-
-/* Quick Voice Nav Chips */
-.jarvis-quick-commands {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 24px;
-}
-.jarvis-cmd-chip {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 999px;
-  padding: 7px 14px;
-  color: #cbd5e1;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.jarvis-cmd-chip:hover {
-  border-color: #38bdf8;
-  color: #fff;
-  background: rgba(56, 189, 248, 0.15);
-}
-
-/* F1 Compare 4 AI Models Grid */
-.jarvis-f1-section {
-  width: 100%;
-  margin-top: 6px;
-}
-.jarvis-f1-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  color: #94a3b8;
-  margin-bottom: 12px;
-  font-family: ui-monospace, SFMono-Regular, monospace;
-}
 .jarvis-f1-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 14px;
+  padding: 18px 20px;
 }
-@media (max-width: 640px) {
-  .jarvis-f1-grid {
-    grid-template-columns: 1fr;
-  }
-}
+
 .jarvis-model-card {
-  background: rgba(15, 23, 42, 0.65);
+  background: rgba(14, 22, 42, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  transition: border-color 0.2s;
+  gap: 10px;
+  transition: all 0.2s ease;
 }
+
 .jarvis-model-card:hover {
-  border-color: rgba(56, 189, 248, 0.45);
+  border-color: rgba(0, 229, 255, 0.5);
+  box-shadow: 0 6px 20px rgba(0, 229, 255, 0.15);
+  transform: translateY(-2px);
 }
+
 .jarvis-card-head {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
 }
+
 .jarvis-card-brand {
+  font-size: 11px;
   font-weight: 700;
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.05em;
 }
-.jarvis-badge-deepseek { color: #38bdf8; }
-.jarvis-badge-gemini { color: #818cf8; }
-.jarvis-badge-gpt { color: #34d399; }
-.jarvis-badge-claude { color: #f59e0b; }
+
+.jarvis-badge-deepseek { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+.jarvis-badge-gemini   { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
+.jarvis-badge-gpt      { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+.jarvis-badge-claude   { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
 
 .jarvis-card-meta {
-  font-size: 11px;
-  color: #64748b;
+  font-size: 10px;
+  color: #94a3b8;
   font-family: ui-monospace, SFMono-Regular, monospace;
 }
+
 .jarvis-card-text {
   font-size: 12px;
-  line-height: 1.5;
   color: #cbd5e1;
+  line-height: 1.5;
   flex: 1;
 }
+
 .jarvis-card-actions {
   display: flex;
   gap: 8px;
   margin-top: 4px;
 }
+
 .jarvis-action-btn {
-  padding: 6px 10px;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #cbd5e1;
+  padding: 6px 10px;
+  color: #e2e8f0;
   font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
 }
+
 .jarvis-action-btn:hover {
-  background: rgba(56, 189, 248, 0.2);
-  border-color: #38bdf8;
-  color: #fff;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.25), rgba(168, 85, 247, 0.25));
+  border-color: #00e5ff;
+  color: #ffffff;
+}
+
+@media (max-width: 760px) {
+  .top-jarvis-btn {
+    padding: 3px 10px 3px 5px;
+    margin: 0;
+  }
+  .jarvis-name {
+    display: none;
+  }
+  .jarvis-live-pill {
+    top: 68px;
+    font-size: 11px;
+    padding: 6px 14px;
+  }
+  .jarvis-f1-drawer {
+    right: 8px;
+    left: 8px;
+    bottom: 8px;
+    width: auto;
+  }
 }
