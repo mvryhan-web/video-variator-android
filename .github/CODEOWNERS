@@ -7,3 +7,11 @@
 /app/src/main/assets/media/pricing/ @mvryhan-web
 /docs/PRICING_OWNER_ART_LOCK.json @mvryhan-web
 /tests/pricing-owner-art-lock.mjs @mvryhan-web
+
+# Owner-approved Everyday Tools hero/layout — explicit new owner approval required.
+/app/src/main/assets/everyday-tools-visual.js @mvryhan-web
+/app/src/main/assets/everyday-tools-visual.css @mvryhan-web
+/app/src/main/assets/free-tools.html @mvryhan-web
+/app/src/main/assets/media/approved-design-20261023/09_Everyday_Tools.png @mvryhan-web
+/docs/EVERYDAY_TOOLS_OWNER_DESIGN_LOCK.md @mvryhan-web
+/tests/owner-everyday-tools-art-lock.mjs @mvryhan-web
