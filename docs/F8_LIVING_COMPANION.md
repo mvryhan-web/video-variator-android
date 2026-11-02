@@ -2,7 +2,9 @@
 
 Read with original `docs/DEEPSYQ_SOURCE_TXT/DEEPSYQ_BLOCK_8.txt` and latest `AGENTS.md` / `DECISIONS.md`.
 
-**Product idea:** Luna (copper/cream dog), Mira (charcoal/cream cat), Nova (russet/cream fox) are a useful companion, not a constant animated advertisement. Their user-facing identity is determined by chosen pet and name; future genuine 3D assets stay in [Issue #495](https://github.com/mvryhan-web/video-variator-android/issues/495). This code remains an *isolated SVG prototype*, NOT final 3D production, on `virtual-pet.html` ONLY. Public Home is not modified.
+**Product idea:** Luna (copper/cream dog), Mira (charcoal/cream cat), Nova (russet/cream fox) are a useful companion, not a constant animated advertisement. Their user-facing identity is determined by chosen pet and name.
+
+**Visual status (2026-11-02):** The F8 builder now uses each primitive's own BMesh vertices, points orthographic cameras at the actual pet, and fails the asset build when transparent renders are empty or touch a frame edge. Blender 4.2 regenerated the three rigged GLBs, full-body transparent turnaround renders, and eight-frame `idle_breathe` / `walk_loop` sprite sequences. The isolated F8 page and existing companion widget play the verified sprite sequences; they do not yet load GLB animation directly in WebGL. The original owner-selected posters remain reference art, never masquerade as transparent sprites. Reduced motion and the user's Still setting stop animation. No Home layout, payment, voice, production or main-branch changes are part of this F8 patch.
 
 ## Scenario coverage — honest status
 The policy module `virtual-pet-living.js` registers **all 16** scenarios S01–S16 and persists individual *user preferences*. A checked toggle **does not** authorize unsupported model/credit actions. Users can enable their preferences in advance, disable particular advice, disable all tips, choose Calm/Playful/Off and select dog/cat/fox. Additional 3 original abilities are shared with S04/S08/S10 rather than duplicating backend functionality.
@@ -32,7 +34,7 @@ The policy module `virtual-pet-living.js` registers **all 16** scenarios S01–S
 - One helpful bubble at a time; priority: purchased-credit risk, existing draft, real capability problem, optional tips.
 - Optional automatic tips: max 3 per browser session and >=10 minute quiet window between; avoid duplicate event signatures and "do not show this type again" in the controller. Keep no prompt text or personal filenames in registry.
 - Motion: once every 90s, a small 1.8s edge-local step, desktop >=769 CSS px only, when visible, no modal, typing, busy badge, or prefers-reduced-motion. User can set movement Gentle / Playful / Still, side Auto/Left/Right, and compact size. Auto side currently defaults to the safe right edge, not autonomous spatial collision detection; do not claim actual full-screen pathfinding.
-- Face: expressive or subtle local SVG microexpression; authentic 3D face/rig states still with Antigravity task.
+- Face: current isolated widget uses the rendered sprite face; authentic GLB runtime playback and binding the remaining authored actions to real advice events are later F8 work.
 - Voice: OFF, no microphone request, no speech synthesis, no external AI. A later Voice opt-in requires owner approval, cost/consent and access control under Block 6/7.
 - Mobile (320/390px): no strolling. Reduced-motion: no animation. When changing quantities, prompt, model, price, ratio or credits, only an explicit user button may request an authenticated server refresh, not a pet-triggered paid job.
 - All advice is optional; pet Off/Hide must not weaken existing actual security controls.

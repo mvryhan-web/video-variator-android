@@ -7,6 +7,7 @@ and atlas manifests for Luna (dog), Mira (cat), and Nova (fox).
 
 import bpy
 import bmesh
+import hashlib
 import math
 import os
 import json
@@ -15,6 +16,38 @@ from mathutils import Vector, Euler, Matrix
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 ASSETS_DIR = os.path.join(REPO_ROOT, "app", "src", "main", "assets", "virtual-pet")
+
+
+def aim_camera(camera_obj, target):
+    """Point Blender's local -Z camera axis at the requested world-space point."""
+    direction = Vector(target) - camera_obj.location
+    if direction.length == 0:
+        raise ValueError("Camera target must not equal camera position")
+    camera_obj.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+
+
+def assert_visible_alpha_margin(filepath, minimum_margin=0.025):
+    """Fail the asset build if a transparent character render touches its frame."""
+    image = bpy.data.images.load(filepath, check_existing=False)
+    try:
+        width, height = image.size
+        if width < 2 or height < 2 or image.channels < 4:
+            raise RuntimeError(f"Expected an RGBA render: {filepath}")
+        pixels = [0.0] * (width * height * image.channels)
+        image.pixels.foreach_get(pixels)
+        alpha = pixels[3::4]
+        visible = [i for i, value in enumerate(alpha) if value > 0.02]
+        if not visible:
+            raise RuntimeError(f"Transparent render contains no character: {filepath}")
+        xs = [i % width for i in visible]
+        ys = [i // width for i in visible]
+        margin = min(min(xs), min(ys), width - 1 - max(xs), height - 1 - max(ys))
+        if margin / min(width, height) < minimum_margin:
+            raise RuntimeError(
+                f"Character is clipped or too close to frame edge ({margin}px): {filepath}"
+            )
+    finally:
+        bpy.data.images.remove(image)
 
 # 1. PET DEFINITIONS
 PET_CONFIGS = {
@@ -114,6 +147,7 @@ def clean_scene():
     scene.render.resolution_x = 512
     scene.render.resolution_y = 512
     scene.render.resolution_percentage = 100
+    scene.eevee.taa_render_samples = 8
 
 def create_pbr_material(name, base_color, roughness=0.65, metallic=0.0):
     mat = bpy.data.materials.new(name=name)
@@ -150,7 +184,7 @@ def build_pet_mesh(cfg):
 
     # 1. Torso
     b_scale = p["body_scale"]
-    bmesh.ops.create_uvsphere(bm, u_segments=24, v_segments=16, radius=1.0)
+    bmesh.ops.create_uvsphere(bm, u_segments=32, v_segments=24, radius=1.0)
     for v in bm.verts:
         v.co.x *= b_scale[0]
         v.co.y *= b_scale[1]
@@ -161,17 +195,20 @@ def build_pet_mesh(cfg):
         f.material_index = 0
 
     # 2. Chest / Belly cream patch
-    bmesh.ops.create_uvsphere(bm, u_segments=16, v_segments=12, radius=1.0)
-    for v in [v for v in bm.verts if v.select]:
+    belly_verts = bmesh.ops.create_uvsphere(
+        bm, u_segments=16, v_segments=12, radius=1.0
+    )["verts"]
+    for v in belly_verts:
         v.co.x *= b_scale[0] * 0.75
         v.co.y = (v.co.y * b_scale[1] * 0.75) + 0.12
         v.co.z = (v.co.z * b_scale[2] * 0.70) + 0.48
-    for f in [f for f in bm.faces if f.select]:
+    belly_faces = {face for vertex in belly_verts for face in vertex.link_faces}
+    for f in belly_faces:
         f.material_index = 1
 
     # 3. Head
     h_scale = p["head_scale"]
-    head_verts = bmesh.ops.create_uvsphere(bm, u_segments=24, v_segments=16, radius=1.0)["verts"]
+    head_verts = bmesh.ops.create_uvsphere(bm, u_segments=32, v_segments=24, radius=1.0)["verts"]
     for v in head_verts:
         v.co.x *= h_scale[0]
         v.co.y = (v.co.y * h_scale[1]) + 0.40
@@ -204,9 +241,11 @@ def build_pet_mesh(cfg):
     e_scale = p["eye_scale"]
     for side in (-1, 1):
         eye_verts = bmesh.ops.create_uvsphere(bm, u_segments=12, v_segments=10, radius=1.0)["verts"]
+        eye_surface_y = 0.40 + h_scale[1] * math.sqrt(max(0.0, 1.0 - (0.16 / h_scale[0]) ** 2))
         for v in eye_verts:
             v.co.x = (v.co.x * e_scale[0]) + (side * 0.16)
-            v.co.y = (v.co.y * e_scale[1]) + 0.55
+            # Sit each eye on the visible front surface of the head, not inside it.
+            v.co.y = (v.co.y * e_scale[1]) + eye_surface_y + e_scale[1] * 0.38
             v.co.z = (v.co.z * e_scale[2]) + 0.78
         for f in bm.faces:
             if any(v in eye_verts for v in f.verts):
@@ -277,6 +316,8 @@ def build_pet_mesh(cfg):
             f.material_index = 4
 
     # Finish mesh
+    for face in bm.faces:
+        face.smooth = True
     bm.to_mesh(mesh)
     bm.free()
     mesh.update()
@@ -708,6 +749,8 @@ def setup_studio_lighting():
     # Camera
     cam_data = bpy.data.cameras.new(name="RenderCamera")
     cam_data.lens = 50.0
+    cam_data.type = 'ORTHO'
+    cam_data.ortho_scale = 2.25
     cam_obj = bpy.data.objects.new(name="RenderCamera", object_data=cam_data)
     scene.collection.objects.link(cam_obj)
     scene.camera = cam_obj
@@ -716,23 +759,27 @@ def setup_studio_lighting():
 def render_previews(cfg, cam_obj, out_dir):
     scene = bpy.context.scene
     os.makedirs(out_dir, exist_ok=True)
+    scene.render.resolution_x = 256
+    scene.render.resolution_y = 256
 
     angles = [
-        ("three_quarter", (1.6, 1.6, 1.1), (0.1, 0.2, 0.55), (math.radians(65), 0, math.radians(135))),
-        ("front",         (0.0, 2.2, 0.75), (0.0, 0.2, 0.55), (math.radians(85), 0, math.radians(180))),
-        ("side",          (2.2, 0.0, 0.75), (0.0, 0.0, 0.55), (math.radians(85), 0, math.radians(90))),
-        ("back",          (0.0, -2.2, 0.75), (0.0, -0.2, 0.55), (math.radians(85), 0, 0)),
-        ("face_closeup",  (0.0, 1.1, 0.82), (0.0, 0.4, 0.78), (math.radians(88), 0, math.radians(180)))
+        ("three_quarter", (1.8, 4.0, 1.8), (0.0, 0.0, 0.62), 2.35),
+        ("front",         (0.0, 4.2, 1.45), (0.0, 0.0, 0.62), 2.2),
+        ("side",          (4.2, 0.0, 1.45), (0.0, 0.0, 0.62), 2.2),
+        ("back",          (0.0, -4.2, 1.45), (0.0, 0.0, 0.62), 2.2),
+        ("face_closeup",  (0.0, 2.8, 1.5), (0.0, 0.38, 0.78), 1.8)
     ]
 
-    for name, loc, target, rot in angles:
+    for name, loc, target, ortho_scale in angles:
         cam_obj.location = loc
-        cam_obj.rotation_euler = rot
+        aim_camera(cam_obj, target)
+        cam_obj.data.ortho_scale = ortho_scale
         
         # 1. Render Transparent PNG
         scene.render.film_transparent = True
         scene.render.filepath = os.path.join(out_dir, f"{name}.png")
         bpy.ops.render.render(write_still=True)
+        assert_visible_alpha_margin(scene.render.filepath)
 
         # 2. Render Dark Background
         scene.render.film_transparent = False
@@ -759,8 +806,9 @@ def render_sprite_frames(cfg, cam_obj, arm_obj, anim_name, out_dir, num_frames=1
     scene.render.resolution_x = 168
     scene.render.resolution_y = 168
 
-    cam_obj.location = (1.4, 1.4, 0.95)
-    cam_obj.rotation_euler = (math.radians(65), 0, math.radians(135))
+    cam_obj.location = (1.8, 4.0, 1.8)
+    aim_camera(cam_obj, (0.0, 0.0, 0.62))
+    cam_obj.data.ortho_scale = 2.35
 
     act = bpy.data.actions.get(anim_name)
     if act and arm_obj.animation_data:
@@ -772,6 +820,7 @@ def render_sprite_frames(cfg, cam_obj, arm_obj, anim_name, out_dir, num_frames=1
             out_file = os.path.join(out_dir, f"{anim_name}_{i:02d}.png")
             scene.render.filepath = out_file
             bpy.ops.render.render(write_still=True)
+            assert_visible_alpha_margin(out_file)
 
 # 4. MASTER BUILD PIPELINE
 def build_pet(pet_key):
@@ -830,10 +879,27 @@ def build_pet(pet_key):
         "actions": list(actions.keys())
     }
 
+
+def update_manifest_hashes():
+    manifest_path = os.path.join(ASSETS_DIR, "pets.manifest.json")
+    with open(manifest_path, "r", encoding="utf-8") as manifest_file:
+        manifest = json.load(manifest_file)
+    for pet in manifest["pets"]:
+        key = pet["key"]
+        production = pet["production"]
+        for field in ("blend", "glb"):
+            asset_path = os.path.join(REPO_ROOT, "app", "src", "main", "assets", production[field])
+            with open(asset_path, "rb") as asset:
+                production[field + "Sha256"] = hashlib.sha256(asset.read()).hexdigest()
+    with open(manifest_path, "w", encoding="utf-8") as manifest_file:
+        json.dump(manifest, manifest_file, ensure_ascii=False, indent=2)
+        manifest_file.write("\n")
+
 def main():
     results = {}
     for k in ["luna", "mira", "nova"]:
         results[k] = build_pet(k)
+    update_manifest_hashes()
     print("\nALL THREE F8 3D PETS SUCCESSFULLY GENERATED!")
     print(json.dumps(results, indent=2))
 

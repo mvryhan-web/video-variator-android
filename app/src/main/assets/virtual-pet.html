@@ -136,6 +136,11 @@
       .sim-row {
         grid-template-columns: 1fr;
       }
+
+      #pet3dStudioCard > div:first-child {
+        grid-template-columns: minmax(0, 1fr) !important;
+        padding: 16px !important;
+      }
     }
 
     .sim-box {
@@ -254,7 +259,7 @@
           <!-- Viewport Box -->
           <div style="text-align:center;">
             <div id="petViewportBox" style="background:#0b0f19; border:1px solid #2a3449; border-radius:12px; width:100%; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; transition:background 0.2s;">
-              <img id="petPreviewImg" src="virtual-pet/luna/renders/three_quarter.png" alt="3D Pet Preview" style="width:168px; height:168px; object-fit:contain; filter:drop-shadow(0 8px 16px rgba(0,0,0,0.5)); transition:transform 0.2s;" />
+              <img id="petPreviewImg" src="virtual-pet/luna/renders/three_quarter.png?v=f8-camera-fix-20261102-1" alt="Animated Luna pet preview" style="width:168px; height:168px; object-fit:contain; filter:drop-shadow(0 8px 16px rgba(0,0,0,0.5)); transition:transform 0.2s;" />
               <div id="petScaleBadge" style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.6); padding:2px 8px; border-radius:6px; font-size:11px; color:#94a3b8;">168 px</div>
             </div>
             <!-- Background & Scale Toggles -->
@@ -377,7 +382,7 @@
   </div>
 
   <script src="virtual-pet-living.js"></script>
-  <script src="virtual-pet.js"></script>
+  <script src="virtual-pet.js?v=f8-camera-fix-20261102-1"></script>
   <script defer src="deepsyq-site-shell.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -474,6 +479,7 @@
       let currentBg = 'transparent'; // 'transparent' | 'dark' | 'light'
       let currentSize = 168;
       let animInterval = null;
+      const assetVersion = 'f8-camera-fix-20261102-1';
 
       const petData = {
         luna: {
@@ -514,7 +520,7 @@
         let bgSuffix = '';
         if (currentBg === 'dark') bgSuffix = '_dark';
         else if (currentBg === 'light') bgSuffix = '_light';
-        previewImg.src = `virtual-pet/${currentPetKey}/renders/${currentAngle}${bgSuffix}.png`;
+        previewImg.src = `virtual-pet/${currentPetKey}/renders/${currentAngle}${bgSuffix}.png?v=${assetVersion}`;
       }
 
       function selectPet(key) {
@@ -532,6 +538,7 @@
         document.getElementById('btnInspectMira').className = key === 'mira' ? 'ds-pet-btn ds-pet-btn-primary' : 'ds-pet-btn ds-pet-btn-secondary';
         document.getElementById('btnInspectNova').className = key === 'nova' ? 'ds-pet-btn ds-pet-btn-primary' : 'ds-pet-btn ds-pet-btn-secondary';
         updatePreviewImage();
+        playSpriteLoop('idle_breathe');
       }
 
       document.getElementById('btnInspectLuna').addEventListener('click', () => selectPet('luna'));
@@ -581,7 +588,7 @@
         stopAnimation();
         let frame = 0;
         animInterval = setInterval(() => {
-          previewImg.src = `virtual-pet/${currentPetKey}/sprites/${animName}_0${frame}.png`;
+          previewImg.src = `virtual-pet/${currentPetKey}/sprites/${animName}_0${frame}.png?v=${assetVersion}`;
           frame = (frame + 1) % 8;
         }, 125);
       }
@@ -589,6 +596,7 @@
       document.getElementById('btnPlayBreathe').addEventListener('click', () => playSpriteLoop('idle_breathe'));
       document.getElementById('btnPlayWalk').addEventListener('click', () => playSpriteLoop('walk_loop'));
       document.getElementById('btnStopAnim').addEventListener('click', updatePreviewImage);
+      selectPet(currentPetKey);
     });
   </script>
 </body>

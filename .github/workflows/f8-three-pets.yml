@@ -7,7 +7,14 @@ on:
       - 'app/src/main/assets/virtual-pet-living.js'
       - 'app/src/main/assets/virtual-pet.css'
       - 'app/src/main/assets/virtual-pet.html'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/index.html'
+      - 'app/src/main/assets/generate-studio.html'
+      - 'app/src/main/assets/my-creations.html'
+      - 'app/src/main/assets/compare-ai.html'
+      - 'app/src/main/assets/ai-agents.html'
       - 'tests/virtual-pet*'
+      - 'scripts/build_f8_pets_3d.py'
       - '.github/workflows/f8-three-pets.yml'
   push:
     branches: [deepsyq-platform]
@@ -17,7 +24,14 @@ on:
       - 'app/src/main/assets/virtual-pet-living.js'
       - 'app/src/main/assets/virtual-pet.css'
       - 'app/src/main/assets/virtual-pet.html'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/index.html'
+      - 'app/src/main/assets/generate-studio.html'
+      - 'app/src/main/assets/my-creations.html'
+      - 'app/src/main/assets/compare-ai.html'
+      - 'app/src/main/assets/ai-agents.html'
       - 'tests/virtual-pet*'
+      - 'scripts/build_f8_pets_3d.py'
       - '.github/workflows/f8-three-pets.yml'
 jobs:
   no-spend:
@@ -31,4 +45,5 @@ jobs:
         run: |
           node --check app/src/main/assets/virtual-pet.js
           node --check app/src/main/assets/virtual-pet-living.js
+          python3 -m py_compile scripts/build_f8_pets_3d.py
           node --test tests/virtual-pet.test.mjs tests/virtual-pet-assets-unit.mjs tests/virtual-pet-living-unit.mjs

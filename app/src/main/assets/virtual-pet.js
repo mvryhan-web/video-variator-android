@@ -204,6 +204,8 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
       this.isInitialized = false;
       this.livingController = root?.DeepsyqLivingPet?.createController?.() || null;
       this.ambientTimer = null;
+      this.spriteTimer = null;
+      this.spriteFrame = 0;
     }
 
     getStorage() {
@@ -344,6 +346,7 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
 
       if (!this.settings.enabled || this.settings.mode === 'off') {
         this.widgetEl.classList.add('ds-pet-hidden');
+        this.stopPetSpriteAnimation();
         return;
       }
       this.widgetEl.classList.remove('ds-pet-hidden');
@@ -362,12 +365,13 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
           this.settings.pet === 'fox' ? SVG_FOX : SVG_DOG;
         svgContainer.innerHTML = `
           <div class="ds-pet-visual-wrap">
-            <img class="ds-pet-3d-img" src="virtual-pet/${petKey}/renders/three_quarter.png" alt="${this.settings.name}" width="100%" height="100%" loading="eager" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';" />
+            <img class="ds-pet-3d-img" src="virtual-pet/${petKey}/renders/three_quarter.png?v=f8-camera-fix-20261102-1" alt="${this.escapeHtml(this.settings.name)}" width="100%" height="100%" loading="eager" onerror="this.onerror=null; window.__deepsyqVirtualPetInstance?.stopPetSpriteAnimation?.(); this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';" />
             <div class="ds-pet-svg-fallback" style="display:none; width:100%; height:100%;">
               ${fallbackSvg}
             </div>
           </div>
         `;
+        this.startPetSpriteAnimation(petKey);
       }
 
       const avatar = document.getElementById('dsPetAvatar');
@@ -469,6 +473,34 @@ const globalScope = typeof globalThis !== 'undefined' ? globalThis :
         this.widgetEl.classList.add('ds-pet-ambient-walk');
         window.setTimeout(() => this.widgetEl?.classList?.remove('ds-pet-ambient-walk'),1900);
       },90000);
+    }
+
+    stopPetSpriteAnimation() {
+      if (this.spriteTimer && typeof window !== 'undefined') {
+        window.clearInterval(this.spriteTimer);
+      }
+      this.spriteTimer = null;
+    }
+
+    startPetSpriteAnimation(petKey) {
+      this.stopPetSpriteAnimation();
+      this.spriteFrame = 0;
+      if (typeof window === 'undefined' || !this.widgetEl ||
+          this.settings.mode === 'off' || this.settings.living?.movement === 'still' ||
+          window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return;
+      const image = document.querySelector('#dsPetSvgContainer .ds-pet-3d-img');
+      if (!image) return;
+      const version = 'f8-camera-fix-20261102-1';
+      this.spriteTimer = window.setInterval(() => {
+        if (!image.isConnected || document.hidden || this.widgetEl?.classList.contains('ds-pet-hidden')) return;
+        if (this.settings.living?.movement === 'still' ||
+            window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
+          this.stopPetSpriteAnimation();
+          return;
+        }
+        image.src = `virtual-pet/${petKey}/sprites/idle_breathe_${String(this.spriteFrame).padStart(2, '0')}.png?v=${version}`;
+        this.spriteFrame = (this.spriteFrame + 1) % 8;
+      }, 125);
     }
 
     offerLivingHint(id,event,text,actions=[],mood='normal') {
