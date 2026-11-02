@@ -61,7 +61,7 @@ export function installInspiration(app,{auth,pool,env=process.env}){
   if(req.query.target){const target=String(req.query.target);if(!TARGETS.has(target))return res.status(400).json({error:'INVALID_INSPIRATION_FILTER'});if(target==='agent'&&!agentTargetsEnabled(env))return res.json({items:[],categories:[],ratios:[]});args.push(target);where.push(`action_target=$${args.length}`);}
   const q=String(req.query.q||'').trim().slice(0,80);if(q){args.push('%'+q.replace(/[\\%_]/g,c=>'\\'+c)+'%');where.push(`(title ILIKE $${args.length} OR category ILIKE $${args.length} OR description ILIKE $${args.length} OR prompt ILIKE $${args.length})`);}
   const limit=Math.max(1,Math.min(48,Number.parseInt(req.query.limit||'24',10)||24)),offset=Math.max(0,Math.min(5000,Number.parseInt(req.query.offset||'0',10)||0)),targetGate=publicTargetSql(env);
-  const {rows}=await pool.query(`SELECT * FROM vv_ai_inspiration WHERE ${where.join(' AND ')}${targetGate} ORDER BY featured DESC,sort_order ASC,created_at DESC LIMIT ${limit+1} OFFSET ${offset}`,args);
+  const {rows}=await pool.query(`SELECT * FROM vv_ai_inspiration WHERE ${where.join(' AND ')}${targetGate} ORDER BY featured DESC,sort_order ASC,created_at DESC,id ASC LIMIT ${limit+1} OFFSET ${offset}`,args);
   const [cats,ratios]=await Promise.all([
    pool.query(`SELECT DISTINCT category FROM vv_ai_inspiration WHERE active=true AND rights_basis IN ('owned','licensed') AND length(trim(rights_note))>=3${targetGate} ORDER BY category`),
    pool.query(`SELECT DISTINCT aspect_ratio FROM vv_ai_inspiration WHERE active=true AND rights_basis IN ('owned','licensed') AND length(trim(rights_note))>=3${targetGate} ORDER BY aspect_ratio`)
