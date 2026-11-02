@@ -32,7 +32,7 @@ function harness(){
  const context={document,window,localStorage:{getItem:()=>account},fetch,AbortController,Intl,Date,Number,String,Set,Promise,Error,Event:class Event{},console,validWalletAmount,setInterval:fn=>{tick=fn;}};
  vm.createContext(context);
  vm.runInContext(
-  source.replace(/^import[^\n]*\n/,'').replace(/void refresh\(\);\s*$/,'')+
+  source.replace(/^import[^\n]*\n/m,'').replace(/void refresh\(\);\s*$/,'')+
    '\nglobalThis.A40={refresh,check};',context
  );
  return {
