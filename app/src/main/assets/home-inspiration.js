@@ -35,6 +35,7 @@ function detailEl(tag,className,text){
  return el;
 }
 function openInspirationDetail(item,opener){
+ for(const v of previewVideos)v.pause();
  if(inspirationDetail?.open)inspirationDetail.close();
  const dialog=detailEl('dialog','inspiration-detail-dialog');
  dialog.setAttribute('aria-label',item.title+' inspiration details');
@@ -133,6 +134,48 @@ function openInspirationDetail(item,opener){
 
 
 let items=[],activeKind='all',afterDraw=()=>{};
+let previewObserver=null,previewVideos=[];
+const finePreviewHover=typeof window!=='undefined'?window.matchMedia('(hover: hover) and (pointer: fine)'):null;
+function syncPreviewPlayback(){
+ const allowed=!document.hidden&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData;
+ const hoverMode=finePreviewHover?.matches;
+ const active=allowed?(hoverMode
+  ? previewVideos.find(v=>v.__previewHovered&&v.__previewVisible)
+  : [...previewVideos].filter(v=>v.__previewVisible).sort((a,b)=>b.__previewRatio-a.__previewRatio)[0]):null;
+ for(const v of previewVideos){
+  if(v!==active){
+   v.pause();
+   if(v.hasAttribute('src')){v.removeAttribute('src');v.load();}
+  }else{
+   if(v.getAttribute('src')!==v.dataset.src){v.src=v.dataset.src;v.load();}
+   if(v.paused)void v.play().catch(()=>v.pause());
+  }
+ }
+}
+function attachPreviewPlayback(){
+ previewObserver?.disconnect();
+ previewVideos=[...document.querySelectorAll('#inspirationPreviewGrid .inspiration-preview-card video[data-src]')];
+ if(!previewVideos.length)return;
+ for(const v of previewVideos){
+  const card=v.closest('.inspiration-preview-card');
+  card.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')v.__previewHovered=true;syncPreviewPlayback();});
+  card.addEventListener('pointerleave',()=>{v.__previewHovered=false;syncPreviewPlayback();});
+ }
+ if('IntersectionObserver' in window){
+  previewObserver=new IntersectionObserver(entries=>{
+   for(const e of entries){
+    const v=e.target.querySelector('video[data-src]');
+    if(v){v.__previewRatio=e.intersectionRatio;v.__previewVisible=e.isIntersecting&&e.intersectionRatio>=.6;}
+   }
+   syncPreviewPlayback();
+  },{threshold:[0,.6,.75,1]});
+  for(const v of previewVideos)previewObserver.observe(v.closest('.inspiration-preview-card'));
+ }
+}
+if(typeof document!=='undefined'){
+ document.addEventListener('visibilitychange',syncPreviewPlayback);
+ finePreviewHover?.addEventListener?.('change',syncPreviewPlayback);
+}
 export function renderHomeInspiration(feed,onRender=()=>{}){
  afterDraw=onRender;
  document.querySelectorAll('[data-canvas-example]').forEach(button=>{const item=feed.find(item=>item.slug===button.dataset.canvasExample||item.id===button.dataset.canvasExample);button.disabled=!item;button.onclick=item?()=>openInspirationDetail(item,button):null;});
@@ -147,7 +190,7 @@ export function renderHomeInspiration(feed,onRender=()=>{}){
  draw();
 }
 function draw(){
- const root=document.getElementById('inspirationPreviewGrid');root.querySelectorAll('video').forEach(v=>v.pause());root.replaceChildren();
+ const root=document.getElementById('inspirationPreviewGrid');previewObserver?.disconnect();root.querySelectorAll('video').forEach(v=>{v.pause();v.removeAttribute('src');});previewVideos=[];root.replaceChildren();
  const visible=items.filter(item=>activeKind==='all'||item.kind===activeKind);
  for(const item of visible){
   const button=detailEl('button','inspiration-preview-card');button.type='button';button.dataset.kind=item.kind;
@@ -159,7 +202,7 @@ function draw(){
   button.style.setProperty('--inspiration-ratio',String(ratio));
   const visual=detailEl('div','inspiration-preview-media');
   if(item.kind==='video'){
-   const video=detailEl('video');video.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';
+   const video=detailEl('video');video.dataset.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';
    if(item.previewPosterUrl)video.poster=item.previewPosterUrl;
    visual.append(video);
   }else{
@@ -172,6 +215,7 @@ function draw(){
  }
  const empty=document.getElementById('inspirationEmpty');empty.hidden=visible.length>0;
  empty.textContent=activeKind==='all'?'No inspiration yet.':activeKind==='image'?'No images yet.':'No videos yet.';
+ attachPreviewPlayback();
  afterDraw();
 }
 
