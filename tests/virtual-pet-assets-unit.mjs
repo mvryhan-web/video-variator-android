@@ -101,22 +101,23 @@ test('F8 manifest files physically exist, are non-empty and valid 3D models',()=
  }
 });
 
-test('F8 movement uses fresh generated sprite assets on its supported pages',()=>{
+test('F8 assets remain archived but never load in public pages',()=>{
  const assets=path.join(root,'app/src/main/assets');
- for(const page of ['deepsyq.html','index.html','generate-studio.html','virtual-pet.html','my-creations.html','compare-ai.html','ai-agents.html']){
+ for(const page of ['deepsyq.html','index.html','generate-studio.html','my-creations.html','compare-ai.html','ai-agents.html']){
   const html=readFileSync(path.join(assets,page),'utf8');
-  assert.match(html,/src="virtual-pet\.js\?v=f8-sprite-preload-20261103-1"/,`${page} must load the refreshed companion code`);
+  assert.ok(!/<script\\b[^>]*src=["']virtual-pet\\.js/.test(html),`${page} must not load frozen F8 code`);
+  assert.ok(!/<link\\b[^>]*href=["']virtual-pet\\.css/.test(html),`${page} must not load frozen F8 CSS`);
  }
+ const home=readFileSync(path.join(assets,'deepsyq.html'),'utf8');
+ assert.ok(!home.includes('livingPetsSection'),'Home must not feature frozen F8 pets');
+ const previewServer=readFileSync(path.join(root,'server','deepsyq-preview.js'),'utf8');
+ const productionServer=readFileSync(path.join(root,'server','server.js'),'utf8');
+ for(const [name,src] of [['DEV',previewServer],['production',productionServer]]){
+  assert.ok(src.includes("req.path==='/virtual-pet'"),`${name} must return 404 before static assets`);
+ }
+ // Only source assets and the retired editor remain in-repo for potential future work.
  const petPage=readFileSync(path.join(assets,'virtual-pet.html'),'utf8');
- assert.match(petPage,/playSpriteLoop\('idle_breathe'\)/,'the preview should move as soon as a pet is selected');
- assert.match(petPage,/previewImg\.alt = `Animated \$\{d\.accessibilityName\} preview`/,'the preview description should follow the selected pet');
- assert.match(petPage,/prefers-reduced-motion: reduce/,'the pet preview must respect reduced-motion preference');
- assert.match(petPage,/sprites\/\$\{animName\}_0\$\{frame\}\.png\?v=\$\{assetVersion\}/,'preview controls should use regenerated animation frames');
+ assert.match(petPage,/playSpriteLoop\\('idle_breathe'\\)/,'archived preview source remains recoverable');
  const runtime=readFileSync(path.join(assets,'virtual-pet.js'),'utf8');
- assert.match(runtime,/startPetSpriteAnimation\(petKey\)/,'the page companion should display the generated animation');
- assert.match(runtime,/Array\.from\(\{length: 8\}/,'the companion should preload all eight frames before playback');
- assert.match(runtime,/Promise\.all\(frameUrls\.map/,'the visible image must wait for frame loading instead of cycling through pending network requests');
- assert.match(runtime,/loadToken !== this\.spriteLoadToken/,'a stale pet preload must not replace the newly selected animal');
- assert.match(runtime,/\}, 210\)/,'frame timing should leave enough time for browser painting');
- assert.match(runtime,/prefers-reduced-motion: reduce/,'the companion must respect the user motion preference');
+ assert.match(runtime,/startPetSpriteAnimation\\(petKey\\)/,'archived animation source remains available');
 });
