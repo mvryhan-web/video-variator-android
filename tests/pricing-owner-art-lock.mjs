@@ -33,6 +33,6 @@ test('Everyday Tools original October 23 image and right crop are preserved',()=
  const css=read('app/src/main/assets/everyday-tools-visual.css').toString();
  assert.ok(js.includes('media/approved-design-20261023/09_Everyday_Tools.png'));
  assert.ok(js.includes("crop([695,61,703,242],'et-hero-art')"));
- assert.ok(css.includes('.et-hero-art{left:42%;width:58%;object-fit:cover}'));
+ assert.ok(css.includes('.et-hero-art{right:0;left:auto;top:0;width:min(58%,703px);height:100%;object-fit:contain;opacity:1;image-rendering:auto}'));
  assert.ok(!css.includes('.et-hero-art{left:0;width:100%;height:100%'));
 });
