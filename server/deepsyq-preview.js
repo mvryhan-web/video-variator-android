@@ -85,6 +85,11 @@ app.get(['/','/dashboard','/deepsyq.html'],homepage);
 // The deleted owner-cancelled workflow is never reachable in this preview.
 app.get(['/product-video','/product-video.html'],(_req,res)=>res.status(404).type('text/plain').send('Not found'));
 app.get(['/inspiration','/inspiration.html'],(_req,res)=>res.redirect(302,'/deepsyq.html#inspirationPreview'));
+// F8 retired by owner: do not expose the former pet page, scripts, or model assets.
+app.use((req,res,next)=>{
+  if(/^\/virtual-pet(?=\/|\.|$)/i.test(req.path))return res.status(404).set('Cache-Control','no-store').type('text/plain').send('Not found');
+  next();
+});
 app.use(express.static(assets,{extensions:['html'],index:false,fallthrough:true}));
 app.use((req,res)=>{
  if(req.method!=='GET'&&req.method!=='HEAD')return res.status(405).type('text/plain').send('PREVIEW_READ_ONLY');
