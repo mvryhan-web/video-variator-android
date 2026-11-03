@@ -10,6 +10,8 @@ import {getJarvixVoice, getJarvixLanguage} from './jarvis-core.js';
     }
     let currentSessionId = getStudioSessionId();
     let currentlyPlayingBtn = null;
+    let pendingChat = null;
+    let chatVersion = 0;
 
     const SAMPLES_DATA = [
         { lang: 'ru', locale:'ru-RU', flag: '🇷🇺', name: 'Русский', text: 'Здравствуйте! Я JARVIX — ваш голосовой помощник Deepsyq. Чем могу помочь?' },
@@ -173,12 +175,17 @@ import {getJarvixVoice, getJarvixLanguage} from './jarvis-core.js';
 
     async function sendMessage(text) {
       if (!text || !text.trim()) return;
+      pendingChat?.abort();
+      const version = ++chatVersion;
+      const controller = new AbortController();
+      pendingChat = controller;
       const clean = text.trim();
       appendLog('Вы', clean, 'user');
       chatInput.value = '';
 
       try {
         const res = await fetch('/api/jarvix/chat', {
+          signal: controller.signal,
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -193,6 +200,7 @@ import {getJarvixVoice, getJarvixLanguage} from './jarvis-core.js';
         }
 
         const data = await res.json();
+        if (version !== chatVersion) return;
         appendLog('JARVIX', data.reply, 'jarvix');
 
         if (data.action && data.action.type === 'block_unauthorized') {
@@ -203,6 +211,7 @@ import {getJarvixVoice, getJarvixLanguage} from './jarvis-core.js';
         stateInspector.textContent = JSON.stringify({
           sessionId: currentSessionId,
           intent: data.intent,
+          provider: data.provider || 'unknown',
           accumulatedEntities: data.entities || {},
           compiledPrompt: data.compiledPrompt || '',
           action: data.action || null,
@@ -216,6 +225,7 @@ import {getJarvixVoice, getJarvixLanguage} from './jarvis-core.js';
           snd.play().catch(() => {});
         } else speakReply(data.reply, data.language || currentLanguage());
       } catch (err) {
+        if (version !== chatVersion || err.name === 'AbortError') return;
         appendLog('SYSTEM', 'Ошибка связи: ' + err.message, 'system');
       }
     }
@@ -232,6 +242,9 @@ import {getJarvixVoice, getJarvixLanguage} from './jarvis-core.js';
     });
 
     document.getElementById('resetMemoryBtn').addEventListener('click', async () => {
+      chatVersion += 1;
+      pendingChat?.abort();
+      window.speechSynthesis?.cancel();
       try {
         await fetch('/api/jarvix/reset', {
           method: 'POST',
@@ -252,3 +265,26 @@ import {getJarvixVoice, getJarvixLanguage} from './jarvis-core.js';
       }, null, 2);
     });
   
+
+    async function refreshConnectionStatus() {
+      const target=document.getElementById('jarvixConnectionStatus');
+      if(!target)return;
+      const lang=currentLanguage();
+      const messages={
+        ru:'LLM не подключена. Доступны локальные команды и временная память диалога. Голос использует возможности браузера.',
+        en:'LLM is not connected. Local commands and temporary conversation memory are available. Voice uses browser speech.',
+        fr:'Le LLM n’est pas connecté. Les commandes locales et la mémoire temporaire sont disponibles. La voix utilise le navigateur.',
+        es:'El LLM no está conectado. Están disponibles los comandos locales y la memoria temporal. La voz usa el navegador.'
+      };
+      try {
+        const response=await fetch('/api/jarvix/status');
+        if(!response.ok)throw new Error('status unavailable');
+        const status=await response.json();
+        if(status.llm?.status==='not_connected')target.textContent=messages[lang]||messages.en;
+        else target.textContent=({ru:'Подключение LLM ещё не подтверждено реальным ответом модели.',en:'The LLM connection has not been verified by a model response.',fr:'La connexion au LLM n’a pas encore été vérifiée.',es:'La conexión con el LLM todavía no se ha verificado.'})[lang]||messages.en;
+      } catch (_) {
+        target.textContent=({ru:'Статус LLM недоступен. Подключение модели не подтверждено.',en:'LLM status is unavailable. Model connection is unverified.',fr:'Le statut du LLM est indisponible. La connexion n’est pas confirmée.',es:'El estado del LLM no está disponible. La conexión no está confirmada.'})[lang]||messages.en;
+      }
+    }
+    refreshConnectionStatus();
+    window.addEventListener('deepsyq:lang',refreshConnectionStatus);

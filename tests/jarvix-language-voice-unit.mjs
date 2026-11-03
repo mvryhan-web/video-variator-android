@@ -13,11 +13,13 @@ function runtime(voices=[],selected='en',pageLanguage='ru') {
   CustomEvent:class {constructor(type,options){this.type=type;this.detail=options.detail;}},
   SpeechSynthesisUtterance:class {constructor(text){this.text=text;}},
   isJarvisActive:false,keepListening:false,isJarvisListening:false,
-  isJarvisSpeaking:false,currentSpokenUtterance:'',console
+  isJarvisSpeaking:false,currentSpokenUtterance:'',speechVersion:0,currentTtsAudio:null,
+  timers:[],setTimeout:fn=>context.timers.push(fn),console
  });
  const selectors=source.slice(source.indexOf('let cachedVoices'),source.indexOf('function getTopBtn'));
+ const stop=source.slice(source.indexOf('export function stopAllSpeech'),source.indexOf('let isJarvisSpeaking'));
  const speech=source.slice(source.indexOf('export function speakLocalSpeechSynthesis'),source.indexOf('let lastSpokenText'));
- vm.runInContext((selectors+speech).replaceAll('export function','function'),context);
+ vm.runInContext((selectors+stop+speech).replaceAll('export function','function'),context);
  return {context,events,spoken};
 }
 
@@ -43,4 +45,14 @@ test('voice list never falls back to female or unidentified voices in any langua
   assert.equal(state.spoken[0].lang.slice(0,2),lang);
   assert.equal(state.spoken[0].pitch,1);
  }
+});
+
+
+test('Stop invalidates a pending speech completion instead of navigating or resuming',()=>{
+ const state=runtime([{lang:'en',name:'George'}],'en');
+ vm.runInContext("let completed=0; speakLocalSpeechSynthesis('hello',()=>completed++, 'en');",state.context);
+ state.spoken[0].onend();
+ vm.runInContext('stopAllSpeech()',state.context);
+ for(const callback of state.context.timers)callback();
+ assert.equal(vm.runInContext('completed',state.context),0);
 });

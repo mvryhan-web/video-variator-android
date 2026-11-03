@@ -1,3 +1,14 @@
+# JARVIX verified test-site review — 3 November 2026
+
+- Previous live preview was still d8aaba8962ca4cd6cb803a72b06ba03319f39223 (PR512). PR514 had never been deployed.
+- This revision combines current DEV including Antigravity E's f41f74d voice/barge-in changes with PR514, preserving silent standby and current owner artwork/publication freeze.
+- The isolated preview explicitly uses local deterministic rules. It does NOT call an LLM, even when an OpenAI key/enable flag exists. `/api/jarvix/status` and the Studio's visible status now explain this; configured credentials on another server are reported as unverified, never as connected.
+- Core fixes: explicit navigation verbs, no automatic paid generation via voice (`auto=1` removed; handoff autoGenerate=false), no unconfirmed prompt clearing, no late reply/navigation after Stop, no stale speech-end callbacks, no fabricated live weather, and no metadata/viral-reach promises. Voice remains browser speech, male-name-filtered; original dedicated multilingual TTS/STT is NOT installed.
+- Memory is short-lived in-process context (30-minute idle TTL), not durable account memory. The site index covers actual public controls/routes; this is not model training or proof that provider features are live.
+- No live paid-model test, secret creation, live Stripe, production deploy or billing change is authorized by this work. Publish the reviewed revision only to the existing isolated test site; record exact deploy SHA and acceptance in Issue233.
+
+---
+
 # JARVIX implementation status
 
 Updated 2026-11-02. These changes target the isolated DEV preview only.

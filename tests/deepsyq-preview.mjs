@@ -7,7 +7,7 @@ import {readFile} from 'node:fs/promises';
 test('isolated Deepsyq preview serves the current Canvas UI and disables paid endpoints',async()=>{
  const port=31896,base='http://127.0.0.1:'+port;
  const child=spawn(process.execPath,['server/deepsyq-preview.js'],{
-  env:{...process.env,PORT:String(port),DATABASE_URL:'',APP_JWT_SECRET:'',STRIPE_SECRET_KEY:'',GEMINI_API_KEY:'',BYTEPLUS_API_KEY:''},
+  env:{...process.env,PORT:String(port),DATABASE_URL:'',APP_JWT_SECRET:'',STRIPE_SECRET_KEY:'',GEMINI_API_KEY:'',BYTEPLUS_API_KEY:'',OPENAI_API_KEY:'test-secret-never-use',JARVIX_AI_ENABLED:'true'},
   stdio:['ignore','pipe','pipe']
  });
  let stderr='';
@@ -46,6 +46,11 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
   assert.equal(models.enabled,false);
   assert.ok(models.catalog.length>0);
   assert.ok(models.catalog.every(m=>m.enabled===false));
+  const jarvixStatus=await(await fetch(base+'/api/jarvix/status')).json();
+  assert.equal(jarvixStatus.llm.status,'not_connected');
+  assert.equal(jarvixStatus.llm.model,null);
+  assert.equal(jarvixStatus.memory.persistent,false);
+  assert.equal(JSON.stringify(jarvixStatus).includes('test-secret-never-use'),false);
   const jarvixMap=await(await fetch(base+'/api/jarvix/site-map')).json();
   assert.equal(jarvixMap.ok,true);
   assert.ok(jarvixMap.pages.some(page=>page.path==='/generate-studio.html'));

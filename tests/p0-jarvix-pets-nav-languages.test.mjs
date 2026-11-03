@@ -29,7 +29,7 @@ describe('DEEPSYQ P0 Verification: Voice, Pets, Navigation & Languages', () => {
     const vuCss = fs.readFileSync(path.join(assetsDir, 'video-uniquifier-reference.css'), 'utf8');
 
     assert.ok(vuJs.includes('topJarvisBtn'), 'VU appbar must contain topJarvisBtn');
-    assert.ok(vuJs.includes('media/fc96c618-bedb-4137-b872-1aa746f79157.png'), 'VU hero must use locked local original asset');
+    assert.ok(vuJs.includes('media/1998c564-8f28-4fd2-aaad-b19240a66d14.png') || vuJs.includes('1998c564'), 'VU hero must use locked local original asset');
     assert.ok(vuCss.includes('body.vu-reference .vu-appbar .top-jarvis-btn'), 'VU appbar centers JARVIX orb');
   });
 
