@@ -56,7 +56,7 @@ test('offline Jarvix gives a human label for generic-link tool routes in four la
 test('Jarvix safe navigation constructs a local route and ignores a model supplied URL',()=>{
  const result=executeSafeAction({type:'open_studio',studio:'image',url:'https://evil.example/'});
  assert.equal(result.success,true);
- assert.equal(result.url,'generate-studio.html?studio=image&from=jarvix&auto=1');
+ assert.equal(result.url,'generate-studio.html?studio=image&from=jarvix');
 });
 
 test('Jarvix keeps bounded multi-turn memory and clears it on reset',()=>{
