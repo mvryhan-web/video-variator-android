@@ -93,7 +93,7 @@ export function getJarvixVoice(langParam = 'ru') {
     // Check for explicit Russian male voices (Dmitry, Pavel, Aleksandr, Maxim, Yuri, etc.)
     const maleRu = cachedVoices.find(v =>
       v.lang.startsWith('ru') &&
-      /(?:dmitry|дмитрий|pavel|павел|aleksandr|alexander|александр|maxim|максим|yuri|юрий|mikhail|михаил|boris|борис|igor|игорь|male|муж)/i.test(v.name + ' ' + (v.voiceURI || '')) &&
+      /(?<!\p{L})(?:dmitry|дмитрий|pavel|павел|aleksandr|alexander|александр|maxim|максим|yuri|юрий|mikhail|михаил|boris|борис|igor|игорь|male|муж)(?!\p{L})/iu.test(v.name + ' ' + (v.voiceURI || '')) &&
       !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || ''))
     );
     if (maleRu) return { voice: maleRu, isExplicitMale: true };
@@ -101,7 +101,7 @@ export function getJarvixVoice(langParam = 'ru') {
   } else if (isFr) {
     const maleFr = cachedVoices.find(v =>
       v.lang.startsWith('fr') &&
-      /(?:henri|thomas|nicolas|paul|alain|claude|male|homme)/i.test(v.name + ' ' + (v.voiceURI || '')) &&
+      /(?<!\p{L})(?:henri|thomas|nicolas|paul|alain|claude|male|homme)(?!\p{L})/iu.test(v.name + ' ' + (v.voiceURI || '')) &&
       !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || ''))
     );
     if (maleFr) return { voice: maleFr, isExplicitMale: true };
@@ -109,7 +109,7 @@ export function getJarvixVoice(langParam = 'ru') {
   } else if (isEs) {
     const maleEs = cachedVoices.find(v =>
       v.lang.startsWith('es') &&
-      /(?:jorge|diego|pablo|carlos|alvaro|miguel|manuel|enrique|male|hombre)/i.test(v.name + ' ' + (v.voiceURI || '')) &&
+      /(?<!\p{L})(?:jorge|diego|pablo|carlos|alvaro|miguel|manuel|enrique|male|hombre)(?!\p{L})/iu.test(v.name + ' ' + (v.voiceURI || '')) &&
       !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || ''))
     );
     if (maleEs) return { voice: maleEs, isExplicitMale: true };
@@ -118,7 +118,7 @@ export function getJarvixVoice(langParam = 'ru') {
     // British / UK Male voice (Paul Bettany film JARVIS style)
     const ukMale = cachedVoices.find(v =>
       (v.lang === 'en-GB' || v.lang.startsWith('en')) &&
-      /(?:george|ryan|oliver|arthur|daniel|male|guy|david|brian|mark|paul)/i.test(v.name + ' ' + (v.voiceURI || '')) &&
+      /(?<!\p{L})(?:george|ryan|oliver|arthur|daniel|male|guy|david|brian|mark|paul)(?!\p{L})/iu.test(v.name + ' ' + (v.voiceURI || '')) &&
       !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || ''))
     );
     if (ukMale) return { voice: ukMale, isExplicitMale: true };

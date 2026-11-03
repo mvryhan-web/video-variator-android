@@ -30,7 +30,7 @@ test('selected RU/EN/FR/ES wins over Russian browser and old page locale',()=>{
 
 test('voice list never falls back to female or unidentified voices in any language',()=>{
  for(const [lang,female,male] of [['ru','Irina','Dmitry'],['en','Samantha','George'],['fr','Hortense','Henri'],['es','Monica','Jorge']]) {
-  const voices=[{lang,name:female},{lang,name:'Google '+lang}];
+  const voices=[{lang,name:female},{lang,name:'Google '+lang},{lang,name:'Microsoft Paulina Manuela'}];
   let state=runtime(voices,lang);
   assert.equal(vm.runInContext(`getJarvixVoice('${lang}')`,state.context),null);
   vm.runInContext(`speakLocalSpeechSynthesis('test', null, '${lang}')`,state.context);

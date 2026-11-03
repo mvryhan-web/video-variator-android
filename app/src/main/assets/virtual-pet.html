@@ -127,12 +127,12 @@
 
     .sim-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: 20px;
       margin-bottom: 24px;
     }
 
-    .sandbox-panel, .power-card, #pet3dStudioCard div { min-width:0; }
+    .sandbox-panel, .power-card, .sim-box, .sim-input, #pet3dStudioCard div { min-width:0; }
     .sandbox-panel button, .power-card button { max-width:100%; overflow-wrap:anywhere; }
     @media (max-width: 768px) {
       .pet-page-container { padding:24px 16px 100px; }
@@ -140,7 +140,7 @@
       #pet3dStudioCard { padding:16px !important; }
       #petPreviewImg { max-width:100%; }
       .sim-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
 
       #pet3dStudioCard > div:first-child {
