@@ -153,6 +153,7 @@ export function updateJarvisState(mode = 'idle') {
 }
 
 let currentSpokenUtterance = '';
+let retainedSpeechUtterance = null;
 
 // 2. Text-to-Speech Engine with Guaranteed Complete Output & Mutual Acoustic Exclusion
 export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'ru', isRu = true) {
@@ -170,6 +171,7 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
     const version = ++speechVersion;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
+    retainedSpeechUtterance = utterance;
     const resolvedLang = (typeof langCode === 'string') ? langCode : (isRu ? 'ru' : 'en');
     const isFr = resolvedLang === 'fr';
     const isEs = resolvedLang === 'es';
@@ -835,7 +837,7 @@ function resumeJarvisRecognition() {
         const isExplicitInterrupt = /(?:стоп|стой|подожди|погоди|хватит|замолчи|тихо|отмена|прерви|хватит болтать|stop|quiet|silence|wait|cancel|pause)/i.test(heardLower);
 
         // 2. Action command keywords (open video, pricing, theme, etc.)
-        const isActionCommand = /(?:открой|перейди|запусти|видео|картинк|фото|тариф|инструмент|холст|посветлее|потемнее|неон|свет|очисти|сотри|open|theme|clear|pricing|video|studio)/i.test(heardLower);
+        const isActionCommand = /(?:открой|перейди|запусти|очисти|сотри|open|launch|ouvre|ouvrez|abre|abrir)/i.test(heardLower);
 
         // 3. Acoustic echo check: Compare heard text with words JARVIX is speaking right now
         const spokenWords = (currentSpokenUtterance || '').toLowerCase()
@@ -848,6 +850,12 @@ function resumeJarvisRecognition() {
           .split(/\s+/)
           .filter(w => w.length > 2);
 
+        // Speaker echo must never trigger action keywords from our own reply.
+        const echoMatches = heardWords.filter(w => spokenWords.includes(w)).length;
+        if (heardWords.length && echoMatches / heardWords.length >= 0.6) {
+          accumulatedText = '';
+          return;
+        }
         const hasUserWords = heardWords.some(w => !spokenWords.includes(w));
 
         if (isExplicitInterrupt || isActionCommand || (hasUserWords && heardWords.length >= 1)) {
