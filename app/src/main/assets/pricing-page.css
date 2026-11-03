@@ -300,3 +300,7 @@ body.deepsyq-pricing-page .price-credit-heading{padding:25px 23px}
  body.deepsyq-pricing-page .price-credit-heading{padding:20px}
  body.deepsyq-pricing-page .price-plan{min-height:0}
 }
+
+/* Owner: lower the four portals and show more of the credits city. */
+body.deepsyq-pricing-page .price-hero-art{background-position:center,center 32%}
+body.deepsyq-pricing-page .price-credit-hero-art{background-size:cover,auto 160%;background-position:center,center 35%}
