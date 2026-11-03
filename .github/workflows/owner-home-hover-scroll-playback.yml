@@ -1,0 +1,45 @@
+name: Owner Home hover and mobile scroll video previews
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/home-experience.js'
+      - 'app/src/main/assets/home-inspiration.js'
+      - 'tests/owner-home-hover-scroll-playback.spec.mjs'
+      - '.github/workflows/owner-home-hover-scroll-playback.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/home-experience.js'
+      - 'app/src/main/assets/home-inspiration.js'
+      - 'tests/owner-home-hover-scroll-playback.spec.mjs'
+      - '.github/workflows/owner-home-hover-scroll-playback.yml'
+permissions:
+  contents: read
+jobs:
+  browser-hover-scroll:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/home-experience.js && node --check app/src/main/assets/home-inspiration.js && node --check tests/owner-home-hover-scroll-playback.spec.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Real browser desktop hover and mobile scroll lifecycle
+        run: npx playwright test tests/owner-home-hover-scroll-playback.spec.mjs --project=chromium --project=webkit --project=mobile-chromium --project=mobile-webkit --workers=1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owner-home-hover-scroll-evidence
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
