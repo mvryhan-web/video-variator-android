@@ -30,3 +30,12 @@ node --test tests/deepsyq-preview.mjs tests/jarvix-brain.test.mjs tests/jarvix-v
 ```
 
 Latest local run: 29/29 tests passed. The local Playwright browser suite could not run because its Chromium binary is not installed; the relevant pet and Jarvix behavior was verified in the live DEV preview.
+
+## P correction — 3 November 2026
+
+- Selected site language now overrides the browser language for chat requests and spoken replies. A Russian OS no longer forces Russian after selecting EN/FR/ES.
+- Browser output requires an explicitly recognized male voice for the selected language. If unavailable, no female/unknown speaker is substituted; Studio keeps the text reply and explains why audio is unavailable. This is a restricted browser fallback, NOT the requested single self-hosted speaker.
+- The F8 settings dialog is constrained to the viewport, including 320px screens; shrinking grid tracks and long labels no longer force horizontal overflow. All 16 preferences remain.
+- Physical GLB/rig/animation/sprite checks pass for all three pets. Visual inspection of current turnaround PNGs still shows primitive geometry, flat eyes and visible silhouette defects; owner-approved concepts have not been faithfully reproduced. F8 artwork is NOT final or owner accepted.
+- No original licensed speaker profile, loaded speech weights or inference service exists in this checkout. TTS/STT remain BLOCKED_SPEECH_HOSTING. No OpenAI key was created/installed and no billable inference was run. Secure API access, authenticated memory and cost gates still require completion before live use.
+- Local no-spend checks: 52 passed. Browser download in this host returned a corrupt ZIP; browser acceptance is delegated to the focused GitHub CI run and must be reported separately.

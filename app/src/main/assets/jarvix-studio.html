@@ -475,6 +475,7 @@
   </div>
 
   <script type="module">
+    import {getJarvixVoice, getJarvixLanguage} from './jarvis-core.js';
     function getStudioSessionId() {
       try {
         const existing = sessionStorage.getItem('jarvix_studio_session');
@@ -540,11 +541,13 @@
           const utterance = new SpeechSynthesisUtterance(text);
           utterance.lang = lang;
           const langPrefix = lang.slice(0,2);
-          const voices = window.speechSynthesis.getVoices();
-          const voice = voices.find(v => v.lang.toLowerCase().startsWith(langPrefix) && /(?:male|man|david|daniel|george|thomas|henri|jorge|pavel|dmitry|александр|дмитрий|павел|homme|hombre)/i.test(v.name+' '+v.voiceURI))
-            || voices.find(v => v.lang.toLowerCase().startsWith(langPrefix));
-          if (voice) utterance.voice = voice;
-          utterance.pitch = voice && /(?:female|woman|zira|samantha|karen|anna|ирина|елена|victoria)/i.test(voice.name+' '+voice.voiceURI) ? 0.88 : 1;
+          const voiceMeta = getJarvixVoice(langPrefix);
+          if (!voiceMeta) {
+            appendLog('SYSTEM', 'Мужской голос для этого языка недоступен на устройстве. Собственная речевая модель ещё не подключена.', 'system');
+            return;
+          }
+          utterance.voice = voiceMeta.voice;
+          utterance.pitch = 1;
           window.speechSynthesis.speak(utterance);
           btn.classList.add('playing');
           btn.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> Стоп`;
@@ -627,12 +630,7 @@
       return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
     }
 
-    function currentLanguage() {
-      try {
-        const lang = localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang') || document.documentElement.lang || 'ru';
-        return ['ru','en','es','fr'].includes(lang.slice(0,2)) ? lang.slice(0,2) : 'ru';
-      } catch (_) { return 'ru'; }
-    }
+    function currentLanguage() { return getJarvixLanguage(); }
 
     function speakReply(text, language) {
       if (!('speechSynthesis' in window) || !text) return;
@@ -640,12 +638,13 @@
       const locales = {ru:'ru-RU',en:'en-GB',es:'es-ES',fr:'fr-FR'};
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = locales[language] || locales.ru;
-      const voices = window.speechSynthesis.getVoices();
-      const prefix = language || 'ru';
-      const voice = voices.find(v => v.lang.toLowerCase().startsWith(prefix) && /(?:male|man|david|daniel|george|thomas|henri|jorge|pavel|dmitry|александр|дмитрий|павел|homme|hombre)/i.test(v.name+' '+v.voiceURI))
-        || voices.find(v => v.lang.toLowerCase().startsWith(prefix));
-      if (voice) utterance.voice = voice;
-      utterance.pitch = voice && /(?:female|woman|zira|samantha|karen|anna|ирина|елена|victoria)/i.test(voice.name+' '+voice.voiceURI) ? 0.88 : 1;
+      const voiceMeta = getJarvixVoice(language || 'ru');
+      if (!voiceMeta) {
+        appendLog('SYSTEM', 'Мужской голос для этого языка недоступен на устройстве. Ответ доступен в чате.', 'system');
+        return;
+      }
+      utterance.voice = voiceMeta.voice;
+      utterance.pitch = 1;
       window.speechSynthesis.speak(utterance);
     }
 

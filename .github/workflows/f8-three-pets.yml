@@ -14,6 +14,10 @@ on:
       - 'app/src/main/assets/compare-ai.html'
       - 'app/src/main/assets/ai-agents.html'
       - 'tests/virtual-pet*'
+      - 'tests/jarvix-language-voice-unit.mjs'
+      - 'app/src/main/assets/jarvis-core.js'
+      - 'app/src/main/assets/jarvix-studio.html'
+      - 'server/jarvix-voice.js'
       - 'scripts/build_f8_pets_3d.py'
       - '.github/workflows/f8-three-pets.yml'
   push:
@@ -31,6 +35,10 @@ on:
       - 'app/src/main/assets/compare-ai.html'
       - 'app/src/main/assets/ai-agents.html'
       - 'tests/virtual-pet*'
+      - 'tests/jarvix-language-voice-unit.mjs'
+      - 'app/src/main/assets/jarvis-core.js'
+      - 'app/src/main/assets/jarvix-studio.html'
+      - 'server/jarvix-voice.js'
       - 'scripts/build_f8_pets_3d.py'
       - '.github/workflows/f8-three-pets.yml'
 jobs:
@@ -47,3 +55,14 @@ jobs:
           node --check app/src/main/assets/virtual-pet-living.js
           python3 -m py_compile scripts/build_f8_pets_3d.py
           node --test tests/virtual-pet.test.mjs tests/virtual-pet-assets-unit.mjs tests/virtual-pet-living-unit.mjs
+      - name: Jarvix language and speech regressions (no provider requests)
+        run: node --test tests/jarvix-language-voice-unit.mjs tests/jarvis-core.test.mjs tests/jarvix-brain.test.mjs tests/jarvix-site-knowledge.test.mjs tests/jarvix-voice-bargein-pets.test.mjs
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Pet settings desktop and mobile browser regressions
+        run: npx playwright test tests/virtual-pet-living.spec.mjs --project=chromium --project=mobile-chromium --project=webkit --project=mobile-webkit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: f8-pet-browser-evidence
+          path: test-results/

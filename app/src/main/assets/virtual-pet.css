@@ -502,7 +502,14 @@
 .ds-pet-avatar-wrapper:focus-within .ds-pet-quick-controls {
   opacity:1;transform:translateX(0);
 }
-.ds-pet-modal { max-height:min(92vh,760px); overflow-y:auto; }
+.ds-pet-modal-overlay, .ds-pet-modal-overlay * { box-sizing:border-box; }
+.ds-pet-modal-overlay { overflow:auto; }
+.ds-pet-modal { min-width:0; max-height:min(calc(100dvh - 32px),760px); overflow-y:auto; }
+.ds-pet-modal-title, .ds-pet-choice-card, .ds-pet-toggle-info { min-width:0; overflow-wrap:anywhere; }
+.ds-pet-modal-header > button { flex-shrink:0; }
+.ds-pet-select-cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.ds-pet-toggle-row { gap:10px; }
+.ds-pet-select { min-width:0; max-width:100%; }
 .ds-pet-scenario-list summary { cursor:pointer; font-size:13px; font-weight:600; padding:10px 0; }
 .ds-pet-scenario-list .ds-pet-toggles { padding-top:8px; }
 .ds-pet-scenario-list .ds-pet-toggle-row strong {font-size:12px;}

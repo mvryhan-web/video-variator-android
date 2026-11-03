@@ -56,3 +56,27 @@ test('F8 manual Magic Shield demo never submits or charges',async({page})=>{
  await expect(page.locator('#dsVirtualPetWidget')).toHaveClass(/ds-pet-hidden/);
  expect(writes).toEqual([]);
 });
+
+for (const width of [320,390]) {
+ test(`F8 settings and all three pet choices fit ${width}px without clipping`,async({page})=>{
+  await page.setViewportSize({width,height:844});
+  await page.goto('/virtual-pet.html');
+  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.locator('#btnOpenSettings').click();
+  const dialog=page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  for(const name of [/Луна/,/Мира/,/Нова/]) {
+   const choice=dialog.getByRole('radio',{name});
+   await choice.click();
+   await expect(choice).toHaveAttribute('aria-checked','true');
+   const box=await choice.boundingBox();
+   expect(box.x).toBeGreaterThanOrEqual(0);
+   expect(box.x+box.width).toBeLessThanOrEqual(width);
+  }
+  expect(await dialog.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+  await dialog.locator('#dsPetModalSaveBtn').click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.locator('#dsPetAvatar')).toHaveAttribute('title',/Нова/);
+  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ });
+}

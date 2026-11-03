@@ -74,6 +74,13 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
 
 const FEMALE_VOICE_REGEX = /(?:irina|ирина|tatiana|татьяна|elena|елена|victoria|виктория|milena|милена|svetl|светл|anna|анна|daria|дарья|female|женск|zira|samantha|karen|moira|fiona|hazel|susan|linda|helena|monica|laura|marta|lucia|carmen|hortense|julie|celine|amelie|virginie)/i;
 
+export function getJarvixLanguage() {
+  let selected = document.documentElement.lang;
+  try { selected = localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang') || selected; } catch (_) {}
+  const code = String(selected || navigator.language || 'ru').toLowerCase().split('-')[0];
+  return ['ru', 'en', 'es', 'fr'].includes(code) ? code : 'en';
+}
+
 export function getJarvixVoice(langParam = 'ru') {
   refreshVoices();
   if (!cachedVoices.length) return null;
@@ -91,11 +98,6 @@ export function getJarvixVoice(langParam = 'ru') {
     );
     if (maleRu) return { voice: maleRu, isExplicitMale: true };
 
-    const nonFemaleRu = cachedVoices.find(v => v.lang.startsWith('ru') && !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || '')));
-    if (nonFemaleRu) return { voice: nonFemaleRu, isExplicitMale: false };
-
-    const anyRu = cachedVoices.find(v => v.lang.startsWith('ru'));
-    if (anyRu) return { voice: anyRu, isExplicitMale: false };
   } else if (isFr) {
     const maleFr = cachedVoices.find(v =>
       v.lang.startsWith('fr') &&
@@ -104,11 +106,6 @@ export function getJarvixVoice(langParam = 'ru') {
     );
     if (maleFr) return { voice: maleFr, isExplicitMale: true };
 
-    const nonFemaleFr = cachedVoices.find(v => v.lang.startsWith('fr') && !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || '')));
-    if (nonFemaleFr) return { voice: nonFemaleFr, isExplicitMale: false };
-
-    const anyFr = cachedVoices.find(v => v.lang.startsWith('fr'));
-    if (anyFr) return { voice: anyFr, isExplicitMale: false };
   } else if (isEs) {
     const maleEs = cachedVoices.find(v =>
       v.lang.startsWith('es') &&
@@ -117,11 +114,6 @@ export function getJarvixVoice(langParam = 'ru') {
     );
     if (maleEs) return { voice: maleEs, isExplicitMale: true };
 
-    const nonFemaleEs = cachedVoices.find(v => v.lang.startsWith('es') && !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || '')));
-    if (nonFemaleEs) return { voice: nonFemaleEs, isExplicitMale: false };
-
-    const anyEs = cachedVoices.find(v => v.lang.startsWith('es'));
-    if (anyEs) return { voice: anyEs, isExplicitMale: false };
   } else {
     // British / UK Male voice (Paul Bettany film JARVIS style)
     const ukMale = cachedVoices.find(v =>
@@ -131,11 +123,6 @@ export function getJarvixVoice(langParam = 'ru') {
     );
     if (ukMale) return { voice: ukMale, isExplicitMale: true };
 
-    const nonFemaleEn = cachedVoices.find(v => v.lang.startsWith('en') && !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || '')));
-    if (nonFemaleEn) return { voice: nonFemaleEn, isExplicitMale: false };
-
-    const anyEn = cachedVoices.find(v => v.lang.startsWith('en'));
-    if (anyEn) return { voice: anyEn, isExplicitMale: false };
   }
   return null;
 }
@@ -183,9 +170,13 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
     if (voiceMeta && voiceMeta.voice) {
       utterance.voice = voiceMeta.voice;
     }
-    // Lower an unclassified system fallback slightly; only a named male voice
-    // is treated as a confirmed male selection. Web Speech still varies by OS.
-    utterance.pitch = voiceMeta && !voiceMeta.isExplicitMale ? 0.88 : 1.0;
+    // Never silently substitute an unknown or female OS voice.
+    if (!voiceMeta?.isExplicitMale) {
+      window.dispatchEvent(new CustomEvent('jarvix:voice-unavailable', { detail: { language: resolvedLang } }));
+      if (typeof onComplete === 'function') onComplete();
+      return;
+    }
+    utterance.pitch = 1.0;
     utterance.rate = 1.0;
 
     utterance.onstart = () => {
@@ -243,11 +234,8 @@ export function speakJarvis(text, onComplete = null) {
   stopAllSpeech();
   resetSilenceTimer();
 
-  const lang = document.documentElement.lang || localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang') || 'ru';
-  const isRu = (lang === 'ru' || lang.startsWith('ru') || navigator.language?.startsWith('ru'));
-  const isFr = (lang === 'fr' || lang.startsWith('fr'));
-  const isEs = (lang === 'es' || lang.startsWith('es'));
-  const langCode = isRu ? 'ru' : isFr ? 'fr' : isEs ? 'es' : 'en';
+  const langCode = getJarvixLanguage();
+  const isRu = langCode === 'ru';
 
   // Browser speech synthesis uses the language selected on the site.
   // Microphone is strictly paused during speech and resumed safely on completion
@@ -395,7 +383,7 @@ export function handleJarvisVoiceCommand(commandText) {
   const t = commandText.trim();
   const lower = t.toLowerCase();
   resetSilenceTimer();
-  const isRu = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru'));
+  const isRu = (getJarvixLanguage() === 'ru');
 
   // 1. CAPABILITIES & BUTLER IDENTITY ("Что ты умеешь делать?", "Что ты умеешь?", "Кто ты", "Помощь")
   if (/(?:что\s+(?:ты\s+)?(?:умеешь|можешь)(?:\s+делать)?|твои\s+возможности|какие\s+(?:у\s+тебя\s+)?функции|что\s+ты\s+такое|кто\s+ты|расскажи\s+о\s+себе|справка|помощь|help|what can you do)/i.test(lower)) {
@@ -709,10 +697,7 @@ export function handleJarvisVoiceCommand(commandText) {
   // L. ASYNC JARVIX AI BRAIN & MEMORY DISPATCH
   (async () => {
     try {
-      const lang = document.documentElement.lang || 'ru';
-      const langCode = (lang === 'ru' || lang.startsWith('ru') || navigator.language?.startsWith('ru'))
-        ? 'ru'
-        : (lang === 'fr' || lang.startsWith('fr')) ? 'fr' : (lang === 'es' || lang.startsWith('es')) ? 'es' : 'en';
+      const langCode = getJarvixLanguage();
 
       const res = await fetch('/api/jarvix/chat', {
         method: 'POST',
@@ -915,7 +900,7 @@ function startSilenceTimer() {
   clearTimeout(silenceTimer);
   silenceTimer = setTimeout(() => {
     if (isJarvisActive && !isJarvisSpeaking) {
-      const isRu = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru'));
+      const isRu = (getJarvixLanguage() === 'ru');
       const farewell = isRu
         ? 'Я выключаюсь. Если я вам понадоблюсь, включите меня.'
         : 'I am turning off. If you need me, simply click on me.';
@@ -955,7 +940,7 @@ export function activateJarvisVoice() {
   const topBtn = getTopBtn();
   if (topBtn) topBtn.classList.add('is-active');
 
-  const isRu = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru'));
+  const isRu = (getJarvixLanguage() === 'ru');
   const hasGreeted = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('jarvix_greeted') === '1';
 
   let greetingText = '';
