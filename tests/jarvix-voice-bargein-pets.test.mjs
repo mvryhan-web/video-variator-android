@@ -40,16 +40,10 @@ describe('JARVIX Human Voice, Instant Barge-in, Theme Off & 3D Pets Showcase', (
     assert.ok(jarvisJs.includes("updateJarvisState('listening')"), 'immediately switches state to listening');
   });
 
-  it('verifies deepsyq.html contains Spanish language and 3D Living Pets showcase section', () => {
+  it('verifies deepsyq.html contains Spanish language and pets retired per owner decision', () => {
     const html = fs.readFileSync(path.join(assetsDir, 'deepsyq.html'), 'utf8');
     assert.ok(html.includes('<option value="es">Español</option>'), 'Spanish in language selector');
-    assert.ok(html.includes('id="livingPetsSection"'), 'livingPetsSection must exist in deepsyq.html');
-    assert.ok(html.includes('data-select-pet="dog"'), 'Luna selection button');
-    assert.ok(html.includes('data-select-pet="cat"'), 'Mira selection button');
-    assert.ok(html.includes('data-select-pet="fox"'), 'Nova selection button');
-    assert.ok(html.includes('virtual-pet/luna/renders/three_quarter_dark.png'), 'Luna 3D render');
-    assert.ok(html.includes('virtual-pet/mira/renders/three_quarter_dark.png'), 'Mira 3D render');
-    assert.ok(html.includes('virtual-pet/nova/renders/three_quarter_dark.png'), 'Nova 3D render');
+    assert.ok(!html.includes('id="livingPetsSection"'), 'livingPetsSection must be removed from deepsyq.html');
   });
 
   it('verifies virtual-pet/glb contains all three 3D models: luna.glb, mira.glb, nova.glb', () => {
