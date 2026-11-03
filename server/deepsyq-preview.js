@@ -116,7 +116,21 @@ app.get(['/','/dashboard','/deepsyq.html'],homepage);
 // The deleted owner-cancelled workflow is never reachable in this preview.
 app.get(['/product-video','/product-video.html'],(_req,res)=>res.status(404).type('text/plain').send('Not found'));
 app.get(['/inspiration','/inspiration.html'],(_req,res)=>res.redirect(302,'/deepsyq.html#inspirationPreview'));
-app.use(express.static(assets,{extensions:['html'],index:false,fallthrough:true}));
+// Static, already-public media can be cached briefly so revisiting the design
+// preview does not re-download entire video/image galleries at Render egress cost.
+// This does NOT cache preview HTML, JSON/API responses, or non-media assets.
+// Using a short TTL allows corrected owner media to appear without a URL change.
+app.use(express.static(assets,{
+ extensions:['html'],index:false,fallthrough:true,
+ setHeaders(res,filePath){
+  const relative=path.relative(assets,filePath).split(path.sep).join('/');
+  if(relative.startsWith('media/')&&/\.(?:avif|gif|jpe?g|png|svg|webp|m4a|mp3|mp4|wav|webm)$/i.test(relative)){
+   res.setHeader('Cache-Control','public, max-age=3600, must-revalidate');
+  }else{
+   res.setHeader('Cache-Control','no-store');
+  }
+ }
+}));
 app.use((req,res)=>{
  if(req.method!=='GET'&&req.method!=='HEAD')return res.status(405).type('text/plain').send('PREVIEW_READ_ONLY');
  res.status(404).type('text/plain').send('Not found');
