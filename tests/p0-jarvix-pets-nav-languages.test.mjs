@@ -50,19 +50,23 @@ describe('DEEPSYQ P0 Verification: Voice, Pets, Navigation & Languages', () => {
     assert.ok(brainJs.includes('DEEPSYQ_CAPABILITIES'), 'truthful capabilities registry');
   });
 
-  it('4. verifies deepsyq.html displays ONE selected pet with switcher and full body', () => {
-    const html = fs.readFileSync(path.join(assetsDir, 'deepsyq.html'), 'utf8');
-
-    assert.ok(html.includes('id="homeActivePetStage"'), 'Home has single active pet stage');
-    assert.ok(html.includes('id="petStageDog"'), 'Luna stage item');
-    assert.ok(html.includes('id="petStageCat"'), 'Mira stage item');
-    assert.ok(html.includes('id="petStageFox"'), 'Nova stage item');
-    assert.ok(html.includes('id="homePetTabDog"'), 'Luna switcher button');
-    assert.ok(html.includes('id="homePetTabCat"'), 'Mira switcher button');
-    assert.ok(html.includes('id="homePetTabFox"'), 'Nova switcher button');
-    assert.ok(html.includes('id="petModeCalm"'), 'Calm mode button');
-    assert.ok(html.includes('id="petModePlayful"'), 'Playful mode button');
-    assert.ok(html.includes('id="petModeOff"'), 'Off mode button');
+  it('4. verifies owner-retired F8 does not load on public pages while source assets remain archived', () => {
+    const publicPages = [
+      'deepsyq.html', 'index.html', 'generate-studio.html',
+      'ai-agents.html', 'compare-ai.html', 'my-creations.html'
+    ];
+    for (const page of publicPages) {
+      const html = fs.readFileSync(path.join(assetsDir, page), 'utf8');
+      assert.ok(!/<script\\b[^>]*src=["']virtual-pet\\.js/.test(html), `${page} must not load pet JavaScript`);
+      assert.ok(!/<link\\b[^>]*href=["']virtual-pet\\.css/.test(html), `${page} must not load pet CSS`);
+    }
+    const home = fs.readFileSync(path.join(assetsDir, 'deepsyq.html'), 'utf8');
+    assert.ok(!home.includes('livingPetsSection'), 'Home pet block is retired');
+    assert.ok(!home.includes('homeActivePetStage'), 'Home does not render a large pet');
+    const server = fs.readFileSync(path.join(repoDir, 'server', 'server.js'), 'utf8');
+    assert.ok(server.includes("req.path==='/virtual-pet'"), 'server blocks retired F8 public paths');
+    const manifest = JSON.parse(fs.readFileSync(path.join(assetsDir, 'virtual-pet/pets.manifest.json'), 'utf8'));
+    assert.deepEqual(manifest.pets.map(p => p.key), ['luna', 'mira', 'nova'], 'assets remain in GitHub for future development');
   });
 
   it('5. verifies left menu is cleaned: redundant technical tools removed, JARVIX has orb emblem', () => {
