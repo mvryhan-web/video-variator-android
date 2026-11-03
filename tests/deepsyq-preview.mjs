@@ -37,9 +37,13 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
   for(const name of ['audio','agent','apps','canvas']){
    const art=await fetch(base+'/media/home/neon-20261018/'+name+'.webp');
    assert.equal(art.status,200);assert.match(art.headers.get('content-type'),/image\/webp/);
+   assert.equal(art.headers.get('cache-control'),'public, max-age=3600, must-revalidate','only approved public media may be cached in preview');
+   assert.match(art.headers.get('x-robots-tag')||'',/noindex/);
+   assert.equal(art.headers.get('x-content-type-options'),'nosniff');
   }
   const cfg=await(await fetch(base+'/api/config')).json();
   assert.equal(cfg.billingConfigured,false);
+  assert.equal((await fetch(base+'/api/config')).headers.get('cache-control'),'no-store','sensitive and live JSON is never cached');
   assert.equal(cfg.googleClientId,'');
   assert.equal(cfg.features.aiApps,true);
   const models=await(await fetch(base+'/api/studio/config')).json();
@@ -77,6 +81,7 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
    assert.equal(item.sourceFilename,undefined,'do not expose private attachment metadata');
    const media=await fetch(base+item.previewUrl,{headers:{Range:'bytes=0-127'}});
    assert.equal(media.status,206);assert.match(media.headers.get('content-type'),/video\/mp4/);
+   assert.equal(media.headers.get('cache-control'),'public, max-age=3600, must-revalidate','cached media must retain bounded byte-range support');
    assert.equal((await media.arrayBuffer()).byteLength,128);
   }
   const gallery=await(await fetch(base+'/api/inspiration?featured=true&limit=60')).json();
