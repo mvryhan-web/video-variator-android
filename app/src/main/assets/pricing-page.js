@@ -221,10 +221,8 @@ function renderCredits(config){
   const content=node('div','price-credit-content');
   const title=node('h3','price-credit-number','✦ '+numeral.format(p.credits));
   const info=node('div','price-credit-bonus');
-  info.append(node('small','price-bonus-status','✦ Bonus credits · proposed, not included'));
   info.append(node('strong','price-bonus-title','General AI credits'));
   info.append(node('b','price-bonus-count','+ '+numeral.format(p.bonus)));
-  info.append(node('small','price-bonus-desc','One-time top-up · added only after Stripe confirms payment'));
   const foot=node('div','price-credit-bottom');
   const cost=node('strong','price-credit-price',amount);
   // Every visible AI-credit card opens the *existing* Deepsyq sign-in when logged out.
@@ -244,7 +242,6 @@ function renderCredits(config){
   content.append(title,info,foot);
   card.append(content);host.append(card);
  }
- message('creditStatus',checkoutMode?'Verified server packages are purchasable below. Proposed bonuses are not included.':'AI pack checkout is not available in this preview. All pictured pack prices and bonuses are proposals.');
 }
 async function checkoutCredit(pack){
  if(!validAiPack(pack)||creditCheckoutPending)return;
