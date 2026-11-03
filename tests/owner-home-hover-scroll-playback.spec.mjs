@@ -36,20 +36,20 @@ test('desktop spotlight and Inspiration videos play only while hovered; photos n
  for(let i=0;i<3;i++){
   const card=cards.nth(i),video=card.locator('video');
   await card.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
-  await expect(video).not.toHaveAttribute('src',/\\.mp4/);
+  await expect(video).not.toHaveAttribute('src',/\.mp4/);
   await card.hover();
-  await expect(video).toHaveAttribute('src',/\\.mp4/);
+  await expect(video).toHaveAttribute('src',/\.mp4/);
   await page.mouse.move(0,0);
-  await expect(video).not.toHaveAttribute('src',/\\.mp4/);
+  await expect(video).not.toHaveAttribute('src',/\.mp4/);
  }
  const inspiration=page.locator('#inspirationPreviewGrid .inspiration-preview-card');
  const motion=inspiration.first().locator('video');
  await inspiration.first().evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
- await expect(motion).not.toHaveAttribute('src',/\\.mp4/);
+ await expect(motion).not.toHaveAttribute('src',/\.mp4/);
  await inspiration.first().hover();
- await expect(motion).toHaveAttribute('src',/\\.mp4/);
+ await expect(motion).toHaveAttribute('src',/\.mp4/);
  await page.mouse.move(0,0);
- await expect(motion).not.toHaveAttribute('src',/\\.mp4/);
+ await expect(motion).not.toHaveAttribute('src',/\.mp4/);
  await expect(inspiration.nth(1).locator('img')).toHaveCount(1);
  await expect(inspiration.nth(1).locator('video')).toHaveCount(0);
  expect(await page.evaluate(()=>window.__previewCalls.length)).toBeGreaterThan(0);
@@ -61,14 +61,14 @@ test('mobile spotlight and Inspiration videos load only while scrolled into view
  const spotlight=page.locator('.home-feature-spotlight').first();
  const video=spotlight.locator('video');
  await page.evaluate(()=>window.scrollTo(0,0));
- await expect(video).not.toHaveAttribute('src',/\\.mp4/);
+ await expect(video).not.toHaveAttribute('src',/\.mp4/);
  await spotlight.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
- await expect(video).toHaveAttribute('src',/\\.mp4/);
+ await expect(video).toHaveAttribute('src',/\.mp4/);
  await page.evaluate(()=>window.scrollTo(0,0));
- await expect(video).not.toHaveAttribute('src',/\\.mp4/);
+ await expect(video).not.toHaveAttribute('src',/\.mp4/);
  const motion=page.locator('#inspirationPreviewGrid .inspiration-preview-card').first();
  await motion.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
- await expect(motion.locator('video')).toHaveAttribute('src',/\\.mp4/);
+ await expect(motion.locator('video')).toHaveAttribute('src',/\.mp4/);
  await page.evaluate(()=>window.scrollTo(0,0));
- await expect(motion.locator('video')).not.toHaveAttribute('src',/\\.mp4/);
+ await expect(motion.locator('video')).not.toHaveAttribute('src',/\.mp4/);
 });
