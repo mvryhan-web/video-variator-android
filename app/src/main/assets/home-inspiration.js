@@ -159,7 +159,7 @@ function draw(){
   button.style.setProperty('--inspiration-ratio',String(ratio));
   const visual=detailEl('div','inspiration-preview-media');
   if(item.kind==='video'){
-   const video=detailEl('video');video.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';
+   const video=detailEl('video');video.dataset.src=item.previewUrl;video.muted=true;video.loop=true;video.playsInline=true;video.preload='none';
    if(item.previewPosterUrl)video.poster=item.previewPosterUrl;
    visual.append(video);
   }else{

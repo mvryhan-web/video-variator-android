@@ -82,3 +82,56 @@ test('owner-supplied MP4: real muted autoplay, six complete films wrap, arrows, 
  await page.screenshot({path:info.outputPath('owner-carousel-after-real-cycle.png'),fullPage:false});
  }catch(error){await diagnoseFailure();throw error;}
 });
+
+
+test('lower Home video cards: desktop mouse hover only, touch scroll visibility only, no paid actions',async({page})=>{
+ test.setTimeout(65000);
+ const fixture=[
+  {id:'preview-hover-a',slug:'preview-hover-a',kind:'video',title:'First preview',category:'Cinematic',featured:true,active:true,actionTarget:'studio',aspectRatio:'16:9',previewUrl:'/media/home/neon-20261018/canvas-card.mp4',previewPosterUrl:'/media/home/neon-20261018/canvas.webp',prompt:'Original clip'},
+  {id:'preview-hover-b',slug:'preview-hover-b',kind:'video',title:'Second preview',category:'Cinematic',featured:true,active:true,actionTarget:'studio',aspectRatio:'16:9',previewUrl:'/media/home/neon-20261018/apps-card.mp4',previewPosterUrl:'/media/home/neon-20261018/apps.webp',prompt:'Original clip'}
+ ];
+ const paid=[];
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio|billing|generate|ai-wallet)/.test(r.url()))paid.push(r.url());});
+ await page.route('**/api/config',r=>r.fulfill({json:{billingConfigured:false,features:{inspiration:true,aiApps:true},plans:{}}}));
+ await page.route('**/api/studio/config',r=>r.fulfill({json:{enabled:false,ownerOnly:true,models:[],catalog:[]}}));
+ await page.route('**/api/inspiration**',r=>{
+  const params=new URL(r.request().url()).searchParams;
+  const items=params.has('target')&&params.get('target')==='agent'?[]:params.get('kind')==='video'?[]:fixture;
+  return r.fulfill({json:{items,categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false}}});
+ });
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ const hover=await page.evaluate(()=>matchMedia('(hover: hover) and (pointer: fine)').matches);
+ const spot=page.locator('.home-spotlight-canvas');
+ const spotMedia=spot.locator('video.home-spotlight-video');
+ await spot.scrollIntoViewIfNeeded();
+ if(hover){
+  // Scrolling alone must not start a desktop preview.
+  await expect(spotMedia).not.toHaveAttribute('src',/\.mp4/);
+  await spot.hover();
+  await expect(spotMedia).toHaveAttribute('src',/canvas-card\.mp4/);
+  await page.mouse.move(0,0);
+  await expect(spotMedia).not.toHaveAttribute('src',/\.mp4/);
+ }else{
+  // Touch devices play a visible preview but unload it after scrolling away.
+  await expect(spotMedia).toHaveAttribute('src',/canvas-card\.mp4/);
+  await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+  await expect(spotMedia).not.toHaveAttribute('src',/\.mp4/);
+ }
+ const inspiration=page.locator('#inspirationPreviewGrid .inspiration-preview-card').first();
+ await expect(inspiration).toBeVisible();
+ await inspiration.scrollIntoViewIfNeeded();
+ const previewVideos=page.locator('#inspirationPreviewGrid video');
+ await expect(previewVideos).toHaveCount(2);
+ if(hover){
+  await expect.poll(()=>page.locator('#inspirationPreviewGrid video[src]').count()).toBe(0);
+  await inspiration.hover();
+  await expect(inspiration.locator('video')).toHaveAttribute('src',/canvas-card\.mp4/);
+  await page.mouse.move(0,0);
+  await expect.poll(()=>page.locator('#inspirationPreviewGrid video[src]').count()).toBe(0);
+ }else{
+  await expect.poll(()=>page.locator('#inspirationPreviewGrid video[src]').count()).toBe(1);
+  await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+  await expect.poll(()=>page.locator('#inspirationPreviewGrid video[src]').count()).toBe(0);
+ }
+ expect(paid).toEqual([]);
+});
