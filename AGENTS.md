@@ -12,6 +12,22 @@ This owner decision supersedes earlier automatic-production-publication instruct
 
 ---
 
+## OWNER RULE — 2026-11-03 — СТРУКТУРА ФУНКЦИОНАЛА DEEPSYQ F1–F6 (JARVIS И ПЕРЕНОС ТАРИФОВ)
+
+**Обязательное распоряжение владельца от 03.11.2026 для всех участников (P, Администратор, Antigravity, Jules, любые модели):**
+Структура ключевых функциональных направлений платформы окончательно реорганизована в **6 канонических блоков (F1–F6)**:
+- **F1 — Compare AI + Smart Routing:** Параллельное сравнение текстовых/генеративных моделей и смарт-выбор.
+- **F2 — Jarvis (Voice & User AI Assistant):** Единый голосовой и пользовательский ИИ-ассистент в шаре (Orb). Прежние F2 (User Agent) и F6 (Voice Agent) **объединены в один пункт F2**. Включает микрофон, синтез мужским тембром-баритоном, мгновенный barge-in, текстовый чат, сценарии «Сделай за меня» и системные команды.
+- **F3 — Inspiration / Create Yours:** Каталог вдохновения и библиотека шаблонов.
+- **F4 — Studio / My Workspace:** Единое рабочее пространство (генераторы, холст Canvas, History, My Creations).
+- **F5 — Product Watcher:** Внутренний мониторинг аптайма, защита транзакций Stripe и себестоимости (owner-only).
+- **F6 — Pricing / Credits / Stripe:** Тарифные планы, пакеты AI-кредитов, Stripe биллинг и баланс кошелька (**бывший F7 перемещён на место F6**).
+- **Бывший F8 (Virtual Pet Companion / Питомцы) полностью закрыт и удален из кодовой базы.**
+
+Запрещается использовать старую нумерацию F1–F8 или повторно разделять Jarvis на отдельные F2 и F6.
+
+---
+
 ## OWNER PERMANENT PRICE DESIGN FREEZE — 2026-11-02
 
 See `docs/PRICING_OWNER_ART_LOCK.json` and `docs/PRICING_OWNER_ART_LOCK.md`. Pricing's original 12 owner-selected images, hero, five plans/five credit cards and CSS/HTML may NEVER be changed/replaced/redesigned by autonomous agents without a NEW explicit owner request. Pricing art lock CI + CODEOWNERS apply even to unrelated shared-header/translation work. Keep checkout and wallet protections unchanged.
