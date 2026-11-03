@@ -9,6 +9,19 @@ export function unlockOwnerSpeech() {
   audioReady = audioContext.resume();
   audioReady.catch(() => {});
 }
+export const OWNER_GREETING_TEXT = Object.freeze({ru:'Я Джарвис. Слушаю вас.',en:'I am Jarvis. How can I help?',fr:'Je suis Jarvis. Je vous écoute.',es:'Soy Jarvis. ¿En qué puedo ayudarte?'});
+let greetingsPromise = null;
+export function prepareOwnerGreetings() {
+  if (!greetingsPromise) greetingsPromise = fetch('/media/jarvix/owner-greetings.json', {signal:AbortSignal.timeout(8000)})
+    .then(reply => reply.ok ? reply.json() : null).catch(() => null);
+  return greetingsPromise;
+}
+function greetingBlob(data, text, language) {
+  const item = data?.languages?.[language];
+  if (!item || item.text !== text.trim() || typeof item.audio !== 'string') return null;
+  const bytes = Uint8Array.from(atob(item.audio), character => character.charCodeAt(0));
+  return new Blob([bytes], {type:item.mime});
+}
 export function stopOwnerSpeech() {
   version += 1;
   if (source) { source.onended = null; try { source.stop(); } catch {} source = null; }
@@ -22,8 +35,11 @@ export async function speakOwnerSpeech(text, language, hooks) {
   pending = controller;
   const timer = setTimeout(() => controller.abort(), 120000);
   try {
-    const configReply = await fetch('/api/jarvix/voice-config', {signal:controller.signal});
-    const config = configReply.ok ? await configReply.json() : {};
+    const greetingData = OWNER_GREETING_TEXT[language] === text.trim() ? await prepareOwnerGreetings() : null;
+    if (turn !== version) return;
+    const cached = greetingBlob(greetingData, text, language);
+    const configReply = cached ? null : await fetch('/api/jarvix/voice-config', {signal:controller.signal});
+    const config = cached ? {configured:true, speechModelInstalled:true} : configReply.ok ? await configReply.json() : {};
     if (turn !== version) return;
     if (!config.configured) { hooks.fallback(); return; }
     if (!config.speechModelInstalled) throw Error('Voice worker unavailable');
@@ -38,10 +54,13 @@ export async function speakOwnerSpeech(text, language, hooks) {
         if (space > 150) end = space;
       }
       const chunk = rest.slice(0, end); rest = rest.slice(end).trim();
-      const reply = await fetch('/api/jarvix/tts', {method:'POST', signal:controller.signal,
-        headers:{'Content-Type':'application/json'},body:JSON.stringify({text:chunk,language})});
-      if (!reply.ok || !reply.headers.get('content-type')?.startsWith('audio/wav')) throw Error('Speech failed');
-      const blob = await reply.blob();
+      let blob = cached;
+      if (!blob) {
+        const reply = await fetch('/api/jarvix/tts', {method:'POST', signal:controller.signal,
+          headers:{'Content-Type':'application/json'},body:JSON.stringify({text:chunk,language})});
+        if (!reply.ok || !reply.headers.get('content-type')?.startsWith('audio/wav')) throw Error('Speech failed');
+        blob = await reply.blob();
+      }
       if (turn !== version) return;
       if (audioContext) {
         await audioReady;

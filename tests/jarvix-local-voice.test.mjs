@@ -52,3 +52,16 @@ test('gesture unlock precedes network and Web Audio plays returned speech',async
   assert.equal(events[0],'resume');assert.ok(events.includes('play'));assert.equal(events.at(-1),'complete');
  }finally{stopOwnerSpeech();global.fetch=previousFetch;global.AudioContext=previousContext;}
 });
+
+test('cached public greeting plays with zero health or TTS worker calls',async()=>{
+ const previousFetch=global.fetch, previousAudio=global.Audio;
+ const module=await import('../app/src/main/assets/jarvix-owner-speech.js?cache-test');
+ const requests=[];let completed=0;
+ global.fetch=async url=>{requests.push(url);assert.equal(url,'/media/jarvix/owner-greetings.json');return Response.json({languages:{ru:{text:module.OWNER_GREETING_TEXT.ru,mime:'audio/mpeg',audio:Buffer.from('test audio').toString('base64')}}});};
+ global.Audio=class{play(){queueMicrotask(()=>this.onended());return Promise.resolve();}pause(){}};
+ try{
+  await module.prepareOwnerGreetings();
+  await module.speakOwnerSpeech(module.OWNER_GREETING_TEXT.ru,'ru',{start(){},complete(){completed++;},fallback(){assert.fail('fallback');},error(){assert.fail('error');}});
+  assert.equal(completed,1);assert.equal(requests.length,1);
+ }finally{module.stopOwnerSpeech();global.fetch=previousFetch;global.Audio=previousAudio;}
+});

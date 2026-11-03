@@ -1,6 +1,6 @@
 // JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
 // Guaranteed Male Film Voice, Instant Navigation ("Сделано."), Multi-Turn Weather Brain & Smart ChatGPT Prompt Generation
-import {speakOwnerSpeech, stopOwnerSpeech, unlockOwnerSpeech} from './jarvix-owner-speech.js';
+import {speakOwnerSpeech, stopOwnerSpeech, unlockOwnerSpeech, prepareOwnerGreetings, OWNER_GREETING_TEXT} from './jarvix-owner-speech.js';
 import { detectIntent } from './home-experience.js';
 import { saveStudioHandoff } from './studio-handoff.js';
 
@@ -266,6 +266,7 @@ export function speakJarvis(text, onComplete = null) {
   if (button) { button.dataset.voicePhase = 'connecting'; button.setAttribute('aria-busy','true'); button.title = waitingTitle[langCode]; }
   if (label) label.textContent = waiting[langCode];
   let speechFailed = false;
+  const speechStartedAt = performance.now();
   speakOwnerSpeech(text, langCode, {
     fallback: () => {
       if (label) label.textContent = 'JARVIX';
@@ -273,7 +274,10 @@ export function speakJarvis(text, onComplete = null) {
       speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
     },
     phase: phase => {
-      if (button) button.dataset.voicePhase = phase;
+      if (button) {
+        button.dataset.voicePhase = phase;
+        if (phase === 'playing') button.dataset.voiceLatencyMs = String(Math.round(performance.now() - speechStartedAt));
+      }
       if (label) label.textContent = phase === 'playing' ? 'JARVIX' : waiting[langCode];
     },
     start: () => {
@@ -831,7 +835,7 @@ function pauseJarvisRecognition() {
 }
 
 function resumeJarvisRecognition() {
-  if (!isJarvisActive || !keepListening) return;
+  if (!isJarvisActive || !keepListening || isJarvisSpeaking) return;
 
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRec) return;
@@ -850,6 +854,12 @@ function resumeJarvisRecognition() {
     jarvisRecognition.onstart = () => {
       isJarvisListening = true;
       updateJarvisState('listening');
+      const button = getTopBtn();
+      if (button) {
+        button.dataset.voicePhase = 'listening';
+        const label = button.querySelector('.jarvis-name');
+        if (label) label.textContent = {ru:'Слушаю', en:'Listening', fr:'Écoute', es:'Escucho'}[getJarvixLanguage()];
+      }
       resetSilenceTimer();
     };
 
@@ -1015,21 +1025,10 @@ export function activateJarvisVoice() {
     sessionStorage.setItem('jarvix_active', '1');
   } catch (_) {}
 
-  // Request audio hardware echo cancellation if available in browser
-  if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
-    try {
-      navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
-        .then(stream => {
-          setTimeout(() => stream.getTracks().forEach(t => t.stop()), 5000);
-        })
-        .catch(() => {});
-    } catch (_) {}
-  }
-
   const topBtn = getTopBtn();
   if (topBtn) topBtn.classList.add('is-active');
 
-  const greetings = {ru:'Я Джарвис. Слушаю вас.', en:'I am Jarvis. How can I help?', fr:'Je suis Jarvis. Je vous écoute.', es:'Soy Jarvis. ¿En qué puedo ayudarte?'};
+  const greetings = OWNER_GREETING_TEXT;
   const greetingText = greetings[getJarvixLanguage()] || greetings.en;
 
   speakJarvis(greetingText);
@@ -1089,6 +1088,7 @@ if (typeof window !== 'undefined') {
 // 12. Mount JARVIX UI Component & restore state across pages
 export function initJarvis() {
   if (typeof document === 'undefined') return;
+  prepareOwnerGreetings();
 
   // Restore saved theme on load
   try {
