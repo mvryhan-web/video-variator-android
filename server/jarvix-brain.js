@@ -27,7 +27,6 @@ const SITE_PAGE_FILES = Object.freeze([
   ['deepsyq-vs-deepseek.html', 'Deepsyq and DeepSeek comparison'],
   ['generate-studio.html', 'Image, video and audio generation studio'],
   ['jarvix-studio.html', 'JARVIX chat and voice studio'],
-  ['virtual-pet.html', 'Virtual pets and companion settings'],
   ['ai-agents.html', 'AI agents'],
   ['ai-apps.html', 'AI Apps templates'],
   ['canvas.html', 'Creative canvas'],
@@ -111,6 +110,7 @@ export function buildJarvixSiteKnowledge() {
         // Keep only navigable local routes. Never feed script or external URLs
         // into the assistant's knowledge or let them become navigation targets.
         if (!href || !linkLabel || /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(href)) continue;
+        if (/^\/?virtual-pet(?:[./?#]|$)/i.test(href)) continue;
         links.push({ label: linkLabel.slice(0, 120), href: href.slice(0, 240) });
       }
       if (file === 'free-tools.html') {
@@ -288,7 +288,7 @@ export function executeSafeAction(action) {
       success: true,
       type: 'open_studio',
       studio,
-      url: `generate-studio.html?studio=${studio}&from=jarvix&auto=1`
+      url: `generate-studio.html?studio=${studio}&from=jarvix`
     };
   }
 
@@ -302,8 +302,9 @@ export function executeSafeAction(action) {
 
   if (action.type === 'clear_inputs' || action.type === 'clear_input') {
     return {
-      success: true,
-      type: 'clear_inputs'
+      success: false,
+      type: 'block_unauthorized',
+      reason: 'MANUAL_CONFIRMATION_REQUIRED'
     };
   }
 
@@ -351,6 +352,16 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
   let replyText = '';
   let action = null;
   let studioHandoff = null;
+
+  if (/(?:llm|gpt|языковая модель|подключена ли модель|language model|modèle de langage|modelo de lenguaje)/i.test(lower)) {
+    const replies={
+      ru:'Для этого ответа LLM не подключена: сейчас работают локальные команды и временная память. Каталог моделей не означает их подключение. Собственный голос тоже ещё не установлен.',
+      en:'No LLM is connected for this response: local commands and temporary memory are available. A model catalog does not mean the models are connected. A dedicated voice is not installed yet.',
+      fr:'Aucun LLM n’est connecté pour cette réponse : les commandes locales et la mémoire temporaire sont disponibles. Le catalogue ne confirme pas la connexion des modèles. La voix dédiée n’est pas encore installée.',
+      es:'No hay un LLM conectado para esta respuesta: están disponibles los comandos locales y la memoria temporal. El catálogo no confirma la conexión de los modelos. La voz propia aún no está instalada.'
+    };
+    return {reply:replies[lang]||replies.en,action:null,entities:{...session.accumulatedPrompt},compiledPrompt:compileAccumulatedPrompt(session.accumulatedPrompt),studioHandoff:null,language:lang,provider:'jarvix-mock-brain'};
+  }
 
   // 0. GUARDRAIL CHECK: BLOCK UNAUTHORIZED SPENDS OR DELETIONS
   if (/(?:спиши|снять|оплати|charge|deduct|pay|\$|доллар)/i.test(lower) && /(?:счет|баланс|аккаунт|деньг|card|account)/i.test(lower)) {
@@ -508,10 +519,10 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
   }
 
   // 5. NAVIGATION / STUDIO OPENING ("Открой студию", "Открой видео", "Open studio")
-  if (/(?:открой|перейди|запусти|open|launch)?\s*(?:video[\s-]?studio|image[\s-]?studio|видео[\s-]?студи|студи|studio)/i.test(lower)) {
+  if (/(?:открой|перейди|запусти|open|launch|ouvre|abre)\s+(?:video[\s-]?studio|image[\s-]?studio|видео[\s-]?студи|студи|studio)/i.test(lower)) {
     const targetKind = session.accumulatedPrompt.targetKind || 'image';
     const compiledPrompt = compileAccumulatedPrompt(session.accumulatedPrompt) || 'Высокодетализированный кадр 8k';
-    const studioUrl = `generate-studio.html?studio=${targetKind}&from=jarvix&auto=1`;
+    const studioUrl = `generate-studio.html?studio=${targetKind}&from=jarvix`;
 
     action = executeSafeAction({
       type: 'open_studio',
@@ -522,7 +533,7 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
     studioHandoff = {
       kind: targetKind,
       prompt: compiledPrompt,
-      autoGenerate: true
+      autoGenerate: false
     };
 
     replyText = isRu
@@ -599,7 +610,7 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
   if (/(?:очисти|сотри|clear|delete)/i.test(lower)) {
     action = executeSafeAction({ type: 'clear_inputs' });
     return {
-      reply: isRu ? 'Поля ввода очищены.' : 'Inputs cleared.',
+      reply: isRu ? 'Очистите поле вручную, чтобы не потерять текст случайно.' : 'Please clear the field manually so your text is not lost accidentally.',
       action,
       entities: { ...session.accumulatedPrompt },
       compiledPrompt: compileAccumulatedPrompt(session.accumulatedPrompt),
@@ -618,7 +629,7 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
       : 'Current prices and terms are listed on the Pricing page. Please check that page for the latest details.';
     return {
       reply: replyText,
-      action: { type: 'open_studio', url: 'pricing.html' },
+      action: null,
       entities: { ...session.accumulatedPrompt },
       compiledPrompt: compileAccumulatedPrompt(session.accumulatedPrompt),
       studioHandoff: null,
@@ -630,8 +641,8 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
   // 8. SOCIAL DIALOG & STATUS
   if (/(?:как дела|как ты|how are you|como estas|comment vas-tu)/i.test(lower)) {
     replyText = isRu
-      ? 'Все бортовые системы функционируют на максимальной производительности. Готов генерировать идеи или навигировать по платформе.'
-      : 'All onboard systems are fully operational. Ready to assist with prompts and workflows.';
+      ? 'Работают базовые локальные команды. Для этого ответа языковая модель не подключена.'
+      : 'Basic local commands are available. A live language model is not connected for this response.';
     return {
       reply: replyText,
       action: null,
@@ -646,8 +657,8 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
   // 8.1. VIRAL VIDEO & REELS/TIKTOK ALGORITHM ADVICE
   if (/(?:совет|посоветуй|как\s+(?:лучше\s+)?(?:сделать|смонтировать|улучшить|снять|продвинуть)|алгоритм|тиктоке?|рилс|shorts|вирусн|хук|просмотр)/i.test(lower)) {
     replyText = isRu
-      ? 'Главный секрет виральности сейчас — визуальный хук в первые 1.5 секунды, динамичный темп и уникализированные метаданные через наш Видеоуникализатор, чтобы алгоритмы соцсетей не занижали охваты. Хотите открыть Видеоуникализатор или составить сценарий?'
-      : 'The key to virality is a strong 1.5-second hook, tight pacing, and using our Video Uniquifier so platform algorithms treat each upload as fresh original content. Shall I open Video Uniquifier?';
+      ? 'Начните ролик с понятной интриги, уберите затянутые фрагменты и проверьте удержание зрителей. Изменение метаданных не гарантирует оригинальность или охваты. Это локальная заготовка совета, а не анализ вашего ролика. Хотите подготовить сценарий?'
+      : 'Start with a clear hook, remove slow sections and review audience retention. Changing metadata does not guarantee originality or reach. This is a local suggestion, not an analysis of your video. Shall we prepare a script?';
     return {
       reply: replyText,
       action: null,
@@ -678,8 +689,8 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
   // 8.3. DEEPSYQ UTILITIES & EVERYDAY TOOLS
   if (/(?:утилит|инструмент|everyday|фон|сжат|сжатие|телесуфлер|аватар)/i.test(lower) && !/открой|перейди/i.test(lower)) {
     replyText = isRu
-      ? 'Все повседневные утилиты Deepsyq — удаление фона, сжатие видео и фото, телесуфлер и аватары — работают локально в браузере и на 100% бесплатны без списания кредитов. Сказать «Открой инструменты», чтобы перейти к ним?'
-      : 'All Deepsyq everyday tools — background remover, media compression, teleprompter and avatars — run directly in your browser without charging credits. Say "Open tools" to view them.';
+      ? 'В разделе Everyday Tools есть инструменты для фона, сжатия медиа, телесуфлёр и Avatar Studio. Доступность и условия проверяйте на странице выбранного инструмента. Сказать «Открой инструменты», чтобы перейти к ним?'
+      : 'Everyday Tools includes background removal, media compression, Teleprompter and Avatar Studio. Check the selected tool page for availability and terms. Say "Open tools" to view them.';
     return {
       reply: replyText,
       action: null,
@@ -709,8 +720,10 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
 
   // 9. PROACTIVE NATURAL FALLBACK
   replyText = isRu
-    ? 'Готов сформировать детальный промпт для нейросети, открыть студию или инструмент сайта. Что для вас сделать?'
-    : 'Ready to formulate a prompt or open any creative studio. What would you like to do?';
+    ? 'Могу подготовить черновик промпта или помочь найти инструмент. Сейчас диалог ограничен локальными командами; LLM не подключена.'
+    : isFr ? 'Je peux préparer un brouillon de prompt ou vous aider à trouver un outil. Le dialogue est actuellement limité aux commandes locales ; le LLM n’est pas connecté.'
+    : isEs ? 'Puedo preparar un borrador de prompt o ayudarle a encontrar una herramienta. El diálogo está limitado a comandos locales; el LLM no está conectado.'
+    : 'I can prepare a prompt draft or help find a tool. This dialogue currently uses local commands; the LLM is not connected.';
 
   return {
     reply: replyText,
@@ -733,7 +746,7 @@ export async function processTurnWithOpenAI(userText, session, lang = 'ru', opti
     return processTurnWithMockBrain(userText, session, lang);
   }
 
-  const model = env.JARVIX_AI_MODEL || 'gpt-6-luna';
+  const model = env.JARVIX_AI_MODEL || 'gpt-6';
   const systemPrompt = `You are JARVIX, the resident intelligent voice butler of DEEPSYQ creative AI platform.
 Language: ${lang}.
 Tone: Calm, confident, polite, sophisticated, concise butler persona (Marvel JARVIS inspired).
@@ -745,7 +758,7 @@ Strict Safety Rules:
 2. NEVER trigger paid generation, credit deduction, billing changes, or asset deletion without explicit client confirmation.
 3. If the user refines a creative concept across turns (e.g. Porsche -> black -> rain), accumulate all details into a cohesive production prompt.
 4. When instructed to open a studio or tool, output an action JSON block:
-{"action":{"type":"open_studio","studio":"video","url":"generate-studio.html?studio=video&from=jarvix&auto=1"}}
+{"action":{"type":"open_studio","studio":"video","url":"generate-studio.html?studio=video&from=jarvix"}}
 5. NEVER repeat or parrot the user's prompt or words back to them (e.g. do not say "I heard...", "You asked for...", "Я услышал..."). Answer directly and concisely.
 Keep speech responses concise and natural for audio text-to-speech.
 
@@ -798,6 +811,7 @@ Only describe a control if it appears in this site map.`;
       } catch (_) {}
     }
 
+    if (!cleanReply.trim()) return processTurnWithMockBrain(userText, session, lang);
     session.history.push({ role: 'user', content: userText, timestamp: Date.now() });
     session.history.push({ role: 'assistant', content: cleanReply, timestamp: Date.now() });
     if (session.history.length > 24) session.history.splice(0, session.history.length - 24);
@@ -817,8 +831,20 @@ Only describe a control if it appears in this site map.`;
   }
 }
 
+// Configuration is not proof of a successful model response. Never expose secrets.
+export function getJarvixRuntimeStatus({previewOnly=false,env=process.env}={}) {
+  const configured=!previewOnly && env.JARVIX_AI_ENABLED==='true' && env.JARVIX_AI_DISABLE!=='true' &&
+    !!String(env.OPENAI_API_KEY||'').trim() && !/^(mock-|dummy$)/.test(String(env.OPENAI_API_KEY||''));
+  return {ok:true,mode:previewOnly?'isolated-preview':'server',
+    llm:{connected:false,status:configured?'configured_unverified':'not_connected',model:configured?env.JARVIX_AI_MODEL||'gpt-6':null},
+    memory:{storage:'process',ttlSeconds:SESSION_TTL_MS/1000,persistent:false},
+    speech:{source:'browser',dedicatedVoiceInstalled:false,languages:['ru','en','es','fr']},
+    paidGenerationEnabled:false};
+}
+
 // 7. MAIN ROUTE INSTALLER FOR EXPRESS
 export function installJarvixBrainRoutes(app, options = {}) {
+  app.get('/api/jarvix/status',(_req,res)=>res.json(getJarvixRuntimeStatus(options)));
   // Chat Turn Endpoint
   app.post('/api/jarvix/chat', async (req, res) => {
     try {
