@@ -839,11 +839,31 @@ function pauseJarvisRecognition() {
   isJarvisListening = false;
 }
 
+function showRecognitionError(reason) {
+  const button = getTopBtn();
+  if (!button) return;
+  const language = getJarvixLanguage();
+  const messages = {
+    ru: { unsupported: 'Браузер не поддерживает распознавание речи', permission: 'Разреши Chrome доступ к микрофону', service: 'Служба распознавания речи недоступна', microphone: 'Не удалось открыть микрофон', network: 'Нет связи со службой распознавания речи', launch: 'Не удалось запустить распознавание речи' },
+    en: { unsupported: 'Speech recognition is not supported by this browser', permission: 'Allow Chrome to use the microphone', service: 'Speech recognition service is unavailable', microphone: 'The microphone could not be opened', network: 'Speech recognition service connection failed', launch: 'Speech recognition could not start' },
+    fr: { unsupported: 'La reconnaissance vocale n’est pas prise en charge par ce navigateur', permission: 'Autorisez Chrome à utiliser le microphone', service: 'Le service de reconnaissance vocale est indisponible', microphone: 'Impossible d’ouvrir le microphone', network: 'Connexion au service de reconnaissance vocale impossible', launch: 'Impossible de démarrer la reconnaissance vocale' },
+    es: { unsupported: 'Este navegador no admite el reconocimiento de voz', permission: 'Permite que Chrome use el micrófono', service: 'El servicio de reconocimiento de voz no está disponible', microphone: 'No se pudo abrir el micrófono', network: 'Falló la conexión con el servicio de reconocimiento de voz', launch: 'No se pudo iniciar el reconocimiento de voz' }
+  };
+  const labels = { ru: 'Нет ввода', en: 'No input', fr: 'Aucune entrée', es: 'Sin entrada' };
+  button.dataset.recognitionError = reason;
+  button.title = (messages[language] || messages.en)[reason] || (messages.en)[reason] || messages.en.launch;
+  const label = button.querySelector('.jarvis-name');
+  if (label) label.textContent = labels[language] || labels.en;
+}
+
 function resumeJarvisRecognition() {
   if (!isJarvisActive || !keepListening || isJarvisSpeaking) return;
 
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRec) return;
+  if (!SpeechRec) {
+    showRecognitionError('unsupported');
+    return;
+  }
 
   try {
     pauseJarvisRecognition();
@@ -863,6 +883,7 @@ function resumeJarvisRecognition() {
       updateJarvisState('listening');
       const button = getTopBtn();
       if (button) {
+        delete button.dataset.recognitionError;
         button.dataset.voicePhase = 'listening';
         const label = button.querySelector('.jarvis-name');
         if (label) label.textContent = {ru:'Слушаю', en:'Listening', fr:'Écoute', es:'Escucho'}[getJarvixLanguage()];
@@ -990,6 +1011,13 @@ function resumeJarvisRecognition() {
 
     jarvisRecognition.onerror = (err) => {
       if (recognitionTurn !== recognitionVersion || !isJarvisActive) return;
+      const recognitionErrors = {
+        'not-allowed': 'permission',
+        'service-not-allowed': 'service',
+        'audio-capture': 'microphone',
+        network: 'network'
+      };
+      if (recognitionErrors[err.error]) showRecognitionError(recognitionErrors[err.error]);
       if (err.error === 'not-allowed') {
         const resumeOnGesture = () => {
           document.removeEventListener('click', resumeOnGesture);
@@ -1009,6 +1037,7 @@ function resumeJarvisRecognition() {
     jarvisRecognition.start();
   } catch (err) {
     console.warn('[JARVIX] Launch failed:', err);
+    showRecognitionError('launch');
   }
 }
 
