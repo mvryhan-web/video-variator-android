@@ -19,6 +19,17 @@ const assets=path.join(root,'app','src','main','assets');
 const ffmpegUmd=path.join(root,'node_modules','@ffmpeg','ffmpeg','dist','umd');
 const ffmpegCore=path.join(root,'node_modules','@ffmpeg','core','dist','esm');
 const disabled={error:'PREVIEW_ONLY',message:'This is a design preview. Accounts, payments and paid AI generation are disabled.'};
+// Anonymous visitor cookie acts as a bearer token for temporary preview-only jobs.
+// Never publish the shared in-memory jobs list or other visitors' prompts/media.
+function studioVisitorSession(req,res){
+ const raw=String(req.headers.cookie||'');
+ const named=raw.split(';').map(part=>part.trim()).find(part=>/^ds_preview_session=[0-9a-f-]{36}$/i.test(part));
+ if(named)return named.split('=')[1];
+ const id=randomUUID();
+ const secure=req.secure||String(req.headers['x-forwarded-proto']||'').split(',')[0].trim()==='https';
+ res.append('Set-Cookie','ds_preview_session='+id+'; HttpOnly; SameSite=Lax; Path=/api/studio; Max-Age=86400'+(secure?'; Secure':''));
+ return id;
+}
 
 app.disable('x-powered-by');
 app.use(express.json({limit:'8kb'}));
@@ -75,6 +86,7 @@ app.get('/api/studio/config', (_req, res) => {
 
 app.get('/api/studio/access', (req, res) => {
   if (isLegacyTest) return res.status(503).json(disabled);
+  studioVisitorSession(req,res);
   const quota = checkDailyQuota(req.ip || 'guest');
   res.json({
     ok: true,
@@ -102,6 +114,7 @@ app.post('/api/studio/estimate', (req, res) => {
 
 app.post('/api/studio/jobs', async (req, res) => {
   if (isLegacyTest) return res.status(503).json(disabled);
+  const visitor=studioVisitorSession(req,res);
   const quota = checkDailyQuota(req.ip || 'guest');
   if (!quota.allowed) {
     return res.status(429).json({ error: 'DAILY_QUOTA_EXCEEDED', message: 'Дневной лимит бесплатных тестов исчерпан (20/день).' });
@@ -114,6 +127,7 @@ app.post('/api/studio/jobs', async (req, res) => {
 
   const jobRecord = {
     id,
+    visitor,
     kind,
     model: model || (kind === 'image' ? 'flux-schnell' : 'veo-lite'),
     prompt,
@@ -130,9 +144,9 @@ app.post('/api/studio/jobs', async (req, res) => {
       jobRecord.progress = 50;
       let result;
       if (kind === 'video') {
-        result = await generateTrialVideo({ prompt, model, duration: req.body?.videoDuration || 5 });
+        result = await generateTrialVideo({ prompt, model, duration: req.body?.videoDuration || 5, allowExternal: false });
       } else {
-        result = await generateFreeImage({ prompt, model, ratio: req.body?.ratio || '1:1' });
+        result = await generateFreeImage({ prompt, model, ratio: req.body?.ratio || '1:1', allowExternal: false });
       }
       jobRecord.status = 'ready';
       jobRecord.progress = 100;
@@ -157,7 +171,7 @@ app.post('/api/studio/jobs', async (req, res) => {
 app.get('/api/studio/jobs/:id', (req, res) => {
   if (isLegacyTest) return res.status(503).json(disabled);
   const job = studioJobs.get(req.params.id);
-  if (!job) return res.status(404).json({ error: 'NOT_FOUND' });
+  if (!job || job.visitor !== studioVisitorSession(req,res)) return res.status(404).json({ error: 'NOT_FOUND' });
   res.json({
     ok: true,
     id: job.id,
@@ -174,7 +188,7 @@ app.get('/api/studio/jobs/:id', (req, res) => {
 app.get('/api/studio/jobs/:id/media', (req, res) => {
   if (isLegacyTest) return res.status(503).json(disabled);
   const job = studioJobs.get(req.params.id);
-  if (!job || job.status !== 'ready' || !job.media) {
+  if (!job || job.visitor !== studioVisitorSession(req,res) || job.status !== 'ready' || !job.media) {
     return res.status(404).json({ error: 'RESULT_UNAVAILABLE' });
   }
   res.set('Content-Type', job.mime || 'image/svg+xml');
@@ -184,7 +198,9 @@ app.get('/api/studio/jobs/:id/media', (req, res) => {
 
 app.get('/api/studio/jobs', (req, res) => {
   if (isLegacyTest) return res.status(503).json(disabled);
+  const visitor=studioVisitorSession(req,res);
   const list = Array.from(studioJobs.values())
+    .filter(j => j.visitor === visitor)
     .map(j => ({
       id: j.id,
       kind: j.kind,

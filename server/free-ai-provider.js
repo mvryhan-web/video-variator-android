@@ -34,12 +34,12 @@ export function incrementDailyQuota(userId = 'guest') {
 /**
  * Generate image using Hugging Face Free Inference API or deterministic creative SVG/PNG fallback
  */
-export async function generateFreeImage({ prompt, model = 'flux-schnell', ratio = '1:1', userId = 'guest' }) {
+export async function generateFreeImage({ prompt, model = 'flux-schnell', ratio = '1:1', userId = 'guest', allowExternal = false }) {
   const hfToken = process.env.HF_TOKEN || process.env.HUGGINGFACE_API_KEY || '';
   const geminiKey = process.env.GEMINI_API_KEY || '';
   
   // 1. If Hugging Face token is provided, use official free serverless inference
-  if (hfToken) {
+  if (allowExternal && hfToken) {
     try {
       const hfModel = model.includes('flux') ? 'black-forest-labs/FLUX.1-schnell' : 'stabilityai/stable-diffusion-xl-base-1.0';
       const response = await fetch(`https://api-inference.huggingface.co/models/${hfModel}`, {
@@ -66,12 +66,12 @@ export async function generateFreeImage({ prompt, model = 'flux-schnell', ratio 
 /**
  * Generate video using Developer Trial API (Fal.ai, Replicate, BytePlus) or animated preview fallback
  */
-export async function generateTrialVideo({ prompt, model = 'veo-lite', duration = 5, userId = 'guest' }) {
+export async function generateTrialVideo({ prompt, model = 'veo-lite', duration = 5, userId = 'guest', allowExternal = false }) {
   const falKey = process.env.FAL_KEY || '';
   const replicateToken = process.env.REPLICATE_API_TOKEN || '';
 
   // 1. If Fal.ai trial key is provided ($10 free developer credit)
-  if (falKey) {
+  if (allowExternal && falKey) {
     try {
       const response = await fetch('https://fal.run/fal-ai/fast-svd/text-to-video', {
         method: 'POST',
