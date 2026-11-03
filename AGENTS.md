@@ -34,12 +34,6 @@ This owner decision supersedes earlier automatic-production-publication instruct
 
 ---
 
-## D23 OWNER — 2026-11-03 NEW EXACT ART APPROVAL
-
-Owner supplied 12 original Pricing image URLs and expressly approved restoring those exact files, superseding previous same-day deletion; all other Pricing design remains frozen. Read `docs/PRICING_OWNER_ART_LOCK.json` and `docs/OWNER_APPROVED_PRICING_EVERYDAY_IMAGES_20261103.md`. Restore Oct 23 Everyday Tools right-hand hero source; never substitute other photos or alter payment/Stripe/credits. TEST only. Future art edits again require express owner consent.
-
----
-
 ## OWNER PERMANENT PRICE DESIGN FREEZE — 2026-11-02
 
 See `docs/PRICING_OWNER_ART_LOCK.json` and `docs/PRICING_OWNER_ART_LOCK.md`. Pricing's original 12 owner-selected images, hero, five plans/five credit cards and CSS/HTML may NEVER be changed/replaced/redesigned by autonomous agents without a NEW explicit owner request. Pricing art lock CI + CODEOWNERS apply even to unrelated shared-header/translation work. Keep checkout and wallet protections unchanged.
