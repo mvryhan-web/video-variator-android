@@ -18,6 +18,17 @@ function image(key,extra=''){
  const [x,y,w,h]=R[key],esc=key.replace(/[^a-z0-9]/gi,'');
  const el=document.createElement('span');el.className='vu-art vu-art-'+esc+(extra?' '+extra:'');
  el.setAttribute('aria-hidden','true');
+ // Owner 24-25 Oct reference panorama, not later isolated car-only photo.
+ if(key==='hero'){
+  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('viewBox','208 56 1230 252');
+  svg.setAttribute('preserveAspectRatio','xMidYMid slice');
+  svg.setAttribute('aria-hidden','true');
+  svg.setAttribute('width','100%');svg.setAttribute('height','100%');
+  const art=document.createElementNS(ns,'image');
+  art.setAttribute('href',file);art.setAttribute('width','1448');art.setAttribute('height','1086');
+  svg.append(art);el.append(svg);return el;
+ }
  const img=document.createElement('img');const dedicated=key==='hero'?'https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/1998c564-8f28-4fd2-aaad-b19240a66d14.png':key==='uploader'?'media/vu-clean-upload-20261025.svg':null;img.src=dedicated||file;if(key==='hero')img.addEventListener('error',()=>{if(img.src.includes('vu-clean-hero-20261025.svg'))return;img.src='media/1998c564-8f28-4fd2-aaad-b19240a66d14.png';img.addEventListener('error',()=>{img.src='media/vu-clean-hero-20261025.svg';},{once:true});},{once:true});img.alt='';img.loading=(key==='hero'?'eager':'lazy');img.decoding='async';
  Object.assign(img.style,dedicated?{position:'absolute',width:'100%',height:'100%',left:'0',top:'0',objectFit:key==='hero'?'cover':'contain',pointerEvents:'none'}:{position:'absolute',maxWidth:'none',width:(1447/w*100)+'%',height:(1087/h*100)+'%',left:(-x/w*100)+'%',top:(-y/h*100)+'%',pointerEvents:'none'});
  el.append(img);return el;

@@ -5,7 +5,7 @@ const cdn='media/pricing/';
 // Exact previously approved 2026-10-25 images; see docs/PRICING_OWNER_ART_LOCK.json.
 // Never use placeholder, AI-generated substitute or alternate asset filenames.
 const originalOwnerCdn='https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/';
-const approvedArtVersion='owner-20261103-arches-city-v3';
+const approvedArtVersion='owner-20261103-restore-24-25-v4';
 const approvedPath=key=>cdn+art[key]+'?v='+approvedArtVersion;
 const art={
  trial:'d72f2da8-9e73-4110-abc5-c743032631fd.png',

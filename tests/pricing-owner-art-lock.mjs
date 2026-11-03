@@ -63,7 +63,7 @@ test('Pricing owner-original four-portal hero survives slow JS and stale browser
  const html=read('app/src/main/assets/pricing.html').toString('utf8');
  const css=read('app/src/main/assets/pricing-page.css').toString('utf8');
  const js=read('app/src/main/assets/pricing-page.js').toString('utf8');
- const version='owner-20261103-arches-city-v3';
+ const version='owner-20261103-restore-24-25-v4';
  assert.ok(html.includes('href="pricing-page.css?v='+version+'"'),'browser must fetch the approved latest CSS');
  assert.ok(html.includes('src="pricing-page.js?v='+version+'"'),'browser must fetch the latest approved image mapping');
  assert.ok(js.includes("const approvedArtVersion='"+version+"';"),'all 12 original images must refresh, not substitute');
