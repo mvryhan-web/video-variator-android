@@ -270,6 +270,11 @@ app.get('/',(req,res,next)=>{
 app.get('/dashboard',(req,res)=>res.sendFile(path.join(staticDir,'deepsyq.html')));
 app.get(['/ai-apps','/ai-apps.html'],(req,res,next)=>platformFeatureEnabled('AI_APPS_ENABLED')?next():res.status(404).type('text/plain').send('Not found'));
 app.get(['/inspiration','/inspiration.html'],(_req,res)=>res.redirect(302,'/deepsyq.html#inspirationPreview'));
+// F8 pets are frozen by owner decision (2026-11-03): no public pet UI or asset delivery.
+app.use((req,res,next)=>{
+  if(req.path==='/virtual-pet'||/^\/virtual-pet(?:\/|[-.])/.test(req.path))return res.status(404).type('text/plain').send('Not found');
+  next();
+});
 // Retired owner-deleted workflow: never fall through to the generic SPA index.
 app.get(['/product-video','/product-video.html'],(_req,res)=>res.status(404).type('text/plain').send('Not found'));
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
