@@ -131,14 +131,19 @@ export function renderHomeCarousel(items){
  if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{for(const e of entries){visible=e.isIntersecting;if(visible)ambientPlay();else pauseFilms();}},{threshold:.25});observer.observe(carousel);}
  setSlide(0);
 }
-// Spotlight cards keep their approved WebP stills until actually visible.
- // Even if Canvas, JARVIX and AI Apps are all visible together, only ONE
- // spotlight MP4 is active; main carousel pauses while a spotlight plays.
+// Spotlight cards retain their original WebP posters by default.
+// Desktop with a precise mouse: play only while the pointer is OVER a visible card.
+// Touch/coarse devices: play only while a card is visible during scrolling.
+// Keep a single active MP4; do not change the owner-approved main carousel.
 if(spotlightVideos.length&&'IntersectionObserver' in window){
+ const desktopHover=window.matchMedia?.('(hover: hover) and (pointer: fine)');
  function syncSpotlightPlayback(){
   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const allowed=!document.hidden&&!reduced&&!navigator.connection?.saveData;
-  const active=allowed?spotlightVideos.find(v=>v.__spotlightVisible):null;
+  const visibleSpotlight=spotlightVideos.find(v=>v.__spotlightVisible);
+  const active=allowed?(desktopHover?.matches
+   ?spotlightVideos.find(v=>v.__spotlightVisible&&v.__spotlightHovered)
+   :visibleSpotlight):null;
   const wasActive=spotlightPlaybackActive;
   spotlightPlaybackActive=!!active;
   if(active)pauseFilms();
@@ -160,9 +165,16 @@ if(spotlightVideos.length&&'IntersectionObserver' in window){
   }
   syncSpotlightPlayback();
  },{threshold:[0,.6,1]});
- for(const v of spotlightVideos)spotlightObserver.observe(v.closest('.home-feature-spotlight'));
+ for(const v of spotlightVideos){
+  const card=v.closest('.home-feature-spotlight');
+  card.addEventListener('pointerenter',()=>{v.__spotlightHovered=true;syncSpotlightPlayback();});
+  card.addEventListener('pointerleave',()=>{v.__spotlightHovered=false;syncSpotlightPlayback();});
+  spotlightObserver.observe(card);
+ }
+ desktopHover?.addEventListener?.('change',syncSpotlightPlayback);
  document.addEventListener('visibilitychange',syncSpotlightPlayback);
 }
+
 if(video&&carousel){
  carousel.addEventListener('keydown',e=>{
   if(e.target!==carousel)return;
