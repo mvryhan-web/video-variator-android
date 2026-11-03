@@ -1,3 +1,15 @@
+## СТРОГОЕ ПРАВИЛО ТЕСТОВОЙ ПУБЛИКАЦИИ — 03.11.2026
+
+После безопасной реализации и проверок НЕ останавливаться на PR/merge. Публиковать доказанную ревизию на существующем изолированном TEST Render `srv-db91k1vf3r2c73fpj350` и проверять реальный URL (функции/изображения/desktop/mobile по запросу). Проверять DEV HEAD и фактически развернутый SHA: при расхождении сначала сохранить опубликованные изменения, а не откатывать. При независимых старых CI-сбоях, не затрагивающих изменение, искать разрешённый изолированный preview-only путь; не обходить обязательный merge gate и не объявлять DONE без тестового результата. Не публиковать main/production, не делать платных API вызовов, не выдавать SVG-заглушки за AI. Если проверяемый тестовый релиз технически невозможен, статус `NOT_TEST_DEPLOYED` с точной причиной, но не `DONE`.
+
+## ОБЯЗАТЕЛЬНАЯ ПРОВЕРКА РЕЗУЛЬТАТА P — 03.11.2026
+
+**Перед любой работой прочитай верхний `OWNER FINAL ACCEPTANCE GATE — 2026-11-03` в [AGENTS.md](../AGENTS.md).** Для каждого задания сперва фиксируй конкретный видимый/функциональный результат, исходный эталон и запрет на изменения остального. После изменений отдельно проверяй технические доказательства (код/CI/Render) **и реальный результат на запрошенном URL**. Для визуальных задач сравни фактические скриншоты desktop/mobile с исходным эталоном. Без этого используй `VISUAL_NOT_VERIFIED`, не «готово». Не оставляй проверку владельцу и не объявляй успех по `LIVE` на Render. Если владелец просит лишь оценить ошибку, не правь страницу.
+
+**Инцидент:** Everyday Tools 03.11.2026: CSS был опубликован без визуальной приёмки; публикация не подтверждает восстановление баннера. Это действующий незакрытый критерий, а не новый дизайн-заказ.
+
+---
+
 ## OWNER RULE — 2026-11-03 — TEST SITE FIRST; PRODUCTION PUBLICATION FROZEN
 
 **Standing owner authorization:** publish every completed, appropriately checked change to the existing DEEPSYQ test site so the owner can inspect its actual behavior, without asking again for each safe test publication. Deploy only the intended reviewed revision and verify the deployed page; a commit, PR, merge or accepted deploy request alone is not proof that the owner can see the change.
