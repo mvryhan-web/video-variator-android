@@ -61,7 +61,7 @@ for (const width of [320,390]) {
  test(`F8 settings and all three pet choices fit ${width}px without clipping`,async({page})=>{
   await page.setViewportSize({width,height:844});
   await page.goto('/virtual-pet.html');
-  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth ? [] : [...document.querySelectorAll('body *')].filter(el=>{const b=el.getBoundingClientRect();return b.right>innerWidth+1&&b.width>0;}).map(el=>el.id||el.className||el.tagName).slice(0,12))).toEqual([]);
   await page.locator('#btnOpenSettings').click();
   const dialog=page.getByRole('dialog');
   await expect(dialog).toBeVisible();
@@ -77,6 +77,6 @@ for (const width of [320,390]) {
   await dialog.locator('#dsPetModalSaveBtn').click();
   await expect(dialog).toHaveCount(0);
   await expect(page.locator('#dsPetAvatar')).toHaveAttribute('title',/Нова/);
-  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth ? [] : [...document.querySelectorAll('body *')].filter(el=>{const b=el.getBoundingClientRect();return b.right>innerWidth+1&&b.width>0;}).map(el=>el.id||el.className||el.tagName).slice(0,12))).toEqual([]);
  });
 }

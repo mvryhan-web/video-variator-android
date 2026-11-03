@@ -132,7 +132,13 @@
       margin-bottom: 24px;
     }
 
+    .sandbox-panel, .power-card, #pet3dStudioCard div { min-width:0; }
+    .sandbox-panel button, .power-card button { max-width:100%; overflow-wrap:anywhere; }
     @media (max-width: 768px) {
+      .pet-page-container { padding:24px 16px 100px; }
+      .sandbox-panel, .power-card { padding:16px; }
+      #pet3dStudioCard { padding:16px !important; }
+      #petPreviewImg { max-width:100%; }
       .sim-row {
         grid-template-columns: 1fr;
       }
@@ -246,7 +252,7 @@
             Настоящие 3D-персонажи со скелетом (armature 14 костей), 15 анимациями, PBR-материалами и оптимизированными rigged .glb.
           </p>
         </div>
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button type="button" class="ds-pet-btn ds-pet-btn-primary" id="btnInspectLuna">Луна (Корги)</button>
           <button type="button" class="ds-pet-btn ds-pet-btn-secondary" id="btnInspectMira">Мира (Кошка)</button>
           <button type="button" class="ds-pet-btn ds-pet-btn-secondary" id="btnInspectNova">Нова (Лисёнок)</button>
@@ -275,7 +281,7 @@
 
           <!-- Character Details & Controls -->
           <div>
-            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
               <h3 id="petCardTitle" style="margin:0; font-size:20px; color:#f1f5f9;">🐕 Луна (Собака-корги)</h3>
               <span id="petCardBadge" style="font-size:12px; padding:3px 8px; border-radius:6px; background:#40DFAE22; color:#40DFAE; border:1px solid #40DFAE55;">RIGGED & VERIFIED</span>
             </div>
@@ -310,7 +316,7 @@
               <div>
                 <strong style="color:#f1f5f9;">Скелет:</strong> Armature (14 костей) • <strong style="color:#f1f5f9;">Анимаций:</strong> 15 клипов
               </div>
-              <div style="display:flex; gap:12px;">
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
                 <a id="linkGlb" href="virtual-pet/luna/glb/luna.glb" download style="color:#38bdf8; text-decoration:none;">⬇ Скачать .GLB</a>
                 <a id="linkBlend" href="virtual-pet/luna/source/luna.blend" download style="color:#38bdf8; text-decoration:none;">⬇ Исходник .BLEND</a>
               </div>
