@@ -15,3 +15,5 @@
 .tools-hub .tools-direct-launches a:hover{border-color:#9383ed}
 .tools-hub .tools-direct-launches a:focus-visible{outline:3px solid #ad98ff;outline-offset:3px}
 @media(max-width:375px){.tools-hub .tools-direct-launches a{width:100%}}
+
+header.top{width:100%!important;max-width:none!important;box-sizing:border-box!important;}

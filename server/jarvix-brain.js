@@ -480,6 +480,70 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
     };
   }
 
+  // 8.1. VIRAL VIDEO & REELS/TIKTOK ALGORITHM ADVICE
+  if (/(?:совет|посоветуй|как\s+(?:лучше\s+)?(?:сделать|смонтировать|улучшить|снять|продвинуть)|алгоритм|тиктоке?|рилс|shorts|вирусн|хук|просмотр)/i.test(lower)) {
+    replyText = isRu
+      ? 'Главный секрет виральности сейчас — визуальный хук в первые 1.5 секунды, динамичный темп и уникализированные метаданные через наш Видеоуникализатор, чтобы алгоритмы соцсетей не занижали охваты. Хотите открыть Видеоуникализатор или составить сценарий?'
+      : 'The key to virality is a strong 1.5-second hook, tight pacing, and using our Video Uniquifier so platform algorithms treat each upload as fresh original content. Shall I open Video Uniquifier?';
+    return {
+      reply: replyText,
+      action: null,
+      entities: { ...session.accumulatedPrompt },
+      compiledPrompt: compileAccumulatedPrompt(session.accumulatedPrompt),
+      studioHandoff: null,
+      language: lang,
+      provider: 'jarvix-mock-brain'
+    };
+  }
+
+  // 8.2. CREATIVE IDEA GENERATOR
+  if (/(?:иде(?:я|ю|и)|придумай|вдохнов|концепт|сюжет|сценарий|подскажи|что\s+создать)/i.test(lower)) {
+    replyText = isRu
+      ? 'Предлагаю кинематографичный концепт: ночной мегаполис в тумане с неоновыми отражениями на мокром асфальте и парящими силуэтами в стиле киберпанк. Могу сразу сформировать готовый промпт и открыть студию видео или фото. Что выберем?'
+      : 'How about a cinematic concept: a misty night metropolis with glowing neon reflections on wet asphalt and cyberpunk silhouettes? I can prepare the prompt and open the studio. Shall we?';
+    return {
+      reply: replyText,
+      action: null,
+      entities: { ...session.accumulatedPrompt },
+      compiledPrompt: compileAccumulatedPrompt(session.accumulatedPrompt),
+      studioHandoff: null,
+      language: lang,
+      provider: 'jarvix-mock-brain'
+    };
+  }
+
+  // 8.3. DEEPSYQ UTILITIES & EVERYDAY TOOLS
+  if (/(?:утилит|инструмент|everyday|фон|сжат|сжатие|телесуфлер|аватар)/i.test(lower) && !/открой|перейди/i.test(lower)) {
+    replyText = isRu
+      ? 'Все повседневные утилиты Deepsyq — удаление фона, сжатие видео и фото, телесуфлер и аватары — работают локально в браузере и на 100% бесплатны без списания кредитов. Сказать «Открой инструменты», чтобы перейти к ним?'
+      : 'All Deepsyq everyday tools — background remover, media compression, teleprompter and avatars — run directly in your browser without charging credits. Say "Open tools" to view them.';
+    return {
+      reply: replyText,
+      action: null,
+      entities: { ...session.accumulatedPrompt },
+      compiledPrompt: compileAccumulatedPrompt(session.accumulatedPrompt),
+      studioHandoff: null,
+      language: lang,
+      provider: 'jarvix-mock-brain'
+    };
+  }
+
+  // 8.4. BUTLER WIT & LORE
+  if (/(?:шутк|анекдот|пошути|кто\s+(?:твой\s+)?создатель|почему\s+джарвикс|джарвис)/i.test(lower)) {
+    replyText = isRu
+      ? 'Я JARVIX — ваш цифровой дворецкий. В отличие от Тони Старка, вам не нужен костюм из титанового сплава, чтобы творить шедевры в Deepsyq, хотя стильный неоновый интерфейс я всегда готов включить. Чем займемся?'
+      : 'I am JARVIX — your resident intelligence. Unlike Tony Stark, you do not need titanium armor to create wonders on Deepsyq. What shall we create today?';
+    return {
+      reply: replyText,
+      action: null,
+      entities: { ...session.accumulatedPrompt },
+      compiledPrompt: compileAccumulatedPrompt(session.accumulatedPrompt),
+      studioHandoff: null,
+      language: lang,
+      provider: 'jarvix-mock-brain'
+    };
+  }
+
   // 9. PROACTIVE NATURAL FALLBACK
   replyText = isRu
     ? 'Готов сформировать детальный промпт для нейросети, открыть студию или инструмент сайта. Что для вас сделать?'

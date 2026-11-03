@@ -430,11 +430,20 @@ export function handleJarvisVoiceCommand(commandText) {
     return;
   }
 
-  // 4. SHUTDOWN / STANDBY ("Выключись", "Пока", "Стоп")
-  if (/(?:выключись|отключись|пока|до\s+свидания|замолчи|хватит|стоп|goodbye|bye|turn off|shut down)/i.test(lower)) {
+  // 4. INSTANT SILENCE / BARGE-IN ("Стоп", "Замолчи", "Тихо", "Хватит")
+  if (/^(?:стоп|стой|замолчи|тихо|хватит|stop|quiet|silence)$/i.test(lower)) {
+    stopAllSpeech();
+    isJarvisSpeaking = false;
+    currentSpokenUtterance = '';
+    updateJarvisState('listening');
+    return;
+  }
+
+  // 4b. SHUTDOWN / STANDBY ("Выключись", "Пока", "До свидания")
+  if (/(?:выключись|отключись|пока|до\s+свидания|goodbye|bye|turn off|shut down)/i.test(lower)) {
     const byeMsg = isRu
-      ? 'Выключаюсь. Если я вам понадоблюсь — просто нажмите на сферу вверху страницы.'
-      : 'Deactivating. Whenever you need me, simply click the orb.';
+      ? 'Выключаюсь. Нажмите на сферу, если понадоблюсь.'
+      : 'Deactivating. Click the orb when you need me.';
     speakJarvis(byeMsg, () => {
       deactivateJarvisVoice();
     });
@@ -492,17 +501,14 @@ export function handleJarvisVoiceCommand(commandText) {
     const targetKind = isVideo ? 'video' : isAudio ? 'audio' : 'image';
 
     const expandedPrompt = expandCreativePrompt(concept, targetKind);
-    speakJarvis('Сделано.', async () => {
-      try {
-        await saveStudioHandoff({
-          kind: targetKind,
-          prompt: expandedPrompt,
-          settings: {},
-          source: 'jarvix-smart-prompt',
-          autoGenerate: true
-        });
-      } catch (_) {}
-      location.assign(`generate-studio.html?studio=${targetKind}&from=jarvix&auto=1`);
+    saveStudioHandoff({
+      kind: targetKind,
+      prompt: expandedPrompt,
+      settings: {},
+      source: 'jarvix-smart-prompt',
+      autoGenerate: true
+    }).finally(() => {
+      instantOpen(`generate-studio.html?studio=${targetKind}&from=jarvix&auto=1`);
     });
     return;
   }
@@ -849,7 +855,7 @@ function resumeJarvisRecognition() {
           accumulatedText = '';
 
           if (isExplicitInterrupt && !isActionCommand) {
-            speakJarvis('Слушаю вас.');
+            // Instant silence upon user barge-in ("Стоп" / "Замолчи" / "Хватит")
             return;
           }
 
@@ -870,6 +876,13 @@ function resumeJarvisRecognition() {
       updateJarvisState('listening');
       clearTimeout(speechTimeout);
       speechTimeout = setTimeout(() => {
+        const trimmed = current.trim();
+        // Ignore single filler syllables, coughs, mic pops
+        if (/^(?:а|да|ну|эм|ээ|хм|ок|yes|no|uh|um|ah)$/i.test(trimmed)) {
+          accumulatedText = '';
+          return;
+        }
+
         if (current.length > 2 && !isJarvisSpeaking) {
           const now = Date.now();
           // Prevent duplicate recognition loops of the exact same command within 2.5 seconds
@@ -899,7 +912,18 @@ function resumeJarvisRecognition() {
 
     jarvisRecognition.onerror = (err) => {
       if (err.error === 'not-allowed') {
-        deactivateJarvisVoice();
+        const resumeOnGesture = () => {
+          document.removeEventListener('click', resumeOnGesture);
+          document.removeEventListener('keydown', resumeOnGesture);
+          if (isJarvisActive && keepListening) {
+            resumeJarvisRecognition();
+          }
+        };
+        document.addEventListener('click', resumeOnGesture, { once: true });
+        document.addEventListener('keydown', resumeOnGesture, { once: true });
+        isJarvisListening = false;
+        updateJarvisState('idle');
+        return;
       }
     };
 
@@ -909,18 +933,12 @@ function resumeJarvisRecognition() {
   }
 }
 
-// 10. Silence Timer: Polite auto-standby after silence
+// 10. Silence Timer: Polite auto-standby after silence (silent standby, never unprompted talk)
 function startSilenceTimer() {
   clearTimeout(silenceTimer);
   silenceTimer = setTimeout(() => {
     if (isJarvisActive && !isJarvisSpeaking) {
-      const isRu = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru'));
-      const farewell = isRu
-        ? 'Я выключаюсь. Если я вам понадоблюсь, включите меня.'
-        : 'I am turning off. If you need me, simply click on me.';
-      speakJarvis(farewell, () => {
-        deactivateJarvisVoice();
-      });
+      deactivateJarvisVoice();
     }
   }, SILENCE_TIMEOUT_MS);
 }
@@ -1009,8 +1027,8 @@ export function toggleJarvisVoice() {
   if (isJarvisSpeaking) {
     stopAllSpeech();
     isJarvisSpeaking = false;
-    resumeJarvisRecognition();
-    updateJarvisState('listening');
+    currentSpokenUtterance = '';
+    deactivateJarvisVoice();
     return;
   }
   if (isJarvisActive) {
@@ -1018,6 +1036,18 @@ export function toggleJarvisVoice() {
   } else {
     activateJarvisVoice();
   }
+}
+
+// Global Escape listener to immediately cancel speech synthesis
+if (typeof window !== 'undefined') {
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isJarvisSpeaking) {
+      stopAllSpeech();
+      isJarvisSpeaking = false;
+      currentSpokenUtterance = '';
+      updateJarvisState('listening');
+    }
+  });
 }
 
 // 12. Mount JARVIX UI Component & restore state across pages
@@ -1058,6 +1088,15 @@ export function initJarvis() {
     sayOnLoad = sessionStorage.getItem('jarvix_say_on_load');
     if (sayOnLoad) sessionStorage.removeItem('jarvix_say_on_load');
   } catch (_) {}
+
+  // Home page protection: Home page (deepsyq.html) should NEVER auto-listen on fresh visit
+  const isHomePage = location.pathname.endsWith('deepsyq.html') || location.pathname === '/' || location.pathname.endsWith('/');
+  if (isHomePage && !sayOnLoad) {
+    wasActive = false;
+    try {
+      sessionStorage.removeItem('jarvix_active');
+    } catch (_) {}
+  }
 
   if (wasActive || sayOnLoad) {
     isJarvisActive = true;
