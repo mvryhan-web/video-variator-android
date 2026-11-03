@@ -107,7 +107,7 @@ test('F8 movement uses fresh generated sprite assets on its supported pages',()=
   const html=readFileSync(path.join(assets,page),'utf8');
   assert.match(html,/src="virtual-pet\.js\?v=f8-sprite-preload-20261103-1"/,`${page} must load the refreshed companion code`);
  }
- const petPage=readFileSync(path.join(assets,'virtual-pet.html'),'utf8');
+ const petPage=readFileSync(path.join(assets,'virtual-pet.html'),'utf8')+readFileSync(path.join(assets,'virtual-pet-page.js'),'utf8');
  assert.match(petPage,/playSpriteLoop\('idle_breathe'\)/,'the preview should move as soon as a pet is selected');
  assert.match(petPage,/previewImg\.alt = `Animated \$\{d\.accessibilityName\} preview`/,'the preview description should follow the selected pet');
  assert.match(petPage,/prefers-reduced-motion: reduce/,'the pet preview must respect reduced-motion preference');

@@ -177,7 +177,9 @@ describe('JARVIX AI Brain & Multilingual Voice (Issue #498)', () => {
   describe('7. Interactive JARVIX Review Studio (jarvix-studio.html)', () => {
     it('shows the four browser-language previews without claiming a bundled voice engine', () => {
       assert.ok(fs.existsSync(studioHtmlPath), 'jarvix-studio.html must exist');
-      const html = fs.readFileSync(studioHtmlPath, 'utf8');
+      const markup = fs.readFileSync(studioHtmlPath, 'utf8');
+      assert.match(markup, /<script type="module" src="jarvix-studio-page\.js"><\/script>/);
+      const html = markup + fs.readFileSync(path.join(path.dirname(studioHtmlPath), 'jarvix-studio-page.js'), 'utf8');
 
       assert.ok(html.includes('JARVIX Intelligence & Multilingual Voice Studio'));
       assert.ok(html.includes('id="samplesList"'));

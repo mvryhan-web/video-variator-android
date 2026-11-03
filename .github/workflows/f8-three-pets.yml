@@ -7,6 +7,8 @@ on:
       - 'app/src/main/assets/virtual-pet-living.js'
       - 'app/src/main/assets/virtual-pet.css'
       - 'app/src/main/assets/virtual-pet.html'
+      - 'app/src/main/assets/virtual-pet-page.js'
+      - 'app/src/main/assets/jarvix-studio-page.js'
       - 'app/src/main/assets/deepsyq.html'
       - 'app/src/main/assets/index.html'
       - 'app/src/main/assets/generate-studio.html'
@@ -28,6 +30,8 @@ on:
       - 'app/src/main/assets/virtual-pet-living.js'
       - 'app/src/main/assets/virtual-pet.css'
       - 'app/src/main/assets/virtual-pet.html'
+      - 'app/src/main/assets/virtual-pet-page.js'
+      - 'app/src/main/assets/jarvix-studio-page.js'
       - 'app/src/main/assets/deepsyq.html'
       - 'app/src/main/assets/index.html'
       - 'app/src/main/assets/generate-studio.html'
@@ -60,7 +64,7 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npx playwright install --with-deps chromium webkit
       - name: Pet settings desktop and mobile browser regressions
-        run: npx playwright test tests/virtual-pet-living.spec.mjs --project=chromium --project=mobile-chromium --project=webkit --project=mobile-webkit
+        run: npx playwright test tests/virtual-pet-living.spec.mjs tests/jarvix-page-csp.spec.mjs --project=chromium --project=mobile-chromium --project=webkit --project=mobile-webkit
       - uses: actions/upload-artifact@v4
         if: always()
         with:
