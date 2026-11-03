@@ -180,9 +180,12 @@ test('BASE 3: six featured carousel slots preserve thirteen original source scen
   return route.fulfill({json:{items:scenes.slice(0,2),categories:['Cinematic'],ratios:['16:9'],pagination:{hasMore:false}}});
  });
  await page.goto('/deepsyq.html');
+  await page.locator('#homeHeroCarousel').scrollIntoViewIfNeeded();
  await expect(page.locator('#homeHeroDots')).toHaveCount(0);
- await expect(page.locator('#homeHeroNextVideo')).toHaveAttribute('src','/approved-identity-2.mp4');
- await expect(page.locator('#homeHeroPreviousVideo')).toHaveAttribute('src','/approved-identity-6.mp4');
+ await expect(page.locator('#homeHeroNextVideo')).not.toHaveAttribute('src',/.+/);
+  await expect(page.locator('#homeHeroNextVideo')).toHaveAttribute('poster','/approved-poster-2.png');
+ await expect(page.locator('#homeHeroPreviousVideo')).not.toHaveAttribute('src',/.+/);
+  await expect(page.locator('#homeHeroPreviousVideo')).toHaveAttribute('poster','/approved-poster-6.png');
  expect(exactVideoFeed).toBe(true);
  await expect(page.locator('#homeHeroCarousel img')).toHaveCount(0);
  expect(scenes).toHaveLength(13); // Seven additional owner scene identities stay in the feed.
@@ -194,7 +197,8 @@ test('BASE 3: six featured carousel slots preserve thirteen original source scen
  await page.locator('#homeHeroNext').click();
  await expect(page.locator('#inspirationHeroVideo')).toHaveAttribute('src','/approved-identity-1.mp4');
  await expect(page.locator('#homeHeroCarousel')).toHaveAttribute('aria-label',/video 1 of 6/);
- await expect(page.locator('#homeHeroPreviousVideo')).toHaveAttribute('src','/approved-identity-6.mp4');
+ await expect(page.locator('#homeHeroPreviousVideo')).not.toHaveAttribute('src',/.+/);
+  await expect(page.locator('#homeHeroPreviousVideo')).toHaveAttribute('poster','/approved-poster-6.png');
  await expect(page.locator('#inspirationPreviewGrid .inspiration-preview-card')).toHaveCount(2);
 });
 
