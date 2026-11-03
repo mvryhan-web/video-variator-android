@@ -2,7 +2,7 @@
    No shared Home, Studio, or billing layout mutations. */
 :root{--price-bg:#020a1d;--price-border:#244b86;--price-ink:#f7f6ff;--price-muted:#b7c9e9;--price-cyan:#00dfff;--price-purple:#c23dff;--price-gold:#ffc665}
 /* Owner D23: restored exact twelve original owner images, no other design changes. */
-:root{--price-hero-art:url("media/pricing/fa2c9a57-3fe7-4a2c-8123-7da568cabe10.png?v=owner-20261103-exact-12-v5");--price-credit-hero-art:url("media/pricing/e5506ef4-b0a2-412d-a8b7-6e3108f80761.png?v=owner-20261103-exact-12-v5")}
+:root{--price-hero-art:url("media/pricing/fa2c9a57-3fe7-4a2c-8123-7da568cabe10.png?v=owner-original-cdn-20261103-v6");--price-credit-hero-art:url("media/pricing/e5506ef4-b0a2-412d-a8b7-6e3108f80761.png?v=owner-original-cdn-20261103-v6")}
 
 *{box-sizing:border-box}
 html{background:var(--price-bg);scroll-behavior:smooth}

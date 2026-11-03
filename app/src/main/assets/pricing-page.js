@@ -5,7 +5,7 @@ const cdn='media/pricing/';
 // Owner D23 2026-11-03: owner EXPLICITLY reapproved these original twelve image URLs.
 // New approval supersedes the earlier six-asset removal. Do not substitute images.
 const originalOwnerCdn='https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/';
-const approvedArtVersion='owner-20261103-exact-12-v5';
+const approvedArtVersion='owner-original-cdn-20261103-v6';
 const approvedPath=key=>cdn+art[key]+'?v='+approvedArtVersion;
 const art={
  trial:'d72f2da8-9e73-4110-abc5-c743032631fd.png',
