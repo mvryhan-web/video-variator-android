@@ -58,3 +58,20 @@ test('Pricing renders exactly the approved image-to-plan mapping with same-origi
  assert.match(js,/i\.src=originalOwnerCdn\+art\[key\]/);
  assert.doesNotMatch(js,/Math\.random\(\).*price|source\.unsplash|picsum\.photos/i);
 });
+
+test('Pricing owner-original four-portal hero survives slow JS and stale browser caches',()=>{
+ const html=read('app/src/main/assets/pricing.html').toString('utf8');
+ const css=read('app/src/main/assets/pricing-page.css').toString('utf8');
+ const js=read('app/src/main/assets/pricing-page.js').toString('utf8');
+ const version='owner-20261103-original-4-portals';
+ assert.ok(html.includes('href="pricing-page.css?v='+version+'"'),'browser must fetch the approved latest CSS');
+ assert.ok(html.includes('src="pricing-page.js?v='+version+'"'),'browser must fetch the latest approved image mapping');
+ assert.ok(js.includes("const approvedArtVersion='"+version+"';"),'all 12 original images must refresh, not substitute');
+ for(const [cssVar,key] of [['--price-hero-art','hero'],['--price-credit-hero-art','creditHero']]){
+  assert.ok(css.includes(cssVar+':url("media/pricing/'+approved.assets[key].filename+'?v='+version+'")'),'static CSS must show exact owner '+key+' before JavaScript');
+ }
+ assert.match(css,/var\(--price-hero-art\)/,'original four-portal banner still uses owner image variable');
+ assert.match(css,/var\(--price-credit-hero-art\)/,'original credit banner still uses owner image variable');
+ assert.match(html,/Four glowing magical portals above a celestial staircase/);
+ assert.equal((html.match(/<span>[^<]+<\/span>/g)||[]).filter(x=>/Professional AI Tools|Studio|Quality|Press Release/.test(x)).length,4,'keep four original hero frames/chips');
+});
