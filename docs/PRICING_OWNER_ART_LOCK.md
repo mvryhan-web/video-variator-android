@@ -1,3 +1,11 @@
+## D23 OWNER EXPRESS APPROVAL (2026-11-03): REINSTATE ALL TWELVE ORIGINAL IMAGES
+
+The owner supplied filenames/URLs for the original 4-frame hero, 5 plan images, original celestial city AI Credits hero, and 5 original packs. This **later explicit permission** supersedes earlier same-day removal of 6 photos. Restore exact historical Git blobs from `2d43597ecce7034ee957fc4083544b571495ebd6`, keep all price/Stripe/wallet code untouched, lock assets against future unauthorized replacement, and publish **TEST only**.
+
+Everyday Tools: use 2026-10-23 original `media/approved-design-20261023/09_Everyday_Tools.png`, right-side hero crop with live text left, no stretched image.
+
+---
+
 ## OWNER UPDATE — 2026-11-03 — supersedes all earlier 12-photo freeze claims
 
 The owner rejected six Pricing images and explicitly ordered their removal from the TEST branch: Pricing main hero and plan-card screenshots for Trial, Basic, Pro, Business, Lifetime. Deleted exact names are recorded as `blockedAssetNames` in the JSON lock. NEVER re-import, regenerate, or restore these images from Git history, old CDN, agent backups or main without new owner visual approval. Display neutral CSS gradients in their places until the owner reviews genuine 24–25 October candidates.
