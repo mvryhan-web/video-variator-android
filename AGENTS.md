@@ -1,3 +1,9 @@
+## OWNER FINAL DESIGN APPROVAL — EVERYDAY TOOLS — 2026-11-03
+
+The owner approved the restored Everyday Tools page at TEST revision 5626621155cfe842a3ecca84d4c22c0560b0d43e, including its full-width original top banner. The ENTIRE page design is FINAL, alongside Pricing and Video Uniquifier. No agent, model, program, automated update or contributor may change the artwork, crop, layout, typography, colors, text, opacity or responsive composition without NEW explicit owner permission for that specific change. Do not restore the split half-width banner. Functional changes must preserve the approved design. Updating the hash baseline also requires explicit owner permission. This applies across domains and does not authorize production publication.
+
+---
+
 ## OWNER FINAL DESIGN APPROVAL — 2026-11-03 — PRICING AND VIDEO UNIQUIFIER
 
 The owner explicitly approved the currently published TEST Pricing (including all twelve actual CDN originals, portal framing, full-width AI Credits banner, removed microcopy and 95% opaque credit panels) and Video Uniquifier. Their design is FINAL. No agent, model, program, automated update or contributor may change their artwork, layout, typography, colors, text, opacity or responsive composition without a NEW explicit instruction from the owner permitting that specific change. Silence, another task, prior blanket autonomy, old image-removal rules or historical locks are not permission. This rule supersedes conflicting older Pricing instructions below. Preserve functionality. Apply to these pages on all domains; it grants NO production publication. Never revert to mislabeled historical image bytes. See docs/OWNER_FINAL_PAGE_DESIGN_LOCK.json; changing its baseline also requires explicit owner permission.

@@ -35,6 +35,11 @@
     "app/src/main/assets/v3.css": "c2f7cca7a9a25c12cebf5a6476a392be7b9503c312eba9c6de551b504c9920ad",
     "app/src/main/assets/v5.css": "f9324452a502f2662eec3ffc357186f0d45584addc275111d44cb22dae3e219b",
     "app/src/main/assets/video-uniquifier-reference.css": "f24c631243eb71b95be87a9865b5c7a2ff2e0b467d95cb79238321a6fedf229b",
-    "app/src/main/assets/video-uniquifier-reference.js": "da9fd4b33cec60d0d3ab9132085a1124736e415c184bc8452041026387913d47"
-  }
+    "app/src/main/assets/video-uniquifier-reference.js": "da9fd4b33cec60d0d3ab9132085a1124736e415c184bc8452041026387913d47",
+    "app/src/main/assets/free-tools.html": "03b2afa3a4d55fe86914d7df551ec0d52e99ab29746528af6b91d74c28e9d83a",
+    "app/src/main/assets/everyday-tools-visual.css": "a0faca06cc594a953585d10bb3afb78e74cf7dd2173dd94845567fb056a4fd90",
+    "app/src/main/assets/everyday-tools-visual.js": "46205ca17276177770a54e35329904a06cdf76b647168f95091715db82f7d8df",
+    "app/src/main/assets/media/approved-design-20261023/09_Everyday_Tools.png": "2d92a23312097c836c5df67012d7f10cd6c68b0d3ebd7d5640a9e4fca63c8271"
+  },
+  "everydayToolsApprovedRevision": "5626621155cfe842a3ecca84d4c22c0560b0d43e"
 }
