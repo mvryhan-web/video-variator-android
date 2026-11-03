@@ -1,3 +1,9 @@
+## OWNER RULE — 2026-11-03 — COMPLETE REVIEWED TEST VERSION TO PRODUCTION
+
+Before any owner-authorized production release, follow docs/OWNER_TEST_TO_PRODUCTION_RELEASE_POLICY.md. Carry all approved changes of the exact tested candidate; record environment differences explicitly, preserve locked designs, verify the actual deployed revision and keep a rollback plan. No partial/stale copy, secret/test-data promotion or unverified mock feature claimed as live. This policy grants NO production release authorization. TEST Jarvis commercial limits stay OFF; production-only rules are in docs/JARVIS_OWNER_TRIAL_AND_RELEASE_POLICY.md.
+
+---
+
 ## OWNER FINAL DESIGN APPROVAL — 2026-11-03 — PRICING AND VIDEO UNIQUIFIER
 
 The owner explicitly approved the currently published TEST Pricing (including all twelve actual CDN originals, portal framing, full-width AI Credits banner, removed microcopy and 95% opaque credit panels) and Video Uniquifier. Their design is FINAL. No agent, model, program, automated update or contributor may change their artwork, layout, typography, colors, text, opacity or responsive composition without a NEW explicit instruction from the owner permitting that specific change. Silence, another task, prior blanket autonomy, old image-removal rules or historical locks are not permission. This rule supersedes conflicting older Pricing instructions below. Preserve functionality. Apply to these pages on all domains; it grants NO production publication. Never revert to mislabeled historical image bytes. See docs/OWNER_FINAL_PAGE_DESIGN_LOCK.json; changing its baseline also requires explicit owner permission.
