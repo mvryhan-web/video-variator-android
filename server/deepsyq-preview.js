@@ -116,6 +116,11 @@ app.get(['/','/dashboard','/deepsyq.html'],homepage);
 // The deleted owner-cancelled workflow is never reachable in this preview.
 app.get(['/product-video','/product-video.html'],(_req,res)=>res.status(404).type('text/plain').send('Not found'));
 app.get(['/inspiration','/inspiration.html'],(_req,res)=>res.redirect(302,'/deepsyq.html#inspirationPreview'));
+// F8 pets are frozen by owner decision (2026-11-03): no public pet UI or asset delivery.
+app.use((req,res,next)=>{
+  if(req.path==='/virtual-pet'||/^\/virtual-pet(?:\/|[-.])/.test(req.path))return res.status(404).type('text/plain').send('Not found');
+  next();
+});
 app.use(express.static(assets,{extensions:['html'],index:false,fallthrough:true}));
 app.use((req,res)=>{
  if(req.method!=='GET'&&req.method!=='HEAD')return res.status(405).type('text/plain').send('PREVIEW_READ_ONLY');
