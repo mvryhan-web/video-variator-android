@@ -3,13 +3,13 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `de92241a1d08e7425acc2f685896155090e8a032`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
-Scope: `server/` | Indexed files: 60 | Named symbols: 171 | Checked relations: 50
+Source commit: `33a01eaad705f294efb25209304a16ddeeeda18d`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Scope: `server/` | Indexed files: 61 | Named symbols: 174 | Checked relations: 50
 
 ## Topic finder (matching filenames)
 
 - **Credits, payments and pricing:** `server/generation-purchased-provider-boundary.js`, `server/generation-subscription-credits.js`, `server/generation-wallet.js`
-- **Video, providers and jobs:** `server/compare-ai-mock-worker.js`, `server/generation-provider.js`, `server/generation-purchased-provider-boundary.js`, `server/generation-storage.js`, `server/generation-video-submit-uncertainty.js`, `server/generation-worker.js`, `server/product-watcher/worker.js`, `server/telegram-video-core.js`, `server/telegram-video.js`
+- **Video, providers and jobs:** `server/compare-ai-mock-worker.js`, `server/free-ai-provider.js`, `server/generation-provider.js`, `server/generation-purchased-provider-boundary.js`, `server/generation-storage.js`, `server/generation-video-submit-uncertainty.js`, `server/generation-worker.js`, `server/product-watcher/worker.js`, `server/telegram-video-core.js`, `server/telegram-video.js`
 - **Image, Canvas and Home:** `server/deepsyq-preview.js`, `server/generation-openai-image.js`
 - **Audio and voice:** `server/jarvix-voice.js`, `server/speech.js`
 - **AI Apps, Inspiration, History:** `server/generation-inspiration.js`, `server/tool-policy.js`, `server/workspace-card-sections.js`, `server/workspace-job-view.js`, `server/workspace-project-policy.js`
@@ -39,11 +39,15 @@ db.js (L1) · adminEmail (L6) · pool (L8)
 
 ### `server/deepsyq-preview.js`
 
-app (L14) · port (L15) · root (L16) · assets (L17) · ffmpegUmd (L18) · ffmpegCore (L19) · disabled (L20) · jarvixRequests (L52) · ownerMedia (L80) · imageMedia (L81) · ownerInspiration (L86) · ownerNext (L90) · approvedItems (L92) · previewItems (L93) · creativeMedia (L103)
+app (L15) · port (L16) · root (L17) · assets (L18) · ffmpegUmd (L19) · ffmpegCore (L20) · disabled (L21) · freeStudioModels (L50) · jarvixRequests (L203) · ownerMedia (L231) · imageMedia (L232) · ownerInspiration (L237) · ownerNext (L241) · approvedItems (L243) · previewItems (L244) · creativeMedia (L254)
 
 ### `server/email-auth.js`
 
 scrypt (L5) · attempts (L6)
+
+### `server/free-ai-provider.js`
+
+studioJobs (L11) · dailyUsage (L14)
 
 ### `server/generation-byteplus.js`
 
