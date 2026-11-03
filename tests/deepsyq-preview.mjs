@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
+import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 
 test('isolated Deepsyq preview serves the current Canvas UI and disables paid endpoints',async()=>{
@@ -43,8 +44,14 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
   const js=await fetch(base+'/home-experience.js');
   assert.equal(js.status,200);assert.equal(js.headers.get('cache-control'),'no-cache');
   const etag=js.headers.get('etag');assert.ok(etag,'UI JavaScript should include validator');
-  const unchanged=await fetch(base+'/home-experience.js',{headers:{'If-None-Match':etag}});
-  assert.equal(unchanged.status,304,'repeat UI JS load should transfer no body');
+  const unchanged=await new Promise((resolve,reject)=>{
+   // Node's fetch auto-adds no-cache on conditional requests and disables
+   // RFC freshness handling; exercise a browser-equivalent raw HTTP validator.
+   const request=http.get(base+'/home-experience.js',{headers:{'If-None-Match':etag}},response=>{
+    response.resume();response.on('end',()=>resolve(response));
+   });request.on('error',reject);
+  });
+  assert.equal(unchanged.statusCode,304,'unchanged UI JS should return ETag/304 without a full response body');
   assert.equal((await fetch(base+'/deepsyq.html')).headers.get('cache-control'),'no-store','do not cache HTML');
   assert.equal((await fetch(base+'/api/config')).headers.get('cache-control'),'no-store','do not cache API JSON');
   const cfg=await(await fetch(base+'/api/config')).json();
