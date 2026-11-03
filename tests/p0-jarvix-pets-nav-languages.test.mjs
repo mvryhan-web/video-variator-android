@@ -50,19 +50,12 @@ describe('DEEPSYQ P0 Verification: Voice, Pets, Navigation & Languages', () => {
     assert.ok(brainJs.includes('DEEPSYQ_CAPABILITIES'), 'truthful capabilities registry');
   });
 
-  it('4. verifies deepsyq.html displays ONE selected pet with switcher and full body', () => {
+  it('4. verifies deepsyq.html completely removes pets per owner freeze decision 2026-11-03', () => {
     const html = fs.readFileSync(path.join(assetsDir, 'deepsyq.html'), 'utf8');
-
-    assert.ok(html.includes('id="homeActivePetStage"'), 'Home has single active pet stage');
-    assert.ok(html.includes('id="petStageDog"'), 'Luna stage item');
-    assert.ok(html.includes('id="petStageCat"'), 'Mira stage item');
-    assert.ok(html.includes('id="petStageFox"'), 'Nova stage item');
-    assert.ok(html.includes('id="homePetTabDog"'), 'Luna switcher button');
-    assert.ok(html.includes('id="homePetTabCat"'), 'Mira switcher button');
-    assert.ok(html.includes('id="homePetTabFox"'), 'Nova switcher button');
-    assert.ok(html.includes('id="petModeCalm"'), 'Calm mode button');
-    assert.ok(html.includes('id="petModePlayful"'), 'Playful mode button');
-    assert.ok(html.includes('id="petModeOff"'), 'Off mode button');
+    assert.ok(!html.includes('id="livingPetsSection"'), 'Home does not contain livingPetsSection');
+    assert.ok(!html.includes('id="homeActivePetStage"'), 'Home does not contain pet stage');
+    assert.ok(!html.includes('virtual-pet.js'), 'Home does not load virtual-pet.js');
+    assert.ok(!html.includes('virtual-pet.css'), 'Home does not load virtual-pet.css');
   });
 
   it('5. verifies left menu is cleaned: redundant technical tools removed, JARVIX has orb emblem', () => {
