@@ -1,6 +1,6 @@
 // JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
 // Guaranteed Male Film Voice, Instant Navigation ("Сделано."), Multi-Turn Weather Brain & Smart ChatGPT Prompt Generation
-import {speakOwnerSpeech, stopOwnerSpeech} from './jarvix-owner-speech.js';
+import {speakOwnerSpeech, stopOwnerSpeech, unlockOwnerSpeech} from './jarvix-owner-speech.js';
 import { detectIntent } from './home-experience.js';
 import { saveStudioHandoff } from './studio-handoff.js';
 
@@ -259,8 +259,23 @@ export function speakJarvis(text, onComplete = null) {
   // Browser speech synthesis uses the language selected on the site.
   // Microphone is strictly paused during speech and resumed safely on completion
   const version = speechVersion;
+  const button = getTopBtn();
+  const label = button?.querySelector('.jarvis-name');
+  const waiting = {ru:'Готовлю…',en:'Preparing…',fr:'Prépare…',es:'Preparando…'};
+  const waitingTitle = {ru:'Готовлю голос. Дождитесь ответа компьютера.',en:'Preparing voice. Waiting for your computer.',fr:'Préparation de la voix. En attente de votre ordinateur.',es:'Preparando la voz. Esperando a tu ordenador.'};
+  if (button) { button.dataset.voicePhase = 'connecting'; button.setAttribute('aria-busy','true'); button.title = waitingTitle[langCode]; }
+  if (label) label.textContent = waiting[langCode];
+  let speechFailed = false;
   speakOwnerSpeech(text, langCode, {
-    fallback: () => speakLocalSpeechSynthesis(text, onComplete, langCode, isRu),
+    fallback: () => {
+      if (label) label.textContent = 'JARVIX';
+      if (button) button.removeAttribute('aria-busy');
+      speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
+    },
+    phase: phase => {
+      if (button) button.dataset.voicePhase = phase;
+      if (label) label.textContent = phase === 'playing' ? 'JARVIX' : waiting[langCode];
+    },
     start: () => {
       resetSilenceTimer(); clearTimeout(silenceTimer);
       pauseJarvisRecognition(); isJarvisSpeaking = true;
@@ -269,13 +284,17 @@ export function speakJarvis(text, onComplete = null) {
     complete: () => setTimeout(() => {
       if (version !== speechVersion) return;
       isJarvisSpeaking = false; currentSpokenUtterance = '';
+      if (button) { button.removeAttribute('aria-busy'); button.dataset.voicePhase = speechFailed ? 'error' : 'ready'; }
+      if (!speechFailed && label) label.textContent = 'JARVIX';
       if (typeof onComplete === 'function') onComplete();
       else if (isJarvisActive && keepListening) {
         resumeJarvisRecognition(); startSilenceTimer(); updateJarvisState('listening');
       } else updateJarvisState('idle');
     }, 300),
-    error: () => {
-      const button = getTopBtn();
+    error: code => {
+      speechFailed = true;
+      if (label) label.textContent = {ru:'Нет звука',en:'No audio',fr:'Sans son',es:'Sin audio'}[langCode];
+      if (button) button.dataset.voiceError = code;
       const messages = {ru:'Голосовой сервер недоступен. Попробуйте ещё раз.',en:'Voice server unavailable. Please try again.',fr:'Serveur vocal indisponible. Réessayez.',es:'Servidor de voz no disponible. Inténtalo de nuevo.'};
       if (button) button.title = messages[langCode] || messages.en;
       window.dispatchEvent(new CustomEvent('jarvix:voice-unavailable', {detail:{language:langCode,source:'self-hosted'}}));
@@ -989,6 +1008,7 @@ function resetSilenceTimer() {
 
 // 11. Activation & Deactivation (Smart Conversational Memory)
 export function activateJarvisVoice() {
+  unlockOwnerSpeech();
   isJarvisActive = true;
   keepListening = true;
   try {
@@ -1031,6 +1051,10 @@ export function deactivateJarvisVoice() {
   const topBtn = getTopBtn();
   if (topBtn) {
     topBtn.classList.remove('is-active', 'is-speaking', 'is-listening');
+    topBtn.removeAttribute('aria-busy');
+    topBtn.dataset.voicePhase = 'idle';
+    const label = topBtn.querySelector('.jarvis-name');
+    if (label) label.textContent = 'JARVIX';
   }
 }
 
