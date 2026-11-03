@@ -8,6 +8,10 @@ const EOF_ROUNDING_SECONDS=.001;
 const video=typeof document !== 'undefined' ? $('inspirationHeroVideo') : null;
 const carousel=typeof document !== 'undefined' ? $('homeHeroCarousel') : null;
 const neighborVideos=(typeof document !== 'undefined' ? [$('homeHeroPreviousVideo'),$('homeHeroNextVideo')] : []).filter(Boolean);
+// At most one active film at a time. Adjacent films and inactive spotlight cards
+// display the existing approved poster, never prefetch full MP4s.
+const spotlightVideos=typeof document!=='undefined'?[...document.querySelectorAll('.home-spotlight-video[data-src]')]:[];
+let spotlightPlaybackActive=false;
 // Thin phone-side previews use their real poster frames. Keep the single
 // main decoder available for smooth iOS playback, especially higher bitrate clips.
 const compactPreview=typeof window !== 'undefined' ? window.matchMedia?.('(max-width: 760px)') : null;
@@ -15,7 +19,7 @@ let slides=[],index=0,visible=false,userPaused=false,observer=null,failedSlides=
 let completionTimer=null,startupTimer=null,startupRecoveries=0,playbackSerial=0;
 function resetCompletion(){clearTimeout(completionTimer);clearTimeout(startupTimer);completionTimer=null;startupTimer=null;startupRecoveries=0;playbackSerial++;}
 function advanceCompletedSlide(){if(!ambientAllowed())return;if(slides.length>1)setSlide(index+1);else if(slides.length===1){resetCompletion();video.currentTime=0;ambientPlay();}}
-function ambientAllowed(){return !document.hidden&&visible&&!userPaused&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData;}
+function ambientAllowed(){return !document.hidden&&visible&&!userPaused&&!spotlightPlaybackActive&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData;}
 function pauseFilms(){clearTimeout(startupTimer);startupTimer=null;video?.pause();neighborVideos.forEach(v=>v.pause());}
 function recoverStartupClock(){
  if(startupTimer||!ambientAllowed()||!video?.getAttribute('src')||video.currentTime>=.1)return;
@@ -33,11 +37,16 @@ function recoverStartupClock(){
   recoverStartupClock();
  },1800);
 }
+function ensureSelectedVideoSource(){
+ const selected=slides[index];
+ if(!video||!selected?.previewUrl)return false;
+ if(video.getAttribute('src')!==selected.previewUrl){video.src=selected.previewUrl;video.load();}
+ return true;
+}
 function ambientPlay(){
- if(!video?.getAttribute('src')||!ambientAllowed())return;
+ if(!ambientAllowed()||!ensureSelectedVideoSource())return;
  const serial=playbackSerial;
  void video.play().catch(error=>{if(serial!==playbackSerial||error.name==='AbortError')return;userPaused=true;pauseFilms();setPlayLabel();});
- neighborVideos.forEach(v=>{if(compactPreview?.matches)v.pause();else if(v.getAttribute('src'))void v.play().catch(()=>{});});
  recoverStartupClock();
 }
 compactPreview?.addEventListener?.('change',()=>{pauseFilms();ambientPlay();});
@@ -47,9 +56,13 @@ function updateNeighbors(){
   let at=(index+direction+slides.length)%slides.length;
   for(let n=0;n<slides.length&&failedSlides.has(at);n++)at=(at+direction+slides.length)%slides.length;
   const item=slides[at];
+  v.pause();
+  // Never attach a movie URL to the neighboring frames. Reuse only the
+  // separately approved still-frame poster until selected as the main film.
+  if(v.hasAttribute('src')){v.removeAttribute('src');v.load();}
   v.parentElement.hidden=!item||at===index;
-  if(!item||at===index){v.pause();v.removeAttribute('src');v.load();return;}
-  if(v.getAttribute('src')!==item.previewUrl){v.pause();v.src=item.previewUrl;if(item.previewPosterUrl)v.poster=item.previewPosterUrl;else v.removeAttribute('poster');v.muted=true;v.load();}
+  if(item?.previewPosterUrl)v.poster=item.previewPosterUrl;
+  else v.removeAttribute('poster');
  });
 }
 function renderCredit(item){
@@ -89,9 +102,10 @@ function setSlide(next,direction=1){
  resetCompletion();index=selected;
  const item=slides[index];
  const link='deepsyq.html#inspirationPreview';
- video.pause();video.src=item.previewUrl;
+ video.pause();
+ // Keep offscreen or user-paused films poster-only until an actual play request.
+ if(video.hasAttribute('src')){video.removeAttribute('src');video.load();}
  if(item.previewPosterUrl)video.poster=item.previewPosterUrl;else video.removeAttribute('poster');
- video.load();
  const showcase=ownerHomeShowcase(item);
  const destinations=['canvas.html','#agentFeature','generate-studio.html?studio=video','generate-studio.html?studio=image','generate-studio.html?studio=audio'];
  const destination=showcase?.href==='#quickCreateForm'||showcase?.href==='#canvasFeature'?'canvas.html':showcase?.href;
@@ -117,6 +131,38 @@ export function renderHomeCarousel(items){
  if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{for(const e of entries){visible=e.isIntersecting;if(visible)ambientPlay();else pauseFilms();}},{threshold:.25});observer.observe(carousel);}
  setSlide(0);
 }
+// Spotlight cards keep their approved WebP stills until actually visible.
+ // Even if Canvas, JARVIX and AI Apps are all visible together, only ONE
+ // spotlight MP4 is active; main carousel pauses while a spotlight plays.
+if(spotlightVideos.length&&'IntersectionObserver' in window){
+ function syncSpotlightPlayback(){
+  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const allowed=!document.hidden&&!reduced&&!navigator.connection?.saveData;
+  const active=allowed?spotlightVideos.find(v=>v.__spotlightVisible):null;
+  const wasActive=spotlightPlaybackActive;
+  spotlightPlaybackActive=!!active;
+  if(active)pauseFilms();
+  for(const v of spotlightVideos){
+   if(v!==active){
+    v.pause();
+    if(v.hasAttribute('src')){v.removeAttribute('src');v.load();}
+    continue;
+   }
+   if(v.getAttribute('src')!==v.dataset.src){v.src=v.dataset.src;v.load();}
+   if(v.paused)void v.play().catch(()=>{v.pause();});
+  }
+  if(wasActive&&!active)ambientPlay();
+ }
+ const spotlightObserver=new IntersectionObserver(entries=>{
+  for(const e of entries){
+   const v=e.target.querySelector('.home-spotlight-video[data-src]');
+   if(v)v.__spotlightVisible=e.isIntersecting&&e.intersectionRatio>=.6;
+  }
+  syncSpotlightPlayback();
+ },{threshold:[0,.6,1]});
+ for(const v of spotlightVideos)spotlightObserver.observe(v.closest('.home-feature-spotlight'));
+ document.addEventListener('visibilitychange',syncSpotlightPlayback);
+}
 if(video&&carousel){
  carousel.addEventListener('keydown',e=>{
   if(e.target!==carousel)return;
@@ -132,7 +178,7 @@ if(video&&carousel){
  $('homeHeroPlay')?.addEventListener('click',()=>{
   userPaused=!userPaused;setPlayLabel();
   if(userPaused)pauseFilms();
-  else if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches&&!document.hidden&&visible)void video.play().catch(()=>{userPaused=true;setPlayLabel();});
+  else if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches&&!document.hidden&&visible&&ensureSelectedVideoSource())void video.play().catch(()=>{userPaused=true;setPlayLabel();});
   else ambientPlay();
  });
  video.addEventListener('ended',advanceCompletedSlide);

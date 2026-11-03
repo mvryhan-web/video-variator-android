@@ -1,6 +1,10 @@
 /* Deepsyq owner-approved dedicated scrollable Pricing page.
    No shared Home, Studio, or billing layout mutations. */
 :root{--price-bg:#020a1d;--price-border:#244b86;--price-ink:#f7f6ff;--price-muted:#b7c9e9;--price-cyan:#00dfff;--price-purple:#c23dff;--price-gold:#ffc665}
+/* Original October 25 owner-selected four-portal hero and AI Credits banner.
+   The page must display these exact local images even before its JS runs. */
+:root{--price-hero-art:url("media/pricing/fa2c9a57-3fe7-4a2c-8123-7da568cabe10.png?v=owner-20261103-restore-24-25-v4");--price-credit-hero-art:url("media/pricing/e5506ef4-b0a2-412d-a8b7-6e3108f80761.png?v=owner-20261103-restore-24-25-v4")}
+
 *{box-sizing:border-box}
 html{background:var(--price-bg);scroll-behavior:smooth}
 body.deepsyq-pricing-page{margin:0;min-height:100vh;background:linear-gradient(#020819,#020c23);color:var(--price-ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
@@ -276,4 +280,24 @@ body.deepsyq-pricing-page .price-credit-heading{
     max-width:100%;
     padding:25px 20px;
   }
+}
+
+/* Owner-approved Oct 25 banner proportions restored without changing billing. */
+body.deepsyq-pricing-page .price-hero,
+body.deepsyq-pricing-page .price-hero-copy{min-height:clamp(238px,18vw,280px)}
+body.deepsyq-pricing-page .price-hero-copy{padding:24px 22px 20px;justify-content:space-between}
+body.deepsyq-pricing-page .price-hero h1{margin-bottom:0}
+body.deepsyq-pricing-page .price-hero .price-chips{margin-top:22px;padding-top:0}
+body.deepsyq-pricing-page .price-plan{min-height:535px}
+body.deepsyq-pricing-page .price-plan-picture{height:145px}
+body.deepsyq-pricing-page .price-credit-hero{height:clamp(190px,16vw,230px);align-items:flex-start}
+body.deepsyq-pricing-page .price-credit-hero-art{background-size:cover,cover;background-position:center center,center 32%}
+body.deepsyq-pricing-page .price-credit-heading{padding:25px 23px}
+@media(max-width:700px){
+ body.deepsyq-pricing-page .price-hero,
+ body.deepsyq-pricing-page .price-hero-copy{min-height:295px}
+ body.deepsyq-pricing-page .price-hero-copy{padding:22px 15px 17px}
+ body.deepsyq-pricing-page .price-credit-hero{height:235px}
+ body.deepsyq-pricing-page .price-credit-heading{padding:20px}
+ body.deepsyq-pricing-page .price-plan{min-height:0}
 }
