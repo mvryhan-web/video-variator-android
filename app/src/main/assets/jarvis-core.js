@@ -185,7 +185,7 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
     }
     // Lower an unclassified system fallback slightly; only a named male voice
     // is treated as a confirmed male selection. Web Speech still varies by OS.
-    utterance.pitch = voiceMeta && !voiceMeta.isExplicitMale ? 0.88 : 1.0;
+    utterance.pitch = 1.0;
     utterance.rate = 1.0;
 
     utterance.onstart = () => {

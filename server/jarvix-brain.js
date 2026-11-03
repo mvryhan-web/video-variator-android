@@ -727,7 +727,7 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
 export async function processTurnWithOpenAI(userText, session, lang = 'ru', options = {}) {
   const env = options.env || process.env;
   const fetcher = options.fetcher || globalThis.fetch;
-  const apiKey = (env.OPENAI_API_KEY || '').trim();
+  const apiKey = (env.OPENAI_API_KEY || process.env.OPENAI_API_KEY || '').trim();
   // A key alone never enables billable calls. The owner must set the explicit flag.
   if (env.JARVIX_AI_ENABLED !== 'true' || !apiKey || apiKey.startsWith('mock-') || apiKey === 'dummy' || env.JARVIX_AI_DISABLE === 'true') {
     return processTurnWithMockBrain(userText, session, lang);
