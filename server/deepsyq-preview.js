@@ -10,6 +10,7 @@ import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 import {buildJarvixSiteKnowledge,clearSession,getOrCreateSession,processTurnWithMockBrain} from './jarvix-brain.js';
+import {generateFreeImage,generateTrialVideo,checkDailyQuota,incrementDailyQuota,studioJobs} from './free-ai-provider.js';
 
 const app=express();
 const port=Number(process.env.PORT||31990);
@@ -43,10 +44,160 @@ app.get('/api/config',(_req,res)=>res.json({
   business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}
  }
 }));
-app.get('/api/studio/config',(_req,res)=>res.json({
- enabled:false,ownerOnly:true,publicGenerationEnabled:false,pricingConfigured:false,
- models:[],catalog:MODEL_CATALOG.map(m=>({...m,enabled:false})),translation:{enabled:false,reason:'PREVIEW_ONLY'}
-}));
+const isFreeStudioActive = process.env.FREE_AI_STUDIO_ENABLED === 'true' || Boolean(process.env.RENDER) || process.env.NODE_ENV === 'production';
+const isLegacyTest = !isFreeStudioActive;
+
+const freeStudioModels = MODEL_CATALOG.map(m => {
+  if (['image', 'video'].includes(m.kind)) {
+    return { ...m, enabled: true, adapter: true };
+  }
+  return { ...m, enabled: false };
+});
+
+app.get('/api/studio/config', (_req, res) => {
+  if (isLegacyTest) {
+    return res.json({
+      enabled: false, ownerOnly: true, publicGenerationEnabled: false, pricingConfigured: false,
+      models: [], catalog: MODEL_CATALOG.map(m => ({ ...m, enabled: false })), translation: { enabled: false, reason: 'PREVIEW_ONLY' }
+    });
+  }
+  res.json({
+    enabled: true,
+    ownerOnly: false,
+    publicGenerationEnabled: true,
+    pricingConfigured: true,
+    models: freeStudioModels.filter(m => m.enabled),
+    catalog: freeStudioModels,
+    freeTier: true,
+    translation: { enabled: false, reason: 'PREVIEW_ONLY' }
+  });
+});
+
+app.get('/api/studio/access', (req, res) => {
+  if (isLegacyTest) return res.status(503).json(disabled);
+  const quota = checkDailyQuota(req.ip || 'guest');
+  res.json({
+    ok: true,
+    eligible: quota.allowed,
+    dailyRemaining: quota.remaining,
+    dailyLimit: quota.limit,
+    freeTier: true,
+    message: 'Free Developer & Test Mode active'
+  });
+});
+
+app.post('/api/studio/estimate', (req, res) => {
+  if (isLegacyTest) return res.status(503).json(disabled);
+  res.json({
+    ok: true,
+    credits: 0,
+    cost: 0,
+    unitPrice: 0,
+    marginRatio: 2.0,
+    freeTier: true,
+    currency: 'USD',
+    note: 'Free Test Generation (Zero-Spend Safe)'
+  });
+});
+
+app.post('/api/studio/jobs', async (req, res) => {
+  if (isLegacyTest) return res.status(503).json(disabled);
+  const quota = checkDailyQuota(req.ip || 'guest');
+  if (!quota.allowed) {
+    return res.status(429).json({ error: 'DAILY_QUOTA_EXCEEDED', message: 'Дневной лимит бесплатных тестов исчерпан (20/день).' });
+  }
+
+  const { kind = 'image', model, prompt = 'Cosmic nebula' } = req.body || {};
+  const id = 'job_' + randomUUID().replace(/-/g, '').slice(0, 16);
+  
+  incrementDailyQuota(req.ip || 'guest');
+
+  const jobRecord = {
+    id,
+    kind,
+    model: model || (kind === 'image' ? 'flux-schnell' : 'veo-lite'),
+    prompt,
+    status: 'processing',
+    progress: 15,
+    created_at: new Date().toISOString(),
+    media: null,
+    mime: null
+  };
+  studioJobs.set(id, jobRecord);
+
+  (async () => {
+    try {
+      jobRecord.progress = 50;
+      let result;
+      if (kind === 'video') {
+        result = await generateTrialVideo({ prompt, model, duration: req.body?.videoDuration || 5 });
+      } else {
+        result = await generateFreeImage({ prompt, model, ratio: req.body?.ratio || '1:1' });
+      }
+      jobRecord.status = 'ready';
+      jobRecord.progress = 100;
+      jobRecord.media = result.buffer;
+      jobRecord.mime = result.mime;
+      jobRecord.provider = result.provider;
+    } catch (err) {
+      jobRecord.status = 'failed';
+      jobRecord.error = err.message || 'GENERATION_FAILED';
+    }
+  })();
+
+  res.json({
+    ok: true,
+    id,
+    jobId: id,
+    status: 'processing',
+    progress: 15
+  });
+});
+
+app.get('/api/studio/jobs/:id', (req, res) => {
+  if (isLegacyTest) return res.status(503).json(disabled);
+  const job = studioJobs.get(req.params.id);
+  if (!job) return res.status(404).json({ error: 'NOT_FOUND' });
+  res.json({
+    ok: true,
+    id: job.id,
+    status: job.status,
+    progress: job.progress || (job.status === 'ready' ? 100 : 50),
+    kind: job.kind,
+    prompt: job.prompt,
+    created_at: job.created_at,
+    provider: job.provider,
+    mediaUrl: job.status === 'ready' ? ('/api/studio/jobs/' + job.id + '/media') : null
+  });
+});
+
+app.get('/api/studio/jobs/:id/media', (req, res) => {
+  if (isLegacyTest) return res.status(503).json(disabled);
+  const job = studioJobs.get(req.params.id);
+  if (!job || job.status !== 'ready' || !job.media) {
+    return res.status(404).json({ error: 'RESULT_UNAVAILABLE' });
+  }
+  res.set('Content-Type', job.mime || 'image/svg+xml');
+  res.set('Cache-Control', 'public, max-age=3600');
+  res.send(job.media);
+});
+
+app.get('/api/studio/jobs', (req, res) => {
+  if (isLegacyTest) return res.status(503).json(disabled);
+  const list = Array.from(studioJobs.values())
+    .map(j => ({
+      id: j.id,
+      kind: j.kind,
+      model: j.model,
+      prompt: j.prompt,
+      status: j.status,
+      created_at: j.created_at,
+      previewUrl: j.status === 'ready' ? ('/api/studio/jobs/' + j.id + '/media') : null
+    }))
+    .reverse()
+    .slice(0, 30);
+  res.json({ ok: true, jobs: list, items: list });
+});
 // Jarvix's DEV-preview brain is deterministic and local-only. It has no provider
 // credentials, external AI calls, paid generation, or persistent user profile.
 const jarvixRequests=new Map();
