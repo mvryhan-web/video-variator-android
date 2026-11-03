@@ -1,0 +1,41 @@
+name: F4 TEST Studio no-spend and visitor privacy
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/free-ai-provider.js'
+      - 'server/deepsyq-preview.js'
+      - 'tests/free-ai-studio.test.mjs'
+      - 'tests/free-ai-studio-preview-isolation.test.mjs'
+      - '.github/workflows/free-ai-studio-preview-safety.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/free-ai-provider.js'
+      - 'server/deepsyq-preview.js'
+      - 'tests/free-ai-studio.test.mjs'
+      - 'tests/free-ai-studio-preview-isolation.test.mjs'
+      - '.github/workflows/free-ai-studio-preview-safety.yml'
+permissions:
+  contents: read
+jobs:
+  preview-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      NODE_ENV: test
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --omit=dev --no-audit --no-fund
+      - name: Verify source and tests syntax
+        run: node --check server/free-ai-provider.js && node --check server/deepsyq-preview.js && node --check tests/free-ai-studio-preview-isolation.test.mjs
+      - name: Real isolated HTTP generation and strict zero-spend privacy
+        run: node --test tests/free-ai-studio.test.mjs tests/free-ai-studio-preview-isolation.test.mjs tests/deepsyq-preview.mjs
