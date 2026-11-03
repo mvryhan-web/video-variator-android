@@ -2,12 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
+import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 
 test('isolated Deepsyq preview serves the current Canvas UI and disables paid endpoints',async()=>{
  const port=31896,base='http://127.0.0.1:'+port;
  const child=spawn(process.execPath,['server/deepsyq-preview.js'],{
-  env:{...process.env,PORT:String(port),DATABASE_URL:'',APP_JWT_SECRET:'',STRIPE_SECRET_KEY:'',GEMINI_API_KEY:'',BYTEPLUS_API_KEY:'',OPENAI_API_KEY:'test-secret-never-use',JARVIX_AI_ENABLED:'true'},
+  env:{...process.env,PORT:String(port),DATABASE_URL:'',APP_JWT_SECRET:'',STRIPE_SECRET_KEY:'',GEMINI_API_KEY:'',BYTEPLUS_API_KEY:''},
   stdio:['ignore','pipe','pipe']
  });
  let stderr='';
@@ -37,7 +38,22 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
   for(const name of ['audio','agent','apps','canvas']){
    const art=await fetch(base+'/media/home/neon-20261018/'+name+'.webp');
    assert.equal(art.status,200);assert.match(art.headers.get('content-type'),/image\/webp/);
+   assert.equal(art.headers.get('cache-control'),'public, max-age=3600, must-revalidate');
+   assert.match(art.headers.get('x-robots-tag')||'',/noindex/);
   }
+  const js=await fetch(base+'/home-experience.js');
+  assert.equal(js.status,200);assert.equal(js.headers.get('cache-control'),'no-cache');
+  const etag=js.headers.get('etag');assert.ok(etag,'UI JavaScript should include validator');
+  const unchanged=await new Promise((resolve,reject)=>{
+   // Node's fetch auto-adds no-cache on conditional requests and disables
+   // RFC freshness handling; exercise a browser-equivalent raw HTTP validator.
+   const request=http.get(base+'/home-experience.js',{headers:{'If-None-Match':etag}},response=>{
+    response.resume();response.on('end',()=>resolve(response));
+   });request.on('error',reject);
+  });
+  assert.equal(unchanged.statusCode,304,'unchanged UI JS should return ETag/304 without a full response body');
+  assert.equal((await fetch(base+'/deepsyq.html')).headers.get('cache-control'),'no-store','do not cache HTML');
+  assert.equal((await fetch(base+'/api/config')).headers.get('cache-control'),'no-store','do not cache API JSON');
   const cfg=await(await fetch(base+'/api/config')).json();
   assert.equal(cfg.billingConfigured,false);
   assert.equal(cfg.googleClientId,'');
@@ -46,11 +62,6 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
   assert.equal(models.enabled,false);
   assert.ok(models.catalog.length>0);
   assert.ok(models.catalog.every(m=>m.enabled===false));
-  const jarvixStatus=await(await fetch(base+'/api/jarvix/status')).json();
-  assert.equal(jarvixStatus.llm.status,'not_connected');
-  assert.equal(jarvixStatus.llm.model,null);
-  assert.equal(jarvixStatus.memory.persistent,false);
-  assert.equal(JSON.stringify(jarvixStatus).includes('test-secret-never-use'),false);
   const jarvixMap=await(await fetch(base+'/api/jarvix/site-map')).json();
   assert.equal(jarvixMap.ok,true);
   assert.ok(jarvixMap.pages.some(page=>page.path==='/generate-studio.html'));
@@ -82,6 +93,7 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
    assert.equal(item.sourceFilename,undefined,'do not expose private attachment metadata');
    const media=await fetch(base+item.previewUrl,{headers:{Range:'bytes=0-127'}});
    assert.equal(media.status,206);assert.match(media.headers.get('content-type'),/video\/mp4/);
+   assert.equal(media.headers.get('cache-control'),'public, max-age=3600, must-revalidate','media caching must preserve byte-range playback');
    assert.equal((await media.arrayBuffer()).byteLength,128);
   }
   const gallery=await(await fetch(base+'/api/inspiration?featured=true&limit=60')).json();

@@ -272,6 +272,11 @@ app.get(['/ai-apps','/ai-apps.html'],(req,res,next)=>platformFeatureEnabled('AI_
 app.get(['/inspiration','/inspiration.html'],(_req,res)=>res.redirect(302,'/deepsyq.html#inspirationPreview'));
 // Retired owner-deleted workflow: never fall through to the generic SPA index.
 app.get(['/product-video','/product-video.html'],(_req,res)=>res.status(404).type('text/plain').send('Not found'));
+// F8 retired by owner: do not expose the former pet page, scripts, or model assets.
+app.use((req,res,next)=>{
+  if(/^\/virtual-pet(?=\/|\.|$)/i.test(req.path))return res.status(404).set('Cache-Control','no-store').type('text/plain').send('Not found');
+  next();
+});
 app.use(express.static(staticDir,{extensions:['html'],setHeaders(res,file){if(/\.(html|js|css|webmanifest)$/.test(file))res.setHeader('Cache-Control','no-cache');else res.setHeader('Cache-Control','public,max-age=86400');}}));
 app.use((req,res,next)=>{if(req.method==='GET'&&!req.path.startsWith('/api/')&&!req.path.startsWith('/vendor/'))return res.sendFile(path.join(staticDir,'index.html'));next();});
 

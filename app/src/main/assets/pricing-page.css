@@ -1,6 +1,9 @@
 /* Deepsyq owner-approved dedicated scrollable Pricing page.
    No shared Home, Studio, or billing layout mutations. */
 :root{--price-bg:#020a1d;--price-border:#244b86;--price-ink:#f7f6ff;--price-muted:#b7c9e9;--price-cyan:#00dfff;--price-purple:#c23dff;--price-gold:#ffc665}
+/* Owner D23: restored exact twelve original owner images, no other design changes. */
+:root{--price-hero-art:url("media/pricing/fa2c9a57-3fe7-4a2c-8123-7da568cabe10.png?v=owner-original-cdn-20261103-v6");--price-credit-hero-art:url("media/pricing/e5506ef4-b0a2-412d-a8b7-6e3108f80761.png?v=owner-original-cdn-20261103-v6")}
+
 *{box-sizing:border-box}
 html{background:var(--price-bg);scroll-behavior:smooth}
 body.deepsyq-pricing-page{margin:0;min-height:100vh;background:linear-gradient(#020819,#020c23);color:var(--price-ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
@@ -277,3 +280,31 @@ body.deepsyq-pricing-page .price-credit-heading{
     padding:25px 20px;
   }
 }
+
+/* Owner-approved Oct 25 banner proportions restored without changing billing. */
+body.deepsyq-pricing-page .price-hero,
+body.deepsyq-pricing-page .price-hero-copy{min-height:clamp(238px,18vw,280px)}
+body.deepsyq-pricing-page .price-hero-copy{padding:24px 22px 20px;justify-content:space-between}
+body.deepsyq-pricing-page .price-hero h1{margin-bottom:0}
+body.deepsyq-pricing-page .price-hero .price-chips{margin-top:22px;padding-top:0}
+body.deepsyq-pricing-page .price-plan{min-height:535px}
+body.deepsyq-pricing-page .price-plan-picture{height:145px}
+body.deepsyq-pricing-page .price-credit-hero{height:clamp(190px,16vw,230px);align-items:flex-start}
+body.deepsyq-pricing-page .price-credit-hero-art{background-size:cover,cover;background-position:center center,center 32%}
+body.deepsyq-pricing-page .price-credit-heading{padding:25px 23px}
+@media(max-width:700px){
+ body.deepsyq-pricing-page .price-hero,
+ body.deepsyq-pricing-page .price-hero-copy{min-height:295px}
+ body.deepsyq-pricing-page .price-hero-copy{padding:22px 15px 17px}
+ body.deepsyq-pricing-page .price-credit-hero{height:235px}
+ body.deepsyq-pricing-page .price-credit-heading{padding:20px}
+ body.deepsyq-pricing-page .price-plan{min-height:0}
+}
+
+/* Owner: lower the four portals and show more of the credits city. */
+body.deepsyq-pricing-page .price-hero-art{background-position:center,center 32%}
+body.deepsyq-pricing-page .price-credit-hero-art{background-size:cover,auto 160%;background-position:center,center 35%}
+
+/* Owner AI Credits cleanup: full-width art and 95% opaque amount panels. */
+body.deepsyq-pricing-page .price-credit-hero-art{background-size:cover,cover;background-position:center,center 35%}
+.price-credit-bonus{background:rgba(7,15,35,.95)}

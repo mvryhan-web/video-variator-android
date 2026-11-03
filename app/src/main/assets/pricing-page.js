@@ -2,10 +2,10 @@
  * Never use proposed marketing credits or bonus amounts in any checkout payload. */
 import {validPlanPrice,validToolLimit,validLifetimeCurrency,validAiPack,aiCheckoutMode,checkoutErrorMessage} from './ai-pricing-display.js';
 const cdn='media/pricing/';
-// Exact previously approved 2026-10-25 images; see docs/PRICING_OWNER_ART_LOCK.json.
-// Never use placeholder, AI-generated substitute or alternate asset filenames.
+// Owner D23 2026-11-03: owner EXPLICITLY reapproved these original twelve image URLs.
+// New approval supersedes the earlier six-asset removal. Do not substitute images.
 const originalOwnerCdn='https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/';
-const approvedArtVersion='owner-20261025-12';
+const approvedArtVersion='owner-original-cdn-20261103-v6';
 const approvedPath=key=>cdn+art[key]+'?v='+approvedArtVersion;
 const art={
  trial:'d72f2da8-9e73-4110-abc5-c743032631fd.png',
@@ -13,12 +13,12 @@ const art={
  pro:'e6d706ae-d1a0-4db9-9a42-1e3d15cdc4ee.png',
  business:'82c0702f-67cc-4d93-acdb-68a45937a454.png',
  lifetime:'a3417cc0-5586-4f67-a98d-4019a6524dff.png',
+ hero:'fa2c9a57-3fe7-4a2c-8123-7da568cabe10.png',
  credit1000:'d5b13a37-38fb-4c49-9d52-e63e86f69bd4.png',
  credit10000:'45c92ba3-9198-499a-b718-96670193cdf9.png',
  credit100000:'529567d2-78ae-4a59-a9a5-6758390f1957.png',
  credit1000000:'77fcf2c1-e659-4ca6-98d3-74d13a275c04.png',
  credit10000000:'bb87cfda-d36e-4aee-8177-e0b6903e9dfe.png',
- hero:'fa2c9a57-3fe7-4a2c-8123-7da568cabe10.png',
  creditHero:'e5506ef4-b0a2-412d-a8b7-6e3108f80761.png'
 };
 Object.freeze(art);
@@ -128,7 +128,7 @@ function renderPlans(config){
  const host=byId('planCards');host.replaceChildren();
  for(const p of planned){
   const item=node('article','price-plan price-'+p.key);
-  const picture=node('div','price-plan-picture');picture.append(img(p.key));
+  const picture=node('div','price-plan-picture');picture.append(img(p.key)); // exact original approved artwork
   if(p.key==='lifetime')picture.append(node('span','price-best','♛ BEST VALUE'));
   const body=node('div','price-plan-body');
   const heading=node('h3','price-plan-name',p.name);heading.id='plan-'+p.key;
@@ -221,10 +221,8 @@ function renderCredits(config){
   const content=node('div','price-credit-content');
   const title=node('h3','price-credit-number','✦ '+numeral.format(p.credits));
   const info=node('div','price-credit-bonus');
-  info.append(node('small','price-bonus-status','✦ Bonus credits · proposed, not included'));
   info.append(node('strong','price-bonus-title','General AI credits'));
   info.append(node('b','price-bonus-count','+ '+numeral.format(p.bonus)));
-  info.append(node('small','price-bonus-desc','One-time top-up · added only after Stripe confirms payment'));
   const foot=node('div','price-credit-bottom');
   const cost=node('strong','price-credit-price',amount);
   // Every visible AI-credit card opens the *existing* Deepsyq sign-in when logged out.
@@ -244,7 +242,6 @@ function renderCredits(config){
   content.append(title,info,foot);
   card.append(content);host.append(card);
  }
- message('creditStatus',checkoutMode?'Verified server packages are purchasable below. Proposed bonuses are not included.':'AI pack checkout is not available in this preview. All pictured pack prices and bonuses are proposals.');
 }
 async function checkoutCredit(pack){
  if(!validAiPack(pack)||creditCheckoutPending)return;

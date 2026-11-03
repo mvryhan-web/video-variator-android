@@ -62,7 +62,7 @@
  const heading=make('h1','', 'Everyday Tools');
  const lead=make('strong','et-hero-lead','Less routine. More creating.');
  const tagline=make('p','','Simple, powerful tools to handle your everyday creative tasks. All in one place.');
- heroCopy.append(heading,lead,tagline);hero.append(crop([695,61,703,242],'et-hero-art'),heroCopy);showcase.append(hero);
+ heroCopy.append(heading,lead,tagline);hero.append(crop([210,62,1227,250],'et-hero-art'),heroCopy);showcase.append(hero);
  const leadRow=make('div','et-section-heading');
  const inner=make('div');inner.append(make('h2','','Choose a tool'),make('p','','Everyday essentials for your creative workflow.'));
  const picker=make('select','et-picker');picker.setAttribute('aria-label','Filter tools');

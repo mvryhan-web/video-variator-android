@@ -87,3 +87,11 @@ body[data-approved-page="free-tools"] main.free-tools-page[data-active-tool=""] 
  .et-avatar-wrap{height:160px}
 }
 @media(max-width:640px){.et-avatar-wrap{height:151px}.et-speech-links{display:grid;grid-template-columns:1fr 1fr;gap:10px}}
+
+/* Owner D23: approved original Oct 23 illustration crop on right; no later stretched CSS. */
+
+/* Owner: restore only the original full-width Everyday Tools hero composition. */
+.et-hero .et-hero-art{left:0;width:100%;height:100%}
+.et-hero:after{background:none}
+.et-hero-copy{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(max-width:700px){.et-hero{height:clamp(125px,22vw,205px);min-height:125px}.et-hero .et-hero-art{min-width:650px;left:0}}

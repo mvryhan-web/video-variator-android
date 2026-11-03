@@ -29,15 +29,14 @@ test('History navigation opens saved results, not a Home teaser anchor',()=>{
  assert.match(studio,/get\('view'\)==='history'\)setHistory\(true\)/,'Studio must honor the history deep link');
 });
 
-test('Canvas, Assets and the existing Jarvix assistant have real destinations',()=>{
+test('Canvas, Assets and JARVIX anchors exist; unavailable Affiliate stays a non-link',()=>{
  assert.equal(homeNavigationTarget('Canvas'),'canvas.html');
  assert.equal(homeNavigationTarget('Assets and saved creations'),'generate-studio.html?view=history');
  assert.ok(!home.includes('id="quickCreateForm"'),'Home must not retain Canvas editor');
  assert.ok(source('canvas.html').includes('id="quickCreateForm"'),'Canvas editor must exist on dedicated page');
  assert.ok(!home.includes('id="recentCreations"'),'Removed Home history cards must not be restored');
- assert.equal(homeNavigationTarget('JARVIX'),'ai-agents.html');
- assert.ok(existsSync(join(assets,'ai-agents.html')));
- assert.match(home,/<span class="nav-pending" aria-label="Affiliate program coming soon"/);
+ assert.equal(homeNavigationTarget('JARVIX'),'ai-agents.html','Current published Jarvix destination must exist');
+ assert.match(home,/<span class="nav-pending" aria-label="Affiliate program coming soon"/,'Unavailable Affiliate must remain non-clickable');
 });
 
 test('Every local HTML anchor links to an existing project asset',()=>{

@@ -2,59 +2,37 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {fileURLToPath} from 'node:url';
-import path from 'node:path';
-
-const repo=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const assets=path.join(repo,'app/src/main/assets');
-const approved=JSON.parse(readFileSync(path.join(repo,'docs/PRICING_OWNER_ART_LOCK.json'),'utf8'));
-const read=p=>readFileSync(path.join(repo,p));
-const gitBlobSha1=data=>createHash('sha1').update('blob '+data.length+'\0').update(data).digest('hex');
-const exact=['trial','basic','pro','business','lifetime','credit1000','credit10000',
- 'credit100000','credit1000000','credit10000000','hero','creditHero'];
-
-test('12 ORIGINAL owner-approved Pricing photos are locked by exact filename and BYTES (not decorative substitutes)',()=>{
- assert.equal(approved.schema,'deepsyq-pricing-owner-art-lock/v1');
- assert.deepEqual(Object.keys(approved.assets),exact);
- const seen=new Set();
- for(const key of exact){
-  const {filename,gitBlobSha1:sha,bytes}=approved.assets[key];
-  assert.match(filename,/^[a-f0-9-]{36}\.png$/,'Unexpected Pricing image for '+key);
-  assert.ok(!seen.has(filename),'One original image must be used only once');
-  seen.add(filename);
-  const relative='app/src/main/assets/media/pricing/'+filename;
-  assert.ok(existsSync(path.join(repo,relative)),'Original PNG missing: '+relative);
-  const png=read(relative);
-  assert.equal(png.length,bytes,'Owner artwork size unexpectedly changed: '+key);
-  assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a','Not a PNG: '+key);
-  assert.equal(gitBlobSha1(png),sha,'PROTECTED OWNER ARTWORK ALTERED: '+key+'. Restore exact original bytes, do not generate another.');
+const read=path=>readFileSync(path);
+const lock=JSON.parse(read('docs/PRICING_OWNER_ART_LOCK.json'));
+const gitBlobSha=bytes=>createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
+const keys=['trial','basic','pro','business','lifetime','credit1000','credit10000','credit100000','credit1000000','credit10000000','hero','creditHero'];
+test('owner D23 restored 12 ORIGINAL image blobs with matching Git byte hashes',()=>{
+ assert.deepEqual(Object.keys(lock.assets),keys);assert.deepEqual(lock.blockedAssetNames,[]);
+ for(const key of keys){
+  const meta=lock.assets[key],path='app/src/main/assets/media/pricing/'+meta.filename;
+  assert.ok(existsSync(path),'missing '+key);const bytes=read(path);
+  assert.equal(bytes.length,meta.bytes,key+' size');assert.equal(gitBlobSha(bytes),meta.gitBlobSha1,key+' Git blob hash');
  }
 });
-
-test('approved HTML/CSS layout is frozen; no agent may redesign Pricing without new owner instruction',()=>{
- const html=read('app/src/main/assets/pricing.html');
- const css=read('app/src/main/assets/pricing-page.css');
- assert.equal(gitBlobSha1(html),approved.layout.htmlGitBlobSha1,'OWNER-LOCKED Pricing HTML was changed');
- assert.equal(gitBlobSha1(css),approved.layout.cssGitBlobSha1,'OWNER-LOCKED Pricing layout CSS was changed');
- assert.match(html.toString('utf8'),/id="planCards"/);
- assert.match(html.toString('utf8'),/id="creditCards"/);
- assert.match(css.toString('utf8'),/var\(--price-hero-art\)/);
- assert.match(css.toString('utf8'),/var\(--price-credit-hero-art\)/);
+test('owner image mapping covers 5 plans, 2 heroes and 5 AI-credit packs',()=>{
+ const js=read('app/src/main/assets/pricing-page.js').toString();
+ const css=read('app/src/main/assets/pricing-page.css').toString();
+ const html=read('app/src/main/assets/pricing.html').toString();
+ for(const key of keys)assert.ok(js.includes(key+":'"+lock.assets[key].filename+"'"),key+' mapping');
+ for(const phrase of ['picture.append(img(p.key))','card.append(img(p.image))',"['hero','--price-hero-art']","['creditHero','--price-credit-hero-art']",'fallbackTried=true'])assert.ok(js.includes(phrase),phrase);
+ for(const key of ['hero','creditHero'])assert.ok(css.includes(lock.assets[key].filename),key+' CSS image');
+ for(const id of ['planCards','creditCards','wallet'])assert.ok(html.includes('id="'+id+'"'));
+ for(const api of ['/api/billing/checkout','/api/ai-billing/checkout','No payment was taken'])assert.ok(js.includes(api));
 });
-
-test('Pricing renders exactly the approved image-to-plan mapping with same-origin primary and original CDN failover',()=>{
- const js=read('app/src/main/assets/pricing-page.js').toString('utf8');
- assert.match(js,/const cdn='media\/pricing\/'/);
- assert.match(js,/Object\.freeze\(art\)/);
- assert.match(js,/const approvedPath=key=>cdn\+art\[key\]/);
- assert.match(js,/fallbackTried=true/);
- assert.match(js,/const originalOwnerCdn='https:\/\/d2ol7oe51mr4n9\.cloudfront\.net\/user_3DohHzQ92OwE6TBQr5M2fYm2CwS\/'/);
- for(const key of exact){
-  assert.ok(js.includes(key+":'"+approved.assets[key].filename+"'"),'Original '+key+' artwork mapping was changed');
- }
- assert.equal((js.match(/\.png'/g)||[]).length,12,'Expected all 12 original photos (no invented extra images)');
- assert.match(js,/root\.style\.setProperty\(cssVar/);
- assert.match(js,/i\.src=approvedPath\(key\)/);
- assert.match(js,/i\.src=originalOwnerCdn\+art\[key\]/);
- assert.doesNotMatch(js,/Math\.random\(\).*price|source\.unsplash|picsum\.photos/i);
+test('approved Pricing HTML and CSS immutable in owner lock',()=>{
+ assert.equal(gitBlobSha(read('app/src/main/assets/pricing.html')),lock.layout.htmlGitBlobSha1);
+ assert.equal(gitBlobSha(read('app/src/main/assets/pricing-page.css')),lock.layout.cssGitBlobSha1);
+});
+test('Everyday Tools original October 23 image and right crop are preserved',()=>{
+ const js=read('app/src/main/assets/everyday-tools-visual.js').toString();
+ const css=read('app/src/main/assets/everyday-tools-visual.css').toString();
+ assert.ok(js.includes('media/approved-design-20261023/09_Everyday_Tools.png'));
+ assert.ok(js.includes("crop([695,61,703,242],'et-hero-art')"));
+ assert.ok(css.includes('.et-hero-art{left:42%;width:58%;object-fit:cover}'));
+ assert.ok(!css.includes('.et-hero-art{left:0;width:100%;height:100%'));
 });

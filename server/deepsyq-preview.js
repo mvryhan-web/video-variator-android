@@ -117,7 +117,28 @@ app.get(['/','/dashboard','/deepsyq.html'],homepage);
 // The deleted owner-cancelled workflow is never reachable in this preview.
 app.get(['/product-video','/product-video.html'],(_req,res)=>res.status(404).type('text/plain').send('Not found'));
 app.get(['/inspiration','/inspiration.html'],(_req,res)=>res.redirect(302,'/deepsyq.html#inspirationPreview'));
-app.use(express.static(assets,{extensions:['html'],index:false,fallthrough:true}));
+// F8 retired by owner: do not expose the former pet page, scripts, or model assets.
+app.use((req,res,next)=>{
+  if(/^\/virtual-pet(?=\/|\.|$)/i.test(req.path))return res.status(404).set('Cache-Control','no-store').type('text/plain').send('Not found');
+  next();
+});
+// Public media may be cached briefly on repeat preview visits. This server
+// keeps private and changing JSON/HTML/API content no-store; UI code revalidates
+// using ETag/304 to avoid re-sending its entire body on every navigation.
+// Byte-range (206) support for genuine MP4s stays with Express static.
+app.use(express.static(assets,{
+ extensions:['html'],index:false,fallthrough:true,
+ setHeaders(res,filePath){
+  const relative=path.relative(assets,filePath).split(path.sep).join('/');
+  if(relative.startsWith('media/')&&/\.(?:avif|gif|jpe?g|png|svg|webp|m4a|mp3|mp4|wav|webm)$/i.test(relative)){
+   res.setHeader('Cache-Control','public, max-age=3600, must-revalidate');
+  }else if(/\.(?:css|js|mjs)$/i.test(relative)){
+   res.setHeader('Cache-Control','no-cache');
+  }else{
+   res.setHeader('Cache-Control','no-store');
+  }
+ }
+}));
 app.use((req,res)=>{
  if(req.method!=='GET'&&req.method!=='HEAD')return res.status(405).type('text/plain').send('PREVIEW_READ_ONLY');
  res.status(404).type('text/plain').send('Not found');

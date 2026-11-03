@@ -1,3 +1,15 @@
+## OWNER FINAL DESIGN APPROVAL — 2026-11-03 — PRICING AND VIDEO UNIQUIFIER
+
+The owner explicitly approved the currently published TEST Pricing (including all twelve actual CDN originals, portal framing, full-width AI Credits banner, removed microcopy and 95% opaque credit panels) and Video Uniquifier. Their design is FINAL. No agent, model, program, automated update or contributor may change their artwork, layout, typography, colors, text, opacity or responsive composition without a NEW explicit instruction from the owner permitting that specific change. Silence, another task, prior blanket autonomy, old image-removal rules or historical locks are not permission. This rule supersedes conflicting older Pricing instructions below. Preserve functionality. Apply to these pages on all domains; it grants NO production publication. Never revert to mislabeled historical image bytes. See docs/OWNER_FINAL_PAGE_DESIGN_LOCK.json; changing its baseline also requires explicit owner permission.
+
+---
+
+## OWNER OVERRIDE — 2026-11-03 — REJECTED PRICING PHOTOS MUST NOT RETURN
+
+The owner explicitly rejected the Pricing main hero image and all five Pricing plan-card screenshot images (Trial / Basic / Pro / Business / Lifetime). Delete these six binaries from the TEST branch, remove their active JS/CSS usage, and never restore them from Git history, old CloudFront, coordinator snapshots, or agent copies without the owner's NEW explicit visual approval. The exact blocked filenames are listed in `docs/PRICING_OWNER_ART_LOCK.json` under `blockedAssetNames`. Earlier statements that all twelve Pricing images must remain are superseded. **The five AI Credits card images and the AI Credits wide banner are explicitly retained**; do not alter them. Do not substitute screenshots or generate replacements without the owner first reviewing each candidate here. Changes to Pricing images require owner approval before any new preview deployment; production remains frozen. This owner instruction supersedes all conflicting older Pricing image locks below.
+
+---
+
 ## OWNER RULE — 2026-11-03 — TEST SITE FIRST; PRODUCTION PUBLICATION FROZEN
 
 **Standing owner authorization:** publish every completed, appropriately checked change to the existing DEEPSYQ test site so the owner can inspect its actual behavior, without asking again for each safe test publication. Deploy only the intended reviewed revision and verify the deployed page; a commit, PR, merge or accepted deploy request alone is not proof that the owner can see the change.
@@ -9,6 +21,22 @@
 - **Verification:** record actual Render settings/deploy state separately from this policy. If the connected tool cannot change automatic deployment settings, report that limitation and keep the change marked pending rather than claiming auto-deploy is disabled.
 
 This owner decision supersedes earlier automatic-production-publication instructions. Historical records below remain preserved.
+
+---
+
+## OWNER RULE — 2026-11-03 — СТРУКТУРА ФУНКЦИОНАЛА DEEPSYQ F1–F6 (JARVIS И ПЕРЕНОС ТАРИФОВ)
+
+**Обязательное распоряжение владельца от 03.11.2026 для всех участников (P, Администратор, Antigravity, Jules, любые модели):**
+Структура ключевых функциональных направлений платформы окончательно реорганизована в **6 канонических блоков (F1–F6)**:
+- **F1 — Compare AI + Smart Routing:** Параллельное сравнение текстовых/генеративных моделей и смарт-выбор.
+- **F2 — Jarvis (Voice & User AI Assistant):** Единый голосовой и пользовательский ИИ-ассистент в шаре (Orb). Прежние F2 (User Agent) и F6 (Voice Agent) **объединены в один пункт F2**. Включает микрофон, синтез мужским тембром-баритоном, мгновенный barge-in, текстовый чат, сценарии «Сделай за меня» и системные команды.
+- **F3 — Inspiration / Create Yours:** Каталог вдохновения и библиотека шаблонов.
+- **F4 — Studio / My Workspace:** Единое рабочее пространство (генераторы, холст Canvas, History, My Creations).
+- **F5 — Product Watcher:** Внутренний мониторинг аптайма, защита транзакций Stripe и себестоимости (owner-only).
+- **F6 — Pricing / Credits / Stripe:** Тарифные планы, пакеты AI-кредитов, Stripe биллинг и баланс кошелька (**бывший F7 перемещён на место F6**).
+- **Бывший F8 (Virtual Pet Companion / Питомцы) полностью закрыт и удален из кодовой базы.**
+
+Запрещается использовать старую нумерацию F1–F8 или повторно разделять Jarvis на отдельные F2 и F6.
 
 ---
 
