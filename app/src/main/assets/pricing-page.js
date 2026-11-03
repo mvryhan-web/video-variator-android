@@ -5,7 +5,7 @@ const cdn='media/pricing/';
 // Exact previously approved 2026-10-25 images; see docs/PRICING_OWNER_ART_LOCK.json.
 // Never use placeholder, AI-generated substitute or alternate asset filenames.
 const originalOwnerCdn='https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/';
-const approvedArtVersion='owner-20261025-12';
+const approvedArtVersion='owner-20261103-original-4-portals';
 const approvedPath=key=>cdn+art[key]+'?v='+approvedArtVersion;
 const art={
  trial:'d72f2da8-9e73-4110-abc5-c743032631fd.png',
@@ -128,7 +128,7 @@ function renderPlans(config){
  const host=byId('planCards');host.replaceChildren();
  for(const p of planned){
   const item=node('article','price-plan price-'+p.key);
-  const picture=node('div','price-plan-picture');picture.append(img(p.key));
+  const picture=node('div','price-plan-picture'); // Owner 2026-11-03: no gallery screenshots or decorative photos on plan cards
   if(p.key==='lifetime')picture.append(node('span','price-best','♛ BEST VALUE'));
   const body=node('div','price-plan-body');
   const heading=node('h3','price-plan-name',p.name);heading.id='plan-'+p.key;
@@ -217,7 +217,7 @@ function renderCredits(config){
   const amount=serverPack?money(serverPack.amount/100,serverPack.currency.toUpperCase()):money(p.price);
   const valid=!!serverPack&&!!checkoutMode;
   const card=node('article','price-credit-card');
-  card.append(img(p.image));
+  // Owner 2026-11-03: AI Credits cards are clean gradients; only the original sky-city banner displays artwork.
   const content=node('div','price-credit-content');
   const title=node('h3','price-credit-number','✦ '+numeral.format(p.credits));
   const info=node('div','price-credit-bonus');
