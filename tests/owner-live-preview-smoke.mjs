@@ -61,4 +61,30 @@ try{
  assert.equal(await mobile.locator('.home-feature-spotlight').count(),3);
  await mobile.screenshot({path:'test-results/live-preview/mobile-home.png'});
  console.log('LIVE_BROWSER_ACCEPTED',JSON.stringify({desktop:1440,mobile:390,spotlights:3}));
+
+ // Deployed behavior (no browser mocks): desktop must start ONLY on hover.
+ const desktopCard=desktop.locator('.home-feature-spotlight').first(),desktopVideo=desktopCard.locator('video');
+ await desktopCard.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
+ await desktop.mouse.move(0,0);
+ await delay(300);
+ assert.equal(await desktopVideo.getAttribute('src'),null,'desktop spotlight must remain still before hover');
+ await desktopCard.hover();
+ let hoverLoaded=false;
+ for(let n=0;n<45;n++){if((await desktopVideo.getAttribute('src'))?.includes('.mp4')){hoverLoaded=true;break;}await delay(150);}
+ assert.ok(hoverLoaded,'desktop spotlight loads the approved video on hover');
+ await desktop.mouse.move(0,0);
+ for(let n=0;n<45;n++){if(await desktopVideo.getAttribute('src')===null)break;await delay(150);}
+ assert.equal(await desktopVideo.getAttribute('src'),null,'desktop stops/unloads on mouse leave');
+ // Mobile uses the visible viewport, not simulated hover.
+ await mobile.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+ const mobileCard=mobile.locator('.home-feature-spotlight').first(),mobileVideo=mobileCard.locator('video');
+ await mobileCard.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
+ let mobileLoaded=false;
+ for(let n=0;n<45;n++){if((await mobileVideo.getAttribute('src'))?.includes('.mp4')){mobileLoaded=true;break;}await delay(150);}
+ assert.ok(mobileLoaded,'mobile spotlight loads when scrolled into view');
+ await mobile.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+ for(let n=0;n<45;n++){if(await mobileVideo.getAttribute('src')===null)break;await delay(150);}
+ assert.equal(await mobileVideo.getAttribute('src'),null,'mobile spotlight stops when offscreen');
+ console.log('LIVE_SPOTLIGHT_ACCEPTED',JSON.stringify({desktopHover: hoverLoaded,mobileScroll:mobileLoaded,inactiveUnloads:true}));
+
 }finally{await browser.close();}
