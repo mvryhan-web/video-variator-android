@@ -1,3 +1,17 @@
+## OWNER RULE — 2026-11-03 — TEST SITE FIRST; PRODUCTION PUBLICATION FROZEN
+
+**Standing owner authorization:** publish every completed, appropriately checked change to the existing DEEPSYQ test site so the owner can inspect its actual behavior, without asking again for each safe test publication. Deploy only the intended reviewed revision and verify the deployed page; a commit, PR, merge or accepted deploy request alone is not proof that the owner can see the change.
+
+- **Canonical test site:** https://deepsyq-visual-preview-20261016.onrender.com/ — Render service `srv-db91k1vf3r2c73fpj350`, workspace `My Workspace` (`tea-dalqjcm7bikc73a8lu6g`), normal source branch `deepsyq-platform`. Keep the isolated test entrypoint `npm run preview:deepsyq`. After a permitted test deployment, return a direct link to the changed page and distinguish working features from mock/unavailable ones.
+- **Main site / frozen release destination:** https://video-variator-android.onrender.com/ — Render service `srv-dalqnkoae00c73caj8vg`, branch `main`. Disable its Render automatic deploys. No automatic or manual production publication, main update, release hook, restart-as-release, or preview-to-production promotion without a later explicit owner release instruction. Do not delete or suspend the service, domain, database or existing user data; the owner requested a publication freeze.
+- **Future release:** finish and review the product on the test site first. The intended eventual production address is the existing main site above, using the existing repository/infrastructure. Actual promotion requires the owner's separate explicit approval, release/security/financial gates, a known revision and rollback plan.
+- **No hidden spending or protection bypass:** test-site publication does not authorize paid AI, live Stripe, unsafe migrations, changing frozen artwork, bypassing mandatory checks, or presenting mock features as live. A UI-only preview may use the isolated preview server only when its scoped checks pass and unrelated full-backend blockers are recorded; this does not permit merging a failing PR or deploying the financial backend.
+- **Verification:** record actual Render settings/deploy state separately from this policy. If the connected tool cannot change automatic deployment settings, report that limitation and keep the change marked pending rather than claiming auto-deploy is disabled.
+
+This owner decision supersedes earlier automatic-production-publication instructions. Historical records below remain preserved.
+
+---
+
 # DECISIONS.md — прямые решения владельца Deepsyq
 
 ## 2026-11-02 — D20: Единый P-координатор, прежние чат-роли упразднены
