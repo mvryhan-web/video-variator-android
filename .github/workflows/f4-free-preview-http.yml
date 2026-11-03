@@ -1,0 +1,39 @@
+name: F4 isolated test preview HTTP zero-spend gate
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/free-ai-provider.js'
+      - 'server/deepsyq-preview.js'
+      - 'tests/free-ai-studio.test.mjs'
+      - 'tests/f4-free-preview-http.test.mjs'
+      - '.github/workflows/f4-free-preview-http.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'server/free-ai-provider.js'
+      - 'server/deepsyq-preview.js'
+      - 'tests/free-ai-studio.test.mjs'
+      - 'tests/f4-free-preview-http.test.mjs'
+      - '.github/workflows/f4-free-preview-http.yml'
+permissions:
+  contents: read
+jobs:
+  preview-http:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ''
+      STRIPE_SECRET_KEY: ''
+      GEMINI_API_KEY: ''
+      BYTEPLUS_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check server/free-ai-provider.js && node --check server/deepsyq-preview.js && node --check tests/f4-free-preview-http.test.mjs
+      - name: Verify fake-credit isolated preview, anonymous privacy and disabled payments
+        run: node --test tests/free-ai-studio.test.mjs tests/f4-free-preview-http.test.mjs tests/deepsyq-preview.mjs tests/pricing-owner-art-lock.mjs tests/owner-final-page-design-lock.mjs
