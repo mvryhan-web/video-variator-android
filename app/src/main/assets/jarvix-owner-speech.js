@@ -1,3 +1,4 @@
+import {prepareStaticClips, getStaticClip} from './jarvix-clip-library.js';
 // Owner-hosted speech; no private URL or key is sent to the browser.
 let version = 0, pending = null, playing = null, objectUrl = null;
 let audioContext = null, audioReady = null, source = null;
@@ -12,6 +13,7 @@ export function unlockOwnerSpeech() {
 export const OWNER_GREETING_TEXT = Object.freeze({ru:'Я Джарвис. Слушаю вас.',en:'I am Jarvis. How can I help?',fr:'Je suis Jarvis. Je vous écoute.',es:'Soy Jarvis. ¿En qué puedo ayudarte?'});
 let greetingsPromise = null;
 export function prepareOwnerGreetings() {
+  prepareStaticClips();
   if (!greetingsPromise) greetingsPromise = fetch('/media/jarvix/owner-greetings.json', {signal:AbortSignal.timeout(8000)})
     .then(reply => reply.ok ? reply.json() : null).catch(() => null);
   return greetingsPromise;
@@ -37,12 +39,15 @@ export async function speakOwnerSpeech(text, language, hooks) {
   try {
     const greetingData = OWNER_GREETING_TEXT[language] === text.trim() ? await prepareOwnerGreetings() : null;
     if (turn !== version) return;
-    const cached = greetingBlob(greetingData, text, language);
+    const greetingCached = greetingBlob(greetingData, text, language);
+    const cached = greetingCached || await getStaticClip(text, language, controller.signal);
+    if (turn !== version) return;
     const configReply = cached ? null : await fetch('/api/jarvix/voice-config', {signal:controller.signal});
     const config = cached ? {configured:true, speechModelInstalled:true} : configReply.ok ? await configReply.json() : {};
     if (turn !== version) return;
     if (!config.configured) { hooks.fallback(); return; }
     if (!config.speechModelInstalled) throw Error('Voice worker unavailable');
+    hooks.source?.(greetingCached ? 'cached-greeting' : cached ? 'static-clip' : 'worker');
     hooks.start();
     hooks.phase?.('generating');
     // Split long replies without silently cutting their final words.

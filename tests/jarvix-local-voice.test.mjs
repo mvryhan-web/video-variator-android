@@ -29,7 +29,7 @@ test('worker failure is unavailable and does not leak credentials',async()=>{
 test('Stop during pending config prevents late playback or completion',async()=>{
  const previous=global.fetch;let release,called=0;
  global.fetch=()=>new Promise(r=>release=r);
- try{const task=speakOwnerSpeech('Hello','en',{start:()=>called++,fallback:()=>called++,complete:()=>called++,error:()=>called++});stopOwnerSpeech();release(Response.json({configured:true,speechModelInstalled:true}));await task;assert.equal(called,0);}finally{global.fetch=previous;}
+ try{const task=speakOwnerSpeech('Hello','en',{start:()=>called++,fallback:()=>called++,complete:()=>called++,error:()=>called++});for(let i=0;i<30 && !release;i++)await Promise.resolve();assert.equal(typeof release,'function');stopOwnerSpeech();release(Response.json({configured:true,speechModelInstalled:true}));await task;assert.equal(called,0);}finally{global.fetch=previous;}
 });
 test('configured but unavailable worker never silently substitutes a browser voice',async()=>{
  const previous=global.fetch;global.fetch=async()=>Response.json({configured:true,speechModelInstalled:false});let fallback=0,error=0;

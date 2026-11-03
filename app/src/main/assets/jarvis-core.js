@@ -1,3 +1,4 @@
+import {navigationReply} from './jarvix-navigation-reply.js';
 // JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
 // Guaranteed Male Film Voice, Instant Navigation ("Сделано."), Multi-Turn Weather Brain & Smart ChatGPT Prompt Generation
 import {speakOwnerSpeech, stopOwnerSpeech, unlockOwnerSpeech, prepareOwnerGreetings, OWNER_GREETING_TEXT} from './jarvix-owner-speech.js';
@@ -60,6 +61,7 @@ export function stopAllSpeech() {
 let isJarvisSpeaking = false;
 let isJarvisListening = false;
 let jarvisRecognition = null;
+let recognitionVersion = 0;
 let keepListening = false;
 let silenceTimer = null;
 const SILENCE_TIMEOUT_MS = 45000;
@@ -268,6 +270,7 @@ export function speakJarvis(text, onComplete = null) {
   let speechFailed = false;
   const speechStartedAt = performance.now();
   speakOwnerSpeech(text, langCode, {
+    source: source => { if (button) button.dataset.voiceSource = source; },
     fallback: () => {
       if (label) label.textContent = 'JARVIX';
       if (button) button.removeAttribute('aria-busy');
@@ -316,8 +319,9 @@ export function instantOpen(url) {
     }
   } catch (_) {}
 
+  const navigationText = navigationReply(url, getJarvixLanguage());
   if (isSamePage) {
-    speakJarvis('Сделано.');
+    speakJarvis(navigationText);
     try {
       const targetUrl = new URL(url, location.href);
       if (targetUrl.hash) location.hash = targetUrl.hash;
@@ -327,7 +331,7 @@ export function instantOpen(url) {
 
   // Cross-page navigation: speak cleanly ONCE upon target page mount, never doubled
   try {
-    sessionStorage.setItem('jarvix_say_on_load', 'Сделано.');
+    sessionStorage.setItem('jarvix_say_on_load', navigationText);
     sessionStorage.setItem('jarvix_active', '1');
   } catch (_) {}
   location.assign(url);
@@ -825,6 +829,7 @@ export function handleJarvisVoiceCommand(commandText) {
 
 // 9. Speech Recognition Control (Pure Voice Loop)
 function pauseJarvisRecognition() {
+  recognitionVersion += 1;
   if (jarvisRecognition) {
     try {
       jarvisRecognition.onend = null;
@@ -842,6 +847,7 @@ function resumeJarvisRecognition() {
 
   try {
     pauseJarvisRecognition();
+    const recognitionTurn = recognitionVersion;
 
     jarvisRecognition = new SpeechRec();
     jarvisRecognition.continuous = true;
@@ -852,6 +858,7 @@ function resumeJarvisRecognition() {
       (lang === 'es' || lang.startsWith('es')) ? 'es-ES' : 'en-US';
 
     jarvisRecognition.onstart = () => {
+      if (recognitionTurn !== recognitionVersion || !isJarvisActive || !keepListening) return;
       isJarvisListening = true;
       updateJarvisState('listening');
       const button = getTopBtn();
@@ -869,6 +876,7 @@ function resumeJarvisRecognition() {
     let lastHandledTime = 0;
 
     jarvisRecognition.onresult = e => {
+      if (recognitionTurn !== recognitionVersion || !isJarvisActive || !keepListening) return;
       let interim = '';
       for (let i = e.resultIndex; i < e.results.length; ++i) {
         const item = e.results[i];
@@ -942,6 +950,7 @@ function resumeJarvisRecognition() {
       updateJarvisState('listening');
       clearTimeout(speechTimeout);
       speechTimeout = setTimeout(() => {
+        if (recognitionTurn !== recognitionVersion || !isJarvisActive || !keepListening) return;
         const trimmed = current.trim();
         // Ignore single filler syllables, coughs, mic pops
         if (/^(?:а|да|ну|эм|ээ|хм|ок|yes|no|uh|um|ah)$/i.test(trimmed)) {
@@ -965,9 +974,12 @@ function resumeJarvisRecognition() {
     };
 
     jarvisRecognition.onend = () => {
+      if (recognitionTurn !== recognitionVersion) return;
+      isJarvisListening = false;
+      clearTimeout(speechTimeout);
       if (isJarvisActive && keepListening) {
         setTimeout(() => {
-          if (isJarvisActive && keepListening) {
+          if (recognitionTurn === recognitionVersion && isJarvisActive && keepListening && !isJarvisSpeaking) {
             resumeJarvisRecognition();
           }
         }, 150);
@@ -977,6 +989,7 @@ function resumeJarvisRecognition() {
     };
 
     jarvisRecognition.onerror = (err) => {
+      if (recognitionTurn !== recognitionVersion || !isJarvisActive) return;
       if (err.error === 'not-allowed') {
         const resumeOnGesture = () => {
           document.removeEventListener('click', resumeOnGesture);
