@@ -1,3 +1,9 @@
+## OWNER RULE — 2026-11-03 — EVERY SAFE TASK ENDS ON TEST, NOT AT PR
+
+Owner requires that safe, completed DEEPSYQ work be **published to the existing isolated Render TEST site and verified there** as the default final step, rather than stopping at commit/PR/CI. No repeated permission request for each permitted TEST publication. Before changing `deepsyq-platform` or redeploying, compare the running Render commit with DEV and **carry forward concurrently published, approved changes**; no silent site regressions. After publication prove the selected SHA is LIVE **and** test the actual target URL in desktop/mobile browser. If a relevant acceptance gate fails, fix it or record exact `NOT_TEST_DEPLOYED`; unrelated historical CI failures do not prove the new feature broken, but may not be bypassed to merge a failing PR. Never claim test publication from GitHub merge, Render request or status alone. No production deployment, provider spending, unsafe migrations or fake claim of real AI from SVG fallback.
+
+---
+
 ## OWNER FINAL ACCEPTANCE GATE — 2026-11-03 — «СДЕЛАНО» ТОЛЬКО ПО ФАКТИЧЕСКОМУ РЕЗУЛЬТАТУ
 
 **Обязательно для P, администратора, Antigravity, Jules и всех новых рабочих чатов.** Это операционное уточнение существующих правил #11/#13 (`DONE` только после настоящей проверки), а не разрешение обходить CI, менять защищённые дизайны, оплачивать тесты или публиковать production.
@@ -13,6 +19,12 @@
 9. **Если владелец велел ничего не делать, не делать никаких новых изменений или deploy.** При обнаруженном несовпадении не самоуверенно объявлять задачу закрытой. Законченная техническая операция ≠ принятый владельцем визуальный результат.
 
 **Урок инцидента Everyday Tools (03.11.2026):** восстановление было ошибочно объявлено завершённым после правки двух CSS-селекторов и статуса Render `LIVE` без сверки screenshot. Это **НЕ ПРИЕМЛЕМО**; повторно такую операцию считать только `DEPLOYED_NOT_VISUALLY_VERIFIED`, пока фактический вид баннера не подтверждён. Действующие запреты на production, платные API, рискованные миграции и обход красного обязательного CI сохраняются.
+
+---
+
+## OWNER FINAL DESIGN APPROVAL — 2026-11-03 — PRICING AND VIDEO UNIQUIFIER
+
+The owner explicitly approved the currently published TEST Pricing (including all twelve actual CDN originals, portal framing, full-width AI Credits banner, removed microcopy and 95% opaque credit panels) and Video Uniquifier. Their design is FINAL. No agent, model, program, automated update or contributor may change their artwork, layout, typography, colors, text, opacity or responsive composition without a NEW explicit instruction from the owner permitting that specific change. Silence, another task, prior blanket autonomy, old image-removal rules or historical locks are not permission. This rule supersedes conflicting older Pricing instructions below. Preserve functionality. Apply to these pages on all domains; it grants NO production publication. Never revert to mislabeled historical image bytes. See docs/OWNER_FINAL_PAGE_DESIGN_LOCK.json; changing its baseline also requires explicit owner permission.
 
 ---
 

@@ -9,7 +9,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
-import {buildJarvixSiteKnowledge,clearSession,getOrCreateSession,processTurnWithMockBrain} from './jarvix-brain.js';
+import {buildJarvixSiteKnowledge,clearSession,getOrCreateSession,processTurnWithMockBrain,getJarvixRuntimeStatus} from './jarvix-brain.js';
 import {generateFreeImage,generateTrialVideo,checkDailyQuota,incrementDailyQuota,studioJobs} from './free-ai-provider.js';
 
 const app=express();
@@ -241,6 +241,7 @@ app.post('/api/jarvix/reset',(req,res)=>{
  if(!validSessionId(sid))return res.status(400).json({error:'INVALID_SESSION'});
  clearSession(sid);res.json({ok:true});
 });
+app.get('/api/jarvix/status',(_req,res)=>res.json(getJarvixRuntimeStatus({previewOnly:true})));
 app.get('/api/jarvix/site-map',(_req,res)=>res.json({ok:true,pages:buildJarvixSiteKnowledge()}));
 // Read-only preview of the owner's approved bundled media. This is the same
 // Inspiration response consumed by Home, without production DB/admin writes.

@@ -29,7 +29,7 @@ test('server config, original checkout endpoints and no false wallet credit clai
  assert.match(js,/if\(!valid\)\{/);
  assert.match(js,/No payment was taken/);
  assert.doesNotMatch(js,/button\.disabled=!valid/);
- assert.match(js,/Bonus credits · proposed, not included/);
+ assert.doesNotMatch(js,/Bonus credits · proposed, not included/);
 });
 test('no fake credit allocation for Trial and Lifetime; lifecycle guards retain account isolation',()=>{
  assert.match(js,/Credits and included access: to be confirmed/);
@@ -73,16 +73,16 @@ test('annual quote toggle remains presentation-only, protects original billing a
 
 test('owner correction preserves big bonus numbers, forbids only tiny tool-plan and USD card footer notes',()=>{
  assert.doesNotMatch(html,/Tool plans cover the included tools and their stated allowances/);
- assert.match(html,/Purchase AI credits to unlock the full power of Deepsyq AI/);
- assert.match(html,/More creativity\. More possibilities\. Fuel your ideas\./);
+ assert.doesNotMatch(html,/Purchase AI credits to unlock the full power of Deepsyq AI/);
+ assert.doesNotMatch(html,/More creativity\. More possibilities\. Fuel your ideas\./);
  assert.match(html,/View your AI wallet and purchase availability/);
  assert.match(html,/href="pricing.html#wallet"/);
  assert.match(html,/id="walletHistory"/);
  assert.match(js,/bonus:200/);
  assert.match(js,/bonus:3333/);
  assert.match(js,/price-bonus-count/);
- assert.match(js,/price-bonus-status/);
- assert.match(js,/price-bonus-desc/);
+ assert.match(css,/price-bonus-status/);
+ assert.match(css,/price-bonus-desc/);
  assert.doesNotMatch(js,/price-credit-note/);
  assert.doesNotMatch(css,/\.price-credit-note\{/);
  assert.match(css,/background-position:center center,center top/);

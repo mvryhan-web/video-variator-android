@@ -121,13 +121,6 @@ export function synthesizeSpeechWave(text, arg2 = 'baritone', arg3 = null, sampl
 export function installJarvixVoiceRoutes(app) {
   // Voice Configuration & Status
   app.get('/api/jarvix/voice-config', (req, res) => {
-    let manifestData = null;
-    try {
-      if (fs.existsSync(MANIFEST_PATH)) {
-        manifestData = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8'));
-      }
-    } catch (_) {}
-
     res.json({
       ok: true,
       service: 'JARVIX voice status',
