@@ -281,3 +281,10 @@ body.deepsyq-pricing-page .price-credit-heading{
     padding:25px 20px;
   }
 }
+
+/* OWNER 2026-11-03: TEST PRICING RESTORE — NO GALLERY SCREENSHOTS.
+   Keep the original four-frame hero and wide AI Credits sky-city banners above.
+   Plan/credit cards must be typography + gradients, never decorative photos or video stills. */
+body.deepsyq-pricing-page .price-plan-picture{background:radial-gradient(ellipse at 60% 30%,#243b75,#102451 52%,#04132f 100%)}
+body.deepsyq-pricing-page .price-plan-picture>.price-art,
+body.deepsyq-pricing-page .price-credit-card>.price-art{display:none!important}
