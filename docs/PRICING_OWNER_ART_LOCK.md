@@ -1,3 +1,13 @@
+## OWNER UPDATE — 2026-11-03 — supersedes all earlier 12-photo freeze claims
+
+The owner rejected six Pricing images and explicitly ordered their removal from the TEST branch: Pricing main hero and plan-card screenshots for Trial, Basic, Pro, Business, Lifetime. Deleted exact names are recorded as `blockedAssetNames` in the JSON lock. NEVER re-import, regenerate, or restore these images from Git history, old CDN, agent backups or main without new owner visual approval. Display neutral CSS gradients in their places until the owner reviews genuine 24–25 October candidates.
+
+**DO NOT DELETE OR MODIFY AI CREDITS ART:** the five AI Credits card images and its wide header image remain unchanged and are the only six assets recorded under `assets`. No Stripe, prices, wallet, other pages, or production changes are authorized by this removal.
+
+The historical instructions below are superseded where they claim that all 12 images were approved.
+
+---
+
 ## 2026-11-02 — PERMANENT OWNER LOCK: PRICING VISUALS, ALL 12 ORIGINAL PHOTOS
 
 **Owner's direct instruction: restore the original October 25, 2026 Pricing design and NEVER redesign/re-generate/swap Pricing photos again without the owner's NEW explicit approval.** This overrides autonomous Antigravity/Jules/P/other agent instructions, generic "unify sitewide header" work, and aesthetic suggestions. The approved `pricing.html` contains exactly five Video & Everyday Tools plan cards (Trial, Basic, Pro, Business, Lifetime) and below five AI Credits cards, plus original hero banner and AI Credits sky-city banner. All 12 original image identifiers and their pinned local Git blob SHA-1 checksums reside in `docs/PRICING_OWNER_ART_LOCK.json` (historic owner mapping: 2026-10-25 commit `48b0c216fb249738cc9db7540489e32be39de19a`; first local mirror: 2026-11-02 commit `2d43597ecce7034ee957fc4083544b571495ebd6`).

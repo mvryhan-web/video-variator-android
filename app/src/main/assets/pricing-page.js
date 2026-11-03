@@ -2,23 +2,17 @@
  * Never use proposed marketing credits or bonus amounts in any checkout payload. */
 import {validPlanPrice,validToolLimit,validLifetimeCurrency,validAiPack,aiCheckoutMode,checkoutErrorMessage} from './ai-pricing-display.js';
 const cdn='media/pricing/';
-// Exact previously approved 2026-10-25 images; see docs/PRICING_OWNER_ART_LOCK.json.
-// Never use placeholder, AI-generated substitute or alternate asset filenames.
+// Owner 2026-11-03: plan and hero screenshots rejected and removed; only AI Credits artwork retained.
+// Do not re-add the rejected visuals without the owner's explicit visual approval.
 const originalOwnerCdn='https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/';
 const approvedArtVersion='owner-20261103-restore-24-25-v4';
 const approvedPath=key=>cdn+art[key]+'?v='+approvedArtVersion;
 const art={
- trial:'d72f2da8-9e73-4110-abc5-c743032631fd.png',
- basic:'56338ba4-aba2-4b0d-bbb7-a2f537294937.png',
- pro:'e6d706ae-d1a0-4db9-9a42-1e3d15cdc4ee.png',
- business:'82c0702f-67cc-4d93-acdb-68a45937a454.png',
- lifetime:'a3417cc0-5586-4f67-a98d-4019a6524dff.png',
  credit1000:'d5b13a37-38fb-4c49-9d52-e63e86f69bd4.png',
  credit10000:'45c92ba3-9198-499a-b718-96670193cdf9.png',
  credit100000:'529567d2-78ae-4a59-a9a5-6758390f1957.png',
  credit1000000:'77fcf2c1-e659-4ca6-98d3-74d13a275c04.png',
  credit10000000:'bb87cfda-d36e-4aee-8177-e0b6903e9dfe.png',
- hero:'fa2c9a57-3fe7-4a2c-8123-7da568cabe10.png',
  creditHero:'e5506ef4-b0a2-412d-a8b7-6e3108f80761.png'
 };
 Object.freeze(art);
@@ -26,7 +20,7 @@ const root=document.documentElement;
 // Local copies avoid the old remote-CDN image loss. If a specific local file
 // fails, only the ORIGINAL owner-approved CDN file with the SAME identifier
 // may be tried. No replacement images and no silent art swaps.
-for (const [key, cssVar] of [['hero','--price-hero-art'],['creditHero','--price-credit-hero-art']]) {
+for (const [key, cssVar] of [['creditHero','--price-credit-hero-art']]) {
  const local=approvedPath(key);
  root.style.setProperty(cssVar,'url("'+local+'")');
  const probe=new Image();
@@ -128,7 +122,7 @@ function renderPlans(config){
  const host=byId('planCards');host.replaceChildren();
  for(const p of planned){
   const item=node('article','price-plan price-'+p.key);
-  const picture=node('div','price-plan-picture');picture.append(img(p.key));
+  const picture=node('div','price-plan-picture'); // intentionally no rejected photos; gradient until owner approves replacements
   if(p.key==='lifetime')picture.append(node('span','price-best','♛ BEST VALUE'));
   const body=node('div','price-plan-body');
   const heading=node('h3','price-plan-name',p.name);heading.id='plan-'+p.key;

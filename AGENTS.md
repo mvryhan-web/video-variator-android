@@ -1,3 +1,9 @@
+## OWNER OVERRIDE — 2026-11-03 — REJECTED PRICING PHOTOS MUST NOT RETURN
+
+The owner explicitly rejected the Pricing main hero image and all five Pricing plan-card screenshot images (Trial / Basic / Pro / Business / Lifetime). Delete these six binaries from the TEST branch, remove their active JS/CSS usage, and never restore them from Git history, old CloudFront, coordinator snapshots, or agent copies without the owner's NEW explicit visual approval. The exact blocked filenames are listed in `docs/PRICING_OWNER_ART_LOCK.json` under `blockedAssetNames`. Earlier statements that all twelve Pricing images must remain are superseded. **The five AI Credits card images and the AI Credits wide banner are explicitly retained**; do not alter them. Do not substitute screenshots or generate replacements without the owner first reviewing each candidate here. Changes to Pricing images require owner approval before any new preview deployment; production remains frozen. This owner instruction supersedes all conflicting older Pricing image locks below.
+
+---
+
 ## OWNER RULE — 2026-11-03 — TEST SITE FIRST; PRODUCTION PUBLICATION FROZEN
 
 **Standing owner authorization:** publish every completed, appropriately checked change to the existing DEEPSYQ test site so the owner can inspect its actual behavior, without asking again for each safe test publication. Deploy only the intended reviewed revision and verify the deployed page; a commit, PR, merge or accepted deploy request alone is not proof that the owner can see the change.
