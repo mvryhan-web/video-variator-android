@@ -5,7 +5,8 @@ import {
   checkDailyQuota,
   incrementDailyQuota,
   generateFreeImage,
-  generateTrialVideo
+  generateTrialVideo,
+  generateFreeAudio
 } from '../server/free-ai-provider.js';
 
 test('Free AI Provider: checkDailyQuota and incrementDailyQuota enforce rate limits', () => {
@@ -58,6 +59,20 @@ test('Free AI Provider: generateTrialVideo produces valid video/animation artifa
   assert.ok(result);
   assert.ok(result.buffer);
   assert.ok(result.buffer.length > 500);
+  assert.ok(result.provider);
+});
+
+test('Free AI Provider: generateFreeAudio produces valid audio/WAV artifact', async () => {
+  const result = await generateFreeAudio({
+    prompt: 'Jarvis greeting chime',
+    text: 'Jarvis online',
+    model: 'google-tts-preview'
+  });
+
+  assert.ok(result);
+  assert.ok(result.buffer);
+  assert.ok(result.buffer.length > 1000);
+  assert.equal(result.mime, 'audio/wav');
   assert.ok(result.provider);
 });
 

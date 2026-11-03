@@ -10,7 +10,7 @@ import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 import {buildJarvixSiteKnowledge,clearSession,getOrCreateSession,processTurnWithMockBrain,getJarvixRuntimeStatus} from './jarvix-brain.js';
-import {generateFreeImage,generateTrialVideo,checkDailyQuota,incrementDailyQuota,studioJobs} from './free-ai-provider.js';
+import {generateFreeImage,generateTrialVideo,generateFreeAudio,checkDailyQuota,incrementDailyQuota,studioJobs} from './free-ai-provider.js';
 
 const app=express();
 const port=Number(process.env.PORT||31990);
@@ -59,7 +59,7 @@ const isFreeStudioActive = process.env.FREE_AI_STUDIO_ENABLED === 'true' || Bool
 const isLegacyTest = !isFreeStudioActive;
 
 const freeStudioModels = MODEL_CATALOG.map(m => {
-  if (['image', 'video'].includes(m.kind)) {
+  if (['image', 'video', 'music', 'voice'].includes(m.kind)) {
     return { ...m, enabled: true, adapter: true };
   }
   return { ...m, enabled: false };
