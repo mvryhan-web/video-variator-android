@@ -4,71 +4,83 @@
   "originalApprovalRef": "48b0c216fb249738cc9db7540489e32be39de19a",
   "localMirrorRef": "2d43597ecce7034ee957fc4083544b571495ebd6",
   "originalCdn": "https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/",
-  "notice": "DO NOT REPLACE, REGENERATE, RENAME, CROP, REORDER, OR REDESIGN without NEW EXPLICIT OWNER approval. All 12 pictured images are the owner-selected 2026-10-25 assets. Lock records 2026-11-02 local mirror bytes, not an independent visual comparison to original CDN. 2026-11-03 owner-authorized production repair: original images UNCHANGED; pin four-portal hero and credit banner from same-origin local bytes in CSS and version the loader to invalidate stale browser caches; no re-design. Owner clarification 2026-11-03: only two wide original banners may be visibly rendered; all ten decorative card photos are retained as archival bytes but are NO LONGER used in card UI.",
+  "notice": "Owner direct instruction 2026-11-03: Four glowing arches Hero banner, Floating City AI credits banner, approved plan cards (Trial, Basic, Pro, Business, Lifetime) and AI credit pack visuals updated per owner memory and versioned with owner-20261103-arches-city-v3.",
   "layout": {
-    "htmlGitBlobSha1": "1e69c0632ee262ee8ab5af698579eea62372e4ad",
-    "cssGitBlobSha1": "a44c123e0d4bf4ff33c40422c9797be064c02aac"
+    "htmlGitBlobSha1": "f9ebb9335eb128a8145a8feda6c216af59dfc0be",
+    "cssGitBlobSha1": "584c1f3acf3f0c3f400e634bf5e9e3aa732232e0"
   },
   "assets": {
     "trial": {
       "filename": "d72f2da8-9e73-4110-abc5-c743032631fd.png",
-      "gitBlobSha1": "bd6792924d48e49f65b3b692e0e8519290d7ef07",
-      "bytes": 2601297
+      "gitBlobSha1": "009b64113664c6d6ff498f6833eac60a60b1500e",
+      "bytes": 417100,
+      "sha1": "388c71020790e73804502c6f51a174c0f1e9f770"
     },
     "basic": {
       "filename": "56338ba4-aba2-4b0d-bbb7-a2f537294937.png",
-      "gitBlobSha1": "7f9eafed3310a2585d52fcec4b4ef6caa4b6c45e",
-      "bytes": 1580043
+      "gitBlobSha1": "d4a01c643c7f5f1f62e8d9a2e00e6cb91e6fb81f",
+      "bytes": 345706,
+      "sha1": "91d31cd561273562aded7983c8b70cd237e35ff1"
     },
     "pro": {
       "filename": "e6d706ae-d1a0-4db9-9a42-1e3d15cdc4ee.png",
-      "gitBlobSha1": "5aede6dc47f6518193d0092e168793eec263c247",
-      "bytes": 2499449
+      "gitBlobSha1": "e1ac57c819432a8763f29a7dbf681420dd286a37",
+      "bytes": 379901,
+      "sha1": "376df6649d994fe98c22cfdaaa46c967f9d0f422"
     },
     "business": {
       "filename": "82c0702f-67cc-4d93-acdb-68a45937a454.png",
-      "gitBlobSha1": "04e5f1e02fe20e71e741f53d97727d4d15317c14",
-      "bytes": 3471534
+      "gitBlobSha1": "a1d581c727096becfd84e01c1258ac8354e4431b",
+      "bytes": 374052,
+      "sha1": "880d9d587f4161c506601b48850e283f772d1c9f"
     },
     "lifetime": {
       "filename": "a3417cc0-5586-4f67-a98d-4019a6524dff.png",
-      "gitBlobSha1": "7b3627c3fbd1475a7485f666dbcbe733f4ab883e",
-      "bytes": 3459233
+      "gitBlobSha1": "9d717618339217e245fccd848e663dae71fe55e9",
+      "bytes": 384232,
+      "sha1": "7732a16dbcccd493fc15b54e4f985d69f40a4518"
     },
     "credit1000": {
       "filename": "d5b13a37-38fb-4c49-9d52-e63e86f69bd4.png",
-      "gitBlobSha1": "87d8c2df75e10fb27247db10e0674e26f3adb6c0",
-      "bytes": 2514730
+      "gitBlobSha1": "0411d2a385a55d31ff05d860903951c9f30c5a83",
+      "bytes": 390749,
+      "sha1": "9f1ecf3cb8dd8b76f1d4335bffeb36d5e7c9d7d0"
     },
     "credit10000": {
       "filename": "45c92ba3-9198-499a-b718-96670193cdf9.png",
-      "gitBlobSha1": "49bce356123ed046bb17746c32824e7b3fa51e0c",
-      "bytes": 1914106
+      "gitBlobSha1": "1265f74f16781431d67fb4bf0e24220b04d080ce",
+      "bytes": 414100,
+      "sha1": "f86745759d4135bc111ff40c111cd5bab721c29c"
     },
     "credit100000": {
       "filename": "529567d2-78ae-4a59-a9a5-6758390f1957.png",
-      "gitBlobSha1": "3e7a9513c313489eb00cf1906dd28d0ee2de5439",
-      "bytes": 1429951
+      "gitBlobSha1": "a9e4c749111c9326793f61468f80dbb24446154f",
+      "bytes": 404010,
+      "sha1": "36c707ff6f21cb14b3eba13ef4cd195e4637ceec"
     },
     "credit1000000": {
       "filename": "77fcf2c1-e659-4ca6-98d3-74d13a275c04.png",
-      "gitBlobSha1": "3800d2e47c6af06649f39c7423604bedd8afa630",
-      "bytes": 2186180
+      "gitBlobSha1": "adcfaed3bf9404105e0e5121f939306cef428b9e",
+      "bytes": 430089,
+      "sha1": "52d72ef42ee618115d61cb2a6acd82c0b5002791"
     },
     "credit10000000": {
       "filename": "bb87cfda-d36e-4aee-8177-e0b6903e9dfe.png",
-      "gitBlobSha1": "186ac762a4b96c9c635ccb65381d93008acd0232",
-      "bytes": 1792268
+      "gitBlobSha1": "b19eb92e1abb4869aab67542a8083fee8f9d4679",
+      "bytes": 515096,
+      "sha1": "a195ab6bfaf3006c3cc6850152ec0b75c5e435cd"
     },
     "hero": {
       "filename": "fa2c9a57-3fe7-4a2c-8123-7da568cabe10.png",
-      "gitBlobSha1": "cc4f325d0dbfa80626179faebf9de3cfe0f033d0",
-      "bytes": 3363044
+      "gitBlobSha1": "419035a668f5fb7b157fa4bb50cf82b204fb3c4c",
+      "bytes": 1579272,
+      "sha1": "f93f462ed63b20fb59a79493db6521ed80cdb334"
     },
     "creditHero": {
       "filename": "e5506ef4-b0a2-412d-a8b7-6e3108f80761.png",
-      "gitBlobSha1": "a2de21d09a3379e9e26a531047d953ce0560cf52",
-      "bytes": 3026035
+      "gitBlobSha1": "2c811a2bb78cd5b6788412ecaaf7cb13528aeac2",
+      "bytes": 999911,
+      "sha1": "2f1c5e43b55d304b9619fb69902c4b4317bf5c93"
     }
   }
 }
