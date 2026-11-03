@@ -12,7 +12,7 @@ test('Home media budget: no MP4 source on neighbor or spotlight video until play
  }
  assert.match(script,/function updateNeighbors\(\)/);
  assert.doesNotMatch(script,/v\.src=item\.previewUrl/,'never attach MP4 sources to neighboring films');
- assert.match(script,/v\.poster=item\.previewPosterUrl/);
+ assert.match(script,/v\.poster=item\?\.previewPosterUrl/);
  assert.match(script,/function ensureSelectedVideoSource\(\)/);
  assert.match(script,/if\(!ambientAllowed\(\)\|\|!ensureSelectedVideoSource\(\)\)return/);
  assert.match(script,/spotlightVideos\.find\(v=>v\.__spotlightVisible\)/);
