@@ -75,3 +75,17 @@ test('Pricing owner-original four-portal hero survives slow JS and stale browser
  assert.match(html,/Four glowing magical portals above a celestial staircase/);
  assert.equal((html.match(/<span>[^<]+<\/span>/g)||[]).filter(x=>/Professional AI Tools|Studio|Quality|Press Release/.test(x)).length,4,'keep four original hero frames/chips');
 });
+
+test('Pricing excludes all ten unwanted gallery-style card photos but preserves the two wide original owner banners',()=>{
+ const html=read('app/src/main/assets/pricing.html').toString('utf8');
+ const css=read('app/src/main/assets/pricing-page.css').toString('utf8');
+ const js=read('app/src/main/assets/pricing-page.js').toString('utf8');
+ assert.match(html,/Four glowing magical portals above a celestial staircase/);
+ for(const key of ['hero','creditHero']) assert.ok(js.includes(key+":'"+approved.assets[key].filename+"'"));
+ assert.doesNotMatch(js,/picture\.append\(img\(p\.key\)\)/,'Plan cards must not download screenshot/art thumbnails');
+ assert.doesNotMatch(js,/card\.append\(img\(p\.image\)\)/,'AI credit cards must not download random pictures');
+ assert.match(css,/\.price-plan-picture>\.price-art/);
+ assert.match(css,/\.price-credit-card>\.price-art\{display:none!important\}/);
+ assert.match(css,/var\(--price-hero-art\)/);
+ assert.match(css,/var\(--price-credit-hero-art\)/);
+});
