@@ -7,7 +7,15 @@ const $ = id => document.getElementById(id);
 
 let isJarvisActive = false;
 let currentTtsAudio = null;
+let speechVersion = 0;
 let jarvixSessionId = null;
+let pendingJarvixTurn = null;
+let jarvixTurnVersion = 0;
+function cancelJarvixTurn() {
+  jarvixTurnVersion += 1;
+  pendingJarvixTurn?.abort();
+  pendingJarvixTurn = null;
+}
 
 export function getJarvixSessionId() {
   if (!jarvixSessionId) {
@@ -33,6 +41,7 @@ export function getStoredTimbre() {
 }
 
 export function stopAllSpeech() {
+  speechVersion += 1;
   if (currentTtsAudio) {
     try {
       currentTtsAudio.pause();
@@ -74,6 +83,13 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
 
 const FEMALE_VOICE_REGEX = /(?:irina|ирина|tatiana|татьяна|elena|елена|victoria|виктория|milena|милена|svetl|светл|anna|анна|daria|дарья|female|женск|zira|samantha|karen|moira|fiona|hazel|susan|linda|helena|monica|laura|marta|lucia|carmen|hortense|julie|celine|amelie|virginie)/i;
 
+export function getJarvixLanguage() {
+  let selected = document.documentElement.lang;
+  try { selected = localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang') || selected; } catch (_) {}
+  const code = String(selected || navigator.language || 'ru').toLowerCase().split('-')[0];
+  return ['ru', 'en', 'es', 'fr'].includes(code) ? code : 'en';
+}
+
 export function getJarvixVoice(langParam = 'ru') {
   refreshVoices();
   if (!cachedVoices.length) return null;
@@ -86,56 +102,36 @@ export function getJarvixVoice(langParam = 'ru') {
     // Check for explicit Russian male voices (Dmitry, Pavel, Aleksandr, Maxim, Yuri, etc.)
     const maleRu = cachedVoices.find(v =>
       v.lang.startsWith('ru') &&
-      /(?:dmitry|дмитрий|pavel|павел|aleksandr|alexander|александр|maxim|максим|yuri|юрий|mikhail|михаил|boris|борис|igor|игорь|male|муж)/i.test(v.name + ' ' + (v.voiceURI || '')) &&
+      /(?<!\p{L})(?:dmitry|дмитрий|pavel|павел|aleksandr|alexander|александр|maxim|максим|yuri|юрий|mikhail|михаил|boris|борис|igor|игорь|male|муж)(?!\p{L})/iu.test(v.name + ' ' + (v.voiceURI || '')) &&
       !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || ''))
     );
     if (maleRu) return { voice: maleRu, isExplicitMale: true };
 
-    const nonFemaleRu = cachedVoices.find(v => v.lang.startsWith('ru') && !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || '')));
-    if (nonFemaleRu) return { voice: nonFemaleRu, isExplicitMale: false };
-
-    const anyRu = cachedVoices.find(v => v.lang.startsWith('ru'));
-    if (anyRu) return { voice: anyRu, isExplicitMale: false };
   } else if (isFr) {
     const maleFr = cachedVoices.find(v =>
       v.lang.startsWith('fr') &&
-      /(?:henri|thomas|nicolas|paul|alain|claude|male|homme)/i.test(v.name + ' ' + (v.voiceURI || '')) &&
+      /(?<!\p{L})(?:henri|thomas|nicolas|paul|alain|claude|male|homme)(?!\p{L})/iu.test(v.name + ' ' + (v.voiceURI || '')) &&
       !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || ''))
     );
     if (maleFr) return { voice: maleFr, isExplicitMale: true };
 
-    const nonFemaleFr = cachedVoices.find(v => v.lang.startsWith('fr') && !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || '')));
-    if (nonFemaleFr) return { voice: nonFemaleFr, isExplicitMale: false };
-
-    const anyFr = cachedVoices.find(v => v.lang.startsWith('fr'));
-    if (anyFr) return { voice: anyFr, isExplicitMale: false };
   } else if (isEs) {
     const maleEs = cachedVoices.find(v =>
       v.lang.startsWith('es') &&
-      /(?:jorge|diego|pablo|carlos|alvaro|miguel|manuel|enrique|male|hombre)/i.test(v.name + ' ' + (v.voiceURI || '')) &&
+      /(?<!\p{L})(?:jorge|diego|pablo|carlos|alvaro|miguel|manuel|enrique|male|hombre)(?!\p{L})/iu.test(v.name + ' ' + (v.voiceURI || '')) &&
       !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || ''))
     );
     if (maleEs) return { voice: maleEs, isExplicitMale: true };
 
-    const nonFemaleEs = cachedVoices.find(v => v.lang.startsWith('es') && !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || '')));
-    if (nonFemaleEs) return { voice: nonFemaleEs, isExplicitMale: false };
-
-    const anyEs = cachedVoices.find(v => v.lang.startsWith('es'));
-    if (anyEs) return { voice: anyEs, isExplicitMale: false };
   } else {
     // British / UK Male voice (Paul Bettany film JARVIS style)
     const ukMale = cachedVoices.find(v =>
       (v.lang === 'en-GB' || v.lang.startsWith('en')) &&
-      /(?:george|ryan|oliver|arthur|daniel|male|guy|david|brian|mark|paul)/i.test(v.name + ' ' + (v.voiceURI || '')) &&
+      /(?<!\p{L})(?:george|ryan|oliver|arthur|daniel|male|guy|david|brian|mark|paul)(?!\p{L})/iu.test(v.name + ' ' + (v.voiceURI || '')) &&
       !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || ''))
     );
     if (ukMale) return { voice: ukMale, isExplicitMale: true };
 
-    const nonFemaleEn = cachedVoices.find(v => v.lang.startsWith('en') && !FEMALE_VOICE_REGEX.test(v.name + ' ' + (v.voiceURI || '')));
-    if (nonFemaleEn) return { voice: nonFemaleEn, isExplicitMale: false };
-
-    const anyEn = cachedVoices.find(v => v.lang.startsWith('en'));
-    if (anyEn) return { voice: anyEn, isExplicitMale: false };
   }
   return null;
 }
@@ -157,6 +153,7 @@ export function updateJarvisState(mode = 'idle') {
 }
 
 let currentSpokenUtterance = '';
+let retainedSpeechUtterance = null;
 
 // 2. Text-to-Speech Engine with Guaranteed Complete Output & Mutual Acoustic Exclusion
 export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'ru', isRu = true) {
@@ -171,8 +168,10 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
       resumeJarvisRecognition();
     }
 
+    const version = ++speechVersion;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
+    retainedSpeechUtterance = utterance;
     const resolvedLang = (typeof langCode === 'string') ? langCode : (isRu ? 'ru' : 'en');
     const isFr = resolvedLang === 'fr';
     const isEs = resolvedLang === 'es';
@@ -183,20 +182,29 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
     if (voiceMeta && voiceMeta.voice) {
       utterance.voice = voiceMeta.voice;
     }
-    // Lower an unclassified system fallback slightly; only a named male voice
-    // is treated as a confirmed male selection. Web Speech still varies by OS.
+    // Never silently substitute an unknown or female OS voice.
+    if (!voiceMeta?.isExplicitMale) {
+      window.dispatchEvent(new CustomEvent('jarvix:voice-unavailable', { detail: { language: resolvedLang } }));
+      if (typeof onComplete === 'function') onComplete();
+      return;
+    }
     utterance.pitch = 1.0;
     utterance.rate = 1.0;
 
     utterance.onstart = () => {
+      if (version !== speechVersion) return;
       isJarvisSpeaking = true;
       currentSpokenUtterance = text;
       updateJarvisState('speaking');
     };
 
+    let finished = false;
     const finish = () => {
+      if (finished) return;
+      finished = true;
       // 300ms acoustic guard delay to prevent room reverberation / speaker tail from triggering mic
       setTimeout(() => {
+        if (version !== speechVersion) return;
         isJarvisSpeaking = false;
         currentSpokenUtterance = '';
         if (typeof onComplete === 'function') {
@@ -243,11 +251,8 @@ export function speakJarvis(text, onComplete = null) {
   stopAllSpeech();
   resetSilenceTimer();
 
-  const lang = document.documentElement.lang || localStorage.getItem('deepsyq_home_language') || localStorage.getItem('deepsyq_lang') || 'ru';
-  const isRu = (lang === 'ru' || lang.startsWith('ru') || navigator.language?.startsWith('ru'));
-  const isFr = (lang === 'fr' || lang.startsWith('fr'));
-  const isEs = (lang === 'es' || lang.startsWith('es'));
-  const langCode = isRu ? 'ru' : isFr ? 'fr' : isEs ? 'es' : 'en';
+  const langCode = getJarvixLanguage();
+  const isRu = langCode === 'ru';
 
   // Browser speech synthesis uses the language selected on the site.
   // Microphone is strictly paused during speech and resumed safely on completion
@@ -308,22 +313,15 @@ function detectCityKey(text) {
   return null;
 }
 
-function handleWeatherInquiry(cityKey, isRu) {
-  const city = WORLD_CITIES[cityKey] || WORLD_CITIES.paris;
-  jarvixContext.lastCity = cityKey || 'paris';
-  jarvixContext.waitingFor = 'weather_week';
-
-  const timeStr = new Intl.DateTimeFormat(isRu ? 'ru-RU' : 'en-US', {
-    timeZone: city.tz,
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(new Date());
-
-  const response = isRu
-    ? `В ${city.ru} сейчас ${timeStr}, температура около ${city.temp} градусов, ${city.cond}. Хотите узнать прогноз на неделю?`
-    : `In ${city.en} it is currently ${timeStr}, temperature around ${city.temp} degrees, ${city.cond}. Would you like to hear the weekly forecast?`;
-
-  speakJarvis(response);
+function handleWeatherInquiry(cityKey, isRu = true) {
+  jarvixContext.waitingFor = null;
+  const message={
+    ru:'Сервис актуальной погоды не подключён. Не могу достоверно назвать температуру или прогноз.',
+    en:'Live weather is not connected. I cannot reliably provide a temperature or forecast.',
+    fr:'La météo en direct n’est pas connectée. Je ne peux pas donner une température ou des prévisions fiables.',
+    es:'El servicio del tiempo no está conectado. No puedo dar una temperatura ni un pronóstico fiables.'
+  };
+  speakJarvis(message[getJarvixLanguage()] || message.en);
 }
 
 // 5. ChatGPT-Grade Creative Prompt Expander
@@ -392,16 +390,21 @@ function clearCurrentInputs() {
 // 8. Main Voice Command Handler (Hands, Ears, Instant Navigation & Conversational Brain)
 export function handleJarvisVoiceCommand(commandText) {
   if (!commandText) return;
+  cancelJarvixTurn();
+  const turnVersion = jarvixTurnVersion;
   const t = commandText.trim();
   const lower = t.toLowerCase();
   resetSilenceTimer();
-  const isRu = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru'));
+  const lang = getJarvixLanguage();
+  const isRu = lang === 'ru';
+  const isFr = lang === 'fr';
+  const isEs = lang === 'es';
 
   // 1. CAPABILITIES & BUTLER IDENTITY ("Что ты умеешь делать?", "Что ты умеешь?", "Кто ты", "Помощь")
   if (/(?:что\s+(?:ты\s+)?(?:умеешь|можешь)(?:\s+делать)?|твои\s+возможности|какие\s+(?:у\s+тебя\s+)?функции|что\s+ты\s+такое|кто\s+ты|расскажи\s+о\s+себе|справка|помощь|help|what can you do)/i.test(lower)) {
     const helpMsg = isRu
-      ? 'Я JARVIX — ваш бортовой голосовой помощник Deepsyq. Я умею: моментально открывать студии видео, фото, аудио и инструменты сайта; создавать кинематографичные промпты для нейросетей на любую тему; регулировать тему и освещение сайта; очищать поля ввода; а также сообщать точное время и погоду в любых мировых столицах. Что для вас сделать?'
-      : 'I am JARVIX — your resident voice intelligence on Deepsyq. I can instantly open video, photo, audio studios and site tools, generate cinematic AI prompts, adjust website lighting and themes, clear inputs, and report live time and weather worldwide. How can I help you?';
+      ? 'Я JARVIX — помощник Deepsyq. Могу открыть раздел сайта и помочь с черновиком промпта. Полноценная языковая модель и собственный голос ещё не подключены. Генерацию вы запускаете сами в студии.'
+      : 'I am JARVIX, your Deepsyq assistant. I can open site sections and help prepare a prompt. A live language model and dedicated voice are not connected yet. You start generation yourself in Studio.';
     speakJarvis(helpMsg);
     return;
   }
@@ -410,8 +413,8 @@ export function handleJarvisVoiceCommand(commandText) {
   if (/^(?:привет|здравствуй(?:те)?|добрый\s+(?:день|вечер|утро)|салют|хай|hello|hi)$/i.test(lower) || /(?:как\s+(?:твои\s+)?дела|как\s+ты|как\s+настроение|как\s+поживаешь|how are you)/i.test(lower)) {
     if (/(?:как\s+(?:твои\s+)?дела|как\s+ты|как\s+настроение|how are you)/i.test(lower)) {
       const statusMsg = isRu
-        ? 'Все системы функционируют безупречно. Готов открывать студии, генерировать промпты и помогать в работе. Что для вас сделать?'
-        : 'All systems are fully operational and ready. What can I do for you today?';
+        ? 'Доступны базовые команды сайта. Подключение языковой модели можно проверить на странице Джарви.'
+        : 'Basic site commands are available. Check the Jarvix page for language-model connection status.';
       speakJarvis(statusMsg);
       return;
     }
@@ -441,7 +444,7 @@ export function handleJarvisVoiceCommand(commandText) {
   }
 
   // 4b. SHUTDOWN / STANDBY ("Выключись", "Пока", "До свидания")
-  if (/(?:выключись|отключись|пока|до\s+свидания|goodbye|bye|turn off|shut down)/i.test(lower)) {
+  if (/^(?:выключись|отключись|пока|до\s+свидания|goodbye|bye|turn off|shut down)[.!]?$/i.test(lower)) {
     const byeMsg = isRu
       ? 'Выключаюсь. Нажмите на сферу, если понадоблюсь.'
       : 'Deactivating. Click the orb when you need me.';
@@ -507,9 +510,12 @@ export function handleJarvisVoiceCommand(commandText) {
       prompt: expandedPrompt,
       settings: {},
       source: 'jarvix-smart-prompt',
-      autoGenerate: true
-    }).finally(() => {
-      instantOpen(`generate-studio.html?studio=${targetKind}&from=jarvix&auto=1`);
+      autoGenerate: false
+    }).then(() => {
+      if (turnVersion !== jarvixTurnVersion) return;
+      instantOpen(`generate-studio.html?studio=${targetKind}&from=jarvix`);
+    }).catch(() => {
+      if (turnVersion === jarvixTurnVersion) speakJarvis(isRu ? 'Не удалось подготовить черновик. Попробуйте ещё раз.' : 'The draft could not be prepared. Please try again.');
     });
     return;
   }
@@ -521,76 +527,72 @@ export function handleJarvisVoiceCommand(commandText) {
   }
 
   if (/(?:переделай|замени|измени|повтори|еще вариант|regenerate)/i.test(lower)) {
-    const genBtn = $('generate');
-    if (genBtn && !genBtn.disabled) {
-      speakJarvis('Сделано.');
-      genBtn.click();
-      return;
-    }
+    speakJarvis(isRu ? 'Проверьте параметры и нажмите Create в студии. Голосовая команда не запускает платную генерацию.' : 'Review the settings and press Create in Studio. Voice commands do not start paid generation.');
+    return;
   }
 
   // E. INSTANT PAGE OPENING ("Открой видео", "Открой картинку", "Открой инструменты" — моментально!)
-  if (/(?:открой|перейди|запусти)?\s*(?:видео[\s-]?студи|видео|video)/i.test(lower) && !/удали|сжатие/i.test(lower)) {
+  if (/(?:открой|перейди|запусти|open|launch|ouvre|abre)\s+(?:видео[\s-]?студи|видео|video)/i.test(lower) && !/удали|сжатие/i.test(lower)) {
     instantOpen('generate-studio.html?studio=video&from=jarvix');
     return;
   }
 
-  if (/(?:открой|перейди|запусти)?\s*(?:изображен|картинк|фото|image|photo)/i.test(lower) && !/удали|сжатие/i.test(lower)) {
+  if (/(?:открой|перейди|запусти|open|launch|ouvre|abre)\s+(?:изображен|картинк|фото|image|photo)/i.test(lower) && !/удали|сжатие/i.test(lower)) {
     instantOpen('generate-studio.html?studio=image&from=jarvix');
     return;
   }
 
-  if (/(?:открой|перейди|запусти)?\s*(?:аудио|музык|audio|music)/i.test(lower)) {
+  if (/(?:открой|перейди|запусти|open|launch|ouvre|abre)\s+(?:аудио|музык|audio|music)/i.test(lower)) {
     instantOpen('generate-studio.html?studio=audio&from=jarvix');
     return;
   }
 
-  if (/(?:открой|перейди|запусти)?\s*(?:агент|ai[\s-]?агент|agent)/i.test(lower)) {
+  if (/(?:открой|перейди|запусти|open|launch|ouvre|abre)\s+(?:агент|ai[\s-]?агент|agent)/i.test(lower)) {
     instantOpen('ai-agents.html?from=jarvix');
     return;
   }
 
-  if (/(?:открой|перейди|запусти)?\s*(?:уникализатор|видеоуникализатор|uniquifier|vu)/i.test(lower)) {
+  if (/(?:открой|перейди|запусти|open|launch|ouvre|abre)\s+(?:уникализатор|видеоуникализатор|uniquifier|vu)/i.test(lower)) {
     instantOpen('index.html');
     return;
   }
 
-  if (/(?:открой|перейди|запусти)?\s*(?:инструмент|everyday|tools)/i.test(lower)) {
+  if (/(?:открой|перейди|запусти|open|launch|ouvre|abre)\s+(?:инструмент|everyday|tools)/i.test(lower)) {
     instantOpen('free-tools.html');
     return;
   }
 
-  if (/(?:открой|перейди)?\s*(?:холст|canvas)/i.test(lower)) {
+  if (/(?:открой|перейди|open|ouvre|abre)\s+(?:холст|canvas)/i.test(lower)) {
     instantOpen('canvas.html');
     return;
   }
 
-  if (/(?:открой|перейди)?\s*(?:шаблон|apps|ai[\s-]?apps)/i.test(lower)) {
+  if (/(?:открой|перейди|open|ouvre|abre)\s+(?:шаблон|apps|ai[\s-]?apps)/i.test(lower)) {
     instantOpen('ai-apps.html');
     return;
   }
 
-  if (/(?:открой|перейди)?\s*(?:тариф|цен|стоимост|подписк|pricing)/i.test(lower)) {
+  if (/(?:открой|перейди|open|ouvre|abre)\s+(?:тариф|цен|стоимост|подписк|pricing)/i.test(lower)) {
     instantOpen('pricing.html');
     return;
   }
 
-  if (/(?:главн|домой|home)/i.test(lower)) {
+  if (/(?:открой|перейди|open|ouvre|abre)\s+(?:главн|домой|home)/i.test(lower)) {
     instantOpen('deepsyq.html');
     return;
   }
 
-  if (/(?:истори|мои работы|сохранен|assets|history)/i.test(lower)) {
+  if (/(?:открой|перейди|open|ouvre|abre)\s+(?:истори|мои работы|сохранен|assets|history)/i.test(lower)) {
     instantOpen('generate-studio.html?view=history');
     return;
   }
 
-  if (/(?:аватар|avatar)/i.test(lower)) {
+  if (/(?:открой|перейди|open|ouvre|abre)\s+(?:аватар|avatar)/i.test(lower)) {
     instantOpen('avatar-studio.html');
     return;
   }
 
-  if (/(?:суфлер|телесуфлер|teleprompter)/i.test(lower)) {
+  if (/(?:открой|перейди|open|ouvre|abre)\s+(?:суфлер|телесуфлер|teleprompter)/i.test(lower)) {
     instantOpen('teleprompter.html');
     return;
   }
@@ -607,8 +609,7 @@ export function handleJarvisVoiceCommand(commandText) {
 
   // F. DIRECT ACTIONS: Clear, Delete
   if (/(?:удали|очисти|сотри|clear|delete)/i.test(lower)) {
-    clearCurrentInputs();
-    speakJarvis('Сделано. Очистил.');
+    speakJarvis(isRu ? 'Очистите поле вручную, чтобы случайно не потерять ваш текст.' : 'Please clear the field manually so your text is not lost accidentally.');
     return;
   }
 
@@ -715,12 +716,12 @@ export function handleJarvisVoiceCommand(commandText) {
   // L. ASYNC JARVIX AI BRAIN & MEMORY DISPATCH
   (async () => {
     try {
-      const lang = document.documentElement.lang || 'ru';
-      const langCode = (lang === 'ru' || lang.startsWith('ru') || navigator.language?.startsWith('ru'))
-        ? 'ru'
-        : (lang === 'fr' || lang.startsWith('fr')) ? 'fr' : (lang === 'es' || lang.startsWith('es')) ? 'es' : 'en';
+      const langCode = getJarvixLanguage();
 
+      const controller = new AbortController();
+      pendingJarvixTurn = controller;
       const res = await fetch('/api/jarvix/chat', {
+        signal: controller.signal,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -733,12 +734,14 @@ export function handleJarvisVoiceCommand(commandText) {
 
       if (res.ok) {
         const data = await res.json();
+        if (turnVersion !== jarvixTurnVersion) return;
         if (data.studioHandoff) {
           try {
             await saveStudioHandoff(data.studioHandoff);
           } catch (_) {}
         }
 
+        if (turnVersion !== jarvixTurnVersion) return;
         if (data.action) {
           if (data.action.type === 'open_studio') {
             speakJarvis(data.reply || 'Сделано.', () => {
@@ -760,9 +763,11 @@ export function handleJarvisVoiceCommand(commandText) {
         }
       }
     } catch (err) {
+      if (turnVersion !== jarvixTurnVersion || err.name === 'AbortError') return;
       console.warn('[JARVIX AI Brain API dispatch]', err);
     }
 
+    if (turnVersion !== jarvixTurnVersion) return;
     // Intelligent Proactive Fallback (never repeat user's query)
     const smartFallback = isRu
       ? 'Слушаю вас. Могу открыть любую студию, сгенерировать кинематографичный промпт или настроить интерфейс. Что для вас сделать?'
@@ -832,7 +837,7 @@ function resumeJarvisRecognition() {
         const isExplicitInterrupt = /(?:стоп|стой|подожди|погоди|хватит|замолчи|тихо|отмена|прерви|хватит болтать|stop|quiet|silence|wait|cancel|pause)/i.test(heardLower);
 
         // 2. Action command keywords (open video, pricing, theme, etc.)
-        const isActionCommand = /(?:открой|перейди|запусти|видео|картинк|фото|тариф|инструмент|холст|посветлее|потемнее|неон|свет|очисти|сотри|open|theme|clear|pricing|video|studio)/i.test(heardLower);
+        const isActionCommand = /(?:открой|перейди|запусти|очисти|сотри|open|launch|ouvre|ouvrez|abre|abrir)/i.test(heardLower);
 
         // 3. Acoustic echo check: Compare heard text with words JARVIX is speaking right now
         const spokenWords = (currentSpokenUtterance || '').toLowerCase()
@@ -845,10 +850,17 @@ function resumeJarvisRecognition() {
           .split(/\s+/)
           .filter(w => w.length > 2);
 
+        // Speaker echo must never trigger action keywords from our own reply.
+        const echoMatches = heardWords.filter(w => spokenWords.includes(w)).length;
+        if (heardWords.length && echoMatches / heardWords.length >= 0.6) {
+          accumulatedText = '';
+          return;
+        }
         const hasUserWords = heardWords.some(w => !spokenWords.includes(w));
 
         if (isExplicitInterrupt || isActionCommand || (hasUserWords && heardWords.length >= 1)) {
           // USER BARGE-IN DETECTED: Immediately cut off speech with 0ms latency
+          cancelJarvixTurn();
           stopAllSpeech();
           isJarvisSpeaking = false;
           currentSpokenUtterance = '';
@@ -973,7 +985,7 @@ export function activateJarvisVoice() {
   const topBtn = getTopBtn();
   if (topBtn) topBtn.classList.add('is-active');
 
-  const isRu = (document.documentElement.lang === 'ru' || navigator.language?.startsWith('ru'));
+  const isRu = (getJarvixLanguage() === 'ru');
   const hasGreeted = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('jarvix_greeted') === '1';
 
   let greetingText = '';
@@ -1007,6 +1019,7 @@ export function activateJarvisVoice() {
 }
 
 export function deactivateJarvisVoice() {
+  cancelJarvixTurn();
   isJarvisActive = false;
   keepListening = false;
   isJarvisSpeaking = false;
@@ -1042,7 +1055,8 @@ export function toggleJarvisVoice() {
 // Global Escape listener to immediately cancel speech synthesis
 if (typeof window !== 'undefined') {
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isJarvisSpeaking) {
+    if (e.key === 'Escape') {
+      cancelJarvixTurn();
       stopAllSpeech();
       isJarvisSpeaking = false;
       currentSpokenUtterance = '';

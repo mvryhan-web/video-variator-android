@@ -9,7 +9,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
-import {buildJarvixSiteKnowledge,clearSession,getOrCreateSession,processTurnWithMockBrain} from './jarvix-brain.js';
+import {buildJarvixSiteKnowledge,clearSession,getOrCreateSession,processTurnWithMockBrain,getJarvixRuntimeStatus} from './jarvix-brain.js';
 import {generateFreeImage,generateTrialVideo,checkDailyQuota,incrementDailyQuota,studioJobs} from './free-ai-provider.js';
 
 const app=express();
@@ -69,6 +69,10 @@ app.get('/api/studio/config', (_req, res) => {
     models: freeStudioModels.filter(m => m.enabled),
     catalog: freeStudioModels,
     freeTier: true,
+    previewOnly: true,
+    actualAiGeneration: false,
+    actualVideoGeneration: false,
+    artifactType: 'synthetic-svg-demonstration',
     translation: { enabled: false, reason: 'PREVIEW_ONLY' }
   });
 });
@@ -93,7 +97,7 @@ app.post('/api/studio/estimate', (req, res) => {
     credits: 0,
     cost: 0,
     unitPrice: 0,
-    marginRatio: 2.0,
+    marginRatio: null,
     freeTier: true,
     currency: 'USD',
     note: 'Free Test Generation (Zero-Spend Safe)'
@@ -108,6 +112,7 @@ app.post('/api/studio/jobs', async (req, res) => {
   }
 
   const { kind = 'image', model, prompt = 'Cosmic nebula' } = req.body || {};
+  if (!['image', 'video'].includes(kind) || typeof prompt !== 'string' || prompt.length > 2000) return res.status(400).json({error:'INVALID_PREVIEW_INPUT'});
   const id = 'job_' + randomUUID().replace(/-/g, '').slice(0, 16);
   
   incrementDailyQuota(req.ip || 'guest');
@@ -184,7 +189,9 @@ app.get('/api/studio/jobs/:id/media', (req, res) => {
 
 app.get('/api/studio/jobs', (req, res) => {
   if (isLegacyTest) return res.status(503).json(disabled);
-  const list = Array.from(studioJobs.values())
+  const list = [];
+  /* Anonymous preview has no owner auth: publishing all jobs would leak user prompts.
+    Private history is intentionally unavailable until session isolation is implemented.
     .map(j => ({
       id: j.id,
       kind: j.kind,
@@ -195,8 +202,8 @@ app.get('/api/studio/jobs', (req, res) => {
       previewUrl: j.status === 'ready' ? ('/api/studio/jobs/' + j.id + '/media') : null
     }))
     .reverse()
-    .slice(0, 30);
-  res.json({ ok: true, jobs: list, items: list });
+    .slice(0, 30); */
+  res.json({ ok: true, jobs: list, items: list, previewOnly: true });
 });
 // Jarvix's DEV-preview brain is deterministic and local-only. It has no provider
 // credentials, external AI calls, paid generation, or persistent user profile.
@@ -225,6 +232,7 @@ app.post('/api/jarvix/reset',(req,res)=>{
  if(!validSessionId(sid))return res.status(400).json({error:'INVALID_SESSION'});
  clearSession(sid);res.json({ok:true});
 });
+app.get('/api/jarvix/status',(_req,res)=>res.json(getJarvixRuntimeStatus({previewOnly:true})));
 app.get('/api/jarvix/site-map',(_req,res)=>res.json({ok:true,pages:buildJarvixSiteKnowledge()}));
 // Read-only preview of the owner's approved bundled media. This is the same
 // Inspiration response consumed by Home, without production DB/admin writes.

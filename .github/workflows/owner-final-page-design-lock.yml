@@ -1,0 +1,11 @@
+name: Owner final Pricing and Video Uniquifier design lock
+on: [pull_request, push]
+jobs:
+  approved-design:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tests/owner-final-page-design-lock.mjs
