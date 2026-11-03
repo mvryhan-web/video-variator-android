@@ -80,3 +80,24 @@ test('Free AI Provider: studioJobs Map stores and tracks jobs', () => {
   studioJobs.delete(jobId);
   assert.equal(studioJobs.has(jobId), false);
 });
+
+
+test('Free provider never calls a credential-backed API without explicit authorization',async()=>{
+ const originalFetch=globalThis.fetch;
+ const originalHf=process.env.HF_TOKEN,originalFal=process.env.FAL_KEY;
+ const calls=[];
+ try{
+  process.env.HF_TOKEN='test-non-billable-sentinel';
+  process.env.FAL_KEY='test-non-billable-sentinel';
+  globalThis.fetch=async(...args)=>{calls.push(args);throw Error('FORBIDDEN_EXTERNAL_CALL');};
+  const image=await generateFreeImage({prompt:'Zero-spend local artwork'});
+  const video=await generateTrialVideo({prompt:'Zero-spend local video preview'});
+  assert.equal(image.mime,'image/svg+xml');
+  assert.equal(video.mime,'image/svg+xml','preview is an SVG, not a real MP4');
+  assert.deepEqual(calls,[],'credentials must not trigger network calls');
+ }finally{
+  globalThis.fetch=originalFetch;
+  if(originalHf===undefined)delete process.env.HF_TOKEN;else process.env.HF_TOKEN=originalHf;
+  if(originalFal===undefined)delete process.env.FAL_KEY;else process.env.FAL_KEY=originalFal;
+ }
+});
