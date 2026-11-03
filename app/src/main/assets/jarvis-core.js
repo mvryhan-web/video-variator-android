@@ -1,5 +1,6 @@
 // JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
 // Guaranteed Male Film Voice, Instant Navigation ("Сделано."), Multi-Turn Weather Brain & Smart ChatGPT Prompt Generation
+import {speakOwnerSpeech, stopOwnerSpeech} from './jarvix-owner-speech.js';
 import { detectIntent } from './home-experience.js';
 import { saveStudioHandoff } from './studio-handoff.js';
 
@@ -41,6 +42,7 @@ export function getStoredTimbre() {
 }
 
 export function stopAllSpeech() {
+  stopOwnerSpeech();
   speechVersion += 1;
   if (currentTtsAudio) {
     try {
@@ -256,7 +258,29 @@ export function speakJarvis(text, onComplete = null) {
 
   // Browser speech synthesis uses the language selected on the site.
   // Microphone is strictly paused during speech and resumed safely on completion
-  speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
+  const version = speechVersion;
+  speakOwnerSpeech(text, langCode, {
+    fallback: () => speakLocalSpeechSynthesis(text, onComplete, langCode, isRu),
+    start: () => {
+      resetSilenceTimer(); clearTimeout(silenceTimer);
+      pauseJarvisRecognition(); isJarvisSpeaking = true;
+      currentSpokenUtterance = text; updateJarvisState('speaking');
+    },
+    complete: () => setTimeout(() => {
+      if (version !== speechVersion) return;
+      isJarvisSpeaking = false; currentSpokenUtterance = '';
+      if (typeof onComplete === 'function') onComplete();
+      else if (isJarvisActive && keepListening) {
+        resumeJarvisRecognition(); startSilenceTimer(); updateJarvisState('listening');
+      } else updateJarvisState('idle');
+    }, 300),
+    error: () => {
+      const button = getTopBtn();
+      const messages = {ru:'Голосовой сервер недоступен. Попробуйте ещё раз.',en:'Voice server unavailable. Please try again.',fr:'Serveur vocal indisponible. Réessayez.',es:'Servidor de voz no disponible. Inténtalo de nuevo.'};
+      if (button) button.title = messages[langCode] || messages.en;
+      window.dispatchEvent(new CustomEvent('jarvix:voice-unavailable', {detail:{language:langCode,source:'self-hosted'}}));
+    }
+  });
 }
 
 // 3. Instant Navigation Utility ("Сделано." — spoken strictly ONCE)
@@ -985,35 +1009,8 @@ export function activateJarvisVoice() {
   const topBtn = getTopBtn();
   if (topBtn) topBtn.classList.add('is-active');
 
-  const isRu = (getJarvixLanguage() === 'ru');
-  const hasGreeted = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('jarvix_greeted') === '1';
-
-  let greetingText = '';
-  if (!hasGreeted) {
-    // 1st time greeting: polite introduction & lighting/design check
-    greetingText = isRu
-      ? 'Здравствуйте! Я JARVIX. Готов к работе. Скажите, удобно ли вам текущее освещение и дизайн сайта? Могу сделать посветлее, потемнее или включить неоновый киберпанк.'
-      : 'Greetings! I am JARVIX. Online and ready. How is the current lighting and design for you? I can make it brighter, darker, or switch to neon cyberpunk.';
-    try {
-      sessionStorage.setItem('jarvix_greeted', '1');
-    } catch (_) {}
-  } else {
-    // Subsequent clicks: smart, attentive butler response
-    const butlerRepliesRu = [
-      'Да, слушаю вас.',
-      'Всегда к вашим услугам.',
-      'На связи. Что делаем?',
-      'Слушаю вас.'
-    ];
-    const butlerRepliesEn = [
-      'Yes, listening.',
-      'At your service.',
-      'Standing by. What shall we do?',
-      'Listening.'
-    ];
-    const list = isRu ? butlerRepliesRu : butlerRepliesEn;
-    greetingText = list[Math.floor(Math.random() * list.length)];
-  }
+  const greetings = {ru:'Я Джарвис. Слушаю вас.', en:'I am Jarvis. How can I help?', fr:'Je suis Jarvis. Je vous écoute.', es:'Soy Jarvis. ¿En qué puedo ayudarte?'};
+  const greetingText = greetings[getJarvixLanguage()] || greetings.en;
 
   speakJarvis(greetingText);
 }

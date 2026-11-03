@@ -7,6 +7,7 @@ const source=readFileSync(new URL('../app/src/main/assets/jarvis-core.js',import
 function runtime(voices=[],selected='en',pageLanguage='ru') {
  const events=[],spoken=[];
  const context=vm.createContext({
+  stopOwnerSpeech:()=>{},
   document:{documentElement:{lang:pageLanguage}}, navigator:{language:'ru-RU'},
   localStorage:{getItem:()=>selected},
   window:{speechSynthesis:{getVoices:()=>voices,cancel(){},speak:u=>spoken.push(u)},dispatchEvent:e=>events.push(e)},
