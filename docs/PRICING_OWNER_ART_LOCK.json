@@ -4,10 +4,10 @@
   "originalApprovalRef": "48b0c216fb249738cc9db7540489e32be39de19a",
   "localMirrorRef": "2d43597ecce7034ee957fc4083544b571495ebd6",
   "originalCdn": "https://d2ol7oe51mr4n9.cloudfront.net/user_3DohHzQ92OwE6TBQr5M2fYm2CwS/",
-  "notice": "DO NOT REPLACE, REGENERATE, RENAME, CROP, REORDER, OR REDESIGN without NEW EXPLICIT OWNER approval. All 12 pictured images are the owner-selected 2026-10-25 assets. Lock records 2026-11-02 local mirror bytes, not an independent visual comparison to original CDN. 2026-11-03 owner-authorized production repair: original images UNCHANGED; pin four-portal hero and credit banner from same-origin local bytes in CSS and version the loader to invalidate stale browser caches; no re-design.",
+  "notice": "DO NOT REPLACE, REGENERATE, RENAME, CROP, REORDER, OR REDESIGN without NEW EXPLICIT OWNER approval. All 12 pictured images are the owner-selected 2026-10-25 assets. Lock records 2026-11-02 local mirror bytes, not an independent visual comparison to original CDN. 2026-11-03 owner-authorized production repair: original images UNCHANGED; pin four-portal hero and credit banner from same-origin local bytes in CSS and version the loader to invalidate stale browser caches; no re-design. Owner clarification 2026-11-03: only two wide original banners may be visibly rendered; all ten decorative card photos are retained as archival bytes but are NO LONGER used in card UI.",
   "layout": {
     "htmlGitBlobSha1": "1e69c0632ee262ee8ab5af698579eea62372e4ad",
-    "cssGitBlobSha1": "4b135bb59ec18f3401f2098dc45fe8600f816db0"
+    "cssGitBlobSha1": "a44c123e0d4bf4ff33c40422c9797be064c02aac"
   },
   "assets": {
     "trial": {
