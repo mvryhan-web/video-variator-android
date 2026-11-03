@@ -6,7 +6,7 @@ const page=readFileSync(new URL('../app/src/main/assets/deepsyq.html',import.met
 const css=readFileSync(new URL('../app/src/main/assets/home-triptych-video.css',import.meta.url),'utf8');
 const links=[
   ['canvas','canvas.html','media/home/neon-20261018/canvas.webp','media/home/neon-20261018/canvas-card.mp4','Canvas'],
-  ['agent','ai-agents.html','media/home/neon-20261018/agent.webp','media/home/neon-20261018/agent-card.mp4','AI Agent'],
+  ['agent','ai-agents.html','media/home/neon-20261018/agent.webp','media/home/neon-20261018/agent-card.mp4','JARVIX'],
   ['apps','ai-apps.html','media/home/neon-20261018/apps.webp','media/home/neon-20261018/apps-card.mp4','AI Apps'],
 ];
 test('only the three approved Home spotlight cards receive real videos with native fallback',()=>{
@@ -23,7 +23,7 @@ test('only the three approved Home spotlight cards receive real videos with nati
     assert.ok(a[0].includes('data-src="'+file+'"'));
     assert.doesNotMatch(a[0],/\sautoplay\b|\ssrc="[^"]+\.mp4"/,'spotlight videos must not auto-fetch full MP4');
     assert.ok(a[0].includes(file));
-    assert.ok(a[0].includes('<strong>'+label+'</strong>'));
+    assert.match(a[0],new RegExp('<strong(?:\\s[^>]*)?>'+label+'<\\/strong>'));
     assert.doesNotMatch(a[0],/<small>|<em>/,'Owner removed marketing microcopy from this spotlight');
     assert.match(a[0],/<video[^>]*muted[^>]*loop[^>]*playsinline[^>]*preload="none"/);
     assert.match(a[0],/aria-hidden="true"/);
