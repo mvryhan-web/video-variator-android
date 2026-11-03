@@ -1,3 +1,11 @@
+## ОБЯЗАТЕЛЬНАЯ ПРОВЕРКА РЕЗУЛЬТАТА P — 03.11.2026
+
+**Перед любой работой прочитай верхний `OWNER FINAL ACCEPTANCE GATE — 2026-11-03` в [AGENTS.md](../AGENTS.md).** Для каждого задания сперва фиксируй конкретный видимый/функциональный результат, исходный эталон и запрет на изменения остального. После изменений отдельно проверяй технические доказательства (код/CI/Render) **и реальный результат на запрошенном URL**. Для визуальных задач сравни фактические скриншоты desktop/mobile с исходным эталоном. Без этого используй `VISUAL_NOT_VERIFIED`, не «готово». Не оставляй проверку владельцу и не объявляй успех по `LIVE` на Render. Если владелец просит лишь оценить ошибку, не правь страницу.
+
+**Инцидент:** Everyday Tools 03.11.2026: CSS был опубликован без визуальной приёмки; публикация не подтверждает восстановление баннера. Это действующий незакрытый критерий, а не новый дизайн-заказ.
+
+---
+
 ## OWNER RULE — 2026-11-03 — TEST SITE FIRST; PRODUCTION PUBLICATION FROZEN
 
 **Standing owner authorization:** publish every completed, appropriately checked change to the existing DEEPSYQ test site so the owner can inspect its actual behavior, without asking again for each safe test publication. Deploy only the intended reviewed revision and verify the deployed page; a commit, PR, merge or accepted deploy request alone is not proof that the owner can see the change.
