@@ -35,7 +35,10 @@ test('Canvas and local Assets anchors exist, disabled features remain non-links'
  assert.ok(!home.includes('id="quickCreateForm"'),'Home must not retain Canvas editor');
  assert.ok(source('canvas.html').includes('id="quickCreateForm"'),'Canvas editor must exist on dedicated page');
  assert.ok(!home.includes('id="recentCreations"'),'Removed Home history cards must not be restored');
- assert.match(home,/<span class="nav-pending" aria-label="AI Agent coming soon"/);
+ // JARVIX is the live AI assistant; only truly pending items must remain non-links.
+ assert.match(home, /aria-label="Affiliate program coming soon"/);
+ assert.match(home, /aria-label="Activate JARVIX AI"/);
+ assert.ok(!home.includes('aria-label="AI Agent coming soon"'), 'do not restore stale AI Agent placeholder');
 });
 
 test('Every local HTML anchor links to an existing project asset',()=>{
