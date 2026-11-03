@@ -57,8 +57,8 @@ describe('DEEPSYQ P0 Verification: Voice, Pets, Navigation & Languages', () => {
     ];
     for (const page of publicPages) {
       const html = fs.readFileSync(path.join(assetsDir, page), 'utf8');
-      assert.ok(!/<script\\b[^>]*src=["']virtual-pet\\.js/.test(html), `${page} must not load pet JavaScript`);
-      assert.ok(!/<link\\b[^>]*href=["']virtual-pet\\.css/.test(html), `${page} must not load pet CSS`);
+      assert.ok(!/<script\b[^>]*src=["']virtual-pet\.js/.test(html), `${page} must not load pet JavaScript`);
+      assert.ok(!/<link\b[^>]*href=["']virtual-pet\.css/.test(html), `${page} must not load pet CSS`);
     }
     const home = fs.readFileSync(path.join(assetsDir, 'deepsyq.html'), 'utf8');
     assert.ok(!home.includes('livingPetsSection'), 'Home pet block is retired');
