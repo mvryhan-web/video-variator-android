@@ -47,3 +47,91 @@ test('TEST F4 Create button: zero-credit quote -> one job -> image displayed; no
   assert.doesNotMatch(await page.locator('#status').innerText(),/изменились|changed/);
  }finally{if(browser)await browser.close();child.kill('SIGTERM');if(child.exitCode===null&&child.signalCode===null)await once(child,'exit');}
 });
+
+
+test('TEST Studio separation: image only in Images, audio only in Audio, no shared results in Video',async()=>{
+ const port=32594,base='http://127.0.0.1:'+port;
+ const child=spawn(process.execPath,['server/deepsyq-preview.js'],{env:{
+  ...process.env,PORT:String(port),NODE_ENV:'test',FREE_AI_STUDIO_ENABLED:'true',
+  HF_TOKEN:'sentinel-no-network',FAL_KEY:'sentinel-no-network',STRIPE_SECRET_KEY:'',
+  DATABASE_URL:'',GEMINI_API_KEY:'',BYTEPLUS_API_KEY:''
+ },stdio:['ignore','pipe','pipe']});
+ let stderr='',browser;child.stderr.on('data',d=>{stderr+=String(d)});
+ try{
+  let ready=false;
+  for(let i=0;i<100;i++){if(child.exitCode!==null)throw Error('Server exited: '+stderr);
+   try{if((await fetch(base+'/api/health')).ok){ready=true;break}}catch(_){}
+   await new Promise(r=>setTimeout(r,100));}
+  assert.ok(ready,'preview server must start');
+  browser=await chromium.launch({headless:true});
+  const page=await browser.newPage({locale:'ru-RU'});
+  await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
+  page.on('dialog',dialog=>dialog.accept());
+  // This acceptance test uses an already-consented browser profile. Onboarding is verified separately.
+  await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+  const go=async(section)=>{
+   await page.goto(base+'/generate-studio.html?studio='+section,{waitUntil:'domcontentloaded'});
+   // Explicitly accept the real onboarding consent dialog before interacting with Studio tabs.
+   const accept=page.locator('#luminaAcceptButton');
+   if(await accept.isVisible())await accept.click();
+  };
+  const create=async(prompt)=>{
+   await page.locator('#prompt').fill(prompt);
+   await page.waitForFunction(()=>!document.querySelector('#generate')?.disabled,null,{timeout:15000});
+   await page.locator('#generate').click();
+  };
+  const historyCount=async expected=>{
+   // Wait for a NEW response; otherwise a previous "No results" can race with the current filter.
+   const response=page.waitForResponse(r=>r.url().includes('/api/studio/jobs?filter=')&&r.status()===200);
+   await page.locator('#showHistory').click();
+   await response;
+   await page.waitForFunction(n=>{
+    const list=document.querySelector('#historyList');
+    const content=list?.textContent||'';
+    return list&&!/Loading results|Загружаем результаты/.test(content)&&list.querySelectorAll('.history-card').length===n;
+   },expected,{timeout:15000});
+   assert.equal(await page.locator('#historyList .history-card').count(),expected);
+  };
+  await go('image');
+  await create('Фотография белого кота в саду');
+  await page.locator('#media img').waitFor({state:'visible',timeout:25000});
+  const imageId=await page.evaluate(()=>sessionStorage.getItem('vu_generation_job_image'));
+  assert.match(imageId||'',/^job_/);
+  assert.equal(await page.evaluate(()=>sessionStorage.getItem('vu_generation_job_video')),null);
+  await page.locator('.studio-nav [data-kind="video"]').dispatchEvent('click');
+  assert.equal(await page.locator('#media img').count(),0,'image result cleared on video switch');
+  await historyCount(0);
+  await page.locator('.studio-nav [data-kind="music"]').dispatchEvent('click');
+  assert.equal(await page.locator('#media img').count(),0,'image result cleared on audio switch');
+  await historyCount(0);
+  await page.locator('#showCreate').click();
+  await create('Короткий музыкальный сигнал приветствия');
+  await page.locator('#media audio').waitFor({state:'visible',timeout:25000});
+  assert.equal(await page.locator('#media img').count(),0,'Audio tab must render audio, not SVG image');
+  const audioId=await page.evaluate(()=>sessionStorage.getItem('vu_generation_job_audio'));
+  assert.match(audioId||'',/^job_/);
+  assert.notEqual(imageId,audioId);
+  await historyCount(1);
+  assert.equal(await page.locator('#historyList .history-card .history-preview[data-kind="music"]').count(),1);
+  await page.locator('.studio-nav [data-kind="image"]').dispatchEvent('click');
+  assert.equal(await page.locator('#media audio').count(),0,'audio player cleared on Image switch');
+  await historyCount(1);
+  assert.equal(await page.locator('#historyList .history-card .history-preview[data-kind="image"]').count(),1);
+  await go('video');
+  assert.equal(await page.locator('#media img').count(),0,'new Video page does not auto-restore last image');
+  await historyCount(0);
+  await go('image');
+  await page.locator('#media img').waitFor({state:'visible',timeout:25000});
+  assert.equal(await page.locator('#media audio').count(),0);
+  await go('audio');
+  await page.locator('#media audio').waitFor({state:'visible',timeout:25000});
+  assert.equal(await page.locator('#media img').count(),0);
+  // A pre-upgrade shared job must migrate ONLY inside its real media section.
+  await page.evaluate((id)=>{sessionStorage.removeItem('vu_generation_job_image');sessionStorage.setItem('vu_generation_job',id);},imageId);
+  await go('video');
+  assert.equal(await page.locator('#media img').count(),0,'legacy image must never restore inside Video');
+  await go('image');
+  await page.locator('#media img').waitFor({state:'visible',timeout:25000});
+  assert.equal(await page.evaluate(()=>sessionStorage.getItem('vu_generation_job_image')),imageId);
+ }finally{if(browser)await browser.close();child.kill('SIGTERM');if(child.exitCode===null&&child.signalCode===null)await once(child,'exit');}
+});

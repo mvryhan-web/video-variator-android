@@ -64,6 +64,27 @@ test('live isolated TEST Studio creates a zero-spend preview and keeps prompts/m
   assert.equal(video.status,'ready');
   const videoMedia=await fetch(base+video.mediaUrl,{headers:{cookie}});
   assert.match(videoMedia.headers.get('content-type')||'',/image\/svg\+xml/);
+
+  // One anonymous visitor still gets three independent media-type histories.
+  const audioPost=await fetch(base+'/api/studio/jobs',{method:'POST',
+   headers:{'content-type':'application/json',cookie},
+   body:JSON.stringify({kind:'music',model:'lyria-3-clip-preview',prompt:'Short greeting chime'})});
+  assert.equal(audioPost.status,200);
+  const audioId=(await audioPost.json()).jobId;
+  const audioJob=await(await fetch(base+'/api/studio/jobs/'+audioId,{headers:{cookie}})).json();
+  assert.equal(audioJob.status,'ready');
+  assert.equal(audioJob.kind,'music');
+  assert.equal(audioJob.mime,'audio/wav','Audio cannot produce an SVG image');
+  const wav=await fetch(base+audioJob.mediaUrl,{headers:{cookie}});
+  assert.match(wav.headers.get('content-type')||'',/audio\/wav/);
+  const images=(await(await fetch(base+'/api/studio/jobs?filter=image',{headers:{cookie}})).json()).items;
+  const videos=(await(await fetch(base+'/api/studio/jobs?filter=video',{headers:{cookie}})).json()).items;
+  const audios=(await(await fetch(base+'/api/studio/jobs?filter=music',{headers:{cookie}})).json()).items;
+  assert.deepEqual(images.map(x=>x.id),[created.jobId]);
+  assert.deepEqual(videos.map(x=>x.id),[videoId]);
+  assert.deepEqual(audios.map(x=>x.id),[audioId]);
+  const all=(await(await fetch(base+'/api/studio/jobs?filter=all',{headers:{cookie}})).json()).items;
+  assert.equal(all.length,3,'My Creations may legitimately include all three kinds');
  }finally{
   child.kill('SIGTERM');
  }
