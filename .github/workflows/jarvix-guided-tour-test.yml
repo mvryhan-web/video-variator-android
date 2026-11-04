@@ -1,0 +1,36 @@
+name: Jarvix TEST owner guided tour browser acceptance
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/jarvis-core.js'
+      - 'app/src/main/assets/jarvis-core.css'
+      - 'app/src/main/assets/jarvix-guided-tour.js'
+      - 'tests/jarvix-guided-tour.test.mjs'
+      - '.github/workflows/jarvix-guided-tour-test.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/jarvis-core.js'
+      - 'app/src/main/assets/jarvis-core.css'
+      - 'app/src/main/assets/jarvix-guided-tour.js'
+      - 'tests/jarvix-guided-tour.test.mjs'
+      - '.github/workflows/jarvix-guided-tour-test.yml'
+permissions:
+  contents: read
+jobs:
+  guided-tour-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Verify tour JavaScript syntax
+        run: node --check app/src/main/assets/jarvis-core.js && node --check app/src/main/assets/jarvix-guided-tour.js && node --check tests/jarvix-guided-tour.test.mjs
+      - name: Click visible tour header button, verify overlay and exit, no paid calls
+        run: node --test tests/jarvix-guided-tour.test.mjs
