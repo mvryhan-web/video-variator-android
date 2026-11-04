@@ -14,7 +14,9 @@
     "migrate:ai": "node server/migrate-ai.js",
     "migrate:ai:check": "node server/migrate-ai.js --check",
     "ai:preflight": "node server/ai-preflight.js",
-    "preview:deepsyq": "node server/deepsyq-preview.js"
+    "preview:deepsyq": "node server/deepsyq-preview.js",
+    "check:jarvis": "node --experimental-vm-modules scripts/jarvis-stability.mjs",
+    "postinstall": "npm run check:jarvis"
   },
   "dependencies": {
     "@ffmpeg/core": "0.12.10",

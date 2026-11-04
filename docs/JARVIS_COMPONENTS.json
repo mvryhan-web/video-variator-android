@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "entry": "app/src/main/assets/jarvis-core.js",
+  "components": [
+    {"id":"orb-and-microphone","files":["app/src/main/assets/jarvis-core.js","app/src/main/assets/jarvis-core.css"],"dependsOn":["speech","navigation","showcase"],"contracts":["single canonical module URL","activate once, Stop cancels late work","resume listening after speech"]},
+    {"id":"speech","files":["app/src/main/assets/jarvix-owner-speech.js","app/src/main/assets/jarvix-clip-library.js","server/jarvix-local-voice.js"],"dependsOn":["recordings"],"contracts":["matching locale","static recording before synthesis","cancel stale audio"]},
+    {"id":"recordings","files":["app/src/main/assets/media/jarvix/clips/manifest.json"],"dependsOn":[],"contracts":["unique locale IDs","all referenced audio exists","SHA-256 matches bytes and URL cache version"]},
+    {"id":"navigation","files":["app/src/main/assets/jarvix-page-commands.js","app/src/main/assets/jarvix-site-controls.js","app/src/main/assets/deepsyq-site-shell.js"],"dependsOn":["knowledge"],"contracts":["specific tool before generic studio","respect disabled options","negative commands and questions do not change settings"]},
+    {"id":"showcase","files":["app/src/main/assets/jarvix-guided-tour.js","app/src/main/assets/media/jarvix/jarvix-showcase-v2.json"],"dependsOn":["speech","navigation"],"contracts":["no missing module exports","unapproved new pack remains disabled","Stop restores original theme"]},
+    {"id":"knowledge","files":["server/jarvix-brain.js","server/deepsyq-preview.js"],"dependsOn":[],"contracts":["prices from current /api/config","features from shipped Pricing source","no model-connected claim from catalog/config alone"]}
+  ],
+  "regressionTests": [
+    "tests/jarvis-contracts.test.mjs",
+    "tests/jarvis-core.test.mjs",
+    "tests/jarvix-single-instance.test.mjs",
+    "tests/jarvix-activation-session.test.mjs",
+    "tests/jarvix-recognition-lifecycle.test.mjs",
+    "tests/jarvix-guided-tour.test.mjs",
+    "tests/jarvix-page-commands.test.mjs",
+    "tests/jarvix-site-controls.test.mjs",
+    "tests/jarvix-release-local-llm.test.mjs",
+    "tests/jarvix-catalog-routing.test.mjs",
+    "tests/jarvix-clip-library.test.mjs",
+    "tests/jarvix-local-voice.test.mjs",
+    "tests/free-ai-studio-preview-isolation.test.mjs",
+    "tests/pricing-owner-art-lock.mjs"
+  ]
+}

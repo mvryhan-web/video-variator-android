@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-04",
+  "scope": "TEST ONLY",
+  "sourceCommit": "59d0e3387e97df502c9c60613abc0892aca935b6",
+  "audioRestoreCommit": "314d73977f57c7fafebdcc2122d6b9212228cf0d",
+  "render": {"serviceId":"srv-db91k1vf3r2c73fpj350","deployId":"dep-dbllj0dt1l0c73dni7eg","url":"https://deepsyq-visual-preview-20261016.onrender.com/","status":"live","finishedAt":"2026-11-04T16:14:29.510156Z"},
+  "capabilities": [
+    {"id":"orb-toggle","status":"live_browser_verified","evidence":"Activation class becomes active; second click returns to idle. Owner confirmed restored Jarvis works."},
+    {"id":"russian-greeting-playback","status":"live_browser_verified","evidence":"Published restored runtime reported playing with source static-clip; Stop returned idle."},
+    {"id":"four-language-greeting-files","status":"live_http_verified","evidence":"All four published _76 files matched approved replacement bytes; not a listening-quality review of all four languages."},
+    {"id":"once-per-session-intro","status":"automated_verified","evidence":"Activation-session tests cover one introduction and subsequent listening phrase; stale activation callbacks canceled."},
+    {"id":"tool-navigation","status":"automated_and_typed_browser_verified","evidence":"29 tool routes/aliases tested. Actual Tools page opened photo compression from «открой комплекс фото» using command-input QA, without microphone."},
+    {"id":"vu-settings","status":"automated_and_typed_browser_verified","evidence":"Actual VU mode, resolution and 16:9 changed; disabled count stayed unchanged and was reported. All variants not individually browser-tested."},
+    {"id":"current-plan-answers","status":"automated_and_typed_browser_verified","evidence":"Actual Pro reply used current $24/2250 allowance and Pricing features; live site-map and shipped command-module bytes verified."},
+    {"id":"owners-live-microphone","status":"not_verified_in_cloud_browser","evidence":"Cloud browser reported microphone permission failure; this is not evidence that the owner microphone fails."},
+    {"id":"local-qwen-connectivity","status":"not_verified","evidence":"Local adapter exists. Running authenticated Qwen endpoint and Render local-LLM configuration remain unverified."},
+    {"id":"new-showcase-pack","status":"disabled_pending_approved_audio","evidence":"jarvix-showcase-v2.json ready:false; recorded tour clips do not prove the separate new showcase pack is approved."}
+  ],
+  "limitations": ["This file records past evidence, not an automatic declaration that every current feature works.","Runtime code may evolve when its contracts and acceptance checks pass; frozen page designs retain their separate owner locks.","Full repository CI has independent blockers; this baseline does not override them or authorize production."]
+}

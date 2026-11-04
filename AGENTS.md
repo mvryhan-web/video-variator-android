@@ -1,3 +1,9 @@
+## OWNER RULE — 2026-11-04 — JARVIS: СОХРАНЯТЬ ПРОВЕРЕННЫЕ ФУНКЦИИ
+
+Для каждой правки Jarvis сначала читать `docs/JARVIS_COMPONENTS.json`, `docs/JARVIS_STABILITY.md` и `docs/JARVIS_VERIFIED_BASELINE.json`. Проверять все затронутые вызовы/импорты/данные; не заменять целиком рабочую реализацию ради правки аудио. Перед публикацией выполнять `npm run check:jarvis`; для задания «только аудио» — также `npm run check:jarvis -- --audio-only <полный-SHA-проверенной-базы>`. Нельзя удалять/ослаблять регрессии, менять baseline ради зелёного CI или считать статус Live доказательством работы микрофона/модели. Сохранять доказательства проверенного поведения, SHA, deploy и ограничения. Новая возможность не отменяет старые работающие сценарии. Публикация только в существующий TEST, обязательные прочие gates сохраняются; production не разрешён.
+
+---
+
 ## OWNER RULE — 2026-11-03 — EVERY SAFE TASK ENDS ON TEST, NOT AT PR
 
 Owner requires that safe, completed DEEPSYQ work be **published to the existing isolated Render TEST site and verified there** as the default final step, rather than stopping at commit/PR/CI. No repeated permission request for each permitted TEST publication. Before changing `deepsyq-platform` or redeploying, compare the running Render commit with DEV and **carry forward concurrently published, approved changes**; no silent site regressions. After publication prove the selected SHA is LIVE **and** test the actual target URL in desktop/mobile browser. If a relevant acceptance gate fails, fix it or record exact `NOT_TEST_DEPLOYED`; unrelated historical CI failures do not prove the new feature broken, but may not be bypassed to merge a failing PR. Never claim test publication from GitHub merge, Render request or status alone. No production deployment, provider spending, unsafe migrations or fake claim of real AI from SVG fallback.

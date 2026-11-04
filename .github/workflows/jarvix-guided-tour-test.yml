@@ -1,20 +1,28 @@
-name: Jarvix TEST owner guided tour browser acceptance
+name: Jarvis dependency and regression gate
 on:
   pull_request:
     branches: [deepsyq-platform]
     paths:
-      - 'app/src/main/assets/jarvis-core.js'
-      - 'app/src/main/assets/jarvis-core.css'
-      - 'app/src/main/assets/jarvix-guided-tour.js'
-      - 'tests/jarvix-guided-tour.test.mjs'
+      - 'app/src/main/assets/**'
+      - 'server/**'
+      - 'tests/jarvi*.mjs'
+      - 'tests/free-ai-studio-preview-isolation.test.mjs'
+      - 'tests/pricing-owner-art-lock.mjs'
+      - 'docs/JARVIS_*.json'
+      - 'scripts/jarvis-stability.mjs'
+      - 'package*.json'
       - '.github/workflows/jarvix-guided-tour-test.yml'
   push:
-    branches: [deepsyq-platform]
+    branches: [deepsyq-platform, p/navigation-compact-20261104]
     paths:
-      - 'app/src/main/assets/jarvis-core.js'
-      - 'app/src/main/assets/jarvis-core.css'
-      - 'app/src/main/assets/jarvix-guided-tour.js'
-      - 'tests/jarvix-guided-tour.test.mjs'
+      - 'app/src/main/assets/**'
+      - 'server/**'
+      - 'tests/jarvi*.mjs'
+      - 'tests/free-ai-studio-preview-isolation.test.mjs'
+      - 'tests/pricing-owner-art-lock.mjs'
+      - 'docs/JARVIS_*.json'
+      - 'scripts/jarvis-stability.mjs'
+      - 'package*.json'
       - '.github/workflows/jarvix-guided-tour-test.yml'
 permissions:
   contents: read
@@ -28,9 +36,5 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - run: npm ci --no-audit --no-fund
-      - run: npx playwright install --with-deps chromium
-      - name: Verify tour JavaScript syntax
-        run: node --check app/src/main/assets/jarvis-core.js && node --check app/src/main/assets/jarvix-guided-tour.js && node --check tests/jarvix-guided-tour.test.mjs
-      - name: Click visible tour header button, verify overlay and exit, no paid calls
-        run: node --test tests/jarvix-guided-tour.test.mjs
+      - name: Install production dependencies and run the shared stability gate
+        run: npm ci --omit=dev --no-audit --no-fund
