@@ -81,8 +81,15 @@ test('TEST Studio separation: image only in Images, audio only in Audio, no shar
    await page.locator('#generate').click();
   };
   const historyCount=async expected=>{
+   // Wait for a NEW response; otherwise a previous "No results" can race with the current filter.
+   const response=page.waitForResponse(r=>r.url().includes('/api/studio/jobs?filter=')&&r.status()===200);
    await page.locator('#showHistory').click();
-   await page.waitForFunction(()=>document.querySelector('#historyList')?.textContent&&!document.querySelector('#historyList')?.textContent.includes('Загружаем'),null,{timeout:15000});
+   await response;
+   await page.waitForFunction(n=>{
+    const list=document.querySelector('#historyList');
+    const content=list?.textContent||'';
+    return list&&!/Loading results|Загружаем результаты/.test(content)&&list.querySelectorAll('.history-card').length===n;
+   },expected,{timeout:15000});
    assert.equal(await page.locator('#historyList .history-card').count(),expected);
   };
   await go('image');
