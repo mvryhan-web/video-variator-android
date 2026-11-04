@@ -1,0 +1,21 @@
+/* Owner-requested festive chrome. Page artwork and content are untouched. */
+html[data-site-theme="festive-newyear"] .ds-header{
+ background:linear-gradient(110deg,#082d25f2,#071c29f2 58%,#30251bf2)!important;
+ border-bottom-color:#d9b56d!important;
+ box-shadow:0 1px 0 #e8ca7e55,0 8px 36px #071b2080!important;
+ isolation:isolate;
+}
+html[data-site-theme="festive-newyear"] .ds-header::after{
+ content:"";position:absolute;inset:auto 12px -4px;height:7px;pointer-events:none;z-index:-1;
+ background:radial-gradient(circle,#ffe5a5 0 2px,transparent 3px) 0 0/38px 7px repeat-x;
+ filter:drop-shadow(0 0 4px #e9b953);
+}
+html[data-site-theme="festive-newyear"] #sidebar{
+ background:radial-gradient(ellipse at 0 0,#124735bb,transparent 60%),#071c19!important;
+ border-right-color:#b5954b66!important;
+}
+html[data-site-theme="festive-newyear"] #sidebar .active{
+ background:linear-gradient(105deg,#195640,#314d41)!important;
+ border-color:#ceb37888!important;
+}
+html[data-site-theme="festive-newyear"] .ds-header #topJarvisBtn{border-color:#edc66d!important;box-shadow:0 0 16px #d4b15b44!important}
