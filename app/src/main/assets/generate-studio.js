@@ -228,7 +228,7 @@ function scrubStudioAccount({removeDrafts=false}={}){
  $('clearRefs').hidden=true;$('imageEditPresets').hidden=true;
  job=null;busy=false;activeVideoWatchId=null;
  if(removeDrafts){
-  try{for(const key of [imageDraftKey,videoDraftKey,'vu_generation_job','vu_generation_background_job','deepsyq_template_start','deepsyq_studio_handoff_id'])if(key)sessionStorage.removeItem(key);}catch(_){}
+  try{for(const key of [imageDraftKey,videoDraftKey,'vu_generation_job','vu_generation_job_image','vu_generation_job_video','vu_generation_job_audio','vu_generation_background_job','deepsyq_template_start','deepsyq_studio_handoff_id'])if(key)sessionStorage.removeItem(key);}catch(_){}
  }
  for(const dialog of document.querySelectorAll('dialog[open]'))dialog.close();
  document.body.inert=true;document.body.style.visibility='hidden';
@@ -895,17 +895,20 @@ async function openHistoryJob(id){
  const epoch=++generation;try{await watch(id,epoch);if(epoch===generation)setHistory(false);}catch(e){if(epoch!==generation)return;activeVideoWatchId=null;$('status').textContent=errorText(e);busy=false;availability();}
 }
 async function loadHistory(){
- const epoch=++historyLoadEpoch,requestedFilter=historyFilter;
+ const epoch=++historyLoadEpoch,requestedFilter=historyFilter,requestedType=kind;
  const accountToken=typeof localStorage==='undefined'?null:localStorage.getItem('vv_token');
- const isCurrent=()=>epoch===historyLoadEpoch&&historyView&&historyFilter===requestedFilter&&
+ const isCurrent=()=>epoch===historyLoadEpoch&&historyView&&historyFilter===requestedFilter&&kind===requestedType&&
   (typeof localStorage==='undefined'||localStorage.getItem('vv_token')===accountToken);
  const list=$('historyList');list.hidden=false;clearHistoryMediaPreview();clearHistoryThumbs();list.replaceChildren();const loading=document.createElement('p');loading.className='hint';loading.textContent=say('Loading results…','Загружаем результаты…');list.append(loading);
  try{
-  const d=await(await api('/api/studio/jobs?filter='+encodeURIComponent(requestedFilter))).json();
+  const d=await(await api('/api/studio/jobs?filter='+encodeURIComponent(requestedType))).json();
   if(!isCurrent())return; // Ignore late results from a previous account, tab or filter.
+  // Even legacy servers ignoring ?filter cannot display a different type of media here.
+  const items=(Array.isArray(d.items)?d.items:[]).filter(item=>belongsToSection(item.kind,requestedType)&&
+    (requestedFilter==='failed'?item.status==='failed':requestedFilter==='processing'?['queued','processing','finalizing'].includes(item.status):true));
   list.replaceChildren();
-  if(!d.items?.length){const p=document.createElement('p');p.className='hint';p.textContent=say('No results in this filter yet.','В этом фильтре пока нет результатов.');list.append(p);return;}
-  for(const item of d.items){
+  if(!items.length){const p=document.createElement('p');p.className='hint';p.textContent=say('No results in this filter yet.','В этом фильтре пока нет результатов.');list.append(p);return;}
+  for(const item of items){
    const card=document.createElement('article');card.className='history-card';
    const preview=document.createElement('div');preview.className='history-preview';preview.dataset.kind=item.kind;preview.textContent=item.kind==='image'?'✧':item.kind==='video'?'▷':'♫';preview.setAttribute('aria-hidden','true');
    const head=document.createElement('div');head.className='history-card-head';
@@ -956,7 +959,10 @@ async function loadHistory(){
   }
  }catch(e){if(!isCurrent())return;list.replaceChildren();const p=document.createElement('p');p.className='hint';p.textContent=errorText(e);list.append(p);}
 }
-document.querySelectorAll('[data-history-filter]').forEach(button=>button.onclick=()=>{historyFilter=button.dataset.historyFilter;document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));void loadHistory();});
+document.querySelectorAll('[data-history-filter]').forEach(button=>{
+ button.hidden=['image','video'].includes(button.dataset.historyFilter); // All means every result of the CURRENT Studio type.
+ button.onclick=()=>{historyFilter=button.dataset.historyFilter;document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));void loadHistory();};
+});
 function setHistory(on){if(!on){++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();$('historyList').replaceChildren();}historyView=on;$('showCreate').setAttribute('aria-pressed',String(!on));$('showHistory').setAttribute('aria-pressed',String(on));$('historyEmpty').hidden=!on;$('historyList').hidden=!on;$('empty').hidden=on||!!blob;$('resumeJob').hidden=!currentStudioJob();if(on)void loadHistory();}
 window.addEventListener('pagehide',()=>{++historyLoadEpoch;clearHistoryMediaPreview();clearHistoryThumbs();});
 $('showCreate').onclick=()=>{const u=new URL(location.href);u.searchParams.delete('view');history.replaceState(null,'',u);setHistory(false);};$('showHistory').onclick=()=>setHistory(true);
@@ -1005,7 +1011,7 @@ $('backgroundVideo').onclick=()=>{
  rememberStudioJob(backgroundJob,'video');
  sessionStorage.setItem('vu_generation_background_job',backgroundJob);
  const u=new URL(location.href);u.searchParams.set('view','history');history.replaceState(null,'',u);
- historyFilter='video';document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.historyFilter==='video')));
+ historyFilter='all';document.querySelectorAll('[data-history-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.historyFilter==='all')));
  setHistory(true);availability();
  $('status').textContent=say(
   'Video job saved in History. Browser waiting stopped; generation was NOT cancelled. Return later to check its status.',
