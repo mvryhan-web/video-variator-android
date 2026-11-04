@@ -1,0 +1,34 @@
+name: TEST F4 browser Create and zero-credit quote acceptance
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/generate-studio.js'
+      - 'server/deepsyq-preview.js'
+      - 'tests/f4-test-create-button.test.mjs'
+      - '.github/workflows/f4-test-create-button.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/generate-studio.js'
+      - 'server/deepsyq-preview.js'
+      - 'tests/f4-test-create-button.test.mjs'
+      - '.github/workflows/f4-test-create-button.yml'
+permissions:
+  contents: read
+jobs:
+  browser-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Check TEST code and test syntax
+        run: node --check app/src/main/assets/generate-studio.js && node --check server/deepsyq-preview.js && node --check tests/f4-test-create-button.test.mjs
+      - name: Test click Create -> 0-credit quote -> private SVG displayed
+        run: node --test tests/f4-test-create-button.test.mjs tests/free-ai-studio-preview-isolation.test.mjs

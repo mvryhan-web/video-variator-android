@@ -82,6 +82,8 @@ app.get('/api/studio/config', (_req, res) => {
     models: freeStudioModels.filter(m => m.enabled),
     catalog: freeStudioModels,
     freeTier: true,
+    previewOnly: true,
+    outputMode: 'local-demo',
     translation: { enabled: false, reason: 'PREVIEW_ONLY' }
   });
 });
@@ -102,8 +104,15 @@ app.get('/api/studio/access', (req, res) => {
 
 app.post('/api/studio/estimate', (req, res) => {
   if (isLegacyTest) return res.status(503).json(disabled);
+  const {kind,model,quantity=1} = req.body || {};
+  const valid = freeStudioModels.some(m => m.enabled && m.id === model && (m.kind === kind || (kind === 'music' && m.kind === 'voice')));
+  if (!valid) return res.status(400).json({error:'AI_MODEL_NOT_AVAILABLE'});
+  if (quantity !== 1) return res.status(400).json({error:'IMAGE_BATCH_NOT_ENABLED'});
   res.json({
     ok: true,
+    kind,model,quantity:1,
+    previewOnly: true,
+    outputMode: 'local-demo',
     credits: 0,
     cost: 0,
     unitPrice: 0,
@@ -183,6 +192,8 @@ app.get('/api/studio/jobs/:id', (req, res) => {
     prompt: job.prompt,
     created_at: job.created_at,
     provider: job.provider,
+    mime: job.mime || null,
+    previewOnly: true,
     mediaUrl: job.status === 'ready' ? ('/api/studio/jobs/' + job.id + '/media') : null
   });
 });
@@ -194,7 +205,7 @@ app.get('/api/studio/jobs/:id/media', (req, res) => {
     return res.status(404).json({ error: 'RESULT_UNAVAILABLE' });
   }
   res.set('Content-Type', job.mime || 'image/svg+xml');
-  res.set('Cache-Control', 'public, max-age=3600');
+  res.set('Cache-Control', 'private, no-store');
   res.send(job.media);
 });
 
