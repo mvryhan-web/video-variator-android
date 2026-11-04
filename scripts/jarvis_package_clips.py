@@ -12,9 +12,11 @@ import zipfile
 def package(root):
     catalog = json.loads((root / 'jarvix-phrases.json').read_text(encoding='utf-8'))
     phrases = [(language, item) for language, items in catalog['phrases'].items() for item in items]
-    if len(phrases) != 200 or any(len(catalog['phrases'].get(language, [])) != 50 for language in ['ru', 'en', 'fr', 'es']):
-        raise ValueError('Expected 200 phrases, 50 per language')
-    if len({item['id'] for _, item in phrases}) != 200:
+    expected = catalog.get('totalPhrases')
+    per_language = catalog.get('perLanguage')
+    if len(phrases) != expected or any(len(catalog['phrases'].get(language, [])) != per_language for language in ['ru', 'en', 'fr', 'es']):
+        raise ValueError('Phrase catalog totals do not match metadata')
+    if len({item['id'] for _, item in phrases}) != expected:
         raise ValueError('Duplicate phrase IDs')
     folder = root / 'app/src/main/assets/media/jarvix/clips'
     checked = []
@@ -44,10 +46,10 @@ def package(root):
         digest = hashlib.sha256(mp3.read_bytes()).hexdigest()
         entries.append({'id': item['id'], 'language': language, 'text': item['text'],
                         'sha256': digest, 'url': '/media/jarvix/clips/' + mp3.name + '?v=' + digest[:12]})
-        print('MP3:', number, '/200', flush=True)
+        print('MP3:', number, '/' + str(expected), flush=True)
     manifest = folder / 'manifest.json'
-    manifest.write_text(json.dumps({'version': 1, 'expected': 200, 'ready': 200, 'clips': entries}, ensure_ascii=False), encoding='utf-8')
-    archive = root / 'jarvis-200-clips.zip'
+    manifest.write_text(json.dumps({'version': 1, 'expected': expected, 'ready': expected, 'clips': entries}, ensure_ascii=False), encoding='utf-8')
+    archive = root / ('jarvis-' + str(expected) + '-clips.zip')
     temporary_archive = archive.with_suffix('.partial.zip')
     with zipfile.ZipFile(temporary_archive, 'w', compression=zipfile.ZIP_DEFLATED) as output:
         output.write(manifest, 'clips/manifest.json')
