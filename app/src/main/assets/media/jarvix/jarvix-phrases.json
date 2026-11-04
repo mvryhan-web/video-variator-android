@@ -15,7 +15,7 @@
       {
         "id": "jarvix_ru_01",
         "category": "greeting",
-        "text": "Привет! Я JARVIS, персональный ассистент Deepsyq. Умею открывать страницы, генерировать изображения и видео, а также помогать с проектами."
+        "text": "JARVIS в сети. Добро пожаловать в будущее генеративного контента. Я управляю видео, звуком, фото и этим сайтом прямо с вашего голоса. Хотите неоновую атмосферу или сразу запустим генерацию? Жду вашу команду."
       },
       {
         "id": "jarvix_ru_02",
@@ -267,7 +267,7 @@
       {
         "id": "jarvix_en_01",
         "category": "greeting",
-        "text": "Hello! I am JARVIS, your Deepsyq assistant. I can navigate pages, generate images and videos, and assist with your creative projects."
+        "text": "JARVIS online. Welcome to the future of generative media. I command video, audio, imagery, and this entire interface straight from your voice. Would you like a neon vibe, or should we launch generation right away? Standing by."
       },
       {
         "id": "jarvix_en_02",
@@ -519,7 +519,7 @@
       {
         "id": "jarvix_fr_01",
         "category": "greeting",
-        "text": "Bonjour ! Je suis JARVIS, votre assistant Deepsyq. Je peux ouvrir vos pages, générer des images et vidéos, et vous aider sur vos projets."
+        "text": "JARVIS en ligne. Bienvenue dans le futur de la création générative. Je contrôle la vidéo, le son, l'image et ce site directement à votre voix. Prêt pour une ambiance néon ou on lance la génération ? J'attends vos ordres."
       },
       {
         "id": "jarvix_fr_02",
@@ -771,7 +771,7 @@
       {
         "id": "jarvix_es_01",
         "category": "greeting",
-        "text": "¡Hola! Soy JARVIS, tu asistente de Deepsyq. Puedo navegar por páginas, generar imágenes y videos, y ayudarte en tus proyectos."
+        "text": "JARVIS en línea. Bienvenido al futuro de la creación generativa. Controlo video, audio, imágenes y este sitio web directamente con tu voz. ¿Prefieres un ambiente neón o iniciamos la generación? Espero tu orden."
       },
       {
         "id": "jarvix_es_02",
