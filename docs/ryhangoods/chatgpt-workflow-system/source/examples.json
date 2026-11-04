@@ -1,0 +1,50 @@
+[
+  [
+    "A five-post content plan",
+    "Fictional shop: Cedar Cup. One ceramic mug, 300 ml, hand-wash recommended, available in blue and cream. No discount, deadline or customer results supplied.",
+    "1. Product introduction: \"Meet the 300 ml Cedar Cup mug, available in blue and cream.\" CTA: choose your colour.\n2. Care note: \"Keep your Cedar Cup routine simple: hand washing is recommended.\" CTA: save the care note.\n3. Colour comparison: \"Blue or cream? Two options for your coffee corner.\" CTA: compare the actual product photos.\n4. Size explanation: \"A 300 ml mug for your daily drink.\" CTA: check the dimensions when supplied; do not invent them.\n5. FAQ: \"Which colours are available? Blue and cream. How should I wash it? Hand washing is recommended.\" CTA: send any unanswered product question.",
+    "All five posts use supplied facts. No handmade claim, dishwasher promise, discount or testimonial was added."
+  ],
+  [
+    "A bounded research memo",
+    "Fictional source A: eight interview participants; five mention confusing file names. Fictional source B: four support tickets; three concern expired links. Tickets and participants may overlap.",
+    "Decision: improve delivery clarity before adding more content.\nEvidence: A reports 5 of 8 interview participants mentioning file names. B reports 3 of 4 tickets concerning expired links.\nLimit: these are different collections with possible overlap. They cannot be added into a 12-person sample.\nNext test: provide descriptive filenames and a dated link check, then observe a new delivery session.\nUnknown: prevalence across all customers and whether either change causes fewer support contacts.",
+    "The memo preserves both denominators, states overlap and proposes a test rather than claiming a measured improvement."
+  ],
+  [
+    "A reproducible margin analysis",
+    "Synthetic orders: A revenue 120 cost 72; B revenue 80 cost 60; C revenue 0 cost 0. Currency EUR. No shipping or tax fields supplied.",
+    "Order A gross profit: 48; gross margin: 40.0%.\nOrder B gross profit: 20; gross margin: 25.0%.\nOrder C gross profit: 0; gross margin: undefined because revenue is zero.\nTotal revenue: 200. Total cost: 132. Gross profit: 68. Aggregate gross margin: 34.0%.\nThis is not net profit: fees, shipping and taxes are not represented. Do not average 40% and 25% to obtain the aggregate margin.",
+    "Check: (200 - 132) / 200 = 0.34. Zero revenue produces an undefined ratio, not a fabricated percentage."
+  ],
+  [
+    "Meeting decisions and actions",
+    "Synthetic transcript: Alex: \"We will use the blue cover.\" Sam: \"I will send the revised file on 6 November 2026.\" Alex: \"Someone should test the link.\"",
+    "Decision D01: use the blue cover. Evidence: Alex's explicit decision.\nAction A01: send the revised file. Owner: Sam. Due: 2026-11-06. Evidence: Sam's explicit commitment.\nOpen question Q01: who will test the link, and by when? No person or deadline was agreed.\nDo not assign Q01 to Alex simply because Alex mentioned it. Ask the owner to resolve the assignment before treating it as a commitment.",
+    "The action owner and date come from the transcript. The unassigned task remains an open question."
+  ],
+  [
+    "A scoped proposal calculation",
+    "Fictional client asks for three product descriptions. Agreed planning assumption: 1.5 hours each at EUR 40/hour; one consolidated revision round. No legal terms or tax treatment supplied.",
+    "Scope: three product descriptions based on the client's approved fact sheets.\nFee basis: 3 x 1.5 hours x EUR 40 = EUR 180 before any applicable taxes.\nReview: one consolidated revision round against the agreed facts and tone.\nExcluded: new photography, translations, product research beyond supplied facts and additional products.\nTiming: to be confirmed after complete source material is received.\nNext decision: client confirms scope and the missing deadline. This planning example is not a binding contract.",
+    "The fee reconciles to the units. No completion date, tax rule or client approval is invented."
+  ],
+  [
+    "Debug a zero-revenue edge case",
+    "Faulty expression: margin = (revenue - cost) / revenue. Reproduction: revenue 0 and cost 0 raises division by zero.",
+    "Expected behaviour: represent the ratio as undefined when revenue is zero; still report revenue, cost and profit.\nMinimal correction: margin = None if revenue == 0 else (revenue - cost) / revenue.\nTargeted checks: 120 and 72 returns 0.4; 80 and 60 returns 0.25; 0 and 0 returns None.\nScope: this fixes the arithmetic edge case only. It does not validate tax, refund or accounting treatment.",
+    "The package test script checks all three cases. No live accounting or production integration is claimed."
+  ],
+  [
+    "A wireframe handoff",
+    "Fictional service page: editorial review for small businesses. Required blocks: clear offer, process, deliverables, contact route. No client logos or measured outcomes supplied.",
+    "Reading order: offer headline, one-sentence audience fit, three-step process, exact deliverables, contact link.\nSuggested headline: \"Clearer copy for your next release.\"\nProcess: supply your draft, review the editorial notes, approve the final copy.\nDeliverables: an edited draft and a change note, subject to agreed scope.\nMobile: retain the same reading order in one column; avoid horizontal scrolling.\nContact: use a real owner-supplied destination before publication. No fake form submission or invented client proof.",
+    "The handoff is a static content and layout specification. Hosting and contact delivery require separate verification."
+  ],
+  [
+    "Execute, verify and repair a claim",
+    "Synthetic draft: \"Our workflow increases conversions by 26% and works on every ChatGPT plan.\" No measurement or plan-coverage evidence exists.",
+    "Defect: an unsupported numerical uplift and an unsupported universal compatibility claim.\nRepair: \"Use a repeatable brief, review checklist and handoff to organize this task. Feature availability depends on your account; regular-chat fallback instructions are included.\"\nVerification: the repaired version contains no invented performance number and does not promise unavailable features.\nRelease state: wording corrected; account-specific import and scheduling remain untested.",
+    "A more modest truthful claim is accepted; the unsupported claims are not preserved for marketing impact."
+  ]
+]
