@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "totalPhrases": 200,
-  "perLanguage": 50,
+  "totalPhrases": 300,
+  "perLanguage": 75,
   "languages": [
     "ru",
     "en",
@@ -261,6 +261,131 @@
         "id": "jarvix_ru_50",
         "category": "dialogue",
         "text": "Отличная работа! Что создадим дальше?"
+      },
+      {
+        "id": "jarvix_ru_51",
+        "category": "faq_commercial",
+        "text": "Да, все сгенерированные фото и видео полностью принадлежат вам. Вы можете свободно использовать их в рекламе, соцсетях и коммерческих проектах. Начинаем?"
+      },
+      {
+        "id": "jarvix_ru_52",
+        "category": "faq_prompt",
+        "text": "Не умеете писать промпты? Не переживайте! Просто опишите идею своими словами, а я составлю идеальный промпт для нейросети. Попробуем?"
+      },
+      {
+        "id": "jarvix_ru_53",
+        "category": "faq_img2vid",
+        "text": "Да, конечно! Загрузите любую фотографию, и я превращу её в плавный кинематографичный видеоролик. Открыть загрузку фото?"
+      },
+      {
+        "id": "jarvix_ru_54",
+        "category": "faq_pricing",
+        "text": "У нас есть бесплатные ежедневные инструменты, а также гибкие тарифы от девяти долларов и пакеты кредитов. Открыть страницу цен?"
+      },
+      {
+        "id": "jarvix_ru_55",
+        "category": "faq_security",
+        "text": "Оплата на сто процентов безопасна. Все платежи проходят через официальный защищенный шлюз Stripe с банковским шифрованием. Выбрать тариф?"
+      },
+      {
+        "id": "jarvix_ru_56",
+        "category": "faq_credits",
+        "text": "Если закончатся кредиты, вы всегда можете докупить дополнительный пакет без смены тарифа или использовать бесплатные инструменты. Показать доступные пакеты?"
+      },
+      {
+        "id": "jarvix_ru_57",
+        "category": "faq_quality",
+        "text": "Мы поддерживаем генерацию изображений до 4K и кристально четкое Full HD видео для любых экранов. Включить максимальное качество?"
+      },
+      {
+        "id": "jarvix_ru_58",
+        "category": "faq_timing",
+        "text": "Создание видео обычно занимает от тридцати секунд до пары минут в зависимости от сложности сцены. Запустить процесс?"
+      },
+      {
+        "id": "jarvix_ru_59",
+        "category": "faq_format",
+        "text": "Фотографии скачиваются в высоком качестве PNG или JPG, а видео — в готовом MP4 для YouTube, TikTok и соцсетей. Начать экспорт?"
+      },
+      {
+        "id": "jarvix_ru_60",
+        "category": "faq_examples",
+        "text": "В нашей галерее Inspiration собраны лучшие примеры работ с готовыми промптами и настройками. Показать примеры?"
+      },
+      {
+        "id": "jarvix_ru_61",
+        "category": "guide_start",
+        "text": "Не знаете, с чего начать? Без паники, я проведу вас шаг за шагом. Вам нужен контент для соцсетей, бизнеса или для себя?"
+      },
+      {
+        "id": "jarvix_ru_62",
+        "category": "guide_aspect",
+        "text": "Вам нужен вертикальный формат девять к шестнадцати для Reels и Shorts, или широкий экран для YouTube?"
+      },
+      {
+        "id": "jarvix_ru_63",
+        "category": "guide_plan",
+        "text": "Хотите, я подберу лучший тариф под ваши задачи: Базовый, Про или Безлимитный Бизнес?"
+      },
+      {
+        "id": "jarvix_ru_64",
+        "category": "guide_uniquifier",
+        "text": "Хотите удалить водяные знаки или сделать видео уникальным для алгоритмов соцсетей?"
+      },
+      {
+        "id": "jarvix_ru_65",
+        "category": "guide_voiceover",
+        "text": "Хотите сгенерировать реалистичный голос диктора для вашего видеоролика?"
+      },
+      {
+        "id": "jarvix_ru_66",
+        "category": "guide_music",
+        "text": "Хотите добавить атмосферную фоновую музыку, идеально подходящую под ваше видео?"
+      },
+      {
+        "id": "jarvix_ru_67",
+        "category": "guide_save",
+        "text": "Результат готов. Сохранить его в вашу личную галерею или сразу скачать на устройство?"
+      },
+      {
+        "id": "jarvix_ru_68",
+        "category": "guide_color",
+        "text": "Хотите изменить цветовую палитру: сделать изображение более теплым, кинематографичным или футуристичным?"
+      },
+      {
+        "id": "jarvix_ru_69",
+        "category": "guide_motion",
+        "text": "Хотите добавить больше динамики и скорости движения в ваш видеоролик?"
+      },
+      {
+        "id": "jarvix_ru_70",
+        "category": "guide_retry",
+        "text": "Если хотите другой вариант, я мгновенно перегенерирую результат с новыми параметрами. Сделать новый дубль?"
+      },
+      {
+        "id": "jarvix_ru_71",
+        "category": "support",
+        "text": "Нужна помощь с оплатой или возник технический вопрос? Я могу открыть окно связи со службой поддержки. Открыть?"
+      },
+      {
+        "id": "jarvix_ru_72",
+        "category": "guide_cleanup",
+        "text": "Хотите быстро убрать лишние объекты, надписи или людей с вашей фотографии?"
+      },
+      {
+        "id": "jarvix_ru_73",
+        "category": "privacy",
+        "text": "Все ваши проекты и генерации строго конфиденциальны и видны только вам. Продолжаем работу?"
+      },
+      {
+        "id": "jarvix_ru_74",
+        "category": "guide_freetier",
+        "text": "Хотите, я покажу, как экономить кредиты и использовать бесплатные нейросети на платформе?"
+      },
+      {
+        "id": "jarvix_ru_75",
+        "category": "action_prompt",
+        "text": "Я всегда рядом на каждом этапе создания контента. Какую идею реализуем прямо сейчас?"
       }
     ],
     "en": [
@@ -513,6 +638,131 @@
         "id": "jarvix_en_50",
         "category": "dialogue",
         "text": "Great job! What should we build next?"
+      },
+      {
+        "id": "jarvix_en_51",
+        "category": "faq_commercial",
+        "text": "Yes, all generated images and videos belong 100% to you. You are free to use them for ads, social media, and commercial projects. Shall we start?"
+      },
+      {
+        "id": "jarvix_en_52",
+        "category": "faq_prompt",
+        "text": "Not sure how to write a prompt? No worries! Just describe your vision in plain words and I will build an expert prompt for you. Want to try?"
+      },
+      {
+        "id": "jarvix_en_53",
+        "category": "faq_img2vid",
+        "text": "Yes, absolutely! Upload any photo, and I will transform it into smooth cinematic video motion. Open photo upload?"
+      },
+      {
+        "id": "jarvix_en_54",
+        "category": "faq_pricing",
+        "text": "We offer free everyday tools, plus flexible plans starting at nine dollars and credit packs. Should I open the pricing page?"
+      },
+      {
+        "id": "jarvix_en_55",
+        "category": "faq_security",
+        "text": "Payments are 100% secure. Everything is processed via official Stripe encryption with full bank protection. Ready to select a plan?"
+      },
+      {
+        "id": "jarvix_en_56",
+        "category": "faq_credits",
+        "text": "Running low on credits? You can easily grab an extra credit pack without changing plans or use free tools. Show available credit packs?"
+      },
+      {
+        "id": "jarvix_en_57",
+        "category": "faq_quality",
+        "text": "We support image generation up to 4K and ultra-sharp Full HD video for any display. Enable maximum quality?"
+      },
+      {
+        "id": "jarvix_en_58",
+        "category": "faq_timing",
+        "text": "Video generation usually takes between thirty seconds and a couple of minutes depending on scene complexity. Launch rendering?"
+      },
+      {
+        "id": "jarvix_en_59",
+        "category": "faq_format",
+        "text": "Photos download in high-res PNG or JPG, and videos in standard MP4 ready for YouTube, TikTok, and Instagram. Start download?"
+      },
+      {
+        "id": "jarvix_en_60",
+        "category": "faq_examples",
+        "text": "Our Inspiration showcase features top creations with full prompts and settings included. Want to see some examples?"
+      },
+      {
+        "id": "jarvix_en_61",
+        "category": "guide_start",
+        "text": "Not sure where to begin? Don't worry, I will guide you step by step. Do you need content for social media, business, or fun?"
+      },
+      {
+        "id": "jarvix_en_62",
+        "category": "guide_aspect",
+        "text": "Do you need a nine by sixteen vertical format for Reels and TikTok, or widescreen for YouTube?"
+      },
+      {
+        "id": "jarvix_en_63",
+        "category": "guide_plan",
+        "text": "Would you like me to recommend the best plan for your needs: Basic, Pro, or Unlimited Business?"
+      },
+      {
+        "id": "jarvix_en_64",
+        "category": "guide_uniquifier",
+        "text": "Would you like to remove watermarks or uniquify your video for social media algorithms?"
+      },
+      {
+        "id": "jarvix_en_65",
+        "category": "guide_voiceover",
+        "text": "Would you like to generate a realistic AI voiceover narration for your video?"
+      },
+      {
+        "id": "jarvix_en_66",
+        "category": "guide_music",
+        "text": "Shall we generate atmospheric background music perfectly tailored to your video?"
+      },
+      {
+        "id": "jarvix_en_67",
+        "category": "guide_save",
+        "text": "Your result is ready. Save it to your private library or download directly to your device?"
+      },
+      {
+        "id": "jarvix_en_68",
+        "category": "guide_color",
+        "text": "Would you like to adjust color grading: make it warmer, cinematic, or cyberpunk neon?"
+      },
+      {
+        "id": "jarvix_en_69",
+        "category": "guide_motion",
+        "text": "Would you like to add more camera dynamics and motion intensity to your video?"
+      },
+      {
+        "id": "jarvix_en_70",
+        "category": "guide_retry",
+        "text": "If you want a different take, I can regenerate another version with updated parameters. Take another shot?"
+      },
+      {
+        "id": "jarvix_en_71",
+        "category": "support",
+        "text": "Need help with billing or have a technical question? I can connect you with customer support. Open help chat?"
+      },
+      {
+        "id": "jarvix_en_72",
+        "category": "guide_cleanup",
+        "text": "Would you like to quickly erase unwanted objects or people from your image?"
+      },
+      {
+        "id": "jarvix_en_73",
+        "category": "privacy",
+        "text": "All your creative projects and generations are strictly private and visible only to you. Ready to continue?"
+      },
+      {
+        "id": "jarvix_en_74",
+        "category": "guide_freetier",
+        "text": "Want me to show you how to save credits and utilize our free daily AI tools?"
+      },
+      {
+        "id": "jarvix_en_75",
+        "category": "action_prompt",
+        "text": "I am right here with you at every step of creation. What concept shall we bring to life now?"
       }
     ],
     "fr": [
@@ -765,6 +1015,131 @@
         "id": "jarvix_fr_50",
         "category": "dialogue",
         "text": "Superbe création ! Que faisons-nous ensuite ?"
+      },
+      {
+        "id": "jarvix_fr_51",
+        "category": "faq_commercial",
+        "text": "Oui, toutes les images et vidéos générées vous appartiennent à 100 %. Vous pouvez les utiliser librement pour la publicité et vos projets commerciaux. On commence ?"
+      },
+      {
+        "id": "jarvix_fr_52",
+        "category": "faq_prompt",
+        "text": "Vous ne savez pas rédiger un prompt ? Aucun souci ! Décrivez votre idée avec vos propres mots et je créerai le prompt parfait. On essaie ?"
+      },
+      {
+        "id": "jarvix_fr_53",
+        "category": "faq_img2vid",
+        "text": "Oui, tout à fait ! Importez une photo et je l'animerai en vidéo fluide et cinématique. Ouvrir l'import de photo ?"
+      },
+      {
+        "id": "jarvix_fr_54",
+        "category": "faq_pricing",
+        "text": "Nous proposons des outils gratuits au quotidien, ainsi que des forfaits dès neuf dollars et des packs de crédits. Ouvrir les tarifs ?"
+      },
+      {
+        "id": "jarvix_fr_55",
+        "category": "faq_security",
+        "text": "Le paiement est totalement sécurisé via la passerelle officielle Stripe avec cryptage bancaire. Choisir un abonnement ?"
+      },
+      {
+        "id": "jarvix_fr_56",
+        "category": "faq_credits",
+        "text": "Plus de crédits ? Vous pouvez recharger un pack sans changer d'abonnement ou utiliser les outils gratuits. Voir les packs ?"
+      },
+      {
+        "id": "jarvix_fr_57",
+        "category": "faq_quality",
+        "text": "Nous prenons en charge la génération jusqu'en 4K et vidéo Full HD pour tous vos écrans. Activer la qualité maximale ?"
+      },
+      {
+        "id": "jarvix_fr_58",
+        "category": "faq_timing",
+        "text": "La génération vidéo prend généralement entre trente secondes et deux minutes selon la scène. Lancer le rendu ?"
+      },
+      {
+        "id": "jarvix_fr_59",
+        "category": "faq_format",
+        "text": "Les photos sont en haute définition PNG ou JPG, et les vidéos en MP4 prêt pour TikTok, YouTube et Instagram. Télécharger ?"
+      },
+      {
+        "id": "jarvix_fr_60",
+        "category": "faq_examples",
+        "text": "Notre galerie d'inspiration regroupe les meilleures créations avec leurs prompts complets. Afficher les exemples ?"
+      },
+      {
+        "id": "jarvix_fr_61",
+        "category": "guide_start",
+        "text": "Vous ne savez pas par où commencer ? Je vous guide pas à pas. C'est pour les réseaux, le travail ou pour vous ?"
+      },
+      {
+        "id": "jarvix_fr_62",
+        "category": "guide_aspect",
+        "text": "Avez-vous besoin d'un format vertical neuf seizièmes pour smartphone ou panoramique pour grand écran ?"
+      },
+      {
+        "id": "jarvix_fr_63",
+        "category": "guide_plan",
+        "text": "Souhaitez-vous que je vous recommande le meilleur forfait : Basique, Pro ou Business illimité ?"
+      },
+      {
+        "id": "jarvix_fr_64",
+        "category": "guide_uniquifier",
+        "text": "Voulez-vous supprimer les filigranes ou rendre votre vidéo unique pour les algorithmes des réseaux ?"
+      },
+      {
+        "id": "jarvix_fr_65",
+        "category": "guide_voiceover",
+        "text": "Souhaitez-vous générer une voix off IA réaliste pour votre vidéo ?"
+      },
+      {
+        "id": "jarvix_fr_66",
+        "category": "guide_music",
+        "text": "Voulez-vous ajouter une musique d'ambiance adaptée au rythme de votre vidéo ?"
+      },
+      {
+        "id": "jarvix_fr_67",
+        "category": "guide_save",
+        "text": "Votre résultat est prêt. L'enregistrer dans votre bibliothèque ou le télécharger directement ?"
+      },
+      {
+        "id": "jarvix_fr_68",
+        "category": "guide_color",
+        "text": "Souhaitez-vous ajuster les couleurs : ton plus chaud, cinématique ou néon futuriste ?"
+      },
+      {
+        "id": "jarvix_fr_69",
+        "category": "guide_motion",
+        "text": "Voulez-vous ajouter plus de dynamisme et de mouvement de caméra à votre vidéo ?"
+      },
+      {
+        "id": "jarvix_fr_70",
+        "category": "guide_retry",
+        "text": "Si vous souhaitez une autre version, je peux la régénérer instantanément avec d'autres réglages. Faire un nouvel essai ?"
+      },
+      {
+        "id": "jarvix_fr_71",
+        "category": "support",
+        "text": "Besoin d'aide pour le paiement ou une question technique ? Je peux ouvrir le support d'assistance. Ouvrir le chat ?"
+      },
+      {
+        "id": "jarvix_fr_72",
+        "category": "guide_cleanup",
+        "text": "Voulez-vous effacer rapidement des objets ou personnes indésirables sur votre photo ?"
+      },
+      {
+        "id": "jarvix_fr_73",
+        "category": "privacy",
+        "text": "Tous vos projets et créations sont strictement privés et visibles uniquement par vous. On continue ?"
+      },
+      {
+        "id": "jarvix_fr_74",
+        "category": "guide_freetier",
+        "text": "Voulez-vous que je vous montre comment économiser vos crédits avec nos outils gratuits ?"
+      },
+      {
+        "id": "jarvix_fr_75",
+        "category": "action_prompt",
+        "text": "Je suis à vos côtés à chaque étape de votre création. Quelle idée donnons-nous vie maintenant ?"
       }
     ],
     "es": [
@@ -1017,6 +1392,131 @@
         "id": "jarvix_es_50",
         "category": "dialogue",
         "text": "¡Excelente trabajo! ¿Qué creamos ahora?"
+      },
+      {
+        "id": "jarvix_es_51",
+        "category": "faq_commercial",
+        "text": "Sí, todas las fotos y videos generados te pertenecen al 100%. Eres libre de usarlos en publicidad, redes sociales y proyectos comerciales. ¿Empezamos?"
+      },
+      {
+        "id": "jarvix_es_52",
+        "category": "faq_prompt",
+        "text": "¿No sabes cómo escribir el prompt? ¡No te preocupes! Cuéntame tu idea con tus propias palabras y yo crearé el prompt perfecto. ¿Lo intentamos?"
+      },
+      {
+        "id": "jarvix_es_53",
+        "category": "faq_img2vid",
+        "text": "¡Sí, por supuesto! Sube cualquier fotografía y la transformaré en un video cinemático y fluido. ¿Abrir la subida de foto?"
+      },
+      {
+        "id": "jarvix_es_54",
+        "category": "faq_pricing",
+        "text": "Ofrecemos herramientas gratuitas diarias, además de planes desde nueve dólares y paquetes de créditos. ¿Abro la página de precios?"
+      },
+      {
+        "id": "jarvix_es_55",
+        "category": "faq_security",
+        "text": "El pago es 100% seguro a través de la pasarela oficial Stripe con cifrado bancario completo. ¿Elegir un plan?"
+      },
+      {
+        "id": "jarvix_es_56",
+        "category": "faq_credits",
+        "text": "¿Te quedaste sin créditos? Puedes recargar un paquete sin cambiar de plan o usar las herramientas gratuitas. ¿Ver paquetes?"
+      },
+      {
+        "id": "jarvix_es_57",
+        "category": "faq_quality",
+        "text": "Soportamos imágenes de hasta 4K y video Full HD ultra nítido para cualquier pantalla. ¿Activar máxima calidad?"
+      },
+      {
+        "id": "jarvix_es_58",
+        "category": "faq_timing",
+        "text": "Generar un video suele tardar entre treinta segundos y dos minutos según la escena. ¿Iniciar el renderizado?"
+      },
+      {
+        "id": "jarvix_es_59",
+        "category": "faq_format",
+        "text": "Las fotos se descargan en alta resolución PNG o JPG, y los videos en MP4 listos para TikTok, YouTube e Instagram. ¿Descargar?"
+      },
+      {
+        "id": "jarvix_es_60",
+        "category": "faq_examples",
+        "text": "Nuestra galería de inspiración muestra las mejores creaciones con sus prompts completos. ¿Quieres ver ejemplos?"
+      },
+      {
+        "id": "jarvix_es_61",
+        "category": "guide_start",
+        "text": "¿No sabes por dónde empezar? Te guiaré paso a paso. ¿Buscas contenido para redes, trabajo o para ti?"
+      },
+      {
+        "id": "jarvix_es_62",
+        "category": "guide_aspect",
+        "text": "¿Necesitas formato vertical nueve dieciseisavos para Reels y TikTok, o panorámico para YouTube?"
+      },
+      {
+        "id": "jarvix_es_63",
+        "category": "guide_plan",
+        "text": "¿Quieres que te recomiende el plan ideal para ti: Básico, Pro o Negocios ilimitado?"
+      },
+      {
+        "id": "jarvix_es_64",
+        "category": "guide_uniquifier",
+        "text": "¿Quieres quitar marcas de agua o hacer tu video único para los algoritmos de redes sociales?"
+      },
+      {
+        "id": "jarvix_es_65",
+        "category": "guide_voiceover",
+        "text": "¿Deseas generar una voz en off realista con inteligencia artificial para tu video?"
+      },
+      {
+        "id": "jarvix_es_66",
+        "category": "guide_music",
+        "text": "¿Quieres añadir música de fondo que encaje perfectamente con el ritmo de tu video?"
+      },
+      {
+        "id": "jarvix_es_67",
+        "category": "guide_save",
+        "text": "Tu resultado está listo. ¿Guardarlo en tu biblioteca privada o descargarlo directamente al dispositivo?"
+      },
+      {
+        "id": "jarvix_es_68",
+        "category": "guide_color",
+        "text": "¿Quieres cambiar la paleta de color: hacerla más cálida, cinemática o neón ciberpunk?"
+      },
+      {
+        "id": "jarvix_es_69",
+        "category": "guide_motion",
+        "text": "¿Quieres añadir más dinamismo y movimiento de cámara a tu video?"
+      },
+      {
+        "id": "jarvix_es_70",
+        "category": "guide_retry",
+        "text": "Si prefieres otra versión, puedo regenerarla al instante con nuevos ajustes. ¿Hacemos otra toma?"
+      },
+      {
+        "id": "jarvix_es_71",
+        "category": "support",
+        "text": "¿Necesitas ayuda con el pago o tienes dudas técnicas? Puedo conectarte con soporte. ¿Abrir el chat?"
+      },
+      {
+        "id": "jarvix_es_72",
+        "category": "guide_cleanup",
+        "text": "¿Quieres eliminar objetos o personas no deseadas de tu fotografía rápidamente?"
+      },
+      {
+        "id": "jarvix_es_73",
+        "category": "privacy",
+        "text": "Todos tus proyectos y creaciones son estrictamente privados y solo visibles para ti. ¿Continuamos?"
+      },
+      {
+        "id": "jarvix_es_74",
+        "category": "guide_freetier",
+        "text": "¿Quieres que te enseñe cómo ahorrar créditos usando nuestras herramientas de IA gratuitas?"
+      },
+      {
+        "id": "jarvix_es_75",
+        "category": "action_prompt",
+        "text": "Estoy contigo en cada paso de tu creación. ¿Qué idea hacemos realidad ahora mismo?"
       }
     ]
   }
