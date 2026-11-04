@@ -45,7 +45,7 @@ export function resolveToolCommand(text){
 }
 export function parseVariationSettings(text){
  const t=normalizeCommand(text),settings={};
- if(/(?:не меняй|не изменяй|оставь|don't change|ne change|no cambies)/u.test(t))return null;
+ if(/^(?:почему|что|как|какой|какая|зачем|сколько|why|what|how|pourquoi|quel|comment|combien|por qué|qué|cómo|cuánto)/u.test(t)||/(?:не меняй|не изменяй|оставь|don't change|ne change|no cambies)/u.test(t))return null;
  const modes=[[/баланс|balanced|balance|équilibr|equilibrad/u,'balanced'],[/бережн|мягк|gentle|doux|suave/u,'gentle'],[/динамич|dynamic|dynamique|dinámic/u,'dynamic']];
  const selected=modes.filter(([r])=>r.test(t));
  if(selected.length>1)return {error:'ambiguous'};

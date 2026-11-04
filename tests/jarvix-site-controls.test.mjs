@@ -20,6 +20,8 @@ test('compound VU settings and ambiguous ratios never invent a supported ratio',
  assert.deepEqual(parseVariationSettings('настрой баланс 1080 и 16 на 9, 10 вариантов'),{settings:{mode:'balanced',aspectRatio:'16:9',quality:'1080',variantCount:'10'}});
  assert.equal(parseVariationSettings('баланс 10 на 18 и 16 на 9').error,'ratio');
  assert.equal(parseVariationSettings('не меняй баланс'),null);
+ assert.equal(parseVariationSettings('что такое режим баланс'),null);
+ assert.equal(parseVariationSettings('why is 4k not available'),null);
  assert.equal(parseVariationSettings('16 на 9 и 9 на 16').error,'ratio');
 });
 test('voice settings preserve plan-disabled options and report partial success honestly',()=>{
