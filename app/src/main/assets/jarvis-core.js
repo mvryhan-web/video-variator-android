@@ -1123,7 +1123,7 @@ export function activateJarvisVoice() {
       if (activation!==activationVersion || !isJarvisActive || !keepListening) return;
       const phrase=catalog.phrases?.[language]?.find(p=>p.id===`jarvix_${language}_37`);
       if (phrase) speakJarvis(phrase.text); else resumeJarvisRecognition();
-    }).catch(()=>{if(isJarvisActive && keepListening)resumeJarvisRecognition();});
+    }).catch(()=>{if(activation===activationVersion && isJarvisActive && keepListening)resumeJarvisRecognition();});
   } else {
     try { sessionStorage.setItem('jarvix_introduced_v2','1'); } catch (_) {}
     pauseJarvisRecognition();
@@ -1235,6 +1235,7 @@ export function initJarvis() {
   }
 
   if (wasActive || sayOnLoad) {
+    const restoredActivation=++activationVersion;
     isJarvisActive = true;
     keepListening = true;
     try {
@@ -1247,8 +1248,9 @@ export function initJarvis() {
 
     if (sayOnLoad) {
       setTimeout(() => {
+        if(restoredActivation!==activationVersion || !isJarvisActive || !keepListening)return;
         speakJarvis(sayOnLoad, () => {
-          if (isJarvisActive && keepListening) {
+          if (restoredActivation===activationVersion && isJarvisActive && keepListening) {
             resumeJarvisRecognition();
             startSilenceTimer();
             updateJarvisState('listening');
