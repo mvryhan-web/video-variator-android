@@ -13,6 +13,8 @@ test('every registered tool names a shipped page and every mobile workflow is in
 test('specific tool navigation beats generic photo/video pages in all four languages',()=>{
  for(const [command,id] of [['открой комплекс фото','compress-photo'],['открой сжать фото','compress-photo'],['ouvre compresser les photos','compress-photo'],['open compress photo','compress-photo'],['abre comprimir foto','compress-photo'],['открой объединить пдф','pdf-merge'],['открой фото в видео','photo-motion']])assert.equal(resolveToolCommand(command)?.id,id);
  assert.equal(resolveToolCommand('что такое фото'),null);
+ assert.equal(resolveToolCommand('не открывай сжать фото'),null);
+ assert.equal(resolveToolCommand('do not open compress photo'),null);
 });
 test('compound VU settings and ambiguous ratios never invent a supported ratio',()=>{
  assert.deepEqual(parseVariationSettings('настрой баланс 1080 и 16 на 9, 10 вариантов'),{settings:{mode:'balanced',aspectRatio:'16:9',quality:'1080',variantCount:'10'}});

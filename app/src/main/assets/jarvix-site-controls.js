@@ -32,10 +32,11 @@ export const SITE_TOOLS=Object.freeze([
  tool('captions','mobile-utility.html?tool=captions','субтитр|subtitle|sous-titre|subtítulo'),
  tool('uniquifier','index.html','уникализатор|уникализация видео|video uniquifier|uniquificateur|unificador de video')
 ]);
+const negativeAction=/(?:не (?:откры|откро|меня|изменя|ставь|настра|устанавли|переключ)|don.t (?:open|change|set)|do not (?:open|change|set)|n.ouvre|ne change|no (?:abras|cambies|ajustes))/u;
 const actionWords=/(?:откро|откры|открой|перейди|покажи|зайди|включи|open|show|go to|ouvre|ouvrez|montre|abre|abrir|muestra)/u;
 export function resolveToolCommand(text){
  const t=normalizeCommand(text);
- if(!actionWords.test(t))return null;
+ if(negativeAction.test(t)||!actionWords.test(t))return null;
  const matches=SITE_TOOLS.filter(item=>item.aliases.some(a=>t.includes(normalizeCommand(a))));
  // More specific names win; several unrelated tools require a clarification.
  const score=item=>Math.max(...item.aliases.filter(a=>t.includes(normalizeCommand(a))).map(a=>a.length));
@@ -119,6 +120,7 @@ function safeLiveSelection(text,speak,language){
 }
 export function routeSiteCommand(text,{language='ru',speak,navigate,isCurrent=()=>true}){
  const t=normalizeCommand(text),w=words[language]||words.en;
+ if(negativeAction.test(t)){speak({ru:'Оставляю без изменений.',en:'Leaving it unchanged.',fr:'Je laisse les réglages inchangés.',es:'Lo dejo sin cambios.'}[language]||'Leaving it unchanged.');return true;}
  const isPrice=/(?:расскажи|сравни|сколько|стоимост|цена|цены|что входит|что получ|how much|price|cost|combien|coût|cuánto|cuanto|precio|все тариф|какие тариф)/u.test(t)&&/(?:тариф|подписк|план|basic|pro\b|business|lifetime|trial|бизнес|бейсик|пожизн|pricing|plan|subscription|abonnement|tarif|precio|suscrip)/u.test(t);
  if(isPrice){Promise.all(['/api/config','/api/jarvix/site-map'].map(url=>fetch(url,{cache:'no-store',signal:AbortSignal.timeout(5000)}).then(r=>{if(!r.ok)throw Error();return r.json();}))).then(([data,knowledge])=>{if(isCurrent())speak(pricingReply(data,t,language,knowledge));}).catch(()=>{if(isCurrent())speak(w.none);});return true;}
  const settings=parseVariationSettings(t);
