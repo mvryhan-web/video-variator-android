@@ -1,3 +1,4 @@
+"""REJECTED / DO NOT REUSE. Owner rejected all V1 ads and this style on 2026-11-04. Historical source only. See DIGITAL_PRODUCT_RULES_RU.md and V2 checkpoint."""
 """Native 3600px editorial layouts. Real PDF covers; no invented interface."""
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
