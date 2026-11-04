@@ -1157,6 +1157,9 @@ export function deactivateJarvisVoice() {
     topBtn.classList.remove('is-active', 'is-speaking', 'is-listening');
     topBtn.removeAttribute('aria-busy');
     topBtn.dataset.voicePhase = 'idle';
+    delete topBtn.dataset.recognitionError;
+    delete topBtn.dataset.voiceError;
+    topBtn.title='JARVIX — AI Voice Commander';
     const label = topBtn.querySelector('.jarvis-name');
     if (label) label.textContent = 'JARVIX';
   }

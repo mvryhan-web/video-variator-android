@@ -16,3 +16,7 @@ New pack: `app/src/main/assets/media/jarvix/jarvix-showcase-v2.json`. 14 short s
 Save each ID as MP3 in `media/jarvix/clips/`, check clipping/silences and audibly review the four introductions. Only then set `ready:true`. The browser never synthesizes missing showcase phrases: until the complete pack is approved, activation uses the earlier introduction and listens. The phrase text is not claimed as a finished audio file.
 
 Tour state crosses real same-origin page navigation. No iframe simulation, auto-generation, billing, change to frozen page artwork or extra Tour button. A manual theme command is allowed independently of the showcase. The old unsolicited festive theme is cleared once per tab on migration; future explicit choices are preserved.
+
+## Single-instance fix found during published verification
+
+Versioned entry scripts (`jarvis-core.js?v=7.0` / `?v=7`) and unversioned module imports caused TWO module instances with separate speech/recognition state. All five entry references now use the same canonical `jarvis-core.js` URL, matching tour imports. This fixes the actual source of late labels, speech/listening state split and a microphone that did not resume after introduction. No core query-string entry may be reintroduced.

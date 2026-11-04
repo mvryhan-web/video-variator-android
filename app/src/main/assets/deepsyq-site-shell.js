@@ -69,7 +69,7 @@ if(!isHome){
 document.body.classList.add('ds-chrome');
 const header=document.querySelector('.ds-header')||document.querySelector('header.top');header.classList.add('ds-header');
 if(!document.querySelector('link[href^="jarvis-core.css"]')){const c=document.createElement('link');c.rel='stylesheet';c.href='jarvis-core.css?v=7';document.head.append(c);}
-if(!isHome&&!document.querySelector('script[src^="jarvis-core.js"]')){const j=document.createElement('script');j.type='module';j.src='jarvis-core.js?v=7';document.body.append(j);}
+if(!isHome&&!document.querySelector('script[src^="jarvis-core.js"]')){const j=document.createElement('script');j.type='module';j.src='jarvis-core.js';document.body.append(j);}
 const side=$('sidebar'),menu=$('menu'),mobile=matchMedia('(max-width:760px)');
 let overflow='';
 const scrim=document.createElement('div');scrim.className='ds-scrim';document.body.append(scrim);
