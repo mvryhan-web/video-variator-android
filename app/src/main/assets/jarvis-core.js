@@ -1,4 +1,5 @@
 import {navigationReply} from './jarvix-navigation-reply.js';
+import {findCatalogReply} from './jarvix-clip-library.js';
 // JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
 // Guaranteed Male Film Voice, Instant Navigation ("Сделано."), Multi-Turn Weather Brain & Smart ChatGPT Prompt Generation
 import {speakOwnerSpeech, stopOwnerSpeech, unlockOwnerSpeech, prepareOwnerGreetings, OWNER_GREETING_TEXT} from './jarvix-owner-speech.js';
@@ -789,6 +790,14 @@ export function handleJarvisVoiceCommand(commandText) {
     try {
       const langCode = getJarvixLanguage();
 
+      // Ready recordings answer known information questions before any AI request.
+      const catalogReply = await findCatalogReply(t, langCode);
+      if (turnVersion !== jarvixTurnVersion) return;
+      if (catalogReply) {
+        speakJarvis(catalogReply.text);
+        return;
+      }
+
       const controller = new AbortController();
       pendingJarvixTurn = controller;
       const res = await fetch('/api/jarvix/chat', {
@@ -994,12 +1003,12 @@ function resumeJarvisRecognition() {
         if (recognitionTurn !== recognitionVersion || !isJarvisActive || !keepListening) return;
         const trimmed = current.trim();
         // Ignore single filler syllables, coughs, mic pops
-        if (/^(?:а|да|ну|эм|ээ|хм|ок|yes|no|uh|um|ah)$/i.test(trimmed)) {
+        if (/^(?:а|ну|эм|ээ|хм|uh|um|ah)$/i.test(trimmed)) {
           accumulatedText = '';
           return;
         }
 
-        if (current.length > 2 && !isJarvisSpeaking) {
+        if ((current.length > 2 || /^(?:да|нет|yes|no|oui|non|si|sí)$/iu.test(trimmed)) && !isJarvisSpeaking) {
           const now = Date.now();
           // Prevent duplicate recognition loops of the exact same command within 2.5 seconds
           if (current.toLowerCase() === lastHandledText.toLowerCase() && (now - lastHandledTime) < 2500) {
@@ -1235,3 +1244,4 @@ if (typeof document !== 'undefined') {
     initJarvis();
   }
 }
+
