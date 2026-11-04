@@ -67,6 +67,10 @@ let silenceTimer = null;
 const SILENCE_TIMEOUT_MS = 45000;
 
 // Conversational context memory for multi-turn dialogs (e.g., weather city, prompt refinement)
+
+const JARVIX_ONBOARDING = {"ru":{"ask":"Хотите изменить оформление сайта: сделать его светлее, темнее или включить неоновый стиль? Если нет, оставлю всё как есть.","choose":"Какой вариант выбрать: светлую тему, тёмную или неоновую?","no":"Хорошо, оставляю оформление без изменений. Что хотите сделать: фото, видео, аудио или посмотреть бесплатные инструменты?","dark":"Готово, включил тёмное оформление. Что дальше: фото, видео, аудио или бесплатные инструменты?","light":"Готово, включил светлое оформление. Что дальше: фото, видео, аудио или бесплатные инструменты?","neon":"Готово, включил неоновый стиль. Что дальше: фото, видео, аудио или бесплатные инструменты?","menu":"Могу помочь с фото, видео или аудио, открыть повседневные инструменты либо показать примеры во Вдохновении. Что выберете?","tools":"Everyday Tools собирает повседневные инструменты платформы. Сейчас открою этот раздел.","inspire":"В Inspiration собраны примеры, от которых можно оттолкнуться для собственного проекта. Сейчас открою галерею.","open":"Что открыть: Everyday Tools, Inspiration или Студию для создания фото и видео?"},"en":{"ask":"Would you like to change the site's look—lighter, darker, or neon? If not, I'll leave it as it is.","choose":"Which would you prefer: light, dark, or neon?","no":"No changes made. What would you like to do: make an image, video, audio, or explore free tools?","dark":"Done. The dark theme is on. What next: an image, video, audio, or free tools?","light":"Done. The light theme is on. What next: an image, video, audio, or free tools?","neon":"Done. The neon theme is on. What next: an image, video, audio, or free tools?","menu":"I can help with images, video, or audio, open Everyday Tools, or show examples in Inspiration. Which would you like?","tools":"Everyday Tools brings together the platform's everyday utilities. I'm opening that section now.","inspire":"Inspiration has examples you can use as a starting point for a project. I'm opening the showcase now.","open":"What should I open: Everyday Tools, Inspiration, or Studio for image and video creation?"},"fr":{"ask":"Souhaitez-vous modifier l’apparence du site : plus claire, plus sombre ou néon ? Sinon, je ne change rien.","choose":"Que préférez-vous : le thème clair, sombre ou néon ?","no":"D’accord, je ne change rien. Que voulez-vous faire : une image, une vidéo, de l’audio ou découvrir les outils gratuits ?","dark":"C’est fait, le thème sombre est activé. Ensuite : image, vidéo, audio ou outils gratuits ?","light":"C’est fait, le thème clair est activé. Ensuite : image, vidéo, audio ou outils gratuits ?","neon":"C’est fait, le thème néon est activé. Ensuite : image, vidéo, audio ou outils gratuits ?","menu":"Je peux vous aider pour une image, une vidéo ou de l’audio, ouvrir Everyday Tools ou montrer des exemples dans Inspiration. Que choisissez-vous ?","tools":"Everyday Tools rassemble les outils pratiques de la plateforme. J’ouvre cette rubrique.","inspire":"Inspiration propose des exemples pour démarrer un projet. J’ouvre la galerie.","open":"Que dois-je ouvrir : Everyday Tools, Inspiration ou le Studio de création ?"},"es":{"ask":"¿Quieres cambiar el aspecto del sitio: más claro|claro, más oscuro|oscuro o neón? Si no, lo dejaré como está.","choose":"¿Qué prefieres: tema claro, oscuro o neón?","no":"De acuerdo, no cambio nada. ¿Qué quieres hacer: una imagen, un vídeo, audio o ver herramientas gratuitas?","dark":"Listo, activé el tema oscuro. ¿Qué sigue: imagen, vídeo, audio o herramientas gratuitas?","light":"Listo, activé el tema claro. ¿Qué sigue: imagen, vídeo, audio o herramientas gratuitas?","neon":"Listo, activé el tema neón. ¿Qué sigue: imagen, vídeo, audio o herramientas gratuitas?","menu":"Puedo ayudarte con imágenes, vídeo o audio, abrir Everyday Tools o mostrar ejemplos en Inspiration. ¿Qué prefieres?","tools":"Everyday Tools reúne las utilidades cotidianas de la plataforma. Voy a abrir esa sección.","inspire":"Inspiration ofrece ejemplos para iniciar un proyecto. Voy a abrir la galería.","open":"¿Qué abro: Everyday Tools, Inspiration o Studio para crear imágenes y vídeos?"}};
+function onboardingText(key, language = getJarvixLanguage()) { return JARVIX_ONBOARDING[language]?.[key] || JARVIX_ONBOARDING.en[key]; }
+
 const jarvixContext = {
   waitingFor: null, // 'weather_city' | 'weather_week'
   lastCity: 'paris',
@@ -451,12 +455,10 @@ export function handleJarvisVoiceCommand(commandText) {
   const isFr = lang === 'fr';
   const isEs = lang === 'es';
 
-  // 1. CAPABILITIES & BUTLER IDENTITY ("Что ты умеешь делать?", "Что ты умеешь?", "Кто ты", "Помощь")
-  if (/(?:что\s+(?:ты\s+)?(?:умеешь|можешь)(?:\s+делать)?|твои\s+возможности|какие\s+(?:у\s+тебя\s+)?функции|что\s+ты\s+такое|кто\s+ты|расскажи\s+о\s+себе|справка|помощь|help|what can you do)/i.test(lower)) {
-    const helpMsg = isRu
-      ? 'Я JARVIX — помощник Deepsyq. Могу открыть раздел сайта и помочь с черновиком промпта. Полноценная языковая модель и собственный голос ещё не подключены. Генерацию вы запускаете сами в студии.'
-      : 'I am JARVIX, your Deepsyq assistant. I can open site sections and help prepare a prompt. A live language model and dedicated voice are not connected yet. You start generation yourself in Studio.';
-    speakJarvis(helpMsg);
+  // 1. CAPABILITIES & GUIDED TOUR
+  if (/(?:что\s+(?:ты\s+)?(?:умеешь|можешь)(?:\s+делать)?|твои\s+возможности|какие\s+(?:у\s+тебя\s+)?функции|кто\s+ты|расскажи\s+о\s+себе|справка|помощь|help|what can you do|que peux-tu faire|qué puedes hacer|que puedes hacer)/i.test(lower)) {
+    jarvixContext.waitingFor = 'next_choice';
+    speakJarvis(onboardingText('menu'));
     return;
   }
 
@@ -503,6 +505,35 @@ export function handleJarvisVoiceCommand(commandText) {
       deactivateJarvisVoice();
     });
     return;
+  }
+
+  // Guided first conversation. A negative answer never resets the existing theme.
+  if (jarvixContext.waitingFor === 'welcome_choice') {
+    const no = /(?:нет|не надо|оставь|оставить|no|non|no gracias|déjalo|dejalo)/i.test(lower);
+    const yes = /(?:да|хочу|давай|yes|sure|oui|sí|si|claro)/i.test(lower);
+    const theme = /(?:светл|светлее|темнее|темная тема|темнее|потемнее|темн|тём|неонов|киберпанк|light|dark|darker|lighter|neon|clair|sombre|néon|más claro|claro|más oscuro|oscuro)/i.test(lower);
+    if (no && !theme) { jarvixContext.waitingFor='next_choice'; speakJarvis(onboardingText('no')); return; }
+    if (yes && !theme) { jarvixContext.waitingFor='theme_style'; speakJarvis(onboardingText('choose')); return; }
+    jarvixContext.waitingFor=null;
+  }
+  if (jarvixContext.waitingFor === 'theme_style') {
+    const no = /(?:нет|не надо|оставь|no|non|no gracias)/i.test(lower);
+    const theme = /(?:светл|светлее|темнее|темная тема|темнее|потемнее|темн|тём|неонов|киберпанк|light|dark|darker|lighter|neon|clair|sombre|néon|más claro|claro|más oscuro|oscuro)/i.test(lower);
+    if (no && !theme) { jarvixContext.waitingFor='next_choice'; speakJarvis(onboardingText('no')); return; }
+    if (!theme) { speakJarvis(onboardingText('choose')); return; }
+    jarvixContext.waitingFor=null;
+  }
+  if (jarvixContext.waitingFor === 'next_choice') {
+    if (/(?:everyday|tools|инструмент|бесплатн|free tool|outil|herramient|gratis)/i.test(lower)) {
+      jarvixContext.waitingFor=null; speakJarvis(onboardingText('tools'),()=>{if(isJarvisActive)instantOpen('free-tools.html');}); return;
+    }
+    if (/(?:inspiration|вдохнов|inspiración|inspiracion|пример|examples|exemples|ejemplos)/i.test(lower)) {
+      jarvixContext.waitingFor=null; speakJarvis(onboardingText('inspire'),()=>{if(isJarvisActive)instantOpen('deepsyq.html#inspirationPreview');}); return;
+    }
+    if (/(?:studio|студи|фото|изображ|картин|video|видео|vidéo|vídeo|audio|аудио|music|музык|musique|música|create|созда|créer)/i.test(lower)) {
+      jarvixContext.waitingFor=null; instantOpen('generate-studio.html'); return;
+    }
+    speakJarvis(onboardingText('open')); return;
   }
 
   // A. MULTI-TURN DIALOG CONTEXT HANDLERS
@@ -676,28 +707,17 @@ export function handleJarvisVoiceCommand(commandText) {
   }
 
   // G1. THEME & LIGHTING COMMANDS
-  if (/(?:посветлее|светлая тема|светлее|включи свет|light theme)/i.test(lower)) {
-    applySiteTheme('light');
-    speakJarvis('Сделано. Сделал освещение сайта ярким и светлым.');
-    return;
+  if (/(?:посветлее|светлая тема|светлее|включи свет|light theme|lighter|plus clair|thème clair|tema claro|más claro|claro)/i.test(lower)) {
+    applySiteTheme('light'); jarvixContext.waitingFor='next_choice'; speakJarvis(onboardingText('light')); return;
   }
-
-  if (/(?:потемнее|темная тема|темнее|ночной режим|dark theme)/i.test(lower)) {
-    applySiteTheme('midnight');
-    speakJarvis('Сделано. Переключил на глубокую темную тему.');
-    return;
+  if (/(?:потемнее|темная тема|темнее|ночной режим|dark theme|darker|plus sombre|thème sombre|tema oscuro|más oscuro|oscuro)/i.test(lower)) {
+    applySiteTheme('midnight'); jarvixContext.waitingFor='next_choice'; speakJarvis(onboardingText('dark')); return;
   }
-
-  if (!/(?:выключи|отключи|не\s+надо)/i.test(lower) && /(?:неонов|киберпанк|neon|cyberpunk)/i.test(lower)) {
-    applySiteTheme('neon');
-    speakJarvis('Сделано. Включил неоновый киберпанк.');
-    return;
+  if (!/(?:выключи|отключи|не\s+надо|don't|do not|ne pas|no quiero)/i.test(lower) && /(?:неонов|киберпанк|neon|cyberpunk|néon)/i.test(lower)) {
+    applySiteTheme('neon'); jarvixContext.waitingFor='next_choice'; speakJarvis(onboardingText('neon')); return;
   }
-
-  if (!/(?:выключи|отключи|не\s+надо)/i.test(lower) && /(?:золот|люкс|gold|luxury)/i.test(lower)) {
-    applySiteTheme('gold');
-    speakJarvis('Сделано. Включил премиальный золотой стиль.');
-    return;
+  if (!/(?:выключи|отключи|не\s+надо|don't|do not|ne pas|no quiero)/i.test(lower) && /(?:золот|люкс|gold|luxury)/i.test(lower)) {
+    applySiteTheme('gold'); speakJarvis(isRu ? 'Готово, включил золотой стиль.' : isFr ? 'C’est fait, le thème doré est activé.' : isEs ? 'Listo, activé el tema dorado.' : 'Done. The gold theme is on.'); return;
   }
 
   // H. SITWIDE LANGUAGE SWITCHING
@@ -1043,12 +1063,8 @@ function resumeJarvisRecognition() {
 
 // 10. Silence Timer: Polite auto-standby after silence (silent standby, never unprompted talk)
 function startSilenceTimer() {
+  // Do not end an active listening session just because the user pauses.
   clearTimeout(silenceTimer);
-  silenceTimer = setTimeout(() => {
-    if (isJarvisActive && !isJarvisSpeaking) {
-      deactivateJarvisVoice();
-    }
-  }, SILENCE_TIMEOUT_MS);
 }
 
 function resetSilenceTimer() {
@@ -1072,8 +1088,10 @@ export function activateJarvisVoice() {
 
   const greetings = OWNER_GREETING_TEXT;
   const greetingText = greetings[getJarvixLanguage()] || greetings.en;
-
-  speakJarvis(greetingText);
+  jarvixContext.waitingFor = 'welcome_choice';
+  speakJarvis(greetingText, () => {
+    if (isJarvisActive && keepListening) speakJarvis(onboardingText('ask'));
+  });
 }
 
 export function deactivateJarvisVoice() {
