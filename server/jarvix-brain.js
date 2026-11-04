@@ -736,6 +736,49 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
   };
 }
 
+
+// 5.5. LOCAL / FREE TIER QWEN HYBRID ENGINE
+export async function processTurnWithLocalQwen(userText, session, lang = 'ru') {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 1800);
+  try {
+    const res = await fetch('http://127.0.0.1:8766/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [
+          ...session.history.slice(-6).map(h => ({ role: h.role, content: h.content })),
+          { role: 'user', content: userText }
+        ],
+        max_tokens: 100
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content?.trim();
+    if (!reply) return null;
+
+    session.history.push({ role: 'user', content: userText, timestamp: Date.now() });
+    session.history.push({ role: 'assistant', content: reply, timestamp: Date.now() });
+    if (session.history.length > 24) session.history.splice(0, session.history.length - 24);
+
+    return {
+      reply,
+      action: null,
+      entities: { ...session.accumulatedPrompt },
+      compiledPrompt: compileAccumulatedPrompt(session.accumulatedPrompt),
+      studioHandoff: null,
+      language: lang,
+      provider: 'qwen-hybrid'
+    };
+  } catch (_) {
+    clearTimeout(timer);
+    return null;
+  }
+}
+
 // 6. LIVE OPENAI RESPONSES API DISPATCHER
 export async function processTurnWithOpenAI(userText, session, lang = 'ru', options = {}) {
   const env = options.env || process.env;
@@ -743,6 +786,10 @@ export async function processTurnWithOpenAI(userText, session, lang = 'ru', opti
   const apiKey = (env.OPENAI_API_KEY || process.env.OPENAI_API_KEY || '').trim();
   // A key alone never enables billable calls. The owner must set the explicit flag.
   if (env.JARVIX_AI_ENABLED !== 'true' || !apiKey || apiKey.startsWith('mock-') || apiKey === 'dummy' || env.JARVIX_AI_DISABLE === 'true') {
+    if (!options.previewOnly && process.env.NODE_ENV !== 'test') {
+      const qwen = await processTurnWithLocalQwen(userText, session, lang);
+      if (qwen) return qwen;
+    }
     return processTurnWithMockBrain(userText, session, lang);
   }
 

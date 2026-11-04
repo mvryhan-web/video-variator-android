@@ -724,3 +724,42 @@ html[data-site-theme="gold"] {
 html[data-site-theme="gold"] body {
   background: radial-gradient(ellipse 80% 450px at 70% -150px, #f59e0b25, transparent 70%), #0c0a07 !important;
 }
+
+
+html[data-site-theme="festive-newyear"],
+html[data-site-theme="newyear"],
+html[data-site-theme="festive"] {
+  --ds-bg: #030f0a;
+  --ds-sidebar: #051910;
+  --ds-surface: #0a2519;
+  --ds-raised: #103625;
+  --ds-line: #10b981;
+  --ds-text: #f0fdf4;
+  --ds-muted: #86efac;
+  --ds-violet: #e11d48;
+  --ds-pink: #f59e0b;
+  --ds-blue: #38bdf8;
+  color-scheme: dark;
+}
+html[data-site-theme="festive-newyear"] body,
+html[data-site-theme="newyear"] body,
+html[data-site-theme="festive"] body {
+  background: radial-gradient(ellipse 80% 450px at 74% -150px, rgba(225, 29, 72, 0.22), transparent 70%),
+              radial-gradient(ellipse 600px 450px at 20% 40%, rgba(16, 185, 129, 0.20), transparent 70%),
+              radial-gradient(ellipse 500px 400px at 80% 80%, rgba(245, 158, 11, 0.15), transparent 70%), #030f0a !important;
+  color: #f0fdf4 !important;
+}
+html[data-site-theme="festive-newyear"] :is(.content>.top, .topbar, body>header),
+html[data-site-theme="newyear"] :is(.content>.top, .topbar, body>header),
+html[data-site-theme="festive"] :is(.content>.top, .topbar, body>header) {
+  border-bottom: 1.5px solid rgba(225, 29, 72, 0.6) !important;
+  box-shadow: 0 4px 30px rgba(16, 185, 129, 0.25) !important;
+  background: rgba(5, 25, 16, 0.88) !important;
+}
+html[data-site-theme="festive-newyear"] :is(.card, .price-card, .app-card, .hub-tile, .tool-card, .panel, .studio-card),
+html[data-site-theme="newyear"] :is(.card, .price-card, .app-card, .hub-tile, .tool-card, .panel, .studio-card),
+html[data-site-theme="festive"] :is(.card, .price-card, .app-card, .hub-tile, .tool-card, .panel, .studio-card) {
+  background: rgba(10, 37, 25, 0.75) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  box-shadow: 0 4px 20px rgba(225, 29, 72, 0.12) !important;
+}
