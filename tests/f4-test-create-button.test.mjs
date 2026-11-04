@@ -67,6 +67,8 @@ test('TEST Studio separation: image only in Images, audio only in Audio, no shar
   const page=await browser.newPage({locale:'ru-RU'});
   await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
   page.on('dialog',dialog=>dialog.accept());
+  // This acceptance test uses an already-consented browser profile. Onboarding is verified separately.
+  await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
   const go=async(section)=>{
    await page.goto(base+'/generate-studio.html?studio='+section,{waitUntil:'domcontentloaded'});
    // Explicitly accept the real onboarding consent dialog before interacting with Studio tabs.
