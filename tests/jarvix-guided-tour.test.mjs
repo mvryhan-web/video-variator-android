@@ -41,6 +41,13 @@ test('TEST owner Jarvix header Tour button starts and closes the real guided tou
   await page.waitForFunction(()=>document.getElementById('jarvixTourOverlay')?.classList.contains('is-active'),null,{timeout:10000});
   await page.locator('#jarvixTourSkip').click();
   await page.waitForFunction(()=>!document.getElementById('jarvixTourOverlay')?.classList.contains('is-active'),null,{timeout:10000});
+  await page.setViewportSize({width:390,height:844});
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>document.getElementById('topJarvisTourBtn')?.__jarvixTourBound===true,null,{timeout:15000});
+  await tourBtn.click();
+  await page.waitForFunction(()=>document.getElementById('jarvixTourOverlay')?.classList.contains('is-active'),null,{timeout:10000});
+  await page.locator('#jarvixTourSkip').click();
+  await page.waitForFunction(()=>!document.getElementById('jarvixTourOverlay')?.classList.contains('is-active'),null,{timeout:10000});
   assert.equal(paidRequests,0,'tour clicks cannot submit AI or billing jobs');
  }finally{
   if(browser)await browser.close();
