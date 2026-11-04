@@ -46,10 +46,12 @@ if not args.all:
 else:
     phrases=[(lang,item) for lang,items in catalog["phrases"].items() for item in items]
     identifiers=[item["id"] for lang,item in phrases]
-    if len(phrases)!=200 or len(set(identifiers))!=200 or any(len(catalog["phrases"].get(lang,[]))!=50 for lang in ["ru","en","fr","es"]):
-        raise RuntimeError("Expected 200 unique clips, 50 per language")
+    expected = catalog.get("totalPhrases")
+    per_language = catalog.get("perLanguage")
+    if expected != len(phrases) or len(set(identifiers)) != expected or any(len(catalog["phrases"].get(lang,[])) != per_language for lang in ["ru","en","fr","es"]):
+        raise RuntimeError("Phrase catalog totals do not match metadata")
     for number,(lang,item) in enumerate(phrases,1):
         if not re.fullmatch(r"jarvix_(ru|en|fr|es)_\d{2}",item["id"]):raise RuntimeError("Invalid clip ID")
-        print(str(number)+"/200",flush=True)
+        print(str(number)+"/"+str(expected),flush=True)
         save(item["id"],item["text"],lang)
-    print("ALL 200 CLIPS READY")
+    print("ALL "+str(expected)+" CLIPS READY")
