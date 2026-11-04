@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "totalPhrases": 200,
-  "perLanguage": 50,
+  "totalPhrases": 344,
+  "perLanguage": 86,
   "languages": [
     "ru",
     "en",
@@ -261,6 +261,186 @@
         "id": "jarvix_ru_50",
         "category": "dialogue",
         "text": "Отличная работа! Что создадим дальше?"
+      },
+      {
+        "id": "jarvix_ru_51",
+        "category": "help",
+        "text": "Для коммерческого использования проверьте условия лицензии выбранной модели и вашего тарифа перед публикацией результата."
+      },
+      {
+        "id": "jarvix_ru_52",
+        "category": "help",
+        "text": "Опишите идею обычными словами: я помогу уточнить сюжет, стиль, формат и детали промпта."
+      },
+      {
+        "id": "jarvix_ru_53",
+        "category": "help",
+        "text": "Хотите превратить фотографию в короткое видео? Выберите анимацию изображения в Студии и добавьте описание движения."
+      },
+      {
+        "id": "jarvix_ru_54",
+        "category": "help",
+        "text": "Оплата проходит через Stripe. Перед подтверждением проверьте сумму и выбранный пакет."
+      },
+      {
+        "id": "jarvix_ru_55",
+        "category": "help",
+        "text": "Чтобы пополнить баланс, откройте AI Credits, выберите пакет и подтвердите покупку."
+      },
+      {
+        "id": "jarvix_ru_56",
+        "category": "help",
+        "text": "Баланс и доступные кредиты можно посмотреть в профиле. Стоимость генерации зависит от модели и настроек."
+      },
+      {
+        "id": "jarvix_ru_57",
+        "category": "help",
+        "text": "Разрешение 4K доступно не для каждой модели. Проверьте параметры выбранной модели в Студии."
+      },
+      {
+        "id": "jarvix_ru_58",
+        "category": "help",
+        "text": "Время обработки зависит от модели, длины запроса и очереди. Готовый результат появится в рабочей области."
+      },
+      {
+        "id": "jarvix_ru_59",
+        "category": "help",
+        "text": "Готовое видео можно скачать в MP4, а изображение — в PNG, если этот формат доступен для результата."
+      },
+      {
+        "id": "jarvix_ru_60",
+        "category": "help",
+        "text": "Что хотите сделать сначала: создать изображение, видео или аудио? Я помогу выбрать следующий шаг."
+      },
+      {
+        "id": "jarvix_ru_61",
+        "category": "help",
+        "text": "Для Reels обычно выбирают вертикальный формат 9:16, для YouTube — горизонтальный 16:9. Что готовим?"
+      },
+      {
+        "id": "jarvix_ru_62",
+        "category": "help",
+        "text": "Сравните функции и лимиты на странице тарифов и выберите подходящий план. Открыть тарифы?"
+      },
+      {
+        "id": "jarvix_ru_63",
+        "category": "help",
+        "text": "Для видео можно подготовить музыку или озвучку. Что нужно: музыка, голос или оба варианта?"
+      },
+      {
+        "id": "jarvix_ru_64",
+        "category": "help",
+        "text": "Чтобы подготовить видео для повторной публикации, откройте видеоуникализатор и проверьте доступные настройки."
+      },
+      {
+        "id": "jarvix_ru_65",
+        "category": "help",
+        "text": "Начнём просто: назовите тему, желаемый стиль и формат — я помогу составить описание."
+      },
+      {
+        "id": "jarvix_ru_66",
+        "category": "help",
+        "text": "Открыть Everyday Tools? Там собраны повседневные инструменты платформы."
+      },
+      {
+        "id": "jarvix_ru_67",
+        "category": "help",
+        "text": "В Inspiration можно посмотреть примеры и выбрать идею, от которой удобно оттолкнуться."
+      },
+      {
+        "id": "jarvix_ru_68",
+        "category": "help",
+        "text": "Хотите, я кратко перечислю бесплатные инструменты и разделы для знакомства с платформой?"
+      },
+      {
+        "id": "jarvix_ru_69",
+        "category": "help",
+        "text": "Выберите пример в Inspiration, посмотрите его параметры и используйте как отправную точку для своей идеи."
+      },
+      {
+        "id": "jarvix_ru_70",
+        "category": "help",
+        "text": "Могу уточнить описание: добавить объект, окружение, освещение, настроение и нужное соотношение сторон."
+      },
+      {
+        "id": "jarvix_ru_71",
+        "category": "help",
+        "text": "Для начала выберите фото или видео, затем расскажите, что хотите увидеть. Начнём с изображения или ролика?"
+      },
+      {
+        "id": "jarvix_ru_72",
+        "category": "help",
+        "text": "Я могу открыть нужный раздел, подсказать порядок действий и помочь сформулировать запрос. Что хотите сделать?"
+      },
+      {
+        "id": "jarvix_ru_73",
+        "category": "help",
+        "text": "Какой стиль изображения выбрать: реалистичный, иллюстративный или киберпанк?"
+      },
+      {
+        "id": "jarvix_ru_74",
+        "category": "help",
+        "text": "Когда будете готовы, назовите задачу — я проведу вас по доступным шагам."
+      },
+      {
+        "id": "jarvix_ru_75",
+        "category": "help",
+        "text": "Не обязательно знать специальные термины. Расскажите идею своими словами, и мы уточним детали вместе."
+      },
+      {
+        "id": "jarvix_ru_76",
+        "category": "greeting",
+        "text": "Я Джарвис, голосовой помощник Deepsyq. Помогу с фото и видео, открою нужный раздел и настрою оформление: светлое, тёмное или неоновое. С чего начнём?"
+      },
+      {
+        "id": "jarvix_ru_77",
+        "category": "dialogue",
+        "text": "Хотите изменить оформление сайта: сделать его светлее, темнее или включить неоновый стиль? Если нет, оставлю всё как есть."
+      },
+      {
+        "id": "jarvix_ru_78",
+        "category": "dialogue",
+        "text": "Какой вариант выбрать: светлую тему, тёмную или неоновую?"
+      },
+      {
+        "id": "jarvix_ru_79",
+        "category": "dialogue",
+        "text": "Хорошо, оставляю оформление без изменений. Что хотите сделать: фото, видео, аудио или посмотреть бесплатные инструменты?"
+      },
+      {
+        "id": "jarvix_ru_80",
+        "category": "dialogue",
+        "text": "Готово, включил тёмное оформление. Что дальше: фото, видео, аудио или бесплатные инструменты?"
+      },
+      {
+        "id": "jarvix_ru_81",
+        "category": "dialogue",
+        "text": "Готово, включил светлое оформление. Что дальше: фото, видео, аудио или бесплатные инструменты?"
+      },
+      {
+        "id": "jarvix_ru_82",
+        "category": "dialogue",
+        "text": "Готово, включил неоновый стиль. Что дальше: фото, видео, аудио или бесплатные инструменты?"
+      },
+      {
+        "id": "jarvix_ru_83",
+        "category": "dialogue",
+        "text": "Могу помочь с фото, видео или аудио, открыть повседневные инструменты либо показать примеры во Вдохновении. Что выберете?"
+      },
+      {
+        "id": "jarvix_ru_84",
+        "category": "dialogue",
+        "text": "Everyday Tools собирает повседневные инструменты платформы. Сейчас открою этот раздел."
+      },
+      {
+        "id": "jarvix_ru_85",
+        "category": "dialogue",
+        "text": "В Inspiration собраны примеры, от которых можно оттолкнуться для собственного проекта. Сейчас открою галерею."
+      },
+      {
+        "id": "jarvix_ru_86",
+        "category": "dialogue",
+        "text": "Что открыть: Everyday Tools, Inspiration или Студию для создания фото и видео?"
       }
     ],
     "en": [
@@ -513,6 +693,186 @@
         "id": "jarvix_en_50",
         "category": "dialogue",
         "text": "Great job! What should we build next?"
+      },
+      {
+        "id": "jarvix_en_51",
+        "category": "help",
+        "text": "Before publishing for commercial use, check the selected model's license and your plan terms."
+      },
+      {
+        "id": "jarvix_en_52",
+        "category": "help",
+        "text": "Describe your idea in plain language. I can help refine the subject, style, format, and prompt details."
+      },
+      {
+        "id": "jarvix_en_53",
+        "category": "help",
+        "text": "Would you like to turn a photo into a short video? Choose image animation in Studio and describe the movement."
+      },
+      {
+        "id": "jarvix_en_54",
+        "category": "help",
+        "text": "Checkout is handled through Stripe. Review the amount and selected package before confirming."
+      },
+      {
+        "id": "jarvix_en_55",
+        "category": "help",
+        "text": "To add credits, open AI Credits, choose a package, and confirm the purchase."
+      },
+      {
+        "id": "jarvix_en_56",
+        "category": "help",
+        "text": "Check your balance and credits in your profile. Generation costs depend on the model and settings."
+      },
+      {
+        "id": "jarvix_en_57",
+        "category": "help",
+        "text": "4K resolution is not available for every model. Check the selected model's options in Studio."
+      },
+      {
+        "id": "jarvix_en_58",
+        "category": "help",
+        "text": "Processing time depends on the model, prompt length, and queue. The result will appear in your workspace."
+      },
+      {
+        "id": "jarvix_en_59",
+        "category": "help",
+        "text": "Download a finished video as MP4 or an image as PNG when that format is available for the result."
+      },
+      {
+        "id": "jarvix_en_60",
+        "category": "help",
+        "text": "What would you like to make first: an image, a video, or audio? I can guide you through the next step."
+      },
+      {
+        "id": "jarvix_en_61",
+        "category": "help",
+        "text": "Reels usually use vertical 9:16; YouTube often uses widescreen 16:9. Which are you making?"
+      },
+      {
+        "id": "jarvix_en_62",
+        "category": "help",
+        "text": "Compare features and limits on the plans page, then choose what fits your needs. Shall I open it?"
+      },
+      {
+        "id": "jarvix_en_63",
+        "category": "help",
+        "text": "For a video, we can plan music or a voiceover. Which do you need: music, a voice, or both?"
+      },
+      {
+        "id": "jarvix_en_64",
+        "category": "help",
+        "text": "To prepare a video for reuse, open Video Uniquifier and review its available settings."
+      },
+      {
+        "id": "jarvix_en_65",
+        "category": "help",
+        "text": "We can start simply: tell me the subject, style, and format, and I will help shape the description."
+      },
+      {
+        "id": "jarvix_en_66",
+        "category": "help",
+        "text": "Would you like me to open Everyday Tools? It contains the platform's everyday utilities."
+      },
+      {
+        "id": "jarvix_en_67",
+        "category": "help",
+        "text": "In Inspiration, browse examples and choose an idea to build on."
+      },
+      {
+        "id": "jarvix_en_68",
+        "category": "help",
+        "text": "Would you like a quick tour of the free tools and sections available on the platform?"
+      },
+      {
+        "id": "jarvix_en_69",
+        "category": "help",
+        "text": "Choose an example in Inspiration, review its settings, and use it as a starting point for your own idea."
+      },
+      {
+        "id": "jarvix_en_70",
+        "category": "help",
+        "text": "I can make the description more precise by adding the subject, setting, lighting, mood, and aspect ratio."
+      },
+      {
+        "id": "jarvix_en_71",
+        "category": "help",
+        "text": "Choose image or video, then tell me what you want to see. Shall we start with a picture or a clip?"
+      },
+      {
+        "id": "jarvix_en_72",
+        "category": "help",
+        "text": "I can open a section, explain the steps, and help shape your prompt. What would you like to do?"
+      },
+      {
+        "id": "jarvix_en_73",
+        "category": "help",
+        "text": "Which image style would you prefer: realistic, illustrative, or cyberpunk?"
+      },
+      {
+        "id": "jarvix_en_74",
+        "category": "help",
+        "text": "When you are ready, tell me what you want to do and I will guide you through the available steps."
+      },
+      {
+        "id": "jarvix_en_75",
+        "category": "help",
+        "text": "You do not need special terminology. Describe your idea in your own words and we can refine it together."
+      },
+      {
+        "id": "jarvix_en_76",
+        "category": "greeting",
+        "text": "I'm Jarvis, your Deepsyq assistant. I can help with images, video, and site themes: light, dark, or neon. What shall we do?"
+      },
+      {
+        "id": "jarvix_en_77",
+        "category": "dialogue",
+        "text": "Would you like to change the site's look—lighter, darker, or neon? If not, I'll leave it as it is."
+      },
+      {
+        "id": "jarvix_en_78",
+        "category": "dialogue",
+        "text": "Which would you prefer: light, dark, or neon?"
+      },
+      {
+        "id": "jarvix_en_79",
+        "category": "dialogue",
+        "text": "No changes made. What would you like to do: make an image, video, audio, or explore free tools?"
+      },
+      {
+        "id": "jarvix_en_80",
+        "category": "dialogue",
+        "text": "Done. The dark theme is on. What next: an image, video, audio, or free tools?"
+      },
+      {
+        "id": "jarvix_en_81",
+        "category": "dialogue",
+        "text": "Done. The light theme is on. What next: an image, video, audio, or free tools?"
+      },
+      {
+        "id": "jarvix_en_82",
+        "category": "dialogue",
+        "text": "Done. The neon theme is on. What next: an image, video, audio, or free tools?"
+      },
+      {
+        "id": "jarvix_en_83",
+        "category": "dialogue",
+        "text": "I can help with images, video, or audio, open Everyday Tools, or show examples in Inspiration. Which would you like?"
+      },
+      {
+        "id": "jarvix_en_84",
+        "category": "dialogue",
+        "text": "Everyday Tools brings together the platform's everyday utilities. I'm opening that section now."
+      },
+      {
+        "id": "jarvix_en_85",
+        "category": "dialogue",
+        "text": "Inspiration has examples you can use as a starting point for a project. I'm opening the showcase now."
+      },
+      {
+        "id": "jarvix_en_86",
+        "category": "dialogue",
+        "text": "What should I open: Everyday Tools, Inspiration, or Studio for image and video creation?"
       }
     ],
     "fr": [
@@ -765,6 +1125,186 @@
         "id": "jarvix_fr_50",
         "category": "dialogue",
         "text": "Superbe création ! Que faisons-nous ensuite ?"
+      },
+      {
+        "id": "jarvix_fr_51",
+        "category": "help",
+        "text": "Avant toute publication commerciale, vérifiez la licence du modèle choisi et les conditions de votre forfait."
+      },
+      {
+        "id": "jarvix_fr_52",
+        "category": "help",
+        "text": "Décrivez votre idée simplement. Je peux préciser le sujet, le style, le format et les détails du prompt."
+      },
+      {
+        "id": "jarvix_fr_53",
+        "category": "help",
+        "text": "Voulez-vous transformer une photo en courte vidéo ? Choisissez l’animation d’image dans le Studio et décrivez le mouvement."
+      },
+      {
+        "id": "jarvix_fr_54",
+        "category": "help",
+        "text": "Le paiement passe par Stripe. Vérifiez le montant et le forfait choisi avant de confirmer."
+      },
+      {
+        "id": "jarvix_fr_55",
+        "category": "help",
+        "text": "Pour ajouter des crédits, ouvrez AI Credits, choisissez un pack et confirmez l’achat."
+      },
+      {
+        "id": "jarvix_fr_56",
+        "category": "help",
+        "text": "Votre solde et vos crédits sont visibles dans votre profil. Le coût dépend du modèle et des réglages."
+      },
+      {
+        "id": "jarvix_fr_57",
+        "category": "help",
+        "text": "La résolution 4K n’est pas disponible pour tous les modèles. Vérifiez les options dans le Studio."
+      },
+      {
+        "id": "jarvix_fr_58",
+        "category": "help",
+        "text": "Le traitement dépend du modèle, de la longueur de la demande et de la file d’attente. Le résultat apparaîtra dans votre espace."
+      },
+      {
+        "id": "jarvix_fr_59",
+        "category": "help",
+        "text": "La vidéo peut être téléchargée en MP4 et l’image en PNG lorsque ce format est disponible."
+      },
+      {
+        "id": "jarvix_fr_60",
+        "category": "help",
+        "text": "Que voulez-vous créer d’abord : une image, une vidéo ou de l’audio ? Je peux vous guider."
+      },
+      {
+        "id": "jarvix_fr_61",
+        "category": "help",
+        "text": "Pour Reels, on choisit souvent le format vertical 9:16 ; pour YouTube, le format horizontal 16:9. Lequel prépare-t-on ?"
+      },
+      {
+        "id": "jarvix_fr_62",
+        "category": "help",
+        "text": "Comparez les fonctions et limites sur la page des forfaits. Voulez-vous que je l’ouvre ?"
+      },
+      {
+        "id": "jarvix_fr_63",
+        "category": "help",
+        "text": "Pour une vidéo, nous pouvons préparer une musique ou une voix off. Que vous faut-il ?"
+      },
+      {
+        "id": "jarvix_fr_64",
+        "category": "help",
+        "text": "Pour préparer une vidéo à une nouvelle publication, ouvrez Video Uniquifier et vérifiez les réglages disponibles."
+      },
+      {
+        "id": "jarvix_fr_65",
+        "category": "help",
+        "text": "Commençons simplement : indiquez le sujet, le style et le format, et je vous aiderai à formuler la description."
+      },
+      {
+        "id": "jarvix_fr_66",
+        "category": "help",
+        "text": "Voulez-vous ouvrir Everyday Tools ? Vous y trouverez les outils pratiques de la plateforme."
+      },
+      {
+        "id": "jarvix_fr_67",
+        "category": "help",
+        "text": "Dans Inspiration, parcourez des exemples et choisissez une idée de départ."
+      },
+      {
+        "id": "jarvix_fr_68",
+        "category": "help",
+        "text": "Voulez-vous un bref aperçu des outils gratuits et des sections de la plateforme ?"
+      },
+      {
+        "id": "jarvix_fr_69",
+        "category": "help",
+        "text": "Choisissez un exemple dans Inspiration, consultez ses paramètres et utilisez-le comme point de départ."
+      },
+      {
+        "id": "jarvix_fr_70",
+        "category": "help",
+        "text": "Je peux préciser la description avec le sujet, le décor, la lumière, l’ambiance et le format."
+      },
+      {
+        "id": "jarvix_fr_71",
+        "category": "help",
+        "text": "Choisissez image ou vidéo, puis décrivez le résultat souhaité. On commence par une image ou un clip ?"
+      },
+      {
+        "id": "jarvix_fr_72",
+        "category": "help",
+        "text": "Je peux ouvrir une section, expliquer les étapes et vous aider à formuler la demande. Que voulez-vous faire ?"
+      },
+      {
+        "id": "jarvix_fr_73",
+        "category": "help",
+        "text": "Quel style d’image préférez-vous : réaliste, illustratif ou cyberpunk ?"
+      },
+      {
+        "id": "jarvix_fr_74",
+        "category": "help",
+        "text": "Quand vous êtes prêt, dites-moi ce que vous souhaitez faire et je vous guiderai."
+      },
+      {
+        "id": "jarvix_fr_75",
+        "category": "help",
+        "text": "Pas besoin de termes techniques. Décrivez votre idée avec vos mots et nous préciserons les détails ensemble."
+      },
+      {
+        "id": "jarvix_fr_76",
+        "category": "greeting",
+        "text": "Je suis Jarvis, votre assistant Deepsyq. Je peux aider pour vos images, vidéos et thèmes du site : clair, sombre ou néon. Par quoi commencer ?"
+      },
+      {
+        "id": "jarvix_fr_77",
+        "category": "dialogue",
+        "text": "Souhaitez-vous modifier l’apparence du site : plus claire, plus sombre ou néon ? Sinon, je ne change rien."
+      },
+      {
+        "id": "jarvix_fr_78",
+        "category": "dialogue",
+        "text": "Que préférez-vous : le thème clair, sombre ou néon ?"
+      },
+      {
+        "id": "jarvix_fr_79",
+        "category": "dialogue",
+        "text": "D’accord, je ne change rien. Que voulez-vous faire : une image, une vidéo, de l’audio ou découvrir les outils gratuits ?"
+      },
+      {
+        "id": "jarvix_fr_80",
+        "category": "dialogue",
+        "text": "C’est fait, le thème sombre est activé. Ensuite : image, vidéo, audio ou outils gratuits ?"
+      },
+      {
+        "id": "jarvix_fr_81",
+        "category": "dialogue",
+        "text": "C’est fait, le thème clair est activé. Ensuite : image, vidéo, audio ou outils gratuits ?"
+      },
+      {
+        "id": "jarvix_fr_82",
+        "category": "dialogue",
+        "text": "C’est fait, le thème néon est activé. Ensuite : image, vidéo, audio ou outils gratuits ?"
+      },
+      {
+        "id": "jarvix_fr_83",
+        "category": "dialogue",
+        "text": "Je peux vous aider pour une image, une vidéo ou de l’audio, ouvrir Everyday Tools ou montrer des exemples dans Inspiration. Que choisissez-vous ?"
+      },
+      {
+        "id": "jarvix_fr_84",
+        "category": "dialogue",
+        "text": "Everyday Tools rassemble les outils pratiques de la plateforme. J’ouvre cette rubrique."
+      },
+      {
+        "id": "jarvix_fr_85",
+        "category": "dialogue",
+        "text": "Inspiration propose des exemples pour démarrer un projet. J’ouvre la galerie."
+      },
+      {
+        "id": "jarvix_fr_86",
+        "category": "dialogue",
+        "text": "Que dois-je ouvrir : Everyday Tools, Inspiration ou le Studio de création ?"
       }
     ],
     "es": [
@@ -1017,6 +1557,186 @@
         "id": "jarvix_es_50",
         "category": "dialogue",
         "text": "¡Excelente trabajo! ¿Qué creamos ahora?"
+      },
+      {
+        "id": "jarvix_es_51",
+        "category": "help",
+        "text": "Antes de publicar con fines comerciales, comprueba la licencia del modelo elegido y las condiciones de tu plan."
+      },
+      {
+        "id": "jarvix_es_52",
+        "category": "help",
+        "text": "Describe tu idea con palabras sencillas. Puedo ayudarte a precisar el tema, el estilo, el formato y el prompt."
+      },
+      {
+        "id": "jarvix_es_53",
+        "category": "help",
+        "text": "¿Quieres convertir una foto en un vídeo corto? Elige la animación de imagen en Studio y describe el movimiento."
+      },
+      {
+        "id": "jarvix_es_54",
+        "category": "help",
+        "text": "El pago se procesa con Stripe. Revisa el importe y el paquete elegido antes de confirmar."
+      },
+      {
+        "id": "jarvix_es_55",
+        "category": "help",
+        "text": "Para añadir créditos, abre AI Credits, elige un paquete y confirma la compra."
+      },
+      {
+        "id": "jarvix_es_56",
+        "category": "help",
+        "text": "Consulta tu saldo y tus créditos en tu perfil. El coste depende del modelo y de los ajustes."
+      },
+      {
+        "id": "jarvix_es_57",
+        "category": "help",
+        "text": "La resolución 4K no está disponible en todos los modelos. Comprueba las opciones en Studio."
+      },
+      {
+        "id": "jarvix_es_58",
+        "category": "help",
+        "text": "El procesamiento depende del modelo, la longitud de la solicitud y la cola. El resultado aparecerá en tu espacio."
+      },
+      {
+        "id": "jarvix_es_59",
+        "category": "help",
+        "text": "Descarga el vídeo en MP4 o la imagen en PNG cuando ese formato esté disponible."
+      },
+      {
+        "id": "jarvix_es_60",
+        "category": "help",
+        "text": "¿Qué quieres crear primero: una imagen, un vídeo o audio? Puedo guiarte en el siguiente paso."
+      },
+      {
+        "id": "jarvix_es_61",
+        "category": "help",
+        "text": "Reels suele usar formato vertical 9:16 y YouTube, horizontal 16:9. ¿Cuál estás preparando?"
+      },
+      {
+        "id": "jarvix_es_62",
+        "category": "help",
+        "text": "Compara funciones y límites en la página de planes. ¿Quieres que la abra?"
+      },
+      {
+        "id": "jarvix_es_63",
+        "category": "help",
+        "text": "Para un vídeo podemos preparar música o voz en off. ¿Qué necesitas?"
+      },
+      {
+        "id": "jarvix_es_64",
+        "category": "help",
+        "text": "Para preparar un vídeo para volver a publicarlo, abre Video Uniquifier y revisa las opciones disponibles."
+      },
+      {
+        "id": "jarvix_es_65",
+        "category": "help",
+        "text": "Empecemos de forma sencilla: dime el tema, el estilo y el formato, y te ayudaré a redactarlo."
+      },
+      {
+        "id": "jarvix_es_66",
+        "category": "help",
+        "text": "¿Quieres que abra Everyday Tools? Allí están las utilidades cotidianas de la plataforma."
+      },
+      {
+        "id": "jarvix_es_67",
+        "category": "help",
+        "text": "En Inspiration puedes ver ejemplos y elegir una idea como punto de partida."
+      },
+      {
+        "id": "jarvix_es_68",
+        "category": "help",
+        "text": "¿Quieres que te cuente brevemente qué herramientas y secciones gratuitas hay en la plataforma?"
+      },
+      {
+        "id": "jarvix_es_69",
+        "category": "help",
+        "text": "Elige un ejemplo en Inspiration, revisa sus ajustes y úsalo como base para tu propia idea."
+      },
+      {
+        "id": "jarvix_es_70",
+        "category": "help",
+        "text": "Puedo concretar la descripción con el sujeto, el entorno, la iluminación, el ambiente y el formato."
+      },
+      {
+        "id": "jarvix_es_71",
+        "category": "help",
+        "text": "Elige imagen o vídeo y luego cuéntame qué quieres ver. ¿Empezamos con una imagen o un clip?"
+      },
+      {
+        "id": "jarvix_es_72",
+        "category": "help",
+        "text": "Puedo abrir una sección, explicar los pasos y ayudarte a formular la solicitud. ¿Qué quieres hacer?"
+      },
+      {
+        "id": "jarvix_es_73",
+        "category": "help",
+        "text": "¿Qué estilo de imagen prefieres: realista, ilustrado o cyberpunk?"
+      },
+      {
+        "id": "jarvix_es_74",
+        "category": "help",
+        "text": "Cuando quieras, dime qué quieres hacer y te guiaré por los pasos disponibles."
+      },
+      {
+        "id": "jarvix_es_75",
+        "category": "help",
+        "text": "No hace falta conocer términos técnicos. Cuéntame tu idea con tus propias palabras y la concretamos juntos."
+      },
+      {
+        "id": "jarvix_es_76",
+        "category": "greeting",
+        "text": "Soy Jarvis, tu asistente Deepsyq. Te ayudo con imágenes, vídeos y temas del sitio: claro, oscuro o neón. ¿Por dónde empezamos?"
+      },
+      {
+        "id": "jarvix_es_77",
+        "category": "dialogue",
+        "text": "¿Quieres cambiar el aspecto del sitio: más claro, más oscuro o neón? Si no, lo dejaré como está."
+      },
+      {
+        "id": "jarvix_es_78",
+        "category": "dialogue",
+        "text": "¿Qué prefieres: tema claro, oscuro o neón?"
+      },
+      {
+        "id": "jarvix_es_79",
+        "category": "dialogue",
+        "text": "De acuerdo, no cambio nada. ¿Qué quieres hacer: una imagen, un vídeo, audio o ver herramientas gratuitas?"
+      },
+      {
+        "id": "jarvix_es_80",
+        "category": "dialogue",
+        "text": "Listo, activé el tema oscuro. ¿Qué sigue: imagen, vídeo, audio o herramientas gratuitas?"
+      },
+      {
+        "id": "jarvix_es_81",
+        "category": "dialogue",
+        "text": "Listo, activé el tema claro. ¿Qué sigue: imagen, vídeo, audio o herramientas gratuitas?"
+      },
+      {
+        "id": "jarvix_es_82",
+        "category": "dialogue",
+        "text": "Listo, activé el tema neón. ¿Qué sigue: imagen, vídeo, audio o herramientas gratuitas?"
+      },
+      {
+        "id": "jarvix_es_83",
+        "category": "dialogue",
+        "text": "Puedo ayudarte con imágenes, vídeo o audio, abrir Everyday Tools o mostrar ejemplos en Inspiration. ¿Qué prefieres?"
+      },
+      {
+        "id": "jarvix_es_84",
+        "category": "dialogue",
+        "text": "Everyday Tools reúne las utilidades cotidianas de la plataforma. Voy a abrir esa sección."
+      },
+      {
+        "id": "jarvix_es_85",
+        "category": "dialogue",
+        "text": "Inspiration ofrece ejemplos para iniciar un proyecto. Voy a abrir la galería."
+      },
+      {
+        "id": "jarvix_es_86",
+        "category": "dialogue",
+        "text": "¿Qué abro: Everyday Tools, Inspiration o Studio para crear imágenes y vídeos?"
       }
     ]
   }
