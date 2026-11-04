@@ -1,5 +1,8 @@
+import {navigationReply} from './jarvix-navigation-reply.js';
+import {findCatalogReply} from './jarvix-clip-library.js';
 // JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
 // Guaranteed Male Film Voice, Instant Navigation ("Сделано."), Multi-Turn Weather Brain & Smart ChatGPT Prompt Generation
+import {speakOwnerSpeech, stopOwnerSpeech, unlockOwnerSpeech, prepareOwnerGreetings, OWNER_GREETING_TEXT} from './jarvix-owner-speech.js';
 import { detectIntent } from './home-experience.js';
 import { saveStudioHandoff } from './studio-handoff.js';
 
@@ -41,6 +44,7 @@ export function getStoredTimbre() {
 }
 
 export function stopAllSpeech() {
+  stopOwnerSpeech();
   speechVersion += 1;
   if (currentTtsAudio) {
     try {
@@ -58,11 +62,16 @@ export function stopAllSpeech() {
 let isJarvisSpeaking = false;
 let isJarvisListening = false;
 let jarvisRecognition = null;
+let recognitionVersion = 0;
 let keepListening = false;
 let silenceTimer = null;
 const SILENCE_TIMEOUT_MS = 45000;
 
 // Conversational context memory for multi-turn dialogs (e.g., weather city, prompt refinement)
+
+const JARVIX_ONBOARDING = {"ru":{"ask":"Хотите изменить оформление сайта: сделать его светлее, темнее или включить неоновый стиль? Если нет, оставлю всё как есть.","choose":"Какой вариант выбрать: светлую тему, тёмную или неоновую?","no":"Хорошо, оставляю оформление без изменений. Что хотите сделать: фото, видео, аудио или посмотреть бесплатные инструменты?","dark":"Готово, включил тёмное оформление. Что дальше: фото, видео, аудио или бесплатные инструменты?","light":"Готово, включил светлое оформление. Что дальше: фото, видео, аудио или бесплатные инструменты?","neon":"Готово, включил неоновый стиль. Что дальше: фото, видео, аудио или бесплатные инструменты?","menu":"Могу помочь с фото, видео или аудио, открыть повседневные инструменты либо показать примеры во Вдохновении. Что выберете?","tools":"Everyday Tools собирает повседневные инструменты платформы. Сейчас открою этот раздел.","inspire":"В Inspiration собраны примеры, от которых можно оттолкнуться для собственного проекта. Сейчас открою галерею.","open":"Что открыть: Everyday Tools, Inspiration или Студию для создания фото и видео?"},"en":{"ask":"Would you like to change the site's look—lighter, darker, or neon? If not, I'll leave it as it is.","choose":"Which would you prefer: light, dark, or neon?","no":"No changes made. What would you like to do: make an image, video, audio, or explore free tools?","dark":"Done. The dark theme is on. What next: an image, video, audio, or free tools?","light":"Done. The light theme is on. What next: an image, video, audio, or free tools?","neon":"Done. The neon theme is on. What next: an image, video, audio, or free tools?","menu":"I can help with images, video, or audio, open Everyday Tools, or show examples in Inspiration. Which would you like?","tools":"Everyday Tools brings together the platform's everyday utilities. I'm opening that section now.","inspire":"Inspiration has examples you can use as a starting point for a project. I'm opening the showcase now.","open":"What should I open: Everyday Tools, Inspiration, or Studio for image and video creation?"},"fr":{"ask":"Souhaitez-vous modifier l’apparence du site : plus claire, plus sombre ou néon ? Sinon, je ne change rien.","choose":"Que préférez-vous : le thème clair, sombre ou néon ?","no":"D’accord, je ne change rien. Que voulez-vous faire : une image, une vidéo, de l’audio ou découvrir les outils gratuits ?","dark":"C’est fait, le thème sombre est activé. Ensuite : image, vidéo, audio ou outils gratuits ?","light":"C’est fait, le thème clair est activé. Ensuite : image, vidéo, audio ou outils gratuits ?","neon":"C’est fait, le thème néon est activé. Ensuite : image, vidéo, audio ou outils gratuits ?","menu":"Je peux vous aider pour une image, une vidéo ou de l’audio, ouvrir Everyday Tools ou montrer des exemples dans Inspiration. Que choisissez-vous ?","tools":"Everyday Tools rassemble les outils pratiques de la plateforme. J’ouvre cette rubrique.","inspire":"Inspiration propose des exemples pour démarrer un projet. J’ouvre la galerie.","open":"Que dois-je ouvrir : Everyday Tools, Inspiration ou le Studio de création ?"},"es":{"ask":"¿Quieres cambiar el aspecto del sitio: más claro|claro, más oscuro|oscuro o neón? Si no, lo dejaré como está.","choose":"¿Qué prefieres: tema claro, oscuro o neón?","no":"De acuerdo, no cambio nada. ¿Qué quieres hacer: una imagen, un vídeo, audio o ver herramientas gratuitas?","dark":"Listo, activé el tema oscuro. ¿Qué sigue: imagen, vídeo, audio o herramientas gratuitas?","light":"Listo, activé el tema claro. ¿Qué sigue: imagen, vídeo, audio o herramientas gratuitas?","neon":"Listo, activé el tema neón. ¿Qué sigue: imagen, vídeo, audio o herramientas gratuitas?","menu":"Puedo ayudarte con imágenes, vídeo o audio, abrir Everyday Tools o mostrar ejemplos en Inspiration. ¿Qué prefieres?","tools":"Everyday Tools reúne las utilidades cotidianas de la plataforma. Voy a abrir esa sección.","inspire":"Inspiration ofrece ejemplos para iniciar un proyecto. Voy a abrir la galería.","open":"¿Qué abro: Everyday Tools, Inspiration o Studio para crear imágenes y vídeos?"}};
+function onboardingText(key, language = getJarvixLanguage()) { return JARVIX_ONBOARDING[language]?.[key] || JARVIX_ONBOARDING.en[key]; }
+
 const jarvixContext = {
   waitingFor: null, // 'weather_city' | 'weather_week'
   lastCity: 'paris',
@@ -256,7 +265,53 @@ export function speakJarvis(text, onComplete = null) {
 
   // Browser speech synthesis uses the language selected on the site.
   // Microphone is strictly paused during speech and resumed safely on completion
-  speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
+  const version = speechVersion;
+  const button = getTopBtn();
+  const label = button?.querySelector('.jarvis-name');
+  const waiting = {ru:'Готовлю…',en:'Preparing…',fr:'Prépare…',es:'Preparando…'};
+  const waitingTitle = {ru:'Готовлю голос. Дождитесь ответа компьютера.',en:'Preparing voice. Waiting for your computer.',fr:'Préparation de la voix. En attente de votre ordinateur.',es:'Preparando la voz. Esperando a tu ordenador.'};
+  if (button) { button.dataset.voicePhase = 'connecting'; button.setAttribute('aria-busy','true'); button.title = waitingTitle[langCode]; }
+  if (label) label.textContent = waiting[langCode];
+  let speechFailed = false;
+  const speechStartedAt = performance.now();
+  speakOwnerSpeech(text, langCode, {
+    source: source => { if (button) button.dataset.voiceSource = source; },
+    fallback: () => {
+      if (label) label.textContent = 'JARVIX';
+      if (button) button.removeAttribute('aria-busy');
+      speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
+    },
+    phase: phase => {
+      if (button) {
+        button.dataset.voicePhase = phase;
+        if (phase === 'playing') button.dataset.voiceLatencyMs = String(Math.round(performance.now() - speechStartedAt));
+      }
+      if (label) label.textContent = phase === 'playing' ? 'JARVIX' : waiting[langCode];
+    },
+    start: () => {
+      resetSilenceTimer(); clearTimeout(silenceTimer);
+      pauseJarvisRecognition(); isJarvisSpeaking = true;
+      currentSpokenUtterance = text; updateJarvisState('speaking');
+    },
+    complete: () => setTimeout(() => {
+      if (version !== speechVersion) return;
+      isJarvisSpeaking = false; currentSpokenUtterance = '';
+      if (button) { button.removeAttribute('aria-busy'); button.dataset.voicePhase = speechFailed ? 'error' : 'ready'; }
+      if (!speechFailed && label) label.textContent = 'JARVIX';
+      if (typeof onComplete === 'function') onComplete();
+      else if (isJarvisActive && keepListening) {
+        resumeJarvisRecognition(); startSilenceTimer(); updateJarvisState('listening');
+      } else updateJarvisState('idle');
+    }, 300),
+    error: code => {
+      speechFailed = true;
+      if (label) label.textContent = {ru:'Нет звука',en:'No audio',fr:'Sans son',es:'Sin audio'}[langCode];
+      if (button) button.dataset.voiceError = code;
+      const messages = {ru:'Голосовой сервер недоступен. Попробуйте ещё раз.',en:'Voice server unavailable. Please try again.',fr:'Serveur vocal indisponible. Réessayez.',es:'Servidor de voz no disponible. Inténtalo de nuevo.'};
+      if (button) button.title = messages[langCode] || messages.en;
+      window.dispatchEvent(new CustomEvent('jarvix:voice-unavailable', {detail:{language:langCode,source:'self-hosted'}}));
+    }
+  });
 }
 
 // 3. Instant Navigation Utility ("Сделано." — spoken strictly ONCE)
@@ -269,8 +324,9 @@ export function instantOpen(url) {
     }
   } catch (_) {}
 
+  const navigationText = navigationReply(url, getJarvixLanguage());
   if (isSamePage) {
-    speakJarvis('Сделано.');
+    speakJarvis(navigationText);
     try {
       const targetUrl = new URL(url, location.href);
       if (targetUrl.hash) location.hash = targetUrl.hash;
@@ -280,7 +336,7 @@ export function instantOpen(url) {
 
   // Cross-page navigation: speak cleanly ONCE upon target page mount, never doubled
   try {
-    sessionStorage.setItem('jarvix_say_on_load', 'Сделано.');
+    sessionStorage.setItem('jarvix_say_on_load', navigationText);
     sessionStorage.setItem('jarvix_active', '1');
   } catch (_) {}
   location.assign(url);
@@ -400,12 +456,10 @@ export function handleJarvisVoiceCommand(commandText) {
   const isFr = lang === 'fr';
   const isEs = lang === 'es';
 
-  // 1. CAPABILITIES & BUTLER IDENTITY ("Что ты умеешь делать?", "Что ты умеешь?", "Кто ты", "Помощь")
-  if (/(?:что\s+(?:ты\s+)?(?:умеешь|можешь)(?:\s+делать)?|твои\s+возможности|какие\s+(?:у\s+тебя\s+)?функции|что\s+ты\s+такое|кто\s+ты|расскажи\s+о\s+себе|справка|помощь|help|what can you do)/i.test(lower)) {
-    const helpMsg = isRu
-      ? 'Я JARVIX — помощник Deepsyq. Могу открыть раздел сайта и помочь с черновиком промпта. Полноценная языковая модель и собственный голос ещё не подключены. Генерацию вы запускаете сами в студии.'
-      : 'I am JARVIX, your Deepsyq assistant. I can open site sections and help prepare a prompt. A live language model and dedicated voice are not connected yet. You start generation yourself in Studio.';
-    speakJarvis(helpMsg);
+  // 1. CAPABILITIES & GUIDED TOUR
+  if (/(?:что\s+(?:ты\s+)?(?:умеешь|можешь)(?:\s+делать)?|твои\s+возможности|какие\s+(?:у\s+тебя\s+)?функции|кто\s+ты|расскажи\s+о\s+себе|справка|помощь|help|what can you do|que peux-tu faire|qué puedes hacer|que puedes hacer)/i.test(lower)) {
+    jarvixContext.waitingFor = 'next_choice';
+    speakJarvis(onboardingText('menu'));
     return;
   }
 
@@ -452,6 +506,35 @@ export function handleJarvisVoiceCommand(commandText) {
       deactivateJarvisVoice();
     });
     return;
+  }
+
+  // Guided first conversation. A negative answer never resets the existing theme.
+  if (jarvixContext.waitingFor === 'welcome_choice') {
+    const no = /(?:нет|не надо|оставь|оставить|no|non|no gracias|déjalo|dejalo)/i.test(lower);
+    const yes = /(?:да|хочу|давай|yes|sure|oui|sí|si|claro)/i.test(lower);
+    const theme = /(?:светл|светлее|темнее|темная тема|темнее|потемнее|темн|тём|неонов|киберпанк|light|dark|darker|lighter|neon|clair|sombre|néon|más claro|claro|más oscuro|oscuro)/i.test(lower);
+    if (no && !theme) { jarvixContext.waitingFor='next_choice'; speakJarvis(onboardingText('no')); return; }
+    if (yes && !theme) { jarvixContext.waitingFor='theme_style'; speakJarvis(onboardingText('choose')); return; }
+    jarvixContext.waitingFor=null;
+  }
+  if (jarvixContext.waitingFor === 'theme_style') {
+    const no = /(?:нет|не надо|оставь|no|non|no gracias)/i.test(lower);
+    const theme = /(?:светл|светлее|темнее|темная тема|темнее|потемнее|темн|тём|неонов|киберпанк|light|dark|darker|lighter|neon|clair|sombre|néon|más claro|claro|más oscuro|oscuro)/i.test(lower);
+    if (no && !theme) { jarvixContext.waitingFor='next_choice'; speakJarvis(onboardingText('no')); return; }
+    if (!theme) { speakJarvis(onboardingText('choose')); return; }
+    jarvixContext.waitingFor=null;
+  }
+  if (jarvixContext.waitingFor === 'next_choice') {
+    if (/(?:everyday|tools|инструмент|бесплатн|free tool|outil|herramient|gratis)/i.test(lower)) {
+      jarvixContext.waitingFor=null; speakJarvis(onboardingText('tools'),()=>{if(isJarvisActive)instantOpen('free-tools.html');}); return;
+    }
+    if (/(?:inspiration|вдохнов|inspiración|inspiracion|пример|examples|exemples|ejemplos)/i.test(lower)) {
+      jarvixContext.waitingFor=null; speakJarvis(onboardingText('inspire'),()=>{if(isJarvisActive)instantOpen('deepsyq.html#inspirationPreview');}); return;
+    }
+    if (/(?:studio|студи|фото|изображ|картин|video|видео|vidéo|vídeo|audio|аудио|music|музык|musique|música|create|созда|créer)/i.test(lower)) {
+      jarvixContext.waitingFor=null; instantOpen('generate-studio.html'); return;
+    }
+    speakJarvis(onboardingText('open')); return;
   }
 
   // A. MULTI-TURN DIALOG CONTEXT HANDLERS
@@ -625,28 +708,17 @@ export function handleJarvisVoiceCommand(commandText) {
   }
 
   // G1. THEME & LIGHTING COMMANDS
-  if (/(?:посветлее|светлая тема|светлее|включи свет|light theme)/i.test(lower)) {
-    applySiteTheme('light');
-    speakJarvis('Сделано. Сделал освещение сайта ярким и светлым.');
-    return;
+  if (/(?:посветлее|светлая тема|светлее|включи свет|light theme|lighter|plus clair|thème clair|tema claro|más claro|claro)/i.test(lower)) {
+    applySiteTheme('light'); jarvixContext.waitingFor='next_choice'; speakJarvis(onboardingText('light')); return;
   }
-
-  if (/(?:потемнее|темная тема|темнее|ночной режим|dark theme)/i.test(lower)) {
-    applySiteTheme('midnight');
-    speakJarvis('Сделано. Переключил на глубокую темную тему.');
-    return;
+  if (/(?:потемнее|темная тема|темнее|ночной режим|dark theme|darker|plus sombre|thème sombre|tema oscuro|más oscuro|oscuro)/i.test(lower)) {
+    applySiteTheme('midnight'); jarvixContext.waitingFor='next_choice'; speakJarvis(onboardingText('dark')); return;
   }
-
-  if (!/(?:выключи|отключи|не\s+надо)/i.test(lower) && /(?:неонов|киберпанк|neon|cyberpunk)/i.test(lower)) {
-    applySiteTheme('neon');
-    speakJarvis('Сделано. Включил неоновый киберпанк.');
-    return;
+  if (!/(?:выключи|отключи|не\s+надо|don't|do not|ne pas|no quiero)/i.test(lower) && /(?:неонов|киберпанк|neon|cyberpunk|néon)/i.test(lower)) {
+    applySiteTheme('neon'); jarvixContext.waitingFor='next_choice'; speakJarvis(onboardingText('neon')); return;
   }
-
-  if (!/(?:выключи|отключи|не\s+надо)/i.test(lower) && /(?:золот|люкс|gold|luxury)/i.test(lower)) {
-    applySiteTheme('gold');
-    speakJarvis('Сделано. Включил премиальный золотой стиль.');
-    return;
+  if (!/(?:выключи|отключи|не\s+надо|don't|do not|ne pas|no quiero)/i.test(lower) && /(?:золот|люкс|gold|luxury)/i.test(lower)) {
+    applySiteTheme('gold'); speakJarvis(isRu ? 'Готово, включил золотой стиль.' : isFr ? 'C’est fait, le thème doré est activé.' : isEs ? 'Listo, activé el tema dorado.' : 'Done. The gold theme is on.'); return;
   }
 
   // H. SITWIDE LANGUAGE SWITCHING
@@ -718,6 +790,14 @@ export function handleJarvisVoiceCommand(commandText) {
     try {
       const langCode = getJarvixLanguage();
 
+      // Ready recordings answer known information questions before any AI request.
+      const catalogReply = await findCatalogReply(t, langCode);
+      if (turnVersion !== jarvixTurnVersion) return;
+      if (catalogReply) {
+        speakJarvis(catalogReply.text);
+        return;
+      }
+
       const controller = new AbortController();
       pendingJarvixTurn = controller;
       const res = await fetch('/api/jarvix/chat', {
@@ -778,6 +858,7 @@ export function handleJarvisVoiceCommand(commandText) {
 
 // 9. Speech Recognition Control (Pure Voice Loop)
 function pauseJarvisRecognition() {
+  recognitionVersion += 1;
   if (jarvisRecognition) {
     try {
       jarvisRecognition.onend = null;
@@ -787,14 +868,35 @@ function pauseJarvisRecognition() {
   isJarvisListening = false;
 }
 
+function showRecognitionError(reason) {
+  const button = getTopBtn();
+  if (!button) return;
+  const language = getJarvixLanguage();
+  const messages = {
+    ru: { unsupported: 'Браузер не поддерживает распознавание речи', permission: 'Разреши Chrome доступ к микрофону', service: 'Служба распознавания речи недоступна', microphone: 'Не удалось открыть микрофон', network: 'Нет связи со службой распознавания речи', launch: 'Не удалось запустить распознавание речи' },
+    en: { unsupported: 'Speech recognition is not supported by this browser', permission: 'Allow Chrome to use the microphone', service: 'Speech recognition service is unavailable', microphone: 'The microphone could not be opened', network: 'Speech recognition service connection failed', launch: 'Speech recognition could not start' },
+    fr: { unsupported: 'La reconnaissance vocale n’est pas prise en charge par ce navigateur', permission: 'Autorisez Chrome à utiliser le microphone', service: 'Le service de reconnaissance vocale est indisponible', microphone: 'Impossible d’ouvrir le microphone', network: 'Connexion au service de reconnaissance vocale impossible', launch: 'Impossible de démarrer la reconnaissance vocale' },
+    es: { unsupported: 'Este navegador no admite el reconocimiento de voz', permission: 'Permite que Chrome use el micrófono', service: 'El servicio de reconocimiento de voz no está disponible', microphone: 'No se pudo abrir el micrófono', network: 'Falló la conexión con el servicio de reconocimiento de voz', launch: 'No se pudo iniciar el reconocimiento de voz' }
+  };
+  const labels = { ru: 'Нет ввода', en: 'No input', fr: 'Aucune entrée', es: 'Sin entrada' };
+  button.dataset.recognitionError = reason;
+  button.title = (messages[language] || messages.en)[reason] || (messages.en)[reason] || messages.en.launch;
+  const label = button.querySelector('.jarvis-name');
+  if (label) label.textContent = labels[language] || labels.en;
+}
+
 function resumeJarvisRecognition() {
-  if (!isJarvisActive || !keepListening) return;
+  if (!isJarvisActive || !keepListening || isJarvisSpeaking) return;
 
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRec) return;
+  if (!SpeechRec) {
+    showRecognitionError('unsupported');
+    return;
+  }
 
   try {
     pauseJarvisRecognition();
+    const recognitionTurn = recognitionVersion;
 
     jarvisRecognition = new SpeechRec();
     jarvisRecognition.continuous = true;
@@ -805,8 +907,16 @@ function resumeJarvisRecognition() {
       (lang === 'es' || lang.startsWith('es')) ? 'es-ES' : 'en-US';
 
     jarvisRecognition.onstart = () => {
+      if (recognitionTurn !== recognitionVersion || !isJarvisActive || !keepListening) return;
       isJarvisListening = true;
       updateJarvisState('listening');
+      const button = getTopBtn();
+      if (button) {
+        delete button.dataset.recognitionError;
+        button.dataset.voicePhase = 'listening';
+        const label = button.querySelector('.jarvis-name');
+        if (label) label.textContent = {ru:'Слушаю', en:'Listening', fr:'Écoute', es:'Escucho'}[getJarvixLanguage()];
+      }
       resetSilenceTimer();
     };
 
@@ -816,6 +926,7 @@ function resumeJarvisRecognition() {
     let lastHandledTime = 0;
 
     jarvisRecognition.onresult = e => {
+      if (recognitionTurn !== recognitionVersion || !isJarvisActive || !keepListening) return;
       let interim = '';
       for (let i = e.resultIndex; i < e.results.length; ++i) {
         const item = e.results[i];
@@ -889,14 +1000,15 @@ function resumeJarvisRecognition() {
       updateJarvisState('listening');
       clearTimeout(speechTimeout);
       speechTimeout = setTimeout(() => {
+        if (recognitionTurn !== recognitionVersion || !isJarvisActive || !keepListening) return;
         const trimmed = current.trim();
         // Ignore single filler syllables, coughs, mic pops
-        if (/^(?:а|да|ну|эм|ээ|хм|ок|yes|no|uh|um|ah)$/i.test(trimmed)) {
+        if (/^(?:а|ну|эм|ээ|хм|uh|um|ah)$/i.test(trimmed)) {
           accumulatedText = '';
           return;
         }
 
-        if (current.length > 2 && !isJarvisSpeaking) {
+        if ((current.length > 2 || /^(?:да|нет|yes|no|oui|non|si|sí)$/iu.test(trimmed)) && !isJarvisSpeaking) {
           const now = Date.now();
           // Prevent duplicate recognition loops of the exact same command within 2.5 seconds
           if (current.toLowerCase() === lastHandledText.toLowerCase() && (now - lastHandledTime) < 2500) {
@@ -912,9 +1024,12 @@ function resumeJarvisRecognition() {
     };
 
     jarvisRecognition.onend = () => {
+      if (recognitionTurn !== recognitionVersion) return;
+      isJarvisListening = false;
+      clearTimeout(speechTimeout);
       if (isJarvisActive && keepListening) {
         setTimeout(() => {
-          if (isJarvisActive && keepListening) {
+          if (recognitionTurn === recognitionVersion && isJarvisActive && keepListening && !isJarvisSpeaking) {
             resumeJarvisRecognition();
           }
         }, 150);
@@ -924,6 +1039,14 @@ function resumeJarvisRecognition() {
     };
 
     jarvisRecognition.onerror = (err) => {
+      if (recognitionTurn !== recognitionVersion || !isJarvisActive) return;
+      const recognitionErrors = {
+        'not-allowed': 'permission',
+        'service-not-allowed': 'service',
+        'audio-capture': 'microphone',
+        network: 'network'
+      };
+      if (recognitionErrors[err.error]) showRecognitionError(recognitionErrors[err.error]);
       if (err.error === 'not-allowed') {
         const resumeOnGesture = () => {
           document.removeEventListener('click', resumeOnGesture);
@@ -943,17 +1066,14 @@ function resumeJarvisRecognition() {
     jarvisRecognition.start();
   } catch (err) {
     console.warn('[JARVIX] Launch failed:', err);
+    showRecognitionError('launch');
   }
 }
 
 // 10. Silence Timer: Polite auto-standby after silence (silent standby, never unprompted talk)
 function startSilenceTimer() {
+  // Do not end an active listening session just because the user pauses.
   clearTimeout(silenceTimer);
-  silenceTimer = setTimeout(() => {
-    if (isJarvisActive && !isJarvisSpeaking) {
-      deactivateJarvisVoice();
-    }
-  }, SILENCE_TIMEOUT_MS);
 }
 
 function resetSilenceTimer() {
@@ -965,57 +1085,22 @@ function resetSilenceTimer() {
 
 // 11. Activation & Deactivation (Smart Conversational Memory)
 export function activateJarvisVoice() {
+  unlockOwnerSpeech();
   isJarvisActive = true;
   keepListening = true;
   try {
     sessionStorage.setItem('jarvix_active', '1');
   } catch (_) {}
 
-  // Request audio hardware echo cancellation if available in browser
-  if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
-    try {
-      navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
-        .then(stream => {
-          setTimeout(() => stream.getTracks().forEach(t => t.stop()), 5000);
-        })
-        .catch(() => {});
-    } catch (_) {}
-  }
-
   const topBtn = getTopBtn();
   if (topBtn) topBtn.classList.add('is-active');
 
-  const isRu = (getJarvixLanguage() === 'ru');
-  const hasGreeted = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('jarvix_greeted') === '1';
-
-  let greetingText = '';
-  if (!hasGreeted) {
-    // 1st time greeting: polite introduction & lighting/design check
-    greetingText = isRu
-      ? 'Здравствуйте! Я JARVIX. Готов к работе. Скажите, удобно ли вам текущее освещение и дизайн сайта? Могу сделать посветлее, потемнее или включить неоновый киберпанк.'
-      : 'Greetings! I am JARVIX. Online and ready. How is the current lighting and design for you? I can make it brighter, darker, or switch to neon cyberpunk.';
-    try {
-      sessionStorage.setItem('jarvix_greeted', '1');
-    } catch (_) {}
-  } else {
-    // Subsequent clicks: smart, attentive butler response
-    const butlerRepliesRu = [
-      'Да, слушаю вас.',
-      'Всегда к вашим услугам.',
-      'На связи. Что делаем?',
-      'Слушаю вас.'
-    ];
-    const butlerRepliesEn = [
-      'Yes, listening.',
-      'At your service.',
-      'Standing by. What shall we do?',
-      'Listening.'
-    ];
-    const list = isRu ? butlerRepliesRu : butlerRepliesEn;
-    greetingText = list[Math.floor(Math.random() * list.length)];
-  }
-
-  speakJarvis(greetingText);
+  const greetings = OWNER_GREETING_TEXT;
+  const greetingText = greetings[getJarvixLanguage()] || greetings.en;
+  jarvixContext.waitingFor = 'welcome_choice';
+  speakJarvis(greetingText, () => {
+    if (isJarvisActive && keepListening) speakJarvis(onboardingText('ask'));
+  });
 }
 
 export function deactivateJarvisVoice() {
@@ -1034,6 +1119,10 @@ export function deactivateJarvisVoice() {
   const topBtn = getTopBtn();
   if (topBtn) {
     topBtn.classList.remove('is-active', 'is-speaking', 'is-listening');
+    topBtn.removeAttribute('aria-busy');
+    topBtn.dataset.voicePhase = 'idle';
+    const label = topBtn.querySelector('.jarvis-name');
+    if (label) label.textContent = 'JARVIX';
   }
 }
 
@@ -1068,6 +1157,7 @@ if (typeof window !== 'undefined') {
 // 12. Mount JARVIX UI Component & restore state across pages
 export function initJarvis() {
   if (typeof document === 'undefined') return;
+  prepareOwnerGreetings();
 
   // Restore saved theme on load
   try {
@@ -1154,3 +1244,4 @@ if (typeof document !== 'undefined') {
     initJarvis();
   }
 }
+

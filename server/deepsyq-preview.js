@@ -12,6 +12,8 @@ import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 import {buildJarvixSiteKnowledge,clearSession,getOrCreateSession,processTurnWithMockBrain,getJarvixRuntimeStatus} from './jarvix-brain.js';
 import {generateFreeImage,generateTrialVideo,generateFreeAudio,checkDailyQuota,incrementDailyQuota,studioJobs} from './free-ai-provider.js';
 
+import {installLocalVoice} from './jarvix-local-voice.js';
+
 const app=express();
 const port=Number(process.env.PORT||31990);
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -241,6 +243,7 @@ app.post('/api/jarvix/reset',(req,res)=>{
  if(!validSessionId(sid))return res.status(400).json({error:'INVALID_SESSION'});
  clearSession(sid);res.json({ok:true});
 });
+installLocalVoice(app);
 app.get('/api/jarvix/status',(_req,res)=>res.json(getJarvixRuntimeStatus({previewOnly:true})));
 app.get('/api/jarvix/site-map',(_req,res)=>res.json({ok:true,pages:buildJarvixSiteKnowledge()}));
 // Read-only preview of the owner's approved bundled media. This is the same
