@@ -15,3 +15,12 @@ Service: owner-hosted VoxCPM2, accessed only through the existing test-origin `/
 - Free preview media is a deterministic artifact/audio signal, not proof of real image/video/music model connectivity. Keep paid generation safeguards in place.
 
 The release must report local LLM configuration/connectivity truthfully. Subscriber billing/credit entitlement integration is not proven by this UI or local adapter change.
+
+## Verified test publication
+
+- Render TEST deploy `dep-dblj61vf3r2c73aa5sqg`, exact source `af67c06dffa420af302caa07b34be6d7429b1abd`, LIVE at 2026-11-04 13:30:15 UTC.
+- Actual Tools URL shows the shared header/sidebar; clicking the orb enters `is-active is-speaking`, second click removes those classes. Studio composer measured 136 px high in the published browser.
+- Local mobile frame verification covered drawer open/Escape and four-language header controls. No live mobile device voice recognition claim.
+- Scoped Node checks: 40 release checks plus TEST Studio no-spend/private isolation pass. Additional catalog/speech/language tests pass; legacy core source-string assertions updated to current translation/session names.
+- Exact-head CI safety, F4 no-spend/privacy, Jarvis tour, artwork and navigation-related checks sampled green. Other repository checks remain red. In particular final design lock flags an upstream `deepsyq-global-theme.css` hash mismatch (unchanged by this PR); gallery expects the former removed header links; Pricing browser layout assertions also fail. Do not merge the PR or promote this preview to production while relevant release gates remain unresolved.
+- Production has not been deployed. No voice clip, source recording, token or transcript was changed. Local LLM connectivity and production subscription/credit metering remain unverified.

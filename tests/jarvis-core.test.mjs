@@ -49,7 +49,7 @@ describe('JARVIX AI Voice Commander & Autonomous Butler System', () => {
     const shellJs = fs.readFileSync(path.join(assetsDir, 'deepsyq-site-shell.js'), 'utf8');
     assert.ok(shellJs.includes('jarvis-core.js'), 'deepsyq-site-shell.js must inject JARVIS script');
     assert.ok(shellJs.includes('topJarvisBtn'), 'deepsyq-site-shell.js must create topJarvisBtn if missing');
-    assert.ok(shellJs.includes('shellI18n'), 'must contain multilingual translations');
+    assert.ok(shellJs.includes('const navText=') && shellJs.includes('const copy='), 'must contain multilingual translations');
     assert.ok(shellJs.includes('deepsyq_home_language'), 'must react to saved language');
   });
 
@@ -63,7 +63,7 @@ describe('JARVIX AI Voice Commander & Autonomous Butler System', () => {
     assert.ok(jarvisJs.includes('utterance.pitch = 1.0'), 'natural clear human pitch without demonic drop must be set');
     assert.ok(jarvisJs.includes('умеешь|можешь'), 'must match capabilities questions like что ты умеешь делать');
     assert.ok(jarvisJs.includes('smartFallback'), 'must have intelligent proactive fallback');
-    assert.ok(jarvisJs.includes('jarvix_greeted'), 'smart memory session key must be used');
+    assert.ok(jarvisJs.includes('jarvix_session_id'), 'smart memory session key must be used');
     assert.ok(jarvisJs.includes('SILENCE_TIMEOUT_MS'), 'silence timeout constant must be configured');
     assert.ok(jarvisJs.includes('applySiteTheme'), 'theme/lighting switcher must be exported');
     assert.ok(jarvisJs.includes('setSiteLanguage'), 'multilingual switcher must be exported');
