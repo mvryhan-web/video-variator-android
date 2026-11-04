@@ -1,3 +1,4 @@
+import {routeSiteCommand,resumeSiteSettings} from './jarvix-site-controls.js';
 import { startJarvixGuidedTour, stopJarvixGuidedTour, isTourActive, resumeJarvixGuidedTour } from './jarvix-guided-tour.js';
 import {resolveJarvixPageCommand} from './jarvix-page-commands.js';
 import {navigationReply} from './jarvix-navigation-reply.js';
@@ -458,6 +459,8 @@ export function handleJarvisVoiceCommand(commandText) {
   const isRu = lang === 'ru';
   const isFr = lang === 'fr';
   const isEs = lang === 'es';
+
+  if(routeSiteCommand(t,{language:lang,speak:speakJarvis,navigate:instantOpen,isCurrent:()=>turnVersion===jarvixTurnVersion&&isJarvisActive})){jarvixContext.waitingFor=null;return;}
 
   const pageCommand=resolveJarvixPageCommand(t, jarvixContext.waitingFor==='next_choice');
   if(pageCommand){jarvixContext.waitingFor=null;stopJarvixGuidedTour();instantOpen(pageCommand);return;}
@@ -1184,6 +1187,7 @@ if (typeof window !== 'undefined') {
 export function initJarvis() {
   if (typeof document === 'undefined') return;
   prepareOwnerGreetings();
+  resumeSiteSettings(speakJarvis);
 
   if (!document.querySelector('link[href="jarvix-showcase-theme.css"]')) {
     const style=document.createElement('link');style.rel='stylesheet';style.href='jarvix-showcase-theme.css';document.head.appendChild(style);

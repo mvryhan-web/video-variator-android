@@ -9,7 +9,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
-import {buildJarvixSiteKnowledge,clearSession,getOrCreateSession,processTurnWithMockBrain,processTurnWithLocalQwen,getJarvixRuntimeStatus} from './jarvix-brain.js';
+import {buildJarvixSiteKnowledge,clearSession,getOrCreateSession,processTurnWithMockBrain,processTurnWithLocalQwen,getJarvixRuntimeStatus,buildJarvixPricingKnowledge} from './jarvix-brain.js';
 import {generateFreeImage,generateTrialVideo,generateFreeAudio,checkDailyQuota,incrementDailyQuota,studioJobs} from './free-ai-provider.js';
 
 import {installLocalVoice} from './jarvix-local-voice.js';
@@ -260,7 +260,7 @@ app.post('/api/jarvix/reset',(req,res)=>{
 });
 installLocalVoice(app);
 app.get('/api/jarvix/status',(_req,res)=>res.json(getJarvixRuntimeStatus({previewOnly:true})));
-app.get('/api/jarvix/site-map',(_req,res)=>res.json({ok:true,pages:buildJarvixSiteKnowledge()}));
+app.get('/api/jarvix/site-map',(_req,res)=>res.json({ok:true,pages:buildJarvixSiteKnowledge(),pricing:buildJarvixPricingKnowledge()}));
 // Read-only preview of the owner's approved bundled media. This is the same
 // Inspiration response consumed by Home, without production DB/admin writes.
 const ownerMedia=JSON.parse(await readFile(path.join(assets,'media/home/owner-20261018/manifest.json'),'utf8'));

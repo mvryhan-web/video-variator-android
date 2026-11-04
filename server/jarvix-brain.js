@@ -1,3 +1,4 @@
+import {SITE_TOOLS} from '../app/src/main/assets/jarvix-site-controls.js';
 /**
  * DEEPSYQ JARVIX AI Brain & Dialog Intelligence — Issue #498 (Coordinator #233)
  *
@@ -114,6 +115,7 @@ export function buildJarvixSiteKnowledge() {
         links.push({ label: linkLabel.slice(0, 120), href: href.slice(0, 240) });
       }
       if (file === 'free-tools.html') {
+        links.push(...SITE_TOOLS.map(tool=>({label:tool.aliases.join(' / '),href:tool.url})));
         // The owner-approved tool cards are created from this small data table
         // at runtime, so index their actual labels and destinations as well.
         const cardsSource = fs.readFileSync(path.join(SITE_ASSETS_DIR, 'everyday-tools-visual.js'), 'utf8');
@@ -126,7 +128,7 @@ export function buildJarvixSiteKnowledge() {
         label,
         title,
         headings: [...new Set(headings)].slice(0, 8),
-        controls: [...new Set(controls)].slice(0, 36),
+        controls: [...new Set(controls)],
         links: links.filter((link, index) => links.findIndex(candidate => candidate.href === link.href && candidate.label === link.label) === index).slice(0, 60)
       });
     } catch (_) {
@@ -135,6 +137,17 @@ export function buildJarvixSiteKnowledge() {
   }
   siteKnowledgeCache = Object.freeze(pages.map(page => Object.freeze(page)));
   return siteKnowledgeCache;
+}
+
+// Read the SAME feature copy rendered by Pricing; prices remain /api/config-authoritative.
+export function buildJarvixPricingKnowledge(){
+ const source=fs.readFileSync(path.join(SITE_ASSETS_DIR,'pricing-page.js'),'utf8');
+ const result={};
+ for(const key of ['basic','pro','business','lifetime']){
+  const part=source.match(new RegExp('^\\s*'+key+':\\[(.*)\\][,]?$', 'm'))?.[1]||'';
+  result[key]=[...part.matchAll(/\['[^']*','([^']*)'\]/g)].map(m=>m[1]);
+ }
+ return result;
 }
 
 // 1. DEEPSYQ CAPABILITIES REGISTRY (Truthful knowledge base, zero hallucinated models)
@@ -751,7 +764,7 @@ export async function processTurnWithLocalQwen(userText, session, lang = 'ru', o
     const response=await fetcher(url.href,{method:'POST',redirect:'error',
       headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},
       body:JSON.stringify({model:env.JARVIX_LOCAL_LLM_MODEL||'qwen',stream:false,
-        messages:[{role:'system',content:'You are Deepsyq Jarvis. Reply concisely in '+lang+'. Answer about the actual site. Never claim an action or a finished generation. Site capabilities: '+JSON.stringify(DEEPSYQ_CAPABILITIES)},
+        messages:[{role:'system',content:'You are Deepsyq Jarvis. Reply concisely in '+lang+'. Answer about the actual site. Never claim an action or a finished generation. Site capabilities: '+JSON.stringify(DEEPSYQ_CAPABILITIES)+'. Tools: '+JSON.stringify(SITE_TOOLS)},
           ...session.history.slice(-6).map(h=>({role:h.role,content:h.content})),{role:'user',content:userText}],max_tokens:160}),
       signal:AbortSignal.timeout(12000)});
     if(!response.ok)return null;
@@ -796,6 +809,8 @@ Keep speech responses concise and natural for audio text-to-speech.
 
 Verified public DEEPSYQ pages, visible form controls, and local navigation links:
 ${JSON.stringify(buildJarvixSiteKnowledge())}
+Tools and exact public URLs:
+${JSON.stringify(SITE_TOOLS)}
 Only describe a control if it appears in this site map.`;
 
   try {
@@ -914,7 +929,7 @@ export function installJarvixBrainRoutes(app, options = {}) {
 
   // Public site map used to ground assistant answers in live page labels.
   app.get('/api/jarvix/site-map', (_req, res) => {
-    res.json({ ok: true, pages: buildJarvixSiteKnowledge() });
+    res.json({ ok: true, pages: buildJarvixSiteKnowledge(),tools:SITE_TOOLS,pricing:buildJarvixPricingKnowledge() });
   });
 
   // Capabilities Registry Query
