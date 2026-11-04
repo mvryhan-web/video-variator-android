@@ -1,0 +1,16 @@
+[
+  {
+    "file": "Pinogri_Workflow_Studio_v1.zip",
+    "bytes": 513692,
+    "files": 221,
+    "sha256": "3ee2b6e3d18f4066f7534dec51fba32c98be5d37453a1422c1f0f17f96057695",
+    "crc_and_content": "PASS"
+  },
+  {
+    "file": "Pinogri_Workflow_Studio_Owner_Backup_v1.zip",
+    "bytes": 2993426,
+    "files": 243,
+    "sha256": "476c1467d5bcf2960a6365d53a1e8726c02b92d3e29632ed9294ed1fe11e9ad1",
+    "crc_and_content": "PASS"
+  }
+]
