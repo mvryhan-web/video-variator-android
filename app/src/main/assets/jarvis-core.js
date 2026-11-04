@@ -1174,6 +1174,14 @@ export function initJarvis() {
 
   const setupBtn = () => {
     const topBtn = getTopBtn();
+    const tourBtn = document.getElementById('topJarvisTourBtn');
+    if (tourBtn && !tourBtn.__jarvixTourBound) {
+      tourBtn.__jarvixTourBound = true;
+      tourBtn.addEventListener('click', () => {
+        // Tour starts only after an explicit click. It does not start mic capture or paid AI calls.
+        startJarvixGuidedTour();
+      });
+    }
     if (topBtn && !topBtn.__jarvisBound) {
       topBtn.__jarvisBound = true;
       topBtn.onclick = () => toggleJarvisVoice();
