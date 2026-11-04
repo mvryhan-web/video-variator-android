@@ -2,6 +2,21 @@ import {prepareStaticClips, getStaticClip} from './jarvix-clip-library.js';
 // Owner-hosted speech; no private URL or key is sent to the browser.
 let version = 0, pending = null, playing = null, objectUrl = null;
 let audioContext = null, audioReady = null, source = null;
+// Sentence-sized requests reduce time to first sound. They are not token streaming.
+export function splitSpeechChunks(text) {
+  const chunks = [];
+  let rest = String(text).trim();
+  while (rest) {
+    const limit = chunks.length ? 240 : 140;
+    if (rest.length <= limit) { chunks.push(rest); break; }
+    const prefix = rest.slice(0, limit + 1);
+    const sentenceEnds = [...prefix.matchAll(/[.!?…](?:["»”])?(?=\s)/gu)];
+    let end = sentenceEnds.length ? sentenceEnds[sentenceEnds.length - 1].index + sentenceEnds[sentenceEnds.length - 1][0].length : rest.lastIndexOf(' ', limit);
+    if (end < 30) end = limit;
+    chunks.push(rest.slice(0, end).trim()); rest = rest.slice(end).trim();
+  }
+  return chunks;
+}
 // Must run synchronously in the real activation click, before network awaits.
 export function unlockOwnerSpeech() {
   const Context = globalThis.AudioContext || globalThis.webkitAudioContext;
@@ -37,10 +52,11 @@ export async function speakOwnerSpeech(text, language, hooks) {
   pending = controller;
   const timer = setTimeout(() => controller.abort(), 120000);
   try {
-    const greetingData = OWNER_GREETING_TEXT[language] === text.trim() ? await prepareOwnerGreetings() : null;
+    const staticCached = await getStaticClip(text, language, controller.signal);
+    const greetingData = !staticCached && OWNER_GREETING_TEXT[language] === text.trim() ? await prepareOwnerGreetings() : null;
     if (turn !== version) return;
     const greetingCached = greetingBlob(greetingData, text, language);
-    const cached = greetingCached || await getStaticClip(text, language, controller.signal);
+    const cached = staticCached || greetingCached;
     if (turn !== version) return;
     const configReply = cached ? null : await fetch('/api/jarvix/voice-config', {signal:controller.signal});
     const config = cached ? {configured:true, speechModelInstalled:true} : configReply.ok ? await configReply.json() : {};
@@ -50,23 +66,25 @@ export async function speakOwnerSpeech(text, language, hooks) {
     hooks.source?.(greetingCached ? 'cached-greeting' : cached ? 'static-clip' : 'worker');
     hooks.start();
     hooks.phase?.('generating');
-    // Split long replies without silently cutting their final words.
-    let rest = text.trim();
-    while (rest && turn === version) {
-      let end = Math.min(300, rest.length);
-      if (rest.length > 300) {
-        const space = rest.lastIndexOf(' ', 300);
-        if (space > 150) end = space;
-      }
-      const chunk = rest.slice(0, end); rest = rest.slice(end).trim();
-      let blob = cached;
-      if (!blob) {
+    // A cached recording is complete: play it exactly once, regardless of text length.
+    const chunks = cached ? [text.trim()] : splitSpeechChunks(text);
+    const loadChunk = async chunk => {
+      try {
+        if (cached) return {blob: cached};
         const reply = await fetch('/api/jarvix/tts', {method:'POST', signal:controller.signal,
           headers:{'Content-Type':'application/json'},body:JSON.stringify({text:chunk,language})});
         if (!reply.ok || !reply.headers.get('content-type')?.startsWith('audio/wav')) throw Error('Speech failed');
-        blob = await reply.blob();
-      }
+        return {blob: await reply.blob()};
+      } catch (error) { return {error}; }
+    };
+    let next = loadChunk(chunks[0]);
+    for (let index = 0; index < chunks.length && turn === version; index++) {
+      const result = await next;
+      if (result.error) throw result.error;
+      const blob = result.blob;
       if (turn !== version) return;
+      // Only one synthesis request at a time; prepare the next while this audio plays.
+      next = index + 1 < chunks.length ? loadChunk(chunks[index + 1]) : null;
       if (audioContext) {
         await audioReady;
         if (audioContext.state !== 'running') throw new Error('AUDIO_GESTURE_REQUIRED');
@@ -103,7 +121,7 @@ export async function speakOwnerSpeech(text, language, hooks) {
         URL.revokeObjectURL(objectUrl); objectUrl = null;
       }
       if (turn !== version) return;
-      if (rest) hooks.phase?.('generating');
+      if (index + 1 < chunks.length) hooks.phase?.('generating');
     }
     if (turn === version) hooks.complete();
   } catch (error) {
@@ -120,3 +138,4 @@ export async function speakOwnerSpeech(text, language, hooks) {
     if (pending === controller) pending = null;
   }
 }
+
