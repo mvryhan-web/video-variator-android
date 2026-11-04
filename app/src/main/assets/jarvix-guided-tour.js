@@ -10,6 +10,7 @@ import { applySiteTheme, getJarvixLanguage, speakJarvis, stopAllSpeech, updateJa
 let isTourRunning = false;
 let tourTimeouts = [];
 let currentTourAudio = null;
+let tourVersion = 0;
 
 export function isTourActive() {
   return isTourRunning;
@@ -20,29 +21,17 @@ function clearTourTimers() {
   tourTimeouts = [];
 }
 
-function highlightElement(selector, durationMs = 3500) {
-  try {
-    const el = document.querySelector(selector);
-    if (!el) return;
-    el.classList.add('jarvis-tour-spotlight');
-    const t = setTimeout(() => {
-      el.classList.remove('jarvis-tour-spotlight');
-    }, durationMs);
-    tourTimeouts.push(t);
-  } catch (_) {}
-}
-
 const TOUR_TEXTS = {
   ru: {
     intro: 'JARVIS в сети. Добро пожаловать в будущее генеративного контента. Я управляю видео, звуком, фото и этим сайтом прямо с вашего голоса. Хотите неоновую атмосферу или сразу запустим генерацию? Жду вашу команду.',
     styles: 'Могу менять оформление прямо на лету: светлая тема, тёмная, яркий неоновый стиль и эксклюзивный новогодний режим.',
-    nav: 'Я умею открывать любые разделы платформы. Открываю Студию генерации. Здесь вы создаете видео, фото и аудио шедевры.',
+    nav: 'Я умею открывать любые разделы платформы. В Студии генерации вы создаёте видео, фото и аудио шедевры.',
     finish: 'С чего бы вы хотели начать? Назовите команду, и я сделаю всё за вас.'
   },
   en: {
     intro: 'JARVIS online. Welcome to the future of generative media. I command video, audio, imagery, and this entire interface straight from your voice. Would you like a neon vibe, or should we launch generation right away? Standing by.',
     styles: 'I can adapt the design on the fly: light theme, dark, neon cyberpunk, and our festive New Year style.',
-    nav: 'I can navigate anywhere on the platform. Opening Creation Studio for video, imagery and audio.',
+    nav: 'I can navigate anywhere on the platform. Creation Studio brings together video, imagery and audio.',
     finish: 'Where shall we begin? Name your command, and I will handle it all for you.'
   },
   fr: {
@@ -61,6 +50,8 @@ const TOUR_TEXTS = {
 
 function playClipOrSpeak(clipName, textFallback, onComplete) {
   if (!isTourRunning) return;
+  const turn = tourVersion;
+  const active = () => isTourRunning && turn === tourVersion;
   const lang = getJarvixLanguage();
   const suffix = (lang === 'en' || lang === 'fr' || lang === 'es') ? `_${lang}` : '';
   const filename = `${clipName}${suffix}.mp3`;
@@ -74,13 +65,13 @@ function playClipOrSpeak(clipName, textFallback, onComplete) {
     if (hasEnded) return;
     hasEnded = true;
     currentTourAudio = null;
-    if (isTourRunning && typeof onComplete === 'function') {
+    if (active() && typeof onComplete === 'function') {
       onComplete();
     }
   };
 
   audio.onplay = () => {
-    if (!isTourRunning) {
+    if (!active()) {
       audio.pause();
       return;
     }
@@ -90,7 +81,7 @@ function playClipOrSpeak(clipName, textFallback, onComplete) {
   audio.onended = finish;
   audio.onerror = () => {
     currentTourAudio = null;
-    if (!isTourRunning) return;
+    if (!active()) return;
     speakJarvis(textFallback, finish);
   };
 
@@ -98,7 +89,7 @@ function playClipOrSpeak(clipName, textFallback, onComplete) {
   if (playPromise !== undefined) {
     playPromise.catch(() => {
       currentTourAudio = null;
-      if (!isTourRunning) return;
+      if (!active()) return;
       speakJarvis(textFallback, finish);
     });
   }
@@ -107,6 +98,7 @@ function playClipOrSpeak(clipName, textFallback, onComplete) {
 export function startJarvixGuidedTour() {
   if (isTourRunning) return;
   isTourRunning = true;
+  tourVersion += 1;
   clearTourTimers();
   stopAllSpeech();
 
@@ -127,7 +119,7 @@ export function startJarvixGuidedTour() {
       if (!isTourRunning) return;
 
       // Step 3: Navigation & Studio walkthrough
-      highlightElement('a[href*="generate-studio"], #homeCreativeTools, #homeQuickBar', 4500);
+      // No HUD or spotlight overlays: the owner requested voice-only presentation.
 
       playClipOrSpeak('jarvix_tour_nav', texts.nav, () => {
         if (!isTourRunning) return;
@@ -136,8 +128,14 @@ export function startJarvixGuidedTour() {
         playClipOrSpeak('jarvix_tour_finish', texts.finish, () => {
           if (!isTourRunning) return;
           isTourRunning = false;
-          updateJarvisState('listening');
-          resumeJarvisRecognition();
+          clearTourTimers();
+          const studio = new URL('generate-studio.html?studio=image', location.href);
+          if (location.pathname.endsWith('/generate-studio.html')) {
+            updateJarvisState('listening');resumeJarvisRecognition();
+          } else {
+            sessionStorage.setItem('jarvix_active','1');
+            location.assign(studio.href);
+          }
         });
       });
     });
@@ -146,9 +144,11 @@ export function startJarvixGuidedTour() {
 
 export function stopJarvixGuidedTour() {
   isTourRunning = false;
+  tourVersion += 1;
   clearTourTimers();
   if (currentTourAudio) {
     try {
+      currentTourAudio.onended = null;currentTourAudio.onerror = null;currentTourAudio.onplay = null;
       currentTourAudio.pause();
       currentTourAudio.currentTime = 0;
     } catch (_) {}

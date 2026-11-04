@@ -67,7 +67,7 @@
  const inner=make('div');inner.append(make('h2','','Choose a tool'),make('p','','Everyday essentials for your creative workflow.'));
  const picker=make('select','et-picker');picker.setAttribute('aria-label','Filter tools');
  for(const [v,t] of [['all','All Tools'],['image','Image Tools'],['video','Video Tools'],['audio','Audio Tools'],['everyday','Everyday'],['creative','Creative']]){const o=make('option','',t);o.value=v;picker.append(o);}
- leadRow.append(inner,picker);showcase.append(leadRow);
+ leadRow.append(inner,picker);if(document.body.classList.contains('ds-chrome')){bar.hidden=true;leadRow.append(topSearch);}showcase.append(leadRow);
  const gallery=make('div','et-gallery');gallery.id='etGallery';
  for(const card of cards){
   const a=make('a','et-card');a.href=card.href||('?tool='+card.mode);a.dataset.category=card.category;

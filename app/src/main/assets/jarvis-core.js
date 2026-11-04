@@ -890,7 +890,7 @@ function showRecognitionError(reason) {
   if (label) label.textContent = labels[language] || labels.en;
 }
 
-function resumeJarvisRecognition() {
+export function resumeJarvisRecognition() {
   if (!isJarvisActive || !keepListening || isJarvisSpeaking) return;
 
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1100,6 +1100,7 @@ export function activateJarvisVoice() {
   const topBtn = getTopBtn();
   if (topBtn) topBtn.classList.add('is-active');
 
+  pauseJarvisRecognition();
   startJarvixGuidedTour();
 }
 
@@ -1140,16 +1141,10 @@ export function toggleJarvisVoice() {
   }
 }
 
-// Global Escape listener to immediately cancel speech synthesis
+// Escape is the same complete stop as the second activation click.
 if (typeof window !== 'undefined') {
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      cancelJarvixTurn();
-      stopAllSpeech();
-      isJarvisSpeaking = false;
-      currentSpokenUtterance = '';
-      updateJarvisState('listening');
-    }
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') deactivateJarvisVoice();
   });
 }
 

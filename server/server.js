@@ -1,3 +1,4 @@
+import {installLocalVoice} from './jarvix-local-voice.js';
 import {initToolAccess,installToolAccess} from './tool-access.js';
 import {installGenerationStudio} from './generation-studio.js';
 import {installProductWatcher} from './product-watcher/admin-api.js';
@@ -214,6 +215,7 @@ installToolAccess(app,{auth});
 installSpeech(app,{auth,reserve:reserveSpeech});
 installReminders(app,{auth});
 installJarvixBrainRoutes(app);
+installLocalVoice(app);
 installJarvixVoiceRoutes(app);
 
 app.get('/api/health',(req,res)=>res.json({ok:true,service:'video-uniquifier',https:req.secure||!isProduction,videoProcessing:'local-only',ffmpegRuntime:'same-origin-esm',appUrl,time:new Date().toISOString()}));

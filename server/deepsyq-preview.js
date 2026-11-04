@@ -9,7 +9,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
-import {buildJarvixSiteKnowledge,clearSession,getOrCreateSession,processTurnWithMockBrain,getJarvixRuntimeStatus} from './jarvix-brain.js';
+import {buildJarvixSiteKnowledge,clearSession,getOrCreateSession,processTurnWithMockBrain,processTurnWithLocalQwen,getJarvixRuntimeStatus} from './jarvix-brain.js';
 import {generateFreeImage,generateTrialVideo,generateFreeAudio,checkDailyQuota,incrementDailyQuota,studioJobs} from './free-ai-provider.js';
 
 import {installLocalVoice} from './jarvix-local-voice.js';
@@ -243,14 +243,14 @@ function allowJarvixRequest(req){
  return state.count<=20;
 }
 function validSessionId(value){return typeof value==='string'&&/^[\w-]{1,80}$/.test(value);}
-app.post('/api/jarvix/chat',(req,res)=>{
+app.post('/api/jarvix/chat',async(req,res)=>{
  if(!allowJarvixRequest(req))return res.status(429).json({error:'JARVIX_RATE_LIMIT'});
  const body=req.body||{},message=typeof body.message==='string'?body.message.trim():'';
  if(!message||message.length>2000)return res.status(400).json({error:'INVALID_MESSAGE'});
  const sessionId=validSessionId(body.sessionId)?body.sessionId:validSessionId(body.conversationId)?body.conversationId:`preview-${randomUUID()}`;
  const language=['ru','en','es','fr'].includes(body.language)?body.language:'ru';
  const session=getOrCreateSession(sessionId);
- const result=processTurnWithMockBrain(message,session,language);
+ const result=await processTurnWithLocalQwen(message,session,language)||processTurnWithMockBrain(message,session,language);
  res.json({ok:true,reply:result.reply,action:result.action,entities:result.entities,compiledPrompt:result.compiledPrompt,studioHandoff:result.studioHandoff,sessionId:session.id,conversationId:session.id,language,provider:result.provider,audioUrl:null});
 });
 app.post('/api/jarvix/reset',(req,res)=>{

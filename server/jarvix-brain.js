@@ -738,45 +738,30 @@ export function processTurnWithMockBrain(userText, session, lang = 'ru') {
 
 
 // 5.5. LOCAL / FREE TIER QWEN HYBRID ENGINE
-export async function processTurnWithLocalQwen(userText, session, lang = 'ru') {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 1800);
+export async function processTurnWithLocalQwen(userText, session, lang = 'ru', options = {}) {
+  const env=options.env||process.env, fetcher=options.fetcher||globalThis.fetch;
+  if(env.JARVIX_LOCAL_LLM_ENABLED!=='true')return null;
+  const endpoint=String(env.JARVIX_LOCAL_LLM_URL||'').trim();
+  const token=String(env.JARVIX_LOCAL_LLM_TOKEN||'');
+  let url;
+  try{url=new URL(endpoint);}catch{return null;}
+  const loopback=['localhost','127.0.0.1','[::1]'].includes(url.hostname);
+  if(!['http:','https:'].includes(url.protocol)||url.username||url.password||url.hash||url.search||(!loopback&&url.protocol!=='https:')||(loopback&&env.RENDER)||(!loopback&&token.length<32))return null;
   try {
-    const res = await fetch('http://127.0.0.1:8766/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [
-          ...session.history.slice(-6).map(h => ({ role: h.role, content: h.content })),
-          { role: 'user', content: userText }
-        ],
-        max_tokens: 100
-      }),
-      signal: controller.signal
-    });
-    clearTimeout(timer);
-    if (!res.ok) return null;
-    const data = await res.json();
-    const reply = data.choices?.[0]?.message?.content?.trim();
-    if (!reply) return null;
-
-    session.history.push({ role: 'user', content: userText, timestamp: Date.now() });
-    session.history.push({ role: 'assistant', content: reply, timestamp: Date.now() });
-    if (session.history.length > 24) session.history.splice(0, session.history.length - 24);
-
-    return {
-      reply,
-      action: null,
-      entities: { ...session.accumulatedPrompt },
-      compiledPrompt: compileAccumulatedPrompt(session.accumulatedPrompt),
-      studioHandoff: null,
-      language: lang,
-      provider: 'qwen-hybrid'
-    };
-  } catch (_) {
-    clearTimeout(timer);
-    return null;
-  }
+    const response=await fetcher(url.href,{method:'POST',redirect:'error',
+      headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},
+      body:JSON.stringify({model:env.JARVIX_LOCAL_LLM_MODEL||'qwen',stream:false,
+        messages:[{role:'system',content:'You are Deepsyq Jarvis. Reply concisely in '+lang+'. Answer about the actual site. Never claim an action or a finished generation. Site capabilities: '+JSON.stringify(DEEPSYQ_CAPABILITIES)},
+          ...session.history.slice(-6).map(h=>({role:h.role,content:h.content})),{role:'user',content:userText}],max_tokens:160}),
+      signal:AbortSignal.timeout(12000)});
+    if(!response.ok)return null;
+    const data=await response.json();
+    const reply=data.choices?.[0]?.message?.content?.trim();
+    if(!reply||reply.length>4000)return null;
+    session.history.push({role:'user',content:userText,timestamp:Date.now()},{role:'assistant',content:reply,timestamp:Date.now()});
+    if(session.history.length>24)session.history.splice(0,session.history.length-24);
+    return {reply,action:null,entities:{...session.accumulatedPrompt},compiledPrompt:compileAccumulatedPrompt(session.accumulatedPrompt),studioHandoff:null,language:lang,provider:'qwen-hybrid'};
+  } catch {return null;}
 }
 
 // 6. LIVE OPENAI RESPONSES API DISPATCHER
@@ -786,8 +771,8 @@ export async function processTurnWithOpenAI(userText, session, lang = 'ru', opti
   const apiKey = (env.OPENAI_API_KEY || process.env.OPENAI_API_KEY || '').trim();
   // A key alone never enables billable calls. The owner must set the explicit flag.
   if (env.JARVIX_AI_ENABLED !== 'true' || !apiKey || apiKey.startsWith('mock-') || apiKey === 'dummy' || env.JARVIX_AI_DISABLE === 'true') {
-    if (!options.previewOnly && process.env.NODE_ENV !== 'test') {
-      const qwen = await processTurnWithLocalQwen(userText, session, lang);
+    if (env.JARVIX_LOCAL_LLM_ENABLED === 'true') {
+      const qwen = await processTurnWithLocalQwen(userText, session, lang, options);
       if (qwen) return qwen;
     }
     return processTurnWithMockBrain(userText, session, lang);
@@ -904,7 +889,10 @@ export function installJarvixBrainRoutes(app, options = {}) {
       const lang = ['ru', 'en', 'es', 'fr'].includes(language) ? language : 'ru';
       const session = getOrCreateSession(sid);
 
-      const result = await processTurnWithOpenAI(message, session, lang);
+      // Paid routing needs a trusted server-side entitlement gate, never a client plan.
+      const paidAllowed=typeof options.authorizePaidBrain==='function' && await options.authorizePaidBrain(req);
+      const env=paidAllowed?(options.env||process.env):{...(options.env||process.env),JARVIX_AI_DISABLE:'true'};
+      const result = await processTurnWithOpenAI(message, session, lang, {...options,env});
       res.json({
         ok: true,
         reply: result.reply,

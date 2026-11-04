@@ -11,7 +11,7 @@ function setup(){
  localStorage:{getItem:()=> 'ru'},document:{documentElement:{lang:'ru'}},
  updateJarvisState(){},getTopBtn:()=>null,resetSilenceTimer(){},getJarvixLanguage:()=> 'ru',
  handleJarvisVoiceCommand:text=>commands.push(text),setTimeout:fn=>{timers.push(fn);return timers.length;},clearTimeout(){},console});
- vm.runInContext(control,context);vm.runInContext('resumeJarvisRecognition()',context);
+ vm.runInContext(control.replace(/export /g,''),context);vm.runInContext('resumeJarvisRecognition()',context);
  return {context,instances,timers,commands};
 }
 test('delayed recognition result cannot navigate after Stop',()=>{

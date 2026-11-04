@@ -1493,3 +1493,5 @@ try{if(sessionStorage.getItem('deepsyq_studio_account_reset_notice')==='1'){sess
 applyVoicePromptFromUrl();
 initStudioVoiceInput();
 initStudioConsents();
+
+if(new URLSearchParams(location.search).get('chooseModel')==='1')$('modelButton').click();

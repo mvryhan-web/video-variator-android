@@ -231,11 +231,12 @@ $('inviteShare')?.addEventListener('click',async()=>{
 // Header sign-in must not depend on dispatching a click to the inert,
 // off-canvas mobile sidebar account button.
 $('topLogin')?.addEventListener('click',()=>{
- if(localStorage.getItem('vv_token'))location.assign('index.html#profile');
+ if(localStorage.getItem('vv_token'))location.assign('index.html?view=profile');
  else openAuth();
 });
 function markHomeLogin(){const b=$('topLogin');if(b)b.textContent=localStorage.getItem('vv_token')?homeLangText().account:homeLangText().login;}
 markHomeLogin();
+if(new URLSearchParams(location.search).get('signin')==='1'){openAuth();const u=new URL(location.href);u.searchParams.delete('signin');history.replaceState(null,'',u);}
 // Real owner-approved media only. Playback is disabled for reduced motion/data saver.
 let inspirationVideoObserver=null;
 function showInspirationVideos(root){
@@ -550,7 +551,7 @@ if(requestedIdentityToken)try{
   dashboardAccountOwnerToken=requestedIdentityToken;
   $('accountLabel').textContent=user.name||'Your workspace';
   $('accountButton').textContent='Account settings';
-  $('accountButton').onclick=()=>location.assign('index.html#profile');
+  $('accountButton').onclick=()=>location.assign('index.html?view=profile');
   $('logout').hidden=false;
   if(user.isAdmin&&!document.getElementById('adminAiControl')){
    const a=document.createElement('a');a.id='adminAiControl';a.href='deepsyq-admin.html';a.textContent='Owner AI Control';document.querySelector('.sidebar-bottom').prepend(a);

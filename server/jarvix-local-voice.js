@@ -23,7 +23,7 @@ export function installLocalVoice(app, {env=process.env, fetchImpl=fetch}={}) {
    return res.status(400).json({error:'INVALID_SPEECH'});
   // No queue: protect the owner's laptop without introducing a commercial timer.
   if(busy)return res.status(429).json({error:'VOICE_BUSY'});
-  if(req.headers.origin && req.headers.origin!== 'https://deepsyq-visual-preview-20261016.onrender.com')
+  if(req.headers.origin && !['https://deepsyq-visual-preview-20261016.onrender.com','https://video-variator-android.onrender.com'].includes(req.headers.origin))
    return res.status(403).json({error:'VOICE_ORIGIN_DENIED'});
   busy=true;
   try{
