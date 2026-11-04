@@ -156,6 +156,9 @@ app.post('/api/studio/jobs', async (req, res) => {
       let result;
       if (kind === 'video') {
         result = await generateTrialVideo({ prompt, model, duration: req.body?.videoDuration || 5, allowExternal: false });
+      } else if (['music','voice','audio'].includes(kind)) {
+        // Free TEST audio is a WAV chime, not an image mislabeled as audio.
+        result = await generateFreeAudio({ prompt, text: prompt, model });
       } else {
         result = await generateFreeImage({ prompt, model, ratio: req.body?.ratio || '1:1', allowExternal: false });
       }
@@ -212,8 +215,9 @@ app.get('/api/studio/jobs/:id/media', (req, res) => {
 app.get('/api/studio/jobs', (req, res) => {
   if (isLegacyTest) return res.status(503).json(disabled);
   const visitor=studioVisitorSession(req,res);
+  const filter=String(req.query.filter||'all');
   const list = Array.from(studioJobs.values())
-    .filter(j => j.visitor === visitor)
+    .filter(j => j.visitor === visitor && (filter==='all'||(filter==='audio'?['audio','music','voice'].includes(j.kind):filter==='failed'?j.status==='failed':filter==='processing'?['queued','processing','finalizing'].includes(j.status):j.kind===filter)))
     .map(j => ({
       id: j.id,
       kind: j.kind,
