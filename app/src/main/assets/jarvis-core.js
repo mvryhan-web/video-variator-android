@@ -1,4 +1,4 @@
-import { startJarvixGuidedTour, stopJarvixGuidedTour } from './jarvix-guided-tour.js';
+import { startJarvixGuidedTour, stopJarvixGuidedTour, isTourActive } from './jarvix-guided-tour.js';
 import {navigationReply} from './jarvix-navigation-reply.js';
 import {findCatalogReply} from './jarvix-clip-library.js';
 // JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
@@ -1100,15 +1100,11 @@ export function activateJarvisVoice() {
   const topBtn = getTopBtn();
   if (topBtn) topBtn.classList.add('is-active');
 
-  const greetings = OWNER_GREETING_TEXT;
-  const greetingText = greetings[getJarvixLanguage()] || greetings.en;
-  jarvixContext.waitingFor = 'welcome_choice';
-  speakJarvis(greetingText, () => {
-    if (isJarvisActive && keepListening) speakJarvis(onboardingText('ask'));
-  });
+  startJarvixGuidedTour();
 }
 
 export function deactivateJarvisVoice() {
+  stopJarvixGuidedTour();
   cancelJarvixTurn();
   isJarvisActive = false;
   keepListening = false;
@@ -1120,6 +1116,11 @@ export function deactivateJarvisVoice() {
   clearTimeout(silenceTimer);
   stopAllSpeech();
   pauseJarvisRecognition();
+  if (jarvisRecognition) {
+    try {
+      jarvisRecognition.abort();
+    } catch (_) {}
+  }
 
   const topBtn = getTopBtn();
   if (topBtn) {
@@ -1132,14 +1133,7 @@ export function deactivateJarvisVoice() {
 }
 
 export function toggleJarvisVoice() {
-  if (isJarvisSpeaking) {
-    stopAllSpeech();
-    isJarvisSpeaking = false;
-    currentSpokenUtterance = '';
-    deactivateJarvisVoice();
-    return;
-  }
-  if (isJarvisActive) {
+  if (isJarvisActive || isJarvisSpeaking || isJarvisListening || isTourActive()) {
     deactivateJarvisVoice();
   } else {
     activateJarvisVoice();
@@ -1174,14 +1168,6 @@ export function initJarvis() {
 
   const setupBtn = () => {
     const topBtn = getTopBtn();
-    const tourBtn = document.getElementById('topJarvisTourBtn');
-    if (tourBtn && !tourBtn.__jarvixTourBound) {
-      tourBtn.__jarvixTourBound = true;
-      tourBtn.addEventListener('click', () => {
-        // Tour starts only after an explicit click. It does not start mic capture or paid AI calls.
-        startJarvixGuidedTour();
-      });
-    }
     if (topBtn && !topBtn.__jarvisBound) {
       topBtn.__jarvisBound = true;
       topBtn.onclick = () => toggleJarvisVoice();
