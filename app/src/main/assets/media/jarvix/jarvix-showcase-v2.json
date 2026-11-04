@@ -1,0 +1,347 @@
+{
+  "version": 2,
+  "ready": false,
+  "note": "AntiGravity generates these NEW recordings only. Set ready true only after all 56 matching MP3s are uploaded and audibly reviewed. Do not reuse the rejected tour audio.",
+  "languages": {
+    "ru": [
+      {
+        "id": "jarvix_showcase_ru_01",
+        "audio": "media/jarvix/clips/jarvix_showcase_ru_01.mp3",
+        "text": "Я Джарвис, ваш голосовой помощник Deepsyq. Покажу, что умею, а затем вы сможете дать мне задачу."
+      },
+      {
+        "id": "jarvix_showcase_ru_02",
+        "audio": "media/jarvix/clips/jarvix_showcase_ru_02.mp3",
+        "text": "Включаю тёмное оформление.",
+        "theme": "midnight"
+      },
+      {
+        "id": "jarvix_showcase_ru_03",
+        "audio": "media/jarvix/clips/jarvix_showcase_ru_03.mp3",
+        "text": "Теперь — светлое оформление.",
+        "theme": "light"
+      },
+      {
+        "id": "jarvix_showcase_ru_04",
+        "audio": "media/jarvix/clips/jarvix_showcase_ru_04.mp3",
+        "text": "А это неоновый стиль.",
+        "theme": "neon"
+      },
+      {
+        "id": "jarvix_showcase_ru_05",
+        "audio": "media/jarvix/clips/jarvix_showcase_ru_05.mp3",
+        "text": "И новогоднее оформление — для праздничного настроения.",
+        "theme": "festive-newyear"
+      },
+      {
+        "id": "jarvix_showcase_ru_06",
+        "audio": "media/jarvix/clips/jarvix_showcase_ru_06.mp3",
+        "text": "Возвращаю ваше исходное оформление. Изменить его можно по вашей команде.",
+        "restore": true
+      },
+      {
+        "id": "jarvix_showcase_ru_07",
+        "audio": "media/jarvix/clips/jarvix_showcase_ru_07.mp3",
+        "text": "Это раздел фото. Здесь вы выбираете модель и описываете изображение.",
+        "url": "generate-studio.html?studio=image"
+      },
+      {
+        "id": "jarvix_showcase_ru_08",
+        "audio": "media/jarvix/clips/jarvix_showcase_ru_08.mp3",
+        "text": "Здесь создают видео: выберите модель, формат и опишите сцену.",
+        "url": "generate-studio.html?studio=video"
+      },
+      {
+        "id": "jarvix_showcase_ru_09",
+        "audio": "media/jarvix/clips/jarvix_showcase_ru_09.mp3",
+        "text": "Это аудиостудия — для работы со звуком и озвучкой.",
+        "url": "generate-studio.html?studio=audio"
+      },
+      {
+        "id": "jarvix_showcase_ru_10",
+        "audio": "media/jarvix/clips/jarvix_showcase_ru_10.mp3",
+        "text": "В Canvas можно собрать и доработать свою идею.",
+        "url": "canvas.html"
+      },
+      {
+        "id": "jarvix_showcase_ru_11",
+        "audio": "media/jarvix/clips/jarvix_showcase_ru_11.mp3",
+        "text": "В Everyday Tools собраны повседневные инструменты: сжатие фото, работа с PDF, коллажи и извлечение звука.",
+        "url": "free-tools.html"
+      },
+      {
+        "id": "jarvix_showcase_ru_12",
+        "audio": "media/jarvix/clips/jarvix_showcase_ru_12.mp3",
+        "text": "Это видеоуникализатор. Здесь можно настроить обработку своего видео.",
+        "url": "index.html"
+      },
+      {
+        "id": "jarvix_showcase_ru_13",
+        "audio": "media/jarvix/clips/jarvix_showcase_ru_13.mp3",
+        "text": "Здесь представлены тарифы и AI-кредиты. Условия и цены можно посмотреть на этой странице.",
+        "url": "pricing.html"
+      },
+      {
+        "id": "jarvix_showcase_ru_14",
+        "audio": "media/jarvix/clips/jarvix_showcase_ru_14.mp3",
+        "text": "Мы снова на главной. Что хотите сделать? Я слушаю.",
+        "url": "deepsyq.html"
+      }
+    ],
+    "en": [
+      {
+        "id": "jarvix_showcase_en_01",
+        "audio": "media/jarvix/clips/jarvix_showcase_en_01.mp3",
+        "text": "I'm Jarvis, your Deepsyq voice assistant. Let me show you around, then you can give me a task."
+      },
+      {
+        "id": "jarvix_showcase_en_02",
+        "audio": "media/jarvix/clips/jarvix_showcase_en_02.mp3",
+        "text": "Switching to the dark theme.",
+        "theme": "midnight"
+      },
+      {
+        "id": "jarvix_showcase_en_03",
+        "audio": "media/jarvix/clips/jarvix_showcase_en_03.mp3",
+        "text": "Now, the light theme.",
+        "theme": "light"
+      },
+      {
+        "id": "jarvix_showcase_en_04",
+        "audio": "media/jarvix/clips/jarvix_showcase_en_04.mp3",
+        "text": "Here is the neon style.",
+        "theme": "neon"
+      },
+      {
+        "id": "jarvix_showcase_en_05",
+        "audio": "media/jarvix/clips/jarvix_showcase_en_05.mp3",
+        "text": "And the New Year theme, for a festive atmosphere.",
+        "theme": "festive-newyear"
+      },
+      {
+        "id": "jarvix_showcase_en_06",
+        "audio": "media/jarvix/clips/jarvix_showcase_en_06.mp3",
+        "text": "Restoring your original theme. I will change it when you ask.",
+        "restore": true
+      },
+      {
+        "id": "jarvix_showcase_en_07",
+        "audio": "media/jarvix/clips/jarvix_showcase_en_07.mp3",
+        "text": "This is the image studio. Choose a model and describe your image.",
+        "url": "generate-studio.html?studio=image"
+      },
+      {
+        "id": "jarvix_showcase_en_08",
+        "audio": "media/jarvix/clips/jarvix_showcase_en_08.mp3",
+        "text": "Here is the video studio. Choose a model, format, and describe your scene.",
+        "url": "generate-studio.html?studio=video"
+      },
+      {
+        "id": "jarvix_showcase_en_09",
+        "audio": "media/jarvix/clips/jarvix_showcase_en_09.mp3",
+        "text": "This is the audio studio, for sound and voice work.",
+        "url": "generate-studio.html?studio=audio"
+      },
+      {
+        "id": "jarvix_showcase_en_10",
+        "audio": "media/jarvix/clips/jarvix_showcase_en_10.mp3",
+        "text": "Canvas helps you bring an idea together and refine it.",
+        "url": "canvas.html"
+      },
+      {
+        "id": "jarvix_showcase_en_11",
+        "audio": "media/jarvix/clips/jarvix_showcase_en_11.mp3",
+        "text": "Everyday Tools includes photo compression, PDF tools, collages, and audio extraction.",
+        "url": "free-tools.html"
+      },
+      {
+        "id": "jarvix_showcase_en_12",
+        "audio": "media/jarvix/clips/jarvix_showcase_en_12.mp3",
+        "text": "This is Video Uniquifier, where you can adjust how your own video is processed.",
+        "url": "index.html"
+      },
+      {
+        "id": "jarvix_showcase_en_13",
+        "audio": "media/jarvix/clips/jarvix_showcase_en_13.mp3",
+        "text": "Here are the plans and AI credits. You can review the prices and terms on this page.",
+        "url": "pricing.html"
+      },
+      {
+        "id": "jarvix_showcase_en_14",
+        "audio": "media/jarvix/clips/jarvix_showcase_en_14.mp3",
+        "text": "We are back on Home. What would you like to do? I'm listening.",
+        "url": "deepsyq.html"
+      }
+    ],
+    "fr": [
+      {
+        "id": "jarvix_showcase_fr_01",
+        "audio": "media/jarvix/clips/jarvix_showcase_fr_01.mp3",
+        "text": "Je suis Jarvis, votre assistant vocal Deepsyq. Je vous présente le site, puis vous pourrez me confier une tâche."
+      },
+      {
+        "id": "jarvix_showcase_fr_02",
+        "audio": "media/jarvix/clips/jarvix_showcase_fr_02.mp3",
+        "text": "Je passe au thème sombre.",
+        "theme": "midnight"
+      },
+      {
+        "id": "jarvix_showcase_fr_03",
+        "audio": "media/jarvix/clips/jarvix_showcase_fr_03.mp3",
+        "text": "Voici maintenant le thème clair.",
+        "theme": "light"
+      },
+      {
+        "id": "jarvix_showcase_fr_04",
+        "audio": "media/jarvix/clips/jarvix_showcase_fr_04.mp3",
+        "text": "Et le style néon.",
+        "theme": "neon"
+      },
+      {
+        "id": "jarvix_showcase_fr_05",
+        "audio": "media/jarvix/clips/jarvix_showcase_fr_05.mp3",
+        "text": "Voici le thème du Nouvel An, pour une ambiance festive.",
+        "theme": "festive-newyear"
+      },
+      {
+        "id": "jarvix_showcase_fr_06",
+        "audio": "media/jarvix/clips/jarvix_showcase_fr_06.mp3",
+        "text": "Je rétablis votre thème initial. Je le changerai à votre demande.",
+        "restore": true
+      },
+      {
+        "id": "jarvix_showcase_fr_07",
+        "audio": "media/jarvix/clips/jarvix_showcase_fr_07.mp3",
+        "text": "Voici le studio image. Choisissez un modèle et décrivez votre image.",
+        "url": "generate-studio.html?studio=image"
+      },
+      {
+        "id": "jarvix_showcase_fr_08",
+        "audio": "media/jarvix/clips/jarvix_showcase_fr_08.mp3",
+        "text": "Voici le studio vidéo. Choisissez un modèle, un format et décrivez la scène.",
+        "url": "generate-studio.html?studio=video"
+      },
+      {
+        "id": "jarvix_showcase_fr_09",
+        "audio": "media/jarvix/clips/jarvix_showcase_fr_09.mp3",
+        "text": "Voici le studio audio, pour le son et la voix.",
+        "url": "generate-studio.html?studio=audio"
+      },
+      {
+        "id": "jarvix_showcase_fr_10",
+        "audio": "media/jarvix/clips/jarvix_showcase_fr_10.mp3",
+        "text": "Canvas vous aide à assembler et à affiner votre idée.",
+        "url": "canvas.html"
+      },
+      {
+        "id": "jarvix_showcase_fr_11",
+        "audio": "media/jarvix/clips/jarvix_showcase_fr_11.mp3",
+        "text": "Everyday Tools propose la compression de photos, des outils PDF, des collages et l’extraction audio.",
+        "url": "free-tools.html"
+      },
+      {
+        "id": "jarvix_showcase_fr_12",
+        "audio": "media/jarvix/clips/jarvix_showcase_fr_12.mp3",
+        "text": "Voici l’outil de variation vidéo. Vous pouvez y régler le traitement de votre propre vidéo.",
+        "url": "index.html"
+      },
+      {
+        "id": "jarvix_showcase_fr_13",
+        "audio": "media/jarvix/clips/jarvix_showcase_fr_13.mp3",
+        "text": "Voici les tarifs et les crédits IA. Les prix et les conditions sont indiqués sur cette page.",
+        "url": "pricing.html"
+      },
+      {
+        "id": "jarvix_showcase_fr_14",
+        "audio": "media/jarvix/clips/jarvix_showcase_fr_14.mp3",
+        "text": "Nous revoici à l’accueil. Que souhaitez-vous faire ? Je vous écoute.",
+        "url": "deepsyq.html"
+      }
+    ],
+    "es": [
+      {
+        "id": "jarvix_showcase_es_01",
+        "audio": "media/jarvix/clips/jarvix_showcase_es_01.mp3",
+        "text": "Soy Jarvis, tu asistente de voz de Deepsyq. Te mostraré el sitio y después podrás pedirme una tarea."
+      },
+      {
+        "id": "jarvix_showcase_es_02",
+        "audio": "media/jarvix/clips/jarvix_showcase_es_02.mp3",
+        "text": "Activo el tema oscuro.",
+        "theme": "midnight"
+      },
+      {
+        "id": "jarvix_showcase_es_03",
+        "audio": "media/jarvix/clips/jarvix_showcase_es_03.mp3",
+        "text": "Ahora, el tema claro.",
+        "theme": "light"
+      },
+      {
+        "id": "jarvix_showcase_es_04",
+        "audio": "media/jarvix/clips/jarvix_showcase_es_04.mp3",
+        "text": "Este es el estilo neón.",
+        "theme": "neon"
+      },
+      {
+        "id": "jarvix_showcase_es_05",
+        "audio": "media/jarvix/clips/jarvix_showcase_es_05.mp3",
+        "text": "Y este es el tema de Año Nuevo, para un ambiente festivo.",
+        "theme": "festive-newyear"
+      },
+      {
+        "id": "jarvix_showcase_es_06",
+        "audio": "media/jarvix/clips/jarvix_showcase_es_06.mp3",
+        "text": "Restauro tu tema original. Lo cambiaré cuando me lo pidas.",
+        "restore": true
+      },
+      {
+        "id": "jarvix_showcase_es_07",
+        "audio": "media/jarvix/clips/jarvix_showcase_es_07.mp3",
+        "text": "Este es el estudio de imágenes. Elige un modelo y describe tu imagen.",
+        "url": "generate-studio.html?studio=image"
+      },
+      {
+        "id": "jarvix_showcase_es_08",
+        "audio": "media/jarvix/clips/jarvix_showcase_es_08.mp3",
+        "text": "Aquí está el estudio de vídeo. Elige un modelo, un formato y describe la escena.",
+        "url": "generate-studio.html?studio=video"
+      },
+      {
+        "id": "jarvix_showcase_es_09",
+        "audio": "media/jarvix/clips/jarvix_showcase_es_09.mp3",
+        "text": "Este es el estudio de audio, para trabajar con sonido y voz.",
+        "url": "generate-studio.html?studio=audio"
+      },
+      {
+        "id": "jarvix_showcase_es_10",
+        "audio": "media/jarvix/clips/jarvix_showcase_es_10.mp3",
+        "text": "Canvas te ayuda a reunir y perfeccionar tu idea.",
+        "url": "canvas.html"
+      },
+      {
+        "id": "jarvix_showcase_es_11",
+        "audio": "media/jarvix/clips/jarvix_showcase_es_11.mp3",
+        "text": "Everyday Tools incluye compresión de fotos, herramientas PDF, collages y extracción de audio.",
+        "url": "free-tools.html"
+      },
+      {
+        "id": "jarvix_showcase_es_12",
+        "audio": "media/jarvix/clips/jarvix_showcase_es_12.mp3",
+        "text": "Esta es la herramienta de variación de vídeo. Aquí puedes ajustar el procesamiento de tu propio vídeo.",
+        "url": "index.html"
+      },
+      {
+        "id": "jarvix_showcase_es_13",
+        "audio": "media/jarvix/clips/jarvix_showcase_es_13.mp3",
+        "text": "Aquí están los planes y los créditos de IA. Consulta los precios y las condiciones en esta página.",
+        "url": "pricing.html"
+      },
+      {
+        "id": "jarvix_showcase_es_14",
+        "audio": "media/jarvix/clips/jarvix_showcase_es_14.mp3",
+        "text": "Volvemos al inicio. ¿Qué quieres hacer? Te escucho.",
+        "url": "deepsyq.html"
+      }
+    ]
+  }
+}

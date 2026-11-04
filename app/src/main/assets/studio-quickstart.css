@@ -138,3 +138,18 @@ body.studio-quickstart .stage #empty #taskTitle {
     font-size: 25px !important;
   }
 }
+
+/* Owner reference 2026-11-04: compact idle composer, with room to grow for content. */
+body.studio-quickstart #creator.composer{padding:8px 16px!important;border-radius:26px;min-height:130px}
+body.studio-quickstart #creator .prompt-row{gap:10px;min-height:42px;align-items:center}
+body.studio-quickstart #creator .upload{flex:0 0 42px;width:42px;min-height:42px;height:42px;border-radius:12px}
+body.studio-quickstart #creator .upload>span:first-child{font-size:24px;line-height:1}
+body.studio-quickstart #creator .upload>[data-t="addPhoto"]{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+body.studio-quickstart #creator #prompt{box-sizing:border-box;height:42px;min-height:42px!important;max-height:180px;resize:vertical;padding:10px 46px 10px 2px!important;line-height:1.5}
+body.studio-quickstart #creator .prompt-voice-dock{bottom:6px;right:5px}
+body.studio-quickstart #creator .composer-controls{margin-top:8px;gap:8px}
+body.studio-quickstart #creator .composer-controls #generate{padding:10px 20px;min-height:42px;font-size:15px}
+body.studio-quickstart #creator .composer-controls .pill{min-height:38px;padding:8px 12px}
+body.studio-quickstart #creator>.hint{margin:5px 0 0}
+body.studio-quickstart #creator .ref-meta:empty{display:none}
+@media(max-width:600px){body.studio-quickstart #creator.composer{padding:10px 12px!important}body.studio-quickstart #creator .composer-controls .pill{flex:0 1 auto;font-size:11px;padding:7px 9px}body.studio-quickstart #creator .composer-controls #generate{flex:0 0 auto;margin-left:auto}}

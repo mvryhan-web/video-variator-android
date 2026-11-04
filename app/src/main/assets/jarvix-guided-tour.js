@@ -1,168 +1,56 @@
-/**
- * JARVIX Interactive Guided Tour & Site Presentation (Cinematic Voice Walkthrough)
- * 1. Option 4 Voice Introduction (Film style, no robotic text frames)
- * 2. Dynamic Live Theme switching (Light, Dark, Neon Cyberpunk, Festive New Year!)
- * 3. Navigation & Studio Showcase
- * 4. Closing call-to-action & Voice Mic Activation
- */
-import { applySiteTheme, getJarvixLanguage, speakJarvis, stopAllSpeech, updateJarvisState, resumeJarvisRecognition } from './jarvis-core.js';
-
-let isTourRunning = false;
-let tourTimeouts = [];
-let currentTourAudio = null;
-
-export function isTourActive() {
-  return isTourRunning;
+// Owner-controlled showcase: every page action precedes its own narration.
+// Until the NEW voice pack is published, use the previously approved greeting only.
+import {getJarvixLanguage, speakJarvis, stopAllSpeech, applySiteTheme, pauseJarvisRecognition, updateJarvisState, resumeJarvisRecognition} from './jarvis-core.js';
+import {OWNER_GREETING_TEXT} from './jarvix-owner-speech.js';
+const KEY='jarvix_showcase_v2';
+let running=false, audio=null, version=0;
+export function isTourActive(){return running;}
+function read(){try{return JSON.parse(sessionStorage.getItem(KEY)||'null');}catch{return null;}}
+function write(state){try{sessionStorage.setItem(KEY,JSON.stringify(state));}catch{}}
+function restore(state){if(state)applySiteTheme(state.originalTheme||'default');}
+function clear(){try{sessionStorage.removeItem(KEY);}catch{}}
+function finish(state){running=false;clear();restore(state);updateJarvisState('listening');resumeJarvisRecognition();}
+async function playStep(state){
+ const turn=++version;running=true;stopAllSpeech();pauseJarvisRecognition();
+ const step=state.steps[state.index];
+ if(!step){finish(state);return;}
+ if(step.url){
+  const target=new URL(step.url,location.href);
+  if(target.pathname!==location.pathname||target.search!==location.search){write(state);location.assign(target.href);return;}
+ }
+ if(step.restore)restore(state);else if(step.theme)applySiteTheme(step.theme);
+ const clip=new Audio(step.audio);audio=clip;
+ // No speed/pitch/effects processing. Voice production belongs to AntiGravity.
+ clip.playbackRate=1;clip.preservesPitch=true;
+ const next=()=>{if(turn!==version||!running)return;audio=null;state.index++;write(state);playStep(state);};
+ clip.onplay=()=>{if(turn===version&&running)updateJarvisState('speaking');};
+ clip.onended=next;
+ clip.onerror=()=>{if(turn===version)finish(state);};
+ try{await clip.play();}catch{if(turn===version)finish(state);}
 }
-
-function clearTourTimers() {
-  for (const t of tourTimeouts) clearTimeout(t);
-  tourTimeouts = [];
+export async function startJarvixGuidedTour(){
+ if(running)return;
+ stopAllSpeech();running=true;const turn=++version;
+ let pack=null;
+ try{const response=await fetch('media/jarvix/jarvix-showcase-v2.json',{cache:'no-cache'});if(response.ok)pack=await response.json();}catch{}
+ if(turn!==version||!running)return;
+ const language=getJarvixLanguage();
+ const steps=pack?.languages?.[language];
+ if(pack?.ready!==true||!Array.isArray(steps)||!steps.length||steps.some(s=>!/^media\/jarvix\/clips\/jarvix_showcase_(ru|en|fr|es)_\d{2}\.mp3$/.test(s.audio))){
+  running=false;
+  // Roll back to the earlier, owner-approved, natural introduction recording.
+  speakJarvis(OWNER_GREETING_TEXT[language]||OWNER_GREETING_TEXT.en);
+  return;
+ }
+ let originalTheme=null;try{originalTheme=localStorage.getItem('deepsyq_site_theme');}catch{}
+ const state={steps,index:0,language,originalTheme};write(state);playStep(state);
 }
-
-function highlightElement(selector, durationMs = 3500) {
-  try {
-    const el = document.querySelector(selector);
-    if (!el) return;
-    el.classList.add('jarvis-tour-spotlight');
-    const t = setTimeout(() => {
-      el.classList.remove('jarvis-tour-spotlight');
-    }, durationMs);
-    tourTimeouts.push(t);
-  } catch (_) {}
+export function resumeJarvixGuidedTour(){
+ const state=read();if(!state?.steps?.length)return false;
+ playStep(state);return true;
 }
-
-const TOUR_TEXTS = {
-  ru: {
-    intro: 'JARVIS в сети. Добро пожаловать в будущее генеративного контента. Я управляю видео, звуком, фото и этим сайтом прямо с вашего голоса. Хотите неоновую атмосферу или сразу запустим генерацию? Жду вашу команду.',
-    styles: 'Могу менять оформление прямо на лету: светлая тема, тёмная, яркий неоновый стиль и эксклюзивный новогодний режим.',
-    nav: 'Я умею открывать любые разделы платформы. Открываю Студию генерации. Здесь вы создаете видео, фото и аудио шедевры.',
-    finish: 'С чего бы вы хотели начать? Назовите команду, и я сделаю всё за вас.'
-  },
-  en: {
-    intro: 'JARVIS online. Welcome to the future of generative media. I command video, audio, imagery, and this entire interface straight from your voice. Would you like a neon vibe, or should we launch generation right away? Standing by.',
-    styles: 'I can adapt the design on the fly: light theme, dark, neon cyberpunk, and our festive New Year style.',
-    nav: 'I can navigate anywhere on the platform. Opening Creation Studio for video, imagery and audio.',
-    finish: 'Where shall we begin? Name your command, and I will handle it all for you.'
-  },
-  fr: {
-    intro: 'JARVIS en ligne. Bienvenue dans le futur de la création générative. Je contrôle la vidéo, le son, l\'image et ce site directement à votre voix. Prêt pour une ambiance néon ou on lance la génération ? J\'attends vos ordres.',
-    styles: 'Je peux métamorphoser l\'interface en direct : thème clair, sombre, néon cyberpunk et le mode festif du Nouvel An.',
-    nav: 'Je peux ouvrir n\'importe quelle section de la plateforme. J\'ouvre le Studio de création pour vos vidéos, images et pistes audio.',
-    finish: 'Par quoi souhaitez-vous commencer ? Donnez votre commande vocale, et je m\'occupe de tout.'
-  },
-  es: {
-    intro: 'JARVIS en línea. Bienvenido al futuro de la creación generativa. Controlo video, audio, imágenes y este sitio web directamente con tu voz. ¿Prefieres un ambiente neón o iniciamos la generación? Espero tu orden.',
-    styles: 'Puedo transformar el sitio al instante: tema claro, oscuro, neón cyberpunk y el modo festivo de Año Nuevo.',
-    nav: 'Puedo abrir cualquier sección de la plateforme. Abriendo el Estudio de creación para video, imagen y audio.',
-    finish: '¿Por dónde empezamos? Da tu orden de voz y yo me encargaré de todo.'
-  }
-};
-
-function playClipOrSpeak(clipName, textFallback, onComplete) {
-  if (!isTourRunning) return;
-  const lang = getJarvixLanguage();
-  const suffix = (lang === 'en' || lang === 'fr' || lang === 'es') ? `_${lang}` : '';
-  const filename = `${clipName}${suffix}.mp3`;
-  const clipUrl = `media/jarvix/clips/${filename}`;
-
-  const audio = new Audio(clipUrl);
-  currentTourAudio = audio;
-
-  let hasEnded = false;
-  const finish = () => {
-    if (hasEnded) return;
-    hasEnded = true;
-    currentTourAudio = null;
-    if (isTourRunning && typeof onComplete === 'function') {
-      onComplete();
-    }
-  };
-
-  audio.onplay = () => {
-    if (!isTourRunning) {
-      audio.pause();
-      return;
-    }
-    updateJarvisState('speaking');
-  };
-
-  audio.onended = finish;
-  audio.onerror = () => {
-    currentTourAudio = null;
-    if (!isTourRunning) return;
-    speakJarvis(textFallback, finish);
-  };
-
-  const playPromise = audio.play();
-  if (playPromise !== undefined) {
-    playPromise.catch(() => {
-      currentTourAudio = null;
-      if (!isTourRunning) return;
-      speakJarvis(textFallback, finish);
-    });
-  }
-}
-
-export function startJarvixGuidedTour() {
-  if (isTourRunning) return;
-  isTourRunning = true;
-  clearTourTimers();
-  stopAllSpeech();
-
-  const lang = getJarvixLanguage();
-  const texts = TOUR_TEXTS[lang] || TOUR_TEXTS.en;
-
-  // Step 1: Flagship Intro (Option 4)
-  playClipOrSpeak('jarvix_tour_intro', texts.intro, () => {
-    if (!isTourRunning) return;
-
-    // Step 2: Dynamic Live Styles (with live theme changes during voice)
-    tourTimeouts.push(setTimeout(() => { if (isTourRunning) applySiteTheme('light'); }, 1000));
-    tourTimeouts.push(setTimeout(() => { if (isTourRunning) applySiteTheme('midnight'); }, 3500));
-    tourTimeouts.push(setTimeout(() => { if (isTourRunning) applySiteTheme('neon'); }, 6000));
-    tourTimeouts.push(setTimeout(() => { if (isTourRunning) applySiteTheme('festive-newyear'); }, 8500));
-
-    playClipOrSpeak('jarvix_tour_styles', texts.styles, () => {
-      if (!isTourRunning) return;
-
-      // Step 3: Navigation & Studio walkthrough
-      highlightElement('a[href*="generate-studio"], #homeCreativeTools, #homeQuickBar', 4500);
-
-      playClipOrSpeak('jarvix_tour_nav', texts.nav, () => {
-        if (!isTourRunning) return;
-
-        // Step 4: Closing & Mic Activation
-        playClipOrSpeak('jarvix_tour_finish', texts.finish, () => {
-          if (!isTourRunning) return;
-          isTourRunning = false;
-          updateJarvisState('listening');
-          resumeJarvisRecognition();
-        });
-      });
-    });
-  });
-}
-
-export function stopJarvixGuidedTour() {
-  isTourRunning = false;
-  clearTourTimers();
-  if (currentTourAudio) {
-    try {
-      currentTourAudio.pause();
-      currentTourAudio.currentTime = 0;
-    } catch (_) {}
-    currentTourAudio = null;
-  }
-  stopAllSpeech();
-  document.querySelectorAll('.jarvis-tour-spotlight').forEach(el => el.classList.remove('jarvis-tour-spotlight'));
-}
-
-// Global escape key handler
-if (typeof window !== 'undefined') {
-  window.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && isTourRunning) {
-      stopJarvixGuidedTour();
-    }
-  });
+export function stopJarvixGuidedTour(){
+ version++;running=false;
+ if(audio){audio.onended=null;audio.onerror=null;audio.onplay=null;audio.pause();audio=null;}
+ const state=read();clear();restore(state);stopAllSpeech();
 }

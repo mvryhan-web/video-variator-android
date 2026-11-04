@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 const source=readFileSync(new URL('../app/src/main/assets/jarvis-core.js',import.meta.url),'utf8');
-const control=source.slice(source.indexOf('function pauseJarvisRecognition()'),source.indexOf('// 10. Silence Timer'));
+const control=source.slice(source.indexOf('export function pauseJarvisRecognition()'),source.indexOf('// 10. Silence Timer'));
 function setup(){
  const instances=[],timers=[],commands=[];
  const context=vm.createContext({recognitionVersion:0,isJarvisActive:true,keepListening:true,isJarvisSpeaking:false,isJarvisListening:false,jarvisRecognition:null,
@@ -11,7 +11,7 @@ function setup(){
  localStorage:{getItem:()=> 'ru'},document:{documentElement:{lang:'ru'}},
  updateJarvisState(){},getTopBtn:()=>null,resetSilenceTimer(){},getJarvixLanguage:()=> 'ru',
  handleJarvisVoiceCommand:text=>commands.push(text),setTimeout:fn=>{timers.push(fn);return timers.length;},clearTimeout(){},console});
- vm.runInContext(control,context);vm.runInContext('resumeJarvisRecognition()',context);
+ vm.runInContext(control.replace(/export /g,''),context);vm.runInContext('resumeJarvisRecognition()',context);
  return {context,instances,timers,commands};
 }
 test('delayed recognition result cannot navigate after Stop',()=>{

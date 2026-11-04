@@ -1,57 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {spawn} from 'node:child_process';
-import {once} from 'node:events';
-import {chromium} from '@playwright/test';
-
-test('TEST owner Jarvix header Tour button starts and closes the real guided tour',async()=>{
- const port=32605,base='http://127.0.0.1:'+port;
- const child=spawn(process.execPath,['server/deepsyq-preview.js'],{
-  env:{...process.env,PORT:String(port),NODE_ENV:'test',DATABASE_URL:'',STRIPE_SECRET_KEY:'',
-    HF_TOKEN:'',FAL_KEY:'',OPENAI_API_KEY:'',JARVIX_AI_ENABLED:'false'},
-  stdio:['ignore','pipe','pipe']
- });
- let stderr='',browser;
- child.stderr.on('data',chunk=>{stderr+=String(chunk)});
- try{
-  let ready=false;
-  for(let i=0;i<100;i++){
-   if(child.exitCode!==null)throw Error('Preview exited: '+stderr);
-   try{if((await fetch(base+'/api/health')).ok){ready=true;break}}catch(_){}
-   await new Promise(resolve=>setTimeout(resolve,100));
-  }
-  assert.ok(ready,'isolated TEST server should start: '+stderr);
-  browser=await chromium.launch({headless:true});
-  const page=await browser.newPage({viewport:{width:1440,height:900},locale:'ru-RU'});
-  await page.route('https://accounts.google.com/gsi/client',route=>route.fulfill({contentType:'application/javascript',body:''}));
-  let paidRequests=0;
-  page.on('request',request=>{if(/\/api\/(?:billing|studio\/jobs|jarvix\/chat)/.test(request.url())&&request.method()==='POST')paidRequests++;});
-  await page.goto(base+'/deepsyq.html',{waitUntil:'domcontentloaded'});
-  const tourBtn=page.locator('#topJarvisTourBtn');
-  await tourBtn.waitFor({state:'visible'});
-  await page.waitForFunction(()=>document.getElementById('topJarvisTourBtn')?.__jarvixTourBound===true,null,{timeout:15000});
-  await tourBtn.click();
-  const overlay=page.locator('#jarvixTourOverlay');
-  await overlay.waitFor({state:'visible',timeout:10000});
-  assert.equal(await overlay.evaluate(el=>el.classList.contains('is-active')),true);
-  assert.ok((await overlay.locator('#jarvixTourText').innerText()).length>20,'the tour must render its narrated first step');
-  await page.keyboard.press('Escape');
-  await page.waitForFunction(()=>!document.getElementById('jarvixTourOverlay')?.classList.contains('is-active'),null,{timeout:10000});
-  await tourBtn.click();
-  await page.waitForFunction(()=>document.getElementById('jarvixTourOverlay')?.classList.contains('is-active'),null,{timeout:10000});
-  await page.locator('#jarvixTourSkip').click();
-  await page.waitForFunction(()=>!document.getElementById('jarvixTourOverlay')?.classList.contains('is-active'),null,{timeout:10000});
-  await page.setViewportSize({width:390,height:844});
-  await page.reload({waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>document.getElementById('topJarvisTourBtn')?.__jarvixTourBound===true,null,{timeout:15000});
-  await tourBtn.click();
-  await page.waitForFunction(()=>document.getElementById('jarvixTourOverlay')?.classList.contains('is-active'),null,{timeout:10000});
-  await page.locator('#jarvixTourSkip').click();
-  await page.waitForFunction(()=>!document.getElementById('jarvixTourOverlay')?.classList.contains('is-active'),null,{timeout:10000});
-  assert.equal(paidRequests,0,'tour clicks cannot submit AI or billing jobs');
- }finally{
-  if(browser)await browser.close();
-  child.kill('SIGTERM');
-  if(child.exitCode===null&&child.signalCode===null)await once(child,'exit');
- }
+import vm from 'node:vm';
+import {readFileSync} from 'node:fs';
+const source=readFileSync(new URL('../app/src/main/assets/jarvix-guided-tour.js',import.meta.url),'utf8').replace(/^import .*;$/mg,'').replace(/export /g,'');
+function setup(pack){
+ const clips=[],themes=[],moves=[],spoken=[],memory=new Map();let resumed=0;
+ const context=vm.createContext({getJarvixLanguage:()=> 'ru',OWNER_GREETING_TEXT:{ru:'original approved greeting'},fetch:async()=>({ok:true,json:async()=>pack}),Audio:class{constructor(url){this.url=url;clips.push(this);}play(){this.onplay?.();return Promise.resolve();}pause(){this.paused=true;}},applySiteTheme:t=>themes.push(t),speakJarvis:t=>spoken.push(t),stopAllSpeech(){},pauseJarvisRecognition(){},updateJarvisState(){},resumeJarvisRecognition(){resumed++;},URL,location:{href:'https://test.example/deepsyq.html',pathname:'/deepsyq.html',search:'',assign:url=>moves.push(url)},localStorage:{getItem:()=> 'neon'},sessionStorage:{getItem:k=>memory.get(k)||null,setItem:(k,v)=>memory.set(k,v),removeItem:k=>memory.delete(k)}});
+ vm.runInContext(source,context);return {context,clips,themes,moves,spoken,memory,resumed:()=>resumed};
+}
+test('missing NEW voice pack rolls back to original introduction without themes or forced photo navigation',async()=>{
+ const s=setup({ready:false});await vm.runInContext('startJarvixGuidedTour()',s.context);assert.deepEqual(s.spoken,['original approved greeting']);assert.equal(s.clips.length,0);assert.equal(s.themes.length,0);assert.equal(s.moves.length,0);
+});
+test('showcase applies theme before speech and navigates before destination narration',async()=>{
+ const steps=[{theme:'midnight',audio:'media/jarvix/clips/jarvix_showcase_ru_01.mp3'},{url:'pricing.html',audio:'media/jarvix/clips/jarvix_showcase_ru_02.mp3'}];
+ const s=setup({ready:true,languages:{ru:steps}});await vm.runInContext('startJarvixGuidedTour()',s.context);assert.equal(s.themes[0],'midnight');assert.equal(s.clips.length,1);s.clips[0].onended();assert.equal(s.moves[0],'https://test.example/pricing.html');assert.equal(s.clips.length,1);
+ // Simulate mounting the actual destination document with shared sessionStorage.
+ s.context.location.pathname='/pricing.html';s.context.location.href=s.moves[0];vm.runInContext('resumeJarvixGuidedTour()',s.context);assert.equal(s.clips.length,2);s.clips[1].onended();assert.equal(s.themes.at(-1),'neon');assert.equal(s.resumed(),1);
+});
+test('Stop restores original theme and invalidates late audio completion',async()=>{
+ const s=setup({ready:true,languages:{ru:[{theme:'light',audio:'media/jarvix/clips/jarvix_showcase_ru_01.mp3'}]}});await vm.runInContext('startJarvixGuidedTour()',s.context);const audio=s.clips[0],late=audio.onended;vm.runInContext('stopJarvixGuidedTour()',s.context);late();assert.equal(audio.paused,true);assert.equal(audio.onended,null);assert.equal(s.themes.at(-1),'neon');assert.equal(s.resumed(),0);assert.equal(s.memory.size,0);
 });

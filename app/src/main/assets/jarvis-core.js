@@ -1,4 +1,5 @@
-import { startJarvixGuidedTour, stopJarvixGuidedTour, isTourActive } from './jarvix-guided-tour.js';
+import { startJarvixGuidedTour, stopJarvixGuidedTour, isTourActive, resumeJarvixGuidedTour } from './jarvix-guided-tour.js';
+import {resolveJarvixPageCommand} from './jarvix-page-commands.js';
 import {navigationReply} from './jarvix-navigation-reply.js';
 import {findCatalogReply} from './jarvix-clip-library.js';
 // JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
@@ -10,6 +11,7 @@ import { saveStudioHandoff } from './studio-handoff.js';
 const $ = id => document.getElementById(id);
 
 let isJarvisActive = false;
+let activationVersion = 0;
 let currentTtsAudio = null;
 let speechVersion = 0;
 let jarvixSessionId = null;
@@ -457,6 +459,9 @@ export function handleJarvisVoiceCommand(commandText) {
   const isFr = lang === 'fr';
   const isEs = lang === 'es';
 
+  const pageCommand=resolveJarvixPageCommand(t, jarvixContext.waitingFor==='next_choice');
+  if(pageCommand){jarvixContext.waitingFor=null;stopJarvixGuidedTour();instantOpen(pageCommand);return;}
+
   // 1. CAPABILITIES & GUIDED TOUR
   if (/(?:экскурси|покажи сайт|презентаци|тур по сайту|обзор сайта|видеопрезентац|проведи тур|tour|guided tour|showcase|show me the site)/i.test(lower)) {
     startJarvixGuidedTour();
@@ -531,10 +536,10 @@ export function handleJarvisVoiceCommand(commandText) {
   }
   if (jarvixContext.waitingFor === 'next_choice') {
     if (/(?:everyday|tools|инструмент|бесплатн|free tool|outil|herramient|gratis)/i.test(lower)) {
-      jarvixContext.waitingFor=null; speakJarvis(onboardingText('tools'),()=>{if(isJarvisActive)instantOpen('free-tools.html');}); return;
+      jarvixContext.waitingFor=null; instantOpen('free-tools.html'); return;
     }
     if (/(?:inspiration|вдохнов|inspiración|inspiracion|пример|examples|exemples|ejemplos)/i.test(lower)) {
-      jarvixContext.waitingFor=null; speakJarvis(onboardingText('inspire'),()=>{if(isJarvisActive)instantOpen('deepsyq.html#inspirationPreview');}); return;
+      jarvixContext.waitingFor=null; instantOpen('deepsyq.html#inspirationPreview'); return;
     }
     if (/(?:studio|студи|фото|изображ|картин|video|видео|vidéo|vídeo|audio|аудио|music|музык|musique|música|create|созда|créer)/i.test(lower)) {
       jarvixContext.waitingFor=null; instantOpen('generate-studio.html'); return;
@@ -722,6 +727,10 @@ export function handleJarvisVoiceCommand(commandText) {
   if (!/(?:выключи|отключи|не\s+надо|don't|do not|ne pas|no quiero)/i.test(lower) && /(?:неонов|киберпанк|neon|cyberpunk|néon)/i.test(lower)) {
     applySiteTheme('neon'); jarvixContext.waitingFor='next_choice'; speakJarvis(onboardingText('neon')); return;
   }
+  if (/(?:новогод|рождеств|new year|christmas|nouvel an|noël|año nuevo|navidad)/i.test(lower)) {
+    applySiteTheme('festive-newyear');
+    resumeJarvisRecognition(); return;
+  }
   if (!/(?:выключи|отключи|не\s+надо|don't|do not|ne pas|no quiero)/i.test(lower) && /(?:золот|люкс|gold|luxury)/i.test(lower)) {
     applySiteTheme('gold'); speakJarvis(isRu ? 'Готово, включил золотой стиль.' : isFr ? 'C’est fait, le thème doré est activé.' : isEs ? 'Listo, activé el tema dorado.' : 'Done. The gold theme is on.'); return;
   }
@@ -862,7 +871,7 @@ export function handleJarvisVoiceCommand(commandText) {
 }
 
 // 9. Speech Recognition Control (Pure Voice Loop)
-function pauseJarvisRecognition() {
+export function pauseJarvisRecognition() {
   recognitionVersion += 1;
   if (jarvisRecognition) {
     try {
@@ -890,7 +899,7 @@ function showRecognitionError(reason) {
   if (label) label.textContent = labels[language] || labels.en;
 }
 
-function resumeJarvisRecognition() {
+export function resumeJarvisRecognition() {
   if (!isJarvisActive || !keepListening || isJarvisSpeaking) return;
 
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -933,9 +942,11 @@ function resumeJarvisRecognition() {
     jarvisRecognition.onresult = e => {
       if (recognitionTurn !== recognitionVersion || !isJarvisActive || !keepListening) return;
       let interim = '';
+      let finalResult=false;
       for (let i = e.resultIndex; i < e.results.length; ++i) {
         const item = e.results[i];
         if (item.isFinal) {
+          finalResult=true;
           accumulatedText += ' ' + item[0].transcript;
         } else {
           interim += item[0].transcript;
@@ -1025,7 +1036,7 @@ function resumeJarvisRecognition() {
           accumulatedText = '';
           handleJarvisVoiceCommand(current);
         }
-      }, 900);
+      }, finalResult ? 0 : 900);
     };
 
     jarvisRecognition.onend = () => {
@@ -1090,6 +1101,7 @@ function resetSilenceTimer() {
 
 // 11. Activation & Deactivation (Smart Conversational Memory)
 export function activateJarvisVoice() {
+  const activation=++activationVersion;
   unlockOwnerSpeech();
   isJarvisActive = true;
   keepListening = true;
@@ -1100,10 +1112,28 @@ export function activateJarvisVoice() {
   const topBtn = getTopBtn();
   if (topBtn) topBtn.classList.add('is-active');
 
-  startJarvixGuidedTour();
+  let introduced = false;
+  try { introduced = sessionStorage.getItem('jarvix_introduced_v2') === '1'; } catch (_) {}
+  if (introduced) {
+    jarvixContext.waitingFor = null;
+    const language = getJarvixLanguage();
+    // Existing owner recording: no repeated presentation or theme changes.
+    prepareOwnerGreetings();
+    fetch('media/jarvix/jarvix-phrases.json').then(r=>r.json()).then(catalog=>{
+      if (activation!==activationVersion || !isJarvisActive || !keepListening) return;
+      const phrase=catalog.phrases?.[language]?.find(p=>p.id===`jarvix_${language}_37`);
+      if (phrase) speakJarvis(phrase.text); else resumeJarvisRecognition();
+    }).catch(()=>{if(activation===activationVersion && isJarvisActive && keepListening)resumeJarvisRecognition();});
+  } else {
+    try { sessionStorage.setItem('jarvix_introduced_v2','1'); } catch (_) {}
+    pauseJarvisRecognition();
+    startJarvixGuidedTour();
+  }
+
 }
 
 export function deactivateJarvisVoice() {
+  activationVersion++;
   stopJarvixGuidedTour();
   cancelJarvixTurn();
   isJarvisActive = false;
@@ -1127,6 +1157,9 @@ export function deactivateJarvisVoice() {
     topBtn.classList.remove('is-active', 'is-speaking', 'is-listening');
     topBtn.removeAttribute('aria-busy');
     topBtn.dataset.voicePhase = 'idle';
+    delete topBtn.dataset.recognitionError;
+    delete topBtn.dataset.voiceError;
+    topBtn.title='JARVIX — AI Voice Commander';
     const label = topBtn.querySelector('.jarvis-name');
     if (label) label.textContent = 'JARVIX';
   }
@@ -1140,16 +1173,10 @@ export function toggleJarvisVoice() {
   }
 }
 
-// Global Escape listener to immediately cancel speech synthesis
+// Escape is the same complete stop as the second activation click.
 if (typeof window !== 'undefined') {
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      cancelJarvixTurn();
-      stopAllSpeech();
-      isJarvisSpeaking = false;
-      currentSpokenUtterance = '';
-      updateJarvisState('listening');
-    }
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') deactivateJarvisVoice();
   });
 }
 
@@ -1158,13 +1185,22 @@ export function initJarvis() {
   if (typeof document === 'undefined') return;
   prepareOwnerGreetings();
 
+  if (!document.querySelector('link[href="jarvix-showcase-theme.css"]')) {
+    const style=document.createElement('link');style.rel='stylesheet';style.href='jarvix-showcase-theme.css';document.head.appendChild(style);
+  }
+
   // Restore saved theme on load
   try {
     const savedTheme = localStorage.getItem('deepsyq_site_theme');
-    if (savedTheme) {
+    if (savedTheme==='festive-newyear' && !sessionStorage.getItem('jarvix_showcase_theme_migrated')) {
+      localStorage.removeItem('deepsyq_site_theme');
+      document.documentElement.removeAttribute('data-site-theme');
+    } else if (savedTheme) {
       document.documentElement.setAttribute('data-site-theme', savedTheme);
     }
   } catch (_) {}
+
+  try{sessionStorage.setItem('jarvix_showcase_theme_migrated','1');}catch{}
 
   const setupBtn = () => {
     const topBtn = getTopBtn();
@@ -1193,16 +1229,13 @@ export function initJarvis() {
     if (sayOnLoad) sessionStorage.removeItem('jarvix_say_on_load');
   } catch (_) {}
 
-  // Home page protection: Home page (deepsyq.html) should NEVER auto-listen on fresh visit
-  const isHomePage = location.pathname.endsWith('deepsyq.html') || location.pathname === '/' || location.pathname.endsWith('/');
-  if (isHomePage && !sayOnLoad) {
-    wasActive = false;
-    try {
-      sessionStorage.removeItem('jarvix_active');
-    } catch (_) {}
+  // An explicitly active session remains active when returning Home, too.
+  if (wasActive && resumeJarvixGuidedTour()) {
+    isJarvisActive=true;keepListening=true;setupBtn();return;
   }
 
   if (wasActive || sayOnLoad) {
+    const restoredActivation=++activationVersion;
     isJarvisActive = true;
     keepListening = true;
     try {
@@ -1215,8 +1248,9 @@ export function initJarvis() {
 
     if (sayOnLoad) {
       setTimeout(() => {
+        if(restoredActivation!==activationVersion || !isJarvisActive || !keepListening)return;
         speakJarvis(sayOnLoad, () => {
-          if (isJarvisActive && keepListening) {
+          if (restoredActivation===activationVersion && isJarvisActive && keepListening) {
             resumeJarvisRecognition();
             startSilenceTimer();
             updateJarvisState('listening');

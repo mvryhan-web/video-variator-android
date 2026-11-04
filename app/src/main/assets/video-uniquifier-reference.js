@@ -92,7 +92,7 @@ function build(){
  const dash=$('dashboardView'),shell=document.querySelector('.shell'),workspace=dash?.querySelector('.workspace'),hero=dash?.querySelector('.hero');
  if(!dash||!shell||!workspace||!hero||document.body.classList.contains('vu-reference'))return;
  document.body.classList.add('vu-reference');
- makeNav(shell);
+ if(!document.body.classList.contains('ds-chrome'))makeNav(shell);
  const title=$('heroTitle'),p=hero.querySelector('[data-i18n="heroText"]');
  if(p)p.remove();
  if(title){
