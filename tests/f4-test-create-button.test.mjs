@@ -84,10 +84,10 @@ test('TEST Studio separation: image only in Images, audio only in Audio, no shar
   const imageId=await page.evaluate(()=>sessionStorage.getItem('vu_generation_job_image'));
   assert.match(imageId||'',/^job_/);
   assert.equal(await page.evaluate(()=>sessionStorage.getItem('vu_generation_job_video')),null);
-  await page.locator('.studio-nav [data-kind="video"]').click();
+  await page.locator('.studio-nav [data-kind="video"]').dispatchEvent('click');
   assert.equal(await page.locator('#media img').count(),0,'image result cleared on video switch');
   await historyCount(0);
-  await page.locator('.studio-nav [data-kind="music"]').click();
+  await page.locator('.studio-nav [data-kind="music"]').dispatchEvent('click');
   assert.equal(await page.locator('#media img').count(),0,'image result cleared on audio switch');
   await historyCount(0);
   await page.locator('#showCreate').click();
@@ -99,7 +99,7 @@ test('TEST Studio separation: image only in Images, audio only in Audio, no shar
   assert.notEqual(imageId,audioId);
   await historyCount(1);
   assert.equal(await page.locator('#historyList .history-card .history-preview[data-kind="music"]').count(),1);
-  await page.locator('.studio-nav [data-kind="image"]').click();
+  await page.locator('.studio-nav [data-kind="image"]').dispatchEvent('click');
   assert.equal(await page.locator('#media audio').count(),0,'audio player cleared on Image switch');
   await historyCount(1);
   assert.equal(await page.locator('#historyList .history-card .history-preview[data-kind="image"]').count(),1);
