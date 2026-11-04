@@ -1,0 +1,192 @@
+[
+  {
+    "number": 1,
+    "file": "Images/01.png",
+    "purpose": "Обложка",
+    "native_dimensions": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "dpi_metadata": null,
+    "bytes": 1972900,
+    "sha256": "94a641a25b91f2dc148da3fa547f4921e053aea953cf60fa740ab5547fe5ad48",
+    "content_verified": "Reviewed against actual resource names, counts and supplied examples; mockups are illustrative",
+    "format_verified": "PASS: PNG CRC/integrity",
+    "visual_verified": "Individually displayed and reviewed; main text readable, no observed major clipping",
+    "license_verified": "Original AI-assisted campaign; own PDF content references; no third-party paid design copied",
+    "result": "DESIGN_REVIEW_ONLY: below 3000px export requirement",
+    "corrections": "Invented cards replaced by actual PDF page"
+  },
+  {
+    "number": 2,
+    "file": "Images/02.png",
+    "purpose": "Состав",
+    "native_dimensions": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "dpi_metadata": null,
+    "bytes": 2111762,
+    "sha256": "df1468d94568cc7fa426ab044d38fe2796cd5c850429ff6fbccee521e5625240",
+    "content_verified": "Reviewed against actual resource names, counts and supplied examples; mockups are illustrative",
+    "format_verified": "PASS: PNG CRC/integrity",
+    "visual_verified": "Individually displayed and reviewed; main text readable, no observed major clipping",
+    "license_verified": "Original AI-assisted campaign; own PDF content references; no third-party paid design copied",
+    "result": "DESIGN_REVIEW_ONLY: below 3000px export requirement",
+    "corrections": "Invented tablet example replaced by actual PDF excerpt"
+  },
+  {
+    "number": 3,
+    "file": "Images/03.png",
+    "purpose": "Рабочий пример",
+    "native_dimensions": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "dpi_metadata": null,
+    "bytes": 2137158,
+    "sha256": "4d04e16fa36591ec5b7e3d09ff053af85e726dcd9c9637dde4182e04ea3772df",
+    "content_verified": "Reviewed against actual resource names, counts and supplied examples; mockups are illustrative",
+    "format_verified": "PASS: PNG CRC/integrity",
+    "visual_verified": "Individually displayed and reviewed; main text readable, no observed major clipping",
+    "license_verified": "Original AI-assisted campaign; own PDF content references; no third-party paid design copied",
+    "result": "DESIGN_REVIEW_ONLY: below 3000px export requirement",
+    "corrections": "No material content correction required"
+  },
+  {
+    "number": 4,
+    "file": "Images/04.png",
+    "purpose": "Навыки",
+    "native_dimensions": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "dpi_metadata": null,
+    "bytes": 2144618,
+    "sha256": "751308143eb179c822ccc6a6043ad867ed3e021fb0fc52a8563fa779e0dad83e",
+    "content_verified": "Reviewed against actual resource names, counts and supplied examples; mockups are illustrative",
+    "format_verified": "PASS: PNG CRC/integrity",
+    "visual_verified": "Individually displayed and reviewed; main text readable, no observed major clipping",
+    "license_verified": "Original AI-assisted campaign; own PDF content references; no third-party paid design copied",
+    "result": "DESIGN_REVIEW_ONLY: below 3000px export requirement",
+    "corrections": "No material content correction required"
+  },
+  {
+    "number": 5,
+    "file": "Images/05.png",
+    "purpose": "Проекты",
+    "native_dimensions": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "dpi_metadata": null,
+    "bytes": 2413378,
+    "sha256": "2735783c4cf655228dff563b6b4912e71b4d9754e9fd57b24c31113cfdeae23b",
+    "content_verified": "Reviewed against actual resource names, counts and supplied examples; mockups are illustrative",
+    "format_verified": "PASS: PNG CRC/integrity",
+    "visual_verified": "Individually displayed and reviewed; main text readable, no observed major clipping",
+    "license_verified": "Original AI-assisted campaign; own PDF content references; no third-party paid design copied",
+    "result": "DESIGN_REVIEW_ONLY: below 3000px export requirement",
+    "corrections": "No material content correction required"
+  },
+  {
+    "number": 6,
+    "file": "Images/06.png",
+    "purpose": "Клиентские шаблоны",
+    "native_dimensions": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "dpi_metadata": null,
+    "bytes": 2037318,
+    "sha256": "41ca9dc728bae8c1440d426f08214ddf7021fc77e6f958e489ca8a657cdff828",
+    "content_verified": "Reviewed against actual resource names, counts and supplied examples; mockups are illustrative",
+    "format_verified": "PASS: PNG CRC/integrity",
+    "visual_verified": "Individually displayed and reviewed; main text readable, no observed major clipping",
+    "license_verified": "Original AI-assisted campaign; own PDF content references; no third-party paid design copied",
+    "result": "DESIGN_REVIEW_ONLY: below 3000px export requirement",
+    "corrections": "No material content correction required"
+  },
+  {
+    "number": 7,
+    "file": "Images/07.png",
+    "purpose": "Маршруты",
+    "native_dimensions": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "dpi_metadata": null,
+    "bytes": 1849700,
+    "sha256": "c3a29de68f5443e11c50406b15e14ece2340d714ff33e48f210967a3dc6f7137",
+    "content_verified": "Reviewed against actual resource names, counts and supplied examples; mockups are illustrative",
+    "format_verified": "PASS: PNG CRC/integrity",
+    "visual_verified": "Individually displayed and reviewed; main text readable, no observed major clipping",
+    "license_verified": "Original AI-assisted campaign; own PDF content references; no third-party paid design copied",
+    "result": "DESIGN_REVIEW_ONLY: below 3000px export requirement",
+    "corrections": "Fabricated chapter titles and checklists removed"
+  },
+  {
+    "number": 8,
+    "file": "Images/08.png",
+    "purpose": "PDF-руководства",
+    "native_dimensions": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "dpi_metadata": null,
+    "bytes": 2213442,
+    "sha256": "e132e84f7fea3d447a7c65df14916f89f8f525b60972d371b928e053a4125052",
+    "content_verified": "Reviewed against actual resource names, counts and supplied examples; mockups are illustrative",
+    "format_verified": "PASS: PNG CRC/integrity",
+    "visual_verified": "Individually displayed and reviewed; main text readable, no observed major clipping",
+    "license_verified": "Original AI-assisted campaign; own PDF content references; no third-party paid design copied",
+    "result": "DESIGN_REVIEW_ONLY: below 3000px export requirement",
+    "corrections": "No material content correction required"
+  },
+  {
+    "number": 9,
+    "file": "Images/09.png",
+    "purpose": "Проверка фактов",
+    "native_dimensions": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "dpi_metadata": null,
+    "bytes": 1997258,
+    "sha256": "4c94e5f0d437ae77b5c0fbe71511913490bb2df8270bbdb60d4f2bc041756a45",
+    "content_verified": "Reviewed against actual resource names, counts and supplied examples; mockups are illustrative",
+    "format_verified": "PASS: PNG CRC/integrity",
+    "visual_verified": "Individually displayed and reviewed; main text readable, no observed major clipping",
+    "license_verified": "Original AI-assisted campaign; own PDF content references; no third-party paid design copied",
+    "result": "DESIGN_REVIEW_ONLY: below 3000px export requirement",
+    "corrections": "No material content correction required"
+  },
+  {
+    "number": 10,
+    "file": "Images/10.png",
+    "purpose": "Скачивание",
+    "native_dimensions": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "dpi_metadata": null,
+    "bytes": 1979229,
+    "sha256": "9c8309950d728ec4e4ca2c5de2cba052065307acae1392dae909b617e6e7e7fc",
+    "content_verified": "Reviewed against actual resource names, counts and supplied examples; mockups are illustrative",
+    "format_verified": "PASS: PNG CRC/integrity",
+    "visual_verified": "Individually displayed and reviewed; main text readable, no observed major clipping",
+    "license_verified": "Original AI-assisted campaign; own PDF content references; no third-party paid design copied",
+    "result": "DESIGN_REVIEW_ONLY: below 3000px export requirement",
+    "corrections": "Fake filenames and sample table removed; actual PDF cover shown"
+  }
+]
