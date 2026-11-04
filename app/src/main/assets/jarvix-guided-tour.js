@@ -46,23 +46,24 @@ const TOUR_TEXTS = {
     finish: 'Where shall we begin? Name your command, and I will handle it all for you.'
   },
   fr: {
-    intro: 'JARVIS en ligne. Bienvenue dans le futur de la création générative. Je contrôle la vidéo, le son, l\'image et ce site directement à votre voix.',
-    styles: 'Je peux métamorphoser l’interface : thème clair, sombre, néon cyberpunk et le mode festif du Nouvel An !',
-    nav: 'J’ouvre le Studio de création pour vos vidéos, images et pistes audio.',
-    finish: 'Par quoi commencer ? Donnez votre commande vocale.'
+    intro: 'JARVIS en ligne. Bienvenue dans le futur de la création générative. Je contrôle la vidéo, le son, l\'image et ce site directement à votre voix. Prêt pour une ambiance néon ou on lance la génération ? J\'attends vos ordres.',
+    styles: 'Je peux métamorphoser l\'interface en direct : thème clair, sombre, néon cyberpunk et le mode festif du Nouvel An.',
+    nav: 'Je peux ouvrir n\'importe quelle section de la plateforme. J\'ouvre le Studio de création pour vos vidéos, images et pistes audio.',
+    finish: 'Par quoi souhaitez-vous commencer ? Donnez votre commande vocale, et je m\'occupe de tout.'
   },
   es: {
-    intro: 'JARVIS en línea. Bienvenido al futuro de la creación generativa. Controlo video, audio, imágenes y este sitio web directamente con tu voz.',
-    styles: 'Puedo transformar el sitio: tema claro, oscuro, neón cyberpunk y el modo festivo de Año Nuevo.',
-    nav: 'Abriendo el Estudio de creación para video, imagen y audio.',
-    finish: '¿Por dónde empezamos? Da tu orden de voz.'
+    intro: 'JARVIS en línea. Bienvenido al futuro de la creación generativa. Controlo video, audio, imágenes y este sitio web directamente con tu voz. ¿Prefieres un ambiente neón o iniciamos la generación? Espero tu orden.',
+    styles: 'Puedo transformar el sitio al instante: tema claro, oscuro, neón cyberpunk y el modo festivo de Año Nuevo.',
+    nav: 'Puedo abrir cualquier sección de la plateforme. Abriendo el Estudio de creación para video, imagen y audio.',
+    finish: '¿Por dónde empezamos? Da tu orden de voz y yo me encargaré de todo.'
   }
 };
 
 function playClipOrSpeak(clipName, textFallback, onComplete) {
   if (!isTourRunning) return;
   const lang = getJarvixLanguage();
-  const filename = lang === 'en' ? `${clipName}_en.mp3` : `${clipName}.mp3`;
+  const suffix = (lang === 'en' || lang === 'fr' || lang === 'es') ? `_${lang}` : '';
+  const filename = `${clipName}${suffix}.mp3`;
   const clipUrl = `media/jarvix/clips/${filename}`;
 
   const audio = new Audio(clipUrl);
