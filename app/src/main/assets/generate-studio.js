@@ -1070,10 +1070,17 @@ $('creator').onsubmit=async e=>{
    ...(original.kind==='video'?{videoResolution:original.videoResolution,videoDuration:original.videoDuration,videoInputMode:original.videoInputMode}:{}),
    musicMode:original.musicMode,referenceCount:original.references.length,quantity:1};
   const quote=await(await api('/api/studio/estimate',{method:'POST',body:JSON.stringify(quoteInput)})).json();
-  if(quote.kind!==original.kind||quote.model!==original.model||quote.quantity!==1||!Number.isSafeInteger(quote.credits)||quote.credits<1||!stillAccepted()){abortPrice();return;}
+  // A TEST-only zero-credit demo is never treated as an approved paid quote.
+  // Paid quotes must still have at least one credit and cannot use the free-only path.
+  const freePreview=config.enabled===true&&config.freeTier===true&&config.previewOnly===true&&quote.freeTier===true&&quote.previewOnly===true&&quote.credits===0;
+  const paidQuote=config.freeTier!==true&&quote.freeTier!==true&&Number.isSafeInteger(quote.credits)&&quote.credits>=1;
+  if(quote.kind!==original.kind||quote.model!==original.model||quote.quantity!==1||!(freePreview||paidQuote)||!stillAccepted()){abortPrice();return;}
   const quotedModel=catalog.find(m=>m.id===quote.model);
   const label=ru&&quotedModel?.labelRu?quotedModel.labelRu:quotedModel?.label||quote.model;
-  const accepted=confirm(say(
+  const accepted=confirm(freePreview?say(
+   'Free TEST preview: this creates a local demo SVG image, NOT a real AI photograph or MP4. No provider is contacted and no credits are charged. Continue?',
+   'Бесплатный тест: создаётся локальная SVG-демонстрация, а НЕ настоящая AI-фотография или MP4. Провайдер не вызывается, кредиты не списываются. Продолжить?'
+  ):say(
    'Your prompt and attached reference photos, if any, will be sent to the selected AI service using '+label+'. Cost: '+quote.credits.toLocaleString()+' AI credits. Continue?',
    'Запрос и прикреплённые фотографии будут переданы выбранному AI-сервису через модель «'+label+'». Стоимость: '+quote.credits.toLocaleString()+' AI-кредитов. Продолжить?'
   ));
