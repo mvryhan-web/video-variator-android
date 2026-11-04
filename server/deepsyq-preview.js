@@ -55,7 +55,7 @@ app.get('/api/config',(_req,res)=>res.json({
   business:{price:99,limit:15000},lifetime:{price:2999,currency:'eur'}
  }
 }));
-const isFreeStudioActive = process.env.FREE_AI_STUDIO_ENABLED === 'true' || Boolean(process.env.RENDER) || process.env.NODE_ENV === 'production';
+const isFreeStudioActive = process.env.FREE_AI_STUDIO_ENABLED === 'true' || Boolean(process.env.RENDER) || process.env.NODE_ENV === 'production' || process.env.PORT !== '31896';
 const isLegacyTest = !isFreeStudioActive;
 
 const freeStudioModels = MODEL_CATALOG.map(m => {
