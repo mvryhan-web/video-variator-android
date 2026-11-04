@@ -10,7 +10,7 @@ export function unlockOwnerSpeech() {
   audioReady = audioContext.resume();
   audioReady.catch(() => {});
 }
-export const OWNER_GREETING_TEXT = Object.freeze({ru:'Я Джарвис. Слушаю вас.',en:'I am Jarvis. How can I help?',fr:'Je suis Jarvis. Je vous écoute.',es:'Soy Jarvis. ¿En qué puedo ayudarte?'});
+export const OWNER_GREETING_TEXT = Object.freeze({"ru":"Я Джарвис, голосовой помощник Deepsyq. Помогу с фото и видео, открою нужный раздел и настрою оформление: светлое, тёмное или неоновое. С чего начнём?","en":"I'm Jarvis, your Deepsyq assistant. I can help with images, video, and site themes: light, dark, or neon. What shall we do?","fr":"Je suis Jarvis, votre assistant Deepsyq. Je peux aider pour vos images, vidéos et thèmes du site : clair, sombre ou néon. Par quoi commencer ?","es":"Soy Jarvis, tu asistente Deepsyq. Te ayudo con imágenes, vídeos y temas del sitio: claro, oscuro o neón. ¿Por dónde empezamos?"});
 let greetingsPromise = null;
 export function prepareOwnerGreetings() {
   prepareStaticClips();
