@@ -1,6 +1,6 @@
 import {routeSiteCommand,resumeSiteSettings} from './jarvix-site-controls.js';
 import { startJarvixGuidedTour, stopJarvixGuidedTour, isTourActive, resumeJarvixGuidedTour } from './jarvix-guided-tour.js';
-import {resolveJarvixPageCommand} from './jarvix-page-commands.js';
+import {resolveJarvixPageCommand,resolveJarvixSiteUrl} from './jarvix-page-commands.js';
 import {navigationReply} from './jarvix-navigation-reply.js';
 import {findCatalogReply} from './jarvix-clip-library.js';
 // JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
@@ -328,6 +328,8 @@ export function speakJarvis(text, onComplete = null) {
 
 // 3. Instant Navigation Utility ("Сделано." — spoken strictly ONCE)
 export function instantOpen(url) {
+  url = resolveJarvixSiteUrl(url, location.href);
+  if (!url) return;
   let isSamePage = false;
   try {
     const targetUrl = new URL(url, location.href);
@@ -849,8 +851,10 @@ export function handleJarvisVoiceCommand(commandText) {
         if (turnVersion !== jarvixTurnVersion) return;
         if (data.action) {
           if (data.action.type === 'open_studio') {
+            const target = resolveJarvixSiteUrl(data.action.url, location.href);
+            if (!target) return;
             speakJarvis(data.reply || 'Сделано.', () => {
-              location.assign(data.action.url);
+              location.assign(target);
             });
             return;
           } else if (data.action.type === 'adjust_theme') {

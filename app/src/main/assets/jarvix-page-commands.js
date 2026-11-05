@@ -1,4 +1,13 @@
 // Explicit navigation takes priority over dialogue and never submits generation.
+export function resolveJarvixSiteUrl(value, base) {
+ try {
+  const current = new URL(base), target = new URL(value, current);
+  if (!['http:', 'https:'].includes(target.protocol) || target.origin !== current.origin || target.username || target.password) return null;
+  if (target.pathname !== '/' && !/^\/[a-z0-9-]+\.html$/i.test(target.pathname)) return null;
+  return target.pathname + target.search + target.hash;
+ } catch { return null; }
+}
+
 export function resolveJarvixPageCommand(text, allowChoice=false) {
  const input=String(text).toLowerCase().replace(/[.,!?«»"']/g,' ').replace(/\s+/g,' ').trim();
  if(!allowChoice&&!/(?:откро|откры|открой|перейди|покажи|зайди|open|show|go to|ouvre|ouvrez|montre|va sur|abre|abrir|muestra|ir a)/iu.test(input))return null;
