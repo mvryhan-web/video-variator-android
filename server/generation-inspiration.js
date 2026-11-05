@@ -58,6 +58,7 @@ async function getManifestInspirationItems() {
       requiredInputTypes: item.requiredInputTypes || [],
       defaultSettings: item.defaultSettings || {},
       actionTarget: item.actionTarget || 'studio',
+      active: item.active === true,
       featured: !!item.featured,
       sortOrder: item.sortOrder || 100
     })).filter(x => !x.previewUrl?.includes('logo') && !x.previewPosterUrl?.includes('logo'));
@@ -98,13 +99,23 @@ function row(r,{ownerView=false,agentActionPath=null}={}){
 }
 function publicTargetSql(env){return agentTargetsEnabled(env)?'':" AND action_target='studio'";}
 
+// Static manifest cards obey the same public active/agent policy as DB records.
+// Do not turn a disabled Home showcase asset into a discoverable Inspiration card.
+export function publicManifestInspirationItem(item,env={}){
+ if(!item||item.active!==true)return null;
+ if(item.actionTarget==='studio')return item;
+ if(item.actionTarget!=='agent'||!agentTargetsEnabled(env))return null;
+ return {...item,actionPath:agentPath(env)};
+}
+
 export function installInspiration(app,{auth,pool,env=process.env}){
   app.get('/api/inspiration',async(req,res)=>{
     if(!featureEnabled(env))return res.status(503).json({error:'INSPIRATION_NOT_ENABLED'});
     try{
       await initInspiration(pool,env);
-      const manifestItems = await getManifestInspirationItems();
-      
+      const manifestItems = (await getManifestInspirationItems())
+        .map(item=>publicManifestInspirationItem(item,env)).filter(Boolean);
+
       const q = req.query;
       let items = manifestItems.filter(item => 
         !item.previewUrl?.includes('logo') && 
@@ -148,7 +159,11 @@ export function installInspiration(app,{auth,pool,env=process.env}){
       await initInspiration(pool,env);
       const manifestItems = await getManifestInspirationItems();
       const match = manifestItems.find(x => x.slug === req.params.slug);
-      if (match) return res.json({item: match});
+      if (match){
+        const visible = publicManifestInspirationItem(match,env);
+        if(!visible)return res.status(404).json({error:'INSPIRATION_NOT_FOUND'});
+        return res.json({item:visible});
+      }
       const {rows}=await pool.query(`SELECT * FROM vv_ai_inspiration WHERE slug=$1 AND active=true AND rights_basis IN ('owned','licensed') AND length(trim(rights_note))>=3${publicTargetSql(env)}`,[req.params.slug]);
       if(!rows.length)return res.status(404).json({error:'INSPIRATION_NOT_FOUND'});
       res.json({item:row(rows[0],{agentActionPath:agentPath(env)})});
