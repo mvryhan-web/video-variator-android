@@ -96,3 +96,9 @@
   body.ds-mobile-layout .specs-table :is(th,td) {overflow-wrap:anywhere;white-space:normal}
   body.ds-mobile-layout .badge-guard {max-width:100%;white-space:normal;overflow-wrap:anywhere}
 }
+@media(max-width:760px) {
+  body.ds-mobile-layout .scenarios-grid {grid-template-columns:minmax(0,1fr)}
+  body.ds-mobile-layout :is(.scenario-card,.step-item,.scenario-head>div) {min-width:0}
+  body.ds-mobile-layout :is(.scenario-head,.step-top,.step-badges) {flex-wrap:wrap}
+  body.ds-mobile-layout :is(.launch-all-btn,.step-btn) {max-width:100%;white-space:normal;overflow-wrap:anywhere}
+}
