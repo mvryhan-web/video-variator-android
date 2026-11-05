@@ -11,7 +11,7 @@ Latest owner instruction supersedes earlier Invite Friend/language controls. Use
 - Critical shell CSS and small module load from document head with render blocking; initialization is bounded to 750 ms. Cross-document View Transitions give header, sidebar, orb and mobile menu separate non-fading named snapshots. Old/unsupported browsers retain standard navigation; this is visual continuity, not persistent SPA DOM. No wholesale page-script re-execution/router rewrite.
 - Existing owner male voice clips are used in all four languages. No newly generated voice, provider calls or altered audio effects. Intro uses catalogue greeting 01, not a newly recorded verbatim script. Per-section clips are paired with real page navigation and highlighted controls.
 - Tour plan is an internal allowlisted eight-step sequence; session data cannot supply arbitrary destinations/audio URLs. Pause persists playback position, completion cannot advance while paused, Stop clears state/audio/spotlights; media blocking pauses with Continue rather than silently skipping.
-- Studio tour is read-only: creator form is inert; no consent is accepted/stored. Stopping the tour restores the normal legal prompt before using Studio. Normal non-tour entry retains existing consent behavior.
+- Studio tour is read-only: entire Studio main content is inert, including dynamically rebuilt composer forms; no consent is accepted/stored. Stopping the tour restores the normal legal prompt before using Studio. Normal non-tour entry retains existing consent behavior.
 - Existing missing export of `resumeJarvisRecognition` broke the old guide/core module graph. Exported the existing recognition pause/resume functions; no brain/voice provider replacement.
 
 ## Evidence before publication
