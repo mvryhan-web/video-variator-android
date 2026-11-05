@@ -7,6 +7,10 @@ export function drawerSwipe(start, end, open, width) {
   return null;
 }
 
+export function headerAccount(token, lang='en') {
+ const labels=token?{en:'Account',ru:'Аккаунт',fr:'Compte',es:'Cuenta'}:{en:'Log in',ru:'Войти',fr:'Connexion',es:'Acceder'};
+ return {label:labels[lang]||labels.en,href:token?'index.html?view=profile':'deepsyq.html?panel=login'};
+}
 function setupMobileShell() {
   if (document.body.dataset.mobileShell) return;
   const header = location.pathname.endsWith('/index.html') ? document.querySelector('.vu-appbar')
@@ -15,31 +19,27 @@ function setupMobileShell() {
   const toggle = document.querySelector('#menu, .ds-site-mobile-toggle, .vu-nav-toggle, #menuBtn');
   if (!header || !sidebar || !toggle) return;
   document.body.dataset.mobileShell = 'ready';
-  const css = document.createElement('link');
-  css.rel = 'stylesheet'; css.href = 'deepsyq-mobile-shell.css'; document.head.append(css);
+  header.classList.add('ds-stable-header');sidebar.classList.add('ds-stable-sidebar');
+  if (!document.querySelector('link[href="deepsyq-mobile-shell.css"]')) {const css=document.createElement('link');css.rel='stylesheet';css.href='deepsyq-mobile-shell.css';document.head.append(css);}
 
   // Only the global header search is removed; template/tool searches remain useful.
   document.querySelectorAll('.home-global-search, .vu-search').forEach(el => el.remove());
   header.querySelectorAll('form:has(input[type="search"])').forEach(el => el.remove());
 
   const words = {
-    en: ['Promo Code', 'Pricing', 'Log in', 'Invite a friend'],
-    ru: ['Промокод', 'Тарифы', 'Войти', 'Пригласить друга'],
-    fr: ['Code promo', 'Tarifs', 'Connexion', 'Inviter un ami'],
-    es: ['Código', 'Precios', 'Acceder', 'Invitar amigo']
+    en: ['All tools', 'Pricing', 'Log in', 'Take a Tour'],
+    ru: ['Все инструменты', 'Тарифы', 'Войти', 'Экскурсия'],
+    fr: ['Tous les outils', 'Tarifs', 'Connexion', 'Visite guidée'],
+    es: ['Herramientas', 'Precios', 'Acceder', 'Visita guiada']
   };
   const locale = () => {
     try { return localStorage.getItem('deepsyq_home_language') || document.documentElement.lang.split('-')[0]; }
     catch { return document.documentElement.lang.split('-')[0]; }
   };
   const copy = () => words[locale()] || words.en;
-  let invite = document.getElementById('topInvite');
-  if (!invite) {
-    invite = document.createElement('a'); invite.href = 'deepsyq.html?panel=invite';
-  }
-  invite.classList.add('ds-invite-entry'); invite.textContent = copy()[3];
-  const bottom = sidebar.querySelector('.sidebar-bottom, .ds-site-footer') || sidebar;
-  bottom.append(invite);
+  document.getElementById('topInvite')?.remove();
+  const removedLanguage=document.getElementById('homeLanguage');
+  (removedLanguage?.closest('label')||removedLanguage)?.remove();
 
   const brand = document.createElement('a');
   brand.href = 'deepsyq.html'; brand.className = 'ds-mobile-brand'; brand.setAttribute('aria-label', 'Deepsyq Home');
@@ -57,26 +57,15 @@ function setupMobileShell() {
   const link = (text, href, className) => {
     const el = document.createElement('a'); el.textContent = text; el.href = href; el.className = className; return el;
   };
-  const nativeLanguage = document.getElementById('homeLanguage');
-  const language = nativeLanguage || document.createElement('select');
-  if (!nativeLanguage) {
-    language.setAttribute('aria-label', 'Site language');
-    for (const [value, label] of [['en','English'],['ru','Русский'],['fr','Français'],['es','Español']]) {
-      const option = document.createElement('option'); option.value = value; option.textContent = label; language.append(option);
-    }
-    language.value = words[locale()] ? locale() : 'en';
-    language.addEventListener('change', () => {
-      try { localStorage.setItem('deepsyq_home_language', language.value); localStorage.setItem('deepsyq_lang', language.value); } catch {}
-      document.documentElement.lang = language.value;
-      window.dispatchEvent(new CustomEvent('deepsyq:lang', {detail: {language: language.value}}));
-      refresh();
-    });
-  }
-  const promo = document.getElementById('topPromo') || link(copy()[0], 'deepsyq.html?panel=promo', '');
+  const tools = link(copy()[0], 'free-tools.html', 'ds-header-tools');
+  const tour = document.createElement('button');tour.type='button';tour.id='dsTakeTour';tour.textContent=copy()[3];tour.className='ds-header-tour';
+  tour.addEventListener('click', async () => {tour.disabled=true;try{const guide=await import('./jarvix-guided-tour.js');guide.startJarvixGuidedTour();}catch{tour.textContent='Tour unavailable';}finally{tour.disabled=false;}});
+  const desktopActions=document.createElement('div');desktopActions.className='ds-desktop-actions';desktopActions.append(tools,tour);
+  const oldPromo=document.getElementById('topPromo');if(oldPromo)oldPromo.replaceWith(desktopActions);else header.append(desktopActions);
   const pricing = document.getElementById('topPricing') || link(copy()[1], 'pricing.html', '');
   const login = document.getElementById('topLogin') || link(copy()[2], 'deepsyq.html?panel=login', '');
-  const reused = [toggle, language, promo, pricing, login];
-  const languageLabels = [...language.options].map(option => option.textContent);
+  if(!document.getElementById('topLogin'))desktopActions.append(login);
+  const reused = [toggle, tools, tour, pricing, login];
   const saved = new Map();
   const move = (el, parent) => {
     if (el.parentNode) { const marker = document.createComment('mobile header slot'); el.before(marker); saved.set(el, marker); }
@@ -84,12 +73,13 @@ function setupMobileShell() {
   };
   function refresh() {
     const labels = copy();
-    if (!document.getElementById('topPromo')) promo.textContent = labels[0];
+    tools.textContent=labels[0];tour.textContent=labels[3];
     if (!document.getElementById('topPricing')) pricing.textContent = labels[1];
-    if (!document.getElementById('topLogin')) login.textContent = labels[2];
-    invite.textContent = labels[3];
+    let token='';try{token=localStorage.getItem('vv_token')||'';}catch{}
+    const account=headerAccount(token,locale());login.textContent=account.label;if(login.tagName==='A')login.href=account.href;
   }
   window.addEventListener('deepsyq:lang', refresh);
+  window.addEventListener('storage',refresh);window.addEventListener('pageshow',refresh);window.addEventListener('focus',refresh);refresh();
 
   const mobile = matchMedia('(max-width:760px)');
   let mounted = false;
@@ -111,8 +101,7 @@ function setupMobileShell() {
       document.body.classList.add('ds-mobile-layout');
       header.append(brand, controls);
       move(toggle, document.body); toggle.classList.add('ds-mobile-menu');
-      move(language, left); move(promo, left); move(pricing, right); move(login, right);
-      for (const option of language.options) option.textContent = option.value.toUpperCase();
+      move(tools, left); move(tour, left); move(pricing, right); move(login, right);
     } else if (!mobile.matches && mounted) {
       if (isOpen()) toggle.click();
       mounted = false;
@@ -125,7 +114,6 @@ function setupMobileShell() {
       const marker = saved.get(header); if (marker?.parentNode) marker.replaceWith(header); saved.delete(header);
       header.classList.remove('ds-mobile-header'); sidebar.classList.remove('ds-mobile-drawer');
       toggle.classList.remove('ds-mobile-menu'); document.body.classList.remove('ds-mobile-layout'); sidebar.inert = false;
-      [...language.options].forEach((option, index) => {option.textContent = languageLabels[index];});
     }
     syncDrawer();
   };
@@ -164,15 +152,19 @@ function setupMobileShell() {
   }
 }
 if (typeof document !== 'undefined') {
+ window.addEventListener('pagereveal',e=>{document.documentElement.dataset.headerTransition=e.viewTransition?'active':'standard';});
+ await new Promise(resolve=>{
+ const deadline=setTimeout(resolve,750);const done=()=>{clearTimeout(deadline);resolve();};
   const boot = () => {
     setupMobileShell();
-    if (document.body.dataset.mobileShell) return;
+    if (document.body.dataset.mobileShell) {done();return;}
     const ready = new MutationObserver(() => {
       setupMobileShell();
-      if (document.body.dataset.mobileShell) ready.disconnect();
+      if (document.body.dataset.mobileShell) {ready.disconnect();done();}
     });
     ready.observe(document.body, {childList:true,subtree:true});
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, {once:true});
-  else setTimeout(boot, 0);
+  else boot();
+ });
 }

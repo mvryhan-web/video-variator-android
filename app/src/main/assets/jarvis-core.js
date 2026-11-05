@@ -219,7 +219,7 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
         currentSpokenUtterance = '';
         if (typeof onComplete === 'function') {
           onComplete();
-        } else if (isJarvisActive && keepListening) {
+        } else if (isJarvisActive && keepListening && !isTourActive()) {
           resumeJarvisRecognition();
           startSilenceTimer();
           updateJarvisState('listening');
@@ -862,7 +862,7 @@ export function handleJarvisVoiceCommand(commandText) {
 }
 
 // 9. Speech Recognition Control (Pure Voice Loop)
-function pauseJarvisRecognition() {
+export function pauseJarvisRecognition() {
   recognitionVersion += 1;
   if (jarvisRecognition) {
     try {
@@ -890,7 +890,7 @@ function showRecognitionError(reason) {
   if (label) label.textContent = labels[language] || labels.en;
 }
 
-function resumeJarvisRecognition() {
+export function resumeJarvisRecognition() {
   if (!isJarvisActive || !keepListening || isJarvisSpeaking) return;
 
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1225,7 +1225,7 @@ export function initJarvis() {
       }, 350);
     } else {
       setTimeout(() => {
-        if (isJarvisActive && keepListening) {
+        if (isJarvisActive && keepListening && !isTourActive()) {
           resumeJarvisRecognition();
           startSilenceTimer();
           updateJarvisState('listening');

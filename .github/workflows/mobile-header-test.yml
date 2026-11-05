@@ -8,6 +8,9 @@ on:
       - 'app/src/main/assets/generate-studio.html'
       - 'app/src/main/assets/video-uniquifier-reference.js'
       - 'tests/deepsyq-mobile-shell.test.mjs'
+      - 'app/src/main/assets/jarvix-guided-tour.js'
+      - 'app/src/main/assets/jarvix-tour-plan.js'
+      - 'tests/jarvix-tour-plan.test.mjs'
   push:
     branches: ['p/mobile-header-20261105']
 permissions:
@@ -20,5 +23,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tests/deepsyq-mobile-shell.test.mjs tests/deepsyq-navigation-contract-unit.mjs
+      - run: node --test tests/deepsyq-mobile-shell.test.mjs tests/deepsyq-navigation-contract-unit.mjs tests/jarvix-tour-plan.test.mjs
       - run: node --check app/src/main/assets/deepsyq-mobile-shell.js

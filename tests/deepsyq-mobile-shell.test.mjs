@@ -16,3 +16,9 @@ test('left swipe closes only from inside the drawer; taps and scrolling do not',
   assert.equal(drawerSwipe({x:200,y:100,time:0},{x:190,y:110,time:250},true,300),null);
   assert.equal(drawerSwipe({x:200,y:100,time:0},{x:100,y:200,time:250},true,300),null);
 });
+
+test('existing session switches account control to the profile in all supported languages', async()=>{
+ const {headerAccount}=await import('../app/src/main/assets/deepsyq-mobile-shell.js');
+ assert.deepEqual(headerAccount('','en'),{label:'Log in',href:'deepsyq.html?panel=login'});
+ for(const [lang,label]of Object.entries({en:'Account',ru:'Аккаунт',fr:'Compte',es:'Cuenta'}))assert.deepEqual(headerAccount('session-present',lang),{label,href:'index.html?view=profile'});
+});

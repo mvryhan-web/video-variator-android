@@ -109,6 +109,14 @@
   document.addEventListener('DOMContentLoaded', () => {
     const isStudio = location.pathname.includes('generate-studio');
     if (isStudio && !isAccepted()) {
+      // A tour only presents the interface. It cannot submit a generation or
+      // accept consent; stopping the tour restores the normal consent prompt.
+      let tour=null;try{tour=JSON.parse(sessionStorage.getItem('deepsyq_guided_tour_v3')||'null');}catch(_){}
+      if(tour&&Number.isInteger(tour.index)&&tour.index>=1&&tour.index<=3&&['playing','paused'].includes(tour.phase)){
+        const creator=document.getElementById('creator');if(creator)creator.inert=true;
+        window.addEventListener('jarvix:tour-ended',()=>{if(creator)creator.inert=false;if(!isAccepted())window.openLuminaTermsModal();},{once:true});
+        return;
+      }
       setTimeout(() => {
         window.openLuminaTermsModal();
       }, 250);
