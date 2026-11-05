@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
-import {validateInspiration,installInspiration} from '../server/generation-inspiration.js';
+import {validateInspiration,installInspiration,publicManifestInspirationItem} from '../server/generation-inspiration.js';
 
 test('inspiration validation requires owned/licensed media and safe preview URLs',()=>{
  const item=validateInspiration({title:'Owned editorial image',slug:'owned-editorial-image',kind:'image',category:'editorial',previewUrl:'/owned/inspiration/editorial.webp',prompt:'Editorial portrait with soft natural light',aspectRatio:'2:3',rightsBasis:'owned',rightsNote:'Created in house',active:true,featured:true});
@@ -254,4 +254,33 @@ test('inspiration search treats typed percent, underscore, and backslash literal
   assert.deepEqual(sql.args,['%100'+String.fromCharCode(92)+'%'+String.fromCharCode(92)+'_'+String.fromCharCode(92,92)+'sale%']);
   assert.match(sql.sql,/title ILIKE \$1/);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});
+
+test('static Inspiration manifest hides inactive Home footage and respects explicit agent gating',async()=>{
+ const sample={id:'agent-private',slug:'agent-private',active:true,actionTarget:'agent',title:'Owner agent only'};
+ assert.equal(publicManifestInspirationItem({...sample,active:false},{AI_INSPIRATION_AGENT_TARGETS_ENABLED:'true',AI_INSPIRATION_AGENT_PATH:'/agent.html'}),null);
+ assert.equal(publicManifestInspirationItem(sample,{}),null,'agent cards are invisible without opt-in');
+ assert.equal(publicManifestInspirationItem(sample,{AI_INSPIRATION_AGENT_TARGETS_ENABLED:'true'}),null,'a real same-origin path is required');
+ assert.equal(publicManifestInspirationItem(sample,{AI_INSPIRATION_AGENT_TARGETS_ENABLED:'true',AI_INSPIRATION_AGENT_PATH:'https://external.example/agent'}),null);
+ const visible=publicManifestInspirationItem(sample,{AI_INSPIRATION_AGENT_TARGETS_ENABLED:'true',AI_INSPIRATION_AGENT_PATH:'/agent.html'});
+ assert.equal(visible.actionPath,'/agent.html');
+ assert.equal(publicManifestInspirationItem({...sample,actionTarget:'studio'},{}).slug,'agent-private');
+ const pool={async query(){return {rows:[]};}};
+ const app=express();
+ installInspiration(app,{pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true'},auth:(_req,_res,next)=>next()});
+ const listener=app.listen(0);await new Promise(r=>listener.once('listening',r));
+ try {
+  const base='http://127.0.0.1:'+listener.address().port;
+  const hidden=await fetch(base+'/api/inspiration/owner-01-close-up-woman');
+  assert.equal(hidden.status,404,'Home-only inactive owner footage is not public Inspiration');
+  assert.equal((await hidden.json()).error,'INSPIRATION_NOT_FOUND');
+  const gallery=await (await fetch(base+'/api/inspiration?kind=video&limit=60')).json();
+  assert.ok(!gallery.items.some(x=>x.slug==='owner-01-close-up-woman'));
+  const active=await fetch(base+'/api/inspiration/sculptural-gold-mineral-ring');
+  assert.equal(active.status,200,'owner-approved active artwork stays available');
+  assert.equal((await active.json()).item.slug,'sculptural-gold-mineral-ring');
+ } finally {
+  listener.closeAllConnections();
+  await new Promise(resolve=>listener.close(resolve));
+ }
 });
