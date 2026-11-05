@@ -1,0 +1,282 @@
+[
+  {
+    "file": "01_MAIN_3300.jpg",
+    "source_file": "01.png",
+    "source_sha256": "94a641a25b91f2dc148da3fa547f4921e053aea953cf60fa740ab5547fe5ad48",
+    "source_dimensions": [
+      1254,
+      1254
+    ],
+    "source_metadata_keys": [],
+    "export_dimensions": [
+      3300,
+      3300
+    ],
+    "mode": "RGB",
+    "format": "JPEG",
+    "jpeg_quality": 97,
+    "chroma_subsampling": "4:4:4",
+    "dpi_metadata": 300,
+    "icc": "sRGB; unprofiled source assumed sRGB",
+    "resize": "Pillow Lanczos interpolation; no added native detail; no crop or composition change",
+    "source_preserved": "Original PNG retained unchanged in saved V2 source archive",
+    "export_sha256": "b8f0b91e54fa95479a525e7cf9ebac24934b354c99cdb1882359d17ec1114406",
+    "bytes": 2764060,
+    "jpeg_psnr_against_resized_pixels_db": 50.49,
+    "technical_check": "PASS",
+    "visual_check": "PASS: individually displayed and inspected; main copy, layout and watermark preserved; no observed new clipping or distortion",
+    "source_limit": "Small body text retains the source resolution limit; resize does not reconstruct details."
+  },
+  {
+    "file": "02_CONTENTS_3300.jpg",
+    "source_file": "02.png",
+    "source_sha256": "df1468d94568cc7fa426ab044d38fe2796cd5c850429ff6fbccee521e5625240",
+    "source_dimensions": [
+      1254,
+      1254
+    ],
+    "source_metadata_keys": [],
+    "export_dimensions": [
+      3300,
+      3300
+    ],
+    "mode": "RGB",
+    "format": "JPEG",
+    "jpeg_quality": 97,
+    "chroma_subsampling": "4:4:4",
+    "dpi_metadata": 300,
+    "icc": "sRGB; unprofiled source assumed sRGB",
+    "resize": "Pillow Lanczos interpolation; no added native detail; no crop or composition change",
+    "source_preserved": "Original PNG retained unchanged in saved V2 source archive",
+    "export_sha256": "b56a85495ead9c73e9bb913ee32a27e1aa61ab544bffba6ad5774e85321a3dda",
+    "bytes": 2952568,
+    "jpeg_psnr_against_resized_pixels_db": 50.56,
+    "technical_check": "PASS",
+    "visual_check": "PASS: individually displayed and inspected; main copy, layout and watermark preserved; no observed new clipping or distortion",
+    "source_limit": "Small body text retains the source resolution limit; resize does not reconstruct details."
+  },
+  {
+    "file": "03_WORKED_EXAMPLE_3300.jpg",
+    "source_file": "03.png",
+    "source_sha256": "4d04e16fa36591ec5b7e3d09ff053af85e726dcd9c9637dde4182e04ea3772df",
+    "source_dimensions": [
+      1254,
+      1254
+    ],
+    "source_metadata_keys": [],
+    "export_dimensions": [
+      3300,
+      3300
+    ],
+    "mode": "RGB",
+    "format": "JPEG",
+    "jpeg_quality": 97,
+    "chroma_subsampling": "4:4:4",
+    "dpi_metadata": 300,
+    "icc": "sRGB; unprofiled source assumed sRGB",
+    "resize": "Pillow Lanczos interpolation; no added native detail; no crop or composition change",
+    "source_preserved": "Original PNG retained unchanged in saved V2 source archive",
+    "export_sha256": "7c83791c09557102fcc7373b2d94c6991fbb9e1a30f202ce7b0ef623080bf63d",
+    "bytes": 2944963,
+    "jpeg_psnr_against_resized_pixels_db": 50.81,
+    "technical_check": "PASS",
+    "visual_check": "PASS: individually displayed and inspected; main copy, layout and watermark preserved; no observed new clipping or distortion",
+    "source_limit": "Small body text retains the source resolution limit; resize does not reconstruct details."
+  },
+  {
+    "file": "04_SKILLS_3300.jpg",
+    "source_file": "04.png",
+    "source_sha256": "751308143eb179c822ccc6a6043ad867ed3e021fb0fc52a8563fa779e0dad83e",
+    "source_dimensions": [
+      1254,
+      1254
+    ],
+    "source_metadata_keys": [],
+    "export_dimensions": [
+      3300,
+      3300
+    ],
+    "mode": "RGB",
+    "format": "JPEG",
+    "jpeg_quality": 97,
+    "chroma_subsampling": "4:4:4",
+    "dpi_metadata": 300,
+    "icc": "sRGB; unprofiled source assumed sRGB",
+    "resize": "Pillow Lanczos interpolation; no added native detail; no crop or composition change",
+    "source_preserved": "Original PNG retained unchanged in saved V2 source archive",
+    "export_sha256": "2ca03a613b4a286ca30562601f48e8cabfe8ec9cc7eb8f12c4b9c78563fc668c",
+    "bytes": 2996362,
+    "jpeg_psnr_against_resized_pixels_db": 50.45,
+    "technical_check": "PASS",
+    "visual_check": "PASS: individually displayed and inspected; main copy, layout and watermark preserved; no observed new clipping or distortion",
+    "source_limit": "Small body text retains the source resolution limit; resize does not reconstruct details."
+  },
+  {
+    "file": "05_PROJECTS_3300.jpg",
+    "source_file": "05.png",
+    "source_sha256": "2735783c4cf655228dff563b6b4912e71b4d9754e9fd57b24c31113cfdeae23b",
+    "source_dimensions": [
+      1254,
+      1254
+    ],
+    "source_metadata_keys": [],
+    "export_dimensions": [
+      3300,
+      3300
+    ],
+    "mode": "RGB",
+    "format": "JPEG",
+    "jpeg_quality": 97,
+    "chroma_subsampling": "4:4:4",
+    "dpi_metadata": 300,
+    "icc": "sRGB; unprofiled source assumed sRGB",
+    "resize": "Pillow Lanczos interpolation; no added native detail; no crop or composition change",
+    "source_preserved": "Original PNG retained unchanged in saved V2 source archive",
+    "export_sha256": "6e49d288babb38db452dd21e7ea2c54d8a2eb6c786e98452a5552b7b0ffdb9da",
+    "bytes": 3456994,
+    "jpeg_psnr_against_resized_pixels_db": 50.14,
+    "technical_check": "PASS",
+    "visual_check": "PASS: individually displayed and inspected; main copy, layout and watermark preserved; no observed new clipping or distortion",
+    "source_limit": "Small body text retains the source resolution limit; resize does not reconstruct details."
+  },
+  {
+    "file": "06_CLIENT_TEMPLATES_3300.jpg",
+    "source_file": "06.png",
+    "source_sha256": "41ca9dc728bae8c1440d426f08214ddf7021fc77e6f958e489ca8a657cdff828",
+    "source_dimensions": [
+      1254,
+      1254
+    ],
+    "source_metadata_keys": [],
+    "export_dimensions": [
+      3300,
+      3300
+    ],
+    "mode": "RGB",
+    "format": "JPEG",
+    "jpeg_quality": 97,
+    "chroma_subsampling": "4:4:4",
+    "dpi_metadata": 300,
+    "icc": "sRGB; unprofiled source assumed sRGB",
+    "resize": "Pillow Lanczos interpolation; no added native detail; no crop or composition change",
+    "source_preserved": "Original PNG retained unchanged in saved V2 source archive",
+    "export_sha256": "b0c21fd9e58c391a025ffaeb172469df390a0c47bfdefdbdd5b929726420f90c",
+    "bytes": 2844173,
+    "jpeg_psnr_against_resized_pixels_db": 51.0,
+    "technical_check": "PASS",
+    "visual_check": "PASS: individually displayed and inspected; main copy, layout and watermark preserved; no observed new clipping or distortion",
+    "source_limit": "Small body text retains the source resolution limit; resize does not reconstruct details."
+  },
+  {
+    "file": "07_ROLE_ROUTES_3300.jpg",
+    "source_file": "07.png",
+    "source_sha256": "c3a29de68f5443e11c50406b15e14ece2340d714ff33e48f210967a3dc6f7137",
+    "source_dimensions": [
+      1254,
+      1254
+    ],
+    "source_metadata_keys": [],
+    "export_dimensions": [
+      3300,
+      3300
+    ],
+    "mode": "RGB",
+    "format": "JPEG",
+    "jpeg_quality": 97,
+    "chroma_subsampling": "4:4:4",
+    "dpi_metadata": 300,
+    "icc": "sRGB; unprofiled source assumed sRGB",
+    "resize": "Pillow Lanczos interpolation; no added native detail; no crop or composition change",
+    "source_preserved": "Original PNG retained unchanged in saved V2 source archive",
+    "export_sha256": "6fed2f4bc624e4f2873409773c3c8db6319a64705e5cab3a02493f99921f9dd8",
+    "bytes": 2613041,
+    "jpeg_psnr_against_resized_pixels_db": 50.68,
+    "technical_check": "PASS",
+    "visual_check": "PASS: individually displayed and inspected; main copy, layout and watermark preserved; no observed new clipping or distortion",
+    "source_limit": "Small body text retains the source resolution limit; resize does not reconstruct details."
+  },
+  {
+    "file": "08_PDF_GUIDES_3300.jpg",
+    "source_file": "08.png",
+    "source_sha256": "e132e84f7fea3d447a7c65df14916f89f8f525b60972d371b928e053a4125052",
+    "source_dimensions": [
+      1254,
+      1254
+    ],
+    "source_metadata_keys": [],
+    "export_dimensions": [
+      3300,
+      3300
+    ],
+    "mode": "RGB",
+    "format": "JPEG",
+    "jpeg_quality": 97,
+    "chroma_subsampling": "4:4:4",
+    "dpi_metadata": 300,
+    "icc": "sRGB; unprofiled source assumed sRGB",
+    "resize": "Pillow Lanczos interpolation; no added native detail; no crop or composition change",
+    "source_preserved": "Original PNG retained unchanged in saved V2 source archive",
+    "export_sha256": "0eaa29255f8a449187850ab743f662aa3d3a53a63404df85bde9d12115fb7f4e",
+    "bytes": 3093042,
+    "jpeg_psnr_against_resized_pixels_db": 50.27,
+    "technical_check": "PASS",
+    "visual_check": "PASS: individually displayed and inspected; main copy, layout and watermark preserved; no observed new clipping or distortion",
+    "source_limit": "Small body text retains the source resolution limit; resize does not reconstruct details."
+  },
+  {
+    "file": "09_QUALITY_REVIEW_3300.jpg",
+    "source_file": "09.png",
+    "source_sha256": "4c94e5f0d437ae77b5c0fbe71511913490bb2df8270bbdb60d4f2bc041756a45",
+    "source_dimensions": [
+      1254,
+      1254
+    ],
+    "source_metadata_keys": [],
+    "export_dimensions": [
+      3300,
+      3300
+    ],
+    "mode": "RGB",
+    "format": "JPEG",
+    "jpeg_quality": 97,
+    "chroma_subsampling": "4:4:4",
+    "dpi_metadata": 300,
+    "icc": "sRGB; unprofiled source assumed sRGB",
+    "resize": "Pillow Lanczos interpolation; no added native detail; no crop or composition change",
+    "source_preserved": "Original PNG retained unchanged in saved V2 source archive",
+    "export_sha256": "f08aec4e47bbb86d29d5bb975fc354d87dbc0161fdd66297a41dfc5172cf12e8",
+    "bytes": 2858072,
+    "jpeg_psnr_against_resized_pixels_db": 50.75,
+    "technical_check": "PASS",
+    "visual_check": "PASS: individually displayed and inspected; main copy, layout and watermark preserved; no observed new clipping or distortion",
+    "source_limit": "Small body text retains the source resolution limit; resize does not reconstruct details."
+  },
+  {
+    "file": "10_DOWNLOAD_3300.jpg",
+    "source_file": "10.png",
+    "source_sha256": "9c8309950d728ec4e4ca2c5de2cba052065307acae1392dae909b617e6e7e7fc",
+    "source_dimensions": [
+      1254,
+      1254
+    ],
+    "source_metadata_keys": [],
+    "export_dimensions": [
+      3300,
+      3300
+    ],
+    "mode": "RGB",
+    "format": "JPEG",
+    "jpeg_quality": 97,
+    "chroma_subsampling": "4:4:4",
+    "dpi_metadata": 300,
+    "icc": "sRGB; unprofiled source assumed sRGB",
+    "resize": "Pillow Lanczos interpolation; no added native detail; no crop or composition change",
+    "source_preserved": "Original PNG retained unchanged in saved V2 source archive",
+    "export_sha256": "420f7343ad4ff9970e14b4c1a8742eae601df9458772ce519e448e723076671a",
+    "bytes": 2882095,
+    "jpeg_psnr_against_resized_pixels_db": 50.55,
+    "technical_check": "PASS",
+    "visual_check": "PASS: individually displayed and inspected; main copy, layout and watermark preserved; no observed new clipping or distortion",
+    "source_limit": "Small body text retains the source resolution limit; resize does not reconstruct details."
+  }
+]
