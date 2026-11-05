@@ -70,7 +70,9 @@ test('sampled public navigation has no missing local HTML targets',async()=>{
   for(const link of localLinks(html)){
    if(link.path==='/')continue;
    const target=resolve(assets,'.'+link.path);
-   if(!target.startsWith(assets+'/')){missing.push(name+': unsafe '+link.href);continue;}
+   const normTarget=target.replace(/\\/g,'/');
+   const normAssets=assets.replace(/\\/g,'/');
+   if(!normTarget.startsWith(normAssets+'/')){missing.push(name+': unsafe '+link.href);continue;}
    try{await access(target);}catch{missing.push(name+' -> '+link.href);}
   }
  }
@@ -151,7 +153,8 @@ test('report truthful international SEO blockers; explicit strict release check 
 
 
 test('preflight GitHub Actions reruns when actual SEO input pages/robots/sitemap/preview change',async()=>{
- const workflow=await read('.github/workflows/agent-a-seo-release-preflight.yml');
+ const rawWorkflow=await read('.github/workflows/agent-a-seo-release-preflight.yml');
+ const workflow=rawWorkflow.replace(/\r\n/g, '\n');
  const pr=workflow.split('\n  pull_request:\n')[1]?.split('\n  push:\n')[0]||'';
  const push=workflow.split('\n  push:\n')[1]?.split('\n  workflow_dispatch:\n')[0]||'';
  const inputs=[

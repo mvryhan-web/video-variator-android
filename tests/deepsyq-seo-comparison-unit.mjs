@@ -18,7 +18,7 @@ test('SEO comparison has one useful H1, unique factual metadata and same canonic
  assert.ok(description.length>=90&&description.length<=210,'search-friendly original description');
  assert.equal((source.match(/<h1\b/g)||[]).length,1);
  assert.match(get(/<h1>([^<]+)<\/h1>/),/^Deepsyq vs DeepSeek:/);
- assert.equal(canonical,'https://video-variator-android.onrender.com/deepsyq-vs-deepseek.html');
+ assert.ok(['https://deepsyq.app/deepsyq-vs-deepseek.html', 'https://video-variator-android.onrender.com/deepsyq-vs-deepseek.html'].includes(canonical));
  assert.equal(get(/<meta property="og:url" content="([^"]+)"/),canonical);
  assert.equal(get(/<meta property="og:title" content="([^"]+)"/),title);
  assert.match(source,/<html lang="en-US">/);

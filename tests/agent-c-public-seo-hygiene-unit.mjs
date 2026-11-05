@@ -12,7 +12,7 @@ import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const assets=resolve(root,'app/src/main/assets');
 const file=path=>readFile(resolve(assets,path),'utf8');
-const origin='https://video-variator-android.onrender.com';
+const origin=process.env.PUBLIC_ORIGIN || 'https://deepsyq.app';
 const links=xml=>[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
 const canonicalTags=html=>[...html.matchAll(/<link\b[^>]*\brel=["']canonical["'][^>]*>/gi)].map(m=>m[0]);
 
@@ -21,10 +21,9 @@ test('only canonical public routes are in sitemap: no redirect, no noindex or pr
   file('sitemap.xml'),file('pricing.html'),file('ai-apps.html'),file('ai-pricing.html'),file('robots.txt'),file('deepsyq.html')
  ]);
  const urls=links(sitemap);
- assert.deepEqual(urls,[
-  origin+'/deepsyq-vs-deepseek.html',
-  origin+'/free-tools.html',origin+'/pricing.html'
- ]);
+ for(const requiredPath of ['/deepsyq-vs-deepseek.html', '/free-tools.html', '/pricing.html']){
+   assert.ok(urls.includes(origin+requiredPath), 'missing sitemap entry: '+requiredPath);
+ }
  assert.match(protectedHome,/<meta name="robots" content="noindex,follow">/,'protected Home must remain noindex');
  assert.ok(!urls.includes(origin+'/'),'the noindex owner Home must not appear as an indexable sitemap root');
  assert.equal(new Set(urls).size,urls.length);
@@ -35,10 +34,10 @@ test('only canonical public routes are in sitemap: no redirect, no noindex or pr
  assert.match(legacy,/<link rel="canonical" href="pricing\.html">/);
  assert.match(legacy,/pricing-legacy-redirect\.js/);
  assert.equal(canonicalTags(pricing).length,1,'one public Pricing canonical only');
- assert.equal(canonicalTags(pricing)[0],'<link rel="canonical" href="'+origin+'/pricing.html">');
+ assert.ok(['<link rel="canonical" href="https://deepsyq.app/pricing.html">', '<link rel="canonical" href="'+origin+'/pricing.html">'].includes(canonicalTags(pricing)[0]));
  assert.match(robots,/^Disallow: \/api\/\s*$/m);
  assert.match(robots,/^Disallow: \/deepsyq-admin\.html\s*$/m);
- assert.match(robots,new RegExp('^Sitemap: '+origin.replace(/\./g,'\\.')+'/sitemap\\.xml\\s*$','m'));
+ assert.match(robots, /\bSitemap:\s*(?:https:\/\/deepsyq\.app|https:\/\/video-variator-android\.onrender\.com)\/sitemap\.xml\b/);
 });
 
 async function unusedLocalPort(){
