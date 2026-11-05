@@ -80,3 +80,19 @@
   }
 }
 @media(prefers-reduced-motion:reduce) {.ds-mobile-drawer {transition:none!important}}
+
+/* Keep secondary mobile screens within the Android WebView viewport. */
+@media(max-width:760px) {
+  body.ds-mobile-layout .ds-section-nav {flex-wrap:wrap;overflow:visible}
+  body.ds-mobile-layout .ds-section-nav a {flex:0 1 auto;overflow-wrap:anywhere}
+  body.ds-mobile-layout .studio-grid {grid-template-columns:minmax(0,1fr)}
+  body.ds-mobile-layout .studio-card {min-width:0;max-width:100%;box-sizing:border-box}
+  body.ds-mobile-layout .terminal-input-bar {flex-wrap:wrap}
+  body.ds-mobile-layout .terminal-input-bar input {min-width:0;max-width:100%}
+  body.ds-mobile-layout .terminal-logs {overflow-wrap:anywhere}
+}
+@media(max-width:760px) {
+  body.ds-mobile-layout .specs-table {width:100%;table-layout:fixed}
+  body.ds-mobile-layout .specs-table :is(th,td) {overflow-wrap:anywhere;white-space:normal}
+  body.ds-mobile-layout .badge-guard {max-width:100%;white-space:normal;overflow-wrap:anywhere}
+}
