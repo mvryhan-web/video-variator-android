@@ -102,3 +102,7 @@
   body.ds-mobile-layout :is(.scenario-head,.step-top,.step-badges) {flex-wrap:wrap}
   body.ds-mobile-layout :is(.launch-all-btn,.step-btn) {max-width:100%;white-space:normal;overflow-wrap:anywhere}
 }
+/* Account dialogs must cover the pinned header and its navigation button. */
+@media(max-width:760px) {
+ body.ds-mobile-layout :is(#authModal,#onboardingModal):not([hidden]) {z-index:800!important}
+}
