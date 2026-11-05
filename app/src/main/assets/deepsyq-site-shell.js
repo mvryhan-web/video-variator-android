@@ -93,6 +93,10 @@
     }
   }
 
+  const mobileShell = document.createElement('script');
+  mobileShell.type = 'module'; mobileShell.src = 'deepsyq-mobile-shell.js';
+  document.body.append(mobileShell);
+
   // Sidebar building on subpages
   if (!document.body || document.getElementById('sidebar') || document.getElementById('dsSiteSidebar')) return;
 

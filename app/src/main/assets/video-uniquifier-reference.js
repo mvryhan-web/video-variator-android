@@ -332,3 +332,4 @@ function build(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(build),{once:true});
 else requestAnimationFrame(build);
 })();
+import('./deepsyq-mobile-shell.js');
