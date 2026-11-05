@@ -58,6 +58,13 @@ export async function speakOwnerSpeech(text, language, hooks) {
     const greetingCached = greetingBlob(greetingData, text, language);
     const cached = staticCached || greetingCached;
     if (turn !== version) return;
+    // A known male device voice can speak new text without a round trip to the GPU.
+    // Keep approved recordings first; never choose an unidentified device voice.
+    if (!cached && hooks.browserAvailable?.()) {
+      hooks.source?.('browser-male');
+      hooks.fallback();
+      return;
+    }
     const configReply = cached ? null : await fetch('/api/jarvix/voice-config', {signal:controller.signal});
     const config = cached ? {configured:true, speechModelInstalled:true} : configReply.ok ? await configReply.json() : {};
     if (turn !== version) return;

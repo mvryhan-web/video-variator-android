@@ -43,6 +43,14 @@ export function createClipLibrary(fetchImpl = fetch) {
     }).catch(() => []);
   return {
     prepare,
+    async preload(language) {
+      const entries = await prepare();
+      // Warm only common replies in the selected language, never the whole catalog.
+      const ids = new Set([3, 7, 8, 21, 22, 24, 37, 76].map(n => `jarvix_${language}_${String(n).padStart(2, '0')}`));
+      for (const item of entries.filter(item => item.language === language && ids.has(item.id))) {
+        await this.get(item.text, language, AbortSignal.timeout(8000));
+      }
+    },
     async findReply(query, language) {
       return selectCatalogReply(await prepare(), query, language);
     },
@@ -75,4 +83,5 @@ const library = createClipLibrary();
 export const prepareStaticClips = library.prepare;
 export const getStaticClip = library.get;
 export const findCatalogReply = library.findReply;
+export const preloadStaticClips = language => library.preload(language);
 

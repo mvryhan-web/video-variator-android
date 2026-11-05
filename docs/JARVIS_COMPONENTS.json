@@ -22,6 +22,8 @@
     "tests/jarvix-catalog-routing.test.mjs",
     "tests/jarvix-clip-library.test.mjs",
     "tests/jarvix-local-voice.test.mjs",
+    "tests/jarvix-fast-speech.test.mjs",
+    "tests/jarvix-language-voice-unit.mjs",
     "tests/free-ai-studio-preview-isolation.test.mjs",
     "tests/pricing-owner-art-lock.mjs"
   ]

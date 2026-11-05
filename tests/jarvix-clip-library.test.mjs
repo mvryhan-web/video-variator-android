@@ -19,6 +19,16 @@ test('stopped speech does not fetch an audio clip after delayed manifest arrives
  let finish;let calls=0;const lib=createClipLibrary(()=>{calls++;return new Promise(resolve=>finish=resolve);});const controller=new AbortController();const result=lib.get(clip.text,'ru',controller.signal);controller.abort();finish(Response.json({clips:[clip]}));assert.equal(await result,null);assert.equal(calls,1);
 });
 
+test('preloading warms only common replies in the requested locale and reuses audio',async()=>{
+ const calls=[];
+ const common={...clip,id:'jarvix_ru_37',text:'Слушаю.',url:'/media/jarvix/clips/jarvix_ru_37.mp3'};
+ const lib=createClipLibrary(async url=>{calls.push(url);return url.endsWith('manifest.json')?Response.json({clips:[clip,common,{...common,id:'jarvix_en_37',language:'en',url:'/media/jarvix/clips/jarvix_en_37.mp3'}]}):new Response('audio',{headers:{'content-type':'audio/mpeg'}});});
+ await lib.preload('ru');
+ assert.deepEqual(calls,['/media/jarvix/clips/manifest.json',common.url]);
+ assert.ok(await lib.get(common.text,'ru'));
+ assert.equal(calls.length,2);
+});
+
 test('navigation replies match target page and language without claiming a finished generation',async()=>{
  const {navigationReply}=await import('../app/src/main/assets/jarvix-navigation-reply.js');
  assert.equal(navigationReply('/pricing.html','en'),'Navigating to plans and subscriptions.');

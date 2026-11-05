@@ -8,6 +8,7 @@ function runtime(voices=[],selected='en',pageLanguage='ru') {
  const events=[],spoken=[];
  const context=vm.createContext({
   stopOwnerSpeech:()=>{},
+  pauseJarvisRecognition:()=>events.push({type:'recognition-paused'}),getTopBtn:()=>null,
   document:{documentElement:{lang:pageLanguage}}, navigator:{language:'ru-RU'},
   localStorage:{getItem:()=>selected},
   window:{speechSynthesis:{getVoices:()=>voices,cancel(){},speak:u=>spoken.push(u)},dispatchEvent:e=>events.push(e)},
@@ -38,7 +39,7 @@ test('voice list never falls back to female or unidentified voices in any langua
   assert.equal(vm.runInContext(`getJarvixVoice('${lang}')`,state.context),null);
   vm.runInContext(`speakLocalSpeechSynthesis('test', null, '${lang}')`,state.context);
   assert.equal(state.spoken.length,0);
-  assert.equal(state.events[0].type,'jarvix:voice-unavailable');
+  assert.ok(state.events.some(event=>event.type==='jarvix:voice-unavailable'));
   state=runtime([...voices,{lang,name:male}],lang);
   vm.runInContext(`speakLocalSpeechSynthesis('test', null, '${lang}')`,state.context);
   assert.equal(state.spoken.length,1);

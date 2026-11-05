@@ -6,6 +6,7 @@ import {findCatalogReply} from './jarvix-clip-library.js';
 // JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
 // Guaranteed Male Film Voice, Instant Navigation ("Сделано."), Multi-Turn Weather Brain & Smart ChatGPT Prompt Generation
 import {speakOwnerSpeech, stopOwnerSpeech, unlockOwnerSpeech, prepareOwnerGreetings, OWNER_GREETING_TEXT} from './jarvix-owner-speech.js';
+import {preloadStaticClips} from './jarvix-clip-library.js';
 import { detectIntent } from './home-experience.js';
 import { saveStudioHandoff } from './studio-handoff.js';
 
@@ -175,11 +176,8 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
     return;
   }
   try {
-    // Keep recognition active for instant ChatGPT-style user interruption (barge-in)
-    // pauseJarvisRecognition() is preserved for shutdown/standby
-    if (isJarvisActive && keepListening && !isJarvisListening) {
-      resumeJarvisRecognition();
-    }
+    // Do not let speaker echo become a second command; resume after playback.
+    pauseJarvisRecognition();
 
     const version = ++speechVersion;
     window.speechSynthesis.cancel();
@@ -208,6 +206,12 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
       if (version !== speechVersion) return;
       isJarvisSpeaking = true;
       currentSpokenUtterance = text;
+      const button = getTopBtn();
+      if (button) {
+        button.dataset.voiceSource = 'browser-male';
+        button.dataset.voicePhase = 'playing';
+        button.removeAttribute('aria-busy');
+      }
       updateJarvisState('speaking');
     };
 
@@ -220,6 +224,8 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
         if (version !== speechVersion) return;
         isJarvisSpeaking = false;
         currentSpokenUtterance = '';
+        const button = getTopBtn();
+        if (button) button.dataset.voicePhase = 'ready';
         if (typeof onComplete === 'function') {
           onComplete();
         } else if (isJarvisActive && keepListening) {
@@ -279,8 +285,10 @@ export function speakJarvis(text, onComplete = null) {
   let speechFailed = false;
   const speechStartedAt = performance.now();
   speakOwnerSpeech(text, langCode, {
+    browserAvailable: () => Boolean(getJarvixVoice(langCode)?.isExplicitMale),
     source: source => { if (button) button.dataset.voiceSource = source; },
     fallback: () => {
+      if (version !== speechVersion) return;
       if (label) label.textContent = 'JARVIX';
       if (button) button.removeAttribute('aria-busy');
       speakLocalSpeechSynthesis(text, onComplete, langCode, isRu);
@@ -1106,6 +1114,7 @@ function resetSilenceTimer() {
 export function activateJarvisVoice() {
   const activation=++activationVersion;
   unlockOwnerSpeech();
+  void preloadStaticClips(getJarvixLanguage());
   isJarvisActive = true;
   keepListening = true;
   try {
