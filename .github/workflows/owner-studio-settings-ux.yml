@@ -34,7 +34,7 @@ jobs:
           fi
       - run: npx playwright install --with-deps chromium webkit
       - name: Owner's exact UI on desktop and mobile (no paid provider requests)
-        run: npx playwright test tests/generation-studio.spec.mjs --project=chromium --project=mobile-webkit --grep "Studio Settings ratio frames match actual aspect"
+        run: npx playwright test tests/generation-studio.spec.mjs tests/owner-studio-popover-first-open-20261020.spec.mjs --project=chromium --project=mobile-webkit --grep "Studio Settings ratio frames match actual aspect|first settings panel open"
       - name: Preserve browser trace when failing
         if: failure()
         uses: actions/upload-artifact@v4
