@@ -304,7 +304,7 @@ const banner='<div role="status" class="deepsyq-preview-notice" style="position:
 async function homepage(_req,res){
  try{
   const html=await readFile(path.join(assets,'deepsyq.html'),'utf8');
-  res.type('html').send(html.replace(/<body\\b[^>]*>/i,body=>body+banner));
+  res.type('html').send(html.replace(/<body\b[^>]*>/i,body=>body+banner));
  }catch(_){res.status(503).type('text/plain').send('Preview assets are unavailable');}
 }
 app.get(['/','/dashboard','/deepsyq.html'],homepage);
