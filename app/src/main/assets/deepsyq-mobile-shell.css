@@ -157,4 +157,18 @@
  .ds-tour-label{max-width:140px;font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){#topJarvisBtn .jarvis-ring{animation:none!important}}
-@media(min-width:1100px){.top.ds-stable-header #dsTakeTour{position:absolute;left:calc(50% + 48px);top:50%;transform:translateY(-50%)}}
+
+/* Owner 6 Nov: only transport buttons, up near the brand on mobile. */
+.ds-tour-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.ds-tour-controls{width:auto;min-width:0;flex-wrap:nowrap}
+@media(min-width:761px){
+ .top.ds-stable-header #dsTakeTour{position:static;transform:none}
+ #topPricing{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:8px 16px!important;border-radius:13px;color:#fff!important;border:1px solid #00beff!important;background:linear-gradient(105deg,#21164b,#03509b)!important;box-shadow:0 0 13px #0befff68;font-weight:650}
+}
+@media(max-width:760px){
+ .ds-tour-controls{inset:calc(7px + env(safe-area-inset-top)) 6px auto auto;transform:none;max-width:102px;padding:3px;gap:3px;border-radius:12px}
+ .ds-tour-controls button{min-height:38px;min-width:40px;padding:4px 6px;font-size:10px;border-radius:9px}
+ body.ds-mobile-layout:has(.ds-tour-controls) .ds-mobile-brand{font-size:18px!important;gap:4px}
+ body.ds-mobile-layout:has(.ds-tour-controls) .ds-mobile-brand img{width:23px;height:23px}
+}
+.ds-tour-drawer-target{outline:2px solid #4de7ff!important;outline-offset:2px;background:#163c60!important}

@@ -23,5 +23,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tests/deepsyq-mobile-shell.test.mjs tests/deepsyq-navigation-contract-unit.mjs tests/jarvix-tour-plan.test.mjs
+      - run: node --test tests/deepsyq-mobile-shell.test.mjs tests/deepsyq-navigation-contract-unit.mjs tests/jarvix-tour-plan.test.mjs tests/jarvix-activation.test.mjs tests/jarvix-recognition-lifecycle.test.mjs tests/jarvix-local-voice.test.mjs tests/studio-consent-preview.test.mjs
       - run: node --check app/src/main/assets/deepsyq-mobile-shell.js

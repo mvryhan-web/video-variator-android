@@ -138,3 +138,25 @@ body.studio-quickstart .stage #empty #taskTitle {
     font-size: 25px !important;
   }
 }
+
+/* Owner 6 Nov: compact creation routes; history/results keep their full flow. */
+body.studio-quickstart .stage-tabs{display:none!important}
+body.studio-quickstart .stage:has(#empty:not([hidden])){flex:0 0 auto!important;min-height:0!important;padding:24px 0!important}
+body.studio-quickstart .stage:has(#empty:not([hidden]))+form.composer{position:relative;bottom:auto;margin-top:0}
+@media(max-width:760px){
+ body.studio-quickstart .studio-shell,body.studio-quickstart .studio-shell>main{min-height:0!important}
+ body.studio-quickstart .studio-shell>main{margin:0!important;padding:12px 12px max(12px,env(safe-area-inset-bottom))!important}
+ body.studio-quickstart .stage:has(#empty:not([hidden])){padding:14px 0 18px!important}
+ body.studio-quickstart .stage #empty #taskTitle{font-size:22px!important;line-height:1.25!important}
+ body.studio-quickstart #creator.composer{padding:12px!important;margin-top:0!important;position:relative!important;bottom:auto!important}
+ body.studio-quickstart #creator textarea{min-height:84px!important;height:100px;max-height:160px}
+ body.studio-quickstart #referenceBox{min-height:72px!important;flex-basis:58px!important}
+ body.studio-quickstart .composer-controls{gap:7px;margin-top:10px}
+ body.studio-quickstart .composer-controls .pill{padding:8px 10px;min-height:42px;font-size:11px}
+ body.studio-quickstart .composer-controls #generate{min-height:44px;flex:1}
+}
+@media(max-width:760px){
+ body.studio-quickstart .composer-controls .studio-type-picker,body.studio-quickstart .composer-controls #modelButton{flex:1 1 42%;white-space:nowrap;min-width:0}
+ body.studio-quickstart .composer-controls #settingsButton{flex:0 1 auto}
+ body.studio-quickstart .composer-controls #generate{flex:1 1 50%}
+}

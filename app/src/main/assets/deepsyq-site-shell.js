@@ -76,7 +76,7 @@
 
     const jarvisScript = document.createElement('script');
     jarvisScript.type = 'module';
-    jarvisScript.src = 'jarvis-core.js?v=7.0';
+    jarvisScript.src = 'jarvis-core.js';
     document.body.append(jarvisScript);
 
     // If a top header exists, insert JARVIX Orb dead-center

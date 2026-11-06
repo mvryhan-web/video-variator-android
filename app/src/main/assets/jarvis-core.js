@@ -1,4 +1,4 @@
-import { startJarvixGuidedTour, stopJarvixGuidedTour, isTourActive } from './jarvix-guided-tour.js';
+import { stopJarvixGuidedTour, isTourActive } from './jarvix-guided-tour.js';
 import {navigationReply} from './jarvix-navigation-reply.js';
 import {findCatalogReply} from './jarvix-clip-library.js';
 // JARVIX AI Core v6.0 — Autonomous Voice Butler & Resident Intelligence
@@ -64,6 +64,7 @@ let isJarvisSpeaking = false;
 let isJarvisListening = false;
 let jarvisRecognition = null;
 let recognitionVersion = 0;
+let recognitionStarting = false;
 let keepListening = false;
 let silenceTimer = null;
 const SILENCE_TIMEOUT_MS = 45000;
@@ -459,7 +460,7 @@ export function handleJarvisVoiceCommand(commandText) {
 
   // 1. CAPABILITIES & GUIDED TOUR
   if (/(?:экскурси|покажи сайт|презентаци|тур по сайту|обзор сайта|видеопрезентац|проведи тур|tour|guided tour|showcase|show me the site)/i.test(lower)) {
-    startJarvixGuidedTour();
+    speakJarvis({ru:'Нажмите кнопку «Экскурсия», чтобы начать обзор.',en:'Press Take a Tour to start the walkthrough.',fr:'Appuyez sur Visite guidée pour commencer.',es:'Pulsa Visita guiada para comenzar.'}[getJarvixLanguage()]);
     return;
   }
   if (/(?:что\s+(?:ты\s+)?(?:умеешь|можешь)(?:\s+делать)?|твои\s+возможности|какие\s+(?:у\s+тебя\s+)?функции|кто\s+ты|расскажи\s+о\s+себе|справка|помощь|help|what can you do|que peux-tu faire|qué puedes hacer|que puedes hacer)/i.test(lower)) {
@@ -864,6 +865,7 @@ export function handleJarvisVoiceCommand(commandText) {
 // 9. Speech Recognition Control (Pure Voice Loop)
 export function pauseJarvisRecognition() {
   recognitionVersion += 1;
+  recognitionStarting = false;
   if (jarvisRecognition) {
     try {
       jarvisRecognition.onend = null;
@@ -891,7 +893,7 @@ function showRecognitionError(reason) {
 }
 
 export function resumeJarvisRecognition() {
-  if (!isJarvisActive || !keepListening || isJarvisSpeaking) return;
+  if (!isJarvisActive || !keepListening || isJarvisSpeaking || isTourActive() || isJarvisListening || recognitionStarting) return;
 
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRec) {
@@ -913,6 +915,7 @@ export function resumeJarvisRecognition() {
 
     jarvisRecognition.onstart = () => {
       if (recognitionTurn !== recognitionVersion || !isJarvisActive || !keepListening) return;
+      recognitionStarting = false;
       isJarvisListening = true;
       updateJarvisState('listening');
       const button = getTopBtn();
@@ -1030,6 +1033,7 @@ export function resumeJarvisRecognition() {
 
     jarvisRecognition.onend = () => {
       if (recognitionTurn !== recognitionVersion) return;
+      recognitionStarting = false;
       isJarvisListening = false;
       clearTimeout(speechTimeout);
       if (isJarvisActive && keepListening) {
@@ -1037,7 +1041,7 @@ export function resumeJarvisRecognition() {
           if (recognitionTurn === recognitionVersion && isJarvisActive && keepListening && !isJarvisSpeaking) {
             resumeJarvisRecognition();
           }
-        }, 150);
+        }, 1200);
       } else {
         isJarvisListening = false;
       }
@@ -1052,24 +1056,21 @@ export function resumeJarvisRecognition() {
         network: 'network'
       };
       if (recognitionErrors[err.error]) showRecognitionError(recognitionErrors[err.error]);
-      if (err.error === 'not-allowed') {
-        const resumeOnGesture = () => {
-          document.removeEventListener('click', resumeOnGesture);
-          document.removeEventListener('keydown', resumeOnGesture);
-          if (isJarvisActive && keepListening) {
-            resumeJarvisRecognition();
-          }
-        };
-        document.addEventListener('click', resumeOnGesture, { once: true });
-        document.addEventListener('keydown', resumeOnGesture, { once: true });
+      recognitionStarting = false;
+      // A denied/unavailable service must not trigger Android's mic start tone in a loop.
+      if (recognitionErrors[err.error]) {
+        keepListening = false;
+        jarvisRecognition.onend = null;
         isJarvisListening = false;
         updateJarvisState('idle');
-        return;
       }
+
     };
 
+    recognitionStarting = true;
     jarvisRecognition.start();
   } catch (err) {
+    recognitionStarting = false;
     console.warn('[JARVIX] Launch failed:', err);
     showRecognitionError('launch');
   }
@@ -1089,6 +1090,12 @@ function resetSilenceTimer() {
 }
 
 // 11. Activation & Deactivation (Smart Conversational Memory)
+export function suspendJarvisForTour() {
+  isJarvisActive=false;keepListening=false;
+  try{sessionStorage.removeItem('jarvix_active');}catch{}
+  stopAllSpeech();pauseJarvisRecognition();
+}
+
 export function activateJarvisVoice() {
   unlockOwnerSpeech();
   isJarvisActive = true;
@@ -1100,7 +1107,13 @@ export function activateJarvisVoice() {
   const topBtn = getTopBtn();
   if (topBtn) topBtn.classList.add('is-active');
 
-  startJarvixGuidedTour();
+  // Ordinary activation is a short listening acknowledgement, never the tour.
+  const listening = {ru:'Слушаю вас очень внимательно.',en:'Listening closely. Go ahead.',fr:'Je vous écoute très attentivement.',es:'Te escucho atentamente. Dime.'};
+  speakJarvis(listening[getJarvixLanguage()] || listening.en, () => {
+    if(isJarvisActive && keepListening && !isTourActive()){
+      resumeJarvisRecognition();updateJarvisState('listening');
+    }
+  });
 }
 
 export function deactivateJarvisVoice() {
@@ -1193,14 +1206,7 @@ export function initJarvis() {
     if (sayOnLoad) sessionStorage.removeItem('jarvix_say_on_load');
   } catch (_) {}
 
-  // Home page protection: Home page (deepsyq.html) should NEVER auto-listen on fresh visit
-  const isHomePage = location.pathname.endsWith('deepsyq.html') || location.pathname === '/' || location.pathname.endsWith('/');
-  if (isHomePage && !sayOnLoad) {
-    wasActive = false;
-    try {
-      sessionStorage.removeItem('jarvix_active');
-    } catch (_) {}
-  }
+  // Fresh visits stay idle; an explicitly enabled session survives navigation Home.
 
   if (wasActive || sayOnLoad) {
     isJarvisActive = true;

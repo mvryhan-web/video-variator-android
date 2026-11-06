@@ -39,6 +39,9 @@ function setupMobileShell() {
   const copy = () => words[locale()] || words.en;
   // Desktop keeps the original Home actions and their existing event handlers.
   // Mobile has its own Tools/Tour controls; it hides the legacy actions in CSS.
+  document.getElementById('topPromo')?.remove();
+  const invite=document.getElementById('topInvite');
+  if(invite){invite.classList.add('ds-invite-entry');(sidebar.querySelector('.sidebar-bottom')||sidebar).append(invite);}
   const language=document.getElementById('homeLanguage');
   if(language)for(const option of language.options)option.textContent=option.value.toUpperCase();
 

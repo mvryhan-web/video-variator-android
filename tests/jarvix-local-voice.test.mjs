@@ -65,3 +65,16 @@ test('cached public greeting plays with zero health or TTS worker calls',async()
   assert.equal(completed,1);assert.equal(requests.length,1);
  }finally{module.stopOwnerSpeech();global.fetch=previousFetch;global.Audio=previousAudio;}
 });
+
+
+test('only the exact TEST domains may use the owner voice bridge',async()=>{
+ const wav=Buffer.alloc(46);wav.write('RIFF');wav.write('WAVE',8);let calls=0;
+ const h=routes({env,fetchImpl:async()=>{calls++;return new Response(wav,{headers:{'Content-Type':'audio/wav'}});}});
+ for(const origin of ['https://deepsyq.app','https://www.deepsyq.app','https://deepsyq-visual-preview-20261016.onrender.com']){
+  const r=response();await h['/api/jarvix/tts']({headers:{origin},body:{text:'Hello',language:'en'}},r);assert.equal(r.code,200);
+ }
+ for(const origin of ['https://deepsyq.app.evil.test','https://evil.test','http://deepsyq.app']){
+  const r=response();await h['/api/jarvix/tts']({headers:{origin},body:{text:'Hello',language:'en'}},r);assert.equal(r.code,403);
+ }
+ assert.equal(calls,3);
+});
