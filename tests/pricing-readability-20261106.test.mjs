@@ -34,17 +34,24 @@ test('all five displayed base + proposed bonus examples are correct',()=>{
   ]);
   assert.ok(pricing.includes("numeral.format(p.credits+p.bonus)"));
   assert.ok(pricing.includes("['Base',numeral.format(p.credits)]"));
-  assert.ok(pricing.includes("['Bonus · proposed','+ '+numeral.format(p.bonus)]"));
-  assert.ok(pricing.includes("['Total · proposed',numeral.format(p.credits+p.bonus)]"));
+  assert.ok(pricing.includes("['Bonus','+ '+numeral.format(p.bonus)]"));
+  assert.ok(pricing.includes("['Total',numeral.format(p.credits+p.bonus)]"));
 });
 
 test('bonuses are not represented as credited in checkout and original images stay intact',()=>{
-  assert.ok(pricing.includes("Actual approved checkout credits: '+numeral.format(serverPack.credits)"));
-  assert.ok(pricing.includes("Proposed bonus and total are not active."));
+  assert.ok(pricing.includes("Only verified base credits are granted after payment."));
+  assert.ok(pricing.includes("Bonus and total figures are proposed, not active or included in checkout."));
   assert.ok(pricing.includes("body:JSON.stringify({sku:pack.sku,requestId:creditRequestIds.get(key)})"));
   assert.ok(pricing.includes("const valid=!!serverPack&&!!checkoutMode;"));
   assert.ok(pricing.includes("picture.append(img(p.key))"));
   assert.ok(pricing.includes("card.append(img(p.image))"));
   assert.ok(!pricing.includes('80% Credit Bonus'));
+  assert.ok(pricing.includes("const badge=node('h3','price-credit-badge')"));
+  assert.ok(pricing.includes("foot.append(badge,cost,button)"));
+  assert.ok(!pricing.includes("const title=node('h3','price-credit-number'"));
+  assert.ok(!pricing.includes("price-credit-breakdown-note',"));
+  assert.ok(pricing.includes("host.before(notice)"));
+  assert.ok(css.includes('.price-credit-badge{'));
+  assert.ok(css.includes('@media(max-width:420px)'));
   assert.ok(css.includes('grid-template-columns:repeat(3,minmax(0,1fr))'));
 });

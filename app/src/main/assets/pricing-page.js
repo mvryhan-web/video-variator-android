@@ -212,6 +212,16 @@ function renderCredits(config){
  const host=byId('creditCards');host.replaceChildren();
  const serverPacks=Array.isArray(config?.packs)?config.packs.filter(validAiPack):[];
  const checkoutMode=aiCheckoutMode(config);
+ // One readable section-wide disclosure replaces the repeated text inside each card.
+ // The bonus values are illustrative; Stripe wallet settlement still grants pack.credits.
+ let notice=byId('priceCreditDisclosure');
+ if(!notice){
+  notice=node('p','price-credit-disclosure',
+   'Bonus and total figures are proposed, not active or included in checkout. Only verified base credits are granted after payment.');
+  notice.id='priceCreditDisclosure';
+  notice.setAttribute('role','note');
+  host.before(notice);
+ }
  for(const p of creditOptions){
   const serverPack=serverPacks.find(x=>x.credits===p.credits);
   const amount=serverPack?money(serverPack.amount/100,serverPack.currency.toUpperCase()):money(p.price);
@@ -219,24 +229,24 @@ function renderCredits(config){
   const card=node('article','price-credit-card');
   card.append(img(p.image));
   const content=node('div','price-credit-content');
-  const title=node('h3','price-credit-number','✦ '+numeral.format(p.credits));
-  // Display-only marketing preview: the server grants ONLY pack.credits after
-  // a confirmed Stripe payment. Never claim these proposed bonuses are active.
+  card.setAttribute('aria-describedby','priceCreditDisclosure');
+  // The existing card artwork stays visible above and below the centered metrics.
+  // The base amount appears ONCE in the bottom badge, not above the inset panel.
   const info=node('div','price-credit-bonus price-credit-breakdown');
   for(const [label,number] of [
    ['Base',numeral.format(p.credits)],
-   ['Bonus · proposed','+ '+numeral.format(p.bonus)],
-   ['Total · proposed',numeral.format(p.credits+p.bonus)]
+   ['Bonus','+ '+numeral.format(p.bonus)],
+   ['Total',numeral.format(p.credits+p.bonus)]
   ]){
    const segment=node('div','price-credit-segment');
    segment.append(node('span','price-credit-segment-label',label),
                   node('strong','price-credit-segment-value',number));
    info.append(segment);
   }
-  info.append(node('span','price-credit-breakdown-note',
-   serverPack?'Actual approved checkout credits: '+numeral.format(serverPack.credits)+'. Bonus is not included.':
-   'Proposed bonus and total are not active. Checkout requires server approval.'));
   const foot=node('div','price-credit-bottom');
+  const badge=node('h3','price-credit-badge');
+  badge.append(node('span','price-credit-badge-sparkle','✦'),
+   node('span','price-credit-badge-count',numeral.format(p.credits)));
   const cost=node('strong','price-credit-price',amount);
   // Every visible AI-credit card opens the *existing* Deepsyq sign-in when logged out.
   // Availability and real checkout remain strictly server-authoritative.
@@ -250,9 +260,9 @@ function renderCredits(config){
    }
    void checkoutCredit(serverPack);
   });
-  foot.append(cost,button);
-  // The owner asked to remove only the tiny footnote below the displayed dollar price.
-  content.append(title,info,foot);
+  foot.append(badge,cost,button);
+  // Keep the approved background art, card colors and checkout behavior intact.
+  content.append(info,foot);
   card.append(content);host.append(card);
  }
 }
