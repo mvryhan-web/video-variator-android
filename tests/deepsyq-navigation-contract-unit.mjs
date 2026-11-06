@@ -24,9 +24,11 @@ test('Primary navigation opens the named creation studio',()=>{
  assert.match(studio,/requested==='audio'\?'music'/,'Audio URL must select the Music/Audio editor');
 });
 
-test('History navigation opens saved results, not a Home teaser anchor',()=>{
- assert.equal(homeNavigationTarget('History'),'generate-studio.html?view=history');
- assert.match(studio,/get\('view'\)==='history'\)setHistory\(true\)/,'Studio must honor the history deep link');
+test('Only Library contains the My Creations entry; the More duplicate is removed',()=>{
+ assert.equal(homeNavigationTarget('My Creations'),'my-creations.html');
+ assert.equal((home.match(/aria-label="My Creations"/g)||[]).length,1);
+ assert.ok(!home.includes('aria-label="History"'),'Remove duplicate under More');
+ assert.match(studio,/get\('view'\)==='history'\)setHistory\(true\)/,'Assets keeps Studio history access');
 });
 
 test('Canvas, Assets, My Creations and JARVIX links have correct existing destinations',()=>{
