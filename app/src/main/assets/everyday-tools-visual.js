@@ -58,11 +58,8 @@
  language.addEventListener('change',()=>{status.textContent=language.value==='en'?'English':language.value==='fr'?'Français sélectionné':'Выбран русский';});
  const topSearch=make('label','et-top-search');topSearch.append(make('span','','⌕'),search);bar.append(topSearch,barLinks,promo,invite,language,invitationFeedback,status,dialog);
  showcase.append(bar);
- const hero=make('div','et-hero');const heroCopy=make('div','et-hero-copy');
- const heading=make('h1','', 'Everyday Tools');
- const lead=make('strong','et-hero-lead','Less routine. More creating.');
- const tagline=make('p','','Simple, powerful tools to handle your everyday creative tasks. All in one place.');
- heroCopy.append(heading,lead,tagline);hero.append(crop([210,62,1227,250],'et-hero-art'),heroCopy);showcase.append(hero);
+ // Owner 2026-11-06: remove oversized Everyday Tools showcase banner;
+ // navigation, gallery and real tool links below remain intact.
  const leadRow=make('div','et-section-heading');
  const inner=make('div');inner.append(make('h2','','Choose a tool'),make('p','','Everyday essentials for your creative workflow.'));
  const picker=make('select','et-picker');picker.setAttribute('aria-label','Filter tools');

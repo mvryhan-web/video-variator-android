@@ -93,8 +93,8 @@ test('C14 five widths: Tools real modes/Back/legacy, exactly three AI Apps kinds
   await expect(page).toHaveURL(/\/index\.html$/);
   await expect(page.locator('#mode option')).toHaveCount(3);
   await page.goto('/ai-apps.html');
-  const types=await page.locator('#type option').evaluateAll(os=>os.map(o=>o.value));
-  expect(types).toEqual(['','image','video','audio']);
+  await expect(page.locator('.filters')).toHaveCount(0);
+  for(const kind of ['Fictional Image','Fictional Video','Fictional Audio'])await expect(page.locator('.app-card').filter({hasText:kind})).toBeVisible();
   await expect(page.locator('.app-card').filter({hasText:'Cancelled Product Video'})).toHaveCount(0);
   await expect(page.locator('.app-card').filter({hasText:'Unavailable Agent'})
     .getByRole('button',{name:'Workflow pending'})).toBeDisabled();

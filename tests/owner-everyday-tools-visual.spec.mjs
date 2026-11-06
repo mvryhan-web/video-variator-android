@@ -5,7 +5,7 @@ test('owner Everyday Tools landing: exactly nine live destinations, sidebar and 
  const r=await page.goto('/free-tools.html');expect(r.status()).toBe(200);
  await expect(page.locator('#etShowcase')).toBeVisible();
  await expect(page.locator('#etGallery .et-card')).toHaveCount(9);
- await expect(page.locator('#etShowcase .et-hero h1')).toHaveText('Everyday Tools');
+ await expect(page.locator('#etShowcase .et-hero')).toHaveCount(0);
  await expect(page.locator('.ds-site-caption').filter({hasText:'Everyday Tools'})).toHaveCount(1);
  await expect(page.locator('#etGallery .et-card').first()).toContainText('Compress Photos');
  // Reference layout: 19 standard cards, one separate wide Background Remover, two wide speech tiles.

@@ -60,6 +60,9 @@
   link.append(iconEl,heading,small);grid.append(link);
  });
  const screen=document.createElement('div');screen.className='hub-screen-header';screen.hidden=true;screen.innerHTML='<button type="button" id="hubBack"></button><h1 tabindex="-1" id="hubTitle"></h1><p role="status" id="hubNotice"></p>';screen.querySelector('button').textContent='← '+c.back;hero.after(screen);
+ // The original Everyday Tools banner is redundant on every detail screen.
+ // Remove its DOM node after moving the real settings switch to the header.
+ hero.remove();
  $('#files').closest('label').querySelector('span').textContent=c.choose;
  const adjust=document.createElement('h2');adjust.className='hub-adjust';adjust.textContent=c.settings;$('#qualityLabel').before(adjust);
  const saveTitle=document.createElement('h2');saveTitle.textContent=c.result;saveTitle.hidden=true;$('#outputs').before(saveTitle);new MutationObserver(()=>{saveTitle.hidden=!$('#outputs article');}).observe($('#outputs'),{childList:true});
@@ -78,12 +81,16 @@
   const valid=modes.includes(mode)&&!['tts','stt'].includes(mode);mode=valid?mode:'';
   if(active==='prompter'&&mode!==active)$('#cameraClose').click();
   if(mode&&mode!=='prompter'&&$('#operation').value!==mode){$('#operation').value=mode;$('#operation').dispatchEvent(new Event('change'));$('#outputs').replaceChildren();$('#status').textContent='';}
-  active=mode;main.dataset.activeTool=mode;hero.hidden=!!mode;grid.hidden=!!mode;screen.hidden=!mode;panel.hidden=!mode||mode==='prompter';camera.hidden=mode!=='prompter';$('.media-tools-card').hidden=mode==='prompter';
+  active=mode;main.dataset.activeTool=mode;grid.hidden=!!mode;screen.hidden=!mode;panel.hidden=!mode||mode==='prompter';camera.hidden=mode!=='prompter';$('.media-tools-card').hidden=mode==='prompter';
   window.dispatchEvent(new CustomEvent('vu:toolchange'));
-  $('#hubTitle').textContent=c.names[modes.indexOf(mode)]||c.title;$('#hubNotice').textContent='';selection();if(focus){window.scrollTo(0,0);(mode?$('#hubTitle'):hero.querySelector('h1')).focus();}
+  $('#hubTitle').textContent=c.names[modes.indexOf(mode)]||c.title;$('#hubNotice').textContent='';selection();if(focus){
+   window.scrollTo(0,0);
+   const target=mode?$('#hubTitle'):main.querySelector('#etShowcase .et-section-heading h2');
+   if(target){target.tabIndex=-1;target.focus();}
+  }
  }
  function navigate(mode){if(!allowed())return;const u=new URL(location.href);mode?u.searchParams.set('tool',mode):u.searchParams.delete('tool');history.pushState({},'',u);render(mode,true);}
- $('#hubBack').onclick=()=>navigate('');hero.querySelector('h1').tabIndex=-1;
+ $('#hubBack').onclick=()=>navigate('');
  window.addEventListener('popstate',()=>{if(!allowed()){const u=new URL(location.href);active?u.searchParams.set('tool',active):u.searchParams.delete('tool');history.pushState({},'',u);return;}render(new URLSearchParams(location.search).get('tool'),true);});
  const nativeBack=window.vuHandleAndroidBack;window.vuHandleAndroidBack=()=>{if(active){navigate('');return true;}return nativeBack();};
  render(new URLSearchParams(location.search).get('tool'));
