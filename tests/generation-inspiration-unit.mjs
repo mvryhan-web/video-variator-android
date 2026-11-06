@@ -278,7 +278,17 @@ test('static Inspiration manifest hides inactive Home footage and respects expli
   assert.ok(!gallery.items.some(x=>x.slug==='owner-01-close-up-woman'));
   const active=await fetch(base+'/api/inspiration/sculptural-gold-mineral-ring');
   assert.equal(active.status,200,'owner-approved active artwork stays available');
-  assert.equal((await active.json()).item.slug,'sculptural-gold-mineral-ring');
+  const approved=(await active.json()).item;
+  assert.equal(approved.slug,'sculptural-gold-mineral-ring');
+  const filtered=await (await fetch(base+'/api/inspiration?kind='+encodeURIComponent(approved.kind)+'&category='+encodeURIComponent(approved.category)+'&ratio='+encodeURIComponent(approved.aspectRatio))).json();
+  assert.ok(filtered.items.length>0,'approved artwork survives all matching public filters');
+  assert.ok(filtered.items.every(x=>x.kind===approved.kind&&x.category===approved.category&&x.aspectRatio===approved.aspectRatio));
+  assert.deepEqual(filtered.categories,[approved.category],'facets cannot advertise unrelated categories');
+  assert.deepEqual(filtered.ratios,[approved.aspectRatio],'facets cannot advertise unrelated aspect ratios');
+  const noMatch=await (await fetch(base+'/api/inspiration?kind=image&category=__missing_facet_category__')).json();
+  assert.deepEqual(noMatch.items,[]);
+  assert.deepEqual(noMatch.categories,[],'no results cannot leak unrelated category facets');
+  assert.deepEqual(noMatch.ratios,[],'no results cannot leak unrelated aspect ratios');
  } finally {
   listener.closeAllConnections();
   await new Promise(resolve=>listener.close(resolve));
