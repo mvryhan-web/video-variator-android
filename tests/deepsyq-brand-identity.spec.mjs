@@ -16,19 +16,23 @@ test('site uses approved logo and official install links',()=>{
   assert.match(html,/href="deepsyq-install-192.png"/);
   assert.doesNotMatch(html,/<span class="mark">d\.<\/span>/);
 });
-test('separate PWA preserves installed legacy Video Uniquifier identity',()=>{
+test('both installed PWA identities use approved Deepsyq branding without changing install IDs',()=>{
   const pwa=JSON.parse(text('assets/deepsyq.webmanifest'));
   const old=JSON.parse(text('assets/manifest.webmanifest'));
   assert.equal(pwa.short_name,'Deepsyq');
   assert.equal(pwa.start_url,'/deepsyq.html');
   assert.equal(pwa.id,'/deepsyq');
   assert(pwa.icons.some(i=>i.purpose==='maskable'&&i.src==='deepsyq-install-512.png'));
-  assert.equal(old.short_name,'Uniquifier');
+  assert.equal(old.short_name,'Deepsyq');
+  assert.equal(old.id,'/','Existing Video Uniquifier PWA install ID remains stable');
+  assert.equal(old.start_url,'/','Existing installed PWA launch route remains stable');
+  assert(old.icons.some(i=>i.purpose==='maskable'&&i.src==='deepsyq-install-512.png'));
+  assert(!old.icons.some(i=>i.src==='icon.svg'));
 });
 test('Android adaptive launcher uses owner mark without renaming package',()=>{
   for(const x of ['ic_launcher.xml','ic_launcher_round.xml'])
     assert.match(text('res/mipmap-anydpi-v26/'+x), /@drawable\/deepsyq_adaptive_foreground/);
-  assert.match(text('AndroidManifest.xml'),/android:label="Video Uniquifier"/);
+  assert.match(text('AndroidManifest.xml'),/android:label="Deepsyq"/);
   assert(readFileSync(path('res/drawable/deepsyq_adaptive_foreground.png')).length>10000);
 });
 
