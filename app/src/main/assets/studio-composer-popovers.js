@@ -19,9 +19,22 @@ document.addEventListener('DOMContentLoaded',()=>{
  document.body.classList.add('studio-single-rail');
  new MutationObserver(()=>{picker.disabled=$('modelButton').disabled;}).observe($('modelButton'),{attributes:true,attributeFilter:['disabled']});
  let activeAnchor=null,activePanel=null;
+ // Model and Settings buttons move into a temporary modal. After it closes,
+ // their boxes are empty: all position passes must use the visible gear.
+ function visibleAnchor(anchor){
+  const hub=anchor?.closest?.('#studioSettingsHub');
+  if(hub&&!hub.open){
+   const gear=$('studioSettingsToggle');
+   if(gear?.isConnected)return gear;
+  }
+  return anchor;
+ }
  function position(panel,anchor){
   if(!panel.open)return;
+  anchor=visibleAnchor(anchor);
+  if(!anchor?.isConnected)return;
   const edge=12,gap=8,r=anchor.getBoundingClientRect();
+  if(!r.width||!r.height)return;
   const above=Math.max(0,r.top-edge-gap),below=Math.max(0,innerHeight-r.bottom-edge-gap);
   const up=above>=below;
   panel.style.maxHeight=Math.max(100,Math.min(640,Math.max(above,below),innerHeight-edge*2))+'px';
@@ -60,10 +73,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   // dialog in the same event. Run after that handler too: native dialog
   // layout can still report the temporary (0, 0) position during capture.
   anchor.addEventListener('click',()=>{
-   const place=()=>requestAnimationFrame(()=>position(panel,anchor));
-   setTimeout(place,0);
-   requestAnimationFrame(()=>requestAnimationFrame(()=>position(panel,anchor)));
-   setTimeout(()=>position(panel,anchor),80);
+   const place=()=>position(panel,activePanel===panel&&activeAnchor?activeAnchor:anchor);
+   setTimeout(()=>requestAnimationFrame(place),0);
+   requestAnimationFrame(()=>requestAnimationFrame(place));
+   setTimeout(place,80);
   });
  }
  for(const panel of [menu,$('modelDialog'),$('settingsDialog')]){
