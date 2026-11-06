@@ -64,3 +64,23 @@ test('Spring banner uses uploaded owner artwork full width, without duplicate ba
  assert.match(creations,/src="deepsyq-site-shell\.js"/,'The existing shared header and orb are retained');
  assert.doesNotMatch(creations,/<nav class="topbar-nav"/);
 });
+
+test('My Creations keeps a full functional top header around the shared centered JARVIX sphere',()=>{
+ const core=src('deepsyq-site-shell.js');
+ const mobile=src('deepsyq-mobile-shell.js');
+ assert.match(creations,/<header class="ws-site-header" aria-label="Deepsyq site header">/);
+ assert.match(creations,/<a class="ws-header-brand" href="deepsyq\.html"/);
+ assert.match(creations,/<a id="topPricing" href="pricing\.html">Pricing<\/a>/);
+ assert.match(creations,/<a id="topLogin" class="ws-header-account" href="deepsyq\.html\?panel=login">Log in<\/a>/);
+ assert.match(creations,/\.ws-site-header>\.ds-desktop-actions\{order:2;margin-left:auto/);
+ assert.match(core,/const topH = document\.querySelector\('header'\)/,'Shared shell injects one orb into the existing header');
+ assert.match(core,/jBtn\.id = 'topJarvisBtn'/,'Keep the original working Jarvis');
+ assert.match(mobile,/const tools = link\(copy\(\)\[0\], 'free-tools\.html'/);
+ assert.match(mobile,/tour\.addEventListener\('click', async \(\) =>/);
+ assert.match(mobile,/const pricing = document\.getElementById\('topPricing'\)/);
+ assert.match(mobile,/const login = document\.getElementById\('topLogin'\)/);
+ assert.doesNotMatch(creations,/<button id="topJarvisBtn"/,'Never create a second sphere');
+ assert.doesNotMatch(creations,/<nav class="topbar-nav"/,'Never restore the overlapping Open Studio shortcut');
+ assert.match(creations,/media\/my-creations\/spring-hero-20261106\.webp/,'Preserve approved photo');
+ assert.match(creations,/id="wsResultsTitle">Saved Creations/,'Preserve the work library');
+});

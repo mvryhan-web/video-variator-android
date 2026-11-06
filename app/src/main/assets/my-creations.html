@@ -12,6 +12,19 @@
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{margin:0;background:radial-gradient(circle at 68% -8%,#132253 0%,transparent 46%),#050a17;color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
 a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{cursor:pointer}
+.ws-site-header{position:relative;display:flex;align-items:center;gap:12px;min-height:72px;padding:10px 25px;background:linear-gradient(110deg,#051127,#08132c);border-bottom:1px solid #18365b;z-index:45}
+.ws-header-brand{display:inline-flex;align-items:center;gap:9px;flex:0 0 auto;font-size:20px;line-height:1;font-weight:800;letter-spacing:-.035em;color:#f6f9ff}
+.ws-header-brand img{width:31px;height:31px;object-fit:contain}
+.ws-header-actions{display:flex;align-items:center;gap:9px;order:3;flex:0 0 auto;margin:0}
+.ws-header-actions a{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:37px;padding:7px 12px;border-radius:12px;border:1px solid #355282;color:#e5efff;background:#0d1a38;font-size:12px;font-weight:650}
+.ws-header-actions a:hover{border-color:#41caff}
+.ws-header-actions .ws-header-account{border-color:#ba6cee;background:linear-gradient(110deg,#8c2be2,#2067e8);color:#fff}
+.ws-header-actions .ws-header-optional{display:none}
+.ws-site-header>.ds-desktop-actions{order:2;margin-left:auto;display:flex;gap:9px;align-items:center}
+.ws-site-header #topJarvisBtn{z-index:110}
+@media(min-width:1650px){.ws-header-actions .ws-header-optional{display:inline-flex}}
+@media(min-width:761px) and (max-width:1060px){.ws-site-header{padding:9px 14px}.ws-header-brand{font-size:17px}.ws-header-brand img{width:26px;height:26px}.ws-header-actions{gap:5px}.ws-header-actions a{padding:7px 9px;font-size:11px}.ws-site-header>.ds-desktop-actions{gap:5px}.ws-site-header>.ds-desktop-actions :is(a,button){padding:7px 8px;font-size:11px}}
+@media(max-width:760px){.ws-site-header{min-height:58px;padding:8px 12px}.ws-header-brand{font-size:17px}.ws-header-actions{margin-left:auto}.ws-header-actions .ws-header-optional{display:none}}
 main.ws-page{width:100%;max-width:1500px;margin:0 auto;padding:12px clamp(12px,1.8vw,24px) 48px}
 .ws-hero{display:flex;align-items:center;position:relative;overflow:hidden;min-height:245px;padding:28px 34px;background:#08152f url("media/my-creations/spring-hero-20261106.webp") center center / cover no-repeat;border:1px solid #087fe2;border-radius:17px;isolation:isolate}
 .ws-hero:after{content:"";position:absolute;inset:auto 0 0;height:1px;background:linear-gradient(90deg,#17cefc,#a62dfa)}
@@ -82,6 +95,18 @@ main.ws-page{width:100%;max-width:1500px;margin:0 auto;padding:12px clamp(12px,1
 <script type="module" blocking="render" src="deepsyq-mobile-shell.js"></script>
 </head>
 <body>
+<header class="ws-site-header" aria-label="Deepsyq site header">
+  <a class="ws-header-brand" href="deepsyq.html" aria-label="Deepsyq Home">
+    <img src="deepsyq-logo.png" width="31" height="31" alt=""> Deepsyq
+  </a>
+  <!-- Shared shell adds the existing JARVIX sphere here and the Mobile Shell supplies Tour and All Tools. -->
+  <nav class="ws-header-actions" aria-label="Platform and account">
+    <a class="ws-header-optional" href="contact.html">Help</a>
+    <a class="ws-header-optional" href="pricing.html#credits">Credits</a>
+    <a id="topPricing" href="pricing.html">Pricing</a>
+    <a id="topLogin" class="ws-header-account" href="deepsyq.html?panel=login">Log in</a>
+  </nav>
+</header>
 <main class="ws-page">
   <section class="ws-hero" aria-labelledby="wsTitle">
     <div class="ws-hero-content">
