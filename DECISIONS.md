@@ -1,3 +1,15 @@
+## 2026-11-06 — D23: ИЗ КОМАНДЫ УДАЛЕНЫ GOOGLE JULES 1, 2, 3; КОД СОХРАНИТЬ
+
+**Последнее прямое решение владельца, вступает в силу немедленно.** Три Google Jules больше НЕ работают в DEEPSYQ. Ранее установленный срок 11.11.2026 отменён. Любое указание продолжать им работу, возвращать сессии, назначать новые issues, добавлять триггерный label `jules`, проверять ACK либо запускать Jules-автоматизацию утратило силу.
+
+**Команда:** главный координатор и разработчик **P**; действующий **Администратор**; **Google Antigravity** для сложного кода. A/B/C/D ранее упразднены — не восстанавливать.
+
+**Сохранность:** не удалять никакие результаты Jules (мердженный/немерженный код, коммиты, ветки, PR, тесты, изображения, QA, комментарии, handoff). Созданы отдельные Git-снимки каждого из трёх и всей DEV до прекращения работ; точные SHA, ссылки и история в [Jules retirement archive](docs/DEEPSYQ_JULES_RETIREMENT_ARCHIVE_20261106.md). Старые пункты и Jules-only issues закрыть как отменённые, **НЕ как DONE функции**. Незаконченные полезные работы остаются в едином backlog P без назначения Jules. Отключение GitHub-контроля не является проверенным прекращением внешних сессий в Google.
+
+Сохраняются D20, D22 (канонические F1–F6), защита коммерческой генерации, маржа 2×, заморозка production/main и дизайн-lock. Исторические решения ниже для архива, но не для исполнения.
+
+---
+
 ## OWNER RULE — 2026-11-03 — TEST SITE FIRST; PRODUCTION PUBLICATION FROZEN
 
 **Standing owner authorization:** publish every completed, appropriately checked change to the existing DEEPSYQ test site so the owner can inspect its actual behavior, without asking again for each safe test publication. Deploy only the intended reviewed revision and verify the deployed page; a commit, PR, merge or accepted deploy request alone is not proof that the owner can see the change.
