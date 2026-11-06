@@ -1,50 +1,45 @@
-/* Owner composer reference: one site rail and unified DeepSyQ dark neon popovers. */
+/* Owner composer reference: one site rail and compact, button-anchored panels. */
 .studio-shell{grid-template-columns:minmax(0,1fr)}
 .studio-shell>.studio-nav{display:none}
 .studio-single-rail .studio-shell{display:block}
 .studio-single-rail .studio-shell>main{max-width:1440px;padding-inline:clamp(16px,4vw,64px)}
 .studio-type-picker .nav-icon{width:18px;height:18px;font-size:18px;display:inline-flex}
 .studio-type-picker .nav-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6}
-.composer-chevron{margin-left:auto;color:#7dd3fc}
-.composer-popover{position:fixed!important;inset:auto!important;margin:0!important;transform:none!important;width:min(360px,calc(100vw - 24px));max-width:calc(100vw - 24px);box-sizing:border-box;max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;color:#e2e8f8;background:linear-gradient(145deg,#0d1226,#121938)!important;border:1px solid #2a3a6b!important;border-radius:16px!important;padding:18px!important;box-shadow:0 18px 48px rgba(0,0,0,0.8),0 0 24px rgba(76,156,244,0.18)!important;backdrop-filter:blur(14px)}
-.composer-popover::backdrop{background:rgba(4,7,17,0.65)!important;backdrop-filter:blur(4px)!important}
-.composer-popover .dialog-head{background:transparent!important;border-bottom:1px solid #223055;padding:0 0 12px!important;margin-bottom:14px;gap:8px}
-.composer-popover .dialog-head h2{font-size:16px;line-height:1.4;font-weight:700;color:#e0f2fe;margin-right:auto}
-.composer-popover .dialog-head>[data-close]{width:44px;min-width:44px;min-height:44px;height:44px;font-size:20px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid #2a3a6b;color:#cbd5e1}
-.composer-popover .dialog-head>[data-close]:hover{background:rgba(239,68,68,0.2);color:#fca5a5;border-color:rgba(239,68,68,0.5)}
-.composer-popover .hint{color:#94a3b8}
-.studio-type-menu{width:180px;padding:8px!important;scrollbar-gutter:auto}
-#studioTypeMenu .studio-nav{display:flex;flex-direction:column;padding:0;border:0;gap:4px;background:transparent}
+.composer-chevron{margin-left:auto;color:#aaa}
+.composer-popover{position:fixed!important;inset:auto!important;margin:0!important;transform:none!important;width:min(360px,calc(100vw - 24px));max-width:calc(100vw - 24px);box-sizing:border-box;max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;color:#e9e9e9;background:#1b1b1b!important;border:1px solid #393939!important;border-radius:12px!important;padding:16px!important;box-shadow:0 18px 48px #0008}
+.composer-popover::backdrop{background:transparent!important;backdrop-filter:none!important}
+.composer-popover .dialog-head{background:#1b1b1b!important;border-bottom:1px solid #353535;padding:0 0 12px!important;margin-bottom:14px;gap:8px}
+.composer-popover .dialog-head h2{font-size:16px;line-height:1.4;font-weight:550;margin-right:auto}
+.composer-popover .dialog-head>[data-close]{width:44px;min-width:44px;min-height:44px;height:44px;font-size:20px}
+.composer-popover .hint{color:#9d9d9d}
+.studio-type-menu{width:170px;padding:7px!important;scrollbar-gutter:auto}
+#studioTypeMenu .studio-nav{display:flex;flex-direction:column;padding:0;border:0;gap:3px;background:transparent}
 .studio-type-menu .nav-caption,.studio-type-menu .nav-footer{display:none}
-.studio-type-menu .studio-nav>button{flex:none;min-height:44px;border:1px solid transparent;border-radius:10px;padding:8px 12px;background:transparent;font-size:14px;gap:10px;color:#cbd5e1;transition:all 0.2s}
-.studio-type-menu .studio-nav>button:hover{background:rgba(76,156,244,0.12);color:#fff}
-#studioTypeMenu .studio-nav>button[aria-pressed=true]{color:#fff;background:linear-gradient(105deg,#21164b,#03509b);border-color:#00beff;box-shadow:0 0 12px rgba(11,239,255,0.3)}
-.studio-type-menu .studio-nav>button[aria-pressed=true]::after{content:'✓';margin-left:auto;color:#00e5ff;font-weight:700}
+.studio-type-menu .studio-nav>button{flex:none;min-height:44px;border:0;border-radius:7px;padding:8px 10px;background:transparent;font-size:14px;gap:10px}
+#studioTypeMenu .studio-nav>button[aria-pressed=true]{color:#fff;background:#2c2c2c}
+.studio-type-menu .studio-nav>button[aria-pressed=true]::after{content:'✓';margin-left:auto}
 .studio-type-menu .nav-icon{width:18px;height:18px;display:flex}
 .studio-type-menu .nav-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6}
-#modelDialog.composer-popover .model-choices{gap:6px;margin-top:12px}
-#modelDialog.composer-popover .model-card{position:relative;display:grid;grid-template-columns:38px minmax(0,1fr) 16px;column-gap:12px;row-gap:3px;min-height:70px;padding:10px 10px;background:#141b34;border:1px solid #233157;border-radius:12px;cursor:pointer;transition:all 0.2s}
-#modelDialog.composer-popover .model-card:hover{background:rgba(76,156,244,0.15);border-color:rgba(76,156,244,0.4)}
-#modelDialog.composer-popover .model-card[aria-pressed=true]{background:linear-gradient(135deg,rgba(33,22,75,0.85),rgba(3,80,155,0.7))!important;border:1px solid #00beff!important;box-shadow:0 0 14px rgba(11,239,255,0.3)!important}
+#modelDialog.composer-popover .model-choices{gap:4px;margin-top:12px}
+#modelDialog.composer-popover .model-card{position:relative;display:grid;grid-template-columns:38px minmax(0,1fr) 16px;column-gap:12px;row-gap:3px;min-height:70px;padding:10px 8px;background:transparent;border:0;border-radius:8px}
+#modelDialog.composer-popover .model-card[aria-pressed=true],#modelDialog.composer-popover .model-card:hover{background:#303030}
 #modelDialog.composer-popover .model-card strong,#modelDialog.composer-popover .model-card small,#modelDialog.composer-popover .model-card .connection{grid-column:2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#modelDialog.composer-popover .model-card strong{font-size:14px;font-weight:600;color:#f1f5f9;grid-row:1}
-#modelDialog.composer-popover .model-card small{font-size:11px;grid-row:2;color:#94a3b8}
-#modelDialog.composer-popover .model-card .connection{font-size:10px;grid-row:3;color:#a5b4fc}
-.model-provider-mark{grid-column:1;grid-row:1/4;align-self:center;display:grid;place-items:center;width:38px;height:38px;background:linear-gradient(135deg,#162044,#1d2b5c);border:1px solid #33487c;border-radius:10px;font-size:18px;font-weight:700;color:#38bdf8}
-#modelDialog.composer-popover .model-card[aria-pressed=true]::after{content:'✓';grid-column:3;grid-row:1/4;align-self:center;color:#00e5ff;font-weight:700}
-#settingsDialog.composer-popover label{color:#e2e8f0;margin:16px 0 10px;gap:10px;font-size:13px;font-weight:600}
+#modelDialog.composer-popover .model-card strong{font-size:14px;font-weight:500;grid-row:1}
+#modelDialog.composer-popover .model-card small{font-size:11px;grid-row:2;color:#aaa}
+#modelDialog.composer-popover .model-card .connection{font-size:10px;grid-row:3;color:#b3a9c9}
+.model-provider-mark{grid-column:1;grid-row:1/4;align-self:center;display:grid;place-items:center;width:38px;height:38px;background:#303030;border:1px solid #454545;border-radius:9px;font-size:21px;font-weight:650;color:#eee}
+#modelDialog.composer-popover .model-card[aria-pressed=true]::after{content:'✓';grid-column:3;grid-row:1/4;align-self:center;color:#ddd}
+#settingsDialog.composer-popover label{color:#ddd;margin:16px 0 10px;gap:10px}
 #settingsDialog.composer-popover .ratio-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 18px}
-#settingsDialog.composer-popover .ratio-choices button{min-width:0;min-height:48px;background:#141b34;border:1px solid #233157;border-radius:10px;padding:8px;font-size:13px;color:#cbd5e1;cursor:pointer;transition:all 0.2s}
-#settingsDialog.composer-popover .ratio-choices button:hover,.composer-setting-choices button:hover{border-color:#38bdf8;color:#fff}
-#settingsDialog.composer-popover .ratio-choices button[aria-pressed=true],.composer-setting-choices button[aria-pressed=true]{border-color:#00beff!important;background:linear-gradient(105deg,#21164b,#03509b)!important;box-shadow:0 0 12px rgba(11,239,255,0.35)!important;color:#fff!important;font-weight:700}
+#settingsDialog.composer-popover .ratio-choices button{min-width:0;min-height:48px;background:#2a2a2a;border:1px solid transparent;border-radius:8px;padding:8px;font-size:13px;color:#ddd}
+#settingsDialog.composer-popover .ratio-choices button[aria-pressed=true],.composer-setting-choices button[aria-pressed=true]{border-color:#cbd3dd!important;background:#303236!important;color:#fff}
 #settingsDialog.composer-popover .ratio-drawing{display:none}
 #settingsDialog.composer-popover #ratioLabel{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .composer-setting-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.composer-setting-choices button{min-width:0;min-height:44px;border:1px solid #233157;background:#141b34;border-radius:10px;padding:8px;color:#cbd5e1;font-size:13px;cursor:pointer;transition:all 0.2s}
+.composer-setting-choices button{min-width:0;min-height:44px;border:1px solid transparent;background:#2a2a2a;border-radius:8px;padding:8px;color:#ddd;font-size:13px}
 .composer-native-select{position:absolute!important;width:1px!important;height:1px!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;clip-path:inset(50%);border:0!important}
 .composer-duration{display:flex;gap:20px;align-items:center;min-height:42px}
-.composer-duration input{width:100%;min-width:0;accent-color:#00e5ff}
-.composer-duration output{flex:0 0 60px;min-height:36px;display:grid;place-items:center;border-radius:10px;background:#141b34;border:1px solid #233157;font-size:14px;color:#00e5ff;font-weight:700}
-.composer-settings-reset{font-size:11px!important;min-height:32px!important;border:0!important;background:transparent!important;color:#94a3b8!important;padding:4px!important;cursor:pointer}
-.composer-settings-reset:hover{color:#38bdf8!important}
+.composer-duration input{width:100%;min-width:0;accent-color:#cbd3dd}
+.composer-duration output{flex:0 0 60px;min-height:36px;display:grid;place-items:center;border-radius:8px;background:#2a2a2a;font-size:14px;color:#eee}
+.composer-settings-reset{font-size:11px!important;min-height:32px!important;border:0!important;background:transparent!important;color:#aaa!important;padding:4px!important}
 @media(max-width:700px){.studio-single-rail .studio-shell>main{min-height:calc(100svh - 62px)}.composer-controls{gap:7px}.studio-type-picker{flex:0 0 auto}.composer-popover{padding:14px!important}.composer-controls .pill{font-size:11px}.studio-type-menu{padding:7px!important}}

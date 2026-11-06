@@ -27,7 +27,7 @@ test('Owner neon layout: reference section order, real card images and mobile bo
  await expect(page.locator('#createWithDeepsyq .home-feature-spotlight')).toHaveCount(3);
  await expect(page.locator('.home-create-card')).toHaveCount(6);
  await expect(page.getByRole('search').getByRole('searchbox',{name:'Search creative tools'})).toBeVisible();
- await expect(page.locator('.home-global-search')).toHaveCount(0);
+ await expect(page.locator('.home-global-search')).toHaveAttribute('action','ai-apps.html');
  await expect(page.locator('.home-feature-spotlight')).toHaveCount(3);
  await expect(page.locator('.home-hero-recommended')).toContainText('Recommended');
  await expect(page.locator('.home-create-copy strong')).toHaveText(['Image','Video','Audio','AI Agent','AI Apps','Canvas']);
