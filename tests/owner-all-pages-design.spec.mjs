@@ -22,7 +22,7 @@ for(const entry of pages){
   await expect(page.locator(studio?'link[href="studio-classic-theme.css"]':'link[href="deepsyq-global-theme.css"]')).toHaveCount(1);
   if(studio){await expect(page.locator('.ds-studio-examples')).toHaveCount(0);await expect(page.locator('script[src="approved-page-design.js"]')).toHaveCount(0);}
   if(entry.id==='08-audio-tools'){
-   await expect(page.locator('#toolAccessBanner')).toBeVisible();
+   await expect(page.locator('#toolAccessBanner')).toHaveCount(0);
    const hero=await page.locator('.ds-approved-hero').boundingBox();
    const tool=await page.locator('.tool-card').filter({has:page.locator('#speechText')}).boundingBox();
    if(info.project.name.startsWith('desktop'))expect(hero.width).toBeGreaterThan(tool.width*1.7);
