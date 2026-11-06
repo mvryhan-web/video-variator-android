@@ -28,7 +28,7 @@ test('approved Deepsyq logo is loaded and legible in desktop sidebar and mobile 
  expect(writes).toEqual([]); // logo rendering must not start billing, upload or AI generation
 });
 
-test('Deepsyq install identity serves its own PWA icons while old app keeps its manifest',async({page,request})=>{
+test('both installed PWA identities serve the approved Deepsyq icon set',async({page,request})=>{
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href','deepsyq.webmanifest');
  await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href','deepsyq-install-192.png');
@@ -46,5 +46,8 @@ test('Deepsyq install identity serves its own PWA icons while old app keeps its 
  expect(favicon.status()).toBe(200);
  const legacy=await request.get('/manifest.webmanifest');
  expect(legacy.status()).toBe(200);
- expect((await legacy.json()).short_name).toBe('Uniquifier');
+ const oldManifest=await legacy.json();
+ expect(oldManifest.short_name).toBe('Deepsyq');
+ expect(oldManifest.id).toBe('/');
+ expect(oldManifest.icons.some(icon=>icon.src==='deepsyq-icon-192.png')).toBeTruthy();
 });
