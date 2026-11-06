@@ -116,12 +116,15 @@ html .inspiration-detail-dialog .inspiration-detail-close:focus-visible{
 /* Gallery detail only: original media, single-line expandable prompt, and one Clone CTA.
    Canvas and Agent detail presentations are not changed. */
 .inspiration-detail-minimal .inspiration-detail-sidebar{gap:10px}
+.inspiration-detail-minimal .inspiration-detail-heading{margin:0}
 .inspiration-detail-minimal .inspiration-detail-prompt{
- min-width:0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ min-width:0;max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere;
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;
+ overflow:hidden;text-overflow:ellipsis;
 }
 .inspiration-detail-minimal .inspiration-detail-prompt.is-expanded{
- white-space:pre-wrap;overflow-wrap:anywhere;overflow:auto;
- text-overflow:clip;max-height:min(38dvh,280px);
+ display:block;-webkit-line-clamp:unset;white-space:pre-wrap;overflow-wrap:anywhere;
+ overflow:auto;text-overflow:clip;max-height:min(38dvh,280px);
 }
 .inspiration-detail-minimal .inspiration-detail-more{
  align-self:flex-start;min-height:32px;border:0;border-radius:0;padding:4px 0;
