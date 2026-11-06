@@ -17,18 +17,19 @@ test('approved Deepsyq logo is loaded and legible in desktop sidebar and mobile 
  expect(big.height).toBeGreaterThanOrEqual(24);
  await expect(page.locator('#sidebar .brand-name')).toHaveText('Deepsyq');
  await page.setViewportSize({width:390,height:844});
- const top=page.locator('.top-brand img[src="deepsyq-logo.png"]');
+ // On mobile the shared shell replaces the old top-brand with the owner-approved mobile brand.
+ const top=page.locator('.ds-mobile-header .ds-mobile-brand img[src="deepsyq-logo.png"]');
  await expect(top).toBeVisible();
  await expect.poll(()=>top.evaluate(img=>img.complete?img.naturalWidth:0)).toBe(1254);
  const small=await top.boundingBox();
  expect(small).not.toBeNull();
  expect(small.width).toBeGreaterThanOrEqual(20);
  expect(small.height).toBeGreaterThanOrEqual(20);
- await expect(page.locator('.top-brand')).toContainText('Deepsyq');
+ await expect(page.locator('.ds-mobile-header .ds-mobile-brand')).toContainText('Deepsyq');
  expect(writes).toEqual([]); // logo rendering must not start billing, upload or AI generation
 });
 
-test('Deepsyq install identity serves its own PWA icons while old app keeps its manifest',async({page,request})=>{
+test('both installed PWA identities serve the approved Deepsyq icon set',async({page,request})=>{
  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href','deepsyq.webmanifest');
  await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href','deepsyq-install-192.png');
@@ -46,5 +47,32 @@ test('Deepsyq install identity serves its own PWA icons while old app keeps its 
  expect(favicon.status()).toBe(200);
  const legacy=await request.get('/manifest.webmanifest');
  expect(legacy.status()).toBe(200);
- expect((await legacy.json()).short_name).toBe('Uniquifier');
+ const oldManifest=await legacy.json();
+ expect(oldManifest.short_name).toBe('Deepsyq');
+ expect(oldManifest.id).toBe('/');
+ expect(oldManifest.icons.some(icon=>icon.src==='deepsyq-icon-192.png')).toBeTruthy();
+});
+
+test('Video History and other creator pages show the official Deepsyq logo, including installed web icons',async({page,request})=>{
+ const postPaid=[];
+ page.on('request',req=>{
+  const path=new URL(req.url()).pathname; if(req.method()==='POST'&&['/api/ai-billing/','/api/ai-wallet/','/api/studio/','/api/checkout/'].some(prefix=>path.startsWith(prefix)))postPaid.push(req.url());
+ });
+ await page.goto('/index.html?view=history',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('body')).toHaveClass(/vu-reference/);
+ await expect(page.locator('#historyView')).toHaveClass(/active/);
+ const mobile=(page.viewportSize()?.width||0)<=760;
+ const logo=page.locator(mobile?'.ds-mobile-header .ds-mobile-brand img[src="deepsyq-logo.png"]':'.vu-appbar .vu-logo-image[src="deepsyq-logo.png"]');
+ await expect(logo).toBeVisible();
+ await expect.poll(()=>logo.evaluate(img=>img.complete?img.naturalWidth:0)).toBe(1254);
+ await expect(page.locator('link[rel="icon"][href="favicon.ico"]')).toHaveCount(1);
+ await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href','manifest.webmanifest');
+ const webManifest=await (await request.get('/manifest.webmanifest')).json();
+ expect(webManifest.short_name).toBe('Deepsyq');
+ expect(webManifest.icons.map(i=>i.src)).toContain('deepsyq-icon-192.png');
+ await page.goto('/pricing.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator(mobile?'.ds-mobile-header .ds-mobile-brand img[src="deepsyq-logo.png"]':'.price-brand img[src="deepsyq-logo.png"]')).toBeVisible();
+ await page.goto('/my-creations.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator(mobile?'.ds-mobile-header .ds-mobile-brand img[src="deepsyq-logo.png"]':'.ws-header-brand img[src="deepsyq-logo.png"]')).toBeVisible();
+ expect(postPaid).toEqual([]);
 });

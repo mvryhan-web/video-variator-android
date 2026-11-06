@@ -1,7 +1,7 @@
 {
-  "name": "Video Uniquifier",
-  "short_name": "Uniquifier",
-  "description": "Make your old videos unique with privacy-first on-device processing.",
+  "name": "Deepsyq — AI Creative Workspace",
+  "short_name": "Deepsyq",
+  "description": "Deepsyq creative tools for images, video, audio, and everyday tasks.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
@@ -16,10 +16,28 @@
   ],
   "icons": [
     {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "deepsyq-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "deepsyq-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "deepsyq-install-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "deepsyq-install-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
