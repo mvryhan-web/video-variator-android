@@ -51,3 +51,26 @@ test('both installed PWA identities serve the approved Deepsyq icon set',async({
  expect(oldManifest.id).toBe('/');
  expect(oldManifest.icons.some(icon=>icon.src==='deepsyq-icon-192.png')).toBeTruthy();
 });
+
+test('Video History and other creator pages show the official Deepsyq logo, including installed web icons',async({page,request})=>{
+ const postPaid=[];
+ page.on('request',req=>{
+  if(req.method()==='POST'&&/\\/api\\/(ai-billing|ai-wallet|studio|checkout)/.test(new URL(req.url()).pathname))postPaid.push(req.url());
+ });
+ await page.goto('/index.html?view=history',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('body')).toHaveClass(/vu-reference/);
+ await expect(page.locator('#historyView')).toHaveClass(/active/);
+ const logo=page.locator('.vu-appbar .vu-logo-image[src="deepsyq-logo.png"]');
+ await expect(logo).toBeVisible();
+ await expect.poll(()=>logo.evaluate(img=>img.complete?img.naturalWidth:0)).toBe(1254);
+ await expect(page.locator('link[rel="icon"][href="favicon.ico"]')).toHaveCount(1);
+ await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href','manifest.webmanifest');
+ const webManifest=await (await request.get('/manifest.webmanifest')).json();
+ expect(webManifest.short_name).toBe('Deepsyq');
+ expect(webManifest.icons.map(i=>i.src)).toContain('deepsyq-icon-192.png');
+ await page.goto('/pricing.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('.price-brand img[src="deepsyq-logo.png"]')).toBeVisible();
+ await page.goto('/my-creations.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('.ws-header-brand img[src="deepsyq-logo.png"]')).toBeVisible();
+ expect(postPaid).toEqual([]);
+});
