@@ -109,3 +109,30 @@ html .inspiration-detail-dialog .inspiration-detail-close:focus-visible{
 }
 /* Owner request: remove the mobile-only Inspiration shortcut from desktop Home. */
 @media (min-width:761px){body.home-neon .home-prompt-ideas{display:none!important}}
+
+/* Owner request: remove the mobile-only Inspiration shortcut from desktop Home. */
+@media (min-width:761px){body.home-neon .home-prompt-ideas{display:none!important}}
+
+/* Gallery detail only: original media, single-line expandable prompt, and one Clone CTA.
+   Canvas and Agent detail presentations are not changed. */
+.inspiration-detail-minimal .inspiration-detail-sidebar{gap:10px}
+.inspiration-detail-minimal .inspiration-detail-prompt{
+ min-width:0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.inspiration-detail-minimal .inspiration-detail-prompt.is-expanded{
+ white-space:pre-wrap;overflow-wrap:anywhere;overflow:auto;
+ text-overflow:clip;max-height:min(38dvh,280px);
+}
+.inspiration-detail-minimal .inspiration-detail-more{
+ align-self:flex-start;min-height:32px;border:0;border-radius:0;padding:4px 0;
+ background:transparent;color:#d7ccff;font:inherit;font-size:12px;
+ font-weight:650;text-align:left;cursor:pointer;
+}
+.inspiration-detail-minimal .inspiration-detail-more[hidden]{display:none}
+.inspiration-detail-minimal .inspiration-detail-more:focus-visible{
+ outline:2px solid #d39fff;outline-offset:2px;
+}
+.inspiration-detail-minimal .inspiration-detail-actions{display:block}
+.inspiration-detail-minimal .inspiration-detail-actions button.inspiration-detail-clone{
+ width:100%;grid-column:auto;background:#fff;border-color:#fff;color:#11131b;
+}

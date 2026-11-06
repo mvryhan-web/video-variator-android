@@ -34,7 +34,7 @@ function detailEl(tag,className,text){
  if(text!==undefined)el.textContent=String(text);
  return el;
 }
-function openInspirationDetail(item,opener){
+function openInspirationDetail(item,opener,{minimal=false}={}){
  for(const v of previewVideos)v.pause();
  if(inspirationDetail?.open)inspirationDetail.close();
  const dialog=detailEl('dialog','inspiration-detail-dialog');
@@ -46,7 +46,7 @@ function openInspirationDetail(item,opener){
  close.type='button';close.setAttribute('aria-label','Close inspiration preview');
  close.onclick=()=>dialog.close();
  const caption=detailEl('span','inspiration-detail-caption',item.kind==='video'?'Video inspiration':'Image inspiration');
- toolbar.append(close,caption);
+ toolbar.append(close);if(!minimal)toolbar.append(caption);
  const imageArea=detailEl('div','inspiration-detail-image-area');
  let media;
  if(item.kind==='video'){
@@ -66,8 +66,28 @@ function openInspirationDetail(item,opener){
  const description=detailEl('p','inspiration-detail-description',item.description||'Owner-approved Deepsyq inspiration.');
  const headingPrompt=detailEl('h3','inspiration-detail-heading','Prompt');
  const prompt=detailEl('p','inspiration-detail-prompt',item.prompt||'No prompt available.');
- sidebar.append(heading,kindLine,description,headingPrompt,prompt);
- if(item.kind==='video'){
+ let promptMore=null,promptResizeObserver=null;
+ if(minimal){
+  dialog.classList.add('inspiration-detail-minimal');
+  prompt.id='inspiration-detail-current-prompt';
+  prompt.setAttribute('aria-label','Prompt');
+  promptMore=detailEl('button','inspiration-detail-more','Show more');
+  promptMore.type='button';promptMore.hidden=true;
+  promptMore.setAttribute('aria-controls',prompt.id);
+  promptMore.setAttribute('aria-expanded','false');
+  promptMore.onclick=()=>{
+   const expanded=prompt.classList.toggle('is-expanded');
+   promptMore.textContent=expanded?'Show less':'Show more';
+   promptMore.setAttribute('aria-expanded',String(expanded));
+   if(!expanded)requestAnimationFrame(refreshPromptMore);
+  };
+  sidebar.append(prompt,promptMore);
+ }else sidebar.append(heading,kindLine,description,headingPrompt,prompt);
+ function refreshPromptMore(){
+  if(!minimal||!promptMore||prompt.classList.contains('is-expanded'))return;
+  promptMore.hidden=prompt.scrollWidth<=prompt.clientWidth+1;
+ }
+ if(item.kind==='video'&&!minimal){
   const meta=detailEl('div','inspiration-detail-parameters');
   meta.append(detailEl('h3','inspiration-detail-heading','Parameters'));
   const entries=[['Model',item.defaultModel||item.displayModel||'Choose in Studio'],['Aspect ratio',item.aspectRatio]];
@@ -85,7 +105,7 @@ function openInspirationDetail(item,opener){
  const note=detailEl('p','inspiration-detail-note','An example, not a ready-to-run AI model. Opening Studio prepares your prompt; no generation or payment starts automatically.');
  const feedback=detailEl('p','inspiration-detail-feedback');feedback.hidden=true;feedback.setAttribute('role','alert');
  const actions=detailEl('div','inspiration-detail-actions');
- const clone=detailEl('button','inspiration-detail-clone','✦ Clone & try');clone.setAttribute('aria-label','Clone & Try');
+ const clone=detailEl('button','inspiration-detail-clone',minimal?'Clone & Try':'✦ Clone & try');clone.setAttribute('aria-label','Clone & Try');
  const use=detailEl('button','inspiration-detail-secondary','Use this prompt');
  const create=detailEl('button','inspiration-detail-secondary','Create yours');
  const copy=detailEl('button','inspiration-detail-secondary','Copy prompt');
@@ -116,12 +136,13 @@ function openInspirationDetail(item,opener){
   feedback.textContent=copied?'Prompt copied to clipboard.':'Clipboard is unavailable. Select the prompt text above to copy it.';
   feedback.hidden=false;
  };
- actions.append(clone,use,copy,create);
- sidebar.append(note,feedback,actions);
+ if(minimal){actions.append(clone);sidebar.append(feedback,actions);}
+ else{actions.append(clone,use,copy,create);sidebar.append(note,feedback,actions);}
  layout.append(stage,sidebar);dialog.append(layout);
  const previousOverflow=document.body.style.overflow;
  dialog.addEventListener('close',()=>{
   if(media.tagName==='VIDEO')media.pause();
+  promptResizeObserver?.disconnect();
   document.body.style.overflow=previousOverflow;
   dialog.remove();if(inspirationDetail===dialog)inspirationDetail=null;
   if(opener.isConnected)opener.focus({preventScroll:true});
@@ -129,6 +150,13 @@ function openInspirationDetail(item,opener){
  dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
  document.body.append(dialog);inspirationDetail=dialog;
  dialog.showModal();document.body.style.overflow='hidden';close.focus({preventScroll:true});
+ if(minimal){
+  if('ResizeObserver' in window){
+   promptResizeObserver=new ResizeObserver(refreshPromptMore);
+   promptResizeObserver.observe(prompt);
+  }
+  requestAnimationFrame(refreshPromptMore);
+ }
  if(media.tagName==='VIDEO')void media.play().catch(()=>{});
 }
 
@@ -210,7 +238,7 @@ function draw(){
    visual.append(image);
   }
   button.append(visual);
-  button.onclick=()=>openInspirationDetail(item,button);
+  button.onclick=()=>openInspirationDetail(item,button,{minimal:true});
   root.append(button);
  }
  const empty=document.getElementById('inspirationEmpty');empty.hidden=visible.length>0;
