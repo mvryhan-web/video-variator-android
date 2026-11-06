@@ -5,6 +5,15 @@ test.beforeEach(async({page})=>{
  await page.route('https://accounts.google.com/gsi/client',r=>r.fulfill({contentType:'application/javascript',body:''}));
 });
 
+// Video quality/mode controls remain model-validated internally, but are
+// intentionally hidden from the owner-approved simplified Settings popup.
+async function setInternalVideoOption(page,id,value){
+ await page.locator('#'+id).evaluate((select,next)=>{
+  select.value=next;
+  select.dispatchEvent(new Event('change',{bubbles:true}));
+ },value);
+}
+
 async function chooseStudio(page,kind){await page.locator('#studioTypePicker').click();await page.locator('#studioTypeMenu [data-kind="'+kind+'"]').click();}
 test('mobile studio has clear sections, no false generation and no overflow',async({page})=>{await page.setViewportSize({width:390,height:844});let posts=0;page.on('request',r=>{if(r.method()==='POST')posts++;});await page.goto('/generate-studio.html');await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await page.locator('#prompt').fill('Ocean');await page.locator('#consent').check();await expect(page.locator('#generate')).toBeDisabled();await expect(page.locator('#availability')).toContainText('not enabled');await chooseStudio(page,'image');await expect(page.locator('#taskTitle')).toHaveText('Light up your creation with Deepsyq');await expect(page.locator('#ratio option')).toHaveCount(5);await chooseStudio(page,'music');await page.locator('#settingsButton').click();await expect(page.locator('#musicOptions')).toBeVisible();await page.locator('#musicMode').selectOption('instrumental');await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('#referenceBox')).toBeHidden();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(posts).toBe(0);});
 test('config exposes readiness without secrets and disabled endpoint fails closed',async({request})=>{const r=await request.get('/api/studio/config');expect(r.status()).toBe(200);const c=await r.json();expect(c.enabled).toBe(false);expect(c.ownerOnly).toBe(true);expect(c.translation.enabled).toBe(false);const post=await request.post('/api/studio/jobs',{data:{kind:'image',prompt:'test',consent:true}});expect(post.status()).toBe(503);});
@@ -183,12 +192,12 @@ test('video selectors follow real Veo/Seedance capabilities without submitting j
  let posts=0;page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))posts++;});
  await page.goto('/generate-studio.html?studio=video');
  await page.locator('#settingsButton').click();
- await expect(page.locator('#videoResolutionLabel')).toBeVisible();
- await expect(page.locator('#videoDurationLabel')).toBeVisible();
+ await expect(page.locator('#videoResolutionLabel')).toBeHidden();
+ await expect(page.locator('#videoDurationLabel')).toBeHidden();
  await expect(page.locator('#videoDuration option')).toHaveCount(3);
- await page.locator('#videoDuration').selectOption('4');
- await expect(page.locator('#settingsButton')).toContainText('4s');
- await page.locator('#videoResolution').selectOption('1080p');
+ await setInternalVideoOption(page,'videoDuration','4');
+ await expect(page.locator('#settingsButton')).not.toContainText('4s');
+ await setInternalVideoOption(page,'videoResolution','1080p');
  await expect(page.locator('#videoDuration')).toHaveValue('8');
  await expect(page.locator('#videoDuration option')).toHaveCount(1);
  await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
@@ -196,7 +205,7 @@ test('video selectors follow real Veo/Seedance capabilities without submitting j
  await page.getByRole('button',{name:/^Seedance 2\.0 Text or up to/}).click();
  await page.locator('#settingsButton').click();
  await expect(page.locator('#videoDuration option')).toHaveCount(5);
- await page.locator('#videoDuration').selectOption('15');
+ await setInternalVideoOption(page,'videoDuration','15');
  await expect(page.locator('#videoDuration')).toHaveValue('15');
  await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
  await chooseStudio(page,'image');
@@ -216,13 +225,13 @@ test('Seedance image modes follow attached photo count without posting paid jobs
  await page.locator('#references').setInputFiles(image);
  await page.locator('#settingsButton').click();
  await expect(page.locator('#videoInputMode')).toHaveValue('first_frame');
- await page.locator('#videoInputMode').selectOption('reference_image');
+ await setInternalVideoOption(page,'videoInputMode','reference_image');
  await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
  await page.locator('#references').setInputFiles({...image,name:'last.png'});
  await page.locator('#settingsButton').click();
  await expect(page.locator('#videoInputMode')).toHaveValue('reference_image');
  await expect(page.locator('#videoInputMode option')).toHaveCount(2);
- await page.locator('#videoInputMode').selectOption('first_last');
+ await setInternalVideoOption(page,'videoInputMode','first_last');
  await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
  await page.locator('#references').setInputFiles({...image,name:'third.png'});
  await page.locator('#settingsButton').click();
@@ -243,8 +252,8 @@ test('video prompt and model settings restore privately after tab reload without
  await page.getByRole('button',{name:/^Seedance 2\.0 Text or up to/}).click();
  await page.locator('#prompt').fill('A calm mountain sunrise with slowly moving clouds');
  await page.locator('#settingsButton').click();
- await page.locator('#videoResolution').selectOption('1080p');
- await page.locator('#videoDuration').selectOption('15');
+ await setInternalVideoOption(page,'videoResolution','1080p');
+ await setInternalVideoOption(page,'videoDuration','15');
  await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
  await page.reload();
  await expect(page.locator('#prompt')).toHaveValue('A calm mountain sunrise with slowly moving clouds');
@@ -273,7 +282,7 @@ test('recovered Seedance first and last frames require both photos again, never 
  await page.locator('#references').setInputFiles([photo('first.png'),photo('last.png')]);
  await expect(page.locator('#refPreview img')).toHaveCount(2);
  await page.locator('#settingsButton').click();
- await page.locator('#videoInputMode').selectOption('first_last');
+ await setInternalVideoOption(page,'videoInputMode','first_last');
  await page.locator('#settingsDialog [data-close=settingsDialog]').last().click();
  await page.reload();
  await expect(page.locator('#refPreview img')).toHaveCount(0);
@@ -386,3 +395,49 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
  });
  }
 }
+
+
+test('Studio Settings ratio frames match actual aspect and Video popup omits advanced options',async({page})=>{
+ let posts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))posts++;});
+ for(const width of [390,1363]){
+  await page.setViewportSize({width,height:870});
+  await page.goto('/generate-studio.html?studio=image');
+  await page.locator('#settingsButton').click();
+  const ratios=await page.locator('#settingsDialog #ratioChoices button').evaluateAll(elements=>Object.fromEntries(elements.map(button=>{
+   const frame=button.querySelector('.ratio-drawing');
+   const rect=frame.getBoundingClientRect();
+   return [button.getAttribute('aria-label'),{width:rect.width,height:rect.height,visible:getComputedStyle(frame).display!=='none'}];
+  })));
+  for(const ratio of ['1:1','2:3','9:16','16:9']){
+   expect(ratios[ratio],ratio+' must have a visible drawing').toBeDefined();
+   expect(ratios[ratio].visible).toBe(true);
+   expect(ratios[ratio].height).toBeGreaterThan(0);
+   const [w,h]=ratio.split(':').map(Number);
+   expect(Math.abs(ratios[ratio].width/ratios[ratio].height-w/h),ratio).toBeLessThan(0.08);
+  }
+  expect(ratios['1:1'].width).toBe(ratios['1:1'].height);
+  expect(ratios['9:16'].height).toBeGreaterThan(ratios['9:16'].width);
+  expect(ratios['16:9'].width).toBeGreaterThan(ratios['16:9'].height);
+  await page.locator('#ratioChoices button[aria-label="9:16"]').click();
+  await expect(page.locator('#ratio')).toHaveValue('9:16');
+  await page.locator('#settingsDialog [data-close="settingsDialog"]').last().click();
+
+  await page.goto('/generate-studio.html?studio=video');
+  await page.locator('#settingsButton').click();
+  const panel=page.locator('#settingsDialog');
+  await expect(panel).toHaveAttribute('data-studio-kind','video');
+  await expect(panel.locator('#ratioChoices')).toBeVisible();
+  for(const id of ['videoInputModeLabel','videoInputModeNote','videoResolutionLabel','videoDurationLabel','videoSettingsNote']){
+   await expect(page.locator('#'+id)).toBeHidden();
+  }
+  await expect(panel.locator('.specs')).toBeHidden();
+  await expect(panel.locator('.composer-settings-reset')).toBeHidden();
+  await expect(panel.locator('[data-t="capabilityNote"]')).toBeHidden();
+  await expect(panel.getByRole('button',{name:'Done',exact:true})).toBeVisible();
+  await expect(page.locator('#videoResolution')).toHaveValue(/720p|1080p/);
+  await panel.getByRole('button',{name:'Done',exact:true}).click();
+  await expect(panel).toBeHidden();
+ }
+ expect(posts).toBe(0);
+});
