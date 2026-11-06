@@ -1,0 +1,30 @@
+name: Video History Compare Plans canonical pricing (no spend)
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/creator-pages.js'
+      - 'app/src/main/assets/pricing.html'
+      - 'tests/video-history-pricing-link-unit.mjs'
+      - '.github/workflows/owner-video-history-pricing-link.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/creator-pages.js'
+      - 'app/src/main/assets/pricing.html'
+      - 'tests/video-history-pricing-link-unit.mjs'
+permissions:
+  contents: read
+jobs:
+  no-spend-pricing-navigation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify current pricing link without external calls
+        run: |
+          node --check app/src/main/assets/creator-pages.js
+          node --test tests/video-history-pricing-link-unit.mjs
