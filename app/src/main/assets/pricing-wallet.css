@@ -24,3 +24,31 @@
 @media(max-width:500px){.price-wallet-area{padding:16px 12px}.price-wallet-summary{grid-template-columns:1fr}.price-wallet-row{align-items:flex-start}.price-wallet-row>span{max-width:42%}}
 
 .price-plans-area .price-tools-heading{margin:0;padding:16px 5px 12px;color:#e7f4ff;font-size:clamp(16px,1.65vw,23px);font-weight:750;letter-spacing:.01em}
+
+
+/* Owner 2026-11-06 — Pricing readability only. Original cards, images, dimensions,
+   prices and approved primary design stylesheet remain unchanged. */
+body.deepsyq-pricing-page .price-feature-icon.is-included{color:#8cf4b4;font-weight:800}
+body.deepsyq-pricing-page .price-feature-icon.is-info{color:#b9d2e9;font-weight:700}
+body.deepsyq-pricing-page .price-credit-breakdown{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-content:center;
+ gap:8px 5px;padding:12px 9px;min-width:0;
+}
+body.deepsyq-pricing-page .price-credit-segment{
+ display:flex;flex-direction:column;justify-content:center;gap:6px;min-width:0;
+}
+body.deepsyq-pricing-page .price-credit-segment+.price-credit-segment{
+ border-left:1px solid #6086b877;padding-left:6px;
+}
+body.deepsyq-pricing-page .price-credit-segment-label{
+ font-size:11px;font-weight:700;line-height:1.35;color:#c7ddf3;
+}
+body.deepsyq-pricing-page .price-credit-segment-value{
+ font-size:clamp(12px,1.2vw,18px);line-height:1.2;font-weight:850;
+ font-variant-numeric:tabular-nums;color:#f5fbff;overflow-wrap:anywhere;
+}
+body.deepsyq-pricing-page .price-credit-segment:nth-child(2) .price-credit-segment-value{color:#bed0e0}
+body.deepsyq-pricing-page .price-credit-breakdown-note{
+ grid-column:1/-1;font-size:11px;line-height:1.4;color:#c7ddf3;
+ border-top:1px solid #6086b877;padding-top:8px;
+}
