@@ -398,6 +398,8 @@ for(const viewport of [{width:1448,height:900},{width:390,height:844},{width:320
 
 
 test('Studio Settings ratio frames match actual aspect and Video popup omits advanced options',async({page})=>{
+ // This is a visual-only authenticated consent fixture; the real consent gate remains unchanged.
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
  let posts=0;
  page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))posts++;});
  for(const width of [390,1363]){
