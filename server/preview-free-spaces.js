@@ -7,7 +7,7 @@
 export const FREE_SPACE_MODELS=Object.freeze({
   image:Object.freeze({id:'test-flux-schnell',label:'FLUX.1 Schnell · Free',host:'black-forest-labs-flux-1-schnell.hf.space',action:'infer',mime:['image/png','image/jpeg','image/webp']}),
   video:Object.freeze({id:'test-ltx-video',label:'LTX-Video · Free',host:'lightricks-ltx-video-distilled.hf.space',action:'text_to_video',mime:['video/mp4']}),
-  music:Object.freeze({id:'test-musicgen',label:'MusicGen · Free',host:'facebook-musicgen.hf.space',action:'predict_batched',mime:['audio/wav','audio/mpeg','audio/mp3','audio/ogg']})
+  music:Object.freeze({id:'test-stable-audio-3',label:'Stable Audio 3 · Free',host:'stabilityai-stable-audio-3.hf.space',action:'infer',mime:['audio/wav','audio/mpeg','audio/mp3','audio/ogg']})
 });
 const failure=(name)=>{throw Error(name);};
 const allowedEventId=s=>typeof s==='string'&&/^[a-f0-9-]{8,80}$/i.test(s);
@@ -15,7 +15,7 @@ const fileLimit={image:16*1024*1024,video:24*1024*1024,music:16*1024*1024};
 function requestData(kind,prompt){
   if(kind==='image')return [prompt,0,true,512,512,4];
   if(kind==='video')return [prompt,'',null,null,320,512,'text-to-video',2,33,0,true,2,false];
-  if(kind==='music')return [prompt,null];
+  if(kind==='music')return ['small-music',prompt,3,8,3,'euler',0];
   return failure('FREE_MODEL_UNAVAILABLE');
 }
 function findFile(value,depth=0){
