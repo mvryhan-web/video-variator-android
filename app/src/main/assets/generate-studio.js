@@ -720,7 +720,12 @@ $('musicMode').onchange=()=>{$('consent').checked=false;modelId='';renderModel()
 const studioDialogAnchors=new Map();
 function placeStudioDialog(dialog,anchor){
  if(!dialog.open||!anchor?.isConnected)return;
+ // The trigger is relocated into a temporary Studio Settings dialog.
+ // Once it closes its geometry is 0,0; use the visible gear instead.
+ const hub=anchor.closest?.('#studioSettingsHub');
+ if(hub&&!hub.open&&$('studioSettingsToggle')?.isConnected)anchor=$('studioSettingsToggle');
  const target=anchor.getBoundingClientRect(),box=dialog.getBoundingClientRect(),pad=12,gap=8;
+ if(!target.width||!target.height)return;
  const left=Math.max(pad,Math.min(target.left,innerWidth-box.width-pad));
  const above=target.top-box.height-gap;
  const top=above>=pad?above:Math.max(pad,Math.min(innerHeight-box.height-pad,target.bottom+gap));
