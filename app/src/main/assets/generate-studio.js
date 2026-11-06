@@ -465,7 +465,7 @@ function renderImageResolution(){
 function renderImageOutputFormat(){
  const select=$('imageOutputFormat'),model=currentModel(),choices=kind==='image'?(model?.capabilities?.outputFormats||['auto']):[];
  const previous=select.value;select.replaceChildren();
- for(const format of choices)select.add(new Option(format==='auto'?say('Provider default','Формат провайдера'):format==='jpeg'?'JPEG':'PNG',format));
+ for(const format of choices)select.add(new Option(format==='auto'?say('Provider default','Формат провайдера'):format==='jpeg'?'JPEG':format==='webp'?'WebP':'PNG',format));
  if(choices.includes(previous))select.value=previous;
  $('imageOutputFormatLabel').hidden=kind!=='image'||choices.length<2;
  $('imageOutputFormatNote').hidden=kind!=='image'||choices.length<2;
@@ -1188,7 +1188,7 @@ $('continueImage').onclick=async()=>{
  catch(_){$('status').textContent=say('Could not prepare this image. Download it and add it manually.','Не удалось подготовить изображение. Скачайте его и добавьте вручную.');}
  finally{busy=false;availability();}
 };
-function filename(){const ext=blob?.type.startsWith('video/')?'mp4':blob?.type==='image/svg+xml'?'svg':blob?.type==='image/jpeg'?'jpg':blob?.type.startsWith('image/')?'png':blob?.type==='audio/wav'?'wav':'mp3';return `Deepsyq-${job}.${ext}`;}
+function filename(){const ext=blob?.type.startsWith('video/')?'mp4':blob?.type==='image/svg+xml'?'svg':blob?.type==='image/jpeg'?'jpg':blob?.type==='image/webp'?'webp':blob?.type.startsWith('image/')?'png':blob?.type==='audio/wav'?'wav':'mp3';return `Deepsyq-${job}.${ext}`;}
 $('download').onclick=async()=>{if(!blob||busy)return;busy=true;availability();try{await saveLocal(new File([blob],filename(),{type:blob.type}));}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
 $('share').onclick=async()=>{if(!blob||busy)return;const file=new File([blob],filename(),{type:blob.type});try{if(window.AndroidBridge&&window.VUShareFile){busy=true;availability();try{await window.VUShareFile({blob:file,name:file.name});}finally{busy=false;availability();}return;}if(navigator.canShare?.({files:[file]}))await navigator.share({files:[file]});else $('status').textContent=say('File sharing is unavailable in this browser. Download the file to share it.','Этот браузер не поддерживает отправку файла. Скачайте его и поделитесь.');}catch(e){if(e.name!=='AbortError')$('status').textContent=say('Could not share. Try downloading the file.','Не удалось поделиться. Попробуйте скачать файл.');}};
 $('remove').onclick=async()=>{if(!job||busy)return;busy=true;availability();try{await api(`/api/studio/jobs/${encodeURIComponent(job)}`,{method:'DELETE'});++generation;clearResult();forgetStudioJob(job,kind);job=null;$('status').textContent=say('Result deleted. Downloaded copies are kept.','Результат удалён. Скачанные копии остаются.');if(historyView)await loadHistory();else setHistory(false);}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
