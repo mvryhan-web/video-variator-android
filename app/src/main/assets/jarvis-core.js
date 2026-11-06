@@ -673,8 +673,8 @@ export function handleJarvisVoiceCommand(commandText) {
     return;
   }
 
-  if (/(?:открой|перейди|open|ouvre|abre)\s+(?:истори|мои работы|сохранен|assets|history)/i.test(lower)) {
-    instantOpen('generate-studio.html?view=history');
+  if (/(?:открой|перейди|open|ouvre|abre)\s+(?:истори|мои работы|сохранен|history)/i.test(lower)) {
+    instantOpen('my-creations.html');
     return;
   }
 

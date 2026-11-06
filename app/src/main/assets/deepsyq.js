@@ -418,7 +418,7 @@ async function loadRecentCreations(){
   const label={ready:'Ready',queued:'Queued',processing:'Processing',finalizing:'Finalizing',failed:'Failed'};
   for(const item of items){
    if(!item||!['image','video','music'].includes(item.kind))continue;
-   const card=document.createElement('a');card.className='recent-creation';card.href='generate-studio.html?view=history';
+   const card=document.createElement('a');card.className='recent-creation';card.href='my-creations.html';
    const head=document.createElement('div'),type=document.createElement('strong'),state=document.createElement('span');
    type.textContent=item.kind==='music'?'Audio':item.kind==='image'?'Image':'Video';
    state.textContent=label[item.status]||'In progress';state.dataset.status=String(item.status||'unknown');head.append(type,state);

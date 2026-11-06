@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 
 // Agent C BASE29: approved inner-page navigation. No live accounts or paid providers.
 const ordered=['Home','Image','Video','JARVIX','Audio','Tools','AI Apps','Canvas',
- 'Video Uniquifier','Assets','My Creations','Share','Inspiration','Pricing'];
+ 'Video Uniquifier','My Creations','Share','Inspiration','Pricing'];
 async function openMobileSidebar(page){
  const toggle=page.locator('.ds-site-mobile-toggle');
  if(await toggle.isVisible())await toggle.click();
@@ -32,12 +32,13 @@ test('BASE29 sidebar order, existing routes, and honest non-links for unavailabl
  for(const [label,href] of [
   ['Home','deepsyq.html'],['Tools','free-tools.html'],['AI Apps','ai-apps.html'],
   ['Canvas','canvas.html'],['Video Uniquifier','index.html'],
-  ['Assets','generate-studio.html?view=history'],
   ['My Creations','my-creations.html'],
   ['Pricing','pricing.html'],
   ['Inspiration','deepsyq.html#inspirationPreview']
  ]) await expect(nav.getByRole('link',{name:label,exact:true})).toHaveAttribute('href',href);
  await expect(nav.getByRole('link',{name:'JARVIX AI'})).toHaveCount(1);
+ await expect(nav.getByRole('link',{name:'Assets',exact:true})).toHaveCount(0);
+ await expect(nav.locator('a[href="generate-studio.html?view=history"]')).toHaveCount(0);
  await expect(nav).not.toContainText('Affiliate');
  await expect(nav.locator('[aria-label="Agent coming soon"]')).toHaveCount(0);
  await expect(nav.getByRole('link',{name:/Favorites|Challenges/i})).toHaveCount(0);
@@ -148,5 +149,22 @@ test('BASE29 inner-page mobile drawer retains keyboard focus, blocks hidden link
  await expect(menu).not.toHaveAttribute('aria-modal','true');
  expect(await page.evaluate(()=>document.body.style.overflow)).toBe(initialOverflow);
  await expect(menu.getByRole('link',{name:'Pricing',exact:true})).toBeVisible();
+ expect(paid).toEqual([]);
+});
+
+
+test('retired Assets is absent from Home, Studio, My Creations, and shared mobile navigation',async({page})=>{
+ const paid=noPaidRequests(page);
+ for(const width of [390,1448]){
+  await page.setViewportSize({width,height:844});
+  for(const route of ['deepsyq.html','ai-apps.html','my-creations.html','generate-studio.html?studio=image']){
+   await page.goto('/'+route,{waitUntil:'domcontentloaded'});
+   const nav=page.locator(route==='deepsyq.html'?'#sidebar nav':'#dsSiteSidebar nav');
+   await expect(nav).toHaveCount(1);
+   await expect(nav.locator('a[href="generate-studio.html?view=history"]')).toHaveCount(0);
+   await expect(nav.locator('a').filter({hasText:/^Assets$/i})).toHaveCount(0);
+   await expect(nav.locator('a[href="my-creations.html"]')).toHaveCount(1);
+  }
+ }
  expect(paid).toEqual([]);
 });
