@@ -61,7 +61,8 @@ body.studio-quickstart .composer-duration input{accent-color:#65d9f8}
  gap:7px;min-height:91px;padding:9px 6px;line-height:1.15;
 }
 #settingsDialog.composer-popover .ratio-drawing{
- display:block;flex:none;box-sizing:border-box;
+ display:block!important;flex:0 0 auto;box-sizing:border-box!important;
+ min-width:0!important;min-height:0!important;height:auto!important;
  border:2px solid #a7c8f2;border-radius:3px;
  background:linear-gradient(145deg,#183654,#0b192f);
  box-shadow:inset 0 0 0 1px #0e274a;
