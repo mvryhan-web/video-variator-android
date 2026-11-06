@@ -39,7 +39,7 @@ test('Existing processing controls keep exact unique IDs and same values',()=>{
  assert.ok(art.includes("qual.dispatchEvent(new Event('change'"));
 });
 test('Purely decorative preview does not impersonate playable media or results',()=>{
- assert.match(art,/Illustrative preview controls/);
+ assert.doesNotMatch(art,/Illustrative preview controls|Example preview|vu-preview-scene/);
  assert.ok(!art.includes('vu-film-play">▶'));
  assert.ok(!art.includes('vu-preview-play" aria-label='));
  assert.match(art,/disabled>⇩/);
