@@ -49,7 +49,7 @@ app.get('/robots.txt',(_req,res)=>res.type('text/plain').send('User-agent: *\nDi
 app.get('/vendor/ffmpeg/ffmpeg.js',(_req,res)=>res.type('application/javascript').sendFile(path.join(ffmpegUmd,'ffmpeg.js')));
 app.get('/vendor/ffmpeg/ffmpeg-core.js',(_req,res)=>res.type('application/javascript').sendFile(path.join(ffmpegCore,'ffmpeg-core.js')));
 app.get('/vendor/ffmpeg/ffmpeg-core.wasm',(_req,res)=>res.type('application/wasm').sendFile(path.join(ffmpegCore,'ffmpeg-core.wasm')));
-app.get('/api/health',(_req,res)=>res.json({ok:true,service:'deepsyq-design-preview',paymentsEnabled:false,paidAiGenerationEnabled:false,freeAiGenerationEnabled:isFreeStudioActive,aiGenerationEnabled:isFreeStudioActive,freeAiProvider:'Hugging Face public ZeroGPU'}));
+app.get('/api/health',(_req,res)=>res.json(isLegacyTest?{ok:true,service:'deepsyq-design-preview',paymentsEnabled:false,aiGenerationEnabled:false}:{ok:true,service:'deepsyq-design-preview',paymentsEnabled:false,paidAiGenerationEnabled:false,freeAiGenerationEnabled:true,aiGenerationEnabled:true,freeAiProvider:'Hugging Face public ZeroGPU'}));
 app.get('/api/config',(_req,res)=>res.json({
  googleClientId:'',appleClientId:'',emailAuth:false,billingConfigured:false,trialLimit:0,
  features:{aiApps:true,inspiration:true,onboarding:false},
