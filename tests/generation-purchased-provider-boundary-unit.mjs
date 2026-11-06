@@ -60,6 +60,7 @@ test('bonus, refunded, foreign and replayed proofs cannot send any provider requ
  for(const fake of [
   null,{...proof,source:'welcome_bonus'},{...proof,refunded:true},
   {...proof,purchaseConfirmed:false},{...proof,jobId:'job-foreign'},
+  {...proof,reservationId:'other-job-reservation'},
   {...proof,dispatchClaimedExactlyOnce:false},
   {...proof,purchasedCreditsAvailableBeforeReserve:0},
   {...proof,provider:'BytePlus'}]){

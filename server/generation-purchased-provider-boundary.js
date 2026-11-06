@@ -40,6 +40,7 @@ export async function submitPurchasedProviderRequest({
   verifyPurchasedReservation:wallet.purchasedDispatchVerifier({env,client})
  });
  if(proof.authorized!==true||proof.userId!==user.id||proof.jobId!==job.id||
+    proof.reservationId!==job.id||
     proof.modelId!==model.id||proof.provider!==model.provider)deny();
  // Do not auto-submit a second time when acceptance by a provider is unknown.
  // D's database claim is committed exactly once before this single call.
