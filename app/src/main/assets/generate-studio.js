@@ -465,7 +465,7 @@ function renderImageResolution(){
 function renderImageOutputFormat(){
  const select=$('imageOutputFormat'),model=currentModel(),choices=kind==='image'?(model?.capabilities?.outputFormats||['auto']):[];
  const previous=select.value;select.replaceChildren();
- for(const format of choices)select.add(new Option(format==='auto'?say('Provider default','Формат провайдера'):format==='jpeg'?'JPEG':'PNG',format));
+ for(const format of choices)select.add(new Option(format==='auto'?say('Provider default','Формат провайдера'):format==='jpeg'?'JPEG':format==='webp'?'WebP':'PNG',format));
  if(choices.includes(previous))select.value=previous;
  $('imageOutputFormatLabel').hidden=kind!=='image'||choices.length<2;
  $('imageOutputFormatNote').hidden=kind!=='image'||choices.length<2;
@@ -1099,7 +1099,8 @@ $('creator').onsubmit=async e=>{
    ...(original.kind==='image'?{resolution:original.resolution,outputFormat:original.outputFormat}:{}),
    ...(original.kind==='video'?{videoResolution:original.videoResolution,videoDuration:original.videoDuration,videoInputMode:original.videoInputMode}:{}),
    musicMode:original.musicMode,referenceCount:original.references.length,quantity:1};
-  const quote=await(await api('/api/studio/estimate',{method:'POST',body:JSON.stringify(quoteInput)})).json();
+  if(config?.freeTier===true&&original.references.length!==0)throw Error('FREE_TEXT_ONLY');
+   const quote=await(await api('/api/studio/estimate',{method:'POST',body:JSON.stringify(quoteInput)})).json();
   // A TEST-only zero-credit demo is never treated as an approved paid quote.
   // Paid quotes must still have at least one credit and cannot use the free-only path.
   const freePreview=config.enabled===true&&config.freeTier===true&&config.previewOnly===true&&quote.freeTier===true&&quote.previewOnly===true&&quote.credits===0;
@@ -1108,8 +1109,8 @@ $('creator').onsubmit=async e=>{
   const quotedModel=catalog.find(m=>m.id===quote.model);
   const label=ru&&quotedModel?.labelRu?quotedModel.labelRu:quotedModel?.label||quote.model;
   const accepted=confirm(freePreview?say(
-   'Free TEST preview: this creates a local demo SVG image, NOT a real AI photograph or MP4. No provider is contacted and no credits are charged. Continue?',
-   'Бесплатный тест: создаётся локальная SVG-демонстрация, а НЕ настоящая AI-фотография или MP4. Провайдер не вызывается, кредиты не списываются. Продолжить?'
+   'Free TEST AI: your text prompt goes to a PUBLIC Hugging Face community Space. Do not enter private data. Real image/video/music generation depends on its free GPU quota and may fail. No paid API or AI credits are used. Continue?',
+   'Бесплатный TEST AI: ваш текстовый запрос передаётся СТОРОННЕМУ ПУБЛИЧНОМУ сервису Hugging Face. Не вводите личные данные. Настоящая генерация зависит от доступности бесплатной GPU-очереди; возможна ошибка, но не подмена. Без оплаты и кредитов. Продолжить?'
   ):say(
    'Your prompt and attached reference photos, if any, will be sent to the selected AI service using '+label+'. Cost: '+quote.credits.toLocaleString()+' AI credits. Continue?',
    'Запрос и прикреплённые фотографии будут переданы выбранному AI-сервису через модель «'+label+'». Стоимость: '+quote.credits.toLocaleString()+' AI-кредитов. Продолжить?'
@@ -1187,7 +1188,7 @@ $('continueImage').onclick=async()=>{
  catch(_){$('status').textContent=say('Could not prepare this image. Download it and add it manually.','Не удалось подготовить изображение. Скачайте его и добавьте вручную.');}
  finally{busy=false;availability();}
 };
-function filename(){const ext=blob?.type.startsWith('video/')?'mp4':blob?.type==='image/svg+xml'?'svg':blob?.type==='image/jpeg'?'jpg':blob?.type.startsWith('image/')?'png':blob?.type==='audio/wav'?'wav':'mp3';return `Deepsyq-${job}.${ext}`;}
+function filename(){const ext=blob?.type.startsWith('video/')?'mp4':blob?.type==='image/svg+xml'?'svg':blob?.type==='image/jpeg'?'jpg':blob?.type==='image/webp'?'webp':blob?.type.startsWith('image/')?'png':blob?.type==='audio/wav'?'wav':'mp3';return `Deepsyq-${job}.${ext}`;}
 $('download').onclick=async()=>{if(!blob||busy)return;busy=true;availability();try{await saveLocal(new File([blob],filename(),{type:blob.type}));}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
 $('share').onclick=async()=>{if(!blob||busy)return;const file=new File([blob],filename(),{type:blob.type});try{if(window.AndroidBridge&&window.VUShareFile){busy=true;availability();try{await window.VUShareFile({blob:file,name:file.name});}finally{busy=false;availability();}return;}if(navigator.canShare?.({files:[file]}))await navigator.share({files:[file]});else $('status').textContent=say('File sharing is unavailable in this browser. Download the file to share it.','Этот браузер не поддерживает отправку файла. Скачайте его и поделитесь.');}catch(e){if(e.name!=='AbortError')$('status').textContent=say('Could not share. Try downloading the file.','Не удалось поделиться. Попробуйте скачать файл.');}};
 $('remove').onclick=async()=>{if(!job||busy)return;busy=true;availability();try{await api(`/api/studio/jobs/${encodeURIComponent(job)}`,{method:'DELETE'});++generation;clearResult();forgetStudioJob(job,kind);job=null;$('status').textContent=say('Result deleted. Downloaded copies are kept.','Результат удалён. Скачанные копии остаются.');if(historyView)await loadHistory();else setHistory(false);}catch(e){$('status').textContent=errorText(e);}finally{busy=false;availability();}};
