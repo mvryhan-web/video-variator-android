@@ -18,8 +18,10 @@ export function tourPlan(language='en') {
  return rows.map(([title,url,id,target])=>({title,url,target,...(id?{audio:`media/jarvix/clips/jarvix_${lang}_${String(id).padStart(2,'0')}.mp3`}:{narration:'plan'})}));
 }
 export function planNarration(card,language='en') {
- const parts=[card.name,card.price,card.summary,...(card.features||[]).slice(0,3),card.note].filter(Boolean);
- return parts.join('. ').replace(/\s+/g,' ').slice(0,650);
+ const conditional=/proposed|unavailable|not.*active|pending/i.test((card.price||'')+' '+(card.summary||''));
+ const detail=conditional&&card.summary?[card.summary]:(card.features||[]).slice(0,2);
+ const parts=[card.name,card.price,...detail,conditional&&!card.summary?card.note:null].filter(Boolean);
+ return parts.join('. ').replace(/\s+/g,' ').slice(0,260);
 }
 export function tourAction(state,action) {
  if(!state)return null;

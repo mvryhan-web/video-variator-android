@@ -43,7 +43,7 @@ async function play(){
   let card=document.querySelector(step.target);
   if(!card){waitTimer=setTimeout(()=>{if(current===turn&&state)void play();},250);return;}
   spotlight(step);
-  const text=planNarration({name:card.querySelector('h3')?.textContent,price:card.querySelector('.price-plan-price')?.textContent,summary:card.querySelector('.price-plan-summary')?.textContent,features:[...card.querySelectorAll('.price-features li')].map(e=>e.textContent),note:card.querySelector('.price-plan-note')?.textContent},state.language);
+  const text=planNarration({name:card.querySelector('h3')?.textContent,price:[...(card.querySelector('.price-plan-price')?.children||[])].map(e=>e.textContent).join(' '),summary:card.querySelector('.price-plan-summary')?.textContent,features:[...card.querySelectorAll('.price-features li')].map(e=>e.querySelector('span:last-child')?.textContent||e.textContent),note:card.querySelector('.price-plan-note')?.textContent},state.language);
   bar.dataset.narration='connecting';
   void speakOwnerSpeech(text,state.language,{source:()=>{},phase:phase=>{if(current===turn&&bar)bar.dataset.narration=phase;},start:()=>updateJarvisState('speaking'),complete:()=>advance(current),fallback:()=>blocked(current,'Voice service unavailable'),error:()=>blocked(current,'Voice service unavailable')});return;
  }
