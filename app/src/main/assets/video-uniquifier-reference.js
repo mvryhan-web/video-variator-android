@@ -242,48 +242,8 @@ function build(){
  const speed=$('fastExport');if(speed){speed.checked=false;speed.disabled=true;}
  new MutationObserver(()=>{const s=$('fastExport');if(s&&!s.disabled){s.checked=false;s.disabled=true;}}).observe(workspace,{childList:true,subtree:true});
  const btn=$('startBtn');if(btn){btn.removeAttribute('data-i18n');btn.innerHTML='✦ &nbsp;Create variants &nbsp; →';}
- const preview=node('section','vu-panel vu-preview');
- preview.innerHTML='<div class="vu-panel-head"><h3>Example preview</h3></div>';
- const scene=node('div','vu-preview-scene');scene.append(image('preview'));scene.insertAdjacentHTML('beforeend','<span class="vu-preview-controls" aria-label="Illustrative preview controls">▶ &nbsp; Preview image <span class="vu-timeline"></span> ◖ ◱</span>');preview.append(scene);right.append(preview);
- // This is a real local preview of the selected source, not a sample output.
- // Keep the design example only when no video has been chosen.
- const previewTitle=preview.querySelector('.vu-panel-head h3');
- const sourceVideo=node('video','vu-source-video');
- sourceVideo.controls=true;sourceVideo.playsInline=true;sourceVideo.preload='metadata';
- sourceVideo.setAttribute('aria-label','Your selected video');
- sourceVideo.hidden=true;
- scene.append(sourceVideo);
- const sourceCaption=node('p','vu-preview-file');
- sourceCaption.hidden=true;preview.append(sourceCaption);
- let sourceURL=null;
- function releaseSourcePreview(){
-  sourceVideo.pause();sourceVideo.removeAttribute('src');sourceVideo.load();
-  if(sourceURL){URL.revokeObjectURL(sourceURL);sourceURL=null;}
-  sourceVideo.hidden=true;scene.classList.remove('vu-has-input');
-  sourceCaption.hidden=true;sourceCaption.textContent='';
-  previewTitle.textContent='Example preview';
- }
- function refreshSourcePreview(){
-  releaseSourcePreview();
-  const files=[...($('fileInput')?.files||[])];
-  // Preview the actual locally selected source; do not upload or generate it.
-  if(!files.length)return;
-  sourceURL=URL.createObjectURL(files[0]);
-  sourceVideo.src=sourceURL;sourceVideo.hidden=false;
-  scene.classList.add('vu-has-input');
-  previewTitle.textContent='Your video preview';
-  sourceCaption.textContent=files.length===1?files[0].name:files[0].name+' · first of '+files.length+' videos';
-  sourceCaption.hidden=false;
- }
- sourceVideo.addEventListener('error',()=>{
-  if(!sourceURL)return;
-  sourceCaption.textContent='Preview unavailable for this file format. You can still try processing it.';
-  sourceCaption.hidden=false;
- });
- $('fileInput')?.addEventListener('change',refreshSourcePreview);
- window.addEventListener('pagehide',releaseSourcePreview);
- window.addEventListener('pageshow',()=>{if(!sourceURL&&$('fileInput')?.files?.length)refreshSourcePreview();});
- refreshSourcePreview();
+ // Owner 2026-11-06: remove the entire illustrative Example preview with the car.
+ // File selection, generation, queue, downloads and history remain independent.
  const queue=node('section','vu-panel vu-output');queue.innerHTML='<div class="vu-panel-head vu-output-head"><div><h3>Output queue</h3><p>Your generated variants will appear here.</p></div><button type="button" class="vu-queue-clear">Clear all</button></div>';
  const lines=node('div','vu-output-lines');queue.append(lines);
  for(let i=0;i<3;i++){const row=node('div','vu-output-row');row.innerHTML='<span class="vu-output-thumb"></span><b>Variant '+(i+1)+'</b><span class="vu-output-dash">–</span><span class="vu-progress-line"></span><span class="vu-output-dash">–</span><button type="button" disabled>⇩ &nbsp;Download</button>';row.querySelector('.vu-output-thumb').append(image(i%2?'queue2':'queue1'));lines.append(row);}
@@ -296,7 +256,6 @@ function build(){
   const input=$('fileInput');
   if(input)input.value='';
   window.VideoVariatorUI?.setFiles([]);
-  releaseSourcePreview();
   window.__vuLastResults=[];
   $('resultsCard')?.querySelector('.readyDownloads')?.remove();
   if($('resultsCard'))$('resultsCard').hidden=true;
