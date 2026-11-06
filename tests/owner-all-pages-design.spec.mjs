@@ -54,3 +54,44 @@ for(const entry of pages){
   await page.screenshot({path:path.join(dir,entry.id+'.png'),fullPage:false,animations:'disabled'});
  });
 }
+
+// Owner 2026-11-06: Pricing card layout QA at desktop and phone viewports.
+// This only reads the UI: no payments, generation jobs, or account writes.
+test('Pricing AI-credit badges stay top-left and prices fit next to actions',async({page},info)=>{
+ const response=await page.goto('/pricing.html',{waitUntil:'domcontentloaded'});
+ expect(response.status()).toBe(200);
+ await expect(page.locator('.price-credit-card')).toHaveCount(5,{timeout:20000});
+ const widths=info.project.name.startsWith('mobile')?[390,320]:[1448,1180];
+ for(const width of widths){
+  await page.setViewportSize({width,height:844});
+  const results=await page.locator('.price-credit-card').evaluateAll(cards=>cards.map(card=>{
+   const rect=el=>{const b=el.getBoundingClientRect();return{left:b.left,right:b.right,top:b.top,bottom:b.bottom,width:b.width}};
+   return{
+    card:rect(card),
+    badge:rect(card.querySelector('.price-credit-badge')),
+    metrics:rect(card.querySelector('.price-credit-breakdown')),
+    footer:rect(card.querySelector('.price-credit-bottom')),
+    price:rect(card.querySelector('.price-credit-price')),
+    action:rect(card.querySelector('.price-credit-purchase')),
+    diamonds:card.querySelectorAll('.price-credit-badge').length
+   };
+  }));
+  expect(results).toHaveLength(5);
+  for(const [i,x] of results.entries()){
+   const where='credit card '+(i+1)+' at '+width+'px';
+   expect(x.diamonds,where+' must have only one upper-left badge').toBe(1);
+   expect(x.badge.left,where+' badge left').toBeGreaterThanOrEqual(x.card.left-1);
+   expect(x.badge.right,where+' badge right').toBeLessThanOrEqual(x.card.right+1);
+   expect(x.badge.bottom,where+' badge must not overlap central metrics').toBeLessThanOrEqual(x.metrics.top-2);
+   expect(x.metrics.left,where+' metrics left').toBeGreaterThanOrEqual(x.card.left-1);
+   expect(x.metrics.right,where+' metrics right').toBeLessThanOrEqual(x.card.right+1);
+   expect(x.price.left,where+' price left').toBeGreaterThanOrEqual(x.footer.left-1);
+   expect(x.price.right,where+' price right').toBeLessThanOrEqual(x.footer.right+1);
+   expect(x.action.left,where+' action left').toBeGreaterThanOrEqual(x.footer.left-1);
+   expect(x.action.right,where+' action right').toBeLessThanOrEqual(x.footer.right+1);
+   expect(x.action.bottom,where+' action bottom').toBeLessThanOrEqual(x.footer.bottom+1);
+   const apart=x.price.right<=x.action.left+1||x.price.bottom<=x.action.top+1;
+   expect(apart,where+' must not overlap price and action').toBe(true);
+  }
+ }
+});

@@ -231,7 +231,7 @@ function renderCredits(config){
   const content=node('div','price-credit-content');
   card.setAttribute('aria-describedby','priceCreditDisclosure');
   // The existing card artwork stays visible above and below the centered metrics.
-  // The base amount appears ONCE in the bottom badge, not above the inset panel.
+  // The base amount appears ONCE in its original top-left corner, above the inset.
   const info=node('div','price-credit-bonus price-credit-breakdown');
   for(const [label,number] of [
    ['Base',numeral.format(p.credits)],
@@ -260,9 +260,10 @@ function renderCredits(config){
    }
    void checkoutCredit(serverPack);
   });
-  foot.append(badge,cost,button);
+  foot.append(cost,button);
+  // The upper-left badge restores the original credit count position.
   // Keep the approved background art, card colors and checkout behavior intact.
-  content.append(info,foot);
+  content.append(badge,info,foot);
   card.append(content);host.append(card);
  }
 }

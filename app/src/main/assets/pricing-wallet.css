@@ -140,3 +140,50 @@ body.deepsyq-pricing-page .price-credit-purchase{
  body.deepsyq-pricing-page .price-credit-bottom{padding:8px;column-gap:8px}
  body.deepsyq-pricing-page .price-credit-disclosure{font-size:12px;line-height:1.5}
 }
+
+/* Owner 2026-11-06: return AI-credit diamond/count to its original upper-left
+   position; keep the approved center metrics and existing artwork untouched.
+   Price and existing action are the ONLY contents of the compact bottom bar. */
+body.deepsyq-pricing-page .price-credit-badge{
+ position:absolute;top:13px;left:13px;z-index:2;
+ display:inline-flex;align-items:center;justify-content:flex-start;
+ max-width:calc(100% - 26px);width:max-content;
+ margin:0;padding:8px 13px;line-height:1.12;
+ font-size:clamp(14px,1.2vw,20px);
+}
+body.deepsyq-pricing-page .price-credit-bottom{
+ display:flex;align-items:center;justify-content:space-between;
+ flex-wrap:nowrap;column-gap:12px;row-gap:8px;
+ min-width:0;padding:8px 11px;border-radius:999px;
+}
+body.deepsyq-pricing-page .price-credit-bottom .price-credit-price{
+ flex:0 0 auto;min-width:0;line-height:1.15;
+ font-size:clamp(18px,1.5vw,24px);letter-spacing:-.035em;
+}
+body.deepsyq-pricing-page .price-credit-bottom .price-credit-purchase{
+ flex:0 1 auto;grid-column:auto;justify-self:auto;
+ width:auto;max-width:100%;min-width:0;
+ padding:8px 13px;font-size:clamp(10px,.85vw,12px);
+ line-height:1.2;
+}
+@media(max-width:700px){
+ body.deepsyq-pricing-page .price-credit-badge{top:12px;left:12px;padding:8px 12px}
+ body.deepsyq-pricing-page .price-credit-bottom{
+  display:flex;flex-wrap:nowrap;column-gap:9px;
+  padding:8px 10px;border-radius:999px;
+ }
+ body.deepsyq-pricing-page .price-credit-bottom .price-credit-price{font-size:clamp(18px,5vw,22px)}
+ body.deepsyq-pricing-page .price-credit-bottom .price-credit-purchase{
+  flex:0 1 auto;grid-column:auto;width:auto;
+  padding:8px 11px;font-size:11px;
+ }
+}
+@media(max-width:420px){
+ body.deepsyq-pricing-page .price-credit-breakdown{margin-top:44px}
+}
+@media(max-width:345px){
+ body.deepsyq-pricing-page .price-credit-bottom{flex-wrap:wrap;border-radius:20px}
+ body.deepsyq-pricing-page .price-credit-bottom .price-credit-purchase{
+  flex:1 1 100%;width:100%;
+ }
+}

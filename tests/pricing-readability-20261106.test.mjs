@@ -47,11 +47,16 @@ test('bonuses are not represented as credited in checkout and original images st
   assert.ok(pricing.includes("card.append(img(p.image))"));
   assert.ok(!pricing.includes('80% Credit Bonus'));
   assert.ok(pricing.includes("const badge=node('h3','price-credit-badge')"));
-  assert.ok(pricing.includes("foot.append(badge,cost,button)"));
+  assert.ok(pricing.includes("content.append(badge,info,foot)"));
+  assert.ok(pricing.includes("foot.append(cost,button)"));
+  assert.ok(!pricing.includes("foot.append(badge,cost,button)"));
   assert.ok(!pricing.includes("const title=node('h3','price-credit-number'"));
   assert.ok(!pricing.includes("price-credit-breakdown-note',"));
   assert.ok(pricing.includes("host.before(notice)"));
   assert.ok(css.includes('.price-credit-badge{'));
+  assert.ok(css.includes('position:absolute;top:13px;left:13px;z-index:2'));
+  assert.ok(css.includes('price-credit-bottom .price-credit-price{'));
+  assert.ok(css.includes('@media(max-width:345px)'));
   assert.ok(css.includes('@media(max-width:420px)'));
   assert.ok(css.includes('grid-template-columns:repeat(3,minmax(0,1fr))'));
 });
