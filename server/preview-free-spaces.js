@@ -19,7 +19,9 @@ function requestData(kind,prompt){
   return failure('FREE_MODEL_UNAVAILABLE');
 }
 function findFile(value,depth=0){
-  if(depth>5||!value||typeof value!=='object')return null;
+  if(depth>5||!value)return null;
+  if(typeof value==='string')return value;
+  if(typeof value!=='object')return null;
   if(typeof value.url==='string'&&value.url)return value.url;
   if(typeof value.path==='string'&&value.path)return value.path;
   if(Array.isArray(value)){for(const v of value){const result=findFile(v,depth+1);if(result)return result;}}
@@ -40,12 +42,14 @@ function safeMediaUrl(raw,model){
 }
 function mediaType(bytes,kind){
   if(kind==='image'){
+    if(bytes.length<24)return failure('FREE_RESULT_FORMAT_MISMATCH');
     if(bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))return 'image/png';
     if(bytes.length>3&&bytes[0]===255&&bytes[1]===216&&bytes[2]===255)return 'image/jpeg';
     if(bytes.length>12&&bytes.toString('ascii',0,4)==='RIFF'&&bytes.toString('ascii',8,12)==='WEBP')return 'image/webp';
   }
   if(kind==='video'&&bytes.length>32&&bytes.toString('ascii',4,8)==='ftyp'&&bytes.includes(Buffer.from('moov'))&&bytes.includes(Buffer.from('mdat')))return 'video/mp4';
   if(kind==='music'){
+    if(bytes.length<44)return failure('FREE_RESULT_FORMAT_MISMATCH');
     if(bytes.length>44&&bytes.toString('ascii',0,4)==='RIFF'&&bytes.toString('ascii',8,12)==='WAVE')return 'audio/wav';
     if(bytes.length>3&&bytes.toString('ascii',0,3)==='ID3')return 'audio/mpeg';
     if(bytes.length>3&&bytes[0]===255&&(bytes[1]&224)===224)return 'audio/mpeg';
@@ -94,7 +98,7 @@ export async function generateTestSpaceMedia({kind,model:requestedModel,prompt,c
     if(!events.ok||!events.body)return failure('FREE_PROVIDER_UNAVAILABLE');
     let text='',completion=null;
     for await(const chunk of events.body){
-      text+=Buffer.from(chunk).toString('utf8');
+      text+=Buffer.from(chunk).toString('utf8').replace(/\r/g,'');
       if(text.length>1024*1024)return failure('FREE_PROVIDER_BAD_RESULT');
       let separator;
       while((separator=text.indexOf('\n\n'))!==-1){
