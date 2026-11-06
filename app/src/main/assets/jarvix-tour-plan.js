@@ -23,8 +23,8 @@ export function tourPlan(language='en') {
 }
 export function planNarration(card,language='en') {
  const conditional=/proposed|unavailable|not.*active|pending/i.test((card.price||'')+' '+(card.summary||''));
- const detail=conditional&&card.summary?[card.summary]:(card.features||[]).slice(0,12);
- const parts=[card.name,card.price,...detail,conditional&&!card.summary?card.note:null].filter(Boolean);
+ const detail=conditional&&card.summary?[]:(card.features||[]).slice(0,2);
+ const parts=[card.name,card.price,card.summary,...detail,conditional&&!card.summary?card.note:null].filter(Boolean);
  return parts.join('. ').replace(/\s+/g,' ');
 }
 export function tourAction(state,action) {
