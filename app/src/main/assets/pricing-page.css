@@ -308,3 +308,12 @@ body.deepsyq-pricing-page .price-credit-hero-art{background-size:cover,auto 160%
 /* Owner AI Credits cleanup: full-width art and 95% opaque amount panels. */
 body.deepsyq-pricing-page .price-credit-hero-art{background-size:cover,cover;background-position:center,center 35%}
 .price-credit-bonus{background:rgba(7,15,35,.95)}
+
+/* Owner 2026-11-06 — MOBILE ONLY: reveal all four existing portal frames
+   in the first Pricing hero; leave AI Credits, cards and desktop untouched. */
+@media (max-width: 700px) {
+  body.deepsyq-pricing-page .price-hero-art {
+    background-size: cover, auto 84%;
+    background-position: center center, 90% 32%;
+  }
+}
