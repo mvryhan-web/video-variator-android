@@ -40,3 +40,5 @@ body.j-action-workspace.studio-quickstart #creator.composer textarea{min-height:
 @media(max-width:760px){.j-action-workspace #homeCreativeTools .home-create-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 body.j-action-workspace #homeQuickBar.j-neon-dock:has([data-jarvix-chat]),body.j-action-workspace.studio-quickstart .studio-shell>main>#creator.composer.j-neon-dock{bottom:calc(12px + env(safe-area-inset-bottom,0px) + var(--j-keyboard-inset,0px))!important}
 @media(max-width:760px){body.j-action-workspace #homeQuickBar.j-neon-dock:has([data-jarvix-chat]),body.j-action-workspace.studio-quickstart .studio-shell>main>#creator.composer.j-neon-dock{bottom:calc(8px + env(safe-area-inset-bottom,0px) + var(--j-keyboard-inset,0px))!important}}
+/* Home's identity remains in the sidebar; never overlay the menu/tour controls. */
+@media(min-width:761px){body.j-action-workspace .top.ds-stable-header .top-brand{display:none!important}}
