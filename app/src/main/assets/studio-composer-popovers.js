@@ -80,7 +80,17 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
  }
  for(const panel of [menu,$('modelDialog'),$('settingsDialog')]){
-  panel.addEventListener('close',()=>{const anchor=panel===menu?picker:$(panel.id==='modelDialog'?'modelButton':'settingsButton');anchor?.setAttribute('aria-expanded','false');if(activePanel===panel){activePanel=null;activeAnchor=null;}});
+  panel.addEventListener('close',()=>{
+   const anchor=panel===menu?picker:$(panel.id==='modelDialog'?'modelButton':'settingsButton');
+   anchor?.setAttribute('aria-expanded','false');
+   if(activePanel===panel){
+    const hub=$('studioSettingsHub'),gear=$('studioSettingsToggle');
+    if(hub?.open&&gear?.isConnected){
+     activePanel=hub;activeAnchor=gear;
+     requestAnimationFrame(()=>position(hub,gear));
+    }else{activePanel=null;activeAnchor=null;}
+   }
+  });
   panel.addEventListener('click',event=>{if(event.target!==panel)return;const r=panel.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)panel.close();});
  }
  const reposition=()=>{if(activePanel?.open&&activeAnchor)position(activePanel,activeAnchor);};
@@ -130,8 +140,14 @@ document.addEventListener('DOMContentLoaded',()=>{
  const close=document.createElement('button');close.type='button';close.textContent='×';close.setAttribute('aria-label',text('Close settings','Закрыть настройки'));close.onclick=()=>hub.close();
  const format=$('settingsButton'),model=$('modelButton');
  hub.append(heading,close,picker,model,format);document.body.append(hub);
- for(const control of [picker,model,format])control.addEventListener('click',()=>hub.close(),{capture:true});
- const gear=document.createElement('button');gear.type='button';gear.className='pill j-studio-settings';gear.id='studioSettingsToggle';gear.setAttribute('aria-label',text('Studio settings','Настройки студии'));gear.textContent='☷';gear.setAttribute('aria-haspopup','dialog');gear.onclick=()=>{hub.showModal();position(hub,gear);};controls.prepend(gear);
- decorateComposer($('creator'));if(new URLSearchParams(location.search).get('settings')==='1')hub.showModal();
+ // The hub stays open when a user selects model, type or format.
+ // Child dialogs close independently and return to this parent Settings view.
+ const gear=document.createElement('button');gear.type='button';gear.className='pill j-studio-settings';gear.id='studioSettingsToggle';gear.setAttribute('aria-label',text('Studio settings','Настройки студии'));gear.textContent='☷';gear.setAttribute('aria-haspopup','dialog');gear.onclick=()=>{if(!hub.open)hub.showModal();prepare(hub,gear);position(hub,gear);};
+ hub.addEventListener('close',()=>{
+  gear.setAttribute('aria-expanded','false');
+  if(activePanel===hub){activePanel=null;activeAnchor=null;}
+ });
+ controls.prepend(gear);
+ decorateComposer($('creator'));if(new URLSearchParams(location.search).get('settings')==='1'){hub.showModal();prepare(hub,gear);position(hub,gear);}
 
 });

@@ -20,7 +20,7 @@ test('first settings panel open stays anchored in Image, Video and Audio Studio'
    await expect(page.locator('#studioTypePicker')).toBeVisible();
    await expect(page.locator('.studio-shell>.studio-nav')).toBeHidden();
    await hub.locator('#settingsButton').click();
-   await expect(hub).toBeHidden();
+   await expect(hub).toHaveAttribute('open','');
    await expect(panel).toBeVisible();
 
    // Verify the final position, including the delayed 80ms Studio layout pass.
@@ -51,7 +51,67 @@ test('first settings panel open stays anchored in Image, Video and Audio Studio'
 
    await panel.getByRole('button',{name:/^(Done|Готово|Terminé|Listo)$/}).click();
    await expect(panel).toBeHidden();
+   await expect(hub).toHaveAttribute('open','');
+   await hub.getByRole('button',{name:/^(Close settings|Закрыть настройки)$/}).click();
+   await expect(hub).not.toHaveAttribute('open','');
   }
  }
  expect(paidCalls).toBe(0);
+});
+
+
+test('Studio Settings stays open through model and aspect selections until explicit X',async({page})=>{
+ test.setTimeout(90000);
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+ let posts=0;
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))posts++;});
+ for(const width of [1363,390]){
+  await page.setViewportSize({width,height:width<500?844:936});
+  for(const studio of ['image','video','audio']){
+   await page.goto('/generate-studio.html?studio='+studio);
+   const gear=page.locator('#studioSettingsToggle');
+   const hub=page.locator('#studioSettingsHub');
+   await gear.click();
+   await expect(hub).toHaveAttribute('open','');
+
+   // Change to another available model; the selected label must be retained
+   // when the model's own overlay closes.
+   await hub.locator('#modelButton').click();
+   await expect(page.locator('#modelDialog')).toBeVisible();
+   await expect(hub).toHaveAttribute('open','');
+   const option=page.locator('#modelDialog .model-card[aria-pressed="false"]').first();
+   await expect(option).toBeVisible();
+   const selected=(await option.locator('strong').textContent()).trim();
+   await option.click();
+   await expect(page.locator('#modelDialog')).toBeHidden();
+   await expect(hub).toHaveAttribute('open','');
+   await expect(hub.locator('#modelButton')).toContainText(selected);
+
+   await hub.locator('#settingsButton').click();
+   const settings=page.locator('#settingsDialog');
+   await expect(settings).toBeVisible();
+   await expect(hub).toHaveAttribute('open','');
+   const choices=settings.locator('#ratioChoices button');
+   let selectedRatio=null;
+   if(await choices.count()){
+    selectedRatio=await choices.last().getAttribute('aria-label');
+    await choices.last().click();
+    await expect(page.locator('#ratio')).toHaveValue(selectedRatio);
+   }
+   await settings.getByRole('button',{name:/^(Done|Готово|Terminé|Listo)$/}).click();
+   await expect(settings).toBeHidden();
+   await expect(hub).toHaveAttribute('open','');
+   await expect(hub.locator('#modelButton')).toContainText(selected);
+   if(selectedRatio){
+    await expect(hub.locator('#settingsButton')).toContainText(selectedRatio);
+    await expect(page.locator('#ratio')).toHaveValue(selectedRatio);
+   }
+
+   // Only the main dialog's X closes the entire Settings workflow.
+   await hub.getByRole('button',{name:/^(Close settings|Закрыть настройки)$/}).click();
+   await expect(hub).not.toHaveAttribute('open','');
+   await expect(gear).toHaveAttribute('aria-expanded','false');
+  }
+ }
+ expect(posts).toBe(0);
 });
