@@ -106,7 +106,7 @@ function element(tag,className,content){const e=document.createElement(tag);if(c
 function paragraph(parent,content,cls='cp-note'){const p=element('p',cls,content);parent.append(p);return p;}
 function kicker(parent,value){parent.prepend(element('span','cp-kicker',value));}
 function link(parent,label,href,cls='cp-action'){const a=element('a',cls,label);a.href=href;parent.append(a);return a;}
-function plansLink(parent){const a=link(parent,c.plans,'index.html#plans');a.dataset.creatorDestination='plans';}
+function plansLink(parent){return link(parent,c.plans,'pricing.html#plans');}
 function callout(parent,title,description){const box=element('section','cp-cta');const body=element('div');body.append(element('h3','',title));paragraph(body,description);box.append(body);plansLink(box);parent.append(box);return box;}
 function features(parent,items){const grid=element('div','cp-feature-grid');items.forEach(([title,description],i)=>{const card=element('article','cp-feature');card.append(element('span','cp-number',String(i+1).padStart(2,'0')),element('h3','',title));paragraph(card,description);grid.append(card);});parent.append(grid);return grid;}
 function hero(parent,values,descriptionSelector){parent.classList.add('cp-hero');kicker(parent,values[0]);const lead=element('p','cp-lead',values[1]);parent.querySelector('h1').after(lead);text(descriptionSelector,values[2]);}
@@ -184,8 +184,7 @@ if($('#dashboardView')){
  document.querySelectorAll('.planBtn').forEach(button=>{button.textContent=button.dataset.plan==='lifetime'?c.lifetime:c.choose+' '+button.dataset.plan[0].toUpperCase()+button.dataset.plan.slice(1);});
  document.querySelectorAll('.price [data-i18n="perMonth"]').forEach(el=>{el.removeAttribute('data-i18n');el.textContent=c.perMonth;});text('.featured .popular',c.recommended);text('.lifetimeCard .price span',c.once);
  text('#avatarStudioLink span:last-child',c.avatar);
- // Same-page CTAs use existing view navigation; standalone tools keep real links.
- document.querySelectorAll('[data-creator-destination="plans"]').forEach(a=>a.addEventListener('click',event=>{if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;event.preventDefault();history.replaceState(history.state,'',location.pathname+location.search+'#plans');window.VideoVariatorUI?.showView('plans');}));
+ // Compare Plans uses canonical Pricing; do not intercept clicks into legacy Plans view.
  // Support shared links from the tool pages without triggering billing or checkout.
  const openHash=()=>{const name=location.hash.slice(1);if(['history','analytics','plans','faq','profile'].includes(name))window.VideoVariatorUI?.showView(name);};
  openHash();window.addEventListener('hashchange',openHash);
