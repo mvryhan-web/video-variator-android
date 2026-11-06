@@ -21,6 +21,8 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const assets=path.join(root,'app','src','main','assets');
 const ffmpegUmd=path.join(root,'node_modules','@ffmpeg','ffmpeg','dist','umd');
 const ffmpegCore=path.join(root,'node_modules','@ffmpeg','core','dist','esm');
+let testVideoBuffer=null;
+async function bundledTestVideo(){if(!testVideoBuffer)testVideoBuffer=await readFile(path.join(assets,'media/home/neon-20261018/apps-card.mp4'));return {buffer:testVideoBuffer,mime:'video/mp4',provider:'bundled-test-demo-not-ai'};}
 const disabled={error:'PREVIEW_ONLY',message:'This is a design preview. Accounts, payments and paid AI generation are disabled.'};
 // Anonymous visitor cookie acts as a bearer token for temporary preview-only jobs.
 // Never publish the shared in-memory jobs list or other visitors' prompts/media.
@@ -160,6 +162,8 @@ app.post('/api/studio/jobs', async (req, res) => {
       let result;
       if (kind === 'video') {
         result = await generateTrialVideo({ prompt, model, duration: req.body?.videoDuration || 5, allowExternal: false });
+        // An SVG must never be presented as a playable video. Reuse a clearly labelled bundled demo without provider calls.
+        if(!result.mime?.startsWith('video/'))result=await bundledTestVideo();
       } else if (['music','voice','audio'].includes(kind)) {
         // Free TEST audio is a WAV chime, not an image mislabeled as audio.
         result = await generateFreeAudio({ prompt, text: prompt, model });
