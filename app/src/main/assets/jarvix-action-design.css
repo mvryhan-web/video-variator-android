@@ -42,3 +42,4 @@ body.j-action-workspace #homeQuickBar.j-neon-dock:has([data-jarvix-chat]),body.j
 @media(max-width:760px){body.j-action-workspace #homeQuickBar.j-neon-dock:has([data-jarvix-chat]),body.j-action-workspace.studio-quickstart .studio-shell>main>#creator.composer.j-neon-dock{bottom:calc(8px + env(safe-area-inset-bottom,0px) + var(--j-keyboard-inset,0px))!important}}
 /* Home's identity remains in the sidebar; never overlay the menu/tour controls. */
 @media(min-width:761px){body.j-action-workspace .top.ds-stable-header .top-brand{display:none!important}}
+@media(max-width:760px){body.j-action-workspace .jarvix-compose.j-neon-composer textarea{height:64px!important;min-height:64px!important;line-height:22px!important;overflow-y:auto;scrollbar-width:none}body.j-action-workspace .jarvix-compose.j-neon-composer textarea::-webkit-scrollbar{display:none}}

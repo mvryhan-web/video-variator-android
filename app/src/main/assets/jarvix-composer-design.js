@@ -11,7 +11,7 @@ export function decorateComposer(form,{settingsTarget=null}={}){
  dock.classList.add('j-neon-dock');dock.append(rail);
  const mic=form.querySelector('#jMic,#studioVoiceBtn');
  const attach=form.querySelector('#jAttach');
- if(attach){const clip=make('button','⌁');clip.type='button';clip.className='j-attach-shortcut';clip.setAttribute('aria-label',ru?'Прикрепить файл':'Attach file');clip.onclick=()=>attach.click();mic?.before(clip);}
- if(settingsTarget){const gear=make('button','☷');gear.type='button';gear.className='j-settings-shortcut';gear.setAttribute('aria-label',ru?'Настройки студии':'Studio settings');gear.setAttribute('aria-haspopup','dialog');gear.onclick=settingsTarget;mic?.after(gear);}
+ if(attach){const clip=make('button','⌁');clip.innerHTML='<svg width="20" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 13l7-7a3 3 0 014 4L9 20a5 5 0 01-7-7L13 2M5 15l9-9"/></svg>';clip.type='button';clip.className='j-attach-shortcut';clip.setAttribute('aria-label',ru?'Прикрепить файл':'Attach file');clip.onclick=()=>attach.click();mic?.before(clip);}
+ if(settingsTarget){const gear=make('button','☷');gear.innerHTML='<svg width="21" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18M8 3v6M16 9v6M10 15v6"/></svg>';gear.type='button';gear.className='j-settings-shortcut';gear.setAttribute('aria-label',ru?'Настройки студии':'Studio settings');gear.setAttribute('aria-haspopup','dialog');gear.onclick=settingsTarget;mic?.after(gear);}
  const plus=form.querySelector('#jPlus');if(plus)plus.classList.add('j-glow-plus');
 }
