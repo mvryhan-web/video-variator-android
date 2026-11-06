@@ -1,0 +1,27 @@
+name: Mobile header and drawer
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/deepsyq-mobile-shell.*'
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/generate-studio.html'
+      - 'app/src/main/assets/video-uniquifier-reference.js'
+      - 'tests/deepsyq-mobile-shell.test.mjs'
+      - 'app/src/main/assets/jarvix-guided-tour.js'
+      - 'app/src/main/assets/jarvix-tour-plan.js'
+      - 'tests/jarvix-tour-plan.test.mjs'
+  push:
+    branches: ['p/mobile-header-20261105']
+permissions:
+  contents: read
+jobs:
+  mobile-header:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/deepsyq-mobile-shell.test.mjs tests/deepsyq-navigation-contract-unit.mjs tests/jarvix-tour-plan.test.mjs tests/jarvix-activation.test.mjs tests/jarvix-recognition-lifecycle.test.mjs tests/jarvix-local-voice.test.mjs tests/studio-consent-preview.test.mjs
+      - run: node --check app/src/main/assets/deepsyq-mobile-shell.js

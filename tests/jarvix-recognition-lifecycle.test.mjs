@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 const source=readFileSync(new URL('../app/src/main/assets/jarvis-core.js',import.meta.url),'utf8');
-const control=source.slice(source.indexOf('function pauseJarvisRecognition()'),source.indexOf('// 10. Silence Timer'));
+const control=source.slice(source.indexOf('function pauseJarvisRecognition()'),source.indexOf('// 10. Silence Timer')).replaceAll('export function','function');
 function setup(){
  const instances=[],timers=[],commands=[];
- const context=vm.createContext({recognitionVersion:0,isJarvisActive:true,keepListening:true,isJarvisSpeaking:false,isJarvisListening:false,jarvisRecognition:null,
+ const context=vm.createContext({recognitionVersion:0,recognitionStarting:false,isTourActive:()=>false,isJarvisActive:true,keepListening:true,isJarvisSpeaking:false,isJarvisListening:false,jarvisRecognition:null,
  window:{SpeechRecognition:class{constructor(){instances.push(this);}start(){}stop(){}}},
  localStorage:{getItem:()=> 'ru'},document:{documentElement:{lang:'ru'}},
  updateJarvisState(){},getTopBtn:()=>null,resetSilenceTimer(){},getJarvixLanguage:()=> 'ru',
@@ -23,4 +23,11 @@ test('stale onend cannot restart recognition after a new speech pause',()=>{
 });
 test('listening does not start while assistant is speaking',()=>{
  const s=setup();vm.runInContext('isJarvisSpeaking=true;resumeJarvisRecognition()',s.context);assert.equal(s.instances.length,1);
+});
+
+test('repeated resume during startup never creates a second microphone session',()=>{
+ const s=setup();vm.runInContext('resumeJarvisRecognition();resumeJarvisRecognition()',s.context);assert.equal(s.instances.length,1);
+});
+test('permission error cannot restart the microphone through onend',()=>{
+ const s=setup(),rec=s.instances[0];rec.onerror({error:'not-allowed'});assert.equal(rec.onend,null);assert.equal(s.context.keepListening,false);assert.equal(s.instances.length,1);
 });

@@ -76,7 +76,7 @@
 
     const jarvisScript = document.createElement('script');
     jarvisScript.type = 'module';
-    jarvisScript.src = 'jarvis-core.js?v=7.0';
+    jarvisScript.src = 'jarvis-core.js';
     document.body.append(jarvisScript);
 
     // If a top header exists, insert JARVIX Orb dead-center
@@ -92,6 +92,10 @@
       topH.append(jBtn);
     }
   }
+
+  const mobileShell = document.createElement('script');
+  mobileShell.type = 'module'; mobileShell.src = 'deepsyq-mobile-shell.js';
+  document.body.append(mobileShell);
 
   // Sidebar building on subpages
   if (!document.body || document.getElementById('sidebar') || document.getElementById('dsSiteSidebar')) return;

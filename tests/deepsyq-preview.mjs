@@ -32,8 +32,9 @@ test('isolated Deepsyq preview serves the current Canvas UI and disables paid en
   const canvasHtml=await canvas.text();
   assert.match(canvasHtml,/id="quickCreatePrompt"/);
   assert.match(canvasHtml,/id="quickCreateFiles"/);
-  assert.match(html,/design preview/);
-  assert.match(html,/<body class="home-neon"><div role="status"/);
+  // Owner removed the visual banner; endpoint isolation remains enforced below.
+  assert.doesNotMatch(html,/deepsyq-preview-notice|Deepsyq design preview · Work in progress/);
+  assert.match(html,/<body class="home-neon">/);
   assert.match(html,/id="createWithDeepsyq"/);
   for(const name of ['audio','agent','apps','canvas']){
    const art=await fetch(base+'/media/home/neon-20261018/'+name+'.webp');

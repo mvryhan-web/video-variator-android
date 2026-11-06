@@ -84,3 +84,8 @@ body[data-approved-page="audio-studio"] #toolAccessBanner{grid-column:1/-1;margi
 @media(max-width:700px){
  body.deepsyq-sitewide-shell main>header{padding-inline-start:48px;min-height:52px;flex-wrap:wrap}
 }
+/* Owner dashboards: keep every section shortcut readable on phone screens. */
+@media(max-width:760px){
+ body:is([data-approved-page="deepsyq-admin"],[data-approved-page="product-watcher-admin"]) .ds-section-nav{flex-wrap:wrap;overflow:visible}
+ body:is([data-approved-page="deepsyq-admin"],[data-approved-page="product-watcher-admin"]) .ds-section-nav a{flex:0 1 auto;overflow-wrap:anywhere;min-height:44px;display:flex;align-items:center}
+}

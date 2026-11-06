@@ -26,7 +26,7 @@
 
     backdrop.innerHTML = `
       <div class="lumina-modal-card">
-        <div class="lumina-modal-header">
+        <button type="button" class="lumina-preview-close" aria-label="Close without accepting">×</button><div class="lumina-modal-header">
           <div class="lumina-brand-badge">✦ BYTEPLUS LUMINA · DEEPSYQ AI</div>
           <h2 id="luminaModalTitle" class="lumina-modal-title">Условия сервиса и AI-генерации</h2>
           <p class="lumina-modal-sub">Пожалуйста, примите условия использования платформы и дайте согласие на обработку данных AI-моделями для завершения регистрации.</p>
@@ -67,6 +67,7 @@
       </div>
     `;
 
+    backdrop.querySelector('.lumina-preview-close').onclick=()=>backdrop.remove();
     document.body.appendChild(backdrop);
     return backdrop;
   }
@@ -108,7 +109,18 @@
   // Auto-prompt on Studio entry if not yet accepted
   document.addEventListener('DOMContentLoaded', () => {
     const isStudio = location.pathname.includes('generate-studio');
+    if(isStudio)document.getElementById('creator')?.addEventListener('submit',event=>{
+      if(!isAccepted()){event.preventDefault();event.stopImmediatePropagation();window.openLuminaTermsModal();}
+    },{capture:true});
     if (isStudio && !isAccepted()) {
+      // A tour only presents the interface. It cannot submit a generation or
+      // accept consent; stopping the tour restores the normal consent prompt.
+      let tour=null;try{tour=JSON.parse(sessionStorage.getItem('deepsyq_guided_tour_v4')||'null');}catch(_){}
+      if(tour&&Number.isInteger(tour.index)&&tour.index>=1&&tour.index<=3&&['playing','paused'].includes(tour.phase)){
+        const content=document.querySelector('main');if(content)content.inert=true;
+        window.addEventListener('jarvix:tour-ended',()=>{if(content)content.inert=false;if(!isAccepted())window.openLuminaTermsModal();},{once:true});
+        return;
+      }
       setTimeout(() => {
         window.openLuminaTermsModal();
       }, 250);

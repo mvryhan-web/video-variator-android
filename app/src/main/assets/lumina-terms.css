@@ -181,3 +181,5 @@
   .lumina-modal-title{font-size:19px}
   .lumina-term-card{padding:12px}
 }
+
+.lumina-modal-card{position:relative}.lumina-preview-close{position:absolute;right:8px;top:8px;z-index:1;width:40px;height:40px;padding:0;border:1px solid #6b6a96;border-radius:12px;background:#13213b;color:#fff;font-size:24px;cursor:pointer}
