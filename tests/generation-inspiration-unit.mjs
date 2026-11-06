@@ -30,7 +30,7 @@ test('public inspiration is active-only, ratio-filtered and agent-target content
   if(sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true'))return {rows};
   throw new Error(sql);
  }};
- const app=express();app.use(express.json());installInspiration(app,{pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true',ADMIN_EMAIL:'owner@example.test'},auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});
+ const app=express();app.use(express.json());installInspiration(app,{manifestItems:[],pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true',ADMIN_EMAIL:'owner@example.test'},auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});
  const server=app.listen(0);await new Promise(r=>server.once('listening',r));const base='http://127.0.0.1:'+server.address().port;
  try{
   let r=await fetch(base+'/api/inspiration?kind=image&ratio=1%3A1');assert.equal(r.status,200);let d=await r.json();
@@ -66,7 +66,7 @@ test('owner Inspiration readiness reports concrete content blockers',async()=>{
 test('agent inspiration requires both explicit flag and a real same-origin action path',async()=>{
  const rows=[{id:'a1',title:'Agent example',slug:'agent-example',kind:'video',category:'Campaign',description:'Agent workflow example',preview_url:'/agent.webp',preview_poster_url:null,prompt:'Build a campaign',default_model:null,aspect_ratio:'9:16',required_input_types:['image'],default_settings:{ratio:'9:16'},action_target:'agent',rights_basis:'owned',rights_note:'Created in house',active:true,featured:true,sort_order:1,created_at:new Date(),updated_at:new Date()}];
  const makePool=()=>({async query(sql){if(sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_inspiration'))return {rows:[]};if(sql.startsWith('SELECT DISTINCT category'))return {rows:[{category:'Campaign'}]};if(sql.startsWith('SELECT DISTINCT aspect_ratio'))return {rows:[{aspect_ratio:'9:16'}]};if(sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true'))return {rows};throw new Error(sql);}});
- async function request(env){const app=express();installInspiration(app,{pool:makePool(),env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true',ADMIN_EMAIL:'owner@example.test',...env},auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});const server=app.listen(0);await new Promise(r=>server.once('listening',r));try{return await (await fetch('http://127.0.0.1:'+server.address().port+'/api/inspiration?target=agent')).json();}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}}
+ async function request(env){const app=express();installInspiration(app,{manifestItems:[],pool:makePool(),env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true',ADMIN_EMAIL:'owner@example.test',...env},auth:(req,_res,next)=>{req.user={id:'owner',provider:'google',email:'owner@example.test'};next();}});const server=app.listen(0);await new Promise(r=>server.once('listening',r));try{return await (await fetch('http://127.0.0.1:'+server.address().port+'/api/inspiration?target=agent')).json();}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}}
  let d=await request({AI_INSPIRATION_AGENT_TARGETS_ENABLED:'true'});assert.deepEqual(d.items,[]);
  d=await request({AI_INSPIRATION_AGENT_TARGETS_ENABLED:'true',AI_INSPIRATION_AGENT_PATH:'/agent.html'});assert.equal(d.items.length,1);assert.equal(d.items[0].actionPath,'/agent.html');
  d=await request({AI_INSPIRATION_AGENT_TARGETS_ENABLED:'true',AI_INSPIRATION_AGENT_PATH:'https://evil.example/agent'});assert.deepEqual(d.items,[]);
@@ -76,7 +76,7 @@ test('agent inspiration requires both explicit flag and a real same-origin actio
 test('public inspiration pagination is bounded and exposes a next offset',async()=>{
  const rows=Array.from({length:25},(_,i)=>({id:'p'+i,title:'Item '+i,slug:'item-'+i,kind:'image',category:'Editorial',description:'',preview_url:'/p'+i+'.webp',preview_poster_url:null,prompt:'Prompt '+i,default_model:null,aspect_ratio:'1:1',required_input_types:[],default_settings:{},action_target:'studio',rights_basis:'owned',rights_note:'Created in house',active:true,featured:false,sort_order:i,created_at:new Date(),updated_at:new Date()}));
  const pool={async query(sql){if(sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_inspiration'))return {rows:[]};if(sql.startsWith('SELECT DISTINCT category'))return {rows:[{category:'Editorial'}]};if(sql.startsWith('SELECT DISTINCT aspect_ratio'))return {rows:[{aspect_ratio:'1:1'}]};if(sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true'))return {rows};throw new Error(sql);}};
- const app=express();installInspiration(app,{pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true',ADMIN_EMAIL:'owner@example.test'},auth:(req,_res,next)=>next()});const server=app.listen(0);await new Promise(r=>server.once('listening',r));
+ const app=express();installInspiration(app,{manifestItems:[],pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true',ADMIN_EMAIL:'owner@example.test'},auth:(req,_res,next)=>next()});const server=app.listen(0);await new Promise(r=>server.once('listening',r));
  try{const r=await fetch('http://127.0.0.1:'+server.address().port+'/api/inspiration?limit=24&offset=0');assert.equal(r.status,200);const d=await r.json();assert.equal(d.items.length,24);assert.equal(d.pagination.hasMore,true);assert.equal(d.pagination.nextOffset,24);assert.equal(d.pagination.limit,24);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
 
@@ -111,7 +111,7 @@ test('public Inspiration pages remain stable when bulk-imported images tie on fe
   }
   throw Error('Unexpected SQL: '+sql);
  }};
- const app=express();installInspiration(app,{pool,
+ const app=express();installInspiration(app,{manifestItems:[],pool,
   env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true'},
   auth:(_req,_res,next)=>next()});
  const server=app.listen(0);await new Promise(r=>server.once('listening',r));
@@ -145,7 +145,7 @@ test('public Inspiration facet options honor every active gallery filter and reu
   throw Error('Unexpected SQL: '+sql);
  }};
  const app=express();
- installInspiration(app,{pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true'},
+ installInspiration(app,{manifestItems:[],pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true'},
   auth:(_req,_res,next)=>next()});
  const server=app.listen(0);await new Promise(resolve=>server.once('listening',resolve));
  try{
@@ -195,7 +195,7 @@ test('public Inspiration facets cannot bypass hidden agent target when agent is 
   if(sql.startsWith('SELECT DISTINCT aspect_ratio'))return {rows:[{aspect_ratio:'1:1'}]};
   throw Error('Unexpected SQL');
  }};
- const app=express();installInspiration(app,{pool,env:{
+ const app=express();installInspiration(app,{manifestItems:[],pool,env:{
   NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true',
   AI_INSPIRATION_AGENT_TARGETS_ENABLED:'false'
  },auth:(_req,_res,next)=>next()});
@@ -243,7 +243,7 @@ test('inspiration search treats typed percent, underscore, and backslash literal
   if(sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true'))return {rows:[]};
   throw Error('UNEXPECTED_SQL');
  }};
- const app=express();installInspiration(app,{pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true'},auth:(_req,_res,next)=>next()});
+ const app=express();installInspiration(app,{manifestItems:[],pool,env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true'},auth:(_req,_res,next)=>next()});
  const server=app.listen(0);await new Promise(r=>server.once('listening',r));
  try{
   const typed='100%_'+String.fromCharCode(92)+'sale';
@@ -293,4 +293,36 @@ test('static Inspiration manifest hides inactive Home footage and respects expli
   listener.closeAllConnections();
   await new Promise(resolve=>listener.close(resolve));
  }
+});
+
+
+test('DB-owned Inspiration cards remain public beside static manifests without exposing rights notes',async()=>{
+ const approved={id:'db-unique',slug:'db-unique',kind:'image',category:'OwnerEditorial',title:'Owned database card',
+  description:'',preview_url:'/owner.webp',preview_poster_url:null,prompt:'Owner prompt',default_model:null,
+  aspect_ratio:'1:1',required_input_types:[],default_settings:{},action_target:'studio',
+  rights_basis:'owned',rights_note:'Owner proof is private',active:true,featured:false,sort_order:10,
+  created_at:'2026-11-02T00:00:00Z',updated_at:'2026-11-02T00:00:00Z'};
+ const pool={async query(sql,args=[]){
+  if(sql.includes('CREATE TABLE IF NOT EXISTS vv_ai_inspiration'))return {rows:[]};
+  if(sql.startsWith('SELECT * FROM vv_ai_inspiration WHERE active=true'))return {rows:[approved]};
+  if(sql.startsWith('SELECT DISTINCT category'))return {rows:[{category:'OwnerEditorial',total_count:'1'}]};
+  if(sql.startsWith('SELECT DISTINCT aspect_ratio'))return {rows:[{aspect_ratio:'1:1'}]};
+  throw Error('Unexpected SQL '+sql);
+ }};
+ const app=express();installInspiration(app,{pool,manifestItems:[
+  {slug:'static-approved',id:'static-approved',title:'Static approved',kind:'image',category:'StaticEditorial',
+    prompt:'Static prompt',aspectRatio:'2:3',active:true,actionTarget:'studio',sortOrder:1}
+ ],env:{NODE_ENV:'test',AI_INSPIRATION_ENABLED:'true'},auth:(_req,_res,next)=>next()});
+ const server=app.listen(0);await new Promise(r=>server.once('listening',r));
+ try{
+  const response=await fetch('http://127.0.0.1:'+server.address().port+'/api/inspiration?limit=10');
+  assert.equal(response.status,200);
+  const body=await response.json();
+  assert.deepEqual(body.items.map(x=>x.slug),['static-approved','db-unique']);
+  assert.equal(body.pagination.total,2);
+  assert.deepEqual(body.categories,['OwnerEditorial','StaticEditorial']);
+  assert.deepEqual(body.ratios,['1:1','2:3']);
+  assert.equal(body.items[1].rightsNote,undefined);
+  assert.equal(body.items[1].rightsBasis,undefined);
+ }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
