@@ -1032,12 +1032,13 @@ function resumeJarvisRecognition() {
       if (recognitionTurn !== recognitionVersion) return;
       isJarvisListening = false;
       clearTimeout(speechTimeout);
-      if (isJarvisActive && keepListening) {
+      if (isJarvisActive && keepListening && !isJarvisSpeaking) {
+        // 800ms debounce prevents rapid audio "bing-bing" loop on mobile Chrome/Android
         setTimeout(() => {
           if (recognitionTurn === recognitionVersion && isJarvisActive && keepListening && !isJarvisSpeaking) {
             resumeJarvisRecognition();
           }
-        }, 150);
+        }, 800);
       } else {
         isJarvisListening = false;
       }
@@ -1045,6 +1046,10 @@ function resumeJarvisRecognition() {
 
     jarvisRecognition.onerror = (err) => {
       if (recognitionTurn !== recognitionVersion || !isJarvisActive) return;
+      if (err.error === 'no-speech') {
+        // Silence timeout: normal behavior, avoid rapid audio beep loops
+        return;
+      }
       const recognitionErrors = {
         'not-allowed': 'permission',
         'service-not-allowed': 'service',
@@ -1100,7 +1105,29 @@ export function activateJarvisVoice() {
   const topBtn = getTopBtn();
   if (topBtn) topBtn.classList.add('is-active');
 
-  startJarvixGuidedTour();
+  const tourDone = localStorage.getItem('deepsyq_tour_completed') === 'true';
+  if (!tourDone) {
+    localStorage.setItem('deepsyq_tour_completed', 'true');
+    startJarvixGuidedTour();
+  } else {
+    // Tour already completed: JARVIS asks what to open and listens immediately!
+    const lang = getJarvixLanguage();
+    const promptText = lang === 'ru'
+      ? 'Я слушаю, что открыть?'
+      : lang === 'fr'
+      ? 'Je vous écoute, que voulez-vous ouvrir ?'
+      : lang === 'es'
+      ? 'Te escucho, ¿qué quieres abrir?'
+      : 'I\'m listening, what shall I open?';
+
+    updateJarvisState('speaking');
+    speakJarvis(promptText, () => {
+      if (isJarvisActive) {
+        updateJarvisState('listening');
+        resumeJarvisRecognition();
+      }
+    });
+  }
 }
 
 export function deactivateJarvisVoice() {
