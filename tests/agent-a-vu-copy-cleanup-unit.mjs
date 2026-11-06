@@ -14,7 +14,7 @@ test('only owner-requested decorative micro-copy is removed',()=>{
  assert.match(js,/querySelectorAll\('\.sectionHead \.workspaceEyebrow'\)/);
  assert.match(js,/txt\.innerHTML='<strong>/);
  assert.doesNotMatch(js,/txt\.innerHTML='<strong>[^\n]*<small>/);
- assert.match(js, /preview\.innerHTML='<div class="vu-panel-head"><h3>Example preview<\/h3><\/div>'/);
+ assert.doesNotMatch(js, /preview\.innerHTML|Example preview|vu-preview-scene/);
  assert.doesNotMatch(js,/See an example of how video variants can look/);
  assert.doesNotMatch(js,/Unlock more power and create without limits/);
  assert.match(js,/Upgrade to<br>Deepsyq Pro/);
