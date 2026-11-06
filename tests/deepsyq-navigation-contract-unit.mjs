@@ -28,12 +28,14 @@ test('Only Library contains the My Creations entry; the More duplicate is remove
  assert.equal(homeNavigationTarget('My Creations'),'my-creations.html');
  assert.equal((home.match(/aria-label="My Creations"/g)||[]).length,1);
  assert.ok(!home.includes('aria-label="History"'),'Remove duplicate under More');
- assert.match(studio,/get\('view'\)==='history'\)setHistory\(true\)/,'Assets keeps Studio history access');
+ assert.match(studio,/get\('view'\)==='history'\)setHistory\(true\)/,'Saved Studio history remains functional, without a separate navigation item');
+ assert.ok(!home.includes('aria-label="Assets and saved creations"'),'Retired navigation entry must not return');
+ assert.ok(!source('deepsyq-site-shell.js').includes("label: 'Assets'"),'Shared sidebar must not display retired navigation');
 });
 
-test('Canvas, Assets, My Creations and JARVIX links have correct existing destinations',()=>{
+test('Canvas, My Creations and JARVIX links have correct existing destinations',()=>{
  assert.equal(homeNavigationTarget('Canvas'),'canvas.html');
- assert.equal(homeNavigationTarget('Assets and saved creations'),'generate-studio.html?view=history');
+ assert.ok(!home.includes('title="Assets — saved creations"'),'No retired sidebar label or destination remains');
  assert.ok(!home.includes('id="quickCreateForm"'),'Home must not retain Canvas editor');
  assert.ok(source('canvas.html').includes('id="quickCreateForm"'),'Canvas editor must exist on dedicated page');
  assert.ok(!home.includes('id="recentCreations"'),'Removed Home history cards must not be restored');

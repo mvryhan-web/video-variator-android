@@ -60,8 +60,8 @@ test('Home Inspiration filters image and video cards in place; detail shows the 
   await expect(imageDialog.locator('.inspiration-detail-parameters')).toHaveCount(0);
   await expect(imageDialog.getByRole('heading',{name:'Parameters',exact:true})).toHaveCount(0);
   await expect(imageDialog.getByRole('button',{name:'Clone & Try'})).toHaveText('Clone & Try');
-  await expect(imageDialog.getByRole('heading',{name:'Prompt:',exact:true})).toBeVisible();
   await expect(imageDialog.locator('.inspiration-detail-title,.inspiration-detail-kind,.inspiration-detail-description,.inspiration-detail-note,.inspiration-detail-parameters,.inspiration-detail-caption')).toHaveCount(0);
+  await expect(imageDialog.locator('.inspiration-detail-heading')).toHaveText('Prompt:');
   await expect(imageDialog.locator('.inspiration-detail-actions button')).toHaveCount(1);
   await expect(imageDialog.locator('.inspiration-detail-clone')).toHaveCSS('background-color','rgb(255, 255, 255)');
   const imageClose=await expectPlainClose(imageDialog);
@@ -122,15 +122,22 @@ test('five Inspiration videos and image cards share one compact and expandable p
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.inspiration-detail-media')).toHaveCount(1);
   await expect(dialog.locator('.inspiration-detail-prompt')).toHaveText(item.prompt);
-  await expect(dialog.getByRole('heading',{name:'Prompt:',exact:true})).toBeVisible();
-  const clipped=await dialog.locator('.inspiration-detail-prompt').evaluate(el=>{
-   const css=getComputedStyle(el);
-   return {height:el.clientHeight,scrollHeight:el.scrollHeight,lineHeight:parseFloat(css.lineHeight),paddingTop:parseFloat(css.paddingTop),paddingBottom:parseFloat(css.paddingBottom)};
+  await expect(dialog.locator('.inspiration-detail-heading')).toHaveText('Prompt:');
+  const metrics=await dialog.evaluate(d=>{
+   const stage=d.querySelector('.inspiration-detail-stage').getBoundingClientRect();
+   const side=d.querySelector('.inspiration-detail-sidebar').getBoundingClientRect();
+   const actions=d.querySelector('.inspiration-detail-actions').getBoundingClientRect();
+   const p=d.querySelector('.inspiration-detail-prompt');
+   return {stageHeight:stage.height,sideHeight:side.height,bottomGap:side.bottom-actions.bottom,
+     textHeight:p.clientHeight,lineHeight:parseFloat(getComputedStyle(p).lineHeight),
+     textScrollHeight:p.scrollHeight};
   });
-  expect(clipped.scrollHeight).toBeGreaterThan(clipped.height+1);
-  expect(clipped.height).toBeLessThanOrEqual(clipped.lineHeight*4+clipped.paddingTop+clipped.paddingBottom+3);
-  await expect(dialog.locator('.inspiration-detail-prompt')).toHaveCSS('-webkit-line-clamp','4');
-  await expect(dialog.locator('.inspiration-detail-caption,.inspiration-detail-title,.inspiration-detail-kind,.inspiration-detail-description,.inspiration-detail-heading,.inspiration-detail-note,.inspiration-detail-parameters')).toHaveCount(0);
+  expect(metrics.stageHeight,'mobile media stage must be taller than sidebar').toBeGreaterThan(metrics.sideHeight);
+  expect(metrics.bottomGap,'white Clone must stay at bottom').toBeLessThan(38);
+  expect(metrics.textHeight,'collapsed prompt shows at most four lines').toBeLessThanOrEqual(metrics.lineHeight*4+30);
+  expect(metrics.textScrollHeight,'long prompt has hidden overflow').toBeGreaterThan(metrics.textHeight);
+  await expect(dialog.locator('.inspiration-detail-prompt')).toHaveCSS('white-space','pre-wrap');
+  await expect(dialog.locator('.inspiration-detail-caption,.inspiration-detail-title,.inspiration-detail-kind,.inspiration-detail-description,.inspiration-detail-note,.inspiration-detail-parameters')).toHaveCount(0);
   await expect(dialog.locator('.inspiration-detail-actions button')).toHaveCount(1);
   const clone=dialog.getByRole('button',{name:'Clone & Try'});
   await expect(clone).toHaveCSS('background-color','rgb(255, 255, 255)');
@@ -138,11 +145,10 @@ test('five Inspiration videos and image cards share one compact and expandable p
   await expect(expand).toBeVisible();
   await expect(expand).toHaveAttribute('aria-expanded','false');
   await expand.click();
-  await expect(dialog.locator('.inspiration-detail-prompt')).toHaveCSS('display','block');
   await expect(dialog.locator('.inspiration-detail-prompt')).toHaveCSS('white-space','pre-wrap');
   await expect(dialog.getByRole('button',{name:'Show less'})).toHaveAttribute('aria-expanded','true');
   await dialog.getByRole('button',{name:'Show less'}).click();
-  await expect(dialog.locator('.inspiration-detail-prompt')).toHaveCSS('-webkit-line-clamp','4');
+  await expect(dialog.locator('.inspiration-detail-prompt')).toHaveCSS('white-space','pre-wrap');
   await dialog.getByRole('button',{name:'Close inspiration preview'}).click();
   await expect(dialog).toHaveCount(0);
  }

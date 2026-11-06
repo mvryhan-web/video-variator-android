@@ -12,6 +12,11 @@ export function headerAccount(token, lang='en') {
  return {label:labels[lang]||labels.en,href:token?'index.html?view=profile':'deepsyq.html?panel=login'};
 }
 function setupMobileShell() {
+  if(/\/(?:deepsyq|jarvix-chat|generate-studio)\.html$/.test(location.pathname)||location.pathname==='/'){
+    document.body.classList.add('j-action-workspace');
+    if(!document.querySelector('link[href="jarvix-action-design.css"]')){const css=document.createElement('link');css.rel='stylesheet';css.href='jarvix-action-design.css';document.head.append(css);}
+  }
+
   if (document.body.dataset.mobileShell) return;
   const header = location.pathname.endsWith('/index.html') ? document.querySelector('.vu-appbar')
     : document.querySelector('.vu-appbar') || document.querySelector('header:has(#topJarvisBtn)');
@@ -67,9 +72,18 @@ function setupMobileShell() {
   const desktopActions=document.createElement('div');desktopActions.className='ds-desktop-actions';desktopActions.append(tour);
   const orb=document.getElementById('topJarvisBtn');if(orb)orb.after(desktopActions);else header.append(desktopActions);
   const pricing = document.getElementById('topPricing') || link(copy()[1], 'pricing.html', '');
+  if(!pricing.id){pricing.id='topPricing';desktopActions.append(pricing);}
   const login = document.getElementById('topLogin') || link(copy()[2], 'deepsyq.html?panel=login', '');
   if(!document.getElementById('topLogin'))desktopActions.append(login);
   desktopActions.prepend(tools);
+  if(document.body.classList.contains('j-action-workspace')){
+    const apps=link('✦ AI Apps','ai-apps.html','ds-header-apps');desktopActions.append(apps);
+    const balance=link('⚡ AI credits: —','pricing.html#credits','ds-header-credit');if(!document.getElementById('walletButton'))desktopActions.append(balance);
+    const updateCredit=async()=>{const token=localStorage.getItem('vv_token');balance.textContent='⚡ AI credits: —';if(!token)return;try{const r=await fetch('/api/ai-wallet/balance',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const data=await r.json();if(token===localStorage.getItem('vv_token')&&Number.isSafeInteger(data.available)&&data.available>=0)balance.textContent='⚡ AI credits: '+data.available.toLocaleString();}catch{}};
+    void updateCredit();window.addEventListener('storage',e=>{if(e.key==='vv_token')void updateCredit();});
+    const placeExtras=()=>{if(document.body.classList.contains('ds-mobile-layout')){left.append(apps);right.prepend(balance);}else {desktopActions.append(apps);if(!document.getElementById('walletButton'))desktopActions.append(balance);else balance.remove();}};
+    new MutationObserver(placeExtras).observe(document.body,{attributes:true,attributeFilter:['class']});placeExtras();
+  }
   const reused = [toggle, tools, tour, pricing, login];
   const saved = new Map();
   const move = (el, parent) => {

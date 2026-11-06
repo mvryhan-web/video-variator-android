@@ -16,19 +16,26 @@ test('site uses approved logo and official install links',()=>{
   assert.match(html,/href="deepsyq-install-192.png"/);
   assert.doesNotMatch(html,/<span class="mark">d\.<\/span>/);
 });
-test('separate PWA preserves installed legacy Video Uniquifier identity',()=>{
+test('both installed PWA identities use approved Deepsyq branding without changing install IDs',()=>{
   const pwa=JSON.parse(text('assets/deepsyq.webmanifest'));
   const old=JSON.parse(text('assets/manifest.webmanifest'));
   assert.equal(pwa.short_name,'Deepsyq');
   assert.equal(pwa.start_url,'/deepsyq.html');
   assert.equal(pwa.id,'/deepsyq');
   assert(pwa.icons.some(i=>i.purpose==='maskable'&&i.src==='deepsyq-install-512.png'));
-  assert.equal(old.short_name,'Uniquifier');
+  assert.equal(old.short_name,'Deepsyq');
+  assert.equal(old.id,'/','Existing Video Uniquifier PWA install ID remains stable');
+  assert.equal(old.start_url,'/','Existing installed PWA launch route remains stable');
+  assert(old.icons.some(i=>i.purpose==='maskable'&&i.src==='deepsyq-install-512.png'));
+  assert(!old.icons.some(i=>i.src==='icon.svg'));
 });
 test('Android adaptive launcher uses owner mark without renaming package',()=>{
   for(const x of ['ic_launcher.xml','ic_launcher_round.xml'])
     assert.match(text('res/mipmap-anydpi-v26/'+x), /@drawable\/deepsyq_adaptive_foreground/);
-  assert.match(text('AndroidManifest.xml'),/android:label="Video Uniquifier"/);
+  assert.match(text('AndroidManifest.xml'),/android:label="Deepsyq"/);
+  const splash=text('res/values-v31/styles.xml');
+  assert.match(splash,/android:windowSplashScreenAnimatedIcon">@drawable\/deepsyq_adaptive_foreground/,'Android 12+ splash must reuse approved owner mark');
+  assert.doesNotMatch(splash,/android:windowSplashScreenAnimatedIcon">@drawable\/ic_vu_foreground/,'Old VU splash must not reappear');
   assert(readFileSync(path('res/drawable/deepsyq_adaptive_foreground.png')).length>10000);
 });
 
@@ -97,4 +104,29 @@ test('maskable/mobile brand exports are parseable pictures, not empty placeholde
 test('adaptive launcher is available throughout the supported Android API range',()=>{
  const gradle=readFileSync(new URL('../app/build.gradle',import.meta.url),'utf8');
  assert.match(gradle,/\bminSdk\s*=\s*26\b/,'version-26 XML launcher is safe only because app minSdk is 26+');
+});
+
+test('Video History and downloaded PWA use the same approved Deepsyq icon files',()=>{
+ const page=text('assets/index.html');
+ const legacy=JSON.parse(text('assets/manifest.webmanifest'));
+ const official=JSON.parse(text('assets/deepsyq.webmanifest'));
+ const sw=text('assets/sw.js');
+ const ui=text('assets/video-uniquifier-reference.js');
+ assert.ok(page.includes('rel="icon" type="image/x-icon" href="favicon.ico"'));
+ assert.ok(page.includes('rel="icon" type="image/png" sizes="192x192" href="deepsyq-icon-192.png"'));
+ assert.ok(page.includes('rel="apple-touch-icon" sizes="192x192" href="deepsyq-install-192.png"'));
+ assert.ok(page.includes('<img src="deepsyq-logo.png" width="36" height="36"'));
+ assert.ok(!page.includes('<span class="brandMark">VU</span>'));
+ assert.ok(!page.includes('rel="icon" href="icon.svg"'));
+ assert.equal(legacy.short_name,official.short_name);
+ for(const icon of legacy.icons){
+  assert.ok(icon.src.startsWith('deepsyq-'));
+  assert.ok(readFileSync(path('assets/'+icon.src)).length>1000);
+ }
+ assert.ok(sw.includes("icon:'/deepsyq-icon-192.png'"));
+ assert.ok(sw.includes("showNotification('Deepsyq · Reminder'"));
+ assert.ok(!sw.includes("icon:'/icon.svg'"));
+ assert.ok(ui.includes('src="deepsyq-logo.png"'));
+ assert.ok(ui.includes("['▤','My Creations','my-creations.html']"));
+ assert.ok(!ui.includes("['♧','Affiliate',null]"));
 });

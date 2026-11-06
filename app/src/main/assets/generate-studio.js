@@ -1,9 +1,12 @@
+import {resolveActionModel} from './jarvix-action-plan.js';
 import {saveLocal} from './ai-media.js';
 import {MODEL_CATALOG,MODELS} from './generate-models.js';
 import {takeStudioHandoff} from './studio-handoff.js';
 import {studioCreditWalletState} from './studio-credit-wallet.js';
 import {progressView} from './studio-job-progress.js';
 const $=id=>document.getElementById(id);
+let voiceActionPending=false,studioActionVersion=0;
+const briefVoice=async text=>{const {speakJarvis}=await import('./jarvis-core.js');speakJarvis(text);};
 const resolveStudioLang=()=>{
   try{
     const s=localStorage.getItem('deepsyq_home_language')||localStorage.getItem('deepsyq_lang');
@@ -1125,13 +1128,13 @@ $('creator').onsubmit=async e=>{
    ...original,requestId:crypto.randomUUID(),expectedCredits:quote.credits
   })})).json();
   if(!d.id)throw Error('STUDIO_STORAGE_UNAVAILABLE');
-  job=d.id;rememberStudioJob(job,kind);updateJobProgress(d.status||'processing',{creditsReserved:d.creditsReserved});
+  job=d.id;if(voiceActionPending){voiceActionPending=false;void briefVoice(say('Started','Запустил','Lancé','Iniciado'));}rememberStudioJob(job,kind);updateJobProgress(d.status||'processing',{creditsReserved:d.creditsReserved});
   if(kind==='video'){activeVideoWatchId=job;availability();}
   $('status').textContent=say('Generating. This can take a few minutes.','Генерация. Это может занять несколько минут.');
   await watch(job,epoch);
  }catch(e){
   if(!job)updateJobProgress('unconfirmed');
-  $('status').textContent=errorText(e);busy=false;availability();
+  $('status').textContent=errorText(e);if(voiceActionPending){voiceActionPending=false;void briefVoice(/credit|balance/i.test(e.message)?say('Insufficient credits','Недостаточно кредитов'):say('Clarify prompt','Уточните промпт'));}busy=false;availability();
  }
 };
 // Continue from an existing image in the same browser without an API call.
@@ -1493,3 +1496,26 @@ try{if(sessionStorage.getItem('deepsyq_studio_account_reset_notice')==='1'){sess
 applyVoicePromptFromUrl();
 initStudioVoiceInput();
 initStudioConsents();
+
+// Reuse the initialized Studio and its protected submit handler, without remounting chrome.
+document.body.dataset.jarvixStudioAction='ready';
+window.addEventListener('jarvix:studio-action',async event=>{
+ if(busy)return;
+ const actionVersion=++studioActionVersion,token=localStorage.getItem('vv_token');
+ try{
+  const action=event.detail;if(action?.intent!=='GENERATE_MEDIA'||!action.raw_prompt)throw Error('INVALID_PROMPT');
+  const model=resolveActionModel(action,config.models);
+  const target=action.media_type==='audio'?'music':action.media_type;select(target);modelId=model.id;renderModel();
+  $('prompt').value=action.raw_prompt;
+  if(action.aspect_ratio){$('ratio').value=action.aspect_ratio;updateRatioSelection();}
+  if(action.duration){$('videoDuration').value=String(action.duration);updateRatioSelection();}
+  $('consent').checked=false;availability();
+  // Paid provider requests remain behind Studio's existing manual approval flow.
+  if(config.previewOnly!==true||config.freeTier!==true||config.outputMode!=='local-demo')throw Error('MANUAL_STUDIO_APPROVAL_REQUIRED');
+  const quote=await(await api('/api/studio/estimate',{method:'POST',body:JSON.stringify({kind:target,model:model.id,quantity:1})})).json();
+  if(actionVersion!==studioActionVersion||modelId!==model.id||kind!==target||$('prompt').value!==action.raw_prompt||token!==localStorage.getItem('vv_token')||quote.previewOnly!==true||quote.credits!==0||Number(quote.cost)!==0)throw Error('ZERO_SPEND_NOT_VERIFIED');
+  $('consent').checked=true;availability();
+  if($('generate').disabled)throw Error('STUDIO_NOT_READY');
+  voiceActionPending=true;$('creator').requestSubmit();
+ }catch(e){$('status').textContent=errorText(e);void briefVoice(say('Clarify prompt','Уточните промпт','Précisez','Aclara petición'));}
+});

@@ -56,8 +56,8 @@ function makeNav(shell){
   ['','Home',[['⌂','Home','deepsyq.html']]],
   ['Creation','', [['▧','Image','generate-studio.html?studio=image'],['▶','Video','index.html'],['✧','Agent','ai-agents.html'],['≋','Audio','audio-studio.html']]],
   ['Tools','', [['⊞','AI Apps','ai-apps.html'],['◩','Canvas','canvas.html'],['⌗','All Tools','free-tools.html']]],
-  ['Library','', [['▢','Assets','generate-studio.html?view=history'],['▤','My Creations','generate-studio.html?view=history']]],
-  ['Community','', [['♧','Inspiration','deepsyq.html#inspiration'],['♧','Affiliate',null]]]];
+  ['Library','', [['▢','Assets','generate-studio.html?view=history'],['▤','My Creations','my-creations.html']]],
+  ['Community','', [['♧','Inspiration','deepsyq.html#inspirationPreview']]]];
  sections.forEach(([heading,_unused,links])=>{
   const group=node('div','vu-nav-group');
   if(heading)group.append(node('p','vu-nav-heading',heading));

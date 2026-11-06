@@ -64,7 +64,7 @@ function openInspirationDetail(item,opener,{minimal=false}={}){
  const heading=detailEl('h2','inspiration-detail-title',item.title);
  const kindLine=detailEl('p','inspiration-detail-kind',(item.category||'Inspiration')+' · '+(item.kind==='video'?'Video':'Image'));
  const description=detailEl('p','inspiration-detail-description',item.description||'Owner-approved Deepsyq inspiration.');
- const headingPrompt=detailEl('h3','inspiration-detail-heading',minimal?'Prompt:':'Prompt');
+ const headingPrompt=detailEl('h3','inspiration-detail-heading','Prompt');
  const prompt=detailEl('p','inspiration-detail-prompt',item.prompt||'No prompt available.');
  let promptMore=null,promptResizeObserver=null;
  if(minimal){
@@ -81,6 +81,7 @@ function openInspirationDetail(item,opener,{minimal=false}={}){
    promptMore.setAttribute('aria-expanded',String(expanded));
    if(!expanded)requestAnimationFrame(refreshPromptMore);
   };
+  headingPrompt.textContent='Prompt:';
   sidebar.append(headingPrompt,prompt,promptMore);
  }else sidebar.append(heading,kindLine,description,headingPrompt,prompt);
  function refreshPromptMore(){

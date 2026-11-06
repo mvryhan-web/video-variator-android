@@ -1,5 +1,7 @@
+import {decorateComposer} from './jarvix-composer-design.js';
 import {validateAttachments} from './jarvix-conversations.js';
 export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
+ decorateComposer(form,{settingsTarget:()=>{location.assign('generate-studio.html?studio='+(['image','video','audio'].includes(mode)?mode:'image')+'&settings=1');}});
  if(innerWidth<361)input.placeholder='Message…';
  let mode='auto',files=[],recognition=null,base='';
  const plus=document.getElementById('jPlus'),menu=document.getElementById('jPlusMenu'),fileInput=document.getElementById('jFiles'),attachments=document.getElementById('jAttachments'),mic=document.getElementById('jMic');
