@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 
 // Agent C BASE29: approved inner-page navigation. No live accounts or paid providers.
-const ordered=['Home','Image','Video','Agent','Audio','Tools','AI Apps','Canvas',
+const ordered=['Home','Image','Video','JARVIX','Audio','Tools','AI Apps','Canvas',
  'Video Uniquifier','Assets','My Creations','History','Share','Inspiration','Pricing'];
 async function openMobileSidebar(page){
  const toggle=page.locator('.ds-site-mobile-toggle');
@@ -37,9 +37,9 @@ test('BASE29 sidebar order, existing routes, and honest non-links for unavailabl
   ['History','generate-studio.html?view=history'],['Pricing','pricing.html'],
   ['Inspiration','deepsyq.html#inspirationPreview']
  ]) await expect(nav.getByRole('link',{name:label,exact:true})).toHaveAttribute('href',href);
- await expect(nav.locator('[aria-label="Agent coming soon"]')).toHaveCount(1);
+ await expect(nav.getByRole('link',{name:'JARVIX AI'})).toHaveCount(1);
  await expect(nav).not.toContainText('Affiliate');
- await expect(nav.locator('[aria-label="Agent coming soon"] a')).toHaveCount(0);
+ await expect(nav.locator('[aria-label="Agent coming soon"]')).toHaveCount(0);
  await expect(nav.getByRole('link',{name:/Favorites|Challenges/i})).toHaveCount(0);
  await expect(nav.getByRole('button',{name:'Share Deepsyq'})).toBeVisible();
  expect(paid).toEqual([]);
