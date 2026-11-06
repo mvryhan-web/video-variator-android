@@ -136,3 +136,56 @@ html .inspiration-detail-dialog .inspiration-detail-close:focus-visible{
 .inspiration-detail-minimal .inspiration-detail-actions button.inspiration-detail-clone{
  width:100%;grid-column:auto;background:#fff;border-color:#fff;color:#11131b;
 }
+
+/* F3 only: keep the explicit Front: label, expose four prompt lines and
+   maximize real media while pinning Clone at the bottom on mobile and desktop. */
+.inspiration-detail-minimal .inspiration-detail-layout{
+ grid-template-columns:minmax(0,1fr) minmax(265px,308px);
+}
+.inspiration-detail-minimal .inspiration-detail-image-area{padding:5px}
+.inspiration-detail-minimal .inspiration-detail-media{
+ border-radius:3px;box-shadow:none;max-width:100%;max-height:100%;object-fit:contain;
+}
+.inspiration-detail-minimal .inspiration-detail-sidebar{
+ display:flex;flex-direction:column;gap:9px;padding:16px;
+ overflow:hidden;min-height:0;
+}
+.inspiration-detail-minimal .inspiration-detail-heading{
+ margin:0;font-size:13px;font-weight:700;color:#e1e8ff;
+}
+.inspiration-detail-minimal .inspiration-detail-prompt:not(.is-expanded){
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;
+ white-space:pre-wrap;overflow:hidden;overflow-wrap:anywhere;
+ text-overflow:ellipsis;max-height:none;
+}
+.inspiration-detail-minimal .inspiration-detail-prompt.is-expanded{
+ display:block;-webkit-line-clamp:unset;overflow:auto;white-space:pre-wrap;
+ max-height:min(38dvh,300px);min-height:0;flex:0 1 auto;
+}
+.inspiration-detail-minimal .inspiration-detail-more{flex:0 0 auto;min-height:28px}
+.inspiration-detail-minimal .inspiration-detail-actions{
+ flex:0 0 auto;display:block;margin-top:auto;padding-top:9px;
+}
+.inspiration-detail-minimal .inspiration-detail-actions .inspiration-detail-clone{
+ width:100%;background:#fff;color:#11131b;border-color:#fff;
+}
+@media(max-width:760px){
+ .inspiration-detail-minimal .inspiration-detail-layout{
+  display:flex;flex-direction:column;height:100%;
+ }
+ .inspiration-detail-minimal .inspiration-detail-stage{
+  flex:1 1 auto;height:auto;min-height:0;
+ }
+ .inspiration-detail-minimal .inspiration-detail-image-area{padding:3px 5px}
+ .inspiration-detail-minimal .inspiration-detail-sidebar{
+  flex:0 0 auto;height:clamp(206px,29dvh,260px);max-height:46dvh;
+  padding:12px 14px 14px;min-height:0;overflow:hidden;
+ }
+ .inspiration-detail-minimal .inspiration-detail-toolbar{
+  height:38px;min-height:38px;padding:2px 9px;
+ }
+ .inspiration-detail-minimal .inspiration-detail-prompt{font-size:12px}
+ .inspiration-detail-minimal .inspiration-detail-prompt.is-expanded{
+  max-height:min(28dvh,225px);
+ }
+}

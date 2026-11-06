@@ -81,11 +81,12 @@ function openInspirationDetail(item,opener,{minimal=false}={}){
    promptMore.setAttribute('aria-expanded',String(expanded));
    if(!expanded)requestAnimationFrame(refreshPromptMore);
   };
-  sidebar.append(prompt,promptMore);
+  headingPrompt.textContent='Front:';
+  sidebar.append(headingPrompt,prompt,promptMore);
  }else sidebar.append(heading,kindLine,description,headingPrompt,prompt);
  function refreshPromptMore(){
   if(!minimal||!promptMore||prompt.classList.contains('is-expanded'))return;
-  promptMore.hidden=prompt.scrollWidth<=prompt.clientWidth+1;
+  promptMore.hidden=prompt.scrollHeight<=prompt.clientHeight+1;
  }
  if(item.kind==='video'&&!minimal){
   const meta=detailEl('div','inspiration-detail-parameters');
