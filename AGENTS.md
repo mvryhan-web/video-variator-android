@@ -1,3 +1,11 @@
+## OWNER D23 — 2026-11-06 — GOOGLE JULES 1/2/3 RETIRED IMMEDIATELY / KEEP ALL CODE
+
+**Latest owner instruction overrides every older Jules dispatch, continuation, cutoff (including 11 Nov), monitoring and handoff instruction below.** Google Jules 1, 2 and 3 are **not active DEEPSYQ executors**. Do not issue, re-label, re-dispatch, revive, wait for, or ask any of them to complete work. Do not run Jules-specific automation. **Active team is ONLY P, Administrator and Google Antigravity.** Unfinished functionality goes into P's ordinary backlog, never a Jules assignment.
+
+**Preserve all prior implementation:** no deletion of existing code, merged or unmerged commits, tests, PR diffs, branches, comments, images or reports. Historical Jules mentions in this file remain archival and are not an active order. Git backups and the retirement record: [`docs/DEEPSYQ_JULES_RETIREMENT_ARCHIVE_20261106.md`](docs/DEEPSYQ_JULES_RETIREMENT_ARCHIVE_20261106.md). Close Jules-only issues as CANCELLED / NOT_PLANNED, not feature DONE. No changes to `main`, production, paid APIs, Stripe, or page-design locks. GitHub shutdown does not itself prove external Google Jules sessions terminated.
+
+---
+
 ## OWNER RULE — 2026-11-03 — EVERY SAFE TASK ENDS ON TEST, NOT AT PR
 
 Owner requires that safe, completed DEEPSYQ work be **published to the existing isolated Render TEST site and verified there** as the default final step, rather than stopping at commit/PR/CI. No repeated permission request for each permitted TEST publication. Before changing `deepsyq-platform` or redeploying, compare the running Render commit with DEV and **carry forward concurrently published, approved changes**; no silent site regressions. After publication prove the selected SHA is LIVE **and** test the actual target URL in desktop/mobile browser. If a relevant acceptance gate fails, fix it or record exact `NOT_TEST_DEPLOYED`; unrelated historical CI failures do not prove the new feature broken, but may not be bypassed to merge a failing PR. Never claim test publication from GitHub merge, Render request or status alone. No production deployment, provider spending, unsafe migrations or fake claim of real AI from SVG fallback.
