@@ -111,8 +111,8 @@
 #topJarvisBtn .jarvis-name{display:none!important}
 #topJarvisBtn .jarvis-mini-orb,body.ds-mobile-layout #topJarvisBtn .jarvis-mini-orb{position:absolute!important;inset:5px!important;width:auto!important;height:auto!important;background:none!important;box-shadow:none!important;border:0!important}
 #topJarvisBtn .jarvis-core{position:absolute!important;inset:32%!important;width:auto!important;height:auto!important;border-radius:50%!important;background:radial-gradient(circle,#f0ffff,#37f7ff 48%,#00aec7)!important;box-shadow:0 0 13px #16efff!important}
-#topJarvisBtn .jarvis-ring{position:absolute!important;inset:3px!important;width:auto!important;height:auto!important;border:2px dashed #de56ff!important;border-radius:50%!important;animation:none!important;transform:none!important;opacity:1!important}
-#topJarvisBtn .jarvis-ring.ring-violet{inset:8px!important;border-color:#00eaff!important;transform:rotate(18deg)!important}
+#topJarvisBtn .jarvis-ring{position:absolute!important;inset:3px!important;width:auto!important;height:auto!important;border:2px dashed #de56ff!important;border-radius:50%!important;animation:ds-orb-rotate 9s linear infinite!important;transform-origin:center!important;opacity:1!important}
+#topJarvisBtn .jarvis-ring.ring-violet{inset:8px!important;border-color:#00eaff!important;animation:ds-orb-rotate-reverse 6s linear infinite!important}
 #topJarvisBtn::before,#topJarvisBtn::after{display:none!important}
 .ds-desktop-actions{display:flex;gap:8px;align-items:center}
 .ds-desktop-actions :is(a,button){min-height:38px;padding:8px 12px;border:1px solid #7e58c9;border-radius:12px;background:linear-gradient(125deg,#231534,#09172c);color:#f0edff;font:600 12px system-ui;text-decoration:none;cursor:pointer;box-sizing:border-box}
@@ -143,3 +143,18 @@
 @media(prefers-reduced-motion:reduce){#topJarvisBtn.ds-tour-speaking{animation:none}::view-transition-group(*){animation-duration:0s!important}}
 @media(min-width:761px){body .ds-stable-header{position:sticky!important;top:0!important;z-index:500!important}}
 .jarvis-tour-spotlight{scroll-margin-top:150px}
+
+/* Owner correction 6 Nov: original desktop actions, mobile-only tools, moving reactor. */
+@keyframes ds-orb-rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes ds-orb-rotate-reverse{from{transform:rotate(18deg)}to{transform:rotate(-342deg)}}
+.ds-desktop-actions>.ds-header-tools{display:none}
+@media(min-width:761px){
+ .ds-stable-header .ds-desktop-actions{flex-shrink:0;margin-right:8px}
+ .ds-stable-header .top-language select{width:54px!important;min-width:54px!important;height:32px;padding:4px!important;font-size:10px!important}
+ .ds-stable-header .top-actions{flex-wrap:nowrap;gap:9px}
+ .ds-tour-controls{left:auto;right:16px;top:88px;bottom:auto;transform:none;padding:6px 8px;gap:6px;border-radius:13px}
+ .ds-tour-controls button{min-height:32px;padding:5px 9px;font-size:11px;border-radius:9px}
+ .ds-tour-label{max-width:140px;font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){#topJarvisBtn .jarvis-ring{animation:none!important}}
+@media(min-width:1100px){.top.ds-stable-header #dsTakeTour{position:absolute;left:calc(50% + 48px);top:50%;transform:translateY(-50%)}}

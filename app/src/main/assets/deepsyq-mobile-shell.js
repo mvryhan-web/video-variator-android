@@ -37,9 +37,10 @@ function setupMobileShell() {
     catch { return document.documentElement.lang.split('-')[0]; }
   };
   const copy = () => words[locale()] || words.en;
-  document.getElementById('topInvite')?.remove();
-  const removedLanguage=document.getElementById('homeLanguage');
-  (removedLanguage?.closest('label')||removedLanguage)?.remove();
+  // Desktop keeps the original Home actions and their existing event handlers.
+  // Mobile has its own Tools/Tour controls; it hides the legacy actions in CSS.
+  const language=document.getElementById('homeLanguage');
+  if(language)for(const option of language.options)option.textContent=option.value.toUpperCase();
 
   const brand = document.createElement('a');
   brand.href = 'deepsyq.html'; brand.className = 'ds-mobile-brand'; brand.setAttribute('aria-label', 'Deepsyq Home');
@@ -60,11 +61,12 @@ function setupMobileShell() {
   const tools = link(copy()[0], 'free-tools.html', 'ds-header-tools');
   const tour = document.createElement('button');tour.type='button';tour.id='dsTakeTour';tour.textContent=copy()[3];tour.className='ds-header-tour';
   tour.addEventListener('click', async () => {tour.disabled=true;try{const guide=await import('./jarvix-guided-tour.js');guide.startJarvixGuidedTour();}catch{tour.textContent='Tour unavailable';}finally{tour.disabled=false;}});
-  const desktopActions=document.createElement('div');desktopActions.className='ds-desktop-actions';desktopActions.append(tools,tour);
-  const oldPromo=document.getElementById('topPromo');if(oldPromo)oldPromo.replaceWith(desktopActions);else header.append(desktopActions);
+  const desktopActions=document.createElement('div');desktopActions.className='ds-desktop-actions';desktopActions.append(tour);
+  const orb=document.getElementById('topJarvisBtn');if(orb)orb.after(desktopActions);else header.append(desktopActions);
   const pricing = document.getElementById('topPricing') || link(copy()[1], 'pricing.html', '');
   const login = document.getElementById('topLogin') || link(copy()[2], 'deepsyq.html?panel=login', '');
   if(!document.getElementById('topLogin'))desktopActions.append(login);
+  desktopActions.prepend(tools);
   const reused = [toggle, tools, tour, pricing, login];
   const saved = new Map();
   const move = (el, parent) => {
