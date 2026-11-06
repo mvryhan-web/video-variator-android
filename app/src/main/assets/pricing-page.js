@@ -66,14 +66,14 @@ const sharedAccess=[
  ['✓','Video Uniquifier and tools included in this plan'],
  ['✓','Canvas workspace; AI generation requires paid credits'],
  ['✓','Explore the AI model catalog (availability varies)'],
- ['ⓘ','Watermark removal is not confirmed for this plan'],
+ ['✓','Watermark-free Video Uniquifier exports'],
  ['✓','One account for your plan, credits and history'],
  ['✓','AI wallet and prepaid packages are separate']
 ];
 const monthlyDetails=[['✓','Monthly subscription; manage in your account']];
 const planned=[
  {key:'trial',name:'Trial',suffix:'one time',label:'Start Trial',summary:'Introductory offer for new accounts — not yet active',
-  benefits:[['◇','New-account eligibility: pending approval'],['◇','Credits and included access: to be confirmed'],['◇','Watermark removal: terms not approved'],['✓','Explore the Canvas workspace; paid AI requires credits'],['◇','Duration and renewal terms: not approved'],['◇','Trial checkout is not available']],proposed:true},
+  benefits:[['ⓘ','New-account eligibility: pending approval'],['✕','AI credits not included in current Trial preview'],['✕','Watermark-free exports not included in Trial'],['✓','Explore the Canvas workspace; paid AI requires credits'],['ⓘ','Duration and renewal terms: not approved'],['✕','Trial checkout is not available']],proposed:true},
  {key:'basic',name:'Basic',suffix:'/ month',label:'Choose Basic',summary:'For everyday video variations and essential tools',
   benefits:[...verifiedQuality.basic,...sharedAccess,...monthlyDetails]},
  {key:'pro',name:'Pro',suffix:'/ month',label:'Choose Pro',summary:'For regular creators needing higher quality and more variants',
@@ -163,7 +163,7 @@ function renderPlans(config){
   });
   for(const [icon,copy] of benefitRows){
    const li=node('li');
-   const sym=node('span','price-feature-icon'+(icon==='✓'?' is-included':icon==='ⓘ'?' is-info':''),icon);sym.setAttribute('aria-hidden','true');
+   const sym=node('span','price-feature-icon'+(icon==='✓'?' is-included':icon==='✕'?' is-excluded':icon==='ⓘ'?' is-info':''),icon);sym.setAttribute('aria-hidden','true');
    li.append(sym,node('span','',copy));list.append(li);
   }
   const note=node('p','price-plan-note',p.proposed?'$0.99 Trial: price and included credits are NOT active yet.':p.key==='lifetime'?'ⓘ Lifetime does not include unlimited paid AI generation; purchase AI credits separately.':!verified?'The server has not supplied a verified price.':'');

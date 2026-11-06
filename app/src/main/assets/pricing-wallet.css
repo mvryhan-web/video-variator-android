@@ -30,6 +30,7 @@
    prices and approved primary design stylesheet remain unchanged. */
 body.deepsyq-pricing-page .price-feature-icon.is-included{color:#8cf4b4;font-weight:800}
 body.deepsyq-pricing-page .price-feature-icon.is-info{color:#b9d2e9;font-weight:700}
+body.deepsyq-pricing-page .price-feature-icon.is-excluded{color:#ff9caa;font-weight:800}
 body.deepsyq-pricing-page .price-credit-breakdown{
  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-content:center;
  gap:8px 5px;padding:12px 9px;min-width:0;

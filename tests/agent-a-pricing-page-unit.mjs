@@ -32,7 +32,7 @@ test('server config, original checkout endpoints and no false wallet credit clai
  assert.doesNotMatch(js,/Bonus credits · proposed, not included/);
 });
 test('no fake credit allocation for Trial and Lifetime; lifecycle guards retain account isolation',()=>{
- assert.match(js,/Credits and included access: to be confirmed/);
+ assert.match(js,/AI credits not included in current Trial preview/);
  assert.match(js,/Tool credits: see current terms/);
  assert.match(js,/Lifetime does not include unlimited paid AI generation/);
  assert.match(js,/accountEpoch\+\+/);
@@ -50,7 +50,7 @@ test('original account modal and wider Pricing feature matrix are present withou
  assert.match(html,/accounts\.google\.com\/gsi\/client/);
  assert.match(js,/api\('\/api\/auth\/google'/);
  assert.match(js,/One account for your plan, credits and history/);
- assert.match(js,/Watermark removal is not confirmed for this plan/);
+ assert.match(js,/Watermark-free Video Uniquifier exports/);
  assert.match(js,/Canvas workspace; AI generation requires paid credits/);
  assert.doesNotMatch(js,/Access to all models/);
  assert.match(css,/max-width:none;margin-inline:0/);
