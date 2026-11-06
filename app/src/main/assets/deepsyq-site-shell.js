@@ -119,7 +119,6 @@
     { section:'Community' },
     { label: 'Inspiration', icon: '◌', url:'deepsyq.html#inspirationPreview', key: 'inspiration' },
     { section:'More' },
-    { label: 'History', icon: '◷', url:'generate-studio.html?view=history', key: 'history' },
     { label: 'Pricing', icon: '＄', url:'pricing.html', key: 'pricing' }
   ];
 
