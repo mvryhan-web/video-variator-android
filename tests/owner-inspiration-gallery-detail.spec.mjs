@@ -59,7 +59,10 @@ test('Home Inspiration filters image and video cards in place; detail shows the 
   await expect(imageDialog.locator('img')).toHaveAttribute('alt',image.title);
   await expect(imageDialog.locator('.inspiration-detail-parameters')).toHaveCount(0);
   await expect(imageDialog.getByRole('heading',{name:'Parameters',exact:true})).toHaveCount(0);
-  await expect(imageDialog.getByRole('button',{name:'Clone & try'})).toHaveText('✦ Clone & try');
+  await expect(imageDialog.getByRole('button',{name:'Clone & Try'})).toHaveText('Clone & Try');
+  await expect(imageDialog.locator('.inspiration-detail-title,.inspiration-detail-kind,.inspiration-detail-description,.inspiration-detail-heading,.inspiration-detail-note,.inspiration-detail-parameters,.inspiration-detail-caption')).toHaveCount(0);
+  await expect(imageDialog.locator('.inspiration-detail-actions button')).toHaveCount(1);
+  await expect(imageDialog.locator('.inspiration-detail-clone')).toHaveCSS('background-color','rgb(255, 255, 255)');
   const imageClose=await expectPlainClose(imageDialog);
   await imageClose.click();await expect(imageDialog).toHaveCount(0);
   const videoTab=section.getByRole('button',{name:'Video',exact:true});await videoTab.scrollIntoViewIfNeeded();await videoTab.click();
@@ -99,4 +102,39 @@ test('Home inspiration clone hands off prompt without generating',async({page})=
  await page.getByRole('button',{name:'Clone & Try'}).click();
  await expect(page).toHaveURL(/generate-studio\.html\?studio=video/);
  expect(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('deepsyq_template_start')).promptTemplate)).toBe(video.prompt);
+});
+
+test('five Inspiration videos and image cards share one compact and expandable prompt detail',async({page})=>{
+ test.setTimeout(120000);
+ const longPrompt='Create a cinematic scene with natural lighting, polished textures and authentic detail. '.repeat(18);
+ const fiveVideos=Array.from({length:5},(_,i)=>({...video,id:'preview-video-'+i,title:'Video '+(i+1),prompt:longPrompt+'Video '+(i+1)}));
+ const pictures=Array.from({length:3},(_,i)=>({...image,id:'preview-image-'+i,title:'Image '+(i+1),prompt:longPrompt+'Image '+(i+1)}));
+ await page.route('**/api/config',r=>r.fulfill({json:{features:{inspiration:true},plans:{}}}));
+ await page.route('**/api/inspiration**',r=>r.fulfill({json:{items:[...fiveVideos,...pictures],categories:[],ratios:[]}}));
+ await page.setViewportSize({width:390,height:850});
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ const gallery=page.locator('#inspirationPreviewGrid');
+ await expect(gallery.locator('.inspiration-preview-card')).toHaveCount(8);
+ for(const item of [...fiveVideos,...pictures]){
+  await gallery.getByRole('button',{name:'View '+item.title+' inspiration'}).click();
+  const dialog=page.locator('dialog.inspiration-detail-minimal');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('.inspiration-detail-media')).toHaveCount(1);
+  await expect(dialog.locator('.inspiration-detail-prompt')).toHaveText(item.prompt);
+  await expect(dialog.locator('.inspiration-detail-prompt')).toHaveCSS('white-space','nowrap');
+  await expect(dialog.locator('.inspiration-detail-caption,.inspiration-detail-title,.inspiration-detail-kind,.inspiration-detail-description,.inspiration-detail-heading,.inspiration-detail-note,.inspiration-detail-parameters')).toHaveCount(0);
+  await expect(dialog.locator('.inspiration-detail-actions button')).toHaveCount(1);
+  const clone=dialog.getByRole('button',{name:'Clone & Try'});
+  await expect(clone).toHaveCSS('background-color','rgb(255, 255, 255)');
+  const expand=dialog.getByRole('button',{name:'Show more'});
+  await expect(expand).toBeVisible();
+  await expect(expand).toHaveAttribute('aria-expanded','false');
+  await expand.click();
+  await expect(dialog.locator('.inspiration-detail-prompt')).toHaveCSS('white-space','pre-wrap');
+  await expect(dialog.getByRole('button',{name:'Show less'})).toHaveAttribute('aria-expanded','true');
+  await dialog.getByRole('button',{name:'Show less'}).click();
+  await expect(dialog.locator('.inspiration-detail-prompt')).toHaveCSS('white-space','nowrap');
+  await dialog.getByRole('button',{name:'Close inspiration preview'}).click();
+  await expect(dialog).toHaveCount(0);
+ }
 });
