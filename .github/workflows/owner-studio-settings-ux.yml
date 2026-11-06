@@ -1,0 +1,44 @@
+name: Owner Studio Settings ratio frames and clean Video UI
+on:
+  pull_request:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/generate-studio.html'
+      - 'app/src/main/assets/generate-studio.js'
+      - 'app/src/main/assets/studio-composer-popovers.css'
+      - 'app/src/main/assets/studio-composer-popovers.js'
+      - 'tests/generation-studio.spec.mjs'
+      - 'tests/owner-studio-popover-first-open-20261020.spec.mjs'
+      - '.github/workflows/owner-studio-settings-ux.yml'
+permissions:
+  contents: read
+concurrency:
+  group: owner-studio-settings-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  studio-settings-ux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check app/src/main/assets/generate-studio.js && node --check app/src/main/assets/studio-composer-popovers.js && node --check tests/generation-studio.spec.mjs
+      - name: Prefer official Ubuntu archive for browser dependencies
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            echo 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Owner's exact UI on desktop and mobile (no paid provider requests)
+        run: npx playwright test tests/generation-studio.spec.mjs --project=chromium --project=mobile-webkit --grep "Studio Settings ratio frames match actual aspect"
+      - name: Preserve browser trace when failing
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-studio-settings-ux-traces
+          path: test-results/
+          if-no-files-found: ignore
