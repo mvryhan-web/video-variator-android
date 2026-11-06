@@ -58,6 +58,7 @@ async function getManifestInspirationItems() {
       requiredInputTypes: item.requiredInputTypes || [],
       defaultSettings: item.defaultSettings || {},
       actionTarget: item.actionTarget || 'studio',
+      active: item.active === true,
       featured: !!item.featured,
       sortOrder: item.sortOrder || 100
     })).filter(x => !x.previewUrl?.includes('logo') && !x.previewPosterUrl?.includes('logo'));
@@ -98,48 +99,84 @@ function row(r,{ownerView=false,agentActionPath=null}={}){
 }
 function publicTargetSql(env){return agentTargetsEnabled(env)?'':" AND action_target='studio'";}
 
-export function installInspiration(app,{auth,pool,env=process.env}){
+// Static manifest cards obey the same public active/agent policy as DB records.
+// Do not turn a disabled Home showcase asset into a discoverable Inspiration card.
+export function publicManifestInspirationItem(item,env={}){
+ if(!item||item.active!==true)return null;
+ if(item.actionTarget==='studio')return item;
+ if(item.actionTarget!=='agent'||!agentTargetsEnabled(env))return null;
+ return {...item,actionPath:agentPath(env)};
+}
+
+export function installInspiration(app,{auth,pool,env=process.env,manifestItems=null}){
   app.get('/api/inspiration',async(req,res)=>{
     if(!featureEnabled(env))return res.status(503).json({error:'INSPIRATION_NOT_ENABLED'});
     try{
       await initInspiration(pool,env);
-      const manifestItems = await getManifestInspirationItems();
-      
-      const q = req.query;
-      let items = manifestItems.filter(item => 
-        !item.previewUrl?.includes('logo') && 
-        !item.previewPosterUrl?.includes('logo') &&
-        (q.featured !== 'true' || item.featured) &&
-        (!q.kind || q.kind === 'all' || item.kind === q.kind) &&
-        (!q.target || item.actionTarget === q.target) &&
-        (!q.category || item.category === q.category) &&
-        (!q.ratio || item.aspectRatio === q.ratio) &&
-        (!q.q || item.title.toLowerCase().includes(String(q.q).toLowerCase()) || (item.prompt && item.prompt.toLowerCase().includes(String(q.q).toLowerCase())))
-      ).sort((a,b) => (a.sortOrder || 100) - (b.sortOrder || 100));
+      const q=req.query;
+      const limit=Math.max(1,Math.min(60,Number.parseInt(q.limit||'24',10)||24));
+      const page=Math.max(1,Number.parseInt(q.page||'1',10)||1);
+      const offset=Math.max(0,Math.min(5000,Number.parseInt(q.offset||'0',10)||((page-1)*limit)));
+      const noPage=()=>({page,limit,total:0,offset,nextOffset:null,hasMore:false});
+      // No public SQL or facet query may reveal agent-only records without BOTH gates.
+      if(q.target==='agent'&&!agentTargetsEnabled(env))
+        return res.json({items:[],categories:[],ratios:[],pagination:noPage()});
+      const source=manifestItems===null?await getManifestInspirationItems():manifestItems;
+      const approved=source.map(item=>publicManifestInspirationItem(item,env)).filter(Boolean);
+      const visibleManifest=approved.filter(item=>
+        !item.previewUrl?.includes('logo')&&!item.previewPosterUrl?.includes('logo')&&
+        (q.featured!=='true'||item.featured)&&
+        (!q.kind||q.kind==='all'||item.kind===q.kind)&&
+        (!q.target||item.actionTarget===q.target)&&
+        (!q.category||item.category===q.category)&&
+        (!q.ratio||item.aspectRatio===q.ratio)&&
+        (!q.q||item.title.toLowerCase().includes(String(q.q).toLowerCase())||
+          (item.prompt&&item.prompt.toLowerCase().includes(String(q.q).toLowerCase())))
+      ).sort((a,b)=>(a.sortOrder||100)-(b.sortOrder||100)||String(a.slug).localeCompare(String(b.slug)));
 
-      const total = items.length;
-      const limit = Math.max(1, Math.min(60, Number.parseInt(q.limit || '24', 10) || 24));
-      const page = Math.max(1, Number.parseInt(q.page || '1', 10) || 1);
-      const offset = Math.max(0, Math.min(5000, Number.parseInt(q.offset || '0', 10) || ((page - 1) * limit)));
-      const visible = items.slice(offset, offset + limit);
-      const hasMore = offset + limit < total;
-
-      const categories = [...new Set(manifestItems.map(item => item.category).filter(Boolean))].sort();
-      const ratios = [...new Set(manifestItems.map(item => item.aspectRatio).filter(Boolean))].sort();
-
-      res.json({
-        items: visible,
-        categories,
-        ratios,
-        pagination: {
-          page,
-          limit,
-          total,
-          offset,
-          nextOffset: hasMore ? offset + limit : null,
-          hasMore
-        }
-      });
+      // Preserve the existing approved static gallery while restoring the
+      // database-backed owner publication path, with bound, rights-gated SQL.
+      const conditions=["active=true","rights_basis IN ('owned','licensed')","length(trim(rights_note))>=3"];
+      const args=[];
+      if(!agentTargetsEnabled(env))conditions.push("action_target='studio'");
+      const match=(column,value)=>{args.push(value);conditions.push(column+'=$'+args.length);};
+      if(q.kind&&q.kind!=='all')match('kind',q.kind);
+      if(q.category)match('category',q.category);
+      if(q.ratio)match('aspect_ratio',q.ratio);
+      if(q.featured==='true')conditions.push('featured=true');
+      if(q.target)match('action_target',q.target);
+      if(q.q){
+        // Escape LIKE wildcards and the escape character before binding.
+        args.push('%'+String(q.q).replace(/[\\%_]/g,'\\$&')+'%');
+        const slot='$'+args.length;
+        conditions.push('(title ILIKE '+slot+' OR prompt ILIKE '+slot+')');
+      }
+      const where=' WHERE '+conditions.join(' AND ');
+      const manifestPage=visibleManifest.slice(offset,offset+limit);
+      const dbOffset=Math.max(0,offset-visibleManifest.length);
+      const remaining=limit-manifestPage.length;
+      // Fetch one extra DB record to determine hasMore without unbounded scans.
+      const sql='SELECT * FROM vv_ai_inspiration'+where+
+        ' ORDER BY featured DESC,sort_order ASC,created_at DESC,id ASC LIMIT '+
+        (remaining+1)+' OFFSET '+dbOffset;
+      const [gallery,dbCategories,dbRatios]=await Promise.all([
+        pool.query(sql,args),
+        // The window count reports the exact DB total without a fourth query.
+        pool.query('SELECT DISTINCT category,COUNT(*) OVER() AS total_count FROM vv_ai_inspiration'+where,args),
+        pool.query('SELECT DISTINCT aspect_ratio FROM vv_ai_inspiration'+where,args)
+      ]);
+      const dbRows=gallery.rows||[];
+      const items=[...manifestPage,...dbRows.slice(0,remaining).map(r=>row(r,{agentActionPath:agentPath(env)}))];
+      const categories=[...new Set([...visibleManifest.map(x=>x.category),...(dbCategories.rows||[]).map(r=>r.category)].filter(Boolean))].sort();
+      const ratios=[...new Set([...visibleManifest.map(x=>x.aspectRatio),...(dbRatios.rows||[]).map(r=>r.aspect_ratio)].filter(Boolean))].sort();
+      const count=Number(dbCategories.rows?.[0]?.total_count);
+      const observed=dbOffset+dbRows.length;
+      const dbTotal=Number.isSafeInteger(count)&&count>=0?count:observed;
+      const total=visibleManifest.length+dbTotal;
+      const hasMore=offset+items.length<total||dbRows.length>remaining;
+      res.json({items,categories,ratios,pagination:{
+        page,limit,total,offset,nextOffset:hasMore?offset+limit:null,hasMore
+      }});
     }catch(_){res.status(503).json({error:'INSPIRATION_UNAVAILABLE'});}
   });
   app.get('/api/inspiration/:slug',async(req,res)=>{
@@ -148,7 +185,11 @@ export function installInspiration(app,{auth,pool,env=process.env}){
       await initInspiration(pool,env);
       const manifestItems = await getManifestInspirationItems();
       const match = manifestItems.find(x => x.slug === req.params.slug);
-      if (match) return res.json({item: match});
+      if (match){
+        const visible = publicManifestInspirationItem(match,env);
+        if(!visible)return res.status(404).json({error:'INSPIRATION_NOT_FOUND'});
+        return res.json({item:visible});
+      }
       const {rows}=await pool.query(`SELECT * FROM vv_ai_inspiration WHERE slug=$1 AND active=true AND rights_basis IN ('owned','licensed') AND length(trim(rights_note))>=3${publicTargetSql(env)}`,[req.params.slug]);
       if(!rows.length)return res.status(404).json({error:'INSPIRATION_NOT_FOUND'});
       res.json({item:row(rows[0],{agentActionPath:agentPath(env)})});
