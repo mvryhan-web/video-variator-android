@@ -178,6 +178,9 @@ body.deepsyq-pricing-page .price-credit-bottom .price-credit-purchase{
   padding:8px 11px;font-size:11px;
  }
 }
+@media(max-width:420px){
+ body.deepsyq-pricing-page .price-credit-breakdown{margin-top:44px}
+}
 @media(max-width:345px){
  body.deepsyq-pricing-page .price-credit-bottom{flex-wrap:wrap;border-radius:20px}
  body.deepsyq-pricing-page .price-credit-bottom .price-credit-purchase{
