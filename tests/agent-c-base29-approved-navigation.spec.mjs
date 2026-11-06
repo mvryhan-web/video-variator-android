@@ -162,8 +162,8 @@ test('retired Assets is absent from Home, Studio, My Creations, and shared mobil
    const nav=page.locator(route==='deepsyq.html'?'#sidebar nav':'#dsSiteSidebar nav');
    await expect(nav).toHaveCount(1);
    await expect(nav.locator('a[href="generate-studio.html?view=history"]')).toHaveCount(0);
-   await expect(nav.getByRole('link',{name:'Assets',exact:true})).toHaveCount(0);
-   await expect(nav.getByRole('link',{name:'My Creations',exact:true})).toHaveCount(1);
+   await expect(nav.locator('a').filter({hasText:/^Assets$/i})).toHaveCount(0);
+   await expect(nav.locator('a[href="my-creations.html"]')).toHaveCount(1);
   }
  }
  expect(paid).toEqual([]);
