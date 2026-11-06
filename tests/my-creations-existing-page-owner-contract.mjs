@@ -16,6 +16,8 @@ test('Library My Creations links directly to existing page, Assets remains uncha
  assert.match(nav, /\{ label: 'My Creations', icon: '▣', url:'my-creations\.html'/);
  assert.match(nav, /path === 'my-creations\.html' \? 'history'/);
  assert.ok(existsSync(join(assets,'my-creations.html')));
+ assert.doesNotMatch(home,/aria-label="History"/,'Home More duplicate is retired');
+ assert.doesNotMatch(nav,/label: 'History', icon:/,'Shared sidebar More duplicate is retired');
 });
 
 test('Existing My Creations retains actual private Workspace API and never invents items',()=>{
