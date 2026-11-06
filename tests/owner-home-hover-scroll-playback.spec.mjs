@@ -119,11 +119,16 @@ test('mobile Need an idea? scrolls to the real Inspiration heading without openi
  await expect(page.locator('#inspirationPreviewTitle')).toBeVisible();
 });
 
-test('desktop Need an idea? keeps the existing starter-ideas disclosure',async({page})=>{
+test('desktop hides Need an idea? entirely; mobile retains Inspiration shortcut',async({page})=>{
  await page.setViewportSize({width:1280,height:800});
  await setup(page);
- const summary=page.locator('.home-prompt-ideas > summary');
- await summary.click();
- await expect(page.locator('.home-prompt-ideas')).toHaveAttribute('open');
- await expect(page.locator('.home-quick-ideas')).toBeVisible();
+ const details=page.locator('.home-prompt-ideas');
+ const summary=details.locator('summary');
+ await expect(details).toBeHidden();
+ await expect(summary).toBeHidden();
+ await page.setViewportSize({width:390,height:844});
+ await expect(details).toBeVisible();
+ await expect(summary).toBeVisible();
+ await page.setViewportSize({width:1280,height:800});
+ await expect(details).toBeHidden();
 });
