@@ -163,7 +163,7 @@ function renderPlans(config){
   });
   for(const [icon,copy] of benefitRows){
    const li=node('li');
-   const sym=node('span','price-feature-icon',icon);sym.setAttribute('aria-hidden','true');
+   const sym=node('span','price-feature-icon'+(icon==='✓'?' is-included':icon==='ⓘ'?' is-info':''),icon);sym.setAttribute('aria-hidden','true');
    li.append(sym,node('span','',copy));list.append(li);
   }
   const note=node('p','price-plan-note',p.proposed?'$0.99 Trial: price and included credits are NOT active yet.':p.key==='lifetime'?'ⓘ Lifetime does not include unlimited paid AI generation; purchase AI credits separately.':!verified?'The server has not supplied a verified price.':'');
