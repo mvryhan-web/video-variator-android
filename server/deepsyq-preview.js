@@ -10,7 +10,8 @@ import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {MODEL_CATALOG} from '../app/src/main/assets/generate-models.js';
 import {buildJarvixSiteKnowledge,clearSession,getOrCreateSession,processTurnWithMockBrain,getJarvixRuntimeStatus} from './jarvix-brain.js';
-import {generateFreeImage,generateTrialVideo,generateFreeAudio,checkDailyQuota,incrementDailyQuota,studioJobs} from './free-ai-provider.js';
+import {checkDailyQuota,incrementDailyQuota,studioJobs} from './free-ai-provider.js';
+import {FREE_SPACE_MODELS,generateTestSpaceMedia} from './preview-free-spaces.js';
 
 import {installLocalVoice} from './jarvix-local-voice.js';
 
@@ -48,7 +49,7 @@ app.get('/robots.txt',(_req,res)=>res.type('text/plain').send('User-agent: *\nDi
 app.get('/vendor/ffmpeg/ffmpeg.js',(_req,res)=>res.type('application/javascript').sendFile(path.join(ffmpegUmd,'ffmpeg.js')));
 app.get('/vendor/ffmpeg/ffmpeg-core.js',(_req,res)=>res.type('application/javascript').sendFile(path.join(ffmpegCore,'ffmpeg-core.js')));
 app.get('/vendor/ffmpeg/ffmpeg-core.wasm',(_req,res)=>res.type('application/wasm').sendFile(path.join(ffmpegCore,'ffmpeg-core.wasm')));
-app.get('/api/health',(_req,res)=>res.json({ok:true,service:'deepsyq-design-preview',paymentsEnabled:false,aiGenerationEnabled:false}));
+app.get('/api/health',(_req,res)=>res.json({ok:true,service:'deepsyq-design-preview',paymentsEnabled:false,paidAiGenerationEnabled:false,freeAiGenerationEnabled:isFreeStudioActive,aiGenerationEnabled:isFreeStudioActive,freeAiProvider:'Hugging Face public ZeroGPU'}));
 app.get('/api/config',(_req,res)=>res.json({
  googleClientId:'',appleClientId:'',emailAuth:false,billingConfigured:false,trialLimit:0,
  features:{aiApps:true,inspiration:true,onboarding:false},
@@ -60,12 +61,17 @@ app.get('/api/config',(_req,res)=>res.json({
 const isFreeStudioActive = process.env.FREE_AI_STUDIO_ENABLED === 'true' || Boolean(process.env.RENDER) || process.env.NODE_ENV === 'production' || process.env.PORT !== '31896';
 const isLegacyTest = !isFreeStudioActive;
 
-const freeStudioModels = MODEL_CATALOG.map(m => {
-  if (['image', 'video', 'music', 'voice'].includes(m.kind)) {
-    return { ...m, enabled: true, adapter: true };
-  }
-  return { ...m, enabled: false };
-});
+// TEST exposes ONLY its genuine no-charge public models, never paid Veo/Gemini/Lyria labels.
+const imageTemplate=MODEL_CATALOG.find(m=>m.kind==='image'&&m.adapter);
+const videoTemplate=MODEL_CATALOG.find(m=>m.kind==='video'&&m.adapter);
+const musicTemplate=MODEL_CATALOG.find(m=>m.kind==='music'&&m.adapter);
+const freeStudioModels=[
+ {...imageTemplate,id:FREE_SPACE_MODELS.image.id,label:FREE_SPACE_MODELS.image.label,kind:'image',provider:'Hugging Face ZeroGPU',references:0,ratios:['1:1'],quality:'512px',enabled:true,adapter:true,
+  capabilities:{...imageTemplate.capabilities,maxReferences:0,supportsImageReferences:false,resolutions:['512px'],outputFormats:['png'],imageSizes:['512px']}},
+ {...videoTemplate,id:FREE_SPACE_MODELS.video.id,label:FREE_SPACE_MODELS.video.label,kind:'video',provider:'Hugging Face ZeroGPU',references:0,ratios:['16:9'],quality:'512p',duration:'2 seconds',enabled:true,adapter:true,
+  capabilities:{...videoTemplate.capabilities,maxReferences:0,supportsImageReferences:false,resolutions:['512p'],durations:[2],durationSeconds:2,maxDurationSeconds:2,videoInputModes:['text'],supportsImageToVideo:false}},
+ {...musicTemplate,id:FREE_SPACE_MODELS.music.id,label:FREE_SPACE_MODELS.music.label,kind:'music',provider:'Hugging Face ZeroGPU',references:0,enabled:true,adapter:true}
+];
 
 app.get('/api/studio/config', (_req, res) => {
   if (isLegacyTest) {
@@ -83,7 +89,8 @@ app.get('/api/studio/config', (_req, res) => {
     catalog: freeStudioModels,
     freeTier: true,
     previewOnly: true,
-    outputMode: 'local-demo',
+    outputMode: 'public-free-models',
+    externalProcessing: 'Public Hugging Face Space; send non-sensitive text prompts only',
     translation: { enabled: false, reason: 'PREVIEW_ONLY' }
   });
 });
@@ -105,21 +112,21 @@ app.get('/api/studio/access', (req, res) => {
 app.post('/api/studio/estimate', (req, res) => {
   if (isLegacyTest) return res.status(503).json(disabled);
   const {kind,model,quantity=1} = req.body || {};
-  const valid = freeStudioModels.some(m => m.enabled && m.id === model && (m.kind === kind || (kind === 'music' && m.kind === 'voice')));
+  const valid = freeStudioModels.some(m => m.enabled && m.id === model && m.kind === kind);
   if (!valid) return res.status(400).json({error:'AI_MODEL_NOT_AVAILABLE'});
-  if (quantity !== 1) return res.status(400).json({error:'IMAGE_BATCH_NOT_ENABLED'});
+  if (quantity !== 1 || Number(req.body?.referenceCount||0)!==0) return res.status(400).json({error:'FREE_TEXT_ONLY_OR_BATCH_NOT_AVAILABLE'});
   res.json({
     ok: true,
     kind,model,quantity:1,
     previewOnly: true,
-    outputMode: 'local-demo',
+    outputMode: 'public-free-models',
     credits: 0,
     cost: 0,
     unitPrice: 0,
-    marginRatio: 2.0,
+    marginRatio: null,
     freeTier: true,
     currency: 'USD',
-    note: 'Free Test Generation (Zero-Spend Safe)'
+    note: 'Public free GPU queue: prompts leave DEEPSYQ; no guaranteed capacity, no paid APIs'
   });
 });
 
@@ -131,16 +138,24 @@ app.post('/api/studio/jobs', async (req, res) => {
     return res.status(429).json({ error: 'DAILY_QUOTA_EXCEEDED', message: 'Дневной лимит бесплатных тестов исчерпан (20/день).' });
   }
 
-  const { kind = 'image', model, prompt = 'Cosmic nebula' } = req.body || {};
+  const {kind,model,prompt,consent,references,referenceCount} = req.body || {};
+  if(!freeStudioModels.some(m=>m.kind===kind&&m.id===model))
+    return res.status(400).json({error:'FREE_MODEL_UNAVAILABLE'});
+  if(consent!==true)return res.status(400).json({error:'FREE_EXTERNAL_CONSENT_REQUIRED'});
+  if((Array.isArray(references)&&references.length)||Number(referenceCount||0)!==0)
+    return res.status(400).json({error:'FREE_TEXT_ONLY'});
+  if(typeof prompt!=='string'||prompt.trim().length<3||prompt.length>1200)
+    return res.status(400).json({error:'FREE_INVALID_PROMPT'});
+  if([...studioJobs.values()].some(j=>j.status==='processing'))
+    return res.status(429).json({error:'FREE_PROVIDER_BUSY'});
   const id = 'job_' + randomUUID().replace(/-/g, '').slice(0, 16);
-  
   incrementDailyQuota(req.ip || 'guest');
 
   const jobRecord = {
     id,
     visitor,
     kind,
-    model: model || (kind === 'image' ? 'flux-schnell' : 'veo-lite'),
+    model,
     prompt,
     status: 'processing',
     progress: 15,
@@ -153,15 +168,9 @@ app.post('/api/studio/jobs', async (req, res) => {
   (async () => {
     try {
       jobRecord.progress = 50;
-      let result;
-      if (kind === 'video') {
-        result = await generateTrialVideo({ prompt, model, duration: req.body?.videoDuration || 5, allowExternal: false });
-      } else if (['music','voice','audio'].includes(kind)) {
-        // Free TEST audio is a WAV chime, not an image mislabeled as audio.
-        result = await generateFreeAudio({ prompt, text: prompt, model });
-      } else {
-        result = await generateFreeImage({ prompt, model, ratio: req.body?.ratio || '1:1', allowExternal: false });
-      }
+      // Never substitute a local SVG or fixed tone if the real free provider fails.
+      // The user explicitly confirms transfer to a third-party public demo.
+      const result = await generateTestSpaceMedia({kind,model,prompt,consent,referenceCount:0});
       jobRecord.status = 'ready';
       jobRecord.progress = 100;
       jobRecord.media = result.buffer;
