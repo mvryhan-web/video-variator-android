@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 
 // Agent C BASE29: approved inner-page navigation. No live accounts or paid providers.
 const ordered=['Home','Image','Video','JARVIX','Audio','Tools','AI Apps','Canvas',
- 'Video Uniquifier','Assets','My Creations','History','Share','Inspiration','Pricing'];
+ 'Video Uniquifier','Assets','My Creations','Share','Inspiration','Pricing'];
 async function openMobileSidebar(page){
  const toggle=page.locator('.ds-site-mobile-toggle');
  if(await toggle.isVisible())await toggle.click();
@@ -34,7 +34,7 @@ test('BASE29 sidebar order, existing routes, and honest non-links for unavailabl
   ['Canvas','canvas.html'],['Video Uniquifier','index.html'],
   ['Assets','generate-studio.html?view=history'],
   ['My Creations','my-creations.html'],
-  ['History','generate-studio.html?view=history'],['Pricing','pricing.html'],
+  ['Pricing','pricing.html'],
   ['Inspiration','deepsyq.html#inspirationPreview']
  ]) await expect(nav.getByRole('link',{name:label,exact:true})).toHaveAttribute('href',href);
  await expect(nav.getByRole('link',{name:'JARVIX AI'})).toHaveCount(1);
@@ -90,7 +90,7 @@ test('BASE29 protected Home still holds Inspiration All/Video/Image, no fake AI 
  expect(paid).toEqual([]);
 });
 
-test('BASE29 canonical Pricing and History links navigate, with no generation request',async({page})=>{
+test('BASE29 canonical Pricing and single Library My Creations link navigate with no generation request',async({page})=>{
  const paid=noPaidRequests(page);
  await page.goto('/ai-apps.html');
  await openMobileSidebar(page);
@@ -99,9 +99,12 @@ test('BASE29 canonical Pricing and History links navigate, with no generation re
  await expect(page.locator('#pricingTitle')).toBeVisible();
  await page.goto('/ai-apps.html');
  await openMobileSidebar(page);
- await page.locator('#dsSiteSidebar').getByRole('link',{name:'History',exact:true}).click();
- await expect(page).toHaveURL(/\/generate-studio\.html\?view=history/);
- await expect(page.locator('#showHistory')).toHaveAttribute('aria-pressed','true');
+ const nav=page.locator('#dsSiteSidebar');
+ await expect(nav.getByRole('link',{name:'My Creations',exact:true})).toHaveCount(1);
+ await expect(nav.getByRole('link',{name:'History',exact:true})).toHaveCount(0);
+ await nav.getByRole('link',{name:'My Creations',exact:true}).click();
+ await expect(page).toHaveURL(/\/my-creations\.html$/);
+ await expect(page.locator('#wsTitle')).toHaveText('My Creations');
  expect(paid).toEqual([]);
 });
 
