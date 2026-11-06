@@ -161,6 +161,26 @@ async function checkout(plan){if(pending)return;if(!localStorage.getItem('vv_tok
 // featured API records as the existing gallery. Never invent preview assets.
 function updateInspirationHero(items){renderHomeCarousel(items);}
 
+// The existing "Need an idea?" summary is a mobile shortcut to the
+// already-published Inspiration section. Desktop disclosure stays unchanged.
+let pendingMobileInspirationJump=false;
+function scrollToMobileInspiration(){
+ const target=$('inspirationPreview');
+ if(!target||target.hidden){pendingMobileInspirationJump=true;return;}
+ pendingMobileInspirationJump=false;
+ target.scrollIntoView({
+  behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',
+  block:'start'
+ });
+}
+document.querySelector('.home-prompt-ideas > summary')?.addEventListener('click',event=>{
+ if(!window.matchMedia('(max-width: 760px)').matches)return;
+ event.preventDefault();
+ event.currentTarget.parentElement.open=false;
+ scrollToMobileInspiration();
+});
+
+
 // Owner-approved Home enhancements: no extra provider/credit/auth APIs are created.
 const homeLang=$('homeLanguage');
 const homeI18n={
@@ -267,7 +287,7 @@ async function loadInspirationPreview(){
     if(!Number.isSafeInteger(nextOffset)||nextOffset<=offset)break;
     offset=nextOffset;
    }
-   const studio=inspirationFeed.filter(x=>x.actionTarget==='studio'&&['video','image'].includes(x.kind)&&!x.previewUrl?.includes('logo')&&!x.previewPosterUrl?.includes('logo'));renderHomeInspiration(studio,()=>showInspirationVideos(root));const ad=await fetch(base+'/api/inspiration?featured=true&target=agent&limit=3',{cache:'no-store'}).then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));const agents=Array.isArray(ad.items)?ad.items:[];agentRoot.replaceChildren();for(const item of agents){const card=document.createElement(item.actionPath?'a':'article');card.className='inspiration-preview-card agent-example';if(item.actionPath){card.href=item.actionPath+'?from=inspiration';card.onclick=()=>sessionStorage.setItem('deepsyq_agent_inspiration_start',JSON.stringify({id:item.id,title:item.title,generationType:item.kind,promptTemplate:item.prompt||'',defaultModel:item.defaultModel||null,requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],defaultSettings:{...(item.defaultSettings||{}),ratio:item.aspectRatio},source:'inspiration',action:'create'}));}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const desc=document.createElement('span');desc.textContent=item.description||item.prompt;copy.append(title,desc);card.append(copy);agentRoot.append(card);}agentSection.hidden=!agents.length;}catch(_){section.hidden=true;agentSection.hidden=true;}
+   const studio=inspirationFeed.filter(x=>x.actionTarget==='studio'&&['video','image'].includes(x.kind)&&!x.previewUrl?.includes('logo')&&!x.previewPosterUrl?.includes('logo'));renderHomeInspiration(studio,()=>showInspirationVideos(root));if(pendingMobileInspirationJump)scrollToMobileInspiration();const ad=await fetch(base+'/api/inspiration?featured=true&target=agent&limit=3',{cache:'no-store'}).then(async response=>response.ok?response.json():({items:[]})).catch(()=>({items:[]}));const agents=Array.isArray(ad.items)?ad.items:[];agentRoot.replaceChildren();for(const item of agents){const card=document.createElement(item.actionPath?'a':'article');card.className='inspiration-preview-card agent-example';if(item.actionPath){card.href=item.actionPath+'?from=inspiration';card.onclick=()=>sessionStorage.setItem('deepsyq_agent_inspiration_start',JSON.stringify({id:item.id,title:item.title,generationType:item.kind,promptTemplate:item.prompt||'',defaultModel:item.defaultModel||null,requiredInputTypes:Array.isArray(item.requiredInputTypes)?item.requiredInputTypes:[],defaultSettings:{...(item.defaultSettings||{}),ratio:item.aspectRatio},source:'inspiration',action:'create'}));}const copy=document.createElement('div');const title=document.createElement('strong');title.textContent=item.title;const desc=document.createElement('span');desc.textContent=item.description||item.prompt;copy.append(title,desc);card.append(copy);agentRoot.append(card);}agentSection.hidden=!agents.length;}catch(_){section.hidden=true;agentSection.hidden=true;}
 }
 
 async function loadFeaturedWorkflows(){
