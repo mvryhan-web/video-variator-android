@@ -1,0 +1,31 @@
+name: My Creations existing page and retired affiliate (no spend)
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/assets/my-creations.html'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'tests/my-creations-existing-page-owner-contract.mjs'
+      - 'tests/deepsyq-navigation-contract-unit.mjs'
+      - '.github/workflows/my-creations-owner-contract.yml'
+  push:
+    branches: [deepsyq-platform]
+    paths:
+      - 'app/src/main/assets/my-creations.html'
+      - 'app/src/main/assets/deepsyq.html'
+      - 'app/src/main/assets/deepsyq-site-shell.js'
+      - 'tests/my-creations-existing-page-owner-contract.mjs'
+      - 'tests/deepsyq-navigation-contract-unit.mjs'
+permissions:
+  contents: read
+jobs:
+  owner-library-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: No-spend existing My Creations and navigation tests
+        run: node --test tests/my-creations-existing-page-owner-contract.mjs tests/deepsyq-navigation-contract-unit.mjs

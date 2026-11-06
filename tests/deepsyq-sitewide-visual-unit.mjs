@@ -38,7 +38,9 @@ test('shared shell is navigation only, no money or AI operations',()=>{
 test('every secondary navigation destination exists; pending features are not links',()=>{
  const js=readFileSync(new URL('deepsyq-site-shell.js',root),'utf8');
  for(const group of ["Home","Creation","Tools","Library","Community","More"]) assert.ok(js.includes("section:'"+group+"'"),group);
- for(const label of ['Agent','Affiliate']) assert.ok(js.includes("label:'"+label+"',icon:")&&js.includes("pending:true"),label);
+ assert.match(js,/label:'Agent',icon:'✦', pending:false, isJarvix: true/,'Existing JARVIX remains active');
+ assert.doesNotMatch(js,/label:'Affiliate'|key: 'affiliate'/,'Retired Affiliate must not appear in navigation');
+ assert.doesNotMatch(readFileSync(new URL('deepsyq.html',root),'utf8'),/Affiliate program coming soon/,'Retired Affiliate must not appear on Home');
  const home=readFileSync(new URL('deepsyq.html',root),'utf8');
  for(const label of ['Favo'+'rites','Chall'+'enges']){
   assert.ok(!js.includes(label),'Unapproved navigation in shared shell: '+label);
