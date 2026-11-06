@@ -54,16 +54,18 @@ test('live isolated TEST Studio creates a zero-spend preview and keeps prompts/m
   assert.equal((await fetch(base+'/api/studio/jobs/'+created.jobId)).status,404);
   assert.equal((await fetch(base+own.mediaUrl)).status,404);
 
-  // Deliberately no external inference: test-only video fallback is SVG, never a fake MP4.
+  // No external inference: clearly identified bundled MP4 demo, never an SVG in a video player.
   const movie=await fetch(base+'/api/studio/jobs',{method:'POST',
    headers:{'content-type':'application/json',cookie},
    body:JSON.stringify({kind:'video',prompt:'Animated local demo',duration:5})});
   assert.equal(movie.status,200);
   const videoId=(await movie.json()).jobId;
-  const video=await(await fetch(base+'/api/studio/jobs/'+videoId,{headers:{cookie}})).json();
+  let video;for(let attempt=0;attempt<30;attempt++){video=await(await fetch(base+'/api/studio/jobs/'+videoId,{headers:{cookie}})).json();if(video.status==='ready')break;await new Promise(r=>setTimeout(r,50));}
   assert.equal(video.status,'ready');
   const videoMedia=await fetch(base+video.mediaUrl,{headers:{cookie}});
-  assert.match(videoMedia.headers.get('content-type')||'',/image\/svg\+xml/);
+  assert.match(videoMedia.headers.get('content-type')||'',/video\/mp4/);
+  assert.equal(video.provider,'bundled-test-demo-not-ai');
+  assert.equal(Buffer.from(await videoMedia.arrayBuffer()).subarray(4,8).toString(),'ftyp');
 
   // One anonymous visitor still gets three independent media-type histories.
   const audioPost=await fetch(base+'/api/studio/jobs',{method:'POST',
