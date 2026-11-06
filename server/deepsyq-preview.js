@@ -300,11 +300,11 @@ const creativeTemplates=creativeMedia.previewPublicationApproved===true?creative
 app.get('/api/templates',(_req,res)=>res.json({items:creativeTemplates}));
 app.get('/api/auth/email/status',(_req,res)=>res.json({configured:false}));
 app.use('/api',(_req,res)=>res.status(503).json(disabled));
-const banner='<div role="status" class="deepsyq-preview-notice" style="position:relative;z-index:90;padding:12px 20px;text-align:center;background:#3d3320;color:#f6e9cb;font:600 13px system-ui">Deepsyq design preview · Work in progress · Sign-in, payments and paid AI generation are disabled.</div>';
+const banner='';
 async function homepage(_req,res){
  try{
   const html=await readFile(path.join(assets,'deepsyq.html'),'utf8');
-  res.type('html').send(html.replace(/<body\b[^>]*>/i,body=>body+banner));
+  res.type('html').send(html);
  }catch(_){res.status(503).type('text/plain').send('Preview assets are unavailable');}
 }
 app.get(['/','/dashboard','/deepsyq.html'],homepage);
