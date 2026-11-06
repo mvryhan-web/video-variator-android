@@ -8,6 +8,7 @@ on:
       - 'app/src/main/assets/sw.js'
       - 'app/src/main/assets/video-uniquifier-reference.js'
       - 'app/src/main/AndroidManifest.xml'
+      - 'app/src/main/res/values-v31/styles.xml'
       - 'app/src/main/assets/deepsyq.css'
       - 'app/src/main/assets/deepsyq*png'
       - 'app/src/main/assets/deepsyq.webmanifest'
