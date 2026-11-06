@@ -42,3 +42,19 @@ These Git references preserve committed code/history; **they do not back up Goog
 3. **Google Antigravity** — complex scoped coding only, subject to owner quotas and P review.
 
 Historic A/B/C/D chat roles remain retired under D20. D22 canonical blocks remain **F1–F6**; old F8 stays retired.
+
+## Verified execution record — 2026-11-06
+
+D23 implemented in canonical `AGENTS.md`, `DECISIONS.md`, `docs/DEEPSYQ_P_COORDINATOR_RESTORE.md` and coordinator Issue #233 (title updated). The hourly Jules-specific automation `Deepsyq — Jules и живая карта` (id `6ad35fd2dad081918582ef83d7aa80f9`) was disabled. The separate daily DEEPSYQ project report automation remains enabled, but its Jules dispatch/ACK/queue instructions were removed and replaced with D23/active-team instructions.
+
+**GitHub dispatch prevention:** all 23 open issues carrying GitHub label `jules` were closed with `not_planned` and the `jules` label removed. Additional coordination queues #222 and #237 were closed `not_planned`. A fresh search confirmed **zero open Jules-labeled issues, zero open Jules-labeled PRs, and zero open issues with Jules in title**. Historical issue bodies/comments are retained verbatim. These closures are administrative and do **not** certify the features as DONE.
+
+**Additional work snapshots**, created before PR closure:
+- Jules 1 PR #293 → [`archive/jules1-w5-4-pr293-20261106`](https://github.com/mvryhan-web/video-variator-android/tree/archive/jules1-w5-4-pr293-20261106), SHA `296b7cb10ac898eb77297f96f6546b4d4e196dc0`.
+- Jules 2 PR #256 → [`archive/jules2-u2-pr256-20261106`](https://github.com/mvryhan-web/video-variator-android/tree/archive/jules2-u2-pr256-20261106), SHA `8de161c3ae7791681b9c706e8beadc0651348597`.
+- Jules 3 PR #243 → [`archive/jules3-g2-pr243-20261106`](https://github.com/mvryhan-web/video-variator-android/tree/archive/jules3-g2-pr243-20261106), SHA `0ce61f5696f83e224cce46182795172a3388ddde`.
+- Jules 3 PR #225 → [`archive/jules3-readonly-pr225-20261106`](https://github.com/mvryhan-web/video-variator-android/tree/archive/jules3-readonly-pr225-20261106), SHA `62e17b20d96d0fb2e60e9629f6cb58ed6bda25fb`.
+
+PRs **#519, #263, #293, #256 and #243** were annotated with D23 and closed **unmerged**, original PRs and branches preserved. **PR #225 was not closed**: attempted GitHub operation returned an access/safety block from the tool. Subsequent readback confirmed it remained OPEN, UNMERGED. Its source is separately archived in the snapshot above, and it must never be treated as active Jules work or automatically merged.
+
+Do not call an archived agent again, rerun its closed issue, delete code or attempt release; P can select useful historical code for a fresh, independently reviewed scope. This is a docs/coordination operation only: no app, paid AI, Stripe, Render, `main` or production deployment changed.
