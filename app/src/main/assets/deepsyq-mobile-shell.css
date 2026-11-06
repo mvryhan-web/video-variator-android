@@ -55,8 +55,8 @@
   body.ds-mobile-layout #topJarvisBtn .jarvis-mini-orb {width:40px!important;height:40px!important}
   body.ds-mobile-layout .ds-mobile-drawer {
     position:fixed!important;inset:0 auto 0 0!important;z-index:600!important;
-    width:min(82vw,300px)!important;max-width:calc(100vw - 40px)!important;height:100dvh!important;max-height:100dvh!important;
-    padding:calc(66px + var(--ds-mobile-safe-top)) 14px 24px!important;box-sizing:border-box;overflow:auto!important;
+    width:50vw!important;max-width:50vw!important;height:100dvh!important;max-height:100dvh!important;
+    padding:calc(66px + var(--ds-mobile-safe-top)) 8px 24px!important;box-sizing:border-box;overflow:auto!important;
     background:#071124!important;transform:translateX(-105%)!important;overscroll-behavior:contain;
     border-right:1px solid #344269!important;box-shadow:12px 0 36px #0007;
   }
@@ -174,3 +174,13 @@
 .ds-tour-drawer-target{outline:2px solid #4de7ff!important;outline-offset:2px;background:#163c60!important}
 /* Page-shell styles load later; pin the header above those route overrides. */
 @media(min-width:761px){html body.deepsyq-sitewide-shell header.ds-stable-header,html body.home-neon header.ds-stable-header{position:sticky!important;top:0!important;z-index:500!important}}
+
+/* Owner screenshot: mobile drawer occupies half the screen, never the whole page. */
+@media(max-width:760px){
+ body.ds-mobile-layout .ds-mobile-drawer :is(nav a,nav button,.nav-pending){min-width:0;max-width:100%;font-size:12px!important;line-height:1.35;white-space:normal!important;overflow-wrap:anywhere;padding-inline:8px}
+ body.ds-mobile-layout .ds-mobile-drawer :is(.nav-label,.jarvis-name){min-width:0;white-space:normal!important;overflow-wrap:anywhere;font-size:12px!important}
+ body.ds-mobile-layout .ds-mobile-drawer :is(.nav-icon,.ds-icon){flex-shrink:0;width:18px!important;min-width:18px!important;font-size:17px!important}
+ body.ds-mobile-layout .ds-mobile-drawer nav a{gap:7px}
+ body.ds-mobile-layout .ds-mobile-drawer :is(.caption,.ds-site-caption){font-size:10px;letter-spacing:1px;overflow-wrap:anywhere}
+ body.ds-mobile-layout .ds-mobile-drawer .ds-invite-entry{font-size:12px!important}
+}

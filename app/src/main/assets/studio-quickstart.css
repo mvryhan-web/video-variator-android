@@ -160,3 +160,13 @@ body.studio-quickstart .stage:has(#empty:not([hidden]))+form.composer{position:r
  body.studio-quickstart .composer-controls #settingsButton{flex:0 1 auto}
  body.studio-quickstart .composer-controls #generate{flex:1 1 50%}
 }
+
+/* Owner follow-up: keep the composer at the bottom and reserve the stage for results. */
+body.studio-quickstart .studio-shell>main{height:calc(100dvh - 78px);min-height:0!important;display:flex;flex-direction:column;margin:0 auto}
+body.studio-quickstart .studio-shell>main>.stage{flex:1 1 0!important;min-height:0!important;overflow:auto;padding:16px 0!important}
+body.studio-quickstart .studio-shell>main>#creator.composer{flex:0 0 auto;position:relative!important;bottom:auto!important;margin-top:auto!important}
+body.studio-quickstart .studio-shell>main:has(#historyEmpty:not([hidden])){height:auto;min-height:calc(100dvh - 78px)!important}
+@media(max-width:760px){
+ body.studio-quickstart .studio-shell>main{height:calc(100dvh - 132px - env(safe-area-inset-top,0px));min-height:0!important}
+ body.studio-quickstart .studio-shell>main:has(#historyEmpty:not([hidden])){height:auto;min-height:calc(100dvh - 132px)!important}
+}
