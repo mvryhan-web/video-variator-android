@@ -57,3 +57,20 @@ test('Russian page copy explains avatar support and keeps links functional',asyn
   await expect(page.locator('#dashboardView')).toHaveClass(/active/);
  }finally{await context.close();}
 });
+
+test('Video History Compare Plans opens current Pricing, not legacy in-app Plans',async({page})=>{
+ const paidRequests=[];
+ page.on('request',request=>{
+  if(request.method()==='POST'&&new URL(request.url()).pathname.startsWith('/api/'))paidRequests.push(request.url());
+ });
+ await page.goto('/index.html?view=history');
+ await expect(page.locator('#historyView')).toHaveClass(/active/);
+ const compare=page.locator('#historyView .cp-cta a.cp-action');
+ await expect(compare).toBeVisible();
+ await expect(compare).toHaveAttribute('href','pricing.html#plans');
+ await compare.click();
+ await expect(page).toHaveURL(/\/pricing\.html#plans$/);
+ await expect(page.locator('#plans')).toBeVisible();
+ await expect(page.locator('#priceBillingMonthly')).toBeVisible();
+ expect(paidRequests).toEqual([]);
+});
