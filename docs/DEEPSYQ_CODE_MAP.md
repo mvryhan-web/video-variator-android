@@ -3,7 +3,7 @@
 > Generated offline from Graphify AST. Safe identifiers/paths only; not source-of-truth. No private graph, source snippets, secrets or user files.
 > Agents A/B/C/D, coordinator #5 and Jules: **look here first**; open only the linked source and changes after the SHA. If SHA is stale, verify only affected files.
 
-Source commit: `d692e01174d75171df5773de495771dbed3e2f37`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
+Source commit: `ac08cd57981fb65a1dd3bfcac2f212108baf6943`  | Graphify pinned: `86c57be8204673c2a1b9849a3292a7dd3ab373d8`
 Scope: `server/` | Indexed files: 61 | Named symbols: 174 | Checked relations: 50
 
 ## Topic finder (matching filenames)
