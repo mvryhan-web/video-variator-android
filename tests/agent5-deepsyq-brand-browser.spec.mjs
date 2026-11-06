@@ -55,7 +55,7 @@ test('both installed PWA identities serve the approved Deepsyq icon set',async({
 test('Video History and other creator pages show the official Deepsyq logo, including installed web icons',async({page,request})=>{
  const postPaid=[];
  page.on('request',req=>{
-  if(req.method()==='POST'&&/\\/api\\/(ai-billing|ai-wallet|studio|checkout)/.test(new URL(req.url()).pathname))postPaid.push(req.url());
+  const path=new URL(req.url()).pathname; if(req.method()==='POST'&&['/api/ai-billing/','/api/ai-wallet/','/api/studio/','/api/checkout/'].some(prefix=>path.startsWith(prefix)))postPaid.push(req.url());
  });
  await page.goto('/index.html?view=history',{waitUntil:'domcontentloaded'});
  await expect(page.locator('body')).toHaveClass(/vu-reference/);
