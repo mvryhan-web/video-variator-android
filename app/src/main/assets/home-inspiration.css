@@ -107,3 +107,5 @@ html .inspiration-detail-dialog .inspiration-detail-close:focus-visible{
 }
 @media(prefers-reduced-motion:reduce){
 }
+/* Owner request: remove the mobile-only Inspiration shortcut from desktop Home. */
+@media (min-width:761px){body.home-neon .home-prompt-ideas{display:none!important}}
