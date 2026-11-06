@@ -97,3 +97,38 @@ test('genuine owner MP4 advances while active and stops when the card leaves vie
  await page.evaluate(()=>window.scrollTo(0,0));
  await expect(preview).not.toHaveAttribute('src',/\.mp4/);
 });
+
+test('mobile Need an idea? scrolls to the real Inspiration heading without opening starter ideas',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await setup(page);
+ const summary=page.locator('.home-prompt-ideas > summary');
+ const inspiration=page.locator('#inspirationPreview');
+ await expect(summary).toBeVisible();
+ await expect(inspiration).toBeVisible();
+ await page.evaluate(()=>window.scrollTo(0,0));
+ await summary.click();
+ await expect(page.locator('.home-prompt-ideas')).not.toHaveAttribute('open');
+ // Respect the fixed mobile header; the actual Inspiration heading must
+ // be in the viewport rather than obscured behind the header.
+ await expect.poll(()=>inspiration.evaluate(el=>{
+  const top=el.getBoundingClientRect().top;
+  const header=document.querySelector('header.ds-mobile-header');
+  const visibleHeaderBottom=header?.getBoundingClientRect().bottom||0;
+  return top>=visibleHeaderBottom-8&&top<window.innerHeight*0.75;
+ }),{timeout:8000}).toBe(true);
+ await expect(page.locator('#inspirationPreviewTitle')).toBeVisible();
+});
+
+test('desktop hides Need an idea? entirely; mobile retains Inspiration shortcut',async({page})=>{
+ await page.setViewportSize({width:1280,height:800});
+ await setup(page);
+ const details=page.locator('.home-prompt-ideas');
+ const summary=details.locator('summary');
+ await expect(details).toBeHidden();
+ await expect(summary).toBeHidden();
+ await page.setViewportSize({width:390,height:844});
+ await expect(details).toBeVisible();
+ await expect(summary).toBeVisible();
+ await page.setViewportSize({width:1280,height:800});
+ await expect(details).toBeHidden();
+});
