@@ -242,7 +242,7 @@ function build(){
  const speed=$('fastExport');if(speed){speed.checked=false;speed.disabled=true;}
  new MutationObserver(()=>{const s=$('fastExport');if(s&&!s.disabled){s.checked=false;s.disabled=true;}}).observe(workspace,{childList:true,subtree:true});
  const btn=$('startBtn');if(btn){btn.removeAttribute('data-i18n');btn.innerHTML='✦ &nbsp;Create variants &nbsp; →';}
- // Owner 2026-11-06: remove the entire illustrative Example preview with the car.
+ // Owner 2026-11-06: remove the entire illustrative car panel.
  // File selection, generation, queue, downloads and history remain independent.
  const queue=node('section','vu-panel vu-output');queue.innerHTML='<div class="vu-panel-head vu-output-head"><div><h3>Output queue</h3><p>Your generated variants will appear here.</p></div><button type="button" class="vu-queue-clear">Clear all</button></div>';
  const lines=node('div','vu-output-lines');queue.append(lines);
