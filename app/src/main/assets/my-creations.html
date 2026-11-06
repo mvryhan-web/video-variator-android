@@ -1,186 +1,72 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080d1d">
-<title>My Workspace · Мои проекты · Deepsyq</title>
+<title>My Creations · Deepsyq</title>
 <link rel="stylesheet" href="approved-page-design.css">
+<link rel="stylesheet" href="deepsyq-global-theme.css">
 <style>
-  :root {
-    --bg: #080d1d;
-    --panel: rgba(17, 25, 48, 0.86);
-    --border: rgba(148, 163, 184, 0.18);
-    --text: #f8fafc;
-    --muted: #94a3b8;
-    --accent: #6366f1;
-    --accent-hover: #818cf8;
-    --ok: #22c55e;
-    --warn: #f59e0b;
-    --err: #ef4444;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: Inter, system-ui, -apple-system, sans-serif;
-    background: radial-gradient(circle at 20% 0%, #16214a 0%, #080d1d 65%);
-    color: var(--text);
-    min-height: 100vh;
-  }
-  header.topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(8, 13, 29, 0.85);
-    backdrop-filter: blur(12px);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .topbar a {
-    color: var(--text);
-    text-decoration: none;
-    font-weight: 600;
-  }
-  .topbar-nav {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  .pill-link {
-    padding: 8px 14px;
-    border-radius: 999px;
-    background: rgba(99, 102, 241, 0.16);
-    border: 1px solid rgba(99, 102, 241, 0.4);
-    font-size: 14px;
-  }
-  main {
-    max-width: 1160px;
-    margin: 0 auto;
-    padding: 28px 20px 64px;
-  }
-  .hero-head {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .hero-head h1 { margin: 0 0 6px; font-size: 28px; }
-  .hero-head p { margin: 0; color: var(--muted); }
-  .toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 14px;
-    border-radius: 16px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    margin-bottom: 20px;
-  }
-  .toolbar input, .toolbar select, .toolbar button {
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: rgba(8, 13, 29, 0.9);
-    color: var(--text);
-    font-size: 14px;
-  }
-  .toolbar input { flex: 1 1 220px; }
-  .section-tabs {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 18px;
-  }
-  .section-tabs button {
-    padding: 9px 16px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: var(--panel);
-    color: var(--muted);
-    cursor: pointer;
-    font-weight: 600;
-  }
-  .section-tabs button[aria-pressed="true"] {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
-  .cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-    gap: 16px;
-  }
-  .ws-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .ws-preview {
-    height: 120px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, rgba(99,102,241,0.22), rgba(14,165,233,0.14));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    color: var(--muted);
-    border: 1px solid rgba(255,255,255,0.06);
-  }
-  .ws-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .ws-title {
-    font-weight: 700;
-    font-size: 16px;
-    word-break: break-word;
-  }
-  .ws-badge {
-    font-size: 12px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    background: rgba(148,163,184,0.16);
-  }
-  .ws-badge[data-status="completed"] { background: rgba(34,197,94,0.18); color: #86efac; }
-  .ws-badge[data-status="processing"], .ws-badge[data-status="queued"] { background: rgba(245,158,11,0.18); color: #fcd34d; }
-  .ws-badge[data-status="failed"] { background: rgba(239,68,68,0.18); color: #fca5a5; }
-  .ws-meta { font-size: 12px; color: var(--muted); }
-  .ws-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: auto;
-  }
-  .ws-actions button, .ws-actions a {
-    padding: 7px 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.04);
-    color: var(--text);
-    font-size: 12px;
-    cursor: pointer;
-    text-decoration: none;
-  }
-  .ws-actions button:hover, .ws-actions a:hover {
-    border-color: var(--accent-hover);
-  }
-  #wsStatus {
-    color: var(--muted);
-    margin: 12px 0;
-  }
+:root{color-scheme:dark;--bg:#050a17;--panel:#081731;--line:#1760a8;--text:#f8faff;--muted:#a8b9d3;--cyan:#00d8f7;--violet:#a317f6}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(circle at 68% -8%,#132253 0%,transparent 46%),#050a17;color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{cursor:pointer}
+header.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:61px;padding:12px clamp(15px,2.4vw,30px);background:#040b1c;border-bottom:1px solid #17244c;position:sticky;top:0;z-index:25}
+.topbar .top-brand{display:inline-flex;align-items:center;gap:8px;font-size:21px;font-weight:770;letter-spacing:-.035em}
+.top-brand img{width:31px;height:31px;object-fit:contain}
+.topbar-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.topbar-nav a{font-size:12px;color:#dbe9ff;padding:9px 15px;border:1px solid #365487;border-radius:100px}
+.topbar-nav a:hover{border-color:#16c8f4}
+main.ws-page{width:100%;max-width:1500px;margin:0 auto;padding:12px clamp(12px,1.8vw,24px) 48px}
+.ws-hero{display:flex;align-items:center;position:relative;overflow:hidden;min-height:245px;padding:28px 34px;background:radial-gradient(circle at 66% 50%,rgba(89,58,230,.5),transparent 30%),linear-gradient(107deg,#08152f 3%,#0c1b49 66%,#080d24);border:1px solid #087fe2;border-radius:17px;isolation:isolate}
+.ws-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#08152f 0%,rgba(8,21,47,.92) 38%,rgba(8,21,47,.1) 76%),url("media/home/owner-20261018/01-close-up-woman.jpg") right center / auto 120% no-repeat;z-index:-1}
+.ws-hero:after{content:"";position:absolute;inset:auto 0 0;height:1px;background:linear-gradient(90deg,#17cefc,#a62dfa)}
+.ws-hero-content{max-width:600px}
+.ws-kicker{font-size:12px;color:#1addf4;letter-spacing:.36em;font-weight:800;text-transform:uppercase}
+.ws-hero h1{font-size:clamp(34px,4vw,51px);line-height:1.1;letter-spacing:-.045em;margin:10px 0 13px;background:linear-gradient(100deg,#fff 17%,#eca7f6 88%);background-clip:text;-webkit-background-clip:text;color:transparent}
+.ws-hero p{color:#d4def2;font-size:16px;line-height:1.55;max-width:520px;margin:0 0 21px}
+.ws-hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+.ws-primary,.ws-secondary{padding:11px 20px;border-radius:100px;font-size:13px;font-weight:750;display:inline-flex;align-items:center;justify-content:center;border:1px solid transparent}
+.ws-primary{background:linear-gradient(110deg,#b900ef,#5351ff 49%,#00d5ee);box-shadow:0 3px 22px #8044fa7a;color:white}
+.ws-secondary{background:#07122b;border-color:#6c85ba;color:#eff5ff}
+.ws-panel{margin-top:20px;padding:20px;border-radius:17px;background:linear-gradient(122deg,#08162f,#081735);border:1px solid #0b79c5;box-shadow:0 4px 38px #00112f33}
+.ws-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ws-section-head h2{font-size:22px;letter-spacing:-.035em;margin:0 0 2px}
+.ws-section-head p{color:var(--muted);font-size:12px;margin:0}
+.ws-private{font-size:12px;padding:8px 15px;border:1px solid #2b447d;color:#afc0e1;border-radius:999px}
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 13px}
+.toolbar input,.toolbar select,.toolbar button{color:#e7f4ff;background:#0c2344;border:1px solid #2d538d;border-radius:999px;min-height:38px;padding:8px 14px;font-size:13px}
+.toolbar input{flex:1 1 280px;border-radius:10px;min-width:170px}
+.toolbar input::placeholder{color:#a9bcd5}
+.toolbar select{max-width:180px}
+.toolbar button:hover,.toolbar select:hover{border-color:#26cde8}
+.archive-label{display:inline-flex;align-items:center;gap:5px;color:#b9c5db;font-size:12px}
+.section-tabs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0 16px}
+.section-tabs button{padding:9px 17px;border:1px solid #24527f;border-radius:100px;background:#081b3a;color:#c9d8f3;font-size:12px}
+.section-tabs button[aria-pressed=true]{background:linear-gradient(100deg,#9f21eb,#245eee);border-color:#9353fb;color:#fff}
+.ws-types-label{margin-left:auto;color:#92acd0;font-size:12px}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:14px}
+.ws-card{display:flex;flex-direction:column;gap:10px;border:1px solid #195a9e;border-radius:13px;background:linear-gradient(160deg,#0a1c3b,#08112a);padding:12px;min-width:0}
+.ws-preview{border-radius:10px;aspect-ratio:16/9;background:radial-gradient(circle at 55% 48%,#232c69 0%,#101c40 43%,#08132d 82%);border:1px solid #31517e;display:flex;align-items:center;justify-content:center;color:#a2d4f4;font-size:15px}
+.ws-head{display:flex;justify-content:space-between;gap:10px;align-items:start}.ws-title{font-weight:700;overflow-wrap:anywhere}.ws-badge{border:1px solid #3b4c77;border-radius:999px;font-size:10px;padding:3px 7px;color:#ccd5e7}
+.ws-badge[data-status=completed]{color:#84efc1}.ws-badge[data-status=failed]{color:#ff9fa5}.ws-badge[data-status=processing],.ws-badge[data-status=queued]{color:#ffd485}
+.ws-meta{font-size:12px;color:#a5b6d5}
+.ws-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto}.ws-actions button,.ws-actions a{background:#132b4d;border:1px solid #27568d;border-radius:9px;color:#e4f2ff;padding:7px 10px;font-size:12px}.ws-actions :is(a,button):hover{border-color:#1de5ff}
+#wsStatus{color:#b6cae4;font-size:13px}
+.ws-empty{min-height:230px;grid-column:1/-1;border:1px dashed #1f4f83;border-radius:14px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;text-align:center;padding:34px 18px;background:radial-gradient(circle at 50% 100%,#101d43,#06122a)}
+.ws-empty-icon{width:64px;height:64px;display:grid;place-items:center;font-size:27px;border-radius:18px;border:1px solid #7d44ef;background:linear-gradient(140deg,#122f61,#33146b)}
+.ws-empty h3{margin:2px 0;font-size:20px}.ws-empty p{margin:0 0 13px;color:#b0c2db;font-size:13px}
+.ws-discover{margin-top:19px}.ws-discover-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}.ws-discover-head h2{font-size:21px;margin:0}.ws-discover-head p{font-size:12px;color:#9eb2d0;margin:0}
+.ws-discover-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.ws-discover-card{display:flex;min-height:118px;align-items:stretch;overflow:hidden;border:1px solid #0e69c1;border-radius:15px;background:#061731}
+.ws-discover-card img{width:40%;object-fit:cover;min-width:0}
+.ws-discover-card>span{padding:15px 14px;display:flex;justify-content:center;flex-direction:column;gap:6px}
+.ws-discover-card strong{font-size:17px}.ws-discover-card small{font-size:12px;color:#9babc6}.ws-discover-card em{font-size:12px;font-style:normal;color:#09dafa}
+@media(max-width:1080px){.ws-discover-card img{width:33%}.ws-discover-card strong{font-size:14px}}
+@media(max-width:900px){.ws-hero:before{background:linear-gradient(90deg,#08152f 0%,rgba(8,21,47,.78) 57%,rgba(8,21,47,.28)),url("media/home/owner-20261018/01-close-up-woman.jpg") right center / auto 116% no-repeat}}
+@media(max-width:720px){header.topbar{min-height:55px;padding:9px 12px}.topbar-nav{gap:5px}.topbar-nav a{padding:6px 9px;font-size:11px}main.ws-page{padding:10px 11px 30px}.ws-hero{min-height:225px;padding:21px 18px}.ws-hero:before{background:linear-gradient(90deg,#07142b 0%,rgba(7,20,43,.87) 58%,rgba(7,20,43,.55)),url("media/home/owner-20261018/01-close-up-woman.jpg") right center / auto 100% no-repeat}.ws-hero p{max-width:300px;font-size:13px}.ws-panel{padding:14px}.ws-types-label{margin-left:0}.ws-discover-grid{grid-template-columns:1fr}.ws-discover-card{min-height:103px}.ws-discover-card img{width:36%}.ws-empty{min-height:215px}.cards-grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}}
+@media(max-width:390px){.toolbar input{flex-basis:100%}.toolbar select{flex:1}.ws-private{display:none}.ws-hero h1{font-size:34px}}
 </style>
 <link rel="canonical" href="https://deepsyq.app/my-creations.html">
 <meta property="og:url" content="https://deepsyq.app/my-creations.html">
@@ -193,51 +79,60 @@
 </head>
 <body>
 <header class="topbar">
-  <a href="deepsyq.html">← Deepsyq</a>
-  <strong>My Workspace (F4)</strong>
-  <nav class="topbar-nav">
-    <a class="pill-link" href="generate-studio.html">Открыть Studio ✦</a>
-    <a class="pill-link" href="compare-ai.html">Compare AI</a>
-    <a class="pill-link" href="ai-agents.html">AI Agents</a>
+  <a class="top-brand" href="deepsyq.html" aria-label="Deepsyq Home"><img src="deepsyq-logo.png" alt="" width="31" height="31"> Deepsyq</a>
+  <nav class="topbar-nav" aria-label="Workspace shortcuts">
+    <a href="generate-studio.html">Open Studio</a>
+    <a href="pricing.html">Pricing</a>
   </nav>
 </header>
-<main>
-  <div class="hero-head">
-    <div>
-      <h1>Мои проекты и генерации</h1>
-      <p>Управляйте сохранёнными карточками: поиск, избранное, переименование и архивация.</p>
+<main class="ws-page">
+  <section class="ws-hero" aria-labelledby="wsTitle">
+    <div class="ws-hero-content">
+      <div class="ws-kicker">My workspace</div>
+      <h1 id="wsTitle">My Creations</h1>
+      <p>Your saved Image, Video and Audio Studio work, organized in one place.</p>
+      <div class="ws-hero-actions">
+        <a class="ws-primary" href="generate-studio.html">✦ Open Studio →</a>
+        <a class="ws-secondary" href="deepsyq.html#inspirationPreview">Explore Inspiration ↗</a>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="toolbar">
-    <input id="searchInput" type="search" maxlength="100" placeholder="Поиск по названию или ID…">
-    <select id="typeSelect" aria-label="Фильтр по типу">
-      <option value="">Все типы</option>
-      <option value="image">Изображения (Image)</option>
-      <option value="video">Видео (Video)</option>
-      <option value="audio">Аудио (Audio)</option>
-    </select>
-    <select id="statusSelect" aria-label="Фильтр по статусу">
-      <option value="">Все статусы</option>
-      <option value="completed">Готово (Completed)</option>
-      <option value="processing">В работе (Processing)</option>
-      <option value="failed">Ошибка (Failed)</option>
-    </select>
-    <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);">
-      <input id="includeArchived" type="checkbox"> Показать архив
-    </label>
-    <button id="refreshBtn" type="button">Обновить</button>
-  </div>
+  <section class="ws-panel" aria-labelledby="wsResultsTitle">
+    <div class="ws-section-head">
+      <div><h2 id="wsResultsTitle">Your creations</h2><p>Search your own saved studio results. Nothing is generated automatically.</p></div>
+      <span class="ws-private">Private workspace ◈</span>
+    </div>
+    <div class="toolbar">
+      <input id="searchInput" type="search" maxlength="100" aria-label="Search creations by title or ID" placeholder="⌕  Search by title or ID…">
+      <select id="typeSelect" aria-label="Filter by type">
+        <option value="">All types</option><option value="image">Image</option><option value="video">Video</option><option value="audio">Audio</option>
+      </select>
+      <select id="statusSelect" aria-label="Filter by status">
+        <option value="">All statuses</option><option value="completed">Completed</option><option value="processing">In progress</option><option value="failed">Failed</option>
+      </select>
+      <button id="refreshBtn" type="button">Refresh ↻</button>
+      <label class="archive-label"><input id="includeArchived" type="checkbox"> Show archive</label>
+    </div>
+    <div class="section-tabs" role="group" aria-label="Creations sections">
+      <button type="button" data-sec="recent" aria-pressed="true">Recent (<span id="cnt-recent">0</span>)</button>
+      <button type="button" data-sec="favorites" aria-pressed="false">Favorites (<span id="cnt-favorites">0</span>)</button>
+      <button type="button" data-sec="completed" aria-pressed="false">Completed (<span id="cnt-completed">0</span>)</button>
+      <button type="button" data-sec="drafts" aria-pressed="false">In progress (<span id="cnt-drafts">0</span>)</button>
+      <span class="ws-types-label">Image · Video · Audio</span>
+    </div>
+    <p id="wsStatus" role="status" aria-live="polite">Loading your workspace…</p>
+    <div id="cardsGrid" class="cards-grid"></div>
+  </section>
 
-  <div class="section-tabs" role="tablist">
-    <button type="button" data-sec="recent" aria-pressed="true">Недавние (<span id="cnt-recent">0</span>)</button>
-    <button type="button" data-sec="favorites" aria-pressed="false">★ Избранное (<span id="cnt-favorites">0</span>)</button>
-    <button type="button" data-sec="completed" aria-pressed="false">Готовые (<span id="cnt-completed">0</span>)</button>
-    <button type="button" data-sec="drafts" aria-pressed="false">В работе (<span id="cnt-drafts">0</span>)</button>
-  </div>
-
-  <p id="wsStatus" role="status" aria-live="polite">Загрузка рабочей области…</p>
-  <div id="cardsGrid" class="cards-grid"></div>
+  <section class="ws-discover" aria-labelledby="wsExploreTitle">
+    <div class="ws-discover-head"><h2 id="wsExploreTitle">Explore what you can create</h2><p>Studio examples — not your saved files</p></div>
+    <div class="ws-discover-grid">
+      <a class="ws-discover-card" href="generate-studio.html?studio=image"><img src="media/home/owner-20261018/01-close-up-woman.jpg" alt="Image Studio example" loading="lazy"><span><strong>Image Studio</strong><small>Create and edit images.</small><em>Open Studio ↗</em></span></a>
+      <a class="ws-discover-card" href="generate-studio.html?studio=video"><img src="media/home/owner-20261018/02-futuristic-portal.jpg" alt="Video Studio example" loading="lazy"><span><strong>Video Studio</strong><small>Create videos with AI.</small><em>Open Studio ↗</em></span></a>
+      <a class="ws-discover-card" href="generate-studio.html?studio=audio"><img src="media/home/neon-20261018/audio.webp" alt="Audio Studio example" loading="lazy"><span><strong>Audio Studio</strong><small>Create music and audio.</small><em>Open Studio ↗</em></span></a>
+    </div>
+  </section>
 </main>
 <script type="module">
   const $ = id => document.getElementById(id);
@@ -252,11 +147,14 @@
 
   async function loadCards() {
     if (!localStorage.getItem('vv_token')) {
-      $('wsStatus').textContent = 'Войдите в аккаунт на главной странице, чтобы открыть свои проекты.';
-      $('cardsGrid').replaceChildren();
+      $('wsStatus').textContent = '';
+      const empty = document.createElement('div');
+      empty.className = 'ws-empty';
+      empty.innerHTML = '<span class="ws-empty-icon" aria-hidden="true">▦</span><h3>Sign in to view your creations</h3><p>Your personal results appear here after signing in.</p><a class="ws-primary" href="deepsyq.html?panel=login">Sign in to continue →</a>';
+      $('cardsGrid').replaceChildren(empty);
       return;
     }
-    $('wsStatus').textContent = 'Загружаем карточки…';
+    $('wsStatus').textContent = 'Loading your creations…';
     const params = new URLSearchParams();
     const q = $('searchInput').value.trim();
     const type = $('typeSelect').value;
@@ -278,7 +176,7 @@
       }
       renderSection();
     } catch (e) {
-      $('wsStatus').textContent = 'Не удалось загрузить карточки (' + (e.message || 'ошибка') + ').';
+      $('wsStatus').textContent = 'Unable to load your creations (' + (e.message || 'error') + ').';
     }
   }
 
@@ -293,7 +191,7 @@
       if (!res.ok) throw new Error(data.error || 'PATCH_FAILED');
       await loadCards();
     } catch (e) {
-      $('wsStatus').textContent = 'Действие отклонено: ' + (e.message || 'ошибка');
+      $('wsStatus').textContent = 'Action unavailable: ' + (e.message || 'ошибка');
     }
   }
 
@@ -302,7 +200,11 @@
     grid.replaceChildren();
     const list = lastData?.sections?.[activeSection] || [];
     if (!list.length) {
-      $('wsStatus').textContent = 'В этой секции пока нет карточек.';
+      $('wsStatus').textContent = '';
+      const empty = document.createElement('div');
+      empty.className = 'ws-empty';
+      empty.innerHTML = '<span class="ws-empty-icon" aria-hidden="true">▦</span><h3>No creations here yet</h3><p>Your saved studio work will appear here.</p><a class="ws-secondary" href="generate-studio.html">Open Studio →</a>';
+      grid.append(empty);
       return;
     }
     $('wsStatus').textContent = '';
@@ -335,30 +237,30 @@
 
       const openLink = document.createElement('a');
       openLink.href = 'generate-studio.html?jobId=' + encodeURIComponent(card.id);
-      openLink.textContent = 'В Studio ↗';
+      openLink.textContent = 'Open in Studio ↗';
 
       const favBtn = document.createElement('button');
       favBtn.type = 'button';
-      favBtn.textContent = isFav ? '★ Убрать' : '☆ В избранное';
+      favBtn.textContent = isFav ? '★ Remove favorite' : '☆ Favorite';
       favBtn.onclick = () => patchCard(card.id, { action: 'favorite', isFavorite: !isFav });
 
       const renBtn = document.createElement('button');
       renBtn.type = 'button';
-      renBtn.textContent = 'Переименовать';
+      renBtn.textContent = 'Rename';
       renBtn.onclick = () => {
-        const nextTitle = prompt('Новое название проекта:', card.title);
+        const nextTitle = prompt('New title:', card.title);
         if (nextTitle && nextTitle.trim()) patchCard(card.id, { action: 'rename', title: nextTitle.trim() });
       };
 
       const archBtn = document.createElement('button');
       archBtn.type = 'button';
-      archBtn.textContent = 'В архив';
+      archBtn.textContent = 'Archive';
       archBtn.onclick = () => patchCard(card.id, { action: 'archive' });
 
       if (card.status === 'archived') {
         const resBtn = document.createElement('button');
         resBtn.type = 'button';
-        resBtn.textContent = 'Из архива';
+        resBtn.textContent = 'Restore';
         resBtn.onclick = () => patchCard(card.id, { action: 'restore' });
         actions.append(openLink, favBtn, renBtn, resBtn);
       } else {
