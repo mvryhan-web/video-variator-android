@@ -744,16 +744,16 @@ export function handleJarvisVoiceCommand(commandText) {
 
   // G1. THEME & LIGHTING COMMANDS
   if (/(?:посветлее|светлая тема|светлее|включи свет|light theme|lighter|plus clair|thème clair|tema claro|más claro|claro)/i.test(lower)) {
-    applySiteTheme('light'); jarvixContext.waitingFor='next_choice'; speakJarvis(onboardingText('light')); return;
+    applySiteTheme('light'); jarvixContext.waitingFor='next_choice'; speakJarvis(({ru:'Готово',en:'Done',fr:'Fait',es:'Listo'}[getJarvixLanguage()]||'Done')); return;
   }
   if (/(?:потемнее|темная тема|темнее|ночной режим|dark theme|darker|plus sombre|thème sombre|tema oscuro|más oscuro|oscuro)/i.test(lower)) {
-    applySiteTheme('midnight'); jarvixContext.waitingFor='next_choice'; speakJarvis(onboardingText('dark')); return;
+    applySiteTheme('midnight'); jarvixContext.waitingFor='next_choice'; speakJarvis(({ru:'Готово',en:'Done',fr:'Fait',es:'Listo'}[getJarvixLanguage()]||'Done')); return;
   }
   if (!/(?:выключи|отключи|не\s+надо|don't|do not|ne pas|no quiero)/i.test(lower) && /(?:неонов|киберпанк|neon|cyberpunk|néon)/i.test(lower)) {
-    applySiteTheme('neon'); jarvixContext.waitingFor='next_choice'; speakJarvis(onboardingText('neon')); return;
+    applySiteTheme('neon'); jarvixContext.waitingFor='next_choice'; speakJarvis(({ru:'Готово',en:'Done',fr:'Fait',es:'Listo'}[getJarvixLanguage()]||'Done')); return;
   }
   if (!/(?:выключи|отключи|не\s+надо|don't|do not|ne pas|no quiero)/i.test(lower) && /(?:золот|люкс|gold|luxury)/i.test(lower)) {
-    applySiteTheme('gold'); speakJarvis(isRu ? 'Готово, включил золотой стиль.' : isFr ? 'C’est fait, le thème doré est activé.' : isEs ? 'Listo, activé el tema dorado.' : 'Done. The gold theme is on.'); return;
+    applySiteTheme('gold'); speakJarvis(({ru:'Готово',en:'Done',fr:'Fait',es:'Listo'}[getJarvixLanguage()]||'Done')); return;
   }
 
   // H. SITWIDE LANGUAGE SWITCHING

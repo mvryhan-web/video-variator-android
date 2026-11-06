@@ -1,6 +1,8 @@
 import {prepareStaticClips, getStaticClip} from './jarvix-clip-library.js';
 // Owner-hosted speech; no private URL or key is sent to the browser.
 let version = 0, pending = null, playing = null, objectUrl = null;
+// Only generic action acknowledgements are retained, never user prompts.
+const actionAudio=new Map(),actionWords=new Set(['Открыл','Перешёл','Готово','Сделано','Выполняю','Запустил','Есть','Недостаточно кредитов','Уточните промпт','Opened','Done','Started','Clarify prompt','Insufficient credits','Ouvert','Fait','Lancé','Précisez','Abierto','Listo','Iniciado','Aclara petición']);
 let audioContext = null, audioReady = null, source = null;
 // Sentence-sized requests reduce time to first sound. They are not token streaming.
 export function splitSpeechChunks(text) {
@@ -56,14 +58,15 @@ export async function speakOwnerSpeech(text, language, hooks) {
     const greetingData = !staticCached && OWNER_GREETING_TEXT[language] === text.trim() ? await prepareOwnerGreetings() : null;
     if (turn !== version) return;
     const greetingCached = greetingBlob(greetingData, text, language);
-    const cached = staticCached || greetingCached;
+    const ackKey=language+':'+text.trim(),ackCached=actionAudio.get(ackKey);
+    const cached = staticCached || greetingCached || ackCached;
     if (turn !== version) return;
     const configReply = cached ? null : await fetch('/api/jarvix/voice-config', {signal:controller.signal});
     const config = cached ? {configured:true, speechModelInstalled:true} : configReply.ok ? await configReply.json() : {};
     if (turn !== version) return;
     if (!config.configured) { hooks.fallback(); return; }
     if (!config.speechModelInstalled) throw Error('Voice worker unavailable');
-    hooks.source?.(greetingCached ? 'cached-greeting' : cached ? 'static-clip' : 'worker');
+    hooks.source?.(ackCached ? 'memory-ack' : greetingCached ? 'cached-greeting' : cached ? 'static-clip' : 'worker');
     hooks.start();
     hooks.phase?.('generating');
     // A cached recording is complete: play it exactly once, regardless of text length.
@@ -74,7 +77,9 @@ export async function speakOwnerSpeech(text, language, hooks) {
         const reply = await fetch('/api/jarvix/tts', {method:'POST', signal:controller.signal,
           headers:{'Content-Type':'application/json'},body:JSON.stringify({text:chunk,language})});
         if (!reply.ok || !reply.headers.get('content-type')?.startsWith('audio/wav')) throw Error('Speech failed');
-        return {blob: await reply.blob()};
+        const blob=await reply.blob();
+        if(actionWords.has(text.trim())&&blob.size<=256*1024){if(actionAudio.size>=24)actionAudio.delete(actionAudio.keys().next().value);actionAudio.set(ackKey,blob);}
+        return {blob};
       } catch (error) { return {error}; }
     };
     let next = loadChunk(chunks[0]);

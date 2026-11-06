@@ -78,3 +78,12 @@ test('only the exact TEST domains may use the owner voice bridge',async()=>{
  }
  assert.equal(calls,3);
 });
+
+test('repeated short action acknowledgement reuses audio without another worker request',async()=>{
+ const oldFetch=global.fetch,oldAudio=global.Audio;
+ const module=await import('../app/src/main/assets/jarvix-owner-speech.js?action-cache-test');let tts=0,configs=0,done=0;
+ global.fetch=async url=>{if(url.endsWith('voice-config')){configs++;return Response.json({configured:true,speechModelInstalled:true});}if(url.endsWith('/tts')){tts++;return new Response('wave',{headers:{'content-type':'audio/wav'}});}return Response.json({clips:[]});};
+ global.Audio=class{play(){queueMicrotask(()=>this.onended());return Promise.resolve();}pause(){}};
+ const hooks={start(){},complete(){done++;},fallback(){assert.fail('fallback');},error(){assert.fail('error');}};
+ try{await module.speakOwnerSpeech('Готово','ru',hooks);await module.speakOwnerSpeech('Готово','ru',hooks);assert.equal(done,2);assert.equal(tts,1);assert.equal(configs,1);}finally{module.stopOwnerSpeech();global.fetch=oldFetch;global.Audio=oldAudio;}
+});
