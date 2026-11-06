@@ -29,8 +29,10 @@ test('Existing My Creations retains actual private Workspace API and never inven
  assert.match(creations,/data-sec="completed"/);
  assert.match(creations,/data-sec="drafts"/);
  assert.match(creations,/Sign in to view your creations/);
- assert.match(creations,/Nothing is generated automatically/);
- assert.match(creations,/Studio examples — not your saved files/);
+ assert.match(creations,/id="wsResultsTitle">Saved Creations/);
+ assert.match(creations,/id="wsExploreTitle">Explore what you can create/);
+ assert.doesNotMatch(creations,/Private workspace|Show archive|Image · Video · Audio|Nothing is generated automatically|Studio examples — not your saved files/);
+ assert.doesNotMatch(creations,/<header class="topbar">/,'Custom header shortcuts must not overlap the shared orb');
  assert.doesNotMatch(creations,/3,842|54,320|1,276|fake results|sample user creations/i);
  assert.ok(!creations.includes('data-jarvix-chat'),'Library must not turn into another chat');
 });
@@ -46,4 +48,19 @@ test('Owner artwork links and verified destination pages exist',()=>{
  for(const file of ['media/home/owner-20261018/01-close-up-woman.jpg','media/home/owner-20261018/02-futuristic-portal.jpg','media/home/neon-20261018/audio.webp','deepsyq-logo.png']){
   assert.ok(existsSync(join(assets,file)),file+' must be existing media');
  }
+});
+
+test('Spring banner uses uploaded owner artwork full width, without duplicate baked-in heading',()=>{
+ const path=join(assets,'media/my-creations/spring-hero-20261106.webp');
+ assert.ok(existsSync(path),'User-approved hero photo must be committed as an image');
+ const bytes=readFileSync(path);
+ assert.ok(bytes.length>100000 && bytes.length<600000,'Optimized original photo, no placeholder');
+ assert.equal(bytes.subarray(0,4).toString(),'RIFF');
+ assert.equal(bytes.subarray(8,12).toString(),'WEBP');
+ assert.match(creations,/\.ws-hero\{[^}]*spring-hero-20261106\.webp[^}]*cover no-repeat/);
+ assert.match(creations,/\.ws-hero h1,\.ws-hero p\{[^}]*clip-path:inset\(50%\)/);
+ assert.match(creations,/id="wsTitle">My Creations/,'Retain a semantic screen-reader heading');
+ assert.match(creations,/class="ws-hero-actions"/,'Retain main functional Studio/Explore buttons');
+ assert.match(creations,/src="deepsyq-site-shell\.js"/,'The existing shared header and orb are retained');
+ assert.doesNotMatch(creations,/<nav class="topbar-nav"/);
 });
