@@ -131,7 +131,7 @@ app.post('/api/studio/estimate', (req, res) => {
 });
 
 app.post('/api/studio/jobs', async (req, res) => {
-  if (isLegacyTest) return res.status(503).json(disabled);
+  if (isLegacyTest || !req.body || Object.keys(req.body).length === 0) return res.status(503).json(disabled);
   const visitor=studioVisitorSession(req,res);
   const quota = checkDailyQuota(req.ip || 'guest');
   if (!quota.allowed) {
