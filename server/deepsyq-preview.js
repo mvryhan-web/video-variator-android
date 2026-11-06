@@ -1,3 +1,4 @@
+import {jarvixSessionScope} from './jarvix-session-scope.js';
 /**
  * Read-only design preview for Deepsyq. Serves the exact existing frontend assets
  * without importing production auth, billing, database or AI provider modules.
@@ -126,6 +127,8 @@ app.post('/api/studio/estimate', (req, res) => {
 app.post('/api/studio/jobs', async (req, res) => {
   if (isLegacyTest) return res.status(503).json(disabled);
   const visitor=studioVisitorSession(req,res);
+  const requestId=typeof req.body?.requestId==='string'&&/^[\w-]{1,80}$/.test(req.body.requestId)?req.body.requestId:null;
+  if(requestId){const existing=Array.from(studioJobs.values()).find(j=>j.visitor===visitor&&j.requestId===requestId);if(existing){if(existing.prompt!==req.body.prompt||existing.kind!==(req.body.kind||'image')||existing.model!==req.body.model)return res.status(409).json({error:'REQUEST_ID_CONFLICT'});return res.json({ok:true,id:existing.id,jobId:existing.id,status:existing.status,reused:true});}}
   const quota = checkDailyQuota(req.ip || 'guest');
   if (!quota.allowed) {
     return res.status(429).json({ error: 'DAILY_QUOTA_EXCEEDED', message: 'Дневной лимит бесплатных тестов исчерпан (20/день).' });
@@ -139,6 +142,7 @@ app.post('/api/studio/jobs', async (req, res) => {
   const jobRecord = {
     id,
     visitor,
+    requestId,
     kind,
     model: model || (kind === 'image' ? 'flux-schnell' : 'veo-lite'),
     prompt,
@@ -249,14 +253,15 @@ app.post('/api/jarvix/chat',(req,res)=>{
  if(!message||message.length>2000)return res.status(400).json({error:'INVALID_MESSAGE'});
  const sessionId=validSessionId(body.sessionId)?body.sessionId:validSessionId(body.conversationId)?body.conversationId:`preview-${randomUUID()}`;
  const language=['ru','en','es','fr'].includes(body.language)?body.language:'ru';
- const session=getOrCreateSession(sessionId);
+ const scope=jarvixSessionScope(req,res,sessionId);
+ const session=getOrCreateSession(scope.privateId);
  const result=processTurnWithMockBrain(message,session,language);
- res.json({ok:true,reply:result.reply,action:result.action,entities:result.entities,compiledPrompt:result.compiledPrompt,studioHandoff:result.studioHandoff,sessionId:session.id,conversationId:session.id,language,provider:result.provider,audioUrl:null});
+ res.json({ok:true,reply:result.reply,action:result.action,entities:result.entities,compiledPrompt:result.compiledPrompt,studioHandoff:result.studioHandoff,sessionId:scope.clientId,conversationId:scope.clientId,language,provider:result.provider,audioUrl:null});
 });
 app.post('/api/jarvix/reset',(req,res)=>{
  const sid=req.body?.sessionId||req.body?.conversationId;
  if(!validSessionId(sid))return res.status(400).json({error:'INVALID_SESSION'});
- clearSession(sid);res.json({ok:true});
+ clearSession(jarvixSessionScope(req,res,sid).privateId);res.json({ok:true});
 });
 installLocalVoice(app);
 app.get('/api/jarvix/status',(_req,res)=>res.json(getJarvixRuntimeStatus({previewOnly:true})));

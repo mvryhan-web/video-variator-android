@@ -22,6 +22,8 @@ function cancelJarvixTurn() {
 }
 
 export function getJarvixSessionId() {
+  try{const selected=sessionStorage.getItem('jarvix_session_id');
+  if(selected&&/^[\w-]{1,80}$/.test(selected))jarvixSessionId=selected;}catch{}
   if (!jarvixSessionId) {
     try {
       jarvixSessionId = sessionStorage.getItem('jarvix_session_id');
@@ -809,7 +811,7 @@ export function handleJarvisVoiceCommand(commandText) {
       const res = await fetch('/api/jarvix/chat', {
         signal: controller.signal,
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(localStorage.getItem('vv_token')?{Authorization:'Bearer '+localStorage.getItem('vv_token')}:{}) },
         body: JSON.stringify({
           sessionId: getJarvixSessionId(),
           message: t,

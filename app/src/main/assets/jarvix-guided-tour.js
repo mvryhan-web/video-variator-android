@@ -1,7 +1,7 @@
 import {getJarvixLanguage,stopAllSpeech,pauseJarvisRecognition,updateJarvisState,suspendJarvisForTour} from './jarvis-core.js';
 import {speakOwnerSpeech,stopOwnerSpeech,unlockOwnerSpeech} from './jarvix-owner-speech.js';
-import {TOUR_KEY,tourPlan,tourAction,planNarration} from './jarvix-tour-plan.js';
-let audio=null,turn=0,bar=null,state=null,navTimer=null,waitTimer=null;
+import {TOUR_KEY,tourPlan,tourAction,planNarration,sectionNarration,narrationChunks} from './jarvix-tour-plan.js';
+let audio=null,turn=0,bar=null,state=null,navTimer=null,waitTimer=null,stepWaitKey=null,stepWaitStart=0;
 const read=()=>{try{const s=JSON.parse(sessionStorage.getItem(TOUR_KEY)||'null');return s&&Number.isInteger(s.index)&&s.index>=0&&s.index<tourPlan(s.language).length&&['playing','paused'].includes(s.phase)?s:null;}catch{return null;}};
 function save(){try{state?sessionStorage.setItem(TOUR_KEY,JSON.stringify(state)):sessionStorage.removeItem(TOUR_KEY);}catch{}}
 export function isTourActive(){return !!state||!!read();}
@@ -37,19 +37,27 @@ async function play(){
   const link=showNavigation(step.url);
   navTimer=setTimeout(()=>{if(current!==turn||!state||state.phase!=='playing')return;save();link?link.click():location.assign(target.href);},1100);return;
  }
- if(state.index===0){showNavigation('generate-studio.html?studio=image');}else{closeNavigation();spotlight(step);}
+ if(state.index===0){closeNavigation();}else{closeNavigation();spotlight(step);}
  pauseJarvisRecognition();if(state.phase==='paused')return;
+ const waitKey=location.pathname+location.search+':'+state.index;if(stepWaitKey!==waitKey){stepWaitKey=waitKey;stepWaitStart=Date.now();}
+ if(state.index!==0&&!document.querySelector(step.target)&&Date.now()-stepWaitStart<5000){waitTimer=setTimeout(()=>{if(current===turn&&state)void play();},100);return;}
+ if(step.narration==='section'){
+  spotlight(step);
+  void speakOwnerSpeech(sectionNarration(step.title,state.language),state.language,{start:()=>updateJarvisState('speaking'),complete:()=>advance(current),fallback:()=>blocked(current,'Voice service unavailable'),error:()=>blocked(current,'Voice service unavailable')});return;
+ }
  if(step.narration==='plan'){
   let card=document.querySelector(step.target);
   if(!card){waitTimer=setTimeout(()=>{if(current===turn&&state)void play();},250);return;}
   spotlight(step);
   const text=planNarration({name:card.querySelector('h3')?.textContent,price:[...(card.querySelector('.price-plan-price')?.children||[])].map(e=>e.textContent).join(' '),summary:card.querySelector('.price-plan-summary')?.textContent,features:[...card.querySelectorAll('.price-features li')].map(e=>e.querySelector('span:last-child')?.textContent||e.textContent),note:card.querySelector('.price-plan-note')?.textContent},state.language);
   bar.dataset.narration='connecting';
-  void speakOwnerSpeech(text,state.language,{source:()=>{},phase:phase=>{if(current===turn&&bar)bar.dataset.narration=phase;},start:()=>updateJarvisState('speaking'),complete:()=>advance(current),fallback:()=>blocked(current,'Voice service unavailable'),error:()=>blocked(current,'Voice service unavailable')});return;
+  const chunks=narrationChunks(text);let part=state.narrationStep===state.index?Math.min(state.narrationPart||0,chunks.length-1):0;
+  const speakNext=()=>{if(current!==turn||!state||state.phase!=='playing')return;void speakOwnerSpeech(chunks[part],state.language,{source:()=>{},phase:phase=>{if(current===turn&&bar)bar.dataset.narration=phase;},start:()=>updateJarvisState('speaking'),complete:()=>{if(++part<chunks.length){state.narrationStep=state.index;state.narrationPart=part;save();speakNext();}else advance(current);},fallback:()=>blocked(current,'Voice service unavailable'),error:()=>blocked(current,'Voice service unavailable')});};speakNext();return;
  }
+ const started=performance.now();
  audio=new Audio(step.audio);const clip=audio;clip.id='dsTourAudio';clip.hidden=true;document.body.append(clip);clip.playbackRate=1;
  clip.onloadedmetadata=()=>{if(state&&state.position)clip.currentTime=Math.min(state.position,Number.isFinite(clip.duration)?Math.max(0,clip.duration-.1):state.position);};
- clip.onplay=()=>{pauseJarvisRecognition();updateJarvisState('speaking');};clip.onended=()=>advance(current);
+ clip.onplay=()=>{pauseJarvisRecognition();updateJarvisState('speaking');};clip.onended=()=>{const delay=state?.index===0?Math.max(0,3000-(performance.now()-started)):0;waitTimer=setTimeout(()=>advance(current),delay);};
  clip.onerror=()=>blocked(current);
  try{await clip.play();}catch{blocked(current,'Press Continue');}
 }
@@ -67,6 +75,6 @@ export function resumeJarvixGuidedTour(){state=read();if(!state)return false;voi
 if(typeof window!=='undefined'){
  window.addEventListener('keydown',e=>{if(e.key==='Escape'&&isTourActive())stopJarvixGuidedTour();});
  window.addEventListener('pagehide',()=>{if(state){state.position=audio?.currentTime||0;save();audio?.pause();}});
- const resume=()=>{if(read())resumeJarvixGuidedTour();};
+ const resume=()=>{if(location.pathname.endsWith('/jarvix-chat.html')){if(read())stopJarvixGuidedTour();return;}if(read())resumeJarvixGuidedTour();};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',resume,{once:true});else queueMicrotask(resume);
 }

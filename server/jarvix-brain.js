@@ -1,3 +1,4 @@
+import {jarvixSessionScope} from './jarvix-session-scope.js';
 /**
  * DEEPSYQ JARVIX AI Brain & Dialog Intelligence — Issue #498 (Coordinator #233)
  *
@@ -902,7 +903,8 @@ export function installJarvixBrainRoutes(app, options = {}) {
       }
 
       const lang = ['ru', 'en', 'es', 'fr'].includes(language) ? language : 'ru';
-      const session = getOrCreateSession(sid);
+      const scope = jarvixSessionScope(req,res,sid);
+      const session = getOrCreateSession(scope.privateId);
 
       const result = await processTurnWithOpenAI(message, session, lang);
       res.json({
@@ -913,8 +915,8 @@ export function installJarvixBrainRoutes(app, options = {}) {
         entities: result.entities,
         compiledPrompt: result.compiledPrompt,
         studioHandoff: result.studioHandoff,
-        sessionId: session.id,
-        conversationId: session.id,
+        sessionId: scope.clientId,
+        conversationId: scope.clientId,
         language: lang,
         provider: result.provider
       });
@@ -942,7 +944,7 @@ export function installJarvixBrainRoutes(app, options = {}) {
   app.post('/api/jarvix/reset', (req, res) => {
     const { sessionId, conversationId } = req.body || {};
     const sid = sessionId || conversationId;
-    if (sid) clearSession(sid);
+    if (sid) clearSession(jarvixSessionScope(req,res,sid).privateId);
     res.json({ ok: true });
   });
 }

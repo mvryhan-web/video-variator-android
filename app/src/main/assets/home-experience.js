@@ -458,7 +458,7 @@ export function choose(kind){
  if($('homeQuickSubmit')) $('homeQuickSubmit').setAttribute('aria-label', isAgent ? 'Open AI Agents' : 'Open in Studio');
 }
 
-if($('homeQuickForm')){
+if($('homeQuickForm')&&!$('homeQuickForm').hasAttribute('data-jarvix-chat')){
  const draftOwner=localStorage.getItem('vv_token')||'guest';
  function guardHomeDraft(){
   if((localStorage.getItem('vv_token')||'guest')===draftOwner)return true;
