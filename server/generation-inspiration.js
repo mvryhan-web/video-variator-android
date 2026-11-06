@@ -135,8 +135,9 @@ export function installInspiration(app,{auth,pool,env=process.env}){
       const visible = items.slice(offset, offset + limit);
       const hasMore = offset + limit < total;
 
-      const categories = [...new Set(manifestItems.map(item => item.category).filter(Boolean))].sort();
-      const ratios = [...new Set(manifestItems.map(item => item.aspectRatio).filter(Boolean))].sort();
+      // Facets describe the filtered result, never hidden or unrelated manifest cards.
+      const categories = [...new Set(items.map(item => item.category).filter(Boolean))].sort();
+      const ratios = [...new Set(items.map(item => item.aspectRatio).filter(Boolean))].sort();
 
       res.json({
         items: visible,
