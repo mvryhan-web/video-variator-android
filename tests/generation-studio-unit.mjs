@@ -539,6 +539,24 @@ test('F1 POST /api/studio/compare/validate and /mock-run execute 2-4 model compa
   const paidBody=await paidRes.json();
   assert.equal(paidBody.error,'PAID_COMPARE_DISABLED');
 
+  // The mock route must not synthesize consent when the caller omits it.
+  // Validation and execution must apply the same explicit opt-in policy.
+  for(const rejected of [
+   {...payload,userConsent:undefined},
+   {...payload,userConsent:false},
+   {...payload,userConsent:0},
+   {...payload,userConsent:undefined,consent:false}
+  ]){
+   const denied=await fetch(base+'/api/studio/compare/mock-run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rejected)});
+   assert.equal(denied.status,400,'missing/false consent must deny mock execution');
+   assert.equal((await denied.json()).error,'USER_CONSENT_REQUIRED');
+   assert.equal(providerCalls,0,'consent rejection cannot invoke a paid provider');
+  }
+  // Preserve the existing explicit consent alias for clients using consent:true.
+  const alias=await fetch(base+'/api/studio/compare/mock-run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,userConsent:undefined,consent:true})});
+  assert.equal(alias.status,200);
+  assert.equal((await alias.json()).billing.paidProviderCalls,0);
+
   const runRes=await fetch(base+'/api/studio/compare/mock-run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   assert.equal(runRes.status,200);
   const runBody=await runRes.json();
