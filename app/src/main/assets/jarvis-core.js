@@ -1,3 +1,4 @@
+import {extractAction} from './jarvix-action-plan.js';
 import { stopJarvixGuidedTour, isTourActive } from './jarvix-guided-tour.js';
 import {navigationReply} from './jarvix-navigation-reply.js';
 import {findCatalogReply} from './jarvix-clip-library.js';
@@ -246,7 +247,9 @@ export function speakLocalSpeechSynthesis(text, onComplete = null, langCode = 'r
 let lastSpokenText = '';
 let lastSpokenTime = 0;
 
+let actionFirstReply=false;
 export function speakJarvis(text, onComplete = null) {
+  if(actionFirstReply&&String(text||'').trim().split(/\s+/).length>2)text={ru:'Уточните промпт',en:'Clarify prompt',fr:'Précisez',es:'Aclara petición'}[getJarvixLanguage()]||'Clarify prompt';
   if (!text) {
     if (typeof onComplete === 'function') onComplete();
     return;
@@ -319,7 +322,7 @@ export function speakJarvis(text, onComplete = null) {
 }
 
 // 3. Instant Navigation Utility ("Сделано." — spoken strictly ONCE)
-export function instantOpen(url) {
+export function instantOpen(url, acknowledgement = null) {
   let isSamePage = false;
   try {
     const targetUrl = new URL(url, location.href);
@@ -328,7 +331,7 @@ export function instantOpen(url) {
     }
   } catch (_) {}
 
-  const navigationText = navigationReply(url, getJarvixLanguage());
+  const navigationText = acknowledgement || ({ru:'Открыл',en:'Opened',fr:'Ouvert',es:'Abierto'}[getJarvixLanguage()] || 'Opened');
   if (isSamePage) {
     speakJarvis(navigationText);
     try {
@@ -450,6 +453,7 @@ function clearCurrentInputs() {
 // 8. Main Voice Command Handler (Hands, Ears, Instant Navigation & Conversational Brain)
 export function handleJarvisVoiceCommand(commandText) {
   if (!commandText) return;
+  actionFirstReply=true;
   cancelJarvixTurn();
   const turnVersion = jarvixTurnVersion;
   const t = commandText.trim();
@@ -459,6 +463,29 @@ export function handleJarvisVoiceCommand(commandText) {
   const isRu = lang === 'ru';
   const isFr = lang === 'fr';
   const isEs = lang === 'es';
+
+  // Action-first commands share the existing conversation and zero-spend handlers.
+  const action=extractAction(t);
+  if(action){
+    if(action.intent==='NAVIGATE'){if(location.pathname.endsWith('/generate-studio.html')&&action.media_type){const kind=action.media_type==='audio'?'music':action.media_type;document.querySelector('[data-kind="'+kind+'"]')?.click();speakJarvis({ru:'Открыл',en:'Opened',fr:'Ouvert',es:'Abierto'}[lang]||'Opened');}else instantOpen(action.url);return;}
+    if(!action.raw_prompt){speakJarvis({ru:'Уточните промпт',en:'Clarify prompt',fr:'Précisez',es:'Aclara petición'}[lang]||'Clarify prompt');return;}
+    if(document.body.dataset.jarvixStudioAction==='ready'){window.dispatchEvent(new CustomEvent('jarvix:studio-action',{detail:action}));return;}
+    (async()=>{
+      try{
+        const {conversationStore,makeId}=await import('./jarvix-conversations.js');
+        if(turnVersion!==jarvixTurnVersion)return;
+        const store=await conversationStore();
+        let chat=await store.get(sessionStorage.getItem('jarvix_active_conversation'))||store.create(getJarvixSessionId());
+        store.guard();if(turnVersion!==jarvixTurnVersion)return;
+        if(!chat.messages.length)chat.title=t.slice(0,60);
+        chat.messages.push({id:makeId(),role:'user',text:action.raw_prompt,mode:action.media_type,action,voiceAction:true,files:[],status:'pending',createdAt:Date.now()});
+        await store.save(chat);store.guard();if(turnVersion!==jarvixTurnVersion)return;
+        sessionStorage.setItem('jarvix_active_conversation',chat.id);
+        // Existing chat handles model validation and starts only isolated TEST demos.
+        if(location.pathname.endsWith('/jarvix-chat.html'))window.dispatchEvent(new Event('jarvix:conversation-updated'));else location.assign('jarvix-chat.html');
+      }catch{if(turnVersion===jarvixTurnVersion)speakJarvis({ru:'Уточните промпт',en:'Clarify prompt',fr:'Précisez',es:'Aclara petición'}[lang]||'Clarify prompt');}
+    })();return;
+  }
 
   // 1. CAPABILITIES & GUIDED TOUR
   if (/(?:экскурси|покажи сайт|презентаци|тур по сайту|обзор сайта|видеопрезентац|проведи тур|tour|guided tour|showcase|show me the site)/i.test(lower)) {
@@ -1252,3 +1279,5 @@ if (typeof document !== 'undefined') {
   }
 }
 
+
+window.addEventListener('jarvix:command',event=>{if(typeof event.detail?.text==='string')handleJarvisVoiceCommand(event.detail.text);});

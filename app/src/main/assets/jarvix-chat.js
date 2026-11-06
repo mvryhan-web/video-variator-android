@@ -1,7 +1,8 @@
+import {resolveActionModel} from './jarvix-action-plan.js';
 import {downloadResult,mediaExtension} from './jarvix-result-cache.js';
 import {makeId,conversationStore,resolveMode} from './jarvix-conversations.js';
 import {bindComposer,trackViewport} from './jarvix-composer.js';
-import {getJarvixSessionId,getJarvixLanguage} from './jarvis-core.js';
+import {getJarvixSessionId,getJarvixLanguage,speakJarvis} from './jarvis-core.js';
 import {saveStudioHandoff} from './studio-handoff.js';
 const $=id=>document.getElementById(id),status=text=>$('jStatus').textContent=text;
 const store=await conversationStore();let conversation=null,busy=false,epoch=0,controller=null,config=null,urls=[];
@@ -49,16 +50,18 @@ async function processMessage(message){
    // Fail closed outside the isolated zero-spend preview. Production launch remains in Studio's existing consent/payment flow.
    if(config.previewOnly!==true||config.outputMode!=='local-demo')throw Error('Generation here is limited to TEST demo mode. Open the existing Studio to review model, consent and cost.');
    if(message.files?.length)throw Error('TEST demo models do not process reference files. Files are preserved; open this request in Studio to choose a compatible model.');
-   const kind=mode==='audio'?'music':mode,model=(config.models||[]).find(m=>m.enabled&&m.kind===kind);
+   const kind=mode==='audio'?'music':mode,model=message.action?resolveActionModel(message.action,config.models):(config.models||[]).find(m=>m.enabled&&m.kind===kind);
    if(!model)throw Error('No model is available for this mode.');
-   const quote=await api('/api/studio/estimate',{kind,model:model.id,quantity:1});
+   const parameters=message.action?{...(message.action.aspect_ratio?{ratio:message.action.aspect_ratio}:{}),...(message.action.duration?{videoDuration:message.action.duration}:{})}:{};
+   const quote=await api('/api/studio/estimate',{kind,model:model.id,quantity:1,...parameters});
    if(quote.previewOnly!==true||Number(quote.credits)!==0||Number(quote.cost)!==0)throw Error('Zero-cost TEST estimate could not be verified.');
-   const d=await api('/api/studio/jobs',{kind,model:model.id,prompt:message.text,quantity:1,requestId:message.id,consent:false});
+   const d=await api('/api/studio/jobs',{kind,model:model.id,prompt:message.text,quantity:1,requestId:message.id,consent:false,...parameters});
+   if(message.voiceAction)speakJarvis({ru:'Запустил',en:'Started',fr:'Lancé',es:'Iniciado'}[getJarvixLanguage()]||'Started');
    answer={id:makeId(),role:'assistant',text:'TEST demonstration result · '+mode,jobId:d.jobId||d.id,status:d.status,kind:mode,demo:true,createdAt:Date.now()};
   }
   message.status='sent';conversation.messages.push(answer);await save();render();if(answer.jobId)await poll(answer);
  }catch(e){message.status=message.status==='sent'?'sent':e.name==='AbortError'?'interrupted':'error';message.error=e.message;await save();if(e.name!=='AbortError'){
-   status(e.message);const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});location.assign('generate-studio.html?studio='+(kind==='music'?'audio':kind));}catch(e){status(e.message);}};$('jStatus').append(link);
+   status(e.message);if(message.voiceAction)speakJarvis(/credit|balance/i.test(e.message)?'Недостаточно кредитов':'Уточните промпт');const link=node('button','Open request in Studio');link.type='button';link.onclick=async()=>{const mode=resolveMode(message.text,message.mode),kind=mode==='audio'?'music':mode==='text'?'image':mode;const files=(message.files||[]).filter(f=>['image/png','image/jpeg'].includes(f.type)&&f.size<=1024*1024);try{await saveStudioHandoff({kind,prompt:message.text,files,source:'jarvix-chat'});location.assign('generate-studio.html?studio='+(kind==='music'?'audio':kind));}catch(e){status(e.message);}};$('jStatus').append(link);
   }if(e.name==='AbortError')throw e;}
 }
 const composer=bindComposer({form:$('jChatForm'),input:$('jInput'),onError:status,onSend:async({text,mode,files})=>{if(busy)return;try{store.guard();const m={id:makeId(),role:'user',text,mode,files,status:'pending',createdAt:Date.now()};if(!conversation.messages.length)conversation.title=text.slice(0,60);conversation.messages.push(m);await save();composer.clear();render();await run(()=>processMessage(m));}catch(e){status(e.message);}}});
@@ -69,3 +72,5 @@ function freeze(){try{store.guard();}catch{++epoch;controller?.abort();composer.
 window.addEventListener('storage',freeze);window.addEventListener('focus',freeze);window.addEventListener('pageshow',freeze);
 conversation=await store.get(sessionStorage.getItem('jarvix_active_conversation'))||store.create(getJarvixSessionId());sessionStorage.setItem('jarvix_active_conversation',conversation.id);await save();render();trackViewport();await restoreResults();
 const pending=conversation.messages.find(m=>m.status==='pending');if(pending)await run(()=>processMessage(pending));
+
+window.addEventListener('jarvix:conversation-updated',async()=>{if(busy)return;const next=await store.get(sessionStorage.getItem('jarvix_active_conversation'));if(!next)return;conversation=next;render();const pending=conversation.messages.find(m=>m.status==='pending');if(pending)await run(()=>processMessage(pending));});

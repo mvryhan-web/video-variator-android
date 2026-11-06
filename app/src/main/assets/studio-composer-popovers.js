@@ -1,3 +1,4 @@
+import {decorateComposer} from './jarvix-composer-design.js';
 // Presentation adapter only: existing Studio buttons/selects remain authoritative.
 // No provider requests, prices, capabilities or generation state are defined here.
 document.addEventListener('DOMContentLoaded',()=>{
@@ -29,6 +30,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   panel.style.setProperty('top',Math.max(edge,Math.min(up?r.top-p.height-gap:r.bottom+gap,innerHeight-p.height-edge))+'px','important');
  }
  function prepare(panel,anchor){
+  if(anchor.closest('#studioSettingsHub'))anchor=$('studioSettingsToggle');
   panel.classList.add('composer-popover');activePanel=panel;activeAnchor=anchor;
   const kind=nav.querySelector('[aria-pressed="true"]')?.dataset.kind||'video';
   if(panel.id==='modelDialog')$('modelDialogTitle').textContent={image:text('Picture model','Модель изображения'),video:text('Video model','Модель видео'),music:text('Audio model','Модель аудио')}[kind];
@@ -110,4 +112,13 @@ document.addEventListener('DOMContentLoaded',()=>{
  const reset=document.createElement('button');reset.type='button';reset.className='composer-settings-reset';reset.textContent=text('↻ Reset','↻ Сбросить');
  reset.addEventListener('click',()=>{for(const id of ['ratio','imageResolution','videoResolution','videoDuration']){const select=$(id);if(select.disabled||select.closest('[hidden]'))continue;const option=[...select.options].find(o=>!o.disabled);if(option){select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));}}syncSettings();reposition();});
  $('settingsDialog').querySelector('.dialog-head').insertBefore(reset,$('settingsDialog').querySelector('[data-close]'));
+ const hub=document.createElement('dialog');hub.id='studioSettingsHub';hub.className='composer-popover j-settings-hub';
+ const heading=document.createElement('h2');heading.textContent=text('Studio settings','Настройки студии');
+ const close=document.createElement('button');close.type='button';close.textContent='×';close.setAttribute('aria-label',text('Close settings','Закрыть настройки'));close.onclick=()=>hub.close();
+ const format=$('settingsButton'),model=$('modelButton');
+ hub.append(heading,close,picker,model,format);document.body.append(hub);
+ for(const control of [picker,model,format])control.addEventListener('click',()=>hub.close(),{capture:true});
+ const gear=document.createElement('button');gear.type='button';gear.className='pill j-studio-settings';gear.id='studioSettingsToggle';gear.setAttribute('aria-label',text('Studio settings','Настройки студии'));gear.textContent='☷';gear.setAttribute('aria-haspopup','dialog');gear.onclick=()=>{hub.showModal();position(hub,gear);};controls.prepend(gear);
+ decorateComposer($('creator'));if(new URLSearchParams(location.search).get('settings')==='1')hub.showModal();
+
 });
