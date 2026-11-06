@@ -3,6 +3,7 @@ import {test,expect} from '@playwright/test';
 // The real consent gate is not the subject of this positioning test.
 // Pre-accept in the isolated browser fixture; never change production consent.
 test('first settings panel open stays anchored in Image, Video and Audio Studio',async({page})=>{
+ test.setTimeout(90000); // Six navigations across mobile and desktop.
  await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
  let paidCalls=0;
  page.on('request',request=>{if(request.method()==='POST'&&request.url().includes('/api/studio/jobs'))paidCalls++;});
