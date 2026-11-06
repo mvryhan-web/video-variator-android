@@ -5,17 +5,22 @@ import {readFileSync} from 'node:fs';
 const pricing=readFileSync('app/src/main/assets/pricing-page.js','utf8');
 const css=readFileSync('app/src/main/assets/pricing-wallet.css','utf8');
 
-test('only confirmed plan inclusions have checkmarks; unverified watermark has information icon',()=>{
+test('four paid plans show watermark-free Video Uniquifier export and Trial unavailable benefits have red crosses',()=>{
   for(const plan of ['Basic','Pro','Business']){
     assert.ok(pricing.includes("['✓','Included "+plan+" tools']"));
   }
   assert.ok(pricing.includes("['✓','Included Lifetime Tools']"));
-  assert.ok(pricing.includes("['ⓘ','Watermark removal is not confirmed for this plan']"));
-  assert.ok(!pricing.includes("['✓','No Watermark']"));
+  assert.ok(pricing.includes("['✓','Watermark-free Video Uniquifier exports']"));
+  assert.ok(pricing.includes("['✕','Watermark-free exports not included in Trial']"));
+  assert.ok(pricing.includes("['✕','AI credits not included in current Trial preview']"));
+  assert.ok(pricing.includes("['✕','Trial checkout is not available']"));
+  assert.ok(pricing.includes("['ⓘ','Duration and renewal terms: not approved']"));
+  assert.ok(!pricing.includes("['◇','Watermark removal: terms not approved']"));
   assert.ok(pricing.includes("ⓘ Lifetime does not include unlimited paid AI generation"));
   assert.ok(!pricing.includes("['◇','Lifetime does not include unlimited paid AI generation']"));
   assert.ok(pricing.includes("icon==='✓'?' is-included'"));
   assert.ok(css.includes('.price-feature-icon.is-included{color:#8cf4b4'));
+  assert.ok(css.includes('.price-feature-icon.is-excluded{color:#ff9caa'));
 });
 
 test('all five displayed base + proposed bonus examples are correct',()=>{
