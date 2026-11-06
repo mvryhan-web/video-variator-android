@@ -27,6 +27,11 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: node --check app/src/main/assets/generate-studio.js && node --check app/src/main/assets/studio-composer-popovers.js && node --check tests/generation-studio.spec.mjs
+      - name: Prefer official Ubuntu archive for browser dependencies
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf '%s\\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          fi
       - run: npx playwright install --with-deps chromium webkit
       - name: Owner's exact UI on desktop and mobile (no paid provider requests)
         run: npx playwright test tests/generation-studio.spec.mjs tests/owner-studio-popover-first-open-20261020.spec.mjs --project=chromium --project=mobile-webkit --grep "Studio Settings ratio frames match actual aspect|first settings panel open"
