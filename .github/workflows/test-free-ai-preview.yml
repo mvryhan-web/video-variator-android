@@ -1,0 +1,25 @@
+name: Free AI preview — no-spend checks
+on:
+  pull_request:
+    paths:
+      - 'server/preview-free-spaces.js'
+      - 'server/deepsyq-preview.js'
+      - 'app/src/main/assets/generate-studio.js'
+      - 'tests/preview-free-spaces.test.mjs'
+      - '.github/workflows/test-free-ai-preview.yml'
+  push:
+    branches: ['p/test-free-real-ai-spaces-20261106']
+permissions:
+  contents: read
+jobs:
+  no-spend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check server/preview-free-spaces.js
+      - run: node --check server/deepsyq-preview.js
+      - run: node --check app/src/main/assets/generate-studio.js
+      - run: node --test tests/preview-free-spaces.test.mjs
