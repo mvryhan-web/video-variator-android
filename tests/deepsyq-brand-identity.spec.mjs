@@ -33,6 +33,9 @@ test('Android adaptive launcher uses owner mark without renaming package',()=>{
   for(const x of ['ic_launcher.xml','ic_launcher_round.xml'])
     assert.match(text('res/mipmap-anydpi-v26/'+x), /@drawable\/deepsyq_adaptive_foreground/);
   assert.match(text('AndroidManifest.xml'),/android:label="Deepsyq"/);
+  const splash=text('res/values-v31/styles.xml');
+  assert.match(splash,/android:windowSplashScreenAnimatedIcon">@drawable\/deepsyq_adaptive_foreground/,'Android 12+ splash must reuse approved owner mark');
+  assert.doesNotMatch(splash,/android:windowSplashScreenAnimatedIcon">@drawable\/ic_vu_foreground/,'Old VU splash must not reappear');
   assert(readFileSync(path('res/drawable/deepsyq_adaptive_foreground.png')).length>10000);
 });
 
