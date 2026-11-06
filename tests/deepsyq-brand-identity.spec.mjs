@@ -102,3 +102,29 @@ test('adaptive launcher is available throughout the supported Android API range'
  const gradle=readFileSync(new URL('../app/build.gradle',import.meta.url),'utf8');
  assert.match(gradle,/\bminSdk\s*=\s*26\b/,'version-26 XML launcher is safe only because app minSdk is 26+');
 });
+
+test('Video History and downloaded PWA use the same approved Deepsyq icon files',()=>{
+  const page=text('assets/index.html');
+  const old=JSON.parse(text('assets/manifest.webmanifest'));
+  const fresh=JSON.parse(text('assets/deepsyq.webmanifest'));
+  const sw=text('assets/sw.js');
+  const ui=text('assets/video-uniquifier-reference.js');
+  assert.match(page,/rel="icon" type="image\\/x-icon" href="favicon\\.ico"/);
+  assert.match(page,/rel="icon" type="image\\/png" sizes="192x192" href="deepsyq-icon-192\\.png"/);
+  assert.match(page,/rel="apple-touch-icon" sizes="192x192" href="deepsyq-install-192\\.png"/);
+  assert.match(page,/<img src="deepsyq-logo\\.png" width="36" height="36"/,'Old VU fallback symbol is replaced');
+  assert.doesNotMatch(page,/<span class="brandMark">VU<\\/span>|rel="icon" href="icon\\.svg"/);
+  assert.equal(old.short_name,fresh.short_name,'Both PWA install entrypoints should show Deepsyq');
+  for(const icon of old.icons){
+    assert(icon.src.startsWith('deepsyq-'),'PWA icon must be a reviewed owner export');
+    const bytes=readFileSync(path('assets/'+icon.src));
+    assert(bytes.length>1000,'PWA image must exist and be nonempty');
+  }
+  assert.match(sw,/icon:'\\/deepsyq-icon-192\\.png'/,'Notification icon must match Deepsyq');
+  assert.match(sw,/showNotification\\('Deepsyq · Reminder'/,'Notification title must match Deepsyq');
+  assert.doesNotMatch(sw,/icon:'\\/icon\\.svg'|showNotification\\('Video Uniquifier · Reminder'/);
+  assert.match(ui,/src="deepsyq-logo\\.png"/,'Video History header uses owner original mark');
+  assert.match(ui,/My Creations','History navigation remains available');
+  assert.match(ui,/my-creations\\.html/,'My Creations opens dedicated real library');
+  assert.doesNotMatch(ui,/Affiliate', 'Owner-cancelled Affiliate is absent from Video History');
+});
