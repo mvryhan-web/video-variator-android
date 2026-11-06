@@ -50,7 +50,7 @@ test('original account modal and wider Pricing feature matrix are present withou
  assert.match(html,/accounts\.google\.com\/gsi\/client/);
  assert.match(js,/api\('\/api\/auth\/google'/);
  assert.match(js,/One account for your plan, credits and history/);
- assert.match(js,/Watermark removal: check the relevant tool terms/);
+ assert.match(js,/Watermark removal is not confirmed for this plan/);
  assert.match(js,/Canvas workspace; AI generation requires paid credits/);
  assert.doesNotMatch(js,/Access to all models/);
  assert.match(css,/max-width:none;margin-inline:0/);
@@ -60,7 +60,7 @@ test('original account modal and wider Pricing feature matrix are present withou
 test('annual quote toggle remains presentation-only, protects original billing and credit accounting',()=>{
  assert.match(html,/id="priceBillingMonthly"/);
  assert.match(html,/id="priceBillingYearly"/);
- assert.match(html,/80% Credit Bonus/);
+ assert.match(js,/AI Credits Sold Separately/);assert.doesNotMatch(js,/80% Credit Bonus/);
  assert.match(js,/const annualPlanKeys=new Set\(\['basic','pro','business'\]\)/);
  assert.match(js,/Math\.round\(monthlyCents\*0\.8\)/);
  assert.match(js,/if\(billingPeriod==='yearly'&&annualPlanKeys\.has\(plan\)\)/);
@@ -71,7 +71,7 @@ test('annual quote toggle remains presentation-only, protects original billing a
  assert.match(css,/price-billing-switch/);
 });
 
-test('owner correction preserves big bonus numbers, forbids only tiny tool-plan and USD card footer notes',()=>{
+test('owner correction clarifies proposed bonus totals, forbids tiny tool-plan and USD footer notes',()=>{
  assert.doesNotMatch(html,/Tool plans cover the included tools and their stated allowances/);
  assert.doesNotMatch(html,/Purchase AI credits to unlock the full power of Deepsyq AI/);
  assert.doesNotMatch(html,/More creativity\. More possibilities\. Fuel your ideas\./);
@@ -80,7 +80,7 @@ test('owner correction preserves big bonus numbers, forbids only tiny tool-plan 
  assert.match(html,/id="walletHistory"/);
  assert.match(js,/bonus:200/);
  assert.match(js,/bonus:3333/);
- assert.match(js,/price-bonus-count/);
+ assert.match(js,/price-credit-breakdown/);
  assert.match(css,/price-bonus-status/);
  assert.match(css,/price-bonus-desc/);
  assert.doesNotMatch(js,/price-credit-note/);

@@ -57,16 +57,16 @@ async function api(path,options={}){
  return body;
 }
 const verifiedQuality={
- basic:[['▣','750 tool credits / month'],['⊞','Up to 5 variants'],['⚙','Gentle mode'],['▣','720p quality'],['◇','Included Basic tools']],
- pro:[['▣','2,250 tool credits / month'],['⊞','Up to 10 variants'],['⚙','Gentle + Balance modes'],['▣','1080p quality'],['◇','Included Pro tools']],
- business:[['▣','15,000 tool credits / month'],['⊞','Up to 15 variants'],['⚙','Gentle, Balance + Dynamic'],['▣','4K quality'],['◇','Included Business tools']],
- lifetime:[['▣','Tool credits: see current terms'],['⊞','Up to 15 variants'],['⚙','Gentle, Balance + Dynamic'],['▣','Up to 4K quality'],['◇','Included Lifetime tools']]
+ basic:[['▣','750 tool credits / month'],['⊞','Up to 5 variants'],['⚙','Gentle mode'],['▣','720p quality'],['✓','Included Basic tools']],
+ pro:[['▣','2,250 tool credits / month'],['⊞','Up to 10 variants'],['⚙','Gentle + Balance modes'],['▣','1080p quality'],['✓','Included Pro tools']],
+ business:[['▣','15,000 tool credits / month'],['⊞','Up to 15 variants'],['⚙','Gentle, Balance + Dynamic'],['▣','4K quality'],['✓','Included Business tools']],
+ lifetime:[['▣','Tool credits: see current terms'],['⊞','Up to 15 variants'],['⚙','Gentle, Balance + Dynamic'],['▣','Up to 4K quality'],['✓','Included Lifetime Tools']]
 };
 const sharedAccess=[
  ['✓','Video Uniquifier and tools included in this plan'],
  ['✓','Canvas workspace; AI generation requires paid credits'],
  ['✓','Explore the AI model catalog (availability varies)'],
- ['◇','Watermark removal: check the relevant tool terms'],
+ ['ⓘ','Watermark removal is not confirmed for this plan'],
  ['✓','One account for your plan, credits and history'],
  ['✓','AI wallet and prepaid packages are separate']
 ];
@@ -81,7 +81,7 @@ const planned=[
  {key:'business',name:'Business',suffix:'/ month',label:'Choose Business',summary:'For larger video workloads and all supported variation modes',
   benefits:[...verifiedQuality.business,...sharedAccess,...monthlyDetails]},
  {key:'lifetime',name:'Lifetime',suffix:'one time',label:'Choose Lifetime',summary:'One-time access to the included tools',
-  benefits:[...verifiedQuality.lifetime,...sharedAccess,['✓','One-time purchase: no monthly plan renewal'],['◇','Lifetime does not include unlimited paid AI generation']]}
+  benefits:[...verifiedQuality.lifetime,...sharedAccess,['✓','One-time purchase: no monthly plan renewal']]}
 ];
 let planCheckoutPending=false,creditCheckoutPending=false;
 let toolBillingConfigured=false,googleAuthClientId='',googleInitialized=false,authReturnFocus=null;
@@ -102,8 +102,8 @@ function syncBillingPeriod(){
  monthly.setAttribute('aria-pressed',String(isMonthly));
  yearly.setAttribute('aria-pressed',String(!isMonthly));
  promo.replaceChildren();
- promo.append(node('strong','',isMonthly?'80% Credit Bonus':'Save 20%'));
- promo.append(node('small','',isMonthly?'Promotional label only · credited amounts are unchanged':'Yearly prices are estimates; annual checkout is not enabled'));
+ promo.append(node('strong','',isMonthly?'AI Credits Sold Separately':'Save 20%'));
+ promo.append(node('small','',isMonthly?'Optional AI credit packs are separate from tool plan credits':'Yearly prices are estimates; annual checkout is not enabled'));
 }
 for(const [id,period] of [['priceBillingMonthly','monthly'],['priceBillingYearly','yearly']]){
  byId(id).addEventListener('click',()=>{
@@ -163,10 +163,10 @@ function renderPlans(config){
   });
   for(const [icon,copy] of benefitRows){
    const li=node('li');
-   const sym=node('span','price-feature-icon',icon);sym.setAttribute('aria-hidden','true');
+   const sym=node('span','price-feature-icon'+(icon==='✓'?' is-included':icon==='ⓘ'?' is-info':''),icon);sym.setAttribute('aria-hidden','true');
    li.append(sym,node('span','',copy));list.append(li);
   }
-  const note=node('p','price-plan-note',p.proposed?'$0.99 Trial: price and included credits are NOT active yet.':!verified?'The server has not supplied a verified price.':'');
+  const note=node('p','price-plan-note',p.proposed?'$0.99 Trial: price and included credits are NOT active yet.':p.key==='lifetime'?'ⓘ Lifetime does not include unlimited paid AI generation; purchase AI credits separately.':!verified?'The server has not supplied a verified price.':'');
   body.append(heading,price);
   if(annualNote)body.append(annualNote);
   body.append(summary,button,facts,caption,list,note);
@@ -220,9 +220,22 @@ function renderCredits(config){
   card.append(img(p.image));
   const content=node('div','price-credit-content');
   const title=node('h3','price-credit-number','✦ '+numeral.format(p.credits));
-  const info=node('div','price-credit-bonus');
-  info.append(node('strong','price-bonus-title','General AI credits'));
-  info.append(node('b','price-bonus-count','+ '+numeral.format(p.bonus)));
+  // Display-only marketing preview: the server grants ONLY pack.credits after
+  // a confirmed Stripe payment. Never claim these proposed bonuses are active.
+  const info=node('div','price-credit-bonus price-credit-breakdown');
+  for(const [label,number] of [
+   ['Base',numeral.format(p.credits)],
+   ['Bonus · proposed','+ '+numeral.format(p.bonus)],
+   ['Total · proposed',numeral.format(p.credits+p.bonus)]
+  ]){
+   const segment=node('div','price-credit-segment');
+   segment.append(node('span','price-credit-segment-label',label),
+                  node('strong','price-credit-segment-value',number));
+   info.append(segment);
+  }
+  info.append(node('span','price-credit-breakdown-note',
+   serverPack?'Actual approved checkout credits: '+numeral.format(serverPack.credits)+'. Bonus is not included.':
+   'Proposed bonus and total are not active. Checkout requires server approval.'));
   const foot=node('div','price-credit-bottom');
   const cost=node('strong','price-credit-price',amount);
   // Every visible AI-credit card opens the *existing* Deepsyq sign-in when logged out.
