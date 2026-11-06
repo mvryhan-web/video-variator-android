@@ -17,14 +17,15 @@ test('approved Deepsyq logo is loaded and legible in desktop sidebar and mobile 
  expect(big.height).toBeGreaterThanOrEqual(24);
  await expect(page.locator('#sidebar .brand-name')).toHaveText('Deepsyq');
  await page.setViewportSize({width:390,height:844});
- const top=page.locator('.top-brand img[src="deepsyq-logo.png"]');
+ // On mobile the shared shell replaces the old top-brand with the owner-approved mobile brand.
+ const top=page.locator('.ds-mobile-header .ds-mobile-brand img[src="deepsyq-logo.png"]');
  await expect(top).toBeVisible();
  await expect.poll(()=>top.evaluate(img=>img.complete?img.naturalWidth:0)).toBe(1254);
  const small=await top.boundingBox();
  expect(small).not.toBeNull();
  expect(small.width).toBeGreaterThanOrEqual(20);
  expect(small.height).toBeGreaterThanOrEqual(20);
- await expect(page.locator('.top-brand')).toContainText('Deepsyq');
+ await expect(page.locator('.ds-mobile-header .ds-mobile-brand')).toContainText('Deepsyq');
  expect(writes).toEqual([]); // logo rendering must not start billing, upload or AI generation
 });
 
@@ -60,7 +61,8 @@ test('Video History and other creator pages show the official Deepsyq logo, incl
  await page.goto('/index.html?view=history',{waitUntil:'domcontentloaded'});
  await expect(page.locator('body')).toHaveClass(/vu-reference/);
  await expect(page.locator('#historyView')).toHaveClass(/active/);
- const logo=page.locator('.vu-appbar .vu-logo-image[src="deepsyq-logo.png"]');
+ const mobile=(page.viewportSize()?.width||0)<=760;
+ const logo=page.locator(mobile?'.ds-mobile-header .ds-mobile-brand img[src="deepsyq-logo.png"]':'.vu-appbar .vu-logo-image[src="deepsyq-logo.png"]');
  await expect(logo).toBeVisible();
  await expect.poll(()=>logo.evaluate(img=>img.complete?img.naturalWidth:0)).toBe(1254);
  await expect(page.locator('link[rel="icon"][href="favicon.ico"]')).toHaveCount(1);
@@ -69,8 +71,8 @@ test('Video History and other creator pages show the official Deepsyq logo, incl
  expect(webManifest.short_name).toBe('Deepsyq');
  expect(webManifest.icons.map(i=>i.src)).toContain('deepsyq-icon-192.png');
  await page.goto('/pricing.html',{waitUntil:'domcontentloaded'});
- await expect(page.locator('.price-brand img[src="deepsyq-logo.png"]')).toBeVisible();
+ await expect(page.locator(mobile?'.ds-mobile-header .ds-mobile-brand img[src="deepsyq-logo.png"]':'.price-brand img[src="deepsyq-logo.png"]')).toBeVisible();
  await page.goto('/my-creations.html',{waitUntil:'domcontentloaded'});
- await expect(page.locator('.ws-header-brand img[src="deepsyq-logo.png"]')).toBeVisible();
+ await expect(page.locator(mobile?'.ds-mobile-header .ds-mobile-brand img[src="deepsyq-logo.png"]':'.ws-header-brand img[src="deepsyq-logo.png"]')).toBeVisible();
  expect(postPaid).toEqual([]);
 });
