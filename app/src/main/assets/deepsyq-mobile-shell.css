@@ -184,3 +184,19 @@
  body.ds-mobile-layout .ds-mobile-drawer :is(.caption,.ds-site-caption){font-size:10px;letter-spacing:1px;overflow-wrap:anywhere}
  body.ds-mobile-layout .ds-mobile-drawer .ds-invite-entry{font-size:12px!important}
 }
+
+/* OWNER 2026-11-06 — mobile-only hero crop corrections.
+   Scope is limited to the two existing banner images; preserve all desktop styles,
+   approved artwork and other page layouts. Shared stylesheet avoids altering locked designs. */
+@media (max-width: 590px) {
+  body.vu-reference #dashboardView .hero.card {
+    background-size: 100% 100%, auto 86%, auto 86% !important;
+    background-position: center center, 94% center, 94% center !important;
+  }
+}
+@media (max-width: 700px) {
+  body.deepsyq-pricing-page .price-hero-art {
+    background-size: cover, auto 84%;
+    background-position: center center, 90% 32%;
+  }
+}
