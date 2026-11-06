@@ -172,3 +172,5 @@
  body.ds-mobile-layout:has(.ds-tour-controls) .ds-mobile-brand img{width:23px;height:23px}
 }
 .ds-tour-drawer-target{outline:2px solid #4de7ff!important;outline-offset:2px;background:#163c60!important}
+/* Page-shell styles load later; pin the header above those route overrides. */
+@media(min-width:761px){html body.deepsyq-sitewide-shell header.ds-stable-header,html body.home-neon header.ds-stable-header{position:sticky!important;top:0!important;z-index:500!important}}

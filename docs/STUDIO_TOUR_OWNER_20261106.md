@@ -8,3 +8,5 @@
 5. Verify TEST SHA and real desktop/mobile behavior; no production/APK claims.
 
 Implementation notes: all participating routes import one canonical unversioned core module, avoiding duplicate state caused by ?v=5/6/7 imports. Voice bridge retains an exact allowlist and adds the two verified custom TEST domains. Fresh visit stays idle; explicit listening survives navigation Home. Errors stop recognition retries, startup is deduplicated. A dismiss-without-accepting control allows inspecting settings; submitting the creator still opens consent and is blocked until accepted. No consent flag is set by tests or tour.
+
+Live findings: detailed tariff narration exceeded the laptop voice timeout; shortened to current plan name/price and two visible limits, retaining proposed/unavailable status. Short bridge synthesis returned a real 48 kHz PCM WAV and the revised live tour advanced Trial→Basic→Pro. A later-loaded inner-page shell rule overrode desktop sticky positioning; increased header selector specificity without altering Pricing content/art.
