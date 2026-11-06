@@ -66,11 +66,11 @@ const imageTemplate=MODEL_CATALOG.find(m=>m.kind==='image'&&m.adapter);
 const videoTemplate=MODEL_CATALOG.find(m=>m.kind==='video'&&m.adapter);
 const musicTemplate=MODEL_CATALOG.find(m=>m.kind==='music'&&m.adapter);
 const freeStudioModels=[
- {...imageTemplate,id:FREE_SPACE_MODELS.image.id,label:FREE_SPACE_MODELS.image.label,kind:'image',provider:'Hugging Face ZeroGPU',references:0,ratios:['1:1'],quality:'512px',enabled:true,adapter:true,
-  capabilities:{...imageTemplate.capabilities,maxReferences:0,supportsImageReferences:false,resolutions:['512px'],outputFormats:['png'],imageSizes:['512px']}},
- {...videoTemplate,id:FREE_SPACE_MODELS.video.id,label:FREE_SPACE_MODELS.video.label,kind:'video',provider:'Hugging Face ZeroGPU',references:0,ratios:['16:9'],quality:'512p',duration:'2 seconds',enabled:true,adapter:true,
+ {...imageTemplate,id:FREE_SPACE_MODELS.image.id,label:FREE_SPACE_MODELS.image.label,labelRu:'FLUX.1 Schnell · бесплатно',description:'512px free AI image from a public ZeroGPU queue',descriptionRu:'Изображение 512 px через бесплатную публичную очередь',kind:'image',provider:'Hugging Face ZeroGPU',references:0,ratios:['1:1'],quality:'512px',enabled:true,adapter:true,
+  capabilities:{...imageTemplate.capabilities,maxReferences:0,supportsImageReferences:false,resolutions:['512px'],outputFormats:['webp'],imageSizes:['512px']}},
+ {...videoTemplate,id:FREE_SPACE_MODELS.video.id,label:FREE_SPACE_MODELS.video.label,labelRu:'LTX-Video · бесплатно',description:'Two-second text-to-video MP4 via a free public GPU queue',descriptionRu:'Настоящее короткое MP4 из текста через бесплатную публичную очередь',kind:'video',provider:'Hugging Face ZeroGPU',references:0,ratios:['16:9'],quality:'512p',duration:'2 seconds',enabled:true,adapter:true,
   capabilities:{...videoTemplate.capabilities,maxReferences:0,supportsImageReferences:false,resolutions:['512p'],durations:[2],durationSeconds:2,maxDurationSeconds:2,videoInputModes:['text'],supportsImageToVideo:false}},
- {...musicTemplate,id:FREE_SPACE_MODELS.music.id,label:FREE_SPACE_MODELS.music.label,kind:'music',provider:'Hugging Face ZeroGPU',references:0,enabled:true,adapter:true}
+ {...musicTemplate,id:FREE_SPACE_MODELS.music.id,label:FREE_SPACE_MODELS.music.label,labelRu:'Stable Audio 3 · бесплатно',description:'Short instrumental music via a free public GPU queue, vocals not guaranteed',descriptionRu:'Короткая инструментальная музыка через бесплатную публичную очередь',kind:'music',provider:'Hugging Face ZeroGPU',references:0,enabled:true,adapter:true}
 ];
 
 app.get('/api/studio/config', (_req, res) => {
