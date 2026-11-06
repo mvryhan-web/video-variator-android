@@ -53,3 +53,32 @@ body.studio-quickstart .composer-popover .primary{background:linear-gradient(110
 body.studio-quickstart .composer-popover .hint,body.studio-quickstart #modelDialog .model-card small{color:#a9bdd8!important}
 body.studio-quickstart .composer-controls .pill{border:1px solid #4975ad;background:linear-gradient(120deg,#182345,#102a43);color:#e8f2ff;box-shadow:inset 0 0 10px #21669b22}
 body.studio-quickstart .composer-duration input{accent-color:#65d9f8}
+
+/* Owner Studio Settings cleanup: the small drawing is the real selected ratio,
+   not a uniformly shaped landscape button. Keep the native select authoritative. */
+#settingsDialog.composer-popover .ratio-choices button{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:7px;min-height:91px;padding:9px 6px;line-height:1.15;
+}
+#settingsDialog.composer-popover .ratio-drawing{
+ display:block;flex:none;box-sizing:border-box;
+ border:2px solid #a7c8f2;border-radius:3px;
+ background:linear-gradient(145deg,#183654,#0b192f);
+ box-shadow:inset 0 0 0 1px #0e274a;
+}
+#settingsDialog.composer-popover .ratio-choices button[aria-pressed=true] .ratio-drawing{
+ border-color:#78ecff;background:linear-gradient(145deg,#164d72,#10263d);
+ box-shadow:0 0 9px #34bfff55;
+}
+/* The video model still validates these settings internally. The owner does
+   not want photo-role menus, 720p / duration, or provider notes in the popup. */
+#settingsDialog.composer-popover[data-studio-kind="video"] :is(
+ #videoInputModeLabel,#videoInputModeNote,#videoResolutionLabel,
+ #videoDurationLabel,#videoSettingsNote,.specs,.composer-settings-reset
+){display:none!important}
+/* Remove redundant implementation notes from all public Settings popups;
+   pricing and entitlement validation remain untouched. */
+#settingsDialog.composer-popover :is([data-t="capabilityNote"],#imageUnsupportedControls){display:none!important}
+@media(max-width:420px){
+ #settingsDialog.composer-popover .ratio-choices button{min-height:85px;gap:6px;padding:8px 4px}
+}
