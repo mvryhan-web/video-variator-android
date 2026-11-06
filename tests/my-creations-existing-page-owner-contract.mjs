@@ -10,9 +10,10 @@ const home=src('deepsyq.html');
 const nav=src('deepsyq-site-shell.js');
 const creations=src('my-creations.html');
 
-test('Library My Creations links directly to existing page, Assets remains unchanged',()=>{
+test('Library contains only My Creations; retired Assets is absent from navigation',()=>{
  assert.match(home,/<a href="my-creations\.html" aria-label="My Creations"/);
- assert.match(home,/<a href="generate-studio\.html\?view=history" aria-label="Assets and saved creations"/);
+ assert.doesNotMatch(home, /aria-label="Assets and saved creations"/,'Retired Home Assets entry must stay removed');
+ assert.doesNotMatch(nav, /label: 'Assets'/,'No Assets in shared mobile and desktop navigation');
  assert.match(nav, /\{ label: 'My Creations', icon: '▣', url:'my-creations\.html'/);
  assert.match(nav, /path === 'my-creations\.html' \? 'history'/);
  assert.ok(existsSync(join(assets,'my-creations.html')));
