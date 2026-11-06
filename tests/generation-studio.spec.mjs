@@ -405,6 +405,7 @@ test('Studio Settings ratio frames match actual aspect and Video popup omits adv
  for(const width of [390,1363]){
   await page.setViewportSize({width,height:870});
   await page.goto('/generate-studio.html?studio=image');
+  await page.locator('#studioSettingsToggle').click();
   await page.locator('#settingsButton').click();
   const ratios=await page.locator('#settingsDialog #ratioChoices button').evaluateAll(elements=>Object.fromEntries(elements.map(button=>{
    const frame=button.querySelector('.ratio-drawing');
@@ -426,6 +427,7 @@ test('Studio Settings ratio frames match actual aspect and Video popup omits adv
   await page.locator('#settingsDialog [data-close="settingsDialog"]').last().click();
 
   await page.goto('/generate-studio.html?studio=video');
+  await page.locator('#studioSettingsToggle').click();
   await page.locator('#settingsButton').click();
   const panel=page.locator('#settingsDialog');
   await expect(panel).toHaveAttribute('data-studio-kind','video');
