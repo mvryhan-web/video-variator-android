@@ -358,12 +358,3 @@ body.vu-reference .vu-preview-scene > .vu-source-video:not([hidden]){
 }
 body.vu-reference .vu-preview-file{margin:8px 6px 0;color:#d8e6fc;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
 body.vu-reference .vu-queue-clear:disabled{opacity:.45;cursor:not-allowed}
-
-/* Owner 2026-11-06 — MOBILE ONLY: show three existing film portals instead of the left car.
-   The banner asset, hero copy and all desktop layout stay unchanged. */
-@media (max-width: 590px) {
-  body.vu-reference #dashboardView .hero.card {
-    background-size: 100% 100%, auto 86%, auto 86% !important;
-    background-position: center center, 94% center, 94% center !important;
-  }
-}
