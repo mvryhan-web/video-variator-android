@@ -1,6 +1,8 @@
 import {test,expect} from '@playwright/test';
 
 test('first settings panel open stays anchored in Image, Video and Audio Studio',async({page})=>{
+ // Avoid the mandatory terms overlay in a visual-placement test, without changing product consent.
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
  await page.setViewportSize({width:1363,height:936});
  for(const studio of ['image','video','audio']){
   await page.goto('/generate-studio.html?studio='+studio);
