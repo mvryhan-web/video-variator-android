@@ -6,36 +6,20 @@ const templates=[
  {id:'owned-audio',title:'Brand Voiceover',description:'Narration workflow',category:'Marketing',generationType:'audio',promptTemplate:'Original voiceover concept',active:true}
 ];
 
-test('AI Apps local search, formats, categories and shareable URL preserve real API results without spending',async({page})=>{
+test('AI Apps shows all active templates without removed filters or paid requests',async({page})=>{
  await page.route('**/api/templates',route=>route.fulfill({json:{items:templates}}));
  let creates=0;
  page.on('request',request=>{if(request.url().includes('/api/studio/jobs')&&request.method()==='POST')creates++;});
  await page.goto('/ai-apps.html?q=portrait&type=image');
- await expect(page.locator('#search')).toHaveValue('portrait');
- await expect(page.locator('#type')).toHaveValue('image');
- await expect(page.locator('.app-card')).toHaveCount(1);
- await expect(page.locator('#apps')).toContainText('Editorial Portrait');
-
- await page.locator('#search').fill('demo');
- await page.locator('#type').selectOption('video');
- await page.locator('#category').selectOption('Marketing');
- await expect(page.locator('.app-card')).toHaveCount(1);
- await expect(page.locator('#apps')).toContainText('Demo Reel');
- await expect(page.locator('#status')).toHaveText('1 of 3 active templates shown.');
- await expect.poll(()=>new URL(page.url()).searchParams.get('category')).toBe('Marketing');
- await expect.poll(()=>new URL(page.url()).searchParams.get('type')).toBe('video');
-
- await page.reload();
- await expect(page.locator('#category')).toHaveValue('Marketing');
- await expect(page.locator('#search')).toHaveValue('demo');
- await expect(page.locator('.app-card')).toHaveCount(1);
-
- await page.getByRole('button',{name:'Clear filters'}).click();
+ await expect(page.locator('.filters,#search,#type,#category,#clearFilters')).toHaveCount(0);
  await expect(page.locator('.app-card')).toHaveCount(3);
  await expect(page.locator('#status')).toHaveText('3 of 3 active templates shown.');
- await expect.poll(()=>new URL(page.url()).searchParams.has('q')).toBe(false);
+ for(const name of ['Editorial Portrait','Demo Reel','Brand Voiceover'])await expect(page.locator('#apps')).toContainText(name);
+ await page.reload();
+ await expect(page.locator('.app-card')).toHaveCount(3);
  expect(creates).toBe(0);
 });
+
 
 test('AI Apps reports no published content and API errors without inventing templates',async({page})=>{
  await page.route('**/api/templates',route=>route.fulfill({json:{items:[]}}));
@@ -50,7 +34,7 @@ test('AI Apps reports no published content and API errors without inventing temp
 });
 
 
-test('AI Apps can retry a temporary template API outage without losing URL filters or generating',async({page})=>{
+test('AI Apps retries template API failures without restoring filters or generating',async({page})=>{
  let attempts=0,jobPosts=0;
  await page.route('**/api/templates',route=>{
   attempts++;
@@ -62,10 +46,8 @@ test('AI Apps can retry a temporary template API outage without losing URL filte
  await expect(page.locator('#status')).toContainText('temporarily unavailable');
  await expect(page.locator('.app-card')).toHaveCount(0);
  await page.getByRole('button',{name:'Retry loading templates'}).click();
- await expect(page.locator('#search')).toHaveValue('portrait');
- await expect(page.locator('#type')).toHaveValue('image');
- await expect(page.locator('.app-card')).toHaveCount(1);
- await expect(page.locator('#apps')).toContainText('Editorial Portrait');
+ await expect(page.locator('.filters')).toHaveCount(0);
+ await expect(page.locator('.app-card')).toHaveCount(3);
  expect(attempts).toBe(2);
  expect(jobPosts).toBe(0);
 });
@@ -105,7 +87,7 @@ test('AI Apps only enables workflows with inputs supported by the existing Studi
  expect(jobPosts).toBe(0);
 });
 
-test('AI Apps reveals large real API catalogs in batches and resets paging on filter changes',async({page})=>{
+test('AI Apps pages large real API catalogs without a filters panel',async({page})=>{
  const many=Array.from({length:25},(_,i)=>({
   id:'catalog-'+i,title:'Template '+i,description:'A genuine active workflow',category:'Photography',
   generationType:'image',promptTemplate:'Original prompt '+i,active:true
@@ -113,17 +95,15 @@ test('AI Apps reveals large real API catalogs in batches and resets paging on fi
  await page.route('**/api/templates',route=>route.fulfill({json:{items:many}}));
  await page.goto('/ai-apps.html');
  await expect(page.locator('.app-card')).toHaveCount(12);
- await expect(page.locator('#status')).toHaveText('Showing 12 of 25 matching templates (25 active templates loaded).');
+ await expect(page.locator('#status')).toHaveText('Showing 12 of 25 active templates.');
  await page.getByRole('button',{name:/Load more templates/}).click();
  await expect(page.locator('.app-card')).toHaveCount(24);
  await page.getByRole('button',{name:/Load more templates/}).click();
  await expect(page.locator('.app-card')).toHaveCount(25);
  await expect(page.locator('#loadMore')).toBeHidden();
- await page.locator('#search').fill('Template 20');
- await expect(page.locator('.app-card')).toHaveCount(1);
- await expect(page.locator('#loadMore')).toBeHidden();
- await page.locator('#search').fill('');
+ await page.reload();
  await expect(page.locator('.app-card')).toHaveCount(12);
+ await expect(page.locator('.filters')).toHaveCount(0);
 });
 
 test('AI Apps catalog remains usable without page-level horizontal overflow',async({page})=>{
@@ -134,8 +114,7 @@ test('AI Apps catalog remains usable without page-level horizontal overflow',asy
  await page.route('**/api/templates',route=>route.fulfill({json:{items:enough}}));
  await page.goto('/ai-apps.html');
  await expect(page.locator('.app-card')).toHaveCount(12);
- await expect(page.locator('#search')).toBeVisible();
- await expect(page.locator('#type')).toBeVisible();
+ await expect(page.locator('.filters')).toHaveCount(0);
  await expect(page.locator('#loadMore')).toBeVisible();
  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
  await page.getByRole('button',{name:/Load more templates/}).click();
