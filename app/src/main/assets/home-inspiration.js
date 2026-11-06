@@ -81,7 +81,7 @@ function openInspirationDetail(item,opener,{minimal=false}={}){
    promptMore.setAttribute('aria-expanded',String(expanded));
    if(!expanded)requestAnimationFrame(refreshPromptMore);
   };
-  headingPrompt.textContent='Front:';
+  headingPrompt.textContent='Prompt:';
   sidebar.append(headingPrompt,prompt,promptMore);
  }else sidebar.append(heading,kindLine,description,headingPrompt,prompt);
  function refreshPromptMore(){

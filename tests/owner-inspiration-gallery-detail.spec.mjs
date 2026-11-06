@@ -61,7 +61,7 @@ test('Home Inspiration filters image and video cards in place; detail shows the 
   await expect(imageDialog.getByRole('heading',{name:'Parameters',exact:true})).toHaveCount(0);
   await expect(imageDialog.getByRole('button',{name:'Clone & Try'})).toHaveText('Clone & Try');
   await expect(imageDialog.locator('.inspiration-detail-title,.inspiration-detail-kind,.inspiration-detail-description,.inspiration-detail-note,.inspiration-detail-parameters,.inspiration-detail-caption')).toHaveCount(0);
-  await expect(imageDialog.locator('.inspiration-detail-heading')).toHaveText('Front:');
+  await expect(imageDialog.locator('.inspiration-detail-heading')).toHaveText('Prompt:');
   await expect(imageDialog.locator('.inspiration-detail-actions button')).toHaveCount(1);
   await expect(imageDialog.locator('.inspiration-detail-clone')).toHaveCSS('background-color','rgb(255, 255, 255)');
   const imageClose=await expectPlainClose(imageDialog);
@@ -122,7 +122,7 @@ test('five Inspiration videos and image cards share one compact and expandable p
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.inspiration-detail-media')).toHaveCount(1);
   await expect(dialog.locator('.inspiration-detail-prompt')).toHaveText(item.prompt);
-  await expect(dialog.locator('.inspiration-detail-heading')).toHaveText('Front:');
+  await expect(dialog.locator('.inspiration-detail-heading')).toHaveText('Prompt:');
   const metrics=await dialog.evaluate(d=>{
    const stage=d.querySelector('.inspiration-detail-stage').getBoundingClientRect();
    const side=d.querySelector('.inspiration-detail-sidebar').getBoundingClientRect();
