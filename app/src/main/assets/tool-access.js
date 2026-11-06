@@ -33,23 +33,22 @@
  }
  function badge(tool){if(tool==='photo')return copy.single;if(!minimum[tool])return copy.free;const name=planName(minimum[tool]);if(access?.tools?.[tool]?.included)return copy.included;return name+' · '+(token()&&access?.trial.remaining>0?copy.trial:copy.locked);}
  function render(){
-  const banner=document.getElementById('toolAccessBanner');if(!banner)return;
-  const all=access?.allFeatures,paid=access&&access.plan!=='trial';
-  banner.querySelector('[data-access-summary]').textContent=all?copy.all:paid?copy.inPlan(planName(access.plan)):copy.remaining(access?.trial.remaining??5);
-  banner.querySelector('[data-access-notice]').textContent=notice||(access?.trial.pending?copy.pending(access.trial.pending):'');
-  const sign=banner.querySelector('[data-access-signin]');sign.hidden=!!token();
-  document.querySelectorAll('[data-hub-tool]').forEach(card=>{let el=card.querySelector('.toolAccessBadge');if(!el){el=document.createElement('span');el.className='toolAccessBadge';card.append(el);}el.textContent=badge(card.dataset.hubTool);card.dataset.access=access?.tools?.[card.dataset.hubTool]?.included?'included':minimum[card.dataset.hubTool]?'subscription':'free';});
-  const mode=document.querySelector('.free-tools-page')?.dataset.activeTool||new URLSearchParams(location.search).get('tool');
-  const detail=banner.querySelector('[data-access-detail]');detail.textContent=mode?(badge(mode)+(mode==='tts'?' · '+copy.speech:'')):'';
+  // Entitlements and per-tool availability stay active, but the owner removed
+  // the promotional "3 tools free / trial tasks remaining" banner everywhere.
+  document.querySelectorAll('[data-hub-tool]').forEach(card=>{
+   let el=card.querySelector('.toolAccessBadge');
+   if(!el){el=document.createElement('span');el.className='toolAccessBadge';card.append(el);}
+   el.textContent=badge(card.dataset.hubTool);
+   card.dataset.access=access?.tools?.[card.dataset.hubTool]?.included?'included':minimum[card.dataset.hubTool]?'subscription':'free';
+  });
+  const message=notice||(access?.trial.pending?copy.pending(access.trial.pending):'');
+  const detail=document.getElementById('hubNotice');
+  if(detail&&message)detail.textContent=message;
  }
  function setup(){
   const page=document.querySelector('.free-tools-page')||document.getElementById('speechText')?.closest('main');
   if(page){
-   const banner=document.createElement('section');banner.id='toolAccessBanner';banner.className='toolAccessBanner';
-   for(const [tag,key] of [['strong','summary'],['p','detail'],['p','notice']]){const el=document.createElement(tag);el.dataset['access'+key[0].toUpperCase()+key.slice(1)]='';if(key==='notice')el.setAttribute('role','status');banner.append(el);}
-   const links=document.createElement('div');const plans=document.createElement('a');plans.href='index.html#plans';plans.textContent=copy.plans;links.append(plans);
-   const sign=document.createElement('a');sign.dataset.accessSignin='';sign.href='index.html?signIn=1&toolReturn='+encodeURIComponent(location.pathname.split('/').pop()+location.search);sign.textContent=copy.signIn;links.append(sign);banner.append(links);
-   const header=page.querySelector('header');header?header.after(banner):page.prepend(banner);
+   // No access advertisement is inserted. Server-side checks and tool badges remain.
    const heading=page.querySelector('.free-tools-hero h1');if(heading)heading.textContent=copy.title;
    const audioBack=document.querySelector('[data-s=back]');if(audioBack)audioBack.textContent='← '+copy.title;
    const free=document.querySelector('[data-s=free]');if(free)free.textContent=copy.choose('Pro');
