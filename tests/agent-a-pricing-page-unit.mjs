@@ -32,7 +32,7 @@ test('server config, original checkout endpoints and no false wallet credit clai
  assert.doesNotMatch(js,/Bonus credits · proposed, not included/);
 });
 test('no fake credit allocation for Trial and Lifetime; lifecycle guards retain account isolation',()=>{
- assert.match(js,/Credits and included access: to be confirmed/);
+ assert.match(js,/AI credits not included in current Trial preview/);
  assert.match(js,/Tool credits: see current terms/);
  assert.match(js,/Lifetime does not include unlimited paid AI generation/);
  assert.match(js,/accountEpoch\+\+/);
