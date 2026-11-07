@@ -28,7 +28,8 @@ test('No new website framework, no invented asset page, upload uses original val
  assert.ok(composer.includes("document.getElementById('jAttach').onclick=()=>fileInput.click()"));
  assert.ok(composer.includes("files=validateAttachments([...files,...fileInput.files])"));
  assert.ok(composer.includes("await voice.stop()"));
- assert.match(design,/my-creations\.html|j-hub-glyph/);
+ assert.match(home,/href="my-creations\.html"/);
+ assert.match(design,/j-hub-glyph/);
  assert.ok(!css.includes('.j-mode-rail::after'));
  assert.match(css,/\.jarvix-compose \.j-settings-menu/);
  assert.match(design,/generate-studio\.html\?studio='\+kind\+'&settings=1'/);

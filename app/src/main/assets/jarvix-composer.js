@@ -9,7 +9,10 @@ export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
  const reportMode=()=>form.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode},bubbles:true}));
  const plus=document.getElementById('jPlus'),menu=document.getElementById('jPlusMenu'),fileInput=document.getElementById('jFiles'),attachments=document.getElementById('jAttachments'),mic=document.getElementById('jMic');
  function render(){attachments.replaceChildren();files.forEach((f,i)=>{const b=document.createElement('button');b.type='button';b.textContent=f.name+' ×';b.setAttribute('aria-label','Remove '+f.name);b.onclick=()=>{files.splice(i,1);render();};attachments.append(b);});}
- plus.onclick=()=>{menu.hidden=!menu.hidden;plus.setAttribute('aria-expanded',String(!menu.hidden));};
+ plus.onclick=()=>{menu.hidden=!menu.hidden;plus.setAttribute('aria-expanded',String(!menu.hidden));
+  const settings=form.querySelector('#jSettingsMenu'),gear=form.querySelector('.j-settings-shortcut');
+  if(settings&&!menu.hidden){settings.hidden=true;gear?.setAttribute('aria-expanded','false');}
+ };
  menu.querySelectorAll('[data-j-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.jMode;onMode(mode);
   try{sessionStorage.setItem('jarvix_composer_mode',mode);}catch{}
   for(const item of menu.querySelectorAll('[data-j-mode]'))item.setAttribute('aria-pressed',String(item===b));
