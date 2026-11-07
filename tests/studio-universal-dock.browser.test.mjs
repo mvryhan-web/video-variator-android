@@ -110,6 +110,31 @@ try{
    });
   }
  }
+ await test('Audio premium panel keeps actual audio modes, language, voice and Done controls',async()=>{
+  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const page=await context.newPage();const paid=[],errors=[];
+  page.on('pageerror',e=>errors.push(String(e)));
+  page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(?:studio\/jobs|stripe|payments)\b/.test(r.url()))paid.push(r.url());});
+  try{
+   await page.goto(base+'/generate-studio.html?studio=audio',{waitUntil:'domcontentloaded'});
+   await page.waitForSelector('#studioUniversalDock #studioSettingsToggle',{timeout:20000});
+   await page.locator('#studioUniversalDock #studioSettingsToggle').click();
+   await page.locator('#studioSettingsHub[open]').waitFor({timeout:12000});
+   await page.locator('#studioSettingsHub #settingsButton').click();
+   await page.locator('#settingsDialog[open]').waitFor({timeout:12000});
+   assert.equal(await page.locator('#settingsDialog').getAttribute('data-studio-kind'),'music');
+   assert.equal(await page.locator('#settingsDialog #musicOptions').isVisible(),true);
+   const modes=await page.locator('#musicMode option').evaluateAll(items=>items.map(x=>x.value));
+   assert.ok(modes.includes('song')&&modes.includes('instrumental'));
+   await page.locator('#musicMode').selectOption('instrumental');
+   assert.equal(await page.locator('#musicMode').inputValue(),'instrumental');
+   await page.screenshot({path:file+'/mobile-premium-audio-settings.png',fullPage:false});
+   await page.locator('#settingsDialog [data-t="done"]').click();
+   assert.equal(await page.locator('#studioSettingsHub[open]').count(),1);
+   assert.deepEqual(paid,[]);
+   assert.deepEqual(errors,[]);
+  }finally{await context.close();}
+ });
  await test('Home gear opens previous existing Studio settings; Universal Hub rail remains unchanged',async()=>{
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   try{
