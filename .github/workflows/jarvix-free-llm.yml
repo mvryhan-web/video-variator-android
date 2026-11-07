@@ -98,3 +98,31 @@ jobs:
           name: owner-universal-hub-mobile-desktop
           path: artifacts/jarvix-universal-hub/*.png
           retention-days: 14
+
+  studio-universal-dock-browser:
+    name: Owner single bottom dock Image Video Audio desktop/mobile
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    env:
+      OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      DATABASE_URL: ''
+      JARVIX_QUOTA_DATABASE_URL: ''
+      JARVIX_FREE_LLM_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Shared Studio panel in six real browser journeys
+        run: node --test tests/studio-universal-dock.browser.test.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owner-one-universal-studio-dock
+          path: artifacts/studio-universal-dock/*.png
+          retention-days: 14
