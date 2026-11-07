@@ -309,7 +309,7 @@ test('GO stage09 orb reacts to measured speech, listening and silence without re
  test.setTimeout(90000);
  await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
  let paid=0;
- page.on('request',r=>{if(r.method()==='POST'&&/\\/api\\/(studio\\/jobs|payments|stripe)\\b/.test(r.url()))paid++;});
+ page.on('request',r=>{if(r.method()==='POST'&&['/api/studio/jobs','/api/payments','/api/stripe'].some(p=>r.url().includes(p)))paid++;});
  for(const width of [390,1365]){
   await page.setViewportSize({width,height:900});
   await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
