@@ -20,3 +20,19 @@ body:has(#homeQuickForm[data-jarvix-chat]){padding-bottom:calc(var(--jarvix-comp
 .jarvix-chat .j-plus-menu{max-height:min(350px,55dvh);overflow:auto}.jarvix-chat .j-chat-bottom{position:relative}.jarvix-chat .jarvix-compose textarea{background:transparent;border:0}.jarvix-chat .j-message button{margin-top:8px;margin-right:6px;font-size:12px}
 
 @media(max-width:360px){.j-chat-toolbar h1{font-size:14px}.j-chat-toolbar .j-history{max-width:110px}.j-chat-toolbar button{font-size:11px;padding:5px}.jarvix-compose textarea::placeholder{font-size:14px}}
+
+/* JARVIX chat voice dictation: a clear stop square and animated listening waves. */
+.jarvix-compose #jMic{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.jarvix-compose #jMic[data-voice-recording="true"]{border-color:#43cadf;background:#163448;box-shadow:0 0 0 2px #43cadf26}
+.jarvix-compose #jMic[data-voice-recording="true"] svg{display:none}
+.jarvix-compose #jMic[data-voice-recording="true"]::after{content:"";display:block;width:13px;height:13px;border-radius:2px;background:#f4fcff}
+.jarvix-compose .j-voice-waves{display:inline-flex;align-items:center;justify-content:center;gap:3px;width:40px;height:24px;flex:0 0 40px}
+.jarvix-compose .j-voice-waves[hidden]{display:none}
+.jarvix-compose .j-voice-waves span{display:block;width:3px;height:6px;background:#70e6f0;border-radius:8px;animation:jarvix-listening-wave 0.85s ease-in-out infinite alternate}
+.jarvix-compose .j-voice-waves span:nth-child(2){animation-delay:-.57s;animation-duration:.72s}
+.jarvix-compose .j-voice-waves span:nth-child(3){animation-delay:-.38s;animation-duration:1.05s}
+.jarvix-compose .j-voice-waves span:nth-child(4){animation-delay:-.66s;animation-duration:.79s}
+.jarvix-compose .j-voice-waves span:nth-child(5){animation-delay:-.23s;animation-duration:.93s}
+@keyframes jarvix-listening-wave{from{height:4px;opacity:.65}to{height:21px;opacity:1}}
+@media(max-width:360px){.jarvix-compose .j-voice-waves{width:26px;flex-basis:26px;gap:2px}.jarvix-compose .j-voice-waves span{width:2px}}
+@media(prefers-reduced-motion:reduce){.jarvix-compose .j-voice-waves span{animation:none;height:12px}.jarvix-compose .j-voice-waves span:nth-child(even){height:6px}}
