@@ -4,7 +4,7 @@ import {TOUR_KEY,tourAction,tourCues,cueAt,tourNavigationClip,planNarrationBeats
 import {tourV3Plan as tourPlan} from './jarvix-tour-v3-script.js';
 import {getTourV3Recording} from './jarvix-tour-v3-audio.js';
 let audio=null,turn=0,bar=null,state=null,navTimer=null,waitTimer=null,stepWaitKey=null,stepWaitStart=0,activeFocus='',tourSettingsOpened=false;
-let transcriptPromise=null;
+let transcriptPromise=null,tourSpeaking=false;
 const clipTranscript=file=>{
  transcriptPromise ||= fetch('media/jarvix/clips/manifest.json',{signal:AbortSignal.timeout(5000)})
   .then(r=>r.ok?r.json():null).then(data=>new Map((data?.clips||[]).map(item=>[item.url.split('/').pop().split('?')[0],item.text]))).catch(()=>new Map());
@@ -15,7 +15,11 @@ function captionForClip(file,current){caption('');void clipTranscript(file).then
 const read=()=>{try{const s=JSON.parse(sessionStorage.getItem(TOUR_KEY)||'null');return s&&Number.isInteger(s.index)&&s.index>=0&&s.index<tourPlan(s.language).length&&['playing','paused'].includes(s.phase)?s:null;}catch{return null;}};
 function save(){try{state?sessionStorage.setItem(TOUR_KEY,JSON.stringify(state)):sessionStorage.removeItem(TOUR_KEY);}catch{}}
 export function isTourActive(){return !!state||!!read();}
-function clearAudio(){turn++;clearTimeout(navTimer);clearTimeout(waitTimer);stopOwnerSpeech();if(audio){audio.onended=null;audio.onplay=null;audio.onerror=null;audio.ontimeupdate=null;audio.pause();audio.remove();audio=null;}}
+function setTourSpeaking(active){
+ tourSpeaking=Boolean(active);
+ document.getElementById('topJarvisBtn')?.classList.toggle('ds-tour-speaking',tourSpeaking&&state?.phase==='playing');
+}
+function clearAudio(){turn++;clearTimeout(navTimer);clearTimeout(waitTimer);setTourSpeaking(false);stopOwnerSpeech();if(audio){audio.onended=null;audio.onplay=null;audio.onerror=null;audio.ontimeupdate=null;audio.pause();audio.remove();audio=null;}}
 const navElements=()=>({sidebar:document.querySelector('#sidebar,#dsSiteSidebar,.shell>.sidebar'),toggle:document.querySelector('#menu,.ds-site-mobile-toggle,.vu-nav-toggle,#menuBtn')});
 function menuOpen(){return document.body.classList.contains('ds-mobile-drawer-open')||document.body.classList.contains('ds-site-nav-open')||document.body.classList.contains('menu-open')||document.body.classList.contains('vu-nav-open');}
 function showNavigation(url){
@@ -56,10 +60,10 @@ function render(){
  bar.setAttribute('aria-label',`JARVIX · ${tourPlan(lang)[state.index].title} · ${state.index+1}/${tourPlan(lang).length}${state.error?' · '+state.error:''}`);
  for(const [i,key]of ['pause','continue','stop'].entries()){const b=bar.querySelector(`[data-tour="${key}"]`);b.textContent=texts[i];b.title=state.error||texts[i];}
  bar.querySelector('[data-tour="pause"]').hidden=state.phase==='paused';bar.querySelector('[data-tour="continue"]').hidden=state.phase!=='paused';
- bar.dataset.error=state.error||'';document.getElementById('topJarvisBtn')?.classList.toggle('ds-tour-speaking',state.phase==='playing');
+ bar.dataset.error=state.error||'';document.getElementById('topJarvisBtn')?.classList.toggle('ds-tour-speaking',state.phase==='playing'&&tourSpeaking);
 }
 function advance(current){if(current!==turn||!state||state.phase!=='playing')return;closeTourSettings();state=tourAction(state,'ended');save();if(state)void play();else{clearAudio();document.querySelectorAll('.jarvis-tour-spotlight,.ds-tour-drawer-target').forEach(e=>e.classList.remove('jarvis-tour-spotlight','ds-tour-drawer-target'));activeFocus='';updateJarvisState('idle');render();window.dispatchEvent(new Event('jarvix:tour-ended'));}}
-function blocked(current,message='Audio unavailable'){if(current!==turn||!state)return;state={...state,phase:'paused',error:message};save();render();updateJarvisState('idle');}
+function blocked(current,message='Audio unavailable'){if(current!==turn||!state)return;setTourSpeaking(false);state={...state,phase:'paused',error:message};save();render();updateJarvisState('idle');}
 
 function speakNavigation(step,target,current){
  closeTourSettings();
@@ -140,15 +144,22 @@ async function speakV3(text,current,complete,beat=null){
   let spoken=false,ended=false;
   const began=()=>{
    if(spoken||current!==turn||!state||state.phase!=='playing')return;
-   spoken=true;updateJarvisState('speaking');
+   spoken=true;setTourSpeaking(true);updateJarvisState('speaking');
    if(beat)cueV3(beat);
   };
   const done=()=>{
    if(ended||current!==turn||!state||state.phase!=='playing')return;
-   ended=true;complete();
+   ended=true;setTourSpeaking(false);complete();
   };
   if(voice){
    audio=new Audio(voice);const clip=audio;clip.id='dsTourAudio';clip.hidden=true;document.body.append(clip);
+   // Pause/Continue resumes the actual owner clip without replaying narration.
+   clip.onloadedmetadata=()=>{
+    if(current!==turn||!state)return;
+    const seconds=Number(state.position)||0;
+    if(seconds>0&&Number.isFinite(clip.duration)&&clip.duration>0)
+     clip.currentTime=Math.min(seconds,Math.max(0,clip.duration-.05));
+   };
    clip.onplay=began;
    clip.onended=()=>{clip.remove();if(audio===clip)audio=null;done();};
    clip.onerror=()=>blocked(current,'Owner voice recording unavailable');
@@ -168,27 +179,38 @@ async function speakV3(text,current,complete,beat=null){
 }
 function playV3(step,target,current){
  if(!state||state.phase!=='playing')return;
- const navigate=()=>{
-  if(current!==turn||!state||state.phase!=='playing')return;
+ if(target.pathname!==location.pathname||target.search!==location.search){
+  // Navigate FIRST: title MP3 must not announce a section on the previous page.
   closeV3Dialogs();
-  state.navAnnounced=state.index;state.position=0;save();
   const link=showNavigation(step.url);
   navTimer=setTimeout(()=>{
    if(current!==turn||!state||state.phase!=='playing')return;
-   if(link&&new URL(link.href).pathname===target.pathname&&new URL(link.href).search===target.search)link.click();
+   if(link&&new URL(link.href).pathname===target.pathname&&new URL(link.href).search===target.search&&
+      new URL(link.href).hash===target.hash)link.click();
    else location.assign(target.href);
   },120);
- };
- if(target.pathname!==location.pathname||target.search!==location.search){
-  if(step.navText&&state.navAnnounced!==state.index){
-   showNavigation(step.url);void speakV3(step.navText,current,navigate);return;
-  }
-  navigate();return;
+  return;
  }
  closeNavigation();pauseJarvisRecognition();
  const index=Math.min(state.beat||0,step.beats.length);
  if(index===step.beats.length){closeV3Dialogs();advance(current);return;}
  const beat=step.beats[index];
+ // Destination title waits for visible content, then the beat matches its control.
+ if(step.navText&&state.navAnnounced!==state.index){
+  const key=location.pathname+location.search+':v3:nav:'+state.index;
+  if(![...document.querySelectorAll(step.beats[0].target)].some(el=>el.getClientRects().length)){
+   if(stepWaitKey!==key){stepWaitKey=key;stepWaitStart=Date.now();}
+   if(Date.now()-stepWaitStart<5000)
+    waitTimer=setTimeout(()=>{if(current===turn&&state)void play();},150);
+   else blocked(current,'Tour section unavailable');
+   return;
+  }
+  void speakV3(step.navText,current,()=>{
+   if(current!==turn||!state||state.phase!=='playing')return;
+   state.navAnnounced=state.index;state.position=0;save();void play();
+  });
+  return;
+ }
  if(!document.querySelector(beat.target)){
   const key=location.pathname+location.search+':v3:'+state.index+':'+index;
   if(stepWaitKey!==key){stepWaitKey=key;stepWaitStart=Date.now();}
