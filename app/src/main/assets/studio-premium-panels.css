@@ -283,3 +283,13 @@ body.studio-premium-panels :is(#studioSettingsHub,#modelDialog,#settingsDialog).
 @media(prefers-reduced-motion:reduce){
  body.studio-premium-panels .composer-popover *{transition:none!important;animation:none!important}
 }
+
+/* Real type symbols instead of empty faux-image icon containers. */
+body.studio-premium-panels #modelDialog.composer-popover .dialog-head::before{
+ content:"✧";display:grid!important;place-items:center!important;
+ font-size:23px!important;font-weight:600!important;line-height:1!important;color:#66edf4!important;
+}
+body.studio-premium-panels #settingsDialog.composer-popover .dialog-head::before{
+ content:"☷";display:grid!important;place-items:center!important;
+ font-size:23px!important;font-weight:700!important;line-height:1!important;color:#ffcd6b!important;
+}
