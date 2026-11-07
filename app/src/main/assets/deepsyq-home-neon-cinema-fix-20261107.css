@@ -1,0 +1,52 @@
+/* Home-only correction for the owner's 07 Nov annotated screenshot.
+   Kept separate from the shared theme so existing browser CSS caches cannot
+   continue drawing the removed edges or cinematic dark gradients.
+   No element geometry, controls, media URLs, or other route styles change. */
+
+/* The #00e5ff vertical hairline on Neon comes from the theme sidebar rail,
+   not solely from the cockpit border. Leave navigation placement intact. */
+body.home-neon :is(#sidebar, .ds-site-sidebar, aside.ds-stable-sidebar) {
+  border-right-color: transparent !important;
+}
+
+/* Remove only the two marked outer side rails / glow ends. Preserve the
+   two horizontal neon strokes, center JARVIX orb and all button lights. */
+@media (min-width: 761px) {
+  body.home-neon header.ds-unified-header .ds-header-cockpit {
+    border-left-color: transparent !important;
+    border-right-color: transparent !important;
+    box-shadow:
+      0 -6px 12px -9px rgba(0, 242, 254, .58),
+      0 6px 12px -9px rgba(0, 242, 254, .58),
+      inset 0 1px 4px -3px rgba(0, 242, 254, .3),
+      inset 0 -1px 4px -3px rgba(0, 242, 254, .3) !important;
+  }
+}
+
+/* Remove the actual masking layers, not merely their background colors.
+   The previously missed dark gradient underneath the credit label goes too. */
+body.home-neon .hero-stage.hero-stage-cinematic #homeHeroCarousel::after,
+body.home-neon .hero-stage.hero-stage-cinematic #homeHeroCarousel .hero-neighbor::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+
+body.home-neon .hero-stage.hero-stage-cinematic #homeHeroCarousel .hero-film-credit {
+  background: none !important;
+}
+
+/* Gentle correction on the real video elements makes this noticeably
+   brighter without changing the original files, shape or framing. */
+body.home-neon .hero-stage.hero-stage-cinematic #homeHeroCarousel :is(
+  .inspiration-hero-feature video,
+  .hero-neighbor video
+) {
+  opacity: 1 !important;
+  filter: brightness(1.18) saturate(1.04) !important;
+}
+
+/* Keep titles legible directly on the now-unmasked footage. */
+body.home-neon #homeHeroCarousel .hero-film-credit :is(strong, small) {
+  text-shadow: 0 2px 10px rgba(0, 4, 18, .85);
+}
