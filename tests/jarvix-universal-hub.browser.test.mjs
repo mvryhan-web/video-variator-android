@@ -97,10 +97,16 @@ try{
      assert.match(await page.locator('#homeStudioSettingsFrame').getAttribute('src'),/studio=video&settings=1/);
      for(const id of ['studioTypePicker','modelButton','settingsButton'])
        assert.equal(await native.locator('#studioSettingsHub #'+id).count(),1,'real native Studio control: '+id);
+     assert.equal(await native.locator('body>.topbar').evaluate(el=>getComputedStyle(el).display),'none','embedded Studio header must not duplicate Home');
+     assert.equal(await native.locator('body>.studio-shell').evaluate(el=>getComputedStyle(el).display),'none','embedded Studio layout and second bottom dock must be hidden');
      await page.screenshot({path:folder+'/'+l.name+'-native-studio-settings.png',fullPage:false});
      await native.locator('#studioSettingsHub > button:nth-child(2)').click();
-     await page.locator('#homeStudioSettingsFrame').waitFor({state:'detached',timeout:12000});
+     await page.locator('#homeStudioSettingsHost').waitFor({state:'hidden',timeout:12000});
      assert.equal(new URL(page.url()).pathname,beforeSettings,'closing popup must preserve Home');
+     await page.locator('#homeQuickForm .j-settings-shortcut').click();
+     await page.locator('#homeStudioSettingsHost').waitFor({state:'visible',timeout:12000});
+     await page.locator('#homeQuickForm .j-settings-shortcut').click();
+     await page.locator('#homeStudioSettingsHost').waitFor({state:'hidden',timeout:12000});
     }
     assert.equal(errors.length,0,'console runtime errors: '+errors.join('; '));
    }finally{await context.close();}
