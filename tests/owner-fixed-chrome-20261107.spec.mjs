@@ -182,3 +182,46 @@ test('stage05 mobile drawer preserves canonical icons, ordering, routes and clos
  }
  expect(paid).toBe(0);
 });
+
+
+test('stage06 composer uses stable icons and preserves existing image mode and actions',async({page})=>{
+ test.setTimeout(120000);
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio\/jobs|payments|stripe)\b/.test(r.url()))paid++;});
+ for(const width of [390,1365]){
+  await page.setViewportSize({width,height:900});
+  for(const route of ['deepsyq.html','generate-studio.html?studio=image']){
+   await page.goto('/'+route,{waitUntil:'domcontentloaded'});
+   const rail=page.locator('.j-mode-rail').first();
+   await expect(rail,route+' lower creation modes missing').toHaveCount(1);
+   const controls=await rail.locator('a').evaluateAll(nodes=>nodes.map(a=>({
+    label:a.textContent.trim(),href:a.getAttribute('href'),
+    icon:a.querySelector('.j-rail-icon svg')?.outerHTML||''
+   })));
+   for(const [label,href] of [
+    ['Image','generate-studio.html?studio=image'],
+    ['Video','generate-studio.html?studio=video'],
+    ['Audio','generate-studio.html?studio=audio'],
+    ['Tools','free-tools.html'],
+    ['Video Uniquifier','index.html']]){
+    const matching=controls.filter(x=>x.label===label);
+    expect(matching.length,route+' duplicate/missing '+label).toBe(1);
+    expect(matching[0].href).toBe(href);
+    expect(matching[0].icon,route+' font-dependent '+label).toContain('<svg');
+   }
+   expect(controls.filter(x=>x.label.includes('JARVIX')).length).toBe(1);
+   await expect(page.locator('.j-attach-shortcut').first()).toHaveCount(1);
+   await expect(page.locator('.j-settings-shortcut').first()).toHaveCount(1);
+   if(route==='deepsyq.html'){
+    const shortcut=page.locator('.j-image-shortcut');
+    await expect(shortcut).toHaveCount(1);
+    await shortcut.click();
+    await expect(page.locator('#jPlusMenu [data-j-mode="image"]')).toHaveAttribute('aria-pressed','true');
+    await expect(page.locator('#jPlusMenu')).toBeHidden();
+    await expect(page.locator('#jPlus')).toHaveText('I');
+   }
+  }
+ }
+ expect(paid).toBe(0);
+});
