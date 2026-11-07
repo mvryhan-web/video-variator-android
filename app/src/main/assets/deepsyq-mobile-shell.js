@@ -124,11 +124,13 @@ function setupMobileShell() {
   if(!login.isConnected)desktopActions.append(login);
   desktopActions.prepend(tools);
   if(document.body.classList.contains('j-action-workspace') || document.body.classList.contains('ds-embedded-uniquifier')){
-    const apps=link('✦ AI Apps','ai-apps.html','ds-header-apps');desktopActions.append(apps);
-    const balance=link('⚡ AI credits: —','pricing.html#credits','ds-header-credit');if(!document.getElementById('walletButton'))desktopActions.append(balance);
-    const updateCredit=async()=>{const token=localStorage.getItem('vv_token');balance.textContent='⚡ AI credits: —';if(!token)return;try{const r=await fetch('/api/ai-wallet/balance',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const data=await r.json();if(token===localStorage.getItem('vv_token')&&Number.isSafeInteger(data.available)&&data.available>=0)balance.textContent='⚡ AI credits: '+data.available.toLocaleString();}catch{}};
+    // Owner 07 Nov: no AI Apps header pill. Its position beside the orb
+    // belongs to the working AI Credit link; Tour moves to the other side.
+    const balance=link('AI Credit','pricing.html#credits','ds-header-credit');
+    balance.setAttribute('aria-label','AI Credit');
+    const updateCredit=async()=>{const token=localStorage.getItem('vv_token');balance.textContent='AI Credit';balance.removeAttribute('title');if(!token)return;try{const r=await fetch('/api/ai-wallet/balance',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const data=await r.json();if(token===localStorage.getItem('vv_token')&&Number.isSafeInteger(data.available)&&data.available>=0)balance.title='Available AI credits: '+data.available.toLocaleString();}catch{}};
     void updateCredit();window.addEventListener('storage',e=>{if(e.key==='vv_token')void updateCredit();});
-    const placeExtras=()=>{if(document.body.classList.contains('ds-mobile-layout')){left.append(apps);right.prepend(balance);}else {desktopActions.append(apps);if(!document.getElementById('walletButton'))desktopActions.append(balance);else balance.remove();}};
+    const placeExtras=()=>{if(document.body.classList.contains('ds-mobile-layout')){left.append(balance);}else if(!document.getElementById('walletButton'))desktopActions.insertBefore(balance,tour);else balance.remove();};
     new MutationObserver(placeExtras).observe(document.body,{attributes:true,attributeFilter:['class']});placeExtras();
   }
   const reused = [toggle, tools, tour, pricing, login];
@@ -185,7 +187,7 @@ function setupMobileShell() {
       document.body.classList.add('ds-mobile-layout');
       header.append(brand, controls);
       move(toggle, document.body); toggle.classList.add('ds-mobile-menu');
-      move(tools, left); move(tour, left); move(pricing, right); move(login, right);
+      move(tools, left); move(tour, right); move(pricing, right); move(login, right);
     } else if (!mobile.matches && mounted) {
       if (isOpen()) toggle.click();
       mounted = false;
