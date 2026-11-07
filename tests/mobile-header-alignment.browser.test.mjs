@@ -70,7 +70,9 @@ test('Owner mobile header positioning across shared pages',async()=>{
       // Legacy informational/tool pages have their own content paddings; this
       // task must normalize their HEADER, not redesign their first content row.
       const legacyContentGap=['contact.html','audio-studio.html','jarvix-studio.html','mobile-utility.html'].includes(route)?80:28;
-      if(geometry.main)assert.ok(geometry.main.y>=geometry.header.y+geometry.header.h-1&&
+      // Inspiration is a Home anchor: its intentional scroll shifts <main>
+      // above the viewport while the fixed mobile header stays in place.
+      if(geometry.main&&!route.includes('#'))assert.ok(geometry.main.y>=geometry.header.y+geometry.header.h-1&&
        geometry.main.y<=geometry.header.y+geometry.header.h+legacyContentGap,
        width+' '+route+' actual content begins near the common header without a large top gap');
       assert.ok(geometry.word.x>geometry.menu.x+geometry.menu.w+2&&
