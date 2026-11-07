@@ -79,3 +79,54 @@ test('Voice Review Studio displays free Gemini status rather than stale LLM disc
  assert.match(page,/status\.freeLlm\?\.enabled/);
  assert.match(page,/Gemini Free включена для JARVIX/);
 });
+
+test('JARVIX safe action router covers existing DEEPSYQ tools without paid endpoints',async()=>{
+ const {extractAction,ACTION_ROUTES}=await import('../app/src/main/assets/jarvix-action-plan.js');
+ const cases=[
+  ['Открой Video Studio','video'],['Открой Image Studio','image'],['Открой Audio Studio','audio'],
+  ['Открой мои работы','history'],['Открой Canvas','canvas'],['Открой AI Apps','apps'],
+  ['Открой инструменты','tools'],['Открой тарифы','pricing'],['Покажи вдохновение','inspiration'],
+  ['Открой уникализатор видео','uniquifier'],['Открой телесуфлёр','teleprompter'],
+  ['Открой удаление фона','background'],['Открой фото в PDF','pdf'],
+  ['Открой коллаж','collage'],['Открой умные напоминания','reminders'],
+  ['Открой аватар студию','avatar'],['Открой сравнение моделей','compare'],
+  ['Открой виртуального питомца','pets'],['Открой политику конфиденциальности','privacy'],
+  ['Открой Audio Trim','audioTools'],['Open the home page','home']
+ ];
+ for(const [input,target] of cases){
+  const a=extractAction(input);
+  assert.ok(a,input);assert.equal(a.intent,'NAVIGATE',input);assert.equal(a.target,target,input);
+  assert.equal(a.url,ACTION_ROUTES[target],input);
+  assert.match(a.url,/^[a-z-]+\.html(?:[?#].*)?$/i);
+ }
+ for(const [target,url] of Object.entries(ACTION_ROUTES)){
+  const page=url.split(/[?#]/)[0];
+  assert.match(await (await import('node:fs/promises')).readFile(new URL('../app/src/main/assets/'+page,import.meta.url),'utf8'),/<html/i,target);
+  assert.ok(!/admin|billing|checkout|charge/i.test(url),target);
+ }
+});
+test('JARVIX text media commands prepare Studios and never auto bill or falsely claim generation',async()=>{
+ const {extractAction}=await import('../app/src/main/assets/jarvix-action-plan.js');
+ for(const [input,target,keyword] of [
+  ['Создай видео про китов 9:16','video','китов'],
+  ['Создай фотографию горного озера','image','горного'],
+  ['Сделай музыку про море','audio','море'],
+  ['Generate image of a mountain','image','mountain']
+ ]){
+  const a=extractAction(input);assert.ok(a,input);assert.equal(a.intent,'GENERATE_MEDIA');
+  assert.equal(a.target,target);assert.ok(a.raw_prompt.toLowerCase().includes(keyword),input);
+ }
+ assert.equal(extractAction('Создай видео про китов 9:16').aspect_ratio,'9:16');
+ for(const text of ['Как создать видео?','Что ты умеешь?','Сколько стоит видео?','Напиши текст про фото','Оплати подписку','Спиши 100 долларов','Удалить базу данных']){
+  assert.equal(extractAction(text),null,text);
+ }
+ const {readFile}=await import('node:fs/promises');
+ const chat=await readFile(new URL('../app/src/main/assets/jarvix-chat.js',import.meta.url),'utf8');
+ assert.match(chat,/command\?\.intent==='NAVIGATE'/);
+ assert.match(chat,/command\?\.intent==='GENERATE_MEDIA'/);
+ assert.match(chat,/saveStudioHandoff\(/);
+ assert.match(chat,/message\.mode==='auto'\?'text':resolveMode/);
+ assert.match(chat,/No generation or credit charge has started/);
+ assert.match(chat,/Number\(quote\.credits\)!==0/);
+ assert.match(chat,/consent:false/);
+});

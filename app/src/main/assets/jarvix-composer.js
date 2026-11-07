@@ -1,21 +1,32 @@
-import {createSpeechDraft} from './jarvix-speech-draft.js';
+import {bindVoiceInput} from './jarvix-voice-input.js';
 import {decorateComposer} from './jarvix-composer-design.js';
+import {openHomeStudioSettings} from './home-studio-settings.js';
 import {validateAttachments} from './jarvix-conversations.js';
 export function bindComposer({form,input,onSend,onError,onMode=()=>{}}){
- decorateComposer(form,{settingsTarget:()=>{location.assign('generate-studio.html?studio='+(['image','video','audio'].includes(mode)?mode:'image')+'&settings=1');}});
+ decorateComposer(form,{settingsTarget:()=>{const selected=['image','video','audio'].includes(mode)?mode:'image';
+  openHomeStudioSettings({gear:form.querySelector('.j-settings-shortcut'),mode:selected});}});
  if(innerWidth<361)input.placeholder='Message…';
- let mode='auto',files=[],recognition=null,base='';
+ let mode='auto',files=[];
+ try{const stored=sessionStorage.getItem('jarvix_composer_mode');if(['image','video','audio'].includes(stored))mode=stored;}catch{}
+ const reportMode=()=>form.dispatchEvent(new CustomEvent('jarvix:mode',{detail:{mode},bubbles:true}));
  const plus=document.getElementById('jPlus'),menu=document.getElementById('jPlusMenu'),fileInput=document.getElementById('jFiles'),attachments=document.getElementById('jAttachments'),mic=document.getElementById('jMic');
  function render(){attachments.replaceChildren();files.forEach((f,i)=>{const b=document.createElement('button');b.type='button';b.textContent=f.name+' ×';b.setAttribute('aria-label','Remove '+f.name);b.onclick=()=>{files.splice(i,1);render();};attachments.append(b);});}
  plus.onclick=()=>{menu.hidden=!menu.hidden;plus.setAttribute('aria-expanded',String(!menu.hidden));};
- menu.querySelectorAll('[data-j-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.jMode;onMode(mode);for(const item of menu.querySelectorAll('[data-j-mode]'))item.setAttribute('aria-pressed',String(item===b));plus.textContent=mode==='auto'?'+':mode[0].toUpperCase();menu.hidden=true;plus.setAttribute('aria-expanded','false');input.focus();});
+ menu.querySelectorAll('[data-j-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.jMode;onMode(mode);
+  try{sessionStorage.setItem('jarvix_composer_mode',mode);}catch{}
+  for(const item of menu.querySelectorAll('[data-j-mode]'))item.setAttribute('aria-pressed',String(item===b));
+  // The + remains a plus: selected mode is indicated only by the shared lower badge.
+  plus.textContent='+';menu.hidden=true;plus.setAttribute('aria-expanded','false');reportMode();input.focus();
+ });
+ for(const item of menu.querySelectorAll('[data-j-mode]'))item.setAttribute('aria-pressed',String(item.dataset.jMode===mode));
+ reportMode();
  document.getElementById('jAttach').onclick=()=>fileInput.click();fileInput.onchange=()=>{try{files=validateAttachments([...files,...fileInput.files]);render();}catch(e){onError(e.message);}fileInput.value='';menu.hidden=true;plus.setAttribute('aria-expanded','false');};
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){menu.hidden=true;plus.setAttribute('aria-expanded','false');}});
  document.addEventListener('pointerdown',e=>{if(!form.contains(e.target)){menu.hidden=true;plus.setAttribute('aria-expanded','false');}});
- mic.onclick=()=>{if(recognition){recognition.stop();return;}const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){onError('Voice input is unavailable in this browser.');return;}const r=new SR();recognition=r;base=input.value;const draft=createSpeechDraft(base);r.lang=({ru:'ru-RU',en:'en-US',fr:'fr-FR',es:'es-ES'})[document.documentElement.lang.slice(0,2)]||'en-US';r.interimResults=true;r.continuous=true;r.onresult=e=>{if(recognition!==r)return;input.value=draft(e);input.dispatchEvent(new Event('input',{bubbles:true}));};r.onend=()=>{if(recognition!==r)return;recognition=null;mic.setAttribute('aria-pressed','false');};r.onerror=e=>{if(recognition===r)onError('Microphone: '+e.error);};mic.setAttribute('aria-pressed','true');r.start();};
- form.addEventListener('submit',async e=>{e.preventDefault();if(!input.value.trim())return;recognition?.stop();await onSend({text:input.value.trim(),mode,files:[...files]});});
+ const voice=bindVoiceInput({mic,input,form,onError});
+ form.addEventListener('submit',async e=>{e.preventDefault();await voice.stop();if(!input.value.trim())return;await onSend({text:input.value.trim(),mode,files:[...files]});});
  input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();form.requestSubmit();}});
- return {clear(){input.value='';files=[];render();},add(file){files=validateAttachments([...files,file]);render();input.focus();},stop(){recognition?.abort();}};
+ return {clear(){input.value='';files=[];render();},add(file){files=validateAttachments([...files,file]);render();input.focus();},stop(){void voice.abort();}};
 }
 export function trackViewport(root){
  const update=()=>{const v=window.visualViewport;document.documentElement.style.setProperty('--j-viewport',(v?.height||innerHeight)+'px');if(root)document.documentElement.style.setProperty('--jarvix-compose-height',root.getBoundingClientRect().height+'px');};

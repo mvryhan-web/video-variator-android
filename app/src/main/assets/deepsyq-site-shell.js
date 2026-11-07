@@ -88,7 +88,7 @@
       jBtn.className = 'top-jarvis-btn';
       jBtn.setAttribute('aria-label', 'Activate JARVIX AI');
       jBtn.title = 'JARVIX — AI Voice Commander & Compare';
-      jBtn.innerHTML = '<div class="jarvis-mini-orb"><span class="jarvis-core"></span><span class="jarvis-ring"></span><span class="jarvis-ring ring-violet"></span></div><span class="jarvis-name">JARVIX</span>';
+      jBtn.innerHTML = '<div class="jarvis-mini-orb"></div><span class="jarvis-name">JARVIX</span>';
       topH.append(jBtn);
     }
   }
@@ -210,7 +210,7 @@
       orb.style.placeItems = 'center';
       orb.style.marginRight = '8px';
       orb.style.verticalAlign = 'middle';
-      orb.innerHTML = '<span class="jarvis-core" style="width:9px;height:9px"></span><span class="jarvis-ring"></span><span class="jarvis-ring ring-violet"></span>';
+
       
       const textSpan = document.createElement('span');
       textSpan.className = 'jarvis-name';

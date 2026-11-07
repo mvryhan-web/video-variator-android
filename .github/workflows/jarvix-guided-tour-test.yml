@@ -7,6 +7,11 @@ on:
       - 'app/src/main/assets/jarvis-core.css'
       - 'app/src/main/assets/jarvix-guided-tour.js'
       - 'app/src/main/assets/jarvix-tour-plan.js'
+      - 'app/src/main/assets/jarvix-tour-v3-script.js'
+      - 'app/src/main/assets/jarvix-tour-v3-audio.js'
+      - 'app/src/main/assets/media/jarvix/voice-library.json'
+      - 'app/src/main/assets/media/jarvix/tour-v3/**'
+      - 'tests/jarvix-tour-v3.test.mjs'
       - 'app/src/main/assets/deepsyq-mobile-shell.css'
       - 'tests/jarvix-tour-plan.test.mjs'
       - 'tests/jarvix-guided-tour.test.mjs'
@@ -18,6 +23,11 @@ on:
       - 'app/src/main/assets/jarvis-core.css'
       - 'app/src/main/assets/jarvix-guided-tour.js'
       - 'app/src/main/assets/jarvix-tour-plan.js'
+      - 'app/src/main/assets/jarvix-tour-v3-script.js'
+      - 'app/src/main/assets/jarvix-tour-v3-audio.js'
+      - 'app/src/main/assets/media/jarvix/voice-library.json'
+      - 'app/src/main/assets/media/jarvix/tour-v3/**'
+      - 'tests/jarvix-tour-v3.test.mjs'
       - 'app/src/main/assets/deepsyq-mobile-shell.css'
       - 'tests/jarvix-tour-plan.test.mjs'
       - 'tests/jarvix-guided-tour.test.mjs'
@@ -27,7 +37,7 @@ permissions:
 jobs:
   guided-tour-browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 7
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,8 +47,8 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
       - name: Verify tour JavaScript syntax
-        run: node --check app/src/main/assets/jarvis-core.js && node --check app/src/main/assets/jarvix-guided-tour.js && node --check app/src/main/assets/jarvix-tour-plan.js && node --check tests/jarvix-guided-tour.test.mjs && node --check tests/jarvix-tour-plan.test.mjs
+        run: node --check app/src/main/assets/jarvis-core.js && node --check app/src/main/assets/jarvix-guided-tour.js && node --check app/src/main/assets/jarvix-tour-plan.js && node --check app/src/main/assets/jarvix-tour-v3-script.js && node --check app/src/main/assets/jarvix-tour-v3-audio.js && node --check tests/jarvix-tour-v3.test.mjs && node --check tests/jarvix-guided-tour.test.mjs && node --check tests/jarvix-tour-plan.test.mjs
       - name: Check four-language narration/action timing contract
-        run: node --test tests/jarvix-tour-plan.test.mjs
+        run: node --test tests/jarvix-tour-plan.test.mjs tests/jarvix-tour-v3.test.mjs
       - name: Click visible tour header button, verify overlay and exit, no paid calls
         run: node --test tests/jarvix-guided-tour.test.mjs

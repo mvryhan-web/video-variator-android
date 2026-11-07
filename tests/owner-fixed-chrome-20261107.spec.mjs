@@ -238,20 +238,20 @@ test('stage07 approved JARVIX orb reused in header, nav and composer without dup
    await page.goto('/'+route,{waitUntil:'domcontentloaded'});
    const top=page.locator('#topJarvisBtn');
    await expect(top).toHaveCount(1);
-   await expect(top.locator('.jarvis-mini-orb.jv-approved-orb > svg.ds-reference-orb')).toHaveCount(1);
-   await expect(top.locator('svg.ds-reference-orb')).toHaveAttribute('viewBox','0 0 160 160');
+   const photo=top.locator('.jarvis-mini-orb.jv-owner-photo-test');
+   await expect(photo).toHaveCount(1);
+   await expect(photo.locator('.jv-owner-upload-orb')).toHaveCount(5);
+   await expect(top.locator('svg.ds-reference-orb')).toHaveCount(0);
    await expect(top.locator('.jarvis-ring:visible')).toHaveCount(0);
-   const artwork=await page.locator('.jarvis-mini-orb.jv-approved-orb > svg.ds-reference-orb').evaluateAll(nodes=>nodes.map(x=>x.querySelector('radialGradient')?.id));
-   expect(artwork.every(Boolean)).toBe(true);
-   expect(new Set(artwork).size).toBe(artwork.length);
+   await expect.poll(()=>photo.locator('.jv-owner-layer-base').evaluate(node=>node.complete&&node.naturalWidth===1254)).toBe(true);
    const rail=page.locator('.j-mode-rail');
    if(await rail.count()){
     const jarvix=rail.locator('a[href="jarvix-chat.html"]');
     await expect(jarvix).toHaveCount(1);
-    await expect(jarvix.locator('.jv-approved-orb > svg.ds-reference-orb')).toHaveCount(1);
+    await expect(jarvix.locator('.jv-owner-photo-test > .jv-owner-layer-base')).toHaveCount(1);
     await expect(jarvix).toContainText('JARVIX');
    }
-   const nav=page.locator('.ds-site-jarvix-btn .jv-approved-orb > svg.ds-reference-orb, #sidebar .nav-entry .jv-approved-orb > svg.ds-reference-orb');
+   const nav=page.locator('.ds-site-jarvix-btn .jv-owner-photo-test > .jv-owner-layer-base, #sidebar .nav-entry .jv-owner-photo-test > .jv-owner-layer-base');
    if(await page.locator('.ds-site-jarvix-btn,#sidebar .nav-entry a[aria-label="JARVIX"]').count())await expect(nav.first()).toBeAttached();
    expect(await page.locator('#topJarvisBtn').count()).toBe(1);
   }
@@ -260,46 +260,240 @@ test('stage07 approved JARVIX orb reused in header, nav and composer without dup
 });
 
 
-test('stage08 JARVIX orbit directions, halo duration and stable shell size',async({page})=>{
+test('owner original-photo cyan clockwise, pink counterclockwise, inner orbits upward, halo breathing and stable size',async({page})=>{
  test.setTimeout(90000);
  await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
  let paid=0;
- page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio\/jobs|payments|stripe)\b/.test(r.url()))paid++;});
+ page.on('request',r=>{if(r.method()==='POST'&&['/api/studio/jobs','/api/payments','/api/stripe'].some(path=>r.url().includes(path)))paid++;});
  for(const width of [390,1365]){
   await page.setViewportSize({width,height:900});
   await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
-  const svg=page.locator('#topJarvisBtn .jv-approved-orb svg.ds-reference-orb');
-  await expect(svg).toHaveCount(1);
-  const result=await svg.evaluate(node=>{
-   const css=selector=>getComputedStyle(node.querySelector(selector));
-   const halo=getComputedStyle(node.parentElement,'::before');
-   const shell=node.getBoundingClientRect(),host=node.closest('#topJarvisBtn').getBoundingClientRect();
-   return {cyan:css('.ds-orbit-spin').animationName,
-    pink:css('.ds-orbit-reverse').animationName,
-    blueBack:css('.jv-blue-behind').animationName,
-    blueFront:css('.jv-blue-front').animationName,
-    goldIn:css('.jv-warm-in').animationName,
-    goldOut:css('.jv-warm-out').animationName,
-    halo:halo.animationName,haloDuration:halo.animationDuration,
-    shell:{width:shell.width,height:shell.height},host:{width:host.width,height:host.height}};
+  const orb=page.locator('#topJarvisBtn .jarvis-mini-orb.jv-owner-photo-test');
+  await expect(orb).toHaveCount(1);
+  const metrics=await orb.evaluate(el=>{
+   const css=part=>getComputedStyle(el.querySelector('.jv-owner-layer-'+part));
+   const shell=el.getBoundingClientRect(),button=el.closest('#topJarvisBtn').getBoundingClientRect();
+   return {cyan:css('cyan').animationName,pink:css('pink').animationName,
+    blue:css('inner').animationName,orange:css('orange').animationName,
+    halo:css('base').animationName,haloDuration:css('base').animationDuration,
+    baseFilter:css('base').filter,legacySvg:el.querySelectorAll('svg.ds-reference-orb').length,
+    pseudoBefore:getComputedStyle(el,'::before').content,
+    shell:{width:shell.width,height:shell.height},button:{width:button.width,height:button.height}};
   });
-  expect(result.cyan).toContain('jv-ring-clockwise');
-  expect(result.pink).toContain('jv-ring-counterclockwise');
-  expect(result.blueBack).toContain('jv-blue-up');
-  expect(result.blueFront).toContain('jv-blue-up');
-  expect(result.goldIn).toContain('jv-warm-leak-in');
-  expect(result.goldOut).toContain('jv-warm-leak-out');
-  expect(result.halo).toContain('jv-halo-breath');
-  expect(result.haloDuration).toBe('5s');
-  await page.waitForTimeout(300);
-  const later=await svg.evaluate(node=>{
-   const shell=node.getBoundingClientRect(),host=node.closest('#topJarvisBtn').getBoundingClientRect();
-   return {shell:{width:shell.width,height:shell.height},host:{width:host.width,height:host.height}};
-  });
-  expect(later.shell.width).toBeCloseTo(result.shell.width,1);
-  expect(later.shell.height).toBeCloseTo(result.shell.height,1);
-  expect(later.host.width).toBeCloseTo(result.host.width,1);
-  expect(later.host.height).toBeCloseTo(result.host.height,1);
+  expect(metrics.cyan).toContain('jv-photo-cyan-clockwise');
+  expect(metrics.pink).toContain('jv-photo-pink-counterclockwise');
+  expect(metrics.blue).toContain('jv-photo-blue-orbits-up');
+  expect(metrics.orange).toContain('jv-photo-original-orange-flow');
+  expect(metrics.halo).toContain('jv-photo-original-halo-breath');
+  expect(metrics.haloDuration).toBe('5s');
+  expect(metrics.baseFilter).toBe('none');
+  expect(metrics.legacySvg).toBe(0);
+  expect(metrics.pseudoBefore).toBe('none');
+  const original=await orb.locator('.jv-owner-layer-cyan').evaluate(el=>getComputedStyle(el).transform);
+  await page.waitForTimeout(650);
+  const next=await orb.locator('.jv-owner-layer-cyan').evaluate(el=>getComputedStyle(el).transform);
+  expect(next).not.toBe(original);
+  const later=await orb.evaluate(el=>{const r=el.getBoundingClientRect(),b=el.closest('#topJarvisBtn').getBoundingClientRect();return {shell:{width:r.width,height:r.height},button:{width:b.width,height:b.height}};});
+  expect(later.shell.width).toBeCloseTo(metrics.shell.width,1);
+  expect(later.shell.height).toBeCloseTo(metrics.shell.height,1);
+  expect(later.button.width).toBeCloseTo(metrics.button.width,1);
+  expect(later.button.height).toBeCloseTo(metrics.button.height,1);
  }
  expect(paid).toBe(0);
+});
+
+
+test('owner-uploaded JARVIX sphere is the only orb art across TEST pages',async({page})=>{
+ test.setTimeout(120000);
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&r.url().includes('/api/studio/jobs'))paid++;});
+ for(const width of [390,1365]){
+  await page.setViewportSize({width,height:900});
+  for(const route of ['/deepsyq.html','/generate-studio.html?studio=image','/jarvix-chat.html']){
+   await page.goto(route,{waitUntil:'domcontentloaded'});
+   const headerOrb=page.locator('#topJarvisBtn .jv-approved-orb').first();
+   await expect(headerOrb).toHaveCount(1);
+   const photo=headerOrb.locator('img.jv-owner-layer-base');
+   await expect(photo).toHaveCount(1);
+   await expect.poll(()=>photo.evaluate(img=>img.complete&&img.naturalWidth===1254&&img.naturalHeight===1254),{timeout:25000}).toBe(true);
+   await expect.poll(()=>headerOrb.evaluate(el=>el.classList.contains('jv-owner-photo-test'))).toBe(true);
+   await expect(headerOrb.locator('svg.ds-reference-orb')).toHaveCount(0);
+   await expect(headerOrb.locator('img.jv-owner-upload-orb')).toHaveCount(5);
+   const mask=await photo.evaluate(img=>getComputedStyle(img).maskImage);
+   expect(mask).toContain('radial-gradient');
+   const src=await photo.getAttribute('src');
+   expect(src).toContain('/760ea0b9-ba7d-4982-97f2-9bb59a6b0979.png');
+   await expect.poll(()=>page.evaluate(()=>[...document.querySelectorAll('.jarvis-mini-orb.jv-approved-orb')]
+     .every(el=>el.querySelector('img.jv-owner-upload-orb')))).toBe(true);
+  }
+ }
+ expect(paid).toBe(0);
+});
+
+test('owner JARVIX shows no rejected sphere at all when owner image fails',async({page})=>{
+ test.setTimeout(60000);
+ await page.route('**/760ea0b9-ba7d-4982-97f2-9bb59a6b0979.png',route=>route.abort('failed'));
+ for(const width of [390,1365]){
+  await page.setViewportSize({width,height:900});
+  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+  const orb=page.locator('#topJarvisBtn .jarvis-mini-orb.jv-approved-orb').first();
+  await expect(orb).toHaveCount(1);
+  await expect.poll(()=>orb.evaluate(el=>el.classList.contains('jv-owner-photo-unavailable'))).toBe(true);
+  await expect(orb.locator('svg, .ds-reference-orb, .jarvis-core, .jarvis-ring, .jv-owner-upload-orb')).toHaveCount(0);
+  const pseudo=await orb.evaluate(el=>getComputedStyle(el,'::before').content);
+  expect(pseudo).toBe('none');
+ }
+});
+
+test('owner image module contains no legacy SVG builder or fallback',async({page})=>{
+ const response=await page.request.get('/jarvix-approved-orb.js');
+ expect(response.ok()).toBe(true);
+ const moduleSource=await response.text();
+ expect(moduleSource).not.toContain('function createOrbSvg');
+ expect(moduleSource).not.toContain('slot.append(createOrbSvg');
+ expect(moduleSource).toContain("const parts=['base','inner','cyan','orange','pink']");
+});
+
+test('JARVIX removes any late-injected old orb nodes without touching owner image or controls',async({page})=>{
+ test.setTimeout(60000);
+ await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+ const orb=page.locator('#topJarvisBtn .jarvis-mini-orb.jv-approved-orb').first();
+ await expect.poll(()=>orb.evaluate(el=>el.classList.contains('jv-owner-photo-test'))).toBe(true);
+ await page.evaluate(()=>{
+  const slot=document.querySelector('#topJarvisBtn .jarvis-mini-orb');
+  const oldSvg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  oldSvg.classList.add('ds-reference-orb');
+  slot.append(oldSvg);
+  for(const name of ['jarvis-core','jarvis-ring']){
+   const el=document.createElement('span');el.className=name;slot.append(el);
+  }
+ });
+ await expect(orb.locator('svg, .ds-reference-orb, .jarvis-core, .jarvis-ring')).toHaveCount(0);
+ await expect(orb.locator('.jv-owner-upload-orb')).toHaveCount(5);
+ await expect(page.locator('#topJarvisBtn')).toHaveCount(1);
+});
+
+
+test('owner JARVIX original sphere has no outer football-shaped pseudo overlay',async({page})=>{
+ test.setTimeout(60000);
+ const css=await page.request.get('/jarvix-action-design.css');
+ expect(css.ok()).toBe(true);
+ expect(await css.text()).not.toContain('body.j-action-workspace #topJarvisBtn::after{display:block');
+ for(const width of [390,1365]){
+  await page.setViewportSize({width,height:900});
+  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+  const orb=page.locator('#topJarvisBtn');
+  await expect(orb).toHaveCount(1);
+  await expect.poll(()=>orb.evaluate(el=>getComputedStyle(el,'::after').display)).toBe('none');
+  await expect.poll(()=>orb.locator('.jv-owner-photo-test').count()).toBe(1);
+  await expect(orb.locator('svg.ds-reference-orb, .jarvis-ring')).toHaveCount(0);
+ }
+});
+
+
+test('Video Uniquifier runs only inside DEEPSYQ shell; old menus and sales bar stay suppressed',async({page})=>{
+ test.setTimeout(90000);
+ await page.setViewportSize({width:1365,height:900});
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&['/api/studio/jobs','/api/payments','/api/stripe'].some(p=>r.url().includes(p)))paid++;});
+ await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('body.ds-embedded-uniquifier')).toHaveCount(1);
+ await expect(page.locator('.ds-platform-header #topJarvisBtn')).toHaveCount(1);
+ await expect(page.locator('#dsSiteSidebar nav a[href="index.html"]')).toHaveCount(1);
+ await expect(page.locator('.ds-platform-header .ds-header-tools')).toContainText('Everyday Tools');
+ await expect(page.locator('.ds-platform-header .ds-header-tour')).toHaveCount(1);
+ await expect(page.locator('.ds-platform-header .ds-header-credit')).toHaveCount(1);
+ await expect(page.locator('.ds-platform-header #topPricing')).toHaveAttribute('href','pricing.html');
+ await expect(page.locator('.ds-platform-header #topLogin')).toHaveCount(1);
+ await expect(page.locator('.ds-platform-header #homeLanguage')).toHaveCount(1);
+ await expect(page.locator('.vu-appbar,.vu-side-nav,.vu-upgrade')).toHaveCount(0);
+ await expect(page.locator('.shell>.sidebar')).toBeHidden();
+ await expect(page.locator('.shell>.main>.topbar')).toBeHidden();
+ await expect(page.locator('#dashboardView>.hero')).toBeHidden();
+ await expect(page.locator('#fileInput')).toHaveCount(1);
+ await expect(page.locator('#variantCount')).toHaveCount(1);
+ await expect(page.locator('#mode')).toHaveCount(1);
+ await expect(page.locator('#aspectRatio')).toHaveCount(1);
+ await expect(page.locator('#quality')).toHaveCount(1);
+ await expect(page.locator('#startBtn')).toBeVisible();
+ await expect(page.locator('#progressCard,#resultsCard,#historyView')).toHaveCount(3);
+ const pin=await page.locator('.ds-platform-header').evaluate(el=>getComputedStyle(el).position);
+ expect(pin).toBe('fixed');
+ const orb=page.locator('#topJarvisBtn .jv-owner-photo-test');
+ await expect(orb).toHaveCount(1);
+ expect(paid).toBe(0);
+});
+
+test('Video Uniquifier mobile uses platform drawer; no second legacy sidebar or header',async({page})=>{
+ test.setTimeout(90000);
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/index.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('.ds-platform-header #topJarvisBtn')).toHaveCount(1);
+ await expect(page.locator('.ds-platform-header #topLogin')).toHaveCount(1);
+ await expect(page.locator('.shell>.sidebar')).toBeHidden();
+ await expect(page.locator('#dsSiteSidebar')).toHaveCount(1);
+ await expect(page.locator('.vu-appbar,.vu-side-nav,.vu-upgrade')).toHaveCount(0);
+ await expect(page.locator('#startBtn')).toBeVisible();
+ const menu=page.locator('.ds-site-mobile-toggle');
+ await expect(menu).toHaveCount(1);
+ await menu.click();
+ await expect(page.locator('body')).toHaveClass(/ds-site-nav-open/);
+ await expect(page.locator('#dsSiteSidebar')).toBeVisible();
+});
+
+
+test('one approved header shell reuses JARVIX and platform actions on secondary routes',async({page})=>{
+ test.setTimeout(150000);
+ await page.setViewportSize({width:1365,height:900});
+ let paid=0;page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio\/jobs|payments|stripe)\b/.test(r.url()))paid++;});
+ for(const route of ['generate-studio.html?studio=image','generate-studio.html?studio=video','generate-studio.html?studio=audio','ai-apps.html','canvas.html','pricing.html','my-creations.html','free-tools.html']){
+  await page.goto('/'+route,{waitUntil:'domcontentloaded'});
+  await expect.poll(()=>page.evaluate(()=>document.body.dataset.dsUnifiedPlatform),{timeout:12000}).toBe('ready');
+  await expect(page.locator('header.ds-unified-header')).toHaveCount(1);
+  const header=page.locator('header.ds-unified-header');
+  await expect(header.locator('#topJarvisBtn')).toHaveCount(1);
+  await expect(header.locator('#topJarvisBtn .jv-owner-photo-test')).toHaveCount(1);
+  await expect(header.locator('#dsTakeTour')).toHaveCount(1);
+  await expect(header.locator('.ds-header-tools')).toHaveCount(1);
+  await expect(header.locator('.ds-header-credit')).toHaveCount(1);
+  await expect(header.locator('#topPricing')).toHaveAttribute('href','pricing.html');
+  await expect(header.locator('#topLogin')).toHaveCount(1);
+  await expect(header.locator('#dsUnifiedLanguage')).toHaveValue(/en|ru|fr|es/);
+  await expect(page.locator('#dsSiteSidebar')).toHaveCount(1);
+  await expect(page.locator('.vu-appbar,.vu-side-nav,.vu-upgrade')).toHaveCount(0);
+  await expect(header).toBeVisible();
+  expect(await header.evaluate(el=>getComputedStyle(el).position)).toBe('fixed');
+ }
+ expect(paid).toBe(0);
+});
+test('secondary-page desktop navigation toggles with a single persistent owner orb',async({page})=>{
+ test.setTimeout(90000);
+ await page.setViewportSize({width:1365,height:900});
+ await page.goto('/free-tools.html',{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>page.evaluate(()=>document.body.dataset.dsUnifiedPlatform),{timeout:12000}).toBe('ready');
+ const orb=page.locator('header.ds-unified-header #topJarvisBtn');
+ await page.evaluate(()=>{window.__ownerOrbInstance=document.querySelector('header.ds-unified-header #topJarvisBtn');});
+ const menu=page.locator('.ds-site-mobile-toggle');
+ await expect(menu).toBeVisible();
+ await menu.click();
+ await expect(page.locator('body')).toHaveClass(/ds-unified-nav-collapsed/);
+ await expect(orb).toHaveCount(1);
+ expect(await orb.evaluate(el=>el===window.__ownerOrbInstance)).toBe(true);
+ await menu.click();
+ await expect(page.locator('body')).not.toHaveClass(/ds-unified-nav-collapsed/);
+});
+test('mobile secondary header preserves existing mobile buttons without duplicating them',async({page})=>{
+ test.setTimeout(80000);
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/generate-studio.html?studio=image',{waitUntil:'domcontentloaded'});
+ await expect.poll(()=>page.evaluate(()=>document.body.dataset.mobileShell),{timeout:12000}).toBe('ready');
+ await expect(page.locator('#topJarvisBtn')).toHaveCount(1);
+ await expect(page.locator('#dsTakeTour')).toHaveCount(1);
+ await expect(page.locator('.ds-header-tools')).toHaveCount(1);
+ await expect(page.locator('#topLogin')).toHaveCount(1);
+ await expect(page.locator('.ds-mobile-control-left #dsTakeTour')).toHaveCount(1);
+ await expect(page.locator('.ds-mobile-control-left .ds-header-tools')).toHaveCount(1);
+ await expect(page.locator('.ds-mobile-control-right #topLogin')).toHaveCount(1);
 });

@@ -20,3 +20,371 @@ body:has(#homeQuickForm[data-jarvix-chat]){padding-bottom:calc(var(--jarvix-comp
 .jarvix-chat .j-plus-menu{max-height:min(350px,55dvh);overflow:auto}.jarvix-chat .j-chat-bottom{position:relative}.jarvix-chat .jarvix-compose textarea{background:transparent;border:0}.jarvix-chat .j-message button{margin-top:8px;margin-right:6px;font-size:12px}
 
 @media(max-width:360px){.j-chat-toolbar h1{font-size:14px}.j-chat-toolbar .j-history{max-width:110px}.j-chat-toolbar button{font-size:11px;padding:5px}.jarvix-compose textarea::placeholder{font-size:14px}}
+
+/* JARVIX chat voice dictation: a clear stop square and animated listening waves. */
+.jarvix-compose #jMic{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.jarvix-compose #jMic[data-voice-recording="true"]{border-color:#43cadf;background:#163448;box-shadow:0 0 0 2px #43cadf26}
+.jarvix-compose #jMic[data-voice-recording="true"] svg{display:none}
+.jarvix-compose #jMic[data-voice-recording="true"]::after{content:"";display:block;width:13px;height:13px;border-radius:2px;background:#f4fcff}
+.jarvix-compose .j-voice-waves{display:inline-flex;align-items:center;justify-content:center;gap:3px;width:40px;height:24px;flex:0 0 40px}
+.jarvix-compose .j-voice-waves[hidden]{display:none}
+.jarvix-compose .j-voice-waves span{display:block;width:3px;height:6px;background:#70e6f0;border-radius:8px;animation:jarvix-listening-wave 0.85s ease-in-out infinite alternate}
+.jarvix-compose .j-voice-waves span:nth-child(2){animation-delay:-.57s;animation-duration:.72s}
+.jarvix-compose .j-voice-waves span:nth-child(3){animation-delay:-.38s;animation-duration:1.05s}
+.jarvix-compose .j-voice-waves span:nth-child(4){animation-delay:-.66s;animation-duration:.79s}
+.jarvix-compose .j-voice-waves span:nth-child(5){animation-delay:-.23s;animation-duration:.93s}
+@keyframes jarvix-listening-wave{from{height:4px;opacity:.65}to{height:21px;opacity:1}}
+@media(max-width:360px){.jarvix-compose .j-voice-waves{width:26px;flex-basis:26px;gap:2px}.jarvix-compose .j-voice-waves span{width:2px}}
+@media(prefers-reduced-motion:reduce){.jarvix-compose .j-voice-waves span{animation:none;height:12px}.jarvix-compose .j-voice-waves span:nth-child(even){height:6px}}
+
+
+/* Owner correction 2026-11-07: ONLY the existing UPPER composer controls.
+   The lower JARVIX/Image/Video/Audio/Tools/Video Uniquifier rail remains
+   exactly as implemented before PR #590. No extra rail styles or waveform. */
+/* Keep the two rows separate; never allow a send circle to escape the top row. */
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer{
+ box-sizing:border-box;
+ display:flex!important;
+ flex-wrap:nowrap!important;
+ align-items:center!important;
+ gap:10px;
+ min-width:0;
+ width:100%;
+ padding:5px 7px!important;
+ border:1px solid #30498566!important;
+ border-radius:999px!important;
+ background:linear-gradient(105deg,#101c40e8,#07132be8)!important;
+ box-shadow:inset 0 0 20px #030b2a52!important;
+ position:relative;
+}
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer textarea{
+ box-sizing:border-box;
+ flex:1 1 90px!important;
+ min-width:0!important;
+ width:0;
+ max-width:none;
+ min-height:46px;
+ margin:0;
+ padding:10px 8px;
+ background:transparent!important;
+ border:0!important;
+ border-radius:14px;
+ color:#f0f6ff;
+ line-height:1.35;
+}
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer :is(#jPlus,.j-send){
+ box-sizing:border-box!important;
+ flex:0 0 58px!important;
+ width:58px!important;
+ height:58px!important;
+ min-width:58px!important;
+ min-height:58px!important;
+ max-width:58px!important;
+ max-height:58px!important;
+ aspect-ratio:1!important;
+ display:grid!important;
+ place-items:center!important;
+ align-self:center!important;
+ position:relative!important;
+ inset:auto!important;
+ margin:0!important;
+ padding:0!important;
+ border-radius:50%!important;
+ line-height:1!important;
+ transform:none!important;
+ overflow:visible;
+ cursor:pointer;
+}
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer #jPlus{
+ font-size:32px!important;
+ font-weight:350!important;
+ color:#fff!important;
+ border:2px solid #d661ff!important;
+ background:radial-gradient(circle at 50% 45%,#24346e 0%,#0c1535 58%,#19072b 100%)!important;
+ box-shadow:0 0 0 2px #ae3dff24,0 0 13px #b328ffb8,0 0 18px #125eff76,
+  inset 0 0 9px #612cff54!important;
+ text-shadow:0 0 5px #fff7!important;
+}
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer .j-send,
+.home-neon #homeQuickForm #homeQuickSubmit{
+ border:2px solid #c2a5ff!important;
+ background:linear-gradient(135deg,#df39f9 4%,#9147ff 42%,#02d3f2 96%)!important;
+ box-shadow:0 0 0 2px #bc4bff1e,0 0 17px #b645ffb8,0 0 18px #03e3f794,
+  inset 0 1px 9px #fff5!important;
+ color:#fff!important;
+ font-size:0!important;
+ font-weight:400!important;
+ text-align:center!important;
+}
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer .j-send .j-send-plane{
+ display:block;
+ width:27px!important;
+ height:27px!important;
+ flex:0 0 27px;
+ stroke:#fff;
+ fill:none;
+ filter:drop-shadow(0 0 3px #f0faffac);
+ transform:none!important;
+}
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer
+ :is(.j-image-shortcut,.j-attach-shortcut,#jMic,.j-settings-shortcut){
+ box-sizing:border-box;
+ flex:0 0 40px;
+ width:40px;
+ height:42px;
+ min-width:40px;
+ min-height:42px;
+ padding:7px!important;
+ display:inline-grid;
+ place-items:center;
+ align-self:center;
+ border:0!important;
+ border-radius:14px!important;
+ background:transparent!important;
+ box-shadow:none!important;
+ color:#eaf3ff!important;
+ margin:0!important;
+}
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer
+ :is(.j-image-shortcut,.j-attach-shortcut,#jMic,.j-settings-shortcut) svg{
+ display:block;
+ width:22px;
+ height:22px;
+ max-width:100%;
+ max-height:100%;
+}
+:where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer
+ :is(.j-image-shortcut,.j-attach-shortcut,#jMic,.j-settings-shortcut):hover{
+ background:#1d346555!important;
+}
+
+@media(max-width:760px){
+ :where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer{
+  gap:5px!important;
+  padding:3px 2px!important;
+  min-height:58px;
+ }
+ :where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer textarea{
+  min-height:46px;
+  padding:9px 4px;
+  font-size:14px!important;
+  line-height:1.2;
+ }
+ :where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer :is(#jPlus,.j-send){
+  flex:0 0 50px!important;
+  width:50px!important;
+  height:50px!important;
+  min-width:50px!important;
+  min-height:50px!important;
+  max-width:50px!important;
+  max-height:50px!important;
+ }
+ :where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer
+  :is(.j-image-shortcut,.j-attach-shortcut,#jMic,.j-settings-shortcut){
+  flex:0 0 31px;
+  width:31px;
+  min-width:31px;
+  height:36px;
+  min-height:36px;
+  padding:4px!important;
+ }
+ :where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer
+  :is(.j-image-shortcut,.j-attach-shortcut,#jMic,.j-settings-shortcut) svg{
+  width:20px;
+  height:20px;
+ }
+}
+@media(max-width:390px){
+ :where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer{gap:3px!important}
+ :where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer :is(#jPlus,.j-send){
+  flex-basis:44px!important;width:44px!important;height:44px!important;
+  min-width:44px!important;min-height:44px!important;max-width:44px!important;max-height:44px!important;
+ }
+ :where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer
+  :is(.j-image-shortcut,.j-attach-shortcut,#jMic,.j-settings-shortcut){
+  flex-basis:28px;min-width:28px;width:28px;padding:3px!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ :where(#homeQuickForm,#jChatForm,#studioDockControls).j-neon-composer :is(#jPlus,.j-send){transition:none!important;animation:none!important}
+}
+
+
+/* Owner-approved Universal Hub (#3), scoped to the existing + menu.
+   No new bar, no change to the approved circular +/Send or chat functionality. */
+.jarvix-compose .j-plus-menu.j-hub-menu{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;
+ box-sizing:border-box;width:min(590px,calc(100vw - 28px));min-width:0;max-width:calc(100vw - 28px);
+ padding:15px 14px 17px;left:0;right:auto;bottom:calc(100% + 14px);
+ max-height:min(330px,50dvh);overflow-y:auto;overflow-x:hidden;
+ border:2px solid transparent;border-radius:25px;
+ background:linear-gradient(135deg,#060d24f8,#151137fc) padding-box,
+ linear-gradient(125deg,#03eaff,#d444ff 52%,#00c8fc) border-box;
+ box-shadow:0 12px 35px #000c,0 0 23px #9f36f75c,0 0 20px #06d2ff4c;
+}
+.jarvix-compose .j-plus-menu.j-hub-menu[hidden],.jarvix-compose .j-settings-menu[hidden]{display:none!important}
+.jarvix-compose .j-hub-menu .j-hub-tile{
+ appearance:none;box-sizing:border-box;min-width:0;min-height:91px;height:auto;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;
+ margin:0;padding:12px 5px 10px;border:1px solid #298fdb;border-radius:17px;
+ background:linear-gradient(155deg,#122452,#070e29);box-shadow:inset 0 0 12px #145dd74d,0 0 10px #1272dc29;
+ color:#eef8ff;text-decoration:none;text-align:center;font:inherit;cursor:pointer;
+ transition:filter .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+.jarvix-compose .j-hub-menu .j-hub-tile:nth-child(2),
+.jarvix-compose .j-hub-menu .j-hub-tile:nth-child(5){
+ border-color:#b83df1;background:linear-gradient(145deg,#281049,#0d1033);box-shadow:inset 0 0 12px #8a24ff55,0 0 12px #8d2cff3b;
+}
+.jarvix-compose .j-hub-menu .j-hub-tile:nth-child(3),
+.jarvix-compose .j-hub-menu .j-hub-tile:nth-child(7){
+ border-color:#12dae2;background:linear-gradient(145deg,#064653,#081533);box-shadow:inset 0 0 15px #08c7de50,0 0 10px #05cdec40;
+}
+.jarvix-compose .j-hub-menu .j-hub-tile:nth-child(4),
+.jarvix-compose .j-hub-menu .j-hub-tile:nth-child(8){border-color:#b99a3e;box-shadow:inset 0 0 13px #a77e2055,0 0 8px #ba8a2c40}
+.jarvix-compose .j-hub-menu .j-hub-tile:is(:hover,:focus-visible),
+.jarvix-compose .j-hub-menu .j-hub-tile[aria-pressed="true"]{
+ border-color:#58f3ff;box-shadow:inset 0 0 18px #188ef376,0 0 14px #22dbff9a;filter:brightness(1.1)
+}
+.jarvix-compose .j-hub-glyph{display:grid;place-items:center;width:30px;height:30px;color:#6ee7ff;flex:0 0 30px}
+.jarvix-compose .j-hub-glyph svg{width:29px;height:29px;max-width:100%}
+.jarvix-compose .j-hub-tile:nth-child(2) .j-hub-glyph,
+.jarvix-compose .j-hub-tile:nth-child(5) .j-hub-glyph{color:#e58bff}
+.jarvix-compose .j-hub-tile:nth-child(3) .j-hub-glyph,
+.jarvix-compose .j-hub-tile:nth-child(7) .j-hub-glyph{color:#41ffe8}
+.jarvix-compose .j-hub-tile:nth-child(4) .j-hub-glyph,
+.jarvix-compose .j-hub-tile:nth-child(8) .j-hub-glyph{color:#ffdb78}
+.jarvix-compose .j-hub-tile strong{font-size:clamp(10px,1.9vw,14px);font-weight:600;white-space:normal;line-height:1.1;overflow-wrap:normal}
+.jarvix-compose .j-settings-menu{
+ position:absolute;z-index:72;bottom:calc(100% + 14px);right:0;
+ box-sizing:border-box;width:min(380px,calc(100vw - 28px));max-width:calc(100vw - 28px);
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:14px;
+ border:2px solid transparent;border-radius:23px;
+ background:linear-gradient(140deg,#07132dfc,#11112ffc) padding-box,
+ linear-gradient(110deg,#03d8f7,#b946ff,#03eaff) border-box;
+ box-shadow:0 15px 35px #000a,0 0 20px #18d5fa4d,0 0 15px #ab38fa5c;
+}
+.jarvix-compose .j-settings-tile{
+ min-width:0;min-height:87px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;
+ border:1px solid #7a68d7;border-radius:16px;background:linear-gradient(145deg,#1e1745,#091a36);
+ color:#f5f9ff;text-decoration:none;font-size:13px;font-weight:650;line-height:1.1;
+ box-shadow:inset 0 0 12px #8a40ff42;
+}
+.jarvix-compose .j-settings-tile svg{width:28px;height:28px;color:#79e9ff}
+.jarvix-compose .j-settings-tile:nth-child(2){border-color:#bd52ff}
+.jarvix-compose .j-settings-tile:nth-child(3){border-color:#16dfdc}
+.jarvix-compose .j-settings-tile:is(:hover,:focus-visible){outline:1px solid #4cf0ff;outline-offset:2px;box-shadow:0 0 13px #31e4ff8e}
+.j-mode-rail .j-active-mode:not([hidden]){box-sizing:border-box;display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:6px;min-height:35px;
+ padding:6px 12px;margin:0;border:1px solid #24d5ff;border-radius:999px;
+ background:linear-gradient(110deg,#172358,#08162f);box-shadow:0 0 13px #05b4ff85,inset 0 0 12px #08c9ff35;color:#e9fcff;
+ font-size:13px;font-weight:700;white-space:nowrap;
+}
+.j-mode-rail .j-active-mode[hidden]{display:none!important}
+.j-mode-rail .j-active-mode svg{width:17px;height:17px;color:#31e7ff}
+@media(max-width:760px){
+ .jarvix-compose .j-plus-menu.j-hub-menu{gap:6px;padding:10px 8px 12px;max-height:min(300px,45dvh);border-radius:22px}
+ .jarvix-compose .j-hub-menu .j-hub-tile{min-height:76px;padding:9px 2px;gap:7px;border-radius:13px}
+ .jarvix-compose .j-hub-glyph{width:23px;height:23px;flex-basis:23px}
+ .jarvix-compose .j-hub-glyph svg{width:23px;height:23px}
+ .jarvix-compose .j-hub-tile strong{font-size:clamp(9px,2.45vw,12px)}
+ .jarvix-compose .j-settings-menu{gap:6px;padding:10px}
+ .jarvix-compose .j-settings-tile{min-height:73px;font-size:12px;gap:7px}
+ .j-mode-rail .j-active-mode:not([hidden]){min-height:30px;font-size:11px;padding:5px 9px}
+}
+@media(prefers-reduced-motion:reduce){.jarvix-compose .j-hub-tile{transition:none!important}}
+
+
+/* Owner 2026-11-07: Studio Image/Video/Audio share the EXACT existing Universal
+   Hub appearance. This is one visible dock reusing the real Studio form controls;
+   the original provider/consent/price and native Studio Settings remain in charge. */
+body.studio-universal-ready #creator{
+ position:static!important;inset:auto!important;transform:none!important;
+ padding:6px 0 0!important;margin:0!important;
+ border:0!important;box-shadow:none!important;background:transparent!important;
+ backdrop-filter:none!important;max-width:none!important;
+}
+body.studio-universal-ready #creator>.prompt-row,
+body.studio-universal-ready #creator>.composer-controls{display:none!important}
+body.studio-universal-ready .studio-shell>main{
+ padding-bottom:calc(160px + env(safe-area-inset-bottom,0px))!important;
+}
+#studioUniversalDock.j-neon-dock{
+ box-sizing:border-box;position:fixed;z-index:55;
+ bottom:calc(12px + env(safe-area-inset-bottom,0px));
+ left:calc(204px + (100vw - 204px)/2);
+ transform:translateX(-50%);width:min(840px,calc(100vw - 300px));
+ max-width:calc(100vw - 22px);min-width:0;
+ display:flex;flex-direction:column;gap:7px;
+ padding:9px 12px 11px;border:2px solid transparent;border-radius:32px;
+ background:linear-gradient(130deg,#09122aeb,#080c29f5) padding-box,
+  linear-gradient(105deg,#00dfff,#4c69ff 28%,#c244ff 75%,#04dafa) border-box;
+ box-shadow:0 0 14px #00dfff67,0 0 18px #953aff57,inset 0 0 16px #183e7845;
+ color:#edf8ff;
+}
+#studioDockControls.jarvix-compose.j-neon-composer{
+ box-sizing:border-box;display:flex;align-items:center;gap:10px;
+ width:100%;min-width:0;padding:5px 7px;
+ border-radius:999px;background:linear-gradient(105deg,#101c40e8,#07132be8);
+ border:1px solid #30498566;
+}
+#studioDockControls #prompt{
+ box-sizing:border-box;resize:none;min-width:0;width:0;flex:1 1 90px;
+ height:52px!important;min-height:46px!important;max-height:100px;
+ margin:0!important;padding:10px 8px!important;
+ border:0!important;background:transparent!important;border-radius:14px;
+ font:inherit;line-height:1.3;color:#f5f9ff;outline-offset:2px;
+}
+#studioDockControls #studioVoiceBtn,
+#studioDockControls #studioSettingsToggle{
+ box-sizing:border-box;flex:0 0 40px;min-width:40px;width:40px;height:42px;
+ display:grid;place-items:center;position:relative;
+ padding:7px!important;margin:0!important;
+ border:0!important;border-radius:14px!important;
+ box-shadow:none!important;background:transparent!important;color:#eaf3ff!important;
+}
+#studioDockControls #studioVoiceBtn svg{width:22px;height:22px;display:block}
+#studioDockControls #studioSettingsToggle{font-size:25px!important;font-weight:500}
+#studioDockControls #studioVoiceBtn:is(:hover,:focus-visible),
+#studioDockControls #studioSettingsToggle:is(:hover,:focus-visible){
+ background:#1d346555!important;
+}
+#studioDockControls .j-send-plane{display:block;width:27px;height:27px}
+#studioUniversalDock>.j-mode-rail{
+ display:flex;flex-wrap:nowrap;align-items:center;gap:9px;min-width:0;
+ padding:2px 5px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
+}
+#studioUniversalDock>.j-mode-rail::-webkit-scrollbar{display:none}
+#studioUniversalDock>.j-mode-rail a{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ min-height:38px;padding:7px 14px;
+ border:1px solid #a64af5;border-radius:999px;
+ background:linear-gradient(120deg,#0b1639,#0b1025);
+ box-shadow:0 0 9px #a546e94c,inset 0 0 9px #3d30bf38;
+ color:#f3f6ff;text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap;
+}
+#studioUniversalDock>.j-mode-rail a:first-child{
+ border-color:#0ee9f7;color:#22eafa;
+ box-shadow:0 0 10px #00eaff94,inset 0 0 8px #00b4ff4d;font-weight:700;
+}
+#studioUniversalDock>.j-mode-rail .j-rail-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px}
+#studioUniversalDock>.j-mode-rail .j-rail-icon svg{width:18px;height:18px}
+body.studio-universal-ready .j-settings-menu .j-settings-tile{
+ cursor:pointer;
+}
+@media(max-width:900px){
+ #studioUniversalDock.j-neon-dock{left:50%;width:calc(100vw - 24px);max-width:none}
+}
+@media(max-width:760px){
+ #studioUniversalDock.j-neon-dock{
+  padding:9px 8px 10px;bottom:calc(8px + env(safe-area-inset-bottom,0px));gap:5px;border-radius:25px;
+ }
+ #studioDockControls.jarvix-compose.j-neon-composer{gap:5px;padding:3px 2px;min-height:58px}
+ #studioDockControls #prompt{height:48px!important;min-height:45px!important;font-size:15px;padding:8px 4px!important}
+ #studioDockControls #studioVoiceBtn,
+ #studioDockControls #studioSettingsToggle{flex:0 0 31px;min-width:31px;width:31px;height:36px;padding:4px!important}
+ #studioUniversalDock>.j-mode-rail{gap:6px;padding:2px}
+ #studioUniversalDock>.j-mode-rail a{min-height:34px;font-size:11px;padding:6px 9px}
+}
+@media(max-width:390px){
+ #studioDockControls.jarvix-compose.j-neon-composer{gap:3px}
+ #studioDockControls #studioVoiceBtn,#studioDockControls #studioSettingsToggle{flex-basis:28px;min-width:28px;width:28px}
+}

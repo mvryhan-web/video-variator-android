@@ -1,5 +1,6 @@
 import {applyCanonicalNavIcons} from './deepsyq-canonical-nav-icons.js';
 import {installApprovedJarvixOrb} from './jarvix-approved-orb.js';
+import {installUnifiedPlatformHeader} from './deepsyq-unified-platform-header.js';
 // Owner mobile reference, 2026-11-05. Keep existing buttons and their handlers.
 export function drawerSwipe(start, end, open, width) {
   if (!start || Math.abs(end.y - start.y) > 45 || end.time - start.time > 700) return null;
@@ -20,8 +21,10 @@ function setupMobileShell() {
   }
 
   if (document.body.dataset.mobileShell) return;
-  const header = location.pathname.endsWith('/index.html') ? document.querySelector('.vu-appbar')
-    : document.querySelector('.vu-appbar') || document.querySelector('header:has(#topJarvisBtn)');
+  // DEEPSYQ owns the Video Uniquifier shell; never select the former VU appbar.
+  const header = document.querySelector('.ds-platform-header') ||
+    (location.pathname.endsWith('/index.html') ? document.querySelector('.vu-appbar')
+    : document.querySelector('.vu-appbar') || document.querySelector('header:has(#topJarvisBtn)'));
   const sidebar = document.querySelector('#sidebar, #dsSiteSidebar, .shell>.sidebar');
   const toggle = document.querySelector('#menu, .ds-site-mobile-toggle, .vu-nav-toggle, #menuBtn');
   if (!header || !sidebar || !toggle) return;
@@ -120,7 +123,7 @@ function setupMobileShell() {
   if(!login.id)login.id='topLogin';
   if(!login.isConnected)desktopActions.append(login);
   desktopActions.prepend(tools);
-  if(document.body.classList.contains('j-action-workspace')){
+  if(document.body.classList.contains('j-action-workspace') || document.body.classList.contains('ds-embedded-uniquifier')){
     const apps=link('✦ AI Apps','ai-apps.html','ds-header-apps');desktopActions.append(apps);
     const balance=link('⚡ AI credits: —','pricing.html#credits','ds-header-credit');if(!document.getElementById('walletButton'))desktopActions.append(balance);
     const updateCredit=async()=>{const token=localStorage.getItem('vv_token');balance.textContent='⚡ AI credits: —';if(!token)return;try{const r=await fetch('/api/ai-wallet/balance',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const data=await r.json();if(token===localStorage.getItem('vv_token')&&Number.isSafeInteger(data.available)&&data.available>=0)balance.textContent='⚡ AI credits: '+data.available.toLocaleString();}catch{}};
@@ -136,13 +139,31 @@ function setupMobileShell() {
   };
   function refresh() {
     const labels = copy();
-    tools.textContent=labels[0];tour.textContent=labels[3];
+    tools.textContent=document.body.classList.contains('ds-embedded-uniquifier')?'Everyday Tools':labels[0];tour.textContent=labels[3];
     if (!document.getElementById('topPricing')) pricing.textContent = labels[1];
     let token='';try{token=localStorage.getItem('vv_token')||'';}catch{}
     const account=headerAccount(token,locale());login.textContent=account.label;if(login.tagName==='A')login.href=account.href;
   }
   window.addEventListener('deepsyq:lang', refresh);
   window.addEventListener('storage',refresh);window.addEventListener('pageshow',refresh);window.addEventListener('focus',refresh);refresh();
+
+  if(document.body.classList.contains('ds-embedded-uniquifier')){
+    const localeSelect=header.querySelector('#homeLanguage');
+    if(localeSelect){
+      localeSelect.value=['en','ru','fr','es'].includes(locale())?locale():'en';
+      localeSelect.addEventListener('change',()=>{
+        localStorage.setItem('deepsyq_home_language',localeSelect.value);
+        window.dispatchEvent(new Event('deepsyq:lang'));
+        refresh();
+      });
+    }
+    // On desktop reuse the existing platform navigation button, never VU menu.
+    document.querySelector('.ds-site-mobile-toggle')?.addEventListener('click',()=>{
+      if(matchMedia('(min-width:901px)').matches){
+        document.body.classList.toggle('ds-vu-nav-collapsed');
+      }
+    });
+  }
 
   const mobile = matchMedia('(max-width:760px)');
   let mounted = false;
@@ -222,6 +243,12 @@ if (typeof document !== 'undefined') {
     setupMobileShell();
     applyCanonicalNavIcons(); // Icons only; unchanged route handlers and labels.
     installApprovedJarvixOrb(); // Stage07: same approved orb art in existing controls, no new UI actions.
+    if(!document.querySelector('link[href="deepsyq-unified-platform-header.css"]')){
+      const style=document.createElement('link');style.rel='stylesheet';style.href='deepsyq-unified-platform-header.css';
+      style.addEventListener('load',()=>window.dispatchEvent(new Event('resize')),{once:true});
+      document.head.append(style);
+    }
+    installUnifiedPlatformHeader(); // Exactly one owner toolbar; reuses existing actions and layout.
     if (document.body.dataset.mobileShell) {done();return;}
     const ready = new MutationObserver(() => {
       setupMobileShell();
