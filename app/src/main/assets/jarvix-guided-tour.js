@@ -101,17 +101,20 @@ async function play(){
   blocked(current,'Tour control unavailable');return;
  }
  if(step.narration==='section'){
-  spotlight(step);
-  void speakOwnerSpeech(sectionNarration(step.title,state.language),state.language,{start:()=>updateJarvisState('speaking'),complete:()=>advance(current),fallback:()=>blocked(current,'Voice service unavailable'),error:()=>blocked(current,'Voice service unavailable')});return;
+  speakBeats(sectionNarrationBeats(step.title,state.language),current);return;
  }
  if(step.narration==='plan'){
-  let card=document.querySelector(step.target);
-  if(!card){waitTimer=setTimeout(()=>{if(current===turn&&state)void play();},250);return;}
-  spotlight(step);
-  const text=planNarration({name:card.querySelector('h3')?.textContent,price:[...(card.querySelector('.price-plan-price')?.children||[])].map(e=>e.textContent).join(' '),summary:card.querySelector('.price-plan-summary')?.textContent,billingNotice:card.querySelector('.price-plan-facts > span:last-child')?.textContent,features:[...card.querySelectorAll('.price-features li')].map(e=>e.querySelector('span:last-child')?.textContent||e.textContent),note:card.querySelector('.price-plan-note')?.textContent},state.language);
-  bar.dataset.narration='connecting';
-  const chunks=narrationChunks(text);let part=state.narrationStep===state.index?Math.min(state.narrationPart||0,chunks.length-1):0;
-  const speakNext=()=>{if(current!==turn||!state||state.phase!=='playing')return;void speakOwnerSpeech(chunks[part],state.language,{source:()=>{},phase:phase=>{if(current===turn&&bar)bar.dataset.narration=phase;},start:()=>updateJarvisState('speaking'),complete:()=>{if(++part<chunks.length){state.narrationStep=state.index;state.narrationPart=part;save();speakNext();}else advance(current);},fallback:()=>blocked(current,'Voice service unavailable'),error:()=>blocked(current,'Voice service unavailable')});};speakNext();return;
+  const card=document.querySelector(step.target);
+  const data={
+   name:card.querySelector('h3')?.textContent,
+   price:[...(card.querySelector('.price-plan-price')?.children||[])].map(e=>e.textContent).join(' '),
+   summary:card.querySelector('.price-plan-summary')?.textContent,
+   billingNotice:card.querySelector('.price-plan-facts > span:last-child')?.textContent,
+   features:[...card.querySelectorAll('.price-features li')].map(e=>e.querySelector('span:last-child')?.textContent||e.textContent),
+   note:card.querySelector('.price-plan-note')?.textContent
+  };
+  const beats=planNarrationBeats(data).map(beat=>({...beat,target:step.target+' '+beat.target}));
+  speakBeats(beats,current);return;
  }
  const started=performance.now();
  audio=new Audio(step.audio);const clip=audio;clip.id='dsTourAudio';clip.hidden=true;document.body.append(clip);clip.playbackRate=1;
