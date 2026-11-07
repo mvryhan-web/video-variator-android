@@ -130,3 +130,16 @@ test('JARVIX text media commands prepare Studios and never auto bill or falsely 
  assert.match(chat,/Number\(quote\.credits\)!==0/);
  assert.match(chat,/consent:false/);
 });
+
+
+test('GO stage09 JARVIX voice meter uses decoded PCM energy, never invents speech during silence',async()=>{
+ const {measuredVoiceLevel}=await import('../app/src/main/assets/jarvix-owner-speech.js');
+ const silent=new Float32Array(48000);
+ assert.equal(measuredVoiceLevel(silent,48000,.4),0);
+ const spoken=Float32Array.from({length:48000},(_,i)=>Math.sin(i*.035)*.12);
+ const audible=measuredVoiceLevel(spoken,48000,.4);
+ assert.ok(audible>.2&&audible<=1,'speaking waveform produces measurable energy');
+ assert.equal(measuredVoiceLevel(spoken,48000,5),0,'end of clip is silent');
+ assert.equal(measuredVoiceLevel(null,48000,.2),0);
+ assert.equal(measuredVoiceLevel(spoken,0,.2),0);
+});
