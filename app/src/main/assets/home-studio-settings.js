@@ -16,7 +16,7 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
  host.id='homeStudioSettingsHost';
  host.setAttribute('role','group');
  host.setAttribute('aria-label','Studio settings');
- host.style.cssText='position:fixed;z-index:10010;isolation:isolate;padding:0;margin:0;border:0;background:transparent;box-shadow:none;';
+ host.style.cssText='position:fixed;z-index:10010;isolation:isolate;padding:0;margin:0;border:0;background:transparent;box-shadow:none;visibility:hidden;';
  const frame=document.createElement('iframe');
  frame.id='homeStudioSettingsFrame';
  frame.title='Studio settings — existing model and format controls';
@@ -62,7 +62,7 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
    frame.contentDocument?.querySelector('[data-kind="'+nativeKind+'"]')?.click();
    if(current)current.mode=nextMode;
   }
-  visible=true;host.style.display='block';position();
+  visible=true;host.style.display='block';host.style.visibility=host.dataset.ready==='true'?'visible':'hidden';position();
   gear.setAttribute('aria-expanded','true');gear.setAttribute('aria-controls',host.id);
   if(hubRef&&!hubRef.open)hubRef.showModal();
   pinRef?.();
@@ -162,6 +162,10 @@ export function openHomeStudioSettings({gear,mode='image'}={}){
   pinRef=pin;
   pin();
   frame.contentWindow.requestAnimationFrame(pin);
+  // Never expose the embedded Studio page before its original settings hub
+  // and its no-duplicate-layout presentation are both fully initialized.
+  host.dataset.ready='true';
+  if(visible)host.style.visibility='visible';
   hub.addEventListener('close',close);
   // Ensure the host closes even if the native dialog close event is delayed
   // in mobile WebKit/Chromium iframe top layers.
