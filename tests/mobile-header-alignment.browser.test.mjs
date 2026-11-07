@@ -45,7 +45,12 @@ test('Owner mobile header positioning across shared pages',async()=>{
       });
       console.log('MOBILE_HEADER_QA '+JSON.stringify({width,route,...geometry}));
       const centerX=b=>b.x+b.w/2,centerY=b=>b.y+b.h/2;
-      for(const key of ['header','spacer','brand','word','login','menu','orb','controls','main'])
+      // The legacy JARVIX Studio route has no native <main>; its header is
+      // shared, but this task must not rewrite that page's document structure.
+      const expectedBoxes=route==='jarvix-studio.html'
+       ? ['header','spacer','brand','word','login','menu','orb','controls']
+       : ['header','spacer','brand','word','login','menu','orb','controls','main'];
+      for(const key of expectedBoxes)
        assert.ok(geometry[key]&&geometry[key].w>0&&geometry[key].h>0,
         width+' '+route+' missing shared visible '+key+' '+JSON.stringify(geometry));
       assert.equal(geometry.header.h,132,width+' '+route+' exactly one compact 132px header');
@@ -65,7 +70,7 @@ test('Owner mobile header positioning across shared pages',async()=>{
       // Legacy informational/tool pages have their own content paddings; this
       // task must normalize their HEADER, not redesign their first content row.
       const legacyContentGap=['contact.html','audio-studio.html','jarvix-studio.html','mobile-utility.html'].includes(route)?80:28;
-      assert.ok(geometry.main.y>=geometry.header.y+geometry.header.h-1&&
+      if(geometry.main)assert.ok(geometry.main.y>=geometry.header.y+geometry.header.h-1&&
        geometry.main.y<=geometry.header.y+geometry.header.h+legacyContentGap,
        width+' '+route+' actual content begins near the common header without a large top gap');
       assert.ok(geometry.word.x>geometry.menu.x+geometry.menu.w+2&&
