@@ -190,7 +190,7 @@ html .inspiration-detail-dialog .inspiration-detail-close:focus-visible{
  }
 }
 
-/* Inspiration image detail only: mobile left "Show more", right "Copy prompt".
+/* Inspiration image and video details: mobile left "Show more", right "Copy prompt".
    The original Clone & Try stays full width on the bottom. */
 .inspiration-detail-minimal .inspiration-detail-prompt-controls{
  display:flex;align-items:center;justify-content:space-between;
@@ -214,15 +214,15 @@ html .inspiration-detail-dialog .inspiration-detail-close:focus-visible{
  position:absolute;z-index:2;top:50%;transform:translateY(-50%);
  display:grid;place-items:center;
  width:42px;height:46px;min-width:42px;
- padding:0;border:1px solid #55c7cc80;border-radius:13px;
- color:#efffff;background:#091524bf;
+ padding:0;border:0!important;border-radius:0!important;box-shadow:none!important;
+ color:#efffff;background:transparent!important;
  font-size:32px;line-height:1;cursor:pointer;
- backdrop-filter:blur(8px);
+ backdrop-filter:none!important;
 }
 .inspiration-detail-minimal .inspiration-detail-prev{left:12px}
 .inspiration-detail-minimal .inspiration-detail-next{right:12px}
 .inspiration-detail-minimal .inspiration-detail-arrow:hover{
- border-color:#ffd07c;color:#ffd07c;background:#0b1929ee;
+ color:#ffd07c;background:transparent!important;
 }
 .inspiration-detail-minimal .inspiration-detail-arrow:focus-visible{
  outline:2px solid #ffd07c;outline-offset:2px;
@@ -232,7 +232,7 @@ html .inspiration-detail-dialog .inspiration-detail-close:focus-visible{
  font-variant-numeric:tabular-nums;
 }
 @media(max-width:460px){
- .inspiration-detail-minimal .inspiration-detail-arrow{width:38px;min-width:38px;height:44px;font-size:29px;border-radius:11px}
+ .inspiration-detail-minimal .inspiration-detail-arrow{width:38px;min-width:38px;height:44px;font-size:29px}
  .inspiration-detail-minimal .inspiration-detail-prev{left:7px}
  .inspiration-detail-minimal .inspiration-detail-next{right:7px}
  .inspiration-detail-minimal .inspiration-detail-prompt-controls{gap:8px}
