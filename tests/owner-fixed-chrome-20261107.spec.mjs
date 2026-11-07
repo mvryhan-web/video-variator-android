@@ -39,8 +39,10 @@ for(const [label,width,height] of [['desktop',1365,900],['mobile',390,844]]){
     const s=sidebar?.getBoundingClientRect();
     return {position:getComputedStyle(el).position,top:r.top,bottom:r.bottom,width:r.width,sidebarPosition:sidebar&&getComputedStyle(sidebar).position,sidebarTop:s?.top,scrollY:window.scrollY};
    });
-   expect(metrics.scrollY,'test viewport did not scroll on '+path).toBeGreaterThan(0);
-   expect(metrics.position,'header not pinned on '+path).toMatch(/fixed|sticky/);
+   // Some routes scroll inside their own container rather than window (notably
+   // Pricing / Library in mobile WebKit). A genuinely viewport-fixed header is
+   // required independent of the scroll container, so assert its geometry.
+   expect(metrics.position,'header must stay viewport-fixed on '+path).toBe('fixed');
    expect(Math.abs(metrics.top),'header scrolled out of view on '+path).toBeLessThanOrEqual(3);
    expect(metrics.bottom,'header too small/hidden on '+path).toBeGreaterThan(30);
    expect(metrics.sidebarPosition,'sidebar not fixed on '+path).toBe('fixed');
