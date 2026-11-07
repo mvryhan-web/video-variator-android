@@ -1,4 +1,4 @@
-/* Owner 2026-11-07 Cockpit Header: exact match to owner reference media_1794074488180_596c4603.jpg
+/* Owner 2026-11-07 Cockpit Header: exact match to owner reference media_1794076777524_b2e60749.jpg
  * Left pod: [≡] Menu, [▷] Tour, [🗂] Everyday Tools
  * Center: JARVIX glowing orb
  * Right pod: [⚡] AI Credits, [👑] Pricing, [RU ⌵] Language, [👤] Log in
@@ -6,8 +6,8 @@
 const labels = {
   en: { credits: 'AI Credits', login: 'Log in', pricing: 'Pricing', tour: 'Tour', tools: 'Everyday Tools' },
   ru: { credits: 'AI Credits', login: 'Войти', pricing: 'Тарифы', tour: 'Экскурсия', tools: 'Everyday Tools' },
-  fr: { credits: 'Crédits IA', login: 'Connexion', pricing: 'Tarifs', tour: 'Visite guidée', tools: 'Outils' },
-  es: { credits: 'Créditos IA', login: 'Acceder', pricing: 'Precios', tour: 'Visita guidada', tools: 'Herramientas' }
+  fr: { credits: 'Crédits IA', login: 'Connexion', pricing: 'Tarifs', tour: 'Visite guidée', tools: 'Everyday Tools' },
+  es: { credits: 'Créditos IA', login: 'Acceder', pricing: 'Precios', tour: 'Visita guiada', tools: 'Everyday Tools' }
 };
 
 const locale = () => {
@@ -39,9 +39,9 @@ export function installUnifiedPlatformHeader() {
     return;
   }
 
-  const header = document.querySelector('header.ds-stable-header') || document.querySelector('header.top') || document.querySelector('header');
-  const sidebar = document.querySelector('#sidebar, #dsSiteSidebar');
-  const toggle = document.querySelector('.ds-site-mobile-toggle, #menu, #menuBtn');
+  const header = document.querySelector('header.ds-stable-header') || document.querySelector('header.top') || document.querySelector('header.ds-platform-header') || document.querySelector('header');
+  const sidebar = document.querySelector('#sidebar, #dsSiteSidebar, .shell>.sidebar');
+  const toggle = document.querySelector('.ds-site-mobile-toggle, #menu, #menuBtn, .vu-nav-toggle');
   const orb = document.getElementById('topJarvisBtn');
   let tour = document.getElementById('dsTakeTour');
   let tools = header?.querySelector('.ds-header-tools') || document.querySelector('.ds-header-tools');
@@ -89,10 +89,9 @@ export function installUnifiedPlatformHeader() {
   // Credit balance button
   let credit = header.querySelector('.ds-header-credit') || document.querySelector('.ds-header-credit');
   if (!credit) {
-    credit = link('AI Credit', 'pricing.html#credits', 'ds-header-credit ds-unified-credit');
+    credit = link('AI Credits', 'pricing.html#credits', 'ds-header-credit ds-unified-credit');
     credit.setAttribute('aria-label', 'AI Credit');
   }
-  credit.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:6px;color:#facc15;font-size:14px">⚡</span><span class="ds-pod-text">AI Credits</span>';
 
   const readBalance = async () => {
     let token = '';
@@ -153,7 +152,7 @@ export function installUnifiedPlatformHeader() {
 
   if (toggle) {
     toggle.classList.add('ds-pod-btn', 'ds-pod-menu');
-    toggle.innerHTML = '<span class="ds-menu-icon" aria-hidden="true">≡</span>';
+    toggle.innerHTML = '<span class="ds-menu-icon" aria-hidden="true" style="font-size:18px;line-height:1">≡</span>';
     left.append(toggle);
   }
 
@@ -173,12 +172,12 @@ export function installUnifiedPlatformHeader() {
   right.className = 'ds-header-pod ds-header-pod-right ds-unified-actions-right';
 
   credit.classList.add('ds-pod-btn', 'ds-pod-credit');
-  credit.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:6px;color:#facc15;font-size:14px">⚡</span><span class="ds-pod-text">AI Credits</span>';
+  credit.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:6px;display:inline-flex;align-items:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" stroke-width="1"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></span><span class="ds-pod-text">AI Credits</span>';
   credit.setAttribute('aria-label', 'AI Credit');
   right.append(credit);
 
   pricing.classList.add('ds-pod-btn', 'ds-pod-pricing');
-  pricing.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:6px;color:#fbbf24;font-size:14px">👑</span><span class="ds-pod-text">' + dictionary().pricing + '</span>';
+  pricing.innerHTML = '<span class="ds-pod-icon" aria-hidden="true" style="margin-right:6px;color:#fbbf24;font-size:13px">👑</span><span class="ds-pod-text">' + dictionary().pricing + '</span>';
   right.append(pricing);
 
   right.append(languageWrap);
