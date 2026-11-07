@@ -89,7 +89,7 @@ export function installUnifiedPlatformHeader(){
  document.body.dataset.dsUnifiedPlatform='ready';
  const updateToggle=()=>{
   if(matchMedia('(max-width:900px)').matches)return;
-  const rightEdge=document.body.classList.contains('ds-unified-nav-collapsed')?0:sidebar.getBoundingClientRect().right;
+  const rightEdge=document.body.classList.contains('ds-unified-nav-collapsed')?0:sidebar.getBoundingClientRect().width;
   toggle.style.setProperty('--ds-unified-menu-left',Math.round(rightEdge+22)+'px');
  };
  toggle.addEventListener('click',()=>{
