@@ -116,11 +116,19 @@ async function play(){
   const beats=planNarrationBeats(data).map(beat=>({...beat,target:step.target+' '+beat.target}));
   speakBeats(beats,current);return;
  }
- const started=performance.now();
+ const cues=tourCues(step.title);
+ const started=performance.now();let lastCue=-1;
  audio=new Audio(step.audio);const clip=audio;clip.id='dsTourAudio';clip.hidden=true;document.body.append(clip);clip.playbackRate=1;
- clip.onloadedmetadata=()=>{if(state&&state.position)clip.currentTime=Math.min(state.position,Number.isFinite(clip.duration)?Math.max(0,clip.duration-.1):state.position);};
- clip.onplay=()=>{pauseJarvisRecognition();updateJarvisState('speaking');};clip.onended=()=>{const delay=state?.index===0?Math.max(0,3000-(performance.now()-started)):0;waitTimer=setTimeout(()=>advance(current),delay);};
- clip.onerror=()=>blocked(current);
+ const sync=()=>{if(current!==turn||!state||state.phase!=='playing')return;
+  const index=cueAt(cues,clip.currentTime,clip.duration);
+  if(index!==lastCue){lastCue=index;spotlight(cues[index]);}
+ };
+ clip.onloadedmetadata=()=>{if(state?.position)clip.currentTime=Math.min(state.position,Number.isFinite(clip.duration)?Math.max(0,clip.duration-.1):state.position);sync();};
+ clip.ontimeupdate=sync;
+ clip.onplay=()=>{pauseJarvisRecognition();updateJarvisState('speaking');sync();};
+ clip.onended=()=>{const delay=state?.index===0?Math.max(0,3000-(performance.now()-started)):0;waitTimer=setTimeout(()=>advance(current),delay);};
+ clip.onerror=()=>blocked(current,'Recorded narration unavailable');
+ captionForClip(step.audio,current);
  try{await clip.play();}catch{blocked(current,'Press Continue');}
 }
 export function startJarvixGuidedTour(){
@@ -132,7 +140,7 @@ export function startJarvixGuidedTour(){
 }
 export function pauseJarvixGuidedTour(){if(!state)return;state={...tourAction(state,'pause'),position:audio?.currentTime||state.position||0};clearAudio();save();updateJarvisState('idle');render();}
 export function continueJarvixGuidedTour(){if(!state)return;unlockOwnerSpeech();state={...tourAction(state,'continue'),error:null};save();void play();}
-export function stopJarvixGuidedTour(){clearAudio();state=null;save();stopAllSpeech();pauseJarvisRecognition();closeNavigation();window.dispatchEvent(new Event('jarvix:tour-ended'));document.querySelectorAll('.jarvis-tour-spotlight').forEach(e=>e.classList.remove('jarvis-tour-spotlight'));updateJarvisState('idle');render();}
+export function stopJarvixGuidedTour(){clearAudio();state=null;save();stopAllSpeech();pauseJarvisRecognition();closeNavigation();activeFocus='';window.dispatchEvent(new Event('jarvix:tour-ended'));document.querySelectorAll('.jarvis-tour-spotlight').forEach(e=>e.classList.remove('jarvis-tour-spotlight'));updateJarvisState('idle');render();}
 export function resumeJarvixGuidedTour(){state=read();if(!state)return false;void play();return true;}
 if(typeof window!=='undefined'){
  window.addEventListener('keydown',e=>{if(e.key==='Escape'&&isTourActive())stopJarvixGuidedTour();});
