@@ -258,3 +258,48 @@ test('stage07 approved JARVIX orb reused in header, nav and composer without dup
  }
  expect(paid).toBe(0);
 });
+
+
+test('stage08 JARVIX orbit directions, halo duration and stable shell size',async({page})=>{
+ test.setTimeout(90000);
+ await page.addInitScript(()=>localStorage.setItem('deepsyq_lumina_terms_accepted','true'));
+ let paid=0;
+ page.on('request',r=>{if(r.method()==='POST'&&/\/api\/(studio\/jobs|payments|stripe)\b/.test(r.url()))paid++;});
+ for(const width of [390,1365]){
+  await page.setViewportSize({width,height:900});
+  await page.goto('/deepsyq.html',{waitUntil:'domcontentloaded'});
+  const svg=page.locator('#topJarvisBtn .jv-approved-orb svg.ds-reference-orb');
+  await expect(svg).toHaveCount(1);
+  const result=await svg.evaluate(node=>{
+   const css=selector=>getComputedStyle(node.querySelector(selector));
+   const halo=getComputedStyle(node.parentElement,'::before');
+   const shell=node.getBoundingClientRect(),host=node.closest('#topJarvisBtn').getBoundingClientRect();
+   return {cyan:css('.ds-orbit-spin').animationName,
+    pink:css('.ds-orbit-reverse').animationName,
+    blueBack:css('.jv-blue-behind').animationName,
+    blueFront:css('.jv-blue-front').animationName,
+    goldIn:css('.jv-warm-in').animationName,
+    goldOut:css('.jv-warm-out').animationName,
+    halo:halo.animationName,haloDuration:halo.animationDuration,
+    shell:{width:shell.width,height:shell.height},host:{width:host.width,height:host.height}};
+  });
+  expect(result.cyan).toContain('jv-ring-clockwise');
+  expect(result.pink).toContain('jv-ring-counterclockwise');
+  expect(result.blueBack).toContain('jv-blue-up');
+  expect(result.blueFront).toContain('jv-blue-up');
+  expect(result.goldIn).toContain('jv-warm-leak-in');
+  expect(result.goldOut).toContain('jv-warm-leak-out');
+  expect(result.halo).toContain('jv-halo-breath');
+  expect(result.haloDuration).toBe('5s');
+  await page.waitForTimeout(300);
+  const later=await svg.evaluate(node=>{
+   const shell=node.getBoundingClientRect(),host=node.closest('#topJarvisBtn').getBoundingClientRect();
+   return {shell:{width:shell.width,height:shell.height},host:{width:host.width,height:host.height}};
+  });
+  expect(later.shell.width).toBeCloseTo(result.shell.width,1);
+  expect(later.shell.height).toBeCloseTo(result.shell.height,1);
+  expect(later.host.width).toBeCloseTo(result.host.width,1);
+  expect(later.host.height).toBeCloseTo(result.host.height,1);
+ }
+ expect(paid).toBe(0);
+});
