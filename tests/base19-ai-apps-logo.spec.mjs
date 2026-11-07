@@ -1,3 +1,5 @@
+import {test,expect} from '@playwright/test';
+
 test('BASE #19: AI Apps uses the actual approved Deepsyq image asset, not a placeholder badge',async({page},info)=>{
  let writes=0;
  page.on('request',r=>{if(r.method()==='POST')writes++;});
