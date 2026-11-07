@@ -40,7 +40,32 @@ test('Owner mobile header positioning across shared pages',async()=>{
         menu:box('.ds-mobile-menu'),orb:box('#topJarvisBtn'),controls:box('.ds-mobile-controls'),
         main:box('main'),body:document.body.className};
       });
-      console.log('MOBILE_HEADER_GEOMETRY '+JSON.stringify({width,route,...geometry}));
+      console.log('MOBILE_HEADER_QA '+JSON.stringify({width,route,...geometry}));
+      const centerX=b=>b.x+b.w/2,centerY=b=>b.y+b.h/2;
+      for(const key of ['header','spacer','brand','word','login','menu','orb','controls','main'])
+       assert.ok(geometry[key]&&geometry[key].w>0&&geometry[key].h>0,
+        width+' '+route+' missing shared visible '+key+' '+JSON.stringify(geometry));
+      assert.equal(geometry.header.h,132,width+' '+route+' exactly one compact 132px header');
+      assert.equal(geometry.spacer.h,132,width+' '+route+' flow spacer matches header (no leftover 156px gap)');
+      assert.ok(Math.abs(centerX(geometry.word)-width/2)<=1.5,
+       width+' '+route+' actual Deepsyq WORD must be horizontally centered, not the icon+word pair');
+      assert.ok(Math.abs(centerY(geometry.word)-centerY(geometry.login))<=2,
+       width+' '+route+' title must share actual Login button midline '+JSON.stringify(geometry));
+      assert.ok(Math.abs(centerY(geometry.menu)-centerY(geometry.login))<=2,
+       width+' '+route+' menu and Login remain same top row');
+      assert.ok(geometry.orb.y>=geometry.brand.y+geometry.brand.h-2,
+       width+' '+route+' original orb must not cover Deepsyq word');
+      assert.ok(geometry.orb.y+geometry.orb.h<=geometry.header.y+geometry.header.h+2,
+       width+' '+route+' original orb must fit within compact header');
+      assert.ok(geometry.controls.y+geometry.controls.h<=geometry.header.y+geometry.header.h+1,
+       width+' '+route+' existing second-row controls must fit header');
+      assert.ok(geometry.main.y>=geometry.header.y+geometry.header.h-1&&
+       geometry.main.y<=geometry.header.y+geometry.header.h+28,
+       width+' '+route+' actual content begins near the common header without a large top gap');
+      assert.ok(geometry.word.x>geometry.menu.x+geometry.menu.w+2&&
+       geometry.word.x+geometry.word.w<geometry.login.x-2,
+       width+' '+route+' title must not overlap menu or Login');
+
      }finally{await page.close();}
     }
    }finally{await context.close();}
